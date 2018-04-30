@@ -242,11 +242,6 @@ MULTIPROCESS_TEST_MAIN(CheckTmpFileExists) {
 }
 
 TEST_F(ProcessUtilTest, SelectivelyClonedDir) {
-  // Selective cloning only works if the test executable is deployed as a
-  // package.
-  if (GetPackageRoot().empty())
-    return;
-
   const std::string signal_file =
       ProcessUtilTest::GetSignalFilePath(kSignalFileClone);
   remove(signal_file.c_str());
@@ -269,11 +264,6 @@ TEST_F(ProcessUtilTest, SelectivelyClonedDir) {
 // error code if it detects a directory other than "/tmp", so we can use that as
 // a signal that it successfully detected another entry in the root namespace.
 TEST_F(ProcessUtilTest, CloneAlternateDir) {
-  // Selective cloning only works if the test executable is deployed as a
-  // package.
-  if (GetPackageRoot().empty())
-    return;
-
   const std::string signal_file =
       ProcessUtilTest::GetSignalFilePath(kSignalFileClone);
   remove(signal_file.c_str());

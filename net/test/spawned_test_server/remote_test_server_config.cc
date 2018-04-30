@@ -29,14 +29,7 @@ base::FilePath GetTestServerConfigFilePath() {
 #if defined(OS_ANDROID)
   PathService::Get(base::DIR_ANDROID_EXTERNAL_STORAGE, &dir);
 #elif defined(OS_FUCHSIA)
-  // TODO(https://crbug.com/805057): Remove conditional after bootfs turndown.
-  if (base::GetPackageRoot().empty()) {
-    // Bootfs runs.
-    dir = base::FilePath("/system");
-  } else {
-    // Packaged runs.
-    dir = base::FilePath("/data");
-  }
+  dir = base::FilePath("/data");
 #else
   PathService::Get(base::DIR_TEMP, &dir);
 #endif

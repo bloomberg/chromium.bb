@@ -40,15 +40,7 @@ NativeLibrary LoadNativeLibraryWithOptions(const FilePath& library_path,
     return nullptr;
   }
 
-  // Fuchsia libraries must live under the "lib" directory, which may be located
-  // in /system/lib or /pkg/lib depending on whether the executable is running
-  // inside a package.
-  // TODO(https://crbug.com/805057): Remove the non-package codepath when bootfs
-  // is deprecated.
   FilePath computed_path = base::GetPackageRoot();
-  if (computed_path.empty()) {
-    CHECK(PathService::Get(DIR_EXE, &computed_path));
-  }
   computed_path = computed_path.AppendASCII("lib").Append(components[0]);
   base::File library(computed_path,
                      base::File::FLAG_OPEN | base::File::FLAG_READ);
