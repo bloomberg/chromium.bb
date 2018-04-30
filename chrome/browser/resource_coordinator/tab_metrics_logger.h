@@ -10,6 +10,8 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/base/page_transition_types.h"
 
+class Browser;
+
 namespace base {
 class TimeDelta;
 }  // namespace base
@@ -17,6 +19,10 @@ class TimeDelta;
 namespace content {
 class WebContents;
 }  // namespace content
+
+namespace resource_coordinator {
+struct TabFeatures;
+}  // namespace resource_coordinator
 
 // Logs metrics for a tab and its WebContents when requested.
 // Must be used on the UI thread.
@@ -89,6 +95,14 @@ class TabMetricsLogger {
   // Returns the site engagement score for the WebContents, rounded down to 10s
   // to limit granularity. Returns -1 if site engagement service is disabled.
   static int GetSiteEngagementScore(const content::WebContents* web_contents);
+
+  // Creates TabFeatures for logging or scoring tabs.
+  // A common function for populating these features ensures that the same
+  // values are used for logging training examples to UKM and for locally
+  // scoring tabs.
+  static resource_coordinator::TabFeatures GetTabFeatures(
+      const Browser* browser,
+      const TabMetrics& tab_metrics);
 
  private:
   // A counter to be incremented and logged with each UKM entry, used to
