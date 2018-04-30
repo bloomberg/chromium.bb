@@ -37,24 +37,25 @@ class CTPage(page_module.Page):
 
 
 class LocalTracePath(story.Story):
-  def __init__(self, local_file_path, shared_state_class):
+  def __init__(self, local_trace_path, cloud_trace_link, shared_state_class):
     super(LocalTracePath, self).__init__(
         shared_state_class=shared_state_class,
-        name=local_file_path)
+        name=local_trace_path)
+    self.cloud_trace_link = cloud_trace_link
   def Run(self, shared_state):
     pass
 
 
 class CTBrowserLessPageSet(story.StorySet):
   """Page set used by CT Benchmarks that do not require a browser."""
-  def __init__(self, local_file_paths):
+  def __init__(self, local_trace_path, cloud_trace_link):
     super(CTBrowserLessPageSet, self).__init__()
     shared_state_class = shared_browserless_story.SharedBrowserlessStory
-    for local_file_path in local_file_paths.split(','):
-      self.AddStory(
-          LocalTracePath(
-              local_file_path=local_file_path,
-              shared_state_class=shared_state_class))
+    self.AddStory(
+        LocalTracePath(
+            local_trace_path=local_trace_path,
+            cloud_trace_link=cloud_trace_link,
+            shared_state_class=shared_state_class))
 
 
 class CTPageSet(story.StorySet):

@@ -27,20 +27,30 @@ class AnalysisMetricsCT(perf_benchmark.PerfBenchmark):
   def AddBenchmarkCommandLineArgs(cls, parser):
     super(AnalysisMetricsCT, cls).AddBenchmarkCommandLineArgs(parser)
     ct_benchmarks_util.AddBenchmarkCommandLineArgs(parser)
+    parser.add_option('--local-trace-path', type='string',
+                      default=None,
+                      help='The local path to the trace file')
+    parser.add_option('--cloud-trace-link', type='string',
+                      default=None,
+                      help='Cloud link from where the local trace file was ' +
+                           'downloaded')
     parser.add_option('--metric-name', type='string',
                       default=None,
                       help='The metric to parse the trace with')
 
   @classmethod
   def ProcessCommandLineArgs(cls, parser, args):
-    if not args.urls_list:
-      parser.error('Please specify --urls-list')
+    if not args.local_trace_path:
+      parser.error('Please specify --local-trace-path')
+    if not args.cloud_trace_link:
+      parser.error('Please specify --cloud-trace-link')
     if not args.metric_name:
       parser.error('Please specify --metric-name')
     cls.metric_name = args.metric_name
 
   def CreateStorySet(self, options):
-    return page_set.CTBrowserLessPageSet(options.urls_list)
+    return page_set.CTBrowserLessPageSet(options.local_trace_path,
+                                         options.cloud_trace_link)
 
   @classmethod
   def Name(cls):

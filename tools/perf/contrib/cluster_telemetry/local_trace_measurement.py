@@ -43,7 +43,8 @@ class LocalTraceMeasurement(
     start = time.time()
     mre_result = metric_runner.RunMetric(
         filename, metrics, extra_import_options,
-        report_progress=False)
+        report_progress=False,
+        canonical_url=results.current_page.cloud_trace_link)
     logging.warning('Processing resulting traces took %.3f seconds' % (
         time.time() - start))
     page = results.current_page
