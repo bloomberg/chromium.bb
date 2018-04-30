@@ -1,3 +1,7 @@
+# NOTE: if adding an exclusion for an existing failure (e.g. additional test for
+# feature X that is already not working), please add it beside the existing
+# failures. Otherwise please reach out to network-service-dev@.
+
 # http://crbug.com/715640
 -ServiceWorkerBrowserTest.FetchPageWithSaveData
 -ServiceWorkerBrowserTest.ImportsBustMemcache
@@ -68,4 +72,6 @@
 # http://crbug.com/819663.
 -WebContentsImplBrowserTest.UpdateLoadState
 
-# NOTE: before adding new exclusions, please reach out to network-service-dev@.
+# NOTE: if adding an exclusion for an existing failure (e.g. additional test for
+# feature X that is already not working), please add it beside the existing
+# failures. Otherwise please reach out to network-service-dev@.
