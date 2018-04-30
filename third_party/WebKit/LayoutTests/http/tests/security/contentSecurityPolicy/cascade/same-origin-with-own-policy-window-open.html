@@ -8,9 +8,6 @@
 </head>
 <body>
 <script>
-  // The filesystem test takes some nesting to setup:
-  setup({explicit_done: true});
-
   async_test(t => {
     assert_allowed_image_in_document(t, document, "http://127.0.0.1:8000/resources/square.png?top-level");
     assert_allowed_image_in_document(t, document, "http://example.test:8000/resources/square.png?top-level");
@@ -33,29 +30,7 @@
     };
   }, "Image loaded via 'blob:' window blocked.");
 
-  async_test(t => {
-    window.webkitRequestFileSystem(window.TEMPORARY, 1024*1024, fs => {
-      fs.root.getFile('worker.js', { create: true }, entry => {
-        entry.createWriter(w => {
-          w.onwriteend = _ => {
-            var w = window.open(entry.toURL());
-            w.onload = _ => {
-              w.document.head.innerHTML = "<meta http-equiv='content-security-policy' content='img-src http://127.0.0.1:8000'>";
-              assert_allowed_image_in_document(t, w.document, "http://127.0.0.1:8000/resources/square.png?filesystem-frame");
-              assert_blocked_image_in_document(t, w.document, "http://example.test:8000/resources/square.png?filesystem-frame");
-            };
-
-            // explicit_done: yay.
-            done();
-          };
-          w.onerror = t.unreached_func();
-
-          var b = new Blob([], {type: "text/html"});
-          w.write(b);
-        });
-      });
-    });
-  }, "Image loaded via 'filesystem:' window blocked.");
+  // filesystem URLs can no longer be window.open'ed.
 </script>
 </body>
 </html>

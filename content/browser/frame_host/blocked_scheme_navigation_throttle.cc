@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/frame_host/data_url_navigation_throttle.h"
+#include "content/browser/frame_host/blocked_scheme_navigation_throttle.h"
 
 #include "base/feature_list.h"
 #include "base/strings/stringprintf.h"
@@ -20,25 +20,25 @@
 namespace content {
 
 namespace {
-const char kConsoleError[] =
-    "Not allowed to navigate top frame to data URL: %s";
+const char kConsoleError[] = "Not allowed to navigate top frame to %s URL: %s";
 }
 
-DataUrlNavigationThrottle::DataUrlNavigationThrottle(
+BlockedSchemeNavigationThrottle::BlockedSchemeNavigationThrottle(
     NavigationHandle* navigation_handle)
     : NavigationThrottle(navigation_handle) {}
 
-DataUrlNavigationThrottle::~DataUrlNavigationThrottle() {}
+BlockedSchemeNavigationThrottle::~BlockedSchemeNavigationThrottle() {}
 
 NavigationThrottle::ThrottleCheckResult
-DataUrlNavigationThrottle::WillProcessResponse() {
+BlockedSchemeNavigationThrottle::WillProcessResponse() {
   NavigationHandleImpl* handle =
       static_cast<NavigationHandleImpl*>(navigation_handle());
   if (handle->IsDownload())
     return PROCEED;
 
-  // We treat <a download href="data:.."> as a navigation, but it will always
-  // result in a download, not a top-level navigation, so not blocking it here.
+  // We treat <a download href="data:.."> and <a download href="filesystem:..">
+  // as a navigation, but it will always result in a download, not a top-level
+  // navigation, so not blocking it here.
   if (handle->GetSuggestedFilename().has_value())
     return PROCEED;
 
@@ -46,25 +46,27 @@ DataUrlNavigationThrottle::WillProcessResponse() {
       handle->frame_tree_node()->frame_tree()->root()->current_frame_host();
   top_frame->AddMessageToConsole(
       CONSOLE_MESSAGE_LEVEL_ERROR,
-      base::StringPrintf(kConsoleError, handle->GetURL().spec().c_str()));
+      base::StringPrintf(kConsoleError, handle->GetURL().scheme().c_str(),
+                         handle->GetURL().spec().c_str()));
   return CANCEL;
 }
 
-const char* DataUrlNavigationThrottle::GetNameForLogging() {
-  return "DataUrlNavigationThrottle";
+const char* BlockedSchemeNavigationThrottle::GetNameForLogging() {
+  return "BlockedSchemeNavigationThrottle";
 }
 
 // static
 std::unique_ptr<NavigationThrottle>
-DataUrlNavigationThrottle::CreateThrottleForNavigation(
+BlockedSchemeNavigationThrottle::CreateThrottleForNavigation(
     NavigationHandle* navigation_handle) {
   if (navigation_handle->IsInMainFrame() &&
       navigation_handle->IsRendererInitiated() &&
       !navigation_handle->IsSameDocument() &&
-      navigation_handle->GetURL().SchemeIs(url::kDataScheme) &&
+      (navigation_handle->GetURL().SchemeIs(url::kDataScheme) ||
+       navigation_handle->GetURL().SchemeIs(url::kFileSystemScheme)) &&
       !base::FeatureList::IsEnabled(
           features::kAllowContentInitiatedDataUrlNavigations)) {
-    return std::make_unique<DataUrlNavigationThrottle>(navigation_handle);
+    return std::make_unique<BlockedSchemeNavigationThrottle>(navigation_handle);
   }
   return nullptr;
 }

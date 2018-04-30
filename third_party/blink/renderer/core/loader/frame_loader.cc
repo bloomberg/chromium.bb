@@ -743,21 +743,26 @@ bool FrameLoader::PrepareRequestForThisFrame(FrameLoadRequest& request) {
     return false;
   }
 
-  // Block renderer-initiated loads of data URLs in the top frame. If the mime
-  // type of the data URL is supported, the URL will eventually be rendered, so
-  // block it here. Otherwise, the load might be handled by a plugin or end up
-  // as a download, so allow it to let the embedder figure out what to do with
-  // it.
+  // Block renderer-initiated loads of data: and filesystem: URLs in the top
+  // frame.
+  //
+  // If the mime type of the data URL is supported, the URL will
+  // eventually be rendered, so block it here. Otherwise, the load might be
+  // handled by a plugin or end up as a download, so allow it to let the
+  // embedder figure out what to do with it. Navigations to filesystem URLs are
+  // always blocked here.
   if (frame_->IsMainFrame() &&
       !request.GetResourceRequest().IsSameDocumentNavigation() &&
       !frame_->Client()->AllowContentInitiatedDataUrlNavigations(
           request.OriginDocument()->Url()) &&
       !request.GetResourceRequest().GetSuggestedFilename().has_value() &&
-      url.ProtocolIsData() && NetworkUtils::IsDataURLMimeTypeSupported(url)) {
+      (url.ProtocolIs("filesystem") ||
+       (url.ProtocolIsData() &&
+        NetworkUtils::IsDataURLMimeTypeSupported(url)))) {
     frame_->GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
         kSecurityMessageSource, kErrorMessageLevel,
-        "Not allowed to navigate top frame to data URL: " +
-            url.ElidedString()));
+        "Not allowed to navigate top frame to " + url.Protocol() +
+            " URL: " + url.ElidedString()));
     return false;
   }
 

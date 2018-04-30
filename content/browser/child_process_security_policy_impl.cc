@@ -683,12 +683,12 @@ bool ChildProcessSecurityPolicyImpl::CanRedirectToURL(const GURL& url) {
 
   // Note about redirects and special URLs:
   // * data-url: Blocked by net::DataProtocolHandler::IsSafeRedirectTarget().
+  // * filesystem-url: Blocked by
+  // storage::FilesystemProtocolHandler::IsSafeRedirectTarget().
   // Depending on their inner origins and if the request is browser-initiated or
-  // renderer-initiated, blob-urls and filesystem-urls might get blocked by
-  // CanCommitURL or in DocumentLoader::RedirectReceived.
-  // * blob-url: If not blocked, a 'file not found' response will be
-  //             generated in net::BlobURLRequestJob::DidStart().
-  // * filesystem-url: If not blocked, the response is displayed.
+  // renderer-initiated, blob-urls might get blocked by CanCommitURL or in
+  // DocumentLoader::RedirectReceived. If not blocked, a 'file not found'
+  // response will be generated in net::BlobURLRequestJob::DidStart().
 
   return true;
 }
