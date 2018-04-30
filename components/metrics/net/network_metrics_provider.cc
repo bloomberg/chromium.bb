@@ -404,10 +404,11 @@ void NetworkMetricsProvider::WriteWifiAccessPointProto(
   for (const base::StringPiece& oui_str : base::SplitStringPiece(
            info.oui_list, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
     uint32_t oui;
-    if (base::HexStringToUInt(oui_str, &oui))
+    if (base::HexStringToUInt(oui_str, &oui)) {
       vendor->add_element_identifier(oui);
-    else
-      NOTREACHED();
+    } else {
+      DLOG(WARNING) << "Error when parsing OUI list of the WiFi access point";
+    }
   }
 }
 
