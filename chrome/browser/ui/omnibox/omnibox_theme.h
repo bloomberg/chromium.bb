@@ -53,4 +53,6 @@ SkColor GetOmniboxColor(OmniboxPart part,
                         OmniboxTint tint,
                         OmniboxPartState state = OmniboxPartState::NORMAL);
 
+float GetOmniboxStateAlpha(OmniboxPartState state);
+
 #endif  // CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_THEME_H_
