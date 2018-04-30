@@ -48,6 +48,13 @@ class CC_EXPORT RenderFrameMetadata {
   // Selection region relative to the current viewport. If the selection is
   // empty or otherwise unused, the bound types will indicate such.
   viz::Selection<gfx::SelectionBound> selection;
+
+  // Determines whether the page is mobile optimized or not, which means at
+  // least one of the following has to be true:
+  // - page has a width=device-width or narrower viewport.
+  // - page prevents zooming in or out (i.e. min and max page scale factors
+  // are the same).
+  bool is_mobile_optimized = false;
 };
 
 }  // namespace cc

@@ -119,7 +119,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       public TouchEmulatorClient,
       public SyntheticGestureController::Delegate,
       public viz::mojom::CompositorFrameSink,
-      public IPC::Listener {
+      public IPC::Listener,
+      public RenderFrameMetadataProvider::Observer {
  public:
   // |routing_id| must not be MSG_ROUTING_NONE.
   // If this object outlives |delegate|, DetachDelegate() must be called when
@@ -879,6 +880,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 #if defined(OS_MACOSX)
   device::mojom::WakeLock* GetWakeLock();
 #endif
+
+  // RenderFrameMetadataProvider::Observer implementation.
+  void OnRenderFrameMetadataChanged() override;
+  void OnRenderFrameSubmission() override {}
 
   // true if a renderer has once been valid. We use this flag to display a sad
   // tab only when we lose our renderer and not if a paint occurs during

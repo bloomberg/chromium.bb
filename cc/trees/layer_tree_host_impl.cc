@@ -108,6 +108,29 @@
 namespace cc {
 namespace {
 
+// Used to accommodate finite precision when comparing scaled viewport and
+// content widths. While this value may seem large, width=device-width on an N7
+// V1 saw errors of ~0.065 between computed window and content widths.
+const float kMobileViewportWidthEpsilon = 0.15f;
+
+bool HasFixedPageScale(LayerTreeImpl* active_tree) {
+  return active_tree->min_page_scale_factor() ==
+         active_tree->max_page_scale_factor();
+}
+
+bool HasMobileViewport(LayerTreeImpl* active_tree) {
+  float window_width_dip = active_tree->current_page_scale_factor() *
+                           active_tree->ScrollableViewportSize().width();
+  float content_width_css = active_tree->ScrollableSize().width();
+  return content_width_css <= window_width_dip + kMobileViewportWidthEpsilon;
+}
+
+bool IsMobileOptimized(LayerTreeImpl* active_tree) {
+  bool has_mobile_viewport = HasMobileViewport(active_tree);
+  bool has_fixed_page_scale = HasFixedPageScale(active_tree);
+  return has_fixed_page_scale || has_mobile_viewport;
+}
+
 viz::ResourceFormat TileRasterBufferFormat(
     const LayerTreeSettings& settings,
     viz::ContextProvider* context_provider,
@@ -1869,8 +1892,8 @@ RenderFrameMetadata LayerTreeHostImpl::MakeRenderFrameMetadata() {
       gfx::ScrollOffsetToVector2dF(active_tree_->TotalScrollOffset());
   metadata.root_background_color = active_tree_->background_color();
   metadata.is_scroll_offset_at_top = active_tree_->TotalScrollOffset().y() == 0;
-
   active_tree_->GetViewportSelection(&metadata.selection);
+  metadata.is_mobile_optimized = IsMobileOptimized(active_tree_.get());
 
   return metadata;
 }

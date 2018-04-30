@@ -33,6 +33,10 @@ struct StructTraits<content::mojom::RenderFrameMetadataDataView,
     return metadata.selection;
   }
 
+  static bool is_mobile_optimized(const cc::RenderFrameMetadata& metadata) {
+    return metadata.is_mobile_optimized;
+  }
+
   static bool Read(content::mojom::RenderFrameMetadataDataView data,
                    cc::RenderFrameMetadata* out);
 };
