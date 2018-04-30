@@ -265,8 +265,6 @@ class Directory {
   // to indicate the continuation state of the next GetUpdates operation.
   void GetDownloadProgress(ModelType type,
                            sync_pb::DataTypeProgressMarker* value_out) const;
-  void GetDownloadProgressAsString(ModelType type,
-                                   std::string* value_out) const;
   void SetDownloadProgress(ModelType type,
                            const sync_pb::DataTypeProgressMarker& value);
   bool HasEmptyDownloadProgress(ModelType type) const;

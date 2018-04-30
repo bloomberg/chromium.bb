@@ -820,13 +820,6 @@ void Directory::GetDownloadProgress(
       kernel_->persisted_info.download_progress[model_type]);
 }
 
-void Directory::GetDownloadProgressAsString(ModelType model_type,
-                                            std::string* value_out) const {
-  ScopedKernelLock lock(this);
-  kernel_->persisted_info.download_progress[model_type].SerializeToString(
-      value_out);
-}
-
 size_t Directory::GetEntriesCount() const {
   ScopedKernelLock lock(this);
   return kernel_->metahandles_map.size();

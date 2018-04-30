@@ -8,6 +8,7 @@
 #include <iterator>
 
 #include "base/logging.h"
+#include "components/sync/engine_impl/update_handler.h"
 #include "components/sync/syncable/directory.h"
 
 namespace syncer {
@@ -25,13 +26,22 @@ SyncCycleSnapshot SyncCycle::TakeSnapshot() const {
 
 SyncCycleSnapshot SyncCycle::TakeSnapshotWithOrigin(
     sync_pb::SyncEnums::GetUpdatesOrigin get_updates_origin) const {
-  syncable::Directory* dir = context_->directory();
-
   ProgressMarkerMap download_progress_markers;
   for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
     ModelType type(ModelTypeFromInt(i));
-    dir->GetDownloadProgressAsString(type, &download_progress_markers[type]);
+    const UpdateHandler* update_handler =
+        context_->model_type_registry()->GetUpdateHandler(type);
+    if (update_handler == nullptr) {
+      continue;
+    }
+    sync_pb::DataTypeProgressMarker progress_marker;
+    update_handler->GetDownloadProgress(&progress_marker);
+    download_progress_markers[type] = progress_marker.SerializeAsString();
   }
+
+  // TODO(mastiz): Remove dependency to directory, since it most likely hides
+  // an issue with USS types.
+  syncable::Directory* dir = context_->directory();
 
   std::vector<int> num_entries_by_type(MODEL_TYPE_COUNT, 0);
   std::vector<int> num_to_delete_entries_by_type(MODEL_TYPE_COUNT, 0);
