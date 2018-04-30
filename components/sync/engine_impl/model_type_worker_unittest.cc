@@ -320,9 +320,10 @@ class ModelTypeWorkerTest : public ::testing::Test {
 
   void TriggerTypeRootUpdateFromServer() {
     SyncEntity entity = server()->TypeRootUpdate();
-    worker()->ProcessGetUpdatesResponse(
-        server()->GetProgress(), server()->GetContext(), {&entity}, nullptr);
-    worker()->PassiveApplyUpdates(nullptr);
+    worker()->ProcessGetUpdatesResponse(server()->GetProgress(),
+                                        server()->GetContext(), {&entity},
+                                        &status_controller_);
+    worker()->PassiveApplyUpdates(&status_controller_);
   }
 
   void TriggerPartialUpdateFromServer(int64_t version_offset,
@@ -336,15 +337,16 @@ class ModelTypeWorkerTest : public ::testing::Test {
                     entity.mutable_specifics());
     }
 
-    worker()->ProcessGetUpdatesResponse(
-        server()->GetProgress(), server()->GetContext(), {&entity}, nullptr);
+    worker()->ProcessGetUpdatesResponse(server()->GetProgress(),
+                                        server()->GetContext(), {&entity},
+                                        &status_controller_);
   }
 
   void TriggerUpdateFromServer(int64_t version_offset,
                                const std::string& tag,
                                const std::string& value) {
     TriggerPartialUpdateFromServer(version_offset, tag, value);
-    worker()->ApplyUpdates(nullptr);
+    worker()->ApplyUpdates(&status_controller_);
   }
 
   void TriggerTombstoneFromServer(int64_t version_offset,
@@ -357,14 +359,15 @@ class ModelTypeWorkerTest : public ::testing::Test {
                     entity.mutable_specifics());
     }
 
-    worker()->ProcessGetUpdatesResponse(
-        server()->GetProgress(), server()->GetContext(), {&entity}, nullptr);
-    worker()->ApplyUpdates(nullptr);
+    worker()->ProcessGetUpdatesResponse(server()->GetProgress(),
+                                        server()->GetContext(), {&entity},
+                                        &status_controller_);
+    worker()->ApplyUpdates(&status_controller_);
   }
 
   // Simulates the end of a GU sync cycle and tells the worker to flush changes
   // to the processor.
-  void ApplyUpdates() { worker()->ApplyUpdates(nullptr); }
+  void ApplyUpdates() { worker()->ApplyUpdates(&status_controller_); }
 
   // Delivers specified protos as updates.
   //
@@ -373,8 +376,9 @@ class ModelTypeWorkerTest : public ::testing::Test {
   // protocol. Try to use the other, higher level methods if possible.
   void DeliverRawUpdates(const SyncEntityList& list) {
     worker()->ProcessGetUpdatesResponse(server()->GetProgress(),
-                                        server()->GetContext(), list, nullptr);
-    worker()->ApplyUpdates(nullptr);
+                                        server()->GetContext(), list,
+                                        &status_controller_);
+    worker()->ApplyUpdates(&status_controller_);
   }
 
   // By default, this harness behaves as if all tasks posted to the model
@@ -419,7 +423,7 @@ class ModelTypeWorkerTest : public ::testing::Test {
     sync_pb::ClientToServerResponse response =
         server()->DoSuccessfulCommit(message);
 
-    contribution->ProcessCommitResponse(response, nullptr);
+    contribution->ProcessCommitResponse(response, &status_controller_);
     contribution->CleanUp();
   }
 
@@ -487,6 +491,8 @@ class ModelTypeWorkerTest : public ::testing::Test {
   base::ObserverList<TypeDebugInfoObserver> type_observers_;
 
   std::unique_ptr<NonBlockingTypeDebugInfoEmitter> emitter_;
+
+  StatusController status_controller_;
 };
 
 // Requests a commit and verifies the messages sent to the client and server as
