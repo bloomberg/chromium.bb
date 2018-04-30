@@ -313,6 +313,131 @@ TEST_F(NinjaBinaryTargetWriterTest, OutputExtensionAndInputDeps) {
   EXPECT_EQ(expected, out_str);
 }
 
+TEST_F(NinjaBinaryTargetWriterTest, NoHardDepsToNoPublicHeaderTarget) {
+  Err err;
+  TestWithScope setup;
+
+  SourceFile generated_file("//out/Debug/generated.cc");
+
+  // An action does code generation.
+  Target action(setup.settings(), Label(SourceDir("//foo/"), "generate"));
+  action.set_output_type(Target::ACTION);
+  action.visibility().SetPublic();
+  action.SetToolchain(setup.toolchain());
+  action.set_output_dir(SourceDir("//out/Debug/foo/"));
+  action.action_values().outputs() =
+      SubstitutionList::MakeForTest("//out/Debug/generated.cc");
+  ASSERT_TRUE(action.OnResolved(&err));
+
+  // A source set compiling geneated code, this target does not publicize any
+  // headers.
+  Target gen_obj(setup.settings(), Label(SourceDir("//foo/"), "gen_obj"));
+  gen_obj.set_output_type(Target::SOURCE_SET);
+  gen_obj.set_output_dir(SourceDir("//out/Debug/foo/"));
+  gen_obj.sources().push_back(generated_file);
+  gen_obj.visibility().SetPublic();
+  gen_obj.private_deps().push_back(LabelTargetPair(&action));
+  gen_obj.set_all_headers_public(false);
+  gen_obj.SetToolchain(setup.toolchain());
+  ASSERT_TRUE(gen_obj.OnResolved(&err));
+
+  std::ostringstream obj_out;
+  NinjaBinaryTargetWriter obj_writer(&gen_obj, obj_out);
+  obj_writer.Run();
+
+  const char obj_expected[] =
+      "defines =\n"
+      "include_dirs =\n"
+      "cflags =\n"
+      "cflags_cc =\n"
+      "root_out_dir = .\n"
+      "target_out_dir = obj/foo\n"
+      "target_output_name = gen_obj\n"
+      "\n"
+      "build obj/out/Debug/gen_obj.generated.o: cxx generated.cc"
+      " || obj/foo/generate.stamp\n"
+      "\n"
+      "build obj/foo/gen_obj.stamp: stamp obj/out/Debug/gen_obj.generated.o"
+      // The order-only dependency here is strictly unnecessary since the
+      // sources list this as an order-only dep.
+      " || obj/foo/generate.stamp\n";
+
+  std::string obj_str = obj_out.str();
+  EXPECT_EQ(obj_expected, obj_str);
+
+  // A shared library depends on gen_obj, having corresponding header for
+  // generated obj.
+  Target gen_lib(setup.settings(), Label(SourceDir("//foo/"), "gen_lib"));
+  gen_lib.set_output_type(Target::SHARED_LIBRARY);
+  gen_lib.set_output_dir(SourceDir("//out/Debug/foo/"));
+  gen_lib.sources().push_back(SourceFile("//foor/generated.h"));
+  gen_lib.visibility().SetPublic();
+  gen_lib.private_deps().push_back(LabelTargetPair(&gen_obj));
+  gen_lib.SetToolchain(setup.toolchain());
+  ASSERT_TRUE(gen_lib.OnResolved(&err));
+
+  std::ostringstream lib_out;
+  NinjaBinaryTargetWriter lib_writer(&gen_lib, lib_out);
+  lib_writer.Run();
+
+  const char lib_expected[] =
+      "defines =\n"
+      "include_dirs =\n"
+      "root_out_dir = .\n"
+      "target_out_dir = obj/foo\n"
+      "target_output_name = libgen_lib\n"
+      "\n"
+      "\n"
+      "build ./libgen_lib.so: solink obj/out/Debug/gen_obj.generated.o"
+      // The order-only dependency here is strictly unnecessary since
+      // obj/out/Debug/gen_obj.generated.o has dependency to
+      // obj/foo/gen_obj.stamp
+      " || obj/foo/gen_obj.stamp\n"
+      "  ldflags =\n"
+      "  libs =\n"
+      "  output_extension = .so\n"
+      "  output_dir = foo\n";
+
+  std::string lib_str = lib_out.str();
+  EXPECT_EQ(lib_expected, lib_str);
+
+  // An executable depends on gen_lib.
+  Target executable(setup.settings(),
+                    Label(SourceDir("//foo/"), "final_target"));
+  executable.set_output_type(Target::EXECUTABLE);
+  executable.set_output_dir(SourceDir("//out/Debug/foo/"));
+  executable.sources().push_back(SourceFile("//foo/main.cc"));
+  executable.private_deps().push_back(LabelTargetPair(&gen_lib));
+  executable.SetToolchain(setup.toolchain());
+  ASSERT_TRUE(executable.OnResolved(&err)) << err.message();
+
+  std::ostringstream final_out;
+  NinjaBinaryTargetWriter final_writer(&executable, final_out);
+  final_writer.Run();
+
+  // There is no order only dependency to action target.
+  const char final_expected[] =
+      "defines =\n"
+      "include_dirs =\n"
+      "cflags =\n"
+      "cflags_cc =\n"
+      "root_out_dir = .\n"
+      "target_out_dir = obj/foo\n"
+      "target_output_name = final_target\n"
+      "\n"
+      "build obj/foo/final_target.main.o: cxx ../../foo/main.cc\n"
+      "\n"
+      "build ./final_target: link obj/foo/final_target.main.o"
+      " ./libgen_lib.so\n"
+      "  ldflags =\n"
+      "  libs =\n"
+      "  output_extension = \n"
+      "  output_dir = foo\n";
+
+  std::string final_str = final_out.str();
+  EXPECT_EQ(final_expected, final_str);
+}
+
 // Tests libs are applied.
 TEST_F(NinjaBinaryTargetWriterTest, LibsAndLibDirs) {
   Err err;
