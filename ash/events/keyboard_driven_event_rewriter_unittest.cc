@@ -6,14 +6,14 @@
 
 #include <string>
 
+#include "ash/events/keyboard_driven_event_rewriter.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/chromeos/events/keyboard_driven_event_rewriter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
 
-namespace chromeos {
+namespace ash {
 
 class KeyboardDrivenEventRewriterTest : public testing::Test {
  public:
@@ -114,4 +114,4 @@ TEST_F(KeyboardDrivenEventRewriterTest, Rewrite) {
   }
 }
 
-}  // namespace chromeos
+}  // namespace ash

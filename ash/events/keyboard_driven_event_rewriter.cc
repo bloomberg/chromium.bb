@@ -2,51 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/events/keyboard_driven_event_rewriter.h"
+#include "ash/events/keyboard_driven_event_rewriter.h"
 
-#include "chrome/browser/chromeos/system/input_device_settings.h"
-#include "components/session_manager/core/session_manager.h"
+#include "ash/session/session_controller.h"
+#include "ash/shell.h"
 #include "ui/chromeos/events/event_rewriter_chromeos.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 
-namespace chromeos {
+namespace ash {
 
-namespace {
+KeyboardDrivenEventRewriter::KeyboardDrivenEventRewriter() = default;
 
-const int kModifierMask = ui::EF_SHIFT_DOWN;
-
-KeyboardDrivenEventRewriter* instance = nullptr;
-
-// Returns true if and only if it is on login screen (i.e. user is not logged
-// in) and the keyboard driven flag in the OEM manifest is on.
-bool ShouldStripModifiersForArrowKeysAndEnter() {
-  if (session_manager::SessionManager::Get() &&
-      !session_manager::SessionManager::Get()->IsSessionStarted()) {
-    return system::InputDeviceSettings::Get()
-        ->ForceKeyboardDrivenUINavigation();
-  }
-
-  return false;
-}
-
-}  // namespace
-
-// static
-KeyboardDrivenEventRewriter* KeyboardDrivenEventRewriter::GetInstance() {
-  DCHECK(instance);
-  return instance;
-}
-
-KeyboardDrivenEventRewriter::KeyboardDrivenEventRewriter() {
-  DCHECK(!instance);
-  instance = this;
-}
-
-KeyboardDrivenEventRewriter::~KeyboardDrivenEventRewriter() {
-  DCHECK_EQ(instance, this);
-  instance = nullptr;
-}
+KeyboardDrivenEventRewriter::~KeyboardDrivenEventRewriter() = default;
 
 ui::EventRewriteStatus KeyboardDrivenEventRewriter::RewriteForTesting(
     const ui::Event& event,
@@ -57,8 +25,10 @@ ui::EventRewriteStatus KeyboardDrivenEventRewriter::RewriteForTesting(
 ui::EventRewriteStatus KeyboardDrivenEventRewriter::RewriteEvent(
     const ui::Event& event,
     std::unique_ptr<ui::Event>* rewritten_event) {
-  if (!ShouldStripModifiersForArrowKeysAndEnter())
+  if (!enabled_ ||
+      Shell::Get()->session_controller()->IsActiveUserSessionStarted()) {
     return ui::EVENT_REWRITE_CONTINUE;
+  }
 
   return Rewrite(event, rewritten_event);
 }
@@ -74,6 +44,7 @@ ui::EventRewriteStatus KeyboardDrivenEventRewriter::Rewrite(
     const ui::Event& event,
     std::unique_ptr<ui::Event>* rewritten_event) {
   int flags = event.flags();
+  const int kModifierMask = ui::EF_SHIFT_DOWN;
   if ((flags & kModifierMask) != kModifierMask)
     return ui::EVENT_REWRITE_CONTINUE;
 
@@ -93,7 +64,7 @@ ui::EventRewriteStatus KeyboardDrivenEventRewriter::Rewrite(
       flags & ~(ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN),
       key_event.code(), key_event.GetDomKey(), key_event.key_code()};
 
-  if (rewritten_to_tab_) {
+  if (arrow_to_tab_rewriting_enabled_) {
     if (key_code == ui::VKEY_LEFT || key_code == ui::VKEY_RIGHT ||
         key_code == ui::VKEY_UP || key_code == ui::VKEY_DOWN) {
       const ui::KeyEvent tab_event(ui::ET_KEY_PRESSED, ui::VKEY_TAB,
@@ -111,4 +82,4 @@ ui::EventRewriteStatus KeyboardDrivenEventRewriter::Rewrite(
   return ui::EVENT_REWRITE_REWRITTEN;
 }
 
-}  // namespace chromeos
+}  // namespace ash

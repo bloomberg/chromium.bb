@@ -25,6 +25,7 @@ mojom("interfaces_internal") {
     "cros_display_config.mojom",
     "docked_magnifier_controller.mojom",
     "event_properties.mojom",
+    "event_rewriter_controller.mojom",
     "first_run_helper.mojom",
     "highlighter_controller.mojom",
     "ime_controller.mojom",

@@ -1,0 +1,16 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module ash.mojom;
+
+// Allows clients to toggle some event rewriting behavior.
+interface EventRewriterController {
+  // Enables the KeyboardDrivenEventRewriter, which is disabled by default.
+  // This only applies when the user is on the login screen.
+  SetKeyboardDrivenEventRewriterEnabled(bool enabled);
+
+  // If true, Shift + Arrow keys are rewritten to Tab/Shift-Tab keys.
+  // This only applies when the KeyboardDrivenEventRewriter is active.
+  SetArrowToTabRewritingEnabled(bool enabled);
+};
