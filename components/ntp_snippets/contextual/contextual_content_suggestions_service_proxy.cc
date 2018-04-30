@@ -85,7 +85,13 @@ void ContextualContentSuggestionsServiceProxy::ClearState() {
 void ContextualContentSuggestionsServiceProxy::ReportEvent(
     ukm::SourceId ukm_source_id,
     ContextualSuggestionsEvent event) {
-  DCHECK(ukm_source_id != ukm::kInvalidSourceId);
+  // TODO(pnoland): investigate how we can get into this state(one known
+  // example is if we switch tabs and there's no committed navigation in the new
+  // tab) and prevent it from happening. Replace the early return with a DCHECK
+  // once this is done.
+  if (ukm_source_id == ukm::kInvalidSourceId) {
+    return;
+  }
 
   // Flush the previous page (if any) and setup the new page.
   if (ukm_source_id != last_ukm_source_id_) {
