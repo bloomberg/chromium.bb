@@ -12,7 +12,6 @@
 #include "ash/shelf/app_list_button.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_button.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shelf/shelf_widget.h"
@@ -853,7 +852,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, SetIcon) {
   // Ensure icon heights are correct (see test.js in app_icon/ test directory)
   // Note, images are no longer available in ChromeLauncherController. They are
   // are passed directly to the ShelfController.
-  EXPECT_EQ(ash::kShelfSize, app_item_image.height());
+  EXPECT_EQ(extension_misc::EXTENSION_ICON_MEDIUM, app_item_image.height());
   EXPECT_EQ(extension_misc::EXTENSION_ICON_LARGE,
             app_item_custom_image.height());
   EXPECT_EQ(64, panel_item_image.height());
