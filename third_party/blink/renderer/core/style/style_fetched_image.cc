@@ -93,7 +93,7 @@ FloatSize StyleFetchedImage::ImageSize(
   // border-image, etc.)
   //
   // https://drafts.csswg.org/css-images-3/#the-image-orientation
-  FloatSize size(image_->IntrinsicSize(kDoNotRespectImageOrientation));
+  FloatSize size(image->Size());
   return ApplyZoom(size, multiplier);
 }
 
