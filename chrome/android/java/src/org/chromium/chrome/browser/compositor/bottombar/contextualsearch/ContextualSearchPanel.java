@@ -26,7 +26,9 @@ import org.chromium.chrome.browser.compositor.scene_layer.ContextualSearchSceneL
 import org.chromium.chrome.browser.compositor.scene_layer.SceneOverlayLayer;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
+import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.resources.ResourceManager;
 
@@ -40,40 +42,39 @@ public class ContextualSearchPanel extends OverlayPanel {
      */
     private static final long HIDE_PROGRESS_BAR_DELAY = 1000 / 60 * 4;
 
-    /**
-     * Used for logging state changes.
-     */
+    /** When using the Generic UX we never show the Arrow Icon */
+    private static final float ARROW_ICON_OPACITY_GENERIC_UX = 0.f;
+
+    /** When using the Generic UX we always show the Close Icon */
+    private static final float CLOSE_ICON_OPACITY_GENERIC_UX = 1.f;
+
+    /** Used for logging state changes. */
     private final ContextualSearchPanelMetrics mPanelMetrics;
 
-    /**
-     * The height of the bar shadow, in pixels.
-     */
+    /** The height of the bar shadow, in pixels. */
     private final float mBarShadowHeightPx;
 
-    /**
-     * The distance of the divider from the end of the bar, in dp.
-     */
+    /** The distance of the divider from the end of the bar, in dp. */
     private final float mEndButtonWidthDp;
 
-    /**
-     * Whether the Panel should be promoted to a new tab after being maximized.
-     */
+    /** Whether the Panel should be promoted to a new tab after being maximized. */
     private boolean mShouldPromoteToTabAfterMaximizing;
 
-    /**
-     * The object for handling global Contextual Search management duties
-     */
+    /** The object for handling global Contextual Search management duties */
     private ContextualSearchManagementDelegate mManagementDelegate;
 
-    /**
-     * Whether the content view has been touched.
-     */
+    /** Whether the content view has been touched. */
     private boolean mHasContentBeenTouched;
 
-    /**
-     * The compositor layer used for drawing the panel.
-     */
+    /** The compositor layer used for drawing the panel. */
     private ContextualSearchSceneLayer mSceneLayer;
+
+    /**
+     * Whether to use the Generic Sheet UX.
+     * This activates the closebox in the peeking Bar, and may someday do more,
+     * e.g. swipe-closed behavior.  See crbug.com/831783 for details.
+     */
+    private boolean mUseGenericSheetUx;
 
     // ============================================================================================
     // Constructor
@@ -97,6 +98,13 @@ public class ContextualSearchPanel extends OverlayPanel {
         mEndButtonWidthDp = mPxToDp
                 * mContext.getResources().getDimensionPixelSize(
                           R.dimen.contextual_search_end_button_width);
+    }
+
+    @Override
+    protected void initializeUiState() {
+        mUseGenericSheetUx = mActivity.supportsContextualSuggestionsBottomSheet()
+                && FeatureUtilities.isContextualSuggestionsBottomSheetEnabled(
+                           DeviceFormFactor.isNonMultiDisplayContextOnTablet(mActivity));
     }
 
     @Override
@@ -288,7 +296,9 @@ public class ContextualSearchPanel extends OverlayPanel {
         getSearchBarControl().onSearchBarClick(x);
 
         if (isPeeking()) {
-            if (getSearchBarControl().getQuickActionControl().hasQuickAction()
+            if (useGenericSheetUx() && isCoordinateInsideCloseButton(x)) {
+                closePanel(StateChangeReason.CLOSE_BUTTON, true);
+            } else if (getSearchBarControl().getQuickActionControl().hasQuickAction()
                     && isCoordinateInsideActionTarget(x)) {
                 mPanelMetrics.setWasQuickActionClicked();
                 getSearchBarControl().getQuickActionControl().sendIntent(
@@ -687,6 +697,33 @@ public class ContextualSearchPanel extends OverlayPanel {
         super.updatePanelForSizeChange();
 
         mManagementDelegate.onPanelResized();
+    }
+
+    @Override
+    public float getArrowIconOpacity() {
+        if (useGenericSheetUx()) {
+            return ARROW_ICON_OPACITY_GENERIC_UX;
+        } else {
+            return super.getArrowIconOpacity();
+        }
+    }
+
+    @Override
+    public float getCloseIconOpacity() {
+        if (useGenericSheetUx()) {
+            return CLOSE_ICON_OPACITY_GENERIC_UX;
+        } else {
+            return super.getCloseIconOpacity();
+        }
+    }
+
+    /**
+     * Whether the UX should match the generic sheet UX used by the generic assistive surface.
+     * TODO(crbug.com/831783) remove when the generic sheet UX is the default.
+     * @return Whether to apply the generic UX, rather than the legacy Contextual Search UX.
+     */
+    boolean useGenericSheetUx() {
+        return mUseGenericSheetUx;
     }
 
     // ============================================================================================
