@@ -119,10 +119,10 @@ void OmniboxPopupViewIOS::OnMatchSelected(
 
 void OmniboxPopupViewIOS::OnMatchSelectedForAppending(
     const AutocompleteMatch& match) {
-  // Make a defensive copy of |match.contents|, as CopyToOmnibox() will trigger
-  // a new round of autocomplete and modify |match|.
-  base::string16 contents(match.contents);
-  delegate_->OnSelectedMatchForAppending(contents);
+  // Make a defensive copy of |match.fill_into_edit|, as CopyToOmnibox() will
+  // trigger a new round of autocomplete and modify |match|.
+  base::string16 fill_into_edit(match.fill_into_edit);
+  delegate_->OnSelectedMatchForAppending(fill_into_edit);
 }
 
 void OmniboxPopupViewIOS::OnMatchSelectedForDeletion(
