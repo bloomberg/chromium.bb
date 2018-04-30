@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -23,9 +24,9 @@ namespace content {
 class BrowserThreadTest : public testing::Test {
  public:
   void Release() const {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    loop_.task_runner()->PostTask(FROM_HERE,
-                                  base::MessageLoop::QuitWhenIdleClosure());
+    EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    EXPECT_TRUE(on_release_);
+    std::move(on_release_).Run();
   }
 
   void StopUIThread() { ui_thread_->Stop(); }
@@ -52,42 +53,49 @@ class BrowserThreadTest : public testing::Test {
     BrowserThreadImpl::ResetGlobalsForTesting(BrowserThread::IO);
   }
 
-  static void BasicFunction(base::MessageLoop* message_loop) {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    message_loop->task_runner()->PostTask(
-        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+  // Prepares this BrowserThreadTest for Release() to be invoked. |on_release|
+  // will be invoked when this occurs.
+  void ExpectRelease(base::OnceClosure on_release) {
+    on_release_ = std::move(on_release);
+  }
+
+  static void BasicFunction(base::OnceClosure continuation) {
+    EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    std::move(continuation).Run();
   }
 
   class DeletedOnIO
       : public base::RefCountedThreadSafe<DeletedOnIO,
                                           BrowserThread::DeleteOnIOThread> {
    public:
-    explicit DeletedOnIO(base::MessageLoop* message_loop)
-        : message_loop_(message_loop) {}
+    explicit DeletedOnIO(base::OnceClosure on_deletion)
+        : on_deletion_(std::move(on_deletion)) {}
 
    private:
     friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
     friend class base::DeleteHelper<DeletedOnIO>;
 
     ~DeletedOnIO() {
-      CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-      message_loop_->task_runner()->PostTask(
-          FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+      EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
+      std::move(on_deletion_).Run();
     }
 
-    base::MessageLoop* message_loop_;
+    base::OnceClosure on_deletion_;
   };
 
  private:
   std::unique_ptr<BrowserProcessSubThread> ui_thread_;
   std::unique_ptr<BrowserProcessSubThread> io_thread_;
-  // It's kind of ugly to make this mutable - solely so we can post the Quit
-  // Task from Release(). This should be fixed.
-  mutable base::MessageLoop loop_;
+
+  base::MessageLoop loop_;
+  // Must be set before Release() to verify the deletion is intentional. Will be
+  // run from the next call to Release(). mutable so it can be consumed from
+  // Release().
+  mutable base::OnceClosure on_release_;
 };
 
 class UIThreadDestructionObserver
-    : public base::MessageLoop::DestructionObserver {
+    : public base::MessageLoopCurrent::DestructionObserver {
  public:
   explicit UIThreadDestructionObserver(bool* did_shutdown,
                                        const base::Closure& callback)
@@ -102,10 +110,10 @@ class UIThreadDestructionObserver
 
  private:
   static void Watch(UIThreadDestructionObserver* observer) {
-    base::MessageLoop::current()->AddDestructionObserver(observer);
+    base::MessageLoopCurrent::Get()->AddDestructionObserver(observer);
   }
 
-  // base::MessageLoop::DestructionObserver:
+  // base::MessageLoopCurrent::DestructionObserver:
   void WillDestroyCurrentMessageLoop() override {
     // Ensure that even during MessageLoop teardown the BrowserThread ID is
     // correctly associated with this thread and the BrowserThreadTaskRunner
@@ -113,7 +121,7 @@ class UIThreadDestructionObserver
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
     EXPECT_TRUE(ui_task_runner_->BelongsToCurrentThread());
 
-    base::MessageLoop::current()->RemoveDestructionObserver(this);
+    base::MessageLoopCurrent::Get()->RemoveDestructionObserver(this);
     *did_shutdown_ = true;
     callback_task_runner_->PostTask(FROM_HERE, callback_);
   }
@@ -125,47 +133,57 @@ class UIThreadDestructionObserver
 };
 
 TEST_F(BrowserThreadTest, PostTask) {
+  base::RunLoop run_loop;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&BasicFunction, base::MessageLoop::current()));
-  base::RunLoop().Run();
+      base::BindOnce(&BasicFunction, run_loop.QuitWhenIdleClosure()));
+  run_loop.Run();
 }
 
 TEST_F(BrowserThreadTest, Release) {
+  base::RunLoop run_loop;
+  ExpectRelease(run_loop.QuitWhenIdleClosure());
   BrowserThread::ReleaseSoon(BrowserThread::UI, FROM_HERE, this);
-  base::RunLoop().Run();
+  run_loop.Run();
 }
 
 TEST_F(BrowserThreadTest, ReleasedOnCorrectThread) {
+  base::RunLoop run_loop;
   {
     scoped_refptr<DeletedOnIO> test(
-        new DeletedOnIO(base::MessageLoop::current()));
+        new DeletedOnIO(run_loop.QuitWhenIdleClosure()));
   }
-  base::RunLoop().Run();
+  run_loop.Run();
 }
 
 TEST_F(BrowserThreadTest, PostTaskViaTaskRunner) {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
+  base::RunLoop run_loop;
   task_runner->PostTask(
-      FROM_HERE, base::BindOnce(&BasicFunction, base::MessageLoop::current()));
-  base::RunLoop().Run();
+      FROM_HERE,
+      base::BindOnce(&BasicFunction, run_loop.QuitWhenIdleClosure()));
+  run_loop.Run();
 }
 
 TEST_F(BrowserThreadTest, ReleaseViaTaskRunner) {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       BrowserThread::GetTaskRunnerForThread(BrowserThread::UI);
+
+  base::RunLoop run_loop;
+  ExpectRelease(run_loop.QuitWhenIdleClosure());
   task_runner->ReleaseSoon(FROM_HERE, this);
-  base::RunLoop().Run();
+  run_loop.Run();
 }
 
 TEST_F(BrowserThreadTest, PostTaskAndReply) {
   // Most of the heavy testing for PostTaskAndReply() is done inside the
   // task runner test.  This just makes sure we get piped through at all.
-  ASSERT_TRUE(BrowserThread::PostTaskAndReply(
-      BrowserThread::IO, FROM_HERE, base::DoNothing(),
-      base::BindOnce(&base::RunLoop::QuitCurrentWhenIdleDeprecated)));
-  base::RunLoop().Run();
+  base::RunLoop run_loop;
+  ASSERT_TRUE(BrowserThread::PostTaskAndReply(BrowserThread::IO, FROM_HERE,
+                                              base::DoNothing(),
+                                              run_loop.QuitWhenIdleClosure()));
+  run_loop.Run();
 }
 
 TEST_F(BrowserThreadTest, RunsTasksInCurrentSequencedDuringShutdown) {
