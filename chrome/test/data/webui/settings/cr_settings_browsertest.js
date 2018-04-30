@@ -1776,7 +1776,13 @@ CrSettingsCrostiniPageTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsCrostiniPageTest', 'All', function() {
+GEN('#if defined(OS_CHROMEOS) && !defined(NDEBUG)');
+GEN('#define MAYBE_CROSTINI_All DISABLED_All');
+GEN('#else');
+GEN('#define MAYBE_CROSTINI_All All');
+GEN('#endif');
+
+TEST_F('CrSettingsCrostiniPageTest', 'MAYBE_CROSTINI_All', function() {
   mocha.run();
 });
 
