@@ -638,7 +638,7 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   GURL webstore_url(extension_urls::GetWebstoreLaunchURL());
   if (request->url().SchemeIsHTTPOrHTTPS() &&
-      request->url().DomainIs(webstore_url.host().c_str())) {
+      request->url().DomainIs(webstore_url.host_piece())) {
     net::HttpResponseHeaders* response_headers = request->response_headers();
     if (response_headers &&
         !response_headers->HasHeaderValue("x-frame-options", "deny") &&
