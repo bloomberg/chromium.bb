@@ -152,6 +152,8 @@ class CORE_EXPORT ScriptPromiseResolver
     // resolve.
     // See: http://crbug.com/663476
     if (ScriptForbiddenScope::IsScriptForbidden()) {
+      // Retain this object until it is actually resolved or rejected.
+      KeepAliveWhilePending();
       timer_.StartOneShot(TimeDelta(), FROM_HERE);
       return;
     }
