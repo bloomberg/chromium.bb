@@ -205,12 +205,18 @@ if (host_toolchain == "") {
   } else if (host_os == "mac") {
     host_toolchain = "//build/toolchain/mac:clang_$host_cpu"
   } else if (host_os == "win") {
-    # On Windows always use the target CPU for host builds. On the
+    # On Windows always use the target CPU for host builds for x86/x64. On the
     # configurations we support this will always work and it saves build steps.
-    if (is_clang) {
-      host_toolchain = "//build/toolchain/win:win_clang_$target_cpu"
+    if (target_cpu == "x86" || target_cpu == "x64") {
+      if (is_clang) {
+        host_toolchain = "//build/toolchain/win:win_clang_$target_cpu"
+      } else {
+        host_toolchain = "//build/toolchain/win:$target_cpu"
+      }
+    } else if (is_clang) {
+      host_toolchain = "//build/toolchain/win:win_clang_$host_cpu"
     } else {
-      host_toolchain = "//build/toolchain/win:$target_cpu"
+      host_toolchain = "//build/toolchain/win:$host_cpu"
     }
   } else if (host_os == "aix") {
     host_toolchain = "//build/toolchain/aix:$host_cpu"
