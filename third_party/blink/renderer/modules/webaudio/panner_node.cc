@@ -665,42 +665,36 @@ PannerNode::PannerNode(BaseAudioContext& context)
       position_x_(
           AudioParam::Create(context,
                              kParamTypePannerPositionX,
-                             "Panner.positionX",
                              0.0,
                              AudioParamHandler::AutomationRate::kAudio,
                              AudioParamHandler::AutomationRateMode::kVariable)),
       position_y_(
           AudioParam::Create(context,
                              kParamTypePannerPositionY,
-                             "Panner.positionY",
                              0.0,
                              AudioParamHandler::AutomationRate::kAudio,
                              AudioParamHandler::AutomationRateMode::kVariable)),
       position_z_(
           AudioParam::Create(context,
                              kParamTypePannerPositionZ,
-                             "Panner.positionZ",
                              0.0,
                              AudioParamHandler::AutomationRate::kAudio,
                              AudioParamHandler::AutomationRateMode::kVariable)),
       orientation_x_(
           AudioParam::Create(context,
                              kParamTypePannerOrientationX,
-                             "Panner.orientationX",
                              1.0,
                              AudioParamHandler::AutomationRate::kAudio,
                              AudioParamHandler::AutomationRateMode::kVariable)),
       orientation_y_(
           AudioParam::Create(context,
                              kParamTypePannerOrientationY,
-                             "Panner.orientationY",
                              0.0,
                              AudioParamHandler::AutomationRate::kAudio,
                              AudioParamHandler::AutomationRateMode::kVariable)),
       orientation_z_(AudioParam::Create(
           context,
           kParamTypePannerOrientationZ,
-          "Panner.orientationZ",
           0.0,
           AudioParamHandler::AutomationRate::kAudio,
           AudioParamHandler::AutomationRateMode::kVariable)) {

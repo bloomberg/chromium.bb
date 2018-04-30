@@ -112,6 +112,8 @@ class AudioParamHandler final : public ThreadSafeRefCounted<AudioParamHandler>,
 
   AudioParamType GetParamType() const { return param_type_; }
   void SetParamType(AudioParamType);
+  // Set the parameter name for an AudioWorklet.
+  void SetCustomParamName(const String name);
   // Return a nice name for the AudioParam.
   String GetParamName() const;
 
@@ -120,13 +122,12 @@ class AudioParamHandler final : public ThreadSafeRefCounted<AudioParamHandler>,
 
   static scoped_refptr<AudioParamHandler> Create(BaseAudioContext& context,
                                                  AudioParamType param_type,
-                                                 String param_name,
                                                  double default_value,
                                                  AutomationRate rate,
                                                  AutomationRateMode rate_mode,
                                                  float min_value,
                                                  float max_value) {
-    return base::AdoptRef(new AudioParamHandler(context, param_type, param_name,
+    return base::AdoptRef(new AudioParamHandler(context, param_type,
                                                 default_value, rate, rate_mode,
                                                 min_value, max_value));
   }
@@ -201,7 +202,6 @@ class AudioParamHandler final : public ThreadSafeRefCounted<AudioParamHandler>,
  private:
   AudioParamHandler(BaseAudioContext&,
                     AudioParamType,
-                    String param_name,
                     double default_value,
                     AutomationRate rate,
                     AutomationRateMode rate_mode,
@@ -221,9 +221,11 @@ class AudioParamHandler final : public ThreadSafeRefCounted<AudioParamHandler>,
   // node it belongs to.  Mostly for informational purposes and doesn't affect
   // implementation.
   AudioParamType param_type_;
-  // Name of the AudioParam. This is only used for printing out more
-  // informative warnings, and is otherwise arbitrary.
-  String param_name_;
+  // Name of the AudioParam. This is only used for printing out more informative
+  // warnings, and only used for AudioWorklets.  All others have a name derived
+  // from the |param_type_|.  Worklets need custom names because they're defined
+  // by the user.
+  String custom_param_name_;
 
   // Intrinsic value
   float intrinsic_value_;
@@ -253,10 +255,15 @@ class AudioParam final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  // The most common case where the rate, mode, and limits can default.
+  static AudioParam* Create(BaseAudioContext&,
+                            AudioParamType,
+                            double default_value);
+  // The general case where the rate and mode cannot use defaults (but the
+  // limits can).
   static AudioParam* Create(
       BaseAudioContext&,
       AudioParamType,
-      String param_name,
       double default_value,
       AudioParamHandler::AutomationRate rate,
       AudioParamHandler::AutomationRateMode rate_mode,
@@ -271,6 +278,7 @@ class AudioParam final : public ScriptWrappable {
 
   AudioParamType GetParamType() const { return Handler().GetParamType(); }
   void SetParamType(AudioParamType);
+  void SetCustomParamName(const String name);
   String GetParamName() const;
 
   float value() const;
@@ -306,7 +314,6 @@ class AudioParam final : public ScriptWrappable {
  private:
   AudioParam(BaseAudioContext&,
              AudioParamType,
-             String param_name,
              double default_value,
              AudioParamHandler::AutomationRate rate,
              AudioParamHandler::AutomationRateMode rate_mode,
