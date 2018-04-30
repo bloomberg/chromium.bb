@@ -65,13 +65,13 @@ class FileManagerBrowserTestBase : public ExtensionApiTest {
   void InstallExtension(const base::FilePath& path, const char* manifest_name);
 
   // Runs the test: awaits chrome.test messsage commands and chrome.test PASS
-  // or FAIL messsages to process. |OnMessage| is used to handle the commands
+  // or FAIL messsages to process. |OnCommand| is used to handle the commands
   // sent from the test extension. Returns on test PASS or FAIL.
   void RunTestMessageLoop();
 
   // Process test extension command |name|, with arguments |value|. Write the
   // results to |output|.
-  void OnMessage(const std::string& name,
+  void OnCommand(const std::string& name,
                  const base::DictionaryValue& value,
                  std::string* output);
 

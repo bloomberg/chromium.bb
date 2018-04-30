@@ -635,7 +635,7 @@ void FileManagerBrowserTestBase::RunTestMessageLoop() {
     }
 
     std::string output;
-    OnMessage(name, *message_dictionary, &output);
+    OnCommand(name, *message_dictionary, &output);
     if (HasFatalFailure())
       break;
 
@@ -643,10 +643,11 @@ void FileManagerBrowserTestBase::RunTestMessageLoop() {
   }
 }
 
-void FileManagerBrowserTestBase::OnMessage(const std::string& name,
+void FileManagerBrowserTestBase::OnCommand(const std::string& name,
                                            const base::DictionaryValue& value,
                                            std::string* output) {
   base::ScopedAllowBlockingForTesting allow_blocking;
+
   if (name == "getTestName") {
     // Pass the test case name.
     *output = GetTestCaseNameParam();
