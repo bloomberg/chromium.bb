@@ -95,6 +95,10 @@ bool NGLayoutInputNode::IsListMarker() const {
   return IsBlock() && box_->IsLayoutNGListMarker();
 }
 
+bool NGLayoutInputNode::IsAnonymous() const {
+  return box_->IsAnonymous();
+}
+
 bool NGLayoutInputNode::IsQuirkyContainer() const {
   return box_->GetDocument().InQuirksMode() &&
          (box_->IsBody() || box_->IsTableCell());
