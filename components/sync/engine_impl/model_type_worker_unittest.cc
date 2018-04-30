@@ -1155,7 +1155,8 @@ TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseData) {
   entity.set_folder(false);
   entity.mutable_unique_position()->set_custom_compressed_v1("POSITION");
   entity.set_version(1);
-  entity.set_client_defined_unique_tag("TAG");
+  entity.set_client_defined_unique_tag("CLIENT_TAG");
+  entity.set_server_defined_unique_tag("SERVER_TAG");
   entity.set_deleted(false);
   entity.mutable_specifics()->CopyFrom(GenerateSpecifics(kTag1, kValue1));
   UpdateResponseData response_data;
@@ -1171,7 +1172,8 @@ TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseData) {
   EXPECT_FALSE(data.parent_id.empty());
   EXPECT_FALSE(data.is_folder);
   EXPECT_TRUE(data.unique_position.has_custom_compressed_v1());
-  EXPECT_EQ("TAG", data.client_tag_hash);
+  EXPECT_EQ("CLIENT_TAG", data.client_tag_hash);
+  EXPECT_EQ("SERVER_TAG", data.server_defined_unique_tag);
   EXPECT_FALSE(data.is_deleted());
   EXPECT_EQ(kTag1, data.specifics.preference().name());
   EXPECT_EQ(kValue1, data.specifics.preference().value());
