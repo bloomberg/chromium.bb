@@ -307,26 +307,24 @@ static void read_metadata_private_data(const uint8_t *data, size_t sz) {
   }
 }
 
-static void read_metadata_hdr_cll(const uint8_t *data) {
-  mem_get_le16(data);
-  mem_get_le16(data + 2);
+static void read_metadata_hdr_cll(const uint8_t *data, size_t sz) {
+  struct aom_read_bit_buffer rb = { data, data + sz, 0, NULL, NULL };
+  aom_rb_read_literal(&rb, 16);  // max_cll
+  aom_rb_read_literal(&rb, 16);  // max_fall
 }
 
-static void read_metadata_hdr_mdcv(const uint8_t *data) {
+static void read_metadata_hdr_mdcv(const uint8_t *data, size_t sz) {
+  struct aom_read_bit_buffer rb = { data, data + sz, 0, NULL, NULL };
   for (int i = 0; i < 3; i++) {
-    mem_get_le16(data);
-    data += 2;
-    mem_get_le16(data);
-    data += 2;
+    aom_rb_read_literal(&rb, 16);  // primary_i_chromaticity_x
+    aom_rb_read_literal(&rb, 16);  // primary_i_chromaticity_y
   }
 
-  mem_get_le16(data);
-  data += 2;
-  mem_get_le16(data);
-  data += 2;
-  mem_get_le16(data);
-  data += 2;
-  mem_get_le16(data);
+  aom_rb_read_literal(&rb, 16);  // white_point_chromaticity_x
+  aom_rb_read_literal(&rb, 16);  // white_point_chromaticity_y
+
+  aom_rb_read_unsigned_literal(&rb, 32);  // luminance_max
+  aom_rb_read_unsigned_literal(&rb, 32);  // luminance_min
 }
 
 static void scalability_structure(struct aom_read_bit_buffer *rb) {
@@ -411,9 +409,9 @@ static size_t read_metadata(const uint8_t *data, size_t sz) {
   if (metadata_type == OBU_METADATA_TYPE_PRIVATE_DATA) {
     read_metadata_private_data(data + 2, sz - 2);
   } else if (metadata_type == OBU_METADATA_TYPE_HDR_CLL) {
-    read_metadata_hdr_cll(data + 2);
+    read_metadata_hdr_cll(data + 2, sz - 2);
   } else if (metadata_type == OBU_METADATA_TYPE_HDR_MDCV) {
-    read_metadata_hdr_mdcv(data + 2);
+    read_metadata_hdr_mdcv(data + 2, sz - 2);
   } else if (metadata_type == OBU_METADATA_TYPE_SCALABILITY) {
     read_metadata_scalability(data + 2, sz - 2);
   } else if (metadata_type == OBU_METADATA_TYPE_TIMECODE) {
