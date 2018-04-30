@@ -580,13 +580,15 @@ FloatRect LayoutText::LocalBoundingBoxRectForAccessibility() const {
   return result;
 }
 
+namespace {
+
 enum ShouldAffinityBeDownstream {
   kAlwaysDownstream,
   kAlwaysUpstream,
   kUpstreamIfPositionIsNotAtStart
 };
 
-static bool LineDirectionPointFitsInBox(
+bool LineDirectionPointFitsInBox(
     int point_line_direction,
     InlineTextBox* box,
     ShouldAffinityBeDownstream& should_affinity_be_downstream) {
@@ -626,7 +628,7 @@ static bool LineDirectionPointFitsInBox(
   return false;
 }
 
-static PositionWithAffinity CreatePositionWithAffinityForBox(
+PositionWithAffinity CreatePositionWithAffinityForBox(
     const InlineBox* box,
     int offset,
     ShouldAffinityBeDownstream should_affinity_be_downstream) {
@@ -652,7 +654,11 @@ static PositionWithAffinity CreatePositionWithAffinityForBox(
       offset + text_start_offset, affinity);
 }
 
-static PositionWithAffinity
+TextDirection ContainingBlockDirectionOf(const InlineBox& box) {
+  return box.GetLineLayoutItem().ContainingBlock().Style()->Direction();
+}
+
+PositionWithAffinity
 CreatePositionWithAffinityForBoxAfterAdjustingOffsetForBiDi(
     const InlineTextBox* box,
     int offset,
@@ -660,7 +666,13 @@ CreatePositionWithAffinityForBoxAfterAdjustingOffsetForBiDi(
   DCHECK(box);
   DCHECK_GE(offset, 0);
 
-  if (offset && static_cast<unsigned>(offset) < box->Len()) {
+  // TODO(layout-dev): Stop passing out-of-range |offset|.
+  if (static_cast<unsigned>(offset) > box->Len())
+    offset = box->Len();
+
+  if ((offset && static_cast<unsigned>(offset) < box->Len()) ||
+      box->Direction() == ContainingBlockDirectionOf(*box)) {
+    // TODO(layout-dev): Fix handling of left on 12CBA
     return CreatePositionWithAffinityForBox(box, box->Start() + offset,
                                             should_affinity_be_downstream);
   }
@@ -670,9 +682,7 @@ CreatePositionWithAffinityForBoxAfterAdjustingOffsetForBiDi(
     // offset is on the left edge
 
     const InlineBox* prev_box = box->PrevLeafChildIgnoringLineBreak();
-    if ((prev_box && prev_box->BidiLevel() == box->BidiLevel()) ||
-        box->GetLineLayoutItem().ContainingBlock().Style()->Direction() ==
-            box->Direction()) {  // FIXME: left on 12CBA
+    if (prev_box && prev_box->BidiLevel() == box->BidiLevel()) {
       return CreatePositionWithAffinityForBox(box, box->CaretLeftmostOffset(),
                                               should_affinity_be_downstream);
     }
@@ -709,9 +719,7 @@ CreatePositionWithAffinityForBoxAfterAdjustingOffsetForBiDi(
   }
 
   const InlineBox* next_box = box->NextLeafChildIgnoringLineBreak();
-  if ((next_box && next_box->BidiLevel() == box->BidiLevel()) ||
-      box->GetLineLayoutItem().ContainingBlock().Style()->Direction() ==
-          box->Direction()) {
+  if (next_box && next_box->BidiLevel() == box->BidiLevel()) {
     return CreatePositionWithAffinityForBox(box, box->CaretRightmostOffset(),
                                             should_affinity_be_downstream);
   }
@@ -747,6 +755,8 @@ CreatePositionWithAffinityForBoxAfterAdjustingOffsetForBiDi(
   return CreatePositionWithAffinityForBox(box, box->CaretLeftmostOffset(),
                                           should_affinity_be_downstream);
 }
+
+}  // namespace
 
 PositionWithAffinity LayoutText::PositionForPoint(
     const LayoutPoint& point) const {
