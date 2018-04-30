@@ -6,6 +6,8 @@
 
 #include <type_traits>
 
+#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/interfaces/event_rewriter_controller.mojom.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
@@ -13,7 +15,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
-#include "chrome/browser/chromeos/events/keyboard_driven_event_rewriter.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
@@ -42,7 +43,9 @@
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/version_info/version_info.h"
+#include "content/public/common/service_manager_connection.h"
 #include "google_apis/google_api_keys.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
@@ -303,11 +306,14 @@ void CoreOobeHandler::HandleUpdateCurrentScreen(
     const std::string& screen_name) {
   const OobeScreen screen = GetOobeScreenFromName(screen_name);
   oobe_ui_->CurrentScreenChanged(screen);
-  // TODO(mash): Support EventRewriterController; see crbug.com/647781
-  if (!ash_util::IsRunningInMash()) {
-    KeyboardDrivenEventRewriter::GetInstance()->SetArrowToTabRewritingEnabled(
-        screen == OobeScreen::SCREEN_OOBE_EULA);
-  }
+
+  content::ServiceManagerConnection* connection =
+      content::ServiceManagerConnection::GetForProcess();
+  ash::mojom::EventRewriterControllerPtr event_rewriter_controller_ptr;
+  connection->GetConnector()->BindInterface(ash::mojom::kServiceName,
+                                            &event_rewriter_controller_ptr);
+  event_rewriter_controller_ptr->SetArrowToTabRewritingEnabled(
+      screen == OobeScreen::SCREEN_OOBE_EULA);
 }
 
 void CoreOobeHandler::HandleEnableHighContrast(bool enabled) {

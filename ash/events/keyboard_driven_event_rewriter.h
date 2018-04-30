@@ -2,23 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_EVENTS_KEYBOARD_DRIVEN_EVENT_REWRITER_H_
-#define CHROME_BROWSER_CHROMEOS_EVENTS_KEYBOARD_DRIVEN_EVENT_REWRITER_H_
+#ifndef ASH_EVENTS_KEYBOARD_DRIVEN_EVENT_REWRITER_H_
+#define ASH_EVENTS_KEYBOARD_DRIVEN_EVENT_REWRITER_H_
 
+#include "ash/ash_export.h"
 #include "base/macros.h"
 #include "ui/events/event_rewriter.h"
 
-namespace chromeos {
+namespace ash {
 
 // KeyboardDrivenEventRewriter removes the modifier flags from
 // Shift+<Arrow keys|Enter|F6> key events. This mapping only happens
 // on login screen and only when the keyboard driven oobe is enabled.
-class KeyboardDrivenEventRewriter : public ui::EventRewriter {
+class ASH_EXPORT KeyboardDrivenEventRewriter : public ui::EventRewriter {
  public:
   KeyboardDrivenEventRewriter();
   ~KeyboardDrivenEventRewriter() override;
-
-  static KeyboardDrivenEventRewriter* GetInstance();
 
   // Calls Rewrite for testing.
   ui::EventRewriteStatus RewriteForTesting(
@@ -33,21 +32,25 @@ class KeyboardDrivenEventRewriter : public ui::EventRewriter {
       const ui::Event& last_event,
       std::unique_ptr<ui::Event>* new_event) override;
 
-  // Allow setting Shift + Arrow keys rewritten to Tab/Shift-Tab keys |enabled|.
-  void SetArrowToTabRewritingEnabled(bool rewritten_to_tab) {
-    rewritten_to_tab_ = rewritten_to_tab;
+  void set_enabled(bool enabled) { enabled_ = enabled; }
+  void set_arrow_to_tab_rewriting_enabled(bool enabled) {
+    arrow_to_tab_rewriting_enabled_ = enabled;
   }
 
  private:
   ui::EventRewriteStatus Rewrite(const ui::Event& event,
                                  std::unique_ptr<ui::Event>* new_event);
 
+  // If true, this rewriter is enabled. It is only active before user login.
+  bool enabled_ = false;
+
   // If true, Shift + Arrow keys are rewritten to Tab/Shift-Tab keys.
-  bool rewritten_to_tab_ = false;
+  // This only applies when the KeyboardDrivenEventRewriter is active.
+  bool arrow_to_tab_rewriting_enabled_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardDrivenEventRewriter);
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
-#endif  // CHROME_BROWSER_CHROMEOS_EVENTS_KEYBOARD_DRIVEN_EVENT_REWRITER_H_
+#endif  // ASH_EVENTS_KEYBOARD_DRIVEN_EVENT_REWRITER_H_

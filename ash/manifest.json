@@ -18,6 +18,7 @@
           "ash::mojom::CastConfig",
           "ash::mojom::CrosDisplayConfigController",
           "ash::mojom::DockedMagnifierController",
+          "ash::mojom::EventRewriterController",
           "ash::mojom::FirstRunHelper",
           "ash::mojom::HighlighterController",
           "ash::mojom::ImeController",

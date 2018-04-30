@@ -14,6 +14,7 @@
 #include "ash/cast_config_controller.h"
 #include "ash/display/ash_display_controller.h"
 #include "ash/display/cros_display_config.h"
+#include "ash/events/event_rewriter_controller.h"
 #include "ash/first_run/first_run_helper.h"
 #include "ash/highlighter/highlighter_controller.h"
 #include "ash/ime/ime_controller.h"
@@ -100,6 +101,11 @@ void BindCastConfigOnMainThread(mojom::CastConfigRequest request) {
 void BindDockedMagnifierControllerRequestOnMainThread(
     mojom::DockedMagnifierControllerRequest request) {
   Shell::Get()->docked_magnifier_controller()->BindRequest(std::move(request));
+}
+
+void BindEventRewriterControllerRequestOnMainThread(
+    mojom::EventRewriterControllerRequest request) {
+  Shell::Get()->event_rewriter_controller()->BindRequest(std::move(request));
 }
 
 void BindFirstRunHelperRequestOnMainThread(
@@ -234,6 +240,9 @@ void RegisterInterfaces(
         base::BindRepeating(&BindDockedMagnifierControllerRequestOnMainThread),
         main_thread_task_runner);
   }
+  registry->AddInterface(
+      base::BindRepeating(&BindEventRewriterControllerRequestOnMainThread),
+      main_thread_task_runner);
   registry->AddInterface(
       base::BindRepeating(&BindFirstRunHelperRequestOnMainThread),
       main_thread_task_runner);

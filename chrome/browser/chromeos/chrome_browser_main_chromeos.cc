@@ -10,7 +10,9 @@
 #include <utility>
 #include <vector>
 
-#include "ash/event_rewriter_controller.h"
+#include "ash/events/event_rewriter_controller.h"
+#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/interfaces/event_rewriter_controller.mojom.h"
 #include "ash/shell.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "base/bind.h"
@@ -55,7 +57,6 @@
 #include "chrome/browser/chromeos/dbus/vm_applications_service_provider_delegate.h"
 #include "chrome/browser/chromeos/display/quirks_manager_delegate_impl.h"
 #include "chrome/browser/chromeos/events/event_rewriter_delegate_impl.h"
-#include "chrome/browser/chromeos/events/keyboard_driven_event_rewriter.h"
 #include "chrome/browser/chromeos/extensions/default_app_order.h"
 #include "chrome/browser/chromeos/external_metrics.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
@@ -1049,12 +1050,20 @@ void ChromeBrowserMainPartsChromeos::PreBrowserStart() {
 }
 
 void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
+  // Enable the KeyboardDrivenEventRewriter if the OEM manifest flag is on.
+  if (system::InputDeviceSettings::Get()->ForceKeyboardDrivenUINavigation()) {
+    content::ServiceManagerConnection* connection =
+        content::ServiceManagerConnection::GetForProcess();
+    ash::mojom::EventRewriterControllerPtr event_rewriter_controller_ptr;
+    connection->GetConnector()->BindInterface(ash::mojom::kServiceName,
+                                              &event_rewriter_controller_ptr);
+    event_rewriter_controller_ptr->SetKeyboardDrivenEventRewriterEnabled(true);
+  }
+
   if (chromeos::GetAshConfig() != ash::Config::MASH) {
     // TODO(mash): Support EventRewriterController; see crbug.com/647781
     ash::EventRewriterController* event_rewriter_controller =
         ash::Shell::Get()->event_rewriter_controller();
-    event_rewriter_controller->AddEventRewriter(
-        std::unique_ptr<ui::EventRewriter>(new KeyboardDrivenEventRewriter()));
     event_rewriter_controller->AddEventRewriter(
         std::unique_ptr<ui::EventRewriter>(new SpokenFeedbackEventRewriter()));
     event_rewriter_delegate_ = std::make_unique<EventRewriterDelegateImpl>();
@@ -1062,7 +1071,6 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
         std::make_unique<ui::EventRewriterChromeOS>(
             event_rewriter_delegate_.get(),
             ash::Shell::Get()->sticky_keys_controller()));
-    event_rewriter_controller->Init();
   }
 
   // In classic ash must occur after ash::ShellPort is initialized. Triggers a

@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/event_rewriter_controller.h"
+#include "ash/events/event_rewriter_controller.h"
 
 #include <utility>
 
 #include "ash/display/mirror_window_controller.h"
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/events/keyboard_driven_event_rewriter.h"
 #include "ash/shell.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_tree_host.h"
@@ -16,9 +17,14 @@
 
 namespace ash {
 
-EventRewriterController::EventRewriterController() : initialized_(false) {
+EventRewriterController::EventRewriterController() {
   // Add the controller as an observer for new root windows.
   aura::Env::GetInstance()->AddObserver(this);
+
+  std::unique_ptr<KeyboardDrivenEventRewriter> keyboard_driven_event_rewriter =
+      std::make_unique<KeyboardDrivenEventRewriter>();
+  keyboard_driven_event_rewriter_ = keyboard_driven_event_rewriter.get();
+  AddEventRewriter(std::move(keyboard_driven_event_rewriter));
 }
 
 EventRewriterController::~EventRewriterController() {
@@ -33,35 +39,37 @@ EventRewriterController::~EventRewriterController() {
 
 void EventRewriterController::AddEventRewriter(
     std::unique_ptr<ui::EventRewriter> rewriter) {
-  DCHECK(!initialized_);
-  rewriters_.push_back(std::move(rewriter));
-}
-
-void EventRewriterController::Init() {
-  DCHECK(!initialized_);
-  initialized_ = true;
   // Add the rewriters to each existing root window EventSource.
-  aura::Window::Windows windows = Shell::GetAllRootWindows();
-  for (auto* window : windows)
-    AddToEventSource(window->GetHost()->GetEventSource());
+  for (auto* window : Shell::GetAllRootWindows())
+    window->GetHost()->GetEventSource()->AddEventRewriter(rewriter.get());
 
   // In case there are any mirroring displays, their hosts' EventSources won't
   // be included above.
   const auto* mirror_window_controller =
       Shell::Get()->window_tree_host_manager()->mirror_window_controller();
   for (auto* window : mirror_window_controller->GetAllRootWindows())
-    AddToEventSource(window->GetHost()->GetEventSource());
+    window->GetHost()->GetEventSource()->AddEventRewriter(rewriter.get());
+
+  rewriters_.push_back(std::move(rewriter));
+}
+
+void EventRewriterController::BindRequest(
+    mojom::EventRewriterControllerRequest request) {
+  bindings_.AddBinding(this, std::move(request));
+}
+
+void EventRewriterController::SetKeyboardDrivenEventRewriterEnabled(
+    bool enabled) {
+  keyboard_driven_event_rewriter_->set_enabled(enabled);
+}
+
+void EventRewriterController::SetArrowToTabRewritingEnabled(bool enabled) {
+  keyboard_driven_event_rewriter_->set_arrow_to_tab_rewriting_enabled(enabled);
 }
 
 void EventRewriterController::OnHostInitialized(aura::WindowTreeHost* host) {
-  if (initialized_)
-    AddToEventSource(host->GetEventSource());
-}
-
-void EventRewriterController::AddToEventSource(ui::EventSource* source) {
-  DCHECK(source);
   for (const auto& rewriter : rewriters_)
-    source->AddEventRewriter(rewriter.get());
+    host->GetEventSource()->AddEventRewriter(rewriter.get());
 }
 
 }  // namespace ash
