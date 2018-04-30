@@ -772,7 +772,9 @@ void AppMenuModel::Build() {
   if (extensions::util::IsNewBookmarkAppsEnabled() &&
       banners::AppBannerManager::IsExperimentalAppBannersEnabled()) {
     const extensions::Extension* pwa =
-        extensions::util::GetPwaForSecureActiveTab(browser_);
+        base::FeatureList::IsEnabled(features::kDesktopPWAWindowing)
+            ? extensions::util::GetPwaForSecureActiveTab(browser_)
+            : nullptr;
     if (pwa) {
       AddItem(
           IDC_OPEN_IN_PWA_WINDOW,

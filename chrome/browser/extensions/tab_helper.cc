@@ -199,7 +199,7 @@ void TabHelper::CreateHostedAppFromWebContents() {
 }
 
 bool TabHelper::CanCreateBookmarkApp() const {
-  return !profile_->IsGuestSession() &&
+  return !profile_->IsGuestSession() && !profile_->IsOffTheRecord() &&
          !profile_->IsSystemProfile() &&
          IsValidBookmarkAppUrl(web_contents()->GetURL());
 }
