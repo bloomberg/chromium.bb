@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/animation/timing.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -153,6 +154,22 @@ std::unique_ptr<CompositorScrollTimeline> ToCompositorScrollTimeline(
                                                     time_range.GetAsDouble());
 }
 
+void StartEffectOnCompositor(CompositorAnimation* animation,
+                             KeyframeEffect* effect) {
+  DCHECK(effect);
+  Element& target = *effect->target();
+  effect->Model()->SnapshotAllCompositorKeyframes(
+      target, target.ComputedStyleRef(), target.ParentComputedStyle());
+
+  int group = 0;
+  base::Optional<double> start_time = base::nullopt;
+  double time_offset = 0;
+  double playback_rate = 1;
+
+  effect->StartAnimationOnCompositor(group, start_time, time_offset,
+                                     playback_rate, animation);
+}
+
 unsigned NextSequenceNumber() {
   // TODO(majidvp): This should actually come from the same source as other
   // animation so that they have the correct ordering.
@@ -228,8 +245,7 @@ void WorkletAnimation::play() {
   document_->GetWorkletAnimationController().AttachAnimation(*this);
   play_state_ = Animation::kPending;
 
-  KeyframeEffect* target_effect = effects_.at(0);
-  Element* target = target_effect->target();
+  Element* target = GetEffect()->target();
   if (!target)
     return;
   target->EnsureElementAnimations().GetWorkletAnimations().insert(this);
@@ -244,15 +260,14 @@ void WorkletAnimation::cancel() {
     return;
   document_->GetWorkletAnimationController().DetachAnimation(*this);
 
-  KeyframeEffect* target_effect = effects_.at(0);
   if (compositor_animation_) {
-    target_effect->CancelAnimationOnCompositor(compositor_animation_.get());
+    GetEffect()->CancelAnimationOnCompositor(compositor_animation_.get());
     DestroyCompositorAnimation();
   }
 
   play_state_ = Animation::kIdle;
 
-  Element* target = target_effect->target();
+  Element* target = GetEffect()->target();
   if (!target)
     return;
   target->EnsureElementAnimations().GetWorkletAnimations().erase(this);
@@ -271,6 +286,10 @@ void WorkletAnimation::UpdateIfNecessary() {
   Update(kTimingUpdateOnDemand);
 }
 
+void WorkletAnimation::EffectInvalidated() {
+  document_->GetWorkletAnimationController().InvalidateAnimation(*this);
+}
+
 void WorkletAnimation::Update(TimingUpdateReason reason) {
   if (play_state_ != Animation::kRunning)
     return;
@@ -281,9 +300,7 @@ void WorkletAnimation::Update(TimingUpdateReason reason) {
   // TODO(crbug.com/756359): For now we use 0 as inherited time in but we will
   // need to get the inherited time from worklet context.
   double inherited_time_seconds = 0;
-
-  KeyframeEffect* target_effect = effects_.at(0);
-  target_effect->UpdateInheritedTime(inherited_time_seconds, reason);
+  GetEffect()->UpdateInheritedTime(inherited_time_seconds, reason);
 }
 
 AnimationTimeline& WorkletAnimation::GetAnimationTimeline() {
@@ -295,10 +312,28 @@ AnimationTimeline& WorkletAnimation::GetAnimationTimeline() {
   return *timeline_.GetAsDocumentTimeline();
 }
 
+bool WorkletAnimation::UpdateCompositingState() {
+  switch (play_state_) {
+    case Animation::kPending: {
+      String failure_message;
+      if (StartOnCompositor(&failure_message))
+        return true;
+      document_->AddConsoleMessage(ConsoleMessage::Create(
+          kOtherMessageSource, kWarningMessageLevel, failure_message));
+      return false;
+    }
+    case Animation::kRunning: {
+      UpdateOnCompositor();
+      return false;
+    }
+    default:
+      return false;
+  }
+}
+
 bool WorkletAnimation::StartOnCompositor(String* failure_message) {
   DCHECK(IsMainThread());
-  KeyframeEffect* target_effect = effects_.at(0);
-  Element& target = *target_effect->target();
+  Element& target = *GetEffect()->target();
 
   // TODO(crbug.com/836393): This should not be possible but it is currently
   // happening and needs to be investigated/fixed.
@@ -311,7 +346,7 @@ bool WorkletAnimation::StartOnCompositor(String* failure_message) {
   // keyframe groups have been created. To ensure this we manually snapshot the
   // frames in the target effect.
   // TODO(smcgruer): This shouldn't be necessary - Animation doesn't do this.
-  target_effect->Model()->SnapshotAllCompositorKeyframes(
+  GetEffect()->Model()->SnapshotAllCompositorKeyframes(
       target, target.ComputedStyleRef(), target.ParentComputedStyle());
 
   if (!CheckElementComposited(target)) {
@@ -330,7 +365,7 @@ bool WorkletAnimation::StartOnCompositor(String* failure_message) {
 
   double playback_rate = 1;
   CompositorAnimations::FailureCode failure_code =
-      target_effect->CheckCanStartAnimationOnCompositor(playback_rate);
+      GetEffect()->CheckCanStartAnimationOnCompositor(playback_rate);
 
   if (!failure_code.Ok()) {
     play_state_ = Animation::kIdle;
@@ -354,14 +389,8 @@ bool WorkletAnimation::StartOnCompositor(String* failure_message) {
   CompositorAnimations::AttachCompositedLayers(target,
                                                compositor_animation_.get());
 
-  base::Optional<double> start_time = base::nullopt;
-  double time_offset = 0;
-  int group = 0;
-
   // TODO(smcgruer): We need to start all of the effects, not just the first.
-  effects_.at(0)->StartAnimationOnCompositor(group, start_time, time_offset,
-                                             playback_rate,
-                                             compositor_animation_.get());
+  StartEffectOnCompositor(compositor_animation_.get(), GetEffect());
   play_state_ = Animation::kRunning;
 
   AnimationTimeline& timeline = GetAnimationTimeline();
@@ -371,6 +400,14 @@ bool WorkletAnimation::StartOnCompositor(String* failure_message) {
     start_time_ = time;
 
   return true;
+}
+
+void WorkletAnimation::UpdateOnCompositor() {
+  // We want to update the keyframe effect on compositor animation without
+  // destroying the compositor animation instance. This is achieved by
+  // canceling, and start the blink keyframe effect on compositor.
+  GetEffect()->CancelAnimationOnCompositor(compositor_animation_.get());
+  StartEffectOnCompositor(compositor_animation_.get(), GetEffect());
 }
 
 void WorkletAnimation::DestroyCompositorAnimation() {
@@ -385,6 +422,11 @@ void WorkletAnimation::DestroyCompositorAnimation() {
     compositor_animation_->SetAnimationDelegate(nullptr);
     compositor_animation_ = nullptr;
   }
+}
+
+KeyframeEffect* WorkletAnimation::GetEffect() const {
+  DCHECK(effects_.at(0));
+  return effects_.at(0);
 }
 
 void WorkletAnimation::Dispose() {

@@ -65,16 +65,14 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   // is not currently supported by worklet animations.
   bool EffectSuppressed() const override { return false; }
 
-  // TODO(crbug.com/833846): We should update compositor animation when this
-  // happens.
-  void EffectInvalidated() override {}
+  void EffectInvalidated() override;
   void UpdateIfNecessary() override;
 
   Animation* GetAnimation() override { return nullptr; }
 
   // WorkletAnimationBase implementation.
   void Update(TimingUpdateReason) override;
-  bool StartOnCompositor(String* failure_message) override;
+  bool UpdateCompositingState() override;
 
   // CompositorAnimationClient implementation.
   CompositorAnimation* GetCompositorAnimation() const override {
@@ -94,7 +92,7 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   const DocumentTimelineOrScrollTimeline& Timeline() { return timeline_; }
 
   const scoped_refptr<SerializedScriptValue> Options() { return options_; }
-  KeyframeEffect* GetEffect() const override { return effects_.at(0); }
+  KeyframeEffect* GetEffect() const override;
 
   void Trace(blink::Visitor*) override;
 
@@ -107,6 +105,14 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   void DestroyCompositorAnimation();
 
   AnimationTimeline& GetAnimationTimeline();
+
+  // Attempts to start the animation on the compositor side, returning true if
+  // it succeeds or false otherwise. If false is returned and failure_message
+  // was non-null, failure_message may be filled with an error description.
+  bool StartOnCompositor(String* failure_message);
+
+  // Updates a running animation on the compositor side.
+  void UpdateOnCompositor();
 
   unsigned sequence_number_;
 

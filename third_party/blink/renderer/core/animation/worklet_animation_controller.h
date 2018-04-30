@@ -34,6 +34,7 @@ class CORE_EXPORT WorkletAnimationController
 
   void AttachAnimation(WorkletAnimationBase&);
   void DetachAnimation(WorkletAnimationBase&);
+  void InvalidateAnimation(WorkletAnimationBase&);
 
   void UpdateAnimationCompositingStates();
   void UpdateAnimationTimings(TimingUpdateReason);
