@@ -54,7 +54,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
       bool is_main_frame,
       ResourceType resource_type,
       ui::PageTransition transition_type,
-      bool should_replace_current_entry,
       bool is_download,
       bool is_stream,
       bool allow_download,
@@ -114,13 +113,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
 
   ResourceRequesterInfo* requester_info() const {
     return requester_info_.get();
-  }
-
-  // Whether this request is part of a navigation that should replace the
-  // current session history entry. This state is shuffled up and down the stack
-  // for request transfers.
-  bool should_replace_current_entry() const {
-    return should_replace_current_entry_;
   }
 
   // DetachableResourceHandler for this request.  May be NULL.
@@ -225,7 +217,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   int request_id_;
   int render_frame_id_;
   bool is_main_frame_;
-  bool should_replace_current_entry_;
   bool is_download_;
   bool is_stream_;
   bool allow_download_;
