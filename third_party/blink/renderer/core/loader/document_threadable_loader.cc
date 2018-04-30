@@ -1116,15 +1116,20 @@ void DocumentThreadableLoader::DispatchDidFail(const ResourceError& error) {
   if (error.CORSErrorStatus()) {
     DCHECK(out_of_blink_cors_);
     // TODO(toyoshim): Should consider to pass correct arguments instead of
-    // KURL(), 0, and HTTPHeaderMap() to GetErrorString().
-    // We still need plumbing some more information.
+    // WebURL() and WebHTTPHeaderMap() to GetErrorString().
+    // We still need plumbing required information.
+    const int response_code =
+        error.CORSErrorStatus()->related_response_headers
+            ? error.CORSErrorStatus()->related_response_headers->response_code()
+            : 0;
     GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
         kJSMessageSource, kErrorMessageLevel,
         "Failed to load " + error.FailingURL() + ": " +
-            CORS::GetErrorString(
-                CORS::ErrorParameter::Create(
-                    *error.CORSErrorStatus(), KURL(error.FailingURL()), KURL(),
-                    0, HTTPHeaderMap(), *GetSecurityOrigin(), request_context_))
+            CORS::GetErrorString(CORS::ErrorParameter::Create(
+                                     error.CORSErrorStatus()->cors_error,
+                                     KURL(error.FailingURL()), KURL(),
+                                     response_code, HTTPHeaderMap(),
+                                     *GetSecurityOrigin(), request_context_))
                 .Utf8()
                 .data()));
   }

@@ -37,25 +37,15 @@ ErrorParameter CreateWrongParameter(network::mojom::CORSError error) {
 
 // static
 ErrorParameter ErrorParameter::Create(
-    const network::CORSErrorStatus& error_status,
+    const network::mojom::CORSError error,
     const KURL& first_url,
     const KURL& second_url,
     const int status_code,
     const HTTPHeaderMap& header_map,
     const SecurityOrigin& origin,
     const WebURLRequest::RequestContext context) {
-  String hint;
-  switch (error_status.cors_error) {
-    case network::mojom::CORSError::kMethodDisallowedByPreflightResponse:
-    case network::mojom::CORSError::kHeaderDisallowedByPreflightResponse:
-      DCHECK(!error_status.failed_parameter.empty());
-      hint = String(error_status.failed_parameter.c_str());
-      break;
-    default:
-      break;
-  }
-  return ErrorParameter(error_status.cors_error, first_url, second_url,
-                        status_code, header_map, origin, context, hint, false);
+  return ErrorParameter(error, first_url, second_url, status_code, header_map,
+                        origin, context, String(), false);
 }
 
 // static

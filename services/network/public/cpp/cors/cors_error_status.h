@@ -5,8 +5,6 @@
 #ifndef SERVICES_NETWORK_PUBLIC_CPP_CORS_CORS_ERROR_STATUS_H_
 #define SERVICES_NETWORK_PUBLIC_CPP_CORS_CORS_ERROR_STATUS_H_
 
-#include <string>
-
 #include "base/component_export.h"
 #include "base/memory/scoped_refptr.h"
 #include "net/http/http_response_headers.h"
@@ -24,8 +22,9 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) CORSErrorStatus {
   CORSErrorStatus(const CORSErrorStatus& status);
 
   explicit CORSErrorStatus(network::mojom::CORSError error);
-  CORSErrorStatus(network::mojom::CORSError error,
-                  const std::string& failed_parameter);
+  CORSErrorStatus(
+      network::mojom::CORSError error,
+      scoped_refptr<net::HttpResponseHeaders> related_response_headers);
 
   ~CORSErrorStatus();
 
@@ -34,8 +33,9 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) CORSErrorStatus {
 
   network::mojom::CORSError cors_error;
 
-  // Contains request method name, or header name that didn't pass a CORS check.
-  std::string failed_parameter;
+  // Partial HTTP response headers including status line that will be useful to
+  // generate a human readable error message.
+  scoped_refptr<net::HttpResponseHeaders> related_response_headers;
 };
 
 }  // namespace network

@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_CORS_CORS_ERROR_STRING_H_
 
 #include "base/macros.h"
-#include "services/network/public/cpp/cors/cors_error_status.h"
 #include "services/network/public/mojom/cors.mojom-shared.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -24,7 +23,7 @@ namespace CORS {
 struct PLATFORM_EXPORT ErrorParameter {
   // Creates an ErrorParameter for generic cases. Use this function if |error|
   // can contain any.
-  static ErrorParameter Create(const network::CORSErrorStatus&,
+  static ErrorParameter Create(const network::mojom::CORSError,
                                const KURL& first_url,
                                const KURL& second_url,
                                const int status_code,
