@@ -1341,6 +1341,11 @@
       status: "stable",
     },
     {
+      name: "WebUSBOnDedicatedAndSharedWorkers",
+      status: "test",
+      depends_on: ["WebUSB"],
+    },
+    {
       name: "WebVR",
       origin_trial_feature_name: "WebVR1.1M62",
       status: "experimental",

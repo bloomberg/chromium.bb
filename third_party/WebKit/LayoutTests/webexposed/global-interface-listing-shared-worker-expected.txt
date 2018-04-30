@@ -1166,6 +1166,14 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method sort
 [Worker]     method toString
 [Worker]     method values
+[Worker] interface USB : EventTarget
+[Worker]     attribute @@toStringTag
+[Worker]     getter onconnect
+[Worker]     getter ondisconnect
+[Worker]     method constructor
+[Worker]     method getDevices
+[Worker]     setter onconnect
+[Worker]     setter ondisconnect
 [Worker] interface WebGL2RenderingContext
 [Worker]     attribute @@toStringTag
 [Worker]     attribute ACTIVE_ATTRIBUTES
