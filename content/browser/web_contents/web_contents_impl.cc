@@ -4155,9 +4155,11 @@ void WebContentsImpl::SubresourceResponseStarted(const GURL& url,
 }
 
 void WebContentsImpl::ResourceLoadComplete(
+    RenderFrameHost* render_frame_host,
     mojom::ResourceLoadInfoPtr resource_load_info) {
+  bool is_main_frame = !render_frame_host->GetParent();
   for (auto& observer : observers_) {
-    observer.ResourceLoadComplete(*resource_load_info);
+    observer.ResourceLoadComplete(*resource_load_info, is_main_frame);
   }
 }
 

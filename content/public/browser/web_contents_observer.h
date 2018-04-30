@@ -259,7 +259,8 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   // This method is invoked when a resource has been loaded, successfully or
   // not.
   virtual void ResourceLoadComplete(
-      const mojom::ResourceLoadInfo& resource_load_info) {}
+      const mojom::ResourceLoadInfo& resource_load_info,
+      bool is_main_frame) {}
 
   // This method is invoked when a new non-pending navigation entry is created.
   // This corresponds to one NavigationController entry being created

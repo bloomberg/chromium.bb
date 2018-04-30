@@ -653,6 +653,10 @@ class ResourceLoadObserver : public WebContentsObserver {
     return resource_load_infos_;
   }
 
+  const std::vector<bool>& resource_is_associated_with_main_frame() const {
+    return resource_is_associated_with_main_frame_;
+  }
+
   const std::vector<GURL>& memory_cached_loaded_urls() const {
     return memory_cached_loaded_urls_;
   }
@@ -707,13 +711,15 @@ class ResourceLoadObserver : public WebContentsObserver {
   void Reset() {
     resource_load_infos_.clear();
     memory_cached_loaded_urls_.clear();
+    resource_is_associated_with_main_frame_.clear();
   }
 
  private:
   // WebContentsObserver implementation:
-  void ResourceLoadComplete(
-      const mojom::ResourceLoadInfo& resource_load_info) override {
+  void ResourceLoadComplete(const mojom::ResourceLoadInfo& resource_load_info,
+                            bool is_main_frame) override {
     resource_load_infos_.push_back(resource_load_info.Clone());
+    resource_is_associated_with_main_frame_.push_back(is_main_frame);
   }
 
   void DidLoadResourceFromMemoryCache(const GURL& url,
@@ -724,6 +730,7 @@ class ResourceLoadObserver : public WebContentsObserver {
 
   std::vector<GURL> memory_cached_loaded_urls_;
   std::vector<mojom::ResourceLoadInfoPtr> resource_load_infos_;
+  std::vector<bool> resource_is_associated_with_main_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceLoadObserver);
 };
@@ -954,6 +961,28 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   EXPECT_FALSE(observer.resource_load_infos()[0]
                    ->redirect_info_chain[1]
                    ->network_info->always_access_network);
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       ResourceLoadCompleteIsMainFrame) {
+  ResourceLoadObserver observer(shell());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url(embedded_test_server()->GetURL("/page_with_image.html"));
+  NavigateToURL(shell(), url);
+  ASSERT_EQ(2U, observer.resource_load_infos().size());
+  EXPECT_EQ(url, observer.resource_load_infos()[0]->url);
+  EXPECT_TRUE(observer.resource_is_associated_with_main_frame()[0]);
+  EXPECT_TRUE(observer.resource_is_associated_with_main_frame()[1]);
+  observer.Reset();
+
+  // Load that same page inside an iframe.
+  GURL data_url("data:text/html,<iframe src='" + url.spec() + "'></iframe>");
+  NavigateToURL(shell(), data_url);
+  ASSERT_EQ(2U, observer.resource_load_infos().size());
+  EXPECT_EQ(url, observer.resource_load_infos()[0]->url);
+  EXPECT_FALSE(observer.resource_is_associated_with_main_frame()[0]);
+  EXPECT_FALSE(observer.resource_is_associated_with_main_frame()[1]);
 }
 
 struct LoadProgressDelegateAndObserver : public WebContentsDelegate,

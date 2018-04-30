@@ -349,8 +349,10 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual void SubresourceResponseStarted(const GURL& url,
                                           net::CertStatus cert_status) {}
 
-  // Notifies that the render finished loading a subresource.
+  // Notifies that the render finished loading a subresource for the frame
+  // associated with |render_frame_host|.
   virtual void ResourceLoadComplete(
+      RenderFrameHost* render_frame_host,
       mojom::ResourceLoadInfoPtr resource_load_info) {}
 
   // Request to print a frame that is in a different process than its parent.
