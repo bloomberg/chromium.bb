@@ -10,6 +10,9 @@ assert(enable_extensions,
        "Cannot depend on extensions because enable_extensions=false.")
 
 schema_sources = [
+  # TODO(crbug/837773) De-dupe Automation later.
+  "automation.idl",
+  "automation_internal.idl",
   "bookmarks.json",
   "braille_display_private.idl",
   "history.json",

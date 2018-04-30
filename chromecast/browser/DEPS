@@ -37,6 +37,7 @@ include_rules = [
   "+net",
   "+services/network/public/cpp",
   "+services/service_manager/public",
+  "+ui/accessibility",
   "+ui/aura",
   "+ui/base",
   "+ui/compositor",

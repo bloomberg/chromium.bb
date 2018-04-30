@@ -25,6 +25,7 @@
 #include "extensions/common/features/manifest_feature.h"
 #include "extensions/common/features/simple_feature.h"
 #include "extensions/common/manifest_handler.h"
+#include "extensions/common/manifest_handlers/automation.h"
 #include "extensions/common/manifest_handlers/content_scripts_handler.h"
 #include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/permissions/permissions_info.h"
@@ -39,6 +40,7 @@ namespace {
 
 void RegisterCastManifestHandlers() {
   DCHECK(!ManifestHandler::IsRegistrationFinalized());
+  (new AutomationHandler)->Register();  // TODO(crbug/837773) De-dupe later.
   (new ContentScriptsHandler)->Register();
 }
 
