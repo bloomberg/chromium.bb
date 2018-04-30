@@ -161,11 +161,6 @@ void LayerTreeResourceProvider::PrepareSendToParent(
     }
   }
 
-  // TODO(piman): See if this FlushPendingWork is needed.
-  // https://crbug.com/836497
-  if (compositor_context_provider_)
-    compositor_context_provider_->ContextSupport()->FlushPendingWork();
-
   if (!unverified_sync_tokens.empty()) {
     DCHECK(settings_.delegated_sync_points_required);
     DCHECK(gl);
