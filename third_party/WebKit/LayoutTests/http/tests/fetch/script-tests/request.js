@@ -53,8 +53,8 @@ test(function() {
                         'Default Request.method should be GET');
           assert_equals(request.mode, 'cors',
                         'Default Request.mode should be cors');
-          assert_equals(request.credentials, 'omit',
-                        'Default Request.credentials should be omit');
+          assert_equals(request.credentials, 'same-origin',
+                        'Default Request.credentials should be same-origin');
       });
 }, "Request default value test");
 
@@ -171,7 +171,7 @@ test(function() {
     assert_equals(request2.url, URL, 'Request.url should match');
     assert_equals(request2.method, 'GET', 'Request.method should match');
     assert_equals(request2.mode, 'cors', 'Request.mode should match');
-    assert_equals(request2.credentials, 'omit',
+    assert_equals(request2.credentials, 'same-origin',
                   'Request.credentials should match');
     assert_equals(request2.headers.get('X-Fetch-Foo').split(', ')[0], 'foo1',
                   'Request.headers should match');
@@ -294,10 +294,10 @@ test(function() {
         var init1 = {};
         if (credentials1 != undefined) { init1['credentials'] = credentials1; }
         request1 = new Request(URL, init1);
-        assert_equals(request1.credentials, credentials1 || 'omit',
+        assert_equals(request1.credentials, credentials1 || 'same-origin',
                       'Request.credentials should match');
         request1 = new Request(request1);
-        assert_equals(request1.credentials, credentials1 || 'omit',
+        assert_equals(request1.credentials, credentials1 || 'same-origin',
                       'Request.credentials should match');
         CREDENTIALS.forEach(function(credentials2) {
             request1 = new Request(URL, init1);

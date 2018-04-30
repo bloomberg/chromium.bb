@@ -666,7 +666,7 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataThrottleBrowserTest, MAYBE_Credentials) {
     std::string credentials;
     bool should_run;
   } kTestCases[] = {
-      {true, "", false},
+      {true, "", true},
       {true, "omit", false},
       {true, "same-origin", true},
       {true, "include", true},
