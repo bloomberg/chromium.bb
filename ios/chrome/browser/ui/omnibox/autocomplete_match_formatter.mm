@@ -168,10 +168,25 @@ UIColor* DimColorIncognito() {
   return attributedText;
 }
 
+// The primary purpose of this list is to omit the "what you typed" types, since
+// those are simply the input in the omnibox and copying the text back to the
+// omnibox would be a noop. However, this list also omits other types that are
+// deprecated or not launched on iOS.
 - (BOOL)isAppendable {
-  return _match.type == AutocompleteMatchType::SEARCH_HISTORY ||
+  return _match.type == AutocompleteMatchType::BOOKMARK_TITLE ||
+         _match.type == AutocompleteMatchType::CALCULATOR ||
+         _match.type == AutocompleteMatchType::HISTORY_BODY ||
+         _match.type == AutocompleteMatchType::HISTORY_KEYWORD ||
+         _match.type == AutocompleteMatchType::HISTORY_TITLE ||
+         _match.type == AutocompleteMatchType::HISTORY_URL ||
+         _match.type == AutocompleteMatchType::NAVSUGGEST ||
+         _match.type == AutocompleteMatchType::NAVSUGGEST_PERSONALIZED ||
+         _match.type == AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED ||
+         _match.type == AutocompleteMatchType::SEARCH_SUGGEST_TAIL ||
          _match.type == AutocompleteMatchType::SEARCH_SUGGEST ||
          _match.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY ||
+         _match.type == AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED ||
+         _match.type == AutocompleteMatchType::SEARCH_SUGGEST_TAIL ||
          _match.type == AutocompleteMatchType::PHYSICAL_WEB_DEPRECATED;
 }
 

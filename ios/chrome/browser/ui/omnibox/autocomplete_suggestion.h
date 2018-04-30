@@ -19,7 +19,7 @@ class GURL;
 // Some suggestions represent a URL, for example the ones from history.
 - (BOOL)isURL;
 // Some suggestions can be appended to omnibox text in order to refine the
-// query.
+// query or URL.
 - (BOOL)isAppendable;
 // The leading image for this suggestion type (loupe, globe, etc). Values are
 // described in AutocompleteMatchType enum.
