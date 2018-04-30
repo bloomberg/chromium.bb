@@ -508,13 +508,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestParameter(IN_GUEST_MODE, "showGridViewDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "showGridViewDrive")));
 
-#if defined(DISABLE_SLOW_FILESAPP_TESTS)
-#define MAYBE_Providers DISABLED_Providers
-#else
-#define MAYBE_Providers Providers
-#endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_Providers,
+    Providers,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE, "requestMount"),
