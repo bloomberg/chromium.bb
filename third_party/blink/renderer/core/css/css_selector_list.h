@@ -71,13 +71,15 @@ class CORE_EXPORT CSSSelectorList {
     o.selector_array_ = nullptr;
   }
 
-  static CSSSelectorList ConcatenatePseudoMatchesExpansion(
+  static CSSSelectorList ConcatenateListExpansion(
       const CSSSelectorList& expanded,
       const CSSSelectorList& original);
 
-  CSSSelectorList ExpandedFirstMatchesPseudo() const;
-  CSSSelectorList TransformForPseudoMatches();
+  CSSSelectorList ExpandedFirstPseudoClass() const;
+  CSSSelectorList TransformForListExpansion();
   bool HasPseudoMatches() const;
+  bool HasPseudoIS() const;
+  bool RequiresExpansion() const;
 
   CSSSelectorList& operator=(CSSSelectorList&& o) {
     DCHECK(this != &o);

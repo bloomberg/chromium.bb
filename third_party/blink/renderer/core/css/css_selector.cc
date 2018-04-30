@@ -100,6 +100,8 @@ inline unsigned CSSSelector::SpecificityForOneSelector() const {
   // FIXME: Pseudo-elements and pseudo-classes do not have the same specificity.
   // This function isn't quite correct.
   // http://www.w3.org/TR/selectors/#specificity
+  if (ignore_specificity_)
+    return 0;
   switch (match_) {
     case kId:
       return 0x010000;
@@ -216,6 +218,7 @@ PseudoId CSSSelector::GetPseudoId(PseudoType type) {
     case kPseudoVisited:
     case kPseudoAny:
     case kPseudoMatches:
+    case kPseudoIS:
     case kPseudoAnyLink:
     case kPseudoWebkitAnyLink:
     case kPseudoAutofill:
@@ -390,6 +393,7 @@ const static NameToPseudoStruct kPseudoTypeWithArgumentsMap[] = {
     {"cue", CSSSelector::kPseudoCue},
     {"host", CSSSelector::kPseudoHost},
     {"host-context", CSSSelector::kPseudoHostContext},
+    {"is", CSSSelector::kPseudoIS},
     {"lang", CSSSelector::kPseudoLang},
     {"matches", CSSSelector::kPseudoMatches},
     {"not", CSSSelector::kPseudoNot},
@@ -606,6 +610,7 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
     case kPseudoIncrement:
     case kPseudoIndeterminate:
     case kPseudoInvalid:
+    case kPseudoIS:
     case kPseudoLang:
     case kPseudoLastChild:
     case kPseudoLastOfType:
@@ -757,6 +762,7 @@ const CSSSelector* CSSSelector::SerializeCompound(
         case kPseudoHostContext:
         case kPseudoAny:
         case kPseudoMatches:
+        case kPseudoIS:
           break;
         default:
           break;
@@ -1093,6 +1099,14 @@ bool CSSSelector::NeedsUpdatedDistribution() const {
 bool CSSSelector::HasPseudoMatches() const {
   for (const CSSSelector* s = this; s; s = s->TagHistory()) {
     if (s->GetPseudoType() == CSSSelector::kPseudoMatches)
+      return true;
+  }
+  return false;
+}
+
+bool CSSSelector::HasPseudoIS() const {
+  for (const CSSSelector* s = this; s; s = s->TagHistory()) {
+    if (s->GetPseudoType() == CSSSelector::kPseudoIS)
       return true;
   }
   return false;

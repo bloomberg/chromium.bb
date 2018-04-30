@@ -319,6 +319,10 @@
       status: "experimental",
     },
     {
+      name: "CSSPseudoIS",
+      status: "experimental",
+    },
+    {
       name: "CSSScrollSnapPoints",
       status: "experimental",
     },
