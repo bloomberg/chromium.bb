@@ -35,7 +35,6 @@
 #include "content/public/common/connection_filter.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/font_cache_dispatcher_win.h"
-#include "content/public/common/mojo_channel_switches.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/sandbox_init.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
@@ -50,6 +49,7 @@
 #include "printing/emf_win.h"
 #include "sandbox/win/src/sandbox_policy.h"
 #include "sandbox/win/src/sandbox_types.h"
+#include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/mojom/constants.mojom.h"
@@ -312,7 +312,7 @@ ServiceUtilityProcessHost::ServiceUtilityProcessHost(
 
 ServiceUtilityProcessHost::~ServiceUtilityProcessHost() {
   // We need to kill the child process when the host dies.
-  process_.Terminate(content::RESULT_CODE_NORMAL_EXIT, false);
+  process_.Terminate(service_manager::RESULT_CODE_NORMAL_EXIT, false);
 }
 
 bool ServiceUtilityProcessHost::StartRenderPDFPagesToMetafile(
@@ -410,8 +410,9 @@ bool ServiceUtilityProcessHost::StartProcess(bool sandbox) {
 
   base::CommandLine cmd_line(exe_path);
   cmd_line.AppendSwitchASCII(switches::kProcessType, switches::kUtilityProcess);
-  cmd_line.AppendSwitchASCII(switches::kServiceRequestChannelToken,
-                             mojo_bootstrap_token);
+  cmd_line.AppendSwitchASCII(
+      service_manager::switches::kServiceRequestChannelToken,
+      mojo_bootstrap_token);
   cmd_line.AppendSwitch(switches::kLang);
   cmd_line.AppendArg(switches::kPrefetchArgumentOther);
 

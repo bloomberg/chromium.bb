@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_ZYGOTE_HOST_ZYGOTE_COMMUNICATION_LINUX_H_
-#define CONTENT_BROWSER_ZYGOTE_HOST_ZYGOTE_COMMUNICATION_LINUX_H_
+#ifndef SERVICES_SERVICE_MANAGER_ZYGOTE_HOST_ZYGOTE_COMMUNICATION_LINUX_H_
+#define SERVICES_SERVICE_MANAGER_ZYGOTE_HOST_ZYGOTE_COMMUNICATION_LINUX_H_
 
 #include <memory>
 #include <set>
@@ -13,23 +13,23 @@
 #include <sys/types.h>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/files/scoped_file.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/process/process_handle.h"
 #include "base/synchronization/lock.h"
-#include "content/common/content_export.h"
 
 namespace base {
 class Pickle;
 }  // namespace base
 
-namespace content {
+namespace service_manager {
 
 // Handles interprocess communication with the Linux zygote process. The zygote
 // does not use standard Chrome IPC or mojo, see:
 // https://chromium.googlesource.com/chromium/src/+/master/docs/linux_sandbox_ipc.md
-class CONTENT_EXPORT ZygoteCommunication {
+class COMPONENT_EXPORT(SERVICE_MANAGER_ZYGOTE) ZygoteCommunication {
  public:
   ZygoteCommunication();
   ~ZygoteCommunication();
@@ -58,7 +58,7 @@ class CONTENT_EXPORT ZygoteCommunication {
   // still running, even when they're not. When |known_dead| is true, the
   // process will be SIGKILL-ed first (which should have no effect if it was
   // really dead). This is to prevent a waiting waitpid() from blocking in
-  // a single-threaded Zygote. See crbug.com/157458.
+  // a single-threaded Zygote. See https://crbug.com/157458.
   base::TerminationStatus GetTerminationStatus(base::ProcessHandle handle,
                                                bool known_dead,
                                                int* exit_code);
@@ -98,6 +98,6 @@ class CONTENT_EXPORT ZygoteCommunication {
   bool init_;
 };
 
-}  // namespace content
+}  // namespace service_manager
 
-#endif  // CONTENT_BROWSER_ZYGOTE_HOST_ZYGOTE_COMMUNICATION_LINUX_H_
+#endif  // SERVICES_SERVICE_MANAGER_ZYGOTE_HOST_ZYGOTE_COMMUNICATION_LINUX_H_

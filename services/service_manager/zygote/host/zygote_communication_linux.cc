@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/zygote_host/zygote_communication_linux.h"
+#include "services/service_manager/zygote/host/zygote_communication_linux.h"
 
 #include <string.h>
 #include <sys/socket.h>
@@ -16,14 +16,13 @@
 #include "base/pickle.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/unix_domain_socket.h"
-#include "content/common/zygote_commands_linux.h"
-#include "content/public/common/content_switches.h"
-#include "content/public/common/result_codes.h"
+#include "services/service_manager/embedder/result_codes.h"
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/sandbox/switches.h"
+#include "services/service_manager/zygote/common/zygote_commands_linux.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 
-namespace content {
+namespace service_manager {
 
 ZygoteCommunication::ZygoteCommunication()
     : control_fd_(),
@@ -98,12 +97,10 @@ pid_t ZygoteCommunication::ForkRequest(
   for (std::vector<std::string>::const_iterator i = argv.begin();
        i != argv.end(); ++i)
     pickle.WriteString(*i);
-  if (process_type == switches::kRendererProcess) {
-    std::unique_ptr<icu::TimeZone> timezone(icu::TimeZone::createDefault());
-    icu::UnicodeString timezone_id;
-    pickle.WriteString16(
-        base::i18n::UnicodeStringToString16(timezone->getID(timezone_id)));
-  }
+  std::unique_ptr<icu::TimeZone> timezone(icu::TimeZone::createDefault());
+  icu::UnicodeString timezone_id;
+  pickle.WriteString16(
+      base::i18n::UnicodeStringToString16(timezone->getID(timezone_id)));
 
   // Fork requests contain one file descriptor for the PID oracle, and one
   // more for each file descriptor mapping for the child process.
@@ -320,4 +317,4 @@ int ZygoteCommunication::GetSandboxStatus() {
   return sandbox_status_;
 }
 
-}  // namespace content
+}  // namespace service_manager

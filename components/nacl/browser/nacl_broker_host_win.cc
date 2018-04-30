@@ -21,7 +21,6 @@
 #include "content/public/browser/child_process_data.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/mojo_channel_switches.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "mojo/edk/embedder/embedder.h"
 

@@ -24,7 +24,7 @@ const char kDefaultServicePrefetchArgument[] = "/prefetch:8";
 
 #endif  // defined(OS_WIN)
 
-// Disable the in-process stack traces.
+// Disables the in-process stack traces.
 const char kDisableInProcessStackTraces[] = "disable-in-process-stack-traces";
 
 // Controls whether console logging is enabled and optionally configures where
@@ -43,6 +43,10 @@ const char kProcessTypeServiceManager[] = "service-manager";
 // the role of a service instance.
 const char kProcessTypeService[] = "service-runner";
 
+// The token to use to construct the message pipe for a service in a child
+// process.
+const char kServiceRequestChannelToken[] = "service-request-channel-token";
+
 // Describes the file descriptors passed to a child process in the following
 // list format:
 //
@@ -53,6 +57,12 @@ const char kProcessTypeService[] = "service-runner";
 // the child process can use to retrieve the file descriptor from the
 // global descriptor table.
 const char kSharedFiles[] = "shared-files";
+
+// The prefix used when starting the zygote process. (i.e. 'gdb --args')
+const char kZygoteCmdPrefix[] = "zygote-cmd-prefix";
+
+// Causes the process to run as a zygote.
+const char kZygoteProcess[] = "zygote";
 
 }  // namespace switches
 }  // namespace service_manager

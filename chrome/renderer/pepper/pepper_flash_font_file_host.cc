@@ -68,7 +68,7 @@ bool PepperFlashFontFileHost::GetFontData(uint32_t table,
   int fd = fd_.get();
   if (fd != -1)
     result = content::GetFontTable(fd, table, 0 /* offset */,
-                 reinterpret_cast<uint8_t*>(buffer), length);
+                                   reinterpret_cast<uint8_t*>(buffer), length);
 #elif defined(OS_WIN)
   if (typeface_) {
     table = base::ByteSwap(table);
