@@ -71,7 +71,6 @@ BiquadFilterNode::BiquadFilterNode(BaseAudioContext& context)
       frequency_(
           AudioParam::Create(context,
                              kParamTypeBiquadFilterFrequency,
-                             "BiquadFilter.frequency",
                              350.0,
                              AudioParamHandler::AutomationRate::kAudio,
                              AudioParamHandler::AutomationRateMode::kVariable,
@@ -79,21 +78,18 @@ BiquadFilterNode::BiquadFilterNode(BaseAudioContext& context)
                              context.sampleRate() / 2)),
       q_(AudioParam::Create(context,
                             kParamTypeBiquadFilterQ,
-                            "BiquadFilter.Q",
                             1.0,
                             AudioParamHandler::AutomationRate::kAudio,
                             AudioParamHandler::AutomationRateMode::kVariable)),
       gain_(
           AudioParam::Create(context,
                              kParamTypeBiquadFilterGain,
-                             "BiquadFilter.gain",
                              0.0,
                              AudioParamHandler::AutomationRate::kAudio,
                              AudioParamHandler::AutomationRateMode::kVariable)),
       detune_(AudioParam::Create(
           context,
           kParamTypeBiquadFilterDetune,
-          "BiquadFilter.detune",
           0.0,
           AudioParamHandler::AutomationRate::kAudio,
           AudioParamHandler::AutomationRateMode::kVariable)) {

@@ -473,7 +473,6 @@ OscillatorNode::OscillatorNode(BaseAudioContext& context,
       frequency_(
           AudioParam::Create(context,
                              kParamTypeOscillatorFrequency,
-                             "Oscillator.frequency",
                              440,
                              AudioParamHandler::AutomationRate::kAudio,
                              AudioParamHandler::AutomationRateMode::kVariable,
@@ -483,7 +482,6 @@ OscillatorNode::OscillatorNode(BaseAudioContext& context,
       detune_(AudioParam::Create(
           context,
           kParamTypeOscillatorDetune,
-          "Oscillator.detune",
           0,
           AudioParamHandler::AutomationRate::kAudio,
           AudioParamHandler::AutomationRateMode::kVariable)) {

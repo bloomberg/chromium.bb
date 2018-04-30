@@ -223,10 +223,11 @@ AudioWorkletNode::AudioWorkletNode(
     String param_name = param_info.Name().IsolatedCopy();
     AudioParam* audio_param = AudioParam::Create(
         context, kParamTypeAudioWorklet,
-        "AudioWorklet(\"" + name + "\")." + param_name,
         param_info.DefaultValue(), AudioParamHandler::AutomationRate::kAudio,
         AudioParamHandler::AutomationRateMode::kVariable, param_info.MinValue(),
         param_info.MaxValue());
+    audio_param->SetCustomParamName("AudioWorkletNode(\"" + name + "\")." +
+                                    param_name);
     audio_param_map.Set(param_name, audio_param);
     param_handler_map.Set(param_name, WrapRefCounted(&audio_param->Handler()));
 

@@ -40,7 +40,6 @@ const double AudioParamHandler::kSnapThreshold = 0.001;
 
 AudioParamHandler::AudioParamHandler(BaseAudioContext& context,
                                      AudioParamType param_type,
-                                     String param_name,
                                      double default_value,
                                      AutomationRate rate,
                                      AutomationRateMode rate_mode,
@@ -48,7 +47,6 @@ AudioParamHandler::AudioParamHandler(BaseAudioContext& context,
                                      float max_value)
     : AudioSummingJunction(context.GetDeferredTaskHandler()),
       param_type_(param_type),
-      param_name_(param_name),
       intrinsic_value_(default_value),
       default_value_(default_value),
       automation_rate_(rate),
@@ -71,8 +69,82 @@ void AudioParamHandler::SetParamType(AudioParamType param_type) {
   param_type_ = param_type;
 }
 
+void AudioParamHandler::SetCustomParamName(const String name) {
+  DCHECK(param_type_ == kParamTypeAudioWorklet);
+  custom_param_name_ = name;
+}
+
 String AudioParamHandler::GetParamName() const {
-  return param_name_;
+  switch (GetParamType()) {
+    case kParamTypeAudioBufferSourcePlaybackRate:
+      return "AudioBufferSource.playbackRate";
+    case kParamTypeAudioBufferSourceDetune:
+      return "AudioBufferSource.detune";
+    case kParamTypeBiquadFilterFrequency:
+      return "BiquadFilter.frequency";
+    case kParamTypeBiquadFilterQ:
+      return "BiquadFilter.Q";
+    case kParamTypeBiquadFilterGain:
+      return "BiquadFilter.Gain";
+    case kParamTypeBiquadFilterDetune:
+      return "BiquadFilter.detune";
+    case kParamTypeDelayDelayTime:
+      return "Delay.delayTime";
+    case kParamTypeDynamicsCompressorThreshold:
+      return "DynamicsCompressor.threshold";
+    case kParamTypeDynamicsCompressorKnee:
+      return "DynamicsCompressor.knee";
+    case kParamTypeDynamicsCompressorRatio:
+      return "DynamicsCompressor.ratio";
+    case kParamTypeDynamicsCompressorAttack:
+      return "DynamicsCompressor.attack";
+    case kParamTypeDynamicsCompressorRelease:
+      return "DynamicsCompressor.release";
+    case kParamTypeGainGain:
+      return "Gain.gain";
+    case kParamTypeOscillatorFrequency:
+      return "Oscillator.frequency";
+    case kParamTypeOscillatorDetune:
+      return "Oscillator.detune";
+    case kParamTypeStereoPannerPan:
+      return "StereoPanner.pan";
+    case kParamTypePannerPositionX:
+      return "Panner.positionX";
+    case kParamTypePannerPositionY:
+      return "Panner.positionY";
+    case kParamTypePannerPositionZ:
+      return "Panner.positionZ";
+    case kParamTypePannerOrientationX:
+      return "Panner.orientationX";
+    case kParamTypePannerOrientationY:
+      return "Panner.orientationY";
+    case kParamTypePannerOrientationZ:
+      return "Panner.orientationZ";
+    case kParamTypeAudioListenerPositionX:
+      return "AudioListener.positionX";
+    case kParamTypeAudioListenerPositionY:
+      return "AudioListener.positionY";
+    case kParamTypeAudioListenerPositionZ:
+      return "AudioListener.positionZ";
+    case kParamTypeAudioListenerForwardX:
+      return "AudioListener.forwardX";
+    case kParamTypeAudioListenerForwardY:
+      return "AudioListener.forwardY";
+    case kParamTypeAudioListenerForwardZ:
+      return "AudioListener.forwardZ";
+    case kParamTypeAudioListenerUpX:
+      return "AudioListener.upX";
+    case kParamTypeAudioListenerUpY:
+      return "AudioListener.upY";
+    case kParamTypeAudioListenerUpZ:
+      return "AudioListener.upZ";
+    case kParamTypeConstantSourceOffset:
+      return "ConstantSource.offset";
+    case kParamTypeAudioWorklet:
+      return custom_param_name_;
+    default:
+      NOTREACHED();
+  }
 }
 
 float AudioParamHandler::Value() {
@@ -255,7 +327,6 @@ int AudioParamHandler::ComputeQHistogramValue(float new_value) const {
 
 AudioParam::AudioParam(BaseAudioContext& context,
                        AudioParamType param_type,
-                       String param_name,
                        double default_value,
                        AudioParamHandler::AutomationRate rate,
                        AudioParamHandler::AutomationRateMode rate_mode,
@@ -263,7 +334,6 @@ AudioParam::AudioParam(BaseAudioContext& context,
                        float max_value)
     : handler_(AudioParamHandler::Create(context,
                                          param_type,
-                                         param_name,
                                          default_value,
                                          rate,
                                          rate_mode,
@@ -273,7 +343,16 @@ AudioParam::AudioParam(BaseAudioContext& context,
 
 AudioParam* AudioParam::Create(BaseAudioContext& context,
                                AudioParamType param_type,
-                               String param_name,
+                               double default_value) {
+  return new AudioParam(context, param_type, default_value,
+                        AudioParamHandler::AutomationRate::kAudio,
+                        AudioParamHandler::AutomationRateMode::kVariable,
+                        -std::numeric_limits<float>::max(),
+                        std::numeric_limits<float>::max());
+}
+
+AudioParam* AudioParam::Create(BaseAudioContext& context,
+                               AudioParamType param_type,
                                double default_value,
                                AudioParamHandler::AutomationRate rate,
                                AudioParamHandler::AutomationRateMode rate_mode,
@@ -281,8 +360,8 @@ AudioParam* AudioParam::Create(BaseAudioContext& context,
                                float max_value) {
   DCHECK_LE(min_value, max_value);
 
-  return new AudioParam(context, param_type, param_name, default_value, rate,
-                        rate_mode, min_value, max_value);
+  return new AudioParam(context, param_type, default_value, rate, rate_mode,
+                        min_value, max_value);
 }
 
 void AudioParam::Trace(blink::Visitor* visitor) {
@@ -335,6 +414,10 @@ float AudioParam::maxValue() const {
 
 void AudioParam::SetParamType(AudioParamType param_type) {
   Handler().SetParamType(param_type);
+}
+
+void AudioParam::SetCustomParamName(const String name) {
+  Handler().SetCustomParamName(name);
 }
 
 String AudioParam::automationRate() const {
