@@ -4,7 +4,7 @@
 
 #include "content/public/browser/browser_main_parts.h"
 
-#include "content/public/common/result_codes.h"
+#include "services/service_manager/embedder/result_codes.h"
 
 namespace content {
 
@@ -13,7 +13,7 @@ bool BrowserMainParts::ShouldContentCreateFeatureList() {
 }
 
 int BrowserMainParts::PreEarlyInitialization() {
-  return RESULT_CODE_NORMAL_EXIT;
+  return service_manager::RESULT_CODE_NORMAL_EXIT;
 }
 
 int BrowserMainParts::PreCreateThreads() {

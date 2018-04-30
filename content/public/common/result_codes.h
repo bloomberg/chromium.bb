@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_COMMON_RESULT_CODES_H_
 #define CONTENT_PUBLIC_COMMON_RESULT_CODES_H_
 
+#include "services/service_manager/embedder/result_codes.h"
+
 namespace content {
 
 // This file consolidates all the return codes for the browser and renderer
@@ -28,11 +30,10 @@ namespace content {
 // TODO(wfh): Break the dependency so it is possible to add more values.
 
 enum ResultCode {
-  // Process terminated normally.
-  RESULT_CODE_NORMAL_EXIT,
+  RESULT_CODE_CONTENT_START = service_manager::RESULT_CODE_LAST_CODE,
 
   // Process was killed by user or system.
-  RESULT_CODE_KILLED,
+  RESULT_CODE_KILLED = RESULT_CODE_CONTENT_START,
 
   // Process hung.
   RESULT_CODE_HUNG,

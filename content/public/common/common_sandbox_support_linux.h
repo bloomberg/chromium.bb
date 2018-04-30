@@ -29,20 +29,6 @@ CONTENT_EXPORT bool GetFontTable(int fd,
                                  uint8_t* output,
                                  size_t* output_length);
 
-// Returns a file descriptor for a shared memory segment.  The
-// executable flag indicates that the caller intends to use mprotect
-// with PROT_EXEC after making a mapping, but not that it intends to
-// mmap with PROT_EXEC in the first place.  (Some systems, such as
-// ChromeOS, disallow PROT_EXEC in mmap on /dev/shm files but do allow
-// PROT_EXEC in mprotect on mappings from such files.  This function
-// can yield an object that has that constraint.)
-CONTENT_EXPORT int MakeSharedMemorySegmentViaIPC(size_t length,
-                                                 bool executable);
-
-// Gets the well-known file descriptor on which we expect to find the
-// sandbox IPC channel.
-CONTENT_EXPORT int GetSandboxFD();
-
-};  // namespace content
+}  // namespace content
 
 #endif  // CONTENT_PUBLIC_COMMON_COMMON_SANDBOX_SUPPORT_LINUX_H_

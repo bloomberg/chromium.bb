@@ -43,6 +43,10 @@ source_set("minimal") {
     "//sandbox",
     "//services/service_manager/public/cpp",
   ]
+
+  if (is_linux) {
+    deps += [ "//services/service_manager/zygote" ]
+  }
 }
 
 # This exists just to make 'gn check' happy with :minimal and
@@ -129,6 +133,7 @@ if (is_linux) {
       "//mojo/edk",
       "//sandbox/linux:sandbox_services",
       "//services/service_manager/sandbox",
+      "//services/service_manager/zygote",
       "//url/ipc:url_ipc",
     ]
 
@@ -249,6 +254,7 @@ if (is_nacl_nonsfi) {
       "//sandbox/linux:sandbox",
       "//services/service_manager/public/cpp",
       "//services/service_manager/sandbox",
+      "//services/service_manager/zygote:zygote_util",
     ]
   }
 

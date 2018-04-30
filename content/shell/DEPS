@@ -39,6 +39,9 @@ include_rules = [
   "+components/viz/common/resources",
   "+components/viz/common/switches.h",
   "+services/test/echo",
+
+  # Access to the process specific switches.
+  "+services/service_manager/embedder",
 ]
 
 specific_include_rules = {

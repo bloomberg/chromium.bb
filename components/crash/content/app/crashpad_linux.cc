@@ -41,7 +41,8 @@ class SandboxedHandler {
   }
 
   bool Initialize() {
-    server_fd_ = base::GlobalDescriptors::GetInstance()->Get(kCrashDumpSignal);
+    server_fd_ = base::GlobalDescriptors::GetInstance()->Get(
+        service_manager::kCrashDumpSignal);
 
     return Signals::InstallCrashHandlers(HandleCrash, 0, nullptr);
   }

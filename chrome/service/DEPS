@@ -8,5 +8,4 @@ include_rules = [
   "+components/version_info",
   "+mojo/edk/embedder",
   "+sandbox/win/src",
-  "+services/service_manager",
 ]

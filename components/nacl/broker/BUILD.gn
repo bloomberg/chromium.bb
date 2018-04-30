@@ -31,6 +31,7 @@ source_set("broker") {
     "//mojo/edk",
     "//sandbox",
     "//services/service_manager/public/cpp",
+    "//services/service_manager/zygote:zygote_buildflags",
   ]
 
   if (current_cpu == target_cpu) {
@@ -48,13 +49,6 @@ source_set("content_dummy") {
   sources = [
     "//content/public/common/sandbox_init.h",
     "//content/public/common/sandboxed_process_launcher_delegate.h",
-  ]
-
-  deps = [
-    # sandboxed_process_launcher_delegate.h includes headers generated from
-    # //content/public/common:zygote_buildflags, so this target needs to have a
-    # dep on it as well.
-    "//content/public/common:zygote_buildflags",
   ]
 }
 
@@ -151,9 +145,9 @@ if (current_cpu == "x86") {
     deps = [
       "//base",
       "//content/public/common:static_switches",
-      "//content/public/common:zygote_buildflags",
       "//sandbox",
       "//services/service_manager/sandbox",
+      "//services/service_manager/zygote:zygote_buildflags",
     ]
   }
 

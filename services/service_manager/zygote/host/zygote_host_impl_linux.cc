@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/zygote_host/zygote_host_impl_linux.h"
+#include "services/service_manager/zygote/host/zygote_host_impl_linux.h"
 
 #include <stdlib.h>
 #include <sys/socket.h>
@@ -14,16 +14,16 @@
 #include "base/process/kill.h"
 #include "base/process/memory.h"
 #include "base/strings/string_number_conversions.h"
-#include "content/common/zygote_commands_linux.h"
-#include "content/public/common/content_switches.h"
+#include "build/build_config.h"
 #include "sandbox/linux/services/credentials.h"
 #include "sandbox/linux/services/namespace_sandbox.h"
 #include "sandbox/linux/suid/client/setuid_sandbox_host.h"
 #include "sandbox/linux/suid/common/sandbox.h"
 #include "services/service_manager/sandbox/linux/sandbox_linux.h"
 #include "services/service_manager/sandbox/switches.h"
+#include "services/service_manager/zygote/common/zygote_commands_linux.h"
 
-namespace content {
+namespace service_manager {
 
 namespace {
 
@@ -76,7 +76,8 @@ void ZygoteHostImpl::Init(const base::CommandLine& command_line) {
     return;
   }
 
-  // Exit early if running as root without --no-sandbox. See crbug.com/638180.
+  // Exit early if running as root without --no-sandbox. See
+  // https://crbug.com/638180.
   // When running as root with the sandbox enabled, the browser process
   // crashes on zygote initialization. Running as root with the sandbox
   // is not supported, and if Chrome were able to display UI it would be showing
@@ -104,7 +105,7 @@ void ZygoteHostImpl::Init(const base::CommandLine& command_line) {
 
 #if defined(OS_CHROMEOS)
     // Chrome OS has a kernel patch that restricts oom_score_adj. See
-    // crbug.com/576409 for details.
+    // https://crbug.com/576409 for details.
     if (!sandbox_binary_.empty()) {
       use_suid_sandbox_for_adj_oom_score_ = true;
     } else {
@@ -296,4 +297,4 @@ void ZygoteHostImpl::AdjustRendererOOMScore(base::ProcessHandle pid,
 }
 #endif
 
-}  // namespace content
+}  // namespace service_manager

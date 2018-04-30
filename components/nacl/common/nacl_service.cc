@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "content/public/common/mojo_channel_switches.h"
 #include "content/public/common/service_names.mojom.h"
 #include "ipc/ipc.mojom.h"
 #include "mojo/edk/embedder/embedder.h"
@@ -16,13 +15,14 @@
 #include "mojo/edk/embedder/scoped_ipc_support.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
 
 #if defined(OS_POSIX)
 #include "base/posix/global_descriptors.h"
-#include "content/public/common/content_descriptors.h"
+#include "services/service_manager/embedder/descriptors.h"
 #elif defined(OS_WIN)
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #endif
@@ -36,8 +36,9 @@ EstablishMojoConnection() {
       mojo::edk::PlatformChannelPair::PassClientHandleFromParentProcess(
           *base::CommandLine::ForCurrentProcess()));
 #else
-  mojo::edk::ScopedPlatformHandle platform_channel(mojo::edk::PlatformHandle(
-      base::GlobalDescriptors::GetInstance()->Get(kMojoIPCChannel)));
+  mojo::edk::ScopedPlatformHandle platform_channel(
+      mojo::edk::PlatformHandle(base::GlobalDescriptors::GetInstance()->Get(
+          service_manager::kMojoIPCChannel)));
 #endif
   DCHECK(platform_channel.is_valid());
   return mojo::edk::IncomingBrokerClientInvitation::Accept(
@@ -49,7 +50,7 @@ service_manager::mojom::ServiceRequest ConnectToServiceManager(
     mojo::edk::IncomingBrokerClientInvitation* invitation) {
   const std::string service_request_channel_token =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kServiceRequestChannelToken);
+          service_manager::switches::kServiceRequestChannelToken);
   DCHECK(!service_request_channel_token.empty());
   mojo::ScopedMessagePipeHandle parent_handle =
       invitation->ExtractMessagePipe(service_request_channel_token);

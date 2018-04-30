@@ -53,6 +53,7 @@ component("embedder") {
   ]
 
   public_deps = [
+    ":embedder_result_codes",
     "//base",
     "//services/service_manager/public/cpp",
   ]
@@ -62,8 +63,13 @@ component("embedder") {
     deps += [
       "//base/allocator:buildflags",
       "//components/tracing:startup_tracing",
-      "//ui/base",
     ]
+
+    if (!is_nacl) {
+      # NaCl stuff should not depend on skia as it would require platform and
+      # cpu properties set.
+      deps += [ "//ui/base" ]
+    }
 
     public_deps += [
       ":embedder_switches",
@@ -85,6 +91,12 @@ component("embedder_switches") {
     "switches.h",
   ]
   defines = [ "SERVICE_MANAGER_EMBEDDER_SWITCHES_IMPL" ]
+}
+
+source_set("embedder_result_codes") {
+  sources = [
+    "result_codes.h",
+  ]
 }
 
 source_set("unittests") {
