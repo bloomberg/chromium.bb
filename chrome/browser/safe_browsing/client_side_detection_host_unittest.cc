@@ -1243,7 +1243,7 @@ TEST_F(ClientSideDetectionHostTest,
   resource_load_info->referrer = GURL("http://host2.com");
   resource_load_info->method = "GET";
   resource_load_info->resource_type = content::RESOURCE_TYPE_SUB_FRAME;
-  csd_host_->ResourceLoadComplete(*resource_load_info);
+  csd_host_->ResourceLoadComplete(*resource_load_info, /*is_main_frame=*/false);
 
   EXPECT_EQ(0u, GetBrowseInfo()->ips.size());
 }

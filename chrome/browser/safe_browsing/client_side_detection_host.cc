@@ -446,7 +446,8 @@ void ClientSideDetectionHost::DidFinishNavigation(
 }
 
 void ClientSideDetectionHost::ResourceLoadComplete(
-    const content::mojom::ResourceLoadInfo& resource_load_info) {
+    const content::mojom::ResourceLoadInfo& resource_load_info,
+    bool is_main_frame) {
   if (!content::IsResourceTypeFrame(resource_load_info.resource_type) &&
       browse_info_.get() && should_extract_malware_features_ &&
       resource_load_info.url.is_valid() && resource_load_info.ip.has_value()) {
