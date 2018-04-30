@@ -26,6 +26,7 @@
 #include "chrome/browser/media/router/discovery/dial/dial_url_fetcher.h"
 #include "chrome/browser/media/router/discovery/mdns/cast_media_sink_service.h"
 #include "chrome/browser/media/router/discovery/mdns/cast_media_sink_service_impl.h"
+#include "chrome/browser/media/router/providers/dial/dial_activity_manager.h"
 #include "chrome/common/media_router/discovery/media_sink_internal.h"
 #include "net/base/ip_endpoint.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -176,6 +177,31 @@ class TestDialURLFetcher : public DialURLFetcher {
 
  private:
   network::TestURLLoaderFactory* const factory_;
+};
+
+class TestDialActivityManager : public DialActivityManager {
+ public:
+  explicit TestDialActivityManager(network::TestURLLoaderFactory* factory);
+  ~TestDialActivityManager() override;
+
+  std::unique_ptr<DialURLFetcher> CreateFetcher(
+      DialURLFetcher::SuccessCallback success_cb,
+      DialURLFetcher::ErrorCallback error_cb) override;
+
+  void SetExpectedRequest(const GURL& url,
+                          const std::string& method,
+                          const base::Optional<std::string>& post_data);
+
+  MOCK_METHOD0(OnFetcherCreated, void());
+
+ private:
+  network::TestURLLoaderFactory* const factory_;
+
+  GURL expected_url_;
+  std::string expected_method_;
+  base::Optional<std::string> expected_post_data_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestDialActivityManager);
 };
 
 // Helper function to create an IP endpoint object.

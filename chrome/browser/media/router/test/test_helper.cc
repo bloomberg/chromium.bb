@@ -101,6 +101,32 @@ void TestDialURLFetcher::StartDownload() {
       256 * 1024);
 }
 
+TestDialActivityManager::TestDialActivityManager(
+    network::TestURLLoaderFactory* factory)
+    : DialActivityManager(), factory_(factory) {}
+TestDialActivityManager::~TestDialActivityManager() = default;
+
+std::unique_ptr<DialURLFetcher> TestDialActivityManager::CreateFetcher(
+    DialURLFetcher::SuccessCallback success_cb,
+    DialURLFetcher::ErrorCallback error_cb) {
+  OnFetcherCreated();
+  auto fetcher = std::make_unique<TestDialURLFetcher>(
+      std::move(success_cb), std::move(error_cb), factory_);
+  EXPECT_CALL(*fetcher, DoStart(expected_url_, expected_method_,
+                                expected_post_data_, testing::_));
+  return fetcher;
+}
+
+void TestDialActivityManager::SetExpectedRequest(
+    const GURL& url,
+    const std::string& method,
+    const base::Optional<std::string>& post_data) {
+  EXPECT_CALL(*this, OnFetcherCreated());
+  expected_url_ = url;
+  expected_method_ = method;
+  expected_post_data_ = post_data;
+}
+
 net::IPEndPoint CreateIPEndPoint(int num) {
   net::IPAddress ip_address;
   CHECK(ip_address.AssignFromIPLiteral(
