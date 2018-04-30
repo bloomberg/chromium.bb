@@ -126,15 +126,16 @@ class UnloadResults {
   int aborts_;
 };
 
-class UnloadTest : public InProcessBrowserTest {
+class UnloadTestBase : public InProcessBrowserTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     const testing::TestInfo* const test_info =
         testing::UnitTest::GetInstance()->current_test_info();
-    if (strcmp(test_info->name(),
-        "BrowserCloseTabWhenOtherTabHasListener") == 0) {
+    if (strstr(test_info->name(), "BrowserCloseTabWhenOtherTabHasListener") !=
+        nullptr) {
       command_line->AppendSwitch(switches::kDisablePopupBlocking);
-    } else if (strcmp(test_info->name(), "BrowserTerminateBeforeUnload") == 0) {
+    } else if (strstr(test_info->name(), "BrowserTerminateBeforeUnload") !=
+               nullptr) {
 #if defined(OS_POSIX)
       DisableSIGTERMHandling();
 #endif
@@ -205,12 +206,24 @@ class UnloadTest : public InProcessBrowserTest {
   }
 };
 
+class UnloadTest : public UnloadTestBase,
+                   public testing::WithParamInterface<bool> {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    UnloadTestBase::SetUpCommandLine(command_line);
+    if (GetParam())
+      command_line->AppendSwitch(switches::kEnableFastUnload);
+  }
+};
+
+INSTANTIATE_TEST_CASE_P(, UnloadTest, testing::Bool());
+
 // Navigate to a page with an infinite unload handler.
 // Then two async crosssite requests to ensure
 // we don't get confused and think we're closing the tab.
 //
 // This test is flaky on the valgrind UI bots. http://crbug.com/39057
-IN_PROC_BROWSER_TEST_F(UnloadTest, CrossSiteInfiniteUnloadAsync) {
+IN_PROC_BROWSER_TEST_P(UnloadTest, CrossSiteInfiniteUnloadAsync) {
   // Tests makes no sense in single-process mode since the renderer is hung.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSingleProcess))
@@ -224,7 +237,7 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, CrossSiteInfiniteUnloadAsync) {
 // Navigate to a page with an infinite unload handler.
 // Then two sync crosssite requests to ensure
 // we correctly nav to each one.
-IN_PROC_BROWSER_TEST_F(UnloadTest, CrossSiteInfiniteUnloadSync) {
+IN_PROC_BROWSER_TEST_P(UnloadTest, CrossSiteInfiniteUnloadSync) {
   // Tests makes no sense in single-process mode since the renderer is hung.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSingleProcess))
@@ -240,7 +253,7 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, CrossSiteInfiniteUnloadSync) {
 // we don't get confused and think we're closing the tab.
 // This test is flaky on the valgrind UI bots. http://crbug.com/39057 and
 // http://crbug.com/86469
-IN_PROC_BROWSER_TEST_F(UnloadTest, CrossSiteInfiniteBeforeUnloadAsync) {
+IN_PROC_BROWSER_TEST_P(UnloadTest, CrossSiteInfiniteBeforeUnloadAsync) {
   // Tests makes no sense in single-process mode since the renderer is hung.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSingleProcess))
@@ -255,7 +268,7 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, CrossSiteInfiniteBeforeUnloadAsync) {
 // Then two two sync crosssite requests to ensure
 // we correctly nav to each one.
 // Flaky on Win, Linux, and Mac; http://crbug.com/462671.
-IN_PROC_BROWSER_TEST_F(UnloadTest, DISABLED_CrossSiteInfiniteBeforeUnloadSync) {
+IN_PROC_BROWSER_TEST_P(UnloadTest, DISABLED_CrossSiteInfiniteBeforeUnloadSync) {
   // Tests makes no sense in single-process mode since the renderer is hung.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSingleProcess))
@@ -267,19 +280,19 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, DISABLED_CrossSiteInfiniteBeforeUnloadSync) {
 }
 
 // Tests closing the browser on a page with no unload listeners registered.
-IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseNoUnloadListeners) {
+IN_PROC_BROWSER_TEST_P(UnloadTest, BrowserCloseNoUnloadListeners) {
   LoadUrlAndQuitBrowser(NOLISTENERS_HTML, "nolisteners");
 }
 
 // Tests closing the browser on a page with an unload listener registered.
 // Test marked as flaky in http://crbug.com/51698
-IN_PROC_BROWSER_TEST_F(UnloadTest, DISABLED_BrowserCloseUnload) {
+IN_PROC_BROWSER_TEST_P(UnloadTest, DISABLED_BrowserCloseUnload) {
   LoadUrlAndQuitBrowser(UNLOAD_HTML, "unload");
 }
 
 // Tests closing the browser with a beforeunload handler and clicking
 // OK in the beforeunload confirm dialog.
-IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseBeforeUnloadOK) {
+IN_PROC_BROWSER_TEST_P(UnloadTest, BrowserCloseBeforeUnloadOK) {
   NavigateToDataURL(BEFORE_UNLOAD_HTML, "beforeunload");
   PrepareForDialog(browser());
 
@@ -294,7 +307,7 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseBeforeUnloadOK) {
 // Tests closing the browser with a beforeunload handler and clicking
 // CANCEL in the beforeunload confirm dialog.
 // If this test flakes, reopen http://crbug.com/123110
-IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseBeforeUnloadCancel) {
+IN_PROC_BROWSER_TEST_P(UnloadTest, BrowserCloseBeforeUnloadCancel) {
   NavigateToDataURL(BEFORE_UNLOAD_HTML, "beforeunload");
   PrepareForDialog(browser());
   chrome::CloseWindow(browser());
@@ -321,7 +334,7 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseBeforeUnloadCancel) {
 
 // Tests closing the browser by BrowserList::CloseAllBrowsersWithProfile,
 // on a page with no unload listeners registered.
-IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserListCloseNoUnloadListeners) {
+IN_PROC_BROWSER_TEST_P(UnloadTest, BrowserListCloseNoUnloadListeners) {
   NavigateToDataURL(NOLISTENERS_HTML, "nolisteners");
 
   content::WindowedNotificationObserver window_observer(
@@ -340,7 +353,7 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserListCloseNoUnloadListeners) {
 
 // Tests closing the browser by BrowserList::CloseAllBrowsersWithProfile, with a
 // beforeunload handler and clicking Leave in the beforeunload confirm dialog.
-IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserListCloseBeforeUnloadOK) {
+IN_PROC_BROWSER_TEST_P(UnloadTest, BrowserListCloseBeforeUnloadOK) {
   NavigateToDataURL(BEFORE_UNLOAD_HTML, "beforeunload");
   PrepareForDialog(browser());
 
@@ -361,7 +374,7 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserListCloseBeforeUnloadOK) {
 
 // Tests closing the browser by BrowserList::CloseAllBrowsersWithProfile, with a
 // beforeunload handler and clicking Stay in the beforeunload confirm dialog.
-IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserListCloseBeforeUnloadCancel) {
+IN_PROC_BROWSER_TEST_P(UnloadTest, BrowserListCloseBeforeUnloadCancel) {
   NavigateToDataURL(BEFORE_UNLOAD_HTML, "beforeunload");
   PrepareForDialog(browser());
 
@@ -397,7 +410,7 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserListCloseBeforeUnloadCancel) {
 
 // Tests double calls to BrowserList::CloseAllBrowsersWithProfile, with a
 // beforeunload handler and clicking Leave in the beforeunload confirm dialog.
-IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserListDoubleCloseBeforeUnloadOK) {
+IN_PROC_BROWSER_TEST_P(UnloadTest, BrowserListDoubleCloseBeforeUnloadOK) {
   NavigateToDataURL(BEFORE_UNLOAD_HTML, "beforeunload");
   PrepareForDialog(browser());
 
@@ -423,7 +436,7 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserListDoubleCloseBeforeUnloadOK) {
 
 // Tests double calls to BrowserList::CloseAllBrowsersWithProfile, with a
 // beforeunload handler and clicking Stay in the beforeunload confirm dialog.
-IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserListDoubleCloseBeforeUnloadCancel) {
+IN_PROC_BROWSER_TEST_P(UnloadTest, BrowserListDoubleCloseBeforeUnloadCancel) {
   NavigateToDataURL(BEFORE_UNLOAD_HTML, "beforeunload");
   PrepareForDialog(browser());
 
@@ -465,7 +478,7 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserListDoubleCloseBeforeUnloadCancel) {
 // Tests closing the browser by BrowserList::CloseAllBrowsersWithProfile, with
 // a null success callback, a beforeunload handler and clicking Leave in the
 // beforeunload confirm dialog. The test succeed if no crash happens.
-IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserListCloseBeforeUnloadNullCallbackOk) {
+IN_PROC_BROWSER_TEST_P(UnloadTest, BrowserListCloseBeforeUnloadNullCallbackOk) {
   NavigateToDataURL(BEFORE_UNLOAD_HTML, "beforeunload");
   PrepareForDialog(browser());
 
@@ -483,7 +496,7 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserListCloseBeforeUnloadNullCallbackOk) {
 // Tests closing the browser by BrowserList::CloseAllBrowsersWithProfile, with
 // a null failure callback, a beforeunload handler and clicking Stay in the
 // beforeunload confirm dialog. The test succeed if no crash happens.
-IN_PROC_BROWSER_TEST_F(UnloadTest,
+IN_PROC_BROWSER_TEST_P(UnloadTest,
                        BrowserListCloseBeforeUnloadNullCallbackCancel) {
   NavigateToDataURL(BEFORE_UNLOAD_HTML, "beforeunload");
   PrepareForDialog(browser());
@@ -516,7 +529,7 @@ IN_PROC_BROWSER_TEST_F(UnloadTest,
 // Tests terminating the browser with a beforeunload handler.
 // Currently only ChromeOS shuts down gracefully.
 #if defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserTerminateBeforeUnload) {
+IN_PROC_BROWSER_TEST_P(UnloadTest, BrowserTerminateBeforeUnload) {
   NavigateToDataURL(BEFORE_UNLOAD_HTML, "beforeunload");
   EXPECT_EQ(kill(base::GetCurrentProcessHandle(), SIGTERM), 0);
 }
@@ -525,7 +538,7 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserTerminateBeforeUnload) {
 // Tests closing the browser and clicking OK in the beforeunload confirm dialog
 // if an inner frame has the focus.
 // If this flakes, use http://crbug.com/32615 and http://crbug.com/45675
-IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseWithInnerFocusedFrame) {
+IN_PROC_BROWSER_TEST_P(UnloadTest, BrowserCloseWithInnerFocusedFrame) {
   NavigateToDataURL(INNER_FRAME_WITH_FOCUS_HTML, "innerframewithfocus");
   PrepareForDialog(browser());
 
@@ -539,14 +552,14 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseWithInnerFocusedFrame) {
 
 // Tests closing the browser with a beforeunload handler that takes forever
 // by running an infinite loop.
-IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseInfiniteBeforeUnload) {
+IN_PROC_BROWSER_TEST_P(UnloadTest, BrowserCloseInfiniteBeforeUnload) {
   LoadUrlAndQuitBrowser(INFINITE_BEFORE_UNLOAD_HTML,
                         "infinitebeforeunload");
 }
 
 // Tests closing the browser on a page with an unload listener registered where
 // the unload handler has an infinite loop.
-IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseInfiniteUnload) {
+IN_PROC_BROWSER_TEST_P(UnloadTest, BrowserCloseInfiniteUnload) {
   // Tests makes no sense in single-process mode since the renderer is hung.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSingleProcess))
@@ -557,7 +570,7 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseInfiniteUnload) {
 
 // Tests closing the browser with a beforeunload handler that hangs.
 // If this flakes, use http://crbug.com/78803 and http://crbug.com/86469
-IN_PROC_BROWSER_TEST_F(UnloadTest, DISABLED_BrowserCloseInfiniteBeforeUnload) {
+IN_PROC_BROWSER_TEST_P(UnloadTest, DISABLED_BrowserCloseInfiniteBeforeUnload) {
   // Tests makes no sense in single-process mode since the renderer is hung.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSingleProcess))
@@ -569,7 +582,7 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, DISABLED_BrowserCloseInfiniteBeforeUnload) {
 // Tests closing the browser on a page with an unload listener registered where
 // the unload handler has an infinite loop followed by an alert.
 // If this flakes, use http://crbug.com/86469
-IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseInfiniteUnloadAlert) {
+IN_PROC_BROWSER_TEST_P(UnloadTest, BrowserCloseInfiniteUnloadAlert) {
   // Tests makes no sense in single-process mode since the renderer is hung.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSingleProcess))
@@ -581,7 +594,7 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseInfiniteUnloadAlert) {
 // Tests closing the browser with a beforeunload handler that hangs then
 // pops up an alert.
 // If this flakes, use http://crbug.com/78803 and http://crbug.com/86469.
-IN_PROC_BROWSER_TEST_F(UnloadTest,
+IN_PROC_BROWSER_TEST_P(UnloadTest,
                        DISABLED_BrowserCloseInfiniteBeforeUnloadAlert) {
   // Tests makes no sense in single-process mode since the renderer is hung.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -594,13 +607,13 @@ IN_PROC_BROWSER_TEST_F(UnloadTest,
 
 // Tests closing the browser on a page with an unload listener registered where
 // the unload handler has an 2 second long loop followed by an alert.
-IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseTwoSecondUnloadAlert) {
+IN_PROC_BROWSER_TEST_P(UnloadTest, BrowserCloseTwoSecondUnloadAlert) {
   LoadUrlAndQuitBrowser(TWO_SECOND_UNLOAD_ALERT_HTML, "twosecondunloadalert");
 }
 
 // Tests closing the browser with a beforeunload handler that takes
 // two seconds to run then pops up an alert.
-IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseTwoSecondBeforeUnloadAlert) {
+IN_PROC_BROWSER_TEST_P(UnloadTest, BrowserCloseTwoSecondBeforeUnloadAlert) {
   LoadUrlAndQuitBrowser(TWO_SECOND_BEFORE_UNLOAD_ALERT_HTML,
                         "twosecondbeforeunloadalert");
 }
@@ -610,7 +623,7 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseTwoSecondBeforeUnloadAlert) {
 // handler can be closed.
 // If this flakes, see http://crbug.com/45162, http://crbug.com/45281 and
 // http://crbug.com/86769.
-IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseTabWhenOtherTabHasListener) {
+IN_PROC_BROWSER_TEST_P(UnloadTest, BrowserCloseTabWhenOtherTabHasListener) {
   NavigateToDataURL(CLOSE_TAB_WHEN_OTHER_TAB_HAS_LISTENER, "only_one_unload");
 
   // Simulate a click to force user_gesture to true; if we don't, the resulting
@@ -637,7 +650,7 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseTabWhenOtherTabHasListener) {
   CheckTitle("only_one_unload");
 }
 
-IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserListForceCloseNoUnloadListeners) {
+IN_PROC_BROWSER_TEST_P(UnloadTest, BrowserListForceCloseNoUnloadListeners) {
   NavigateToDataURL(NOLISTENERS_HTML, "nolisteners");
 
   content::WindowedNotificationObserver window_observer(
@@ -654,7 +667,7 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserListForceCloseNoUnloadListeners) {
   EXPECT_EQ(0, unload_results.get_aborts());
 }
 
-IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserListForceCloseWithBeforeUnload) {
+IN_PROC_BROWSER_TEST_P(UnloadTest, BrowserListForceCloseWithBeforeUnload) {
   NavigateToDataURL(BEFORE_UNLOAD_HTML, "beforeunload");
 
   content::WindowedNotificationObserver window_observer(
@@ -671,7 +684,7 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserListForceCloseWithBeforeUnload) {
   EXPECT_EQ(0, unload_results.get_aborts());
 }
 
-IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserListForceCloseAfterNormalClose) {
+IN_PROC_BROWSER_TEST_P(UnloadTest, BrowserListForceCloseAfterNormalClose) {
   NavigateToDataURL(BEFORE_UNLOAD_HTML, "beforeunload");
 
   content::WindowedNotificationObserver window_observer(
@@ -693,10 +706,10 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserListForceCloseAfterNormalClose) {
   EXPECT_EQ(0, unload_results.get_aborts());
 }
 
-class FastUnloadTest : public UnloadTest {
+class FastUnloadTest : public UnloadTestBase {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    UnloadTest::SetUpCommandLine(command_line);
+    UnloadTestBase::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnableFastUnload);
   }
 
