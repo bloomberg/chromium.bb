@@ -70,6 +70,7 @@ if(NOT BUILD_SHARED_LIBS)
 endif()
 
 set(AOM_UNIT_TEST_DECODER_SOURCES "${AOM_ROOT}/test/decode_api_test.cc"
+    "${AOM_ROOT}/test/invalid_file_test.cc"
     "${AOM_ROOT}/test/ivf_video_source.h")
 
 set(AOM_UNIT_TEST_ENCODER_SOURCES
