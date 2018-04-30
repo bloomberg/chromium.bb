@@ -13,6 +13,7 @@
 #include "ui/app_list/answer_card_contents_registry.h"
 #include "ui/app_list/views/suggestion_chip_view.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/render_text.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
@@ -32,6 +33,7 @@ constexpr int kTextPaddingHorizontalDip = 12;
 constexpr int kTextPaddingVerticalDip = 4;
 
 // Typography.
+constexpr SkColor kTextColorHint = SkColorSetA(SK_ColorBLACK, 0x42);
 constexpr SkColor kTextColorPrimary = SkColorSetA(SK_ColorBLACK, 0xDE);
 
 // TODO(dmblack): Remove after removing placeholders.
@@ -67,30 +69,101 @@ class RoundRectBackground : public views::Background {
   DISALLOW_COPY_AND_ASSIGN(RoundRectBackground);
 };
 
+// TODO(dmblack): Try to use existing StyledLabel class.
+// InteractionLabel ------------------------------------------------------------
+
+class InteractionLabel : public views::View {
+ public:
+  InteractionLabel() : render_text_(gfx::RenderText::CreateHarfBuzzInstance()) {
+    render_text_->SetFontList(render_text_->font_list().DeriveWithSizeDelta(4));
+    render_text_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
+    render_text_->SetMultiline(true);
+    ClearQuery();
+  }
+
+  ~InteractionLabel() override = default;
+
+  // views::View:
+  int GetHeightForWidth(int width) const override {
+    if (width == 0)
+      return 0;
+
+    // Cache original |display_rect|.
+    const gfx::Rect display_rect = render_text_->display_rect();
+
+    // Measure |height| for |width|.
+    render_text_->SetDisplayRect(gfx::Rect(width, 0));
+    int height = render_text_->GetStringSize().height();
+
+    // Restore original |display_rect|.
+    render_text_->SetDisplayRect(display_rect);
+
+    return height;
+  }
+
+  void OnPaint(gfx::Canvas* canvas) override {
+    views::View::OnPaint(canvas);
+    render_text_->Draw(canvas);
+  }
+
+  void SetQuery(const Query& query) {
+    render_text_->SetColor(kTextColorPrimary);
+
+    // Empty query.
+    if (query.high_confidence_text.empty() &&
+        query.low_confidence_text.empty()) {
+      render_text_->SetText(base::UTF8ToUTF16(kPlaceholderPrompt));
+    } else {
+      // Populated query.
+      render_text_->SetText(base::UTF8ToUTF16(query.high_confidence_text));
+      if (!query.low_confidence_text.empty()) {
+        render_text_->AppendText(base::UTF8ToUTF16(query.low_confidence_text));
+        render_text_->ApplyColor(
+            kTextColorHint, gfx::Range(query.high_confidence_text.length(),
+                                       query.high_confidence_text.length() +
+                                           query.low_confidence_text.length()));
+      }
+    }
+    PreferredSizeChanged();
+    SchedulePaint();
+  }
+
+  void ClearQuery() { SetQuery({}); }
+
+ protected:
+  // views::View:
+  gfx::Size CalculatePreferredSize() const override {
+    return render_text_->GetStringSize();
+  }
+
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override {
+    render_text_->SetDisplayRect(GetContentsBounds());
+  }
+
+ private:
+  std::unique_ptr<gfx::RenderText> render_text_;
+
+  DISALLOW_COPY_AND_ASSIGN(InteractionLabel);
+};
+
 // InteractionContainer --------------------------------------------------------
 
 class InteractionContainer : public views::View {
  public:
-  InteractionContainer() : interaction_label_(new views::Label()) {
+  InteractionContainer() : interaction_label_(new InteractionLabel()) {
     InitLayout();
   }
 
   ~InteractionContainer() override = default;
 
-  void SetQuery(const Query& query) {
-    // TODO(dmblack): Represent high confidence and low confidence portions of
-    // the query with different colors.
-    interaction_label_->SetText(base::UTF8ToUTF16(query.high_confidence_text) +
-                                base::UTF8ToUTF16(query.low_confidence_text));
-
+  // views::View:
+  void ChildPreferredSizeChanged(views::View* child) override {
     PreferredSizeChanged();
   }
 
-  void ClearQuery() {
-    interaction_label_->SetText(base::ASCIIToUTF16(kPlaceholderPrompt));
+  void SetQuery(const Query& query) { interaction_label_->SetQuery(query); }
 
-    PreferredSizeChanged();
-  }
+  void ClearQuery() { interaction_label_->ClearQuery(); }
 
  private:
   void InitLayout() {
@@ -113,20 +186,12 @@ class InteractionContainer : public views::View {
     AddChildView(icon_placeholder);
 
     // Interaction label.
-    interaction_label_->SetAutoColorReadabilityEnabled(false);
-    interaction_label_->SetEnabledColor(kTextColorPrimary);
-    interaction_label_->SetFontList(
-        interaction_label_->font_list().DeriveWithSizeDelta(4));
-    interaction_label_->SetHorizontalAlignment(
-        gfx::HorizontalAlignment::ALIGN_LEFT);
-    interaction_label_->SetMultiLine(true);
-    interaction_label_->SetText(base::ASCIIToUTF16(kPlaceholderPrompt));
     AddChildView(interaction_label_);
 
     layout->SetFlexForView(interaction_label_, 1);
   }
 
-  views::Label* interaction_label_;  // Owned by view hierarchy.
+  InteractionLabel* interaction_label_;  // Owned by view hierarchy.
 
   DISALLOW_COPY_AND_ASSIGN(InteractionContainer);
 };
