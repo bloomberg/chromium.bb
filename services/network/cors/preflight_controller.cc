@@ -150,34 +150,19 @@ std::unique_ptr<PreflightResult> CreatePreflightResult(
       detected_error);
 }
 
-base::Optional<mojom::CORSError> CheckPreflightResult(
+base::Optional<CORSErrorStatus> CheckPreflightResult(
     PreflightResult* result,
-    const ResourceRequest& original_request,
-    scoped_refptr<net::HttpResponseHeaders>* error_header) {
-  DCHECK(error_header);
-
+    const ResourceRequest& original_request) {
   base::Optional<mojom::CORSError> error =
       result->EnsureAllowedCrossOriginMethod(original_request.method);
   if (error)
-    return error;
+    return CORSErrorStatus(*error, original_request.method);
 
   std::string detected_error_header;
   error = result->EnsureAllowedCrossOriginHeaders(original_request.headers,
                                                   &detected_error_header);
-  if (error) {
-    // Gather information to report the error's details.
-    DCHECK(!detected_error_header.empty());
-    std::string header_value;
-    bool found = original_request.headers.GetHeader(detected_error_header,
-                                                    &header_value);
-    DCHECK(found);
-    // Status line below is dummy to construct a response header instance.
-    *error_header =
-        base::MakeRefCounted<net::HttpResponseHeaders>(base::StringPrintf(
-            "HTTP/1.0 200 OK\n%s: %s", detected_error_header.c_str(),
-            header_value.c_str()));
-    return error;
-  }
+  if (error)
+    return CORSErrorStatus(*error, detected_error_header);
 
   return base::nullopt;
 }
@@ -291,27 +276,25 @@ class PreflightController::PreflightLoader final {
     std::unique_ptr<PreflightResult> result = CreatePreflightResult(
         final_url, head, original_request_, &detected_error);
 
-    scoped_refptr<net::HttpResponseHeaders> error_header;
+    base::Optional<CORSErrorStatus> detected_error_status;
     if (result) {
       // Preflight succeeded. Check |original_request_| with |result|.
       DCHECK(!detected_error);
-      detected_error =
-          CheckPreflightResult(result.get(), original_request_, &error_header);
+      detected_error_status =
+          CheckPreflightResult(result.get(), original_request_);
+    } else {
+      DCHECK(detected_error);
+      detected_error_status = CORSErrorStatus(*detected_error);
     }
 
     // TODO(toyoshim): Check the spec if we cache |result| regardless of
     // following checks.
-    if (!detected_error) {
+    if (!detected_error_status) {
       controller_->AppendToCache(*original_request_.request_initiator,
                                  original_request_.url, std::move(result));
     }
 
-    if (detected_error) {
-      std::move(completion_callback_)
-          .Run(CORSErrorStatus(*detected_error, error_header));
-    } else {
-      std::move(completion_callback_).Run(base::nullopt);
-    }
+    std::move(completion_callback_).Run(detected_error_status);
 
     RemoveFromController();
     // |this| is deleted here.
