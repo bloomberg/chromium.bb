@@ -115,6 +115,8 @@ void DataReductionProxySettings::SetCallbackToRegisterSyntheticFieldTrial(
 }
 
 bool DataReductionProxySettings::IsDataReductionProxyEnabled() const {
+  if (spdy_proxy_auth_enabled_.GetPrefName().empty())
+    return false;
   return spdy_proxy_auth_enabled_.GetValue() ||
          params::ShouldForceEnableDataReductionProxy();
 }
