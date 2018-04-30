@@ -13,7 +13,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/frame_host/ancestor_throttle.h"
-#include "content/browser/frame_host/data_url_navigation_throttle.h"
+#include "content/browser/frame_host/blocked_scheme_navigation_throttle.h"
 #include "content/browser/frame_host/debug_urls.h"
 #include "content/browser/frame_host/form_submission_throttle.h"
 #include "content/browser/frame_host/frame_tree_node.h"
@@ -1281,9 +1281,11 @@ void NavigationHandleImpl::RegisterNavigationThrottles() {
   // Enforce rules for WebUI navigations.
   AddThrottle(WebUINavigationThrottle::CreateThrottleForNavigation(this));
 
-  // Check for renderer-inititated main frame navigations to data URLs. This is
-  // done first as it may block the main frame navigation altogether.
-  AddThrottle(DataUrlNavigationThrottle::CreateThrottleForNavigation(this));
+  // Check for renderer-inititated main frame navigations to blocked URL schemes
+  // (data, filesystem). This is done early as it may block the main frame
+  // navigation altogether.
+  AddThrottle(
+      BlockedSchemeNavigationThrottle::CreateThrottleForNavigation(this));
 
   AddThrottle(AncestorThrottle::MaybeCreateThrottleFor(this));
   AddThrottle(FormSubmissionThrottle::MaybeCreateThrottleFor(this));

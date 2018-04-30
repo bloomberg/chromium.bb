@@ -25,6 +25,10 @@ class FileSystemProtocolHandler
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override;
 
+  bool IsSafeRedirectTarget(const GURL& location) const override {
+    return false;
+  }
+
  private:
   const std::string storage_domain_;
 

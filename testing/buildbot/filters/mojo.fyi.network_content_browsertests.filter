@@ -74,6 +74,20 @@
 # https://crbug.com/819663.
 -WebContentsImplBrowserTest.UpdateLoadState
 
+# Fails because of missing support to navigate to filesystem: URLs.
+# https://crbug.com/797292
+-BlockedSchemeNavigationBrowserTest.BrowserInitiated_Allow/1
+-BlockedSchemeNavigationBrowserTest.HTML_FormPost_SameScheme_Block/1
+-BlockedSchemeNavigationBrowserTest.HTML_Navigation_SameScheme_Block/1
+-BlockedSchemeNavigationBrowserTest.HTML_NavigationFromFrame_TopFrameHasBlockedScheme_Block/1
+-BlockedSchemeNavigationBrowserTest.HTML_WindowOpenFromFrame_TopFrameHasBlockedScheme_Block/1
+-BlockedSchemeNavigationBrowserTest.OctetStream_BrowserInitiated/1
+-BlockedSchemeNavigationBrowserTest.PDF_BrowserInitiatedNavigation_Allow/1
+-BlockedSchemeNavigationBrowserTest.PDF_NavigationFromFrame_TopFrameHasBlockedScheme_Block/1
+-BlockedSchemeNavigationBrowserTest.PDF_WindowOpenFromFrame_TopFrameHasBlockedScheme_Block/1
+-BlockedSchemeNavigationBrowserTest.UnknownMimeType_BrowserInitiated_Download/1
+-BlockedSchemeNavigationBrowserTest.WindowOpenRedirectAndBack/1
+
 # NOTE: if adding an exclusion for an existing failure (e.g. additional test for
 # feature X that is already not working), please add it beside the existing
 # failures. Otherwise please reach out to network-service-dev@.

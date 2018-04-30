@@ -1031,27 +1031,53 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
     EXPECT_EQ(2u, pm->GetAllFrames().size());
   }
 
-  // From the main frame, create a blank popup and navigate it to each nested
-  // URL. This should also be allowed, since the navigation originated from an
-  // extension process.
-  for (size_t i = 0; i < arraysize(nested_urls); i++) {
+  // From the main frame, create a blank popup and navigate it to the nested
+  // blob URL. This should also be allowed, since the navigation originated from
+  // an extension process.
+  {
     content::WebContents* popup =
         OpenPopup(main_frame, GURL(url::kAboutBlankURL));
     EXPECT_NE(popup, tab);
 
     content::TestNavigationObserver observer(popup);
     EXPECT_TRUE(ExecuteScript(
-        popup, "location.href = '" + nested_urls[i].spec() + "';"));
+        popup, "location.href = '" + nested_urls[0].spec() + "';"));
     observer.Wait();
 
-    EXPECT_EQ(nested_urls[i], popup->GetLastCommittedURL());
+    EXPECT_EQ(nested_urls[0], popup->GetLastCommittedURL());
     EXPECT_EQ(extension_origin,
               popup->GetMainFrame()->GetLastCommittedOrigin());
     EXPECT_EQ("foo", GetTextContent(popup->GetMainFrame()));
 
-    EXPECT_EQ(3 + i,
-              pm->GetRenderFrameHostsForExtension(extension->id()).size());
-    EXPECT_EQ(3 + i, pm->GetAllFrames().size());
+    EXPECT_EQ(3u, pm->GetRenderFrameHostsForExtension(extension->id()).size());
+    EXPECT_EQ(3u, pm->GetAllFrames().size());
+  }
+
+  // Same as above, but renderers cannot navigate top frame to filesystem URLs.
+  // So this will result in a console message.
+  {
+    content::WebContents* popup =
+        OpenPopup(main_frame, GURL(url::kAboutBlankURL));
+    EXPECT_NE(popup, tab);
+
+    content::ConsoleObserverDelegate console_observer(
+        popup, "Not allowed to navigate top frame to*");
+    popup->SetDelegate(&console_observer);
+    EXPECT_TRUE(ExecuteScript(
+        popup, "location.href = '" + nested_urls[1].spec() + "';"));
+    console_observer.Wait();
+
+    // about:blank URLs can be modified by their opener. In that case their
+    // effective origin changes to that of the opener, but the page URL remains
+    // about:blank. Here the popup is being modified by the extension page,
+    // so it's origin will change to the extension URL.
+    EXPECT_EQ(GURL(url::kAboutBlankURL), popup->GetLastCommittedURL());
+    EXPECT_EQ(extension_origin,
+              popup->GetMainFrame()->GetLastCommittedOrigin());
+    EXPECT_EQ(std::string(), GetTextContent(popup->GetMainFrame()));
+
+    EXPECT_EQ(4u, pm->GetRenderFrameHostsForExtension(extension->id()).size());
+    EXPECT_EQ(4u, pm->GetAllFrames().size());
   }
 }
 

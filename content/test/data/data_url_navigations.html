@@ -2,6 +2,8 @@
 
 <h3>HTML mimetype</h3>
 
+<a download href="data:text/html,download" id="download-link">&lt;a download link&gt;</a>
+<br><br>
 <button id='navigate-top-frame-to-html'
     onclick='top.location.href=`data:text/html,
         <script>console.log(&quot;NAVIGATION_SUCCESSFUL&quot;)</script>`'>
@@ -101,5 +103,8 @@
   <input type=submit id='form-post-to-unknown-mimetype'
          value='Submit form to data URL unknown mimetype'>
 </form>
-
+<script>
+  if (window.domAutomationController)
+      window.domAutomationController.send("READY");
+</script>
 </html>
