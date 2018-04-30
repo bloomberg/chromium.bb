@@ -156,8 +156,6 @@
 
       'Android Builder (dbg) Goma Canary': 'android_debug_static_bot_vrdata',
 
-      'Android deterministic': 'android_without_codecs_release_bot_minimal_symbols',
-      'Android deterministic (dbg)': 'android_debug_bot',
       'Browser Side Navigation Linux': 'release_bot',
       'CFI Linux CF': 'cfi_full_cfi_icall_cfi_diag_recover_release_static',
       'CFI Linux ToT': 'clang_tot_cfi_full_cfi_icall_cfi_diag_thin_lto_release_static_dcheck_always_on',
@@ -226,8 +224,6 @@
       'Linux ARM64': 'release_bot_arm64',
       'Linux ARM64 (dbg)': 'debug_bot_arm64',
       'Linux Clang Analyzer': 'linux_chromium_analysis',
-      'Linux deterministic': 'release_bot',
-      'Linux deterministic (dbg)': 'debug_bot',
       'Linux remote_run Builder': 'release_bot',
       'Linux remote_run Tester': 'release_bot',
       'Linux Viz': 'release_trybot',
