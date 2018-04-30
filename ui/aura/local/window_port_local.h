@@ -58,12 +58,12 @@ class AURA_EXPORT WindowPortLocal : public WindowPort {
 
  private:
   void OnSurfaceChanged(const viz::SurfaceInfo& surface_info);
-  void SetLocalSurfaceId(const viz::LocalSurfaceId& local_surface_id);
+  void UpdateLocalSurfaceId();
+  const viz::LocalSurfaceId& GetCurrentLocalSurfaceId() const;
 
   Window* const window_;
   gfx::Size last_size_;
   float last_device_scale_factor_ = 1.0f;
-  viz::LocalSurfaceId local_surface_id_;
   viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
   base::WeakPtr<cc::LayerTreeFrameSink> frame_sink_;
 
