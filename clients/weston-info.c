@@ -118,6 +118,7 @@ struct seat_info {
 	struct wl_seat *seat;
 	struct weston_info *info;
 
+	struct wl_keyboard *keyboard;
 	uint32_t capabilities;
 	char *name;
 
@@ -498,10 +499,8 @@ seat_handle_capabilities(void *data, struct wl_seat *wl_seat,
 		return;
 
 	if (caps & WL_SEAT_CAPABILITY_KEYBOARD) {
-		struct wl_keyboard *keyboard;
-
-		keyboard = wl_seat_get_keyboard(seat->seat);
-		wl_keyboard_add_listener(keyboard, &keyboard_listener,
+		seat->keyboard = wl_seat_get_keyboard(seat->seat);
+		wl_keyboard_add_listener(seat->keyboard, &keyboard_listener,
 					 seat);
 
 		seat->info->roundtrip_needed = true;
@@ -530,6 +529,9 @@ destroy_seat_info(void *data)
 
 	if (seat->name != NULL)
 		free(seat->name);
+
+	if (seat->keyboard)
+		wl_keyboard_destroy(seat->keyboard);
 
 	wl_list_remove(&seat->global_link);
 }
