@@ -25,6 +25,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/scoped_native_library.h"
@@ -352,18 +353,73 @@ bool BadAMDVulkanDriverVersion(GPUInfo* gpu_info) {
 
   return false;
 }
-void GetGpuSupportedVulkanVersion(GPUInfo* gpu_info) {
-  TRACE_EVENT0("gpu", "GetGpuSupportedVulkanVersion");
 
-  gpu_info->supports_vulkan = false;
-  gpu_info->vulkan_version = 0;
-
-  base::NativeLibrary vulkan_library =
+bool InitVulkan(base::NativeLibrary* vulkan_library,
+                PFN_vkGetInstanceProcAddr* vkGetInstanceProcAddr,
+                PFN_vkCreateInstance* vkCreateInstance) {
+  *vulkan_library =
       base::LoadNativeLibrary(base::FilePath(L"vulkan-1.dll"), nullptr);
 
-  if (!vulkan_library) {
-    return;
+  if (!(*vulkan_library)) {
+    return false;
   }
+
+  *vkGetInstanceProcAddr = reinterpret_cast<PFN_vkGetInstanceProcAddr>(
+      GetProcAddress(*vulkan_library, "vkGetInstanceProcAddr"));
+
+  if (*vkGetInstanceProcAddr) {
+    *vkCreateInstance = reinterpret_cast<PFN_vkCreateInstance>(
+        (*vkGetInstanceProcAddr)(nullptr, "vkCreateInstance"));
+    if (*vkCreateInstance) {
+      return true;
+    }
+  }
+  base::UnloadNativeLibrary(*vulkan_library);
+  return false;
+}
+
+bool InitVulkanInstanceProc(
+    const VkInstance& vk_instance,
+    PFN_vkGetInstanceProcAddr& vkGetInstanceProcAddr,
+    PFN_vkDestroyInstance* vkDestroyInstance,
+    PFN_vkEnumeratePhysicalDevices* vkEnumeratePhysicalDevices,
+    PFN_vkEnumerateDeviceExtensionProperties*
+        vkEnumerateDeviceExtensionProperties) {
+  *vkDestroyInstance = reinterpret_cast<PFN_vkDestroyInstance>(
+      vkGetInstanceProcAddr(vk_instance, "vkDestroyInstance"));
+
+  *vkEnumeratePhysicalDevices =
+      reinterpret_cast<PFN_vkEnumeratePhysicalDevices>(
+          vkGetInstanceProcAddr(vk_instance, "vkEnumeratePhysicalDevices"));
+
+  *vkEnumerateDeviceExtensionProperties =
+      reinterpret_cast<PFN_vkEnumerateDeviceExtensionProperties>(
+          vkGetInstanceProcAddr(vk_instance,
+                                "vkEnumerateDeviceExtensionProperties"));
+
+  if ((*vkDestroyInstance) && (*vkEnumeratePhysicalDevices) &&
+      (*vkEnumerateDeviceExtensionProperties)) {
+    return true;
+  }
+  return false;
+}
+
+void GetGpuSupportedVulkanVersionAndExtensions(
+    GPUInfo* gpu_info,
+    const std::vector<const char*>& requested_vulkan_extensions,
+    std::vector<bool>* extension_support) {
+  TRACE_EVENT0("gpu", "GetGpuSupportedVulkanVersionAndExtensions");
+
+  base::NativeLibrary vulkan_library;
+  PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr;
+  PFN_vkCreateInstance vkCreateInstance;
+  PFN_vkEnumeratePhysicalDevices vkEnumeratePhysicalDevices;
+  PFN_vkEnumerateDeviceExtensionProperties vkEnumerateDeviceExtensionProperties;
+  PFN_vkDestroyInstance vkDestroyInstance;
+  VkInstance vk_instance = VK_NULL_HANDLE;
+  uint32_t physical_device_count = 0;
+  gpu_info->supports_vulkan = false;
+  gpu_info->vulkan_version = 0;
 
   // Skip if the system has an older AMD Vulkan driver amdvlk64.dll which
   // crashes when vkCreateInstance() gets called. This bug is fixed in the
@@ -372,63 +428,100 @@ void GetGpuSupportedVulkanVersion(GPUInfo* gpu_info) {
     return;
   }
 
-  PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr =
-      reinterpret_cast<PFN_vkGetInstanceProcAddr>(
-          GetProcAddress(vulkan_library, "vkGetInstanceProcAddr"));
+  if (!InitVulkan(&vulkan_library, &vkGetInstanceProcAddr, &vkCreateInstance)) {
+    return;
+  }
 
-  if (vkGetInstanceProcAddr) {
-    PFN_vkCreateInstance vkCreateInstance =
-        reinterpret_cast<PFN_vkCreateInstance>(
-            vkGetInstanceProcAddr(nullptr, "vkCreateInstance"));
+  VkApplicationInfo app_info = {};
+  app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 
-    if (vkCreateInstance) {
-      VkApplicationInfo app_info = {};
-      app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+  VkInstanceCreateInfo create_info = {};
+  create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+  create_info.pApplicationInfo = &app_info;
 
-      VkInstanceCreateInfo create_info = {};
-      create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-      create_info.pApplicationInfo = &app_info;
+  // Get the Vulkan API version supported in the GPU driver
+  for (int minor_version = 1; minor_version >= 0; --minor_version) {
+    app_info.apiVersion = VK_MAKE_VERSION(1, minor_version, 0);
+    VkResult result = vkCreateInstance(&create_info, nullptr, &vk_instance);
+    if (result == VK_SUCCESS && vk_instance &&
+        InitVulkanInstanceProc(vk_instance, vkGetInstanceProcAddr,
+                               &vkDestroyInstance, &vkEnumeratePhysicalDevices,
+                               &vkEnumerateDeviceExtensionProperties)) {
+      result = vkEnumeratePhysicalDevices(vk_instance, &physical_device_count,
+                                          nullptr);
+      if (result == VK_SUCCESS && physical_device_count > 0) {
+        gpu_info->supports_vulkan = true;
+        gpu_info->vulkan_version = app_info.apiVersion;
+        break;
+      } else {
+        vkDestroyInstance(vk_instance, nullptr);
+        vk_instance = VK_NULL_HANDLE;
+      }
+    }
+  }
 
-      for (int minor_version = 1; minor_version >= 0; --minor_version) {
-        app_info.apiVersion = VK_MAKE_VERSION(1, minor_version, 0);
+  // Check whether the requested_vulkan_extensions are supported
+  if (gpu_info->supports_vulkan) {
+    std::vector<VkPhysicalDevice> physical_devices(physical_device_count);
+    vkEnumeratePhysicalDevices(vk_instance, &physical_device_count,
+                               physical_devices.data());
 
-        VkInstance vk_instance;
-        VkResult result = vkCreateInstance(&create_info, nullptr, &vk_instance);
-        if (result == VK_SUCCESS) {
-          PFN_vkEnumeratePhysicalDevices vkEnumeratePhysicalDevices =
-              reinterpret_cast<PFN_vkEnumeratePhysicalDevices>(
-                  vkGetInstanceProcAddr(vk_instance,
-                                        "vkEnumeratePhysicalDevices"));
+    // physical_devices[0]: Only query the default device for now
+    uint32_t property_count;
+    vkEnumerateDeviceExtensionProperties(physical_devices[0], nullptr,
+                                         &property_count, nullptr);
 
-          if (vkEnumeratePhysicalDevices) {
-            uint32_t physical_device_count = 0;
-            result = vkEnumeratePhysicalDevices(
-                vk_instance, &physical_device_count, nullptr);
-            if (result == VK_SUCCESS && physical_device_count > 0) {
-              gpu_info->supports_vulkan = true;
-              gpu_info->vulkan_version = app_info.apiVersion;
-              break;
-            }
-          }
+    std::vector<VkExtensionProperties> extension_properties(property_count);
+    if (property_count > 0) {
+      vkEnumerateDeviceExtensionProperties(physical_devices[0], nullptr,
+                                           &property_count,
+                                           extension_properties.data());
+    }
+
+    for (size_t i = 0; i < requested_vulkan_extensions.size(); ++i) {
+      for (size_t p = 0; p < property_count; ++p) {
+        if (strcmp(requested_vulkan_extensions[i],
+                   extension_properties[p].extensionName) == 0) {
+          (*extension_support)[i] = true;
+          break;
         }
       }
     }
   }
+
+  if (vk_instance) {
+    vkDestroyInstance(vk_instance, nullptr);
+  }
+
   base::UnloadNativeLibrary(vulkan_library);
 }
 
 void RecordGpuSupportedRuntimeVersionHistograms(GPUInfo* gpu_info) {
+  // D3D
   GetGpuSupportedD3D12Version(gpu_info);
-  GetGpuSupportedVulkanVersion(gpu_info);
-
   UMA_HISTOGRAM_BOOLEAN("GPU.SupportsDX12", gpu_info->supports_dx12);
-  UMA_HISTOGRAM_BOOLEAN("GPU.SupportsVulkan", gpu_info->supports_vulkan);
   UMA_HISTOGRAM_ENUMERATION(
       "GPU.D3D12FeatureLevel",
       ConvertToHistogramFeatureLevel(gpu_info->d3d12_feature_level));
+
+  // Vulkan
+  const std::vector<const char*> vulkan_extensions = {
+      "VK_KHR_external_memory_win32", "VK_KHR_external_semaphore_win32",
+      "VK_KHR_win32_keyed_mutex"};
+  std::vector<bool> extension_support(vulkan_extensions.size(), false);
+  GetGpuSupportedVulkanVersionAndExtensions(gpu_info, vulkan_extensions,
+                                            &extension_support);
+
+  UMA_HISTOGRAM_BOOLEAN("GPU.SupportsVulkan", gpu_info->supports_vulkan);
   UMA_HISTOGRAM_ENUMERATION(
       "GPU.VulkanVersion",
       ConvertToHistogramVulkanVersion(gpu_info->vulkan_version));
+
+  for (size_t i = 0; i < vulkan_extensions.size(); ++i) {
+    std::string name = "GPU.VulkanExtSupport.";
+    name.append(vulkan_extensions[i]);
+    base::UmaHistogramBoolean(name, extension_support[i]);
+  }
 }
 
 bool CollectContextGraphicsInfo(GPUInfo* gpu_info) {
