@@ -33,23 +33,25 @@
 static int obudec_read_leb128(FILE *f, uint8_t *value_buffer,
                               uint64_t *value_length, uint64_t *value) {
   if (!f || !value_buffer || !value_length || !value) return -1;
-  for (int len = 0; len < OBU_MAX_LENGTH_FIELD_SIZE; ++len) {
+  int len;
+  for (len = 0; len < OBU_MAX_LENGTH_FIELD_SIZE; ++len) {
     const size_t num_read = fread(&value_buffer[len], 1, 1, f);
-    if (num_read == 0 && feof(f)) {
-      *value_length = 0;
-      return 0;
-    }
-    if (num_read != 1) {
+    if (num_read == 0) {
+      if (len == 0 && feof(f)) {
+        *value_length = 0;
+        return 0;
+      }
       // Ran out of data before completing read of value.
       return -1;
     }
     if ((value_buffer[len] >> 7) == 0) {
-      *value_length = (size_t)(len + 1);
+      ++len;
+      *value_length = (size_t)len;
       break;
     }
   }
 
-  return aom_uleb_decode(value_buffer, OBU_MAX_LENGTH_FIELD_SIZE, value, NULL);
+  return aom_uleb_decode(value_buffer, len, value, NULL);
 }
 
 // Reads OBU header from 'f'. The 'buffer_capacity' passed in must be large
@@ -135,7 +137,7 @@ static int obudec_read_obu_header_and_size(FILE *f, size_t buffer_capacity,
     }
   }
 
-  if (obudec_read_obu_header(f, buffer_capacity, is_annexb,
+  if (obudec_read_obu_header(f, buffer_capacity - leb128_length, is_annexb,
                              buffer + leb128_length, obu_header,
                              &header_size) != 0) {
     return -1;
