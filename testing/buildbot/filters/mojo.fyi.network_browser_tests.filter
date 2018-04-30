@@ -1,3 +1,7 @@
+# NOTE: if adding an exclusion for an existing failure (e.g. additional test for
+# feature X that is already not working), please add it beside the existing
+# failures. Otherwise please reach out to network-service-dev@.
+
 # These tests currently fail when run with --enable-features=NetworkService
 # See https://crbug.com/769401
 
@@ -271,4 +275,6 @@
 -CertificateTransparencyBrowserTest.ProfileRequest
 -CertificateTransparencyBrowserTest.SystemRequest
 
-# NOTE: before adding new exclusions, please reach out to network-service-dev@.
+# NOTE: if adding an exclusion for an existing failure (e.g. additional test for
+# feature X that is already not working), please add it beside the existing
+# failures. Otherwise please reach out to network-service-dev@.
