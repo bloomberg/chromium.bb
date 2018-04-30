@@ -273,16 +273,24 @@ CreateOverlayCandidateValidator(
   std::unique_ptr<viz::CompositorOverlayCandidateValidator> validator;
 #if defined(USE_OZONE)
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableHardwareOverlays)) {
-    std::string enable_overlay_flag =
-        command_line->GetSwitchValueASCII(switches::kEnableHardwareOverlays);
-    std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates =
-        ui::OzonePlatform::GetInstance()
-            ->GetOverlayManager()
-            ->CreateOverlayCandidates(widget);
-    validator.reset(new viz::CompositorOverlayCandidateValidatorOzone(
-        std::move(overlay_candidates), enable_overlay_flag));
+
+  std::string enable_overlay_flag =
+      command_line->GetSwitchValueASCII(switches::kEnableHardwareOverlays);
+
+  ui::OzonePlatform* ozone_platform = ui::OzonePlatform::GetInstance();
+  DCHECK(ozone_platform);
+  ui::OverlayManagerOzone* overlay_manager =
+      ozone_platform->GetOverlayManager();
+  if (!command_line->HasSwitch(switches::kEnableHardwareOverlays) &&
+      overlay_manager->SupportsOverlays()) {
+    enable_overlay_flag = "single-fullscreen,single-on-top";
   }
+
+  std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates =
+      ozone_platform->GetOverlayManager()->CreateOverlayCandidates(widget);
+
+  validator.reset(new viz::CompositorOverlayCandidateValidatorOzone(
+      std::move(overlay_candidates), enable_overlay_flag));
 #elif defined(OS_MACOSX)
   // Overlays are only supported through the remote layer API.
   if (ui::RemoteLayerAPISupported()) {

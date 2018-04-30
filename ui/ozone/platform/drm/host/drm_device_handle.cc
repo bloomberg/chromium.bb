@@ -65,8 +65,12 @@ bool DrmDeviceHandle::Initialize(const base::FilePath& dev_path,
     sys_path_ = sys_path;
 
     num_auth_attempts++;
-    if (Authenticate(file_.get()))
+    if (Authenticate(file_.get())) {
+      struct drm_set_client_cap cap = {DRM_CLIENT_CAP_ATOMIC, 1};
+      has_atomic_capabilities_ =
+          !drmIoctl(file_.get(), DRM_IOCTL_SET_CLIENT_CAP, &cap);
       break;
+    }
 
     // To avoid spamming the logs, hold off before logging a warning (some
     // failures are expected at first) and only log a single message.
