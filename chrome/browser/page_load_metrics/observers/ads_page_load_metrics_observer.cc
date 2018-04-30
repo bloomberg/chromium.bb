@@ -32,6 +32,17 @@ namespace {
       break;                                                               \
   }
 
+// Finds the RenderFrameHost for the handle, possibly using the FrameTreeNode
+// ID directly if the the handle has not been committed.
+// NOTE: Unsafe with respect to security privileges.
+content::RenderFrameHost* FindFrameMaybeUnsafe(
+    content::NavigationHandle* handle) {
+  return handle->HasCommitted()
+             ? handle->GetRenderFrameHost()
+             : handle->GetWebContents()->UnsafeFindFrameByFrameTreeNodeId(
+                   handle->GetFrameTreeNodeId());
+}
+
 bool DetectGoogleAd(content::NavigationHandle* navigation_handle) {
   // Because sub-resource filtering isn't always enabled, and doesn't work
   // well in monitoring mode (no CSS enforcement), it's difficult to identify
@@ -44,12 +55,9 @@ bool DetectGoogleAd(content::NavigationHandle* navigation_handle) {
   // ID. It returns the committed frame host or the initial frame host for the
   // frame if no committed host exists. Using a previous host is fine because
   // once a frame has an ad we always consider it to have an ad.
-  // We use the unsafe method of FindFrameByFrameTreeNodeId because we're not
-  // concerned with which process the frame lives on (we're just measuring
-  // bytes and not granting security priveleges).
+  // NOTE: Just used for measuring bytes, does not grant security privileges.
   content::RenderFrameHost* current_frame_host =
-      navigation_handle->GetWebContents()->UnsafeFindFrameByFrameTreeNodeId(
-          navigation_handle->GetFrameTreeNodeId());
+      FindFrameMaybeUnsafe(navigation_handle);
   if (current_frame_host) {
     const std::string& frame_name = current_frame_host->GetFrameName();
     if (base::StartsWith(frame_name, "google_ads_iframe",
@@ -78,12 +86,12 @@ void RecordParentExistsForSubFrame(
 AdsPageLoadMetricsObserver::AdFrameData::AdFrameData(
     FrameTreeNodeId frame_tree_node_id,
     AdTypes ad_types,
-    bool cross_origin)
+    AdOriginStatus origin_status)
     : frame_bytes(0u),
       frame_bytes_uncached(0u),
       frame_tree_node_id(frame_tree_node_id),
       ad_types(ad_types),
-      cross_origin(cross_origin) {}
+      origin_status(origin_status) {}
 
 // static
 std::unique_ptr<AdsPageLoadMetricsObserver>
@@ -172,17 +180,22 @@ void AdsPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
 
   AdFrameData* ad_data = parent_id_and_data->second;
 
+  // This frame is not nested within an ad frame but is itself an ad.
   if (!ad_data && ad_types.any()) {
-    // This frame is not nested within an ad frame but is itself an ad.
-    // TODO(csharrison): Replace/remove url::Origin::Create, provide direct
-    //   access through the navigation_handle.
-    bool cross_origin = !navigation_handle->GetWebContents()
-                             ->GetMainFrame()
-                             ->GetLastCommittedOrigin()
-                             .IsSameOriginWith(url::Origin::Create(
-                                 navigation_handle->GetURL()));
+    AdOriginStatus origin_status = AdOriginStatus::kUnknown;
+    // NOTE: frame look-up only used for determining cross-origin status, not
+    // granting security permissions.
+    content::RenderFrameHost* ad_host = FindFrameMaybeUnsafe(navigation_handle);
+    if (ad_host) {
+      content::RenderFrameHost* main_host =
+          navigation_handle->GetWebContents()->GetMainFrame();
+      origin_status = main_host->GetLastCommittedOrigin().IsSameOriginWith(
+                          ad_host->GetLastCommittedOrigin())
+                          ? AdOriginStatus::kSame
+                          : AdOriginStatus::kCross;
+    }
     ad_frames_data_storage_.emplace_back(frame_tree_node_id, ad_types,
-                                         cross_origin);
+                                         origin_status);
     ad_data = &ad_frames_data_storage_.back();
   }
 
@@ -337,12 +350,13 @@ void AdsPageLoadMetricsObserver::RecordHistogramsForType(int ad_type) {
         "Bytes.AdFrames.PerFrame.PercentNetwork", UMA_HISTOGRAM_PERCENTAGE,
         ad_type,
         ad_frame_data.frame_bytes_uncached * 100 / ad_frame_data.frame_bytes);
-    ADS_HISTOGRAM("FrameCounts.AdFrames.PerFrame.CrossOrigin",
-                  UMA_HISTOGRAM_BOOLEAN, ad_type, ad_frame_data.cross_origin);
+    ADS_HISTOGRAM("FrameCounts.AdFrames.PerFrame.OriginStatus",
+                  UMA_HISTOGRAM_ENUMERATION, ad_type,
+                  ad_frame_data.origin_status);
   }
 
   // TODO(ericrobinson): Consider renaming this to match
-  //   'FrameCounts.AdFrames.PerFrame.CrossOrigin'.
+  //   'FrameCounts.AdFrames.PerFrame.OriginStatus'.
   ADS_HISTOGRAM("FrameCounts.AnyParentFrame.AdFrames",
                 UMA_HISTOGRAM_COUNTS_1000, ad_type, non_zero_ad_frames);
 

@@ -33,6 +33,16 @@ class AdsPageLoadMetricsObserver
     AD_TYPE_MAX = AD_TYPE_ALL
   };
 
+  // The origin of the ad relative to the main frame's origin.
+  // Note: Logged to UMA, keep in sync with CrossOriginAdStatus in enums.xml.
+  //   Add new entries to the end, and do not renumber.
+  enum class AdOriginStatus {
+    kUnknown = 0,
+    kSame = 1,
+    kCross = 2,
+    kMaxValue = kCross,
+  };
+
   using AdTypes = std::bitset<AD_TYPE_MAX>;
 
   // Returns a new AdsPageLoadMetricObserver. If the feature is disabled it
@@ -62,12 +72,12 @@ class AdsPageLoadMetricsObserver
   struct AdFrameData {
     AdFrameData(FrameTreeNodeId frame_tree_node_id,
                 AdTypes ad_types,
-                bool cross_origin);
+                AdOriginStatus origin_status);
     size_t frame_bytes;
     size_t frame_bytes_uncached;
     const FrameTreeNodeId frame_tree_node_id;
     AdTypes ad_types;
-    bool cross_origin;
+    AdOriginStatus origin_status;
   };
 
   // subresource_filter::SubresourceFilterObserver:

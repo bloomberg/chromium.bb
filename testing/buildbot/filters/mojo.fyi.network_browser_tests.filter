@@ -57,6 +57,10 @@
 -ContentSettingsTest.RedirectLoopCookies
 
 # http://crbug.com/816684 Track Page Load Metrics.
+-AdsPageLoadMetricsObserverBrowserTest.OriginStatusMetricEmbedded
+-AdsPageLoadMetricsObserverBrowserTest.OriginStatusMetricEmbeddedEmpty
+-AdsPageLoadMetricsObserverBrowserTest.OriginStatusMetricSame
+-AdsPageLoadMetricsObserverBrowserTest.OriginStatusMetricCross
 -AdsPageLoadMetricsObserverBrowserTest.DocOverwritesNavigation
 -AdsPageLoadMetricsObserverBrowserTest.SubresourceFilter
 -PageLoadMetricsBrowserTest.LoadingMetrics
