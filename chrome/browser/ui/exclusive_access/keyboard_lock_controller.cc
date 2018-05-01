@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_bubble_hide_callback.h"
@@ -19,6 +20,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 
 using base::TimeDelta;
+using base::TimeTicks;
 using content::WebContents;
 
 namespace {
@@ -26,8 +28,18 @@ namespace {
 const char kBubbleReshowsHistogramName[] =
     "ExclusiveAccess.BubbleReshowsPerSession.KeyboardLock";
 
+const char kForcedBubbleReshowsHistogramName[] =
+    "ExclusiveAccess.BubbleReshowsPerSession.KeyboardLockForced";
+
 // Amount of time the user must hold ESC to exit full screen.
 constexpr TimeDelta kHoldEscapeTime = TimeDelta::FromMilliseconds(1500);
+
+// Amount of time to look for ESC key presses to reshow the exit instructions.
+constexpr TimeDelta kDefaultEscRepeatWindow = TimeDelta::FromSeconds(1);
+
+// Number of times ESC must be pressed within |kDefaultEscRepeatWindow| to
+// trigger the exit instructions to be shown again.
+constexpr int kEscRepeatCountToTriggerUiReshow = 3;
 
 bool IsExperimentalKeyboardLockUIEnabled() {
   return base::FeatureList::IsEnabled(features::kExperimentalKeyboardLockUI);
@@ -40,16 +52,15 @@ bool IsExperimentalKeyboardLockApiEnabled() {
 }  // namespace
 
 KeyboardLockController::KeyboardLockController(ExclusiveAccessManager* manager)
-    : ExclusiveAccessControllerBase(manager) {}
+    : ExclusiveAccessControllerBase(manager),
+      esc_repeat_window_(kDefaultEscRepeatWindow),
+      esc_repeat_tick_clock_(base::DefaultTickClock::GetInstance()) {}
 
 KeyboardLockController::~KeyboardLockController() = default;
 
 bool KeyboardLockController::HandleUserPressedEscape() {
   if (!IsKeyboardLockActive())
     return false;
-
-  // TODO(joedow): Add a timer and counter to re-display the exit instructions
-  // if the user rapidly presses the ESC key.
 
   UnlockKeyboard();
   return true;
@@ -69,6 +80,12 @@ void KeyboardLockController::NotifyTabExclusiveAccessLost() {
 
 void KeyboardLockController::RecordBubbleReshowsHistogram(int reshow_count) {
   UMA_HISTOGRAM_COUNTS_100(kBubbleReshowsHistogramName, reshow_count);
+}
+
+void KeyboardLockController::RecordForcedBubbleReshowsHistogram() {
+  UMA_HISTOGRAM_COUNTS_100(kForcedBubbleReshowsHistogramName,
+                           forced_reshow_count_);
+  forced_reshow_count_ = 0;
 }
 
 bool KeyboardLockController::IsKeyboardLockActive() const {
@@ -117,6 +134,7 @@ bool KeyboardLockController::HandleKeyEvent(
     // timer and doesn't exit. This means the user pressed Esc, but not long
     // enough to trigger an exit
     hold_timer_.Stop();
+    ReShowExitBubbleIfNeeded();
   } else if (event.GetType() == content::NativeWebKeyboardEvent::kRawKeyDown &&
              !hold_timer_.IsRunning()) {
     // Seeing a key down event on Esc when the hold timer is stopped starts
@@ -169,6 +187,7 @@ void KeyboardLockController::UnlockKeyboard() {
     return;
 
   RecordExitingUMA();
+  RecordForcedBubbleReshowsHistogram();
   keyboard_lock_state_ = KeyboardLockState::kUnlocked;
 
   if (!fake_keyboard_lock_for_test_) {
@@ -185,4 +204,25 @@ void KeyboardLockController::HandleUserHeldEscape() {
   manager->fullscreen_controller()->HandleUserPressedEscape();
   manager->mouse_lock_controller()->HandleUserPressedEscape();
   HandleUserPressedEscape();
+}
+
+void KeyboardLockController::ReShowExitBubbleIfNeeded() {
+  TimeTicks now = esc_repeat_tick_clock_->NowTicks();
+  TimeTicks esc_repeat_window = now - esc_repeat_window_;
+  // Remove any events which are outside of the window.
+  while (!esc_keypress_tracker_.empty() &&
+         esc_keypress_tracker_.front() < esc_repeat_window) {
+    esc_keypress_tracker_.pop_front();
+  }
+
+  esc_keypress_tracker_.push_back(now);
+  if (esc_keypress_tracker_.size() >= kEscRepeatCountToTriggerUiReshow) {
+    exclusive_access_manager()->UpdateExclusiveAccessExitBubbleContent(
+        ExclusiveAccessBubbleHideCallback(), /*force_update=*/true);
+    forced_reshow_count_++;
+    esc_keypress_tracker_.clear();
+
+    if (esc_repeat_triggered_for_test_)
+      std::move(esc_repeat_triggered_for_test_).Run();
+  }
 }

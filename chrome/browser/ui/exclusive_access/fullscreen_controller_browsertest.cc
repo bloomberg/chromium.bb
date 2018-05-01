@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_mock_time_task_runner.h"
+#include "base/time/time.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -13,9 +15,13 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "ui/events/event.h"
+#include "ui/events/event_constants.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 
 using content::WebContents;
 using ui::PAGE_TRANSITION_TYPED;
@@ -202,6 +208,102 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest, SlowKeyboardLockUnlockRelock) {
                   ->IsKeyboardLockActive());
   ASSERT_EQ(EXCLUSIVE_ACCESS_BUBBLE_TYPE_KEYBOARD_LOCK_EXIT_INSTRUCTION,
             GetExclusiveAccessBubbleType());
+}
+
+IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
+                       RepeatedEscEventsWithinWindowReshowsExitBubble) {
+  EnterActiveTabFullscreen();
+
+  base::SimpleTestTickClock clock;
+  SetEscRepeatTestTickClock(&clock);
+
+  bool esc_threshold_reached = false;
+  SetEscRepeatThresholdReachedCallback(base::BindOnce(
+      [](bool* triggered) { *triggered = true; }, &esc_threshold_reached));
+
+  // Set the window to a known value for testing.
+  SetEscRepeatWindowLength(base::TimeDelta::FromSeconds(1));
+
+  RequestKeyboardLock(/*esc_key_locked=*/true);
+  ASSERT_TRUE(GetExclusiveAccessManager()
+                  ->keyboard_lock_controller()
+                  ->IsKeyboardLockActive());
+
+  content::NativeWebKeyboardEvent key_down_event(
+      blink::WebKeyboardEvent::kRawKeyDown, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  key_down_event.windows_key_code = ui::VKEY_ESCAPE;
+
+  content::NativeWebKeyboardEvent key_up_event(
+      blink::WebKeyboardEvent::kKeyUp, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  key_up_event.windows_key_code = ui::VKEY_ESCAPE;
+
+  // Total time for keypress events is 400ms which is inside the window.
+  GetExclusiveAccessManager()->HandleUserKeyEvent(key_down_event);
+  // Keypresses are counted on the keyup event.
+  GetExclusiveAccessManager()->HandleUserKeyEvent(key_up_event);
+  ASSERT_FALSE(esc_threshold_reached);
+
+  clock.Advance(base::TimeDelta::FromMilliseconds(100));
+  GetExclusiveAccessManager()->HandleUserKeyEvent(key_down_event);
+  clock.Advance(base::TimeDelta::FromMilliseconds(100));
+  GetExclusiveAccessManager()->HandleUserKeyEvent(key_up_event);
+  ASSERT_FALSE(esc_threshold_reached);
+
+  clock.Advance(base::TimeDelta::FromMilliseconds(100));
+  GetExclusiveAccessManager()->HandleUserKeyEvent(key_down_event);
+  clock.Advance(base::TimeDelta::FromMilliseconds(100));
+  GetExclusiveAccessManager()->HandleUserKeyEvent(key_up_event);
+  ASSERT_TRUE(esc_threshold_reached);
+}
+
+IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
+                       RepeatedEscEventsOutsideWindowDoesNotShowExitBubble) {
+  EnterActiveTabFullscreen();
+
+  base::SimpleTestTickClock clock;
+  SetEscRepeatTestTickClock(&clock);
+
+  bool esc_threshold_reached = false;
+  SetEscRepeatThresholdReachedCallback(base::BindOnce(
+      [](bool* triggered) { *triggered = true; }, &esc_threshold_reached));
+
+  // Set the window to a known value for testing.
+  SetEscRepeatWindowLength(base::TimeDelta::FromSeconds(1));
+
+  RequestKeyboardLock(/*esc_key_locked=*/true);
+  ASSERT_TRUE(GetExclusiveAccessManager()
+                  ->keyboard_lock_controller()
+                  ->IsKeyboardLockActive());
+
+  content::NativeWebKeyboardEvent key_down_event(
+      blink::WebKeyboardEvent::kRawKeyDown, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  key_down_event.windows_key_code = ui::VKEY_ESCAPE;
+
+  content::NativeWebKeyboardEvent key_up_event(
+      blink::WebKeyboardEvent::kKeyUp, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  key_up_event.windows_key_code = ui::VKEY_ESCAPE;
+
+  // Total time for keypress events is 1200ms which is outside the window.
+  GetExclusiveAccessManager()->HandleUserKeyEvent(key_down_event);
+  // Keypresses are counted on the keyup event.
+  GetExclusiveAccessManager()->HandleUserKeyEvent(key_up_event);
+  ASSERT_FALSE(esc_threshold_reached);
+
+  clock.Advance(base::TimeDelta::FromMilliseconds(400));
+  GetExclusiveAccessManager()->HandleUserKeyEvent(key_down_event);
+  clock.Advance(base::TimeDelta::FromMilliseconds(200));
+  GetExclusiveAccessManager()->HandleUserKeyEvent(key_up_event);
+  ASSERT_FALSE(esc_threshold_reached);
+
+  clock.Advance(base::TimeDelta::FromMilliseconds(400));
+  GetExclusiveAccessManager()->HandleUserKeyEvent(key_down_event);
+  clock.Advance(base::TimeDelta::FromMilliseconds(200));
+  GetExclusiveAccessManager()->HandleUserKeyEvent(key_up_event);
+  ASSERT_FALSE(esc_threshold_reached);
 }
 
 IN_PROC_BROWSER_TEST_F(FullscreenControllerTest, KeyboardLockAfterMouseLock) {

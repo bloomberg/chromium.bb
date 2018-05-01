@@ -44,10 +44,13 @@ class ExclusiveAccessBubbleViews : public ExclusiveAccessBubble,
       ExclusiveAccessBubbleHideCallback bubble_first_hide_callback);
   ~ExclusiveAccessBubbleViews() override;
 
+  // |force_update| indicates the caller wishes to show the bubble contents
+  // regardless of whether the contents have changed.
   void UpdateContent(
       const GURL& url,
       ExclusiveAccessBubbleType bubble_type,
-      ExclusiveAccessBubbleHideCallback bubble_first_hide_callback);
+      ExclusiveAccessBubbleHideCallback bubble_first_hide_callback,
+      bool force_update);
 
   // Repositions |popup_| if it is visible.
   void RepositionIfVisible();

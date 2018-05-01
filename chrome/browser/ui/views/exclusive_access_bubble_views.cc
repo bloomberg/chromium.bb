@@ -112,9 +112,10 @@ ExclusiveAccessBubbleViews::~ExclusiveAccessBubbleViews() {
 void ExclusiveAccessBubbleViews::UpdateContent(
     const GURL& url,
     ExclusiveAccessBubbleType bubble_type,
-    ExclusiveAccessBubbleHideCallback bubble_first_hide_callback) {
+    ExclusiveAccessBubbleHideCallback bubble_first_hide_callback,
+    bool force_update) {
   DCHECK_NE(EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE, bubble_type);
-  if (bubble_type_ == bubble_type && url_ == url)
+  if (bubble_type_ == bubble_type && url_ == url && !force_update)
     return;
 
   // Bubble maybe be re-used after timeout.

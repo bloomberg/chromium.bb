@@ -376,7 +376,8 @@ void ChromeNativeAppWindowViewsAuraAsh::SetFullscreen(int fullscreen_types) {
                               AppWindow::FULLSCREEN_TYPE_WINDOW_API)
               ? EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_EXIT_INSTRUCTION
               : EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE,
-          ExclusiveAccessBubbleHideCallback());
+          ExclusiveAccessBubbleHideCallback(),
+          /*force_update=*/false);
     }
 
     // Autohide the shelf instead of hiding the shelf completely when only in
@@ -466,7 +467,8 @@ void ChromeNativeAppWindowViewsAuraAsh::ExitFullscreen() {
 void ChromeNativeAppWindowViewsAuraAsh::UpdateExclusiveAccessExitBubbleContent(
     const GURL& url,
     ExclusiveAccessBubbleType bubble_type,
-    ExclusiveAccessBubbleHideCallback bubble_first_hide_callback) {
+    ExclusiveAccessBubbleHideCallback bubble_first_hide_callback,
+    bool force_update) {
   if (bubble_type == EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE) {
     exclusive_access_bubble_.reset();
     if (bubble_first_hide_callback) {
@@ -478,7 +480,7 @@ void ChromeNativeAppWindowViewsAuraAsh::UpdateExclusiveAccessExitBubbleContent(
 
   if (exclusive_access_bubble_) {
     exclusive_access_bubble_->UpdateContent(
-        url, bubble_type, std::move(bubble_first_hide_callback));
+        url, bubble_type, std::move(bubble_first_hide_callback), force_update);
     return;
   }
 
