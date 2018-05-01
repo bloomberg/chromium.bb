@@ -418,13 +418,13 @@ bool FormCache::ShowPredictions(const FormDataPredictions& form,
           0, std::min(field_data.label.length(), kMaxLabelSize));
 
       // A rough estimate of the maximum title size is:
-      //    7 field titles at <17 chars each
-      //    + 6 values at <40 chars each
+      //    8 field titles at <17 chars each
+      //    + 7 values at <40 chars each
       //    + 1 truncated label at <kMaxLabelSize;
-      //    = 459 chars, rounded up to the next multiple of 64 = 512
+      //    = 516 chars, rounded up to the next multiple of 64 = 576
       // A particularly large parseable name could blow through this and cause
       // another allocation, but that's OK.
-      constexpr size_t kMaxTitleSize = 512;
+      constexpr size_t kMaxTitleSize = 576;
       std::string title;
       title.reserve(kMaxTitleSize);
       title += "overall type: ";
