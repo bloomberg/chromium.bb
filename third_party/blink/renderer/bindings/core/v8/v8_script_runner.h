@@ -90,9 +90,6 @@ class CORE_EXPORT V8ScriptRunner final {
       v8::Isolate*,
       ScriptState*,
       const ScriptSourceCode&);
-  static v8::MaybeLocal<v8::Value> RunCompiledInternalScript(
-      v8::Isolate*,
-      v8::Local<v8::Script>);
   static v8::MaybeLocal<v8::Value> CallAsConstructor(
       v8::Isolate*,
       v8::Local<v8::Object>,

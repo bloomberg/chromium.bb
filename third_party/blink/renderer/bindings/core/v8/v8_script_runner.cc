@@ -465,6 +465,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::RunCompiledScript(
       ThrowScriptForbiddenException(isolate);
       return v8::MaybeLocal<v8::Value>();
     }
+    v8::Isolate::SafeForTerminationScope safe_for_termination(isolate);
     v8::MicrotasksScope microtasks_scope(isolate,
                                          v8::MicrotasksScope::kRunMicrotasks);
     // ToCoreString here should be zero copy due to externalized string
@@ -563,20 +564,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::CompileAndRunInternalScript(
   TRACE_EVENT0("v8", "v8.run");
   RuntimeCallStatsScopedTracer rcs_scoped_tracer(isolate);
   RUNTIME_CALL_TIMER_SCOPE(isolate, RuntimeCallStats::CounterId::kV8);
-  v8::MicrotasksScope microtasks_scope(
-      isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
-  v8::MaybeLocal<v8::Value> result = script->Run(isolate->GetCurrentContext());
-  CHECK(!isolate->IsDead());
-  return result;
-}
-
-v8::MaybeLocal<v8::Value> V8ScriptRunner::RunCompiledInternalScript(
-    v8::Isolate* isolate,
-    v8::Local<v8::Script> script) {
-  TRACE_EVENT0("v8", "v8.run");
-  RuntimeCallStatsScopedTracer rcs_scoped_tracer(isolate);
-  RUNTIME_CALL_TIMER_SCOPE(isolate, RuntimeCallStats::CounterId::kV8);
-
+  v8::Isolate::SafeForTerminationScope safe_for_termination(isolate);
   v8::MicrotasksScope microtasks_scope(
       isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
   v8::MaybeLocal<v8::Value> result = script->Run(isolate->GetCurrentContext());
@@ -612,6 +600,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::CallAsConstructor(
   CHECK(constructor->IsFunction());
   v8::Local<v8::Function> function = constructor.As<v8::Function>();
 
+  v8::Isolate::SafeForTerminationScope safe_for_termination(isolate);
   v8::MicrotasksScope microtasks_scope(isolate,
                                        v8::MicrotasksScope::kRunMicrotasks);
   probe::CallFunction probe(context, function, depth);
@@ -651,6 +640,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::CallFunction(
                        ToLocalDOMWindow(function->CreationContext()), frame,
                        BindingSecurity::ErrorReportOption::kDoNotReport));
   CHECK(!ThreadState::Current()->IsWrapperTracingForbidden());
+  v8::Isolate::SafeForTerminationScope safe_for_termination(isolate);
   v8::MicrotasksScope microtasks_scope(isolate,
                                        v8::MicrotasksScope::kRunMicrotasks);
   probe::CallFunction probe(context, function, depth);
@@ -672,6 +662,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::CallInternalFunction(
   RUNTIME_CALL_TIMER_SCOPE(isolate, RuntimeCallStats::CounterId::kV8);
 
   CHECK(!ThreadState::Current()->IsWrapperTracingForbidden());
+  v8::Isolate::SafeForTerminationScope safe_for_termination(isolate);
   v8::MicrotasksScope microtasks_scope(
       isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
   v8::MaybeLocal<v8::Value> result =
@@ -686,6 +677,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::EvaluateModule(
     v8::Local<v8::Context> context) {
   TRACE_EVENT0("v8,devtools.timeline", "v8.evaluateModule");
   RUNTIME_CALL_TIMER_SCOPE(isolate, RuntimeCallStats::CounterId::kV8);
+  v8::Isolate::SafeForTerminationScope safe_for_termination(isolate);
   v8::MicrotasksScope microtasks_scope(isolate,
                                        v8::MicrotasksScope::kRunMicrotasks);
   return module->Evaluate(context);
