@@ -90,7 +90,7 @@ public class AwSafeBrowsingConfigHelper {
                     recordUserOptIn(UserOptIn.OPT_OUT);
                 }
             };
-            PlatformServiceBridge.getInstance().querySafeBrowsingUserConsent(appContext, cb);
+            PlatformServiceBridge.getInstance().querySafeBrowsingUserConsent(cb);
         }
     }
 

@@ -52,8 +52,7 @@ public abstract class PlatformServiceBridge {
     }
 
     // Overriding implementations may call "callback" asynchronously, on any thread.
-    public void querySafeBrowsingUserConsent(
-            Context context, @NonNull final Callback<Boolean> callback) {
+    public void querySafeBrowsingUserConsent(@NonNull final Callback<Boolean> callback) {
         // User opt-in preference depends on a SafetyNet API.
     }
 

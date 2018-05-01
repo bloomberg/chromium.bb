@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser;
 
-import android.content.Context;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -37,7 +35,7 @@ public class MockSafeBrowsingApiHandler implements SafeBrowsingApiHandler {
     private HashMap<String, String> mResponseMap;
 
     @Override
-    public boolean init(Context context, Observer observer) {
+    public boolean init(Observer observer) {
         mObserver = observer;
         mResponseMap = new HashMap<String, String>(sResponseMap);
         return true;
