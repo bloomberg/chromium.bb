@@ -99,6 +99,10 @@ class DataReductionProxyMetricsObserver
                             extra_request_compelte_info) override;
   void OnEventOccurred(const void* const event_key) override;
 
+  // Exponentially bucket the number of bytes for privacy-implicated resources.
+  // Input below 10KB returns 0.
+  static int64_t ExponentiallyBucketBytes(int64_t bytes);
+
  private:
   // Sends the page load information to the pingback client.
   void SendPingback(const page_load_metrics::mojom::PageLoadTiming& timing,
@@ -139,14 +143,22 @@ class DataReductionProxyMetricsObserver
   int num_network_resources_;
 
   // The total content network bytes that the user would have downloaded if they
-  // were not using data reduction proxy.
-  int64_t original_network_bytes_;
+  // were not using data reduction proxy for HTTP resources.
+  int64_t insecure_original_network_bytes_;
 
-  // The total network bytes loaded through data reduction proxy.
+  // The total content network bytes that the user would have downloaded if they
+  // were not using data reduction proxy for HTTPS resources.
+  int64_t secure_original_network_bytes_;
+
+  // The total network bytes loaded through data reduction proxy. This value
+  // only concerns HTTP traffic.
   int64_t network_bytes_proxied_;
 
-  // The total network bytes used.
-  int64_t network_bytes_;
+  // The total network bytes used for HTTP resources.
+  int64_t insecure_network_bytes_;
+
+  // The total network bytes used for HTTPS resources.
+  int64_t secure_network_bytes_;
 
   // The process ID of the main frame renderer during OnCommit.
   base::ProcessId process_id_;
