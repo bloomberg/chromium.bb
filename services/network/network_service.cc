@@ -19,7 +19,6 @@
 #include "net/dns/host_resolver.h"
 #include "net/dns/mapped_host_resolver.h"
 #include "net/log/net_log.h"
-#include "net/log/net_log_util.h"
 #include "net/nqe/network_quality_estimator.h"
 #include "net/nqe/network_quality_estimator_params.h"
 #include "net/url_request/url_request_context_builder.h"
@@ -194,14 +193,6 @@ void NetworkService::RegisterNetworkContext(NetworkContext* network_context) {
 void NetworkService::DeregisterNetworkContext(NetworkContext* network_context) {
   DCHECK_EQ(1u, network_contexts_.count(network_context));
   network_contexts_.erase(network_context);
-}
-
-void NetworkService::CreateNetLogEntriesForActiveObjects(
-    net::NetLog::ThreadSafeObserver* observer) {
-  std::set<net::URLRequestContext*> contexts;
-  for (NetworkContext* nc : network_contexts_)
-    contexts.insert(nc->url_request_context());
-  return net::CreateNetLogEntriesForActiveObjects(contexts, observer);
 }
 
 void NetworkService::SetClient(mojom::NetworkServiceClientPtr client) {
