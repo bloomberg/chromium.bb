@@ -55,6 +55,9 @@ class DEVICE_VR_EXPORT VRDisplayImpl : public mojom::VRMagicWindowProvider {
  private:
   // mojom::VRMagicWindowProvider
   void GetPose(GetPoseCallback callback) override;
+  void GetFrameData(const gfx::Size& frame_size,
+                    int16_t display_rotation,
+                    GetFrameDataCallback callback) override;
 
   mojo::Binding<mojom::VRMagicWindowProvider> binding_;
   mojom::VRDisplayClientPtr client_;

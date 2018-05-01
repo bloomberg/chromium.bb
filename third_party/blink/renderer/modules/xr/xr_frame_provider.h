@@ -8,6 +8,7 @@
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
@@ -50,6 +51,7 @@ class XRFrameProvider final
       int16_t frame_id,
       device::mojom::blink::VRPresentationProvider::VSyncStatus,
       const base::Optional<gpu::MailboxHolder>& buffer_holder);
+  void OnNonExclusiveFrameData(device::mojom::blink::VRMagicWindowFrameDataPtr);
   void OnNonExclusivePose(device::mojom::blink::VRPosePtr);
 
   void ScheduleExclusiveFrame();
@@ -59,7 +61,14 @@ class XRFrameProvider final
       bool success,
       device::mojom::blink::VRDisplayFrameTransportOptionsPtr);
   void OnPresentationProviderConnectionError();
-  void ProcessScheduledFrame(double timestamp);
+  void ProcessScheduledFrame(
+      base::Optional<device::mojom::blink::VRMagicWindowFrameDataPtr>
+          frame_data,
+      double timestamp);
+
+  void RenderBackgroundImage(
+      const device::mojom::blink::VRMagicWindowFrameDataPtr& frame_data,
+      XRSession* session);
 
   const Member<XRDevice> device_;
   Member<XRSession> exclusive_session_;
@@ -79,6 +88,11 @@ class XRFrameProvider final
   device::mojom::blink::VRPresentationProviderPtr presentation_provider_;
   device::mojom::blink::VRMagicWindowProviderPtr magic_window_provider_;
   device::mojom::blink::VRPosePtr frame_pose_;
+
+  // Track the size/orientation of the requested canvas.
+  // TODO(https://crbug.com/836496): move these to XRSession.
+  IntSize ar_requested_transfer_size_;
+  int ar_requested_transfer_angle_ = 0;
 
   // This frame ID is XR-specific and is used to track when frames arrive at the
   // XR compositor so that it knows which poses to use, when to apply bounds

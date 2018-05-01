@@ -41,7 +41,7 @@ namespace vr {
 
 class MailboxToSurfaceBridge {
  public:
-  explicit MailboxToSurfaceBridge(base::OnceClosure on_initialized);
+  MailboxToSurfaceBridge();
   ~MailboxToSurfaceBridge();
 
   // Returns true if the GPU process connection is established and ready to use.
@@ -54,9 +54,41 @@ class MailboxToSurfaceBridge {
 
   void CreateSurface(gl::SurfaceTexture*);
 
-  // This creates the context using the surface provided by an earlier
-  // CreateSurface call, or an offscreen context if that wasn't called.
-  void CreateContextProvider();
+  // This class can be used in a couple ways using these sequences:
+  //
+  // To use entirely on the GL thread:
+  // Call CreateAndBindContextProvider(callback) from your thread.
+  // When the callback is invoked, the object is ready for GL calls
+  // such as CreateMailboxTexture().
+  //
+  // To create on one thread and use GL on another:
+  // Call CreateUnboundContextProvider(callback) and then make sure
+  // to call BindContextProviderToCurrentThread() from your GL
+  // thread afterwards before making an GL-related calls.
+
+  // Asynchronously create the context using the surface provided by an earlier
+  // CreateSurface call, or an offscreen context if that wasn't called. Also
+  // binds the context provider to the thread used for constructing the
+  // MailboxToSurfaceBridge object, and calls the callback on the constructor
+  // thread. Use this if constructing the object on the intended GL thread.
+  void CreateAndBindContextProvider(base::OnceClosure callback);
+
+  // Variant of above, use this if the MailboxToSurfaceBridge constructor
+  // wasn't run on the GL thread. The provided callback is run on the
+  // constructor thread. After that, you can pass the MailboxToSurfaceBridge
+  // to another thread. You must call BindContextProviderToCurrentThread()
+  // on the target GL thread before using any GL methods.
+  // The GL methods check that they are called on this thread, so there
+  // will be a DCHECK error if they are not used consistently.
+  void CreateUnboundContextProvider(base::OnceClosure callback);
+
+  // Client must call this on the target (GL) thread after
+  // CreateUnboundContextProvider. It's called automatically when using
+  // CreateAndBindContextProvider.
+  void BindContextProviderToCurrentThread();
+
+  // All other public methods below must be called on the GL thread
+  // (except when marked otherwise).
 
   void ResizeSurface(int width, int height);
 
@@ -102,9 +134,9 @@ class MailboxToSurfaceBridge {
   void UnbindSharedBuffer(uint32_t image_id, uint32_t texture_id);
 
  private:
+  void CreateContextProviderInternal();
   void OnContextAvailableOnUiThread(
       scoped_refptr<viz::ContextProvider> provider);
-  void BindContextProvider();
   void InitializeRenderer();
   void DestroyContext();
   void DrawQuad(unsigned int textureHandle);
@@ -114,7 +146,10 @@ class MailboxToSurfaceBridge {
   gpu::gles2::GLES2Interface* gl_ = nullptr;
   gpu::ContextSupport* context_support_ = nullptr;
   int surface_handle_ = gpu::kNullSurfaceHandle;
-  base::OnceClosure on_initialized_;
+  // TODO(https://crbug.com/836524): shouldn't have both of these closures
+  // in the same class like this.
+  base::OnceClosure on_context_bound_;
+  base::OnceClosure on_context_provider_ready_;
 
   // Saved state for a pending resize, the dimensions are only
   // valid if needs_resize_ is true.
@@ -122,7 +157,8 @@ class MailboxToSurfaceBridge {
   int resize_width_;
   int resize_height_;
 
-  scoped_refptr<base::SingleThreadTaskRunner> gl_thread_task_runner_;
+  // A task runner for the thread the object was created on.
+  scoped_refptr<base::SingleThreadTaskRunner> constructor_thread_task_runner_;
 
   // Must be last.
   base::WeakPtrFactory<MailboxToSurfaceBridge> weak_ptr_factory_;

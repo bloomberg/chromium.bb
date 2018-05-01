@@ -139,9 +139,8 @@ GLuint ConsumeTexture(gpu::gles2::GLES2Interface* gl,
 
 namespace vr {
 
-MailboxToSurfaceBridge::MailboxToSurfaceBridge(base::OnceClosure on_initialized)
-    : on_initialized_(std::move(on_initialized)),
-      gl_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+MailboxToSurfaceBridge::MailboxToSurfaceBridge()
+    : constructor_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_ptr_factory_(this) {
   DVLOG(1) << __FUNCTION__;
 }
@@ -169,15 +168,28 @@ bool MailboxToSurfaceBridge::IsGpuWorkaroundEnabled(int32_t workaround) {
 void MailboxToSurfaceBridge::OnContextAvailableOnUiThread(
     scoped_refptr<viz::ContextProvider> provider) {
   DVLOG(1) << __FUNCTION__;
+  // Must save a reference to the viz::ContextProvider to keep it alive,
+  // otherwise the GL context created from it becomes invalid on its
+  // destruction.
   context_provider_ = std::move(provider);
-  gl_thread_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&MailboxToSurfaceBridge::BindContextProvider,
-                                base::Unretained(this)));
+
+  if (on_context_provider_ready_) {
+    // We have a custom callback from CreateUnboundContextProvider. Run that.
+    // The client is responsible for running BindContextProviderToCurrentThread
+    // before use.
+    constructor_thread_task_runner_->PostTask(
+        FROM_HERE, base::ResetAndReturn(&on_context_provider_ready_));
+  } else {
+    DCHECK(on_context_bound_);
+    constructor_thread_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &MailboxToSurfaceBridge::BindContextProviderToCurrentThread,
+            base::Unretained(this)));
+  }
 }
 
-void MailboxToSurfaceBridge::BindContextProvider() {
-  // Must save a reference to the viz::ContextProvider to keep it alive,
-  // otherwise the GL context created from it becomes invalid.
+void MailboxToSurfaceBridge::BindContextProviderToCurrentThread() {
   auto result = context_provider_->BindToCurrentThread();
   if (result != gpu::ContextResult::kSuccess) {
     DLOG(ERROR) << "Failed to init viz::ContextProvider";
@@ -198,8 +210,8 @@ void MailboxToSurfaceBridge::BindContextProvider() {
   InitializeRenderer();
 
   DVLOG(1) << __FUNCTION__ << ": Context ready";
-  if (on_initialized_) {
-    base::ResetAndReturn(&on_initialized_).Run();
+  if (on_context_bound_) {
+    base::ResetAndReturn(&on_context_bound_).Run();
   }
 }
 
@@ -217,7 +229,21 @@ void MailboxToSurfaceBridge::CreateSurface(
   ANativeWindow_release(window);
 }
 
-void MailboxToSurfaceBridge::CreateContextProvider() {
+void MailboxToSurfaceBridge::CreateUnboundContextProvider(
+    base::OnceClosure callback) {
+  on_context_provider_ready_ = std::move(callback);
+  DCHECK(!on_context_bound_);
+  CreateContextProviderInternal();
+}
+
+void MailboxToSurfaceBridge::CreateAndBindContextProvider(
+    base::OnceClosure on_bound_callback) {
+  on_context_bound_ = std::move(on_bound_callback);
+  DCHECK(!on_context_provider_ready_);
+  CreateContextProviderInternal();
+}
+
+void MailboxToSurfaceBridge::CreateContextProviderInternal() {
   // The callback to run in this thread. It is necessary to keep |surface| alive
   // until the context becomes available. So pass it on to the callback, so that
   // it stays alive, and is destroyed on the same thread once done.

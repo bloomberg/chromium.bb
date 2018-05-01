@@ -86,8 +86,15 @@ struct VRPose {
 struct VRDisplayCapabilities {
   bool hasPosition;
   bool hasExternalDisplay;
+
   // Indicates whether the display can actively show imagery on a headset.
   bool canPresent;
+
+  // If true, this is an AR display that can provide a background image along
+  // with each pose. Clients who want them should send a frame image request
+  // via getFrameData instead of getPose.
+  // TODO(https://crbug.com/836349): this may need to change.
+  bool can_provide_pass_through_images;
 };
 
 // Information about the optical properties for an eye in a VRDisplay.
@@ -157,6 +164,22 @@ struct VRDisplayFrameTransportOptions {
   bool wait_for_transfer_notification;
   bool wait_for_render_notification;
   bool wait_for_gpu_fence;
+};
+
+// The data needed for each frame for a magic window experience
+// that uses a background image / projection matrix instead of
+// just a VRPose - ex: non-exclusive AR needs a camera image and
+// to get a projection matrix directly from the backend rather than
+// FOV values to support features like focus.
+struct VRMagicWindowFrameData {
+  VRPose pose;
+  gpu.mojom.MailboxHolder buffer_holder;
+  gfx.mojom.Size buffer_size;
+  // TODO(https://crbug.com/838515): Is this delta since the last
+  // frame? OR an unspecified origin? Something else?
+  mojo_base.mojom.TimeDelta time_delta;
+  array<float, 16> projection_matrix;
+
 };
 
 enum VRDisplayEventReason {
@@ -232,10 +255,24 @@ interface VRDisplayHost {
   ExitPresent();
 };
 
-// Provides the necessary functionality for a non-presenting WebVR page to draw
-// magic window content.
+// Provides the necessary functionality for a non-presenting WebXR session to
+// draw magic window content.
+// For AR displays (VRDisplayCapabilities.can_provide_pass_through_images
+// is true), clients can use GetFrameData to get images.
+// TODO(836478): rename VRMagicWindowProvider to NonExclusiveWindowProvider or
+// similar.
 interface VRMagicWindowProvider {
   GetPose() => (VRPose? pose);
+
+  // rotation is analogous to display::Display::Rotation and must be
+  // 0, 1, 2, or 3 representing increments of 90 degrees.
+  // Different devices can have different native orientations - 0
+  // is the native orientation, and then increments of 90 degrees
+  // from there.
+  // TODO(https://crbug.com/836948): use Rotation from display mojom.
+  // TODO(https://crbug.com/837944): frame_data should not be optional.
+  GetFrameData(gfx.mojom.Size frame_size, int16 display_rotation) =>
+      (VRMagicWindowFrameData? frame_data);
 };
 
 // Provides the necessary functionality for a presenting WebVR page to draw

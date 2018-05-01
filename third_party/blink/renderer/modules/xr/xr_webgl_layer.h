@@ -68,6 +68,9 @@ class XRWebGLLayer final : public XRLayer,
   void OnFrameEnd() override;
   void OnResize() override;
 
+  void OverwriteColorBufferFromMailboxTexture(const gpu::MailboxHolder&,
+                                              const IntSize& size);
+
   scoped_refptr<StaticBitmapImage> TransferToStaticBitmapImage(
       std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback);
 
