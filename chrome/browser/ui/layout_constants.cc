@@ -15,7 +15,7 @@ int GetLayoutConstant(LayoutConstant constant) {
   const bool newer_material = ui::MaterialDesignController::IsNewerMaterialUi();
   switch (constant) {
     case BOOKMARK_BAR_HEIGHT:
-      return touch_optimized_material ? 40 : 28;
+      return touch_optimized_material ? 40 : 32;
 #if defined(OS_MACOSX)
     case BOOKMARK_BAR_HEIGHT_NO_OVERLAP:
       return GetLayoutConstant(BOOKMARK_BAR_HEIGHT) - 2;
