@@ -12,9 +12,10 @@ from telemetry import story
 from telemetry.timeline import chrome_trace_category_filter
 from telemetry.timeline import chrome_trace_config
 from telemetry.web_perf import timeline_based_measurement
+from contrib.vr_benchmarks import vr_browsing_mode_pages
 from contrib.vr_benchmarks import webvr_sample_pages
 from contrib.vr_benchmarks import webvr_wpr_pages
-from contrib.vr_benchmarks import vr_browsing_mode_pages
+from contrib.vr_benchmarks import webxr_sample_pages
 
 
 class _BaseVRBenchmark(perf_benchmark.PerfBenchmark):
@@ -46,7 +47,7 @@ class _BaseVRBenchmark(perf_benchmark.PerfBenchmark):
              'benchmark to run without issues.')
 
 
-class _BaseWebVRBenchmark(_BaseVRBenchmark):
+class _BaseWebVRWebXRBenchmark(_BaseVRBenchmark):
 
   SUPPORTED_PLATFORMS = [story.expectations.ALL_ANDROID]
 
@@ -66,19 +67,32 @@ class _BaseWebVRBenchmark(_BaseVRBenchmark):
         chrome_trace_config.MemoryDumpConfig())
     return options
 
-  def SetExtraBrowserOptions(self, options):
-    memory.SetExtraBrowserOptionsForMemoryMeasurement(options)
-    options.AppendExtraBrowserArgs([
-        '--enable-webvr',
-    ])
-
   @classmethod
   def ShouldAddValue(cls, name, from_first_story_run):
     del from_first_story_run  # unused
     return memory.DefaultShouldAddValueForMemoryMeasurement(name)
 
 
+class _BaseWebVRBenchmark(_BaseWebVRWebXRBenchmark):
+
+  def SetExtraBrowserOptions(self, options):
+    memory.SetExtraBrowserOptionsForMemoryMeasurement(options)
+    options.AppendExtraBrowserArgs([
+        '--enable-webvr',
+    ])
+
+
+class _BaseWebXRBenchmark(_BaseWebVRWebXRBenchmark):
+
+  def SetExtraBrowserOptions(self, options):
+    memory.SetExtraBrowserOptionsForMemoryMeasurement(options)
+    options.AppendExtraBrowserArgs([
+        '--enable-features=WebXR',
+    ])
+
+
 @benchmark.Owner(emails=['bsheedy@chromium.org', 'leilei@chromium.org'])
+# pylint: disable=too-many-ancestors
 class XrWebVrStatic(_BaseWebVRBenchmark):
   """Measures WebVR performance with synthetic sample pages."""
 
@@ -91,6 +105,20 @@ class XrWebVrStatic(_BaseWebVRBenchmark):
 
 
 @benchmark.Owner(emails=['bsheedy@chromium.org', 'tiborg@chromium.org'])
+# pylint: disable=too-many-ancestors
+class XrWebXrStatic(_BaseWebXRBenchmark):
+  """Measures WebXR performance with synthetic sample pages."""
+
+  def CreateStorySet(self, options):
+    return webxr_sample_pages.WebXrSamplePageSet()
+
+  @classmethod
+  def Name(cls):
+    return 'xr.webxr.static'
+
+
+@benchmark.Owner(emails=['bsheedy@chromium.org', 'tiborg@chromium.org'])
+# pylint: disable=too-many-ancestors
 class XrWebVrWprStatic(_BaseWebVRBenchmark):
   """Measures WebVR performance with WPR copies of live websites."""
 
@@ -103,6 +131,7 @@ class XrWebVrWprStatic(_BaseWebVRBenchmark):
 
 
 @benchmark.Owner(emails=['bsheedy@chromium.org', 'tiborg@chromium.org'])
+# pylint: disable=too-many-ancestors
 class XrWebVrLiveStatic(_BaseWebVRBenchmark):
   """Measures WebVR performance with live websites.
 

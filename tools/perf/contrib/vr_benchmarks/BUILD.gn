@@ -18,10 +18,12 @@ group("vr_perf_tests") {
     "./vr_story_set.py",
     "./webvr_sample_pages.py",
     "./webvr_wpr_pages.py",
+    "./webxr_sample_pages.py",
     "//chrome/android/shared_preference_files/test/",
     "//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk",
     "//third_party/gvr-android-sdk/test-apks/vr_keyboard/vr_keyboard_current.apk",
     "//chrome/test/data/vr/webvr_info/samples/",
+    "//chrome/test/data/vr/webxr_samples/",
 
     # Necessary for running on bots
     "//testing/scripts/common.py",
