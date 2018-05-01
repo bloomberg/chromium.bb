@@ -419,10 +419,12 @@ void LayoutBlock::RemoveLeftoverAnonymousBlock(LayoutBlock* child) {
 void LayoutBlock::UpdateAfterLayout() {
   InvalidateStickyConstraints();
 
+  LayoutBox::UpdateAfterLayout();
+
+  // Must happen after LayoutBox::UpdateAfterLayout since overflow and
+  // scrollability is calculated there.
   if (RuntimeEnabledFeatures::ImplicitRootScrollerEnabled() && GetNode())
     GetDocument().GetRootScrollerController().ConsiderForImplicit(*GetNode());
-
-  LayoutBox::UpdateAfterLayout();
 }
 
 void LayoutBlock::UpdateLayout() {

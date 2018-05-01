@@ -2266,6 +2266,8 @@ void Document::UpdateStyle() {
                       ("Style.UpdateTime", 0, 10000000, 50));
   update_histogram.Count(update_duration_seconds * 1000 * 1000);
   CSSTiming::From(*this).RecordUpdateDuration(update_duration_seconds);
+
+  GetRootScrollerController().DidUpdateStyle();
 }
 
 void Document::ViewportDefiningElementDidChange() {

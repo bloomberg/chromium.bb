@@ -202,6 +202,10 @@ inline bool operator!=(const LayoutSize& a, const LayoutSize& b) {
   return a.Width() != b.Width() || a.Height() != b.Height();
 }
 
+inline bool operator!=(const LayoutSize& a, const IntSize& b) {
+  return a.Width() != b.Width() || a.Height() != b.Height();
+}
+
 inline FloatPoint operator+(const FloatPoint& a, const LayoutSize& b) {
   return FloatPoint(a.X() + b.Width(), a.Y() + b.Height());
 }
