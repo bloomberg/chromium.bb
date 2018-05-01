@@ -38,7 +38,6 @@ source_set("webui") {
     "//components/ntp_tiles",
     "//components/password_manager/core/browser",
     "//components/physical_web/data_source",
-    "//components/physical_web/webui",
     "//components/prefs",
     "//components/resources",
     "//components/strings",
