@@ -1822,12 +1822,6 @@
         },
         {
           "board_name": "fizz",
-          "name": "talon",
-          "cq_test_enabled": false,
-          "release_builder_test_pool": "bvt"
-        },
-        {
-          "board_name": "fizz",
           "name": "teemo",
           "test_suites": [
             "sanity",
