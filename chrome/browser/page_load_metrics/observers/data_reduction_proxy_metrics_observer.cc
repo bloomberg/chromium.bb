@@ -30,6 +30,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/child_process_host.h"
+#include "services/metrics/public/cpp/metrics_utils.h"
 #include "url/gurl.h"
 
 namespace data_reduction_proxy {
@@ -103,9 +104,11 @@ DataReductionProxyMetricsObserver::DataReductionProxyMetricsObserver()
       opted_out_(false),
       num_data_reduction_proxy_resources_(0),
       num_network_resources_(0),
-      original_network_bytes_(0),
+      insecure_original_network_bytes_(0),
+      secure_original_network_bytes_(0),
       network_bytes_proxied_(0),
-      network_bytes_(0),
+      insecure_network_bytes_(0),
+      secure_network_bytes_(0),
       process_id_(base::kNullProcessId),
       renderer_memory_usage_kb_(0),
       render_process_host_id_(content::ChildProcessHost::kInvalidUniqueID),
@@ -201,6 +204,10 @@ void DataReductionProxyMetricsObserver::RecordPageSizeUMA() const {
   if (num_network_resources_ == 0)
     return;
 
+  const int64_t network_bytes = insecure_network_bytes_ + secure_network_bytes_;
+  const int64_t original_network_bytes =
+      insecure_original_network_bytes_ + secure_original_network_bytes_;
+
   // TODO(ryansturm): Evaluate if any of the below histograms are unncessary
   // once data is available. crbug.com/682782
 
@@ -210,25 +217,23 @@ void DataReductionProxyMetricsObserver::RecordPageSizeUMA() const {
       (100 * num_data_reduction_proxy_resources_) / num_network_resources_);
 
   // The percent of bytes that went through the data reduction proxy.
-  if (network_bytes_ > 0) {
+  if (network_bytes > 0) {
     UMA_HISTOGRAM_PERCENTAGE(
         GetConstHistogramWithSuffix(internal::kBytesPercentProxied),
-        static_cast<int>((100 * network_bytes_proxied_) / network_bytes_));
+        static_cast<int>((100 * network_bytes_proxied_) / network_bytes));
   }
 
   // If the data reduction proxy caused savings, record the compression ratio;
   // otherwise, record the inflation ratio.
-  if (original_network_bytes_ > 0 &&
-      original_network_bytes_ >= network_bytes_) {
+  if (original_network_bytes > 0 && original_network_bytes >= network_bytes) {
     UMA_HISTOGRAM_PERCENTAGE(
         GetConstHistogramWithSuffix(internal::kBytesCompressionRatio),
-        static_cast<int>((100 * network_bytes_) / original_network_bytes_));
-  } else if (original_network_bytes_ > 0) {
+        static_cast<int>((100 * network_bytes) / original_network_bytes));
+  } else if (original_network_bytes > 0) {
     // Inflation should never be above one hundred percent.
     UMA_HISTOGRAM_PERCENTAGE(
         GetConstHistogramWithSuffix(internal::kBytesInflationPercent),
-        static_cast<int>((100 * network_bytes_) / original_network_bytes_ -
-                         100));
+        static_cast<int>((100 * network_bytes) / original_network_bytes - 100));
   }
 
   // Record the number of network resources seen.
@@ -248,7 +253,7 @@ void DataReductionProxyMetricsObserver::RecordPageSizeUMA() const {
 
   // Record the total KB of network bytes.
   PAGE_BYTES_HISTOGRAM(GetConstHistogramWithSuffix(internal::kNetworkBytes),
-                       network_bytes_);
+                       network_bytes);
 
   // Record the total amount of bytes that went through the data reduction
   // proxy.
@@ -258,22 +263,32 @@ void DataReductionProxyMetricsObserver::RecordPageSizeUMA() const {
   // Record the total amount of bytes that did not go through the data reduction
   // proxy.
   PAGE_BYTES_HISTOGRAM(GetConstHistogramWithSuffix(internal::kBytesNotProxied),
-                       network_bytes_ - network_bytes_proxied_);
+                       network_bytes - network_bytes_proxied_);
 
   // Record the total KB of network bytes that the user would have seen without
   // using data reduction proxy.
   PAGE_BYTES_HISTOGRAM(GetConstHistogramWithSuffix(internal::kBytesOriginal),
-                       original_network_bytes_);
+                       original_network_bytes);
 
   // Record the savings the user saw by using data reduction proxy. If there was
   // inflation instead, record that.
-  if (network_bytes_ <= original_network_bytes_) {
+  if (network_bytes <= original_network_bytes) {
     PAGE_BYTES_HISTOGRAM(GetConstHistogramWithSuffix(internal::kBytesSavings),
-                         original_network_bytes_ - network_bytes_);
+                         original_network_bytes - network_bytes);
   } else {
     PAGE_BYTES_HISTOGRAM(GetConstHistogramWithSuffix(internal::kBytesInflation),
-                         network_bytes_proxied_ - original_network_bytes_);
+                         network_bytes_proxied_ - original_network_bytes);
   }
+}
+
+// static
+int64_t DataReductionProxyMetricsObserver::ExponentiallyBucketBytes(
+    int64_t bytes) {
+  const int64_t start_buckets = 10000;
+  if (bytes < start_buckets) {
+    return 0;
+  }
+  return ukm::GetExponentialBucketMin(bytes, 1.16);
 }
 
 void DataReductionProxyMetricsObserver::SendPingback(
@@ -332,12 +347,18 @@ void DataReductionProxyMetricsObserver::SendPingback(
     host_id = render_process_host_id_;
   }
 
+  const int64_t original_network_bytes =
+      insecure_original_network_bytes_ +
+      ExponentiallyBucketBytes(secure_original_network_bytes_);
+  const int64_t network_bytes =
+      insecure_network_bytes_ + ExponentiallyBucketBytes(secure_network_bytes_);
+
   DataReductionProxyPageLoadTiming data_reduction_proxy_timing(
       timing.navigation_start, response_start, load_event_start,
       first_image_paint, first_contentful_paint,
       experimental_first_meaningful_paint,
-      parse_blocked_on_script_load_duration, parse_stop, network_bytes_,
-      original_network_bytes_, app_background_occurred, opted_out_,
+      parse_blocked_on_script_load_duration, parse_stop, network_bytes,
+      original_network_bytes, app_background_occurred, opted_out_,
       renderer_memory_usage_kb_, host_id);
   GetPingbackClient()->SendPingback(*data_, data_reduction_proxy_timing);
 }
@@ -457,9 +478,18 @@ void DataReductionProxyMetricsObserver::OnLoadedResource(
   }
   if (extra_request_complete_info.was_cached)
     return;
-  original_network_bytes_ +=
-      extra_request_complete_info.original_network_content_length;
-  network_bytes_ += extra_request_complete_info.raw_body_bytes;
+
+  const bool is_secure =
+      extra_request_complete_info.url.SchemeIsCryptographic();
+  if (is_secure) {
+    secure_original_network_bytes_ +=
+        extra_request_complete_info.original_network_content_length;
+    secure_network_bytes_ += extra_request_complete_info.raw_body_bytes;
+  } else {
+    insecure_original_network_bytes_ +=
+        extra_request_complete_info.original_network_content_length;
+    insecure_network_bytes_ += extra_request_complete_info.raw_body_bytes;
+  }
   num_network_resources_++;
   if (!extra_request_complete_info.data_reduction_proxy_data ||
       !extra_request_complete_info.data_reduction_proxy_data
@@ -467,6 +497,7 @@ void DataReductionProxyMetricsObserver::OnLoadedResource(
     return;
   }
   num_data_reduction_proxy_resources_++;
+  // Proxied bytes are always non-secure.
   network_bytes_proxied_ += extra_request_complete_info.raw_body_bytes;
 }
 

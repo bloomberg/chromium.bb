@@ -582,14 +582,21 @@ TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationCompression) {
 
   int network_resources = 0;
   int drp_resources = 0;
-  int64_t network_bytes = 0;
+  int64_t insecure_network_bytes = 0;
+  int64_t secure_network_bytes = 0;
   int64_t drp_bytes = 0;
-  int64_t ocl_bytes = 0;
+  int64_t insecure_ocl_bytes = 0;
+  int64_t secure_ocl_bytes = 0;
   for (const auto& request : resources) {
     SimulateLoadedResource(request);
     if (!request.was_cached) {
-      network_bytes += request.raw_body_bytes;
-      ocl_bytes += request.original_network_content_length;
+      if (request.url.SchemeIsCryptographic()) {
+        secure_network_bytes += request.raw_body_bytes;
+        secure_ocl_bytes += request.original_network_content_length;
+      } else {
+        insecure_network_bytes += request.raw_body_bytes;
+        insecure_ocl_bytes += request.original_network_content_length;
+      }
       ++network_resources;
     }
     if (request.data_reduction_proxy_data &&
@@ -601,8 +608,9 @@ TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationCompression) {
 
   NavigateToUntrackedUrl();
 
-  ValidateDataHistograms(network_resources, drp_resources, network_bytes,
-                         drp_bytes, ocl_bytes);
+  ValidateDataHistograms(network_resources, drp_resources,
+                         insecure_network_bytes + secure_network_bytes,
+                         drp_bytes, insecure_ocl_bytes + secure_ocl_bytes);
 }
 
 TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationInflation) {
@@ -665,27 +673,41 @@ TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationInflation) {
 
   int network_resources = 0;
   int drp_resources = 0;
-  int64_t network_bytes = 0;
+  int64_t insecure_network_bytes = 0;
+  int64_t secure_network_bytes = 0;
   int64_t drp_bytes = 0;
-  int64_t ocl_bytes = 0;
+  int64_t secure_drp_bytes = 0;
+  int64_t insecure_ocl_bytes = 0;
+  int64_t secure_ocl_bytes = 0;
   for (const auto& request : resources) {
     SimulateLoadedResource(request);
+    const bool is_secure = request.url.SchemeIsCryptographic();
     if (!request.was_cached) {
-      network_bytes += request.raw_body_bytes;
-      ocl_bytes += request.original_network_content_length;
+      if (is_secure) {
+        secure_network_bytes += request.raw_body_bytes;
+        secure_ocl_bytes += request.original_network_content_length;
+      } else {
+        insecure_network_bytes += request.raw_body_bytes;
+        insecure_ocl_bytes += request.original_network_content_length;
+      }
       ++network_resources;
     }
     if (request.data_reduction_proxy_data &&
         request.data_reduction_proxy_data->used_data_reduction_proxy()) {
-      drp_bytes += request.raw_body_bytes;
+      if (is_secure)
+        secure_drp_bytes += request.raw_body_bytes;
+      else
+        drp_bytes += request.raw_body_bytes;
       ++drp_resources;
     }
   }
 
   NavigateToUntrackedUrl();
 
-  ValidateDataHistograms(network_resources, drp_resources, network_bytes,
-                         drp_bytes, ocl_bytes);
+  ValidateDataHistograms(network_resources, drp_resources,
+                         insecure_network_bytes + secure_network_bytes,
+                         drp_bytes + secure_drp_bytes,
+                         insecure_ocl_bytes + secure_ocl_bytes);
 }
 
 TEST_F(DataReductionProxyMetricsObserverTest, ProcessIdSentOnRendererCrash) {
