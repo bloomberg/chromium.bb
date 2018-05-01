@@ -8,7 +8,6 @@
 #include <linux/input.h>
 #include <stddef.h>
 
-#include "base/message_loop/message_loop.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/events/event.h"
 #include "ui/events/ozone/evdev/device_event_dispatcher_evdev.h"

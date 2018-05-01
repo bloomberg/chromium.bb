@@ -12,7 +12,6 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
 #include "services/ui/common/task_runner_test_base.h"

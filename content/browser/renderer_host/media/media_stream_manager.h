@@ -37,7 +37,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/power_monitor/power_observer.h"
 #include "base/single_thread_task_runner.h"

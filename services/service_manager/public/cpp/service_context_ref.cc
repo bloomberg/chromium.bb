@@ -5,7 +5,6 @@
 #include "services/service_manager/public/cpp/service_context_ref.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"

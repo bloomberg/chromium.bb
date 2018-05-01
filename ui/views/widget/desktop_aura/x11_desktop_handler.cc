@@ -4,7 +4,6 @@
 
 #include "ui/views/widget/desktop_aura/x11_desktop_handler.h"
 
-#include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_event_dispatcher.h"

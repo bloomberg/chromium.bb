@@ -5,7 +5,6 @@
 #include "remoting/protocol/clipboard_thread_proxy.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "remoting/proto/event.pb.h"
 
 namespace remoting {

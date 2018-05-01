@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 
-#include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/grit/chromium_strings.h"

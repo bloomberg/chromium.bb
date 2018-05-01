@@ -15,7 +15,6 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/observer_list.h"
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "base/strings/string_number_conversions.h"

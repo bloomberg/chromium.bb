@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "ppapi/shared_impl/callback_tracker.h"
 #include "ppapi/shared_impl/id_assignment.h"
 #include "ppapi/shared_impl/ppapi_globals.h"

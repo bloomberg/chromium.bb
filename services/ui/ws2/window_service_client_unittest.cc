@@ -7,7 +7,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/message_loop/message_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "services/ui/ws2/test_window_service_delegate.h"
 #include "services/ui/ws2/test_window_tree_client.h"

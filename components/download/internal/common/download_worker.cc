@@ -4,7 +4,6 @@
 
 #include "components/download/internal/common/download_worker.h"
 
-#include "base/message_loop/message_loop.h"
 #include "components/download/internal/common/resource_downloader.h"
 #include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_interrupt_reasons.h"

@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/memory/shared_memory.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"

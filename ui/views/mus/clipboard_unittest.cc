@@ -4,7 +4,6 @@
 
 #include "ui/views/mus/clipboard_mus.h"
 
-#include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/views/mus/mus_client.h"

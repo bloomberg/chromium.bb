@@ -10,7 +10,6 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/timer/timer.h"
 #include "base/trace_event/trace_event.h"

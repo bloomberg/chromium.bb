@@ -12,7 +12,6 @@
 #include <wrl/client.h>
 
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/timer/timer.h"
 #include "net/base/ip_endpoint.h"
 #include "remoting/host/screen_resolution.h"

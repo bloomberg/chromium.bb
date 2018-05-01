@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "components/drive/service/drive_api_service.h"
-#include "base/message_loop/message_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "google_apis/drive/dummy_auth_service.h"
 #include "google_apis/drive/request_sender.h"

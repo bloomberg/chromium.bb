@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/bind_helpers.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task_runner_util.h"
 #include "base/task_scheduler/post_task.h"

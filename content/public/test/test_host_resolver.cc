@@ -5,7 +5,6 @@
 #include "content/public/test/test_host_resolver.h"
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
 #include "content/browser/notification_service_impl.h"
 #include "net/base/net_errors.h"

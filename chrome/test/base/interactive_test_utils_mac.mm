@@ -9,7 +9,6 @@
 
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_objc_class_swizzler.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_browser_application_mac.h"

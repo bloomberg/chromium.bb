@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/scoped_observer.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/client/capture_delegate.h"

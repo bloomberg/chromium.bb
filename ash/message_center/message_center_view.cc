@@ -18,7 +18,6 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_node_data.h"

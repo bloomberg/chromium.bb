@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/json/json_reader.h"
-#include "base/message_loop/message_loop.h"
 #include "services/data_decoder/xml_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

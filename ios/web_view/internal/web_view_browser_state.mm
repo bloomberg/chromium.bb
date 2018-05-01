@@ -9,7 +9,6 @@
 #include "base/base_paths.h"
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/threading/thread_restrictions.h"
 #include "components/autofill/core/browser/autofill_manager.h"

@@ -5,7 +5,6 @@
 #include "content/browser/android/java/java_bridge_thread.h"
 
 #include "base/lazy_instance.h"
-#include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner_util.h"
 #include "build/build_config.h"

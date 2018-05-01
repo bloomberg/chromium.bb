@@ -8,7 +8,6 @@
 #include "base/location.h"
 #include "base/mac/bundle_locations.h"
 #import "base/mac/foundation_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"

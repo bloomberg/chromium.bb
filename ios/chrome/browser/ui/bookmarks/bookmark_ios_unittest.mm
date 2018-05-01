@@ -4,7 +4,6 @@
 
 #include "ios/chrome/browser/ui/bookmarks/bookmark_ios_unittest.h"
 
-#include "base/message_loop/message_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"

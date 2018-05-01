@@ -4,7 +4,6 @@
 
 #include "services/network/url_request_context_owner.h"
 
-#include "base/message_loop/message_loop.h"
 #include "components/prefs/pref_service.h"
 #include "net/url_request/url_request_context.h"
 

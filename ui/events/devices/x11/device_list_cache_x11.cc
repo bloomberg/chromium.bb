@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/memory/singleton.h"
-#include "base/message_loop/message_loop.h"
 #include "ui/events/devices/x11/device_data_manager_x11.h"
 
 namespace {

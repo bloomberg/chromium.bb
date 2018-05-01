@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/i18n/number_formatting.h"
-#include "base/message_loop/message_loop.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #import "ui/message_center/cocoa/popup_collection.h"

@@ -4,7 +4,6 @@
 
 #include "base/pending_task.h"
 
-#include "base/message_loop/message_loop.h"
 
 namespace base {
 

@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/message_loop/message_loop.h"
 #include "chrome/browser/search/instant_io_context.h"
 #include "chrome/grit/browser_resources.h"
 #include "content/public/browser/browser_thread.h"

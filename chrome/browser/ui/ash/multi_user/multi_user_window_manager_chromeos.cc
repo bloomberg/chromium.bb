@@ -13,7 +13,6 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"  // mash-ok
 #include "base/auto_reset.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"

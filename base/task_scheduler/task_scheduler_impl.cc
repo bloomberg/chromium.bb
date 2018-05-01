@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_util.h"
 #include "base/task_scheduler/delayed_task_manager.h"

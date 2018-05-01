@@ -11,7 +11,6 @@
 #include <string>
 #include <utility>
 
-#include "base/message_loop/message_loop.h"
 #include "components/sync/base/model_type_test_util.h"
 #include "components/sync/engine_impl/cycle/debug_info_getter.h"
 #include "components/sync/engine_impl/cycle/mock_debug_info_getter.h"

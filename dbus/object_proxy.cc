@@ -11,7 +11,6 @@
 #include "base/bind_helpers.h"
 #include "base/debug/leak_annotations.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
