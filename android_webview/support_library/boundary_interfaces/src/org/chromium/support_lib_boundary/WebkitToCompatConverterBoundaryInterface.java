@@ -57,4 +57,10 @@ public interface WebkitToCompatConverterBoundaryInterface {
             /* SafeBrowsingResponse */ Object safeBrowsingResponse);
     /* SafeBrowsingResponse */ Object convertSafeBrowsingResponse(
             /* SupportLibSafeBrowsingResponse */ InvocationHandler safeBrowsingResponse);
+
+    // WebMessagePort
+    /* SupportLibWebMessagePort */ InvocationHandler convertWebMessagePort(
+            /* WebMessagePort */ Object webMessagePort);
+    /* WebMessagePort */ Object convertWebMessagePort(
+            /* SupportLibWebMessagePort */ InvocationHandler webMessagePort);
 }

@@ -6,6 +6,7 @@ package com.android.webview.chromium;
 
 import android.webkit.SafeBrowsingResponse;
 import android.webkit.ServiceWorkerWebSettings;
+import android.webkit.WebMessagePort;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
@@ -17,6 +18,7 @@ import org.chromium.android_webview.AwSafeBrowsingResponse;
 import org.chromium.android_webview.AwServiceWorkerSettings;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.base.Callback;
+import org.chromium.content_public.browser.MessagePort;
 
 /**
  * Class converting webkit objects to glue-objects shared between the webkit-glue and the support
@@ -56,5 +58,9 @@ public class WebkitToSharedGlueConverter {
     public static Callback<AwSafeBrowsingResponse> getAwSafeBrowsingResponseCallback(
             SafeBrowsingResponse response) {
         return ((SafeBrowsingResponseAdapter) response).getAwSafeBrowsingResponseCallback();
+    }
+
+    public static MessagePort getMessagePort(WebMessagePort messagePort) {
+        return ((WebMessagePortAdapter) messagePort).getPort();
     }
 }
