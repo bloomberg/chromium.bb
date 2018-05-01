@@ -98,6 +98,7 @@ class ASH_EXPORT HeaderView : public views::View,
   views::View* avatar_icon() const;
 
   bool in_immersive_mode() const { return in_immersive_mode_; }
+  bool is_revealed() const { return fullscreen_visible_fraction_ > 0.0; }
 
   void set_title(const base::string16& title) {
     frame_header_->set_title(title);
