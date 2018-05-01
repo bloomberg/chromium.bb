@@ -62,8 +62,7 @@ class MEDIA_EXPORT DecoderStream {
   using ReadCB =
       base::RepeatingCallback<void(Status, const scoped_refptr<Output>&)>;
 
-  DecoderStream(std::unique_ptr<DecoderStreamTraits<StreamType>> traits,
-                const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+  DecoderStream(const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
                 CreateDecodersCB create_decoders_cb,
                 MediaLog* media_log);
   virtual ~DecoderStream();
@@ -214,7 +213,7 @@ class MEDIA_EXPORT DecoderStream {
   void MaybePrepareAnotherOutput();
   void OnPreparedOutputReady(const scoped_refptr<Output>& frame);
 
-  std::unique_ptr<DecoderStreamTraits<StreamType>> traits_;
+  DecoderStreamTraits<StreamType> traits_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   CreateDecodersCB create_decoders_cb_;

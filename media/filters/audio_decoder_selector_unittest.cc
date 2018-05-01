@@ -11,7 +11,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
-#include "media/base/channel_layout.h"
 #include "media/base/gmock_callback_support.h"
 #include "media/base/media_util.h"
 #include "media/base/mock_filters.h"
@@ -60,7 +59,7 @@ class AudioDecoderSelectorTest : public ::testing::Test {
   };
 
   AudioDecoderSelectorTest()
-      : traits_(&media_log_, CHANNEL_LAYOUT_STEREO),
+      : traits_(&media_log_),
         demuxer_stream_(
             new StrictMock<MockDemuxerStream>(DemuxerStream::AUDIO)) {
     // |cdm_context_| and |decryptor_| are conditionally created in

@@ -42,11 +42,10 @@ const char* GetTraceString<DemuxerStream::AUDIO>() {
 
 template <DemuxerStream::Type StreamType>
 DecoderStream<StreamType>::DecoderStream(
-    std::unique_ptr<DecoderStreamTraits<StreamType>> traits,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     CreateDecodersCB create_decoders_cb,
     MediaLog* media_log)
-    : traits_(std::move(traits)),
+    : traits_(media_log),
       task_runner_(task_runner),
       create_decoders_cb_(std::move(create_decoders_cb)),
       media_log_(media_log),
@@ -112,7 +111,7 @@ void DecoderStream<StreamType>::Initialize(
   statistics_cb_ = statistics_cb;
   waiting_for_decryption_key_cb_ = waiting_for_decryption_key_cb;
 
-  traits_->OnStreamReset(stream_);
+  traits_.OnStreamReset(stream_);
 
   state_ = STATE_INITIALIZING;
   SelectDecoder();
@@ -172,7 +171,7 @@ void DecoderStream<StreamType>::Reset(const base::Closure& closure) {
   }
 
   ClearOutputs();
-  traits_->OnStreamReset(stream_);
+  traits_.OnStreamReset(stream_);
 
   // It's possible to have received a DECODE_ERROR and entered STATE_ERROR right
   // before a Reset() is executed. If we are still waiting for a demuxer read,
@@ -276,7 +275,7 @@ void DecoderStream<StreamType>::SelectDecoder() {
       task_runner_, create_decoders_cb_, media_log_);
 
   decoder_selector_->SelectDecoder(
-      traits_.get(), stream_, cdm_context, blacklisted_decoder,
+      &traits_, stream_, cdm_context, blacklisted_decoder,
       base::BindRepeating(&DecoderStream<StreamType>::OnDecoderSelected,
                           weak_factory_.GetWeakPtr()),
       base::BindRepeating(&DecoderStream<StreamType>::OnDecodeOutputReady,
@@ -336,7 +335,7 @@ void DecoderStream<StreamType>::OnDecoderSelected(
   }
 
   // Send logs and statistics updates including the decoder name.
-  traits_->ReportStatistics(statistics_cb_, 0);
+  traits_.ReportStatistics(statistics_cb_, 0);
   media_log_->SetBooleanProperty(GetStreamTypeString() + "_dds",
                                  !!decrypting_demuxer_stream_);
   media_log_->SetStringProperty(GetStreamTypeString() + "_decoder",
@@ -345,7 +344,7 @@ void DecoderStream<StreamType>::OnDecoderSelected(
   MEDIA_LOG(INFO, media_log_)
       << "Selected " << decoder_->GetDisplayName() << " for "
       << GetStreamTypeString() << " decoding, config: "
-      << traits_->GetDecoderConfig(stream_).AsHumanReadableString();
+      << StreamTraits::GetDecoderConfig(stream_).AsHumanReadableString();
 
   if (state_ == STATE_REINITIALIZING_DECODER) {
     CompleteDecoderReinitialization(true);
@@ -400,7 +399,7 @@ void DecoderStream<StreamType>::DecodeInternal(
   DCHECK(!reset_cb_);
   DCHECK(buffer);
 
-  traits_->OnDecode(*buffer);
+  traits_.OnDecode(*buffer);
 
   int buffer_size = buffer->end_of_stream() ? 0 : buffer->data_size();
 
@@ -493,7 +492,7 @@ void DecoderStream<StreamType>::OnDecodeDone(int buffer_size,
     case DecodeStatus::OK:
       // Any successful decode counts!
       if (buffer_size > 0)
-        traits_->ReportStatistics(statistics_cb_, buffer_size);
+        traits_.ReportStatistics(statistics_cb_, buffer_size);
 
       if (state_ == STATE_NORMAL) {
         if (end_of_stream) {
@@ -541,7 +540,7 @@ void DecoderStream<StreamType>::OnDecodeOutputReady(
 
   // If the frame should be dropped, exit early and decode another frame.
   decoder_produced_a_frame_ = true;
-  if (traits_->OnDecodeDone(output) == PostDecodeAction::DROP)
+  if (traits_.OnDecodeDone(output) == PostDecodeAction::DROP)
     return;
 
   if (prepare_cb_ && output->timestamp() + AverageDuration() >=
@@ -683,8 +682,8 @@ void DecoderStream<StreamType>::OnBufferReady(
     //   lost frames if we were to fallback then).
     pending_buffers_.clear();
 
-    const DecoderConfig& config = traits_->GetDecoderConfig(stream_);
-    traits_->OnConfigChanged(config);
+    const DecoderConfig& config = StreamTraits::GetDecoderConfig(stream_);
+    traits_.OnConfigChanged(config);
 
     MEDIA_LOG(INFO, media_log_)
         << GetStreamTypeString()
@@ -738,8 +737,8 @@ void DecoderStream<StreamType>::ReinitializeDecoder() {
 
   state_ = STATE_REINITIALIZING_DECODER;
   // Decoders should not need a new CDM during reinitialization.
-  traits_->InitializeDecoder(
-      decoder_.get(), traits_->GetDecoderConfig(stream_),
+  traits_.InitializeDecoder(
+      decoder_.get(), StreamTraits::GetDecoderConfig(stream_),
       stream_->liveness() == DemuxerStream::LIVENESS_LIVE, cdm_context_,
       base::BindRepeating(&DecoderStream<StreamType>::OnDecoderReinitialized,
                           weak_factory_.GetWeakPtr()),

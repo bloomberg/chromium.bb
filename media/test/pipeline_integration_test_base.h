@@ -88,11 +88,7 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
     kExpectDemuxerFailure = 4,
     kUnreliableDuration = 8,
     kWebAudio = 16,
-    kMonoOutput = 32,
   };
-
-  // Setup method to intialize various state according to flags.
-  void ParseTestTypeFlags(uint8_t flags);
 
   // Starts the pipeline with a file specified by |filename|, optionally with a
   // CdmContext or a |test_type|, returning the final status code after it has
@@ -167,7 +163,6 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
   bool hashing_enabled_;
   bool clockless_playback_;
   bool webaudio_attached_;
-  bool mono_output_;
   std::unique_ptr<Demuxer> demuxer_;
   std::unique_ptr<DataSource> data_source_;
   std::unique_ptr<PipelineImpl> pipeline_;

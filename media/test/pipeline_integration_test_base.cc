@@ -147,13 +147,6 @@ PipelineIntegrationTestBase::~PipelineIntegrationTestBase() {
   base::RunLoop().RunUntilIdle();
 }
 
-void PipelineIntegrationTestBase::ParseTestTypeFlags(uint8_t flags) {
-  hashing_enabled_ = flags & kHashed;
-  clockless_playback_ = !(flags & kNoClockless);
-  webaudio_attached_ = flags & kWebAudio;
-  mono_output_ = flags & kMonoOutput;
-}
-
 // TODO(xhwang): Method definitions in this file needs to be reordered.
 
 void PipelineIntegrationTestBase::OnSeeked(base::TimeDelta seek_time,
@@ -237,7 +230,9 @@ PipelineStatus PipelineIntegrationTestBase::StartInternal(
     uint8_t test_type,
     CreateVideoDecodersCB prepend_video_decoders_cb,
     CreateAudioDecodersCB prepend_audio_decoders_cb) {
-  ParseTestTypeFlags(test_type);
+  hashing_enabled_ = test_type & kHashed;
+  clockless_playback_ = !(test_type & kNoClockless);
+  webaudio_attached_ = test_type & kWebAudio;
 
   EXPECT_CALL(*this, OnMetadata(_))
       .Times(AtMost(1))
@@ -469,23 +464,18 @@ std::unique_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer(
       false, &media_log_, nullptr));
 
   if (!clockless_playback_) {
-    DCHECK(!mono_output_) << " NullAudioSink doesn't specify output parameters";
-
     audio_sink_ =
         new NullAudioSink(scoped_task_environment_.GetMainThreadTaskRunner());
   } else {
-    ChannelLayout output_layout =
-        mono_output_ ? CHANNEL_LAYOUT_MONO : CHANNEL_LAYOUT_STEREO;
-
-    clockless_audio_sink_ = new ClocklessAudioSink(
-        OutputDeviceInfo("", OUTPUT_DEVICE_STATUS_OK,
-                         AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                                         output_layout, 44100, 16, 512)));
-
-    // Say "not optimized for hardware parameters" to disallow renderer
-    // resampling. Hashed tests need this avoid platform dependent floating
-    // point precision differences.
-    if (webaudio_attached_ || hashing_enabled_) {
+    clockless_audio_sink_ = new ClocklessAudioSink(OutputDeviceInfo(
+        "", OUTPUT_DEVICE_STATUS_OK,
+        // Don't allow the audio renderer to resample buffers if hashing is
+        // enabled:
+        hashing_enabled_
+            ? AudioParameters()
+            : AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                              CHANNEL_LAYOUT_STEREO, 44100, 16, 512)));
+    if (webaudio_attached_) {
       clockless_audio_sink_->SetIsOptimizedForHardwareParametersForTesting(
           false);
     }
@@ -589,7 +579,8 @@ PipelineStatus PipelineIntegrationTestBase::StartPipelineWithMediaSource(
     MockMediaSource* source,
     uint8_t test_type,
     FakeEncryptedMedia* encrypted_media) {
-  ParseTestTypeFlags(test_type);
+  hashing_enabled_ = test_type & kHashed;
+  clockless_playback_ = !(test_type & kNoClockless);
 
   if (!(test_type & kExpectDemuxerFailure))
     EXPECT_CALL(*source, InitSegmentReceivedMock(_)).Times(AtLeast(1));

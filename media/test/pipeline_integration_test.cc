@@ -992,26 +992,6 @@ TEST_P(MSEPipelineIntegrationTest, BasicPlaybackOpusWebmTrimmingHashed) {
   EXPECT_HASH_EQ(kOpusEndTrimmingHash_3, GetAudioHash());
 }
 
-TEST_F(PipelineIntegrationTest, BasicPlaybackOpusWebmHashed_MonoOutput) {
-  ASSERT_EQ(PIPELINE_OK,
-            Start("bunny-opus-intensity-stereo.webm", kHashed | kMonoOutput));
-
-  // File should have stereo output, which we know to be encoded using
-  // "phase intensity". Downmixing such files to MONO produces artifcats unless
-  // the decoder performs the downmix, which disables "phase inversion".
-  // See http://crbug.com/806219
-  AudioDecoderConfig config =
-      demuxer_->GetFirstStream(DemuxerStream::AUDIO)->audio_decoder_config();
-  ASSERT_EQ(config.channel_layout(), CHANNEL_LAYOUT_STEREO);
-
-  Play();
-
-  ASSERT_TRUE(WaitUntilOnEnded());
-
-  // Hash has very slight differences when phase inversion is enabled.
-  EXPECT_HASH_EQ("-2.36,-1.64,0.84,1.55,1.51,-0.90,", GetAudioHash());
-}
-
 TEST_F(PipelineIntegrationTest, BasicPlaybackOpusPrerollExceedsCodecDelay) {
   ASSERT_EQ(PIPELINE_OK, Start("bear-opus.webm", kHashed));
 
