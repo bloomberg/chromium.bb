@@ -3820,10 +3820,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kViewsCastDialog)},
 #endif  // defined(TOOLKIT_VIEWS)
 
+#if defined(OS_MACOSX)
     {"enable-emoji-context-menu",
      flag_descriptions::kEnableEmojiContextMenuName,
      flag_descriptions::kEnableEmojiContextMenuDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kEnableEmojiContextMenu)},
+#endif  // OS_MACOSX
 
     {"SupervisedUserCommittedInterstitials",
      flag_descriptions::kSupervisedUserCommittedInterstitialsName,
