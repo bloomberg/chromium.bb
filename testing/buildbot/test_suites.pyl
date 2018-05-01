@@ -1106,47 +1106,6 @@
     'monochrome_apk_checker': {},
   },
 
-  'linux_chromeos_rel_mus_specific_gtests': {
-    'mus_ash_unittests': {
-      'args': [
-        '--enable-features=Mus',
-      ],
-      'test': 'ash_unittests',
-    },
-    'mus_browser_tests': {
-      'args': [
-        '--enable-features=Mus',
-        '--ozone-platform=headless',
-        '--override-use-software-gl-for-tests',
-      ],
-      'swarming': {
-        'shards': 10,
-      },
-      'test': 'browser_tests',
-    },
-    'mus_content_unittests': {
-      'args': [
-        '--enable-features=Mus',
-      ],
-      'test': 'content_unittests',
-    },
-    'mus_content_browsertests': {
-      'args': [
-        '--enable-features=Mus',
-      ],
-      'swarming': {
-        'shards': 2,
-      },
-      'test': 'content_browsertests',
-    },
-    'mus_unit_tests': {
-      'args': [
-        '--enable-features=Mus',
-      ],
-      'test': 'unit_tests',
-    },
-  },
-
   'network_service_android_gtests': {
     'network_service_content_browsertests': {
       'args': [
@@ -2014,7 +1973,6 @@
   'linux_chromeos_rel_gtests': [
     # This is:
     #   linux_chromeos_dbg_gtests
-    #   + linux_chromeos_rel_mus_specific_gtests
     #   + linux_chromeos_rel_specific_gtests
     #   + mash_chromium_gtests
     'aura_gtests',
@@ -2026,7 +1984,6 @@
     'chromium_gtests_for_non_clang_win_devices_with_graphical_output',
     'linux_and_mac_non_clang_specific_chromium_gtests',
     'linux_chromeos_specific_gtests',
-    'linux_chromeos_rel_mus_specific_gtests',
     'linux_chromeos_rel_specific_gtests',
     'linux_flavor_specific_chromium_gtests',
     'mash_chromium_gtests',
@@ -2124,7 +2081,6 @@
     'chromium_gtests_for_devices_with_graphical_output',
     'chromium_gtests_for_non_clang_and_fyi_mac_win_devices_with_graphical_output',
     'chromium_gtests_for_non_clang_win_devices_with_graphical_output',
-    'linux_chromeos_rel_mus_specific_gtests',
     'linux_chromeos_specific_gtests',
     'linux_flavor_specific_chromium_gtests',
     'linux_incl_clang_specific_chromium_gtests',
@@ -2277,7 +2233,6 @@
 
   'mojo_chromiumos_fyi_gtests': [
     'aura_non_clang_gtests',
-    'linux_chromeos_rel_mus_specific_gtests',
     'mash_chromium_gtests',
     'mojo_chromiumos_specific_gtests',
     'viz_fyi_gtests',
