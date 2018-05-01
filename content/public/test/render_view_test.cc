@@ -330,10 +330,7 @@ void RenderViewTest::SetUp() {
   view_params->proxy_routing_id = MSG_ROUTING_NONE;
   view_params->hidden = false;
   view_params->never_visible = false;
-  view_params->initial_size = *InitialSizeParams();
-  view_params->enable_auto_resize = false;
-  view_params->min_size = gfx::Size();
-  view_params->max_size = gfx::Size();
+  view_params->visual_properties = *InitialVisualProperties();
 
   view_ = RenderViewImpl::Create(compositor_deps_.get(), std::move(view_params),
                                  RenderWidget::ShowCallback(),
@@ -668,12 +665,12 @@ ContentRendererClient* RenderViewTest::CreateContentRendererClient() {
   return new ContentRendererClient;
 }
 
-std::unique_ptr<VisualProperties> RenderViewTest::InitialSizeParams() {
-  auto initial_size = std::make_unique<VisualProperties>();
+std::unique_ptr<VisualProperties> RenderViewTest::InitialVisualProperties() {
+  auto initial_visual_properties = std::make_unique<VisualProperties>();
   // Ensure the view has some size so tests involving scrolling bounds work.
-  initial_size->new_size = gfx::Size(400, 300);
-  initial_size->visible_viewport_size = gfx::Size(400, 300);
-  return initial_size;
+  initial_visual_properties->new_size = gfx::Size(400, 300);
+  initial_visual_properties->visible_viewport_size = gfx::Size(400, 300);
+  return initial_visual_properties;
 }
 
 void RenderViewTest::GoToOffset(int offset,

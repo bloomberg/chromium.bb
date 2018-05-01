@@ -120,14 +120,14 @@ class RenderWidgetInitialSizeTest : public RenderWidgetTest {
   }
 
  protected:
-  std::unique_ptr<VisualProperties> InitialSizeParams() override {
-    std::unique_ptr<VisualProperties> initial_size_params(
+  std::unique_ptr<VisualProperties> InitialVisualProperties() override {
+    std::unique_ptr<VisualProperties> initial_visual_properties(
         new VisualProperties());
-    initial_size_params->new_size = initial_size_;
-    initial_size_params->compositor_viewport_pixel_size = initial_size_;
-    initial_size_params->needs_resize_ack = true;
-    initial_size_params->local_surface_id = local_surface_id_;
-    return initial_size_params;
+    initial_visual_properties->new_size = initial_size_;
+    initial_visual_properties->compositor_viewport_pixel_size = initial_size_;
+    initial_visual_properties->needs_resize_ack = true;
+    initial_visual_properties->local_surface_id = local_surface_id_;
+    return initial_visual_properties;
   }
 
   gfx::Size initial_size_;

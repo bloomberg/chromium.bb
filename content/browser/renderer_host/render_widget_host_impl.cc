@@ -856,7 +856,7 @@ bool RenderWidgetHostImpl::GetVisualProperties(
   return dirty;
 }
 
-void RenderWidgetHostImpl::SetInitialRenderSizeParams(
+void RenderWidgetHostImpl::SetInitialVisualProperties(
     const VisualProperties& visual_properties) {
   resize_ack_pending_ = visual_properties.needs_resize_ack;
 
