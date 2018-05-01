@@ -714,7 +714,6 @@ WallpaperManager.prototype.decorateCurrentWallpaperInfoBar_ = function() {
   // The info bar only exists in new wallpaper picker.
   if (!this.useNewWallpaperPicker_)
     return;
-  var image = $('current-wallpaper-image');
   var currentWallpaperInfo;
   Object.values(this.imagesInfoMap_).forEach(imagesInfo => {
     for (var i = 0; i < imagesInfo.length; ++i) {
@@ -724,7 +723,7 @@ WallpaperManager.prototype.decorateCurrentWallpaperInfoBar_ = function() {
   });
 
   // Initialize the "more options" buttons.
-  var foundImageInList = !!currentWallpaperInfo;
+  var isOnlineWallpaper = !!currentWallpaperInfo;
   var surpriseMeEnabled =
       !this.document_.body.hasAttribute('surprise-me-disabled');
   var visibleItemList = [];
@@ -733,19 +732,19 @@ WallpaperManager.prototype.decorateCurrentWallpaperInfoBar_ = function() {
     visibleItemList.push($('refresh'));
     // TODO(wzang): Add event listener to this button.
   }
-  $('explore').hidden = !foundImageInList;
+  $('explore').hidden = !isOnlineWallpaper;
   if (!$('explore').hidden) {
     visibleItemList.push($('explore'));
     $('current-wallpaper-explore-link').href =
         currentWallpaperInfo.authorWebsite;
   }
-  $('center').hidden = foundImageInList || surpriseMeEnabled;
+  $('center').hidden = isOnlineWallpaper || surpriseMeEnabled;
   if (!$('center').hidden) {
     visibleItemList.push($('center'));
     $('center').addEventListener(
         'click', this.setCustomWallpaperLayout_.bind(this, 'CENTER'));
   }
-  $('center-cropped').hidden = foundImageInList || surpriseMeEnabled;
+  $('center-cropped').hidden = isOnlineWallpaper || surpriseMeEnabled;
   if (!$('center-cropped').hidden) {
     visibleItemList.push($('center-cropped'));
     $('center-cropped')
@@ -780,9 +779,13 @@ WallpaperManager.prototype.decorateCurrentWallpaperInfoBar_ = function() {
   }
 
   $('current-wallpaper-more-options')
-      .classList.toggle('online-wallpaper', foundImageInList);
-  if (foundImageInList) {
-    // Initialize the image title and description.
+      .classList.toggle('online-wallpaper', isOnlineWallpaper);
+  var imageElement = $('current-wallpaper-image');
+  if (isOnlineWallpaper) {
+    WallpaperUtil.displayThumbnail(
+        imageElement, currentWallpaperInfo.baseURL,
+        Constants.WallpaperSourceEnum.Online);
+    // Set the image title and description.
     $('current-wallpaper-title').textContent =
         currentWallpaperInfo.displayText[0];
     $('current-wallpaper-description').innerHTML = '';
@@ -791,26 +794,21 @@ WallpaperManager.prototype.decorateCurrentWallpaperInfoBar_ = function() {
           .appendChild(
               document.createTextNode(currentWallpaperInfo.displayText[i]));
     }
-    WallpaperUtil.displayThumbnail(
-        image, currentWallpaperInfo.baseURL,
-        Constants.WallpaperSourceEnum.Online);
   } else {
-    // Show a placeholder as the image title if the current wallpaper is not
-    // found in the list.
-    $('current-wallpaper-title').textContent = str('customCategoryLabel');
-    var onSuccess = fileEntry => {
-      image.src = fileEntry.toURL();
-    };
-    var onError = e => {
-      console.error('Can not get thumbnail data for the current wallpaper.');
-      // TODO(crbug.com/824453): Decide the right UI when this error happens.
-    };
-    wallpaperDirectories.getDirectory(
-        Constants.WallpaperDirNameEnum.THUMBNAIL, dirEntry => {
-          dirEntry.getFile(
-              getBaseName(this.currentWallpaper_), {create: false}, onSuccess,
-              onError);
-        }, onError);
+    // Request the thumbnail of the current wallpaper as fallback, since the
+    // picker doesn't have access to thumbnails of other types of wallpapers.
+    var currentWallpaper = this.currentWallpaper_;
+    chrome.wallpaperPrivate.getCurrentWallpaperThumbnail(
+        imageElement.offsetHeight, imageElement.offsetWidth, thumbnail => {
+          // If the current wallpaper already changed when this function
+          // returns, do nothing.
+          if (currentWallpaper != this.currentWallpaper_)
+            return;
+          WallpaperUtil.displayImage(
+              imageElement, thumbnail, null /*opt_callback=*/);
+          // Show a placeholder as the image title.
+          $('current-wallpaper-title').textContent = str('customCategoryLabel');
+        });
   }
 
   this.updateInfoBarVisibility_();

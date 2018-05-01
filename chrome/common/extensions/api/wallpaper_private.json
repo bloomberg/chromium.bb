@@ -433,6 +433,35 @@
             "parameters": []
           }
         ]
+      },
+      {
+        "name": "getCurrentWallpaperThumbnail",
+        "type": "function",
+        "description": "Get a thumbnail of the wallpaper currently on display.",
+        "nodoc": true,
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "thumbnailWidth",
+            "description": "The desired width of the thumbnail in pixels."
+          },
+          {
+            "type": "integer",
+            "name": "thumbnailHeight",
+            "description": "The desired height of the thumbnail in pixels."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "description": "Function called upon completion.",
+            "parameters": [
+              {
+                "type": "binary",
+                "name": "thumbnail"
+              }
+            ]
+          }
+        ]
       }
     ],
     "events": [
