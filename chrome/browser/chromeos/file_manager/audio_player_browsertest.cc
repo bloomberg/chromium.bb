@@ -15,7 +15,7 @@ class AudioPlayerBrowserTestBase : public FileManagerBrowserTestBase {
     return test_case_name_.c_str();
   }
 
-  const char* GetTestManifestName() const override {
+  const char* GetTestExtensionManifestName() const override {
     return "audio_player_test_manifest.json";
   }
 

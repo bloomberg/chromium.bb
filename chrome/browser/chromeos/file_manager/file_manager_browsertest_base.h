@@ -44,14 +44,15 @@ class FileManagerBrowserTestBase : public ExtensionApiTest {
   void SetUpInProcessBrowserTestFixture() override;
   void SetUpOnMainThread() override;
 
-  // Load the test extension from GetTestManifestName(), and use it drive the
-  // testing of the actual FileManager component extension under test.
+  // Launches the test extension from GetTestExtensionManifestName() and uses
+  // it to drive the testing the actual FileManager component extension under
+  // test by calling RunTestMessageLoop().
   void StartTest();
 
   // Overrides for each FileManagerBrowserTest test extension type.
   virtual GuestMode GetGuestModeParam() const = 0;
   virtual const char* GetTestCaseNameParam() const = 0;
-  virtual const char* GetTestManifestName() const = 0;
+  virtual const char* GetTestExtensionManifestName() const = 0;
 
  private:
   // Called during setup if needed, to create a drive integration service for
@@ -59,10 +60,10 @@ class FileManagerBrowserTestBase : public ExtensionApiTest {
   drive::DriveIntegrationService* CreateDriveIntegrationService(
       Profile* profile);
 
-  // Installs the test extension with manifest |manifest_name|. The extension
+  // Launches the test extension with manifest |manifest_name|. The extension
   // manifest_name file should reside in the specified |path| relative to the
   // Chromium src directory.
-  void InstallExtension(const base::FilePath& path, const char* manifest_name);
+  void LaunchExtension(const base::FilePath& path, const char* manifest_name);
 
   // Runs the test: awaits chrome.test messsage commands and chrome.test PASS
   // or FAIL messsages to process. |OnCommand| is used to handle the commands
