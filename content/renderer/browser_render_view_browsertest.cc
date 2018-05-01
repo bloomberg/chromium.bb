@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
@@ -36,6 +37,7 @@
 #include "net/http/http_cache.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -77,61 +79,6 @@ class TestShellContentRendererClient : public ShellContentRendererClient {
   int latest_error_reason_;
   bool latest_error_stale_copy_in_cache_;
 };
-
-// Must be called on IO thread.
-void InterceptNetworkTransactions(net::URLRequestContextGetter* getter,
-                                  net::Error error) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  net::HttpCache* cache(
-      getter->GetURLRequestContext()->http_transaction_factory()->GetCache());
-  DCHECK(cache);
-  std::unique_ptr<net::FailingHttpTransactionFactory> factory(
-      new net::FailingHttpTransactionFactory(cache->GetSession(), error));
-  // Throw away old version; since this is a browser test, there is no
-  // need to restore the old state.
-  cache->SetHttpNetworkTransactionFactoryForTesting(std::move(factory));
-}
-
-void CallOnUIThreadValidatingReturn(const base::Closure& callback,
-                                    int rv) {
-  DCHECK_EQ(net::OK, rv);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE, callback);
-}
-
-// Must be called on IO thread.  The callback will be called on
-// completion of cache clearing on the UI thread.
-void BackendClearCache(std::unique_ptr<disk_cache::Backend*> backend,
-                       const base::Closure& callback,
-                       int rv) {
-  DCHECK(*backend);
-  DCHECK_EQ(net::OK, rv);
-  (*backend)->DoomAllEntries(
-      base::Bind(&CallOnUIThreadValidatingReturn, callback));
-}
-
-// Must be called on IO thread.  The callback will be called on
-// completion of cache clearing on the UI thread.
-void ClearCache(net::URLRequestContextGetter* getter,
-                const base::Closure& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  net::HttpCache* cache(
-      getter->GetURLRequestContext()->http_transaction_factory()->GetCache());
-  DCHECK(cache);
-  std::unique_ptr<disk_cache::Backend*> backend(new disk_cache::Backend*);
-  *backend = NULL;
-  disk_cache::Backend** backend_ptr = backend.get();
-
-  net::CompletionCallback backend_callback(base::Bind(
-      &BackendClearCache, base::Passed(std::move(backend)), callback));
-
-  // backend_ptr is valid until all copies of backend_callback go out
-  // of scope.
-  if (net::OK == cache->GetBackend(backend_ptr, backend_callback)) {
-    // The call completed synchronously, so GetBackend didn't run the callback.
-    std::move(backend_callback).Run(net::OK);
-  }
-}
 
 }  // namespace
 
@@ -213,18 +160,16 @@ IN_PROC_BROWSER_TEST_F(RenderViewBrowserTest,
 
   // Reload same URL after forcing an error from the the network layer;
   // confirm that the error page is told the cached copy exists.
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter =
-      shell()
-          ->web_contents()
-          ->GetMainFrame()
-          ->GetProcess()
-          ->GetStoragePartition()
-          ->GetURLRequestContext();
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&InterceptNetworkTransactions,
-                     base::RetainedRef(url_request_context_getter),
-                     net::ERR_FAILED));
+  {
+    mojo::ScopedAllowSyncCallForTesting allow_sync_call;
+    content::StoragePartition* partition = shell()
+                                               ->web_contents()
+                                               ->GetMainFrame()
+                                               ->GetProcess()
+                                               ->GetStoragePartition();
+    partition->GetNetworkContext()->SetFailingHttpTransactionForTesting(
+        net::ERR_FAILED);
+  }
 
   // An error results in one completed navigation.
   NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 1);
@@ -236,12 +181,18 @@ IN_PROC_BROWSER_TEST_F(RenderViewBrowserTest,
   EXPECT_TRUE(stale_cache_entry_present);
 
   // Clear the cache and repeat; confirm lack of entry in cache reported.
-  scoped_refptr<MessageLoopRunner> runner = new MessageLoopRunner;
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&ClearCache, base::RetainedRef(url_request_context_getter),
-                     runner->QuitClosure()));
-  runner->Run();
+  {
+    base::RunLoop run_loop;
+    content::StoragePartition* partition = shell()
+                                               ->web_contents()
+                                               ->GetMainFrame()
+                                               ->GetProcess()
+                                               ->GetStoragePartition();
+    partition->GetNetworkContext()->ClearHttpCache(
+        base::Time(), base::Time(), nullptr /* filter */,
+        base::BindOnce(run_loop.QuitClosure()));
+    run_loop.Run();
+  }
 
   content::NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 1);
 

@@ -42,7 +42,6 @@
 -AsyncResourceHandlerBrowserTest/AsyncResourceHandlerBrowserTest.UploadProgress*
 -IsolatedDevToolsProtocolTest.ControlNavigationsChildFrames
 -NavigationHandleImplBrowserTest.ErrorCodeOnRedirect
--RenderViewBrowserTest.ConfirmCacheInformationPlumbed
 -WebContentsImplBrowserTest.DownloadImage_Deny_FileImage
 
 # services/network/url_loader.cc should handle failure in
