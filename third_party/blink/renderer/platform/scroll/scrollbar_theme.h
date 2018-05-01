@@ -125,7 +125,8 @@ class PLATFORM_EXPORT ScrollbarTheme {
   virtual int TrackPosition(const ScrollbarThemeClient&);
   // The length of the track along the axis of the scrollbar.
   virtual int TrackLength(const ScrollbarThemeClient&);
-  // The opacity to be applied to the thumb.
+  // The opacity to be applied to the thumb. A theme overriding ThumbOpacity()
+  // should also override PaintThumbWithOpacity().
   virtual float ThumbOpacity(const ScrollbarThemeClient&) const { return 1.0f; }
 
   virtual bool HasButtons(const ScrollbarThemeClient&) = 0;
@@ -163,6 +164,16 @@ class PLATFORM_EXPORT ScrollbarTheme {
                            const IntRect&,
                            ScrollbarPart) {}
   virtual void PaintThumb(GraphicsContext&, const Scrollbar&, const IntRect&) {}
+
+  // Paint the thumb with ThumbOpacity() applied.
+  virtual void PaintThumbWithOpacity(GraphicsContext& context,
+                                     const Scrollbar& scrollbar,
+                                     const IntRect& rect) {
+    // By default this method just calls PaintThumb(). A theme with custom
+    // ThumbOpacity() should override this method to apply the opacity.
+    DCHECK_EQ(1.0f, ThumbOpacity(scrollbar));
+    PaintThumb(context, scrollbar, rect);
+  }
 
   virtual int MaxOverlapBetweenPages() {
     return std::numeric_limits<int>::max();
