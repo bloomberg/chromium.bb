@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_breaker.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_line_truncator.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_text_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker.h"
@@ -244,6 +245,13 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
   BidiReorder();
   box_states_->UpdateAfterReorder(&line_box_);
   LayoutUnit inline_size = box_states_->ComputeInlinePositions(&line_box_);
+
+  // Truncate the line if 'text-overflow: ellipsis' is set.
+  if (UNLIKELY(inline_size > line_info->AvailableWidth() &&
+               node_.GetLayoutBlockFlow()->ShouldTruncateOverflowingText())) {
+    inline_size = NGLineTruncator(node_, *line_info)
+                      .TruncateLine(inline_size, &line_box_);
+  }
 
   // Create box fragmetns if needed. After this point forward, |line_box_| is a
   // tree structure.

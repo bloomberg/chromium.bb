@@ -78,6 +78,14 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
           bidi_level(bidi_level) {}
     // Create an in-flow |NGPhysicalFragment|.
     Child(scoped_refptr<NGPhysicalFragment> fragment,
+          NGLogicalOffset offset,
+          LayoutUnit inline_size,
+          UBiDiLevel bidi_level)
+        : fragment(std::move(fragment)),
+          offset(offset),
+          inline_size(inline_size),
+          bidi_level(bidi_level) {}
+    Child(scoped_refptr<NGPhysicalFragment> fragment,
           LayoutUnit block_offset,
           LayoutUnit inline_size,
           UBiDiLevel bidi_level)
@@ -130,6 +138,15 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
     using const_iterator = Vector<Child, 16>::const_iterator;
     const_iterator begin() const { return children_.begin(); }
     const_iterator end() const { return children_.end(); }
+    using reverse_iterator = Vector<Child, 16>::reverse_iterator;
+    reverse_iterator rbegin() { return children_.rbegin(); }
+    reverse_iterator rend() { return children_.rend(); }
+    using const_reverse_iterator = Vector<Child, 16>::const_reverse_iterator;
+    const_reverse_iterator rbegin() const { return children_.rbegin(); }
+    const_reverse_iterator rend() const { return children_.rend(); }
+
+    Child* FirstInFlowChild();
+    Child* LastInFlowChild();
 
     // Add a child. Accepts all constructor arguments for |Child|.
     template <class... Args>
