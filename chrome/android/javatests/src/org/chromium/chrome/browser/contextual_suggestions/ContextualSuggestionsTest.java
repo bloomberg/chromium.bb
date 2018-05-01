@@ -31,15 +31,20 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
+import org.chromium.chrome.browser.test.ScreenShooter;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
+import org.chromium.chrome.test.BottomSheetTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.ViewUtils;
 import org.chromium.chrome.test.util.browser.ChromeModernDesign;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
+import org.chromium.chrome.test.util.browser.compositor.layouts.DisableChromeAnimations;
+import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.content.browser.test.util.TestWebContentsObserver;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.test.util.UiRestriction;
@@ -64,9 +69,15 @@ public class ContextualSuggestionsTest {
     public TestRule mChromeModernDesignStateRule = new ChromeModernDesign.Processor();
     @Rule
     public TestRule mFeaturesProcessor = new Features.InstrumentationProcessor();
+    @Rule
+    public ScreenShooter mScreenShooter = new ScreenShooter();
+    @Rule
+    public TestRule mDisableChromeAnimations = new DisableChromeAnimations();
 
-    private static final String TEST_PAGE = "/chrome/test/data/android/navigate/simple.html";
+    private static final String TEST_PAGE =
+            "/chrome/test/data/android/contextual_suggestions/contextual_suggestions_test.html";
 
+    private FakeContextualSuggestionsSource mFakeSource;
     private EmbeddedTestServer mTestServer;
     private ContextualSuggestionsCoordinator mCoordinator;
     private ContextualSuggestionsMediator mMediator;
@@ -75,8 +86,8 @@ public class ContextualSuggestionsTest {
 
     @Before
     public void setUp() throws Exception {
-        mContextualSuggestionsDeps.getFactory().suggestionsSource =
-                new FakeContextualSuggestionsSource();
+        mFakeSource = new FakeContextualSuggestionsSource();
+        mContextualSuggestionsDeps.getFactory().suggestionsSource = mFakeSource;
         FetchHelper.setDisableDelayForTesting(true);
 
         FakeEnabledStateMonitor stateMonitor = new FakeEnabledStateMonitor();
@@ -283,6 +294,39 @@ public class ContextualSuggestionsTest {
         assertEquals(titleWidth, title.getWidth() + menuButton.getWidth());
     }
 
+    @Test
+    @MediumTest
+    @Feature({"ContextualSuggestions", "UiCatalogue"})
+    @DisableFeatures(FeatureConstants.CONTEXTUAL_SUGGESTIONS_FEATURE)
+    public void testCaptureContextualSuggestionsBottomSheet()
+            throws InterruptedException, TimeoutException {
+        forceShowSuggestions();
+        BottomSheetTestRule.waitForWindowUpdates();
+        mScreenShooter.shoot("Contextual suggestions: peeking");
+
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_HALF, false));
+        BottomSheetTestRule.waitForWindowUpdates();
+        mScreenShooter.shoot("Contextual suggestions: half height, images loading");
+
+        ThreadUtils.runOnUiThreadBlocking(() -> mFakeSource.runImageFetchCallbacks());
+        BottomSheetTestRule.waitForWindowUpdates();
+        mScreenShooter.shoot("Contextual suggestions: half height, images loaded");
+
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_FULL, false));
+        BottomSheetTestRule.waitForWindowUpdates();
+        mScreenShooter.shoot("Contextual suggestions: full height");
+
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            RecyclerView view =
+                    (RecyclerView) mBottomSheet.getCurrentSheetContent().getContentView();
+            view.scrollToPosition(5);
+        });
+        BottomSheetTestRule.waitForWindowUpdates();
+        mScreenShooter.shoot("Contextual suggestions: scrolled");
+    }
+
     private void forceShowSuggestions() throws InterruptedException, TimeoutException {
         assertEquals("Model has incorrect number of items.",
                 (int) FakeContextualSuggestionsSource.TOTAL_ITEM_COUNT,
@@ -326,6 +370,6 @@ public class ContextualSuggestionsTest {
 
         RecyclerViewTestUtils.waitForStableRecyclerView(recyclerView);
 
-        return (SnippetArticleViewHolder) recyclerView.findViewHolderForAdapterPosition(2);
+        return (SnippetArticleViewHolder) recyclerView.findViewHolderForAdapterPosition(0);
     }
 }
