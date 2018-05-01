@@ -192,38 +192,6 @@ class MockAudioCapturerSource : public media::AudioCapturerSource {
   ~MockAudioCapturerSource() override {}
 };
 
-// Tests in csswg-test use absolute path links such as
-//   <script src="/resources/testharness.js">.
-// Because we load the tests as local files, such links don't work.
-// This function fixes this issue by rewriting file: URLs which were produced
-// from such links so that they point actual files in LayoutTests/resources/.
-//
-// Note that this isn't applied to external/wpt because tests in external/wpt
-// are accessed via http.
-WebURL RewriteAbsolutePathInCsswgTest(const std::string& utf8_url) {
-  const char kFileScheme[] = "file:///";
-  const int kFileSchemeLen = arraysize(kFileScheme) - 1;
-  if (utf8_url.compare(0, kFileSchemeLen, kFileScheme, kFileSchemeLen) != 0)
-    return WebURL();
-  if (utf8_url.find("/LayoutTests/") != std::string::npos)
-    return WebURL();
-#if defined(OS_WIN)
-  // +3 for a drive letter, :, and /.
-  const int kFileSchemeAndDriveLen = kFileSchemeLen + 3;
-  if (utf8_url.size() <= kFileSchemeAndDriveLen)
-    return WebURL();
-  std::string path = utf8_url.substr(kFileSchemeAndDriveLen);
-#else
-  std::string path = utf8_url.substr(kFileSchemeLen);
-#endif
-  base::FilePath new_path =
-      LayoutTestRenderThreadObserver::GetInstance()
-          ->webkit_source_dir()
-          .Append(FILE_PATH_LITERAL("LayoutTests/"))
-          .AppendASCII(path);
-  return WebURL(net::FilePathToFileURL(new_path));
-}
-
 }  // namespace
 
 BlinkTestRunner::BlinkTestRunner(RenderView* render_view)
@@ -327,39 +295,7 @@ WebURL BlinkTestRunner::LocalFileToDataURL(const WebURL& file_url) {
 
 WebURL BlinkTestRunner::RewriteLayoutTestsURL(const std::string& utf8_url,
                                               bool is_wpt_mode) {
-  if (is_wpt_mode) {
-    WebURL rewritten_url = RewriteAbsolutePathInCsswgTest(utf8_url);
-    if (!rewritten_url.IsEmpty())
-      return rewritten_url;
-    return WebURL(GURL(utf8_url));
-  }
-
-  const char kGenPrefix[] = "file:///gen/";
-  const int kGenPrefixLen = arraysize(kGenPrefix) - 1;
-
-  // Map "file:///gen/" to "file://<build directory>/gen/".
-  if (!utf8_url.compare(0, kGenPrefixLen, kGenPrefix, kGenPrefixLen)) {
-    base::FilePath gen_directory_path =
-        test_config_->build_directory.Append(FILE_PATH_LITERAL("gen/"));
-    std::string new_url = std::string("file://") +
-                          gen_directory_path.AsUTF8Unsafe() +
-                          utf8_url.substr(kGenPrefixLen);
-    return WebURL(GURL(new_url));
-  }
-
-  const char kPrefix[] = "file:///tmp/LayoutTests/";
-  const int kPrefixLen = arraysize(kPrefix) - 1;
-
-  if (utf8_url.compare(0, kPrefixLen, kPrefix, kPrefixLen))
-    return WebURL(GURL(utf8_url));
-
-  base::FilePath replace_path =
-      LayoutTestRenderThreadObserver::GetInstance()->webkit_source_dir()
-          .Append(FILE_PATH_LITERAL("LayoutTests/"));
-  std::string utf8_path = replace_path.AsUTF8Unsafe();
-  std::string new_url =
-      std::string("file://") + utf8_path + utf8_url.substr(kPrefixLen);
-  return WebURL(GURL(new_url));
+  return content::RewriteLayoutTestsURL(utf8_url, is_wpt_mode);
 }
 
 test_runner::TestPreferences* BlinkTestRunner::Preferences() {

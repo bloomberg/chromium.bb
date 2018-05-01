@@ -20,6 +20,7 @@ namespace blink {
 class WebInputEvent;
 class WebLocalFrame;
 struct WebSize;
+class WebURL;
 class WebURLRequest;
 class WebView;
 class WebWidget;
@@ -185,6 +186,12 @@ void ForceTextInputStateUpdateForRenderFrame(RenderFrame* render_frame);
 // Returns true if the navigation identified by the |request| was initiated by
 // the browser or renderer.
 bool IsNavigationInitiatedByRenderer(const blink::WebURLRequest& request);
+
+// RewriteURLFunction must be safe to call from any thread in the renderer
+// process.
+using RewriteURLFunction = blink::WebURL (*)(const std::string&,
+                                             bool is_wpt_mode);
+void SetWorkerRewriteURLFunction(RewriteURLFunction rewrite_url_function);
 
 }  // namespace content
 

@@ -36,17 +36,13 @@ class LayoutTestRenderThreadObserver : public RenderThreadObserver {
   test_runner::WebTestInterfaces* test_interfaces() const {
     return test_interfaces_.get();
   }
-  const base::FilePath& webkit_source_dir() const { return webkit_source_dir_; }
 
  private:
   // Message handlers.
-  void OnSetWebKitSourceDir(const base::FilePath& webkit_source_dir);
   void OnReplicateLayoutTestRuntimeFlagsChanges(
       const base::DictionaryValue& changed_layout_test_runtime_flags);
 
   std::unique_ptr<test_runner::WebTestInterfaces> test_interfaces_;
-
-  base::FilePath webkit_source_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(LayoutTestRenderThreadObserver);
 };

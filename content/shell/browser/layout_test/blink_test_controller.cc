@@ -82,21 +82,6 @@ namespace content {
 
 namespace {
 
-base::FilePath GetBuildDirectory() {
-  base::FilePath result;
-  base::PathService::Get(base::DIR_EXE, &result);
-
-#if defined(OS_MACOSX)
-  if (base::mac::AmIBundled()) {
-    // The bundled app executables (Chromium, TestShell, etc) live three
-    // levels down from the build directory, eg:
-    // Chromium.app/Contents/MacOS/Chromium
-    result = result.DirName().DirName().DirName();
-  }
-#endif
-  return result;
-}
-
 std::string DumpFrameState(const ExplodedFrameState& frame_state,
                            size_t indent,
                            bool is_current_index) {
@@ -874,7 +859,6 @@ void BlinkTestController::HandleNewRenderFrameHost(RenderFrameHost* frame) {
     params->allow_external_pages = false;
     params->current_working_directory = current_working_directory_;
     params->temp_path = temp_path_;
-    params->build_directory = GetBuildDirectory();
     params->test_url = test_url_;
     params->enable_pixel_dumping = enable_pixel_dumping_;
     params->allow_external_pages =

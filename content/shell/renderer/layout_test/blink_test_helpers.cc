@@ -7,12 +7,54 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/web_preferences.h"
 #include "content/shell/common/layout_test/layout_test_switches.h"
 #include "content/shell/test_runner/test_preferences.h"
+#include "net/base/filename_util.h"
+
+#if defined(OS_MACOSX)
+#include "base/mac/foundation_util.h"
+#endif
+
+using blink::WebURL;
+
+namespace {
+
+// Tests in csswg-test use absolute path links such as
+//   <script src="/resources/testharness.js">.
+// Because we load the tests as local files, such links don't work.
+// This function fixes this issue by rewriting file: URLs which were produced
+// from such links so that they point actual files in LayoutTests/resources/.
+//
+// Note that this isn't applied to external/wpt because tests in external/wpt
+// are accessed via http.
+WebURL RewriteAbsolutePathInCsswgTest(const std::string& utf8_url) {
+  const char kFileScheme[] = "file:///";
+  const int kFileSchemeLen = base::size(kFileScheme) - 1;
+  if (utf8_url.compare(0, kFileSchemeLen, kFileScheme, kFileSchemeLen) != 0)
+    return WebURL();
+  if (utf8_url.find("/LayoutTests/") != std::string::npos)
+    return WebURL();
+#if defined(OS_WIN)
+  // +3 for a drive letter, :, and /.
+  const int kFileSchemeAndDriveLen = kFileSchemeLen + 3;
+  if (utf8_url.size() <= kFileSchemeAndDriveLen)
+    return WebURL();
+  std::string path = utf8_url.substr(kFileSchemeAndDriveLen);
+#else
+  std::string path = utf8_url.substr(kFileSchemeLen);
+#endif
+  base::FilePath new_path = content::GetWebKitRootDirFilePath()
+                                .Append(FILE_PATH_LITERAL("LayoutTests/"))
+                                .AppendASCII(path);
+  return WebURL(net::FilePathToFileURL(new_path));
+}
+
+}  // namespace
 
 namespace content {
 
@@ -106,8 +148,62 @@ void ApplyLayoutTestDefaultPreferences(WebPreferences* prefs) {
 
 base::FilePath GetWebKitRootDirFilePath() {
   base::FilePath base_path;
-  base::PathService::Get(base::DIR_SOURCE_ROOT, &base_path);
+  bool success = base::PathService::Get(base::DIR_SOURCE_ROOT, &base_path);
+  CHECK(success);
   return base_path.Append(FILE_PATH_LITERAL("third_party/WebKit"));
+}
+
+base::FilePath GetBuildDirectory() {
+  base::FilePath result;
+  bool success = base::PathService::Get(base::DIR_EXE, &result);
+  CHECK(success);
+
+#if defined(OS_MACOSX)
+  if (base::mac::AmIBundled()) {
+    // The bundled app executables live three levels down from the build
+    // directory, eg:
+    // Content Shell.app/Contents/Frameworks/Content Shell Helper.app
+    // And this helper executable lives an additional three levels down:
+    // Content Shell Helper.app/Contents/MacOS/Content Shell Helper
+    result = result.DirName().DirName().DirName().DirName().DirName().DirName();
+  }
+#endif
+  return result;
+}
+
+WebURL RewriteLayoutTestsURL(const std::string& utf8_url, bool is_wpt_mode) {
+  if (is_wpt_mode) {
+    WebURL rewritten_url = RewriteAbsolutePathInCsswgTest(utf8_url);
+    if (!rewritten_url.IsEmpty())
+      return rewritten_url;
+    return WebURL(GURL(utf8_url));
+  }
+
+  const char kGenPrefix[] = "file:///gen/";
+  const int kGenPrefixLen = base::size(kGenPrefix) - 1;
+
+  // Map "file:///gen/" to "file://<build directory>/gen/".
+  if (!utf8_url.compare(0, kGenPrefixLen, kGenPrefix, kGenPrefixLen)) {
+    base::FilePath gen_directory_path =
+        GetBuildDirectory().Append(FILE_PATH_LITERAL("gen/"));
+    std::string new_url = std::string("file://") +
+                          gen_directory_path.AsUTF8Unsafe() +
+                          utf8_url.substr(kGenPrefixLen);
+    return WebURL(GURL(new_url));
+  }
+
+  const char kPrefix[] = "file:///tmp/LayoutTests/";
+  const int kPrefixLen = base::size(kPrefix) - 1;
+
+  if (utf8_url.compare(0, kPrefixLen, kPrefix, kPrefixLen))
+    return WebURL(GURL(utf8_url));
+
+  base::FilePath replace_path =
+      GetWebKitRootDirFilePath().Append(FILE_PATH_LITERAL("LayoutTests/"));
+  std::string utf8_path = replace_path.AsUTF8Unsafe();
+  std::string new_url =
+      std::string("file://") + utf8_path + utf8_url.substr(kPrefixLen);
+  return WebURL(GURL(new_url));
 }
 
 }  // namespace content

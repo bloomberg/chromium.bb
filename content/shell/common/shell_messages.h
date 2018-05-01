@@ -20,10 +20,6 @@
 // Tells the renderer to reset all test runners.
 IPC_MESSAGE_ROUTED0(ShellViewMsg_Reset)
 
-// Sets the path to the WebKit checkout.
-IPC_MESSAGE_CONTROL1(ShellViewMsg_SetWebKitSourceDir,
-                     base::FilePath /* webkit source dir */)
-
 // Tells the main window that a secondary renderer in a different process asked
 // to finish the test.
 IPC_MESSAGE_ROUTED0(ShellViewMsg_TestFinishedInSecondaryRenderer)

@@ -5,6 +5,8 @@
 #ifndef CONTENT_SHELL_RENDERER_LAYOUT_TEST_BLINK_TEST_HELPERS_H_
 #define CONTENT_SHELL_RENDERER_LAYOUT_TEST_BLINK_TEST_HELPERS_H_
 
+#include "third_party/blink/public/platform/web_url.h"
+
 namespace base {
 class FilePath;
 }
@@ -28,6 +30,15 @@ void ApplyLayoutTestDefaultPreferences(WebPreferences* prefs);
 
 // Returns the root of the Blink checkout.
 base::FilePath GetWebKitRootDirFilePath();
+
+// The build directory of the Blink checkout.
+base::FilePath GetBuildDirectory();
+
+// Replaces file:///tmp/LayoutTests/ with the actual path to the
+// LayoutTests directory, or rewrite URLs generated from absolute
+// path links in web-platform-tests.
+blink::WebURL RewriteLayoutTestsURL(const std::string& utf8_url,
+                                    bool is_wpt_mode);
 
 }  // namespace content
 

@@ -40,6 +40,7 @@
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/render_widget.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
+#include "content/renderer/service_worker/worker_fetch_context_impl.h"
 #include "content/shell/common/layout_test/layout_test_switches.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/test_runner/test_common.h"
@@ -263,6 +264,10 @@ void SetMockDeviceMotionData(const MotionData& data) {
 
 void SetMockDeviceOrientationData(const OrientationData& data) {
   RendererBlinkPlatformImpl::SetMockDeviceOrientationDataForTesting(data);
+}
+
+void SetWorkerRewriteURLFunction(RewriteURLFunction rewrite_url_function) {
+  WorkerFetchContextImpl::InstallRewriteURLFunction(rewrite_url_function);
 }
 
 namespace {
