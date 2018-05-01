@@ -995,25 +995,22 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
       }
     }
 
-    // Don't add WYT when user requested keyword search.
-    if (keyword_input_.text().empty()) {
-      SearchSuggestionParser::SuggestResult verbatim(
-          /*suggestion=*/trimmed_verbatim,
-          AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
-          /*subtype_identifier=*/0,
-          /*match_contents=*/trimmed_verbatim,
-          /*match_contents_prefix=*/base::string16(),
-          /*annotation=*/base::string16(), answer_contents, answer_type,
-          std::move(answer), /*suggest_query_params=*/std::string(),
-          /*deletion_url=*/std::string(),
-          /*image_dominant_color=*/std::string(),
-          /*image_url=*/std::string(),
-          /*from_keyword_provider=*/false, verbatim_relevance,
-          relevance_from_server, /*should_prefetch=*/false,
-          /*input_text=*/trimmed_verbatim);
-      AddMatchToMap(verbatim, std::string(), did_not_accept_default_suggestion,
-                    false, keyword_url != nullptr, &map);
-    }
+    SearchSuggestionParser::SuggestResult verbatim(
+        /*suggestion=*/trimmed_verbatim,
+        AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
+        /*subtype_identifier=*/0,
+        /*match_contents=*/trimmed_verbatim,
+        /*match_contents_prefix=*/base::string16(),
+        /*annotation=*/base::string16(), answer_contents, answer_type,
+        std::move(answer), /*suggest_query_params=*/std::string(),
+        /*deletion_url=*/std::string(),
+        /*image_dominant_color=*/std::string(),
+        /*image_url=*/std::string(),
+        /*from_keyword_provider=*/false, verbatim_relevance,
+        relevance_from_server, /*should_prefetch=*/false,
+        /*input_text=*/trimmed_verbatim);
+    AddMatchToMap(verbatim, std::string(), did_not_accept_default_suggestion,
+                  false, keyword_url != nullptr, &map);
   }
   if (!keyword_input_.text().empty()) {
     // We only create the verbatim search query match for a keyword
