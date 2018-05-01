@@ -39,8 +39,8 @@
 #include "third_party/blink/renderer/core/inspector/console_types.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/modules/websockets/web_pepper_socket_channel_client_proxy.h"
-#include "third_party/blink/renderer/modules/websockets/web_socket_channel.h"
-#include "third_party/blink/renderer/modules/websockets/web_socket_channel_impl.h"
+#include "third_party/blink/renderer/modules/websockets/websocket_channel.h"
+#include "third_party/blink/renderer/modules/websockets/websocket_channel_impl.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 

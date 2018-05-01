@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/modules/websockets/worker_web_socket_channel.h"
+#include "third_party/blink/renderer/modules/websockets/worker_websocket_channel.h"
 
 #include <memory>
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -440,9 +440,10 @@ void Bridge::Send(const CString& message) {
   DCHECK(main_channel_client_);
   std::unique_ptr<Vector<char>> data =
       std::make_unique<Vector<char>>(message.length());
-  if (message.length())
+  if (message.length()) {
     memcpy(data->data(), static_cast<const char*>(message.data()),
            message.length());
+  }
 
   PostCrossThreadTask(
       *parent_execution_context_task_runners_->Get(TaskType::kNetworking),
@@ -459,10 +460,11 @@ void Bridge::Send(const DOMArrayBuffer& binary_data,
   // into Vector<char>.
   std::unique_ptr<Vector<char>> data =
       std::make_unique<Vector<char>>(byte_length);
-  if (binary_data.ByteLength())
+  if (binary_data.ByteLength()) {
     memcpy(data->data(),
            static_cast<const char*>(binary_data.Data()) + byte_offset,
            byte_length);
+  }
 
   PostCrossThreadTask(
       *parent_execution_context_task_runners_->Get(TaskType::kNetworking),

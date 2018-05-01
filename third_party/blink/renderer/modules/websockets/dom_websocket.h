@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_DOM_WEB_SOCKET_H_
-#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_DOM_WEB_SOCKET_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_DOM_WEBSOCKET_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_DOM_WEBSOCKET_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -41,8 +41,8 @@
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/modules/websockets/web_socket_channel.h"
-#include "third_party/blink/renderer/modules/websockets/web_socket_channel_client.h"
+#include "third_party/blink/renderer/modules/websockets/websocket_channel.h"
+#include "third_party/blink/renderer/modules/websockets/websocket_channel_client.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/timer.h"
@@ -256,4 +256,4 @@ class MODULES_EXPORT DOMWebSocket : public EventTargetWithInlineData,
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_DOM_WEB_SOCKET_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_DOM_WEBSOCKET_H_

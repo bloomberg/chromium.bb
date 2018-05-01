@@ -28,16 +28,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WEB_SOCKET_CHANNEL_H_
-#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WEB_SOCKET_CHANNEL_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WEBSOCKET_CHANNEL_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WEBSOCKET_CHANNEL_H_
 
 #include <memory>
+#include "base/macros.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/inspector/console_types.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -48,8 +48,6 @@ class WebSocketChannelClient;
 
 class MODULES_EXPORT WebSocketChannel
     : public GarbageCollectedFinalized<WebSocketChannel> {
-  WTF_MAKE_NONCOPYABLE(WebSocketChannel);
-
  public:
   WebSocketChannel() = default;
   static WebSocketChannel* Create(ExecutionContext*, WebSocketChannelClient*);
@@ -105,8 +103,11 @@ class MODULES_EXPORT WebSocketChannel
   virtual ~WebSocketChannel() = default;
 
   virtual void Trace(blink::Visitor* visitor) {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WebSocketChannel);
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WEB_SOCKET_CHANNEL_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WEBSOCKET_CHANNEL_H_

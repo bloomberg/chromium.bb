@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_INSPECTOR_WEB_SOCKET_EVENTS_H_
-#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_INSPECTOR_WEB_SOCKET_EVENTS_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_INSPECTOR_WEBSOCKET_EVENTS_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_INSPECTOR_WEBSOCKET_EVENTS_H_
 
 #include <memory>
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"

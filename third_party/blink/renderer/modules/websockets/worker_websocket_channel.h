@@ -28,21 +28,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WORKER_WEB_SOCKET_CHANNEL_H_
-#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WORKER_WEB_SOCKET_CHANNEL_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WORKER_WEBSOCKET_CHANNEL_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WORKER_WEBSOCKET_CHANNEL_H_
 
 #include <stdint.h>
 #include <memory>
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
 #include "services/network/public/mojom/websocket.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/workers/parent_execution_context_task_runners.h"
 #include "third_party/blink/renderer/core/workers/worker_thread_lifecycle_observer.h"
-#include "third_party/blink/renderer/modules/websockets/web_socket_channel.h"
-#include "third_party/blink/renderer/modules/websockets/web_socket_channel_client.h"
-#include "third_party/blink/renderer/modules/websockets/web_socket_channel_impl.h"
+#include "third_party/blink/renderer/modules/websockets/websocket_channel.h"
+#include "third_party/blink/renderer/modules/websockets/websocket_channel_client.h"
+#include "third_party/blink/renderer/modules/websockets/websocket_channel_impl.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -59,8 +60,6 @@ class WorkerGlobalScope;
 class WorkerThreadLifecycleContext;
 
 class WorkerWebSocketChannel final : public WebSocketChannel {
-  WTF_MAKE_NONCOPYABLE(WorkerWebSocketChannel);
-
  public:
   static WebSocketChannel* Create(WorkerGlobalScope& worker_global_scope,
                                   WebSocketChannelClient* client,
@@ -103,7 +102,6 @@ class WorkerWebSocketChannel final : public WebSocketChannel {
         public WebSocketChannelClient,
         public WorkerThreadLifecycleObserver {
     USING_GARBAGE_COLLECTED_MIXIN(MainChannelClient);
-    WTF_MAKE_NONCOPYABLE(MainChannelClient);
 
    public:
     MainChannelClient(Bridge*,
@@ -151,12 +149,12 @@ class WorkerWebSocketChannel final : public WebSocketChannel {
     CrossThreadWeakPersistent<Bridge> bridge_;
     scoped_refptr<base::SingleThreadTaskRunner> worker_networking_task_runner_;
     Member<WebSocketChannelImpl> main_channel_;
+
+    DISALLOW_COPY_AND_ASSIGN(MainChannelClient);
   };
 
   // Bridge for MainChannelClient. Running on the worker thread.
   class Bridge final : public GarbageCollectedFinalized<Bridge> {
-    WTF_MAKE_NONCOPYABLE(Bridge);
-
    public:
     Bridge(WebSocketChannelClient*, WorkerGlobalScope&);
     ~Bridge();
@@ -199,6 +197,8 @@ class WorkerWebSocketChannel final : public WebSocketChannel {
     CrossThreadPersistent<ParentExecutionContextTaskRunners>
         parent_execution_context_task_runners_;
     CrossThreadPersistent<MainChannelClient> main_channel_client_;
+
+    DISALLOW_COPY_AND_ASSIGN(Bridge);
   };
 
  private:
@@ -208,8 +208,10 @@ class WorkerWebSocketChannel final : public WebSocketChannel {
 
   Member<Bridge> bridge_;
   std::unique_ptr<SourceLocation> location_at_connection_;
+
+  DISALLOW_COPY_AND_ASSIGN(WorkerWebSocketChannel);
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WORKER_WEB_SOCKET_CHANNEL_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WORKER_WEBSOCKET_CHANNEL_H_

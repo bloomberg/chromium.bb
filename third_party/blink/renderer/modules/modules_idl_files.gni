@@ -406,7 +406,7 @@ modules_idl_files =
           "webmidi/midi_output_map.idl",
           "webmidi/midi_port.idl",
           "websockets/close_event.idl",
-          "websockets/web_socket.idl",
+          "websockets/websocket.idl",
           "webusb/usb.idl",
           "webusb/usb_alternate_interface.idl",
           "webusb/usb_endpoint.idl",

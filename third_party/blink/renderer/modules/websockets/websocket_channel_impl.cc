@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/modules/websockets/web_socket_channel_impl.h"
+#include "third_party/blink/renderer/modules/websockets/websocket_channel_impl.h"
 
 #include <memory>
 
@@ -53,9 +53,9 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
-#include "third_party/blink/renderer/modules/websockets/inspector_web_socket_events.h"
-#include "third_party/blink/renderer/modules/websockets/web_socket_channel_client.h"
-#include "third_party/blink/renderer/modules/websockets/web_socket_handle_impl.h"
+#include "third_party/blink/renderer/modules/websockets/inspector_websocket_events.h"
+#include "third_party/blink/renderer/modules/websockets/websocket_channel_client.h"
+#include "third_party/blink/renderer/modules/websockets/websocket_handle_impl.h"
 #include "third_party/blink/renderer/platform/loader/fetch/unique_identifier.h"
 #include "third_party/blink/renderer/platform/network/network_log.h"
 #include "third_party/blink/renderer/platform/network/web_socket_handshake_request.h"
