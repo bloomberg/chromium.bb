@@ -10,15 +10,14 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/views/chrome_test_views_delegate.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/tree/tree_view.h"
-#include "ui/views/test/test_views_delegate.h"
 
 using base::ASCIIToUTF16;
 using base::UTF8ToUTF16;
@@ -34,9 +33,6 @@ class BookmarkEditorViewTest : public testing::Test {
   void SetUp() override {
     profile_.reset(new TestingProfile());
     profile_->CreateBookmarkModel(true);
-
-    views_delegate_.set_layout_provider(
-        ChromeLayoutProvider::CreateLayoutProvider());
 
     model_ = BookmarkModelFactory::GetForBrowserContext(profile_.get());
     bookmarks::test::WaitForBookmarkModelToLoad(model_);
@@ -115,7 +111,6 @@ class BookmarkEditorViewTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
 
   BookmarkModel* model_;
-  views::TestViewsDelegate views_delegate_;
   std::unique_ptr<TestingProfile> profile_;
 
  private:
@@ -148,6 +143,8 @@ class BookmarkEditorViewTest : public testing::Test {
         model_->AddFolder(model_->other_node(), 1, ASCIIToUTF16("OF1"));
     model_->AddURL(of1, 0, ASCIIToUTF16("of1a"), GURL(test_base + "of1a"));
   }
+
+  ChromeTestViewsDelegate views_delegate_;
 
   std::unique_ptr<BookmarkEditorView> editor_;
 };

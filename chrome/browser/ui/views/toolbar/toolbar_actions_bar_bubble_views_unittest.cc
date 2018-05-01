@@ -10,8 +10,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/toolbar/test_toolbar_actions_bar_bubble_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_bubble_delegate.h"
-#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/test/views/chrome_views_test_base.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -24,7 +24,6 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/test/test_widget_observer.h"
-#include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
 
@@ -32,7 +31,7 @@ namespace {
 const int kIconSize = 16;
 }
 
-class ToolbarActionsBarBubbleViewsTest : public views::ViewsTestBase {
+class ToolbarActionsBarBubbleViewsTest : public ChromeViewsTestBase {
  public:
   views::View* TestCreateExtraView() {
     DCHECK(bubble_);
@@ -43,15 +42,9 @@ class ToolbarActionsBarBubbleViewsTest : public views::ViewsTestBase {
   ToolbarActionsBarBubbleViewsTest() {}
   ~ToolbarActionsBarBubbleViewsTest() override {}
 
-  void SetUp() override {
-    views::ViewsTestBase::SetUp();
-    test_views_delegate()->set_layout_provider(
-        ChromeLayoutProvider::CreateLayoutProvider());
-  }
-
   void TearDown() override {
     anchor_widget_.reset();
-    views::ViewsTestBase::TearDown();
+    ChromeViewsTestBase::TearDown();
   }
 
   std::unique_ptr<views::Widget> CreateAnchorWidget() {
