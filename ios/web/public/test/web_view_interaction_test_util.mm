@@ -119,13 +119,14 @@ CGRect GetBoundingRectOfElementWithId(web::WebState* web_state,
   return CGRectMake(left * scale, top * scale, width * scale, height * scale);
 }
 
-// Returns whether the Javascript action specified by |action| ran on
-// |element_id| in the passed |web_state|. |error| can be nil, and will return
-// any error from executing JavaScript.
-bool RunActionOnWebViewElementWithId(web::WebState* web_state,
-                                     const std::string& element_id,
-                                     ElementAction action,
-                                     NSError* __autoreleasing* error) {
+// Returns whether the Javascript action specified by |action| ran on the
+// element retrieved by the Javascript snippet |element_script| in the passed
+// |web_state|. |error| can be nil, and will return any error from executing
+// JavaScript.
+bool RunActionOnWebViewElementWithScript(web::WebState* web_state,
+                                         const std::string& element_script,
+                                         ElementAction action,
+                                         NSError* __autoreleasing* error) {
   CRWWebController* web_controller =
       static_cast<WebStateImpl*>(web_state)->GetWebController();
   const char* js_action = nullptr;
@@ -140,16 +141,16 @@ bool RunActionOnWebViewElementWithId(web::WebState* web_state,
       js_action = ".submit();";
       break;
   }
-  NSString* script = [NSString
-      stringWithFormat:@"(function() {"
-                        "  var element = document.getElementById('%s');"
-                        "  if (element) {"
-                        "    element%s;"
-                        "    return true;"
-                        "  }"
-                        "  return false;"
-                        "})();",
-                       element_id.c_str(), js_action];
+  NSString* script = [NSString stringWithFormat:
+                                   @"(function() {"
+                                    "  var element = %s;"
+                                    "  if (element) {"
+                                    "    element%s;"
+                                    "    return true;"
+                                    "  }"
+                                    "  return false;"
+                                    "})();",
+                                   element_script.c_str(), js_action];
   __block bool did_complete = false;
   __block bool element_found = false;
   __block NSError* block_error = nil;
@@ -175,6 +176,19 @@ bool RunActionOnWebViewElementWithId(web::WebState* web_state,
   return js_finished && element_found;
 }
 
+// Returns whether the Javascript action specified by |action| ran on
+// |element_id| in the passed |web_state|. |error| can be nil, and will return
+// any error from executing JavaScript.
+bool RunActionOnWebViewElementWithId(web::WebState* web_state,
+                                     const std::string& element_id,
+                                     ElementAction action,
+                                     NSError* __autoreleasing* error) {
+  std::string element_script =
+      base::StringPrintf("document.getElementById('%s')", element_id.c_str());
+  return RunActionOnWebViewElementWithScript(web_state, element_script, action,
+                                             error);
+}
+
 bool TapWebViewElementWithId(web::WebState* web_state,
                              const std::string& element_id) {
   return RunActionOnWebViewElementWithId(web_state, element_id,
@@ -186,6 +200,14 @@ bool TapWebViewElementWithId(web::WebState* web_state,
                              NSError* __autoreleasing* error) {
   return RunActionOnWebViewElementWithId(web_state, element_id,
                                          ELEMENT_ACTION_CLICK, error);
+}
+
+bool TapWebViewElementWithIdInIframe(web::WebState* web_state,
+                                     const std::string& element_id) {
+  std::string element_script = base::StringPrintf(
+      "window.frames[0].document.getElementById('%s')", element_id.c_str());
+  return RunActionOnWebViewElementWithScript(web_state, element_script,
+                                             ELEMENT_ACTION_CLICK, nil);
 }
 
 bool FocusWebViewElementWithId(web::WebState* web_state,

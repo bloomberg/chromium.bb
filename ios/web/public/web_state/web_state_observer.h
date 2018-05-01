@@ -124,6 +124,9 @@ class WebStateObserver {
   // loaded).
   virtual void LoadProgressChanged(WebState* web_state, double progress) {}
 
+  // Called when the canGoBack / canGoForward state of the window was changed.
+  virtual void DidChangeBackForwardState(WebState* web_state) {}
+
   // Called when the title of the WebState is set.
   virtual void TitleWasSet(WebState* web_state) {}
 

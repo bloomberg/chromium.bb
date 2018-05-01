@@ -269,6 +269,12 @@ void TestWebState::OnDocumentSubmitted(const std::string& form_name,
   }
 }
 
+void TestWebState::OnBackForwardStateChanged() {
+  for (auto& observer : observers_) {
+    observer.DidChangeBackForwardState(this);
+  }
+}
+
 void TestWebState::OnVisibleSecurityStateChanged() {
   for (auto& observer : observers_) {
     observer.DidChangeVisibleSecurityState(this);

@@ -47,6 +47,9 @@
 - (void)webState:(web::WebState*)webState
     didChangeLoadingProgress:(double)progress;
 
+// Invoked by WebStateObserverBridge::DidChangeBackForwardState.
+- (void)webStateDidChangeBackForwardState:(web::WebState*)webState;
+
 // Invoked by WebStateObserverBridge::TitleWasSet.
 - (void)webStateDidChangeTitle:(web::WebState*)webState;
 
@@ -112,6 +115,7 @@ class WebStateObserverBridge : public web::WebStateObserver {
       web::WebState* web_state,
       web::PageLoadCompletionStatus load_completion_status) override;
   void LoadProgressChanged(web::WebState* web_state, double progress) override;
+  void DidChangeBackForwardState(web::WebState* web_state) override;
   void TitleWasSet(web::WebState* web_state) override;
   void DidChangeVisibleSecurityState(web::WebState* web_state) override;
   void DidSuppressDialog(web::WebState* web_state) override;

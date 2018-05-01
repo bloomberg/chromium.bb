@@ -777,6 +777,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (void)webViewLoadingStateDidChange;
 // Called when WKWebView title has been changed.
 - (void)webViewTitleDidChange;
+// Called when WKWebView canGoForward/canGoBack state has been changed.
+- (void)webViewBackForwardStateDidChange;
 // Called when WKWebView URL has been changed.
 - (void)webViewURLDidChange;
 // Returns YES if a KVO change to |newURL| could be a 'navigation' within the
@@ -1018,6 +1020,8 @@ GURL URLEscapedForHistory(const GURL& url) {
     @"title" : @"webViewTitleDidChange",
     @"loading" : @"webViewLoadingStateDidChange",
     @"URL" : @"webViewURLDidChange",
+    @"canGoForward" : @"webViewBackForwardStateDidChange",
+    @"canGoBack" : @"webViewBackForwardStateDidChange"
   };
 }
 
@@ -5011,6 +5015,13 @@ registerLoadRequestForURL:(const GURL&)requestURL
     // there is no way to tell if KVO change fired for new or previous page.
     [self setNavigationItemTitle:[_webView title]];
   }
+}
+
+- (void)webViewBackForwardStateDidChange {
+  // Don't trigger for LegacyNavigationManager because its back/foward state
+  // doesn't always match that of WKWebView.
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled())
+    _webStateImpl->OnBackForwardStateChanged();
 }
 
 - (void)webViewURLDidChange {

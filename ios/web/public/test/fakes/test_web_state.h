@@ -121,6 +121,7 @@ class TestWebState : public WebState {
   void OnDocumentSubmitted(const std::string& form_name,
                            bool user_initiated,
                            bool is_main_frame);
+  void OnBackForwardStateChanged();
   void OnVisibleSecurityStateChanged();
 
  private:
