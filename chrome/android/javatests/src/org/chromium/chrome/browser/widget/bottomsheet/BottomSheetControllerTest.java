@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.widget.FadingBackgroundView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.ContentPriority;
@@ -122,6 +123,36 @@ public class BottomSheetControllerTest {
         assertEquals("The bottom sheet should be peeking.", BottomSheet.SHEET_STATE_PEEK,
                 mBottomSheet.getSheetState());
         assertEquals("The bottom sheet is showing incorrect content.", mLowPriorityContent,
+                mBottomSheet.getCurrentSheetContent());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"BottomSheetController"})
+    public void testSheetHiddenAfterTabSwitcher() throws InterruptedException, TimeoutException {
+        // Open a second tab and then reselect the original activity tab.
+        Tab tab1 = mActivityTestRule.getActivity().getActivityTab();
+        ChromeTabUtils.newTabFromMenu(
+                InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
+        Tab tab2 = mActivityTestRule.getActivity().getActivityTab();
+
+        requestContentInSheet(mLowPriorityContent, true);
+
+        // Enter the tab switcher and select a different tab.
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mActivityTestRule.getActivity().getLayoutManager().showOverview(false);
+            mBottomSheet.endAnimations();
+            assertEquals("The bottom sheet should be hidden.", BottomSheet.SHEET_STATE_HIDDEN,
+                    mBottomSheet.getSheetState());
+            mActivityTestRule.getActivity().getTabModelSelector().getCurrentModel().setIndex(
+                    0, TabSelectionType.FROM_USER);
+            mActivityTestRule.getActivity().getLayoutManager().hideOverview(false);
+            mBottomSheet.endAnimations();
+        });
+
+        assertEquals("The bottom sheet still should be hidden.", BottomSheet.SHEET_STATE_HIDDEN,
+                mBottomSheet.getSheetState());
+        assertEquals("The bottom sheet is showing incorrect content.", null,
                 mBottomSheet.getCurrentSheetContent());
     }
 

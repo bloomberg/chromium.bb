@@ -25,7 +25,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
@@ -34,7 +33,6 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
 import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabStateBrowserControlsVisibilityDelegate;
@@ -50,12 +48,9 @@ import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content.browser.test.util.TestTouchUtils;
 import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.content.browser.test.util.UiUtils;
-import org.chromium.content_public.browser.RenderCoordinates;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.net.test.EmbeddedTestServer;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -173,7 +168,7 @@ public class FullscreenManagerTest {
     @LargeTest
     @Feature({"Fullscreen"})
     public void testExitPersistentFullscreenAllowsManualFullscreen() throws InterruptedException {
-        disableBrowserOverrides();
+        FullscreenManagerTestUtils.disableBrowserOverrides();
         mActivityTestRule.startMainActivityWithURL(LONG_FULLSCREEN_API_HTML_TEST_PAGE);
 
         ChromeFullscreenManager fullscreenManager =
@@ -188,22 +183,23 @@ public class FullscreenManagerTest {
         TouchCommon.singleClickView(view);
         FullscreenTestUtils.waitForPersistentFullscreen(delegate, true);
 
-        waitForBrowserControlsPosition(-browserControlsHeight);
+        FullscreenManagerTestUtils.waitForBrowserControlsPosition(
+                mActivityTestRule, -browserControlsHeight);
 
         TestTouchUtils.sleepForDoubleTapTimeout(InstrumentationRegistry.getInstrumentation());
         TouchCommon.singleClickView(view);
         FullscreenTestUtils.waitForPersistentFullscreen(delegate, false);
-        waitForBrowserControlsPosition(0);
+        FullscreenManagerTestUtils.waitForBrowserControlsPosition(mActivityTestRule, 0);
 
-        scrollBrowserControls(false);
-        scrollBrowserControls(true);
+        FullscreenManagerTestUtils.scrollBrowserControls(mActivityTestRule, false);
+        FullscreenManagerTestUtils.scrollBrowserControls(mActivityTestRule, true);
     }
 
     @Test
     @LargeTest
     @Feature({"Fullscreen"})
     public void testManualHidingShowingBrowserControls() throws InterruptedException {
-        disableBrowserOverrides();
+        FullscreenManagerTestUtils.disableBrowserOverrides();
         mActivityTestRule.startMainActivityWithURL(LONG_HTML_TEST_PAGE);
 
         final ChromeFullscreenManager fullscreenManager =
@@ -211,7 +207,8 @@ public class FullscreenManagerTest {
 
         Assert.assertEquals(fullscreenManager.getTopControlOffset(), 0f, 0);
 
-        waitForBrowserControlsToBeMoveable(mActivityTestRule.getActivity().getActivityTab());
+        FullscreenManagerTestUtils.waitForBrowserControlsToBeMoveable(
+                mActivityTestRule, mActivityTestRule.getActivity().getActivityTab());
 
         // Check that the URL bar has not grabbed focus (http://crbug/236365)
         UrlBar urlBar = (UrlBar) mActivityTestRule.getActivity().findViewById(R.id.url_bar);
@@ -223,7 +220,7 @@ public class FullscreenManagerTest {
     @Feature({"Fullscreen"})
     public void testHidingBrowserControlsRemovesSurfaceFlingerOverlay()
             throws InterruptedException {
-        disableBrowserOverrides();
+        FullscreenManagerTestUtils.disableBrowserOverrides();
         mActivityTestRule.startMainActivityWithURL(LONG_HTML_TEST_PAGE);
 
         final ChromeFullscreenManager fullscreenManager =
@@ -246,7 +243,7 @@ public class FullscreenManagerTest {
 
         // When the top-controls are removed, we need a layout to trigger the
         // transparent region for the app to be updated.
-        scrollBrowserControls(false);
+        FullscreenManagerTestUtils.scrollBrowserControls(mActivityTestRule, false);
         CriteriaHelper.pollUiThread(
                 new Criteria() {
                     @Override
@@ -279,7 +276,7 @@ public class FullscreenManagerTest {
     @LargeTest
     @Feature({"Fullscreen"})
     public void testManualFullscreenDisabledForChromePages() throws InterruptedException {
-        disableBrowserOverrides();
+        FullscreenManagerTestUtils.disableBrowserOverrides();
         // The credits page was chosen as it is a chrome:// page that is long and would support
         // manual fullscreen if it were supported.
         mActivityTestRule.startMainActivityWithURL("chrome://credits");
@@ -298,23 +295,23 @@ public class FullscreenManagerTest {
         TouchCommon.dragStart(mActivityTestRule.getActivity(), dragX, dragStartY, downTime);
         TouchCommon.dragTo(mActivityTestRule.getActivity(), dragX, dragX, dragStartY, dragFullY,
                 100, downTime);
-        waitForBrowserControlsPosition(0f);
+        FullscreenManagerTestUtils.waitForBrowserControlsPosition(mActivityTestRule, 0f);
         TouchCommon.dragEnd(mActivityTestRule.getActivity(), dragX, dragFullY, downTime);
-        waitForBrowserControlsPosition(0f);
+        FullscreenManagerTestUtils.waitForBrowserControlsPosition(mActivityTestRule, 0f);
     }
 
     @Test
     @LargeTest
     @Feature({"Fullscreen"})
     public void testControlsShownOnUnresponsiveRenderer() throws InterruptedException {
-        disableBrowserOverrides();
+        FullscreenManagerTestUtils.disableBrowserOverrides();
         mActivityTestRule.startMainActivityWithURL(LONG_HTML_TEST_PAGE);
 
         ChromeFullscreenManager fullscreenManager =
                 mActivityTestRule.getActivity().getFullscreenManager();
         Assert.assertEquals(fullscreenManager.getTopControlOffset(), 0f, 0);
 
-        scrollBrowserControls(false);
+        FullscreenManagerTestUtils.scrollBrowserControls(mActivityTestRule, false);
 
         Tab tab = mActivityTestRule.getActivity().getActivityTab();
         final TabWebContentsDelegateAndroid delegate =
@@ -325,7 +322,7 @@ public class FullscreenManagerTest {
                 delegate.rendererUnresponsive();
             }
         });
-        waitForBrowserControlsPosition(0f);
+        FullscreenManagerTestUtils.waitForBrowserControlsPosition(mActivityTestRule, 0f);
 
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
@@ -346,7 +343,7 @@ public class FullscreenManagerTest {
     @Test
     @DisabledTest(message = "crbug.com/642336")
     public void testPrerenderedPageSupportsManualHiding() throws InterruptedException {
-        disableBrowserOverrides();
+        FullscreenManagerTestUtils.disableBrowserOverrides();
         mActivityTestRule.startMainActivityOnBlankPage();
 
         EmbeddedTestServer testServer =
@@ -364,7 +361,7 @@ public class FullscreenManagerTest {
             OmniboxTestUtils.toggleUrlBarFocus(urlBar, false);
             OmniboxTestUtils.waitForFocusAndKeyboardActive(urlBar, false);
 
-            waitForBrowserControlsToBeMoveable(tab);
+            FullscreenManagerTestUtils.waitForBrowserControlsToBeMoveable(mActivityTestRule, tab);
         } finally {
             testServer.stopAndDestroyServer();
         }
@@ -377,7 +374,7 @@ public class FullscreenManagerTest {
     @DisabledTest(message = "crbug.com/698413")
     public void testBrowserControlsShownWhenInputIsFocused()
             throws InterruptedException, TimeoutException {
-        disableBrowserOverrides();
+        FullscreenManagerTestUtils.disableBrowserOverrides();
         mActivityTestRule.startMainActivityWithURL(LONG_HTML_WITH_AUTO_FOCUS_INPUT_TEST_PAGE);
 
         ChromeFullscreenManager fullscreenManager =
@@ -401,121 +398,8 @@ public class FullscreenManagerTest {
                 "document.getElementById('input_text').blur();");
         waitForEditableNodeToLoseFocus(tab);
 
-        waitForBrowserControlsToBeMoveable(mActivityTestRule.getActivity().getActivityTab());
-    }
-
-    private void scrollBrowserControls(boolean show) {
-        ChromeFullscreenManager fullscreenManager =
-                mActivityTestRule.getActivity().getFullscreenManager();
-        int browserControlsHeight = fullscreenManager.getTopControlsHeight();
-
-        waitForPageToBeScrollable(mActivityTestRule.getActivity().getActivityTab());
-
-        float dragX = 50f;
-        // Use a larger scroll range than the height of the browser controls to ensure we overcome
-        // the delay in a scroll start being sent.
-        float dragStartY = browserControlsHeight * 3;
-        float dragEndY = dragStartY - browserControlsHeight * 2;
-        float expectedPosition = -browserControlsHeight;
-        if (show) {
-            expectedPosition = 0f;
-            float tempDragStartY = dragStartY;
-            dragStartY = dragEndY;
-            dragEndY = tempDragStartY;
-        }
-        long downTime = SystemClock.uptimeMillis();
-        TouchCommon.dragStart(mActivityTestRule.getActivity(), dragX, dragStartY, downTime);
-        TouchCommon.dragTo(
-                mActivityTestRule.getActivity(), dragX, dragX, dragStartY, dragEndY, 100, downTime);
-        TouchCommon.dragEnd(mActivityTestRule.getActivity(), dragX, dragEndY, downTime);
-        waitForBrowserControlsPosition(expectedPosition);
-    }
-
-    private void waitForBrowserControlsPosition(float position) {
-        final ChromeFullscreenManager fullscreenManager =
-                mActivityTestRule.getActivity().getFullscreenManager();
-        CriteriaHelper.pollUiThread(Criteria.equals(position, new Callable<Float>() {
-            @Override
-            public Float call() {
-                return fullscreenManager.getTopControlOffset();
-            }
-        }));
-    }
-
-    private void waitForPageToBeScrollable(final Tab tab) {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return RenderCoordinates.fromWebContents(tab.getWebContents())
-                               .getContentHeightPixInt()
-                        > tab.getContentView().getHeight();
-            }
-        });
-    }
-
-    /**
-     * Waits for the browser controls to be moveable by user gesture.
-     * <p>
-     * This function requires the browser controls to start fully visible.  It till then ensure that
-     * at some point the controls can be moved by user gesture.  It will then fully cycle the top
-     * controls to entirely hidden and back to fully shown.
-     */
-    private void waitForBrowserControlsToBeMoveable(final Tab tab) throws InterruptedException {
-        waitForBrowserControlsPosition(0f);
-
-        final CallbackHelper contentMovedCallback = new CallbackHelper();
-        final ChromeFullscreenManager fullscreenManager =
-                mActivityTestRule.getActivity().getFullscreenManager();
-        final float initialVisibleContentOffset = fullscreenManager.getTopVisibleContentOffset();
-
-        fullscreenManager.addListener(new FullscreenListener() {
-            @Override
-            public void onControlsOffsetChanged(float topOffset, float bottomOffset,
-                    boolean needsAnimate) {
-                if (fullscreenManager.getTopVisibleContentOffset() != initialVisibleContentOffset) {
-                    contentMovedCallback.notifyCalled();
-                    fullscreenManager.removeListener(this);
-                }
-            }
-
-            @Override
-            public void onToggleOverlayVideoMode(boolean enabled) {
-            }
-
-            @Override
-            public void onContentOffsetChanged(float offset) {
-            }
-
-            @Override
-            public void onBottomControlsHeightChanged(int bottomControlsHeight) {
-            }
-        });
-
-        float dragX = 50f;
-        float dragStartY = tab.getView().getHeight() - 50f;
-
-        for (int i = 0; i < 10; i++) {
-            float dragEndY = dragStartY - fullscreenManager.getTopControlsHeight();
-
-            long downTime = SystemClock.uptimeMillis();
-            TouchCommon.dragStart(mActivityTestRule.getActivity(), dragX, dragStartY, downTime);
-            TouchCommon.dragTo(mActivityTestRule.getActivity(), dragX, dragX, dragStartY, dragEndY,
-                    100, downTime);
-            TouchCommon.dragEnd(mActivityTestRule.getActivity(), dragX, dragEndY, downTime);
-
-            try {
-                contentMovedCallback.waitForCallback(0, 1, 500, TimeUnit.MILLISECONDS);
-
-                scrollBrowserControls(false);
-                scrollBrowserControls(true);
-
-                return;
-            } catch (TimeoutException e) {
-                // Ignore and retry
-            }
-        }
-
-        Assert.fail("Visible content never moved as expected.");
+        FullscreenManagerTestUtils.waitForBrowserControlsToBeMoveable(
+                mActivityTestRule, mActivityTestRule.getActivity().getActivityTab());
     }
 
     private void waitForEditableNodeToLoseFocus(final Tab tab) {
@@ -525,15 +409,6 @@ public class FullscreenManagerTest {
                 SelectionPopupController controller =
                         SelectionPopupController.fromWebContents(tab.getWebContents());
                 return !controller.isFocusedNodeEditable();
-            }
-        });
-    }
-
-    private void disableBrowserOverrides() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                BrowserStateBrowserControlsVisibilityDelegate.disableForTesting();
             }
         });
     }
