@@ -14,6 +14,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chrome/test/views/scoped_macviews_browser_mode.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -42,22 +43,39 @@ class WindowActivityWatcherTest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
+    // Browser is created in BrowserMain() before the test UKM recorder.
+    ASSERT_EQ(0u, ukm_entry_checker_->NumEntries(kEntryName));
+
 #if defined(OS_MACOSX)
-    // On Mac, the browser window needs to be forced to the front.
+    // On Mac, the browser window needs to be forced to the front. This will
+    // create a UKM entry for the activation because it happens after the
+    // WindowActivityWatcher creation. On other platforms, activation happens
+    // before creation, and as a result, no UKM entry is created.
+    // TODO(crbug.com/650859): Reassess after activation is restored in the
+    // focus manager.
     ui_test_utils::BrowserActivationWaiter waiter(browser());
     ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
     waiter.WaitForActivation();
     ASSERT_TRUE(browser()->window()->IsActive());
-#endif
 
-    // Browser is created in BrowserMain() before the test UKM recorder.
-    ASSERT_EQ(0u, ukm_entry_checker_->NumEntries(kEntryName));
+    UkmMetricMap expected_metrics({
+        {TabManager_WindowMetrics::kWindowIdName, browser()->session_id().id()},
+        {TabManager_WindowMetrics::kShowStateName,
+         WindowMetricsEvent::SHOW_STATE_NORMAL},
+        {TabManager_WindowMetrics::kTypeName, WindowMetricsEvent::TYPE_TABBED},
+        {TabManager_WindowMetrics::kIsActiveName, 1},
+        {TabManager_WindowMetrics::kTabCountName, 1},
+    });
+    ukm_entry_checker_->ExpectNewEntry(kEntryName, GURL(), expected_metrics);
+#endif
   }
 
  protected:
   std::unique_ptr<UkmEntryChecker> ukm_entry_checker_;
 
  private:
+  test::ScopedMacViewsBrowserMode views_mode_{true};
+
   DISALLOW_COPY_AND_ASSIGN(WindowActivityWatcherTest);
 };
 
