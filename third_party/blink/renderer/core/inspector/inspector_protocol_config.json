@@ -1,11 +1,11 @@
 {
     "protocol": {
         "path": "browser_protocol.pdl",
-        "package": "core/inspector/protocol",
+        "package": "third_party/blink/renderer/core/inspector/protocol",
         "output": "inspector/protocol",
         "namespace": ["blink", "protocol"],
         "export_macro": "CORE_EXPORT",
-        "export_header": "core/core_export.h",
+        "export_header": "third_party/blink/renderer/core/core_export.h",
         "options": [
             {
                 "domain": "Accessibility"
@@ -125,10 +125,10 @@
     },
 
     "lib": {
-        "package": "core/inspector/protocol",
+        "package": "third_party/blink/renderer/core/inspector/protocol",
         "output": "inspector/protocol",
-        "string_header": "core/inspector/v8_inspector_string.h",
+        "string_header": "third_party/blink/renderer/core/inspector/v8_inspector_string.h",
         "export_macro": "CORE_EXPORT",
-        "export_header": "core/core_export.h"
+        "export_header": "third_party/blink/renderer/core/core_export.h"
     }
 }
