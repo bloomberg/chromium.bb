@@ -104,6 +104,14 @@ void WebStateObserverBridge::LoadProgressChanged(web::WebState* web_state,
   }
 }
 
+void WebStateObserverBridge::DidChangeBackForwardState(
+    web::WebState* web_state) {
+  SEL selector = @selector(webStateDidChangeBackForwardState:);
+  if ([observer_ respondsToSelector:selector]) {
+    [observer_ webStateDidChangeBackForwardState:web_state];
+  }
+}
+
 void WebStateObserverBridge::TitleWasSet(web::WebState* web_state) {
   if ([observer_ respondsToSelector:@selector(webStateDidChangeTitle:)]) {
     [observer_ webStateDidChangeTitle:web_state];

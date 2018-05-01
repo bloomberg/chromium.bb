@@ -85,6 +85,9 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   // candidates received in OnFaviconUrlUpdated.
   void OnNavigationFinished(web::NavigationContext* context);
 
+  // Called when current window's canGoBack / canGoForward state was changed.
+  void OnBackForwardStateChanged();
+
   // Called when page title was changed.
   void OnTitleChanged();
 

@@ -175,6 +175,11 @@ void WebStateImpl::SetWebController(CRWWebController* web_controller) {
   web_controller_ = web_controller;
 }
 
+void WebStateImpl::OnBackForwardStateChanged() {
+  for (auto& observer : observers_)
+    observer.DidChangeBackForwardState(this);
+}
+
 void WebStateImpl::OnTitleChanged() {
   for (auto& observer : observers_)
     observer.TitleWasSet(this);

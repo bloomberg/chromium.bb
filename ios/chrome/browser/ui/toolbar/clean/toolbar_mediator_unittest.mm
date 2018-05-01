@@ -320,7 +320,7 @@ TEST_F(ToolbarMediatorTest, TestToolbarSetupWithNoWebstateList) {
   [[[consumer_ reject] ignoringNonObjectArgs] setTabCount:0];
 }
 
-// Test the Toolbar Setup gets called when the mediator's WebState and Consumer
+// Tests the Toolbar Setup gets called when the mediator's WebState and Consumer
 // have been set.
 TEST_F(ToolbarMediatorTest, TestToolbarSetup) {
   mediator_.webStateList = web_state_list_.get();
@@ -333,7 +333,7 @@ TEST_F(ToolbarMediatorTest, TestToolbarSetup) {
   [[consumer_ verify] setShareMenuEnabled:NO];
 }
 
-// Test the Toolbar Setup gets called when the mediator's WebState and Consumer
+// Tests the Toolbar Setup gets called when the mediator's WebState and Consumer
 // have been set in reverse order.
 TEST_F(ToolbarMediatorTest, TestToolbarSetupReverse) {
   mediator_.consumer = consumer_;
@@ -364,8 +364,8 @@ TEST_F(ToolbarMediatorTest, TestWebstateListRelatedSetupReverse) {
   [[consumer_ verify] setTabCount:3];
 }
 
-// Test the Toolbar is updated when the Webstate observer method DidStartLoading
-// is triggered by SetLoading.
+// Tests the Toolbar is updated when the Webstate observer method
+// DidStartLoading is triggered by SetLoading.
 TEST_F(ToolbarMediatorTest, TestDidStartLoading) {
   // Change the default loading state to false to verify the Webstate
   // callback with true.
@@ -378,7 +378,7 @@ TEST_F(ToolbarMediatorTest, TestDidStartLoading) {
   [[consumer_ verify] setLoadingState:YES];
 }
 
-// Test the Toolbar is updated when the Webstate observer method DidStopLoading
+// Tests the Toolbar is updated when the Webstate observer method DidStopLoading
 // is triggered by SetLoading.
 TEST_F(ToolbarMediatorTest, TestDidStopLoading) {
   mediator_.webStateList = web_state_list_.get();
@@ -389,7 +389,7 @@ TEST_F(ToolbarMediatorTest, TestDidStopLoading) {
   [[consumer_ verify] setLoadingState:NO];
 }
 
-// Test the Toolbar is updated when the Webstate observer method
+// Tests the Toolbar is updated when the Webstate observer method
 // DidLoadPageWithSuccess is triggered by OnPageLoaded.
 TEST_F(ToolbarMediatorTest, TestDidLoadPageWithSucess) {
   SetUpBookmarks();
@@ -410,7 +410,7 @@ TEST_F(ToolbarMediatorTest, TestDidLoadPageWithSucess) {
   [[consumer_ verify] setShareMenuEnabled:YES];
 }
 
-// Test the Toolbar is updated when the Webstate observer method
+// Tests the Toolbar is updated when the Webstate observer method
 // didFinishNavigation is called.
 TEST_F(ToolbarMediatorTest, TestDidFinishNavigation) {
   SetUpBookmarks();
@@ -432,8 +432,8 @@ TEST_F(ToolbarMediatorTest, TestDidFinishNavigation) {
   [[consumer_ verify] setShareMenuEnabled:YES];
 }
 
-// Test the Toolbar is updated when the Webstate observer method
-// didFinishNavigation is called.
+// Tests the Toolbar is updated when the Webstate observer method
+// didChangeVisibleSecurityState is called.
 TEST_F(ToolbarMediatorTest, TestDidChangeVisibleSecurityState) {
   SetUpBookmarks();
   mediator_.webStateList = web_state_list_.get();
@@ -453,7 +453,7 @@ TEST_F(ToolbarMediatorTest, TestDidChangeVisibleSecurityState) {
   [[consumer_ verify] setShareMenuEnabled:YES];
 }
 
-// Test the Toolbar is updated when the Webstate observer method
+// Tests the Toolbar is updated when the Webstate observer method
 // didChangeLoadingProgress is called.
 TEST_F(ToolbarMediatorTest, TestLoadingProgress) {
   mediator_.webStateList = web_state_list_.get();
@@ -462,6 +462,22 @@ TEST_F(ToolbarMediatorTest, TestLoadingProgress) {
 
   [mediator_ webState:web_state_ didChangeLoadingProgress:0.42];
   [[consumer_ verify] setLoadingProgressFraction:0.42];
+}
+
+// Tests the Toolbar is updated when Webstate observer method
+// didChangeBackForwardState is called.
+TEST_F(ToolbarMediatorTest, TestDidChangeBackForwardState) {
+  mediator_.webStateList = web_state_list_.get();
+  SetUpActiveWebState();
+  mediator_.consumer = consumer_;
+
+  navigation_manager_->set_can_go_forward(true);
+  navigation_manager_->set_can_go_back(true);
+
+  web_state_->OnBackForwardStateChanged();
+
+  [[consumer_ verify] setCanGoForward:YES];
+  [[consumer_ verify] setCanGoBack:YES];
 }
 
 // Test that increasing the number of Webstates will update the consumer with

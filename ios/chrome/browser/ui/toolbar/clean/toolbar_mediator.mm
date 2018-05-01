@@ -122,6 +122,11 @@
   [self.consumer setLoadingProgressFraction:progress];
 }
 
+- (void)webStateDidChangeBackForwardState:(web::WebState*)webState {
+  DCHECK_EQ(_webState, webState);
+  [self updateConsumer];
+}
+
 - (void)webStateDidChangeVisibleSecurityState:(web::WebState*)webState {
   DCHECK_EQ(_webState, webState);
   [self updateConsumer];
