@@ -938,12 +938,6 @@ std::string FragmentShader::GetShaderSource() const {
       break;
   }
 
-  // Premultiply by alpha.
-  if (premultiply_alpha_mode_ == NON_PREMULTIPLIED_ALPHA) {
-    SRC("// Premultiply alpha");
-    SRC("texColor.rgb *= texColor.a;");
-  }
-
   // Apply color conversion.
   switch (color_conversion_mode_) {
     case COLOR_CONVERSION_MODE_LUT:
@@ -961,13 +955,30 @@ std::string FragmentShader::GetShaderSource() const {
       HDR("             LutLookup(sampler, pos.xy + vec2(0, 1.0 / size)),");
       HDR("             pos.z - layer);");
       HDR("}");
+      // Un-premultiply by alpha.
+      if (premultiply_alpha_mode_ != NON_PREMULTIPLIED_ALPHA) {
+        SRC("// un-premultiply alpha");
+        SRC("if (texColor.a > 0.0) texColor.rgb /= texColor.a;");
+      }
       SRC("texColor.rgb = LUT(lut_texture, texColor.xyz, lut_size).xyz;");
+      SRC("texColor.rgb *= texColor.a;");
       break;
     case COLOR_CONVERSION_MODE_SHADER:
       header += color_transform_->GetShaderSource();
+      // Un-premultiply by alpha.
+      if (premultiply_alpha_mode_ != NON_PREMULTIPLIED_ALPHA) {
+        SRC("// un-premultiply alpha");
+        SRC("if (texColor.a > 0.0) texColor.rgb /= texColor.a;");
+      }
       SRC("texColor.rgb = DoColorConversion(texColor.xyz);");
+      SRC("texColor.rgb *= texColor.a;");
       break;
     case COLOR_CONVERSION_MODE_NONE:
+      // Premultiply by alpha.
+      if (premultiply_alpha_mode_ == NON_PREMULTIPLIED_ALPHA) {
+        SRC("// Premultiply alpha");
+        SRC("texColor.rgb *= texColor.a;");
+      }
       break;
   }
 
