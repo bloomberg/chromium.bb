@@ -22,7 +22,7 @@ ShellWebMainParts::~ShellWebMainParts() {
 
 void ShellWebMainParts::PreMainMessageLoopStart() {
   base::FilePath pak_path;
-  PathService::Get(base::DIR_MODULE, &pak_path);
+  base::PathService::Get(base::DIR_MODULE, &pak_path);
   ui::ResourceBundle::InitSharedInstanceWithPakPath(
       pak_path.AppendASCII("web_shell_resources.pak"));
 }

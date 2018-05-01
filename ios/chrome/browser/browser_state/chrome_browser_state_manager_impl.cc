@@ -103,7 +103,7 @@ void BrowserStateSizeTask(const base::FilePath& path) {
 // Gets the user data directory.
 base::FilePath GetUserDataDir() {
   base::FilePath user_data_dir;
-  bool result = PathService::Get(ios::DIR_USER_DATA, &user_data_dir);
+  bool result = base::PathService::Get(ios::DIR_USER_DATA, &user_data_dir);
   DCHECK(result);
   return user_data_dir;
 }

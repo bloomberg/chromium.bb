@@ -308,7 +308,7 @@ void ApplicationContextImpl::CreateLocalState() {
   DCHECK(!local_state_);
 
   base::FilePath local_state_path;
-  CHECK(PathService::Get(ios::FILE_LOCAL_STATE, &local_state_path));
+  CHECK(base::PathService::Get(ios::FILE_LOCAL_STATE, &local_state_path));
   scoped_refptr<PrefRegistrySimple> pref_registry(new PrefRegistrySimple);
 
   // Register local state preferences.
@@ -336,7 +336,7 @@ void ApplicationContextImpl::CreateGCMDriver() {
   DCHECK(!gcm_driver_);
 
   base::FilePath store_path;
-  CHECK(PathService::Get(ios::DIR_GLOBAL_GCM_STORE, &store_path));
+  CHECK(base::PathService::Get(ios::DIR_GLOBAL_GCM_STORE, &store_path));
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner(
       base::CreateSequencedTaskRunnerWithTraits(

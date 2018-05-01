@@ -29,7 +29,7 @@ const base::FilePath::CharType kProductDirName[] =
 #endif
 
 bool GetDefaultUserDataDirectory(base::FilePath* result) {
-  if (!PathService::Get(base::DIR_APP_DATA, result)) {
+  if (!base::PathService::Get(base::DIR_APP_DATA, result)) {
     NOTREACHED();
     return false;
   }
@@ -58,7 +58,7 @@ bool PathProvider(int key, base::FilePath* result) {
       break;
 
     case DIR_TEST_DATA:
-      if (!PathService::Get(base::DIR_SOURCE_ROOT, &cur))
+      if (!base::PathService::Get(base::DIR_SOURCE_ROOT, &cur))
         return false;
       cur = cur.Append(FILE_PATH_LITERAL("ios"));
       cur = cur.Append(FILE_PATH_LITERAL("chrome"));
@@ -67,13 +67,13 @@ bool PathProvider(int key, base::FilePath* result) {
       break;
 
     case DIR_GLOBAL_GCM_STORE:
-      if (!PathService::Get(DIR_USER_DATA, &cur))
+      if (!base::PathService::Get(DIR_USER_DATA, &cur))
         return false;
       cur = cur.Append(gcm_driver::kGCMStoreDirname);
       break;
 
     case FILE_LOCAL_STATE:
-      if (!PathService::Get(DIR_USER_DATA, &cur))
+      if (!base::PathService::Get(DIR_USER_DATA, &cur))
         return false;
       cur = cur.Append(FILE_PATH_LITERAL("Local State"));
       break;
@@ -98,7 +98,7 @@ bool PathProvider(int key, base::FilePath* result) {
 }  // namespace
 
 void RegisterPathProvider() {
-  PathService::RegisterProvider(PathProvider, PATH_START, PATH_END);
+  base::PathService::RegisterProvider(PathProvider, PATH_START, PATH_END);
 }
 
 void GetUserCacheDirectory(const base::FilePath& browser_state_dir,
@@ -110,10 +110,10 @@ void GetUserCacheDirectory(const base::FilePath& browser_state_dir,
   *result = browser_state_dir;
 
   base::FilePath app_data_dir;
-  if (!PathService::Get(base::DIR_APP_DATA, &app_data_dir))
+  if (!base::PathService::Get(base::DIR_APP_DATA, &app_data_dir))
     return;
   base::FilePath cache_dir;
-  if (!PathService::Get(base::DIR_CACHE, &cache_dir))
+  if (!base::PathService::Get(base::DIR_CACHE, &cache_dir))
     return;
   if (!app_data_dir.AppendRelativePath(browser_state_dir, &cache_dir))
     return;

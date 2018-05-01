@@ -73,7 +73,8 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
 
     // Setup the cookie store.
     base::FilePath cookie_path;
-    bool cookie_path_found = PathService::Get(base::DIR_APP_DATA, &cookie_path);
+    bool cookie_path_found =
+        base::PathService::Get(base::DIR_APP_DATA, &cookie_path);
     DCHECK(cookie_path_found);
     cookie_path = cookie_path.Append("WebShell").Append("Cookies");
     scoped_refptr<net::CookieMonster::PersistentCookieStore> persistent_store =

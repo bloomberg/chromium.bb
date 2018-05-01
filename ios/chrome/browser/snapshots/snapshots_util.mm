@@ -50,7 +50,7 @@ void ClearIOSSnapshots(base::OnceClosure callback) {
 void GetSnapshotsPaths(std::vector<base::FilePath>* snapshots_paths) {
   DCHECK(snapshots_paths);
   base::FilePath snapshots_dir;
-  PathService::Get(base::DIR_CACHE, &snapshots_dir);
+  base::PathService::Get(base::DIR_CACHE, &snapshots_dir);
   // Snapshots are located in a path with the bundle ID used twice.
   snapshots_dir = snapshots_dir.Append("Snapshots")
                       .Append(base::mac::BaseBundleID())

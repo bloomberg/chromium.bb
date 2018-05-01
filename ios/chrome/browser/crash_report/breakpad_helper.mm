@@ -132,8 +132,9 @@ void Start(const std::string& channel_name) {
   NSString* cachePath = [cachesDirectories objectAtIndex:0];
   NSString* dumpDirectory =
       [cachePath stringByAppendingPathComponent:@kDefaultLibrarySubdirectory];
-  PathService::Override(ios::DIR_CRASH_DUMPS,
-                        base::FilePath(base::SysNSStringToUTF8(dumpDirectory)));
+  base::PathService::Override(
+      ios::DIR_CRASH_DUMPS,
+      base::FilePath(base::SysNSStringToUTF8(dumpDirectory)));
 }
 
 void SetEnabled(bool enabled) {
@@ -164,7 +165,7 @@ bool IsUploadingEnabled() {
 
 void CleanupCrashReports() {
   base::FilePath crash_directory;
-  PathService::Get(ios::DIR_CRASH_DUMPS, &crash_directory);
+  base::PathService::Get(ios::DIR_CRASH_DUMPS, &crash_directory);
   base::PostTaskWithTraits(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::BindOnce(&DeleteAllReportsInDirectory, crash_directory));

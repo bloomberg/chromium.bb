@@ -71,7 +71,7 @@ WebViewBrowserState::WebViewBrowserState(
   // ChromeWebView is not predetermined, so IO access is temporarily allowed.
   bool wasIOAllowed = base::ThreadRestrictions::SetIOAllowed(true);
 
-  CHECK(PathService::Get(base::DIR_APP_DATA, &path_));
+  CHECK(base::PathService::Get(base::DIR_APP_DATA, &path_));
 
   request_context_getter_ = new WebViewURLRequestContextGetter(
       GetStatePath(),

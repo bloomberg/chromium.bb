@@ -58,7 +58,7 @@ favicon_base::FaviconRawBitmapResult CreateTestBitmap() {
   favicon_base::FaviconRawBitmapResult result;
   result.expired = false;
   base::FilePath favicon_path;
-  PathService::Get(ios::DIR_TEST_DATA, &favicon_path);
+  base::PathService::Get(ios::DIR_TEST_DATA, &favicon_path);
   favicon_path =
       favicon_path.Append(FILE_PATH_LITERAL("favicon/test_favicon.png"));
   NSData* favicon_data = [NSData

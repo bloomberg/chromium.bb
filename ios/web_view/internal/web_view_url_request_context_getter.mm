@@ -72,7 +72,8 @@ net::URLRequestContext* WebViewURLRequestContextGetter::GetURLRequestContext() {
 
     // Setup the cookie store.
     base::FilePath cookie_path;
-    bool cookie_path_found = PathService::Get(base::DIR_APP_DATA, &cookie_path);
+    bool cookie_path_found =
+        base::PathService::Get(base::DIR_APP_DATA, &cookie_path);
     DCHECK(cookie_path_found);
     cookie_path = cookie_path.Append("ChromeWebView").Append("Cookies");
     scoped_refptr<net::CookieMonster::PersistentCookieStore> persistent_store =
@@ -111,7 +112,7 @@ net::URLRequestContext* WebViewURLRequestContextGetter::GetURLRequestContext() {
 
     // Setup channel id store.
     base::FilePath channel_id_path;
-    PathService::Get(base::DIR_APP_DATA, &channel_id_path);
+    base::PathService::Get(base::DIR_APP_DATA, &channel_id_path);
     channel_id_path =
         channel_id_path.Append("ChromeWebView").Append("Channel ID");
     scoped_refptr<net::SQLiteChannelIDStore> channel_id_db =
