@@ -186,7 +186,7 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
   using RenderWidgetHostImpl::GetVisualProperties;
   using RenderWidgetHostImpl::OnResizeOrRepaintACK;
   using RenderWidgetHostImpl::RendererExited;
-  using RenderWidgetHostImpl::SetInitialRenderSizeParams;
+  using RenderWidgetHostImpl::SetInitialVisualProperties;
   using RenderWidgetHostImpl::old_visual_properties_;
   using RenderWidgetHostImpl::is_hidden_;
   using RenderWidgetHostImpl::resize_ack_pending_;
@@ -679,7 +679,7 @@ class RenderWidgetHostTest : public testing::Test {
     view_.reset(new TestView(host_.get()));
     ConfigureView(view_.get());
     host_->SetView(view_.get());
-    SetInitialRenderSizeParams();
+    SetInitialVisualProperties();
     host_->Init();
     host_->DisableGestureDebounce();
 
@@ -735,10 +735,10 @@ class RenderWidgetHostTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  void SetInitialRenderSizeParams() {
-    VisualProperties render_size_params;
-    host_->GetVisualProperties(&render_size_params);
-    host_->SetInitialRenderSizeParams(render_size_params);
+  void SetInitialVisualProperties() {
+    VisualProperties visual_properties;
+    host_->GetVisualProperties(&visual_properties);
+    host_->SetInitialVisualProperties(visual_properties);
   }
 
   virtual void ConfigureView(TestView* view) {

@@ -181,7 +181,7 @@ class RenderViewTest : public testing::Test {
   virtual ContentRendererClient* CreateContentRendererClient();
 
   // Allows a subclass to customize the initial size of the RenderView.
-  virtual std::unique_ptr<VisualProperties> InitialSizeParams();
+  virtual std::unique_ptr<VisualProperties> InitialVisualProperties();
 
   // testing::Test
   void SetUp() override;

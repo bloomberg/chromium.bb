@@ -564,7 +564,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // Sets the |visual_properties| that were sent to the renderer bundled with
   // the request to create a new RenderWidget.
-  void SetInitialRenderSizeParams(const VisualProperties& visual_properties);
+  void SetInitialVisualProperties(const VisualProperties& visual_properties);
 
   // Pushes updated visual properties to the renderer as well as whether the
   // focused node should be scrolled into view.

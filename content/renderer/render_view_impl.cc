@@ -467,7 +467,7 @@ RenderViewImpl::RenderViewImpl(
     : RenderWidget(params.view_id,
                    compositor_deps,
                    blink::kWebPopupTypeNone,
-                   params.initial_size.screen_info,
+                   params.visual_properties.screen_info,
                    params.swapped_out,
                    params.hidden,
                    params.never_visible,
@@ -512,7 +512,7 @@ void RenderViewImpl::Initialize(
   was_created_by_renderer_ = was_created_by_renderer;
 #endif
   renderer_wide_named_frame_lookup_ = params->renderer_wide_named_frame_lookup;
-  display_mode_ = params->initial_size.display_mode;
+  display_mode_ = params->visual_properties.display_mode;
 
   WebFrame* opener_frame =
       RenderFrameImpl::ResolveOpener(params->opener_frame_route_id);
@@ -611,7 +611,7 @@ void RenderViewImpl::Initialize(
   UpdateWebViewWithDeviceScaleFactor();
   OnSetRendererPrefs(params->renderer_preferences);
 
-  OnSynchronizeVisualProperties(params->initial_size);
+  OnSynchronizeVisualProperties(params->visual_properties);
 
   idle_user_detector_.reset(new IdleUserDetector());
 
@@ -1285,8 +1285,8 @@ WebView* RenderViewImpl::CreateView(WebLocalFrame* creator,
   // TODO(vangelis): Can we tell if the new view will be a background page?
   bool never_visible = false;
 
-  VisualProperties initial_size = VisualProperties();
-  initial_size.screen_info = screen_info_;
+  VisualProperties visual_properties = VisualProperties();
+  visual_properties.screen_info = screen_info_;
 
   // The initial hidden state for the RenderViewImpl here has to match what the
   // browser will eventually decide for the given disposition. Since we have to
@@ -1317,10 +1317,7 @@ WebView* RenderViewImpl::CreateView(WebLocalFrame* creator,
   // the empty string.
   view_params->hidden = is_background_tab;
   view_params->never_visible = never_visible;
-  view_params->initial_size = initial_size;
-  view_params->enable_auto_resize = false;
-  view_params->min_size = gfx::Size();
-  view_params->max_size = gfx::Size();
+  view_params->visual_properties = visual_properties;
   view_params->page_zoom_level = page_zoom_level_;
 
   // Unretained() is safe here because our calling function will also call
