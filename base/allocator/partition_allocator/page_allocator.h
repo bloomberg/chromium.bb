@@ -9,35 +9,12 @@
 
 #include <cstddef>
 
+#include "base/allocator/partition_allocator/page_allocator_constants.h"
 #include "base/base_export.h"
 #include "base/compiler_specific.h"
 #include "build/build_config.h"
 
 namespace base {
-
-#if defined(OS_WIN)
-static const size_t kPageAllocationGranularityShift = 16;  // 64KB
-#elif defined(_MIPS_ARCH_LOONGSON)
-static const size_t kPageAllocationGranularityShift = 14;  // 16KB
-#else
-static const size_t kPageAllocationGranularityShift = 12;  // 4KB
-#endif
-static const size_t kPageAllocationGranularity =
-    1 << kPageAllocationGranularityShift;
-static const size_t kPageAllocationGranularityOffsetMask =
-    kPageAllocationGranularity - 1;
-static const size_t kPageAllocationGranularityBaseMask =
-    ~kPageAllocationGranularityOffsetMask;
-
-#if defined(_MIPS_ARCH_LOONGSON)
-static const size_t kSystemPageSize = 16384;
-#else
-static const size_t kSystemPageSize = 4096;
-#endif
-static const size_t kSystemPageOffsetMask = kSystemPageSize - 1;
-static_assert((kSystemPageSize & (kSystemPageSize - 1)) == 0,
-              "kSystemPageSize must be power of 2");
-static const size_t kSystemPageBaseMask = ~kSystemPageOffsetMask;
 
 enum PageAccessibilityConfiguration {
   PageInaccessible,

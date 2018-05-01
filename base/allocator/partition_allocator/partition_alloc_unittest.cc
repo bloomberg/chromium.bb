@@ -27,6 +27,12 @@
 
 #if !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
 
+// Because there is so much deep inspection of the internal objects,
+// explicitly annotating the namespaces for commonly expected objects makes the
+// code unreadable. Prefer using directives instead.
+using base::internal::PartitionBucket;
+using base::internal::PartitionPage;
+
 namespace {
 
 constexpr size_t kTestMaxAllocation = base::kSystemPageSize;
@@ -83,6 +89,14 @@ bool ClearAddressSpaceLimit() {
 }  // namespace
 
 namespace base {
+
+// NOTE: Though this test actually excercises interfaces inside the ::base
+// namespace, the unittest is inside the ::base::internal spaces because a
+// portion of the test expectations require inspecting objects and behavior
+// in the ::base::internal namespace. An alternate formulation would be to
+// explicitly add using statements for each inspected type but this felt more
+// readable.
+namespace internal {
 
 const size_t kTestAllocSize = 16;
 #if !DCHECK_IS_ON()
@@ -2089,6 +2103,7 @@ TEST_F(PartitionAllocTest, SmallReallocDoesNotMoveTrailingCookie) {
   generic_allocator.root()->Free(ptr);
 }
 
+}  // namespace internal
 }  // namespace base
 
 #endif  // !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
