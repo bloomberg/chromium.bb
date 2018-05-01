@@ -456,6 +456,12 @@ int RunDesc(const std::vector<std::string>& args) {
 
   bool json = cmdline->GetSwitchValueASCII("format") == "json";
 
+  if (target_matches.empty() && config_matches.empty()) {
+    OutputString("The input " + args[1] +
+                 " matches no targets, configs or files.\n", DECORATION_YELLOW);
+    return 1;
+  }
+
   if (json) {
     // Convert all targets/configs to JSON, serialize and print them
     auto res = std::make_unique<base::DictionaryValue>();
