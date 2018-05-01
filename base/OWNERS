@@ -39,6 +39,10 @@ per-file *_fuchsia*=file://build/fuchsia/OWNERS
 per-file feature_list*=asvitkine@chromium.org
 per-file feature_list*=isherman@chromium.org
 
+# Restricted since rand_util.h also backs the cryptographically secure RNG.
+per-file rand_util*=set noparent
+per-file rand_util*=file://ipc/SECURITY_OWNERS
+
 # For TCMalloc tests:
 per-file security_unittest.cc=jln@chromium.org
 
