@@ -163,13 +163,13 @@ Then to run for example the headless platform:
 To build `chrome`, do this from the `src` directory:
 
 ``` shell
-gn args out/OzoneLinuxDesktop --args="use_ozone=true enable_mus=true"
+gn args out/OzoneLinuxDesktop --args="use_ozone=true"
 ninja -C out/OzoneLinuxDesktop chrome
 ```
 Then to run for example the X11 platform:
 
 ``` shell
-./out/OzoneLinuxDesktop/chrome --ozone-platform=x11 --enable-features=Mus
+./out/OzoneLinuxDesktop/chrome --ozone-platform=x11
 ```
 
 ### GN Configuration notes
