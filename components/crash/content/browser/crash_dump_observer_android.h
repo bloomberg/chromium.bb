@@ -54,6 +54,10 @@ class CrashDumpObserver : public content::BrowserChildProcessObserver,
     // a slightly different implementation than
     // ApplicationStatusListener::GetState.
     bool was_oom_protected_status = false;
+
+    // Applies to renderer process only. Generally means renderer is hosting
+    // one or more visible tabs.
+    bool renderer_has_visible_clients = false;
   };
 
   // CrashDumpObserver client interface.

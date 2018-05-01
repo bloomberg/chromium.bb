@@ -142,6 +142,7 @@ void CrashDumpObserver::Observe(int type,
   TerminationInfo info{rph->GetID(), rph->GetProcess().Handle(),
                        content::PROCESS_TYPE_RENDERER,
                        base::android::APPLICATION_STATE_UNKNOWN};
+  info.renderer_has_visible_clients = rph->VisibleClientCount() > 0;
   switch (type) {
     case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED: {
       // NOTIFICATION_RENDERER_PROCESS_TERMINATED is sent when the renderer
