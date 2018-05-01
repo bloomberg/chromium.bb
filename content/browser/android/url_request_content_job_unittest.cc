@@ -129,7 +129,7 @@ URLRequestContentJobTest::URLRequestContentJobTest() {}
 void URLRequestContentJobTest::RunRequest(const Range* range,
                                           const char* intent_type) {
   base::FilePath test_dir;
-  PathService::Get(base::DIR_SOURCE_ROOT, &test_dir);
+  base::PathService::Get(base::DIR_SOURCE_ROOT, &test_dir);
   test_dir = test_dir.AppendASCII("content");
   test_dir = test_dir.AppendASCII("test");
   test_dir = test_dir.AppendASCII("data");

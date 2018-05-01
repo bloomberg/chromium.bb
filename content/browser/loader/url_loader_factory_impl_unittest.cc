@@ -149,7 +149,7 @@ TEST_P(URLLoaderFactoryImplTest, GetResponse) {
   constexpr int32_t kRequestId = 28;
   network::mojom::URLLoaderPtr loader;
   base::FilePath root;
-  PathService::Get(DIR_TEST_DATA, &root);
+  base::PathService::Get(DIR_TEST_DATA, &root);
   net::URLRequestMockHTTPJob::AddUrlHandlers(root);
   network::ResourceRequest request;
   network::TestURLLoaderClient client;
@@ -342,7 +342,7 @@ TEST_P(URLLoaderFactoryImplTest, DownloadToFile) {
 
   network::mojom::URLLoaderPtr loader;
   base::FilePath root;
-  PathService::Get(DIR_TEST_DATA, &root);
+  base::PathService::Get(DIR_TEST_DATA, &root);
   net::URLRequestMockHTTPJob::AddUrlHandlers(root);
 
   network::ResourceRequest request;
@@ -410,7 +410,7 @@ TEST_P(URLLoaderFactoryImplTest, DownloadToFileFailure) {
 
   network::mojom::URLLoaderPtr loader;
   base::FilePath root;
-  PathService::Get(DIR_TEST_DATA, &root);
+  base::PathService::Get(DIR_TEST_DATA, &root);
   net::URLRequestSlowDownloadJob::AddUrlHandler();
 
   network::ResourceRequest request;
@@ -468,7 +468,7 @@ TEST_P(URLLoaderFactoryImplTest, OnTransferSizeUpdated) {
   constexpr int32_t kRequestId = 28;
   network::mojom::URLLoaderPtr loader;
   base::FilePath root;
-  PathService::Get(DIR_TEST_DATA, &root);
+  base::PathService::Get(DIR_TEST_DATA, &root);
   net::URLRequestMockHTTPJob::AddUrlHandlers(root);
   network::ResourceRequest request;
   network::TestURLLoaderClient client;
@@ -528,7 +528,7 @@ TEST_P(URLLoaderFactoryImplTest, CancelFromRenderer) {
   constexpr int32_t kRequestId = 28;
   network::mojom::URLLoaderPtr loader;
   base::FilePath root;
-  PathService::Get(DIR_TEST_DATA, &root);
+  base::PathService::Get(DIR_TEST_DATA, &root);
   net::URLRequestFailedJob::AddUrlHandler();
   network::ResourceRequest request;
   network::TestURLLoaderClient client;

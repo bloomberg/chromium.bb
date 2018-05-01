@@ -41,7 +41,7 @@ class CursorRendererAuraTest : public AuraTestBase {
       // Initialize the shared global resource bundle that has bitmap
       // resources needed by CursorRenderer
       base::FilePath pak_file;
-      bool r = PathService::Get(base::DIR_MODULE, &pak_file);
+      bool r = base::PathService::Get(base::DIR_MODULE, &pak_file);
       DCHECK(r);
       pak_file = pak_file.Append(FILE_PATH_LITERAL("content_shell.pak"));
       ui::ResourceBundle::InitSharedInstanceWithPakPath(pak_file);

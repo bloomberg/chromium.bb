@@ -33,7 +33,7 @@ bool BlinkTestPlatformInitialize() {
   base::SetUpFontconfig();
 
   base::FilePath base_path;
-  PathService::Get(base::DIR_MODULE, &base_path);
+  base::PathService::Get(base::DIR_MODULE, &base_path);
   for (size_t i = 0; i < arraysize(kLocalFonts); ++i) {
     if (!base::LoadFontIntoFontconfig(base_path.Append(kLocalFonts[i])))
       return false;

@@ -21,7 +21,7 @@ class SystemHotkeyMapTest : public ::testing::Test {
 
   NSData* DataFromTestFile(const char* file) {
     base::FilePath test_data_dir;
-    bool result = PathService::Get(DIR_TEST_DATA, &test_data_dir);
+    bool result = base::PathService::Get(DIR_TEST_DATA, &test_data_dir);
     if (!result)
       return nil;
 

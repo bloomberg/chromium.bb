@@ -197,7 +197,7 @@ TEST_F(RenderViewHostTest, DragEnteredFileURLsStillBlocked) {
 
 TEST_F(RenderViewHostTest, MessageWithBadHistoryItemFiles) {
   base::FilePath file_path;
-  EXPECT_TRUE(PathService::Get(base::DIR_TEMP, &file_path));
+  EXPECT_TRUE(base::PathService::Get(base::DIR_TEMP, &file_path));
   file_path = file_path.AppendASCII("foo");
   EXPECT_EQ(0, process()->bad_msg_count());
   test_rvh()->TestOnUpdateStateWithFile(file_path);
@@ -221,7 +221,7 @@ void SetBadFilePath(const GURL& url,
 TEST_F(RenderViewHostTest, NavigationWithBadHistoryItemFiles) {
   GURL url("http://www.google.com");
   base::FilePath file_path;
-  EXPECT_TRUE(PathService::Get(base::DIR_TEMP, &file_path));
+  EXPECT_TRUE(base::PathService::Get(base::DIR_TEMP, &file_path));
   file_path = file_path.AppendASCII("bar");
   auto set_bad_file_path_callback = base::Bind(SetBadFilePath, url, file_path);
 

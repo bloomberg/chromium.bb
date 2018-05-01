@@ -227,7 +227,7 @@ void ZygoteCommunication::Init(
   CHECK(!init_);
 
   base::FilePath chrome_path;
-  CHECK(PathService::Get(base::FILE_EXE, &chrome_path));
+  CHECK(base::PathService::Get(base::FILE_EXE, &chrome_path));
 
   base::CommandLine cmd_line(chrome_path);
   cmd_line.AppendSwitchASCII(switches::kProcessType, switches::kZygoteProcess);

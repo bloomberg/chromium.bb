@@ -20,7 +20,7 @@ class FileAPIBrowserTest : public ContentBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(FileAPIBrowserTest, FileInputChooserParams) {
   base::FilePath file;
-  EXPECT_TRUE(PathService::Get(base::DIR_TEMP, &file));
+  EXPECT_TRUE(base::PathService::Get(base::DIR_TEMP, &file));
   file = file.AppendASCII("bar");
 
   NavigateToURL(shell(), GetTestUrl(".", "file_input.html"));

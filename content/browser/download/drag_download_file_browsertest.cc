@@ -71,7 +71,7 @@ class DragDownloadFileTest : public ContentBrowserTest {
             ->GetDownloadManagerDelegate());
     delegate->SetDownloadBehaviorForTesting(downloads_directory());
     base::FilePath test_data_dir;
-    ASSERT_TRUE(PathService::Get(content::DIR_TEST_DATA, &test_data_dir));
+    ASSERT_TRUE(base::PathService::Get(content::DIR_TEST_DATA, &test_data_dir));
     embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
     ASSERT_TRUE(embedded_test_server()->Start());
   }

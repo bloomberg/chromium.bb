@@ -98,7 +98,7 @@ static void RequestPlaformPathFromFileSystemURL(
                       url,
                       &platform_path);
   base::FilePath data_storage_path;
-  PathService::Get(base::DIR_ANDROID_APP_DATA, &data_storage_path);
+  base::PathService::Get(base::DIR_ANDROID_APP_DATA, &data_storage_path);
   if (data_storage_path.IsParent(platform_path))
     ReturnResultOnUIThread(std::move(callback), platform_path.value());
   else

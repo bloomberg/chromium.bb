@@ -116,7 +116,7 @@ void InitLogging(const base::CommandLine& command_line) {
   base::FilePath log_filename;
   std::string filename = command_line.GetSwitchValueASCII(switches::kLogFile);
   if (filename.empty()) {
-    PathService::Get(base::DIR_EXE, &log_filename);
+    base::PathService::Get(base::DIR_EXE, &log_filename);
     log_filename = log_filename.AppendASCII("content_shell.log");
   } else {
     log_filename = base::FilePath::FromUTF8Unsafe(filename);
@@ -360,7 +360,7 @@ void ShellMainDelegate::InitializeResourceBundle() {
     // Loaded from disk for browsertests.
     if (pak_fd < 0) {
       base::FilePath pak_file;
-      bool r = PathService::Get(base::DIR_ANDROID_APP_DATA, &pak_file);
+      bool r = base::PathService::Get(base::DIR_ANDROID_APP_DATA, &pak_file);
       DCHECK(r);
       pak_file = pak_file.Append(FILE_PATH_LITERAL("paks"));
       pak_file = pak_file.Append(FILE_PATH_LITERAL("content_shell.pak"));
@@ -380,7 +380,7 @@ void ShellMainDelegate::InitializeResourceBundle() {
   ui::ResourceBundle::InitSharedInstanceWithPakPath(GetResourcesPakFilePath());
 #else
   base::FilePath pak_file;
-  bool r = PathService::Get(base::DIR_ASSETS, &pak_file);
+  bool r = base::PathService::Get(base::DIR_ASSETS, &pak_file);
   DCHECK(r);
   pak_file = pak_file.Append(FILE_PATH_LITERAL("content_shell.pak"));
   ui::ResourceBundle::InitSharedInstanceWithPakPath(pak_file);

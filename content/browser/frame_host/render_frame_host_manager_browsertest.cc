@@ -2390,7 +2390,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, DontSelectInvalidFiles) {
   // Use a file path with an invalid encoding, such that it can't be converted
   // to a WebString (on all platforms but Windows).
   base::FilePath file;
-  EXPECT_TRUE(PathService::Get(base::DIR_TEMP, &file));
+  EXPECT_TRUE(base::PathService::Get(base::DIR_TEMP, &file));
   file = file.Append(FILE_PATH_LITERAL("foo\337bar"));
 
   // Navigate and try to get page to reference this file in its PageState.
@@ -2448,7 +2448,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                        RestoreFileAccessForHistoryNavigation) {
   StartServer();
   base::FilePath file;
-  EXPECT_TRUE(PathService::Get(base::DIR_TEMP, &file));
+  EXPECT_TRUE(base::PathService::Get(base::DIR_TEMP, &file));
   file = file.AppendASCII("bar");
 
   // Navigate to url and get it to reference a file in its PageState.
@@ -2510,7 +2510,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                        RestoreSubframeFileAccessForHistoryNavigation) {
   StartServer();
   base::FilePath file;
-  EXPECT_TRUE(PathService::Get(base::DIR_TEMP, &file));
+  EXPECT_TRUE(base::PathService::Get(base::DIR_TEMP, &file));
   file = file.AppendASCII("bar");
 
   // Navigate to url and get it to reference a file in its PageState.

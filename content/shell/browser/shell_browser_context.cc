@@ -110,7 +110,7 @@ void ShellBrowserContext::InitWhileIOAllowed() {
   }
 
 #if defined(OS_WIN)
-  CHECK(PathService::Get(base::DIR_LOCAL_APP_DATA, &path_));
+  CHECK(base::PathService::Get(base::DIR_LOCAL_APP_DATA, &path_));
   path_ = path_.Append(std::wstring(L"content_shell"));
 #elif defined(OS_LINUX)
   std::unique_ptr<base::Environment> env(base::Environment::Create());
@@ -120,10 +120,10 @@ void ShellBrowserContext::InitWhileIOAllowed() {
                                  base::nix::kDotConfigDir));
   path_ = config_dir.Append("content_shell");
 #elif defined(OS_MACOSX)
-  CHECK(PathService::Get(base::DIR_APP_DATA, &path_));
+  CHECK(base::PathService::Get(base::DIR_APP_DATA, &path_));
   path_ = path_.Append("Chromium Content Shell");
 #elif defined(OS_ANDROID)
-  CHECK(PathService::Get(base::DIR_ANDROID_APP_DATA, &path_));
+  CHECK(base::PathService::Get(base::DIR_ANDROID_APP_DATA, &path_));
   path_ = path_.Append(FILE_PATH_LITERAL("content_shell"));
 #else
   NOTIMPLEMENTED();

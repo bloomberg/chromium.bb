@@ -163,7 +163,8 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
     }
 
     base::FilePath helper_executable;
-    CHECK(PathService::Get(content::CHILD_PROCESS_EXE, &helper_executable));
+    CHECK(
+        base::PathService::Get(content::CHILD_PROCESS_EXE, &helper_executable));
 
     options->fds_to_remap.push_back(std::make_pair(pipe, pipe));
 
