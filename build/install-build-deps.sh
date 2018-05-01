@@ -160,7 +160,6 @@ dev_list="\
   devscripts
   fakeroot
   flex
-  fonts-ipafont
   g++
   git-core
   git-svn
@@ -505,9 +504,6 @@ if package_exists apache2.2-bin; then
 else
   dev_list="${dev_list} apache2-bin"
 fi
-if package_exists xfonts-mathml; then
-  dev_list="${dev_list} xfonts-mathml"
-fi
 if package_exists libav-tools; then
   dev_list="${dev_list} libav-tools"
 fi
@@ -519,14 +515,6 @@ elif package_exists php7.0-cgi; then
   dev_list="${dev_list} php7.0-cgi libapache2-mod-php7.0"
 else
   dev_list="${dev_list} php5-cgi libapache2-mod-php5"
-fi
-# ttf-mscorefonts-installer is in the Debian contrib repo, which has
-# dependencies on non-free software.  Install it only if the user has already
-# enabled contrib.
-if package_exists ttf-mscorefonts-installer; then
-  dev_list="${dev_list} ttf-mscorefonts-installer"
-elif package_exists msttcorefonts; then
-  dev_list="${dev_list} msttcorefonts"
 fi
 
 # Some packages are only needed if the distribution actually supports
