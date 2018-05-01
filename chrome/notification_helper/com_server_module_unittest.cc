@@ -8,7 +8,7 @@
 
 #include <wrl/client.h>
 
-#include "base/win/scoped_winrt_initializer.h"
+#include "base/win/scoped_com_initializer.h"
 #include "chrome/install_static/install_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -17,8 +17,9 @@ class ComServerModuleTest : public testing::Test {
   ComServerModuleTest() = default;
 
   void SetUp() override {
-    winrt_initializer_ = std::make_unique<base::win::ScopedWinrtInitializer>();
-    ASSERT_TRUE(winrt_initializer_->Succeeded());
+    scoped_com_initializer_ =
+        std::make_unique<base::win::ScopedCOMInitializer>();
+    ASSERT_TRUE(scoped_com_initializer_->Succeeded());
 
     server_module_ = std::make_unique<notification_helper::ComServerModule>();
 
@@ -36,7 +37,7 @@ class ComServerModuleTest : public testing::Test {
       server_module_->UnregisterClassObjects();
 
     server_module_.reset();
-    winrt_initializer_.reset();
+    scoped_com_initializer_.reset();
   }
 
   notification_helper::ComServerModule* server_module() {
@@ -44,7 +45,7 @@ class ComServerModuleTest : public testing::Test {
   }
 
  private:
-  std::unique_ptr<base::win::ScopedWinrtInitializer> winrt_initializer_;
+  std::unique_ptr<base::win::ScopedCOMInitializer> scoped_com_initializer_;
 
   // The server module that holds the COM object class.
   std::unique_ptr<notification_helper::ComServerModule> server_module_;
