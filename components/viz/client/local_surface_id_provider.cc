@@ -16,9 +16,7 @@ DefaultLocalSurfaceIdProvider::DefaultLocalSurfaceIdProvider() = default;
 
 const LocalSurfaceId& DefaultLocalSurfaceIdProvider::GetLocalSurfaceIdForFrame(
     const CompositorFrame& frame) {
-  if (!parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId()
-           .is_valid() ||
-      surface_size_ != frame.size_in_pixels() ||
+  if (frame.size_in_pixels() != surface_size_ ||
       frame.device_scale_factor() != device_scale_factor_) {
     parent_local_surface_id_allocator_.GenerateId();
   }
