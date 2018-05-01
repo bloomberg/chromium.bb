@@ -17,7 +17,6 @@
 class GURL;
 
 namespace blink {
-struct Manifest;
 class WebInputEvent;
 class WebLocalFrame;
 struct WebSize;
@@ -47,6 +46,7 @@ class RenderFrame;
 class RendererGamepadProvider;
 class RenderView;
 class StoragePartition;
+struct Manifest;
 
 // Turn the browser process into layout test mode.
 void EnableBrowserLayoutTestMode();
@@ -100,7 +100,7 @@ void EnableWebTestProxyCreation(
     const WidgetProxyCreationCallback& widget_proxy_creation_callback,
     const FrameProxyCreationCallback& frame_proxy_creation_callback);
 
-typedef base::OnceCallback<void(const GURL&, const blink::Manifest&)>
+typedef base::OnceCallback<void(const GURL&, const Manifest&)>
     FetchManifestCallback;
 void FetchManifest(blink::WebView* view, FetchManifestCallback callback);
 

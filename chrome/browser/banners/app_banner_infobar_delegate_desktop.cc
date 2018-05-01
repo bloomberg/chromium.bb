@@ -26,7 +26,7 @@ infobars::InfoBar* AppBannerInfoBarDelegateDesktop::Create(
     content::WebContents* web_contents,
     base::WeakPtr<AppBannerManager> weak_manager,
     extensions::BookmarkAppHelper* bookmark_app_helper,
-    const blink::Manifest& manifest) {
+    const content::Manifest& manifest) {
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
   return infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
@@ -38,7 +38,7 @@ infobars::InfoBar* AppBannerInfoBarDelegateDesktop::Create(
 AppBannerInfoBarDelegateDesktop::AppBannerInfoBarDelegateDesktop(
     base::WeakPtr<AppBannerManager> weak_manager,
     extensions::BookmarkAppHelper* bookmark_app_helper,
-    const blink::Manifest& manifest)
+    const content::Manifest& manifest)
     : ConfirmInfoBarDelegate(),
       weak_manager_(weak_manager),
       bookmark_app_helper_(bookmark_app_helper),

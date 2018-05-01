@@ -7,7 +7,7 @@
 
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
-#include "third_party/blink/public/common/manifest/manifest.h"
+#include "content/public/common/manifest.h"
 
 class GURL;
 class PrefService;
@@ -19,7 +19,7 @@ class PrefService;
 // share_target field, or it does but there is no url_template field, this will
 // remove |manifest_url| from kWebShareVisitedTargets, if it is there.
 void UpdateShareTargetInPrefs(const GURL& manifest_url,
-                              const blink::Manifest& manifest,
+                              const content::Manifest& manifest,
                               PrefService* pref_service);
 
 #endif // CHROME_BROWSER_WEBSHARE_SHARE_TARGET_PREF_HELPER_H_

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/common/manifest/manifest_mojom_traits.h"
+#include "content/public/common/manifest_struct_traits.h"
 
 #include "mojo/public/cpp/base/string16_mojom_traits.h"
-#include "third_party/blink/public/common/manifest/web_display_mode_mojom_traits.h"
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_enum_traits.h"
+#include "third_party/blink/public/platform/web_display_mode_struct_traits.h"
 #include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
 #include "url/mojom/url_gurl_mojom_traits.h"
 
@@ -16,7 +16,7 @@ namespace {
 bool ValidateColor(int64_t color) {
   return color >= std::numeric_limits<int32_t>::min() ||
          color <= std::numeric_limits<int32_t>::max() ||
-         color == blink::Manifest::kInvalidOrMissingColor;
+         color == content::Manifest::kInvalidOrMissingColor;
 }
 
 // A wrapper around base::Optional<base::string16> so a custom StructTraits
@@ -39,7 +39,7 @@ struct StructTraits<mojo_base::mojom::String16DataView, TruncatedString16> {
     }
     mojo::ArrayDataView<uint16_t> buffer_view;
     input.GetDataDataView(&buffer_view);
-    if (buffer_view.size() > blink::Manifest::kMaxIPCStringLength)
+    if (buffer_view.size() > content::Manifest::kMaxIPCStringLength)
       return false;
 
     output->string.emplace();
@@ -48,9 +48,9 @@ struct StructTraits<mojo_base::mojom::String16DataView, TruncatedString16> {
   }
 };
 
-bool StructTraits<blink::mojom::ManifestDataView, blink::Manifest>::Read(
+bool StructTraits<blink::mojom::ManifestDataView, content::Manifest>::Read(
     blink::mojom::ManifestDataView data,
-    blink::Manifest* out) {
+    content::Manifest* out) {
   TruncatedString16 string;
   if (!data.ReadName(&string))
     return false;
@@ -100,8 +100,9 @@ bool StructTraits<blink::mojom::ManifestDataView, blink::Manifest>::Read(
   return true;
 }
 
-bool StructTraits<blink::mojom::ManifestIconDataView, blink::Manifest::Icon>::
-    Read(blink::mojom::ManifestIconDataView data, blink::Manifest::Icon* out) {
+bool StructTraits<blink::mojom::ManifestIconDataView, content::Manifest::Icon>::
+    Read(blink::mojom::ManifestIconDataView data,
+         content::Manifest::Icon* out) {
   if (!data.ReadSrc(&out->src))
     return false;
 
@@ -124,9 +125,9 @@ bool StructTraits<blink::mojom::ManifestIconDataView, blink::Manifest::Icon>::
 }
 
 bool StructTraits<blink::mojom::ManifestRelatedApplicationDataView,
-                  blink::Manifest::RelatedApplication>::
+                  content::Manifest::RelatedApplication>::
     Read(blink::mojom::ManifestRelatedApplicationDataView data,
-         blink::Manifest::RelatedApplication* out) {
+         content::Manifest::RelatedApplication* out) {
   TruncatedString16 string;
   if (!data.ReadPlatform(&string))
     return false;
@@ -143,9 +144,9 @@ bool StructTraits<blink::mojom::ManifestRelatedApplicationDataView,
 }
 
 bool StructTraits<blink::mojom::ManifestShareTargetDataView,
-                  blink::Manifest::ShareTarget>::
+                  content::Manifest::ShareTarget>::
     Read(blink::mojom::ManifestShareTargetDataView data,
-         blink::Manifest::ShareTarget* out) {
+         content::Manifest::ShareTarget* out) {
   return data.ReadUrlTemplate(&out->url_template);
 }
 

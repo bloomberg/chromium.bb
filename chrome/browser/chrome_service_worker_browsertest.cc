@@ -353,7 +353,7 @@ class ChromeServiceWorkerManifestFetchTest
 
   static void ManifestCallbackAndRun(const base::Closure& continuation,
                                      const GURL&,
-                                     const blink::Manifest&) {
+                                     const content::Manifest&) {
     continuation.Run();
   }
 
