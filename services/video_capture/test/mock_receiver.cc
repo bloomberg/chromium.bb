@@ -11,10 +11,10 @@ MockReceiver::MockReceiver(mojom::ReceiverRequest request)
 
 MockReceiver::~MockReceiver() = default;
 
-void MockReceiver::OnNewBufferHandle(
+void MockReceiver::OnNewBuffer(
     int32_t buffer_id,
-    mojo::ScopedSharedBufferHandle buffer_handle) {
-  DoOnNewBufferHandle(buffer_id, &buffer_handle);
+    media::mojom::VideoBufferHandlePtr buffer_handle) {
+  DoOnNewBuffer(buffer_id, &buffer_handle);
 }
 
 void MockReceiver::OnFrameReadyInBuffer(

@@ -100,15 +100,15 @@ void VideoCaptureClient::OnStateChanged(media::mojom::VideoCaptureState state) {
   }
 }
 
-void VideoCaptureClient::OnBufferCreated(
+void VideoCaptureClient::OnNewBuffer(
     int32_t buffer_id,
-    mojo::ScopedSharedBufferHandle handle) {
+    media::mojom::VideoBufferHandlePtr buffer_handle) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(handle.is_valid());
   DVLOG(3) << __func__ << ": buffer_id=" << buffer_id;
+  DCHECK(buffer_handle->is_shared_buffer_handle());
 
-  const auto insert_result =
-      client_buffers_.emplace(std::make_pair(buffer_id, std::move(handle)));
+  const auto insert_result = client_buffers_.emplace(std::make_pair(
+      buffer_id, std::move(buffer_handle->get_shared_buffer_handle())));
   DCHECK(insert_result.second);
 }
 

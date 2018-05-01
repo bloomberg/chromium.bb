@@ -96,11 +96,9 @@ class FakeVideoCaptureStack {
    private:
     using Buffer = media::VideoCaptureDevice::Client::Buffer;
 
-    void OnNewBufferHandle(
-        int buffer_id,
-        std::unique_ptr<Buffer::HandleProvider> handle_provider) final {
-      buffers_[buffer_id] =
-          handle_provider->GetHandleForInterProcessTransit(true);
+    void OnNewBuffer(int buffer_id,
+                     media::mojom::VideoBufferHandlePtr buffer_handle) final {
+      buffers_[buffer_id] = std::move(buffer_handle);
     }
 
     void OnFrameReadyInBuffer(
@@ -110,7 +108,9 @@ class FakeVideoCaptureStack {
         media::mojom::VideoFrameInfoPtr frame_info) final {
       const auto it = buffers_.find(buffer_id);
       CHECK(it != buffers_.end());
-      mojo::ScopedSharedBufferHandle& buffer = it->second;
+      CHECK(it->second->is_shared_buffer_handle());
+      mojo::ScopedSharedBufferHandle& buffer =
+          it->second->get_shared_buffer_handle();
 
       const size_t mapped_size =
           media::VideoCaptureFormat(frame_info->coded_size, 0.0f,
@@ -156,7 +156,7 @@ class FakeVideoCaptureStack {
     void OnStartedUsingGpuDecode() final { NOTREACHED(); }
 
     FakeVideoCaptureStack* const capture_stack_;
-    base::flat_map<int, mojo::ScopedSharedBufferHandle> buffers_;
+    base::flat_map<int, media::mojom::VideoBufferHandlePtr> buffers_;
   };
 
   FrameCallback frame_callback_;

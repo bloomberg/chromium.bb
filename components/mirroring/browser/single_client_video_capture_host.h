@@ -70,10 +70,8 @@ class SingleClientVideoCaptureHost final
 
   // media::VideoFrameReceiver implementations
   using Buffer = VideoCaptureDevice::Client::Buffer;
-  void OnNewBufferHandle(
-      int buffer_id,
-      std::unique_ptr<VideoCaptureDevice::Client::Buffer::HandleProvider>
-          handle_provider) override;
+  void OnNewBuffer(int buffer_id,
+                   media::mojom::VideoBufferHandlePtr buffer_handle) override;
   void OnFrameReadyInBuffer(
       int buffer_id,
       int frame_feedback_id,

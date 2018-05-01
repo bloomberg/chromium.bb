@@ -140,22 +140,22 @@ class MockVideoFrameReceiver : public media::VideoFrameReceiver {
 
   ~MockVideoFrameReceiver() override {
     DCHECK_ON_DEVICE_THREAD();
-    EXPECT_TRUE(handle_providers_.empty());
+    EXPECT_TRUE(buffer_handles_.empty());
     EXPECT_TRUE(feedback_ids_.empty());
     EXPECT_TRUE(access_permissions_.empty());
     EXPECT_TRUE(frame_infos_.empty());
   }
 
-  void OnNewBufferHandle(
-      int buffer_id,
-      std::unique_ptr<Buffer::HandleProvider> handle_provider) final {
+  void OnNewBuffer(int buffer_id,
+                   media::mojom::VideoBufferHandlePtr buffer_handle) final {
     DCHECK_ON_DEVICE_THREAD();
-    auto* const raw_pointer = handle_provider.get();
-    handle_providers_[buffer_id] = std::move(handle_provider);
-    MockOnNewBufferHandle(buffer_id, raw_pointer);
+    auto* const raw_pointer = buffer_handle.get();
+    buffer_handles_[buffer_id] = std::move(buffer_handle);
+    MockOnNewBuffer(buffer_id, raw_pointer);
   }
-  MOCK_METHOD2(MockOnNewBufferHandle,
-               void(int buffer_id, Buffer::HandleProvider* handle_provider));
+  MOCK_METHOD2(MockOnNewBuffer,
+               void(int buffer_id,
+                    media::mojom::VideoBufferHandle* buffer_handle));
   void OnFrameReadyInBuffer(
       int buffer_id,
       int frame_feedback_id,
@@ -183,13 +183,14 @@ class MockVideoFrameReceiver : public media::VideoFrameReceiver {
 
   mojo::ScopedSharedBufferHandle TakeBufferHandle(int buffer_id) {
     DCHECK_NOT_ON_DEVICE_THREAD();
-    const auto it = handle_providers_.find(buffer_id);
-    if (it == handle_providers_.end()) {
+    const auto it = buffer_handles_.find(buffer_id);
+    if (it == buffer_handles_.end()) {
       ADD_FAILURE() << "Missing entry for buffer_id=" << buffer_id;
       return mojo::ScopedSharedBufferHandle();
     }
-    auto buffer = it->second->GetHandleForInterProcessTransit(true);
-    handle_providers_.erase(it);
+    CHECK(it->second->is_shared_buffer_handle());
+    auto buffer = std::move(it->second->get_shared_buffer_handle());
+    buffer_handles_.erase(it);
     return buffer;
   }
 
@@ -228,8 +229,7 @@ class MockVideoFrameReceiver : public media::VideoFrameReceiver {
   }
 
  private:
-  base::flat_map<int, std::unique_ptr<Buffer::HandleProvider>>
-      handle_providers_;
+  base::flat_map<int, media::mojom::VideoBufferHandlePtr> buffer_handles_;
   base::flat_map<int, int> feedback_ids_;
   base::flat_map<int, std::unique_ptr<Buffer::ScopedAccessPermission>>
       access_permissions_;
@@ -451,7 +451,7 @@ TEST_F(FrameSinkVideoCaptureDeviceTest, CapturesAndDeliversFrames) {
       const int first_frame_number = next_frame_number;
       for (int i = 0; i < in_flight_count; ++i) {
         Expectation new_buffer_called =
-            EXPECT_CALL(*receiver, MockOnNewBufferHandle(Ge(0), NotNull()))
+            EXPECT_CALL(*receiver, MockOnNewBuffer(Ge(0), NotNull()))
                 .WillOnce(SaveArg<0>(&buffer_ids[i]));
         EXPECT_CALL(*receiver,
                     MockOnFrameReadyInBuffer(Eq(ByRef(buffer_ids[i])), Ge(0),

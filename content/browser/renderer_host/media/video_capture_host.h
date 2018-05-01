@@ -54,10 +54,10 @@ class CONTENT_EXPORT VideoCaptureHost
 
   // VideoCaptureControllerEventHandler implementation.
   void OnError(VideoCaptureControllerID id) override;
-  void OnBufferCreated(VideoCaptureControllerID id,
-                       mojo::ScopedSharedBufferHandle handle,
-                       int length,
-                       int buffer_id) override;
+  void OnNewBuffer(VideoCaptureControllerID id,
+                   media::mojom::VideoBufferHandlePtr buffer_handle,
+                   int length,
+                   int buffer_id) override;
   void OnBufferDestroyed(VideoCaptureControllerID id,
                          int buffer_id) override;
   void OnBufferReady(

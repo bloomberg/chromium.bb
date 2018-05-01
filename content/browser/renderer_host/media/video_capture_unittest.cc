@@ -176,11 +176,11 @@ class VideoCaptureTest : public testing::Test,
  protected:
   // media::mojom::VideoCaptureObserver implementation.
   MOCK_METHOD1(OnStateChanged, void(media::mojom::VideoCaptureState));
-  void OnBufferCreated(int32_t buffer_id,
-                       mojo::ScopedSharedBufferHandle handle) override {
-    DoOnBufferCreated(buffer_id);
+  void OnNewBuffer(int32_t buffer_id,
+                   media::mojom::VideoBufferHandlePtr buffer_handle) override {
+    DoOnNewBuffer(buffer_id);
   }
-  MOCK_METHOD1(DoOnBufferCreated, void(int32_t));
+  MOCK_METHOD1(DoOnNewBuffer, void(int32_t));
   void OnBufferReady(int32_t buffer_id,
                      media::mojom::VideoFrameInfoPtr info) override {
     DoOnBufferReady(buffer_id);
@@ -196,7 +196,7 @@ class VideoCaptureTest : public testing::Test,
 
     EXPECT_CALL(*this,
                 OnStateChanged(media::mojom::VideoCaptureState::STARTED));
-    EXPECT_CALL(*this, DoOnBufferCreated(_))
+    EXPECT_CALL(*this, DoOnNewBuffer(_))
         .Times(AnyNumber())
         .WillRepeatedly(Return());
     EXPECT_CALL(*this, DoOnBufferReady(_))

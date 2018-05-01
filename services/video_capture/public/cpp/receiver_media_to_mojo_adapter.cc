@@ -30,12 +30,10 @@ ReceiverMediaToMojoAdapter::ReceiverMediaToMojoAdapter(
 
 ReceiverMediaToMojoAdapter::~ReceiverMediaToMojoAdapter() = default;
 
-void ReceiverMediaToMojoAdapter::OnNewBufferHandle(
+void ReceiverMediaToMojoAdapter::OnNewBuffer(
     int32_t buffer_id,
-    mojo::ScopedSharedBufferHandle buffer_handle) {
-  auto provider = std::make_unique<media::SharedMemoryHandleProvider>();
-  CHECK(provider->InitFromMojoHandle(std::move(buffer_handle)));
-  receiver_->OnNewBufferHandle(buffer_id, std::move(provider));
+    media::mojom::VideoBufferHandlePtr buffer_handle) {
+  receiver_->OnNewBuffer(buffer_id, std::move(buffer_handle));
 }
 
 void ReceiverMediaToMojoAdapter::OnFrameReadyInBuffer(

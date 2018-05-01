@@ -111,13 +111,13 @@ VideoCaptureController::BufferContext::BufferContext(
     int buffer_context_id,
     int buffer_id,
     media::VideoFrameConsumerFeedbackObserver* consumer_feedback_observer,
-    mojo::ScopedSharedBufferHandle handle)
+    media::mojom::VideoBufferHandlePtr buffer_handle)
     : buffer_context_id_(buffer_context_id),
       buffer_id_(buffer_id),
       is_retired_(false),
       frame_feedback_id_(0),
       consumer_feedback_observer_(consumer_feedback_observer),
-      buffer_handle_(std::move(handle)),
+      buffer_handle_(std::move(buffer_handle)),
       max_consumer_utilization_(
           media::VideoFrameConsumerFeedbackObserver::kNoUtilizationRecorded),
       consumer_hold_count_(0) {}
@@ -157,16 +157,29 @@ void VideoCaptureController::BufferContext::DecreaseConsumerCount() {
   }
 }
 
-mojo::ScopedSharedBufferHandle
-VideoCaptureController::BufferContext::CloneHandle() {
-  // Special behavior here: If the handle was already read-only, the Clone()
-  // call here will maintain that read-only permission. If it was read-write,
-  // the cloned handle will have read-write permission.
-  //
-  // TODO(crbug.com/797470): We should be able to demote read-write to read-only
-  // permissions when Clone()'ing handles. Currently, this causes a crash.
-  return buffer_handle_->Clone(
-      mojo::SharedBufferHandle::AccessMode::READ_WRITE);
+media::mojom::VideoBufferHandlePtr
+VideoCaptureController::BufferContext::CloneBufferHandle() {
+  // Unable to use buffer_handle_->Clone(), because shared_buffer does not
+  // support the copy constructor.
+  media::mojom::VideoBufferHandlePtr result =
+      media::mojom::VideoBufferHandle::New();
+  if (buffer_handle_->is_shared_buffer_handle()) {
+    // Special behavior here: If the handle was already read-only, the Clone()
+    // call here will maintain that read-only permission. If it was read-write,
+    // the cloned handle will have read-write permission.
+    //
+    // TODO(crbug.com/797470): We should be able to demote read-write to
+    // read-only permissions when Clone()'ing handles. Currently, this causes a
+    // crash.
+    result->set_shared_buffer_handle(
+        buffer_handle_->get_shared_buffer_handle()->Clone(
+            mojo::SharedBufferHandle::AccessMode::READ_WRITE));
+  } else if (buffer_handle_->is_mailbox_handles()) {
+    result->set_mailbox_handles(buffer_handle_->get_mailbox_handles()->Clone());
+  } else {
+    NOTREACHED() << "Unexpected video buffer handle type";
+  }
+  return result;
 }
 
 VideoCaptureController::VideoCaptureController(
@@ -382,16 +395,15 @@ VideoCaptureController::GetVideoCaptureFormat() const {
   return video_capture_format_;
 }
 
-void VideoCaptureController::OnNewBufferHandle(
-    int buffer_id,
-    std::unique_ptr<media::VideoCaptureDevice::Client::Buffer::HandleProvider>
-        handle_provider) {
+void VideoCaptureController::OnNewBuffer(
+    int32_t buffer_id,
+    media::mojom::VideoBufferHandlePtr buffer_handle) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(FindUnretiredBufferContextFromBufferId(buffer_id) ==
          buffer_contexts_.end());
-  buffer_contexts_.emplace_back(
-      next_buffer_context_id_++, buffer_id, launched_device_.get(),
-      handle_provider->GetHandleForInterProcessTransit(true /* read only */));
+  buffer_contexts_.emplace_back(next_buffer_context_id_++, buffer_id,
+                                launched_device_.get(),
+                                std::move(buffer_handle));
 }
 
 void VideoCaptureController::OnFrameReadyInBuffer(
@@ -424,8 +436,8 @@ void VideoCaptureController::OnFrameReadyInBuffer(
             media::VideoCaptureFormat(frame_info->coded_size, 0.0f,
                                       frame_info->pixel_format)
                 .ImageAllocationSize();
-        client->event_handler->OnBufferCreated(
-            client->controller_id, buffer_context_iter->CloneHandle(),
+        client->event_handler->OnNewBuffer(
+            client->controller_id, buffer_context_iter->CloneBufferHandle(),
             mapped_size, buffer_context_id);
       }
 

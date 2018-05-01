@@ -94,7 +94,7 @@ TEST_F(FakeVideoCaptureDeviceDescriptorTest, CanUseSecondRequestedProxy) {
   base::RunLoop wait_loop_2;
   mojom::ReceiverPtr receiver_proxy;
   MockReceiver receiver(mojo::MakeRequest(&receiver_proxy));
-  EXPECT_CALL(receiver, DoOnNewBufferHandle(_, _));
+  EXPECT_CALL(receiver, DoOnNewBuffer(_, _));
   EXPECT_CALL(receiver, DoOnFrameReadyInBuffer(_, _, _, _))
       .WillRepeatedly(
           InvokeWithoutArgs([&wait_loop_2]() { wait_loop_2.Quit(); }));

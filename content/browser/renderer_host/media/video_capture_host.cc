@@ -113,17 +113,18 @@ void VideoCaptureHost::OnError(VideoCaptureControllerID controller_id) {
                      controller_id));
 }
 
-void VideoCaptureHost::OnBufferCreated(VideoCaptureControllerID controller_id,
-                                       mojo::ScopedSharedBufferHandle handle,
-                                       int length,
-                                       int buffer_id) {
+void VideoCaptureHost::OnNewBuffer(
+    VideoCaptureControllerID controller_id,
+    media::mojom::VideoBufferHandlePtr buffer_handle,
+    int length,
+    int buffer_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (controllers_.find(controller_id) == controllers_.end())
     return;
 
   if (base::ContainsKey(device_id_to_observer_map_, controller_id)) {
-    device_id_to_observer_map_[controller_id]->OnBufferCreated(
-        buffer_id, std::move(handle));
+    device_id_to_observer_map_[controller_id]->OnNewBuffer(
+        buffer_id, std::move(buffer_handle));
   }
 }
 

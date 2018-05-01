@@ -35,11 +35,15 @@ static const float kFrameRateToRequest = 15.0f;
 class MockVideoCaptureControllerEventHandler
     : public VideoCaptureControllerEventHandler {
  public:
-  MOCK_METHOD4(DoOnBufferCreated,
+  MOCK_METHOD4(DoOnNewBuffer,
                void(VideoCaptureControllerID id,
-                    mojo::ScopedSharedBufferHandle* handle,
+                    media::mojom::VideoBufferHandlePtr* buffer_handle,
                     int length,
                     int buffer_id));
+  MOCK_METHOD3(DoOnNewMailboxHolderBufferHandle,
+               void(VideoCaptureControllerID id,
+                    int buffer_id,
+                    media::mojom::MailboxVideoFrameDataPtr* texture_handles));
   MOCK_METHOD2(OnBufferDestroyed,
                void(VideoCaptureControllerID, int buffer_id));
   MOCK_METHOD3(OnBufferReady,
@@ -52,11 +56,11 @@ class MockVideoCaptureControllerEventHandler
   MOCK_METHOD1(OnStartedUsingGpuDecode, void(VideoCaptureControllerID));
   MOCK_METHOD1(OnStoppedUsingGpuDecode, void(VideoCaptureControllerID));
 
-  void OnBufferCreated(VideoCaptureControllerID id,
-                       mojo::ScopedSharedBufferHandle handle,
-                       int length,
-                       int buffer_id) override {
-    DoOnBufferCreated(id, &handle, length, buffer_id);
+  void OnNewBuffer(VideoCaptureControllerID id,
+                   media::mojom::VideoBufferHandlePtr buffer_handle,
+                   int length,
+                   int buffer_id) override {
+    DoOnNewBuffer(id, &buffer_handle, length, buffer_id);
   }
 };
 
@@ -309,7 +313,7 @@ IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest,
           must_wait_for_gpu_decode_to_start = false;
         }));
   }
-  EXPECT_CALL(mock_controller_event_handler_, DoOnBufferCreated(_, _, _, _))
+  EXPECT_CALL(mock_controller_event_handler_, DoOnNewBuffer(_, _, _, _))
       .Times(AtLeast(1));
   EXPECT_CALL(mock_controller_event_handler_, OnBufferReady(_, _, _))
       .WillRepeatedly(Invoke(

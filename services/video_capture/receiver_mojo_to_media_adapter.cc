@@ -18,15 +18,13 @@ ReceiverOnTaskRunner::~ReceiverOnTaskRunner() {
   task_runner_->DeleteSoon(FROM_HERE, receiver_.release());
 }
 
-// media::VideoFrameReceiver:
-void ReceiverOnTaskRunner::OnNewBufferHandle(
+void ReceiverOnTaskRunner::OnNewBuffer(
     int buffer_id,
-    std::unique_ptr<media::VideoCaptureDevice::Client::Buffer::HandleProvider>
-        handle_provider) {
+    media::mojom::VideoBufferHandlePtr buffer_handle) {
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&media::VideoFrameReceiver::OnNewBufferHandle,
-                            base::Unretained(receiver_.get()), buffer_id,
-                            base::Passed(&handle_provider)));
+      FROM_HERE, base::BindOnce(&media::VideoFrameReceiver::OnNewBuffer,
+                                base::Unretained(receiver_.get()), buffer_id,
+                                base::Passed(&buffer_handle)));
 }
 
 void ReceiverOnTaskRunner::OnFrameReadyInBuffer(
@@ -80,13 +78,10 @@ ReceiverMojoToMediaAdapter::ReceiverMojoToMediaAdapter(
 
 ReceiverMojoToMediaAdapter::~ReceiverMojoToMediaAdapter() = default;
 
-void ReceiverMojoToMediaAdapter::OnNewBufferHandle(
+void ReceiverMojoToMediaAdapter::OnNewBuffer(
     int buffer_id,
-    std::unique_ptr<media::VideoCaptureDevice::Client::Buffer::HandleProvider>
-        handle_provider) {
-  receiver_->OnNewBufferHandle(
-      buffer_id,
-      handle_provider->GetHandleForInterProcessTransit(true /* read-only */));
+    media::mojom::VideoBufferHandlePtr buffer_handle) {
+  receiver_->OnNewBuffer(buffer_id, std::move(buffer_handle));
 }
 
 void ReceiverMojoToMediaAdapter::OnFrameReadyInBuffer(

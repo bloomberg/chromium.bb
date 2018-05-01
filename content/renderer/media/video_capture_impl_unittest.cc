@@ -146,10 +146,12 @@ class VideoCaptureImplTest : public ::testing::Test {
   }
 
   void SimulateOnBufferCreated(int buffer_id, const base::SharedMemory& shm) {
-    video_capture_impl_->OnBufferCreated(
-        buffer_id, mojo::WrapSharedMemoryHandle(
-                       shm.GetReadOnlyHandle(), shm.mapped_size(),
-                       mojo::UnwrappedSharedMemoryHandleProtection::kReadOnly));
+    media::mojom::VideoBufferHandlePtr buffer_handle =
+        media::mojom::VideoBufferHandle::New();
+    buffer_handle->set_shared_buffer_handle(mojo::WrapSharedMemoryHandle(
+        shm.GetReadOnlyHandle(), shm.mapped_size(),
+        mojo::UnwrappedSharedMemoryHandleProtection::kReadOnly));
+    video_capture_impl_->OnNewBuffer(buffer_id, std::move(buffer_handle));
   }
 
   void SimulateBufferReceived(int buffer_id, const gfx::Size& size) {

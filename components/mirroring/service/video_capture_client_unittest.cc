@@ -78,7 +78,12 @@ TEST_F(VideoCaptureClientTest, Basic) {
     run_loop.Run();
   }
   scoped_task_environment_.RunUntilIdle();
-  client_->OnBufferCreated(0, mojo::SharedBufferHandle::Create(100000));
+
+  media::mojom::VideoBufferHandlePtr buffer_handle =
+      media::mojom::VideoBufferHandle::New();
+  buffer_handle->set_shared_buffer_handle(
+      mojo::SharedBufferHandle::Create(100000));
+  client_->OnNewBuffer(0, std::move(buffer_handle));
   scoped_task_environment_.RunUntilIdle();
   {
     base::RunLoop run_loop;

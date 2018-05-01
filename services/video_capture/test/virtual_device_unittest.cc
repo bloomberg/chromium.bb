@@ -134,7 +134,7 @@ TEST_F(VirtualDeviceTest, OnFrameReadyInBufferWithReceiver) {
   mojom::ReceiverPtr receiver_proxy;
   MockReceiver receiver(mojo::MakeRequest(&receiver_proxy));
   EXPECT_CALL(receiver, OnStarted());
-  EXPECT_CALL(receiver, DoOnNewBufferHandle(_, _))
+  EXPECT_CALL(receiver, DoOnNewBuffer(_, _))
       .Times(VirtualDeviceMojoAdapter::max_buffer_pool_buffer_count());
   EXPECT_CALL(receiver, DoOnFrameReadyInBuffer(_, _, _, _))
       .Times(VirtualDeviceMojoAdapter::max_buffer_pool_buffer_count());

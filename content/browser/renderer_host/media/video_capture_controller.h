@@ -99,10 +99,8 @@ class CONTENT_EXPORT VideoCaptureController
   bool has_received_frames() const { return has_received_frames_; }
 
   // Implementation of media::VideoFrameReceiver interface:
-  void OnNewBufferHandle(
-      int buffer_id,
-      std::unique_ptr<media::VideoCaptureDevice::Client::Buffer::HandleProvider>
-          handle_provider) override;
+  void OnNewBuffer(int32_t buffer_id,
+                   media::mojom::VideoBufferHandlePtr buffer_handle) override;
   void OnFrameReadyInBuffer(
       int buffer_id,
       int frame_feedback_id,
@@ -156,13 +154,16 @@ class CONTENT_EXPORT VideoCaptureController
         int buffer_context_id,
         int buffer_id,
         media::VideoFrameConsumerFeedbackObserver* consumer_feedback_observer,
-        mojo::ScopedSharedBufferHandle handle);
+        media::mojom::VideoBufferHandlePtr buffer_handle);
     ~BufferContext();
     BufferContext(BufferContext&& other);
     BufferContext& operator=(BufferContext&& other);
     int buffer_context_id() const { return buffer_context_id_; }
     int buffer_id() const { return buffer_id_; }
     bool is_retired() const { return is_retired_; }
+    const media::mojom::VideoBufferHandlePtr& buffer_handle() const {
+      return buffer_handle_;
+    }
     void set_is_retired() { is_retired_ = true; }
     void set_frame_feedback_id(int id) { frame_feedback_id_ = id; }
     void set_consumer_feedback_observer(
@@ -179,7 +180,7 @@ class CONTENT_EXPORT VideoCaptureController
     void IncreaseConsumerCount();
     void DecreaseConsumerCount();
     bool HasConsumers() const { return consumer_hold_count_ > 0; }
-    mojo::ScopedSharedBufferHandle CloneHandle();
+    media::mojom::VideoBufferHandlePtr CloneBufferHandle();
 
    private:
     int buffer_context_id_;
@@ -187,7 +188,7 @@ class CONTENT_EXPORT VideoCaptureController
     bool is_retired_;
     int frame_feedback_id_;
     media::VideoFrameConsumerFeedbackObserver* consumer_feedback_observer_;
-    mojo::ScopedSharedBufferHandle buffer_handle_;
+    media::mojom::VideoBufferHandlePtr buffer_handle_;
     double max_consumer_utilization_;
     int consumer_hold_count_;
     std::unique_ptr<

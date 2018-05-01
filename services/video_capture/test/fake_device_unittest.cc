@@ -32,7 +32,7 @@ TEST_F(FakeVideoCaptureDeviceTest, FrameCallbacksArrive) {
   int num_frames_arrived = 0;
   mojom::ReceiverPtr receiver_proxy;
   MockReceiver receiver(mojo::MakeRequest(&receiver_proxy));
-  EXPECT_CALL(receiver, DoOnNewBufferHandle(_, _)).Times(AtLeast(1));
+  EXPECT_CALL(receiver, DoOnNewBuffer(_, _)).Times(AtLeast(1));
   EXPECT_CALL(receiver, DoOnFrameReadyInBuffer(_, _, _, _))
       .WillRepeatedly(InvokeWithoutArgs([&wait_loop, &num_frames_arrived]() {
         num_frames_arrived += 1;
@@ -59,7 +59,7 @@ TEST_F(FakeVideoCaptureDeviceTest, BuffersGetReused) {
   int num_frames_arrived = 0;
   mojom::ReceiverPtr receiver_proxy;
   MockReceiver receiver(mojo::MakeRequest(&receiver_proxy));
-  EXPECT_CALL(receiver, DoOnNewBufferHandle(_, _))
+  EXPECT_CALL(receiver, DoOnNewBuffer(_, _))
       .WillRepeatedly(InvokeWithoutArgs(
           [&num_buffers_created]() { num_buffers_created++; }));
   EXPECT_CALL(receiver, DoOnFrameReadyInBuffer(_, _, _, _))
