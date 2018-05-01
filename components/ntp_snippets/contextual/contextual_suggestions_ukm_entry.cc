@@ -116,13 +116,12 @@ void ContextualSuggestionsUkmEntry::StartTimerIfNeeded() {
 }
 
 void ContextualSuggestionsUkmEntry::StopTimerIfNeeded() {
-  // Either the timer should be running or we should have a computed duration
-  // from the timer.
+  // We should either have a timer or a computed duration from the timer.
   DCHECK(show_duration_timer_ || show_duration_exponential_bucket_ > 0);
 
-  // If we've already computed the bucket then we've already stopped/reset the
-  // timer.
-  if (show_duration_exponential_bucket_ > 0)
+  // If we've already computed the duration, or there's no timer to stop, then
+  // there's nothing to do.
+  if (show_duration_exponential_bucket_ > 0 || !show_duration_timer_)
     return;
 
   show_duration_exponential_bucket_ = ukm::GetExponentialBucketMin(
