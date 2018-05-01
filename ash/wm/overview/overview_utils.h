@@ -36,6 +36,8 @@ bool IsNewOverviewAnimationsEnabled();
 // obsolete. See https://crbug.com/782320.
 bool IsNewOverviewUi();
 
+bool IsOverviewSwipeToCloseEnabled();
+
 // Creates and returns a background translucent widget parented in
 // |root_window|'s default container and having |background_color|.
 // When |border_thickness| is non-zero, a border is created having

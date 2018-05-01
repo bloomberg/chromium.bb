@@ -297,6 +297,10 @@
 -WindowSelectorTest.RemoveDisplay
 -WindowSelectorTest.RemoveDisplayWithAnimation
 
+# TODO: ShellPortMash::CreateTabletModeEventHandler. http://crbug.com/698093
+-WindowSelectorTest.DragToClose
+-WindowSelectorTest.FlingToClose
+
 # Needs CursorManager/CursorManagerTestApi. http://crbug.com/780637
 -WindowTreeHostManagerTest.DontUpdateInvisibleCursorLocationAfterDisplayChange
 -WindowTreeHostManagerTest.UpdateMouseLocationAfterDisplayChange

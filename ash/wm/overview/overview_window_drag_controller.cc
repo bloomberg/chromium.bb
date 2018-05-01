@@ -8,12 +8,14 @@
 
 #include "ash/screen_util.h"
 #include "ash/shell.h"
+#include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/scoped_transform_overview_window.h"
 #include "ash/wm/overview/window_selector.h"
 #include "ash/wm/overview/window_selector_item.h"
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
 #include "ash/wm/window_positioning_utils.h"
+#include "base/numerics/ranges.h"
 #include "ui/aura/window.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
@@ -24,6 +26,18 @@ namespace {
 // Before dragging an overview window, the window will scale up |kPreDragScale|
 // to indicate its selection.
 constexpr float kDragWindowScale = 0.04f;
+
+// The amount of distance from the start of drag the item needs to be dragged
+// vertically for it to be closed on release.
+constexpr float kDragToCloseDistanceThresholdDp = 160.f;
+
+// If an item is in drag to close mode, dragging it more than this amount
+// horizontally will change the item to drag to snap mode.
+constexpr int kDragToSnapDistanceThresholdDp = 100;
+
+// Flings with less velocity than this will not close the dragged item.
+constexpr float kFlingToCloseVelocityThreshold = 3000.f;
+constexpr float kItemMinOpacity = 0.4f;
 
 }  // namespace
 
@@ -38,14 +52,11 @@ void OverviewWindowDragController::InitiateDrag(
     WindowSelectorItem* item,
     const gfx::Point& location_in_screen) {
   item_ = item;
-
   previous_event_location_ = location_in_screen;
-  // No need to track the initial event location if the event does not start in
-  // a snap region.
-  initial_event_location_ =
-      GetSnapPosition(location_in_screen) == SplitViewController::NONE
-          ? base::nullopt
-          : base::make_optional(location_in_screen);
+  initial_event_location_ = location_in_screen;
+  started_in_snap_region_ =
+      GetSnapPosition(location_in_screen) != SplitViewController::NONE;
+  current_drag_behavior_ = DragBehavior::kUndefined;
 }
 
 void OverviewWindowDragController::Drag(const gfx::Point& location_in_screen) {
@@ -57,31 +68,82 @@ void OverviewWindowDragController::Drag(const gfx::Point& location_in_screen) {
         std::abs(distance.y()) < kMinimumDragOffset) {
       return;
     }
-    StartSplitViewDragMode(location_in_screen);
+
+    if (IsOverviewSwipeToCloseEnabled() &&
+        std::abs(distance.x()) < std::abs(distance.y())) {
+      current_drag_behavior_ = DragBehavior::kDragToClose;
+      original_opacity_ = item_->GetOpacity();
+      did_move_ = true;
+    } else {
+      StartSplitViewDragMode(location_in_screen);
+    }
+  }
+
+  // Update the drag behavior if needed.
+  int x_offset = 0;
+  if (current_drag_behavior_ == DragBehavior::kDragToClose &&
+      std::abs(location_in_screen.x() - initial_event_location_.x()) >
+          kDragToSnapDistanceThresholdDp) {
+    // If the window has moved enough in a horizontal direction while in drag
+    // to close mode, enter drag to snap mode. Reposition the window selector
+    // item to be centered at the latest event location.
+    item_->SetOpacity(original_opacity_);
+    x_offset = location_in_screen.x() - initial_event_location_.x();
+    current_drag_behavior_ = DragBehavior::kDragToSnap;
+  }
+
+  // Update the state based on the drag behavior.
+  if (current_drag_behavior_ == DragBehavior::kDragToClose) {
+    // Update |item_|'s opacity based on its distance. |item_|'s x coordinate
+    // should not change while in drag to close state.
+    float val = std::abs(static_cast<float>(location_in_screen.y()) -
+                         initial_event_location_.y()) /
+                kDragToCloseDistanceThresholdDp;
+    val = base::ClampToRange(val, 0.f, 1.f);
+    float opacity = original_opacity_;
+    if (opacity > kItemMinOpacity) {
+      opacity = original_opacity_ - val * (original_opacity_ - kItemMinOpacity);
+    }
+    item_->SetOpacity(opacity);
+  } else if (current_drag_behavior_ == DragBehavior::kDragToSnap) {
+    UpdateDragIndicatorsAndWindowGrid(location_in_screen);
+    if (x_offset == 0)
+      x_offset = location_in_screen.x() - previous_event_location_.x();
   }
 
   // Update the dragged |item_|'s bounds accordingly.
   gfx::Rect bounds(item_->target_bounds());
-  bounds.Offset(location_in_screen.x() - previous_event_location_.x(),
+  bounds.Offset(x_offset,
                 location_in_screen.y() - previous_event_location_.y());
   item_->SetBounds(bounds, OverviewAnimationType::OVERVIEW_ANIMATION_NONE);
   previous_event_location_ = location_in_screen;
-
-  UpdateDragIndicatorsAndWindowGrid(location_in_screen);
 }
 
 void OverviewWindowDragController::CompleteDrag(
     const gfx::Point& location_in_screen) {
   // Update window grid bounds and |snap_position_| in case the screen
   // orientation was changed.
-  UpdateDragIndicatorsAndWindowGrid(location_in_screen);
-  window_selector_->SetSplitViewDragIndicatorsIndicatorState(
-      IndicatorState::kNone, gfx::Point());
+  if (current_drag_behavior_ == DragBehavior::kDragToSnap) {
+    UpdateDragIndicatorsAndWindowGrid(location_in_screen);
+    window_selector_->SetSplitViewDragIndicatorsIndicatorState(
+        IndicatorState::kNone, gfx::Point());
+  }
 
   if (!did_move_) {
     ActivateDraggedWindow();
+  } else if (current_drag_behavior_ == DragBehavior::kDragToClose) {
+    // If we are in drag to close mode close the window if it has been dragged
+    // enough, otherwise reposition it and set its opacity back to its original
+    // value.
+    if (std::abs((location_in_screen - initial_event_location_).y()) >
+        kDragToCloseDistanceThresholdDp) {
+      item_->CloseWindow();
+    } else {
+      item_->SetOpacity(original_opacity_);
+      window_selector_->PositionWindows(/*animate=*/true);
+    }
   } else {
-    did_move_ = false;
+    DCHECK_EQ(current_drag_behavior_, DragBehavior::kDragToSnap);
     // If the window was dragged around but should not be snapped, move it back
     // to overview window grid.
     if (!ShouldUpdateDragIndicatorsOrSnap(location_in_screen) ||
@@ -92,7 +154,9 @@ void OverviewWindowDragController::CompleteDrag(
       SnapWindow(snap_position_);
     }
   }
+  did_move_ = false;
   item_ = nullptr;
+  current_drag_behavior_ = DragBehavior::kNoDrag;
 }
 
 void OverviewWindowDragController::StartSplitViewDragMode(
@@ -105,11 +169,28 @@ void OverviewWindowDragController::StartSplitViewDragMode(
                    OverviewAnimationType::OVERVIEW_ANIMATION_NONE);
 
   did_move_ = true;
+  current_drag_behavior_ = DragBehavior::kDragToSnap;
   window_selector_->SetSplitViewDragIndicatorsIndicatorState(
       split_view_controller_->CanSnap(item_->GetWindow())
           ? IndicatorState::kDragArea
           : IndicatorState::kCannotSnap,
       location_in_screen);
+}
+
+void OverviewWindowDragController::Fling(const gfx::Point& location_in_screen,
+                                         float velocity_x,
+                                         float velocity_y) {
+  if (current_drag_behavior_ == DragBehavior::kDragToClose ||
+      current_drag_behavior_ == DragBehavior::kUndefined) {
+    if (std::abs(velocity_y) > kFlingToCloseVelocityThreshold) {
+      item_->CloseWindow();
+      return;
+    }
+  }
+
+  // If the fling velocity was not high enough, or flings should be ignored,
+  // treat it as a scroll end event.
+  CompleteDrag(location_in_screen);
 }
 
 void OverviewWindowDragController::ActivateDraggedWindow() {
@@ -131,15 +212,17 @@ void OverviewWindowDragController::ActivateDraggedWindow() {
     window_selector_->SelectWindow(item_);
     split_view_controller_->ShowAppCannotSnapToast();
   }
+  current_drag_behavior_ = DragBehavior::kNoDrag;
 }
 
 void OverviewWindowDragController::ResetGesture() {
   window_selector_->PositionWindows(/*animate=*/true);
   window_selector_->SetSplitViewDragIndicatorsIndicatorState(
       IndicatorState::kNone, gfx::Point());
-  // This function gets called on long press, which bypasses CompleteDrag but
-  // stops dragging as well, so reset |item_|.
+  // This function gets called after a long press release, which bypasses
+  // CompleteDrag but stops dragging as well, so reset |item_|.
   item_ = nullptr;
+  current_drag_behavior_ = DragBehavior::kNoDrag;
 }
 
 void OverviewWindowDragController::ResetWindowSelector() {
@@ -205,23 +288,23 @@ void OverviewWindowDragController::UpdateDragIndicatorsAndWindowGrid(
 
 bool OverviewWindowDragController::ShouldUpdateDragIndicatorsOrSnap(
     const gfx::Point& event_location) {
-  if (initial_event_location_ == base::nullopt)
+  if (!started_in_snap_region_)
     return true;
 
   auto snap_position = GetSnapPosition(event_location);
   if (snap_position == SplitViewController::NONE) {
     // If the event started in a snap region, but has since moved out set
-    // |initial_event_location_| to |event_location| which is guarenteed to not
+    // |started_in_snap_region_| to false. |event_location| is guarenteed to not
     // be in a snap region so that the drag indicators are shown correctly and
     // the snap mechanism works normally for the rest of the drag.
-    initial_event_location_ = base::nullopt;
+    started_in_snap_region_ = false;
     return true;
   }
 
   // The drag indicators can update or the item can snap even if the drag events
   // are in the snap region, if the event has travelled past the threshold in
   // the direction of the attempted snap region.
-  const gfx::Vector2d distance = event_location - *initial_event_location_;
+  const gfx::Vector2d distance = event_location - initial_event_location_;
   // Check the x-axis distance for landscape, y-axis distance for portrait.
   int distance_scalar =
       split_view_controller_->IsCurrentScreenOrientationLandscape()
