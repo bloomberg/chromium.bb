@@ -2299,6 +2299,7 @@ crbug.com/836627 external/wpt/content-security-policy/inside-worker/dedicated-in
 crbug.com/836627 external/wpt/content-security-policy/inside-worker/shared-inheritance.html [ Pass Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.12 ] external/wpt/dom/nodes/ParentNode-querySelector-All.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] virtual/unified-autoplay/external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-self.https.sub.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/html/syntax/parsing/template/creating-an-element-for-the-token/template-owner-document.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] virtual/picture-in-picture/external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-some.https.sub.html [ Timeout ]
