@@ -27,6 +27,7 @@ class FormStructure;
 
 namespace blink {
 class Document;
+class NavigatorVR;
 }
 
 namespace cc {
@@ -106,6 +107,7 @@ class METRICS_EXPORT UkmRecorder {
   friend autofill::AutofillMetrics;
   friend autofill::FormStructure;
   friend blink::Document;
+  friend blink::NavigatorVR;
   friend cc::UkmManager;
   friend content::CrossSiteDocumentResourceHandler;
   friend content::PluginServiceImpl;

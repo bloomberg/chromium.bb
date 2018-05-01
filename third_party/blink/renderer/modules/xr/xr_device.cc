@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/xr/xr_device.h"
 
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
@@ -91,9 +92,22 @@ ScriptPromise XRDevice::supportsSession(
   return promise;
 }
 
+int64_t XRDevice::GetSourceId() const {
+  return xr_->GetSourceId();
+}
+
 ScriptPromise XRDevice::requestSession(
     ScriptState* script_state,
     const XRSessionCreationOptions& options) {
+  Document* doc = ToDocumentOrNull(ExecutionContext::From(script_state));
+
+  if (options.exclusive() && !did_log_request_exclusive_session_ && doc) {
+    ukm::builders::XR_WebXR(GetSourceId())
+        .SetDidRequestPresentation(1)
+        .Record(doc->UkmRecorder());
+    did_log_request_exclusive_session_ = true;
+  }
+
   // Check first to see if the device is capable of supporting the requested
   // options.
   const char* reject_reason = checkSessionSupport(options);
@@ -111,7 +125,6 @@ ScriptPromise XRDevice::requestSession(
           DOMException::Create(kInvalidStateError, kActiveExclusiveSession));
     }
 
-    Document* doc = ToDocumentOrNull(ExecutionContext::From(script_state));
     if (!Frame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr)) {
       return ScriptPromise::RejectWithDOMException(
           script_state,

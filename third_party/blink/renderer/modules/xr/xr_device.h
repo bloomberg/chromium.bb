@@ -77,6 +77,10 @@ class XRDevice final : public EventTargetWithInlineData,
   bool HasDeviceFocus() { return has_device_focus_; }
   bool HasDeviceAndFrameFocus() { return IsFrameFocused() && HasDeviceFocus(); }
 
+  bool SupportsExclusive() { return supports_exclusive_; }
+
+  int64_t GetSourceId() const;
+
  private:
   void SetXRDisplayInfo(device::mojom::blink::VRDisplayInfoPtr);
 
@@ -95,6 +99,9 @@ class XRDevice final : public EventTargetWithInlineData,
   bool is_external_;
   bool supports_exclusive_;
   bool has_device_focus_ = true;
+
+  // Indicates whether we've already logged a request for an exclusive session.
+  bool did_log_request_exclusive_session_ = false;
 
   device::mojom::blink::VRMagicWindowProviderPtr magic_window_provider_;
   device::mojom::blink::VRDisplayHostPtr display_;

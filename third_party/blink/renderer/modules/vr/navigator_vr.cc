@@ -6,6 +6,7 @@
 
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -69,6 +70,14 @@ XR* NavigatorVR::xr(Navigator& navigator) {
 }
 
 XR* NavigatorVR::xr() {
+  if (!did_log_NavigatorXR_) {
+    ukm::builders::XR_WebXR(GetSourceId())
+        .SetDidUseNavigatorXR(1)
+        .Record(GetDocument()->UkmRecorder());
+
+    did_log_NavigatorXR_ = true;
+  }
+
   LocalFrame* frame = GetSupplementable()->GetFrame();
   // Always return null when the navigator is detached.
   if (!frame)
@@ -86,9 +95,26 @@ XR* NavigatorVR::xr() {
       return nullptr;
     }
 
-    xr_ = XR::Create(*frame);
+    xr_ = XR::Create(*frame, ukm_source_id_);
+    MaybeLogDidUseGamepad();
   }
   return xr_;
+}
+
+void NavigatorVR::SetDidUseGamepad() {
+  did_use_gamepad_ = true;
+  MaybeLogDidUseGamepad();
+}
+
+void NavigatorVR::MaybeLogDidUseGamepad() {
+  // If we have used WebXR and Gamepad, and haven't already logged the metric,
+  // record that Gamepad is used.
+  if (xr_ && did_use_gamepad_ && !did_log_did_use_gamepad_) {
+    ukm::builders::XR_WebXR(ukm_source_id_)
+        .SetDidGetGamepads(1)
+        .Record(GetDocument()->UkmRecorder());
+    did_log_did_use_gamepad_ = true;
+  }
 }
 
 ScriptPromise NavigatorVR::getVRDisplays(ScriptState* script_state,
@@ -190,9 +216,23 @@ void NavigatorVR::Trace(blink::Visitor* visitor) {
 
 NavigatorVR::NavigatorVR(Navigator& navigator)
     : Supplement<Navigator>(navigator),
-      FocusChangedObserver(navigator.GetFrame()->GetPage()) {
+      FocusChangedObserver(navigator.GetFrame()->GetPage()),
+      ukm_source_id_(ukm::UkmRecorder::GetNewSourceID()) {
   navigator.GetFrame()->DomWindow()->RegisterEventListenerObserver(this);
   FocusedFrameChanged();
+
+  if (navigator.GetFrame() && WebFrame::FromFrame(navigator.GetFrame())) {
+    WebFrame* main_frame = WebFrame::FromFrame(navigator.GetFrame())->Top();
+    if (main_frame) {
+      url::Origin main_frame_origin = main_frame->GetSecurityOrigin();
+      GetDocument()->UkmRecorder()->UpdateSourceURL(ukm_source_id_,
+                                                    main_frame_origin.GetURL());
+    }
+  }
+}
+
+int64_t NavigatorVR::GetSourceId() const {
+  return ukm_source_id_;
 }
 
 NavigatorVR::~NavigatorVR() = default;
