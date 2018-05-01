@@ -167,7 +167,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardOverlayUIBrowserTest,
     }
   }
 
-  constexpr int kExpectedFoundAccelerators = 60;
+  constexpr int kExpectedFoundAccelerators = 62;
   DCHECK_EQ(kExpectedFoundAccelerators, found_accelerators)
       << "It seems ash::kAcceleratorData or the 'shortcut' section of "
          "'/chrome/browser/resources/chromeos/keyboard_overlay_data.js' has "

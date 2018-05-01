@@ -60,6 +60,7 @@
 -DockedMagnifierTest.TestOutsidePrefsUpdates
 -DockedMagnifierTest.TextInputFieldEvents
 -DockedMagnifierTest.TransformSimple
+-MagnifiersAcceleratorsTester.TestToggleMagnifiers
 
 # TODO: CursorManagerTestApi. http://crbug.com/780637
 -DragWindowResizerTest.CursorDeviceScaleFactor

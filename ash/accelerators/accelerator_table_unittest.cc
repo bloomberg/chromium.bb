@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <set>
+#include <tuple>
 
 #include "ash/accelerators/accelerator_table.h"
 #include "base/macros.h"
@@ -15,23 +16,18 @@ namespace ash {
 
 namespace {
 
-// The number of non-Search-based accelerators as of 2017-11-30.
-constexpr int kNonSearchAcceleratorsNum = 92;
-// The hash of non-Search-based accelerators as of 2017-11-30.
+// The number of non-Search-based accelerators as of 2018-04-30.
+constexpr int kNonSearchAcceleratorsNum = 88;
+// The hash of non-Search-based accelerators as of 2018-04-30.
 // See HashAcceleratorData().
-// TODO: adding Search-based accelerators should not update this hash
-// (crbug.com/778432).
 constexpr char kNonSearchAcceleratorsHash[] =
-    "a6b59ab9473365f40ad50724412bb134";
+    "06096f5c3177fd99f7c30cfbf4b7d635";
 
 struct Cmp {
   bool operator()(const AcceleratorData& lhs, const AcceleratorData& rhs) {
-    if (lhs.trigger_on_press != rhs.trigger_on_press)
-      return lhs.trigger_on_press < rhs.trigger_on_press;
-    if (lhs.keycode != rhs.keycode)
-      return lhs.keycode < rhs.keycode;
-    return lhs.modifiers < rhs.modifiers;
     // Do not check |action|.
+    return std::tie(lhs.trigger_on_press, lhs.keycode, lhs.modifiers) <
+           std::tie(rhs.trigger_on_press, rhs.keycode, rhs.modifiers);
   }
 };
 
@@ -150,7 +146,7 @@ TEST(AcceleratorTableTest, CheckSearchBasedAccelerators) {
   }
 
   const int accelerators_number = non_search_accelerators.size();
-  EXPECT_LE(accelerators_number, kNonSearchAcceleratorsNum)
+  EXPECT_EQ(accelerators_number, kNonSearchAcceleratorsNum)
       << "All new accelerators should be Search-based and approved by UX.";
 
   std::stable_sort(non_search_accelerators.begin(),

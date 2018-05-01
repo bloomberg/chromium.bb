@@ -153,6 +153,12 @@ const AcceleratorData kAcceleratorData[] = {
     {true, ui::VKEY_M, ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN,
      MOVE_ACTIVE_WINDOW_BETWEEN_DISPLAYS},
 
+    // Magnifiers shortcuts.
+    {true, ui::VKEY_D, ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN,
+     TOGGLE_DOCKED_MAGNIFIER},
+    {true, ui::VKEY_M, ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN,
+     TOGGLE_FULLSCREEN_MAGNIFIER},
+
     // Media Player shortcuts.
     {true, ui::VKEY_MEDIA_NEXT_TRACK, ui::EF_NONE, MEDIA_NEXT_TRACK},
     {true, ui::VKEY_MEDIA_PLAY_PAUSE, ui::EF_NONE, MEDIA_PLAY_PAUSE},

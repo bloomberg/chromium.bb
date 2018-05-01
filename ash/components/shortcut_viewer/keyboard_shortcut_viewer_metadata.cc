@@ -182,6 +182,20 @@ const gfx::VectorIcon* GetVectorIconForKeyboardCode(ui::KeyboardCode key_code) {
 const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
   static base::NoDestructor<std::vector<KeyboardShortcutItem>> item_list({
       {// |categories|
+       {ShortcutCategory::kAccessibility},
+       IDS_KSV_DESCRIPTION_TOGGLE_DOCKED_MAGNIFIER,
+       IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
+       // |accelerator_ids|
+       {{ui::VKEY_D, ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN}}},
+
+      {// |categories|
+       {ShortcutCategory::kAccessibility},
+       IDS_KSV_DESCRIPTION_TOGGLE_FULLSCREEN_MAGNIFIER,
+       IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
+       // |accelerator_ids|
+       {{ui::VKEY_M, ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN}}},
+
+      {// |categories|
        {ShortcutCategory::kPopular},
        IDS_KSV_DESCRIPTION_LOCK_SCREEN,
        IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
