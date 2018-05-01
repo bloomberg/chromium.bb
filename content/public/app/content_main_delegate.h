@@ -21,7 +21,6 @@ class CommandLine;
 namespace service_manager {
 class BackgroundServiceManager;
 class Identity;
-class ZygoteForkDelegate;
 }  // namespace service_manager
 
 namespace content {
@@ -30,6 +29,7 @@ class ContentBrowserClient;
 class ContentGpuClient;
 class ContentRendererClient;
 class ContentUtilityClient;
+class ZygoteForkDelegate;
 struct MainFunctionParams;
 
 class CONTENT_EXPORT ContentMainDelegate {
@@ -81,8 +81,7 @@ class CONTENT_EXPORT ContentMainDelegate {
   // specify one or more zygote delegates if it wishes by storing them in
   // |*delegates|.
   virtual void ZygoteStarting(
-      std::vector<std::unique_ptr<service_manager::ZygoteForkDelegate>>*
-          delegates);
+      std::vector<std::unique_ptr<ZygoteForkDelegate>>* delegates);
 
   // Called every time the zygote process forks.
   virtual void ZygoteForked() {}

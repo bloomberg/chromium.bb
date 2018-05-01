@@ -8,7 +8,6 @@ include_rules = [
   "+content/public/app",
   "+content/public/browser",
   "+content/public/common",
-  "+services/service_manager/sandbox",
   "+ui/base",
 ]
 

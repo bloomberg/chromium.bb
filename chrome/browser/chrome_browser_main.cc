@@ -845,7 +845,7 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
     const content::MainFunctionParams& parameters)
     : parameters_(parameters),
       parsed_command_line_(parameters.command_line),
-      result_code_(service_manager::RESULT_CODE_NORMAL_EXIT),
+      result_code_(content::RESULT_CODE_NORMAL_EXIT),
       startup_watcher_(new StartupTimeBomb()),
       shutdown_watcher_(new ShutdownWatcherHelper()),
       ui_thread_profiler_(ThreadProfiler::CreateAndStartOnMainThread()),
@@ -1075,7 +1075,7 @@ int ChromeBrowserMainParts::PreEarlyInitialization() {
     }
     // Continue on and show error later (once UI has been initialized and main
     // message loop is running).
-    return service_manager::RESULT_CODE_NORMAL_EXIT;
+    return content::RESULT_CODE_NORMAL_EXIT;
   }
   return load_local_state_result;
 }
@@ -1128,7 +1128,7 @@ int ChromeBrowserMainParts::PreCreateThreads() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::PreCreateThreads");
   result_code_ = PreCreateThreadsImpl();
 
-  if (result_code_ == service_manager::RESULT_CODE_NORMAL_EXIT) {
+  if (result_code_ == content::RESULT_CODE_NORMAL_EXIT) {
 #if !defined(OS_ANDROID)
     // These members must be initialized before exiting this function normally.
     DCHECK(master_prefs_.get());
@@ -1171,7 +1171,7 @@ int ChromeBrowserMainParts::LoadLocalState(
   }
 
   const int apply_first_run_result = ApplyFirstRunPrefs();
-  if (apply_first_run_result != service_manager::RESULT_CODE_NORMAL_EXIT)
+  if (apply_first_run_result != content::RESULT_CODE_NORMAL_EXIT)
     return apply_first_run_result;
 
   browser_process_->SetApplicationLocale(locale);
@@ -1186,7 +1186,7 @@ int ChromeBrowserMainParts::LoadLocalState(
   // tasks.
   SetupFieldTrials();
 
-  return service_manager::RESULT_CODE_NORMAL_EXIT;
+  return content::RESULT_CODE_NORMAL_EXIT;
 }
 
 int ChromeBrowserMainParts::ApplyFirstRunPrefs() {
@@ -1197,7 +1197,7 @@ int ChromeBrowserMainParts::ApplyFirstRunPrefs() {
   // browser's profile_manager object is created, but after ResourceBundle
   // is initialized.
   if (!first_run::IsChromeFirstRun())
-    return service_manager::RESULT_CODE_NORMAL_EXIT;
+    return content::RESULT_CODE_NORMAL_EXIT;
 
   first_run::ProcessMasterPreferencesResult pmp_result =
       first_run::ProcessMasterPreferences(user_data_dir_, master_prefs_.get());
@@ -1239,7 +1239,7 @@ int ChromeBrowserMainParts::ApplyFirstRunPrefs() {
     local_state->SetBoolean(prefs::kWelcomePageOnOSUpgradeEnabled, false);
 #endif
 #endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-  return service_manager::RESULT_CODE_NORMAL_EXIT;
+  return content::RESULT_CODE_NORMAL_EXIT;
 }
 
 int ChromeBrowserMainParts::PreCreateThreadsImpl() {
@@ -1418,7 +1418,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   // which is used in SetupMetrics().
   SetupMetrics();
 
-  return service_manager::RESULT_CODE_NORMAL_EXIT;
+  return content::RESULT_CODE_NORMAL_EXIT;
 }
 
 void ChromeBrowserMainParts::PostCreateThreads() {
@@ -1631,7 +1631,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     }
 
     return shell_integration::SetAsDefaultBrowser()
-               ? static_cast<int>(service_manager::RESULT_CODE_NORMAL_EXIT)
+               ? static_cast<int>(content::RESULT_CODE_NORMAL_EXIT)
                : static_cast<int>(chrome::RESULT_CODE_SHELL_INTEGRATION_FAILED);
   }
 
@@ -1647,7 +1647,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   if (parsed_command_line().HasSwitch(switches::kPackExtension)) {
     extensions::StartupHelper extension_startup_helper;
     if (extension_startup_helper.PackExtension(parsed_command_line()))
-      return service_manager::RESULT_CODE_NORMAL_EXIT;
+      return content::RESULT_CODE_NORMAL_EXIT;
     return chrome::RESULT_CODE_PACK_EXTENSION_ERROR;
   }
 
@@ -1678,7 +1678,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
       // expected.
       if (parsed_command_line().HasSwitch(switches::kTestType))
         return chrome::RESULT_CODE_NORMAL_EXIT_PROCESS_NOTIFIED;
-      return service_manager::RESULT_CODE_NORMAL_EXIT;
+      return content::RESULT_CODE_NORMAL_EXIT;
 
     case ProcessSingleton::PROFILE_IN_USE:
       return chrome::RESULT_CODE_PROFILE_IN_USE;
@@ -1738,7 +1738,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     }
 #else
     // We don't support retention experiments on Mac or Linux.
-    return service_manager::RESULT_CODE_NORMAL_EXIT;
+    return content::RESULT_CODE_NORMAL_EXIT;
 #endif  // defined(OS_WIN)
   }
 #endif  // !defined(OS_ANDROID)
@@ -1746,7 +1746,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 #if defined(OS_WIN)
   // Do the tasks if chrome has been upgraded while it was last running.
   if (!already_running && upgrade_util::DoUpgradeTasks(parsed_command_line()))
-    return service_manager::RESULT_CODE_NORMAL_EXIT;
+    return content::RESULT_CODE_NORMAL_EXIT;
 
   // Check if there is any machine level Chrome installed on the current
   // machine. If yes and the current Chrome process is user level, we do not
@@ -1776,7 +1776,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
                                   user_data_dir_,
                                   parsed_command_line());
   if (!profile_)
-    return service_manager::RESULT_CODE_NORMAL_EXIT;
+    return content::RESULT_CODE_NORMAL_EXIT;
 
 #if !defined(OS_ANDROID)
   const base::TimeTicks start_time_step2 = base::TimeTicks::Now();
@@ -1830,7 +1830,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     // The first run dialog is modal, and spins a RunLoop, which could receive
     // a SIGTERM, and call chrome::AttemptExit(). Exit cleanly in that case.
     if (browser_shutdown::IsTryingToQuit())
-      return service_manager::RESULT_CODE_NORMAL_EXIT;
+      return content::RESULT_CODE_NORMAL_EXIT;
 
     if (!master_prefs_->suppress_first_run_default_browser_prompt) {
       browser_creator_->set_show_main_browser_window(

@@ -44,6 +44,7 @@
 #include "content/public/common/connection_filter.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/mojo_channel_switches.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/simple_connection_filter.h"
@@ -63,7 +64,6 @@
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/client_process_impl.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
 #include "services/resource_coordinator/public/mojom/service_constants.mojom.h"
-#include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/runner/common/client_util.h"
@@ -247,9 +247,8 @@ InitializeMojoIPCChannel() {
       mojo::edk::PlatformChannelPair::PassClientHandleFromParentProcess(
           *base::CommandLine::ForCurrentProcess());
 #elif defined(OS_POSIX)
-  platform_channel.reset(
-      mojo::edk::PlatformHandle(base::GlobalDescriptors::GetInstance()->Get(
-          service_manager::kMojoIPCChannel)));
+  platform_channel.reset(mojo::edk::PlatformHandle(
+      base::GlobalDescriptors::GetInstance()->Get(kMojoIPCChannel)));
 #endif
   // Mojo isn't supported on all child process types.
   // TODO(crbug.com/604282): Support Mojo in the remaining processes.
@@ -455,7 +454,7 @@ void ChildThreadImpl::Init(const Options& options) {
 
     std::string service_request_token =
         base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            service_manager::switches::kServiceRequestChannelToken);
+            switches::kServiceRequestChannelToken);
     if (!service_request_token.empty() && invitation) {
       service_request_pipe =
           invitation->ExtractMessagePipe(service_request_token);

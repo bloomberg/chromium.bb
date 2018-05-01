@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_SERVICE_MANAGER_ZYGOTE_ZYGOTE_HOST_LINUX_H_
-#define SERVICES_SERVICE_MANAGER_ZYGOTE_ZYGOTE_HOST_LINUX_H_
+#ifndef CONTENT_PUBLIC_BROWSER_ZYGOTE_HOST_LINUX_H_
+#define CONTENT_PUBLIC_BROWSER_ZYGOTE_HOST_LINUX_H_
 
 #include <unistd.h>
 
-#include "base/component_export.h"
 #include "base/process/process.h"
+#include "content/common/content_export.h"
 
-namespace service_manager {
+namespace content {
 
 // https://chromium.googlesource.com/chromium/src/+/master/docs/linux_zygote.md
 
@@ -19,7 +19,7 @@ namespace service_manager {
 class ZygoteHost {
  public:
   // Returns the singleton instance.
-  static COMPONENT_EXPORT(SERVICE_MANAGER_ZYGOTE) ZygoteHost* GetInstance();
+  CONTENT_EXPORT static ZygoteHost* GetInstance();
 
   virtual ~ZygoteHost() {}
 
@@ -37,6 +37,6 @@ class ZygoteHost {
                                       int score) = 0;
 };
 
-}  // namespace service_manager
+}  // namespace content
 
-#endif  // SERVICES_SERVICE_MANAGER_ZYGOTE_ZYGOTE_HOST_LINUX_H_
+#endif  // CONTENT_PUBLIC_BROWSER_ZYGOTE_HOST_LINUX_H_

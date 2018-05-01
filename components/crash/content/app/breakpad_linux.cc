@@ -992,7 +992,8 @@ class NonBrowserCrashHandler : public google_breakpad::CrashGenerationClient {
  public:
   NonBrowserCrashHandler()
       : server_fd_(base::GlobalDescriptors::GetInstance()->Get(
-            service_manager::kCrashDumpSignal)) {}
+            kCrashDumpSignal)) {
+  }
 
   ~NonBrowserCrashHandler() override {}
 
