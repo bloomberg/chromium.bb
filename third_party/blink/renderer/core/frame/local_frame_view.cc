@@ -2613,19 +2613,10 @@ void LocalFrameView::PerformPostLayoutTasks() {
   DCHECK(frame_->GetDocument());
 
   FontFaceSetDocument::DidLayout(*frame_->GetDocument());
-  // Cursor update scheduling is done by the local root, which is the main frame
-  // if there are no RemoteFrame ancestors in the frame tree. Use of
-  // localFrameRoot() is discouraged but will change when cursor update
-  // scheduling is moved from EventHandler to PageEventHandler.
-
   // Fire a fake a mouse move event to update hover state and mouse cursor, and
   // send the right mouse out/over events.
-  if (RuntimeEnabledFeatures::UpdateHoverPostLayoutEnabled()) {
-    frame_->GetEventHandler().DispatchFakeMouseMoveEventSoon(
-        MouseEventManager::FakeMouseMoveReason::kPerFrame);
-  } else {
-    GetFrame().LocalFrameRoot().GetEventHandler().ScheduleCursorUpdate();
-  }
+  frame_->GetEventHandler().DispatchFakeMouseMoveEventSoon(
+      MouseEventManager::FakeMouseMoveReason::kPerFrame);
 
   UpdateGeometriesIfNeeded();
 

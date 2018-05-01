@@ -1252,10 +1252,6 @@
       status: "experimental",
     },
     {
-      name: "UpdateHoverPostLayout",
-      status: "stable",
-    },
-    {
       name: "UserActivationV2",
     },
     {
