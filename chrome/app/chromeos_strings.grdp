@@ -4934,7 +4934,7 @@
   <message name="IDS_CROSTINI_INSTALLER_BODY" desc="Description for the Crostini installer, a dialog for installing the 'Terminal'.">
     Develop on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. You can run your favorite native apps and command-line tools seamlessly and securely.
 
-Installing the <ph name="APP_NAME">$2<ex>Terminal</ex></ph> will download <ph name="DOWNLOAD_SIZE">$3<ex>200MB</ex></ph> of data.
+Installing the <ph name="APP_NAME">$2<ex>Terminal</ex></ph> will download <ph name="DOWNLOAD_SIZE">$3<ex>300MB</ex></ph> of data.
   </message>
   <message name="IDS_CROSTINI_INSTALLER_INSTALL_BUTTON" desc="Label for the button in the Crostini installer dialog to begin installing the 'Terminal'.">
     Install
@@ -4977,5 +4977,20 @@ Installing the <ph name="APP_NAME">$2<ex>Terminal</ex></ph> will download <ph na
   </message>
   <message name="IDS_CROSTINI_INSTALLER_START_CONTAINER_ERROR" desc="Text shown in the Crostini installer dialog when the container fails to start inside the 'Termina VM'">
     ERROR: Failed to start container inside Termina VM.
+  </message>
+  <message name="IDS_CROSTINI_UNINSTALLER_TITLE" desc="Title of the Crostini uninstaller, a dialog for uninstalling the 'Terminal', the associated VM and Linux container.">
+    <ph name="APP_NAME">$1<ex>Uninstall Terminal</ex></ph> for <ph name="DEVICE_TYPE">$2<ex>Chromebook</ex></ph>
+  </message>
+  <message name="IDS_CROSTINI_UNINSTALLER_BODY" desc="Description for the Crostini uninstaller, a dialog for uninstalling the 'Terminal', the associated VM and Linux container.">
+    This will uninstall the <ph name="APP_NAME">$1<ex>Terminal</ex></ph>, and remove all Linux data and applications from your <ph name="DEVICE_TYPE">$2<ex>Chromebook</ex></ph>. Are you sure?
+  </message>
+  <message name="IDS_CROSTINI_UNINSTALLER_UNINSTALL_BUTTON" desc="Label for the button in the Crostini uninstaller dialog to uninstall the 'Terminal'.">
+  Uninstall
+  </message>
+  <message name="IDS_CROSTINI_UNINSTALLER_UNINSTALLING_MESSAGE" desc="Text shown in the Crostini installer dialog when the 'Terminal' uninstall is in progress.">
+  Uninstalling...
+  </message>
+    <message name="IDS_CROSTINI_UNINSTALLER_ERROR" desc="Text shown in the Crostini uninstaller dialog when the 'Terminal' uninstall process fails.">
+    ERROR: Failed to uninstall <ph name="APP_NAME">$1<ex>Terminal</ex></ph>.
   </message>
 </grit-part>

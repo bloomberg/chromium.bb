@@ -773,9 +773,11 @@ void CrostiniManager::OnGetContainerAppIcons(
 
 void CrostiniManager::RemoveCrostini(Profile* profile,
                                      std::string vm_name,
-                                     std::string container_name) {
+                                     std::string container_name,
+                                     RemoveCrostiniCallback callback) {
   auto crostini_remover = base::MakeRefCounted<CrostiniRemover>(
-      profile, std::move(vm_name), std::move(container_name));
+      profile, std::move(vm_name), std::move(container_name),
+      std::move(callback));
   crostini_remover->RemoveCrostini();
 }
 

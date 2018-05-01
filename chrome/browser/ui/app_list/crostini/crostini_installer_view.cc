@@ -37,11 +37,9 @@ CrostiniInstallerView* g_crostini_installer_view = nullptr;
 
 // The size of the download for the VM image.
 // TODO(timloh): This is just a placeholder.
-constexpr int kDownloadSizeInBytes = 200 * 1024 * 1024;
+constexpr int kDownloadSizeInBytes = 300 * 1024 * 1024;
 
-// TODO(timloh): We should get this from a ChromeLayoutProvider
 constexpr int kDialogWidth = 448;
-
 }  // namespace
 
 void CrostiniInstallerView::Show(Profile* profile) {

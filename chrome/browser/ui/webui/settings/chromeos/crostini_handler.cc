@@ -4,10 +4,12 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/crostini_handler.h"
 
+#include "base/bind_helpers.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/crostini/crostini_installer_view.h"
+#include "chrome/browser/ui/app_list/crostini/crostini_uninstaller_view.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
@@ -36,9 +38,10 @@ void CrostiniHandler::HandleRequestCrostiniInstallerView(
 
 void CrostiniHandler::HandleRequestRemoveCrostini(const base::ListValue* args) {
   AllowJavascript();
+  // TODO(nverne): change this to use CrostiniUninstallerView::Show
   crostini::CrostiniManager::GetInstance()->RemoveCrostini(
       Profile::FromWebUI(web_ui()), kCrostiniDefaultVmName,
-      kCrostiniDefaultContainerName);
+      kCrostiniDefaultContainerName, base::DoNothing());
 }
 
 }  // namespace settings

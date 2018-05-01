@@ -77,6 +77,8 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer {
                               std::vector<Icon>& icons)>;
   // The type of the callback for CrostiniManager::RestartCrostini.
   using RestartCrostiniCallback = ConciergeClientCallback;
+  // The type of the callback for CrostiniManager::RemoveCrostini.
+  using RemoveCrostiniCallback = ConciergeClientCallback;
 
   // Observer class for the Crostini restart flow.
   class RestartObserver {
@@ -194,7 +196,8 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer {
 
   void RemoveCrostini(Profile* profile,
                       std::string vm_name,
-                      std::string container_name);
+                      std::string container_name,
+                      RemoveCrostiniCallback callback);
 
   // Returns the singleton instance of CrostiniManager.
   static CrostiniManager* GetInstance();

@@ -6,6 +6,7 @@
 
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/ui/app_list/crostini/crostini_uninstaller_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/ui_base_features.h"
 
@@ -43,8 +44,7 @@ void CrostiniAppContextMenu::ExecuteCommand(int command_id, int event_flags) {
   switch (command_id) {
     case UNINSTALL:
       if (app_id() == kCrostiniTerminalId) {
-        crostini::CrostiniManager::GetInstance()->RemoveCrostini(
-            profile(), kCrostiniDefaultVmName, kCrostiniDefaultContainerName);
+        CrostiniUninstallerView::Show(profile());
         return;
       }
       break;
