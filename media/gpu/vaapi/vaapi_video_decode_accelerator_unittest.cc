@@ -22,7 +22,7 @@ using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::TestWithParam;
 using ::testing::ValuesIn;
-using ::testing::WithArgs;
+using ::testing::WithArg;
 
 namespace media {
 
@@ -34,8 +34,14 @@ ACTION_P(RunClosure, closure) {
 
 constexpr VideoCodecProfile kCodecProfiles[] = {H264PROFILE_MIN, VP8PROFILE_MIN,
                                                 VP9PROFILE_MIN};
-constexpr int kBitstreamId = 123;
+constexpr int32_t kBitstreamId = 123;
 constexpr size_t kInputSize = 256;
+
+constexpr size_t kNumPictures = 2;
+const gfx::Size kPictureSize(64, 48);
+
+constexpr size_t kNewNumPictures = 3;
+const gfx::Size kNewPictureSize(64, 48);
 
 }  // namespace
 
@@ -182,6 +188,112 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<VideoCodecProfile>,
     run_loop.Run();
   }
 
+  // Try and QueueInputBuffer()s, where we pretend that |mock_decoder_| requests
+  // to kAllocateNewSurfaces: |vda_| will ping us to ProvidePictureBuffers().
+  // If |expect_dismiss_picture_buffers| is signalled, then we expect as well
+  // that |vda_| will emit |num_picture_buffers_to_dismiss| DismissPictureBuffer
+  // calls.
+  void QueueInputBufferSequence(size_t num_pictures,
+                                const gfx::Size& picture_size,
+                                int32_t bitstream_id,
+                                bool expect_dismiss_picture_buffers = false,
+                                size_t num_picture_buffers_to_dismiss = 0) {
+    ::testing::InSequence s;
+    base::RunLoop run_loop;
+    base::Closure quit_closure = run_loop.QuitClosure();
+    EXPECT_CALL(*mock_decoder_, SetStream(_, _, kInputSize));
+    EXPECT_CALL(*mock_decoder_, Decode())
+        .WillOnce(Return(AcceleratedVideoDecoder::kAllocateNewSurfaces));
+
+    EXPECT_CALL(*mock_decoder_, GetRequiredNumOfPictures())
+        .WillOnce(Return(num_pictures));
+    EXPECT_CALL(*mock_decoder_, GetPicSize()).WillOnce(Return(picture_size));
+    EXPECT_CALL(*mock_vaapi_wrapper_, DestroySurfaces());
+
+    if (expect_dismiss_picture_buffers) {
+      EXPECT_CALL(*this, DismissPictureBuffer(_))
+          .Times(num_picture_buffers_to_dismiss);
+    }
+
+    EXPECT_CALL(*this,
+                ProvidePictureBuffers(num_pictures, _, 1, picture_size, _))
+        .WillOnce(RunClosure(quit_closure));
+
+    base::SharedMemoryHandle handle;
+    handle = base::SharedMemory::DuplicateHandle(in_shm_->handle());
+    BitstreamBuffer bitstream_buffer(bitstream_id, handle, kInputSize);
+
+    QueueInputBuffer(bitstream_buffer);
+    run_loop.Run();
+  }
+
+  // Calls AssignPictureBuffers(), expecting the corresponding mock calls; we
+  // pretend |mock_decoder_| has kRanOutOfStreamData (i.e. it's finished
+  // decoding) and expect |vda_| to emit a NotifyEndOfBitstreamBuffer().
+  // QueueInputBufferSequence() must have been called beforehand.
+  void AssignPictureBuffersSequence(size_t num_pictures,
+                                    const gfx::Size& picture_size,
+                                    int32_t bitstream_id) {
+    ASSERT_TRUE(vda_.curr_input_buffer_)
+        << "QueueInputBuffer() should have been called";
+
+    ::testing::InSequence s;
+    base::RunLoop run_loop;
+    base::Closure quit_closure = run_loop.QuitClosure();
+
+    EXPECT_CALL(*mock_vaapi_wrapper_,
+                CreateSurfaces(_, picture_size, num_pictures, _))
+        .WillOnce(DoAll(
+            WithArg<3>(Invoke(
+                [num_pictures](std::vector<VASurfaceID>* va_surface_ids) {
+                  va_surface_ids->resize(num_pictures);
+                })),
+            Return(true)));
+    EXPECT_CALL(*mock_vaapi_picture_factory_,
+                MockCreateVaapiPicture(mock_vaapi_wrapper_.get(), picture_size))
+        .Times(num_pictures);
+
+    EXPECT_CALL(*mock_decoder_, Decode())
+        .WillOnce(Return(AcceleratedVideoDecoder::kRanOutOfStreamData));
+    EXPECT_CALL(*this, NotifyEndOfBitstreamBuffer(bitstream_id))
+        .WillOnce(RunClosure(quit_closure));
+
+    const auto tex_target = mock_vaapi_picture_factory_->GetGLTextureTarget();
+    int irrelevant_id = 2;
+    std::vector<PictureBuffer> picture_buffers;
+    for (size_t picture = 0; picture < num_pictures; ++picture) {
+      // The picture buffer id, client id and service texture ids are
+      // arbitrarily chosen.
+      picture_buffers.push_back({irrelevant_id++, picture_size,
+                                 PictureBuffer::TextureIds{irrelevant_id++},
+                                 PictureBuffer::TextureIds{irrelevant_id++},
+                                 tex_target, PIXEL_FORMAT_XRGB});
+    }
+
+    AssignPictureBuffers(picture_buffers);
+    run_loop.Run();
+  }
+
+  // Calls QueueInputBuffer(); we instruct from |mock_decoder_| that it has
+  // kRanOutOfStreamData (i.e. it's finished decoding). This is a fast method
+  // because the Decode() is (almost) immediate.
+  void DecodeOneFrameFast(int32_t bitstream_id) {
+    base::RunLoop run_loop;
+    base::Closure quit_closure = run_loop.QuitClosure();
+    EXPECT_CALL(*mock_decoder_, SetStream(_, _, kInputSize));
+    EXPECT_CALL(*mock_decoder_, Decode())
+        .WillOnce(Return(AcceleratedVideoDecoder::kRanOutOfStreamData));
+    EXPECT_CALL(*this, NotifyEndOfBitstreamBuffer(bitstream_id))
+        .WillOnce(RunClosure(quit_closure));
+
+    base::SharedMemoryHandle handle;
+    handle = base::SharedMemory::DuplicateHandle(in_shm_->handle());
+    BitstreamBuffer bitstream_buffer(bitstream_id, handle, kInputSize);
+
+    QueueInputBuffer(bitstream_buffer);
+    run_loop.Run();
+  }
+
   // VideoDecodeAccelerator::Client methods.
   MOCK_METHOD1(NotifyInitializationComplete, void(bool));
   MOCK_METHOD5(
@@ -214,6 +326,22 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<VideoCodecProfile>,
   DISALLOW_COPY_AND_ASSIGN(VaapiVideoDecodeAcceleratorTest);
 };
 
+// Verify that it is possible to select DRM(egl) and TFP(glx) at runtime.
+TEST_P(VaapiVideoDecodeAcceleratorTest, SupportedPlatforms) {
+  EXPECT_EQ(VaapiPictureFactory::kVaapiImplementationNone,
+            mock_vaapi_picture_factory_->GetVaapiImplementation(
+                gl::kGLImplementationNone));
+  EXPECT_EQ(VaapiPictureFactory::kVaapiImplementationDrm,
+            mock_vaapi_picture_factory_->GetVaapiImplementation(
+                gl::kGLImplementationEGLGLES2));
+
+#if defined(USE_X11)
+  EXPECT_EQ(VaapiPictureFactory::kVaapiImplementationX11,
+            mock_vaapi_picture_factory_->GetVaapiImplementation(
+                gl::kGLImplementationDesktopGL));
+#endif
+}
+
 // This test checks that QueueInputBuffer() fails when state is kUnitialized.
 TEST_P(VaapiVideoDecodeAcceleratorTest, QueueInputBufferAndError) {
   SetVdaStateToUnitialized();
@@ -245,113 +373,46 @@ TEST_P(VaapiVideoDecodeAcceleratorTest, QueueInputBufferAndDecodeError) {
   run_loop.Run();
 }
 
-// Tests usual startup sequence: a BitstreamBuffer is enqueued for decode,
-// |vda_| asks for PictureBuffers, that we provide, and then the same Decode()
-// is tried again.
+// Verifies a single fast frame decoding..
+TEST_P(VaapiVideoDecodeAcceleratorTest, DecodeOneFrame) {
+  DecodeOneFrameFast(kBitstreamId);
+
+  ResetSequence();
+}
+
+// Tests usual startup sequence: a BitstreamBuffer is enqueued for decode;
+// |vda_| asks for PictureBuffers, that we provide via AssignPictureBuffers().
 TEST_P(VaapiVideoDecodeAcceleratorTest,
-       QueueInputBufferAndAssignPictureBuffersAndDecode) {
-  // Try and QueueInputBuffer(), |vda_| will ping us to ProvidePictureBuffers().
-  const uint32_t kNumPictures = 2;
-  const gfx::Size kPictureSize(64, 48);
-  {
-    base::SharedMemoryHandle handle;
-    handle = base::SharedMemory::DuplicateHandle(in_shm_->handle());
-    BitstreamBuffer bitstream_buffer(kBitstreamId, handle, kInputSize);
+       QueueInputBuffersAndAssignPictureBuffers) {
+  QueueInputBufferSequence(kNumPictures, kPictureSize, kBitstreamId);
 
-    base::RunLoop run_loop;
-    base::Closure quit_closure = run_loop.QuitClosure();
-    EXPECT_CALL(*mock_decoder_, SetStream(_, _, kInputSize));
-    EXPECT_CALL(*mock_decoder_, Decode())
-        .WillOnce(Return(AcceleratedVideoDecoder::kAllocateNewSurfaces));
-
-    EXPECT_CALL(*mock_decoder_, GetRequiredNumOfPictures())
-        .WillOnce(Return(kNumPictures));
-    EXPECT_CALL(*mock_decoder_, GetPicSize()).WillOnce(Return(kPictureSize));
-    EXPECT_CALL(*mock_vaapi_wrapper_, DestroySurfaces());
-
-    EXPECT_CALL(*this,
-                ProvidePictureBuffers(kNumPictures, _, 1, kPictureSize, _))
-        .WillOnce(RunClosure(quit_closure));
-
-    QueueInputBuffer(bitstream_buffer);
-    run_loop.Run();
-  }
-  // AssignPictureBuffers() accordingly and expect another go at Decode().
-  {
-    base::RunLoop run_loop;
-    base::Closure quit_closure = run_loop.QuitClosure();
-
-    const uint32_t tex_target =
-        mock_vaapi_picture_factory_->GetGLTextureTarget();
-
-    // These client and service texture ids are arbitrarily chosen.
-    const std::vector<PictureBuffer> kPictureBuffers(
-        {{2, kPictureSize, PictureBuffer::TextureIds{0},
-          PictureBuffer::TextureIds{1}, tex_target, PIXEL_FORMAT_XRGB},
-         {3, kPictureSize, PictureBuffer::TextureIds{2},
-          PictureBuffer::TextureIds{3}, tex_target, PIXEL_FORMAT_XRGB}});
-    EXPECT_EQ(kPictureBuffers.size(), kNumPictures);
-
-    EXPECT_CALL(*mock_vaapi_wrapper_,
-                CreateSurfaces(_, kPictureSize, kNumPictures, _))
-        .WillOnce(DoAll(
-            WithArgs<3>(Invoke([](std::vector<VASurfaceID>* va_surface_ids) {
-              va_surface_ids->resize(kNumPictures);
-            })),
-            Return(true)));
-    EXPECT_CALL(*mock_vaapi_picture_factory_,
-                MockCreateVaapiPicture(mock_vaapi_wrapper_.get(), kPictureSize))
-        .Times(2);
-
-    EXPECT_CALL(*mock_decoder_, Decode())
-        .WillOnce(Return(AcceleratedVideoDecoder::kRanOutOfStreamData));
-    EXPECT_CALL(*this, NotifyEndOfBitstreamBuffer(kBitstreamId))
-        .WillOnce(RunClosure(quit_closure));
-
-    AssignPictureBuffers(kPictureBuffers);
-    run_loop.Run();
-  }
+  AssignPictureBuffersSequence(kNumPictures, kPictureSize, kBitstreamId);
 
   ResetSequence();
 }
 
-// Verifies that Decode() replying kRanOutOfStreamData (to signal it's finished)
-// rolls to a NotifyEndOfBitstreamBuffer().
-TEST_P(VaapiVideoDecodeAcceleratorTest, QueueInputBufferAndDecodeFinished) {
-  base::SharedMemoryHandle handle;
-  handle = base::SharedMemory::DuplicateHandle(in_shm_->handle());
-  BitstreamBuffer bitstream_buffer(kBitstreamId, handle, kInputSize);
+// Tests a typical resolution change sequence: a BitstreamBuffer is enqueued;
+// |vda_| asks for PictureBuffers, we them provide via AssignPictureBuffers().
+// We then try to enqueue a few BitstreamBuffers of a different resolution: we
+// then expect the old ones to be dismissed and new ones provided.This sequence
+// is purely ingress-wise, i.e. there's no decoded output checks.
+TEST_P(VaapiVideoDecodeAcceleratorTest,
+       QueueInputBuffersAndAssignPictureBuffersAndReallocate) {
+  QueueInputBufferSequence(kNumPictures, kPictureSize, kBitstreamId);
 
-  {
-    base::RunLoop run_loop;
-    base::Closure quit_closure = run_loop.QuitClosure();
-    EXPECT_CALL(*mock_decoder_, SetStream(_, _, kInputSize));
-    EXPECT_CALL(*mock_decoder_, Decode())
-        .WillOnce(Return(AcceleratedVideoDecoder::kRanOutOfStreamData));
-    EXPECT_CALL(*this, NotifyEndOfBitstreamBuffer(kBitstreamId))
-        .WillOnce(RunClosure(quit_closure));
+  AssignPictureBuffersSequence(kNumPictures, kPictureSize, kBitstreamId);
 
-    QueueInputBuffer(bitstream_buffer);
-    run_loop.Run();
-  }
+  // Decode a few frames. This step is not necessary.
+  for (int i = 0; i < 5; ++i)
+    DecodeOneFrameFast(kBitstreamId + i);
+
+  QueueInputBufferSequence(kNewNumPictures, kNewPictureSize, kBitstreamId,
+                           true /* expect_dismiss_picture_buffers */,
+                           kNumPictures /* num_picture_buffers_to_dismiss */);
+
+  AssignPictureBuffersSequence(kNewNumPictures, kNewPictureSize, kBitstreamId);
 
   ResetSequence();
-}
-
-// Verify that it is possible to select DRM(egl) and TFP(glx) at runtime.
-TEST_P(VaapiVideoDecodeAcceleratorTest, SupportedPlatforms) {
-  EXPECT_EQ(VaapiPictureFactory::kVaapiImplementationNone,
-            mock_vaapi_picture_factory_->GetVaapiImplementation(
-                gl::kGLImplementationNone));
-  EXPECT_EQ(VaapiPictureFactory::kVaapiImplementationDrm,
-            mock_vaapi_picture_factory_->GetVaapiImplementation(
-                gl::kGLImplementationEGLGLES2));
-
-#if defined(USE_X11)
-  EXPECT_EQ(VaapiPictureFactory::kVaapiImplementationX11,
-            mock_vaapi_picture_factory_->GetVaapiImplementation(
-                gl::kGLImplementationDesktopGL));
-#endif
 }
 
 INSTANTIATE_TEST_CASE_P(/* No prefix. */,
