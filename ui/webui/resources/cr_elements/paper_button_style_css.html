@@ -15,13 +15,6 @@
         /* Blue-ish color used either as a background or as a text color,
            depending on the type of button. */
         --text-or-bg-color: rgb(26, 115, 232);
-
-        --paper-button-flat-keyboard-focus: {
-          background: initial;
-          border-color: var(--flat-keyboard-focus-border-color);
-          font-weight: 500;
-        };
-
         --paper-button-ink-color: var(--paper-grey-600);
 
         border: 1px solid rgb(218, 220, 224);
@@ -36,6 +29,13 @@
         text-transform: none;
       }
 
+      paper-button.keyboard-focus,
+      paper-button.action-button.keyboard-focus {
+        border-color: var(--flat-keyboard-focus-border-color);
+        /* Override default paper-button's internal font-weight style. */
+        font-weight: 500;
+      }
+
       paper-button:not(.action-button):hover {
         background-color: rgba(66,133,244, 0.04);
         border-color: rgb(210, 227, 252);
@@ -47,11 +47,6 @@
         background: var(--text-or-bg-color) padding-box;
         border-color: transparent;
         color: white;
-        --paper-button-flat-keyboard-focus: {
-          background: var(--text-or-bg-color) padding-box;
-          border-color: var(--flat-keyboard-focus-border-color);
-          font-weight: 500;
-        };
       }
 
       paper-button[disabled] {
