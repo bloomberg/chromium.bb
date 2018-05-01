@@ -4,7 +4,6 @@
 
 #include "chrome/browser/sessions/session_service_test_helper.h"
 
-#include "base/message_loop/message_loop.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "components/sessions/core/base_session_service_test_helper.h"
 #include "components/sessions/core/serialized_navigation_entry_test_helper.h"

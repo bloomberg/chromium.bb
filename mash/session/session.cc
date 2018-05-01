@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/message_loop/message_loop.h"
 #include "mash/common/config.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service_context.h"

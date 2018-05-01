@@ -6,7 +6,6 @@
 
 #include "base/android/jni_android.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/android/infobars/infobar_android.h"

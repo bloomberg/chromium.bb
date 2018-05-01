@@ -11,7 +11,6 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/task_scheduler/post_task.h"

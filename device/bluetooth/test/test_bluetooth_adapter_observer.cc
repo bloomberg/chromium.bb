@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor.h"

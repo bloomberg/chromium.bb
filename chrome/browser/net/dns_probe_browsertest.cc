@@ -6,7 +6,6 @@
 #include <set>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_restrictions.h"

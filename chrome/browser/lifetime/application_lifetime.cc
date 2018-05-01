@@ -13,7 +13,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
 #include "build/build_config.h"

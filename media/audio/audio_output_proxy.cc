@@ -5,7 +5,6 @@
 #include "media/audio/audio_output_proxy.h"
 
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_output_dispatcher.h"
 

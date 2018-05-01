@@ -12,7 +12,6 @@
 #include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
 #include "content/browser/resource_context_impl.h"

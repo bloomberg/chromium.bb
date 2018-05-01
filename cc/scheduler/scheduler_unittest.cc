@@ -12,7 +12,6 @@
 #include "base/auto_reset.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"

@@ -13,7 +13,6 @@
 #include "base/bind_helpers.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/sequence_token.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/gtest_util.h"

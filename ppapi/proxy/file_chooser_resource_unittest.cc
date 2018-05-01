@@ -5,7 +5,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/message_loop/message_loop.h"
 #include "ppapi/c/dev/ppb_file_chooser_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_file_ref.h"

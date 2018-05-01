@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/message_loop/message_loop.h"
 #include "base/timer/timer.h"
 #include "components/domain_reliability/util.h"
 

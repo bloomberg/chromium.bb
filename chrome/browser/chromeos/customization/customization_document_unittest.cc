@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"

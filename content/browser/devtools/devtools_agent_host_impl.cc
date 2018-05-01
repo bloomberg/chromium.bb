@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
-#include "base/message_loop/message_loop.h"
 #include "base/observer_list.h"
 #include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/devtools_session.h"

@@ -12,7 +12,6 @@
 #include <utility>
 
 #include "base/lazy_instance.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"

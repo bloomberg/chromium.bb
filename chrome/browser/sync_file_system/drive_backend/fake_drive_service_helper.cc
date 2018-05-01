@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/browser/sync_file_system/sync_file_system_test_util.h"
 #include "chrome/browser/sync_file_system/sync_status_code.h"

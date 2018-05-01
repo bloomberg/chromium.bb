@@ -4,7 +4,6 @@
 
 #include "ui/message_center/fake_ui_delegate.h"
 
-#include "base/message_loop/message_loop.h"
 #include "ui/message_center/ui_controller.h"
 
 namespace message_center {

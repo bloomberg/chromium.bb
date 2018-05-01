@@ -15,7 +15,6 @@
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process_info.h"
 #include "base/stl_util.h"

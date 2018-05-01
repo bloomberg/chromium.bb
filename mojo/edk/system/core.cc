@@ -15,7 +15,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/writable_shared_memory_region.h"
-#include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"

@@ -5,7 +5,6 @@
 #include <stdint.h>
 
 #include "base/callback.h"
-#include "base/message_loop/message_loop.h"
 #include "base/time/default_tick_clock.h"
 #include "chrome/browser/media/cast_transport_host_filter.h"
 #include "chrome/common/cast_messages.h"

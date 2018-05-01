@@ -15,6 +15,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/task_runner.h"
 #include "ui/events/ozone/evdev/event_converter_evdev.h"
 #include "ui/events/ozone/evdev/event_device_info.h"

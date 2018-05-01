@@ -16,7 +16,6 @@
 #include "base/command_line.h"
 #include "base/containers/queue.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sys_info.h"
 #include "base/task_runner_util.h"

@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/webui/theme_source.h"
 
 #include "base/memory/ref_counted_memory.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resources_util.h"

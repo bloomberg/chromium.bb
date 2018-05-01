@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/files/file_path.h"
-#include "base/message_loop/message_loop.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_browsertest.h"

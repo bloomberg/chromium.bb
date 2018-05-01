@@ -8,7 +8,6 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"

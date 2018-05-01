@@ -8,7 +8,6 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #import "base/mac/sdk_forward_declarations.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"

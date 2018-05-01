@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "media/blink/url_index.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -8,7 +8,6 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/search_engines/template_url_service.h"

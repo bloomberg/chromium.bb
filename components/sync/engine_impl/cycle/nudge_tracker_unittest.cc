@@ -10,7 +10,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "components/sync/base/model_type_test_util.h"
 #include "components/sync/test/mock_invalidation.h"

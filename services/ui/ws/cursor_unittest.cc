@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "services/ui/common/types.h"
 #include "services/ui/common/util.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"

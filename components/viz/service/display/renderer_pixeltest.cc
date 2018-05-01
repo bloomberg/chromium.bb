@@ -8,7 +8,6 @@
 #include <tuple>
 
 #include "base/memory/aligned_memory.h"
-#include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
 #include "cc/base/math_util.h"
 #include "cc/paint/paint_flags.h"

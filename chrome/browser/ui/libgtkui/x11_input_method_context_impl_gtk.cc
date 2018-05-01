@@ -11,7 +11,6 @@
 
 #include <gtk/gtk.h>
 
-#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/composition_text_util_pango.h"

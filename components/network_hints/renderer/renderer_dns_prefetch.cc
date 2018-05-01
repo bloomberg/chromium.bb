@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/network_hints/common/network_hints_common.h"
 #include "components/network_hints/common/network_hints_messages.h"

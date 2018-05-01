@@ -12,7 +12,6 @@
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/numerics/safe_math.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"

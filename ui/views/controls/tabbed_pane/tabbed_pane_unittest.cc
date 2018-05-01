@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_action_data.h"

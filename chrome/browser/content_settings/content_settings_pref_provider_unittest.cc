@@ -10,7 +10,6 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/test/simple_test_clock.h"
 #include "base/values.h"
 #include "chrome/browser/content_settings/content_settings_mock_observer.h"

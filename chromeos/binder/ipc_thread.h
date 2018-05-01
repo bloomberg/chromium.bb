@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/threading/thread.h"
 #include "chromeos/binder/command_broker.h"

@@ -10,7 +10,6 @@
 
 #include "base/containers/circular_deque.h"
 #include "base/json/json_reader.h"
-#include "base/message_loop/message_loop.h"
 #include "base/optional.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"

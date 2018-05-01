@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "third_party/blink/public/platform/scheduler/single_thread_idle_task_runner.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_thread_type.h"

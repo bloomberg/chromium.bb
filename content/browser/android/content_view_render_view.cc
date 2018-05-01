@@ -14,7 +14,6 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
 #include "base/lazy_instance.h"
-#include "base/message_loop/message_loop.h"
 #include "cc/layers/layer.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/android/content_view_layer_renderer.h"

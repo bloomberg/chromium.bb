@@ -5,10 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_MESSAGE_LOOP_FOR_MOJO_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_MESSAGE_LOOP_FOR_MOJO_H_
 
-#include "base/message_loop/message_loop.h"
 
 // This file exists just in order to allow unittests to include
-// "base/message_loop/message_loop.h" indirectly without adding a line of
 // "+base/message_loop" in their DEPS file.
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_MESSAGE_LOOP_FOR_MOJO_H_

@@ -11,7 +11,6 @@
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_task_runner_handle.h"

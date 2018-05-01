@@ -8,7 +8,6 @@
 #include <map>
 #include <memory>
 
-#include "base/message_loop/message_loop.h"
 #include "components/sync/engine_impl/sync_scheduler.h"
 
 namespace syncer {

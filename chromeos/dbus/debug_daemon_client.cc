@@ -20,7 +20,6 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_util.h"
 #include "base/task_scheduler/post_task.h"

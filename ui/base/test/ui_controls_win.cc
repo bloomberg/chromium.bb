@@ -5,7 +5,6 @@
 #include "ui/base/test/ui_controls.h"
 
 #include "base/callback.h"
-#include "base/message_loop/message_loop.h"
 #include "ui/base/test/ui_controls_internal_win.h"
 #include "ui/gfx/geometry/point.h"
 

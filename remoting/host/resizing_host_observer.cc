@@ -12,7 +12,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "remoting/host/desktop_resizer.h"
 #include "remoting/host/screen_resolution.h"
 

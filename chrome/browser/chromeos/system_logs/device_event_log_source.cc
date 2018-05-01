@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/system_logs/device_event_log_source.h"
 
-#include "base/message_loop/message_loop.h"
 #include "components/device_event_log/device_event_log.h"
 #include "content/public/browser/browser_thread.h"
 

@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "mojo/edk/embedder/platform_handle_utils.h"
 #include "mojo/edk/system/configuration.h"
 #include "mojo/edk/system/core.h"

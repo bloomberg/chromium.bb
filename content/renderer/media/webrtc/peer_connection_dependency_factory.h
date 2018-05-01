@@ -9,7 +9,6 @@
 
 #include "base/files/file.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"

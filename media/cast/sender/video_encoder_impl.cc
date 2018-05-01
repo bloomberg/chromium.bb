@@ -8,7 +8,6 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "media/base/video_frame.h"
 #include "media/cast/sender/fake_software_video_encoder.h"
 #include "media/cast/sender/vp8_encoder.h"

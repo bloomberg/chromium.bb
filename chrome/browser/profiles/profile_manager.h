@@ -17,7 +17,6 @@
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"

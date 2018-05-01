@@ -5,7 +5,6 @@
 #include "chrome/browser/status_icons/status_icon_menu_model.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/gfx/image/image.h"
 

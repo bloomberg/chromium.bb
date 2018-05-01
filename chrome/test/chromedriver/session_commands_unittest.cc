@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "base/values.h"

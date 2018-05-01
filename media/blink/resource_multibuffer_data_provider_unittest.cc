@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/format_macros.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "media/base/media_log.h"

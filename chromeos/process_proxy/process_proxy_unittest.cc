@@ -13,7 +13,6 @@
 #include "base/callback_forward.h"
 #include "base/command_line.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
 #include "base/process/kill.h"
 #include "base/process/process.h"
 #include "base/run_loop.h"

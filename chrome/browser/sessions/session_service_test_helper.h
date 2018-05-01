@@ -13,7 +13,6 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "components/sessions/core/session_id.h"
 
 class SessionService;

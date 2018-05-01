@@ -10,7 +10,6 @@
 #include "base/big_endian.h"
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/numerics/safe_conversions.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"

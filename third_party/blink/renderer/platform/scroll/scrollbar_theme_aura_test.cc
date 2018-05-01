@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/scroll/scrollbar_theme_aura.h"
 
+#include "base/message_loop/message_loop.h"
 #include "third_party/blink/renderer/platform/scroll/scrollbar_test_suite.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 

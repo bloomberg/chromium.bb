@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/values.h"
 #include "components/onc/onc_constants.h"
 

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/extension_action.h"
 
-#include "base/message_loop/message_loop.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "extensions/common/extension_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"

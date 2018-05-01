@@ -7,7 +7,6 @@
 #include <stdint.h>
 
 #include "base/memory/shared_memory.h"
-#include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_video_decoder.h"

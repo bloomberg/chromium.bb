@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/login/screens/update_screen.h"
 #include "base/command_line.h"
-#include "base/message_loop/message_loop.h"
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "chrome/browser/chromeos/login/screens/mock_base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/mock_error_screen.h"

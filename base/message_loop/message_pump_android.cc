@@ -10,7 +10,6 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "jni/SystemMessageHandler_jni.h"
 

@@ -12,7 +12,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/single_thread_task_runner.h"
 #include "media/base/media_export.h"

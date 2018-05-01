@@ -7,7 +7,6 @@
 #include <tuple>
 
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/c/ppb_websocket.h"

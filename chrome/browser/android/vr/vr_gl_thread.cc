@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
 #include "base/version.h"
 #include "chrome/browser/android/vr/vr_input_connection.h"

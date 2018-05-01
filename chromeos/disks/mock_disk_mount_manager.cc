@@ -9,7 +9,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 
 using testing::_;

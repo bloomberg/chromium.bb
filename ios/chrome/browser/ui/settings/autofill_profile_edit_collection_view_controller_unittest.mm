@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/guid.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_profile.h"

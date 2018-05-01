@@ -11,7 +11,6 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"

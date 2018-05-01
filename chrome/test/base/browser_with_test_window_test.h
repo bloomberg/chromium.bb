@@ -7,7 +7,6 @@
 
 #include "base/at_exit.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/test_browser_window.h"

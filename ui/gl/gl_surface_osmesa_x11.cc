@@ -7,7 +7,6 @@
 #include <stdint.h>
 
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/gl/gl_bindings.h"

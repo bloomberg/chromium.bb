@@ -12,7 +12,6 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
 #include "components/user_manager/user_type.h"
 #include "testing/gtest/include/gtest/gtest.h"

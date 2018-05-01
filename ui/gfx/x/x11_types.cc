@@ -7,7 +7,6 @@
 #include <X11/Xlib.h>
 
 #include "base/command_line.h"
-#include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
 #include "ui/gfx/x/x11_switches.h"
 

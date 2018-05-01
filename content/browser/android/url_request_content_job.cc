@@ -7,7 +7,6 @@
 #include "base/android/content_uri_utils.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/task_runner.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/resource_type.h"

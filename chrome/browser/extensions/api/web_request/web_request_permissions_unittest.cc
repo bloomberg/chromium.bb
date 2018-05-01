@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "chrome/common/extensions/extension_test_util.h"
 #include "chromeos/login/scoped_test_public_session_login_state.h"
 #include "content/public/browser/resource_request_info.h"

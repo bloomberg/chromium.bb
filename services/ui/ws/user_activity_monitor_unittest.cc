@@ -4,7 +4,6 @@
 
 #include "services/ui/ws/user_activity_monitor.h"
 
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_mock_time_task_runner.h"

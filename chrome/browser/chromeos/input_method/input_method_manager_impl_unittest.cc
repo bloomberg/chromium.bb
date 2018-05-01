@@ -18,7 +18,6 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/input_method/mock_candidate_window_controller.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_engine.h"

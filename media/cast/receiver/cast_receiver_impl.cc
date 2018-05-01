@@ -13,7 +13,6 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/trace_event/trace_event.h"
 #include "media/cast/net/rtcp/rtcp_utility.h"
 #include "media/cast/receiver/audio_decoder.h"
