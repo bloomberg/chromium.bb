@@ -3402,7 +3402,7 @@ static void CollectDrawableLayersForLayerListRecursively(
     const GraphicsLayer* layer) {
   DCHECK(RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled());
 
-  if (!layer)
+  if (!layer || layer->Client().ShouldThrottleRendering())
     return;
 
   if (layer->DrawsContent()) {
