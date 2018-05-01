@@ -2,27 +2,37 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_GPU_GPU_CLIENT_H_
-#define CONTENT_BROWSER_GPU_GPU_CLIENT_H_
+#ifndef CONTENT_BROWSER_GPU_GPU_CLIENT_IMPL_H_
+#define CONTENT_BROWSER_GPU_GPU_CLIENT_IMPL_H_
 
+#include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/gpu/gpu_process_host.h"
+#include "content/public/browser/gpu_client.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/ui/public/interfaces/gpu.mojom.h"
 
 namespace content {
 
-class GpuClient : public ui::mojom::Gpu {
+class GpuClientImpl : public ui::mojom::Gpu, public GpuClient {
  public:
-  explicit GpuClient(int render_process_id);
-  ~GpuClient() override;
+  explicit GpuClientImpl(int render_process_id);
+  ~GpuClientImpl() override;
 
   void Add(ui::mojom::GpuRequest request);
 
   void PreEstablishGpuChannel();
 
+  void SetConnectionErrorHandler(
+      ConnectionErrorHandlerClosure connection_error_handler);
+
  private:
-  void OnError();
+  enum class ErrorReason {
+    // OnError() is being called from the destructor.
+    kInDestructor,
+    // OnError() is being called because the connection was lost.
+    kConnectionLost
+  };
+  void OnError(ErrorReason reason);
   void OnEstablishGpuChannel(mojo::ScopedMessagePipeHandle channel_handle,
                              const gpu::GPUInfo& gpu_info,
                              const gpu::GpuFeatureInfo& gpu_feature_info,
@@ -54,11 +64,12 @@ class GpuClient : public ui::mojom::Gpu {
   mojo::ScopedMessagePipeHandle channel_handle_;
   gpu::GPUInfo gpu_info_;
   gpu::GpuFeatureInfo gpu_feature_info_;
-  base::WeakPtrFactory<GpuClient> weak_factory_;
+  ConnectionErrorHandlerClosure connection_error_handler_;
+  base::WeakPtrFactory<GpuClientImpl> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(GpuClient);
+  DISALLOW_COPY_AND_ASSIGN(GpuClientImpl);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_GPU_GPU_CLIENT_H_
+#endif  // CONTENT_BROWSER_GPU_GPU_CLIENT_IMPL_H_

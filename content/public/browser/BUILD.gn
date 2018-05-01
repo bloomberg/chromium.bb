@@ -121,6 +121,7 @@ jumbo_source_set("browser_sources") {
     "font_list_async.h",
     "frame_service_base.h",
     "global_request_id.h",
+    "gpu_client.h",
     "gpu_data_manager.h",
     "gpu_data_manager_observer.h",
     "gpu_feature_checker.cc",
@@ -321,6 +322,7 @@ jumbo_source_set("browser_sources") {
     "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
     "//services/service_manager/public/cpp",
     "//services/tracing/public/cpp",
+    "//services/ui/public/interfaces",
 
     # We expose skia headers in the public API.
     "//skia",

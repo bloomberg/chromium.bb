@@ -72,7 +72,7 @@ class SharedPersistentMemoryAllocator;
 namespace content {
 class BrowserPluginMessageFilter;
 class ChildConnection;
-class GpuClient;
+class GpuClientImpl;
 class IndexedDBDispatcherHost;
 class InProcessChildThreadParams;
 class NotificationMessageFilter;
@@ -814,7 +814,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
 #endif
 
   scoped_refptr<ResourceMessageFilter> resource_message_filter_;
-  std::unique_ptr<GpuClient, BrowserThread::DeleteOnIOThread> gpu_client_;
+  std::unique_ptr<GpuClientImpl, BrowserThread::DeleteOnIOThread> gpu_client_;
   std::unique_ptr<PushMessagingManager, BrowserThread::DeleteOnIOThread>
       push_messaging_manager_;
 
