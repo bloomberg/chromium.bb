@@ -437,8 +437,8 @@ TEST_F(DownloadServiceControllerImplTest, SuccessfulInitWithExistingDownload) {
 
   std::vector<Entry> entries = {entry1, entry2, entry3};
   std::vector<DownloadMetaData> expected_downloads = {
-      util::BuildDownloadMetaData(&entry1),
-      util::BuildDownloadMetaData(&entry2)};
+      util::BuildDownloadMetaData(&entry1, driver_),
+      util::BuildDownloadMetaData(&entry2, driver_)};
 
   EXPECT_CALL(*client_,
               OnServiceInitialized(false, testing::UnorderedElementsAreArray(
