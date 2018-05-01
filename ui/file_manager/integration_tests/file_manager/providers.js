@@ -10,8 +10,8 @@ var appId;
 
 /**
  * Returns steps for initializing test cases.
- * @param {string} manifest Name of the manifest to load for the testing
- *     provider extension.
+ * @param {string} manifest The manifest name of testing provider extension
+ *     to launch for the test case.
  * @return {!Array<function>}
  */
 function getSetupSteps(manifest) {
@@ -19,9 +19,11 @@ function getSetupSteps(manifest) {
     function() {
       chrome.test.sendMessage(
           JSON.stringify({
-            name: 'installProviderExtension',
+            name: 'launchProviderExtension',
             manifest: manifest
-          }));
+          }), this.next);
+    },
+    function() {
       setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
     },
     function(results) {
