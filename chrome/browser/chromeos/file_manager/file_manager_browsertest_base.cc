@@ -761,7 +761,7 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     return;
   }
 
-  if (name == "installProviderExtension") {
+  if (name == "launchProviderExtension") {
     std::string manifest;
     ASSERT_TRUE(value.GetString("manifest", &manifest));
     LaunchExtension(base::FilePath(FILE_PATH_LITERAL(
