@@ -301,7 +301,7 @@ scoped_refptr<X509Certificate> EmbeddedTestServer::GetCertificate() const {
 
 void EmbeddedTestServer::ServeFilesFromDirectory(
     const base::FilePath& directory) {
-  RegisterRequestHandler(base::Bind(&HandleFileRequest, directory));
+  RegisterDefaultHandler(base::Bind(&HandleFileRequest, directory));
 }
 
 void EmbeddedTestServer::ServeFilesFromSourceDirectory(
@@ -319,8 +319,8 @@ void EmbeddedTestServer::ServeFilesFromSourceDirectory(
 }
 
 void EmbeddedTestServer::AddDefaultHandlers(const base::FilePath& directory) {
-  RegisterDefaultHandlers(this);
   ServeFilesFromSourceDirectory(directory);
+  RegisterDefaultHandlers(this);
 }
 
 void EmbeddedTestServer::RegisterRequestHandler(

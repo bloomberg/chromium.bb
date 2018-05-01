@@ -140,6 +140,9 @@ class UserImageManagerTest : public LoginManagerTest,
  public:
   std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
       const net::test_server::HttpRequest& request) {
+    if (request.relative_url != "/avatar.jpg")
+      return nullptr;
+
     // Check whether the token string is the same.
     EXPECT_TRUE(request.headers.find(net::HttpRequestHeaders::kAuthorization) !=
                 request.headers.end());

@@ -227,7 +227,8 @@ class WorkerActivatedObserver
 std::unique_ptr<net::test_server::HttpResponse>
 VerifyServiceWorkerHeaderInRequest(
     const net::test_server::HttpRequest& request) {
-  EXPECT_EQ(request.relative_url, "/service_worker/generated_sw.js");
+  if (request.relative_url != "/service_worker/generated_sw.js")
+    return nullptr;
   auto it = request.headers.find("Service-Worker");
   EXPECT_TRUE(it != request.headers.end());
   EXPECT_EQ("script", it->second);
@@ -240,6 +241,8 @@ VerifyServiceWorkerHeaderInRequest(
 
 std::unique_ptr<net::test_server::HttpResponse> VerifySaveDataHeaderInRequest(
     const net::test_server::HttpRequest& request) {
+  if (request.relative_url != "/service_worker/generated_sw.js")
+    return nullptr;
   auto it = request.headers.find("Save-Data");
   EXPECT_NE(request.headers.end(), it);
   EXPECT_EQ("on", it->second);
@@ -252,6 +255,8 @@ std::unique_ptr<net::test_server::HttpResponse> VerifySaveDataHeaderInRequest(
 
 std::unique_ptr<net::test_server::HttpResponse>
 VerifySaveDataHeaderNotInRequest(const net::test_server::HttpRequest& request) {
+  if (request.relative_url != "/service_worker/generated_sw.js")
+    return nullptr;
   auto it = request.headers.find("Save-Data");
   EXPECT_EQ(request.headers.end(), it);
   return std::make_unique<net::test_server::BasicHttpResponse>();
