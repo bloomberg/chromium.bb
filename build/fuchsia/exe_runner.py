@@ -4,9 +4,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Packages a user.bootfs for a Fuchsia boot image, pulling in the runtime
-dependencies of a test binary, and then uses either QEMU from the Fuchsia SDK
-to run, or starts the bootserver to allow running on a hardware device."""
+"""Deploys and executes a packaged Fuchsia executable on a target."""
 
 import argparse
 import logging

@@ -33,7 +33,7 @@ FVM_TYPE_SPARSE = 'sparse'
 
 
 def _TargetCpuToSdkBinPath(target_arch):
-  """Returns the path to the kernel & bootfs .bin files for |target_cpu|."""
+  """Returns the path to the SDK 'target' file directory for |target_cpu|."""
 
   return os.path.join(common.SDK_ROOT, 'target', target_arch)
 
