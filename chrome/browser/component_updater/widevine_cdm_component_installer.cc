@@ -14,6 +14,7 @@
 
 #include "base/base_paths.h"
 #include "base/bind.h"
+#include "base/containers/flat_set.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -35,6 +36,9 @@
 #include "content/public/browser/cdm_registry.h"
 #include "content/public/common/cdm_info.h"
 #include "crypto/sha2.h"
+// TODO(crbug.com/825041): Move EncryptionMode out of decrypt_config and
+// rename it to EncryptionScheme.
+#include "media/base/decrypt_config.h"
 #include "media/base/video_codecs.h"
 #include "media/cdm/supported_cdm_versions.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
@@ -100,6 +104,8 @@ const char kCdmCodecsListName[] = "x-cdm-codecs";
 //  Whether persistent license is supported by the CDM: "true" or "false".
 const char kCdmPersistentLicenseSupportName[] =
     "x-cdm-persistent-license-support";
+const char kCdmSupportedEncryptionSchemesName[] =
+    "x-cdm-supported-encryption-schemes";
 
 // The following strings are used to specify supported codecs in the
 // parameter |kCdmCodecsListName|.
@@ -108,6 +114,11 @@ const char kCdmSupportedCodecVp9[] = "vp9.0";
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 const char kCdmSupportedCodecAvc1[] = "avc1";
 #endif
+
+// The following strings are used to specify supported encryption schemes in
+// the parameter |kCdmSupportedEncryptionSchemesName|.
+const char kCdmSupportedEncryptionSchemeCenc[] = "cenc";
+const char kCdmSupportedEncryptionSchemeCbcs[] = "cbcs";
 
 // Widevine CDM is packaged as a multi-CRX. Widevine CDM binaries are located in
 // _platform_specific/<platform_arch> folder in the package. This function
@@ -198,6 +209,49 @@ bool GetPersistentLicenseSupport(const base::DictionaryValue& manifest) {
   return value && value->is_bool() && value->GetBool();
 }
 
+// Determine the set of encryption schemes supported from |manifest|. It is
+// assumed that all CDMs support 'cenc', so if the manifest entry
+// |kCdmSupportedEncryptionSchemesName| is missing, the result will indicate
+// support for 'cenc' only. Incorrect types in the manifest entry will log
+// the error and return the empty set. Unrecognized values will be reported
+// but otherwise ignored.
+base::flat_set<media::EncryptionMode> GetSupportedEncryptionSchemes(
+    const base::DictionaryValue& manifest) {
+  const base::Value* value =
+      manifest.FindKey(kCdmSupportedEncryptionSchemesName);
+  if (!value)
+    return {media::EncryptionMode::kCenc};
+
+  if (!value->is_list()) {
+    DLOG(ERROR) << "Manifest entry " << kCdmSupportedEncryptionSchemesName
+                << " is not a list.";
+    return {};
+  }
+
+  const base::Value::ListStorage& list = value->GetList();
+  base::flat_set<media::EncryptionMode> result;
+  for (const auto& item : list) {
+    if (!item.is_string()) {
+      DLOG(ERROR) << "Unrecognized item type in manifest entry "
+                  << kCdmSupportedEncryptionSchemesName;
+      return {};
+    }
+
+    const std::string& scheme = item.GetString();
+    if (scheme == kCdmSupportedEncryptionSchemeCenc) {
+      result.insert(media::EncryptionMode::kCenc);
+    } else if (scheme == kCdmSupportedEncryptionSchemeCbcs) {
+      result.insert(media::EncryptionMode::kCbcs);
+    } else {
+      DLOG(WARNING) << "Unrecognized encryption scheme " << scheme
+                    << " in manifest entry "
+                    << kCdmSupportedEncryptionSchemesName;
+    }
+  }
+
+  return result;
+}
+
 void RegisterWidevineCdmWithChrome(
     const base::Version& cdm_version,
     const base::FilePath& cdm_install_dir,
@@ -205,6 +259,13 @@ void RegisterWidevineCdmWithChrome(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const std::string codecs = GetCodecs(*manifest);
   bool supports_persistent_license = GetPersistentLicenseSupport(*manifest);
+  auto supported_encryption_schemes = GetSupportedEncryptionSchemes(*manifest);
+
+  // TODO(crbug.com/837840): Validate results for other manifest entries.
+  if (supported_encryption_schemes.empty()) {
+    VLOG(1) << "Not registering Widevine CDM due to malformed manifest.";
+    return;
+  }
 
   VLOG(1) << "Register Widevine CDM with Chrome";
 
@@ -217,7 +278,8 @@ void RegisterWidevineCdmWithChrome(
   CdmRegistry::GetInstance()->RegisterCdm(content::CdmInfo(
       kWidevineCdmDisplayName, kWidevineCdmGuid, cdm_version, cdm_path,
       kWidevineCdmFileSystemId, supported_video_codecs,
-      supports_persistent_license, kWidevineKeySystem, false));
+      supports_persistent_license, supported_encryption_schemes,
+      kWidevineKeySystem, false));
 }
 
 }  // namespace

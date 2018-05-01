@@ -14,6 +14,7 @@
 #include "content/public/common/cdm_info.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "media/base/decrypt_config.h"
 #include "media/base/video_codecs.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -39,24 +40,16 @@ class KeySystemSupportTest : public testing::Test {
   // |supports_persistent_license|. All other values for CdmInfo have some
   // default value as they're not returned by IsKeySystemSupported().
   void Register(const std::string& key_system,
-                const std::vector<media::VideoCodec> supported_video_codecs,
-                bool supports_persistent_license) {
+                const std::vector<media::VideoCodec>& supported_video_codecs,
+                bool supports_persistent_license,
+                const base::flat_set<media::EncryptionMode>& supported_modes) {
     DVLOG(1) << __func__;
 
     CdmRegistry::GetInstance()->RegisterCdm(
         CdmInfo(key_system, kTestCdmGuid, base::Version(kVersion),
                 base::FilePath::FromUTF8Unsafe(kTestPath), kTestFileSystemId,
-                supported_video_codecs, supports_persistent_license, key_system,
-                false));
-
-    // As IsKeySystemSupported() checks for the matching pepper plugin,
-    // register a dummy one.
-    // TODO(crbug.com/772160) Remove this when pepper CDM support removed.
-    PluginService::GetInstance()->RegisterInternalPlugin(
-        WebPluginInfo(base::ASCIIToUTF16(key_system),
-                      base::FilePath::FromUTF8Unsafe(kTestPath),
-                      base::ASCIIToUTF16(kVersion), base::string16()),
-        true);
+                supported_video_codecs, supports_persistent_license,
+                supported_modes, key_system, false));
   }
 
   // Determines if |key_system| is registered. If it is, updates |codecs_|
@@ -65,7 +58,8 @@ class KeySystemSupportTest : public testing::Test {
     DVLOG(1) << __func__;
     bool is_available = false;
     key_system_support_->IsKeySystemSupported(key_system, &is_available,
-                                              &codecs_, &persistent_);
+                                              &codecs_, &persistent_,
+                                              &encryption_schemes_);
     return is_available;
   }
 
@@ -75,6 +69,7 @@ class KeySystemSupportTest : public testing::Test {
   // Updated by IsSupported().
   std::vector<media::VideoCodec> codecs_;
   bool persistent_;
+  std::vector<media::EncryptionMode> encryption_schemes_;
 };
 
 // Note that as CdmRegistry::GetInstance() is a static, it is shared between
@@ -86,30 +81,41 @@ TEST_F(KeySystemSupportTest, NoKeySystems) {
 }
 
 TEST_F(KeySystemSupportTest, OneKeySystem) {
-  Register("KeySystem2", {media::VideoCodec::kCodecVP8}, true);
+  Register("KeySystem2", {media::VideoCodec::kCodecVP8}, true,
+           {media::EncryptionMode::kCenc, media::EncryptionMode::kCbcs});
   EXPECT_TRUE(IsSupported("KeySystem2"));
   EXPECT_EQ(1u, codecs_.size());
   EXPECT_EQ(media::VideoCodec::kCodecVP8, codecs_[0]);
   EXPECT_TRUE(persistent_);
+  EXPECT_EQ(2u, encryption_schemes_.size());
+  EXPECT_EQ(media::EncryptionMode::kCenc, encryption_schemes_[0]);
+  EXPECT_EQ(media::EncryptionMode::kCbcs, encryption_schemes_[1]);
 }
 
 TEST_F(KeySystemSupportTest, MultipleKeySystems) {
   Register("KeySystem3",
-           {media::VideoCodec::kCodecVP8, media::VideoCodec::kCodecVP9}, true);
-  Register("KeySystem4", {media::VideoCodec::kCodecVP9}, false);
+           {media::VideoCodec::kCodecVP8, media::VideoCodec::kCodecVP9}, true,
+           {media::EncryptionMode::kCenc});
+  Register("KeySystem4", {media::VideoCodec::kCodecVP9}, false,
+           {media::EncryptionMode::kCbcs});
   EXPECT_TRUE(IsSupported("KeySystem3"));
   EXPECT_EQ(2u, codecs_.size());
   EXPECT_EQ(media::VideoCodec::kCodecVP8, codecs_[0]);
   EXPECT_EQ(media::VideoCodec::kCodecVP9, codecs_[1]);
   EXPECT_TRUE(persistent_);
+  EXPECT_EQ(1u, encryption_schemes_.size());
+  EXPECT_EQ(media::EncryptionMode::kCenc, encryption_schemes_[0]);
   EXPECT_TRUE(IsSupported("KeySystem4"));
   EXPECT_EQ(1u, codecs_.size());
   EXPECT_EQ(media::VideoCodec::kCodecVP9, codecs_[0]);
   EXPECT_FALSE(persistent_);
+  EXPECT_EQ(1u, encryption_schemes_.size());
+  EXPECT_EQ(media::EncryptionMode::kCbcs, encryption_schemes_[0]);
 }
 
 TEST_F(KeySystemSupportTest, MissingKeySystem) {
-  Register("KeySystem5", {media::VideoCodec::kCodecVP8}, true);
+  Register("KeySystem5", {media::VideoCodec::kCodecVP8}, true,
+           {media::EncryptionMode::kCenc});
   EXPECT_FALSE(IsSupported("KeySystem6"));
 }
 
