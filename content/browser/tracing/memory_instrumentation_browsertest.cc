@@ -27,7 +27,7 @@ namespace content {
 class MemoryInstrumentationTest : public ContentBrowserTest {
  protected:
   void Navigate(Shell* shell) {
-    NavigateToURL(shell, GetTestUrl("", "title.html"));
+    EXPECT_TRUE(NavigateToURL(shell, GetTestUrl("", "title1.html")));
   }
 };
 
@@ -72,7 +72,7 @@ std::unique_ptr<GlobalMemoryDump> DoGlobalDump() {
     defined(THREAD_SANITIZER)
 #define MAYBE_PrivateFootprintComputation DISABLED_PrivateFootprintComputation
 #else
-#define MAYBE_PrivateFootprintComputation PrivateFootprintComputatio
+#define MAYBE_PrivateFootprintComputation PrivateFootprintComputation
 #endif
 
 // Despite the location, this test is not tracing related.
