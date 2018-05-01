@@ -89,7 +89,11 @@ component("ui_devtools") {
     ":protocol_generated_sources",
     "//base",
     "//net",
-    "//net:http_server",
     "//ui/gfx",
+  ]
+
+  public_deps = [
+    "//services/network/public/cpp",
+    "//services/network/public/mojom",
   ]
 }

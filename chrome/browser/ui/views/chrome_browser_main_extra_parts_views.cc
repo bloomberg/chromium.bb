@@ -17,11 +17,14 @@
 
 #if defined(USE_AURA)
 #include "base/run_loop.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/ui_devtools/css_agent.h"
 #include "components/ui_devtools/devtools_server.h"
 #include "components/ui_devtools/views/dom_agent_aura.h"
 #include "components/ui_devtools/views/overlay_agent_aura.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -115,8 +118,10 @@ void ChromeBrowserMainExtraPartsViews::PreProfileInit() {
     IMEDriver::Register();
 
   // Start devtools server
+  network::mojom::NetworkContext* network_context =
+      g_browser_process->system_network_context_manager()->GetContext();
   devtools_server_ = ui_devtools::UiDevToolsServer::Create(
-      nullptr, switches::kEnableUiDevTools, 9223);
+      network_context, switches::kEnableUiDevTools, 9223);
   if (devtools_server_) {
     auto dom_backend = std::make_unique<ui_devtools::DOMAgentAura>();
     auto overlay_backend =
