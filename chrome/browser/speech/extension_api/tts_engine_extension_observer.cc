@@ -89,6 +89,10 @@ bool TtsEngineExtensionObserver::SawExtensionLoad(
   return previously_loaded;
 }
 
+const std::set<std::string> TtsEngineExtensionObserver::GetTtsExtensions() {
+  return engine_extension_ids_;
+}
+
 const std::vector<extensions::TtsVoice>*
 TtsEngineExtensionObserver::GetRuntimeVoices(const std::string extension_id) {
   auto it = extension_id_to_runtime_voices_.find(extension_id);
