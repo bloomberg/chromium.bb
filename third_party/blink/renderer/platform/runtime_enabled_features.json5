@@ -547,6 +547,10 @@
       status: "experimental",
     },
     {
+      name: "GamepadVibration",
+      status: "experimental",
+    },
+    {
       name: "GeometryInterfaces",
       status: "stable",
     },
