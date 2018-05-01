@@ -111,7 +111,13 @@
               "origin": {
                 "type": "string",
                 "description": "URL origin of the service requesting the consent."
-              }
+              },
+              "tabId": {
+                "type": "integer",
+                "minimum": 0,
+                "optional": true,
+                "description": "The ID of the tab from which the user consent was requested. The tab ID is used to determine with which tab to associate the user consent request dialog. If the user consent was requested from an app window, the tab ID should not be set."
+	      }
             }
           },
           {
