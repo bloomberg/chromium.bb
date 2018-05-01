@@ -150,9 +150,9 @@ Tree link: https://github.com/PolymerElements/iron-resizable-behavior/tree/v2.1.
 
 Name: iron-scroll-target-behavior
 Repository: https://github.com/PolymerElements/iron-scroll-target-behavior.git
-Tree: v1.1.0
-Revision: eb6a4c81b13d2437360a2d56d99f99d63277ce5d
-Tree link: https://github.com/PolymerElements/iron-scroll-target-behavior/tree/v1.1.0
+Tree: v2.1.1
+Revision: b552a9bd77854a92bb05ed49463c9960092d1b41
+Tree link: https://github.com/PolymerElements/iron-scroll-target-behavior/tree/v2.1.1
 
 Name: iron-scroll-threshold
 Repository: https://github.com/PolymerElements/iron-scroll-threshold.git

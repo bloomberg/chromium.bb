@@ -1,6 +1,6 @@
 /**
-   * `Polymer.IronScrollTargetBehavior` allows an element to respond to scroll events from a
-   * designated scroll target.
+   * `Polymer.IronScrollTargetBehavior` allows an element to respond to scroll
+   * events from a designated scroll target.
    *
    * Elements that consume this behavior can override the `_scrollHandler`
    * method to add logic on the scroll event.
@@ -15,8 +15,8 @@
 
       /**
        * Specifies the element that will handle the scroll event
-       * on the behalf of the current element. This is typically a reference to an element,
-       * but there are a few more posibilities:
+       * on the behalf of the current element. This is typically a reference to an
+       *element, but there are a few more posibilities:
        *
        * ### Elements id
        *
@@ -46,6 +46,7 @@
        *```
        *
        * @type {HTMLElement}
+       * @default document
        */
       scrollTarget: {
         type: HTMLElement,
@@ -55,9 +56,7 @@
       }
     },
 
-    observers: [
-      '_scrollTargetChanged(scrollTarget, isAttached)'
-    ],
+    observers: ['_scrollTargetChanged(scrollTarget, isAttached)'],
 
     /**
      * True if the event listener should be installed.
@@ -76,25 +75,24 @@
       }
       // Support element id references
       if (scrollTarget === 'document') {
-
         this.scrollTarget = this._doc;
 
       } else if (typeof scrollTarget === 'string') {
+        var domHost = this.domHost;
 
-        this.scrollTarget = this.domHost ? this.domHost.$[scrollTarget] :
+        this.scrollTarget = domHost && domHost.$ ?
+            domHost.$[scrollTarget] :
             Polymer.dom(this.ownerDocument).querySelector('#' + scrollTarget);
 
       } else if (this._isValidScrollTarget()) {
-
-        this._boundScrollHandler = this._boundScrollHandler || this._scrollHandler.bind(this);
         this._oldScrollTarget = scrollTarget;
         this._toggleScrollListener(this._shouldHaveListener, scrollTarget);
-
       }
     },
 
     /**
-     * Runs on every scroll event. Consumer of this behavior may override this method.
+     * Runs on every scroll event. Consumer of this behavior may override this
+     * method.
      *
      * @protected
      */
@@ -120,31 +118,36 @@
     },
 
     /**
-     * Gets the number of pixels that the content of an element is scrolled upward.
+     * Gets the number of pixels that the content of an element is scrolled
+     * upward.
      *
      * @type {number}
      */
     get _scrollTop() {
       if (this._isValidScrollTarget()) {
-        return this.scrollTarget === this._doc ? window.pageYOffset : this.scrollTarget.scrollTop;
+        return this.scrollTarget === this._doc ? window.pageYOffset :
+                                                 this.scrollTarget.scrollTop;
       }
       return 0;
     },
 
     /**
-     * Gets the number of pixels that the content of an element is scrolled to the left.
+     * Gets the number of pixels that the content of an element is scrolled to the
+     * left.
      *
      * @type {number}
      */
     get _scrollLeft() {
       if (this._isValidScrollTarget()) {
-        return this.scrollTarget === this._doc ? window.pageXOffset : this.scrollTarget.scrollLeft;
+        return this.scrollTarget === this._doc ? window.pageXOffset :
+                                                 this.scrollTarget.scrollLeft;
       }
       return 0;
     },
 
     /**
-     * Sets the number of pixels that the content of an element is scrolled upward.
+     * Sets the number of pixels that the content of an element is scrolled
+     * upward.
      *
      * @type {number}
      */
@@ -157,7 +160,8 @@
     },
 
     /**
-     * Sets the number of pixels that the content of an element is scrolled to the left.
+     * Sets the number of pixels that the content of an element is scrolled to the
+     * left.
      *
      * @type {number}
      */
@@ -173,11 +177,23 @@
      * Scrolls the content to a particular place.
      *
      * @method scroll
-     * @param {number} left The left position
-     * @param {number} top The top position
+     * @param {number|!{left: number, top: number}} leftOrOptions The left position or scroll options
+     * @param {number=} top The top position
+     * @return {void}
      */
-    scroll: function(left, top) {
-       if (this.scrollTarget === this._doc) {
+    scroll: function(leftOrOptions, top) {
+      var left;
+
+      if (typeof leftOrOptions === 'object') {
+        left = leftOrOptions.left;
+        top = leftOrOptions.top;
+      } else {
+        left = leftOrOptions;
+      }
+
+      left = left || 0;
+      top = top || 0;
+      if (this.scrollTarget === this._doc) {
         window.scrollTo(left, top);
       } else if (this._isValidScrollTarget()) {
         this.scrollTarget.scrollLeft = left;
@@ -192,7 +208,8 @@
      */
     get _scrollTargetWidth() {
       if (this._isValidScrollTarget()) {
-        return this.scrollTarget === this._doc ? window.innerWidth : this.scrollTarget.offsetWidth;
+        return this.scrollTarget === this._doc ? window.innerWidth :
+                                                 this.scrollTarget.offsetWidth;
       }
       return 0;
     },
@@ -204,7 +221,8 @@
      */
     get _scrollTargetHeight() {
       if (this._isValidScrollTarget()) {
-        return this.scrollTarget === this._doc ? window.innerHeight : this.scrollTarget.offsetHeight;
+        return this.scrollTarget === this._doc ? window.innerHeight :
+                                                 this.scrollTarget.offsetHeight;
       }
       return 0;
     },
@@ -219,15 +237,17 @@
     },
 
     _toggleScrollListener: function(yes, scrollTarget) {
-      if (!this._boundScrollHandler) {
-        return;
-      }
       var eventTarget = scrollTarget === this._doc ? window : scrollTarget;
-
       if (yes) {
-        eventTarget.addEventListener('scroll', this._boundScrollHandler);
+        if (!this._boundScrollHandler) {
+          this._boundScrollHandler = this._scrollHandler.bind(this);
+          eventTarget.addEventListener('scroll', this._boundScrollHandler);
+        }
       } else {
-        eventTarget.removeEventListener('scroll', this._boundScrollHandler);
+        if (this._boundScrollHandler) {
+          eventTarget.removeEventListener('scroll', this._boundScrollHandler);
+          this._boundScrollHandler = null;
+        }
       }
     },
 
