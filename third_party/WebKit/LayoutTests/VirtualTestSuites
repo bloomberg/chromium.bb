@@ -482,6 +482,16 @@
     "args": ["--enable-blink-features=LayoutNGBlockFragmentation"]
   },
   {
+    "prefix": "layout_ng_experimental",
+    "base": "css3/flexbox",
+    "args": ["--enable-blink-features=LayoutNGFlexBox"]
+  },
+  {
+    "prefix": "layout_ng_experimental",
+    "base": "external/wpt/css/css-flexbox",
+    "args": ["--enable-blink-features=LayoutNGFlexBox"]
+  },
+  {
     "prefix": "print_browser",
     "base": "print_testharness",
     "args": ["--enable-print-browser"]
