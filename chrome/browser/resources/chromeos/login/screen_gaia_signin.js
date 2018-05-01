@@ -1082,7 +1082,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       } else if (credentials.authCode) {
         chrome.send('completeAuthentication', [
           credentials.gaiaId, credentials.email, credentials.password,
-          credentials.authCode, credentials.usingSAML, credentials.gapsCookie
+          credentials.authCode, credentials.usingSAML, credentials.gapsCookie,
+          credentials.services
         ]);
       } else {
         chrome.send('completeLogin', [
