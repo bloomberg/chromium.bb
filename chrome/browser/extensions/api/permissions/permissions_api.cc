@@ -152,6 +152,13 @@ bool PermissionsRequestFunction::RunAsync() {
     return false;
   }
 
+  gfx::NativeWindow native_window =
+      ChromeExtensionFunctionDetails(this).GetNativeWindowForUI();
+  if (!native_window) {
+    error_ = "Could not find an active window.";
+    return false;
+  }
+
   std::unique_ptr<Request::Params> params(Request::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -230,8 +237,7 @@ bool PermissionsRequestFunction::RunAsync() {
     OnInstallPromptDone(ExtensionInstallPrompt::Result::USER_CANCELED);
   } else {
     CHECK_EQ(DO_NOT_SKIP, auto_confirm_for_tests);
-    install_ui_.reset(
-        new ExtensionInstallPrompt(GetAssociatedWebContentsDeprecated()));
+    install_ui_.reset(new ExtensionInstallPrompt(GetProfile(), native_window));
     install_ui_->ShowDialog(
         base::Bind(&PermissionsRequestFunction::OnInstallPromptDone, this),
         extension(), nullptr,
