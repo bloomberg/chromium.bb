@@ -112,9 +112,7 @@ void ExtensionOptionsGuest::CreateWebContents(
   params.guest_delegate = this;
   // TODO(erikchen): Fix ownership semantics for guest views.
   // https://crbug.com/832879.
-  WebContents* wc = WebContents::Create(params).release();
-  SetViewType(wc, VIEW_TYPE_EXTENSION_GUEST);
-  callback.Run(wc);
+  callback.Run(WebContents::Create(params).release());
 }
 
 void ExtensionOptionsGuest::DidInitialize(

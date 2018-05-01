@@ -24,6 +24,7 @@
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_map.h"
+#include "extensions/browser/view_type_utils.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_provider.h"
 
@@ -38,6 +39,12 @@ ExtensionsGuestViewManagerDelegate::ExtensionsGuestViewManagerDelegate(
 }
 
 ExtensionsGuestViewManagerDelegate::~ExtensionsGuestViewManagerDelegate() {
+}
+
+void ExtensionsGuestViewManagerDelegate::OnGuestAdded(
+    content::WebContents* guest_web_contents) const {
+  // Set the view type so extensions sees the guest view as a foreground page.
+  SetViewType(guest_web_contents, VIEW_TYPE_EXTENSION_GUEST);
 }
 
 void ExtensionsGuestViewManagerDelegate::DispatchEvent(

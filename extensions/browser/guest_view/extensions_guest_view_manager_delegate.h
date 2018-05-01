@@ -22,6 +22,7 @@ class ExtensionsGuestViewManagerDelegate
   ~ExtensionsGuestViewManagerDelegate() override;
 
   // GuestViewManagerDelegate implementation.
+  void OnGuestAdded(content::WebContents* guest_web_contents) const override;
   void DispatchEvent(const std::string& event_name,
                      std::unique_ptr<base::DictionaryValue> args,
                      guest_view::GuestViewBase* guest,
