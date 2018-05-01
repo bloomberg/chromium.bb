@@ -68,10 +68,6 @@ class ChromotingClientRuntime {
     return display_task_runner_;
   }
 
-  scoped_refptr<AutoThreadTaskRunner> file_task_runner() {
-    return file_task_runner_;
-  }
-
   scoped_refptr<net::URLRequestContextGetter> url_requester() {
     return url_requester_;
   }
@@ -98,7 +94,6 @@ class ChromotingClientRuntime {
   scoped_refptr<AutoThreadTaskRunner> audio_task_runner_;
   scoped_refptr<AutoThreadTaskRunner> display_task_runner_;
   scoped_refptr<AutoThreadTaskRunner> network_task_runner_;
-  scoped_refptr<AutoThreadTaskRunner> file_task_runner_;
 
   scoped_refptr<net::URLRequestContextGetter> url_requester_;
 

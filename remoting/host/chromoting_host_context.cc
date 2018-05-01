@@ -138,8 +138,7 @@ std::unique_ptr<ChromotingHostContext> ChromotingHostContext::Create(
       AutoThread::Create("ChromotingCaptureThread", ui_task_runner),
 #endif
       AutoThread::Create("ChromotingEncodeThread", ui_task_runner),
-      base::MakeRefCounted<URLRequestContextGetter>(network_task_runner,
-                                                    file_task_runner),
+      base::MakeRefCounted<URLRequestContextGetter>(network_task_runner),
       nullptr));
 }
 

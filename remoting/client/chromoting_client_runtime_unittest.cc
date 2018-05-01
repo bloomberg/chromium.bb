@@ -21,7 +21,6 @@ TEST(ChromotingClientRuntimeTest, StartAndStop) {
   EXPECT_TRUE(runtime->network_task_runner().get());
   EXPECT_TRUE(runtime->ui_task_runner().get());
   EXPECT_TRUE(runtime->display_task_runner().get());
-  EXPECT_TRUE(runtime->file_task_runner().get());
   EXPECT_TRUE(runtime->url_requester().get());
   EXPECT_TRUE(runtime->log_writer());
 }
