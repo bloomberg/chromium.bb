@@ -861,6 +861,9 @@ extern const char kServiceWorkerScriptFullCodeCacheDescription[];
 extern const char kSettingsWindowName[];
 extern const char kSettingsWindowDescription[];
 
+extern const char kShelfHoverPreviewsName[];
+extern const char kShelfHoverPreviewsDescription[];
+
 extern const char kShowAllDialogsWithViewsToolkitName[];
 extern const char kShowAllDialogsWithViewsToolkitDescription[];
 
