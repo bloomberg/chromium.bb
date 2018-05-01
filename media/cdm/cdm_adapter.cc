@@ -32,6 +32,7 @@
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_types.h"
+#include "media/base/video_util.h"
 #include "media/cdm/cdm_auxiliary_helper.h"
 #include "media/cdm/cdm_helpers.h"
 #include "media/cdm/cdm_wrapper.h"
@@ -810,7 +811,7 @@ void CdmAdapter::InitializeVideoDecoder(const VideoDecoderConfig& config,
     return;
   }
 
-  natural_size_ = config.natural_size();
+  pixel_aspect_ratio_ = config.GetPixelAspectRatio();
 
   if (status == cdm::kDeferredInitialization) {
     DVLOG(1) << "Deferred initialization in " << __func__;
@@ -878,8 +879,9 @@ void CdmAdapter::DecryptAndDecodeVideo(scoped_refptr<DecoderBuffer> encrypted,
     return;
   }
 
-  scoped_refptr<VideoFrame> decoded_frame =
-      video_frame->TransformToVideoFrame(natural_size_);
+  gfx::Rect visible_rect(video_frame->Size().width, video_frame->Size().height);
+  scoped_refptr<VideoFrame> decoded_frame = video_frame->TransformToVideoFrame(
+      GetNaturalSize(visible_rect, pixel_aspect_ratio_));
   if (!decoded_frame) {
     DLOG(ERROR) << __func__ << ": TransformToVideoFrame failed.";
     video_decode_cb.Run(Decryptor::kError, nullptr);
@@ -905,7 +907,7 @@ void CdmAdapter::DeinitializeDecoder(StreamType stream_type) {
       audio_channel_layout_ = CHANNEL_LAYOUT_NONE;
       break;
     case Decryptor::kVideo:
-      natural_size_ = gfx::Size();
+      pixel_aspect_ratio_ = 0.0;
       break;
   }
 }

@@ -103,6 +103,11 @@ class MEDIA_EXPORT VideoDecoderConfig {
   // into account.
   const gfx::Size& natural_size() const { return natural_size_; }
 
+  // TODO(crbug.com/837337): This should be explicitly set (replacing
+  // |natural_size|). It should also be possible to determine whether it was set
+  // at all, since in-stream information may override it if it was not.
+  double GetPixelAspectRatio() const;
+
   // Optional byte data required to initialize video decoders, such as H.264
   // AVCC data.
   void SetExtraData(const std::vector<uint8_t>& extra_data);

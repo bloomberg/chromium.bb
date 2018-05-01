@@ -149,7 +149,8 @@ int FFmpegVideoDecoder::GetVideoBuffer(struct AVCodecContext* codec_context,
                                   codec_context->sample_aspect_ratio.num,
                                   codec_context->sample_aspect_ratio.den);
   } else {
-    natural_size = config_.natural_size();
+    natural_size =
+        GetNaturalSize(gfx::Rect(size), config_.GetPixelAspectRatio());
   }
 
   // FFmpeg has specific requirements on the allocation size of the frame.  The

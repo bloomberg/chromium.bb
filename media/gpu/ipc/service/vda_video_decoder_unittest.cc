@@ -356,33 +356,35 @@ TEST_F(VdaVideoDecoderTest, Decode_OutputAndDismiss) {
 }
 
 TEST_F(VdaVideoDecoderTest, Decode_Output_MaintainsAspect) {
-  Initialize();
-  int32_t bitstream_id = Decode(base::TimeDelta());
-  NotifyEndOfBitstreamBuffer(bitstream_id);
+  // Initialize with a config that has a 2:1 pixel aspect ratio.
+  InitializeWithConfig(VideoDecoderConfig(
+      kCodecVP9, VP9PROFILE_PROFILE0, PIXEL_FORMAT_I420, COLOR_SPACE_HD_REC709,
+      VIDEO_ROTATION_0, gfx::Size(640, 480), gfx::Rect(640, 480),
+      gfx::Size(1280, 480), EmptyExtraData(), Unencrypted()));
+  EXPECT_CALL(*vda_, Initialize(_, vdavd_.get())).WillOnce(Return(true));
+  EXPECT_CALL(init_cb_, Run(true));
+  environment_.RunUntilIdle();
+
+  // Assign a picture buffer that has size 1920x1088.
   int32_t picture_buffer_id = ProvidePictureBuffer();
 
-  // Ask VdaVideoDecoder to produce a frame with:
-  //   - |natural_size| = 1920x1080 (VideoDecoderConfig)
-  //   - |coded_size| = 1920x1088 (PictureBuffer)
-  //   - |visible_rect| = 640x480 (Picture)
-  // VdaVideoDecoder should produce a frame with:
-  //   - |natural_size| = 853x480 (picture aspect ratio matches |natural_size|)
-  //   - |coded_size| = 1920x1088 (must match PictureBuffer)
-  //   - |visible_rect| = 640x480 (must match Picture)
+  // Produce a frame that has visible size 320x240.
+  int32_t bitstream_id = Decode(base::TimeDelta());
+  NotifyEndOfBitstreamBuffer(bitstream_id);
+
   scoped_refptr<VideoFrame> frame;
   EXPECT_CALL(output_cb_, Run(_)).WillOnce(SaveArg<0>(&frame));
   client_->PictureReady(Picture(picture_buffer_id, bitstream_id,
-                                gfx::Rect(640, 480),
+                                gfx::Rect(320, 240),
                                 gfx::ColorSpace::CreateSRGB(), true));
   environment_.RunUntilIdle();
 
+  // The frame should have |natural_size| 640x240 (pixel aspect ratio
+  // preserved).
   ASSERT_TRUE(frame);
-  EXPECT_EQ(frame->natural_size().width(), 853);
-  EXPECT_EQ(frame->natural_size().height(), 480);
-  EXPECT_EQ(frame->coded_size().width(), 1920);
-  EXPECT_EQ(frame->coded_size().height(), 1088);
-  EXPECT_EQ(frame->visible_rect().width(), 640);
-  EXPECT_EQ(frame->visible_rect().height(), 480);
+  EXPECT_EQ(frame->natural_size(), gfx::Size(640, 240));
+  EXPECT_EQ(frame->coded_size(), gfx::Size(1920, 1088));
+  EXPECT_EQ(frame->visible_rect(), gfx::Rect(320, 240));
 }
 
 TEST_F(VdaVideoDecoderTest, Flush) {

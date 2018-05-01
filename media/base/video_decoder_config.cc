@@ -10,6 +10,7 @@
 #include "media/base/media_util.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_types.h"
+#include "media/base/video_util.h"
 
 namespace media {
 
@@ -169,6 +170,10 @@ std::string VideoDecoderConfig::AsHumanReadableString() const {
     << " encrypted? " << (is_encrypted() ? "true" : "false")
     << " rotation: " << VideoRotationToString(video_rotation());
   return s.str();
+}
+
+double VideoDecoderConfig::GetPixelAspectRatio() const {
+  return ::media::GetPixelAspectRatio(visible_rect_, natural_size_);
 }
 
 void VideoDecoderConfig::SetExtraData(const std::vector<uint8_t>& extra_data) {
