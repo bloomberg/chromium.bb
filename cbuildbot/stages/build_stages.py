@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+import base64
 import glob
 import os
 
@@ -20,6 +21,7 @@ from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import test_stages
 from chromite.lib import buildbucket_lib
 from chromite.lib import builder_status_lib
+from chromite.lib import build_summary
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -126,6 +128,52 @@ class CleanUpStage(generic_stages.BuilderStage):
 
     return list(bucket_set)
 
+  def _GetPreviousBuildStatus(self):
+    """Extract the status of the previous build from command-line arguments.
+
+    Returns:
+      A BuildSummary object representing the previous build.
+    """
+    previous_state = build_summary.BuildSummary()
+    if self._run.options.previous_build_state:
+      try:
+        state_json = base64.b64decode(
+            self._run.options.previous_build_state)
+        previous_state.from_json(state_json)
+        logging.info('Previous local build %s finished in state %s.',
+                     previous_state.build_description(), previous_state.status)
+      except ValueError as e:
+        logging.error('Failed to decode previous build state: %s', e)
+    return previous_state
+
+  def _GetPreviousMasterStatus(self, previous_state):
+    """Get the state of the previous master build from CIDB.
+
+    Args:
+      previous_state: A BuildSummary object representing the previous build.
+
+    Returns:
+      A tuple containing the master build number and status, or None, None
+      if there isn't one.
+    """
+    if not previous_state.master_build_id:
+      return None, None
+
+    _, db = self._run.GetCIDBHandle()
+    if not db:
+      return None, None
+
+    master_status = db.GetBuildStatus(previous_state.master_build_id)
+    if not master_status:
+      logging.warning('Previous master build id %s not found.',
+                      previous_state.master_build_id)
+      return None, None
+    logging.info('Previous master build %s finished in state %s',
+                 master_status['build_number'],
+                 master_status['status'])
+
+    return master_status['build_number'], master_status['status']
+
   def CancelObsoleteSlaveBuilds(self):
     """Cancel the obsolete slave builds scheduled by the previous master."""
     logging.info('Cancelling obsolete slave builds.')
@@ -163,6 +211,46 @@ class CleanUpStage(generic_stages.BuilderStage):
                                       self._run.options.debug,
                                       self._run.config)
 
+  def CanReuseChroot(self, chroot_path):
+    """Determine if the chroot can be reused.
+
+    A chroot can be reused if all of the following are true:
+        1.  The existence of chroot.img matches what is requested in the config,
+            i.e. exists when chroot_use_image is True or vice versa.
+        2.  The previous local build succeeded.
+        3.  If there was a previous master build, that build also succeeded.
+
+    Args:
+      chroot_path: Path to the chroot we want to reuse.
+
+    Returns:
+      True if the chroot at |chroot_path| can be reused, False if not.
+    """
+
+    chroot_img = chroot_path + '.img'
+    chroot_img_exists = os.path.exists(chroot_img)
+    if self._run.config.chroot_use_image != chroot_img_exists:
+      logging.info('chroot image at %s %s but chroot_use_image=%s.  '
+                   'Cannot reuse chroot.', chroot_img,
+                   'exists' if chroot_img_exists else "doesn't exist",
+                   self._run.config.chroot_use_image)
+      return False
+
+    previous_state = self._GetPreviousBuildStatus()
+    if previous_state.status != constants.BUILDER_STATUS_PASSED:
+      logging.info('Previous local build %s did not pass. Cannot reuse chroot.',
+                   previous_state.build_number)
+      return False
+
+    if previous_state.master_build_id:
+      build_number, status = self._GetPreviousMasterStatus(previous_state)
+      if status != constants.BUILDER_STATUS_PASSED:
+        logging.info('Previous master build %s did not pass (%s).  '
+                     'Cannot reuse chroot.', build_number, status)
+        return False
+
+    return True
+
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     if (not (self._run.options.buildbot or self._run.options.remote_trybot)
@@ -173,6 +261,7 @@ class CleanUpStage(generic_stages.BuilderStage):
     # If we can't get a manifest out of it, then it's not usable and must be
     # clobbered.
     manifest = None
+    delete_chroot = False
     if not self._run.options.clobber:
       try:
         manifest = git.ManifestCheckout.Cached(self._build_root, search=False)
@@ -186,34 +275,25 @@ class CleanUpStage(generic_stages.BuilderStage):
         if os.path.exists(self._build_root):
           logging.warning("ManifestCheckout at %s is unusable: %s",
                           self._build_root, e)
+        delete_chroot = True
 
     # Clean mount points first to be safe about deleting.
     chroot_path = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR)
     cros_build_lib.CleanupChrootMount(chroot=chroot_path)
     osutils.UmountTree(self._build_root)
 
-    # If our chroot.img status doesn't match what is requested in the config
-    # (exists when chroot_use_image is False or vice versa), delete the chroot
-    # and let it be recreated correctly.  This could happen if a config with a
-    # different value of chroot_use_image ran on this machine previously.
-    chroot_img = chroot_path + '.img'
-    chroot_img_exists = os.path.exists(chroot_img)
-    if self._run.config.chroot_use_image != chroot_img_exists:
-      logging.info('chroot image at %s %s but chroot_use_image=%s.  '
-                   'Deleting chroot.', chroot_img,
-                   'exists' if chroot_img_exists else "doesn't exist",
-                   self._run.config.chroot_use_image)
-      self._DeleteChroot()
+    if not delete_chroot:
+      delete_chroot = not self.CanReuseChroot(chroot_path)
 
     # Re-mount chroot image if it exists so that subsequent steps can clean up
     # inside.
-    if self._run.config.chroot_use_image and chroot_img_exists:
+    if not delete_chroot and self._run.config.chroot_use_image:
       try:
         cros_build_lib.MountChroot(chroot=chroot_path, create=False)
       except cros_build_lib.RunCommandError as e:
         logging.error('Unable to mount chroot under %s.  Deleting chroot.  '
                       'Error: %s', self._build_root, e)
-        self._DeleteChroot()
+        delete_chroot = True
 
     if manifest is None:
       self._DeleteChroot()
@@ -227,7 +307,8 @@ class CleanUpStage(generic_stages.BuilderStage):
                self._DeleteAutotestSitePackages]
       if self._run.options.chrome_root:
         tasks.append(self._DeleteChromeBuildOutput)
-      if self._run.config.chroot_replace and self._run.options.build:
+      if ((self._run.config.chroot_replace and self._run.options.build) or
+          delete_chroot):
         tasks.append(self._DeleteChroot)
       else:
         tasks.append(self._CleanChroot)
