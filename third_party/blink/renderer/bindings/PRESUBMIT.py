@@ -41,11 +41,9 @@ BLACK_LIST = (r'.*\bv8[\\\/].*',)
 
 def _RunBindingsTests(input_api, output_api):
     # Skip if nothing to do
-    # TODO(tkent): Don't use input_api.DEFAULT_BLACK_LIST until we fix
-    # depot_tools. crbug.com/836555
     source_filter = lambda x: input_api.FilterSourceFile(
         x, white_list=input_api.DEFAULT_WHITE_LIST + WHITE_LIST,
-        black_list=BLACK_LIST)
+        black_list=input_api.DEFAULT_BLACK_LIST + BLACK_LIST)
     if not input_api.AffectedFiles(file_filter=source_filter):
         return []
 
