@@ -31,6 +31,8 @@ class AssistantBubble : public views::WidgetObserver {
   void Show();
   void Dismiss();
 
+  bool IsShowing() const;
+
  private:
   AshAssistantController* const assistant_controller_;  // Owned by Shell.
 
