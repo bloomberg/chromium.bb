@@ -71,6 +71,7 @@ IsolateHolder::IsolateHolder(
     params.allow_atomics_wait =
         atomics_wait_mode == AllowAtomicsWaitMode::kAllowAtomicsWait;
     params.external_references = g_reference_table;
+    params.only_terminate_in_safe_scope = true;
 
     isolate_ = v8::Isolate::New(params);
   }
