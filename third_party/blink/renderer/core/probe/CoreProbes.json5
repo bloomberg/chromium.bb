@@ -198,6 +198,7 @@
         "didFinishLoading",
         "didReceiveData",
         "didReceiveResourceResponse",
+        "frameStartedLoading",
         "paintTiming",
         "willSendRequest",
       ]

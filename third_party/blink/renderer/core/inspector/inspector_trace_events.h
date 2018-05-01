@@ -11,6 +11,7 @@
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_selector.h"
+#include "third_party/blink/renderer/core/loader/frame_loader_types.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
@@ -109,6 +110,8 @@ class CORE_EXPORT InspectorTraceEvents
   void Did(const probe::CallFunction&);
 
   void PaintTiming(Document*, const char* name, double timestamp);
+
+  void FrameStartedLoading(LocalFrame*, FrameLoadType);
 
   void Trace(blink::Visitor*) {}
 
