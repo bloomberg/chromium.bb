@@ -20,17 +20,17 @@
 # -PredictorBrowserTest.*
 # -TabManagerTest.*
 # -PasswordManagerBrowserTestBase.*
--DevToolsSanityTest.*
--WebRtcBrowserTest.*
--LoginPromptBrowserTest.*
--ReferrerPolicyTest.*
--PlatformAppBrowserTest.*
--BrowserNavigatorTest.*
--ChromeResourceDispatcherHostDelegateBrowserTest.*
--NoStatePrefetchBrowserTest.*
--PageLoadMetricsBrowserTest.*
--DnsProbeBrowserTest.*
--FullscreenControllerTest.*
+# -DevToolsSanityTest.*
+# -WebRtcBrowserTest.*
+# -LoginPromptBrowserTest.*
+# -ReferrerPolicyTest.*
+# -PlatformAppBrowserTest.*
+# -BrowserNavigatorTest.*
+# -ChromeResourceDispatcherHostDelegateBrowserTest.*
+# -NoStatePrefetchBrowserTest.*
+# -PageLoadMetricsBrowserTest.*
+# -DnsProbeBrowserTest.*
+# -FullscreenControllerTest.*
 -InfoBarUiTest.*
 -PrefsFunctionalTest.*
 -BrowserTest.*
