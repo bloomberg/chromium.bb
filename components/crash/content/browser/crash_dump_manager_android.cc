@@ -29,7 +29,47 @@ namespace breakpad {
 namespace {
 base::LazyInstance<CrashDumpManager>::Leaky g_instance =
     LAZY_INSTANCE_INITIALIZER;
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class ProcessedCrashCounts {
+  kGpuForegroundOom = 0,
+  kRendererForegroundVisibleOom = 1,
+  kRendererForegroundIntentionalKill = 2,
+  kMaxValue = kRendererForegroundIntentionalKill
+};
+
+void LogCount(ProcessedCrashCounts type) {
+  UMA_HISTOGRAM_ENUMERATION("Stability.Android.ProcessedCrashCounts", type);
 }
+
+void LogProcessedMetrics(const CrashDumpObserver::TerminationInfo& info,
+                         bool has_crash_dump) {
+  const bool app_foreground =
+      info.app_state ==
+          base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES ||
+      info.app_state == base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES;
+  const bool intentional_kill = info.was_killed_intentionally_by_browser;
+  const bool android_oom_kill = !info.was_killed_intentionally_by_browser &&
+                                !has_crash_dump && !info.normal_termination;
+  const bool renderer_visible = info.renderer_has_visible_clients;
+
+  if (info.process_type == content::PROCESS_TYPE_GPU && app_foreground &&
+      android_oom_kill) {
+    LogCount(ProcessedCrashCounts::kGpuForegroundOom);
+  }
+
+  if (info.process_type == content::PROCESS_TYPE_RENDERER) {
+    if (app_foreground && android_oom_kill && renderer_visible) {
+      LogCount(ProcessedCrashCounts::kRendererForegroundVisibleOom);
+    }
+    if (intentional_kill && app_foreground) {
+      LogCount(ProcessedCrashCounts::kRendererForegroundIntentionalKill);
+    }
+  }
+}
+
+}  // namespace
 
 CrashDumpManager::CrashDumpDetails::CrashDumpDetails(
     int process_host_id,
@@ -172,6 +212,8 @@ void CrashDumpManager::ProcessMinidumpFileFromChild(
                                 ExitStatus::MINIDUMP_STATUS_COUNT);
     }
   }
+
+  LogProcessedMetrics(info, file_size != 0);
 
   if (file_size == 0) {
     // Empty minidump, this process did not crash. Just remove the file.

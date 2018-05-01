@@ -954,6 +954,19 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="3" label="LowMemory"/>
 </enum>
 
+<enum name="AndroidProcessedCrashCounts">
+  <int value="0" label="Gpu foreground OOM">
+    GPU is killed by Android due to OOM while app is foreground.
+  </int>
+  <int value="1" label="Visible renderer foreground oom">
+    Renderer is killed by Android due to OOM while app is foreground and
+    renderer is hosting visible clients (generally tabs).
+  </int>
+  <int value="2" label="Renderer intentional kill">
+    Renderer is killed to free renderer slot while and app is foreground.
+  </int>
+</enum>
+
 <enum name="AndroidResourceExtractionStatus">
   <int value="0" label="No extraction performed"/>
   <int value="1" label="Extraction success"/>
