@@ -248,9 +248,8 @@ bool LayoutSVGResourceClipper::HitTestClipContent(
     HitTestResult result(HitTestRequest::kSVGClipContent, hit_point);
     LayoutObject* layout_object = child_element.GetLayoutObject();
 
-    if (layout_object->IsBoxModelObject() &&
-        ToLayoutBoxModelObject(layout_object)->HasSelfPaintingLayer())
-      continue;
+    DCHECK(!layout_object->IsBoxModelObject() ||
+           !ToLayoutBoxModelObject(layout_object)->HasSelfPaintingLayer());
 
     if (layout_object->NodeAtFloatPoint(result, point, kHitTestForeground))
       return true;
