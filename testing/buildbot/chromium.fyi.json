@@ -5027,29 +5027,6 @@
       },
       {
         "args": [
-          "--enable-features=Mus"
-        ],
-        "name": "mus_ash_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "ash_unittests"
-      },
-      {
-        "args": [
-          "--enable-features=Mus",
-          "--ozone-platform=headless",
-          "--override-use-software-gl-for-tests"
-        ],
-        "name": "mus_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 10
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
           "--enable-surface-synchronization"
         ],
         "name": "surface_sync_browser_tests",
@@ -5070,17 +5047,6 @@
           "shards": 10
         },
         "test": "browser_tests"
-      },
-      {
-        "args": [
-          "--enable-features=Mus"
-        ],
-        "name": "mus_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 2
-        },
-        "test": "content_browsertests"
       },
       {
         "args": [
@@ -5107,16 +5073,6 @@
       },
       {
         "args": [
-          "--enable-features=Mus"
-        ],
-        "name": "mus_content_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "content_unittests"
-      },
-      {
-        "args": [
           "--enable-features=VizDisplayCompositor",
           "--test-launcher-filter-file=../../testing/buildbot/filters/viz.content_unittests.filter"
         ],
@@ -5131,16 +5087,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "keyboard_unittests"
-      },
-      {
-        "args": [
-          "--enable-features=Mus"
-        ],
-        "name": "mus_unit_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "unit_tests"
       },
       {
         "swarming": {
