@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/common/extension_id.h"
 
 namespace extensions {
 class TestSendMessageFunction;
@@ -94,7 +95,8 @@ class ExtensionTestMessageListener : public content::NotificationObserver {
   ~ExtensionTestMessageListener() override;
 
   // This returns true immediately if we've already gotten the expected
-  // message, or waits until it arrives.
+  // message, or waits until it arrives. Once this returns true, message() and
+  // extension_id_for_message() accessors can be used.
   // Returns false if the wait is interrupted and we still haven't gotten the
   // message, or if the message was equal to |failure_message_|.
   bool WaitUntilSatisfied() WARN_UNUSED_RESULT;
@@ -126,6 +128,10 @@ class ExtensionTestMessageListener : public content::NotificationObserver {
   }
 
   const std::string& message() const { return message_; }
+
+  const extensions::ExtensionId& extension_id_for_message() const {
+    return extension_id_for_message_;
+  }
 
  private:
   // Implements the content::NotificationObserver interface.
@@ -166,6 +172,9 @@ class ExtensionTestMessageListener : public content::NotificationObserver {
 
   // If we received a message that was the failure message.
   bool failed_;
+
+  // The extension id from which |message_| was received.
+  extensions::ExtensionId extension_id_for_message_;
 
   // The function we need to reply to.
   scoped_refptr<extensions::TestSendMessageFunction> function_;
