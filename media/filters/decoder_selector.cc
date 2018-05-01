@@ -90,7 +90,7 @@ void DecoderSelector<StreamType>::SelectDecoder(
   waiting_for_decryption_key_cb_ = waiting_for_decryption_key_cb;
 
   decoders_ = create_decoders_cb_.Run();
-  config_ = StreamTraits::GetDecoderConfig(input_stream_);
+  config_ = traits_->GetDecoderConfig(input_stream_);
 
   InitializeDecoder();
 }
@@ -197,7 +197,7 @@ void DecoderSelector<StreamType>::DecryptingDemuxerStreamInitDone(
   // try to see whether any decoder can decrypt-and-decode the encrypted stream
   // directly. So in both cases, we'll initialize the decoders.
   input_stream_ = decrypted_stream_.get();
-  config_ = StreamTraits::GetDecoderConfig(input_stream_);
+  config_ = traits_->GetDecoderConfig(input_stream_);
   DCHECK(!config_.is_encrypted());
 
   // If we're here we tried all the decoders w/ is_encrypted=true, try again

@@ -10,15 +10,7 @@
 
 namespace media {
 
-AudioDecoderConfig::AudioDecoderConfig()
-    : codec_(kUnknownAudioCodec),
-      sample_format_(kUnknownSampleFormat),
-      bytes_per_channel_(0),
-      channel_layout_(CHANNEL_LAYOUT_UNSUPPORTED),
-      samples_per_second_(0),
-      bytes_per_frame_(0),
-      codec_delay_(0),
-      should_discard_decoder_delay_(true) {}
+AudioDecoderConfig::AudioDecoderConfig() {}
 
 AudioDecoderConfig::AudioDecoderConfig(
     AudioCodec codec,
