@@ -785,7 +785,8 @@ class InputApi(object):
         tests.append(t)
         if self.verbose:
           t.info = _PresubmitNotifyResult
-        t.kwargs['cwd'] = self.PresubmitLocalPath()
+        if not t.kwargs.get('cwd'):
+          t.kwargs['cwd'] = self.PresubmitLocalPath()
     self.thread_pool.AddTests(tests, parallel)
     if not self.parallel:
       msgs.extend(self.thread_pool.RunAsync())

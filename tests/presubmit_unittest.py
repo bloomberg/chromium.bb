@@ -2785,8 +2785,6 @@ class CannedChecksUnittest(PresubmitTestsBase):
     input_api = self.MockInputApi(change, False)
     input_api.verbose = True
     unit_tests = ['allo', 'bar.py']
-    input_api.PresubmitLocalPath().AndReturn(self.fake_root_dir)
-    input_api.PresubmitLocalPath().AndReturn(self.fake_root_dir)
     cmd = ['bar.py', '--verbose']
     if input_api.platform == 'win32':
       cmd.insert(0, 'vpython.bat')
@@ -2813,7 +2811,6 @@ class CannedChecksUnittest(PresubmitTestsBase):
     input_api = self.MockInputApi(change, False)
     input_api.verbose = True
     input_api.logging = self.mox.CreateMock(logging)
-    input_api.PresubmitLocalPath().AndReturn(self.fake_root_dir)
     input_api.PresubmitLocalPath().AndReturn(self.fake_root_dir)
     path = presubmit.os.path.join(self.fake_root_dir, 'random_directory')
     input_api.os_listdir(path).AndReturn(['.', '..', 'a', 'b', 'c'])
