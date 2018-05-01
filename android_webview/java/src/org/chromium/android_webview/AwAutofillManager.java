@@ -13,8 +13,11 @@ import android.view.autofill.AutofillManager;
 import android.view.autofill.AutofillValue;
 
 import org.chromium.base.Log;
+import org.chromium.base.VisibleForTesting;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * The class to call Android's AutofillManager.
@@ -23,6 +26,11 @@ import java.lang.ref.WeakReference;
 public class AwAutofillManager {
     private static final String TAG = "AwAutofillManager";
     private static final boolean DEBUG = false;
+
+    /**
+     * The observer of suggestion window.
+     */
+    public static interface InputUIObserver { void onInputUIShown(); }
 
     private static class AutofillInputUIMonitor extends AutofillManager.AutofillCallback {
         private WeakReference<AwAutofillManager> mManager;
@@ -36,6 +44,7 @@ public class AwAutofillManager {
             AwAutofillManager manager = mManager.get();
             if (manager == null) return;
             manager.mIsAutofillInputUIShowing = (event == EVENT_INPUT_SHOWN);
+            if (event == EVENT_INPUT_SHOWN) manager.notifyInputUIChange();
         }
     }
 
@@ -44,6 +53,7 @@ public class AwAutofillManager {
     private AutofillInputUIMonitor mMonitor;
     private boolean mDestroyed;
     private boolean mDisabled;
+    private ArrayList<WeakReference<InputUIObserver>> mInputUIObservers;
 
     public AwAutofillManager(Context context) {
         if (DEBUG) Log.i(TAG, "constructor");
@@ -112,11 +122,45 @@ public class AwAutofillManager {
         mDestroyed = true;
     }
 
+    public boolean isDisabled() {
+        return mDisabled;
+    }
+
     private boolean checkAndWarnIfDestroyed() {
         if (mDestroyed) {
             Log.w(TAG, "Application attempted to call on a destroyed AwAutofillManager",
                     new Throwable());
         }
         return mDestroyed;
+    }
+
+    public void addInputUIObserver(InputUIObserver observer) {
+        if (observer == null) return;
+        if (mInputUIObservers == null)
+            mInputUIObservers = new ArrayList<WeakReference<InputUIObserver>>();
+        mInputUIObservers.add(new WeakReference<InputUIObserver>(observer));
+    }
+
+    public void removeInputUIObserver(InputUIObserver observer) {
+        if (observer == null) return;
+        for (Iterator<WeakReference<InputUIObserver>> i = mInputUIObservers.listIterator();
+                i.hasNext();) {
+            WeakReference<InputUIObserver> o = i.next();
+            if (o.get() == null || o.get() == observer) i.remove();
+        }
+    }
+
+    @VisibleForTesting
+    public void notifyInputUIChange() {
+        for (Iterator<WeakReference<InputUIObserver>> i = mInputUIObservers.listIterator();
+                i.hasNext();) {
+            WeakReference<InputUIObserver> o = i.next();
+            InputUIObserver observer = o.get();
+            if (observer == null) {
+                i.remove();
+                continue;
+            }
+            observer.onInputUIShown();
+        }
     }
 }

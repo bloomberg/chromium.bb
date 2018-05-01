@@ -212,11 +212,11 @@ public class AwAutofillProvider extends AutofillProvider {
 
     private AutofillRequest mRequest;
     private long mNativeAutofillProvider;
+    private AwAutofillUMA mAutofillUMA;
+    private AwAutofillManager.InputUIObserver mInputUIObserver;
 
     public AwAutofillProvider(Context context, ViewGroup containerView) {
-        assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
-        mAutofillManager = new AwAutofillManager(context);
-        mContainerView = containerView;
+        this(containerView, new AwAutofillManager(context));
     }
 
     @VisibleForTesting
@@ -224,6 +224,14 @@ public class AwAutofillProvider extends AutofillProvider {
         assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
         mAutofillManager = manager;
         mContainerView = containerView;
+        mAutofillUMA = new AwAutofillUMA();
+        mInputUIObserver = new AwAutofillManager.InputUIObserver() {
+            @Override
+            public void onInputUIShown() {
+                mAutofillUMA.onSuggestionDisplayed();
+            }
+        };
+        mAutofillManager.addInputUIObserver(mInputUIObserver);
     }
 
     @Override
@@ -238,12 +246,14 @@ public class AwAutofillProvider extends AutofillProvider {
         // return.
         if (mRequest == null) return;
         mRequest.fillViewStructure(structure);
+        mAutofillUMA.onVirtualStructureProvided();
     }
 
     @Override
     public void autofill(final SparseArray<AutofillValue> values) {
         if (mNativeAutofillProvider != 0 && mRequest != null && mRequest.autofill((values))) {
             autofill(mNativeAutofillProvider, mRequest.mFormData);
+            mAutofillUMA.onAutofill();
         }
     }
 
@@ -275,6 +285,7 @@ public class AwAutofillProvider extends AutofillProvider {
         mRequest = new AutofillRequest(formData, new FocusField((short) focus, absBound));
         int virtualId = mRequest.getVirtualId((short) focus);
         mAutofillManager.notifyVirtualViewEntered(mContainerView, virtualId, absBound);
+        mAutofillUMA.onSessionStarted(mAutofillManager.isDisabled());
     }
 
     @Override
@@ -299,6 +310,7 @@ public class AwAutofillProvider extends AutofillProvider {
             mRequest.setFocusField(new FocusField(focusField.fieldIndex, absBound));
         }
         notifyVirtualValueChanged(index);
+        mAutofillUMA.onUserChangeFieldValue();
     }
 
     @Override
@@ -336,6 +348,7 @@ public class AwAutofillProvider extends AutofillProvider {
         notifyFormValues();
         mAutofillManager.commit(submissionSource);
         mRequest = null;
+        mAutofillUMA.onFormSubmitted(submissionSource);
     }
 
     @Override
