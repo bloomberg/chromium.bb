@@ -1394,6 +1394,12 @@ const char kSettingsWindowName[] = "Show settings in a window";
 const char kSettingsWindowDescription[] =
     "Settings will be shown in a dedicated window instead of as a browser tab.";
 
+const char kShelfHoverPreviewsName[] =
+    "Show previews of running apps when hovering over the shelf.";
+const char kShelfHoverPreviewsDescription[] =
+    "Shows previews of the open windows for a given running app when hovering "
+    "over the shelf.";
+
 const char kShowAllDialogsWithViewsToolkitName[] =
     "Show all dialogs with Views toolkit";
 const char kShowAllDialogsWithViewsToolkitDescription[] =

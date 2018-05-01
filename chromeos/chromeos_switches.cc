@@ -521,6 +521,9 @@ const char kProfileRequiresPolicy[] = "profile-requires-policy";
 // The rlz ping delay (in seconds) that overwrites the default value.
 const char kRlzPingDelay[] = "rlz-ping-delay";
 
+// App window previews when hovering over the shelf.
+const char kShelfHoverPreviews[] = "shelf-hover-previews";
+
 // Overrides network stub behavior. By default, ethernet, wifi and vpn are
 // enabled, and transitions occur instantaneously. Multiple options can be
 // comma separated (no spaces). Note: all options are in the format 'foo=x'.
