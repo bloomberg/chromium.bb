@@ -400,6 +400,7 @@ extern const char kLocalDiscoveryNotificationsEnabled[];
 #if defined(OS_ANDROID)
 extern const char kNotificationsVibrateEnabled[];
 extern const char kMigratedToSiteNotificationChannels[];
+extern const char kClearedBlockedSiteNotificationChannels[];
 #endif
 
 extern const char kPushMessagingAppIdentifierMap[];

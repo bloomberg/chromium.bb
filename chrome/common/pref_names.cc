@@ -1165,6 +1165,12 @@ const char kNotificationsVibrateEnabled[] = "notifications.vibrate_enabled";
 // permission, so any existing permissions must be migrated).
 const char kMigratedToSiteNotificationChannels[] =
     "notifications.migrated_to_channels";
+
+// Boolean pref indicating whether blocked site notification channels underwent
+// a one-time reset yet for https://crbug.com/835232.
+// TODO(https://crbug.com/837614): Remove this after a few releases (M69?).
+const char kClearedBlockedSiteNotificationChannels[] =
+    "notifications.cleared_blocked_channels";
 #endif
 
 // Maps from app ids to origin + Service Worker registration ID.
