@@ -75,6 +75,9 @@ class Tab : public gfx::AnimationDelegate,
   void set_detached() { detached_ = true; }
   bool detached() const { return detached_; }
 
+  // Returns the radius of the outer corners of the tab shape.
+  int GetCornerRadius() const;
+
   // Returns the color used for the alert indicator icon.
   SkColor GetAlertIndicatorColor(TabAlertState state) const;
 

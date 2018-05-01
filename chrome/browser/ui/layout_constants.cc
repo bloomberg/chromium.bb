@@ -59,12 +59,6 @@ int GetLayoutConstant(LayoutConstant constant) {
       return touch_optimized_material ? 20 : 16;
     case LOCATION_BAR_ICON_INTERIOR_PADDING:
       return touch_optimized_material ? 8 : 4;
-    case TABSTRIP_NEW_TAB_BUTTON_SPACING: {
-      // In older material UI, we make the new tab button overlap with the last
-      // tab in the tabstrip.
-      constexpr int kSpacing[] = {-5, -6, 6, 0};
-      return kSpacing[mode];
-    }
     case TAB_AFTER_TITLE_PADDING:
       return touch_optimized_material ? 8 : 4;
     case TAB_ALERT_INDICATOR_CAPTURE_ICON_WIDTH:
@@ -100,6 +94,9 @@ gfx::Insets GetLayoutInsets(LayoutInset inset) {
   const int mode = ui::MaterialDesignController::GetMode();
   switch (inset) {
     case TAB: {
+      // TODO(pkasting): This should disappear; the horizontal portion should
+      // be computed in tab.cc, and the vertical portion become a standalone
+      // value (that should perhaps be 0 in Refresh).
       constexpr int kTabHorizontalInset[] = {16, 18, 24, 16};
       return gfx::Insets(1, kTabHorizontalInset[mode]);
     }

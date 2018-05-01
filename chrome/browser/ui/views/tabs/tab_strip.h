@@ -354,9 +354,19 @@ class TabStrip : public views::View,
   // Returns the position of the new tab button within the strip.
   NewTabButtonPosition GetNewTabButtonPosition() const;
 
+  // Returns the spacing between the new tab button and the adjacent tab.
+  int GetNewTabButtonSpacing() const;
+
+  // Returns the width needed for the new tab button (and padding).
+  int GetNewTabButtonWidth(bool is_incognito) const;
+
   // Returns whether dragging tabs should ever result in the new tab button
   // being hidden.
   bool MayHideNewTabButtonWhileDragging() const;
+
+  // Returns the space to reserve after the tabs, if any, to guarantee the user
+  // can grab part of the window frame (to move the window with).
+  int GetFrameGrabWidth() const;
 
   // Returns whether the window background behind the tabstrip is transparent.
   bool TitlebarBackgroundIsTransparent() const;
