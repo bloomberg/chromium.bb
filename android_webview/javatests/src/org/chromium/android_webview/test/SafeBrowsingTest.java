@@ -138,7 +138,7 @@ public class SafeBrowsingTest {
         private static final long CHECK_DELTA_US = 10;
 
         @Override
-        public boolean init(Context context, Observer result) {
+        public boolean init(Observer result) {
             mObserver = result;
             return true;
         }
