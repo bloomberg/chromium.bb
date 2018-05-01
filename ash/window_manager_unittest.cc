@@ -92,7 +92,12 @@ void OnEmbed(bool success) {
   ASSERT_TRUE(success);
 }
 
-TEST_F(WindowManagerServiceTest, OpenWindow) {
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_OpenWindow DISABLED_OpenWindow
+#else
+#define MAYBE_OpenWindow OpenWindow
+#endif
+TEST_F(WindowManagerServiceTest, MAYBE_OpenWindow) {
   display::ScreenBase screen;
   screen.display_list().AddDisplay(
       display::Display(1, gfx::Rect(0, 0, 200, 200)),
