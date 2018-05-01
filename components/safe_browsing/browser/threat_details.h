@@ -255,6 +255,8 @@ class ThreatDetails : public base::RefCounted<ThreatDetails>,
   FRIEND_TEST_ALL_PREFIXES(ThreatDetailsTest, HTTPCacheNoEntries);
   FRIEND_TEST_ALL_PREFIXES(ThreatDetailsTest, HTTPCache);
   FRIEND_TEST_ALL_PREFIXES(ThreatDetailsTest, ThreatDOMDetails_AmbiguousDOM);
+  FRIEND_TEST_ALL_PREFIXES(ThreatDetailsTest,
+                           ThreatDOMDetails_EmptyReportNotSent);
   FRIEND_TEST_ALL_PREFIXES(ThreatDetailsTest, ThreatDOMDetails_MultipleFrames);
   FRIEND_TEST_ALL_PREFIXES(ThreatDetailsTest, ThreatDOMDetails_TrimToAdTags);
   FRIEND_TEST_ALL_PREFIXES(ThreatDetailsTest, ThreatDOMDetails);
