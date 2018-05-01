@@ -28,7 +28,8 @@ void WorkerAnimationFrameProvider::CancelCallback(int id) {
 }
 
 void WorkerAnimationFrameProvider::BeginFrame() {
-  callback_collection_.ExecuteCallbacks(0, 0);
+  double time = WTF::TimeTicksInSeconds(WTF::CurrentTimeTicks()) * 1000;
+  callback_collection_.ExecuteCallbacks(time, time);
 
   for (auto& ctx : rendering_contexts_) {
     ctx->PushFrame();
