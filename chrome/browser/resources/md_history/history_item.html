@@ -67,52 +67,19 @@
         overflow: hidden;
       }
 
-      #checkbox-container {
-        height: 40px;
-        margin: 0;
-        padding: 0;
-        transform: none;  /* Checkboxes shouldn't flip even in RTL. */
-        width: 40px;
+      #checkbox {
+        margin: 12px;
       }
 
-      :host([selected]) #checkbox {
-        color: var(--interactive-color);
-      }
-
-      #checkmark {
+      /* #checkbox[unresolved] styling is necessary since cr-checkbox is being
+         lazy-loaded. */
+      #checkbox[unresolved] {
         border: 2px solid var(--secondary-text-color);
         border-radius: 2px;
-        height: 12px;
-        margin: 12px;
-        width: 12px;
-      }
-
-      #checkmark::after {
-        border-color: inherit;
-        border-style: solid;
-        border-width: 0 2px 2px 0;
         content: '';
         display: block;
-        height: 70%;
-        transform: scale(0) rotate(45deg);
-        transform-origin: 97% 86%;
-        width: 36%;
-      }
-
-      :host-context([dir='rtl']) #checkmark::after {
-        transform-origin: 50% 14%;
-      }
-
-      :host([selected]) #checkmark {
-        background: var(--interactive-color);
-        border-color: var(--interactive-color);
-      }
-
-      :host([selected]) #checkmark::after {
-        border-color: white;
-        transform: scale(1) rotate(45deg);
-        /* Only animate when showing checkmark. */
-        transition: transform 140ms ease-out;
+        height: 12px;
+        width: 12px;
       }
 
       #time-accessed {
@@ -207,15 +174,13 @@
       <div id="item-container"
           on-mousedown="onItemMousedown_"
           on-click="onItemClick_">
-        <paper-icon-button-light id="checkbox-container"
-            hidden="[[selectionNotAllowed_]]">
-          <button id="checkbox"
-              role="checkbox"
-              aria-checked$="[[getAriaChecked_(selected)]]"
-              aria-label$="[[getEntrySummary_(item)]]">
-            <div id="checkmark"></div>
-          </button>
-        </paper-icon-button-light>
+        <cr-checkbox id="checkbox" checked="[[selected]]" unresolved
+            on-mousedown="onCheckboxClick_"
+            on-keydown="onCheckboxClick_"
+            on-change="onCheckboxChange_"
+            hidden="[[selectionNotAllowed_]]"
+            disabled="[[selectionNotAllowed_]]"
+            aria-label$="[[getEntrySummary_(item)]]"></cr-checkbox>
         <span id="time-accessed">
           [[item.readableTimestamp]]
         </span>
