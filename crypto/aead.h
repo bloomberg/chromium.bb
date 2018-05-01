@@ -16,10 +16,10 @@ struct evp_aead_st;
 
 namespace crypto {
 
-// This class exposes the AES-128-CTR-HMAC-SHA256 AEAD.
+// This class exposes the AES-128-CTR-HMAC-SHA256 and AES_256_GCM AEAD.
 class CRYPTO_EXPORT Aead {
  public:
-  enum AeadAlgorithm { AES_128_CTR_HMAC_SHA256 };
+  enum AeadAlgorithm { AES_128_CTR_HMAC_SHA256, AES_256_GCM };
 
   explicit Aead(AeadAlgorithm algorithm);
 
