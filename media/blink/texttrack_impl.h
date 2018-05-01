@@ -32,16 +32,16 @@ class TextTrackImpl : public TextTrack {
 
   ~TextTrackImpl() override;
 
-  void addWebVTTCue(const base::TimeDelta& start,
-                    const base::TimeDelta& end,
+  void addWebVTTCue(base::TimeDelta start,
+                    base::TimeDelta end,
                     const std::string& id,
                     const std::string& content,
                     const std::string& settings) override;
 
  private:
   static void OnAddCue(WebInbandTextTrackImpl* text_track,
-                       const base::TimeDelta& start,
-                       const base::TimeDelta& end,
+                       base::TimeDelta start,
+                       base::TimeDelta end,
                        const std::string& id,
                        const std::string& content,
                        const std::string& settings);

@@ -383,11 +383,12 @@ class MockTextTrack : public TextTrack {
   MockTextTrack();
   ~MockTextTrack() override;
 
-  MOCK_METHOD5(addWebVTTCue, void(const base::TimeDelta& start,
-                                  const base::TimeDelta& end,
-                                  const std::string& id,
-                                  const std::string& content,
-                                  const std::string& settings));
+  MOCK_METHOD5(addWebVTTCue,
+               void(base::TimeDelta start,
+                    base::TimeDelta end,
+                    const std::string& id,
+                    const std::string& content,
+                    const std::string& settings));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockTextTrack);
@@ -433,8 +434,8 @@ class MockDecryptor : public Decryptor {
   MockDecryptor();
   ~MockDecryptor() override;
 
-  MOCK_METHOD2(RegisterNewKeyCB, void(StreamType stream_type,
-                                      const NewKeyCB& new_key_cb));
+  MOCK_METHOD2(RegisterNewKeyCB,
+               void(StreamType stream_type, const NewKeyCB& new_key_cb));
   MOCK_METHOD3(Decrypt,
                void(StreamType stream_type,
                     scoped_refptr<DecoderBuffer> encrypted,
