@@ -1985,6 +1985,49 @@ TEST_P(PaintControllerTest, InvalidateAll) {
 // Death tests don't work properly on Android.
 #if defined(GTEST_HAS_DEATH_TEST) && !defined(OS_ANDROID)
 
+TEST_P(PaintControllerTest, DuplicatedSubsequences) {
+  FakeDisplayItemClient client("test", LayoutRect(100, 100, 100, 100));
+  GraphicsContext context(GetPaintController());
+
+  auto paint_duplicated_subsequences = [&]() {
+    InitRootChunk();
+    {
+      SubsequenceRecorder r(context, client);
+      DrawRect(context, client, kBackgroundType, FloatRect(100, 100, 100, 100));
+    }
+    {
+      SubsequenceRecorder r(context, client);
+      DrawRect(context, client, kForegroundType, FloatRect(100, 100, 100, 100));
+    }
+    GetPaintController().CommitNewDisplayItems();
+  };
+
+#if DCHECK_IS_ON()
+  EXPECT_DEATH(paint_duplicated_subsequences(),
+               "Multiple subsequences for client: \"test\"");
+  return;
+#endif
+
+  // The following is for non-DCHECK path. No security CHECK should trigger.
+  paint_duplicated_subsequences();
+  // Paint again.
+  InitRootChunk();
+  if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled()) {
+    EXPECT_FALSE(GetPaintController().UseCachedSubsequenceIfPossible(client));
+    SubsequenceRecorder r(context, client);
+    DrawRect(context, client, kBackgroundType, FloatRect(100, 100, 100, 100));
+  } else {
+    EXPECT_TRUE(GetPaintController().UseCachedSubsequenceIfPossible(client));
+  }
+  {
+    // Should not use the cached duplicated subsequence.
+    EXPECT_FALSE(GetPaintController().UseCachedSubsequenceIfPossible(client));
+    SubsequenceRecorder r(context, client);
+    DrawRect(context, client, kForegroundType, FloatRect(100, 100, 100, 100));
+  }
+  GetPaintController().CommitNewDisplayItems();
+}
+
 class PaintControllerUnderInvalidationTest
     : public PaintControllerTestBase,
       private ScopedPaintUnderInvalidationCheckingForTest {

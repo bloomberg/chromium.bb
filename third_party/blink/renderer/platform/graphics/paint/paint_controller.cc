@@ -119,6 +119,16 @@ bool PaintController::UseCachedSubsequenceIfPossible(
     return false;
   }
 
+  if (current_paint_artifact_.GetDisplayItemList()[markers->start]
+          .IsTombstone()) {
+    // The subsequence has already been copied, indicating that the same client
+    // created multiple subsequences. If DCHECK_IS_ON(), then we should have
+    // encountered the DCHECK at the end of EndSubsequence() during the previous
+    // paint.
+    NOTREACHED();
+    return false;
+  }
+
   EnsureNewDisplayItemListInitialCapacity();
 
   if (next_item_to_match_ == markers->start) {
