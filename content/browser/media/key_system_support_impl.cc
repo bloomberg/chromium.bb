@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "content/public/browser/cdm_registry.h"
@@ -62,13 +63,16 @@ void KeySystemSupportImpl::IsKeySystemSupported(
   std::unique_ptr<CdmInfo> cdm = GetCdmInfoForKeySystem(key_system);
   if (!cdm) {
     SendCdmAvailableUMA(key_system, false);
-    std::move(callback).Run(false, {}, false);
+    std::move(callback).Run(false, {}, false, {});
     return;
   }
 
+  const base::flat_set<media::EncryptionMode>& schemes =
+      cdm->supported_encryption_schemes;
   SendCdmAvailableUMA(key_system, true);
-  std::move(callback).Run(true, cdm->supported_video_codecs,
-                          cdm->supports_persistent_license);
+  std::move(callback).Run(
+      true, cdm->supported_video_codecs, cdm->supports_persistent_license,
+      std::vector<media::EncryptionMode>(schemes.begin(), schemes.end()));
 }
 
 }  // namespace content
