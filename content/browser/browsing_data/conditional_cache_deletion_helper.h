@@ -9,6 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/message_loop/message_loop.h"
+#include "base/sequenced_task_runner_helpers.h"
 #include "content/common/content_export.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"

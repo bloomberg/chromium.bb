@@ -9,12 +9,9 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/single_thread_task_runner.h"
 #include "net/url_request/url_request_context_getter.h"
-
-namespace base {
-class SingleThreadTaskRunner;
-}
 
 namespace net {
 class URLRequestContext;
