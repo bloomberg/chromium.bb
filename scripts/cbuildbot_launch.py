@@ -164,12 +164,6 @@ def GetLastBuildState(root):
 
   state = build_summary.BuildSummary()
 
-  # Merge the old state file into the state.  This will be overwritten by the
-  # new state file if it contains the same fields, which is what we want.
-  # TODO(bmgordon): Remove this once all builders have had time to migrate to
-  # the new file.
-  state.buildroot_layout, state.branch, state.distfiles_ts = GetState(root)
-
   try:
     state_raw = osutils.ReadFile(state_file)
     state.from_json(state_raw)
@@ -200,35 +194,6 @@ def SetLastBuildState(root, new_state):
   # Remove old state file.  Its contents have been migrated into the new file.
   old_state_file = os.path.join(root, '.cbuildbot_launch_state')
   osutils.SafeUnlink(old_state_file)
-
-
-def GetState(root):
-  """Fetch the current state of our working directory.
-
-  Will return with a default result if there is no known state.
-
-  Args:
-    root: Root of the working directory tree as a string.
-
-  Returns:
-    Layout version as an integer (0 for unknown).
-    Previous branch as a string ('' for unknown).
-    Last distfiles clearance time in POSIX time (None for unknown).
-  """
-  state_file = os.path.join(root, '.cbuildbot_launch_state')
-
-  try:
-    state = osutils.ReadFile(state_file)
-    parts = state.split()
-    if len(parts) >= 3:
-      return int(parts[0]), parts[1], float(parts[2])
-    else:
-      # TODO(pprabhu) delete this branch once most buildslaves have migrated to
-      # newer state with three parts.
-      return int(parts[0]), parts[1], None
-  except (IOError, ValueError, IndexError):
-    # If we are unable to either read or parse the state file, we get here.
-    return 0, '', None
 
 
 def _MaybeCleanDistfiles(repo, distfiles_ts, metrics_fields):
