@@ -9,6 +9,14 @@
              file="../../webui/resources/cr_elements/cr_action_menu/cr_action_menu.js"
              type="chrome_html"
              compress="gzip" />
+  <structure name="IDR_CR_ELEMENTS_CR_CHECKBOX_HTML"
+             file="../../webui/resources/cr_elements/cr_checkbox/cr_checkbox.html"
+             type="chrome_html"
+             compress="gzip" />
+  <structure name="IDR_CR_ELEMENTS_CR_CHECKBOX_JS"
+             file="../../webui/resources/cr_elements/cr_checkbox/cr_checkbox.js"
+             type="chrome_html"
+             compress="gzip" />
   <structure name="IDR_CR_ELEMENTS_CR_CONTAINER_SHADOW_BEHAVIOR_HTML"
              file="../../webui/resources/cr_elements/cr_container_shadow_behavior.html"
              type="chrome_html"

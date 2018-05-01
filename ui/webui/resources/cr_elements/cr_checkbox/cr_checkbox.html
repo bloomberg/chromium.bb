@@ -1,0 +1,100 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-behaviors/paper-ripple-behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
+
+<dom-module id="cr-checkbox">
+  <template>
+    <style>
+      :host {
+        cursor: pointer;
+        line-height: 0;
+        outline: none;
+        user-select: none;
+      }
+
+      :host([disabled]) {
+        cursor: initial;
+        pointer-events: none;
+      }
+
+      #checkbox {
+        background: none;
+        border: none;
+        cursor: pointer;
+        display: inline-block;
+        height: 16px;
+        margin: 0;
+        outline: none;
+        padding: 0;
+        position: relative;
+        transform: none;  /* Checkboxes shouldn't flip even in RTL. */
+        vertical-align: middle;
+        width: 16px;
+      }
+
+      #checkmark {
+        border: 2px solid var(--secondary-text-color);
+        border-radius: 2px;
+        display: block;
+        height: 12px;
+        width: 12px;
+      }
+
+      #checkmark::after {
+        border-color: inherit;
+        border-style: solid;
+        border-width: 0 2px 2px 0;
+        content: '';
+        display: block;
+        height: 70%;
+        transform: scale(0) rotate(45deg);
+        transform-origin: 97% 86%;
+        width: 36%;
+      }
+
+      :host-context([dir='rtl']) #checkmark::after {
+        transform-origin: 50% 14%;
+      }
+
+      :host([checked]) #checkmark {
+        background: var(--google-blue-500);
+        border-color: var(--google-blue-500);
+      }
+
+      :host([checked]) #checkmark::after {
+        border-color: white;
+        transform: scale(1) rotate(45deg);
+        /* Only animate when showing checkmark. */
+        transition: transform 140ms ease-out;
+      }
+
+      paper-ripple {
+        color: var(--primary-text-color);
+        height: 40px;
+        left: -12px;
+        opacity: 0.5;
+        pointer-events: none;
+        top: -12px;
+        transition: color linear 80ms;
+        width: 40px;
+      }
+
+      :host([checked]) paper-ripple {
+        color: var(--primary-color);
+      }
+
+      :host-context([dir=rtl]) paper-ripple {
+        left: auto;
+        right: -12px;
+      }
+    </style>
+    <!-- Mousing down then moving cursor out of this element should not trigger
+         click on the parent. With <button> this works as expected, while <div>
+         does not. -->
+    <button id="checkbox" tabindex="-1">
+      <span id="checkmark"></span>
+    </button>
+  </template>
+  <script src="cr_checkbox.js"></script>
+</dom-module>

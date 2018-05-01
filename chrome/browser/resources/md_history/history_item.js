@@ -136,6 +136,9 @@ cr.define('md_history', function() {
     /** @private {boolean} */
     mouseDown_: false,
 
+    /** @private {boolean} */
+    isShiftKeyDown_: false,
+
     /** @override */
     attached: function() {
       Polymer.RenderStatus.afterNextRender(this, function() {
@@ -212,6 +215,33 @@ cr.define('md_history', function() {
         index: this.index,
         shiftKey: e.shiftKey,
       });
+    },
+
+    /**
+     * This is bound to mouse/keydown instead of click/press because this
+     * has to fire before onCheckboxChange_. If we bind it to click/press,
+     * it might trigger out of disired order.
+     *
+     * @param {!Event} e
+     * @private
+     */
+    onCheckboxClick_: function(e) {
+      this.isShiftKeyDown_ = e.shiftKey;
+    },
+
+    /**
+     * @param {!Event} e
+     * @private
+     */
+    onCheckboxChange_: function(e) {
+      this.fire('history-checkbox-select', {
+        index: this.index,
+        // If the user clicks or press enter/space key, oncheckboxClick_ will
+        // trigger before this function, so a shift-key might be recorded.
+        shiftKey: this.isShiftKeyDown_,
+      });
+
+      this.isShiftKeyDown_ = false;
     },
 
     /**
