@@ -12,6 +12,7 @@ from benchmarks import loading
 
 from telemetry import benchmark
 from telemetry.internal import story_runner
+from telemetry.value import none_values
 from telemetry.value.list_of_scalar_values import StandardDeviation
 
 def _ListSubtraction(diff_list, control_list):
@@ -43,8 +44,12 @@ def _PointSubtraction(diff_point, control_point):
   elif diff_point['type'] == 'list_of_scalar_values':
     # Points may have None 'values' regardless their types.
     if not diff_point['values'] or not control_point['values']:
+      none_value_reason = (
+          none_values.MERGE_FAILURE_REASON +
+          ' None values: %s' % repr([diff_point, control_point]))
       diff_point['values'] = None
       diff_point['std'] = None
+      diff_point['none_value_reason'] = none_value_reason
       return
     _ListSubtraction(diff_point['values'], control_point['values'])
     diff_point['std'] = StandardDeviation(diff_point['values'])
