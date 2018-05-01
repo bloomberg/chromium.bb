@@ -29,6 +29,8 @@ ChromeGuestViewManagerDelegate::~ChromeGuestViewManagerDelegate() {
 
 void ChromeGuestViewManagerDelegate::OnGuestAdded(
     content::WebContents* guest_web_contents) const {
+  ExtensionsGuestViewManagerDelegate::OnGuestAdded(guest_web_contents);
+
   // Attaches the task-manager-specific tag for the GuestViews to its
   // |guest_web_contents| so that their corresponding tasks show up in the task
   // manager.
