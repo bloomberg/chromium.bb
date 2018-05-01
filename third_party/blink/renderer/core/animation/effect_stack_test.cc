@@ -37,7 +37,8 @@ class AnimationEffectStackTest : public PageTestBase {
 
   void UpdateTimeline(double time) {
     GetDocument().GetAnimationClock().UpdateTime(
-        GetDocument().Timeline().ZeroTime() + time);
+        base::TimeTicks() + base::TimeDelta::FromSecondsD(
+                                GetDocument().Timeline().ZeroTime() + time));
     timeline->ServiceAnimations(kTimingUpdateForAnimationFrame);
   }
 

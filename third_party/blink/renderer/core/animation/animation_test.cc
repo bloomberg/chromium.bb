@@ -107,7 +107,7 @@ class AnimationAnimationTest : public RenderingTest {
     // animation can be pushed to the compositor.
     UpdateAllLifecyclePhases();
 
-    document->GetAnimationClock().UpdateTime(0);
+    document->GetAnimationClock().UpdateTime(base::TimeTicks());
     document->GetPendingAnimations().Update(base::nullopt, true);
   }
 
@@ -127,7 +127,8 @@ class AnimationAnimationTest : public RenderingTest {
       double time,
       base::Optional<CompositorElementIdSet> composited_element_ids =
           base::Optional<CompositorElementIdSet>()) {
-    document->GetAnimationClock().UpdateTime(time);
+    document->GetAnimationClock().UpdateTime(
+        base::TimeTicks() + base::TimeDelta::FromSecondsD(time));
     document->GetPendingAnimations().Update(composited_element_ids, false);
     // The timeline does not know about our animation, so we have to explicitly
     // call update().
@@ -165,7 +166,8 @@ TEST_F(AnimationAnimationTest, CurrentTimeDoesNotSetOutdated) {
   // FIXME: We should split simulateFrame into a version that doesn't update
   // the animation and one that does, as most of the tests don't require
   // update() to be called.
-  document->GetAnimationClock().UpdateTime(10);
+  document->GetAnimationClock().UpdateTime(base::TimeTicks() +
+                                           base::TimeDelta::FromSecondsD(10));
   EXPECT_EQ(10, animation->CurrentTimeInternal());
   EXPECT_FALSE(animation->Outdated());
 }
