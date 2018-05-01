@@ -838,10 +838,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void DispatchInputEventWithLatencyInfo(const blink::WebInputEvent& event,
                                          ui::LatencyInfo* latency);
 
-  // Called when there is a new auto resize (using a post to avoid a stack
-  // which may get in recursive loops).
-  void DelayedAutoResized();
-
   void WindowSnapshotReachedScreen(int snapshot_id);
 
   void OnSnapshotFromSurfaceReceived(int snapshot_id,
@@ -938,9 +934,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Visual properties that were most recently sent to the renderer.
   std::unique_ptr<VisualProperties> old_visual_properties_;
 
-  // The next auto resize to send.
-  gfx::Size new_auto_size_;
-
   // True if the render widget host should track the render widget's size as
   // opposed to visa versa.
   bool auto_resize_enabled_;
@@ -950,8 +943,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // The maximum size for the render widget if auto-resize is enabled.
   gfx::Size max_size_for_auto_resize_;
-
-  base::Optional<viz::LocalSurfaceId> last_auto_resize_surface_id_;
 
   bool waiting_for_screen_rects_ack_;
   gfx::Rect last_view_screen_rect_;

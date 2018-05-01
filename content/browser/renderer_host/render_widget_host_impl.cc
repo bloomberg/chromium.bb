@@ -2182,15 +2182,14 @@ void RenderWidgetHostImpl::OnResizeOrRepaintACK(
 
   DidCompleteResizeOrRepaint(params, paint_start);
 
-  last_auto_resize_surface_id_ = params.child_allocated_local_surface_id;
+  if (auto_resize_enabled_ && view_) {
+    viz::ScopedSurfaceIdAllocator scoped_allocator =
+        view_->ResizeDueToAutoResize(params.view_size,
+                                     *params.child_allocated_local_surface_id);
 
-  if (auto_resize_enabled_) {
-    bool post_callback = new_auto_size_.IsEmpty();
-    new_auto_size_ = params.view_size;
-    if (post_callback) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(&RenderWidgetHostImpl::DelayedAutoResized,
-                                    weak_factory_.GetWeakPtr()));
+    if (delegate_) {
+      delegate_->ResizeDueToAutoResize(
+          this, params.view_size, *params.child_allocated_local_surface_id);
     }
   }
 
@@ -2630,27 +2629,6 @@ void RenderWidgetHostImpl::GotResponseToKeyboardLockRequest(bool allowed) {
     LockKeyboard();
   else
     UnlockKeyboard();
-}
-
-void RenderWidgetHostImpl::DelayedAutoResized() {
-  gfx::Size new_size = new_auto_size_;
-  // Clear the new_auto_size_ since the empty value is used as a flag to
-  // indicate that no callback is in progress (i.e. without this line
-  // DelayedAutoResized will not get called again).
-  new_auto_size_.SetSize(0, 0);
-  if (!auto_resize_enabled_)
-    return;
-
-  if (view_) {
-    viz::ScopedSurfaceIdAllocator scoped_allocator =
-        view_->ResizeDueToAutoResize(new_size,
-                                     last_auto_resize_surface_id_.value());
-
-    if (delegate_) {
-      delegate_->ResizeDueToAutoResize(this, new_size,
-                                       last_auto_resize_surface_id_.value());
-    }
-  }
 }
 
 void RenderWidgetHostImpl::DetachDelegate() {
