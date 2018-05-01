@@ -3941,6 +3941,13 @@ bool SkipConditionalFeatureEntry(const FeatureEntry& entry) {
       channel == version_info::Channel::STABLE) {
     return true;
   }
+
+  // enable-experimental-crostini-ui is only available for boards that have
+  // VM support, which is controlled by the Crostini feature.
+  if (!strcmp("enable-experimental-crostini-ui", entry.internal_name) &&
+      !base::FeatureList::IsEnabled(features::kCrostini)) {
+    return true;
+  }
 #endif  // defined(OS_CHROMEOS)
 
   // data-reduction-proxy-lo-fi and enable-data-reduction-proxy-lite-page
