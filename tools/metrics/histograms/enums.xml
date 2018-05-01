@@ -14055,6 +14055,8 @@ Called by update_net_error_codes.py.-->
       label="SAFE_BROWSING_PRIVATE_ON_SECURITY_INTERSTITIAL_SHOWN"/>
   <int value="420"
       label="SAFE_BROWSING_PRIVATE_ON_SECURITY_INTERSTITIAL_PROCEEDED"/>
+  <int value="421"
+      label="ACCESSIBILITY_PRIVATE_ON_SELECT_TO_SPEAK_STATE_CHANGE_REQUESTED"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">
@@ -15357,6 +15359,9 @@ Called by update_net_error_codes.py.-->
   <int value="1245" label="AUTOTESTPRIVATE_UPDATEPRINTER"/>
   <int value="1246" label="AUTOTESTPRIVATE_REMOVEPRINTER"/>
   <int value="1247" label="WALLPAPERPRIVATE_GETCURRENTWALLPAPERTHUMBNAIL"/>
+  <int value="1248" label="ACCESSIBILITY_PRIVATE_ONSELECTTOSPEAKSTATECHANGED"/>
+  <int value="1249"
+      label="ACCESSIBILITY_PRIVATE_ONSELECTTOSPEAKSTATECHANGEREQUESTED"/>
 </enum>
 
 <enum name="ExtensionIconState">

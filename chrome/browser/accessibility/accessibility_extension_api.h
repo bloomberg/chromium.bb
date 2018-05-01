@@ -88,6 +88,15 @@ class AccessibilityPrivateSendSyntheticKeyEventFunction
   DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.sendSyntheticKeyEvent",
                              ACCESSIBILITY_PRIVATE_SENDSYNTHETICKEYEVENT)
 };
+
+// API function that is called when the Select-to-Speak extension state changes.
+class AccessibilityPrivateOnSelectToSpeakStateChangedFunction
+    : public UIThreadExtensionFunction {
+  ~AccessibilityPrivateOnSelectToSpeakStateChangedFunction() override {}
+  ResponseAction Run() override;
+  DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.onSelectToSpeakStateChanged",
+                             ACCESSIBILITY_PRIVATE_ONSELECTTOSPEAKSTATECHANGED)
+};
 #endif  // defined (OS_CHROMEOS)
 
 #endif  // CHROME_BROWSER_ACCESSIBILITY_ACCESSIBILITY_EXTENSION_API_H_

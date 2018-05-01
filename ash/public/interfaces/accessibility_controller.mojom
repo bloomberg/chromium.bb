@@ -36,6 +36,18 @@ enum AccessibilityAlert {
   WINDOW_OVERVIEW_MODE_ENTERED
 };
 
+enum SelectToSpeakState {
+  // Select to Speak is not actively selecting text or speaking.
+  kSelectToSpeakStateInactive,
+
+  // Select to Speak is being used to actively select a new region. Note that
+  // it might also be speaking, but the selecting state takes precedence.
+  kSelectToSpeakStateSelecting,
+
+  // Select to Speak is currently speaking.
+  kSelectToSpeakStateSpeaking,
+};
+
 // Interface for ash client (e.g. Chrome) to control and query accessibility
 // features.
 interface AccessibilityController {

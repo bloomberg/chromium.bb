@@ -39,3 +39,11 @@ chrome.metricsPrivate = {
 chrome.commandLinePrivate = {
   hasSwitch: function() {}
 };
+
+chrome.accessibilityPrivate = {};
+
+chrome.accessibilityPrivate.SelectToSpeakState = {
+  INACTIVE: 'inactive',
+  SELECTING: 'selecting',
+  SPEAKING: 'speaking'
+};

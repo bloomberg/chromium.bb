@@ -1308,6 +1308,7 @@ enum HistogramValue {
   AUTOTESTPRIVATE_UPDATEPRINTER,
   AUTOTESTPRIVATE_REMOVEPRINTER,
   WALLPAPERPRIVATE_GETCURRENTWALLPAPERTHUMBNAIL,
+  ACCESSIBILITY_PRIVATE_ONSELECTTOSPEAKSTATECHANGED,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

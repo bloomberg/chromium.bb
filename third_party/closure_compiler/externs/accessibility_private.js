@@ -101,6 +101,16 @@ chrome.accessibilityPrivate.KeyboardMode = {
 };
 
 /**
+ * @enum {string}
+ * @see https://developer.chrome.com/extensions/accessibilityPrivate#type-SelectToSpeakState
+ */
+chrome.accessibilityPrivate.SelectToSpeakState = {
+  SELECTING: 'selecting',
+  SPEAKING: 'speaking',
+  INACTIVE: 'inactive',
+};
+
+/**
  * Enables or disables native accessibility support. Once disabled, it is up to
  * the calling extension to provide accessibility for web contents.
  * @param {boolean} enabled True if native accessibility support should be
@@ -203,3 +213,20 @@ chrome.accessibilityPrivate.onTwoFingerTouchStart;
  * @see https://developer.chrome.com/extensions/accessibilityPrivate#event-onTwoFingerTouchStop
  */
 chrome.accessibilityPrivate.onTwoFingerTouchStop;
+
+/**
+ * Called by the Select-to-Speak extension when Select-to-Speak has changed states,
+ * between selecting with the mouse, speaking, and inactive.
+ * @param {!chrome.accessibilityPrivate.SelectToSpeakState} state The current
+ *    state of the Select-to-Speak extension
+ * @see https://developer.chrome.com/extensions/accessibilityPrivate#method-onSelectToSpeakStateChanged
+ */
+chrome.accessibilityPrivate.onSelectToSpeakStateChanged = function(state) {};
+
+/**
+ * Called when Chrome OS wants to toggle the Select-to-Speak state, between selecting
+ * with the mouse, speaking, and inactive
+ * @type {!ChromeEvent}
+ * @see https://developer.chrome.com/extensions/accessibilityPrivate#event-onSelectToSpeakStateChangeRequested
+ */
+chrome.accessibilityPrivate.onSelectToSpeakStateChangeRequested;
