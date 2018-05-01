@@ -5516,6 +5516,19 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   //                         following flag accordingly.
   cm->reset_decoder_state = 0;
 
+  // Don't allow a show_existing_frame to coincide with an error resilient or
+  // S-Frame
+  struct lookahead_entry *lookahead_src = NULL;
+  if (cm->current_video_frame > 0)
+    lookahead_src = av1_lookahead_peek(cpi->lookahead, 0);
+  if (lookahead_src != NULL &&
+      ((cpi->oxcf.error_resilient_mode |
+        ((lookahead_src->flags & AOM_EFLAG_ERROR_RESILIENT) != 0)) ||
+       (cpi->oxcf.s_frame_mode |
+        ((lookahead_src->flags & AOM_EFLAG_SET_S_FRAME) != 0)))) {
+    cm->show_existing_frame = 0;
+  }
+
   if (oxcf->pass == 2 && cm->show_existing_frame) {
     // Manage the source buffer and flush out the source frame that has been
     // coded already; Also get prepared for PSNR calculation if needed.
