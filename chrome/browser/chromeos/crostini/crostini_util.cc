@@ -68,7 +68,8 @@ void MaybeLaunchContainerAppplication(
 
 bool IsCrostiniAllowed() {
   return virtual_machines::AreVirtualMachinesAllowedByVersionAndChannel() &&
-         virtual_machines::AreVirtualMachinesAllowedByPolicy();
+         virtual_machines::AreVirtualMachinesAllowedByPolicy() &&
+         base::FeatureList::IsEnabled(features::kCrostini);
 }
 
 bool IsCrostiniUIAllowedForProfile(Profile* profile) {
