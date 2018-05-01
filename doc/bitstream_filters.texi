@@ -75,6 +75,10 @@ the header stored in extradata to the key packets:
 ffmpeg -i INPUT -map 0 -flags:v +global_header -c:v libx264 -bsf:v dump_extra out.ts
 @end example
 
+@section eac3_core
+
+Extract the core from a E-AC-3 stream, dropping extra channels.
+
 @section extract_extradata
 
 Extract the in-band extradata.
@@ -92,6 +96,60 @@ extradata.
 When this option is enabled, the long-term headers are removed from the
 bitstream after extraction.
 @end table
+
+@section filter_units
+
+Remove units with types in or not in a given set from the stream.
+
+@table @option
+@item pass_types
+List of unit types or ranges of unit types to pass through while removing
+all others.  This is specified as a '|'-separated list of unit type values
+or ranges of values with '-'.
+
+@item remove_types
+Identical to @option{pass_types}, except the units in the given set
+removed and all others passed through.
+@end table
+
+Extradata is unchanged by this transformation, but note that if the stream
+contains inline parameter sets then the output may be unusable if they are
+removed.
+
+For example, to remove all non-VCL NAL units from an H.264 stream:
+@example
+ffmpeg -i INPUT -c:v copy -bsf:v 'filter_units=pass_types=1-5' OUTPUT
+@end example
+
+To remove all AUDs, SEI and filler from an H.265 stream:
+@example
+ffmpeg -i INPUT -c:v copy -bsf:v 'filter_units=remove_types=35|38-40' OUTPUT
+@end example
+
+@section hapqa_extract
+
+Extract Rgb or Alpha part of an HAPQA file, without recompression, in order to create an HAPQ or an HAPAlphaOnly file.
+
+@table @option
+@item texture
+Specifies the texture to keep.
+
+@table @option
+@item color
+@item alpha
+@end table
+
+@end table
+
+Convert HAPQA to HAPQ
+@example
+ffmpeg -i hapqa_inputfile.mov -c copy -bsf:v hapqa_extract=texture=color -tag:v HapY -metadata:s:v:0 encoder="HAPQ" hapq_file.mov
+@end example
+
+Convert HAPQA to HAPAlphaOnly
+@example
+ffmpeg -i hapqa_inputfile.mov -c copy -bsf:v hapqa_extract=texture=alpha -tag:v HapA -metadata:s:v:0 encoder="HAPAlpha Only" hapalphaonly_file.mov
+@end example
 
 @section h264_metadata
 

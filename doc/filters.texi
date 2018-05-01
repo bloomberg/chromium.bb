@@ -221,6 +221,7 @@ Here is a BNF description of the filtergraph syntax:
 @var{FILTERGRAPH}      ::= [sws_flags=@var{flags};] @var{FILTERCHAIN} [;@var{FILTERGRAPH}]
 @end example
 
+@anchor{filtergraph escaping}
 @section Notes on filtergraph escaping
 
 Filtergraph description composition entails several levels of
@@ -509,7 +510,7 @@ An Anti-Aliasing setting is able to produce "softer" crushing sounds.
 Another feature of this filter is the logarithmic mode.
 This setting switches from linear distances between bits to logarithmic ones.
 The result is a much more "natural" sounding crusher which doesn't gate low
-signals for example. The human ear has a logarithmic perception, too
+signals for example. The human ear has a logarithmic perception,
 so this kind of crushing is much more pleasant.
 Logarithmic crushing is also able to get anti-aliased.
 
@@ -958,6 +959,10 @@ Set Impulse Response filter length. Default is 1, which means whole IR is proces
 
 @item again
 Enable applying gain measured from power of IR.
+
+@item maxir
+Set max allowed Impulse Response filter duration in seconds. Default is 30 seconds.
+Allowed range is 0.1 to 60 seconds.
 @end table
 
 @subsection Examples
@@ -1350,6 +1355,9 @@ The duration of the first input.
 The transition time, in seconds, for volume renormalization when an input
 stream ends. The default value is 2 seconds.
 
+@item weights
+Specify weight of each input audio stream as sequence.
+Each weight is separated by space. By default all inputs have same weight.
 @end table
 
 @section anequalizer
@@ -1746,7 +1754,7 @@ It accepts the following option:
 @table @option
 @item length
 Short window length in seconds, used for peak and trough RMS measurement.
-Default is @code{0.05} (50 milliseconds). Allowed range is @code{[0.1 - 10]}.
+Default is @code{0.05} (50 milliseconds). Allowed range is @code{[0.01 - 10]}.
 
 @item metadata
 
@@ -2049,7 +2057,7 @@ Change bandreject width.
 Syntax for the command is : "@var{width}"
 @end table
 
-@section bass
+@section bass, lowshelf
 
 Boost or cut the bass (lower) frequencies of the audio using a two-pole
 shelving filter with a response similar to that of a standard
@@ -2188,6 +2196,10 @@ The channel layout of the output stream.
 If no mapping is present, the filter will implicitly map input channels to
 output channels, preserving indices.
 
+@subsection Examples
+
+@itemize
+@item
 For example, assuming a 5.1+downmix input MOV file,
 @example
 ffmpeg -i in.mov -filter 'channelmap=map=DL-FL|DR-FR' out.wav
@@ -2195,10 +2207,12 @@ ffmpeg -i in.mov -filter 'channelmap=map=DL-FL|DR-FR' out.wav
 will create an output WAV file tagged as stereo from the downmix channels of
 the input.
 
+@item
 To fix a 5.1 WAV improperly encoded in AAC's native channel order
 @example
 ffmpeg -i in.wav -filter 'channelmap=1|2|0|5|3|4:5.1' out.wav
 @end example
+@end itemize
 
 @section channelsplit
 
@@ -2208,8 +2222,17 @@ It accepts the following parameters:
 @table @option
 @item channel_layout
 The channel layout of the input stream. The default is "stereo".
+@item channels
+A channel layout describing the channels to be extracted as separate output streams
+or "all" to extract each input channel as a separate stream. The default is "all".
+
+Choosing channels not present in channel layout in the input will result in an error.
 @end table
 
+@subsection Examples
+
+@itemize
+@item
 For example, assuming a stereo input MP3 file,
 @example
 ffmpeg -i in.mp3 -filter_complex channelsplit out.mkv
@@ -2217,6 +2240,7 @@ ffmpeg -i in.mp3 -filter_complex channelsplit out.mkv
 will create an output Matroska file with two audio streams, one containing only
 the left channel and the other the right channel.
 
+@item
 Split a 5.1 WAV file into per-channel files:
 @example
 ffmpeg -i in.wav -filter_complex
@@ -2225,6 +2249,14 @@ ffmpeg -i in.wav -filter_complex
 front_center.wav -map '[LFE]' lfe.wav -map '[SL]' side_left.wav -map '[SR]'
 side_right.wav
 @end example
+
+@item
+Extract only LFE from a 5.1 WAV file:
+@example
+ffmpeg -i in.wav -filter_complex 'channelsplit=channel_layout=5.1:channels=LFE[LFE]'
+-map '[LFE]' lfe.wav
+@end example
+@end itemize
 
 @section chorus
 Add a chorus effect to the audio.
@@ -3147,6 +3179,21 @@ Default is @var{freq}.
 
 @item lfe
 Set custom gain for LFE channels. Value is in dB. Default is 0.
+
+@item size
+Set size of frame in number of samples which will be processed at once.
+Default value is @var{1024}. Allowed range is from 1024 to 96000.
+
+@item hrir
+Set format of hrir stream.
+Default value is @var{stereo}. Alternative value is @var{multich}.
+If value is set to @var{stereo}, number of additional streams should
+be greater or equal to number of input channels in first input stream.
+Also each additional stream should have stereo number of channels.
+If value is set to @var{multich}, number of additional streams should
+be exactly one. Also number of input channels of additional stream
+should be equal or greater than twice number of channels of first input
+stream.
 @end table
 
 @subsection Examples
@@ -3158,6 +3205,14 @@ each amovie filter use stereo file with IR coefficients as input.
 The files give coefficients for each position of virtual loudspeaker:
 @example
 ffmpeg -i input.wav -lavfi-complex "amovie=azi_270_ele_0_DFC.wav[sr],amovie=azi_90_ele_0_DFC.wav[sl],amovie=azi_225_ele_0_DFC.wav[br],amovie=azi_135_ele_0_DFC.wav[bl],amovie=azi_0_ele_0_DFC.wav,asplit[fc][lfe],amovie=azi_35_ele_0_DFC.wav[fl],amovie=azi_325_ele_0_DFC.wav[fr],[a:0][fl][fr][fc][lfe][bl][br][sl][sr]headphone=FL|FR|FC|LFE|BL|BR|SL|SR"
+output.wav
+@end example
+
+@item
+Full example using wav files as coefficients with amovie filters for 7.1 downmix,
+but now in @var{multich} @var{hrir} format.
+@example
+ffmpeg -i input.wav -lavfi-complex "amovie=minp.wav[hrirs],[a:0][hrirs]headphone=map=FL|FR|FC|LFE|BL|BR|SL|SR:hrir=multich"
 output.wav
 @end example
 @end itemize
@@ -3582,7 +3637,7 @@ lv2=p=http\\\\://calf.sourceforge.net/plugins/BassEnhancer:c=amount=2
 @end example
 
 @item
-Apply bass vinyl plugin from Calf:
+Apply vinyl plugin from Calf:
 @example
 lv2=p=http\\\\://calf.sourceforge.net/plugins/Vinyl:c=drone=0.2|aging=0.5
 @end example
@@ -4377,7 +4432,7 @@ Set LFE input volume. By default, this is @var{1}.
 Set LFE output volume. By default, this is @var{1}.
 @end table
 
-@section treble
+@section treble, highshelf
 
 Boost or cut treble (upper) frequencies of the audio using a two-pole
 shelving filter with a response similar to that of a standard
@@ -7022,6 +7077,65 @@ If enabled, current pixel is changed if and only if all pixel components are ban
 e.g. banding detection threshold is triggered for all color components.
 The default is disabled.
 @end table
+
+@section deblock
+
+Remove blocking artifacts from input video.
+
+The filter accepts the following options:
+
+@table @option
+@item filter
+Set filter type, can be @var{weak} or @var{strong}. Default is @var{strong}.
+This controls what kind of deblocking is applied.
+
+@item block
+Set size of block, allowed range is from 4 to 512. Default is @var{8}.
+
+@item alpha
+@item beta
+@item gamma
+@item delta
+Set blocking detection thresholds. Allowed range is 0 to 1.
+Defaults are: @var{0.098} for @var{alpha} and @var{0.05} for the rest.
+Using higher threshold gives more deblocking strength.
+Setting @var{alpha} controls threshold detection at exact edge of block.
+Remaining options controls threshold detection near the edge. Each one for
+below/above or left/right. Setting any of those to @var{0} disables
+deblocking.
+
+@item planes
+Set planes to filter. Default is to filter all available planes.
+@end table
+
+@subsection Examples
+
+@itemize
+@item
+Deblock using weak filter and block size of 4 pixels.
+@example
+deblock=filter=weak:block=4
+@end example
+
+@item
+Deblock using strong filter, block size of 4 pixels and custom thresholds for
+deblocking more edges.
+@example
+deblock=filter=strong:block=4:alpha=0.12:beta=0.07:gamma=0.06:delta=0.05
+@end example
+
+@item
+Similar as above, but filter only first plane.
+@example
+deblock=filter=strong:block=4:alpha=0.12:beta=0.07:gamma=0.06:delta=0.05:planes=1
+@end example
+
+@item
+Similar as above, but filter only second and third plane.
+@example
+deblock=filter=strong:block=4:alpha=0.12:beta=0.07:gamma=0.06:delta=0.05:planes=6
+@end example
+@end itemize
 
 @anchor{decimate}
 @section decimate
@@ -10345,15 +10459,17 @@ The filter accepts the following options:
 @item cx
 Relative x-coordinate of the focal point of the image, and thereby the center of the
 distortion. This value has a range [0,1] and is expressed as fractions of the image
-width.
+width. Default is 0.5.
 @item cy
 Relative y-coordinate of the focal point of the image, and thereby the center of the
 distortion. This value has a range [0,1] and is expressed as fractions of the image
-height.
+height. Default is 0.5.
 @item k1
-Coefficient of the quadratic correction term. 0.5 means no correction.
+Coefficient of the quadratic correction term. This value has a range [-1,1]. 0 means
+no correction. Default is 0.
 @item k2
-Coefficient of the double quadratic correction term. 0.5 means no correction.
+Coefficient of the double quadratic correction term. This value has a range [-1,1].
+0 means no correction. Default is 0.
 @end table
 
 The formula that generates the correction is:
@@ -16218,6 +16334,17 @@ For example, to vertically flip a video with @command{ffmpeg}:
 ffmpeg -i in.avi -vf "vflip" out.avi
 @end example
 
+@section vfrdet
+
+Detect variable frame rate video.
+
+This filter tries to detect if the input is variable or constant frame rate.
+
+At end it will output number of frames detected as having variable delta pts,
+and ones with constant delta pts.
+If there was frames with variable delta, than it will also show min and max delta
+encountered.
+
 @anchor{vignette}
 @section vignette
 
@@ -16491,6 +16618,9 @@ Luma and chroma combined together.
 @item aflat
 Similar as above, but shows difference between blue and red chroma.
 
+@item xflat
+Similar as above, but use different colors.
+
 @item chroma
 Displays only chroma.
 
@@ -16510,6 +16640,9 @@ Do not display graticule.
 
 @item green
 Display green graticule showing legal broadcast ranges.
+
+@item orange
+Display orange graticule showing legal broadcast ranges.
 @end table
 
 @item opacity, o
@@ -19906,7 +20039,7 @@ Set channel width, allowed range is [80, 8192]. Default is 400.
 Set channel height, allowed range is [1, 900]. Default is 20.
 
 @item f
-Set fade, allowed range is [0.001, 1]. Default is 0.95.
+Set fade, allowed range is [0, 1]. Default is 0.95.
 
 @item c
 Set volume color expression.
@@ -19931,12 +20064,33 @@ If set, displays channel names. Default is enabled.
 If set, displays volume values. Default is enabled.
 
 @item o
-Set orientation, can be @code{horizontal} or @code{vertical},
-default is @code{horizontal}.
+Set orientation, can be horizontal: @code{h} or vertical: @code{v},
+default is @code{h}.
 
 @item s
-Set step size, allowed range s [0, 5]. Default is 0, which means
+Set step size, allowed range is [0, 5]. Default is 0, which means
 step is disabled.
+
+@item p
+Set background opacity, allowed range is [0, 1]. Default is 0.
+
+@item m
+Set metering mode, can be peak: @code{p} or rms: @code{r},
+default is @code{p}.
+
+@item ds
+Set display scale, can be linear: @code{lin} or log: @code{log},
+default is @code{lin}.
+
+@item dm
+In second.
+If set to > 0., display a line for the max level
+in the previous seconds.
+default is disabled: @code{0.}
+
+@item dmc
+The color of the max line. Use when @code{dm} option is set to > 0.
+default is: @code{orange}
 @end table
 
 @section showwaves
@@ -20006,6 +20160,20 @@ Cubic root.
 @end table
 
 Default is linear.
+
+@item draw
+Set the draw mode. This is mostly useful to set for high @var{n}.
+
+Available values are:
+@table @samp
+@item scale
+Scale pixel values for each drawn sample.
+
+@item full
+Draw every sample directly.
+@end table
+
+Default value is @code{scale}.
 @end table
 
 @subsection Examples
@@ -20216,7 +20384,7 @@ filters in the filtergraph.
 
 @code{zmq} and @code{azmq} work as a pass-through filters. @code{zmq}
 must be inserted between two video filters, @code{azmq} between two
-audio filters.
+audio filters. Both are capable to send messages to any filter type.
 
 To enable these filters you need to install the libzmq library and
 headers and configure FFmpeg with @code{--enable-libzmq}.
@@ -20226,7 +20394,10 @@ For more information about libzmq see:
 
 The @code{zmq} and @code{azmq} filters work as a libzmq server, which
 receives messages sent through a network interface defined by the
-@option{bind_address} option.
+@option{bind_address} (or the abbreviation "@option{b}") option.
+Default value of this option is @file{tcp://localhost:5555}. You may
+want to alter this value to your needs, but do not forget to escape any
+':' signs (see @ref{filtergraph escaping}).
 
 The received message must be in the form:
 @example
@@ -20234,7 +20405,10 @@ The received message must be in the form:
 @end example
 
 @var{TARGET} specifies the target of the command, usually the name of
-the filter class or a specific filter instance name.
+the filter class or a specific filter instance name. The default
+filter instance name uses the pattern @samp{Parsed_<filter_name>_<index>},
+but you can override this by using the @samp{filter_name@@id} syntax
+(see @ref{Filtergraph syntax}).
 
 @var{COMMAND} specifies the name of the command for the target filter.
 
@@ -20256,14 +20430,17 @@ will send a reply to the client, adopting the format:
 Look at @file{tools/zmqsend} for an example of a zmq client which can
 be used to send commands processed by these filters.
 
-Consider the following filtergraph generated by @command{ffplay}
+Consider the following filtergraph generated by @command{ffplay}.
+In this example the last overlay filter has an instance name. All other
+filters will have default instance names.
+
 @example
 ffplay -dumpgraph 1 -f lavfi "
 color=s=100x100:c=red  [l];
 color=s=100x100:c=blue [r];
 nullsrc=s=200x100, zmq [bg];
-[bg][l]   overlay      [bg+l];
-[bg+l][r] overlay=x=100 "
+[bg][l]   overlay     [bg+l];
+[bg+l][r] overlay@@my=x=100 "
 @end example
 
 To change the color of the left side of the video, the following
@@ -20276,6 +20453,12 @@ To change the right side:
 @example
 echo Parsed_color_1 c pink | tools/zmqsend
 @end example
+
+To change the position of the right side:
+@example
+echo overlay@@my x 150 | tools/zmqsend
+@end example
+
 
 @c man end MULTIMEDIA FILTERS
 

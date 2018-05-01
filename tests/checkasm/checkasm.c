@@ -163,6 +163,9 @@ static const struct {
         { "vf_threshold", checkasm_check_vf_threshold },
     #endif
 #endif
+#if CONFIG_SWSCALE
+    { "sw_rgb", checkasm_check_sw_rgb },
+#endif
 #if CONFIG_AVUTIL
         { "fixed_dsp", checkasm_check_fixed_dsp },
         { "float_dsp", checkasm_check_float_dsp },
@@ -291,8 +294,12 @@ int float_near_ulp_array(const float *a, const float *b, unsigned max_ulp,
 int float_near_abs_eps(float a, float b, float eps)
 {
     float abs_diff = fabsf(a - b);
+    if (abs_diff < eps)
+        return 1;
 
-    return abs_diff < eps;
+    fprintf(stderr, "test failed comparing %g with %g (abs diff=%g with EPS=%g)\n", a, b, abs_diff, eps);
+
+    return 0;
 }
 
 int float_near_abs_eps_array(const float *a, const float *b, float eps,
