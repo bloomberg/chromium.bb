@@ -18,6 +18,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/ui/echo_dialog_view.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/common/extensions/api/echo_private.h"
@@ -240,7 +241,33 @@ void EchoPrivateGetUserConsentFunction::OnRedeemOffersAllowedChecked(
     return;
   }
 
-  content::WebContents* web_contents = GetAssociatedWebContentsDeprecated();
+  content::WebContents* web_contents = nullptr;
+  if (params->consent_requester.tab_id) {
+    TabStripModel* tab_strip = nullptr;
+    int tab_index = -1;
+    if (!extensions::ExtensionTabUtil::GetTabById(
+            *params->consent_requester.tab_id, browser_context(),
+            false /*incognito_enabled*/, nullptr /*browser*/, &tab_strip,
+            &web_contents, &tab_index)) {
+      error_ = "Tab not found.";
+      SendResponse(false);
+      return;
+    }
+
+    // Bail out if the requested tab is not active - the dialog is modal to the
+    // window, so showing it for a request from an inactive tab could be
+    // misleading/confusing to the user.
+    if (tab_index != tab_strip->active_index()) {
+      error_ = "Consent requested from an inactive tab.";
+      SendResponse(false);
+      return;
+    }
+  } else {
+    // TODO(tbarzic): Change this to GetSenderWebContets once the echo extension
+    // code is updated to send tab ID information with the request.
+    web_contents = GetAssociatedWebContentsDeprecated();
+  }
+
   if (!web_contents) {
     error_ = "No web contents.";
     SendResponse(false);
