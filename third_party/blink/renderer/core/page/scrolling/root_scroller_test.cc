@@ -1394,9 +1394,17 @@ TEST_P(RootScrollerSimTest, ImplicitRootScroller) {
               width: 100%;
               height: 100%;
             }
+            /* Makes sure the document doesn't have any overflow itself */
+            #clip {
+              overflow: hidden;
+              width: 100%;
+              height: 100%;
+            }
           </style>
-          <div id="container">
-            <div id="spacer"></div>
+          <div id="clip">
+            <div id="container">
+              <div id="spacer"></div>
+            </div>
           </div>
       )HTML");
   Compositor().BeginFrame();
@@ -1432,40 +1440,236 @@ TEST_P(RootScrollerSimTest, ImplicitRootScroller) {
     container->style()->setProperty(&GetDocument(), style, style_val, String(),
                                     ASSERT_NO_EXCEPTION);
     Compositor().BeginFrame();
-    ASSERT_EQ(
-        expected_root_scroller,
-        GetDocument().GetRootScrollerController().EffectiveRootScroller());
+    ASSERT_EQ(expected_root_scroller,
+              GetDocument().GetRootScrollerController().EffectiveRootScroller())
+        << "Failed to set rootScroller after setting " << std::get<0>(test_case)
+        << ": " << std::get<1>(test_case);
     container->style()->setProperty(&GetDocument(), std::get<0>(test_case),
                                     String(), String(), ASSERT_NO_EXCEPTION);
     Compositor().BeginFrame();
-    ASSERT_EQ(
-        &GetDocument(),
-        GetDocument().GetRootScrollerController().EffectiveRootScroller());
+    ASSERT_EQ(&GetDocument(),
+              GetDocument().GetRootScrollerController().EffectiveRootScroller())
+        << "Failed to reset rootScroller after setting "
+        << std::get<0>(test_case) << ": " << std::get<1>(test_case);
   }
 
-  // Now remove the overflowing element and rerun the tests. There should be no
-  // difference based on the fact that the scroller has overflow or not.
+  // Now remove the overflowing element and rerun the tests. The container
+  // element should no longer be implicitly promoted as it doesn't have any
+  // overflow.
   Element* spacer = GetDocument().getElementById("spacer");
   spacer->remove();
 
   for (auto test_case : test_cases) {
     String& style = std::get<0>(test_case);
     String& style_val = std::get<1>(test_case);
-    Node* expected_root_scroller = std::get<2>(test_case);
+    Node* expected_root_scroller = &GetDocument();
 
     container->style()->setProperty(&GetDocument(), style, style_val, String(),
                                     ASSERT_NO_EXCEPTION);
     Compositor().BeginFrame();
-    ASSERT_EQ(
-        expected_root_scroller,
-        GetDocument().GetRootScrollerController().EffectiveRootScroller());
+    ASSERT_EQ(expected_root_scroller,
+              GetDocument().GetRootScrollerController().EffectiveRootScroller())
+        << "Failed to set rootScroller after setting " << std::get<0>(test_case)
+        << ": " << std::get<1>(test_case);
+
     container->style()->setProperty(&GetDocument(), std::get<0>(test_case),
                                     String(), String(), ASSERT_NO_EXCEPTION);
     Compositor().BeginFrame();
-    ASSERT_EQ(
-        &GetDocument(),
-        GetDocument().GetRootScrollerController().EffectiveRootScroller());
+    ASSERT_EQ(&GetDocument(),
+              GetDocument().GetRootScrollerController().EffectiveRootScroller())
+        << "Failed to reset rootScroller after setting "
+        << std::get<0>(test_case) << ": " << std::get<1>(test_case);
   }
+}
+
+// Test that adding overflow to an element that would otherwise be eligable to
+// be implicitly pomoted causes promotion.
+TEST_P(RootScrollerSimTest, ImplicitRootScrollerAddOverflow) {
+  ScopedSetRootScrollerForTest disable_root_scroller(false);
+  ScopedImplicitRootScrollerForTest enable_implicit(true);
+
+  WebView().Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+          <!DOCTYPE html>
+          <style>
+            ::-webkit-scrollbar {
+              width: 0px;
+              height: 0px;
+            }
+            body, html {
+              width: 100%;
+              height: 100%;
+              margin: 0px;
+            }
+            #container {
+              width: 100%;
+              height: 100%;
+              overflow: auto;
+            }
+          </style>
+          <div id="container">
+            <div id="spacer"></div>
+          </div>
+      )HTML");
+  Compositor().BeginFrame();
+
+  ASSERT_EQ(&GetDocument(),
+            GetDocument().GetRootScrollerController().EffectiveRootScroller())
+      << "Shouldn't promote 'container' since it has no overflow.";
+
+  Element* spacer = GetDocument().getElementById("spacer");
+  spacer->style()->setProperty(&GetDocument(), "height", "2000px", String(),
+                               ASSERT_NO_EXCEPTION);
+  spacer->style()->setProperty(&GetDocument(), "width", "2000px", String(),
+                               ASSERT_NO_EXCEPTION);
+  Compositor().BeginFrame();
+  Element* container = GetDocument().getElementById("container");
+  EXPECT_EQ(container,
+            GetDocument().GetRootScrollerController().EffectiveRootScroller())
+      << "Adding overflow should cause 'container' to be promoted.";
+}
+
+// Test that a valid implicit root scroller wont be promoted/will be demoted if
+// the main document has overflow.
+TEST_P(RootScrollerSimTest, ImplicitRootScrollerDocumentScrollsOverflow) {
+  // TODO(bokan): This test will fail without root-layer-scrolls but that's ok
+  // because it's already shipped and non-root-layer-scrolls is no longer
+  // supported. https://crbug.com/823365.
+  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled())
+    return;
+
+  ScopedSetRootScrollerForTest disable_root_scroller(false);
+  ScopedImplicitRootScrollerForTest enable_implicit(true);
+
+  WebView().Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+          <!DOCTYPE html>
+          <style>
+            ::-webkit-scrollbar {
+              width: 0px;
+              height: 0px;
+            }
+            body, html {
+              width: 100%;
+              height: 100%;
+              margin: 0px;
+            }
+            #container {
+              width: 100%;
+              height: 100%;
+              overflow: auto;
+            }
+            #spacer {
+              width: 2000px;
+              height: 2000px;
+            }
+          </style>
+          <div id="container">
+            <div id="spacer"></div>
+          </div>
+          <div id="overflow"></div>
+      )HTML");
+  Compositor().BeginFrame();
+
+  Element* container = GetDocument().getElementById("container");
+  ASSERT_EQ(container,
+            GetDocument().GetRootScrollerController().EffectiveRootScroller());
+
+  Element* overflow = GetDocument().getElementById("overflow");
+  overflow->style()->setProperty(&GetDocument(), "height", "10px", String(),
+                                 ASSERT_NO_EXCEPTION);
+  overflow->style()->setProperty(&GetDocument(), "width", "10px", String(),
+                                 ASSERT_NO_EXCEPTION);
+  Compositor().BeginFrame();
+  EXPECT_EQ(&GetDocument(),
+            GetDocument().GetRootScrollerController().EffectiveRootScroller())
+      << "Adding overflow to document should cause 'container' to be demoted.";
+
+  overflow->remove();
+  Compositor().BeginFrame();
+  EXPECT_EQ(container,
+            GetDocument().GetRootScrollerController().EffectiveRootScroller())
+      << "Removing document overflow should cause 'container' to be promoted.";
+}
+
+// Test that we'll only implicitly promote an element if its visible.
+TEST_P(RootScrollerSimTest, ImplicitRootScrollerVisibilityCondition) {
+  ScopedSetRootScrollerForTest disable_root_scroller(false);
+  ScopedImplicitRootScrollerForTest enable_implicit(true);
+
+  WebView().Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+          <!DOCTYPE html>
+          <style>
+            ::-webkit-scrollbar {
+              width: 0px;
+              height: 0px;
+            }
+            body, html {
+              width: 100%;
+              height: 100%;
+              margin: 0px;
+            }
+            #container {
+              width: 100%;
+              height: 100%;
+              overflow: auto;
+            }
+            #spacer {
+              width: 2000px;
+              height: 2000px;
+            }
+          </style>
+          <div id="container">
+            <div id="spacer"></div>
+          </div>
+      )HTML");
+  Compositor().BeginFrame();
+
+  Element* container = GetDocument().getElementById("container");
+  ASSERT_EQ(container,
+            GetDocument().GetRootScrollerController().EffectiveRootScroller());
+
+  container->style()->setProperty(&GetDocument(), "opacity", "0.5", String(),
+                                  ASSERT_NO_EXCEPTION);
+  Compositor().BeginFrame();
+  EXPECT_EQ(&GetDocument(),
+            GetDocument().GetRootScrollerController().EffectiveRootScroller())
+      << "Adding opacity to 'container' causes it to be demoted.";
+
+  container->style()->setProperty(&GetDocument(), "opacity", "", String(),
+                                  ASSERT_NO_EXCEPTION);
+  Compositor().BeginFrame();
+  EXPECT_EQ(container,
+            GetDocument().GetRootScrollerController().EffectiveRootScroller())
+      << "Removing opacity from 'container' causes it to be promoted.";
+
+  container->style()->setProperty(&GetDocument(), "visibility", "hidden",
+                                  String(), ASSERT_NO_EXCEPTION);
+  Compositor().BeginFrame();
+  EXPECT_EQ(&GetDocument(),
+            GetDocument().GetRootScrollerController().EffectiveRootScroller())
+      << "visibility:hidden causes 'container' to be demoted.";
+
+  container->style()->setProperty(&GetDocument(), "visibility", "collapse",
+                                  String(), ASSERT_NO_EXCEPTION);
+  Compositor().BeginFrame();
+  EXPECT_EQ(&GetDocument(),
+            GetDocument().GetRootScrollerController().EffectiveRootScroller())
+      << "visibility:collapse doesn't cause 'container' to be promoted.";
+
+  container->style()->setProperty(&GetDocument(), "visibility", "visible",
+                                  String(), ASSERT_NO_EXCEPTION);
+  Compositor().BeginFrame();
+  EXPECT_EQ(container,
+            GetDocument().GetRootScrollerController().EffectiveRootScroller())
+      << "visibility:visible causes promotion";
 }
 
 // Tests implicit root scroller mode for iframes.

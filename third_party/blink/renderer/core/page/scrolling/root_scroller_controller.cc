@@ -29,7 +29,7 @@ class RootFrameViewport;
 
 namespace {
 
-bool FillsViewport(const Element& element) {
+bool FillsViewport(const Element& element, bool check_location) {
   DCHECK(element.GetLayoutObject());
   DCHECK(element.GetLayoutObject()->IsBox());
 
@@ -46,8 +46,13 @@ bool FillsViewport(const Element& element) {
 
   LayoutRect bounding_box(quad.BoundingBox());
 
-  return bounding_box.Location() == LayoutPoint::Zero() &&
-         bounding_box.Size() == top_document.GetLayoutView()->GetLayoutSize();
+  if (bounding_box.Size() != top_document.GetLayoutView()->GetLayoutSize())
+    return false;
+
+  if (!check_location)
+    return true;
+
+  return bounding_box.Location() == LayoutPoint::Zero();
 }
 
 }  // namespace
@@ -89,6 +94,20 @@ Node& RootScrollerController::EffectiveRootScroller() const {
 }
 
 void RootScrollerController::DidUpdateLayout() {
+  RecomputeEffectiveRootScroller();
+}
+
+void RootScrollerController::DidUpdateStyle() {
+  // Only implicit root scroller evaluation depends on properties that don't
+  // also affect layout.
+  if (!RuntimeEnabledFeatures::ImplicitRootScrollerEnabled())
+    return;
+
+  // If we need layout we'll recompute everything after that so don't do
+  // anything here.
+  if (!document_->View() || document_->View()->NeedsLayout())
+    return;
+
   RecomputeEffectiveRootScroller();
 }
 
@@ -194,7 +213,7 @@ bool RootScrollerController::IsValidRootScroller(const Element& element) const {
       return false;
   }
 
-  if (!FillsViewport(element))
+  if (!FillsViewport(element, true))
     return false;
 
   return true;
@@ -205,19 +224,20 @@ bool RootScrollerController::IsValidImplicit(const Element& element) const {
   if (!IsValidRootScroller(element))
     return false;
 
-  // Valid iframes can always be implicitly promoted.
-  if (element.IsFrameOwnerElement())
-    return true;
-
   const ComputedStyle* style = element.GetLayoutObject()->Style();
   if (!style)
     return false;
 
-  // Regular Elements must have overflow: auto or scroll.
-  return style->OverflowX() == EOverflow::kAuto ||
-         style->OverflowX() == EOverflow::kScroll ||
-         style->OverflowY() == EOverflow::kAuto ||
-         style->OverflowY() == EOverflow::kScroll;
+  // Do not implicitly promote things that are partially or fully invisible.
+  if (style->HasOpacity() || style->Visibility() != EVisibility::kVisible)
+    return false;
+
+  // Valid, visible iframes can always be implicitly promoted.
+  if (element.IsFrameOwnerElement())
+    return true;
+
+  LayoutBox* box = ToLayoutBox(element.GetLayoutObject());
+  return box->GetScrollableArea()->ScrollsOverflow();
 }
 
 void RootScrollerController::ApplyRootScrollerProperties(Node& node) {
@@ -286,7 +306,17 @@ void RootScrollerController::UpdateIFrameGeometryAndLayoutSize(
 }
 
 void RootScrollerController::ProcessImplicitCandidates() {
+  implicit_root_scroller_ = nullptr;
+
   if (!RuntimeEnabledFeatures::ImplicitRootScrollerEnabled())
+    return;
+
+  if (!document_->GetLayoutView())
+    return;
+
+  // If the document has scrollable content, that's a good sign we shouldn't
+  // implicitly promote anything.
+  if (document_->GetLayoutView()->GetScrollableArea()->ScrollsOverflow())
     return;
 
   Element* highest_z_element = nullptr;
@@ -342,14 +372,30 @@ void RootScrollerController::ElementRemoved(const Element& element) {
 
 void RootScrollerController::ConsiderForImplicit(Node& node) {
   DCHECK(RuntimeEnabledFeatures::ImplicitRootScrollerEnabled());
+  if (!document_->GetFrame()->IsMainFrame())
+    return;
+
+  if (document_->GetPage()->GetChromeClient().IsPopup())
+    return;
 
   if (!node.IsElementNode())
     return;
 
-  if (!IsValidImplicit(ToElement(node)))
-    return;
+  DCHECK(node.GetLayoutObject());
+  DCHECK(node.GetLayoutObject()->IsBox());
 
-  if (document_->GetPage()->GetChromeClient().IsPopup())
+  if (!node.IsFrameOwnerElement()) {
+    LayoutBox* box = ToLayoutBox(node.GetLayoutObject());
+    if (!box->GetScrollableArea())
+      return;
+
+    if (!box->GetScrollableArea()->ScrollsOverflow())
+      return;
+  }
+
+  // Check only the size since we wont have location information at this point
+  // in layout.
+  if (!FillsViewport(ToElement(node), false))
     return;
 
   implicit_candidates_.insert(&ToElement(node));

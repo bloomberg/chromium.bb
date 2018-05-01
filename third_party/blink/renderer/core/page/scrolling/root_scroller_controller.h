@@ -69,6 +69,9 @@ class CORE_EXPORT RootScrollerController
   // replaced by the default root scroller.
   void DidUpdateLayout();
 
+  // We need to track style changes to reevaluate the implicit root scroller.
+  void DidUpdateStyle();
+
   // This class needs to be informed when the FrameView of its Document changes
   // size. This may occur without a layout (e.g. URL bar hiding) so we can't
   // rely on DidUpdateLayout.
