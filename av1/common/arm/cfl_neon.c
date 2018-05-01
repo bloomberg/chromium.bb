@@ -52,17 +52,27 @@ static void cfl_luma_subsampling_420_lbd_neon(const uint8_t *input,
       const uint16x4_t top = vpaddl_u8(vld1_u8(input));
       const uint16x4_t sum = vpadal_u8(top, vld1_u8(input + input_stride));
       vst1_s16(pred_buf_q3, vshl_n_s16(vreinterpret_s16_u16(sum), 1));
-    } else {
+    } else if (width == 16) {
       const uint16x8_t top = vpaddlq_u8(vld1q_u8(input));
       const uint16x8_t sum = vpadalq_u8(top, vld1q_u8(input + input_stride));
       vst1q_s16(pred_buf_q3, vshlq_n_s16(vreinterpretq_s16_u16(sum), 1));
-      if (width == 32) {
-        const uint16x8_t next_top = vpaddlq_u8(vld1q_u8(input + 16));
-        const uint16x8_t next_sum =
-            vpadalq_u8(next_top, vld1q_u8(input + 16 + input_stride));
-        vst1q_s16(pred_buf_q3 + 8,
-                  vshlq_n_s16(vreinterpretq_s16_u16(next_sum), 1));
-      }
+    } else {
+      const uint8x8x4_t top = vld4_u8(input);
+      const uint8x8x4_t bot = vld4_u8(input + input_stride);
+      // equivalent to a vpaddlq_u8 (because vld4q interleaves)
+      const uint16x8_t top_0 = vaddl_u8(top.val[0], top.val[1]);
+      // equivalent to a vpaddlq_u8 (because vld4q interleaves)
+      const uint16x8_t bot_0 = vaddl_u8(bot.val[0], bot.val[1]);
+      // equivalent to a vpaddlq_u8 (because vld4q interleaves)
+      const uint16x8_t top_1 = vaddl_u8(top.val[2], top.val[3]);
+      // equivalent to a vpaddlq_u8 (because vld4q interleaves)
+      const uint16x8_t bot_1 = vaddl_u8(bot.val[2], bot.val[3]);
+      int16x8x2_t sum;
+      sum.val[0] =
+          vshlq_n_s16(vreinterpretq_s16_u16(vaddq_u16(top_0, bot_0)), 1);
+      sum.val[1] =
+          vshlq_n_s16(vreinterpretq_s16_u16(vaddq_u16(top_1, bot_1)), 1);
+      vst2q_s16(pred_buf_q3, sum);
     }
     input += luma_stride;
   } while ((pred_buf_q3 += CFL_BUF_LINE) < end);
