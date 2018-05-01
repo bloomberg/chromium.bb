@@ -58,4 +58,11 @@ TEST(NamesMapTest, Set) {
     ExpectEqMap(test_case.second, map);
   }
 }
+
+TEST(NamesMapTest, SetNull) {
+  NamesMap map;
+  map.Set(AtomicString("foo bar"));
+  map.Set(g_null_atom);
+  ExpectEqMap({}, map);
+}
 }  // namespace blink
