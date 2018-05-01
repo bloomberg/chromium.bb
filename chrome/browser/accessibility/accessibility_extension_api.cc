@@ -37,6 +37,7 @@
 #include "ash/shell.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_helper_bridge.h"
+#include "services/ui/public/interfaces/accessibility_manager.mojom.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event_sink.h"
 #endif
@@ -257,6 +258,36 @@ AccessibilityPrivateSendSyntheticKeyEventFunction::Run() {
       ash::Shell::GetPrimaryRootWindow()->GetHost()->event_sink();
   if (sink->OnEventFromSource(&synthetic_key_event).dispatcher_destroyed)
     return RespondNow(Error("Unable to dispatch key "));
+
+  return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
+AccessibilityPrivateOnSelectToSpeakStateChangedFunction::Run() {
+  std::unique_ptr<accessibility_private::OnSelectToSpeakStateChanged::Params>
+      params =
+          accessibility_private::OnSelectToSpeakStateChanged::Params::Create(
+              *args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+  accessibility_private::SelectToSpeakState params_state = params->state;
+  ash::mojom::SelectToSpeakState state;
+  switch (params_state) {
+    case accessibility_private::SelectToSpeakState::
+        SELECT_TO_SPEAK_STATE_SELECTING:
+      state = ash::mojom::SelectToSpeakState::kSelectToSpeakStateSelecting;
+      break;
+    case accessibility_private::SelectToSpeakState::
+        SELECT_TO_SPEAK_STATE_SPEAKING:
+      state = ash::mojom::SelectToSpeakState::kSelectToSpeakStateSpeaking;
+      break;
+    case accessibility_private::SelectToSpeakState::
+        SELECT_TO_SPEAK_STATE_INACTIVE:
+    case accessibility_private::SelectToSpeakState::SELECT_TO_SPEAK_STATE_NONE:
+      state = ash::mojom::SelectToSpeakState::kSelectToSpeakStateInactive;
+  }
+
+  // TODO(katie): Plumb state updates into AccessibilityManager for
+  // http://crbug.com/753018.
 
   return RespondNow(NoArguments());
 }

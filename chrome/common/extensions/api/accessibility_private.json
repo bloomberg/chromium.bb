@@ -82,6 +82,12 @@
             "description": "Contains all active modifiers."
           }
         }
+      },
+      {
+        "id": "SelectToSpeakState",
+        "type": "string",
+        "description": "The state of the Select-to-Speak extension",
+        "enum": ["selecting", "speaking", "inactive"]
       }
     ],
     "functions": [
@@ -207,6 +213,18 @@
           }
         ],
         "platforms": ["chromeos"]
+      },
+      {
+        "name": "onSelectToSpeakStateChanged",
+        "type": "function",
+        "description": "Called by the Select-to-Speak extension when Select-to-Speak has changed states, between selecting with the mouse, speaking, and inactive.",
+        "parameters": [
+          {
+            "name": "state",
+            "$ref": "SelectToSpeakState"
+          }
+        ],
+        "platforms": ["chromeos"]
       }
     ],
     "events": [
@@ -235,8 +253,15 @@
       {
         "name": "onTwoFingerTouchStop",
         "type": "function",
-        "description": "Fired when  the user is no longer holding down two fingers (including releasing one, holding down three, or moving them).",
+        "description": "Fired when the user is no longer holding down two fingers (including releasing one, holding down three, or moving them).",
         "parameters": []
+      },
+      {
+        "name": "onSelectToSpeakStateChangeRequested",
+        "type": "function",
+        "description": "Called when Chrome OS wants to change the Select-to-Speak state, between selecting with the mouse, speaking, and inactive.",
+        "parameters": [],
+        "platforms": ["chromeos"]
       }
     ]
   }
