@@ -3997,10 +3997,11 @@ TEST_P(ColorTransformPixelTest, Basic) {
     color.set_y(input_colors[4 * i + 1] / 255.f);
     color.set_z(input_colors[4 * i + 2] / 255.f);
     float alpha = input_colors[4 * i + 3] / 255.f;
-    if (!premultiplied_alpha_) {
-      color.Scale(alpha);
+    if (premultiplied_alpha_ && alpha > 0.0) {
+      color.Scale(1.0f / alpha);
     }
     transform->Transform(&color, 1);
+    color.Scale(alpha);
     color.set_x(std::min(std::max(0.f, color.x()), 1.f));
     color.set_y(std::min(std::max(0.f, color.y()), 1.f));
     color.set_z(std::min(std::max(0.f, color.z()), 1.f));
