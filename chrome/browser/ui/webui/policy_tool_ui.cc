@@ -47,6 +47,7 @@ content::WebUIDataSource* CreatePolicyToolUIHtmlSource() {
   source->AddLocalizedString("errorFileCorrupted",
                              IDS_POLICY_TOOL_CORRUPTED_FILE);
   source->AddLocalizedString("enableEditing", IDS_POLICY_TOOL_ENABLE_EDITING);
+  source->AddLocalizedString("errorInvalidType", IDS_POLICY_TOOL_INVALID_TYPE);
   source->AddLocalizedString("errorRenameFailed",
                              IDS_POLICY_TOOL_RENAME_FAILED);
   source->AddLocalizedString("errorSessionExist",

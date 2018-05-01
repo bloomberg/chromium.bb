@@ -12,6 +12,8 @@
 #include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/policy/schema_registry_service.h"
+#include "chrome/browser/policy/schema_registry_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "components/strings/grit/components_strings.h"
@@ -60,6 +62,56 @@ base::ListValue GetSessionsList(const base::FilePath& sessions_dir) {
   for (const Session& session : sessions)
     session_names.GetList().push_back(base::Value(session.second));
   return session_names;
+}
+
+// Tries to parse the value if it is necessary. If parsing was necessary, but
+// not successful, returns nullptr.
+std::unique_ptr<base::Value> ParseSinglePolicyType(
+    const policy::Schema& policy_schema,
+    const std::string& policy_name,
+    base::Value* policy_value) {
+  if (!policy_schema.valid())
+    return nullptr;
+  if (policy_value->type() == base::Value::Type::STRING &&
+      policy_schema.type() != base::Value::Type::STRING) {
+    return base::JSONReader::Read(policy_value->GetString());
+  }
+  return base::Value::ToUniquePtrValue(policy_value->Clone());
+}
+
+// Checks if the value matches the actual policy type.
+bool CheckSinglePolicyType(const policy::Schema& policy_schema,
+                           const std::string& policy_name,
+                           base::Value* policy_value) {
+  // If the schema is invalid, this means that the policy is unknown, and so
+  // considered valid.
+  if (!policy_schema.valid())
+    return true;
+  std::string error_path, error;
+  return policy_schema.Validate(*policy_value, policy::SCHEMA_STRICT,
+                                &error_path, &error);
+}
+
+// Parses and checks policy types for a single source (e.g. chrome policies
+// or policies for one extension). For each policy, if parsing was successful
+// and the parsed value matches its expected schema, replaces the policy value
+// with the parsed value. Also, sets the 'valid' field to indicate whether the
+// value is valid for its policy.
+void ParseSourcePolicyTypes(const policy::Schema* source_schema,
+                            base::Value* policies) {
+  for (const auto& policy : policies->DictItems()) {
+    const std::string policy_name = policy.first;
+    policy::Schema policy_schema = source_schema->GetKnownProperty(policy_name);
+    std::unique_ptr<base::Value> parsed_value = ParseSinglePolicyType(
+        policy_schema, policy_name, policy.second.FindKey("value"));
+    if (parsed_value &&
+        CheckSinglePolicyType(policy_schema, policy_name, parsed_value.get())) {
+      policy.second.SetKey("value", std::move(*parsed_value));
+      policy.second.SetKey("valid", base::Value(true));
+    } else {
+      policy.second.SetKey("valid", base::Value(false));
+    }
+  }
 }
 
 }  // namespace
@@ -169,7 +221,8 @@ std::string PolicyToolUIHandler::ReadOrCreateFileCallback() {
   return contents;
 }
 
-void PolicyToolUIHandler::OnFileRead(const std::string& contents) {
+void PolicyToolUIHandler::OnSessionContentReceived(
+    const std::string& contents) {
   // If the saving is disabled, send a message about that to the UI.
   if (!is_saving_enabled_) {
     CallJavascriptFunction("policy.Page.disableSaving");
@@ -185,8 +238,7 @@ void PolicyToolUIHandler::OnFileRead(const std::string& contents) {
                            base::DictionaryValue());
     CallJavascriptFunction("policy.Page.disableEditing");
   } else {
-    // TODO(urusant): convert the policy values so that the types are
-    // consistent with actual policy types.
+    ParsePolicyTypes(value.get());
     CallJavascriptFunction("policy.Page.setPolicyValues", *value);
     CallJavascriptFunction("policy.Page.setSessionTitle",
                            base::Value(session_name_));
@@ -207,7 +259,7 @@ void PolicyToolUIHandler::ImportFile() {
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&PolicyToolUIHandler::ReadOrCreateFileCallback,
                      base::Unretained(this)),
-      base::BindOnce(&PolicyToolUIHandler::OnFileRead,
+      base::BindOnce(&PolicyToolUIHandler::OnSessionContentReceived,
                      callback_weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -350,6 +402,7 @@ void PolicyToolUIHandler::HandleUpdateSession(const base::ListValue* args) {
                      base::Unretained(this), converted_values),
       base::BindOnce(&PolicyToolUIHandler::OnSessionUpdated,
                      callback_weak_ptr_factory_.GetWeakPtr()));
+  OnSessionContentReceived(converted_values);
 }
 
 void PolicyToolUIHandler::HandleResetSession(const base::ListValue* args) {
@@ -456,4 +509,32 @@ void PolicyToolUIHandler::ExportSessionToFile(
       initial_path, &file_type_info, /*file_type_index=*/0,
       /*default_extension=*/base::FilePath::StringType(), owning_window,
       /*params=*/nullptr);
+}
+
+void PolicyToolUIHandler::ParsePolicyTypes(
+    base::DictionaryValue* policies_dict) {
+  // TODO(rodmartin): Is there a better way to get the
+  // types for each policy?.
+  Profile* profile = Profile::FromWebUI(web_ui());
+  policy::SchemaRegistry* registry =
+      policy::SchemaRegistryServiceFactory::GetForContext(
+          profile->GetOriginalProfile())
+          ->registry();
+  scoped_refptr<policy::SchemaMap> schema_map = registry->schema_map();
+
+  for (const auto& policies_dict : policies_dict->DictItems()) {
+    policy::PolicyNamespace policy_domain;
+    if (policies_dict.first == "chromePolicies") {
+      policy_domain = policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, "");
+    } else if (policies_dict.first == "extensionPolicies") {
+      policy_domain =
+          policy::PolicyNamespace(policy::POLICY_DOMAIN_EXTENSIONS, "");
+    } else {
+      // The domains should be only chromePolicies and extensionPolicies.
+      NOTREACHED();
+      continue;
+    }
+    const policy::Schema* schema = schema_map->GetSchema(policy_domain);
+    ParseSourcePolicyTypes(schema, &policies_dict.second);
+  }
 }
