@@ -18,10 +18,12 @@
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/gtest_util.h"
 #include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/test/simple_test_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/network_session_configurator/browser/network_session_configurator.h"
@@ -41,6 +43,7 @@
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_manager.h"
 #include "net/http/http_transaction_factory.h"
+#include "net/http/http_transaction_test_util.h"
 #include "net/log/net_log_with_source.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_info.h"
@@ -896,6 +899,108 @@ TEST_F(NetworkContextTest, ClearChannelIdTriggersSslChangeNotification) {
   run_loop.Run();
 
   EXPECT_EQ(1, ssl_config_changed_count_);
+}
+
+TEST_F(NetworkContextTest, ClearHttpAuthCache) {
+  GURL origin("http://google.com");
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+  net::HttpAuthCache* cache = network_context->url_request_context()
+                                  ->http_transaction_factory()
+                                  ->GetSession()
+                                  ->http_auth_cache();
+
+  base::Time start_time;
+  ASSERT_TRUE(base::Time::FromString("30 May 2018 12:00:00", &start_time));
+  base::SimpleTestClock test_clock;
+  test_clock.SetNow(start_time);
+  cache->set_clock_for_testing(&test_clock);
+
+  base::string16 user = base::ASCIIToUTF16("user");
+  base::string16 password = base::ASCIIToUTF16("pass");
+  cache->Add(origin, "Realm1", net::HttpAuth::AUTH_SCHEME_BASIC,
+             "basic realm=Realm1", net::AuthCredentials(user, password), "/");
+
+  test_clock.Advance(base::TimeDelta::FromHours(1));  // Time now 13:00
+  cache->Add(origin, "Realm2", net::HttpAuth::AUTH_SCHEME_BASIC,
+             "basic realm=Realm2", net::AuthCredentials(user, password), "/");
+
+  ASSERT_EQ(2u, cache->GetEntriesSizeForTesting());
+  ASSERT_NE(nullptr,
+            cache->Lookup(origin, "Realm1", net::HttpAuth::AUTH_SCHEME_BASIC));
+  ASSERT_NE(nullptr,
+            cache->Lookup(origin, "Realm2", net::HttpAuth::AUTH_SCHEME_BASIC));
+
+  base::RunLoop run_loop;
+  base::Time test_time;
+  ASSERT_TRUE(base::Time::FromString("30 May 2018 12:30:00", &test_time));
+  network_context->ClearHttpAuthCache(test_time, run_loop.QuitClosure());
+  run_loop.Run();
+
+  EXPECT_EQ(1u, cache->GetEntriesSizeForTesting());
+  EXPECT_NE(nullptr,
+            cache->Lookup(origin, "Realm1", net::HttpAuth::AUTH_SCHEME_BASIC));
+  EXPECT_EQ(nullptr,
+            cache->Lookup(origin, "Realm2", net::HttpAuth::AUTH_SCHEME_BASIC));
+}
+
+TEST_F(NetworkContextTest, ClearAllHttpAuthCache) {
+  GURL origin("http://google.com");
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+  net::HttpAuthCache* cache = network_context->url_request_context()
+                                  ->http_transaction_factory()
+                                  ->GetSession()
+                                  ->http_auth_cache();
+
+  base::Time start_time;
+  ASSERT_TRUE(base::Time::FromString("30 May 2018 12:00:00", &start_time));
+  base::SimpleTestClock test_clock;
+  test_clock.SetNow(start_time);
+  cache->set_clock_for_testing(&test_clock);
+
+  base::string16 user = base::ASCIIToUTF16("user");
+  base::string16 password = base::ASCIIToUTF16("pass");
+  cache->Add(origin, "Realm1", net::HttpAuth::AUTH_SCHEME_BASIC,
+             "basic realm=Realm1", net::AuthCredentials(user, password), "/");
+
+  test_clock.Advance(base::TimeDelta::FromHours(1));  // Time now 13:00
+  cache->Add(origin, "Realm2", net::HttpAuth::AUTH_SCHEME_BASIC,
+             "basic realm=Realm2", net::AuthCredentials(user, password), "/");
+
+  ASSERT_EQ(2u, cache->GetEntriesSizeForTesting());
+  ASSERT_NE(nullptr,
+            cache->Lookup(origin, "Realm1", net::HttpAuth::AUTH_SCHEME_BASIC));
+  ASSERT_NE(nullptr,
+            cache->Lookup(origin, "Realm2", net::HttpAuth::AUTH_SCHEME_BASIC));
+
+  base::RunLoop run_loop;
+  network_context->ClearHttpAuthCache(base::Time(), run_loop.QuitClosure());
+  run_loop.Run();
+
+  EXPECT_EQ(0u, cache->GetEntriesSizeForTesting());
+  EXPECT_EQ(nullptr,
+            cache->Lookup(origin, "Realm1", net::HttpAuth::AUTH_SCHEME_BASIC));
+  EXPECT_EQ(nullptr,
+            cache->Lookup(origin, "Realm2", net::HttpAuth::AUTH_SCHEME_BASIC));
+}
+
+TEST_F(NetworkContextTest, ClearEmptyHttpAuthCache) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+  net::HttpAuthCache* cache = network_context->url_request_context()
+                                  ->http_transaction_factory()
+                                  ->GetSession()
+                                  ->http_auth_cache();
+
+  ASSERT_EQ(0u, cache->GetEntriesSizeForTesting());
+
+  base::RunLoop run_loop;
+  network_context->ClearHttpAuthCache(base::Time::UnixEpoch(),
+                                      base::BindOnce(run_loop.QuitClosure()));
+  run_loop.Run();
+
+  EXPECT_EQ(0u, cache->GetEntriesSizeForTesting());
 }
 
 void SetCookieCallback(base::RunLoop* run_loop, bool* result_out, bool result) {

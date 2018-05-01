@@ -12,6 +12,8 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/time/default_clock.h"
+#include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
 #include "net/http/http_auth.h"
@@ -60,10 +62,6 @@ class NET_EXPORT HttpAuthCache {
 
     void UpdateStaleChallenge(const std::string& auth_challenge);
 
-    void set_creation_time_for_testing(base::TimeTicks creation_time) {
-      creation_time_ = creation_time;
-    }
-
    private:
     friend class HttpAuthCache;
     FRIEND_TEST_ALL_PREFIXES(HttpAuthCacheTest, AddPath);
@@ -103,8 +101,9 @@ class NET_EXPORT HttpAuthCache {
 
     // Times the entry was created and last used (by looking up, adding a path,
     // or updating the challenge.)
-    base::TimeTicks creation_time_;
-    base::TimeTicks last_use_time_;
+    base::TimeTicks creation_time_ticks_;
+    base::TimeTicks last_use_time_ticks_;
+    base::Time creation_time_;
   };
 
   // Prevent unbounded memory growth. These are safeguards for abuse; it is
@@ -169,6 +168,13 @@ class NET_EXPORT HttpAuthCache {
   // Clears cache entries created within |duration| of base::TimeTicks::Now().
   void ClearEntriesAddedWithin(base::TimeDelta duration);
 
+  // Clears cache entries added since |begin_time| or all entries if
+  // |begin_time| is null.
+  void ClearEntriesAddedSince(base::Time begin_time);
+
+  // Clears all added entries.
+  void ClearAllEntries();
+
   // Updates a stale digest entry on server |origin| for realm |realm| and
   // scheme |scheme|. The cached auth challenge is replaced with
   // |auth_challenge| and the nonce count is reset.
@@ -182,9 +188,18 @@ class NET_EXPORT HttpAuthCache {
   // Copies all entries from |other| cache.
   void UpdateAllFrom(const HttpAuthCache& other);
 
+  size_t GetEntriesSizeForTesting();
+  void set_tick_clock_for_testing(const base::TickClock* tick_clock) {
+    tick_clock_ = tick_clock;
+  }
+  void set_clock_for_testing(const base::Clock* clock) { clock_ = clock; }
+
  private:
   typedef std::list<Entry> EntryList;
   EntryList entries_;
+
+  const base::TickClock* tick_clock_ = base::DefaultTickClock::GetInstance();
+  const base::Clock* clock_ = base::DefaultClock::GetInstance();
 };
 
 // An authentication realm entry.

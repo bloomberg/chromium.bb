@@ -195,6 +195,10 @@ interface NetworkContext {
                   mojo_base.mojom.Time end_time,
                   ClearDataFilter? filter) => ();
 
+  // Clears all entries from the HTTP Auth cache that were added since
+  // |start_time|. Supports unbounded delete using null Time value.
+  ClearHttpAuthCache(mojo_base.mojom.Time start_time) => ();
+
   // Configures network conditions for the specified throttling profile.
   // The throttling will be applied only to requests that have
   // X-DevTools-Emulate-Network-Conditions-Client-Id: <profile_id>

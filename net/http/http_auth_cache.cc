@@ -88,7 +88,7 @@ HttpAuthCache::Entry* HttpAuthCache::Lookup(const GURL& origin,
     ++entries_examined;
     if (it->origin() == origin && it->realm() == realm &&
         it->scheme() == scheme) {
-      it->last_use_time_ = base::TimeTicks::Now();
+      it->last_use_time_ticks_ = tick_clock_->NowTicks();
       RecordLookupPosition(entries_examined);
       return &(*it);
     }
@@ -127,7 +127,7 @@ HttpAuthCache::Entry* HttpAuthCache::LookupByPath(const GURL& origin,
     }
   }
   if (best_match)
-    best_match->last_use_time_ = base::TimeTicks::Now();
+    best_match->last_use_time_ticks_ = tick_clock_->NowTicks();
   RecordLookupByPathPosition(best_match_position);
   return best_match;
 }
@@ -141,7 +141,7 @@ HttpAuthCache::Entry* HttpAuthCache::Add(const GURL& origin,
   CheckOriginIsValid(origin);
   CheckPathIsValid(path);
 
-  base::TimeTicks now = base::TimeTicks::Now();
+  base::TimeTicks now_ticks = tick_clock_->NowTicks();
 
   // Check for existing entry (we will re-use it if present).
   HttpAuthCache::Entry* entry = Lookup(origin, realm, scheme);
@@ -150,10 +150,12 @@ HttpAuthCache::Entry* HttpAuthCache::Add(const GURL& origin,
     // Failsafe to prevent unbounded memory growth of the cache.
     if (entries_.size() >= kMaxNumRealmEntries) {
       LOG(WARNING) << "Num auth cache entries reached limit -- evicting";
-      UMA_HISTOGRAM_LONG_TIMES("Net.HttpAuthCacheAddEvictedCreation",
-          now - entries_.back().creation_time_);
-      UMA_HISTOGRAM_LONG_TIMES("Net.HttpAuthCacheAddEvictedLastUse",
-          now - entries_.back().last_use_time_);
+      UMA_HISTOGRAM_LONG_TIMES(
+          "Net.HttpAuthCacheAddEvictedCreation",
+          now_ticks - entries_.back().creation_time_ticks_);
+      UMA_HISTOGRAM_LONG_TIMES(
+          "Net.HttpAuthCacheAddEvictedLastUse",
+          now_ticks - entries_.back().last_use_time_ticks_);
       entries_.pop_back();
       evicted = true;
     }
@@ -164,7 +166,8 @@ HttpAuthCache::Entry* HttpAuthCache::Add(const GURL& origin,
     entry->origin_ = origin;
     entry->realm_ = realm;
     entry->scheme_ = scheme;
-    entry->creation_time_ = now;
+    entry->creation_time_ticks_ = now_ticks;
+    entry->creation_time_ = clock_->Now();
   }
   DCHECK_EQ(origin, entry->origin_);
   DCHECK_EQ(realm, entry->realm_);
@@ -174,7 +177,7 @@ HttpAuthCache::Entry* HttpAuthCache::Add(const GURL& origin,
   entry->credentials_ = credentials;
   entry->nonce_count_ = 1;
   entry->AddPath(path);
-  entry->last_use_time_ = now;
+  entry->last_use_time_ticks_ = now_ticks;
 
   return entry;
 }
@@ -251,10 +254,24 @@ bool HttpAuthCache::Remove(const GURL& origin,
 }
 
 void HttpAuthCache::ClearEntriesAddedWithin(base::TimeDelta duration) {
-  base::TimeTicks begin_time = base::TimeTicks::Now() - duration;
+  base::TimeTicks begin_time = tick_clock_->NowTicks() - duration;
   base::EraseIf(entries_, [begin_time](const Entry& entry) {
-    return entry.creation_time_ >= begin_time;
+    return entry.creation_time_ticks_ >= begin_time;
   });
+}
+
+void HttpAuthCache::ClearEntriesAddedSince(base::Time begin_time) {
+  if (begin_time.is_null()) {
+    ClearAllEntries();
+  } else {
+    base::EraseIf(entries_, [begin_time](const Entry& entry) {
+      return entry.creation_time_ >= begin_time;
+    });
+  }
+}
+
+void HttpAuthCache::ClearAllEntries() {
+  entries_.clear();
 }
 
 bool HttpAuthCache::UpdateStaleChallenge(const GURL& origin,
@@ -265,7 +282,7 @@ bool HttpAuthCache::UpdateStaleChallenge(const GURL& origin,
   if (!entry)
     return false;
   entry->UpdateStaleChallenge(auth_challenge);
-  entry->last_use_time_ = base::TimeTicks::Now();
+  entry->last_use_time_ticks_ = tick_clock_->NowTicks();
   return true;
 }
 
@@ -284,6 +301,10 @@ void HttpAuthCache::UpdateAllFrom(const HttpAuthCache& other) {
     // Copy nonce count (for digest authentication).
     entry->nonce_count_ = it->nonce_count_;
   }
+}
+
+size_t HttpAuthCache::GetEntriesSizeForTesting() {
+  return entries_.size();
 }
 
 }  // namespace net
