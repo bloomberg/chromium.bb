@@ -6,12 +6,14 @@ package org.chromium.support_lib_glue;
 
 import android.webkit.SafeBrowsingResponse;
 import android.webkit.ServiceWorkerWebSettings;
+import android.webkit.WebMessagePort;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 
 import com.android.webview.chromium.SafeBrowsingResponseAdapter;
 import com.android.webview.chromium.ServiceWorkerSettingsAdapter;
+import com.android.webview.chromium.WebMessagePortAdapter;
 import com.android.webview.chromium.WebResourceErrorAdapter;
 import com.android.webview.chromium.WebkitToSharedGlueConverter;
 
@@ -98,5 +100,22 @@ class SupportLibWebkitToCompatConverterAdapter implements WebkitToCompatConverte
                         .getDelegateFromInvocationHandler(safeBrowsingResponse);
         return new SafeBrowsingResponseAdapter(
                 supportLibResponse.getAwSafeBrowsingResponseCallback());
+    }
+
+    @Override
+    public /* SupportLibWebMessagePort */ InvocationHandler convertWebMessagePort(
+            /* WebMessagePort */ Object webMessagePort) {
+        return BoundaryInterfaceReflectionUtil.createInvocationHandlerFor(
+                new SupportLibWebMessagePortAdapter(WebkitToSharedGlueConverter.getMessagePort(
+                        (WebMessagePort) webMessagePort)));
+    }
+
+    @Override
+    public /* WebMessagePort */ Object convertWebMessagePort(
+            /* SupportLibWebMessagePort */ InvocationHandler webMessagePort) {
+        SupportLibWebMessagePortAdapter supportLibMessagePort =
+                (SupportLibWebMessagePortAdapter) BoundaryInterfaceReflectionUtil
+                        .getDelegateFromInvocationHandler(webMessagePort);
+        return new WebMessagePortAdapter(supportLibMessagePort.getPort());
     }
 }

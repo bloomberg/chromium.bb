@@ -4,6 +4,8 @@
 
 package org.chromium.support_lib_boundary;
 
+import android.net.Uri;
+
 import java.lang.reflect.InvocationHandler;
 
 /**
@@ -11,4 +13,6 @@ import java.lang.reflect.InvocationHandler;
 public interface WebViewProviderBoundaryInterface {
     void insertVisualStateCallback(long requestId,
             /* VisualStateCallback */ InvocationHandler callback);
+    /* WebMessagePort */ InvocationHandler[] createWebMessageChannel();
+    void postMessageToMainFrame(/* WebMessage */ InvocationHandler message, Uri targetOrigin);
 }
