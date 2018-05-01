@@ -24,8 +24,10 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "ui/shell_dialogs/select_file_dialog_factory.h"
 #include "ui/shell_dialogs/select_file_policy.h"
@@ -69,6 +71,13 @@ class PolicyToolUITest : public InProcessBrowserTest {
   std::unique_ptr<base::ListValue> ExtractSessionsList();
 
   void CreateMultipleSessionFiles(int count);
+
+  void SetPolicyValue(const std::string& policy_name,
+                      const std::string& policy_value);
+
+  bool CheckPolicyStatus(const std::string& policy_name,
+                         const std::string& policy_value,
+                         const std::string& expected_status);
 
   // Check if the error message that replaces the element is shown correctly.
   // Returns 1 if error message is shown, -1 if the error message is not shown,
@@ -143,6 +152,53 @@ void PolicyToolUITest::RenameSession(const std::string& session_name,
   EXPECT_TRUE(content::ExecuteScript(
       browser()->tab_strip_model()->GetActiveWebContents(), javascript));
   content::RunAllTasksUntilIdle();
+}
+
+// Set |policy_value| as a value of |policy_name|, this function will
+// run all the tasks until idle because editing a policy value will post
+// tasks in the TaskScheduler.
+void PolicyToolUITest::SetPolicyValue(const std::string& policy_name,
+                                      const std::string& policy_value) {
+  std::string javascript =
+      "document.getElementById('show-unset').click();"
+      "var policies = document.querySelectorAll("
+      "    'section.policy-table-section > * > tbody');"
+      "var policyEntry;"
+      "for (var i = 0; i < policies.length; ++i) {"
+      "  if (policies[i].getElementsByClassName('name')[0].textContent == '" +
+      policy_name +
+      "') {"
+      "    policyEntry = policies[i];"
+      "    break;"
+      "  }"
+      "}"
+      "policyEntry.getElementsByClassName('edit-button')[0].click();"
+      "policyEntry.getElementsByClassName('value-edit-field')[0].value = '" +
+      policy_value +
+      "';"
+      "policyEntry.getElementsByClassName('save-button')[0].click();"
+      "document.getElementById('show-unset').click();"
+      "var name = policyEntry.getElementsByClassName('name-column')[0]"
+      "                      .getElementsByTagName('div')[0].textContent;";
+  EXPECT_TRUE(content::ExecuteScript(
+      browser()->tab_strip_model()->GetActiveWebContents(), javascript));
+  content::RunAllTasksUntilIdle();
+}
+
+// Check the status of |policy_name| after set |policy_value| as a value.
+// Return |true| if the status is equal to |expected_status| and |false|
+// otherwise.
+bool PolicyToolUITest::CheckPolicyStatus(const std::string& policy_name,
+                                         const std::string& policy_value,
+                                         const std::string& expected_status) {
+  ui_test_utils::NavigateToURL(browser(), GURL("chrome://policy-tool"));
+  // Wait until the current session load.
+  content::RunAllTasksUntilIdle();
+  // SetPolicyValue waits until all the tasks finish.
+  SetPolicyValue(policy_name, policy_value);
+  std::unique_ptr<base::DictionaryValue> page = ExtractPolicyValues(true);
+  return base::Value(expected_status) ==
+         *page->FindPath({"chromePolicies", policy_name, "status"});
 }
 
 std::unique_ptr<base::DictionaryValue> PolicyToolUITest::ExtractPolicyValues(
@@ -661,4 +717,60 @@ IN_PROC_BROWSER_TEST_F(PolicyToolUIExportTest, ExportSessionPolicyToLinux) {
   EXPECT_TRUE(base::ContentsEqual(export_policies_test_file_path_,
                                   GetSessionPath(FILE_PATH_LITERAL("1"))));
   TestSelectFileDialogPolicyTool::SetFactory(nullptr);
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyToolUITest,
+                       CheckPolicyTypeCorrectBooleanTypeValidation) {
+  EXPECT_TRUE(CheckPolicyStatus("AllowDinosaurEasterEgg", "true",
+                                l10n_util::GetStringUTF8(IDS_POLICY_OK)));
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyToolUITest,
+                       CheckPolicyTypeIncorrectBooleanTypeValidation) {
+  EXPECT_TRUE(CheckPolicyStatus(
+      "AllowDinosaurEasterEgg", "string",
+      l10n_util::GetStringUTF8(IDS_POLICY_TOOL_INVALID_TYPE)));
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyToolUITest,
+                       CheckPolicyTypeCorrectListTypeValidation) {
+  EXPECT_TRUE(CheckPolicyStatus("ImagesAllowedForUrls", "[\"a\", \"b\"]",
+                                l10n_util::GetStringUTF8(IDS_POLICY_OK)));
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyToolUITest,
+                       CheckPolicyTypeBoolAsListTypeValidation) {
+  EXPECT_TRUE(CheckPolicyStatus(
+      "ImagesAllowedForUrls", "true",
+      l10n_util::GetStringUTF8(IDS_POLICY_TOOL_INVALID_TYPE)));
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyToolUITest,
+                       CheckPolicyTypeWrongElementTypesInListValidation) {
+  EXPECT_TRUE(CheckPolicyStatus(
+      "ImagesAllowedForUrls", "[1, 2]",
+      l10n_util::GetStringUTF8(IDS_POLICY_TOOL_INVALID_TYPE)));
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyToolUITest,
+                       CheckPolicyTypeMalformedListValidation) {
+  EXPECT_TRUE(CheckPolicyStatus(
+      "ImagesAllowedForUrls", "[\"a\"",
+      l10n_util::GetStringUTF8(IDS_POLICY_TOOL_INVALID_TYPE)));
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyToolUITest,
+                       CheckPolicyTypeValidDictionaryTypeValidation) {
+  EXPECT_TRUE(
+      CheckPolicyStatus("ManagedBookmarks",
+                        R"([{"toplevel_name": "My managed bookmarks folder"},)"
+                        R"({"url": "google.com", "name": "Google"}])",
+                        l10n_util::GetStringUTF8(IDS_POLICY_OK)));
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyToolUITest,
+                       CheckPolicyTypeWrongAttributesTypeValidation) {
+  EXPECT_TRUE(CheckPolicyStatus(
+      "ManagedBookmarks", "[{\"attribute\": \"value\"}]",
+      l10n_util::GetStringUTF8(IDS_POLICY_TOOL_INVALID_TYPE)));
 }
