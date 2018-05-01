@@ -1159,11 +1159,13 @@ class InputApiUnittest(PresubmitTestsBase):
           f('a/PRESUBMIT.py'),
           f('a/FOO.json'),
           f('a/FOO.java'),
+          f('a/FOO.mojom'),
         ],
         [
           # Expected.
           'a/PRESUBMIT.py',
           'a/FOO.java',
+          'a/FOO.mojom',
         ],
       ),
       (
@@ -1185,7 +1187,7 @@ class InputApiUnittest(PresubmitTestsBase):
         self.fake_change, './PRESUBMIT.py', False, None, False)
     self.mox.ReplayAll()
 
-    self.assertEqual(len(input_api.DEFAULT_WHITE_LIST), 22)
+    self.assertEqual(len(input_api.DEFAULT_WHITE_LIST), 24)
     self.assertEqual(len(input_api.DEFAULT_BLACK_LIST), 12)
     for item in files:
       results = filter(input_api.FilterSourceFile, item[0])
