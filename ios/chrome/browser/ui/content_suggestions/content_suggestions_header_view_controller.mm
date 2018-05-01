@@ -19,6 +19,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_view.h"
+#import "ios/chrome/browser/ui/toolbar/adaptive/primary_toolbar_view.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive/primary_toolbar_view_controller.h"
 #import "ios/chrome/browser/ui/toolbar/public/fakebox_focuser.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
@@ -180,6 +181,11 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
                                 forOffset:offset
                               screenWidth:screenWidth
                            safeAreaInsets:safeAreaInsets];
+
+  // Before constraining the |fakeTapView| to |locationBarContainer| make sure
+  // to activate the constraints first.
+  if (IsUIRefreshPhase1Enabled())
+    [self.toolbarViewController contractLocationBar];
 }
 
 - (void)updateFakeOmniboxForWidth:(CGFloat)width {
@@ -231,6 +237,7 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
   if (!self.headerView) {
     if (IsUIRefreshPhase1Enabled()) {
       self.headerView = [[ContentSuggestionsHeaderView alloc] init];
+      [self addFakeTapView];
     } else {
       self.headerView = [[NewTabPageHeaderView alloc] init];
     }
@@ -365,6 +372,20 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
   } else {
     [voiceTapTarget setEnabled:NO];
   }
+}
+
+- (void)addFakeTapView {
+  UIButton* fakeTapButton = [[UIButton alloc] init];
+  fakeTapButton.translatesAutoresizingMaskIntoConstraints = NO;
+  [self.toolbarViewController.view addSubview:fakeTapButton];
+  PrimaryToolbarView* primaryToolbarView =
+      base::mac::ObjCCastStrict<PrimaryToolbarView>(
+          self.toolbarViewController.view);
+  UIView* locationBarContainer = primaryToolbarView.locationBarContainer;
+  AddSameConstraints(locationBarContainer, fakeTapButton);
+  [fakeTapButton addTarget:self
+                    action:@selector(fakeOmniboxTapped:)
+          forControlEvents:UIControlEventTouchUpInside];
 }
 
 - (void)loadVoiceSearch:(id)sender {
