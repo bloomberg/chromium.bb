@@ -1256,15 +1256,10 @@ Only use this feature with accounts you trust.
 
       <!-- Window teleportation warning dialog -->
       <message name="IDS_ASH_TELEPORT_WARNING_TITLE" desc="The title of the dialog which warns user about oddities which can be seen when a window gets moved to another user desktop.">
-        Careful, this feature may bite
+        Warning: Experimental feature
       </message>
       <message name="IDS_ASH_TELEPORT_WARNING_MESSAGE" desc="The message on the dialog which warns user about oddities which can be seen when a window gets moved to another user desktop.">
-        Moving windows to another desktop may result in unexpected behaviour.
-
-Subsequent notifications, windows and dialogs may be split between desktops.
-      </message>
-      <message name="IDS_ASH_TELEPORT_WARNING_SHOW_DISMISS" desc="Label for checkbox dismissing show of teleportation warning dialog.">
-        Got it, don't show me again.
+        Moving windows to another desktop may result in unexpected behaviour. Subsequent notifications, windows and dialogs may be split between desktops.
       </message>
 
       <!-- Session aborted dialog -->
@@ -1324,6 +1319,9 @@ Subsequent notifications, windows and dialogs may be split between desktops.
       <!-- Window Control -->
       <message name="IDS_ASH_WINDOW_CONTROL_ACCNAME_BACK" desc="The accessible name for the back button on the window frame.">
         Back button
+      </message>
+      <message name="IDS_ASH_DIALOG_DONT_SHOW_AGAIN" desc="Label for checkbox dismissing show of a dialog.">
+        Don't show again
       </message>
 
       <!-- Power off menu  -->
