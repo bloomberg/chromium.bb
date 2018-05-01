@@ -1278,11 +1278,8 @@ ResourceScheduler::ThrottleDelayable::GetParamsForNetworkQualityContainer() {
   result.push_back({net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G, 8, 3});
   result.push_back({net::EFFECTIVE_CONNECTION_TYPE_2G, 8, 3});
 
-  if (!base::FeatureList::IsEnabled(kThrottleDelayable))
-    return result;
-
-  int config_param_index = 1;
-  while (true) {
+  for (int config_param_index = 1; config_param_index <= 20;
+       ++config_param_index) {
     size_t max_delayable_requests;
 
     if (!base::StringToSizeT(
@@ -1290,7 +1287,6 @@ ResourceScheduler::ThrottleDelayable::GetParamsForNetworkQualityContainer() {
                 kThrottleDelayable, kMaxDelayableRequestsBase +
                                         base::IntToString(config_param_index)),
             &max_delayable_requests)) {
-      DCHECK_LE(result.size(), 20u);
       return result;
     }
 
@@ -1299,17 +1295,11 @@ ResourceScheduler::ThrottleDelayable::GetParamsForNetworkQualityContainer() {
             base::GetFieldTrialParamValueByFeature(
                 kThrottleDelayable, kEffectiveConnectionTypeBase +
                                         base::IntToString(config_param_index)));
-    if (!effective_connection_type)
-      return result;
+    DCHECK(effective_connection_type.has_value());
 
-    double non_delayable_weight;
-    if (!base::StringToDouble(
-            base::GetFieldTrialParamValueByFeature(
-                kThrottleDelayable, kNonDelayableWeightBase +
-                                        base::IntToString(config_param_index)),
-            &non_delayable_weight)) {
-      return result;
-    }
+    double non_delayable_weight = base::GetFieldTrialParamByFeatureAsDouble(
+        kThrottleDelayable,
+        kNonDelayableWeightBase + base::IntToString(config_param_index), 0.0);
 
     // Check if the entry is already present. This will happen if the default
     // params are being overridden by the field trial.
@@ -1327,8 +1317,10 @@ ResourceScheduler::ThrottleDelayable::GetParamsForNetworkQualityContainer() {
       result.push_back({effective_connection_type.value(),
                         max_delayable_requests, non_delayable_weight});
     }
-    config_param_index++;
   }
+  // There should not have been more than 20 params indices specified.
+  NOTREACHED();
+  return result;
 }
 
 bool ResourceScheduler::IsRendererSideResourceSchedulerEnabled() {
