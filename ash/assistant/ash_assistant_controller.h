@@ -57,6 +57,11 @@ class AshAssistantController
   // Releases resources for any card uniquely identified in |id_token_list|.
   void ReleaseCards(const std::vector<base::UnguessableToken>& id_tokens);
 
+  // Invoke to modify the Assistant interaction state.
+  void StartInteraction();
+  void StopInteraction();
+  void ToggleInteraction();
+
   // Invoked on suggestion chip pressed event.
   void OnSuggestionChipPressed(const std::string& text);
 

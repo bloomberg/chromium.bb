@@ -93,6 +93,31 @@ void AshAssistantController::RemoveInteractionModelObserver(
   assistant_interaction_model_.RemoveObserver(observer);
 }
 
+void AshAssistantController::StartInteraction() {
+  // TODO(dmblack): Instruct underlying service to start listening if current
+  // input modality is VOICE. Also modify to check against state in
+  // AssistantInteractionModel when available.
+  if (!assistant_bubble_->IsShowing())
+    OnInteractionStarted();
+}
+
+void AshAssistantController::StopInteraction() {
+  // TODO(dmblack): Instruct underlying service to stop listening. Also modify
+  // to check against state in AssistantInteractionModel when available.
+  if (assistant_bubble_->IsShowing())
+    OnInteractionDismissed();
+}
+
+void AshAssistantController::ToggleInteraction() {
+  // TODO(dmblack): Add interaction state to AssistantInteractionModel. Bubble
+  // should observe interaction model state changes and show/hide itself
+  // appropriately.
+  if (!assistant_bubble_->IsShowing())
+    StartInteraction();
+  else
+    StopInteraction();
+}
+
 void AshAssistantController::OnInteractionStarted() {
   assistant_bubble_timer_.Stop();
   assistant_bubble_->Show();
@@ -167,7 +192,7 @@ void AshAssistantController::OnSpeechLevelUpdated(float speech_level) {
 
 void AshAssistantController::OnOpenUrlResponse(const GURL& url) {
   Shell::Get()->shell_delegate()->OpenUrlFromArc(url);
-  OnInteractionDismissed();
+  StopInteraction();
 }
 
 }  // namespace ash

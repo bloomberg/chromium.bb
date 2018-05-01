@@ -13,6 +13,7 @@
 #include "ash/accelerators/debug_commands.h"
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/assistant/ash_assistant_controller.h"
 #include "ash/debug.h"
 #include "ash/display/display_configuration_controller.h"
 #include "ash/display/display_move_window_util.h"
@@ -643,7 +644,8 @@ bool CanHandleShowStylusTools() {
 }
 
 bool CanHandleStartVoiceInteraction() {
-  return chromeos::switches::IsVoiceInteractionFlagsEnabled();
+  return chromeos::switches::IsVoiceInteractionFlagsEnabled() ||
+         chromeos::switches::IsAssistantEnabled();
 }
 
 void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
@@ -660,6 +662,13 @@ void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
   } else if (accelerator.key_code() == ui::VKEY_ASSISTANT) {
     base::RecordAction(
         base::UserMetricsAction("VoiceInteraction.Started.Assistant"));
+  }
+
+  // TODO(dmblack): Remove. Enabling eligibility check bypass for development
+  // purposes only. We should otherwise respect the eligibility rules below.
+  if (chromeos::switches::IsAssistantEnabled()) {
+    Shell::Get()->ash_assistant_controller()->ToggleInteraction();
+    return;
   }
 
   switch (Shell::Get()->voice_interaction_controller()->allowed_state()) {
@@ -694,7 +703,10 @@ void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
       break;
   }
 
-  Shell::Get()->app_list_controller()->ToggleVoiceInteractionSession();
+  if (!chromeos::switches::IsAssistantEnabled())
+    Shell::Get()->app_list_controller()->ToggleVoiceInteractionSession();
+  else
+    Shell::Get()->ash_assistant_controller()->ToggleInteraction();
 }
 
 void HandleSuspend() {

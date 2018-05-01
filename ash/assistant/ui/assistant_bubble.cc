@@ -124,4 +124,8 @@ void AssistantBubble::Dismiss() {
     container_view_->GetWidget()->Close();
 }
 
+bool AssistantBubble::IsShowing() const {
+  return container_view_ && container_view_->GetWidget()->IsVisible();
+}
+
 }  // namespace ash
