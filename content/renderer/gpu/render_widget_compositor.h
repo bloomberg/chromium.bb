@@ -135,7 +135,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
   blink::WebSize GetViewportSize() const override;
   virtual blink::WebFloatPoint adjustEventPointForPinchZoom(
       const blink::WebFloatPoint& point) const;
-  void SetBackgroundColor(blink::WebColor color) override;
+  void SetBackgroundColor(SkColor color) override;
   void SetVisible(bool visible) override;
   void SetPageScaleFactorAndLimits(float page_scale_factor,
                                    float minimum,
@@ -185,7 +185,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void RequestDecode(const PaintImage& image,
                      base::OnceCallback<void(bool)> callback) override;
 
-  void SetOverscrollBehavior(const blink::WebOverscrollBehavior&) override;
+  void SetOverscrollBehavior(const cc::OverscrollBehavior&) override;
 
   // cc::LayerTreeHostClient implementation.
   void WillBeginMainFrame() override;

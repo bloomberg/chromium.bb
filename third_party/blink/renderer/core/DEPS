@@ -6,6 +6,7 @@ include_rules = [
     "+build/mac",
     "+build/win",
     "+cc/base/region.h",
+    "+cc/input/overscroll_behavior.h",
     "+gpu/config/gpu_feature_info.h",
     "-inspector/v8",
     "+inspector/v8/public",

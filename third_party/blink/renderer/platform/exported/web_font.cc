@@ -79,7 +79,7 @@ float WebFont::XHeight() const {
 void WebFont::DrawText(WebCanvas* canvas,
                        const WebTextRun& run,
                        const WebFloatPoint& left_baseline,
-                       WebColor color,
+                       SkColor color,
                        const WebRect& clip) const {
   FontCachePurgePreventer font_cache_purge_preventer;
   FloatRect text_clip_rect(clip);

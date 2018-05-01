@@ -27,17 +27,16 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_LAYER_TREE_VIEW_H_
 
 #include "base/callback.h"
+#include "cc/input/overscroll_behavior.h"
 #include "cc/trees/layer_tree_mutator.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "third_party/blink/public/platform/web_browser_controls_state.h"
-#include "third_party/blink/public/platform/web_color.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_event_listener_properties.h"
 #include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_image_layer.h"
-#include "third_party/blink/public/platform/web_overscroll_behavior.h"
 #include "third_party/blink/public/platform/web_size.h"
-
+#include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
@@ -87,7 +86,7 @@ class WebLayerTreeView {
   virtual WebSize GetViewportSize() const { return WebSize(); }
 
   // Sets the background color for the viewport.
-  virtual void SetBackgroundColor(WebColor) {}
+  virtual void SetBackgroundColor(SkColor) {}
 
   // Sets whether this view is visible. In threaded mode, a view that is not
   // visible will not composite or trigger UpdateAnimations() or Layout() calls
@@ -135,7 +134,7 @@ class WebLayerTreeView {
 
   // Set the browser's behavior when overscroll happens, e.g. whether to glow
   // or navigate.
-  virtual void SetOverscrollBehavior(const WebOverscrollBehavior&) {}
+  virtual void SetOverscrollBehavior(const cc::OverscrollBehavior&) {}
 
   // Flow control and scheduling ---------------------------------------
 

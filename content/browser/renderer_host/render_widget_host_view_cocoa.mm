@@ -134,7 +134,7 @@ BOOL EventIsReservedBySystem(NSEvent* event) {
 }
 
 // TODO(suzhe): Upstream this function.
-blink::WebColor WebColorFromNSColor(NSColor* color) {
+SkColor SkColorFromNSColor(NSColor* color) {
   CGFloat r, g, b, a;
   [color getRed:&r green:&g blue:&b alpha:&a];
 
@@ -159,10 +159,10 @@ void ExtractUnderlines(NSAttributedString* string,
                               longestEffectiveRange:&range
                                             inRange:NSMakeRange(i, length - i)];
     if (NSNumber* style = [attrs objectForKey:NSUnderlineStyleAttributeName]) {
-      blink::WebColor color = SK_ColorBLACK;
+      SkColor color = SK_ColorBLACK;
       if (NSColor* colorAttr =
               [attrs objectForKey:NSUnderlineColorAttributeName]) {
-        color = WebColorFromNSColor(
+        color = SkColorFromNSColor(
             [colorAttr colorUsingColorSpaceName:NSDeviceRGBColorSpace]);
       }
       ui::ImeTextSpan::Thickness thickness =

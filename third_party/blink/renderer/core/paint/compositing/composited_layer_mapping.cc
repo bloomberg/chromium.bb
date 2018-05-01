@@ -27,8 +27,8 @@
 
 #include <memory>
 
+#include "cc/input/overscroll_behavior.h"
 #include "third_party/blink/public/platform/web_layer_sticky_position_constraint.h"
-#include "third_party/blink/public/platform/web_overscroll_behavior.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -1257,9 +1257,9 @@ void CompositedLayerMapping::UpdateOverscrollBehavior() {
   EOverscrollBehavior behavior_y =
       GetLayoutObject().StyleRef().OverscrollBehaviorY();
   if (scrolling_contents_layer_) {
-    scrolling_contents_layer_->SetOverscrollBehavior(WebOverscrollBehavior(
-        static_cast<WebOverscrollBehavior::OverscrollBehaviorType>(behavior_x),
-        static_cast<WebOverscrollBehavior::OverscrollBehaviorType>(
+    scrolling_contents_layer_->SetOverscrollBehavior(cc::OverscrollBehavior(
+        static_cast<cc::OverscrollBehavior::OverscrollBehaviorType>(behavior_x),
+        static_cast<cc::OverscrollBehavior::OverscrollBehaviorType>(
             behavior_y)));
   }
 }

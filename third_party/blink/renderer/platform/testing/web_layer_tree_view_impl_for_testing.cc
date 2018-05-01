@@ -81,7 +81,7 @@ WebSize WebLayerTreeViewImplForTesting::GetViewportSize() const {
                  layer_tree_host_->device_viewport_size().height());
 }
 
-void WebLayerTreeViewImplForTesting::SetBackgroundColor(WebColor color) {
+void WebLayerTreeViewImplForTesting::SetBackgroundColor(SkColor color) {
   layer_tree_host_->set_background_color(color);
 }
 

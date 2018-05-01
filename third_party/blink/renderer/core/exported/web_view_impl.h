@@ -139,7 +139,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
                                          bool has_scrolled_by_touch) override;
   void MouseCaptureLost() override;
   void SetFocus(bool enable) override;
-  WebColor BackgroundColor() const override;
+  SkColor BackgroundColor() const override;
   WebPagePopupImpl* GetPagePopup() const override;
   bool SelectionBounds(WebRect& anchor, WebRect& focus) const override;
   bool IsAcceleratedCompositingActive() const override;
@@ -226,7 +226,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void PerformCustomContextMenuAction(unsigned action) override;
   void DidCloseContextMenu() override;
   void HidePopups() override;
-  void SetPageOverlayColor(WebColor) override;
+  void SetPageOverlayColor(SkColor) override;
   WebPageImportanceSignals* PageImportanceSignals() override;
   void SetShowPaintRects(bool) override;
   void SetShowDebugBorders(bool);
@@ -247,10 +247,10 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   HitTestResult CoreHitTestResultAt(const WebPoint&);
   void InvalidateRect(const IntRect&);
 
-  void SetBaseBackgroundColor(WebColor);
-  void SetBaseBackgroundColorOverride(WebColor);
+  void SetBaseBackgroundColor(SkColor);
+  void SetBaseBackgroundColorOverride(SkColor);
   void ClearBaseBackgroundColorOverride();
-  void SetBackgroundColorOverride(WebColor);
+  void SetBackgroundColorOverride(SkColor);
   void ClearBackgroundColorOverride();
   void SetZoomFactorOverride(float);
   void SetCompositorDeviceScaleFactorOverride(float);
@@ -261,9 +261,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   bool BackgroundColorOverrideEnabled() const {
     return background_color_override_enabled_;
   }
-  WebColor BackgroundColorOverride() const {
-    return background_color_override_;
-  }
+  SkColor BackgroundColorOverride() const { return background_color_override_; }
 
   Frame* FocusedCoreFrame() const;
 
@@ -430,7 +428,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // changed.
   void DidUpdateBrowserControls();
 
-  void SetOverscrollBehavior(const WebOverscrollBehavior&);
+  void SetOverscrollBehavior(const cc::OverscrollBehavior&);
 
   void ForceNextWebGLContextCreationToFail() override;
   void ForceNextDrawingBufferCreationToFail() override;
@@ -668,11 +666,11 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   WebPoint last_tap_disambiguation_best_candidate_position_;
 
-  WebColor base_background_color_;
+  SkColor base_background_color_;
   bool base_background_color_override_enabled_;
-  WebColor base_background_color_override_;
+  SkColor base_background_color_override_;
   bool background_color_override_enabled_;
-  WebColor background_color_override_;
+  SkColor background_color_override_;
   float zoom_factor_override_;
 
   bool should_dispatch_first_visually_non_empty_layout_;

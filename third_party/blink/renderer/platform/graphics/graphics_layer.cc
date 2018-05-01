@@ -150,7 +150,7 @@ void GraphicsLayer::SetHasWillChangeTransformHint(
 }
 
 void GraphicsLayer::SetOverscrollBehavior(
-    const WebOverscrollBehavior& behavior) {
+    const cc::OverscrollBehavior& behavior) {
   layer_->Layer()->SetOverscrollBehavior(behavior);
 }
 

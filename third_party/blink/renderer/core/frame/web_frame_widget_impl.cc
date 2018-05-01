@@ -325,11 +325,11 @@ void WebFrameWidgetImpl::UpdateLayerTreeBackgroundColor() {
   if (!layer_tree_view_)
     return;
 
-  WebColor color = BackgroundColor();
+  SkColor color = BackgroundColor();
   layer_tree_view_->SetBackgroundColor(color);
 }
 
-void WebFrameWidgetImpl::SetBackgroundColorOverride(WebColor color) {
+void WebFrameWidgetImpl::SetBackgroundColorOverride(SkColor color) {
   background_color_override_enabled_ = true;
   background_color_override_ = color;
   UpdateLayerTreeBackgroundColor();
@@ -340,7 +340,7 @@ void WebFrameWidgetImpl::ClearBackgroundColorOverride() {
   UpdateLayerTreeBackgroundColor();
 }
 
-void WebFrameWidgetImpl::SetBaseBackgroundColorOverride(WebColor color) {
+void WebFrameWidgetImpl::SetBaseBackgroundColorOverride(SkColor color) {
   if (base_background_color_override_enabled_ &&
       base_background_color_override_ == color) {
     return;
@@ -509,7 +509,7 @@ Color WebFrameWidgetImpl::BaseBackgroundColor() const {
              : base_background_color_;
 }
 
-void WebFrameWidgetImpl::SetBaseBackgroundColor(WebColor color) {
+void WebFrameWidgetImpl::SetBaseBackgroundColor(SkColor color) {
   if (base_background_color_ == color)
     return;
 
@@ -645,7 +645,7 @@ void WebFrameWidgetImpl::SetFocus(bool enable) {
   }
 }
 
-WebColor WebFrameWidgetImpl::BackgroundColor() const {
+SkColor WebFrameWidgetImpl::BackgroundColor() const {
   if (background_color_override_enabled_)
     return background_color_override_;
   if (!LocalRootImpl()->GetFrameView())

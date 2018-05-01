@@ -30,7 +30,6 @@
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_event_listener_properties.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
-#include "third_party/blink/public/platform/web_overscroll_behavior.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/animation_worklet_proxy_client.h"
 #include "third_party/blink/renderer/core/dom/ax_object_cache.h"
@@ -50,6 +49,10 @@
 
 // To avoid conflicts with the CreateWindow macro from the Windows SDK...
 #undef CreateWindow
+
+namespace cc {
+struct OverscrollBehavior;
+}
 
 namespace blink {
 
@@ -142,7 +145,7 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
                              const FloatSize& accumulated_overscroll,
                              const FloatPoint& position_in_viewport,
                              const FloatSize& velocity_in_viewport,
-                             const WebOverscrollBehavior&) = 0;
+                             const cc::OverscrollBehavior&) = 0;
 
   virtual bool ShouldReportDetailedMessageForSource(LocalFrame&,
                                                     const String& source) = 0;
@@ -328,7 +331,7 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
 
   virtual void DidUpdateBrowserControls() const {}
 
-  virtual void SetOverscrollBehavior(const WebOverscrollBehavior&) {}
+  virtual void SetOverscrollBehavior(const cc::OverscrollBehavior&) {}
 
   virtual void RegisterPopupOpeningObserver(PopupOpeningObserver*) = 0;
   virtual void UnregisterPopupOpeningObserver(PopupOpeningObserver*) = 0;

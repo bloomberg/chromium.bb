@@ -215,7 +215,7 @@ class WebWidget {
 
   // The page background color. Can be used for filling in areas without
   // content.
-  virtual WebColor BackgroundColor() const {
+  virtual SkColor BackgroundColor() const {
     return 0xFFFFFFFF; /* SK_ColorWHITE */
   }
 

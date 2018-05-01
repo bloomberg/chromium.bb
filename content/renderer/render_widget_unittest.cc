@@ -199,7 +199,7 @@ class InteractiveRenderWidget : public RenderWidget {
                     event.PositionInWidget(),
                     blink::WebFloatSize(event.data.scroll_update.velocity_x,
                                         event.data.scroll_update.velocity_y),
-                    blink::WebOverscrollBehavior());
+                    cc::OverscrollBehavior());
       return true;
     }
 
@@ -300,8 +300,7 @@ TEST_F(RenderWidgetUnittest, FlingOverscroll) {
   // be sent as a separate IPC.
   widget()->DidOverscroll(blink::WebFloatSize(10, 5), blink::WebFloatSize(5, 5),
                           blink::WebFloatPoint(1, 1),
-                          blink::WebFloatSize(10, 5),
-                          blink::WebOverscrollBehavior());
+                          blink::WebFloatSize(10, 5), cc::OverscrollBehavior());
   base::RunLoop().RunUntilIdle();
 }
 

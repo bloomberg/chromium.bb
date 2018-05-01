@@ -102,7 +102,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
                            float browser_controls_delta) override;
   void MouseCaptureLost() override;
   void SetFocus(bool enable) override;
-  WebColor BackgroundColor() const override;
+  SkColor BackgroundColor() const override;
   bool SelectionBounds(WebRect& anchor, WebRect& focus) const override;
   bool IsAcceleratedCompositingActive() const override;
   void WillCloseLayerTreeView() override;
@@ -113,11 +113,11 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
 
   // WebFrameWidget implementation.
   void SetVisibilityState(mojom::PageVisibilityState) override;
-  void SetBackgroundColorOverride(WebColor) override;
+  void SetBackgroundColorOverride(SkColor) override;
   void ClearBackgroundColorOverride() override;
-  void SetBaseBackgroundColorOverride(WebColor) override;
+  void SetBaseBackgroundColorOverride(SkColor) override;
   void ClearBaseBackgroundColorOverride() override;
-  void SetBaseBackgroundColor(WebColor) override;
+  void SetBaseBackgroundColor(SkColor) override;
   WebInputMethodController* GetActiveWebInputMethodController() const override;
   bool ScrollFocusedEditableElementIntoView() override;
 
@@ -226,16 +226,16 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   bool did_suspend_parsing_ = false;
 
   bool background_color_override_enabled_;
-  WebColor background_color_override_;
+  SkColor background_color_override_;
   bool base_background_color_override_enabled_;
-  WebColor base_background_color_override_;
+  SkColor base_background_color_override_;
 
   // TODO(ekaramad): Can we remove this and make sure IME events are not called
   // when there is no page focus?
   // Represents whether or not this object should process incoming IME events.
   bool ime_accept_events_;
 
-  WebColor base_background_color_;
+  SkColor base_background_color_;
 
   SelfKeepAlive<WebFrameWidgetImpl> self_keep_alive_;
 };

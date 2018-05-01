@@ -86,6 +86,9 @@ _CONFIG = [
             # depends on the geometry types above.
             'cc::TouchActionRegion',
 
+            # cc::Layer helper data structs.
+            'cc::OverscrollBehavior',
+
             # Standalone utility libraries that only depend on //base
             'skia::.+',
             'url::.+',

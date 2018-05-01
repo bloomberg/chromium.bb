@@ -417,17 +417,14 @@ TEST_P(WebViewTest, BrokenInputImage) {
 }
 
 TEST_P(WebViewTest, SetBaseBackgroundColor) {
-  const WebColor kWhite = 0xFFFFFFFF;
-  const WebColor kBlue = 0xFF0000FF;
-  const WebColor kDarkCyan = 0xFF227788;
-  const WebColor kTranslucentPutty = 0x80BFB196;
-  const WebColor kTransparent = 0x00000000;
+  const SkColor kDarkCyan = SkColorSetARGB(0xFF, 0x22, 0x77, 0x88);
+  const SkColor kTranslucentPutty = SkColorSetARGB(0x80, 0xBF, 0xB1, 0x96);
 
   WebViewImpl* web_view = web_view_helper_.Initialize();
-  EXPECT_EQ(kWhite, web_view->BackgroundColor());
+  EXPECT_EQ(SK_ColorWHITE, web_view->BackgroundColor());
 
-  web_view->SetBaseBackgroundColor(kBlue);
-  EXPECT_EQ(kBlue, web_view->BackgroundColor());
+  web_view->SetBaseBackgroundColor(SK_ColorBLUE);
+  EXPECT_EQ(SK_ColorBLUE, web_view->BackgroundColor());
 
   WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
   FrameTestHelpers::LoadHTMLString(web_view->MainFrameImpl(),
@@ -442,21 +439,21 @@ TEST_P(WebViewTest, SetBaseBackgroundColor) {
                                    "{background-color:rgba(255,0,0,0.5)}</"
                                    "style></head></html>",
                                    base_url);
-  // Expected: red (50% alpha) blended atop base of kBlue.
+  // Expected: red (50% alpha) blended atop base of SK_ColorBLUE.
   EXPECT_EQ(0xFF80007F, web_view->BackgroundColor());
 
   web_view->SetBaseBackgroundColor(kTranslucentPutty);
   // Expected: red (50% alpha) blended atop kTranslucentPutty. Note the alpha.
   EXPECT_EQ(0xBFE93A31, web_view->BackgroundColor());
 
-  web_view->SetBaseBackgroundColor(kTransparent);
+  web_view->SetBaseBackgroundColor(SK_ColorTRANSPARENT);
   FrameTestHelpers::LoadHTMLString(web_view->MainFrameImpl(),
                                    "<html><head><style>body "
                                    "{background-color:transparent}</style></"
                                    "head></html>",
                                    base_url);
-  // Expected: transparent on top of kTransparent will still be transparent.
-  EXPECT_EQ(kTransparent, web_view->BackgroundColor());
+  // Expected: transparent on top of transparent will still be transparent.
+  EXPECT_EQ(SK_ColorTRANSPARENT, web_view->BackgroundColor());
 
   LocalFrame* frame = web_view->MainFrameImpl()->GetFrame();
   // The shutdown() calls are a hack to prevent this test
@@ -465,7 +462,7 @@ TEST_P(WebViewTest, SetBaseBackgroundColor) {
 
   // Creating a new frame view with the background color having 0 alpha.
   frame->CreateView(IntSize(1024, 768), Color::kTransparent);
-  EXPECT_EQ(kTransparent, frame->View()->BaseBackgroundColor());
+  EXPECT_EQ(SK_ColorTRANSPARENT, frame->View()->BaseBackgroundColor());
   frame->View()->Dispose();
 
   const Color transparent_red(100, 0, 0, 0);
@@ -477,15 +474,14 @@ TEST_P(WebViewTest, SetBaseBackgroundColor) {
 TEST_P(WebViewTest, SetBaseBackgroundColorBeforeMainFrame) {
   // Note: this test doesn't use WebViewHelper since it intentionally runs
   // initialization code between WebView and WebLocalFrame creation.
-  const WebColor kBlue = 0xFF0000FF;
   FrameTestHelpers::TestWebViewClient web_view_client;
   WebViewImpl* web_view = static_cast<WebViewImpl*>(WebView::Create(
       &web_view_client, mojom::PageVisibilityState::kVisible, nullptr));
-  EXPECT_NE(kBlue, web_view->BackgroundColor());
+  EXPECT_NE(SK_ColorBLUE, web_view->BackgroundColor());
   // webView does not have a frame yet, but we should still be able to set the
   // background color.
-  web_view->SetBaseBackgroundColor(kBlue);
-  EXPECT_EQ(kBlue, web_view->BackgroundColor());
+  web_view->SetBaseBackgroundColor(SK_ColorBLUE);
+  EXPECT_EQ(SK_ColorBLUE, web_view->BackgroundColor());
   FrameTestHelpers::TestWebFrameClient web_frame_client;
   WebLocalFrame* frame = WebLocalFrame::CreateMainFrame(
       web_view, &web_frame_client, nullptr, nullptr);
@@ -494,8 +490,8 @@ TEST_P(WebViewTest, SetBaseBackgroundColorBeforeMainFrame) {
 }
 
 TEST_P(WebViewTest, SetBaseBackgroundColorAndBlendWithExistingContent) {
-  const WebColor kAlphaRed = 0x80FF0000;
-  const WebColor kAlphaGreen = 0x8000FF00;
+  const SkColor kAlphaRed = SkColorSetARGB(0x80, 0xFF, 0x00, 0x00);
+  const SkColor kAlphaGreen = SkColorSetARGB(0x80, 0x00, 0xFF, 0x00);
   const int kWidth = 100;
   const int kHeight = 100;
 

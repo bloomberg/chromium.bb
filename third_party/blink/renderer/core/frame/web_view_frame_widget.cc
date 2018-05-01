@@ -140,7 +140,7 @@ void WebViewFrameWidget::WillCloseLayerTreeView() {
   return web_view_->WillCloseLayerTreeView();
 }
 
-WebColor WebViewFrameWidget::BackgroundColor() const {
+SkColor WebViewFrameWidget::BackgroundColor() const {
   return web_view_->BackgroundColor();
 }
 
@@ -160,7 +160,7 @@ void WebViewFrameWidget::SetVisibilityState(
   return web_view_->SetVisibilityState(visibility_state, false);
 }
 
-void WebViewFrameWidget::SetBackgroundColorOverride(WebColor color) {
+void WebViewFrameWidget::SetBackgroundColorOverride(SkColor color) {
   web_view_->SetBackgroundColorOverride(color);
 }
 
@@ -168,7 +168,7 @@ void WebViewFrameWidget::ClearBackgroundColorOverride() {
   return web_view_->ClearBackgroundColorOverride();
 }
 
-void WebViewFrameWidget::SetBaseBackgroundColorOverride(WebColor color) {
+void WebViewFrameWidget::SetBaseBackgroundColorOverride(SkColor color) {
   web_view_->SetBaseBackgroundColorOverride(color);
 }
 
@@ -176,7 +176,7 @@ void WebViewFrameWidget::ClearBaseBackgroundColorOverride() {
   return web_view_->ClearBaseBackgroundColorOverride();
 }
 
-void WebViewFrameWidget::SetBaseBackgroundColor(WebColor color) {
+void WebViewFrameWidget::SetBaseBackgroundColor(SkColor color) {
   web_view_->SetBaseBackgroundColor(color);
 }
 

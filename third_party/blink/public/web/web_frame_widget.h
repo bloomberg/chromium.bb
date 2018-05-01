@@ -58,9 +58,9 @@ class WebFrameWidget : public WebWidget {
   // Overrides the WebFrameWidget's background and base background color. You
   // can use this to enforce a transparent background, which is useful if you
   // want to have some custom background rendered behind the widget.
-  virtual void SetBackgroundColorOverride(WebColor) = 0;
+  virtual void SetBackgroundColorOverride(SkColor) = 0;
   virtual void ClearBackgroundColorOverride() = 0;
-  virtual void SetBaseBackgroundColorOverride(WebColor) = 0;
+  virtual void SetBaseBackgroundColorOverride(SkColor) = 0;
   virtual void ClearBaseBackgroundColorOverride() = 0;
 
   // Sets the base color used for this WebFrameWidget's background. This is in
@@ -71,7 +71,7 @@ class WebFrameWidget : public WebWidget {
   // Setting this takes effect for the currently loaded page, if any, and
   // persists across subsequent navigations. Defaults to white prior to the
   // first call to this method.
-  virtual void SetBaseBackgroundColor(WebColor) = 0;
+  virtual void SetBaseBackgroundColor(SkColor) = 0;
 
   // Returns the local root of this WebFrameWidget.
   virtual WebLocalFrame* LocalRoot() const = 0;

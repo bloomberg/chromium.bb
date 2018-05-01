@@ -44,7 +44,7 @@ class WebLayerTreeViewImplForTesting
   void ClearRootLayer() override;
   cc::AnimationHost* CompositorAnimationHost() override;
   WebSize GetViewportSize() const override;
-  void SetBackgroundColor(blink::WebColor) override;
+  void SetBackgroundColor(SkColor) override;
   void SetVisible(bool) override;
   void SetPageScaleFactorAndLimits(float page_scale_factor,
                                    float minimum,
