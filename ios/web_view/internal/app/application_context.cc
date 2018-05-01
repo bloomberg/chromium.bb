@@ -74,7 +74,7 @@ PrefService* ApplicationContext::GetLocalState() {
 #endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_SIGNIN)
 
     base::FilePath local_state_path;
-    PathService::Get(base::DIR_APP_DATA, &local_state_path);
+    base::PathService::Get(base::DIR_APP_DATA, &local_state_path);
     local_state_path =
         local_state_path.Append(FILE_PATH_LITERAL("ChromeWebView"));
     local_state_path =

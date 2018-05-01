@@ -229,7 +229,7 @@ void RegisterComponentsForUpdate() {
       GetApplicationContext()->GetComponentUpdateService();
   DCHECK(cus);
   base::FilePath path;
-  const bool success = PathService::Get(ios::DIR_USER_DATA, &path);
+  const bool success = base::PathService::Get(ios::DIR_USER_DATA, &path);
   DCHECK(success);
   // Clean up any legacy CRLSet on the local disk - CRLSet used to be shipped
   // as a component on iOS but is not anymore.

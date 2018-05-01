@@ -14,7 +14,7 @@ namespace ios {
 
 scoped_refptr<UploadList> CreateCrashUploadList() {
   base::FilePath crash_dir_path;
-  PathService::Get(ios::DIR_CRASH_DUMPS, &crash_dir_path);
+  base::PathService::Get(ios::DIR_CRASH_DUMPS, &crash_dir_path);
   base::FilePath upload_log_path =
       crash_dir_path.AppendASCII(CrashUploadList::kReporterLogFilename);
   return new TextLogUploadList(upload_log_path);

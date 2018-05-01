@@ -59,7 +59,7 @@ TEST_F(URLFetcherBlockAdapterTest, FetchTextResource) {
 TEST_F(URLFetcherBlockAdapterTest, FetchPNGResource) {
   GURL test_url("http://test");
   base::FilePath favicon_path;
-  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &favicon_path));
+  ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &favicon_path));
   favicon_path = favicon_path.AppendASCII("ios/web/test/data/testfavicon.png");
   NSData* expected_data = [NSData
       dataWithContentsOfFile:base::SysUTF8ToNSString(favicon_path.value())];

@@ -41,13 +41,13 @@ const base::FilePath::CharType kTestName[] = FILE_PATH_LITERAL("heuristics");
 const base::FilePath& GetTestDataDir() {
   CR_DEFINE_STATIC_LOCAL(base::FilePath, dir, ());
   if (dir.empty())
-    PathService::Get(ios::DIR_TEST_DATA, &dir);
+    base::PathService::Get(ios::DIR_TEST_DATA, &dir);
   return dir;
 }
 
 base::FilePath GetIOSInputDirectory() {
   base::FilePath dir;
-  CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &dir));
+  CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &dir));
 
   return dir.AppendASCII("components")
       .AppendASCII("test")
@@ -59,7 +59,7 @@ base::FilePath GetIOSInputDirectory() {
 
 base::FilePath GetIOSOutputDirectory() {
   base::FilePath dir;
-  CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &dir));
+  CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &dir));
 
   return dir.AppendASCII("components")
       .AppendASCII("test")

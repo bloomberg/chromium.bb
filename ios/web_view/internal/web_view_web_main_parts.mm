@@ -30,7 +30,7 @@ void WebViewWebMainParts::PreMainMessageLoopStart() {
       std::string(), nullptr, ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
 
   base::FilePath pak_file;
-  PathService::Get(base::DIR_MODULE, &pak_file);
+  base::PathService::Get(base::DIR_MODULE, &pak_file);
   pak_file = pak_file.Append(FILE_PATH_LITERAL("web_view_resources.pak"));
   ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
       pak_file, ui::SCALE_FACTOR_NONE);

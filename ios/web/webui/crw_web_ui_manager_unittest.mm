@@ -73,7 +73,7 @@ class MockURLFetcherBlockAdapter : public URLFetcherBlockAdapter {
   void Start() override {
     if (url_.spec() == kFaviconUrl) {
       base::FilePath favicon_path;
-      ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &favicon_path));
+      ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &favicon_path));
       favicon_path = favicon_path.AppendASCII(kFaviconPath);
       NSData* favicon = [NSData
           dataWithContentsOfFile:base::SysUTF8ToNSString(favicon_path.value())];

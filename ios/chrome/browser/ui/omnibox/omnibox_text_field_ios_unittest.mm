@@ -139,7 +139,7 @@ TEST_F(OmniboxTextFieldTest, enterPreEditState_preEditTextAlignment_change) {
 
 TEST_F(OmniboxTextFieldTest, SelectedRanges) {
   base::FilePath test_data_directory;
-  ASSERT_TRUE(PathService::Get(ios::DIR_TEST_DATA, &test_data_directory));
+  ASSERT_TRUE(base::PathService::Get(ios::DIR_TEST_DATA, &test_data_directory));
   base::FilePath test_file = test_data_directory.Append(
       FILE_PATH_LITERAL("omnibox/selected_ranges.txt"));
   ASSERT_TRUE(base::PathExists(test_file));

@@ -20,7 +20,7 @@
 namespace web {
 
 ShellBrowserState::ShellBrowserState() : BrowserState() {
-  CHECK(PathService::Get(base::DIR_APP_DATA, &path_));
+  CHECK(base::PathService::Get(base::DIR_APP_DATA, &path_));
 
   request_context_getter_ = new ShellURLRequestContextGetter(
       GetStatePath(),

@@ -89,7 +89,7 @@ base::FilePath CreateTempBrowserStateDir(base::ScopedTempDir* temp_dir) {
     // Fallback logic in case we fail to create unique temporary directory.
     LOG(ERROR) << "Failed to create unique temporary directory.";
     base::FilePath system_tmp_dir;
-    bool success = PathService::Get(base::DIR_TEMP, &system_tmp_dir);
+    bool success = base::PathService::Get(base::DIR_TEMP, &system_tmp_dir);
 
     // We're severely screwed if we can't get the system temporary
     // directory. Die now to avoid writing to the filesystem root
