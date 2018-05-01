@@ -134,6 +134,11 @@ bool HandleCloserAgent::CloseHandles() {
   if (!::GetProcessHandleCount(::GetCurrentProcess(), &handle_count))
     return false;
 
+  // Skip closing these handles when Application Verifier is in use in order to
+  // avoid invalid-handle exceptions.
+  if (GetModuleHandleW(L"vrfcore.dll"))
+    return true;
+
   // Set up buffers for the type info and the name.
   std::vector<BYTE> type_info_buffer(sizeof(OBJECT_TYPE_INFORMATION) +
                                      32 * sizeof(wchar_t));
