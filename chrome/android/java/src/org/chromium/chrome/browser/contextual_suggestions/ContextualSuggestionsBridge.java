@@ -122,14 +122,14 @@ public class ContextualSuggestionsBridge {
 
     @CalledByNative
     private static void addSuggestionToLastCluster(ContextualSuggestionsResult result, String id,
-            String title, String publisher, String url) {
+            String title, String snippet, String publisher, String url, boolean hasImage) {
         assert result.getClusters().size() > 0;
         result.getClusters()
                 .get(result.getClusters().size() - 1)
                 .getSuggestions()
-                .add(new SnippetArticle(KnownCategories.CONTEXTUAL, id, title, publisher, url,
-                        /*publishTimestamp=*/0, /*score=*/0f, /*fetchTimestamp=*/0,
-                        /*isVideoSuggestion=*/false, /*thumbnailDominantColor=*/0));
+                .add(new SnippetArticle(KnownCategories.CONTEXTUAL, id, title, snippet, publisher,
+                        url, /*publishTimestamp=*/0, /*score=*/0f, /*fetchTimestamp=*/0,
+                        /*isVideoSuggestion=*/false, /*thumbnailDominantColor=*/null, hasImage));
     }
 
     static private native boolean nativeIsEnterprisePolicyManaged();
