@@ -1977,7 +1977,7 @@ void UiSceneCreator::CreateUrlBar() {
                         &Button::SetButtonColors);
   scene_->AddUiElement(kUrlBarLayout, std::move(back_button));
 
-  auto separator = Create<Rect>(kUrlBarSeparator, kPhaseForeground);
+  auto separator = Create<Rect>(kUrlBarLeftSeparator, kPhaseForeground);
   separator->set_hit_testable(true);
   separator->SetSize(kUrlBarSeparatorWidthDMM, kUrlBarHeightDMM);
   VR_BIND_COLOR(model_, separator.get(), &ColorScheme::url_bar_separator,
@@ -2097,7 +2097,7 @@ void UiSceneCreator::CreateUrlBar() {
                 &Text::SetColor);
   scene_->AddUiElement(kUrlBarHintLayout, std::move(hint_text));
 
-  separator = Create<Rect>(kUrlBarSeparator, kPhaseForeground);
+  separator = Create<Rect>(kUrlBarRightSeparator, kPhaseForeground);
   separator->set_hit_testable(true);
   separator->SetSize(kUrlBarSeparatorWidthDMM, kUrlBarHeightDMM);
   VR_BIND_COLOR(model_, separator.get(), &ColorScheme::url_bar_separator,
