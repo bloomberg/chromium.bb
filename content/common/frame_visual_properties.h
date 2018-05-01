@@ -7,7 +7,6 @@
 
 #include "content/common/content_export.h"
 #include "content/public/common/screen_info.h"
-#include "third_party/blink/public/platform/web_display_mode.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace content {

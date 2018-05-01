@@ -299,7 +299,7 @@ class TestBookmarkAppHelper : public BookmarkAppHelper {
   }
 
   void CompleteInstallableCheck(const char* manifest_url,
-                                const content::Manifest& manifest,
+                                const blink::Manifest& manifest,
                                 ForInstallableSite for_installable_site) {
     bool installable = for_installable_site == ForInstallableSite::kYes;
     InstallableData data = {
@@ -349,7 +349,7 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, CreateBookmarkApp) {
   helper.Create(base::Bind(&TestBookmarkAppHelper::CreationComplete,
                            base::Unretained(&helper)));
 
-  helper.CompleteInstallableCheck(kManifestUrl, content::Manifest(),
+  helper.CompleteInstallableCheck(kManifestUrl, blink::Manifest(),
                                   ForInstallableSite::kNo);
 
   std::map<GURL, std::vector<SkBitmap> > icon_map;
@@ -399,7 +399,7 @@ TEST_P(BookmarkAppHelperExtensionServiceInstallableSiteTest,
   helper.Create(base::Bind(&TestBookmarkAppHelper::CreationComplete,
                            base::Unretained(&helper)));
 
-  content::Manifest manifest;
+  blink::Manifest manifest;
   manifest.start_url = GURL(kAppUrl);
   manifest.name = base::NullableString16(base::UTF8ToUTF16(kAppTitle), false);
   manifest.scope = GURL(kAppScope);
@@ -441,11 +441,11 @@ TEST_P(BookmarkAppHelperExtensionServiceInstallableSiteTest,
   helper.Create(base::Bind(&TestBookmarkAppHelper::CreationComplete,
                            base::Unretained(&helper)));
 
-  content::Manifest manifest;
+  blink::Manifest manifest;
   manifest.start_url = GURL(kAppUrl);
   manifest.name = base::NullableString16(base::UTF8ToUTF16(kAppTitle), false);
   manifest.scope = GURL(kAppScope);
-  content::Manifest::Icon icon;
+  blink::Manifest::Icon icon;
   icon.src = GURL(kAppIconURL1);
   manifest.icons.push_back(icon);
   icon.src = GURL(kAppIconURL2);
@@ -491,7 +491,7 @@ TEST_P(BookmarkAppHelperExtensionServiceInstallableSiteTest,
   helper.Create(base::Bind(&TestBookmarkAppHelper::CreationComplete,
                            base::Unretained(&helper)));
 
-  content::Manifest manifest;
+  blink::Manifest manifest;
   manifest.start_url = GURL(kAppUrl);
   manifest.name = base::NullableString16(base::UTF8ToUTF16(kAppTitle), false);
   helper.CompleteInstallableCheck(kManifestUrl, manifest, GetParam());
@@ -525,7 +525,7 @@ TEST_F(BookmarkAppHelperExtensionServiceTest,
 
   std::unique_ptr<content::WebContents> contents(
       content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
-  content::Manifest manifest;
+  blink::Manifest manifest;
   manifest.start_url = GURL(kAppUrl);
   manifest.name = base::NullableString16(base::UTF8ToUTF16(kAppTitle), false);
   manifest.scope = GURL(kAppScope);
@@ -578,7 +578,7 @@ TEST_F(BookmarkAppHelperExtensionServiceTest,
   helper.Create(base::Bind(&TestBookmarkAppHelper::CreationComplete,
                            base::Unretained(&helper)));
 
-  helper.CompleteInstallableCheck(kManifestUrl, content::Manifest(),
+  helper.CompleteInstallableCheck(kManifestUrl, blink::Manifest(),
                                   ForInstallableSite::kNo);
   std::map<GURL, std::vector<SkBitmap>> icon_map;
   helper.CompleteIconDownload(true, icon_map);
@@ -746,7 +746,7 @@ TEST_F(BookmarkAppHelperTest, UpdateWebAppInfoFromManifest) {
   info.url = GURL(kAppIcon1);
   web_app_info.icons.push_back(info);
 
-  content::Manifest manifest;
+  blink::Manifest manifest;
   manifest.start_url = GURL(kAppUrl);
   manifest.short_name = base::NullableString16(base::UTF8ToUTF16(kAppShortName),
                                                false);
@@ -765,7 +765,7 @@ TEST_F(BookmarkAppHelperTest, UpdateWebAppInfoFromManifest) {
   // that icons provided by the manifest replace icons in |web_app_info|.
   manifest.name = base::NullableString16(base::UTF8ToUTF16(kAppTitle), false);
 
-  content::Manifest::Icon icon;
+  blink::Manifest::Icon icon;
   icon.src = GURL(kAppIcon2);
   manifest.icons.push_back(icon);
   icon.src = GURL(kAppIcon3);
@@ -783,7 +783,7 @@ TEST_F(BookmarkAppHelperTest, UpdateWebAppInfoFromManifest) {
 // Tests "scope" is only set for installable sites.
 TEST_F(BookmarkAppHelperTest, UpdateWebAppInfoFromManifestInstallableSite) {
   {
-    content::Manifest manifest;
+    blink::Manifest manifest;
     manifest.start_url = GURL(kAppUrl);
     WebApplicationInfo web_app_info;
     BookmarkAppHelper::UpdateWebAppInfoFromManifest(
@@ -793,7 +793,7 @@ TEST_F(BookmarkAppHelperTest, UpdateWebAppInfoFromManifestInstallableSite) {
   }
 
   {
-    content::Manifest manifest;
+    blink::Manifest manifest;
     manifest.start_url = GURL(kAppUrl);
     WebApplicationInfo web_app_info;
     BookmarkAppHelper::UpdateWebAppInfoFromManifest(
@@ -802,7 +802,7 @@ TEST_F(BookmarkAppHelperTest, UpdateWebAppInfoFromManifestInstallableSite) {
   }
 
   {
-    content::Manifest manifest;
+    blink::Manifest manifest;
     manifest.start_url = GURL(kAppUrl);
     WebApplicationInfo web_app_info;
     BookmarkAppHelper::UpdateWebAppInfoFromManifest(

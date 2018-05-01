@@ -6,9 +6,9 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/web_display_mode.h"
+#include "third_party/blink/public/common/manifest/web_display_mode.h"
 
-using IconPurpose = content::Manifest::Icon::IconPurpose;
+using IconPurpose = blink::Manifest::Icon::IconPurpose;
 
 class InstallableManagerUnitTest : public testing::Test {
  public:
@@ -20,14 +20,14 @@ class InstallableManagerUnitTest : public testing::Test {
     return base::NullableString16(base::UTF8ToUTF16(str), false);
   }
 
-  static content::Manifest GetValidManifest() {
-    content::Manifest manifest;
+  static blink::Manifest GetValidManifest() {
+    blink::Manifest manifest;
     manifest.name = ToNullableUTF16("foo");
     manifest.short_name = ToNullableUTF16("bar");
     manifest.start_url = GURL("http://example.com");
     manifest.display = blink::kWebDisplayModeStandalone;
 
-    content::Manifest::Icon primary_icon;
+    blink::Manifest::Icon primary_icon;
     primary_icon.type = base::ASCIIToUTF16("image/png");
     primary_icon.sizes.push_back(gfx::Size(144, 144));
     primary_icon.purpose.push_back(IconPurpose::ANY);
@@ -38,7 +38,7 @@ class InstallableManagerUnitTest : public testing::Test {
     return manifest;
   }
 
-  bool IsManifestValid(const content::Manifest& manifest) {
+  bool IsManifestValid(const blink::Manifest& manifest) {
     // Explicitly reset the error code before running the method.
     manager_->set_valid_manifest_error(NO_ERROR_DETECTED);
     return manager_->IsManifestValidForWebApp(manifest);
@@ -53,19 +53,19 @@ class InstallableManagerUnitTest : public testing::Test {
 };
 
 TEST_F(InstallableManagerUnitTest, EmptyManifestIsInvalid) {
-  content::Manifest manifest;
+  blink::Manifest manifest;
   EXPECT_FALSE(IsManifestValid(manifest));
   EXPECT_EQ(MANIFEST_EMPTY, GetErrorCode());
 }
 
 TEST_F(InstallableManagerUnitTest, CheckMinimalValidManifest) {
-  content::Manifest manifest = GetValidManifest();
+  blink::Manifest manifest = GetValidManifest();
   EXPECT_TRUE(IsManifestValid(manifest));
   EXPECT_EQ(NO_ERROR_DETECTED, GetErrorCode());
 }
 
 TEST_F(InstallableManagerUnitTest, ManifestRequiresNameOrShortName) {
-  content::Manifest manifest = GetValidManifest();
+  blink::Manifest manifest = GetValidManifest();
 
   manifest.name = base::NullableString16();
   EXPECT_TRUE(IsManifestValid(manifest));
@@ -82,7 +82,7 @@ TEST_F(InstallableManagerUnitTest, ManifestRequiresNameOrShortName) {
 }
 
 TEST_F(InstallableManagerUnitTest, ManifestRequiresNonEmptyNameORShortName) {
-  content::Manifest manifest = GetValidManifest();
+  blink::Manifest manifest = GetValidManifest();
 
   manifest.name = ToNullableUTF16("");
   EXPECT_TRUE(IsManifestValid(manifest));
@@ -99,7 +99,7 @@ TEST_F(InstallableManagerUnitTest, ManifestRequiresNonEmptyNameORShortName) {
 }
 
 TEST_F(InstallableManagerUnitTest, ManifestRequiresValidStartURL) {
-  content::Manifest manifest = GetValidManifest();
+  blink::Manifest manifest = GetValidManifest();
 
   manifest.start_url = GURL();
   EXPECT_FALSE(IsManifestValid(manifest));
@@ -111,7 +111,7 @@ TEST_F(InstallableManagerUnitTest, ManifestRequiresValidStartURL) {
 }
 
 TEST_F(InstallableManagerUnitTest, ManifestRequiresImagePNG) {
-  content::Manifest manifest = GetValidManifest();
+  blink::Manifest manifest = GetValidManifest();
 
   manifest.icons[0].type = base::ASCIIToUTF16("image/gif");
   EXPECT_FALSE(IsManifestValid(manifest));
@@ -138,7 +138,7 @@ TEST_F(InstallableManagerUnitTest, ManifestRequiresImagePNG) {
 }
 
 TEST_F(InstallableManagerUnitTest, ManifestRequiresPurposeAny) {
-  content::Manifest manifest = GetValidManifest();
+  blink::Manifest manifest = GetValidManifest();
 
   // The icon MUST have IconPurpose::ANY at least.
   manifest.icons[0].purpose[0] = IconPurpose::BADGE;
@@ -152,7 +152,7 @@ TEST_F(InstallableManagerUnitTest, ManifestRequiresPurposeAny) {
 }
 
 TEST_F(InstallableManagerUnitTest, ManifestRequiresMinimalSize) {
-  content::Manifest manifest = GetValidManifest();
+  blink::Manifest manifest = GetValidManifest();
 
   // The icon MUST be 144x144 size at least.
   manifest.icons[0].sizes[0] = gfx::Size(1, 1);
@@ -185,7 +185,7 @@ TEST_F(InstallableManagerUnitTest, ManifestRequiresMinimalSize) {
 }
 
 TEST_F(InstallableManagerUnitTest, ManifestDisplayModes) {
-  content::Manifest manifest = GetValidManifest();
+  blink::Manifest manifest = GetValidManifest();
 
   manifest.display = blink::kWebDisplayModeUndefined;
   EXPECT_FALSE(IsManifestValid(manifest));

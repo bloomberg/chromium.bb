@@ -26,8 +26,8 @@
 #include "content/public/browser/manifest_icon_selector.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/manifest.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_lock_type.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/favicon_size.h"
@@ -241,7 +241,7 @@ void AddToHomescreenDataFetcher::OnDidGetManifestAndIcons(
       content::ManifestIconSelector::FindBestMatchingIcon(
           data.manifest->icons, shortcut_info_.ideal_splash_image_size_in_px,
           shortcut_info_.minimum_splash_image_size_in_px,
-          content::Manifest::Icon::IconPurpose::ANY);
+          blink::Manifest::Icon::IconPurpose::ANY);
   if (data.badge_icon) {
     shortcut_info_.best_badge_icon_url = data.badge_icon_url;
     badge_icon_ = *data.badge_icon;

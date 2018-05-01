@@ -11,13 +11,16 @@
 #include "content/common/manifest_observer.mojom.h"
 #include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "third_party/blink/public/platform/modules/manifest/manifest_manager.mojom.h"
+#include "third_party/blink/public/mojom/manifest/manifest_manager.mojom.h"
+
+namespace blink {
+struct Manifest;
+}
 
 namespace content {
 
 class RenderFrameHost;
 class WebContents;
-struct Manifest;
 
 // ManifestManagerHost is a helper class that allows callers to get the Manifest
 // associated with the main frame of the observed WebContents. It handles the
@@ -30,7 +33,7 @@ class ManifestManagerHost : public WebContentsObserver,
   ~ManifestManagerHost() override;
 
   using GetManifestCallback =
-      base::OnceCallback<void(const GURL&, const Manifest&)>;
+      base::OnceCallback<void(const GURL&, const blink::Manifest&)>;
 
   // Calls the given callback with the manifest associated with the main frame.
   // If the main frame has no manifest or if getting it failed the callback will
@@ -51,7 +54,7 @@ class ManifestManagerHost : public WebContentsObserver,
 
   void OnRequestManifestResponse(int request_id,
                                  const GURL& url,
-                                 const Manifest& manifest);
+                                 const blink::Manifest& manifest);
 
   // mojom::ManifestUrlChangeObserver:
   void ManifestUrlChanged(const base::Optional<GURL>& manifest_url) override;

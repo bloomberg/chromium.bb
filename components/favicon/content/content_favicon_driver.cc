@@ -17,7 +17,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/common/favicon_url.h"
-#include "content/public/common/manifest.h"
+#include "third_party/blink/public/common/manifest/manifest.h"
 #include "ui/gfx/image/image.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(favicon::ContentFaviconDriver);
@@ -28,9 +28,9 @@ namespace {
 void ExtractManifestIcons(
     ContentFaviconDriver::ManifestDownloadCallback callback,
     const GURL& manifest_url,
-    const content::Manifest& manifest) {
+    const blink::Manifest& manifest) {
   std::vector<FaviconURL> candidates;
-  for (const content::Manifest::Icon& icon : manifest.icons) {
+  for (const blink::Manifest::Icon& icon : manifest.icons) {
     candidates.emplace_back(icon.src, favicon_base::IconType::kWebManifestIcon,
                             icon.sizes);
   }

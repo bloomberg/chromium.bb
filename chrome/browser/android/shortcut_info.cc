@@ -10,8 +10,8 @@ ShortcutInfo::ShortcutInfo(const GURL& shortcut_url)
       display(blink::kWebDisplayModeBrowser),
       orientation(blink::kWebScreenOrientationLockDefault),
       source(SOURCE_ADD_TO_HOMESCREEN_SHORTCUT),
-      theme_color(content::Manifest::kInvalidOrMissingColor),
-      background_color(content::Manifest::kInvalidOrMissingColor),
+      theme_color(blink::Manifest::kInvalidOrMissingColor),
+      background_color(blink::Manifest::kInvalidOrMissingColor),
       ideal_splash_image_size_in_px(0),
       minimum_splash_image_size_in_px(0) {}
 
@@ -20,7 +20,7 @@ ShortcutInfo::ShortcutInfo(const ShortcutInfo& other) = default;
 ShortcutInfo::~ShortcutInfo() {
 }
 
-void ShortcutInfo::UpdateFromManifest(const content::Manifest& manifest) {
+void ShortcutInfo::UpdateFromManifest(const blink::Manifest& manifest) {
   if (!manifest.short_name.string().empty() ||
       !manifest.name.string().empty()) {
     short_name = manifest.short_name.string();
@@ -57,11 +57,11 @@ void ShortcutInfo::UpdateFromManifest(const content::Manifest& manifest) {
   }
 
   // Set the theme color based on the manifest value, if any.
-  if (manifest.theme_color != content::Manifest::kInvalidOrMissingColor)
+  if (manifest.theme_color != blink::Manifest::kInvalidOrMissingColor)
     theme_color = manifest.theme_color;
 
   // Set the background color based on the manifest value, if any.
-  if (manifest.background_color != content::Manifest::kInvalidOrMissingColor)
+  if (manifest.background_color != blink::Manifest::kInvalidOrMissingColor)
     background_color = manifest.background_color;
 
   // Sets the URL of the HTML splash screen, if any.
@@ -70,7 +70,7 @@ void ShortcutInfo::UpdateFromManifest(const content::Manifest& manifest) {
 
   // Set the icon urls based on the icons in the manifest, if any.
   icon_urls.clear();
-  for (const content::Manifest::Icon& icon : manifest.icons)
+  for (const blink::Manifest::Icon& icon : manifest.icons)
     icon_urls.push_back(icon.src.spec());
 
   if (manifest.share_target)

@@ -6,7 +6,8 @@
 #define CONTENT_PUBLIC_BROWSER_MANIFEST_ICON_SELECTOR_H_
 
 #include "base/macros.h"
-#include "content/public/common/manifest.h"
+#include "content/common/content_export.h"
+#include "third_party/blink/public/common/manifest/manifest.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -26,10 +27,10 @@ class CONTENT_EXPORT ManifestIconSelector {
   //
   // Returns the icon url if a suitable icon is found. An empty URL otherwise.
   static GURL FindBestMatchingIcon(
-      const std::vector<content::Manifest::Icon>& icons,
+      const std::vector<blink::Manifest::Icon>& icons,
       int ideal_icon_size_in_px,
       int minimum_icon_size_in_px,
-      content::Manifest::Icon::IconPurpose purpose);
+      blink::Manifest::Icon::IconPurpose purpose);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ManifestIconSelector);

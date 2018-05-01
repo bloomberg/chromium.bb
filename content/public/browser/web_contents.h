@@ -41,6 +41,10 @@
 #include "base/android/scoped_java_ref.h"
 #endif
 
+namespace blink {
+struct Manifest;
+}
+
 namespace base {
 class TimeTicks;
 }
@@ -75,7 +79,6 @@ class RenderWidgetHostView;
 class WebContentsDelegate;
 struct CustomContextMenuContext;
 struct DropData;
-struct Manifest;
 struct MHTMLGenerationParams;
 struct PageImportanceSignals;
 struct RendererPreferences;
@@ -771,7 +774,7 @@ class WebContents : public PageNavigator,
   // frame document's manifest. The url will be empty if the document specifies
   // no manifest, and the manifest will be empty if any other failures occurred.
   using GetManifestCallback =
-      base::OnceCallback<void(const GURL&, const Manifest&)>;
+      base::OnceCallback<void(const GURL&, const blink::Manifest&)>;
 
   // Requests the manifest URL and the Manifest of the main frame's document.
   virtual void GetManifest(GetManifestCallback callback) = 0;

@@ -21,6 +21,7 @@ jumbo_source_set("common") {
     "device_memory/approximated_device_memory.cc",
     "feature_policy/feature_policy.cc",
     "frame/frame_policy.cc",
+    "manifest/manifest.cc",
     "message_port/cloneable_message.cc",
     "message_port/cloneable_message_struct_traits.cc",
     "message_port/cloneable_message_struct_traits.h",
