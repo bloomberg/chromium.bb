@@ -23,6 +23,10 @@
 
 namespace media {
 
+// Interface for media components to log to chrome://media-internals log.
+//
+// Implementations only need to implement AddEvent(), which must be thread-safe.
+// AddEvent() is expected to be called from multiple threads.
 class MEDIA_EXPORT MediaLog {
  public:
   enum MediaLogLevel {

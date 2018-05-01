@@ -17,6 +17,7 @@
 #include "gpu/config/gpu_info.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/media_log.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_types.h"
 #include "media/base/video_util.h"
@@ -101,6 +102,7 @@ std::unique_ptr<VdaVideoDecoder, std::default_delete<VideoDecoder>>
 VdaVideoDecoder::Create(
     scoped_refptr<base::SingleThreadTaskRunner> parent_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
+    MediaLog* media_log,
     const gpu::GpuPreferences& gpu_preferences,
     const gpu::GpuDriverBugWorkarounds& gpu_workarounds,
     GetStubCB get_stub_cb) {
@@ -109,7 +111,7 @@ VdaVideoDecoder::Create(
   // TODO(sandersd): Extend base::WrapUnique() to handle this.
   std::unique_ptr<VdaVideoDecoder, std::default_delete<VideoDecoder>> ptr(
       new VdaVideoDecoder(
-          std::move(parent_task_runner), std::move(gpu_task_runner),
+          std::move(parent_task_runner), std::move(gpu_task_runner), media_log,
           base::BindOnce(&PictureBufferManager::Create),
           base::BindOnce(&CreateCommandBufferHelper, std::move(get_stub_cb)),
           base::BindOnce(&CreateAndInitializeVda, gpu_preferences,
@@ -125,12 +127,14 @@ VdaVideoDecoder::Create(
 VdaVideoDecoder::VdaVideoDecoder(
     scoped_refptr<base::SingleThreadTaskRunner> parent_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
+    MediaLog* media_log,
     CreatePictureBufferManagerCB create_picture_buffer_manager_cb,
     CreateCommandBufferHelperCB create_command_buffer_helper_cb,
     CreateAndInitializeVdaCB create_and_initialize_vda_cb,
     const VideoDecodeAccelerator::Capabilities& vda_capabilities)
     : parent_task_runner_(std::move(parent_task_runner)),
       gpu_task_runner_(std::move(gpu_task_runner)),
+      media_log_(media_log),
       create_command_buffer_helper_cb_(
           std::move(create_command_buffer_helper_cb)),
       create_and_initialize_vda_cb_(std::move(create_and_initialize_vda_cb)),
@@ -141,6 +145,7 @@ VdaVideoDecoder::VdaVideoDecoder(
   DVLOG(1) << __func__;
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(vda_capabilities_.flags, 0U);
+  DCHECK(media_log_);
 
   gpu_weak_this_ = gpu_weak_this_factory_.GetWeakPtr();
   parent_weak_this_ = parent_weak_this_factory_.GetWeakPtr();
@@ -222,14 +227,14 @@ void VdaVideoDecoder::Initialize(
 
   // Verify that the configuration is supported.
   if (reinitializing && config.codec() != config_.codec()) {
-    DLOG(ERROR) << "Codec cannot be changed";
+    MEDIA_LOG(ERROR, media_log_) << "Codec cannot be changed";
     EnterErrorState();
     return;
   }
 
   if (!IsProfileSupported(vda_capabilities_.supported_profiles,
                           config.profile(), config.coded_size())) {
-    DVLOG(1) << "Unsupported profile";
+    MEDIA_LOG(INFO, media_log_) << "Unsupported profile";
     EnterErrorState();
     return;
   }
@@ -238,13 +243,13 @@ void VdaVideoDecoder::Initialize(
   // alpha channels. This is believed to be impossible right now because VPx
   // alpha channel data is passed in side data, which isn't sent to VDAs.
   if (!IsOpaque(config.format())) {
-    DVLOG(1) << "Alpha formats are not supported";
+    MEDIA_LOG(INFO, media_log_) << "Alpha formats are not supported";
     EnterErrorState();
     return;
   }
 
   if (config.is_encrypted()) {
-    DVLOG(1) << "Encrypted streams are not supported";
+    MEDIA_LOG(INFO, media_log_) << "Encrypted streams are not supported";
     EnterErrorState();
     return;
   }
@@ -270,14 +275,15 @@ void VdaVideoDecoder::InitializeOnGpuThread() {
   DCHECK(!vda_);
 
   // Set up |command_buffer_helper_|.
-  command_buffer_helper_ = std::move(create_command_buffer_helper_cb_).Run();
-  if (!command_buffer_helper_) {
+  scoped_refptr<CommandBufferHelper> command_buffer_helper =
+      std::move(create_command_buffer_helper_cb_).Run();
+  if (!command_buffer_helper) {
     parent_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&VdaVideoDecoder::InitializeDone,
                                   parent_weak_this_, false));
     return;
   }
-  picture_buffer_manager_->Initialize(gpu_task_runner_, command_buffer_helper_);
+  picture_buffer_manager_->Initialize(gpu_task_runner_, command_buffer_helper);
 
   // Convert the configuration.
   VideoDecodeAccelerator::Config vda_config;
@@ -298,7 +304,7 @@ void VdaVideoDecoder::InitializeOnGpuThread() {
 
   // Create and initialize the VDA.
   vda_ = std::move(create_and_initialize_vda_cb_)
-             .Run(command_buffer_helper_, this, vda_config);
+             .Run(command_buffer_helper, this, vda_config);
   if (!vda_) {
     parent_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&VdaVideoDecoder::InitializeDone,
@@ -521,7 +527,7 @@ void VdaVideoDecoder::PictureReadyOnParentThread(Picture picture) {
   int32_t bitstream_buffer_id = picture.bitstream_buffer_id();
   const auto timestamp_it = timestamps_.Peek(bitstream_buffer_id);
   if (timestamp_it == timestamps_.end()) {
-    DVLOG(1) << "Unknown bitstream buffer " << bitstream_buffer_id;
+    DLOG(ERROR) << "Unknown bitstream buffer " << bitstream_buffer_id;
     EnterErrorState();
     return;
   }
@@ -650,8 +656,18 @@ void VdaVideoDecoder::NotifyError(VideoDecodeAccelerator::Error error) {
   gpu_weak_vda_factory_ = nullptr;
 
   parent_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&VdaVideoDecoder::EnterErrorState, parent_weak_this_));
+      FROM_HERE, base::BindOnce(&VdaVideoDecoder::NotifyErrorOnParentThread,
+                                parent_weak_this_, error));
+}
+
+void VdaVideoDecoder::NotifyErrorOnParentThread(
+    VideoDecodeAccelerator::Error error) {
+  DVLOG(1) << __func__ << "(" << error << ")";
+  DCHECK(parent_task_runner_->BelongsToCurrentThread());
+
+  MEDIA_LOG(ERROR, media_log_) << "VDA Error " << error;
+
+  EnterErrorState();
 }
 
 void VdaVideoDecoder::ReusePictureBuffer(int32_t picture_buffer_id) {

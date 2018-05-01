@@ -17,6 +17,7 @@
 #include "media/base/decode_status.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_util.h"
+#include "media/base/mock_media_log.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_rotation.h"
@@ -108,7 +109,7 @@ class VdaVideoDecoderTest : public testing::Test {
     EXPECT_CALL(*vda_, Destroy());
 
     vdavd_.reset(new VdaVideoDecoder(
-        task_runner, task_runner,
+        task_runner, task_runner, &media_log_,
         base::BindOnce(&VdaVideoDecoderTest::CreatePictureBufferManager,
                        base::Unretained(this)),
         base::BindOnce(&VdaVideoDecoderTest::CreateCommandBufferHelper,
@@ -223,6 +224,7 @@ class VdaVideoDecoderTest : public testing::Test {
 
   base::test::ScopedTaskEnvironment environment_;
 
+  testing::NiceMock<MockMediaLog> media_log_;
   testing::StrictMock<base::MockCallback<VideoDecoder::InitCB>> init_cb_;
   testing::StrictMock<base::MockCallback<VideoDecoder::OutputCB>> output_cb_;
   testing::StrictMock<

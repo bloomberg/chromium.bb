@@ -8,9 +8,8 @@
 
 namespace media {
 
-// TODO(sandersd): Do we need to respond to the channel closing?
 MojoMediaLog::MojoMediaLog(
-    mojo::AssociatedInterfacePtr<mojom::MediaLog> remote_media_log)
+    scoped_refptr<mojom::ThreadSafeMediaLogAssociatedPtr> remote_media_log)
     : remote_media_log_(std::move(remote_media_log)) {
   DVLOG(1) << __func__;
 }
@@ -22,7 +21,7 @@ MojoMediaLog::~MojoMediaLog() {
 void MojoMediaLog::AddEvent(std::unique_ptr<MediaLogEvent> event) {
   DVLOG(1) << __func__;
   DCHECK(event);
-  remote_media_log_->AddEvent(*event);
+  (**remote_media_log_).AddEvent(*event);
 }
 
 }  // namespace media
