@@ -315,7 +315,8 @@ void BackgroundHTMLParser::EnqueueTokenizedChunk() {
   pending_csp_meta_token_index_ =
       HTMLDocumentParser::TokenizedChunk::kNoPendingToken;
 
-  parser_->EnqueueTokenizedChunk(std::move(chunk));
+  if (parser_)
+    parser_->EnqueueTokenizedChunk(std::move(chunk));
 }
 
 // If the background parser is already running on the main thread, then it is
