@@ -31,7 +31,6 @@ class URLRequestContext;
 namespace network {
 
 class NetworkContext;
-class NetworkUsageAccumulator;
 class MojoNetLog;
 class URLRequestContextBuilderMojo;
 
@@ -95,8 +94,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   void SetRawHeadersAccess(uint32_t process_id, bool allow) override;
   void GetNetworkChangeManager(
       mojom::NetworkChangeManagerRequest request) override;
-  void GetTotalNetworkUsages(
-      mojom::NetworkService::GetTotalNetworkUsagesCallback callback) override;
 
   bool quic_disabled() const { return quic_disabled_; }
   bool HasRawHeadersAccess(uint32_t process_id) const;
@@ -110,9 +107,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
     return &keepalive_statistics_recorder_;
   }
   net::HostResolver* host_resolver() { return host_resolver_.get(); }
-  NetworkUsageAccumulator* network_usage_accumulator() {
-    return network_usage_accumulator_.get();
-  }
 
  private:
   // service_manager::Service implementation.
@@ -143,8 +137,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   std::unique_ptr<net::NetworkQualityEstimator> network_quality_estimator_;
 
   std::unique_ptr<net::HostResolver> host_resolver_;
-
-  std::unique_ptr<NetworkUsageAccumulator> network_usage_accumulator_;
 
   // NetworkContexts register themselves with the NetworkService so that they
   // can be cleaned up when the NetworkService goes away. This is needed as
