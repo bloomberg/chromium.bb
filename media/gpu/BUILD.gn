@@ -383,6 +383,8 @@ if (is_win || is_android || use_v4l2_codec || use_vaapi) {
       sources += [
         "test/rendering_helper.cc",
         "test/rendering_helper.h",
+        "test/video_decode_accelerator_unittest_helpers.cc",
+        "test/video_decode_accelerator_unittest_helpers.h",
         "video_decode_accelerator_unittest.cc",
       ]
       deps += [
