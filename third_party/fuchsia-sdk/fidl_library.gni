@@ -1,0 +1,166 @@
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+assert(is_fuchsia)
+
+template("fidl_library") {
+  pkg_name = target_name
+
+  pkg_name = target_name
+  if (defined(invoker.name)) {
+    pkg_name = invoker.name
+  }
+
+  response_file = "$target_gen_dir/$target_name.rsp"
+  json_representation = "$target_gen_dir/$pkg_name.fidl.json"
+  output_gen_base = "$target_gen_dir/fidl"
+  output_gen_dir = "$output_gen_base/fuchsia/cpp"
+  tables_file = "$output_gen_base/$pkg_name.fidl-tables.cc"
+
+  action("${target_name}_response_file") {
+    visibility = [ ":*" ]
+
+    script = "//third_party/fuchsia-sdk/gen_fidl_response_file.py"
+
+    forward_variables_from(invoker,
+                           [
+                             "deps",
+                             "public_deps",
+                             "sources",
+                             "testonly",
+                           ])
+
+    libraries_file = "$target_gen_dir/$pkg_name.fidl_libraries"
+
+    outputs = [
+      response_file,
+      libraries_file,
+    ]
+
+    args = [
+             "--out-response-file",
+             rebase_path(response_file, root_build_dir),
+             "--out-libraries",
+             rebase_path(libraries_file, root_build_dir),
+             "--tables",
+             rebase_path(tables_file, root_build_dir),
+             "--json",
+             rebase_path(json_representation, root_build_dir),
+             "--name",
+             pkg_name,
+             "--sources",
+           ] + rebase_path(sources, root_build_dir)
+
+    if (defined(invoker.fidl_deps)) {
+      dep_libraries = []
+      deps = []
+
+      foreach(dep, invoker.fidl_deps) {
+        gen_dir = get_label_info(dep, "target_gen_dir")
+        name = get_label_info(dep, "name")
+        dep_libraries += [ "$gen_dir/$name.fidl_libraries" ]
+        deps += [ "${dep}_response_file" ]
+      }
+
+      inputs = dep_libraries
+
+      args += [ "--dep-libraries" ] + rebase_path(dep_libraries, root_build_dir)
+    }
+  }
+
+  action("${target_name}_compile") {
+    forward_variables_from(invoker, [ "testonly" ])
+
+    visibility = [ ":*" ]
+
+    deps = [
+      ":${invoker.target_name}_response_file",
+    ]
+
+    script = "//build/gn_run_binary.py"
+
+    inputs = [
+      response_file,
+    ]
+
+    outputs = [
+      json_representation,
+      tables_file,
+    ]
+
+    rebased_response_file = rebase_path(response_file, root_build_dir)
+    args = [
+      rebase_path("//third_party/fuchsia-sdk/sdk/tools/fidlc", root_build_dir),
+      "@$rebased_response_file",
+    ]
+  }
+
+  action("${target_name}_cpp_gen") {
+    visibility = [ ":${invoker.target_name}" ]
+
+    deps = [
+      ":${invoker.target_name}_compile",
+    ]
+
+    inputs = [
+      json_representation,
+    ]
+
+    outputs = [
+      "$output_gen_dir/$pkg_name.h",
+      "$output_gen_dir/$pkg_name.cc",
+    ]
+
+    script = "//build/gn_run_binary.py"
+    args = [
+      rebase_path("//third_party/fuchsia-sdk/sdk/tools/fidlgen",
+                  root_build_dir),
+      "-generators",
+      "cpp",
+      "-json",
+      rebase_path("$json_representation"),
+      "-include-base",
+      rebase_path("$output_gen_base"),
+      "-output-base",
+      rebase_path("$output_gen_dir/$pkg_name"),
+    ]
+  }
+
+  config("${target_name}_config") {
+    visibility = [ ":${invoker.target_name}" ]
+    include_dirs = [ output_gen_base ]
+  }
+
+  source_set("${target_name}") {
+    forward_variables_from(invoker,
+                           [
+                             "deps",
+                             "public_deps",
+                             "testonly",
+                             "visibility",
+                           ])
+
+    sources = [
+      "$output_gen_dir/$pkg_name.cc",
+      "$output_gen_dir/$pkg_name.h",
+      tables_file,
+    ]
+
+    if (!defined(deps)) {
+      deps = []
+    }
+    deps += [
+      ":${invoker.target_name}_compile",
+      ":${invoker.target_name}_cpp_gen",
+    ]
+
+    if (!defined(public_deps)) {
+      public_deps = []
+    }
+    public_deps += [ "//third_party/fuchsia-sdk:fidl" ]
+    public_deps += [ "//third_party/fuchsia-sdk:fidl_cpp" ]
+
+    public_configs = [ ":${invoker.target_name}_config" ]
+  }
+}
