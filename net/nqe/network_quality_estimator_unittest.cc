@@ -600,8 +600,8 @@ TEST(NetworkQualityEstimatorTest, ComputedPercentiles) {
 
   EXPECT_EQ(nqe::internal::InvalidRTT(),
             estimator.GetRTTEstimateInternal(
-                base::TimeTicks(),
-                nqe::internal::ObservationCategory::kHttp, 100, nullptr));
+                base::TimeTicks(), nqe::internal::OBSERVATION_CATEGORY_HTTP,
+                100, nullptr));
   EXPECT_EQ(nqe::internal::INVALID_RTT_THROUGHPUT,
             estimator.GetDownlinkThroughputKbpsEstimateInternal(
                 base::TimeTicks(), 100));
@@ -625,8 +625,8 @@ TEST(NetworkQualityEstimatorTest, ComputedPercentiles) {
                   base::TimeTicks(), i),
               0);
     EXPECT_LT(estimator.GetRTTEstimateInternal(
-                  base::TimeTicks(),
-                  nqe::internal::ObservationCategory::kHttp, i, nullptr),
+                  base::TimeTicks(), nqe::internal::OBSERVATION_CATEGORY_HTTP,
+                  i, nullptr),
               base::TimeDelta::Max());
 
     if (i != 0) {
@@ -638,11 +638,11 @@ TEST(NetworkQualityEstimatorTest, ComputedPercentiles) {
 
       // RTT percentiles are in increasing order.
       EXPECT_GE(estimator.GetRTTEstimateInternal(
-                    base::TimeTicks(),
-                    nqe::internal::ObservationCategory::kHttp, i, nullptr),
+                    base::TimeTicks(), nqe::internal::OBSERVATION_CATEGORY_HTTP,
+                    i, nullptr),
                 estimator.GetRTTEstimateInternal(
-                    base::TimeTicks(),
-                    nqe::internal::ObservationCategory::kHttp, i - 1, nullptr));
+                    base::TimeTicks(), nqe::internal::OBSERVATION_CATEGORY_HTTP,
+                    i - 1, nullptr));
     }
   }
 }
@@ -1082,12 +1082,13 @@ TEST(NetworkQualityEstimatorTest, TestGetMetricsSince) {
         NetworkQualityEstimator::Observation(
             old_downlink_kbps, old, INT32_MIN,
             NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP));
-    estimator.http_rtt_ms_observations_.AddObservation(
-        NetworkQualityEstimator::Observation(
+    estimator.rtt_ms_observations_[nqe::internal::OBSERVATION_CATEGORY_HTTP]
+        .AddObservation(NetworkQualityEstimator::Observation(
             old_url_rtt.InMilliseconds(), old, INT32_MIN,
             NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP));
-    estimator.transport_rtt_ms_observations_.AddObservation(
-        NetworkQualityEstimator::Observation(
+    estimator
+        .rtt_ms_observations_[nqe::internal::OBSERVATION_CATEGORY_TRANSPORT]
+        .AddObservation(NetworkQualityEstimator::Observation(
             old_tcp_rtt.InMilliseconds(), old, INT32_MIN,
             NETWORK_QUALITY_OBSERVATION_SOURCE_TCP));
   }
@@ -1108,12 +1109,12 @@ TEST(NetworkQualityEstimatorTest, TestGetMetricsSince) {
       NetworkQualityEstimator::Observation(
           new_downlink_kbps, now, INT32_MIN,
           NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP));
-  estimator.http_rtt_ms_observations_.AddObservation(
-      NetworkQualityEstimator::Observation(
+  estimator.rtt_ms_observations_[nqe::internal::OBSERVATION_CATEGORY_HTTP]
+      .AddObservation(NetworkQualityEstimator::Observation(
           new_url_rtt.InMilliseconds(), now, INT32_MIN,
           NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP));
-  estimator.transport_rtt_ms_observations_.AddObservation(
-      NetworkQualityEstimator::Observation(
+  estimator.rtt_ms_observations_[nqe::internal::OBSERVATION_CATEGORY_TRANSPORT]
+      .AddObservation(NetworkQualityEstimator::Observation(
           new_tcp_rtt.InMilliseconds(), now, INT32_MIN,
           NETWORK_QUALITY_OBSERVATION_SOURCE_TCP));
 
@@ -1564,9 +1565,13 @@ TEST(NetworkQualityEstimatorTest,
   EXPECT_EQ(expected_effective_connection_type_notifications,
             observer.effective_connection_types().size());
 
-  EXPECT_EQ(expected_effective_connection_type_notifications,
-            (estimator.http_rtt_ms_observations_.Size() +
-             estimator.transport_rtt_ms_observations_.Size()));
+  EXPECT_EQ(
+      expected_effective_connection_type_notifications,
+      (estimator.rtt_ms_observations_[nqe::internal::OBSERVATION_CATEGORY_HTTP]
+           .Size() +
+       estimator
+           .rtt_ms_observations_[nqe::internal::OBSERVATION_CATEGORY_TRANSPORT]
+           .Size()));
 
   // Increase the number of RTT observations. Every time the number of RTT
   // observations is more than doubled, effective connection type must be
@@ -1582,8 +1587,13 @@ TEST(NetworkQualityEstimatorTest,
           EFFECTIVE_CONNECTION_TYPE_3G);
     }
     size_t rtt_observations_count =
-        (estimator.http_rtt_ms_observations_.Size() +
-         estimator.transport_rtt_ms_observations_.Size()) *
+        (estimator
+             .rtt_ms_observations_[nqe::internal::OBSERVATION_CATEGORY_HTTP]
+             .Size() +
+         estimator
+             .rtt_ms_observations_
+                 [nqe::internal::OBSERVATION_CATEGORY_TRANSPORT]
+             .Size()) *
         0.5;
     // Increase the number of RTT observations to more than twice the number
     // of current observations. This should trigger recomputation of
@@ -2500,8 +2510,9 @@ TEST(NetworkQualityEstimatorTest, TestBDPComputation) {
   base::HistogramTester histogram_tester;
   base::TimeTicks now = base::TimeTicks::Now();
   for (int i = 1; i <= std::pow(2, 10); i *= 2) {
-    estimator.transport_rtt_ms_observations_.AddObservation(
-        NetworkQualityEstimator::Observation(
+    estimator
+        .rtt_ms_observations_[nqe::internal::OBSERVATION_CATEGORY_TRANSPORT]
+        .AddObservation(NetworkQualityEstimator::Observation(
             i, now, INT32_MIN, NETWORK_QUALITY_OBSERVATION_SOURCE_TCP));
   }
   for (int i = 1; i <= std::pow(3, 10); i *= 3) {
@@ -2546,8 +2557,9 @@ TEST(NetworkQualityEstimatorTest,
   // ms.
   for (int host = 1; host <= 3; ++host) {
     for (int rtt = 10 * host; rtt <= 10 * host + 20; ++rtt) {
-      estimator.transport_rtt_ms_observations_.AddObservation(
-          NetworkQualityEstimator::Observation(
+      estimator
+          .rtt_ms_observations_[nqe::internal::OBSERVATION_CATEGORY_TRANSPORT]
+          .AddObservation(NetworkQualityEstimator::Observation(
               rtt, historical, INT32_MIN,
               NETWORK_QUALITY_OBSERVATION_SOURCE_TCP,
               static_cast<uint64_t>(host)));
@@ -2558,8 +2570,9 @@ TEST(NetworkQualityEstimatorTest,
   // ms. The difference between them is expected to be 10 ms.
   for (int host = 1; host <= 3; ++host) {
     for (int rtt = 10 * host + 5; rtt <= 10 * host + 15; ++rtt) {
-      estimator.transport_rtt_ms_observations_.AddObservation(
-          NetworkQualityEstimator::Observation(
+      estimator
+          .rtt_ms_observations_[nqe::internal::OBSERVATION_CATEGORY_TRANSPORT]
+          .AddObservation(NetworkQualityEstimator::Observation(
               rtt, recent, INT32_MIN, NETWORK_QUALITY_OBSERVATION_SOURCE_TCP,
               static_cast<uint64_t>(host)));
     }
@@ -2641,7 +2654,11 @@ TEST(NetworkQualityEstimatorTest,
       NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI, network_name);
   EXPECT_EQ(0u, rtt_observer.observations().size());
   EXPECT_EQ(0u, throughput_observer.observations().size());
-  EXPECT_EQ(0u, estimator.transport_rtt_ms_observations_.Size());
+  EXPECT_EQ(
+      0u,
+      estimator
+          .rtt_ms_observations_[nqe::internal::OBSERVATION_CATEGORY_TRANSPORT]
+          .Size());
   EXPECT_EQ(0u, estimator.http_downstream_throughput_kbps_observations_.Size());
 
   // Simulate reading of prefs.
@@ -2662,8 +2679,15 @@ TEST(NetworkQualityEstimatorTest,
   // DEPRECATED_NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_EXTERNAL_ESTIMATE should
   // be removed from |estimator.rtt_ms_observations_| when a cached estimate is
   // received.
-  EXPECT_EQ(1u, estimator.http_rtt_ms_observations_.Size());
-  EXPECT_EQ(1u, estimator.transport_rtt_ms_observations_.Size());
+  EXPECT_EQ(
+      1u,
+      estimator.rtt_ms_observations_[nqe::internal::OBSERVATION_CATEGORY_HTTP]
+          .Size());
+  EXPECT_EQ(
+      1u,
+      estimator
+          .rtt_ms_observations_[nqe::internal::OBSERVATION_CATEGORY_TRANSPORT]
+          .Size());
 
   // When a cached estimate is available, RTT observations from the external
   // estimate provider and platform must be discarded.
@@ -2674,14 +2698,28 @@ TEST(NetworkQualityEstimatorTest,
       1, base::TimeTicks::Now(), base::Optional<int32_t>(),
       NETWORK_QUALITY_OBSERVATION_SOURCE_DEFAULT_HTTP_FROM_PLATFORM));
   EXPECT_EQ(3u, rtt_observer.observations().size());
-  EXPECT_EQ(2u, estimator.http_rtt_ms_observations_.Size());
-  EXPECT_EQ(1u, estimator.transport_rtt_ms_observations_.Size());
+  EXPECT_EQ(
+      2u,
+      estimator.rtt_ms_observations_[nqe::internal::OBSERVATION_CATEGORY_HTTP]
+          .Size());
+  EXPECT_EQ(
+      1u,
+      estimator
+          .rtt_ms_observations_[nqe::internal::OBSERVATION_CATEGORY_TRANSPORT]
+          .Size());
   estimator.AddAndNotifyObserversOfRTT(nqe::internal::Observation(
       1, base::TimeTicks::Now(), base::Optional<int32_t>(),
       NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP));
   EXPECT_EQ(4u, rtt_observer.observations().size());
-  EXPECT_EQ(3u, estimator.http_rtt_ms_observations_.Size());
-  EXPECT_EQ(1u, estimator.transport_rtt_ms_observations_.Size());
+  EXPECT_EQ(
+      3u,
+      estimator.rtt_ms_observations_[nqe::internal::OBSERVATION_CATEGORY_HTTP]
+          .Size());
+  EXPECT_EQ(
+      1u,
+      estimator
+          .rtt_ms_observations_[nqe::internal::OBSERVATION_CATEGORY_TRANSPORT]
+          .Size());
 
   // When a cached estimate is available, throughput observations from the
   // external estimate provider and platform must be discarded.

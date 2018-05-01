@@ -45,6 +45,11 @@ class NET_EXPORT_PRIVATE ObservationBuffer {
                     double weight_multiplier_per_second,
                     double weight_multiplier_per_signal_level);
 
+  //  This constructor does not copy the |observations_| from |other| to |this|.
+  //  As such, this constructor should only be called before adding any
+  //  observations to |other|.
+  ObservationBuffer(const ObservationBuffer& other);
+
   ~ObservationBuffer();
 
   // Adds |observation| to the buffer. The oldest observation in the buffer
@@ -136,7 +141,7 @@ class NET_EXPORT_PRIVATE ObservationBuffer {
 
   const base::TickClock* tick_clock_;
 
-  DISALLOW_COPY_AND_ASSIGN(ObservationBuffer);
+  DISALLOW_ASSIGN(ObservationBuffer);
 };
 
 }  // namespace internal

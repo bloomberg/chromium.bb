@@ -545,13 +545,13 @@ class NET_EXPORT NetworkQualityEstimator
   // per second) sorted by timestamp.
   ObservationBuffer http_downstream_throughput_kbps_observations_;
 
-  // Buffer that holds RTT observations from the HTTP layer (in milliseconds)
-  // sorted by timestamp.
-  ObservationBuffer http_rtt_ms_observations_;
-
-  // Buffer that holds RTT observations from the transport layer (in
-  // milliseconds) sorted by timestamp.
-  ObservationBuffer transport_rtt_ms_observations_;
+  // Buffer that holds RTT observations with different observation categories.
+  // The entries in |rtt_ms_observations_| are in the same order as the
+  // entries in the nqe::internal:ObservationCategory enum.  Size of
+  // |rtt_ms_observations_| is nqe::internal::OBSERVATION_CATEGORY_COUNT.
+  // Each observation buffer in |rtt_ms_observations_| stores RTT observations
+  // in milliseconds. Within a buffer, the observations are sorted by timestamp.
+  std::vector<ObservationBuffer> rtt_ms_observations_;
 
   // Time when the transaction for the last main frame request was started.
   base::TimeTicks last_main_frame_request_;

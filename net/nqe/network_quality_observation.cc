@@ -42,18 +42,18 @@ ObservationCategory Observation::GetObservationCategory() const {
     case NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_CACHED_ESTIMATE:
     case NETWORK_QUALITY_OBSERVATION_SOURCE_DEFAULT_HTTP_FROM_PLATFORM:
     case DEPRECATED_NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_EXTERNAL_ESTIMATE:
-      return ObservationCategory::kHttp;
+      return ObservationCategory::OBSERVATION_CATEGORY_HTTP;
     case NETWORK_QUALITY_OBSERVATION_SOURCE_TRANSPORT_CACHED_ESTIMATE:
     case NETWORK_QUALITY_OBSERVATION_SOURCE_DEFAULT_TRANSPORT_FROM_PLATFORM:
     case NETWORK_QUALITY_OBSERVATION_SOURCE_TCP:
     case NETWORK_QUALITY_OBSERVATION_SOURCE_QUIC:
-      return ObservationCategory::kTransport;
+      return ObservationCategory::OBSERVATION_CATEGORY_TRANSPORT;
     case NETWORK_QUALITY_OBSERVATION_SOURCE_MAX:
       NOTREACHED();
-      return ObservationCategory::kHttp;
+      return ObservationCategory::OBSERVATION_CATEGORY_HTTP;
   }
   NOTREACHED();
-  return ObservationCategory::kHttp;
+  return ObservationCategory::OBSERVATION_CATEGORY_HTTP;
 }
 
 }  // namespace internal

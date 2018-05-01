@@ -58,8 +58,12 @@ namespace internal {
 const char* GetNameForObservationSource(NetworkQualityObservationSource source);
 
 // Different categories to which an observation source can belong to. Each
-// oberation source belongs to exactly one category.
-enum class ObservationCategory { kHttp = 0, kTransport = 1 };
+// observation source belongs to exactly one category.
+enum ObservationCategory {
+  OBSERVATION_CATEGORY_HTTP = 0,
+  OBSERVATION_CATEGORY_TRANSPORT = 1,
+  OBSERVATION_CATEGORY_COUNT = 2
+};
 
 }  // namespace internal
 
