@@ -47,11 +47,11 @@ class SimCompositor final : public WebLayerTreeView {
 
   bool HasSelection() const { return has_selection_; }
 
-  void SetBackgroundColor(WebColor background_color) override {
+  void SetBackgroundColor(SkColor background_color) override {
     background_color_ = background_color;
   }
 
-  WebColor background_color() { return background_color_; }
+  SkColor background_color() { return background_color_; }
 
  private:
   void SetNeedsBeginFrame() override;
@@ -64,7 +64,7 @@ class SimCompositor final : public WebLayerTreeView {
   bool has_selection_;
   WebViewImpl* web_view_;
   base::TimeTicks last_frame_time_;
-  WebColor background_color_;
+  SkColor background_color_;
 };
 
 }  // namespace blink

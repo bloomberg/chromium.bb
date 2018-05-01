@@ -74,7 +74,7 @@ void OverscrollController::HandleOverscroll(
 }
 
 void OverscrollController::SetOverscrollBehavior(
-    const WebOverscrollBehavior& behavior) {
+    const cc::OverscrollBehavior& behavior) {
   if (behavior != overscroll_behavior_) {
     overscroll_behavior_ = behavior;
     chrome_client_->SetOverscrollBehavior(behavior);

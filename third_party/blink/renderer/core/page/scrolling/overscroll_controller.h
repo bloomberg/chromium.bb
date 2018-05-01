@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCROLLING_OVERSCROLL_CONTROLLER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCROLLING_OVERSCROLL_CONTROLLER_H_
 
-#include "third_party/blink/public/platform/web_overscroll_behavior.h"
+#include "cc/input/overscroll_behavior.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
@@ -39,7 +39,7 @@ class OverscrollController : public GarbageCollected<OverscrollController> {
                         const FloatPoint& position_in_root_frame,
                         const FloatSize& velocity_in_root_frame);
 
-  void SetOverscrollBehavior(const WebOverscrollBehavior&);
+  void SetOverscrollBehavior(const cc::OverscrollBehavior&);
 
   void Trace(blink::Visitor*);
 
@@ -51,7 +51,7 @@ class OverscrollController : public GarbageCollected<OverscrollController> {
 
   FloatSize accumulated_root_overscroll_;
 
-  WebOverscrollBehavior overscroll_behavior_;
+  cc::OverscrollBehavior overscroll_behavior_;
 };
 
 }  // namespace blink

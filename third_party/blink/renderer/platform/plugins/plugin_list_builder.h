@@ -49,7 +49,7 @@ class PluginListBuilder final : public WebPluginListBuilder {
   void AddPlugin(const WebString& name,
                  const WebString& description,
                  const WebString& file_name,
-                 WebColor background_color) override;
+                 SkColor background_color) override;
   void AddMediaTypeToLastPlugin(const WebString& name,
                                 const WebString& description) override;
   void AddFileExtensionToLastMediaType(const WebString& extension) override;

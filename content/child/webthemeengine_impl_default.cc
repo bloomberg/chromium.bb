@@ -12,7 +12,6 @@
 #include "ui/native_theme/overlay_scrollbar_constants_aura.h"
 
 using blink::WebCanvas;
-using blink::WebColor;
 using blink::WebRect;
 using blink::WebThemeEngine;
 using blink::WebScrollbarOverlayColorTheme;

@@ -1969,11 +1969,11 @@ void Document::PropagateStyleToViewport() {
       overflow_style->OverscrollBehaviorX();
   EOverscrollBehavior overscroll_behavior_y =
       overflow_style->OverscrollBehaviorY();
-  using OverscrollBehaviorType = WebOverscrollBehavior::OverscrollBehaviorType;
+  using OverscrollBehaviorType = cc::OverscrollBehavior::OverscrollBehaviorType;
   if (RuntimeEnabledFeatures::CSSOverscrollBehaviorEnabled() &&
       IsInMainFrame()) {
     GetPage()->GetOverscrollController().SetOverscrollBehavior(
-        WebOverscrollBehavior(
+        cc::OverscrollBehavior(
             static_cast<OverscrollBehaviorType>(overscroll_behavior_x),
             static_cast<OverscrollBehaviorType>(overscroll_behavior_y)));
   }

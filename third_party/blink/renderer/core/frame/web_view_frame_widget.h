@@ -72,17 +72,17 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   bool IsWebView() const override { return false; }
   bool IsPagePopup() const override { return false; }
   void WillCloseLayerTreeView() override;
-  WebColor BackgroundColor() const override;
+  SkColor BackgroundColor() const override;
   WebPagePopup* GetPagePopup() const override;
   void UpdateBrowserControlsState(WebBrowserControlsState constraints,
                                   WebBrowserControlsState current,
                                   bool animate) override;
   void SetVisibilityState(mojom::PageVisibilityState) override;
-  void SetBackgroundColorOverride(WebColor) override;
+  void SetBackgroundColorOverride(SkColor) override;
   void ClearBackgroundColorOverride() override;
-  void SetBaseBackgroundColorOverride(WebColor) override;
+  void SetBaseBackgroundColorOverride(SkColor) override;
   void ClearBaseBackgroundColorOverride() override;
-  void SetBaseBackgroundColor(WebColor) override;
+  void SetBaseBackgroundColor(SkColor) override;
   WebInputMethodController* GetActiveWebInputMethodController() const override;
   bool ScrollFocusedEditableElementIntoView() override;
 

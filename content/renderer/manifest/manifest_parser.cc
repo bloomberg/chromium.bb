@@ -17,11 +17,11 @@
 #include "content/public/common/manifest_share_target_util.h"
 #include "content/public/common/manifest_util.h"
 #include "content/renderer/manifest/manifest_uma_util.h"
-#include "third_party/blink/public/platform/web_color.h"
 #include "third_party/blink/public/platform/web_icon_sizes_parser.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_css_parser.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace content {
@@ -137,7 +137,7 @@ int64_t ManifestParser::ParseColor(
   if (parsed_color.is_null())
     return Manifest::kInvalidOrMissingColor;
 
-  blink::WebColor color;
+  SkColor color;
   if (!blink::WebCSSParser::ParseColor(
           &color, blink::WebString::FromUTF16(parsed_color.string()))) {
     AddErrorInfo("property '" + key + "' ignored, '" +

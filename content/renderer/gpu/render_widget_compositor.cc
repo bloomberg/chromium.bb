@@ -92,7 +92,6 @@ using blink::WebSelection;
 using blink::WebSize;
 using blink::WebBrowserControlsState;
 using blink::WebLayerTreeView;
-using blink::WebOverscrollBehavior;
 
 namespace content {
 namespace {
@@ -810,7 +809,7 @@ WebFloatPoint RenderWidgetCompositor::adjustEventPointForPinchZoom(
   return point;
 }
 
-void RenderWidgetCompositor::SetBackgroundColor(blink::WebColor color) {
+void RenderWidgetCompositor::SetBackgroundColor(SkColor color) {
   layer_tree_host_->set_background_color(color);
 }
 
@@ -1169,7 +1168,7 @@ void RenderWidgetCompositor::RequestDecode(
 }
 
 void RenderWidgetCompositor::SetOverscrollBehavior(
-    const WebOverscrollBehavior& behavior) {
+    const cc::OverscrollBehavior& behavior) {
   layer_tree_host_->SetOverscrollBehavior(behavior);
 }
 

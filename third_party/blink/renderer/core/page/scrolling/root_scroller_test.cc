@@ -238,7 +238,7 @@ class OverscrollTestWebViewClient : public FrameTestHelpers::TestWebViewClient {
                     const WebFloatSize&,
                     const WebFloatPoint&,
                     const WebFloatSize&,
-                    const WebOverscrollBehavior&));
+                    const cc::OverscrollBehavior&));
 };
 
 // Tests that setting an element as the root scroller causes it to control url
@@ -281,7 +281,7 @@ TEST_P(RootScrollerTest, TestSetRootScroller) {
     // overscroll.
     EXPECT_CALL(client, DidOverscroll(WebFloatSize(0, 50), WebFloatSize(0, 50),
                                       WebFloatPoint(100, 100), WebFloatSize(),
-                                      WebOverscrollBehavior()));
+                                      cc::OverscrollBehavior()));
     GetWebView()->HandleInputEvent(GenerateTouchGestureEvent(
         WebInputEvent::kGestureScrollUpdate, 0, -500));
     EXPECT_FLOAT_EQ(maximum_scroll, container->scrollTop());
@@ -293,7 +293,7 @@ TEST_P(RootScrollerTest, TestSetRootScroller) {
     // Continue the gesture overscroll.
     EXPECT_CALL(client, DidOverscroll(WebFloatSize(0, 20), WebFloatSize(0, 70),
                                       WebFloatPoint(100, 100), WebFloatSize(),
-                                      WebOverscrollBehavior()));
+                                      cc::OverscrollBehavior()));
     GetWebView()->HandleInputEvent(
         GenerateTouchGestureEvent(WebInputEvent::kGestureScrollUpdate, 0, -20));
     EXPECT_FLOAT_EQ(maximum_scroll, container->scrollTop());
@@ -312,7 +312,7 @@ TEST_P(RootScrollerTest, TestSetRootScroller) {
 
     EXPECT_CALL(client, DidOverscroll(WebFloatSize(0, 30), WebFloatSize(0, 30),
                                       WebFloatPoint(100, 100), WebFloatSize(),
-                                      WebOverscrollBehavior()));
+                                      cc::OverscrollBehavior()));
     GetWebView()->HandleInputEvent(
         GenerateTouchGestureEvent(WebInputEvent::kGestureScrollUpdate, 0, -30));
     EXPECT_FLOAT_EQ(maximum_scroll, container->scrollTop());

@@ -19,7 +19,10 @@
 namespace blink {
 struct WebFloatPoint;
 struct WebFloatSize;
-struct WebOverscrollBehavior;
+}  // namespace blink
+
+namespace cc {
+struct OverscrollBehavior;
 }
 
 namespace ui {
@@ -58,7 +61,7 @@ class CONTENT_EXPORT RenderWidgetInputHandler {
                               const blink::WebFloatSize& accumulatedOverscroll,
                               const blink::WebFloatPoint& position,
                               const blink::WebFloatSize& velocity,
-                              const blink::WebOverscrollBehavior& behavior);
+                              const cc::OverscrollBehavior& behavior);
 
   bool handling_input_event() const { return handling_input_event_; }
   void set_handling_input_event(bool handling_input_event) {

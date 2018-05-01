@@ -26,21 +26,20 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_LAYER_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_LAYER_H_
 
+#include "cc/input/overscroll_behavior.h"
 #include "cc/layers/layer.h"
-
 #include "third_party/blink/public/platform/web_blend_mode.h"
-#include "third_party/blink/public/platform/web_color.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_float_point_3d.h"
 #include "third_party/blink/public/platform/web_float_size.h"
-#include "third_party/blink/public/platform/web_overscroll_behavior.h"
 #include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_touch_info.h"
 #include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 class SkMatrix44;
 
@@ -148,8 +147,8 @@ class WebLayer {
   // etc).
   virtual void SetUseParentBackfaceVisibility(bool) = 0;
 
-  virtual void SetBackgroundColor(WebColor) = 0;
-  virtual WebColor BackgroundColor() const = 0;
+  virtual void SetBackgroundColor(SkColor) = 0;
+  virtual SkColor BackgroundColor() const = 0;
 
   // Clear the filters in use by passing in a newly instantiated
   // FilterOperations object.
@@ -239,7 +238,7 @@ class WebLayer {
   // scroll should be propagated to its ancestors at the beginning of the
   // scroll, and whether the overscroll should cause UI affordance such as
   // glow/bounce etc.
-  virtual void SetOverscrollBehavior(const WebOverscrollBehavior&) = 0;
+  virtual void SetOverscrollBehavior(const cc::OverscrollBehavior&) = 0;
 
   // SnapContainerData contains the necessary information a layer needs to
   // perform snapping. The CSS scroll snap could enforce the scroll positions

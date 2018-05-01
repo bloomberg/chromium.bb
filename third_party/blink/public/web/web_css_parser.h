@@ -5,8 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_CSS_PARSER_H_
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_CSS_PARSER_H_
 
-#include "third_party/blink/public/platform/web_color.h"
 #include "third_party/blink/public/platform/web_common.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace blink {
 
@@ -14,7 +14,7 @@ class WebString;
 
 class WebCSSParser {
  public:
-  BLINK_EXPORT static bool ParseColor(WebColor*, const WebString&);
+  BLINK_EXPORT static bool ParseColor(SkColor*, const WebString&);
 };
 
 }  // namespace blink

@@ -10,7 +10,7 @@
 
 namespace blink {
 
-bool WebCSSParser::ParseColor(WebColor* web_color,
+bool WebCSSParser::ParseColor(SkColor* web_color,
                               const WebString& color_string) {
   Color color = Color(*web_color);
   bool success = CSSParser::ParseColor(color, color_string, true);

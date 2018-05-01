@@ -221,7 +221,7 @@ class WebViewClient : protected WebWidgetClient {
                      const WebFloatSize& accumulated_overscroll,
                      const WebFloatPoint& position_in_viewport,
                      const WebFloatSize& velocity_in_viewport,
-                     const WebOverscrollBehavior& behavior) override {}
+                     const cc::OverscrollBehavior& behavior) override {}
   void HasTouchEventHandlers(bool) override {}
   WebLayerTreeView* InitializeLayerTreeView() override { return nullptr; }
   WebScreenInfo GetScreenInfo() override { return WebScreenInfo(); }

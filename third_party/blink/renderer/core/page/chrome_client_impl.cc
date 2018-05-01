@@ -282,7 +282,7 @@ void ChromeClientImpl::DidOverscroll(const FloatSize& overscroll_delta,
                                      const FloatSize& accumulated_overscroll,
                                      const FloatPoint& position_in_viewport,
                                      const FloatSize& velocity_in_viewport,
-                                     const WebOverscrollBehavior& behavior) {
+                                     const cc::OverscrollBehavior& behavior) {
   if (!web_view_->Client())
     return;
 
@@ -1084,7 +1084,7 @@ void ChromeClientImpl::DidUpdateBrowserControls() const {
 }
 
 void ChromeClientImpl::SetOverscrollBehavior(
-    const WebOverscrollBehavior& overscroll_behavior) {
+    const cc::OverscrollBehavior& overscroll_behavior) {
   web_view_->SetOverscrollBehavior(overscroll_behavior);
 }
 

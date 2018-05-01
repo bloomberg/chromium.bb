@@ -273,7 +273,7 @@ class EmptyEventListener final : public EventListener {
 
 class ColorOverlay final : public PageOverlay::Delegate {
  public:
-  explicit ColorOverlay(WebColor color) : color_(color) {}
+  explicit ColorOverlay(SkColor color) : color_(color) {}
 
  private:
   void PaintPageOverlay(const PageOverlay& page_overlay,
@@ -288,7 +288,7 @@ class ColorOverlay final : public PageOverlay::Delegate {
     graphics_context.FillRect(rect, color_);
   }
 
-  WebColor color_;
+  SkColor color_;
 };
 
 }  // namespace
@@ -1681,7 +1681,7 @@ void WebViewImpl::DidUpdateBrowserControls() {
 }
 
 void WebViewImpl::SetOverscrollBehavior(
-    const WebOverscrollBehavior& overscroll_behavior) {
+    const cc::OverscrollBehavior& overscroll_behavior) {
   if (layer_tree_view_)
     layer_tree_view_->SetOverscrollBehavior(overscroll_behavior);
 }
@@ -2221,7 +2221,7 @@ bool WebViewImpl::SelectionBounds(WebRect& anchor_web,
   return true;
 }
 
-WebColor WebViewImpl::BackgroundColor() const {
+SkColor WebViewImpl::BackgroundColor() const {
   if (background_color_override_enabled_)
     return background_color_override_;
   if (!page_)
@@ -3241,7 +3241,7 @@ Color WebViewImpl::BaseBackgroundColor() const {
              : base_background_color_;
 }
 
-void WebViewImpl::SetBaseBackgroundColor(WebColor color) {
+void WebViewImpl::SetBaseBackgroundColor(SkColor color) {
   if (base_background_color_ == color)
     return;
 
@@ -3249,7 +3249,7 @@ void WebViewImpl::SetBaseBackgroundColor(WebColor color) {
   UpdateBaseBackgroundColor();
 }
 
-void WebViewImpl::SetBaseBackgroundColorOverride(WebColor color) {
+void WebViewImpl::SetBaseBackgroundColorOverride(SkColor color) {
   if (base_background_color_override_enabled_ &&
       base_background_color_override_ == color) {
     return;
@@ -3406,7 +3406,7 @@ void WebViewImpl::MainFrameScrollOffsetChanged() {
   dev_tools_emulator_->MainFrameScrollOrScaleChanged();
 }
 
-void WebViewImpl::SetBackgroundColorOverride(WebColor color) {
+void WebViewImpl::SetBackgroundColorOverride(SkColor color) {
   background_color_override_enabled_ = true;
   background_color_override_ = color;
   UpdateLayerTreeBackgroundColor();
@@ -3422,7 +3422,7 @@ void WebViewImpl::SetZoomFactorOverride(float zoom_factor) {
   SetZoomLevel(ZoomLevel());
 }
 
-void WebViewImpl::SetPageOverlayColor(WebColor color) {
+void WebViewImpl::SetPageOverlayColor(SkColor color) {
   if (page_color_overlay_)
     page_color_overlay_.reset();
 

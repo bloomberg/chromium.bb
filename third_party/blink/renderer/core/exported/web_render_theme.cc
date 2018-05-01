@@ -30,7 +30,6 @@
 
 #include "third_party/blink/public/web/web_render_theme.h"
 
-#include "third_party/blink/public/platform/web_color.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/layout_theme_default.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
@@ -41,7 +40,7 @@ void SetCaretBlinkInterval(base::TimeDelta interval) {
   LayoutTheme::GetTheme().SetCaretBlinkInterval(interval);
 }
 
-void SetFocusRingColor(WebColor color) {
+void SetFocusRingColor(SkColor color) {
   LayoutTheme::GetTheme().SetCustomFocusRingColor(color);
 }
 

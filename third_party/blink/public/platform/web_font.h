@@ -7,8 +7,8 @@
 
 #include <memory>
 #include "third_party/blink/public/platform/web_canvas.h"
-#include "third_party/blink/public/platform/web_color.h"
 #include "third_party/blink/public/platform/web_common.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 // To avoid conflicts with the CreateWindow macro from the Windows SDK...
 #undef DrawText
@@ -35,7 +35,7 @@ class WebFont {
   BLINK_PLATFORM_EXPORT void DrawText(WebCanvas*,
                                       const WebTextRun&,
                                       const WebFloatPoint& left_baseline,
-                                      WebColor,
+                                      SkColor,
                                       const WebRect& clip) const;
   BLINK_PLATFORM_EXPORT int CalculateWidth(const WebTextRun&) const;
   BLINK_PLATFORM_EXPORT int OffsetForPosition(const WebTextRun&,

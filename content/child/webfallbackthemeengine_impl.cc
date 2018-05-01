@@ -11,7 +11,6 @@
 #include "ui/native_theme/native_theme_base.h"
 
 using blink::WebCanvas;
-using blink::WebColor;
 using blink::WebRect;
 using blink::WebFallbackThemeEngine;
 

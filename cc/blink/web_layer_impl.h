@@ -16,7 +16,6 @@
 #include "base/memory/ref_counted.h"
 #include "cc/blink/cc_blink_export.h"
 #include "cc/layers/layer_client.h"
-#include "third_party/blink/public/platform/web_color.h"
 #include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
@@ -74,8 +73,8 @@ class CC_BLINK_EXPORT WebLayerImpl : public blink::WebLayer {
   void SetShouldFlattenTransform(bool flatten) override;
   void SetRenderingContext(int context) override;
   void SetUseParentBackfaceVisibility(bool visible) override;
-  void SetBackgroundColor(blink::WebColor color) override;
-  blink::WebColor BackgroundColor() const override;
+  void SetBackgroundColor(SkColor color) override;
+  SkColor BackgroundColor() const override;
   void SetFilters(const cc::FilterOperations& filters) override;
   void SetFiltersOrigin(const blink::WebFloatPoint& origin) override;
   void SetBackgroundFilters(const cc::FilterOperations& filters) override;
@@ -119,7 +118,7 @@ class CC_BLINK_EXPORT WebLayerImpl : public blink::WebLayer {
   cc::ElementId GetElementId() const override;
   void SetHasWillChangeTransformHint(bool has_will_change) override;
   void ShowScrollbars() override;
-  void SetOverscrollBehavior(const blink::WebOverscrollBehavior&) override;
+  void SetOverscrollBehavior(const cc::OverscrollBehavior&) override;
   void SetSnapContainerData(base::Optional<cc::SnapContainerData>) override;
 
   void SetScrollParent(blink::WebLayer* parent) override;

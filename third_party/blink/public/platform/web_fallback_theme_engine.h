@@ -32,8 +32,8 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_FALLBACK_THEME_ENGINE_H_
 
 #include "third_party/blink/public/platform/web_canvas.h"
-#include "third_party/blink/public/platform/web_color.h"
 #include "third_party/blink/public/platform/web_size.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace blink {
 
@@ -90,14 +90,14 @@ class WebFallbackThemeEngine {
     bool indeterminate;  // Whether the button state is indeterminate.
     bool is_default;     // Whether the button is default button.
     bool has_border;
-    WebColor background_color;
+    SkColor background_color;
   };
 
   // Extra parameters for PartTextField
   struct TextFieldExtraParams {
     bool is_text_area;
     bool is_listbox;
-    WebColor background_color;
+    SkColor background_color;
   };
 
   // Extra parameters for PartMenuList
@@ -107,8 +107,8 @@ class WebFallbackThemeEngine {
     int arrow_x;
     int arrow_y;
     int arrow_size;
-    WebColor arrow_color;
-    WebColor background_color;
+    SkColor arrow_color;
+    SkColor background_color;
   };
 
   // Extra parameters for PartSliderTrack and PartSliderThumb

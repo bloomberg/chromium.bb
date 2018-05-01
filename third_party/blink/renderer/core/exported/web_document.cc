@@ -106,7 +106,7 @@ WebString WebDocument::GetReferrer() const {
   return ConstUnwrap<Document>()->referrer();
 }
 
-WebColor WebDocument::ThemeColor() const {
+SkColor WebDocument::ThemeColor() const {
   return ConstUnwrap<Document>()->ThemeColor().Rgb();
 }
 

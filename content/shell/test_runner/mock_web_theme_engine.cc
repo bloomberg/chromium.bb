@@ -17,7 +17,6 @@
 #include "third_party/skia/include/core/SkRect.h"
 
 using blink::WebCanvas;
-using blink::WebColor;
 using blink::WebRect;
 using blink::WebThemeEngine;
 

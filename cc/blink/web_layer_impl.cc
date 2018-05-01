@@ -40,8 +40,6 @@ using blink::WebLayer;
 using blink::WebFloatPoint;
 using blink::WebVector;
 using blink::WebSize;
-using blink::WebColor;
-using blink::WebOverscrollBehavior;
 
 namespace cc_blink {
 
@@ -201,11 +199,11 @@ void WebLayerImpl::SetUseParentBackfaceVisibility(
   layer_->SetUseParentBackfaceVisibility(use_parent_backface_visibility);
 }
 
-void WebLayerImpl::SetBackgroundColor(WebColor color) {
+void WebLayerImpl::SetBackgroundColor(SkColor color) {
   layer_->SetBackgroundColor(color);
 }
 
-WebColor WebLayerImpl::BackgroundColor() const {
+SkColor WebLayerImpl::BackgroundColor() const {
   return layer_->background_color();
 }
 
@@ -466,8 +464,8 @@ void WebLayerImpl::ShowScrollbars() {
 }
 
 void WebLayerImpl::SetOverscrollBehavior(
-    const blink::WebOverscrollBehavior& behavior) {
-  layer_->SetOverscrollBehavior(static_cast<cc::OverscrollBehavior>(behavior));
+    const cc::OverscrollBehavior& behavior) {
+  layer_->SetOverscrollBehavior(behavior);
 }
 
 void WebLayerImpl::SetSnapContainerData(

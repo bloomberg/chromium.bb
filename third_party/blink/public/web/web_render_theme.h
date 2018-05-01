@@ -32,15 +32,15 @@
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_RENDER_THEME_H_
 
 #include "base/time/time.h"
-#include "third_party/blink/public/platform/web_color.h"
 #include "third_party/blink/public/platform/web_common.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace blink {
 
 // Set caret blink interval for text input areas.
 BLINK_EXPORT void SetCaretBlinkInterval(base::TimeDelta);
 
-BLINK_EXPORT void SetFocusRingColor(WebColor);
+BLINK_EXPORT void SetFocusRingColor(SkColor);
 
 }  // namespace blink
 
