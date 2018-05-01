@@ -172,8 +172,10 @@ void FullscreenControlHost::ShowForInputEntryMethod(
 }
 
 void FullscreenControlHost::OnVisibilityChanged() {
-  if (!IsVisible())
+  if (!IsVisible()) {
     input_entry_method_ = InputEntryMethod::NOT_ACTIVE;
+    key_press_delay_timer_.Stop();
+  }
 
   if (on_popup_visibility_changed_)
     std::move(on_popup_visibility_changed_).Run();
