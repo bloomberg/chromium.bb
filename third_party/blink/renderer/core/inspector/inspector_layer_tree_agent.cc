@@ -32,6 +32,8 @@
 #include "third_party/blink/renderer/core/inspector/inspector_layer_tree_agent.h"
 
 #include <memory>
+
+#include "cc/base/region.h"
 #include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_layer_sticky_position_constraint.h"
@@ -57,6 +59,7 @@
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace blink {
 
@@ -97,18 +100,19 @@ BuildScrollRectsForLayer(GraphicsLayer* graphics_layer,
   std::unique_ptr<Array<protocol::LayerTree::ScrollRect>> scroll_rects =
       Array<protocol::LayerTree::ScrollRect>::create();
   WebLayer* web_layer = graphics_layer->PlatformLayer();
-  WebVector<WebRect> non_fast_scrollable_rects =
+  const cc::Region& non_fast_scrollable_rects =
       web_layer->NonFastScrollableRegion();
-  for (size_t i = 0; i < non_fast_scrollable_rects.size(); ++i) {
+  for (const gfx::Rect& rect : non_fast_scrollable_rects) {
     scroll_rects->addItem(BuildScrollRect(
-        non_fast_scrollable_rects[i],
+        IntRect(rect),
         protocol::LayerTree::ScrollRect::TypeEnum::RepaintsOnScroll));
   }
-  WebVector<WebRect> touch_event_handler_rects =
-      web_layer->TouchEventHandlerRegion();
-  for (size_t i = 0; i < touch_event_handler_rects.size(); ++i) {
+  const cc::Region& touch_event_handler_region =
+      web_layer->TouchEventHandlerRegion().region();
+
+  for (const gfx::Rect& rect : touch_event_handler_region) {
     scroll_rects->addItem(BuildScrollRect(
-        touch_event_handler_rects[i],
+        IntRect(rect),
         protocol::LayerTree::ScrollRect::TypeEnum::TouchEventHandler));
   }
   if (report_wheel_scrollers) {

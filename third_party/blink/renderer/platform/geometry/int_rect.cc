@@ -37,6 +37,9 @@
 
 namespace blink {
 
+IntRect::IntRect(const gfx::Rect& rect)
+    : location_(rect.x(), rect.y()), size_(rect.width(), rect.height()) {}
+
 void IntRect::ShiftXEdgeTo(int edge) {
   int delta = edge - X();
   SetX(edge);

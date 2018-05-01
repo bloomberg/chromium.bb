@@ -43,7 +43,6 @@
 #include "third_party/blink/renderer/core/loader/resource/image_resource_observer.h"
 #include "third_party/blink/renderer/core/paint/compositing/compositing_state.h"
 #include "third_party/blink/renderer/core/paint/fragment_data.h"
-#include "third_party/blink/renderer/core/paint/layer_hit_test_rects.h"
 #include "third_party/blink/renderer/core/paint/paint_phase.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/style_difference.h"
@@ -53,6 +52,7 @@
 #include "third_party/blink/renderer/platform/graphics/compositing_reasons.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_client.h"
 #include "third_party/blink/renderer/platform/graphics/paint_invalidation_reason.h"
+#include "third_party/blink/renderer/platform/graphics/touch_action_rect.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 #include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 

@@ -76,6 +76,14 @@ _CONFIG = [
             'base::Feature.*',
             'base::FEATURE_.+',
 
+            # Chromium geometry types.
+            'gfx::Rect',
+            # Wrapper of SkRegion used in Chromium.
+            'cc::Region',
+
+            # A geometric set of TouchActions associated with areas, and only
+            # depends on the geometry types above.
+            'cc::TouchActionRegion',
 
             # Standalone utility libraries that only depend on //base
             'skia::.+',

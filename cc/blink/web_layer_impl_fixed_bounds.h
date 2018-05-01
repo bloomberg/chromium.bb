@@ -24,7 +24,7 @@ class CC_BLINK_EXPORT WebLayerImplFixedBounds : public WebLayerImpl {
   ~WebLayerImplFixedBounds() override;
 
   // WebLayerImpl overrides.
-  void InvalidateRect(const blink::WebRect& rect) override;
+  void InvalidateRect(const gfx::Rect& rect) override;
   void SetTransformOrigin(
       const blink::WebFloatPoint3D& transform_origin) override;
   void SetBounds(const blink::WebSize& bounds) override;

@@ -6,6 +6,7 @@ include_rules = [
     "+third_party/blink/renderer/platform/geometry",
 
     # Dependencies.
+    "+cc/base/region.h",
     "+third_party/blink/renderer/platform/graphics",
     "+third_party/blink/renderer/platform/json",
     "+third_party/blink/renderer/platform/layout_unit.h",

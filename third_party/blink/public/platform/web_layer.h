@@ -45,10 +45,16 @@
 class SkMatrix44;
 
 namespace cc {
+class FilterOperations;
 class Layer;
 class LayerClient;
-class FilterOperations;
+class Region;
+class TouchActionRegion;
 struct ElementId;
+}
+
+namespace gfx {
+class Rect;
 }
 
 namespace blink {
@@ -66,8 +72,8 @@ class WebLayer {
   // this process.
   virtual int Id() const = 0;
 
-  // Sets a region of the layer as invalid, i.e. needs to update its content.
-  virtual void InvalidateRect(const WebRect&) = 0;
+  // Sets a area of the layer as invalid, i.e. needs to update its content.
+  virtual void InvalidateRect(const gfx::Rect&) = 0;
 
   // Sets the entire layer as invalid, i.e. needs to update its content.
   virtual void Invalidate() = 0;
@@ -192,12 +198,13 @@ class WebLayer {
   virtual uint32_t MainThreadScrollingReasons() = 0;
   virtual bool ShouldScrollOnMainThread() const = 0;
 
-  virtual void SetNonFastScrollableRegion(const WebVector<WebRect>&) = 0;
-  virtual WebVector<WebRect> NonFastScrollableRegion() const = 0;
+  virtual void SetNonFastScrollableRegion(const cc::Region&) = 0;
+  virtual const cc::Region& NonFastScrollableRegion() const = 0;
 
-  virtual void SetTouchEventHandlerRegion(const WebVector<WebTouchInfo>&) = 0;
-  virtual WebVector<WebRect> TouchEventHandlerRegion() const = 0;
-  virtual WebVector<WebRect> TouchEventHandlerRegionForTouchActionForTesting(
+  virtual void SetTouchEventHandlerRegion(
+      const cc::TouchActionRegion& region) = 0;
+  virtual const cc::TouchActionRegion& TouchEventHandlerRegion() const = 0;
+  virtual const cc::Region& TouchEventHandlerRegionForTouchActionForTesting(
       WebTouchAction) const = 0;
 
   virtual void SetIsContainerForFixedPositionLayers(bool) = 0;

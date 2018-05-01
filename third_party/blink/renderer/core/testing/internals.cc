@@ -1851,7 +1851,7 @@ static PaintLayer* FindLayerForGraphicsLayer(PaintLayer* search_root,
 // of rects returned by an SkRegion (which have been split apart for sorting
 // purposes). No attempt is made to do this efficiently (eg. by relying on the
 // sort criteria of SkRegion).
-static void MergeRects(WebVector<blink::WebRect>& rects) {
+static void MergeRects(Vector<IntRect>& rects) {
   for (size_t i = 0; i < rects.size(); ++i) {
     if (rects[i].IsEmpty())
       continue;
@@ -1862,27 +1862,28 @@ static void MergeRects(WebVector<blink::WebRect>& rects) {
         if (rects[j].IsEmpty())
           continue;
         // Try to merge rects[j] into rects[i] along the 4 possible edges.
-        if (rects[i].y == rects[j].y && rects[i].height == rects[j].height) {
-          if (rects[i].x + rects[i].width == rects[j].x) {
-            rects[i].width += rects[j].width;
-            rects[j] = blink::WebRect();
+        if (rects[i].Y() == rects[j].Y() &&
+            rects[i].Height() == rects[j].Height()) {
+          if (rects[i].X() + rects[i].Width() == rects[j].X()) {
+            rects[i].Expand(rects[j].Width(), 0);
+            rects[j] = IntRect();
             updated = true;
-          } else if (rects[i].x == rects[j].x + rects[j].width) {
-            rects[i].x = rects[j].x;
-            rects[i].width += rects[j].width;
-            rects[j] = blink::WebRect();
+          } else if (rects[i].X() == rects[j].X() + rects[j].Width()) {
+            rects[i].SetX(rects[j].X());
+            rects[i].Expand(rects[j].Width(), 0);
+            rects[j] = IntRect();
             updated = true;
           }
-        } else if (rects[i].x == rects[j].x &&
-                   rects[i].width == rects[j].width) {
-          if (rects[i].y + rects[i].height == rects[j].y) {
-            rects[i].height += rects[j].height;
-            rects[j] = blink::WebRect();
+        } else if (rects[i].X() == rects[j].X() &&
+                   rects[i].Width() == rects[j].Width()) {
+          if (rects[i].Y() + rects[i].Height() == rects[j].Y()) {
+            rects[i].Expand(0, rects[j].Height());
+            rects[j] = IntRect();
             updated = true;
-          } else if (rects[i].y == rects[j].y + rects[j].height) {
-            rects[i].y = rects[j].y;
-            rects[i].height += rects[j].height;
-            rects[j] = blink::WebRect();
+          } else if (rects[i].Y() == rects[j].Y() + rects[j].Height()) {
+            rects[i].SetY(rects[j].Y());
+            rects[i].Expand(0, rects[j].Height());
+            rects[j] = IntRect();
             updated = true;
           }
         }
@@ -1894,9 +1895,13 @@ static void MergeRects(WebVector<blink::WebRect>& rects) {
 static void AccumulateLayerRectList(PaintLayerCompositor* compositor,
                                     GraphicsLayer* graphics_layer,
                                     LayerRectList* rects) {
-  WebVector<blink::WebRect> layer_rects =
+  const cc::TouchActionRegion& touch_action_region =
       graphics_layer->PlatformLayer()->TouchEventHandlerRegion();
-  if (!layer_rects.empty()) {
+  if (!touch_action_region.region().IsEmpty()) {
+    Vector<IntRect> layer_rects;
+    for (const gfx::Rect& rect : touch_action_region.region()) {
+      layer_rects.push_back(IntRect(rect));
+    }
     MergeRects(layer_rects);
     String layer_type;
     IntSize layer_offset;

@@ -118,7 +118,6 @@ blink_core_sources("paint") {
     "inline_text_box_painter.h",
     "layer_clip_recorder.cc",
     "layer_clip_recorder.h",
-    "layer_hit_test_rects.h",
     "line_box_list_painter.cc",
     "line_box_list_painter.h",
     "link_highlight_impl.cc",

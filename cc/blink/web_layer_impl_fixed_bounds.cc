@@ -21,7 +21,7 @@ WebLayerImplFixedBounds::WebLayerImplFixedBounds(scoped_refptr<Layer> layer)
 
 WebLayerImplFixedBounds::~WebLayerImplFixedBounds() = default;
 
-void WebLayerImplFixedBounds::InvalidateRect(const blink::WebRect& rect) {
+void WebLayerImplFixedBounds::InvalidateRect(const gfx::Rect& rect) {
   // Partial invalidations seldom occur for such layers.
   // Simply invalidate the whole layer to avoid transformation of coordinates.
   Invalidate();
