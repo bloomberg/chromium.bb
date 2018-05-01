@@ -241,6 +241,9 @@ void NGPhysicalFragment::Destroy() const {
 
 const ComputedStyle& NGPhysicalFragment::Style() const {
   DCHECK(style_);
+  // TODO(kojii): Returning |style_| locks the style at the layout time, and
+  // will not be updated when its base style is updated later. Line styles and
+  // ellipsis styles have this problem.
   if (!GetLayoutObject())
     return *style_;
   switch ((NGStyleVariant)style_variant_) {

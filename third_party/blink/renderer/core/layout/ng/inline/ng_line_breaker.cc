@@ -186,14 +186,8 @@ bool NGLineBreaker::NextLine(const NGLayoutOpportunity& opportunity,
 
   // TODO(kojii): There are cases where we need to PlaceItems() without creating
   // line boxes. These cases need to be reviewed.
-  if (line_.should_create_line_box) {
-    if (!line_.CanFit() &&
-        node_.GetLayoutBlockFlow()->ShouldTruncateOverflowingText()) {
-      TruncateOverflowingText(line_info);
-    }
-
+  if (line_.should_create_line_box)
     ComputeLineLocation(line_info);
-  }
 
   return true;
 }
@@ -934,56 +928,6 @@ LayoutObject* NGLineBreaker::CurrentLayoutObject(
   }
   NOTREACHED();
   return nullptr;
-}
-
-// Truncate overflowing text and append ellipsis.
-void NGLineBreaker::TruncateOverflowingText(NGLineInfo* line_info) {
-  // The ellipsis is styled according to the line style.
-  const Font& font = line_info->LineStyle().GetFont();
-  const SimpleFontData* font_data = font.PrimaryFont();
-  DCHECK(font_data);
-  String ellipsis =
-      font_data && font_data->GlyphForCharacter(kHorizontalEllipsisCharacter)
-          ? String(&kHorizontalEllipsisCharacter, 1)
-          : String(u"...");
-  HarfBuzzShaper shaper(ellipsis.Characters16(), ellipsis.length());
-  scoped_refptr<ShapeResult> shape_result =
-      shaper.Shape(&font, line_info->BaseDirection());
-
-  // Truncate the line to (available_width - ellipsis_width) using 'line-break:
-  // anywhere'.
-  unsigned saved_item_index = item_index_;
-  unsigned saved_offset = offset_;
-  override_break_anywhere_ = true;
-  break_iterator_.SetBreakType(LineBreakType::kBreakCharacter);
-  HandleOverflow(line_info,
-                 line_.AvailableWidth() - shape_result->SnappedWidth());
-
-  // Find the LayoutObject this ellpsis is tied to.
-  LayoutObject* layout_object = CurrentLayoutObject(*line_info);
-
-  // Restore item_index/offset to before HandleOverflow().
-  item_index_ = saved_item_index;
-  offset_ = saved_offset;
-
-  // Ellipsis should not have text decorations. Reset if it's set.
-  scoped_refptr<const ComputedStyle> style = &line_info->LineStyle();
-  if (style->TextDecorationsInEffect() != TextDecoration::kNone) {
-    scoped_refptr<ComputedStyle> ellipsis_style =
-        ComputedStyle::CreateAnonymousStyleWithDisplay(*style,
-                                                       EDisplay::kInline);
-    ellipsis_style->ResetTextDecoration();
-    ellipsis_style->ClearAppliedTextDecorations();
-    style = std::move(ellipsis_style);
-  }
-
-  // The ellipsis should appear at the logical end of the line.
-  // This is stored seprately from other results so that it can be appended
-  // after bidi reorder.
-  NGTextFragmentBuilder builder(node_, constraint_space_.GetWritingMode());
-  builder.SetText(layout_object, ellipsis, style, true /* is_ellipsis_style */,
-                  std::move(shape_result));
-  SetLineEndFragment(builder.ToTextFragment(), line_info);
 }
 
 void NGLineBreaker::SetCurrentStyle(const ComputedStyle& style) {

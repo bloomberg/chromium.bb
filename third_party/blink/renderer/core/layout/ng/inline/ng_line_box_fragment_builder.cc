@@ -56,6 +56,25 @@ const NGPhysicalFragment* NGLineBoxFragmentBuilder::Child::PhysicalFragment()
                        : fragment.get();
 }
 
+NGLineBoxFragmentBuilder::Child*
+NGLineBoxFragmentBuilder::ChildList::FirstInFlowChild() {
+  for (auto& child : *this) {
+    if (child.HasInFlowFragment())
+      return &child;
+  }
+  return nullptr;
+}
+
+NGLineBoxFragmentBuilder::Child*
+NGLineBoxFragmentBuilder::ChildList::LastInFlowChild() {
+  for (auto it = rbegin(); it != rend(); it++) {
+    auto& child = *it;
+    if (child.HasInFlowFragment())
+      return &child;
+  }
+  return nullptr;
+}
+
 void NGLineBoxFragmentBuilder::ChildList::InsertChild(
     unsigned index,
     scoped_refptr<NGLayoutResult> layout_result,

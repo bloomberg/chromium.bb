@@ -126,6 +126,11 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
     return static_cast<NGTextEndEffect>(end_effect_);
   }
 
+  // Create a new fragment that has part of the text of this fragment.
+  // All other properties are the same as this fragment.
+  scoped_refptr<NGPhysicalFragment> TrimText(unsigned start_offset,
+                                             unsigned end_offset) const;
+
   scoped_refptr<NGPhysicalFragment> CloneWithoutOffset() const;
 
   NGTextFragmentPaintInfo PaintInfo() const {

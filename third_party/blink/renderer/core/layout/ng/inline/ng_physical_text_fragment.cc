@@ -143,6 +143,24 @@ NGPhysicalOffsetRect NGPhysicalTextFragment::SelfVisualRect() const {
   return local_visual_rect;
 }
 
+scoped_refptr<NGPhysicalFragment> NGPhysicalTextFragment::TrimText(
+    unsigned new_start_offset,
+    unsigned new_end_offset) const {
+  DCHECK(shape_result_);
+  DCHECK_GE(new_start_offset, StartOffset());
+  DCHECK_GT(new_end_offset, new_start_offset);
+  DCHECK_LE(new_end_offset, EndOffset());
+  scoped_refptr<ShapeResult> new_shape_result =
+      shape_result_->SubRange(new_start_offset, new_end_offset);
+  LayoutUnit new_inline_size = new_shape_result->SnappedWidth();
+  return base::AdoptRef(new NGPhysicalTextFragment(
+      layout_object_, Style(), static_cast<NGStyleVariant>(style_variant_),
+      TextType(), text_, new_start_offset, new_end_offset,
+      IsHorizontal() ? NGPhysicalSize{new_inline_size, size_.height}
+                     : NGPhysicalSize{size_.width, new_inline_size},
+      LineOrientation(), EndEffect(), std::move(new_shape_result)));
+}
+
 scoped_refptr<NGPhysicalFragment> NGPhysicalTextFragment::CloneWithoutOffset()
     const {
   return base::AdoptRef(new NGPhysicalTextFragment(

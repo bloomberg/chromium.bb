@@ -147,7 +147,6 @@ class CORE_EXPORT NGLineBreaker {
   void Rewind(NGLineInfo*, unsigned new_end);
 
   LayoutObject* CurrentLayoutObject(const NGLineInfo&) const;
-  void TruncateOverflowingText(NGLineInfo*);
 
   void SetCurrentStyle(const ComputedStyle&);
 
