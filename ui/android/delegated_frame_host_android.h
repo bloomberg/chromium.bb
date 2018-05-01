@@ -142,7 +142,6 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
 
   const bool enable_surface_synchronization_;
   viz::ParentLocalSurfaceIdAllocator local_surface_id_allocator_;
-  viz::LocalSurfaceId local_surface_id_;
 
   // A lock that is held from the point at which we attach to the compositor to
   // the point at which we submit our first frame to the compositor. This

@@ -835,14 +835,13 @@ bool RenderWidgetHostImpl::GetVisualProperties(
           visual_properties->bottom_controls_height ||
       old_visual_properties_->visible_viewport_size !=
           visual_properties->visible_viewport_size ||
+      old_visual_properties_->local_surface_id !=
+          visual_properties->local_surface_id ||
+      old_visual_properties_->capture_sequence_number !=
+          visual_properties->capture_sequence_number ||
       (enable_surface_synchronization_ &&
        old_visual_properties_->content_source_id !=
-           visual_properties->content_source_id) ||
-      (enable_surface_synchronization_ &&
-       old_visual_properties_->local_surface_id !=
-           visual_properties->local_surface_id) ||
-      old_visual_properties_->capture_sequence_number !=
-          visual_properties->capture_sequence_number;
+           visual_properties->content_source_id);
 
   // We don't expect to receive an ACK when the requested size or the physical
   // backing size is empty, or when the main viewport size didn't change.
@@ -851,9 +850,8 @@ bool RenderWidgetHostImpl::GetVisualProperties(
       !visual_properties->new_size.IsEmpty() &&
       !visual_properties->compositor_viewport_pixel_size.IsEmpty() &&
       (size_changed || next_resize_needs_resize_ack_) &&
-      (!enable_surface_synchronization_ ||
-       (visual_properties->local_surface_id.has_value() &&
-        visual_properties->local_surface_id->is_valid()));
+      (visual_properties->local_surface_id.has_value() &&
+       visual_properties->local_surface_id->is_valid());
 
   return dirty;
 }
@@ -879,19 +877,21 @@ void RenderWidgetHostImpl::SynchronizeVisualProperties(
     return;
   }
 
-  std::unique_ptr<VisualProperties> params(new VisualProperties);
-  if (!GetVisualProperties(params.get()))
+  std::unique_ptr<VisualProperties> visual_properties(new VisualProperties);
+  if (!GetVisualProperties(visual_properties.get()))
     return;
-  params->scroll_focused_node_into_view = scroll_focused_node_into_view;
+  visual_properties->scroll_focused_node_into_view =
+      scroll_focused_node_into_view;
 
-  ScreenInfo screen_info = params->screen_info;
+  ScreenInfo screen_info = visual_properties->screen_info;
   bool width_changed =
-      !old_visual_properties_ ||
-      old_visual_properties_->new_size.width() != params->new_size.width();
-  if (Send(new ViewMsg_SynchronizeVisualProperties(routing_id_, *params))) {
-    resize_ack_pending_ = params->needs_resize_ack;
+      !old_visual_properties_ || old_visual_properties_->new_size.width() !=
+                                     visual_properties->new_size.width();
+  if (Send(new ViewMsg_SynchronizeVisualProperties(routing_id_,
+                                                   *visual_properties))) {
+    resize_ack_pending_ = visual_properties->needs_resize_ack;
     next_resize_needs_resize_ack_ = false;
-    old_visual_properties_.swap(params);
+    old_visual_properties_.swap(visual_properties);
   }
 
   if (delegate_)
