@@ -67,7 +67,6 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
 @property(nonatomic, strong) UIButton* fakeOmnibox;
 @property(nonatomic, strong) UILabel* searchHintLabel;
 @property(nonatomic, strong) NSLayoutConstraint* hintLabelLeadingConstraint;
-@property(nonatomic, strong) NSLayoutConstraint* hintLabelWidthConstraint;
 @property(nonatomic, strong) NSLayoutConstraint* voiceTapTrailingConstraint;
 @property(nonatomic, strong) NSLayoutConstraint* doodleHeightConstraint;
 @property(nonatomic, strong) NSLayoutConstraint* doodleTopMarginConstraint;
@@ -98,7 +97,6 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
 @synthesize headerView = _headerView;
 @synthesize fakeOmnibox = _fakeOmnibox;
 @synthesize hintLabelLeadingConstraint = _hintLabelLeadingConstraint;
-@synthesize hintLabelWidthConstraint = _hintLabelWidthConstraint;
 @synthesize voiceTapTrailingConstraint = _voiceTapTrailingConstraint;
 @synthesize doodleHeightConstraint = _doodleHeightConstraint;
 @synthesize doodleTopMarginConstraint = _doodleTopMarginConstraint;
@@ -176,7 +174,6 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
                                    height:self.fakeOmniboxHeightConstraint
                                 topMargin:self.fakeOmniboxTopMarginConstraint
                                 hintLabel:self.searchHintLabel
-                           hintLabelWidth:self.hintLabelWidthConstraint
                        subviewConstraints:constraints
                                 forOffset:offset
                               screenWidth:screenWidth
@@ -313,21 +310,17 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
 
   // Set up fakebox hint label.
   _searchHintLabel = [[UILabel alloc] init];
-  content_suggestions::configureSearchHintLabel(_searchHintLabel,
-                                                self.fakeOmnibox);
+  UIView* hintLabelContainer = [[UIView alloc] init];
+  content_suggestions::configureSearchHintLabel(
+      _searchHintLabel, hintLabelContainer, self.fakeOmnibox);
 
-  self.hintLabelLeadingConstraint = [_searchHintLabel.leadingAnchor
+  self.hintLabelLeadingConstraint = [hintLabelContainer.leadingAnchor
       constraintEqualToAnchor:[self.fakeOmnibox leadingAnchor]
                      constant:ntp_header::kHintLabelSidePadding];
   if (!IsUIRefreshPhase1Enabled())
     self.hintLabelLeadingConstraint.constant =
         ntp_header::kHintLabelSidePaddingLegacy;
   [self.hintLabelLeadingConstraint setActive:YES];
-
-  if (IsUIRefreshPhase1Enabled()) {
-    self.hintLabelWidthConstraint =
-        [_searchHintLabel.widthAnchor constraintEqualToConstant:0];
-  }
 
   // Set a button the same size as the fake omnibox as the accessibility
   // element. If the hint is the only accessible element, when the fake omnibox
@@ -352,15 +345,11 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
 
   self.voiceTapTrailingConstraint = [voiceTapTarget.trailingAnchor
       constraintEqualToAnchor:[self.fakeOmnibox trailingAnchor]];
-  if (IsUIRefreshPhase1Enabled()) {
-    [NSLayoutConstraint activateConstraints:@[ _voiceTapTrailingConstraint ]];
-  } else {
-    [NSLayoutConstraint activateConstraints:@[
-      [_searchHintLabel.trailingAnchor
-          constraintEqualToAnchor:voiceTapTarget.leadingAnchor],
-      _voiceTapTrailingConstraint
-    ]];
-  }
+  [NSLayoutConstraint activateConstraints:@[
+    [hintLabelContainer.trailingAnchor
+        constraintEqualToAnchor:voiceTapTarget.leadingAnchor],
+    _voiceTapTrailingConstraint
+  ]];
 
   if (self.voiceSearchIsEnabled) {
     [voiceTapTarget addTarget:self

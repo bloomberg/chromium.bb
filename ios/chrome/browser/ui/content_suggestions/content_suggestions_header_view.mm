@@ -65,6 +65,22 @@ const CGFloat kSearchIconLeftMargin = 9;
   self.toolBarView.hidden = IsRegularXRegularSizeClass(self);
 }
 
+#pragma mark - Private
+
+// Scale the the hint label down to at most content_suggestions::kHintTextScale.
+// Also maintains autoresizing frame origin after the transform.
+- (void)scaleHintLabel:(UIView*)hintLabel percent:(CGFloat)percent {
+  CGFloat scaleValue = (content_suggestions::kHintTextScale - 1) * percent + 1;
+  hintLabel.transform = CGAffineTransformMakeScale(scaleValue, scaleValue);
+  // The transform above is anchored around the center of the frame, which means
+  // the origin x and y value will be updated as well as it's width and height.
+  // Since the source of truth for this views layout is governed by it's parent
+  // view in autolayout, reset the frame's origin.x to 0 below.
+  CGRect frame = hintLabel.frame;
+  frame.origin.x = 0;
+  hintLabel.frame = frame;
+}
+
 #pragma mark - NTPHeaderViewAdapter
 
 - (void)addToolbarView:(UIView*)toolbarView {
@@ -140,7 +156,7 @@ const CGFloat kSearchIconLeftMargin = 9;
 
   UIImage* search_icon = [UIImage imageNamed:@"ntp_search_icon"];
   UIImageView* search_view = [[UIImageView alloc] initWithImage:search_icon];
-  [vibrancyView.contentView addSubview:search_view];
+  [searchField addSubview:search_view];
   search_view.translatesAutoresizingMaskIntoConstraints = NO;
   [NSLayoutConstraint activateConstraints:@[
     [search_view.centerYAnchor
@@ -171,7 +187,6 @@ const CGFloat kSearchIconLeftMargin = 9;
                         height:(NSLayoutConstraint*)heightConstraint
                      topMargin:(NSLayoutConstraint*)topMarginConstraint
                      hintLabel:(UILabel*)hintLabel
-                hintLabelWidth:(NSLayoutConstraint*)hintLabelWidthConstraint
             subviewConstraints:(NSArray*)constraints
                      forOffset:(CGFloat)offset
                    screenWidth:(CGFloat)screenWidth
@@ -189,11 +204,12 @@ const CGFloat kSearchIconLeftMargin = 9;
   if (IsRegularXRegularSizeClass(self)) {
     self.alpha = 1 - percent;
     widthConstraint.constant = searchFieldNormalWidth;
-    hintLabelWidthConstraint.active = NO;
+    self.backgroundHeightConstraint.constant =
+        content_suggestions::kSearchFieldHeight;
+    [self scaleHintLabel:hintLabel percent:percent];
     self.blurTopConstraint.constant = 0;
     return;
   } else {
-    hintLabelWidthConstraint.active = YES;
     self.alpha = 1;
   }
 
@@ -219,26 +235,16 @@ const CGFloat kSearchIconLeftMargin = 9;
       (safeAreaInsets.left + kExpandedLocationBarHorizontalMargin) * percent;
   self.backgroundTrailingConstraint.constant =
       -(safeAreaInsets.right + kExpandedLocationBarHorizontalMargin) * percent;
-  // TODO(crbug.com/805645) This should take into account the actual location
-  // bar height in the toolbar. Update this once that's been updated for the
-  // refresh and remove |kLocationBarHeight|.
-  CGFloat kLocationBarHeight = 38;
+
+  CGFloat kLocationBarHeight =
+      kAdaptiveToolbarHeight - 2 * kAdaptiveLocationBarVerticalMargin;
   CGFloat minHeightDiff =
       kLocationBarHeight - content_suggestions::kSearchFieldHeight;
   self.backgroundHeightConstraint.constant =
       content_suggestions::kSearchFieldHeight + minHeightDiff * percent;
 
-  // TODO(crbug.com/805645) This should take into account the actual label width
-  // of the toolbar location omnibox box hint text. Update this once that's been
-  // updated for the refresh and remove |kHintShrinkWidth|.
-  CGFloat kHintShrinkWidth = 30;
-  CGFloat hintWidth =
-      [hintLabel.text
-          cr_boundingSizeWithSize:CGSizeMake(widthConstraint.constant, INFINITY)
-                             font:hintLabel.font]
-          .width;
-  hintLabelWidthConstraint.constant = hintWidth - kHintShrinkWidth * percent;
-  hintLabelWidthConstraint.active = YES;
+  // Scale the hintLabel, and make sure the frame stays left aligned.
+  [self scaleHintLabel:hintLabel percent:percent];
 
   // Adjust the position of the search field's subviews by adjusting their
   // constraint constant value.
