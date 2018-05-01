@@ -37,6 +37,15 @@ struct MediaEngagementConfig {
   // to be high.
   double high_score_lower_threshold;
   double high_score_upper_threshold;
+
+  // The state of different internal autoplay features and flags.
+  bool feature_record_data;
+  bool feature_bypass_autoplay;
+  bool feature_preload_data;
+  string autoplay_policy;
+
+  // The current version of any preloaded component.
+  string preload_version;
 };
 
 interface MediaEngagementScoreDetailsProvider {
