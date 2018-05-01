@@ -83,7 +83,7 @@ int main(int argc, char** argv) {
   ui::RegisterPathProvider();
 
   base::FilePath ui_test_pak_path;
-  CHECK(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
+  CHECK(base::PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
   ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
 
   base::DiscardableMemoryAllocator::SetInstance(

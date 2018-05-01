@@ -25,7 +25,7 @@ bool PathProvider(int key, base::FilePath* result) {
   base::FilePath cur;
   switch (key) {
     case DIR_LOCALES:
-      if (!PathService::Get(base::DIR_MODULE, &cur))
+      if (!base::PathService::Get(base::DIR_MODULE, &cur))
         return false;
 #if defined(OS_MACOSX)
       // On Mac, locale files are in Contents/Resources, a sibling of the
@@ -33,7 +33,7 @@ bool PathProvider(int key, base::FilePath* result) {
       cur = cur.DirName();
       cur = cur.Append(FILE_PATH_LITERAL("Resources"));
 #elif defined(OS_ANDROID)
-      if (!PathService::Get(DIR_RESOURCE_PAKS_ANDROID, &cur))
+      if (!base::PathService::Get(DIR_RESOURCE_PAKS_ANDROID, &cur))
         return false;
 #else
       cur = cur.Append(FILE_PATH_LITERAL("locales"));
@@ -44,7 +44,7 @@ bool PathProvider(int key, base::FilePath* result) {
     // will fail if executed from an installed executable (because the
     // generated path won't exist).
     case UI_DIR_TEST_DATA:
-      if (!PathService::Get(base::DIR_SOURCE_ROOT, &cur))
+      if (!base::PathService::Get(base::DIR_SOURCE_ROOT, &cur))
         return false;
       cur = cur.Append(FILE_PATH_LITERAL("ui"));
       cur = cur.Append(FILE_PATH_LITERAL("base"));
@@ -55,17 +55,17 @@ bool PathProvider(int key, base::FilePath* result) {
       break;
 #if defined(OS_ANDROID)
     case DIR_RESOURCE_PAKS_ANDROID:
-      if (!PathService::Get(base::DIR_ANDROID_APP_DATA, &cur))
+      if (!base::PathService::Get(base::DIR_ANDROID_APP_DATA, &cur))
         return false;
       cur = cur.Append(FILE_PATH_LITERAL("paks"));
       break;
 #endif
     case UI_TEST_PAK:
 #if defined(OS_ANDROID)
-      if (!PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &cur))
+      if (!base::PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &cur))
         return false;
 #else
-      if (!PathService::Get(base::DIR_MODULE, &cur))
+      if (!base::PathService::Get(base::DIR_MODULE, &cur))
         return false;
 #endif
       cur = cur.AppendASCII("ui_test.pak");
@@ -85,7 +85,7 @@ bool PathProvider(int key, base::FilePath* result) {
 // This cannot be done as a static initializer sadly since Visual Studio will
 // eliminate this object file if there is no direct entry point into it.
 void RegisterPathProvider() {
-  PathService::RegisterProvider(PathProvider, PATH_START, PATH_END);
+  base::PathService::RegisterProvider(PathProvider, PATH_START, PATH_END);
 }
 
 }  // namespace ui

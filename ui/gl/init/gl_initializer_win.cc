@@ -50,11 +50,11 @@ bool LoadD3DXLibrary(const base::FilePath& module_path,
 
 bool InitializeStaticOSMesaInternal() {
   base::FilePath module_path;
-  PathService::Get(base::DIR_MODULE, &module_path);
+  base::PathService::Get(base::DIR_MODULE, &module_path);
   base::NativeLibrary library =
       base::LoadNativeLibrary(module_path.Append(L"osmesa.dll"), nullptr);
   if (!library) {
-    PathService::Get(base::DIR_EXE, &module_path);
+    base::PathService::Get(base::DIR_EXE, &module_path);
     library =
         base::LoadNativeLibrary(module_path.Append(L"osmesa.dll"), nullptr);
     if (!library) {
@@ -85,7 +85,7 @@ bool InitializeStaticOSMesaInternal() {
 
 bool InitializeStaticEGLInternal(GLImplementation implementation) {
   base::FilePath module_path;
-  if (!PathService::Get(base::DIR_MODULE, &module_path))
+  if (!base::PathService::Get(base::DIR_MODULE, &module_path))
     return false;
 
   // Attempt to load the D3DX shader compiler using the default search path

@@ -52,7 +52,7 @@ ViewsContentClientMainPartsMac::ViewsContentClientMainPartsMac(
     : ViewsContentClientMainParts(content_params, views_content_client) {
   // Cache the child process path to avoid triggering an AssertIOAllowed.
   base::FilePath child_process_exe;
-  PathService::Get(content::CHILD_PROCESS_EXE, &child_process_exe);
+  base::PathService::Get(content::CHILD_PROCESS_EXE, &child_process_exe);
 
   app_controller_.reset([[ViewsContentClientAppController alloc] init]);
   [[NSApplication sharedApplication] setDelegate:app_controller_];
