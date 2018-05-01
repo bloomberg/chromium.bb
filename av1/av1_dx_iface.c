@@ -60,6 +60,7 @@ struct aom_codec_alg_priv {
   int decode_tile_col;
   unsigned int tile_mode;
   unsigned int is_annexb;
+  int operating_point;
 
   AVxWorker *frame_workers;
   int num_frame_workers;
@@ -416,6 +417,7 @@ static aom_codec_err_t init_decoder(aom_codec_alg_priv_t *ctx) {
     frame_worker_data->pbi->common.is_annexb = ctx->is_annexb;
     frame_worker_data->pbi->dec_tile_row = ctx->decode_tile_row;
     frame_worker_data->pbi->dec_tile_col = ctx->decode_tile_col;
+    frame_worker_data->pbi->operating_point = ctx->operating_point;
     worker->hook = (AVxWorkerHook)frame_worker_hook;
     if (!winterface->reset(worker)) {
       set_error_detail(ctx, "Frame Worker thread creation failed");
@@ -1006,6 +1008,12 @@ static aom_codec_err_t ctrl_set_is_annexb(aom_codec_alg_priv_t *ctx,
   return AOM_CODEC_OK;
 }
 
+static aom_codec_err_t ctrl_set_operating_point(aom_codec_alg_priv_t *ctx,
+                                                va_list args) {
+  ctx->operating_point = va_arg(args, int);
+  return AOM_CODEC_OK;
+}
+
 static aom_codec_err_t ctrl_set_inspection_callback(aom_codec_alg_priv_t *ctx,
                                                     va_list args) {
 #if !CONFIG_INSPECTION
@@ -1037,6 +1045,7 @@ static aom_codec_ctrl_fn_map_t decoder_ctrl_maps[] = {
   { AV1_SET_DECODE_TILE_COL, ctrl_set_decode_tile_col },
   { AV1_SET_TILE_MODE, ctrl_set_tile_mode },
   { AV1D_SET_IS_ANNEXB, ctrl_set_is_annexb },
+  { AV1D_SET_OPERATING_POINT, ctrl_set_operating_point },
   { AV1_SET_INSPECTION_CALLBACK, ctrl_set_inspection_callback },
 
   // Getters

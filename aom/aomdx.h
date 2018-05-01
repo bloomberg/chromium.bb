@@ -149,6 +149,16 @@ enum aom_dec_control_id {
   /** control function to indicate whether bitstream is in Annex-B format. */
   AV1D_SET_IS_ANNEXB,
 
+  /** control function to indicate which operating point to use. A scalable
+   *  stream may define multiple operating points, each of which defines a
+   *  set of temporal and spatial layers to be processed. The operating point
+   *  index may take a value between 0 and
+   * aom_codec_stream_info_t::enhancement_layers_cnt. The
+   * aom_codec_stream_info_t data structure may be retrieved using a call to
+   * aom_codec_peek_stream_info()
+   */
+  AV1D_SET_OPERATING_POINT,
+
   /** control function to set an aom_inspect_cb callback that is invoked each
    * time a frame is decoded.  When compiled without --enable-inspection, this
    * returns AOM_CODEC_INCAPABLE.
@@ -192,6 +202,8 @@ AOM_CTRL_USE_TYPE(AV1_SET_TILE_MODE, unsigned int)
 #define AOM_CTRL_AV1_SET_TILE_MODE
 AOM_CTRL_USE_TYPE(AV1D_SET_IS_ANNEXB, unsigned int)
 #define AOM_CTRL_AV1D_SET_IS_ANNEXB
+AOM_CTRL_USE_TYPE(AV1D_SET_OPERATING_POINT, int)
+#define AOM_CTRL_AV1D_SET_OPERATING_POINT
 AOM_CTRL_USE_TYPE(AV1_SET_INSPECTION_CALLBACK, aom_inspect_init *)
 #define AOM_CTRL_AV1_SET_INSPECTION_CALLBACK
 /*!\endcond */

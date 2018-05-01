@@ -113,15 +113,16 @@ static const arg_def_t tilec = ARG_DEF(NULL, "tile-column", 1,
                                        "(-1 for all columns)");
 static const arg_def_t isannexb =
     ARG_DEF(NULL, "annexb", 0, "Bitstream is in Annex-B format");
+static const arg_def_t oppointarg = ARG_DEF(
+    NULL, "oppoint", 1, "Select an operating point of a scalable bitstream");
 
 static const arg_def_t *all_args[] = {
-  &help,           &codecarg,   &use_yv12,      &use_i420,
-  &flipuvarg,      &rawvideo,   &noblitarg,     &progressarg,
-  &limitarg,       &skiparg,    &postprocarg,   &summaryarg,
-  &outputfile,     &threadsarg, &verbosearg,    &scalearg,
-  &fb_arg,         &md5arg,     &framestatsarg, &continuearg,
-  &outbitdeptharg, &tilem,      &tiler,         &tilec,
-  &isannexb,       NULL
+  &help,           &codecarg,   &use_yv12,    &use_i420,      &flipuvarg,
+  &rawvideo,       &noblitarg,  &progressarg, &limitarg,      &skiparg,
+  &postprocarg,    &summaryarg, &outputfile,  &threadsarg,    &verbosearg,
+  &scalearg,       &fb_arg,     &md5arg,      &framestatsarg, &continuearg,
+  &outbitdeptharg, &tilem,      &tiler,       &tilec,         &isannexb,
+  &oppointarg,     NULL
 };
 
 #if CONFIG_LIBYUV
@@ -512,6 +513,7 @@ static int main_loop(int argc, const char **argv_) {
   int frames_corrupted = 0;
   int dec_flags = 0;
   int do_scale = 0;
+  int operating_point = 0;
   aom_image_t *scaled_img = NULL;
   aom_image_t *img_shifted = NULL;
   int frame_avail, got_data, flush_decoder = 0;
@@ -620,6 +622,8 @@ static int main_loop(int argc, const char **argv_) {
       tile_row = arg_parse_int(&arg);
     } else if (arg_match(&arg, &tilec, argi)) {
       tile_col = arg_parse_int(&arg);
+    } else if (arg_match(&arg, &oppointarg, argi)) {
+      operating_point = arg_parse_int(&arg);
     } else {
       argj++;
     }
@@ -743,6 +747,12 @@ static int main_loop(int argc, const char **argv_) {
 
   if (aom_codec_control(&decoder, AV1_SET_DECODE_TILE_COL, tile_col)) {
     fprintf(stderr, "Failed to set decode_tile_col: %s\n",
+            aom_codec_error(&decoder));
+    goto fail;
+  }
+
+  if (aom_codec_control(&decoder, AV1D_SET_OPERATING_POINT, operating_point)) {
+    fprintf(stderr, "Failed to set operating_point: %s\n",
             aom_codec_error(&decoder));
     goto fail;
   }

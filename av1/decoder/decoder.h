@@ -101,7 +101,9 @@ typedef struct AV1Decoder {
   aom_inspect_cb inspect_cb;
   void *inspect_ctx;
 #endif
+  int operating_point;
   int current_operating_point;
+  int dropped_obus;
 } AV1Decoder;
 
 int av1_receive_compressed_data(struct AV1Decoder *pbi, size_t size,

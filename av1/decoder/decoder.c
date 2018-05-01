@@ -260,31 +260,35 @@ static void swap_frame_buffers(AV1Decoder *pbi) {
   BufferPool *const pool = cm->buffer_pool;
   RefCntBuffer *const frame_bufs = cm->buffer_pool->frame_bufs;
 
-  lock_buffer_pool(pool);
-  for (mask = pbi->refresh_frame_flags; mask; mask >>= 1) {
-    const int old_idx = cm->ref_frame_map[ref_index];
+  if (!pbi->dropped_obus) {
+    lock_buffer_pool(pool);
+    for (mask = pbi->refresh_frame_flags; mask; mask >>= 1) {
+      const int old_idx = cm->ref_frame_map[ref_index];
+      // Current thread releases the holding of reference frame.
+      decrease_ref_count(old_idx, frame_bufs, pool);
+
+      // Release the reference frame holding in the reference map for the
+      // decoding of the next frame.
+      if (mask & 1) decrease_ref_count(old_idx, frame_bufs, pool);
+      cm->ref_frame_map[ref_index] = cm->next_ref_frame_map[ref_index];
+      ++ref_index;
+    }
+
     // Current thread releases the holding of reference frame.
-    decrease_ref_count(old_idx, frame_bufs, pool);
+    const int check_on_show_existing_frame =
+        !cm->show_existing_frame || cm->reset_decoder_state;
+    for (; ref_index < REF_FRAMES && check_on_show_existing_frame;
+         ++ref_index) {
+      const int old_idx = cm->ref_frame_map[ref_index];
+      decrease_ref_count(old_idx, frame_bufs, pool);
+      cm->ref_frame_map[ref_index] = cm->next_ref_frame_map[ref_index];
+    }
 
-    // Release the reference frame holding in the reference map for the decoding
-    // of the next frame.
-    if (mask & 1) decrease_ref_count(old_idx, frame_bufs, pool);
-    cm->ref_frame_map[ref_index] = cm->next_ref_frame_map[ref_index];
-    ++ref_index;
+    unlock_buffer_pool(pool);
+    cm->frame_to_show = get_frame_new_buffer(cm);
   }
 
-  // Current thread releases the holding of reference frame.
-  const int check_on_show_existing_frame =
-      !cm->show_existing_frame || cm->reset_decoder_state;
-  for (; ref_index < REF_FRAMES && check_on_show_existing_frame; ++ref_index) {
-    const int old_idx = cm->ref_frame_map[ref_index];
-    decrease_ref_count(old_idx, frame_bufs, pool);
-    cm->ref_frame_map[ref_index] = cm->next_ref_frame_map[ref_index];
-  }
-
-  unlock_buffer_pool(pool);
   pbi->hold_ref_buf = 0;
-  cm->frame_to_show = get_frame_new_buffer(cm);
 
   lock_buffer_pool(pool);
   --frame_bufs[cm->new_fb_idx].ref_count;
@@ -320,8 +324,6 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
       cm->frame_refs[0].buf->corrupted = 1;
     }
   }
-
-  pbi->ready_for_new_data = 0;
 
   // Find a free buffer for the new frame, releasing the reference previously
   // held.
@@ -436,6 +438,8 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
   cm->last_tile_cols = cm->tile_cols;
   cm->last_tile_rows = cm->tile_rows;
   cm->error.setjmp = 0;
+
+  if (!pbi->dropped_obus) pbi->ready_for_new_data = 0;
   return 0;
 }
 
