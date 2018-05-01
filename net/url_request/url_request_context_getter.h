@@ -9,11 +9,22 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/sequenced_task_runner_helpers.h"
+#include "build/build_config.h"
 #include "net/base/net_export.h"
 
 namespace base {
 class SingleThreadTaskRunner;
 }  // namespace base
+
+namespace content {
+class WebSocketManager;
+}
+
+#if defined(OS_IOS)
+namespace web {
+class NetworkContextOwner;
+}
+#endif  // defined(OS_IOS)
 
 namespace net {
 class URLRequestContext;
@@ -38,12 +49,6 @@ class NET_EXPORT URLRequestContextGetter
   virtual scoped_refptr<base::SingleThreadTaskRunner>
       GetNetworkTaskRunner() const = 0;
 
-  // Adds / removes an observer to watch for shutdown of |this|'s context. Must
-  // only be called on network thread. May not be called once
-  // GetURLRequestContext() starts returning nullptr.
-  void AddObserver(URLRequestContextGetterObserver* observer);
-  void RemoveObserver(URLRequestContextGetterObserver* observer);
-
  protected:
   friend class base::RefCountedThreadSafe<URLRequestContextGetter,
                                           URLRequestContextGetterTraits>;
@@ -64,6 +69,22 @@ class NET_EXPORT URLRequestContextGetter
   void NotifyContextShuttingDown();
 
  private:
+  // AddObserver and RemoveObserver are deprecated. Friend URLFetcherCore,
+  // content::WebSocketManager, and web::NetworkContextOwner to restrict
+  // visibility.
+  friend class URLFetcherCore;
+  friend class content::WebSocketManager;
+
+#if defined(OS_IOS)
+  friend class web::NetworkContextOwner;
+#endif  // defined(OS_IOS)
+
+  // Adds / removes an observer to watch for shutdown of |this|'s context. Must
+  // only be called on network thread. May not be called once
+  // GetURLRequestContext() starts returning nullptr.
+  void AddObserver(URLRequestContextGetterObserver* observer);
+  void RemoveObserver(URLRequestContextGetterObserver* observer);
+
   // OnDestruct is used to ensure deletion on the thread on which the request
   // IO happens.
   void OnDestruct() const;
