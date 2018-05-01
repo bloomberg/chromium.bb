@@ -27,8 +27,11 @@ def main():
   parser.add_argument('apk', help='APK file path.')
   args = parser.parse_args()
 
+  #TODO(crbug.com/838414): add support for files included via loadable_modules.
+  ignored_libs = ['libarcore_sdk_c_minimal.so']
+
   si_count = resource_sizes.AnalyzeStaticInitializers(
-      args.apk, args.tool_prefix, False, '.')
+      args.apk, args.tool_prefix, False, '.', ignored_libs)
   if si_count != args.expected_count:
     print 'Expected {} static initializers, but found {}.'.format(
         args.expected_count, si_count)
@@ -40,7 +43,7 @@ def main():
       print 'Dumping static initializers via dump-static-initializers.py:'
       sys.stdout.flush()
       resource_sizes.AnalyzeStaticInitializers(
-          args.apk, args.tool_prefix, True, '.')
+          args.apk, args.tool_prefix, True, '.', ignored_libs)
       print
       print 'If the above list is not useful, consider listing them with:'
       print '    //tools/binary_size/diagnose_bloat.py'
