@@ -13,6 +13,7 @@
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/transform_node.h"
+#include "cc/trees/property_tree.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
 static constexpr int kMaxNumberOfSlowPathsBeforeReporting = 5;
