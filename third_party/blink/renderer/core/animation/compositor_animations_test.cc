@@ -276,7 +276,8 @@ class AnimationCompositorAnimationsTest : public RenderingTest {
   }
 
   void SimulateFrame(double time) {
-    GetAnimationClock().UpdateTime(time);
+    GetAnimationClock().UpdateTime(base::TimeTicks() +
+                                   base::TimeDelta::FromSecondsD(time));
     GetPendingAnimations().Update(base::Optional<CompositorElementIdSet>(),
                                   false);
     timeline_->ServiceAnimations(kTimingUpdateForAnimationFrame);

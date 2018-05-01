@@ -47,16 +47,17 @@ class CORE_EXPORT AnimationClock {
   DISALLOW_NEW();
 
  public:
-  explicit AnimationClock(WTF::TimeFunction monotonically_increasing_time =
-                              WTF::CurrentTimeTicksInSeconds)
+  using TimeTicksFunction = base::TimeTicks (*)();
+  explicit AnimationClock(
+      TimeTicksFunction monotonically_increasing_time = WTF::CurrentTimeTicks)
       : monotonically_increasing_time_(monotonically_increasing_time),
-        time_(0),
+        time_(),
         task_for_which_time_was_calculated_(
             std::numeric_limits<unsigned>::max()) {}
 
-  void UpdateTime(double time);
+  void UpdateTime(base::TimeTicks time);
   double CurrentTime();
-  void ResetTimeForTesting(double time = 0);
+  void ResetTimeForTesting(base::TimeTicks time = base::TimeTicks());
   void DisableSyntheticTimeForTesting() {
     monotonically_increasing_time_ = nullptr;
   }
@@ -66,8 +67,8 @@ class CORE_EXPORT AnimationClock {
   static void NotifyTaskStart() { ++currently_running_task_; }
 
  private:
-  WTF::TimeFunction monotonically_increasing_time_;
-  double time_;
+  TimeTicksFunction monotonically_increasing_time_;
+  base::TimeTicks time_;
   unsigned task_for_which_time_was_calculated_;
   static unsigned currently_running_task_;
   DISALLOW_COPY_AND_ASSIGN(AnimationClock);

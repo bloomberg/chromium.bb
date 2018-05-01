@@ -31,8 +31,7 @@ void PageAnimator::Trace(blink::Visitor* visitor) {
 void PageAnimator::ServiceScriptedAnimations(
     base::TimeTicks monotonic_animation_start_time) {
   AutoReset<bool> servicing(&servicing_animations_, true);
-  Clock().UpdateTime(
-      monotonic_animation_start_time.since_origin().InSecondsF());
+  Clock().UpdateTime(monotonic_animation_start_time);
 
   HeapVector<Member<Document>, 32> documents;
   for (Frame* frame = page_->MainFrame(); frame;

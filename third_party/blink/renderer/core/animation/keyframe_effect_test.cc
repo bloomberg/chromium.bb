@@ -33,7 +33,8 @@ class KeyframeEffectTest : public PageTestBase {
     element = GetDocument().CreateElementForBinding("foo");
 
     GetDocument().GetAnimationClock().ResetTimeForTesting(
-        GetDocument().Timeline().ZeroTime());
+        base::TimeTicks() +
+        base::TimeDelta::FromSecondsD(GetDocument().Timeline().ZeroTime()));
     GetDocument().documentElement()->AppendChild(element.Get());
     EXPECT_EQ(0, GetDocument().Timeline().currentTime());
   }
