@@ -136,29 +136,26 @@ unsigned long RoundRtt(const std::string& host,
   return std::round(rtt_msec / kGranularityMsec) * kGranularityMsec;
 }
 
-double RoundMbps(const std::string& host,
-                 const base::Optional<double>& downlink_mbps) {
+double RoundKbpsToMbps(const std::string& host,
+                       const base::Optional<int32_t>& downlink_kbps) {
   // Limit the size of the buckets and the maximum reported value to reduce
   // fingerprinting.
   static const size_t kGranularityKbps = 50;
   static const double kMaxDownlinkKbps = 10.0 * 1000;
 
-  double downlink_kbps = 0;
-  if (!downlink_mbps.has_value()) {
-    // Throughput is unavailable. So, return the fastest value.
-    downlink_kbps = kMaxDownlinkKbps;
-  } else {
-    downlink_kbps = downlink_mbps.value() * 1000;
-  }
-  downlink_kbps *= GetRandomMultiplier(host);
+  // If downlink is unavailable, return the fastest value.
+  double randomized_downlink_kbps = downlink_kbps.value_or(kMaxDownlinkKbps);
+  randomized_downlink_kbps *= GetRandomMultiplier(host);
 
-  downlink_kbps = std::min(downlink_kbps, kMaxDownlinkKbps);
+  randomized_downlink_kbps =
+      std::min(randomized_downlink_kbps, kMaxDownlinkKbps);
 
-  DCHECK_LE(0, downlink_kbps);
-  DCHECK_GE(kMaxDownlinkKbps, downlink_kbps);
+  DCHECK_LE(0, randomized_downlink_kbps);
+  DCHECK_GE(kMaxDownlinkKbps, randomized_downlink_kbps);
   // Round down to the nearest kGranularityKbps kbps value.
   double downlink_kbps_rounded =
-      std::round(downlink_kbps / kGranularityKbps) * kGranularityKbps;
+      std::round(randomized_downlink_kbps / kGranularityKbps) *
+      kGranularityKbps;
 
   // Convert from Kbps to Mbps.
   return downlink_kbps_rounded / 1000;
@@ -276,7 +273,7 @@ GetAdditionalNavigationRequestClientHintsHeaders(
     additional_headers->SetHeader(
         blink::kClientHintsHeaderMapping[static_cast<int>(
             blink::mojom::WebClientHintsType::kDownlink)],
-        base::NumberToString(internal::RoundMbps(
+        base::NumberToString(internal::RoundKbpsToMbps(
             url.host(), estimator->GetDownstreamThroughputKbps())));
   }
 
