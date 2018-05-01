@@ -160,6 +160,29 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
     }
 
     /**
+     * Waits for the activity to fully finish its native initialization.
+     * @param The {@link ChromeActivity} to wait for.
+     */
+    public static void waitForActivityNativeInitializationComplete(ChromeActivity activity) {
+        CriteriaHelper.pollUiThread(()
+                                            -> ChromeBrowserInitializer.getInstance(activity)
+                                                       .hasNativeInitializationCompleted(),
+                "Native initialization never finished",
+                20 * CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL,
+                CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+
+        CriteriaHelper.pollUiThread(() -> activity.didFinishNativeInitialization(),
+                "Native initialization (of Activity) never finished");
+    }
+
+    /**
+     * Waits for the activity to fully finish its native initialization.
+     */
+    public void waitForActivityNativeInitializationComplete() {
+        waitForActivityNativeInitializationComplete(getActivity());
+    }
+
+    /**
      * Invokes {@link Instrumentation#startActivitySync(Intent)} and sets the
      * test case's activity to the result. See the documentation for
      * {@link Instrumentation#startActivitySync(Intent)} on the timing of the
@@ -405,21 +428,6 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
         Assert.assertNotNull(tab);
         Assert.assertNotNull(tab.getView());
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-    }
-
-    /**
-     * Waits for the activity to fully finish it's native initialization.
-     */
-    public void waitForActivityNativeInitializationComplete() {
-        CriteriaHelper.pollUiThread(()
-                                            -> ChromeBrowserInitializer.getInstance(getActivity())
-                                                       .hasNativeInitializationCompleted(),
-                "Native initialization never finished",
-                20 * CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL,
-                CriteriaHelper.DEFAULT_POLLING_INTERVAL);
-
-        CriteriaHelper.pollUiThread(() -> getActivity().didFinishNativeInitialization(),
-                "Native initialization (of Activity) never finished");
     }
 
     /**

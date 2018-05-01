@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.contextual_suggestions;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 
@@ -52,10 +53,14 @@ public class ContextualSuggestionsDependenciesRule extends TestWatcher {
         public EnabledStateMonitor enabledStateMonitor;
         public FetchHelper fetchHelper;
 
+        public CallbackHelper createSuggestionsSourceCallback = new CallbackHelper();
+
         @Override
-        ContextualSuggestionsSource createContextualSuggestionSource(Profile profile) {
+        ContextualSuggestionsSource createContextualSuggestionsSource(Profile profile) {
+            createSuggestionsSourceCallback.notifyCalled();
+
             if (suggestionsSource != null) return suggestionsSource;
-            return super.createContextualSuggestionSource(profile);
+            return super.createContextualSuggestionsSource(profile);
         }
 
         @Override

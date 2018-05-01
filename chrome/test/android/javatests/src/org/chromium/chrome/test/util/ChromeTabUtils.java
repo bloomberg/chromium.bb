@@ -638,7 +638,9 @@ public class ChromeTabUtils {
      * asserts that a new tab is opened and is incognito if expectIncognito is true.
      * For use in testing long-press context menu options that open new tabs.
      *
-     * @param view The View to long press.
+     * @param testRule The {@link ChromeTabbedActivityTestRule} used to retrieve the currently
+     *                 running activity.
+     * @param view The {@link View} to long press.
      * @param contextMenuItemId The context menu item to select on the view.
      * @param expectIncognito Whether the opened tab is expected to be incognito.
      * @param expectedUrl The expected url for the new tab.
@@ -674,6 +676,55 @@ public class ChromeTabUtils {
             Assert.assertTrue(testRule.getActivity().getTabModelSelector().isIncognitoSelected());
         } else {
             Assert.assertFalse(testRule.getActivity().getTabModelSelector().isIncognitoSelected());
+        }
+    }
+
+    /**
+     * Long presses the view, selects an item from the context menu, and
+     * asserts that a new tab is opened and is incognito if expectIncognito is true.
+     * For use in testing long-press context menu options that open new tabs in a different
+     * ChromeTabbedActivity instance.
+     *
+     * @param foregroundActivity The {@link ChromeTabbedActivity} currently in the foreground.
+     * @param backgroundActivity The {@link ChromeTabbedActivity} currently in the background. The
+     *                           new tab is expected to open in this activity.
+     * @param view The {@link View} in the {@code foregroundActivity} to long press.
+     * @param contextMenuItemId The context menu item to select on the view.
+     * @param expectIncognito Whether the opened tab is expected to be incognito.
+     * @param expectedUrl The expected url for the new tab.
+     */
+    public static void invokeContextMenuAndOpenInOtherWindow(
+            ChromeTabbedActivity foregroundActivity, ChromeTabbedActivity backgroundActivity,
+            View view, int contextMenuItemId, boolean expectIncognito, final String expectedUrl)
+            throws InterruptedException, ExecutionException {
+        final CallbackHelper createdCallback = new CallbackHelper();
+        final TabModel tabModel =
+                backgroundActivity.getTabModelSelector().getModel(expectIncognito);
+        tabModel.addObserver(new EmptyTabModelObserver() {
+            @Override
+            public void didAddTab(Tab tab, TabLaunchType type) {
+                if (TextUtils.equals(expectedUrl, tab.getUrl())) {
+                    createdCallback.notifyCalled();
+                    tabModel.removeObserver(this);
+                }
+            }
+        });
+
+        TestTouchUtils.performLongClickOnMainSync(
+                InstrumentationRegistry.getInstrumentation(), view);
+        Assert.assertTrue(InstrumentationRegistry.getInstrumentation().invokeContextMenuAction(
+                foregroundActivity, contextMenuItemId, 0));
+
+        try {
+            createdCallback.waitForCallback(0);
+        } catch (TimeoutException e) {
+            Assert.fail("Never received tab creation event");
+        }
+
+        if (expectIncognito) {
+            Assert.assertTrue(backgroundActivity.getTabModelSelector().isIncognitoSelected());
+        } else {
+            Assert.assertFalse(backgroundActivity.getTabModelSelector().isIncognitoSelected());
         }
     }
 }

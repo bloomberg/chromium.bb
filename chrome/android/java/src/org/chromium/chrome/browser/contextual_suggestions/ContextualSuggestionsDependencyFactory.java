@@ -39,7 +39,7 @@ class ContextualSuggestionsDependencyFactory {
      * @return A {@link ContextualSuggestionsSource} for getting contextual suggestions for
      *         the current user.
      */
-    ContextualSuggestionsSource createContextualSuggestionSource(Profile profile) {
+    ContextualSuggestionsSource createContextualSuggestionsSource(Profile profile) {
         return new ContextualSuggestionsSource(profile);
     }
 

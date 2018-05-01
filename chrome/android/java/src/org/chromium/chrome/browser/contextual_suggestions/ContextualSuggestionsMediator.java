@@ -143,7 +143,7 @@ class ContextualSuggestionsMediator
     public void onEnabledStateChanged(boolean enabled) {
         if (enabled) {
             mSuggestionsSource = ContextualSuggestionsDependencyFactory.getInstance()
-                                         .createContextualSuggestionSource(mProfile);
+                                         .createContextualSuggestionsSource(mProfile);
             mFetchHelper = ContextualSuggestionsDependencyFactory.getInstance().createFetchHelper(
                     this, mTabModelSelector);
         } else {
@@ -370,5 +370,10 @@ class ContextualSuggestionsMediator
     @VisibleForTesting
     void showContentInSheetForTesting() {
         showContentInSheet();
+    }
+
+    @VisibleForTesting
+    TextBubble getHelpBubbleForTesting() {
+        return mHelpBubble;
     }
 }
