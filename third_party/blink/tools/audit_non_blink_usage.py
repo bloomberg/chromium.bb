@@ -50,6 +50,7 @@ _CONFIG = [
             'base::make_optional',
             'base::make_span',
             'base::nullopt',
+            'base::size',
             'base::span',
             'logging::GetVlogLevel',
 
