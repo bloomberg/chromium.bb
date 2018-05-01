@@ -23,10 +23,8 @@ namespace remoting {
 
 class URLRequestContextGetter : public net::URLRequestContextGetter {
  public:
-  // TODO(mmenke): Remove |file_task_runner|, as it's no longer used.
-  URLRequestContextGetter(
-      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> file_task_runner);
+  explicit URLRequestContextGetter(
+      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner);
 
   // Overridden from net::URLRequestContextGetter:
   net::URLRequestContext* GetURLRequestContext() override;
@@ -38,7 +36,6 @@ class URLRequestContextGetter : public net::URLRequestContextGetter {
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
   std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
   std::unique_ptr<net::NetLog> net_log_;
   std::unique_ptr<net::URLRequestContext> url_request_context_;

@@ -82,9 +82,8 @@ void TestChromotingClient::StartConnection(
   jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
 
   scoped_refptr<URLRequestContextGetter> request_context_getter;
-  request_context_getter = new URLRequestContextGetter(
-      base::ThreadTaskRunnerHandle::Get(),   // network_runner
-      base::ThreadTaskRunnerHandle::Get());  // file_runner
+  request_context_getter =
+      new URLRequestContextGetter(base::ThreadTaskRunnerHandle::Get());
 
   client_context_.reset(new ClientContext(base::ThreadTaskRunnerHandle::Get()));
 

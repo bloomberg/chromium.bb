@@ -80,8 +80,7 @@ void AccessTokenFetcher::GetAccessTokenFromRefreshToken(
 void AccessTokenFetcher::CreateNewGaiaOAuthClientInstance() {
   scoped_refptr<remoting::URLRequestContextGetter> request_context_getter;
   request_context_getter = new remoting::URLRequestContextGetter(
-      base::ThreadTaskRunnerHandle::Get(),   // network_runner
-      base::ThreadTaskRunnerHandle::Get());  // file_runner
+      base::ThreadTaskRunnerHandle::Get());
 
   auth_client_.reset(new gaia::GaiaOAuthClient(request_context_getter.get()));
 }

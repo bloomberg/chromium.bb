@@ -218,12 +218,9 @@ int StartHostMain(int argc, char** argv) {
   base::Thread::Options io_thread_options(base::MessageLoop::TYPE_IO, 0);
   base::Thread io_thread("IO thread");
   io_thread.StartWithOptions(io_thread_options);
-  base::Thread file_thread("file thread");
-  file_thread.StartWithOptions(io_thread_options);
 
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter(
-      new remoting::URLRequestContextGetter(io_thread.task_runner(),
-                                            file_thread.task_runner()));
+      new remoting::URLRequestContextGetter(io_thread.task_runner()));
 
   net::URLFetcher::SetIgnoreCertificateRequests(true);
 

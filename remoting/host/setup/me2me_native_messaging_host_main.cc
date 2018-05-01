@@ -92,10 +92,6 @@ int Me2MeNativeMessagingHostMain(int argc, char** argv) {
   io_thread.StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
 
-  base::Thread file_thread("file_thread");
-  file_thread.StartWithOptions(
-      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
-
   base::MessageLoopForUI message_loop;
   base::RunLoop run_loop;
 
@@ -184,8 +180,7 @@ int Me2MeNativeMessagingHostMain(int argc, char** argv) {
 
   // OAuth client (for credential requests). IO thread is used for blocking
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter(
-      new URLRequestContextGetter(io_thread.task_runner(),
-                                  file_thread.task_runner()));
+      new URLRequestContextGetter(io_thread.task_runner()));
   std::unique_ptr<OAuthClient> oauth_client(
       new GaiaOAuthClient(url_request_context_getter));
 

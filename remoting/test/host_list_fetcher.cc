@@ -34,8 +34,7 @@ void HostListFetcher::RetrieveHostlist(const std::string& access_token,
   hostlist_callback_ = callback;
 
   request_context_getter_ = new remoting::URLRequestContextGetter(
-      /*network_runner=*/base::ThreadTaskRunnerHandle::Get(),
-      /*file_runner=*/base::ThreadTaskRunnerHandle::Get());
+      /*network_runner=*/base::ThreadTaskRunnerHandle::Get());
 
   request_ = net::URLFetcher::Create(GURL(target_url), net::URLFetcher::GET,
                                      this, TRAFFIC_ANNOTATION_FOR_TESTS);
