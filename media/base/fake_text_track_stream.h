@@ -12,6 +12,10 @@
 #include "media/base/video_decoder_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace media {
 
 // Fake implementation of the DemuxerStream.  These are the stream objects

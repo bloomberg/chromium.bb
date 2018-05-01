@@ -24,6 +24,10 @@
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace content {
 
 class MediaStreamVideoTrack;

@@ -4,6 +4,7 @@
 
 #include "ui/aura/test/window_event_dispatcher_test_api.h"
 
+#include "base/run_loop.h"
 #include "ui/aura/window_event_dispatcher.h"
 
 namespace aura {
