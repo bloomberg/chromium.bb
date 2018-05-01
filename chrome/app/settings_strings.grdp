@@ -402,7 +402,7 @@
   <if expr="chromeos">
     <!-- Crostini Page -->
     <message name="IDS_SETTINGS_CROSTINI_TITLE" desc="The title of Crostini section.">
-      Linux Apps
+      Linux (Beta)
     </message>
     <message name="IDS_SETTINGS_CROSTINI_LABEL" desc="The text associated with the primary section setting.">
       Linux (Beta)
