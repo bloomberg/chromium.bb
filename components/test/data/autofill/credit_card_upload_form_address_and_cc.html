@@ -28,7 +28,6 @@ found in the LICENSE file.
     <div>CVC: <input name="cc_cvc" autocomplete="cc-csc"></div>
     <hr>
     <button id="fill_form" type="button">Fill entire form with default (MasterCard) values</button>
-    <button id="fill_form_amex" type="button">Fill entire form, but with AMEX CC values</button>
     <button id="fill_invalid_cvc" type="button">Fill the CVC field with an invalid value</button>
     <button id="fill_card_only" type="button">Fill the credit card number and expiration fields only</button>
     <button id="clear_cvc" type="button">Clear the CVC field</button>
@@ -57,14 +56,6 @@ found in the LICENSE file.
         document.getElementsByName("cc_month_exp")[0].value = "12";
         document.getElementsByName("cc_year_exp")[0].value = getNextYear();
         document.getElementsByName("cc_cvc")[0].value = "123";
-      });
-
-  document.getElementById("fill_form_amex").addEventListener(
-      "click",
-      function() {
-        document.getElementById("fill_form").click();
-        document.getElementsByName("cc_number")[0].value = "378282246310005";
-        document.getElementsByName("cc_cvc")[0].value = "1234";
       });
 
   document.getElementById("fill_invalid_cvc").addEventListener(

@@ -37,13 +37,8 @@ class TestSaveCardBubbleController : public SaveCardBubbleController {
   MOCK_CONST_METHOD0(GetWindowTitle, base::string16());
   MOCK_CONST_METHOD0(GetExplanatoryMessage, base::string16());
   MOCK_CONST_METHOD0(GetCard, const CreditCard());
-  MOCK_CONST_METHOD0(GetCvcImageResourceId, int());
-  MOCK_CONST_METHOD0(ShouldRequestCvcFromUser, bool());
-  MOCK_CONST_METHOD0(GetCvcEnteredByUser, base::string16());
 
-  void OnSaveButton(const base::string16& cvc) override {
-    on_save_button_was_called_ = true;
-  }
+  void OnSaveButton() override { on_save_button_was_called_ = true; }
   void OnCancelButton() override { on_cancel_button_was_called_ = true; }
   void OnLearnMoreClicked() override { on_learn_more_was_called_ = true; }
   void OnLegalMessageLinkClicked(const GURL& url) override {
@@ -55,9 +50,6 @@ class TestSaveCardBubbleController : public SaveCardBubbleController {
   const LegalMessageLines& GetLegalMessageLines() const override {
     return lines_;
   }
-
-  MOCK_METHOD0(ContinueToRequestCvcStage, void());
-  MOCK_CONST_METHOD1(InputCvcIsValid, bool(const base::string16& input_text));
 
   // Testing state.
   bool on_save_button_was_called() { return on_save_button_was_called_; }

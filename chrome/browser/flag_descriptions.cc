@@ -302,12 +302,6 @@ const char kEnableAutofillCreditCardLastUsedDateDisplayName[] =
 const char kEnableAutofillCreditCardLastUsedDateDisplayDescription[] =
     "If enabled, display the last used date of a credit card in autofill.";
 
-const char kEnableAutofillCreditCardUploadCvcPromptName[] =
-    "Enable requesting missing CVC during Autofill credit card upload";
-const char kEnableAutofillCreditCardUploadCvcPromptDescription[] =
-    "If enabled, requests missing CVC when offering to upload credit cards to "
-    "Google Payments.";
-
 const char kEnableAutofillCreditCardUploadGooglePayOnAndroidBrandingName[] =
     "Enable Google Pay branding when offering credit card upload on Android";
 const char

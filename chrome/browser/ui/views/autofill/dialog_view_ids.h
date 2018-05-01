@@ -18,7 +18,6 @@ enum DialogViewId : int {
   // The following are the important containing views of the bubble.
   MAIN_CONTENT_VIEW_LOCAL,   // The main content view, for a local save bubble
   MAIN_CONTENT_VIEW_UPLOAD,  // The main content view, for an upload save bubble
-  REQUEST_CVC_VIEW,          // Secondary main content view for the CVC fix flow
   FOOTNOTE_VIEW,             // Contains the legal messages for upload save
 
   // The following are views::LabelButton objects (clickable).
@@ -27,9 +26,6 @@ enum DialogViewId : int {
 
   // The following are views::Link objects (clickable).
   LEARN_MORE_LINK,
-
-  // The following are views::Textfield objects.
-  CVC_TEXTFIELD,  // Used for CVC entry
 };
 
 }  // namespace autofill

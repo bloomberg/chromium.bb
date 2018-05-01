@@ -49,7 +49,6 @@ class ChromeAutofillClientIOS : public AutofillClient {
   identity::IdentityManager* GetIdentityManager() override;
   ukm::UkmRecorder* GetUkmRecorder() override;
   AddressNormalizer* GetAddressNormalizer() override;
-  SaveCardBubbleController* GetSaveCardBubbleController() override;
   void ShowAutofillSettings() override;
   void ShowUnmaskPrompt(const CreditCard& card,
                         UnmaskCardReason reason,
@@ -60,7 +59,6 @@ class ChromeAutofillClientIOS : public AutofillClient {
   void ConfirmSaveCreditCardToCloud(
       const CreditCard& card,
       std::unique_ptr<base::DictionaryValue> legal_message,
-      bool should_cvc_be_requested,
       const base::Closure& callback) override;
   void ConfirmCreditCardFillAssist(const CreditCard& card,
                                    const base::Closure& callback) override;

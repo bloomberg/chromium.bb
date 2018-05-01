@@ -24,7 +24,6 @@ class CardUnmaskDelegate;
 class CreditCard;
 class FormStructure;
 class PersonalDataManager;
-class SaveCardBubbleController;
 }
 
 namespace content {
@@ -67,7 +66,6 @@ class AwAutofillClient : public autofill::AutofillClient,
   identity::IdentityManager* GetIdentityManager() override;
   ukm::UkmRecorder* GetUkmRecorder() override;
   autofill::AddressNormalizer* GetAddressNormalizer() override;
-  autofill::SaveCardBubbleController* GetSaveCardBubbleController() override;
   void ShowAutofillSettings() override;
   void ShowUnmaskPrompt(
       const autofill::CreditCard& card,
@@ -79,7 +77,6 @@ class AwAutofillClient : public autofill::AutofillClient,
   void ConfirmSaveCreditCardToCloud(
       const autofill::CreditCard& card,
       std::unique_ptr<base::DictionaryValue> legal_message,
-      bool should_cvc_be_requested,
       const base::Closure& callback) override;
   void ConfirmCreditCardFillAssist(const autofill::CreditCard& card,
                                    const base::Closure& callback) override;

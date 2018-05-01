@@ -32,7 +32,6 @@
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
-#include "components/autofill/core/browser/ui/save_card_bubble_controller.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_util.h"
@@ -103,24 +102,21 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
   upload_request_.card = card;
   uploading_local_card_ = uploading_local_card;
 
-  // In order to prompt the user to upload their card, we must have both:
+  // Ideally, in order to upload a card, we must have both:
   //  1) Card with CVC
   //  2) 1+ recently-used or modified addresses that meet the client-side
   //     validation rules
-  // Here we perform both checks before returning or logging anything, because
-  // if only one of the two is missing, it may be fixable.
+  // We perform all checks before returning or logging in order to know where we
+  // stand with regards to card upload information. If the "send detected
+  // values" experiment is disabled and any problems were found, we do not offer
+  // to save the card. We could fall back to a local save, but we believe that
+  // sometimes offering upload and sometimes offering local save is a confusing
+  // user experience.
 
-  // Additional note: If the "send detected values" experiment is enabled,
-  // ignore the above and always ping Google Payments regardless.  Include what
+  // Alternatively, if the "send detected values" experiment is enabled, always
+  // ping Google Payments regardless and ask if save is allowed. Include what
   // data was found as part of the request, and let Payments decide whether
   // upload save should be offered.
-
-  // Check for a CVC to determine whether we can prompt the user to upload
-  // their card. If no CVC is present and the experiment is off, do nothing.
-  // We could fall back to a local save but we believe that sometimes offering
-  // upload and sometimes offering local save is a confusing user experience.
-  // If no CVC and the experiment is on, request CVC from the user in the
-  // bubble and save using the provided value.
   found_cvc_field_ = false;
   found_value_in_cvc_field_ = false;
   found_cvc_value_in_non_cvc_field_ = false;
@@ -149,29 +145,13 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
 
   pending_upload_request_origin_ = submitted_form.main_frame_origin();
 
-  should_cvc_be_requested_ = false;
   if (upload_request_.cvc.empty()) {
-    // CVC should be requested from the user if the CVC fix flow experiment is
-    // enabled and no other problems were found (i.e., name and address are
-    // available). At this point, |upload_decision_metrics_| is non-zero only if
-    // there were problems gathering a unique name and address.
-    should_cvc_be_requested_ =
-        (!upload_decision_metrics_ &&
-         IsAutofillUpstreamRequestCvcIfMissingExperimentEnabled());
-    if (should_cvc_be_requested_) {
-      // If requesting CVC, don't apply the CVC decision to
-      // |upload_decision_metrics_| yet as that will signify a problem. Instead,
-      // it will be applied in OnDidGetUploadDetails(~).
-      upload_request_.active_experiments.push_back(
-          kAutofillUpstreamRequestCvcIfMissing.name);
-    } else {
-      // If not requesting CVC, apply the CVC decision to
-      // |upload_decision_metrics_| to denote a problem was found.
-      upload_decision_metrics_ |= GetCVCCardUploadDecisionMetric();
-    }
+    // Apply the CVC decision to |upload_decision_metrics_| to denote a problem
+    // was found.
+    upload_decision_metrics_ |= GetCVCCardUploadDecisionMetric();
   }
 
-  // If any problems were found (including missing CVC and fix flow disabled),
+  // If any problems were found across CVC/name/address,
   // |upload_decision_metrics_| will be non-zero. If the "send detected values"
   // experiment is on, continue anyway and just let Payments know that not
   // everything was found, as Payments may still allow the card to be saved.
@@ -248,7 +228,6 @@ void CreditCardSaveManager::OnDidGetUploadDetails(
     user_did_accept_upload_prompt_ = false;
     client_->ConfirmSaveCreditCardToCloud(
         upload_request_.card, std::move(legal_message),
-        should_cvc_be_requested_,
         base::Bind(&CreditCardSaveManager::OnUserDidAcceptUpload,
                    weak_ptr_factory_.GetWeakPtr()));
     client_->LoadRiskData(
@@ -303,18 +282,10 @@ void CreditCardSaveManager::OnDidGetUploadDetails(
         AutofillMetrics::UPLOAD_NOT_OFFERED_GET_UPLOAD_DETAILS_FAILED;
   }
 
-  if (should_cvc_be_requested_) {
-    // If we're requesting CVC from the user, it should be because the CVC field
-    // was not found or it was found but empty or with an invalid value. In any
-    // of those cases, CVC will not have been set on the card in the request.
-    DCHECK(upload_request_.cvc.empty());
-    upload_decision_metrics_ |= GetCVCCardUploadDecisionMetric();
-  } else {
-    // If we're not requesting CVC from the user, assert that we've either
-    // detected the CVC or the send detected values experiment is enabled.
-    DCHECK(IsAutofillUpstreamSendDetectedValuesExperimentEnabled() ||
-           (found_cvc_field_ && found_value_in_cvc_field_));
-  }
+  // Assert that we've either detected the CVC or the "send detected values"
+  // experiment is enabled.
+  DCHECK(IsAutofillUpstreamSendDetectedValuesExperimentEnabled() ||
+         (found_cvc_field_ && found_value_in_cvc_field_));
 
   LogCardUploadDecisions(upload_decision_metrics_);
   pending_upload_request_origin_ = url::Origin();
@@ -440,9 +411,8 @@ void CreditCardSaveManager::SetProfilesForCreditCardUpload(
 int CreditCardSaveManager::GetDetectedValues() const {
   int detected_values = 0;
 
-  // Report detecting CVC if it was found or if we intend to request it from the
-  // user.
-  if (!upload_request_.cvc.empty() || should_cvc_be_requested_) {
+  // Report detecting CVC if it was found.
+  if (!upload_request_.cvc.empty()) {
     detected_values |= DetectedValue::CVC;
   }
 
@@ -520,17 +490,6 @@ void CreditCardSaveManager::SendUploadCardRequest() {
   if (observer_for_testing_)
     observer_for_testing_->OnSentUploadCardRequest();
   upload_request_.app_locale = app_locale_;
-  // If the upload request does not have card CVC and the CVC fix flow is
-  // enabled, populate it with the value provided by the user. If the CVC fix
-  // flow is not enabled, not sending CVC to Payments at all is expected
-  // behavior.
-  if (upload_request_.cvc.empty() &&
-      IsAutofillUpstreamRequestCvcIfMissingExperimentEnabled()) {
-    DCHECK(client_->GetSaveCardBubbleController());
-    upload_request_.cvc =
-        client_->GetSaveCardBubbleController()->GetCvcEnteredByUser();
-  }
-
   upload_request_.billing_customer_number =
       static_cast<int64_t>(payments_client_->GetPrefService()->GetDouble(
           prefs::kAutofillBillingCustomerNumber));

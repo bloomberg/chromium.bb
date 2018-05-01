@@ -203,14 +203,14 @@ class AutofillMetrics {
     // The prompt was dismissed because the user clicked a legal message link.
     SAVE_CARD_PROMPT_DISMISS_CLICK_LEGAL_MESSAGE,
 
-    // The following _CVC_FIX_FLOW_ metrics are independent of the ones above.
-    // For instance, accepting the CVC fix flow will trigger both
+    // The following _CVC_FIX_FLOW_ metrics are independent of the ones above,
+    // and were relevant when the CVC fix flow was active M62-M64. During that
+    // time, for instance, accepting the CVC fix flow would trigger both
     // SAVE_CARD_PROMPT_CVC_FIX_FLOW_END_ACCEPTED as well as
-    // SAVE_CARD_PROMPT_END_ACCEPTED.  They are split apart in order to track
+    // SAVE_CARD_PROMPT_END_ACCEPTED.  They were split apart in order to track
     // acceptance/abandonment rates of the multi-stage dialog user experience.
-
-    // SAVE_CARD_PROMPT_CVC_FIX_FLOW_END_DENIED is an impossible state because
-    // the CVC fix flow uses a close button instead of a cancel button.
+    // (SAVE_CARD_PROMPT_CVC_FIX_FLOW_END_DENIED was an impossible state because
+    // the CVC fix flow uses a close button instead of a cancel button.)
 
     // The prompt moved to a second stage that requested CVC from the user.
     SAVE_CARD_PROMPT_CVC_FIX_FLOW_SHOWN,

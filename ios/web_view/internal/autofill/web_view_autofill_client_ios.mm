@@ -60,11 +60,6 @@ AddressNormalizer* WebViewAutofillClientIOS::GetAddressNormalizer() {
   return nullptr;
 }
 
-SaveCardBubbleController*
-WebViewAutofillClientIOS::GetSaveCardBubbleController() {
-  return nullptr;
-}
-
 void WebViewAutofillClientIOS::ShowAutofillSettings() {
   NOTREACHED();
 }
@@ -86,7 +81,6 @@ void WebViewAutofillClientIOS::ConfirmSaveCreditCardLocally(
 void WebViewAutofillClientIOS::ConfirmSaveCreditCardToCloud(
     const CreditCard& card,
     std::unique_ptr<base::DictionaryValue> legal_message,
-    bool should_cvc_be_requested,
     const base::Closure& callback) {}
 
 void WebViewAutofillClientIOS::ConfirmCreditCardFillAssist(

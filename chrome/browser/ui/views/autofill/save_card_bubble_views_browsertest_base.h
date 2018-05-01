@@ -66,7 +66,6 @@ class SaveCardBubbleViewsBrowserTestBase
   void FillAndSubmitFormWithCardDetailsOnly();
   void FillAndSubmitFormWithoutCvc();
   void FillAndSubmitFormWithInvalidCvc();
-  void FillAndSubmitFormWithAmexWithoutCvc();
   void FillAndSubmitFormWithoutName();
   void FillAndSubmitFormWithConflictingName();
   void FillAndSubmitFormWithoutAddress();

@@ -143,14 +143,6 @@ AddressNormalizer* ChromeAutofillClient::GetAddressNormalizer() {
   return nullptr;
 }
 
-SaveCardBubbleController* ChromeAutofillClient::GetSaveCardBubbleController() {
-#if defined(OS_ANDROID)
-  return nullptr;
-#else
-  return SaveCardBubbleControllerImpl::FromWebContents(web_contents());
-#endif
-}
-
 void ChromeAutofillClient::ShowAutofillSettings() {
 #if defined(OS_ANDROID)
   chrome::android::PreferencesLauncher::ShowAutofillSettings();
@@ -197,7 +189,6 @@ void ChromeAutofillClient::ConfirmSaveCreditCardLocally(
 void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
     const CreditCard& card,
     std::unique_ptr<base::DictionaryValue> legal_message,
-    bool should_cvc_be_requested,
     const base::Closure& callback) {
 #if defined(OS_ANDROID)
   std::unique_ptr<AutofillSaveCardInfoBarDelegateMobile>
@@ -214,8 +205,7 @@ void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
   autofill::SaveCardBubbleControllerImpl::CreateForWebContents(web_contents());
   autofill::SaveCardBubbleControllerImpl* controller =
       autofill::SaveCardBubbleControllerImpl::FromWebContents(web_contents());
-  controller->ShowBubbleForUpload(card, std::move(legal_message),
-                                  should_cvc_be_requested, callback);
+  controller->ShowBubbleForUpload(card, std::move(legal_message), callback);
 #endif
 }
 

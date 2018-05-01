@@ -216,9 +216,6 @@ extern const char kEnableAutofillCreditCardBankNameDisplayDescription[];
 extern const char kEnableAutofillCreditCardLastUsedDateDisplayName[];
 extern const char kEnableAutofillCreditCardLastUsedDateDisplayDescription[];
 
-extern const char kEnableAutofillCreditCardUploadCvcPromptName[];
-extern const char kEnableAutofillCreditCardUploadCvcPromptDescription[];
-
 extern const char
     kEnableAutofillCreditCardUploadGooglePayOnAndroidBrandingName[];
 extern const char

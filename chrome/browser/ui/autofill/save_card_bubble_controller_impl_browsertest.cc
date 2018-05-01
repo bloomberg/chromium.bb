@@ -53,10 +53,9 @@ class SaveCardBubbleControllerImplTest : public DialogBrowserTest {
       controller_->ShowBubbleForLocalSave(test::GetCreditCard(),
                                           base::DoNothing());
     } else {
-      bool should_cvc_be_requested = name == "Server_WithCvcStep";
-      controller_->ShowBubbleForUpload(
-          test::GetMaskedServerCard(), GetTestLegalMessage(),
-          should_cvc_be_requested, base::DoNothing());
+      controller_->ShowBubbleForUpload(test::GetMaskedServerCard(),
+                                       GetTestLegalMessage(),
+                                       base::DoNothing());
     }
   }
 
@@ -76,13 +75,6 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleControllerImplTest, InvokeUi_Local) {
 // Invokes a bubble asking the user if they want to save a credit card to the
 // server.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleControllerImplTest, InvokeUi_Server) {
-  ShowAndVerifyUi();
-}
-
-// Invokes a bubble asking the user if they want to save a credit card to the
-// server, with an added CVC step.
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleControllerImplTest,
-                       InvokeUi_Server_WithCvcStep) {
   ShowAndVerifyUi();
 }
 
