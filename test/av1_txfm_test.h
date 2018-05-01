@@ -82,7 +82,7 @@ typedef void (*LbdInvTxfm2dFunc)(const int32_t *, uint8_t *, int, TX_TYPE,
 static const int bd = 10;
 static const int input_base = (1 << bd);
 
-static INLINE bool isTxSizeTypeValid(TX_SIZE tx_size, TX_TYPE tx_type) {
+static INLINE bool IsTxSizeTypeValid(TX_SIZE tx_size, TX_TYPE tx_type) {
   const TX_SIZE tx_size_sqr_up = txsize_sqr_up_map[tx_size];
   TxSetType tx_set_type;
   if (tx_size_sqr_up > TX_32X32) {
@@ -92,7 +92,7 @@ static INLINE bool isTxSizeTypeValid(TX_SIZE tx_size, TX_TYPE tx_type) {
   } else {
     tx_set_type = EXT_TX_SET_ALL16;
   }
-  return av1_ext_tx_used[tx_set_type][tx_type];
+  return av1_ext_tx_used[tx_set_type][tx_type] != 0;
 }
 
 #if CONFIG_AV1_ENCODER

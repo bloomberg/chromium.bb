@@ -195,7 +195,7 @@ vector<AV1InvTxfm2dParam> GetInvTxfm2dParamList() {
     for (int t = 0; t < TX_TYPES; ++t) {
       const TX_TYPE tx_type = static_cast<TX_TYPE>(t);
       const TX_SIZE tx_size = static_cast<TX_SIZE>(s);
-      if (libaom_test::isTxSizeTypeValid(tx_size, tx_type)) {
+      if (libaom_test::IsTxSizeTypeValid(tx_size, tx_type)) {
         param_list.push_back(
             AV1InvTxfm2dParam(tx_type, tx_size, max_error, avg_error));
       }
@@ -216,7 +216,7 @@ TEST(AV1InvTxfm2d, CfgTest) {
     int8_t high_range = libaom_test::high_range_arr[bd_idx];
     for (int tx_size = 0; tx_size < TX_SIZES_ALL; ++tx_size) {
       for (int tx_type = 0; tx_type < TX_TYPES; ++tx_type) {
-        if (libaom_test::isTxSizeTypeValid(static_cast<TX_SIZE>(tx_size),
+        if (libaom_test::IsTxSizeTypeValid(static_cast<TX_SIZE>(tx_size),
                                            static_cast<TX_TYPE>(tx_type)) ==
             false) {
           continue;
@@ -325,7 +325,7 @@ void AV1LbdInvTxfm2d::RunAV1InvTxfm2dTest(TX_TYPE tx_type, TX_SIZE tx_size,
 TEST_P(AV1LbdInvTxfm2d, match) {
   for (int j = 0; j < (int)(TX_SIZES_ALL); ++j) {
     for (int i = 0; i < (int)TX_TYPES; ++i) {
-      if (libaom_test::isTxSizeTypeValid(static_cast<TX_SIZE>(j),
+      if (libaom_test::IsTxSizeTypeValid(static_cast<TX_SIZE>(j),
                                          static_cast<TX_TYPE>(i))) {
         RunAV1InvTxfm2dTest(static_cast<TX_TYPE>(i), static_cast<TX_SIZE>(j),
                             1);
@@ -337,7 +337,7 @@ TEST_P(AV1LbdInvTxfm2d, match) {
 TEST_P(AV1LbdInvTxfm2d, DISABLED_Speed) {
   for (int j = 0; j < (int)(TX_SIZES_ALL); ++j) {
     for (int i = 0; i < (int)TX_TYPES; ++i) {
-      if (libaom_test::isTxSizeTypeValid(static_cast<TX_SIZE>(j),
+      if (libaom_test::IsTxSizeTypeValid(static_cast<TX_SIZE>(j),
                                          static_cast<TX_TYPE>(i))) {
         RunAV1InvTxfm2dTest(static_cast<TX_TYPE>(i), static_cast<TX_SIZE>(j),
                             10000000);

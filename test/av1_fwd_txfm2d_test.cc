@@ -185,7 +185,7 @@ vector<AV1FwdTxfm2dParam> GetTxfm2dParamList() {
     for (int t = 0; t < TX_TYPES; ++t) {
       const TX_TYPE tx_type = static_cast<TX_TYPE>(t);
       const TX_SIZE tx_size = static_cast<TX_SIZE>(s);
-      if (libaom_test::isTxSizeTypeValid(tx_size, tx_type)) {
+      if (libaom_test::IsTxSizeTypeValid(tx_size, tx_type)) {
         param_list.push_back(
             AV1FwdTxfm2dParam(tx_type, tx_size, max_error, avg_error));
       }
@@ -206,7 +206,7 @@ TEST(AV1FwdTxfm2d, CfgTest) {
     int8_t high_range = libaom_test::high_range_arr[bd_idx];
     for (int tx_size = 0; tx_size < TX_SIZES_ALL; ++tx_size) {
       for (int tx_type = 0; tx_type < TX_TYPES; ++tx_type) {
-        if (libaom_test::isTxSizeTypeValid(static_cast<TX_SIZE>(tx_size),
+        if (libaom_test::IsTxSizeTypeValid(static_cast<TX_SIZE>(tx_size),
                                            static_cast<TX_TYPE>(tx_type)) ==
             false) {
           continue;
@@ -239,7 +239,7 @@ void AV1FwdTxfm2dMatchTest(TX_SIZE tx_size, lowbd_fwd_txfm_func target_func) {
   const int cols = tx_size_wide[tx_size];
   // printf("%d x %d\n", cols, rows);
   for (int tx_type = 0; tx_type < TX_TYPES; ++tx_type) {
-    if (libaom_test::isTxSizeTypeValid(
+    if (libaom_test::IsTxSizeTypeValid(
             tx_size, static_cast<TX_TYPE>(tx_type)) == false) {
       continue;
     }

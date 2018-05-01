@@ -101,7 +101,7 @@ TEST(Av1ScanTest, Dependency) {
     const int rows = get_txb_high((TX_SIZE)tx_size);
     const int cols = get_txb_wide((TX_SIZE)tx_size);
     for (int tx_type = 0; tx_type < TX_TYPES; ++tx_type) {
-      if (libaom_test::isTxSizeTypeValid(static_cast<TX_SIZE>(tx_size),
+      if (libaom_test::IsTxSizeTypeValid(static_cast<TX_SIZE>(tx_size),
                                          static_cast<TX_TYPE>(tx_type)) ==
           false) {
         continue;
