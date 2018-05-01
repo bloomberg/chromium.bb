@@ -13,7 +13,7 @@ base::LazyInstance<LocalSurfaceId>::Leaky g_invalid_local_surface_id =
     LAZY_INSTANCE_INITIALIZER;
 
 ParentLocalSurfaceIdAllocator::ParentLocalSurfaceIdAllocator()
-    : current_local_surface_id_(kInvalidParentSequenceNumber,
+    : current_local_surface_id_(kInitialParentSequenceNumber,
                                 kInitialChildSequenceNumber,
                                 base::UnguessableToken::Create()) {}
 

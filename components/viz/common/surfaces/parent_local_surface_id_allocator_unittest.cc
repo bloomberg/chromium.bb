@@ -18,7 +18,7 @@
 namespace viz {
 namespace {
 
-::testing::AssertionResult ParentSequenceNumberIsNotSet(
+::testing::AssertionResult ParentSequenceNumberIsSet(
     const LocalSurfaceId& local_surface_id);
 ::testing::AssertionResult ChildSequenceNumberIsSet(
     const LocalSurfaceId& local_surface_id);
@@ -31,16 +31,16 @@ ParentLocalSurfaceIdAllocator GetChildUpdatedAllocator();
 }  // namespace
 
 // The default constructor should generate a embed_token and initialize the
-// sequence number of the last known LocalSurfaceId to an invalid state.
+// last known LocalSurfaceId.
 // Allocation should not be suppressed.
 TEST(ParentLocalSurfaceIdAllocatorTest,
-     DefaultConstructorShouldNotSetLocalSurfaceIdComponents) {
+     DefaultConstructorShouldInitializeLocalSurfaceIdAndNotBeSuppressed) {
   ParentLocalSurfaceIdAllocator default_constructed_parent_allocator;
 
   const LocalSurfaceId& default_local_surface_id =
       default_constructed_parent_allocator.GetCurrentLocalSurfaceId();
-  EXPECT_FALSE(default_local_surface_id.is_valid());
-  EXPECT_TRUE(ParentSequenceNumberIsNotSet(default_local_surface_id));
+  EXPECT_TRUE(default_local_surface_id.is_valid());
+  EXPECT_TRUE(ParentSequenceNumberIsSet(default_local_surface_id));
   EXPECT_TRUE(ChildSequenceNumberIsSet(default_local_surface_id));
   EXPECT_FALSE(NonceIsEmpty(default_local_surface_id));
   EXPECT_FALSE(default_constructed_parent_allocator.is_allocation_suppressed());
@@ -146,13 +146,13 @@ TEST(ParentLocalSurfaceIdAllocatorTest, ResetUpdatesComponents) {
 
   LocalSurfaceId default_local_surface_id =
       default_constructed_parent_allocator.GetCurrentLocalSurfaceId();
-  EXPECT_FALSE(default_local_surface_id.is_valid());
-  EXPECT_TRUE(ParentSequenceNumberIsNotSet(default_local_surface_id));
+  EXPECT_TRUE(default_local_surface_id.is_valid());
+  EXPECT_TRUE(ParentSequenceNumberIsSet(default_local_surface_id));
   EXPECT_TRUE(ChildSequenceNumberIsSet(default_local_surface_id));
   EXPECT_FALSE(NonceIsEmpty(default_local_surface_id));
 
   LocalSurfaceId new_local_surface_id(
-      1u, 1u, base::UnguessableToken::Deserialize(0, 1u));
+      2u, 2u, base::UnguessableToken::Deserialize(0, 1u));
 
   default_constructed_parent_allocator.Reset(new_local_surface_id);
   EXPECT_EQ(new_local_surface_id,
@@ -170,12 +170,12 @@ TEST(ParentLocalSurfaceIdAllocatorTest, ResetUpdatesComponents) {
 
 namespace {
 
-::testing::AssertionResult ParentSequenceNumberIsNotSet(
+::testing::AssertionResult ParentSequenceNumberIsSet(
     const LocalSurfaceId& local_surface_id) {
-  if (local_surface_id.parent_sequence_number() == kInvalidParentSequenceNumber)
+  if (local_surface_id.parent_sequence_number() != kInvalidParentSequenceNumber)
     return ::testing::AssertionSuccess();
 
-  return ::testing::AssertionFailure() << "parent_sequence_number() is set";
+  return ::testing::AssertionFailure() << "parent_sequence_number() is not set";
 }
 
 ::testing::AssertionResult ChildSequenceNumberIsSet(
