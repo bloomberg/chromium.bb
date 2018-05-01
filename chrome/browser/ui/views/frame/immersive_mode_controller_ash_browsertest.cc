@@ -11,6 +11,8 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/macros.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/profiles/profile_io_data.h"
+#include "chrome/browser/ssl/cert_verifier_browser_test.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller_test.h"
@@ -24,23 +26,41 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/web_application_info.h"
+#include "chrome/test/base/ui_test_utils.h"
+#include "content/public/common/content_switches.h"
+#include "net/cert/mock_cert_verifier.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/views/animation/test/ink_drop_host_view_test_api.h"
 
 class ImmersiveModeControllerAshHostedAppBrowserTest
     : public ExtensionBrowserTest {
  public:
-  ImmersiveModeControllerAshHostedAppBrowserTest() = default;
+  ImmersiveModeControllerAshHostedAppBrowserTest()
+      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS),
+        mock_cert_verifier_(),
+        cert_verifier_(&mock_cert_verifier_) {}
+
   ~ImmersiveModeControllerAshHostedAppBrowserTest() override = default;
 
   // InProcessBrowserTest override:
   void SetUpOnMainThread() override {
+    cert_verifier_.set_default_result(net::OK);
+    https_server_.AddDefaultHandlers(
+        base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+    ASSERT_TRUE(https_server_.Start());
+
     WebApplicationInfo web_app_info;
-    web_app_info.app_url = GURL("https://example.org");
+    web_app_info.app_url = https_server_.GetURL("/simple.html");
     web_app_info.theme_color = SK_ColorBLUE;
 
     const extensions::Extension* app = InstallBookmarkApp(web_app_info);
+
+    ui_test_utils::UrlLoadObserver url_observer(
+        web_app_info.app_url, content::NotificationService::AllSources());
     browser_ = LaunchAppBrowser(app);
+    // Wait for the URL to load so that the location bar end-state stabilizes.
+    url_observer.Wait();
+
     controller_ = browser_view()->immersive_mode_controller();
 
     // Disable animations in immersive fullscreen before we show the window,
@@ -50,6 +70,21 @@ class ImmersiveModeControllerAshHostedAppBrowserTest
         .SetupForTest();
 
     browser_->window()->Show();
+  }
+
+  void SetUpInProcessBrowserTestFixture() override {
+    ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
+    ProfileIOData::SetCertVerifierForTesting(&mock_cert_verifier_);
+  }
+
+  void TearDownInProcessBrowserTestFixture() override {
+    ProfileIOData::SetCertVerifierForTesting(nullptr);
+    ExtensionBrowserTest::TearDownInProcessBrowserTestFixture();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ExtensionBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kUseMockCertVerifierForTesting);
   }
 
   // Returns the bounds of |view| in widget coordinates.
@@ -88,14 +123,19 @@ class ImmersiveModeControllerAshHostedAppBrowserTest
 
   std::unique_ptr<ImmersiveRevealedLock> revealed_lock_;
 
+  net::EmbeddedTestServer https_server_;
+  net::MockCertVerifier mock_cert_verifier_;
+  // Similar to net::MockCertVerifier, but also updates the CertVerifier
+  // used by the NetworkService. This is needed for when tests run with
+  // the NetworkService enabled.
+  CertVerifierBrowserTest::CertVerifier cert_verifier_;
+
   DISALLOW_COPY_AND_ASSIGN(ImmersiveModeControllerAshHostedAppBrowserTest);
 };
 
-// https://crbug.com/832544 Flaky
 // Test the layout and visibility of the TopContainerView and web contents when
 // a hosted app is put into immersive fullscreen.
-IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
-                       DISABLED_Layout) {
+IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest, Layout) {
   TabStrip* tabstrip = browser_view()->tabstrip();
   ToolbarView* toolbar = browser_view()->toolbar();
   views::WebView* contents_web_view = browser_view()->contents_web_view();
