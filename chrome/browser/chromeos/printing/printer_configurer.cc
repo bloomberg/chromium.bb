@@ -276,4 +276,41 @@ std::unique_ptr<PrinterConfigurer> PrinterConfigurer::Create(Profile* profile) {
   return std::make_unique<PrinterConfigurerImpl>(profile);
 }
 
+std::ostream& operator<<(std::ostream& out, const PrinterSetupResult& result) {
+  switch (result) {
+    case kFatalError:
+      out << "fatal error";
+      break;
+    case kSuccess:
+      out << "success";
+      break;
+    case kPrinterUnreachable:
+      out << "printer unreachable";
+      break;
+    case kDbusError:
+      out << "failed to connect over dbus";
+      break;
+    case kNativePrintersNotAllowed:
+      out << "native printers denied by policy";
+      break;
+    case kPpdTooLarge:
+      out << "PPD too large";
+      break;
+    case kInvalidPpd:
+      out << "PPD rejected by cupstestppd";
+      break;
+    case kPpdNotFound:
+      out << "could not find PPD";
+      break;
+    case kPpdUnretrievable:
+      out << "failed to download PPD";
+      break;
+    case kMaxValue:
+      out << "unexpected result";
+      break;
+  }
+
+  return out;
+}
+
 }  // namespace chromeos
