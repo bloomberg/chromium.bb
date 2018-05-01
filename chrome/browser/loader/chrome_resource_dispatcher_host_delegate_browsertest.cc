@@ -84,13 +84,14 @@ std::unique_ptr<net::test_server::HttpResponse> HandleTestRequest(
     http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
     http_response->AddCustomHeader("Location", redirect_target);
     return std::move(http_response);
-  } else {
+  } else if (request.relative_url == "/") {
     std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
         new net::test_server::BasicHttpResponse);
     http_response->set_code(net::HTTP_OK);
     http_response->set_content("Success");
     return std::move(http_response);
   }
+  return nullptr;
 }
 
 class TestDispatcherHostDelegate : public ChromeResourceDispatcherHostDelegate {
