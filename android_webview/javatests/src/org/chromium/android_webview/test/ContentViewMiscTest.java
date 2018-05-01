@@ -23,8 +23,7 @@ import org.chromium.android_webview.AwContentsStatics;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
-import org.chromium.content.browser.ContentViewStatics;
-import org.chromium.content_public.browser.ContentViewCore;
+import org.chromium.content_public.browser.ContentViewStatics;
 import org.chromium.net.ProxyChangeListener;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -40,7 +39,6 @@ public class ContentViewMiscTest {
 
     private TestAwContentsClient mContentsClient;
     private AwContents mAwContents;
-    private ContentViewCore mContentViewCore;
 
     @Before
     public void setUp() throws Exception {
@@ -48,7 +46,6 @@ public class ContentViewMiscTest {
         final AwTestContainerView testContainerView =
                 mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
         mAwContents = testContainerView.getAwContents();
-        mContentViewCore = testContainerView.getContentViewCore();
     }
 
     @Test

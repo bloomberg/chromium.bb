@@ -7,9 +7,9 @@ package org.chromium.content.browser;
 import org.chromium.net.ProxyChangeListener;
 
 /**
- * Implementations of various static methods.
+ * Implementations of {@link ContentViewStatics}.
  */
-public class ContentViewStatics {
+public class ContentViewStaticsImpl {
     /**
      * Suspends Webkit timers in all renderers.
      * New renderers created after this call will be created with the

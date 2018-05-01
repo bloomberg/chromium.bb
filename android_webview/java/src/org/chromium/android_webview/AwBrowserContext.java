@@ -8,7 +8,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import org.chromium.base.memory.MemoryPressureMonitor;
-import org.chromium.content.browser.ContentViewStatics;
+import org.chromium.content_public.browser.ContentViewStatics;
 
 /**
  * Java side of the Browser Context: contains all the java side objects needed to host one
