@@ -95,7 +95,7 @@ void HttpServer::SendRaw(int connection_id,
     return;
 
   if (connection->write_buf().size() + data.size() >
-      connection->kMaxBufferSize) {
+      connection->WriteBufferSize()) {
     LOG(ERROR) << "Write buffer is full.";
     return;
   }
@@ -164,6 +164,20 @@ void HttpServer::Close(int connection_id) {
                                                   connection.release());
 }
 
+bool HttpServer::SetReceiveBufferSize(int connection_id, int32_t size) {
+  HttpConnection* connection = FindConnection(connection_id);
+  if (connection)
+    connection->SetReadBufferSize(size);
+  return connection;
+}
+
+bool HttpServer::SetSendBufferSize(int connection_id, int32_t size) {
+  HttpConnection* connection = FindConnection(connection_id);
+  if (connection)
+    connection->SetWriteBufferSize(size);
+  return connection;
+}
+
 void HttpServer::GetLocalAddress(
     mojom::TCPServerSocket::GetLocalAddressCallback callback) {
   server_socket_->GetLocalAddress(std::move(callback));
@@ -223,7 +237,8 @@ void HttpServer::OnReadable(int connection_id, MojoResult result) {
     return;
   }
 
-  if (connection->read_buf().size() + bytes_read > connection->kMaxBufferSize) {
+  if (connection->read_buf().size() + bytes_read >
+      connection->ReadBufferSize()) {
     LOG(ERROR) << "Read buffer is full.";
     connection->receive_handle().EndReadData(bytes_read);
     return;
