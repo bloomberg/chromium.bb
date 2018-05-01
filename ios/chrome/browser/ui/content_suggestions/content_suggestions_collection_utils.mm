@@ -86,6 +86,7 @@ namespace content_suggestions {
 
 const CGFloat kSearchFieldHeight = 50;
 const int kSearchFieldBackgroundColor = 0xF1F3F4;
+const CGFloat kHintTextScale = 0.85;
 
 const NSUInteger kMostVisitedItemsPerLine = 4;
 
@@ -203,25 +204,27 @@ CGFloat heightForLogoHeader(BOOL logoIsShowing,
 }
 
 void configureSearchHintLabel(UILabel* searchHintLabel,
+                              UIView* hintLabelContainer,
                               UIButton* searchTapTarget) {
-  [searchHintLabel setTranslatesAutoresizingMaskIntoConstraints:NO];
+  // searchHintLabel is intentionally not using autolayout because it will need
+  // to use a CGAffineScale transform that will not work correctly with
+  // autolayout.  Instead, |hintLabelContainer| will use autolayout and will
+  // contain |searchHintLabel|.
+  searchHintLabel.autoresizingMask =
+      UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+  [hintLabelContainer setTranslatesAutoresizingMaskIntoConstraints:NO];
+  [searchTapTarget addSubview:hintLabelContainer];
+  [hintLabelContainer addSubview:searchHintLabel];
 
-  [searchTapTarget addSubview:searchHintLabel];
-
-  if (IsUIRefreshPhase1Enabled()) {
-    [NSLayoutConstraint activateConstraints:@[
-      [searchHintLabel.centerYAnchor
-          constraintEqualToAnchor:searchTapTarget.centerYAnchor]
-    ]];
-  } else {
-    [NSLayoutConstraint activateConstraints:@[
-      [searchHintLabel.heightAnchor
-          constraintEqualToConstant:kSearchFieldHeight - 2 * kSearchHintMargin],
-      [searchHintLabel.centerYAnchor
-          constraintEqualToAnchor:searchTapTarget.centerYAnchor
-                         constant:kSearchHintVerticalOffset]
-    ]];
-  }
+  CGFloat centerYOffsetConstant =
+      IsUIRefreshPhase1Enabled() ? 0 : kSearchHintVerticalOffset;
+  [NSLayoutConstraint activateConstraints:@[
+    [hintLabelContainer.centerYAnchor
+        constraintEqualToAnchor:searchTapTarget.centerYAnchor
+                       constant:centerYOffsetConstant],
+    [hintLabelContainer.heightAnchor
+        constraintEqualToConstant:kSearchFieldHeight - 2 * kSearchHintMargin],
+  ]];
 
   [searchHintLabel setText:l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT)];
   if (base::i18n::IsRTL()) {
@@ -231,7 +234,6 @@ void configureSearchHintLabel(UILabel* searchHintLabel,
     [searchHintLabel setTextColor:[UIColor colorWithWhite:0 alpha:kHintAlpha]];
     searchHintLabel.font =
         [UIFont preferredFontForTextStyle:UIFontTextStyleTitle3];
-    searchHintLabel.adjustsFontSizeToFitWidth = YES;
   } else {
     [searchHintLabel
         setTextColor:

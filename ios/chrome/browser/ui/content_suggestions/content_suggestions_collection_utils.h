@@ -13,6 +13,8 @@ extern const CGFloat kSearchFieldHeight;
 
 extern const int kSearchFieldBackgroundColor;
 
+extern const CGFloat kHintTextScale;
+
 // Returns the maximum number of tiles fitting in |availableWidth|, limited to
 // 4.
 NSUInteger numberOfTilesForWidth(CGFloat availableWidth);
@@ -43,9 +45,12 @@ CGFloat searchFieldWidth(CGFloat superviewWidth);
 CGFloat heightForLogoHeader(BOOL logoIsShowing,
                             BOOL promoCanShow,
                             BOOL toolbarPresent);
-// Configure the |searchHintLabel| for the fake omnibox, adding it to the
-// |searchTapTarget| and constrain it.
+// Configure the |searchHintLabel| for the fake omnibox.  |hintLabelContainer|
+// is added to the |searchTapTarget| with autolayout and |searchHintLabel| is
+// added to |hintLabelContainer| with autoresizing.  This is done due to the
+// way searchHintLabel is later tranformed.
 void configureSearchHintLabel(UILabel* searchHintLabel,
+                              UIView* hintLabelContainer,
                               UIButton* searchTapTarget);
 // Configure the |voiceSearchButton|, adding it to the |searchTapTarget| and
 // constraining it.
