@@ -87,10 +87,6 @@ class TestStartPageSearchResult : public TestSearchResult {
   }
   ~TestStartPageSearchResult() override = default;
 
-  void GetContextMenuModel(GetMenuModelCallback callback) override {
-    std::move(callback).Run(std::make_unique<ui::SimpleMenuModel>(nullptr));
-  }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(TestStartPageSearchResult);
 };

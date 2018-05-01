@@ -11,21 +11,19 @@
 #include <vector>
 
 #include "ash/app_list/model/app_list_item_observer.h"
-#include "ash/public/interfaces/menu.mojom.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
 #include "ui/app_list/app_list_export.h"
+#include "ui/app_list/views/app_list_view_context_menu.h"
 #include "ui/app_list/views/image_shadow_animator.h"
-#include "ui/base/models/simple_menu_model.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
 
 namespace views {
 class ImageView;
 class Label;
-class MenuRunner;
 class ProgressBar;
 }  // namespace views
 
@@ -35,11 +33,12 @@ class AppListItem;
 class AppListViewDelegate;
 class AppsGridView;
 
-class APP_LIST_EXPORT AppListItemView : public views::Button,
-                                        public views::ContextMenuController,
-                                        public AppListItemObserver,
-                                        public ImageShadowAnimator::Delegate,
-                                        public ui::SimpleMenuModel::Delegate {
+class APP_LIST_EXPORT AppListItemView
+    : public views::Button,
+      public views::ContextMenuController,
+      public AppListItemObserver,
+      public ImageShadowAnimator::Delegate,
+      public AppListViewContextMenu::Delegate {
  public:
   // Internal class name.
   static const char kViewClassName[];
@@ -170,9 +169,7 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
   void ItemPercentDownloadedChanged() override;
   void ItemBeingDestroyed() override;
 
-  // ui::SimpleMenuModel::Delegate overrides;
-  bool IsCommandIdChecked(int command_id) const override;
-  bool IsCommandIdEnabled(int command_id) const override;
+  // AppListViewContextMenu::Delegate overrides;
   void ExecuteCommand(int command_id, int event_flags) override;
 
   const bool is_folder_;
@@ -186,10 +183,7 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
   views::Label* title_;               // Strongly typed child view.
   views::ProgressBar* progress_bar_;  // Strongly typed child view.
 
-  std::unique_ptr<views::MenuRunner> context_menu_runner_;
-  std::unique_ptr<ui::SimpleMenuModel> context_menu_model_;
-  std::vector<ash::mojom::MenuItemPtr> context_menu_items_;
-  std::vector<std::unique_ptr<ui::MenuModel>> context_submenu_models_;
+  AppListViewContextMenu context_menu_;
 
   UIState ui_state_ = UI_STATE_NORMAL;
 

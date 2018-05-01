@@ -125,6 +125,12 @@ bool FakeAppListModelUpdater::SearchEngineIsGoogle() {
   return search_engine_is_google_;
 }
 
+void FakeAppListModelUpdater::GetSearchResultContextMenuModel(
+    const std::string& result_id,
+    GetMenuModelCallback callback) {
+  std::move(callback).Run(nullptr);
+}
+
 ChromeSearchResult* FakeAppListModelUpdater::FindSearchResult(
     const std::string& result_id) {
   for (auto& result : search_results_) {

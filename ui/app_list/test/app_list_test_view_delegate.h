@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/test/app_list_test_model.h"
+#include "ui/base/models/simple_menu_model.h"
 
 namespace app_list {
 namespace test {
@@ -25,7 +26,8 @@ namespace test {
 class AppListTestModel;
 
 // A concrete AppListViewDelegate for unit tests.
-class AppListTestViewDelegate : public AppListViewDelegate {
+class AppListTestViewDelegate : public AppListViewDelegate,
+                                public ui::SimpleMenuModel::Delegate {
  public:
   AppListTestViewDelegate();
   ~AppListTestViewDelegate() override;
@@ -51,6 +53,9 @@ class AppListTestViewDelegate : public AppListViewDelegate {
   void InvokeSearchResultAction(const std::string& result_id,
                                 int action_index,
                                 int event_flags) override {}
+  void GetSearchResultContextMenuModel(
+      const std::string& result_id,
+      GetContextMenuModelCallback callback) override;
   void ViewShown(int64_t display_id) override {}
   void Dismiss() override;
   void ViewClosing() override {}
@@ -75,6 +80,11 @@ class AppListTestViewDelegate : public AppListViewDelegate {
   AppListTestModel* GetTestModel() { return model_.get(); }
 
  private:
+  // ui::SimpleMenuModel::Delegate overrides:
+  bool IsCommandIdChecked(int command_id) const override;
+  bool IsCommandIdEnabled(int command_id) const override;
+  void ExecuteCommand(int command_id, int event_flags) override;
+
   int dismiss_count_ = 0;
   int open_search_result_count_ = 0;
   int next_profile_app_count_ = 0;
@@ -82,6 +92,7 @@ class AppListTestViewDelegate : public AppListViewDelegate {
   std::unique_ptr<AppListTestModel> model_;
   std::unique_ptr<SearchModel> search_model_;
   std::vector<SkColor> wallpaper_prominent_colors_;
+  ui::SimpleMenuModel search_result_context_menu_model_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListTestViewDelegate);
 };

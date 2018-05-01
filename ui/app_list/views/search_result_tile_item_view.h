@@ -6,19 +6,16 @@
 #define UI_APP_LIST_VIEWS_SEARCH_RESULT_TILE_ITEM_VIEW_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "ui/app_list/app_list_export.h"
+#include "ui/app_list/views/app_list_view_context_menu.h"
 #include "ui/app_list/views/search_result_base_view.h"
 #include "ui/views/context_menu_controller.h"
 
-namespace ui {
-class MenuModel;
-}  // namespace ui
-
 namespace views {
 class ImageView;
-class MenuRunner;
 class Label;
 }  // namespace views
 
@@ -33,7 +30,8 @@ class PaginationModel;
 // that has SearchResult::DisplayType DISPLAY_TILE or DISPLAY_RECOMMENDATION.
 class APP_LIST_EXPORT SearchResultTileItemView
     : public SearchResultBaseView,
-      public views::ContextMenuController {
+      public views::ContextMenuController,
+      public AppListViewContextMenu::Delegate {
  public:
   SearchResultTileItemView(SearchResultContainerView* result_container,
                            AppListViewDelegate* view_delegate,
@@ -71,12 +69,15 @@ class APP_LIST_EXPORT SearchResultTileItemView
                               const gfx::Point& point,
                               ui::MenuSourceType source_type) override;
 
+  // AppListViewContextMenu::Delegate overrides:
+  void ExecuteCommand(int command_id, int event_flags) override;
+
  private:
   // Bound by ShowContextMenuForView().
   void OnGetContextMenuModel(views::View* source,
                              const gfx::Point& point,
                              ui::MenuSourceType source_type,
-                             std::unique_ptr<ui::MenuModel> menu_model);
+                             std::vector<ash::mojom::MenuItemPtr> menu);
 
   void SetIcon(const gfx::ImageSkia& icon);
   void SetBadgeIcon(const gfx::ImageSkia& badge_icon);
@@ -115,10 +116,9 @@ class APP_LIST_EXPORT SearchResultTileItemView
 
   SkColor parent_background_color_ = SK_ColorTRANSPARENT;
 
-  std::unique_ptr<ui::MenuModel> menu_model_;
-  std::unique_ptr<views::MenuRunner> context_menu_runner_;
-
   const bool is_play_store_app_search_enabled_;
+
+  AppListViewContextMenu context_menu_;
 
   base::WeakPtrFactory<SearchResultTileItemView> weak_ptr_factory_;
 

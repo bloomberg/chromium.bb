@@ -313,6 +313,9 @@ interface AppListClient {
   InvokeSearchResultAction(string result_id,
                            int32 action_index,
                            int32 event_flags);
+  // Returns the context menu model for the search result with |result_id|, or
+  // an empty array if there is currently no menu for the result.
+  GetSearchResultContextMenuModel(string result_id) => (array<MenuItem> items);
 
   //////////////////////////////////////////////////////////////////////////////
   // Interfaces on the app list UI:
@@ -329,8 +332,8 @@ interface AppListClient {
   // Interfaces on app list items:
   // Activates (opens) the item with |id|.
   ActivateItem(string id, int32 event_flags);
-  // Returns the context menu model for the item with |id|, or NULL if there is
-  // currently no menu for the item (e.g. during install).
+  // Returns the context menu model for the item with |id|, or an empty array if
+  // there is currently no menu for the item (e.g. during install).
   GetContextMenuModel(string id) => (array<MenuItem> items);
   // Invoked when a context menu item of an app list item is clicked.
   // |id|: the clicked AppListItem's id.

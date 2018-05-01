@@ -39,7 +39,8 @@ SearchResultListView::SearchResultListView(AppListMainView* main_view,
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
 
   for (int i = 0; i < kMaxResults; ++i) {
-    search_result_views_.emplace_back(new SearchResultView(this));
+    search_result_views_.emplace_back(
+        new SearchResultView(this, view_delegate_));
     results_container_->AddChildView(search_result_views_.back());
   }
   AddChildView(results_container_);

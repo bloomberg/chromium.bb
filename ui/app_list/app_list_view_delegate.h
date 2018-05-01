@@ -60,6 +60,15 @@ class APP_LIST_EXPORT AppListViewDelegate {
                                         int action_index,
                                         int event_flags) = 0;
 
+  // Returns the context menu model for a ChromeSearchResult with |result_id|,
+  // or NULL if there is currently no menu for the result.
+  // Note the returned menu model is owned by that result.
+  using GetContextMenuModelCallback =
+      base::OnceCallback<void(std::vector<ash::mojom::MenuItemPtr>)>;
+  virtual void GetSearchResultContextMenuModel(
+      const std::string& result_id,
+      GetContextMenuModelCallback callback) = 0;
+
   // Invoked when the app list is shown.
   virtual void ViewShown(int64_t display_id) = 0;
 
@@ -82,8 +91,6 @@ class APP_LIST_EXPORT AppListViewDelegate {
   // Returns the context menu model for a ChromeAppListItem with |id|, or NULL
   // if there is currently no menu for the item (e.g. during install).
   // Note the returned menu model is owned by that item.
-  using GetContextMenuModelCallback =
-      base::OnceCallback<void(std::vector<ash::mojom::MenuItemPtr>)>;
   virtual void GetContextMenuModel(const std::string& id,
                                    GetContextMenuModelCallback callback) = 0;
 

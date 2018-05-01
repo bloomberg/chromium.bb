@@ -27,6 +27,10 @@ void ChromeSearchResult::UpdateFromMatch(
   set_relevance(match.relevance());
 }
 
+void ChromeSearchResult::GetContextMenuModel(GetMenuModelCallback callback) {
+  std::move(callback).Run(nullptr);
+}
+
 // static
 std::string ChromeSearchResult::TagsDebugStringForTest(const std::string& text,
                                                        const Tags& tags) {

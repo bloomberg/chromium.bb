@@ -93,6 +93,7 @@ SearchResultTileItemView::SearchResultTileItemView(
       pagination_model_(pagination_model),
       is_play_store_app_search_enabled_(
           features::IsPlayStoreAppSearchEnabled()),
+      context_menu_(this),
       weak_ptr_factory_(this) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
 
@@ -161,7 +162,7 @@ SearchResultTileItemView::~SearchResultTileItemView() {
 void SearchResultTileItemView::SetSearchResult(SearchResult* item) {
   // Handle the case where this may be called from a nested run loop while its
   // context menu is showing. This cancels the menu (it's for the old item).
-  context_menu_runner_.reset();
+  context_menu_.Reset();
 
   SetVisible(!!item);
 
@@ -348,7 +349,7 @@ void SearchResultTileItemView::OnMetadataChanged() {
 
 void SearchResultTileItemView::OnResultDestroying() {
   // The menu comes from |item_|. If we're showing a menu we need to cancel it.
-  context_menu_runner_.reset();
+  context_menu_.Reset();
 
   if (item_)
     item_->RemoveObserver(this);
@@ -364,19 +365,20 @@ void SearchResultTileItemView::ShowContextMenuForView(
   if (!item_)
     return;
 
-  item_->GetContextMenuModel(base::BindOnce(
-      &SearchResultTileItemView::OnGetContextMenuModel,
-      weak_ptr_factory_.GetWeakPtr(), source, point, source_type));
+  view_delegate_->GetSearchResultContextMenuModel(
+      item_->id(),
+      base::BindOnce(&SearchResultTileItemView::OnGetContextMenuModel,
+                     weak_ptr_factory_.GetWeakPtr(), source, point,
+                     source_type));
 }
 
 void SearchResultTileItemView::OnGetContextMenuModel(
     views::View* source,
     const gfx::Point& point,
     ui::MenuSourceType source_type,
-    std::unique_ptr<ui::MenuModel> menu_model) {
-  if (!menu_model)
+    std::vector<ash::mojom::MenuItemPtr> menu) {
+  if (menu.empty() || context_menu_.IsRunning())
     return;
-  menu_model_ = std::move(menu_model);
 
   if (IsSuggestedAppTile()) {
     if (view_delegate_->GetModel()->state_fullscreen() ==
@@ -415,14 +417,21 @@ void SearchResultTileItemView::OnGetContextMenuModel(
           gfx::Size(kGridSelectedSize, kGridSelectedSize));
     }
   }
-  context_menu_runner_ = std::make_unique<views::MenuRunner>(
-      menu_model_.get(), run_types,
+  context_menu_.Build(
+      std::move(menu), run_types,
       base::Bind(&SearchResultTileItemView::OnContextMenuClosed,
                  weak_ptr_factory_.GetWeakPtr(), base::TimeTicks::Now()));
-  context_menu_runner_->RunMenuAt(GetWidget(), nullptr, anchor_rect,
-                                  anchor_type, source_type);
+  context_menu_.Run(GetWidget(), nullptr, anchor_rect, anchor_type,
+                    source_type);
 
   source->RequestFocus();
+}
+
+void SearchResultTileItemView::ExecuteCommand(int command_id, int event_flags) {
+  if (item_) {
+    view_delegate_->ContextMenuItemSelected(item_->id(), command_id,
+                                            event_flags);
+  }
 }
 
 void SearchResultTileItemView::SetIcon(const gfx::ImageSkia& icon) {
