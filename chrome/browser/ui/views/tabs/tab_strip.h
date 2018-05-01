@@ -15,6 +15,7 @@
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
+#include "chrome/browser/ui/views/frame/browser_root_view.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
@@ -60,7 +61,8 @@ class TabStrip : public views::View,
                  public views::ButtonListener,
                  public views::MouseWatcherListener,
                  public views::ViewTargeterDelegate,
-                 public TabController {
+                 public TabController,
+                 public BrowserRootView::DropTarget {
  public:
   explicit TabStrip(std::unique_ptr<TabStripController> controller);
   ~TabStrip() override;
@@ -221,9 +223,6 @@ class TabStrip : public views::View,
   // ongoing this does a layout.
   void StopAnimating(bool layout);
 
-  // Called to indicate whether the given URL is a supported file.
-  void FileSupported(const GURL& url, bool supported);
-
   // TabController overrides:
   const ui::ListSelectionModel& GetSelectionModel() const override;
   bool SupportsMultipleSelection() override;
@@ -269,14 +268,16 @@ class TabStrip : public views::View,
   void PaintChildren(const views::PaintInfo& paint_info) override;
   const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
-  // NOTE: the drag and drop methods are invoked from FrameView. This is done
-  // to allow for a drop region that extends outside the bounds of the TabStrip.
-  void OnDragEntered(const ui::DropTargetEvent& event) override;
-  int OnDragUpdated(const ui::DropTargetEvent& event) override;
-  void OnDragExited() override;
-  int OnPerformDrop(const ui::DropTargetEvent& event) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   views::View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
+
+  // BrowserRootView::DropTarget overrides:
+  BrowserRootView::DropIndex GetDropIndex(
+      const ui::DropTargetEvent& event) override;
+  views::View* GetViewForDrop() override;
+  void HandleDragUpdate(
+      const base::Optional<BrowserRootView::DropIndex>& index) override;
+  void HandleDragExited() override;
 
  private:
   enum NewTabButtonPosition {
@@ -304,19 +305,14 @@ class TabStrip : public views::View,
 
   // Used during a drop session of a url. Tracks the position of the drop as
   // well as a window used to highlight where the drop occurs.
-  struct DropInfo {
-    DropInfo(int drop_index,
-             bool drop_before,
-             bool point_down,
-             views::Widget* context);
-    ~DropInfo();
+  struct DropArrow {
+    DropArrow(const BrowserRootView::DropIndex& index,
+              bool point_down,
+              views::Widget* context);
+    ~DropArrow();
 
-    // Index of the tab to drop on. If drop_before is true, the drop should
-    // occur between the tab at drop_index - 1 and drop_index.
-    // WARNING: if drop_before is true it is possible this will == tab_count,
-    // which indicates the drop should create a new tab at the end of the tabs.
-    int drop_index;
-    bool drop_before;
+    // Index of the tab to drop on.
+    BrowserRootView::DropIndex index;
 
     // Direction the arrow should point in. If true, the arrow is displayed
     // above the tab and points down. If false, the arrow is displayed beneath
@@ -327,14 +323,8 @@ class TabStrip : public views::View,
     views::Widget* arrow_window;
     views::ImageView* arrow_view;
 
-    // The URL for the drop event.
-    GURL url;
-
-    // Whether the MIME type of the file pointed to by |url| is supported.
-    bool file_supported;
-
    private:
-    DISALLOW_COPY_AND_ASSIGN(DropInfo);
+    DISALLOW_COPY_AND_ASSIGN(DropArrow);
   };
 
   void Init();
@@ -509,15 +499,9 @@ class TabStrip : public views::View,
   // it.
   gfx::Rect GetDropBounds(int drop_index, bool drop_before, bool* is_beneath);
 
-  // Updates the location of the drop based on the event.
-  void UpdateDropIndex(const ui::DropTargetEvent& event);
-
-  // Sets the location of the drop, repainting as necessary.
-  void SetDropIndex(int tab_data_index, bool drop_before);
-
-  // Returns the drop effect for dropping a URL on the tab strip. This does
-  // not query the data in anyway, it only looks at the source operations.
-  int GetDropEffect(const ui::DropTargetEvent& event);
+  // Show drop arrow with passed |tab_data_index| and |drop_before|.
+  // If |tab_data_index| is negative, the arrow will disappear.
+  void SetDropArrow(const base::Optional<BrowserRootView::DropIndex>& index);
 
   // Returns the image to use for indicating a drop on a tab. If is_down is
   // true, this returns an arrow pointing down.
@@ -649,7 +633,7 @@ class TabStrip : public views::View,
   bool in_tab_close_ = false;
 
   // Valid for the lifetime of a drag over us.
-  std::unique_ptr<DropInfo> drop_info_;
+  std::unique_ptr<DropArrow> drop_arrow_;
 
   // To ensure all tabs pulse at the same time they share the same animation
   // container. This is that animation container.

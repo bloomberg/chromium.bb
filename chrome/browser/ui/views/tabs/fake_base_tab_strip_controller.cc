@@ -109,11 +109,6 @@ void FakeBaseTabStripController::OnDropIndexUpdate(int index,
                                                    bool drop_before) {
 }
 
-void FakeBaseTabStripController::PerformDrop(bool drop_before,
-                                             int index,
-                                             const GURL& url) {
-}
-
 bool FakeBaseTabStripController::IsCompatibleWith(TabStrip* other) const {
   return false;
 }
@@ -137,10 +132,6 @@ void FakeBaseTabStripController::OnStartedDraggingTabs() {
 }
 
 void FakeBaseTabStripController::OnStoppedDraggingTabs() {
-}
-
-void FakeBaseTabStripController::CheckFileSupported(const GURL& url) {
-  tab_strip_->FileSupported(url, true);
 }
 
 SkColor FakeBaseTabStripController::GetToolbarTopSeparatorColor() const {

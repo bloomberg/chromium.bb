@@ -5,22 +5,92 @@
 #include "chrome/browser/ui/views/frame/browser_root_view.h"
 
 #include <cmath>
+#include <string>
 
+#include "base/metrics/user_metrics.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
-#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/views/touch_uma/touch_uma.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_match.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/plugin_service.h"
+#include "content/public/common/webplugininfo.h"
+#include "net/base/filename_util.h"
+#include "net/base/mime_util.h"
+#include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/dragdrop/drop_target_event.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/hit_test.h"
+
+namespace {
+
+using FileSupportedCallback =
+    base::OnceCallback<void(const GURL& url, bool supported)>;
+
+// Get the MIME type of the file pointed to by the url, based on the file's
+// extension. Must be called on a thread that allows IO.
+std::string FindURLMimeType(const GURL& url) {
+  base::AssertBlockingAllowed();
+  base::FilePath full_path;
+  net::FileURLToFilePath(url, &full_path);
+
+  // Get the MIME type based on the filename.
+  std::string mime_type;
+  net::GetMimeTypeFromFile(full_path, &mime_type);
+
+  return mime_type;
+}
+
+void OnFindURLMimeType(const GURL& url,
+                       Profile* profile,
+                       FileSupportedCallback callback,
+                       const std::string& mime_type) {
+  // Check whether the mime type, if given, is known to be supported or whether
+  // there is a plugin that supports the mime type (e.g. PDF).
+  // TODO(bauerb): This possibly uses stale information, but it's guaranteed not
+  // to do disk access.
+  content::WebPluginInfo plugin;
+  std::move(callback).Run(
+      url,
+      mime_type.empty() || blink::IsSupportedMimeType(mime_type) ||
+          content::PluginService::GetInstance()->GetPluginInfo(
+              -1,                // process ID
+              MSG_ROUTING_NONE,  // routing ID
+              profile->GetResourceContext(), url, url::Origin(), mime_type,
+              false, nullptr, &plugin, nullptr));
+}
+
+bool GetURLForDrop(const ui::DropTargetEvent& event, GURL* url) {
+  DCHECK(url);
+  base::string16 title;
+  return event.data().GetURLAndTitle(ui::OSExchangeData::CONVERT_FILENAMES, url,
+                                     &title) &&
+         url->is_valid();
+}
+
+int GetDropEffect(const ui::DropTargetEvent& event, const GURL& url) {
+  const int source_ops = event.source_operations();
+  if (source_ops & ui::DragDropTypes::DRAG_COPY)
+    return ui::DragDropTypes::DRAG_COPY;
+  if (source_ops & ui::DragDropTypes::DRAG_LINK)
+    return ui::DragDropTypes::DRAG_LINK;
+  return ui::DragDropTypes::DRAG_MOVE;
+}
+
+}  // namespace
+
+BrowserRootView::DropInfo::DropInfo() = default;
+BrowserRootView::DropInfo::~DropInfo() = default;
 
 // static
 const char BrowserRootView::kViewClassName[] =
@@ -30,14 +100,14 @@ BrowserRootView::BrowserRootView(BrowserView* browser_view,
                                  views::Widget* widget)
     : views::internal::RootView(widget),
       browser_view_(browser_view),
-      forwarding_to_tab_strip_(false),
-      scroll_remainder_x_(0),
-      scroll_remainder_y_(0) {}
+      weak_ptr_factory_(this) {}
+
+BrowserRootView::~BrowserRootView() = default;
 
 bool BrowserRootView::GetDropFormats(
-      int* formats,
-      std::set<ui::Clipboard::FormatType>* format_types) {
-  if (tabstrip() && tabstrip()->visible()) {
+    int* formats,
+    std::set<ui::Clipboard::FormatType>* format_types) {
+  if (tabstrip()->visible() || toolbar()->visible()) {
     *formats = ui::OSExchangeData::URL | ui::OSExchangeData::STRING;
     return true;
   }
@@ -49,7 +119,11 @@ bool BrowserRootView::AreDropTypesRequired() {
 }
 
 bool BrowserRootView::CanDrop(const ui::OSExchangeData& data) {
-  if (!tabstrip() || !tabstrip()->visible())
+  // If it's not tabbed browser, we don't have to support drag and drops.
+  if (!browser_view_->IsBrowserTypeNormal())
+    return false;
+
+  if (!tabstrip()->visible() && !toolbar()->visible())
     return false;
 
   // If there is a URL, we'll allow the drop.
@@ -61,63 +135,98 @@ bool BrowserRootView::CanDrop(const ui::OSExchangeData& data) {
 }
 
 void BrowserRootView::OnDragEntered(const ui::DropTargetEvent& event) {
-  if (ShouldForwardToTabStrip(event)) {
-    forwarding_to_tab_strip_ = true;
-    std::unique_ptr<ui::DropTargetEvent> mapped_event(
-        MapEventToTabStrip(event, event.data()));
-    tabstrip()->OnDragEntered(*mapped_event.get());
+  drop_info_ = std::make_unique<DropInfo>();
+  GURL url;
+  if (GetURLForDrop(event, &url)) {
+    drop_info_->url = url;
+
+    // Check if the file is supported.
+    if (url.SchemeIsFile()) {
+      base::PostTaskWithTraitsAndReplyWithResult(
+          FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+          base::BindOnce(&FindURLMimeType, url),
+          base::BindOnce(&OnFindURLMimeType, url, browser_view_->GetProfile(),
+                         base::BindOnce(&BrowserRootView::OnFileSupported,
+                                        weak_ptr_factory_.GetWeakPtr())));
+    }
   }
 }
 
 int BrowserRootView::OnDragUpdated(const ui::DropTargetEvent& event) {
-  if (ShouldForwardToTabStrip(event)) {
-    std::unique_ptr<ui::DropTargetEvent> mapped_event(
-        MapEventToTabStrip(event, event.data()));
-    if (!forwarding_to_tab_strip_) {
-      tabstrip()->OnDragEntered(*mapped_event.get());
-      forwarding_to_tab_strip_ = true;
+  if (!drop_info_)
+    OnDragEntered(event);
+
+  if (auto* drop_target = GetDropTarget(event)) {
+    if (drop_info_->target && drop_info_->target != drop_target)
+      drop_info_->target->HandleDragExited();
+    drop_info_->target = drop_target;
+
+    if (!drop_info_->file_supported || !drop_info_->url.is_valid() ||
+        drop_info_->url.SchemeIs(url::kJavaScriptScheme)) {
+      drop_info_->index.reset();
+    } else {
+      drop_info_->index =
+          GetDropIndexForEvent(event, event.data(), drop_target);
     }
-    return tabstrip()->OnDragUpdated(*mapped_event.get());
-  } else if (forwarding_to_tab_strip_) {
-    forwarding_to_tab_strip_ = false;
-    tabstrip()->OnDragExited();
+
+    drop_target->HandleDragUpdate(drop_info_->index);
+    return drop_info_->index ? GetDropEffect(event, drop_info_->url)
+                             : ui::DragDropTypes::DRAG_NONE;
   }
+
+  OnDragExited();
   return ui::DragDropTypes::DRAG_NONE;
 }
 
 void BrowserRootView::OnDragExited() {
-  if (forwarding_to_tab_strip_) {
-    forwarding_to_tab_strip_ = false;
-    tabstrip()->OnDragExited();
+  if (drop_info_ && drop_info_->target) {
+    drop_info_->target->HandleDragExited();
+    drop_info_->target = nullptr;
   }
+
+  drop_info_.reset();
 }
 
 int BrowserRootView::OnPerformDrop(const ui::DropTargetEvent& event) {
-  if (!forwarding_to_tab_strip_)
+  using base::UserMetricsAction;
+
+  if (!drop_info_)
     return ui::DragDropTypes::DRAG_NONE;
 
   // Extract the URL and create a new ui::OSExchangeData containing the URL. We
   // do this as the TabStrip doesn't know about the autocomplete edit and needs
   // to know about it to handle 'paste and go'.
   GURL url;
-  base::string16 title;
-  ui::OSExchangeData mapped_data;
-  if (!event.data().GetURLAndTitle(
-           ui::OSExchangeData::CONVERT_FILENAMES, &url, &title) ||
-      !url.is_valid()) {
+  if (!GetURLForDrop(event, &url)) {
     // The url isn't valid. Use the paste and go url.
-    if (GetPasteAndGoURL(event.data(), &url))
-      mapped_data.SetURL(url, base::string16());
-    // else case: couldn't extract a url or 'paste and go' url. This ends up
-    // passing through an ui::OSExchangeData with nothing in it. We need to do
-    // this so that the tab strip cleans up properly.
-  } else {
-    mapped_data.SetURL(url, base::string16());
+    GetPasteAndGoURL(event.data(), &url);
   }
-  forwarding_to_tab_strip_ = false;
-  std::unique_ptr<ui::DropTargetEvent> mapped_event(
-      MapEventToTabStrip(event, mapped_data));
-  return tabstrip()->OnPerformDrop(*mapped_event);
+
+  // Do nothing if the file was unsupported, the URL is invalid, or this is a
+  // javascript: URL (prevent self-xss). The URL may have been changed after
+  // |drop_info_| was created.
+  if (!drop_info_->file_supported || !url.is_valid() ||
+      url.SchemeIs(url::kJavaScriptScheme))
+    return ui::DragDropTypes::DRAG_NONE;
+
+  NavigateParams params(browser_view_->browser(), url,
+                        ui::PAGE_TRANSITION_LINK);
+  params.tabstrip_index = drop_info_->index->value;
+  if (drop_info_->index->drop_before) {
+    base::RecordAction(UserMetricsAction("Tab_DropURLBetweenTabs"));
+    params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+  } else {
+    base::RecordAction(UserMetricsAction("Tab_DropURLOnTab"));
+    params.disposition = WindowOpenDisposition::CURRENT_TAB;
+    Browser* browser = browser_view_->browser();
+    TabStripModel* model = browser->tab_strip_model();
+    params.source_contents = model->GetWebContentsAt(drop_info_->index->value);
+  }
+
+  params.window_action = NavigateParams::SHOW_WINDOW;
+  Navigate(&params);
+
+  return GetDropEffect(event, url);
 }
 
 const char* BrowserRootView::GetClassName() const {
@@ -195,29 +304,38 @@ void BrowserRootView::OnEventProcessingStarted(ui::Event* event) {
   RootView::OnEventProcessingStarted(event);
 }
 
-bool BrowserRootView::ShouldForwardToTabStrip(
+BrowserRootView::DropTarget* BrowserRootView::GetDropTarget(
     const ui::DropTargetEvent& event) {
-  if (!tabstrip()->visible())
-    return false;
+  // See if we should drop links onto tabstrip first.
+  if (tabstrip()->visible()) {
+    // Allow the drop as long as the mouse is over tabstrip or vertically
+    // before it.
+    gfx::Point tabstrip_loc_in_host;
+    ConvertPointToTarget(tabstrip(), this, &tabstrip_loc_in_host);
+    if (event.y() < tabstrip_loc_in_host.y() + tabstrip()->height())
+      return tabstrip();
+  }
 
-  // Allow the drop as long as the mouse is over the tabstrip or vertically
-  // before it.
-  gfx::Point tab_loc_in_host;
-  ConvertPointToTarget(tabstrip(), this, &tab_loc_in_host);
-  return event.y() < tab_loc_in_host.y() + tabstrip()->height();
+  // See if we can drop links onto toolbar.
+  gfx::Point loc_in_toolbar(event.location());
+  ConvertPointToTarget(this, toolbar(), &loc_in_toolbar);
+  return toolbar()->HitTestPoint(loc_in_toolbar) ? toolbar() : nullptr;
 }
 
-ui::DropTargetEvent* BrowserRootView::MapEventToTabStrip(
+BrowserRootView::DropIndex BrowserRootView::GetDropIndexForEvent(
     const ui::DropTargetEvent& event,
-    const ui::OSExchangeData& data) {
-  gfx::Point tab_strip_loc(event.location());
-  ConvertPointToTarget(this, tabstrip(), &tab_strip_loc);
-  return new ui::DropTargetEvent(data, tab_strip_loc, tab_strip_loc,
-                                 event.source_operations());
+    const ui::OSExchangeData& data,
+    DropTarget* target) {
+  gfx::Point loc_in_view(event.location());
+  ConvertPointToTarget(this, target->GetViewForDrop(), &loc_in_view);
+  ui::DropTargetEvent event_in_view(data, loc_in_view, loc_in_view,
+                                    event.source_operations());
+  return target->GetDropIndex(event_in_view);
 }
 
-TabStrip* BrowserRootView::tabstrip() const {
-  return browser_view_->tabstrip();
+void BrowserRootView::OnFileSupported(const GURL& url, bool supported) {
+  if (drop_info_ && drop_info_->url == url)
+    drop_info_->file_supported = supported;
 }
 
 bool BrowserRootView::GetPasteAndGoURL(const ui::OSExchangeData& data,
