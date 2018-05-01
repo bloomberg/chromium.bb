@@ -43,6 +43,9 @@ namespace {
 void OnTraceUploadComplete(TraceCrashServiceUploader* uploader,
                            bool success,
                            const std::string& feedback) {
+  UMA_HISTOGRAM_BOOLEAN("OutOfProcessHeapProfiling.UploadTrace.Success",
+                        success);
+
   if (!success) {
     LOG(ERROR) << "Cannot upload trace file: " << feedback;
     return;
