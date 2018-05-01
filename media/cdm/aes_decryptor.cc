@@ -10,12 +10,10 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
-#include "crypto/encryptor.h"
 #include "crypto/symmetric_key.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/callback_registry.h"
@@ -25,9 +23,9 @@
 #include "media/base/limits.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
+#include "media/cdm/cenc_decryptor.h"
 #include "media/cdm/cenc_utils.h"
 #include "media/cdm/json_web_key.h"
-#include "media/media_buildflags.h"
 
 namespace media {
 
@@ -148,126 +146,20 @@ void AesDecryptor::SessionIdDecryptionKeyMap::Erase(
   key_list_.erase(position);
 }
 
-enum ClearBytesBufferSel { kSrcContainsClearBytes, kDstContainsClearBytes };
-
-static void CopySubsamples(const std::vector<SubsampleEntry>& subsamples,
-                           const ClearBytesBufferSel sel,
-                           const uint8_t* src,
-                           uint8_t* dst) {
-  for (size_t i = 0; i < subsamples.size(); i++) {
-    const SubsampleEntry& subsample = subsamples[i];
-    if (sel == kSrcContainsClearBytes) {
-      src += subsample.clear_bytes;
-    } else {
-      dst += subsample.clear_bytes;
-    }
-    memcpy(dst, src, subsample.cypher_bytes);
-    src += subsample.cypher_bytes;
-    dst += subsample.cypher_bytes;
-  }
-}
-
 // Decrypts |input| using |key|.  Returns a DecoderBuffer with the decrypted
 // data if decryption succeeded or NULL if decryption failed.
 static scoped_refptr<DecoderBuffer> DecryptData(
     const DecoderBuffer& input,
-    const crypto::SymmetricKey* key) {
+    const crypto::SymmetricKey& key) {
   CHECK(input.data_size());
   CHECK(input.decrypt_config());
-  CHECK(key);
 
-  // Only support 'cenc' decryption.
-  if (input.decrypt_config()->encryption_mode() != EncryptionMode::kCenc) {
-    DVLOG(1) << "Only 'cenc' mode supported.";
-    return nullptr;
-  }
+  if (input.decrypt_config()->encryption_mode() == EncryptionMode::kCenc)
+    return DecryptCencBuffer(input, key);
 
-  crypto::Encryptor encryptor;
-  if (!encryptor.Init(key, crypto::Encryptor::CTR, "")) {
-    DVLOG(1) << "Could not initialize decryptor.";
-    return NULL;
-  }
-
-  DCHECK_EQ(input.decrypt_config()->iv().size(),
-            static_cast<size_t>(DecryptConfig::kDecryptionKeySize));
-  if (!encryptor.SetCounter(input.decrypt_config()->iv())) {
-    DVLOG(1) << "Could not set counter block.";
-    return NULL;
-  }
-
-  const char* sample = reinterpret_cast<const char*>(input.data());
-  size_t sample_size = static_cast<size_t>(input.data_size());
-
-  DCHECK_GT(sample_size, 0U) << "No sample data to be decrypted.";
-  if (sample_size == 0)
-    return NULL;
-
-  if (input.decrypt_config()->subsamples().empty()) {
-    std::string decrypted_text;
-    base::StringPiece encrypted_text(sample, sample_size);
-    if (!encryptor.Decrypt(encrypted_text, &decrypted_text)) {
-      DVLOG(1) << "Could not decrypt data.";
-      return NULL;
-    }
-
-    // TODO(xhwang): Find a way to avoid this data copy.
-    return DecoderBuffer::CopyFrom(
-        reinterpret_cast<const uint8_t*>(decrypted_text.data()),
-        decrypted_text.size());
-  }
-
-  const std::vector<SubsampleEntry>& subsamples =
-      input.decrypt_config()->subsamples();
-
-  size_t total_clear_size = 0;
-  size_t total_encrypted_size = 0;
-  for (size_t i = 0; i < subsamples.size(); i++) {
-    total_clear_size += subsamples[i].clear_bytes;
-    total_encrypted_size += subsamples[i].cypher_bytes;
-    // Check for overflow. This check is valid because *_size is unsigned.
-    DCHECK(total_clear_size >= subsamples[i].clear_bytes);
-    if (total_encrypted_size < subsamples[i].cypher_bytes)
-      return NULL;
-  }
-  size_t total_size = total_clear_size + total_encrypted_size;
-  if (total_size < total_clear_size || total_size != sample_size) {
-    DVLOG(1) << "Subsample sizes do not equal input size";
-    return NULL;
-  }
-
-  // No need to decrypt if there is no encrypted data.
-  if (total_encrypted_size <= 0) {
-    return DecoderBuffer::CopyFrom(reinterpret_cast<const uint8_t*>(sample),
-                                   sample_size);
-  }
-
-  // The encrypted portions of all subsamples must form a contiguous block,
-  // such that an encrypted subsample that ends away from a block boundary is
-  // immediately followed by the start of the next encrypted subsample. We
-  // copy all encrypted subsamples to a contiguous buffer, decrypt them, then
-  // copy the decrypted bytes over the encrypted bytes in the output.
-  // TODO(strobe): attempt to reduce number of memory copies
-  std::unique_ptr<uint8_t[]> encrypted_bytes(new uint8_t[total_encrypted_size]);
-  CopySubsamples(subsamples, kSrcContainsClearBytes,
-                 reinterpret_cast<const uint8_t*>(sample),
-                 encrypted_bytes.get());
-
-  base::StringPiece encrypted_text(
-      reinterpret_cast<const char*>(encrypted_bytes.get()),
-      total_encrypted_size);
-  std::string decrypted_text;
-  if (!encryptor.Decrypt(encrypted_text, &decrypted_text)) {
-    DVLOG(1) << "Could not decrypt data.";
-    return NULL;
-  }
-  DCHECK_EQ(decrypted_text.size(), encrypted_text.size());
-
-  scoped_refptr<DecoderBuffer> output = DecoderBuffer::CopyFrom(
-      reinterpret_cast<const uint8_t*>(sample), sample_size);
-  CopySubsamples(subsamples, kDstContainsClearBytes,
-                 reinterpret_cast<const uint8_t*>(decrypted_text.data()),
-                 output->writable_data());
-  return output;
+  // TODO(crbug.com/658026): Add support for 'cbcs'.
+  DVLOG(1) << "Only 'cenc' mode supported.";
+  return nullptr;
 }
 
 AesDecryptor::AesDecryptor(
@@ -608,7 +500,7 @@ void AesDecryptor::Decrypt(StreamType stream_type,
   }
 
   scoped_refptr<DecoderBuffer> decrypted =
-      DecryptData(*encrypted.get(), key->decryption_key());
+      DecryptData(*encrypted.get(), *key->decryption_key());
   if (!decrypted) {
     DVLOG(1) << "Decryption failed.";
     decrypt_cb.Run(kError, NULL);

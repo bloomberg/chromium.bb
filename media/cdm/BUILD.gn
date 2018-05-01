@@ -30,6 +30,8 @@ source_set("cdm") {
     "aes_decryptor.h",
     "cdm_context_ref_impl.cc",
     "cdm_context_ref_impl.h",
+    "cenc_decryptor.cc",
+    "cenc_decryptor.h",
 
     # TODO(crbug.com/676224): Move this to |enable_library_cdms| block below
     # when EnabledIf attribute is supported in mojom.
@@ -140,11 +142,13 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "aes_decryptor_unittest.cc",
+    "cenc_decryptor_unittest.cc",
     "json_web_key_unittest.cc",
   ]
 
   deps = [
     "//base/test:test_support",
+    "//crypto",
     "//media:test_support",
     "//testing/gmock",
     "//testing/gtest",
