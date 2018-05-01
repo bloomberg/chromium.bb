@@ -158,14 +158,9 @@ static int amdgpu_create_bo(struct bo *bo, uint32_t width, uint32_t height, uint
 	if (use_flags & (BO_USE_LINEAR | BO_USE_SW))
 		gem_create.in.domain_flags |= AMDGPU_GEM_CREATE_CPU_ACCESS_REQUIRED;
 
-	if (use_flags & (BO_USE_SCANOUT | BO_USE_CURSOR)) {
-		/* TODO(dbehr) do not use VRAM after we enable display VM */
-		gem_create.in.domains = AMDGPU_GEM_DOMAIN_VRAM;
-	} else {
-		gem_create.in.domains = AMDGPU_GEM_DOMAIN_GTT;
-		if (!(use_flags & BO_USE_SW_READ_OFTEN))
-			gem_create.in.domain_flags |= AMDGPU_GEM_CREATE_CPU_GTT_USWC;
-	}
+	gem_create.in.domains = AMDGPU_GEM_DOMAIN_GTT;
+	if (!(use_flags & (BO_USE_SW_READ_OFTEN | BO_USE_SCANOUT)))
+		gem_create.in.domain_flags |= AMDGPU_GEM_CREATE_CPU_GTT_USWC;
 
 	/* If drm_version >= 21 everything exposes explicit synchronization primitives
 	   and chromeos/arc++ will use them. Disable implicit synchronization. */
