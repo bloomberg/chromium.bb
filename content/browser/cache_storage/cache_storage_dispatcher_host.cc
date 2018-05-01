@@ -73,15 +73,15 @@ class CacheStorageDispatcherHost::CacheImpl
     auto scoped_request = std::make_unique<ServiceWorkerFetchRequest>(
         request.url, request.method, request.headers, request.referrer,
         request.is_reload);
-    cache->Match(std::move(scoped_request), match_params,
-                 base::BindOnce(&CacheImpl::OnCacheMatchCallback,
-                                weak_factory_.GetWeakPtr(), std::move(callback),
-                                cache_handle_.Clone()));
+
+    cache->Match(
+        std::move(scoped_request), match_params,
+        base::BindOnce(&CacheImpl::OnCacheMatchCallback,
+                       weak_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void OnCacheMatchCallback(
       blink::mojom::CacheStorageCache::MatchCallback callback,
-      CacheStorageCacheHandle cache_handle,
       blink::mojom::CacheStorageError error,
       std::unique_ptr<ServiceWorkerResponse> response) {
     if (error != CacheStorageError::kSuccess) {
@@ -106,8 +106,7 @@ class CacheStorageDispatcherHost::CacheImpl
       cache->MatchAll(
           nullptr, match_params,
           base::BindOnce(&CacheImpl::OnCacheMatchAllCallback,
-                         weak_factory_.GetWeakPtr(), std::move(callback),
-                         cache_handle_.Clone()));
+                         weak_factory_.GetWeakPtr(), std::move(callback)));
       return;
     }
 
@@ -118,20 +117,18 @@ class CacheStorageDispatcherHost::CacheImpl
       cache->MatchAll(
           std::move(scoped_request), match_params,
           base::BindOnce(&CacheImpl::OnCacheMatchAllCallback,
-                         weak_factory_.GetWeakPtr(), std::move(callback),
-                         cache_handle_.Clone()));
+                         weak_factory_.GetWeakPtr(), std::move(callback)));
       return;
     }
 
-    cache->Match(std::move(scoped_request), match_params,
-                 base::BindOnce(&CacheImpl::OnCacheMatchAllCallbackAdapter,
-                                weak_factory_.GetWeakPtr(), std::move(callback),
-                                cache_handle_.Clone()));
+    cache->Match(
+        std::move(scoped_request), match_params,
+        base::BindOnce(&CacheImpl::OnCacheMatchAllCallbackAdapter,
+                       weak_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void OnCacheMatchAllCallback(
       blink::mojom::CacheStorageCache::MatchAllCallback callback,
-      CacheStorageCacheHandle cache_handle,
       blink::mojom::CacheStorageError error,
       std::vector<ServiceWorkerResponse> responses) {
     if (error != CacheStorageError::kSuccess &&
@@ -146,7 +143,6 @@ class CacheStorageDispatcherHost::CacheImpl
 
   void OnCacheMatchAllCallbackAdapter(
       blink::mojom::CacheStorageCache::MatchAllCallback callback,
-      CacheStorageCacheHandle cache_handle,
       blink::mojom::CacheStorageError error,
       std::unique_ptr<ServiceWorkerResponse> response) {
     std::vector<ServiceWorkerResponse> responses;
@@ -154,8 +150,7 @@ class CacheStorageDispatcherHost::CacheImpl
       DCHECK(response);
       responses.push_back(std::move(*response));
     }
-    OnCacheMatchAllCallback(std::move(callback), std::move(cache_handle), error,
-                            std::move(responses));
+    OnCacheMatchAllCallback(std::move(callback), error, std::move(responses));
   }
 
   void Keys(const ServiceWorkerFetchRequest& request,
@@ -171,15 +166,14 @@ class CacheStorageDispatcherHost::CacheImpl
     auto request_ptr = std::make_unique<ServiceWorkerFetchRequest>(
         request.url, request.method, request.headers, request.referrer,
         request.is_reload);
-    cache->Keys(std::move(request_ptr), match_params,
-                base::BindOnce(&CacheImpl::OnCacheKeysCallback,
-                               weak_factory_.GetWeakPtr(), std::move(callback),
-                               cache_handle_.Clone()));
+    cache->Keys(
+        std::move(request_ptr), match_params,
+        base::BindOnce(&CacheImpl::OnCacheKeysCallback,
+                       weak_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void OnCacheKeysCallback(
       blink::mojom::CacheStorageCache::KeysCallback callback,
-      CacheStorageCacheHandle cache_handle,
       blink::mojom::CacheStorageError error,
       std::unique_ptr<content::CacheStorageCache::Requests> requests) {
     if (error != CacheStorageError::kSuccess) {
@@ -200,15 +194,13 @@ class CacheStorageDispatcherHost::CacheImpl
     cache->BatchOperation(
         batch_operations,
         base::BindOnce(&CacheImpl::OnCacheBatchCallback,
-                       weak_factory_.GetWeakPtr(), std::move(callback),
-                       cache_handle_.Clone()),
+                       weak_factory_.GetWeakPtr(), std::move(callback)),
         base::BindOnce(&CacheImpl::OnBadMessage, weak_factory_.GetWeakPtr(),
                        mojo::GetBadMessageCallback()));
   }
 
   void OnCacheBatchCallback(
       blink::mojom::CacheStorageCache::BatchCallback callback,
-      CacheStorageCacheHandle cache_handle,
       blink::mojom::CacheStorageError error) {
     std::move(callback).Run(error);
   }
