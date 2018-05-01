@@ -106,8 +106,7 @@ public class TabWebContentsObserver extends WebContentsObserver {
         int activityState = ApplicationStatus.getStateForActivity(
                 mTab.getWindowAndroid().getActivity().get());
         int rendererCrashStatus = TAB_RENDERER_CRASH_STATUS_MAX;
-        if (!processWasOomProtected
-                || activityState == ActivityState.PAUSED
+        if (mTab.isHidden() || activityState == ActivityState.PAUSED
                 || activityState == ActivityState.STOPPED
                 || activityState == ActivityState.DESTROYED) {
             // The tab crashed in background or was killed by the OS out-of-memory killer.

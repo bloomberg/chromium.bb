@@ -158,11 +158,12 @@ public class SadTabTest {
     /**
      * Helper method that kills the renderer on a UI thread.
      */
-    private void simulateRendererKilled(final Tab tab, final boolean wasOomProtected) {
+    private void simulateRendererKilled(final Tab tab, final boolean visible) {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                tab.simulateRendererKilledForTesting(wasOomProtected);
+                if (!visible) tab.hide();
+                tab.simulateRendererKilledForTesting(false);
             }
         });
     }
