@@ -986,6 +986,15 @@
           'shards': 5,
         },
       },
+      'linux-win_cross-rel': {
+        # content_browsertests sometimes times out without this override on
+        # the cross bot, probably because of https://crbug.com/803591,
+        # see also https://crbug.com/838559
+        # TODO(thakis): Remove this once 803591 is fixed.
+        'swarming': {
+          'shards': 5,
+        },
+      },
       # chromium.linux
       'Cast Audio Linux': {
         'args': [

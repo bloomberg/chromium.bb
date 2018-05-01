@@ -12542,7 +12542,8 @@
             {
               "os": "Windows-10"
             }
-          ]
+          ],
+          "shards": 5
         },
         "test": "content_browsertests"
       },
