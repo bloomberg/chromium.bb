@@ -441,7 +441,7 @@ void CreateTestYUVVideoDrawQuad_FromVideoFrame(
   }
 
   ResourceFormat yuv_highbit_resource_format =
-      child_resource_provider->YuvResourceFormat(bits_per_channel);
+      video_resource_updater->YuvResourceFormat(bits_per_channel);
 
   float multiplier = 1.0;
 
@@ -707,6 +707,7 @@ void CreateTestYUVVideoDrawQuad_NV12(
     uint8_t u,
     uint8_t v,
     RenderPass* render_pass,
+    cc::VideoResourceUpdater* video_resource_updater,
     const gfx::Rect& rect,
     const gfx::Rect& visible_rect,
     cc::DisplayResourceProvider* resource_provider,
@@ -725,7 +726,7 @@ void CreateTestYUVVideoDrawQuad_NV12(
   std::vector<uint8_t> y_pixels(ya_tex_size.GetArea(), y);
   ResourceId resource_y = CreateGpuResource(
       child_context_provider, child_resource_provider, ya_tex_size,
-      child_resource_provider->YuvResourceFormat(8), gfx_color_space,
+      video_resource_updater->YuvResourceFormat(8), gfx_color_space,
       y_pixels.data());
 
   // U goes in the R component and V goes in the G component.
@@ -1221,15 +1222,16 @@ class IntersectingQuadGLPixelTest
     IntersectingQuadPixelTest<TypeParam>::SetUp();
     constexpr bool kUseStreamVideoDrawQuad = false;
     constexpr bool kUseGpuMemoryBufferResources = false;
+    constexpr bool kUseR16Texture = false;
 
     video_resource_updater_ = std::make_unique<cc::VideoResourceUpdater>(
         this->child_context_provider_.get(), nullptr,
         this->child_resource_provider_.get(), kUseStreamVideoDrawQuad,
-        kUseGpuMemoryBufferResources);
+        kUseGpuMemoryBufferResources, kUseR16Texture);
     video_resource_updater2_ = std::make_unique<cc::VideoResourceUpdater>(
         this->child_context_provider_.get(), nullptr,
         this->child_resource_provider_.get(), kUseStreamVideoDrawQuad,
-        kUseGpuMemoryBufferResources);
+        kUseGpuMemoryBufferResources, kUseR16Texture);
   }
 
  protected:
@@ -1561,9 +1563,10 @@ class VideoGLRendererPixelTest : public cc::GLRendererPixelTest {
     GLRendererPixelTest::SetUp();
     constexpr bool kUseStreamVideoDrawQuad = false;
     constexpr bool kUseGpuMemoryBufferResources = false;
+    constexpr bool kUseR16Texture = false;
     video_resource_updater_ = std::make_unique<cc::VideoResourceUpdater>(
         child_context_provider_.get(), nullptr, child_resource_provider_.get(),
-        kUseStreamVideoDrawQuad, kUseGpuMemoryBufferResources);
+        kUseStreamVideoDrawQuad, kUseGpuMemoryBufferResources, kUseR16Texture);
   }
 
   std::unique_ptr<cc::VideoResourceUpdater> video_resource_updater_;
@@ -1723,9 +1726,9 @@ TEST_F(VideoGLRendererPixelTest, SimpleNV12JRect) {
   // YUV of (149,43,21) should be green (0,255,0) in RGB.
   CreateTestYUVVideoDrawQuad_NV12(
       shared_state, media::COLOR_SPACE_JPEG, gfx::ColorSpace::CreateJpeg(),
-      gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f), 149, 43, 21, pass.get(), rect, rect,
-      resource_provider_.get(), child_resource_provider_.get(),
-      child_context_provider_);
+      gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f), 149, 43, 21, pass.get(),
+      video_resource_updater_.get(), rect, rect, resource_provider_.get(),
+      child_resource_provider_.get(), child_context_provider_);
 
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));

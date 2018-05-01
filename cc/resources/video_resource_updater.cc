@@ -343,12 +343,14 @@ VideoResourceUpdater::VideoResourceUpdater(
     LayerTreeFrameSink* layer_tree_frame_sink,
     LayerTreeResourceProvider* resource_provider,
     bool use_stream_video_draw_quad,
-    bool use_gpu_memory_buffer_resources)
+    bool use_gpu_memory_buffer_resources,
+    bool use_r16_texture)
     : context_provider_(context_provider),
       layer_tree_frame_sink_(layer_tree_frame_sink),
       resource_provider_(resource_provider),
       use_stream_video_draw_quad_(use_stream_video_draw_quad),
       use_gpu_memory_buffer_resources_(use_gpu_memory_buffer_resources),
+      use_r16_texture_(use_r16_texture),
       tracing_id_(g_next_video_resource_updater_id.GetNext()),
       weak_ptr_factory_(this) {
   DCHECK(context_provider_ || layer_tree_frame_sink_);
@@ -541,6 +543,21 @@ VideoResourceUpdater::CreateExternalResourcesFromVideoFrame(
     return CreateForHardwarePlanes(std::move(video_frame));
   else
     return CreateForSoftwarePlanes(std::move(video_frame));
+}
+
+viz::ResourceFormat VideoResourceUpdater::YuvResourceFormat(
+    int bits_per_channel) {
+  DCHECK(context_provider_);
+  const auto& caps = context_provider_->ContextCapabilities();
+  if (caps.disable_one_component_textures)
+    return viz::RGBA_8888;
+  if (bits_per_channel <= 8)
+    return caps.texture_rg ? viz::RED_8 : viz::LUMINANCE_8;
+  if (use_r16_texture_ && caps.texture_norm16)
+    return viz::R16_EXT;
+  if (caps.texture_half_float_linear)
+    return viz::LUMINANCE_F16;
+  return viz::LUMINANCE_8;
 }
 
 VideoResourceUpdater::PlaneResource*
@@ -749,10 +766,9 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
     // compositing.
     output_resource_format = viz::RGBA_8888;
     output_color_space = output_color_space.GetAsFullRangeRGB();
-  } else {
+  } else if (!software_compositor()) {
     // Can be composited directly from yuv planes.
-    output_resource_format =
-        resource_provider_->YuvResourceFormat(bits_per_channel);
+    output_resource_format = YuvResourceFormat(bits_per_channel);
   }
 
   // If GPU compositing is enabled, but the output resource format
@@ -902,7 +918,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
   }
 
   const viz::ResourceFormat yuv_resource_format =
-      resource_provider_->YuvResourceFormat(bits_per_channel);
+      YuvResourceFormat(bits_per_channel);
   DCHECK(yuv_resource_format == viz::LUMINANCE_F16 ||
          yuv_resource_format == viz::R16_EXT ||
          yuv_resource_format == viz::LUMINANCE_8 ||

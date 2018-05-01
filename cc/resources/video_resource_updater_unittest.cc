@@ -87,17 +87,17 @@ class VideoResourceUpdaterTest : public testing::Test {
     layer_tree_frame_sink_software_ = FakeLayerTreeFrameSink::CreateSoftware();
     resource_provider3d_ =
         FakeResourceProvider::CreateLayerTreeResourceProvider(
-            context_provider_.get(), high_bit_for_testing_);
+            context_provider_.get());
     resource_provider_software_ =
-        FakeResourceProvider::CreateLayerTreeResourceProvider(
-            nullptr, high_bit_for_testing_);
+        FakeResourceProvider::CreateLayerTreeResourceProvider(nullptr);
   }
 
   std::unique_ptr<VideoResourceUpdater> CreateUpdaterForHardware(
       bool use_stream_video_draw_quad = false) {
     return std::make_unique<VideoResourceUpdater>(
         context_provider_.get(), nullptr, resource_provider3d_.get(),
-        use_stream_video_draw_quad, /*use_gpu_memory_buffer_resources=*/false);
+        use_stream_video_draw_quad, /*use_gpu_memory_buffer_resources=*/false,
+        /*use_r16_texture=*/use_r16_texture_);
   }
 
   std::unique_ptr<VideoResourceUpdater> CreateUpdaterForSoftware() {
@@ -105,7 +105,8 @@ class VideoResourceUpdaterTest : public testing::Test {
         nullptr, layer_tree_frame_sink_software_.get(),
         resource_provider_software_.get(),
         /*use_stream_video_draw_quad=*/false,
-        /*use_gpu_memory_buffer_resources=*/false);
+        /*use_gpu_memory_buffer_resources=*/false,
+        /*use_r16_texture=*/false);
   }
 
   scoped_refptr<media::VideoFrame> CreateTestYUVVideoFrame() {
@@ -246,7 +247,7 @@ class VideoResourceUpdaterTest : public testing::Test {
   std::unique_ptr<LayerTreeResourceProvider> resource_provider3d_;
   std::unique_ptr<LayerTreeResourceProvider> resource_provider_software_;
   gpu::SyncToken release_sync_token_;
-  bool high_bit_for_testing_ = false;
+  bool use_r16_texture_ = false;
 };
 
 const gpu::SyncToken VideoResourceUpdaterTest::kMailboxSyncToken =
@@ -301,7 +302,7 @@ TEST_F(VideoResourceUpdaterTestWithF16, HighBitFrame) {
 class VideoResourceUpdaterTestWithR16 : public VideoResourceUpdaterTest {
  public:
   VideoResourceUpdaterTestWithR16() : VideoResourceUpdaterTest() {
-    high_bit_for_testing_ = true;
+    use_r16_texture_ = true;
     context3d_->set_support_texture_norm16(true);
   }
 };

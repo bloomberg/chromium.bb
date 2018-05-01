@@ -26,26 +26,11 @@ LayerTreeResourceProvider::Settings::Settings(
     viz::ContextProvider* compositor_context_provider,
     bool delegated_sync_points_required,
     const viz::ResourceSettings& resource_settings)
-    : yuv_highbit_resource_format(resource_settings.high_bit_for_testing
-                                      ? viz::R16_EXT
-                                      : viz::LUMINANCE_8),
-      delegated_sync_points_required(delegated_sync_points_required) {
+    : delegated_sync_points_required(delegated_sync_points_required) {
   if (!compositor_context_provider) {
     // Pick an arbitrary limit here similar to what hardware might.
     max_texture_size = 16 * 1024;
     return;
-  }
-
-  const auto& caps = compositor_context_provider->ContextCapabilities();
-
-  if (caps.disable_one_component_textures) {
-    yuv_resource_format = yuv_highbit_resource_format = viz::RGBA_8888;
-  } else {
-    yuv_resource_format = caps.texture_rg ? viz::RED_8 : viz::LUMINANCE_8;
-    if (resource_settings.use_r16_texture && caps.texture_norm16)
-      yuv_highbit_resource_format = viz::R16_EXT;
-    else if (caps.texture_half_float_linear)
-      yuv_highbit_resource_format = viz::LUMINANCE_F16;
   }
 
   GLES2Interface* gl = compositor_context_provider->ContextGL();
@@ -296,15 +281,6 @@ bool LayerTreeResourceProvider::IsRenderBufferFormatSupported(
 
   NOTREACHED();
   return false;
-}
-
-viz::ResourceFormat LayerTreeResourceProvider::YuvResourceFormat(
-    int bits) const {
-  if (bits > 8) {
-    return settings_.yuv_highbit_resource_format;
-  } else {
-    return settings_.yuv_resource_format;
-  }
 }
 
 LayerTreeResourceProvider::ScopedSkSurface::ScopedSkSurface(

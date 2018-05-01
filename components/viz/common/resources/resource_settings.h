@@ -21,8 +21,7 @@ class VIZ_COMMON_EXPORT ResourceSettings {
   ~ResourceSettings();
 
   bool use_gpu_memory_buffer_resources = false;
-  bool high_bit_for_testing = false;
-  // TODO(riju): Remove after r16 is used without the flag. crbug.com/759456
+  // TODO(crbug.com/759456): Remove after r16 is used without the flag.
   bool use_r16_texture = false;
 };
 
