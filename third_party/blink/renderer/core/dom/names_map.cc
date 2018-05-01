@@ -16,6 +16,10 @@ NamesMap::NamesMap(const AtomicString& string) {
 }
 
 void NamesMap::Set(const AtomicString& source) {
+  if (source.IsNull()) {
+    Clear();
+    return;
+  }
   if (source.Is8Bit()) {
     Set(source, source.Characters8());
     return;
