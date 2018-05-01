@@ -285,7 +285,7 @@ public class NewTabPageView
 
         mSearchBoxView = mNewTabPageLayout.findViewById(R.id.search_box);
         if (SuggestionsConfig.useModernLayout()) {
-            mSearchBoxView.setBackgroundResource(R.drawable.modern_toolbar_background);
+            mSearchBoxView.setBackgroundResource(R.drawable.ntp_search_box);
             mSearchBoxView.getLayoutParams().height =
                     getResources().getDimensionPixelSize(R.dimen.ntp_search_box_height_modern);
 

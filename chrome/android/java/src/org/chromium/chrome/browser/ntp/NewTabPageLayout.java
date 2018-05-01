@@ -7,8 +7,11 @@ package org.chromium.chrome.browser.ntp;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.drawable.RippleDrawable;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.util.TypedValue;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
@@ -270,5 +273,26 @@ public class NewTabPageLayout extends LinearLayout {
     private static void measureExactly(View view, int widthPx, int heightPx) {
         view.measure(MeasureSpec.makeMeasureSpec(widthPx, MeasureSpec.EXACTLY),
                 MeasureSpec.makeMeasureSpec(heightPx, MeasureSpec.EXACTLY));
+    }
+
+    /**
+     * Provides the additional capabilities needed for the SearchBox container layout.
+     */
+    public static class SearchBoxContainerView extends LinearLayout {
+        /** Constructor for inflating from XML. */
+        public SearchBoxContainerView(Context context, AttributeSet attrs) {
+            super(context, attrs);
+        }
+
+        @Override
+        public boolean onInterceptTouchEvent(MotionEvent ev) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
+                    && ev.getActionMasked() == MotionEvent.ACTION_DOWN) {
+                if (getBackground() instanceof RippleDrawable) {
+                    ((RippleDrawable) getBackground()).setHotspot(ev.getX(), ev.getY());
+                }
+            }
+            return super.onInterceptTouchEvent(ev);
+        }
     }
 }
