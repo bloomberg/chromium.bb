@@ -340,6 +340,10 @@
     },
   },
 
+  'chrome_cleaner_gtests': {
+    'chrome_cleaner_unittests': {}
+  },
+
   'chromedriver_py_tests_isolated_scripts': {
     'chromedriver_py_tests': {
       "args": [
@@ -2203,6 +2207,7 @@
   'chromium_win_fyi_gtests': [
     'aura_gtests',
     'aura_non_clang_gtests',
+    'chrome_cleaner_gtests',
     'chromium_gtests',
     'chromium_gtests_for_devices_with_graphical_output',
     'chromium_gtests_for_non_clang_and_fyi_mac_win_devices_with_graphical_output',

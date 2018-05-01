@@ -576,6 +576,7 @@ group("gn_all") {
   if (is_win) {
     deps += [
       "//base:pe_image_test",
+      "//chrome/chrome_cleaner:chrome_cleaner_unittests",
       "//chrome/install_static:install_static_unittests",
       "//chrome/installer/gcapi",
       "//chrome/installer/setup:setup_unittests",
