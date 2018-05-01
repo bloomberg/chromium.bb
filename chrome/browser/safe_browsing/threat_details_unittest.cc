@@ -143,19 +143,23 @@ class ThreatDetailsWrap : public ThreatDetails {
 class MockSafeBrowsingUIManager : public SafeBrowsingUIManager {
  public:
   // The safe browsing UI manager does not need a service for this test.
-  MockSafeBrowsingUIManager() : SafeBrowsingUIManager(NULL) {}
+  MockSafeBrowsingUIManager()
+      : SafeBrowsingUIManager(NULL), report_sent_(false) {}
 
   // When the serialized report is sent, this is called.
   void SendSerializedThreatDetails(const std::string& serialized) override {
+    report_sent_ = true;
     serialized_ = serialized;
   }
 
   const std::string& GetSerialized() { return serialized_; }
+  bool ReportWasSent() { return report_sent_; }
 
  private:
   ~MockSafeBrowsingUIManager() override {}
 
   std::string serialized_;
+  bool report_sent_;
   DISALLOW_COPY_AND_ASSIGN(MockSafeBrowsingUIManager);
 };
 
@@ -193,6 +197,8 @@ class ThreatDetailsTest : public ChromeRenderViewHostTestHarness {
     return HistoryServiceFactory::GetForProfile(
         profile(), ServiceAccessType::EXPLICIT_ACCESS);
   }
+
+  bool ReportWasSent() { return ui_manager_->ReportWasSent(); }
 
  protected:
   void InitResource(SBThreatType threat_type,
@@ -1128,6 +1134,76 @@ TEST_F(ThreatDetailsTest, ThreatDOMDetails_TrimToAdTags) {
   ClientSafeBrowsingReportRequest actual;
   actual.ParseFromString(serialized);
   VerifyResults(actual, expected);
+}
+
+// Tests that an empty report does not get sent. Empty reports can result from
+// trying to trim a report to ad tags when no ad tags are present.
+// This test uses the following structure.
+// kDOMParentURL
+//   \- <frame src=kDataURL>
+//        \- <script src=kDOMChildURL2>
+TEST_F(ThreatDetailsTest, ThreatDOMDetails_EmptyReportNotSent) {
+  // Create a child renderer inside the main frame to house the inner iframe.
+  // Perform the navigation first in order to manipulate the frame tree.
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL(kLandingURL));
+  content::RenderFrameHost* child_rfh =
+      content::RenderFrameHostTester::For(main_rfh())->AppendChild("subframe");
+  // Define two sets of DOM nodes - one for an outer page containing a frame,
+  // and then another for the inner page containing the contents of that frame.
+  std::vector<mojom::ThreatDOMDetailsNodePtr> outer_params;
+  mojom::ThreatDOMDetailsNodePtr outer_child_node =
+      mojom::ThreatDOMDetailsNode::New();
+  outer_child_node->url = GURL(kDataURL);
+  outer_child_node->tag_name = "frame";
+  outer_child_node->parent = GURL(kDOMParentURL);
+  outer_child_node->attributes.push_back(
+      mojom::AttributeNameValue::New("src", kDataURL));
+  outer_params.push_back(std::move(outer_child_node));
+  mojom::ThreatDOMDetailsNodePtr outer_summary_node =
+      mojom::ThreatDOMDetailsNode::New();
+  outer_summary_node->url = GURL(kDOMParentURL);
+  outer_summary_node->children.push_back(GURL(kDataURL));
+  // Set |child_frame_routing_id| for this node to something non-sensical so
+  // that the child frame lookup fails.
+  outer_summary_node->child_frame_routing_id = -100;
+  outer_params.push_back(std::move(outer_summary_node));
+
+  // Now define some more nodes for the body of the frame. The URL of this
+  // inner frame is "about:blank".
+  std::vector<mojom::ThreatDOMDetailsNodePtr> inner_params;
+  mojom::ThreatDOMDetailsNodePtr inner_child_node =
+      mojom::ThreatDOMDetailsNode::New();
+  inner_child_node->url = GURL(kDOMChildUrl2);
+  inner_child_node->tag_name = "script";
+  inner_child_node->parent = GURL(kBlankURL);
+  inner_child_node->attributes.push_back(
+      mojom::AttributeNameValue::New("src", kDOMChildUrl2));
+  inner_params.push_back(std::move(inner_child_node));
+  mojom::ThreatDOMDetailsNodePtr inner_summary_node =
+      mojom::ThreatDOMDetailsNode::New();
+  inner_summary_node->url = GURL(kBlankURL);
+  inner_summary_node->children.push_back(GURL(kDOMChildUrl2));
+  inner_params.push_back(std::move(inner_summary_node));
+
+  UnsafeResource resource;
+  InitResource(SB_THREAT_TYPE_URL_UNWANTED, ThreatSource::LOCAL_PVER4,
+               true /* is_subresource */, GURL(kThreatURL), &resource);
+
+  // Send both sets of nodes, from different render frames.
+  scoped_refptr<ThreatDetailsWrap> trimmed_report = new ThreatDetailsWrap(
+      ui_manager_.get(), web_contents(), resource, NULL, history_service(),
+      /*trim_to_ad_tags=*/true);
+
+  // Send both sets of nodes from different render frames.
+  trimmed_report->OnReceivedThreatDOMDetails(nullptr, child_rfh,
+                                             std::move(inner_params));
+  trimmed_report->OnReceivedThreatDOMDetails(nullptr, main_rfh(),
+                                             std::move(outer_params));
+
+  std::string serialized = WaitForThreatDetailsDone(
+      trimmed_report.get(), false /* did_proceed*/, 0 /* num_visit */);
+  EXPECT_FALSE(ReportWasSent());
 }
 
 // Tests creating a threat report of a malware page where there are redirect

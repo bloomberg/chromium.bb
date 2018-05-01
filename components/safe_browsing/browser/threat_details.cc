@@ -677,6 +677,12 @@ void ThreatDetails::FinishCollection(bool did_proceed, int num_visit) {
 
   if (trim_to_ad_tags_) {
     TrimElements(trimmed_dom_element_ids_, &elements_, &resources_);
+    // If trimming the report removed all the elements then don't bother
+    // sending it.
+    if (elements_.empty()) {
+      AllDone();
+      return;
+    }
   }
 
   did_proceed_ = did_proceed;
