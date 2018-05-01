@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<grit-part>
-  <if expr="is_android or is_ios">
-    <include name="IDR_PHYSICAL_WEB_UI_HTML" file="../physical_web/webui/resources/physical_web.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
-    <include name="IDR_PHYSICAL_WEB_UI_JS" file="../physical_web/webui/resources/physical_web.js" type="BINDATA" compress="gzip" />
-    <include name="IDR_PHYSICAL_WEB_UI_CSS" file="../physical_web/webui/resources/physical_web.css" type="BINDATA" compress="gzip" />
-    <include name="IDR_PHYSICAL_WEB_UI_LINK_ICON" file="../physical_web/resources/ic_link_grey600_36dp.png" type="BINDATA" compress="gzip" />
-  </if>
-</grit-part>

@@ -203,7 +203,6 @@
       <part file="password_manager_strings.grdp" />
       <part file="payments_strings.grdp" />
       <part file="pdf_strings.grdp" />
-      <part file="physical_web_ui_strings.grdp" />
       <part file="policy_strings.grdp" />
       <part file="printing_strings.grdp" />
       <part file="reset_password_strings.grdp" />

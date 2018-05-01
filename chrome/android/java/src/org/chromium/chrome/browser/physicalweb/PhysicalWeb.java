@@ -8,16 +8,12 @@ import android.annotation.TargetApi;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.SysUtils;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.IntentHandler;
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.components.location.LocationUtils;
@@ -97,15 +93,6 @@ public class PhysicalWeb {
                 && locationUtils.hasAndroidLocationPermission()
                 && TemplateUrlService.getInstance().isDefaultSearchEngineGoogle()
                 && !Profile.getLastUsedProfile().isOffTheRecord();
-    }
-
-    /**
-     * Starts the Activity that shows the list of Physical Web URLs.
-     */
-    public static void showUrlList() {
-        IntentHandler.startChromeLauncherActivityForTrustedIntent(
-                new Intent(Intent.ACTION_VIEW, Uri.parse(UrlConstants.PHYSICAL_WEB_URL))
-                        .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
     }
 
     /**
