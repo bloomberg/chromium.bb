@@ -32,6 +32,9 @@ class TtsEngineExtensionObserver
   // as loaded immediately if |update| is set to true.
   bool SawExtensionLoad(const std::string& extension_id, bool update);
 
+  // Gets the currently loaded TTS extension ids.
+  const std::set<std::string> GetTtsExtensions();
+
   // Gets voices for |extension_id| updated through TtsEngine.updateVoices.
   const std::vector<extensions::TtsVoice>* GetRuntimeVoices(
       const std::string extension_id);

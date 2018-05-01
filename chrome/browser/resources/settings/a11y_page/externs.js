@@ -28,3 +28,8 @@ Window.prototype.SpeechSynthesisUtterance = function() {};
  *   extensionId: string, id: string}}
  */
 let TtsHandlerVoice;
+
+/**
+ * @typedef {{name: string, extensionId: string, optionsPage: string}}
+ */
+let TtsHandlerExtension;

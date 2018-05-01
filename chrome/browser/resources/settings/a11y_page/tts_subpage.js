@@ -36,6 +36,9 @@ Polymer({
     this.addWebUIListener(
         'all-voice-data-updated', this.populateVoiceList_.bind(this));
     chrome.send('getAllTtsVoiceData');
+    this.addWebUIListener(
+        'tts-extensions-updated', this.populateExtensionList_.bind(this));
+    chrome.send('getTtsExtensions');
   },
 
   /**
@@ -62,6 +65,15 @@ Polymer({
       result[voice.languageCode].voices.push(voice);
     });
     this.set('languagesToVoices', Object.values(result));
+  },
+
+  /**
+   * Sets the list of Text-to-Speech extensions for the UI.
+   * @param {Array<TtsHandlerExtension>} extensions
+   * @private
+   */
+  populateExtensionList_: function(extensions) {
+    this.extensions = extensions;
   },
 
   /**
@@ -96,6 +108,14 @@ Polymer({
     return lang.voices.map(voice => {
       return {value: voice.id, name: voice.name};
     });
+  },
+
+  /**
+   * Function to navigate to the options page for an extension.
+   * @param {TtsHandlerExtension} engine
+   * @private */
+  onManageTtsEngineSettingsClick_: function(engine) {
+    window.open(engine.optionsPage, '_blank');
   },
 
   /** @private */
