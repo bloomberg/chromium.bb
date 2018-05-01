@@ -799,6 +799,9 @@ const char kFramebustingDescription[] =
 const char kGamepadExtensionsName[] = "Gamepad Extensions";
 const char kGamepadExtensionsDescription[] =
     "Enables experimental extensions to the Gamepad APIs.";
+const char kGamepadVibrationName[] = "Gamepad Vibration";
+const char kGamepadVibrationDescription[] =
+    "Enables haptic vibration effects on supported gamepads.";
 
 const char kGpuRasterizationMsaaSampleCountName[] =
     "GPU rasterization MSAA sample count.";

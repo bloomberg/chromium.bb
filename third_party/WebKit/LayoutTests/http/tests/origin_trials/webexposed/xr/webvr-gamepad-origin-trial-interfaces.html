@@ -13,13 +13,12 @@ To test whether the token is working, run virtual/origin-trials-runtimeflags-dis
 const token="AjBmNGyEfNhgv1i84o2MDXzBna5hynT2UdRWh24E6smvQuM6lTjdHiORSsixiR6wo8A4AZofrxgIT6RYIjwg2AMAAABTeyJvcmlnaW4iOiAiaHR0cDovLzEyNy4wLjAuMTo4MDAwIiwgImZlYXR1cmUiOiAiV2ViVlIxLjFNNjIiLCAiZXhwaXJ5IjogMjAwMDAwMDAwMH0=";
 
 properties_to_check = {
-  'Gamepad': ['pose', 'vibrationActuator', 'hand', 'displayId'],
+  'Gamepad': ['pose', 'hand', 'displayId'],
   'GamepadButton': ['touched'],
 };
 
 interfaces_to_check = [
-  'GamepadPose',
-  'GamepadHapticActuator'
+  'GamepadPose'
 ];
 
 // Skip this test if flags are not set properly.
@@ -52,8 +51,7 @@ test(t => {
       'orientation',
       'angularVelocity',
       'angularAcceleration'
-    ],
-    'GamepadHapticActuator': ['type', 'playEffect', 'reset']
+    ]
   });
 }, 'Additional Gamepad Extensions interfaces and their properties are available.');
 

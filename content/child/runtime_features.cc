@@ -304,6 +304,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (base::FeatureList::IsEnabled(features::kGamepadExtensions))
     WebRuntimeFeatures::EnableGamepadExtensions(true);
 
+  if (base::FeatureList::IsEnabled(features::kGamepadVibration))
+    WebRuntimeFeatures::EnableGamepadVibration(true);
+
   if (base::FeatureList::IsEnabled(features::kCompositeOpaqueFixedPosition))
     WebRuntimeFeatures::EnableFeatureFromString("CompositeOpaqueFixedPosition",
                                                 true);

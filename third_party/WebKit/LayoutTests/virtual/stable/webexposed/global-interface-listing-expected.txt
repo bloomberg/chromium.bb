@@ -1752,6 +1752,7 @@ interface Gamepad
     getter index
     getter mapping
     getter timestamp
+    getter vibrationActuator
     method constructor
 interface GamepadButton
     attribute @@toStringTag
@@ -1762,6 +1763,12 @@ interface GamepadEvent : Event
     attribute @@toStringTag
     getter gamepad
     method constructor
+interface GamepadHapticActuator
+    attribute @@toStringTag
+    getter type
+    method constructor
+    method playEffect
+    method reset
 interface Gyroscope : Sensor
     attribute @@toStringTag
     getter x
