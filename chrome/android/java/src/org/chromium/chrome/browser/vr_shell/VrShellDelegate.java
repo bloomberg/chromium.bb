@@ -559,8 +559,7 @@ public class VrShellDelegate
                 return;
             }
             sInstance.mPendingExitVrRequest = () -> {
-                sInstance.requestToExitVrInternal(
-                        listener, UiUnsupportedMode.SEARCH_ENGINE_PROMO, false);
+                VrShellDelegate.requestToExitVr(listener, UiUnsupportedMode.SEARCH_ENGINE_PROMO);
             };
         }
     }
@@ -716,6 +715,10 @@ public class VrShellDelegate
             getVrClassesWrapper().setVrModeEnabled(activity, false);
             sVrModeEnabledActivitys.remove(activity);
         }
+    }
+
+    /* package */ static boolean isVrModeEnabled(Activity activity) {
+        return sVrModeEnabledActivitys.contains(activity);
     }
 
     @CalledByNative
@@ -1399,6 +1402,7 @@ public class VrShellDelegate
                 // If we didn't cancel the startup animation, we won't be getting another onResume
                 // call, so enter VR here.
                 handleDonFlowSuccess();
+                runPendingExitVrTask();
 
                 // This is extremely unlikely to happen in practice, but it's theoretically possible
                 // for the page to have loaded and registered an activate handler before this point.
@@ -1411,19 +1415,11 @@ public class VrShellDelegate
                 }
             }
         }
-        // If canceling entry animation started, the activity is paused first and then expect a
-        // onResume is called next. We don't want to disrupt this process by calling
-        // runPendingExitVrTask which will show DOFF sceeen. DOFF might trigger onStop before
-        // onResume which will crash Chrome. So if we know that we are canceling animation, we don't
-        // call runPendingExitVrTask.
-        if (!mCancellingEntryAnimation) {
-            runPendingExitVrTask();
-        }
     }
 
     private void runPendingExitVrTask() {
         if (mPendingExitVrRequest == null) return;
-        mPendingExitVrRequest.run();
+        new Handler().post(mPendingExitVrRequest);
         mPendingExitVrRequest = null;
     }
 
@@ -1572,6 +1568,12 @@ public class VrShellDelegate
     private void requestToExitVrInternal(OnExitVrRequestListener listener,
             @UiUnsupportedMode int reason, boolean showExitPromptBeforeDoff) {
         assert listener != null;
+        if (getVrClassesWrapper().bootsToVr()) {
+            setVrModeEnabled(mActivity, false);
+            listener.onSucceeded();
+            return;
+        }
+
         // If we are currently processing another request, deny the request.
         if (mOnExitVrRequestListener != null) {
             listener.onDenied();
@@ -1669,6 +1671,7 @@ public class VrShellDelegate
         }
 
         mPaused = false;
+        mCancellingEntryAnimation = false;
 
         // We call resume here to be symmetric with onPause in case we get paused/resumed without
         // being hidden/shown. However, we still don't want to resume if we're not visible to avoid
@@ -1721,16 +1724,7 @@ public class VrShellDelegate
         mProbablyInDon = false;
         mShowVrServicesUpdatePrompt = null;
 
-        postOnResume();
-    }
-
-    private void postOnResume() {
-        if (mCancellingEntryAnimation) {
-            // If we know this onResume is called after cancel animation finished, it is safe to
-            // request exit VR and show DOFF.
-            runPendingExitVrTask();
-            mCancellingEntryAnimation = false;
-        }
+        runPendingExitVrTask();
     }
 
     private void handleDonFlowSuccess() {
@@ -1791,13 +1785,19 @@ public class VrShellDelegate
         mMaybeActivateAfterHeadsetInsertion = false;
         mStopped = false;
         if (mDonSucceeded) setWindowModeForVr();
-        if (mInVr) {
-            if (!getVrClassesWrapper().isInVrSession()) {
-                shutdownVr(true, false);
-            } else {
-                setVrModeEnabled(mActivity, true);
-            }
+
+        // This handles the case where Chrome was paused in VR (ie the user navigated to DD home or
+        // something), then exited VR and resumed Chrome in 2D. Chrome is still showing VR UI but
+        // the user is no longer in a VR session.
+        if (mInVr && !getVrClassesWrapper().isInVrSession()) {
+            shutdownVr(true, false);
         }
+
+        // Note that we do not turn VR mode on here for two reasons.
+        // 1. If we're in VR, it should already be on and won't get turned off until we explicitly
+        // turn it off for this Activity.
+        // 2. Turning VR mode on breaks popup showing code, which relies on VR mode sometimes being
+        // off while in VR.
     }
 
     private void onStop() {
