@@ -18,8 +18,8 @@ class TextTrackConfig;
 class TextTrack {
  public:
   virtual ~TextTrack() {}
-  virtual void addWebVTTCue(const base::TimeDelta& start,
-                            const base::TimeDelta& end,
+  virtual void addWebVTTCue(base::TimeDelta start,
+                            base::TimeDelta end,
                             const std::string& id,
                             const std::string& content,
                             const std::string& settings) = 0;
