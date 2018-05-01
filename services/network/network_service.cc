@@ -24,6 +24,7 @@
 #include "net/url_request/url_request_context_builder.h"
 #include "services/network/mojo_net_log.h"
 #include "services/network/network_context.h"
+#include "services/network/network_usage_accumulator.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/url_request_context_builder_mojo.h"
 
@@ -149,6 +150,8 @@ NetworkService::NetworkService(
 #endif
 
   host_resolver_ = CreateHostResolver();
+
+  network_usage_accumulator_ = std::make_unique<NetworkUsageAccumulator>();
 }
 
 NetworkService::~NetworkService() {
@@ -238,6 +241,11 @@ net::NetLog* NetworkService::net_log() const {
 void NetworkService::GetNetworkChangeManager(
     mojom::NetworkChangeManagerRequest request) {
   network_change_manager_->AddRequest(std::move(request));
+}
+
+void NetworkService::GetTotalNetworkUsages(
+    mojom::NetworkService::GetTotalNetworkUsagesCallback callback) {
+  std::move(callback).Run(network_usage_accumulator_->GetTotalNetworkUsages());
 }
 
 void NetworkService::OnBindInterface(
