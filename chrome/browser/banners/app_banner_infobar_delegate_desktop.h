@@ -9,7 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
-#include "content/public/common/manifest.h"
+#include "third_party/blink/public/common/manifest/manifest.h"
 
 namespace content {
 class WebContents;
@@ -34,13 +34,13 @@ class AppBannerInfoBarDelegateDesktop : public ConfirmInfoBarDelegate {
       content::WebContents* web_contents,
       base::WeakPtr<AppBannerManager> weak_manager,
       extensions::BookmarkAppHelper* bookmark_app_helper,
-      const content::Manifest& manifest);
+      const blink::Manifest& manifest);
 
  private:
   AppBannerInfoBarDelegateDesktop(
       base::WeakPtr<AppBannerManager> weak_manager,
       extensions::BookmarkAppHelper* bookmark_app_helper,
-      const content::Manifest& manifest);
+      const blink::Manifest& manifest);
   ~AppBannerInfoBarDelegateDesktop() override;
 
   // ConfirmInfoBarDelegate:
@@ -54,7 +54,7 @@ class AppBannerInfoBarDelegateDesktop : public ConfirmInfoBarDelegate {
 
   base::WeakPtr<AppBannerManager> weak_manager_;
   extensions::BookmarkAppHelper* bookmark_app_helper_;
-  content::Manifest manifest_;
+  blink::Manifest manifest_;
   bool has_user_interaction_;
 
   DISALLOW_COPY_AND_ASSIGN(AppBannerInfoBarDelegateDesktop);

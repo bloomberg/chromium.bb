@@ -25,8 +25,8 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/manifest.h"
-#include "third_party/blink/public/platform/web_display_mode.h"
+#include "third_party/blink/public/common/manifest/manifest.h"
+#include "third_party/blink/public/common/manifest/web_display_mode.h"
 #include "ui/gfx/image/image_unittest_util.h"
 #include "url/gurl.h"
 
@@ -103,18 +103,18 @@ base::NullableString16 NullableStringFromUTF8(const std::string& value) {
   return base::NullableString16(base::UTF8ToUTF16(value), false);
 }
 
-// Builds WebAPK compatible content::Manifest.
-content::Manifest BuildDefaultManifest() {
-  content::Manifest manifest;
+// Builds WebAPK compatible blink::Manifest.
+blink::Manifest BuildDefaultManifest() {
+  blink::Manifest manifest;
   manifest.name = NullableStringFromUTF8(kDefaultManifestName);
   manifest.short_name = NullableStringFromUTF8(kDefaultManifestShortName);
   manifest.start_url = GURL(kDefaultStartUrl);
   manifest.display = kDefaultManifestDisplayMode;
 
-  content::Manifest::Icon primary_icon;
+  blink::Manifest::Icon primary_icon;
   primary_icon.type = base::ASCIIToUTF16("image/png");
   primary_icon.sizes.push_back(gfx::Size(144, 144));
-  primary_icon.purpose.push_back(content::Manifest::Icon::IconPurpose::ANY);
+  primary_icon.purpose.push_back(blink::Manifest::Icon::IconPurpose::ANY);
   primary_icon.src = GURL(kDefaultIconUrl);
   manifest.icons.push_back(primary_icon);
 
@@ -177,7 +177,7 @@ class TestInstallableManager : public InstallableManager {
 
   void SetInstallable(bool is_installable) { is_installable_ = is_installable; }
 
-  void SetManifest(const content::Manifest& manifest) {
+  void SetManifest(const blink::Manifest& manifest) {
     manifest_ = manifest;
 
     if (!manifest.icons.empty()) {
@@ -202,7 +202,7 @@ class TestInstallableManager : public InstallableManager {
   void ResolveQueuedMetrics() { std::move(queued_metrics_callback_).Run(); }
 
  private:
-  content::Manifest manifest_;
+  blink::Manifest manifest_;
   GURL primary_icon_url_;
   GURL badge_icon_url_;
   std::unique_ptr<SkBitmap> primary_icon_;
@@ -290,7 +290,7 @@ class AddToHomescreenDataFetcherTest : public ChromeRenderViewHostTestHarness {
     histograms.ExpectTotalCount("Webapp.AddToHomescreenDialog.Timeout", 1);
   }
 
-  void SetManifest(const content::Manifest& manifest) {
+  void SetManifest(const blink::Manifest& manifest) {
     installable_manager_->SetManifest(manifest);
   }
 
@@ -329,7 +329,7 @@ TEST_F(AddToHomescreenDataFetcherTest, EmptyManifest) {
 TEST_F(AddToHomescreenDataFetcherTest, NoIconManifest) {
   // Test a manifest with no icons. This should use the short name and have
   // a generated icon (empty icon url).
-  content::Manifest manifest = BuildDefaultManifest();
+  blink::Manifest manifest = BuildDefaultManifest();
   manifest.icons.clear();
   SetManifest(manifest);
 
@@ -486,7 +486,7 @@ TEST_F(AddToHomescreenDataFetcherTest, ServiceWorkerCheckTimesOutUnknown) {
 
 TEST_F(AddToHomescreenDataFetcherTest, InstallableManifest) {
   // Test a site that has an offline-capable service worker.
-  content::Manifest manifest(BuildDefaultManifest());
+  blink::Manifest manifest(BuildDefaultManifest());
   SetManifest(manifest);
 
   base::HistogramTester histograms;
@@ -513,7 +513,7 @@ TEST_F(AddToHomescreenDataFetcherTest, ManifestNameClobbersWebApplicationName) {
   // Manifest::short_name that Manifest::name is used as the title.
   {
     // Check the case where we have no icons.
-    content::Manifest manifest = BuildDefaultManifest();
+    blink::Manifest manifest = BuildDefaultManifest();
     manifest.icons.clear();
     manifest.short_name = base::NullableString16();
     SetManifest(manifest);
@@ -528,7 +528,7 @@ TEST_F(AddToHomescreenDataFetcherTest, ManifestNameClobbersWebApplicationName) {
                                   kDefaultManifestName));
   }
 
-  content::Manifest manifest(BuildDefaultManifest());
+  blink::Manifest manifest(BuildDefaultManifest());
   manifest.short_name = base::NullableString16();
   SetManifest(manifest);
 
@@ -585,7 +585,7 @@ TEST_F(AddToHomescreenDataFetcherTest, ManifestNoNameNoShortName) {
   //  - The page is not WebAPK compatible.
   //  - WebApplicationInfo::title is used as the "name".
   //  - We still use the icons from the manifest.
-  content::Manifest manifest(BuildDefaultManifest());
+  blink::Manifest manifest(BuildDefaultManifest());
   manifest.name = base::NullableString16();
   manifest.short_name = base::NullableString16();
 

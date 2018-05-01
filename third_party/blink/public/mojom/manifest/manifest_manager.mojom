@@ -4,7 +4,7 @@
 
 module blink.mojom;
 
-import "third_party/blink/public/platform/modules/manifest/manifest.mojom";
+import "third_party/blink/public/mojom/manifest/manifest.mojom";
 import "url/mojom/url.mojom";
 
 interface ManifestManager {

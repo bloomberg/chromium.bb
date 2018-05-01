@@ -47,7 +47,7 @@ ManifestManager::~ManifestManager() {
 void ManifestManager::RequestManifest(RequestManifestCallback callback) {
   RequestManifestImpl(base::BindOnce(
       [](RequestManifestCallback callback, const GURL& manifest_url,
-         const Manifest& manifest,
+         const blink::Manifest& manifest,
          const blink::mojom::ManifestDebugInfo* debug_info) {
         std::move(callback).Run(manifest_url, manifest);
       },
@@ -58,7 +58,7 @@ void ManifestManager::RequestManifestDebugInfo(
     RequestManifestDebugInfoCallback callback) {
   RequestManifestImpl(base::BindOnce(
       [](RequestManifestDebugInfoCallback callback, const GURL& manifest_url,
-         const Manifest& manifest,
+         const blink::Manifest& manifest,
          const blink::mojom::ManifestDebugInfo* debug_info) {
         std::move(callback).Run(manifest_url,
                                 debug_info ? debug_info->Clone() : nullptr);
@@ -69,7 +69,7 @@ void ManifestManager::RequestManifestDebugInfo(
 void ManifestManager::RequestManifestImpl(
     InternalRequestManifestCallback callback) {
   if (!may_have_manifest_) {
-    std::move(callback).Run(GURL(), Manifest(), nullptr);
+    std::move(callback).Run(GURL(), blink::Manifest(), nullptr);
     return;
   }
 
@@ -190,7 +190,7 @@ void ManifestManager::ResolveCallbacks(ResolveState state) {
   // |manifest_url| will be reset on navigation or if we receive a didchange
   // event.
   if (state == ResolveStateFailure)
-    manifest_ = Manifest();
+    manifest_ = blink::Manifest();
 
   manifest_dirty_ = state != ResolveStateSuccess;
 

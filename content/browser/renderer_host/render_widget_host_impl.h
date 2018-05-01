@@ -58,7 +58,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "services/viz/public/interfaces/hit_test/input_target_client.mojom.h"
-#include "third_party/blink/public/platform/web_display_mode.h"
+#include "third_party/blink/public/common/manifest/web_display_mode.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/ui_base_types.h"

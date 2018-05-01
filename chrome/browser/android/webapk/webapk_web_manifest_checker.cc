@@ -4,7 +4,7 @@
 
 #include "chrome/browser/android/webapk/webapk_web_manifest_checker.h"
 
-#include "content/public/common/manifest.h"
+#include "third_party/blink/public/common/manifest/manifest.h"
 #include "url/gurl.h"
 
 namespace {
@@ -19,8 +19,8 @@ bool IsUrlWebApkCompatible(const GURL& url) {
 
 }  // anonymous namespace
 
-bool AreWebManifestUrlsWebApkCompatible(const content::Manifest& manifest) {
-  for (const content::Manifest::Icon& icon : manifest.icons) {
+bool AreWebManifestUrlsWebApkCompatible(const blink::Manifest& manifest) {
+  for (const blink::Manifest::Icon& icon : manifest.icons) {
     if (!IsUrlWebApkCompatible(icon.src))
       return false;
   }

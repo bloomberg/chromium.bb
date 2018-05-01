@@ -14,12 +14,13 @@
 #include "base/macros.h"
 #include "content/common/push_messaging.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
-#include "third_party/blink/public/platform/modules/manifest/manifest.mojom.h"
+#include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
 #include "third_party/blink/public/platform/modules/push_messaging/web_push_client.h"
 
 class GURL;
 
 namespace blink {
+struct Manifest;
 struct WebPushSubscriptionOptions;
 }
 
@@ -29,7 +30,6 @@ namespace mojom {
 enum class PushRegistrationStatus;
 }
 
-struct Manifest;
 struct PushSubscriptionOptions;
 
 class PushMessagingClient : public RenderFrameObserver,
@@ -55,7 +55,7 @@ class PushMessagingClient : public RenderFrameObserver,
       bool user_gesture,
       std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks,
       const GURL& manifest_url,
-      const Manifest& manifest);
+      const blink::Manifest& manifest);
 
   void DoSubscribe(
       blink::WebServiceWorkerRegistration* service_worker_registration,

@@ -27,7 +27,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_INTERNAL_SETTINGS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_INTERNAL_SETTINGS_H_
 
-#include "third_party/blink/public/platform/web_display_mode.h"
+#include "third_party/blink/public/common/manifest/web_display_mode.h"
 #include "third_party/blink/renderer/core/editing/editing_behavior_types.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/testing/internal_settings_generated.h"

@@ -35,7 +35,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
-#include "third_party/blink/public/platform/web_display_mode.h"
+#include "third_party/blink/public/common/manifest/web_display_mode.h"
 #include "third_party/blink/public/platform/web_float_size.h"
 #include "third_party/blink/public/platform/web_gesture_curve_target.h"
 #include "third_party/blink/public/platform/web_gesture_event.h"

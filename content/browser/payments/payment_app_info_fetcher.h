@@ -12,7 +12,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/stored_payment_app.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/manifest.h"
+#include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace content {
@@ -67,7 +67,7 @@ class PaymentAppInfoFetcher {
 
     // The WebContents::GetManifestCallback.
     void FetchPaymentAppManifestCallback(const GURL& url,
-                                         const Manifest& manifest);
+                                         const blink::Manifest& manifest);
 
     // The ManifestIconDownloader::IconFetchCallback.
     void OnIconFetched(const SkBitmap& icon);

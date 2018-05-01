@@ -5,7 +5,7 @@
 #include "content/renderer/manifest/manifest_uma_util.h"
 
 #include "base/metrics/histogram_macros.h"
-#include "content/public/common/manifest.h"
+#include "third_party/blink/public/common/manifest/manifest.h"
 
 namespace content {
 
@@ -29,7 +29,7 @@ enum ManifestFetchResultType {
 
 } // anonymous namespace
 
-void ManifestUmaUtil::ParseSucceeded(const Manifest& manifest) {
+void ManifestUmaUtil::ParseSucceeded(const blink::Manifest& manifest) {
   UMA_HISTOGRAM_BOOLEAN(kUMANameParseSuccess, true);
   UMA_HISTOGRAM_BOOLEAN("Manifest.IsEmpty", manifest.IsEmpty());
   if (manifest.IsEmpty())

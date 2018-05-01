@@ -15,7 +15,7 @@
 #include "content/common/drag_event_source_info.h"
 #include "content/public/common/drop_data.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
-#include "third_party/blink/public/platform/web_display_mode.h"
+#include "third_party/blink/public/common/manifest/web_display_mode.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "ui/gfx/native_widget_types.h"

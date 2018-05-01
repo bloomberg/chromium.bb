@@ -93,7 +93,7 @@ public class ShortcutHelper {
     // be correctly populated into the WebappRegistry/WebappDataStorage.
     public static final int WEBAPP_SHORTCUT_VERSION = 2;
 
-    // This value is equal to kInvalidOrMissingColor in the C++ content::Manifest struct.
+    // This value is equal to kInvalidOrMissingColor in the C++ blink::Manifest struct.
     public static final long MANIFEST_COLOR_INVALID_OR_MISSING = ((long) Integer.MAX_VALUE) + 1;
 
     private static final String TAG = "ShortcutHelper";

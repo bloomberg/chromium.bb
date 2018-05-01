@@ -9,7 +9,7 @@
 #include "base/location.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/manifest/manifest.mojom-blink.h"
+#include "third_party/blink/public/mojom/manifest/manifest.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/web_icon_sizes_parser.h"
