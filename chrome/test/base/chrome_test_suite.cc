@@ -68,8 +68,8 @@ void ChromeTestSuite::Initialize() {
 #endif
 
   if (!browser_dir_.empty()) {
-    PathService::Override(base::DIR_EXE, browser_dir_);
-    PathService::Override(base::DIR_MODULE, browser_dir_);
+    base::PathService::Override(base::DIR_EXE, browser_dir_);
+    base::PathService::Override(base::DIR_MODULE, browser_dir_);
   }
 
   // Disable external libraries load if we are under python process in
@@ -89,7 +89,7 @@ void ChromeTestSuite::Initialize() {
 #if defined(OS_MACOSX)
   // Look in the framework bundle for resources.
   base::FilePath path;
-  PathService::Get(base::DIR_EXE, &path);
+  base::PathService::Get(base::DIR_EXE, &path);
   path = path.Append(chrome::kFrameworkName);
   base::mac::SetOverrideFrameworkBundlePath(path);
 #endif

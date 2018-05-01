@@ -23,7 +23,7 @@ class PageActionManifestTest : public ChromeManifestTest {
  protected:
   base::FilePath GetTestDataDir() override {
     base::FilePath path;
-    PathService::Get(chrome::DIR_TEST_DATA, &path);
+    base::PathService::Get(chrome::DIR_TEST_DATA, &path);
     return path.AppendASCII("extensions").AppendASCII("page_action");
   }
 

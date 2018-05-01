@@ -68,7 +68,7 @@ bool NavigateToUrlWithEdge(const base::string16& url) {
 
 void NavigateToUrlWithIExplore(const base::string16& url) {
   base::FilePath iexplore;
-  if (!PathService::Get(base::DIR_PROGRAM_FILES, &iexplore))
+  if (!base::PathService::Get(base::DIR_PROGRAM_FILES, &iexplore))
     return;
 
   iexplore = iexplore.AppendASCII("Internet Explorer");

@@ -14,7 +14,7 @@ base::FilePath GetProfilesINI() {
   // The default location of the profile folder containing user data is
   // under user HOME directory in .mozilla/firefox folder on Linux.
   base::FilePath home;
-  PathService::Get(base::DIR_HOME, &home);
+  base::PathService::Get(base::DIR_HOME, &home);
   if (!home.empty()) {
     ini_file = home.Append(".mozilla/firefox/profiles.ini");
   }

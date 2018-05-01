@@ -320,7 +320,7 @@ void NaClBrowserTestNewlibExtension::SetUpCommandLine(
     base::CommandLine* command_line) {
   NaClBrowserTestBase::SetUpCommandLine(command_line);
   base::FilePath src_root;
-  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &src_root));
+  ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &src_root));
 
   // Extension-based tests should specialize the GetDocumentRoot() / Variant()
   // to point at the isolated the test extension directory.
@@ -338,7 +338,7 @@ void NaClBrowserTestGLibcExtension::SetUpCommandLine(
     base::CommandLine* command_line) {
   NaClBrowserTestBase::SetUpCommandLine(command_line);
   base::FilePath src_root;
-  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &src_root));
+  ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &src_root));
 
   // Extension-based tests should specialize the GetDocumentRoot() / Variant()
   // to point at the isolated the test extension directory.

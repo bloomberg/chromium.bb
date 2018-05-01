@@ -85,9 +85,9 @@ bool ChromeCrashReporterClient::GetCrashDumpLocation(
   if (env->GetVar("BREAKPAD_DUMP_LOCATION", &alternate_crash_dump_location)) {
     base::FilePath crash_dumps_dir_path =
         base::FilePath::FromUTF8Unsafe(alternate_crash_dump_location);
-    PathService::Override(chrome::DIR_CRASH_DUMPS, crash_dumps_dir_path);
+    base::PathService::Override(chrome::DIR_CRASH_DUMPS, crash_dumps_dir_path);
   }
-  return PathService::Get(chrome::DIR_CRASH_DUMPS, crash_dir);
+  return base::PathService::Get(chrome::DIR_CRASH_DUMPS, crash_dir);
 }
 
 bool ChromeCrashReporterClient::IsRunningUnattended() {

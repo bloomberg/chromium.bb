@@ -93,7 +93,8 @@ int InstallerCrashReporterClient::GetResultCodeRespawnFailed() {
 bool InstallerCrashReporterClient::GetCrashDumpLocation(
     base::string16* crash_dir) {
   base::FilePath crash_directory_path;
-  bool ret = PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_directory_path);
+  bool ret =
+      base::PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_directory_path);
   if (ret)
     *crash_dir = crash_directory_path.value();
   return ret;

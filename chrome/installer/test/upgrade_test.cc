@@ -21,7 +21,7 @@ class UpgradeTest : public testing::Test {
   // Generate a newer version of mini_installer.exe.
   static void SetUpTestCase() {
     base::FilePath dir_exe;
-    ASSERT_TRUE(PathService::Get(base::DIR_EXE, &dir_exe));
+    ASSERT_TRUE(base::PathService::Get(base::DIR_EXE, &dir_exe));
     ASSERT_TRUE(base::CreateTemporaryFile(&next_mini_installer_path_));
     ASSERT_TRUE(
         upgrade_test::GenerateAlternateVersion(

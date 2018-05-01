@@ -81,7 +81,7 @@ TEST(UnpackerTest, IntegrationTest) {
 
   // Get a disk image to use to test
   base::FilePath originalPath;
-  PathService::Get(base::DIR_SOURCE_ROOT, &originalPath);
+  base::PathService::Get(base::DIR_SOURCE_ROOT, &originalPath);
   originalPath = originalPath.AppendASCII("chrome/test/data/mac_installer/");
   base::FilePath copiedPath = base::FilePath(originalPath);
   NSString* diskImageOriginalPath = base::SysUTF8ToNSString(

@@ -71,7 +71,7 @@ class MachOImageReaderTest : public testing::Test {
  protected:
   void OpenTestFile(const char* file_name, base::MemoryMappedFile* file) {
     base::FilePath test_data;
-    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data));
+    ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data));
 
     base::FilePath path = test_data.AppendASCII("safe_browsing")
                                    .AppendASCII("mach_o")

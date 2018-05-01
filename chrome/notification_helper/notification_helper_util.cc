@@ -16,7 +16,7 @@ base::FilePath GetChromeExePath() {
   // in Chrome installs). Failing that, look for it alonside
   // notification_helper.exe.
   base::FilePath dir_exe;
-  if (!PathService::Get(base::DIR_EXE, &dir_exe))
+  if (!base::PathService::Get(base::DIR_EXE, &dir_exe))
     return base::FilePath();
 
   base::FilePath chrome_exe =

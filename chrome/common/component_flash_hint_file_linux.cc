@@ -86,7 +86,8 @@ bool WriteToDisk(const int version,
                  const base::FilePath& plugin_path,
                  const std::string& flash_version) {
   base::FilePath hint_file_path;
-  if (!PathService::Get(chrome::FILE_COMPONENT_FLASH_HINT, &hint_file_path))
+  if (!base::PathService::Get(chrome::FILE_COMPONENT_FLASH_HINT,
+                              &hint_file_path))
     return false;
 
   std::string encoded_hash;
@@ -142,7 +143,8 @@ bool RecordFlashUpdate(const base::FilePath& unpacked_plugin,
 
 bool DoesHintFileExist() {
   base::FilePath hint_file_path;
-  if (!PathService::Get(chrome::FILE_COMPONENT_FLASH_HINT, &hint_file_path))
+  if (!base::PathService::Get(chrome::FILE_COMPONENT_FLASH_HINT,
+                              &hint_file_path))
     return false;
   return base::PathExists(hint_file_path);
 }
@@ -150,7 +152,8 @@ bool DoesHintFileExist() {
 bool VerifyAndReturnFlashLocation(base::FilePath* path,
                                   std::string* flash_version) {
   base::FilePath hint_file_path;
-  if (!PathService::Get(chrome::FILE_COMPONENT_FLASH_HINT, &hint_file_path))
+  if (!base::PathService::Get(chrome::FILE_COMPONENT_FLASH_HINT,
+                              &hint_file_path))
     return false;
 
   std::string json_string;

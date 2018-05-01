@@ -161,7 +161,8 @@ int MainDllLoader::Launch(HINSTANCE instance,
     }
 
     base::FilePath watcher_data_directory;
-    if (!PathService::Get(chrome::DIR_WATCHER_DATA, &watcher_data_directory))
+    if (!base::PathService::Get(chrome::DIR_WATCHER_DATA,
+                                &watcher_data_directory))
       return chrome::RESULT_CODE_MISSING_DATA;
 
     // Intentionally leaked.

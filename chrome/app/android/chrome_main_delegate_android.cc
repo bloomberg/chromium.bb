@@ -66,7 +66,7 @@ void ChromeMainDelegateAndroid::SecureDataDirectory() {
   // TODO(crbug.com/832388): Remove this once minsdk >= 21,
   // at which point this will be handled by PathUtils.java.
   base::FilePath data_path;
-  bool ok = PathService::Get(base::DIR_ANDROID_APP_DATA, &data_path);
+  bool ok = base::PathService::Get(base::DIR_ANDROID_APP_DATA, &data_path);
   if (ok) {
     ok = base::SetPosixFilePermissions(data_path,
                                        base::FILE_PERMISSION_USER_MASK);

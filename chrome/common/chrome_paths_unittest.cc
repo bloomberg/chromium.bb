@@ -22,20 +22,20 @@ namespace chrome {
 TEST(ChromePaths, UserCacheDir) {
   base::FilePath test_profile_dir, cache_dir;
 #if defined(OS_MACOSX)
-  ASSERT_TRUE(PathService::Get(base::DIR_APP_DATA, &test_profile_dir));
+  ASSERT_TRUE(base::PathService::Get(base::DIR_APP_DATA, &test_profile_dir));
   test_profile_dir = test_profile_dir.Append("foobar");
   base::FilePath expected_cache_dir;
-  ASSERT_TRUE(PathService::Get(base::DIR_CACHE, &expected_cache_dir));
+  ASSERT_TRUE(base::PathService::Get(base::DIR_CACHE, &expected_cache_dir));
   expected_cache_dir = expected_cache_dir.Append("foobar");
 #elif(OS_ANDROID)
   // No matter what the test_profile_dir is, Android always use the
   // application's cache directory since multiple profiles are not
   // supported.
   base::FilePath expected_cache_dir;
-  ASSERT_TRUE(PathService::Get(base::DIR_CACHE, &expected_cache_dir));
+  ASSERT_TRUE(base::PathService::Get(base::DIR_CACHE, &expected_cache_dir));
 #elif(OS_POSIX)
   base::FilePath homedir;
-  PathService::Get(base::DIR_HOME, &homedir);
+  base::PathService::Get(base::DIR_HOME, &homedir);
   // Note: we assume XDG_CACHE_HOME/XDG_CONFIG_HOME are at their
   // default settings.
   test_profile_dir = homedir.Append(".config/foobar");
@@ -70,7 +70,7 @@ TEST(ChromePaths, DefaultUserDataDir) {
     env->UnSetVar("CHROME_CONFIG_HOME");
 
   base::FilePath home_dir;
-  PathService::Get(base::DIR_HOME, &home_dir);
+  base::PathService::Get(base::DIR_HOME, &home_dir);
 
   std::string expected_branding;
 #if defined(GOOGLE_CHROME_BUILD)

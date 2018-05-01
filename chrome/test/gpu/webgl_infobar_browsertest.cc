@@ -54,7 +54,7 @@ class WebGLInfoBarTest : public InProcessBrowserTest {
  protected:
   void SetUpInProcessBrowserTestFixture() override {
     base::FilePath test_dir;
-    ASSERT_TRUE(PathService::Get(content::DIR_TEST_DATA, &test_dir));
+    ASSERT_TRUE(base::PathService::Get(content::DIR_TEST_DATA, &test_dir));
     gpu_test_dir_ = test_dir.AppendASCII("gpu");
   }
   base::FilePath gpu_test_dir_;

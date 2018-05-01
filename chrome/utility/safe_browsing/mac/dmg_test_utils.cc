@@ -18,7 +18,7 @@ namespace test {
 
 void GetTestFile(const char* file_name, base::File* file) {
   base::FilePath test_data;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_GEN_TEST_DATA, &test_data));
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_GEN_TEST_DATA, &test_data));
 
   base::FilePath path = test_data.AppendASCII("chrome")
       .AppendASCII("safe_browsing_dmg")

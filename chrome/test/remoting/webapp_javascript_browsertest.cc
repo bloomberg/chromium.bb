@@ -24,7 +24,7 @@ namespace remoting {
 IN_PROC_BROWSER_TEST_F(QUnitBrowserTestRunner,
                        MAYBE_Remoting_Webapp_Js_Unittest) {
   base::FilePath base_dir;
-  ASSERT_TRUE(PathService::Get(base::DIR_EXE, &base_dir));
+  ASSERT_TRUE(base::PathService::Get(base::DIR_EXE, &base_dir));
 
 #if defined(OS_MACOSX)
   if (base::mac::AmIBundled()) {

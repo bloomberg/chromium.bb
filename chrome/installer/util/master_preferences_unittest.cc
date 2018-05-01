@@ -200,7 +200,7 @@ TEST_F(MasterPreferencesTest, FirstRunTabs) {
 // general it is expected the extension format to be backwards compatible.
 TEST(MasterPrefsExtension, ValidateExtensionJSON) {
   base::FilePath prefs_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &prefs_path));
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &prefs_path));
   prefs_path = prefs_path.AppendASCII("extensions")
       .AppendASCII("good").AppendASCII("Preferences");
 

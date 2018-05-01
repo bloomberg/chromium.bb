@@ -39,7 +39,8 @@ class PeImageReaderTest : public testing::TestWithParam<const TestData*> {
   PeImageReaderTest() : expected_data_(GetParam()) {}
 
   void SetUp() override {
-    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_file_path_));
+    ASSERT_TRUE(
+        base::PathService::Get(chrome::DIR_TEST_DATA, &data_file_path_));
     data_file_path_ = data_file_path_.AppendASCII("safe_browsing");
     data_file_path_ = data_file_path_.AppendASCII(expected_data_->filename);
 
@@ -215,7 +216,8 @@ class PeImageReaderCertificateTest
   PeImageReaderCertificateTest() : expected_data_(GetParam()) {}
 
   void SetUp() override {
-    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_file_path_));
+    ASSERT_TRUE(
+        base::PathService::Get(chrome::DIR_TEST_DATA, &data_file_path_));
     data_file_path_ = data_file_path_.AppendASCII("safe_browsing");
     data_file_path_ = data_file_path_.AppendASCII("download_protection");
     data_file_path_ = data_file_path_.AppendASCII(expected_data_->filename);

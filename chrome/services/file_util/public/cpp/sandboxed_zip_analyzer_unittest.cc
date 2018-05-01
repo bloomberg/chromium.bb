@@ -80,7 +80,7 @@ class SandboxedZipAnalyzerTest : public ::testing::Test {
         connector_(test_connector_factory_->CreateConnector()) {}
 
   void SetUp() override {
-    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &dir_test_data_));
+    ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &dir_test_data_));
     dir_test_data_ = dir_test_data_.AppendASCII("safe_browsing");
   }
 

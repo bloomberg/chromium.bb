@@ -116,7 +116,7 @@ void MediaRouterBaseBrowserTest::ParseCommandLine() {
   // No extension provided. Use the default component extension in Chromium.
   if (extension_unpacked_.empty()) {
     base::FilePath base_dir;
-    ASSERT_TRUE(PathService::Get(base::DIR_MODULE, &base_dir));
+    ASSERT_TRUE(base::PathService::Get(base::DIR_MODULE, &base_dir));
     base::FilePath extension_path = base_dir.Append(FILE_PATH_LITERAL(
         "gen/chrome/browser/resources/media_router/extension"));
     if (PathExists(extension_path)) {

@@ -33,11 +33,11 @@ TEST(ProductTest, ProductInstallBasic) {
   BrowserDistribution* distribution = product->distribution();
 
   base::FilePath user_data_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
   EXPECT_FALSE(user_data_dir.empty());
 
   base::FilePath program_files;
-  ASSERT_TRUE(PathService::Get(base::DIR_PROGRAM_FILES, &program_files));
+  ASSERT_TRUE(base::PathService::Get(base::DIR_PROGRAM_FILES, &program_files));
   // The User Data path should never be under program files, even though
   // system_level is true.
   EXPECT_EQ(std::wstring::npos,

@@ -71,7 +71,7 @@ base::FilePath GetProfilesINI() {
   base::FilePath ini_file;
   // The default location of the profile folder containing user data is
   // under the "Application Data" folder in Windows XP, Vista, and 7.
-  if (!PathService::Get(base::DIR_APP_DATA, &ini_file))
+  if (!base::PathService::Get(base::DIR_APP_DATA, &ini_file))
     return base::FilePath();
 
   ini_file = ini_file.AppendASCII("Mozilla");

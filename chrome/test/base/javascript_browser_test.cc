@@ -46,7 +46,8 @@ JavaScriptBrowserTest::~JavaScriptBrowserTest() {
 
 void JavaScriptBrowserTest::SetUpOnMainThread() {
   base::FilePath test_data_directory;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory));
+  ASSERT_TRUE(
+      base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory));
   test_data_directory = test_data_directory.Append(kWebUITestFolder);
   library_search_paths_.push_back(test_data_directory);
 
@@ -60,13 +61,14 @@ void JavaScriptBrowserTest::SetUpOnMainThread() {
      !defined(LEAK_SANITIZER)) ||                                 \
     BUILDFLAG(ENABLE_NACL) || defined(OS_CHROMEOS)
   base::FilePath gen_test_data_directory;
-  ASSERT_TRUE(
-      PathService::Get(chrome::DIR_GEN_TEST_DATA, &gen_test_data_directory));
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_GEN_TEST_DATA,
+                                     &gen_test_data_directory));
   library_search_paths_.push_back(gen_test_data_directory);
 #endif
 
   base::FilePath source_root_directory;
-  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &source_root_directory));
+  ASSERT_TRUE(
+      base::PathService::Get(base::DIR_SOURCE_ROOT, &source_root_directory));
   library_search_paths_.push_back(source_root_directory);
 
   AddLibrary(base::FilePath(kMockJSPath));

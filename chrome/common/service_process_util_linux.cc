@@ -53,7 +53,7 @@ bool ForceServiceProcessShutdown(const std::string& version,
 // Returns an absolute path as required.
 mojo::edk::NamedPlatformHandle GetServiceProcessChannel() {
   base::FilePath temp_dir;
-  PathService::Get(base::DIR_TEMP, &temp_dir);
+  base::PathService::Get(base::DIR_TEMP, &temp_dir);
   std::string pipe_name = GetServiceProcessScopedVersionedName("_service_ipc");
   std::string pipe_path = temp_dir.Append(pipe_name).value();
   return mojo::edk::NamedPlatformHandle(pipe_path);

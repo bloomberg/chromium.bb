@@ -12,12 +12,12 @@ namespace chrome {
 
 void GetUserCacheDirectory(const base::FilePath& profile_dir,
                            base::FilePath* result) {
-  if (!PathService::Get(base::DIR_CACHE, result))
+  if (!base::PathService::Get(base::DIR_CACHE, result))
     *result = profile_dir;
 }
 
 bool GetDefaultUserDataDirectory(base::FilePath* result) {
-  return PathService::Get(base::DIR_ANDROID_APP_DATA, result);
+  return base::PathService::Get(base::DIR_ANDROID_APP_DATA, result);
 }
 
 bool GetUserDocumentsDirectory(base::FilePath* result) {

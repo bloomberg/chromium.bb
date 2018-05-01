@@ -45,7 +45,7 @@ class SandboxedDMGAnalyzerTest : public testing::Test {
 
   base::FilePath GetFilePath(const char* file_name) {
     base::FilePath test_data;
-    EXPECT_TRUE(PathService::Get(chrome::DIR_GEN_TEST_DATA, &test_data));
+    EXPECT_TRUE(base::PathService::Get(chrome::DIR_GEN_TEST_DATA, &test_data));
     return test_data.AppendASCII("chrome")
         .AppendASCII("safe_browsing_dmg")
         .AppendASCII(file_name);
@@ -165,7 +165,7 @@ TEST_F(SandboxedDMGAnalyzerTest, AnalyzeDmgNoSignature) {
 
 TEST_F(SandboxedDMGAnalyzerTest, AnalyzeDmgWithSignature) {
   base::FilePath signed_dmg;
-  EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &signed_dmg));
+  EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &signed_dmg));
   signed_dmg = signed_dmg.AppendASCII("safe_browsing")
                    .AppendASCII("mach_o")
                    .AppendASCII("signed-archive.dmg");
@@ -177,7 +177,8 @@ TEST_F(SandboxedDMGAnalyzerTest, AnalyzeDmgWithSignature) {
   EXPECT_EQ(2215u, results.signature_blob.size());
 
   base::FilePath signed_dmg_signature;
-  EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &signed_dmg_signature));
+  EXPECT_TRUE(
+      base::PathService::Get(chrome::DIR_TEST_DATA, &signed_dmg_signature));
   signed_dmg_signature = signed_dmg_signature.AppendASCII("safe_browsing")
                              .AppendASCII("mach_o")
                              .AppendASCII("signed-archive-signature.data");

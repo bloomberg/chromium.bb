@@ -96,7 +96,7 @@ TEST_F(InitValueManifestTest, InitFromValueValid) {
       "init_valid_minimal.json"));
 
   base::FilePath path;
-  PathService::Get(chrome::DIR_TEST_DATA, &path);
+  base::PathService::Get(chrome::DIR_TEST_DATA, &path);
   path = path.AppendASCII("extensions");
 
   EXPECT_TRUE(crx_file::id_util::IdIsValid(extension->id()));

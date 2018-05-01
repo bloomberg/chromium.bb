@@ -128,7 +128,7 @@ bool GetLogsPath(base::FilePath* result) {
 #ifdef NDEBUG
   // Release builds write to the data dir. This is a copy of the Windows
   // implementation of GetDefaultUserDataDirectory().
-  if (!PathService::Get(base::DIR_LOCAL_APP_DATA, result))
+  if (!base::PathService::Get(base::DIR_LOCAL_APP_DATA, result))
     return false;
   *result = result->Append(install_static::GetChromeInstallSubDirectory());
   *result = result->Append(chrome::kUserDataDirname);
@@ -136,7 +136,7 @@ bool GetLogsPath(base::FilePath* result) {
 
 #else
   // Debug builds write next to the binary (in the build tree)
-  return PathService::Get(base::DIR_EXE, result);
+  return base::PathService::Get(base::DIR_EXE, result);
 #endif  // NDEBUG
 }
 

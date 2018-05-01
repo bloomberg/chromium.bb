@@ -327,7 +327,7 @@ TEST(ExtensionTest, MimeTypeSniffing) {
   };
 
   base::FilePath dir_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &dir_path));
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &dir_path));
   dir_path = dir_path.AppendASCII("extensions");
 
   // First, test an extension packed a long time ago (but in this galaxy).

@@ -47,7 +47,7 @@ NSString* GetServiceProcessLaunchDLabel() {
       base::mac::CFToNSCast(CopyServiceProcessLaunchDName()));
   NSString* label = [name stringByAppendingString:@".service_process"];
   base::FilePath user_data_dir;
-  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   std::string user_data_dir_path = user_data_dir.value();
   NSString* ns_path = base::SysUTF8ToNSString(user_data_dir_path);
   ns_path = [ns_path stringByReplacingOccurrencesOfString:@" "
@@ -83,7 +83,7 @@ class ExecFilePathWatcherCallback {
 
 base::FilePath GetServiceProcessSocketName() {
   base::FilePath socket_name;
-  PathService::Get(base::DIR_TEMP, &socket_name);
+  base::PathService::Get(base::DIR_TEMP, &socket_name);
   std::string pipe_name = GetServiceProcessScopedName("srv");
   socket_name = socket_name.Append(pipe_name);
   CHECK_LT(socket_name.value().size(), mojo::edk::kMaxSocketNameLength);

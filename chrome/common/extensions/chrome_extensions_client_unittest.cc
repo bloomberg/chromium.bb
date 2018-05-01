@@ -31,7 +31,7 @@ class ChromeExtensionsClientTest : public testing::Test {
 // Test that a browser action extension returns a path to an icon.
 TEST_F(ChromeExtensionsClientTest, GetBrowserImagePaths) {
   base::FilePath install_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
   install_dir = install_dir.AppendASCII("extensions")
                     .AppendASCII("api_test")
                     .AppendASCII("browser_action")
@@ -52,7 +52,7 @@ TEST_F(ChromeExtensionsClientTest, GetBrowserImagePaths) {
 // Test that extensions with zero-length action icons will not load.
 TEST_F(ChromeExtensionsClientTest, CheckZeroLengthActionIconFiles) {
   base::FilePath install_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
 
   // Try to install an extension with a zero-length browser action icon file.
   base::FilePath ext_dir = install_dir.AppendASCII("extensions")

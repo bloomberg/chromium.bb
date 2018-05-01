@@ -395,8 +395,8 @@ void InitializeUserDataDir(base::CommandLine* command_line) {
           base::FilePath(invalid_user_data_dir_buf));
       command_line->AppendSwitchPath(switches::kUserDataDir, user_data_dir);
     }
-    CHECK(PathService::OverrideAndCreateIfNeeded(chrome::DIR_USER_DATA,
-                                                 user_data_dir, false, true));
+    CHECK(base::PathService::OverrideAndCreateIfNeeded(
+        chrome::DIR_USER_DATA, user_data_dir, false, true));
   }
 #else  // OS_WIN
   base::FilePath user_data_dir =
@@ -421,22 +421,23 @@ void InitializeUserDataDir(base::CommandLine* command_line) {
   policy::path_parser::CheckUserDataDirPolicy(&user_data_dir);
 #endif  // OS_MAC
 
-  const bool specified_directory_was_invalid = !user_data_dir.empty() &&
-      !PathService::OverrideAndCreateIfNeeded(chrome::DIR_USER_DATA,
-          user_data_dir, false, true);
+  const bool specified_directory_was_invalid =
+      !user_data_dir.empty() &&
+      !base::PathService::OverrideAndCreateIfNeeded(chrome::DIR_USER_DATA,
+                                                    user_data_dir, false, true);
   // Save inaccessible or invalid paths so the user may be prompted later.
   if (specified_directory_was_invalid)
     chrome::SetInvalidSpecifiedUserDataDir(user_data_dir);
 
   // Warn and fail early if the process fails to get a user data directory.
-  if (!PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
+  if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
     // If an invalid command-line or policy override was specified, the user
     // will be given an error with that value. Otherwise, use the directory
     // returned by PathService (or the fallback default directory) in the error.
     if (!specified_directory_was_invalid) {
-      // PathService::Get() returns false and yields an empty path if it fails
-      // to create DIR_USER_DATA. Retrieve the default value manually to display
-      // a more meaningful error to the user in that case.
+      // base::PathService::Get() returns false and yields an empty path if it
+      // fails to create DIR_USER_DATA. Retrieve the default value manually to
+      // display a more meaningful error to the user in that case.
       if (user_data_dir.empty())
         chrome::GetDefaultUserDataDirectory(&user_data_dir);
       chrome::SetInvalidSpecifiedUserDataDir(user_data_dir);
@@ -621,8 +622,8 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
   if (command_line.HasSwitch(chromeos::switches::kHomedir)) {
     homedir = base::FilePath(
         command_line.GetSwitchValueASCII(chromeos::switches::kHomedir));
-    PathService::OverrideAndCreateIfNeeded(
-        base::DIR_HOME, homedir, true, false);
+    base::PathService::OverrideAndCreateIfNeeded(base::DIR_HOME, homedir, true,
+                                                 false);
   }
 
   // If we are recovering from a crash on a ChromeOS device, then we will do
@@ -765,9 +766,9 @@ void ChromeMainDelegate::PreSandboxStartup() {
 #if defined(OS_MACOSX)
   // On the Mac, the child executable lives at a predefined location within
   // the app bundle's versioned directory.
-  PathService::Override(content::CHILD_PROCESS_EXE,
-                        chrome::GetVersionedDirectory().
-                        Append(chrome::kHelperProcessExecutablePath));
+  base::PathService::Override(content::CHILD_PROCESS_EXE,
+                              chrome::GetVersionedDirectory().Append(
+                                  chrome::kHelperProcessExecutablePath));
 
   InitMacCrashReporter(command_line, process_type);
   SetUpInstallerPreferences(command_line);
@@ -789,7 +790,7 @@ void ChromeMainDelegate::PreSandboxStartup() {
     if (downgrade::IsMSIInstall()) {
       downgrade::MoveUserDataForFirstRunAfterDowngrade();
       base::FilePath user_data_dir;
-      if (PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
+      if (base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
         downgrade::UpdateLastVersion(user_data_dir);
     }
 #endif
@@ -881,7 +882,7 @@ void ChromeMainDelegate::PreSandboxStartup() {
             locale, NULL, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
 
     base::FilePath resources_pack_path;
-    PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
+    base::PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
     ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
         resources_pack_path, ui::SCALE_FACTOR_NONE);
 #endif
