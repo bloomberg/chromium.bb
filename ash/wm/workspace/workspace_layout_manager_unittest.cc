@@ -1545,7 +1545,30 @@ TEST_F(WorkspaceLayoutManagerBackdropTest,
   EXPECT_FALSE(test_helper.GetBackdropWindow());
   // Dismissing the app list should cause the backdrop to be shown again.
   GetAppListTestHelper()->Dismiss();
+}
+
+TEST_F(WorkspaceLayoutManagerBackdropTest, OpenAppListInOverviewMode) {
+  WorkspaceController* wc = ShellTestApi(Shell::Get()).workspace_controller();
+  WorkspaceControllerTestApi test_helper(wc);
+
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindow(gfx::Rect(0, 0, 100, 100)));
+  EXPECT_FALSE(test_helper.GetBackdropWindow());
+
+  // Turn the top window backdrop on.
+  ShowTopWindowBackdropForContainer(default_container(), true);
   EXPECT_TRUE(test_helper.GetBackdropWindow());
+
+  // Toggle overview button to enter overview mode.
+  Shell::Get()->window_selector_controller()->ToggleOverview();
+  EXPECT_FALSE(test_helper.GetBackdropWindow());
+
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+  EXPECT_FALSE(test_helper.GetBackdropWindow());
+  // Showing the app list in overview mode should still hide the backdrop.
+  GetAppListTestHelper()->Show(GetPrimaryDisplay().id());
+  EXPECT_FALSE(test_helper.GetBackdropWindow());
 }
 
 TEST_F(WorkspaceLayoutManagerBackdropTest, SpokenFeedbackForArc) {
