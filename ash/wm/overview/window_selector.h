@@ -121,6 +121,10 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   void CompleteDrag(WindowSelectorItem* item,
                     const gfx::Point& location_in_screen);
   void StartSplitViewDragMode(const gfx::Point& location_in_screen);
+  void Fling(WindowSelectorItem* item,
+             const gfx::Point& location_in_screen,
+             float velocity_x,
+             float velocity_y);
   void ActivateDraggedWindow();
   void ResetDraggedWindowGesture();
 

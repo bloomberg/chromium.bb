@@ -248,6 +248,10 @@ class ShieldButton : public views::Button {
           listener()->HandleDragEvent(location);
           break;
         case ui::ET_SCROLL_FLING_START:
+          listener()->HandleFlingStartEvent(location,
+                                            event->details().velocity_x(),
+                                            event->details().velocity_y());
+          break;
         case ui::ET_GESTURE_SCROLL_END:
           listener()->HandleReleaseEvent(location);
           break;
@@ -994,7 +998,6 @@ void WindowSelectorItem::HandleReleaseEvent(
     const gfx::Point& location_in_screen) {
   if (!IsDragItem())
     return;
-
   window_grid_->SetSelectionWidgetVisibility(true);
   window_selector_->CompleteDrag(this, location_in_screen);
 }
@@ -1009,6 +1012,13 @@ void WindowSelectorItem::HandleDragEvent(const gfx::Point& location_in_screen) {
 void WindowSelectorItem::HandleLongPressEvent(
     const gfx::Point& location_in_screen) {
   window_selector_->StartSplitViewDragMode(location_in_screen);
+}
+
+void WindowSelectorItem::HandleFlingStartEvent(
+    const gfx::Point& location_in_screen,
+    float velocity_x,
+    float velocity_y) {
+  window_selector_->Fling(this, location_in_screen, velocity_x, velocity_y);
 }
 
 void WindowSelectorItem::ActivateDraggedWindow() {
@@ -1103,6 +1113,19 @@ void WindowSelectorItem::SetShadowBounds(
   shadow_->SetContentBounds(bounds_in_item);
 }
 
+void WindowSelectorItem::SetOpacity(float opacity) {
+  item_widget_->SetOpacity(opacity);
+  if (background_view_ && !IsNewOverviewUi()) {
+    background_view_->AnimateBackgroundOpacity(
+        selected_ ? 0.f : kHeaderOpacity * opacity);
+  }
+  transform_window_.SetOpacity(opacity);
+}
+
+float WindowSelectorItem::GetOpacity() {
+  return item_widget_->GetNativeWindow()->layer()->opacity();
+}
+
 bool WindowSelectorItem::ShouldAnimateWhenEntering() const {
   if (!IsNewOverviewAnimationsEnabled())
     return true;
@@ -1178,15 +1201,6 @@ void WindowSelectorItem::SetItemBounds(const gfx::Rect& target_bounds,
   ScopedTransformOverviewWindow::ScopedAnimationSettings animation_settings;
   transform_window_.BeginScopedAnimation(animation_type, &animation_settings);
   transform_window_.SetTransform(root_window_, transform);
-}
-
-void WindowSelectorItem::SetOpacity(float opacity) {
-  item_widget_->SetOpacity(opacity);
-  if (background_view_ && !IsNewOverviewUi()) {
-    background_view_->AnimateBackgroundOpacity(
-        selected_ ? 0.f : kHeaderOpacity * opacity);
-  }
-  transform_window_.SetOpacity(opacity);
 }
 
 void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
