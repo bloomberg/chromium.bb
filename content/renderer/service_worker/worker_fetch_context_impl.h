@@ -33,8 +33,9 @@ class WebSocketHandshakeThrottleProvider;
 // worker and shared worker). This class is created on the main thread and
 // passed to the worker thread. This class is not used for service workers. For
 // service workers, ServiceWorkerFetchContextImpl class is used instead.
-class WorkerFetchContextImpl : public blink::WebWorkerFetchContext,
-                               public mojom::ServiceWorkerWorkerClient {
+class CONTENT_EXPORT WorkerFetchContextImpl
+    : public blink::WebWorkerFetchContext,
+      public mojom::ServiceWorkerWorkerClient {
  public:
   // |url_loader_factory_info| is a generic URLLoaderFactory that may
   // contain multiple URLLoader factories for different schemes internally,
@@ -95,6 +96,9 @@ class WorkerFetchContextImpl : public blink::WebWorkerFetchContext,
   // https://w3c.github.io/webappsec-secure-contexts/
   void set_is_secure_context(bool flag);
   void set_origin_url(const GURL& origin_url);
+
+  using RewriteURLFunction = blink::WebURL (*)(const std::string&, bool);
+  static void InstallRewriteURLFunction(RewriteURLFunction rewrite_url);
 
  private:
   class URLLoaderFactoryImpl;

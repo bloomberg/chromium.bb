@@ -128,6 +128,7 @@ LayoutTestContentRendererClient::LayoutTestContentRendererClient() {
   EnableWebTestProxyCreation(base::Bind(&WebViewTestProxyCreated),
                              base::Bind(&WebWidgetTestProxyCreated),
                              base::Bind(&WebFrameTestProxyCreated));
+  SetWorkerRewriteURLFunction(RewriteLayoutTestsURL);
 }
 
 LayoutTestContentRendererClient::~LayoutTestContentRendererClient() {

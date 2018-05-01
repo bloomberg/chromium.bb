@@ -28,6 +28,15 @@
 
 namespace content {
 
+WorkerFetchContextImpl::RewriteURLFunction g_rewrite_url = nullptr;
+
+// static
+void WorkerFetchContextImpl::InstallRewriteURLFunction(
+    RewriteURLFunction rewrite_url) {
+  CHECK(!g_rewrite_url);
+  g_rewrite_url = rewrite_url;
+}
+
 class WorkerFetchContextImpl::URLLoaderFactoryImpl
     : public blink::WebURLLoaderFactory {
  public:
@@ -223,6 +232,9 @@ void WorkerFetchContextImpl::WillSendRequest(blink::WebURLRequest& request) {
     // fetch.
     request.SetSkipServiceWorker(true);
   }
+
+  if (g_rewrite_url)
+    request.SetURL(g_rewrite_url(request.Url().GetString().Utf8(), false));
 }
 
 bool WorkerFetchContextImpl::IsControlledByServiceWorker() const {

@@ -118,8 +118,6 @@ void LayoutTestContentBrowserClient::RenderProcessWillLaunch(
       host->GetID(), partition->GetDatabaseTracker(),
       partition->GetQuotaManager(), partition->GetURLRequestContext(),
       partition->GetNetworkContext()));
-
-  host->Send(new ShellViewMsg_SetWebKitSourceDir(GetWebKitRootDirFilePath()));
 }
 
 void LayoutTestContentBrowserClient::ExposeInterfacesToRenderer(

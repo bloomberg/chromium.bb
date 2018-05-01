@@ -45,18 +45,12 @@ bool LayoutTestRenderThreadObserver::OnControlMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(LayoutTestRenderThreadObserver, message)
-    IPC_MESSAGE_HANDLER(ShellViewMsg_SetWebKitSourceDir, OnSetWebKitSourceDir)
     IPC_MESSAGE_HANDLER(LayoutTestMsg_ReplicateLayoutTestRuntimeFlagsChanges,
                         OnReplicateLayoutTestRuntimeFlagsChanges)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
   return handled;
-}
-
-void LayoutTestRenderThreadObserver::OnSetWebKitSourceDir(
-    const base::FilePath& webkit_source_dir) {
-  webkit_source_dir_ = webkit_source_dir;
 }
 
 void LayoutTestRenderThreadObserver::OnReplicateLayoutTestRuntimeFlagsChanges(
