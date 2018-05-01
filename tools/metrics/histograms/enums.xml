@@ -30237,6 +30237,9 @@ Called by update_use_counter_css.py.-->
 </enum>
 
 <enum name="MultiProfileSessionMode">
+  <obsolete>
+    Deprecated 09/2017. See histogram MultiProfile.SessionMode.
+  </obsolete>
   <int value="0" label="Single user mode"/>
   <int value="1" label="Side by side mode"/>
   <int value="2" label="Separate desktop mode"/>
@@ -30253,6 +30256,9 @@ Called by update_use_counter_css.py.-->
 </enum>
 
 <enum name="MultiProfileTeleportWindowAction">
+  <obsolete>
+    Deprecated 04/2018.
+  </obsolete>
   <int value="0" label="Drag and drop"/>
   <int value="1" label="Caption context menu"/>
   <int value="2" label="Return by minimize"/>

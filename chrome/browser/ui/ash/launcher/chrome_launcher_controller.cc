@@ -8,7 +8,6 @@
 #include <set>
 #include <utility>
 
-#include "ash/multi_profile_uma.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/remote_shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_item.h"
@@ -219,8 +218,7 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
   if (arc::IsArcAllowedForProfile(profile))
     arc_deferred_launcher_.reset(new ArcAppDeferredLauncherController(this));
 
-  // In multi profile mode we might have a window manager. We try to create it
-  // here. If the instantiation fails, the manager is not needed.
+  // Create either the real window manager or a stub.
   MultiUserWindowManager::CreateInstance();
 
   // On Chrome OS using multi profile we want to switch the content of the shelf
@@ -510,8 +508,6 @@ ash::ShelfAction ChromeLauncherController::ActivateWindowOrMinimizeIfActive(
       multi_user_util::GetAccountIdFromProfile(profile());
   MultiUserWindowManager* manager = MultiUserWindowManager::GetInstance();
   if (!manager->IsWindowOnDesktopOfUser(native_window, current_account_id)) {
-    ash::MultiProfileUMA::RecordTeleportAction(
-        ash::MultiProfileUMA::TELEPORT_WINDOW_RETURN_BY_LAUNCHER);
     manager->ShowWindowForUser(native_window, current_account_id);
     window->Activate();
     return ash::SHELF_ACTION_WINDOW_ACTIVATED;

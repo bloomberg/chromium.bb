@@ -7,7 +7,6 @@
 #include <set>
 #include <vector>
 
-#include "ash/multi_profile_uma.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/interfaces/window_actions.mojom.h"
 #include "ash/shell.h"                                  // mash-ok
@@ -15,6 +14,7 @@
 #include "base/auto_reset.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -57,21 +57,32 @@ const int kUserFadeTimeMS = 110;
 // The animation time in ms for a window which get teleported to another screen.
 const int kTeleportAnimationTimeMS = 300;
 
+// Used for UMA metrics. Do not reorder.
+enum TeleportWindowType {
+  TELEPORT_WINDOW_BROWSER = 0,
+  TELEPORT_WINDOW_INCOGNITO_BROWSER,
+  TELEPORT_WINDOW_V1_APP,
+  TELEPORT_WINDOW_V2_APP,
+  TELEPORT_WINDOW_PANEL,
+  TELEPORT_WINDOW_POPUP,
+  TELEPORT_WINDOW_UNKNOWN,
+  NUM_TELEPORT_WINDOW_TYPES
+};
+
 // Records the type of window which was transferred to another desktop.
 void RecordUMAForTransferredWindowType(aura::Window* window) {
   // We need to figure out what kind of window this is to record the transfer.
   Browser* browser = chrome::FindBrowserWithWindow(window);
-  ash::MultiProfileUMA::TeleportWindowType window_type =
-      ash::MultiProfileUMA::TELEPORT_WINDOW_UNKNOWN;
+  TeleportWindowType window_type = TELEPORT_WINDOW_UNKNOWN;
   if (browser) {
     if (browser->profile()->IsOffTheRecord()) {
-      window_type = ash::MultiProfileUMA::TELEPORT_WINDOW_INCOGNITO_BROWSER;
+      window_type = TELEPORT_WINDOW_INCOGNITO_BROWSER;
     } else if (browser->is_app()) {
-      window_type = ash::MultiProfileUMA::TELEPORT_WINDOW_V1_APP;
+      window_type = TELEPORT_WINDOW_V1_APP;
     } else if (browser->is_type_popup()) {
-      window_type = ash::MultiProfileUMA::TELEPORT_WINDOW_POPUP;
+      window_type = TELEPORT_WINDOW_POPUP;
     } else {
-      window_type = ash::MultiProfileUMA::TELEPORT_WINDOW_BROWSER;
+      window_type = TELEPORT_WINDOW_BROWSER;
     }
   } else {
     // Unit tests might come here without a profile manager.
@@ -91,13 +102,14 @@ void RecordUMAForTransferredWindowType(aura::Window* window) {
     if (app_window) {
       if (app_window->window_type() ==
           extensions::AppWindow::WINDOW_TYPE_PANEL) {
-        window_type = ash::MultiProfileUMA::TELEPORT_WINDOW_PANEL;
+        window_type = TELEPORT_WINDOW_PANEL;
       } else {
-        window_type = ash::MultiProfileUMA::TELEPORT_WINDOW_V2_APP;
+        window_type = TELEPORT_WINDOW_V2_APP;
       }
     }
   }
-  ash::MultiProfileUMA::RecordTeleportWindowType(window_type);
+  UMA_HISTOGRAM_ENUMERATION("MultiProfile.TeleportWindowType", window_type,
+                            NUM_TELEPORT_WINDOW_TYPES);
 }
 
 bool HasSystemModalTransientChildWindow(aura::Window* window) {
@@ -516,13 +528,9 @@ bool MultiUserWindowManagerChromeOS::ShowWindowForUserIntern(
   if (account_id != owner && minimized)
     return false;
 
-  if (minimized) {
-    // If it is minimized it falls back to the original desktop.
-    ash::MultiProfileUMA::RecordTeleportAction(
-        ash::MultiProfileUMA::TELEPORT_WINDOW_RETURN_BY_MINIMIZE);
-  } else {
+  if (!minimized) {
     // If the window was transferred without getting minimized, we should record
-    // the window type.
+    // the window type. Otherwise it falls back to the original desktop.
     RecordUMAForTransferredWindowType(window);
   }
 
