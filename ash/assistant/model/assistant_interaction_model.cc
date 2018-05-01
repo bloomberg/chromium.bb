@@ -9,7 +9,10 @@
 
 namespace ash {
 
-AssistantInteractionModel::AssistantInteractionModel() = default;
+AssistantInteractionModel::AssistantInteractionModel() {
+  // TODO(dmblack): Default input modality should be read from user preferences.
+  input_modality_ = InputModality::kVoice;
+}
 
 AssistantInteractionModel::~AssistantInteractionModel() = default;
 
@@ -27,6 +30,14 @@ void AssistantInteractionModel::ClearInteraction() {
   ClearUiElements();
   ClearQuery();
   ClearSuggestions();
+}
+
+void AssistantInteractionModel::SetInputModality(InputModality input_modality) {
+  if (input_modality == input_modality_)
+    return;
+
+  input_modality_ = input_modality;
+  NotifyInputModalityChanged();
 }
 
 void AssistantInteractionModel::AddUiElement(
@@ -61,6 +72,12 @@ void AssistantInteractionModel::AddSuggestions(
 void AssistantInteractionModel::ClearSuggestions() {
   suggestions_list_.clear();
   NotifySuggestionsCleared();
+}
+
+void AssistantInteractionModel::NotifyInputModalityChanged() {
+  for (AssistantInteractionModelObserver& observer : observers_) {
+    observer.OnInputModalityChanged(input_modality_);
+  }
 }
 
 void AssistantInteractionModel::NotifyUiElementAdded(

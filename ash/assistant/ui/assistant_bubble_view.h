@@ -41,6 +41,7 @@ class AssistantBubbleView : public views::View,
   void ChildVisibilityChanged(views::View* child) override;
 
   // AssistantInteractionModelObserver:
+  void OnInputModalityChanged(InputModality input_modality) override;
   void OnUiElementAdded(const AssistantUiElement* ui_element) override;
   void OnUiElementsCleared() override;
   void OnQueryChanged(const Query& query) override;
