@@ -35,6 +35,10 @@ struct DownloadMetaData {
   // The GUID of the download.
   std::string guid;
 
+  // Data that has been fetched. Can be used to get the current size of
+  // uncompleted download.
+  uint64_t current_size;
+
   // Info about successfully completed download, or null for in-progress
   // download. Failed download will not be persisted and exposed as meta data.
   base::Optional<CompletionInfo> completion_info;

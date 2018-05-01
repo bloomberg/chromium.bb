@@ -19,12 +19,13 @@ bool CompletionInfo::operator==(const CompletionInfo& other) const {
   return path == other.path && bytes_downloaded == other.bytes_downloaded;
 }
 
-DownloadMetaData::DownloadMetaData() = default;
+DownloadMetaData::DownloadMetaData() : current_size(0u) {}
 
 DownloadMetaData::DownloadMetaData(const DownloadMetaData& other) = default;
 
 bool DownloadMetaData::operator==(const DownloadMetaData& other) const {
-  return guid == other.guid && completion_info == other.completion_info;
+  return guid == other.guid && current_size == other.current_size &&
+         completion_info == other.completion_info;
 }
 
 DownloadMetaData::~DownloadMetaData() = default;

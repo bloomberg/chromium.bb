@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "components/download/internal/background_service/download_driver.h"
 #include "components/download/internal/background_service/entry.h"
 #include "components/download/public/background_service/download_metadata.h"
 
@@ -24,7 +25,8 @@ uint32_t GetNumberOfLiveEntriesForClient(DownloadClient client,
 
 std::map<DownloadClient, std::vector<DownloadMetaData>>
 MapEntriesToMetadataForClients(const std::set<DownloadClient>& clients,
-                               const std::vector<Entry*>& entries) {
+                               const std::vector<Entry*>& entries,
+                               DownloadDriver* driver) {
   std::map<DownloadClient, std::vector<DownloadMetaData>> categorized;
 
   for (auto* entry : entries) {
@@ -32,7 +34,7 @@ MapEntriesToMetadataForClients(const std::set<DownloadClient>& clients,
     if (clients.find(client) == clients.end())
       client = DownloadClient::INVALID;
 
-    categorized[client].push_back(BuildDownloadMetaData(entry));
+    categorized[client].push_back(BuildDownloadMetaData(entry, driver));
   }
 
   return categorized;
@@ -86,14 +88,22 @@ bool EntryBetterThan(const Entry& lhs, const Entry& rhs) {
   return lhs.create_time < rhs.create_time;
 }
 
-DownloadMetaData BuildDownloadMetaData(Entry* entry) {
+DownloadMetaData BuildDownloadMetaData(Entry* entry, DownloadDriver* driver) {
   DCHECK(entry);
   DownloadMetaData meta_data;
   meta_data.guid = entry->guid;
   if (entry->state == Entry::State::COMPLETE) {
     meta_data.completion_info =
         CompletionInfo(entry->target_file_path, entry->bytes_downloaded);
+    // If the download is completed, the |current_size| needs to pull from entry
+    // since the history db record has been deleted.
+    meta_data.current_size = entry->bytes_downloaded;
+    return meta_data;
   }
+
+  auto driver_entry = driver->Find(entry->guid);
+  if (driver_entry)
+    meta_data.current_size = driver_entry->bytes_downloaded;
   return meta_data;
 }
 

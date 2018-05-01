@@ -1051,7 +1051,7 @@ void ControllerImpl::KillTimedOutUploads() {
 
 void ControllerImpl::NotifyClientsOfStartup(bool state_lost) {
   auto categorized = util::MapEntriesToMetadataForClients(
-      clients_->GetRegisteredClients(), model_->PeekEntries());
+      clients_->GetRegisteredClients(), model_->PeekEntries(), driver_.get());
 
   for (auto client_id : clients_->GetRegisteredClients()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(

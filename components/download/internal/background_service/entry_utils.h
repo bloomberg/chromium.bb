@@ -17,6 +17,7 @@
 
 namespace download {
 
+class DownloadDriver;
 struct DownloadMetaData;
 struct Entry;
 
@@ -35,7 +36,8 @@ uint32_t GetNumberOfLiveEntriesForClient(DownloadClient client,
 // not be included.
 std::map<DownloadClient, std::vector<DownloadMetaData>>
 MapEntriesToMetadataForClients(const std::set<DownloadClient>& clients,
-                               const std::vector<Entry*>& entries);
+                               const std::vector<Entry*>& entries,
+                               DownloadDriver* driver);
 
 // Gets the least strict scheduling criteria from |entries|, the criteria is
 // used to schedule platform background tasks.
@@ -46,8 +48,9 @@ Criteria GetSchedulingCriteria(const Model::EntryList& entries,
 // |rhs| based on their priority and cancel time.
 bool EntryBetterThan(const Entry& lhs, const Entry& rhs);
 
-// Builds a download meta data based on |entry|.
-DownloadMetaData BuildDownloadMetaData(Entry* entry);
+// Builds a download meta data based on |entry| and the states from |driver| in
+// the history db.
+DownloadMetaData BuildDownloadMetaData(Entry* entry, DownloadDriver* driver);
 
 }  // namespace util
 }  // namespace download
