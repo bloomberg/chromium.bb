@@ -9,6 +9,7 @@
 #include "ui/gfx/linux/native_pixmap_dmabuf.h"
 #include "ui/gfx/native_pixmap.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_enums.h"
 #include "ui/gl/gl_image_native_pixmap.h"
 
 #if defined(USE_OZONE)
@@ -126,7 +127,8 @@ GpuMemoryBufferFactoryNativePixmap::CreateImageForGpuMemoryBuffer(
       new gl::GLImageNativePixmap(size, internalformat));
   if (!image->Initialize(pixmap.get(), format)) {
     LOG(ERROR) << "Failed to create GLImage " << size.ToString() << ", "
-               << gfx::BufferFormatToString(format);
+               << gfx::BufferFormatToString(format) << ", |internalformat|: "
+               << gl::GLEnums::GetStringEnum(internalformat);
     return nullptr;
   }
   return image;
@@ -157,7 +159,8 @@ GpuMemoryBufferFactoryNativePixmap::CreateAnonymousImage(
       new gl::GLImageNativePixmap(size, internalformat));
   if (!image->Initialize(pixmap.get(), format)) {
     LOG(ERROR) << "Failed to create GLImage " << size.ToString() << ", "
-               << gfx::BufferFormatToString(format);
+               << gfx::BufferFormatToString(format) << ", |internalformat|: "
+               << gl::GLEnums::GetStringEnum(internalformat);
     return nullptr;
   }
   *is_cleared = true;
