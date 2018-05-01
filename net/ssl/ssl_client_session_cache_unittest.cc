@@ -60,8 +60,9 @@ class SSLClientSessionCacheTest : public testing::Test {
 
 }  // namespace
 
-// These tests rely on ASan to verify that SSL_SESSION reference counts were
-// correctly managed and no sessions leaked or were accessed after free.
+// These tests rely on memory corruption detectors to verify that
+// SSL_SESSION reference counts were correctly managed and no sessions
+// leaked or were accessed after free.
 
 // Test basic insertion and lookup operations.
 TEST_F(SSLClientSessionCacheTest, Basic) {

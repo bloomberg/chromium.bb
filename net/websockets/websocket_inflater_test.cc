@@ -165,7 +165,7 @@ TEST(WebSocketInflaterTest, CallAddBytesAndFinishWithoutGetOutput) {
   ASSERT_TRUE(inflater.Finish());
   EXPECT_EQ(5u, inflater.CurrentOutputSize());
 
-  // This is a test for detecting memory leaks with valgrind.
+  // This is a test for memory leak detectors.
 }
 
 TEST(WebSocketInflaterTest, CallAddBytesAndFinishWithoutGetOutputChoked) {
@@ -177,7 +177,7 @@ TEST(WebSocketInflaterTest, CallAddBytesAndFinishWithoutGetOutputChoked) {
   ASSERT_TRUE(inflater.Finish());
   EXPECT_EQ(1u, inflater.CurrentOutputSize());
 
-  // This is a test for detecting memory leaks with valgrind.
+  // This is a test for memory leak detectors.
 }
 
 TEST(WebSocketInflaterTest, LargeRandomDeflateInflate) {

@@ -107,8 +107,8 @@ class HTTP2_EXPORT_PRIVATE HpackVarintDecoder {
     return 7 * (MaxExtensionBytes() - 1);
   }
 
-  // These fields are initialized just to keep ASAN happy about reading
-  // them from DebugString().
+  // These fields are initialized just to keep memory corruption detectors
+  // happy about reading them from DebugString().
   uint32_t value_ = 0;
   uint32_t offset_ = 0;
 };

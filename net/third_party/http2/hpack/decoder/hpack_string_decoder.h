@@ -192,8 +192,8 @@ class HTTP2_EXPORT_PRIVATE HpackStringDecoder {
 
   HpackVarintDecoder length_decoder_;
 
-  // These fields are initialized just to keep ASAN happy about reading
-  // them from DebugString().
+  // These fields are initialized just to keep memory corruption detectors
+  // happy about reading them from DebugString().
   size_t remaining_ = 0;
   StringDecoderState state_ = kStartDecodingLength;
   bool huffman_encoded_ = false;

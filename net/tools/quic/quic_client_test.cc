@@ -68,7 +68,7 @@ TEST_F(QuicClientTest, DoNotLeakSocketFDs) {
   // port exhaustion in long running processes which repeatedly create clients.
 
   // Create a ProofVerifier before counting the number of open FDs to work
-  // around some ASAN weirdness.
+  // around some memory corruption detector weirdness.
   crypto_test_utils::ProofVerifierForTesting().reset();
 
   // Record initial number of FDs, after creation of EpollServer.
@@ -92,7 +92,7 @@ TEST_F(QuicClientTest, DoNotLeakSocketFDs) {
 
 TEST_F(QuicClientTest, CreateAndCleanUpUDPSockets) {
   // Create a ProofVerifier before counting the number of open FDs to work
-  // around some ASAN weirdness.
+  // around some memory corruption detector weirdness.
   crypto_test_utils::ProofVerifierForTesting().reset();
 
   EpollServer eps;

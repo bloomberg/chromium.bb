@@ -234,9 +234,7 @@ class SettingGetterImplGSettings
     if (client_) {
       // gsettings client was not cleaned up.
       if (task_runner_->RunsTasksInCurrentSequence()) {
-        // We are on the UI thread so we can clean it safely. This is
-        // the case at least for ui_tests running under Valgrind in
-        // bug 16076.
+        // We are on the UI thread so we can clean it safely.
         VLOG(1) << "~SettingGetterImplGSettings: releasing gsettings client";
         ShutDown();
       } else {

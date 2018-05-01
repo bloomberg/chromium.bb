@@ -508,7 +508,7 @@ class SSLServerSocketTest : public PlatformTest {
 
 // This test only executes creation of client and server sockets. This is to
 // test that creation of sockets doesn't crash and have minimal code to run
-// under valgrind in order to help debugging memory problems.
+// with memory leak/corruption checking tools.
 TEST_F(SSLServerSocketTest, Initialize) {
   ASSERT_NO_FATAL_FAILURE(CreateContext());
   ASSERT_NO_FATAL_FAILURE(CreateSockets());
