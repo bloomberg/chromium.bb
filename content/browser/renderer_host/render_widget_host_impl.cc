@@ -2236,6 +2236,12 @@ void RenderWidgetHostImpl::OnAutoscrollStart(const gfx::PointF& position) {
 
   ForwardGestureEventWithLatencyInfo(
       scroll_begin, ui::LatencyInfo(ui::SourceEventType::OTHER));
+
+  // Send a GFS event with zero velocity to make sure that the scroll sequence
+  // will end with the GFC generated in |OnAutoscrollEnd()|; Otherwise if the
+  // user cancels the autoscroll without moving the mouse, the GFC will get
+  // filtered since no GFS is sent in the sequence. https://crbug.com/829794
+  OnAutoscrollFling(gfx::Vector2dF());
 }
 
 void RenderWidgetHostImpl::OnAutoscrollFling(const gfx::Vector2dF& velocity) {

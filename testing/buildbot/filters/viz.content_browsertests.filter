@@ -90,6 +90,7 @@
 
 # Browser side fling cannot use SetNeedsBeginFrame on viz https://crbug.com/823310
 -CompositorEventAckBrowserTest.TouchStartDuringFling
+-BrowserSideFlingBrowserTest.*
 
 # Uses LatencyInfo for input info https://crbug.com/791557
 -MouseLatencyBrowserTest.CoalescedMouseMovesCorrectlyTerminated
