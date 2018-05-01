@@ -47,8 +47,8 @@ class VideoCaptureClient : public media::mojom::VideoCaptureObserver {
 
   // media::mojom::VideoCaptureObserver implementations.
   void OnStateChanged(media::mojom::VideoCaptureState state) override;
-  void OnBufferCreated(int32_t buffer_id,
-                       mojo::ScopedSharedBufferHandle handle) override;
+  void OnNewBuffer(int32_t buffer_id,
+                   media::mojom::VideoBufferHandlePtr buffer_handle) override;
   void OnBufferReady(int32_t buffer_id,
                      media::mojom::VideoFrameInfoPtr info) override;
   void OnBufferDestroyed(int32_t buffer_id) override;

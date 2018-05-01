@@ -167,9 +167,9 @@ void SingleClientVideoCaptureHost::GetDeviceFormatsInUse(
   std::move(callback).Run(media::VideoCaptureFormats());
 }
 
-void SingleClientVideoCaptureHost::OnNewBufferHandle(
+void SingleClientVideoCaptureHost::OnNewBuffer(
     int buffer_id,
-    std::unique_ptr<Buffer::HandleProvider> handle_provider) {
+    media::mojom::VideoBufferHandlePtr buffer_handle) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(3) << __func__ << ": buffer_id=" << buffer_id;
   DCHECK(observer_);
@@ -177,9 +177,7 @@ void SingleClientVideoCaptureHost::OnNewBufferHandle(
   const auto insert_result =
       id_map_.emplace(std::make_pair(buffer_id, next_buffer_context_id_));
   DCHECK(insert_result.second);
-  observer_->OnBufferCreated(
-      next_buffer_context_id_++,
-      handle_provider->GetHandleForInterProcessTransit(true /* read only */));
+  observer_->OnNewBuffer(next_buffer_context_id_++, std::move(buffer_handle));
 }
 
 void SingleClientVideoCaptureHost::OnFrameReadyInBuffer(

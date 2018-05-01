@@ -15,14 +15,13 @@ VideoFrameReceiverOnTaskRunner::VideoFrameReceiverOnTaskRunner(
 
 VideoFrameReceiverOnTaskRunner::~VideoFrameReceiverOnTaskRunner() = default;
 
-void VideoFrameReceiverOnTaskRunner::OnNewBufferHandle(
+void VideoFrameReceiverOnTaskRunner::OnNewBuffer(
     int buffer_id,
-    std::unique_ptr<VideoCaptureDevice::Client::Buffer::HandleProvider>
-        handle_provider) {
+    media::mojom::VideoBufferHandlePtr buffer_handle) {
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&VideoFrameReceiver::OnNewBufferHandle, receiver_, buffer_id,
-                 base::Passed(std::move(handle_provider))));
+      base::BindOnce(&VideoFrameReceiver::OnNewBuffer, receiver_, buffer_id,
+                     base::Passed(std::move(buffer_handle))));
 }
 
 void VideoFrameReceiverOnTaskRunner::OnFrameReadyInBuffer(

@@ -29,10 +29,8 @@ class MockVideoFrameReceiver : public VideoFrameReceiver {
   MOCK_METHOD0(OnStarted, void());
   MOCK_METHOD0(OnStartedUsingGpuDecode, void());
 
-  void OnNewBufferHandle(
-      int buffer_id,
-      std::unique_ptr<VideoCaptureDevice::Client::Buffer::HandleProvider>
-          handle_provider) override {
+  void OnNewBuffer(int buffer_id,
+                   media::mojom::VideoBufferHandlePtr buffer_handle) override {
     MockOnNewBufferHandle(buffer_id);
   }
 

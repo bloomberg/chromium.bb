@@ -69,8 +69,8 @@ class CONTENT_EXPORT VideoCaptureImpl
 
   // media::mojom::VideoCaptureObserver implementation.
   void OnStateChanged(media::mojom::VideoCaptureState state) override;
-  void OnBufferCreated(int32_t buffer_id,
-                       mojo::ScopedSharedBufferHandle handle) override;
+  void OnNewBuffer(int32_t buffer_id,
+                   media::mojom::VideoBufferHandlePtr buffer_handle) override;
   void OnBufferReady(int32_t buffer_id,
                      media::mojom::VideoFrameInfoPtr info) override;
   void OnBufferDestroyed(int32_t buffer_id) override;
@@ -79,9 +79,7 @@ class CONTENT_EXPORT VideoCaptureImpl
   friend class VideoCaptureImplTest;
   friend class MockVideoCaptureImpl;
 
-  // Carries a shared memory for transferring video frames from browser to
-  // renderer.
-  class ClientBuffer;
+  struct BufferContext;
 
   // Contains information about a video capture client, including capture
   //  parameters callbacks to the client.
@@ -91,11 +89,10 @@ class CONTENT_EXPORT VideoCaptureImpl
   using BufferFinishedCallback =
       base::OnceCallback<void(double consumer_resource_utilization)>;
 
-  // Sends an IPC message to browser process when all clients are done with the
-  // buffer.
-  void OnClientBufferFinished(int buffer_id,
-                              scoped_refptr<ClientBuffer> buffer,
-                              double consumer_resource_utilization);
+  void OnAllClientsFinishedConsumingFrame(
+      int buffer_id,
+      scoped_refptr<BufferContext> buffer_context,
+      double consumer_resource_utilization);
 
   void StopDevice();
   void RestartCapture();
@@ -136,7 +133,7 @@ class CONTENT_EXPORT VideoCaptureImpl
   mojo::Binding<media::mojom::VideoCaptureObserver> observer_binding_;
 
   // Buffers available for sending to the client.
-  using ClientBufferMap = std::map<int32_t, scoped_refptr<ClientBuffer>>;
+  using ClientBufferMap = std::map<int32_t, scoped_refptr<BufferContext>>;
   ClientBufferMap client_buffers_;
 
   ClientInfoMap clients_;

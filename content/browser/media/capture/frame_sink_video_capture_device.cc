@@ -45,35 +45,6 @@ viz::mojom::FrameSinkVideoCapturerPtrInfo CreateCapturer() {
   return capturer.PassInterface();
 }
 
-// Adapter for a VideoFrameReceiver to get access to the mojo SharedBufferHandle
-// for a frame.
-class HandleMover
-    : public media::VideoCaptureDevice::Client::Buffer::HandleProvider {
- public:
-  explicit HandleMover(mojo::ScopedSharedBufferHandle handle)
-      : handle_(std::move(handle)) {}
-  ~HandleMover() final {}
-
-  mojo::ScopedSharedBufferHandle GetHandleForInterProcessTransit(
-      bool read_only) final {
-    return std::move(handle_);
-  }
-
-  base::SharedMemoryHandle GetNonOwnedSharedMemoryHandleForLegacyIPC() final {
-    NOTREACHED();
-    return base::SharedMemoryHandle();
-  }
-
-  std::unique_ptr<media::VideoCaptureBufferHandle> GetHandleForInProcessAccess()
-      final {
-    NOTREACHED();
-    return nullptr;
-  }
-
- private:
-  mojo::ScopedSharedBufferHandle handle_;
-};
-
 // Adapter for a VideoFrameReceiver to notify once frame consumption is
 // complete. VideoFrameReceiver requires owning an object that it will destroy
 // once consumption is complete. This class adapts between that scheme and
@@ -266,9 +237,11 @@ void FrameSinkVideoCaptureDevice::OnFrameCaptured(
   // Pass the video frame to the VideoFrameReceiver. This is done by first
   // passing the shared memory buffer handle and then notifying it that a new
   // frame is ready to be read from the buffer.
-  receiver_->OnNewBufferHandle(
-      static_cast<BufferId>(slot_index),
-      std::make_unique<HandleMover>(std::move(buffer)));
+  media::mojom::VideoBufferHandlePtr buffer_handle =
+      media::mojom::VideoBufferHandle::New();
+  buffer_handle->set_shared_buffer_handle(std::move(buffer));
+  receiver_->OnNewBuffer(static_cast<BufferId>(slot_index),
+                         std::move(buffer_handle));
   receiver_->OnFrameReadyInBuffer(
       static_cast<BufferId>(slot_index), slot_index,
       std::make_unique<ScopedFrameDoneHelper>(

@@ -18,10 +18,8 @@ class ReceiverOnTaskRunner : public media::VideoFrameReceiver {
   ~ReceiverOnTaskRunner() override;
 
   // media::VideoFrameReceiver implementation.
-  void OnNewBufferHandle(
-      int buffer_id,
-      std::unique_ptr<media::VideoCaptureDevice::Client::Buffer::HandleProvider>
-          handle_provider) override;
+  void OnNewBuffer(int buffer_id,
+                   media::mojom::VideoBufferHandlePtr buffer_handle) override;
   void OnFrameReadyInBuffer(
       int buffer_id,
       int frame_feedback_id,
@@ -48,10 +46,8 @@ class ReceiverMojoToMediaAdapter : public media::VideoFrameReceiver {
   ~ReceiverMojoToMediaAdapter() override;
 
   // media::VideoFrameReceiver implementation.
-  void OnNewBufferHandle(
-      int buffer_id,
-      std::unique_ptr<media::VideoCaptureDevice::Client::Buffer::HandleProvider>
-          handle_provider) override;
+  void OnNewBuffer(int buffer_id,
+                   media::mojom::VideoBufferHandlePtr buffer_handle) override;
   void OnFrameReadyInBuffer(
       int buffer_id,
       int frame_feedback_id,

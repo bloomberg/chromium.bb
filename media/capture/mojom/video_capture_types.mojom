@@ -41,6 +41,11 @@ enum VideoCaptureTransportType {
   OTHER_TRANSPORT
 };
 
+union VideoBufferHandle {
+  handle<shared_buffer> shared_buffer_handle;
+  media.mojom.MailboxVideoFrameData mailbox_handles;
+};
+
 struct VideoCaptureFormat {
   gfx.mojom.Size frame_size;
   float frame_rate;

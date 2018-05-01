@@ -13,7 +13,7 @@ interface ScopedAccessPermission {};
 // Callback interface for receiving data and messages from a started
 // video_capture.mojom.Device.
 interface Receiver {
-  OnNewBufferHandle(int32 buffer_id, handle<shared_buffer> buffer_handle);
+  OnNewBuffer(int32 buffer_id, media.mojom.VideoBufferHandle buffer_handle);
   OnFrameReadyInBuffer(int32 buffer_id, int32 frame_feedback_id,
                        ScopedAccessPermission access_permission,
                        media.mojom.VideoFrameInfo frame_info);

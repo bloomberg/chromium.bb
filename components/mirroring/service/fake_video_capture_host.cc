@@ -41,7 +41,10 @@ void FakeVideoCaptureHost::SendOneFrame(const gfx::Size& size,
   mojo::ScopedSharedBufferHandle buffer =
       mojo::SharedBufferHandle::Create(5000);
   memset(buffer->Map(5000).get(), 125, 5000);
-  observer_->OnBufferCreated(0, std::move(buffer));
+  media::mojom::VideoBufferHandlePtr buffer_handle =
+      media::mojom::VideoBufferHandle::New();
+  buffer_handle->set_shared_buffer_handle(std::move(buffer));
+  observer_->OnNewBuffer(0, std::move(buffer_handle));
   media::VideoFrameMetadata metadata;
   metadata.SetDouble(media::VideoFrameMetadata::FRAME_RATE, 30);
   metadata.SetTimeTicks(media::VideoFrameMetadata::REFERENCE_TIME,

@@ -35,11 +35,10 @@ class CONTENT_EXPORT VideoCaptureControllerEventHandler {
   // An Error has occurred in the VideoCaptureDevice.
   virtual void OnError(VideoCaptureControllerID id) = 0;
 
-  // A buffer has been newly created.
-  virtual void OnBufferCreated(VideoCaptureControllerID id,
-                               mojo::ScopedSharedBufferHandle handle,
-                               int length,
-                               int buffer_id) = 0;
+  virtual void OnNewBuffer(VideoCaptureControllerID id,
+                           media::mojom::VideoBufferHandlePtr buffer_handle,
+                           int length,
+                           int buffer_id) = 0;
 
   // A previously created buffer has been freed and will no longer be used.
   virtual void OnBufferDestroyed(VideoCaptureControllerID id,

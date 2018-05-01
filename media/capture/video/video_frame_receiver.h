@@ -21,11 +21,12 @@ class CAPTURE_EXPORT VideoFrameReceiver {
   // Tells the VideoFrameReceiver that the producer is going to subsequently use
   // the provided buffer as one of possibly many for frame delivery via
   // OnFrameReadyInBuffer(). Note, that a call to this method does not mean that
-  // the caller allows the receiver to read from or write to the buffer.
-  virtual void OnNewBufferHandle(
-      int buffer_id,
-      std::unique_ptr<VideoCaptureDevice::Client::Buffer::HandleProvider>
-          handle_provider) = 0;
+  // the caller allows the receiver to read from or write to the buffer just
+  // yet. Temporary permission to read will be given with subsequent calls to
+  // OnFrameReadyInBuffer().
+  virtual void OnNewBuffer(
+      int32_t buffer_id,
+      media::mojom::VideoBufferHandlePtr buffer_handle) = 0;
 
   // Tells the VideoFrameReceiver that a new frame is ready for consumption
   // in the buffer with id |buffer_id| and allows it to read the data from

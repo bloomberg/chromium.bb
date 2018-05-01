@@ -23,10 +23,8 @@ class CAPTURE_EXPORT VideoFrameReceiverOnTaskRunner
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~VideoFrameReceiverOnTaskRunner() override;
 
-  void OnNewBufferHandle(
-      int buffer_id,
-      std::unique_ptr<VideoCaptureDevice::Client::Buffer::HandleProvider>
-          handle_provider) override;
+  void OnNewBuffer(int32_t buffer_id,
+                   media::mojom::VideoBufferHandlePtr buffer_handle) override;
   void OnFrameReadyInBuffer(
       int buffer_id,
       int frame_feedback_id,

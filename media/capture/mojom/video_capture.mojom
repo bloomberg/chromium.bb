@@ -21,8 +21,8 @@ import "ui/gfx/geometry/mojo/geometry.mojom";
 //   Observer                                        VideoCaptureHost
 //      | ---> StartCapture                                     |
 //      |                        OnStateChanged(STARTED) <---   |
-//      |                             OnBufferCreated(1) <---   |
-//      |                             OnBufferCreated(2) <---   |
+//      |                                 OnNewBuffer(1) <---   |
+//      |                                 OnNewBuffer(2) <---   |
 //      =                                                       =
 // and capture will then refer to those preallocated buffers:
 //      |                               OnBufferReady(1) <---   |
@@ -37,11 +37,11 @@ import "ui/gfx/geometry/mojo/geometry.mojom";
 // Buffers can be reallocated with a larger size, if e.g. resolution changes.
 //      |                 (resolution change)                   |
 //      |                           OnBufferDestroyed(1) <---   |
-//      |                             OnBufferCreated(3) <---   |
+//      |                                 OnNewBuffer(3) <---   |
 //      |                               OnBufferReady(3) <---   |
 //      | ---> ReleaseBuffer(2)                                 |
 //      |                           OnBufferDestroyed(2) <---   |
-//      |                             OnBufferCreated(5) <---   |
+//      |                                 OnNewBuffer(5) <---   |
 //      |                               OnBufferReady(5) <---   |
 //      =                                                       =
 // In the communication epilogue, the client Stop()s capture, receiving a last
@@ -64,14 +64,17 @@ interface VideoCaptureObserver {
   // Gets notified about a VideoCaptureState update.
   OnStateChanged(VideoCaptureState state);
 
-  // A new buffer identified by |buffer_id| has been created for video capture.
-  OnBufferCreated(int32 buffer_id, handle<shared_buffer> handle_fd);
+  // Registers a |buffer_handle| at the Renderer/Client using the given
+  // |buffer_id|. The Browser/Host may subsequently use |buffer_id| to share
+  // video frames via calls to OnBufferReady().
+  OnNewBuffer(int32 buffer_id, media.mojom.VideoBufferHandle buffer_handle);
 
   // |buffer_id| has video capture data with |info| containing the associated
   // VideoFrame constituent parts.
   OnBufferReady(int32 buffer_id, VideoFrameInfo info);
 
-  // |buffer_id| has been released by VideoCaptureHost and must not be used.
+  // The buffer handle previously registered for |buffer_id| via OnNewBuffer(),
+  // is no longer going to be used by the Browser/Host.
   OnBufferDestroyed(int32 buffer_id);
 };
 

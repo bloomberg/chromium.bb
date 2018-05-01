@@ -81,9 +81,12 @@ void VirtualDeviceMojoAdapter::RequestFrameBuffer(
 
   if (!base::ContainsValue(known_buffer_ids_, buffer_id)) {
     if (receiver_.is_bound()) {
-      receiver_->OnNewBufferHandle(
-          buffer_id, buffer_pool_->GetHandleForInterProcessTransit(
-                         buffer_id, true /* read_only */));
+      media::mojom::VideoBufferHandlePtr buffer_handle =
+          media::mojom::VideoBufferHandle::New();
+      buffer_handle->set_shared_buffer_handle(
+          buffer_pool_->GetHandleForInterProcessTransit(buffer_id,
+                                                        true /* read_only */));
+      receiver_->OnNewBuffer(buffer_id, std::move(buffer_handle));
     }
     known_buffer_ids_.push_back(buffer_id);
 
@@ -142,9 +145,12 @@ void VirtualDeviceMojoAdapter::Start(
 
   // Notify receiver of known buffers */
   for (auto buffer_id : known_buffer_ids_) {
-    receiver_->OnNewBufferHandle(buffer_id,
-                                 buffer_pool_->GetHandleForInterProcessTransit(
-                                     buffer_id, true /* read_only */));
+    media::mojom::VideoBufferHandlePtr buffer_handle =
+        media::mojom::VideoBufferHandle::New();
+    buffer_handle->set_shared_buffer_handle(
+        buffer_pool_->GetHandleForInterProcessTransit(buffer_id,
+                                                      true /* read_only */));
+    receiver_->OnNewBuffer(buffer_id, std::move(buffer_handle));
   }
 }
 
