@@ -140,21 +140,21 @@ class CSSPropertiesWriter(CSSPropertyBaseWriter):
 
     def h_includes(self, property_):
         if property_['alias_for']:
-            yield "core/css/properties/css_unresolved_property.h"
+            yield "third_party/blink/renderer/core/css/properties/css_unresolved_property.h"
         else:
-            yield "core/css/properties/" + property_['namespace_group'].lower() + ".h"
+            yield "third_party/blink/renderer/core/css/properties/" + property_['namespace_group'].lower() + ".h"
             if property_['direction_aware_options']:
-                yield "core/style_property_shorthand.h"
+                yield "third_party/blink/renderer/core/style_property_shorthand.h"
             if property_['runtime_flag']:
-                yield "platform/runtime_enabled_features.h"
+                yield "third_party/blink/renderer/platform/runtime_enabled_features.h"
             if property_['should_implement_apply_functions']:
                 for include in self.apply_includes(property_):
-                    yield include
+                    yield 'third_party/blink/renderer/' + include
 
     def cpp_includes(self, property_):
         if 'should_implement_apply_functions_in_cpp' in property_:
             for include in self.apply_includes(property_):
-                yield include
+                yield 'third_party/blink/renderer/' + include
 
     def apply_includes(self, property_):
         yield "core/css/resolver/style_resolver_state.h"

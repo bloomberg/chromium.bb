@@ -11,11 +11,11 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/variable.h"
 {% for property_filename in longhand_property_filenames %}
   {% if property_filename != "longhand" %}
-#include "core/css/properties/longhands/{{property_filename}}.h"
+#include "third_party/blink/renderer/core/css/properties/longhands/{{property_filename}}.h"
   {% endif %}
 {% endfor %}
 {% for property_filename in shorthand_property_filenames %}
-#include "core/css/properties/shorthands/{{property_filename}}.h"
+#include "third_party/blink/renderer/core/css/properties/shorthands/{{property_filename}}.h"
 {% endfor %}
 
 namespace blink {

@@ -3,7 +3,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/{{file_basename}}.h"
+#include "third_party/blink/renderer/core/{{file_basename}}.h"
 
 #include <string.h>
 #include "third_party/blink/renderer/core/css/hash_tools.h"
@@ -46,4 +46,4 @@ CSSPropertyID cssPropertyID(const String& string)
     return resolveCSSPropertyID(unresolvedCSSPropertyID(string));
 }
 
-} // namespace blink
+}  // namespace blink
