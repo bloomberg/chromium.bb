@@ -159,6 +159,11 @@ void ExtensionOptionsGuest::AddNewContents(
     const gfx::Rect& initial_rect,
     bool user_gesture,
     bool* was_blocked) {
+  // |new_contents| is potentially used as a non-embedded WebContents, so we
+  // check that it isn't a guest. The only place that this method should be
+  // called is WebContentsImpl::ViewSource - which generates a non-guest
+  // WebContents.
+  DCHECK(!ExtensionOptionsGuest::FromWebContents(new_contents.get()));
   if (!attached() || !embedder_web_contents()->GetDelegate())
     return;
 
