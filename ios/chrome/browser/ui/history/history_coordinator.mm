@@ -9,6 +9,7 @@
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/history/core/browser/browsing_history_service.h"
 #include "components/keyed_service/core/service_access_type.h"
+#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
@@ -16,6 +17,7 @@
 #include "ios/chrome/browser/ui/history/history_table_view_controller.h"
 #import "ios/chrome/browser/ui/history/history_transitioning_delegate.h"
 #include "ios/chrome/browser/ui/history/ios_browsing_history_driver.h"
+#import "ios/chrome/browser/ui/settings/clear_browsing_data_coordinator.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -35,6 +37,10 @@
 // The transitioning delegate used by the history view controller.
 @property(nonatomic, strong)
     HistoryTransitioningDelegate* historyTransitioningDelegate;
+
+// The coordinator that will present Clear Browsing Data.
+@property(nonatomic, strong)
+    ClearBrowsingDataCoordinator* clearBrowsingDataCoordinator;
 @end
 
 @implementation HistoryCoordinator
@@ -42,6 +48,7 @@
 @synthesize historyNavigationController = _historyNavigationController;
 @synthesize historyTransitioningDelegate = _historyTransitioningDelegate;
 @synthesize loader = _loader;
+@synthesize clearBrowsingDataCoordinator = _clearBrowsingDataCoordinator;
 
 - (void)start {
   // Initialize and configure HistoryTableViewController.
@@ -96,10 +103,15 @@
 }
 
 - (void)displayPrivacySettings {
-  // TODO(crbug.com/805201): We need to push CBD into the NavigationController
-  // instead of presenting it modally.
-  [self.dispatcher showClearBrowsingDataSettingsFromViewController:
-                       self.historyNavigationController];
+  if (experimental_flags::IsCollectionsUIRebootEnabled()) {
+    self.clearBrowsingDataCoordinator = [[ClearBrowsingDataCoordinator alloc]
+        initWithBaseViewController:self.historyNavigationController
+                      browserState:self.browserState];
+    [self.clearBrowsingDataCoordinator start];
+  } else {
+    [self.dispatcher showClearBrowsingDataSettingsFromViewController:
+                         self.historyNavigationController];
+  }
 }
 
 @end
