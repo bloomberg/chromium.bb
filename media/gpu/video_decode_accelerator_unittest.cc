@@ -277,7 +277,9 @@ class GLRenderingVDAClient
 
   // Simple getters for inspecting the state of the Client.
   int num_done_bitstream_buffers() { return num_done_bitstream_buffers_; }
-  int num_skipped_fragments() { return num_skipped_fragments_; }
+  int num_skipped_fragments() {
+    return encoded_data_helper_->num_skipped_fragments();
+  }
   int num_queued_fragments() { return num_queued_fragments_; }
   int num_decoded_frames() { return num_decoded_frames_; }
   double frames_per_second();
@@ -298,28 +300,14 @@ class GLRenderingVDAClient
   // Reset the associated decoder after flushing.
   void ResetDecoderAfterFlush();
 
-  // Compute & return the first encoded bytes (including a start frame) to send
-  // to the decoder, starting at |start_pos| and returning one fragment. Skips
-  // to the first decodable position.
-  std::string GetBytesForFirstFragment(size_t start_pos, size_t* end_pos);
-  // Compute & return the encoded bytes of next fragment to send to the decoder
-  // (based on |start_pos|).
-  std::string GetBytesForNextFragment(size_t start_pos, size_t* end_pos);
-  // Helpers for GetBytesForNextFragment above.
-  void GetBytesForNextNALU(size_t start_pos, size_t* end_pos);  // For h.264.
-  std::string GetBytesForNextFrame(size_t start_pos,
-                                   size_t* end_pos);  // For VP8/9.
-
   // Request decode of the next fragment in the encoded data.
   void DecodeNextFragment();
 
   size_t window_id_;
   RenderingHelper* rendering_helper_;
   gfx::Size frame_size_;
-  std::string encoded_data_;
   const int num_in_flight_decodes_;
   int outstanding_decodes_;
-  size_t encoded_data_next_pos_to_decode_;
   int next_bitstream_buffer_id_;
   ClientStateNotification<ClientState>* note_;
   std::unique_ptr<VideoDecodeAccelerator> decoder_;
@@ -331,7 +319,6 @@ class GLRenderingVDAClient
   int reset_after_frame_num_;
   int delete_decoder_state_;
   ClientState state_;
-  int num_skipped_fragments_;
   int num_queued_fragments_;
   int num_decoded_frames_;
   int num_done_bitstream_buffers_;
@@ -363,6 +350,8 @@ class GLRenderingVDAClient
   TextureRefMap pending_textures_;
 
   int32_t next_picture_buffer_id_;
+
+  const std::unique_ptr<media::test::EncodedDataHelper> encoded_data_helper_;
 
   base::WeakPtr<GLRenderingVDAClient> weak_this_;
   base::WeakPtrFactory<GLRenderingVDAClient> weak_this_factory_;
@@ -396,20 +385,18 @@ GLRenderingVDAClient::GLRenderingVDAClient(
     : window_id_(window_id),
       rendering_helper_(rendering_helper),
       frame_size_(frame_width, frame_height),
-      encoded_data_(encoded_data),
       num_in_flight_decodes_(num_in_flight_decodes),
       outstanding_decodes_(0),
-      encoded_data_next_pos_to_decode_(0),
       next_bitstream_buffer_id_(0),
       note_(note),
       remaining_play_throughs_(num_play_throughs),
       reset_after_frame_num_(reset_after_frame_num),
       delete_decoder_state_(delete_decoder_state),
       state_(CS_CREATED),
-      num_skipped_fragments_(0),
       num_queued_fragments_(0),
       num_decoded_frames_(0),
       num_done_bitstream_buffers_(0),
+      profile_(profile),
       fake_decoder_(fake_decoder),
       texture_target_(0),
       pixel_format_(PIXEL_FORMAT_UNKNOWN),
@@ -417,17 +404,15 @@ GLRenderingVDAClient::GLRenderingVDAClient(
       decode_calls_per_second_(decode_calls_per_second),
       render_as_thumbnails_(render_as_thumbnails),
       next_picture_buffer_id_(1),
+      encoded_data_helper_(
+          new media::test::EncodedDataHelper(encoded_data, profile_)),
       weak_this_factory_(this) {
+  DCHECK_NE(profile_, VIDEO_CODEC_PROFILE_UNKNOWN);
   LOG_ASSERT(num_in_flight_decodes > 0);
   LOG_ASSERT(num_play_throughs > 0);
   // |num_in_flight_decodes_| is unsupported if |decode_calls_per_second_| > 0.
   if (decode_calls_per_second_ > 0)
     LOG_ASSERT(1 == num_in_flight_decodes_);
-
-  // Default to H264 baseline if no profile provided.
-  profile_ =
-      (profile != VIDEO_CODEC_PROFILE_UNKNOWN ? profile : H264PROFILE_BASELINE);
-
   weak_this_ = weak_this_factory_.GetWeakPtr();
 }
 
@@ -588,7 +573,7 @@ void GLRenderingVDAClient::PictureReady(const Picture& picture) {
     decoder_->Reset();
     // Re-start decoding from the beginning of the stream to avoid needing to
     // know how to find I-frames and so on in this test.
-    encoded_data_next_pos_to_decode_ = 0;
+    encoded_data_helper_->Rewind();
   }
 
   TextureRefMap::iterator texture_it =
@@ -657,7 +642,7 @@ void GLRenderingVDAClient::NotifyEndOfBitstreamBuffer(
   --outstanding_decodes_;
 
   // Flush decoder after all BitstreamBuffers are processed.
-  if (encoded_data_next_pos_to_decode_ == encoded_data_.size()) {
+  if (encoded_data_helper_->ReachEndOfStream()) {
     if (state_ != CS_FLUSHING) {
       decoder_->Flush();
       SetState(CS_FLUSHING);
@@ -703,7 +688,7 @@ void GLRenderingVDAClient::NotifyResetDone() {
   }
 
   if (remaining_play_throughs_) {
-    encoded_data_next_pos_to_decode_ = 0;
+    encoded_data_helper_->Rewind();
     FinishInitialization();
     return;
   }
@@ -731,11 +716,6 @@ void GLRenderingVDAClient::OutputFrameDeliveryTimes(base::File* output) {
     t0 = frame_delivery_times_[i];
     output->WriteAtCurrentPos(s.data(), s.length());
   }
-}
-
-static bool LookingAtNAL(const std::string& encoded, size_t pos) {
-  return encoded[pos] == 0 && encoded[pos + 1] == 0 && encoded[pos + 2] == 0 &&
-         encoded[pos + 3] == 1;
 }
 
 void GLRenderingVDAClient::SetState(ClientState new_state) {
@@ -767,117 +747,31 @@ void GLRenderingVDAClient::DeleteDecoder() {
     return;
   weak_vda_ptr_factory_->InvalidateWeakPtrs();
   decoder_.reset();
-  base::STLClearObject(&encoded_data_);
+
   active_textures_.clear();
 
   // Set state to CS_DESTROYED after decoder is deleted.
   SetState(CS_DESTROYED);
 }
 
-std::string GLRenderingVDAClient::GetBytesForFirstFragment(size_t start_pos,
-                                                           size_t* end_pos) {
-  if (profile_ < H264PROFILE_MAX) {
-    *end_pos = start_pos;
-    while (*end_pos + 4 < encoded_data_.size()) {
-      if ((encoded_data_[*end_pos + 4] & 0x1f) == 0x7)  // SPS start frame
-        return GetBytesForNextFragment(*end_pos, end_pos);
-      GetBytesForNextNALU(*end_pos, end_pos);
-      num_skipped_fragments_++;
-    }
-    *end_pos = start_pos;
-    return std::string();
-  }
-  DCHECK_LE(profile_, VP9PROFILE_MAX);
-  return GetBytesForNextFragment(start_pos, end_pos);
-}
-
-std::string GLRenderingVDAClient::GetBytesForNextFragment(size_t start_pos,
-                                                          size_t* end_pos) {
-  if (profile_ < H264PROFILE_MAX) {
-    *end_pos = start_pos;
-    GetBytesForNextNALU(*end_pos, end_pos);
-    if (start_pos != *end_pos) {
-      num_queued_fragments_++;
-    }
-    return encoded_data_.substr(start_pos, *end_pos - start_pos);
-  }
-  DCHECK_LE(profile_, VP9PROFILE_MAX);
-  return GetBytesForNextFrame(start_pos, end_pos);
-}
-
-void GLRenderingVDAClient::GetBytesForNextNALU(size_t start_pos,
-                                               size_t* end_pos) {
-  *end_pos = start_pos;
-  if (*end_pos + 4 > encoded_data_.size())
-    return;
-  LOG_ASSERT(LookingAtNAL(encoded_data_, start_pos));
-  *end_pos += 4;
-  while (*end_pos + 4 <= encoded_data_.size() &&
-         !LookingAtNAL(encoded_data_, *end_pos)) {
-    ++*end_pos;
-  }
-  if (*end_pos + 3 >= encoded_data_.size())
-    *end_pos = encoded_data_.size();
-}
-
-std::string GLRenderingVDAClient::GetBytesForNextFrame(size_t start_pos,
-                                                       size_t* end_pos) {
-  // Helpful description: http://wiki.multimedia.cx/index.php?title=IVF
-  std::string bytes;
-  if (start_pos == 0)
-    start_pos = 32;  // Skip IVF header.
-  *end_pos = start_pos;
-  uint32_t frame_size = *reinterpret_cast<uint32_t*>(&encoded_data_[*end_pos]);
-  *end_pos += 12;  // Skip frame header.
-  bytes.append(encoded_data_.substr(*end_pos, frame_size));
-  *end_pos += frame_size;
-  num_queued_fragments_++;
-  return bytes;
-}
-
-static bool FragmentHasConfigInfo(const uint8_t* data,
-                                  size_t size,
-                                  VideoCodecProfile profile) {
-  if (profile >= H264PROFILE_MIN && profile <= H264PROFILE_MAX) {
-    H264Parser parser;
-    parser.SetStream(data, size);
-    H264NALU nalu;
-    H264Parser::Result result = parser.AdvanceToNextNALU(&nalu);
-    if (result != H264Parser::kOk) {
-      // Let the VDA figure out there's something wrong with the stream.
-      return false;
-    }
-
-    return nalu.nal_unit_type == H264NALU::kSPS;
-  } else if (profile >= VP8PROFILE_MIN && profile <= VP9PROFILE_MAX) {
-    return (size > 0 && !(data[0] & 0x01));
-  }
-  // Shouldn't happen at this point.
-  LOG(FATAL) << "Invalid profile: " << GetProfileName(profile);
-  return false;
-}
-
 void GLRenderingVDAClient::DecodeNextFragment() {
   if (decoder_deleted())
     return;
-  if (encoded_data_next_pos_to_decode_ == encoded_data_.size())
+  if (encoded_data_helper_->ReachEndOfStream())
     return;
-  size_t end_pos;
   std::string next_fragment_bytes;
-  if (encoded_data_next_pos_to_decode_ == 0) {
-    next_fragment_bytes = GetBytesForFirstFragment(0, &end_pos);
-  } else {
-    next_fragment_bytes =
-        GetBytesForNextFragment(encoded_data_next_pos_to_decode_, &end_pos);
-  }
+  next_fragment_bytes = encoded_data_helper_->GetBytesForNextData();
   size_t next_fragment_size = next_fragment_bytes.size();
+  if (next_fragment_size == 0)
+    return;
 
+  num_queued_fragments_++;
   // Call Reset() just after Decode() if the fragment contains config info.
   // This tests how the VDA behaves when it gets a reset request before it has
   // a chance to ProvidePictureBuffers().
   bool reset_here = false;
   if (reset_after_frame_num_ == RESET_AFTER_FIRST_CONFIG_INFO) {
-    reset_here = FragmentHasConfigInfo(
+    reset_here = media::test::EncodedDataHelper::HasConfigInfo(
         reinterpret_cast<const uint8_t*>(next_fragment_bytes.data()),
         next_fragment_size, profile_);
     if (reset_here)
@@ -910,9 +804,7 @@ void GLRenderingVDAClient::DecodeNextFragment() {
     reset_after_frame_num_ = MID_STREAM_RESET;
     decoder_->Reset();
     // Restart from the beginning to re-Decode() the SPS we just sent.
-    encoded_data_next_pos_to_decode_ = 0;
-  } else {
-    encoded_data_next_pos_to_decode_ = end_pos;
+    encoded_data_helper_->Rewind();
   }
 
   if (decode_calls_per_second_ > 0) {
@@ -1049,7 +941,8 @@ void VideoDecodeAcceleratorTest::ParseAndReadTestVideoData(
       LOG_ASSERT(base::StringToInt(fields[5], &video_file->min_fps_render));
     if (!fields[6].empty())
       LOG_ASSERT(base::StringToInt(fields[6], &video_file->min_fps_no_render));
-    int profile = -1;
+    // Default to H264 baseline if no profile provided.
+    int profile = static_cast<int>(H264PROFILE_BASELINE);
     if (!fields[7].empty())
       LOG_ASSERT(base::StringToInt(fields[7], &profile));
     video_file->profile = static_cast<VideoCodecProfile>(profile);
