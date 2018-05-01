@@ -931,6 +931,8 @@ template("mojom") {
       output_target_type = "source_set"
     }
 
+    js_data_deps_target_name = target_name + "_js_data_deps"
+
     target("jumbo_" + output_target_type, "${target_name}${variant_suffix}") {
       if (defined(bindings_configuration.for_blink) &&
           bindings_configuration.for_blink &&
@@ -1033,6 +1035,11 @@ template("mojom") {
       if (defined(bindings_configuration.for_blink) &&
           bindings_configuration.for_blink) {
         public_deps += [ "//mojo/public/cpp/bindings:wtf_support" ]
+      }
+
+      if (enable_ipc_fuzzer) {
+        # Generate JS bindings by default if IPC fuzzer is enabled.
+        public_deps += [ ":$js_data_deps_target_name" ]
       }
     }
 
@@ -1191,7 +1198,6 @@ template("mojom") {
       }
     }
 
-    js_data_deps_target_name = target_name + "_js_data_deps"
     group(js_data_deps_target_name) {
       deps = []
       if (defined(invoker.sources)) {
