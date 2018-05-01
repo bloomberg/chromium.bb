@@ -93,7 +93,7 @@ void CookieStoreIOSPersistent::DeleteCanonicalCookieAsync(
 }
 
 void CookieStoreIOSPersistent::DeleteAllCreatedInTimeRangeAsync(
-    const TimeRange& creation_range,
+    const net::CookieDeletionInfo::TimeRange& creation_range,
     DeleteCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (metrics_enabled())

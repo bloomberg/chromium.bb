@@ -96,11 +96,11 @@ class CookieStoreIOS : public net::CookieStore,
                          base::OnceClosure callback) override;
   void DeleteCanonicalCookieAsync(const CanonicalCookie& cookie,
                                   DeleteCallback callback) override;
-  void DeleteAllCreatedInTimeRangeAsync(const TimeRange& creation_range,
-                                        DeleteCallback callback) override;
-  void DeleteAllMatchingInfoAsync(
-      net::CookieStore::CookieDeletionInfo delete_info,
+  void DeleteAllCreatedInTimeRangeAsync(
+      const net::CookieDeletionInfo::TimeRange& creation_range,
       DeleteCallback callback) override;
+  void DeleteAllMatchingInfoAsync(net::CookieDeletionInfo delete_info,
+                                  DeleteCallback callback) override;
   void DeleteSessionCookiesAsync(DeleteCallback callback) override;
   void FlushStore(base::OnceClosure callback) override;
   CookieChangeDispatcher& GetChangeDispatcher() override;
@@ -170,9 +170,8 @@ class CookieStoreIOS : public net::CookieStore,
   // Inherited CookieNotificationObserver methods.
   void OnSystemCookiesChanged() override;
 
-  void DeleteCookiesMatchingInfoAsync(
-      CookieStore::CookieDeletionInfo delete_info,
-      DeleteCallback callback);
+  void DeleteCookiesMatchingInfoAsync(net::CookieDeletionInfo delete_info,
+                                      DeleteCallback callback);
 
   // Flush to CookieMonster from |cookies|, and run |callback|.
   void FlushStoreFromCookies(base::OnceClosure callback,

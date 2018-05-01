@@ -55,8 +55,9 @@ class CookieStoreIOSPersistent : public CookieStoreIOS {
                          base::OnceClosure callback) override;
   void DeleteCanonicalCookieAsync(const CanonicalCookie& cookie,
                                   DeleteCallback callback) override;
-  void DeleteAllCreatedInTimeRangeAsync(const TimeRange& creation_range,
-                                        DeleteCallback callback) override;
+  void DeleteAllCreatedInTimeRangeAsync(
+      const net::CookieDeletionInfo::TimeRange& creation_range,
+      DeleteCallback callback) override;
   void DeleteAllMatchingInfoAsync(CookieDeletionInfo delete_info,
                                   DeleteCallback callback) override;
   void DeleteSessionCookiesAsync(DeleteCallback callback) override;

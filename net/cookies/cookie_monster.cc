@@ -75,6 +75,7 @@
 using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
+using TimeRange = net::CookieDeletionInfo::TimeRange;
 
 // In steady state, most cookie requests can be satisfied by the in memory
 // cookie monster store. If the cookie request cannot be satisfied by the in

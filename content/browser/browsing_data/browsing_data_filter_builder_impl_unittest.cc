@@ -16,7 +16,7 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-using CookieDeletionInfo = net::CookieStore::CookieDeletionInfo;
+using CookieDeletionInfo = net::CookieDeletionInfo;
 
 namespace content {
 

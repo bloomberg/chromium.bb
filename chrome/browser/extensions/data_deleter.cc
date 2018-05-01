@@ -39,7 +39,7 @@ void ClearCookiesOnIOThread(scoped_refptr<net::URLRequestContextGetter> context,
                             const GURL& origin) {
   net::CookieStore* cookie_store =
       context->GetURLRequestContext()->cookie_store();
-  net::CookieStore::CookieDeletionInfo delete_info;
+  net::CookieDeletionInfo delete_info;
   delete_info.host = origin.host();
   cookie_store->DeleteAllMatchingInfoAsync(std::move(delete_info),
                                            net::CookieStore::DeleteCallback());

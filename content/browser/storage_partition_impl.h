@@ -121,7 +121,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   void ClearData(uint32_t remove_mask,
                  uint32_t quota_storage_remove_mask,
                  const OriginMatcherFunction& origin_matcher,
-                 net::CookieStore::CookieDeletionInfo delete_info,
+                 net::CookieDeletionInfo delete_info,
                  const base::Time begin,
                  const base::Time end,
                  base::OnceClosure callback) override;
@@ -245,7 +245,7 @@ class CONTENT_EXPORT StoragePartitionImpl
                      uint32_t quota_storage_remove_mask,
                      const GURL& remove_origin,
                      const OriginMatcherFunction& origin_matcher,
-                     net::CookieStore::CookieDeletionInfo cookie_delete_info,
+                     net::CookieDeletionInfo cookie_delete_info,
                      const base::Time begin,
                      const base::Time end,
                      base::OnceClosure callback);

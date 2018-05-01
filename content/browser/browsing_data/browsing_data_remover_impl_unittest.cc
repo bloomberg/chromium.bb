@@ -112,7 +112,7 @@ struct StoragePartitionRemovalData {
   base::Time remove_begin;
   base::Time remove_end;
   StoragePartition::OriginMatcherFunction origin_matcher;
-  net::CookieStore::CookieDeletionInfo cookie_delete_info;
+  net::CookieDeletionInfo cookie_delete_info;
 };
 
 net::CanonicalCookie CreateCookieWithHost(const GURL& source) {
@@ -160,7 +160,7 @@ class StoragePartitionRemovalTestStoragePartition
   void ClearData(uint32_t remove_mask,
                  uint32_t quota_storage_remove_mask,
                  const OriginMatcherFunction& origin_matcher,
-                 net::CookieStore::CookieDeletionInfo cookie_delete_info,
+                 net::CookieDeletionInfo cookie_delete_info,
                  const base::Time begin,
                  const base::Time end,
                  base::OnceClosure callback) override {

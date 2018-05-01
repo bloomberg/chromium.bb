@@ -39,7 +39,7 @@
 
 namespace net {
 
-using CookieDeletionInfo = CookieStore::CookieDeletionInfo;
+using CookieDeletionInfo = CookieDeletionInfo;
 
 namespace {
 
@@ -409,7 +409,7 @@ void CookieStoreIOS::DeleteCanonicalCookieAsync(const CanonicalCookie& cookie,
 }
 
 void CookieStoreIOS::DeleteAllCreatedInTimeRangeAsync(
-    const TimeRange& creation_range,
+    const CookieDeletionInfo::TimeRange& creation_range,
     DeleteCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -424,9 +424,8 @@ void CookieStoreIOS::DeleteAllCreatedInTimeRangeAsync(
   DeleteCookiesMatchingInfoAsync(std::move(delete_info), std::move(callback));
 }
 
-void CookieStoreIOS::DeleteAllMatchingInfoAsync(
-    CookieStore::CookieDeletionInfo delete_info,
-    DeleteCallback callback) {
+void CookieStoreIOS::DeleteAllMatchingInfoAsync(CookieDeletionInfo delete_info,
+                                                DeleteCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // If cookies are not allowed, a CookieStoreIOS subclass should be used

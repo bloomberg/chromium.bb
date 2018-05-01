@@ -179,14 +179,13 @@ class CONTENT_EXPORT StoragePartition {
   //   is scheduled.
   // Note: Make sure you know what you are doing before clearing cookies
   // selectively. You don't want to break the web.
-  virtual void ClearData(
-      uint32_t remove_mask,
-      uint32_t quota_storage_remove_mask,
-      const OriginMatcherFunction& origin_matcher,
-      net::CookieStore::CookieDeletionInfo cookie_delete_info,
-      const base::Time begin,
-      const base::Time end,
-      base::OnceClosure callback) = 0;
+  virtual void ClearData(uint32_t remove_mask,
+                         uint32_t quota_storage_remove_mask,
+                         const OriginMatcherFunction& origin_matcher,
+                         net::CookieDeletionInfo cookie_delete_info,
+                         const base::Time begin,
+                         const base::Time end,
+                         base::OnceClosure callback) = 0;
 
   // Clears the HTTP and media caches associated with this StoragePartition's
   // request contexts. If |begin| and |end| are not null, only entries with

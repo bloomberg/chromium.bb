@@ -50,8 +50,7 @@ namespace net {
 
 using base::Time;
 using base::TimeDelta;
-using CookieDeletionInfo = net::CookieStore::CookieDeletionInfo;
-using TimeRange = CookieStore::TimeRange;
+using CookieDeletionInfo = net::CookieDeletionInfo;
 
 namespace {
 

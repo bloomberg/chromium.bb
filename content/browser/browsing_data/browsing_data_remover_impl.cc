@@ -406,7 +406,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(
 
     // If cookies are supposed to be conditionally deleted from the storage
     // partition, create the deletion info object.
-    net::CookieStore::CookieDeletionInfo cookie_delete_info;
+    net::CookieDeletionInfo cookie_delete_info;
     if (!filter_builder.IsEmptyBlacklist() &&
         (storage_partition_remove_mask &
          StoragePartition::REMOVE_DATA_MASK_COOKIES)) {

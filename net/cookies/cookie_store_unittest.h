@@ -38,7 +38,7 @@
 namespace net {
 
 using base::Thread;
-using CookieDeletionInfo = CookieStore::CookieDeletionInfo;
+using TimeRange = CookieDeletionInfo::TimeRange;
 
 const int kTimeout = 1000;
 
@@ -249,9 +249,8 @@ class CookieStoreTest : public testing::Test {
     return callback.result();
   }
 
-  uint32_t DeleteCreatedInTimeRange(
-      CookieStore* cs,
-      const CookieStore::TimeRange& creation_range) {
+  uint32_t DeleteCreatedInTimeRange(CookieStore* cs,
+                                    const TimeRange& creation_range) {
     DCHECK(cs);
     ResultSavingCookieCallback<uint32_t> callback;
     cs->DeleteAllCreatedInTimeRangeAsync(
@@ -1300,16 +1299,16 @@ TYPED_TEST_P(CookieStoreTest, TestDeleteAllCreatedInTimeRange) {
 
   // Remove cookies in empty intervals.
   EXPECT_EQ(0u, this->DeleteCreatedInTimeRange(
-                    cs, CookieStore::TimeRange(last_month, last_minute)));
+                    cs, TimeRange(last_month, last_minute)));
   EXPECT_EQ(0u, this->DeleteCreatedInTimeRange(
-                    cs, CookieStore::TimeRange(next_minute, next_month)));
+                    cs, TimeRange(next_minute, next_month)));
   // Check that the cookie is still there.
   this->MatchCookieLines("A=B",
                          this->GetCookies(cs, this->http_www_foo_.url()));
 
   // Remove the cookie with an interval defined by two dates.
   EXPECT_EQ(1u, this->DeleteCreatedInTimeRange(
-                    cs, CookieStore::TimeRange(last_minute, next_minute)));
+                    cs, TimeRange(last_minute, next_minute)));
   // Check that the cookie disappeared.
   this->MatchCookieLines(std::string(),
                          this->GetCookies(cs, this->http_www_foo_.url()));
@@ -1322,7 +1321,7 @@ TYPED_TEST_P(CookieStoreTest, TestDeleteAllCreatedInTimeRange) {
 
   // Remove the cookie with a null ending time.
   EXPECT_EQ(1u, this->DeleteCreatedInTimeRange(
-                    cs, CookieStore::TimeRange(last_minute, base::Time())));
+                    cs, TimeRange(last_minute, base::Time())));
   // Check that the cookie disappeared.
   this->MatchCookieLines(std::string(),
                          this->GetCookies(cs, this->http_www_foo_.url()));
@@ -1665,315 +1664,6 @@ TYPED_TEST_P(CookieStoreTest, DeleteSessionCookie) {
   EXPECT_EQ("C=D", this->GetCookies(cs, this->http_www_foo_.url()));
 }
 
-TYPED_TEST_P(CookieStoreTest, TimeRangeValues) {
-  CookieStore::TimeRange range;
-  EXPECT_EQ(base::Time(), range.start());
-  EXPECT_EQ(base::Time(), range.end());
-
-  const base::Time kTestStart = base::Time::FromDoubleT(1000);
-  const base::Time kTestEnd = base::Time::FromDoubleT(10000);
-
-  EXPECT_EQ(kTestStart,
-            CookieStore::TimeRange(kTestStart, base::Time()).start());
-  EXPECT_EQ(base::Time(),
-            CookieStore::TimeRange(kTestStart, base::Time()).end());
-
-  EXPECT_EQ(kTestStart, CookieStore::TimeRange(kTestStart, kTestEnd).start());
-  EXPECT_EQ(kTestEnd, CookieStore::TimeRange(kTestStart, kTestEnd).end());
-
-  CookieStore::TimeRange range2;
-  range2.SetStart(kTestStart);
-  EXPECT_EQ(kTestStart, range2.start());
-  EXPECT_EQ(base::Time(), range2.end());
-  range2.SetEnd(kTestEnd);
-  EXPECT_EQ(kTestStart, range2.start());
-  EXPECT_EQ(kTestEnd, range2.end());
-}
-
-TYPED_TEST_P(CookieStoreTest, TimeRangeContains) {
-  // Default TimeRange matches all time values.
-  CookieStore::TimeRange range;
-  EXPECT_TRUE(range.Contains(base::Time::Now()));
-  EXPECT_TRUE(range.Contains(base::Time::Max()));
-
-  // With a start, but no end.
-  const double kTestMinEpoch = 1000;
-  range.SetStart(base::Time::FromDoubleT(kTestMinEpoch));
-  EXPECT_FALSE(range.Contains(base::Time::Min()));
-  EXPECT_FALSE(range.Contains(base::Time::FromDoubleT(kTestMinEpoch - 1)));
-  EXPECT_TRUE(range.Contains(base::Time::FromDoubleT(kTestMinEpoch)));
-  EXPECT_TRUE(range.Contains(base::Time::FromDoubleT(kTestMinEpoch + 1)));
-  EXPECT_TRUE(range.Contains(base::Time::Max()));
-
-  // With an end, but no start.
-  const double kTestMaxEpoch = 10000000;
-  range = CookieStore::TimeRange();
-  range.SetEnd(base::Time::FromDoubleT(kTestMaxEpoch));
-  EXPECT_TRUE(range.Contains(base::Time::Min()));
-  EXPECT_TRUE(range.Contains(base::Time::FromDoubleT(kTestMaxEpoch - 1)));
-  EXPECT_FALSE(range.Contains(base::Time::FromDoubleT(kTestMaxEpoch)));
-  EXPECT_FALSE(range.Contains(base::Time::FromDoubleT(kTestMaxEpoch + 1)));
-  EXPECT_FALSE(range.Contains(base::Time::Max()));
-
-  // With both a start and an end.
-  range.SetStart(base::Time::FromDoubleT(kTestMinEpoch));
-  EXPECT_FALSE(range.Contains(base::Time::Min()));
-  EXPECT_FALSE(range.Contains(base::Time::FromDoubleT(kTestMinEpoch - 1)));
-  EXPECT_TRUE(range.Contains(base::Time::FromDoubleT(kTestMinEpoch)));
-  EXPECT_TRUE(range.Contains(base::Time::FromDoubleT(kTestMinEpoch + 1)));
-  EXPECT_TRUE(range.Contains(base::Time::FromDoubleT(kTestMaxEpoch - 1)));
-  EXPECT_FALSE(range.Contains(base::Time::FromDoubleT(kTestMaxEpoch)));
-  EXPECT_FALSE(range.Contains(base::Time::FromDoubleT(kTestMaxEpoch + 1)));
-  EXPECT_FALSE(range.Contains(base::Time::Max()));
-
-  // And where start==end.
-  range = CookieStore::TimeRange(base::Time::FromDoubleT(kTestMinEpoch),
-                                 base::Time::FromDoubleT(kTestMinEpoch));
-  EXPECT_FALSE(range.Contains(base::Time::Min()));
-  EXPECT_FALSE(range.Contains(base::Time::FromDoubleT(kTestMinEpoch - 1)));
-  EXPECT_TRUE(range.Contains(base::Time::FromDoubleT(kTestMinEpoch)));
-  EXPECT_FALSE(range.Contains(base::Time::FromDoubleT(kTestMinEpoch + 1)));
-}
-
-TYPED_TEST_P(CookieStoreTest, CookieDeletionInfoMatchSessionControl) {
-  CanonicalCookie persistent_cookie("persistent-cookie", "persistent-value",
-                                    "persistent-domain", "persistent-path",
-                                    /*creation=*/base::Time::Now(),
-                                    /*expiration=*/base::Time::Max(),
-                                    /*last_access=*/base::Time::Now(),
-                                    /*secure=*/false,
-                                    /*httponly=*/false,
-                                    CookieSameSite::DEFAULT_MODE,
-                                    CookiePriority::COOKIE_PRIORITY_DEFAULT);
-
-  CanonicalCookie session_cookie(
-      "session-cookie", "session-value", "session-domain", "session-path",
-      /*creation=*/base::Time::Now(),
-      /*expiration=*/base::Time(),
-      /*last_access=*/base::Time::Now(),
-      /*secure=*/false,
-      /*httponly=*/false, CookieSameSite::DEFAULT_MODE,
-      CookiePriority::COOKIE_PRIORITY_DEFAULT);
-
-  CookieDeletionInfo delete_info;
-  EXPECT_TRUE(delete_info.Matches(persistent_cookie));
-  EXPECT_TRUE(delete_info.Matches(session_cookie));
-
-  delete_info.session_control =
-      CookieDeletionInfo::SessionControl::PERSISTENT_COOKIES;
-  EXPECT_TRUE(delete_info.Matches(persistent_cookie));
-  EXPECT_FALSE(delete_info.Matches(session_cookie));
-
-  delete_info.session_control =
-      CookieDeletionInfo::SessionControl::SESSION_COOKIES;
-  EXPECT_FALSE(delete_info.Matches(persistent_cookie));
-  EXPECT_TRUE(delete_info.Matches(session_cookie));
-}
-
-TYPED_TEST_P(CookieStoreTest, CookieDeletionInfoMatchHost) {
-  CanonicalCookie domain_cookie("domain-cookie", "domain-cookie-value",
-                                /*domain=*/".example.com", "/path",
-                                /*creation=*/base::Time::Now(),
-                                /*expiration=*/base::Time::Max(),
-                                /*last_access=*/base::Time::Now(),
-                                /*secure=*/false,
-                                /*httponly=*/false,
-                                CookieSameSite::DEFAULT_MODE,
-                                CookiePriority::COOKIE_PRIORITY_DEFAULT);
-
-  CanonicalCookie host_cookie("host-cookie", "host-cookie-value",
-                              /*domain=*/"thehost.hosting.com", "/path",
-                              /*creation=*/base::Time::Now(),
-                              /*expiration=*/base::Time::Max(),
-                              /*last_access=*/base::Time::Now(),
-                              /*secure=*/false,
-                              /*httponly=*/false, CookieSameSite::DEFAULT_MODE,
-                              CookiePriority::COOKIE_PRIORITY_DEFAULT);
-
-  EXPECT_TRUE(domain_cookie.IsDomainCookie());
-  EXPECT_TRUE(host_cookie.IsHostCookie());
-
-  CookieDeletionInfo delete_info;
-  EXPECT_TRUE(delete_info.Matches(domain_cookie));
-  EXPECT_TRUE(delete_info.Matches(host_cookie));
-
-  delete_info.host = "thehost.hosting.com";
-  EXPECT_FALSE(delete_info.Matches(domain_cookie));
-  EXPECT_TRUE(delete_info.Matches(host_cookie));
-
-  delete_info.host = "otherhost.hosting.com";
-  EXPECT_FALSE(delete_info.Matches(domain_cookie));
-  EXPECT_FALSE(delete_info.Matches(host_cookie));
-
-  delete_info.host = "thehost.otherhosting.com";
-  EXPECT_FALSE(delete_info.Matches(domain_cookie));
-  EXPECT_FALSE(delete_info.Matches(host_cookie));
-}
-
-TYPED_TEST_P(CookieStoreTest, CookieDeletionInfoMatchName) {
-  CanonicalCookie cookie1("cookie1-name", "cookie1-value",
-                          /*domain=*/".example.com", "/path",
-                          /*creation=*/base::Time::Now(),
-                          /*expiration=*/base::Time::Max(),
-                          /*last_access=*/base::Time::Now(),
-                          /*secure=*/false,
-                          /*httponly=*/false, CookieSameSite::DEFAULT_MODE,
-                          CookiePriority::COOKIE_PRIORITY_DEFAULT);
-  CanonicalCookie cookie2("cookie2-name", "cookie2-value",
-                          /*domain=*/".example.com", "/path",
-                          /*creation=*/base::Time::Now(),
-                          /*expiration=*/base::Time::Max(),
-                          /*last_access=*/base::Time::Now(),
-                          /*secure=*/false,
-                          /*httponly=*/false, CookieSameSite::DEFAULT_MODE,
-                          CookiePriority::COOKIE_PRIORITY_DEFAULT);
-
-  CookieDeletionInfo delete_info;
-  delete_info.name = "cookie1-name";
-  EXPECT_TRUE(delete_info.Matches(cookie1));
-  EXPECT_FALSE(delete_info.Matches(cookie2));
-}
-
-TYPED_TEST_P(CookieStoreTest, CookieDeletionInfoMatchValue) {
-  CanonicalCookie cookie1("cookie1-name", "cookie1-value",
-                          /*domain=*/".example.com", "/path",
-                          /*creation=*/base::Time::Now(),
-                          /*expiration=*/base::Time::Max(),
-                          /*last_access=*/base::Time::Now(),
-                          /*secure=*/false,
-                          /*httponly=*/false, CookieSameSite::DEFAULT_MODE,
-                          CookiePriority::COOKIE_PRIORITY_DEFAULT);
-  CanonicalCookie cookie2("cookie2-name", "cookie2-value",
-                          /*domain=*/".example.com", "/path",
-                          /*creation=*/base::Time::Now(),
-                          /*expiration=*/base::Time::Max(),
-                          /*last_access=*/base::Time::Now(),
-                          /*secure=*/false,
-                          /*httponly=*/false, CookieSameSite::DEFAULT_MODE,
-                          CookiePriority::COOKIE_PRIORITY_DEFAULT);
-
-  CookieDeletionInfo delete_info;
-  delete_info.value_for_testing = "cookie2-value";
-  EXPECT_FALSE(delete_info.Matches(cookie1));
-  EXPECT_TRUE(delete_info.Matches(cookie2));
-}
-
-TYPED_TEST_P(CookieStoreTest, CookieDeletionInfoMatchUrl) {
-  CanonicalCookie cookie("cookie-name", "cookie-value",
-                         /*domain=*/"www.example.com", "/path",
-                         /*creation=*/base::Time::Now(),
-                         /*expiration=*/base::Time::Max(),
-                         /*last_access=*/base::Time::Now(),
-                         /*secure=*/false,
-                         /*httponly=*/false, CookieSameSite::NO_RESTRICTION,
-                         CookiePriority::COOKIE_PRIORITY_DEFAULT);
-
-  CookieDeletionInfo delete_info;
-  delete_info.url = GURL("https://www.example.com/path");
-  EXPECT_TRUE(delete_info.Matches(cookie));
-
-  delete_info.url = GURL("https://www.example.com/another/path");
-  EXPECT_FALSE(delete_info.Matches(cookie));
-}
-
-TYPED_TEST_P(CookieStoreTest, CookieDeletionInfoDomainMatchesDomain) {
-  CookieDeletionInfo delete_info;
-
-  const double kTestMinEpoch = 1000;
-  const double kTestMaxEpoch = 10000000;
-  delete_info.creation_range.SetStart(base::Time::FromDoubleT(kTestMinEpoch));
-  delete_info.creation_range.SetEnd(base::Time::FromDoubleT(kTestMaxEpoch));
-
-  auto create_cookie = [kTestMinEpoch](std::string cookie_domain) {
-    CanonicalCookie cookie(
-        /*name=*/"test-cookie",
-        /*value=*/"cookie-value", cookie_domain,
-        /*path=*/"cookie/path",
-        /*creation=*/base::Time::FromDoubleT(kTestMinEpoch + 1),
-        /*expiration=*/base::Time::Max(),
-        /*last_access=*/base::Time::FromDoubleT(kTestMinEpoch + 1),
-        /*secure=*/false,
-        /*httponly=*/false,
-        /*same_site=*/CookieSameSite::DEFAULT_MODE,
-        /*priority=*/CookiePriority::COOKIE_PRIORITY_DEFAULT);
-    return cookie;
-  };
-
-  // by default empty domain list and default match action will match.
-  EXPECT_TRUE(delete_info.Matches(create_cookie("example.com")));
-
-  const char kExtensionHostname[] = "mgndgikekgjfcpckkfioiadnlibdjbkf";
-
-  // Only using the inclusion list because this is only testing
-  // DomainMatchesDomainSet and not CookieStore::CookieDeletionInfo::Matches.
-  delete_info.domains_and_ips_to_delete =
-      std::set<std::string>({"example.com", "another.com", "192.168.0.1"});
-  EXPECT_TRUE(delete_info.Matches(create_cookie(".example.com")));
-  EXPECT_TRUE(delete_info.Matches(create_cookie("example.com")));
-  EXPECT_TRUE(delete_info.Matches(create_cookie(".another.com")));
-  EXPECT_TRUE(delete_info.Matches(create_cookie("192.168.0.1")));
-  EXPECT_FALSE(delete_info.Matches(create_cookie(".nomatch.com")));
-  EXPECT_FALSE(delete_info.Matches(create_cookie("192.168.0.2")));
-  EXPECT_FALSE(delete_info.Matches(create_cookie(kExtensionHostname)));
-}
-
-TYPED_TEST_P(CookieStoreTest, CookieDeletionInfoMatchesDomainList) {
-  CookieDeletionInfo delete_info;
-
-  auto create_cookie = [](std::string cookie_domain) {
-    CanonicalCookie cookie(
-        /*name=*/"test-cookie",
-        /*value=*/"cookie-value", cookie_domain,
-        /*path=*/"cookie/path",
-        /*creation=*/base::Time::Now(),
-        /*expiration=*/base::Time::Max(),
-        /*last_access=*/base::Time::Now(),
-        /*secure=*/false,
-        /*httponly=*/false,
-        /*same_site=*/CookieSameSite::DEFAULT_MODE,
-        /*priority=*/CookiePriority::COOKIE_PRIORITY_DEFAULT);
-    return cookie;
-  };
-
-  // With two empty lists (default) should match any domain.
-  EXPECT_TRUE(delete_info.Matches(create_cookie("anything.com")));
-
-  // With only an "to_delete" list.
-  delete_info.domains_and_ips_to_delete =
-      std::set<std::string>({"includea.com", "includeb.com"});
-  EXPECT_TRUE(delete_info.Matches(create_cookie("includea.com")));
-  EXPECT_TRUE(delete_info.Matches(create_cookie("includeb.com")));
-  EXPECT_FALSE(delete_info.Matches(create_cookie("anything.com")));
-
-  // With only an "to_ignore" list.
-  delete_info.domains_and_ips_to_delete.clear();
-  delete_info.domains_and_ips_to_ignore.insert("exclude.com");
-  EXPECT_TRUE(delete_info.Matches(create_cookie("anything.com")));
-  EXPECT_FALSE(delete_info.Matches(create_cookie("exclude.com")));
-
-  // Now with both lists populated.
-  //
-  // +----------------------+
-  // | to_delete            |  outside.com
-  // |                      |
-  // |  left.com  +---------------------+
-  // |            | mid.com | to_ignore |
-  // |            |         |           |
-  // +------------|---------+           |
-  //              |           right.com |
-  //              |                     |
-  //              +---------------------+
-  delete_info.domains_and_ips_to_delete =
-      std::set<std::string>({"left.com", "mid.com"});
-  delete_info.domains_and_ips_to_ignore =
-      std::set<std::string>({"mid.com", "right.com"});
-
-  EXPECT_TRUE(delete_info.Matches(create_cookie("left.com")));
-  EXPECT_FALSE(delete_info.Matches(create_cookie("mid.com")));
-  EXPECT_FALSE(delete_info.Matches(create_cookie("right.com")));
-  EXPECT_FALSE(delete_info.Matches(create_cookie("outside.com")));
-}
-
 REGISTER_TYPED_TEST_CASE_P(CookieStoreTest,
                            FilterTest,
                            SetCanonicalCookieTest,
@@ -2014,16 +1704,7 @@ REGISTER_TYPED_TEST_CASE_P(CookieStoreTest,
                            GetAllCookiesAsync,
                            DeleteCookieAsync,
                            DeleteCanonicalCookieAsync,
-                           DeleteSessionCookie,
-                           TimeRangeValues,
-                           TimeRangeContains,
-                           CookieDeletionInfoDomainMatchesDomain,
-                           CookieDeletionInfoMatchesDomainList,
-                           CookieDeletionInfoMatchSessionControl,
-                           CookieDeletionInfoMatchHost,
-                           CookieDeletionInfoMatchName,
-                           CookieDeletionInfoMatchValue,
-                           CookieDeletionInfoMatchUrl);
+                           DeleteSessionCookie);
 
 }  // namespace net
 

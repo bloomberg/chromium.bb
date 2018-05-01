@@ -426,7 +426,7 @@ void WebViewGuest::ClearDataInternal(base::Time remove_since,
     return;
   }
 
-  net::CookieStore::CookieDeletionInfo cookie_delete_info;
+  net::CookieDeletionInfo cookie_delete_info;
   cookie_delete_info.creation_range.SetStart(remove_since);
   cookie_delete_info.creation_range.SetEnd(base::Time::Now());
 
@@ -437,15 +437,15 @@ void WebViewGuest::ClearDataInternal(base::Time remove_since,
 
   if ((removal_mask & ALL_COOKIES_MASK) == ALL_COOKIES_MASK) {
     cookie_delete_info.session_control =
-        net::CookieStore::CookieDeletionInfo::SessionControl::IGNORE_CONTROL;
+        net::CookieDeletionInfo::SessionControl::IGNORE_CONTROL;
   } else if (removal_mask &
              webview::WEB_VIEW_REMOVE_DATA_MASK_SESSION_COOKIES) {
     cookie_delete_info.session_control =
-        net::CookieStore::CookieDeletionInfo::SessionControl::SESSION_COOKIES;
+        net::CookieDeletionInfo::SessionControl::SESSION_COOKIES;
   } else if (removal_mask &
              webview::WEB_VIEW_REMOVE_DATA_MASK_PERSISTENT_COOKIES) {
-    cookie_delete_info.session_control = net::CookieStore::CookieDeletionInfo::
-        SessionControl::PERSISTENT_COOKIES;
+    cookie_delete_info.session_control =
+        net::CookieDeletionInfo::SessionControl::PERSISTENT_COOKIES;
   }
 
   content::StoragePartition* partition =
