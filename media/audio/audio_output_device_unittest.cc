@@ -19,6 +19,7 @@
 #include "base/task_runner.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "media/audio/audio_sync_reader.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -342,6 +343,15 @@ struct TestEnvironment {
         /*log callback*/ base::DoNothing(), params, std::move(shared_memory),
         std::move(browser_socket));
     time_stamp = base::TimeTicks::Now();
+
+#if defined(OS_FUCHSIA)
+    // Raise the timeout limits to reduce bot flakiness.
+    // Fuchsia's task scheduler suffers from bad jitter on systems running many
+    // tests simultaneously on nested virtualized deployments (e.g. test bots),
+    // leading some read operations to randomly timeout.
+    reader->set_max_wait_timeout_for_test(
+        base::TimeDelta::FromMilliseconds(50));
+#endif
   }
 
   base::CancelableSyncSocket renderer_socket;
