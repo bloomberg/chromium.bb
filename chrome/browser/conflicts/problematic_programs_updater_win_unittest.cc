@@ -27,8 +27,8 @@ class MockModuleListFilter : public ModuleListFilter {
   MockModuleListFilter() = default;
   ~MockModuleListFilter() override = default;
 
-  bool IsWhitelisted(const ModuleInfoKey& module_key,
-                     const ModuleInfoData& module_data) const override {
+  bool IsWhitelisted(base::StringPiece module_basename_hash,
+                     base::StringPiece module_code_id_hash) const override {
     return false;
   }
 

@@ -13,6 +13,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/optional.h"
 #include "base/sha1.h"
+#include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/conflicts/module_info_win.h"
@@ -164,6 +165,23 @@ class ModuleListFilterTest : public ::testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(ModuleListFilterTest);
 };
+
+TEST_F(ModuleListFilterTest, IsWhitelistedStringPieceVersion) {
+  base::string16 basename = L"basename.dll";  // Must be lowercase.
+  std::string code_id = GetCodeId(12u, 32u);
+
+  ModuleListBuilder module_list_builder(module_list_path());
+  module_list_builder.AddWhitelistedModule(basename, code_id);
+  ASSERT_TRUE(module_list_builder.Finalize());
+
+  ASSERT_TRUE(module_list_filter().Initialize(module_list_path()));
+
+  // Calculate hashes.
+  std::string basename_hash = base::SHA1HashString(base::UTF16ToUTF8(basename));
+  std::string code_id_hash = base::SHA1HashString(code_id);
+
+  EXPECT_TRUE(module_list_filter().IsWhitelisted(basename_hash, code_id_hash));
+}
 
 TEST_F(ModuleListFilterTest, WhitelistedModules) {
   ModuleInfo module_1 = CreateModuleInfo(dll1_, 0123, 4567);
