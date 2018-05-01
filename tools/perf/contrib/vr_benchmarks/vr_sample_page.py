@@ -7,22 +7,27 @@ from telemetry import page
 from contrib.vr_benchmarks import (shared_android_vr_page_state as
                                    vr_state)
 
-SAMPLE_DIR = os.path.join(
+WEBVR_SAMPLE_DIR = os.path.join(
     os.path.dirname(__file__), '..', '..', '..', '..', 'chrome', 'test',
     'data', 'vr', 'webvr_info', 'samples')
 
 
-class VrSamplePage(page.Page):
-  """Superclass for all VR sample pages."""
+WEBXR_SAMPLE_DIR = os.path.join(
+    os.path.dirname(__file__), '..', '..', '..', '..', 'chrome', 'test',
+    'data', 'vr', 'webxr_samples')
 
-  def __init__(self, sample_page, page_set, url_parameters=None,
-      extra_browser_args=None):
+
+class _VrXrSamplePage(page.Page):
+  """Superclass for all VR and XR sample pages."""
+
+  def __init__(self, sample_directory, sample_page, page_set,
+      url_parameters=None, extra_browser_args=None):
     url = '%s.html' % sample_page
     if url_parameters is not None:
       url += '?' + '&'.join(url_parameters)
     name = url.replace('.html', '')
-    url = 'file://' + os.path.join(SAMPLE_DIR, url)
-    super(VrSamplePage, self).__init__(
+    url = 'file://' + os.path.join(sample_directory, url)
+    super(_VrXrSamplePage, self).__init__(
         url=url,
         page_set=page_set,
         name=name,
@@ -32,8 +37,42 @@ class VrSamplePage(page.Page):
 
   def Run(self, shared_state):
     self._shared_page_state = shared_state
-    super(VrSamplePage, self).Run(shared_state)
+    super(_VrXrSamplePage, self).Run(shared_state)
 
   @property
   def platform(self):
     return self._shared_page_state.platform
+
+
+class VrSamplePage(_VrXrSamplePage):
+  """Superclass for all VR sample pages."""
+
+  def __init__(self, sample_page, page_set, url_parameters=None,
+      extra_browser_args=None):
+    super(VrSamplePage, self).__init__(
+        sample_directory=WEBVR_SAMPLE_DIR,
+        sample_page=sample_page,
+        page_set=page_set,
+        url_parameters=url_parameters,
+        extra_browser_args=extra_browser_args)
+
+
+class XrSamplePage(_VrXrSamplePage):
+  """Superclass for all XR sample pages."""
+
+  def __init__(self, sample_page, page_set, url_parameters=None,
+      extra_browser_args=None):
+    super(XrSamplePage, self).__init__(
+        sample_directory=WEBXR_SAMPLE_DIR,
+        sample_page=sample_page,
+        page_set=page_set,
+        url_parameters=url_parameters,
+        extra_browser_args=extra_browser_args)
+
+  @property
+  def serving_dir(self):
+    # The default implementation of serving_dir results in the WebXR pages not
+    # loading properly since the JS resources are in webxr_samples/js/, and the
+    # default implementation results in webxr_samples/tests/ being the serving
+    # directory.
+    return WEBXR_SAMPLE_DIR
