@@ -107,7 +107,9 @@ struct MOJO_SYSTEM_IMPL_EXPORT PlatformHandle {
   HANDLE handle;
 
   // A Windows HANDLE may be duplicated to another process but not yet sent to
-  // that process. This tracks the handle's owning process.
+  // that process. This tracks the handle's owning process and this process
+  // handle (if not null, i.e., the current process) is *owned* by this
+  // PlatformHandle.
   base::ProcessHandle owning_process;
 
   // A Windows HANDLE may be an unconnected named pipe. In this case, we need to

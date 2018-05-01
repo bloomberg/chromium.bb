@@ -21,6 +21,7 @@
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/channel.h"
 #include "mojo/edk/system/ports/name.h"
+#include "mojo/edk/system/scoped_process_handle.h"
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #include "mojo/edk/system/mach_port_relay.h"
@@ -115,12 +116,9 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
   // Invokes the bad message callback for this channel, if any.
   void NotifyBadMessage(const std::string& error);
 
-  // Note: On Windows, we take ownership of the remote process handle.
-  void SetRemoteProcessHandle(base::ProcessHandle process_handle);
+  void SetRemoteProcessHandle(ScopedProcessHandle process_handle);
   bool HasRemoteProcessHandle();
-  // Note: The returned |ProcessHandle| is owned by the caller and should be
-  // freed if necessary.
-  base::ProcessHandle CopyRemoteProcessHandle();
+  ScopedProcessHandle CloneRemoteProcessHandle();
 
   // Used for context in Delegate calls (via |from_node| arguments.)
   void SetRemoteNodeName(const ports::NodeName& name);
@@ -133,7 +131,7 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
                   const ports::NodeName& token,
                   const ports::PortName& port_name);
   void AddBrokerClient(const ports::NodeName& client_name,
-                       base::ProcessHandle process_handle);
+                       ScopedProcessHandle process_handle);
   void BrokerClientAdded(const ports::NodeName& client_name,
                          ScopedPlatformHandle broker_channel);
   void AcceptBrokerClient(const ports::NodeName& broker_name,
@@ -200,10 +198,7 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
   ports::NodeName remote_node_name_;
 
   base::Lock remote_process_handle_lock_;
-  base::ProcessHandle remote_process_handle_ = base::kNullProcessHandle;
-#if defined(OS_WIN)
-  ScopedPlatformHandle scoped_remote_process_handle_;
-#endif
+  ScopedProcessHandle remote_process_handle_;
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   base::Lock pending_mach_messages_lock_;

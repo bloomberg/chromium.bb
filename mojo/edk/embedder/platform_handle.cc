@@ -65,7 +65,9 @@ void PlatformHandle::CloseIfNecessary() {
     //    * Set hSourceProcessHandle to the target process from the
     //      call that created the handle.
     //    * Set hSourceHandle to the duplicated handle to close.
-    //    * Set lpTargetHandle to NULL.
+    //    * Set lpTargetHandle [sic] to NULL. (N.B.: This appears to be a
+    //      documentation bug; what matters is that hTargetProcessHandle is
+    //      NULL.)
     //    * Set dwOptions to DUPLICATE_CLOSE_SOURCE.
     //
     // [1] https://msdn.microsoft.com/en-us/library/windows/desktop/ms724251
@@ -73,8 +75,9 @@ void PlatformHandle::CloseIfNecessary() {
     // NOTE: It's possible for this operation to fail if the owning process
     // was terminated or is in the process of being terminated. Either way,
     // there is nothing we can reasonably do about failure, so we ignore it.
-    DuplicateHandle(owning_process, handle, NULL, &handle, 0, FALSE,
-                    DUPLICATE_CLOSE_SOURCE);
+    ::DuplicateHandle(owning_process, handle, NULL, &handle, 0, FALSE,
+                      DUPLICATE_CLOSE_SOURCE);
+    ::CloseHandle(owning_process);
     return;
   }
 
