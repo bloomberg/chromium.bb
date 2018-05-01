@@ -64,6 +64,7 @@ public class ChromeFullscreenManager
     private float mControlOffsetRatio;
     private float mPreviousControlOffset;
     private boolean mIsEnteringPersistentModeState;
+    private FullscreenOptions mPendingFullscreenOptions;
 
     private boolean mInGesture;
     private boolean mContentViewScrolling;
@@ -252,7 +253,7 @@ public class ChromeFullscreenManager
             // Exit fullscreen in onStop to ensure the system UI flags are set correctly when
             // showing again (on JB MR2+ builds, the omnibox would be covered by the
             // notification bar when this was done in onStart()).
-            setPersistentFullscreenMode(false);
+            exitPersistentFullscreenMode();
         } else if (newState == ActivityState.STARTED) {
             ThreadUtils.postOnUiThreadDelayed(new Runnable() {
                 @Override
@@ -284,13 +285,14 @@ public class ChromeFullscreenManager
     protected FullscreenHtmlApiDelegate createApiDelegate() {
         return new FullscreenHtmlApiDelegate() {
             @Override
-            public void onEnterFullscreen() {
+            public void onEnterFullscreen(FullscreenOptions options) {
                 Tab tab = getTab();
                 if (areBrowserControlsOffScreen()) {
                     // The browser controls are currently hidden.
-                    getHtmlApiHandler().enterFullscreen(tab);
+                    getHtmlApiHandler().enterFullscreen(tab, options);
                 } else {
                     // We should hide browser controls first.
+                    mPendingFullscreenOptions = options;
                     mIsEnteringPersistentModeState = true;
                     tab.updateFullscreenEnabledState();
                 }
@@ -300,6 +302,7 @@ public class ChromeFullscreenManager
             public boolean cancelPendingEnterFullscreen() {
                 boolean wasPending = mIsEnteringPersistentModeState;
                 mIsEnteringPersistentModeState = false;
+                mPendingFullscreenOptions = null;
                 return wasPending;
             }
 
@@ -512,8 +515,9 @@ public class ChromeFullscreenManager
 
         final Tab tab = getTab();
         if (tab != null && areBrowserControlsOffScreen() && mIsEnteringPersistentModeState) {
-            getHtmlApiHandler().enterFullscreen(tab);
+            getHtmlApiHandler().enterFullscreen(tab, mPendingFullscreenOptions);
             mIsEnteringPersistentModeState = false;
+            mPendingFullscreenOptions = null;
         }
 
         updateContentViewChildrenState();

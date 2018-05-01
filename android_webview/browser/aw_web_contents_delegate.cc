@@ -247,8 +247,10 @@ void AwWebContentsDelegate::RequestMediaAccessPermission(
 
 void AwWebContentsDelegate::EnterFullscreenModeForTab(
     content::WebContents* web_contents,
-    const GURL& origin) {
-  WebContentsDelegateAndroid::EnterFullscreenModeForTab(web_contents, origin);
+    const GURL& origin,
+    const blink::WebFullscreenOptions& options) {
+  WebContentsDelegateAndroid::EnterFullscreenModeForTab(web_contents, origin,
+                                                        options);
   is_fullscreen_ = true;
   web_contents->GetRenderViewHost()->GetWidget()->SynchronizeVisualProperties();
 }

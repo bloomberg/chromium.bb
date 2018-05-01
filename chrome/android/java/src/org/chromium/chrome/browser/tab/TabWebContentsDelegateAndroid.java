@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.document.DocumentWebContentsDelegate;
 import org.chromium.chrome.browser.findinpage.FindMatchRectsDetails;
 import org.chromium.chrome.browser.findinpage.FindNotificationDetails;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
+import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.media.MediaCaptureNotificationService;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.policy.PolicyAuditor.AuditEvent;
@@ -216,11 +217,21 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
     }
 
     @Override
-    public void toggleFullscreenModeForTab(boolean enableFullscreen) {
+    public void enterFullscreenModeForTab(boolean prefersNavigationBar) {
+        FullscreenOptions options = new FullscreenOptions(prefersNavigationBar);
         if (FullscreenActivity.shouldUseFullscreenActivity(mTab)) {
-            FullscreenActivity.toggleFullscreenMode(enableFullscreen, mTab);
+            FullscreenActivity.enterFullscreenMode(mTab, options);
         } else {
-            mTab.toggleFullscreenMode(enableFullscreen);
+            mTab.enterFullscreenMode(options);
+        }
+    }
+
+    @Override
+    public void exitFullscreenModeForTab() {
+        if (FullscreenActivity.shouldUseFullscreenActivity(mTab)) {
+            FullscreenActivity.exitFullscreenMode(mTab);
+        } else {
+            mTab.exitFullscreenMode();
         }
     }
 

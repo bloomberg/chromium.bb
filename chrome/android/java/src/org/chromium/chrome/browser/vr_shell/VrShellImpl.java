@@ -693,7 +693,7 @@ public class VrShellImpl
             removeVrRootView();
         }
 
-        mActivity.getFullscreenManager().setPersistentFullscreenMode(false);
+        mActivity.getFullscreenManager().exitPersistentFullscreenMode();
         reparentAllTabs(mActivity.getWindowAndroid());
         if (mNativeVrShell != 0) {
             nativeDestroy(mNativeVrShell);

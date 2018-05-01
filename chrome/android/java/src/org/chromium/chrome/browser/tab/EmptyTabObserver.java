@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.tab;
 import android.graphics.Bitmap;
 import android.view.ContextMenu;
 
+import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.BrowserControlsState;
@@ -80,7 +81,10 @@ public class EmptyTabObserver implements TabObserver {
     public void onUpdateUrl(Tab tab, String url) { }
 
     @Override
-    public void onToggleFullscreenMode(Tab tab, boolean enable) { }
+    public void onEnterFullscreenMode(Tab tab, FullscreenOptions options) {}
+
+    @Override
+    public void onExitFullscreenMode(Tab tab) {}
 
     @Override
     public void onDidFailLoad(

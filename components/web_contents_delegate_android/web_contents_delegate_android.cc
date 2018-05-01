@@ -354,12 +354,14 @@ bool WebContentsDelegateAndroid::ShouldBlockMediaRequest(const GURL& url) {
 
 void WebContentsDelegateAndroid::EnterFullscreenModeForTab(
     WebContents* web_contents,
-    const GURL& origin) {
+    const GURL& origin,
+    const blink::WebFullscreenOptions& options) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
   if (obj.is_null())
     return;
-  Java_WebContentsDelegateAndroid_toggleFullscreenModeForTab(env, obj, true);
+  Java_WebContentsDelegateAndroid_enterFullscreenModeForTab(
+      env, obj, options.prefers_navigation_bar);
 }
 
 void WebContentsDelegateAndroid::ExitFullscreenModeForTab(
@@ -368,7 +370,7 @@ void WebContentsDelegateAndroid::ExitFullscreenModeForTab(
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
   if (obj.is_null())
     return;
-  Java_WebContentsDelegateAndroid_toggleFullscreenModeForTab(env, obj, false);
+  Java_WebContentsDelegateAndroid_exitFullscreenModeForTab(env, obj);
 }
 
 bool WebContentsDelegateAndroid::IsFullscreenForTabOrPending(

@@ -419,8 +419,10 @@ void Shell::LoadingStateChanged(WebContents* source,
   PlatformSetIsLoading(source->IsLoading());
 }
 
-void Shell::EnterFullscreenModeForTab(WebContents* web_contents,
-                                      const GURL& origin) {
+void Shell::EnterFullscreenModeForTab(
+    WebContents* web_contents,
+    const GURL& origin,
+    const blink::WebFullscreenOptions& options) {
   ToggleFullscreenModeForTab(web_contents, true);
 }
 

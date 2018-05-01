@@ -17,6 +17,7 @@ import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.widget.ControlContainer;
@@ -43,10 +44,13 @@ public class FullscreenActivity extends SingleTabActivity {
         final Tab tab = getTabToSteal(IntentUtils.safeGetIntExtra(
                 getIntent(), IntentHandler.EXTRA_TAB_ID, Tab.INVALID_TAB_ID));
 
+        FullscreenOptions options = IntentUtils.safeGetParcelableExtra(
+                getIntent(), IntentHandler.EXTRA_FULLSCREEN_OPTIONS);
+
         tab.reparent(this, createTabDelegateFactory());
 
         tab.getFullscreenManager().setTab(tab);
-        tab.toggleFullscreenMode(true);
+        tab.enterFullscreenMode(options);
 
         mWebContentsObserver = new WebContentsObserver(tab.getWebContents()) {
             @Override
@@ -102,7 +106,7 @@ public class FullscreenActivity extends SingleTabActivity {
         return true;
     }
 
-    public static void toggleFullscreenMode(final boolean enableFullscreen, final Tab tab) {
+    public static void enterFullscreenMode(final Tab tab, FullscreenOptions options) {
         if (tab.getFullscreenManager() == null) {
             Log.w(TAG, "Cannot toggle fullscreen, manager is null.");
             return;
@@ -112,11 +116,20 @@ public class FullscreenActivity extends SingleTabActivity {
             tab.getFullscreenManager().setTab(null);
         }
 
-        if (enableFullscreen) {
-            launchFullscreenActivityThenStealTab(tab);
-        } else {
-            reparentTabToOriginalOwner(tab);
+        launchFullscreenActivityThenStealTab(tab, options);
+    }
+
+    public static void exitFullscreenMode(final Tab tab) {
+        if (tab.getFullscreenManager() == null) {
+            Log.w(TAG, "Cannot toggle fullscreen, manager is null.");
+            return;
         }
+
+        if (tab.getFullscreenManager().getTab() == tab) {
+            tab.getFullscreenManager().setTab(null);
+        }
+
+        reparentTabToOriginalOwner(tab);
     }
 
     private static void reparentTabToOriginalOwner(final Tab tab) {
@@ -165,11 +178,11 @@ public class FullscreenActivity extends SingleTabActivity {
             tab.getFullscreenManager().setTab(tab);
 
             // TODO(peconn): Will this not already happen?
-            tab.toggleFullscreenMode(false);
+            tab.exitFullscreenMode();
         });
     }
 
-    private static void launchFullscreenActivityThenStealTab(Tab tab) {
+    private static void launchFullscreenActivityThenStealTab(Tab tab, FullscreenOptions options) {
         ChromeActivity activity = tab.getActivity();
 
         sTabsToSteal.put(tab.getId(), tab);
@@ -177,6 +190,7 @@ public class FullscreenActivity extends SingleTabActivity {
         Intent intent = new Intent();
         intent.setClass(activity, FullscreenActivity.class);
         intent.putExtra(IntentHandler.EXTRA_TAB_ID, tab.getId());
+        intent.putExtra(IntentHandler.EXTRA_FULLSCREEN_OPTIONS, options);
         intent.putExtra(IntentHandler.EXTRA_PARENT_COMPONENT, activity.getComponentName());
         intent.putExtra(Browser.EXTRA_APPLICATION_ID, activity.getPackageName());
         // In multiwindow mode we want both activities to be able to launch independent

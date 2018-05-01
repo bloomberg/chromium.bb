@@ -19,6 +19,7 @@
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "third_party/blink/public/web/web_fullscreen_options.h"
 #include "ui/gfx/native_widget_types.h"
 
 #ifdef USE_AURA
@@ -99,8 +100,10 @@ class FakeKeyboardLockWebContentsDelegate : public WebContentsDelegate {
   ~FakeKeyboardLockWebContentsDelegate() override {}
 
   // WebContentsDelegate overrides.
-  void EnterFullscreenModeForTab(WebContents* web_contents,
-                                 const GURL& origin) override;
+  void EnterFullscreenModeForTab(
+      WebContents* web_contents,
+      const GURL& origin,
+      const blink::WebFullscreenOptions& options) override;
   void ExitFullscreenModeForTab(WebContents* web_contents) override;
   bool IsFullscreenForTabOrPending(
       const WebContents* web_contents) const override;
@@ -117,7 +120,8 @@ class FakeKeyboardLockWebContentsDelegate : public WebContentsDelegate {
 
 void FakeKeyboardLockWebContentsDelegate::EnterFullscreenModeForTab(
     WebContents* web_contents,
-    const GURL& origin) {
+    const GURL& origin,
+    const blink::WebFullscreenOptions& options) {
   is_fullscreen_ = true;
   if (keyboard_lock_requested_)
     web_contents->GotResponseToKeyboardLockRequest(/*allowed=*/true);
@@ -291,7 +295,8 @@ void KeyboardLockBrowserTest::CancelKeyboardLock(
 }
 
 void KeyboardLockBrowserTest::EnterFullscreen(const base::Location& from_here) {
-  web_contents()->EnterFullscreenMode(https_fullscreen_frame());
+  web_contents()->EnterFullscreenMode(https_fullscreen_frame(),
+                                      blink::WebFullscreenOptions());
 
   ASSERT_TRUE(web_contents()->IsFullscreenForCurrentTab())
       << "Location: " << from_here.ToString();

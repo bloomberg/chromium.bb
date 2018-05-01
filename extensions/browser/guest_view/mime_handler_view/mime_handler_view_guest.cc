@@ -308,11 +308,13 @@ void MimeHandlerViewGuest::OnRenderFrameHostDeleted(int process_id,
   }
 }
 
-void MimeHandlerViewGuest::EnterFullscreenModeForTab(content::WebContents*,
-                                                     const GURL& origin) {
+void MimeHandlerViewGuest::EnterFullscreenModeForTab(
+    content::WebContents*,
+    const GURL& origin,
+    const blink::WebFullscreenOptions& options) {
   if (SetFullscreenState(true)) {
     embedder_web_contents()->GetDelegate()->EnterFullscreenModeForTab(
-        embedder_web_contents(), origin);
+        embedder_web_contents(), origin, options);
   }
 }
 

@@ -156,7 +156,8 @@ void FullscreenControllerTest::SetPrivilegedFullscreen(bool is_privileged) {
 void FullscreenControllerTest::EnterActiveTabFullscreen() {
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   FullscreenNotificationObserver fullscreen_observer;
-  browser()->EnterFullscreenModeForTab(tab, GURL());
+  browser()->EnterFullscreenModeForTab(tab, GURL(),
+                                       blink::WebFullscreenOptions());
   fullscreen_observer.Wait();
 }
 

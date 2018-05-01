@@ -1516,8 +1516,10 @@ class TestWCDelegateForDialogsAndFullscreen : public JavaScriptDialogManager,
     return this;
   }
 
-  void EnterFullscreenModeForTab(WebContents* web_contents,
-                                 const GURL& origin) override {
+  void EnterFullscreenModeForTab(
+      WebContents* web_contents,
+      const GURL& origin,
+      const blink::WebFullscreenOptions& options) override {
     is_fullscreen_ = true;
   }
 
@@ -1982,7 +1984,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), url));
 
   // alert
-  wc->EnterFullscreenMode(url);
+  wc->EnterFullscreenMode(url, blink::WebFullscreenOptions());
   EXPECT_TRUE(wc->IsFullscreenForCurrentTab());
   std::string script = "alert('hi')";
   test_delegate.WillWaitForDialog();
@@ -1991,7 +1993,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   EXPECT_FALSE(wc->IsFullscreenForCurrentTab());
 
   // confirm
-  wc->EnterFullscreenMode(url);
+  wc->EnterFullscreenMode(url, blink::WebFullscreenOptions());
   EXPECT_TRUE(wc->IsFullscreenForCurrentTab());
   script = "confirm('hi')";
   test_delegate.WillWaitForDialog();
@@ -2000,7 +2002,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   EXPECT_FALSE(wc->IsFullscreenForCurrentTab());
 
   // prompt
-  wc->EnterFullscreenMode(url);
+  wc->EnterFullscreenMode(url, blink::WebFullscreenOptions());
   EXPECT_TRUE(wc->IsFullscreenForCurrentTab());
   script = "prompt('hi')";
   test_delegate.WillWaitForDialog();
@@ -2009,7 +2011,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   EXPECT_FALSE(wc->IsFullscreenForCurrentTab());
 
   // beforeunload
-  wc->EnterFullscreenMode(url);
+  wc->EnterFullscreenMode(url, blink::WebFullscreenOptions());
   EXPECT_TRUE(wc->IsFullscreenForCurrentTab());
   // Disable the hang monitor (otherwise there will be a race between the
   // beforeunload dialog and the beforeunload hang timer) and give the page a
@@ -2038,7 +2040,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), url));
 
   // popup
-  wc->EnterFullscreenMode(url);
+  wc->EnterFullscreenMode(url, blink::WebFullscreenOptions());
   EXPECT_TRUE(wc->IsFullscreenForCurrentTab());
   std::string script = "window.open('', '', 'width=200,height=100')";
   test_delegate.WillWaitForNewContents();
@@ -2068,7 +2070,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   test_delegate.Wait();
 
   // Put the main contents into fullscreen ...
-  wc->EnterFullscreenMode(url);
+  wc->EnterFullscreenMode(url, blink::WebFullscreenOptions());
   EXPECT_TRUE(wc->IsFullscreenForCurrentTab());
 
   // ... and ensure that a call to window.focus() from it causes loss of

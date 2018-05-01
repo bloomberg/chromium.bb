@@ -450,7 +450,7 @@ public class ReaderModeManager extends TabModelSelectorTabObserver {
         if (info != null) info.onStartedReaderMode();
 
         // Make sure to exit fullscreen mode before navigating.
-        mTabModelSelector.getCurrentTab().toggleFullscreenMode(false);
+        mTabModelSelector.getCurrentTab().exitFullscreenMode();
         DomDistillerTabUtils.distillCurrentPageAndView(getBasePageWebContents());
     }
 

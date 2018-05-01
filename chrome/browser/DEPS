@@ -160,6 +160,7 @@ include_rules = [
   "+third_party/blink/public/public_buildflags.h",
   "+third_party/blink/public/web/web_context_menu_data.h",
   "+third_party/blink/public/web/web_find_options.h",
+  "+third_party/blink/public/web/web_fullscreen_options.h",
   "+third_party/blink/public/web/web_media_player_action.h",
   "+third_party/blink/public/web/web_plugin_action.h",
   "+third_party/blink/public/web/web_presentation_receiver_flags.h",

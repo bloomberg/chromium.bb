@@ -2793,7 +2793,7 @@ void RenderFrameHostImpl::OnEnterFullscreen(
   }
 
   // TODO(alexmos): See if this can use the last committed origin instead.
-  delegate_->EnterFullscreenMode(GetLastCommittedURL().GetOrigin());
+  delegate_->EnterFullscreenMode(GetLastCommittedURL().GetOrigin(), options);
 
   // The previous call might change the fullscreen state. We need to make sure
   // the renderer is aware of that, which is done via the resize message.

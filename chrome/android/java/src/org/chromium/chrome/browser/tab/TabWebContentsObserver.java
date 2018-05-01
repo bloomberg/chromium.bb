@@ -223,7 +223,7 @@ public class TabWebContentsObserver extends WebContentsObserver {
 
         FullscreenManager fullscreenManager = mTab.getFullscreenManager();
         if (isInMainFrame && !isSameDocument && fullscreenManager != null) {
-            fullscreenManager.setPersistentFullscreenMode(false);
+            fullscreenManager.exitPersistentFullscreenMode();
         }
 
         if (isInMainFrame) {
