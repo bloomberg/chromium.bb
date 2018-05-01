@@ -143,8 +143,9 @@ INTERMEDIATE_KEY = RSA(0x00c661afcc659f88855a83ade8fb792dc13d0cf388b17bece9149cf
                        65537,
                        0x77c5e2edf52d2cafd6c649e9b06aa9455226cfa26805fa337f4e81c7c94bedfb3721715208e2d28aa4a042b2f5a3db03212ad44dae564ffeb6a44efedf7c2b65e21aca056301a3591b36c82600394fbdc16268fc0adaabadb5207871f4ef6d17888a30b84240955cd889768681cf23d0de0fe88f008c8841643e341acd397e2d1104a23242e566088b7617c26ae8b48a85b6c9b7dc64ef1fa5e9b124ff8c1659a82d8225f28a820cc6ca07beff0354364c631a9142309fea1d8b054f6e00e23c54b493a21fcbe89a646b39d1acba5bc2ace9bba0252671d42a15202f3afccc912114d6c20eb3131e74289f2c744c5b39e7d3780fe21402ab1c3ae65854fee401)
 
-# Intermediate certificate CN
-INTERMEDIATE_CN = "Testing Intermediate CA"
+# Intermediate certificate CN prefix (random serial number is added to the CN
+# in order to avoid caching issues.)
+INTERMEDIATE_CN_PREFIX = "Testing Intermediate CA"
 
 LEAF_KEY = RSA(0x00cd12d317b39cfbb160fb1dc9c9f0dc8fef3604dda4d8c557392ce1d616483713f78216cadbefd1c76ea0f3bbbe410e24b233b1b73583922b09314e249b2cfde1be0995e13f160fb630c10d447750da20ffaa4880006717feaa3e4db602e4f511b5cc312f770f44b037784effec62640f948aa189c3769f03bdd0e22a36ecfa5951f5577de195a4fba33c879b657968b79138fd7ab389a9968522f7389c6052be1ff78bc168d3ea961e132a044eba33ac07ead95367c7b815e91eca924d914fd0d811349b8bf500707ba71a43a2901a545f34e1792e72654f6649fab9716f4ba17379ee8042186bbba9b9bac416a60474cc60686f0e6e4b01259cc3cb5873edf9,
                65537,
@@ -487,14 +488,16 @@ def GenerateCertKeyAndIntermediate(subject,
   if serial == 0:
     serial = RandomNumber(16)
 
-  target_cert_der = MakeCertificate(INTERMEDIATE_CN, bytes(subject), serial,
+  intermediate_serial = RandomNumber(16)
+  intermediate_cn = "%s %X" % (INTERMEDIATE_CN_PREFIX, intermediate_serial)
+
+  target_cert_der = MakeCertificate(intermediate_cn, bytes(subject), serial,
                                     LEAF_KEY, INTERMEDIATE_KEY,
                                     ip_sans=ip_sans, dns_sans=dns_sans,
                                     ca_issuers_url=bytes(ca_issuers_url))
   target_cert_pem = DERToPEM(target_cert_der)
 
-  intermediate_serial = RandomNumber(16)
-  intermediate_cert_der = MakeCertificate(ROOT_CN, INTERMEDIATE_CN,
+  intermediate_cert_der = MakeCertificate(ROOT_CN, intermediate_cn,
                                           intermediate_serial,
                                           INTERMEDIATE_KEY, ROOT_KEY,
                                           is_ca=True)
