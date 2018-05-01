@@ -231,10 +231,10 @@ def main():
   exe_ext = '.exe' if sys.platform == 'win32' else ''
   want = ['bin/llvm-symbolizer' + exe_ext,
           'bin/sancov' + exe_ext,
-          'lib/clang/*/asan_blacklist.txt',
-          'lib/clang/*/cfi_blacklist.txt',
           # Copy built-in headers (lib/clang/3.x.y/include).
           'lib/clang/*/include/*',
+          'lib/clang/*/share/asan_blacklist.txt',
+          'lib/clang/*/share/cfi_blacklist.txt',
           ]
   if sys.platform == 'win32':
     want.append('bin/clang-cl.exe')
@@ -270,7 +270,7 @@ def main():
                  'lib/clang/*/lib/linux/*libclang_rt.fuzzer*',
                  'lib/clang/*/lib/linux/*libclang_rt.san*',
                  'lib/clang/*/lib/linux/*profile*',
-                 'lib/clang/*/msan_blacklist.txt',
+                 'lib/clang/*/share/msan_blacklist.txt',
                  ])
   elif sys.platform == 'win32':
     want.extend(['lib/clang/*/lib/windows/clang_rt.asan*.dll',
