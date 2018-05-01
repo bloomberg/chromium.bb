@@ -10,14 +10,14 @@
   if (window.testRunner)
     testRunner.waitUntilDone();
 
-  video.onplay = () => {
+  video.addEventListener('loadeddata', () => {
     video.controls = true;
 
     if (window.testRunner)
       testRunner.notifyDone();
-  };
+  }, { once: true });
 
   video.src = "../content/test.ogv";
-  video.play();
+  video.load();
 </script>
 </html>
