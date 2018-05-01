@@ -11,6 +11,8 @@
 
 namespace views {
 
+class MenuController;
+
 // Layout type information for menu items. Use the instance() method to obtain
 // the MenuConfig for the current platform.
 struct VIEWS_EXPORT MenuConfig {
@@ -140,6 +142,9 @@ struct VIEWS_EXPORT MenuConfig {
   // Radius of the rounded corners of the menu border. Must be >= 0.
   int corner_radius;
 
+  // Radius of combobox rounded corners. Must be >= 0.
+  int combobox_corner_radius;
+
   // Radius of the rounded corners of the touchable menu border
   int touchable_corner_radius;
 
@@ -157,6 +162,9 @@ struct VIEWS_EXPORT MenuConfig {
 
   // Vertical padding for touchable menus.
   int vertical_touchable_menu_item_padding;
+
+  // Helper methods to simplify access to MenuConfig:
+  int CornerRadiusForMenu(const MenuController* controller) const;
 
  private:
   // Configures a MenuConfig as appropriate for the current platform.
