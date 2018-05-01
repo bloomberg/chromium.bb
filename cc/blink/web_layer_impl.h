@@ -17,15 +17,8 @@
 #include "cc/blink/cc_blink_export.h"
 #include "cc/layers/layer_client.h"
 #include "third_party/blink/public/platform/web_color.h"
-#include "third_party/blink/public/platform/web_double_point.h"
-#include "third_party/blink/public/platform/web_float_point.h"
-#include "third_party/blink/public/platform/web_float_size.h"
 #include "third_party/blink/public/platform/web_layer.h"
-#include "third_party/blink/public/platform/web_point.h"
-#include "third_party/blink/public/platform/web_rect.h"
-#include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_string.h"
-#include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
 
 namespace cc {
@@ -45,7 +38,7 @@ class CC_BLINK_EXPORT WebLayerImpl : public blink::WebLayer {
 
   // WebLayer implementation.
   int Id() const override;
-  void InvalidateRect(const blink::WebRect&) override;
+  void InvalidateRect(const gfx::Rect&) override;
   void Invalidate() override;
   void AddChild(blink::WebLayer* child) override;
   void InsertChild(blink::WebLayer* child, size_t index) override;
@@ -101,15 +94,12 @@ class CC_BLINK_EXPORT WebLayerImpl : public blink::WebLayer {
       uint32_t main_thread_scrolling_reasons_to_clear) override;
   uint32_t MainThreadScrollingReasons() override;
   bool ShouldScrollOnMainThread() const override;
-  void SetNonFastScrollableRegion(
-      const blink::WebVector<blink::WebRect>& region) override;
-  blink::WebVector<blink::WebRect> NonFastScrollableRegion() const override;
-  void SetTouchEventHandlerRegion(
-      const blink::WebVector<blink::WebTouchInfo>& touch_info) override;
-  blink::WebVector<blink::WebRect> TouchEventHandlerRegion() const override;
-  blink::WebVector<blink::WebRect>
-      TouchEventHandlerRegionForTouchActionForTesting(
-          cc::TouchAction) const override;
+  void SetNonFastScrollableRegion(const cc::Region& region) override;
+  const cc::Region& NonFastScrollableRegion() const override;
+  void SetTouchEventHandlerRegion(const cc::TouchActionRegion& region) override;
+  const cc::TouchActionRegion& TouchEventHandlerRegion() const override;
+  const cc::Region& TouchEventHandlerRegionForTouchActionForTesting(
+      cc::TouchAction) const override;
   void SetIsContainerForFixedPositionLayers(bool is_container) override;
   bool IsContainerForFixedPositionLayers() const override;
   void SetIsResizedByBrowserControls(bool) override;

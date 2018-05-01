@@ -31,6 +31,7 @@
 #include "third_party/blink/public/platform/web_layer_sticky_position_constraint.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 
@@ -38,7 +39,6 @@ using cc::Layer;
 using blink::WebLayer;
 using blink::WebFloatPoint;
 using blink::WebVector;
-using blink::WebRect;
 using blink::WebSize;
 using blink::WebColor;
 using blink::WebOverscrollBehavior;
@@ -61,7 +61,7 @@ int WebLayerImpl::Id() const {
 }
 
 DISABLE_CFI_PERF
-void WebLayerImpl::InvalidateRect(const blink::WebRect& rect) {
+void WebLayerImpl::InvalidateRect(const gfx::Rect& rect) {
   layer_->SetNeedsDisplayRect(rect);
 }
 
@@ -282,71 +282,26 @@ bool WebLayerImpl::ShouldScrollOnMainThread() const {
   return layer_->should_scroll_on_main_thread();
 }
 
-void WebLayerImpl::SetNonFastScrollableRegion(const WebVector<WebRect>& rects) {
-  cc::Region region;
-  for (size_t i = 0; i < rects.size(); ++i)
-    region.Union(rects[i]);
+void WebLayerImpl::SetNonFastScrollableRegion(const cc::Region& region) {
   layer_->SetNonFastScrollableRegion(region);
 }
 
-WebVector<WebRect> WebLayerImpl::NonFastScrollableRegion() const {
-  size_t num_rects = 0;
-  for (gfx::Rect rect : layer_->non_fast_scrollable_region()) {
-    ALLOW_UNUSED_LOCAL(rect);
-    ++num_rects;
-  }
-
-  WebVector<WebRect> result(num_rects);
-  size_t i = 0;
-  for (gfx::Rect rect : layer_->non_fast_scrollable_region()) {
-    result[i] = rect;
-    ++i;
-  }
-  return result;
+const cc::Region& WebLayerImpl::NonFastScrollableRegion() const {
+  return layer_->non_fast_scrollable_region();
 }
 
 void WebLayerImpl::SetTouchEventHandlerRegion(
-    const WebVector<blink::WebTouchInfo>& touch_info) {
-  base::flat_map<blink::WebTouchAction, cc::Region> region_map;
-  for (size_t i = 0; i < touch_info.size(); ++i)
-    region_map[touch_info[i].touch_action].Union(touch_info[i].rect);
-  layer_->SetTouchActionRegion(cc::TouchActionRegion(region_map));
+    const cc::TouchActionRegion& region) {
+  layer_->SetTouchActionRegion(region);
 }
 
-WebVector<WebRect> WebLayerImpl::TouchEventHandlerRegion() const {
-  size_t num_rects = 0;
-  for (gfx::Rect rect : layer_->touch_action_region().region()) {
-    ALLOW_UNUSED_LOCAL(rect);
-    ++num_rects;
-  }
-
-  WebVector<WebRect> result(num_rects);
-  size_t i = 0;
-  for (gfx::Rect rect : layer_->touch_action_region().region()) {
-    result[i] = rect;
-    ++i;
-  }
-  return result;
+const cc::TouchActionRegion& WebLayerImpl::TouchEventHandlerRegion() const {
+  return layer_->touch_action_region();
 }
 
-WebVector<WebRect>
-WebLayerImpl::TouchEventHandlerRegionForTouchActionForTesting(
+const cc::Region& WebLayerImpl::TouchEventHandlerRegionForTouchActionForTesting(
     cc::TouchAction touch_action) const {
-  size_t num_rects = 0;
-  for (gfx::Rect rect :
-       layer_->touch_action_region().GetRegionForTouchAction(touch_action)) {
-    ALLOW_UNUSED_LOCAL(rect);
-    ++num_rects;
-  }
-
-  WebVector<WebRect> result(num_rects);
-  size_t i = 0;
-  for (gfx::Rect rect :
-       layer_->touch_action_region().GetRegionForTouchAction(touch_action)) {
-    result[i] = rect;
-    ++i;
-  }
-  return result;
+  return layer_->touch_action_region().GetRegionForTouchAction(touch_action);
 }
 
 void WebLayerImpl::SetIsContainerForFixedPositionLayers(bool enable) {

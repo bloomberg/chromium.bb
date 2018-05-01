@@ -26,10 +26,15 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_REGION_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_REGION_H_
 
+#include "cc/base/region.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
+
+namespace cc {
+class Region;
+}
 
 namespace blink {
 
@@ -161,6 +166,15 @@ static inline Region Translate(const Region& region, const IntSize& offset) {
   result.Translate(offset);
 
   return result;
+}
+
+// Creates a cc::Region with the same data as |region|.
+static inline cc::Region RegionToCCRegion(const Region& in_region) {
+  Vector<IntRect> rects = in_region.Rects();
+  cc::Region out_region;
+  for (const IntRect& r : rects)
+    out_region.Union(gfx::Rect(r.X(), r.Y(), r.Width(), r.Height()));
+  return out_region;
 }
 
 inline bool operator==(const Region& a, const Region& b) {

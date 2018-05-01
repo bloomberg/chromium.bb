@@ -1143,6 +1143,8 @@ jumbo_component("platform") {
     "graphics/surface_layer_bridge.h",
     "graphics/texture_holder.h",
     "graphics/touch_action.h",
+    "graphics/touch_action_rect.cc",
+    "graphics/touch_action_rect.h",
     "graphics/unaccelerated_static_bitmap_image.cc",
     "graphics/unaccelerated_static_bitmap_image.h",
     "graphics/video_frame_resource_provider.cc",

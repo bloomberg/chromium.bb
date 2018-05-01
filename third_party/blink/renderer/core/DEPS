@@ -5,6 +5,7 @@ include_rules = [
     "+base/unguessable_token.h",
     "+build/mac",
     "+build/win",
+    "+cc/base/region.h",
     "+gpu/config/gpu_feature_info.h",
     "-inspector/v8",
     "+inspector/v8/public",

@@ -531,7 +531,7 @@ TEST_P(ScrollingCoordinatorTest, clippedBodyTest) {
 
   WebLayer* root_scroll_layer = GetRootScrollLayer();
   ASSERT_TRUE(root_scroll_layer);
-  ASSERT_EQ(0u, root_scroll_layer->NonFastScrollableRegion().size());
+  EXPECT_TRUE(root_scroll_layer->NonFastScrollableRegion().IsEmpty());
 }
 
 TEST_P(ScrollingCoordinatorTest, touchAction) {
@@ -550,11 +550,11 @@ TEST_P(ScrollingCoordinatorTest, touchAction) {
 
   GraphicsLayer* graphics_layer = composited_layer_mapping->MainGraphicsLayer();
   WebLayer* web_layer = graphics_layer->PlatformLayer();
-  WebVector<WebRect> rects =
+  cc::Region region =
       web_layer->TouchEventHandlerRegionForTouchActionForTesting(
           TouchAction::kTouchActionPanX | TouchAction::kTouchActionPanDown);
-  EXPECT_EQ(rects.size(), 1u);
-  EXPECT_EQ(IntRect(rects[0]), IntRect(0, 0, 1000, 1000));
+  EXPECT_EQ(region.GetRegionComplexity(), 1);
+  EXPECT_EQ(region.bounds(), IntRect(0, 0, 1000, 1000));
 }
 
 TEST_P(ScrollingCoordinatorTest, touchActionRegions) {
@@ -574,21 +574,21 @@ TEST_P(ScrollingCoordinatorTest, touchActionRegions) {
   GraphicsLayer* graphics_layer = composited_layer_mapping->MainGraphicsLayer();
   WebLayer* web_layer = graphics_layer->PlatformLayer();
 
-  WebVector<WebRect> rects =
+  cc::Region region =
       web_layer->TouchEventHandlerRegionForTouchActionForTesting(
           TouchAction::kTouchActionPanDown | TouchAction::kTouchActionPanX);
-  EXPECT_EQ(rects.size(), 1u);
-  EXPECT_EQ(IntRect(rects[0]), IntRect(0, 0, 100, 100));
+  EXPECT_EQ(region.GetRegionComplexity(), 1);
+  EXPECT_EQ(region.bounds(), IntRect(0, 0, 100, 100));
 
-  rects = web_layer->TouchEventHandlerRegionForTouchActionForTesting(
+  region = web_layer->TouchEventHandlerRegionForTouchActionForTesting(
       TouchAction::kTouchActionPanDown | TouchAction::kTouchActionPanRight);
-  EXPECT_EQ(rects.size(), 1u);
-  EXPECT_EQ(IntRect(rects[0]), IntRect(0, 0, 50, 50));
+  EXPECT_EQ(region.GetRegionComplexity(), 1);
+  EXPECT_EQ(region.bounds(), IntRect(0, 0, 50, 50));
 
-  rects = web_layer->TouchEventHandlerRegionForTouchActionForTesting(
+  region = web_layer->TouchEventHandlerRegionForTouchActionForTesting(
       TouchAction::kTouchActionPanDown);
-  EXPECT_EQ(rects.size(), 1u);
-  EXPECT_EQ(IntRect(rects[0]), IntRect(0, 100, 100, 100));
+  EXPECT_EQ(region.GetRegionComplexity(), 1);
+  EXPECT_EQ(region.bounds(), IntRect(0, 100, 100, 100));
 }
 
 TEST_P(ScrollingCoordinatorTest, touchActionBlockingHandler) {
@@ -608,16 +608,16 @@ TEST_P(ScrollingCoordinatorTest, touchActionBlockingHandler) {
   GraphicsLayer* graphics_layer = composited_layer_mapping->MainGraphicsLayer();
   WebLayer* web_layer = graphics_layer->PlatformLayer();
 
-  WebVector<WebRect> rects =
+  cc::Region region =
       web_layer->TouchEventHandlerRegionForTouchActionForTesting(
           TouchAction::kTouchActionNone);
-  EXPECT_EQ(rects.size(), 1u);
-  EXPECT_EQ(IntRect(rects[0]), IntRect(0, 0, 100, 100));
+  EXPECT_EQ(region.GetRegionComplexity(), 1);
+  EXPECT_EQ(region.bounds(), IntRect(0, 0, 100, 100));
 
-  rects = web_layer->TouchEventHandlerRegionForTouchActionForTesting(
+  region = web_layer->TouchEventHandlerRegionForTouchActionForTesting(
       TouchAction::kTouchActionPanY);
-  EXPECT_EQ(rects.size(), 1u);
-  EXPECT_EQ(IntRect(rects[0]), IntRect(0, 0, 1000, 1000));
+  EXPECT_EQ(region.GetRegionComplexity(), 1);
+  EXPECT_EQ(region.bounds(), IntRect(0, 0, 1000, 1000));
 }
 
 TEST_P(ScrollingCoordinatorTest, overflowScrolling) {

@@ -68,6 +68,8 @@ class PLATFORM_EXPORT IntRect {
   explicit IntRect(const FloatRect&) = delete;
   explicit IntRect(const LayoutRect&) = delete;
 
+  explicit IntRect(const gfx::Rect& rect);
+
   IntPoint Location() const { return location_; }
   IntSize Size() const { return size_; }
 

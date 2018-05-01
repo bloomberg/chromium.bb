@@ -274,7 +274,12 @@ DOMRectList* Page::NonFastScrollableRects(const LocalFrame* frame) {
       frame->View()->LayoutViewportScrollableArea()->LayerForScrolling();
   if (!layer)
     return DOMRectList::Create();
-  return DOMRectList::Create(layer->PlatformLayer()->NonFastScrollableRegion());
+  const cc::Region& region = layer->PlatformLayer()->NonFastScrollableRegion();
+  Vector<IntRect> rects;
+  rects.ReserveCapacity(region.GetRegionComplexity());
+  for (const gfx::Rect& rect : region)
+    rects.push_back(IntRect(rect));
+  return DOMRectList::Create(rects);
 }
 
 void Page::SetMainFrame(Frame* main_frame) {
