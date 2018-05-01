@@ -520,7 +520,7 @@
     },
     'blink_w3ctests': {
       'filepath': 'third_party/WebKit/LayoutTests/external/' \
-                  '|third_party/WebKit/Tools/Scripts/webkitpy/w3c/'
+                  '|third_party/blink/tools/blinkpy/w3c/'
     },
     'blink_webp': {
       'filepath': 'third_party/blink/renderer/platform/image-decoders/webp' \

@@ -19,8 +19,8 @@ with how to use it. See the
 
 There are two parts to actually extending framework to test a piece of software.
 The first part is extending certain files in:
-[/third_party/WebKit/Tools/Scripts/webkitpy/layout_tests/](/third_party/WebKit/Tools/Scripts/webkitpy/layout_tests/)
-The code in `webkitpy/layout_tests` is the layout test framework itself
+[/third_party/blink/tools/blinkpy/web_tests/](/third_party/blink/tools/blinkpy/web_tests/)
+The code in `blinkpy/web_tests` is the layout test framework itself
 
 The second part is creating a driver (program) to actually communicate the
 layout test framework. This part is significantly more tricky and dependent on

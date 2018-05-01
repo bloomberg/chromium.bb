@@ -209,7 +209,7 @@ The syntax of a line is roughly:
   `Android`, `Release`, `Debug`.
 * Some modifiers are meta keywords, e.g. `Win` represents both `Win7` and
   `Win10`. See the `CONFIGURATION_SPECIFIER_MACROS` dictionary in
-  [third_party/WebKit/Tools/Scripts/webkitpy/layout_tests/port/base.py](../../third_party/WebKit/Tools/Scripts/webkitpy/layout_tests/port/base.py)
+  [third_party/blink/tools/blinkpy/web_tests/port/base.py](../../third_party/blink/tools/blinkpy/web_tests/port/base.py)
   for the meta keywords and which modifiers they represent.
 * Expectations can be one or more of `Crash`, `Failure`, `Pass`, `Rebaseline`,
   `Slow`, `Skip`, `Timeout`, `WontFix`, `Missing`, `NeedsManualRebaseline`.

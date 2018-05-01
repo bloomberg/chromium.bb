@@ -114,7 +114,7 @@ def temporary_file():
 
 def parse_common_test_results(json_results, test_separator='/'):
   def convert_trie_to_flat_paths(trie, prefix=None):
-    # Also see webkitpy.layout_tests.layout_package.json_results_generator
+    # Also see blinkpy.web_tests.layout_package.json_results_generator
     result = {}
     for name, data in trie.iteritems():
       if prefix:

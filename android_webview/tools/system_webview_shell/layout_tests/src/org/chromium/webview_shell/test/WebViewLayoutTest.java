@@ -61,7 +61,7 @@ public class WebViewLayoutTest {
     // stable interfaces can dissapear and reappear later. To select the file to compare
     // against a fallback approach is used. The order in the List below is important due
     // to how blink performs baseline optimizations. For more details see
-    // third_party/WebKit/Tools/Scripts/webkitpy/common/checkout/baseline_optimizer.py.
+    // third_party/blink/tools/blinkpy/common/checkout/baseline_optimizer.py.
     private static final List<String> BLINK_STABLE_FALLBACKS = Arrays.asList(
             EXTERNAL_PREFIX + BASE_BLINK_TEST_PATH + "virtual/stable/" + GLOBAL_LISTING_FILE,
             EXTERNAL_PREFIX + BASE_BLINK_TEST_PATH + "platform/linux/virtual/stable/"

@@ -445,7 +445,7 @@ class PathParser {
     this.dir = this.dir || "";
     [, this.raw_basename, this.raw_extension] = this.file.match(/(.+)\.(.+)/);
 
-    // WebKit/Tools/Scripts/webkitpy/layout_tests/port/base.py output_filename()
+    // blink/tools/blinkpy/web_tests/port/base.py output_filename()
     let index = this.raw_extension.indexOf("?");
     if (index > -1) {
       let query_string = this.raw_extension.slice(index + 1);

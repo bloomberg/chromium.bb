@@ -4,8 +4,8 @@
 
 #
 # Most of this file was ported over from Blink's
-# Tools/Scripts/webkitpy/layout_tests/layout_package/json_results_generator.py
-# Tools/Scripts/webkitpy/common/net/file_uploader.py
+# tools/blinkpy/web_tests/layout_package/json_results_generator.py
+# tools/blinkpy/common/net/file_uploader.py
 #
 
 import json

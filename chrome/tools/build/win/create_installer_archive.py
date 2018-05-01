@@ -432,7 +432,7 @@ def CopyIfChanged(src, target_dir):
 
 
 # Taken and modified from:
-# third_party\WebKit\Tools\Scripts\webkitpy\layout_tests\port\factory.py
+# third_party\blink\tools\blinkpy\web_tests\port\factory.py
 def _read_configuration_from_gn(build_dir):
   """Return the configuration to used based on args.gn, if possible."""
   path = os.path.join(build_dir, 'args.gn')
