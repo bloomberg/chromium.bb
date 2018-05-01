@@ -10,7 +10,6 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/events/event_listener.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
-#include "third_party/blink/renderer/core/frame/dom_visual_viewport.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
@@ -187,18 +186,19 @@ void MediaControlPopupMenuElement::SetPosition() {
   static const char kImportant[] = "important";
   static const char kPx[] = "px";
 
-  DCHECK(MediaElement().getBoundingClientRect());
-  DCHECK(GetDocument().domWindow());
-  DCHECK(GetDocument().domWindow()->visualViewport());
-
   DOMRect* bounding_client_rect =
       EffectivePopupAnchor()->getBoundingClientRect();
-  DOMVisualViewport* viewport = GetDocument().domWindow()->visualViewport();
+  LocalDOMWindow* dom_window = GetDocument().domWindow();
 
-  WTF::String bottom_str_value = WTF::String::Number(
-      viewport->height() - bounding_client_rect->bottom() + kPopupMenuMarginPx);
-  WTF::String right_str_value = WTF::String::Number(
-      viewport->width() - bounding_client_rect->right() + kPopupMenuMarginPx);
+  DCHECK(bounding_client_rect);
+  DCHECK(dom_window);
+
+  WTF::String bottom_str_value =
+      WTF::String::Number(dom_window->innerHeight() -
+                          bounding_client_rect->bottom() + kPopupMenuMarginPx);
+  WTF::String right_str_value =
+      WTF::String::Number(dom_window->innerWidth() -
+                          bounding_client_rect->right() + kPopupMenuMarginPx);
 
   bottom_str_value.append(kPx);
   right_str_value.append(kPx);
