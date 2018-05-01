@@ -83,6 +83,7 @@ class VideoFrameStreamTest
         num_decoded_bytes_unreported_(0),
         has_no_key_(false) {
     video_frame_stream_.reset(new VideoFrameStream(
+        std::make_unique<VideoFrameStream::StreamTraits>(&media_log_),
         message_loop_.task_runner(),
         base::Bind(&VideoFrameStreamTest::CreateVideoDecodersForTest,
                    base::Unretained(this)),
