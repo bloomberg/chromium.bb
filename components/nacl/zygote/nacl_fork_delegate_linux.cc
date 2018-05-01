@@ -130,8 +130,7 @@ bool SendIPCRequestAndReadReply(int ipc_channel,
 namespace nacl {
 
 void AddNaClZygoteForkDelegates(
-    std::vector<std::unique_ptr<service_manager::ZygoteForkDelegate>>*
-        delegates) {
+    std::vector<std::unique_ptr<content::ZygoteForkDelegate>>* delegates) {
   delegates->push_back(
       std::make_unique<NaClForkDelegate>(false /* nonsfi_mode */));
   delegates->push_back(
@@ -168,8 +167,8 @@ void NaClForkDelegate::Init(const int sandboxdesc,
 
   // For communications between the NaCl loader process and
   // the browser process.
-  int nacl_sandbox_descriptor = base::GlobalDescriptors::kBaseDescriptor +
-                                service_manager::kSandboxIPCChannel;
+  int nacl_sandbox_descriptor =
+      base::GlobalDescriptors::kBaseDescriptor + kSandboxIPCChannel;
   // Confirm a hard-wired assumption.
   DCHECK_EQ(sandboxdesc, nacl_sandbox_descriptor);
 

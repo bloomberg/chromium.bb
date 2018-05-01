@@ -9,18 +9,18 @@
 #include "content/browser/child_process_launcher_helper.h"
 #include "content/browser/child_process_launcher_helper_posix.h"
 #include "content/browser/sandbox_host_linux.h"
+#include "content/browser/zygote_host/zygote_communication_linux.h"
+#include "content/browser/zygote_host/zygote_host_impl_linux.h"
 #include "content/public/browser/child_process_launcher_utils.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/common/common_sandbox_support_linux.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
+#include "content/public/common/zygote_handle.h"
 #include "gpu/config/gpu_switches.h"
 #include "services/service_manager/sandbox/linux/sandbox_linux.h"
-#include "services/service_manager/zygote/common/common_sandbox_support_linux.h"
-#include "services/service_manager/zygote/common/zygote_handle.h"
-#include "services/service_manager/zygote/host/zygote_communication_linux.h"
-#include "services/service_manager/zygote/host/zygote_host_impl_linux.h"
 
 namespace content {
 namespace internal {
@@ -55,8 +55,7 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
        base::CommandLine::ForCurrentProcess()->HasSwitch(
            switches::kEnableOOPRasterization))) {
     const int sandbox_fd = SandboxHostLinux::GetInstance()->GetChildSocket();
-    options->fds_to_remap.push_back(
-        std::make_pair(sandbox_fd, service_manager::GetSandboxFD()));
+    options->fds_to_remap.push_back(std::make_pair(sandbox_fd, GetSandboxFD()));
   }
 
   options->environ = delegate_->GetEnvironment();
@@ -72,7 +71,7 @@ ChildProcessLauncherHelper::LaunchProcessOnLauncherThread(
     int* launch_result) {
   *is_synchronous_launch = true;
 
-  service_manager::ZygoteHandle zygote_handle =
+  ZygoteHandle zygote_handle =
       base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoZygote)
           ? nullptr
           : delegate_->GetZygote();
@@ -93,7 +92,7 @@ ChildProcessLauncherHelper::LaunchProcessOnLauncherThread(
       // chrome::kLowestRendererOomScore in chrome/chrome_constants.h, but
       // that's not something we can include here.)
       const int kLowestRendererOomScore = 300;
-      service_manager::ZygoteHostImpl::GetInstance()->AdjustRendererOOMScore(
+      ZygoteHostImpl::GetInstance()->AdjustRendererOOMScore(
           handle, kLowestRendererOomScore);
     }
 #endif
@@ -145,7 +144,7 @@ bool ChildProcessLauncherHelper::TerminateProcess(const base::Process& process,
 void ChildProcessLauncherHelper::ForceNormalProcessTerminationSync(
     ChildProcessLauncherHelper::Process process) {
   DCHECK(CurrentlyOnProcessLauncherTaskRunner());
-  process.process.Terminate(service_manager::RESULT_CODE_NORMAL_EXIT, false);
+  process.process.Terminate(RESULT_CODE_NORMAL_EXIT, false);
   // On POSIX, we must additionally reap the child.
   if (process.zygote) {
     // If the renderer was created via a zygote, we have to proxy the reaping
