@@ -189,6 +189,9 @@ template("yasm_assemble") {
 
     sources = get_target_outputs(":$action_name")
 
+    # Do not publicize any header to remove build dependency.
+    public = []
+
     deps = [
       ":$action_name",
     ]
