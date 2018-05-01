@@ -25,6 +25,7 @@ import android.os.SystemClock;
 import android.support.annotation.CallSuper;
 import android.util.DisplayMetrics;
 import android.util.Pair;
+import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -161,6 +162,7 @@ import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.widget.Toast;
 import org.chromium.webapk.lib.client.WebApkNavigationClient;
 import org.chromium.webapk.lib.client.WebApkValidator;
@@ -307,6 +309,21 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     @Override
     public void preInflationStartup() {
         super.preInflationStartup();
+
+        if (VrShellDelegate.getVrClassesWrapper().bootsToVr()) {
+            // TODO(mthiesse): Remove this once b/78108624 is fixed. This is a workaround for a
+            // platform bug where Chrome crashes on launch for standalone devices if not launched
+            // onto the primary display (There's a virtual display 2D apps are default launched onto
+            // with different display properties). Re-launch with the same intent but to the primary
+            // display.
+            if (DisplayAndroid.getNonMultiDisplay(this).getDisplayId() != Display.DEFAULT_DISPLAY) {
+                finish();
+                startActivity(getIntent(),
+                        ApiCompatibilityUtils.createLaunchDisplayIdActivityOptions(
+                                Display.DEFAULT_DISPLAY));
+                return;
+            }
+        }
 
         // We need to explicitly enable VR mode here so that the system doesn't kick us out of VR,
         // or drop us into the 2D-in-VR rendering mode, while we prepare for VR rendering.

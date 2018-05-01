@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.Display;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
@@ -151,7 +152,15 @@ public class VrIntentUtils {
         // enter VR (I don't know what's canceling it). To hide the 2D UI, we resort to the black
         // overlay view added in {@link startWithVrIntentPreNative}.
         int animation = VrShellDelegate.USE_HIDE_ANIMATION ? R.anim.stay_hidden : 0;
-        return ActivityOptions.makeCustomAnimation(context, animation, 0).toBundle();
+        ActivityOptions options = ActivityOptions.makeCustomAnimation(context, animation, 0);
+        if (VrShellDelegate.getVrClassesWrapper().bootsToVr()) {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+                assert false;
+            } else {
+                options.setLaunchDisplayId(Display.DEFAULT_DISPLAY);
+            }
+        }
+        return options.toBundle();
     }
 
     /**
@@ -167,7 +176,8 @@ public class VrIntentUtils {
      * @return whether the intent was forwarded to the VR launcher.
      */
     public static boolean maybeForwardToVrLauncher(Intent intent, Activity activity) {
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.O) return false;
+        // Standalone VR devices use 2D-in-VR rendering on O+.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return false;
         if (wouldUse2DInVrRenderingMode(activity) && VrShellDelegate.deviceSupportsVrLaunches()) {
             Intent vrIntent = new Intent(intent);
             vrIntent.setComponent(null);
@@ -190,7 +200,7 @@ public class VrIntentUtils {
         int uiMode = config.uiMode & Configuration.UI_MODE_TYPE_MASK;
         if (uiMode != Configuration.UI_MODE_TYPE_VR_HEADSET) return false;
         VrClassesWrapper wrapper = VrShellDelegate.getVrClassesWrapper();
-        return wrapper != null && wrapper.supports2dInVr();
+        return wrapper != null && (wrapper.bootsToVr() || wrapper.supports2dInVr());
     }
 
     /**
