@@ -163,8 +163,10 @@ void ContextualSuggestionsBridge::OnSuggestionsAvailable(
       Java_ContextualSuggestionsBridge_addSuggestionToLastCluster(
           env, j_result, ConvertUTF8ToJavaString(env, suggestion.id),
           ConvertUTF8ToJavaString(env, suggestion.title),
+          ConvertUTF8ToJavaString(env, suggestion.snippet),
           ConvertUTF8ToJavaString(env, suggestion.publisher_name),
-          ConvertUTF8ToJavaString(env, suggestion.url.spec()));
+          ConvertUTF8ToJavaString(env, suggestion.url.spec()),
+          !suggestion.image_id.empty());
     }
   }
   RunCallbackAndroid(j_callback, j_result);

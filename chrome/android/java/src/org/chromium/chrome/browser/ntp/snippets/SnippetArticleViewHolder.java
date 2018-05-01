@@ -38,6 +38,7 @@ public class SnippetArticleViewHolder extends CardViewHolder {
 
     private final DisplayStyleObserverAdapter mDisplayStyleObserver;
     private final ImpressionTracker mExposureTracker;
+
     /**
      * Constructs a {@link SnippetArticleViewHolder} item used to display snippets.
      * @param parent The SuggestionsRecyclerView that is going to contain the newly created view.
@@ -49,10 +50,25 @@ public class SnippetArticleViewHolder extends CardViewHolder {
     public SnippetArticleViewHolder(SuggestionsRecyclerView parent,
             ContextMenuManager contextMenuManager, SuggestionsUiDelegate uiDelegate,
             UiConfig uiConfig, OfflinePageBridge offlinePageBridge) {
-        super(getLayout(), parent, uiConfig, contextMenuManager);
+        this(parent, contextMenuManager, uiDelegate, uiConfig, offlinePageBridge, getLayout());
+    }
+
+    /**
+     * Constructs a {@link SnippetArticleViewHolder} item used to display snippets.
+     * @param parent The SuggestionsRecyclerView that is going to contain the newly created view.
+     * @param contextMenuManager The manager responsible for the context menu.
+     * @param uiDelegate The delegate object used to open an article, fetch thumbnails, etc.
+     * @param uiConfig The NTP UI configuration object used to adjust the article UI.
+     * @param offlinePageBridge used to determine if article is prefetched.
+     * @param layoutId The layout resource reference for this card.
+     */
+    protected SnippetArticleViewHolder(SuggestionsRecyclerView parent,
+            ContextMenuManager contextMenuManager, SuggestionsUiDelegate uiDelegate,
+            UiConfig uiConfig, OfflinePageBridge offlinePageBridge, int layoutId) {
+        super(layoutId, parent, uiConfig, contextMenuManager);
 
         mUiDelegate = uiDelegate;
-        mSuggestionsBinder = new SuggestionsBinder(itemView, uiDelegate);
+        mSuggestionsBinder = createBinder(uiDelegate);
         mDisplayStyleObserver = new DisplayStyleObserverAdapter(
                 itemView, uiConfig, newDisplayStyle -> updateLayout());
 
@@ -134,6 +150,10 @@ public class SnippetArticleViewHolder extends CardViewHolder {
         ((SnippetArticleViewHolder) holder).refreshOfflineBadgeVisibility();
     }
 
+    protected SuggestionsBinder createBinder(SuggestionsUiDelegate uiDelegate) {
+        return new SuggestionsBinder(itemView, uiDelegate, false);
+    }
+
     /**
      * Updates the layout taking into account screen dimensions and the type of snippet displayed.
      */
@@ -143,9 +163,10 @@ public class SnippetArticleViewHolder extends CardViewHolder {
         boolean showHeadline = shouldShowHeadline();
         boolean showThumbnail = shouldShowThumbnail(layout);
         boolean showThumbnailVideoBadge = shouldShowThumbnailVideoBadge(showThumbnail);
+        boolean showSnippet = shouldShowSnippet();
 
         mSuggestionsBinder.updateFieldsVisibility(
-                showHeadline, showThumbnail, showThumbnailVideoBadge);
+                showHeadline, showThumbnail, showThumbnailVideoBadge, showSnippet);
     }
 
     /** If the title is empty (or contains only whitespace characters), we do not show it. */
@@ -153,11 +174,14 @@ public class SnippetArticleViewHolder extends CardViewHolder {
         return !mArticle.mTitle.trim().isEmpty();
     }
 
+    /**
+     * @return Whether a thumbnail should be shown for this suggestion.
+     */
     private boolean shouldShowThumbnail(int layout) {
         // Minimal cards don't have a thumbnail
         if (layout == ContentSuggestionsCardLayout.MINIMAL_CARD) return false;
 
-        return true;
+        return mArticle.mHasThumbnail;
     }
 
     private boolean shouldShowThumbnailVideoBadge(boolean showThumbnail) {
@@ -170,6 +194,13 @@ public class SnippetArticleViewHolder extends CardViewHolder {
     private void refreshOfflineBadgeVisibility() {
         boolean visible = mArticle.getOfflinePageOfflineId() != null || mArticle.isAssetDownload();
         mSuggestionsBinder.updateOfflineBadgeVisibility(visible);
+    }
+
+    /**
+     * @return Whether a snippet should be shown for this suggestion.
+     */
+    private boolean shouldShowSnippet() {
+        return mArticle.mSnippet.length() > 0;
     }
 
     /**

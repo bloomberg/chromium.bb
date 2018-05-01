@@ -39,7 +39,7 @@
 
         <org.chromium.chrome.browser.widget.ListMenuButton
             android:id="@+id/more"
-            android:layout_width="@dimen/contextual_suggestions_icon_size"
+            android:layout_width="@dimen/contextual_suggestions_toolbar_icon_size"
             android:layout_height="match_parent"
             android:background="?attr/selectableItemBackground"
             android:src="@drawable/ic_more_vert_black_24dp"
@@ -49,7 +49,7 @@
         <ImageView
             android:id="@+id/close_button"
             android:layout_height="match_parent"
-            android:layout_width="@dimen/contextual_suggestions_icon_size"
+            android:layout_width="@dimen/contextual_suggestions_toolbar_icon_size"
             android:background="?attr/selectableItemBackground"
             android:src="@drawable/btn_close"
             android:scaleType="center"

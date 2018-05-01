@@ -26,6 +26,9 @@ public class SnippetArticle implements OfflinableSuggestion {
     /** The title of this article. */
     public final String mTitle;
 
+    /** The snippet for this article. */
+    public final String mSnippet;
+
     /** The canonical publisher name (e.g., New York Times). */
     public final String mPublisher;
 
@@ -43,6 +46,9 @@ public class SnippetArticle implements OfflinableSuggestion {
      * suggestions.
      */
     public final long mFetchTimestampMilliseconds;
+
+    /** Whether the snippet has a thumbnail to display. **/
+    public final boolean mHasThumbnail;
 
     /** The flag that indicates whether this is a video suggestion. */
     public boolean mIsVideoSuggestion;
@@ -87,15 +93,29 @@ public class SnippetArticle implements OfflinableSuggestion {
     private boolean mIsPrefetched;
 
     /**
-     * Creates a SnippetArticleListItem object that will hold the data.
+     * Creates a SnippetArticleListItem object that will hold the data. Default is to have a
+     * thumbnail and empty snippet.
      */
     @SuppressLint("SupportAnnotationUsage") // for ColorInt on an Integer rather than int or long
     public SnippetArticle(int category, String idWithinCategory, String title, String publisher,
             String url, long publishTimestamp, float score, long fetchTimestamp,
             boolean isVideoSuggestion, @ColorInt Integer thumbnailDominantColor) {
+        this(category, idWithinCategory, title, "", publisher, url, publishTimestamp, score,
+                fetchTimestamp, isVideoSuggestion, thumbnailDominantColor, true);
+    }
+
+    /**
+     * Creates a SnippetArticleListItem object that will hold the data.
+     */
+    @SuppressLint("SupportAnnotationUsage") // for ColorInt on an Integer rather than int or long
+    public SnippetArticle(int category, String idWithinCategory, String title, String snippet,
+            String publisher, String url, long publishTimestamp, float score, long fetchTimestamp,
+            boolean isVideoSuggestion, @ColorInt Integer thumbnailDominantColor,
+            boolean hasThumbnail) {
         mCategory = category;
         mIdWithinCategory = idWithinCategory;
         mTitle = title;
+        mSnippet = snippet;
         mPublisher = publisher;
         mUrl = url;
         mPublishTimestampMilliseconds = publishTimestamp;
@@ -103,6 +123,7 @@ public class SnippetArticle implements OfflinableSuggestion {
         mFetchTimestampMilliseconds = fetchTimestamp;
         mIsVideoSuggestion = isVideoSuggestion;
         mThumbnailDominantColor = thumbnailDominantColor;
+        mHasThumbnail = hasThumbnail;
     }
 
     @Override
