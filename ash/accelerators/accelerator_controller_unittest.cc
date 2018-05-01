@@ -12,7 +12,10 @@
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/ime/test_ime_controller_client.h"
+#include "ash/magnifier/docked_magnifier_controller.h"
+#include "ash/magnifier/magnification_controller.h"
 #include "ash/media_controller.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -36,6 +39,7 @@
 #include "ash/wm/wm_event.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/user_action_tester.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
@@ -1345,6 +1349,62 @@ TEST_F(AcceleratorControllerGuestModeTest, IncognitoWindowDisabled) {
   // New incognito window is disabled.
   EXPECT_FALSE(Shell::Get()->accelerator_controller()->PerformActionIfEnabled(
       NEW_INCOGNITO_WINDOW));
+}
+
+namespace {
+
+class MagnifiersAcceleratorsTester : public AcceleratorControllerTest {
+ public:
+  MagnifiersAcceleratorsTester() = default;
+  ~MagnifiersAcceleratorsTester() override = default;
+
+  // AcceleratorControllerTest:
+  void SetUp() override {
+    // Explicitly enable the Docked Magnifier feature for the tests.
+    scoped_feature_list_.InitAndEnableFeature(features::kDockedMagnifier);
+
+    AcceleratorControllerTest::SetUp();
+  }
+
+  DockedMagnifierController* docked_magnifier_controller() const {
+    return Shell::Get()->docked_magnifier_controller();
+  }
+
+  MagnificationController* fullscreen_magnifier_controller() const {
+    return Shell::Get()->magnification_controller();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(MagnifiersAcceleratorsTester);
+};
+
+}  // namespace
+
+TEST_F(MagnifiersAcceleratorsTester, TestToggleMagnifiers) {
+  EXPECT_FALSE(docked_magnifier_controller()->GetEnabled());
+  EXPECT_FALSE(fullscreen_magnifier_controller()->IsEnabled());
+
+  // Toggle the fullscreen magnifier on/off.
+  const ui::Accelerator fullscreen_magnifier_accelerator(
+      ui::VKEY_M, ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN);
+  EXPECT_TRUE(ProcessInController(fullscreen_magnifier_accelerator));
+  EXPECT_FALSE(docked_magnifier_controller()->GetEnabled());
+  EXPECT_TRUE(fullscreen_magnifier_controller()->IsEnabled());
+  EXPECT_TRUE(ProcessInController(fullscreen_magnifier_accelerator));
+  EXPECT_FALSE(docked_magnifier_controller()->GetEnabled());
+  EXPECT_FALSE(fullscreen_magnifier_controller()->IsEnabled());
+
+  // Toggle the docked magnifier on/off.
+  const ui::Accelerator docked_magnifier_accelerator(
+      ui::VKEY_D, ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN);
+  EXPECT_TRUE(ProcessInController(docked_magnifier_accelerator));
+  EXPECT_TRUE(docked_magnifier_controller()->GetEnabled());
+  EXPECT_FALSE(fullscreen_magnifier_controller()->IsEnabled());
+  EXPECT_TRUE(ProcessInController(docked_magnifier_accelerator));
+  EXPECT_FALSE(docked_magnifier_controller()->GetEnabled());
+  EXPECT_FALSE(fullscreen_magnifier_controller()->IsEnabled());
 }
 
 }  // namespace ash

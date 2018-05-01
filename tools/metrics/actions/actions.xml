@@ -1017,6 +1017,22 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Accel_Toggle_Docked_Magnifier">
+  <owner>afakhry@chromium.org</owner>
+  <description>
+    Metric recorded when the user toggles the Chrome OS Docked Magnifier with a
+    keyboard shortcut.
+  </description>
+</action>
+
+<action name="Accel_Toggle_Fullscreen_Magnifier">
+  <owner>afakhry@chromium.org</owner>
+  <description>
+    Metric recorded when the user toggles the Chrome OS Fullscreen Magnifier
+    with a keyboard shortcut.
+  </description>
+</action>
+
 <action name="Accel_Toggle_High_Contrast">
   <owner>dmazzoni@chromium.org</owner>
   <description>

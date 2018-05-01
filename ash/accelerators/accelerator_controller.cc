@@ -781,6 +781,26 @@ void HandleToggleDictation() {
   Shell::Get()->accessibility_controller()->ToggleDictation();
 }
 
+bool CanHandleToggleDockedMagnifier() {
+  if (Shell::GetAshConfig() == Config::MASH) {
+    // TODO: Mash support for the Docked Magnifier https://crbug.com/814481.
+    NOTIMPLEMENTED();
+    return false;
+  }
+
+  return features::IsDockedMagnifierEnabled();
+}
+
+void HandleToggleDockedMagnifier() {
+  DCHECK(features::IsDockedMagnifierEnabled());
+  base::RecordAction(UserMetricsAction("Accel_Toggle_Docked_Magnifier"));
+
+  DockedMagnifierController* docked_magnifier_controller =
+      Shell::Get()->docked_magnifier_controller();
+  const bool current_enabled = docked_magnifier_controller->GetEnabled();
+  docked_magnifier_controller->SetEnabled(!current_enabled);
+}
+
 void HandleToggleHighContrast() {
   base::RecordAction(UserMetricsAction("Accel_Toggle_High_Contrast"));
 
@@ -814,6 +834,26 @@ void HandleToggleHighContrast() {
   }
 
   controller->SetHighContrastEnabled(will_be_enabled);
+}
+
+bool CanHandleToggleFullscreenMagnifier() {
+  if (Shell::GetAshConfig() == Config::MASH) {
+    // TODO: Mash support for the Fullscreen Magnifier
+    // https://crbug.com/821551.
+    NOTIMPLEMENTED();
+    return false;
+  }
+
+  return true;
+}
+
+void HandleToggleFullscreenMagnifier() {
+  base::RecordAction(UserMetricsAction("Accel_Toggle_Fullscreen_Magnifier"));
+
+  MagnificationController* fullscreen_magnifier_controller =
+      Shell::Get()->magnification_controller();
+  const bool current_enabled = fullscreen_magnifier_controller->IsEnabled();
+  fullscreen_magnifier_controller->SetEnabled(!current_enabled);
 }
 
 void HandleToggleSpokenFeedback() {
@@ -1203,6 +1243,10 @@ bool AcceleratorController::CanPerformAction(
       return CanHandleToggleCapsLock(accelerator, previous_accelerator);
     case TOGGLE_DICTATION:
       return CanHandleToggleDictation();
+    case TOGGLE_DOCKED_MAGNIFIER:
+      return CanHandleToggleDockedMagnifier();
+    case TOGGLE_FULLSCREEN_MAGNIFIER:
+      return CanHandleToggleFullscreenMagnifier();
     case TOGGLE_MESSAGE_CENTER_BUBBLE:
       return CanHandleToggleMessageCenterBubble();
     case TOGGLE_MIRROR_MODE:
@@ -1526,8 +1570,14 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
     case TOGGLE_DICTATION:
       HandleToggleDictation();
       break;
+    case TOGGLE_DOCKED_MAGNIFIER:
+      HandleToggleDockedMagnifier();
+      break;
     case TOGGLE_FULLSCREEN:
       HandleToggleFullscreen(accelerator);
+      break;
+    case TOGGLE_FULLSCREEN_MAGNIFIER:
+      HandleToggleFullscreenMagnifier();
       break;
     case TOGGLE_HIGH_CONTRAST:
       HandleToggleHighContrast();
