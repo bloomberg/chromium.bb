@@ -795,11 +795,6 @@ void TabStrip::StopAnimating(bool layout) {
     DoLayout();
 }
 
-void TabStrip::FileSupported(const GURL& url, bool supported) {
-  if (drop_info_.get() && drop_info_->url == url)
-    drop_info_->file_supported = supported;
-}
-
 const ui::ListSelectionModel& TabStrip::GetSelectionModel() const {
   return controller_->GetSelectionModel();
 }
@@ -1260,70 +1255,6 @@ gfx::Size TabStrip::CalculatePreferredSize() const {
                    Tab::GetMinimumInactiveSize().height());
 }
 
-void TabStrip::OnDragEntered(const DropTargetEvent& event) {
-  // Force animations to stop, otherwise it makes the index calculation tricky.
-  StopAnimating(true);
-
-  UpdateDropIndex(event);
-
-  GURL url;
-  base::string16 title;
-
-  // Check whether the event data includes supported drop data.
-  if (event.data().GetURLAndTitle(ui::OSExchangeData::CONVERT_FILENAMES, &url,
-                                  &title) &&
-      url.is_valid()) {
-    drop_info_->url = url;
-
-    // For file:// URLs, kick off a MIME type request in case they're dropped.
-    if (url.SchemeIsFile())
-      controller_->CheckFileSupported(url);
-  }
-}
-
-int TabStrip::OnDragUpdated(const DropTargetEvent& event) {
-  // Update the drop index even if the file is unsupported, to allow
-  // dragging a file to the contents of another tab.
-  UpdateDropIndex(event);
-
-  if (!drop_info_->file_supported ||
-      drop_info_->url.SchemeIs(url::kJavaScriptScheme))
-    return ui::DragDropTypes::DRAG_NONE;
-
-  return GetDropEffect(event);
-}
-
-void TabStrip::OnDragExited() {
-  SetDropIndex(-1, false);
-}
-
-int TabStrip::OnPerformDrop(const DropTargetEvent& event) {
-  if (!drop_info_.get())
-    return ui::DragDropTypes::DRAG_NONE;
-
-  const int drop_index = drop_info_->drop_index;
-  const bool drop_before = drop_info_->drop_before;
-  const bool file_supported = drop_info_->file_supported;
-
-  // Hide the drop indicator.
-  SetDropIndex(-1, false);
-
-  // Do nothing if the file was unsupported, the URL is invalid, or this is a
-  // javascript: URL (prevent self-xss). The URL may have been changed after
-  // |drop_info_| was created.
-  GURL url;
-  base::string16 title;
-  if (!file_supported ||
-      !event.data().GetURLAndTitle(ui::OSExchangeData::CONVERT_FILENAMES, &url,
-                                   &title) ||
-      !url.is_valid() || url.SchemeIs(url::kJavaScriptScheme))
-    return ui::DragDropTypes::DRAG_NONE;
-
-  controller_->PerformDrop(drop_before, drop_index, url);
-
-  return GetDropEffect(event);
-}
-
 void TabStrip::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kTabList;
 }
@@ -1354,6 +1285,43 @@ views::View* TabStrip::GetTooltipHandlerForPoint(const gfx::Point& point) {
       return ConvertPointToViewAndGetTooltipHandler(this, tab, point);
   }
   return this;
+}
+
+BrowserRootView::DropIndex TabStrip::GetDropIndex(
+    const DropTargetEvent& event) {
+  // Force animations to stop, otherwise it makes the index calculation tricky.
+  StopAnimating(true);
+
+  // If the UI layout is right-to-left, we need to mirror the mouse
+  // coordinates since we calculate the drop index based on the
+  // original (and therefore non-mirrored) positions of the tabs.
+  const int x = GetMirroredXInView(event.x());
+  for (int i = 0; i < tab_count(); ++i) {
+    Tab* tab = tab_at(i);
+    const int tab_max_x = tab->x() + tab->width();
+    const int hot_width = tab->width() / kTabEdgeRatioInverse;
+    if (x < tab_max_x) {
+      if (x >= (tab_max_x - hot_width))
+        return {i + 1, true};
+      return {i, x < tab->x() + hot_width};
+    }
+  }
+
+  // The drop isn't over a tab, add it to the end.
+  return {tab_count(), true};
+}
+
+views::View* TabStrip::GetViewForDrop() {
+  return this;
+}
+
+void TabStrip::HandleDragUpdate(
+    const base::Optional<BrowserRootView::DropIndex>& index) {
+  SetDropArrow(index);
+}
+
+void TabStrip::HandleDragExited() {
+  SetDropArrow({});
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2071,76 +2039,39 @@ gfx::Rect TabStrip::GetDropBounds(int drop_index,
   return drop_bounds;
 }
 
-void TabStrip::UpdateDropIndex(const DropTargetEvent& event) {
-  // If the UI layout is right-to-left, we need to mirror the mouse
-  // coordinates since we calculate the drop index based on the
-  // original (and therefore non-mirrored) positions of the tabs.
-  const int x = GetMirroredXInView(event.x());
-  // We don't allow replacing the urls of pinned tabs.
-  for (int i = GetPinnedTabCount(); i < tab_count(); ++i) {
-    Tab* tab = tab_at(i);
-    const int tab_max_x = tab->x() + tab->width();
-    const int hot_width = tab->width() / kTabEdgeRatioInverse;
-    if (x < tab_max_x) {
-      if (x < tab->x() + hot_width)
-        SetDropIndex(i, true);
-      else if (x >= tab_max_x - hot_width)
-        SetDropIndex(i + 1, true);
-      else
-        SetDropIndex(i, false);
-      return;
-    }
+void TabStrip::SetDropArrow(
+    const base::Optional<BrowserRootView::DropIndex>& index) {
+  if (!index) {
+    controller_->OnDropIndexUpdate(-1, false);
+    drop_arrow_.reset();
+    return;
   }
 
-  // The drop isn't over a tab, add it to the end.
-  SetDropIndex(tab_count(), true);
-}
-
-void TabStrip::SetDropIndex(int tab_data_index, bool drop_before) {
   // Let the controller know of the index update.
-  controller_->OnDropIndexUpdate(tab_data_index, drop_before);
+  controller_->OnDropIndexUpdate(index->value, index->drop_before);
 
-  if (tab_data_index == -1) {
-    if (drop_info_.get())
-      drop_info_.reset(NULL);
+  if (drop_arrow_ && (index == drop_arrow_->index))
     return;
-  }
-
-  if (drop_info_.get() && drop_info_->drop_index == tab_data_index &&
-      drop_info_->drop_before == drop_before) {
-    return;
-  }
 
   bool is_beneath;
   gfx::Rect drop_bounds =
-      GetDropBounds(tab_data_index, drop_before, &is_beneath);
+      GetDropBounds(index->value, index->drop_before, &is_beneath);
 
-  if (!drop_info_.get()) {
-    drop_info_.reset(
-        new DropInfo(tab_data_index, drop_before, !is_beneath, GetWidget()));
+  if (!drop_arrow_) {
+    drop_arrow_ = std::make_unique<DropArrow>(*index, !is_beneath, GetWidget());
   } else {
-    drop_info_->drop_index = tab_data_index;
-    drop_info_->drop_before = drop_before;
-    if (is_beneath == drop_info_->point_down) {
-      drop_info_->point_down = !is_beneath;
-      drop_info_->arrow_view->SetImage(
-          GetDropArrowImage(drop_info_->point_down));
+    drop_arrow_->index = *index;
+    if (is_beneath == drop_arrow_->point_down) {
+      drop_arrow_->point_down = !is_beneath;
+      drop_arrow_->arrow_view->SetImage(
+          GetDropArrowImage(drop_arrow_->point_down));
     }
   }
 
   // Reposition the window. Need to show it too as the window is initially
   // hidden.
-  drop_info_->arrow_window->SetBounds(drop_bounds);
-  drop_info_->arrow_window->Show();
-}
-
-int TabStrip::GetDropEffect(const ui::DropTargetEvent& event) {
-  const int source_ops = event.source_operations();
-  if (source_ops & ui::DragDropTypes::DRAG_COPY)
-    return ui::DragDropTypes::DRAG_COPY;
-  if (source_ops & ui::DragDropTypes::DRAG_LINK)
-    return ui::DragDropTypes::DRAG_LINK;
-  return ui::DragDropTypes::DRAG_MOVE;
+  drop_arrow_->arrow_window->SetBounds(drop_bounds);
+  drop_arrow_->arrow_window->Show();
 }
 
 // static
@@ -2149,17 +2080,13 @@ gfx::ImageSkia* TabStrip::GetDropArrowImage(bool is_down) {
       is_down ? IDR_TAB_DROP_DOWN : IDR_TAB_DROP_UP);
 }
 
-// TabStrip::DropInfo
+// TabStrip:DropArrow:
 // ----------------------------------------------------------
 
-TabStrip::DropInfo::DropInfo(int drop_index,
-                             bool drop_before,
-                             bool point_down,
-                             views::Widget* context)
-    : drop_index(drop_index),
-      drop_before(drop_before),
-      point_down(point_down),
-      file_supported(true) {
+TabStrip::DropArrow::DropArrow(const BrowserRootView::DropIndex& index,
+                               bool point_down,
+                               views::Widget* context)
+    : index(index), point_down(point_down) {
   arrow_view = new views::ImageView;
   arrow_view->SetImage(GetDropArrowImage(point_down));
 
@@ -2174,7 +2101,7 @@ TabStrip::DropInfo::DropInfo(int drop_index,
   arrow_window->SetContentsView(arrow_view);
 }
 
-TabStrip::DropInfo::~DropInfo() {
+TabStrip::DropArrow::~DropArrow() {
   // Close eventually deletes the window, which deletes arrow_view too.
   arrow_window->Close();
 }

@@ -11,7 +11,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_base_types.h"
 
-class GURL;
 class Tab;
 class TabStrip;
 
@@ -83,9 +82,6 @@ class TabStripController {
   // Notifies controller of a drop index update.
   virtual void OnDropIndexUpdate(int index, bool drop_before) = 0;
 
-  // Performs a drop at the specified location.
-  virtual void PerformDrop(bool drop_before, int index, const GURL& url) = 0;
-
   // Return true if this tab strip is compatible with the provided tab strip.
   // Compatible tab strips can transfer tabs during drag and drop.
   virtual bool IsCompatibleWith(TabStrip* other) const = 0;
@@ -113,10 +109,6 @@ class TabStripController {
   // This is also called when the tabs that the user is dragging were detached
   // from this tabstrip but the user is still dragging the tabs.
   virtual void OnStoppedDraggingTabs() = 0;
-
-  // Determines if the file type of the URL is supported. Should invoke
-  // TabStrip::FileSupported to report the result.
-  virtual void CheckFileSupported(const GURL& url) = 0;
 
   // Returns COLOR_TOOLBAR_TOP_SEPARATOR[,_INACTIVE] depending on the activation
   // state of the window.

@@ -42,7 +42,6 @@ class FakeBaseTabStripController : public TabStripController {
                              ui::MenuSourceType source_type) override;
   int HasAvailableDragActions() const override;
   void OnDropIndexUpdate(int index, bool drop_before) override;
-  void PerformDrop(bool drop_before, int index, const GURL& url) override;
   bool IsCompatibleWith(TabStrip* other) const override;
   void CreateNewTab() override;
   void CreateNewTabWithLocation(const base::string16& loc) override;
@@ -50,7 +49,6 @@ class FakeBaseTabStripController : public TabStripController {
   void StackedLayoutMaybeChanged() override;
   void OnStartedDraggingTabs() override;
   void OnStoppedDraggingTabs() override;
-  void CheckFileSupported(const GURL& url) override;
   SkColor GetToolbarTopSeparatorColor() const override;
   base::string16 GetAccessibleTabName(const Tab* tab) const override;
   Profile* GetProfile() const override;

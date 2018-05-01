@@ -13,6 +13,7 @@
 #include "chrome/browser/command_observer.h"
 #include "chrome/browser/ui/toolbar/app_menu_icon_controller.h"
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
+#include "chrome/browser/ui/views/frame/browser_root_view.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/profiles/avatar_toolbar_button.h"
@@ -56,7 +57,8 @@ class ToolbarView : public views::AccessiblePaneView,
                     public views::ButtonListener,
                     public AppMenuIconController::Delegate,
                     public UpgradeObserver,
-                    public ToolbarButtonProvider {
+                    public ToolbarButtonProvider,
+                    public BrowserRootView::DropTarget {
  public:
   // The view class name.
   static const char kViewClassName[];
@@ -188,6 +190,11 @@ class ToolbarView : public views::AccessiblePaneView,
   AppMenuButton* GetAppMenuButton() override;
   void FocusToolbar() override;
   views::AccessiblePaneView* GetAsAccessiblePaneView() override;
+
+  // BrowserRootView::DropTarget
+  BrowserRootView::DropIndex GetDropIndex(
+      const ui::DropTargetEvent& event) override;
+  views::View* GetViewForDrop() override;
 
   // Used to avoid duplicating the near-identical logic of
   // ToolbarView::CalculatePreferredSize() and ToolbarView::GetMinimumSize().

@@ -701,6 +701,15 @@ views::AccessiblePaneView* ToolbarView::GetAsAccessiblePaneView() {
   return this;
 }
 
+BrowserRootView::DropIndex ToolbarView::GetDropIndex(
+    const ui::DropTargetEvent& event) {
+  return {browser_->tab_strip_model()->active_index(), false};
+}
+
+views::View* ToolbarView::GetViewForDrop() {
+  return this;
+}
+
 gfx::Size ToolbarView::GetSizeInternal(
     gfx::Size (View::*get_size)() const) const {
   gfx::Size size((location_bar_->*get_size)());
