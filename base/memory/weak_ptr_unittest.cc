@@ -684,26 +684,6 @@ TEST(WeakPtrDeathTest, NonOwnerThreadResetsWeakPtrAfterReference) {
   ASSERT_DCHECK_DEATH(arrow.target.reset());
 }
 
-TEST(WeakPtrDeathTest, NonOwnerThreadUsesWeakPtrOperatorBoolAfterReference) {
-  // The default style "fast" does not support multi-threaded tests
-  // (introduces deadlock on Linux).
-  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-
-  auto target = std::make_unique<Target>();
-
-  // Main thread creates an arrow referencing the Target.
-  Arrow arrow;
-  arrow.target = target->AsWeakPtr();
-
-  // Background thread tries to deref target, binding it to the thread.
-  BackgroundThread background;
-  background.Start();
-  background.DeRef(&arrow);
-
-  // Main thread invokes bool operator. This is a thread safe operation.
-  EXPECT_TRUE(arrow.target.operator bool());
-}
-
 TEST(WeakPtrDeathTest, NonOwnerThreadDeletesWeakPtrAfterReference) {
   // The default style "fast" does not support multi-threaded tests
   // (introduces deadlock on Linux).
