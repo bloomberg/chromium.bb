@@ -28,7 +28,9 @@ class XR final : public EventTargetWithInlineData,
   USING_GARBAGE_COLLECTED_MIXIN(XR);
 
  public:
-  static XR* Create(LocalFrame& frame) { return new XR(frame); }
+  static XR* Create(LocalFrame& frame, int64_t source_id) {
+    return new XR(frame, source_id);
+  }
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(devicechange);
 
@@ -52,14 +54,22 @@ class XR final : public EventTargetWithInlineData,
   void FocusedFrameChanged() override;
   bool IsFrameFocused();
 
+  int64_t GetSourceId() const { return ukm_source_id_; }
+
  private:
-  explicit XR(LocalFrame& frame);
+  explicit XR(LocalFrame& frame, int64_t ukm_source_id_);
 
   void OnDevicesSynced();
   void ResolveRequestDevice();
   void Dispose();
 
   bool devices_synced_;
+
+  // Indicates whether use of requestDevice has already been logged.
+  bool did_log_requestDevice_ = false;
+  bool did_log_returned_device_ = false;
+  bool did_log_supports_exclusive_ = false;
+  const int64_t ukm_source_id_;
 
   HeapVector<Member<XRDevice>> devices_;
   Member<ScriptPromiseResolver> pending_devices_resolver_;

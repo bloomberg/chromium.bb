@@ -22,6 +22,8 @@ const HeapVector<Member<XRView>>& XRPresentationFrame::views() const {
 
 XRDevicePose* XRPresentationFrame::getDevicePose(
     XRCoordinateSystem* coordinate_system) const {
+  session_->LogGetPose();
+
   // If we don't have a valid base pose return null. Most common when tracking
   // is lost.
   if (!base_pose_matrix_ || !coordinate_system) {

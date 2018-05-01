@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/xr/xr.h"
 
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -32,10 +33,11 @@ const char kNoDevicesMessage[] = "No devices found.";
 
 }  // namespace
 
-XR::XR(LocalFrame& frame)
+XR::XR(LocalFrame& frame, int64_t ukm_source_id)
     : ContextLifecycleObserver(frame.GetDocument()),
       FocusChangedObserver(frame.GetPage()),
       devices_synced_(false),
+      ukm_source_id_(ukm_source_id),
       binding_(this) {
   frame.GetInterfaceProvider().GetInterface(mojo::MakeRequest(&service_));
   service_.set_connection_error_handler(
@@ -75,6 +77,13 @@ ScriptPromise XR::requestDevice(ScriptState* script_state) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(kInvalidStateError, kNavigatorDetachedError));
+  }
+
+  if (!did_log_requestDevice_ && frame->GetDocument()) {
+    ukm::builders::XR_WebXR(ukm_source_id_)
+        .SetDidRequestAvailableDevices(1)
+        .Record(frame->GetDocument()->UkmRecorder());
+    did_log_requestDevice_ = true;
   }
 
   if (IsSupportedInFeaturePolicy(mojom::FeaturePolicyFeature::kWebVr)) {
@@ -155,6 +164,23 @@ void XR::ResolveRequestDevice() {
       pending_devices_resolver_->Reject(
           DOMException::Create(kNotFoundError, kNoDevicesMessage));
     } else {
+      if (!did_log_returned_device_ || !did_log_supports_exclusive_) {
+        Document* doc = GetFrame() ? GetFrame()->GetDocument() : nullptr;
+        if (doc) {
+          ukm::builders::XR_WebXR ukm_builder(ukm_source_id_);
+          ukm_builder.SetReturnedDevice(1);
+          did_log_returned_device_ = true;
+
+          // We only expose a single device to WebXR, so report that device's
+          // capabilities.
+          if (devices_[0]->SupportsExclusive()) {
+            ukm_builder.SetReturnedPresentationCapableDevice(1);
+            did_log_supports_exclusive_ = true;
+          }
+
+          ukm_builder.Record(doc->UkmRecorder());
+        }
+      }
       pending_devices_resolver_->Resolve(devices_[0]);
     }
 

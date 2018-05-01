@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/modules/gamepad/gamepad_dispatcher.h"
 #include "third_party/blink/renderer/modules/gamepad/gamepad_event.h"
 #include "third_party/blink/renderer/modules/gamepad/gamepad_list.h"
+#include "third_party/blink/renderer/modules/vr/navigator_vr.h"
 
 namespace {
 
@@ -149,6 +150,15 @@ GamepadList* NavigatorGamepad::getGamepads(Navigator& navigator) {
 }
 
 GamepadList* NavigatorGamepad::Gamepads() {
+  // Tell VR that gamepad is in use.
+  Document* document = GetFrame() ? GetFrame()->GetDocument() : nullptr;
+  if (document) {
+    NavigatorVR* navigator_vr = NavigatorVR::From(*document);
+    if (navigator_vr) {
+      navigator_vr->SetDidUseGamepad();
+    }
+  }
+
   SampleAndCheckConnectedGamepads();
   return gamepads_.Get();
 }

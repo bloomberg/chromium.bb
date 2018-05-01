@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
 
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_xr_frame_request_callback.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -208,6 +209,14 @@ void XRSession::cancelAnimationFrame(int id) {
 }
 
 HeapVector<Member<XRInputSource>> XRSession::getInputSources() const {
+  Document* doc = ToDocumentOrNull(GetExecutionContext());
+  if (!did_log_getInputSources_ && doc) {
+    ukm::builders::XR_WebXR(device_->GetSourceId())
+        .SetDidGetXRInputSources(1)
+        .Record(doc->UkmRecorder());
+    did_log_getInputSources_ = true;
+  }
+
   HeapVector<Member<XRInputSource>> source_array;
   for (const auto& input_source : input_sources_.Values()) {
     source_array.push_back(input_source);
@@ -359,6 +368,17 @@ void XRSession::OnFrame(
     // OnFrameEnd if it's still valid.
     if (!ended_)
       frame_base_layer->OnFrameEnd();
+  }
+}
+
+void XRSession::LogGetPose() const {
+  Document* doc = ToDocumentOrNull(GetExecutionContext());
+  if (!did_log_getDevicePose_ && doc) {
+    did_log_getDevicePose_ = true;
+
+    ukm::builders::XR_WebXR(device_->GetSourceId())
+        .SetDidRequestPose(1)
+        .Record(doc->UkmRecorder());
   }
 }
 

@@ -50,7 +50,7 @@ class MODULES_EXPORT NavigatorVR final
 
   VRController* Controller();
   Document* GetDocument();
-  bool IsFocused() { return focused_; }
+  bool IsFocused() const { return focused_; }
 
   // Queues up event to be fired soon.
   void EnqueueVREvent(VRDisplayEvent*);
@@ -65,6 +65,11 @@ class MODULES_EXPORT NavigatorVR final
   void DidAddEventListener(LocalDOMWindow*, const AtomicString&) override;
   void DidRemoveEventListener(LocalDOMWindow*, const AtomicString&) override;
   void DidRemoveAllEventListeners(LocalDOMWindow*) override;
+
+  void SetDidUseGamepad();
+  void MaybeLogDidUseGamepad();
+
+  int64_t GetSourceId() const;
 
   void Trace(blink::Visitor*) override;
 
@@ -86,6 +91,10 @@ class MODULES_EXPORT NavigatorVR final
   // Metrics data - indicates whether we've already measured this data so we
   // don't do it every frame.
   bool did_log_getVRDisplays_ = false;
+  bool did_log_NavigatorXR_ = false;
+  bool did_log_did_use_gamepad_ = false;
+  bool did_use_gamepad_ = false;
+  const int64_t ukm_source_id_;
 };
 
 }  // namespace blink

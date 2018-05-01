@@ -3625,6 +3625,17 @@ be describing additional metrics about the same event.
 
 <event name="XR.WebXR" singular="True">
   <owner>billorr@chromium.org</owner>
+  <metric name="DidGetGamepads">
+    <summary>
+      Boolean value that indicates that the Gamepad API was used on a WebXR
+      site.
+    </summary>
+  </metric>
+  <metric name="DidGetXRInputSources">
+    <summary>
+      Boolean value that indicates that the WebXR input API was used.
+    </summary>
+  </metric>
   <metric name="DidRequestAvailableDevices">
     <summary>
       Boolean value that indicates that the API to enumerate devices was called.
@@ -3638,6 +3649,11 @@ be describing additional metrics about the same event.
   <metric name="DidRequestPresentation">
     <summary>
       Boolean value that indicates that presentation was requested.
+    </summary>
+  </metric>
+  <metric name="DidUseNavigatorXR">
+    <summary>
+      Boolean value that indicates that the WebXR Device API was used.
     </summary>
   </metric>
   <metric name="ReturnedDevice">

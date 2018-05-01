@@ -95,6 +95,8 @@ class XRSession final : public EventTargetWithInlineData {
   // reports (0, 0);
   DoubleSize OutputCanvasSize() const;
 
+  void LogGetPose() const;
+
   // EventTarget overrides.
   ExecutionContext* GetExecutionContext() const override;
   const AtomicString& InterfaceName() const override;
@@ -151,6 +153,11 @@ class XRSession final : public EventTargetWithInlineData {
   bool resolving_frame_ = false;
   bool update_views_next_frame_ = false;
   bool views_dirty_ = true;
+
+  // Indicates that we've already logged a metric, so don't need to log it
+  // again.
+  mutable bool did_log_getInputSources_ = false;
+  mutable bool did_log_getDevicePose_ = false;
 
   // Dimensions of the output canvas.
   int output_width_ = 1;
