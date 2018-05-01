@@ -81,7 +81,6 @@
 ./tools/serve/commands.json
 ./tools/serve/serve.py
 ./tools/six
-./tools/six/CHANGES
 ./tools/six/CONTRIBUTORS
 ./tools/six/LICENSE
 ./tools/six/README
