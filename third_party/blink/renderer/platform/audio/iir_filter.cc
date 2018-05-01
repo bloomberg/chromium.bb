@@ -151,7 +151,7 @@ void IIRFilter::GetFrequencyResponse(int n_frequencies,
   }
 }
 
-double IIRFilter::TailTime(double sample_rate) {
+double IIRFilter::TailTime(double sample_rate, bool is_filter_stable) {
   // The maximum tail time.  This is somewhat arbitrary, but we're assuming that
   // no one is going to expect the IIRFilter to produce an output after this
   // much time after the inputs have stopped.
@@ -161,6 +161,13 @@ double IIRFilter::TailTime(double sample_rate) {
   // assume that we've reached the tail of the response.  Currently, this means
   // that the impulse is less than 1 bit of a 16-bit PCM value.
   const float kMaxTailAmplitude = 1 / 32768.0;
+
+  // If filter is not stable, just return max tail.  Since the filter is not
+  // stable, the impulse response won't converge to zero, so we don't need to
+  // find the impulse response to find the actual tail time.
+  if (!is_filter_stable) {
+    return kMaxTailTime;
+  }
 
   // How to compute the tail time?  We're going to filter an impulse
   // for |kMaxTailTime| seconds, in blocks of kRenderQuantumFrames at

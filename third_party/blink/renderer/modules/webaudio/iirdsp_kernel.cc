@@ -11,7 +11,8 @@ namespace blink {
 IIRDSPKernel::IIRDSPKernel(IIRProcessor* processor)
     : AudioDSPKernel(processor),
       iir_(processor->Feedforward(), processor->Feedback()) {
-  tail_time_ = iir_.TailTime(processor->SampleRate());
+  tail_time_ =
+      iir_.TailTime(processor->SampleRate(), processor->IsFilterStable());
 }
 
 void IIRDSPKernel::Process(const float* source,
