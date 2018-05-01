@@ -1020,6 +1020,11 @@ public class VrShellImpl
     }
 
     @CalledByNative
+    public void openShare() {
+        mActivity.onMenuOrKeyboardAction(R.id.share_menu_id, true);
+    }
+
+    @CalledByNative
     public void openSettings() {
         mActivity.onMenuOrKeyboardAction(R.id.preferences_id, true);
     }

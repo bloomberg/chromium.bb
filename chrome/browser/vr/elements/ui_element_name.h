@@ -69,6 +69,7 @@ enum UiElementName {
   kOverflowMenuRecentTabsItem,
   kOverflowMenuHistoryItem,
   kOverflowMenuDownloadsItem,
+  kOverflowMenuShareItem,
   kOverflowMenuPreferencesItem,
   kOverflowMenuCloseAllTabsItem,
   kOverflowMenuCloseAllIncognitoTabsItem,

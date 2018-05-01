@@ -70,6 +70,7 @@ static const char* g_ui_element_name_strings[] = {
     "kOverflowMenuRecentTabsItem",
     "kOverflowMenuHistoryItem",
     "kOverflowMenuDownloadsItem",
+    "kOverflowMenuShareItem",
     "kOverflowMenuPreferencesItem",
     "kOverflowMenuCloseAllTabsItem",
     "kOverflowMenuCloseAllIncognitoTabsItem",

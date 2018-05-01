@@ -274,6 +274,12 @@ void VrGLThread::OpenDownloads() {
       FROM_HERE, base::BindOnce(&VrShell::OpenDownloads, weak_vr_shell_));
 }
 
+void VrGLThread::OpenShare() {
+  DCHECK(OnGlThread());
+  main_thread_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&VrShell::OpenShare, weak_vr_shell_));
+}
+
 void VrGLThread::OpenSettings() {
   DCHECK(OnGlThread());
   main_thread_task_runner_->PostTask(

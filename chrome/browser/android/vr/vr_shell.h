@@ -139,6 +139,7 @@ class VrShell : device::GvrGamepadDataProvider,
   void OpenRecentTabs();
   void OpenHistory();
   void OpenDownloads();
+  void OpenShare();
   void OpenSettings();
   void CloseAllTabs();
   void CloseAllIncognitoTabs();

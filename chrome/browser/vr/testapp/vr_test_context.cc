@@ -525,6 +525,7 @@ void VrTestContext::OpenBookmarks() {}
 void VrTestContext::OpenRecentTabs() {}
 void VrTestContext::OpenHistory() {}
 void VrTestContext::OpenDownloads() {}
+void VrTestContext::OpenShare() {}
 void VrTestContext::OpenSettings() {}
 
 void VrTestContext::CloseAllTabs() {

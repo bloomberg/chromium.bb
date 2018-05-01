@@ -91,6 +91,7 @@ class VrGLThread : public base::android::JavaHandlerThread,
   void OpenRecentTabs() override;
   void OpenHistory() override;
   void OpenDownloads() override;
+  void OpenShare() override;
   void OpenSettings() override;
   void CloseAllTabs() override;
   void CloseAllIncognitoTabs() override;

@@ -37,6 +37,7 @@ class UiBrowserInterface {
   virtual void OpenRecentTabs() = 0;
   virtual void OpenHistory() = 0;
   virtual void OpenDownloads() = 0;
+  virtual void OpenShare() = 0;
   virtual void OpenSettings() = 0;
   virtual void CloseAllTabs() = 0;
   virtual void CloseAllIncognitoTabs() = 0;

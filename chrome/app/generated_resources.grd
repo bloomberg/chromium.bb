@@ -10855,6 +10855,9 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
       <message name="IDS_VR_MENU_DOWNLOADS" desc="Menu item for opening the downloads page. [CHAR-LIMIT=27]">
         Downloads
       </message>
+      <message name="IDS_VR_MENU_SHARE" desc="Menu item for sharing the current URL. [CHAR-LIMIT=27]">
+        Share...
+      </message>
       <message name="IDS_VR_MENU_PREFERENCES" desc="Menu item for opening browser preferences. [CHAR-LIMIT=27]">
         Settings
       </message>
