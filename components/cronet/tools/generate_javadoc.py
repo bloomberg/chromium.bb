@@ -6,6 +6,7 @@
 
 import optparse
 import os
+import shutil
 import sys
 import tempfile
 
@@ -33,8 +34,7 @@ class CronetExtension(Extension):
                           CronetPostprocessor(md), '_end')
 
 
-def GenerateJavadoc(options, src_dir):
-  output_dir = os.path.abspath(os.path.join(options.output_dir, 'javadoc'))
+def GenerateJavadoc(options, src_dir, output_dir):
   working_dir = os.path.join(options.input_dir, 'android', 'api')
   overview_file = os.path.abspath(options.overview_file)
 
@@ -72,6 +72,14 @@ def GenerateJavadoc(options, src_dir):
     build_utils.DeleteDirectory(output_dir)
     raise
 
+  # Create an index.html file at the root as this is the accepted format.
+  # Do this by copying reference/index.html and adjusting the path.
+  with open(os.path.join(output_dir, 'reference', 'index.html'), 'r') as \
+      old_index, open(os.path.join(output_dir, 'index.html'), 'w') as new_index:
+    for line in old_index:
+      new_index.write(line.replace('classes.html',
+                                   os.path.join('reference', 'classes.html')))
+
 
 def main():
   parser = optparse.OptionParser()
@@ -81,7 +89,7 @@ def main():
   parser.add_option('--input-src-jar', help='Cronet api source jar')
   parser.add_option('--overview-file', help='Path of the overview page')
   parser.add_option('--readme-file', help='Path of the README.md')
-  parser.add_option('--stamp', help='Path to touch on success.')
+  parser.add_option('--zip-file', help='Path to ZIP archive of javadocs.')
   parser.add_option('--android-sdk-jar', help='Path to android.jar')
 
   options, _ = parser.parse_args()
@@ -96,16 +104,18 @@ def main():
   net_docs.ProcessDocs([options.readme_file], options.input_dir,
                        options.output_dir, extensions=[CronetExtension()])
 
-  GenerateJavadoc(options, os.path.abspath(unzipped_jar_path))
+  output_dir = os.path.abspath(os.path.join(options.output_dir, 'javadoc'))
+  GenerateJavadoc(options, os.path.abspath(unzipped_jar_path), output_dir)
 
-  if options.stamp:
-    build_utils.Touch(options.stamp)
+  if options.zip_file:
+    assert options.zip_file.endswith('.zip')
+    shutil.make_archive(options.zip_file[:-4], 'zip', output_dir)
   if options.depfile:
-    assert options.stamp
+    assert options.zip_file
     deps = []
     for root, _, filenames in os.walk(options.input_dir):
       deps.extend(os.path.join(root, f) for f in filenames)
-    build_utils.WriteDepfile(options.depfile, options.stamp, deps)
+    build_utils.WriteDepfile(options.depfile, options.zip_file, deps)
   # Clean up temporary output directory.
   build_utils.DeleteDirectory(unzipped_jar_path)
 
