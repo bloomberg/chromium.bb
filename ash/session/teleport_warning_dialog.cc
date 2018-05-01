@@ -8,11 +8,12 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "base/macros.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/layout/fill_layout.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/widget/widget.h"
 
@@ -21,13 +22,13 @@ namespace ash {
 namespace {
 
 // Default width of the dialog.
-const int kDefaultWidth = 448;
+constexpr int kDefaultWidth = 448;
 
 }  // namespace
 
 TeleportWarningDialog::TeleportWarningDialog(OnAcceptCallback callback)
     : never_show_again_checkbox_(new views::Checkbox(
-          l10n_util::GetStringUTF16(IDS_ASH_TELEPORT_WARNING_SHOW_DISMISS))),
+          l10n_util::GetStringUTF16(IDS_ASH_DIALOG_DONT_SHOW_AGAIN))),
       on_accept_(std::move(callback)) {
   never_show_again_checkbox_->SetChecked(true);
 }
@@ -56,16 +57,17 @@ bool TeleportWarningDialog::Accept() {
   return true;
 }
 
-views::View* TeleportWarningDialog::CreateExtraView() {
-  return never_show_again_checkbox_;
-}
-
 ui::ModalType TeleportWarningDialog::GetModalType() const {
   return ui::MODAL_TYPE_SYSTEM;
 }
 
 base::string16 TeleportWarningDialog::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_ASH_TELEPORT_WARNING_TITLE);
+}
+
+bool TeleportWarningDialog::ShouldShowCloseButton() const {
+  // Material UI has no [X] in the corner of this dialog.
+  return !ui::MaterialDesignController::IsSecondaryUiMaterial();
 }
 
 gfx::Size TeleportWarningDialog::CalculatePreferredSize() const {
@@ -75,10 +77,13 @@ gfx::Size TeleportWarningDialog::CalculatePreferredSize() const {
 }
 
 void TeleportWarningDialog::InitDialog() {
-  SetBorder(
-      views::CreateEmptyBorder(views::LayoutProvider::Get()->GetInsetsMetric(
-          views::INSETS_DIALOG_TITLE)));
-  SetLayoutManager(std::make_unique<views::FillLayout>());
+  const views::LayoutProvider* provider = views::LayoutProvider::Get();
+  SetBorder(views::CreateEmptyBorder(
+      provider->GetDialogInsetsForContentType(views::TEXT, views::CONTROL)));
+
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kVertical, gfx::Insets(),
+      provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
 
   // Explanation string
   views::Label* label = new views::Label(
@@ -86,6 +91,7 @@ void TeleportWarningDialog::InitDialog() {
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   AddChildView(label);
+  AddChildView(never_show_again_checkbox_);
 }
 
 }  // namespace ash
