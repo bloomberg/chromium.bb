@@ -1569,10 +1569,26 @@ void ExtensionPrefs::InitPrefStore() {
     // need to load the extension-controlled preferences.
     // See https://crbug.com/828295.
     auto predicate = [](const auto& info) {
+      // HACK(devlin): Unpacked extensions stored in preferences do not have a
+      // manifest, only a path (from which the manifest is later loaded). This
+      // means that we don't know what type the extension is just from the
+      // preferences (and, indeed, it may change types, if the file on disk has
+      // changed).
+      // Because of this, we may be passing |is_theme| incorrectly for unpacked
+      // extensions below. This is okay in this instance, since if the extension
+      // is a theme, initializing the controlled prefs shouldn't matter.
+      // However, this is a pretty hacky solution. It would likely be better if
+      // we could instead initialize the controlled preferences when the
+      // extension is more finalized, but this also needs to happen sufficiently
+      // before other subsystems are notified about the extension being loaded.
+      Manifest::Type type =
+          info->extension_manifest
+              ? Manifest::GetTypeFromManifestValue(*info->extension_manifest)
+              : Manifest::TYPE_UNKNOWN;
+      bool is_theme = type == Manifest::TYPE_THEME;
       // Erase the entry if the extension won't be loaded.
-      return !Manifest::ShouldAlwaysLoadExtension(
-          info->extension_location,
-          Manifest::GetTypeFromManifestValue(*info->extension_manifest));
+      return !Manifest::ShouldAlwaysLoadExtension(info->extension_location,
+                                                  is_theme);
     };
     base::EraseIf(*extensions_info, predicate);
   }

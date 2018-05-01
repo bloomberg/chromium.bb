@@ -137,11 +137,11 @@ Manifest::Type Manifest::GetTypeFromManifestValue(
 
 // static
 bool Manifest::ShouldAlwaysLoadExtension(Manifest::Location location,
-                                         Manifest::Type type) {
+                                         bool is_theme) {
   if (location == Manifest::COMPONENT)
     return true;  // Component extensions are always allowed.
 
-  if (type == Manifest::TYPE_THEME)
+  if (is_theme)
     return true;  // Themes are allowed, even with --disable-extensions.
 
   // TODO(devlin): This seems wrong. See https://crbug.com/833540.

@@ -1206,7 +1206,7 @@ void ExtensionService::AddExtension(const Extension* extension) {
   // is set (http://crbug.com/29067).
   if (!extensions_enabled_ &&
       !Manifest::ShouldAlwaysLoadExtension(extension->location(),
-                                           extension->GetType()) &&
+                                           extension->is_theme()) &&
       disable_flag_exempted_extensions_.count(extension->id()) == 0) {
     return;
   }

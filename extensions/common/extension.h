@@ -467,7 +467,10 @@ struct ExtensionInfo {
                 Manifest::Location location);
   ~ExtensionInfo();
 
+  // Note: This may be null (e.g. for unpacked extensions retrieved from the
+  // Preferences file).
   std::unique_ptr<base::DictionaryValue> extension_manifest;
+
   ExtensionId extension_id;
   base::FilePath extension_path;
   Manifest::Location extension_location;
