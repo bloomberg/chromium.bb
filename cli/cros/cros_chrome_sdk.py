@@ -836,6 +836,11 @@ class ChromeSDKCommand(command.CliCommand):
       os.environ[self.sdk.SDK_PATH_ENV] = options.sdk_path
     os.environ[self.sdk.SDK_VERSION_ENV] = sdk_ctx.version
 
+    # Add board and sdk version as gn args so that tests can bind them in
+    # test wrappers generated at compile time.
+    gn_args['cros_board'] = board
+    gn_args['cros_sdk_version'] = sdk_ctx.version
+
     # Export the board/version info in a more accessible way, so developers can
     # reference them in their chrome_sdk.bashrc files, as well as within the
     # chrome-sdk shell.
