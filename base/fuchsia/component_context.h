@@ -5,6 +5,7 @@
 #ifndef BASE_FUCHSIA_COMPONENT_CONTEXT_H_
 #define BASE_FUCHSIA_COMPONENT_CONTEXT_H_
 
+#include "base/base_export.h"
 #include "base/fuchsia/fidl_interface_request.h"
 #include "base/fuchsia/scoped_zx_handle.h"
 #include "base/macros.h"
@@ -25,7 +26,7 @@ namespace fuchsia {
 
 // Provides access to the component's environment and allows it to publish
 // outgoing services.
-class ComponentContext {
+class BASE_EXPORT ComponentContext {
  public:
   ComponentContext();
   ~ComponentContext();

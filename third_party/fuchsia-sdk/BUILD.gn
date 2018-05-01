@@ -156,6 +156,7 @@ fuchsia_sdk_pkg("fidl_cpp") {
     "internal/message_handler.cc",
     "internal/message_reader.cc",
     "internal/pending_response.cc",
+    "internal/proxy.cc",
     "internal/proxy_controller.cc",
     "internal/stub.cc",
     "internal/stub_controller.cc",
@@ -179,5 +180,12 @@ fuchsia_sdk_pkg("fdio") {
     "include/fdio/util.h",
     "include/fdio/vfs.h",
     "include/fdio/watcher.h",
+  ]
+}
+
+fuchsia_sdk_pkg("netstack") {
+  fidl_files = [
+    "net_address.fidl",
+    "netstack.fidl",
   ]
 }
