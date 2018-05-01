@@ -405,7 +405,7 @@ void av1_init_me_luts(void);
 
 void av1_set_mvcost(MACROBLOCK *x, int ref, int ref_mv_idx);
 
-void av1_get_entropy_contexts(BLOCK_SIZE bsize, TX_SIZE tx_size,
+void av1_get_entropy_contexts(BLOCK_SIZE bsize,
                               const struct macroblockd_plane *pd,
                               ENTROPY_CONTEXT t_above[2 * MAX_MIB_SIZE],
                               ENTROPY_CONTEXT t_left[2 * MAX_MIB_SIZE]);

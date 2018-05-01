@@ -2798,7 +2798,7 @@ static void txfm_rd_in_plane(MACROBLOCK *x, const AV1_COMP *cpi,
 
   if (plane == 0) xd->mi[0]->tx_size = tx_size;
 
-  av1_get_entropy_contexts(bsize, tx_size, pd, args.t_above, args.t_left);
+  av1_get_entropy_contexts(bsize, pd, args.t_above, args.t_left);
 
   av1_foreach_transformed_block_in_plane(xd, bsize, plane, block_rd_txfm,
                                          &args);
@@ -4377,7 +4377,7 @@ static void select_inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
     const int init_depth = get_search_init_depth(mi_width, mi_height, &cpi->sf);
     av1_init_rd_stats(&pn_rd_stats);
 
-    av1_get_entropy_contexts(bsize, 0, pd, ctxa, ctxl);
+    av1_get_entropy_contexts(bsize, pd, ctxa, ctxl);
     memcpy(tx_above, xd->above_txfm_context, sizeof(TXFM_CONTEXT) * mi_width);
     memcpy(tx_left, xd->left_txfm_context, sizeof(TXFM_CONTEXT) * mi_height);
 
@@ -4586,7 +4586,7 @@ int inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *rd_stats,
     TXFM_CONTEXT tx_left[MAX_MIB_SIZE * 2];
     RD_STATS pn_rd_stats;
 
-    av1_get_entropy_contexts(bsize, 0, pd, ctxa, ctxl);
+    av1_get_entropy_contexts(bsize, pd, ctxa, ctxl);
     memcpy(tx_above, xd->above_txfm_context, sizeof(TXFM_CONTEXT) * mi_width);
     memcpy(tx_left, xd->left_txfm_context, sizeof(TXFM_CONTEXT) * mi_height);
 
@@ -4902,7 +4902,7 @@ static void set_skip_flag(MACROBLOCK *x, RD_STATS *rd_stats, int bsize,
   const int tx_size_ctx = get_txsize_entropy_ctx(tx_size);
   ENTROPY_CONTEXT ctxa[2 * MAX_MIB_SIZE];
   ENTROPY_CONTEXT ctxl[2 * MAX_MIB_SIZE];
-  av1_get_entropy_contexts(bsize, 0, &xd->plane[0], ctxa, ctxl);
+  av1_get_entropy_contexts(bsize, &xd->plane[0], ctxa, ctxl);
   TXB_CTX txb_ctx;
   // Because plane is 0, plane_bsize equal to bsize
   get_txb_ctx(bsize, tx_size, 0, ctxa, ctxl, &txb_ctx);
@@ -5069,7 +5069,7 @@ int inter_block_uvrd(const AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *rd_stats,
       ENTROPY_CONTEXT tl[2 * MAX_MIB_SIZE];
       RD_STATS pn_rd_stats;
       av1_init_rd_stats(&pn_rd_stats);
-      av1_get_entropy_contexts(bsizec, 0, pd, ta, tl);
+      av1_get_entropy_contexts(bsizec, pd, ta, tl);
 
       for (idy = 0; idy < mi_height; idy += bh) {
         for (idx = 0; idx < mi_width; idx += bw) {

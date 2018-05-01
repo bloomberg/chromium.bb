@@ -437,7 +437,7 @@ void av1_encode_sb(const struct AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
     int idx, idy;
     int block = 0;
     int step = tx_size_wide_unit[max_tx_size] * tx_size_high_unit[max_tx_size];
-    av1_get_entropy_contexts(bsizec, 0, pd, ctx.ta[plane], ctx.tl[plane]);
+    av1_get_entropy_contexts(bsizec, pd, ctx.ta[plane], ctx.tl[plane]);
 
     av1_subtract_plane(x, bsizec, plane);
 
@@ -579,8 +579,7 @@ void av1_encode_intra_block_plane(const struct AV1_COMP *cpi, MACROBLOCK *x,
 
   if (enable_optimize_b) {
     const struct macroblockd_plane *const pd = &xd->plane[plane];
-    const TX_SIZE tx_size = av1_get_tx_size(plane, xd);
-    av1_get_entropy_contexts(bsize, tx_size, pd, ta, tl);
+    av1_get_entropy_contexts(bsize, pd, ta, tl);
   }
   av1_foreach_transformed_block_in_plane(
       xd, bsize, plane, encode_block_intra_and_set_context, &arg);
