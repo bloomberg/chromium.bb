@@ -40,7 +40,9 @@ public class InputMethodManagerWrapperImpl implements InputMethodManagerWrapper 
     @Override
     public void restartInput(View view) {
         if (DEBUG_LOGS) Log.i(TAG, "restartInput");
-        getInputMethodManager().restartInput(view);
+        InputMethodManager manager = getInputMethodManager();
+        if (manager == null) return;
+        manager.restartInput(view);
     }
 
     @Override
@@ -48,7 +50,8 @@ public class InputMethodManagerWrapperImpl implements InputMethodManagerWrapper 
         if (DEBUG_LOGS) Log.i(TAG, "showSoftInput");
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites(); // crbug.com/616283
         try {
-            getInputMethodManager().showSoftInput(view, flags, resultReceiver);
+            InputMethodManager manager = getInputMethodManager();
+            if (manager != null) manager.showSoftInput(view, flags, resultReceiver);
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
@@ -56,7 +59,8 @@ public class InputMethodManagerWrapperImpl implements InputMethodManagerWrapper 
 
     @Override
     public boolean isActive(View view) {
-        final boolean active = getInputMethodManager().isActive(view);
+        InputMethodManager manager = getInputMethodManager();
+        final boolean active = manager != null && manager.isActive(view);
         if (DEBUG_LOGS) Log.i(TAG, "isActive: " + active);
         return active;
     }
@@ -67,8 +71,9 @@ public class InputMethodManagerWrapperImpl implements InputMethodManagerWrapper 
         if (DEBUG_LOGS) Log.i(TAG, "hideSoftInputFromWindow");
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites(); // crbug.com/616283
         try {
-            return getInputMethodManager().hideSoftInputFromWindow(
-                    windowToken, flags, resultReceiver);
+            InputMethodManager manager = getInputMethodManager();
+            return manager != null
+                    && manager.hideSoftInputFromWindow(windowToken, flags, resultReceiver);
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
@@ -81,15 +86,18 @@ public class InputMethodManagerWrapperImpl implements InputMethodManagerWrapper 
             Log.i(TAG, "updateSelection: SEL [%d, %d], COM [%d, %d]", selStart, selEnd,
                     candidatesStart, candidatesEnd);
         }
-        getInputMethodManager().updateSelection(
-                view, selStart, selEnd, candidatesStart, candidatesEnd);
+        InputMethodManager manager = getInputMethodManager();
+        if (manager == null) return;
+        manager.updateSelection(view, selStart, selEnd, candidatesStart, candidatesEnd);
     }
 
     @Override
     public void updateCursorAnchorInfo(View view, CursorAnchorInfo cursorAnchorInfo) {
         if (DEBUG_LOGS) Log.i(TAG, "updateCursorAnchorInfo");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getInputMethodManager().updateCursorAnchorInfo(view, cursorAnchorInfo);
+            InputMethodManager manager = getInputMethodManager();
+            if (manager == null) return;
+            manager.updateCursorAnchorInfo(view, cursorAnchorInfo);
         }
     }
 
@@ -97,7 +105,9 @@ public class InputMethodManagerWrapperImpl implements InputMethodManagerWrapper 
     public void updateExtractedText(
             View view, int token, android.view.inputmethod.ExtractedText text) {
         if (DEBUG_LOGS) Log.d(TAG, "updateExtractedText");
-        getInputMethodManager().updateExtractedText(view, token, text);
+        InputMethodManager manager = getInputMethodManager();
+        if (manager == null) return;
+        manager.updateExtractedText(view, token, text);
     }
 
     @Override
@@ -106,6 +116,7 @@ public class InputMethodManagerWrapperImpl implements InputMethodManagerWrapper 
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) return;
         if (DEBUG_LOGS) Log.i(TAG, "notifyUserAction");
         InputMethodManager manager = getInputMethodManager();
+        if (manager == null) return;
         try {
             Method method = InputMethodManager.class.getMethod("notifyUserAction");
             method.invoke(manager);
