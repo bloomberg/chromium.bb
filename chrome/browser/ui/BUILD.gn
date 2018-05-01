@@ -1543,8 +1543,6 @@ split_static_library("ui") {
       "webui/devtools_ui.h",
       "webui/extensions/extensions_ui.cc",
       "webui/extensions/extensions_ui.h",
-      "webui/extensions/install_extension_handler.cc",
-      "webui/extensions/install_extension_handler.h",
       "webui/foreign_session_handler.cc",
       "webui/foreign_session_handler.h",
       "webui/help/version_updater.h",
