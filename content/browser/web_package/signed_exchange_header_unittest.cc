@@ -72,7 +72,7 @@ TEST(SignedExchangeHeaderTest, ParseHeaderLength) {
 
 TEST(SignedExchangeHeaderTest, ParseGoldenFile) {
   base::FilePath test_htxg_path;
-  PathService::Get(content::DIR_TEST_DATA, &test_htxg_path);
+  base::PathService::Get(content::DIR_TEST_DATA, &test_htxg_path);
   test_htxg_path = test_htxg_path.AppendASCII("htxg").AppendASCII(
       "test.example.org_test.htxg");
 

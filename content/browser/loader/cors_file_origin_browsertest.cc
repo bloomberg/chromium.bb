@@ -89,7 +89,7 @@ class CORSFileOriginBrowserTest : public ContentBrowserTest {
     base::AutoLock lock(lock_);
 
     // Need to obtain the path on the main thread.
-    ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &test_data_loader_path_));
+    ASSERT_TRUE(base::PathService::Get(DIR_TEST_DATA, &test_data_loader_path_));
     test_data_loader_path_ =
         test_data_loader_path_.Append(FILE_PATH_LITERAL("loader"));
 

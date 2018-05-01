@@ -63,7 +63,7 @@ class RenderWidgetHostViewBrowserTest : public ContentBrowserTest {
         frames_captured_(0) {}
 
   void SetUpOnMainThread() override {
-    ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &test_dir_));
+    ASSERT_TRUE(base::PathService::Get(DIR_TEST_DATA, &test_dir_));
   }
 
   // Attempts to set up the source surface.  Returns false if unsupported on the

@@ -310,7 +310,7 @@ TEST(DOMStorageDatabaseTest, TestSimpleRemoveOneValue) {
 
 TEST(DOMStorageDatabaseTest, TestCanOpenAndReadWebCoreDatabase) {
   base::FilePath dir_test_data;
-  ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &dir_test_data));
+  ASSERT_TRUE(base::PathService::Get(DIR_TEST_DATA, &dir_test_data));
   base::FilePath test_data = dir_test_data.AppendASCII("dom_storage");
   test_data = test_data.AppendASCII("webcore_test_database.localstorage");
   ASSERT_TRUE(base::PathExists(test_data));

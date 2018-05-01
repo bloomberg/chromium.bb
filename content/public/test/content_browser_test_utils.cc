@@ -31,7 +31,7 @@ namespace content {
 base::FilePath GetTestFilePath(const char* dir, const char* file) {
   base::FilePath path;
   base::ThreadRestrictions::ScopedAllowIO allow_io_for_path_service;
-  PathService::Get(DIR_TEST_DATA, &path);
+  base::PathService::Get(DIR_TEST_DATA, &path);
   if (dir)
     path = path.AppendASCII(dir);
   return path.AppendASCII(file);

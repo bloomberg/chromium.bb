@@ -28,7 +28,7 @@ bool SetupFonts() {
   // AHEM____.TTF is copied to the directory of DumpRenderTree.exe by
   // WebKit.gyp.
   base::FilePath base_path;
-  PathService::Get(base::DIR_MODULE, &base_path);
+  base::PathService::Get(base::DIR_MODULE, &base_path);
   base::FilePath font_path =
       base_path.Append(FILE_PATH_LITERAL("/AHEM____.TTF"));
 

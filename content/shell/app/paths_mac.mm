@@ -15,7 +15,7 @@ namespace {
 base::FilePath GetContentsPath() {
   // Start out with the path to the running executable.
   base::FilePath path;
-  PathService::Get(base::FILE_EXE, &path);
+  base::PathService::Get(base::FILE_EXE, &path);
 
   // Up to Contents.
   if (base::mac::IsBackgroundOnlyProcess()) {
@@ -52,7 +52,7 @@ void OverrideChildProcessPath() {
                                             .Append("MacOS")
                                             .Append("Content Shell Helper");
 
-  PathService::Override(content::CHILD_PROCESS_EXE, helper_path);
+  base::PathService::Override(content::CHILD_PROCESS_EXE, helper_path);
 }
 
 void OverrideSourceRootPath() {
@@ -61,7 +61,7 @@ void OverrideSourceRootPath() {
   //
   // Going up 5 levels is needed, since frameworks path looks something like
   // src/out/foo/Content Shell.app/Contents/Framework/
-  PathService::Override(
+  base::PathService::Override(
       base::DIR_SOURCE_ROOT,
       GetFrameworksPath().DirName().DirName().DirName().DirName().DirName());
 }

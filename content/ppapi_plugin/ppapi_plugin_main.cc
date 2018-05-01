@@ -106,7 +106,7 @@ int PpapiPluginMain(const MainFunctionParams& parameters) {
   // Specifies $HOME explicitly because some plugins rely on $HOME but
   // no other part of Chrome OS uses that.  See crbug.com/335290.
   base::FilePath homedir;
-  PathService::Get(base::DIR_HOME, &homedir);
+  base::PathService::Get(base::DIR_HOME, &homedir);
   setenv("HOME", homedir.value().c_str(), 1);
 #endif
 

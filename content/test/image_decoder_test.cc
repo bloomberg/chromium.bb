@@ -107,7 +107,7 @@ void VerifyImage(const blink::WebImageDecoder& decoder,
 
 void ImageDecoderTest::SetUp() {
   base::FilePath data_dir;
-  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &data_dir));
+  ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &data_dir));
   data_dir_ = data_dir.AppendASCII("webkit").AppendASCII("data").AppendASCII(
       format_ + "_decoder");
   if (!base::PathExists(data_dir_)) {

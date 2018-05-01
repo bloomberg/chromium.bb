@@ -33,7 +33,7 @@ const int kOutputBufferSize = 4096;
 
 std::string GetTestFileContents(base::StringPiece name) {
   base::FilePath path;
-  PathService::Get(content::DIR_TEST_DATA, &path);
+  base::PathService::Get(content::DIR_TEST_DATA, &path);
   path = path.AppendASCII("htxg").AppendASCII(name);
 
   std::string contents;

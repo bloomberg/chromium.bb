@@ -133,7 +133,7 @@ class WebPackageRequestHandlerBrowserTest
   static std::string ReadFile(const std::string& data_path) {
     base::ScopedAllowBlockingForTesting allow_io;
     base::FilePath root_path;
-    CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &root_path));
+    CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &root_path));
     std::string contents;
     CHECK(base::ReadFileToString(root_path.AppendASCII(data_path), &contents));
     return contents;
@@ -143,7 +143,7 @@ class WebPackageRequestHandlerBrowserTest
     std::string header_file_relative_path = data_path + kMockHeaderFileSuffix;
     base::ScopedAllowBlockingForTesting allow_io;
     base::FilePath root_path;
-    CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &root_path));
+    CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &root_path));
     if (!base::PathExists(root_path.AppendASCII(header_file_relative_path)))
       return "HTTP/1.0 200 OK\n";
     return ReadFile(header_file_relative_path);
@@ -153,7 +153,7 @@ class WebPackageRequestHandlerBrowserTest
                                       const std::string& data_path) {
     DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
     base::FilePath root_path;
-    CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &root_path));
+    CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &root_path));
     net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
         url, net::URLRequestMockHTTPJob::CreateInterceptorForSingleFile(
                  root_path.AppendASCII(data_path)));

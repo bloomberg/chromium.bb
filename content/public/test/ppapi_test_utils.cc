@@ -40,7 +40,7 @@ struct PluginInfo {
 bool RegisterPlugins(base::CommandLine* command_line,
                      const std::vector<PluginInfo>& plugins) {
   base::FilePath plugin_dir;
-  if (!PathService::Get(base::DIR_MODULE, &plugin_dir))
+  if (!base::PathService::Get(base::DIR_MODULE, &plugin_dir))
     return false;
 
   StringType args;
