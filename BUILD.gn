@@ -1096,7 +1096,10 @@ if (!is_ios && !is_android && !is_chromecast && !is_fuchsia) {
       ]
     }
     if (enable_ipc_fuzzer && !is_component_build) {
-      deps += [ "//tools/ipc_fuzzer:ipc_fuzzer_all" ]
+      deps += [
+        "//chrome/app:service_manifests",
+        "//tools/ipc_fuzzer:ipc_fuzzer_all",
+      ]
     }
     if (!is_chromeos) {
       deps += [
