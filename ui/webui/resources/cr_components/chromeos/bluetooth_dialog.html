@@ -2,6 +2,7 @@
 
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
@@ -11,7 +12,7 @@
 
 <dom-module id="bluetooth-dialog">
   <template>
-    <style include="cr-hidden-style iron-flex">
+    <style include="cr-hidden-style paper-button-style iron-flex">
       cr-dialog {
         --cr-dialog-native: var(--bluetooth-dialog-style);
       }
@@ -117,19 +118,27 @@
       </div>
       <div slot="button-container">
         <template is="dom-if" if="[[!errorMessage_]]">
+          <paper-button hidden$="[[showDismiss_(pairingDevice, pairingEvent_)]]"
+              class="cancel-button" on-tap="onCancelTap_">
+           [[i18n('cancel')]]
+          </paper-button>
           <paper-button hidden$="[[!showAcceptReject_(pairingEvent_)]]"
-              on-tap="onAcceptTap_">[[i18n('bluetoothAccept')]]</paper-button>
+              class="action-button" on-tap="onAcceptTap_">
+            [[i18n('bluetoothAccept')]]
+          </paper-button>
           <paper-button hidden$="[[!showAcceptReject_(pairingEvent_)]]"
-              on-tap="onRejectTap_">[[i18n('bluetoothReject')]]</paper-button>
+              class="action-button" on-tap="onRejectTap_">
+            [[i18n('bluetoothReject')]]
+          </paper-button>
           <paper-button hidden$="[[!showConnect_(pairingEvent_)]]"
               disabled="[[!enableConnect_(pairingEvent_, pinOrPass_)]]"
-              on-tap="onConnectTap_">[[i18n('bluetoothPair')]]</paper-button>
+              class="action-button" on-tap="onConnectTap_">
+            [[i18n('bluetoothPair')]]
+          </paper-button>
           <paper-button
               hidden$="[[!showDismiss_(pairingDevice, pairingEvent_)]]"
-              on-tap="close">[[i18n('ok')]]</paper-button>
-          <paper-button hidden$="[[showDismiss_(pairingDevice, pairingEvent_)]]"
-              on-tap="onCancelTap_">
-           [[i18n('cancel')]]
+              class="action-button" on-tap="close">
+            [[i18n('ok')]]
           </paper-button>
         </template>
         <template is="dom-if" if="[[errorMessage_]]">
