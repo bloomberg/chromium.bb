@@ -261,10 +261,11 @@ class EmbeddedWorkerInstance::DevToolsProxy {
 // UI thread. Lives on the IO thread.
 class EmbeddedWorkerInstance::WorkerProcessHandle {
  public:
-  WorkerProcessHandle(const base::WeakPtr<ServiceWorkerContextCore>& context,
-                      int embedded_worker_id,
-                      int process_id)
-      : context_(context),
+  WorkerProcessHandle(
+      const base::WeakPtr<ServiceWorkerProcessManager>& process_manager,
+      int embedded_worker_id,
+      int process_id)
+      : process_manager_(process_manager),
         embedded_worker_id_(embedded_worker_id),
         process_id_(process_id) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -273,19 +274,17 @@ class EmbeddedWorkerInstance::WorkerProcessHandle {
 
   ~WorkerProcessHandle() {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    if (!context_)
-      return;
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(&ServiceWorkerProcessManager::ReleaseWorkerProcess,
-                       context_->process_manager()->AsWeakPtr(),
-                       embedded_worker_id_));
+                       process_manager_, embedded_worker_id_));
   }
 
   int process_id() const { return process_id_; }
 
  private:
-  base::WeakPtr<ServiceWorkerContextCore> context_;
+  // Can be dereferenced on the UI thread only.
+  base::WeakPtr<ServiceWorkerProcessManager> process_manager_;
 
   const int embedded_worker_id_;
   const int process_id_;
@@ -378,17 +377,19 @@ class EmbeddedWorkerInstance::StartTask {
     DCHECK_EQ(params->embedded_worker_id, instance_->embedded_worker_id_);
     TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ServiceWorker", "ALLOCATING_PROCESS",
                                       this);
+    base::WeakPtr<ServiceWorkerProcessManager> process_manager =
+        instance_->context_->process_manager()->AsWeakPtr();
+
     // Hop to the UI thread for process allocation and setup. We will continue
     // on the IO thread in StartTask::OnSetupCompleted().
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&SetupOnUIThread,
-                       instance_->context_->process_manager()->AsWeakPtr(),
-                       can_use_existing_process, std::move(params),
-                       std::move(request_), instance_->context_.get(),
-                       instance_->context_,
-                       base::BindOnce(&StartTask::OnSetupCompleted,
-                                      weak_factory_.GetWeakPtr())));
+        base::BindOnce(
+            &SetupOnUIThread, process_manager, can_use_existing_process,
+            std::move(params), std::move(request_), instance_->context_.get(),
+            instance_->context_,
+            base::BindOnce(&StartTask::OnSetupCompleted,
+                           weak_factory_.GetWeakPtr(), process_manager)));
   }
 
   static void RunStartCallback(StartTask* task,
@@ -407,6 +408,7 @@ class EmbeddedWorkerInstance::StartTask {
 
  private:
   void OnSetupCompleted(
+      base::WeakPtr<ServiceWorkerProcessManager> process_manager,
       ServiceWorkerStatusCode status,
       mojom::EmbeddedWorkerStartParamsPtr params,
       std::unique_ptr<ServiceWorkerProcessManager::AllocatedProcessInfo>
@@ -414,6 +416,16 @@ class EmbeddedWorkerInstance::StartTask {
       std::unique_ptr<EmbeddedWorkerInstance::DevToolsProxy> devtools_proxy,
       network::mojom::URLLoaderFactoryPtrInfo non_network_loader_factory_info) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+    // We allocated a process but will not use it. Tell the process manager to
+    // release the process, by making a WorkerProcessHandle and immediately
+    // destroying it.
+    if (status == SERVICE_WORKER_OK && !instance_->context_) {
+      WorkerProcessHandle(process_manager, instance_->embedded_worker_id(),
+                          process_info->process_id);
+      status = SERVICE_WORKER_ERROR_ABORT;
+    }
+
     if (status != SERVICE_WORKER_OK) {
       TRACE_EVENT_NESTABLE_ASYNC_END1("ServiceWorker", "ALLOCATING_PROCESS",
                                       this, "Error",
@@ -441,7 +453,7 @@ class EmbeddedWorkerInstance::StartTask {
     // Notify the instance that a process is allocated.
     state_ = ProcessAllocationState::ALLOCATED;
     instance_->OnProcessAllocated(
-        std::make_unique<WorkerProcessHandle>(instance_->context_,
+        std::make_unique<WorkerProcessHandle>(process_manager,
                                               instance_->embedded_worker_id(),
                                               process_info->process_id),
         start_situation);
@@ -633,8 +645,8 @@ void EmbeddedWorkerInstance::OnRegisteredToDevToolsManager(
 ServiceWorkerStatusCode EmbeddedWorkerInstance::SendStartWorker(
     mojom::EmbeddedWorkerStartParamsPtr params,
     network::mojom::URLLoaderFactoryPtr non_network_loader_factory) {
-  if (!context_)
-    return SERVICE_WORKER_ERROR_ABORT;
+  DCHECK(context_);
+
   if (!context_->GetDispatcherHost(process_id())) {
     // Check if there's a dispatcher host, which is a good sign the process is
     // still alive. It's possible that previously the process crashed, and the
