@@ -896,7 +896,8 @@ void BrowserView::ExitFullscreen() {
 void BrowserView::UpdateExclusiveAccessExitBubbleContent(
     const GURL& url,
     ExclusiveAccessBubbleType bubble_type,
-    ExclusiveAccessBubbleHideCallback bubble_first_hide_callback) {
+    ExclusiveAccessBubbleHideCallback bubble_first_hide_callback,
+    bool force_update) {
   // Immersive mode has no exit bubble because it has a visible strip at the
   // top that gives the user a hover target. In a public session we show the
   // bubble.
@@ -916,7 +917,7 @@ void BrowserView::UpdateExclusiveAccessExitBubbleContent(
 
   if (exclusive_access_bubble_) {
     exclusive_access_bubble_->UpdateContent(
-        url, bubble_type, std::move(bubble_first_hide_callback));
+        url, bubble_type, std::move(bubble_first_hide_callback), force_update);
     return;
   }
 
@@ -2436,7 +2437,8 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
 
   if (fullscreen && !chrome::IsRunningInAppMode()) {
     UpdateExclusiveAccessExitBubbleContent(url, bubble_type,
-                                           ExclusiveAccessBubbleHideCallback());
+                                           ExclusiveAccessBubbleHideCallback(),
+                                           /*force_update=*/false);
   }
 
   // Undo our anti-jankiness hacks and force a re-layout.

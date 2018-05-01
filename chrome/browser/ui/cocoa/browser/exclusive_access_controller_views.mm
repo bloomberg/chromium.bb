@@ -100,7 +100,8 @@ void ExclusiveAccessController::ExitFullscreen() {
 void ExclusiveAccessController::UpdateExclusiveAccessExitBubbleContent(
     const GURL& url,
     ExclusiveAccessBubbleType bubble_type,
-    ExclusiveAccessBubbleHideCallback bubble_first_hide_callback) {
+    ExclusiveAccessBubbleHideCallback bubble_first_hide_callback,
+    bool force_update) {
   url_ = url;
   bubble_type_ = bubble_type;
   CallHideCallbackAsNotShownIfNecessary(std::move(bubble_first_hide_callback_));

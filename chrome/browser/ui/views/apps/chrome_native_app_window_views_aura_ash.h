@@ -96,7 +96,8 @@ class ChromeNativeAppWindowViewsAuraAsh
   void UpdateExclusiveAccessExitBubbleContent(
       const GURL& url,
       ExclusiveAccessBubbleType bubble_type,
-      ExclusiveAccessBubbleHideCallback bubble_first_hide_callback) override;
+      ExclusiveAccessBubbleHideCallback bubble_first_hide_callback,
+      bool force_update) override;
   void OnExclusiveAccessUserInput() override;
   content::WebContents* GetActiveWebContents() override;
   void UnhideDownloadShelf() override;

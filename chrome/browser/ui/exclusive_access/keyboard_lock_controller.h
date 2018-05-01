@@ -6,10 +6,16 @@
 #define CHROME_BROWSER_UI_EXCLUSIVE_ACCESS_KEYBOARD_LOCK_CONTROLLER_H_
 
 #include "base/callback.h"
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_bubble_hide_callback.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_controller_base.h"
+
+namespace base {
+class TickClock;
+}  // namespace base
 
 namespace content {
 struct NativeWebKeyboardEvent;
@@ -72,6 +78,13 @@ class KeyboardLockController : public ExclusiveAccessControllerBase {
   // Called when the user has held down Escape.
   void HandleUserHeldEscape();
 
+  // Displays the exit instructions if the user presses escape rapidly.
+  void ReShowExitBubbleIfNeeded();
+
+  // Records the number of times the exit instructions were shown due to
+  // repeated ESC keypresses.
+  void RecordForcedBubbleReshowsHistogram();
+
   // TODO(joedow): Remove this bool and initiate keyboard lock from javascript
   // once all platforms have been implemented.
   // If true, does not call into the WebContents to lock the keyboard.
@@ -81,9 +94,21 @@ class KeyboardLockController : public ExclusiveAccessControllerBase {
   // Called after the bubble is hidden in tests, if set.
   ExclusiveAccessBubbleHideCallbackForTest bubble_hide_callback_for_test_;
 
-  bool esc_key_locked_ = false;
+  // Called after the esc repeat threshold is reached, if set.
+  base::OnceClosure esc_repeat_triggered_for_test_;
+
+  // Tracks the count of bubble reshows due to repeated ESC key presses.
+  int forced_reshow_count_ = 0;
+
   KeyboardLockState keyboard_lock_state_ = KeyboardLockState::kUnlocked;
   base::OneShotTimer hold_timer_;
+
+  // Window which determines whether to reshow the exit fullscreen instructions.
+  base::TimeDelta esc_repeat_window_;
+
+  const base::TickClock* esc_repeat_tick_clock_ = nullptr;
+
+  base::circular_deque<base::TimeTicks> esc_keypress_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardLockController);
 };

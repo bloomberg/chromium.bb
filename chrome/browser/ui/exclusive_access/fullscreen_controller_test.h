@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/test/scoped_feature_list.h"
@@ -22,6 +23,10 @@
 #if defined(OS_MACOSX)
 #include "ui/base/test/scoped_fake_nswindow_fullscreen.h"
 #endif
+
+namespace base {
+class TickClock;
+}  // namespace base
 
 // Observer for NOTIFICATION_FULLSCREEN_CHANGED notifications.
 class FullscreenNotificationObserver
@@ -80,6 +85,12 @@ class FullscreenControllerTest : public InProcessBrowserTest {
   void OnBubbleHidden(
       std::vector<ExclusiveAccessBubbleHideReason>* reason_recorder,
       ExclusiveAccessBubbleHideReason);
+
+  void SetEscRepeatWindowLength(base::TimeDelta esc_repeat_window);
+
+  void SetEscRepeatThresholdReachedCallback(base::OnceClosure callback);
+
+  void SetEscRepeatTestTickClock(const base::TickClock* tick_clock_for_test);
 
   int InitialBubbleDelayMs() const;
 

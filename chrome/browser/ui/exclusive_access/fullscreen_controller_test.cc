@@ -4,8 +4,10 @@
 
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller_test.h"
 
+#include <utility>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -162,6 +164,26 @@ void FullscreenControllerTest::EnterExtensionInitiatedFullscreen() {
   FullscreenNotificationObserver fullscreen_observer;
   browser()->ToggleFullscreenModeWithExtension(GURL("faux_extension"));
   fullscreen_observer.Wait();
+}
+
+void FullscreenControllerTest::SetEscRepeatWindowLength(
+    base::TimeDelta esc_repeat_window) {
+  GetExclusiveAccessManager()->keyboard_lock_controller()->esc_repeat_window_ =
+      esc_repeat_window;
+}
+
+void FullscreenControllerTest::SetEscRepeatThresholdReachedCallback(
+    base::OnceClosure callback) {
+  GetExclusiveAccessManager()
+      ->keyboard_lock_controller()
+      ->esc_repeat_triggered_for_test_ = std::move(callback);
+}
+
+void FullscreenControllerTest::SetEscRepeatTestTickClock(
+    const base::TickClock* tick_clock_for_test) {
+  GetExclusiveAccessManager()
+      ->keyboard_lock_controller()
+      ->esc_repeat_tick_clock_ = tick_clock_for_test;
 }
 
 void FullscreenControllerTest::OnBubbleHidden(

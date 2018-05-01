@@ -55,7 +55,8 @@ class ExclusiveAccessContext {
   virtual void UpdateExclusiveAccessExitBubbleContent(
       const GURL& url,
       ExclusiveAccessBubbleType bubble_type,
-      ExclusiveAccessBubbleHideCallback bubble_first_hide_callback) = 0;
+      ExclusiveAccessBubbleHideCallback bubble_first_hide_callback,
+      bool force_update) = 0;
 
   // Informs the exclusive access system of some user input, which may update
   // internal timers and/or re-display the bubble.

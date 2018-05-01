@@ -89,7 +89,8 @@ class PresentationReceiverWindowView final
   void UpdateExclusiveAccessExitBubbleContent(
       const GURL& url,
       ExclusiveAccessBubbleType bubble_type,
-      ExclusiveAccessBubbleHideCallback bubble_first_hide_callback) final;
+      ExclusiveAccessBubbleHideCallback bubble_first_hide_callback,
+      bool force_update) final;
   void OnExclusiveAccessUserInput() final;
   content::WebContents* GetActiveWebContents() final;
   void UnhideDownloadShelf() final;
