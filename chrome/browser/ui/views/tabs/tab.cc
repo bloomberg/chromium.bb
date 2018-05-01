@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/tabs/alert_indicator_button.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_close_button.h"
@@ -104,6 +105,8 @@ const double kSelectedTabThrobScale = 0.95 - kSelectedTabOpacity;
 //
 // The value returned here must be at least Tab::kMinimumEndcapWidth.
 float GetTabEndcapWidth() {
+  // TODO(pkasting): This should become a member function and vary with
+  // GetCornerRadius().
   return GetLayoutInsets(TAB).left() -
          (MD::GetMode() == MD::MATERIAL_REFRESH ? 0.0f : 0.5f);
 }
@@ -354,6 +357,11 @@ Tab::Tab(TabController* controller, gfx::AnimationContainer* container)
 }
 
 Tab::~Tab() {
+}
+
+int Tab::GetCornerRadius() const {
+  // TODO(pkasting): This should vary as the tab width decreases.
+  return ChromeLayoutProvider::Get()->GetCornerRadiusMetric(EMPHASIS_MEDIUM);
 }
 
 SkColor Tab::GetAlertIndicatorColor(TabAlertState state) const {

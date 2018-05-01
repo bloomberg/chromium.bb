@@ -68,9 +68,6 @@ enum LayoutConstant {
   // of the icon view (e.g. does not highlight on hover).
   LOCATION_BAR_ICON_INTERIOR_PADDING,
 
-  // The amount of spacing between the last tab and the new tab button.
-  TABSTRIP_NEW_TAB_BUTTON_SPACING,
-
   // Padding after the tab title.
   TAB_AFTER_TITLE_PADDING,
 

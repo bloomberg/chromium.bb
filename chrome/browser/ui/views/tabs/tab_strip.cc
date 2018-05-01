@@ -118,12 +118,6 @@ const int kPinnedToNonPinnedOffset = 3;
 
 TabSizeInfo* g_tab_size_info = nullptr;
 
-// Returns the width needed for the new tab button (and padding).
-int GetNewTabButtonWidth(bool is_incognito) {
-  return GetLayoutSize(NEW_TAB_BUTTON, is_incognito).width() +
-         GetLayoutConstant(TABSTRIP_NEW_TAB_BUTTON_SPACING);
-}
-
 enum NewTabButtonPosition {
   LEADING,     // Pinned to the leading edge of the tabstrip region.
   AFTER_TABS,  // After the last tab.
@@ -340,10 +334,10 @@ int TabStrip::GetMaxX() const {
   const auto position = GetNewTabButtonPosition();
   DCHECK_NE(TRAILING, position);
 
-  const gfx::Rect& last_object_bounds = (position == AFTER_TABS)
-                                            ? new_tab_button_bounds_
-                                            : ideal_bounds(tab_count() - 1);
-  return last_object_bounds.right();
+  if (position == AFTER_TABS)
+    return new_tab_button_bounds_.right();
+  // There might be no tabs yet during startup.
+  return tab_count() ? ideal_bounds(tab_count() - 1).right() : 0;
 }
 
 void TabStrip::SetBackgroundOffset(const gfx::Point& offset) {
@@ -1251,7 +1245,8 @@ gfx::Size TabStrip::CalculatePreferredSize() const {
     needed_tab_width = std::min(std::max(needed_tab_width, min_selected_width),
                                 largest_min_tab_width);
   }
-  return gfx::Size(needed_tab_width + GetNewTabButtonWidth(IsIncognito()),
+  return gfx::Size(needed_tab_width + GetFrameGrabWidth() +
+                       GetNewTabButtonWidth(IsIncognito()),
                    Tab::GetMinimumInactiveSize().height());
 }
 
@@ -1443,8 +1438,52 @@ TabStrip::NewTabButtonPosition TabStrip::GetNewTabButtonPosition() const {
   return frame_view->CaptionButtonsOnLeadingEdge() ? TRAILING : LEADING;
 }
 
+int TabStrip::GetNewTabButtonSpacing() const {
+  constexpr int kSpacing[] = {-5, -6, 6, 8};
+  const auto mode = MD::GetMode();
+  int spacing = kSpacing[mode];
+
+  // Not sure if we can reach here with no tabs (e.g. during startup), but not
+  // crashing in that case is easy.
+  if (mode == MD::MATERIAL_REFRESH && tab_count()) {
+    const int adjacent_tab_index =
+        (GetNewTabButtonPosition() == LEADING) ? 0 : tab_count() - 1;
+    spacing -= tab_at(adjacent_tab_index)->GetCornerRadius();
+  }
+
+  return spacing;
+}
+
+int TabStrip::GetNewTabButtonWidth(bool is_incognito) const {
+  int width = GetLayoutSize(NEW_TAB_BUTTON, is_incognito).width();
+  if (GetNewTabButtonPosition() != TRAILING)
+    width += GetNewTabButtonSpacing();
+  return width;
+}
+
 bool TabStrip::MayHideNewTabButtonWhileDragging() const {
   return GetNewTabButtonPosition() == AFTER_TABS;
+}
+
+int TabStrip::GetFrameGrabWidth() const {
+  // Only Refresh has a grab area.
+  if (MD::GetMode() != MD::MATERIAL_REFRESH)
+    return 0;
+
+  // The apparent width of the grab area.
+  constexpr int kGrabWidth = 50;
+  int width = kGrabWidth;
+
+  // There might be no tabs yet during startup.
+  if ((GetNewTabButtonPosition() != AFTER_TABS) && tab_count()) {
+    // The grab area is adjacent to the last tab.  This tab has mostly empty
+    // space where the outer (lower) corners are, which should be treated as
+    // part of the grab area, so decrease the size of the remaining grab area by
+    // that width.
+    width -= tab_at(tab_count() - 1)->GetCornerRadius();
+  }
+
+  return width;
 }
 
 bool TabStrip::TitlebarBackgroundIsTransparent() const {
@@ -1669,7 +1708,7 @@ int TabStrip::NewTabButtonX() const {
   // always visible.
   return std::min(tab_area_width,
                   tabs_.ideal_bounds(tabs_.view_size() - 1).right() +
-                      GetLayoutConstant(TABSTRIP_NEW_TAB_BUTTON_SPACING));
+                      GetNewTabButtonSpacing());
 }
 
 int TabStrip::GetSizeNeededForTabs(const Tabs& tabs) {
@@ -2164,7 +2203,7 @@ int TabStrip::GenerateIdealBoundsForPinnedTabs(int* first_non_pinned_index) {
 }
 
 int TabStrip::GetTabAreaWidth() const {
-  return width() - GetNewTabButtonWidth(IsIncognito());
+  return width() - GetFrameGrabWidth() - GetNewTabButtonWidth(IsIncognito());
 }
 
 void TabStrip::StartResizeLayoutAnimation() {
