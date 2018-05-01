@@ -25,6 +25,8 @@ namespace ui {
 
 namespace {
 
+constexpr viz::LocalSurfaceId kInvalidLocalSurfaceId;
+
 scoped_refptr<cc::SurfaceLayer> CreateSurfaceLayer(
     const viz::SurfaceId& surface_id,
     const gfx::Size& size_in_pixels,
@@ -149,8 +151,7 @@ void DelegatedFrameHostAndroid::CopyFromCompositingSurface(
         gfx::Vector2d(request->area().width(), request->area().height()),
         gfx::Vector2d(output_size.width(), output_size.height()));
   }
-
-  support_->RequestCopyOfOutput(local_surface_id_, std::move(request));
+  support_->RequestCopyOfOutput(kInvalidLocalSurfaceId, std::move(request));
 }
 
 bool DelegatedFrameHostAndroid::CanCopyFromCompositingSurface() const {
@@ -214,13 +215,10 @@ void DelegatedFrameHostAndroid::DetachFromCompositor() {
 }
 
 void DelegatedFrameHostAndroid::SynchronizeVisualProperties() {
-  if (enable_surface_synchronization_) {
-    local_surface_id_ = local_surface_id_allocator_.GenerateId();
-
-    // TODO(ericrk): We should handle updating our surface layer with the new
-    // ID. See similar behavior in delegated_frame_host.cc.
-    // https://crbug.com/801350
-  }
+  local_surface_id_allocator_.GenerateId();
+  // TODO(ericrk): We should handle updating our surface layer with the new
+  // ID if surface synchronization is enabled. See similar behavior in
+  // delegated_frame_host.cc. https://crbug.com/801350
 }
 
 void DelegatedFrameHostAndroid::DidReceiveCompositorFrameAck(
@@ -285,7 +283,7 @@ const viz::SurfaceId& DelegatedFrameHostAndroid::SurfaceId() const {
 
 const viz::LocalSurfaceId& DelegatedFrameHostAndroid::GetLocalSurfaceId()
     const {
-  return local_surface_id_;
+  return local_surface_id_allocator_.GetCurrentLocalSurfaceId();
 }
 
 void DelegatedFrameHostAndroid::TakeFallbackContentFrom(
