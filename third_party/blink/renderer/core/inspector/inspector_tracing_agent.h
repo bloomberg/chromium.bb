@@ -22,15 +22,7 @@ class WorkerInspectorProxy;
 class CORE_EXPORT InspectorTracingAgent final
     : public InspectorBaseAgent<protocol::Tracing::Metainfo> {
  public:
-  class Client {
-   public:
-    virtual ~Client() = default;
-
-    virtual void ShowReloadingBlanket() = 0;
-    virtual void HideReloadingBlanket() = 0;
-  };
-
-  InspectorTracingAgent(Client*, InspectedFrames*);
+  explicit InspectorTracingAgent(InspectedFrames*);
   ~InspectorTracingAgent() override;
 
   void Trace(blink::Visitor*) override;
@@ -40,8 +32,6 @@ class CORE_EXPORT InspectorTracingAgent final
   protocol::Response disable() override;
 
   // InspectorInstrumentation methods
-  void FrameStartedLoading(LocalFrame*, FrameLoadType);
-  void FrameStoppedLoading(LocalFrame*);
   void DidStartWorker(WorkerInspectorProxy*, bool);
 
   // Protocol method implementations.
@@ -54,15 +44,11 @@ class CORE_EXPORT InspectorTracingAgent final
              std::unique_ptr<StartCallback>) override;
   void end(std::unique_ptr<EndCallback>) override;
 
-  // Methods for other agents to use.
-  void RootLayerCleared();
-
  private:
   void EmitMetadataEvents();
   void InnerDisable();
   bool IsStarted() const;
 
-  Client* client_;
   String session_id_;
   Member<InspectedFrames> inspected_frames_;
 

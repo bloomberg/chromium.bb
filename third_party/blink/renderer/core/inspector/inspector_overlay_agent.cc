@@ -229,7 +229,6 @@ InspectorOverlayAgent::InspectorOverlayAgent(
           &InspectorOverlayAgent::OnTimer),
       suspended_(false),
       disposed_(false),
-      show_reloading_blanket_(false),
       in_layout_(false),
       needs_update_(false),
       v8_session_(v8_session),
@@ -276,7 +275,6 @@ void InspectorOverlayAgent::Restore() {
 
 void InspectorOverlayAgent::Dispose() {
   InspectorBaseAgent::Dispose();
-  show_reloading_blanket_ = false;
   disposed_ = true;
   ClearInternal();
 }
@@ -370,7 +368,7 @@ Response InspectorOverlayAgent::setPausedInDebuggerMessage(
 
 Response InspectorOverlayAgent::setSuspended(bool suspended) {
   state_->setBoolean(OverlayAgentState::kSuspended, suspended);
-  if (suspended && !suspended_ && !show_reloading_blanket_)
+  if (suspended && !suspended_)
     ClearInternal();
   suspended_ = suspended;
   return Response::OK();
@@ -607,21 +605,6 @@ bool InspectorOverlayAgent::HandleInputEvent(const WebInputEvent& input_event) {
   return handled;
 }
 
-void InspectorOverlayAgent::ShowReloadingBlanket() {
-  show_reloading_blanket_ = true;
-  ScheduleUpdate();
-}
-
-void InspectorOverlayAgent::HideReloadingBlanket() {
-  if (!show_reloading_blanket_)
-    return;
-  show_reloading_blanket_ = false;
-  if (suspended_)
-    ClearInternal();
-  else
-    ScheduleUpdate();
-}
-
 void InspectorOverlayAgent::InnerHideHighlight() {
   highlight_node_.Clear();
   event_target_node_.Clear();
@@ -656,8 +639,6 @@ void InspectorOverlayAgent::InnerHighlightQuad(
 bool InspectorOverlayAgent::IsEmpty() {
   if (disposed_)
     return true;
-  if (show_reloading_blanket_)
-    return false;
   if (suspended_)
     return true;
   bool has_visible_elements = highlight_node_ || event_target_node_ ||
@@ -695,10 +676,6 @@ void InspectorOverlayAgent::RebuildOverlayPage() {
 
   Reset(viewport_size, visible_rect_in_document.Location());
 
-  if (show_reloading_blanket_) {
-    EvaluateInOverlay("showReloadingBlanket", "");
-    return;
-  }
   DrawNodeHighlight();
   DrawQuadHighlight();
   DrawPausedInDebuggerMessage();

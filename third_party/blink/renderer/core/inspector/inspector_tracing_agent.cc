@@ -1,17 +1,13 @@
-//
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
 
 #include "third_party/blink/renderer/core/inspector/inspector_tracing_agent.h"
 
-#include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
 #include "third_party/blink/renderer/core/inspector/inspected_frames.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
-#include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/workers/execution_context_worker_registry.h"
 #include "third_party/blink/renderer/core/workers/worker_inspector_proxy.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -30,9 +26,8 @@ const char kDevtoolsMetadataEventCategory[] =
     TRACE_DISABLED_BY_DEFAULT("devtools.timeline");
 }
 
-InspectorTracingAgent::InspectorTracingAgent(Client* client,
-                                             InspectedFrames* inspected_frames)
-    : client_(client), inspected_frames_(inspected_frames) {}
+InspectorTracingAgent::InspectorTracingAgent(InspectedFrames* inspected_frames)
+    : inspected_frames_(inspected_frames) {}
 
 InspectorTracingAgent::~InspectorTracingAgent() {}
 
@@ -47,18 +42,6 @@ void InspectorTracingAgent::Restore() {
     instrumenting_agents_->addInspectorTracingAgent(this);
     EmitMetadataEvents();
   }
-}
-
-void InspectorTracingAgent::FrameStartedLoading(LocalFrame* frame,
-                                                FrameLoadType type) {
-  if (frame != inspected_frames_->Root() || !IsReloadLoadType(type))
-    return;
-  client_->ShowReloadingBlanket();
-}
-
-void InspectorTracingAgent::FrameStoppedLoading(LocalFrame* frame) {
-  if (frame != inspected_frames_->Root())
-    client_->HideReloadingBlanket();
 }
 
 void InspectorTracingAgent::DidStartWorker(WorkerInspectorProxy* proxy, bool) {
@@ -128,18 +111,12 @@ void InspectorTracingAgent::EmitMetadataEvents() {
   }
 }
 
-void InspectorTracingAgent::RootLayerCleared() {
-  if (IsStarted())
-    client_->HideReloadingBlanket();
-}
-
 Response InspectorTracingAgent::disable() {
   InnerDisable();
   return Response::OK();
 }
 
 void InspectorTracingAgent::InnerDisable() {
-  client_->HideReloadingBlanket();
   instrumenting_agents_->removeInspectorTracingAgent(this);
   state_->remove(TracingAgentState::kSessionId);
   session_id_ = String();

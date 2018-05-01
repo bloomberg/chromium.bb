@@ -40,7 +40,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/inspector/inspector_layer_tree_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_page_agent.h"
-#include "third_party/blink/renderer/core/inspector/inspector_tracing_agent.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
@@ -57,7 +56,6 @@ class WebLocalFrameImpl;
 class CORE_EXPORT WebDevToolsAgentImpl final
     : public GarbageCollectedFinalized<WebDevToolsAgentImpl>,
       public mojom::blink::DevToolsAgent,
-      public InspectorTracingAgent::Client,
       public InspectorPageAgent::Client,
       public InspectorLayerTreeAgent::Client,
       private WebThread::TaskObserver {
@@ -86,7 +84,6 @@ class CORE_EXPORT WebDevToolsAgentImpl final
   void DidCommitLoadForLocalFrame(LocalFrame*);
   void DidStartProvisionalLoad(LocalFrame*);
   bool ScreencastEnabled();
-  void RootLayerCleared();
   String NavigationInitiatorInfo(LocalFrame*);
   String EvaluateInOverlayForTesting(const String& script);
 
@@ -105,10 +102,6 @@ class CORE_EXPORT WebDevToolsAgentImpl final
       mojom::blink::DevToolsSessionRequest io_session,
       const String& reattach_state) override;
   void InspectElement(const WebPoint& point_in_local_root) override;
-
-  // InspectorTracingAgent::Client implementation.
-  void ShowReloadingBlanket() override;
-  void HideReloadingBlanket() override;
 
   // InspectorPageAgent::Client implementation.
   void PageLayoutInvalidated(bool resized) override;

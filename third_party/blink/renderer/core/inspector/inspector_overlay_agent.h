@@ -121,8 +121,6 @@ class CORE_EXPORT InspectorOverlayAgent final
   void DispatchBufferedTouchEvents();
   bool HandleInputEvent(const WebInputEvent&);
   void PageLayoutInvalidated(bool resized);
-  void ShowReloadingBlanket();
-  void HideReloadingBlanket();
   String EvaluateInOverlayForTest(const String&);
   void PaintOverlay();
   void LayoutOverlay();
@@ -210,7 +208,6 @@ class CORE_EXPORT InspectorOverlayAgent final
   TaskRunnerTimer<InspectorOverlayAgent> timer_;
   bool suspended_;
   bool disposed_;
-  bool show_reloading_blanket_;
   bool in_layout_;
   bool needs_update_;
   v8_inspector::V8InspectorSession* v8_session_;
