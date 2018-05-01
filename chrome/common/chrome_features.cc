@@ -233,7 +233,7 @@ const base::Feature kExperimentalAppBanners {
 
 #if defined(OS_CHROMEOS)
 extern const base::Feature kExperimentalCrostiniUI{
-    "ExperimentalCrostiniUI", base::FEATURE_ENABLED_BY_DEFAULT};
+    "ExperimentalCrostiniUI", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 // An experimental fullscreen prototype that allows pages to map browser and
