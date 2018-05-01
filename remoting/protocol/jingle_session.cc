@@ -37,15 +37,20 @@ namespace protocol {
 
 namespace {
 
+// Timeouts have been temporarily increased for testing.
+// TODO(rkjnsn): Revert default and session timeouts once done with testing.
+
 // How long we should wait for a response from the other end. This value is used
 // for all requests except |transport-info|.
-const int kDefaultMessageTimeout = 10;
+// const int kDefaultMessageTimeout = 10;
+const int kDefaultMessageTimeout = 35;  // For testing
 
 // During a reconnection, it usually takes longer for the peer to respond due to
 // pending messages in the channel from the previous session.  From experiment,
 // it can take up to 20s for the session to reconnect. To make it safe, setting
 // the timeout to 30s.
-const int kSessionInitiateAndAcceptTimeout = kDefaultMessageTimeout * 3;
+// const int kSessionInitiateAndAcceptTimeout = kDefaultMessageTimeout * 3;
+const int kSessionInitiateAndAcceptTimeout = 45;  // For testing
 
 // Timeout for the transport-info messages.
 const int kTransportInfoTimeout = 10 * 60;
