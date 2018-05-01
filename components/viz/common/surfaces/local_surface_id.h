@@ -26,6 +26,7 @@ class ChildLocalSurfaceIdAllocator;
 
 constexpr uint32_t kInvalidParentSequenceNumber = 0;
 constexpr uint32_t kInvalidChildSequenceNumber = 0;
+constexpr uint32_t kInitialParentSequenceNumber = 1;
 constexpr uint32_t kInitialChildSequenceNumber = 1;
 
 // This struct is the part of SurfaceId that can be modified by the client.
