@@ -674,19 +674,18 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
   }
 
   if (name == "getCwsWidgetContainerMockUrl") {
-    // Obtain whether the test is in guest mode or not.
+    // Obtain the mock CWS widget container URL and URL.origin.
     const GURL url = embedded_test_server()->GetURL(
         "/chromeos/file_manager/cws_container_mock/index.html");
     std::string origin = url.GetOrigin().spec();
-
-    // Removes trailing a slash.
-    if (*origin.rbegin() == '/')
+    if (*origin.rbegin() == '/')  // Strip origin trailing '/'.
       origin.resize(origin.length() - 1);
 
-    base::DictionaryValue res;
-    res.SetString("url", url.spec());
-    res.SetString("origin", origin);
-    base::JSONWriter::Write(res, output);
+    base::DictionaryValue dictionary;
+    dictionary.SetString("url", url.spec());
+    dictionary.SetString("origin", origin);
+
+    base::JSONWriter::Write(dictionary, output);
     return;
   }
 
