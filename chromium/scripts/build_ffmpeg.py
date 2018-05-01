@@ -320,8 +320,8 @@ def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
   # triggering mis-detection during configure execution.
   if target_os == 'win':
     RewriteFile(
-        os.path.join(config_dir, 'ffbuild/config.mak'), r'(LDFLAGS=.*)',
-        r'\1 -FORCE:UNRESOLVED')
+        os.path.join(config_dir, 'ffbuild/config.mak'), [(r'(LDFLAGS=.*)',
+        r'\1 -FORCE:UNRESOLVED')])
 
   if target_os in (host_os, host_os + '-noasm', 'android',
                    'win') and not config_only:
