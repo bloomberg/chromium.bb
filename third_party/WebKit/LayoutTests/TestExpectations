@@ -2294,10 +2294,6 @@ crbug.com/832071 virtual/navigation-mojo-response/external/wpt/service-workers/s
 crbug.com/833215 [ Mac10.12 Mac10.13 Retina ] external/wpt/accelerometer/Accelerometer.https.html [ Pass Timeout ]
 crbug.com/833215 [ Linux ] external/wpt/accelerometer/Accelerometer.https.html [ Pass Failure ]
 
-crbug.com/836627 external/wpt/content-security-policy/inside-worker/dedicated-script.html [ Pass Failure ]
-crbug.com/836627 external/wpt/content-security-policy/inside-worker/dedicated-inheritance.html [ Pass Failure ]
-crbug.com/836627 external/wpt/content-security-policy/inside-worker/shared-inheritance.html [ Pass Failure ]
-
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 [ Mac10.12 ] external/wpt/dom/nodes/ParentNode-querySelector-All.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] virtual/unified-autoplay/external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-self.https.sub.html [ Timeout ]
@@ -3444,8 +3440,6 @@ crbug.com/796034 external/wpt/html/semantics/scripting-1/the-script-element/modu
 crbug.com/796034 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/string-compilation-base-url-inline-classic.html [ Failure ]
 crbug.com/796034 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/string-compilation-base-url-inline-module.html [ Failure ]
 
-crbug.com/837213 external/wpt/html/semantics/scripting-1/the-script-element/module/crossorigin.html [ Pass Failure ]
-
 # Geolocation tests
 crbug.com/745079 external/wpt/geolocation-API/PositionOptions.https.html [ Failure ]
 
@@ -4128,5 +4122,4 @@ crbug.com/836242 [ Linux Mac Win ] fast/loader/reload-zero-byte-plugin.html [ Pa
 crbug.com/836275 [ Linux Mac ] fast/spatial-navigation/snav-two-elements-one-line.html [ Pass Failure ]
 
 # Sheriff 2018-04-25
-crbug.com/836763 [ Win7 ] external/wpt/websockets/Create-protocols-repeated-case-insensitive.any.js [ Pass Failure ]
 crbug.com/836783 fast/peerconnection/RTCRtpSender-setParameters.html [ Pass Timeout ]
