@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.vr_shell;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
+import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.graphics.PointF;
@@ -162,6 +163,9 @@ public class VrShellImpl
             // No need render to a Surface if we're reprojected. We'll be rendering with surfaceless
             // EGL.
             mPresentationView = new FrameLayout(mActivity);
+
+            // This can show up behind popups on standalone devices, so make sure it's black.
+            mPresentationView.setBackgroundColor(Color.BLACK);
 
             // Only enable sustained performance mode when Async reprojection decouples the app
             // framerate from the display framerate.

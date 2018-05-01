@@ -111,6 +111,16 @@ public class VrIntentUtils {
     }
 
     /**
+     * @param activity The Activity to check.
+     * @return Whether this Activity is launching into VR, or is already in VR.
+     */
+    public static boolean isLaunchingIntoVr(Activity activity) {
+        return VrShellDelegate.isInVr() || isVrIntent(activity.getIntent())
+                || VrIntentUtils.wouldUse2DInVrRenderingMode(activity)
+                || VrShellDelegate.isVrModeEnabled(activity);
+    }
+
+    /**
      * @return whether the given intent is should open in a Custom Tab.
      */
     public static boolean isCustomTabVrIntent(Intent intent) {
