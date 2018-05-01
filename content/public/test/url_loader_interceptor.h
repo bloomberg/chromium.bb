@@ -102,6 +102,22 @@ class URLLoaderInterceptor {
   void GetNetworkFactoryCallback(
       URLLoaderFactoryGetter* url_loader_factory_getter);
 
+  // Callback on IO thread whenever a NavigationURLLoaderNetworkService
+  // is loading a frame request through ResourceDispatcherHost (i.e. when the
+  // network service is disabled).
+  bool BeginNavigationCallback(
+      network::mojom::URLLoaderRequest* request,
+      int32_t routing_id,
+      int32_t request_id,
+      uint32_t options,
+      const network::ResourceRequest& url_request,
+      network::mojom::URLLoaderClientPtr* client,
+      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation);
+
+  // Attempts to intercept the given request, returning true if it was
+  // intercepted.
+  bool Intercept(RequestParams* params);
+
   // Called when a SubresourceWrapper's binding has an error.
   void SubresourceWrapperBindingError(SubresourceWrapper* wrapper);
 
