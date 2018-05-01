@@ -2008,7 +2008,6 @@
       'gn_args': ('ozone_auto_platforms=false ozone_platform_wayland=true '
                   'ozone_platform="x11" '
                   'ozone_platform_x11=true ozone_platform_gbm=true '
-                  'enable_mus=true '
                   'use_xkbcommon=true use_ozone=true'),
     },
 
