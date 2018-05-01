@@ -15,6 +15,7 @@
 #include "chrome/browser/media/router/test/mock_media_router.h"
 #include "chrome/browser/media/router/test/test_helper.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
+#include "chrome/browser/ui/media_router/media_router_ui_helper.h"
 #include "chrome/browser/ui/webui/media_router/media_router_webui_message_handler.h"
 #include "chrome/common/media_router/media_route.h"
 #include "chrome/common/media_router/media_source_helper.h"
@@ -123,9 +124,9 @@ class TestMediaRouterUI : public MediaRouterUI {
       : MediaRouterUI(web_ui), router_(router) {}
   ~TestMediaRouterUI() override = default;
 
-  MediaRouter* GetMediaRouter() override { return router_; }
-
  private:
+  MediaRouter* GetMediaRouter() const override { return router_; }
+
   MediaRouter* router_;
   DISALLOW_COPY_AND_ASSIGN(TestMediaRouterUI);
 };
@@ -233,6 +234,14 @@ class MediaRouterUITest : public ChromeRenderViewHostTestHarness {
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
+class MediaRouterUIIncognitoTest : public MediaRouterUITest {
+ protected:
+  content::BrowserContext* GetBrowserContext() override {
+    return static_cast<Profile*>(MediaRouterUITest::GetBrowserContext())
+        ->GetOffTheRecordProfile();
+  }
+};
+
 TEST_F(MediaRouterUITest, RouteCreationTimeoutForTab) {
   CreateMediaRouterUI(profile());
   std::vector<MediaRouteResponseCallback> callbacks;
@@ -336,8 +345,8 @@ TEST_F(MediaRouterUITest, RouteCreationParametersCantBeCreated) {
   std::move(sink_callback).Run("foundSinkId");
 }
 
-TEST_F(MediaRouterUITest, RouteRequestFromIncognito) {
-  CreateMediaRouterUI(profile()->GetOffTheRecordProfile());
+TEST_F(MediaRouterUIIncognitoTest, RouteRequestFromIncognito) {
+  CreateMediaRouterUI(profile());
   media_router_ui_->OnDefaultPresentationChanged(presentation_request_);
 
   EXPECT_CALL(mock_router_,
@@ -370,7 +379,7 @@ TEST_F(MediaRouterUITest, SortedSinks) {
 
   // Sorted order is 2, 3, 1.
   media_router_ui_->OnResultsUpdated(unsorted_sinks);
-  const auto& sorted_sinks = media_router_ui_->sinks_;
+  const auto& sorted_sinks = media_router_ui_->GetEnabledSinks();
   EXPECT_EQ(sink_name2, sorted_sinks[0].sink.name());
   EXPECT_EQ(sink_id3, sorted_sinks[1].sink.id());
   EXPECT_EQ(sink_id1, sorted_sinks[2].sink.id());
@@ -399,7 +408,7 @@ TEST_F(MediaRouterUITest, SortSinksByIconType) {
   // Sorted order is CAST, CAST_AUDIO_GROUP "A", CAST_AUDIO_GROUP "B",
   // CAST_AUDIO, HANGOUT, GENERIC.
   media_router_ui_->OnResultsUpdated(unsorted_sinks);
-  const auto& sorted_sinks = media_router_ui_->sinks_;
+  const auto& sorted_sinks = media_router_ui_->GetEnabledSinks();
   EXPECT_EQ(sink6.sink.id(), sorted_sinks[0].sink.id());
   EXPECT_EQ(sink4.sink.id(), sorted_sinks[1].sink.id());
   EXPECT_EQ(sink2.sink.id(), sorted_sinks[2].sink.id());
@@ -424,11 +433,11 @@ TEST_F(MediaRouterUITest, FilterNonDisplayRoutes) {
   routes.push_back(display_route_2);
 
   media_router_ui_->OnRoutesUpdated(routes, std::vector<MediaRoute::Id>());
-  ASSERT_EQ(2u, media_router_ui_->routes_.size());
-  EXPECT_TRUE(display_route_1.Equals(media_router_ui_->routes_[0]));
-  EXPECT_TRUE(media_router_ui_->routes_[0].for_display());
-  EXPECT_TRUE(display_route_2.Equals(media_router_ui_->routes_[1]));
-  EXPECT_TRUE(media_router_ui_->routes_[1].for_display());
+  ASSERT_EQ(2u, media_router_ui_->routes().size());
+  EXPECT_TRUE(display_route_1.Equals(media_router_ui_->routes()[0]));
+  EXPECT_TRUE(media_router_ui_->routes()[0].for_display());
+  EXPECT_TRUE(display_route_2.Equals(media_router_ui_->routes()[1]));
+  EXPECT_TRUE(media_router_ui_->routes()[1].for_display());
 }
 
 TEST_F(MediaRouterUITest, FilterNonDisplayJoinableRoutes) {
@@ -452,11 +461,11 @@ TEST_F(MediaRouterUITest, FilterNonDisplayJoinableRoutes) {
   joinable_route_ids.push_back("routeId3");
 
   media_router_ui_->OnRoutesUpdated(routes, joinable_route_ids);
-  ASSERT_EQ(2u, media_router_ui_->joinable_route_ids_.size());
+  ASSERT_EQ(2u, media_router_ui_->joinable_route_ids().size());
   EXPECT_EQ(display_route_1.media_route_id(),
-            media_router_ui_->joinable_route_ids_[0]);
+            media_router_ui_->joinable_route_ids()[0]);
   EXPECT_EQ(display_route_2.media_route_id(),
-            media_router_ui_->joinable_route_ids_[1]);
+            media_router_ui_->joinable_route_ids()[1]);
 }
 
 TEST_F(MediaRouterUITest, UIMediaRoutesObserverAssignsCurrentCastModes) {
@@ -554,39 +563,6 @@ TEST_F(MediaRouterUITest, UIMediaRoutesObserverSkipsUnavailableCastModes) {
 
   EXPECT_CALL(mock_router_, UnregisterMediaRoutesObserver(_)).Times(1);
   observer.reset();
-}
-
-TEST_F(MediaRouterUITest, GetExtensionNameExtensionPresent) {
-  std::string id = "extensionid";
-  GURL url = GURL("chrome-extension://" + id);
-  std::unique_ptr<extensions::ExtensionRegistry> registry =
-      std::make_unique<extensions::ExtensionRegistry>(nullptr);
-  scoped_refptr<extensions::Extension> app =
-      extensions::ExtensionBuilder(
-          "test app name", extensions::ExtensionBuilder::Type::PLATFORM_APP)
-          .SetID(id)
-          .Build();
-
-  ASSERT_TRUE(registry->AddEnabled(app));
-  EXPECT_EQ("test app name",
-            MediaRouterUI::GetExtensionName(url, registry.get()));
-}
-
-TEST_F(MediaRouterUITest, GetExtensionNameEmptyWhenNotInstalled) {
-  std::string id = "extensionid";
-  GURL url = GURL("chrome-extension://" + id);
-  std::unique_ptr<extensions::ExtensionRegistry> registry =
-      std::make_unique<extensions::ExtensionRegistry>(nullptr);
-
-  EXPECT_EQ("", MediaRouterUI::GetExtensionName(url, registry.get()));
-}
-
-TEST_F(MediaRouterUITest, GetExtensionNameEmptyWhenNotExtensionURL) {
-  GURL url = GURL("https://www.google.com");
-  std::unique_ptr<extensions::ExtensionRegistry> registry =
-      std::make_unique<extensions::ExtensionRegistry>(nullptr);
-
-  EXPECT_EQ("", MediaRouterUI::GetExtensionName(url, registry.get()));
 }
 
 TEST_F(MediaRouterUITest, NotFoundErrorOnCloseWithNoSinks) {
