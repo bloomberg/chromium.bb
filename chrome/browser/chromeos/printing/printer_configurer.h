@@ -63,6 +63,9 @@ class PrinterConfigurer {
   PrinterConfigurer() = default;
 };
 
+// Stream operator for ease of logging |result|.
+std::ostream& operator<<(std::ostream& out, const PrinterSetupResult& result);
+
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_PRINTING_PRINTER_CONFIGURER_H_
