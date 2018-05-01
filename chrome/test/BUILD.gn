@@ -255,6 +255,8 @@ static_library("test_support") {
       "../browser/ui/views/media_router/app_menu_test_api.h",
       "views/accessibility_checker.cc",
       "views/accessibility_checker.h",
+      "views/chrome_test_views_delegate.cc",
+      "views/chrome_test_views_delegate.h",
       "views/chrome_views_test_base.cc",
       "views/chrome_views_test_base.h",
       "views/scoped_macviews_browser_mode.cc",

@@ -7,13 +7,12 @@
 #include <memory>
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
+#include "chrome/test/views/chrome_views_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/test/test_views_delegate.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view.h"
 
@@ -41,7 +40,7 @@ constexpr TitleSubtitlePair kTitleSubtitlePairs[] = {
      "If you're happy and you know it, clap your hands!", true},
 };
 
-class HoverButtonTest : public views::ViewsTestBase {
+class HoverButtonTest : public ChromeViewsTestBase {
  public:
   HoverButtonTest() {}
 
@@ -49,15 +48,6 @@ class HoverButtonTest : public views::ViewsTestBase {
     auto icon = std::make_unique<views::View>();
     icon->SetPreferredSize(gfx::Size(16, 16));
     return icon;
-  }
-
-  // views::ViewsTestBase:
-  void SetUp() override {
-    ViewsTestBase::SetUp();
-    // HoverButton uses Chrome-specific layout constants, so make sure these
-    // exist for testing.
-    test_views_delegate()->set_layout_provider(
-        ChromeLayoutProvider::CreateLayoutProvider());
   }
 
  private:

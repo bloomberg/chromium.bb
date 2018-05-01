@@ -12,8 +12,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/translate/translate_bubble_model.h"
 #include "chrome/browser/ui/translate/translate_bubble_view_state_transition.h"
-#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/test/views/chrome_views_test_base.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -26,7 +26,6 @@
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/styled_label.h"
-#include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 
 
@@ -151,16 +150,13 @@ class MockTranslateBubbleModel : public TranslateBubbleModel {
 
 }  // namespace
 
-class TranslateBubbleViewTest : public views::ViewsTestBase {
+class TranslateBubbleViewTest : public ChromeViewsTestBase {
  public:
   TranslateBubbleViewTest() {}
 
  protected:
   void SetUp() override {
-    views::ViewsTestBase::SetUp();
-    // Set the ChromeLayoutProvider as the default layout provider.
-    test_views_delegate()->set_layout_provider(
-        ChromeLayoutProvider::CreateLayoutProvider());
+    ChromeViewsTestBase::SetUp();
 
     // The bubble needs the parent as an anchor.
     views::Widget::InitParams params =
@@ -196,7 +192,7 @@ class TranslateBubbleViewTest : public views::ViewsTestBase {
     bubble_->GetWidget()->CloseNow();
     anchor_widget_.reset();
 
-    views::ViewsTestBase::TearDown();
+    ChromeViewsTestBase::TearDown();
   }
 
   bool denial_button_clicked() { return mock_model_->translation_declined_; }
