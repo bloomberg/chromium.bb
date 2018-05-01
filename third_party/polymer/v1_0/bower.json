@@ -27,7 +27,7 @@
     "iron-pages": "PolymerElements/iron-pages#2.0.1",
     "iron-range-behavior": "PolymerElements/iron-range-behavior#2.0.0",
     "iron-resizable-behavior": "PolymerElements/iron-resizable-behavior#2.1.0",
-    "iron-scroll-target-behavior": "PolymerElements/iron-scroll-target-behavior#1.1.0",
+    "iron-scroll-target-behavior": "PolymerElements/iron-scroll-target-behavior#2.1.1",
     "iron-scroll-threshold": "PolymerElements/iron-scroll-threshold#2.0.0",
     "iron-selector": "PolymerElements/iron-selector#2.0.1",
     "iron-test-helpers": "PolymerElements/iron-test-helpers#2.0.0",

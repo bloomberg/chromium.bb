@@ -30,7 +30,7 @@
         border-top: var(--settings-separator-line);
       }
 
-      .fixed-height-container {
+      :host([fixed-height]) #container {
         /* Max items we show before scrolling is 6. Adding a 7th item to the
          * list will add a scroll bar to the container. */
         max-height: calc((var(--settings-row-min-height) +
@@ -50,9 +50,8 @@
         <div class="url">$i18n{searchEnginesQueryURL}</div>
         <div class="icon-placeholder"></div>
       </div>
-      <div id="container"
-          class$="scroll-container [[getHeightClass(scrollTarget)]]"
-          scrollable$="[[isScrollable(scrollTarget)]]">
+      <div id="container" class="scroll-container"
+          scrollable$="[[fixedHeight]]">
         <iron-list items="[[engines]]" scroll-target="[[scrollTarget]]"
             scroll-offset="[[scrollOffset]]" preserve-focus risk-selection>
           <template>
