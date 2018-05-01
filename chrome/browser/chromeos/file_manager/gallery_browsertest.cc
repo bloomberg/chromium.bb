@@ -15,7 +15,7 @@ class GalleryBrowserTestBase : public FileManagerBrowserTestBase {
     return test_case_name_.c_str();
   }
 
-  const char* GetTestManifestName() const override {
+  const char* GetTestExtensionManifestName() const override {
     return "gallery_test_manifest.json";
   }
 

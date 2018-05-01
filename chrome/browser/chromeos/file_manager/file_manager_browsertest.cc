@@ -44,7 +44,7 @@ class FileManagerBrowserTest :
     return std::get<1>(GetParam());
   }
 
-  const char* GetTestManifestName() const override {
+  const char* GetTestExtensionManifestName() const override {
     return "file_manager_test_manifest.json";
   }
 
@@ -639,15 +639,17 @@ class MultiProfileFileManagerBrowserTest : public FileManagerBrowserTestBase {
                                                  "refresh_token");
   }
 
- private:
   GuestMode GetGuestModeParam() const override { return NOT_IN_GUEST_MODE; }
-  const char* GetTestManifestName() const override {
-    return "file_manager_test_manifest.json";
-  }
+
   const char* GetTestCaseNameParam() const override {
     return test_case_name_.c_str();
   }
 
+  const char* GetTestExtensionManifestName() const override {
+    return "file_manager_test_manifest.json";
+  }
+
+ private:
   std::string test_case_name_;
 };
 

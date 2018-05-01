@@ -247,15 +247,15 @@ class TestVolume {
 
   static base::FilePath GetTestDataFilePath(const std::string& file_name) {
     // Get the path to file manager's test data directory.
-    base::FilePath source;
-    CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &source));
-    auto test_data_path = source.AppendASCII("chrome")
-                              .AppendASCII("test")
-                              .AppendASCII("data")
-                              .AppendASCII("chromeos")
-                              .AppendASCII("file_manager");
+    base::FilePath source_dir;
+    CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &source_dir));
+    auto test_data_dir = source_dir.AppendASCII("chrome")
+                             .AppendASCII("test")
+                             .AppendASCII("data")
+                             .AppendASCII("chromeos")
+                             .AppendASCII("file_manager");
     // Return full test data path to the given |file_name|.
-    return test_data_path.Append(base::FilePath::FromUTF8Unsafe(file_name));
+    return test_data_dir.Append(base::FilePath::FromUTF8Unsafe(file_name));
   }
 
  private:
@@ -588,22 +588,21 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
 
 void FileManagerBrowserTestBase::StartTest() {
   LOG(INFO) << "FileManagerBrowserTest::StartTest " << GetTestCaseNameParam();
-  InstallExtension(
-      base::FilePath(FILE_PATH_LITERAL("ui/file_manager/integration_tests")),
-      GetTestManifestName());
+  static const base::FilePath test_extension_dir =
+      base::FilePath(FILE_PATH_LITERAL("ui/file_manager/integration_tests"));
+  LaunchExtension(test_extension_dir, GetTestExtensionManifestName());
   RunTestMessageLoop();
 }
 
-void FileManagerBrowserTestBase::InstallExtension(const base::FilePath& path,
-                                                  const char* manifest_name) {
-  base::FilePath root_path;
-  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &root_path));
+void FileManagerBrowserTestBase::LaunchExtension(const base::FilePath& path,
+                                                 const char* manifest_name) {
+  base::FilePath source_dir;
+  CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &source_dir));
 
-  // Launch the extension.
-  const base::FilePath absolute_path = root_path.Append(path);
-  const extensions::Extension* const extension =
-      LoadExtensionAsComponentWithManifest(absolute_path, manifest_name);
-  ASSERT_TRUE(extension);
+  const base::FilePath source_path = source_dir.Append(path);
+  const extensions::Extension* const extension_launched =
+      LoadExtensionAsComponentWithManifest(source_path, manifest_name);
+  CHECK(extension_launched) << "Launching: " << manifest_name;
 }
 
 void FileManagerBrowserTestBase::RunTestMessageLoop() {
@@ -766,9 +765,9 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
   if (name == "installProviderExtension") {
     std::string manifest;
     ASSERT_TRUE(value.GetString("manifest", &manifest));
-    InstallExtension(base::FilePath(FILE_PATH_LITERAL(
-                         "ui/file_manager/integration_tests/testing_provider")),
-                     manifest.c_str());
+    LaunchExtension(base::FilePath(FILE_PATH_LITERAL(
+                        "ui/file_manager/integration_tests/testing_provider")),
+                    manifest.c_str());
     return;
   }
 
