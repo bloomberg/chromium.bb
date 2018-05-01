@@ -5,7 +5,6 @@
 """Implements commands for running and interacting with Fuchsia on QEMU."""
 
 import boot_data
-import common
 import logging
 import target
 import os
@@ -13,6 +12,8 @@ import platform
 import socket
 import subprocess
 import time
+
+from common import SDK_ROOT, EnsurePathExists
 
 
 # Virtual networking configuration data for QEMU.
@@ -51,9 +52,8 @@ class QemuTarget(target.Target):
       self.Shutdown()
 
   def Start(self):
-    qemu_path = os.path.join(
-        common.SDK_ROOT, 'qemu', 'bin',
-        'qemu-system-' + self._GetTargetSdkArch())
+    qemu_path = os.path.join(SDK_ROOT, 'qemu', 'bin',
+                             'qemu-system-' + self._GetTargetSdkArch())
     kernel_args = boot_data.GetKernelArgs(self._output_dir)
 
     # TERM=dumb tells the guest OS to not emit ANSI commands that trigger
@@ -67,20 +67,24 @@ class QemuTarget(target.Target):
     qemu_command = [qemu_path,
         '-m', str(self._ram_size_mb),
         '-nographic',
-        '-kernel', boot_data.GetTargetFile(self._GetTargetSdkArch(),
-                                           'zircon.bin'),
-        '-initrd', boot_data.GetTargetFile(self._GetTargetSdkArch(),
-                                           'bootdata-blob.bin'),
+        '-kernel', EnsurePathExists(
+            boot_data.GetTargetFile(self._GetTargetSdkArch(),
+                                    'zircon.bin')),
+        '-initrd', EnsurePathExists(
+            boot_data.GetTargetFile(self._GetTargetSdkArch(),
+                                    'bootdata-blob.bin')),
         '-smp', '4',
 
         # Attach the blobstore and data volumes. Use snapshot mode to discard
         # any changes.
         '-snapshot',
         '-drive', 'file=%s,format=qcow2,if=none,id=data,snapshot=on' %
-            os.path.join(self._output_dir, 'fvm.blk.qcow2'),
+                    EnsurePathExists(os.path.join(self._output_dir,
+                                                  'fvm.blk.qcow2')),
         '-drive', 'file=%s,format=qcow2,if=none,id=blobstore,snapshot=on' %
-            boot_data.ConfigureDataFVM(self._output_dir,
-                                       boot_data.FVM_TYPE_QCOW),
+            EnsurePathExists(
+                boot_data.ConfigureDataFVM(self._output_dir,
+                                           boot_data.FVM_TYPE_QCOW)),
         '-device', 'virtio-blk-pci,drive=data',
         '-device', 'virtio-blk-pci,drive=blobstore',
 
