@@ -98,7 +98,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, DeleteOmniboxSuggestionResult) {
 
   // Peek into the controller to see if it has the results we expect.
   const AutocompleteResult& result = autocomplete_controller->result();
-  ASSERT_EQ(3U, result.size()) << AutocompleteResultAsString(result);
+  ASSERT_EQ(4U, result.size()) << AutocompleteResultAsString(result);
 
   EXPECT_EQ(base::ASCIIToUTF16("kw d"), result.match_at(0).fill_into_edit);
   EXPECT_EQ(AutocompleteProvider::TYPE_KEYWORD,
@@ -116,6 +116,11 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, DeleteOmniboxSuggestionResult) {
             result.match_at(2).provider->type());
   // Verify that the second omnibox extension suggestion is not deletable.
   EXPECT_FALSE(result.match_at(2).deletable);
+
+  EXPECT_EQ(base::ASCIIToUTF16("kw d"), result.match_at(3).fill_into_edit);
+  EXPECT_EQ(AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
+            result.match_at(3).type);
+  EXPECT_FALSE(result.match_at(3).deletable);
 
 // This test portion is excluded from Mac because the Mac key combination
 // FN+SHIFT+DEL used to delete an omnibox suggestion cannot be reproduced.
@@ -135,9 +140,10 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, DeleteOmniboxSuggestionResult) {
 
   // Verify that the first suggestion result was deleted. There should be one
   // less suggestion result, 3 now instead of 4.
-  ASSERT_EQ(2U, result.size());
+  ASSERT_EQ(3U, result.size());
   EXPECT_EQ(base::ASCIIToUTF16("kw d"), result.match_at(0).fill_into_edit);
   EXPECT_EQ(base::ASCIIToUTF16("kw n2"), result.match_at(1).fill_into_edit);
+  EXPECT_EQ(base::ASCIIToUTF16("kw d"), result.match_at(2).fill_into_edit);
 #endif
 }
 
@@ -165,7 +171,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, ExtensionSuggestionsOnlyInKeywordMode) {
   // Peek into the controller to see if it has the results we expect.
   {
     const AutocompleteResult& result = autocomplete_controller->result();
-    ASSERT_EQ(3U, result.size()) << AutocompleteResultAsString(result);
+    ASSERT_EQ(4U, result.size()) << AutocompleteResultAsString(result);
 
     EXPECT_EQ(base::ASCIIToUTF16("kw d"), result.match_at(0).fill_into_edit);
     EXPECT_EQ(AutocompleteProvider::TYPE_KEYWORD,
@@ -178,6 +184,10 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, ExtensionSuggestionsOnlyInKeywordMode) {
     EXPECT_EQ(base::ASCIIToUTF16("kw n2"), result.match_at(2).fill_into_edit);
     EXPECT_EQ(AutocompleteProvider::TYPE_KEYWORD,
               result.match_at(2).provider->type());
+
+    EXPECT_EQ(base::ASCIIToUTF16("kw d"), result.match_at(3).fill_into_edit);
+    EXPECT_EQ(AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
+              result.match_at(3).type);
   }
 
   // Now clear the omnibox by pressing escape multiple times, focus the
