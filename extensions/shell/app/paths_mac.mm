@@ -17,7 +17,7 @@ namespace {
 
 base::FilePath GetFrameworksPath() {
   base::FilePath path;
-  PathService::Get(base::FILE_EXE, &path);
+  base::PathService::Get(base::FILE_EXE, &path);
   // We now have a path .../App Shell.app/Contents/MacOS/App Shell, and want to
   // transform it into
   // .../App Shell.app/Contents/Frameworks/App Shell Framework.framework.
@@ -46,7 +46,7 @@ void OverrideChildProcessFilePath() {
                             .Append("Contents")
                             .Append("MacOS")
                             .Append("App Shell Helper");
-  PathService::Override(content::CHILD_PROCESS_EXE, path);
+  base::PathService::Override(content::CHILD_PROCESS_EXE, path);
 }
 
 }  // namespace extensions

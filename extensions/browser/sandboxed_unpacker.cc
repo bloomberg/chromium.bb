@@ -174,7 +174,7 @@ bool FindWritableTempLocation(const base::FilePath& extensions_dir,
 // directory to provide additional security/privacy and speed up the rest of
 // the extension install process.
 #if !defined(OS_CHROMEOS)
-  PathService::Get(base::DIR_TEMP, temp_dir);
+  base::PathService::Get(base::DIR_TEMP, temp_dir);
   if (VerifyJunctionFreeLocation(temp_dir))
     return true;
 #endif

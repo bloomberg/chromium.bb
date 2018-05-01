@@ -29,11 +29,11 @@ AppShellTest::AppShellTest()
   // bundle, rather than the top-level extensions_browsertests, because we
   // make many assumptions about where the executable is located.
   base::FilePath app_shell_path;
-  CHECK(PathService::Get(base::FILE_EXE, &app_shell_path));
+  CHECK(base::PathService::Get(base::FILE_EXE, &app_shell_path));
   app_shell_path = app_shell_path.DirName();
   app_shell_path = app_shell_path.Append(
       FILE_PATH_LITERAL("App Shell.app/Contents/MacOS/App Shell"));
-  CHECK(PathService::Override(base::FILE_EXE, app_shell_path));
+  CHECK(base::PathService::Override(base::FILE_EXE, app_shell_path));
 #endif
 }
 

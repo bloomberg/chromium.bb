@@ -26,7 +26,7 @@ class PrefsTestBrowserContext : public content::TestBrowserContext {
   // content::BrowserContext:
   base::FilePath GetPath() const override {
     base::FilePath path;
-    PathService::Get(extensions::DIR_TEST_DATA, &path);
+    base::PathService::Get(extensions::DIR_TEST_DATA, &path);
     return path.AppendASCII("shell_prefs");
   }
 

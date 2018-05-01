@@ -109,7 +109,7 @@ TEST(ExtensionL10nUtil, GetValidLocalesWithUnsupportedLocale) {
 
 TEST(ExtensionL10nUtil, GetValidLocalesWithValidLocalesAndMessagesFile) {
   base::FilePath install_dir;
-  ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &install_dir));
+  ASSERT_TRUE(base::PathService::Get(DIR_TEST_DATA, &install_dir));
   install_dir =
       install_dir.AppendASCII("extension_with_locales").Append(kLocaleFolder);
 
@@ -125,7 +125,7 @@ TEST(ExtensionL10nUtil, GetValidLocalesWithValidLocalesAndMessagesFile) {
 
 TEST(ExtensionL10nUtil, LoadMessageCatalogsValidFallback) {
   base::FilePath install_dir;
-  ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &install_dir));
+  ASSERT_TRUE(base::PathService::Get(DIR_TEST_DATA, &install_dir));
   install_dir =
       install_dir.AppendASCII("extension_with_locales").Append(kLocaleFolder);
 

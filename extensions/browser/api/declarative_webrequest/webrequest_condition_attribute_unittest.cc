@@ -41,7 +41,7 @@ const char kUnknownConditionName[] = "unknownType";
 
 base::FilePath TestDataPath(base::StringPiece relative_to_src) {
   base::FilePath src_dir;
-  CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &src_dir));
+  CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &src_dir));
   return src_dir.AppendASCII(relative_to_src);
 }
 

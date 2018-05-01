@@ -107,7 +107,7 @@ std::string ManifestTest::GetTestExtensionID() const {
 
 base::FilePath ManifestTest::GetTestDataDir() {
   base::FilePath path;
-  PathService::Get(DIR_TEST_DATA, &path);
+  base::PathService::Get(DIR_TEST_DATA, &path);
   return path.AppendASCII("manifest_tests");
 }
 

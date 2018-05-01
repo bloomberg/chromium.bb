@@ -144,7 +144,7 @@ WebViewAPITest::WebViewAPITest() {
 void WebViewAPITest::LaunchApp(const std::string& app_location) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::FilePath test_data_dir;
-  PathService::Get(DIR_TEST_DATA, &test_data_dir);
+  base::PathService::Get(DIR_TEST_DATA, &test_data_dir);
   test_data_dir = test_data_dir.AppendASCII(app_location.c_str());
 
   const Extension* extension = extension_system_->LoadApp(test_data_dir);
@@ -200,7 +200,7 @@ void WebViewAPITest::StartTestServer(const std::string& app_location) {
 
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::FilePath test_data_dir;
-  PathService::Get(DIR_TEST_DATA, &test_data_dir);
+  base::PathService::Get(DIR_TEST_DATA, &test_data_dir);
   test_data_dir = test_data_dir.AppendASCII(app_location.c_str());
   embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
 

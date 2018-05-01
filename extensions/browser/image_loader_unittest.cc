@@ -66,7 +66,7 @@ class ImageLoaderTest : public ExtensionsTest {
                                            Manifest::Location location) {
     // Create and load an extension.
     base::FilePath extension_dir;
-    if (!PathService::Get(DIR_TEST_DATA, &extension_dir)) {
+    if (!base::PathService::Get(DIR_TEST_DATA, &extension_dir)) {
       EXPECT_FALSE(true);
       return NULL;
     }

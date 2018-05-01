@@ -47,7 +47,7 @@ bool GetPublicKey(const base::FilePath& path, std::string* public_key) {
 TEST(VerifiedContents, Simple) {
   // Figure out our test data directory.
   base::FilePath path;
-  PathService::Get(DIR_TEST_DATA, &path);
+  base::PathService::Get(DIR_TEST_DATA, &path);
   path = path.AppendASCII(kContentVerifierDirectory);
 
   // Initialize the VerifiedContents object.
@@ -140,7 +140,7 @@ TEST(VerifiedContents, FailsOnBase64) {
   // will be considered to be invalid data. Verify that it gets rejected.
 
   base::FilePath path;
-  PathService::Get(DIR_TEST_DATA, &path);
+  base::PathService::Get(DIR_TEST_DATA, &path);
   path = path.AppendASCII(kContentVerifierDirectory);
 
   // Initialize the VerifiedContents object.

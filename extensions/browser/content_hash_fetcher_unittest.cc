@@ -180,7 +180,7 @@ class ContentHashFetcherTest : public ExtensionsTest {
   // data dir.
   base::FilePath GetTestPath(const base::FilePath& relative_path) {
     base::FilePath base_path;
-    EXPECT_TRUE(PathService::Get(extensions::DIR_TEST_DATA, &base_path));
+    EXPECT_TRUE(base::PathService::Get(extensions::DIR_TEST_DATA, &base_path));
     base_path = base_path.AppendASCII("content_hash_fetcher");
     return base_path.Append(relative_path);
   }

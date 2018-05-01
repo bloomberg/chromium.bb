@@ -62,7 +62,7 @@ class Receiver {
 
 void RunBasicTest(const char* filename) {
   base::FilePath path;
-  PathService::Get(DIR_TEST_DATA, &path);
+  base::PathService::Get(DIR_TEST_DATA, &path);
   std::string extension_id = crx_file::id_util::GenerateId("test");
   ExtensionResource resource(
       extension_id, path, base::FilePath().AppendASCII(filename));
@@ -88,7 +88,7 @@ TEST_F(FileReaderTest, BiggerFile) {
 
 TEST_F(FileReaderTest, NonExistantFile) {
   base::FilePath path;
-  PathService::Get(DIR_TEST_DATA, &path);
+  base::PathService::Get(DIR_TEST_DATA, &path);
   std::string extension_id = crx_file::id_util::GenerateId("test");
   ExtensionResource resource(extension_id, path, base::FilePath(
       FILE_PATH_LITERAL("file_that_does_not_exist")));
