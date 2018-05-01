@@ -210,7 +210,7 @@ inlinevar-rgx=[A-Za-z_][A-Za-z0-9_]*$
 #  x/y/z    - coordinates
 #  e        - except XXXError as e:
 #  f/fd     - with open('blah') as f:
-#  _log/Run - webkitpy functions
+#  _log/Run - blinkpy functions
 good-names=_,i,j,k,v,x,y,z,e,f,fd,_log,Run
 
 # Bad variable names which should always be refused, separated by a comma.

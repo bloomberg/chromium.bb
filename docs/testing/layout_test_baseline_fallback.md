@@ -45,7 +45,7 @@ falling back to newer versions. Besides, Android falls back to Linux, which then
 falls back to Windows. Eventually, all platforms fall back to the root directory
 (i.e. the generic baselines that live alongside tests). The rules are configured
 by `FALLBACK_PATHS` in each Port class in
-[`//src/third_party/WebKit/Tools/Scripts/webkitpy/layout_tests/port`](../../third_party/WebKit/Tools/Scripts/webkitpy/layout_tests/port).
+[`//src/third_party/blink/tools/blinkpy/web_tests/port`](../../third_party/blink/tools/blinkpy/web_tests/port).
 
 All platforms can be organized into a tree based on their fallback relations (we
 are not considering virtual test suites yet). See the lower half (the
@@ -94,7 +94,7 @@ hacking `blinkpy`, you can stop here.
 We can remove a baseline if it is the same as its fallback. An extreme example
 is that if all platforms have the same result, we can just have a single generic
 baseline. Here is the algorithm used by
-[`blink_tool.py optimize-baselines`](../../third_party/WebKit/Tools/Scripts/webkitpy/common/checkout/baseline_optimizer.py)
+[`blink_tool.py optimize-baselines`](../../third_party/blink/tools/blinkpy/common/checkout/baseline_optimizer.py)
 to optimize the duplication away.
 
 Notice from the previous section that the virtual and non-virtual parts are two

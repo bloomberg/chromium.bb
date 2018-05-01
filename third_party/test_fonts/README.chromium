@@ -28,7 +28,7 @@ How to update or add fonts:
     executing the following command:
 	$ git add ./third_party/test_fonts/test_fonts.tar.gz.sha1
 7.  (optional) Update FONT_FILES in
-    third_party/WebKit/Tools/Scripts/webkitpy/layout_tests/port/base.py .
+    third_party/blink/tools/blinkpy/web_tests/port/base.py .
 
 If you need access to the chromium-fonts bucket, contact Chrome infra.% For
 details, please refer to
