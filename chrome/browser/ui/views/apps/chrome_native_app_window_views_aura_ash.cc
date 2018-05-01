@@ -566,27 +566,41 @@ void ChromeNativeAppWindowViewsAuraAsh::OnMenuClosed() {
   menu_model_.reset();
 }
 
+bool ChromeNativeAppWindowViewsAuraAsh::ShouldEnableImmersiveMode() const {
+  // No immersive mode for forced fullscreen.
+  if (app_window()->IsForcedFullscreen())
+    return false;
+
+  // Always use immersive mode in a public session.
+  if (profiles::IsPublicSession())
+    return true;
+
+  // Always use immersive mode when fullscreen is set by the OS.
+  if (app_window()->IsOsFullscreen())
+    return true;
+
+  TabletModeClient* client = TabletModeClient::Get();
+  // Windows in tablet mode which are resizable have their title bars
+  // hidden in ash for more size, so enable immersive mode so users
+  // have access to window controls. Non resizable windows do not gain
+  // size by hidding the title bar, so it is not hidden and thus there
+  // is no need for immersive mode.
+  // TODO(sammiequon): Investigate whether we should check
+  // resizability using WindowState instead of CanResize.
+  // TODO(crbug.com/801619): This adds a little extra animation
+  // when minimizing or unminimizing window.
+  return client && client->tablet_mode_enabled() && CanResize() &&
+         !IsMinimized();
+}
+
 void ChromeNativeAppWindowViewsAuraAsh::UpdateImmersiveMode() {
   // |immersive_fullscreen_controller_| should only be set if immersive
   // fullscreen is the fullscreen type used by the OS, or if we're in a
   // public session where we always use immersive.
   if (!immersive_fullscreen_controller_)
     return;
-  TabletModeClient* client = TabletModeClient::Get();
-  const bool immersive_enabled =
-      profiles::IsPublicSession() || app_window()->IsOsFullscreen() ||
-      // Windows in tablet mode which are resizable have their title bars
-      // hidden in ash for more size, so enable immersive mode so users
-      // have access to window controls. Non resizable windows do not gain
-      // size by hidding the title bar, so it is not hidden and thus there
-      // is no need for immersive mode.
-      // TODO(sammiequon): Investigate whether we should check
-      // resizability using WindowState instead of CanResize.
-      // TODO(crbug.com/801619): This adds a little extra animation
-      // when minimizing or unminimizing window.
-      (client && client->tablet_mode_enabled() && CanResize() &&
-       !IsMinimized());
+
   immersive_fullscreen_controller_->SetEnabled(
       ash::ImmersiveFullscreenController::WINDOW_TYPE_PACKAGED_APP,
-      immersive_enabled);
+      ShouldEnableImmersiveMode());
 }

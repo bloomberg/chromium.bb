@@ -325,6 +325,10 @@ void ShelfController::OnActiveUserPrefServiceChanged(
 }
 
 void ShelfController::OnTabletModeStarted() {
+  // Do nothing when running in app mode.
+  if (Shell::Get()->session_controller()->IsRunningInAppMode())
+    return;
+
   // Force the shelf to be visible and to be bottom aligned in tablet mode; the
   // prefs are restored on exit.
   for (const auto& display : display::Screen::GetScreen()->GetAllDisplays()) {
@@ -340,6 +344,10 @@ void ShelfController::OnTabletModeStarted() {
 }
 
 void ShelfController::OnTabletModeEnded() {
+  // Do nothing when running in app mode.
+  if (Shell::Get()->session_controller()->IsRunningInAppMode())
+    return;
+
   SetShelfBehaviorsFromPrefs();
   // Only animate out of tablet mode if the shelf alignment will not change.
   for (const auto& display : display::Screen::GetScreen()->GetAllDisplays()) {
