@@ -65,6 +65,7 @@
 #include "media/gpu/gpu_video_decode_accelerator_factory.h"
 #include "media/gpu/test/rendering_helper.h"
 #include "media/gpu/test/video_accelerator_unittest_helpers.h"
+#include "media/gpu/test/video_decode_accelerator_unittest_helpers.h"
 #include "media/video/h264_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -79,10 +80,7 @@
 #endif  // BUILDFLAG(USE_VAAPI)
 
 #if defined(OS_CHROMEOS)
-#include "ui/gfx/native_pixmap.h"
-#include "ui/ozone/public/ozone_gpu_test_helper.h"
 #include "ui/ozone/public/ozone_platform.h"
-#include "ui/ozone/public/surface_factory_ozone.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace media {
@@ -141,8 +139,7 @@ base::FilePath g_test_file_path;
 base::FilePath g_thumbnail_output_dir;
 
 // Environment to store rendering thread.
-class VideoDecodeAcceleratorTestEnvironment;
-VideoDecodeAcceleratorTestEnvironment* g_env;
+media::test::VideoDecodeAcceleratorTestEnvironment* g_env;
 
 // Magic constants for differentiating the reasons for NotifyResetDone being
 // called.
@@ -191,7 +188,6 @@ struct TestVideoFile {
 
 const gfx::Size kThumbnailsPageSize(1600, 1200);
 const gfx::Size kThumbnailSize(160, 120);
-const int kMD5StringLength = 32;
 
 base::FilePath GetTestDataFile(const base::FilePath& input_file) {
   if (input_file.IsAbsolute())
@@ -204,35 +200,6 @@ base::FilePath GetTestDataFile(const base::FilePath& input_file) {
       << g_test_file_path.Append(input_file).value().c_str()
       << " is not an existing path.";
   return abs_path;
-}
-
-// Read in golden MD5s for the thumbnailed rendering of this video
-void ReadGoldenThumbnailMD5s(const TestVideoFile* video_file,
-                             std::vector<std::string>* md5_strings) {
-  base::FilePath filepath(video_file->file_name);
-  filepath = filepath.AddExtension(FILE_PATH_LITERAL(".md5"));
-  std::string all_md5s;
-  base::ReadFileToString(GetTestDataFile(filepath), &all_md5s);
-  *md5_strings = base::SplitString(all_md5s, "\n", base::TRIM_WHITESPACE,
-                                   base::SPLIT_WANT_ALL);
-  // Check these are legitimate MD5s.
-  for (const std::string& md5_string : *md5_strings) {
-    // Ignore the empty string added by SplitString
-    if (!md5_string.length())
-      continue;
-    // Ignore comments
-    if (md5_string.at(0) == '#')
-      continue;
-
-    LOG_IF(ERROR, static_cast<int>(md5_string.length()) != kMD5StringLength)
-        << "MD5 length error: " << md5_string;
-    bool hex_only = std::count_if(md5_string.begin(), md5_string.end(),
-                                  isxdigit) == kMD5StringLength;
-    LOG_IF(ERROR, !hex_only) << "MD5 includes non-hex char: " << md5_string;
-  }
-  LOG_IF(ERROR, md5_strings->empty()) << "  MD5 checksum file ("
-                                      << filepath.MaybeAsASCII()
-                                      << ") missing or empty.";
 }
 
 // State of the GLRenderingVDAClient below.  Order matters here as the test
@@ -249,142 +216,6 @@ enum ClientState {
   CS_DESTROYED = 8,
   CS_MAX,  // Must be last entry.
 };
-
-// Initialize the GPU thread for rendering. We only need to setup once
-// for all test cases.
-class VideoDecodeAcceleratorTestEnvironment : public ::testing::Environment {
- public:
-  VideoDecodeAcceleratorTestEnvironment()
-      : rendering_thread_("GLRenderingVDAClientThread") {}
-
-  void SetUp() override {
-    base::Thread::Options options;
-    options.message_loop_type = base::MessageLoop::TYPE_UI;
-    rendering_thread_.StartWithOptions(options);
-
-    base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-                             base::WaitableEvent::InitialState::NOT_SIGNALED);
-    rendering_thread_.task_runner()->PostTask(
-        FROM_HERE, base::Bind(&RenderingHelper::InitializeOneOff,
-                              g_use_gl_renderer, &done));
-    done.Wait();
-
-#if defined(OS_CHROMEOS)
-    gpu_helper_.reset(new ui::OzoneGpuTestHelper());
-    // Need to initialize after the rendering side since the rendering side
-    // initializes the "GPU" parts of Ozone.
-    //
-    // This also needs to be done in the test environment since this shouldn't
-    // be initialized multiple times for the same Ozone platform.
-    gpu_helper_->Initialize(base::ThreadTaskRunnerHandle::Get());
-#endif
-  }
-
-  void TearDown() override {
-#if defined(OS_CHROMEOS)
-    gpu_helper_.reset();
-#endif
-    rendering_thread_.Stop();
-  }
-
-  scoped_refptr<base::SingleThreadTaskRunner> GetRenderingTaskRunner() const {
-    return rendering_thread_.task_runner();
-  }
-
- private:
-  base::Thread rendering_thread_;
-#if defined(OS_CHROMEOS)
-  std::unique_ptr<ui::OzoneGpuTestHelper> gpu_helper_;
-#endif
-
-  DISALLOW_COPY_AND_ASSIGN(VideoDecodeAcceleratorTestEnvironment);
-};
-
-// A helper class used to manage the lifetime of a Texture. Can be backed by
-// either a buffer allocated by the VDA, or by a preallocated pixmap.
-class TextureRef : public base::RefCounted<TextureRef> {
- public:
-  static scoped_refptr<TextureRef> Create(
-      uint32_t texture_id,
-      const base::Closure& no_longer_needed_cb);
-
-  static scoped_refptr<TextureRef> CreatePreallocated(
-      uint32_t texture_id,
-      const base::Closure& no_longer_needed_cb,
-      VideoPixelFormat pixel_format,
-      const gfx::Size& size);
-
-  gfx::GpuMemoryBufferHandle ExportGpuMemoryBufferHandle() const;
-
-  int32_t texture_id() const { return texture_id_; }
-
- private:
-  friend class base::RefCounted<TextureRef>;
-
-  TextureRef(uint32_t texture_id, const base::Closure& no_longer_needed_cb)
-      : texture_id_(texture_id), no_longer_needed_cb_(no_longer_needed_cb) {}
-
-  ~TextureRef();
-
-  uint32_t texture_id_;
-  base::Closure no_longer_needed_cb_;
-#if defined(OS_CHROMEOS)
-  scoped_refptr<gfx::NativePixmap> pixmap_;
-#endif
-};
-
-TextureRef::~TextureRef() {
-  base::ResetAndReturn(&no_longer_needed_cb_).Run();
-}
-
-// static
-scoped_refptr<TextureRef> TextureRef::Create(
-    uint32_t texture_id,
-    const base::Closure& no_longer_needed_cb) {
-  return base::WrapRefCounted(new TextureRef(texture_id, no_longer_needed_cb));
-}
-
-// static
-scoped_refptr<TextureRef> TextureRef::CreatePreallocated(
-    uint32_t texture_id,
-    const base::Closure& no_longer_needed_cb,
-    VideoPixelFormat pixel_format,
-    const gfx::Size& size) {
-  scoped_refptr<TextureRef> texture_ref;
-#if defined(OS_CHROMEOS)
-  texture_ref = TextureRef::Create(texture_id, no_longer_needed_cb);
-  LOG_ASSERT(texture_ref);
-
-  ui::OzonePlatform* platform = ui::OzonePlatform::GetInstance();
-  ui::SurfaceFactoryOzone* factory = platform->GetSurfaceFactoryOzone();
-  gfx::BufferFormat buffer_format =
-      VideoPixelFormatToGfxBufferFormat(pixel_format);
-  texture_ref->pixmap_ =
-      factory->CreateNativePixmap(gfx::kNullAcceleratedWidget, size,
-                                  buffer_format, gfx::BufferUsage::SCANOUT);
-  LOG_ASSERT(texture_ref->pixmap_);
-#endif
-
-  return texture_ref;
-}
-
-gfx::GpuMemoryBufferHandle TextureRef::ExportGpuMemoryBufferHandle() const {
-  gfx::GpuMemoryBufferHandle handle;
-#if defined(OS_CHROMEOS)
-  CHECK(pixmap_);
-  handle.type = gfx::NATIVE_PIXMAP;
-  for (size_t i = 0; i < pixmap_->GetDmaBufFdCount(); i++) {
-    int duped_fd = HANDLE_EINTR(dup(pixmap_->GetDmaBufFd(i)));
-    LOG_ASSERT(duped_fd != -1) << "Failed duplicating dmabuf fd";
-    handle.native_pixmap_handle.fds.emplace_back(
-        base::FileDescriptor(duped_fd, true));
-    handle.native_pixmap_handle.planes.emplace_back(
-        pixmap_->GetDmaBufPitch(i), pixmap_->GetDmaBufOffset(i), i,
-        pixmap_->GetDmaBufModifier(i));
-  }
-#endif
-  return handle;
-}
 
 // Client that can accept callbacks from a VideoDecodeAccelerator and is used by
 // the TESTs below.
@@ -455,7 +286,8 @@ class GLRenderingVDAClient
   bool decoder_deleted() { return !decoder_.get(); }
 
  private:
-  typedef std::map<int32_t, scoped_refptr<TextureRef>> TextureRefMap;
+  typedef std::map<int32_t, scoped_refptr<media::test::TextureRef>>
+      TextureRefMap;
 
   void SetState(ClientState new_state);
   void FinishInitialization();
@@ -679,16 +511,17 @@ void GLRenderingVDAClient::ProvidePictureBuffers(
                                      &done);
     done.Wait();
 
-    scoped_refptr<TextureRef> texture_ref;
+    scoped_refptr<media::test::TextureRef> texture_ref;
     base::Closure delete_texture_cb =
         base::Bind(&RenderingHelper::DeleteTexture,
                    base::Unretained(rendering_helper_), texture_id);
 
     if (g_test_import) {
-      texture_ref = TextureRef::CreatePreallocated(
+      texture_ref = media::test::TextureRef::CreatePreallocated(
           texture_id, delete_texture_cb, pixel_format, dimensions);
     } else {
-      texture_ref = TextureRef::Create(texture_id, delete_texture_cb);
+      texture_ref =
+          media::test::TextureRef::Create(texture_id, delete_texture_cb);
     }
 
     LOG_ASSERT(texture_ref);
@@ -1519,7 +1352,9 @@ TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
     std::vector<std::string> golden_md5s;
     std::string md5_string = base::MD5String(
         base::StringPiece(reinterpret_cast<char*>(&rgb[0]), rgb.size()));
-    ReadGoldenThumbnailMD5s(test_video_files_[0].get(), &golden_md5s);
+    base::FilePath filepath(test_video_files_[0]->file_name);
+    media::test::ReadGoldenThumbnailMD5s(
+        filepath.AddExtension(FILE_PATH_LITERAL(".md5")), &golden_md5s);
     std::vector<std::string>::iterator match =
         find(golden_md5s.begin(), golden_md5s.end(), md5_string);
     if (match == golden_md5s.end()) {
@@ -1805,9 +1640,10 @@ class VDATestSuite : public base::TestSuite {
 #endif  // OS_WIN || OS_CHROMEOS
 
     media::g_env =
-        reinterpret_cast<media::VideoDecodeAcceleratorTestEnvironment*>(
+        reinterpret_cast<media::test::VideoDecodeAcceleratorTestEnvironment*>(
             testing::AddGlobalTestEnvironment(
-                new media::VideoDecodeAcceleratorTestEnvironment()));
+                new media::test::VideoDecodeAcceleratorTestEnvironment(
+                    g_use_gl_renderer)));
 
 #if defined(OS_CHROMEOS)
     ui::OzonePlatform::InitParams params;
