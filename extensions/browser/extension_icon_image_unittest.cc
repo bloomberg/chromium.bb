@@ -87,7 +87,7 @@ class ExtensionIconImageTest : public ExtensionsTest,
                                            Manifest::Location location) {
     // Create and load an extension.
     base::FilePath test_file;
-    if (!PathService::Get(DIR_TEST_DATA, &test_file)) {
+    if (!base::PathService::Get(DIR_TEST_DATA, &test_file)) {
       EXPECT_FALSE(true);
       return NULL;
     }

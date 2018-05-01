@@ -152,7 +152,7 @@ class ContentVerifierTest
     manifest.Set(manifest_keys::kContentScripts, std::move(content_scripts));
 
     base::FilePath path;
-    EXPECT_TRUE(PathService::Get(DIR_TEST_DATA, &path));
+    EXPECT_TRUE(base::PathService::Get(DIR_TEST_DATA, &path));
 
     std::string error;
     scoped_refptr<Extension> extension(Extension::Create(

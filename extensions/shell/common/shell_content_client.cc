@@ -30,7 +30,7 @@ namespace {
 bool GetNaClPluginPath(base::FilePath* path) {
   // On Posix, plugins live in the module directory.
   base::FilePath module;
-  if (!PathService::Get(base::DIR_MODULE, &module))
+  if (!base::PathService::Get(base::DIR_MODULE, &module))
     return false;
   *path = module.Append(nacl::kInternalNaClPluginFileName);
   return true;

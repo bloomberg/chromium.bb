@@ -65,8 +65,10 @@ void OnDirectorySizeCalculated(
 
 base::FilePath PrettifyPath(const base::FilePath& source_path) {
   base::FilePath home_path;
-  if (source_path.empty() || !PathService::Get(base::DIR_HOME, &home_path))
+  if (source_path.empty() ||
+      !base::PathService::Get(base::DIR_HOME, &home_path)) {
     return source_path;
+  }
 
   base::FilePath display_path = base::FilePath(kHomeShortcut);
   if (source_path == home_path)
@@ -127,7 +129,7 @@ base::FilePath ResolveHomeDirectory(const base::FilePath& path) {
     return path;
   }
   base::FilePath result;
-  PathService::Get(base::DIR_HOME, &result);
+  base::PathService::Get(base::DIR_HOME, &result);
   // The user could specify "~" or "~/", so be safe.
   if (value.length() > 2) {
     result = result.Append(value.substr(2));

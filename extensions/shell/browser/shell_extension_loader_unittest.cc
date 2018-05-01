@@ -107,7 +107,7 @@ class ShellExtensionLoaderTest : public ExtensionsTest {
   // Returns the path to a test directory.
   base::FilePath GetExtensionPath(const std::string& dir) {
     base::FilePath test_data_dir;
-    PathService::Get(DIR_TEST_DATA, &test_data_dir);
+    base::PathService::Get(DIR_TEST_DATA, &test_data_dir);
     return test_data_dir.AppendASCII(dir);
   }
 

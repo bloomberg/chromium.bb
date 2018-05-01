@@ -36,7 +36,7 @@ const base::FilePath::StringType ToLower(
 
 TEST(ExtensionResourceTest, CreateWithMissingResourceOnDisk) {
   base::FilePath root_path;
-  ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &root_path));
+  ASSERT_TRUE(base::PathService::Get(DIR_TEST_DATA, &root_path));
   base::FilePath relative_path;
   relative_path = relative_path.AppendASCII("cira.js");
   std::string extension_id = crx_file::id_util::GenerateId("test");

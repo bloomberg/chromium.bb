@@ -27,7 +27,7 @@ class InfoMapTest : public testing::Test {
 // Returns a barebones test Extension object with the given name.
 static scoped_refptr<Extension> CreateExtension(const std::string& name) {
   base::FilePath path;
-  PathService::Get(DIR_TEST_DATA, &path);
+  base::PathService::Get(DIR_TEST_DATA, &path);
 
   return ExtensionBuilder(name).SetPath(path.AppendASCII(name)).Build();
 }

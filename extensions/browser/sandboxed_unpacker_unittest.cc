@@ -168,7 +168,7 @@ class SandboxedUnpackerTest : public ExtensionsTest {
 
   base::FilePath GetCrxFullPath(const std::string& crx_name) {
     base::FilePath full_path;
-    EXPECT_TRUE(PathService::Get(extensions::DIR_TEST_DATA, &full_path));
+    EXPECT_TRUE(base::PathService::Get(extensions::DIR_TEST_DATA, &full_path));
     full_path = full_path.AppendASCII("unpacker").AppendASCII(crx_name);
     EXPECT_TRUE(base::PathExists(full_path)) << full_path.value();
     return full_path;

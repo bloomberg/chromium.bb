@@ -48,7 +48,7 @@ TEST(ExtensionPathUtilTest, BasicPrettifyPathTest) {
 
 TEST(ExtensionPathUtilTest, ResolveHomeDirTest) {
   FilePath home_dir;
-  ASSERT_TRUE(PathService::Get(base::DIR_HOME, &home_dir));
+  ASSERT_TRUE(base::PathService::Get(base::DIR_HOME, &home_dir));
   const FilePath abs_path(FILE_PATH_LITERAL("/foo/bar/baz"));
   const FilePath rel_path(FILE_PATH_LITERAL("foo/bar/baz"));
   const FilePath rel_path_with_tilde(FILE_PATH_LITERAL("~/foo/bar"));

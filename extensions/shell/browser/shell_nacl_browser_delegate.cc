@@ -53,16 +53,16 @@ bool ShellNaClBrowserDelegate::DialogsAreSuppressed() {
 bool ShellNaClBrowserDelegate::GetCacheDirectory(base::FilePath* cache_dir) {
   // Just use the general cache directory, not a subdirectory like Chrome does.
 #if defined(OS_POSIX)
-  return PathService::Get(base::DIR_CACHE, cache_dir);
+  return base::PathService::Get(base::DIR_CACHE, cache_dir);
 #elif defined(OS_WIN)
   // TODO(yoz): Find an appropriate persistent directory to use here.
-  return PathService::Get(base::DIR_TEMP, cache_dir);
+  return base::PathService::Get(base::DIR_TEMP, cache_dir);
 #endif
 }
 
 bool ShellNaClBrowserDelegate::GetPluginDirectory(base::FilePath* plugin_dir) {
   // On Posix, plugins are in the module directory.
-  return PathService::Get(base::DIR_MODULE, plugin_dir);
+  return base::PathService::Get(base::DIR_MODULE, plugin_dir);
 }
 
 bool ShellNaClBrowserDelegate::GetPnaclDirectory(base::FilePath* pnacl_dir) {
