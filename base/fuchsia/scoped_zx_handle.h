@@ -8,6 +8,7 @@
 #include <zircon/status.h>
 #include <zircon/syscalls.h>
 
+#include "base/base_export.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/scoped_generic.h"
 
@@ -29,7 +30,7 @@ struct ScopedZxHandleTraits {
 
 }  // namespace internal
 
-class ScopedZxHandle
+class BASE_EXPORT ScopedZxHandle
     : public ScopedGeneric<zx_handle_t, internal::ScopedZxHandleTraits> {
  public:
   ScopedZxHandle() = default;

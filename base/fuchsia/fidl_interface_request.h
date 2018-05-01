@@ -5,6 +5,7 @@
 #ifndef BASE_FUCHSIA_FIDL_INTERFACE_REQUEST_H_
 #define BASE_FUCHSIA_FIDL_INTERFACE_REQUEST_H_
 
+#include "base/base_export.h"
 #include "base/fuchsia/scoped_zx_handle.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
@@ -30,7 +31,7 @@ namespace fuchsia {
 // need to connect to a service. FidlInterfaceRequest is resolved when the
 // channel is passed to the service implementation, e.g. through
 // ComponentContext.
-class FidlInterfaceRequest {
+class BASE_EXPORT FidlInterfaceRequest {
  public:
   template <typename Interface>
   explicit FidlInterfaceRequest(fidl::InterfaceRequest<Interface> request)
