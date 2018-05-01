@@ -17,11 +17,17 @@
 #include "chromeos/services/assistant/service.h"
 #include "chromeos/services/assistant/utils.h"
 #include "chromeos/system/version_loader.h"
+#include "libassistant/shared/internal_api/assistant_manager_delegate.h"
 #include "libassistant/shared/internal_api/assistant_manager_internal.h"
 #include "url/gurl.h"
 
+using assistant_client::ActionModule;
+
 namespace chromeos {
 namespace assistant {
+
+const std::string KWiFiDeviceSettingId = "WIFI";
+const std::string KBluetoothDeviceSettingId = "BLUETOOTH";
 
 AssistantManagerServiceImpl::AssistantManagerServiceImpl(
     mojom::AudioInputPtr audio_input)
@@ -197,6 +203,20 @@ void AssistantManagerServiceImpl::OnSpeechLevelUpdated(
           weak_factory_.GetWeakPtr(), speech_level));
 }
 
+ActionModule::Result AssistantManagerServiceImpl::HandleModifySettingClientOp(
+    const std::string& modify_setting_args_proto) {
+  DVLOG(2) << "HandleModifySettingClientOp=" << modify_setting_args_proto;
+  // TODO(b/78184487): Wire up to Chrome API to update device setting.
+  return ActionModule::Result::Ok();
+}
+
+bool AssistantManagerServiceImpl::IsSettingSupported(
+    const std::string& setting_id) {
+  DVLOG(2) << "IsSettingSupported=" << setting_id;
+  return (setting_id == KWiFiDeviceSettingId ||
+          setting_id == KBluetoothDeviceSettingId);
+}
+
 void AssistantManagerServiceImpl::StartAssistantInternal(
     base::OnceCallback<void()> callback,
     const std::string& access_token,
@@ -215,6 +235,7 @@ void AssistantManagerServiceImpl::StartAssistantInternal(
 
   assistant_manager_internal_->SetDisplayConnection(display_connection_.get());
   assistant_manager_internal_->RegisterActionModule(action_module_.get());
+  assistant_manager_internal_->SetAssistantManagerDelegate(this);
   assistant_manager_->AddConversationStateListener(this);
 
   if (!assistant_settings_manager_) {
