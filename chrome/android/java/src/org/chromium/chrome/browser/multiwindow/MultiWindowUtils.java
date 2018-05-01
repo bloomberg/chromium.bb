@@ -8,7 +8,6 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityManager.AppTask;
-import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -165,7 +164,7 @@ public class MultiWindowUtils implements ActivityStateListener {
      * @see Context#startActivity(Intent, Bundle)
      */
     public static Bundle getOpenInOtherWindowActivityOptions(Activity activity) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return null;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) return null;
         if (!getInstance().isInMultiDisplayMode(activity)) return null;
         Display defaultDisplay = DisplayAndroidManager.getDefaultDisplayForContext(activity);
         DisplayManager displayManager =
@@ -180,9 +179,8 @@ public class MultiWindowUtils implements ActivityStateListener {
             throw new IllegalStateException(
                     "Attempting to open window in other display, but one is not found");
         }
-        return ActivityOptions.makeBasic()
-                .setLaunchDisplayId(launchDisplay.getDisplayId())
-                .toBundle();
+        return ApiCompatibilityUtils.createLaunchDisplayIdActivityOptions(
+                launchDisplay.getDisplayId());
     }
 
     @Override
