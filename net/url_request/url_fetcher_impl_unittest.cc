@@ -77,7 +77,7 @@ const char kCreateUploadStreamBody[] = "rosebud";
 
 base::FilePath GetUploadFileTestPath() {
   base::FilePath path;
-  PathService::Get(base::DIR_SOURCE_ROOT, &path);
+  base::PathService::Get(base::DIR_SOURCE_ROOT, &path);
   return path.Append(
       FILE_PATH_LITERAL("net/data/url_request_unittest/BullRunSpeech.txt"));
 }
@@ -419,7 +419,7 @@ class URLFetcherTest : public testing::Test {
     }
 
     base::FilePath server_root;
-    PathService::Get(base::DIR_SOURCE_ROOT, &server_root);
+    base::PathService::Get(base::DIR_SOURCE_ROOT, &server_root);
 
     EXPECT_TRUE(base::ContentsEqual(
         server_root.Append(kDocRoot).AppendASCII(file_to_fetch), out_path));
@@ -1019,7 +1019,7 @@ TEST_F(URLFetcherTest, DownloadProgress) {
   std::string file_contents;
 
   base::FilePath server_root;
-  PathService::Get(base::DIR_SOURCE_ROOT, &server_root);
+  base::PathService::Get(base::DIR_SOURCE_ROOT, &server_root);
 
   ASSERT_TRUE(base::ReadFileToString(
       server_root.Append(kDocRoot).AppendASCII(kFileToFetch), &file_contents));

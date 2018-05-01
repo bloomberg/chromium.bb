@@ -1277,7 +1277,7 @@ TEST_F(URLRequestTest, FileDirCancelTest) {
   TestDelegate d;
   {
     base::FilePath file_path;
-    PathService::Get(base::DIR_SOURCE_ROOT, &file_path);
+    base::PathService::Get(base::DIR_SOURCE_ROOT, &file_path);
     file_path = file_path.Append(FILE_PATH_LITERAL("net"));
     file_path = file_path.Append(FILE_PATH_LITERAL("data"));
 
@@ -1303,7 +1303,7 @@ TEST_F(URLRequestTest, FileDirOutputSanity) {
   const char sentinel_name[] = "filedir-sentinel";
 
   base::FilePath path;
-  PathService::Get(base::DIR_SOURCE_ROOT, &path);
+  base::PathService::Get(base::DIR_SOURCE_ROOT, &path);
   path = path.Append(kTestFilePath);
 
   TestDelegate d;
@@ -1338,7 +1338,7 @@ TEST_F(URLRequestTest, FileDirRedirectNoCrash) {
   // redirects does not crash.  See http://crbug.com/18686.
 
   base::FilePath path;
-  PathService::Get(base::DIR_SOURCE_ROOT, &path);
+  base::PathService::Get(base::DIR_SOURCE_ROOT, &path);
   path = path.Append(kTestFilePath);
 
   TestDelegate d;
@@ -1404,7 +1404,7 @@ TEST_F(URLRequestTest, InvalidReferrerTest) {
 #if defined(OS_WIN)
 TEST_F(URLRequestTest, ResolveShortcutTest) {
   base::FilePath app_path;
-  PathService::Get(base::DIR_SOURCE_ROOT, &app_path);
+  base::PathService::Get(base::DIR_SOURCE_ROOT, &app_path);
   app_path = app_path.Append(kTestFilePath);
   app_path = app_path.AppendASCII("with-headers.html");
 
@@ -5443,7 +5443,7 @@ TEST_F(URLRequestTestHTTP, GetZippedTest) {
       { true, true, false, false, true };
 
   base::FilePath file_path;
-  PathService::Get(base::DIR_SOURCE_ROOT, &file_path);
+  base::PathService::Get(base::DIR_SOURCE_ROOT, &file_path);
   file_path = file_path.Append(kTestFilePath);
   file_path = file_path.Append(FILE_PATH_LITERAL("BullRunSpeech.txt"));
   std::string expected_content;
@@ -6496,13 +6496,13 @@ TEST_F(URLRequestTestHTTP, PostFileTest) {
     r->set_method("POST");
 
     base::FilePath dir;
-    PathService::Get(base::DIR_EXE, &dir);
+    base::PathService::Get(base::DIR_EXE, &dir);
     base::SetCurrentDirectory(dir);
 
     std::vector<std::unique_ptr<UploadElementReader>> element_readers;
 
     base::FilePath path;
-    PathService::Get(base::DIR_SOURCE_ROOT, &path);
+    base::PathService::Get(base::DIR_SOURCE_ROOT, &path);
     path = path.Append(kTestFilePath);
     path = path.Append(FILE_PATH_LITERAL("with-headers.html"));
     element_readers.push_back(std::make_unique<UploadFileElementReader>(
@@ -8255,7 +8255,7 @@ TEST_F(URLRequestTestHTTP, DeferredRedirect) {
     EXPECT_EQ(OK, d.request_status());
 
     base::FilePath path;
-    PathService::Get(base::DIR_SOURCE_ROOT, &path);
+    base::PathService::Get(base::DIR_SOURCE_ROOT, &path);
     path = path.Append(kTestFilePath);
     path = path.Append(FILE_PATH_LITERAL("with-headers.html"));
 
@@ -8293,7 +8293,7 @@ TEST_F(URLRequestTestHTTP, DeferredRedirect_GetFullRequestHeaders) {
     EXPECT_EQ(OK, d.request_status());
 
     base::FilePath path;
-    PathService::Get(base::DIR_SOURCE_ROOT, &path);
+    base::PathService::Get(base::DIR_SOURCE_ROOT, &path);
     path = path.Append(kTestFilePath);
     path = path.Append(FILE_PATH_LITERAL("with-headers.html"));
 
@@ -11998,7 +11998,7 @@ class URLRequestTestFTP : public URLRequestTest {
 
   std::string GetTestFileContents() {
     base::FilePath path;
-    EXPECT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &path));
+    EXPECT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &path));
     path = path.Append(kTestFilePath);
     path = path.AppendASCII(kFtpTestFile);
     std::string contents;

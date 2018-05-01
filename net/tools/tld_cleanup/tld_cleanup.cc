@@ -56,7 +56,7 @@ int main(int argc, const char* argv[]) {
   base::CommandLine::Init(argc, argv);
 
   base::FilePath log_filename;
-  PathService::Get(base::DIR_EXE, &log_filename);
+  base::PathService::Get(base::DIR_EXE, &log_filename);
   log_filename = log_filename.AppendASCII("tld_cleanup.log");
   logging::LoggingSettings settings;
   settings.logging_dest = destination;
@@ -67,14 +67,14 @@ int main(int argc, const char* argv[]) {
   base::i18n::InitializeICU();
 
   base::FilePath input_file;
-  PathService::Get(base::DIR_SOURCE_ROOT, &input_file);
+  base::PathService::Get(base::DIR_SOURCE_ROOT, &input_file);
   input_file = input_file.Append(FILE_PATH_LITERAL("net"))
                          .Append(FILE_PATH_LITERAL("base"))
                          .Append(FILE_PATH_LITERAL(
                              "registry_controlled_domains"))
                          .Append(FILE_PATH_LITERAL("effective_tld_names.dat"));
   base::FilePath output_file;
-  PathService::Get(base::DIR_SOURCE_ROOT, &output_file);
+  base::PathService::Get(base::DIR_SOURCE_ROOT, &output_file);
   output_file = output_file.Append(FILE_PATH_LITERAL("net"))
                            .Append(FILE_PATH_LITERAL("base"))
                            .Append(FILE_PATH_LITERAL(

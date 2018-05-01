@@ -141,7 +141,8 @@ bool LocalTestServer::LaunchPython(const base::FilePath& testserver_path) {
   base::LaunchOptions options;
 
   // Set CWD to source root.
-  if (!PathService::Get(base::DIR_SOURCE_ROOT, &options.current_directory)) {
+  if (!base::PathService::Get(base::DIR_SOURCE_ROOT,
+                              &options.current_directory)) {
     LOG(ERROR) << "Failed to get DIR_SOURCE_ROOT";
     return false;
   }

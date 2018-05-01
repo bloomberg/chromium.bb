@@ -110,7 +110,7 @@ TEST(HpackFuzzUtilTest, PassValidInputThroughAllStages) {
 
 TEST(HpackFuzzUtilTest, ValidFuzzExamplesRegressionTest) {
   base::FilePath source_root;
-  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &source_root));
+  ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &source_root));
 
   // Load the example fixtures versioned with the source tree.
   HpackFuzzUtil::Input input;

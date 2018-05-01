@@ -107,7 +107,7 @@ class ProxyResolverV8Test : public testing::Test {
   // called more than once, the previous ProxyResolverV8 is deleted.
   int CreateResolver(const char* filename) {
     base::FilePath path;
-    PathService::Get(base::DIR_SOURCE_ROOT, &path);
+    base::PathService::Get(base::DIR_SOURCE_ROOT, &path);
     path = path.AppendASCII("net");
     path = path.AppendASCII("data");
     path = path.AppendASCII("proxy_resolver_v8_unittest");

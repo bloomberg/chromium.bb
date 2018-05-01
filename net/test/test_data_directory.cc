@@ -26,7 +26,7 @@ base::FilePath GetTestNetDataDirectory() {
   base::FilePath src_root;
   {
     base::ThreadRestrictions::ScopedAllowIO allow_io_for_path_service;
-    PathService::Get(base::DIR_SOURCE_ROOT, &src_root);
+    base::PathService::Get(base::DIR_SOURCE_ROOT, &src_root);
   }
 
   return src_root.Append(kNetDataRelativePath);
