@@ -150,6 +150,9 @@ void TableCellPainter::PaintMask(const PaintInfo& paint_info,
   BoxPainter(layout_table_cell_).PaintMaskImages(paint_info, paint_rect);
 }
 
+// TODO(crbug.com/377847): When table cells fully support subpixel layout, we
+// should not snap the size to pixels here. We should remove this function and
+// snap to pixels for the rect with paint offset applied.
 LayoutRect TableCellPainter::PaintRectNotIncludingVisualOverflow(
     const LayoutPoint& paint_offset) {
   return LayoutRect(paint_offset,
