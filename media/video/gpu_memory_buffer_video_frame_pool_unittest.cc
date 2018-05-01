@@ -351,6 +351,31 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareXB30Frame) {
       media::VideoFrameMetadata::READ_LOCK_FENCES_ENABLED));
 }
 
+TEST_F(GpuMemoryBufferVideoFramePoolTest, PreservesMetadata) {
+  scoped_refptr<VideoFrame> software_frame = CreateTestYUVVideoFrame(10);
+  software_frame->metadata()->SetBoolean(
+      media::VideoFrameMetadata::END_OF_STREAM, true);
+  base::TimeTicks kTestReferenceTime =
+      base::TimeDelta::FromMilliseconds(12345) + base::TimeTicks();
+  software_frame->metadata()->SetTimeTicks(VideoFrameMetadata::REFERENCE_TIME,
+                                           kTestReferenceTime);
+  scoped_refptr<VideoFrame> frame;
+  gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
+      software_frame, base::BindOnce(MaybeCreateHardwareFrameCallback, &frame));
+
+  RunUntilIdle();
+
+  EXPECT_NE(software_frame.get(), frame.get());
+  bool end_of_stream = false;
+  EXPECT_TRUE(frame->metadata()->GetBoolean(
+      media::VideoFrameMetadata::END_OF_STREAM, &end_of_stream));
+  EXPECT_TRUE(end_of_stream);
+  base::TimeTicks render_time;
+  EXPECT_TRUE(frame->metadata()->GetTimeTicks(
+      VideoFrameMetadata::REFERENCE_TIME, &render_time));
+  EXPECT_EQ(kTestReferenceTime, render_time);
+}
+
 // CreateGpuMemoryBuffer can return null (e.g: when the GPU process is down).
 // This test checks that in that case we don't crash and still create the
 // textures.

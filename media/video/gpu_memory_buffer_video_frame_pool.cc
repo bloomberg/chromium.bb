@@ -915,16 +915,10 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
     default:
       break;
   }
+
+  frame->metadata()->MergeMetadataFrom(video_frame->metadata());
   frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY,
                                 allow_overlay);
-
-  base::TimeTicks render_time;
-  if (video_frame->metadata()->GetTimeTicks(VideoFrameMetadata::REFERENCE_TIME,
-                                            &render_time)) {
-    frame->metadata()->SetTimeTicks(VideoFrameMetadata::REFERENCE_TIME,
-                                    render_time);
-  }
-
   frame->metadata()->SetBoolean(VideoFrameMetadata::READ_LOCK_FENCES_ENABLED,
                                 true);
 
