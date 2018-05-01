@@ -42,14 +42,6 @@ ACTION_P2(CdmCreated, cdm, error_message) {
   arg0.Run(cdm, error_message);
 }
 
-ACTION_P3(InvokeFunction, classPointer, memberFunc, p1) {
-  (classPointer->*memberFunc)(arg0, p1);
-}
-
-ACTION_P4(InvokeFunction2, classPointer, memberFunc, p1, p2) {
-  (classPointer->*memberFunc)(arg0, p1, p2);
-}
-
 namespace media {
 
 namespace {
@@ -153,9 +145,10 @@ class MojoCdmTest : public ::testing::Test {
       // never called.
       ForceConnectionError();
     } else {
-      EXPECT_CALL(*remote_cdm_, OnSetServerCertificate(certificate, _))
-          .WillOnce(WithArg<1>(InvokeFunction(this, &MojoCdmTest::HandlePromise,
-                                              expected_result)));
+      EXPECT_CALL(*remote_cdm_, SetServerCertificate(certificate, _))
+          .WillOnce([&](const auto& certificate, auto promise) {
+            HandlePromise(std::move(promise), expected_result);
+          });
     }
 
     mojo_cdm_->SetServerCertificate(
@@ -178,11 +171,13 @@ class MojoCdmTest : public ::testing::Test {
       // CreateSessionAndGenerateRequest() is never called.
       ForceConnectionError();
     } else {
-      EXPECT_CALL(*remote_cdm_, OnCreateSessionAndGenerateRequest(
+      EXPECT_CALL(*remote_cdm_, CreateSessionAndGenerateRequest(
                                     session_type, data_type, key_id, _))
-          .WillOnce(WithArg<3>(
-              InvokeFunction2(this, &MojoCdmTest::HandleSessionPromise,
-                              session_id, expected_result)));
+          .WillOnce([&](auto session_type, auto init_data_type,
+                        const auto& init_data, auto promise) {
+            HandleSessionPromise(std::move(promise), session_id,
+                                 expected_result);
+          });
     }
 
     // Note that although it's called CreateSessionAndGenerateRequest, no
@@ -211,10 +206,11 @@ class MojoCdmTest : public ::testing::Test {
       // Break the connection before the call, so LoadSession() is never called.
       ForceConnectionError();
     } else {
-      EXPECT_CALL(*remote_cdm_, OnLoadSession(session_type, session_id, _))
-          .WillOnce(WithArg<2>(
-              InvokeFunction2(this, &MojoCdmTest::HandleSessionPromise,
-                              session_id, expected_result)));
+      EXPECT_CALL(*remote_cdm_, LoadSession(session_type, session_id, _))
+          .WillOnce([&](auto session_type, auto session_id, auto promise) {
+            HandleSessionPromise(std::move(promise), session_id,
+                                 expected_result);
+          });
     }
 
     mojo_cdm_->LoadSession(session_type, session_id,
@@ -246,9 +242,10 @@ class MojoCdmTest : public ::testing::Test {
       // called.
       ForceConnectionError();
     } else {
-      EXPECT_CALL(*remote_cdm_, OnUpdateSession(session_id, response, _))
-          .WillOnce(WithArg<2>(InvokeFunction(this, &MojoCdmTest::HandlePromise,
-                                              expected_result)));
+      EXPECT_CALL(*remote_cdm_, UpdateSession(session_id, response, _))
+          .WillOnce([&](auto session_id, auto response, auto promise) {
+            HandlePromise(std::move(promise), expected_result);
+          });
     }
 
     mojo_cdm_->UpdateSession(
@@ -264,9 +261,10 @@ class MojoCdmTest : public ::testing::Test {
       // called.
       ForceConnectionError();
     } else {
-      EXPECT_CALL(*remote_cdm_, OnCloseSession(session_id, _))
-          .WillOnce(WithArg<1>(InvokeFunction(this, &MojoCdmTest::HandlePromise,
-                                              expected_result)));
+      EXPECT_CALL(*remote_cdm_, CloseSession(session_id, _))
+          .WillOnce([&](auto session_id, auto promise) {
+            HandlePromise(std::move(promise), expected_result);
+          });
     }
 
     mojo_cdm_->CloseSession(session_id, std::make_unique<MockCdmPromise>(
@@ -281,9 +279,10 @@ class MojoCdmTest : public ::testing::Test {
       // called.
       ForceConnectionError();
     } else {
-      EXPECT_CALL(*remote_cdm_, OnRemoveSession(session_id, _))
-          .WillOnce(WithArg<1>(InvokeFunction(this, &MojoCdmTest::HandlePromise,
-                                              expected_result)));
+      EXPECT_CALL(*remote_cdm_, RemoveSession(session_id, _))
+          .WillOnce([&](auto session_id, auto promise) {
+            HandlePromise(std::move(promise), expected_result);
+          });
     }
 
     mojo_cdm_->RemoveSession(session_id, std::make_unique<MockCdmPromise>(
@@ -291,7 +290,7 @@ class MojoCdmTest : public ::testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  void HandlePromise(std::unique_ptr<SimpleCdmPromise>& promise,
+  void HandlePromise(std::unique_ptr<SimpleCdmPromise> promise,
                      ExpectedResult expected_result) {
     switch (expected_result) {
       case SUCCESS:
@@ -326,7 +325,7 @@ class MojoCdmTest : public ::testing::Test {
     }
   }
 
-  void HandleSessionPromise(std::unique_ptr<NewSessionCdmPromise>& promise,
+  void HandleSessionPromise(std::unique_ptr<NewSessionCdmPromise> promise,
                             const std::string& session_id,
                             ExpectedResult expected_result) {
     switch (expected_result) {

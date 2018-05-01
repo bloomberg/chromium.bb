@@ -396,7 +396,7 @@ TEST_F(PipelineControllerTest, SeekToSeekTimeNotElided) {
 TEST_F(PipelineControllerTest, VideoTrackChangeWhileSuspending) {
   Complete(StartPipeline());
   EXPECT_CALL(*pipeline_, Suspend(_));
-  EXPECT_CALL(*pipeline_, MockOnSelectedVideoTrackChanged(_, _)).Times(0);
+  EXPECT_CALL(*pipeline_, OnSelectedVideoTrackChanged(_, _)).Times(0);
   pipeline_controller_.Suspend();
   pipeline_controller_.OnSelectedVideoTrackChanged({});
 }
@@ -404,7 +404,7 @@ TEST_F(PipelineControllerTest, VideoTrackChangeWhileSuspending) {
 TEST_F(PipelineControllerTest, AudioTrackChangeWhileSuspending) {
   Complete(StartPipeline());
   EXPECT_CALL(*pipeline_, Suspend(_));
-  EXPECT_CALL(*pipeline_, MockOnEnabledAudioTracksChanged(_, _)).Times(0);
+  EXPECT_CALL(*pipeline_, OnEnabledAudioTracksChanged(_, _)).Times(0);
   pipeline_controller_.Suspend();
   pipeline_controller_.OnEnabledAudioTracksChanged({});
 }
@@ -412,10 +412,10 @@ TEST_F(PipelineControllerTest, AudioTrackChangeWhileSuspending) {
 TEST_F(PipelineControllerTest, AudioTrackChangeDuringVideoTrackChange) {
   Complete(StartPipeline());
 
-  EXPECT_CALL(*pipeline_, MockOnSelectedVideoTrackChanged(_, _));
+  EXPECT_CALL(*pipeline_, OnSelectedVideoTrackChanged(_, _));
   pipeline_controller_.OnSelectedVideoTrackChanged({});
   pipeline_controller_.OnEnabledAudioTracksChanged({});
-  EXPECT_CALL(*pipeline_, MockOnEnabledAudioTracksChanged(_, _));
+  EXPECT_CALL(*pipeline_, OnEnabledAudioTracksChanged(_, _));
 
   pipeline_controller_.FireOnTrackChangeCompleteForTesting(
       PipelineController::State::PLAYING);
@@ -426,7 +426,7 @@ TEST_F(PipelineControllerTest, AudioTrackChangeDuringVideoTrackChange) {
 
 TEST_F(PipelineControllerTest, SuspendDuringVideoTrackChange) {
   Complete(StartPipeline());
-  EXPECT_CALL(*pipeline_, MockOnSelectedVideoTrackChanged(_, _));
+  EXPECT_CALL(*pipeline_, OnSelectedVideoTrackChanged(_, _));
   was_resumed_ = false;
   pipeline_controller_.OnSelectedVideoTrackChanged({});
   pipeline_controller_.Suspend();
@@ -444,7 +444,7 @@ TEST_F(PipelineControllerTest, SuspendDuringVideoTrackChange) {
 
 TEST_F(PipelineControllerTest, SuspendDuringAudioTrackChange) {
   Complete(StartPipeline());
-  EXPECT_CALL(*pipeline_, MockOnEnabledAudioTracksChanged(_, _));
+  EXPECT_CALL(*pipeline_, OnEnabledAudioTracksChanged(_, _));
   was_resumed_ = false;
 
   pipeline_controller_.OnEnabledAudioTracksChanged({});
