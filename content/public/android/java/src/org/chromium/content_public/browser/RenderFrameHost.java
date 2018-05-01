@@ -38,4 +38,11 @@ public interface RenderFrameHost {
      * Notifies the native RenderFrameHost about a user activation from the browser side.
      */
     void notifyUserActivation();
+
+    /**
+     * Returns whether we're in incognito mode.
+     *
+     * @return {@code true} if we're in incoginto mode.
+     */
+    boolean isIncognito();
 }

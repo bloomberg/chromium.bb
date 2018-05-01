@@ -27,4 +27,9 @@ public class MockRenderFrameHost implements RenderFrameHost {
 
     @Override
     public void notifyUserActivation() {}
+
+    @Override
+    public boolean isIncognito() {
+        return false;
+    }
 }
