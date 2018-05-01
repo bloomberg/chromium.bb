@@ -1445,11 +1445,6 @@ void MenuController::UpdateInitialLocation(const gfx::Rect& bounds,
                                            bool context_menu) {
   pending_state_.context_menu = context_menu;
   pending_state_.initial_bounds = bounds;
-  if (bounds.height() > 1) {
-    // Inset the bounds slightly, otherwise drag coordinates don't line up
-    // nicely and menus close prematurely.
-    pending_state_.initial_bounds.Inset(0, 1);
-  }
 
   // Reverse anchor position for RTL languages.
   if (base::i18n::IsRTL() &&
@@ -1562,9 +1557,8 @@ bool MenuController::ShowSiblingMenu(SubmenuView* source,
 
   // It is currently not possible to show a submenu recursively in a bubble.
   DCHECK(!MenuItemView::IsBubble(anchor));
-  // Subtract 1 from the height to make the popup flush with the button border.
   UpdateInitialLocation(gfx::Rect(screen_menu_loc.x(), screen_menu_loc.y(),
-                                  button->width(), button->height() - 1),
+                                  button->width(), button->height()),
                         anchor, state_.context_menu);
   alt_menu->PrepareForRun(
       false, has_mnemonics,

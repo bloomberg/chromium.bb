@@ -52,9 +52,8 @@ void BookmarkMenuController::RunMenuAt(BookmarkBarView* bookmark_bar) {
   bookmark_bar_->GetAnchorPositionForButton(menu_button, &anchor);
   gfx::Point screen_loc;
   views::View::ConvertPointToScreen(menu_button, &screen_loc);
-  // Subtract 1 from the height to make the popup flush with the button border.
   gfx::Rect bounds(screen_loc.x(), screen_loc.y(), menu_button->width(),
-                   menu_button->height() - 1);
+                   menu_button->height());
   menu_delegate_->GetBookmarkModel()->AddObserver(this);
   // We only delete ourself after the menu completes, so we can safely ignore
   // the return value.
