@@ -81,7 +81,16 @@ class PLATFORM_EXPORT ScrollbarThemeMac : public ScrollbarTheme {
   void PaintTrackBackground(GraphicsContext&,
                             const Scrollbar&,
                             const IntRect&) override;
-  void PaintThumb(GraphicsContext&, const Scrollbar&, const IntRect&) override;
+  void PaintThumb(GraphicsContext& context,
+                  const Scrollbar& scrollbar,
+                  const IntRect& rect) override {
+    PaintThumbInternal(context, scrollbar, rect, 1.0f);
+  }
+  void PaintThumbWithOpacity(GraphicsContext& context,
+                             const Scrollbar& scrollbar,
+                             const IntRect& rect) override {
+    PaintThumbInternal(context, scrollbar, rect, ThumbOpacity(scrollbar));
+  }
 
   float ThumbOpacity(const ScrollbarThemeClient&) const override;
 
@@ -111,6 +120,11 @@ class PLATFORM_EXPORT ScrollbarThemeMac : public ScrollbarTheme {
   int MinimumThumbLength(const ScrollbarThemeClient&) override;
 
   int TickmarkBorderWidth() override { return 1; }
+
+  void PaintThumbInternal(GraphicsContext&,
+                          const Scrollbar&,
+                          const IntRect&,
+                          float opacity);
 
   scoped_refptr<Pattern> overhang_pattern_;
 };

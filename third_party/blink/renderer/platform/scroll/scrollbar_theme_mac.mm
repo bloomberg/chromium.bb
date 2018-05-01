@@ -272,49 +272,59 @@ void ScrollbarThemeMac::PaintTrackBackground(GraphicsContext& context,
   [scrollbar_painter drawKnobSlotInRect:track_rect highlight:NO];
 }
 
-void ScrollbarThemeMac::PaintThumb(GraphicsContext& context,
-                                   const Scrollbar& scrollbar,
-                                   const IntRect& rect) {
+void ScrollbarThemeMac::PaintThumbInternal(GraphicsContext& context,
+                                           const Scrollbar& scrollbar,
+                                           const IntRect& rect,
+                                           float opacity) {
   if (DrawingRecorder::UseCachedDrawingIfPossible(context, scrollbar,
                                                   DisplayItem::kScrollbarThumb))
     return;
 
-  // Expand dirty rect to allow for scroll thumb anti-aliasing in minimum thumb
-  // size case.
   DrawingRecorder recorder(context, scrollbar, DisplayItem::kScrollbarThumb);
 
   GraphicsContextStateSaver state_saver(context);
   context.Translate(rect.X(), rect.Y());
-  LocalCurrentGraphicsContext local_context(context,
-                                            IntRect(IntPoint(), rect.Size()));
+  IntRect local_rect(IntPoint(), rect.Size());
 
-  ScrollbarPainter scrollbar_painter = PainterForScrollbar(scrollbar);
-  [scrollbar_painter setEnabled:scrollbar.Enabled()];
-  // drawKnob aligns the thumb to right side of the draw rect.
-  // If the vertical overlay scrollbar is on the left, use trackWidth instead
-  // of scrollbar width, to avoid the gap on the left side of the thumb.
-  IntRect draw_rect = IntRect(rect);
-  if (UsesOverlayScrollbars() && scrollbar.IsLeftSideVerticalScrollbar()) {
-    int thumb_width = [scrollbar_painter trackWidth];
-    draw_rect.SetWidth(thumb_width);
+  if (opacity != 1.0f) {
+    FloatRect float_local_rect(local_rect);
+    context.BeginLayer(opacity, SkBlendMode::kSrcOver, &float_local_rect);
   }
-  [scrollbar_painter setBoundsSize:NSSizeFromCGSize(CGSize(draw_rect.Size()))];
 
-  [scrollbar_painter setDoubleValue:0];
-  [scrollbar_painter setKnobProportion:1];
+  {
+    LocalCurrentGraphicsContext local_context(context, local_rect);
+    ScrollbarPainter scrollbar_painter = PainterForScrollbar(scrollbar);
+    [scrollbar_painter setEnabled:scrollbar.Enabled()];
+    // drawKnob aligns the thumb to right side of the draw rect.
+    // If the vertical overlay scrollbar is on the left, use trackWidth instead
+    // of scrollbar width, to avoid the gap on the left side of the thumb.
+    IntRect draw_rect = IntRect(rect);
+    if (UsesOverlayScrollbars() && scrollbar.IsLeftSideVerticalScrollbar()) {
+      int thumb_width = [scrollbar_painter trackWidth];
+      draw_rect.SetWidth(thumb_width);
+    }
+    [scrollbar_painter
+        setBoundsSize:NSSizeFromCGSize(CGSize(draw_rect.Size()))];
 
-  CGFloat old_knob_alpha = [scrollbar_painter knobAlpha];
-  [scrollbar_painter setKnobAlpha:1];
+    [scrollbar_painter setDoubleValue:0];
+    [scrollbar_painter setKnobProportion:1];
 
-  if (scrollbar.Enabled())
-    [scrollbar_painter drawKnob];
+    CGFloat old_knob_alpha = [scrollbar_painter knobAlpha];
+    [scrollbar_painter setKnobAlpha:1];
 
-  // If this state is not set, then moving the cursor over the scrollbar area
-  // will only cause the scrollbar to engorge when moved over the top of the
-  // scrollbar area.
-  [scrollbar_painter
-      setBoundsSize:NSSizeFromCGSize(CGSize(scrollbar.FrameRect().Size()))];
-  [scrollbar_painter setKnobAlpha:old_knob_alpha];
+    if (scrollbar.Enabled())
+      [scrollbar_painter drawKnob];
+
+    // If this state is not set, then moving the cursor over the scrollbar area
+    // will only cause the scrollbar to engorge when moved over the top of the
+    // scrollbar area.
+    [scrollbar_painter
+        setBoundsSize:NSSizeFromCGSize(CGSize(scrollbar.FrameRect().Size()))];
+    [scrollbar_painter setKnobAlpha:old_knob_alpha];
+  }
+
+  if (opacity != 1.0f)
+    context.EndLayer();
 }
 
 int ScrollbarThemeMac::ScrollbarThickness(ScrollbarControlSize control_size) {

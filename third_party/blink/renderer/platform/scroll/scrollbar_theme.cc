@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
-#include "third_party/blink/renderer/platform/graphics/paint/compositing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
@@ -136,20 +135,8 @@ bool ScrollbarTheme::Paint(const Scrollbar& scrollbar,
     PaintTickmarks(graphics_context, scrollbar, track_paint_rect);
   }
 
-  // Paint the thumb.
-  if (scroll_mask & kThumbPart) {
-    base::Optional<CompositingRecorder> compositing_recorder;
-    float opacity = ThumbOpacity(scrollbar);
-    if (opacity != 1.0f) {
-      FloatRect float_thumb_rect(thumb_rect);
-      float_thumb_rect.Inflate(1);  // some themes inflate thumb bounds
-      compositing_recorder.emplace(graphics_context, scrollbar,
-                                   SkBlendMode::kSrcOver, opacity,
-                                   &float_thumb_rect);
-    }
-
-    PaintThumb(graphics_context, scrollbar, thumb_rect);
-  }
+  if (scroll_mask & kThumbPart)
+    PaintThumbWithOpacity(graphics_context, scrollbar, thumb_rect);
 
   return true;
 }
