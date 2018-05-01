@@ -55,12 +55,9 @@ class MultiUserWindowManager {
   };
 
   // Creates an instance of the MultiUserWindowManager.
-  // Note: This function might fail if due to the desired mode the
-  // MultiUserWindowManager is not required.
   static MultiUserWindowManager* CreateInstance();
 
-  // Gets the instance of the object. If the multi profile mode is not enabled
-  // this will return NULL.
+  // Gets the instance of the object.
   static MultiUserWindowManager* GetInstance();
 
   // Whether or not the window's title should show the avatar. On chromeos,

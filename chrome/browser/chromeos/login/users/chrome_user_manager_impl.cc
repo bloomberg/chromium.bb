@@ -10,7 +10,6 @@
 #include <set>
 #include <utility>
 
-#include "ash/multi_profile_uma.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/session_controller.mojom.h"
@@ -1275,8 +1274,10 @@ void ChromeUserManagerImpl::UpdateNumberOfUsers() {
   size_t users = GetLoggedInUsers().size();
   if (users) {
     // Write the user number as UMA stat when a multi user session is possible.
-    if ((users + GetUsersAllowedForMultiProfile().size()) > 1)
-      ash::MultiProfileUMA::RecordUserCount(users);
+    if ((users + GetUsersAllowedForMultiProfile().size()) > 1) {
+      UMA_HISTOGRAM_COUNTS_100("MultiProfile.UsersPerSessionIncremental",
+                               users);
+    }
   }
 
   static crash_reporter::CrashKeyString<64> crash_key("num-users");

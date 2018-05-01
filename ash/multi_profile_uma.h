@@ -15,63 +15,25 @@ namespace ash {
 // browser frame that is recorded by the "Profile.OpenMethod" metric.
 class ASH_EXPORT MultiProfileUMA {
  public:
-  // Keep these enums up to date with tools/metrics/histograms/histograms.xml.
-  enum SessionMode {
-    SESSION_SINGLE_USER_MODE = 0,
-    SESSION_SIDE_BY_SIDE_MODE,
-    SESSION_SEPARATE_DESKTOP_MODE,
-    NUM_SESSION_MODES
-  };
-
+  // Used for UMA metrics. Do not reorder.
   enum SigninUserAction {
     SIGNIN_USER_BY_TRAY = 0,
     SIGNIN_USER_BY_BROWSER_FRAME,  // Deprecated.
     NUM_SIGNIN_USER_ACTIONS
   };
 
+  // Used for UMA metrics. Do not reorder.
   enum SwitchActiveUserAction {
     SWITCH_ACTIVE_USER_BY_TRAY = 0,
     SWITCH_ACTIVE_USER_BY_ACCELERATOR,
     NUM_SWITCH_ACTIVE_USER_ACTIONS
   };
 
-  enum TeleportWindowType {
-    TELEPORT_WINDOW_BROWSER = 0,
-    TELEPORT_WINDOW_INCOGNITO_BROWSER,
-    TELEPORT_WINDOW_V1_APP,
-    TELEPORT_WINDOW_V2_APP,
-    TELEPORT_WINDOW_PANEL,
-    TELEPORT_WINDOW_POPUP,
-    TELEPORT_WINDOW_UNKNOWN,
-    NUM_TELEPORT_WINDOW_TYPES
-  };
-
-  enum TeleportWindowAction {
-    TELEPORT_WINDOW_DRAG_AND_DROP = 0,
-    TELEPORT_WINDOW_CAPTION_MENU,
-    TELEPORT_WINDOW_RETURN_BY_MINIMIZE,
-    TELEPORT_WINDOW_RETURN_BY_LAUNCHER,
-    NUM_TELEPORT_WINDOW_ACTIONS
-  };
-
-  // Record the type of user (multi profile) session.
-  static void RecordSessionMode(SessionMode mode);
-
   // Record signing in a new user and what UI path was taken.
   static void RecordSigninUser(SigninUserAction action);
 
   // Record switching the active user and what UI path was taken.
   static void RecordSwitchActiveUser(SwitchActiveUserAction action);
-
-  // Record the type of window which got teleported to another desk.
-  static void RecordTeleportWindowType(TeleportWindowType window_type);
-
-  // Record the way and how many times a window got teleported to another desk.
-  static void RecordTeleportAction(TeleportWindowAction action);
-
-  // Record number of users joined into a session. Called every time a user gets
-  // added.
-  static void RecordUserCount(int number_of_users);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(MultiProfileUMA);

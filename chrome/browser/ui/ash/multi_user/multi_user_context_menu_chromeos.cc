@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/ash/multi_user/multi_user_context_menu.h"
 
-#include "ash/multi_profile_uma.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
@@ -63,9 +62,6 @@ void OnAcceptTeleportWarning(const AccountId& account_id,
 
   PrefService* pref = ProfileManager::GetActiveUserProfile()->GetPrefs();
   pref->SetBoolean(prefs::kMultiProfileWarningShowDismissed, no_show_again);
-
-  ash::MultiProfileUMA::RecordTeleportAction(
-      ash::MultiProfileUMA::TELEPORT_WINDOW_CAPTION_MENU);
 
   MultiUserWindowManager::GetInstance()->ShowWindowForUser(window_, account_id);
 }
