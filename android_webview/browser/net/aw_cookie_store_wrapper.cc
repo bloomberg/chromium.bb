@@ -60,14 +60,14 @@ void DeleteCanonicalCookieAsyncOnCookieThread(
 }
 
 void DeleteAllCreatedWithinRangeAsyncOnCookieThread(
-    const net::CookieStore::TimeRange& creation_range,
+    const net::CookieDeletionInfo::TimeRange& creation_range,
     net::CookieStore::DeleteCallback callback) {
   GetCookieStore()->DeleteAllCreatedInTimeRangeAsync(creation_range,
                                                      std::move(callback));
 }
 
 void DeleteAllMatchingInfoAsyncOnCookieThread(
-    net::CookieStore::CookieDeletionInfo delete_info,
+    net::CookieDeletionInfo delete_info,
     net::CookieStore::DeleteCallback callback) {
   GetCookieStore()->DeleteAllMatchingInfoAsync(std::move(delete_info),
                                                std::move(callback));
@@ -152,7 +152,7 @@ void AwCookieStoreWrapper::DeleteCanonicalCookieAsync(
 }
 
 void AwCookieStoreWrapper::DeleteAllCreatedInTimeRangeAsync(
-    const TimeRange& creation_range,
+    const net::CookieDeletionInfo::TimeRange& creation_range,
     DeleteCallback callback) {
   DCHECK(client_task_runner_->RunsTasksInCurrentSequence());
   PostTaskToCookieStoreTaskRunner(base::BindOnce(
@@ -161,7 +161,7 @@ void AwCookieStoreWrapper::DeleteAllCreatedInTimeRangeAsync(
 }
 
 void AwCookieStoreWrapper::DeleteAllMatchingInfoAsync(
-    net::CookieStore::CookieDeletionInfo delete_info,
+    net::CookieDeletionInfo delete_info,
     DeleteCallback callback) {
   DCHECK(client_task_runner_->RunsTasksInCurrentSequence());
   PostTaskToCookieStoreTaskRunner(base::BindOnce(

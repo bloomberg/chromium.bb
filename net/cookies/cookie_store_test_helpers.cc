@@ -17,6 +17,7 @@ using net::registry_controlled_domains::GetDomainAndRegistry;
 using net::registry_controlled_domains::GetRegistryLength;
 using net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES;
 using net::registry_controlled_domains::INCLUDE_UNKNOWN_REGISTRIES;
+using TimeRange = net::CookieDeletionInfo::TimeRange;
 
 namespace {
 
@@ -182,7 +183,7 @@ void DelayedCookieMonster::DeleteAllCreatedInTimeRangeAsync(
 }
 
 void DelayedCookieMonster::DeleteAllMatchingInfoAsync(
-    net::CookieStore::CookieDeletionInfo delete_info,
+    net::CookieDeletionInfo delete_info,
     DeleteCallback callback) {
   ADD_FAILURE();
 }

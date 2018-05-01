@@ -36,7 +36,7 @@
 //        sort cookie list responses from the network::mojom::CookieManager.
 //      * CompareCookiesByValue: As above, but only by value.
 
-using CookieDeletionInfo = net::CookieStore::CookieDeletionInfo;
+using CookieDeletionInfo = net::CookieDeletionInfo;
 
 namespace network {
 

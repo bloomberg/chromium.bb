@@ -106,13 +106,13 @@ void MockCookieStore::DeleteCanonicalCookieAsync(
 }
 
 void MockCookieStore::DeleteAllCreatedInTimeRangeAsync(
-    const TimeRange& time_range,
+    const net::CookieDeletionInfo::TimeRange& time_range,
     DeleteCallback callback) {
   CHECK(false);
 }
 
 void MockCookieStore::DeleteAllMatchingInfoAsync(
-    net::CookieStore::CookieDeletionInfo delete_info,
+    net::CookieDeletionInfo delete_info,
     DeleteCallback callback) {
   CHECK(false);
 }

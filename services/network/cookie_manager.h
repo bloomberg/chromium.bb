@@ -13,8 +13,12 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "net/cookies/cookie_change_dispatcher.h"
-#include "net/cookies/cookie_store.h"
+#include "net/cookies/cookie_deletion_info.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
+
+namespace net {
+class CookieStore;
+}
 
 class GURL;
 
@@ -98,7 +102,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
 };
 
 COMPONENT_EXPORT(NETWORK_SERVICE)
-net::CookieStore::CookieDeletionInfo DeletionFilterToInfo(
+net::CookieDeletionInfo DeletionFilterToInfo(
     network::mojom::CookieDeletionFilterPtr filter);
 
 }  // namespace network

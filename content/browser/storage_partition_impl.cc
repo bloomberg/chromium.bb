@@ -66,7 +66,7 @@
 #include "content/browser/plugin_private_storage_helper.h"
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
-using CookieDeletionInfo = net::CookieStore::CookieDeletionInfo;
+using CookieDeletionInfo = net::CookieDeletionInfo;
 
 namespace content {
 

@@ -8,11 +8,11 @@
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_options.h"
+#include "net/cookies/cookie_store.h"
 #include "url/gurl.h"
 
-using CookieDeletionInfo = net::CookieStore::CookieDeletionInfo;
-using CookieDeleteSessionControl =
-    net::CookieStore::CookieDeletionInfo::SessionControl;
+using CookieDeletionInfo = net::CookieDeletionInfo;
+using CookieDeleteSessionControl = net::CookieDeletionInfo::SessionControl;
 
 namespace network {
 

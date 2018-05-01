@@ -141,12 +141,12 @@ BrowsingDataFilterBuilderImpl::BuildNetworkServiceFilter() const {
   return filter;
 }
 
-net::CookieStore::CookieDeletionInfo
-BrowsingDataFilterBuilderImpl::BuildCookieDeletionInfo() const {
+net::CookieDeletionInfo BrowsingDataFilterBuilderImpl::BuildCookieDeletionInfo()
+    const {
   DCHECK(origins_.empty())
       << "Origin-based deletion is not suitable for cookies. Please use "
          "different scoping, such as RegistrableDomainFilterBuilder.";
-  net::CookieStore::CookieDeletionInfo delete_info;
+  net::CookieDeletionInfo delete_info;
 
   switch (mode_) {
     case WHITELIST:

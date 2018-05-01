@@ -144,6 +144,7 @@ using base::UserMetricsAction;
 using content::BrowserContext;
 using content::BrowserThread;
 using content::BrowsingDataFilterBuilder;
+using TimeRange = net::CookieDeletionInfo::TimeRange;
 
 namespace {
 
@@ -206,7 +207,7 @@ void ClearPnaclCacheOnIOThread(base::Time begin,
 }
 #endif
 
-void ClearCookiesOnIOThread(const net::CookieStore::TimeRange& creation_range,
+void ClearCookiesOnIOThread(const TimeRange& creation_range,
                             net::URLRequestContextGetter* rq_context,
                             base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -218,7 +219,7 @@ void ClearCookiesOnIOThread(const net::CookieStore::TimeRange& creation_range,
 }
 
 void ClearCookiesMatchingInfoOnIOThread(
-    net::CookieStore::CookieDeletionInfo delete_info,
+    net::CookieDeletionInfo delete_info,
     net::URLRequestContextGetter* rq_context,
     base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -718,14 +719,14 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
               BrowserThread::IO, FROM_HERE,
               base::BindOnce(
                   &ClearCookiesOnIOThread,
-                  net::CookieStore::TimeRange(delete_begin_, delete_end_),
+                  TimeRange(delete_begin_, delete_end_),
                   base::RetainedRef(std::move(sb_context)),
                   UIThreadTrampoline(base::BindOnce(
                       &ChromeBrowsingDataRemoverDelegate::OnClearedCookies,
                       weak_ptr_factory_.GetWeakPtr(),
                       CreatePendingTaskCompletionClosure()))));
         } else {
-          net::CookieStore::CookieDeletionInfo delete_info =
+          net::CookieDeletionInfo delete_info =
               filter_builder.BuildCookieDeletionInfo();
           delete_info.creation_range.SetStart(delete_begin_);
           delete_info.creation_range.SetEnd(delete_end_);

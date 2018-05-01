@@ -44,7 +44,7 @@
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 using net::CanonicalCookie;
-using CookieDeletionInfo = net::CookieStore::CookieDeletionInfo;
+using CookieDeletionInfo = net::CookieDeletionInfo;
 
 namespace content {
 namespace {
