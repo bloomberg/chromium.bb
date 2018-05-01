@@ -34,8 +34,7 @@ class PictureInPictureWindowControllerBrowserTest
 };
 
 // Checks the creation of the window controller, as well as basic window
-// creation and visibility. The window is currently only implemented in views.
-#if defined(USE_AURA)
+// creation and visibility.
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                        CreationAndVisibility) {
   content::WebContents* active_web_contents =
@@ -61,4 +60,3 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   window_controller()->Show();
   ASSERT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
 }
-#endif
