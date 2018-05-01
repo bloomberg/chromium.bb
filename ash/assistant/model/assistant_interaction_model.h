@@ -17,6 +17,13 @@ namespace ash {
 class AssistantInteractionModelObserver;
 class AssistantUiElement;
 
+// Enumeration of interaction input modalities.
+enum class InputModality {
+  kKeyboard,
+  kStylus,
+  kVoice,
+};
+
 // Models the state of the query. For a text query, only the high confidence
 // text portion will be populated. At start of a voice query, both the high and
 // low confidence text portions will be empty. As speech recognition continues,
@@ -29,6 +36,11 @@ struct Query {
   std::string high_confidence_text;
   // Low confidence portion of the query.
   std::string low_confidence_text;
+
+  // Returns true if query is empty, false otherwise.
+  bool empty() const {
+    return high_confidence_text.empty() && low_confidence_text.empty();
+  }
 };
 
 // Models the Assistant interaction. This includes query state, state of speech
@@ -45,6 +57,12 @@ class AssistantInteractionModel {
   // Resets the interaction to its initial state.
   void ClearInteraction();
 
+  // Updates the input modality for the interaction.
+  void SetInputModality(InputModality input_modality);
+
+  // Returns the input modality for the interaction.
+  InputModality input_modality() const { return input_modality_; }
+
   // Adds the specified |ui_element| that should be rendered for the
   // interaction.
   void AddUiElement(std::unique_ptr<AssistantUiElement> ui_element);
@@ -52,10 +70,13 @@ class AssistantInteractionModel {
   // Clears all UI elements for the interaction.
   void ClearUiElements();
 
-  // Updates the query state for the interaction.
+  // Updates the query for the interaction.
   void SetQuery(const Query& query);
 
-  // Clears query state for the interaction.
+  // Returns the query for the interaction.
+  const Query& query() const { return query_; }
+
+  // Clears the query for the interaction.
   void ClearQuery();
 
   // Adds the specified |suggestions| that should be rendered for the
@@ -66,6 +87,7 @@ class AssistantInteractionModel {
   void ClearSuggestions();
 
  private:
+  void NotifyInputModalityChanged();
   void NotifyUiElementAdded(const AssistantUiElement* ui_element);
   void NotifyUiElementsCleared();
   void NotifyQueryChanged();
@@ -73,6 +95,7 @@ class AssistantInteractionModel {
   void NotifySuggestionsAdded(const std::vector<std::string>& suggestions);
   void NotifySuggestionsCleared();
 
+  InputModality input_modality_;
   Query query_;
   std::vector<std::string> suggestions_list_;
   std::vector<std::unique_ptr<AssistantUiElement>> ui_element_list_;

@@ -35,6 +35,11 @@ class AshAssistantController
 
   void BindRequest(mojom::AshAssistantControllerRequest request);
 
+  // Returns a reference to the underlying interaction model.
+  const AssistantInteractionModel* GetInteractionModel() const {
+    return &assistant_interaction_model_;
+  }
+
   // Registers the specified |observer| with the interaction model observer
   // pool.
   void AddInteractionModelObserver(AssistantInteractionModelObserver* observer);

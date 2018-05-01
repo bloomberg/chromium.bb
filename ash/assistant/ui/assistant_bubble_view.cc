@@ -41,8 +41,9 @@ constexpr SkColor kTextColorPrimary = SkColorSetA(SK_ColorBLACK, 0xDE);
 constexpr SkColor kPlaceholderColor = SkColorSetA(SK_ColorBLACK, 0x1F);
 constexpr int kPlaceholderIconSizeDip = 32;
 
-// TODO(b/77638210): Replace with localized resource string.
-constexpr char kPlaceholderPrompt[] = "Hi, how can I help?";
+// TODO(b/77638210): Replace with localized resource strings.
+constexpr char kDefaultPrompt[] = "Hi, how can I help?";
+constexpr char kStylusPrompt[] = "Draw with your stylus to select";
 
 // TODO(dmblack): Remove after removing placeholders.
 // RoundRectBackground ---------------------------------------------------------
@@ -74,7 +75,10 @@ class RoundRectBackground : public views::Background {
 
 class InteractionLabel : public views::View {
  public:
-  InteractionLabel() : render_text_(gfx::RenderText::CreateHarfBuzzInstance()) {
+  explicit InteractionLabel(
+      const AssistantInteractionModel* assistant_interaction_model)
+      : assistant_interaction_model_(assistant_interaction_model),
+        render_text_(gfx::RenderText::CreateHarfBuzzInstance()) {
     render_text_->SetFontList(render_text_->font_list().DeriveWithSizeDelta(4));
     render_text_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
     render_text_->SetMultiline(true);
@@ -110,9 +114,8 @@ class InteractionLabel : public views::View {
     render_text_->SetColor(kTextColorPrimary);
 
     // Empty query.
-    if (query.high_confidence_text.empty() &&
-        query.low_confidence_text.empty()) {
-      render_text_->SetText(base::UTF8ToUTF16(kPlaceholderPrompt));
+    if (query.empty()) {
+      render_text_->SetText(GetPrompt());
     } else {
       // Populated query.
       render_text_->SetText(base::UTF8ToUTF16(query.high_confidence_text));
@@ -141,6 +144,18 @@ class InteractionLabel : public views::View {
   }
 
  private:
+  base::string16 GetPrompt() {
+    switch (assistant_interaction_model_->input_modality()) {
+      case InputModality::kStylus:
+        return base::UTF8ToUTF16(kStylusPrompt);
+      case InputModality::kKeyboard:  // fall through
+      case InputModality::kVoice:
+        return base::UTF8ToUTF16(kDefaultPrompt);
+    }
+  }
+
+  // Owned by AshAssistantController.
+  const AssistantInteractionModel* const assistant_interaction_model_;
   std::unique_ptr<gfx::RenderText> render_text_;
 
   DISALLOW_COPY_AND_ASSIGN(InteractionLabel);
@@ -150,7 +165,9 @@ class InteractionLabel : public views::View {
 
 class InteractionContainer : public views::View {
  public:
-  InteractionContainer() : interaction_label_(new InteractionLabel()) {
+  explicit InteractionContainer(
+      const AssistantInteractionModel* assistant_interaction_model)
+      : interaction_label_(new InteractionLabel(assistant_interaction_model)) {
     InitLayout();
   }
 
@@ -341,7 +358,8 @@ class SuggestionsContainer : public views::View {
 AssistantBubbleView::AssistantBubbleView(
     AshAssistantController* assistant_controller)
     : assistant_controller_(assistant_controller),
-      interaction_container_(new InteractionContainer()),
+      interaction_container_(new InteractionContainer(
+          assistant_controller->GetInteractionModel())),
       ui_element_container_(new UiElementContainer()),
       suggestions_container_(new SuggestionsContainer(this)),
       render_request_weak_factory_(this) {
@@ -406,6 +424,14 @@ void AssistantBubbleView::ProcessPendingUiElements() {
     const AssistantUiElement* ui_element = pending_ui_element_list_.front();
     pending_ui_element_list_.pop_front();
     OnUiElementAdded(ui_element);
+  }
+}
+
+void AssistantBubbleView::OnInputModalityChanged(InputModality input_modality) {
+  // If the query for the interaction is empty, we may need to update the prompt
+  // to reflect the current input modality.
+  if (assistant_controller_->GetInteractionModel()->query().empty()) {
+    interaction_container_->ClearQuery();
   }
 }
 

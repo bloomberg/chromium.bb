@@ -13,12 +13,16 @@
 namespace ash {
 
 class AssistantUiElement;
+enum class InputModality;
 struct Query;
 
 // An observer which receives notification of changes to an Assistant
 // interaction.
 class AssistantInteractionModelObserver {
  public:
+  // Invoked when the input modality associated with the interaction is changed.
+  virtual void OnInputModalityChanged(InputModality input_modality) {}
+
   // Invoked when a UI element associated with the interaction is added.
   virtual void OnUiElementAdded(const AssistantUiElement* ui_element) {}
 
