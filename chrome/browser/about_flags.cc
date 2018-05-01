@@ -3891,6 +3891,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableSyncUSSSessionsDescription, kOsAll,
      FEATURE_VALUE_TYPE(switches::kSyncUSSSessions)},
 
+#if defined(OS_CHROMEOS)
+    {"enable-overview-swipe-to-close",
+     flag_descriptions::kEnableOverviewSwipeToCloseName,
+     flag_descriptions::kEnableOverviewSwipeToCloseDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kOverviewSwipeToClose)},
+#endif  // OS_CHROMEOS
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
