@@ -61,12 +61,12 @@ bool ViewsContentMainDelegate::BasicStartupComplete(int* exit_code) {
 
 void ViewsContentMainDelegate::PreSandboxStartup() {
   base::FilePath ui_test_pak_path;
-  CHECK(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
+  CHECK(base::PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
   ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
 
   // Load content resources to provide, e.g., sandbox configuration data on Mac.
   base::FilePath content_resources_pak_path;
-  PathService::Get(base::DIR_MODULE, &content_resources_pak_path);
+  base::PathService::Get(base::DIR_MODULE, &content_resources_pak_path);
   ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
       content_resources_pak_path.AppendASCII("content_resources.pak"),
       ui::SCALE_FACTOR_100P);

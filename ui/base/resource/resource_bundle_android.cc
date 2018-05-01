@@ -81,7 +81,7 @@ std::unique_ptr<DataPack> LoadDataPackFromLocalePak(
 
 void ResourceBundle::LoadCommonResources() {
   base::FilePath disk_path;
-  PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &disk_path);
+  base::PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &disk_path);
   disk_path = disk_path.AppendASCII("chrome_100_percent.pak");
   if (LoadFromApkOrFile("assets/chrome_100_percent.pak",
                         &disk_path,

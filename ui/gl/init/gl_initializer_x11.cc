@@ -91,7 +91,7 @@ bool InitializeStaticEGLInternal(GLImplementation implementation) {
   if (implementation == kGLImplementationSwiftShaderGL) {
 #if BUILDFLAG(ENABLE_SWIFTSHADER)
     base::FilePath module_path;
-    if (!PathService::Get(base::DIR_MODULE, &module_path))
+    if (!base::PathService::Get(base::DIR_MODULE, &module_path))
       return false;
     module_path = module_path.Append("swiftshader/");
 
@@ -103,7 +103,7 @@ bool InitializeStaticEGLInternal(GLImplementation implementation) {
   } else if (cmd->GetSwitchValueASCII(switches::kUseGL) ==
              kGLImplementationANGLEName) {
     base::FilePath module_path;
-    if (!PathService::Get(base::DIR_MODULE, &module_path))
+    if (!base::PathService::Get(base::DIR_MODULE, &module_path))
       return false;
 
     glesv2_path = module_path.Append(kGLESv2ANGLELibraryName);

@@ -71,7 +71,7 @@ bool LoadDefaultEGLGLES2Bindings(gl::GLImplementation implementation) {
   if (implementation == gl::kGLImplementationSwiftShaderGL) {
 #if BUILDFLAG(ENABLE_SWIFTSHADER)
     base::FilePath module_path;
-    if (!PathService::Get(base::DIR_MODULE, &module_path))
+    if (!base::PathService::Get(base::DIR_MODULE, &module_path))
       return false;
     module_path = module_path.Append(FILE_PATH_LITERAL("swiftshader/"));
 

@@ -27,7 +27,7 @@ bool InitializeStaticGLBindingsOSMesaGL() {
   // On Fuchsia libraries are normally in the lib directory. The loader service
   // will load libosmesa.so that belongs to the chrome package when dlopen() is
   // called with relative path.
-  if (!PathService::Get(base::DIR_MODULE, &module_path)) {
+  if (!base::PathService::Get(base::DIR_MODULE, &module_path)) {
     LOG(ERROR) << "PathService::Get failed.";
     return false;
   }
