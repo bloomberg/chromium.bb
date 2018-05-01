@@ -14,7 +14,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
-#include "jni/ContentViewStatics_jni.h"
+#include "jni/ContentViewStaticsImpl_jni.h"
 
 using base::android::ConvertJavaStringToUTF16;
 using base::android::ConvertUTF16ToJavaString;
@@ -90,7 +90,7 @@ base::LazyInstance<SuspendedProcessWatcher>::DestructorAtExit
 
 }  // namespace
 
-static void JNI_ContentViewStatics_SetWebKitSharedTimersSuspended(
+static void JNI_ContentViewStaticsImpl_SetWebKitSharedTimersSuspended(
     JNIEnv* env,
     const JavaParamRef<jclass>& obj,
     jboolean suspend) {
