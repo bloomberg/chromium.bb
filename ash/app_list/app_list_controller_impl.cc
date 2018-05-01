@@ -533,6 +533,13 @@ void AppListControllerImpl::InvokeSearchResultAction(
     client_->InvokeSearchResultAction(result_id, action_index, event_flags);
 }
 
+void AppListControllerImpl::GetSearchResultContextMenuModel(
+    const std::string& result_id,
+    GetContextMenuModelCallback callback) {
+  if (client_)
+    client_->GetSearchResultContextMenuModel(result_id, std::move(callback));
+}
+
 void AppListControllerImpl::ViewShown(int64_t display_id) {
   if (client_)
     client_->ViewShown(display_id);

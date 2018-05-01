@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "ash/app_list/model/search/search_result.h"
 #include "base/macros.h"
@@ -42,6 +43,13 @@ class ChromeSearchResult : public app_list::SearchResult {
   // based on a string match result.
   void UpdateFromMatch(const app_list::TokenizedString& title,
                        const app_list::TokenizedStringMatch& match);
+
+  // Returns the context menu model for this item, or NULL if there is currently
+  // no menu for the item (e.g. during install). |callback| takes the ownership
+  // of the returned menu model.
+  using GetMenuModelCallback =
+      base::OnceCallback<void(std::unique_ptr<ui::MenuModel>)>;
+  virtual void GetContextMenuModel(GetMenuModelCallback callback);
 
   static std::string TagsDebugStringForTest(const std::string& text,
                                             const Tags& tags);

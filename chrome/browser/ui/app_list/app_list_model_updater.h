@@ -119,6 +119,9 @@ class AppListModelUpdater {
       base::OnceCallback<void(std::unique_ptr<ui::MenuModel>)>;
   virtual void GetContextMenuModel(const std::string& id,
                                    GetMenuModelCallback callback) = 0;
+  virtual void GetSearchResultContextMenuModel(
+      const std::string& result_id,
+      GetMenuModelCallback callback) = 0;
   virtual size_t BadgedItemCount() = 0;
   // For SearchModel:
   virtual bool SearchEngineIsGoogle() = 0;

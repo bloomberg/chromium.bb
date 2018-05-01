@@ -13,6 +13,7 @@
 #include "ash/public/cpp/menu_utils.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace app_list {
@@ -20,8 +21,8 @@ namespace test {
 
 AppListTestViewDelegate::AppListTestViewDelegate()
     : model_(std::make_unique<AppListTestModel>()),
-      search_model_(std::make_unique<SearchModel>()) {
-}
+      search_model_(std::make_unique<SearchModel>()),
+      search_result_context_menu_model_(this) {}
 
 AppListTestViewDelegate::~AppListTestViewDelegate() {}
 
@@ -80,6 +81,28 @@ void AppListTestViewDelegate::GetContextMenuModel(
   }
   std::move(callback).Run(ash::menu_utils::GetMojoMenuItemsFromModel(menu));
 }
+
+void AppListTestViewDelegate::GetSearchResultContextMenuModel(
+    const std::string& result_id,
+    GetContextMenuModelCallback callback) {
+  ui::SimpleMenuModel* menu = &search_result_context_menu_model_;
+  menu->Clear();
+  // Change items if needed.
+  int command_id = 0;
+  menu->AddItem(command_id++, base::ASCIIToUTF16("Item0"));
+  menu->AddItem(command_id++, base::ASCIIToUTF16("Item1"));
+  std::move(callback).Run(ash::menu_utils::GetMojoMenuItemsFromModel(menu));
+}
+
+bool AppListTestViewDelegate::IsCommandIdChecked(int command_id) const {
+  return true;
+}
+
+bool AppListTestViewDelegate::IsCommandIdEnabled(int command_id) const {
+  return true;
+}
+
+void AppListTestViewDelegate::ExecuteCommand(int command_id, int event_flags) {}
 
 }  // namespace test
 }  // namespace app_list

@@ -12,6 +12,7 @@
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/views/search_result_actions_view.h"
 #include "ui/app_list/views/search_result_list_view.h"
 #include "ui/gfx/canvas.h"
@@ -52,12 +53,15 @@ int GetIconViewWidth() {
 // static
 const char SearchResultView::kViewClassName[] = "ui/app_list/SearchResultView";
 
-SearchResultView::SearchResultView(SearchResultListView* list_view)
+SearchResultView::SearchResultView(SearchResultListView* list_view,
+                                   AppListViewDelegate* view_delegate)
     : list_view_(list_view),
+      view_delegate_(view_delegate),
       icon_(new views::ImageView),
       badge_icon_(new views::ImageView),
       actions_view_(new SearchResultActionsView(this)),
       progress_bar_(new views::ProgressBar),
+      context_menu_(this),
       weak_ptr_factory_(this) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
   icon_->set_can_process_events_within_subtree(false);
@@ -409,27 +413,32 @@ void SearchResultView::ShowContextMenuForView(views::View* source,
   if (!result_)
     return;
 
-  result_->GetContextMenuModel(base::BindOnce(
-      &SearchResultView::OnGetContextMenu, weak_ptr_factory_.GetWeakPtr(),
-      source, point, source_type));
+  view_delegate_->GetSearchResultContextMenuModel(
+      result_->id(), base::BindOnce(&SearchResultView::OnGetContextMenu,
+                                    weak_ptr_factory_.GetWeakPtr(), source,
+                                    point, source_type));
 }
 
 void SearchResultView::OnGetContextMenu(
     views::View* source,
     const gfx::Point& point,
     ui::MenuSourceType source_type,
-    std::unique_ptr<ui::MenuModel> menu_model) {
-  if (!menu_model)
+    std::vector<ash::mojom::MenuItemPtr> menu) {
+  if (menu.empty() || context_menu_.IsRunning())
     return;
 
-  menu_model_ = std::move(menu_model);
-  context_menu_runner_ = std::make_unique<views::MenuRunner>(
-      menu_model_.get(), views::MenuRunner::HAS_MNEMONICS);
-  context_menu_runner_->RunMenuAt(GetWidget(), nullptr,
-                                  gfx::Rect(point, gfx::Size()),
-                                  views::MENU_ANCHOR_TOPLEFT, source_type);
+  context_menu_.Build(std::move(menu), views::MenuRunner::HAS_MNEMONICS);
+  context_menu_.Run(GetWidget(), nullptr, gfx::Rect(point, gfx::Size()),
+                    views::MENU_ANCHOR_TOPLEFT, source_type);
 
   source->RequestFocus();
+}
+
+void SearchResultView::ExecuteCommand(int command_id, int event_flags) {
+  if (result_) {
+    view_delegate_->ContextMenuItemSelected(result_->id(), command_id,
+                                            event_flags);
+  }
 }
 
 }  // namespace app_list

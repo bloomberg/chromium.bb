@@ -142,11 +142,13 @@ class ASH_EXPORT AppListControllerImpl
   void InvokeSearchResultAction(const std::string& result_id,
                                 int action_index,
                                 int event_flags);
+  using GetContextMenuModelCallback =
+      AppListViewDelegateMash::GetContextMenuModelCallback;
+  void GetSearchResultContextMenuModel(const std::string& result_id,
+                                       GetContextMenuModelCallback callback);
   void ViewShown(int64_t display_id);
   void ViewClosing();
   void ActivateItem(const std::string& id, int event_flags);
-  using GetContextMenuModelCallback =
-      AppListViewDelegateMash::GetContextMenuModelCallback;
   void GetContextMenuModel(const std::string& id,
                            GetContextMenuModelCallback callback);
   void ContextMenuItemSelected(const std::string& id,

@@ -35,6 +35,9 @@ class ASH_EXPORT AppListViewDelegateMash
   void InvokeSearchResultAction(const std::string& result_id,
                                 int action_index,
                                 int event_flags) override;
+  void GetSearchResultContextMenuModel(
+      const std::string& result_id,
+      GetContextMenuModelCallback callback) override;
   void ViewShown(int64_t display_id) override;
   void Dismiss() override;
   void ViewClosing() override;

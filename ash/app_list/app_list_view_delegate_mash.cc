@@ -71,6 +71,12 @@ void AppListViewDelegateMash::InvokeSearchResultAction(
   owner_->InvokeSearchResultAction(result_id, action_index, event_flags);
 }
 
+void AppListViewDelegateMash::GetSearchResultContextMenuModel(
+    const std::string& result_id,
+    GetContextMenuModelCallback callback) {
+  owner_->GetSearchResultContextMenuModel(result_id, std::move(callback));
+}
+
 void AppListViewDelegateMash::ViewShown(int64_t display_id) {
   owner_->ViewShown(display_id);
 }

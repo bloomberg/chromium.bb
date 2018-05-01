@@ -79,6 +79,24 @@ void AppListClientImpl::InvokeSearchResultAction(const std::string& result_id,
     search_controller_->InvokeResultAction(result, action_index, event_flags);
 }
 
+void AppListClientImpl::GetSearchResultContextMenuModel(
+    const std::string& result_id,
+    GetContextMenuModelCallback callback) {
+  if (!model_updater_) {
+    std::move(callback).Run(std::vector<ash::mojom::MenuItemPtr>());
+    return;
+  }
+  model_updater_->GetContextMenuModel(
+      result_id,
+      base::BindOnce(
+          [](GetSearchResultContextMenuModelCallback callback,
+             std::unique_ptr<ui::MenuModel> menu_model) {
+            std::move(callback).Run(
+                ash::menu_utils::GetMojoMenuItemsFromModel(menu_model.get()));
+          },
+          std::move(callback)));
+}
+
 void AppListClientImpl::ViewClosing() {
   controller_delegate_->SetAppListDisplayId(display::kInvalidDisplayId);
 }

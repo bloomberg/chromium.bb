@@ -86,8 +86,4 @@ void SearchResult::Open(int event_flags) {}
 
 void SearchResult::InvokeAction(int action_index, int event_flags) {}
 
-void SearchResult::GetContextMenuModel(GetMenuModelCallback callback) {
-  std::move(callback).Run(nullptr);
-}
-
 }  // namespace app_list

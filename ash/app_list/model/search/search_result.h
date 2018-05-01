@@ -23,10 +23,6 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/range/range.h"
 
-namespace ui {
-class MenuModel;
-}
-
 namespace app_list {
 
 class SearchResultObserver;
@@ -126,13 +122,6 @@ class APP_LIST_MODEL_EXPORT SearchResult {
 
   // Invokes a custom action on the result. It does nothing by default.
   virtual void InvokeAction(int action_index, int event_flags);
-
-  // Returns the context menu model for this item, or NULL if there is currently
-  // no menu for the item (e.g. during install). |callback| takes the ownership
-  // of the returned menu model.
-  using GetMenuModelCallback =
-      base::OnceCallback<void(std::unique_ptr<ui::MenuModel>)>;
-  virtual void GetContextMenuModel(GetMenuModelCallback callback);
 
   void SetMetadata(ash::mojom::SearchResultMetadataPtr metadata) {
     metadata_ = std::move(metadata);

@@ -82,6 +82,8 @@ class ChromeAppListModelUpdater : public AppListModelUpdater {
   void ContextMenuItemSelected(const std::string& id,
                                int command_id,
                                int event_flags) override;
+  void GetSearchResultContextMenuModel(const std::string& result_id,
+                                       GetMenuModelCallback callback) override;
   ChromeSearchResult* FindSearchResult(const std::string& result_id) override;
   ChromeSearchResult* GetResultByTitle(const std::string& title) override;
 
