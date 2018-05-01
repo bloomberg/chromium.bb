@@ -19,7 +19,8 @@ namespace blink {
 IIRFilterHandler::IIRFilterHandler(AudioNode& node,
                                    float sample_rate,
                                    const Vector<double>& feedforward_coef,
-                                   const Vector<double>& feedback_coef)
+                                   const Vector<double>& feedback_coef,
+                                   bool is_filter_stable)
     : AudioBasicProcessorHandler(
           kNodeTypeIIRFilter,
           node,
@@ -27,15 +28,17 @@ IIRFilterHandler::IIRFilterHandler(AudioNode& node,
           std::make_unique<IIRProcessor>(sample_rate,
                                          1,
                                          feedforward_coef,
-                                         feedback_coef)) {}
+                                         feedback_coef,
+                                         is_filter_stable)) {}
 
 scoped_refptr<IIRFilterHandler> IIRFilterHandler::Create(
     AudioNode& node,
     float sample_rate,
     const Vector<double>& feedforward_coef,
-    const Vector<double>& feedback_coef) {
-  return base::AdoptRef(
-      new IIRFilterHandler(node, sample_rate, feedforward_coef, feedback_coef));
+    const Vector<double>& feedback_coef,
+    bool is_filter_stable) {
+  return base::AdoptRef(new IIRFilterHandler(
+      node, sample_rate, feedforward_coef, feedback_coef, is_filter_stable));
 }
 
 // Determine if filter is stable based on the feedback coefficients.
@@ -85,10 +88,12 @@ static bool IsFilterStable(const Vector<double>& feedback_coef) {
 
 IIRFilterNode::IIRFilterNode(BaseAudioContext& context,
                              const Vector<double>& feedforward_coef,
-                             const Vector<double>& feedback_coef)
+                             const Vector<double>& feedback_coef,
+                             bool is_filter_stable)
     : AudioNode(context) {
   SetHandler(IIRFilterHandler::Create(*this, context.sampleRate(),
-                                      feedforward_coef, feedback_coef));
+                                      feedforward_coef, feedback_coef,
+                                      is_filter_stable));
 
   // Histogram of the IIRFilter order.  createIIRFilter ensures that the length
   // of |feedbackCoef| is in the range [1, IIRFilter::kMaxOrder + 1].  The order
@@ -154,7 +159,8 @@ IIRFilterNode* IIRFilterNode::Create(BaseAudioContext& context,
     return nullptr;
   }
 
-  if (!IsFilterStable(feedback_coef)) {
+  bool is_filter_stable = IsFilterStable(feedback_coef);
+  if (!is_filter_stable) {
     StringBuilder message;
     message.Append("Unstable IIRFilter with feedback coefficients: [");
     message.AppendNumber(feedback_coef[0]);
@@ -168,7 +174,8 @@ IIRFilterNode* IIRFilterNode::Create(BaseAudioContext& context,
         kJSMessageSource, kWarningMessageLevel, message.ToString()));
   }
 
-  return new IIRFilterNode(context, feedforward_coef, feedback_coef);
+  return new IIRFilterNode(context, feedforward_coef, feedback_coef,
+                           is_filter_stable);
 }
 
 IIRFilterNode* IIRFilterNode::Create(BaseAudioContext* context,

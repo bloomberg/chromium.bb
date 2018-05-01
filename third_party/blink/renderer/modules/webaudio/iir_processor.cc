@@ -12,8 +12,10 @@ namespace blink {
 IIRProcessor::IIRProcessor(float sample_rate,
                            size_t number_of_channels,
                            const Vector<double>& feedforward_coef,
-                           const Vector<double>& feedback_coef)
-    : AudioDSPKernelProcessor(sample_rate, number_of_channels) {
+                           const Vector<double>& feedback_coef,
+                           bool is_filter_stable)
+    : AudioDSPKernelProcessor(sample_rate, number_of_channels),
+      is_filter_stable_(is_filter_stable) {
   unsigned feedback_length = feedback_coef.size();
   unsigned feedforward_length = feedforward_coef.size();
   DCHECK_GT(feedback_length, 0u);

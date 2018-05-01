@@ -20,7 +20,8 @@ class IIRProcessor final : public AudioDSPKernelProcessor {
   IIRProcessor(float sample_rate,
                size_t number_of_channels,
                const Vector<double>& feedforward_coef,
-               const Vector<double>& feedback_coef);
+               const Vector<double>& feedback_coef,
+               bool is_filter_stable);
   ~IIRProcessor() override;
 
   std::unique_ptr<AudioDSPKernel> CreateKernel() override;
@@ -38,11 +39,14 @@ class IIRProcessor final : public AudioDSPKernelProcessor {
 
   AudioDoubleArray* Feedback() { return &feedback_; }
   AudioDoubleArray* Feedforward() { return &feedforward_; }
+  bool IsFilterStable() const { return is_filter_stable_; }
 
  private:
   // The feedback and feedforward filter coefficients for the IIR filter.
   AudioDoubleArray feedback_;
   AudioDoubleArray feedforward_;
+  bool is_filter_stable_;
+
   // This holds the IIR kernel for computing the frequency response.
   std::unique_ptr<IIRDSPKernel> response_kernel_;
 };

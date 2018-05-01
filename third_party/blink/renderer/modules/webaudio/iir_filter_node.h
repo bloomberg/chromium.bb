@@ -23,13 +23,15 @@ class IIRFilterHandler : public AudioBasicProcessorHandler {
       AudioNode&,
       float sample_rate,
       const Vector<double>& feedforward_coef,
-      const Vector<double>& feedback_coef);
+      const Vector<double>& feedback_coef,
+      bool is_filter_stable);
 
  private:
   IIRFilterHandler(AudioNode&,
                    float sample_rate,
                    const Vector<double>& feedforward_coef,
-                   const Vector<double>& feedback_coef);
+                   const Vector<double>& feedback_coef,
+                   bool is_filter_stable);
 };
 
 class IIRFilterNode : public AudioNode {
@@ -57,7 +59,8 @@ class IIRFilterNode : public AudioNode {
  private:
   IIRFilterNode(BaseAudioContext&,
                 const Vector<double>& denominator,
-                const Vector<double>& numerator);
+                const Vector<double>& numerator,
+                bool is_filter_stable);
 
   IIRProcessor* GetIIRFilterProcessor() const;
 };
