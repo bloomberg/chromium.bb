@@ -169,7 +169,7 @@ class URLRequestQuicTest : public ::testing::Test {
 
   std::string ServerPushCacheDirectory() {
     base::FilePath path;
-    PathService::Get(base::DIR_SOURCE_ROOT, &path);
+    base::PathService::Get(base::DIR_SOURCE_ROOT, &path);
     path = path.AppendASCII("net").AppendASCII("data").AppendASCII(
         "quic_http_response_cache_data_with_push");
     // The file path is known to be an ascii string.

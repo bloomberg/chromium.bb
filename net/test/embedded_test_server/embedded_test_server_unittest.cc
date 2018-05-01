@@ -250,7 +250,7 @@ TEST_P(EmbeddedTestServerTest, RegisterRequestHandler) {
 
 TEST_P(EmbeddedTestServerTest, ServeFilesFromDirectory) {
   base::FilePath src_dir;
-  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &src_dir));
+  ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &src_dir));
   server_->ServeFilesFromDirectory(
       src_dir.AppendASCII("net").AppendASCII("data"));
   ASSERT_TRUE(server_->Start());
@@ -270,7 +270,7 @@ TEST_P(EmbeddedTestServerTest, ServeFilesFromDirectory) {
 
 TEST_P(EmbeddedTestServerTest, MockHeadersWithoutCRLF) {
   base::FilePath src_dir;
-  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &src_dir));
+  ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &src_dir));
   server_->ServeFilesFromDirectory(
       src_dir.AppendASCII("net").AppendASCII("data").AppendASCII(
           "embedded_test_server"));
@@ -529,7 +529,7 @@ class EmbeddedTestServerThreadingTestDelegate
     // Create the test server instance.
     EmbeddedTestServer server(type_);
     base::FilePath src_dir;
-    ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &src_dir));
+    ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &src_dir));
     ASSERT_TRUE(server.Start());
 
     // Make a request and wait for the reply.

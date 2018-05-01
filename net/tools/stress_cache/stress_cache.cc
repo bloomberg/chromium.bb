@@ -58,7 +58,7 @@ const int kExpectedCrash = 100;
 // Starts a new process.
 int RunSlave(int iteration) {
   base::FilePath exe;
-  PathService::Get(base::FILE_EXE, &exe);
+  base::PathService::Get(base::FILE_EXE, &exe);
 
   base::CommandLine cmdline(exe);
   cmdline.AppendArg(base::IntToString(iteration));
@@ -300,7 +300,7 @@ void StressTheCache(int iteration) {
   uint32_t mask = 0xfff;       // 4096 entries.
 
   base::FilePath path;
-  PathService::Get(base::DIR_TEMP, &path);
+  base::PathService::Get(base::DIR_TEMP, &path);
   path = path.AppendASCII("cache_test_stress");
 
   base::Thread cache_thread("CacheThread");

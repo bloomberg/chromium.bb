@@ -45,7 +45,7 @@ using disk_cache::RankCrashes;
 // Starts a new process, to generate the files.
 int RunSlave(RankCrashes action) {
   base::FilePath exe;
-  PathService::Get(base::FILE_EXE, &exe);
+  base::PathService::Get(base::FILE_EXE, &exe);
 
   base::CommandLine cmdline(exe);
   cmdline.AppendArg(base::IntToString(action));
@@ -373,7 +373,7 @@ int main(int argc, const char* argv[]) {
   }
 
   base::FilePath path;
-  PathService::Get(base::DIR_SOURCE_ROOT, &path);
+  base::PathService::Get(base::DIR_SOURCE_ROOT, &path);
   path = path.AppendASCII("net");
   path = path.AppendASCII("data");
   path = path.AppendASCII("cache_tests");

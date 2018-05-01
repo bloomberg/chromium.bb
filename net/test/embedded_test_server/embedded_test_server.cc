@@ -307,14 +307,14 @@ void EmbeddedTestServer::ServeFilesFromDirectory(
 void EmbeddedTestServer::ServeFilesFromSourceDirectory(
     const std::string& relative) {
   base::FilePath test_data_dir;
-  CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
+  CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
   ServeFilesFromDirectory(test_data_dir.AppendASCII(relative));
 }
 
 void EmbeddedTestServer::ServeFilesFromSourceDirectory(
     const base::FilePath& relative) {
   base::FilePath test_data_dir;
-  CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
+  CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
   ServeFilesFromDirectory(test_data_dir.Append(relative));
 }
 

@@ -190,7 +190,7 @@ bool RemoteTestServer::Stop() {
 // device.
 base::FilePath RemoteTestServer::GetDocumentRoot() const {
   base::FilePath src_dir;
-  PathService::Get(base::DIR_SOURCE_ROOT, &src_dir);
+  base::PathService::Get(base::DIR_SOURCE_ROOT, &src_dir);
   return src_dir.Append(document_root());
 }
 
