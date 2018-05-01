@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/paint/block_painter.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/table_cell_painter.h"
 
 namespace blink {
 
@@ -349,8 +350,9 @@ void CollapsedBorderPainter::PaintCollapsedBorders(
   // Now left=start_, right=end_, before_=top, after_=bottom.
 
   // Collapsed borders are half inside and half outside of |rect|.
-  IntRect rect =
-      PixelSnappedIntRect(paint_offset + cell_.Location(), cell_.Size());
+  IntRect rect = PixelSnappedIntRect(
+      TableCellPainter(cell_).PaintRectNotIncludingVisualOverflow(
+          paint_offset + cell_.Location()));
   // |paint_rect| covers the whole collapsed borders.
   IntRect paint_rect = rect;
   paint_rect.Expand(IntRectOutsets(before_.outer_width, end_.outer_width,
