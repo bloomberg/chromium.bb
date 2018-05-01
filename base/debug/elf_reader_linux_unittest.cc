@@ -35,7 +35,7 @@ TEST(ElfReaderTest, ReadElfBuildId) {
 TEST(ElfReaderTest, ReadElfLibraryName) {
 #if defined(OS_ANDROID)
   // On Android the library loader memory maps the full so file.
-  const char kLibraryName[] = "lib_base_unittests__library.so";
+  const char kLibraryName[] = "lib_base_unittests__library";
   const void* addr = &__executable_start;
 #else
   // On Linux the executable does not contain soname and is not mapped till
@@ -61,7 +61,9 @@ TEST(ElfReaderTest, ReadElfLibraryName) {
 
   auto name = ReadElfLibraryName(addr);
   ASSERT_TRUE(name);
-  EXPECT_EQ(kLibraryName, *name);
+  EXPECT_NE(std::string::npos, name->find(kLibraryName))
+      << "Library name " << *name << " doesn't contain expected "
+      << kLibraryName;
 }
 
 }  // namespace debug
