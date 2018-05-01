@@ -17,6 +17,7 @@
 #include "chromeos/services/assistant/platform_api_impl.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "libassistant/contrib/core/macros.h"
+#include "libassistant/shared/internal_api/assistant_manager_delegate.h"
 #include "libassistant/shared/public/conversation_state_listener.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 
@@ -37,7 +38,8 @@ class AssistantManagerServiceImpl
     : public AssistantManagerService,
       public ::chromeos::assistant::action::AssistantActionObserver,
       public AssistantEventObserver,
-      public assistant_client::ConversationStateListener {
+      public assistant_client::ConversationStateListener,
+      public assistant_client::AssistantManagerDelegate {
  public:
   explicit AssistantManagerServiceImpl(mojom::AudioInputPtr audio_input);
   ~AssistantManagerServiceImpl() override;
@@ -79,6 +81,11 @@ class AssistantManagerServiceImpl
       assistant_client::ConversationStateListener::RecognitionState state,
       const assistant_client::ConversationStateListener::RecognitionResult&
           recognition_result) override;
+
+  // AssistantManagerDelegate overrides
+  assistant_client::ActionModule::Result HandleModifySettingClientOp(
+      const std::string& modify_setting_args_proto) override;
+  bool IsSettingSupported(const std::string& setting_id) override;
 
  private:
   void StartAssistantInternal(
