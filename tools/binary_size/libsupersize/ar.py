@@ -107,6 +107,11 @@ def ExpandThinArchives(paths, output_directory):
 
 
 def CreateThinObjectPath(archive_path, subpath):
+  # |subpath| is path complete under Gold, and incomplete under LLD. Check its
+  # prefix to test completeness, and if not, use |archive_path| to supply the
+  # required prefix.
+  if subpath.startswith('obj/'):
+    return subpath
   parent_path = os.path.dirname(archive_path)
   return os.path.normpath(os.path.join(parent_path, subpath))
 
