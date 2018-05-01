@@ -2,6 +2,15 @@ Tests the load event.
 
 Page reloaded.
 Model records:
+FrameStartedLoading Properties:
+{
+    data : {
+        frame : <string>
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "FrameStartedLoading"
+}
 MarkDOMContent Properties:
 {
     data : {

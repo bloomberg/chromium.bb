@@ -23,6 +23,7 @@
   await PerformanceTestRunner.stopTimeline();
 
   TestRunner.addResult('Model records:');
+  PerformanceTestRunner.printTimelineRecords('FrameStartedLoading');
   PerformanceTestRunner.printTimelineRecords('MarkDOMContent');
   PerformanceTestRunner.printTimelineRecords('MarkLoad');
   TestRunner.addResult('Timestamp records:');
@@ -30,8 +31,8 @@
   PerformanceTestRunner.printTimestampRecords('MarkLoad');
   PerformanceTestRunner.printTimestampRecords('MarkFirstPaint');
 
-  const eventDividers = PerformanceTestRunner.timelineModel().eventDividers();
-  eventDividers.reduce((prev, current) => {
+  const markers = PerformanceTestRunner.timelineModel().timeMarkerEvents();
+  markers.reduce((prev, current) => {
     TestRunner.assertGreaterOrEqual(current.startTime, prev.startTime,
         'Event divider timestamps should be monotonically non-decreasing');
     return current;
