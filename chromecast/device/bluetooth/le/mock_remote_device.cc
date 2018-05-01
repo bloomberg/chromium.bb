@@ -7,7 +7,9 @@
 namespace chromecast {
 namespace bluetooth {
 
-MockRemoteDevice::MockRemoteDevice() = default;
+MockRemoteDevice::MockRemoteDevice(const bluetooth_v2_shlib::Addr& addr)
+    : addr_(addr) {}
+
 MockRemoteDevice::~MockRemoteDevice() = default;
 
 }  // namespace bluetooth
