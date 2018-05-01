@@ -33,6 +33,8 @@ struct GpuPreferences;
 
 namespace media {
 
+class MediaLog;
+
 // Implements the VideoDecoder interface backed by a VideoDecodeAccelerator.
 // This class expects to run in the GPU process via MojoVideoDecoder.
 class VdaVideoDecoder : public VideoDecoder,
@@ -65,6 +67,7 @@ class VdaVideoDecoder : public VideoDecoder,
   static std::unique_ptr<VdaVideoDecoder, std::default_delete<VideoDecoder>>
   Create(scoped_refptr<base::SingleThreadTaskRunner> parent_task_runner,
          scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
+         MediaLog* media_log,
          const gpu::GpuPreferences& gpu_preferences,
          const gpu::GpuDriverBugWorkarounds& gpu_workarounds,
          GetStubCB get_stub_cb);
@@ -74,6 +77,8 @@ class VdaVideoDecoder : public VideoDecoder,
   //     MediaService task runner).
   // |gpu_task_runner|: Task runner that GPU command buffer methods must be
   //     called on (should be the GPU main thread).
+  // |media_log|: MediaLog object to log to; must live at least until
+  //     Destroy() returns.
   // |create_picture_buffer_manager_cb|: PictureBufferManager factory.
   // |create_command_buffer_helper_cb|: CommandBufferHelper factory.
   // |create_and_initialize_vda_cb|: VideoDecodeAccelerator factory.
@@ -82,6 +87,7 @@ class VdaVideoDecoder : public VideoDecoder,
   VdaVideoDecoder(
       scoped_refptr<base::SingleThreadTaskRunner> parent_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
+      MediaLog* media_log,
       CreatePictureBufferManagerCB create_picture_buffer_manager_cb,
       CreateCommandBufferHelperCB create_command_buffer_helper_cb,
       CreateAndInitializeVdaCB create_and_initialize_vda_cb,
@@ -137,6 +143,7 @@ class VdaVideoDecoder : public VideoDecoder,
   void NotifyEndOfBitstreamBufferOnParentThread(int32_t bitstream_buffer_id);
   void NotifyFlushDoneOnParentThread();
   void NotifyResetDoneOnParentThread();
+  void NotifyErrorOnParentThread(VideoDecodeAccelerator::Error error);
   void ProvidePictureBuffersAsync(uint32_t count,
                                   VideoPixelFormat pixel_format,
                                   uint32_t planes,
@@ -153,12 +160,10 @@ class VdaVideoDecoder : public VideoDecoder,
   //
   scoped_refptr<base::SingleThreadTaskRunner> parent_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner_;
-  scoped_refptr<CommandBufferHelper> command_buffer_helper_;
+  MediaLog* media_log_;
   scoped_refptr<PictureBufferManager> picture_buffer_manager_;
-
   CreateCommandBufferHelperCB create_command_buffer_helper_cb_;
   CreateAndInitializeVdaCB create_and_initialize_vda_cb_;
-
   const VideoDecodeAccelerator::Capabilities vda_capabilities_;
 
   //

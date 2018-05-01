@@ -8,9 +8,9 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "media/base/media_log.h"
 #include "media/mojo/interfaces/media_log.mojom.h"
-#include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 
 namespace media {
 
@@ -18,14 +18,14 @@ class MojoMediaLog final : public MediaLog {
  public:
   // TODO(sandersd): Template on Ptr type to support non-associated.
   explicit MojoMediaLog(
-      mojo::AssociatedInterfacePtr<mojom::MediaLog> remote_media_log);
+      scoped_refptr<mojom::ThreadSafeMediaLogAssociatedPtr> remote_media_log);
   ~MojoMediaLog() final;
 
   // MediaLog implementation.
   void AddEvent(std::unique_ptr<MediaLogEvent> event) override;
 
  private:
-  mojo::AssociatedInterfacePtr<mojom::MediaLog> remote_media_log_;
+  scoped_refptr<mojom::ThreadSafeMediaLogAssociatedPtr> remote_media_log_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoMediaLog);
 };

@@ -131,7 +131,8 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
                                               std::move(get_stub_cb)));
 #elif defined(OS_MACOSX)
   return VdaVideoDecoder::Create(
-      task_runner, gpu_task_runner_, gpu_preferences_, gpu_workarounds_,
+      task_runner, gpu_task_runner_, media_log, gpu_preferences_,
+      gpu_workarounds_,
       base::BindRepeating(&GetCommandBufferStub, media_gpu_channel_manager_,
                           command_buffer_id->channel_token,
                           command_buffer_id->route_id));
