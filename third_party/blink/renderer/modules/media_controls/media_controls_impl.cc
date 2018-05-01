@@ -76,7 +76,6 @@
 #include "third_party/blink/renderer/modules/media_controls/media_controls_orientation_lock_delegate.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_resource_loader.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_rotate_to_fullscreen_delegate.h"
-#include "third_party/blink/renderer/modules/media_controls/media_controls_window_event_listener.h"
 #include "third_party/blink/renderer/modules/media_controls/media_download_in_product_help_manager.h"
 #include "third_party/blink/renderer/modules/remoteplayback/html_media_element_remote_playback.h"
 #include "third_party/blink/renderer/modules/remoteplayback/remote_playback.h"
@@ -359,10 +358,6 @@ MediaControlsImpl::MediaControlsImpl(HTMLMediaElement& media_element)
       fullscreen_button_(nullptr),
       download_button_(nullptr),
       media_event_listener_(new MediaControlsMediaEventListener(this)),
-      window_event_listener_(MediaControlsWindowEventListener::Create(
-          this,
-          WTF::BindRepeating(&MediaControlsImpl::HideAllMenus,
-                             WrapWeakPersistent(this)))),
       orientation_lock_delegate_(nullptr),
       rotate_to_fullscreen_delegate_(nullptr),
       hide_media_controls_timer_(
@@ -762,7 +757,6 @@ void MediaControlsImpl::RemovedFrom(ContainerNode*) {
   // TODO(mlamouri): we hide show the controls instead of having
   // HTMLMediaElement do it.
 
-  window_event_listener_->Stop();
   media_event_listener_->Detach();
   if (orientation_lock_delegate_)
     orientation_lock_delegate_->Detach();
@@ -1043,9 +1037,6 @@ void MediaControlsImpl::ToggleTextTrackList() {
     text_track_list_->SetIsWanted(false);
     return;
   }
-
-  if (!text_track_list_->IsWanted())
-    window_event_listener_->Start();
 
   text_track_list_->SetIsWanted(!text_track_list_->IsWanted());
 }
@@ -1875,19 +1866,7 @@ bool MediaControlsImpl::OverflowMenuVisible() {
 void MediaControlsImpl::ToggleOverflowMenu() {
   DCHECK(overflow_list_);
 
-  if (!overflow_list_->IsWanted())
-    window_event_listener_->Start();
-
   overflow_list_->SetIsWanted(!overflow_list_->IsWanted());
-}
-
-void MediaControlsImpl::HideAllMenus() {
-  window_event_listener_->Stop();
-
-  if (overflow_list_->IsWanted())
-    overflow_list_->SetIsWanted(false);
-  if (text_track_list_->IsWanted())
-    text_track_list_->SetIsWanted(false);
 }
 
 void MediaControlsImpl::StartHideMediaControlsIfNecessary() {
@@ -1919,11 +1898,6 @@ MediaDownloadInProductHelpManager* MediaControlsImpl::DownloadInProductHelp() {
 
 void MediaControlsImpl::OnWaiting() {
   UpdateCSSClassFromState();
-}
-
-void MediaControlsImpl::MaybeRecordOverflowTimeToAction() {
-  overflow_list_->MaybeRecordTimeTaken(
-      MediaControlOverflowMenuListElement::kTimeToAction);
 }
 
 void MediaControlsImpl::OnLoadedData() {
@@ -1959,7 +1933,6 @@ void MediaControlsImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(cast_button_);
   visitor->Trace(overlay_cast_button_);
   visitor->Trace(media_event_listener_);
-  visitor->Trace(window_event_listener_);
   visitor->Trace(orientation_lock_delegate_);
   visitor->Trace(rotate_to_fullscreen_delegate_);
   visitor->Trace(download_iph_manager_);
