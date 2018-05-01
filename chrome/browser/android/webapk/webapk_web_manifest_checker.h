@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_ANDROID_WEBAPK_WEBAPK_WEB_MANIFEST_CHECKER_H_
 #define CHROME_BROWSER_ANDROID_WEBAPK_WEBAPK_WEB_MANIFEST_CHECKER_H_
 
-namespace blink {
+namespace content {
 struct Manifest;
 }
 
 // Returns whether the format of the URLs in the Web Manifest is WebAPK
 // compatible.
-bool AreWebManifestUrlsWebApkCompatible(const blink::Manifest& manifest);
+bool AreWebManifestUrlsWebApkCompatible(const content::Manifest& manifest);
 
 #endif  // CHROME_BROWSER_ANDROID_WEBAPK_WEBAPK_WEB_MANIFEST_CHECKER_H_

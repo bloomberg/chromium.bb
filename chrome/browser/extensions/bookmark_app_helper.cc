@@ -65,7 +65,7 @@
 #include "net/url_request/url_request.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
-#include "third_party/blink/public/common/manifest/web_display_mode.h"
+#include "third_party/blink/public/platform/web_display_mode.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
@@ -338,7 +338,7 @@ namespace extensions {
 
 // static
 void BookmarkAppHelper::UpdateWebAppInfoFromManifest(
-    const blink::Manifest& manifest,
+    const content::Manifest& manifest,
     WebApplicationInfo* web_app_info,
     ForInstallableSite for_installable_site) {
   if (!manifest.short_name.is_null())
@@ -362,7 +362,7 @@ void BookmarkAppHelper::UpdateWebAppInfoFromManifest(
       web_app_info->scope = manifest.start_url.Resolve(".");
   }
 
-  if (manifest.theme_color != blink::Manifest::kInvalidOrMissingColor)
+  if (manifest.theme_color != content::Manifest::kInvalidOrMissingColor)
     web_app_info->theme_color = static_cast<SkColor>(manifest.theme_color);
 
   // If any icons are specified in the manifest, they take precedence over any

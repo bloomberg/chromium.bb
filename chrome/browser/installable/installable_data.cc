@@ -6,7 +6,7 @@
 
 InstallableData::InstallableData(InstallableStatusCode error_code,
                                  GURL manifest_url,
-                                 const blink::Manifest* manifest,
+                                 const content::Manifest* manifest,
                                  GURL primary_icon_url,
                                  const SkBitmap* primary_icon,
                                  GURL badge_icon_url,

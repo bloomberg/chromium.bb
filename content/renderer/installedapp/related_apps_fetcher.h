@@ -12,7 +12,6 @@
 #include "third_party/blink/public/platform/modules/installedapp/web_related_apps_fetcher.h"
 
 namespace blink {
-struct Manifest;
 namespace mojom {
 class ManifestManager;
 }
@@ -20,6 +19,7 @@ class ManifestManager;
 
 namespace content {
 
+struct Manifest;
 class ManifestManager;
 
 class CONTENT_EXPORT RelatedAppsFetcher : public blink::WebRelatedAppsFetcher {
@@ -41,7 +41,7 @@ class CONTENT_EXPORT RelatedAppsFetcher : public blink::WebRelatedAppsFetcher {
           const blink::WebVector<blink::WebRelatedApplication>&,
           void>> callbacks,
       const GURL& url,
-      const blink::Manifest& manifest);
+      const Manifest& manifest);
 
   blink::mojom::ManifestManager* const manifest_manager_;
 
