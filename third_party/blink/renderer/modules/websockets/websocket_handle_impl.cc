@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/modules/websockets/web_socket_handle_impl.h"
+#include "third_party/blink/renderer/modules/websockets/websocket_handle_impl.h"
 
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/renderer/modules/websockets/web_socket_handle_client.h"
+#include "third_party/blink/renderer/modules/websockets/websocket_handle_client.h"
 #include "third_party/blink/renderer/platform/network/network_log.h"
 #include "third_party/blink/renderer/platform/network/web_socket_handshake_request.h"
 #include "third_party/blink/renderer/platform/network/web_socket_handshake_response.h"

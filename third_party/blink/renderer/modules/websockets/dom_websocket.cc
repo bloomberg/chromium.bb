@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/modules/websockets/dom_web_socket.h"
+#include "third_party/blink/renderer/modules/websockets/dom_websocket.h"
 
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -240,9 +240,10 @@ DOMWebSocket::~DOMWebSocket() {
 }
 
 void DOMWebSocket::LogError(const String& message) {
-  if (GetExecutionContext())
+  if (GetExecutionContext()) {
     GetExecutionContext()->AddConsoleMessage(
         ConsoleMessage::Create(kJSMessageSource, kErrorMessageLevel, message));
+  }
 }
 
 DOMWebSocket* DOMWebSocket::Create(ExecutionContext* context,

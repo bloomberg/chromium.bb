@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/modules/websockets/web_socket_channel_impl.h"
+#include "third_party/blink/renderer/modules/websockets/websocket_channel_impl.h"
 
 #include <stdint.h>
 #include <memory>
@@ -17,10 +17,10 @@
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
-#include "third_party/blink/renderer/modules/websockets/web_socket_channel.h"
-#include "third_party/blink/renderer/modules/websockets/web_socket_channel_client.h"
-#include "third_party/blink/renderer/modules/websockets/web_socket_handle.h"
-#include "third_party/blink/renderer/modules/websockets/web_socket_handle_client.h"
+#include "third_party/blink/renderer/modules/websockets/websocket_channel.h"
+#include "third_party/blink/renderer/modules/websockets/websocket_channel_client.h"
+#include "third_party/blink/renderer/modules/websockets/websocket_handle.h"
+#include "third_party/blink/renderer/modules/websockets/websocket_handle_client.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"

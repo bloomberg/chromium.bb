@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WEB_SOCKET_CHANNEL_IMPL_H_
-#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WEB_SOCKET_CHANNEL_IMPL_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WEBSOCKET_CHANNEL_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WEBSOCKET_CHANNEL_IMPL_H_
 
 #include <stdint.h>
 #include <memory>
@@ -42,9 +42,9 @@
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/core/loader/threadable_loading_context.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/modules/websockets/web_socket_channel.h"
-#include "third_party/blink/renderer/modules/websockets/web_socket_handle.h"
-#include "third_party/blink/renderer/modules/websockets/web_socket_handle_client.h"
+#include "third_party/blink/renderer/modules/websockets/websocket_channel.h"
+#include "third_party/blink/renderer/modules/websockets/websocket_handle.h"
+#include "third_party/blink/renderer/modules/websockets/websocket_handle_client.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -227,4 +227,4 @@ std::ostream& operator<<(std::ostream&, const WebSocketChannelImpl*);
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WEB_SOCKET_CHANNEL_IMPL_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WEBSOCKET_CHANNEL_IMPL_H_

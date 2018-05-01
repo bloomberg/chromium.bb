@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2011 Google Inc.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,50 +28,41 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WEB_SOCKET_HANDLE_H_
-#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WEB_SOCKET_HANDLE_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WEBSOCKET_CHANNEL_CLIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WEBSOCKET_CHANNEL_CLIENT_H_
 
 #include <stdint.h>
-#include "base/single_thread_task_runner.h"
-#include "services/network/public/mojom/websocket.mojom-blink.h"
+#include <memory>
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
-class KURL;
-class WebSocketHandleClient;
-
-// WebSocketHandle is an interface class designed to be a handle of WebSocket
-// connection.  WebSocketHandle will be used together with
-// WebSocketHandleClient.
-//
-// Once a WebSocketHandle is deleted there will be no notification to the
-// corresponding WebSocketHandleClient.  Once a WebSocketHandleClient receives
-// didClose, any method of the corresponding WebSocketHandle can't be called.
-
-class WebSocketHandle {
+class MODULES_EXPORT WebSocketChannelClient : public GarbageCollectedMixin {
  public:
-  enum MessageType {
-    kMessageTypeContinuation,
-    kMessageTypeText,
-    kMessageTypeBinary,
+  virtual ~WebSocketChannelClient() = default;
+  virtual void DidConnect(const String& subprotocol, const String& extensions) {
+  }
+  virtual void DidReceiveTextMessage(const String&) {}
+  virtual void DidReceiveBinaryMessage(std::unique_ptr<Vector<char>>) {}
+  virtual void DidError() {}
+  virtual void DidConsumeBufferedAmount(uint64_t consumed) {}
+  virtual void DidStartClosingHandshake() {}
+  enum ClosingHandshakeCompletionStatus {
+    kClosingHandshakeIncomplete,
+    kClosingHandshakeComplete
   };
+  virtual void DidClose(ClosingHandshakeCompletionStatus,
+                        unsigned short /* code */,
+                        const String& /* reason */) {}
+  void Trace(blink::Visitor* visitor) override {}
 
-  virtual ~WebSocketHandle() = default;
-
-  virtual void Connect(network::mojom::blink::WebSocketPtr,
-                       const KURL&,
-                       const Vector<String>& protocols,
-                       const KURL& site_for_cookies,
-                       const String& user_agent_override,
-                       WebSocketHandleClient*,
-                       base::SingleThreadTaskRunner*) = 0;
-  virtual void Send(bool fin, MessageType, const char* data, size_t) = 0;
-  virtual void FlowControl(int64_t quota) = 0;
-  virtual void Close(unsigned short code, const String& reason) = 0;
+ protected:
+  WebSocketChannelClient() = default;
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WEB_SOCKET_HANDLE_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WEBSOCKET_CHANNEL_CLIENT_H_
