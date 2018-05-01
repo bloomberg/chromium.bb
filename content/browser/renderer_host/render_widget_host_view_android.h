@@ -307,8 +307,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   void OnOverscrollRefreshHandlerAvailable();
 
-  static void OnContextLost();
-
   // TextInputManager::Observer overrides.
   void OnUpdateTextInputStateCalled(TextInputManager* text_input_manager,
                                     RenderWidgetHostViewBase* updated_view,

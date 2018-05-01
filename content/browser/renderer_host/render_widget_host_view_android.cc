@@ -156,17 +156,6 @@ void WakeUpGpu(GpuProcessHost* host) {
 
 }  // namespace
 
-void RenderWidgetHostViewAndroid::OnContextLost() {
-  std::unique_ptr<RenderWidgetHostIterator> widgets(
-      RenderWidgetHostImpl::GetAllRenderWidgetHosts());
-  while (RenderWidgetHost* widget = widgets->GetNextHost()) {
-    if (widget->GetView()) {
-      static_cast<RenderWidgetHostViewAndroid*>(widget->GetView())
-          ->OnLostResources();
-    }
-  }
-}
-
 RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
     RenderWidgetHostImpl* widget_host,
     gfx::NativeView parent_native_view)
