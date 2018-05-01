@@ -61,6 +61,13 @@
 #include "content/browser/tracing/etw_tracing_agent_win.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "base/debug/elf_reader_linux.h"
+
+// Symbol with virtual address of the start of ELF header of the current binary.
+extern char __ehdr_start;
+#endif  // defined(OS_ANDROID)
+
 namespace content {
 
 namespace {
@@ -184,6 +191,17 @@ TracingControllerImpl::GenerateMetadataDict() const {
   metadata_dict->SetString("product-version", GetContentClient()->GetProduct());
   metadata_dict->SetString("v8-version", V8_VERSION_STRING);
   metadata_dict->SetString("user-agent", GetContentClient()->GetUserAgent());
+
+#if defined(OS_ANDROID)
+  // The library name is used for symbolizing heap profiles. This cannot be
+  // obtained from process maps since library can be mapped from apk directly.
+  // This is not added as part of memory-infra os dumps since it is special case
+  // only for chrome library.
+  base::Optional<std::string> soname =
+      base::debug::ReadElfLibraryName(&__ehdr_start);
+  if (soname)
+    metadata_dict->SetString("chrome-library-name", soname.value());
+#endif  // defined(OS_ANDROID)
 
   // OS
 #if defined(OS_CHROMEOS)
