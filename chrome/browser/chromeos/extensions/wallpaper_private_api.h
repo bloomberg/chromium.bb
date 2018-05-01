@@ -339,7 +339,7 @@ class WallpaperPrivateGetLocalImagePathsFunction
 
  private:
   // Responds with the list of collected image paths.
-  void OnGetImagePathsComplete(const std::vector<std::string>& image_Pathss);
+  void OnGetImagePathsComplete(const std::vector<std::string>& image_paths);
 
   DISALLOW_COPY_AND_ASSIGN(WallpaperPrivateGetLocalImagePathsFunction);
 };
@@ -397,6 +397,31 @@ class WallpaperPrivateCancelPreviewWallpaperFunction
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WallpaperPrivateCancelPreviewWallpaperFunction);
+};
+
+class WallpaperPrivateGetCurrentWallpaperThumbnailFunction
+    : public WallpaperFunctionBase {
+ public:
+  DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.getCurrentWallpaperThumbnail",
+                             WALLPAPERPRIVATE_GETCURRENTWALLPAPERTHUMBNAIL)
+  WallpaperPrivateGetCurrentWallpaperThumbnailFunction();
+
+ protected:
+  ~WallpaperPrivateGetCurrentWallpaperThumbnailFunction() override;
+
+  // UIThreadExtensionFunction:
+  ResponseAction Run() override;
+
+ private:
+  // Responds with the thumbnail data.
+  void OnWallpaperImageReturned(const gfx::Size& thumbnail_size,
+                                const gfx::ImageSkia& image);
+
+  // WallpaperFunctionBase:
+  void OnWallpaperDecoded(const gfx::ImageSkia& wallpaper) override;
+
+  DISALLOW_COPY_AND_ASSIGN(
+      WallpaperPrivateGetCurrentWallpaperThumbnailFunction);
 };
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_WALLPAPER_PRIVATE_API_H_

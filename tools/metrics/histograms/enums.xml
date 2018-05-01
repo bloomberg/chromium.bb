@@ -15302,6 +15302,7 @@ Called by update_net_error_codes.py.-->
   <int value="1244" label="WEBSTOREPRIVATE_GETREFERRERCHAIN"/>
   <int value="1245" label="AUTOTESTPRIVATE_UPDATEPRINTER"/>
   <int value="1246" label="AUTOTESTPRIVATE_REMOVEPRINTER"/>
+  <int value="1247" label="WALLPAPERPRIVATE_GETCURRENTWALLPAPERTHUMBNAIL"/>
 </enum>
 
 <enum name="ExtensionIconState">

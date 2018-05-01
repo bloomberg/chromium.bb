@@ -64,6 +64,8 @@ namespace get_collections_info = wallpaper_private::GetCollectionsInfo;
 namespace get_images_info = wallpaper_private::GetImagesInfo;
 namespace get_local_image_paths = wallpaper_private::GetLocalImagePaths;
 namespace get_local_image_data = wallpaper_private::GetLocalImageData;
+namespace get_current_wallpaper_thumbnail =
+    wallpaper_private::GetCurrentWallpaperThumbnail;
 
 namespace {
 
@@ -801,3 +803,36 @@ WallpaperPrivateCancelPreviewWallpaperFunction::Run() {
   WallpaperControllerClient::Get()->CancelPreviewWallpaper();
   return RespondNow(NoArguments());
 }
+
+WallpaperPrivateGetCurrentWallpaperThumbnailFunction::
+    WallpaperPrivateGetCurrentWallpaperThumbnailFunction() = default;
+
+WallpaperPrivateGetCurrentWallpaperThumbnailFunction::
+    ~WallpaperPrivateGetCurrentWallpaperThumbnailFunction() = default;
+
+ExtensionFunction::ResponseAction
+WallpaperPrivateGetCurrentWallpaperThumbnailFunction::Run() {
+  std::unique_ptr<get_current_wallpaper_thumbnail::Params> params(
+      get_current_wallpaper_thumbnail::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  WallpaperControllerClient::Get()->GetWallpaperImage(base::BindOnce(
+      &WallpaperPrivateGetCurrentWallpaperThumbnailFunction::
+          OnWallpaperImageReturned,
+      this, gfx::Size(params->thumbnail_width, params->thumbnail_height)));
+  return RespondLater();
+}
+
+void WallpaperPrivateGetCurrentWallpaperThumbnailFunction::
+    OnWallpaperImageReturned(const gfx::Size& thumbnail_size,
+                             const gfx::ImageSkia& image) {
+  image.EnsureRepsForSupportedScales();
+  scoped_refptr<base::RefCountedBytes> thumbnail_data;
+  GenerateThumbnail(image, thumbnail_size, &thumbnail_data);
+  Respond(OneArgument(std::make_unique<Value>(
+      Value::BlobStorage(thumbnail_data->front(),
+                         thumbnail_data->front() + thumbnail_data->size()))));
+}
+
+void WallpaperPrivateGetCurrentWallpaperThumbnailFunction::OnWallpaperDecoded(
+    const gfx::ImageSkia& wallpaper) {}
