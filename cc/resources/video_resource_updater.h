@@ -88,7 +88,8 @@ class CC_EXPORT VideoResourceUpdater
                        LayerTreeFrameSink* layer_tree_frame_sink,
                        LayerTreeResourceProvider* resource_provider,
                        bool use_stream_video_draw_quad,
-                       bool use_gpu_memory_buffer_resources);
+                       bool use_gpu_memory_buffer_resources,
+                       bool use_r16_texture);
 
   ~VideoResourceUpdater() override;
 
@@ -116,6 +117,8 @@ class CC_EXPORT VideoResourceUpdater
   // TODO(kylechar): This is only public for testing, make private.
   VideoFrameExternalResources CreateExternalResourcesFromVideoFrame(
       scoped_refptr<media::VideoFrame> video_frame);
+
+  viz::ResourceFormat YuvResourceFormat(int bits_per_channel);
 
  private:
   class PlaneResource;
@@ -185,6 +188,8 @@ class CC_EXPORT VideoResourceUpdater
   LayerTreeResourceProvider* const resource_provider_;
   const bool use_stream_video_draw_quad_;
   const bool use_gpu_memory_buffer_resources_;
+  // TODO(crbug.com/759456): Remove after r16 is used without the flag.
+  const bool use_r16_texture_;
   const int tracing_id_;
   std::unique_ptr<media::PaintCanvasVideoRenderer> video_renderer_;
   uint32_t next_plane_resource_id_ = 1;

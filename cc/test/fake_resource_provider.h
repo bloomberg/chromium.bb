@@ -13,13 +13,9 @@ namespace cc {
 class FakeResourceProvider {
  public:
   static std::unique_ptr<LayerTreeResourceProvider>
-  CreateLayerTreeResourceProvider(
-      viz::ContextProvider* context_provider,
-      bool high_bit_for_testing = false) {
-    viz::ResourceSettings resource_settings;
-    resource_settings.high_bit_for_testing = high_bit_for_testing;
+  CreateLayerTreeResourceProvider(viz::ContextProvider* context_provider) {
     return std::make_unique<LayerTreeResourceProvider>(context_provider, true,
-                                                       resource_settings);
+                                                       viz::ResourceSettings());
   }
 
   static std::unique_ptr<DisplayResourceProvider> CreateDisplayResourceProvider(

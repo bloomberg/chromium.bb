@@ -94,8 +94,6 @@ class CC_EXPORT LayerTreeResourceProvider {
 
   int max_texture_size() const { return settings_.max_texture_size; }
 
-  viz::ResourceFormat YuvResourceFormat(int bits) const;
-
   class CC_EXPORT ScopedSkSurface {
    public:
     ScopedSkSurface(GrContext* gr_context,
@@ -125,8 +123,6 @@ class CC_EXPORT LayerTreeResourceProvider {
              const viz::ResourceSettings& resource_settings);
 
     int max_texture_size = 0;
-    viz::ResourceFormat yuv_resource_format = viz::LUMINANCE_8;
-    viz::ResourceFormat yuv_highbit_resource_format = viz::LUMINANCE_8;
     bool delegated_sync_points_required = false;
   } const settings_;
 
