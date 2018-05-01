@@ -153,6 +153,7 @@ cr.define('cr.login', function() {
     this.samlApiUsedCallback = null;
     this.missingGaiaInfoCallback = null;
     this.needPassword = true;
+    this.services_ = null;
 
     this.bindToWebview_(webview);
 
@@ -185,6 +186,7 @@ cr.define('cr.login', function() {
     this.authFlow = AuthFlow.DEFAULT;
     this.samlHandler_.reset();
     this.videoEnabled = false;
+    this.services_ = null;
   };
 
   /**
@@ -655,6 +657,10 @@ cr.define('cr.login', function() {
       this.dispatchEvent(new CustomEvent(
           'identifierEntered',
           {detail: {accountIdentifier: msg.accountIdentifier}}));
+    } else if (msg.method == 'userInfo') {
+      this.services_ = msg.services;
+      if (this.email_ && this.gaiaId_ && this.sessionIndex_)
+        this.maybeCompleteAuth_();
     } else {
       console.warn('Unrecognized message from GAIA: ' + msg.method);
     }
@@ -697,6 +703,13 @@ cr.define('cr.login', function() {
       this.webview_.src = this.initialFrameUrl_;
       return;
     }
+    // TODO(https://crbug.com/837107): remove this once API is fully stabilized.
+    if (!this.services_ && !this.email_.endsWith('@gmail.com')) {
+      console.warn('Forcing empty services.');
+      this.services_ = [];
+    }
+    if (!this.services_)
+      return;
 
     if (this.samlHandler_.samlApiUsed) {
       if (this.samlApiUsedCallback) {
@@ -756,6 +769,21 @@ cr.define('cr.login', function() {
     assert(
         this.skipForNow_ ||
         (this.email_ && this.gaiaId_ && this.sessionIndex_));
+    // Chrome will crash on incorrect data type, so log some error message here.
+    if (this.services_) {
+      if (!Array.isArray(this.services_)) {
+        console.error('FATAL: Bad services type:' + typeof this.services_);
+      } else {
+        for (var i = 0; i < this.services_.length; ++i) {
+          if (typeof this.services_[i] == 'string')
+            continue;
+
+          console.error(
+              'FATAL: Bad services[' + i +
+              '] type:' + typeof this.services_[i]);
+        }
+      }
+    }
     this.dispatchEvent(new CustomEvent(
         'authCompleted',
         // TODO(rsorokin): get rid of the stub values.
@@ -771,6 +799,7 @@ cr.define('cr.login', function() {
             sessionIndex: this.sessionIndex_ || '',
             trusted: this.trusted_,
             gapsCookie: this.newGapsCookie_ || this.gapsCookie_ || '',
+            services: this.services_ || [],
           }
         }));
     this.resetStates();

@@ -8,8 +8,10 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/containers/flat_set.h"
 #include "base/feature_list.h"
 #include "base/guid.h"
+#include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
@@ -219,6 +221,21 @@ void GetVersionAndConsent(std::string* out_version, bool* out_consent) {
   *out_consent = GoogleUpdateSettings::GetCollectStatsConsent();
 }
 
+user_manager::UserType GetUsertypeFromServicesString(
+    const ::login::StringList& services) {
+  bool is_child = false;
+  const base::flat_set<std::string> known_flags = {"uca", "usm"};
+  size_t i = 0;
+  for (const std::string& item : services) {
+    if (known_flags.find(item) != known_flags.end()) {
+      is_child = true;
+    }
+    ++i;
+  }
+
+  return is_child ? user_manager::USER_TYPE_CHILD
+                  : user_manager::USER_TYPE_REGULAR;
+}
 }  // namespace
 
 // A class that's used to specify the way how Gaia should be loaded.
@@ -697,7 +714,8 @@ void GaiaScreenHandler::HandleCompleteAuthentication(
     const std::string& password,
     const std::string& auth_code,
     bool using_saml,
-    const std::string& gaps_cookie) {
+    const std::string& gaps_cookie,
+    const ::login::StringList& services) {
   if (!LoginDisplayHost::default_host())
     return;
 
@@ -706,7 +724,11 @@ void GaiaScreenHandler::HandleCompleteAuthentication(
   const std::string sanitized_email = gaia::SanitizeEmail(email);
   LoginDisplayHost::default_host()->SetDisplayEmail(sanitized_email);
 
-  UserContext user_context(GetAccountId(email, gaia_id, AccountType::GOOGLE));
+  const user_manager::UserType user_type =
+      GetUsertypeFromServicesString(services);
+
+  UserContext user_context(user_type,
+                           GetAccountId(email, gaia_id, AccountType::GOOGLE));
   user_context.SetKey(Key(password));
   // Only save the password for enterprise users. See https://crbug.com/386606.
   const bool is_enterprise_managed = g_browser_process->platform_part()
