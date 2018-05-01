@@ -156,9 +156,9 @@ void WriteManifestAndRuleset(
   JSONFileValueSerializer(extension_dir.Append(json_rules_filepath))
       .Serialize(rules);
 
-  // Persists an empty background script if needed.
+  // Persists a background script if needed.
   if (has_background_script) {
-    std::string content;
+    std::string content = "chrome.test.sendMessage('ready');";
     CHECK_EQ(static_cast<int>(content.length()),
              base::WriteFile(extension_dir.Append(kBackgroundScriptFilepath),
                              content.c_str(), content.length()));
