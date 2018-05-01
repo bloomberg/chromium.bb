@@ -336,10 +336,11 @@ const struct UmaEnumCommandIdPair {
     {89, -1, IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP},
     {90, -1, IDC_CONTENT_CONTEXT_SHOWALLSAVEDPASSWORDS},
     {91, -1, IDC_CONTENT_CONTENT_PICTUREINPICTURE},
+    {92, -1, IDC_CONTENT_CONTEXT_EMOJI},
     // Add new items here and use |enum_id| from the next line.
     // Also, add new items to RenderViewContextMenuItem enum in
     // tools/metrics/histograms/enums.xml.
-    {92, -1, 0},  // Must be the last. Increment |enum_id| when new IDC
+    {93, -1, 0},  // Must be the last. Increment |enum_id| when new IDC
                   // was added.
 };
 

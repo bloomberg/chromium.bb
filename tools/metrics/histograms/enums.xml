@@ -39006,6 +39006,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="89" label="IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP"/>
   <int value="90" label="IDC_CONTENT_CONTEXT_SHOWALLSAVEDPASSWORDS"/>
   <int value="91" label="IDC_CONTENT_CONTENT_PICTUREINPICTURE"/>
+  <int value="92" label="IDC_CONTENT_CONTEXT_EMOJI"/>
 </enum>
 
 <enum name="ReportingHeaderEndpointGroupOutcome">
