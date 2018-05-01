@@ -53,6 +53,7 @@ import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
@@ -381,7 +382,7 @@ public class WebappActivity extends SingleTabActivity {
         BrowserSessionContentUtils.setActiveContentHandler(null);
         if (getActivityTab() != null) saveState(getActivityDirectory());
         if (getFullscreenManager() != null) {
-            getFullscreenManager().setPersistentFullscreenMode(false);
+            getFullscreenManager().exitPersistentFullscreenMode();
         }
         WebApkDisclosureNotificationManager.dismissNotification(this);
     }
@@ -628,9 +629,15 @@ public class WebappActivity extends SingleTabActivity {
         // Disable HTML5 fullscreen in PWA fullscreen mode.
         return new ChromeFullscreenManager(this, ChromeFullscreenManager.CONTROLS_POSITION_TOP) {
             @Override
-            public void setPersistentFullscreenMode(boolean enabled) {
+            public void enterPersistentFullscreenMode(FullscreenOptions options) {
                 if (mWebappInfo.displayMode() == WebDisplayMode.FULLSCREEN) return;
-                super.setPersistentFullscreenMode(enabled);
+                super.enterPersistentFullscreenMode(options);
+            }
+
+            @Override
+            public void exitPersistentFullscreenMode() {
+                if (mWebappInfo.displayMode() == WebDisplayMode.FULLSCREEN) return;
+                super.exitPersistentFullscreenMode();
             }
 
             @Override

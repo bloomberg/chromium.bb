@@ -137,8 +137,10 @@ class Shell : public WebContentsDelegate,
       GetContentVideoViewEmbedder() override;
   void SetOverlayMode(bool use_overlay_mode) override;
 #endif
-  void EnterFullscreenModeForTab(WebContents* web_contents,
-                                 const GURL& origin) override;
+  void EnterFullscreenModeForTab(
+      WebContents* web_contents,
+      const GURL& origin,
+      const blink::WebFullscreenOptions& options) override;
   void ExitFullscreenModeForTab(WebContents* web_contents) override;
   bool IsFullscreenForTabOrPending(
       const WebContents* web_contents) const override;

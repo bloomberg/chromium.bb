@@ -59,8 +59,10 @@ class FakeWebContentsDelegate : public WebContentsDelegate {
   FakeWebContentsDelegate() = default;
   ~FakeWebContentsDelegate() override = default;
 
-  void EnterFullscreenModeForTab(WebContents* web_contents,
-                                 const GURL& origin) override {
+  void EnterFullscreenModeForTab(
+      WebContents* web_contents,
+      const GURL& origin,
+      const blink::WebFullscreenOptions& options) override {
     fullscreened_contents_ = web_contents;
   }
 

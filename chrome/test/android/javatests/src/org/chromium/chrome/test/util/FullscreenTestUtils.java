@@ -51,7 +51,11 @@ public class FullscreenTestUtils {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                delegate.toggleFullscreenModeForTab(state);
+                if (state) {
+                    delegate.enterFullscreenModeForTab(false);
+                } else {
+                    delegate.exitFullscreenModeForTab();
+                }
             }
         });
     }

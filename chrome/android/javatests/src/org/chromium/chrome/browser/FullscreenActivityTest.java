@@ -23,6 +23,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -203,8 +204,12 @@ public class FullscreenActivityTest {
         Tab tab = mActivity.getActivityTab();
         tab.addObserver(new EmptyTabObserver() {
             @Override
-            public void onToggleFullscreenMode(Tab tab, boolean enable) {
-                isTabFullscreen[0] = enable;
+            public void onEnterFullscreenMode(Tab tab, FullscreenOptions options) {
+                isTabFullscreen[0] = true;
+            }
+            @Override
+            public void onExitFullscreenMode(Tab tab) {
+                isTabFullscreen[0] = false;
             }
         });
 

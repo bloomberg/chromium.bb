@@ -173,8 +173,13 @@ public class OverlayPanelContent {
             }
 
             @Override
-            public void toggleFullscreenModeForTab(boolean enterFullscreen) {
-                mIsFullscreen = enterFullscreen;
+            public void enterFullscreenModeForTab(boolean prefersNavigationBar) {
+                mIsFullscreen = true;
+            }
+
+            @Override
+            public void exitFullscreenModeForTab() {
+                mIsFullscreen = false;
             }
 
             @Override

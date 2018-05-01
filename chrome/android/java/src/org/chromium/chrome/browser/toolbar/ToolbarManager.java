@@ -46,6 +46,7 @@ import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.fullscreen.BrowserStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
+import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.ntp.IncognitoNewTabPage;
 import org.chromium.chrome.browser.ntp.NativePageFactory;
@@ -383,8 +384,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             }
 
             @Override
-            public void onToggleFullscreenMode(Tab tab, boolean enable) {
-                if (mFindToolbarManager != null && enable) {
+            public void onEnterFullscreenMode(Tab tab, FullscreenOptions options) {
+                if (mFindToolbarManager != null) {
                     mFindToolbarManager.hideToolbar();
                 }
             }

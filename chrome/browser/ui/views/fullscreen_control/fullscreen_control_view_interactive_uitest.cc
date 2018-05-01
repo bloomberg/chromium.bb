@@ -20,6 +20,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/web/web_fullscreen_options.h"
 #include "ui/events/event.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
@@ -86,7 +87,8 @@ class FullscreenControlViewTest : public InProcessBrowserTest {
     content::WebContentsDelegate* delegate =
         static_cast<content::WebContentsDelegate*>(browser());
     delegate->EnterFullscreenModeForTab(GetActiveWebContents(),
-                                        GURL("about:blank"));
+                                        GURL("about:blank"),
+                                        blink::WebFullscreenOptions());
     fullscreen_observer.Wait();
     ASSERT_TRUE(delegate->IsFullscreenForTabOrPending(GetActiveWebContents()));
   }

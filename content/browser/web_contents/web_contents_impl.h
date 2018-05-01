@@ -538,7 +538,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 #if defined(OS_ANDROID)
   void GetNFC(device::mojom::NFCRequest request) override;
 #endif
-  void EnterFullscreenMode(const GURL& origin) override;
+  void EnterFullscreenMode(const GURL& origin,
+                           const blink::WebFullscreenOptions& options) override;
   void ExitFullscreenMode(bool will_cause_resize) override;
   bool ShouldRouteMessageEvent(
       RenderFrameHost* target_rfh,

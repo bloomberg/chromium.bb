@@ -26,6 +26,7 @@
 #include "third_party/blink/public/platform/web_display_mode.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_security_style.h"
+#include "third_party/blink/public/web/web_fullscreen_options.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -384,8 +385,10 @@ class CONTENT_EXPORT WebContentsDelegate {
   // |origin| is the origin of the initiating frame inside the |web_contents|.
   // |origin| can be empty in which case the |web_contents| last committed
   // URL's origin should be used.
-  virtual void EnterFullscreenModeForTab(WebContents* web_contents,
-                                         const GURL& origin) {}
+  virtual void EnterFullscreenModeForTab(
+      WebContents* web_contents,
+      const GURL& origin,
+      const blink::WebFullscreenOptions& options) {}
 
   // Called when the renderer puts a tab out of fullscreen mode.
   virtual void ExitFullscreenModeForTab(WebContents*) {}

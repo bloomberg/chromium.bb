@@ -122,13 +122,24 @@ public abstract class FullscreenManager {
     }
 
     /**
-     * Enters or exits persistent fullscreen mode.  In this mode, the browser controls will be
+     * Enters persistent fullscreen mode.  In this mode, the browser controls will be
      * permanently hidden until this mode is exited.
-     *
-     * @param enabled Whether to enable persistent fullscreen mode.
      */
-    public void setPersistentFullscreenMode(boolean enabled) {
-        mHtmlApiHandler.setPersistentFullscreenMode(enabled);
+    public void enterPersistentFullscreenMode(FullscreenOptions options) {
+        mHtmlApiHandler.enterPersistentFullscreenMode(options);
+
+        Tab tab = getTab();
+        if (tab != null) {
+            tab.updateFullscreenEnabledState();
+        }
+    }
+
+    /**
+     * Exits persistent fullscreen mode.  In this mode, the browser controls will be
+     * permanently hidden until this mode is exited.
+     */
+    public void exitPersistentFullscreenMode() {
+        mHtmlApiHandler.exitPersistentFullscreenMode();
 
         Tab tab = getTab();
         if (tab != null) {

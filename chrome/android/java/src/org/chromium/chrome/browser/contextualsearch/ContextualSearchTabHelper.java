@@ -11,6 +11,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
+import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -138,7 +139,15 @@ public class ContextualSearchTabHelper
     }
 
     @Override
-    public void onToggleFullscreenMode(Tab tab, boolean enable) {
+    public void onEnterFullscreenMode(Tab tab, FullscreenOptions options) {
+        ContextualSearchManager manager = getContextualSearchManager(tab);
+        if (manager != null) {
+            manager.hideContextualSearch(StateChangeReason.UNKNOWN);
+        }
+    }
+
+    @Override
+    public void onExitFullscreenMode(Tab tab) {
         ContextualSearchManager manager = getContextualSearchManager(tab);
         if (manager != null) {
             manager.hideContextualSearch(StateChangeReason.UNKNOWN);

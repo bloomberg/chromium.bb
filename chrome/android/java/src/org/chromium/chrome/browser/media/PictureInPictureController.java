@@ -336,8 +336,8 @@ public class PictureInPictureController {
         }
 
         @Override
-        public void onToggleFullscreenMode(Tab tab, boolean enable) {
-            if (!enable) dismissActivity(mActivity, METRICS_END_REASON_LEFT_FULLSCREEN);
+        public void onExitFullscreenMode(Tab tab) {
+            dismissActivity(mActivity, METRICS_END_REASON_LEFT_FULLSCREEN);
         }
     }
 

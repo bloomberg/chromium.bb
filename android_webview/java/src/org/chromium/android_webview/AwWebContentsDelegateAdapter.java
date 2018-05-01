@@ -265,12 +265,13 @@ class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
     }
 
     @Override
-    public void toggleFullscreenModeForTab(boolean enterFullscreen) {
-        if (enterFullscreen) {
-            enterFullscreen();
-        } else {
-            exitFullscreen();
-        }
+    public void enterFullscreenModeForTab(boolean prefersNavigationBar) {
+        enterFullscreen();
+    }
+
+    @Override
+    public void exitFullscreenModeForTab() {
+        exitFullscreen();
     }
 
     @Override

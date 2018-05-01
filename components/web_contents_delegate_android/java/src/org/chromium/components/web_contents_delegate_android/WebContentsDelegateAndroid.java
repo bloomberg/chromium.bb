@@ -129,7 +129,10 @@ public class WebContentsDelegateAndroid {
     public void showRepostFormWarningDialog() {}
 
     @CalledByNative
-    public void toggleFullscreenModeForTab(boolean enterFullscreen) {}
+    public void enterFullscreenModeForTab(boolean prefersNavigationBar) {}
+
+    @CalledByNative
+    public void exitFullscreenModeForTab() {}
 
     @CalledByNative
     public boolean isFullscreenForTabOrPending() {

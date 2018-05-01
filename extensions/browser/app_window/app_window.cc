@@ -904,8 +904,10 @@ void AppWindow::NavigationStateChanged(content::WebContents* source,
     native_app_window_->UpdateWindowIcon();
 }
 
-void AppWindow::EnterFullscreenModeForTab(content::WebContents* source,
-                                          const GURL& origin) {
+void AppWindow::EnterFullscreenModeForTab(
+    content::WebContents* source,
+    const GURL& origin,
+    const blink::WebFullscreenOptions& options) {
   ToggleFullscreenModeForTab(source, true);
 }
 

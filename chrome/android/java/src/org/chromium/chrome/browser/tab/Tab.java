@@ -65,6 +65,7 @@ import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.download.ChromeDownloadDelegate;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
+import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.media.ui.MediaSessionTabHelper;
@@ -506,41 +507,50 @@ public class Tab
         }
 
         @Override
-        public void onToggleFullscreenMode(Tab tab, boolean enable) {
-            if (!isUserInteractable() && enable) {
+        public void onEnterFullscreenMode(Tab tab, final FullscreenOptions options) {
+            if (!isUserInteractable()) {
                 mEnterFullscreenRunnable = new Runnable() {
                     @Override
                     public void run() {
-                        toggleFullscreenInternal(true);
+                        enterFullscreenInternal(options);
                         mEnterFullscreenRunnable = null;
                     }
                 };
                 return;
-            } else if (!enable && mEnterFullscreenRunnable != null) {
+            }
+
+            enterFullscreenInternal(options);
+        }
+
+        @Override
+        public void onExitFullscreenMode(Tab tab) {
+            if (mEnterFullscreenRunnable != null) {
                 mEnterFullscreenRunnable = null;
                 return;
             }
 
-            toggleFullscreenInternal(enable);
+            if (mFullscreenManager != null) {
+                mFullscreenManager.exitPersistentFullscreenMode();
+            }
         }
 
         /**
-         * Do the actual enter/exit of fullscreen mode.
-         * @param enable Whether or not fullscreen is enabled.
+         * Do the actual enter of fullscreen mode.
+         * @param options Options adjust fullscreen mode.
          */
-        private void toggleFullscreenInternal(boolean enable) {
+        private void enterFullscreenInternal(FullscreenOptions options) {
             if (mFullscreenManager != null) {
-                mFullscreenManager.setPersistentFullscreenMode(enable);
+                mFullscreenManager.enterPersistentFullscreenMode(options);
             }
 
-            if (enable && getWebContents() != null) {
+            if (getWebContents() != null) {
                 SelectionPopupController controller =
                         SelectionPopupController.fromWebContents(getWebContents());
                 controller.destroySelectActionMode();
             }
 
-            // When going into fullscreen, we want to remove any cached thumbnail of the Tab.
-            if (enable && mNativeTabAndroid != 0) {
+            // We want to remove any cached thumbnail of the Tab.
+            if (mNativeTabAndroid != 0) {
                 nativeClearThumbnailPlaceholder(mNativeTabAndroid);
             }
         }
@@ -1316,7 +1326,7 @@ public class Tab
 
             // Clean up any fullscreen state that might impact other tabs.
             if (mFullscreenManager != null) {
-                mFullscreenManager.setPersistentFullscreenMode(false);
+                mFullscreenManager.exitPersistentFullscreenMode();
             }
 
             if (mTabUma != null) mTabUma.onHide();
@@ -2772,14 +2782,25 @@ public class Tab
     }
 
     /**
-     * Toggles fullscreen mode. If enabling fullscreen while the tab is not interactable, fullscreen
+     * Enters fullscreen mode. If enabling fullscreen while the tab is not interactable, fullscreen
      * will be delayed until the tab is interactable.
-     * @param enableFullscreen Whether fullscreen should be enabled.
+     * @param options Options to adjust fullscreen mode.
      */
-    public void toggleFullscreenMode(boolean enableFullscreen) {
+    public void enterFullscreenMode(FullscreenOptions options) {
         RewindableIterator<TabObserver> observers = getTabObservers();
         while (observers.hasNext()) {
-            observers.next().onToggleFullscreenMode(this, enableFullscreen);
+            observers.next().onEnterFullscreenMode(this, options);
+        }
+    }
+
+    /**
+     * Exits fullscreen mode. If enabling fullscreen while the tab is not interactable, fullscreen
+     * will be delayed until the tab is interactable.
+     */
+    public void exitFullscreenMode() {
+        RewindableIterator<TabObserver> observers = getTabObservers();
+        while (observers.hasNext()) {
+            observers.next().onExitFullscreenMode(this);
         }
     }
 
