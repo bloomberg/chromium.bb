@@ -393,6 +393,11 @@ void VrShell::OpenDownloads() {
   Java_VrShellImpl_openDownloads(env, j_vr_shell_);
 }
 
+void VrShell::OpenShare() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_VrShellImpl_openShare(env, j_vr_shell_);
+}
+
 void VrShell::OpenSettings() {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_VrShellImpl_openSettings(env, j_vr_shell_);

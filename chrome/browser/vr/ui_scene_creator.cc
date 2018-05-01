@@ -2221,6 +2221,7 @@ void UiSceneCreator::CreateOverflowMenu() {
       {kOverflowMenuRecentTabsItem, IDS_VR_MENU_RECENT_TABS},
       {kOverflowMenuHistoryItem, IDS_VR_MENU_HISTORY},
       {kOverflowMenuDownloadsItem, IDS_VR_MENU_DOWNLOADS},
+      {kOverflowMenuShareItem, IDS_VR_MENU_SHARE},
       {kOverflowMenuPreferencesItem, IDS_VR_MENU_PREFERENCES},
       {kOverflowMenuCloseAllTabsItem, IDS_VR_MENU_CLOSE_ALL_TABS},
       {kOverflowMenuCloseAllIncognitoTabsItem,
@@ -2311,6 +2312,15 @@ void UiSceneCreator::CreateOverflowMenu() {
             [](Model* model, UiBrowserInterface* browser) {
               model->overflow_menu_enabled = false;
               browser->OpenDownloads();
+            },
+            base::Unretained(model_), base::Unretained(browser_)));
+        VR_BIND_VISIBILITY(background, model->standalone_vr_device);
+        break;
+      case kOverflowMenuShareItem:
+        background->set_click_handler(base::BindRepeating(
+            [](Model* model, UiBrowserInterface* browser) {
+              model->overflow_menu_enabled = false;
+              browser->OpenShare();
             },
             base::Unretained(model_), base::Unretained(browser_)));
         VR_BIND_VISIBILITY(background, model->standalone_vr_device);
