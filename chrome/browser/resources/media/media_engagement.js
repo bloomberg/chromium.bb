@@ -116,6 +116,28 @@ function renderConfigTable(config) {
       createConfigRow('Lower Threshold', config.highScoreLowerThreshold));
   configTableBody.appendChild(
       createConfigRow('Upper Threshold', config.highScoreUpperThreshold));
+
+  configTableBody.appendChild(createConfigRow(
+      'Record MEI data', formatFeatureFlag(config.featureRecordData)));
+  configTableBody.appendChild(createConfigRow(
+      'Bypass autoplay based on MEI',
+      formatFeatureFlag(config.featureBypassAutoplay)));
+  configTableBody.appendChild(createConfigRow(
+      'Preload MEI data', formatFeatureFlag(config.featurePreloadData)));
+  configTableBody.appendChild(
+      createConfigRow('Autoplay Policy', config.autoplayPolicy));
+  configTableBody.appendChild(createConfigRow(
+      'Preload version',
+      config.preloadVersion ? config.preloadVersion : 'Not Available'));
+}
+
+/**
+ * Converts a boolean into a string value.
+ * @param {bool} value The value of the config setting.
+ * @return {string}
+ */
+function formatFeatureFlag(value) {
+  return value ? 'Enabled' : 'Disabled';
 }
 
 /**

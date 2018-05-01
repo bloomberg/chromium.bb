@@ -6,18 +6,30 @@
 
 #include <memory>
 
+#include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/media/media_engagement_score.h"
 #include "chrome/browser/media/media_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
+#include "components/component_updater/component_updater_service.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "media/base/media_switches.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace {
+
+namespace {
+
+// This is the component ID for the MEI Preload component.
+const char kPreloadComponentID[] = "aemomkdncapdnfajjbbcbdebjljbpmpj";
+
+}  // namespace
 
 // Implementation of media::mojom::MediaEngagementScoreDetailsProvider that
 // retrieves engagement details from the MediaEngagementService.
@@ -48,10 +60,30 @@ class MediaEngagementScoreDetailsProviderImpl
     std::move(callback).Run(media::mojom::MediaEngagementConfig::New(
         MediaEngagementScore::GetScoreMinVisits(),
         MediaEngagementScore::GetHighScoreLowerThreshold(),
-        MediaEngagementScore::GetHighScoreUpperThreshold()));
+        MediaEngagementScore::GetHighScoreUpperThreshold(),
+        base::FeatureList::IsEnabled(media::kRecordMediaEngagementScores),
+        base::FeatureList::IsEnabled(
+            media::kMediaEngagementBypassAutoplayPolicies),
+        base::FeatureList::IsEnabled(media::kPreloadMediaEngagementData),
+        media::GetEffectiveAutoplayPolicy(
+            *base::CommandLine::ForCurrentProcess()),
+        GetPreloadVersion()));
   }
 
  private:
+  const std::string GetPreloadVersion() {
+    component_updater::ComponentUpdateService* cus =
+        g_browser_process->component_updater();
+    std::vector<component_updater::ComponentInfo> info = cus->GetComponents();
+
+    for (const auto& component : info) {
+      if (component.id == kPreloadComponentID)
+        return component.version.GetString();
+    }
+
+    return std::string();
+  }
+
   Profile* profile_;
 
   MediaEngagementService* service_;
