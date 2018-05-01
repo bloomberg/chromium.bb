@@ -123,6 +123,8 @@ class ChromeNativeAppWindowViewsAuraAsh
                            ImmersiveWorkFlow);
   FRIEND_TEST_ALL_PREFIXES(ChromeNativeAppWindowViewsAuraAshBrowserTest,
                            ImmersiveModeFullscreenRestoreType);
+  FRIEND_TEST_ALL_PREFIXES(ChromeNativeAppWindowViewsAuraAshBrowserTest,
+                           NoImmersiveModeWhenForcedFullscreen);
   FRIEND_TEST_ALL_PREFIXES(ChromeNativeAppWindowViewsAuraAshInteractiveTest,
                            NoImmersiveOrBubbleOutsidePublicSessionWindow);
   FRIEND_TEST_ALL_PREFIXES(ChromeNativeAppWindowViewsAuraAshInteractiveTest,
@@ -136,6 +138,9 @@ class ChromeNativeAppWindowViewsAuraAsh
 
   // Callback for MenuRunner
   void OnMenuClosed();
+
+  // Whether immersive mode should be enabled.
+  bool ShouldEnableImmersiveMode() const;
 
   // Helper function to update the immersive mode based on the current
   // app's and window manager's state.

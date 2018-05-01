@@ -112,3 +112,25 @@ IN_PROC_BROWSER_TEST_F(ChromeNativeAppWindowViewsAuraAshBrowserTest,
 
   CloseAppWindow(app_window);
 }
+
+// Verify that immersive mode stays disabled when entering tablet mode in
+// forced fullscreen mode (e.g. when running in a kiosk session).
+IN_PROC_BROWSER_TEST_F(ChromeNativeAppWindowViewsAuraAshBrowserTest,
+                       NoImmersiveModeWhenForcedFullscreen) {
+  extensions::AppWindow* app_window = CreateTestAppWindow("{}");
+  auto* window = static_cast<ChromeNativeAppWindowViewsAuraAsh*>(
+      GetNativeAppWindowForAppWindow(app_window));
+  ASSERT_TRUE(window != nullptr);
+  ASSERT_TRUE(window->immersive_fullscreen_controller_.get() != nullptr);
+
+  app_window->ForcedFullscreen();
+
+  ash::TabletModeController* tablet_mode_controller =
+      ash::Shell::Get()->tablet_mode_controller();
+  tablet_mode_controller->EnableTabletModeWindowManager(true);
+  tablet_mode_controller->FlushForTesting();
+  EXPECT_FALSE(window->immersive_fullscreen_controller_->IsEnabled());
+  tablet_mode_controller->EnableTabletModeWindowManager(false);
+  tablet_mode_controller->FlushForTesting();
+  EXPECT_FALSE(window->immersive_fullscreen_controller_->IsEnabled());
+}
