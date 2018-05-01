@@ -17,16 +17,18 @@ namespace bluetooth {
 
 class MockRemoteService : public RemoteService {
  public:
-  MockRemoteService();
+  explicit MockRemoteService(const bluetooth_v2_shlib::Uuid& uuid);
 
   MOCK_METHOD0(GetCharacteristics,
                std::vector<scoped_refptr<RemoteCharacteristic>>());
   MOCK_METHOD1(GetCharacteristicByUuid,
                scoped_refptr<RemoteCharacteristic>(
                    const bluetooth_v2_shlib::Uuid& uuid));
-  MOCK_CONST_METHOD0(uuid, const bluetooth_v2_shlib::Uuid&());
+  const bluetooth_v2_shlib::Uuid& uuid() const override { return uuid_; }
   MOCK_CONST_METHOD0(handle, uint16_t());
   MOCK_CONST_METHOD0(primary, bool());
+
+  const bluetooth_v2_shlib::Uuid uuid_;
 
  private:
   ~MockRemoteService();

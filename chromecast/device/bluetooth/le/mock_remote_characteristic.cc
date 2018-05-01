@@ -7,7 +7,10 @@
 namespace chromecast {
 namespace bluetooth {
 
-MockRemoteCharacteristic::MockRemoteCharacteristic() = default;
+MockRemoteCharacteristic::MockRemoteCharacteristic(
+    const bluetooth_v2_shlib::Uuid& uuid)
+    : uuid_(uuid) {}
+
 MockRemoteCharacteristic::~MockRemoteCharacteristic() = default;
 
 }  // namespace bluetooth

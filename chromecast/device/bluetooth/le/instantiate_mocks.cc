@@ -15,13 +15,21 @@
 namespace chromecast {
 namespace bluetooth {
 
+namespace {
+
+const bluetooth_v2_shlib::Addr kAddr{};
+const bluetooth_v2_shlib::Uuid kUuid{};
+
+}  // namespace
+
 void InstantiateMocks() {
   MockGattClientManager a;
   MockLeScanManager b;
-  scoped_refptr<MockRemoteCharacteristic> c = new MockRemoteCharacteristic;
-  scoped_refptr<MockRemoteDescriptor> d = new MockRemoteDescriptor;
-  scoped_refptr<MockRemoteDevice> e = new MockRemoteDevice;
-  scoped_refptr<MockRemoteService> f = new MockRemoteService;
+  scoped_refptr<MockRemoteCharacteristic> c(
+      new MockRemoteCharacteristic(kUuid));
+  scoped_refptr<MockRemoteDescriptor> d(new MockRemoteDescriptor);
+  scoped_refptr<MockRemoteDevice> e(new MockRemoteDevice(kAddr));
+  scoped_refptr<MockRemoteService> f(new MockRemoteService(kUuid));
 }
 
 }  // namespace bluetooth

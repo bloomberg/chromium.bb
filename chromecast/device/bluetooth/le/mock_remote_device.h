@@ -16,11 +16,18 @@ namespace bluetooth {
 
 class MockRemoteDevice : public RemoteDevice {
  public:
-  MockRemoteDevice();
+  explicit MockRemoteDevice(const bluetooth_v2_shlib::Addr& addr);
 
-  void Connect(StatusCallback cb) override {}
+  MOCK_METHOD0(Connect, bool());
+  void Connect(StatusCallback cb) override { std::move(cb).Run(Connect()); }
+
   MOCK_METHOD0(ConnectSync, bool());
-  void Disconnect(StatusCallback cb) override {}
+
+  MOCK_METHOD0(Disconnect, bool());
+  void Disconnect(StatusCallback cb) override {
+    std::move(cb).Run(Disconnect());
+  }
+
   MOCK_METHOD0(DisconnectSync, bool());
   void ReadRemoteRssi(RssiCallback cb) override {}
   void RequestMtu(int mtu, StatusCallback cb) override {}
@@ -41,7 +48,9 @@ class MockRemoteDevice : public RemoteDevice {
   MOCK_METHOD1(
       GetServiceByUuidSync,
       scoped_refptr<RemoteService>(const bluetooth_v2_shlib::Uuid& uuid));
-  MOCK_CONST_METHOD0(addr, const bluetooth_v2_shlib::Addr&());
+  const bluetooth_v2_shlib::Addr& addr() const override { return addr_; }
+
+  const bluetooth_v2_shlib::Addr addr_;
 
  private:
   ~MockRemoteDevice();
