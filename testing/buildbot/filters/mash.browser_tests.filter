@@ -74,7 +74,7 @@
 -PDFExtensionHitTestTest.*
 -PDFExtensionLoadTest.*
 
-# Need screenshot support. http://crbug.com/754899
+# Need screenshot support. http://crbug.com/706246
 -ChromeScreenshotGrabberBrowserTest.*
 
 # Null immersive_fullscreen_controller_.
@@ -88,10 +88,6 @@
 -SessionRestoreTestChromeOS.*
 -SAMLPolicyTest.TransferCookiesAffiliated
 -SmartSessionRestoreTest.*
-
-# ash::Shell access in test for wallpaper images.
--CustomizationWallpaperDownloaderBrowserTest.*
--WallpaperManagerPolicyTest.*
 
 # Flaky: private_api_file_system.cc(811) Check failed: external_backend->CanHandleType(file_system_url.type()).
 -DefaultTaskDialog/FileManagerBrowserTest.*
