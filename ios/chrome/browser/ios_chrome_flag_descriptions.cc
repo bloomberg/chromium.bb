@@ -90,11 +90,11 @@ const char kFeedbackKitV2WithSSOServiceName[] =
 const char kFeedbackKitV2WithSSOServiceDescription[] =
     "Send SSOService with configuration for FeedbackKit V2.";
 
-const char kFullscreenContentInsetName[] = "Fullscreen ContentInset";
-const char kFullscreenContentInsetDescription[] =
-    "When enabled, fullscreen will be implemented by adjusting the "
-    "contentInset of the WKWebView's scroll view rather than adjusting its "
-    "frame.";
+const char kFullscreenViewportAdjustmentExperimentName[] =
+    "Fullscreen Viewport Adjustment Mode";
+const char kFullscreenViewportAdjustmentExperimentDescription[] =
+    "The different ways in which the web view's viewport is updated for scroll "
+    "events.  The default option updates the web view's frame.";
 
 const char kHistoryBatchUpdatesFilterName[] = "History Single Batch Filtering";
 const char kHistoryBatchUpdatesFilterDescription[] =

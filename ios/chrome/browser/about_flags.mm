@@ -274,9 +274,12 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"ui-refresh-location-bar", flag_descriptions::kUIRefreshLocationBarName,
      flag_descriptions::kUIRefreshLocationBarDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kUIRefreshLocationBar)},
-    {"fullscreen-content-inset", flag_descriptions::kFullscreenContentInsetName,
-     flag_descriptions::kFullscreenContentInsetDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(fullscreen::features::kFullscreenContentInset)},
+    {"fullscreen-viewport-adjustment-experiment",
+     flag_descriptions::kFullscreenViewportAdjustmentExperimentName,
+     flag_descriptions::kFullscreenViewportAdjustmentExperimentDescription,
+     flags_ui::kOsIos,
+     MULTI_VALUE_TYPE(
+         fullscreen::features::kViewportAdjustmentExperimentChoices)},
     {"autofill-enforce-min-required-fields-for-heuristics",
      flag_descriptions::kAutofillEnforceMinRequiredFieldsForHeuristicsName,
      flag_descriptions::

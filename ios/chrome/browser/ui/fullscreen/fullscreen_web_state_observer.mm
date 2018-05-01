@@ -84,8 +84,9 @@ void FullscreenWebStateObserver::DidFinishNavigation(
   // - For normal pages, using |contentInset| breaks the layout of fixed-
   //   position DOM elements, so top padding must be accomplished by updating
   //   the WKWebView's frame.
-  bool force_content_inset = base::FeatureList::IsEnabled(
-      fullscreen::features::kFullscreenContentInset);
+  bool force_content_inset =
+      fullscreen::features::GetActiveViewportExperiment() ==
+      fullscreen::features::ViewportAdjustmentExperiment::CONTENT_INSET;
   web_state->GetWebViewProxy().shouldUseViewContentInset =
       force_content_inset ||
       web_state->GetContentsMimeType() == "application/pdf";

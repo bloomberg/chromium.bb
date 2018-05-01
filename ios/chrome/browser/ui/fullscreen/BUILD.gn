@@ -39,6 +39,7 @@ source_set("features") {
 
   deps = [
     "//base",
+    "//components/flags_ui",
   ]
 }
 
