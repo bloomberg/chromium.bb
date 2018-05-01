@@ -8,14 +8,20 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/test/bind_test_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browsing_data_remover.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_client.h"
 #include "content/public/test/browsing_data_remover_test_util.h"
 #include "content/public/test/content_browser_test.h"
+#include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/simple_url_loader_test_helper.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/shell/browser/shell.h"
+#include "content/shell/browser/shell_content_browser_client.h"
 #include "net/base/net_errors.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -30,6 +36,7 @@
 namespace {
 
 const char kHstsPath[] = "/hsts";
+const char kHttpAuthPath[] = "/http_auth";
 const char kHstsResponseBody[] = "HSTS set";
 
 std::unique_ptr<net::test_server::HttpResponse> HandleHstsRequest(
@@ -45,6 +52,26 @@ std::unique_ptr<net::test_server::HttpResponse> HandleHstsRequest(
   return nullptr;
 }
 
+// Handles |request| to "/http_auth". If "Authorization" header is present,
+// responds with a non-empty HTTP 200 page (regardless of auth credentials).
+// Otherwise serves a Basic Auth challenge.
+std::unique_ptr<net::test_server::HttpResponse> HandleHttpAuthRequest(
+    const net::test_server::HttpRequest& request) {
+  if (request.relative_url != kHttpAuthPath)
+    return nullptr;
+
+  auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
+  if (base::ContainsKey(request.headers, "Authorization")) {
+    http_response->set_code(net::HTTP_OK);
+    http_response->set_content("Success!");
+  } else {
+    http_response->set_code(net::HTTP_UNAUTHORIZED);
+    http_response->AddCustomHeader("WWW-Authenticate",
+                                   "Basic realm=\"test realm\"");
+  }
+  return http_response;
+}
+
 }  // namespace
 
 namespace content {
@@ -58,7 +85,9 @@ class BrowsingDataRemoverImplBrowserTest : public ContentBrowserTest {
         net::test_server::EmbeddedTestServer::CERT_COMMON_NAME_IS_DOMAIN);
     ssl_server_.AddDefaultHandlers(
         base::FilePath(FILE_PATH_LITERAL("content/test/data")));
-    ssl_server_.RegisterRequestHandler(base::Bind(&HandleHstsRequest));
+    ssl_server_.RegisterRequestHandler(base::BindRepeating(&HandleHstsRequest));
+    ssl_server_.RegisterRequestHandler(
+        base::BindRepeating(&HandleHttpAuthRequest));
     EXPECT_TRUE(ssl_server_.Start());
   }
 
@@ -130,6 +159,40 @@ class BrowsingDataRemoverImplBrowserTest : public ContentBrowserTest {
     return false;
   }
 
+  // Sets HTTP auth cache by making a request with credentials specified in the
+  // URL to a page with an auth challenge.
+  void IssueRequestThatSetsHttpAuthCache() {
+    GURL url = ssl_server_.GetURL(kHttpAuthPath);
+    GURL::Replacements replacements;
+    replacements.SetUsernameStr("user");
+    replacements.SetPasswordStr("password");
+    GURL url_with_creds = url.ReplaceComponents(replacements);
+    ASSERT_TRUE(NavigateToURL(shell(), url_with_creds));
+
+    ASSERT_TRUE(IsHttpAuthCacheSet());
+  }
+
+  // Determines if auth cache is populated by seeing if a request to a page with
+  // an auth challenge succeeds.
+  bool IsHttpAuthCacheSet() {
+    // Set a login request callback to be used instead of a login dialog since
+    // such a dialog is difficult to control programmatically and doesn't work
+    // on all platforms.
+    bool login_requested = false;
+    ShellContentBrowserClient::Get()->set_login_request_callback(
+        base::BindLambdaForTesting([&]() { login_requested = true; }));
+
+    GURL url = ssl_server_.GetURL(kHttpAuthPath);
+    bool navigation_suceeded = NavigateToURL(shell(), url);
+
+    // Because our login request callback does nothing, navigation should
+    // succeed iff login is not needed unless some other unexpected error
+    // occurs.
+    EXPECT_NE(navigation_suceeded, login_requested);
+
+    return !login_requested && navigation_suceeded;
+  }
+
   network::mojom::URLLoaderFactory* url_loader_factory() {
     return BrowserContext::GetDefaultStoragePartition(
                shell()->web_contents()->GetBrowserContext())
@@ -158,6 +221,31 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverImplBrowserTest,
 
   RemoveAndWait(BrowsingDataRemover::DATA_TYPE_DOWNLOADS);
   EXPECT_TRUE(IsHstsSet());
+}
+
+IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverImplBrowserTest, ClearHttpAuthCache) {
+  ASSERT_FALSE(IsHttpAuthCacheSet());
+  IssueRequestThatSetsHttpAuthCache();
+
+  RemoveAndWait(BrowsingDataRemover::DATA_TYPE_COOKIES);
+  EXPECT_FALSE(IsHttpAuthCacheSet());
+}
+
+IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverImplBrowserTest,
+                       PreserveHttpAuthCache) {
+  ASSERT_FALSE(IsHttpAuthCacheSet());
+  IssueRequestThatSetsHttpAuthCache();
+
+  RemoveAndWait(BrowsingDataRemover::DATA_TYPE_DOWNLOADS);
+  EXPECT_TRUE(IsHttpAuthCacheSet());
+}
+
+IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverImplBrowserTest,
+                       ClearHttpAuthCacheWhenEmpty) {
+  ASSERT_FALSE(IsHttpAuthCacheSet());
+
+  RemoveAndWait(BrowsingDataRemover::DATA_TYPE_COOKIES);
+  EXPECT_FALSE(IsHttpAuthCacheSet());
 }
 
 }  // namespace content

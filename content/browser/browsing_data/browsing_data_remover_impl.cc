@@ -105,20 +105,6 @@ bool DoesOriginMatchMaskAndURLs(
   return false;
 }
 
-void ClearHttpAuthCacheOnIOThread(
-    scoped_refptr<net::URLRequestContextGetter> context_getter,
-    base::Time delete_begin) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  net::HttpNetworkSession* http_session = context_getter->GetURLRequestContext()
-                                              ->http_transaction_factory()
-                                              ->GetSession();
-  DCHECK(http_session);
-  http_session->http_auth_cache()->ClearEntriesAddedWithin(base::Time::Now() -
-                                                           delete_begin);
-  http_session->CloseAllConnections();
-}
-
 }  // namespace
 
 BrowsingDataRemoverImpl::BrowsingDataRemoverImpl(
@@ -467,14 +453,10 @@ void BrowsingDataRemoverImpl::RemoveImpl(
   // Auth cache.
   if ((remove_mask & DATA_TYPE_COOKIES) &&
       !(remove_mask & DATA_TYPE_AVOID_CLOSING_CONNECTIONS)) {
-    scoped_refptr<net::URLRequestContextGetter> request_context =
-        BrowserContext::GetDefaultStoragePartition(browser_context_)
-            ->GetURLRequestContext();
-    BrowserThread::PostTaskAndReply(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&ClearHttpAuthCacheOnIOThread,
-                       std::move(request_context), delete_begin_),
-        CreatePendingTaskCompletionClosure());
+    BrowserContext::GetDefaultStoragePartition(browser_context_)
+        ->GetNetworkContext()
+        ->ClearHttpAuthCache(delete_begin,
+                             CreatePendingTaskCompletionClosureForMojo());
   }
 
   //////////////////////////////////////////////////////////////////////////////

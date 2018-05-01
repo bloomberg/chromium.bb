@@ -576,6 +576,18 @@ void NetworkContext::ClearChannelIds(base::Time start_time,
               std::move(callback)));
 }
 
+void NetworkContext::ClearHttpAuthCache(base::Time start_time,
+                                        ClearHttpAuthCacheCallback callback) {
+  net::HttpNetworkSession* http_session =
+      url_request_context_->http_transaction_factory()->GetSession();
+  DCHECK(http_session);
+
+  http_session->http_auth_cache()->ClearEntriesAddedSince(start_time);
+  http_session->CloseAllConnections();
+
+  std::move(callback).Run();
+}
+
 void NetworkContext::SetNetworkConditions(
     const std::string& profile_id,
     mojom::NetworkConditionsPtr conditions) {

@@ -51,6 +51,8 @@ class TestNetworkContext : public mojom::NetworkContext {
                        base::Time end_time,
                        mojom::ClearDataFilterPtr filter,
                        ClearChannelIdsCallback callback) override {}
+  void ClearHttpAuthCache(base::Time start_time,
+                          ClearHttpAuthCacheCallback callback) override {}
   void SetNetworkConditions(const std::string& profile_id,
                             mojom::NetworkConditionsPtr conditions) override {}
   void SetAcceptLanguage(const std::string& new_accept_language) override {}
