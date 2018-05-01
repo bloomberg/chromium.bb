@@ -853,37 +853,6 @@ struct RequestData {
         referrer(referrer) {}
 };
 
-// Captures calls to 'RequestBeginning' and records the URL, first-party for
-// cookies, initiator, load flags, and referrer.
-class RequestDataResourceDispatcherHostDelegate
-    : public ResourceDispatcherHostDelegate {
- public:
-  using RequestCreated = base::RepeatingCallback<void(RequestData)>;
-  explicit RequestDataResourceDispatcherHostDelegate(
-      const RequestCreated& callback)
-      : callback_(callback) {}
-
-  // ResourceDispatcherHostDelegate implementation:
-  void RequestBeginning(
-      net::URLRequest* request,
-      ResourceContext* resource_context,
-      AppCacheService* appcache_service,
-      ResourceType resource_type,
-      std::vector<std::unique_ptr<ResourceThrottle>>* throttles) override {
-    if (!IsResourceTypeFrame(resource_type))
-      return;
-    callback_.Run(RequestData(request->url(), request->site_for_cookies(),
-                              request->initiator(), request->load_flags(),
-                              request->referrer()));
-  }
-
-  void SetDelegate() { ResourceDispatcherHost::Get()->SetDelegate(this); }
-
- private:
-  RequestCreated callback_;
-  DISALLOW_COPY_AND_ASSIGN(RequestDataResourceDispatcherHostDelegate);
-};
-
 const GURL kURLWithUniqueOrigin("data:,");
 
 }  // namespace
@@ -908,18 +877,6 @@ class RequestDataBrowserTest : public ContentBrowserTest {
 
     ASSERT_TRUE(embedded_test_server()->Start());
 
-    if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      delegate_.reset(new RequestDataResourceDispatcherHostDelegate(
-          base::BindRepeating(&RequestDataBrowserTest::RequestCreated,
-                              base::Unretained(this))));
-
-      content::BrowserThread::PostTask(
-          content::BrowserThread::IO, FROM_HERE,
-          base::BindOnce(
-              &RequestDataResourceDispatcherHostDelegate::SetDelegate,
-              base::Unretained(delegate_.get())));
-    }
-
     host_resolver()->AddRule("*", "127.0.0.1");
   }
 
@@ -941,7 +898,6 @@ class RequestDataBrowserTest : public ContentBrowserTest {
   base::Lock requests_lock_;
   std::vector<RequestData> requests_;
   std::unique_ptr<URLLoaderInterceptor> interceptor_;
-  std::unique_ptr<RequestDataResourceDispatcherHostDelegate> delegate_;
 };
 
 IN_PROC_BROWSER_TEST_F(RequestDataBrowserTest, Basic) {

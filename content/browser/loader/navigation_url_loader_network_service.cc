@@ -75,6 +75,11 @@ namespace content {
 
 namespace {
 
+// Only used on the IO thread.
+base::LazyInstance<
+    NavigationURLLoaderNetworkService::BeginNavigationInterceptor>::Leaky
+    g_interceptor = LAZY_INSTANCE_INITIALIZER;
+
 // Returns true if interception by NavigationLoaderInterceptors is enabled.
 bool IsLoaderInterceptionEnabled() {
   return base::FeatureList::IsEnabled(network::features::kNetworkService) ||
@@ -372,16 +377,25 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
           url_request_context_getter));
     }
 
+    uint32_t options = GetURLLoaderOptions(request_info->is_main_frame);
+
+    bool intercepted = false;
+    if (g_interceptor.Get()) {
+      intercepted = g_interceptor.Get().Run(
+          &url_loader, frame_tree_node_id_, 0 /* request_id */, options,
+          *resource_request_.get(), &url_loader_client,
+          net::MutableNetworkTrafficAnnotationTag(
+              kNavigationUrlLoaderTrafficAnnotation));
+    }
+
     // The ResourceDispatcherHostImpl can be null in unit tests.
-    if (ResourceDispatcherHostImpl::Get()) {
+    if (!intercepted && ResourceDispatcherHostImpl::Get()) {
       ResourceDispatcherHostImpl::Get()->BeginNavigationRequest(
           resource_context_, url_request_context_getter->GetURLRequestContext(),
           upload_file_system_context, *request_info,
           std::move(navigation_ui_data_), std::move(url_loader_client),
           std::move(url_loader), service_worker_navigation_handle_core,
-          appcache_handle_core,
-          GetURLLoaderOptions(request_info->is_main_frame),
-          &global_request_id_);
+          appcache_handle_core, options, &global_request_id_);
     }
 
     // TODO(arthursonzogni): Detect when the ResourceDispatcherHost didn't
@@ -1344,6 +1358,14 @@ void NavigationURLLoaderNetworkService::OnComplete(
 
   delegate_->OnRequestFailed(status.exists_in_cache, status.error_code,
                              status.ssl_info);
+}
+
+void NavigationURLLoaderNetworkService::SetBeginNavigationInterceptorForTesting(
+    const BeginNavigationInterceptor& interceptor) {
+  DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::IO) ||
+         BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
+  g_interceptor.Get() = interceptor;
 }
 
 void NavigationURLLoaderNetworkService::OnRequestStarted(

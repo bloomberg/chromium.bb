@@ -51,9 +51,6 @@ class URLLoaderInterceptorTest : public ContentBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(URLLoaderInterceptorTest, MonitorFrame) {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;  // Depends on http://crbug.com/747130.
-
   bool seen = false;
   GURL url = GetPageURL();
   URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
@@ -70,9 +67,6 @@ IN_PROC_BROWSER_TEST_F(URLLoaderInterceptorTest, MonitorFrame) {
 }
 
 IN_PROC_BROWSER_TEST_F(URLLoaderInterceptorTest, InterceptFrame) {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;  // Depends on http://crbug.com/747130.
-
   GURL url = GetPageURL();
   URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
       [&](URLLoaderInterceptor::RequestParams* params) {
