@@ -1259,7 +1259,7 @@ class PackagedAppTest : public ExtensionBrowserTest {
     base::FilePath data_dir;
     {
       base::ScopedAllowBlockingForTesting allow_blocking;
-      ASSERT_TRUE(PathService::Get(chrome::DIR_GEN_TEST_DATA, &data_dir));
+      ASSERT_TRUE(base::PathService::Get(chrome::DIR_GEN_TEST_DATA, &data_dir));
     }
     base::FilePath app_dir = data_dir.AppendASCII("ppapi")
                                      .AppendASCII("tests")

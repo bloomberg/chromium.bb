@@ -90,7 +90,7 @@ TEST_F(ContentScriptsManifestTest, ContentScriptIds) {
 
 TEST_F(ContentScriptsManifestTest, FailLoadingNonUTF8Scripts) {
   base::FilePath install_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
   install_dir = install_dir.AppendASCII("extensions")
                     .AppendASCII("bad")
                     .AppendASCII("bad_encoding");

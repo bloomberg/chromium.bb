@@ -143,7 +143,7 @@ bool GetServiceProcessData(std::string* version, base::ProcessId* pid) {
 // the user-data-dir itself as we have limits on the size of the lock names.
 std::string GetServiceProcessScopedName(const std::string& append_str) {
   base::FilePath user_data_dir;
-  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
 #if defined(OS_WIN)
   std::string user_data_dir_path = base::WideToUTF8(user_data_dir.value());
 #elif defined(OS_POSIX)
@@ -156,7 +156,7 @@ std::string GetServiceProcessScopedName(const std::string& append_str) {
 
 std::unique_ptr<base::CommandLine> CreateServiceProcessCommandLine() {
   base::FilePath exe_path;
-  PathService::Get(content::CHILD_PROCESS_EXE, &exe_path);
+  base::PathService::Get(content::CHILD_PROCESS_EXE, &exe_path);
   DCHECK(!exe_path.empty()) << "Unable to get service process binary name.";
   std::unique_ptr<base::CommandLine> command_line(
       new base::CommandLine(exe_path));

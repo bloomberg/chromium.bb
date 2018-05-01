@@ -378,7 +378,7 @@ void TestingProfile::CreateTempProfileDir() {
 
     // Fallback logic in case we fail to create unique temporary directory.
     base::FilePath system_tmp_dir;
-    bool success = PathService::Get(base::DIR_TEMP, &system_tmp_dir);
+    bool success = base::PathService::Get(base::DIR_TEMP, &system_tmp_dir);
 
     // We're severly screwed if we can't get the system temporary
     // directory. Die now to avoid writing to the filesystem root

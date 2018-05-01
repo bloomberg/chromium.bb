@@ -108,7 +108,7 @@ bool HasValidWindowsPrefetchArgument(const base::CommandLine& command_line) {
 // removed.
 bool RemoveAppCompatFlagsEntry() {
   base::FilePath current_exe;
-  if (!PathService::Get(base::FILE_EXE, &current_exe))
+  if (!base::PathService::Get(base::FILE_EXE, &current_exe))
     return false;
   if (!current_exe.IsAbsolute())
     return false;

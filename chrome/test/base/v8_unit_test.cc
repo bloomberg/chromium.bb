@@ -137,15 +137,15 @@ bool V8UnitTest::RunJavascriptTestF(const std::string& test_fixture,
 
 void V8UnitTest::InitPathsAndLibraries() {
   base::FilePath test_data;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data));
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data));
 
   g_test_data_directory = test_data.AppendASCII("webui");
 
-  ASSERT_TRUE(
-      PathService::Get(chrome::DIR_GEN_TEST_DATA, &g_gen_test_data_directory));
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_GEN_TEST_DATA,
+                                     &g_gen_test_data_directory));
 
   base::FilePath src_root;
-  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &src_root));
+  ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &src_root));
 
   AddLibrary(src_root.AppendASCII("chrome")
                      .AppendASCII("third_party")

@@ -521,7 +521,7 @@ base::FilePath Get7zaPath() {
           &kSwitch7zaPath[0]);
   if (l7za_path.empty()) {
     base::FilePath dir_exe;
-    if (!PathService::Get(base::DIR_EXE, &dir_exe))
+    if (!base::PathService::Get(base::DIR_EXE, &dir_exe))
       LOG(DFATAL) << "Failed getting directory of host executable";
     l7za_path = dir_exe.Append(&k7zaPathRelative[0]);
   }

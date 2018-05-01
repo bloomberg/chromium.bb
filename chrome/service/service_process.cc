@@ -193,7 +193,7 @@ bool ServiceProcess::Initialize(base::MessageLoopForUI* message_loop,
   request_context_getter_ = new ServiceURLRequestContextGetter();
 
   base::FilePath user_data_dir;
-  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   base::FilePath pref_path =
       user_data_dir.Append(chrome::kServiceStateFileName);
   service_prefs_ = std::make_unique<ServiceProcessPrefs>(

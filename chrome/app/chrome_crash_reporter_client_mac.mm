@@ -17,7 +17,7 @@
 
 bool ChromeCrashReporterClient::GetCrashMetricsLocation(
     base::FilePath* metrics_dir) {
-  return PathService::Get(chrome::DIR_USER_DATA, metrics_dir);
+  return base::PathService::Get(chrome::DIR_USER_DATA, metrics_dir);
 }
 
 bool ChromeCrashReporterClient::ReportingIsEnforcedByPolicy(

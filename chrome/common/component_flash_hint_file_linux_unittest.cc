@@ -34,7 +34,7 @@ TEST_F(ComponentFlashHintFileTest, InstallTest) {
   EXPECT_FALSE(component_flash_hint_file::DoesHintFileExist());
 
   base::FilePath flash_dir;
-  ASSERT_TRUE(PathService::Get(
+  ASSERT_TRUE(base::PathService::Get(
       chrome::DIR_COMPONENT_UPDATED_PEPPER_FLASH_PLUGIN, &flash_dir));
 
   base::File::Error error;
@@ -78,7 +78,7 @@ TEST_F(ComponentFlashHintFileTest, CorruptionTest) {
   EXPECT_FALSE(component_flash_hint_file::DoesHintFileExist());
 
   base::FilePath flash_dir;
-  ASSERT_TRUE(PathService::Get(
+  ASSERT_TRUE(base::PathService::Get(
       chrome::DIR_COMPONENT_UPDATED_PEPPER_FLASH_PLUGIN, &flash_dir));
 
   base::File::Error error;
@@ -98,7 +98,7 @@ TEST_F(ComponentFlashHintFileTest, CorruptionTest) {
   const uint8_t updated_file[] = {0x43, 0x72, 0x62, 0x63, 0x79, 0x72,
                                   0x20, 0x66, 0x7a, 0x76, 0x79, 0x76};
   base::FilePath flash_dir_update;
-  ASSERT_TRUE(PathService::Get(
+  ASSERT_TRUE(base::PathService::Get(
       chrome::DIR_COMPONENT_UPDATED_PEPPER_FLASH_PLUGIN, &flash_dir_update));
   flash_dir_update = flash_dir_update.Append("other_flash.so");
   ASSERT_TRUE(base::WriteFile(flash_dir_update,

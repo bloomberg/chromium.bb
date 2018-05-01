@@ -76,8 +76,8 @@ void ConfigureCrashReporting(const InstallerState& installer_state) {
     base::FilePath temp_dir;
     if (GetSystemTemp(&temp_dir)) {
       base::FilePath crash_dir = temp_dir.Append(FILE_PATH_LITERAL("Crashpad"));
-      PathService::OverrideAndCreateIfNeeded(chrome::DIR_CRASH_DUMPS, crash_dir,
-                                             true, true);
+      base::PathService::OverrideAndCreateIfNeeded(chrome::DIR_CRASH_DUMPS,
+                                                   crash_dir, true, true);
     } else {
       // Failed to get a temp dir, something's gone wrong.
       return;

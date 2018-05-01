@@ -13,7 +13,7 @@
 
 base::FilePath GetProfilesINI() {
   base::FilePath app_data_path;
-  if (!PathService::Get(base::DIR_APP_DATA, &app_data_path)) {
+  if (!base::PathService::Get(base::DIR_APP_DATA, &app_data_path)) {
     return base::FilePath();
   }
   base::FilePath ini_file =

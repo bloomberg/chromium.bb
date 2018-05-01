@@ -99,7 +99,7 @@ bool GetMiniInstallerPath(const base::CommandLine& cmd_line,
                           base::FilePath* mini_installer) {
   DCHECK(mini_installer);
   base::FilePath result = cmd_line.GetSwitchValuePath(switches::kMiniInstaller);
-  if (result.empty() && PathService::Get(base::DIR_EXE, &result))
+  if (result.empty() && base::PathService::Get(base::DIR_EXE, &result))
     result = result.Append(kDefaultMiniInstallerFile);
   if (result.empty())
     return false;

@@ -1273,7 +1273,7 @@ bool GetAppShortcutsFolder(ShellUtil::ShellChange level, base::FilePath* path) {
   DCHECK_GE(base::win::GetVersion(), base::win::VERSION_WIN8);
 
   base::FilePath folder;
-  if (!PathService::Get(base::DIR_APP_SHORTCUTS, &folder)) {
+  if (!base::PathService::Get(base::DIR_APP_SHORTCUTS, &folder)) {
     LOG(ERROR) << "Could not get application shortcuts location.";
     return false;
   }
@@ -1620,7 +1620,7 @@ bool ShellUtil::GetShortcutPath(ShortcutLocation location,
       return false;
   }
 
-  if (!PathService::Get(dir_key, path) || path->empty()) {
+  if (!base::PathService::Get(dir_key, path) || path->empty()) {
     NOTREACHED() << dir_key;
     return false;
   }
@@ -1906,7 +1906,7 @@ base::string16 ShellUtil::BuildAppModelId(
 
 ShellUtil::DefaultState ShellUtil::GetChromeDefaultState() {
   base::FilePath app_path;
-  if (!PathService::Get(base::FILE_EXE, &app_path)) {
+  if (!base::PathService::Get(base::FILE_EXE, &app_path)) {
     NOTREACHED();
     return UNKNOWN_DEFAULT;
   }
@@ -1938,7 +1938,7 @@ ShellUtil::DefaultState ShellUtil::GetChromeDefaultProtocolClientState(
     return UNKNOWN_DEFAULT;
 
   base::FilePath chrome_exe;
-  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
+  if (!base::PathService::Get(base::FILE_EXE, &chrome_exe)) {
     NOTREACHED();
     return UNKNOWN_DEFAULT;
   }

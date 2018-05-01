@@ -86,9 +86,9 @@ void RemoveCommandLineSwitch(const base::CommandLine& in_command_line,
 bool OverrideUserDataDir(const base::FilePath& user_data_dir) {
   bool success = true;
 
-  // PathService::Override() is the best way to change the user data directory.
-  // This matches what is done in ChromeMain().
-  success = PathService::Override(chrome::DIR_USER_DATA, user_data_dir);
+  // base::PathService::Override() is the best way to change the user data
+  // directory. This matches what is done in ChromeMain().
+  success = base::PathService::Override(chrome::DIR_USER_DATA, user_data_dir);
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Make sure the cache directory is inside our clear profile. Otherwise
@@ -103,8 +103,8 @@ bool OverrideUserDataDir(const base::FilePath& user_data_dir) {
   // Also make sure that the machine policy directory is inside the clear
   // profile. Otherwise the machine's policies could affect tests.
   base::FilePath policy_files = user_data_dir.AppendASCII("policies");
-  success =
-      success && PathService::Override(chrome::DIR_POLICY_FILES, policy_files);
+  success = success &&
+            base::PathService::Override(chrome::DIR_POLICY_FILES, policy_files);
 #endif
 
   return success;

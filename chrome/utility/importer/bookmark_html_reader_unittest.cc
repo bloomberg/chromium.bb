@@ -195,7 +195,7 @@ class BookmarkHTMLReaderTestWithData : public testing::Test {
 };
 
 void BookmarkHTMLReaderTestWithData::SetUp() {
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_path_));
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_path_));
   test_data_path_ = test_data_path_.AppendASCII("bookmark_html_reader");
 }
 

@@ -31,7 +31,7 @@ scoped_refptr<Extension> LoadManifestUnchecked(const std::string& dir,
                                                const std::string& id,
                                                std::string* error) {
   base::FilePath path;
-  PathService::Get(chrome::DIR_TEST_DATA, &path);
+  base::PathService::Get(chrome::DIR_TEST_DATA, &path);
   path = path.AppendASCII("extensions")
              .AppendASCII(dir)
              .AppendASCII(test_file);

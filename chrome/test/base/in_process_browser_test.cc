@@ -127,21 +127,21 @@ InProcessBrowserTest::InProcessBrowserTest()
   // processes, on Linux at least (failure to do so will cause a browser_test to
   // be run instead of a renderer).
   base::FilePath chrome_path;
-  CHECK(PathService::Get(base::FILE_EXE, &chrome_path));
+  CHECK(base::PathService::Get(base::FILE_EXE, &chrome_path));
   chrome_path = chrome_path.DirName();
   chrome_path = chrome_path.Append(chrome::kBrowserProcessExecutablePath);
-  CHECK(PathService::Override(base::FILE_EXE, chrome_path));
+  CHECK(base::PathService::Override(base::FILE_EXE, chrome_path));
 #endif  // defined(OS_MACOSX)
 
   CreateTestServer(base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   base::FilePath src_dir;
-  CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &src_dir));
+  CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &src_dir));
 
   // chrome::DIR_TEST_DATA isn't going to be setup until after we call
   // ContentMain. However that is after tests' constructors or SetUp methods,
   // which sometimes need it. So just override it.
-  CHECK(PathService::Override(chrome::DIR_TEST_DATA,
-                              src_dir.AppendASCII("chrome/test/data")));
+  CHECK(base::PathService::Override(chrome::DIR_TEST_DATA,
+                                    src_dir.AppendASCII("chrome/test/data")));
 
 #if defined(OS_MACOSX)
   bundle_swizzler_.reset(new ScopedBundleSwizzlerMac);
@@ -237,8 +237,8 @@ void InProcessBrowserTest::SetUp() {
 
   // Redirect the default download directory to a temporary directory.
   ASSERT_TRUE(default_download_dir_.CreateUniqueTempDir());
-  CHECK(PathService::Override(chrome::DIR_DEFAULT_DOWNLOADS,
-                              default_download_dir_.GetPath()));
+  CHECK(base::PathService::Override(chrome::DIR_DEFAULT_DOWNLOADS,
+                                    default_download_dir_.GetPath()));
 
   BrowserTestBase::SetUp();
 }
@@ -259,7 +259,7 @@ void InProcessBrowserTest::SetUpDefaultCommandLine(
   // Explicitly set the path of the binary used for child processes, otherwise
   // they'll try to use browser_tests which doesn't contain ChromeMain.
   base::FilePath subprocess_path;
-  PathService::Get(base::FILE_EXE, &subprocess_path);
+  base::PathService::Get(base::FILE_EXE, &subprocess_path);
   // Recreate the real environment, run the helper within the app bundle.
   subprocess_path = subprocess_path.DirName().DirName();
   DCHECK_EQ(subprocess_path.BaseName().value(), "Contents");
@@ -452,7 +452,7 @@ base::CommandLine InProcessBrowserTest::GetCommandLineForRelaunch() {
   new_command_line.AppendSwitch(content::kLaunchAsBrowser);
 
   base::FilePath user_data_dir;
-  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   new_command_line.AppendSwitchPath(switches::kUserDataDir, user_data_dir);
 
   for (base::CommandLine::SwitchMap::const_iterator iter = switches.begin();

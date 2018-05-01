@@ -137,7 +137,7 @@ bool IsWidevineAvailable(base::FilePath* cdm_path,
     NOT_FOUND,
   } widevine_cdm_file_check = NOT_CHECKED;
 
-  if (PathService::Get(chrome::FILE_WIDEVINE_CDM, cdm_path)) {
+  if (base::PathService::Get(chrome::FILE_WIDEVINE_CDM, cdm_path)) {
     if (widevine_cdm_file_check == NOT_CHECKED)
       widevine_cdm_file_check = base::PathExists(*cdm_path) ? FOUND : NOT_FOUND;
 
@@ -198,7 +198,7 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
   // from the Chrome Web Store to use NaCl even if the command line switch
   // isn't set.  For other uses of NaCl we check for the command line switch.
   base::FilePath path;
-  if (PathService::Get(chrome::FILE_NACL_PLUGIN, &path)) {
+  if (base::PathService::Get(chrome::FILE_NACL_PLUGIN, &path)) {
     content::PepperPluginInfo nacl;
     // The nacl plugin is now built into the Chromium binary.
     nacl.is_internal = true;
@@ -369,8 +369,8 @@ bool GetSystemPepperFlash(content::PepperPluginInfo* plugin) {
     return false;
 
   base::FilePath flash_filename;
-  if (!PathService::Get(chrome::FILE_PEPPER_FLASH_SYSTEM_PLUGIN,
-                        &flash_filename))
+  if (!base::PathService::Get(chrome::FILE_PEPPER_FLASH_SYSTEM_PLUGIN,
+                              &flash_filename))
     return false;
 
   return TryCreatePepperFlashInfo(flash_filename, plugin);

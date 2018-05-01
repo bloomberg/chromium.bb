@@ -237,7 +237,7 @@ DeleteResult DeleteEmptyDir(const base::FilePath& path) {
 // Get the user data directory.
 base::FilePath GetUserDataDir(const Product& product) {
   base::FilePath path;
-  if (!PathService::Get(chrome::DIR_USER_DATA, &path))
+  if (!base::PathService::Get(chrome::DIR_USER_DATA, &path))
     return base::FilePath();
   return path;
 }
@@ -300,7 +300,7 @@ bool MoveSetupOutOfInstallFolder(const InstallerState& installer_state,
 
   base::FilePath tmp_dir;
   base::FilePath temp_file;
-  if (!PathService::Get(base::DIR_TEMP, &tmp_dir)) {
+  if (!base::PathService::Get(base::DIR_TEMP, &tmp_dir)) {
     NOTREACHED();
     return false;
   }

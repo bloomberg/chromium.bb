@@ -23,7 +23,7 @@ class BinaryFeatureExtractorWinTest : public testing::Test {
  protected:
   void SetUp() override {
     base::FilePath source_path;
-    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &source_path));
+    ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &source_path));
     testdata_path_ = source_path
         .AppendASCII("safe_browsing")
         .AppendASCII("download_protection");

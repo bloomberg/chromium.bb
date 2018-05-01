@@ -18,6 +18,6 @@ ChromeManifestTest::~ChromeManifestTest() {
 
 base::FilePath ChromeManifestTest::GetTestDataDir() {
   base::FilePath path;
-  PathService::Get(chrome::DIR_TEST_DATA, &path);
+  base::PathService::Get(chrome::DIR_TEST_DATA, &path);
   return path.AppendASCII("extensions").AppendASCII("manifest_tests");
 }

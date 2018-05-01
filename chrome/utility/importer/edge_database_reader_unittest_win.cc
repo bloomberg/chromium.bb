@@ -49,7 +49,8 @@ class EdgeDatabaseReaderTest : public ::testing::Test {
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_path_));
+    ASSERT_TRUE(
+        base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_path_));
   }
 
  private:

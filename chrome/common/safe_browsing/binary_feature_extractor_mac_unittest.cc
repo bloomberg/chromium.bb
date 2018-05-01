@@ -16,7 +16,7 @@ namespace {
 class BinaryFeatureExtractorMacTest : public testing::Test {
  protected:
   void SetUp() override {
-    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_));
+    ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_));
     feature_extractor_ = new BinaryFeatureExtractor();
   }
 

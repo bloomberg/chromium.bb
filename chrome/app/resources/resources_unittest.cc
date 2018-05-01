@@ -36,7 +36,7 @@ TEST_F(ResourcesTest, CriticalMessagesContainNoExtraWhitespaces) {
   const int messages_to_check[] = {IDS_APP_SHORTCUTS_SUBDIR_NAME};
 
   base::FilePath locales_dir;
-  ASSERT_TRUE(PathService::Get(ui::DIR_LOCALES, &locales_dir));
+  ASSERT_TRUE(base::PathService::Get(ui::DIR_LOCALES, &locales_dir));
 
   // Enumerate through the existing locale (.pak) files.
   base::FileEnumerator file_enumerator(locales_dir, false,

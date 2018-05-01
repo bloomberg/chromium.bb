@@ -27,7 +27,7 @@ class AdvancedFirewallManagerTest : public ::testing::Test {
     }
     skip_test_ = false;
     base::FilePath exe_path;
-    PathService::Get(base::FILE_EXE, &exe_path);
+    base::PathService::Get(base::FILE_EXE, &exe_path);
     EXPECT_TRUE(manager_.Init(L"AdvancedFirewallManagerTest", exe_path));
     manager_.DeleteAllRules();
   }

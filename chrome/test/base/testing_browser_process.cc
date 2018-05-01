@@ -214,7 +214,7 @@ TestingBrowserProcess::browser_policy_connector() {
     // If a test needs to place a file in this directory in the future, we could
     // create a temporary directory and make its path available to tests.
     base::FilePath local_policy_path("/tmp/non/existing/directory");
-    EXPECT_TRUE(PathService::OverrideAndCreateIfNeeded(
+    EXPECT_TRUE(base::PathService::OverrideAndCreateIfNeeded(
         chrome::DIR_POLICY_FILES, local_policy_path, true, false));
 #endif
 

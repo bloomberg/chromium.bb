@@ -33,7 +33,7 @@ const wchar_t kAutolaunchKeyValue[] = L"GoogleChromeAutoLaunch";
 // different installations of Chrome don't conflict.
 base::string16 GetAutoLaunchKeyName() {
   base::FilePath path;
-  if (!PathService::Get(chrome::DIR_USER_DATA, &path))
+  if (!base::PathService::Get(chrome::DIR_USER_DATA, &path))
     NOTREACHED();
   // Background auto-launch is only supported for the Default profile at the
   // moment, but keep the door opened to a multi-profile implementation by
@@ -53,7 +53,7 @@ namespace auto_launch_util {
 
 void EnableBackgroundStartAtLogin() {
   base::FilePath application_dir;
-  if (!PathService::Get(base::DIR_EXE, &application_dir))
+  if (!base::PathService::Get(base::DIR_EXE, &application_dir))
     NOTREACHED();
 
   base::CommandLine cmd_line(application_dir.Append(installer::kChromeExe));

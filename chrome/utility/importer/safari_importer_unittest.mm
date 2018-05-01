@@ -34,7 +34,7 @@ using base::ASCIIToUTF16;
 // This function returns the path to that directory.
 base::FilePath GetTestSafariLibraryPath(const std::string& suffix) {
   base::FilePath test_dir;
-  PathService::Get(chrome::DIR_TEST_DATA, &test_dir);
+  base::PathService::Get(chrome::DIR_TEST_DATA, &test_dir);
 
   // Our simulated ~/Library directory
   return

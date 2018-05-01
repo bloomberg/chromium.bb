@@ -19,7 +19,7 @@ TEST(OmahaXMLRequestTest, CreateReturnsValidXML) {
   ASSERT_TRUE(xml_body_);
 
   base::FilePath path;
-  PathService::Get(base::DIR_SOURCE_ROOT, &path);
+  base::PathService::Get(base::DIR_SOURCE_ROOT, &path);
   path = path.AppendASCII("chrome/test/data/mac_installer/requestCheck.dtd");
   NSString* requestDTDLocation = base::SysUTF8ToNSString(path.value());
   NSData* requestDTDData = [NSData dataWithContentsOfFile:requestDTDLocation];
