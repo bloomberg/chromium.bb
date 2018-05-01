@@ -126,10 +126,10 @@ class Manifest {
   // Returns the Manifest::Type for the given |value|.
   static Type GetTypeFromManifestValue(const base::DictionaryValue& value);
 
-  // Returns true if an item with the given |location| and |type| should
-  // always be loaded, even if extensions are otherwise disabled.
+  // Returns true if an item with the given |location| should always be loaded,
+  // even if extensions are otherwise disabled.
   static bool ShouldAlwaysLoadExtension(Manifest::Location location,
-                                        Manifest::Type type);
+                                        bool is_theme);
 
   Manifest(Location location, std::unique_ptr<base::DictionaryValue> value);
   virtual ~Manifest();
