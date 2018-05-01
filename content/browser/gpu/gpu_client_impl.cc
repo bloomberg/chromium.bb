@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/gpu/gpu_client.h"
+#include "content/browser/gpu/gpu_client_impl.h"
 
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -14,41 +14,60 @@
 
 namespace content {
 
-GpuClient::GpuClient(int render_process_id)
+// static
+std::unique_ptr<GpuClient, BrowserThread::DeleteOnIOThread> GpuClient::Create(
+    ui::mojom::GpuRequest request,
+    ConnectionErrorHandlerClosure connection_error_handler) {
+  std::unique_ptr<GpuClientImpl, BrowserThread::DeleteOnIOThread> gpu_client(
+      new GpuClientImpl(ChildProcessHostImpl::GenerateChildProcessUniqueId()));
+  gpu_client->SetConnectionErrorHandler(std::move(connection_error_handler));
+  gpu_client->Add(std::move(request));
+  return gpu_client;
+}
+
+GpuClientImpl::GpuClientImpl(int render_process_id)
     : render_process_id_(render_process_id), weak_factory_(this) {
   bindings_.set_connection_error_handler(
-      base::Bind(&GpuClient::OnError, base::Unretained(this)));
+      base::Bind(&GpuClientImpl::OnError, base::Unretained(this),
+                 ErrorReason::kConnectionLost));
 }
 
-GpuClient::~GpuClient() {
+GpuClientImpl::~GpuClientImpl() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   bindings_.CloseAllBindings();
-  OnError();
+  OnError(ErrorReason::kInDestructor);
 }
 
-void GpuClient::Add(ui::mojom::GpuRequest request) {
+void GpuClientImpl::Add(ui::mojom::GpuRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
-void GpuClient::OnError() {
+void GpuClientImpl::OnError(ErrorReason reason) {
   ClearCallback();
-  if (!bindings_.empty())
-    return;
-  BrowserGpuMemoryBufferManager* gpu_memory_buffer_manager =
-      BrowserGpuMemoryBufferManager::current();
-  if (gpu_memory_buffer_manager)
-    gpu_memory_buffer_manager->ProcessRemoved(render_process_id_);
+  if (bindings_.empty()) {
+    BrowserGpuMemoryBufferManager* gpu_memory_buffer_manager =
+        BrowserGpuMemoryBufferManager::current();
+    if (gpu_memory_buffer_manager)
+      gpu_memory_buffer_manager->ProcessRemoved(render_process_id_);
+  }
+  if (reason == ErrorReason::kConnectionLost && connection_error_handler_)
+    std::move(connection_error_handler_).Run(this);
 }
 
-void GpuClient::PreEstablishGpuChannel() {
+void GpuClientImpl::PreEstablishGpuChannel() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&GpuClient::EstablishGpuChannel, base::Unretained(this),
-                     EstablishGpuChannelCallback()));
+      base::BindOnce(&GpuClientImpl::EstablishGpuChannel,
+                     base::Unretained(this), EstablishGpuChannelCallback()));
 }
 
-void GpuClient::OnEstablishGpuChannel(
+void GpuClientImpl::SetConnectionErrorHandler(
+    ConnectionErrorHandlerClosure connection_error_handler) {
+  connection_error_handler_ = std::move(connection_error_handler);
+}
+
+void GpuClientImpl::OnEstablishGpuChannel(
     mojo::ScopedMessagePipeHandle channel_handle,
     const gpu::GPUInfo& gpu_info,
     const gpu::GpuFeatureInfo& gpu_feature_info,
@@ -79,13 +98,13 @@ void GpuClient::OnEstablishGpuChannel(
   }
 }
 
-void GpuClient::OnCreateGpuMemoryBuffer(
+void GpuClientImpl::OnCreateGpuMemoryBuffer(
     CreateGpuMemoryBufferCallback callback,
     const gfx::GpuMemoryBufferHandle& handle) {
   std::move(callback).Run(handle);
 }
 
-void GpuClient::ClearCallback() {
+void GpuClientImpl::ClearCallback() {
   if (!callback_)
     return;
   EstablishGpuChannelCallback callback = std::move(callback_);
@@ -94,7 +113,7 @@ void GpuClient::ClearCallback() {
   DCHECK(!callback_);
 }
 
-void GpuClient::EstablishGpuChannel(EstablishGpuChannelCallback callback) {
+void GpuClientImpl::EstablishGpuChannel(EstablishGpuChannelCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // At most one channel should be requested. So clear previous request first.
   ClearCallback();
@@ -131,18 +150,18 @@ void GpuClient::EstablishGpuChannel(EstablishGpuChannelCallback callback) {
       ChildProcessHostImpl::ChildProcessUniqueIdToTracingProcessId(
           render_process_id_),
       preempts, allow_view_command_buffers, allow_real_time_streams,
-      base::Bind(&GpuClient::OnEstablishGpuChannel,
+      base::Bind(&GpuClientImpl::OnEstablishGpuChannel,
                  weak_factory_.GetWeakPtr()));
 }
 
-void GpuClient::CreateJpegDecodeAccelerator(
+void GpuClientImpl::CreateJpegDecodeAccelerator(
     media::mojom::JpegDecodeAcceleratorRequest jda_request) {
   GpuProcessHost* host = GpuProcessHost::Get();
   if (host)
     host->gpu_service()->CreateJpegDecodeAccelerator(std::move(jda_request));
 }
 
-void GpuClient::CreateVideoEncodeAcceleratorProvider(
+void GpuClientImpl::CreateVideoEncodeAcceleratorProvider(
     media::mojom::VideoEncodeAcceleratorProviderRequest vea_provider_request) {
   GpuProcessHost* host = GpuProcessHost::Get();
   if (!host)
@@ -151,7 +170,7 @@ void GpuClient::CreateVideoEncodeAcceleratorProvider(
       std::move(vea_provider_request));
 }
 
-void GpuClient::CreateGpuMemoryBuffer(
+void GpuClientImpl::CreateGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
     gfx::BufferFormat format,
@@ -169,12 +188,12 @@ void GpuClient::CreateGpuMemoryBuffer(
   BrowserGpuMemoryBufferManager::current()
       ->AllocateGpuMemoryBufferForChildProcess(
           id, size, format, usage, render_process_id_,
-          base::BindOnce(&GpuClient::OnCreateGpuMemoryBuffer,
+          base::BindOnce(&GpuClientImpl::OnCreateGpuMemoryBuffer,
                          weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void GpuClient::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
-                                       const gpu::SyncToken& sync_token) {
+void GpuClientImpl::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
+                                           const gpu::SyncToken& sync_token) {
   DCHECK(BrowserGpuMemoryBufferManager::current());
 
   BrowserGpuMemoryBufferManager::current()->ChildProcessDeletedGpuMemoryBuffer(

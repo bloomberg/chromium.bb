@@ -9,6 +9,7 @@ include_rules = [
   "+services/network/public/cpp",
   "+services/service_manager/sandbox",
   "+services/resource_coordinator/public",
+  "+services/ui/public/interfaces",
 ]
 
 specific_include_rules = {

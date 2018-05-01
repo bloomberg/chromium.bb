@@ -89,7 +89,7 @@
 #include "content/browser/fileapi/fileapi_message_filter.h"
 #include "content/browser/frame_host/render_frame_message_filter.h"
 #include "content/browser/gpu/compositor_util.h"
-#include "content/browser/gpu/gpu_client.h"
+#include "content/browser/gpu/gpu_client_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/shader_cache_factory.h"
 #include "content/browser/histogram_controller.h"
@@ -1463,7 +1463,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
   InitializeChannelProxy();
 
   if (!base::FeatureList::IsEnabled(features::kMash))
-    gpu_client_.reset(new GpuClient(GetID()));
+    gpu_client_.reset(new GpuClientImpl(GetID()));
 
   GetMemoryDumpProvider().AddHost(this);
 }
@@ -1983,7 +1983,7 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
     // |gpu_client_| outlives the registry, because its destruction is posted to
     // IO thread from the destructor of |this|.
     registry->AddInterface(
-        base::Bind(&GpuClient::Add, base::Unretained(gpu_client_.get())));
+        base::Bind(&GpuClientImpl::Add, base::Unretained(gpu_client_.get())));
   }
 
   registry->AddInterface(
