@@ -188,6 +188,8 @@ def _GetGclientSpec(internal, rev, template, use_cache, managed):
     else:
       result += "cache_dir = '/b/git-cache'\n"
 
+  result += "target_os = ['chromeos']\n"
+
   return result
 
 def WriteConfigFile(gclient, cwd, internal, rev, template=None,

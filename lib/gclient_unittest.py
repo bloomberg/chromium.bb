@@ -45,6 +45,7 @@ class TestGclientWriteConfigFile(
   'managed': True,
   'name': 'src',
   'url': 'https://chromium.googlesource.com/chromium/src.git'}]
+target_os = ['chromeos']
 """)
 
   def testChromiumSpecNotUseCache(self):
@@ -57,6 +58,7 @@ class TestGclientWriteConfigFile(
   'managed': True,
   'name': 'src',
   'url': 'https://chromium.googlesource.com/chromium/src.git'}]
+target_os = ['chromeos']
 """, use_cache=False)
 
   def testChromeSpec(self):
@@ -74,6 +76,7 @@ class TestGclientWriteConfigFile(
   'managed': True,
   'name': 'src-internal',
   'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git'}]
+target_os = ['chromeos']
 """)
 
   def testChromiumSpecWithGitHash(self):
@@ -86,6 +89,7 @@ class TestGclientWriteConfigFile(
   'managed': True,
   'name': 'src',
   'url': 'https://chromium.googlesource.com/chromium/src.git@7becbe4afb42b3301d42149d7d1cade017f150ff'}]
+target_os = ['chromeos']
 """)
 
   def testChromeSpecWithGitHash(self):
@@ -104,6 +108,7 @@ class TestGclientWriteConfigFile(
   'managed': True,
   'name': 'src-internal',
   'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git'}]
+target_os = ['chromeos']
 """)
 
   def testChromiumSpecWithGitHead(self):
@@ -115,6 +120,7 @@ class TestGclientWriteConfigFile(
   'managed': True,
   'name': 'src',
   'url': 'https://chromium.googlesource.com/chromium/src.git@HEAD'}]
+target_os = ['chromeos']
 """)
 
   def testChromeSpecWithGitHead(self):
@@ -132,6 +138,7 @@ class TestGclientWriteConfigFile(
   'managed': True,
   'name': 'src-internal',
   'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git'}]
+target_os = ['chromeos']
 """)
 
   def testChromeSpecWithGitHashNoManaged(self):
@@ -151,6 +158,7 @@ class TestGclientWriteConfigFile(
   'managed': False,
   'name': 'src-internal',
   'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git'}]
+target_os = ['chromeos']
 """)
 
   def testChromeSpecWithReleaseTag(self):
@@ -162,6 +170,7 @@ class TestGclientWriteConfigFile(
   'managed': True,
   'name': 'CHROME_DEPS',
   'url': 'https://chrome-internal.googlesource.com/chrome/tools/buildspec.git'}]
+target_os = ['chromeos']
 """)
 
   def testChromiumSpecWithReleaseTag(self):
@@ -173,6 +182,7 @@ class TestGclientWriteConfigFile(
   'managed': True,
   'name': 'src',
   'url': 'https://chromium.googlesource.com/chromium/src.git@refs/tags/41.0.2270.0'}]
+target_os = ['chromeos']
 """)
 
   def testChromeSpecWithReleaseTagDepsGit(self):
@@ -184,6 +194,7 @@ class TestGclientWriteConfigFile(
   'managed': True,
   'name': 'CHROME_DEPS',
   'url': 'https://chrome-internal.googlesource.com/chrome/tools/buildspec.git'}]
+target_os = ['chromeos']
 """)
 
   def testChromeSpecDepsResolution(self):
@@ -226,6 +237,7 @@ class TestGclientWriteConfigFile(
   'managed': True,
   'name': 'src-internal',
   'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git'}]
+target_os = ['chromeos']
 """)
 
 
