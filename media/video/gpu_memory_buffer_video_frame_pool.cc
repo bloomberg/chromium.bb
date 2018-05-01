@@ -16,6 +16,7 @@
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/containers/circular_deque.h"
 #include "base/containers/stack_container.h"
 #include "base/location.h"
@@ -360,27 +361,29 @@ void CopyRowsToI420Buffer(int first_row,
                           uint8_t* output,
                           int dest_stride,
                           base::OnceClosure done) {
+  base::ScopedClosureRunner done_runner(std::move(done));
   TRACE_EVENT2("media", "CopyRowsToI420Buffer", "bytes_per_row", bytes_per_row,
                "rows", rows);
-  if (output) {
-    DCHECK_NE(dest_stride, 0);
-    DCHECK_LE(bytes_per_row, std::abs(dest_stride));
-    DCHECK_LE(bytes_per_row, source_stride);
-    DCHECK_GE(bit_depth, 8u);
 
-    if (bit_depth == 8) {
-      libyuv::CopyPlane(source + source_stride * first_row, source_stride,
-                        output + dest_stride * first_row, dest_stride,
-                        bytes_per_row, rows);
-    } else {
-      const int scale = 0x10000 >> (bit_depth - 8);
-      libyuv::Convert16To8Plane(
-          reinterpret_cast<const uint16*>(source + source_stride * first_row),
-          source_stride / 2, output + dest_stride * first_row, dest_stride,
-          scale, bytes_per_row, rows);
-    }
+  if (!output)
+    return;
+
+  DCHECK_NE(dest_stride, 0);
+  DCHECK_LE(bytes_per_row, std::abs(dest_stride));
+  DCHECK_LE(bytes_per_row, source_stride);
+  DCHECK_GE(bit_depth, 8u);
+
+  if (bit_depth == 8) {
+    libyuv::CopyPlane(source + source_stride * first_row, source_stride,
+                      output + dest_stride * first_row, dest_stride,
+                      bytes_per_row, rows);
+  } else {
+    const int scale = 0x10000 >> (bit_depth - 8);
+    libyuv::Convert16To8Plane(
+        reinterpret_cast<const uint16*>(source + source_stride * first_row),
+        source_stride / 2, output + dest_stride * first_row, dest_stride, scale,
+        bytes_per_row, rows);
   }
-  std::move(done).Run();
 }
 
 void CopyRowsToNV12Buffer(int first_row,
@@ -392,30 +395,32 @@ void CopyRowsToNV12Buffer(int first_row,
                           uint8_t* dest_uv,
                           int dest_stride_uv,
                           base::OnceClosure done) {
+  base::ScopedClosureRunner done_runner(std::move(done));
   TRACE_EVENT2("media", "CopyRowsToNV12Buffer", "bytes_per_row", bytes_per_row,
                "rows", rows);
-  if (dest_y && dest_uv) {
-    DCHECK_NE(dest_stride_y, 0);
-    DCHECK_NE(dest_stride_uv, 0);
-    DCHECK_LE(bytes_per_row, std::abs(dest_stride_y));
-    DCHECK_LE(bytes_per_row, std::abs(dest_stride_uv));
-    DCHECK_EQ(0, first_row % 2);
 
-    libyuv::I420ToNV12(
-        source_frame->visible_data(VideoFrame::kYPlane) +
-            first_row * source_frame->stride(VideoFrame::kYPlane),
-        source_frame->stride(VideoFrame::kYPlane),
-        source_frame->visible_data(VideoFrame::kUPlane) +
-            first_row / 2 * source_frame->stride(VideoFrame::kUPlane),
-        source_frame->stride(VideoFrame::kUPlane),
-        source_frame->visible_data(VideoFrame::kVPlane) +
-            first_row / 2 * source_frame->stride(VideoFrame::kVPlane),
-        source_frame->stride(VideoFrame::kVPlane),
-        dest_y + first_row * dest_stride_y, dest_stride_y,
-        dest_uv + first_row / 2 * dest_stride_uv, dest_stride_uv, bytes_per_row,
-        rows);
-  }
-  std::move(done).Run();
+  if (!dest_y || !dest_uv)
+    return;
+
+  DCHECK_NE(dest_stride_y, 0);
+  DCHECK_NE(dest_stride_uv, 0);
+  DCHECK_LE(bytes_per_row, std::abs(dest_stride_y));
+  DCHECK_LE(bytes_per_row, std::abs(dest_stride_uv));
+  DCHECK_EQ(0, first_row % 2);
+
+  libyuv::I420ToNV12(
+      source_frame->visible_data(VideoFrame::kYPlane) +
+          first_row * source_frame->stride(VideoFrame::kYPlane),
+      source_frame->stride(VideoFrame::kYPlane),
+      source_frame->visible_data(VideoFrame::kUPlane) +
+          first_row / 2 * source_frame->stride(VideoFrame::kUPlane),
+      source_frame->stride(VideoFrame::kUPlane),
+      source_frame->visible_data(VideoFrame::kVPlane) +
+          first_row / 2 * source_frame->stride(VideoFrame::kVPlane),
+      source_frame->stride(VideoFrame::kVPlane),
+      dest_y + first_row * dest_stride_y, dest_stride_y,
+      dest_uv + first_row / 2 * dest_stride_uv, dest_stride_uv, bytes_per_row,
+      rows);
 }
 
 void CopyRowsToUYVYBuffer(int first_row,
@@ -425,25 +430,27 @@ void CopyRowsToUYVYBuffer(int first_row,
                           uint8_t* output,
                           int dest_stride,
                           base::OnceClosure done) {
+  base::ScopedClosureRunner done_runner(std::move(done));
   TRACE_EVENT2("media", "CopyRowsToUYVYBuffer", "bytes_per_row", width * 2,
                "rows", rows);
-  if (output) {
-    DCHECK_NE(dest_stride, 0);
-    DCHECK_LE(width, std::abs(dest_stride / 2));
-    DCHECK_EQ(0, first_row % 2);
-    libyuv::I420ToUYVY(
-        source_frame->visible_data(VideoFrame::kYPlane) +
-            first_row * source_frame->stride(VideoFrame::kYPlane),
-        source_frame->stride(VideoFrame::kYPlane),
-        source_frame->visible_data(VideoFrame::kUPlane) +
-            first_row / 2 * source_frame->stride(VideoFrame::kUPlane),
-        source_frame->stride(VideoFrame::kUPlane),
-        source_frame->visible_data(VideoFrame::kVPlane) +
-            first_row / 2 * source_frame->stride(VideoFrame::kVPlane),
-        source_frame->stride(VideoFrame::kVPlane),
-        output + first_row * dest_stride, dest_stride, width, rows);
-  }
-  std::move(done).Run();
+
+  if (!output)
+    return;
+
+  DCHECK_NE(dest_stride, 0);
+  DCHECK_LE(width, std::abs(dest_stride / 2));
+  DCHECK_EQ(0, first_row % 2);
+  libyuv::I420ToUYVY(
+      source_frame->visible_data(VideoFrame::kYPlane) +
+          first_row * source_frame->stride(VideoFrame::kYPlane),
+      source_frame->stride(VideoFrame::kYPlane),
+      source_frame->visible_data(VideoFrame::kUPlane) +
+          first_row / 2 * source_frame->stride(VideoFrame::kUPlane),
+      source_frame->stride(VideoFrame::kUPlane),
+      source_frame->visible_data(VideoFrame::kVPlane) +
+          first_row / 2 * source_frame->stride(VideoFrame::kVPlane),
+      source_frame->stride(VideoFrame::kVPlane),
+      output + first_row * dest_stride, dest_stride, width, rows);
 }
 
 void CopyRowsToRGB10Buffer(bool is_argb,
@@ -454,60 +461,62 @@ void CopyRowsToRGB10Buffer(bool is_argb,
                            uint8_t* output,
                            int dest_stride,
                            base::OnceClosure done) {
+  base::ScopedClosureRunner done_runner(std::move(done));
   TRACE_EVENT2("media", "CopyRowsToXR30Buffer", "bytes_per_row", width * 2,
                "rows", rows);
-  if (output) {
-    DCHECK_NE(dest_stride, 0);
-    DCHECK_LE(width, std::abs(dest_stride / 2));
-    DCHECK_EQ(0, first_row % 2);
 
-    int color_space = COLOR_SPACE_UNSPECIFIED;
-    if (source_frame->metadata()->GetInteger(VideoFrameMetadata::COLOR_SPACE,
-                                             &color_space)) {
-      color_space = COLOR_SPACE_UNSPECIFIED;
-    }
-    const uint16_t* y_plane = reinterpret_cast<const uint16_t*>(
-        source_frame->visible_data(VideoFrame::kYPlane) +
-        first_row * source_frame->stride(VideoFrame::kYPlane));
-    const size_t y_plane_stride = source_frame->stride(VideoFrame::kYPlane) / 2;
-    const uint16_t* v_plane = reinterpret_cast<const uint16_t*>(
-        source_frame->visible_data(VideoFrame::kVPlane) +
-        first_row / 2 * source_frame->stride(VideoFrame::kVPlane));
-    const size_t v_plane_stride = source_frame->stride(VideoFrame::kVPlane) / 2;
-    const uint16_t* u_plane = reinterpret_cast<const uint16_t*>(
-        source_frame->visible_data(VideoFrame::kUPlane) +
-        first_row / 2 * source_frame->stride(VideoFrame::kUPlane));
-    const size_t u_plane_stride = source_frame->stride(VideoFrame::kUPlane) / 2;
-    uint8_t* dest_ar30 = output + first_row * dest_stride;
+  if (!output)
+    return;
 
-    switch (color_space) {
-      case COLOR_SPACE_HD_REC709:
-        if (is_argb) {
-          libyuv::H010ToAR30(y_plane, y_plane_stride, u_plane, u_plane_stride,
-                             v_plane, v_plane_stride, dest_ar30, dest_stride,
-                             width, rows);
-        } else {
-          libyuv::H010ToAB30(y_plane, y_plane_stride, u_plane, u_plane_stride,
-                             v_plane, v_plane_stride, dest_ar30, dest_stride,
-                             width, rows);
-        }
-        break;
-      case COLOR_SPACE_UNSPECIFIED:
-      case COLOR_SPACE_JPEG:
-      case COLOR_SPACE_SD_REC601:
-        if (is_argb) {
-          libyuv::I010ToAR30(y_plane, y_plane_stride, u_plane, u_plane_stride,
-                             v_plane, v_plane_stride, dest_ar30, dest_stride,
-                             width, rows);
-        } else {
-          libyuv::I010ToAB30(y_plane, y_plane_stride, u_plane, u_plane_stride,
-                             v_plane, v_plane_stride, dest_ar30, dest_stride,
-                             width, rows);
-        }
-        break;
-    }
+  DCHECK_NE(dest_stride, 0);
+  DCHECK_LE(width, std::abs(dest_stride / 2));
+  DCHECK_EQ(0, first_row % 2);
+
+  int color_space = COLOR_SPACE_UNSPECIFIED;
+  if (source_frame->metadata()->GetInteger(VideoFrameMetadata::COLOR_SPACE,
+                                           &color_space)) {
+    color_space = COLOR_SPACE_UNSPECIFIED;
   }
-  std::move(done).Run();
+  const uint16_t* y_plane = reinterpret_cast<const uint16_t*>(
+      source_frame->visible_data(VideoFrame::kYPlane) +
+      first_row * source_frame->stride(VideoFrame::kYPlane));
+  const size_t y_plane_stride = source_frame->stride(VideoFrame::kYPlane) / 2;
+  const uint16_t* v_plane = reinterpret_cast<const uint16_t*>(
+      source_frame->visible_data(VideoFrame::kVPlane) +
+      first_row / 2 * source_frame->stride(VideoFrame::kVPlane));
+  const size_t v_plane_stride = source_frame->stride(VideoFrame::kVPlane) / 2;
+  const uint16_t* u_plane = reinterpret_cast<const uint16_t*>(
+      source_frame->visible_data(VideoFrame::kUPlane) +
+      first_row / 2 * source_frame->stride(VideoFrame::kUPlane));
+  const size_t u_plane_stride = source_frame->stride(VideoFrame::kUPlane) / 2;
+  uint8_t* dest_ar30 = output + first_row * dest_stride;
+
+  switch (color_space) {
+    case COLOR_SPACE_HD_REC709:
+      if (is_argb) {
+        libyuv::H010ToAR30(y_plane, y_plane_stride, u_plane, u_plane_stride,
+                           v_plane, v_plane_stride, dest_ar30, dest_stride,
+                           width, rows);
+      } else {
+        libyuv::H010ToAB30(y_plane, y_plane_stride, u_plane, u_plane_stride,
+                           v_plane, v_plane_stride, dest_ar30, dest_stride,
+                           width, rows);
+      }
+      break;
+    case COLOR_SPACE_UNSPECIFIED:
+    case COLOR_SPACE_JPEG:
+    case COLOR_SPACE_SD_REC601:
+      if (is_argb) {
+        libyuv::I010ToAR30(y_plane, y_plane_stride, u_plane, u_plane_stride,
+                           v_plane, v_plane_stride, dest_ar30, dest_stride,
+                           width, rows);
+      } else {
+        libyuv::I010ToAB30(y_plane, y_plane_stride, u_plane, u_plane_stride,
+                           v_plane, v_plane_stride, dest_ar30, dest_stride,
+                           width, rows);
+      }
+      break;
+  }
 }
 
 gfx::Size CodedSize(const scoped_refptr<VideoFrame>& video_frame,
