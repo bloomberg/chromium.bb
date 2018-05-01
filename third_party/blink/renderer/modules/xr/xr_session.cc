@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/resize_observer/resize_observer.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer_entry.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
+#include "third_party/blink/renderer/modules/screen_orientation/screen_orientation.h"
 #include "third_party/blink/renderer/modules/xr/xr.h"
 #include "third_party/blink/renderer/modules/xr/xr_canvas_input_provider.h"
 #include "third_party/blink/renderer/modules/xr/xr_device.h"
@@ -135,6 +136,16 @@ void XRSession::setBaseLayer(XRLayer* value) {
   }
 }
 
+void XRSession::SetNonExclusiveProjectionMatrix(
+    const WTF::Vector<float>& projection_matrix) {
+  DCHECK_EQ(projection_matrix.size(), 16lu);
+
+  non_exclusive_projection_matrix_ = projection_matrix;
+  // It is about as expensive to check equality as to just
+  // update the views, so just update.
+  update_views_next_frame_ = true;
+}
+
 ExecutionContext* XRSession::GetExecutionContext() const {
   return device_->GetExecutionContext();
 }
@@ -186,6 +197,7 @@ ScriptPromise XRSession::requestFrameOfReference(
 }
 
 int XRSession::requestAnimationFrame(V8XRFrameRequestCallback* callback) {
+  TRACE_EVENT0("gpu", __FUNCTION__);
   // Don't allow any new frame requests once the session is ended.
   if (ended_)
     return 0;
@@ -296,6 +308,10 @@ DoubleSize XRSession::OutputCanvasSize() const {
   return DoubleSize(output_width_, output_height_);
 }
 
+int XRSession::OutputCanvasAngle() const {
+  return output_angle_;
+}
+
 void XRSession::OnFocus() {
   if (!blurred_)
     return;
@@ -331,6 +347,7 @@ void XRSession::OnFocusChanged() {
 void XRSession::OnFrame(
     std::unique_ptr<TransformationMatrix> base_pose_matrix,
     const base::Optional<gpu::MailboxHolder>& buffer_mailbox_holder) {
+  TRACE_EVENT0("gpu", __FUNCTION__);
   DVLOG(2) << __FUNCTION__;
   // Don't process any outstanding frames once the session is ended.
   if (ended_)
@@ -403,6 +420,13 @@ void XRSession::UpdateCanvasDimensions(Element* element) {
   update_views_next_frame_ = true;
   output_width_ = element->OffsetWidth() * devicePixelRatio;
   output_height_ = element->OffsetHeight() * devicePixelRatio;
+
+  // TODO(https://crbug.com/836948): handle square canvases.
+  ScreenOrientation* orientation = ScreenOrientation::Create(frame);
+  if (orientation) {
+    output_angle_ = orientation->angle();
+    DVLOG(2) << __FUNCTION__ << ": got angle=" << output_angle_;
+  }
 
   if (base_layer_) {
     base_layer_->OnResize();
@@ -579,7 +603,6 @@ const HeapVector<Member<XRView>>& XRSession::views() {
         views_.push_back(new XRView(this, XRView::kEyeLeft));
         views_.push_back(new XRView(this, XRView::kEyeRight));
       }
-
       // In exclusive mode the projection and view matrices must be aligned with
       // the device's physical optics.
       UpdateViewFromEyeParameters(views_[XRView::kEyeLeft],
@@ -600,13 +623,28 @@ const HeapVector<Member<XRView>>& XRSession::views() {
                  static_cast<float>(output_height_);
       }
 
-      // In non-exclusive mode the projection matrix must be aligned with the
-      // output canvas dimensions.
-      views_[XRView::kEyeLeft]->UpdateProjectionMatrixFromAspect(
-          kMagicWindowVerticalFieldOfView, aspect, depth_near_, depth_far_);
+      if (non_exclusive_projection_matrix_.size() > 0) {
+        views_[XRView::kEyeLeft]->UpdateProjectionMatrixFromRawValues(
+            non_exclusive_projection_matrix_, depth_near_, depth_far_);
+      } else {
+        // In non-exclusive mode, if there is no explicit projection matrix
+        // provided, the projection matrix must be aligned with the
+        // output canvas dimensions.
+        views_[XRView::kEyeLeft]->UpdateProjectionMatrixFromAspect(
+            kMagicWindowVerticalFieldOfView, aspect, depth_near_, depth_far_);
+      }
     }
 
     views_dirty_ = false;
+  } else {
+    // TODO(https://crbug.com/836926): views_dirty_ is not working right for
+    // AR mode, we're not picking up the change on the right frame. Remove this
+    // fallback once that's sorted out.
+    DVLOG(2) << __FUNCTION__ << ": FIXME, fallback proj matrix update";
+    if (non_exclusive_projection_matrix_.size() > 0) {
+      views_[XRView::kEyeLeft]->UpdateProjectionMatrixFromRawValues(
+          non_exclusive_projection_matrix_, depth_near_, depth_far_);
+    }
   }
 
   return views_;

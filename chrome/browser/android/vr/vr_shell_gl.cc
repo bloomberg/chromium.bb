@@ -536,12 +536,11 @@ void VrShellGl::CreateOrResizeWebVRSurface(const gfx::Size& size) {
     mailbox_bridge_->ResizeSurface(size.width(), size.height());
   } else {
     mailbox_bridge_ready_ = false;
-    mailbox_bridge_ = std::make_unique<MailboxToSurfaceBridge>(
+    mailbox_bridge_ = std::make_unique<MailboxToSurfaceBridge>();
+    mailbox_bridge_->CreateSurface(webvr_surface_texture_.get());
+    mailbox_bridge_->CreateAndBindContextProvider(
         base::BindOnce(&VrShellGl::OnGpuProcessConnectionReady,
                        weak_ptr_factory_.GetWeakPtr()));
-
-    mailbox_bridge_->CreateSurface(webvr_surface_texture_.get());
-    mailbox_bridge_->CreateContextProvider();
   }
 }
 

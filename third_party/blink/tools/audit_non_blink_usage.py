@@ -171,6 +171,7 @@ _CONFIG = [
         # These modules need access to GL drawing.
         'allowed': [
             'gpu::gles2::GLES2Interface',
+            'gpu::MailboxHolder',
         ],
     },
     {

@@ -82,6 +82,20 @@ void VRDeviceBase::GetMagicWindowPose(
   OnMagicWindowPoseRequest(std::move(callback));
 }
 
+void VRDeviceBase::GetMagicWindowFrameData(
+    const gfx::Size& frame_size,
+    display::Display::Rotation display_rotation,
+    mojom::VRMagicWindowProvider::GetFrameDataCallback callback) {
+  // TODO(https://crbug.com/836565): rename this boolean.
+  if (!magic_window_enabled_) {
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
+  OnMagicWindowFrameDataRequest(frame_size, display_rotation,
+                                std::move(callback));
+}
+
 void VRDeviceBase::AddDisplay(VRDisplayImpl* display) {
   displays_.insert(display);
 }
@@ -142,6 +156,13 @@ void VRDeviceBase::OnListeningForActivate(bool listening) {}
 
 void VRDeviceBase::OnMagicWindowPoseRequest(
     mojom::VRMagicWindowProvider::GetPoseCallback callback) {
+  std::move(callback).Run(nullptr);
+}
+
+void VRDeviceBase::OnMagicWindowFrameDataRequest(
+    const gfx::Size& frame_size,
+    display::Display::Rotation display_rotation,
+    mojom::VRMagicWindowProvider::GetFrameDataCallback callback) {
   std::move(callback).Run(nullptr);
 }
 

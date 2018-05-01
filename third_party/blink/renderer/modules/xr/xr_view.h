@@ -31,6 +31,11 @@ class XRView final : public ScriptWrappable {
   XRSession* session() const;
   DOMFloat32Array* projectionMatrix() const { return projection_matrix_; }
 
+  void UpdateProjectionMatrixFromRawValues(
+      const WTF::Vector<float>& projection_matrix,
+      float near_depth,
+      float far_depth);
+
   void UpdateProjectionMatrixFromFoV(float up_rad,
                                      float down_rad,
                                      float left_rad,

@@ -10,6 +10,7 @@
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_device.h"
 #include "device/vr/vr_export.h"
+#include "ui/display/display.h"
 
 namespace device {
 
@@ -50,6 +51,12 @@ class DEVICE_VR_EXPORT VRDeviceBase : public VRDevice {
   void OnFrameFocusChanged(VRDisplayImpl* display);
   void GetMagicWindowPose(
       mojom::VRMagicWindowProvider::GetPoseCallback callback);
+  // TODO(https://crbug.com/836478): Rename this, and probably
+  // GetMagicWindowPose to GetNonExclusiveFrameData.
+  void GetMagicWindowFrameData(
+      const gfx::Size& frame_size,
+      display::Display::Rotation display_rotation,
+      mojom::VRMagicWindowProvider::GetFrameDataCallback callback);
 
   VRDisplayImpl* GetPresentingDisplay() { return presenting_display_; }
 
@@ -64,6 +71,10 @@ class DEVICE_VR_EXPORT VRDeviceBase : public VRDevice {
   virtual void OnListeningForActivate(bool listening);
   virtual void OnMagicWindowPoseRequest(
       mojom::VRMagicWindowProvider::GetPoseCallback callback);
+  virtual void OnMagicWindowFrameDataRequest(
+      const gfx::Size& frame_size,
+      display::Display::Rotation display_rotation,
+      mojom::VRMagicWindowProvider::GetFrameDataCallback callback);
 
   std::set<VRDisplayImpl*> displays_;
 

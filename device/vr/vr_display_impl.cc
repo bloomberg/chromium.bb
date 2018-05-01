@@ -9,6 +9,10 @@
 #include "base/bind.h"
 #include "device/vr/vr_device_base.h"
 
+namespace {
+constexpr int kMaxImageHeightOrWidth = 8000;
+}  // namespace
+
 namespace device {
 
 VRDisplayImpl::VRDisplayImpl(VRDevice* device,
@@ -82,6 +86,47 @@ void VRDisplayImpl::GetPose(GetPoseCallback callback) {
     return;
   }
   device_->GetMagicWindowPose(std::move(callback));
+}
+
+// Gets frame image data for AR magic window sessions.
+void VRDisplayImpl::GetFrameData(const gfx::Size& frame_size,
+                                 int16_t display_rotation,
+                                 GetFrameDataCallback callback) {
+  if (!device_->IsAccessAllowed(this)) {
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
+  // Sanity check the size.
+  // While Mojo should handle negative values, we also do not want to allow 0.
+  if (frame_size.width() <= 0 || frame_size.height() <= 0 ||
+      frame_size.width() > kMaxImageHeightOrWidth ||
+      frame_size.height() > kMaxImageHeightOrWidth) {
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
+  display::Display::Rotation display_rotation_enum;
+  switch (display_rotation) {
+    case 0:
+      display_rotation_enum = display::Display::Rotation::ROTATE_0;
+      break;
+    case 1:
+      display_rotation_enum = display::Display::Rotation::ROTATE_90;
+      break;
+    case 2:
+      display_rotation_enum = display::Display::Rotation::ROTATE_180;
+      break;
+    case 3:
+      display_rotation_enum = display::Display::Rotation::ROTATE_270;
+      break;
+    default:
+      LOG(ERROR) << "Invalid frame_rotation value: " << display_rotation;
+      std::move(callback).Run(nullptr);
+      return;
+  }
+  device_->GetMagicWindowFrameData(frame_size, display_rotation_enum,
+                                   std::move(callback));
 }
 
 void VRDisplayImpl::SetListeningForActivate(bool listening) {
