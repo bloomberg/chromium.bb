@@ -607,39 +607,39 @@ void FileManagerBrowserTestBase::InstallExtension(const base::FilePath& path,
 }
 
 void FileManagerBrowserTestBase::RunTestMessageLoop() {
-  // Handle the messages from JavaScript.
-  // The while loop is break when the test is passed or failed.
   FileManagerTestMessageListener listener;
+
   while (true) {
-    FileManagerTestMessageListener::Message entry = listener.GetNextMessage();
-    if (entry.type == extensions::NOTIFICATION_EXTENSION_TEST_PASSED) {
-      // Test succeed.
-      break;
-    } else if (entry.type == extensions::NOTIFICATION_EXTENSION_TEST_FAILED) {
-      // Test failed.
-      ADD_FAILURE() << entry.message;
-      break;
+    auto message = listener.GetNextMessage();
+
+    if (message.type == extensions::NOTIFICATION_EXTENSION_TEST_PASSED)
+      return;  // Test PASSED.
+    if (message.type == extensions::NOTIFICATION_EXTENSION_TEST_FAILED) {
+      ADD_FAILURE() << message.message;
+      return;  // Test FAILED.
     }
 
-    // Parse the message value as JSON.
-    const std::unique_ptr<const base::Value> value =
-        base::JSONReader::Read(entry.message);
-
-    // If the message is not the expected format, just ignore it.
-    const base::DictionaryValue* message_dictionary = NULL;
-    std::string name;
-    if (!value || !value->GetAsDictionary(&message_dictionary) ||
-        !message_dictionary->GetString("name", &name)) {
-      entry.function->Reply(std::string());
+    // If the message in JSON format has no command, just ignore it.
+    const auto json = base::JSONReader::Read(message.message);
+    const base::DictionaryValue* dictionary = nullptr;
+    std::string command;
+    if (!json || !json->GetAsDictionary(&dictionary) ||
+        !dictionary->GetString("name", &command)) {
+      message.function->Reply(std::string());
       continue;
     }
 
-    std::string output;
-    OnCommand(name, *message_dictionary, &output);
-    if (HasFatalFailure())
-      break;
+    // Process the command, reply with the result.
+    std::string result;
+    OnCommand(command, *dictionary, &result);
+    if (!HasFatalFailure()) {
+      message.function->Reply(result);
+      continue;
+    }
 
-    entry.function->Reply(output);
+    // Test FAILED: while processing the command.
+    LOG(INFO) << "[FAILED] " << GetTestCaseNameParam();
+    return;
   }
 }
 
