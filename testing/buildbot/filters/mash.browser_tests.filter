@@ -49,9 +49,6 @@
 # Incorrect window bounds. Probably WindowSizerAsh problem.
 -BrowserTestTabbedOrApp/BrowserTestParam.*
 
-# Timeout waiting for notification.
--CaptivePortalAuthenticationIgnoresProxy/NetworkPortalDetectorImplBrowserTestIgnoreProxy.*
-
 # ash::Shell access from ChromeViewsDelegate::CreateDefaultNonClientFrameView()
 # e.g. from chromeos::CaptivePortalWindowProxy::Show().
 -CaptivePortalWindowCtorDtorTest.*
