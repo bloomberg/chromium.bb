@@ -353,7 +353,8 @@ TEST_F(ChannelIDServiceTest, DestructionWithPendingRequest) {
   // doesn't.
   base::RunLoop().RunUntilIdle();
 
-  // If we got here without crashing or a valgrind error, it worked.
+  // If we got here without crashing or triggering errors in memory
+  // corruption detectors, it worked.
 }
 
 // Tests that making new requests when the ChannelIDService can no longer post
@@ -370,7 +371,8 @@ TEST_F(ChannelIDServiceTest, RequestAfterPoolShutdown) {
 
   error = service_->GetOrCreateChannelID(host, &key, base::Bind(&FailTest),
                                          &request);
-  // If we got here without crashing or a valgrind error, it worked.
+  // If we got here without crashing or triggering errors in memory
+  // corruption detectors, it worked.
   ASSERT_THAT(error, IsError(ERR_IO_PENDING));
   EXPECT_TRUE(request.is_active());
 }

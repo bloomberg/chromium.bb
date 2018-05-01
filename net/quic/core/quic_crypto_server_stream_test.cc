@@ -588,7 +588,7 @@ TEST_P(QuicCryptoServerStreamTestWithFakeProofSource, MultipleChlo) {
   // Send in a second CHLO while processing of the first is still pending.
   // Verify that the server closes the connection rather than crashing.  Note
   // that the crash is a use-after-free, so it may only show up consistently in
-  // ASAN tests.
+  // tests running with memory corruption detectors.
   EXPECT_CALL(
       *server_connection_,
       CloseConnection(QUIC_CRYPTO_MESSAGE_WHILE_VALIDATING_CLIENT_HELLO,

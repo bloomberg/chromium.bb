@@ -27,7 +27,7 @@
 namespace {
 
 void CrashDoubleFree(void) {
-  // Cause ASAN to detect a double-free
+  // Cause memory corruption detectors to notice a double-free
   void *p = malloc(1);
   LOG(INFO) << "Allocated p=" << p << ".  Double-freeing...";
   free(p);
@@ -186,7 +186,8 @@ bool ReadAndRunTestCase(const char* filename) {
   if (crash_test) {
     LOG(INFO) << "Crashing.";
     CrashDoubleFree();
-    // if we're not running under ASAN, that might not have worked
+    // if we're not running under a memory corruption detector, that
+    // might not have worked
     CrashNullPointerDereference();
     NOTREACHED();
     return true;

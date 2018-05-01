@@ -2037,9 +2037,9 @@ TEST_F(SpdyNetworkTransactionTest, StartTransactionOnReadCallback) {
   helper.VerifyDataConsumed();
 }
 
-// Verify that the client can correctly deal with the user callback deleting the
-// transaction. Failures will usually be valgrind errors. See
-// http://crbug.com/46925
+// Verify that the client can correctly deal with the user callback deleting
+// the transaction. Failures will usually be flagged by thread and/or memory
+// checking tools. See http://crbug.com/46925
 TEST_F(SpdyNetworkTransactionTest, DeleteSessionOnReadCallback) {
   SpdySerializedFrame req(spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST));
   MockWrite writes[] = {CreateMockWrite(req, 0)};

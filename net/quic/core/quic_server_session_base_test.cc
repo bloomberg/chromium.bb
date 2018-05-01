@@ -633,8 +633,8 @@ TEST_P(StreamMemberLifetimeTest, Basic) {
   session_.reset();
 
   // Allow the async ProofSource::GetProof call to complete.  Verify (under
-  // asan) that this does not result in accesses to any freed memory from the
-  // session or its subobjects.
+  // memory access checkers) that this does not result in accesses to any
+  // freed memory from the session or its subobjects.
   GetFakeProofSource()->InvokePendingCallback(0);
 }
 

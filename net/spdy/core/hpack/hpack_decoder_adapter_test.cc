@@ -1002,8 +1002,8 @@ TEST_P(HpackDecoderAdapterTest, SectionC6ResponseHuffmanExamples) {
 }
 
 // Regression test: Found that entries with dynamic indexed names and literal
-// values caused "use after free" MSAN failures if the name was evicted as it
-// was being re-used.
+// values caused "use after free" memory sanity checker failures if the name
+// was evicted as it was being re-used.
 TEST_P(HpackDecoderAdapterTest, ReuseNameOfEvictedEntry) {
   // Each entry is measured as 32 bytes plus the sum of the lengths of the name
   // and the value. Set the size big enough for at most one entry, and a fairly

@@ -43,8 +43,8 @@ class HTTP2_EXPORT_PRIVATE HpackEntryTypeDecoder {
  private:
   HpackVarintDecoder varint_decoder_;
 
-  // This field is initialized just to keep ASAN happy about reading it
-  // from DebugString().
+  // This field is initialized just to keep memory corruption detectores
+  // happy about reading it from DebugString().
   HpackEntryType entry_type_ = HpackEntryType::kIndexedHeader;
 };
 

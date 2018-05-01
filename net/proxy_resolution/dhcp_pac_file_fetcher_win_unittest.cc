@@ -105,7 +105,7 @@ class RealFetchTester {
   // Attempts to give worker threads time to finish.  This is currently
   // very simplistic as completion (via completion callback or cancellation)
   // immediately "detaches" any worker threads, so the best we can do is give
-  // them a little time.  If we start running into Valgrind leaks, we can
+  // them a little time.  If we start running into memory leaks, we can
   // do something a bit more clever to track worker threads even when the
   // DhcpPacFileFetcherWin state machine has finished.
   void FinishTestAllowCleanup() {
@@ -144,7 +144,7 @@ TEST(DhcpPacFileFetcherWin, RealFetchWithCancel) {
   fetcher.RunTestWithCancel();
   base::RunLoop().RunUntilIdle();
 
-  // Attempt to avoid Valgrind leak reports in case worker thread is
+  // Attempt to avoid memory leak reports in case worker thread is
   // still running.
   fetcher.FinishTestAllowCleanup();
 }
