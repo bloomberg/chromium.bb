@@ -77,8 +77,8 @@ struct ScreenInfo;
 // the render process dies, the RenderWidgetHostView goes away and all
 // references to it must become nullptr.
 //
-// RenderViewHost (a RenderWidgetHost subclass) is the conduit used to
-// communicate with the RenderView and is owned by the WebContents. If the
+// RenderViewHost (an owner delegate for RenderWidgetHost) is the conduit used
+// to communicate with the RenderView and is owned by the WebContents. If the
 // render process crashes, the RenderViewHost remains and restarts the render
 // process if needed to continue navigation.
 //
@@ -93,9 +93,9 @@ struct ScreenInfo;
 // For select popups, the situation is a little different. The RenderWidgetHost
 // associated with the select popup owns the view and itself (is responsible
 // for destroying itself when the view is closed). The WebContents's only
-// responsibility is to select popups is to create them when it is told to. When
-// the View is destroyed via an IPC message (for when WebCore destroys the
-// popup, e.g. if the user selects one of the options), or because
+// responsibility with select popups is to create them when it is told to. When
+// the View is destroyed via an IPC message (triggered when WebCore destroys
+// the popup, e.g. if the user selects one of the options), or because
 // WM_CANCELMODE is received by the view, the View schedules the destruction of
 // the render process. However in this case since there's no WebContents
 // container, when the render process is destroyed, the RenderWidgetHost just
