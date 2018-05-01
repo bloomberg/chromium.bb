@@ -32,6 +32,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "third_party/blink/public/common/client_hints/client_hints.h"
 
@@ -364,6 +365,23 @@ class ClientHintsBrowserTest : public InProcessBrowserTest {
     EXPECT_GE(10.0, mbps_value);
 
     EXPECT_FALSE(request.headers.find("ect")->second.empty());
+
+    // TODO(tbansal): https://crbug.com/819244: When network servicification is
+    // enabled, the UI thread NQE observers do not receive notifications on
+    // change in the network quality.
+    if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      // Effective connection type is forced to 2G using command line in these
+      // tests. RTT is expected to be 1800 msec but leave some gap to account
+      // for added noise and randomization.
+      EXPECT_NEAR(1800, rtt_value, 360);
+
+      // Effective connection type is forced to 2G using command line in these
+      // tests. downlink is expected to be 0.075 Mbps but leave some gap to
+      // account for added noise and randomization.
+      EXPECT_NEAR(0.075, mbps_value, 0.05);
+
+      EXPECT_EQ("2g", request.headers.find("ect")->second);
+    }
   }
 
   net::EmbeddedTestServer http_server_;

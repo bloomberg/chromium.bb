@@ -34,10 +34,11 @@ namespace internal {
 unsigned long RoundRtt(const std::string& host,
                        const base::Optional<base::TimeDelta>& rtt);
 
-// Returns |downlink_mbps| after adding host-specific random noise, and
-// rounding it as per the NetInfo spec and to improve privacy.
-double RoundMbps(const std::string& host,
-                 const base::Optional<double>& downlink_mbps);
+// Returns downlink (in Mbps) after adding host-specific random noise to
+// |downlink_kbps| (which is in Kbps), and rounding it as per the NetInfo spec
+// to improve privacy.
+double RoundKbpsToMbps(const std::string& host,
+                       const base::Optional<int32_t>& downlink_kbps);
 
 }  // namespace internal
 
