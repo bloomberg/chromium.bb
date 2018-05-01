@@ -223,12 +223,6 @@ bool InputMethodEngine::SendKeyEvent(ui::KeyEvent* event,
   return true;
 }
 
-void InputMethodEngine::ProcessKeyEvent(const ui::KeyEvent& key_event,
-                                        KeyEventDoneCallback callback) {
-  // This override is neeeded to prevent a link failure on Windows build.
-  InputMethodEngineBase::ProcessKeyEvent(key_event, std::move(callback));
-}
-
 bool InputMethodEngine::IsSpecialPage(ui::InputMethod* input_method) {
   Browser* browser = chrome::FindLastActive();
   DCHECK(browser);
