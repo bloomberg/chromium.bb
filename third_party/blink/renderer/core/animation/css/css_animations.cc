@@ -249,8 +249,10 @@ void CSSAnimations::CalculateCompositorAnimationUpdate(
   ElementAnimations* element_animations =
       animating_element ? animating_element->GetElementAnimations() : nullptr;
 
-  // We only update compositor animations in response to changes in the base
-  // style.
+  // If the change in style is only due to the Blink-side animation update, we
+  // do not need to update the compositor-side animations. The compositor is
+  // already changing the same properties and as such this update would provide
+  // no new information.
   if (!element_animations || element_animations->IsAnimationStyleChange())
     return;
 

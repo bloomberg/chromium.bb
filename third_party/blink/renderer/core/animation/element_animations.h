@@ -93,6 +93,13 @@ class CORE_EXPORT ElementAnimations
   CSSAnimations css_animations_;
   AnimationCountedSet animations_;
   WorkletAnimationSet worklet_animations_;
+
+  // When an Element is being animated, its entire style will be dirtied every
+  // frame by the running animation - even if the animation is only changing a
+  // few properties. To avoid the expensive cost of recomputing the entire
+  // style, we store a cached value of the 'base' computed style (e.g. with no
+  // change from the running animations) and use that during style recalc,
+  // applying only the animation changes on top of it.
   bool animation_style_change_;
   scoped_refptr<ComputedStyle> base_computed_style_;
 
