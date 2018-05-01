@@ -16,6 +16,7 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
+#include "media/base/video_util.h"
 #include "media/gpu/windows/d3d11_picture_buffer.h"
 #include "ui/gl/gl_angle_util_win.h"
 #include "ui/gl/gl_bindings.h"
@@ -348,12 +349,15 @@ void D3D11VideoDecoderImpl::OutputResult(D3D11PictureBuffer* buffer) {
 
   // Note: The pixel format doesn't matter.
   gfx::Rect visible_rect(buffer->size());
-  gfx::Size natural_size = buffer->size();
+  // TODO(liberato): Pixel aspect ratio should come from the VideoDecoderConfig
+  // (except when it should come from the SPS).
+  // https://crbug.com/837337
+  double pixel_aspect_ratio = 1.0;
   base::TimeDelta timestamp = buffer->timestamp_;
   auto frame = VideoFrame::WrapNativeTextures(
       PIXEL_FORMAT_NV12, buffer->mailbox_holders(),
-      VideoFrame::ReleaseMailboxCB(), buffer->size(), visible_rect,
-      natural_size, timestamp);
+      VideoFrame::ReleaseMailboxCB(), visible_rect.size(), visible_rect,
+      GetNaturalSize(visible_rect, pixel_aspect_ratio), timestamp);
 
   frame->SetReleaseMailboxCB(media::BindToCurrentLoop(base::BindOnce(
       &D3D11VideoDecoderImpl::OnMailboxReleased, weak_factory_.GetWeakPtr(),

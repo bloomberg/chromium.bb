@@ -249,9 +249,8 @@ class MEDIA_EXPORT CdmAdapter : public ContentDecryptionModule,
   int audio_samples_per_second_ = 0;
   ChannelLayout audio_channel_layout_ = CHANNEL_LAYOUT_NONE;
 
-  // Keep track of video frame natural size from the latest configuration
-  // as the CDM doesn't provide it.
-  gfx::Size natural_size_;
+  // Keep track of aspect ratio from the latest configuration.
+  double pixel_aspect_ratio_ = 0.0;
 
   // Tracks whether an output protection query and a positive query result (no
   // unprotected external link) have been reported to UMA.

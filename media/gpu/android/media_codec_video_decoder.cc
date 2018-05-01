@@ -21,6 +21,7 @@
 #include "media/base/video_codecs.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
+#include "media/base/video_util.h"
 #include "media/gpu/android/android_video_surface_chooser.h"
 #include "media/gpu/android/avda_codec_allocator.h"
 
@@ -648,9 +649,11 @@ bool MediaCodecVideoDecoder::DequeueOutput() {
           SurfaceChooserHelper::FrameInformation::FRAME_INFORMATION_MAX) +
           1);  // PRESUBMIT_IGNORE_UMA_MAX
 
+  gfx::Rect visible_rect(output_buffer->size());
   video_frame_factory_->CreateVideoFrame(
       std::move(output_buffer), presentation_time,
-      decoder_config_.natural_size(), CreatePromotionHintCB(),
+      GetNaturalSize(visible_rect, decoder_config_.GetPixelAspectRatio()),
+      CreatePromotionHintCB(),
       base::Bind(&MediaCodecVideoDecoder::ForwardVideoFrame,
                  weak_factory_.GetWeakPtr(), reset_generation_));
   return true;

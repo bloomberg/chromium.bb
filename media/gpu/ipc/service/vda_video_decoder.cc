@@ -529,7 +529,7 @@ void VdaVideoDecoder::PictureReadyOnParentThread(Picture picture) {
   // Create a VideoFrame for the picture.
   scoped_refptr<VideoFrame> frame = picture_buffer_manager_->CreateVideoFrame(
       picture, timestamp_it->second, visible_rect,
-      GetNaturalSizeWithDAR(visible_rect.size(), config_.natural_size()));
+      GetNaturalSize(visible_rect, config_.GetPixelAspectRatio()));
   if (!frame) {
     EnterErrorState();
     return;

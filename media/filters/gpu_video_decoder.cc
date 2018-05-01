@@ -653,7 +653,9 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
           &GpuVideoDecoder::ReleaseMailbox, weak_factory_.GetWeakPtr(),
           factories_, picture.picture_buffer_id(), pb.client_texture_ids())),
       pb.size(), visible_rect,
-      GetNaturalSizeWithDAR(visible_rect.size(), natural_size), timestamp));
+      GetNaturalSize(visible_rect,
+                     GetPixelAspectRatio(visible_rect, natural_size)),
+      timestamp));
   if (!frame) {
     DLOG(ERROR) << "Create frame failed for: " << picture.picture_buffer_id();
     NotifyError(VideoDecodeAccelerator::PLATFORM_FAILURE);

@@ -14,6 +14,7 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
+#include "media/base/video_util.h"
 #include "third_party/libyuv/include/libyuv/convert.h"
 
 // Include libaom header files.
@@ -358,9 +359,11 @@ scoped_refptr<VideoFrame> AomVideoDecoder::CopyImageToVideoFrame(
   }
 
   // Since we're making a copy, only copy the visible area.
-  const gfx::Size size(img->d_w, img->d_h);
-  auto frame = frame_pool_.CreateFrame(pixel_format, size, gfx::Rect(size),
-                                       config_.natural_size(), kNoTimestamp);
+  const gfx::Rect visible_rect(img->d_w, img->d_h);
+  auto frame = frame_pool_.CreateFrame(
+      pixel_format, visible_rect.size(), visible_rect,
+      GetNaturalSize(visible_rect, config_.GetPixelAspectRatio()),
+      kNoTimestamp);
   if (!frame)
     return nullptr;
 
@@ -380,8 +383,8 @@ scoped_refptr<VideoFrame> AomVideoDecoder::CopyImageToVideoFrame(
                      frame->visible_data(VideoFrame::kUPlane),
                      frame->stride(VideoFrame::kUPlane),
                      frame->visible_data(VideoFrame::kVPlane),
-                     frame->stride(VideoFrame::kVPlane), size.width(),
-                     size.height());
+                     frame->stride(VideoFrame::kVPlane), visible_rect.width(),
+                     visible_rect.height());
   }
 
   return frame;
