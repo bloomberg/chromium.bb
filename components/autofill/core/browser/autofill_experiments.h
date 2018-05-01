@@ -42,7 +42,6 @@ extern const base::Feature kAutofillRationalizeFieldTypePredictions;
 extern const base::Feature kAutofillSuppressDisusedAddresses;
 extern const base::Feature kAutofillSuppressDisusedCreditCards;
 extern const base::Feature kAutofillUpstreamAllowAllEmailDomains;
-extern const base::Feature kAutofillUpstreamRequestCvcIfMissing;
 extern const base::Feature kAutofillUpstreamSendDetectedValues;
 extern const base::Feature kAutofillUpstreamSendPanFirstSix;
 extern const base::Feature kAutofillUpstreamUpdatePromptExplanation;
@@ -129,10 +128,6 @@ void ModifyAutofillCreditCardSuggestion(struct Suggestion* suggestion);
 // if the margin isn't configured in an experiment to tweak autofill popup
 // layout.
 unsigned int GetPopupMargin();
-
-// Returns whether the experiment is enabled where Chrome Upstream requests CVC
-// in the offer to save bubble if it was not detected during the checkout flow.
-bool IsAutofillUpstreamRequestCvcIfMissingExperimentEnabled();
 
 // Returns whether the experiment is enabled where Chrome Upstream always checks
 // to see if it can offer to save (even though some data like name, address, and

@@ -2962,11 +2962,6 @@ const FeatureEntry kFeatureEntries[] = {
          // Must be AutofillCreditCardDropdownVariations to prevent DCHECK crash
          // when the flag is manually enabled in a local build.
          "AutofillCreditCardDropdownVariations")},
-    {"enable-autofill-credit-card-upload-cvc-prompt",
-     flag_descriptions::kEnableAutofillCreditCardUploadCvcPromptName,
-     flag_descriptions::kEnableAutofillCreditCardUploadCvcPromptDescription,
-     kOsDesktop,
-     FEATURE_VALUE_TYPE(autofill::kAutofillUpstreamRequestCvcIfMissing)},
     {"enable-autofill-credit-card-upload-google-pay-on-android-branding",
      flag_descriptions::
          kEnableAutofillCreditCardUploadGooglePayOnAndroidBrandingName,

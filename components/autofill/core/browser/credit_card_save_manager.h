@@ -177,9 +177,6 @@ class CreditCardSaveManager : public payments::PaymentsClientSaveDelegate {
   // |true| if the user has opted to upload save their credit card to Google.
   bool user_did_accept_upload_prompt_ = false;
 
-  // |should_cvc_be_requested_| is |true| if we should request CVC from the user
-  // in the card upload dialog.
-  bool should_cvc_be_requested_ = false;
   // |found_cvc_field_| is |true| if there exists a field that is determined to
   // be a CVC field via heuristics.
   bool found_cvc_field_ = false;

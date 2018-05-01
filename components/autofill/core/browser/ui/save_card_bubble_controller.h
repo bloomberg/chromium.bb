@@ -34,20 +34,8 @@ class SaveCardBubbleController {
   // Returns the card that will be uploaded if the user accepts.
   virtual const CreditCard GetCard() const = 0;
 
-  // Returns the CVC image icon resource ID.
-  virtual int GetCvcImageResourceId() const = 0;
-
-  // Returns whether the dialog should include a field requesting the card's CVC
-  // from the user.
-  virtual bool ShouldRequestCvcFromUser() const = 0;
-
-  // Returns the CVC provided by the user in the save card bubble.
-  virtual base::string16 GetCvcEnteredByUser() const = 0;
-
   // Interaction.
-  // OnSaveButton takes in a string value representing the CVC entered by the
-  // user if it was requested, or an empty string otherwise.
-  virtual void OnSaveButton(const base::string16& cvc) = 0;
+  virtual void OnSaveButton() = 0;
   virtual void OnCancelButton() = 0;
   virtual void OnLearnMoreClicked() = 0;
   virtual void OnLegalMessageLinkClicked(const GURL& url) = 0;
@@ -57,13 +45,6 @@ class SaveCardBubbleController {
 
   // Returns empty vector if no legal message should be shown.
   virtual const LegalMessageLines& GetLegalMessageLines() const = 0;
-
-  // Called when the upload save version of the UI needs to request CVC in order
-  // to save, and has user has clicked [Next] in order to surface that UI.
-  virtual void ContinueToRequestCvcStage() = 0;
-
-  // Utilities.
-  virtual bool InputCvcIsValid(const base::string16& input_text) const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SaveCardBubbleController);

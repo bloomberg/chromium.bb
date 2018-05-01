@@ -308,13 +308,6 @@ static_library("test_support") {
     "test_sync_service.h",
   ]
 
-  if (!is_android) {
-    sources += [
-      "ui/mock_save_card_bubble_controller.cc",
-      "ui/mock_save_card_bubble_controller.h",
-    ]
-  }
-
   public_deps = [
     ":browser",
   ]

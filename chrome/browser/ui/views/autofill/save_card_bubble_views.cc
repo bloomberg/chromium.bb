@@ -12,7 +12,6 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/autofill/dialog_view_ids.h"
-#include "chrome/browser/ui/views/autofill/view_util.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/credit_card.h"
@@ -33,7 +32,6 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/styled_label.h"
-#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/window/dialog_client_view.h"
 
@@ -112,39 +110,12 @@ views::View* SaveCardBubbleViews::CreateFootnoteView() {
         CreateLegalMessageLineLabel(line, this).release());
   }
 
-  // If on the first step of the 2-step upload flow, hide the footer area until
-  // it's time to actually accept the dialog and ToS.
-  if (GetCurrentFlowStep() == UPLOAD_SAVE_CVC_FIX_FLOW_STEP_1_OFFER_UPLOAD)
-    footnote_view_->SetVisible(false);
-
   return footnote_view_;
 }
 
 bool SaveCardBubbleViews::Accept() {
-  DCHECK(initial_step_ || controller_->ShouldRequestCvcFromUser());
-  if (GetCurrentFlowStep() == UPLOAD_SAVE_CVC_FIX_FLOW_STEP_1_OFFER_UPLOAD) {
-    // If user accepted upload but more info is needed, swap the content view
-    // and adjust the layout.
-    initial_step_ = false;
-    DCHECK(controller_);
-    controller_->ContinueToRequestCvcStage();
-    RemoveAllChildViews(/*delete_children=*/true);
-    AddChildView(CreateRequestCvcView().release());
-    GetWidget()->UpdateWindowTitle();
-    GetWidget()->UpdateWindowIcon();
-    // Disable the Save button until a valid CVC is entered:
-    DialogModelChanged();
-    // Make the legal messaging footer appear:
-    DCHECK(footnote_view_);
-    footnote_view_->SetVisible(true);
-    // Resize the bubble if it's grown larger:
-    SizeToContents();
-    return false;
-  }
-  // Otherwise, close the bubble as normal.
   if (controller_)
-    controller_->OnSaveButton(cvc_textfield_ ? cvc_textfield_->text()
-                                             : base::string16());
+    controller_->OnSaveButton();
   return true;
 }
 
@@ -177,38 +148,9 @@ int SaveCardBubbleViews::GetDialogButtons() const {
 
 base::string16 SaveCardBubbleViews::GetDialogButtonLabel(
     ui::DialogButton button) const {
-  switch (GetCurrentFlowStep()) {
-    // Local save has two buttons:
-    case LOCAL_SAVE_ONLY_STEP:
-      return l10n_util::GetStringUTF16(
-          button == ui::DIALOG_BUTTON_OK ? IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT
-                                         : IDS_NO_THANKS);
-    // Upload save has one button but it can say three different things:
-    case UPLOAD_SAVE_ONLY_STEP:
-      return l10n_util::GetStringUTF16(
-          button == ui::DIALOG_BUTTON_OK ? IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT
-                                         : IDS_NO_THANKS);
-    case UPLOAD_SAVE_CVC_FIX_FLOW_STEP_1_OFFER_UPLOAD:
-      return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK
-                                           ? IDS_AUTOFILL_SAVE_CARD_PROMPT_NEXT
-                                           : IDS_NO_THANKS);
-    case UPLOAD_SAVE_CVC_FIX_FLOW_STEP_2_REQUEST_CVC:
-      return l10n_util::GetStringUTF16(
-          button == ui::DIALOG_BUTTON_OK ? IDS_AUTOFILL_SAVE_CARD_PROMPT_CONFIRM
-                                         : IDS_NO_THANKS);
-    default:
-      NOTREACHED();
-      return base::string16();
-  }
-}
-
-bool SaveCardBubbleViews::IsDialogButtonEnabled(ui::DialogButton button) const {
-  if (button == ui::DIALOG_BUTTON_CANCEL)
-    return true;
-
-  DCHECK_EQ(ui::DIALOG_BUTTON_OK, button);
-  return !cvc_textfield_ ||
-         controller_->InputCvcIsValid(cvc_textfield_->text());
+  return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK
+                                       ? IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT
+                                       : IDS_NO_THANKS);
 }
 
 gfx::Size SaveCardBubbleViews::CalculatePreferredSize() const {
@@ -279,12 +221,6 @@ void SaveCardBubbleViews::StyledLabelLinkClicked(views::StyledLabel* label,
   NOTREACHED();
 }
 
-void SaveCardBubbleViews::ContentsChanged(views::Textfield* sender,
-                                          const base::string16& new_contents) {
-  DCHECK_EQ(cvc_textfield_, sender);
-  DialogModelChanged();
-}
-
 views::View* SaveCardBubbleViews::GetFootnoteViewForTesting() {
   return footnote_view_;
 }
@@ -293,17 +229,9 @@ SaveCardBubbleViews::~SaveCardBubbleViews() {}
 
 SaveCardBubbleViews::CurrentFlowStep SaveCardBubbleViews::GetCurrentFlowStep()
     const {
-  // No legal messages means this is not upload save.
-  if (controller_->GetLegalMessageLines().empty())
-    return LOCAL_SAVE_ONLY_STEP;
-  // If we're not requesting CVC, this is the only step on the upload path.
-  if (!controller_->ShouldRequestCvcFromUser())
-    return UPLOAD_SAVE_ONLY_STEP;
-  // Must be on the CVC fix flow on the upload path.
-  if (initial_step_)
-    return UPLOAD_SAVE_CVC_FIX_FLOW_STEP_1_OFFER_UPLOAD;
-
-  return UPLOAD_SAVE_CVC_FIX_FLOW_STEP_2_REQUEST_CVC;
+  // Local save if no legal messages, upload save otherwise.
+  return controller_->GetLegalMessageLines().empty() ? LOCAL_SAVE_ONLY_STEP
+                                                     : UPLOAD_SAVE_ONLY_STEP;
 }
 
 std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
@@ -351,49 +279,6 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
       new views::Label(card.AbbreviatedExpirationDateForDisplay()));
 
   return view;
-}
-
-std::unique_ptr<views::View> SaveCardBubbleViews::CreateRequestCvcView() {
-  auto request_cvc_view = std::make_unique<views::View>();
-  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-
-  request_cvc_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(),
-      provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
-  request_cvc_view->SetBackground(views::CreateThemedSolidBackground(
-      request_cvc_view.get(), ui::NativeTheme::kColorId_BubbleBackground));
-  request_cvc_view->set_id(DialogViewId::REQUEST_CVC_VIEW);
-
-  const CreditCard& card = controller_->GetCard();
-  auto* explanation_label = new views::Label(l10n_util::GetStringFUTF16(
-      IDS_AUTOFILL_SAVE_CARD_PROMPT_ENTER_CVC_EXPLANATION,
-      card.NetworkAndLastFourDigits()));
-  explanation_label->SetMultiLine(true);
-  explanation_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  request_cvc_view->AddChildView(explanation_label);
-
-  auto* cvc_entry_view = new views::View();
-  auto layout = std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets(),
-      provider->GetDistanceMetric(views::DISTANCE_RELATED_BUTTON_HORIZONTAL));
-  layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
-  cvc_entry_view->SetLayoutManager(std::move(layout));
-
-  DCHECK(!cvc_textfield_);
-  cvc_textfield_ = CreateCvcTextfield();
-  cvc_textfield_->set_controller(this);
-  cvc_textfield_->set_id(DialogViewId::CVC_TEXTFIELD);
-  cvc_entry_view->AddChildView(cvc_textfield_);
-
-  auto* cvc_image = new views::ImageView();
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  cvc_image->SetImage(
-      rb.GetImageSkiaNamed(controller_->GetCvcImageResourceId()));
-  cvc_entry_view->AddChildView(cvc_image);
-
-  request_cvc_view->AddChildView(cvc_entry_view);
-  return request_cvc_view;
 }
 
 void SaveCardBubbleViews::AssignIdsToDialogClientView() {

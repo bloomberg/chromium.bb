@@ -96,11 +96,6 @@ AddressNormalizer* ChromeAutofillClientIOS::GetAddressNormalizer() {
   return nullptr;
 }
 
-SaveCardBubbleController*
-ChromeAutofillClientIOS::GetSaveCardBubbleController() {
-  return nullptr;
-}
-
 void ChromeAutofillClientIOS::ShowAutofillSettings() {
   NOTREACHED();
 }
@@ -139,7 +134,6 @@ void ChromeAutofillClientIOS::ConfirmSaveCreditCardLocally(
 void ChromeAutofillClientIOS::ConfirmSaveCreditCardToCloud(
     const CreditCard& card,
     std::unique_ptr<base::DictionaryValue> legal_message,
-    bool should_cvc_be_requested,
     const base::Closure& callback) {
   infobar_manager_->AddInfoBar(CreateSaveCardInfoBarMobile(
       std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(

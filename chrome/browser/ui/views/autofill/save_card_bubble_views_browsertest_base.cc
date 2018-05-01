@@ -175,22 +175,6 @@ void SaveCardBubbleViewsBrowserTestBase::FillAndSubmitFormWithInvalidCvc() {
 }
 
 // Should be called for credit_card_upload_form_address_and_cc.html.
-void SaveCardBubbleViewsBrowserTestBase::FillAndSubmitFormWithAmexWithoutCvc() {
-  content::WebContents* web_contents = GetActiveWebContents();
-  const std::string click_fill_amex_button_js =
-      "(function() { document.getElementById('fill_form_amex').click(); })();";
-  ASSERT_TRUE(content::ExecuteScript(web_contents, click_fill_amex_button_js));
-
-  const std::string click_clear_cvc_button_js =
-      "(function() { document.getElementById('clear_cvc').click(); })();";
-  ASSERT_TRUE(content::ExecuteScript(web_contents, click_clear_cvc_button_js));
-
-  const std::string click_submit_button_js =
-      "(function() { document.getElementById('submit').click(); })();";
-  ASSERT_TRUE(content::ExecuteScript(web_contents, click_submit_button_js));
-}
-
-// Should be called for credit_card_upload_form_address_and_cc.html.
 void SaveCardBubbleViewsBrowserTestBase::FillAndSubmitFormWithoutName() {
   content::WebContents* web_contents = GetActiveWebContents();
   const std::string click_fill_button_js =

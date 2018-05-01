@@ -27598,7 +27598,6 @@ from previous Chrome versions.
   <int value="887011602" label="enable-spelling-auto-correct"/>
   <int value="892899792" label="MaterialDesignIncognitoNTP:disabled"/>
   <int value="900614020" label="ContentSuggestionsShowSummary:disabled"/>
-  <int value="902608487" label="AutofillUpstreamRequestCvcIfMissing:enabled"/>
   <int value="903267263" label="disable-offline-pages"/>
   <int value="908302031"
       label="OmniboxUIExperimentElideSuggestionUrlAfterHost:enabled"/>
@@ -27843,7 +27842,6 @@ from previous Chrome versions.
   <int value="1427905064" label="CreditCardAutofillTouchBar:enabled"/>
   <int value="1431050645" label="PayWithGoogleV1:disabled"/>
   <int value="1434515920" label="ReaderModeInCCT:enabled"/>
-  <int value="1435018419" label="AutofillUpstreamRequestCvcIfMissing:disabled"/>
   <int value="1441897340" label="AndroidSpellCheckerNonLowEnd:enabled"/>
   <int value="1442798825" label="enable-quic"/>
   <int value="1442830837" label="MemoryAblation:disabled"/>

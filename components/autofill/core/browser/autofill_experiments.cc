@@ -61,8 +61,6 @@ const base::Feature kAutofillSuppressDisusedCreditCards{
     "AutofillSuppressDisusedCreditCards", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kAutofillUpstreamAllowAllEmailDomains{
     "AutofillUpstreamAllowAllEmailDomains", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kAutofillUpstreamRequestCvcIfMissing{
-    "AutofillUpstreamRequestCvcIfMissing", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillUpstreamSendDetectedValues{
     "AutofillUpstreamSendDetectedValues", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kAutofillUpstreamSendPanFirstSix{
@@ -280,14 +278,6 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
   }
 
   return !group_name.empty() && group_name != "Disabled";
-}
-
-bool IsAutofillUpstreamRequestCvcIfMissingExperimentEnabled() {
-#if defined(OS_ANDROID)
-  return false;
-#else
-  return base::FeatureList::IsEnabled(kAutofillUpstreamRequestCvcIfMissing);
-#endif
 }
 
 bool IsAutofillUpstreamSendDetectedValuesExperimentEnabled() {
