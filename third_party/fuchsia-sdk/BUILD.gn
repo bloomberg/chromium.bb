@@ -189,3 +189,9 @@ fuchsia_sdk_pkg("netstack") {
     "netstack.fidl",
   ]
 }
+
+fuchsia_sdk_lib_pkg("svc") {
+  sources = [
+    "include/lib/svc/dir.h",
+  ]
+}

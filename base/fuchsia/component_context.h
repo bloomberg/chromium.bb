@@ -24,17 +24,14 @@ class SynchronousInterfacePtr;
 namespace base {
 namespace fuchsia {
 
-// Provides access to the component's environment and allows it to publish
-// outgoing services.
+// Provides access to the component's environment.
 class BASE_EXPORT ComponentContext {
  public:
-  ComponentContext();
+  explicit ComponentContext(ScopedZxHandle service_root);
   ~ComponentContext();
 
-  // Returns default ComponentContext instance for the current process. The
-  // default context uses /srv namespace to connect to environment services and
-  // publishes outgoing services to the directory provided by the process
-  // creator.
+  // Returns default ComponentContext instance for the current process. It uses
+  // /srv namespace to connect to environment services.
   static ComponentContext* GetDefault();
 
   // Satisfies the interface |request| by binding the channel to a service.

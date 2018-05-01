@@ -6,6 +6,8 @@
 
 #include <fdio/util.h>
 
+#include "base/fuchsia/scoped_zx_handle.h"
+#include "base/fuchsia/services_directory.h"
 #include "base/no_destructor.h"
 
 namespace base {
@@ -26,12 +28,17 @@ ScopedZxHandle ConnectToServiceRoot() {
 
 }  // namespace
 
-ComponentContext::ComponentContext() : service_root_(ConnectToServiceRoot()) {}
+ComponentContext::ComponentContext(ScopedZxHandle service_root)
+    : service_root_(std::move(service_root)) {
+  DCHECK(service_root_);
+}
+
 ComponentContext::~ComponentContext() = default;
 
 // static
 ComponentContext* ComponentContext::GetDefault() {
-  static base::NoDestructor<ComponentContext> component_context;
+  static base::NoDestructor<ComponentContext> component_context(
+      ConnectToServiceRoot());
   return component_context.get();
 }
 
