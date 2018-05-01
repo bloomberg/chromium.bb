@@ -18,6 +18,7 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -85,6 +86,8 @@ URLLoader::DeleteCallback NeverInvokedDeleteLoaderCallback() {
 
 constexpr char kBodyReadFromNetBeforePausedHistogram[] =
     "Network.URLLoader.BodyReadFromNetBeforePaused";
+
+constexpr char kTestAuthURL[] = "/auth-basic?password=PASS&realm=REALM";
 
 static ResourceRequest CreateResourceRequest(const char* method,
                                              const GURL& url) {
@@ -1598,6 +1601,196 @@ TEST_F(URLLoaderTest, ReadPipeClosedWhileReadTaskPosted) {
   client()->RunUntilResponseBodyArrived();
   client()->response_body_release();
   delete_run_loop.Run();
+}
+
+// A mock NetworkServiceClient that responds auth challenges with previously
+// set credentials.
+class TestAuthNetworkServiceClient
+    : public network::mojom::NetworkServiceClient {
+ public:
+  TestAuthNetworkServiceClient() = default;
+  ~TestAuthNetworkServiceClient() override = default;
+
+  enum class CredentialsResponse {
+    NO_CREDENTIALS,
+    CORRECT_CREDENTIALS,
+    INCORRECT_CREDENTIALS_THEN_CORRECT_ONES,
+  };
+
+  // network::mojom::NetworkServiceClient:
+  void OnAuthRequired(uint32_t process_id,
+                      uint32_t routing_id,
+                      uint32_t request_id,
+                      const GURL& url,
+                      const GURL& site_for_cookies,
+                      bool first_auth_attempt,
+                      const scoped_refptr<net::AuthChallengeInfo>& auth_info,
+                      int32_t resource_type,
+                      network::mojom::AuthChallengeResponderPtr
+                          auth_challenge_responder) override {
+    switch (credentials_response_) {
+      case CredentialsResponse::NO_CREDENTIALS:
+        auth_credentials_ = base::nullopt;
+        break;
+      case CredentialsResponse::CORRECT_CREDENTIALS:
+        auth_credentials_ = net::AuthCredentials(base::ASCIIToUTF16("USER"),
+                                                 base::ASCIIToUTF16("PASS"));
+        break;
+      case CredentialsResponse::INCORRECT_CREDENTIALS_THEN_CORRECT_ONES:
+        auth_credentials_ = net::AuthCredentials(base::ASCIIToUTF16("USER"),
+                                                 base::ASCIIToUTF16("FAIL"));
+        credentials_response_ = CredentialsResponse::CORRECT_CREDENTIALS;
+        break;
+    }
+    std::move(auth_challenge_responder)->OnAuthCredentials(auth_credentials_);
+    ++on_auth_required_call_counter_;
+  }
+
+  void OnCertificateRequested(
+      uint32_t process_id,
+      uint32_t routing_id,
+      uint32_t request_id,
+      const scoped_refptr<net::SSLCertRequestInfo>& cert_info,
+      network::mojom::NetworkServiceClient::OnCertificateRequestedCallback
+          callback) override {
+    NOTREACHED();
+  }
+
+  void OnSSLCertificateError(uint32_t process_id,
+                             uint32_t routing_id,
+                             uint32_t request_id,
+                             int32_t resource_type,
+                             const GURL& url,
+                             const net::SSLInfo& ssl_info,
+                             bool fatal,
+                             OnSSLCertificateErrorCallback response) override {
+    NOTREACHED();
+  }
+
+  void set_credentials_response(CredentialsResponse credentials_response) {
+    credentials_response_ = credentials_response;
+  }
+
+  int on_auth_required_call_counter() { return on_auth_required_call_counter_; }
+
+ private:
+  CredentialsResponse credentials_response_;
+  base::Optional<net::AuthCredentials> auth_credentials_;
+  int on_auth_required_call_counter_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(TestAuthNetworkServiceClient);
+};
+
+TEST_F(URLLoaderTest, SetAuth) {
+  TestAuthNetworkServiceClient network_service_client;
+  network_service_client.set_credentials_response(
+      TestAuthNetworkServiceClient::CredentialsResponse::CORRECT_CREDENTIALS);
+
+  ResourceRequest request =
+      CreateResourceRequest("GET", test_server()->GetURL(kTestAuthURL));
+  base::RunLoop delete_run_loop;
+  mojom::URLLoaderPtr loader;
+  std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
+      context(), &network_service_client,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      mojo::MakeRequest(&loader), 0, request, false,
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, kProcessId,
+      0 /* request_id */, resource_scheduler_client(), nullptr);
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_TRUE(url_loader);
+
+  client()->RunUntilResponseBodyArrived();
+  EXPECT_TRUE(client()->has_received_response());
+  EXPECT_FALSE(client()->has_received_completion());
+
+  // Spin the message loop until the delete callback is invoked, and then delete
+  // the URLLoader.
+  delete_run_loop.Run();
+
+  client()->RunUntilComplete();
+  EXPECT_TRUE(client()->has_received_completion());
+  scoped_refptr<net::HttpResponseHeaders> headers =
+      client()->response_head().headers;
+  ASSERT_TRUE(headers);
+  EXPECT_EQ(200, headers->response_code());
+  EXPECT_EQ(1, network_service_client.on_auth_required_call_counter());
+  ASSERT_FALSE(url_loader);
+}
+
+TEST_F(URLLoaderTest, CancelAuth) {
+  TestAuthNetworkServiceClient network_service_client;
+  network_service_client.set_credentials_response(
+      TestAuthNetworkServiceClient::CredentialsResponse::NO_CREDENTIALS);
+
+  ResourceRequest request =
+      CreateResourceRequest("GET", test_server()->GetURL(kTestAuthURL));
+  base::RunLoop delete_run_loop;
+  mojom::URLLoaderPtr loader;
+  std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
+      context(), &network_service_client,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      mojo::MakeRequest(&loader), 0, request, false,
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, kProcessId,
+      0 /* request_id */, resource_scheduler_client(), nullptr);
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_TRUE(url_loader);
+
+  client()->RunUntilResponseBodyArrived();
+  EXPECT_TRUE(client()->has_received_response());
+  EXPECT_FALSE(client()->has_received_completion());
+
+  // Spin the message loop until the delete callback is invoked, and then delete
+  // the URLLoader.
+  delete_run_loop.Run();
+
+  client()->RunUntilComplete();
+  EXPECT_TRUE(client()->has_received_completion());
+  scoped_refptr<net::HttpResponseHeaders> headers =
+      client()->response_head().headers;
+  ASSERT_TRUE(headers);
+  EXPECT_EQ(401, headers->response_code());
+  EXPECT_EQ(1, network_service_client.on_auth_required_call_counter());
+  ASSERT_FALSE(url_loader);
+}
+
+TEST_F(URLLoaderTest, TwoChallenges) {
+  TestAuthNetworkServiceClient network_service_client;
+  network_service_client.set_credentials_response(
+      TestAuthNetworkServiceClient::CredentialsResponse::
+          INCORRECT_CREDENTIALS_THEN_CORRECT_ONES);
+
+  ResourceRequest request =
+      CreateResourceRequest("GET", test_server()->GetURL(kTestAuthURL));
+  base::RunLoop delete_run_loop;
+  mojom::URLLoaderPtr loader;
+  std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
+      context(), &network_service_client,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      mojo::MakeRequest(&loader), 0, request, false,
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, kProcessId,
+      0 /* request_id */, resource_scheduler_client(), nullptr);
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_TRUE(url_loader);
+
+  client()->RunUntilResponseBodyArrived();
+  EXPECT_TRUE(client()->has_received_response());
+  EXPECT_FALSE(client()->has_received_completion());
+
+  // Spin the message loop until the delete callback is invoked, and then delete
+  // the URLLoader.
+  delete_run_loop.Run();
+
+  client()->RunUntilComplete();
+  EXPECT_TRUE(client()->has_received_completion());
+  scoped_refptr<net::HttpResponseHeaders> headers =
+      client()->response_head().headers;
+  ASSERT_TRUE(headers);
+  EXPECT_EQ(200, headers->response_code());
+  EXPECT_EQ(2, network_service_client.on_auth_required_call_counter());
+  ASSERT_FALSE(url_loader);
 }
 
 }  // namespace network
