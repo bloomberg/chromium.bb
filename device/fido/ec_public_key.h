@@ -26,6 +26,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) ECPublicKey : public PublicKey {
       std::string algorithm,
       base::span<const uint8_t> u2f_data);
 
+  // Parse a public key encoded in ANSI X9.62 uncompressed format.
+  static std::unique_ptr<ECPublicKey> ParseX962Uncompressed(
+      std::string algorithm,
+      base::span<const uint8_t> input);
+
   ECPublicKey(std::string algorithm,
               std::vector<uint8_t> x,
               std::vector<uint8_t> y);

@@ -61,6 +61,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapMakeCredentialRequest {
     return user_verification_required_;
   }
   bool resident_key_supported() const { return resident_key_supported_; }
+  const base::Optional<std::vector<PublicKeyCredentialDescriptor>>&
+  exclude_list() const {
+    return exclude_list_;
+  }
 
  private:
   std::vector<uint8_t> client_data_hash_;

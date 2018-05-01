@@ -56,8 +56,10 @@ typedef struct OpaqueSecTrustRef* SecACLRef;
 typedef struct OpaqueSecTrustedApplicationRef* SecTrustedApplicationRef;
 
 #if defined(OS_IOS)
+typedef struct CF_BRIDGED_TYPE(id) __SecKey* SecKeyRef;
 typedef struct CF_BRIDGED_TYPE(id) __SecPolicy* SecPolicyRef;
 #else
+typedef struct OpaqueSecKeyRef* SecKeyRef;
 typedef struct OpaqueSecPolicyRef* SecPolicyRef;
 #endif
 
@@ -147,6 +149,7 @@ TYPE_NAME_FOR_CF_TYPE_DECL(CGColor);
 TYPE_NAME_FOR_CF_TYPE_DECL(CTFont);
 TYPE_NAME_FOR_CF_TYPE_DECL(CTRun);
 
+TYPE_NAME_FOR_CF_TYPE_DECL(SecKey);
 TYPE_NAME_FOR_CF_TYPE_DECL(SecPolicy);
 
 #undef TYPE_NAME_FOR_CF_TYPE_DECL
@@ -309,6 +312,7 @@ CF_CAST_DECL(CTFontDescriptor);
 CF_CAST_DECL(CTRun);
 
 CF_CAST_DECL(SecACL);
+CF_CAST_DECL(SecKey);
 CF_CAST_DECL(SecPolicy);
 CF_CAST_DECL(SecTrustedApplication);
 
