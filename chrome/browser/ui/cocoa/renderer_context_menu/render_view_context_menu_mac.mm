@@ -200,6 +200,7 @@ void RenderViewContextMenuMac::ExecuteCommand(int command_id, int event_flags) {
   switch (command_id) {
     case IDC_CONTENT_CONTEXT_EMOJI:
       [NSApp orderFrontCharacterPalette:nil];
+      RenderViewContextMenu::RecordUsedItem(command_id);
       break;
 
     case IDC_CONTENT_CONTEXT_LOOK_UP:
