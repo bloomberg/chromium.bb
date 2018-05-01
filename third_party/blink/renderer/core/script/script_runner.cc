@@ -202,10 +202,9 @@ bool ScriptRunner::ExecuteInOrderTask() {
   if (in_order_scripts_to_execute_soon_.IsEmpty())
     return false;
 
-  PendingScript* pending_script = in_order_scripts_to_execute_soon_.front()
-                                      ->GetPendingScriptIfScriptIsAsync();
-  if (pending_script && pending_script->IsCurrentlyStreaming())
-    return false;
+  DCHECK(!in_order_scripts_to_execute_soon_.front()
+              ->GetPendingScriptIfScriptIsAsync())
+      << "In-order scripts queue should not contain any async script.";
 
   in_order_scripts_to_execute_soon_.TakeFirst()->Execute();
 
