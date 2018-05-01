@@ -12,7 +12,6 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
-#include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -149,9 +148,6 @@ class ClientHintsBrowserTest : public InProcessBrowserTest {
 
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
 
     request_interceptor_ = std::make_unique<ThirdPartyURLLoaderInterceptor>(
         GURL("https://foo.com/non-existing-image.jpg"));
