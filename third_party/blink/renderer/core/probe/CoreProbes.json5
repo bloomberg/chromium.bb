@@ -204,8 +204,6 @@
     },
     Tracing: {
       probes: [
-        "frameStartedLoading",
-        "frameStoppedLoading",
         "didStartWorker",
       ]
     },

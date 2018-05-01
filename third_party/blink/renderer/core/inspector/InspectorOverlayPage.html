@@ -85,10 +85,6 @@ body.platform-linux {
     overflow: hidden;
 }
 
-#reloading-blanket {
-    background-color: rgb(255, 255, 255);
-}
-
 .controls-line > * {
     background-color: rgb(255, 255, 194);
     border: 1px solid rgb(202, 202, 202);
@@ -257,12 +253,6 @@ function drawPausedInDebuggerMessage(message)
     document.querySelector(".controls-line").style.visibility = "visible";
     document.getElementById("paused-in-debugger").textContent = message;
     document.body.classList.add("dimmed");
-}
-
-function showReloadingBlanket()
-{
-    var element = document.getElementById("reloading-blanket");
-    element.style.display = "block";
 }
 
 function _drawGrid(context, rulerAtRight, rulerAtBottom)
@@ -450,7 +440,6 @@ function reset(resetData)
     window._controlsVisible = false;
     document.querySelector(".controls-line").style.visibility = "hidden";
     document.getElementById("element-title").style.visibility = "hidden";
-    document.getElementById("reloading-blanket").style.display = "none";
     document.getElementById("tooltip-container").removeChildren();
 
     document.body.classList.remove("dimmed");
@@ -933,7 +922,6 @@ document.addEventListener("keydown", onDocumentKeyDown);
   <span id="node-width"></span><span class="px">px</span><span class="px"> &#xD7; </span><span id="node-height"></span><span class="px">px</span>
 </div>
 <div id="tooltip-container"></div>
-<div id="reloading-blanket" class="fill" style="display: none"></div>
 <div class="controls-line">
     <div class="message-box"><div id="paused-in-debugger"></div></div>
     <div class="button" id="resume-button" title="Resume script execution (F8)."><div class="glyph"></div></div>

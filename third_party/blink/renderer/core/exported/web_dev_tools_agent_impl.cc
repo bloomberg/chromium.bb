@@ -441,7 +441,7 @@ void WebDevToolsAgentImpl::Session::InitializeInspectorSession(
   inspector_session_->Append(
       new InspectorWorkerAgent(inspected_frames, nullptr));
 
-  tracing_agent_ = new InspectorTracingAgent(agent_, inspected_frames);
+  tracing_agent_ = new InspectorTracingAgent(inspected_frames);
   inspector_session_->Append(tracing_agent_);
 
   page_agent_ = InspectorPageAgent::Create(
@@ -628,21 +628,6 @@ bool WebDevToolsAgentImpl::ScreencastEnabled() {
       return true;
   }
   return false;
-}
-
-void WebDevToolsAgentImpl::RootLayerCleared() {
-  for (auto& session : sessions_)
-    session->tracing_agent()->RootLayerCleared();
-}
-
-void WebDevToolsAgentImpl::ShowReloadingBlanket() {
-  for (auto& session : sessions_)
-    session->overlay_agent()->ShowReloadingBlanket();
-}
-
-void WebDevToolsAgentImpl::HideReloadingBlanket() {
-  for (auto& session : sessions_)
-    session->overlay_agent()->HideReloadingBlanket();
 }
 
 void WebDevToolsAgentImpl::PageLayoutInvalidated(bool resized) {

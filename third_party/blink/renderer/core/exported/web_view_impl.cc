@@ -3584,8 +3584,6 @@ void WebViewImpl::SetRootGraphicsLayer(GraphicsLayer* graphics_layer) {
     layer_tree_view_->SetDeferCommits(true);
     layer_tree_view_->ClearRootLayer();
     layer_tree_view_->ClearViewportLayers();
-    if (WebDevToolsAgentImpl* dev_tools = MainFrameDevToolsAgentImpl())
-      dev_tools->RootLayerCleared();
   }
 }
 
@@ -3605,8 +3603,6 @@ void WebViewImpl::SetRootLayer(WebLayer* layer) {
     layer_tree_view_->SetDeferCommits(true);
     layer_tree_view_->ClearRootLayer();
     layer_tree_view_->ClearViewportLayers();
-    if (WebDevToolsAgentImpl* dev_tools = MainFrameDevToolsAgentImpl())
-      dev_tools->RootLayerCleared();
   }
 }
 
