@@ -332,7 +332,6 @@ void PageLoadTracker::WillProcessNavigationResponse(
     content::NavigationHandle* navigation_handle) {
   DCHECK(!navigation_request_id_.has_value());
   navigation_request_id_ = navigation_handle->GetGlobalRequestID();
-  DCHECK(navigation_request_id_.value() != content::GlobalRequestID());
 }
 
 void PageLoadTracker::Commit(content::NavigationHandle* navigation_handle) {
