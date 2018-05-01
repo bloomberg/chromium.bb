@@ -8,6 +8,8 @@
 #include "base/path_service.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
@@ -24,6 +26,9 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "ui/shell_dialogs/select_file_dialog.h"
+#include "ui/shell_dialogs/select_file_dialog_factory.h"
+#include "ui/shell_dialogs/select_file_policy.h"
 
 namespace {
 
@@ -44,8 +49,6 @@ class PolicyToolUITest : public InProcessBrowserTest {
   ~PolicyToolUITest() override;
 
  protected:
-  // InProcessBrowserTest implementation.
-  void SetUpInProcessBrowserTestFixture() override;
   void SetUp() override;
 
   base::FilePath GetSessionsDir();
@@ -105,8 +108,6 @@ base::FilePath PolicyToolUITest::GetSessionPath(
 PolicyToolUITest::PolicyToolUITest() {}
 
 PolicyToolUITest::~PolicyToolUITest() {}
-
-void PolicyToolUITest::SetUpInProcessBrowserTestFixture() {}
 
 void PolicyToolUITest::SetUp() {
   scoped_feature_list_.InitAndEnableFeature(features::kPolicyTool);
@@ -261,6 +262,85 @@ std::string PolicyToolUITest::ExtractSinglePolicyValue(
   EXPECT_EQ(base::Value::Type::STRING, value->type());
   return value->GetString();
 }
+
+class PolicyToolUIExportTest : public PolicyToolUITest {
+ public:
+  PolicyToolUIExportTest();
+  ~PolicyToolUIExportTest() override;
+
+ protected:
+  // InProcessBrowserTest implementation.
+  void SetUpInProcessBrowserTestFixture() override;
+
+  // The temporary directory and file path for policy saving.
+  base::ScopedTempDir export_policies_test_dir_;
+  base::FilePath export_policies_test_file_path_;
+};
+
+PolicyToolUIExportTest::PolicyToolUIExportTest() {}
+
+PolicyToolUIExportTest::~PolicyToolUIExportTest() {}
+
+void PolicyToolUIExportTest::SetUpInProcessBrowserTestFixture() {
+  ASSERT_TRUE(export_policies_test_dir_.CreateUniqueTempDir());
+  const std::string filename = "policy.json";
+  export_policies_test_file_path_ =
+      export_policies_test_dir_.GetPath().AppendASCII(filename);
+}
+
+// An artificial SelectFileDialog that immediately returns the location of test
+// file instead of showing the UI file picker.
+class TestSelectFileDialogPolicyTool : public ui::SelectFileDialog {
+ public:
+  TestSelectFileDialogPolicyTool(ui::SelectFileDialog::Listener* listener,
+                                 std::unique_ptr<ui::SelectFilePolicy> policy,
+                                 const base::FilePath& default_selected_path)
+      : ui::SelectFileDialog(listener, std::move(policy)) {
+    default_path_ = default_selected_path;
+  }
+
+  void SelectFileImpl(Type type,
+                      const base::string16& title,
+                      const base::FilePath& default_path,
+                      const FileTypeInfo* file_types,
+                      int file_type_index,
+                      const base::FilePath::StringType& default_extension,
+                      gfx::NativeWindow owning_window,
+                      void* params) override {
+    listener_->FileSelected(default_path_, /*index=*/0, /*params=*/nullptr);
+  }
+
+  bool IsRunning(gfx::NativeWindow owning_window) const override {
+    return false;
+  }
+
+  void ListenerDestroyed() override {}
+
+  bool HasMultipleFileTypeChoicesImpl() override { return false; }
+
+ private:
+  ~TestSelectFileDialogPolicyTool() override {}
+  base::FilePath default_path_;
+};
+
+// A factory associated with the artificial file picker.
+class TestSelectFileDialogFactoryPolicyTool
+    : public ui::SelectFileDialogFactory {
+ public:
+  TestSelectFileDialogFactoryPolicyTool(
+      const base::FilePath& default_selected_path) {
+    default_path_ = default_selected_path;
+  }
+
+ private:
+  base::FilePath default_path_;
+  ui::SelectFileDialog* Create(
+      ui::SelectFileDialog::Listener* listener,
+      std::unique_ptr<ui::SelectFilePolicy> policy) override {
+    return new TestSelectFileDialogPolicyTool(listener, std::move(policy),
+                                              default_path_);
+  }
+};
 
 // Flaky on Win buildbots. See crbug.com/832673.
 #if defined(OS_WIN)
@@ -537,4 +617,48 @@ IN_PROC_BROWSER_TEST_F(PolicyToolUITest, MAYBE_RenameSessionInvalidName) {
   RenameSession("2", "/full_path");
   EXPECT_TRUE(IsSessionRenameErrorMessageDisplayed());
   EXPECT_EQ(expected, *ExtractSessionsList());
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyToolUIExportTest, ExportSessionPolicyToLinux) {
+  CreateMultipleSessionFiles(3);
+  // Set SelectFileDialog to use our factory.
+  ui::SelectFileDialog::SetFactory(new TestSelectFileDialogFactoryPolicyTool(
+      export_policies_test_file_path_));
+
+  // Test if the current session policy is successfully exported.
+  ui_test_utils::NavigateToURL(browser(), GURL("chrome://policy-tool"));
+  content::RunAllTasksUntilIdle();
+
+  std::string edit_and_export_js =
+      "$('show-unset').click();"
+      "var policyEntry = document.querySelectorAll("
+      "    'section.policy-table-section > * > tbody')[0];"
+      "policyEntry.getElementsByClassName('edit-button')[0].click();"
+      "policyEntry.getElementsByClassName('value-edit-field')[0].value ="
+      "                                                           'test';"
+      "policyEntry.getElementsByClassName('save-button')[0].click();"
+      "$('export-policies-linux').click()";
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(content::ExecuteScript(contents, edit_and_export_js));
+  // Wait until the posted tasks (Edit session, export to Linux) finish.
+  content::RunAllTasksUntilIdle();
+
+  // Because we created 3 session policies (with paths {0, 1, 2}), the last one
+  // is the current active session policy.
+  EXPECT_TRUE(base::ContentsEqual(export_policies_test_file_path_,
+                                  GetSessionPath(FILE_PATH_LITERAL("2"))));
+
+  // Test if after an export action, we can continue exporting.
+  std::string change_session_js =
+      "$('session-name-field').value = '1';"
+      "$('load-session-button').click();";
+  EXPECT_TRUE(
+      content::ExecuteScript(contents, change_session_js + edit_and_export_js));
+  // Wait until the posted tasks (Edit session, export to Linux) finish.
+  content::RunAllTasksUntilIdle();
+
+  EXPECT_TRUE(base::ContentsEqual(export_policies_test_file_path_,
+                                  GetSessionPath(FILE_PATH_LITERAL("1"))));
+  TestSelectFileDialogPolicyTool::SetFactory(nullptr);
 }

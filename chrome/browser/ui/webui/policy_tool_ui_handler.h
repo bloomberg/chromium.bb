@@ -45,6 +45,8 @@ class PolicyToolUIHandler : public PolicyUIHandler {
 
   void HandleDeleteSession(const base::ListValue* args);
 
+  void HandleExportLinux(const base::ListValue* args);
+
   void OnSessionDeleted(bool is_successful);
 
   std::string ReadOrCreateFileCallback();
@@ -67,10 +69,27 @@ class PolicyToolUIHandler : public PolicyUIHandler {
 
   void SetDefaultSessionName();
 
+  // ui::SelectFileDialog::Listener implementation.
+  void FileSelected(const base::FilePath& path,
+                    int index,
+                    void* params) override;
+
+  void FileSelectionCanceled(void* params) override;
+
+  void WriteSessionPolicyToFile(const base::FilePath& path) const;
+
+  void ExportSessionToFile(const base::FilePath::StringType& file_extension);
+
   bool is_saving_enabled_ = true;
 
+  // This string is filled when an export action occurs, it contains the current
+  // session dictionary in a specific format. This format will be JSON, PLIST,
+  // or REG; depending on the kind of export.
+  std::string session_dict_for_exporting_;
   base::FilePath sessions_dir_;
   base::FilePath::StringType session_name_;
+
+  scoped_refptr<ui::SelectFileDialog> export_policies_select_file_dialog_;
 
   base::WeakPtrFactory<PolicyToolUIHandler> callback_weak_ptr_factory_;
 

@@ -237,6 +237,10 @@
   <message name="IDS_POLICY_TOOL_TITLE" desc="Admin page title and the title of the section that lists policies.">
     Policy management
   </message>
+  <message name="IDS_EXPORT_POLICIES_LINUX" desc="Button that exports the current session policy
+  in linux format.">
+    Export Linux
+  </message>
   <message name="IDS_POLICY_TOOL_EDIT" desc="Label for the button to change policy value in current session.">
     Edit
   </message>
