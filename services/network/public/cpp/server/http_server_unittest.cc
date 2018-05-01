@@ -265,6 +265,10 @@ class HttpServerTest : public testing::Test, public HttpServer::Delegate {
     return requests_[request_index].second;
   }
 
+  HttpConnection* FindConnection(int connection_id) {
+    return server_->FindConnection(connection_id);
+  }
+
   std::unordered_map<int, bool>& connection_map() { return connection_map_; }
 
  protected:
@@ -300,10 +304,23 @@ class WebSocketTest : public HttpServerTest {
   }
 };
 
+TEST_F(HttpServerTest, SetNonexistingConnectionBuffer) {
+  EXPECT_FALSE(server_->SetReceiveBufferSize(1, 1000));
+  EXPECT_FALSE(server_->SetSendBufferSize(1, 1000));
+}
+
 TEST_F(HttpServerTest, Request) {
   TestHttpClient client;
   ASSERT_THAT(client.ConnectAndWait(server_address_), IsOk());
   client.Send("GET /test HTTP/1.1\r\n\r\n");
+
+  int connection_id = connection_map_.begin()->first;
+  HttpConnection* conn = FindConnection(connection_id);
+  EXPECT_TRUE(server_->SetReceiveBufferSize(connection_id, 5u * 1024 * 1024));
+  EXPECT_TRUE(server_->SetSendBufferSize(connection_id, 5u * 1024 * 1024));
+  EXPECT_EQ(conn->ReadBufferSize(), 5u * 1024u * 1024u);
+  EXPECT_EQ(conn->WriteBufferSize(), 5u * 1024u * 1024u);
+
   RunUntilRequestsReceived(1);
   ASSERT_EQ("GET", GetRequest(0).method);
   ASSERT_EQ("/test", GetRequest(0).path);

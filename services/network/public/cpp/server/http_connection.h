@@ -48,22 +48,32 @@ class HttpConnection {
   WebSocket* web_socket() const { return web_socket_.get(); }
   void SetWebSocket(std::unique_ptr<WebSocket> web_socket);
 
+  void SetReadBufferSize(size_t buf_size) { max_read_buf_size_ = buf_size; }
+  void SetWriteBufferSize(size_t buf_size) { max_write_buf_size_ = buf_size; }
+  size_t ReadBufferSize() const { return max_read_buf_size_; }
+  size_t WriteBufferSize() const { return max_write_buf_size_; }
+
   const size_t kMaxBufferSize = 1 * 1024 * 1024;  // 1 Mbyte
 
  private:
   const int id_;
   const mojom::TCPConnectedSocketPtr socket_;
-  const mojo::ScopedDataPipeConsumerHandle socket_receive_handle_;
-  mojo::SimpleWatcher receive_pipe_watcher_;
-  const mojo::ScopedDataPipeProducerHandle socket_send_handle_;
-  mojo::SimpleWatcher send_pipe_watcher_;
-  const net::IPEndPoint peer_addr_;
+
   // Stores data that has been read from the server but not yet parsed into an
   // HTTP request.
   std::string read_buf_;
+  size_t max_read_buf_size_ = kMaxBufferSize;
+  const mojo::ScopedDataPipeConsumerHandle socket_receive_handle_;
+  mojo::SimpleWatcher receive_pipe_watcher_;
+
   // Stores data that has been marked for sending but has not yet been sent to
   // the network.
   std::string write_buf_;
+  size_t max_write_buf_size_ = kMaxBufferSize;
+  const mojo::ScopedDataPipeProducerHandle socket_send_handle_;
+  mojo::SimpleWatcher send_pipe_watcher_;
+
+  const net::IPEndPoint peer_addr_;
 
   std::unique_ptr<WebSocket> web_socket_;
 

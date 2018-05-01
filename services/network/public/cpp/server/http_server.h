@@ -92,8 +92,11 @@ class COMPONENT_EXPORT(NETWORK_CPP) HttpServer {
 
   void Close(int connection_id);
 
-  void SetReceiveBufferSize(int connection_id, int32_t size);
-  void SetSendBufferSize(int connection_id, int32_t size);
+  // These two functions set the read and write buffers of the HttpConnection
+  // identified by |connection_id|.  These return |true| on success, and return
+  // |false| if there is no object indexed by |connection_id|.
+  bool SetReceiveBufferSize(int connection_id, int32_t size);
+  bool SetSendBufferSize(int connection_id, int32_t size);
 
   // Asynchronously gets the local address of this http server. On completion,
   // |callback| will be called with a network error code and the local address
