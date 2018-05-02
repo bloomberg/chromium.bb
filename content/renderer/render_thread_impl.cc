@@ -419,9 +419,7 @@ class RendererLocalSurfaceIdProvider : public viz::LocalSurfaceIdProvider {
       const viz::CompositorFrame& frame) override {
     auto new_surface_properties =
         RenderWidgetSurfaceProperties::FromCompositorFrame(frame);
-    if (!parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId()
-             .is_valid() ||
-        new_surface_properties != surface_properties_) {
+    if (new_surface_properties != surface_properties_) {
       parent_local_surface_id_allocator_.GenerateId();
       surface_properties_ = new_surface_properties;
     }
