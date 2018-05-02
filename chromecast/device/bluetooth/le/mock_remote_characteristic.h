@@ -44,13 +44,10 @@ class MockRemoteCharacteristic : public RemoteCharacteristic {
                  const std::vector<uint8_t>& value,
                  StatusCallback callback) override {}
 
-  MOCK_METHOD2(Write,
-               bool(bluetooth_v2_shlib::Gatt::WriteType write_type,
-                    const std::vector<uint8_t>& value));
-  void Write(bluetooth_v2_shlib::Gatt::WriteType write_type,
-             const std::vector<uint8_t>& value,
+  MOCK_METHOD1(Write, bool(const std::vector<uint8_t>& value));
+  void Write(const std::vector<uint8_t>& value,
              StatusCallback callback) override {
-    std::move(callback).Run(Write(write_type, value));
+    std::move(callback).Run(Write(value));
   }
 
   MOCK_METHOD0(NotificationEnabled, bool());

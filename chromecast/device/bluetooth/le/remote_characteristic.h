@@ -61,10 +61,10 @@ class RemoteCharacteristic
                          const std::vector<uint8_t>& value,
                          StatusCallback callback) = 0;
 
-  // Write |value| to the characteristic with |write_type|. Will retry if
-  // auth_req isn't met. When completed, |callback| will be called.
-  virtual void Write(bluetooth_v2_shlib::Gatt::WriteType write_type,
-                     const std::vector<uint8_t>& value,
+  // Write |value| to the characteristic inferring write_type from
+  // |permissions()|. Will retry if auth_req isn't met. When completed,
+  // |callback| will be called.
+  virtual void Write(const std::vector<uint8_t>& value,
                      StatusCallback callback) = 0;
 
   // Returns true if notifications are enabled.

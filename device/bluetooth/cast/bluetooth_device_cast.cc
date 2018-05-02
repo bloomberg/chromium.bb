@@ -57,6 +57,7 @@ BluetoothDeviceCast::BluetoothDeviceCast(
     BluetoothAdapter* adapter,
     scoped_refptr<chromecast::bluetooth::RemoteDevice> device)
     : BluetoothDevice(adapter),
+      connected_(device->IsConnected()),
       remote_device_(std::move(device)),
       address_(GetCanonicalBluetoothAddress(remote_device_->addr())),
       weak_factory_(this) {}

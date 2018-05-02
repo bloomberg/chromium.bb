@@ -289,13 +289,6 @@ TEST_F(GattClientManagerTest, RemoteDeviceServices) {
   bluetooth_v2_shlib::Gatt::Client::Delegate* delegate =
       gatt_client_->delegate();
   delegate->OnServicesAdded(kTestAddr1, kServices);
-
-  device->GetServices(base::BindOnce(
-      [](std::vector<scoped_refptr<RemoteService>>* pservices,
-         std::vector<scoped_refptr<RemoteService>> services) {
-        *pservices = services;
-      },
-      &services));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(kServices.size(), GetServices(device.get()).size());
@@ -525,6 +518,75 @@ TEST_F(GattClientManagerTest, FakeCccd) {
                   bluetooth_v2_shlib::Gatt::PERMISSION_READ |
                   bluetooth_v2_shlib::Gatt::PERMISSION_WRITE),
               descriptor->permissions());
+  }
+}
+
+TEST_F(GattClientManagerTest, WriteType) {
+  const std::vector<uint8_t> kTestData1 = {0x1, 0x2, 0x3};
+
+  bluetooth_v2_shlib::Gatt::Service service;
+  bluetooth_v2_shlib::Gatt::Characteristic characteristic;
+
+  service.uuid = {{0x1}};
+  service.handle = 0x1;
+  service.primary = true;
+
+  characteristic.uuid = {{0x1, 0x1}};
+  characteristic.handle = 0x2;
+  characteristic.permissions = bluetooth_v2_shlib::Gatt::PERMISSION_WRITE;
+  characteristic.properties = bluetooth_v2_shlib::Gatt::PROPERTY_WRITE;
+  service.characteristics.push_back(characteristic);
+
+  characteristic.uuid = {{0x1, 0x2}};
+  characteristic.handle = 0x3;
+  characteristic.permissions = bluetooth_v2_shlib::Gatt::PERMISSION_WRITE;
+  characteristic.properties =
+      bluetooth_v2_shlib::Gatt::PROPERTY_WRITE_NO_RESPONSE;
+  service.characteristics.push_back(characteristic);
+
+  characteristic.uuid = {{0x1, 0x3}};
+  characteristic.handle = 0x4;
+  characteristic.permissions = bluetooth_v2_shlib::Gatt::PERMISSION_WRITE;
+  characteristic.properties = bluetooth_v2_shlib::Gatt::PROPERTY_SIGNED_WRITE;
+  service.characteristics.push_back(characteristic);
+
+  Connect(kTestAddr1);
+  bluetooth_v2_shlib::Gatt::Client::Delegate* delegate =
+      gatt_client_->delegate();
+  delegate->OnServicesAdded(kTestAddr1, {service});
+
+  scoped_refptr<RemoteDevice> device = GetDevice(kTestAddr1);
+
+  std::vector<scoped_refptr<RemoteService>> services =
+      GetServices(device.get());
+  ASSERT_EQ(1u, services.size());
+
+  std::vector<scoped_refptr<RemoteCharacteristic>> characteristics =
+      services[0]->GetCharacteristics();
+  ASSERT_EQ(3u, characteristics.size());
+
+  using WriteType = bluetooth_v2_shlib::Gatt::WriteType;
+
+  // The current implementation of RemoteDevice will put the characteristics in
+  // the order reported by libcast_bluetooth.
+  const WriteType kWriteTypes[] = {WriteType::WRITE_TYPE_DEFAULT,
+                                   WriteType::WRITE_TYPE_NO_RESPONSE,
+                                   WriteType::WRITE_TYPE_SIGNED};
+
+  for (size_t i = 0; i < characteristics.size(); ++i) {
+    const auto& characteristic = characteristics[i];
+    EXPECT_CALL(
+        *gatt_client_,
+        WriteCharacteristic(kTestAddr1, characteristic->characteristic(),
+                            bluetooth_v2_shlib::Gatt::Client::AUTH_REQ_NONE,
+                            kWriteTypes[i], kTestData1))
+        .WillOnce(Return(true));
+
+    base::MockCallback<RemoteCharacteristic::StatusCallback> write_cb;
+    EXPECT_CALL(write_cb, Run(true));
+    characteristic->Write(kTestData1, write_cb.Get());
+    delegate->OnCharacteristicWriteResponse(kTestAddr1, true,
+                                            characteristic->handle());
   }
 }
 

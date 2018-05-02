@@ -234,12 +234,26 @@ void RemoteCharacteristicImpl::WriteAuth(
   write_callback_ = std::move(callback);
 }
 
-void RemoteCharacteristicImpl::Write(
-    bluetooth_v2_shlib::Gatt::WriteType write_type,
-    const std::vector<uint8_t>& value,
-    StatusCallback callback) {
-  return WriteAuth(bluetooth_v2_shlib::Gatt::Client::AUTH_REQ_NONE, write_type,
-                   value, std::move(callback));
+void RemoteCharacteristicImpl::Write(const std::vector<uint8_t>& value,
+                                     StatusCallback callback) {
+  using WriteType = bluetooth_v2_shlib::Gatt::WriteType;
+  using Properties = bluetooth_v2_shlib::Gatt::Properties;
+
+  WriteType write_type = WriteType::WRITE_TYPE_NONE;
+  if (properties() & Properties::PROPERTY_WRITE) {
+    write_type = WriteType::WRITE_TYPE_DEFAULT;
+  } else if (properties() & Properties::PROPERTY_WRITE_NO_RESPONSE) {
+    write_type = WriteType::WRITE_TYPE_NO_RESPONSE;
+  } else if (properties() & Properties::PROPERTY_SIGNED_WRITE) {
+    write_type = WriteType::WRITE_TYPE_SIGNED;
+  } else {
+    LOG(ERROR) << "Write not supported. Properties: "
+               << static_cast<int>(properties());
+    EXEC_CB_AND_RET(callback, false);
+  }
+
+  WriteAuth(bluetooth_v2_shlib::Gatt::Client::AUTH_REQ_NONE, write_type, value,
+            std::move(callback));
 }
 
 bool RemoteCharacteristicImpl::NotificationEnabled() {
