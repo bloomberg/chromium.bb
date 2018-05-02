@@ -34,6 +34,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/console_message_level.h"
+#include "extensions/common/constants.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -174,6 +175,15 @@ bool TabUnderNavigationThrottle::IsSuspiciousClientRedirect() const {
   if (net::registry_controlled_domains::SameDomainOrHost(
           previous_main_frame_url, target_url,
           net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
+    return false;
+  }
+
+  // Exempt navigating to or from extension URLs, as they will redirect pages in
+  // the background. By exempting in both directions, extensions can always
+  // round-trip a page through an extension URL in order to perform arbitrary
+  // redirections with content scripts.
+  if (target_url.SchemeIs(extensions::kExtensionScheme) ||
+      previous_main_frame_url.SchemeIs(extensions::kExtensionScheme)) {
     return false;
   }
 
