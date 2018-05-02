@@ -103,7 +103,7 @@ class WebViewContentsClientAdapter extends AwContentsClient {
     // The WebViewClient instance that was passed to WebView.setWebViewClient().
     protected WebViewClient mWebViewClient = sNullWebViewClient;
     // Some callbacks will be forwarded to this client for apps using the support library.
-    private SupportLibWebViewContentsClientAdapter mSupportLibClient;
+    private final SupportLibWebViewContentsClientAdapter mSupportLibClient;
     // The WebChromeClient instance that was passed to WebView.setContentViewClient().
     private WebChromeClient mWebChromeClient;
     // The listener receiving find-in-page API results.
