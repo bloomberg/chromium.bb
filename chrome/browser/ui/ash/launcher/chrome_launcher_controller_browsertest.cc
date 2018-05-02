@@ -1858,7 +1858,8 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, MatchingShelfIDandActiveTab) {
 
 // Check that a windowed V1 application can navigate away from its domain, but
 // still gets detected properly.
-IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, V1AppNavigation) {
+// Disabled due to https://crbug.com/838743.
+IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_V1AppNavigation) {
   // We assume that the web store is always there (which it apparently is).
   controller_->PinAppWithID(extensions::kWebStoreAppId);
   const ash::ShelfID id(extensions::kWebStoreAppId);
