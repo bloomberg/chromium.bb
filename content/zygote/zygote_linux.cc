@@ -440,6 +440,8 @@ int Zygote::ForkWithRealPid(const std::string& process_type,
   }
 
   if (pid == 0) {
+    // In the child process.
+
     // If the process is the init process inside a PID namespace, it must have
     // explicit signal handlers.
     if (getpid() == 1) {
@@ -451,7 +453,6 @@ int Zygote::ForkWithRealPid(const std::string& process_type,
       }
     }
 
-    // In the child process.
     write_pipe.reset();
 
     // Ping the PID oracle socket so the browser can find our PID.
@@ -479,32 +480,34 @@ int Zygote::ForkWithRealPid(const std::string& process_type,
   }
 
   // In the parent process.
+  if (pid < 0) {
+    // Fork failed.
+    return -1;
+  }
+
   read_pipe.reset();
   pid_oracle.reset();
 
   // Always receive a real PID from the zygote host, though it might
   // be invalid (see below).
-  base::ProcessId real_pid;
+  base::ProcessId real_pid = -1;
   {
     std::vector<base::ScopedFD> recv_fds;
     char buf[kZygoteMaxMessageLength];
     const ssize_t len = base::UnixDomainSocket::RecvMsg(
         kZygoteSocketPairFd, buf, sizeof(buf), &recv_fds);
-    CHECK_GT(len, 0);
-    CHECK(recv_fds.empty());
 
-    base::Pickle pickle(buf, len);
-    base::PickleIterator iter(pickle);
+    if (len > 0) {
+      CHECK(recv_fds.empty());
 
-    int kind;
-    CHECK(iter.ReadInt(&kind));
-    CHECK(kind == kZygoteCommandForkRealPID);
-    CHECK(iter.ReadInt(&real_pid));
-  }
+      base::Pickle pickle(buf, len);
+      base::PickleIterator iter(pickle);
 
-  // Fork failed.
-  if (pid < 0) {
-    return -1;
+      int kind;
+      CHECK(iter.ReadInt(&kind));
+      CHECK(kind == kZygoteCommandForkRealPID);
+      CHECK(iter.ReadInt(&real_pid));
+    }
   }
 
   // If we successfully forked a child, but it crashed without sending
