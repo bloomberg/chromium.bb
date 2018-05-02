@@ -2229,6 +2229,10 @@ void av1_read_film_grain_params(AV1_COMMON *cm,
     RefCntBuffer *const frame_bufs = cm->buffer_pool->frame_bufs;
     int film_grain_params_ref_idx = aom_rb_read_literal(rb, 3);
     int buf_idx = cm->ref_frame_map[film_grain_params_ref_idx];
+    if (buf_idx == INVALID_IDX) {
+      aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
+                         "Invalid Film grain reference idx");
+    }
     if (!frame_bufs[buf_idx].film_grain_params_present) {
       aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
                          "Film grain reference parameters not available");
