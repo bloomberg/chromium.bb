@@ -638,10 +638,6 @@ const base::Feature kCrosCompUpdates{"CrosCompUpdates",
 const base::Feature kCrOSComponent{"CrOSComponent",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables or disables Chrome OS Container utility on Chrome OS.
-const base::Feature kCrOSContainer{"CrOSContainer",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables or disables Instant Tethering on Chrome OS.
 const base::Feature kInstantTethering{"InstantTethering",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
