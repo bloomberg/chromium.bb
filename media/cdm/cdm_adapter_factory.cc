@@ -29,7 +29,7 @@ void CdmAdapterFactory::Create(
     const SessionKeysChangeCB& session_keys_change_cb,
     const SessionExpirationUpdateCB& session_expiration_update_cb,
     const CdmCreatedCB& cdm_created_cb) {
-  DVLOG(1) << __FUNCTION__ << ": key_system=" << key_system;
+  DVLOG(1) << __func__ << ": key_system=" << key_system;
 
   if (security_origin.unique()) {
     LOG(ERROR) << "Invalid Origin: " << security_origin;
