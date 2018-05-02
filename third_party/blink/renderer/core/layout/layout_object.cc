@@ -2040,10 +2040,12 @@ void LayoutObject::SetStyle(scoped_refptr<ComputedStyle> style) {
       SetShouldDoFullPaintInvalidation();
     else
       SetShouldDoFullPaintInvalidationWithoutGeometryChange();
-
-    if (old_style && !old_style->ClipPathDataEquivalent(*style_))
-      InvalidateClipPathCache();
   }
+
+  if ((diff.NeedsPaintInvalidationObject() ||
+       diff.NeedsPaintInvalidationSubtree()) &&
+      old_style && !old_style->ClipPathDataEquivalent(*style_))
+    InvalidateClipPathCache();
 
   if (diff.NeedsVisualRectUpdate())
     SetMayNeedPaintInvalidation();
