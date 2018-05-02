@@ -696,13 +696,9 @@ static INLINE int get_ext_tx_types(TX_SIZE tx_size, int is_inter,
 #define TXSIZEMAX(t1, t2) (tx_size_2d[(t1)] >= tx_size_2d[(t2)] ? (t1) : (t2))
 #define TXSIZEMIN(t1, t2) (tx_size_2d[(t1)] <= tx_size_2d[(t2)] ? (t1) : (t2))
 
-static INLINE TX_SIZE get_max_rect_tx_size(BLOCK_SIZE bsize) {
-  return max_txsize_rect_lookup[bsize];
-}
-
 static INLINE TX_SIZE tx_size_from_tx_mode(BLOCK_SIZE bsize, TX_MODE tx_mode) {
   const TX_SIZE largest_tx_size = tx_mode_to_biggest_tx_size[tx_mode];
-  const TX_SIZE max_rect_tx_size = get_max_rect_tx_size(bsize);
+  const TX_SIZE max_rect_tx_size = max_txsize_rect_lookup[bsize];
   if (bsize == BLOCK_4X4)
     return AOMMIN(max_txsize_lookup[bsize], largest_tx_size);
   if (txsize_sqr_map[max_rect_tx_size] <= largest_tx_size)
@@ -848,7 +844,7 @@ void av1_setup_block_planes(MACROBLOCKD *xd, int ss_x, int ss_y,
                             const int num_planes);
 
 static INLINE int bsize_to_max_depth(BLOCK_SIZE bsize) {
-  TX_SIZE tx_size = get_max_rect_tx_size(bsize);
+  TX_SIZE tx_size = max_txsize_rect_lookup[bsize];
   int depth = 0;
   while (depth < MAX_TX_DEPTH && tx_size != TX_4X4) {
     depth++;
@@ -858,7 +854,7 @@ static INLINE int bsize_to_max_depth(BLOCK_SIZE bsize) {
 }
 
 static INLINE int bsize_to_tx_size_cat(BLOCK_SIZE bsize) {
-  TX_SIZE tx_size = get_max_rect_tx_size(bsize);
+  TX_SIZE tx_size = max_txsize_rect_lookup[bsize];
   assert(tx_size != TX_4X4);
   int depth = 0;
   while (tx_size != TX_4X4) {
@@ -871,15 +867,15 @@ static INLINE int bsize_to_tx_size_cat(BLOCK_SIZE bsize) {
 }
 
 static INLINE TX_SIZE depth_to_tx_size(int depth, BLOCK_SIZE bsize) {
-  TX_SIZE max_tx_size = get_max_rect_tx_size(bsize);
+  TX_SIZE max_tx_size = max_txsize_rect_lookup[bsize];
   TX_SIZE tx_size = max_tx_size;
   for (int d = 0; d < depth; ++d) tx_size = sub_tx_size_map[tx_size];
   return tx_size;
 }
 
-static INLINE TX_SIZE av1_get_max_uv_txsize(BLOCK_SIZE bsize, int ss_x,
-                                            int ss_y) {
-  const BLOCK_SIZE plane_bsize = ss_size_lookup[bsize][ss_x][ss_y];
+static INLINE TX_SIZE
+av1_get_max_uv_txsize(BLOCK_SIZE bsize, const struct macroblockd_plane *pd) {
+  const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
   assert(plane_bsize < BLOCK_SIZES_ALL);
   TX_SIZE uv_tx = max_txsize_rect_lookup[plane_bsize];
   switch (uv_tx) {
@@ -893,17 +889,12 @@ static INLINE TX_SIZE av1_get_max_uv_txsize(BLOCK_SIZE bsize, int ss_x,
   return uv_tx;
 }
 
-static INLINE TX_SIZE av1_get_uv_tx_size(const MB_MODE_INFO *mbmi, int ss_x,
-                                         int ss_y) {
-  return av1_get_max_uv_txsize(mbmi->sb_type, ss_x, ss_y);
-}
-
 static INLINE TX_SIZE av1_get_tx_size(int plane, const MACROBLOCKD *xd) {
   const MB_MODE_INFO *mbmi = xd->mi[0];
   if (xd->lossless[mbmi->segment_id]) return TX_4X4;
   if (plane == 0) return mbmi->tx_size;
   const MACROBLOCKD_PLANE *pd = &xd->plane[plane];
-  return av1_get_uv_tx_size(mbmi, pd->subsampling_x, pd->subsampling_y);
+  return av1_get_max_uv_txsize(mbmi->sb_type, pd);
 }
 
 void av1_reset_skip_context(MACROBLOCKD *xd, int mi_row, int mi_col,
@@ -973,7 +964,7 @@ static INLINE int get_vartx_max_txsize(const MACROBLOCKD *xd, BLOCK_SIZE bsize,
                                        int subsampled) {
   TX_SIZE max_txsize = xd->lossless[xd->mi[0]->segment_id]
                            ? TX_4X4
-                           : get_max_rect_tx_size(bsize);
+                           : max_txsize_rect_lookup[bsize];
 
   // The decoder is designed so that it can process 64x64 luma pixels at a
   // time. If this is a chroma plane with subsampling and bsize corresponds to

@@ -591,7 +591,8 @@ static void setup_masks(AV1_COMMON *const cm, int mi_row, int mi_col, int plane,
                         (!curr_skip || !prev_skip || is_coding_block_border);
     if (is_edge) {
       const TX_SIZE prev_tx_size =
-          plane ? av1_get_uv_tx_size(mbmi_prev, subsampling_x, subsampling_y)
+          plane ? av1_get_max_uv_tx_size(mbmi_prev->sb_type, subsampling_x,
+                                         subsampling_y)
                 : mbmi_prev->tx_size;
       const TX_SIZE min_tx_size =
           (dir == VERT_EDGE)
@@ -636,14 +637,14 @@ static void setup_tx_block_mask(AV1_COMMON *const cm, int mi_row, int mi_col,
   TX_SIZE plane_tx_size;
   const int is_inter = is_inter_block(mbmi);
   if (is_inter) {
-    plane_tx_size = plane
-                        ? av1_get_uv_tx_size(mbmi, subsampling_x, subsampling_y)
-                        : mbmi->inter_tx_size[av1_get_txb_size_index(
-                              plane_bsize, blk_row, blk_col)];
+    plane_tx_size = plane ? av1_get_max_uv_txsize(mbmi->sb_type, subsampling_x,
+                                                  subsampling_y)
+                          : mbmi->inter_tx_size[av1_get_txb_size_index(
+                                plane_bsize, blk_row, blk_col)];
   } else {
-    plane_tx_size = plane
-                        ? av1_get_uv_tx_size(mbmi, subsampling_x, subsampling_y)
-                        : mbmi->tx_size;
+    plane_tx_size = plane ? av1_get_max_uv_txsize(mbmi->sb_type, subsampling_x,
+                                                  subsampling_y)
+                          : mbmi->tx_size;
   }
 
   if (plane) assert(plane_tx_size == tx_size);
@@ -682,7 +683,7 @@ static void setup_fix_block_mask(AV1_COMMON *const cm, int mi_row, int mi_col,
       scale_chroma_bsize(bsize, subsampling_x, subsampling_y);
   const BLOCK_SIZE plane_bsize =
       ss_size_lookup[bsizec][subsampling_x][subsampling_y];
-  TX_SIZE max_txsize = get_max_rect_tx_size(plane_bsize);
+  TX_SIZE max_txsize = max_txsize_rect_lookup[plane_bsize];
   // The decoder is designed so that it can process 64x64 luma pixels at a
   // time. If this is a chroma plane with subsampling and bsize corresponds to
   // a subsampled BLOCK_128X128 then the lookup above will give TX_64X64. That
@@ -902,8 +903,7 @@ static TX_SIZE get_transform_size(const MACROBLOCKD *const xd,
 
   TX_SIZE tx_size = (plane == AOM_PLANE_Y)
                         ? mbmi->tx_size
-                        : av1_get_uv_tx_size(mbmi, plane_ptr->subsampling_x,
-                                             plane_ptr->subsampling_y);
+                        : av1_get_max_uv_txsize(mbmi->sb_type, plane_ptr);
   assert(tx_size < TX_SIZES_ALL);
   if ((plane == AOM_PLANE_Y) && is_inter_block(mbmi) && !mbmi->skip) {
     const BLOCK_SIZE sb_type = mbmi->sb_type;
@@ -999,7 +999,7 @@ static TX_SIZE set_lpf_parameters(
 
           const int pv_skip = mi_prev->skip && is_inter_block(mi_prev);
           const BLOCK_SIZE bsize =
-              ss_size_lookup[mbmi->sb_type][scale_horz][scale_vert];
+              get_plane_block_size(mbmi->sb_type, plane_ptr);
           const int prediction_masks = edge_dir == VERT_EDGE
                                            ? block_size_wide[bsize] - 1
                                            : block_size_high[bsize] - 1;

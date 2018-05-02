@@ -1219,8 +1219,7 @@ int skip_u4x4_pred_in_obmc(BLOCK_SIZE bsize, const struct macroblockd_plane *pd,
                            int dir) {
   assert(is_motion_variation_allowed_bsize(bsize));
 
-  BLOCK_SIZE bsize_plane =
-      ss_size_lookup[bsize][pd->subsampling_x][pd->subsampling_y];
+  const BLOCK_SIZE bsize_plane = get_plane_block_size(bsize, pd);
   switch (bsize_plane) {
 #if DISABLE_CHROMA_U8X8_OBMC
     case BLOCK_4X4:
@@ -1685,7 +1684,7 @@ void av1_build_intra_predictors_for_interintra(const AV1_COMMON *cm,
   xd->mi[0]->use_intrabc = 0;
 
   av1_predict_intra_block(cm, xd, pd->width, pd->height,
-                          get_max_rect_tx_size(plane_bsize), mode, 0, 0,
+                          max_txsize_rect_lookup[plane_bsize], mode, 0, 0,
                           FILTER_INTRA_MODES, ctx->plane[plane],
                           ctx->stride[plane], dst, dst_stride, 0, 0, plane);
 }

@@ -355,7 +355,7 @@ static void pack_txb_tokens(aom_writer *w, AV1_COMMON *cm, MACROBLOCK *const x,
 
   const struct macroblockd_plane *const pd = &xd->plane[plane];
   const TX_SIZE plane_tx_size =
-      plane ? av1_get_uv_tx_size(mbmi, pd->subsampling_x, pd->subsampling_y)
+      plane ? av1_get_max_uv_txsize(mbmi->sb_type, pd)
             : mbmi->inter_tx_size[av1_get_txb_size_index(plane_bsize, blk_row,
                                                          blk_col)];
 

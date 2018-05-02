@@ -190,7 +190,7 @@ static void decode_reconstruct_tx(AV1_COMMON *cm, MACROBLOCKD *const xd,
                                   TX_SIZE tx_size, int *eob_total) {
   const struct macroblockd_plane *const pd = &xd->plane[plane];
   const TX_SIZE plane_tx_size =
-      plane ? av1_get_uv_tx_size(mbmi, pd->subsampling_x, pd->subsampling_y)
+      plane ? av1_get_max_uv_txsize(mbmi->sb_type, pd)
             : mbmi->inter_tx_size[av1_get_txb_size_index(plane_bsize, blk_row,
                                                          blk_col)];
   // Scale to match transform block unit.
@@ -610,7 +610,7 @@ static TX_SIZE read_tx_size(AV1_COMMON *cm, MACROBLOCKD *xd, int is_inter,
     }
   } else {
     assert(IMPLIES(tx_mode == ONLY_4X4, bsize == BLOCK_4X4));
-    return get_max_rect_tx_size(bsize);
+    return max_txsize_rect_lookup[bsize];
   }
 }
 
@@ -632,7 +632,7 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
   int inter_block_tx = is_inter_block(mbmi) || is_intrabc_block(mbmi);
   if (cm->tx_mode == TX_MODE_SELECT && block_signals_txsize(bsize) &&
       !mbmi->skip && inter_block_tx && !xd->lossless[mbmi->segment_id]) {
-    const TX_SIZE max_tx_size = get_max_rect_tx_size(bsize);
+    const TX_SIZE max_tx_size = max_txsize_rect_lookup[bsize];
     const int bh = tx_size_high_unit[max_tx_size];
     const int bw = tx_size_wide_unit[max_tx_size];
     const int width = block_size_wide[bsize] >> tx_size_wide_log2[0];

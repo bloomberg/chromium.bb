@@ -2987,7 +2987,7 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
   int start_tx;
   int depth;
   int64_t best_rd = INT64_MAX;
-  const TX_SIZE max_rect_tx_size = get_max_rect_tx_size(bs);
+  const TX_SIZE max_rect_tx_size = max_txsize_rect_lookup[bs];
   TX_SIZE best_tx_size = max_rect_tx_size;
   TX_TYPE best_txk_type[TXK_TYPE_BUF_LEN];
   uint8_t best_blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE];
@@ -4353,7 +4353,7 @@ static void select_inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
     const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
     const int mi_width = mi_size_wide[plane_bsize];
     const int mi_height = mi_size_high[plane_bsize];
-    const TX_SIZE max_tx_size = get_max_rect_tx_size(plane_bsize);
+    const TX_SIZE max_tx_size = max_txsize_rect_lookup[plane_bsize];
     const int bh = tx_size_high_unit[max_tx_size];
     const int bw = tx_size_wide_unit[max_tx_size];
     int idx, idy;
@@ -4824,7 +4824,7 @@ static const uint32_t skip_pred_threshold[3][BLOCK_SIZES_ALL] = {
 // The sse value is stored in dist.
 static int predict_skip_flag(MACROBLOCK *x, BLOCK_SIZE bsize, int64_t *dist,
                              int reduced_tx_set) {
-  int max_tx_size = get_max_rect_tx_size(bsize);
+  int max_tx_size = max_txsize_rect_lookup[bsize];
   if (tx_size_high[max_tx_size] > 16 || tx_size_wide[max_tx_size] > 16)
     max_tx_size = AOMMIN(max_txsize_lookup[bsize], TX_16X16);
   const int tx_h = tx_size_high[max_tx_size];
@@ -4882,7 +4882,7 @@ static void set_skip_flag(MACROBLOCK *x, RD_STATS *rd_stats, int bsize,
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
   const int n4 = bsize_to_num_blk(bsize);
-  const TX_SIZE tx_size = get_max_rect_tx_size(bsize);
+  const TX_SIZE tx_size = max_txsize_rect_lookup[bsize];
   memset(mbmi->txk_type, DCT_DCT, sizeof(mbmi->txk_type[0]) * TXK_TYPE_BUF_LEN);
   memset(mbmi->inter_tx_size, tx_size, sizeof(mbmi->inter_tx_size));
   mbmi->tx_size = tx_size;

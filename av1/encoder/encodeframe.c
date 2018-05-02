@@ -4844,7 +4844,8 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
         tx_partition_count_update(cm, x, bsize, mi_row, mi_col, td->counts,
                                   tile_data->allow_update_cdf);
       } else {
-        if (mbmi->tx_size != get_max_rect_tx_size(bsize)) ++x->txb_split_count;
+        if (mbmi->tx_size != max_txsize_rect_lookup[bsize])
+          ++x->txb_split_count;
         if (block_signals_txsize(bsize)) {
           const int tx_size_ctx = get_tx_size_context(xd);
           const int32_t tx_size_cat = bsize_to_tx_size_cat(bsize);
@@ -4879,7 +4880,7 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
           if (mi_col + i < cm->mi_cols && mi_row + j < cm->mi_rows)
             mi_4x4[mis * j + i]->tx_size = intra_tx_size;
 
-      if (intra_tx_size != get_max_rect_tx_size(bsize)) ++x->txb_split_count;
+      if (intra_tx_size != max_txsize_rect_lookup[bsize]) ++x->txb_split_count;
     }
   }
 
