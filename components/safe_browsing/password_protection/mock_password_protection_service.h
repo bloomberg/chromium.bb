@@ -33,6 +33,7 @@ class MockPasswordProtectionService : public PasswordProtectionService {
   MOCK_METHOD0(IsExtendedReporting, bool());
   MOCK_METHOD0(IsIncognito, bool());
   MOCK_METHOD0(IsHistorySyncEnabled, bool());
+  MOCK_METHOD0(OnPolicySpecifiedPasswordChanged, void());
   MOCK_METHOD1(MaybeLogPasswordReuseDetectedEvent, void(content::WebContents*));
   MOCK_METHOD1(UserClickedThroughSBInterstitial, bool(content::WebContents*));
   MOCK_METHOD2(IsPingingEnabled,
@@ -44,6 +45,7 @@ class MockPasswordProtectionService : public PasswordProtectionService {
                void(safe_browsing::SBThreatType, content::WebContents*));
   MOCK_METHOD2(RemoveUnhandledSyncPasswordReuseOnURLsDeleted,
                void(bool, const history::URLRows&));
+  MOCK_METHOD2(OnPolicySpecifiedPasswordReuseDetected, void(const GURL&, bool));
   MOCK_METHOD3(FillReferrerChain,
                void(const GURL&,
                     SessionID,

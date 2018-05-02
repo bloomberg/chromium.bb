@@ -384,8 +384,9 @@ void PasswordProtectionService::MaybeStartPasswordFieldOnFocusRequest(
     const GURL& password_form_action,
     const GURL& password_form_frame_url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RequestOutcome reason;
   if (CanSendPing(LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-                  main_frame_url, false)) {
+                  main_frame_url, false, &reason)) {
     StartRequest(web_contents, main_frame_url, password_form_action,
                  password_form_frame_url,
                  false, /* matches_sync_password: not used for this type */
@@ -401,26 +402,35 @@ void PasswordProtectionService::MaybeStartProtectedPasswordEntryRequest(
     const std::vector<std::string>& matching_domains,
     bool password_field_exists) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RequestOutcome reason;
   if (CanSendPing(LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                  main_frame_url, matches_sync_password)) {
+                  main_frame_url, matches_sync_password, &reason)) {
     StartRequest(web_contents, main_frame_url, GURL(), GURL(),
                  matches_sync_password, matching_domains,
                  LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
                  password_field_exists);
+  } else {
+    MaybeLogPasswordReuseLookupEvent(web_contents, reason, nullptr);
+    if (reason == PASSWORD_ALERT_MODE && matches_sync_password) {
+      OnPolicySpecifiedPasswordReuseDetected(main_frame_url,
+                                             /*is_phishing_url=*/false);
+      // TODO(jialiul): Show chrome://reset-password page.
+    }
   }
 }
 
 bool PasswordProtectionService::CanSendPing(
     LoginReputationClientRequest::TriggerType trigger_type,
     const GURL& main_frame_url,
-    bool matches_sync_password) {
-  RequestOutcome request_outcome = URL_NOT_VALID_FOR_REPUTATION_COMPUTING;
-  if (IsPingingEnabled(trigger_type, &request_outcome) &&
-      !IsURLWhitelistedForPasswordEntry(main_frame_url, &request_outcome) &&
+    bool matches_sync_password,
+    RequestOutcome* reason) {
+  *reason = URL_NOT_VALID_FOR_REPUTATION_COMPUTING;
+  if (IsPingingEnabled(trigger_type, reason) &&
+      !IsURLWhitelistedForPasswordEntry(main_frame_url, reason) &&
       CanGetReputationOfURL(main_frame_url)) {
     return true;
   }
-  RecordNoPingingReason(trigger_type, request_outcome, matches_sync_password);
+  RecordNoPingingReason(trigger_type, *reason, matches_sync_password);
   return false;
 }
 

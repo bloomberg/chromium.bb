@@ -8,6 +8,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
+#include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/signin/account_fetcher_service_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
@@ -20,6 +22,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/test_signin_client_builder.h"
 #include "chrome/browser/sync/user_event_service_factory.h"
+#include "chrome/common/extensions/api/safe_browsing_private.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -40,6 +43,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "extensions/browser/test_event_router.h"
 #include "net/http/http_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -50,11 +54,17 @@ using PasswordReuseDialogInteraction =
     GaiaPasswordReuse::PasswordReuseDialogInteraction;
 using PasswordReuseLookup = GaiaPasswordReuse::PasswordReuseLookup;
 
+namespace OnPolicySpecifiedPasswordReuseDetected = extensions::api::
+    safe_browsing_private::OnPolicySpecifiedPasswordReuseDetected;
+namespace OnPolicySpecifiedPasswordChanged =
+    extensions::api::safe_browsing_private::OnPolicySpecifiedPasswordChanged;
+
 namespace safe_browsing {
 
 namespace {
 
-const char kPhishingURL[] = "http://phishing.com";
+const char kPhishingURL[] = "http://phishing.com/";
+const char kPasswordReuseURL[] = "http://login.example.com/";
 const char kTestAccountID[] = "account_id";
 const char kTestEmail[] = "foo@example.com";
 const char kBasicResponseHeaders[] = "HTTP/1.1 200 OK";
@@ -63,6 +73,12 @@ const char kRedirectURL[] = "http://redirect.com";
 std::unique_ptr<KeyedService> BuildFakeUserEventService(
     content::BrowserContext* context) {
   return std::make_unique<syncer::FakeUserEventService>();
+}
+
+std::unique_ptr<KeyedService> BuildSafeBrowsingPrivateEventRouter(
+    content::BrowserContext* context) {
+  return std::unique_ptr<KeyedService>(
+      new extensions::SafeBrowsingPrivateEventRouter(context));
 }
 
 constexpr struct {
@@ -95,6 +111,39 @@ constexpr struct {
      PasswordReuseLookup::REQUEST_FAILURE}};
 
 }  // namespace
+
+class PasswordProtectionEventObserver
+    : public extensions::TestEventRouter::EventObserver {
+ public:
+  explicit PasswordProtectionEventObserver(
+      extensions::TestEventRouter* event_router)
+      : event_router_(event_router) {
+    event_router->AddEventObserver(this);
+  }
+
+  ~PasswordProtectionEventObserver() override = default;
+
+  // Removes |event_args_| from |*this| and returns them.
+  base::Value PassEventArgs() { return std::move(event_args_); }
+
+  // extensions::TestEventRouter::EventObserver:
+  void OnBroadcastEvent(const extensions::Event& event) override {
+    if (event.event_name ==
+            OnPolicySpecifiedPasswordReuseDetected::kEventName ||
+        event.event_name == OnPolicySpecifiedPasswordChanged::kEventName) {
+      event_args_ = event.event_args->Clone();
+    }
+  }
+
+  extensions::TestEventRouter* event_router() { return event_router_; }
+
+ private:
+  // The arguments passed for the last observed event.
+  base::Value event_args_;
+  extensions::TestEventRouter* event_router_;
+
+  DISALLOW_COPY_AND_ASSIGN(PasswordProtectionEventObserver);
+};
 
 class MockChromePasswordProtectionService
     : public ChromePasswordProtectionService {
@@ -148,6 +197,11 @@ class ChromePasswordProtectionServiceTest
         browser_sync::UserEventServiceFactory::GetInstance()
             ->SetTestingFactoryAndUse(browser_context(),
                                       &BuildFakeUserEventService));
+    test_event_router_ =
+        extensions::CreateAndUseTestEventRouter(browser_context());
+    extensions::SafeBrowsingPrivateEventRouterFactory::GetInstance()
+        ->SetTestingFactory(browser_context(),
+                            BuildSafeBrowsingPrivateEventRouter);
   }
 
   void TearDown() override {
@@ -256,6 +310,7 @@ class ChromePasswordProtectionServiceTest
   std::unique_ptr<LoginReputationClientResponse> verdict_;
   // Owned by KeyedServiceFactory.
   syncer::FakeUserEventService* fake_user_event_service_;
+  extensions::TestEventRouter* test_event_router_;
 };
 
 TEST_F(ChromePasswordProtectionServiceTest,
@@ -284,7 +339,12 @@ TEST_F(ChromePasswordProtectionServiceTest,
 
 TEST_F(ChromePasswordProtectionServiceTest,
        VerifyUserPopulationForProtectedPasswordEntryPing) {
-  // Protected password entry pinging is enabled for all safe browsing users.
+  SigninManagerFactory::GetForProfile(profile())->SetAuthenticatedAccountInfo(
+      kTestAccountID, kTestEmail);
+  SetUpSyncAccount(std::string(AccountTrackerService::kNoHostedDomainFound),
+                   std::string(kTestAccountID), std::string(kTestEmail));
+
+  // Protected password entry pinging is enabled by default.
   PasswordProtectionService::RequestOutcome reason;
   service_->ConfigService(false /*incognito*/, false /*SBER*/);
   EXPECT_TRUE(service_->IsPingingEnabled(
@@ -301,6 +361,24 @@ TEST_F(ChromePasswordProtectionServiceTest,
   service_->ConfigService(true /*incognito*/, true /*SBER*/);
   EXPECT_TRUE(service_->IsPingingEnabled(
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT, &reason));
+
+  // If password protection pinging is disabled by policy,
+  // |IsPingingEnabled(..)| should return false.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      safe_browsing::kEnterprisePasswordProtectionV1);
+  profile()->GetPrefs()->SetInteger(prefs::kPasswordProtectionWarningTrigger,
+                                    PASSWORD_PROTECTION_OFF);
+  service_->ConfigService(false /*incognito*/, false /*SBER*/);
+  EXPECT_FALSE(service_->IsPingingEnabled(
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT, &reason));
+  EXPECT_EQ(PasswordProtectionService::TURNED_OFF_BY_ADMIN, reason);
+
+  profile()->GetPrefs()->SetInteger(prefs::kPasswordProtectionWarningTrigger,
+                                    PASSWORD_REUSE);
+  EXPECT_FALSE(service_->IsPingingEnabled(
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT, &reason));
+  EXPECT_EQ(PasswordProtectionService::PASSWORD_ALERT_MODE, reason);
 }
 
 TEST_F(ChromePasswordProtectionServiceTest,
@@ -696,6 +774,107 @@ TEST_F(ChromePasswordProtectionServiceTest,
   service_->RemoveUnhandledSyncPasswordReuseOnURLsDeleted(
       /*all_history=*/true, {});
   EXPECT_EQ(0, GetSizeofUnhandledSyncPasswordReuses());
+}
+
+TEST_F(ChromePasswordProtectionServiceTest,
+       VerifyOnPolicySpecifiedPasswordChangedEvent) {
+  PasswordProtectionEventObserver event_observer(test_event_router_);
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitAndEnableFeature(kEnterprisePasswordProtectionV1);
+
+  // Preparing sync account.
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile());
+  signin_manager->SetAuthenticatedAccountInfo(kTestAccountID, kTestEmail);
+  SetUpSyncAccount("example.com", std::string(kTestAccountID),
+                   std::string(kTestEmail));
+
+  // Simulates change password.
+  service_->OnGaiaPasswordChanged();
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_EQ(1, test_event_router_->GetEventCount(
+                   OnPolicySpecifiedPasswordChanged::kEventName));
+
+  auto captured_args = event_observer.PassEventArgs().GetList()[0].Clone();
+  EXPECT_EQ("foo@example.com", captured_args.GetString());
+
+  // If user is in incognito mode, no event should be sent.
+  service_->ConfigService(true /*incognito*/, false /*SBER*/);
+  service_->OnGaiaPasswordChanged();
+  base::RunLoop().RunUntilIdle();
+  // Event count should be unchanged.
+  EXPECT_EQ(1, test_event_router_->GetEventCount(
+                   OnPolicySpecifiedPasswordChanged::kEventName));
+}
+
+TEST_F(ChromePasswordProtectionServiceTest,
+       VerifyOnPolicySpecifiedPasswordReuseDetectedEventForPasswordReuse) {
+  PasswordProtectionEventObserver event_observer(test_event_router_);
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitAndEnableFeature(kEnterprisePasswordProtectionV1);
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile());
+  signin_manager->SetAuthenticatedAccountInfo(kTestAccountID, kTestEmail);
+  SetUpSyncAccount("example.com", std::string(kTestAccountID),
+                   std::string(kTestEmail));
+  profile()->GetPrefs()->SetInteger(prefs::kPasswordProtectionWarningTrigger,
+                                    PASSWORD_REUSE);
+  NavigateAndCommit(GURL(kPasswordReuseURL));
+
+  service_->MaybeStartProtectedPasswordEntryRequest(
+      web_contents(), web_contents()->GetLastCommittedURL(),
+      /*maches_sync_password=*/true, {},
+      /*password_field_exists =*/true);
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_EQ(1, test_event_router_->GetEventCount(
+                   OnPolicySpecifiedPasswordReuseDetected::kEventName));
+  auto captured_args = event_observer.PassEventArgs().GetList()[0].Clone();
+  EXPECT_EQ(kPasswordReuseURL, captured_args.FindKey("url")->GetString());
+  EXPECT_EQ("foo@example.com", captured_args.FindKey("userName")->GetString());
+  EXPECT_FALSE(captured_args.FindKey("isPhishingUrl")->GetBool());
+
+  // If user is in incognito mode, no event should be sent.
+  service_->ConfigService(true /*incognito*/, false /*SBER*/);
+  service_->MaybeStartProtectedPasswordEntryRequest(
+      web_contents(), web_contents()->GetLastCommittedURL(),
+      /*maches_sync_password=*/true, {},
+      /*password_field_exists =*/true);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, test_event_router_->GetEventCount(
+                   OnPolicySpecifiedPasswordReuseDetected::kEventName));
+}
+
+TEST_F(ChromePasswordProtectionServiceTest,
+       VerifyOnPolicySpecifiedPasswordReuseDetectedEventForPhishingReuse) {
+  PasswordProtectionEventObserver event_observer(test_event_router_);
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitAndEnableFeature(kEnterprisePasswordProtectionV1);
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile());
+  signin_manager->SetAuthenticatedAccountInfo(kTestAccountID, kTestEmail);
+  SetUpSyncAccount("example.com", std::string(kTestAccountID),
+                   std::string(kTestEmail));
+  profile()->GetPrefs()->SetInteger(prefs::kPasswordProtectionWarningTrigger,
+                                    PASSWORD_REUSE);
+  NavigateAndCommit(GURL(kPhishingURL));
+  service_->OnModalWarningShown(web_contents(), "verdict_token");
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_EQ(1, test_event_router_->GetEventCount(
+                   OnPolicySpecifiedPasswordReuseDetected::kEventName));
+  auto captured_args = event_observer.PassEventArgs().GetList()[0].Clone();
+  EXPECT_EQ(kPhishingURL, captured_args.FindKey("url")->GetString());
+  EXPECT_EQ("foo@example.com", captured_args.FindKey("userName")->GetString());
+  EXPECT_TRUE(captured_args.FindKey("isPhishingUrl")->GetBool());
+
+  // If user is in incognito mode, no event should be sent.
+  service_->ConfigService(true /*incognito*/, false /*SBER*/);
+  service_->OnModalWarningShown(web_contents(), "verdict_token");
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, test_event_router_->GetEventCount(
+                   OnPolicySpecifiedPasswordReuseDetected::kEventName));
 }
 
 }  // namespace safe_browsing

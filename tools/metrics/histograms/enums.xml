@@ -35498,6 +35498,8 @@ Called by update_net_trust_anchors.py.-->
   <int value="15" label="URL matched enterprise whitelist"/>
   <int value="16" label="URL matched enterprise change password URL"/>
   <int value="17" label="URL matched enterprise login URL"/>
+  <int value="18" label="Password Alert mode: no need to send ping"/>
+  <int value="19" label="Turned off by enterprise admin"/>
 </enum>
 
 <enum name="PasswordProtectionSyncAccountType">

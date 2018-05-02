@@ -257,13 +257,13 @@ void PasswordProtectionRequest::SendRequest() {
           cookies_store: "Safe Browsing Cookie Store"
           setting:
             "Users can control this feature via 'Protect you and your device "
-            "from dangerous sites' or 'Automatically report details of "
-            "possible security incidents to Google' setting under 'Privacy'. "
-            "By default, the first setting is enabled and the second is not."
+            "from dangerous sites'. By default, this setting is enabled."
+            "Alternatively, you can turn it off via "
+            "'PasswordProtectionWarningTrigger' enterprise policy setting."
           chrome_policy {
-            SafeBrowsingExtendedReportingOptInAllowed {
+            PasswordProtectionWarningTrigger {
               policy_options {mode: MANDATORY}
-              SafeBrowsingExtendedReportingOptInAllowed: false
+              PasswordProtectionWarningTrigger: 2
             }
           }
         })");
