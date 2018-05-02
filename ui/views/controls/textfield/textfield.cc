@@ -1747,8 +1747,8 @@ gfx::RenderText* Textfield::GetRenderText() const {
   return model_->render_text();
 }
 
-gfx::Point Textfield::GetLastClickLocation() const {
-  return selection_controller_.last_click_location();
+gfx::Point Textfield::GetLastClickRootLocation() const {
+  return selection_controller_.last_click_root_location();
 }
 
 base::string16 Textfield::GetSelectionClipboardText() const {

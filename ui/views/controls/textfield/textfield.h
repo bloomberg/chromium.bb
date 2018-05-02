@@ -366,7 +366,8 @@ class VIEWS_EXPORT Textfield : public View,
   // Returns the TextfieldModel's text/cursor/selection rendering model.
   gfx::RenderText* GetRenderText() const;
 
-  gfx::Point GetLastClickLocation() const;
+  // Returns the last click root location (relative to the root window).
+  gfx::Point GetLastClickRootLocation() const;
 
   // Get the text from the selection clipboard.
   virtual base::string16 GetSelectionClipboardText() const;

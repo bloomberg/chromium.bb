@@ -49,8 +49,10 @@ class VIEWS_EXPORT SelectionController {
   void OnMouseReleased(const ui::MouseEvent& event);
   void OnMouseCaptureLost();
 
-  // Returns the latest click location.
-  const gfx::Point& last_click_location() const { return last_click_location_; }
+  // Returns the latest click location in root coordinates.
+  const gfx::Point& last_click_root_location() const {
+    return last_click_root_location_;
+  }
 
   // Sets whether the SelectionController should update or paste the
   // selection clipboard on middle-click. Default is false.
@@ -86,7 +88,7 @@ class VIEWS_EXPORT SelectionController {
 
   // State variables used to track the last click time and location.
   base::TimeTicks last_click_time_;
-  gfx::Point last_click_location_;
+  gfx::Point last_click_root_location_;
 
   // Used to track double and triple clicks. Can take the values 0, 1 and 2
   // which specify a single, double and triple click respectively. Alternates
