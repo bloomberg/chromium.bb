@@ -388,42 +388,6 @@ cr.define('print_preview_test', function() {
       });
     });
 
-    // Test that the printer list is structured correctly after calling
-    // addCloudPrinters with an empty list.
-    test('PrinterListCloudEmpty', function() {
-      return setupSettingsAndDestinationsWithCapabilities().then(function() {
-        cr.webUIListenerCallback('use-cloud-print', 'cloudprint url', false);
-        const recentList =
-            $('destination-search').querySelector('.recent-list ul');
-        const printList =
-            $('destination-search').querySelector('.print-list ul');
-
-        assertNotEquals(null, recentList);
-        assertEquals(1, recentList.childNodes.length);
-        assertEquals('FooName',
-                     recentList.childNodes.item(0).
-                         querySelector('.destination-list-item-name').
-                         textContent);
-
-        assertNotEquals(null, printList);
-        assertEquals(3, printList.childNodes.length);
-        assertEquals('Save as PDF',
-            printList.childNodes.item(PDF_INDEX).
-                         querySelector('.destination-list-item-name').
-                         textContent);
-        assertEquals('FooName',
-            printList.childNodes.
-                         item(FOO_INDEX).
-                         querySelector('.destination-list-item-name').
-                         textContent);
-        assertEquals('BarName',
-            printList.childNodes.
-                         item(BAR_INDEX).
-                         querySelector('.destination-list-item-name').
-                         textContent);
-      });
-    });
-
     // Test restore settings with one destination.
     test('RestoreLocalDestination', function() {
       initialSettings.serializedAppStateStr = JSON.stringify({

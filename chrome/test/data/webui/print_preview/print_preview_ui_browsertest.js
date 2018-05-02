@@ -69,7 +69,6 @@ PrintPreviewUIBrowserTest.prototype = {
 // Run each mocha test in isolation (within a new TEST_F() call).
 [
   'PrinterList',
-  'PrinterListCloudEmpty',
   'RestoreLocalDestination',
   'RestoreMultipleDestinations',
   'SaveAppState',
