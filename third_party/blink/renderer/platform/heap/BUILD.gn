@@ -8,16 +8,14 @@ import("//third_party/blink/renderer/platform/platform.gni")
 import("//testing/test.gni")
 
 declare_args() {
-  # Enables incremental marking in Oilpan.
+  # Build Blink with incremental marking infrastructure for Oilpan.
   #
-  # Note: Incremental marking is currently considered experimental and also
-  # enables 'enable_blink_heap_incremental_marking'. See default value below.
-  enable_blink_heap_incremental_marking = false
-}
+  # To turn on incremental marking also use
+  #     --enable-blink-features=HeapIncrementalMarking
+  enable_blink_heap_incremental_marking = true
 
-declare_args() {
   # Enables heap verification.
-  enable_blink_heap_verification = enable_blink_heap_incremental_marking
+  enable_blink_heap_verification = false
 }
 
 buildflag_header("blink_heap_buildflags") {
