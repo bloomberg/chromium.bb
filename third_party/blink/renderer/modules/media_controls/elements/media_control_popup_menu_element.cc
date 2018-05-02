@@ -37,20 +37,44 @@ bool FocusListItemIfDisplayed(Node* node) {
 
 }  // anonymous namespace
 
-class MediaControlPopupMenuElement::KeyboardEventListener final
-    : public EventListener {
+class MediaControlPopupMenuElement::EventListener final
+    : public blink::EventListener {
  public:
-  explicit KeyboardEventListener(MediaControlPopupMenuElement* popup_menu)
-      : EventListener(kCPPEventListenerType), popup_menu_(popup_menu) {}
+  explicit EventListener(MediaControlPopupMenuElement* popup_menu)
+      : blink::EventListener(kCPPEventListenerType), popup_menu_(popup_menu) {}
 
-  ~KeyboardEventListener() final = default;
+  ~EventListener() final = default;
 
-  bool operator==(const EventListener& other) const final {
+  void StartListening() {
+    popup_menu_->addEventListener(EventTypeNames::keydown, this, false);
+
+    LocalDOMWindow* window = popup_menu_->GetDocument().domWindow();
+    window->addEventListener(EventTypeNames::scroll, this, true);
+    if (DOMWindow* outer_window = window->top()) {
+      if (outer_window != window)
+        outer_window->addEventListener(EventTypeNames::scroll, this, true);
+      outer_window->addEventListener(EventTypeNames::resize, this, true);
+    }
+  }
+
+  void StopListening() {
+    popup_menu_->removeEventListener(EventTypeNames::keydown, this, false);
+
+    LocalDOMWindow* window = popup_menu_->GetDocument().domWindow();
+    window->removeEventListener(EventTypeNames::scroll, this, true);
+    if (DOMWindow* outer_window = window->top()) {
+      if (outer_window != window)
+        outer_window->removeEventListener(EventTypeNames::scroll, this, true);
+      outer_window->removeEventListener(EventTypeNames::resize, this, true);
+    }
+  }
+
+  bool operator==(const blink::EventListener& other) const final {
     return &other == this;
   }
 
   void Trace(blink::Visitor* visitor) final {
-    EventListener::Trace(visitor);
+    blink::EventListener::Trace(visitor);
     visitor->Trace(popup_menu_);
   }
 
@@ -86,6 +110,9 @@ class MediaControlPopupMenuElement::KeyboardEventListener final
         event->stopPropagation();
         event->SetDefaultHandled();
       }
+    } else if (event->type() == EventTypeNames::resize ||
+               event->type() == EventTypeNames::scroll) {
+      popup_menu_->SetIsWanted(false);
     }
   }
 
@@ -102,34 +129,49 @@ void MediaControlPopupMenuElement::SetIsWanted(bool wanted) {
 
     SelectFirstItem();
 
-    if (!keyboard_event_listener_) {
-      keyboard_event_listener_ = new KeyboardEventListener(this);
-      addEventListener(EventTypeNames::keydown, keyboard_event_listener_,
-                       false);
-    }
+    if (!event_listener_)
+      event_listener_ = new EventListener(this);
+    event_listener_->StartListening();
+  } else {
+    if (event_listener_)
+      event_listener_->StopListening();
   }
 }
 
+void MediaControlPopupMenuElement::OnItemSelected() {
+  SetIsWanted(false);
+}
+
 void MediaControlPopupMenuElement::DefaultEventHandler(Event* event) {
-  if (event->type() == EventTypeNames::pointermove)
+  if (event->type() == EventTypeNames::pointermove) {
     ToElement(event->target()->ToNode())->focus();
+  } else if (event->type() == EventTypeNames::focusout) {
+    GetDocument()
+        .GetTaskRunner(TaskType::kMediaElementEvent)
+        ->PostTask(FROM_HERE,
+                   WTF::Bind(&MediaControlPopupMenuElement::HideIfNotFocused,
+                             WrapWeakPersistent(this)));
+  } else if (event->type() == EventTypeNames::click) {
+    OnItemSelected();
+
+    event->stopPropagation();
+    event->SetDefaultHandled();
+  }
 
   MediaControlDivElement::DefaultEventHandler(event);
 }
 
 void MediaControlPopupMenuElement::RemovedFrom(ContainerNode* container) {
-  if (keyboard_event_listener_) {
-    removeEventListener(EventTypeNames::keydown, keyboard_event_listener_,
-                        false);
-    keyboard_event_listener_ = nullptr;
-  }
+  if (IsWanted())
+    SetIsWanted(false);
+  event_listener_ = nullptr;
 
   MediaControlDivElement::RemovedFrom(container);
 }
 
 void MediaControlPopupMenuElement::Trace(blink::Visitor* visitor) {
   MediaControlDivElement::Trace(visitor);
-  visitor->Trace(keyboard_event_listener_);
+  visitor->Trace(event_listener_);
 }
 
 MediaControlPopupMenuElement::MediaControlPopupMenuElement(
@@ -171,6 +213,16 @@ void MediaControlPopupMenuElement::SetPosition() {
 Element* MediaControlPopupMenuElement::EffectivePopupAnchor() const {
   return MediaControlsImpl::IsModern() ? &GetMediaControls().OverflowButton()
                                        : PopupAnchor();
+}
+
+void MediaControlPopupMenuElement::HideIfNotFocused() {
+  if (!IsWanted())
+    return;
+
+  if (!GetDocument().FocusedElement() ||
+      GetDocument().FocusedElement()->parentElement() != this) {
+    SetIsWanted(false);
+  }
 }
 
 void MediaControlPopupMenuElement::SelectFirstItem() {
