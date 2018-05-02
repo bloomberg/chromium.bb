@@ -55,4 +55,11 @@ void DrmFramebufferDeleter::operator()(drmModeFB* framebuffer) const {
   drmModeFreeFB(framebuffer);
 }
 
+ScopedDrmPropertyBlob::ScopedDrmPropertyBlob(int fd, uint32_t blob_id)
+    : fd(fd), blob_id(blob_id) {}
+
+ScopedDrmPropertyBlob::~ScopedDrmPropertyBlob() {
+  drmModeDestroyPropertyBlob(fd, blob_id);
+}
+
 }  // namespace ui

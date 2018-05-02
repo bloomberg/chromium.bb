@@ -22,6 +22,10 @@ class HardwareDisplayPlaneManagerLegacy : public HardwareDisplayPlaneManager {
               bool test_only) override;
   bool DisableOverlayPlanes(HardwareDisplayPlaneList* plane_list) override;
 
+  bool SetColorCorrectionOnAllCrtcPlanes(
+      uint32_t crtc_id,
+      ScopedDrmColorCtmPtr ctm_blob_data) override;
+
   bool ValidatePrimarySize(const OverlayPlane& primary,
                            const drmModeModeInfo& mode) override;
 
