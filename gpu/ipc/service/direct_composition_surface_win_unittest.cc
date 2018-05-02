@@ -333,6 +333,7 @@ TEST(DirectCompositionSurfaceTest, NoPresentTwice) {
 
   scoped_refptr<gl::GLContext> context =
       gl::init::CreateGLContext(nullptr, surface.get(), gl::GLContextAttribs());
+  context->MakeCurrent(surface.get());
 
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
       gl::QueryD3D11DeviceObjectFromANGLE();
@@ -518,6 +519,7 @@ class DirectCompositionVideoPixelTest : public DirectCompositionPixelTest {
 
     scoped_refptr<gl::GLContext> context = gl::init::CreateGLContext(
         nullptr, surface_.get(), gl::GLContextAttribs());
+    context->MakeCurrent(surface_.get());
     EXPECT_TRUE(surface_->Resize(window_size, 1.0,
                                  gl::GLSurface::ColorSpace::UNSPECIFIED, true));
 
@@ -603,6 +605,7 @@ TEST_F(DirectCompositionPixelTest, SoftwareVideoSwapchain) {
 
   scoped_refptr<gl::GLContext> context = gl::init::CreateGLContext(
       nullptr, surface_.get(), gl::GLContextAttribs());
+  context->MakeCurrent(surface_.get());
   EXPECT_TRUE(surface_->Resize(window_size, 1.0,
                                gl::GLSurface::ColorSpace::UNSPECIFIED, true));
 
@@ -658,6 +661,7 @@ TEST_F(DirectCompositionPixelTest, VideoHandleSwapchain) {
 
   scoped_refptr<gl::GLContext> context = gl::init::CreateGLContext(
       nullptr, surface_.get(), gl::GLContextAttribs());
+  context->MakeCurrent(surface_.get());
   EXPECT_TRUE(surface_->Resize(window_size, 1.0,
                                gl::GLSurface::ColorSpace::UNSPECIFIED, true));
 
