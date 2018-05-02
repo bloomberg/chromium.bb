@@ -317,13 +317,6 @@ ExtensionFunction::ResponseAction
 SystemDisplayShowNativeTouchCalibrationFunction::Run() {
   std::unique_ptr<display::ShowNativeTouchCalibration::Params> params(
       display::ShowNativeTouchCalibration::Params::Create(*args_));
-
-  if (DisplayInfoProvider::Get()->IsNativeTouchCalibrationActive())
-    return RespondNow(Error("Native touch calibration already active."));
-
-  if (DisplayInfoProvider::Get()->IsCustomTouchCalibrationActive())
-    return RespondNow(Error("Custom touch calibration is active."));
-
   DisplayInfoProvider::Get()->ShowNativeTouchCalibration(
       params->id,
       base::BindOnce(&SystemDisplayShowNativeTouchCalibrationFunction::
@@ -342,10 +335,6 @@ ExtensionFunction::ResponseAction
 SystemDisplayStartCustomTouchCalibrationFunction::Run() {
   std::unique_ptr<display::StartCustomTouchCalibration::Params> params(
       display::StartCustomTouchCalibration::Params::Create(*args_));
-
-  if (DisplayInfoProvider::Get()->IsNativeTouchCalibrationActive())
-    return RespondNow(Error("Native touch calibration is active."));
-
   if (!DisplayInfoProvider::Get()->StartCustomTouchCalibration(params->id)) {
     return RespondNow(
         Error("Custom touch calibration not available for display."));
@@ -357,13 +346,6 @@ ExtensionFunction::ResponseAction
 SystemDisplayCompleteCustomTouchCalibrationFunction::Run() {
   std::unique_ptr<display::CompleteCustomTouchCalibration::Params> params(
       display::CompleteCustomTouchCalibration::Params::Create(*args_));
-
-  if (DisplayInfoProvider::Get()->IsNativeTouchCalibrationActive())
-    return RespondNow(Error("Native touch calibration is active."));
-
-  if (!DisplayInfoProvider::Get()->IsCustomTouchCalibrationActive())
-    return RespondNow(Error("Custom touch calibration is not active."));
-
   if (!DisplayInfoProvider::Get()->CompleteCustomTouchCalibration(
           params->pairs, params->bounds)) {
     return RespondNow(Error("Custom touch calibration completion failed."));
@@ -375,14 +357,6 @@ ExtensionFunction::ResponseAction
 SystemDisplayClearTouchCalibrationFunction::Run() {
   std::unique_ptr<display::ClearTouchCalibration::Params> params(
       display::ClearTouchCalibration::Params::Create(*args_));
-
-  if (DisplayInfoProvider::Get()->IsNativeTouchCalibrationActive())
-    return RespondNow(Error("Native touch calibration is active."));
-
-  // TODO(malaykeshav@): Document and test whether
-  // IsCustomTouchCalibrationActive() should be true or false and enforce in
-  // DisplayInfoProvider::ClearTouchCalibration.
-
   if (!DisplayInfoProvider::Get()->ClearTouchCalibration(params->id))
     return RespondNow(Error("Failed to clear custom touch calibration data."));
   return RespondNow(NoArguments());

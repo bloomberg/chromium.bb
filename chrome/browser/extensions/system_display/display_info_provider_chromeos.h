@@ -8,19 +8,20 @@
 #include <map>
 #include <memory>
 
+#include "ash/public/interfaces/cros_display_config.mojom.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "extensions/browser/api/system_display/display_info_provider.h"
 
-namespace ash {
-class OverscanCalibrator;
-class TouchCalibratorController;
-}  // namespace ash
+namespace service_manager {
+class Connector;
+}
 
 namespace extensions {
 
 class DisplayInfoProviderChromeOS : public DisplayInfoProvider {
  public:
-  DisplayInfoProviderChromeOS();
+  explicit DisplayInfoProviderChromeOS(service_manager::Connector* connector);
   ~DisplayInfoProviderChromeOS() override;
 
   // DisplayInfoProvider implementation.
@@ -44,31 +45,30 @@ class DisplayInfoProviderChromeOS : public DisplayInfoProvider {
   bool OverscanCalibrationComplete(const std::string& id) override;
   void ShowNativeTouchCalibration(const std::string& id,
                                   ErrorCallback callback) override;
-  bool IsNativeTouchCalibrationActive() override;
   bool StartCustomTouchCalibration(const std::string& id) override;
   bool CompleteCustomTouchCalibration(
       const api::system_display::TouchCalibrationPairQuad& pairs,
       const api::system_display::Bounds& bounds) override;
   bool ClearTouchCalibration(const std::string& id) override;
-  bool IsCustomTouchCalibrationActive() override;
   void SetMirrorMode(const api::system_display::MirrorModeInfo& info,
                      ErrorCallback callback) override;
-  void UpdateDisplayUnitInfoForPlatform(
-      const display::Display& display,
-      api::system_display::DisplayUnitInfo* unit) override;
 
  private:
-  ash::TouchCalibratorController* GetTouchCalibrator();
+  void CallSetDisplayLayoutInfo(ash::mojom::DisplayLayoutInfoPtr layout_info,
+                                ErrorCallback callback,
+                                ash::mojom::DisplayLayoutInfoPtr cur_info);
+  void CallGetDisplayUnitInfoList(
+      bool single_unified,
+      base::OnceCallback<void(DisplayUnitInfoList result)> callback,
+      ash::mojom::DisplayLayoutInfoPtr layout);
+  void CallTouchCalibration(const std::string& id,
+                            ash::mojom::DisplayConfigOperation op,
+                            ash::mojom::TouchCalibrationPtr calibration,
+                            ErrorCallback callback);
 
-  ash::OverscanCalibrator* GetOverscanCalibrator(const std::string& id);
-
-  std::map<std::string, std::unique_ptr<ash::OverscanCalibrator>>
-      overscan_calibrators_;
-
-  std::unique_ptr<ash::TouchCalibratorController> touch_calibrator_;
-
+  ash::mojom::CrosDisplayConfigControllerPtr cros_display_config_;
   std::string touch_calibration_target_id_;
-  bool custom_touch_calibration_active_ = false;
+  base::WeakPtrFactory<DisplayInfoProviderChromeOS> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayInfoProviderChromeOS);
 };

@@ -6,12 +6,13 @@
 
 #include <stdint.h>
 
+#include "ash/display/cros_display_config.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/interfaces/constants.mojom.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/touch/ash_touch_transform_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -19,8 +20,9 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/system_display/display_info_provider_chromeos.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
+#include "content/public/test/test_service_manager_context.h"
 #include "extensions/common/api/system_display.h"
-#include "services/ui/public/cpp/input_devices/input_device_client_test_api.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/display/display.h"
 #include "ui/display/display_layout.h"
 #include "ui/display/display_switches.h"
@@ -29,8 +31,6 @@
 #include "ui/display/manager/touch_transform_setter.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/display/types/display_constants.h"
-#include "ui/events/devices/touch_device_transform.h"
-#include "ui/events/devices/touchscreen_device.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace extensions {
@@ -46,23 +46,6 @@ void ErrorCallback(std::string* result,
   std::move(callback).Run();
 }
 
-void InitExternalTouchDevices(int64_t display_id) {
-  ui::TouchscreenDevice touchdevice(
-      123, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL,
-      std::string("test external touch device"), gfx::Size(1000, 1000), 1);
-  ui::InputDeviceClientTestApi().SetTouchscreenDevices({touchdevice});
-
-  std::vector<ui::TouchDeviceTransform> transforms;
-  ui::TouchDeviceTransform touch_device_transform;
-  touch_device_transform.display_id = display_id;
-  touch_device_transform.device_id = touchdevice.id;
-  transforms.push_back(touch_device_transform);
-  display::test::TouchTransformControllerTestApi(
-      ash::Shell::Get()->touch_transformer_controller())
-      .touch_transform_setter()
-      ->ConfigureTouchDevices(transforms);
-}
-
 class DisplayInfoProviderChromeosTest : public ash::AshTestBase {
  public:
   DisplayInfoProviderChromeosTest() {}
@@ -75,6 +58,26 @@ class DisplayInfoProviderChromeosTest : public ash::AshTestBase {
 
     ash::AshTestBase::SetUp();
 
+    // Note: for now we have two instances of CrosDisplayConfig, one owned by
+    // ash::Shell and this one. Since CrosDisplayConfig just provides an
+    // interface and doesn't own any classes this should be fine.
+    cros_display_config_ = std::make_unique<ash::CrosDisplayConfig>();
+
+    // Create a local service manager connector to handle requests to
+    // ash::mojom::CrosDisplayConfigController.
+    service_manager::mojom::ConnectorRequest request;
+    connector_ = service_manager::Connector::Create(&request);
+    service_manager::Connector::TestApi test_api(connector_.get());
+    test_api.OverrideBinderForTesting(
+        service_manager::Identity(ash::mojom::kServiceName),
+        ash::mojom::CrosDisplayConfigController::Name_,
+        base::BindRepeating(&DisplayInfoProviderChromeosTest::
+                                AddCrosDisplayConfigControllerBinding,
+                            base::Unretained(this)));
+    // Provide the local connector to DisplayInfoProviderChromeOS.
+    DisplayInfoProvider::InitializeForTesting(
+        new DisplayInfoProviderChromeOS(connector_.get()));
+
     tablet_mode_client_ = std::make_unique<TabletModeClient>();
     ash::mojom::TabletModeControllerPtr controller;
     ash::Shell::Get()->tablet_mode_controller()->BindRequest(
@@ -84,8 +87,12 @@ class DisplayInfoProviderChromeosTest : public ash::AshTestBase {
     // value to be set, as the TabletModeController sends an initial message on
     // startup when it observes the PowerManagerClient.
     tablet_mode_client_->FlushForTesting();
+  }
 
-    DisplayInfoProvider::ResetForTesting();
+  void AddCrosDisplayConfigControllerBinding(
+      mojo::ScopedMessagePipeHandle handle) {
+    cros_display_config_->BindRequest(
+        ash::mojom::CrosDisplayConfigControllerRequest(std::move(handle)));
   }
 
   float GetDisplayZoom(int64_t display_id) {
@@ -190,6 +197,9 @@ class DisplayInfoProviderChromeosTest : public ash::AshTestBase {
   }
 
  private:
+  content::TestServiceManagerContext service_manager_context_;
+  std::unique_ptr<service_manager::Connector> connector_;
+  std::unique_ptr<ash::CrosDisplayConfig> cros_display_config_;
   std::unique_ptr<TabletModeClient> tablet_mode_client_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayInfoProviderChromeosTest);
@@ -1421,147 +1431,6 @@ TEST_F(DisplayInfoProviderChromeosTest, DisplayMode) {
   EXPECT_TRUE(active_mode.IsEquivalent(other_mode_ash));
 }
 
-TEST_F(DisplayInfoProviderChromeosTest, CustomTouchCalibrationInternal) {
-  UpdateDisplay("1200x600,600x1000*2");
-  const int64_t internal_display_id =
-      display::test::DisplayManagerTestApi(ash::Shell::Get()->display_manager())
-          .SetFirstDisplayAsInternalDisplay();
-
-  InitExternalTouchDevices(internal_display_id);
-
-  EXPECT_FALSE(DisplayInfoProvider::Get()->StartCustomTouchCalibration(
-      base::Int64ToString(internal_display_id)));
-  EXPECT_FALSE(DisplayInfoProvider::Get()->IsCustomTouchCalibrationActive());
-}
-
-TEST_F(DisplayInfoProviderChromeosTest, CustomTouchCalibrationWithoutStart) {
-  UpdateDisplay("1200x600,600x1000*2");
-  EXPECT_FALSE(DisplayInfoProvider::Get()->IsCustomTouchCalibrationActive());
-}
-
-TEST_F(DisplayInfoProviderChromeosTest, CustomTouchCalibrationNonTouchDisplay) {
-  UpdateDisplay("1200x600,600x1000*2");
-
-  const int64_t internal_display_id =
-      display::test::DisplayManagerTestApi(ash::Shell::Get()->display_manager())
-          .SetFirstDisplayAsInternalDisplay();
-
-  display::DisplayIdList display_id_list =
-      display_manager()->GetCurrentDisplayIdList();
-
-  // Pick the non internal display Id.
-  const int64_t display_id = display_id_list[0] == internal_display_id
-                                 ? display_id_list[1]
-                                 : display_id_list[0];
-
-  ui::InputDeviceClientTestApi().SetTouchscreenDevices({});
-  std::string id = base::Int64ToString(display_id);
-
-  // Since no external touch devices are present, the calibration should fail.
-  EXPECT_FALSE(DisplayInfoProvider::Get()->StartCustomTouchCalibration(id));
-
-  // If an external touch device is present, the calibration should proceed.
-  InitExternalTouchDevices(display_id);
-  EXPECT_TRUE(DisplayInfoProvider::Get()->StartCustomTouchCalibration(id));
-  EXPECT_TRUE(DisplayInfoProvider::Get()->IsCustomTouchCalibrationActive());
-}
-
-TEST_F(DisplayInfoProviderChromeosTest, CustomTouchCalibrationNegativeBounds) {
-  UpdateDisplay("1200x600,600x1000*2");
-
-  const int64_t internal_display_id =
-      display::test::DisplayManagerTestApi(display_manager())
-          .SetFirstDisplayAsInternalDisplay();
-
-  display::DisplayIdList display_id_list =
-      display_manager()->GetCurrentDisplayIdList();
-
-  // Pick the non internal display Id.
-  const int64_t display_id = display_id_list[0] == internal_display_id
-                                 ? display_id_list[1]
-                                 : display_id_list[0];
-
-  InitExternalTouchDevices(display_id);
-
-  std::string id = base::Int64ToString(display_id);
-
-  api::system_display::TouchCalibrationPairQuad pairs;
-  api::system_display::Bounds bounds;
-  bounds.width = -1;
-
-  EXPECT_TRUE(DisplayInfoProvider::Get()->StartCustomTouchCalibration(id));
-  EXPECT_FALSE(DisplayInfoProvider::Get()->CompleteCustomTouchCalibration(
-      pairs, bounds));
-
-  bounds.width = 0;
-  bounds.height = -1;
-
-  EXPECT_TRUE(DisplayInfoProvider::Get()->StartCustomTouchCalibration(id));
-  EXPECT_FALSE(DisplayInfoProvider::Get()->CompleteCustomTouchCalibration(
-      pairs, bounds));
-}
-
-TEST_F(DisplayInfoProviderChromeosTest, CustomTouchCalibrationInvalidPoints) {
-  UpdateDisplay("1200x600,600x1000*2");
-
-  const int64_t internal_display_id =
-      display::test::DisplayManagerTestApi(display_manager())
-          .SetFirstDisplayAsInternalDisplay();
-
-  display::DisplayIdList display_id_list =
-      display_manager()->GetCurrentDisplayIdList();
-
-  // Pick the non internal display Id.
-  const int64_t display_id = display_id_list[0] == internal_display_id
-                                 ? display_id_list[1]
-                                 : display_id_list[0];
-
-  InitExternalTouchDevices(display_id);
-
-  std::string id = base::Int64ToString(display_id);
-
-  api::system_display::TouchCalibrationPairQuad pairs;
-  api::system_display::Bounds bounds;
-
-  pairs.pair1.display_point.x = -1;
-  EXPECT_TRUE(DisplayInfoProvider::Get()->StartCustomTouchCalibration(id));
-  EXPECT_FALSE(DisplayInfoProvider::Get()->CompleteCustomTouchCalibration(
-      pairs, bounds));
-
-  bounds.width = 1;
-  pairs.pair1.display_point.x = 2;
-
-  EXPECT_TRUE(DisplayInfoProvider::Get()->StartCustomTouchCalibration(id));
-  EXPECT_FALSE(DisplayInfoProvider::Get()->CompleteCustomTouchCalibration(
-      pairs, bounds));
-}
-
-TEST_F(DisplayInfoProviderChromeosTest, CustomTouchCalibrationSuccess) {
-  UpdateDisplay("1200x600,600x1000*2");
-
-  const int64_t internal_display_id =
-      display::test::DisplayManagerTestApi(display_manager())
-          .SetFirstDisplayAsInternalDisplay();
-
-  display::DisplayIdList display_id_list =
-      display_manager()->GetCurrentDisplayIdList();
-
-  // Pick the non internal display Id.
-  const int64_t display_id = display_id_list[0] == internal_display_id
-                                 ? display_id_list[1]
-                                 : display_id_list[0];
-
-  InitExternalTouchDevices(display_id);
-
-  EXPECT_TRUE(DisplayInfoProvider::Get()->StartCustomTouchCalibration(
-      base::Int64ToString(display_id)));
-  EXPECT_TRUE(DisplayInfoProvider::Get()->IsCustomTouchCalibrationActive());
-  api::system_display::TouchCalibrationPairQuad pairs;
-  api::system_display::Bounds bounds;
-  EXPECT_TRUE(DisplayInfoProvider::Get()->CompleteCustomTouchCalibration(
-      pairs, bounds));
-}
-
 TEST_F(DisplayInfoProviderChromeosTest, GetDisplayZoomFactor) {
   UpdateDisplay("1200x600,1600x1000*2");
   display::DisplayIdList display_id_list =
@@ -1688,13 +1557,15 @@ class DisplayInfoProviderChromeosTouchviewTest
 TEST_F(DisplayInfoProviderChromeosTouchviewTest, GetTabletMode) {
   UpdateDisplay("500x600,400x520");
 
-  // Check initial state.
+  // Check initial state. Note: is_tablet_mode is always provided on CrOS.
   DisplayUnitInfoList result = GetAllDisplaysInfo();
   ASSERT_EQ(2u, result.size());
   EXPECT_TRUE(result[0].has_accelerometer_support);
-  EXPECT_FALSE(result[0].is_tablet_mode);
+  ASSERT_TRUE(result[0].is_tablet_mode);
+  EXPECT_FALSE(*result[0].is_tablet_mode);
   EXPECT_FALSE(result[1].has_accelerometer_support);
-  EXPECT_FALSE(result[1].is_tablet_mode);
+  ASSERT_TRUE(result[1].is_tablet_mode);
+  EXPECT_FALSE(*result[1].is_tablet_mode);
 
   // Entering tablet mode will cause DisplayConfigurationObserver to set
   // forced mirror mode. https://crbug.com/733092.
