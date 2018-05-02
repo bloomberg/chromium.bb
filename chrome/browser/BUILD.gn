@@ -10,6 +10,7 @@ import("//build/config/ui.gni")
 import("//build/split_static_library.gni")
 import("//chrome/common/features.gni")
 import("//components/feature_engagement/features.gni")
+import("//components/feed/features.gni")
 import("//components/nacl/features.gni")
 import("//components/offline_pages/buildflags/features.gni")
 import("//components/os_crypt/features.gni")
@@ -4187,6 +4188,14 @@ jumbo_split_static_library("browser") {
 
   if (use_udev) {
     deps += [ "//device/udev_linux" ]
+  }
+
+  if (enable_feed_in_chrome) {
+    sources += [
+      "android/feed/feed_host_service_factory.cc",
+      "android/feed/feed_host_service_factory.h",
+    ]
+    deps += [ "//components/feed/core:feed_core" ]
   }
 }
 
