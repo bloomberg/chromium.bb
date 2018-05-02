@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -91,6 +92,10 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
 
   gpu::gles2::GLES2Interface* GetGLES2Interface() { return gles2_; }
 
+  const std::vector<gfx::GpuMemoryBuffer*>& created_memory_buffers() {
+    return created_memory_buffers_;
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MockGpuVideoAcceleratorFactories);
 
@@ -100,6 +105,8 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
   bool fail_to_allocate_gpu_memory_buffer_ = false;
 
   gpu::gles2::GLES2Interface* gles2_;
+
+  std::vector<gfx::GpuMemoryBuffer*> created_memory_buffers_;
 };
 
 }  // namespace media

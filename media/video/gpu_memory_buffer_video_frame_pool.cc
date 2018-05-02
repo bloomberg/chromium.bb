@@ -32,6 +32,7 @@
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "ui/gfx/buffer_format_util.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gl/trace_util.h"
 
 namespace media {
@@ -464,7 +465,6 @@ void CopyRowsToRGB10Buffer(bool is_argb,
   base::ScopedClosureRunner done_runner(std::move(done));
   TRACE_EVENT2("media", "CopyRowsToXR30Buffer", "bytes_per_row", width * 2,
                "rows", rows);
-
   if (!output)
     return;
 
@@ -472,11 +472,6 @@ void CopyRowsToRGB10Buffer(bool is_argb,
   DCHECK_LE(width, std::abs(dest_stride / 2));
   DCHECK_EQ(0, first_row % 2);
 
-  int color_space = COLOR_SPACE_UNSPECIFIED;
-  if (source_frame->metadata()->GetInteger(VideoFrameMetadata::COLOR_SPACE,
-                                           &color_space)) {
-    color_space = COLOR_SPACE_UNSPECIFIED;
-  }
   const uint16_t* y_plane = reinterpret_cast<const uint16_t*>(
       source_frame->visible_data(VideoFrame::kYPlane) +
       first_row * source_frame->stride(VideoFrame::kYPlane));
@@ -489,33 +484,31 @@ void CopyRowsToRGB10Buffer(bool is_argb,
       source_frame->visible_data(VideoFrame::kUPlane) +
       first_row / 2 * source_frame->stride(VideoFrame::kUPlane));
   const size_t u_plane_stride = source_frame->stride(VideoFrame::kUPlane) / 2;
-  uint8_t* dest_ar30 = output + first_row * dest_stride;
+  uint8_t* dest_rgb10 = output + first_row * dest_stride;
 
-  switch (color_space) {
-    case COLOR_SPACE_HD_REC709:
-      if (is_argb) {
-        libyuv::H010ToAR30(y_plane, y_plane_stride, u_plane, u_plane_stride,
-                           v_plane, v_plane_stride, dest_ar30, dest_stride,
-                           width, rows);
-      } else {
-        libyuv::H010ToAB30(y_plane, y_plane_stride, u_plane, u_plane_stride,
-                           v_plane, v_plane_stride, dest_ar30, dest_stride,
-                           width, rows);
-      }
-      break;
-    case COLOR_SPACE_UNSPECIFIED:
-    case COLOR_SPACE_JPEG:
-    case COLOR_SPACE_SD_REC601:
-      if (is_argb) {
-        libyuv::I010ToAR30(y_plane, y_plane_stride, u_plane, u_plane_stride,
-                           v_plane, v_plane_stride, dest_ar30, dest_stride,
-                           width, rows);
-      } else {
-        libyuv::I010ToAB30(y_plane, y_plane_stride, u_plane, u_plane_stride,
-                           v_plane, v_plane_stride, dest_ar30, dest_stride,
-                           width, rows);
-      }
-      break;
+  SkYUVColorSpace skyuv = kRec709_SkYUVColorSpace;
+  source_frame->ColorSpace().ToSkYUVColorSpace(&skyuv);
+
+  if (skyuv == kRec601_SkYUVColorSpace) {
+    if (is_argb) {
+      libyuv::I010ToAR30(y_plane, y_plane_stride, u_plane, u_plane_stride,
+                         v_plane, v_plane_stride, dest_rgb10, dest_stride,
+                         width, rows);
+    } else {
+      libyuv::I010ToAB30(y_plane, y_plane_stride, u_plane, u_plane_stride,
+                         v_plane, v_plane_stride, dest_rgb10, dest_stride,
+                         width, rows);
+    }
+  } else {
+    if (is_argb) {
+      libyuv::H010ToAR30(y_plane, y_plane_stride, u_plane, u_plane_stride,
+                         v_plane, v_plane_stride, dest_rgb10, dest_stride,
+                         width, rows);
+    } else {
+      libyuv::H010ToAB30(y_plane, y_plane_stride, u_plane, u_plane_stride,
+                         v_plane, v_plane_stride, dest_rgb10, dest_stride,
+                         width, rows);
+    }
   }
 }
 
@@ -910,7 +903,13 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
 #endif
       break;
     case GpuVideoAcceleratorFactories::OutputFormat::XR30:
+    case GpuVideoAcceleratorFactories::OutputFormat::XB30:
       allow_overlay = true;
+      // We've converted the YUV to RGB, fix the color space.
+      // TODO(hubbe): The libyuv YUV to RGB conversion may not have
+      // honored the color space conversion 100%. We should either fix
+      // libyuv or find a way for later passes to make up the difference.
+      frame->set_color_space(video_frame->ColorSpace().GetAsRGB());
       break;
     default:
       break;

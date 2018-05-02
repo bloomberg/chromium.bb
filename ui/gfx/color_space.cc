@@ -423,6 +423,13 @@ ColorSpace ColorSpace::GetAsFullRangeRGB() const {
   return result;
 }
 
+ColorSpace ColorSpace::GetAsRGB() const {
+  ColorSpace result(*this);
+  if (IsValid())
+    result.matrix_ = MatrixID::RGB;
+  return result;
+}
+
 ColorSpace ColorSpace::GetRasterColorSpace() const {
   // Rasterization can only be done into parametric color spaces.
   if (icc_profile_id_)
