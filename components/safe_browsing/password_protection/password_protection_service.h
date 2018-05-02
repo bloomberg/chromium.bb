@@ -79,6 +79,11 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
     MATCHED_ENTERPRISE_WHITELIST = 15,
     MATCHED_ENTERPRISE_CHANGE_PASSWORD_URL = 16,
     MATCHED_ENTERPRISE_LOGIN_URL = 17,
+    // No request is ever sent if the admin configures password protection to
+    // warn on ALL password reuses (rather than just phishing sites).
+    PASSWORD_ALERT_MODE = 18,
+    // No request is event sent if the admin turns off password protection.
+    TURNED_OFF_BY_ADMIN = 19,
     MAX_OUTCOME
   };
 
@@ -239,16 +244,27 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
       const GURL& url,
       RequestOutcome* reason) const = 0;
 
+  // Called when password reuse warning or phishing reuse warning is shown.
+  // Must be called on UI thread.
+  virtual void OnPolicySpecifiedPasswordReuseDetected(const GURL& url,
+                                                      bool is_phishing_url) = 0;
+
+  // Called when a protected password change is detected. Must be called on
+  // UI thread.
+  virtual void OnPolicySpecifiedPasswordChanged() = 0;
+
  protected:
   friend class PasswordProtectionRequest;
 
   // Chrome can send password protection ping if it is allowed by Finch config
   // and if Safe Browsing can compute reputation of |main_frame_url| (e.g.
   // Safe Browsing is not able to compute reputation of a private IP or
-  // a local host). |matches_sync_password| is used for UMA metric recording.
+  // a local host). Update |reason| if sending ping is not allowed.
+  // |matches_sync_password| is used for UMA metric recording.
   bool CanSendPing(LoginReputationClientRequest::TriggerType trigger_type,
                    const GURL& main_frame_url,
-                   bool matches_sync_password);
+                   bool matches_sync_password,
+                   RequestOutcome* reason);
 
   // Called by a PasswordProtectionRequest instance when it finishes to remove
   // itself from |requests_|.

@@ -158,6 +158,16 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // returns an empty string.
   std::string GetOrganizationName();
 
+  // Triggers "safeBrowsingPrivate.OnPolicySpecifiedPasswordReuseDetected"
+  // extension API for enterprise reporting.
+  // |is_phishing_url| indicates if the password reuse happened on a phishing
+  // page.
+  void OnPolicySpecifiedPasswordReuseDetected(const GURL& url,
+                                              bool is_phishing_url) override;
+
+  // Triggers "safeBrowsingPrivate.OnPolicySpecifiedPasswordChanged" API.
+  void OnPolicySpecifiedPasswordChanged() override;
+
  protected:
   // PasswordProtectionService overrides.
   // Obtains referrer chain of |event_url| and |event_tab_id| and add this
@@ -243,6 +253,9 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
  private:
   friend class MockChromePasswordProtectionService;
   friend class ChromePasswordProtectionServiceBrowserTest;
+  FRIEND_TEST_ALL_PREFIXES(
+      ChromePasswordProtectionServiceTest,
+      VerifyOnPolicySpecifiedPasswordReuseDetectedEventForPhishingReuse);
 
   // Gets prefs associated with |profile_|.
   PrefService* GetPrefs();
@@ -273,6 +286,9 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
       int64_t navigation_id,
       sync_pb::UserEventSpecifics::GaiaPasswordReuse::
           PasswordReuseDialogInteraction::InteractionResult interaction_result);
+
+  void OnModalWarningShown(content::WebContents* web_contents,
+                           const std::string& verdict_token);
 
   // Constructor used for tests only.
   ChromePasswordProtectionService(

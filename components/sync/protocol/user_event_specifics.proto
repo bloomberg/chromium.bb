@@ -170,6 +170,9 @@ message UserEventSpecifics {
         // URL did match enterprise whitelist.
         // No further action required related to this re-use event.
         ENTERPRISE_WHITELIST_HIT = 6;
+        // Password reuse lookup is turned off by enterprise policy.
+        // No further action required related to this re-use event.
+        TURNED_OFF_BY_POLICY = 7;
       }
       optional LookupResult lookup_result = 1;
 

@@ -14,6 +14,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
+#include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager.h"
@@ -274,12 +276,21 @@ void ChromePasswordProtectionService::ShowModalWarning(
       base::BindOnce(&ChromePasswordProtectionService::OnUserAction,
                      base::Unretained(this), web_contents,
                      PasswordProtectionService::MODAL_DIALOG));
+
+  OnModalWarningShown(web_contents, verdict_token);
+}
+
+void ChromePasswordProtectionService::OnModalWarningShown(
+    content::WebContents* web_contents,
+    const std::string& verdict_token) {
   RecordWarningAction(PasswordProtectionService::MODAL_DIALOG,
                       PasswordProtectionService::SHOWN);
 
-  // Updates prefs.
   GURL trigger_url = web_contents->GetLastCommittedURL();
   DCHECK(trigger_url.is_valid());
+  OnPolicySpecifiedPasswordReuseDetected(trigger_url,
+                                         /*is_phishing_url=*/true);
+
   DictionaryPrefUpdate update(profile_->GetPrefs(),
                               prefs::kSafeBrowsingUnhandledSyncPasswordReuses);
   // Since base::Value doesn't support int64_t type, we convert the navigation
@@ -388,9 +399,18 @@ bool ChromePasswordProtectionService::IsPingingEnabled(
   if (!IsSafeBrowsingEnabled())
     return false;
 
-  // Protected password entry pinging is enabled for all users.
-  if (trigger_type == LoginReputationClientRequest::PASSWORD_REUSE_EVENT)
+  if (trigger_type == LoginReputationClientRequest::PASSWORD_REUSE_EVENT) {
+    PasswordProtectionTrigger trigger_level = GetPasswordProtectionTriggerPref(
+        prefs::kPasswordProtectionWarningTrigger);
+    if (trigger_level == PASSWORD_REUSE) {
+      *reason = PASSWORD_ALERT_MODE;
+      return false;
+    } else if (trigger_level == PASSWORD_PROTECTION_OFF) {
+      *reason = TURNED_OFF_BY_ADMIN;
+      return false;
+    }
     return true;
+  }
 
   // Password field on focus pinging is enabled for !incognito &&
   // extended_reporting.
@@ -590,6 +610,11 @@ void ChromePasswordProtectionService::MaybeLogPasswordReuseLookupEvent(
       LogPasswordReuseLookupResult(
           web_contents, PasswordReuseLookup::ENTERPRISE_WHITELIST_HIT);
       break;
+    case PasswordProtectionService::PASSWORD_ALERT_MODE:
+    case PasswordProtectionService::TURNED_OFF_BY_ADMIN:
+      LogPasswordReuseLookupResult(web_contents,
+                                   PasswordReuseLookup::TURNED_OFF_BY_POLICY);
+      break;
     case PasswordProtectionService::CANCELED:
     case PasswordProtectionService::TIMEDOUT:
     case PasswordProtectionService::DISABLED_DUE_TO_INCOGNITO:
@@ -690,6 +715,7 @@ void ChromePasswordProtectionService::OnGaiaPasswordChanged() {
   unhandled_sync_password_reuses->Clear();
   for (auto& observer : observer_list_)
     observer.OnGaiaPasswordChanged();
+  OnPolicySpecifiedPasswordChanged();
 }
 
 bool ChromePasswordProtectionService::UserClickedThroughSBInterstitial(
@@ -933,6 +959,23 @@ base::string16 ChromePasswordProtectionService::GetWarningDetailText() {
 std::string ChromePasswordProtectionService::GetOrganizationName() {
   std::string email = GetAccountInfo().email;
   return email.empty() ? std::string() : gaia::ExtractDomainName(email);
+}
+
+void ChromePasswordProtectionService::OnPolicySpecifiedPasswordReuseDetected(
+    const GURL& url,
+    bool is_phishing_url) {
+  if (!IsIncognito()) {
+    extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile_)
+        ->OnPolicySpecifiedPasswordReuseDetected(url, GetAccountInfo().email,
+                                                 is_phishing_url);
+  }
+}
+
+void ChromePasswordProtectionService::OnPolicySpecifiedPasswordChanged() {
+  if (!IsIncognito()) {
+    extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile_)
+        ->OnPolicySpecifiedPasswordChanged(GetAccountInfo().email);
+  }
 }
 
 }  // namespace safe_browsing
