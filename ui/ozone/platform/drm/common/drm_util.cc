@@ -193,16 +193,18 @@ int ConnectorIndex(int device_index, int display_index) {
   return ((device_index << 4) + display_index) & 0xFF;
 }
 
-bool HasColorCorrectionMatrix(int fd, drmModeCrtc* crtc) {
-  ScopedDrmObjectPropertyPtr crtc_props(
-      drmModeObjectGetProperties(fd, crtc->crtc_id, DRM_MODE_OBJECT_CRTC));
+bool HasPerPlaneColorCorrectionMatrix(const int fd, drmModeCrtc* crtc) {
+  ScopedDrmPlaneResPtr plane_resources(drmModeGetPlaneResources(fd));
+  DCHECK(plane_resources);
+  for (uint32_t i = 0; i < plane_resources->count_planes; ++i) {
+    ScopedDrmObjectPropertyPtr plane_props(drmModeObjectGetProperties(
+        fd, plane_resources->planes[i], DRM_MODE_OBJECT_PLANE));
+    DCHECK(plane_props);
 
-  for (uint32_t i = 0; i < crtc_props->count_props; ++i) {
-    ScopedDrmPropertyPtr property(drmModeGetProperty(fd, crtc_props->props[i]));
-    if (property && !strcmp(property->name, "CTM"))
-      return true;
+    if (!FindDrmProperty(fd, plane_props.get(), "PLANE_CTM"))
+      return false;
   }
-  return false;
+  return true;
 }
 
 bool AreDisplayModesEqual(const DisplayMode_Params& lhs,
@@ -212,6 +214,23 @@ bool AreDisplayModesEqual(const DisplayMode_Params& lhs,
 }
 
 }  // namespace
+
+ScopedDrmPropertyPtr FindDrmProperty(int fd,
+                                     drmModeObjectProperties* properties,
+                                     const char* name) {
+  for (uint32_t i = 0; i < properties->count_props; ++i) {
+    ScopedDrmPropertyPtr property(drmModeGetProperty(fd, properties->props[i]));
+    if (property && !strcmp(property->name, name))
+      return property;
+  }
+  return nullptr;
+}
+
+bool HasColorCorrectionMatrix(int fd, drmModeCrtc* crtc) {
+  ScopedDrmObjectPropertyPtr crtc_props(
+      drmModeObjectGetProperties(fd, crtc->crtc_id, DRM_MODE_OBJECT_CRTC));
+  return !!FindDrmProperty(fd, crtc_props.get(), "CTM");
+}
 
 DisplayMode_Params GetDisplayModeParams(const display::DisplayMode& mode) {
   DisplayMode_Params params;
@@ -396,7 +415,8 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
   const bool is_aspect_preserving_scaling =
       IsAspectPreserving(fd, info->connector());
   const bool has_color_correction_matrix =
-      HasColorCorrectionMatrix(fd, info->crtc());
+      HasColorCorrectionMatrix(fd, info->crtc()) ||
+      HasPerPlaneColorCorrectionMatrix(fd, info->crtc());
   const gfx::Size maximum_cursor_size = GetMaximumCursorSize(fd);
 
   std::string display_name;
