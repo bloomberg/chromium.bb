@@ -126,6 +126,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void SetTooltipText(const base::string16& tooltip_text) override;
   void DisplayTooltipText(const base::string16& tooltip_text) override;
   gfx::Size GetRequestedRendererSize() const override;
+  uint32_t GetCaptureSequenceNumber() const override;
   bool IsSurfaceAvailableForCopy() const override;
   void CopyFromSurface(
       const gfx::Rect& src_rect,
@@ -540,6 +541,11 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // Tracks whether keyboard lock is active.
   bool is_keyboard_locked_ = false;
+
+  // Latest capture sequence number which is incremented when the caller
+  // requests surfaces be synchronized via
+  // EnsureSurfaceSynchronizedForLayoutTest().
+  uint32_t latest_capture_sequence_number_ = 0u;
 
   // Factory used to safely scope delayed calls to ShutdownHost().
   base::WeakPtrFactory<RenderWidgetHostViewMac> weak_factory_;
