@@ -931,9 +931,11 @@ void TabDragController::Attach(TabStrip* attached_tabstrip,
   for (size_t i = 0; i < drag_data_.size(); ++i)
     drag_data_[i].attached_tab = tabs[i];
 
-  attached_tabstrip_->StartedDraggingTabs(tabs);
-
   ResetSelection(GetModel(attached_tabstrip_));
+
+  // This should be called after ResetSelection() in order to generate
+  // bounds correctly. http://crbug.com/836004
+  attached_tabstrip_->StartedDraggingTabs(tabs);
 
   // The size of the dragged tab may have changed. Adjust the x offset so that
   // ratio of mouse_offset_ to original width is maintained.

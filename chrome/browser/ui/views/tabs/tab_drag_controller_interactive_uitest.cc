@@ -216,6 +216,11 @@ void TabDragControllerTest::SetWindowFinderForTabStrip(
   tab_strip->drag_controller_->window_finder_ = std::move(window_finder);
 }
 
+void TabDragControllerTest::HandleGestureEvent(TabStrip* tab_strip,
+                                               ui::GestureEvent* event) {
+  tab_strip->OnGestureEvent(event);
+}
+
 void TabDragControllerTest::SetUp() {
 #if defined(USE_AURA)
   // This needs to be disabled as it can interfere with when events are
@@ -380,7 +385,7 @@ IN_PROC_BROWSER_TEST_F(TabDragControllerTest, GestureEndShouldEndDragTest) {
   ui::GestureEvent gesture_end(tab_1_center.x(), tab_1_center.x(), 0,
                                base::TimeTicks(),
                                ui::GestureEventDetails(ui::ET_GESTURE_END));
-  tab_strip->OnGestureEvent(&gesture_end);
+  HandleGestureEvent(tab_strip, &gesture_end);
   EXPECT_FALSE(TabDragController::IsActive());
   EXPECT_FALSE(tab_strip->IsDragSessionActive());
 }
