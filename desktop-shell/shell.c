@@ -342,6 +342,15 @@ get_output_work_area(struct desktop_shell *shell,
 {
 	int32_t panel_width = 0, panel_height = 0;
 
+	if (!output) {
+		area->x = 0;
+		area->y = 0;
+		area->width = 0;
+		area->height = 0;
+
+		return;
+	}
+
 	area->x = output->x;
 	area->y = output->y;
 
