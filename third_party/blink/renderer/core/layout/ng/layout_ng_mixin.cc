@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node_data.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/page/scrolling/root_scroller_util.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_block_flow_painter.h"
@@ -147,9 +148,9 @@ scoped_refptr<NGLayoutResult> LayoutNGMixin<Base>::CachedLayoutResult(
     return nullptr;
   if (constraint_space != *cached_constraint_space_)
     return nullptr;
-  if (cached_constraint_space_->UnpositionedFloats().size() ||
-      cached_result_->UnpositionedFloats().size())
-    return nullptr;
+  // The checks above should be enough to bail if layout is incomplete, but
+  // let's verify:
+  DCHECK(IsBlockLayoutComplete(*cached_constraint_space_, *cached_result_));
   return cached_result_->CloneWithoutOffset();
 }
 

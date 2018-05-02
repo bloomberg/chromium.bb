@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_margin_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/list/ng_unpositioned_list_marker.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_floats_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_positioned_descendant.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
@@ -19,7 +20,6 @@ namespace blink {
 
 class NGExclusionSpace;
 struct NGPositionedFloat;
-struct NGUnpositionedFloat;
 
 // The NGLayoutResult stores the resulting data from layout. This includes
 // geometry information in form of a NGPhysicalFragment, which is kept around
@@ -57,18 +57,6 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   const Vector<NGPositionedFloat>& PositionedFloats() const {
     DCHECK(physical_fragment_->Type() == NGPhysicalFragment::kFragmentLineBox);
     return positioned_floats_;
-  }
-
-  // List of floats that need to be positioned by the next in-flow child that
-  // can determine its position in space.
-  // Use case example where it may be needed:
-  //    <div><float></div>
-  //    <div style="margin-top: 10px; height: 20px"></div>
-  // The float cannot be positioned right away inside of the 1st div because
-  // the vertical position is not known at that moment. It will be known only
-  // after the 2nd div collapses its margin with its parent.
-  const Vector<scoped_refptr<NGUnpositionedFloat>>& UnpositionedFloats() const {
-    return unpositioned_floats_;
   }
 
   const NGUnpositionedListMarker& UnpositionedListMarker() const {
@@ -109,35 +97,43 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   // of floats.
   bool IsPushedByFloats() const { return is_pushed_by_floats_; }
 
+  // Return the types (none, left, right, both) of preceding adjoining
+  // floats. These are floats that are added while the in-flow BFC offset is
+  // still unknown. The floats may or may not be unpositioned (pending). That
+  // depends on which layout pass we're in. Adjoining floats should be treated
+  // differently when calculating clearance on a block with adjoining
+  // block-start margin (in such cases we will know up front that the block will
+  // need clearance, since, if it doesn't, the float will be pulled along with
+  // the block, and the block will fail to clear).
+  NGFloatTypes AdjoiningFloatTypes() const { return adjoining_floats_; }
+
   scoped_refptr<NGLayoutResult> CloneWithoutOffset() const;
 
  private:
   friend class NGFragmentBuilder;
   friend class NGLineBoxFragmentBuilder;
 
-  NGLayoutResult(
-      scoped_refptr<NGPhysicalFragment> physical_fragment,
-      Vector<NGOutOfFlowPositionedDescendant>&
-          out_of_flow_positioned_descendants,
-      Vector<NGPositionedFloat>& positioned_floats,
-      Vector<scoped_refptr<NGUnpositionedFloat>>& unpositioned_floats,
-      const NGUnpositionedListMarker& unpositioned_list_marker,
-      std::unique_ptr<const NGExclusionSpace> exclusion_space,
-      const base::Optional<NGBfcOffset> bfc_offset,
-      const NGMarginStrut end_margin_strut,
-      const LayoutUnit intrinsic_block_size,
-      LayoutUnit minimal_space_shortage,
-      EBreakBetween initial_break_before,
-      EBreakBetween final_break_after,
-      bool has_forced_break,
-      bool is_pushed_by_floats,
-      NGLayoutResultStatus status);
+  NGLayoutResult(scoped_refptr<NGPhysicalFragment> physical_fragment,
+                 Vector<NGOutOfFlowPositionedDescendant>&
+                     out_of_flow_positioned_descendants,
+                 Vector<NGPositionedFloat>& positioned_floats,
+                 const NGUnpositionedListMarker& unpositioned_list_marker,
+                 std::unique_ptr<const NGExclusionSpace> exclusion_space,
+                 const base::Optional<NGBfcOffset> bfc_offset,
+                 const NGMarginStrut end_margin_strut,
+                 const LayoutUnit intrinsic_block_size,
+                 LayoutUnit minimal_space_shortage,
+                 EBreakBetween initial_break_before,
+                 EBreakBetween final_break_after,
+                 bool has_forced_break,
+                 bool is_pushed_by_floats,
+                 NGFloatTypes adjoining_floats,
+                 NGLayoutResultStatus status);
 
   scoped_refptr<NGPhysicalFragment> physical_fragment_;
   Vector<NGOutOfFlowPositionedDescendant> oof_positioned_descendants_;
 
   Vector<NGPositionedFloat> positioned_floats_;
-  Vector<scoped_refptr<NGUnpositionedFloat>> unpositioned_floats_;
 
   NGUnpositionedListMarker unpositioned_list_marker_;
 
@@ -153,6 +149,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   unsigned has_forced_break_ : 1;
 
   unsigned is_pushed_by_floats_ : 1;
+  unsigned adjoining_floats_ : 2;  // NGFloatTypes
 
   unsigned status_ : 1;
 };

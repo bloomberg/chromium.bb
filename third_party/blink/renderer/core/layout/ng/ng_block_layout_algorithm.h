@@ -178,6 +178,10 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // Updates the fragment's BFC offset if it's not already set.
   bool MaybeUpdateFragmentBfcOffset(LayoutUnit bfc_block_offset);
 
+  // Return true if the BFC offset has changed and this means that we need to
+  // abort layout.
+  bool NeedsAbortOnBfcOffsetChange() const;
+
   // Positions pending floats starting from {@origin_block_offset}.
   void PositionPendingFloats(LayoutUnit origin_block_offset);
 
@@ -228,7 +232,14 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // Set if we're resuming layout of a node that has already produced fragments.
   bool is_resuming_;
 
-  bool abort_when_bfc_resolved_;
+  // Set when we're to abort if the BFC offset gets resolved or updated.
+  // Sometimes we walk past elements (i.e. floats) that depend on the BFC offset
+  // being known (in order to position and lay themselves out properly). When
+  // this happens, and we finally manage to resolve (or update) the BFC offset
+  // at some subsequent element, we need to check if this flag is set, and abort
+  // layout if it is.
+  bool abort_when_bfc_offset_updated_ = false;
+
   bool has_processed_first_child_ = false;
 
   std::unique_ptr<NGExclusionSpace> exclusion_space_;

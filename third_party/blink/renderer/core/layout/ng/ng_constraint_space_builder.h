@@ -63,8 +63,10 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   NGConstraintSpaceBuilder& SetIsAnonymous(bool is_anonymous);
   NGConstraintSpaceBuilder& SetUseFirstLineStyle(bool use_first_line_style);
 
-  NGConstraintSpaceBuilder& SetUnpositionedFloats(
-      Vector<scoped_refptr<NGUnpositionedFloat>>& unpositioned_floats);
+  NGConstraintSpaceBuilder& SetAdjoiningFloatTypes(NGFloatTypes floats) {
+    adjoining_floats_ = floats;
+    return *this;
+  }
 
   NGConstraintSpaceBuilder& SetMarginStrut(const NGMarginStrut& margin_strut);
 
@@ -111,6 +113,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   unsigned is_new_fc_ : 1;
   unsigned is_anonymous_ : 1;
   unsigned use_first_line_style_ : 1;
+  unsigned adjoining_floats_ : 2;  // NGFloatTypes
   unsigned text_direction_ : 1;
 
   NGMarginStrut margin_strut_;
@@ -118,7 +121,6 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   base::Optional<NGBfcOffset> floats_bfc_offset_;
   const NGExclusionSpace* exclusion_space_;
   LayoutUnit clearance_offset_;
-  Vector<scoped_refptr<NGUnpositionedFloat>> unpositioned_floats_;
   Vector<NGBaselineRequest> baseline_requests_;
 };
 

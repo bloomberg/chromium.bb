@@ -163,12 +163,12 @@ scoped_refptr<NGLayoutResult> NGLineBoxFragmentBuilder::ToLineBoxFragment() {
 
   return base::AdoptRef(new NGLayoutResult(
       std::move(fragment), oof_positioned_descendants_, positioned_floats_,
-      unpositioned_floats_, unpositioned_list_marker_,
-      std::move(exclusion_space_), bfc_offset_, end_margin_strut_,
+      unpositioned_list_marker_, std::move(exclusion_space_), bfc_offset_,
+      end_margin_strut_,
       /* intrinsic_block_size */ LayoutUnit(),
       /* minimal_space_shortage */ LayoutUnit::Max(), EBreakBetween::kAuto,
       EBreakBetween::kAuto, /* has_forced_break */ false, is_pushed_by_floats_,
-      NGLayoutResult::kSuccess));
+      adjoining_floats_, NGLayoutResult::kSuccess));
 }
 
 }  // namespace blink

@@ -53,6 +53,7 @@ class NGLineBreakerTest : public NGBaseLayoutAlgorithmTest {
     while (!break_token || !break_token->IsFinished()) {
       NGLineBreaker line_breaker(node, NGLineBreakerMode::kContent, *space,
                                  &positioned_floats, &unpositioned_floats,
+                                 /* container_builder */ nullptr,
                                  &exclusion_space, 0u, break_token.get());
       if (!line_breaker.NextLine(opportunity, &line_info))
         break;
