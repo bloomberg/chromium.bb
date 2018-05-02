@@ -128,6 +128,7 @@ struct shell_surface {
 
 	struct weston_output *fullscreen_output;
 	struct weston_output *output;
+	struct wl_listener output_destroy_listener;
 
 	struct surface_state {
 		bool fullscreen;
@@ -1934,6 +1935,17 @@ shell_surface_update_layer(struct shell_surface *shsurf)
 }
 
 static void
+notify_output_destroy(struct wl_listener *listener, void *data)
+{
+	struct shell_surface *shsurf =
+		container_of(listener,
+			     struct shell_surface, output_destroy_listener);
+
+	shsurf->output = NULL;
+	shsurf->output_destroy_listener.notify = NULL;
+}
+
+static void
 shell_surface_set_output(struct shell_surface *shsurf,
                          struct weston_output *output)
 {
@@ -1948,6 +1960,18 @@ shell_surface_set_output(struct shell_surface *shsurf,
 		shsurf->output = es->output;
 	else
 		shsurf->output = get_default_output(es->compositor);
+
+	if (shsurf->output_destroy_listener.notify) {
+		wl_list_remove(&shsurf->output_destroy_listener.link);
+		shsurf->output_destroy_listener.notify = NULL;
+	}
+
+	if (!shsurf->output)
+		return;
+
+	shsurf->output_destroy_listener.notify = notify_output_destroy;
+	wl_signal_add(&shsurf->output->destroy_signal,
+		      &shsurf->output_destroy_listener);
 }
 
 static void
@@ -1986,7 +2010,7 @@ unset_maximized(struct shell_surface *shsurf)
 		weston_desktop_surface_get_surface(shsurf->desktop_surface);
 
 	/* undo all maximized things here */
-	shsurf->output = get_default_output(surface->compositor);
+	shell_surface_set_output(shsurf, get_default_output(surface->compositor));
 
 	if (shsurf->saved_position_valid)
 		weston_view_set_position(shsurf->view,
@@ -2348,7 +2372,8 @@ desktop_surface_added(struct weston_desktop_surface *desktop_surface,
 	shsurf->fullscreen.black_view = NULL;
 	wl_list_init(&shsurf->fullscreen.transform.link);
 
-	shsurf->output = get_default_output(shsurf->shell->compositor);
+	shell_surface_set_output(
+		shsurf, get_default_output(shsurf->shell->compositor));
 
 	wl_signal_init(&shsurf->destroy_signal);
 
