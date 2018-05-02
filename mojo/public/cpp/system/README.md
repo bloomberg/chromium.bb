@@ -1,19 +1,19 @@
 # Mojo C++ System API
-This document is a subset of the [Mojo documentation](/mojo).
+This document is a subset of the [Mojo documentation](/mojo/README.md).
 
 [TOC]
 
 ## Overview
 The Mojo C++ System API provides a convenient set of helper classes and
 functions for working with Mojo primitives. Unlike the low-level
-[C API](/mojo/public/c/system) (upon which this is built) this library takes
-advantage of C++ language features and common STL and `//base` types to provide
-a slightly more idiomatic interface to the Mojo system layer, making it
+[C API](/mojo/public/c/system/README.md) (upon which this is built) this library
+takes advantage of C++ language features and common STL and `//base` types to
+provide a slightly more idiomatic interface to the Mojo system layer, making it
 generally easier to use.
 
 This document provides a brief guide to API usage with example code snippets.
 For a detailed API references please consult the headers in
-[//mojo/public/cpp/system](https://cs.chromium.org/chromium/src/mojo/public/cpp/system/).
+[//mojo/public/cpp/system](https://cs.chromium.org/chromium/src/mojo/public/cpp/system/README.md).
 
 Note that all API symbols referenced in this document are implicitly in the
 top-level `mojo` namespace.
@@ -104,8 +104,8 @@ mojo::CreateDataPipe(null, &producer, &consumer);
 ```
 
 C++ helpers which correspond directly to the
-[Data Pipe C API](/mojo/public/c/system#Data-Pipes) for immediate and two-phase
-I/O are provided as well. For example:
+[Data Pipe C API](/mojo/public/c/system/README.md#Data-Pipes) for immediate and
+two-phase I/O are provided as well. For example:
 
 ``` cpp
 uint32_t num_bytes = 7;
@@ -167,7 +167,8 @@ for detailed C++ platform handle API documentation.
 ## Signals & Watchers
 
 For an introduction to the concepts of handle signals and watchers, check out
-the C API's documentation on [Signals & Watchers](/mojo/public/c/system#Signals-Watchers).
+the C API's documentation on
+[Signals & Watchers](/mojo/public/c/system/README.md#Signals-Watchers).
 
 ### Querying Signals
 
@@ -204,7 +205,8 @@ if (message_pipe.handle0->QuerySignalsState().readable()) {
 ### Watching Handles
 
 The [`mojo::SimpleWatcher`](https://cs.chromium.org/chromium/src/mojo/public/cpp/system/simple_watcher.h)
-class serves as a convenient helper for using the [low-level watcher API](/mojo/public/c/system#Signals-Watchers)
+class serves as a convenient helper for using the
+[low-level watcher API](/mojo/public/c/system/README.md#Signals-Watchers)
 to watch a handle for signaling state changes. A `SimpleWatcher` is bound to a
 single sequence and always dispatches its notifications on a
 `base::SequencedTaskRunner`.
@@ -216,7 +218,7 @@ time by the `mojo::SimpleWatcher::ArmingPolicy` enum:
   before any notifications will fire regarding the state of the watched handle.
   Every time the notification callback is run, the `SimpleWatcher` must be
   rearmed again before the next one can fire. See
-  [Arming a Watcher](/mojo/public/c/system#Arming-a-Watcher) and the
+  [Arming a Watcher](/mojo/public/c/system/README.md#Arming-a-Watcher) and the
   documentation in `SimpleWatcher`'s header.
 
 * `AUTOMATIC` mode ensures that the `SimpleWatcher` always either is armed or
@@ -271,7 +273,8 @@ WriteABunchOfStuff(pipe.handle1.get());
 
 The C++ System API defines some utilities to block a calling sequence while
 waiting for one or more handles to change signaling state in an interesting way.
-These threads combine usage of the [low-level Watcher API](/mojo/public/c/system#Signals-Watchers)
+These threads combine usage of the
+[low-level Watcher API](/mojo/public/c/system/README.md#Signals-Watchers)
 with common synchronization primitives (namely `base::WaitableEvent`.)
 
 While these API features should be used sparingly, they are sometimes necessary.

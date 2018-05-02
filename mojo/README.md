@@ -9,13 +9,13 @@ Chrome), the fastest path forward will be to look at the bindings documentation
 for your language of choice ([**C++**](#C_Bindings),
 [**JavaScript**](#JavaScript-Bindings), or [**Java**](#Java-Bindings)) as well
 as the documentation for the
-[**Mojom IDL and bindings generator**](/mojo/public/tools/bindings).
+[**Mojom IDL and bindings generator**](/mojo/public/tools/bindings/README.md).
 
 If you're looking for information on creating and/or connecting to services, see
-the top-level [Services documentation](/services).
+the top-level [Services documentation](/services/README.md).
 
 For specific details regarding the conversion of old things to new things, check
-out [Converting Legacy Chrome IPC To Mojo](/ipc).
+out [Converting Legacy Chrome IPC To Mojo](/ipc/README.md).
 
 ## System Overview
 
@@ -33,8 +33,8 @@ follows:
 ## Embedder Development Kit (EDK)
 Every process to be interconnected via Mojo IPC is called a **Mojo embedder**
 and needs to embed the
-[**Embedder Development Kit (EDK)**](/mojo/edk/embedder) library. The EDK
-exposes the means for an embedder to physically connect one process to another
+[**Embedder Development Kit (EDK)**](/mojo/edk/embedder/README.md) library. The
+EDK exposes the means for an embedder to physically connect one process to another
 using any supported native IPC primitive (*e.g.,* a UNIX domain socket or
 Windows named pipe) on the host platform.
 
@@ -45,12 +45,13 @@ done within processes that embed Mojo.
 
 ## C System API
 Once the EDK is initialized within a process, the public
-[**C System API**](/mojo/public/c/system) is usable on any thread for the
-remainder of the process's lifetime. This is a lightweight API with a relatively
-small (and eventually stable) ABI. Typically this API is not used directly, but
-it is the foundation upon which all remaining upper layers are built. It exposes
-the fundamental capabilities to create and interact with various types of Mojo
-handles including **message pipes**, **data pipes**, and **shared buffers**.
+[**C System API**](/mojo/public/c/system/README.md) is usable on any thread for
+the remainder of the process's lifetime. This is a lightweight API with a
+relatively small (and eventually stable) ABI. Typically this API is not used
+directly, but it is the foundation upon which all remaining upper layers are
+built. It exposes the fundamental capabilities to create and interact with
+various types of Mojo handles including **message pipes**, **data pipes**, and
+**shared buffers**.
 
 ## High-Level System APIs
 
@@ -60,21 +61,21 @@ system APIs is rare compared to the bindings APIs, but it is sometimes desirable
 or necessary.
 
 ### C++
-The [**C++ System API**](/mojo/public/cpp/system) provides a layer of
+The [**C++ System API**](/mojo/public/cpp/system/README.md) provides a layer of
 C++ helper classes and functions to make safe System API usage easier:
 strongly-typed handle scopers, synchronous waiting operations, system handle
 wrapping and unwrapping helpers, common handle operations, and utilities for
 more easily watching handle state changes.
 
 ### JavaScript
-The [**JavaScript System API**](/third_party/blink/renderer/core/mojo) exposes
-the Mojo primitives to JavaScript, covering all basic functionality of the
+The [**JavaScript System API**](/third_party/blink/renderer/core/mojo/README.md)
+exposes the Mojo primitives to JavaScript, covering all basic functionality of the
 low-level C API.
 
 ### Java
-The [**Java System API**](/mojo/public/java/system) provides helper classes for
-working with Mojo primitives, covering all basic functionality of the low-level
-C API.
+The [**Java System API**](/mojo/public/java/system/README.md) provides helper
+classes for working with Mojo primitives, covering all basic functionality of
+the low-level C API.
 
 ## High-Level Bindings APIs
 Typically developers do not use raw message pipe I/O directly, but instead
@@ -83,28 +84,29 @@ an idiomatic method-calling interface in the target language of choice. This is
 the bindings layer.
 
 ### Mojom IDL and Bindings Generator
-Interfaces are defined using the [**Mojom IDL**](/mojo/public/tools/bindings),
-which can be fed to the [**bindings generator**](/mojo/public/tools/bindings) to
-generate code in various supported languages. Generated code manages
-serialization and deserialization of messages between interface clients and
-implementations, simplifying the code -- and ultimately hiding the message pipe
--- on either side of an interface connection.
+Interfaces are defined using the
+[**Mojom IDL**](/mojo/public/tools/bindings/README.md), which can be fed to the
+[**bindings generator**](/mojo/public/tools/bindings/README.md) to generate code
+in various supported languages. Generated code manages serialization and
+deserialization of messages between interface clients and implementations,
+simplifying the code -- and ultimately hiding the message pipe -- on either side
+of an interface connection.
 
 ### C++ Bindings
 By far the most commonly used API defined by Mojo, the
-[**C++ Bindings API**](/mojo/public/cpp/bindings) exposes a robust set of
-features for interacting with message pipes via generated C++ bindings code,
+[**C++ Bindings API**](/mojo/public/cpp/bindings/README.md) exposes a robust set
+of features for interacting with message pipes via generated C++ bindings code,
 including support for sets of related bindings endpoints, associated interfaces,
 nested sync IPC, versioning, bad-message reporting, arbitrary message filter
 injection, and convenient test facilities.
 
 ### JavaScript Bindings
-The [**JavaScript Bindings API**](/mojo/public/js) provides helper classes
-for working with JavaScript code emitted by the bindings generator.
+The [**JavaScript Bindings API**](/mojo/public/js/README.md) provides helper
+classes for working with JavaScript code emitted by the bindings generator.
 
 ### Java Bindings
-The [**Java Bindings API**](/mojo/public/java/bindings) provides helper classes
-for working with Java code emitted by the bindings generator.
+The [**Java Bindings API**](/mojo/public/java/bindings/README.md) provides
+helper classes for working with Java code emitted by the bindings generator.
 
 ## FAQ
 

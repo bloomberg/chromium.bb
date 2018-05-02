@@ -1,5 +1,5 @@
 # Mojo C System API
-This document is a subset of the [Mojo documentation](/mojo).
+This document is a subset of the [Mojo documentation](/mojo/README.md).
 
 [TOC]
 
@@ -42,9 +42,9 @@ user-provided notification handlers may be invoked at any time on arbitrary
 threads in the process. It is entirely up to the API user to take appropriate
 measures to synchronize operations against other application state.
 
-The higher level [system](/mojo#High-Level-System-APIs) and
-[bindings](/mojo#High-Level-Bindings-APIs) APIs provide helpers to simplify Mojo
-usage in this regard, at the expense of some flexibility.
+The higher level [system](/mojo/README.md#High-Level-System-APIs) and
+[bindings](/mojo/README.md#High-Level-Bindings-APIs) APIs provide helpers to
+simplify Mojo usage in this regard, at the expense of some flexibility.
 
 ## Result Codes
 
@@ -92,12 +92,12 @@ unstructured binary messages with zero or more `MojoHandle` attachments to be
 transferred from one end of a pipe to the other. Message pipes work seamlessly
 across process boundaries or within a single process.
 
-The [Embedder Development Kit (EDK)](/mojo/edk/embedder) provides the means to
-bootstrap one or more primordial cross-process message pipes, and it's up to
-Mojo embedders to expose this capability in some useful way. Once such a pipe is
-established, additional handles -- including other message pipe handles -- may
-be sent to a remote process using that pipe (or in turn, over other pipes sent
-over that pipe, or pipes sent over *that* pipe, and so on...)
+The [Embedder Development Kit (EDK)](/mojo/edk/embedder/README.md) provides the
+means to bootstrap one or more primordial cross-process message pipes, and it's
+up to Mojo embedders to expose this capability in some useful way. Once such a
+pipe is established, additional handles -- including other message pipe
+handles -- may be sent to a remote process using that pipe (or in turn, over
+other pipes sent over that pipe, or pipes sent over *that* pipe, and so on...)
 
 The public C System API exposes the ability to read and write messages on pipes
 and to create new message pipes.
