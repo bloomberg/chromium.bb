@@ -221,7 +221,7 @@ void FrameSchedulerImpl::SetFrameVisible(bool frame_visible) {
     return;
   UMA_HISTOGRAM_BOOLEAN("RendererScheduler.IPC.FrameVisibility", frame_visible);
   frame_visible_ = frame_visible;
-  UpdateTaskQueueThrottling();
+  UpdateThrottling();
 }
 
 bool FrameSchedulerImpl::IsFrameVisible() const {
@@ -239,7 +239,7 @@ void FrameSchedulerImpl::SetCrossOrigin(bool cross_origin) {
   } else {
     frame_origin_type_ = FrameOriginType::kSameOriginFrame;
   }
-  UpdateTaskQueueThrottling();
+  UpdateThrottling();
 }
 
 bool FrameSchedulerImpl::IsCrossOrigin() const {
@@ -375,7 +375,7 @@ scoped_refptr<TaskQueue> FrameSchedulerImpl::ThrottleableTaskQueue() {
           main_thread_scheduler_->tick_clock()->NowTicks(),
           throttleable_task_queue_.get());
     }
-    UpdateTaskQueueThrottling();
+    UpdateThrottling();
   }
   return throttleable_task_queue_;
 }
@@ -523,8 +523,7 @@ void FrameSchedulerImpl::SetPageVisibility(
   page_visibility_ = page_visibility;
   if (page_visibility_ == PageVisibilityState::kVisible)
     page_frozen_ = false;  // visible page must not be frozen.
-  UpdateTaskQueues();
-  UpdateTaskQueueThrottling();
+  UpdatePolicy();
 }
 
 bool FrameSchedulerImpl::IsPageVisible() const {
@@ -537,35 +536,38 @@ void FrameSchedulerImpl::SetPaused(bool frame_paused) {
     return;
 
   frame_paused_ = frame_paused;
-  UpdateTaskQueues();
+  UpdatePolicy();
 }
 
 void FrameSchedulerImpl::SetPageFrozen(bool frozen) {
   DCHECK(!frozen || page_visibility_ == PageVisibilityState::kHidden);
   page_frozen_ = frozen;
-  UpdateTaskQueues();
+  UpdatePolicy();
 }
 
 void FrameSchedulerImpl::SetKeepActive(bool keep_active) {
   keep_active_ = keep_active;
-  UpdateTaskQueues();
+  UpdatePolicy();
 }
 
-void FrameSchedulerImpl::UpdateTaskQueues() {
+void FrameSchedulerImpl::UpdatePolicy() {
   // Per-frame (stoppable) task queues will be frozen after 5mins in
   // background. They will be resumed when the page is visible.
-  UpdateTaskQueue(throttleable_task_queue_,
-                  throttleable_queue_enabled_voter_.get());
-  UpdateTaskQueue(loading_task_queue_, loading_queue_enabled_voter_.get());
-  UpdateTaskQueue(loading_control_task_queue_,
-                  loading_control_queue_enabled_voter_.get());
-  UpdateTaskQueue(deferrable_task_queue_,
-                  deferrable_queue_enabled_voter_.get());
-  UpdateTaskQueue(pausable_task_queue_, pausable_queue_enabled_voter_.get());
-  UpdateThrottlingState();
+  UpdateQueuePolicy(throttleable_task_queue_,
+                    throttleable_queue_enabled_voter_.get());
+  UpdateQueuePolicy(loading_task_queue_, loading_queue_enabled_voter_.get());
+  UpdateQueuePolicy(loading_control_task_queue_,
+                    loading_control_queue_enabled_voter_.get());
+  UpdateQueuePolicy(deferrable_task_queue_,
+                    deferrable_queue_enabled_voter_.get());
+  UpdateQueuePolicy(pausable_task_queue_, pausable_queue_enabled_voter_.get());
+
+  UpdateThrottling();
+
+  NotifyThrottlingObservers();
 }
 
-void FrameSchedulerImpl::UpdateTaskQueue(
+void FrameSchedulerImpl::UpdateQueuePolicy(
     const scoped_refptr<MainThreadTaskQueue>& queue,
     TaskQueue::QueueEnabledVoter* voter) {
   if (!queue || !voter)
@@ -578,7 +580,7 @@ void FrameSchedulerImpl::UpdateTaskQueue(
   voter->SetQueueEnabled(!queue_paused && !queue_frozen);
 }
 
-void FrameSchedulerImpl::UpdateThrottlingState() {
+void FrameSchedulerImpl::NotifyThrottlingObservers() {
   FrameScheduler::ThrottlingState throttling_state = CalculateThrottlingState();
   if (throttling_state == throttling_state_)
     return;
@@ -615,7 +617,7 @@ bool FrameSchedulerImpl::ShouldThrottleTimers() const {
          !frame_visible_ && IsCrossOrigin();
 }
 
-void FrameSchedulerImpl::UpdateTaskQueueThrottling() {
+void FrameSchedulerImpl::UpdateThrottling() {
   // Before we initialize a trottleable task queue, |task_queue_throttled_|
   // stays false and this function ensures it indicates whether are we holding
   // a queue reference for throttler or not.
