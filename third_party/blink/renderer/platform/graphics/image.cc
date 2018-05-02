@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/platform/graphics/image.h"
 
 #include "build/build_config.h"
+#include "cc/tiles/software_image_decode_cache.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
@@ -89,6 +90,18 @@ Image* Image::NullImage() {
   DCHECK(IsMainThread());
   DEFINE_STATIC_REF(Image, null_image, (BitmapImage::Create()));
   return null_image;
+}
+
+// static
+cc::ImageDecodeCache& Image::SharedCCDecodeCache() {
+  // This denotes the allocated locked memory budget for the cache used for
+  // book-keeping. The cache indicates when the total memory locked exceeds this
+  // budget in cc::DecodedDrawImage.
+  static const size_t kLockedMemoryLimitBytes = 64 * 1024 * 1024;
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(cc::SoftwareImageDecodeCache,
+                                  image_decode_cache,
+                                  (kN32_SkColorType, kLockedMemoryLimitBytes));
+  return image_decode_cache;
 }
 
 scoped_refptr<Image> Image::LoadPlatformResource(const char* name) {

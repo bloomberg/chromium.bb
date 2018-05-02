@@ -382,12 +382,13 @@ PaintCanvas* CanvasResourceProvider::Canvas() {
   if (!canvas_) {
     DCHECK(!canvas_image_provider_);
 
-    cc::ImageProvider* image_provider = nullptr;
-    if (ImageDecodeCache()) {
-      canvas_image_provider_.emplace(ImageDecodeCache(),
-                                     ColorParams().GetStorageGfxColorSpace());
-      image_provider = &*canvas_image_provider_;
-    }
+    gfx::ColorSpace target_color_space =
+        ColorParams().NeedsSkColorSpaceXformCanvas()
+            ? ColorParams().GetStorageGfxColorSpace()
+            : gfx::ColorSpace::CreateSRGB();
+
+    canvas_image_provider_.emplace(ImageDecodeCache(), target_color_space);
+    cc::ImageProvider* image_provider = &*canvas_image_provider_;
 
     cc::SkiaPaintCanvas::ContextFlushes context_flushes;
     if (IsAccelerated()) {
@@ -399,11 +400,10 @@ PaintCanvas* CanvasResourceProvider::Canvas() {
     if (ColorParams().NeedsSkColorSpaceXformCanvas()) {
       canvas_ = std::make_unique<cc::SkiaPaintCanvas>(
           GetSkSurface()->getCanvas(), ColorParams().GetSkColorSpace(),
-          std::move(image_provider), context_flushes);
+          image_provider, context_flushes);
     } else {
       canvas_ = std::make_unique<cc::SkiaPaintCanvas>(
-          GetSkSurface()->getCanvas(), std::move(image_provider),
-          context_flushes);
+          GetSkSurface()->getCanvas(), image_provider, context_flushes);
     }
   }
 
@@ -542,10 +542,9 @@ scoped_refptr<CanvasResource> CanvasResourceProvider::CreateResource() {
 }
 
 cc::ImageDecodeCache* CanvasResourceProvider::ImageDecodeCache() {
-  // TODO(khushalsagar): Hook up a software cache.
-  if (!context_provider_wrapper_)
-    return nullptr;
-  return context_provider_wrapper_->ContextProvider()->ImageDecodeCache();
+  if (context_provider_wrapper_)
+    return context_provider_wrapper_->ContextProvider()->ImageDecodeCache();
+  return &Image::SharedCCDecodeCache();
 }
 
 }  // namespace blink

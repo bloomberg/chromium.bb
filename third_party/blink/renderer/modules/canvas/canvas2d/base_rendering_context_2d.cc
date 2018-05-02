@@ -1076,16 +1076,6 @@ bool BaseRenderingContext2D::ShouldDrawImageAntialiased(
          dest_rect.Height() * fabs(height_expansion) < 1;
 }
 
-static bool IsDrawScalingDown(const FloatRect& src_rect,
-                              const FloatRect& dst_rect,
-                              float x_scale_squared,
-                              float y_scale_squared) {
-  return dst_rect.Width() * dst_rect.Width() * x_scale_squared <
-             src_rect.Width() * src_rect.Width() &&
-         dst_rect.Height() * dst_rect.Height() * y_scale_squared <
-             src_rect.Height() * src_rect.Height();
-}
-
 void BaseRenderingContext2D::DrawImageInternal(PaintCanvas* c,
                                                CanvasImageSource* image_source,
                                                Image* image,
@@ -1118,12 +1108,6 @@ void BaseRenderingContext2D::DrawImageInternal(PaintCanvas* c,
     image_flags.setBlendMode(SkBlendMode::kSrcOver);
     image_flags.setImageFilter(nullptr);
   }
-
-  if (!imageSmoothingEnabled() &&
-      IsDrawScalingDown(src_rect, dst_rect,
-                        GetState().Transform().XScaleSquared(),
-                        GetState().Transform().YScaleSquared()))
-    image_flags.setFilterQuality(kLow_SkFilterQuality);
 
   if (!image_source->IsVideoElement()) {
     image_flags.setAntiAlias(ShouldDrawImageAntialiased(dst_rect));
