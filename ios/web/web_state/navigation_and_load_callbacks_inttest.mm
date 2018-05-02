@@ -1028,6 +1028,9 @@ TEST_F(NavigationAndLoadCallbacksTest, ReloadPostNavigation) {
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _));
   EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
       .WillOnce(Return(true));
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    EXPECT_CALL(observer_, DidChangeBackForwardState(web_state()));
+  }
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
@@ -1039,16 +1042,29 @@ TEST_F(NavigationAndLoadCallbacksTest, ReloadPostNavigation) {
   NavigationContext* context = nullptr;
   int32_t nav_id = 0;
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
-  EXPECT_CALL(*decider_, ShouldAllowRequest(_, _)).WillOnce(Return(true));
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    // ShouldAllowRequest() not called because SlimNavigationManager catches
+    // repost before calling policy decider.
+  } else {
+    EXPECT_CALL(*decider_, ShouldAllowRequest(_, _)).WillOnce(Return(true));
+  }
+
+  bool reload_is_renderer_initiated = false;
+  if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    // TODO(crbug.com/676129) LegacyNavigationManager doesn't create a pending
+    // item on reload. This causes the navigation context to be incorrectly
+    // marked renderer-initiated. Remove this workaround.
+    reload_is_renderer_initiated = true;
+  }
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
       .WillOnce(VerifyPostStartedContext(web_state(), action, &context, &nav_id,
-                                         /*renderer_initiated=*/true));
+                                         reload_is_renderer_initiated));
   EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
       .WillOnce(Return(true));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyPostFinishedContext(web_state(), action, &context,
                                           &nav_id,
-                                          /*renderer_initiated=*/true));
+                                          reload_is_renderer_initiated));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
@@ -1122,7 +1138,7 @@ TEST_F(NavigationAndLoadCallbacksTest, ForwardPostNavigation) {
   int32_t nav_id = 0;
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
     EXPECT_CALL(observer_, DidChangeBackForwardState(web_state())).Times(2);
-    EXPECT_CALL(*decider_, ShouldAllowRequest(_, _)).WillOnce(Return(true));
+    // ShouldAllowRequest() not called on repost.
     EXPECT_CALL(observer_, DidStartLoading(web_state()));
   } else {
     EXPECT_CALL(observer_, DidStartLoading(web_state()));
