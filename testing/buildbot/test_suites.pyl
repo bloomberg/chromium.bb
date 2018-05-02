@@ -330,6 +330,7 @@
 
   'test_traffic_annotation_auditor_script': {
     'test_traffic_annotation_auditor': {
+      'hard_timeout': 14400,
       'script': 'test_traffic_annotation_auditor.py',
     },
   },
