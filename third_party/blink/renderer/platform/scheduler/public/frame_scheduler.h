@@ -43,7 +43,8 @@ class FrameScheduler : public FrameOrWorkerScheduler {
    public:
     virtual ~Observer() = default;
 
-    // Notified when throttling state is changed.
+    // Notified when throttling state is changed. May be called consecutively
+    // with the same value.
     virtual void OnThrottlingStateChanged(ThrottlingState) = 0;
   };
 

@@ -85,6 +85,11 @@ class FrameSchedulerImplTest : public testing::Test {
         throttleable_task_queue().get());
   }
 
+  FrameScheduler::ThrottlingState CalculateThrottlingState(
+      FrameScheduler::ObserverType type) {
+    return frame_scheduler_->CalculateThrottlingState(type);
+  }
+
   base::SimpleTestTickClock clock_;
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
   std::unique_ptr<MainThreadSchedulerImpl> scheduler_;
@@ -473,6 +478,14 @@ TEST_F(FrameSchedulerImplTest, ThrottlingObserver) {
 
   observer->CheckObserverState(throttled_count, not_throttled_count,
                                stopped_count);
+}
+
+TEST_F(FrameSchedulerImplTest, DefaultThrottlingState) {
+  EXPECT_EQ(CalculateThrottlingState(FrameScheduler::ObserverType::kLoader),
+            FrameScheduler::ThrottlingState::kNotThrottled);
+  EXPECT_EQ(
+      CalculateThrottlingState(FrameScheduler::ObserverType::kWorkerScheduler),
+      FrameScheduler::ThrottlingState::kNotThrottled);
 }
 
 }  // namespace frame_scheduler_impl_unittest

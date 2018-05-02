@@ -128,7 +128,8 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
   void RemoveThrottleableQueueFromBackgroundCPUTimeBudgetPool();
   void ApplyPolicyToThrottleableQueue();
   bool ShouldThrottleTimers() const;
-  FrameScheduler::ThrottlingState CalculateThrottlingState() const;
+  FrameScheduler::ThrottlingState CalculateThrottlingState(
+      ObserverType type) const;
   void RemoveThrottlingObserver(Observer* observer);
   void UpdateQueuePolicy(const scoped_refptr<MainThreadTaskQueue>& queue,
                          TaskQueue::QueueEnabledVoter* voter);
@@ -166,7 +167,8 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
   MainThreadSchedulerImpl* main_thread_scheduler_;  // NOT OWNED
   PageSchedulerImpl* parent_page_scheduler_;        // NOT OWNED
   base::trace_event::BlameContext* blame_context_;  // NOT OWNED
-  std::set<Observer*> loader_observers_;            // NOT OWNED
+  // Observers are not owned by the scheduler.
+  std::unordered_map<Observer*, ObserverType> throttling_observers_;
   FrameScheduler::ThrottlingState throttling_state_;
   TraceableState<bool, kTracingCategoryNameInfo> frame_visible_;
   TraceableState<PageVisibilityState, kTracingCategoryNameInfo>
