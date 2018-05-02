@@ -133,7 +133,7 @@ include_rules = [
   "+third_party/blink/public/platform/modules/mediasession/media_session.mojom.h",
   "+third_party/blink/public/platform/modules/mediastream/media_devices.mojom.h",
   "+third_party/blink/public/platform/modules/notifications/notification_service.mojom.h",
-  "+third_party/blink/public/platform/modules/offscreencanvas/offscreen_canvas_surface.mojom.h",
+  "+third_party/blink/public/platform/modules/frame_sinks/embedded_frame_sink.mojom.h",
   "+third_party/blink/public/platform/modules/payments/payment_app.mojom.h",
   "+third_party/blink/public/platform/modules/permissions/permission.mojom.h",
   "+third_party/blink/public/platform/modules/permissions/permission_status.mojom.h",

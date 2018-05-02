@@ -7,7 +7,7 @@
 
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/offscreencanvas/offscreen_canvas_surface.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/frame_sinks/embedded_frame_sink.mojom-blink.h"
 #include "third_party/blink/renderer/platform/graphics/begin_frame_provider.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
@@ -26,7 +26,7 @@ class PLATFORM_EXPORT BeginFrameProviderClient {
 
 class PLATFORM_EXPORT BeginFrameProvider
     : public viz::mojom::blink::CompositorFrameSinkClient,
-      public mojom::blink::OffscreenCanvasSurfaceClient {
+      public mojom::blink::EmbeddedFrameSinkClient {
  public:
   explicit BeginFrameProvider(
       const BeginFrameProviderParams& begin_frame_provider_params,
@@ -57,7 +57,7 @@ class PLATFORM_EXPORT BeginFrameProvider
     NOTIMPLEMENTED();
   }
 
-  // viz::mojom::blink::OffscreenCanvasSurfaceClient implementation.
+  // viz::mojom::blink::EmbeddedFrameSinkClient implementation.
   void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) final {
     NOTIMPLEMENTED();
   }
@@ -68,7 +68,7 @@ class PLATFORM_EXPORT BeginFrameProvider
   bool needs_begin_frame_;
 
   mojo::Binding<viz::mojom::blink::CompositorFrameSinkClient> cfs_binding_;
-  mojo::Binding<mojom::blink::OffscreenCanvasSurfaceClient> ocs_binding_;
+  mojo::Binding<mojom::blink::EmbeddedFrameSinkClient> efs_binding_;
   const viz::FrameSinkId frame_sink_id_;
   const viz::FrameSinkId parent_frame_sink_id_;
   viz::mojom::blink::CompositorFrameSinkPtr compositor_frame_sink_;
