@@ -1829,17 +1829,6 @@ test("browser_tests") {
         ]
       }
     }
-    if (is_win) {
-      sources += [ "../browser/printing/pdf_to_emf_converter_browsertest.cc" ]
-      deps += [
-        "//chrome:other_version",
-        "//chrome/app:command_ids",
-        "//third_party/wtl",
-        "//ui/resources",
-      ]
-    } else {
-      sources -= [ "../app/chrome_version.rc.version" ]
-    }
     if (is_mac) {
       # Other platforms only need .pak files, and can build this target
       # standalone much faster.
@@ -1940,6 +1929,7 @@ test("browser_tests") {
     if (is_win) {
       sources += [
         "../browser/extensions/api/networking_private/networking_private_credentials_getter_browsertest.cc",
+        "../browser/printing/pdf_to_emf_converter_browsertest.cc",
         "../browser/ui/views/accessibility/invert_bubble_view_browsertest.cc",
         "../browser/ui/views/settings_reset_prompt_dialog_browsertest.cc",
         "../browser/ui/views/uninstall_view_browsertest.cc",
@@ -1954,8 +1944,21 @@ test("browser_tests") {
         "../browser/vr/webvr_tab_browser_test.cc",
         "../browser/vr/webvr_transition_browser_test.cc",
       ]
-
+      deps += [
+        "//chrome:other_version",
+        "//chrome/app:command_ids",
+        "//third_party/wtl",
+        "//ui/resources",
+      ]
       data_deps += [ "../../device/vr:openvr_mock" ]
+
+      if (is_chrome_branded) {
+        sources +=
+            [ "../browser/conflicts/incompatible_applications_browsertest.cc" ]
+        deps += [ ":conflicts_dll" ]
+      }
+    } else {  # Not Windows.
+      sources -= [ "../app/chrome_version.rc.version" ]
     }
     if (is_mac || is_win) {
       sources += [
