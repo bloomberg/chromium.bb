@@ -304,6 +304,20 @@ float HTMLMetaElement::ParseViewportValueAsDPI(Document* document,
   return value;
 }
 
+ViewportDescription::ViewportFit HTMLMetaElement::ParseViewportFitValueAsEnum(
+    bool& unknown_value,
+    const String& value_string) {
+  if (DeprecatedEqualIgnoringCase(value_string, "auto"))
+    return ViewportDescription::ViewportFit::kAuto;
+  if (DeprecatedEqualIgnoringCase(value_string, "contain"))
+    return ViewportDescription::ViewportFit::kContain;
+  if (DeprecatedEqualIgnoringCase(value_string, "cover"))
+    return ViewportDescription::ViewportFit::kCover;
+
+  unknown_value = true;
+  return ViewportDescription::ViewportFit::kAuto;
+}
+
 void HTMLMetaElement::ProcessViewportKeyValuePair(
     Document* document,
     bool report_warnings,
@@ -352,7 +366,17 @@ void HTMLMetaElement::ProcessViewportKeyValuePair(
   } else if (key_string == "minimal-ui") {
     // Ignore vendor-specific argument.
   } else if (key_string == "viewport-fit") {
-    // Ignore vendor-specific argument.
+    if (RuntimeEnabledFeatures::DisplayCutoutViewportFitEnabled()) {
+      bool unknown_value = false;
+      description->viewport_fit =
+          ParseViewportFitValueAsEnum(unknown_value, value_string);
+
+      // If we got an unknown value then report a warning.
+      if (unknown_value) {
+        ReportViewportWarning(document, kViewportFitUnsupported, value_string,
+                              String());
+      }
+    }
   } else if (key_string == "shrink-to-fit") {
     // Ignore vendor-specific argument.
   } else if (report_warnings) {
@@ -371,6 +395,7 @@ static const char* ViewportErrorMessageTemplate(ViewportErrorCode error_code) {
       "The value for key \"maximum-scale\" is out of bounds and the value has "
       "been clamped.",
       "The key \"target-densitydpi\" is not supported.",
+      "The value \"%replacement1\" for key \"viewport-fit\" is not supported.",
   };
 
   return kErrors[error_code];
@@ -383,6 +408,7 @@ static MessageLevel ViewportErrorMessageLevel(ViewportErrorCode error_code) {
     case kUnrecognizedViewportArgumentKeyError:
     case kUnrecognizedViewportArgumentValueError:
     case kMaximumScaleTooLargeError:
+    case kViewportFitUnsupported:
       return kWarningMessageLevel;
   }
 

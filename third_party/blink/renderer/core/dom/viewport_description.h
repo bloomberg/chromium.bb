@@ -66,6 +66,20 @@ struct CORE_EXPORT ViewportDescription {
     kTypeCount = 7
   };
 
+  // Stores the different possible |viewport-fit| configurations.
+  enum class ViewportFit {
+    // No effect - the whole web page is viewable (default).
+    kAuto = 0,
+
+    // The initial layout viewport and the visual viewport are set to the
+    // largest rectangle which is inscribed in the display of the device.
+    kContain,
+
+    // The initial layout viewport and the visual viewport are set to the
+    // circumscribed rectangle of the physical screen of the device.
+    kCover,
+  };
+
   enum {
     kValueAuto = -1,
     kValueDeviceWidth = -2,
@@ -118,6 +132,8 @@ struct CORE_EXPORT ViewportDescription {
   bool max_zoom_is_explicit;
   bool user_zoom_is_explicit;
 
+  ViewportFit viewport_fit = ViewportFit::kAuto;
+
   bool operator==(const ViewportDescription& other) const {
     // Used for figuring out whether to reset the viewport or not,
     // thus we are not taking type into account.
@@ -131,7 +147,8 @@ struct CORE_EXPORT ViewportDescription {
            zoom_is_explicit == other.zoom_is_explicit &&
            min_zoom_is_explicit == other.min_zoom_is_explicit &&
            max_zoom_is_explicit == other.max_zoom_is_explicit &&
-           user_zoom_is_explicit == other.user_zoom_is_explicit;
+           user_zoom_is_explicit == other.user_zoom_is_explicit &&
+           viewport_fit == other.viewport_fit;
   }
 
   bool operator!=(const ViewportDescription& other) const {

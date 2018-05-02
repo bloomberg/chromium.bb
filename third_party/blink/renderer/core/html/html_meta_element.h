@@ -35,7 +35,8 @@ enum ViewportErrorCode {
   kUnrecognizedViewportArgumentValueError,
   kTruncatedViewportArgumentValueError,
   kMaximumScaleTooLargeError,
-  kTargetDensityDpiUnsupported
+  kTargetDensityDpiUnsupported,
+  kViewportFitUnsupported
 };
 
 class CORE_EXPORT HTMLMetaElement final : public HTMLElement {
@@ -103,6 +104,10 @@ class CORE_EXPORT HTMLMetaElement final : public HTMLElement {
                                        bool report_warnings,
                                        const String& key,
                                        const String& value);
+
+  static ViewportDescription::ViewportFit ParseViewportFitValueAsEnum(
+      bool& unknown_value,
+      const String& value);
 
   static void ReportViewportWarning(Document*,
                                     ViewportErrorCode,

@@ -395,6 +395,10 @@
       name: "DisableRasterInvalidation",
     },
     {
+      name: "DisplayCutoutViewportFit",
+      settable_from_internals: true,
+    },
+    {
       name: "DisplayNoneIFrameCreatesNoLayoutObject",
       status: "stable",
     },
