@@ -121,7 +121,15 @@ views::NativeWidget* ChromeViewsDelegate::CreateNativeWidget(
           ? NativeWidgetType::NATIVE_WIDGET_AURA
           : NativeWidgetType::DESKTOP_NATIVE_WIDGET_AURA;
 
-  if (!ui::win::IsAeroGlassEnabled()) {
+  if (params->shadow_type == views::Widget::InitParams::SHADOW_TYPE_DROP &&
+      params->shadow_elevation.has_value()) {
+    // If the window defines an elevation based shadow in the Widget
+    // initialization parameters, force the use of a non toplevel window,
+    // as the native window manager has no concept of elevation based shadows.
+    // TODO: This may no longer be needed if we get proper elevation-based
+    // shadows on toplevel windows. See https://crbug.com/838667.
+    native_widget_type = NativeWidgetType::NATIVE_WIDGET_AURA;
+  } else if (!ui::win::IsAeroGlassEnabled()) {
     // If we don't have composition (either because Glass is not enabled or
     // because it was disabled at the command line), anything that requires
     // transparency will be broken with a toplevel window, so force the use of
