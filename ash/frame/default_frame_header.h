@@ -102,9 +102,6 @@ class ASH_EXPORT DefaultFrameHeader : public FrameHeader,
   // windows.
   void PaintHighlightForInactiveRestoredWindow(gfx::Canvas* canvas);
 
-  // Paints the header/content separator.
-  void PaintHeaderContentSeparator(gfx::Canvas* canvas);
-
   // Update all the images in the caption buttons.
   void UpdateAllButtonImages();
 

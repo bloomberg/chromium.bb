@@ -38,11 +38,6 @@ namespace {
 // Color for the window title text.
 const SkColor kTitleTextColor = SkColorSetRGB(40, 40, 40);
 const SkColor kLightTitleTextColor = SK_ColorWHITE;
-// Color of the active window header/content separator line.
-const SkColor kHeaderContentSeparatorColor = SkColorSetRGB(150, 150, 152);
-// Color of the inactive window header/content separator line.
-const SkColor kHeaderContentSeparatorInactiveColor =
-    SkColorSetRGB(180, 180, 182);
 // The default color of the frame.
 const SkColor kDefaultFrameColor = SkColorSetRGB(242, 242, 242);
 // Duration of crossfade animation for activating and deactivating frame.
@@ -147,8 +142,6 @@ void DefaultFrameHeader::PaintHeader(gfx::Canvas* canvas, Mode mode) {
   }
   if (frame_->widget_delegate()->ShouldShowWindowTitle() && !title_.empty())
     PaintTitleBar(canvas);
-  if (!UsesCustomFrameColors())
-    PaintHeaderContentSeparator(canvas);
 }
 
 void DefaultFrameHeader::LayoutHeader() {
@@ -320,16 +313,6 @@ void DefaultFrameHeader::PaintTitleBar(gfx::Canvas* canvas) {
   canvas->DrawStringRect(title_,
                          views::NativeWidgetAura::GetWindowTitleFontList(),
                          GetTitleColor(), title_bounds);
-}
-
-void DefaultFrameHeader::PaintHeaderContentSeparator(gfx::Canvas* canvas) {
-  gfx::ScopedCanvas scoped_canvas(canvas);
-  const float scale = canvas->UndoDeviceScaleFactor();
-  gfx::RectF rect(0, painted_height_ * scale - 1, view_->width() * scale, 1);
-  cc::PaintFlags flags;
-  flags.setColor((mode_ == MODE_ACTIVE) ? kHeaderContentSeparatorColor
-                                        : kHeaderContentSeparatorInactiveColor);
-  canvas->sk_canvas()->drawRect(gfx::RectFToSkRect(rect), flags);
 }
 
 void DefaultFrameHeader::UpdateAllButtonImages() {
