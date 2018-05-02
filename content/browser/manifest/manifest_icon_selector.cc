@@ -14,10 +14,10 @@ namespace content {
 
 // static
 GURL ManifestIconSelector::FindBestMatchingIcon(
-    const std::vector<Manifest::Icon>& icons,
+    const std::vector<blink::Manifest::Icon>& icons,
     int ideal_icon_size_in_px,
     int minimum_icon_size_in_px,
-    Manifest::Icon::IconPurpose purpose) {
+    blink::Manifest::Icon::IconPurpose purpose) {
   DCHECK(minimum_icon_size_in_px <= ideal_icon_size_in_px);
 
   // Icon with exact matching size has priority over icon with size "any", which

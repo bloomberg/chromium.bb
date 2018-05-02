@@ -15,7 +15,7 @@
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/console_message_level.h"
-#include "content/public/common/manifest.h"
+#include "third_party/blink/public/common/manifest/manifest.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -228,7 +228,7 @@ void InstallablePaymentAppCrawler::DownloadAndDecodeWebAppIcon(
   if (icons == nullptr || icons->empty())
     return;
 
-  std::vector<content::Manifest::Icon> manifest_icons;
+  std::vector<blink::Manifest::Icon> manifest_icons;
   for (const auto& icon : *icons) {
     if (icon.src.empty() || !base::IsStringUTF8(icon.src)) {
       WarnIfPossible(
@@ -248,10 +248,10 @@ void InstallablePaymentAppCrawler::DownloadAndDecodeWebAppIcon(
       }
     }
 
-    content::Manifest::Icon manifest_icon;
+    blink::Manifest::Icon manifest_icon;
     manifest_icon.src = icon_src;
     manifest_icon.type = base::UTF8ToUTF16(icon.type);
-    manifest_icon.purpose.emplace_back(content::Manifest::Icon::ANY);
+    manifest_icon.purpose.emplace_back(blink::Manifest::Icon::ANY);
     // TODO(crbug.com/782270): Parse icon sizes.
     manifest_icon.sizes.emplace_back(gfx::Size());
     manifest_icons.emplace_back(manifest_icon);
@@ -268,7 +268,7 @@ void InstallablePaymentAppCrawler::DownloadAndDecodeWebAppIcon(
   const int kPaymentAppMinimumIconSize = 0;
   GURL best_icon_url = content::ManifestIconSelector::FindBestMatchingIcon(
       manifest_icons, kPaymentAppIdealIconSize, kPaymentAppMinimumIconSize,
-      content::Manifest::Icon::ANY);
+      blink::Manifest::Icon::ANY);
   if (!best_icon_url.is_valid()) {
     WarnIfPossible(
         "No suitable icon found in the installabble payment app's manifest (" +

@@ -31,8 +31,8 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "third_party/blink/public/common/manifest/web_display_mode.h"
 #include "third_party/blink/public/platform/pointer_properties.h"
-#include "third_party/blink/public/platform/web_display_mode.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/public/platform/web_viewport_style.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"

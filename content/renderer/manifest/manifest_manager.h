@@ -12,10 +12,10 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "content/public/common/manifest.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "third_party/blink/public/platform/modules/manifest/manifest_manager.mojom.h"
+#include "third_party/blink/public/common/manifest/manifest.h"
+#include "third_party/blink/public/mojom/manifest/manifest_manager.mojom.h"
 
 class GURL;
 
@@ -55,7 +55,7 @@ class ManifestManager : public RenderFrameObserver,
 
   using InternalRequestManifestCallback =
       base::OnceCallback<void(const GURL&,
-                              const Manifest&,
+                              const blink::Manifest&,
                               const blink::mojom::ManifestDebugInfo*)>;
 
   // RenderFrameObserver implementation.
@@ -86,7 +86,7 @@ class ManifestManager : public RenderFrameObserver,
   bool manifest_dirty_;
 
   // Current Manifest. Might be outdated if manifest_dirty_ is true.
-  Manifest manifest_;
+  blink::Manifest manifest_;
 
   // The URL of the current manifest.
   GURL manifest_url_;
