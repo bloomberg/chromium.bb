@@ -1396,9 +1396,12 @@ bool TabsUpdateFunction::UpdateURL(const std::string &url_string,
     return false;
   }
 
+  const bool is_javascript_scheme = url.SchemeIs(url::kJavaScriptScheme);
+  UMA_HISTOGRAM_BOOLEAN("Extensions.ApiTabUpdateJavascript",
+                        is_javascript_scheme);
   // JavaScript URLs can do the same kinds of things as cross-origin XHR, so
   // we need to check host permissions before allowing them.
-  if (url.SchemeIs(url::kJavaScriptScheme)) {
+  if (is_javascript_scheme) {
     if (!extension()->permissions_data()->CanAccessPage(
             extension(),
             web_contents_->GetURL(),
