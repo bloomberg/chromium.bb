@@ -369,13 +369,15 @@ INSTANTIATE_TEST_CASE_P(,
 // list defined in FakeConsentAuditor::ExpectedConsentStringIds()), or are part
 // of the white list strings defined in
 // FakeConsentAuditor::WhiteListLocalizedStrings().
-TEST_P(ChromeSigninViewControllerTest, TestAllStrings) {
+// TODO(crbug.com/839001): Reenable this test.
+TEST_F(ChromeSigninViewControllerTest, DISABLED_TestAllStrings) {
   WaitAndExpectAllStringsOnScreen();
 }
 
 // Tests when the user taps on "OK GOT IT", that RecordGaiaConsent() is called
 // with the expected list of string ids, and confirmation string id.
-TEST_P(ChromeSigninViewControllerTest, TestConsentWithOKGOTIT) {
+// TODO(crbug.com/839001): Reenable this test.
+TEST_F(ChromeSigninViewControllerTest, DISABLED_TestConsentWithOKGOTIT) {
   WaitAndExpectAllStringsOnScreen();
   [vc_.primaryButton sendActionsForControlEvents:UIControlEventTouchUpInside];
   ConditionBlock condition = ^bool() {
@@ -397,7 +399,8 @@ TEST_P(ChromeSigninViewControllerTest, TestConsentWithOKGOTIT) {
 }
 
 // Tests that RecordGaiaConsent() is not called when the user taps on UNDO.
-TEST_P(ChromeSigninViewControllerTest, TestRefusingConsent) {
+// TODO(crbug.com/839001): Reenable this test.
+TEST_F(ChromeSigninViewControllerTest, DISABLED_TestRefusingConsent) {
   WaitAndExpectAllStringsOnScreen();
   [vc_.secondaryButton sendActionsForControlEvents:UIControlEventTouchUpInside];
   const std::vector<int>& recorded_ids = fake_consent_auditor_->recorded_ids();
@@ -407,7 +410,8 @@ TEST_P(ChromeSigninViewControllerTest, TestRefusingConsent) {
 
 // Tests that RecordGaiaConsent() is called with the expected list of string
 // ids, and settings confirmation string id.
-TEST_P(ChromeSigninViewControllerTest, TestConsentWithSettings) {
+// TODO(crbug.com/839001): Reenable this test.
+TEST_F(ChromeSigninViewControllerTest, DISABLED_TestConsentWithSettings) {
   WaitAndExpectAllStringsOnScreen();
   [vc_ signinConfirmationControllerDidTapSettingsLink:vc_.confirmationVC];
   const std::vector<int>& recorded_ids = fake_consent_auditor_->recorded_ids();
