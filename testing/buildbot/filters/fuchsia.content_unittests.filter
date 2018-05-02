@@ -60,6 +60,3 @@
 -RenderWidgetHostViewAuraOverscrollTest.TouchGestureEndDispatchedAfterOverscrollComplete
 -RenderWidgetHostViewAuraWheelScrollLatchingEnabledTest.TimerBasedWheelEventPhaseInfo
 -RenderWidgetHostViewAuraAsyncWheelEventsEnabledTest.TimerBasedWheelEventPhaseInfo
-
-# Flaky, https://crbug.com/813795, https://crbug.com/800465.
--RTCRtpSenderTest.ReplaceTrack*
