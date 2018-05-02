@@ -9,6 +9,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
+#include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/resource_metadata.h"
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/output_surface_frame.h"
@@ -21,7 +22,6 @@
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/command_buffer/service/texture_base.h"
 #include "gpu/ipc/service/image_transport_surface.h"
-#include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_gl_api_implementation.h"
@@ -36,14 +36,59 @@ base::AtomicSequenceNumber g_next_command_buffer_id;
 
 }  // namespace
 
-struct SkiaOutputSurfaceImpl::PromiseTextureInfo {
-  PromiseTextureInfo(SkiaOutputSurfaceImpl* skia_renderer,
-                     ResourceMetadata&& metadata)
-      : skia_renderer(skia_renderer), resource_metadata(std::move(metadata)) {}
-  ~PromiseTextureInfo() = default;
+// A helper class for fullfilling promise image on the GPU thread.
+template <class T>
+class SkiaOutputSurfaceImpl::PromiseTextureHelper {
+ public:
+  using HelperType = PromiseTextureHelper<T>;
 
-  SkiaOutputSurfaceImpl* const skia_renderer;
-  ResourceMetadata resource_metadata;
+  PromiseTextureHelper(SkiaOutputSurfaceImpl* impl, T data)
+      : impl_(impl), data_(std::move(data)) {}
+  ~PromiseTextureHelper() = default;
+
+  static sk_sp<SkImage> MakePromiseSkImage(
+      SkiaOutputSurfaceImpl* impl,
+      SkDeferredDisplayListRecorder* recorder,
+      const GrBackendFormat& backend_format,
+      gfx::Size size,
+      GrMipMapped mip_mapped,
+      GrSurfaceOrigin origin,
+      SkColorType color_type,
+      SkAlphaType alpha_type,
+      sk_sp<SkColorSpace> color_space,
+      T data) {
+    DCHECK_CALLED_ON_VALID_THREAD(impl->client_thread_checker_);
+    auto helper = std::make_unique<HelperType>(impl, std::move(data));
+    auto image = recorder->makePromiseTexture(
+        backend_format, size.width(), size.height(), mip_mapped, origin,
+        color_type, alpha_type, color_space, HelperType::Fullfill,
+        HelperType::Release, HelperType::Done, helper.get());
+    if (image)
+      helper.release();
+    return image;
+  }
+
+ private:
+  static void Fullfill(void* texture_context,
+                       GrBackendTexture* backend_texture) {
+    DCHECK(texture_context);
+    auto* helper = static_cast<HelperType*>(texture_context);
+    DCHECK_CALLED_ON_VALID_THREAD(helper->impl_->gpu_thread_checker_);
+    helper->impl_->OnPromiseTextureFullfill(helper->data_, backend_texture);
+  }
+
+  static void Release(void* texture_context) { DCHECK(texture_context); }
+
+  static void Done(void* texture_context) {
+    DCHECK(texture_context);
+    std::unique_ptr<HelperType> helper(
+        static_cast<HelperType*>(texture_context));
+  }
+
+  SkiaOutputSurfaceImpl* const impl_;
+  const T data_;
+
+  DISALLOW_COPY_AND_ASSIGN(PromiseTextureHelper);
 };
 
 SkiaOutputSurfaceImpl::SkiaOutputSurfaceImpl(
@@ -222,18 +267,10 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImage(
   DCHECK(!metadata.mailbox.IsZero());
   resource_sync_tokens_.push_back(metadata.sync_token);
 
-  auto texture_info =
-      std::make_unique<PromiseTextureInfo>(this, std::move(metadata));
-  const auto& data = texture_info->resource_metadata;
-  auto image = recorder_->makePromiseTexture(
-      data.backend_format, data.size.width(), data.size.height(),
-      data.mip_mapped, data.origin, data.color_type, data.alpha_type,
-      data.color_space, SkiaOutputSurfaceImpl::PromiseTextureFullfillStub,
-      SkiaOutputSurfaceImpl::PromiseTextureReleaseStub,
-      SkiaOutputSurfaceImpl::PromiseTextureDoneStub, texture_info.get());
-  if (image)
-    texture_info.release();
-  return image;
+  return PromiseTextureHelper<ResourceMetadata>::MakePromiseSkImage(
+      this, recorder_.get(), metadata.backend_format, metadata.size,
+      metadata.mip_mapped, metadata.origin, metadata.color_type,
+      metadata.alpha_type, metadata.color_space, std::move(metadata));
 }
 
 gpu::SyncToken SkiaOutputSurfaceImpl::SkiaSwapBuffers(
@@ -255,6 +292,104 @@ gpu::SyncToken SkiaOutputSurfaceImpl::SkiaSwapBuffers(
   gpu_service_->scheduler()->ScheduleTask(gpu::Scheduler::Task(
       sequence_id, std::move(callback), std::move(resource_sync_tokens_)));
   return sync_token;
+}
+
+SkCanvas* SkiaOutputSurfaceImpl::BeginPaintRenderPass(
+    const RenderPassId& id,
+    const gfx::Size& surface_size,
+    ResourceFormat format,
+    bool mipmap) {
+  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
+  DCHECK(gpu_service_->gr_context());
+  DCHECK(!current_render_pass_id_);
+  DCHECK(!offscreen_surface_recorder_);
+  DCHECK(resource_sync_tokens_.empty());
+
+  current_render_pass_id_ = id;
+
+  auto gr_context_thread_safe = gpu_service_->gr_context()->threadSafeProxy();
+  constexpr uint32_t flags = 0;
+  // LegacyFontHost will get LCD text and skia figures out what type to use.
+  SkSurfaceProps surface_props(flags, SkSurfaceProps::kLegacyFontHost_InitType);
+  int msaa_sample_count = 0;
+  SkColorType color_type =
+      ResourceFormatToClosestSkColorType(true /*gpu_compositing */, format);
+  SkImageInfo image_info =
+      SkImageInfo::Make(surface_size.width(), surface_size.height(), color_type,
+                        kPremul_SkAlphaType, nullptr /* color_space */);
+
+  // TODO(penghuang): Figure out how to choose the right size.
+  constexpr size_t kCacheMaxResourceBytes = 90 * 1024 * 1024;
+  const auto* version_info = gpu_service_->context_for_skia()->GetVersionInfo();
+  unsigned int texture_storage_format = TextureStorageFormat(format);
+  auto backend_format = GrBackendFormat::MakeGL(
+      gl::GetInternalFormat(version_info, texture_storage_format),
+      GL_TEXTURE_2D);
+  auto characterization = gr_context_thread_safe->createCharacterization(
+      kCacheMaxResourceBytes, image_info, backend_format, msaa_sample_count,
+      kTopLeft_GrSurfaceOrigin, surface_props, mipmap);
+  DCHECK(characterization.isValid());
+  offscreen_surface_recorder_ =
+      std::make_unique<SkDeferredDisplayListRecorder>(characterization);
+  return offscreen_surface_recorder_->getCanvas();
+}
+
+gpu::SyncToken SkiaOutputSurfaceImpl::FinishPaintRenderPass() {
+  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
+  DCHECK(gpu_service_->gr_context());
+  DCHECK(current_render_pass_id_);
+  DCHECK(offscreen_surface_recorder_);
+
+  gpu::SyncToken sync_token(gpu::CommandBufferNamespace::VIZ_OUTPUT_SURFACE,
+                            command_buffer_id_, ++sync_fence_release_);
+
+  auto ddl = offscreen_surface_recorder_->detach();
+  offscreen_surface_recorder_ = nullptr;
+  DCHECK(ddl);
+
+  auto sequence_id = gpu_service_->skia_output_surface_sequence_id();
+  auto callback =
+      base::BindOnce(&SkiaOutputSurfaceImpl::FinishPaintRenderPassOnGpuThread,
+                     base::Unretained(this), current_render_pass_id_,
+                     base::Passed(&ddl), sync_fence_release_);
+  gpu_service_->scheduler()->ScheduleTask(gpu::Scheduler::Task(
+      sequence_id, std::move(callback), std::move(resource_sync_tokens_)));
+  current_render_pass_id_ = 0;
+  sync_token.SetVerifyFlush();
+  return sync_token;
+}
+
+sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromRenderPass(
+    const RenderPassId& id,
+    const gfx::Size& size,
+    ResourceFormat format,
+    bool mipmap) {
+  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
+  DCHECK(recorder_);
+
+  // Convert internal format from GLES2 to platform GL.
+  const auto* version_info = gpu_service_->context_for_skia()->GetVersionInfo();
+  unsigned int texture_storage_format = TextureStorageFormat(format);
+  auto backend_format = GrBackendFormat::MakeGL(
+      gl::GetInternalFormat(version_info, texture_storage_format),
+      GL_TEXTURE_2D);
+  SkColorType color_type =
+      ResourceFormatToClosestSkColorType(true /*gpu_compositing */, format);
+  return PromiseTextureHelper<RenderPassId>::MakePromiseSkImage(
+      this, recorder_.get(), backend_format, size,
+      mipmap ? GrMipMapped::kYes : GrMipMapped::kNo, kTopLeft_GrSurfaceOrigin,
+      color_type, kPremul_SkAlphaType, nullptr /* color_space */, id);
+}
+
+void SkiaOutputSurfaceImpl::RemoveRenderPassResource(
+    std::vector<RenderPassId> ids) {
+  DCHECK(!ids.empty());
+  auto sequence_id = gpu_service_->skia_output_surface_sequence_id();
+  auto callback = base::BindOnce(
+      &SkiaOutputSurfaceImpl::RemoveRenderPassResourceOnGpuThread,
+      base::Unretained(this), base::Passed(&ids));
+  gpu_service_->scheduler()->ScheduleTask(gpu::Scheduler::Task(
+      sequence_id, std::move(callback), std::vector<gpu::SyncToken>()));
 }
 
 void SkiaOutputSurfaceImpl::DidSwapBuffersComplete(
@@ -456,6 +591,43 @@ void SkiaOutputSurfaceImpl::SwapBuffersOnGpuThread(
   sync_point_client_state_->ReleaseFenceSync(sync_fence_release);
 }
 
+void SkiaOutputSurfaceImpl::FinishPaintRenderPassOnGpuThread(
+    RenderPassId id,
+    std::unique_ptr<SkDeferredDisplayList> ddl,
+    uint64_t sync_fence_release) {
+  DCHECK_CALLED_ON_VALID_THREAD(gpu_thread_checker_);
+  DCHECK(ddl);
+
+  if (!gpu_service_->context_for_skia()->MakeCurrent(surface_.get())) {
+    LOG(FATAL) << "Failed to make current.";
+    // TODO(penghuang): Handle resize failure.
+  }
+
+  auto& surface = offscreen_surfaces_[id];
+  SkSurfaceCharacterization characterization;
+  // TODO(penghuang): Using characterization != ddl->characterization(), when
+  // the SkSurfaceCharacterization::operator!= is implemented in Skia.
+  if (!surface || !surface->characterize(&characterization) ||
+      characterization != ddl->characterization()) {
+    surface = SkSurface::MakeRenderTarget(
+        gpu_service_->gr_context(), ddl->characterization(), SkBudgeted::kNo);
+    DCHECK(surface);
+  }
+  surface->draw(ddl.get());
+  gpu_service_->gr_context()->flush();
+  sync_point_client_state_->ReleaseFenceSync(sync_fence_release);
+}
+
+void SkiaOutputSurfaceImpl::RemoveRenderPassResourceOnGpuThread(
+    std::vector<RenderPassId> ids) {
+  DCHECK(!ids.empty());
+  for (const auto& id : ids) {
+    auto it = offscreen_surfaces_.find(id);
+    DCHECK(it != offscreen_surfaces_.end());
+    offscreen_surfaces_.erase(it);
+  }
+}
+
 void SkiaOutputSurfaceImpl::RecreateRecorder() {
   DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
   DCHECK(characterization_.isValid());
@@ -500,30 +672,6 @@ void SkiaOutputSurfaceImpl::BufferPresentedOnClientThread(
   client_->DidReceivePresentationFeedback(swap_id, feedback);
 }
 
-// static
-void SkiaOutputSurfaceImpl::PromiseTextureFullfillStub(
-    void* texture_context,
-    GrBackendTexture* backend_texture) {
-  DCHECK(texture_context);
-  auto* info = static_cast<PromiseTextureInfo*>(texture_context);
-  info->skia_renderer->OnPromiseTextureFullfill(info->resource_metadata,
-                                                backend_texture);
-}
-
-// static
-void SkiaOutputSurfaceImpl::PromiseTextureReleaseStub(void* texture_context) {
-  DCHECK(texture_context);
-  auto* info = static_cast<PromiseTextureInfo*>(texture_context);
-  info->skia_renderer->OnPromiseTextureRelease(info->resource_metadata);
-}
-
-// static
-void SkiaOutputSurfaceImpl::PromiseTextureDoneStub(void* texture_context) {
-  DCHECK(texture_context);
-  std::unique_ptr<PromiseTextureInfo> info(
-      static_cast<PromiseTextureInfo*>(texture_context));
-}
-
 void SkiaOutputSurfaceImpl::OnPromiseTextureFullfill(
     const ResourceMetadata& metadata,
     GrBackendTexture* backend_texture) {
@@ -545,9 +693,17 @@ void SkiaOutputSurfaceImpl::OnPromiseTextureFullfill(
                        metadata.mip_mapped, texture_info);
 }
 
-void SkiaOutputSurfaceImpl::OnPromiseTextureRelease(
-    const ResourceMetadata& metadata) {
-  DCHECK_CALLED_ON_VALID_THREAD(gpu_thread_checker_);
+void SkiaOutputSurfaceImpl::OnPromiseTextureFullfill(
+    const RenderPassId id,
+    GrBackendTexture* backend_texture) {
+  auto it = offscreen_surfaces_.find(id);
+  DCHECK(it != offscreen_surfaces_.end());
+  sk_sp<SkSurface>& surface = it->second;
+  *backend_texture =
+      surface->getBackendTexture(SkSurface::kFlushRead_BackendHandleAccess);
+  DLOG_IF(ERROR, !backend_texture->isValid())
+      << "Failed to full fill the promise texture created from RenderPassId:"
+      << id;
 }
 
 }  // namespace viz
