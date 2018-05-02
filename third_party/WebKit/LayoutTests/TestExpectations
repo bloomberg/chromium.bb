@@ -2808,6 +2808,7 @@ crbug.com/833215 [ Mac10.12 Mac10.13 Retina ] external/wpt/accelerometer/Acceler
 crbug.com/833215 [ Linux ] external/wpt/accelerometer/Accelerometer.https.html [ Pass Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-fonts/font-feature-settings-descriptor-01.html [ Failure ]
 crbug.com/626703 [ Linux Win10 ] external/wpt/fetch/api/redirect/redirect-count.any.worker.html [ Timeout ]
 crbug.com/626703 [ Linux Win10 ] virtual/outofblink-cors/external/wpt/fetch/api/redirect/redirect-count.any.html [ Timeout ]
 crbug.com/626703 [ Linux Win10 ] virtual/outofblink-cors/external/wpt/fetch/api/redirect/redirect-count.any.worker.html [ Timeout ]
