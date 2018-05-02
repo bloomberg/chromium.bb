@@ -30,6 +30,40 @@ bool IsFormatSupported(media::VideoPixelFormat pixel_format) {
   return (pixel_format == media::PIXEL_FORMAT_I420 ||
           pixel_format == media::PIXEL_FORMAT_Y16);
 }
+
+libyuv::RotationMode TranslateRotation(int rotation_degrees) {
+  DCHECK_EQ(0, rotation_degrees % 90)
+      << " Rotation must be a multiple of 90, now: " << rotation_degrees;
+  libyuv::RotationMode rotation_mode = libyuv::kRotate0;
+  if (rotation_degrees == 90)
+    rotation_mode = libyuv::kRotate90;
+  else if (rotation_degrees == 180)
+    rotation_mode = libyuv::kRotate180;
+  else if (rotation_degrees == 270)
+    rotation_mode = libyuv::kRotate270;
+  return rotation_mode;
+}
+
+void GetI420BufferAccess(
+    const media::VideoCaptureDevice::Client::Buffer& buffer,
+    const gfx::Size& dimensions,
+    uint8_t** y_plane_data,
+    uint8_t** u_plane_data,
+    uint8_t** v_plane_data,
+    int* y_plane_stride,
+    int* uv_plane_stride) {
+  *y_plane_data = buffer.handle_provider->GetHandleForInProcessAccess()->data();
+  *u_plane_data = *y_plane_data + media::VideoFrame::PlaneSize(
+                                      media::PIXEL_FORMAT_I420,
+                                      media::VideoFrame::kYPlane, dimensions)
+                                      .GetArea();
+  *v_plane_data = *u_plane_data + media::VideoFrame::PlaneSize(
+                                      media::PIXEL_FORMAT_I420,
+                                      media::VideoFrame::kUPlane, dimensions)
+                                      .GetArea();
+  *y_plane_stride = dimensions.width();
+  *uv_plane_stride = *y_plane_stride / 2;
+}
 }
 
 namespace media {
@@ -139,15 +173,7 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
   if (rotation == 90 || rotation == 270)
     std::swap(destination_width, destination_height);
 
-  DCHECK_EQ(0, rotation % 90) << " Rotation must be a multiple of 90, now: "
-                              << rotation;
-  libyuv::RotationMode rotation_mode = libyuv::kRotate0;
-  if (rotation == 90)
-    rotation_mode = libyuv::kRotate90;
-  else if (rotation == 180)
-    rotation_mode = libyuv::kRotate180;
-  else if (rotation == 270)
-    rotation_mode = libyuv::kRotate270;
+  libyuv::RotationMode rotation_mode = TranslateRotation(rotation);
 
   const gfx::Size dimensions(destination_width, destination_height);
   Buffer buffer =
@@ -164,19 +190,13 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
   DCHECK(dimensions.height());
   DCHECK(dimensions.width());
 
-  auto buffer_access = buffer.handle_provider->GetHandleForInProcessAccess();
-  uint8_t* y_plane_data = buffer_access->data();
-  uint8_t* u_plane_data =
-      y_plane_data +
-      VideoFrame::PlaneSize(PIXEL_FORMAT_I420, VideoFrame::kYPlane, dimensions)
-          .GetArea();
-  uint8_t* v_plane_data =
-      u_plane_data +
-      VideoFrame::PlaneSize(PIXEL_FORMAT_I420, VideoFrame::kUPlane, dimensions)
-          .GetArea();
+  uint8_t* y_plane_data;
+  uint8_t* u_plane_data;
+  uint8_t* v_plane_data;
+  int yplane_stride, uv_plane_stride;
+  GetI420BufferAccess(buffer, dimensions, &y_plane_data, &u_plane_data,
+                      &v_plane_data, &yplane_stride, &uv_plane_stride);
 
-  const int yplane_stride = dimensions.width();
-  const int uv_plane_stride = yplane_stride / 2;
   int crop_x = 0;
   int crop_y = 0;
   libyuv::FourCC origin_colorspace = libyuv::FOURCC_ANY;
@@ -281,6 +301,70 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
       VideoCaptureFormat(dimensions, format.frame_rate, PIXEL_FORMAT_I420);
   OnIncomingCapturedBuffer(std::move(buffer), output_format, reference_time,
                            timestamp);
+}
+
+void VideoCaptureDeviceClient::OnIncomingCapturedGfxBuffer(
+    gfx::GpuMemoryBuffer* buffer,
+    const VideoCaptureFormat& frame_format,
+    int clockwise_rotation,
+    base::TimeTicks reference_time,
+    base::TimeDelta timestamp,
+    int frame_feedback_id) {
+  TRACE_EVENT0("media",
+               "VideoCaptureDeviceClient::OnIncomingCapturedGfxBuffer");
+
+  if (last_captured_pixel_format_ != frame_format.pixel_format) {
+    OnLog("Pixel format: " +
+          VideoPixelFormatToString(frame_format.pixel_format));
+    last_captured_pixel_format_ = frame_format.pixel_format;
+  }
+
+  if (!frame_format.IsValid())
+    return;
+
+  int destination_width = buffer->GetSize().width();
+  int destination_height = buffer->GetSize().height();
+  if (clockwise_rotation == 90 || clockwise_rotation == 270)
+    std::swap(destination_width, destination_height);
+
+  libyuv::RotationMode rotation_mode = TranslateRotation(clockwise_rotation);
+
+  const gfx::Size dimensions(destination_width, destination_height);
+  auto output_buffer =
+      ReserveOutputBuffer(dimensions, PIXEL_FORMAT_I420, frame_feedback_id);
+
+  uint8_t* y_plane_data;
+  uint8_t* u_plane_data;
+  uint8_t* v_plane_data;
+  int y_plane_stride, uv_plane_stride;
+  GetI420BufferAccess(output_buffer, dimensions, &y_plane_data, &u_plane_data,
+                      &v_plane_data, &y_plane_stride, &uv_plane_stride);
+
+  int ret = -EINVAL;
+  switch (frame_format.pixel_format) {
+    case PIXEL_FORMAT_NV12:
+      ret = libyuv::NV12ToI420Rotate(
+          reinterpret_cast<uint8_t*>(buffer->memory(0)), buffer->stride(0),
+          reinterpret_cast<uint8_t*>(buffer->memory(1)), buffer->stride(1),
+          y_plane_data, y_plane_stride, u_plane_data, uv_plane_stride,
+          v_plane_data, uv_plane_stride, buffer->GetSize().width(),
+          buffer->GetSize().height(), rotation_mode);
+      break;
+
+    default:
+      LOG(ERROR) << "Unsupported format: "
+                 << VideoPixelFormatToString(frame_format.pixel_format);
+  }
+  if (ret) {
+    DLOG(WARNING) << "Failed to convert buffer's pixel format to I420 from "
+                  << VideoPixelFormatToString(frame_format.pixel_format);
+    return;
+  }
+
+  const VideoCaptureFormat output_format = VideoCaptureFormat(
+      dimensions, frame_format.frame_rate, PIXEL_FORMAT_I420);
+  OnIncomingCapturedBuffer(std::move(output_buffer), output_format,
+                           reference_time, timestamp);
 }
 
 VideoCaptureDevice::Client::Buffer

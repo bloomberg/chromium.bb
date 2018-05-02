@@ -14,6 +14,9 @@
 namespace media {
 
 // A class storing the context of a running CameraDeviceDelegate.
+//
+// The class is also used to forward/translate events and method calls to a
+// given VideoCaptureDevice::Client.
 class CAPTURE_EXPORT CameraDeviceContext {
  public:
   // The internal state of the running CameraDeviceDelegate.  The state
@@ -106,8 +109,7 @@ class CAPTURE_EXPORT CameraDeviceContext {
   void LogToClient(std::string message);
 
   // Submits the capture data to |client_->OnIncomingCapturedData|.
-  void SubmitCapturedData(const uint8_t* data,
-                          int length,
+  void SubmitCapturedData(gfx::GpuMemoryBuffer* buffer,
                           const VideoCaptureFormat& frame_format,
                           base::TimeTicks reference_time,
                           base::TimeDelta timestamp);

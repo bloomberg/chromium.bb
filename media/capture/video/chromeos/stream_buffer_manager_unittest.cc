@@ -16,8 +16,8 @@
 #include "media/capture/video/chromeos/camera_buffer_factory.h"
 #include "media/capture/video/chromeos/camera_device_context.h"
 #include "media/capture/video/chromeos/camera_device_delegate.h"
-#include "media/capture/video/chromeos/mock_gpu_memory_buffer_manager.h"
 #include "media/capture/video/chromeos/mock_video_capture_client.h"
+#include "media/capture/video/mock_gpu_memory_buffer_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -68,45 +68,31 @@ const VideoCaptureFormat kDefaultCaptureFormat(gfx::Size(1280, 720),
                                                30.0,
                                                PIXEL_FORMAT_NV12);
 
-class MockCameraBufferFactory : public CameraBufferFactory {
+class FakeCameraBufferFactory : public CameraBufferFactory {
  public:
-  MOCK_METHOD2(CreateGpuMemoryBuffer,
-               std::unique_ptr<gfx::GpuMemoryBuffer>(const gfx::Size& size,
-                                                     gfx::BufferFormat format));
+  FakeCameraBufferFactory() {
+    gpu_memory_buffer_manager_ =
+        std::make_unique<unittest_internal::MockGpuMemoryBufferManager>();
+  }
+  std::unique_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBuffer(
+      const gfx::Size& size,
+      gfx::BufferFormat format) override {
+    return unittest_internal::MockGpuMemoryBufferManager::
+        CreateFakeGpuMemoryBuffer(size, format,
+                                  gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE,
+                                  gpu::kNullSurfaceHandle);
+  }
 
-  MOCK_METHOD1(ResolveStreamBufferFormat,
-               ChromiumPixelFormat(cros::mojom::HalPixelFormat hal_format));
+  ChromiumPixelFormat ResolveStreamBufferFormat(
+      cros::mojom::HalPixelFormat hal_format) override {
+    return ChromiumPixelFormat{PIXEL_FORMAT_NV12,
+                               gfx::BufferFormat::YUV_420_BIPLANAR};
+  }
+
+ private:
+  std::unique_ptr<unittest_internal::MockGpuMemoryBufferManager>
+      gpu_memory_buffer_manager_;
 };
-
-std::unique_ptr<gfx::GpuMemoryBuffer> CreateMockGpuMemoryBuffer(
-    const gfx::Size& size,
-    gfx::BufferFormat format) {
-  auto mock_buffer = std::make_unique<unittest_internal::MockGpuMemoryBuffer>();
-  gfx::GpuMemoryBufferHandle fake_handle;
-  fake_handle.native_pixmap_handle.fds.push_back(
-      base::FileDescriptor(0, false));
-  fake_handle.native_pixmap_handle.planes.push_back(
-      gfx::NativePixmapPlane(1280, 0, 1280 * 720));
-  fake_handle.native_pixmap_handle.planes.push_back(
-      gfx::NativePixmapPlane(1280, 0, 1280 * 720 / 2));
-  void* fake_mapped_address = reinterpret_cast<void*>(0xdeadbeef);
-
-  EXPECT_CALL(*mock_buffer, Map()).WillRepeatedly(Return(true));
-  EXPECT_CALL(*mock_buffer, memory(0))
-      .WillRepeatedly(Return(fake_mapped_address));
-  EXPECT_CALL(*mock_buffer, GetHandle()).WillRepeatedly(Return(fake_handle));
-  return mock_buffer;
-}
-
-std::unique_ptr<CameraBufferFactory> CreateMockCameraBufferFactory() {
-  auto buffer_factory = std::make_unique<MockCameraBufferFactory>();
-  EXPECT_CALL(*buffer_factory, CreateGpuMemoryBuffer(_, _))
-      .WillRepeatedly(Invoke(CreateMockGpuMemoryBuffer));
-  EXPECT_CALL(*buffer_factory, ResolveStreamBufferFormat(_))
-      .WillRepeatedly(Return(ChromiumPixelFormat{
-          PIXEL_FORMAT_NV12, gfx::BufferFormat::YUV_420_BIPLANAR}));
-  return buffer_factory;
-}
 
 }  // namespace
 
@@ -122,7 +108,8 @@ class StreamBufferManagerTest : public ::testing::Test {
     stream_buffer_manager_ = std::make_unique<StreamBufferManager>(
         std::move(callback_ops_request),
         std::make_unique<MockStreamCaptureInterface>(), device_context_.get(),
-        CreateMockCameraBufferFactory(), base::ThreadTaskRunnerHandle::Get());
+        std::make_unique<FakeCameraBufferFactory>(),
+        base::ThreadTaskRunnerHandle::Get());
   }
 
   void TearDown() override { stream_buffer_manager_.reset(); }
