@@ -81,14 +81,17 @@ class MakeQualifiedNamesWriter(json5_generator.Writer):
             (self.namespace.lower() + "_names.h"): self.generate_header,
             (self.namespace.lower() + "_names.cc"): self.generate_implementation,
         }
+        qualified_header = self._relative_output_dir + self.namespace.lower() + '_names.h'
         self._template_context = {
             'attrs': self.attrs_json5_file.name_dictionaries,
             'export': self._metadata('export'),
+            'header_guard': self.make_header_guard(qualified_header),
             'input_files': self._input_files,
             'namespace': self.namespace,
             'namespace_prefix': namespace_prefix,
             'namespace_uri': namespace_uri,
             'tags': self.tags_json5_file.name_dictionaries if self.tags_json5_file else [],
+            'this_include_path': qualified_header,
             'use_namespace_for_attrs': use_namespace_for_attrs,
         }
 
