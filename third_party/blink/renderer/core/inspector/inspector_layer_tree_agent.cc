@@ -36,7 +36,6 @@
 #include "cc/base/region.h"
 #include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_layer.h"
-#include "third_party/blink/public/platform/web_layer_sticky_position_constraint.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -73,17 +72,17 @@ inline String IdForLayer(const GraphicsLayer* graphics_layer) {
 }
 
 static std::unique_ptr<protocol::DOM::Rect> BuildObjectForRect(
-    const WebRect& rect) {
+    const gfx::Rect& rect) {
   return protocol::DOM::Rect::create()
-      .setX(rect.x)
-      .setY(rect.y)
-      .setHeight(rect.height)
-      .setWidth(rect.width)
+      .setX(rect.x())
+      .setY(rect.y())
+      .setHeight(rect.height())
+      .setWidth(rect.width())
       .build();
 }
 
 static std::unique_ptr<protocol::LayerTree::ScrollRect> BuildScrollRect(
-    const WebRect& rect,
+    const gfx::Rect& rect,
     const String& type) {
   std::unique_ptr<protocol::DOM::Rect> rect_object = BuildObjectForRect(rect);
   std::unique_ptr<protocol::LayerTree::ScrollRect> scroll_rect_object =
@@ -116,10 +115,10 @@ BuildScrollRectsForLayer(GraphicsLayer* graphics_layer,
         protocol::LayerTree::ScrollRect::TypeEnum::TouchEventHandler));
   }
   if (report_wheel_scrollers) {
-    WebRect web_rect(web_layer->GetPosition().x, web_layer->GetPosition().y,
-                     web_layer->Bounds().width, web_layer->Bounds().height);
     scroll_rects->addItem(BuildScrollRect(
-        web_rect,
+        // TODO(yutak): This truncates the floating point position to integers.
+        gfx::Rect(web_layer->GetPosition().x(), web_layer->GetPosition().y(),
+                  web_layer->Bounds().width(), web_layer->Bounds().height()),
         protocol::LayerTree::ScrollRect::TypeEnum::WheelEventHandler));
   }
   return scroll_rects->length() ? std::move(scroll_rects) : nullptr;
@@ -141,7 +140,7 @@ static GraphicsLayer* FindLayerByElementId(GraphicsLayer* root,
 
 static std::unique_ptr<protocol::LayerTree::StickyPositionConstraint>
 BuildStickyInfoForLayer(GraphicsLayer* root, WebLayer* layer) {
-  WebLayerStickyPositionConstraint constraints =
+  cc::LayerStickyPositionConstraint constraints =
       layer->StickyPositionConstraint();
   if (!constraints.is_sticky)
     return nullptr;
@@ -186,10 +185,10 @@ static std::unique_ptr<protocol::LayerTree::Layer> BuildObjectForLayer(
   std::unique_ptr<protocol::LayerTree::Layer> layer_object =
       protocol::LayerTree::Layer::create()
           .setLayerId(IdForLayer(graphics_layer))
-          .setOffsetX(web_layer->GetPosition().x)
-          .setOffsetY(web_layer->GetPosition().y)
-          .setWidth(web_layer->Bounds().width)
-          .setHeight(web_layer->Bounds().height)
+          .setOffsetX(web_layer->GetPosition().x())
+          .setOffsetY(web_layer->GetPosition().y())
+          .setWidth(web_layer->Bounds().width())
+          .setHeight(web_layer->Bounds().height())
           .setPaintCount(graphics_layer->PaintCount())
           .setDrawsContent(web_layer->DrawsContent())
           .build();
@@ -212,16 +211,18 @@ static std::unique_ptr<protocol::LayerTree::Layer> BuildObjectForLayer(
     layer_object->setTransform(std::move(transform_array));
     const FloatPoint3D& transform_origin = graphics_layer->TransformOrigin();
     // FIXME: rename these to setTransformOrigin*
-    if (web_layer->Bounds().width > 0)
+    if (web_layer->Bounds().width() > 0) {
       layer_object->setAnchorX(transform_origin.X() /
-                               web_layer->Bounds().width);
-    else
-      layer_object->setAnchorX(0.0);
-    if (web_layer->Bounds().height > 0)
+                               web_layer->Bounds().width());
+    } else {
+      layer_object->setAnchorX(0.f);
+    }
+    if (web_layer->Bounds().height() > 0) {
       layer_object->setAnchorY(transform_origin.Y() /
-                               web_layer->Bounds().height);
-    else
-      layer_object->setAnchorY(0.0);
+                               web_layer->Bounds().height());
+    } else {
+      layer_object->setAnchorY(0.f);
+    }
     layer_object->setAnchorZ(transform_origin.Z());
   }
   std::unique_ptr<Array<protocol::LayerTree::ScrollRect>> scroll_rects =

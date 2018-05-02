@@ -52,7 +52,7 @@ class CORE_EXPORT PageOverlay : public GraphicsLayerClient,
     // Paints page overlay contents.
     virtual void PaintPageOverlay(const PageOverlay&,
                                   GraphicsContext&,
-                                  const WebSize& web_view_size) const = 0;
+                                  const IntSize& web_view_size) const = 0;
   };
 
   static std::unique_ptr<PageOverlay> Create(

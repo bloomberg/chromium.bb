@@ -7,6 +7,8 @@ include_rules = [
     "+build/win",
     "+cc/base/region.h",
     "+cc/input/overscroll_behavior.h",
+    "+cc/layers/layer_position_constraint.h",
+    "+cc/layers/layer_sticky_position_constraint.h",
     "+gpu/config/gpu_feature_info.h",
     "-inspector/v8",
     "+inspector/v8/public",

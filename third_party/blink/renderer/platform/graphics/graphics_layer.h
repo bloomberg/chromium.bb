@@ -34,7 +34,6 @@
 #include "third_party/blink/public/platform/web_content_layer.h"
 #include "third_party/blink/public/platform/web_content_layer_client.h"
 #include "third_party/blink/public/platform/web_image_layer.h"
-#include "third_party/blink/public/platform/web_layer_sticky_position_constraint.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
@@ -192,7 +191,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   void SetFilters(CompositorFilterOperations);
   void SetBackdropFilters(CompositorFilterOperations);
 
-  void SetStickyPositionConstraint(const WebLayerStickyPositionConstraint&);
+  void SetStickyPositionConstraint(const cc::LayerStickyPositionConstraint&);
 
   void SetFilterQuality(SkFilterQuality);
 

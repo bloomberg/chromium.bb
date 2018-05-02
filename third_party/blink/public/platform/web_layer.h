@@ -30,37 +30,34 @@
 #include "cc/layers/layer.h"
 #include "third_party/blink/public/platform/web_blend_mode.h"
 #include "third_party/blink/public/platform/web_common.h"
-#include "third_party/blink/public/platform/web_float_point.h"
-#include "third_party/blink/public/platform/web_float_point_3d.h"
-#include "third_party/blink/public/platform/web_float_size.h"
-#include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_rect.h"
-#include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_touch_info.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace cc {
+struct ElementId;
 class FilterOperations;
 class Layer;
 class LayerClient;
+class LayerPositionConstraint;
+struct LayerStickyPositionConstraint;
 class Region;
 class TouchActionRegion;
-struct ElementId;
 }
 
 namespace gfx {
+class PointF;
+class Point3F;
 class Rect;
+class ScrollOffset;
 class Transform;
 }
 
 namespace blink {
 
 class WebLayerScrollClient;
-struct WebFloatPoint;
-struct WebLayerPositionConstraint;
-struct WebLayerStickyPositionConstraint;
 
 class WebLayer {
  public:
@@ -83,8 +80,8 @@ class WebLayer {
   virtual void RemoveFromParent() = 0;
   virtual void RemoveAllChildren() = 0;
 
-  virtual void SetBounds(const WebSize&) = 0;
-  virtual WebSize Bounds() const = 0;
+  virtual void SetBounds(const gfx::Size&) = 0;
+  virtual const gfx::Size& Bounds() const = 0;
 
   virtual void SetMasksToBounds(bool) = 0;
   virtual bool MasksToBounds() const = 0;
@@ -112,14 +109,14 @@ class WebLayer {
   virtual void SetOpaque(bool) = 0;
   virtual bool Opaque() const = 0;
 
-  virtual void SetPosition(const WebFloatPoint&) = 0;
-  virtual WebFloatPoint GetPosition() const = 0;
+  virtual void SetPosition(const gfx::PointF&) = 0;
+  virtual const gfx::PointF& GetPosition() const = 0;
 
   virtual void SetTransform(const gfx::Transform&) = 0;
   virtual const gfx::Transform& Transform() const = 0;
 
-  virtual void SetTransformOrigin(const WebFloatPoint3D&) {}
-  virtual WebFloatPoint3D TransformOrigin() const { return WebFloatPoint3D(); }
+  virtual void SetTransformOrigin(const gfx::Point3F&) = 0;
+  virtual const gfx::Point3F& TransformOrigin() const = 0;
 
   // Sets whether the layer draws its content when compositing.
   virtual void SetDrawsContent(bool) = 0;
@@ -154,7 +151,7 @@ class WebLayer {
   virtual void SetFilters(const cc::FilterOperations&) = 0;
 
   // The position of the original primitive inside the total bounds.
-  virtual void SetFiltersOrigin(const WebFloatPoint&) = 0;
+  virtual void SetFiltersOrigin(const gfx::PointF&) = 0;
 
   // Clear the background filters in use by passing in a newly instantiated
   // FilterOperations object.
@@ -175,14 +172,14 @@ class WebLayer {
   virtual void SetClipParent(WebLayer*) = 0;
 
   // Scrolling
-  virtual void SetScrollPosition(WebFloatPoint) = 0;
-  virtual WebFloatPoint ScrollPosition() const = 0;
+  virtual void SetScrollPosition(const gfx::ScrollOffset&) = 0;
+  virtual const gfx::ScrollOffset& ScrollPosition() const = 0;
 
   // To set a WebLayer as scrollable we must specify the scrolling container
   // bounds.
-  virtual void SetScrollable(const WebSize& scroll_container_bounds) = 0;
+  virtual void SetScrollable(const gfx::Size& scroll_container_bounds) = 0;
   virtual bool Scrollable() const = 0;
-  virtual WebSize ScrollContainerBoundsForTesting() const = 0;
+  virtual const gfx::Size& ScrollContainerBoundsForTesting() const = 0;
 
   virtual void SetUserScrollable(bool horizontal, bool vertical) = 0;
   virtual bool UserScrollableHorizontal() const = 0;
@@ -212,14 +209,15 @@ class WebLayer {
 
   // This function sets layer position constraint. The constraint will be used
   // to adjust layer position during threaded scrolling.
-  virtual void SetPositionConstraint(const WebLayerPositionConstraint&) = 0;
-  virtual WebLayerPositionConstraint PositionConstraint() const = 0;
+  virtual void SetPositionConstraint(const cc::LayerPositionConstraint&) = 0;
+  virtual const cc::LayerPositionConstraint& PositionConstraint() const = 0;
 
   // Sets the sticky position constraint. This will be used to adjust sticky
   // position objects during threaded scrolling.
   virtual void SetStickyPositionConstraint(
-      const WebLayerStickyPositionConstraint&) = 0;
-  virtual WebLayerStickyPositionConstraint StickyPositionConstraint() const = 0;
+      const cc::LayerStickyPositionConstraint&) = 0;
+  virtual const cc::LayerStickyPositionConstraint& StickyPositionConstraint()
+      const = 0;
 
   // The scroll client is notified when the scroll position of the WebLayer
   // changes. Only a single scroll client can be set for a WebLayer at a time.

@@ -80,6 +80,9 @@ _CONFIG = [
 
             # Chromium geometry types.
             'gfx::Rect',
+            'gfx::RectF',
+            'gfx::Size',
+            'gfx::SizeF',
             'gfx::Transform',
             # Wrapper of SkRegion used in Chromium.
             'cc::Region',
@@ -89,6 +92,8 @@ _CONFIG = [
             'cc::TouchActionRegion',
 
             # cc::Layer helper data structs.
+            'cc::LayerPositionConstraint',
+            'cc::LayerStickyPositionConstraint',
             'cc::OverscrollBehavior',
 
             # Standalone utility libraries that only depend on //base

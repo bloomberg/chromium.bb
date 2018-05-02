@@ -22,9 +22,11 @@
 #include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
 
 #include <math.h>
+
 #include "third_party/blink/renderer/platform/text/text_stream.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "ui/gfx/geometry/point3_f.h"
 
 namespace blink {
 
@@ -49,6 +51,10 @@ float FloatPoint3D::AngleBetween(const FloatPoint3D& y) const {
     return acos(clampTo(cos_angle, -1.0, 1.0));
   }
   return 0;
+}
+
+FloatPoint3D::operator gfx::Point3F() const {
+  return gfx::Point3F(x_, y_, z_);
 }
 
 std::ostream& operator<<(std::ostream& ostream, const FloatPoint3D& point) {

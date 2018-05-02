@@ -159,7 +159,7 @@ class InspectorOverlayAgent::InspectorPageOverlayDelegate final
 
   void PaintPageOverlay(const PageOverlay&,
                         GraphicsContext& graphics_context,
-                        const WebSize& web_view_size) const override {
+                        const IntSize& web_view_size) const override {
     if (overlay_->IsEmpty())
       return;
 

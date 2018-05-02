@@ -29,6 +29,7 @@
 #include <math.h>
 #include <algorithm>
 #include <limits>
+
 #include "SkPoint.h"
 #include "third_party/blink/renderer/platform/geometry/double_point.h"
 #include "third_party/blink/renderer/platform/geometry/layout_point.h"
@@ -38,6 +39,7 @@
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/skia/include/core/SkPoint.h"
 #include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/geometry/scroll_offset.h"
 
 namespace blink {
 
@@ -117,6 +119,10 @@ FloatPoint::operator SkPoint() const {
 
 FloatPoint::operator gfx::PointF() const {
   return gfx::PointF(x_, y_);
+}
+
+FloatPoint::operator gfx::ScrollOffset() const {
+  return gfx::ScrollOffset(x_, y_);
 }
 
 std::ostream& operator<<(std::ostream& ostream, const FloatPoint& point) {

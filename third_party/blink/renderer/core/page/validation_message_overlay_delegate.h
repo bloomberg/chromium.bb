@@ -36,7 +36,7 @@ class ValidationMessageOverlayDelegate : public PageOverlay::Delegate {
 
   void PaintPageOverlay(const PageOverlay&,
                         GraphicsContext&,
-                        const WebSize& view_size) const override;
+                        const IntSize& view_size) const override;
   void StartToHide();
 
  private:

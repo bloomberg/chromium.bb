@@ -278,11 +278,11 @@ class ColorOverlay final : public PageOverlay::Delegate {
  private:
   void PaintPageOverlay(const PageOverlay& page_overlay,
                         GraphicsContext& graphics_context,
-                        const WebSize& size) const override {
+                        const IntSize& size) const override {
     if (DrawingRecorder::UseCachedDrawingIfPossible(
             graphics_context, page_overlay, DisplayItem::kPageOverlay))
       return;
-    FloatRect rect(0, 0, size.width, size.height);
+    FloatRect rect(0, 0, size.Width(), size.Height());
     DrawingRecorder recorder(graphics_context, page_overlay,
                              DisplayItem::kPageOverlay);
     graphics_context.FillRect(rect, color_);

@@ -65,6 +65,8 @@
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/size_f.h"
 
 namespace blink {
 
@@ -90,7 +92,7 @@ LinkHighlightImpl::LinkHighlightImpl(Node* node, WebViewImpl* owning_web_view)
   DCHECK(compositor_support);
   content_layer_ = compositor_support->CreateContentLayer(this);
   clip_layer_ = compositor_support->CreateLayer();
-  clip_layer_->SetTransformOrigin(WebFloatPoint3D());
+  clip_layer_->SetTransformOrigin(FloatPoint3D());
   clip_layer_->AddChild(content_layer_->Layer());
 
   compositor_animation_ = CompositorAnimation::Create();
@@ -258,7 +260,8 @@ bool LinkHighlightImpl::ComputeHighlightLayerPathAndPosition(
   bool path_has_changed = !(new_path == path_);
   if (path_has_changed) {
     path_ = new_path;
-    content_layer_->Layer()->SetBounds(EnclosingIntRect(bounding_rect).Size());
+    content_layer_->Layer()->SetBounds(
+        static_cast<gfx::Size>(EnclosingIntRect(bounding_rect).Size()));
   }
 
   content_layer_->Layer()->SetPosition(bounding_rect.Location());
@@ -267,8 +270,7 @@ bool LinkHighlightImpl::ComputeHighlightLayerPathAndPosition(
 }
 
 gfx::Rect LinkHighlightImpl::PaintableRegion() {
-  return gfx::Rect(0, 0, ContentLayer()->Layer()->Bounds().width,
-                   ContentLayer()->Layer()->Bounds().height);
+  return gfx::Rect(ContentLayer()->Layer()->Bounds());
 }
 
 void LinkHighlightImpl::PaintContents(
@@ -379,11 +381,10 @@ void LinkHighlightImpl::UpdateGeometry() {
       content_layer_->Layer()->Invalidate();
 
       if (current_graphics_layer_) {
+        gfx::Rect rect = gfx::ToEnclosingRect(
+            gfx::RectF(Layer()->GetPosition(), gfx::SizeF(Layer()->Bounds())));
         current_graphics_layer_->TrackRasterInvalidation(
-            LinkHighlightDisplayItemClientForTracking(),
-            EnclosingIntRect(
-                FloatRect(Layer()->GetPosition().x, Layer()->GetPosition().y,
-                          Layer()->Bounds().width, Layer()->Bounds().height)),
+            LinkHighlightDisplayItemClientForTracking(), IntRect(rect),
             PaintInvalidationReason::kFull);
       }
     }

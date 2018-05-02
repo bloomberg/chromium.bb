@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
 
 #include "build/build_config.h"
+#include "cc/layers/layer_position_constraint.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
@@ -61,7 +62,6 @@
 #include <utility>
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_compositor_support.h"
-#include "third_party/blink/public/platform/web_layer_position_constraint.h"
 #include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/public/platform/web_scrollbar_layer.h"
 #include "third_party/blink/public/platform/web_scrollbar_theme_geometry.h"
@@ -72,7 +72,6 @@
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 using blink::WebLayer;
-using blink::WebLayerPositionConstraint;
 using blink::WebRect;
 using blink::WebScrollbarLayer;
 using blink::WebVector;
@@ -229,7 +228,8 @@ void ScrollingCoordinator::UpdateAfterCompositingChangeIfNeeded(
   if (frame_view && !RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
     if (WebLayer* scroll_layer = toWebLayer(frame_view->LayerForScrolling())) {
       UpdateUserInputScrollable(frame_view);
-      scroll_layer->SetBounds(frame_view->ContentsSize());
+      scroll_layer->SetBounds(
+          static_cast<gfx::Size>(frame_view->ContentsSize()));
     }
   }
 
@@ -244,8 +244,11 @@ void ScrollingCoordinator::UpdateAfterCompositingChangeIfNeeded(
       LocalFrameView* frame_view = ToLocalFrame(child)->View();
       if (!frame_view || frame_view->ShouldThrottleRendering())
         continue;
-      if (WebLayer* scroll_layer = toWebLayer(frame_view->LayerForScrolling()))
-        scroll_layer->SetBounds(frame_view->ContentsSize());
+      if (WebLayer* scroll_layer =
+              toWebLayer(frame_view->LayerForScrolling())) {
+        scroll_layer->SetBounds(
+            static_cast<gfx::Size>(frame_view->ContentsSize()));
+      }
     }
   }
 }
@@ -253,10 +256,10 @@ void ScrollingCoordinator::UpdateAfterCompositingChangeIfNeeded(
 static void ClearPositionConstraintExceptForLayer(GraphicsLayer* layer,
                                                   GraphicsLayer* except) {
   if (layer && layer != except && toWebLayer(layer))
-    toWebLayer(layer)->SetPositionConstraint(WebLayerPositionConstraint());
+    toWebLayer(layer)->SetPositionConstraint(cc::LayerPositionConstraint());
 }
 
-static WebLayerPositionConstraint ComputePositionConstraint(
+static cc::LayerPositionConstraint ComputePositionConstraint(
     const PaintLayer* layer) {
   DCHECK(layer->HasCompositedLayerMapping());
   do {
@@ -264,8 +267,11 @@ static WebLayerPositionConstraint ComputePositionConstraint(
       const LayoutObject& fixed_position_object = layer->GetLayoutObject();
       bool fixed_to_right = !fixed_position_object.Style()->Right().IsAuto();
       bool fixed_to_bottom = !fixed_position_object.Style()->Bottom().IsAuto();
-      return WebLayerPositionConstraint::FixedPosition(fixed_to_right,
-                                                       fixed_to_bottom);
+      cc::LayerPositionConstraint constraint;
+      constraint.set_is_fixed_position(true);
+      constraint.set_is_fixed_to_right_edge(fixed_to_right);
+      constraint.set_is_fixed_to_bottom_edge(fixed_to_bottom);
+      return constraint;
     }
 
     layer = layer->Parent();
@@ -275,7 +281,7 @@ static WebLayerPositionConstraint ComputePositionConstraint(
     // So, once we find a layer that has its own compositedLayerMapping, we can
     // stop searching for a fixed position LayoutObject.
   } while (layer && !layer->HasCompositedLayerMapping());
-  return WebLayerPositionConstraint();
+  return cc::LayerPositionConstraint();
 }
 
 void ScrollingCoordinator::UpdateLayerPositionConstraint(PaintLayer* layer) {
@@ -471,7 +477,8 @@ bool ScrollingCoordinator::UpdateCompositedScrollOffset(
   if (!web_layer)
     return false;
 
-  web_layer->SetScrollPosition(scrollable_area->ScrollPosition());
+  web_layer->SetScrollPosition(
+      static_cast<gfx::ScrollOffset>(scrollable_area->ScrollPosition()));
   return true;
 }
 
@@ -492,7 +499,8 @@ bool ScrollingCoordinator::ScrollableAreaScrollLayerDidChange(
     web_layer->SetScrollable(container_layer->Bounds());
     FloatPoint scroll_position(scrollable_area->ScrollOrigin() +
                                scrollable_area->GetScrollOffset());
-    web_layer->SetScrollPosition(scroll_position);
+    web_layer->SetScrollPosition(
+        static_cast<gfx::ScrollOffset>(scroll_position));
     // TODO(bokan): This method shouldn't be resizing the layer geometry. That
     // happens in CompositedLayerMapping::UpdateScrollingLayerGeometry.
     LayoutSize subpixel_accumulation =
@@ -509,9 +517,9 @@ bool ScrollingCoordinator::ScrollableAreaScrollLayerDidChange(
             LayoutRect(LayoutPoint(subpixel_accumulation), contents_size))
             .Size();
     // The scrolling contents layer must be at least as large as the clip.
-    scroll_contents_size =
-        scroll_contents_size.ExpandedTo(container_layer->Bounds());
-    web_layer->SetBounds(scroll_contents_size);
+    scroll_contents_size = scroll_contents_size.ExpandedTo(IntSize(
+        container_layer->Bounds().width(), container_layer->Bounds().height()));
+    web_layer->SetBounds(static_cast<gfx::Size>(scroll_contents_size));
     // VisualViewport scrolling may involve pinch zoom and gets routed through
     // WebViewImpl explicitly rather than via ScrollingCoordinator::DidScroll
     // since it needs to be set in tandem with the page scale delta.
@@ -1258,7 +1266,7 @@ bool ScrollingCoordinator::FrameScrollerIsDirty(
           frame_view ? toWebLayer(frame_view->LayoutViewportScrollableArea()
                                       ->LayerForScrolling())
                      : nullptr) {
-    return WebSize(
+    return static_cast<gfx::Size>(
                frame_view->LayoutViewportScrollableArea()->ContentsSize()) !=
            scroll_layer->Bounds();
   }

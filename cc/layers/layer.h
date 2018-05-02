@@ -117,7 +117,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // A layer's bounds are in logical, non-page-scaled pixels (however, the
   // root layer's bounds are in physical pixels).
   void SetBounds(const gfx::Size& bounds);
-  gfx::Size bounds() const { return inputs_.bounds; }
+  const gfx::Size& bounds() const { return inputs_.bounds; }
 
   void SetOverscrollBehavior(const OverscrollBehavior& behavior);
   OverscrollBehavior overscroll_behavior() const {
@@ -177,7 +177,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   bool contents_opaque() const { return inputs_.contents_opaque; }
 
   void SetPosition(const gfx::PointF& position);
-  gfx::PointF position() const { return inputs_.position; }
+  const gfx::PointF& position() const { return inputs_.position; }
 
   // A layer that is a container for fixed position layers cannot be both
   // scrollable and have a non-identity transform.
@@ -204,7 +204,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   const gfx::Transform& transform() const { return inputs_.transform; }
 
   void SetTransformOrigin(const gfx::Point3F&);
-  gfx::Point3F transform_origin() const { return inputs_.transform_origin; }
+  const gfx::Point3F& transform_origin() const {
+    return inputs_.transform_origin;
+  }
 
   void SetScrollParent(Layer* parent);
 
@@ -230,14 +232,16 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   void SetScrollOffset(const gfx::ScrollOffset& scroll_offset);
 
-  gfx::ScrollOffset scroll_offset() const { return inputs_.scroll_offset; }
+  const gfx::ScrollOffset& scroll_offset() const {
+    return inputs_.scroll_offset;
+  }
   void SetScrollOffsetFromImplSide(const gfx::ScrollOffset& scroll_offset);
 
   // Marks this layer as being scrollable and needing an associated scroll node.
   // The scroll node's bounds and container_bounds will be kept in sync
   // with this layer. Once scrollable, a Layer cannot become un-scrollable.
   void SetScrollable(const gfx::Size& scroll_container_bounds);
-  gfx::Size scroll_container_bounds() const {
+  const gfx::Size& scroll_container_bounds() const {
     return inputs_.scroll_container_bounds;
   }
   bool scrollable() const { return inputs_.scrollable; }
@@ -284,7 +288,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     return force_render_surface_for_testing_;
   }
 
-  gfx::ScrollOffset CurrentScrollOffset() const {
+  const gfx::ScrollOffset& CurrentScrollOffset() const {
     return inputs_.scroll_offset;
   }
 

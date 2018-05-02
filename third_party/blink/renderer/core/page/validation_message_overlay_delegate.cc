@@ -95,7 +95,7 @@ LocalFrameView& ValidationMessageOverlayDelegate::FrameView() const {
 void ValidationMessageOverlayDelegate::PaintPageOverlay(
     const PageOverlay& overlay,
     GraphicsContext& context,
-    const WebSize& view_size) const {
+    const IntSize& view_size) const {
   if (IsHiding() && !page_)
     return;
   const_cast<ValidationMessageOverlayDelegate*>(this)->UpdateFrameViewState(
