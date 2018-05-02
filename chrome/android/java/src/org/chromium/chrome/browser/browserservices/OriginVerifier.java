@@ -17,6 +17,7 @@ import android.text.TextUtils;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -25,6 +26,7 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.content.browser.BrowserStartupController;
 
@@ -89,7 +91,7 @@ public class OriginVerifier {
 
     /** Clears all known relations. */
     @VisibleForTesting
-    public static void reset() {
+    public static void clearCachedVerificationsForTesting() {
         ThreadUtils.assertOnUiThread();
         if (sPackageToCachedOrigins != null) sPackageToCachedOrigins.clear();
     }
@@ -218,9 +220,10 @@ public class OriginVerifier {
                 assert false;
                 break;
         }
-        boolean success = nativeVerifyOrigin(mNativeOriginVerifier, mPackageName,
+
+        boolean requestSent = nativeVerifyOrigin(mNativeOriginVerifier, mPackageName,
                 mSignatureFingerprint, mOrigin.toString(), relationship);
-        if (!success) ThreadUtils.runOnUiThread(new VerifiedCallback(false));
+        if (!requestSent) ThreadUtils.runOnUiThread(new VerifiedCallback(false));
     }
 
     /**
@@ -289,14 +292,72 @@ public class OriginVerifier {
         return hexString.toString();
     }
 
+    /** Called asynchronously by nativeVerifyOrigin. */
     @CalledByNative
+    private void onOriginVerificationResult(int result) {
+        switch (result) {
+            case RelationshipCheckResult.SUCCESS:
+                originVerified(true);
+                break;
+            case RelationshipCheckResult.FAILURE:
+                originVerified(false);
+                break;
+            case RelationshipCheckResult.NO_CONNECTION:
+                Log.i(TAG, "Device is offline, checking saved verification result.");
+                checkForSavedResult();
+                break;
+            default:
+                assert false;
+        }
+    }
+
+    /** Deal with the result of an Origin check. Will be called on UI Thread. */
     private void originVerified(boolean originVerified) {
         Log.i(TAG, "Verification %s.", (originVerified ? "succeeded" : "failed"));
         if (originVerified) {
             addVerifiedOriginForPackage(mPackageName, mOrigin, mRelation);
         }
+
+        // We save the result even if there is a failure as a way of overwriting a previously
+        // successfully verified result that fails on a subsequent check.
+        saveVerificationResult(originVerified);
+
         if (mListener != null) mListener.onOriginVerified(mPackageName, mOrigin, originVerified);
         cleanUp();
+    }
+
+    /**
+     * Saves the result of a verification to Preferences so we can reuse it when offline.
+     */
+    private void saveVerificationResult(boolean originVerified) {
+        String link = relationshipToString(mPackageName, mOrigin, mRelation);
+        Set<String> savedLinks;
+        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+            savedLinks = ChromePreferenceManager.getInstance().getVerifiedDigitalAssetLinks();
+        }
+        if (originVerified) {
+            savedLinks.add(link);
+        } else {
+            savedLinks.remove(link);
+        }
+        ChromePreferenceManager.getInstance().setVerifiedDigitalAssetLinks(savedLinks);
+    }
+
+    /**
+     * Checks for a previously saved verification result.
+     */
+    private void checkForSavedResult() {
+        String link = relationshipToString(mPackageName, mOrigin, mRelation);
+        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+            Set<String> savedLinks =
+                    ChromePreferenceManager.getInstance().getVerifiedDigitalAssetLinks();
+            originVerified(savedLinks.contains(link));
+        }
+    }
+
+    private static String relationshipToString(String packageName, Origin origin, int relation) {
+        // Neither package names nor origins contain commas.
+        return packageName + "," + origin + "," + relation;
     }
 
     private native long nativeInit(Profile profile);

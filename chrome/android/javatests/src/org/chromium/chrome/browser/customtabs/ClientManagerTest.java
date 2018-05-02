@@ -56,7 +56,7 @@ public class ClientManagerTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                OriginVerifier.reset();
+                OriginVerifier.clearCachedVerificationsForTesting();
             }
         });
     }

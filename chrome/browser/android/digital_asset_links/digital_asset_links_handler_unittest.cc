@@ -26,13 +26,12 @@ class DigitalAssetLinksHandlerTest : public ::testing::Test {
  public:
   DigitalAssetLinksHandlerTest()
       : num_invocations_(0),
-        response_(nullptr),
+        result_(RelationshipCheckResult::SUCCESS),
         io_thread_(content::BrowserThread::IO, &message_loop_) {}
 
-  void OnRelationshipCheckComplete(
-      std::unique_ptr<base::DictionaryValue> response) {
+  void OnRelationshipCheckComplete(RelationshipCheckResult result) {
     ++num_invocations_;
-    response_ = std::move(response);
+    result_ = result;
   }
 
  protected:
@@ -70,7 +69,7 @@ class DigitalAssetLinksHandlerTest : public ::testing::Test {
   }
 
   int num_invocations_;
-  std::unique_ptr<base::DictionaryValue> response_;
+  RelationshipCheckResult result_;
 
  private:
   base::MessageLoop message_loop_;
@@ -90,12 +89,8 @@ TEST_F(DigitalAssetLinksHandlerTest, PositiveResponse) {
       "", "", "", "");
   SendResponse(net::OK, net::HTTP_OK, true);
 
-  bool verified = false;
   EXPECT_EQ(1, num_invocations_);
-  EXPECT_TRUE(response_);
-  response_->GetBoolean(
-      digital_asset_links::kDigitalAssetLinksCheckResponseKeyLinked, &verified);
-  EXPECT_TRUE(verified);
+  EXPECT_EQ(result_, RelationshipCheckResult::SUCCESS);
 }
 
 TEST_F(DigitalAssetLinksHandlerTest, NegativeResponse) {
@@ -106,12 +101,8 @@ TEST_F(DigitalAssetLinksHandlerTest, NegativeResponse) {
       "", "", "", "");
   SendResponse(net::OK, net::HTTP_OK, false);
 
-  bool verified = false;
   EXPECT_EQ(1, num_invocations_);
-  EXPECT_TRUE(response_);
-  response_->GetBoolean(
-      digital_asset_links::kDigitalAssetLinksCheckResponseKeyLinked, &verified);
-  EXPECT_FALSE(verified);
+  EXPECT_EQ(result_, RelationshipCheckResult::FAILURE);
 }
 
 TEST_F(DigitalAssetLinksHandlerTest, BadRequest) {
@@ -123,7 +114,7 @@ TEST_F(DigitalAssetLinksHandlerTest, BadRequest) {
   SendResponse(net::OK, net::HTTP_BAD_REQUEST, true);
 
   EXPECT_EQ(1, num_invocations_);
-  EXPECT_FALSE(response_);
+  EXPECT_EQ(result_, RelationshipCheckResult::FAILURE);
 }
 
 TEST_F(DigitalAssetLinksHandlerTest, NetworkError) {
@@ -135,6 +126,18 @@ TEST_F(DigitalAssetLinksHandlerTest, NetworkError) {
   SendResponse(net::ERR_ABORTED, net::HTTP_OK, true);
 
   EXPECT_EQ(1, num_invocations_);
-  EXPECT_FALSE(response_);
+  EXPECT_EQ(result_, RelationshipCheckResult::FAILURE);
+}
+
+TEST_F(DigitalAssetLinksHandlerTest, NetworkDisconnected) {
+  DigitalAssetLinksHandler handler(nullptr);
+  handler.CheckDigitalAssetLinkRelationship(
+      base::Bind(&DigitalAssetLinksHandlerTest::OnRelationshipCheckComplete,
+                 base::Unretained(this)),
+      "", "", "", "");
+  SendResponse(net::ERR_INTERNET_DISCONNECTED, net::HTTP_OK, true);
+
+  EXPECT_EQ(1, num_invocations_);
+  EXPECT_EQ(result_, RelationshipCheckResult::NO_CONNECTION);
 }
 }  // namespace digital_asset_links
