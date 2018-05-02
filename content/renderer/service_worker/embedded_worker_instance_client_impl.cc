@@ -63,13 +63,11 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
       params->scope, params->script_url,
       !params->installed_scripts_info.is_null(),
       std::move(params->dispatcher_request),
-      std::move(params->controller_request),
-      std::move(params->service_worker_host), std::move(params->instance_host),
+      std::move(params->controller_request), std::move(params->instance_host),
       std::move(params->provider_info), std::move(temporal_self_),
       RenderThreadImpl::current()
           ->GetWebMainThreadScheduler()
-          ->DefaultTaskRunner(),
-      io_thread_runner_);
+          ->DefaultTaskRunner());
   client->set_blink_initialized_time(blink_initialized_time_);
   client->set_start_worker_received_time(base::TimeTicks::Now());
   // Record UMA to indicate StartWorker is received on renderer.

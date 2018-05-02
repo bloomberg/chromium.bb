@@ -12,7 +12,6 @@ import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/service_manager/public/mojom/interface_provider.mojom";
-import "third_party/blink/public/mojom/service_worker/service_worker.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom";
 import "third_party/blink/public/platform/web_feature.mojom";
 import "third_party/blink/public/web/console_message.mojom";
@@ -58,9 +57,6 @@ struct EmbeddedWorkerStartParams {
   ControllerServiceWorker& controller_request;
   // Information to transfer installed scripts from the browser to the renderer.
   blink.mojom.ServiceWorkerInstalledScriptsInfo? installed_scripts_info;
-  // Interface for the renderer to ask the browser to do operations needed for
-  // ServiceWorkerGlobalScope functionalities.
-  associated blink.mojom.ServiceWorkerHost service_worker_host;
   // Interface for the renderer to send the status updates to the browser.
   associated EmbeddedWorkerInstanceHost instance_host;
   // Information for creating ServiceWorkerNetworkProvider on the renderer.

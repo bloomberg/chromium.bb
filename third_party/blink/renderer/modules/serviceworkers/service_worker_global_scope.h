@@ -107,6 +107,9 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
   bool IsInstalling() const { return is_installing_; }
   void SetIsInstalling(bool is_installing);
 
+  // Script evaluation does not start until this function is called.
+  void ReadyToEvaluateScript();
+
   void CountCacheStorageInstalledScript(uint64_t script_size,
                                         uint64_t script_metadata_size);
 
@@ -148,6 +151,9 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
   size_t cache_storage_installed_script_count_ = 0;
   uint64_t cache_storage_installed_script_total_size_ = 0;
   uint64_t cache_storage_installed_script_metadata_total_size_ = 0;
+
+  bool evaluate_script_ready_ = false;
+  base::OnceClosure evaluate_script_;
 };
 
 DEFINE_TYPE_CASTS(ServiceWorkerGlobalScope,

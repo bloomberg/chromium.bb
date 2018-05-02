@@ -332,6 +332,15 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       scoped_refptr<network::ResourceRequestBody> body,
       bool skip_service_worker);
 
+  // Returns an object info representing |registration|. The object info holds a
+  // Mojo connection to the ServiceWorkerRegistrationObjectHost for the
+  // |registration| to ensure the host stays alive while the object info is
+  // alive. A new ServiceWorkerRegistrationObjectHost instance is created if one
+  // does not already exist.
+  blink::mojom::ServiceWorkerRegistrationObjectInfoPtr
+  CreateServiceWorkerRegistrationObjectInfo(
+      scoped_refptr<ServiceWorkerRegistration> registration);
+
   // Used to get a ServiceWorkerObjectInfo to send to the renderer.
   // The object info holds a Mojo connection to the ServiceWorkerHandle for the
   // |version| to ensure the handle stays alive while the object info is alive.
@@ -540,15 +549,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // For service worker execution contexts.
   void GetInterface(const std::string& interface_name,
                     mojo::ScopedMessagePipeHandle interface_pipe) override;
-
-  // Returns an object info representing |registration|. The object info holds a
-  // Mojo connection to the ServiceWorkerRegistrationObjectHost for the
-  // |registration| to ensure the host stays alive while the object info is
-  // alive. A new ServiceWorkerRegistrationObjectHost instance is created if one
-  // can not be found in |registration_object_hosts_|.
-  blink::mojom::ServiceWorkerRegistrationObjectInfoPtr
-  CreateServiceWorkerRegistrationObjectInfo(
-      scoped_refptr<ServiceWorkerRegistration> registration);
 
   // Perform common checks that need to run before ContainerHost methods that
   // come from a child process are handled.

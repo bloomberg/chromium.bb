@@ -29,7 +29,6 @@ namespace content {
 class ServiceWorkerContextCore;
 class ServiceWorkerDispatcherHost;
 class ServiceWorkerProviderHost;
-class ServiceWorkerRegistration;
 class ServiceWorkerStorage;
 class ServiceWorkerVersion;
 struct ServiceWorkerProviderHostInfo;
@@ -87,9 +86,6 @@ class ServiceWorkerRemoteProviderEndpoint {
   // This is the other end of ServiceWorkerContainerAssociatedPtr owned by
   // content::ServiceWorkerProviderHost.
   mojom::ServiceWorkerContainerAssociatedRequest client_request_;
-  // This is to keep alive the corresponding content::ServiceWorkerRegistration.
-  blink::mojom::ServiceWorkerRegistrationObjectInfoPtr
-      registration_object_info_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRemoteProviderEndpoint);
 };
