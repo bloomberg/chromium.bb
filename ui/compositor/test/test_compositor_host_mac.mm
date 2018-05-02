@@ -84,7 +84,7 @@ class TestAcceleratedWidgetMacNSView : public AcceleratedWidgetMacNSView {
 
   // AcceleratedWidgetMacNSView
   NSView* AcceleratedWidgetGetNSView() const override { return view_; }
-  void AcceleratedWidgetSwapCompleted() override {}
+  void AcceleratedWidgetCALayerParamsUpdated() override {}
 
  private:
   NSView* view_ = nullptr;

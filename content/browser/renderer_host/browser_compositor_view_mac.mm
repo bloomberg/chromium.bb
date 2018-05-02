@@ -4,8 +4,8 @@
 
 #include "content/browser/renderer_host/browser_compositor_view_mac.h"
 
+#import <Cocoa/Cocoa.h>
 #include <stdint.h>
-
 #include <utility>
 
 #include "base/command_line.h"
@@ -230,6 +230,12 @@ void BrowserCompositorMac::ClearCompositorFrame() {
     delegated_frame_host_->ClearDelegatedFrame();
 }
 
+const gfx::CALayerParams* BrowserCompositorMac::GetLastCALayerParams() const {
+  if (!recyclable_compositor_)
+    return nullptr;
+  return recyclable_compositor_->accelerated_widget_mac()->GetCALayerParams();
+}
+
 viz::FrameSinkId BrowserCompositorMac::GetRootFrameSinkId() {
   if (recyclable_compositor_)
     return recyclable_compositor_->compositor()->frame_sink_id();
@@ -430,8 +436,6 @@ void BrowserCompositorMac::TakeFallbackContentFrom(
 
   delegated_frame_host_->TakeFallbackContentFrom(
       other->delegated_frame_host_.get());
-  other->recyclable_compositor_->accelerated_widget_mac()
-      ->ResetNSViewPreservingContents();
   other->TransitionToState(HasNoCompositor);
   TransitionToState(HasAttachedCompositor);
 }

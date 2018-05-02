@@ -16,6 +16,8 @@ component("accelerated_widget_mac") {
     "ca_layer_tree_coordinator.mm",
     "ca_renderer_layer_tree.h",
     "ca_renderer_layer_tree.mm",
+    "display_ca_layer_tree.h",
+    "display_ca_layer_tree.mm",
     "display_link_mac.cc",
     "display_link_mac.h",
     "io_surface_context.h",

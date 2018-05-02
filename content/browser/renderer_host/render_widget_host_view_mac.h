@@ -358,7 +358,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // AcceleratedWidgetMacNSView implementation.
   NSView* AcceleratedWidgetGetNSView() const override;
-  void AcceleratedWidgetSwapCompleted() override;
+  void AcceleratedWidgetCALayerParamsUpdated() override;
 
   void SetShowingContextMenu(bool showing) override;
 
@@ -502,7 +502,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // The background color of the last frame that was swapped. This is not
   // applied until the swap completes (see comments in
-  // AcceleratedWidgetSwapCompleted).
+  // AcceleratedWidgetCALayerParamsUpdated).
   SkColor last_frame_root_background_color_ = SK_ColorTRANSPARENT;
 
   int tab_show_sequence_ = 0;

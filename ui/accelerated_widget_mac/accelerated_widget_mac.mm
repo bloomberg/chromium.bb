@@ -6,27 +6,12 @@
 
 #include <map>
 
-#include "base/debug/dump_without_crashing.h"
 #include "base/lazy_instance.h"
 #include "base/mac/mac_util.h"
-#include "base/mac/scoped_cftyperef.h"
-#include "base/mac/sdk_forward_declarations.h"
-#include "base/trace_event/trace_event.h"
-#include "third_party/skia/include/core/SkCanvas.h"
-#include "ui/base/cocoa/animation_utils.h"
 #include "ui/gfx/geometry/dip_util.h"
-#include "ui/gl/scoped_cgl.h"
-
-@interface CALayer (PrivateAPI)
-- (void)setContentsChanged;
-@end
 
 namespace ui {
 namespace {
-
-// The maximum number of times to dump before throttling (to avoid sending
-// thousands of crash dumps).
-const int kMaxCrashDumps = 10;
 
 typedef std::map<gfx::AcceleratedWidget,AcceleratedWidgetMac*>
     WidgetToHelperMap;
@@ -38,18 +23,6 @@ base::LazyInstance<WidgetToHelperMap>::DestructorAtExit g_widget_to_helper_map;
 // AcceleratedWidgetMac
 
 AcceleratedWidgetMac::AcceleratedWidgetMac() : view_(nullptr) {
-  // Disable the fade-in animation as the layers are added.
-  ScopedCAActionDisabler disabler;
-
-  // Add a flipped transparent layer as a child, so that we don't need to
-  // fiddle with the position of sub-layers -- they will always be at the
-  // origin.
-  flipped_layer_.reset([[CALayer alloc] init]);
-  [flipped_layer_ setGeometryFlipped:YES];
-  [flipped_layer_ setAnchorPoint:CGPointMake(0, 0)];
-  [flipped_layer_
-      setAutoresizingMask:kCALayerWidthSizable|kCALayerHeightSizable];
-
   // Use a sequence number as the accelerated widget handle that we can use
   // to look up the internals structure.
   static uint64_t last_sequence_number = 0;
@@ -64,47 +37,28 @@ AcceleratedWidgetMac::~AcceleratedWidgetMac() {
 }
 
 void AcceleratedWidgetMac::SetNSView(AcceleratedWidgetMacNSView* view) {
-  // Disable the fade-in animation as the view is added.
-  ScopedCAActionDisabler disabler;
-
   DCHECK(view && !view_);
   view_ = view;
-
-  CALayer* background_layer = [view_->AcceleratedWidgetGetNSView() layer];
-  DCHECK(background_layer);
-  [flipped_layer_ setBounds:[background_layer bounds]];
-  [background_layer addSublayer:flipped_layer_];
 }
 
 void AcceleratedWidgetMac::ResetNSView() {
-  if (!view_)
-    return;
-
-  // Disable the fade-out animation as the view is removed.
-  ScopedCAActionDisabler disabler;
-
-  [flipped_layer_ removeFromSuperlayer];
-  [content_layer_ removeFromSuperlayer];
-  [io_surface_layer_ removeFromSuperlayer];
-  content_layer_.reset();
-  io_surface_layer_.reset();
-
-  last_swap_size_dip_ = gfx::Size();
+  last_ca_layer_params_valid_ = false;
   view_ = NULL;
 }
 
-void AcceleratedWidgetMac::ResetNSViewPreservingContents() {
-  if (!view_)
-    return;
-
-  ScopedCAActionDisabler disabler;
-  [flipped_layer_ removeFromSuperlayer];
-  view_ = NULL;
+const gfx::CALayerParams* AcceleratedWidgetMac::GetCALayerParams() const {
+  if (!last_ca_layer_params_valid_)
+    return nullptr;
+  return &last_ca_layer_params_;
 }
 
 bool AcceleratedWidgetMac::HasFrameOfSize(
     const gfx::Size& dip_size) const {
-  return last_swap_size_dip_ == dip_size;
+  if (!last_ca_layer_params_valid_)
+    return false;
+  gfx::Size last_swap_size_dip = gfx::ConvertSizeToDIP(
+      last_ca_layer_params_.scale_factor, last_ca_layer_params_.pixel_size);
+  return last_swap_size_dip == dip_size;
 }
 
 // static
@@ -136,105 +90,11 @@ void AcceleratedWidgetMac::UpdateCALayerTree(
   if (is_suspended_)
     return;
 
-  if (ca_layer_params.ca_context_id) {
-    if ([remote_layer_ contextId] != ca_layer_params.ca_context_id) {
-      remote_layer_.reset([[CALayerHost alloc] init]);
-      [remote_layer_ setContextId:ca_layer_params.ca_context_id];
-      [remote_layer_
-          setAutoresizingMask:kCALayerMaxXMargin | kCALayerMaxYMargin];
-    }
-  } else {
-    remote_layer_.reset();
-  }
-
-  if (remote_layer_) {
-    GotCALayerFrame(base::scoped_nsobject<CALayer>(remote_layer_.get(),
-                                                   base::scoped_policy::RETAIN),
-                    ca_layer_params.pixel_size, ca_layer_params.scale_factor);
-  } else if (ca_layer_params.io_surface_mach_port) {
-    base::ScopedCFTypeRef<IOSurfaceRef> io_surface(
-        IOSurfaceLookupFromMachPort(ca_layer_params.io_surface_mach_port));
-    if (!io_surface) {
-      LOG(ERROR) << "Unable to open IOSurface for frame.";
-      static int dump_counter = kMaxCrashDumps;
-      if (dump_counter) {
-        dump_counter -= 1;
-        base::debug::DumpWithoutCrashing();
-      }
-    }
-    GotIOSurfaceFrame(io_surface, ca_layer_params.pixel_size,
-                      ca_layer_params.scale_factor);
-  } else {
-    LOG(ERROR) << "Frame had neither valid CAContext nor valid IOSurface.";
-    base::ScopedCFTypeRef<IOSurfaceRef> io_surface;
-    GotIOSurfaceFrame(io_surface, ca_layer_params.pixel_size,
-                      ca_layer_params.scale_factor);
-  }
+  last_ca_layer_params_valid_ = true;
+  last_ca_layer_params_ = ca_layer_params;
   if (view_)
-    view_->AcceleratedWidgetSwapCompleted();
+    view_->AcceleratedWidgetCALayerParamsUpdated();
 }
 
-void AcceleratedWidgetMac::GotCALayerFrame(
-    base::scoped_nsobject<CALayer> content_layer,
-    const gfx::Size& pixel_size,
-    float scale_factor) {
-  TRACE_EVENT0("ui", "AcceleratedWidgetMac::GotCAContextFrame");
-  if (!view_) {
-    TRACE_EVENT0("ui", "No associated NSView");
-    return;
-  }
-  ScopedCAActionDisabler disabler;
-  last_swap_size_dip_ = gfx::ConvertSizeToDIP(scale_factor, pixel_size);
-
-  // Ensure that the content is in the CALayer hierarchy, and update fullscreen
-  // low power state.
-  if (content_layer_ != content_layer) {
-    [flipped_layer_ addSublayer:content_layer];
-    [content_layer_ removeFromSuperlayer];
-    content_layer_ = content_layer;
-  }
-
-  // Ensure the IOSurface is removed.
-  if (io_surface_layer_) {
-    [io_surface_layer_ removeFromSuperlayer];
-    io_surface_layer_.reset();
-  }
-}
-
-void AcceleratedWidgetMac::GotIOSurfaceFrame(
-    base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
-    const gfx::Size& pixel_size,
-    float scale_factor) {
-  TRACE_EVENT0("ui", "AcceleratedWidgetMac::GotIOSurfaceFrame");
-  if (!view_) {
-    TRACE_EVENT0("ui", "No associated NSView");
-    return;
-  }
-  ScopedCAActionDisabler disabler;
-  last_swap_size_dip_ = gfx::ConvertSizeToDIP(scale_factor, pixel_size);
-
-  // Create (if needed) and update the IOSurface layer with new content.
-  if (!io_surface_layer_) {
-    io_surface_layer_.reset([[CALayer alloc] init]);
-    [io_surface_layer_ setContentsGravity:kCAGravityTopLeft];
-    [io_surface_layer_ setAnchorPoint:CGPointMake(0, 0)];
-    [flipped_layer_ addSublayer:io_surface_layer_];
-  }
-  id new_contents = static_cast<id>(io_surface.get());
-  if (new_contents && new_contents == [io_surface_layer_ contents])
-    [io_surface_layer_ setContentsChanged];
-  else
-    [io_surface_layer_ setContents:new_contents];
-  [io_surface_layer_ setBounds:CGRectMake(0, 0, last_swap_size_dip_.width(),
-                                          last_swap_size_dip_.height())];
-  if ([io_surface_layer_ contentsScale] != scale_factor)
-    [io_surface_layer_ setContentsScale:scale_factor];
-
-  // Ensure that the content layer is removed.
-  if (content_layer_) {
-    [content_layer_ removeFromSuperlayer];
-    content_layer_.reset();
-  }
-}
 
 }  // namespace ui

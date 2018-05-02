@@ -13,6 +13,7 @@
 #import "content/browser/renderer_host/render_widget_host_view_cocoa.h"
 #include "content/common/cursors/webcursor.h"
 #import "skia/ext/skia_utils_mac.h"
+#include "ui/accelerated_widget_mac/display_ca_layer_tree.h"
 #import "ui/base/cocoa/animation_utils.h"
 #include "ui/display/display_observer.h"
 #include "ui/display/screen.h"
@@ -38,6 +39,7 @@ class RenderWidgetHostViewNSViewBridgeLocal
                    blink::WebPopupType popup_type) override;
   void MakeFirstResponder() override;
   void SetBounds(const gfx::Rect& rect) override;
+  void SetCALayerParams(const gfx::CALayerParams& ca_layer_params) override;
   void SetBackgroundColor(SkColor color) override;
   void SetVisible(bool visible) override;
   void SetTooltipText(const base::string16& display_text) override;
@@ -74,8 +76,10 @@ class RenderWidgetHostViewNSViewBridgeLocal
   std::unique_ptr<PopupWindowMac> popup_window_;
   blink::WebPopupType popup_type_ = blink::kWebPopupTypeNone;
 
-  // The background CoreAnimation layer which is hosted by |cocoa_view_|.
+  // The background CALayer which is hosted by |cocoa_view_|, and is used as
+  // the root of |display_ca_layer_tree_|.
   base::scoped_nsobject<CALayer> background_layer_;
+  std::unique_ptr<ui::DisplayCALayerTree> display_ca_layer_tree_;
 
   // Cached copy of the tooltip text, to avoid redundant calls.
   base::string16 tooltip_text_;
@@ -90,6 +94,8 @@ RenderWidgetHostViewNSViewBridgeLocal::RenderWidgetHostViewNSViewBridgeLocal(
   cocoa_view_.reset([[RenderWidgetHostViewCocoa alloc] initWithClient:client]);
 
   background_layer_.reset([[CALayer alloc] init]);
+  display_ca_layer_tree_ =
+      std::make_unique<ui::DisplayCALayerTree>(background_layer_.get());
   [cocoa_view_ setLayer:background_layer_];
   [cocoa_view_ setWantsLayer:YES];
 }
@@ -165,6 +171,11 @@ void RenderWidgetHostViewNSViewBridgeLocal::SetBounds(const gfx::Rect& rect) {
     rect2.set_height(rect.height());
     [cocoa_view_ setFrame:[superview flipRectToNSRect:rect2]];
   }
+}
+
+void RenderWidgetHostViewNSViewBridgeLocal::SetCALayerParams(
+    const gfx::CALayerParams& ca_layer_params) {
+  display_ca_layer_tree_->UpdateCALayerTree(ca_layer_params);
 }
 
 void RenderWidgetHostViewNSViewBridgeLocal::SetBackgroundColor(SkColor color) {

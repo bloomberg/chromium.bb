@@ -103,12 +103,18 @@ NSView* RenderWidgetHostViewMac::AcceleratedWidgetGetNSView() const {
   return cocoa_view();
 }
 
-void RenderWidgetHostViewMac::AcceleratedWidgetSwapCompleted() {
+void RenderWidgetHostViewMac::AcceleratedWidgetCALayerParamsUpdated() {
   // Set the background color for the root layer from the frame that just
   // swapped. See RenderWidgetHostViewAura for more details. Note that this is
   // done only after the swap has completed, so that the background is not set
   // before the frame is up.
   SetBackgroundLayerColor(last_frame_root_background_color_);
+
+  // Update the contents that the NSView is displaying.
+  const gfx::CALayerParams* ca_layer_params =
+      browser_compositor_->GetLastCALayerParams();
+  if (ca_layer_params)
+    ns_view_bridge_->SetCALayerParams(*ca_layer_params);
 
   if (display_link_)
     display_link_->NotifyCurrentTime(base::TimeTicks::Now());
@@ -707,6 +713,14 @@ void RenderWidgetHostViewMac::TakeFallbackContentFrom(
       static_cast<RenderWidgetHostViewMac*>(view);
   ScopedCAActionDisabler disabler;
   SetBackgroundColor(view_mac->background_color());
+
+  // Make the NSView for |this| display the same content as is being displayed
+  // in the NSView for |view_mac|.
+  const gfx::CALayerParams* ca_layer_params =
+      view_mac->browser_compositor_->GetLastCALayerParams();
+  if (ca_layer_params)
+    ns_view_bridge_->SetCALayerParams(*ca_layer_params);
+
   browser_compositor_->TakeFallbackContentFrom(
       view_mac->browser_compositor_.get());
 }
