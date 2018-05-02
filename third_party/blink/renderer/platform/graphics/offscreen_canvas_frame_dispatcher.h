@@ -80,7 +80,6 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcher
   // Surface-related
   viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
   const viz::FrameSinkId frame_sink_id_;
-  viz::LocalSurfaceId current_local_surface_id_;
 
   int width_;
   int height_;
