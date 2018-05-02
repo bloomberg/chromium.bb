@@ -13,11 +13,11 @@ import android.os.RemoteException;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.chromecast.base.CircularBuffer;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
+import java.io.StringReader;
 
 /**
  * Gets file with system logs for the Assistant Devices and elide PII sensitive info from it.
@@ -44,28 +44,18 @@ class ExternalServiceDeviceLogcatProvider extends ElidedLogcatProvider {
                 IDeviceLogsProvider provider = IDeviceLogsProvider.Stub.asInterface(service);
 
                 ServiceConnection conn = this;
+
                 new AsyncTaskRunner().doAsync(() -> {
-                    CircularBuffer<String> rawLogcat =
-                            new CircularBuffer<>(BuildConfig.LOGCAT_SIZE);
+                    String logsFileName = "";
                     try {
                         // getLogs() currently gives us the filename of the location of the logs
-                        String logsFileName = provider.getLogs();
-                        Log.i(TAG, "Log Location: " + logsFileName);
-
-                        try (BufferedReader bReader =
-                                        new BufferedReader(new FileReader(logsFileName))) {
-                            String logLn;
-                            while ((logLn = bReader.readLine()) != null) {
-                                rawLogcat.add(logLn);
-                            }
-                        } catch (IOException e) {
-                            Log.e(TAG, "Can't read logs", e);
-                        }
-                    } catch (RemoteException e) {
+                        logsFileName = provider.getLogs();
+                        return new BufferedReader(new FileReader(logsFileName));
+                    } catch (FileNotFoundException | RemoteException e) {
                         Log.e(TAG, "Can't get logs", e);
+                        return new BufferedReader(new StringReader(""));
                     } finally {
                         ContextUtils.getApplicationContext().unbindService(conn);
-                        return rawLogcat;
                     }
                 }, callback::onLogsDone);
             }

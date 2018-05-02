@@ -71,6 +71,8 @@ class LogcatElision {
 
     private static final Pattern JAVA_FILE = Pattern.compile(".java:[0-9]+$");
 
+    private static final String[] LOG_SPAM = new String[] {"persist.mtk.mlog2logcat", "MLOG_KERN"};
+
     /**
      * Elides any emails in the specified {@link String} with {@link
      * #EMAIL_ELISION}.
@@ -134,6 +136,15 @@ class LogcatElision {
         return false;
     }
 
+    private static boolean likelyToBeLogSpam(String logline) {
+        for (String spam : LOG_SPAM) {
+            if (logline.contains(spam)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static boolean likelyToBeJavaFile(String url) {
         return JAVA_FILE.matcher(url).find();
     }
@@ -169,6 +180,7 @@ class LogcatElision {
     }
 
     public static String elide(String ln) {
+        if (likelyToBeLogSpam(ln)) return "";
         ln = elideEmail(ln);
         ln = elideIp(ln);
         ln = elideUrl(ln);

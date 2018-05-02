@@ -4,14 +4,15 @@
 
 package org.chromium.chromecast.shell;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.chromecast.base.CircularBuffer;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
-import java.nio.charset.UnsupportedCharsetException;
+import java.io.Reader;
+import java.io.StringReader;
 
 /**
  * Extracts logcat out of Android devices and elide PII sensitive info from it.
@@ -25,39 +26,32 @@ class AndroidAppLogcatProvider extends ElidedLogcatProvider {
 
     @Override
     protected void getRawLogcat(RawLogcatCallback callback) {
-        CircularBuffer<String> rawLogcat = new CircularBuffer<>(BuildConfig.LOGCAT_SIZE);
-        String logLn = null;
         Integer exitValue = null;
 
+        Reader reader = new StringReader("");
         try {
-            Process p = Runtime.getRuntime().exec("logcat -d");
-            try (BufferedReader bReader = new BufferedReader(
-                         new InputStreamReader(p.getInputStream(), Charset.forName("UTF-8")))) {
-                while (exitValue == null) {
-                    while ((logLn = bReader.readLine()) != null) {
-                        // Add each new string to the end of the buffer.
-                        rawLogcat.add(logLn);
-                    }
-                    try {
-                        exitValue = p.exitValue();
-                    } catch (IllegalThreadStateException itse) {
-                        Thread.sleep(HALF_SECOND);
-                    }
+            File outputDir = ContextUtils.getApplicationContext().getCacheDir();
+            File outputFile = File.createTempFile("temp_logcat", ".txt", outputDir);
+
+            Process p = Runtime.getRuntime().exec("logcat -d -f " + outputFile.getAbsolutePath());
+
+            while (exitValue == null) {
+                try {
+                    exitValue = p.exitValue();
+                } catch (IllegalThreadStateException itse) {
+                    Thread.sleep(HALF_SECOND);
                 }
-                if (exitValue != 0) {
-                    String msg = "Logcat process exit value: " + exitValue;
-                    Log.w(TAG, msg);
-                }
-            } catch (UnsupportedCharsetException e) {
-                // Should never happen; all Java implementations are required to support UTF-8.
-                Log.wtf(TAG, "UTF-8 not supported", e);
-            } catch (InterruptedException e) {
-                Log.e(TAG, "Logcat subprocess interrupted ", e);
             }
-        } catch (IOException e) {
-            Log.e(TAG, "Error occurred trying to upload crash dump", e);
+            if (exitValue != 0) {
+                String msg = "Logcat process exit value: " + exitValue;
+                Log.w(TAG, msg);
+            }
+            reader = new FileReader(outputFile);
+
+        } catch (IOException | InterruptedException e) {
+            Log.e(TAG, "Error writing logcat", e);
         } finally {
-            callback.onLogsDone(rawLogcat);
+            callback.onLogsDone(new BufferedReader(reader));
         }
     }
 }
