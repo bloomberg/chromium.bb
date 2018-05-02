@@ -19,5 +19,16 @@ void DisableTracing() {
   base::trace_event::TraceLog::GetInstance()->SetDisabled();
 }
 
+void AddAsyncEnabledStateObserver(
+    base::WeakPtr<AsyncEnabledStateObserver> observer) {
+  base::trace_event::TraceLog::GetInstance()->AddAsyncEnabledStateObserver(
+      observer);
+}
+
+void RemoveAsyncEnabledStateObserver(AsyncEnabledStateObserver* observer) {
+  base::trace_event::TraceLog::GetInstance()->RemoveAsyncEnabledStateObserver(
+      observer);
+}
+
 }  // namespace TraceEvent
 }  // namespace blink

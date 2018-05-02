@@ -203,11 +203,6 @@
         "willSendRequest",
       ]
     },
-    Tracing: {
-      probes: [
-        "didStartWorker",
-      ]
-    },
     Worker: {
       probes: [
         "didStartWorker",
