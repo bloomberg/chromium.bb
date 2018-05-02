@@ -59,7 +59,7 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
   // Takes ownership of |child_contents|.
   static std::unique_ptr<HeadlessWebContentsImpl> CreateForChildContents(
       HeadlessWebContentsImpl* parent,
-      content::WebContents* child_contents);
+      std::unique_ptr<content::WebContents> child_contents);
 
   // HeadlessWebContents implementation:
   void AddObserver(Observer* observer) override;
@@ -155,7 +155,7 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
   struct PendingFrame;
 
   // Takes ownership of |web_contents|.
-  HeadlessWebContentsImpl(content::WebContents* web_contents,
+  HeadlessWebContentsImpl(std::unique_ptr<content::WebContents> web_contents,
                           HeadlessBrowserContextImpl* browser_context);
 
   void InitializeWindow(const gfx::Rect& initial_bounds);
