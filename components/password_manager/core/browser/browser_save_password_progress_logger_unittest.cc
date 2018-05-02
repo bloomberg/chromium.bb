@@ -90,7 +90,7 @@ TEST_F(BrowserSavePasswordProgressLoggerTest, LogFormSignatures) {
       autofill::AutofillUploadContents::Field::GENERATION_ELEMENT);
 
   // Add a server prediction for the text field.
-  form_structure.field(1)->set_overall_server_type(autofill::EMAIL_ADDRESS);
+  form_structure.field(1)->set_server_type(autofill::EMAIL_ADDRESS);
 
   logger.LogFormStructure(
       autofill::SavePasswordProgressLogger::STRING_FORM_VOTES, form_structure);

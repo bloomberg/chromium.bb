@@ -11,14 +11,13 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/signatures_util.h"
 
 namespace autofill {
-
-class AutofillType;
 
 class AutofillField : public FormFieldData {
  public:
@@ -36,7 +35,7 @@ class AutofillField : public FormFieldData {
 
   const std::string& section() const { return section_; }
   ServerFieldType heuristic_type() const { return heuristic_type_; }
-  ServerFieldType overall_server_type() const { return overall_server_type_; }
+  ServerFieldType server_type() const { return server_type_; }
   const std::vector<AutofillQueryResponseContents::Field::FieldPrediction>&
   server_predictions() const {
     return server_predictions_;
@@ -52,7 +51,7 @@ class AutofillField : public FormFieldData {
   // Setters for the detected type and section for this field.
   void set_section(const std::string& section) { section_ = section; }
   void set_heuristic_type(ServerFieldType type);
-  void set_overall_server_type(ServerFieldType type);
+  void set_server_type(ServerFieldType type);
   void set_server_predictions(
       const std::vector<AutofillQueryResponseContents::Field::FieldPrediction>
           predictions) {
@@ -73,13 +72,26 @@ class AutofillField : public FormFieldData {
     only_fill_when_focused_ = fill_when_focused;
   }
 
-  // Set the heuristic or server type, depending on whichever is currently
-  // assigned, to |type|.
-  void SetTypeTo(ServerFieldType type);
+  // Set the type of the field. This sets the value returned by |Type|.
+  // This function can be used to override the value that would be returned by
+  // |ComputedType|.
+  // As the |type| is expected to depend on |ComputedType|, the value will be
+  // reset to |ComputedType| if some internal value change (e.g. on call to
+  // (|set_heuristic_type| or |set_server_type|).
+  // |SetTypeTo| cannot be called with
+  // type.GetStoreableType() == NO_SERVER_DATA.
+  void SetTypeTo(const AutofillType& type);
+
+  // This function returns |ComputedType| unless the value has been overriden
+  // by |SetTypeTo|.
+  // (i.e. overall_type_ != NO_SERVER_DATA ? overall_type_ : ComputedType())
+  AutofillType Type() const;
 
   // This function automatically chooses between server and heuristic autofill
-  // type, depending on the data available.
-  AutofillType Type() const;
+  // type, depending on the data available for this field alone.
+  // This type does not take into account the rationalization involving the
+  // surrounding fields.
+  AutofillType ComputedType() const;
 
   // Returns true if the value of this field is empty.
   bool IsEmpty() const;
@@ -150,15 +162,21 @@ class AutofillField : public FormFieldData {
   std::string section_;
 
   // The type of the field, as determined by the Autofill server.
-  ServerFieldType overall_server_type_;
+  ServerFieldType server_type_;
 
   // The possible types of the field, as determined by the Autofill server,
-  // including |overall_server_type_| as the first item.
+  // including |server_type_| as the first item.
   std::vector<AutofillQueryResponseContents::Field::FieldPrediction>
       server_predictions_;
 
   // The type of the field, as determined by the local heuristics.
   ServerFieldType heuristic_type_;
+
+  // The type of the field. Overrides all other types (html_type_,
+  // heuristic_type_, server_type_).
+  // |AutofillType(NO_SERVER_DATA)| is used when this |overall_type_| has not
+  // been set.
+  AutofillType overall_type_;
 
   // The type of the field, as specified by the site author in HTML.
   HtmlFieldType html_type_;
