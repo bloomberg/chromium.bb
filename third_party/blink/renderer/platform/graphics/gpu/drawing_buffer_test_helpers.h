@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GPU_DRAWING_BUFFER_TEST_HELPERS_H_
 
 #include "build/build_config.h"
+#include "cc/test/stub_decode_cache.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -53,9 +54,12 @@ class WebGraphicsContext3DProviderForTests
   void SetErrorMessageCallback(
       base::RepeatingCallback<void(const char*, int32_t id)>) override {}
   void SignalQuery(uint32_t, base::OnceClosure) override {}
-  cc::ImageDecodeCache* ImageDecodeCache() override { return nullptr; }
+  cc::ImageDecodeCache* ImageDecodeCache() override {
+    return &image_decode_cache_;
+  }
 
  private:
+  cc::StubDecodeCache image_decode_cache_;
   std::unique_ptr<gpu::gles2::GLES2Interface> gl_;
   gpu::Capabilities capabilities_;
   gpu::GpuFeatureInfo gpu_feature_info_;

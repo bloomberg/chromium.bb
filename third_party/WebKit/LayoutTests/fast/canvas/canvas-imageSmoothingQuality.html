@@ -71,26 +71,17 @@ test(function(t) {
     
     lowContext.imageSmoothingEnabled = false;
     var noFilterData = scaleImageData(lowCanvas, lowCanvas.imageSmoothingQuality);
-    
-    assert_false(lowData === mediumData);
-    // Skia uses mipmaps when downscaling, for both high and medium quality
-    assert_equals(mediumData, highData);
-    assert_false(lowData === highData);
-    
-    assert_equals(sampleAlpha(noFilterData), sampleAlpha(lowData));
-    assert_true(sampleAlpha(lowData) > sampleAlpha(mediumData));
-    // Skia uses mipmaps when downscaling, for both high and medium quality
-    assert_equals(sampleAlpha(mediumData), sampleAlpha(highData));
+   
+    // No filtering uses kNone quality, while with imageSmoothingEnabled we use the
+    // same quality.
+    assert_false(noFilterData === mediumData);
+    assert_true(mediumData === highData);
     
     // On setting, it must be set to the new value.
     highContext.imageSmoothingQuality = 'medium';
     assert_equals(highContext.imageSmoothingQuality, 'medium');
-    assert_equals(scaleImageData(highCanvas, highCanvas.imageSmoothingQuality),
-                  mediumData);
     highContext.imageSmoothingQuality = 'high';
     assert_equals(highContext.imageSmoothingQuality, 'high');
-    assert_equals(scaleImageData(highCanvas, highCanvas.imageSmoothingQuality),
-                  highData);
     
     // When the CanvasRenderingContext2D object is created, the attribute must be set to 'low'.
     assert_equals(document.getElementById("default").getContext("2d").imageSmoothingQuality, 'low');

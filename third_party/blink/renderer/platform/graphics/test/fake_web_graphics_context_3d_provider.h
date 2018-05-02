@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_TEST_FAKE_WEB_GRAPHICS_CONTEXT_3D_PROVIDER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_TEST_FAKE_WEB_GRAPHICS_CONTEXT_3D_PROVIDER_H_
 
+#include "cc/test/stub_decode_cache.h"
 #include "cc/tiles/image_decode_cache.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
@@ -20,7 +21,8 @@ class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
  public:
   FakeWebGraphicsContext3DProvider(gpu::gles2::GLES2Interface* gl,
                                    cc::ImageDecodeCache* cache = nullptr)
-      : gl_(gl), image_decode_cache_(cache) {
+      : gl_(gl),
+        image_decode_cache_(cache ? cache : &stub_image_decode_cache_) {
     sk_sp<const GrGLInterface> gl_interface(GrGLCreateNullInterface());
     gr_context_ = GrContext::MakeGL(std::move(gl_interface));
   }
@@ -52,6 +54,8 @@ class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
   }
 
  private:
+  cc::StubDecodeCache stub_image_decode_cache_;
+
   gpu::gles2::GLES2Interface* gl_;
   sk_sp<GrContext> gr_context_;
   gpu::Capabilities capabilities_;

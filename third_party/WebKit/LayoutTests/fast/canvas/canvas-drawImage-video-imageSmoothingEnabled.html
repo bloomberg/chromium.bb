@@ -34,8 +34,7 @@ async_test(function(t) {
         var height = 100;
         var ctx1 = createNewCanvas(width, height);
         var ctx2 = createNewCanvas(width, height);
-        ctx1.imageSmoothingEnabled = true;
-        ctx1.imageSmoothingQuality = 'low';
+        ctx1.imageSmoothingEnabled = false;
         ctx2.imageSmoothingEnabled = true;
         ctx2.imageSmoothingQuality = 'high';
         ctx1.drawImage(video, 0, 0, video.videoWidth, video.videoHeight, 0, 0, width, height);
@@ -43,5 +42,5 @@ async_test(function(t) {
         compareTwoCanvases(ctx1, ctx2, width, height);
     });
     video.src = "../../compositing/resources/video.ogv";
-}, 'drawImage from a video should look differently with different imageSmoothingQuality');
+}, 'drawImage from a video should look differently with imageSmoothing enabled');
 </script>
