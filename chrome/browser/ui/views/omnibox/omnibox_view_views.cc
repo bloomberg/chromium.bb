@@ -758,8 +758,8 @@ bool OmniboxViewViews::OnMouseDragged(const ui::MouseEvent& event) {
 
   bool handled = views::Textfield::OnMouseDragged(event);
 
-  if (HasSelection() ||
-      ExceededDragThreshold(event.location() - GetLastClickLocation())) {
+  if (HasSelection() || ExceededDragThreshold(event.root_location() -
+                                              GetLastClickRootLocation())) {
     select_all_on_mouse_release_ = false;
   }
 

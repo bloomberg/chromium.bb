@@ -590,6 +590,25 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, FirstMouseClickFocusesOnly) {
   EXPECT_TRUE(omnibox_view()->HasFocus());
 }
 
+TEST_F(OmniboxViewViewsSteadyStateElisionsTest, NegligibleDragKeepsElisions) {
+  gfx::Point click_point = GetPointInTextAtXOffset(2 * kCharacterWidth);
+  omnibox_view()->OnMousePressed(
+      CreateMouseEvent(ui::ET_MOUSE_PRESSED, click_point));
+
+  // Offset the drag and release point by an insignificant 2 px.
+  gfx::Point drag_point = click_point;
+  drag_point.Offset(2, 0);
+  omnibox_view()->OnMouseDragged(
+      CreateMouseEvent(ui::ET_MOUSE_DRAGGED, drag_point));
+  omnibox_view()->OnMouseReleased(
+      CreateMouseEvent(ui::ET_MOUSE_RELEASED, drag_point));
+
+  // Expect that after a negligible drag and release, everything is selected.
+  EXPECT_TRUE(IsElidedUrlDisplayed());
+  EXPECT_TRUE(omnibox_view()->IsSelectAll());
+  EXPECT_TRUE(omnibox_view()->HasFocus());
+}
+
 TEST_F(OmniboxViewViewsSteadyStateElisionsTest, CaretPlacementByMouse) {
   SendMouseClick(0);
 
