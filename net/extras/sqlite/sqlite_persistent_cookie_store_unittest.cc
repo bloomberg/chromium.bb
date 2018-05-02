@@ -538,8 +538,9 @@ TEST_F(SQLitePersistentCookieStoreTest, TestDontLoadOldSessionCookies) {
   ASSERT_EQ(0U, cookies.size());
 }
 
-// Confirm bad cookies on disk don't get looaded
-TEST_F(SQLitePersistentCookieStoreTest, FilterBadCookies) {
+// Confirm bad cookies on disk don't get looaded, and that we also remove them
+// from the database.
+TEST_F(SQLitePersistentCookieStoreTest, FilterBadCookiesAndFixupDb) {
   // Create an on-disk store.
   InitializeStore(false, true);
   DestroyStore();
@@ -552,42 +553,62 @@ TEST_F(SQLitePersistentCookieStoreTest, FilterBadCookies) {
       "INSERT INTO cookies (creation_utc, host_key, name, value, "
       "encrypted_value, path, expires_utc, is_secure, is_httponly, "
       "firstpartyonly, last_access_utc, has_expires, is_persistent, priority) "
-      "VALUES (?,'google.izzle',?,?,'',?,0,0,0,0,0,1,1,0)"));
+      "VALUES (?,?,?,?,'',?,0,0,0,0,0,1,1,0)"));
   ASSERT_TRUE(stmt.is_valid());
 
   struct CookieInfo {
+    const char* domain;
     const char* name;
     const char* value;
     const char* path;
   } cookies_info[] = {// A couple non-canonical cookies.
-                      {"A=", "B", "/path"},
-                      {"C ", "D", "/path"},
+                      {"google.izzle", "A=", "B", "/path"},
+                      {"google.izzle", "C ", "D", "/path"},
 
-                      // A canonical cookie.
-                      {"E", "F", "/path"}};
+                      // A canonical cookie for same eTLD+1. This one will get
+                      // dropped out of precaution to avoid confusing the site,
+                      // even though there is nothing wrong with it.
+                      {"sub.google.izzle", "E", "F", "/path"},
+
+                      // A canonical cookie for another eTLD+1
+                      {"chromium.org", "G", "H", "/dir"}};
 
   int64_t creation_time = 1;
   for (auto& cookie_info : cookies_info) {
     stmt.Reset(true);
 
     stmt.BindInt64(0, creation_time++);
-    stmt.BindString(1, cookie_info.name);
-    stmt.BindString(2, cookie_info.value);
-    stmt.BindString(3, cookie_info.path);
+    stmt.BindString(1, cookie_info.domain);
+    stmt.BindString(2, cookie_info.name);
+    stmt.BindString(3, cookie_info.value);
+    stmt.BindString(4, cookie_info.path);
     ASSERT_TRUE(stmt.Run());
   }
   stmt.Clear();
   db.reset();
 
   // Reopen the store and confirm that the only cookie loaded is the
-  // canonical one.
+  // canonical one on an unrelated domain.
   CanonicalCookieVector cookies;
   CreateAndLoad(false, false, &cookies);
   ASSERT_EQ(1U, cookies.size());
-  EXPECT_STREQ("E", cookies[0]->Name().c_str());
-  EXPECT_STREQ("F", cookies[0]->Value().c_str());
-  EXPECT_STREQ("/path", cookies[0]->Path().c_str());
+  EXPECT_STREQ("chromium.org", cookies[0]->Domain().c_str());
+  EXPECT_STREQ("G", cookies[0]->Name().c_str());
+  EXPECT_STREQ("H", cookies[0]->Value().c_str());
+  EXPECT_STREQ("/dir", cookies[0]->Path().c_str());
   DestroyStore();
+
+  // Make sure that we only have one row left.
+  db = std::make_unique<sql::Connection>();
+  ASSERT_TRUE(db->Open(store_name));
+  sql::Statement verify_stmt(db->GetUniqueStatement("SELECT * FROM COOKIES"));
+  ASSERT_TRUE(verify_stmt.is_valid());
+  int found = 0;
+  while (verify_stmt.Step()) {
+    ++found;
+  }
+  EXPECT_TRUE(verify_stmt.Succeeded());
+  EXPECT_EQ(1, found);
 }
 
 TEST_F(SQLitePersistentCookieStoreTest, PersistIsPersistent) {

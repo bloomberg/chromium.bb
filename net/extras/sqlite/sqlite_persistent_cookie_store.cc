@@ -47,6 +47,7 @@ enum CookieLoadProblem {
   COOKIE_LOAD_PROBLEM_DECRYPT_TIMEOUT = 1,
   COOKIE_LOAD_PROBLEM_NON_CANONICAL = 2,
   COOKIE_LOAD_PROBLEM_OPEN_DB = 3,
+  COOKIE_LOAD_PROBLEM_RECOVERY_FAILED = 4,
   COOKIE_LOAD_PROBLEM_LAST_ENTRY
 };
 
@@ -183,8 +184,9 @@ class SQLitePersistentCookieStore::Backend
                          const LoadedCallback& loaded_callback);
 
   // Steps through all results of |smt|, makes a cookie from each, and adds the
-  // cookie to |cookies|. This method also updates |num_cookies_read_|.
-  void MakeCookiesFromSQLStatement(
+  // cookie to |cookies|. Returns true if everything loaded successfully.
+  // Always updates |num_cookies_read_|.
+  bool MakeCookiesFromSQLStatement(
       std::vector<std::unique_ptr<CanonicalCookie>>* cookies,
       sql::Statement* statement);
 
@@ -289,7 +291,8 @@ class SQLitePersistentCookieStore::Backend
   // all domains are loaded).
   void ChainLoadCookies(const LoadedCallback& loaded_callback);
 
-  // Load all cookies for a set of domains/hosts
+  // Load all cookies for a set of domains/hosts. The error recovery code
+  // assumes |key| includes all related domains within an eTLD + 1.
   bool LoadCookiesForDomains(const std::set<std::string>& key);
 
   // Batch a cookie operation (add or delete)
@@ -347,7 +350,8 @@ class SQLitePersistentCookieStore::Backend
   base::TimeDelta cookie_load_duration_;
 
   // The total number of cookies read. Incremented and reported on the
-  // background runner.
+  // background runner.  Includes those that were malformed, not decrypted
+  // correctly, etc.
   int num_cookies_read_;
 
   scoped_refptr<base::SequencedTaskRunner> client_task_runner_;
@@ -857,7 +861,7 @@ bool SQLitePersistentCookieStore::Backend::LoadCookiesForDomains(
     const std::set<std::string>& domains) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
 
-  sql::Statement smt;
+  sql::Statement smt, del_smt;
   if (restore_old_session_cookies_) {
     smt.Assign(db_->GetCachedStatement(
         SQL_FROM_HERE,
@@ -873,7 +877,10 @@ bool SQLitePersistentCookieStore::Backend::LoadCookiesForDomains(
         "has_expires, is_persistent, priority FROM cookies WHERE host_key = ? "
         "AND is_persistent = 1"));
   }
-  if (!smt.is_valid()) {
+  del_smt.Assign(db_->GetCachedStatement(
+      SQL_FROM_HERE, "DELETE FROM cookies WHERE host_key = ?"));
+  if (!smt.is_valid() || !del_smt.is_valid()) {
+    del_smt.Clear();
     smt.Clear();  // Disconnect smt_ref from db_.
     meta_table_.Reset();
     db_.reset();
@@ -882,24 +889,44 @@ bool SQLitePersistentCookieStore::Backend::LoadCookiesForDomains(
 
   std::vector<std::unique_ptr<CanonicalCookie>> cookies;
   std::set<std::string>::const_iterator it = domains.begin();
-  for (; it != domains.end(); ++it) {
+  bool ok = true;
+  for (; it != domains.end() && ok; ++it) {
     smt.BindString(0, *it);
-    MakeCookiesFromSQLStatement(&cookies, &smt);
+    ok = MakeCookiesFromSQLStatement(&cookies, &smt);
     smt.Reset(true);
   }
-  {
+
+  if (ok) {
     base::AutoLock locked(lock_);
     std::move(cookies.begin(), cookies.end(), std::back_inserter(cookies_));
+  } else {
+    // There were some cookies that were in database but could not be loaded
+    // and handed over to CookieMonster. This is trouble since it means that
+    // if some website tries to send them again, CookieMonster won't know to
+    // issue a delete, and then the addition would violate the uniqueness
+    // constraints and not go through.
+    //
+    // For data consistency, we drop the entire eTLD group.
+    for (const std::string& domain : domains) {
+      del_smt.BindString(0, domain);
+      if (!del_smt.Run()) {
+        // TODO(morlovich): Is something more drastic called for here?
+        RecordCookieLoadProblem(COOKIE_LOAD_PROBLEM_RECOVERY_FAILED);
+      }
+      del_smt.Reset(true);
+    }
   }
   return true;
 }
 
-void SQLitePersistentCookieStore::Backend::MakeCookiesFromSQLStatement(
+bool SQLitePersistentCookieStore::Backend::MakeCookiesFromSQLStatement(
     std::vector<std::unique_ptr<CanonicalCookie>>* cookies,
     sql::Statement* statement) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   sql::Statement& smt = *statement;
+  bool ok = true;
   while (smt.Step()) {
+    ++num_cookies_read_;
     std::string value;
     std::string encrypted_value = smt.ColumnString(4);
     if (!encrypted_value.empty() && crypto_) {
@@ -909,6 +936,7 @@ void SQLitePersistentCookieStore::Backend::MakeCookiesFromSQLStatement(
       timeout_tracker->End();
       if (!decrypt_ok) {
         RecordCookieLoadProblem(COOKIE_LOAD_PROBLEM_DECRYPT_FAILED);
+        ok = false;
         continue;
       }
     } else {
@@ -934,9 +962,11 @@ void SQLitePersistentCookieStore::Backend::MakeCookiesFromSQLStatement(
       cookies->push_back(std::move(cc));
     } else {
       RecordCookieLoadProblem(COOKIE_LOAD_PROBLEM_NON_CANONICAL);
+      ok = false;
     }
-    ++num_cookies_read_;
   }
+
+  return ok;
 }
 
 bool SQLitePersistentCookieStore::Backend::EnsureDatabaseVersion() {
