@@ -1260,12 +1260,14 @@ TEST_P(RootScrollerTest, ImmediateUpdateOfLayoutViewport) {
 
 class RootScrollerSimTest : public testing::WithParamInterface<bool>,
                             private ScopedRootLayerScrollingForTest,
-                            private ScopedImplicitRootScrollerForTest,
                             public SimTest {
  public:
   RootScrollerSimTest()
       : ScopedRootLayerScrollingForTest(GetParam()),
-        ScopedImplicitRootScrollerForTest(false) {}
+        implicit_root_scroller_for_test_(false) {}
+
+ private:
+  ScopedImplicitRootScrollerForTest implicit_root_scroller_for_test_;
 };
 
 INSTANTIATE_TEST_CASE_P(All, RootScrollerSimTest, testing::Bool());
@@ -1366,11 +1368,19 @@ TEST_P(RootScrollerSimTest, RootScrollerDoesntAffectVisualViewport) {
   EXPECT_EQ(120, frame->DomWindow()->visualViewport()->pageTop());
 }
 
-// Tests basic implicit root scroller mode with a <div>.
-TEST_P(RootScrollerSimTest, ImplicitRootScroller) {
-  ScopedSetRootScrollerForTest disable_root_scroller(false);
-  ScopedImplicitRootScrollerForTest enable_implicit(true);
+class ImplicitRootScrollerSimTest : public SimTest {
+ public:
+  ImplicitRootScrollerSimTest()
+      : root_scroller_for_test_(false),
+        implicit_root_scroller_for_test_(true) {}
 
+ private:
+  ScopedSetRootScrollerForTest root_scroller_for_test_;
+  ScopedImplicitRootScrollerForTest implicit_root_scroller_for_test_;
+};
+
+// Tests basic implicit root scroller mode with a <div>.
+TEST_F(ImplicitRootScrollerSimTest, ImplicitRootScroller) {
   WebView().Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -1484,10 +1494,7 @@ TEST_P(RootScrollerSimTest, ImplicitRootScroller) {
 
 // Test that adding overflow to an element that would otherwise be eligable to
 // be implicitly pomoted causes promotion.
-TEST_P(RootScrollerSimTest, ImplicitRootScrollerAddOverflow) {
-  ScopedSetRootScrollerForTest disable_root_scroller(false);
-  ScopedImplicitRootScrollerForTest enable_implicit(true);
-
+TEST_F(ImplicitRootScrollerSimTest, ImplicitRootScrollerAddOverflow) {
   WebView().Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -1533,16 +1540,8 @@ TEST_P(RootScrollerSimTest, ImplicitRootScrollerAddOverflow) {
 
 // Test that a valid implicit root scroller wont be promoted/will be demoted if
 // the main document has overflow.
-TEST_P(RootScrollerSimTest, ImplicitRootScrollerDocumentScrollsOverflow) {
-  // TODO(bokan): This test will fail without root-layer-scrolls but that's ok
-  // because it's already shipped and non-root-layer-scrolls is no longer
-  // supported. https://crbug.com/823365.
-  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled())
-    return;
-
-  ScopedSetRootScrollerForTest disable_root_scroller(false);
-  ScopedImplicitRootScrollerForTest enable_implicit(true);
-
+TEST_F(ImplicitRootScrollerSimTest,
+       ImplicitRootScrollerDocumentScrollsOverflow) {
   WebView().Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -1597,10 +1596,7 @@ TEST_P(RootScrollerSimTest, ImplicitRootScrollerDocumentScrollsOverflow) {
 }
 
 // Test that we'll only implicitly promote an element if its visible.
-TEST_P(RootScrollerSimTest, ImplicitRootScrollerVisibilityCondition) {
-  ScopedSetRootScrollerForTest disable_root_scroller(false);
-  ScopedImplicitRootScrollerForTest enable_implicit(true);
-
+TEST_F(ImplicitRootScrollerSimTest, ImplicitRootScrollerVisibilityCondition) {
   WebView().Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -1673,10 +1669,7 @@ TEST_P(RootScrollerSimTest, ImplicitRootScrollerVisibilityCondition) {
 }
 
 // Tests implicit root scroller mode for iframes.
-TEST_P(RootScrollerSimTest, ImplicitRootScrollerIframe) {
-  ScopedSetRootScrollerForTest disable_root_scroller(false);
-  ScopedImplicitRootScrollerForTest enable_implicit(true);
-
+TEST_F(ImplicitRootScrollerSimTest, ImplicitRootScrollerIframe) {
   WebView().Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -1714,6 +1707,59 @@ TEST_P(RootScrollerSimTest, ImplicitRootScrollerIframe) {
 
   ASSERT_EQ(&GetDocument(),
             GetDocument().GetRootScrollerController().EffectiveRootScroller());
+}
+
+// Test that when a valid iframe becomes loaded and thus should be promoted, it
+// becomes the root scroller, without needing an intervening layout.
+TEST_F(ImplicitRootScrollerSimTest,
+       ImplicitRootScrollerIframeLoadedWithoutLayout) {
+  WebView().Resize(WebSize(800, 600));
+  SimRequest main_request("https://example.com/test.html", "text/html");
+  SimRequest child_request("https://example.com/child.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  main_request.Complete(R"HTML(
+          <!DOCTYPE html>
+          <style>
+            ::-webkit-scrollbar {
+              width: 0px;
+              height: 0px;
+            }
+            body, html {
+              width: 100%;
+              height: 100%;
+              margin: 0px;
+            }
+            iframe {
+              width: 100%;
+              height: 100%;
+              border: 0;
+            }
+          </style>
+          <iframe id="container" src="child.html">
+          </iframe>
+      )HTML");
+  Compositor().BeginFrame();
+  ASSERT_EQ(GetDocument().getElementById("container"),
+            GetDocument().GetRootScrollerController().EffectiveRootScroller())
+      << "The iframe is valid and should be promoted.";
+
+  // Completing the second load will cause the FrameView to be swapped which
+  // will cause the iframe to be demoted transiently. Ensure that it gets
+  // re-promoted when the new FrameView is connected even though there's no
+  // layout to trigger it.
+  child_request.Complete(R"HTML(
+        <!DOCTYPE html>
+        <style>
+          body {
+            height: 1000px;
+          }
+        </style>
+  )HTML");
+
+  Compositor().BeginFrame();
+  EXPECT_EQ(GetDocument().getElementById("container"),
+            GetDocument().GetRootScrollerController().EffectiveRootScroller())
+      << "Once loaded, the iframe should be promoted.";
 }
 
 // Tests that we don't explode when a layout occurs and the effective
