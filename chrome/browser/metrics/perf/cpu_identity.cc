@@ -59,6 +59,7 @@ const CpuUarchTableEntry kCpuUarchTable[] = {
     {"0F_03", "Prescott"},
     {"0F_04", "Prescott"},
     {"0F_06", "Presler"},
+    {"0F_70", "Excavator"},   // AMD Stoney Ridge
 };
 
 const CpuUarchTableEntry* kCpuUarchTableEnd =
@@ -78,8 +79,8 @@ CPUIdentity::CPUIdentity(const CPUIdentity& other) = default;
 CPUIdentity::~CPUIdentity() {}
 
 std::string GetCpuUarch(const CPUIdentity& cpuid) {
-  if (cpuid.vendor != "GenuineIntel")
-    return std::string();  // Non-Intel
+  if (cpuid.vendor != "GenuineIntel" && cpuid.vendor != "AuthenticAMD")
+    return std::string();  // Non-Intel or -AMD
 
   std::string family_model =
       base::StringPrintf("%02X_%02X", cpuid.family, cpuid.model);
