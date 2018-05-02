@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_context_creation_attributes_core.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
-#include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 
 using testing::Mock;
@@ -43,9 +42,7 @@ CanvasRenderingContext* CanvasFontCacheTest::Context2d() const {
 }
 
 void CanvasFontCacheTest::SetUp() {
-  Page::PageClients page_clients;
-  FillWithEmptyClients(page_clients);
-  SetupPageWithClients(&page_clients);
+  PageTestBase::SetUp();
   GetDocument().documentElement()->SetInnerHTMLFromString(
       "<body><canvas id='c'></canvas></body>");
   GetDocument().View()->UpdateAllLifecyclePhases();

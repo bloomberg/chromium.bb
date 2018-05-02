@@ -10,7 +10,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
-#include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/page/scoped_page_pauser.h"
 #include "third_party/blink/renderer/core/page/validation_message_client.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
@@ -65,9 +64,7 @@ class HTMLFormControlElementTest : public PageTestBase {
 };
 
 void HTMLFormControlElementTest::SetUp() {
-  Page::PageClients page_clients;
-  FillWithEmptyClients(page_clients);
-  SetupPageWithClients(&page_clients);
+  PageTestBase::SetUp();
   GetDocument().SetMimeType("text/html");
 }
 

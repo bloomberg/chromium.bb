@@ -10,7 +10,6 @@
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
-#include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 
@@ -19,9 +18,7 @@ namespace blink {
 class HTMLCanvasElementModuleTest : public PageTestBase {
  protected:
   void SetUp() override {
-    Page::PageClients page_clients;
-    FillWithEmptyClients(page_clients);
-    SetupPageWithClients(&page_clients);
+    PageTestBase::SetUp();
     SetHtmlInnerHTML("<body><canvas id='c'></canvas></body>");
     canvas_element_ = ToHTMLCanvasElement(GetElementById("c"));
   }

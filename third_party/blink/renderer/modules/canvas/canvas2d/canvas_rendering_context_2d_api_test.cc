@@ -59,9 +59,7 @@ void CanvasRenderingContext2DAPITest::CreateContext(OpacityMode opacity_mode) {
 }
 
 void CanvasRenderingContext2DAPITest::SetUp() {
-  Page::PageClients page_clients;
-  FillWithEmptyClients(page_clients);
-  SetupPageWithClients(&page_clients);
+  PageTestBase::SetUp();
   GetDocument().documentElement()->SetInnerHTMLFromString(
       "<body><canvas id='c'></canvas></body>");
   GetDocument().View()->UpdateAllLifecyclePhases();

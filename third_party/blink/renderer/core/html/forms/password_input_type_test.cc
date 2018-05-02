@@ -68,7 +68,7 @@ class MockInsecureInputService : public mojom::blink::InsecureInputService {
 // appears on the page.
 TEST(PasswordInputTypeTest, PasswordVisibilityEvent) {
   std::unique_ptr<DummyPageHolder> page_holder =
-      DummyPageHolder::Create(IntSize(2000, 2000), nullptr, nullptr, nullptr);
+      DummyPageHolder::Create(IntSize(2000, 2000));
   MockInsecureInputService mock_service(page_holder->GetFrame());
   page_holder->GetDocument().body()->SetInnerHTMLFromString(
       "<input type='password'>");
@@ -81,7 +81,7 @@ TEST(PasswordInputTypeTest, PasswordVisibilityEvent) {
 // appears in a secure context.
 TEST(PasswordInputTypeTest, PasswordVisibilityEventInSecureContext) {
   std::unique_ptr<DummyPageHolder> page_holder =
-      DummyPageHolder::Create(IntSize(2000, 2000), nullptr, nullptr, nullptr);
+      DummyPageHolder::Create(IntSize(2000, 2000));
   MockInsecureInputService mock_service(page_holder->GetFrame());
   page_holder->GetDocument().SetURL(KURL("https://example.test"));
   page_holder->GetDocument().SetSecurityOrigin(
@@ -100,7 +100,7 @@ TEST(PasswordInputTypeTest, PasswordVisibilityEventInSecureContext) {
 // becomes visible.
 TEST(PasswordInputTypeTest, InvisiblePasswordFieldBecomesVisible) {
   std::unique_ptr<DummyPageHolder> page_holder =
-      DummyPageHolder::Create(IntSize(2000, 2000), nullptr, nullptr, nullptr);
+      DummyPageHolder::Create(IntSize(2000, 2000));
   MockInsecureInputService mock_service(page_holder->GetFrame());
   page_holder->GetDocument().body()->SetInnerHTMLFromString(
       "<input type='password' style='display:none;'>");
@@ -122,7 +122,7 @@ TEST(PasswordInputTypeTest, InvisiblePasswordFieldBecomesVisible) {
 // becomes a password.
 TEST(PasswordInputTypeTest, NonPasswordFieldBecomesPassword) {
   std::unique_ptr<DummyPageHolder> page_holder =
-      DummyPageHolder::Create(IntSize(2000, 2000), nullptr, nullptr, nullptr);
+      DummyPageHolder::Create(IntSize(2000, 2000));
   MockInsecureInputService mock_service(page_holder->GetFrame());
   page_holder->GetDocument().body()->SetInnerHTMLFromString(
       "<input type='text'>");
@@ -145,7 +145,7 @@ TEST(PasswordInputTypeTest, NonPasswordFieldBecomesPassword) {
 TEST(PasswordInputTypeTest,
      InvisiblePasswordFieldBecomesVisibleNonPasswordField) {
   std::unique_ptr<DummyPageHolder> page_holder =
-      DummyPageHolder::Create(IntSize(2000, 2000), nullptr, nullptr, nullptr);
+      DummyPageHolder::Create(IntSize(2000, 2000));
   MockInsecureInputService mock_service(page_holder->GetFrame());
   page_holder->GetDocument().body()->SetInnerHTMLFromString(
       "<input type='password' style='display:none;'>");
@@ -168,7 +168,7 @@ TEST(PasswordInputTypeTest,
 // field becomes invisible.
 TEST(PasswordInputTypeTest, VisiblePasswordFieldBecomesInvisible) {
   std::unique_ptr<DummyPageHolder> page_holder =
-      DummyPageHolder::Create(IntSize(2000, 2000), nullptr, nullptr, nullptr);
+      DummyPageHolder::Create(IntSize(2000, 2000));
   MockInsecureInputService mock_service(page_holder->GetFrame());
   page_holder->GetDocument().body()->SetInnerHTMLFromString(
       "<input type='password'>");
@@ -190,7 +190,7 @@ TEST(PasswordInputTypeTest, VisiblePasswordFieldBecomesInvisible) {
 // become invisible.
 TEST(PasswordInputTypeTest, AllVisiblePasswordFieldBecomeInvisible) {
   std::unique_ptr<DummyPageHolder> page_holder =
-      DummyPageHolder::Create(IntSize(2000, 2000), nullptr, nullptr, nullptr);
+      DummyPageHolder::Create(IntSize(2000, 2000));
   MockInsecureInputService mock_service(page_holder->GetFrame());
   page_holder->GetDocument().body()->SetInnerHTMLFromString(
       "<input type='password'><input type='password'>");
@@ -230,7 +230,7 @@ TEST(PasswordInputTypeTest, AllVisiblePasswordFieldBecomeInvisible) {
 // visible password field becomes invisible.
 TEST(PasswordInputTypeTest, PasswordFieldContainerBecomesInvisible) {
   std::unique_ptr<DummyPageHolder> page_holder =
-      DummyPageHolder::Create(IntSize(2000, 2000), nullptr, nullptr, nullptr);
+      DummyPageHolder::Create(IntSize(2000, 2000));
   MockInsecureInputService mock_service(page_holder->GetFrame());
   page_holder->GetDocument().body()->SetInnerHTMLFromString(
       "<div><input type='password'></div>");
@@ -262,7 +262,7 @@ TEST(PasswordInputTypeTest, PasswordFieldContainerBecomesInvisible) {
 // become non-password fields.
 TEST(PasswordInputTypeTest, PasswordFieldsBecomeNonPasswordFields) {
   std::unique_ptr<DummyPageHolder> page_holder =
-      DummyPageHolder::Create(IntSize(2000, 2000), nullptr, nullptr, nullptr);
+      DummyPageHolder::Create(IntSize(2000, 2000));
   MockInsecureInputService mock_service(page_holder->GetFrame());
   page_holder->GetDocument().body()->SetInnerHTMLFromString(
       "<input type='password'><input type='password'>");
@@ -291,7 +291,7 @@ TEST(PasswordInputTypeTest, PasswordFieldsBecomeNonPasswordFields) {
 // visibility events within the same task.
 TEST(PasswordInputTypeTest, MultipleEventsInSameTask) {
   std::unique_ptr<DummyPageHolder> page_holder =
-      DummyPageHolder::Create(IntSize(2000, 2000), nullptr, nullptr, nullptr);
+      DummyPageHolder::Create(IntSize(2000, 2000));
   MockInsecureInputService mock_service(page_holder->GetFrame());
   page_holder->GetDocument().body()->SetInnerHTMLFromString(
       "<input type='password'>");
@@ -312,7 +312,7 @@ TEST(PasswordInputTypeTest, MultipleEventsInSameTask) {
 // on the page.
 TEST(PasswordInputTypeTest, DidEditFieldEvent) {
   std::unique_ptr<DummyPageHolder> page_holder =
-      DummyPageHolder::Create(IntSize(2000, 2000), nullptr, nullptr, nullptr);
+      DummyPageHolder::Create(IntSize(2000, 2000));
   MockInsecureInputService mock_service(page_holder->GetFrame());
   page_holder->GetDocument().body()->SetInnerHTMLFromString(
       "<input type='password'>");
@@ -333,7 +333,7 @@ TEST(PasswordInputTypeTest, DidEditFieldEvent) {
 // in a secure context.
 TEST(PasswordInputTypeTest, DidEditFieldEventNotSentFromSecureContext) {
   std::unique_ptr<DummyPageHolder> page_holder =
-      DummyPageHolder::Create(IntSize(2000, 2000), nullptr, nullptr, nullptr);
+      DummyPageHolder::Create(IntSize(2000, 2000));
   MockInsecureInputService mock_service(page_holder->GetFrame());
   page_holder->GetDocument().SetURL(KURL("https://example.test"));
   page_holder->GetDocument().SetSecurityOrigin(

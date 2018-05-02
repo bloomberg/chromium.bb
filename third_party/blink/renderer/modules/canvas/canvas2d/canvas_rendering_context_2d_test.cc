@@ -19,7 +19,6 @@
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap_options.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
-#include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_gradient.h"
@@ -205,9 +204,11 @@ void CanvasRenderingContext2DTest::SetUp() {
   SharedGpuContext::SetContextProviderFactoryForTesting(
       WTF::BindRepeating(factory, WTF::Unretained(&gl_)));
 
-  Page::PageClients page_clients;
-  FillWithEmptyClients(page_clients);
-  SetupPageWithClients(&page_clients, nullptr, override_settings_function_);
+  PageTestBase::SetUp();
+  // Simulate that we allow scripts, so that HTMLCanvasElement uses
+  // LayoutHTMLCanvas.
+  GetPage().GetSettings().SetScriptEnabled(true);
+
   SetHtmlInnerHTML(
       "<body><canvas id='c'></canvas><canvas id='d'></canvas></body>");
   canvas_element_ = ToHTMLCanvasElement(GetElementById("c"));
@@ -1103,19 +1104,12 @@ TEST_F(CanvasRenderingContext2DTest, ColorManagedPutImageDataOnP3Canvas) {
       CanvasElement(), CanvasColorSpaceSettings::CANVAS_P3);
 }
 
-void OverrideScriptEnabled(Settings& settings) {
-  // Simulate that we allow scripts, so that HTMLCanvasElement uses
-  // LayoutHTMLCanvas.
-  settings.SetScriptEnabled(true);
-}
-
 class CanvasRenderingContext2DTestWithTestingPlatform
     : public CanvasRenderingContext2DTest {
  protected:
   void SetUp() override {
     platform_ = std::make_unique<ScopedTestingPlatformSupport<
         TestingPlatformSupportWithMockScheduler>>();
-    override_settings_function_ = &OverrideScriptEnabled;
     (*platform_)
         ->AdvanceClockSeconds(1.);  // For non-zero DocumentParserTimings.
     CanvasRenderingContext2DTest::SetUp();
