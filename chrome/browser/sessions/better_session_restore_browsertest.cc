@@ -53,9 +53,6 @@
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
 #include "net/url_request/url_request.h"
-#include "net/url_request/url_request_filter.h"
-#include "net/url_request/url_request_interceptor.h"
-#include "net/url_request/url_request_test_job.h"
 #include "services/network/public/cpp/features.h"
 
 #if defined(OS_MACOSX)
@@ -64,75 +61,13 @@
 
 namespace {
 
+const char kTestHeaders[] = "HTTP/1.1 200 OK\nContent-type: text/html\n\n";
+
 // We need to serve the test files so that PRE_Test and Test can access the same
 // page using the same URL. In addition, perceived security origin of the page
 // needs to stay the same, so e.g., redirecting the URL requests doesn't
 // work. (If we used a test server, the PRE_Test and Test would have separate
 // instances running on separate ports.)
-
-class URLRequestFakerInterceptor : public net::URLRequestInterceptor {
- public:
-  // |response_contents| are returned by URLRequestJob's created by
-  // MaybeInterceptRequests.
-  explicit URLRequestFakerInterceptor(const std::string& response_contents)
-      : response_contents_(response_contents) {}
-  ~URLRequestFakerInterceptor() override {}
-
-  // URLRequestInterceptor implementation:
-  net::URLRequestJob* MaybeInterceptRequest(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override {
-    return new net::URLRequestTestJob(request, network_delegate,
-                                      net::URLRequestTestJob::test_headers(),
-                                      response_contents_, true);
-  }
-
- private:
-  const std::string response_contents_;
-
-  DISALLOW_COPY_AND_ASSIGN(URLRequestFakerInterceptor);
-};
-
-class URLRequestFakerForPostRequestsInterceptor
-    : public net::URLRequestInterceptor {
- public:
-  explicit URLRequestFakerForPostRequestsInterceptor(
-      std::string* last_upload_bytes)
-      : last_upload_bytes_(last_upload_bytes) {}
-  ~URLRequestFakerForPostRequestsInterceptor() override {}
-
-  // URLRequestInterceptor implementation:
-  net::URLRequestJob* MaybeInterceptRequest(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override {
-    // Read the uploaded data and store it to last_upload_bytes.
-    const net::UploadDataStream* upload_data = request->get_upload();
-    last_upload_bytes_->clear();
-    if (upload_data) {
-      const std::vector<std::unique_ptr<net::UploadElementReader>>* readers =
-          upload_data->GetElementReaders();
-      if (readers) {
-        for (size_t i = 0; i < readers->size(); ++i) {
-          const net::UploadBytesElementReader* bytes_reader =
-              (*readers)[i]->AsBytesReader();
-          if (bytes_reader) {
-            *last_upload_bytes_ +=
-                std::string(bytes_reader->bytes(), bytes_reader->length());
-          }
-        }
-      }
-    }
-    return new net::URLRequestTestJob(
-        request, network_delegate, net::URLRequestTestJob::test_headers(),
-        "<html><head><title>PASS</title></head><body>Data posted</body></html>",
-        true);
-  }
-
-  mutable std::string* last_upload_bytes_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(URLRequestFakerForPostRequestsInterceptor);
-};
 
 #if BUILDFLAG(ENABLE_BACKGROUND_MODE)
 class FakeBackgroundModeManager : public BackgroundModeManager {
@@ -185,65 +120,44 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
     // SetUpOnMainThread(), because during a session restore the restored tab
     // comes up before SetUpOnMainThread().  Note that at this point, we do not
     // have a profile.
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      url_loader_interceptor_ = std::make_unique<content::URLLoaderInterceptor>(
-          base::BindLambdaForTesting(
-              [&](content::URLLoaderInterceptor::RequestParams* params) {
-                std::string path = params->url_request.url.path();
-                std::string path_prefix = std::string("/") + test_path_;
-                for (auto& it : test_files_) {
-                  std::string file = path_prefix + it;
-                  if (path == file) {
-                    base::ScopedAllowBlockingForTesting allow_io;
-                    base::FilePath file_path = test_file_dir_.AppendASCII(it);
-                    std::string contents;
-                    CHECK(base::ReadFileToString(file_path, &contents));
+    url_loader_interceptor_ = std::make_unique<content::URLLoaderInterceptor>(
+        base::BindLambdaForTesting(
+            [&](content::URLLoaderInterceptor::RequestParams* params) {
+              std::string path = params->url_request.url.path();
+              std::string path_prefix = std::string("/") + test_path_;
+              for (auto& it : test_files_) {
+                std::string file = path_prefix + it;
+                if (path == file) {
+                  base::ScopedAllowBlockingForTesting allow_io;
+                  base::FilePath file_path = test_file_dir_.AppendASCII(it);
+                  std::string contents;
+                  CHECK(base::ReadFileToString(file_path, &contents));
 
-                    content::URLLoaderInterceptor::WriteResponse(
-                        net::URLRequestTestJob::test_headers(), contents,
-                        params->client.get());
-
-                    return true;
-                  }
-                }
-                if (path == path_prefix + "posted.php") {
-                  last_upload_bytes_.clear();
-                  if (params->url_request.request_body) {
-                    auto* elements =
-                        params->url_request.request_body->elements();
-                    DCHECK_EQ(elements->size(), 1u);
-                    auto& element = (*elements)[0];
-                    DCHECK_EQ(element.type(), network::DataElement::TYPE_BYTES);
-                    last_upload_bytes_ =
-                        std::string(element.bytes(), element.length());
-                  }
                   content::URLLoaderInterceptor::WriteResponse(
-                      net::URLRequestTestJob::test_headers(),
-                      "<html><head><title>PASS</title></head><body>Data posted"
-                      "</body></html>",
-                      params->client.get());
+                      kTestHeaders, contents, params->client.get());
+
                   return true;
                 }
-                return false;
-              }));
-      return;
-    }
-
-    for (std::vector<std::string>::const_iterator it = test_files_.begin();
-         it != test_files_.end(); ++it) {
-      base::FilePath path = test_file_dir_.AppendASCII(*it);
-      std::string contents;
-      CHECK(base::ReadFileToString(path, &contents));
-      net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
-          GURL(fake_server_address_ + test_path_ + *it),
-          std::unique_ptr<net::URLRequestInterceptor>(
-              new URLRequestFakerInterceptor(contents)));
-    }
-    post_interceptor_ =
-        new URLRequestFakerForPostRequestsInterceptor(&last_upload_bytes_);
-    net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
-        GURL(fake_server_address_ + test_path_ + "posted.php"),
-        std::unique_ptr<net::URLRequestInterceptor>(post_interceptor_));
+              }
+              if (path == path_prefix + "posted.php") {
+                last_upload_bytes_.clear();
+                if (params->url_request.request_body) {
+                  auto* elements = params->url_request.request_body->elements();
+                  DCHECK_EQ(elements->size(), 1u);
+                  auto& element = (*elements)[0];
+                  DCHECK_EQ(element.type(), network::DataElement::TYPE_BYTES);
+                  last_upload_bytes_ =
+                      std::string(element.bytes(), element.length());
+                }
+                content::URLLoaderInterceptor::WriteResponse(
+                    kTestHeaders,
+                    "<html><head><title>PASS</title></head><body>Data posted"
+                    "</body></html>",
+                    params->client.get());
+                return true;
+              }
+              return false;
+            }));
   }
 
  protected:
@@ -431,10 +345,6 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
   const base::string16 title_storing_;
   const base::string16 title_error_write_failed_;
   const base::string16 title_error_empty_;
-
-  // Interceptor is owned by URLRequestFilter and lives on IO thread; this is
-  // just a reference.
-  URLRequestFakerForPostRequestsInterceptor* post_interceptor_;
 
   std::unique_ptr<content::URLLoaderInterceptor> url_loader_interceptor_;
 
