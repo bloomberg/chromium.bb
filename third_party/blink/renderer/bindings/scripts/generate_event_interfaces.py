@@ -34,7 +34,7 @@ The event interfaces .json5 file contains a list of all Event interfaces, i.e.,
 all interfaces that inherit from Event, including Event itself,
 together with certain extended attributes.
 
-Paths are in POSIX format, and relative to Source/.
+Paths are in POSIX format, and relative to the repository root.
 
 This list is used in core/ to generate EventFactory and EventNames.
 The .json5 format is documented in build/scripts/json5_generator.py.
@@ -54,7 +54,8 @@ EXPORTED_EXTENDED_ATTRIBUTES = (
     'RuntimeEnabled',
 )
 module_path = os.path.dirname(os.path.realpath(__file__))
-source_dir = os.path.normpath(os.path.join(module_path, os.pardir, os.pardir))
+REPO_ROOT_DIR = os.path.normpath(os.path.join(module_path, os.pardir, os.pardir,
+                                              os.pardir, os.pardir, os.pardir))
 
 
 def parse_options():
@@ -75,7 +76,7 @@ def parse_options():
 
 def write_event_interfaces_file(event_idl_files, destination_filename, suffix):
     def interface_line(full_path):
-        relative_dir_local = os.path.dirname(os.path.relpath(full_path, source_dir))
+        relative_dir_local = os.path.dirname(os.path.relpath(full_path, REPO_ROOT_DIR))
         relative_dir_posix = relative_dir_local.replace(os.sep, posixpath.sep)
 
         idl_file_contents = get_file_contents(full_path)
