@@ -21,6 +21,12 @@
 #include "media/renderers/default_renderer_factory.h"
 #include "media/video/gpu_video_accelerator_factories.h"
 
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#include "media/cdm/cdm_paths.h"  // nogncheck
+#include "media/cdm/cdm_proxy.h"  // nogncheck
+#include "media/cdm/library_cdm/clear_key_cdm/clear_key_cdm_proxy.h"  // nogncheck
+#endif
+
 namespace media {
 
 TestMojoMediaClient::TestMojoMediaClient() = default;
@@ -72,5 +78,16 @@ std::unique_ptr<CdmFactory> TestMojoMediaClient::CreateCdmFactory(
   DVLOG(1) << __func__;
   return std::make_unique<DefaultCdmFactory>();
 }
+
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+std::unique_ptr<CdmProxy> TestMojoMediaClient::CreateCdmProxy(
+    const std::string& cdm_guid) {
+  DVLOG(1) << __func__ << ": cdm_guid = " << cdm_guid;
+  if (cdm_guid == kClearKeyCdmGuid)
+    return std::make_unique<ClearKeyCdmProxy>();
+
+  return nullptr;
+}
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 }  // namespace media

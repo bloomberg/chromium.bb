@@ -32,6 +32,11 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#include "media/cdm/cdm_paths.h"                    // nogncheck
+#include "media/mojo/interfaces/cdm_proxy.mojom.h"  // nogncheck
+#endif
+
 namespace media {
 
 namespace {
@@ -52,6 +57,18 @@ const char kInvalidKeySystem[] = "invalid.key.system";
 #endif
 
 const char kSecurityOrigin[] = "https://foo.com";
+
+class MockCdmProxyClient : public mojom::CdmProxyClient {
+ public:
+  MockCdmProxyClient() = default;
+  ~MockCdmProxyClient() override = default;
+
+  // mojom::CdmProxyClient implementation.
+  MOCK_METHOD0(NotifyHardwareReset, void());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockCdmProxyClient);
+};
 
 class MockRendererClient : public mojom::RendererClient {
  public:
@@ -83,6 +100,7 @@ class MediaServiceTest : public service_manager::test::ServiceTest {
  public:
   MediaServiceTest()
       : ServiceTest("media_service_unittests"),
+        cdm_proxy_client_binding_(&cdm_proxy_client_),
         renderer_client_binding_(&renderer_client_),
         video_stream_(DemuxerStream::VIDEO) {}
   ~MediaServiceTest() override = default;
@@ -117,8 +135,28 @@ class MediaServiceTest : public service_manager::test::ServiceTest {
         .WillOnce(InvokeWithoutArgs(run_loop_.get(), &base::RunLoop::Quit));
     cdm_->Initialize(key_system, url::Origin::Create(GURL(kSecurityOrigin)),
                      CdmConfig(),
-                     base::Bind(&MediaServiceTest::OnCdmInitialized,
-                                base::Unretained(this)));
+                     base::BindOnce(&MediaServiceTest::OnCdmInitialized,
+                                    base::Unretained(this)));
+  }
+
+  MOCK_METHOD4(OnCdmProxyInitialized,
+               void(CdmProxy::Status status,
+                    CdmProxy::Protocol protocol,
+                    uint32_t crypto_session_id,
+                    int cdm_id));
+
+  void InitializeCdmProxy(const std::string& cdm_guid) {
+    interface_factory_->CreateCdmProxy(cdm_guid,
+                                       mojo::MakeRequest(&cdm_proxy_));
+
+    EXPECT_CALL(*this, OnCdmProxyInitialized(CdmProxy::Status::kOk, _, _, _))
+        .WillOnce(InvokeWithoutArgs(run_loop_.get(), &base::RunLoop::Quit));
+    mojom::CdmProxyClientAssociatedPtrInfo client_ptr_info;
+    cdm_proxy_client_binding_.Bind(mojo::MakeRequest(&client_ptr_info));
+    cdm_proxy_->Initialize(
+        std::move(client_ptr_info),
+        base::BindOnce(&MediaServiceTest::OnCdmProxyInitialized,
+                       base::Unretained(this)));
   }
 
   MOCK_METHOD1(OnRendererInitialized, void(bool));
@@ -142,10 +180,11 @@ class MediaServiceTest : public service_manager::test::ServiceTest {
         .WillOnce(InvokeWithoutArgs(run_loop_.get(), &base::RunLoop::Quit));
     std::vector<mojom::DemuxerStreamPtrInfo> streams;
     streams.push_back(std::move(video_stream_proxy_info));
-    renderer_->Initialize(std::move(client_ptr_info), std::move(streams),
-                          base::nullopt, base::nullopt,
-                          base::Bind(&MediaServiceTest::OnRendererInitialized,
-                                     base::Unretained(this)));
+    renderer_->Initialize(
+        std::move(client_ptr_info), std::move(streams), base::nullopt,
+        base::nullopt,
+        base::BindOnce(&MediaServiceTest::OnRendererInitialized,
+                       base::Unretained(this)));
   }
 
   MOCK_METHOD0(ConnectionClosed, void());
@@ -155,7 +194,11 @@ class MediaServiceTest : public service_manager::test::ServiceTest {
 
   mojom::InterfaceFactoryPtr interface_factory_;
   mojom::ContentDecryptionModulePtr cdm_;
+  mojom::CdmProxyPtr cdm_proxy_;
   mojom::RendererPtr renderer_;
+
+  NiceMock<MockCdmProxyClient> cdm_proxy_client_;
+  mojo::AssociatedBinding<mojom::CdmProxyClient> cdm_proxy_client_binding_;
 
   NiceMock<MockRendererClient> renderer_client_;
   mojo::AssociatedBinding<mojom::RendererClient> renderer_client_binding_;
@@ -191,6 +234,13 @@ TEST_F(MediaServiceTest, InitializeRenderer) {
   run_loop_->Run();
 }
 #endif  // BUILDFLAG(ENABLE_MOJO_RENDERER)
+
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+TEST_F(MediaServiceTest, CdmProxy) {
+  InitializeCdmProxy(kClearKeyCdmGuid);
+  run_loop_->Run();
+}
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 TEST_F(MediaServiceTest, Lifetime) {
   // The lifetime of the media service is controlled by the number of
