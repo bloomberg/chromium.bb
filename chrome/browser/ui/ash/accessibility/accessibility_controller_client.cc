@@ -110,8 +110,11 @@ void AccessibilityControllerClient::HandleAccessibilityGesture(
   chromeos::AccessibilityManager::Get()->HandleAccessibilityGesture(gesture);
 }
 
-void AccessibilityControllerClient::ToggleDictation() {
-  chromeos::AccessibilityManager::Get()->ToggleDictation();
+void AccessibilityControllerClient::ToggleDictation(
+    ToggleDictationCallback callback) {
+  bool dictation_active =
+      chromeos::AccessibilityManager::Get()->ToggleDictation();
+  std::move(callback).Run(dictation_active);
 }
 
 void AccessibilityControllerClient::SilenceSpokenFeedback() {

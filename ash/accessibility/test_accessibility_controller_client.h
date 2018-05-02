@@ -32,7 +32,7 @@ class TestAccessibilityControllerClient
   void PlayEarcon(int32_t sound_key) override;
   void PlayShutdownSound(PlayShutdownSoundCallback callback) override;
   void HandleAccessibilityGesture(ax::mojom::Gesture gesture) override;
-  void ToggleDictation() override;
+  void ToggleDictation(ToggleDictationCallback callback) override;
   void SilenceSpokenFeedback() override;
   void OnTwoFingerTouchStart() override;
   void OnTwoFingerTouchStop() override;
@@ -50,6 +50,7 @@ class TestAccessibilityControllerClient
   mojom::AccessibilityAlert last_a11y_alert_ = mojom::AccessibilityAlert::NONE;
 
   int32_t sound_key_ = -1;
+  bool is_dictation_active_ = false;
 
   ax::mojom::Gesture last_a11y_gesture_ = ax::mojom::Gesture::kNone;
 

@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/accessibility/dictation_chromeos.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/speech/speech_recognizer.h"
 #include "chrome/common/pref_names.h"
@@ -32,17 +33,18 @@ DictationChromeos::DictationChromeos(Profile* profile)
 
 DictationChromeos::~DictationChromeos() = default;
 
-void DictationChromeos::OnToggleDictation() {
+bool DictationChromeos::OnToggleDictation() {
   if (speech_recognizer_) {
     media::SoundsManager::Get()->Play(chromeos::SOUND_DICTATION_END);
     speech_recognizer_.reset();
-    return;
+    return false;
   }
 
   speech_recognizer_ = std::make_unique<SpeechRecognizer>(
       weak_ptr_factory_.GetWeakPtr(), profile_->GetRequestContext(),
       GetUserLocale(profile_));
   speech_recognizer_->Start(nullptr /* preamble */);
+  return true;
 }
 
 void DictationChromeos::OnSpeechResult(const base::string16& query,
@@ -55,6 +57,11 @@ void DictationChromeos::OnSpeechResult(const base::string16& query,
   if (input_context)
     input_context->CommitText(base::UTF16ToASCII(query));
 
+  chromeos::AccessibilityStatusEventDetails details(
+      chromeos::AccessibilityNotificationType::ACCESSIBILITY_TOGGLE_DICTATION,
+      /*enabled=*/false);
+  chromeos::AccessibilityManager::Get()->NotifyAccessibilityStatusChanged(
+      details);
   speech_recognizer_.reset();
 }
 

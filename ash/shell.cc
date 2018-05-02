@@ -463,6 +463,16 @@ void Shell::OnRootWindowAdded(aura::Window* root_window) {
     observer.OnRootWindowAdded(root_window);
 }
 
+void Shell::OnDictationStarted() {
+  for (auto& observer : shell_observers_)
+    observer.OnDictationStarted();
+}
+
+void Shell::OnDictationEnded() {
+  for (auto& observer : shell_observers_)
+    observer.OnDictationEnded();
+}
+
 void Shell::CreateKeyboard() {
   if (keyboard::IsKeyboardEnabled()) {
     if (keyboard::KeyboardController::GetInstance()) {

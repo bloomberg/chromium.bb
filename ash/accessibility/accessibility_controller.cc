@@ -439,6 +439,14 @@ bool AccessibilityController::IsVirtualKeyboardEnabled() const {
   return virtual_keyboard_enabled_;
 }
 
+bool AccessibilityController::IsDictationActive() const {
+  return dictation_active_;
+}
+
+void AccessibilityController::SetDictationActive(bool is_active) {
+  dictation_active_ = is_active;
+}
+
 void AccessibilityController::TriggerAccessibilityAlert(
     mojom::AccessibilityAlert alert) {
   if (client_)
@@ -463,8 +471,17 @@ void AccessibilityController::HandleAccessibilityGesture(
 }
 
 void AccessibilityController::ToggleDictation() {
-  if (client_)
-    client_->ToggleDictation();
+  if (client_) {
+    client_->ToggleDictation(base::BindOnce(
+        [](AccessibilityController* self, bool is_active) {
+          self->SetDictationActive(is_active);
+          if (is_active)
+            Shell::Get()->OnDictationStarted();
+          else
+            Shell::Get()->OnDictationEnded();
+        },
+        base::Unretained(this)));
+  }
 }
 
 void AccessibilityController::SilenceSpokenFeedback() {

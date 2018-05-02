@@ -22,7 +22,7 @@ class DictationChromeos : public SpeechRecognizerDelegate {
   ~DictationChromeos() override;
 
   // User-initiated dictation.
-  void OnToggleDictation();
+  bool OnToggleDictation();
 
  private:
   // SpeechRecognizerDelegate:

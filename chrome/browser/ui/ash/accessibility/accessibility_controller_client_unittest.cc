@@ -70,7 +70,11 @@ class FakeAccessibilityControllerClient : public AccessibilityControllerClient {
     last_a11y_gesture_ = gesture;
   }
 
-  void ToggleDictation() override { ++toggle_dictation_count_; }
+  void ToggleDictation(ToggleDictationCallback callback) override {
+    ++toggle_dictation_count_;
+    dictation_on_ = !dictation_on_;
+    std::move(callback).Run(dictation_on_);
+  }
 
   void SilenceSpokenFeedback() override { ++silence_spoken_feedback_count_; }
 
@@ -104,6 +108,7 @@ class FakeAccessibilityControllerClient : public AccessibilityControllerClient {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeAccessibilityControllerClient);
+  bool dictation_on_ = false;
 };
 
 }  // namespace
@@ -154,7 +159,7 @@ TEST_F(AccessibilityControllerClientTest, MethodCalls) {
 
   // Tests ToggleDictation method call.
   EXPECT_EQ(0, client.toggle_dictation_count_);
-  client.ToggleDictation();
+  client.ToggleDictation(base::BindOnce([](bool b) {}));
   EXPECT_EQ(1, client.toggle_dictation_count_);
 
   EXPECT_EQ(0, client.silence_spoken_feedback_count_);

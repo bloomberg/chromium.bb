@@ -308,6 +308,12 @@ class ASH_EXPORT Shell : public SessionObserver,
   // Called when a root window is created.
   void OnRootWindowAdded(aura::Window* root_window);
 
+  // Called when dictation is activated.
+  void OnDictationStarted();
+
+  // Called when dictation is ended.
+  void OnDictationEnded();
+
   // Creates a keyboard controller and associate it with the primary root window
   // controller. Destroys the old keyboard controller if it already exists.
   void CreateKeyboard();
