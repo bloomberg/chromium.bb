@@ -27,8 +27,9 @@ namespace internal {
 template <typename Enum, typename SFINAE = void>
 struct EnumSizeTraits {
   static constexpr Enum Count() {
-    static_assert(sizeof(Enum) == 0,
-                  "enumerator must define kLast enumerator to use this macro!");
+    static_assert(
+        sizeof(Enum) == 0,
+        "enumerator must define kMaxValue enumerator to use this macro!");
     return Enum();
   }
 };
