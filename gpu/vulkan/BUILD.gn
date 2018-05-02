@@ -81,7 +81,6 @@ if (enable_vulkan) {
       "tests/vulkan_tests_main.cc",
     ]
 
-    include_dirs = [ "/usr/include" ]
     if (current_cpu == "x64") {
       lib_dirs = [
         "/usr/lib/x86_64-linux-gnu",
