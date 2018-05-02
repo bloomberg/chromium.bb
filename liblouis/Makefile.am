@@ -13,6 +13,7 @@ lib_LTLIBRARIES = liblouis.la
 
 AM_CPPFLAGS = 						\
 	-Wall -Wextra					\
+	-Wno-implicit-fallthrough			\
 	-DTABLESDIR=\""$(datadir)"/liblouis/tables\"	\
 	-I$(top_srcdir)/gnulib				\
 	-I$(top_builddir)/gnulib
