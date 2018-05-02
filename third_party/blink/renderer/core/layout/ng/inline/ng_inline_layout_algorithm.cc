@@ -84,7 +84,6 @@ NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
       is_horizontal_writing_mode_(
           blink::IsHorizontalWritingMode(space.GetWritingMode())) {
   quirks_mode_ = inline_node.InLineHeightQuirksMode();
-  unpositioned_floats_ = ConstraintSpace().UnpositionedFloats();
 
   if (!is_horizontal_writing_mode_)
     baseline_type_ = FontBaseline::kIdeographicBaseline;
@@ -552,10 +551,20 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
 
   bool is_empty_inline = Node().IsEmptyInline();
 
-  if (!is_empty_inline) {
-    DCHECK(ConstraintSpace().UnpositionedFloats().IsEmpty());
+  if (is_empty_inline) {
+    // We're just going to collapse through this one, so whatever went in on one
+    // side will go out on the other side. The position of the adjoining floats
+    // will be affected by any subsequent block, until the BFC offset is
+    // resolved.
+    container_builder_.AddAdjoiningFloatTypes(
+        ConstraintSpace().AdjoiningFloatTypes());
+  } else {
     DCHECK(ConstraintSpace().MarginStrut().IsEmpty());
     container_builder_.SetBfcOffset(ConstraintSpace().BfcOffset());
+
+    // The BFC offset was determined before entering this algorithm. This means
+    // that there should be no adjoining floats.
+    DCHECK(!ConstraintSpace().AdjoiningFloatTypes());
   }
 
   // In order to get the correct list of layout opportunities, we need to
@@ -569,7 +578,6 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
     DCHECK_EQ(handled_item_index, Node().Items().size());
 
     container_builder_.SwapPositionedFloats(&positioned_floats_);
-    container_builder_.SwapUnpositionedFloats(&unpositioned_floats_);
     container_builder_.SetEndMarginStrut(ConstraintSpace().MarginStrut());
     container_builder_.SetExclusionSpace(std::move(initial_exclusion_space));
 
@@ -606,10 +614,10 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
         std::make_unique<NGExclusionSpace>(*initial_exclusion_space);
 
     NGLineInfo line_info;
-    NGLineBreaker line_breaker(Node(), NGLineBreakerMode::kContent,
-                               constraint_space_, &positioned_floats,
-                               &unpositioned_floats_, exclusion_space.get(),
-                               handled_item_index, break_token);
+    NGLineBreaker line_breaker(
+        Node(), NGLineBreakerMode::kContent, constraint_space_,
+        &positioned_floats, &unpositioned_floats_, &container_builder_,
+        exclusion_space.get(), handled_item_index, break_token);
 
     // TODO(ikilpatrick): Does this always succeed when we aren't an empty
     // inline?
@@ -689,10 +697,12 @@ unsigned NGInlineLayoutAlgorithm::PositionLeadingItems(
       NGBoxStrut margins =
           ComputeMarginsForContainer(ConstraintSpace(), node.Style());
 
-      unpositioned_floats_.push_back(NGUnpositionedFloat::Create(
+      auto unpositioned_float = NGUnpositionedFloat::Create(
           ConstraintSpace().AvailableSize(),
           ConstraintSpace().PercentageResolutionSize(), bfc_line_offset,
-          bfc_line_offset, margins, node, /* break_token */ nullptr));
+          bfc_line_offset, margins, node, /* break_token */ nullptr);
+      AddUnpositionedFloat(&unpositioned_floats_, &container_builder_,
+                           std::move(unpositioned_float));
     } else if (is_empty_inline &&
                item.Type() == NGInlineItem::kOutOfFlowPositioned) {
       NGBlockNode node(ToLayoutBox(item.GetLayoutObject()));

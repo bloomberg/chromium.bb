@@ -7,10 +7,12 @@
 #include "third_party/blink/renderer/core/layout/min_max_size.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_container_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_positioned_float.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_space_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
@@ -264,6 +266,33 @@ const Vector<NGPositionedFloat> PositionFloats(
   }
 
   return positioned_floats;
+}
+
+void AddUnpositionedFloat(
+    Vector<scoped_refptr<NGUnpositionedFloat>>* unpositioned_floats,
+    NGContainerFragmentBuilder* fragment_builder,
+    scoped_refptr<NGUnpositionedFloat> unpositioned_float) {
+  if (fragment_builder && !fragment_builder->BfcOffset()) {
+    fragment_builder->AddAdjoiningFloatTypes(
+        unpositioned_float->IsLeft() ? kFloatTypeLeft : kFloatTypeRight);
+  }
+  unpositioned_floats->push_back(std::move(unpositioned_float));
+}
+
+NGFloatTypes ToFloatTypes(EClear clear) {
+  switch (clear) {
+    default:
+      NOTREACHED();
+      FALLTHROUGH;
+    case EClear::kNone:
+      return kFloatTypeNone;
+    case EClear::kLeft:
+      return kFloatTypeLeft;
+    case EClear::kRight:
+      return kFloatTypeRight;
+    case EClear::kBoth:
+      return kFloatTypeBoth;
+  };
 }
 
 }  // namespace blink

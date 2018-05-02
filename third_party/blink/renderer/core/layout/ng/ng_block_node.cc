@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_fragmentation_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_input_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_page_layout_algorithm.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -191,8 +192,7 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
       block_flow->ClearPaintFragment();
   }
 
-  if (layout_result->Status() == NGLayoutResult::kSuccess &&
-      layout_result->UnpositionedFloats().IsEmpty()) {
+  if (IsBlockLayoutComplete(constraint_space, *layout_result)) {
     DCHECK(layout_result->PhysicalFragment());
 
     if (block_flow && first_child && first_child.IsInline()) {

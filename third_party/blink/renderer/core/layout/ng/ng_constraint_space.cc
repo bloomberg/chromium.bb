@@ -47,11 +47,11 @@ NGConstraintSpace::NGConstraintSpace(
     bool is_new_fc,
     bool is_anonymous,
     bool use_first_line_style,
+    NGFloatTypes adjoining_floats,
     const NGMarginStrut& margin_strut,
     const NGBfcOffset& bfc_offset,
     const base::Optional<NGBfcOffset>& floats_bfc_offset,
     const NGExclusionSpace& exclusion_space,
-    Vector<scoped_refptr<NGUnpositionedFloat>>& unpositioned_floats,
     LayoutUnit clearance_offset,
     Vector<NGBaselineRequest>& baseline_requests)
     : available_size_(available_size),
@@ -74,6 +74,7 @@ NGConstraintSpace::NGConstraintSpace(
       is_new_fc_(is_new_fc),
       is_anonymous_(is_anonymous),
       use_first_line_style_(use_first_line_style),
+      adjoining_floats_(adjoining_floats),
       writing_mode_(static_cast<unsigned>(writing_mode)),
       is_orthogonal_writing_mode_root_(is_orthogonal_writing_mode_root),
       direction_(static_cast<unsigned>(direction)),
@@ -82,7 +83,6 @@ NGConstraintSpace::NGConstraintSpace(
       floats_bfc_offset_(floats_bfc_offset),
       exclusion_space_(std::make_unique<NGExclusionSpace>(exclusion_space)),
       clearance_offset_(clearance_offset) {
-  unpositioned_floats_.swap(unpositioned_floats);
   baseline_requests_.swap(baseline_requests);
 }
 
@@ -213,12 +213,6 @@ NGFragmentationType NGConstraintSpace::BlockFragmentationType() const {
 }
 
 bool NGConstraintSpace::operator==(const NGConstraintSpace& other) const {
-  // TODO(cbiesinger): For simplicity and performance, for now, we only
-  // consider two constraint spaces equal if neither one has unpositioned
-  // floats. We should consider changing this in the future.
-  if (unpositioned_floats_.size() || other.unpositioned_floats_.size())
-    return false;
-
   if (exclusion_space_ && other.exclusion_space_ &&
       *exclusion_space_ != *other.exclusion_space_)
     return false;
@@ -245,6 +239,7 @@ bool NGConstraintSpace::operator==(const NGConstraintSpace& other) const {
          separate_leading_fragmentainer_margins_ ==
              other.separate_leading_fragmentainer_margins_ &&
          is_anonymous_ == other.is_anonymous_ &&
+         adjoining_floats_ == other.adjoining_floats_ &&
          writing_mode_ == other.writing_mode_ &&
          direction_ == other.direction_ &&
          margin_strut_ == other.margin_strut_ &&

@@ -174,20 +174,30 @@ class CORE_EXPORT NGConstraintSpace final
 
   // If present, and the current layout hasn't resolved its BFC offset yet (see
   // BfcOffset), the layout should position all of its unpositioned floats at
-  // this offset.
+  // this offset. This value is the BFC offset that we calculated in the
+  // previous pass, a pass which aborted once the BFC offset got resolved,
+  // because we had walked past content (i.e. floats) that depended on it being
+  // resolved.
   //
   // This value should be propogated to child layouts if the current layout
   // hasn't resolved its BFC offset yet.
   //
-  // This value is calculated *after* an initial pass of the tree, this value
-  // should only be present during the second pass.
+  // This value is calculated *after* an initial pass of the tree, and should
+  // only be present during subsequent passes.
   base::Optional<NGBfcOffset> FloatsBfcOffset() const {
     return floats_bfc_offset_;
   }
 
-  const Vector<scoped_refptr<NGUnpositionedFloat>>& UnpositionedFloats() const {
-    return unpositioned_floats_;
-  }
+  // Return the types (none, left, right, both) of preceding adjoining
+  // floats. These are floats that are added while the in-flow BFC offset is
+  // still unknown. The floats may or may not be unpositioned (pending). That
+  // depends on which layout pass we're in. They are typically positioned if
+  // FloatsBfcOffset() is known. Adjoining floats should be treated differently
+  // when calculating clearance on a block with adjoining block-start margin.
+  // (in such cases we will know up front that the block will need clearance,
+  // since, if it doesn't, the float will be pulled along with the block, and
+  // the block will fail to clear).
+  NGFloatTypes AdjoiningFloatTypes() const { return adjoining_floats_; }
 
   bool HasClearanceOffset() const {
     return clearance_offset_ != LayoutUnit::Min();
@@ -206,33 +216,32 @@ class CORE_EXPORT NGConstraintSpace final
  private:
   friend class NGConstraintSpaceBuilder;
   // Default constructor.
-  NGConstraintSpace(
-      WritingMode,
-      bool is_orthogonal_writing_mode_root,
-      TextDirection,
-      NGLogicalSize available_size,
-      NGLogicalSize percentage_resolution_size,
-      LayoutUnit parent_percentage_resolution_inline_size,
-      NGPhysicalSize initial_containing_block_size,
-      LayoutUnit fragmentainer_block_size,
-      LayoutUnit fragmentainer_space_at_bfc_start,
-      bool is_fixed_size_inline,
-      bool is_fixed_size_block,
-      bool is_shrink_to_fit,
-      bool is_inline_direction_triggers_scrollbar,
-      bool is_block_direction_triggers_scrollbar,
-      NGFragmentationType block_direction_fragmentation_type,
-      bool separate_leading_fragmentainer_margins_,
-      bool is_new_fc,
-      bool is_anonymous,
-      bool use_first_line_style,
-      const NGMarginStrut& margin_strut,
-      const NGBfcOffset& bfc_offset,
-      const base::Optional<NGBfcOffset>& floats_bfc_offset,
-      const NGExclusionSpace& exclusion_space,
-      Vector<scoped_refptr<NGUnpositionedFloat>>& unpositioned_floats,
-      LayoutUnit clearance_offset,
-      Vector<NGBaselineRequest>& baseline_requests);
+  NGConstraintSpace(WritingMode,
+                    bool is_orthogonal_writing_mode_root,
+                    TextDirection,
+                    NGLogicalSize available_size,
+                    NGLogicalSize percentage_resolution_size,
+                    LayoutUnit parent_percentage_resolution_inline_size,
+                    NGPhysicalSize initial_containing_block_size,
+                    LayoutUnit fragmentainer_block_size,
+                    LayoutUnit fragmentainer_space_at_bfc_start,
+                    bool is_fixed_size_inline,
+                    bool is_fixed_size_block,
+                    bool is_shrink_to_fit,
+                    bool is_inline_direction_triggers_scrollbar,
+                    bool is_block_direction_triggers_scrollbar,
+                    NGFragmentationType block_direction_fragmentation_type,
+                    bool separate_leading_fragmentainer_margins_,
+                    bool is_new_fc,
+                    bool is_anonymous,
+                    bool use_first_line_style,
+                    NGFloatTypes adjoining_floats,
+                    const NGMarginStrut& margin_strut,
+                    const NGBfcOffset& bfc_offset,
+                    const base::Optional<NGBfcOffset>& floats_bfc_offset,
+                    const NGExclusionSpace& exclusion_space,
+                    LayoutUnit clearance_offset,
+                    Vector<NGBaselineRequest>& baseline_requests);
 
   NGLogicalSize available_size_;
   NGLogicalSize percentage_resolution_size_;
@@ -259,6 +268,7 @@ class CORE_EXPORT NGConstraintSpace final
 
   unsigned is_anonymous_ : 1;
   unsigned use_first_line_style_ : 1;
+  unsigned adjoining_floats_ : 2;  //  NGFloatTypes
 
   unsigned writing_mode_ : 3;
   unsigned is_orthogonal_writing_mode_root_ : 1;
@@ -270,7 +280,6 @@ class CORE_EXPORT NGConstraintSpace final
 
   const std::unique_ptr<const NGExclusionSpace> exclusion_space_;
   LayoutUnit clearance_offset_;
-  Vector<scoped_refptr<NGUnpositionedFloat>> unpositioned_floats_;
 
   Vector<NGBaselineRequest> baseline_requests_;
 };

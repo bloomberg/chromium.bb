@@ -41,6 +41,7 @@ NGLineBreaker::NGLineBreaker(
     const NGConstraintSpace& space,
     Vector<NGPositionedFloat>* positioned_floats,
     Vector<scoped_refptr<NGUnpositionedFloat>>* unpositioned_floats,
+    NGContainerFragmentBuilder* container_builder,
     NGExclusionSpace* exclusion_space,
     unsigned handled_float_index,
     const NGInlineBreakToken* break_token)
@@ -49,6 +50,7 @@ NGLineBreaker::NGLineBreaker(
       constraint_space_(space),
       positioned_floats_(positioned_floats),
       unpositioned_floats_(unpositioned_floats),
+      container_builder_(container_builder),
       exclusion_space_(exclusion_space),
       break_iterator_(node.Text()),
       shaper_(node.Text().Characters16(), node.Text().length()),
@@ -652,7 +654,8 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item,
   // Check if we already have a pending float. That's because a float cannot be
   // higher than any block or floated box generated before.
   if (!unpositioned_floats_->IsEmpty() || float_after_line) {
-    unpositioned_floats_->push_back(std::move(unpositioned_float));
+    AddUnpositionedFloat(unpositioned_floats_, container_builder_,
+                         std::move(unpositioned_float));
   } else {
     LayoutUnit origin_block_offset = bfc_block_offset_;
 

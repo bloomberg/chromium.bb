@@ -31,6 +31,7 @@ NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(WritingMode writing_mode,
       is_new_fc_(false),
       is_anonymous_(false),
       use_first_line_style_(false),
+      adjoining_floats_(kFloatTypeNone),
       text_direction_(static_cast<unsigned>(TextDirection::kLtr)),
       exclusion_space_(nullptr) {}
 
@@ -140,12 +141,6 @@ NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetUseFirstLineStyle(
   return *this;
 }
 
-NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetUnpositionedFloats(
-    Vector<scoped_refptr<NGUnpositionedFloat>>& unpositioned_floats) {
-  unpositioned_floats_ = unpositioned_floats;
-  return *this;
-}
-
 void NGConstraintSpaceBuilder::AddBaselineRequests(
     const Vector<NGBaselineRequest>& requests) {
   DCHECK(baseline_requests_.IsEmpty());
@@ -202,9 +197,7 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
 
   DEFINE_STATIC_LOCAL(NGExclusionSpace, empty_exclusion_space, ());
 
-  // Reset things that do not pass the Formatting Context boundary.
-  if (is_new_fc_)
-    DCHECK(unpositioned_floats_.IsEmpty());
+  DCHECK(!is_new_fc_ || !adjoining_floats_);
 
   const NGExclusionSpace& exclusion_space = (is_new_fc_ || !exclusion_space_)
                                                 ? empty_exclusion_space
@@ -234,8 +227,8 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
         is_block_direction_triggers_scrollbar_,
         static_cast<NGFragmentationType>(fragmentation_type_),
         separate_leading_fragmentainer_margins_, is_new_fc_, is_anonymous_,
-        use_first_line_style_, margin_strut, bfc_offset, floats_bfc_offset,
-        exclusion_space, unpositioned_floats_, clearance_offset,
+        use_first_line_style_, adjoining_floats_, margin_strut, bfc_offset,
+        floats_bfc_offset, exclusion_space, clearance_offset,
         baseline_requests_));
   }
   return base::AdoptRef(new NGConstraintSpace(
@@ -249,8 +242,8 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
       is_inline_direction_triggers_scrollbar_,
       static_cast<NGFragmentationType>(fragmentation_type_),
       separate_leading_fragmentainer_margins_, is_new_fc_, is_anonymous_,
-      use_first_line_style_, margin_strut, bfc_offset, floats_bfc_offset,
-      exclusion_space, unpositioned_floats_, clearance_offset,
+      use_first_line_style_, adjoining_floats_, margin_strut, bfc_offset,
+      floats_bfc_offset, exclusion_space, clearance_offset,
       baseline_requests_));
 }
 

@@ -45,12 +45,6 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::SetExclusionSpace(
   return *this;
 }
 
-NGContainerFragmentBuilder& NGContainerFragmentBuilder::SwapUnpositionedFloats(
-    Vector<scoped_refptr<NGUnpositionedFloat>>* unpositioned_floats) {
-  unpositioned_floats_.swap(*unpositioned_floats);
-  return *this;
-}
-
 NGContainerFragmentBuilder&
 NGContainerFragmentBuilder::SetUnpositionedListMarker(
     const NGUnpositionedListMarker& marker) {
