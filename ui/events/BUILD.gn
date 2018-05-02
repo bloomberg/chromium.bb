@@ -204,6 +204,7 @@ component("events") {
     sources += [
       "ozone/events_ozone.cc",
       "ozone/events_ozone.h",
+      "ozone/keyboard_hook_ozone.cc",
     ]
     deps += [ "//ui/events/ozone:events_ozone_layout" ]
   }
@@ -237,6 +238,7 @@ component("events") {
       "android/key_event_android.h",
       "android/key_event_utils.cc",
       "android/key_event_utils.h",
+      "android/keyboard_hook_android.cc",
       "android/motion_event_android.cc",
       "android/motion_event_android.h",
     ]

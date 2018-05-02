@@ -15,6 +15,10 @@
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_delegate.h"
 
+namespace ui {
+class KeyboardHook;
+}  // namespace ui
+
 namespace aura {
 
 class WindowPort;
@@ -71,6 +75,8 @@ class AURA_EXPORT WindowTreeHostPlatform : public WindowTreeHost,
                                     float device_pixel_ratio) override;
   void OnAcceleratedWidgetDestroyed() override;
   void OnActivationChanged(bool active) override;
+
+  // Overridden from aura::WindowTreeHost:
   bool CaptureSystemKeyEventsImpl(
       base::Optional<base::flat_set<int>> native_key_codes) override;
   void ReleaseSystemKeyEventCapture() override;
@@ -81,6 +87,8 @@ class AURA_EXPORT WindowTreeHostPlatform : public WindowTreeHost,
   std::unique_ptr<ui::PlatformWindow> platform_window_;
   gfx::NativeCursor current_cursor_;
   gfx::Rect bounds_;
+
+  std::unique_ptr<ui::KeyboardHook> keyboard_hook_;
 
   // |pending_local_surface_id_| and |pending_size_| are set when the
   // PlatformWindow instance is requested to adopt a new size (in

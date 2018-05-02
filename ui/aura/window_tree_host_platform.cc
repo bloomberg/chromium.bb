@@ -15,6 +15,7 @@
 #include "ui/base/layout.h"
 #include "ui/compositor/compositor.h"
 #include "ui/events/event.h"
+#include "ui/events/keyboard_hook.h"
 
 #if defined(OS_ANDROID)
 #include "ui/platform_window/android/platform_window_android.h"
@@ -124,17 +125,27 @@ void WindowTreeHostPlatform::ReleaseCapture() {
 
 bool WindowTreeHostPlatform::CaptureSystemKeyEventsImpl(
     base::Optional<base::flat_set<int>> native_key_codes) {
-  // TODO(680809): Implement as part of the KeyboardLock feature work.
-  NOTIMPLEMENTED();
-  return false;
+  // Only one KeyboardHook should be active at a time, otherwise there will be
+  // problems with event routing (i.e. which Hook takes precedence) and
+  // destruction ordering.
+  DCHECK(!keyboard_hook_);
+  keyboard_hook_ = ui::KeyboardHook::Create(
+      std::move(native_key_codes),
+      base::BindRepeating(
+          [](ui::PlatformWindowDelegate* delegate, ui::KeyEvent* event) {
+            delegate->DispatchEvent(event);
+          },
+          base::Unretained(this)));
+
+  return keyboard_hook_ != nullptr;
 }
 
-void WindowTreeHostPlatform::ReleaseSystemKeyEventCapture() {}
+void WindowTreeHostPlatform::ReleaseSystemKeyEventCapture() {
+  keyboard_hook_.reset();
+}
 
 bool WindowTreeHostPlatform::IsKeyLocked(int native_key_code) {
-  // TODO(680809): Implement as part of the KeyboardLock feature work.
-  NOTIMPLEMENTED();
-  return false;
+  return keyboard_hook_ && keyboard_hook_->IsKeyLocked(native_key_code);
 }
 
 void WindowTreeHostPlatform::SetCursorNative(gfx::NativeCursor cursor) {
