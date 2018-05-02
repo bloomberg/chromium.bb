@@ -1,0 +1,19 @@
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
+
+static_library("test_support") {
+  testonly = true
+
+  sources = [
+    "fake_connection_delegate.cc",
+    "fake_connection_delegate.h",
+  ]
+
+  deps = [
+    "//base",
+    "//chromeos/services/secure_channel/public/mojom",
+  ]
+}
