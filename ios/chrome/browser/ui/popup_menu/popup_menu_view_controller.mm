@@ -16,6 +16,7 @@ namespace {
 const CGFloat kImageMargin = 196;
 const CGFloat kCornerRadius = 13;
 const CGFloat kBackgroundGreyScale = 0.98;
+const CGFloat kBackgroundAlpha = 0.65;
 }  // namespace
 
 @interface PopupMenuViewController ()<UIGestureRecognizerDelegate>
@@ -57,8 +58,22 @@ const CGFloat kBackgroundGreyScale = 0.98;
 - (void)setUpContentContainer {
   _contentContainer = [[UIView alloc] init];
 
-  _contentContainer.backgroundColor =
-      [UIColor colorWithWhite:kBackgroundGreyScale alpha:1];
+  if (UIAccessibilityIsReduceTransparencyEnabled()) {
+    _contentContainer.backgroundColor =
+        [UIColor colorWithWhite:kBackgroundGreyScale alpha:1];
+  } else {
+    UIBlurEffect* blurEffect =
+        [UIBlurEffect effectWithStyle:UIBlurEffectStyleExtraLight];
+    UIVisualEffectView* blur =
+        [[UIVisualEffectView alloc] initWithEffect:blurEffect];
+    blur.translatesAutoresizingMaskIntoConstraints = NO;
+    blur.layer.cornerRadius = kCornerRadius;
+    blur.clipsToBounds = YES;
+    blur.backgroundColor =
+        [UIColor colorWithWhite:kBackgroundGreyScale alpha:kBackgroundAlpha];
+    [_contentContainer addSubview:blur];
+    AddSameConstraints(_contentContainer, blur);
+  }
 
   UIImageView* shadow =
       [[UIImageView alloc] initWithImage:StretchableImageNamed(@"menu_shadow")];

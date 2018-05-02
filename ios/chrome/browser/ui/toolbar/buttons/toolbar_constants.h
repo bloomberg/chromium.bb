@@ -40,7 +40,7 @@ extern const CGFloat kIncognitoLocationBarBorderColor;
 extern const CGFloat kLocationBarCornerRadius;
 extern const CGFloat kLocationBarShadowHeight;
 extern const CGFloat kLocationBarShadowInset;
-extern const CGFloat kIcongnitoLocationBackgroundColor;
+extern const CGFloat kIncognitoLocationBackgroundColor;
 
 // Progress Bar Height.
 extern const CGFloat kProgressBarHeight;
@@ -86,7 +86,6 @@ extern const CGFloat kContractedLocationBarHorizontalMargin;
 
 // Adaptive Location bar constants.
 extern const CGFloat kAdaptiveLocationBarCornerRadius;
-extern const CGFloat kIcongnitoAdaptiveLocationBackgroundColor;
 extern const CGFloat kAdaptiveLocationBarBackgroundAlpha;
 extern const CGFloat kAdaptiveLocationBarVerticalMargin;
 
