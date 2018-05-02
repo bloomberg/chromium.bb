@@ -26,7 +26,7 @@ namespace media {
 namespace test {
 
 namespace {
-const int kMD5StringLength = 32;
+const size_t kMD5StringLength = 32;
 }  // namespace
 
 VideoDecodeAcceleratorTestEnvironment::VideoDecodeAcceleratorTestEnvironment(
@@ -236,14 +236,16 @@ bool EncodedDataHelper::HasConfigInfo(const uint8_t* data,
 }
 
 // Read in golden MD5s for the thumbnailed rendering of this video
-void ReadGoldenThumbnailMD5s(const base::FilePath& md5_file_path,
-                             std::vector<std::string>* md5_strings) {
+std::vector<std::string> ReadGoldenThumbnailMD5s(
+    const base::FilePath& md5_file_path) {
+  std::vector<std::string> golden_md5s;
+  std::vector<std::string> md5_strings;
   std::string all_md5s;
   base::ReadFileToString(md5_file_path, &all_md5s);
-  *md5_strings = base::SplitString(all_md5s, "\n", base::TRIM_WHITESPACE,
-                                   base::SPLIT_WANT_ALL);
+  md5_strings = base::SplitString(all_md5s, "\n", base::TRIM_WHITESPACE,
+                                  base::SPLIT_WANT_ALL);
   // Check these are legitimate MD5s.
-  for (const std::string& md5_string : *md5_strings) {
+  for (const std::string& md5_string : md5_strings) {
     // Ignore the empty string added by SplitString
     if (!md5_string.length())
       continue;
@@ -251,16 +253,33 @@ void ReadGoldenThumbnailMD5s(const base::FilePath& md5_file_path,
     if (md5_string.at(0) == '#')
       continue;
 
-    LOG_IF(ERROR, static_cast<int>(md5_string.length()) != kMD5StringLength)
-        << "MD5 length error: " << md5_string;
+    bool valid_length = md5_string.length() == kMD5StringLength;
+    LOG_IF(ERROR, !valid_length) << "MD5 length error: " << md5_string;
     bool hex_only = std::count_if(md5_string.begin(), md5_string.end(),
                                   isxdigit) == kMD5StringLength;
     LOG_IF(ERROR, !hex_only) << "MD5 includes non-hex char: " << md5_string;
+    if (valid_length && hex_only)
+      golden_md5s.push_back(md5_string);
   }
-  LOG_IF(ERROR, md5_strings->empty())
+  LOG_IF(ERROR, md5_strings.empty())
       << "  MD5 checksum file (" << md5_file_path.MaybeAsASCII()
       << ") missing or empty.";
+  return golden_md5s;
 }
 
+bool ConvertRGBAToRGB(const std::vector<unsigned char>& rgba,
+                      std::vector<unsigned char>* rgb) {
+  size_t num_pixels = rgba.size() / 4;
+  rgb->resize(num_pixels * 3);
+  // Drop the alpha channel, but check as we go that it is all 0xff.
+  bool solid = true;
+  for (size_t i = 0; i < num_pixels; i++) {
+    (*rgb)[3 * i] = rgba[4 * i];
+    (*rgb)[3 * i + 1] = rgba[4 * i + 1];
+    (*rgb)[3 * i + 2] = rgba[4 * i + 2];
+    solid = solid && (rgba[4 * i + 3] == 0xff);
+  }
+  return solid;
+}
 }  // namespace test
 }  // namespace media
