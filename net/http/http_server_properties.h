@@ -23,8 +23,8 @@
 #include "net/quic/core/quic_server_id.h"
 #include "net/quic/core/quic_versions.h"
 #include "net/socket/next_proto.h"
-#include "net/spdy/core/spdy_framer.h"  // TODO(willchan): Reconsider this.
-#include "net/spdy/core/spdy_protocol.h"
+#include "net/third_party/spdy/core/spdy_framer.h"  // TODO(willchan): Reconsider this.
+#include "net/third_party/spdy/core/spdy_protocol.h"
 #include "url/scheme_host_port.h"
 
 namespace base {

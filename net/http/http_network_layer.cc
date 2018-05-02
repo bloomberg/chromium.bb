@@ -15,7 +15,7 @@
 #include "net/http/http_stream_factory_job.h"
 #include "net/spdy/chromium/spdy_session.h"
 #include "net/spdy/chromium/spdy_session_pool.h"
-#include "net/spdy/core/spdy_framer.h"
+#include "net/third_party/spdy/core/spdy_framer.h"
 
 namespace net {
 

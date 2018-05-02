@@ -12,7 +12,7 @@
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/platform/api/quic_export.h"
 #include "net/quic/platform/api/quic_map_util.h"
-#include "net/spdy/core/priority_write_scheduler.h"
+#include "net/third_party/spdy/core/priority_write_scheduler.h"
 
 namespace net {
 

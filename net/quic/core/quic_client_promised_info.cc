@@ -10,8 +10,7 @@
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_string.h"
-#include "net/spdy/core/spdy_protocol.h"
-
+#include "net/third_party/spdy/core/spdy_protocol.h"
 
 namespace net {
 

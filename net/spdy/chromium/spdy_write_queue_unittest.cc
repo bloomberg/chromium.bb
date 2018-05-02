@@ -15,7 +15,7 @@
 #include "net/log/net_log_with_source.h"
 #include "net/spdy/chromium/spdy_buffer_producer.h"
 #include "net/spdy/chromium/spdy_stream.h"
-#include "net/spdy/platform/api/spdy_string.h"
+#include "net/third_party/spdy/platform/api/spdy_string.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"

@@ -7,8 +7,7 @@
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_string.h"
-#include "net/spdy/core/spdy_protocol.h"
-
+#include "net/third_party/spdy/core/spdy_protocol.h"
 
 namespace net {
 

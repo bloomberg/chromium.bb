@@ -34,8 +34,8 @@
 #include "net/quic/test_tools/quic_stream_peer.h"
 #include "net/quic/test_tools/quic_stream_send_buffer_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
-#include "net/spdy/core/spdy_framer.h"
 #include "net/test/gtest_util.h"
+#include "net/third_party/spdy/core/spdy_framer.h"
 #include "testing/gmock_mutant.h"
 
 using testing::_;

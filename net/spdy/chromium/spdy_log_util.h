@@ -12,8 +12,8 @@
 #include "net/http/http_log_util.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
-#include "net/spdy/core/spdy_header_block.h"
-#include "net/spdy/platform/api/spdy_string.h"
+#include "net/third_party/spdy/core/spdy_header_block.h"
+#include "net/third_party/spdy/platform/api/spdy_string.h"
 
 namespace base {
 class ListValue;

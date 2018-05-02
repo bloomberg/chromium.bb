@@ -23,9 +23,9 @@
 #include "net/spdy/chromium/spdy_buffer_producer.h"
 #include "net/spdy/chromium/spdy_http_utils.h"
 #include "net/spdy/chromium/spdy_session.h"
-#include "net/spdy/platform/api/spdy_estimate_memory_usage.h"
-#include "net/spdy/platform/api/spdy_string_piece.h"
-#include "net/spdy/platform/api/spdy_string_utils.h"
+#include "net/third_party/spdy/platform/api/spdy_estimate_memory_usage.h"
+#include "net/third_party/spdy/platform/api/spdy_string_piece.h"
+#include "net/third_party/spdy/platform/api/spdy_string_utils.h"
 
 namespace net {
 

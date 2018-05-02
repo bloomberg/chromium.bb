@@ -9,7 +9,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/pending_task.h"
-#include "net/spdy/platform/api/spdy_string.h"
+#include "net/third_party/spdy/platform/api/spdy_string.h"
 
 namespace net {
 

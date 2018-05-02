@@ -16,7 +16,7 @@
 #include "net/spdy/chromium/spdy_buffer.h"
 #include "net/spdy/chromium/spdy_http_utils.h"
 #include "net/spdy/chromium/spdy_stream.h"
-#include "net/spdy/core/spdy_header_block.h"
+#include "net/third_party/spdy/core/spdy_header_block.h"
 
 namespace net {
 

@@ -54,9 +54,9 @@
 #include "net/spdy/chromium/spdy_http_stream.h"
 #include "net/spdy/chromium/spdy_session.h"
 #include "net/spdy/chromium/spdy_session_pool.h"
-#include "net/spdy/core/spdy_protocol.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/ssl_cert_request_info.h"
+#include "net/third_party/spdy/core/spdy_protocol.h"
 #include "url/url_constants.h"
 
 namespace net {

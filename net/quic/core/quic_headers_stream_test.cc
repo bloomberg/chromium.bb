@@ -25,11 +25,11 @@
 #include "net/quic/test_tools/quic_spdy_session_peer.h"
 #include "net/quic/test_tools/quic_stream_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
-#include "net/spdy/core/http2_frame_decoder_adapter.h"
-#include "net/spdy/core/spdy_alt_svc_wire_format.h"
-#include "net/spdy/core/spdy_protocol.h"
-#include "net/spdy/core/spdy_test_utils.h"
 #include "net/test/gtest_util.h"
+#include "net/third_party/spdy/core/http2_frame_decoder_adapter.h"
+#include "net/third_party/spdy/core/spdy_alt_svc_wire_format.h"
+#include "net/third_party/spdy/core/spdy_protocol.h"
+#include "net/third_party/spdy/core/spdy_test_utils.h"
 
 using testing::_;
 using testing::AtLeast;
