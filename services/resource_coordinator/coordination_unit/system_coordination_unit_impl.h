@@ -24,6 +24,8 @@ class SystemCoordinationUnitImpl
 
   // mojom::SystemCoordinationUnit implementation:
   void OnProcessCPUUsageReady() override;
+  void DistributeMeasurementBatch(
+      mojom::ProcessResourceMeasurementBatchPtr measurement_batch) override;
 
  private:
   // CoordinationUnitInterface implementation:
