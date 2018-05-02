@@ -7452,6 +7452,7 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="Entry decryption taking over a minute"/>
   <int value="2" label="Cookie canonical form check failed"/>
   <int value="3" label="Could not open or initialize database"/>
+  <int value="4" label="Attempt to delete broken (and related) rows failed"/>
 </enum>
 
 <enum name="CookieNetworkSecurity">
