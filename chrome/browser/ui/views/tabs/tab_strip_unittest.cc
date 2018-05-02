@@ -62,20 +62,14 @@ class TestTabStripObserver : public TabStripObserver {
 
  private:
   // TabStripObserver overrides.
-  void TabStripAddedTabAt(TabStrip* tab_strip, int index) override {
-    last_tab_added_ = index;
-  }
+  void OnTabAdded(int index) override { last_tab_added_ = index; }
 
-  void TabStripMovedTab(TabStrip* tab_strip,
-                        int from_index,
-                        int to_index) override {
+  void OnTabMoved(int from_index, int to_index) override {
     last_tab_moved_from_ = from_index;
     last_tab_moved_to_ = to_index;
   }
 
-  void TabStripRemovedTabAt(TabStrip* tab_strip, int index) override {
-    last_tab_removed_ = index;
-  }
+  void OnTabRemoved(int index) override { last_tab_removed_ = index; }
 
   TabStrip* tab_strip_;
   int last_tab_added_ = -1;
