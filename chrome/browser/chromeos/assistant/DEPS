@@ -1,6 +1,7 @@
 include_rules = [
   # Add browser dependencies explicitly.
   "-chrome",
+  "+chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h",
   "+chrome/browser/chromeos/assistant",
   "+chrome/browser/chromeos/profiles/profile_helper.h",
   "-chromeos/services",
