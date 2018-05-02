@@ -74,10 +74,12 @@ WEAK_IMPORT_ATTRIBUTE
   return NSZeroRect;
 }
 
-// Lets the window be dragged by its title bar on 10.10.
+// Lets the window be dragged by its title bar on 10.11 and older.
 - (void)mouseDown:(NSEvent*)event {
-  if (@available(macOS 10.11, *))
-    ;  // Not needed on 10.11 and up.
+  if (@available(macOS 10.12, *))
+    ;  // Not needed on 10.12 and up.
+  else if (@available(macOS 10.11, *))
+    [self.window performWindowDragWithEvent:event];
   else if (@available(macOS 10.10, *))
     [self.window beginWindowDragWithEvent:event];
   else
