@@ -17,6 +17,7 @@
 @property(nonatomic, strong) UnifiedConsentMediator* unifiedConsentMediator;
 @property(nonatomic, strong, readwrite)
     UnifiedConsentViewController* unifiedConsentViewController;
+@property(nonatomic, readwrite) BOOL settingsLinkWasTapped;
 
 @end
 
@@ -25,6 +26,7 @@
 @synthesize delegate = _delegate;
 @synthesize unifiedConsentMediator = _unifiedConsentMediator;
 @synthesize unifiedConsentViewController = _unifiedConsentViewController;
+@synthesize settingsLinkWasTapped = _settingsLinkWasTapped;
 
 - (instancetype)init {
   if (self) {
@@ -73,6 +75,8 @@
 - (void)unifiedConsentViewControllerDidTapSettingsLink:
     (UnifiedConsentViewController*)controller {
   DCHECK_EQ(self.unifiedConsentViewController, controller);
+  DCHECK(!self.settingsLinkWasTapped);
+  self.settingsLinkWasTapped = YES;
   [self.delegate unifiedConsentCoordinatorDidTapSettingsLink:self];
 }
 
