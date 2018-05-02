@@ -676,5 +676,10 @@ class ImeActivityTestRule extends ContentShellActivityTestRule {
         public void onViewDetachedFromWindow() {
             mFactory.onViewDetachedFromWindow();
         }
+
+        @Override
+        public void setTriggerDelayedOnCreateInputConnection(boolean trigger) {
+            mFactory.setTriggerDelayedOnCreateInputConnection(trigger);
+        }
     }
 }

@@ -150,12 +150,13 @@ public class ThreadedInputConnectionFactoryTest {
                         mContainerView, mImeAdapter, 1, 0, 0, 0, 0, mEditorInfo);
             }
         };
-        when(mProxyView.onCreateInputConnection(any(EditorInfo.class))).thenAnswer(
-                new Answer<InputConnection>() {
-                    @Override
-                    public InputConnection answer(InvocationOnMock invocation) throws Throwable {
-                        return ThreadUtils.runOnUiThreadBlockingNoException(callable);
-                    }
+        when(mProxyView.onCreateInputConnection(any(EditorInfo.class)))
+                .thenAnswer((InvocationOnMock invocation) -> {
+                    mFactory.setTriggerDelayedOnCreateInputConnection(false);
+                    InputConnection connection =
+                            ThreadUtils.runOnUiThreadBlockingNoException(callable);
+                    mFactory.setTriggerDelayedOnCreateInputConnection(true);
+                    return connection;
                 });
 
         when(mInputMethodManager.isActive(mContainerView)).thenAnswer(new Answer<Boolean>() {

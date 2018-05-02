@@ -375,6 +375,11 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver {
         return mInputConnectionFactory;
     }
 
+    @VisibleForTesting
+    public void setTriggerDelayedOnCreateInputConnectionForTest(boolean trigger) {
+        mInputConnectionFactory.setTriggerDelayedOnCreateInputConnection(trigger);
+    }
+
     /**
      * Get the current input connection for testing purposes.
      */

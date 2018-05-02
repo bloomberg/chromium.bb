@@ -13,7 +13,7 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
 import org.chromium.base.Log;
-import org.chromium.base.annotations.UsedByReflection;
+import org.chromium.content.browser.input.ImeAdapterImpl;
 import org.chromium.content.browser.input.Range;
 import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.InputMethodManagerWrapper;
@@ -24,7 +24,6 @@ import java.util.List;
 /**
  * Overrides InputMethodManagerWrapper for testing purposes.
  */
-@UsedByReflection("ThreadedInputConnectionFactory.java")
 public class TestInputMethodManagerWrapper implements InputMethodManagerWrapper {
     private static final String TAG = "cr_Ime";
 
@@ -59,11 +58,12 @@ public class TestInputMethodManagerWrapper implements InputMethodManagerWrapper 
      */
     public static InputConnectionProvider defaultInputConnectionProvider(
             final ImeAdapter imeAdapter) {
-        return new InputConnectionProvider() {
-            @Override
-            public InputConnection create(EditorInfo info) {
-                return imeAdapter.onCreateInputConnection(info);
-            }
+        return (EditorInfo info) -> {
+            ImeAdapterImpl imeAdapterImpl = (ImeAdapterImpl) imeAdapter;
+            imeAdapterImpl.setTriggerDelayedOnCreateInputConnectionForTest(false);
+            InputConnection connection = imeAdapter.onCreateInputConnection(info);
+            imeAdapterImpl.setTriggerDelayedOnCreateInputConnectionForTest(true);
+            return connection;
         };
     }
 
