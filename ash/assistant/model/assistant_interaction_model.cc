@@ -32,6 +32,15 @@ void AssistantInteractionModel::ClearInteraction() {
   ClearSuggestions();
 }
 
+void AssistantInteractionModel::SetInteractionState(
+    InteractionState interaction_state) {
+  if (interaction_state == interaction_state_)
+    return;
+
+  interaction_state_ = interaction_state;
+  NotifyInteractionStateChanged();
+}
+
 void AssistantInteractionModel::SetInputModality(InputModality input_modality) {
   if (input_modality == input_modality_)
     return;
@@ -72,6 +81,11 @@ void AssistantInteractionModel::AddSuggestions(
 void AssistantInteractionModel::ClearSuggestions() {
   suggestions_list_.clear();
   NotifySuggestionsCleared();
+}
+
+void AssistantInteractionModel::NotifyInteractionStateChanged() {
+  for (AssistantInteractionModelObserver& observer : observers_)
+    observer.OnInteractionStateChanged(interaction_state_);
 }
 
 void AssistantInteractionModel::NotifyInputModalityChanged() {

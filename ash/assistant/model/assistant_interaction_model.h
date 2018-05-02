@@ -24,6 +24,15 @@ enum class InputModality {
   kVoice,
 };
 
+// TODO(dmblack): This is an oversimplification. We will eventually want to
+// distinctly represent listening/thinking/etc. states explicitly so they can
+// be adequately represented in the UI.
+// Enumeration of interaction states.
+enum class InteractionState {
+  kActive,
+  kInactive,
+};
+
 // Models the state of the query. For a text query, only the high confidence
 // text portion will be populated. At start of a voice query, both the high and
 // low confidence text portions will be empty. As speech recognition continues,
@@ -53,6 +62,12 @@ class AssistantInteractionModel {
   // Adds/removes the specified interaction model |observer|.
   void AddObserver(AssistantInteractionModelObserver* observer);
   void RemoveObserver(AssistantInteractionModelObserver* observer);
+
+  // Sets the interaction state.
+  void SetInteractionState(InteractionState interaction_state);
+
+  // Returns the interaction state.
+  InteractionState interaction_state() const { return interaction_state_; }
 
   // Resets the interaction to its initial state.
   void ClearInteraction();
@@ -87,6 +102,7 @@ class AssistantInteractionModel {
   void ClearSuggestions();
 
  private:
+  void NotifyInteractionStateChanged();
   void NotifyInputModalityChanged();
   void NotifyUiElementAdded(const AssistantUiElement* ui_element);
   void NotifyUiElementsCleared();
@@ -95,6 +111,7 @@ class AssistantInteractionModel {
   void NotifySuggestionsAdded(const std::vector<std::string>& suggestions);
   void NotifySuggestionsCleared();
 
+  InteractionState interaction_state_ = InteractionState::kInactive;
   InputModality input_modality_;
   Query query_;
   std::vector<std::string> suggestions_list_;
