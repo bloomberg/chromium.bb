@@ -53,16 +53,19 @@ class GPU_IPC_SERVICE_EXPORT GLES2CommandBufferStub
   int32_t GetRouteID() const override;
 
  private:
+  void OnTakeFrontBuffer(const Mailbox& mailbox) override;
+  void OnReturnFrontBuffer(const Mailbox& mailbox, bool is_lost) override;
+  void OnSwapBuffers(uint32_t flags) override;
+
   // Keep a more specifically typed reference to the decoder to avoid
   // unnecessary casts. Owned by parent class.
   gles2::GLES2Decoder* gles2_decoder_;
 
   base::Closure snapshot_requested_callback_;
 
-  base::WeakPtrFactory<GLES2CommandBufferStub> weak_ptr_factory_;
+  base::circular_deque<int32_t> pending_swaps_;
 
-  void OnTakeFrontBuffer(const Mailbox& mailbox) override;
-  void OnReturnFrontBuffer(const Mailbox& mailbox, bool is_lost) override;
+  base::WeakPtrFactory<GLES2CommandBufferStub> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GLES2CommandBufferStub);
 };

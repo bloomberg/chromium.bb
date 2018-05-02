@@ -69,13 +69,15 @@ void TestContextSupport::SetScheduleOverlayPlaneCallback(
   schedule_overlay_plane_callback_ = schedule_overlay_plane_callback;
 }
 
-void TestContextSupport::Swap() {}
+void TestContextSupport::Swap(uint32_t flags) {}
 
-void TestContextSupport::SwapWithBounds(const std::vector<gfx::Rect>& rects) {}
+void TestContextSupport::SwapWithBounds(const std::vector<gfx::Rect>& rects,
+                                        uint32_t flags) {}
 
-void TestContextSupport::PartialSwapBuffers(const gfx::Rect& sub_buffer) {}
+void TestContextSupport::PartialSwapBuffers(const gfx::Rect& sub_buffer,
+                                            uint32_t flags) {}
 
-void TestContextSupport::CommitOverlayPlanes() {}
+void TestContextSupport::CommitOverlayPlanes(uint32_t flags) {}
 
 void TestContextSupport::ScheduleOverlayPlane(
     int plane_z_order,

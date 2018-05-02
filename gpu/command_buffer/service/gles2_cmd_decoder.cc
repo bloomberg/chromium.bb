@@ -1011,17 +1011,18 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
       GLint border);
 
   // Wrapper for SwapBuffers.
-  void DoSwapBuffers();
+  void DoSwapBuffers(GLbitfield flags);
 
   // Wrapper for SwapBuffersWithBoundsCHROMIUM.
   void DoSwapBuffersWithBoundsCHROMIUM(GLsizei count,
-                                       const volatile GLint* rects);
+                                       const volatile GLint* rects,
+                                       GLbitfield flags);
 
   // Callback for async SwapBuffers.
   void FinishAsyncSwapBuffers(gfx::SwapResult result);
   void FinishSwapBuffers(gfx::SwapResult result);
 
-  void DoCommitOverlayPlanes();
+  void DoCommitOverlayPlanes(GLbitfield flags);
 
   // Wrapper for CopyTexSubImage2D.
   void DoCopyTexSubImage2D(
@@ -12342,7 +12343,8 @@ error::Error GLES2DecoderImpl::HandlePixelStorei(
 
 void GLES2DecoderImpl::DoSwapBuffersWithBoundsCHROMIUM(
     GLsizei count,
-    const volatile GLint* rects) {
+    const volatile GLint* rects,
+    GLbitfield flags) {
   TRACE_EVENT0("gpu", "GLES2DecoderImpl::SwapBuffersWithBoundsCHROMIUM");
   if (!supports_swap_buffers_with_bounds_) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glSwapBuffersWithBoundsCHROMIUM",
@@ -12367,6 +12369,7 @@ void GLES2DecoderImpl::DoSwapBuffersWithBoundsCHROMIUM(
     bounds[i] = gfx::Rect(rects[i * 4 + 0], rects[i * 4 + 1], rects[i * 4 + 2],
                           rects[i * 4 + 3]);
   }
+  client_->OnSwapBuffers(flags);
   FinishSwapBuffers(surface_->SwapBuffersWithBounds(bounds, base::DoNothing()));
 }
 
@@ -12402,6 +12405,7 @@ error::Error GLES2DecoderImpl::HandlePostSubBufferCHROMIUM(
     ++pending_swaps_;
     TRACE_EVENT_ASYNC_BEGIN0("gpu", "AsyncSwapBuffers", async_swap_id);
 
+    client_->OnSwapBuffers(c.flags);
     surface_->PostSubBufferAsync(
         c.x, c.y, c.width, c.height,
         base::Bind(&GLES2DecoderImpl::FinishAsyncSwapBuffers,
@@ -12417,6 +12421,7 @@ error::Error GLES2DecoderImpl::HandlePostSubBufferCHROMIUM(
     base::debug::Alias(&context);
     bool is_current = context_->IsCurrent(surface_.get());
     base::debug::Alias(&is_current);
+    client_->OnSwapBuffers(c.flags);
     FinishSwapBuffers(surface_->PostSubBuffer(c.x, c.y, c.width, c.height,
                                               base::DoNothing()));
   }
@@ -15886,7 +15891,7 @@ error::Error GLES2DecoderImpl::HandleShaderBinary(
 #endif
 }
 
-void GLES2DecoderImpl::DoSwapBuffers() {
+void GLES2DecoderImpl::DoSwapBuffers(GLbitfield flags) {
   bool is_offscreen = !!offscreen_target_frame_buffer_.get();
 
   int this_frame_number = frame_number_++;
@@ -16003,6 +16008,7 @@ void GLES2DecoderImpl::DoSwapBuffers() {
     ++pending_swaps_;
     TRACE_EVENT_ASYNC_BEGIN0("gpu", "AsyncSwapBuffers", async_swap_id);
 
+    client_->OnSwapBuffers(flags);
     surface_->SwapBuffersAsync(
         base::Bind(&GLES2DecoderImpl::FinishAsyncSwapBuffers,
                    weak_ptr_factory_.GetWeakPtr()),
@@ -16017,6 +16023,7 @@ void GLES2DecoderImpl::DoSwapBuffers() {
     base::debug::Alias(&context);
     bool is_current = context_->IsCurrent(surface_.get());
     base::debug::Alias(&is_current);
+    client_->OnSwapBuffers(flags);
     FinishSwapBuffers(surface_->SwapBuffers(base::DoNothing()));
   }
 
@@ -16050,7 +16057,7 @@ void GLES2DecoderImpl::FinishSwapBuffers(gfx::SwapResult result) {
   }
 }
 
-void GLES2DecoderImpl::DoCommitOverlayPlanes() {
+void GLES2DecoderImpl::DoCommitOverlayPlanes(GLbitfield flags) {
   TRACE_EVENT0("gpu", "GLES2DecoderImpl::DoCommitOverlayPlanes");
   if (!supports_commit_overlay_planes_) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glCommitOverlayPlanes",
@@ -16060,11 +16067,13 @@ void GLES2DecoderImpl::DoCommitOverlayPlanes() {
   ClearScheduleCALayerState();
   ClearScheduleDCLayerState();
   if (supports_async_swap_) {
+    client_->OnSwapBuffers(flags);
     surface_->CommitOverlayPlanesAsync(
         base::Bind(&GLES2DecoderImpl::FinishSwapBuffers,
                    weak_ptr_factory_.GetWeakPtr()),
         base::DoNothing());
   } else {
+    client_->OnSwapBuffers(flags);
     FinishSwapBuffers(surface_->CommitOverlayPlanes(base::DoNothing()));
   }
 }

@@ -81,6 +81,7 @@ source_set("common_sources") {
     "scheduling_priority.h",
     "swap_buffers_complete_params.cc",
     "swap_buffers_complete_params.h",
+    "swap_buffers_flags.h",
     "sync_token.cc",
     "sync_token.h",
     "texture_in_use_response.h",

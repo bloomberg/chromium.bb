@@ -2362,10 +2362,10 @@ void BindVertexArrayOES(GLuint array) {
   }
 }
 
-void SwapBuffers() {
+void SwapBuffers(GLbitfield flags) {
   gles2::cmds::SwapBuffers* c = GetCmdSpace<gles2::cmds::SwapBuffers>();
   if (c) {
-    c->Init();
+    c->Init(flags);
   }
 }
 
@@ -2497,11 +2497,15 @@ void GetTranslatedShaderSourceANGLE(GLuint shader, uint32_t bucket_id) {
   }
 }
 
-void PostSubBufferCHROMIUM(GLint x, GLint y, GLint width, GLint height) {
+void PostSubBufferCHROMIUM(GLint x,
+                           GLint y,
+                           GLint width,
+                           GLint height,
+                           GLbitfield flags) {
   gles2::cmds::PostSubBufferCHROMIUM* c =
       GetCmdSpace<gles2::cmds::PostSubBufferCHROMIUM>();
   if (c) {
-    c->Init(x, y, width, height);
+    c->Init(x, y, width, height, flags);
   }
 }
 
@@ -2792,11 +2796,11 @@ void ScheduleCALayerInUseQueryCHROMIUMImmediate(GLsizei count,
   }
 }
 
-void CommitOverlayPlanesCHROMIUM() {
+void CommitOverlayPlanesCHROMIUM(GLbitfield flags) {
   gles2::cmds::CommitOverlayPlanesCHROMIUM* c =
       GetCmdSpace<gles2::cmds::CommitOverlayPlanesCHROMIUM>();
   if (c) {
-    c->Init();
+    c->Init(flags);
   }
 }
 
@@ -3208,14 +3212,16 @@ void OverlayPromotionHintCHROMIUM(GLuint texture,
   }
 }
 
-void SwapBuffersWithBoundsCHROMIUMImmediate(GLsizei count, const GLint* rects) {
+void SwapBuffersWithBoundsCHROMIUMImmediate(GLsizei count,
+                                            const GLint* rects,
+                                            GLbitfield flags) {
   const uint32_t size =
       gles2::cmds::SwapBuffersWithBoundsCHROMIUMImmediate::ComputeSize(count);
   gles2::cmds::SwapBuffersWithBoundsCHROMIUMImmediate* c =
       GetImmediateCmdSpaceTotalSize<
           gles2::cmds::SwapBuffersWithBoundsCHROMIUMImmediate>(size);
   if (c) {
-    c->Init(count, rects);
+    c->Init(count, rects, flags);
   }
 }
 

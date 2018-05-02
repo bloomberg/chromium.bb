@@ -3204,7 +3204,7 @@ error::Error GLES2DecoderPassthroughImpl::DoBindVertexArrayOES(GLuint array) {
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::DoSwapBuffers() {
+error::Error GLES2DecoderPassthroughImpl::DoSwapBuffers(GLbitfield flags) {
   dc_layer_shared_state_.reset();
 
   if (offscreen_) {
@@ -3824,7 +3824,8 @@ error::Error GLES2DecoderPassthroughImpl::DoGetTranslatedShaderSourceANGLE(
 
 error::Error GLES2DecoderPassthroughImpl::DoSwapBuffersWithBoundsCHROMIUM(
     GLsizei count,
-    const volatile GLint* rects) {
+    const volatile GLint* rects,
+    GLbitfield flags) {
   if (count < 0) {
     InsertError(GL_INVALID_VALUE, "count cannot be negative.");
     return error::kNoError;
@@ -3847,7 +3848,8 @@ error::Error GLES2DecoderPassthroughImpl::DoPostSubBufferCHROMIUM(
     GLint x,
     GLint y,
     GLint width,
-    GLint height) {
+    GLint height,
+    GLbitfield flags) {
   if (!surface_->SupportsPostSubBuffer()) {
     InsertError(GL_INVALID_OPERATION,
                 "glPostSubBufferCHROMIUM is not supported for this surface.");
@@ -4262,7 +4264,8 @@ error::Error GLES2DecoderPassthroughImpl::DoScheduleDCLayerCHROMIUM(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::DoCommitOverlayPlanesCHROMIUM() {
+error::Error GLES2DecoderPassthroughImpl::DoCommitOverlayPlanesCHROMIUM(
+    GLbitfield flags) {
   if (!surface_->SupportsCommitOverlayPlanes()) {
     InsertError(GL_INVALID_OPERATION,
                 "glCommitOverlayPlanes not supported by surface.");

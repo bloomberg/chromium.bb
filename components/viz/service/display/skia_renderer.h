@@ -36,7 +36,8 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
                SkiaOutputSurface* skia_output_surface = nullptr);
   ~SkiaRenderer() override;
 
-  void SwapBuffers(std::vector<ui::LatencyInfo> latency_info) override;
+  void SwapBuffers(std::vector<ui::LatencyInfo> latency_info,
+                   bool need_presentation_feedback) override;
 
   void SetDisablePictureQuadImageFiltering(bool disable) {
     disable_picture_quad_image_filtering_ = disable;

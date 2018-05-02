@@ -1673,6 +1673,17 @@ _NAMED_TYPE_INFO = {
       'GL_EXCLUSIVE_EXT',
     ],
   },
+  'SwapBuffersFlags': {
+    'type': 'GLbitfield',
+    'is_complete': True,
+    'valid': [
+      '0',
+      'gpu::SwapBuffersFlags::kPresentationFeedback',
+      'gpu::SwapBuffersFlags::kVSyncParams',
+      'gpu::SwapBuffersFlags::kPresentationFeedback | '
+      'gpu::SwapBuffersFlags::kVSyncParams',
+    ],
+  },
 }
 
 # A function info object specifies the type and other special data for the

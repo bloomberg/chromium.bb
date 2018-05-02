@@ -78,6 +78,7 @@ bool RasterDecoderTestBase::OnWaitSyncToken(const gpu::SyncToken&) {
 }
 void RasterDecoderTestBase::OnDescheduleUntilFinished() {}
 void RasterDecoderTestBase::OnRescheduleAfterFinished() {}
+void RasterDecoderTestBase::OnSwapBuffers(uint32_t flags) {}
 
 void RasterDecoderTestBase::SetUp() {
   InitDecoder(InitState());

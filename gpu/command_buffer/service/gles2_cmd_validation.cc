@@ -5,6 +5,7 @@
 // Contains various validation functions for the GLES2 service.
 
 #include "gpu/command_buffer/service/gles2_cmd_validation.h"
+#include "gpu/command_buffer/common/swap_buffers_flags.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 
 namespace gpu {

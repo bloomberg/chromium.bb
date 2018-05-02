@@ -66,6 +66,7 @@
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
+#include "gpu/command_buffer/common/swap_buffers_flags.h"
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/common/gpu_surface_tracker.h"
@@ -274,11 +275,14 @@ class AndroidOutputSurface
     if (latency_info_cache_.WillSwap(std::move(frame.latency_info)))
       GetCommandBufferProxy()->SetSnapshotRequested();
 
+    uint32_t flags = 0;
+    if (frame.need_presentation_feedback)
+      flags |= gpu::SwapBuffersFlags::kPresentationFeedback;
     if (frame.sub_buffer_rect) {
       DCHECK(frame.sub_buffer_rect->IsEmpty());
-      context_provider_->ContextSupport()->CommitOverlayPlanes();
+      context_provider_->ContextSupport()->CommitOverlayPlanes(flags);
     } else {
-      context_provider_->ContextSupport()->Swap();
+      context_provider_->ContextSupport()->Swap(flags);
     }
   }
 

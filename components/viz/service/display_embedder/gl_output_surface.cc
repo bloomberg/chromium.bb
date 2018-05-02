@@ -15,6 +15,7 @@
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
+#include "gpu/command_buffer/common/swap_buffers_flags.h"
 #include "ui/gl/gl_utils.h"
 
 namespace viz {
@@ -85,15 +86,21 @@ void GLOutputSurface::Reshape(const gfx::Size& size,
 void GLOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
   DCHECK(context_provider_);
 
+  uint32_t flags = 0;
+  if (frame.need_presentation_feedback)
+    flags |= gpu::SwapBuffersFlags::kPresentationFeedback;
+  if (synthetic_begin_frame_source_)
+    flags |= gpu::SwapBuffersFlags::kVSyncParams;
+
   if (latency_info_cache_.WillSwap(std::move(frame.latency_info)))
     context_provider_->ContextSupport()->SetSnapshotRequested();
 
   set_draw_rectangle_for_frame_ = false;
   if (frame.sub_buffer_rect) {
     context_provider_->ContextSupport()->PartialSwapBuffers(
-        *frame.sub_buffer_rect);
+        *frame.sub_buffer_rect, flags);
   } else {
-    context_provider_->ContextSupport()->Swap();
+    context_provider_->ContextSupport()->Swap(flags);
   }
 }
 

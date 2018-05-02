@@ -1763,9 +1763,9 @@ void GLES2TraceImplementation::BindVertexArrayOES(GLuint array) {
   gl_->BindVertexArrayOES(array);
 }
 
-void GLES2TraceImplementation::SwapBuffers() {
+void GLES2TraceImplementation::SwapBuffers(GLbitfield flags) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::SwapBuffers");
-  gl_->SwapBuffers();
+  gl_->SwapBuffers(flags);
 }
 
 GLuint GLES2TraceImplementation::GetMaxValueInBufferCHROMIUM(GLuint buffer_id,
@@ -1932,9 +1932,10 @@ void GLES2TraceImplementation::GetTranslatedShaderSourceANGLE(GLuint shader,
 void GLES2TraceImplementation::PostSubBufferCHROMIUM(GLint x,
                                                      GLint y,
                                                      GLint width,
-                                                     GLint height) {
+                                                     GLint height,
+                                                     GLbitfield flags) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::PostSubBufferCHROMIUM");
-  gl_->PostSubBufferCHROMIUM(x, y, width, height);
+  gl_->PostSubBufferCHROMIUM(x, y, width, height, flags);
 }
 
 void GLES2TraceImplementation::CopyTextureCHROMIUM(
@@ -2183,10 +2184,10 @@ void GLES2TraceImplementation::ScheduleCALayerInUseQueryCHROMIUM(
   gl_->ScheduleCALayerInUseQueryCHROMIUM(count, textures);
 }
 
-void GLES2TraceImplementation::CommitOverlayPlanesCHROMIUM() {
+void GLES2TraceImplementation::CommitOverlayPlanesCHROMIUM(GLbitfield flags) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu",
                                 "GLES2Trace::CommitOverlayPlanesCHROMIUM");
-  gl_->CommitOverlayPlanesCHROMIUM();
+  gl_->CommitOverlayPlanesCHROMIUM(flags);
 }
 
 void GLES2TraceImplementation::FlushDriverCachesCHROMIUM() {
@@ -2523,12 +2524,12 @@ void GLES2TraceImplementation::OverlayPromotionHintCHROMIUM(
                                     display_y, display_width, display_height);
 }
 
-void GLES2TraceImplementation::SwapBuffersWithBoundsCHROMIUM(
-    GLsizei count,
-    const GLint* rects) {
+void GLES2TraceImplementation::SwapBuffersWithBoundsCHROMIUM(GLsizei count,
+                                                             const GLint* rects,
+                                                             GLbitfield flags) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu",
                                 "GLES2Trace::SwapBuffersWithBoundsCHROMIUM");
-  gl_->SwapBuffersWithBoundsCHROMIUM(count, rects);
+  gl_->SwapBuffersWithBoundsCHROMIUM(count, rects, flags);
 }
 
 void GLES2TraceImplementation::SetDrawRectangleCHROMIUM(GLint x,

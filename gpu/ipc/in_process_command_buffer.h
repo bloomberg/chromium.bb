@@ -162,6 +162,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   bool OnWaitSyncToken(const SyncToken& sync_token) override;
   void OnDescheduleUntilFinished() override;
   void OnRescheduleAfterFinished() override;
+  void OnSwapBuffers(uint32_t flags) override;
 
 // ImageTransportSurfaceDelegate implementation:
 #if defined(OS_WIN)

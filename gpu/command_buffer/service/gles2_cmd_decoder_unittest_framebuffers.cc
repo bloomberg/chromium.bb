@@ -3314,7 +3314,7 @@ TEST_P(GLES2DecoderTest, ClearBackbufferBitsOnFlipSwap) {
   EXPECT_EQ(0u, GetAndClearBackbufferClearBitsForTest());
 
   SwapBuffers& cmd = *GetImmediateAs<SwapBuffers>();
-  cmd.Init();
+  cmd.Init(0);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
   EXPECT_EQ(static_cast<uint32_t>(GL_COLOR_BUFFER_BIT),
@@ -3332,7 +3332,7 @@ TEST_P(GLES2DecoderTest, ClearBackbufferBitsOnFlipSwap) {
   EXPECT_EQ(static_cast<uint32_t>(GL_COLOR_BUFFER_BIT),
             GetAndClearBackbufferClearBitsForTest());
 
-  cmd.Init();
+  cmd.Init(0);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
   EXPECT_EQ(static_cast<uint32_t>(GL_COLOR_BUFFER_BIT),

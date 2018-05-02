@@ -298,6 +298,12 @@ class StringTypeValidator {
 };
 StringTypeValidator string_type;
 
+class SwapBuffersFlagsValidator {
+ public:
+  bool IsValid(const GLbitfield value) const;
+};
+SwapBuffersFlagsValidator swap_buffers_flags;
+
 ValueValidator<GLbitfield> sync_flush_flags;
 class SyncParameterValidator {
  public:
