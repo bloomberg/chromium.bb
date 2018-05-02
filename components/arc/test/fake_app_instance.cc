@@ -382,6 +382,27 @@ void FakeAppInstance::GetIcingGlobalQueryResults(
                           std::move(fake_app_data_results));
 }
 
+void FakeAppInstance::GetAppShortcutItems(
+    const std::string& pacakge_name,
+    GetAppShortcutItemsCallback callback) {
+  // Fake app shortcut items results.
+  std::vector<mojom::AppShortcutItemPtr> fake_app_shortcut_items;
+
+  // Fake icon data.
+  std::string png_data_as_string;
+  GetFakeIcon(mojom::ScaleFactor::SCALE_FACTOR_100P, &png_data_as_string);
+  std::vector<uint8_t> fake_icon_png_data(png_data_as_string.begin(),
+                                          png_data_as_string.end());
+
+  for (int i = 0; i < 3; ++i) {
+    fake_app_shortcut_items.push_back(mojom::AppShortcutItem::New(
+        base::StringPrintf("ShortcutId %d", i),
+        base::StringPrintf("ShortLabel %d", i), fake_icon_png_data));
+  }
+
+  std::move(callback).Run(std::move(fake_app_shortcut_items));
+}
+
 void FakeAppInstance::StartPaiFlow() {
   ++start_pai_request_count_;
 }

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 29
+// Next MinVersion: 30
 
 module arc.mojom;
 
@@ -150,7 +150,8 @@ struct AppDataResult {
   string label@1;
   // Text information for the result.
   string text@3;
-  // Icon information in png format. It could be null if not provided.
+  // Icon information in png format. It could be null if not provided. Decoded
+  // in the utility process.
   array<uint8>? icon_png_data@2;
   // Type of this app data search result.
   [MinVersion=28] AppDataResultType type@4;
@@ -178,6 +179,19 @@ enum AppDataRequestState {
   APP_DATA_SEARCH_PROXY_NOT_AVAILABLE = 7,
   // Failed to call globalQuery to GmsCore.
   FAILED_TO_CALL_GLOBALQUERY = 8,
+};
+
+// Describes app shortcut that is published by Android's ShortcutManager.
+struct AppShortcutItem {
+  // The ID of this shortcut. Unique within each publisher app and stable across
+  // devices.
+  string shortcut_id;
+
+  // The short description of this shortcut.
+  string short_label;
+
+  // The icon for this shortcut, decoded in the utility process.
+  array<uint8> icon_png;
 };
 
 // Next method ID: 18
@@ -267,7 +281,7 @@ interface AppHost {
 };
 
 // TODO(lhchavez): Migrate all request/response messages to Mojo.
-// Next method ID: 23
+// Next method ID: 24
 interface AppInstance {
   // DEPRECATED: Please use Init@21 instead.
   InitDeprecated@0(AppHost host_ptr);
@@ -351,13 +365,18 @@ interface AppInstance {
   // happens) is ignored, and uninstall option should appear in the UI.
   [MinVersion=2] UninstallPackage@5(string package_name);
 
-  // Starts a query for Play Store apps.
-  [MinVersion=20] GetRecentAndSuggestedAppsFromPlayStore@16(
-      string query, int32 max_results) =>
-          (AppDiscoveryRequestState state@1, array<AppDiscoveryResult> results@0);
+  // Sends a request to ARC to get app shortcuts for app with |package_name|.
+  [MinVersion=29] GetAppShortcutItems@23(string package_name) =>
+      (array<AppShortcutItem> shortcut_items);
 
   // Starts a query for app data, which is querying icing indexable contents.
   [MinVersion=27] GetIcingGlobalQueryResults@22(
       string query, int32 max_results) =>
           (AppDataRequestState state, array<AppDataResult> results);
+
+  // Starts a query for Play Store apps.
+  [MinVersion=20] GetRecentAndSuggestedAppsFromPlayStore@16(
+      string query, int32 max_results) =>
+          (AppDiscoveryRequestState state@1,
+           array<AppDiscoveryResult> results@0);
 };

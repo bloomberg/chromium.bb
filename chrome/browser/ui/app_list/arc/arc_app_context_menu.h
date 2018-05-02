@@ -5,9 +5,11 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_ARC_ARC_APP_CONTEXT_MENU_H_
 #define CHROME_BROWSER_UI_APP_LIST_ARC_ARC_APP_CONTEXT_MENU_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
+#include "chrome/browser/chromeos/arc/app_shortcuts/arc_app_shortcuts_request.h"
 #include "chrome/browser/ui/app_list/app_context_menu.h"
 
 class AppListControllerDelegate;
@@ -25,7 +27,8 @@ class ArcAppContextMenu : public app_list::AppContextMenu {
                     AppListControllerDelegate* controller);
   ~ArcAppContextMenu() override;
 
-  // AppListContextMenu overrides:
+  // AppContextMenu overrides:
+  void GetMenuModel(GetMenuModelCallback callback) override;
   void BuildMenu(ui::SimpleMenuModel* menu_model) override;
 
   // ui::SimpleMenuModel::Delegate overrides:
@@ -33,8 +36,21 @@ class ArcAppContextMenu : public app_list::AppContextMenu {
   bool IsCommandIdEnabled(int command_id) const override;
 
  private:
-  void IsAppOpen();
+  // Build additional app shortcuts menu items.
+  // TODO(warx): consider merging into BuildMenu.
+  void BuildAppShortcutsMenu(std::unique_ptr<ui::SimpleMenuModel> menu_model,
+                             GetMenuModelCallback callback);
+
+  // Bound by |arc_app_shortcuts_manager_|'s OnGetAppShortcutItems method.
+  void OnGetAppShortcutItems(
+      std::unique_ptr<ui::SimpleMenuModel> menu_model,
+      GetMenuModelCallback callback,
+      std::unique_ptr<arc::ArcAppShortcutItems> shortcut_items);
+
   void ShowPackageInfo();
+
+  // Handles requesting app shortcuts from Android.
+  std::unique_ptr<arc::ArcAppShortcutsRequest> arc_app_shortcuts_request_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppContextMenu);
 };
