@@ -3775,7 +3775,8 @@ activate(struct desktop_shell *shell, struct weston_view *view,
 
 	/* Only demote fullscreen surfaces on the output of activated shsurf.
 	 * Leave fullscreen surfaces on unrelated outputs alone. */
-	lower_fullscreen_layer(shell, shsurf->output);
+	if (shsurf->output)
+		lower_fullscreen_layer(shell, shsurf->output);
 
 	weston_view_activate(view, seat, flags);
 
