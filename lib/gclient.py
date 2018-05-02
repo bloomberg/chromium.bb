@@ -179,6 +179,8 @@ def _GetGclientSpec(internal, rev, template, use_cache, managed):
   solutions = _GetGclientSolutions(internal, rev, template, managed)
   result = 'solutions = %s\n' % pprint.pformat(solutions)
 
+  result += "target_os = ['chromeos']\n"
+
   # Horrible hack, I will go to hell for this.  The bots need to have a git
   # cache set up; but how can we tell whether this code is running on a bot
   # or a developer's machine?
@@ -187,8 +189,6 @@ def _GetGclientSpec(internal, rev, template, use_cache, managed):
       result += "cache_dir = '/tmp/b/git-cache'\n"
     else:
       result += "cache_dir = '/b/git-cache'\n"
-
-  result += "target_os = ['chromeos']\n"
 
   return result
 
