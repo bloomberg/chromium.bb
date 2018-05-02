@@ -127,7 +127,7 @@ void PaymentAppInfoFetcher::SelfDeleteFetcher::RunCallbackAndDestroy() {
 
 void PaymentAppInfoFetcher::SelfDeleteFetcher::FetchPaymentAppManifestCallback(
     const GURL& url,
-    const blink::Manifest& manifest) {
+    const Manifest& manifest) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   manifest_url_ = url;
@@ -211,7 +211,7 @@ void PaymentAppInfoFetcher::SelfDeleteFetcher::FetchPaymentAppManifestCallback(
 
   icon_url_ = ManifestIconSelector::FindBestMatchingIcon(
       manifest.icons, kPaymentAppIdealIconSize, kPaymentAppMinimumIconSize,
-      blink::Manifest::Icon::ANY);
+      Manifest::Icon::ANY);
   if (!icon_url_.is_valid()) {
     WarnIfPossible(
         "No suitable payment handler icon found in the \"icons\" field defined "
