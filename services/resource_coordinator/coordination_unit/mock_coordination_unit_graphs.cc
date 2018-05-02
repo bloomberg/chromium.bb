@@ -29,6 +29,7 @@ MockSinglePageInSingleProcessCoordinationUnitGraph::
       page(TestCoordinationUnitWrapper<PageCoordinationUnitImpl>::Create()) {
   page->AddFrame(frame->id());
   process->AddFrame(frame->id());
+  process->SetPID(1);
 }
 
 MockSinglePageInSingleProcessCoordinationUnitGraph::
@@ -56,6 +57,7 @@ MockSinglePageWithMultipleProcessesCoordinationUnitGraph::
   frame->AddChildFrame(child_frame->id());
   page->AddFrame(child_frame->id());
   other_process->AddFrame(child_frame->id());
+  other_process->SetPID(2);
 }
 
 MockSinglePageWithMultipleProcessesCoordinationUnitGraph::
@@ -70,6 +72,7 @@ MockMultiplePagesWithMultipleProcessesCoordinationUnitGraph::
   other_frame->AddChildFrame(child_frame->id());
   other_page->AddFrame(child_frame->id());
   other_process->AddFrame(child_frame->id());
+  other_process->SetPID(2);
 }
 
 MockMultiplePagesWithMultipleProcessesCoordinationUnitGraph::

@@ -23,7 +23,7 @@ class SystemCoordinationUnitImpl;
 //
 // Where:
 // F: frame
-// Pr: process
+// Pr: process(pid:1)
 // Pg: page
 struct MockSinglePageInSingleProcessCoordinationUnitGraph {
   MockSinglePageInSingleProcessCoordinationUnitGraph();
@@ -46,7 +46,7 @@ struct MockSinglePageInSingleProcessCoordinationUnitGraph {
 // OF: other_frame
 // Pg: page
 // OPg: other_page
-// Pr: process
+// Pr: process(pid:1)
 struct MockMultiplePagesInSingleProcessCoordinationUnitGraph
     : public MockSinglePageInSingleProcessCoordinationUnitGraph {
   MockMultiplePagesInSingleProcessCoordinationUnitGraph();
@@ -69,8 +69,8 @@ struct MockMultiplePagesInSingleProcessCoordinationUnitGraph
 // F: frame
 // CF: child_frame
 // Pg: page
-// Pr: process
-// OPr: other_process
+// Pr: process(pid:1)
+// OPr: other_process(pid:2)
 struct MockSinglePageWithMultipleProcessesCoordinationUnitGraph
     : public MockSinglePageInSingleProcessCoordinationUnitGraph {
   MockSinglePageWithMultipleProcessesCoordinationUnitGraph();
@@ -90,13 +90,13 @@ struct MockSinglePageWithMultipleProcessesCoordinationUnitGraph
 //         CF___|
 //
 // Where:
-// F: frame_coordination_unit
-// OF: other_frame_coordination_unit
-// CF: another_frame_coordination_unit
-// Pg: page_coordination_unit
-// OPg: other_page_coordination_unit
-// Pr: process_coordination_unit
-// OPr: other_process_coordination_unit
+// F: frame
+// OF: other_frame
+// CF: another_frame
+// Pg: page
+// OPg: other_page
+// Pr: process(pid:1)
+// OPr: other_process(pid:2)
 struct MockMultiplePagesWithMultipleProcessesCoordinationUnitGraph
     : public MockMultiplePagesInSingleProcessCoordinationUnitGraph {
   MockMultiplePagesWithMultipleProcessesCoordinationUnitGraph();
