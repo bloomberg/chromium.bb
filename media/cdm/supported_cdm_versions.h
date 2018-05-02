@@ -5,6 +5,8 @@
 #ifndef MEDIA_CDM_SUPPORTED_CDM_VERSIONS_H_
 #define MEDIA_CDM_SUPPORTED_CDM_VERSIONS_H_
 
+#include <array>
+
 #include "media/base/media_export.h"
 #include "media/cdm/api/content_decryption_module.h"
 
@@ -15,8 +17,8 @@
 // - Experimental CDM interface(s), for development.
 //
 // A library CDM interface is "enabled" if it's enabled at runtime, e.g. being
-// able to be registered and creating CDM instances. Typically experimental CDM
-// interfaces are supported, but not enabled by default.
+// able to be registered and creating CDM instances. Experimental CDM interfaces
+// must not be enabled by default.
 //
 // Whether a CDM interface is enabled can also be overridden by using command
 // line switch switches::kOverrideEnabledCdmInterfaceVersion for finer control
@@ -25,15 +27,69 @@
 
 namespace media {
 
-namespace {
+struct SupportedVersion {
+  int version;
+  bool enabled;
+};
+
+constexpr std::array<SupportedVersion, 3> kSupportedCdmInterfaceVersions = {{
+    {9, true},
+    {10, false},
+    {11, false},
+}};
+
+// In most cases CdmInterface::kVersion == CdmInterface::Host::kVersion. However
+// this is not guaranteed. For example, a newer CDM interface may use an
+// existing CDM host. So we keep CDM host support separate from CDM interface
+// support. In CdmInterfaceTraits we also static assert that for supported CDM
+// interface, CdmInterface::Host::kVersion must also be supported.
+constexpr int kMinSupportedCdmHostVersion = 9;
+constexpr int kMaxSupportedCdmHostVersion = 11;
+
+constexpr bool IsSupportedCdmModuleVersion(int version) {
+  return version == CDM_MODULE_VERSION;
+}
+
+// Returns whether the CDM interface of |version| is supported in the
+// implementation.
+constexpr bool IsSupportedCdmInterfaceVersion(int version) {
+  for (size_t i = 0; i < kSupportedCdmInterfaceVersions.size(); ++i) {
+    if (kSupportedCdmInterfaceVersions[i].version == version)
+      return true;
+  }
+
+  return false;
+}
+
+// Returns whether the CDM host interface of |version| is supported in the
+// implementation. Currently there's no way to disable a supported CDM host
+// interface at run time.
+constexpr bool IsSupportedCdmHostVersion(int version) {
+  return kMinSupportedCdmHostVersion <= version &&
+         version <= kMaxSupportedCdmHostVersion;
+}
+
+// Returns whether the CDM interface of |version| is enabled by default.
+constexpr bool IsCdmInterfaceVersionEnabledByDefault(int version) {
+  for (size_t i = 0; i < kSupportedCdmInterfaceVersions.size(); ++i) {
+    if (kSupportedCdmInterfaceVersions[i].version == version)
+      return kSupportedCdmInterfaceVersions[i].enabled;
+  }
+
+  return false;
+}
+
+// Returns whether the CDM interface of |version| is supported in the
+// implementation and enabled at runtime.
+MEDIA_EXPORT bool IsSupportedAndEnabledCdmInterfaceVersion(int version);
 
 typedef bool (*VersionCheckFunc)(int version);
 
 // Returns true if all versions in the range [min_version, max_version] and no
 // versions outside the range are supported, and false otherwise.
-constexpr bool CheckSupportedVersions(VersionCheckFunc check_func,
-                                      int min_version,
-                                      int max_version) {
+constexpr bool CheckVersions(VersionCheckFunc check_func,
+                             int min_version,
+                             int max_version) {
   // For simplicity, only check one version out of the range boundary.
   if (check_func(min_version - 1) || check_func(max_version + 1))
     return false;
@@ -46,7 +102,19 @@ constexpr bool CheckSupportedVersions(VersionCheckFunc check_func,
   return true;
 }
 
-}  // namespace
+// Ensures CDM interface versions in and only in the range [min_version,
+// max_version] are supported in the implementation.
+constexpr bool CheckSupportedCdmInterfaceVersions(int min_version,
+                                                  int max_version) {
+  return CheckVersions(IsSupportedCdmInterfaceVersion, min_version,
+                       max_version);
+}
+
+// Ensures CDM host interface versions in and only in the range [min_version,
+// max_version] are supported in the implementation.
+constexpr bool CheckSupportedCdmHostVersions(int min_version, int max_version) {
+  return CheckVersions(IsSupportedCdmHostVersion, min_version, max_version);
+}
 
 // Traits for CDM Interfaces
 template <int CdmInterfaceVersion>
@@ -56,94 +124,36 @@ template <>
 struct CdmInterfaceTraits<9> {
   using CdmInterface = cdm::ContentDecryptionModule_9;
   static_assert(CdmInterface::kVersion == 9, "CDM interface version mismatch");
-  static constexpr bool IsEnabledByDefault() { return true; }
+  static_assert(IsSupportedCdmHostVersion(CdmInterface::Host::kVersion),
+                "Host not supported");
+  // CDM_9 is already stable and enabled by default.
+  // TODO(xhwang): After CDM_9 support is removed, consider to use a macro to
+  // help define CdmInterfaceTraits specializations.
 };
 
 template <>
 struct CdmInterfaceTraits<10> {
   using CdmInterface = cdm::ContentDecryptionModule_10;
   static_assert(CdmInterface::kVersion == 10, "CDM interface version mismatch");
-  static constexpr bool IsEnabledByDefault() { return false; }
+  static_assert(IsSupportedCdmHostVersion(CdmInterface::Host::kVersion),
+                "Host not supported");
+  static_assert(
+      CdmInterface::kIsStable ||
+          !IsCdmInterfaceVersionEnabledByDefault(CdmInterface::kVersion),
+      "Experimental CDM interface should not be enabled by default");
 };
 
 template <>
 struct CdmInterfaceTraits<11> {
   using CdmInterface = cdm::ContentDecryptionModule_11;
   static_assert(CdmInterface::kVersion == 11, "CDM interface version mismatch");
-  static constexpr bool IsEnabledByDefault() { return false; }
+  static_assert(IsSupportedCdmHostVersion(CdmInterface::Host::kVersion),
+                "Host not supported");
+  static_assert(
+      CdmInterface::kIsStable ||
+          !IsCdmInterfaceVersionEnabledByDefault(CdmInterface::kVersion),
+      "Experimental CDM interface should not be enabled by default");
 };
-
-constexpr bool IsSupportedCdmModuleVersion(int version) {
-  return version == CDM_MODULE_VERSION;
-}
-
-// Returns whether the CDM interface of |version| is supported in the
-// implementation.
-constexpr bool IsSupportedCdmInterfaceVersion(int version) {
-  static_assert(cdm::ContentDecryptionModule::kVersion ==
-                    cdm::ContentDecryptionModule_9::kVersion,
-                "update the code below");
-  switch (version) {
-    // Supported versions in decreasing order.
-    case cdm::ContentDecryptionModule_11::kVersion:
-    case cdm::ContentDecryptionModule_10::kVersion:
-    case cdm::ContentDecryptionModule_9::kVersion:
-      return true;
-    default:
-      return false;
-  }
-}
-
-// Returns whether the CDM host interface of |version| is supported in the
-// implementation. Currently there's no way to disable a supported CDM host
-// interface at run time.
-constexpr bool IsSupportedCdmHostVersion(int version) {
-  static_assert(cdm::ContentDecryptionModule::Host::kVersion ==
-                    cdm::ContentDecryptionModule_9::Host::kVersion,
-                "update the code below");
-  switch (version) {
-    // Supported versions in decreasing order.
-    case cdm::Host_11::kVersion:
-    case cdm::Host_10::kVersion:
-    case cdm::Host_9::kVersion:
-      return true;
-    default:
-      return false;
-  }
-}
-
-// Ensures CDM interface versions in and only in the range [min_version,
-// max_version] are supported in the implementation.
-constexpr bool CheckSupportedCdmInterfaceVersions(int min_version,
-                                                  int max_version) {
-  // The latest stable CDM interface should always be supported.
-  int latest_stable_version = cdm::ContentDecryptionModule::kVersion;
-  if (latest_stable_version < min_version ||
-      latest_stable_version > max_version) {
-    return false;
-  }
-
-  return CheckSupportedVersions(IsSupportedCdmInterfaceVersion, min_version,
-                                max_version);
-}
-
-// Ensures CDM host interface versions in and only in the range [min_version,
-// max_version] are supported in the implementation.
-constexpr bool CheckSupportedCdmHostVersions(int min_version, int max_version) {
-  // The latest stable CDM Host interface should always be supported.
-  int latest_stable_version = cdm::ContentDecryptionModule::Host::kVersion;
-  if (latest_stable_version < min_version ||
-      latest_stable_version > max_version) {
-    return false;
-  }
-
-  return CheckSupportedVersions(IsSupportedCdmHostVersion, min_version,
-                                max_version);
-}
-
-// Returns whether the CDM interface of |version| is supported in the
-// implementation and enabled at runtime.
-MEDIA_EXPORT bool IsSupportedAndEnabledCdmInterfaceVersion(int version);
 
 }  // namespace media
 

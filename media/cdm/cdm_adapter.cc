@@ -553,8 +553,7 @@ CdmWrapper* CdmAdapter::CreateCdmInstance(const std::string& key_system) {
     // instead of a sparse histogram is okay. The following DCHECK asserts this.
     DCHECK(cdm->GetInterfaceVersion() <= 30);
     UMA_HISTOGRAM_ENUMERATION("Media.EME.CdmInterfaceVersion",
-                              cdm->GetInterfaceVersion(),
-                              cdm::ContentDecryptionModule::kVersion + 1);
+                              cdm->GetInterfaceVersion(), 30);
   }
 
   return cdm;
