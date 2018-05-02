@@ -4,5 +4,6 @@ EVENT(canplaythrough)
 EVENT(webkitfullscreenchange)
 EVENT(mousedown)
 EVENT(mouseup)
+EVENT(seeked)
 END OF TEST
 
