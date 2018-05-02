@@ -51,6 +51,11 @@ FullscreenControlPopup::FullscreenControlPopup(
 
 FullscreenControlPopup::~FullscreenControlPopup() {}
 
+// static
+int FullscreenControlPopup::GetButtonBottomOffset() {
+  return kFinalOffset + FullscreenControlView::kCircleButtonDiameter;
+}
+
 void FullscreenControlPopup::Show(const gfx::Rect& parent_bounds_in_screen) {
   if (IsVisible())
     return;
@@ -64,8 +69,6 @@ void FullscreenControlPopup::Show(const gfx::Rect& parent_bounds_in_screen) {
   // to prevent potential flickering.
   AnimationProgressed(animation_.get());
   popup_->Show();
-
-  OnVisibilityChanged();
 }
 
 void FullscreenControlPopup::Hide(bool animated) {
@@ -80,10 +83,6 @@ void FullscreenControlPopup::Hide(bool animated) {
 
   animation_->Reset(0);
   AnimationEnded(animation_.get());
-}
-
-gfx::Rect FullscreenControlPopup::GetFinalBounds() const {
-  return CalculateBounds(kFinalOffset);
 }
 
 views::Widget* FullscreenControlPopup::GetPopupWidget() {
@@ -118,10 +117,10 @@ void FullscreenControlPopup::AnimationEnded(const gfx::Animation* animation) {
     // It's the end of the reversed animation. Just hide the popup in this case.
     parent_bounds_in_screen_ = gfx::Rect();
     popup_->Hide();
-    OnVisibilityChanged();
-    return;
+  } else {
+    AnimationProgressed(animation);
   }
-  AnimationProgressed(animation);
+  OnVisibilityChanged();
 }
 
 gfx::Rect FullscreenControlPopup::CalculateBounds(int y_offset) const {

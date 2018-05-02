@@ -106,6 +106,18 @@ class FullscreenControlViewTest : public InProcessBrowserTest {
         std::move(callback);
   }
 
+  base::OneShotTimer* GetPopupTimeoutTimer() {
+    return &GetFullscreenControlHost()->popup_timeout_timer_;
+  }
+
+  void RunLoopUntilVisibilityChanges() {
+    base::RunLoop run_loop;
+    SetPopupVisibilityChangedCallback(run_loop.QuitClosure());
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), kPopupEventTimeout);
+    run_loop.Run();
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 
@@ -148,12 +160,78 @@ IN_PROC_BROWSER_TEST_F(FullscreenControlViewTest, MAYBE_MouseExitFullscreen) {
 
 #if defined(OS_MACOSX)
 // Entering fullscreen is flaky on Mac: http://crbug.com/824517
+#define MAYBE_MouseExitFullscreen_TimeoutAndRetrigger \
+  DISABLED_MouseExitFullscreen_TimeoutAndRetrigger
+#else
+#define MAYBE_MouseExitFullscreen_TimeoutAndRetrigger \
+  MouseExitFullscreen_TimeoutAndRetrigger
+#endif
+IN_PROC_BROWSER_TEST_F(FullscreenControlViewTest,
+                       MAYBE_MouseExitFullscreen_TimeoutAndRetrigger) {
+  EnterActiveTabFullscreen();
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
+  ASSERT_TRUE(browser_view->IsFullscreen());
+
+  FullscreenControlHost* host = GetFullscreenControlHost();
+  host->Hide(false);
+  ASSERT_FALSE(host->IsVisible());
+
+  // Simulate moving the mouse to the top of the screen, which should show the
+  // fullscreen exit UI.
+  ui::MouseEvent mouse_move(ui::ET_MOUSE_MOVED, gfx::Point(1, 1), gfx::Point(),
+                            base::TimeTicks(), 0, 0);
+  host->OnMouseEvent(&mouse_move);
+  ASSERT_TRUE(host->IsVisible());
+
+  // Wait until popup times out. This is one wait for show and one wait for
+  // hide.
+  RunLoopUntilVisibilityChanges();
+  RunLoopUntilVisibilityChanges();
+  ASSERT_FALSE(host->IsVisible());
+
+  // Simulate moving the mouse to the top again. This should not show the exit
+  // UI.
+  mouse_move = ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(2, 1),
+                              gfx::Point(), base::TimeTicks(), 0, 0);
+  host->OnMouseEvent(&mouse_move);
+  ASSERT_FALSE(host->IsVisible());
+
+  // Simulate moving the mouse out of the buffer area. This resets the state.
+  mouse_move = ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(2, 1000),
+                              gfx::Point(), base::TimeTicks(), 0, 0);
+  host->OnMouseEvent(&mouse_move);
+  ASSERT_FALSE(host->IsVisible());
+
+  // Simulate moving the mouse to the top again, which should show the exit UI.
+  mouse_move = ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(1, 1),
+                              gfx::Point(), base::TimeTicks(), 0, 0);
+  host->OnMouseEvent(&mouse_move);
+  RunLoopUntilVisibilityChanges();
+  ASSERT_TRUE(host->IsVisible());
+
+  // Simulate immediately moving the mouse out of the buffer area. This should
+  // hide the exit UI.
+  mouse_move = ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(2, 1000),
+                              gfx::Point(), base::TimeTicks(), 0, 0);
+  host->OnMouseEvent(&mouse_move);
+  RunLoopUntilVisibilityChanges();
+  ASSERT_FALSE(host->IsVisible());
+
+  ASSERT_TRUE(browser_view->IsFullscreen());
+}
+
+#if defined(OS_MACOSX)
+// Entering fullscreen is flaky on Mac: http://crbug.com/824517
 #define MAYBE_KeyboardPopupInteraction DISABLED_KeyboardPopupInteraction
 #else
 #define MAYBE_KeyboardPopupInteraction KeyboardPopupInteraction
 #endif
 IN_PROC_BROWSER_TEST_F(FullscreenControlViewTest,
                        MAYBE_KeyboardPopupInteraction) {
+  // TODO(yuweih): Test will fail if the cursor is at the top of the screen.
+  // That's because random mouse move events may pass from the browser to the
+  // host and interfere with the InputEntryMethod tracking. Consider fixing
+  // this.
   EnterActiveTabFullscreen();
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   ASSERT_TRUE(browser_view->IsFullscreen());

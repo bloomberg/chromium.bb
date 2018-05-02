@@ -79,13 +79,13 @@ TEST_F(FullscreenControlPopupTest, ShowPopupAnimated) {
   // started.
   EXPECT_GT(GetParentBounds().y(), GetPopupBounds().y());
 
-  gfx::Rect final_bounds = popup_->GetFinalBounds();
-  EXPECT_LT(GetParentBounds().y(), final_bounds.y());
   CompleteAnimation();
 
   EXPECT_FALSE(popup_->IsAnimating());
   EXPECT_TRUE(popup_->IsVisible());
-  EXPECT_EQ(final_bounds, GetPopupBounds());
+  int final_bottom =
+      FullscreenControlPopup::GetButtonBottomOffset() + GetParentBounds().y();
+  EXPECT_EQ(final_bottom, GetPopupBounds().bottom());
 }
 
 TEST_F(FullscreenControlPopupTest, HidePopupWhileStillShowing) {

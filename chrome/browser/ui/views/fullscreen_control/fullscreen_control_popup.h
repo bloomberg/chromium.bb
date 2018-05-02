@@ -29,6 +29,9 @@ class FullscreenControlPopup : public gfx::AnimationDelegate {
                          const base::RepeatingClosure& on_visibility_changed);
   ~FullscreenControlPopup() override;
 
+  // Returns the final bottom of the button as a y offset to its parent view.
+  static int GetButtonBottomOffset();
+
   // Shows the indicator with an animation that drops it off the top of
   // |parent_view|.
   // |parent_bounds_in_screen| holds the bounds of |parent_view| in the screen
@@ -39,10 +42,6 @@ class FullscreenControlPopup : public gfx::AnimationDelegate {
   // the reversed animation of Show(), i.e. the indicator flies to the top of
   // |parent_widget|.
   void Hide(bool animated);
-
-  // Returns the final bounds of the control view when it is fully shown.
-  // Returns empty bounds if the popup is not visible.
-  gfx::Rect GetFinalBounds() const;
 
   views::Widget* GetPopupWidget();
   gfx::SlideAnimation* GetAnimationForTesting();
