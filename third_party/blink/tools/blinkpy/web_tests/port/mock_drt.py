@@ -42,10 +42,10 @@ import sys
 import types
 
 # Since we execute this script directly as part of the unit tests, we need to ensure
-# that Tools/Scripts is in sys.path for the next imports to work correctly.
-script_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-if script_dir not in sys.path:
-    sys.path.append(script_dir)
+# that blink/tools is in sys.path for the next imports to work correctly.
+tools_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+if tools_dir not in sys.path:
+    sys.path.append(tools_dir)
 
 from blinkpy.common import exit_codes
 from blinkpy.common import read_checksum_from_png

@@ -217,7 +217,7 @@ ninja -C out/Default
 # Only "_fini" and "_init" should be unprefixed.
 nm -B out/Default/libchromium_sqlite3.so | cut -c 18- | sort | grep '^T'
 out/Default/sql_unittests
-third_party/WebKit/Tools/Scripts/run-webkit-tests -t Default storage/websql/*
+third_party/blink/tools/run_web_tests.py -t Default storage/websql/*
 cd third_party/sqlite
 
 #### Create the review.

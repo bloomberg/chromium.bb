@@ -28,8 +28,8 @@
 
 """A utility module for making standalone scripts to start servers.
 
-Scripts in Tools/Scripts can use this module to start servers that
-are normally used for layout tests, outside of the layout test runner.
+Scripts in tools/ can use this module to start servers that are normally used
+for layout tests, outside of the layout test runner.
 """
 
 import argparse

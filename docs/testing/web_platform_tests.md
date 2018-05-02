@@ -93,7 +93,7 @@ For maintainers:
 -   The exporter runs continuously under the
     [chromium.infra.cron master](https://build.chromium.org/p/chromium.infra.cron/builders/wpt-exporter).
 -   The source lives in
-    [third_party/WebKit/Tools/Scripts/wpt-export](../../third_party/WebKit/Tools/Scripts/wpt-export).
+    [third_party/blink/tools/wpt_export.py](../../third_party/blink/tools/wpt_export.py).
 -   If the exporter starts misbehaving
     (for example, creating the same PR over and over again)
     put it in "dry run" mode by landing [this CL](https://crrev.com/c/462381/).
@@ -133,7 +133,7 @@ unauthenticated requests, so it is recommended that you let `wpt-export` and
 
 To pull the latest versions of the tests that are currently being imported, you
 can also directly invoke the
-[wpt-import](../../third_party/WebKit/Tools/Scripts/wpt-import) script.
+[wpt-import](../../third_party/blink/tools/wpt_import.py) script.
 
 That script will pull the latest version of the tests from our mirrors of the
 upstream repositories. If any new versions of tests are found, they will be

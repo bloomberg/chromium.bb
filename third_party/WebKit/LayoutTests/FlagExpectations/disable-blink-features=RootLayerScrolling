@@ -587,7 +587,7 @@ crbug.com/538697 [ Win ] printing/webgl-oversized-printing.html [ Failure Crash 
 # development, just marking failed tests here is fine enough for tests under
 # virtual/outofblink-cors.
 #
-# ./Tools/Scripts/run_web_tests.py virtual/outofblink-cors
+# ./tools/run_web_tests.py virtual/outofblink-cors
 # Found 2061 tests; running 2060, skipping 1.
 # 2060 tests ran as expected (1968 passed, 92 didn't).
 
