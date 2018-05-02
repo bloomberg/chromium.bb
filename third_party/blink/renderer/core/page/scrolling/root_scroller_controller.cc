@@ -30,13 +30,15 @@ class RootFrameViewport;
 namespace {
 
 bool FillsViewport(const Element& element, bool check_location) {
-  DCHECK(element.GetLayoutObject());
-  DCHECK(element.GetLayoutObject()->IsBox());
+  if (!element.GetLayoutObject())
+    return false;
 
   LayoutObject* layout_object = element.GetLayoutObject();
 
   // TODO(bokan): Broken for OOPIF. crbug.com/642378.
   Document& top_document = element.GetDocument().TopDocument();
+  if (!top_document.GetLayoutView())
+    return false;
 
   FloatQuad quad = layout_object->LocalToAbsoluteQuad(
       FloatRect(ToLayoutBox(layout_object)->PaddingBoxRect()));
@@ -129,6 +131,11 @@ void RootScrollerController::DidResizeFrameView() {
 
 void RootScrollerController::DidUpdateIFrameFrameView(
     HTMLFrameOwnerElement& element) {
+  if (RuntimeEnabledFeatures::ImplicitRootScrollerEnabled()) {
+    ConsiderForImplicit(element);
+    ProcessImplicitCandidates();
+  }
+
   if (&element != root_scroller_.Get() && &element != implicit_root_scroller_)
     return;
 
@@ -378,10 +385,9 @@ void RootScrollerController::ConsiderForImplicit(Node& node) {
   if (document_->GetPage()->GetChromeClient().IsPopup())
     return;
 
-  if (!node.IsElementNode())
+  if (!node.IsElementNode() || !node.GetLayoutObject())
     return;
 
-  DCHECK(node.GetLayoutObject());
   DCHECK(node.GetLayoutObject()->IsBox());
 
   if (!node.IsFrameOwnerElement()) {
