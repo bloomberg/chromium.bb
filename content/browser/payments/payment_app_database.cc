@@ -457,10 +457,14 @@ void PaymentAppDatabase::DidFindRegistrationToSetPaymentApp(
   bool success = payment_app_proto.SerializeToString(&serialized_payment_app);
   DCHECK(success);
 
+  // Constructing registration_id, registration_origin and storage_key before
+  // moving registration.
+  int64_t registration_id = registration->id();
+  GURL registration_origin = registration->pattern().GetOrigin();
+  std::string storage_key = CreatePaymentAppKey(registration->pattern().spec());
   service_worker_context_->StoreRegistrationUserData(
-      registration->id(), registration->pattern().GetOrigin(),
-      {{CreatePaymentAppKey(registration->pattern().spec()),
-        serialized_payment_app}},
+      registration_id, registration_origin,
+      {{storage_key, serialized_payment_app}},
       base::BindOnce(&PaymentAppDatabase::DidWritePaymentAppForSetPaymentApp,
                      weak_ptr_factory_.GetWeakPtr(), instrument_key, method,
                      std::move(callback), std::move(registration)));
