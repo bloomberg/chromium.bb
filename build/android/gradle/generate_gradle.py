@@ -41,6 +41,8 @@ _RES_SUBDIR = 'extracted-res'
 _GRADLE_BUILD_FILE = 'build.gradle'
 # This needs to come first alphabetically among all modules.
 _MODULE_ALL = '_all'
+_SRC_INTERNAL = os.path.join(
+    os.path.dirname(host_paths.DIR_SOURCE_ROOT), 'src-internal')
 
 _DEFAULT_TARGETS = [
     '//android_webview/test/embedded_test_server:aw_net_test_support_apk',
@@ -748,7 +750,7 @@ def main():
                       action='store_true',
                       help='Generate R.java and other ninja-generated files')
   parser.add_argument('-j',
-                      default=1000,
+                      default=1000 if os.path.exists(_SRC_INTERNAL) else 50,
                       help='Value for number of parallel jobs for ninja')
   version_group = parser.add_mutually_exclusive_group()
   version_group.add_argument('--beta',
