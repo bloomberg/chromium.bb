@@ -62,10 +62,8 @@ void SyncPrefs::RegisterProfilePrefs(
   // although they don't have sync representations.
   user_types.PutAll(ProxyTypes());
 
-  // Treat bookmarks and device info specially.
-  RegisterDataTypePreferredPref(registry, BOOKMARKS, true);
+  // Treat device info specially.
   RegisterDataTypePreferredPref(registry, DEVICE_INFO, true);
-  user_types.Remove(BOOKMARKS);
   user_types.Remove(DEVICE_INFO);
 
   // All types are set to off by default, which forces a configuration to
