@@ -71,11 +71,11 @@ void SpeechRecognitionDispatcherHost::StartRequest(
 
   // Check that the origin specified by the renderer process is one
   // that it is allowed to access.
-  if (params->origin_url != "null" &&
+  if (!params->origin.unique() &&
       !ChildProcessSecurityPolicyImpl::GetInstance()->CanRequestURL(
-          render_process_id_, GURL(params->origin_url))) {
+          render_process_id_, params->origin.GetURL())) {
     LOG(ERROR) << "SRDH::OnStartRequest, disallowed origin: "
-               << params->origin_url;
+               << params->origin.Serialize();
     return;
   }
 
@@ -258,7 +258,7 @@ void SpeechRecognitionDispatcherHost::StartSessionOnIO(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   SpeechRecognitionSessionContext context;
-  context.context_name = params->origin_url;
+  context.security_origin = params->origin;
   context.render_process_id = render_process_id_;
   context.render_frame_id = render_frame_id_;
   context.embedder_render_process_id = embedder_render_process_id;
@@ -269,7 +269,7 @@ void SpeechRecognitionDispatcherHost::StartSessionOnIO(
   config.language = params->language;
   config.grammars = params->grammars;
   config.max_hypotheses = params->max_hypotheses;
-  config.origin_url = params->origin_url;
+  config.origin = params->origin;
   config.initial_context = context;
   config.url_request_context_getter = context_getter_.get();
   config.filter_profanities = filter_profanities;

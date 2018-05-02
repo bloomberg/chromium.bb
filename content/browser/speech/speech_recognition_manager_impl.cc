@@ -277,7 +277,7 @@ int SpeechRecognitionManagerImpl::CreateSession(
   remote_engine_config.continuous = config.continuous;
   remote_engine_config.interim_results = config.interim_results;
   remote_engine_config.max_hypotheses = config.max_hypotheses;
-  remote_engine_config.origin_url = config.origin_url;
+  remote_engine_config.origin_url = config.origin.Serialize();
   remote_engine_config.auth_token = config.auth_token;
   remote_engine_config.auth_scope = config.auth_scope;
   remote_engine_config.preamble = config.preamble;
@@ -349,8 +349,7 @@ void SpeechRecognitionManagerImpl::RecognitionAllowedCallback(int session_id,
     SpeechRecognitionSessionContext& context = session->context;
     context.label = media_stream_manager_->MakeMediaAccessRequest(
         context.render_process_id, context.render_frame_id, context.request_id,
-        StreamControls(true, false),
-        url::Origin::Create(GURL(context.context_name)),
+        StreamControls(true, false), context.security_origin,
         base::BindOnce(
             &SpeechRecognitionManagerImpl::MediaRequestPermissionCallback,
             weak_factory_.GetWeakPtr(), session_id));

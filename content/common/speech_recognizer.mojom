@@ -5,6 +5,7 @@
 module content.mojom;
 
 import "content/public/common/speech_recognition_grammar.mojom";
+import "url/mojom/origin.mojom";
 
 // Used to start a speech recognition session.
 struct StartSpeechRecognitionRequestParams {
@@ -18,8 +19,7 @@ struct StartSpeechRecognitionRequestParams {
   array<content.mojom.SpeechRecognitionGrammar> grammars;
 
   // URL of the page (or iframe if applicable).
-  // TODO(adithyas): Make this a mojom origin instead.
-  string origin_url;
+  url.mojom.Origin origin;
 
   // Maximum number of hypotheses allowed for each results.
   uint32 max_hypotheses;
