@@ -430,12 +430,18 @@ bool Compositor::IsVisible() {
 }
 
 bool Compositor::ScrollLayerTo(int layer_id, const gfx::ScrollOffset& offset) {
-  return host_->GetInputHandler()->ScrollLayerTo(layer_id, offset);
+  auto input_handler = host_->GetInputHandler();
+  // TODO(crbug.com/838873): Handle the case where this weak pointer is invalid.
+  DCHECK(input_handler);
+  return input_handler->ScrollLayerTo(layer_id, offset);
 }
 
 bool Compositor::GetScrollOffsetForLayer(int layer_id,
                                          gfx::ScrollOffset* offset) const {
-  return host_->GetInputHandler()->GetScrollOffsetForLayer(layer_id, offset);
+  auto input_handler = host_->GetInputHandler();
+  // TODO(crbug.com/838873): Handle the case where this weak pointer is invalid.
+  DCHECK(input_handler);
+  return input_handler->GetScrollOffsetForLayer(layer_id, offset);
 }
 
 void Compositor::SetAuthoritativeVSyncInterval(
