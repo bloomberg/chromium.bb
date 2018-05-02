@@ -2808,6 +2808,10 @@ crbug.com/833215 [ Mac10.12 Mac10.13 Retina ] external/wpt/accelerometer/Acceler
 crbug.com/833215 [ Linux ] external/wpt/accelerometer/Accelerometer.https.html [ Pass Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux Win10 ] external/wpt/fetch/api/redirect/redirect-count.any.worker.html [ Timeout ]
+crbug.com/626703 [ Linux Win10 ] virtual/outofblink-cors/external/wpt/fetch/api/redirect/redirect-count.any.html [ Timeout ]
+crbug.com/626703 [ Linux Win10 ] virtual/outofblink-cors/external/wpt/fetch/api/redirect/redirect-count.any.worker.html [ Timeout ]
+crbug.com/626703 [ Linux Win10 ] external/wpt/fetch/api/redirect/redirect-count.any.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/dom/nodes/ParentNode-querySelector-All.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] virtual/unified-autoplay/external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-self.https.sub.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/html/syntax/parsing/template/creating-an-element-for-the-token/template-owner-document.html [ Timeout ]
@@ -3761,7 +3765,6 @@ crbug.com/680407 [ Mac ] fast/forms/select/menulist-appearance-basic.html [ Need
 
 # Importing 'fetch' tests from WPT.
 crbug.com/705490 external/wpt/fetch/api/basic/error-after-response.html [ Timeout Pass ]
-crbug.com/813694 external/wpt/fetch/api/redirect/redirect-location-worker.html [ Pass Timeout ]
 crbug.com/820334 external/wpt/fetch/api/request/request-cache-default-conditional.html [ Timeout Pass ]
 
 crbug.com/765116 external/wpt/xhr/responsexml-document-properties.htm [ Failure ]
