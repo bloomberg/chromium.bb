@@ -2854,25 +2854,6 @@
             ]
         }
     ],
-    "RafAlignedMouseInput": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "RafAlignedMouseInput"
-                    ]
-                }
-            ]
-        }
-    ],
     "ReaderForAccessibility": [
         {
             "platforms": [
