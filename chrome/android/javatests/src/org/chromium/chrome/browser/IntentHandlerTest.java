@@ -92,8 +92,8 @@ public class IntentHandlerTest {
     };
 
     private static final String[][] INTENT_URLS_AND_TYPES_FOR_MHTML = {
-            {"file://foo.mhtml", ""}, {"file://foo.mht", ""},
-            {"file://foo.mhtml", "application/octet-stream"},
+            {"file://foo.mhtml", ""}, {"file://foo.mht", ""}, {"file://foo!.mht", ""},
+            {"file://foo!.mhtml", ""}, {"file://foo.mhtml", "application/octet-stream"},
             {"file://foo.mht", "application/octet-stream"}, {"file://foo", "multipart/related"},
             {"file://foo", "message/rfc822"}, {"content://example.com/1", "multipart/related"},
             {"content://example.com/1", "message/rfc822"},

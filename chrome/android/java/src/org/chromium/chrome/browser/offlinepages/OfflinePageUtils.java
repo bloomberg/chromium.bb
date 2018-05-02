@@ -594,7 +594,7 @@ public class OfflinePageUtils {
      * A load url parameters to handle the intent for viewing MHTML file or content. If the
      * trusted offline page is found, the URL (http/https) of the offline page is to be opened.
      * Otherwise, the file or content URL from the intent will be launched.
-     * @param internUrl URL from the intent.
+     * @param intentUrl URL from the intent.
      * @param callback  The callback to pass back the launching URL and extra headers.
      */
     public static void getLoadUrlParamsForOpeningMhtmlFileOrContent(
