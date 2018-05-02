@@ -3,11 +3,12 @@
 
 {{source_files_for_generated_file(template_file, input_files)}}
 
-#include "{{namespace|lower}}_names.h"
+#include "{{this_include_path}}"
+
+#include <memory>
 
 #include "third_party/blink/renderer/platform/wtf/static_constructors.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
-#include <memory>
 
 namespace blink {
 namespace {{namespace}}Names {
@@ -103,5 +104,5 @@ void init() {
   DCHECK_EQ(attr_i, {{namespace}}AttrsCount);
 }
 
-} // {{namespace}}
-} // namespace blink
+}  // namespace {{namespace}}Names
+}  // namespace blink
