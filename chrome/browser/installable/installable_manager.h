@@ -192,7 +192,7 @@ class InstallableManager
                      const SkBitmap& bitmap);
 
   // content::ServiceWorkerContextObserver overrides
-  void OnRegistrationStored(const GURL& pattern) override;
+  void OnRegistrationCompleted(const GURL& pattern) override;
 
   // content::WebContentsObserver overrides
   void DidFinishNavigation(content::NavigationHandle* handle) override;

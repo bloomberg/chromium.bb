@@ -111,7 +111,7 @@ class RejectActivateTestHelper : public EmbeddedWorkerTestHelper {
 };
 
 enum NotificationType {
-  REGISTRATION_STORED,
+  REGISTRATION_COMPLETED,
   REGISTRATION_DELETED,
   STORAGE_RECOVERED,
 };
@@ -138,10 +138,10 @@ class ServiceWorkerContextTest : public ServiceWorkerContextCoreObserver,
   void TearDown() override { helper_.reset(); }
 
   // ServiceWorkerContextCoreObserver overrides.
-  void OnRegistrationStored(int64_t registration_id,
-                            const GURL& pattern) override {
+  void OnRegistrationCompleted(int64_t registration_id,
+                               const GURL& pattern) override {
     NotificationLog log;
-    log.type = REGISTRATION_STORED;
+    log.type = REGISTRATION_COMPLETED;
     log.pattern = pattern;
     log.registration_id = registration_id;
     notifications_.push_back(log);
@@ -229,7 +229,7 @@ TEST_F(ServiceWorkerContextTest, Register) {
   EXPECT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, registration_id);
 
   ASSERT_EQ(1u, notifications_.size());
-  EXPECT_EQ(REGISTRATION_STORED, notifications_[0].type);
+  EXPECT_EQ(REGISTRATION_COMPLETED, notifications_[0].type);
   EXPECT_EQ(pattern, notifications_[0].pattern);
   EXPECT_EQ(registration_id, notifications_[0].registration_id);
 
@@ -278,7 +278,7 @@ TEST_F(ServiceWorkerContextTest, Register_RejectInstall) {
   EXPECT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, registration_id);
 
   ASSERT_EQ(1u, notifications_.size());
-  EXPECT_EQ(REGISTRATION_STORED, notifications_[0].type);
+  EXPECT_EQ(REGISTRATION_COMPLETED, notifications_[0].type);
   EXPECT_EQ(pattern, notifications_[0].pattern);
   EXPECT_EQ(registration_id, notifications_[0].registration_id);
 
@@ -326,7 +326,7 @@ TEST_F(ServiceWorkerContextTest, Register_RejectActivate) {
   EXPECT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, registration_id);
 
   ASSERT_EQ(1u, notifications_.size());
-  EXPECT_EQ(REGISTRATION_STORED, notifications_[0].type);
+  EXPECT_EQ(REGISTRATION_COMPLETED, notifications_[0].type);
   EXPECT_EQ(pattern, notifications_[0].pattern);
   EXPECT_EQ(registration_id, notifications_[0].registration_id);
 
@@ -369,7 +369,7 @@ TEST_F(ServiceWorkerContextTest, Unregister) {
   base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(2u, notifications_.size());
-  EXPECT_EQ(REGISTRATION_STORED, notifications_[0].type);
+  EXPECT_EQ(REGISTRATION_COMPLETED, notifications_[0].type);
   EXPECT_EQ(pattern, notifications_[0].pattern);
   EXPECT_EQ(registration_id, notifications_[0].registration_id);
   EXPECT_EQ(REGISTRATION_DELETED, notifications_[1].type);
@@ -474,16 +474,16 @@ TEST_F(ServiceWorkerContextTest, UnregisterMultiple) {
   base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(6u, notifications_.size());
-  EXPECT_EQ(REGISTRATION_STORED, notifications_[0].type);
+  EXPECT_EQ(REGISTRATION_COMPLETED, notifications_[0].type);
   EXPECT_EQ(registration_id1, notifications_[0].registration_id);
   EXPECT_EQ(origin1_p1, notifications_[0].pattern);
-  EXPECT_EQ(REGISTRATION_STORED, notifications_[1].type);
+  EXPECT_EQ(REGISTRATION_COMPLETED, notifications_[1].type);
   EXPECT_EQ(origin1_p2, notifications_[1].pattern);
   EXPECT_EQ(registration_id2, notifications_[1].registration_id);
-  EXPECT_EQ(REGISTRATION_STORED, notifications_[2].type);
+  EXPECT_EQ(REGISTRATION_COMPLETED, notifications_[2].type);
   EXPECT_EQ(origin2_p1, notifications_[2].pattern);
   EXPECT_EQ(registration_id3, notifications_[2].registration_id);
-  EXPECT_EQ(REGISTRATION_STORED, notifications_[3].type);
+  EXPECT_EQ(REGISTRATION_COMPLETED, notifications_[3].type);
   EXPECT_EQ(origin3_p1, notifications_[3].pattern);
   EXPECT_EQ(registration_id4, notifications_[3].registration_id);
   EXPECT_EQ(REGISTRATION_DELETED, notifications_[4].type);
@@ -529,10 +529,10 @@ TEST_F(ServiceWorkerContextTest, RegisterNewScript) {
   EXPECT_EQ(old_registration_id, new_registration_id);
 
   ASSERT_EQ(2u, notifications_.size());
-  EXPECT_EQ(REGISTRATION_STORED, notifications_[0].type);
+  EXPECT_EQ(REGISTRATION_COMPLETED, notifications_[0].type);
   EXPECT_EQ(pattern, notifications_[0].pattern);
   EXPECT_EQ(old_registration_id, notifications_[0].registration_id);
-  EXPECT_EQ(REGISTRATION_STORED, notifications_[1].type);
+  EXPECT_EQ(REGISTRATION_COMPLETED, notifications_[1].type);
   EXPECT_EQ(pattern, notifications_[1].pattern);
   EXPECT_EQ(new_registration_id, notifications_[1].registration_id);
 }
@@ -571,10 +571,10 @@ TEST_F(ServiceWorkerContextTest, RegisterDuplicateScript) {
   EXPECT_EQ(old_registration_id, new_registration_id);
 
   ASSERT_EQ(2u, notifications_.size());
-  EXPECT_EQ(REGISTRATION_STORED, notifications_[0].type);
+  EXPECT_EQ(REGISTRATION_COMPLETED, notifications_[0].type);
   EXPECT_EQ(pattern, notifications_[0].pattern);
   EXPECT_EQ(old_registration_id, notifications_[0].registration_id);
-  EXPECT_EQ(REGISTRATION_STORED, notifications_[1].type);
+  EXPECT_EQ(REGISTRATION_COMPLETED, notifications_[1].type);
   EXPECT_EQ(pattern, notifications_[1].pattern);
   EXPECT_EQ(old_registration_id, notifications_[1].registration_id);
 }
@@ -754,11 +754,11 @@ TEST_P(ServiceWorkerContextRecoveryTest, DeleteAndStartOver) {
   EXPECT_EQ(3, context()->GetNewServiceWorkerHandleId());
 
   ASSERT_EQ(3u, notifications_.size());
-  EXPECT_EQ(REGISTRATION_STORED, notifications_[0].type);
+  EXPECT_EQ(REGISTRATION_COMPLETED, notifications_[0].type);
   EXPECT_EQ(pattern, notifications_[0].pattern);
   EXPECT_EQ(registration_id, notifications_[0].registration_id);
   EXPECT_EQ(STORAGE_RECOVERED, notifications_[1].type);
-  EXPECT_EQ(REGISTRATION_STORED, notifications_[2].type);
+  EXPECT_EQ(REGISTRATION_COMPLETED, notifications_[2].type);
   EXPECT_EQ(pattern, notifications_[2].pattern);
   EXPECT_EQ(registration_id, notifications_[2].registration_id);
 }

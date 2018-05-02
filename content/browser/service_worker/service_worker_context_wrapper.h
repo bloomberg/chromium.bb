@@ -98,8 +98,8 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   }
 
   // ServiceWorkerContextCoreObserver implementation:
-  void OnRegistrationStored(int64_t registration_id,
-                            const GURL& pattern) override;
+  void OnRegistrationCompleted(int64_t registration_id,
+                               const GURL& pattern) override;
 
   // ServiceWorkerContext implementation:
   void AddObserver(ServiceWorkerContextObserver* observer) override;

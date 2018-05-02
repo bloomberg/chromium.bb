@@ -532,8 +532,8 @@ void InstallableManager::OnDidCheckHasServiceWorker(
     case content::ServiceWorkerCapability::NO_SERVICE_WORKER:
       InstallableTask& task = task_queue_.Current();
       if (task.params.wait_for_worker) {
-        // Wait for ServiceWorkerContextObserver::OnRegistrationStored. Set the
-        // param |wait_for_worker| to false so we only wait once per task.
+        // Wait for ServiceWorkerContextObserver::OnRegistrationCompleted. Set
+        // the param |wait_for_worker| to false so we only wait once per task.
         task.params.wait_for_worker = false;
         OnWaitingForServiceWorker();
         task_queue_.PauseCurrent();
@@ -597,7 +597,7 @@ void InstallableManager::OnIconFetched(const GURL icon_url,
   WorkOnTask();
 }
 
-void InstallableManager::OnRegistrationStored(const GURL& pattern) {
+void InstallableManager::OnRegistrationCompleted(const GURL& pattern) {
   // If the scope doesn't match we keep waiting.
   if (!content::ServiceWorkerContext::ScopeMatches(pattern,
                                                    manifest().start_url)) {

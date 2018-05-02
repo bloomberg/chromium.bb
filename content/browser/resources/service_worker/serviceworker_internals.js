@@ -220,7 +220,7 @@ cr.define('serviceworker', function() {
     update();
   }
 
-  function onRegistrationStored(scope) {
+  function onRegistrationCompleted(scope) {
     update();
   }
 
@@ -258,7 +258,7 @@ cr.define('serviceworker', function() {
     onErrorReported: onErrorReported,
     onConsoleMessageReported: onConsoleMessageReported,
     onVersionStateChanged: onVersionStateChanged,
-    onRegistrationStored: onRegistrationStored,
+    onRegistrationCompleted: onRegistrationCompleted,
     onRegistrationDeleted: onRegistrationDeleted,
   };
 });

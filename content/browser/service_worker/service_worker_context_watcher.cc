@@ -362,8 +362,9 @@ void ServiceWorkerContextWatcher::OnControlleeRemoved(int64_t version_id,
   SendVersionInfo(*version);
 }
 
-void ServiceWorkerContextWatcher::OnRegistrationStored(int64_t registration_id,
-                                                       const GURL& pattern) {
+void ServiceWorkerContextWatcher::OnRegistrationCompleted(
+    int64_t registration_id,
+    const GURL& pattern) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   SendRegistrationInfo(registration_id, pattern,
                        ServiceWorkerRegistrationInfo::IS_NOT_DELETED);

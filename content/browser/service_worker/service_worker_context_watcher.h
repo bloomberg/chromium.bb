@@ -112,8 +112,8 @@ class CONTENT_EXPORT ServiceWorkerContextWatcher
       blink::mojom::ServiceWorkerProviderType type) override;
   void OnControlleeRemoved(int64_t version_id,
                            const std::string& uuid) override;
-  void OnRegistrationStored(int64_t registration_id,
-                            const GURL& pattern) override;
+  void OnRegistrationCompleted(int64_t registration_id,
+                               const GURL& pattern) override;
   void OnRegistrationDeleted(int64_t registration_id,
                              const GURL& pattern) override;
 

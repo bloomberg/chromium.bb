@@ -12,7 +12,11 @@ namespace content {
 class ServiceWorkerContextObserver {
  public:
   // Called when a service worker has been registered with scope |pattern|.
-  virtual void OnRegistrationStored(const GURL& pattern) {}
+  //
+  // This is called when the ServiceWorkerContainer.register() promise is
+  // resolved, which happens before the service worker registration is persisted
+  // to disk.
+  virtual void OnRegistrationCompleted(const GURL& pattern) {}
 
  protected:
   virtual ~ServiceWorkerContextObserver() {}

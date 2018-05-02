@@ -242,10 +242,11 @@ ResourceContext* ServiceWorkerContextWrapper::resource_context() {
   return resource_context_;
 }
 
-void ServiceWorkerContextWrapper::OnRegistrationStored(int64_t registration_id,
-                                                       const GURL& pattern) {
+void ServiceWorkerContextWrapper::OnRegistrationCompleted(
+    int64_t registration_id,
+    const GURL& pattern) {
   for (auto& observer : observer_list_)
-    observer.OnRegistrationStored(pattern);
+    observer.OnRegistrationCompleted(pattern);
 }
 
 void ServiceWorkerContextWrapper::AddObserver(
