@@ -7,9 +7,9 @@
 #include <string.h>
 #include <type_traits>
 
-#include "base/allocator/partition_allocator/partition_direct_map_extent-inl.h"
+#include "base/allocator/partition_allocator/partition_direct_map_extent.h"
 #include "base/allocator/partition_allocator/partition_oom.h"
-#include "base/allocator/partition_allocator/partition_page-inl.h"
+#include "base/allocator/partition_allocator/partition_page.h"
 #include "base/allocator/partition_allocator/spin_lock.h"
 #include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
@@ -276,7 +276,7 @@ void* PartitionRootGeneric::Realloc(void* ptr,
   internal::PartitionPage* page = internal::PartitionPage::FromPointer(
       internal::PartitionCookieFreePointerAdjust(ptr));
   // TODO(palmer): See if we can afford to make this a CHECK.
-  DCHECK(internal::PartitionPage::IsPointerValid(page));
+  DCHECK(IsValidPage(page));
 
   if (UNLIKELY(page->bucket->is_direct_mapped())) {
     // We may be able to perform the realloc in place by changing the

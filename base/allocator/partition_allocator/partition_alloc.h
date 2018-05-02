@@ -65,10 +65,10 @@
 
 #include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
-#include "base/allocator/partition_allocator/partition_bucket-inl.h"
+#include "base/allocator/partition_allocator/partition_bucket.h"
 #include "base/allocator/partition_allocator/partition_cookie.h"
-#include "base/allocator/partition_allocator/partition_page-inl.h"
-#include "base/allocator/partition_allocator/partition_root_base-inl.h"
+#include "base/allocator/partition_allocator/partition_page.h"
+#include "base/allocator/partition_allocator/partition_root_base.h"
 #include "base/allocator/partition_allocator/spin_lock.h"
 #include "base/base_export.h"
 #include "base/bits.h"
@@ -271,7 +271,7 @@ ALWAYS_INLINE void* PartitionRoot::Alloc(size_t size, const char* type_name) {
   DCHECK(index < this->num_buckets);
   DCHECK(size == index << kBucketShift);
   internal::PartitionBucket* bucket = &this->buckets()[index];
-  void* result = bucket->Alloc(this, 0, size);
+  void* result = AllocFromBucket(bucket, 0, size);
   PartitionAllocHooks::AllocationHookIfEnabled(result, requested_size,
                                                type_name);
   return result;
@@ -288,7 +288,7 @@ ALWAYS_INLINE void PartitionFree(void* ptr) {
   ptr = internal::PartitionCookieFreePointerAdjust(ptr);
   internal::PartitionPage* page = internal::PartitionPage::FromPointer(ptr);
   // TODO(palmer): See if we can afford to make this a CHECK.
-  DCHECK(internal::PartitionPage::IsPointerValid(page));
+  DCHECK(internal::PartitionRootBase::IsValidPage(page));
   page->Free(ptr);
 #endif
 }
@@ -326,7 +326,7 @@ ALWAYS_INLINE void* PartitionAllocGenericFlags(PartitionRootGeneric* root,
   void* ret = nullptr;
   {
     subtle::SpinLock::Guard guard(root->lock);
-    ret = bucket->Alloc(root, flags, size);
+    ret = root->AllocFromBucket(bucket, flags, size);
   }
   PartitionAllocHooks::AllocationHookIfEnabled(ret, requested_size, type_name);
   return ret;
@@ -351,7 +351,7 @@ ALWAYS_INLINE void PartitionRootGeneric::Free(void* ptr) {
   ptr = internal::PartitionCookieFreePointerAdjust(ptr);
   internal::PartitionPage* page = internal::PartitionPage::FromPointer(ptr);
   // TODO(palmer): See if we can afford to make this a CHECK.
-  DCHECK(internal::PartitionPage::IsPointerValid(page));
+  DCHECK(IsValidPage(page));
   {
     subtle::SpinLock::Guard guard(this->lock);
     page->Free(ptr);
@@ -392,7 +392,7 @@ ALWAYS_INLINE size_t PartitionAllocGetSize(void* ptr) {
   ptr = internal::PartitionCookieFreePointerAdjust(ptr);
   internal::PartitionPage* page = internal::PartitionPage::FromPointer(ptr);
   // TODO(palmer): See if we can afford to make this a CHECK.
-  DCHECK(internal::PartitionPage::IsPointerValid(page));
+  DCHECK(internal::PartitionRootBase::IsValidPage(page));
   size_t size = page->bucket->slot_size;
   return internal::PartitionCookieSizeAdjustSubtract(size);
 }
