@@ -121,9 +121,6 @@ class UpgradeDetectorImpl : public UpgradeDetector,
   // schedule calls to NotifyUpgrade.
   base::OneShotTimer upgrade_notification_timer_;
 
-  // True if this build is a dev or canary channel build.
-  bool is_unstable_channel_;
-
   // True if auto update is turned on.
   bool is_auto_update_enabled_;
 

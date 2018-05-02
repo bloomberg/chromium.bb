@@ -12,6 +12,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/time/tick_clock.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/upgrade_observer.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
@@ -19,6 +20,11 @@
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_WIN)
+#include "chrome/install_static/install_modes.h"
+#include "chrome/install_static/test/scoped_install_details.h"
+#endif  // defined(OS_WIN)
 
 namespace {
 
@@ -295,6 +301,29 @@ TEST_F(UpgradeDetectorImplTest, TestPeriodChanges) {
   EXPECT_EQ(upgrade_detector.upgrade_notification_stage(),
             UpgradeDetector::UPGRADE_ANNOYANCE_NONE);
 }
+
+#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+// Tests that the low threshold for unstable channels is less than that for
+// stable channels.
+TEST_F(UpgradeDetectorImplTest, TestUnstableChannelLowThreshold) {
+  // Grab the low threshold for stable channel.
+  base::TimeDelta default_low_threshold;
+  {
+    TestUpgradeDetectorImpl upgrade_detector(GetMockTickClock());
+    default_low_threshold = upgrade_detector.GetThresholdForLevel(
+        UpgradeDetector::UPGRADE_ANNOYANCE_LOW);
+  }
+
+  // Now make sure that the low threshold for canary is smaller.
+  install_static::ScopedInstallDetails install_details(
+      false, install_static::CANARY_INDEX);
+
+  TestUpgradeDetectorImpl upgrade_detector(GetMockTickClock());
+  EXPECT_LT(upgrade_detector.GetThresholdForLevel(
+                UpgradeDetector::UPGRADE_ANNOYANCE_LOW),
+            default_low_threshold);
+}
+#endif
 
 // Appends the time and stage from detector to |notifications|.
 ACTION_P2(AppendTicksAndStage, detector, notifications) {

@@ -102,14 +102,15 @@ base::TimeDelta GetCheckForUpgradeDelay() {
   return kCheckForUpgrade;
 }
 
-#if !defined(OS_WIN) || defined(GOOGLE_CHROME_BUILD)
-// Return true if the current build is one of the unstable channels.
+// Return true if the browser is updating on the dev or canary channels.
 bool IsUnstableChannel() {
-  version_info::Channel channel = chrome::GetChannel();
+  // Unbranded (Chromium) builds are on the UNKNOWN channel, so check explicitly
+  // for the Google Chrome channels that are considered "unstable". This ensures
+  // that Chromium builds get the default behavior.
+  const version_info::Channel channel = chrome::GetChannel();
   return channel == version_info::Channel::DEV ||
          channel == version_info::Channel::CANARY;
 }
-#endif  // !defined(OS_WIN) || defined(GOOGLE_CHROME_BUILD)
 
 // Gets the currently installed version. On Windows, if |critical_update| is not
 // NULL, also retrieves the critical update version info if available.
@@ -158,7 +159,6 @@ UpgradeDetectorImpl::UpgradeDetectorImpl(const base::TickClock* tick_clock)
            base::MayBlock()})),
       detect_upgrade_timer_(this->tick_clock()),
       upgrade_notification_timer_(this->tick_clock()),
-      is_unstable_channel_(false),
       is_auto_update_enabled_(true),
       simulating_outdated_(SimulatingOutdated()),
       is_testing_(simulating_outdated_ || IsTesting()),
@@ -225,11 +225,9 @@ UpgradeDetectorImpl::UpgradeDetectorImpl(const base::TickClock* tick_clock)
     variations_service->AddObserver(this);
 
 #if defined(OS_WIN)
-// Only enable upgrade notifications for Google Chrome builds. Chromium has no
-// upgrade channel.
+// Only enable upgrade notifications for Google Chrome builds. Chromium does not
+// use an auto-updater.
 #if defined(GOOGLE_CHROME_BUILD)
-  // Check whether the build is an unstable channel before starting the timer.
-  is_unstable_channel_ = IsUnstableChannel();
   // There might be a policy/enterprise environment preventing updates, so
   // validate updatability and then call StartTimerForUpgradeCheck
   // appropriately. Skip this step if a past attempt has been made to enable
@@ -258,8 +256,6 @@ UpgradeDetectorImpl::UpgradeDetectorImpl(const base::TickClock* tick_clock)
 #else
   return;
 #endif
-  // Check whether the build is an unstable channel before starting the timer.
-  is_unstable_channel_ = IsUnstableChannel();
   StartTimerForUpgradeCheck();
 #endif  // defined(OS_WIN)
 }
@@ -349,12 +345,12 @@ void UpgradeDetectorImpl::InitializeThresholds() {
   // If elevated_threshold_ and high_threshold_ are present in |stages_|, they
   // must be equal.
   if (stages_.size() != 1) {
-    DCHECK(!is_unstable_channel_);
+    DCHECK(!IsUnstableChannel());
     DCHECK_EQ(stages_.size(), 3U);
     DCHECK_EQ(stages_[1].first, elevated_threshold_);
     DCHECK_EQ(stages_[0].first, high_threshold_);
   } else {
-    DCHECK(is_unstable_channel_);
+    DCHECK(IsUnstableChannel());
   }
 #endif  // DCHECK_IS_ON()
 }
@@ -395,7 +391,7 @@ void UpgradeDetectorImpl::DoInitializeThresholds() {
 
   // Canary and dev channels are extra special, and reach "low" annoyance after
   // one hour (one second in testing) and never advance beyond that.
-  if (is_unstable_channel_) {
+  if (IsUnstableChannel()) {
     low_threshold = is_testing_ ? base::TimeDelta::FromSeconds(1)
                                 : base::TimeDelta::FromHours(1);
     // High and elevated thresholds are not added to |stages_| on unstable
