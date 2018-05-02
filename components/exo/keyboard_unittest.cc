@@ -189,9 +189,27 @@ TEST_F(KeyboardTest, OnKeyboardKey) {
   // This should not generate another press event for KEY_A.
   generator.PressKey(ui::VKEY_A, 0);
 
-  // This should only generate a release event for KEY_A.
+  // This should only generate a single release event for KEY_A.
   EXPECT_CALL(delegate, OnKeyboardKey(testing::_, ui::DomCode::US_A, false));
   generator.ReleaseKey(ui::VKEY_A, 0);
+
+  // Press accelerator after surface lost focus.
+  EXPECT_CALL(delegate, OnKeyboardLeave(surface.get()));
+  focus_client->FocusWindow(nullptr);
+  generator.PressKey(ui::VKEY_W, ui::EF_CONTROL_DOWN);
+
+  // Key should be pressed when focus returns.
+  EXPECT_CALL(delegate, CanAcceptKeyboardEventsForSurface(surface.get()))
+      .WillOnce(testing::Return(true));
+  EXPECT_CALL(delegate, OnKeyboardModifiers(ui::EF_CONTROL_DOWN));
+  EXPECT_CALL(delegate, OnKeyboardEnter(
+                            surface.get(),
+                            base::flat_set<ui::DomCode>({ui::DomCode::US_W})));
+  focus_client->FocusWindow(surface->window());
+
+  // Releasing accelerator when surface has focus should generate event.
+  EXPECT_CALL(delegate, OnKeyboardKey(testing::_, ui::DomCode::US_W, false));
+  generator.ReleaseKey(ui::VKEY_W, ui::EF_CONTROL_DOWN);
 
   keyboard.reset();
 }
