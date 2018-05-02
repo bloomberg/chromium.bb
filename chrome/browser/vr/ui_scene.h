@@ -13,6 +13,7 @@
 #include "chrome/browser/vr/elements/ui_element.h"
 #include "chrome/browser/vr/elements/ui_element_name.h"
 #include "chrome/browser/vr/keyboard_delegate.h"
+#include "chrome/browser/vr/sequence.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace base {
@@ -69,9 +70,12 @@ class UiScene {
   void set_dirty() { is_dirty_ = true; }
 
   void OnGlInitialized(SkiaSurfaceProvider* provider);
+
   // The callback to call on every new frame. This is used for things we want to
   // do every frame regardless of element or subtree visibility.
   void AddPerFrameCallback(PerFrameCallback callback);
+
+  void AddSequence(std::unique_ptr<Sequence> sequence);
 
   SkiaSurfaceProvider* SurfaceProviderForTesting() { return provider_; }
 
@@ -96,6 +100,7 @@ class UiScene {
 
   std::vector<PerFrameCallback> per_frame_callback_;
 
+  std::vector<std::unique_ptr<Sequence>> scheduled_tasks_;
   SkiaSurfaceProvider* provider_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(UiScene);

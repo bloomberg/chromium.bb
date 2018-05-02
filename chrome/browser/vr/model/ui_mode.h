@@ -20,6 +20,8 @@ enum UiMode {
   // This is useful for modal style UiMode which should not hide kModeBrowsing
   // for example.
   kModeRepositionWindow,
+  kModeModalPrompt,
+  kModeVoiceSearchListening,
 };
 
 }  // namespace vr

@@ -18,6 +18,8 @@ bool IsOpaqueUiMode(UiMode mode) {
     case kModeEditingOmnibox:
       return true;
     case kModeRepositionWindow:
+    case kModeModalPrompt:
+    case kModeVoiceSearchListening:
       return false;
   }
   NOTREACHED();
@@ -62,6 +64,10 @@ void Model::toggle_mode(UiMode mode) {
     return;
   }
   push_mode(mode);
+}
+
+UiMode Model::get_mode() const {
+  return ui_modes.back();
 }
 
 UiMode Model::get_last_opaque_mode() const {
