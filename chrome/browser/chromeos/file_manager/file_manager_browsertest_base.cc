@@ -647,22 +647,22 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
   base::ScopedAllowBlockingForTesting allow_blocking;
 
   if (name == "getTestName") {
-    // Pass the test case name.
+    // Obtain the test case name.
     *output = GetTestCaseNameParam();
     return;
   }
 
   if (name == "getRootPaths") {
-    // Pass the root paths.
-    base::DictionaryValue res;
-    res.SetString("downloads",
-                  "/" + util::GetDownloadsMountPointName(profile()));
-    res.SetString("drive", "/" +
-                               drive::util::GetDriveMountPointPath(profile())
-                                   .BaseName()
-                                   .AsUTF8Unsafe() +
-                               "/root");
-    base::JSONWriter::Write(res, output);
+    // Obtain the root paths.
+    const auto downloads = util::GetDownloadsMountPointName(profile());
+    const auto drive = drive::util::GetDriveMountPointPath(profile());
+
+    base::DictionaryValue dictionary;
+    auto drive_root = drive.BaseName().AsUTF8Unsafe().append("/root");
+    dictionary.SetString("drive", "/" + drive_root);
+    dictionary.SetString("downloads", "/" + downloads);
+
+    base::JSONWriter::Write(dictionary, output);
     return;
   }
 
