@@ -4,6 +4,8 @@
 
 source_set("feed_core") {
   sources = [
+    "feed_host_service.cc",
+    "feed_host_service.h",
     "feed_image_database.cc",
     "feed_image_database.h",
     "feed_image_manager.cc",
