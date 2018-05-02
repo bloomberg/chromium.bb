@@ -750,7 +750,6 @@ class PLATFORM_EXPORT ThreadState {
     BlinkGC::MarkingType marking_type;
     BlinkGC::GCReason reason;
     double marking_time_in_milliseconds;
-    size_t marked_object_size;
     std::unique_ptr<MarkingVisitor> visitor;
   };
   GCData current_gc_data_;
