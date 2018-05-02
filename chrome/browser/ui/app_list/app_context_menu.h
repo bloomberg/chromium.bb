@@ -25,10 +25,10 @@ class AppContextMenu : public ui::SimpleMenuModel::Delegate {
   // Defines command ids, used in context menu of all types.
   // These are used in histograms, do not remove/renumber entries. Only add at
   // the end just before USE_LAUNCH_TYPE_COMMAND_END or after INSTALL and before
-  // USE_LAUNCH_TYPE_COMMAND_START. If you're adding to this enum with the
-  // intention that it will be logged, add checks to ensure stability of the
-  // enum and update the ChromeOSUICommands enum listing in
-  // tools/metrics/histograms/enums.xml.
+  // USE_LAUNCH_TYPE_COMMAND_START or after LAUNCH_APP_SHORTCUT_LAST. If you're
+  // adding to this enum with the intention that it will be logged, add checks
+  // to ensure stability of the enum and update the ChromeOSUICommands enum
+  // listing in tools/metrics/histograms/enums.xml.
   enum CommandId {
     LAUNCH_NEW = 100,
     TOGGLE_PIN = 101,
@@ -46,6 +46,10 @@ class AppContextMenu : public ui::SimpleMenuModel::Delegate {
     USE_LAUNCH_TYPE_FULLSCREEN = 202,
     USE_LAUNCH_TYPE_WINDOW = 203,
     USE_LAUNCH_TYPE_COMMAND_END,
+    // Range of command ids reserved for launching app shortcuts from context
+    // menu for Android app.
+    LAUNCH_APP_SHORTCUT_FIRST = 1000,
+    LAUNCH_APP_SHORTCUT_LAST = 1999,
   };
 
   AppContextMenu(AppContextMenuDelegate* delegate,
