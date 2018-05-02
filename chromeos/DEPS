@@ -9,6 +9,7 @@ include_rules = [
   "+components/signin/core/account_id/account_id.h",
   "+components/user_manager/known_user.h",
   "+crypto",
+  "+google_apis/gaia",
   "+media/base/video_facing.h",
   "+mojo/edk/embedder/embedder.h",
   "+net",

@@ -14,6 +14,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/task_scheduler/post_task.h"
+#include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
 #include "third_party/protobuf/src/google/protobuf/message_lite.h"
 
 namespace chromeos {
@@ -240,6 +241,29 @@ void AccountManager::AddObserver(AccountManager::Observer* observer) {
 void AccountManager::RemoveObserver(AccountManager::Observer* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   observers_.RemoveObserver(observer);
+}
+
+std::unique_ptr<OAuth2AccessTokenFetcher>
+AccountManager::CreateAccessTokenFetcher(
+    const AccountKey& account_key,
+    net::URLRequestContextGetter* getter,
+    OAuth2AccessTokenConsumer* consumer) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  auto it = tokens_.find(account_key);
+  if (it == tokens_.end() || it->second.empty()) {
+    return nullptr;
+  }
+
+  return std::make_unique<OAuth2AccessTokenFetcherImpl>(consumer, getter,
+                                                        it->second);
+}
+
+bool AccountManager::IsTokenAvailable(const AccountKey& account_key) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  auto it = tokens_.find(account_key);
+  return it != tokens_.end() && !it->second.empty();
 }
 
 CHROMEOS_EXPORT std::ostream& operator<<(
