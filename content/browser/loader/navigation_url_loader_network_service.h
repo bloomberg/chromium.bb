@@ -22,7 +22,6 @@ struct RedirectInfo;
 namespace content {
 
 class NavigationData;
-class NavigationPostDataHandler;
 class ResourceContext;
 class StoragePartition;
 class NavigationLoaderInterceptor;
