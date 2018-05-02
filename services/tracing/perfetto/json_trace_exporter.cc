@@ -14,7 +14,7 @@
 #include "third_party/perfetto/include/perfetto/tracing/core/trace_config.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/trace_packet.h"
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_event.pbzero.h"
-#include "third_party/perfetto/protos/perfetto/trace/trace_packet.pb.h"
+#include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_packet.pb.h"
 
 namespace {
 
@@ -164,7 +164,7 @@ void JSONTraceExporter::OnTraceData(std::vector<perfetto::TracePacket> packets,
   }
 
   for (auto& encoded_packet : packets) {
-    perfetto::protos::TracePacket packet;
+    perfetto::protos::ChromeTracePacket packet;
     bool decoded = encoded_packet.Decode(&packet);
     DCHECK(decoded);
 

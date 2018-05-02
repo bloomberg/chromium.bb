@@ -35,10 +35,8 @@ component("cpp") {
     ]
 
     deps = [
-      # TODO(oysteine): Add a Perfetto build target which contains
-      # only the top-level proto to avoid pulling in unused messages.
       "//third_party/perfetto/protos/perfetto/trace:zero",
-      "//third_party/perfetto/protos/perfetto/trace/chrome:lite",
+      "//third_party/perfetto/protos/perfetto/trace/chrome:minimal_complete_lite",
       "//third_party/perfetto/protos/perfetto/trace/chrome:zero",
     ]
 
