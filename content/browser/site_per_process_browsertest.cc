@@ -2661,20 +2661,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ProcessTransferAfterError) {
   // Disable host resolution in the test server and try to navigate the subframe
   // cross-site, which will lead to a committed net error.
   GURL url_b = embedded_test_server()->GetURL("b.com", "/title3.html");
-  bool network_service =
-      base::FeatureList::IsEnabled(network::features::kNetworkService);
   std::unique_ptr<URLLoaderInterceptor> url_loader_interceptor;
-  if (network_service) {
-    url_loader_interceptor = std::make_unique<URLLoaderInterceptor>(
-        base::BindRepeating([](URLLoaderInterceptor::RequestParams* params) {
-          network::URLLoaderCompletionStatus status;
-          status.error_code = net::ERR_NOT_IMPLEMENTED;
-          params->client->OnComplete(status);
-          return true;
-        }));
-  } else {
-    host_resolver()->ClearRules();
-  }
+  url_loader_interceptor = std::make_unique<URLLoaderInterceptor>(
+      base::BindRepeating([](URLLoaderInterceptor::RequestParams* params) {
+        network::URLLoaderCompletionStatus status;
+        status.error_code = net::ERR_NOT_IMPLEMENTED;
+        params->client->OnComplete(status);
+        return true;
+      }));
 
   TestNavigationObserver observer(shell()->web_contents());
   NavigateIframeToURL(shell()->web_contents(), "child-0", url_b);
@@ -2699,11 +2693,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ProcessTransferAfterError) {
   EXPECT_EQ("null", child->current_origin().Serialize());
 
   // Try again after re-enabling host resolution.
-  if (network_service) {
-    url_loader_interceptor.reset();
-  } else {
-    host_resolver()->AddRule("*", "127.0.0.1");
-  }
+  url_loader_interceptor.reset();
 
   NavigateIframeToURL(shell()->web_contents(), "child-0", url_b);
   EXPECT_TRUE(observer.last_navigation_succeeded());

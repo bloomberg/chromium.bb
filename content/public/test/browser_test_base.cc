@@ -454,20 +454,12 @@ void BrowserTestBase::InitializeNetworkProcess() {
     return;
 
   initialized_network_process_ = true;
-  const testing::TestInfo* const test_info =
-      testing::UnitTest::GetInstance()->current_test_info();
-  bool network_service =
-      base::FeatureList::IsEnabled(network::features::kNetworkService);
-  // ProcessTransferAfterError is the only browser test which needs to modify
-  // the host rules (when not using the network service).
-  if (network_service ||
-      std::string(test_info->name()) != "ProcessTransferAfterError") {
-    host_resolver()->DisableModifications();
-  }
+  host_resolver()->DisableModifications();
 
   // Send the host resolver rules to the network service if it's in use. No need
   // to do this if it's running in the browser process though.
-  if (!network_service || IsNetworkServiceRunningInProcess())
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
+      IsNetworkServiceRunningInProcess())
     return;
 
   net::RuleBasedHostResolverProc::RuleList rules = host_resolver()->GetRules();
