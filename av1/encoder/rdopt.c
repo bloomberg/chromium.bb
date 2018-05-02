@@ -1608,7 +1608,10 @@ static void prune_tx(const AV1_COMP *cpi, BLOCK_SIZE bsize, MACROBLOCK *x,
       break;
     case PRUNE_2D_ACCURATE:
     case PRUNE_2D_FAST:
-      if (use_tx_split_prune) prune_tx_split(bsize, x);
+      // TODO(huisu@google.com): temporarily turn prune_tx_split off while
+      // testing new models for tx size prediction.
+      // if (use_tx_split_prune) prune_tx_split(bsize, x);
+      (void)use_tx_split_prune;
       break;
     default: assert(0);
   }
