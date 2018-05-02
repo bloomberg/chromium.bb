@@ -83,9 +83,6 @@ class DiscardsDetailsProviderImpl : public mojom::DiscardsDetailsProvider {
           tab_lifecycle_unit_external->GetWebContents();
 
       info->tab_url = contents->GetLastCommittedURL().spec();
-      // This can be empty for pages without a favicon. The WebUI takes care of
-      // showing the chrome://favicon default in that case.
-      info->favicon_url = lifecycle_unit->GetIconURL();
       info->title = base::UTF16ToUTF8(lifecycle_unit->GetTitle());
       info->visibility =
           GetLifecycleUnitVisibility(lifecycle_unit->GetVisibility());

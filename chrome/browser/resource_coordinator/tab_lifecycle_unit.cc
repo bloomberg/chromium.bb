@@ -13,7 +13,6 @@
 #include "chrome/browser/resource_coordinator/tab_lifecycle_observer.h"
 #include "chrome/browser/resource_coordinator/time.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
@@ -84,15 +83,6 @@ TabLifecycleUnitSource::TabLifecycleUnit::AsTabLifecycleUnitExternal() {
 
 base::string16 TabLifecycleUnitSource::TabLifecycleUnit::GetTitle() const {
   return GetWebContents()->GetTitle();
-}
-
-std::string TabLifecycleUnitSource::TabLifecycleUnit::GetIconURL() const {
-  auto* last_committed_entry =
-      GetWebContents()->GetController().GetLastCommittedEntry();
-  if (!last_committed_entry)
-    return std::string();
-  const auto& favicon = last_committed_entry->GetFavicon();
-  return favicon.valid ? favicon.url.spec() : std::string();
 }
 
 base::ProcessHandle TabLifecycleUnitSource::TabLifecycleUnit::GetProcessHandle()

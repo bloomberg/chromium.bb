@@ -90,9 +90,7 @@ bool IsWebUIAllowedToMakeNetworkRequests(const url::Origin& origin) {
       // https://crbug.com/831812
       origin.host() == "sync-confirmation" ||
       // https://crbug.com/831813
-      origin.host() == "inspect" ||
-      // https://crbug.com/837420
-      origin.host() == "discards";
+      origin.host() == "inspect";
 }
 
 }  // namespace

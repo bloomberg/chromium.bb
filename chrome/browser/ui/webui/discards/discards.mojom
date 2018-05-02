@@ -16,8 +16,6 @@ struct TabDiscardsInfo {
   // The URL associated with the tab. This corresponds to GetLastCommittedURL,
   // and is also what is visible in the Omnibox for a given tab.
   string tab_url;
-  // The URL of the favicon being displayed for a tab.
-  string favicon_url;
   // The title of the tab, as displayed on the tab itself.
   string title;
   // The visibility of the LifecycleUnit.
