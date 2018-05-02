@@ -30,6 +30,7 @@ class EVENTS_EXPORT KeyboardHook {
   // |callback| is called for each key which is intercepted.
   // Returns a valid instance if the hook was created and successfully
   // registered otherwise nullptr.
+  // TODO(joedow): Update this interface to use DomCodes.
   static std::unique_ptr<KeyboardHook> Create(
       base::Optional<base::flat_set<int>> native_key_codes,
       KeyEventCallback callback);
