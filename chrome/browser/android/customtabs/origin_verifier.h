@@ -10,11 +10,8 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
 
-namespace base {
-class DictionaryValue;
-}
-
 namespace digital_asset_links {
+enum class RelationshipCheckResult;
 class DigitalAssetLinksHandler;
 }
 
@@ -41,7 +38,7 @@ class OriginVerifier {
 
  private:
   void OnRelationshipCheckComplete(
-      std::unique_ptr<base::DictionaryValue> response);
+      digital_asset_links::RelationshipCheckResult result);
 
   std::unique_ptr<digital_asset_links::DigitalAssetLinksHandler>
       asset_link_handler_;

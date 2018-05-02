@@ -58,12 +58,20 @@ DigitalAssetLinksHandler::~DigitalAssetLinksHandler() = default;
 
 void DigitalAssetLinksHandler::OnURLFetchComplete(
     const net::URLFetcher* source) {
+
   if (!source->GetStatus().is_success() ||
       source->GetResponseCode() != net::HTTP_OK) {
+    if (source->GetStatus().error() == net::ERR_INTERNET_DISCONNECTED
+        || source->GetStatus().error() == net::ERR_NAME_NOT_RESOLVED) {
+      LOG(WARNING) << "Digital Asset Links connection failed.";
+      std::move(callback_).Run(RelationshipCheckResult::NO_CONNECTION);
+      return;
+    }
+
     LOG(WARNING) << base::StringPrintf(
         "Digital Asset Links endpoint responded with code %d.",
         source->GetResponseCode());
-    callback_.Run(nullptr);
+    std::move(callback_).Run(RelationshipCheckResult::FAILURE);
     return;
   }
 
@@ -83,7 +91,12 @@ void DigitalAssetLinksHandler::OnURLFetchComplete(
 
 void DigitalAssetLinksHandler::OnJSONParseSucceeded(
     std::unique_ptr<base::Value> result) {
-  callback_.Run(base::DictionaryValue::From(std::move(result)));
+  base::Value* success = result->FindKeyOfType(
+      kDigitalAssetLinksCheckResponseKeyLinked, base::Value::Type::BOOLEAN);
+
+  std::move(callback_).Run(success && success->GetBool()
+      ? RelationshipCheckResult::SUCCESS
+      : RelationshipCheckResult::FAILURE);
 }
 
 void DigitalAssetLinksHandler::OnJSONParseFailed(
@@ -92,7 +105,7 @@ void DigitalAssetLinksHandler::OnJSONParseFailed(
       << base::StringPrintf(
              "Digital Asset Links response parsing failed with message:")
       << error_message;
-  callback_.Run(nullptr);
+  std::move(callback_).Run(RelationshipCheckResult::FAILURE);
 }
 
 bool DigitalAssetLinksHandler::CheckDigitalAssetLinkRelationship(
@@ -110,7 +123,7 @@ bool DigitalAssetLinksHandler::CheckDigitalAssetLinkRelationship(
   // Resetting both the callback and URLFetcher here to ensure that any previous
   // requests will never get a OnUrlFetchComplete. This effectively cancels
   // any checks that was done over this handler.
-  callback_ = callback;
+  callback_ = std::move(callback);
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("digital_asset_links", R"(
@@ -135,6 +148,7 @@ bool DigitalAssetLinksHandler::CheckDigitalAssetLinkRelationship(
             "Not implemented, considered not useful as no content is being "
             "uploaded; this request merely downloads the resources on the web."
         })");
+
   url_fetcher_ = net::URLFetcher::Create(0, request_url, net::URLFetcher::GET,
                                          this, traffic_annotation);
   url_fetcher_->SetAutomaticallyRetryOn5xx(false);

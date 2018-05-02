@@ -8,7 +8,6 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "base/values.h"
 #include "chrome/browser/android/digital_asset_links/digital_asset_links_handler.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_android.h"
@@ -19,6 +18,7 @@
 using base::android::ConvertJavaStringToUTF16;
 using base::android::JavaParamRef;
 using base::android::JavaRef;
+using digital_asset_links::RelationshipCheckResult;
 
 namespace customtabs {
 
@@ -62,17 +62,12 @@ bool OriginVerifier::VerifyOrigin(JNIEnv* env,
 }
 
 void OriginVerifier::OnRelationshipCheckComplete(
-    std::unique_ptr<base::DictionaryValue> response) {
+    RelationshipCheckResult result) {
   JNIEnv* env = base::android::AttachCurrentThread();
 
-  bool verified = false;
-
-  if (response) {
-    response->GetBoolean(
-        digital_asset_links::kDigitalAssetLinksCheckResponseKeyLinked,
-        &verified);
-  }
-  Java_OriginVerifier_originVerified(env, jobject_, verified);
+  Java_OriginVerifier_onOriginVerificationResult(env,
+                                                 jobject_,
+                                                 static_cast<jint>(result));
 }
 
 void OriginVerifier::Destroy(JNIEnv* env,

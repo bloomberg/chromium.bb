@@ -9,16 +9,19 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
 
-namespace base {
-class DictionaryValue;
-}
-
 namespace digital_asset_links {
 
 extern const char kDigitalAssetLinksCheckResponseKeyLinked[];
 
-typedef base::Callback<void(std::unique_ptr<base::DictionaryValue>)>
-    RelationshipCheckResultCallback;
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.browserservices
+enum class RelationshipCheckResult {
+  SUCCESS = 0,
+  FAILURE,
+  NO_CONNECTION
+};
+
+using RelationshipCheckResultCallback =
+  base::OnceCallback<void(RelationshipCheckResult)>;
 
 // A handler class for sending REST API requests to DigitalAssetLinks web
 // end point. See

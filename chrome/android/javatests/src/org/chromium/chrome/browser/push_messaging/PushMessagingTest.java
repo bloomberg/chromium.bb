@@ -153,7 +153,8 @@ public class PushMessagingTest implements PushMessagingServiceObserver.Listener 
         // Notifications permission should still be prompt.
         Assert.assertEquals("\"default\"", runScriptBlocking("Notification.permission"));
 
-        runScriptAndWaitForTitle("sendToTest('reset title')", "reset title");
+        runScriptAndWaitForTitle("sendToTest('reset title')",
+                "clearCachedVerificationsForTesting title");
 
         // PushManager.subscribePush() should show the notifications infobar again.
         runScript("subscribePush()");
