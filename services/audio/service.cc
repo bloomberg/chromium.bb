@@ -39,6 +39,8 @@ void Service::OnStart() {
       &Service::BindSystemInfoRequest, base::Unretained(this)));
   registry_.AddInterface<mojom::DebugRecording>(base::BindRepeating(
       &Service::BindDebugRecordingRequest, base::Unretained(this)));
+  registry_.AddInterface<mojom::StreamFactory>(base::BindRepeating(
+      &Service::BindStreamFactoryRequest, base::Unretained(this)));
 }
 
 void Service::OnBindInterface(
