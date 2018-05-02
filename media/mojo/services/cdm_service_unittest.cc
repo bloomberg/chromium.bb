@@ -25,12 +25,17 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-using testing::Invoke;
-using testing::InvokeWithoutArgs;
-
 namespace media {
 
 namespace {
+
+using testing::_;
+using testing::Invoke;
+using testing::InvokeWithoutArgs;
+
+MATCHER_P(MatchesResult, success, "") {
+  return arg->success == success;
+}
 
 const char kClearKeyKeySystem[] = "org.w3.clearkey";
 const char kInvalidKeySystem[] = "invalid.key.system";
@@ -125,8 +130,6 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
   MockCdmServiceClient* mock_cdm_service_client_ = nullptr;
 };
 
-}  // namespace
-
 class CdmServiceTest : public service_manager::test::ServiceTest {
  public:
   CdmServiceTest() : ServiceTest("cdm_service_unittest") {}
@@ -160,21 +163,17 @@ class CdmServiceTest : public service_manager::test::ServiceTest {
     Initialize();
   }
 
-  // MOCK_METHOD* doesn't support move-only types. Work around this by having
-  // an extra method.
-  MOCK_METHOD1(OnCdmInitializedInternal, void(bool result));
-  void OnCdmInitialized(mojom::CdmPromiseResultPtr result,
-                        int cdm_id,
-                        mojom::DecryptorPtr decryptor) {
-    OnCdmInitializedInternal(result->success);
-  }
+  MOCK_METHOD3(OnCdmInitialized,
+               void(mojom::CdmPromiseResultPtr result,
+                    int cdm_id,
+                    mojom::DecryptorPtr decryptor));
 
   void InitializeCdm(const std::string& key_system, bool expected_result) {
     base::RunLoop run_loop;
     cdm_factory_ptr_->CreateCdm(key_system, mojo::MakeRequest(&cdm_ptr_));
     cdm_ptr_.set_connection_error_handler(base::BindRepeating(
         &CdmServiceTest::CdmConnectionClosed, base::Unretained(this)));
-    EXPECT_CALL(*this, OnCdmInitializedInternal(expected_result))
+    EXPECT_CALL(*this, OnCdmInitialized(MatchesResult(expected_result), _, _))
         .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
     cdm_ptr_->Initialize(key_system, url::Origin::Create(GURL(kSecurityOrigin)),
                          CdmConfig(),
@@ -198,6 +197,8 @@ class CdmServiceTest : public service_manager::test::ServiceTest {
  private:
   DISALLOW_COPY_AND_ASSIGN(CdmServiceTest);
 };
+
+}  // namespace
 
 TEST_F(CdmServiceTest, LoadCdm) {
   Initialize();
