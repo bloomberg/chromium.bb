@@ -12,6 +12,7 @@ import android.webkit.WebViewClient;
 
 import org.chromium.android_webview.AwContentsClient.AwWebResourceError;
 import org.chromium.android_webview.AwSafeBrowsingResponse;
+import org.chromium.android_webview.ScopedSysTraceEvent;
 import org.chromium.base.Callback;
 import org.chromium.support_lib_boundary.SafeBrowsingResponseBoundaryInterface;
 import org.chromium.support_lib_boundary.WebResourceErrorBoundaryInterface;
@@ -40,9 +41,13 @@ public class SupportLibWebViewContentsClientAdapter {
     }
 
     public void setWebViewClient(WebViewClient possiblyCompatClient) {
-        mWebViewClient = convertCompatClient(possiblyCompatClient);
-        mWebViewClientSupportedFeatures =
-                mWebViewClient == null ? EMPTY_FEATURE_LIST : mWebViewClient.getSupportedFeatures();
+        try (ScopedSysTraceEvent event = ScopedSysTraceEvent.scoped(
+                     "SupportLibWebViewContentsClientAdapter.setWebViewClient")) {
+            mWebViewClient = convertCompatClient(possiblyCompatClient);
+            mWebViewClientSupportedFeatures = mWebViewClient == null
+                    ? EMPTY_FEATURE_LIST
+                    : mWebViewClient.getSupportedFeatures();
+        }
     }
 
     @Nullable
