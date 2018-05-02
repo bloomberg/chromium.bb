@@ -173,6 +173,7 @@ void ChromeExtensionWebContentsObserver::ReloadIfTerminated(
 
 void ChromeExtensionWebContentsObserver::ReadyToCommitNavigation(
     content::NavigationHandle* navigation_handle) {
+  ExtensionWebContentsObserver::ReadyToCommitNavigation(navigation_handle);
   const ExtensionRegistry* registry = ExtensionRegistry::Get(
       navigation_handle->GetWebContents()->GetBrowserContext());
 
