@@ -35,6 +35,7 @@ class AccessibilityControllerClient
   void ShouldToggleSpokenFeedbackViaTouch(
       ShouldToggleSpokenFeedbackViaTouchCallback callback) override;
   void PlaySpokenFeedbackToggleCountdown(int tick_count) override;
+  void RequestSelectToSpeakStateChange() override;
 
   // Flushes the mojo pipe to ash.
   void FlushForTesting();

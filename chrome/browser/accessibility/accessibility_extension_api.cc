@@ -286,8 +286,8 @@ AccessibilityPrivateOnSelectToSpeakStateChangedFunction::Run() {
       state = ash::mojom::SelectToSpeakState::kSelectToSpeakStateInactive;
   }
 
-  // TODO(katie): Plumb state updates into AccessibilityManager for
-  // http://crbug.com/753018.
+  auto* accessibility_manager = chromeos::AccessibilityManager::Get();
+  accessibility_manager->OnSelectToSpeakStateChanged(state);
 
   return RespondNow(NoArguments());
 }

@@ -68,6 +68,10 @@ interface AccessibilityController {
   // Sets whether the accessibility panel is filling the entire screen (e.g. to
   // show the expanded UI for the ChromeVox spoken feedback extension).
   SetAccessibilityPanelFullscreen(bool fullscreen);
+
+  // Sets the current Select-to-Speak state. This should be used by the Select-
+  // to-Speak extension to inform ash of its updated state.
+  SetSelectToSpeakState(SelectToSpeakState state);
 };
 
 // Interface for ash to request accessibility service from its client (e.g.
@@ -111,4 +115,10 @@ interface AccessibilityControllerClient {
   // Plays tick sound indicating spoken feedback will be toggled after
   // countdown.
   PlaySpokenFeedbackToggleCountdown(int32 tick_count);
+
+  // Requests the Select-to-Speak extension to change its state. This lets users
+  // do the same things in tablet mode as with a keyboard. Specifically, if
+  // Select-to-Speak is not speaking, move to capturing state; if
+  // Select-to-Speak is speaking, cancel speaking and move to inactive state.
+  RequestSelectToSpeakStateChange();
 };

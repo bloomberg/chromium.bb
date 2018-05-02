@@ -400,6 +400,21 @@ bool AccessibilityController::IsSelectToSpeakEnabled() const {
   return select_to_speak_enabled_;
 }
 
+void AccessibilityController::RequestSelectToSpeakStateChange() {
+  client_->RequestSelectToSpeakStateChange();
+}
+
+void AccessibilityController::SetSelectToSpeakState(
+    mojom::SelectToSpeakState state) {
+  select_to_speak_state_ = state;
+  NotifyAccessibilityStatusChanged();
+}
+
+mojom::SelectToSpeakState AccessibilityController::GetSelectToSpeakState()
+    const {
+  return select_to_speak_state_;
+}
+
 void AccessibilityController::SetStickyKeysEnabled(bool enabled) {
   if (!active_user_prefs_)
     return;
@@ -835,6 +850,8 @@ void AccessibilityController::UpdateSelectToSpeakFromPref() {
     return;
 
   select_to_speak_enabled_ = enabled;
+  select_to_speak_state_ =
+      mojom::SelectToSpeakState::kSelectToSpeakStateInactive;
 
   NotifyAccessibilityStatusChanged();
 }

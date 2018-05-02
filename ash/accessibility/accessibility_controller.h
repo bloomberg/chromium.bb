@@ -83,6 +83,9 @@ class ASH_EXPORT AccessibilityController
   void SetSelectToSpeakEnabled(bool enabled);
   bool IsSelectToSpeakEnabled() const;
 
+  void RequestSelectToSpeakStateChange();
+  mojom::SelectToSpeakState GetSelectToSpeakState() const;
+
   void SetStickyKeysEnabled(bool enabled);
   bool IsStickyKeysEnabled() const;
 
@@ -138,6 +141,7 @@ class ASH_EXPORT AccessibilityController
   void BrailleDisplayStateChanged(bool connected) override;
   void SetFocusHighlightRect(const gfx::Rect& bounds_in_screen) override;
   void SetAccessibilityPanelFullscreen(bool fullscreen) override;
+  void SetSelectToSpeakState(mojom::SelectToSpeakState state) override;
 
   // SessionObserver:
   void OnSigninScreenPrefServiceInitialized(PrefService* prefs) override;
@@ -192,6 +196,9 @@ class ASH_EXPORT AccessibilityController
   bool select_to_speak_enabled_ = false;
   bool sticky_keys_enabled_ = false;
   bool virtual_keyboard_enabled_ = false;
+
+  mojom::SelectToSpeakState select_to_speak_state_ =
+      mojom::SelectToSpeakState::kSelectToSpeakStateInactive;
 
   // Used to control the highlights of caret, cursor and focus.
   std::unique_ptr<AccessibilityHighlightController>

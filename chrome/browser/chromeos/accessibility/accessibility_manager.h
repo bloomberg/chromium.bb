@@ -187,6 +187,12 @@ class AccessibilityManager
   // Returns if select-to-speak is enabled.
   bool IsSelectToSpeakEnabled() const;
 
+  // Requests that the Select-to-Speak extension change its state.
+  void RequestSelectToSpeakStateChange();
+
+  // Called when the Select-to-Speak extension state has changed.
+  void OnSelectToSpeakStateChanged(ash::mojom::SelectToSpeakState state);
+
   // Invoked to enable or disable switch access.
   void SetSwitchAccessEnabled(bool enabled);
 

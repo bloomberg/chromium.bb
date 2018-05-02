@@ -473,7 +473,6 @@ void AccessibilityManager::OnTwoFingerTouchStart() {
 
   extensions::EventRouter* event_router =
       extensions::EventRouter::Get(profile());
-  CHECK(event_router);
 
   auto event_args = std::make_unique<base::ListValue>();
   auto event = std::make_unique<extensions::Event>(
@@ -489,7 +488,6 @@ void AccessibilityManager::OnTwoFingerTouchStop() {
 
   extensions::EventRouter* event_router =
       extensions::EventRouter::Get(profile());
-  CHECK(event_router);
 
   auto event_args = std::make_unique<base::ListValue>();
   auto event = std::make_unique<extensions::Event>(
@@ -538,9 +536,9 @@ void AccessibilityManager::HandleAccessibilityGesture(
     ax::mojom::Gesture gesture) {
   extensions::EventRouter* event_router =
       extensions::EventRouter::Get(profile());
-  CHECK(event_router);
 
-  std::unique_ptr<base::ListValue> event_args(new base::ListValue());
+  std::unique_ptr<base::ListValue> event_args =
+      std::make_unique<base::ListValue>();
   event_args->AppendString(ui::ToString(gesture));
   std::unique_ptr<extensions::Event> event(new extensions::Event(
       extensions::events::ACCESSIBILITY_PRIVATE_ON_ACCESSIBILITY_GESTURE,
@@ -697,6 +695,33 @@ void AccessibilityManager::SetSelectToSpeakEnabled(bool enabled) {
 
 bool AccessibilityManager::IsSelectToSpeakEnabled() const {
   return select_to_speak_enabled_;
+}
+
+void AccessibilityManager::RequestSelectToSpeakStateChange() {
+  extensions::EventRouter* event_router =
+      extensions::EventRouter::Get(profile_);
+
+  // Send an event to the Select-to-Speak extension requesting a state change.
+  std::unique_ptr<base::ListValue> event_args =
+      std::make_unique<base::ListValue>();
+  std::unique_ptr<extensions::Event> event(new extensions::Event(
+      extensions::events::
+          ACCESSIBILITY_PRIVATE_ON_SELECT_TO_SPEAK_STATE_CHANGE_REQUESTED,
+      extensions::api::accessibility_private::
+          OnSelectToSpeakStateChangeRequested::kEventName,
+      std::move(event_args)));
+  event_router->DispatchEventWithLazyListener(
+      extension_misc::kSelectToSpeakExtensionId, std::move(event));
+}
+
+void AccessibilityManager::OnSelectToSpeakStateChanged(
+    ash::mojom::SelectToSpeakState state) {
+  // TODO(katie): Forward the state change event to
+  // select_to_speak_event_handler_. The extension may have requested that the
+  // handler enter SELECTING state. Prepare to start capturing events from
+  // stylus, mouse or touch. http://crbug.com/753018.
+
+  accessibility_controller_->SetSelectToSpeakState(state);
 }
 
 void AccessibilityManager::OnSelectToSpeakChanged() {
@@ -1147,9 +1172,9 @@ void AccessibilityManager::PostLoadChromeVox() {
 
   extensions::EventRouter* event_router =
       extensions::EventRouter::Get(profile_);
-  CHECK(event_router);
 
-  std::unique_ptr<base::ListValue> event_args(new base::ListValue());
+  std::unique_ptr<base::ListValue> event_args =
+      std::make_unique<base::ListValue>();
   std::unique_ptr<extensions::Event> event(new extensions::Event(
       extensions::events::ACCESSIBILITY_PRIVATE_ON_INTRODUCE_CHROME_VOX,
       extensions::api::accessibility_private::OnIntroduceChromeVox::kEventName,
