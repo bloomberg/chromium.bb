@@ -625,11 +625,12 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
       break;
 
     // If this fragment will be larger than the inline-size of the opportunity,
-    // *and* the opportunity is smaller than the available inline-size,
-    // continue to the next opportunity.
+    // *and* the opportunity is smaller than the available inline-size, and the
+    // container autowraps, continue to the next opportunity.
     if (line_info.Width() > opportunity.rect.InlineSize() &&
         opportunity.rect.InlineSize() !=
-            ConstraintSpace().AvailableSize().inline_size)
+            ConstraintSpace().AvailableSize().inline_size &&
+        Node().Style().AutoWrap())
       continue;
 
     PrepareBoxStates(line_info, break_token);
