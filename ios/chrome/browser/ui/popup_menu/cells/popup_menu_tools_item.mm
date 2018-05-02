@@ -7,6 +7,7 @@
 #include <stdlib.h>
 
 #include "base/logging.h"
+#import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/reading_list/number_badge_view.h"
 #import "ios/chrome/browser/ui/reading_list/text_badge_view.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
@@ -107,6 +108,11 @@ NSString* const kToolsMenuTextBadgeAccessibilityIdentifier =
               reuseIdentifier:(NSString*)reuseIdentifier {
   self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
   if (self) {
+    UIView* selectedBackgroundView = [[UIView alloc] init];
+    selectedBackgroundView.backgroundColor =
+        [UIColor colorWithWhite:0 alpha:kSelectedItemBackgroundAlpha];
+    self.selectedBackgroundView = selectedBackgroundView;
+
     _titleLabel = [[UILabel alloc] init];
     _titleLabel.numberOfLines = 0;
     _titleLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];

@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_navigation_item.h"
 
 #include "base/logging.h"
+#import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 
@@ -83,6 +84,11 @@ const CGFloat kMaxHeight = 100;
               reuseIdentifier:(NSString*)reuseIdentifier {
   self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
   if (self) {
+    UIView* selectedBackgroundView = [[UIView alloc] init];
+    selectedBackgroundView.backgroundColor =
+        [UIColor colorWithWhite:0 alpha:kSelectedItemBackgroundAlpha];
+    self.selectedBackgroundView = selectedBackgroundView;
+
     _titleLabel = [[UILabel alloc] init];
     _titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
     _titleLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
