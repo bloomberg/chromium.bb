@@ -980,8 +980,8 @@ void ThreadState::PostSweep() {
   ThreadHeap::ReportMemoryUsageForTracing();
 
   if (IsMainThread()) {
-    double collection_rate =
-        1.0 - heap_->HeapStats().LiveObjectRateSinceLastGC();
+    ThreadHeapStats& stats = heap_->HeapStats();
+    double collection_rate = 1.0 - stats.LiveObjectRateSinceLastGC();
     TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
                    "ThreadState::collectionRate",
                    static_cast<int>(100 * collection_rate));
@@ -990,19 +990,20 @@ void ThreadState::PostSweep() {
             << " PostSweep: collection_rate: " << std::setprecision(2)
             << (100 * collection_rate) << "%";
 
-    // ThreadHeap::markedObjectSize() may be underestimated here if any other
-    // thread has not yet finished lazy sweeping.
-    heap_->HeapStats().SetMarkedObjectSizeAtLastCompleteSweep(
-        heap_->HeapStats().MarkedObjectSize());
+    stats.SetMarkedObjectSizeAtLastCompleteSweep(stats.MarkedObjectSize());
+
+    stats.SetEstimatedMarkingTimePerByte(
+        stats.MarkedObjectSize()
+            ? (current_gc_data_.marking_time_in_milliseconds / 1000 /
+               stats.MarkedObjectSize())
+            : 0);
 
     DEFINE_STATIC_LOCAL(CustomCountHistogram, object_size_before_gc_histogram,
                         ("BlinkGC.ObjectSizeBeforeGC", 1, 4 * 1024 * 1024, 50));
-    object_size_before_gc_histogram.Count(
-        heap_->HeapStats().ObjectSizeAtLastGC() / 1024);
+    object_size_before_gc_histogram.Count(stats.ObjectSizeAtLastGC() / 1024);
     DEFINE_STATIC_LOCAL(CustomCountHistogram, object_size_after_gc_histogram,
                         ("BlinkGC.ObjectSizeAfterGC", 1, 4 * 1024 * 1024, 50));
-    object_size_after_gc_histogram.Count(heap_->HeapStats().MarkedObjectSize() /
-                                         1024);
+    object_size_after_gc_histogram.Count(stats.MarkedObjectSize() / 1024);
     DEFINE_STATIC_LOCAL(CustomCountHistogram, collection_rate_histogram,
                         ("BlinkGC.CollectionRate", 1, 100, 20));
     collection_rate_histogram.Count(static_cast<int>(100 * collection_rate));
@@ -1425,9 +1426,6 @@ void ThreadState::MarkPhasePrologue(BlinkGC::StackState stack_state,
   Heap().FlushHeapDoesNotContainCacheIfNeeded();
   Heap().ClearArenaAges();
 
-  current_gc_data_.marked_object_size =
-      Heap().HeapStats().AllocatedObjectSize() +
-      Heap().HeapStats().MarkedObjectSize();
   if (marking_type != BlinkGC::kTakeSnapshot)
     Heap().ResetHeapCounters();
 }
@@ -1494,12 +1492,6 @@ void ThreadState::MarkPhaseEpilogue(BlinkGC::MarkingType marking_type) {
 
   if (ShouldVerifyMarking())
     VerifyMarking(marking_type);
-
-  Heap().HeapStats().SetEstimatedMarkingTimePerByte(
-      current_gc_data_.marked_object_size
-          ? (current_gc_data_.marking_time_in_milliseconds / 1000 /
-             current_gc_data_.marked_object_size)
-          : 0);
 
   ThreadHeap::ReportMemoryUsageHistogram();
   WTF::Partitions::ReportMemoryUsageHistogram();
