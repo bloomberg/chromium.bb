@@ -13,28 +13,13 @@ async_test(t => {
   // Need to add a text track for the overflow menu to appear.
   video.addTextTrack("captions");
 
-  video.onloadedmetadata = t.step_func(waitForOverflowButtonToAppear);
-
-  // Start the test once the overflow button has appeared.
-  function waitForOverflowButtonToAppear() {
-    // Element coordinates will show zero until ready for clicking.
-    if (elementCoordinates(button)[0] > 0) {
-      openOverflowMenu();
-    } else {
-      setTimeout(t.step_func(waitForOverflowButtonToAppear));
-    }
-  }
-
-  function openOverflowMenu() {
+  video.addEventListener('loadedmetadata', t.step_func(() => {
     // The overflow menu should be closed by default.
     assert_false(isControlVisible(menu));
 
     // Open overflow menu.
-    const overflowButtonCoordinates = elementCoordinates(button);
-    singleTapAtCoordinates(overflowButtonCoordinates[0],
-                           overflowButtonCoordinates[1],
-                           t.step_func(tapOnOverlay));
-  }
+    singleTapOnControl(button, t.step_func(tapOnOverlay));
+  }));
 
   function tapOnOverlay() {
     // Overflow menu should be visible.
@@ -44,12 +29,14 @@ async_test(t => {
     const overlayCoordinates = coordinatesOutsideElement(mediaControlsOverlayPlayButton(video));
     singleTapAtCoordinates(overlayCoordinates[0] + 1,
                            overlayCoordinates[1] + 1,
-                           t.step_func_done(checkOverflowMenuDisappeared));
+                           t.step_func(checkOverflowMenuDisappeared));
   }
 
   function checkOverflowMenuDisappeared() {
-    // The overflow menu should have disappeared.
-    assert_false(isControlVisible(menu));
+    // The overflow menu should disappear.
+    setTimeout(t.step_func_done(() => {
+      assert_false(isControlVisible(menu));
+    }));
   }
 });
 </script>
