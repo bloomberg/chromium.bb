@@ -1784,6 +1784,12 @@ WakeUpBudgetPool* MainThreadSchedulerImpl::GetWakeUpBudgetPoolForTesting() {
   return main_thread_only().wake_up_budget_pool;
 }
 
+base::TimeTicks MainThreadSchedulerImpl::EnableVirtualTime() {
+  return EnableVirtualTime(main_thread_only().initial_virtual_time.is_null()
+                               ? BaseTimeOverridePolicy::DO_NOT_OVERRIDE
+                               : BaseTimeOverridePolicy::OVERRIDE);
+}
+
 base::TimeTicks MainThreadSchedulerImpl::EnableVirtualTime(
     BaseTimeOverridePolicy policy) {
   if (main_thread_only().use_virtual_time)
@@ -1919,6 +1925,10 @@ void MainThreadSchedulerImpl::MaybeAdvanceVirtualTime(
 void MainThreadSchedulerImpl::SetVirtualTimePolicy(VirtualTimePolicy policy) {
   main_thread_only().virtual_time_policy = policy;
   ApplyVirtualTimePolicy();
+}
+
+void MainThreadSchedulerImpl::SetInitialVirtualTime(base::Time time) {
+  main_thread_only().initial_virtual_time = time;
 }
 
 void MainThreadSchedulerImpl::SetInitialVirtualTimeOffset(

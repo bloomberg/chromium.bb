@@ -192,6 +192,10 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   using BaseTimeOverridePolicy =
       AutoAdvancingVirtualTimeDomain::BaseTimeOverridePolicy;
 
+  // Tells the scheduler that all TaskQueues should use virtual time. Depending
+  // on the initial time, picks the policy to be either overriding or not.
+  base::TimeTicks EnableVirtualTime();
+
   // Tells the scheduler that all TaskQueues should use virtual time. Returns
   // the TimeTicks that virtual time offsets will be relative to.
   base::TimeTicks EnableVirtualTime(BaseTimeOverridePolicy policy);
@@ -203,6 +207,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   // Returns true if virtual time is not paused.
   bool VirtualTimeAllowedToAdvance() const;
   void SetVirtualTimePolicy(VirtualTimePolicy virtual_time_policy);
+  void SetInitialVirtualTime(base::Time time);
   void SetInitialVirtualTimeOffset(base::TimeDelta offset);
   void SetMaxVirtualTimeTaskStarvationCount(int max_task_starvation_count);
   void AddVirtualTimeObserver(VirtualTimeObserver*);

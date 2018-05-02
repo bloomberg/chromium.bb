@@ -201,8 +201,7 @@ void PageSchedulerImpl::ReportIntervention(const std::string& message) {
 }
 
 base::TimeTicks PageSchedulerImpl::EnableVirtualTime() {
-  return main_thread_scheduler_->EnableVirtualTime(
-      MainThreadSchedulerImpl::BaseTimeOverridePolicy::DO_NOT_OVERRIDE);
+  return main_thread_scheduler_->EnableVirtualTime();
 }
 
 void PageSchedulerImpl::DisableVirtualTimeForTesting() {
@@ -211,6 +210,10 @@ void PageSchedulerImpl::DisableVirtualTimeForTesting() {
 
 void PageSchedulerImpl::SetVirtualTimePolicy(VirtualTimePolicy policy) {
   main_thread_scheduler_->SetVirtualTimePolicy(policy);
+}
+
+void PageSchedulerImpl::SetInitialVirtualTime(base::Time time) {
+  main_thread_scheduler_->SetInitialVirtualTime(time);
 }
 
 void PageSchedulerImpl::SetInitialVirtualTimeOffset(base::TimeDelta offset) {
