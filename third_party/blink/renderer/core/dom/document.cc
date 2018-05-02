@@ -2975,12 +2975,9 @@ void Document::open() {
 
     if (frame_->Loader().HasProvisionalNavigation()) {
       frame_->Loader().StopAllLoaders();
-      // PlzNavigate: navigations handled by the client should also be
-      // cancelled.
-      if (frame_->Client() &&
-          frame_->GetSettings()->GetBrowserSideNavigationEnabled()) {
+      // Navigations handled by the client should also be cancelled.
+      if (frame_->Client())
         frame_->Client()->AbortClientNavigation();
-      }
     }
   }
 

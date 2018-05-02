@@ -441,6 +441,16 @@ void TestWebFrameClient::DidStopLoading() {
   --loads_in_progress_;
 }
 
+void TestWebFrameClient::DidCreateDocumentLoader(
+    WebDocumentLoader* document_loader) {
+  base::TimeTicks redirect_start;
+  base::TimeTicks redirect_end;
+  base::TimeTicks fetch_start = base::TimeTicks::Now();
+  bool has_redirect = false;
+  document_loader->UpdateNavigation(redirect_start, redirect_end, fetch_start,
+                                    has_redirect);
+}
+
 TestWebRemoteFrameClient::TestWebRemoteFrameClient() = default;
 
 void TestWebRemoteFrameClient::Bind(

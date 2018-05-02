@@ -543,9 +543,6 @@ void RenderViewImpl::Initialize(
   if (switches::IsTouchDragDropEnabled())
     webview()->GetSettings()->SetTouchDragDropEnabled(true);
 
-  webview()->GetSettings()->SetBrowserSideNavigationEnabled(
-      IsBrowserSideNavigationEnabled());
-
   WebSettings::SelectionStrategyType selection_strategy =
       WebSettings::SelectionStrategyType::kCharacter;
   const std::string selection_strategy_str =

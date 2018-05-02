@@ -340,12 +340,10 @@ bool MixedContentChecker::ShouldBlockFetch(
     ResourceRequest::RedirectStatus redirect_status,
     const KURL& url,
     SecurityViolationReportingPolicy reporting_policy) {
-  // Frame-level loads are checked by the browser if PlzNavigate is enabled. No
-  // need to check them again here.
-  if (frame->GetSettings()->GetBrowserSideNavigationEnabled() &&
-      frame_type != network::mojom::RequestContextFrameType::kNone) {
+  // Frame-level loads are checked by the browser. No need to check them again
+  // here.
+  if (frame_type != network::mojom::RequestContextFrameType::kNone)
     return false;
-  }
 
   Frame* effective_frame = EffectiveFrameForFrameType(frame, frame_type);
   Frame* mixed_frame =

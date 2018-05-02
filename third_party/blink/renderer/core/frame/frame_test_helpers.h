@@ -309,6 +309,7 @@ class TestWebFrameClient : public WebFrameClient {
                                   const WebFrameOwnerProperties&) override;
   void DidStartLoading(bool) override;
   void DidStopLoading() override;
+  void DidCreateDocumentLoader(WebDocumentLoader*) override;
   service_manager::InterfaceProvider* GetInterfaceProvider() override {
     return interface_provider_.get();
   }

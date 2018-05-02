@@ -132,54 +132,22 @@ static NavigationPolicy MaybeCheckCSP(
     LocalFrame* frame,
     NavigationPolicy policy,
     bool should_check_main_world_content_security_policy,
-    bool browser_side_navigation_enabled,
     ContentSecurityPolicy::CheckHeaderType check_header_type) {
-  // If we're loading content into |frame| (NavigationPolicyCurrentTab), check
-  // against the parent's Content Security Policy and kill the load if that
-  // check fails, unless we should bypass the main world's CSP.
-  if (policy == kNavigationPolicyCurrentTab &&
-      should_check_main_world_content_security_policy &&
-      // TODO(arthursonzogni): 'frame-src' check is disabled on the
-      // renderer side with browser-side-navigation, but is enforced on the
-      // browser side. See http://crbug.com/692595 for understanding why it
-      // can't be enforced on both sides instead.
-      !browser_side_navigation_enabled) {
-    Frame* parent_frame = frame->Tree().Parent();
-    if (parent_frame) {
-      ContentSecurityPolicy* parent_policy =
-          parent_frame->GetSecurityContext()->GetContentSecurityPolicy();
-      if (!parent_policy->AllowFrameFromSource(
-              request.Url(), request.GetRedirectStatus(),
-              SecurityViolationReportingPolicy::kReport, check_header_type)) {
-        // Fire a load event, as timing attacks would otherwise reveal that the
-        // frame was blocked. This way, it looks like every other cross-origin
-        // page load.
-        frame->GetDocument()->EnforceSandboxFlags(kSandboxOrigin);
-        frame->Owner()->DispatchLoad();
-        return kNavigationPolicyIgnore;
-      }
-    }
-  }
+  // TODO(arthursonzogni): 'frame-src' check is disabled on the
+  // renderer side, but is enforced on the browser side.
+  // See http://crbug.com/692595 for understanding why it
+  // can't be enforced on both sides instead.
 
-  bool is_form_submission = type == kNavigationTypeFormSubmitted ||
-                            type == kNavigationTypeFormResubmitted;
-  if (is_form_submission &&
-      // 'form-action' check in the frame that is navigating is disabled on the
-      // renderer side when PlzNavigate is enabled, but is enforced on the
-      // browser side instead.
-      // N.B. check in the frame that initiates the navigation stills occurs in
-      // blink and is not enforced on the browser-side.
-      // TODO(arthursonzogni) The 'form-action' check should be fully disabled
-      // in blink when browser side navigation is enabled, except when the form
-      // submission doesn't trigger a navigation(i.e. javascript urls). Please
-      // see https://crbug.com/701749
-      !browser_side_navigation_enabled &&
-      !frame->GetDocument()->GetContentSecurityPolicy()->AllowFormAction(
-          request.Url(), request.GetRedirectStatus(),
-          SecurityViolationReportingPolicy::kReport, check_header_type)) {
-    return kNavigationPolicyIgnore;
-  }
+  // 'form-action' check in the frame that is navigating is disabled on the
+  // renderer side, but is enforced on the browser side instead.
+  // N.B. check in the frame that initiates the navigation stills occurs in
+  // blink and is not enforced on the browser-side.
+  // TODO(arthursonzogni) The 'form-action' check should be fully disabled
+  // in blink, except when the form submission doesn't trigger a navigation
+  // (i.e. javascript urls). Please see https://crbug.com/701749.
 
+  // TODO(dgozman): find better place for the comments above and
+  // remove this method entirely.
   return policy;
 }
 
@@ -1446,11 +1414,9 @@ NavigationPolicy FrameLoader::ShouldContinueForNavigationPolicy(
       return kNavigationPolicyIgnore;
   }
 
-  Settings* settings = frame_->GetSettings();
   if (MaybeCheckCSP(request, type, frame_, policy,
                     should_check_main_world_content_security_policy ==
                         kCheckContentSecurityPolicy,
-                    settings && settings->GetBrowserSideNavigationEnabled(),
                     ContentSecurityPolicy::CheckHeaderType::kCheckEnforce) ==
       kNavigationPolicyIgnore) {
     return kNavigationPolicyIgnore;
@@ -1482,13 +1448,11 @@ NavigationPolicy FrameLoader::ShouldContinueForRedirectNavigationPolicy(
     FrameLoadType frame_load_type,
     bool is_client_redirect,
     HTMLFormElement* form) {
-  Settings* settings = frame_->GetSettings();
   // Check report-only CSP policies, which are not checked by
   // ShouldContinueForNavigationPolicy.
   MaybeCheckCSP(request, type, frame_, policy,
                 should_check_main_world_content_security_policy ==
                     kCheckContentSecurityPolicy,
-                settings && settings->GetBrowserSideNavigationEnabled(),
                 ContentSecurityPolicy::CheckHeaderType::kCheckReportOnly);
 
   return ShouldContinueForNavigationPolicy(
@@ -1526,12 +1490,10 @@ NavigationPolicy FrameLoader::CheckLoadCanStart(
   RecordLatestRequiredCSP();
   // Before modifying the request, check report-only CSP headers to give the
   // site owner a chance to learn about requests that need to be modified.
-  Settings* settings = frame_->GetSettings();
   MaybeCheckCSP(
       resource_request, navigation_type, frame_, navigation_policy,
       frame_load_request.ShouldCheckMainWorldContentSecurityPolicy() ==
           kCheckContentSecurityPolicy,
-      settings && settings->GetBrowserSideNavigationEnabled(),
       ContentSecurityPolicy::CheckHeaderType::kCheckReportOnly);
   ModifyRequestForCSP(resource_request, frame_load_request.OriginDocument());
 
