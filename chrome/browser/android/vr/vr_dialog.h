@@ -24,6 +24,8 @@
 using base::android::JavaParamRef;
 
 namespace vr {
+// TODO(bshe): refactor content_input_delegate and vr_dialog so the common
+// code can be shared in a more clear way (https://crbug.com/838925).
 class VrDialog : public ContentInputDelegate {
  public:
   VrDialog(int width, int height);
@@ -36,24 +38,14 @@ class VrDialog : public ContentInputDelegate {
   ContentInputForwarder* dialog_ = nullptr;
 
   // ContentInputDelegate.
-  void OnContentEnter(const gfx::PointF& normalized_hit_point) override;
-  void OnContentLeave() override;
-  void OnContentMove(const gfx::PointF& normalized_hit_point) override;
-  void OnContentDown(const gfx::PointF& normalized_hit_point) override;
-  void OnContentUp(const gfx::PointF& normalized_hit_point) override;
-  void OnContentFlingCancel(std::unique_ptr<blink::WebGestureEvent> gesture,
-                            const gfx::PointF& normalized_hit_point) override;
-  void OnContentScrollBegin(std::unique_ptr<blink::WebGestureEvent> gesture,
-                            const gfx::PointF& normalized_hit_point) override;
-  void OnContentScrollUpdate(std::unique_ptr<blink::WebGestureEvent> gesture,
-                             const gfx::PointF& normalized_hit_point) override;
-  void OnContentScrollEnd(std::unique_ptr<blink::WebGestureEvent> gesture,
-                          const gfx::PointF& normalized_hit_point) override;
-  void SendGestureToDialog(std::unique_ptr<blink::WebInputEvent> event);
-
+  void SendGestureToTarget(
+      std::unique_ptr<blink::WebInputEvent> event) override;
+  void UpdateGesture(const gfx::PointF& normalized_content_hit_point,
+                     blink::WebGestureEvent& gesture) override;
   std::unique_ptr<blink::WebMouseEvent> MakeMouseEvent(
       blink::WebInputEvent::Type type,
-      const gfx::PointF& normalized_web_content_location);
+      const gfx::PointF& normalized_web_content_location) override;
+
   int width_;
   int height_;
 
