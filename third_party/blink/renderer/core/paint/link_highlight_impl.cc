@@ -146,7 +146,7 @@ void LinkHighlightImpl::AttachLinkHighlightToCompositingLayer(
   if (!new_graphics_layer)
     return;
 
-  clip_layer_->SetTransform(SkMatrix44(SkMatrix44::kIdentity_Constructor));
+  clip_layer_->SetTransform(gfx::Transform());
 
   if (current_graphics_layer_ != new_graphics_layer) {
     if (current_graphics_layer_)

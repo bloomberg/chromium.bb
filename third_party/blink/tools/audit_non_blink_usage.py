@@ -79,6 +79,7 @@ _CONFIG = [
 
             # Chromium geometry types.
             'gfx::Rect',
+            'gfx::Transform',
             # Wrapper of SkRegion used in Chromium.
             'cc::Region',
 

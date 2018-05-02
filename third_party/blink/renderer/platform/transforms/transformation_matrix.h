@@ -35,6 +35,10 @@
 #include "third_party/blink/renderer/platform/wtf/alignment.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
+namespace gfx {
+class Transform;
+}
+
 namespace blink {
 
 class AffineTransform;
@@ -466,6 +470,7 @@ class PLATFORM_EXPORT TransformationMatrix {
   void ToColumnMajorFloatArray(FloatMatrix4& result) const;
 
   static SkMatrix44 ToSkMatrix44(const TransformationMatrix&);
+  static gfx::Transform ToTransform(const TransformationMatrix&);
 
   // If |asMatrix|, return the matrix in row-major order. Otherwise, return
   // the transform's decomposition which shows the translation, scale, etc.

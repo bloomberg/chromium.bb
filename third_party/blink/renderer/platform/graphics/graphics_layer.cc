@@ -1013,7 +1013,7 @@ void GraphicsLayer::SetSize(const FloatSize& size) {
 
 void GraphicsLayer::SetTransform(const TransformationMatrix& transform) {
   transform_ = transform;
-  PlatformLayer()->SetTransform(TransformationMatrix::ToSkMatrix44(transform_));
+  PlatformLayer()->SetTransform(TransformationMatrix::ToTransform(transform));
 }
 
 void GraphicsLayer::SetTransformOrigin(const FloatPoint3D& transform_origin) {

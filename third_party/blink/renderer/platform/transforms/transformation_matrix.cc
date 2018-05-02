@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/platform/wtf/cpu.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "ui/gfx/transform.h"
 
 #if defined(ARCH_CPU_X86_64)
 #include <emmintrin.h>
@@ -1879,6 +1880,11 @@ SkMatrix44 TransformationMatrix::ToSkMatrix44(
   ret.setDouble(3, 2, matrix.M34());
   ret.setDouble(3, 3, matrix.M44());
   return ret;
+}
+
+gfx::Transform TransformationMatrix::ToTransform(
+    const TransformationMatrix& matrix) {
+  return gfx::Transform(TransformationMatrix::ToSkMatrix44(matrix));
 }
 
 String TransformationMatrix::ToString(bool as_matrix) const {

@@ -13,8 +13,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_size.h"
-#include "third_party/skia/include/core/SkMatrix44.h"
 #include "ui/gfx/geometry/point3_f.h"
+#include "ui/gfx/transform.h"
 
 using blink::WebFloatPoint;
 using blink::WebSize;
@@ -46,7 +46,7 @@ void CheckBoundsScaleSimple(WebLayerImplFixedBounds* layer,
 
   EXPECT_EQ(bounds, layer->Bounds());
   EXPECT_EQ(fixed_bounds, layer->layer()->bounds());
-  EXPECT_TRUE(layer->Transform().isIdentity());
+  EXPECT_TRUE(layer->Transform().IsIdentity());
 
   // An arbitrary point to check the scale and transforms.
   gfx::Point3F original_point(10, 20, 1);
@@ -93,14 +93,14 @@ void CompareFixedBoundsLayerAndNormalLayer(const WebFloatPoint& anchor_point,
   WebLayerImplFixedBounds fixed_bounds_layer(cc::PictureImageLayer::Create());
   fixed_bounds_layer.SetBounds(bounds);
   fixed_bounds_layer.SetFixedBounds(fixed_bounds);
-  fixed_bounds_layer.SetTransform(transform.matrix());
+  fixed_bounds_layer.SetTransform(transform);
   fixed_bounds_layer.SetPosition(position);
   root_layer.AddChild(&fixed_bounds_layer);
 
   WebLayerImpl normal_layer(cc::PictureImageLayer::Create());
 
   normal_layer.SetBounds(bounds);
-  normal_layer.SetTransform(transform.matrix());
+  normal_layer.SetTransform(transform);
   normal_layer.SetPosition(position);
   root_layer.AddChild(&normal_layer);
 
