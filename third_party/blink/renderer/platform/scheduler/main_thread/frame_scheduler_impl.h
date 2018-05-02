@@ -126,13 +126,13 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
   void RemoveThrottleableQueueFromBackgroundCPUTimeBudgetPool();
   void ApplyPolicyToThrottleableQueue();
   bool ShouldThrottleTimers() const;
-  void UpdateTaskQueueThrottling();
   FrameScheduler::ThrottlingState CalculateThrottlingState() const;
-  void UpdateThrottlingState();
   void RemoveThrottlingObserver(Observer* observer);
-  void UpdateTaskQueues();
-  void UpdateTaskQueue(const scoped_refptr<MainThreadTaskQueue>& queue,
-                       TaskQueue::QueueEnabledVoter* voter);
+  void UpdatePolicy();
+  void UpdateQueuePolicy(const scoped_refptr<MainThreadTaskQueue>& queue,
+                         TaskQueue::QueueEnabledVoter* voter);
+  void UpdateThrottling();
+  void NotifyThrottlingObservers();
 
   void DidOpenActiveConnection();
   void DidCloseActiveConnection();
