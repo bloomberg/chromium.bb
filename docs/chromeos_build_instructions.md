@@ -14,6 +14,26 @@ First, follow the [normal Linux build
 instructions](https://chromium.googlesource.com/chromium/src/+/master/docs/linux_build_instructions.md)
 as usual to get a Chromium checkout.
 
+## Updating your gclient config
+
+Chromium OS builds of Chromium require some additional build dependencies which
+can be synced by adding `'chromeos'` to the `target_os` list in your `.gclient`
+configuration. This file is located one level up from your Chromium checkout's
+`src`.
+
+If you don't already have a `target_os` line present, simply add this to the
+end of the `.gclient` file:
+
+    target_os = ['chromeos']
+
+If you already have a `target_os` line present in your `.gclient file`, you can
+simply append `'chromeos'` to the existing list there. For example:
+
+    target_os = ['android', 'chromeos']
+
+Once your `.gclient` file is updated, you will need to run `gclient sync` once
+before proceeding with the rest of these instructions.
+
 ## Building and running Chromium with Chromium OS UI on your local machine
 
 Run the following in your chromium checkout:
