@@ -106,10 +106,6 @@ class OmniboxImageView : public views::ImageView {
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxMatchCellView:
 
-// TODO(dschuyler): Move this class to its own file. The reason it started in
-// the omnibox_result_view file was to ease the refactor of this code. I intend
-// to resolve this in mid-2018.
-
 OmniboxMatchCellView::OmniboxMatchCellView(OmniboxResultView* result_view,
                                            const gfx::FontList& font_list,
                                            int text_height)
