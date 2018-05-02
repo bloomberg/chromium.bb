@@ -61,6 +61,7 @@ CGFloat kMinWidth = 320.0;
 @implementation ToolbarActionsBarBubbleMac
 
 @synthesize actionButton = actionButton_;
+@synthesize bodyText = bodyText_;
 @synthesize itemList = itemList_;
 @synthesize dismissButton = dismissButton_;
 @synthesize link = link_;
@@ -258,6 +259,9 @@ CGFloat kMinWidth = 320.0;
   }
 
   DCHECK(actionButton_ || dismissButton_);
+  // TODO(devlin): This doesn't currently take into account
+  // delegate_->GetDefaultDialogButton().
+
   CGFloat buttonStripHeight =
       std::max(actionButtonSize.height, dismissButtonSize.height);
 
@@ -276,16 +280,19 @@ CGFloat kMinWidth = 320.0;
   CGFloat windowWidth =
       std::max(std::max(kMinWidth, buttonStripWidth), headingWidth);
 
-  NSTextField* content =
-      [self addTextFieldWithString:delegate_->GetBodyText(anchoredToAction_)
-                          fontSize:12.0
-                         alignment:NSLeftTextAlignment];
-  [content setFrame:NSMakeRect(0, 0, windowWidth, 0)];
-  // The content should have the same (max) width as the heading, which means
-  // the text will most likely wrap.
-  NSSize contentSize = NSMakeSize(windowWidth,
-                                  [GTMUILocalizerAndLayoutTweaker
-                                       sizeToFitFixedWidthTextField:content]);
+  base::string16 bodyTextString = delegate_->GetBodyText(anchoredToAction_);
+  NSSize bodyTextSize;
+  if (!bodyTextString.empty()) {
+    bodyText_ = [self addTextFieldWithString:bodyTextString
+                                    fontSize:12.0
+                                   alignment:NSLeftTextAlignment];
+    [bodyText_ setFrame:NSMakeRect(0, 0, windowWidth, 0)];
+    // The content should have the same (max) width as the heading, which means
+    // the text will most likely wrap.
+    bodyTextSize =
+        NSMakeSize(windowWidth, [GTMUILocalizerAndLayoutTweaker
+                                    sizeToFitFixedWidthTextField:bodyText_]);
+  }
 
   const CGFloat kItemListIndentation = 10.0;
   base::string16 itemListStr = delegate_->GetItemListText();
@@ -360,11 +367,12 @@ CGFloat kMinWidth = 320.0;
     currentHeight += itemListSize.height + kVerticalPadding;
   }
 
-  [content setFrame:NSMakeRect(kHorizontalPadding,
-                               currentHeight,
-                               contentSize.width,
-                               contentSize.height)];
-  currentHeight += contentSize.height + kVerticalPadding;
+  if (bodyText_) {
+    [bodyText_ setFrame:NSMakeRect(kHorizontalPadding, currentHeight,
+                                   bodyTextSize.width, bodyTextSize.height)];
+    currentHeight += bodyTextSize.height + kVerticalPadding;
+  }
+
   [heading setFrame:NSMakeRect(kHorizontalPadding,
                                currentHeight,
                                headingSize.width,

@@ -70,6 +70,12 @@ base::string16 ExtensionMessageBubbleBridge::GetDismissButtonText() {
   return controller_->delegate()->GetDismissButtonLabel();
 }
 
+ui::DialogButton ExtensionMessageBubbleBridge::GetDefaultDialogButton() {
+  // TODO(estade): we should set a default where appropriate. See
+  // http://crbug.com/751279
+  return ui::DIALOG_BUTTON_NONE;
+}
+
 std::string ExtensionMessageBubbleBridge::GetAnchorActionId() {
   return controller_->GetExtensionIdList().size() == 1u
              ? controller_->GetExtensionIdList()[0]

@@ -33,6 +33,7 @@ class ToolbarActionsBarBubbleViews : public views::BubbleDialogDelegateView,
 
   void Show();
 
+  const views::Label* body_text() const { return body_text_; }
   const views::Label* item_list() const { return item_list_; }
   views::ImageButton* learn_more_button() const { return image_button_; }
 
@@ -56,6 +57,7 @@ class ToolbarActionsBarBubbleViews : public views::BubbleDialogDelegateView,
 
   std::unique_ptr<ToolbarActionsBarBubbleDelegate> delegate_;
   bool delegate_notified_of_close_ = false;
+  views::Label* body_text_ = nullptr;
   views::Label* item_list_ = nullptr;
   views::ImageButton* image_button_ = nullptr;
   const bool anchored_to_action_;

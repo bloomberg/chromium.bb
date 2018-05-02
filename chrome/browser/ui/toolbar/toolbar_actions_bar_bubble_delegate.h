@@ -9,6 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/strings/string16.h"
+#include "ui/base/ui_base_types.h"
 
 namespace gfx {
 struct VectorIcon;
@@ -72,6 +73,9 @@ class ToolbarActionsBarBubbleDelegate {
   // correspond with ACTION_DISMISS. If this returns an empty string, no
   // button will be added.
   virtual base::string16 GetDismissButtonText() = 0;
+
+  // Returns the button that should be set to the default.
+  virtual ui::DialogButton GetDefaultDialogButton() = 0;
 
   // Returns the id of the action to point to, or the empty string if the
   // bubble should point to the center of the actions container.

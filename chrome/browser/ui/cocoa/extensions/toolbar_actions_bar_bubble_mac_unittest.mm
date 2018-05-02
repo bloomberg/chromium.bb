@@ -191,6 +191,7 @@ TEST_F(ToolbarActionsBarBubbleMacTest, ToolbarActionsBarBubbleLayout) {
     EXPECT_FALSE([bubble label]);
     EXPECT_FALSE([bubble link]);
     EXPECT_FALSE([bubble dismissButton]);
+    EXPECT_TRUE([bubble bodyText]);
     EXPECT_FALSE([bubble itemList]);
 
     [bubble close];
@@ -216,6 +217,7 @@ TEST_F(ToolbarActionsBarBubbleMacTest, ToolbarActionsBarBubbleLayout) {
     EXPECT_FALSE([bubble label]);
     EXPECT_TRUE([bubble link]);
     EXPECT_TRUE([bubble dismissButton]);
+    EXPECT_TRUE([bubble bodyText]);
     EXPECT_FALSE([bubble itemList]);
 
     [bubble close];
@@ -233,6 +235,7 @@ TEST_F(ToolbarActionsBarBubbleMacTest, ToolbarActionsBarBubbleLayout) {
     EXPECT_FALSE([bubble label]);
     EXPECT_FALSE([bubble link]);
     EXPECT_TRUE([bubble dismissButton]);
+    EXPECT_TRUE([bubble bodyText]);
     EXPECT_FALSE([bubble itemList]);
 
     [bubble close];
@@ -250,7 +253,25 @@ TEST_F(ToolbarActionsBarBubbleMacTest, ToolbarActionsBarBubbleLayout) {
     EXPECT_FALSE([bubble label]);
     EXPECT_FALSE([bubble link]);
     EXPECT_FALSE([bubble dismissButton]);
+    EXPECT_TRUE([bubble bodyText]);
     EXPECT_TRUE([bubble itemList]);
+
+    [bubble close];
+    chrome::testing::NSRunLoopRunAllPending();
+  }
+
+  // Test with no body text.
+  {
+    TestToolbarActionsBarBubbleDelegate delegate(
+        HeadingString(), base::string16(), ActionString());
+    ToolbarActionsBarBubbleMac* bubble = CreateAndShowBubble(&delegate);
+    EXPECT_TRUE([bubble actionButton]);
+    EXPECT_FALSE([bubble iconView]);
+    EXPECT_FALSE([bubble label]);
+    EXPECT_FALSE([bubble link]);
+    EXPECT_FALSE([bubble dismissButton]);
+    EXPECT_FALSE([bubble bodyText]);
+    EXPECT_FALSE([bubble itemList]);
 
     [bubble close];
     chrome::testing::NSRunLoopRunAllPending();
@@ -266,6 +287,7 @@ TEST_F(ToolbarActionsBarBubbleMacTest, ToolbarActionsBarBubbleLayout) {
     EXPECT_FALSE([bubble label]);
     EXPECT_FALSE([bubble link]);
     EXPECT_FALSE([bubble dismissButton]);
+    EXPECT_TRUE([bubble bodyText]);
     EXPECT_FALSE([bubble itemList]);
 
     [bubble close];
@@ -292,6 +314,7 @@ TEST_F(ToolbarActionsBarBubbleMacTest, ToolbarActionsBarBubbleLayout) {
     EXPECT_TRUE([bubble label]);
     EXPECT_FALSE([bubble link]);
     EXPECT_FALSE([bubble dismissButton]);
+    EXPECT_TRUE([bubble bodyText]);
     EXPECT_FALSE([bubble itemList]);
 
     [bubble close];
@@ -318,6 +341,7 @@ TEST_F(ToolbarActionsBarBubbleMacTest, ToolbarActionsBarBubbleLayout) {
     EXPECT_FALSE([bubble label]);
     EXPECT_TRUE([bubble link]);
     EXPECT_TRUE([bubble dismissButton]);
+    EXPECT_TRUE([bubble bodyText]);
     EXPECT_TRUE([bubble itemList]);
 
     [bubble close];

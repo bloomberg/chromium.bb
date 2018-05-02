@@ -27,6 +27,10 @@ class ToolbarActionsBarBubbleDelegate;
   // Required.
   NSButton* actionButton_;
 
+  // The text to display in the body of the bubble, excluding the item list.
+  // Optional.
+  NSTextField* bodyText_;
+
   // The list of items to display. Optional.
   NSTextField* itemList_;
 
@@ -57,6 +61,7 @@ class ToolbarActionsBarBubbleDelegate;
 + (void)setAnimationEnabledForTesting:(BOOL)enabled;
 
 @property(readonly, nonatomic) NSButton* actionButton;
+@property(readonly, nonatomic) NSTextField* bodyText;
 @property(readonly, nonatomic) NSTextField* itemList;
 @property(readonly, nonatomic) NSButton* dismissButton;
 @property(readonly, nonatomic) NSButton* link;
