@@ -82,14 +82,20 @@ class OneGoogleBarFetcherImplTest : public testing::Test {
             new net::TestURLRequestContextGetter(task_runner_)),
         google_url_tracker_(std::make_unique<GoogleURLTrackerClientStub>(),
                             GoogleURLTracker::ALWAYS_DOT_COM_MODE),
-        one_google_bar_fetcher_(request_context_getter_.get(),
-                                &google_url_tracker_,
-                                kApplicationLocale,
-                                api_url_override,
-                                account_consistency_mirror_required) {}
+        api_url_override_(api_url_override),
+        account_consistency_mirror_required_(
+            account_consistency_mirror_required) {}
 
   ~OneGoogleBarFetcherImplTest() override {
     static_cast<KeyedService&>(google_url_tracker_).Shutdown();
+  }
+
+  void SetUp() override {
+    testing::Test::SetUp();
+
+    one_google_bar_fetcher_ = std::make_unique<OneGoogleBarFetcherImpl>(
+        request_context_getter_.get(), &google_url_tracker_, kApplicationLocale,
+        api_url_override_, account_consistency_mirror_required_);
   }
 
   net::TestURLFetcher* GetRunningURLFetcher() {
@@ -123,7 +129,7 @@ class OneGoogleBarFetcherImplTest : public testing::Test {
   }
 
   OneGoogleBarFetcherImpl* one_google_bar_fetcher() {
-    return &one_google_bar_fetcher_;
+    return one_google_bar_fetcher_.get();
   }
 
  private:
@@ -140,7 +146,9 @@ class OneGoogleBarFetcherImplTest : public testing::Test {
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
   GoogleURLTracker google_url_tracker_;
 
-  OneGoogleBarFetcherImpl one_google_bar_fetcher_;
+  base::Optional<std::string> api_url_override_;
+  bool account_consistency_mirror_required_;
+  std::unique_ptr<OneGoogleBarFetcherImpl> one_google_bar_fetcher_;
 };
 
 TEST_F(OneGoogleBarFetcherImplTest, RequestUrlContainsLanguage) {
