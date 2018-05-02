@@ -56,10 +56,9 @@
     return;
   }
   // nil is allowed only if there is no other identity.
-  DCHECK(selectedIdentity || ios::GetChromeBrowserProvider()
-                                     ->GetChromeIdentityService()
-                                     ->GetAllIdentitiesSortedForDisplay()
-                                     .count == 0);
+  DCHECK(selectedIdentity || !ios::GetChromeBrowserProvider()
+                                  ->GetChromeIdentityService()
+                                  ->HasIdentities());
   _selectedIdentity = selectedIdentity;
   self.selectedIdentityAvatar = nil;
   [self updateViewController];
@@ -119,10 +118,12 @@
 #pragma mark - ChromeIdentityServiceObserver
 
 - (void)identityListChanged {
-  NSArray* identities = ios::GetChromeBrowserProvider()
-                            ->GetChromeIdentityService()
-                            ->GetAllIdentitiesSortedForDisplay();
-  if (![identities containsObject:self.selectedIdentity]) {
+  if (!self.selectedIdentity || !ios::GetChromeBrowserProvider()
+                                     ->GetChromeIdentityService()
+                                     ->IsValidIdentity(self.selectedIdentity)) {
+    NSArray* identities = ios::GetChromeBrowserProvider()
+                              ->GetChromeIdentityService()
+                              ->GetAllIdentitiesSortedForDisplay();
     ChromeIdentity* newIdentity = nil;
     if (identities.count != 0) {
       newIdentity = identities[0];
