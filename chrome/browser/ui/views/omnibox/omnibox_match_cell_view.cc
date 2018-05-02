@@ -51,9 +51,9 @@ int GetIconAlignmentOffset() {
 }
 
 // Returns the margins that should appear at the top and bottom of the result.
-// |match_is_answer| indicates whether the vertical margin is for a omnibox
+// |is_old_style_answer| indicates whether the vertical margin is for a omnibox
 // result displaying an answer to the query.
-gfx::Insets GetVerticalInsets(int text_height, bool match_is_answer) {
+gfx::Insets GetVerticalInsets(int text_height, bool is_old_style_answer) {
   // Regardless of the text size, we ensure a minimum size for the content line
   // here. This minimum is larger for hybrid mouse/touch devices to ensure an
   // adequately sized touch target.
@@ -72,7 +72,7 @@ gfx::Insets GetVerticalInsets(int text_height, bool match_is_answer) {
   if (Md::IsTouchOptimizedUiEnabled()) {
     min_height = std::max(
         min_height, RoundedOmniboxResultsFrame::GetNonResultSectionHeight());
-    if (match_is_answer) {
+    if (is_old_style_answer) {
       // Answer matches apply the normal margin at the top and the minimum
       // allowable margin at the bottom.
       const int top_margin = gfx::ToCeiledInt((min_height - text_height) / 2.f);
@@ -109,7 +109,7 @@ class OmniboxImageView : public views::ImageView {
 OmniboxMatchCellView::OmniboxMatchCellView(OmniboxResultView* result_view,
                                            const gfx::FontList& font_list,
                                            int text_height)
-    : is_answer_(false),
+    : is_old_style_answer_(false),
       is_entity_(false),
       is_search_type_(false),
       text_height_(text_height) {
@@ -127,17 +127,19 @@ OmniboxMatchCellView::OmniboxMatchCellView(OmniboxResultView* result_view,
 OmniboxMatchCellView::~OmniboxMatchCellView() = default;
 
 gfx::Size OmniboxMatchCellView::CalculatePreferredSize() const {
-  int height =
-      text_height_ + GetVerticalInsets(text_height_, is_answer_).height();
-  if (is_answer_ || is_entity_)
-    height += GetAnswerHeight();
+  int height = text_height_ +
+               GetVerticalInsets(text_height_, is_old_style_answer_).height();
+  if (is_old_style_answer_)
+    height += GetOldStyleAnswerHeight();
+  if (is_entity_)
+    height += text_height_;
   return gfx::Size(0, height);
 }
 bool OmniboxMatchCellView::CanProcessEventsWithinSubtree() const {
   return false;
 }
 
-int OmniboxMatchCellView::GetAnswerHeight() const {
+int OmniboxMatchCellView::GetOldStyleAnswerHeight() const {
   int icon_width = icon_view_->width();
   int answer_icon_size = image_view_->visible()
                              ? image_view_->height() + kAnswerIconToTextPadding
@@ -152,12 +154,12 @@ int OmniboxMatchCellView::GetAnswerHeight() const {
 }
 
 void OmniboxMatchCellView::OnMatchUpdate(const AutocompleteMatch& match) {
-  is_answer_ = !!match.answer;
+  is_old_style_answer_ = !!match.answer;
   if (base::FeatureList::IsEnabled(omnibox::kOmniboxRichEntitySuggestions)) {
     is_entity_ = !match.image_url.empty();
   }
   is_search_type_ = AutocompleteMatch::IsSearchType(match.type);
-  if (is_answer_ || is_entity_) {
+  if (is_old_style_answer_ || is_entity_) {
     separator_view_->SetSize(gfx::Size());
   }
   if (is_entity_) {
@@ -171,19 +173,19 @@ const char* OmniboxMatchCellView::GetClassName() const {
 
 void OmniboxMatchCellView::Layout() {
   views::View::Layout();
-  if (is_answer_) {
-    LayoutAnswer();
-  } else if (is_entity_) {
+  if (is_entity_) {
     LayoutEntity();
+  } else if (is_old_style_answer_) {
+    LayoutOldStyleAnswer();
   } else {
     LayoutSplit();
   }
 }
 
-void OmniboxMatchCellView::LayoutAnswer() {
+void OmniboxMatchCellView::LayoutOldStyleAnswer() {
   const int start_x = GetIconAlignmentOffset() + HorizontalPadding();
   int x = start_x + LocationBarView::GetBorderThicknessDip();
-  int y = GetVerticalInsets(text_height_, is_answer_).top();
+  int y = GetVerticalInsets(text_height_, /*is_old_style_answer=*/true).top();
   icon_view_->SetSize(icon_view_->CalculatePreferredSize());
   icon_view_->SetPosition(
       gfx::Point(x, y + (text_height_ - icon_view_->height()) / 2));
@@ -210,7 +212,7 @@ void OmniboxMatchCellView::LayoutAnswer() {
 void OmniboxMatchCellView::LayoutEntity() {
   int x = GetIconAlignmentOffset() + HorizontalPadding() +
           LocationBarView::GetBorderThicknessDip();
-  int y = GetVerticalInsets(text_height_, is_answer_).top();
+  int y = GetVerticalInsets(text_height_, /*is_old_style_answer=*/false).top();
   int image_edge_length = text_height_ * 2;
   image_view_->SetImageSize(gfx::Size(image_edge_length, image_edge_length));
   image_view_->SetBounds(x, y, image_edge_length, image_edge_length);
@@ -224,7 +226,7 @@ void OmniboxMatchCellView::LayoutSplit() {
   int x = GetIconAlignmentOffset() + HorizontalPadding() +
           LocationBarView::GetBorderThicknessDip();
   icon_view_->SetSize(icon_view_->CalculatePreferredSize());
-  int y = GetVerticalInsets(text_height_, is_answer_).top();
+  int y = GetVerticalInsets(text_height_, /*is_old_style_answer=*/false).top();
   icon_view_->SetPosition(
       gfx::Point(x, y + (text_height_ - icon_view_->height()) / 2));
   x += icon_view_->width() + HorizontalPadding();
