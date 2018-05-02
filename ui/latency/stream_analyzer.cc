@@ -5,6 +5,10 @@
 #include "ui/latency/stream_analyzer.h"
 
 namespace ui {
+
+StreamAnalysis::StreamAnalysis() = default;
+StreamAnalysis::~StreamAnalysis() = default;
+
 namespace frame_metrics {
 
 StreamAnalyzer::StreamAnalyzer(
@@ -42,10 +46,10 @@ void StreamAnalyzer::StartNewReportPeriod() {
 void StreamAnalyzer::AddSample(const uint32_t value, const uint32_t weight) {
   DCHECK_GT(weight, 0u);
 
-  uint64_t weighted_value = static_cast<uint64_t>(weight) * value;
-  uint64_t weighted_root = weight * std::sqrt(static_cast<double>(value) *
-                                              kFixedPointRootMultiplier);
-  Accumulator96b weighted_square(value, weight);
+  const uint64_t weighted_value = static_cast<uint64_t>(weight) * value;
+  const uint64_t weighted_root = weight * std::sqrt(static_cast<double>(value) *
+                                                    kFixedPointRootMultiplier);
+  const Accumulator96b weighted_square(value, weight);
 
   // Verify overflow isn't an issue.
   // square_accumulator_ has DCHECKs internally, so we don't worry about
@@ -141,6 +145,19 @@ PercentileResults StreamAnalyzer::ComputePercentiles() const {
     result.values[i] = client_->TransformResult(result.values[i]);
   }
   return result;
+}
+
+void StreamAnalyzer::ComputeSummary(StreamAnalysis* results) const {
+  results->mean = ComputeMean();
+  results->rms = ComputeRMS();
+  results->smr = ComputeSMR();
+  results->std_dev = ComputeStdDev();
+  results->variance_of_roots = ComputeVarianceOfRoots();
+  results->thresholds = ComputeThresholds();
+  results->percentiles = ComputePercentiles();
+  results->worst_mean = windowed_analyzer_.ComputeWorstMean();
+  results->worst_rms = windowed_analyzer_.ComputeWorstRMS();
+  results->worst_smr = windowed_analyzer_.ComputeWorstSMR();
 }
 
 std::unique_ptr<base::trace_event::ConvertableToTraceFormat>

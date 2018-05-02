@@ -55,7 +55,6 @@ ui::PercentileResults PercentilesHelper(
     boundary_right = boundary_iterator->Next();
   }
 
-  NOTREACHED();
   return result;
 }
 
