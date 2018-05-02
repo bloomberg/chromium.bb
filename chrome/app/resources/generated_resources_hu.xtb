@@ -367,7 +367,6 @@
 <translation id="1545775234664667895">Telepített téma: "<ph name="THEME_NAME" />"</translation>
 <translation id="1545786162090505744">URL, ahol a lekérdezést a %s helyettesíti</translation>
 <translation id="1546280085599573572">Ez a bővítmény azt módosította, hogy melyik oldal jelenjen meg a Kezdőlap gombra való kattintás esetén.</translation>
-<translation id="1547572086206517271">Frissítés szükséges</translation>
 <translation id="1548132948283577726">Itt jelennek meg azok a weboldalak, amelyekhez a jelszavak mentése meg lett tiltva.</translation>
 <translation id="1549788673239553762">A(z) <ph name="APP_NAME" /> meg akarja nyitni a következőt: <ph name="VOLUME_NAME" />. A művelet módosíthatja vagy törölheti a fájljait.</translation>
 <translation id="1553538517812678578">korlátlan</translation>
@@ -734,7 +733,6 @@
 <translation id="2128691215891724419">Szinkronizálási hiba: Frissítse a szinkronizálási jelszót...</translation>
 <translation id="2129825002735785149">Beépülő modul frissítése</translation>
 <translation id="2129904043921227933">Szinkronizálási hiba: frissítse a szinkronizálási jelszót...</translation>
-<translation id="2130949041518253417">Szinkronizálás után minden eszközén személyre szabott böngészési élmény várja</translation>
 <translation id="2131077480075264">A(z) „<ph name="APP_NAME" />” telepítése sikertelen, mivel azt a(z) „<ph name="IMPORT_NAME" />” nem engedélyezi.</translation>
 <translation id="2135787500304447609">&amp;Folytatás</translation>
 <translation id="2136372518715274136">Írja be az új jelszót</translation>
@@ -1690,7 +1688,6 @@ Ha további információt szeretne, látogasson el a <ph name="BEGIN_LINK" />Sú
 <translation id="3576324189521867626">Sikeresen telepítve</translation>
 <translation id="3578594933904494462">A lap tartalma meg lesz osztva.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; szeretné megosztani a(z) &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; nyomtatót az Ön &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt; nevű csoportjával. Ha elfogadja, a csoport minden tagja tud majd nyomtatni a nyomtatóval.</translation>
-<translation id="3582972582564653026">Szinkronizálhatja és személyre szabhatja a Chrome-ot minden eszközén</translation>
 <translation id="3584169441612580296">Fotók, zeneszámok és egyéb médiatartalmak olvasása és módosítása a számítógépről</translation>
 <translation id="3587482841069643663">Mind</translation>
 <translation id="358796204584394954">Írja be ezt a kódot a(z) „<ph name="DEVICE_NAME" />” eszközön a párosításhoz:</translation>
@@ -2226,7 +2223,6 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4448844063988177157">Wi-Fi hálózatok keresése...</translation>
 <translation id="4449996769074858870">Ez a lap hangot játszik le.</translation>
 <translation id="4450974146388585462">Elemzés</translation>
-<translation id="4452426408005428395">Inkább mégsem</translation>
 <translation id="445923051607553918">Belépés Wi-Fi hálózatra</translation>
 <translation id="4462159676511157176">Egyéni névszerverek</translation>
 <translation id="4467100756425880649">Chrome Internetes áruház Galéria</translation>
@@ -2736,7 +2732,6 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="5266113311903163739">Tanúsítványkibocsátó-importálási hiba</translation>
 <translation id="5269977353971873915">A nyomtatás nem sikerült</translation>
 <translation id="5271549068863921519">Jelszó mentése</translation>
-<translation id="5275194674756975076">Rendben, frissítés</translation>
 <translation id="5275352920323889391">Kutya</translation>
 <translation id="5275973617553375938">A Google Drive-ról visszaállított fájlok</translation>
 <translation id="527605719918376753">Lap némítása</translation>
@@ -3873,7 +3868,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="7006634003215061422">Alsó margó</translation>
 <translation id="7006844981395428048">$1 hangfájl</translation>
 <translation id="7007648447224463482">Összes megnyitása új ablakban</translation>
-<translation id="7008270479623533562">A bővítmény futtatásához frissítenie kell az oldalt. A bővítményt automatikusan futtathatja ezen a webhelyen, ha jobb gombbal rákattint a bővítmény ikonjára.</translation>
 <translation id="701080569351381435">Forráskód megtekintése</translation>
 <translation id="7012372675181957985">Előfordulhat, hogy a böngészési előzmények más formái megtalálhatók Google-fiókjában a <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> címen</translation>
 <translation id="7014174261166285193">A telepítés nem sikerült.</translation>

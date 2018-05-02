@@ -367,7 +367,6 @@
 <translation id="1545775234664667895">Installerat tema "<ph name="THEME_NAME" />"</translation>
 <translation id="1545786162090505744">Webbadress med %s istället för sökfråga</translation>
 <translation id="1546280085599573572">Det här tillägget har ändrat vilken sida som visas när du klickar på hemknappen.</translation>
-<translation id="1547572086206517271">Uppdatering krävs</translation>
 <translation id="1548132948283577726">Webbplatser som aldrig sparar lösenord visas här.</translation>
 <translation id="1549788673239553762"><ph name="APP_NAME" /> vill ha åtkomst till <ph name="VOLUME_NAME" />. Den kan ändra eller ta bort dina filer.</translation>
 <translation id="1553538517812678578">obegränsad</translation>
@@ -733,7 +732,6 @@
 <translation id="2128691215891724419">Synkroniseringsfel. Uppdatera lösenfrasen för synkronisering ...</translation>
 <translation id="2129825002735785149">Uppdatera pluginprogrammet</translation>
 <translation id="2129904043921227933">Synkroniseringsfel. Uppdatera lösenfras för synkronisering ...</translation>
-<translation id="2130949041518253417">Synkronisera och få samma anpassade surfupplevelse vilken enhet du än använder</translation>
 <translation id="2131077480075264">Det går inte att installera <ph name="APP_NAME" /> eftersom den inte tillåts av <ph name="IMPORT_NAME" /></translation>
 <translation id="2135787500304447609">&amp;Återuppta</translation>
 <translation id="2136372518715274136">Skriv in det nya lösenordet</translation>
@@ -1688,7 +1686,6 @@ Besök vårt <ph name="BEGIN_LINK" />hjälpcenter<ph name="END_LINK" /> om du vi
 <translation id="3576324189521867626">Appen har installerats</translation>
 <translation id="3578594933904494462">Flikens innehåll delas.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; vill dela skrivaren &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; med en grupp som du äger: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Om du accepterar kan alla medlemmar i gruppen skriva ut till skrivaren.</translation>
-<translation id="3582972582564653026">Synkronisera och anpassa Chrome på alla enheter du använder</translation>
 <translation id="3584169441612580296">Läsa och ändra foton, musik och andra media från datorn</translation>
 <translation id="3587482841069643663">Alla</translation>
 <translation id="358796204584394954">Genomför kopplingen genom att skriva den här koden på <ph name="DEVICE_NAME" />:</translation>
@@ -1739,7 +1736,7 @@ Besök vårt <ph name="BEGIN_LINK" />hjälpcenter<ph name="END_LINK" /> om du vi
 <translation id="3646789916214779970">Återställ till standardtema</translation>
 <translation id="3648348069317717750"><ph name="USB_DEVICE_NAME" /> hittades</translation>
 <translation id="3649138363871392317">En bild har tagits</translation>
-<translation id="3650952250015018111">Ge <ph name="APP_NAME" /> åtkomstbehörighet till:</translation>
+<translation id="3650952250015018111">Ge ”<ph name="APP_NAME" />” åtkomstbehörighet till:</translation>
 <translation id="3651488188562686558">Koppla från Wi-Fi</translation>
 <translation id="3652817283076144888">Initierar</translation>
 <translation id="3653999333232393305">Fortsätt tillåta <ph name="HOST" /> att använda din mikrofon</translation>
@@ -2225,7 +2222,6 @@ Besök vårt <ph name="BEGIN_LINK" />hjälpcenter<ph name="END_LINK" /> om du vi
 <translation id="4448844063988177157">Söker efter Wi-Fi-nätverk...</translation>
 <translation id="4449996769074858870">Ljud spelas upp på den här fliken.</translation>
 <translation id="4450974146388585462">Diagnostisera</translation>
-<translation id="4452426408005428395">Strunta i det</translation>
 <translation id="445923051607553918">Anslut till Wi-Fi-nätverk</translation>
 <translation id="4462159676511157176">Anpassade namnservrar</translation>
 <translation id="4467100756425880649">Chrome Web Store Gallery</translation>
@@ -2735,7 +2731,6 @@ Besök vårt <ph name="BEGIN_LINK" />hjälpcenter<ph name="END_LINK" /> om du vi
 <translation id="5266113311903163739">Fel vid import av certifikatutfärdare</translation>
 <translation id="5269977353971873915">Det gick inte att skriva ut dokumentet</translation>
 <translation id="5271549068863921519">Spara lösenord</translation>
-<translation id="5275194674756975076">OK. Uppdatera.</translation>
 <translation id="5275352920323889391">Hund</translation>
 <translation id="5275973617553375938">Återställda filer från Google Drive</translation>
 <translation id="527605719918376753">Stäng av ljud från flik</translation>
@@ -3870,7 +3865,6 @@ Besök vårt <ph name="BEGIN_LINK" />hjälpcenter<ph name="END_LINK" /> om du vi
 <translation id="7006634003215061422">Nedre marginal</translation>
 <translation id="7006844981395428048">$1-ljud</translation>
 <translation id="7007648447224463482">Öppna alla i ett nytt fönster</translation>
-<translation id="7008270479623533562">Du måste uppdatera sidan om du vill köra tillägget. Du kan köra tillägget automatiskt på den här webbplatsen genom att högerklicka på tilläggsikonen.</translation>
 <translation id="701080569351381435">Visa källa</translation>
 <translation id="7012372675181957985">Andra former av webbhistorik för Google-kontot kan finnas på <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7014174261166285193">Installationen misslyckades.</translation>

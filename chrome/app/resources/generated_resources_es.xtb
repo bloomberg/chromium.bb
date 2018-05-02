@@ -367,7 +367,6 @@
 <translation id="1545775234664667895">El tema <ph name="THEME_NAME" /> se ha instalado.</translation>
 <translation id="1545786162090505744">URL con %s en el lugar de la consulta</translation>
 <translation id="1546280085599573572">Esta extensión ha cambiado la página que se muestra al hacer clic en el botón Página de inicio.</translation>
-<translation id="1547572086206517271">Es necesario actualizar</translation>
 <translation id="1548132948283577726">Los sitios de los que nunca se guarda la contraseña aparecerán aquí.</translation>
 <translation id="1549788673239553762"><ph name="APP_NAME" /> quiere acceder a <ph name="VOLUME_NAME" />. Puede modificar o eliminar tus archivos.</translation>
 <translation id="1553538517812678578">sin límite</translation>
@@ -734,7 +733,6 @@
 <translation id="2128691215891724419">Error de sincronización: actualiza la frase de contraseña de sincronización</translation>
 <translation id="2129825002735785149">Actualizar complemento</translation>
 <translation id="2129904043921227933">Error de sincronización: actualiza la frase de contraseña de sincronización</translation>
-<translation id="2130949041518253417">Sincroniza tu cuenta para disfrutar de una experiencia de navegación personalizada en todos tus dispositivos</translation>
 <translation id="2131077480075264">No se puede instalar la extensión "<ph name="APP_NAME" />" porque no tiene permiso de "<ph name="IMPORT_NAME" />".</translation>
 <translation id="2135787500304447609">&amp;Reanudar</translation>
 <translation id="2136372518715274136">Escribe una contraseña nueva</translation>
@@ -1687,7 +1685,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3576324189521867626">Se ha instalado correctamente</translation>
 <translation id="3578594933904494462">Se está compartiendo el contenido de esta pestaña.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; quiere compartir una impresora &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; con un grupo que te pertenece: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Si aceptas, todos los miembros del grupo podrán utilizar esa impresora para imprimir.</translation>
-<translation id="3582972582564653026">Sincroniza y personaliza Chrome en todos tus dispositivos</translation>
 <translation id="3584169441612580296">Leer y modificar fotos, música y otros archivos multimedia de tu ordenador</translation>
 <translation id="3587482841069643663">Todo</translation>
 <translation id="358796204584394954">Escribe este código en el dispositivo <ph name="DEVICE_NAME" /> para vincularlo:</translation>
@@ -2223,7 +2220,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4448844063988177157">Buscando redes Wi-Fi...</translation>
 <translation id="4449996769074858870">Esta pestaña está reproduciendo audio.</translation>
 <translation id="4450974146388585462">Diagnosticar</translation>
-<translation id="4452426408005428395">Cancelar</translation>
 <translation id="445923051607553918">Conectar a una red Wi-Fi</translation>
 <translation id="4462159676511157176">Servidores de nombres personalizados</translation>
 <translation id="4467100756425880649">Galería de Chrome Web Store</translation>
@@ -2732,7 +2728,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="5266113311903163739">Error de importación de la entidad emisora de certificados</translation>
 <translation id="5269977353971873915">Error de impresión</translation>
 <translation id="5271549068863921519">Guardar contraseña</translation>
-<translation id="5275194674756975076">Sí, actualizar</translation>
 <translation id="5275352920323889391">Perro</translation>
 <translation id="5275973617553375938">Archivos recuperados de Google Drive</translation>
 <translation id="527605719918376753">Silenciar pestaña</translation>
@@ -3866,7 +3861,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7006634003215061422">Margen inferior</translation>
 <translation id="7006844981395428048">Audio $1</translation>
 <translation id="7007648447224463482">Abrir todo en una ventana nueva</translation>
-<translation id="7008270479623533562">Para ejecutar esta extensión, debes actualizar la página. Haz clic con el botón derecho en el icono de la extensión para ejecutarla automáticamente.</translation>
 <translation id="701080569351381435">Ver código fuente</translation>
 <translation id="7012372675181957985">Es posible que en tu cuenta de Google haya otros datos de navegación registrados, que puedes consultar en la página <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7014174261166285193">Error de instalación</translation>

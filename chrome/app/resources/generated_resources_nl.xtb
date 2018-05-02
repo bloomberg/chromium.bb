@@ -367,7 +367,6 @@
 <translation id="1545775234664667895">Geïnstalleerd thema: '<ph name="THEME_NAME" />'</translation>
 <translation id="1545786162090505744">URL met %s ipv. zoekterm</translation>
 <translation id="1546280085599573572">Deze extensie heeft gewijzigd welke pagina wordt weergegeven wanneer je op de knop 'Homepage' klikt.</translation>
-<translation id="1547572086206517271">Vernieuwen vereist</translation>
 <translation id="1548132948283577726">Sites die nooit wachtwoorden opslaan, worden hier weergegeven.</translation>
 <translation id="1549788673239553762"><ph name="APP_NAME" /> wil toegang tot <ph name="VOLUME_NAME" />. Hierdoor worden je bestanden mogelijk aangepast of verwijderd.</translation>
 <translation id="1553538517812678578">onbeperkt</translation>
@@ -734,7 +733,6 @@
 <translation id="2128691215891724419">Synchronisatiefout: synchronisatiewachtwoord updaten...</translation>
 <translation id="2129825002735785149">Plug-in updaten</translation>
 <translation id="2129904043921227933">Synchronisatiefout: synchronisatiewachtwoord updaten...</translation>
-<translation id="2130949041518253417">Synchroniseer gegevens voor een gepersonaliseerde browsefunctionaliteit op al je apparaten</translation>
 <translation id="2131077480075264">Kan <ph name="APP_NAME" /> niet installeren, omdat dit niet wordt toegestaan door <ph name="IMPORT_NAME" /></translation>
 <translation id="2135787500304447609">He&amp;rvatten</translation>
 <translation id="2136372518715274136">Nieuw wachtwoord opgeven</translation>
@@ -1689,7 +1687,6 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="3576324189521867626">Installatie geslaagd</translation>
 <translation id="3578594933904494462">De content van dit tabblad wordt gedeeld.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; wil een printer delen &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; met een van je groepen: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Als je akkoord gaat, kunnen alle groepsleden de printer gebruiken voor afdrukken.</translation>
-<translation id="3582972582564653026">Chrome op al je apparaten synchroniseren en personaliseren</translation>
 <translation id="3584169441612580296">Foto's, muziek en andere media van je computer lezen en wijzigen</translation>
 <translation id="3587482841069643663">Alles</translation>
 <translation id="358796204584394954">Typ deze code op '<ph name="DEVICE_NAME" />' om te koppelen:</translation>
@@ -1740,7 +1737,7 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="3646789916214779970">Terugzetten naar standaardthema</translation>
 <translation id="3648348069317717750"><ph name="USB_DEVICE_NAME" /> gedetecteerd</translation>
 <translation id="3649138363871392317">Foto is vastgelegd</translation>
-<translation id="3650952250015018111"><ph name="APP_NAME" /> toegang verlenen:</translation>
+<translation id="3650952250015018111">"<ph name="APP_NAME" />" toegang verlenen:</translation>
 <translation id="3651488188562686558">Verbinding met wifi-netwerk verbreken</translation>
 <translation id="3652817283076144888">Initialiseren</translation>
 <translation id="3653999333232393305"><ph name="HOST" /> toegang tot je microfoon blijven geven</translation>
@@ -2226,7 +2223,6 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="4448844063988177157">Zoeken naar wifi-netwerken...</translation>
 <translation id="4449996769074858870">Op dit tabblad wordt audio afgespeeld.</translation>
 <translation id="4450974146388585462">Diagnose</translation>
-<translation id="4452426408005428395">Annuleren</translation>
 <translation id="445923051607553918">Aanmelden bij wifi-netwerk</translation>
 <translation id="4462159676511157176">Aangepaste naamservers</translation>
 <translation id="4467100756425880649">Chrome Web Store-galerij</translation>
@@ -2737,7 +2733,6 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="5266113311903163739">Fout bij het importeren van de certificeringsinstantie</translation>
 <translation id="5269977353971873915">Afdrukken mislukt</translation>
 <translation id="5271549068863921519">Wachtwoord opslaan</translation>
-<translation id="5275194674756975076">OK, vernieuwen</translation>
 <translation id="5275352920323889391">Hond</translation>
 <translation id="5275973617553375938">Bestanden hersteld vanaf Google Drive</translation>
 <translation id="527605719918376753">Tabblad dempen</translation>
@@ -3872,7 +3867,6 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="7006634003215061422">Marge onderkant</translation>
 <translation id="7006844981395428048">$1-audio</translation>
 <translation id="7007648447224463482">Alles openen in nieuw venster</translation>
-<translation id="7008270479623533562">Je moet de pagina vernieuwen om deze extensie uit te voeren. Klik met de rechtermuisknop op het extensiepictogram om deze extensie automatisch uit te voeren op deze site.</translation>
 <translation id="701080569351381435">Toon paginabron</translation>
 <translation id="7012372675181957985">Voor je Google-account kunnen andere vormen van browsegeschiedenis beschikbaar zijn via <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7014174261166285193">Installatie mislukt.</translation>

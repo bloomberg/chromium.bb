@@ -364,7 +364,6 @@
 <translation id="1545775234664667895">ઇન્સ્ટોલ કરેલી થીમ "<ph name="THEME_NAME" />"</translation>
 <translation id="1545786162090505744">ક્વેરીના બદલે %s વાળું URL</translation>
 <translation id="1546280085599573572">જ્યારે તમે હોમ બટન ક્લિક કરો છો ત્યારે જે પૃષ્ઠ દર્શાવવામાં આવે છે તે આ એક્સટેન્શને બદલ્યું છે.</translation>
-<translation id="1547572086206517271">તાજું કરવું આવશ્યક</translation>
 <translation id="1548132948283577726">ક્યારેય પાસવર્ડ્સ ન સાચવતી સાઇટ્સ અહીં દેખાશે.</translation>
 <translation id="1549788673239553762"><ph name="APP_NAME" />, <ph name="VOLUME_NAME" /> ને ઍક્સેસ કરવા માંગે છે . તે તમારી ફાઇલોને સંશોધિત કરી અથવા કાઢી નાખી શકે છે.</translation>
 <translation id="1553538517812678578">અસીમિત</translation>
@@ -727,7 +726,6 @@
 <translation id="2128691215891724419">સમન્વયન ભૂલ: સમન્વયન પાસફ્રેઝને અપડેટ કરો...</translation>
 <translation id="2129825002735785149">પ્લગ-ઇન અપડેટ કરો</translation>
 <translation id="2129904043921227933">સમન્વયન ભૂલ: સમન્વયન પાસફ્રેઝને અપડેટ કરો...</translation>
-<translation id="2130949041518253417">તમારા બધા ઉપકરણો પર મનગમતા બ્રાઉઝિંગ અનુભવ માટે સિંક કરો</translation>
 <translation id="2131077480075264">"<ph name="APP_NAME" />" ને ઇન્સ્ટોલ કરવામાં અસમર્થ કારણ કે "<ph name="IMPORT_NAME" />" દ્વારા તેની મંજૂરી નથી</translation>
 <translation id="2135787500304447609">&amp;ફરી શરૂ કરો</translation>
 <translation id="2136372518715274136">નવો પાસવર્ડ દાખલ કરો</translation>
@@ -1679,7 +1677,6 @@
 <translation id="3576324189521867626">સફળતાપૂર્વક ઇન્સ્ટૉલ કરી</translation>
 <translation id="3578594933904494462">આ ટેબની સામગ્રી શેર કરવામાં આવી રહી છે.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt;, તમે માલિકી ધરાવો છો તે જૂથ સાથે &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; પ્રિન્ટર શેર કરવા માગે છે: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. જો તમે સ્વીકારો છો, તો બધા જૂથ સભ્યો પ્રિન્ટર પર છાપવામાં સમર્થ હશે.</translation>
-<translation id="3582972582564653026">તમારા બધા ઉપકરણો પર Chromeને સિંક અને વ્યક્તિગત કરો</translation>
 <translation id="3584169441612580296">વાંચો અને તમારા કમ્પ્યુટરમાંથી ફોટો, સંગીત અને અન્ય મીડિયા બદલો</translation>
 <translation id="3587482841069643663">બધા</translation>
 <translation id="358796204584394954">જોડી બનાવવા માટે "<ph name="DEVICE_NAME" />" પર આ કોડ લખો:</translation>
@@ -2212,7 +2209,6 @@
 <translation id="4448844063988177157"> Wi-Fi નેટવર્ક્સ માટે શોધી રહ્યું છે... </translation>
 <translation id="4449996769074858870">આ ટેબ ઑડિઓ ચલાવી રહ્યું છે.</translation>
 <translation id="4450974146388585462">તપાસ કરો</translation>
-<translation id="4452426408005428395">કોઇ વાંધો નહીં</translation>
 <translation id="445923051607553918">Wi-Fi નેટવર્કથી જોડાઓ</translation>
 <translation id="4462159676511157176">કસ્ટમ નામ સર્વર્સ</translation>
 <translation id="4467100756425880649">Chrome વેબ દુકાન ગૅલેરી</translation>
@@ -2719,7 +2715,6 @@
 <translation id="5266113311903163739">પ્રમાણન અધિકારી આયાત ભૂલ</translation>
 <translation id="5269977353971873915">છાપો નિષ્ફળ થયું</translation>
 <translation id="5271549068863921519">પાસવર્ડ સાચવો</translation>
-<translation id="5275194674756975076">ઓકે, તાજું કરો</translation>
 <translation id="5275352920323889391">કૂતરું</translation>
 <translation id="5275973617553375938">Google ડ્રાઇવમાંથી પુનર્પ્રાપ્ત ફાઇલો</translation>
 <translation id="527605719918376753">ટૅબ મ્યૂટ કરો</translation>
@@ -3850,7 +3845,6 @@
 <translation id="7006634003215061422">નીચેનો હાસિયો</translation>
 <translation id="7006844981395428048">$1 ઓડિયો</translation>
 <translation id="7007648447224463482">બધું નવી વિંડોમાં ખોલો</translation>
-<translation id="7008270479623533562">આ એક્સ્ટેન્શનને ચલાવવા માટે, તમારે પૃષ્ઠને તાજું કરવું પડશે. તમે એક્સ્ટેન્શન આઇકન પર રાઇટ-ક્લિક કરીને આ સાઇટ પર આ એક્સ્ટેન્શનને આપમેળે ચલાવી શકો છો.</translation>
 <translation id="701080569351381435">સ્રોત જુઓ</translation>
 <translation id="7012372675181957985">તમારા Google એકાઉન્ટમાં <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> પર બ્રાઉઝિંગ ઇતિહાસના અન્ય સ્વરૂપો હોઇ શકે છે.</translation>
 <translation id="7014174261166285193">ઇન્સ્ટોલેશન નિષ્ફળ થયું.</translation>

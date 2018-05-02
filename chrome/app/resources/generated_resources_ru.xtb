@@ -366,7 +366,6 @@
 <translation id="1545775234664667895">Установлена тема "<ph name="THEME_NAME" />"</translation>
 <translation id="1545786162090505744">Ссылка с параметром %s вместо запроса</translation>
 <translation id="1546280085599573572">Расширение изменило страницу, которая открывается при нажатии кнопки "Главная страница".</translation>
-<translation id="1547572086206517271">Обновите страницу</translation>
 <translation id="1548132948283577726">Здесь будут показаны сайты, которые никогда не сохраняют пароли.</translation>
 <translation id="1549788673239553762"><ph name="APP_NAME" /> запрашивает доступ к тому "<ph name="VOLUME_NAME" />". Это может привести к изменению или удалению файлов.</translation>
 <translation id="1553538517812678578">неограниченно</translation>
@@ -733,7 +732,6 @@
 <translation id="2128691215891724419">Ошибка синхронизации. Обновите кодовую фразу.</translation>
 <translation id="2129825002735785149">Обновить плагин</translation>
 <translation id="2129904043921227933">Ошибка синхронизации. Обновите кодовую фразу.</translation>
-<translation id="2130949041518253417">Синхронизируйте данные браузера на всех своих устройствах.</translation>
 <translation id="2131077480075264">Невозможно установить <ph name="APP_NAME" />: нет разрешения от <ph name="IMPORT_NAME" /></translation>
 <translation id="2135787500304447609">Возобновить</translation>
 <translation id="2136372518715274136">Введите новый пароль</translation>
@@ -1690,7 +1688,6 @@
 <translation id="3576324189521867626">Установлено</translation>
 <translation id="3578594933904494462">К контенту на этой вкладке открыт общий доступ</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; хочет открыть доступ к принтеру &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; для вашей группы &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Если вы примете приглашение, то все участники группы смогут пользоваться этим принтером.</translation>
-<translation id="3582972582564653026">Синхронизируйте данные Chrome на всех устройствах</translation>
 <translation id="3584169441612580296">Доступ к фотографиям, музыке и другим медиафайлам на вашем компьютере, а также их изменение</translation>
 <translation id="3587482841069643663">Все</translation>
 <translation id="358796204584394954">Для подключения введите следующий код на устройстве <ph name="DEVICE_NAME" />:</translation>
@@ -2227,7 +2224,6 @@
 <translation id="4448844063988177157">Поиск сетей Wi-Fi...</translation>
 <translation id="4449996769074858870">На этой вкладке воспроизводится аудио</translation>
 <translation id="4450974146388585462">Проверить подключение</translation>
-<translation id="4452426408005428395">Пропустить</translation>
 <translation id="445923051607553918">Подключение к сети Wi-Fi</translation>
 <translation id="4462159676511157176">Другие серверы имен</translation>
 <translation id="4467100756425880649">Галерея Интернет-магазина Chrome</translation>
@@ -2737,7 +2733,6 @@
 <translation id="5266113311903163739">Ошибка при импорте Центра сертификации</translation>
 <translation id="5269977353971873915">Печать не выполнена</translation>
 <translation id="5271549068863921519">Сохранить пароль</translation>
-<translation id="5275194674756975076">Обновить</translation>
 <translation id="5275352920323889391">Собака</translation>
 <translation id="5275973617553375938">Восстановленные файлы с Google Диска</translation>
 <translation id="527605719918376753">Отключение звука на вкладке</translation>
@@ -3872,7 +3867,6 @@
 <translation id="7006634003215061422">Нижнее поле</translation>
 <translation id="7006844981395428048">Аудио $1</translation>
 <translation id="7007648447224463482">Открыть все в новом окне</translation>
-<translation id="7008270479623533562">Обновите страницу, чтобы запустить это расширение. Если нажать правой кнопкой на значок расширения, оно будет автоматически включаться на этом сайте.</translation>
 <translation id="701080569351381435">Просмотр исходного кода</translation>
 <translation id="7012372675181957985">История просмотра также может храниться в вашем аккаунте Google: <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="7014174261166285193">Установка не выполнена.</translation>

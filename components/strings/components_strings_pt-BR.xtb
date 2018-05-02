@@ -644,7 +644,6 @@
 <translation id="5492298309214877701">Esse site na intranet da empresa, organização ou escola tem o mesmo URL de um website externo.
     <ph name="LINE_BREAK" />
     Tente entrar em contato com o administrador do sistema.</translation>
-<translation id="5499929369096410817">Insira o código de segurança do <ph name="CREDIT_CARD" />. Este código não será salvo.</translation>
 <translation id="5509780412636533143">Favoritos gerenciados</translation>
 <translation id="5510766032865166053">Talvez tenha sido movido ou excluído.</translation>
 <translation id="5523118979700054094">Nome da política</translation>
@@ -704,7 +703,6 @@
 <translation id="5967867314010545767">Remover do histórico</translation>
 <translation id="5972020793760134803">Alternar guia</translation>
 <translation id="5975083100439434680">Diminuir zoom</translation>
-<translation id="597552863672748783">Confirme o código de segurança</translation>
 <translation id="598637245381783098">Não foi possível abrir app de pagamento</translation>
 <translation id="5989320800837274978">Nem os servidores proxy fixos nem o URL de script .pac foram especificados.</translation>
 <translation id="5990559369517809815">Solicitações ao servidor foram bloqueadas por uma extensão.</translation>

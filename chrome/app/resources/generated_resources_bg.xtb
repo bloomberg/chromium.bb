@@ -364,7 +364,6 @@
 <translation id="1545775234664667895">Инсталирана тема: <ph name="THEME_NAME" /></translation>
 <translation id="1545786162090505744">URL адрес с %s вместо заявка</translation>
 <translation id="1546280085599573572">Това разширение промени страницата, която се показва при кликване върху бутона „Начална страница“.</translation>
-<translation id="1547572086206517271">Изисква се опресняване</translation>
 <translation id="1548132948283577726">Тук ще се покажат сайтовете, паролата за които никога не се запазва.</translation>
 <translation id="1549788673239553762"><ph name="APP_NAME" /> иска достъп до „<ph name="VOLUME_NAME" />“. Приложението може да промени или изтрие файловете ви.</translation>
 <translation id="1553538517812678578">неограничено</translation>
@@ -731,7 +730,6 @@
 <translation id="2128691215891724419">Грешка при синхронизирането: Актуализирайте пропуска за синхронизиране...</translation>
 <translation id="2129825002735785149">Актуализиране на приставката</translation>
 <translation id="2129904043921227933">Грешка при синхронизирането: Актуализирайте пропуска за синхронизиране...</translation>
-<translation id="2130949041518253417">Синхронизирането ви дава възможност да сърфирате персонализирано на всичките си устройства</translation>
 <translation id="2131077480075264"><ph name="APP_NAME" /> не може да се инсталира, защото няма разрешение за импортиране на ресурси от <ph name="IMPORT_NAME" /></translation>
 <translation id="2135787500304447609">&amp;Възобновяване</translation>
 <translation id="2136372518715274136">Въведете новата парола</translation>
@@ -1686,7 +1684,6 @@
 <translation id="3576324189521867626">Инсталирането бе успешно</translation>
 <translation id="3578594933904494462">Съдържанието на този раздел се споделя.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; иска да сподели принтера &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; с притежавана от вас група: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Ако приемете, всичките й членове ще могат да отпечатват с него.</translation>
-<translation id="3582972582564653026">Синхронизирайте и персонализирайте Chrome на всичките си устройства</translation>
 <translation id="3584169441612580296">Четене и промяна на снимки, музика и друга мултимедия от компютъра ви</translation>
 <translation id="3587482841069643663">Всички</translation>
 <translation id="358796204584394954">За сдвояване въведете този код на <ph name="DEVICE_NAME" />:</translation>
@@ -2224,7 +2221,6 @@
 <translation id="4448844063988177157">Търсят се Wi-Fi мрежи...</translation>
 <translation id="4449996769074858870">В този раздел се възпроизвежда звук.</translation>
 <translation id="4450974146388585462">Диагностициране</translation>
-<translation id="4452426408005428395">Няма значение</translation>
 <translation id="445923051607553918">Присъединяване към Wi-Fi мрежа</translation>
 <translation id="4462159676511157176">Специално зададени сървъри за имена</translation>
 <translation id="4467100756425880649">Галерия на уеб магазина на Chrome</translation>
@@ -2734,7 +2730,6 @@
 <translation id="5266113311903163739">Грешка при импортирането на сертифициращ орган</translation>
 <translation id="5269977353971873915">Отпечатването не бе успешно</translation>
 <translation id="5271549068863921519">Запазване на паролата</translation>
-<translation id="5275194674756975076">ОK, опресняване</translation>
 <translation id="5275352920323889391">Куче</translation>
 <translation id="5275973617553375938">Възстановени от Google Диск файлове</translation>
 <translation id="527605719918376753">Спиране на звука на раздела</translation>
@@ -3870,7 +3865,6 @@
 <translation id="7006634003215061422">Долно поле</translation>
 <translation id="7006844981395428048">Аудиофайл от тип $1</translation>
 <translation id="7007648447224463482">Отваряне на всички в нов прозорец</translation>
-<translation id="7008270479623533562">За да се изпълни разширението, трябва да опресните страницата. Можете да го стартирате автоматично на този сайт, като кликнете с десен бутон върху съответната икона.</translation>
 <translation id="701080569351381435">Преглед на изходния код</translation>
 <translation id="7012372675181957985">Възможно е в профила ви в Google да има други видове история на сърфиране, съхранявани на адрес <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7014174261166285193">Инсталацията не бе успешна.</translation>

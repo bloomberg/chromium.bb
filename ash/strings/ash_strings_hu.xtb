@@ -246,9 +246,6 @@
 <translation id="6521655319214113338">Kézírásos bevitel</translation>
 <translation id="6528179044667508675">Ne zavarj</translation>
 <translation id="6537270692134705506">Képernyőkép rögzítése</translation>
-<translation id="6580955892089546165">Ez a funkció lehetővé teszi a bejelentkezett felhasználók gyors, jelszó nélküli elérését.
-
-Kizárólag olyan fiókok esetében használja a funkciót, amelyekben megbízik.</translation>
 <translation id="6585808820553845416">A munkamenet <ph name="SESSION_TIME_REMAINING" /> múlva véget ér.</translation>
 <translation id="6627638273713273709">Keresés+Shift+K</translation>
 <translation id="6650933572246256093">A(z) „<ph name="DEVICE_NAME" />” Bluetooth-eszköz engedélyt kér a párosításra. Kérjük, adja meg ezt a biztonsági kódot azon az eszközön: <ph name="PASSKEY" /></translation>
@@ -306,7 +303,6 @@ Kizárólag olyan fiókok esetében használja a funkciót, amelyekben megbízik
 <translation id="7994370417837006925">Többfiókos bejelentkezés</translation>
 <translation id="8000066093800657092">Nincs hálózat</translation>
 <translation id="8054466585765276473">Akkumulátor-időtartam kiszámítása.</translation>
-<translation id="8056430285089645882">Értem, ne jelenjen meg újra ez az üzenet.</translation>
 <translation id="8098591350844501178">A képernyő „<ph name="RECEIVER_NAME" />” eszközre történő átküldésének leállítása</translation>
 <translation id="8132793192354020517">Csatlakozás a következőhöz megtörtént: <ph name="NAME" /></translation>
 <translation id="813913629614996137">Indítás…</translation>

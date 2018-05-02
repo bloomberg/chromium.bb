@@ -368,7 +368,6 @@
 <translation id="1545775234664667895">Εγκατεστημένο θέμα "<ph name="THEME_NAME" />"</translation>
 <translation id="1545786162090505744">URL με % στη θέση του ερωτήματος</translation>
 <translation id="1546280085599573572">Αυτή η επέκταση άλλαξε τη σελίδα που εμφανίζεται όταν κάνετε κλικ στο κουμπί αρχικής σελίδας.</translation>
-<translation id="1547572086206517271">Απαιτείται ανανέωση</translation>
 <translation id="1548132948283577726">Οι ιστότοποι που δεν αποθηκεύουν ποτέ κωδικούς πρόσβασης θα εμφανιστούν εδώ.</translation>
 <translation id="1549788673239553762">Η εφαρμογή <ph name="APP_NAME" /> θέλει να αποκτήσει πρόσβαση σε <ph name="VOLUME_NAME" />. Ενδέχεται να τροποποιήσει ή να διαγράψει τα αρχεία σας.</translation>
 <translation id="1553538517812678578">απεριόριστο</translation>
@@ -735,7 +734,6 @@
 <translation id="2128691215891724419">Σφάλμα συγχρονισμού: Ενημερώστε τη φράση πρόσβασης συγχρονισμού...</translation>
 <translation id="2129825002735785149">Ενημέρωση προσθήκης</translation>
 <translation id="2129904043921227933">Σφάλμα συγχρονισμού: Ενημερώστε τη φράση πρόσβασης συγχρονισμού...</translation>
-<translation id="2130949041518253417">Συγχρονίστε για εξατομικευμένη εμπειρία περιήγησης σε όλες τις συσκευές σας</translation>
 <translation id="2131077480075264">Δεν είναι δυνατή η εγκατάσταση του "<ph name="APP_NAME" />" επειδή δεν επιτρέπεται από το "<ph name="IMPORT_NAME" />"</translation>
 <translation id="2135787500304447609">&amp;Συνέχιση</translation>
 <translation id="2136372518715274136">Εισαγωγή νέου κωδικού πρόσβασης</translation>
@@ -1690,7 +1688,6 @@
 <translation id="3576324189521867626">Εγκαταστάθηκε επιτυχώς</translation>
 <translation id="3578594933904494462">Το περιεχόμενο αυτής της ετικέτας είναι κοινόχρηστο.</translation>
 <translation id="357886715122934472">Ο χρήστης &lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; θέλει να μοιραστεί έναν εκτυπωτή &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; με μια ομάδα που σας ανήκει: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Εάν δεχτείτε, όλα τα μέλη της ομάδας θα έχουν τη δυνατότητα να χρησιμοποιούν τον εκτυπωτή.</translation>
-<translation id="3582972582564653026">Συγχρονίστε και εξατομικεύστε το Chrome στις συσκευές σας</translation>
 <translation id="3584169441612580296">Ανάγνωση και αλλαγή φωτογραφιών, μουσικής και άλλων μέσων από τον υπολογιστή σας</translation>
 <translation id="3587482841069643663">Όλες</translation>
 <translation id="358796204584394954">Πληκτρολογήστε αυτόν τον κωδικό στη συσκευή "<ph name="DEVICE_NAME" />" για να κάνετε σύζευξη:</translation>
@@ -2227,7 +2224,6 @@
 <translation id="4448844063988177157">Αναζήτηση για δίκτυα Wi-Fi...</translation>
 <translation id="4449996769074858870">Αυτή η καρτέλα πραγματοποιεί αναπαραγωγή ήχου.</translation>
 <translation id="4450974146388585462">Διάγνωση</translation>
-<translation id="4452426408005428395">Δεν πειράζει</translation>
 <translation id="445923051607553918">Σύνδεση με δίκτυο Wi-Fi</translation>
 <translation id="4462159676511157176">Προσαρμοσμένοι διακομιστές ονομάτων</translation>
 <translation id="4467100756425880649">Chrome Web Store Gallery</translation>
@@ -2737,7 +2733,6 @@
 <translation id="5266113311903163739">Σφάλμα εισαγωγής της Αρχής Πιστοποίησης</translation>
 <translation id="5269977353971873915">Η εκτύπωση απέτυχε</translation>
 <translation id="5271549068863921519">Αποθήκευση κωδικού πρόσβασης</translation>
-<translation id="5275194674756975076">Εντάξει, να γίνει ανανέωση</translation>
 <translation id="5275352920323889391">Σκύλος</translation>
 <translation id="5275973617553375938">Ανακτημένα αρχεία από το Google Drive</translation>
 <translation id="527605719918376753">Σίγαση καρτέλας</translation>
@@ -3873,7 +3868,6 @@
 <translation id="7006634003215061422">Κάτω περιθώριο</translation>
 <translation id="7006844981395428048">$1 αρχείο ήχου</translation>
 <translation id="7007648447224463482">Άνοιγμα όλων σε νέο παράθυρο</translation>
-<translation id="7008270479623533562">Θα πρέπει να ανανεώσετε τη σελίδα προκειμένου να εκτελεστεί αυτή η επέκταση. Μπορείτε να εκτελέσετε αυτήν την επέκταση αυτόματα σε αυτόν τον ιστότοπο, κάνοντας δεξί κλικ στο εικονίδιο της επέκτασης.</translation>
 <translation id="701080569351381435">Προβολή Πηγαίου Κώδικα</translation>
 <translation id="7012372675181957985">Ο Λογαριασμός σας Google ενδέχεται να διαθέτει άλλες μορφές ιστορικού περιήγησης στη διεύθυνση <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7014174261166285193">Η εγκατάσταση απέτυχε.</translation>

@@ -246,9 +246,6 @@
 <translation id="6521655319214113338">Handschrifteingabe</translation>
 <translation id="6528179044667508675">Nicht stören</translation>
 <translation id="6537270692134705506">Screenshot aufnehmen</translation>
-<translation id="6580955892089546165">Dank dieser Funktion können Sie schnell auf alle angemeldeten Nutzerkonten zugreifen, ohne ein Passwort eingeben zu müssen.
-
-Nutzen Sie diese Funktion nur mit vertrauenswürdigen Konten.</translation>
 <translation id="6585808820553845416">Sitzung endet in <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Suchtaste + Umschalttaste + K</translation>
 <translation id="6650933572246256093">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" bittet um Erlaubnis für Kopplung. Geben Sie auf dem Gerät folgenden Zugangscode ein: <ph name="PASSKEY" />.</translation>
@@ -306,7 +303,6 @@ Nutzen Sie diese Funktion nur mit vertrauenswürdigen Konten.</translation>
 <translation id="7994370417837006925">Mehrfachanmeldung</translation>
 <translation id="8000066093800657092">Nicht verbunden</translation>
 <translation id="8054466585765276473">Akku-Laufzeit wird berechnet.</translation>
-<translation id="8056430285089645882">Ok, nicht mehr anzeigen.</translation>
 <translation id="8098591350844501178">Streamen von Bildschirm an <ph name="RECEIVER_NAME" /> beenden</translation>
 <translation id="8132793192354020517">Verbunden mit <ph name="NAME" /></translation>
 <translation id="813913629614996137">Initialisierung…</translation>

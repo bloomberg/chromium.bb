@@ -247,9 +247,6 @@
 <translation id="6521655319214113338">Pismo odręczne</translation>
 <translation id="6528179044667508675">Nie przeszkadzać</translation>
 <translation id="6537270692134705506">Zrzut całego ekranu</translation>
-<translation id="6580955892089546165">Ta funkcja umożliwia szybki dostęp do każdego konta zalogowanego użytkownika bez konieczności podawania hasła.
-
-Używaj jej tylko w przypadku kont, którym ufasz.</translation>
 <translation id="6585808820553845416">Sesja kończy się za <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Szukaj + Shift + K</translation>
 <translation id="6650933572246256093">Urządzenie Bluetooth „<ph name="DEVICE_NAME" />” chce się sparować. Wpisz na nim ten klucz: <ph name="PASSKEY" /></translation>
@@ -307,7 +304,6 @@ Używaj jej tylko w przypadku kont, którym ufasz.</translation>
 <translation id="7994370417837006925">Wielokrotne logowanie</translation>
 <translation id="8000066093800657092">Brak sieci</translation>
 <translation id="8054466585765276473">Obliczanie czasu pracy na baterii.</translation>
-<translation id="8056430285089645882">Rozumiem. Nie pokazuj tego więcej.</translation>
 <translation id="8098591350844501178">Zakończ przesyłanie ekranu do: <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Połączono z <ph name="NAME" /></translation>
 <translation id="813913629614996137">Inicjuję…</translation>

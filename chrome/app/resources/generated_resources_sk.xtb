@@ -367,7 +367,6 @@
 <translation id="1545775234664667895">Nainštalovaný motív „<ph name="THEME_NAME" />“</translation>
 <translation id="1545786162090505744">URL s %s miesto dopytu</translation>
 <translation id="1546280085599573572">Toto rozšírenie zmenilo stránku, ktorá sa zobrazí po kliknutí na tlačidlo Domovská stránka.</translation>
-<translation id="1547572086206517271">Vyžaduje sa obnovenie</translation>
 <translation id="1548132948283577726">Tu sa zobrazia weby, ktoré nikdy neukladajú heslo.</translation>
 <translation id="1549788673239553762"><ph name="APP_NAME" /> vyžaduje prístup k médiu <ph name="VOLUME_NAME" />. Aplikácia môže upraviť alebo odstrániť vaše súbory.</translation>
 <translation id="1553538517812678578">bez obmedzenia</translation>
@@ -735,7 +734,6 @@ dotyku</translation>
 <translation id="2128691215891724419">Chyba synchronizácie: Aktualizujte prístupovú frázu pre synchronizáciu...</translation>
 <translation id="2129825002735785149">Aktualizovať doplnok</translation>
 <translation id="2129904043921227933">Chyba synchronizácie: Aktualizujte prístupovú frázu synchronizácie...</translation>
-<translation id="2130949041518253417">Synchronizáciou získate prispôsobené prehliadanie vo všetkých zariadeniach</translation>
 <translation id="2131077480075264">Aplikáciu <ph name="APP_NAME" /> nie je možné nainštalovať, pretože nie je povolená v importe <ph name="IMPORT_NAME" /></translation>
 <translation id="2135787500304447609">&amp;Obnoviť</translation>
 <translation id="2136372518715274136">Zadajte nové heslo</translation>
@@ -1689,7 +1687,6 @@ Pri vytvorení kontrolovaného používateľa sa nevytvorí účet Google a jeh
 <translation id="3576324189521867626">Úspešne nainštalovaná</translation>
 <translation id="3578594933904494462">Obsah tejto karty sa zdieľa.</translation>
 <translation id="357886715122934472">Používateľ &lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; chce zdieľať tlačiareň &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; so skupinou, ktorú vlastníte: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Ak žiadosť prijmete, tlačiareň budú môcť využívať všetci členovia skupiny.</translation>
-<translation id="3582972582564653026">Synchronizujte a prispôsobte si Chrome v rôznych zariadeniach</translation>
 <translation id="3584169441612580296">Čítať a meniť fotky, hudbu a ďalšie médiá z tohto počítača</translation>
 <translation id="3587482841069643663">Všetko</translation>
 <translation id="358796204584394954">Na zariadení „<ph name="DEVICE_NAME" />“ zadajte tento kód:</translation>
@@ -1740,7 +1737,7 @@ Pri vytvorení kontrolovaného používateľa sa nevytvorí účet Google a jeh
 <translation id="3646789916214779970">Obnoviť predvolený motív</translation>
 <translation id="3648348069317717750">Rozpoznané zariadenie: <ph name="USB_DEVICE_NAME" /></translation>
 <translation id="3649138363871392317">Fotografia bola nasnímaná</translation>
-<translation id="3650952250015018111">Povoľte aplikácii <ph name="APP_NAME" /> prístup do zariadenia:</translation>
+<translation id="3650952250015018111">Povoľte aplikácii "<ph name="APP_NAME" />" prístup do zariadenia:</translation>
 <translation id="3651488188562686558">Odpojí sa od siete Wi‑Fi</translation>
 <translation id="3652817283076144888">Inicializuje sa</translation>
 <translation id="3653999333232393305">Aj naďalej povoliť stránkam <ph name="HOST" /> prístup k mikrofónu</translation>
@@ -2226,7 +2223,6 @@ Pri vytvorení kontrolovaného používateľa sa nevytvorí účet Google a jeh
 <translation id="4448844063988177157">Prebieha vyhľadávanie sietí Wi‑Fi...</translation>
 <translation id="4449996769074858870">Táto karta prehráva zvuk.</translation>
 <translation id="4450974146388585462">Diagnostikovať</translation>
-<translation id="4452426408005428395">Radšej nie</translation>
 <translation id="445923051607553918">Pripojiť sa k sieti Wi‑Fi</translation>
 <translation id="4462159676511157176">Vlastné menné servery</translation>
 <translation id="4467100756425880649">Galéria Internetového obchodu Chrome</translation>
@@ -2736,7 +2732,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="5266113311903163739">Chyba importovania certifikačnej autority</translation>
 <translation id="5269977353971873915">Zlyhanie tlače</translation>
 <translation id="5271549068863921519">Uložiť heslo</translation>
-<translation id="5275194674756975076">OK, obnoviť</translation>
 <translation id="5275352920323889391">Pes</translation>
 <translation id="5275973617553375938">Obnovené súbory z Disku Google</translation>
 <translation id="527605719918376753">Stlmiť kartu</translation>
@@ -3869,7 +3864,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="7006634003215061422">Dolný okraj</translation>
 <translation id="7006844981395428048">Zvuk vo formáte $1</translation>
 <translation id="7007648447224463482">Otvoriť všetky v novom okne</translation>
-<translation id="7008270479623533562">Ak chcete toto rozšírenie spustiť, musíte obnoviť stránku. Na týchto webových stránkach ho môžete spúšťať aj automaticky pravým kliknutím myši na jeho ikonu.</translation>
 <translation id="701080569351381435">Zobraziť zdrojový kód</translation>
 <translation id="7012372675181957985">Váš účet Google môže mať ďalšie formy histórie prehliadania na adrese <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7014174261166285193">Inštalácia zlyhala.</translation>

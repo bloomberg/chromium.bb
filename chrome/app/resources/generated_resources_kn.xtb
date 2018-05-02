@@ -364,7 +364,6 @@
 <translation id="1545775234664667895">ಸ್ಥಾಪಿಸಲಾಗಿರುವ ಥೀಮ್ "<ph name="THEME_NAME" />"</translation>
 <translation id="1545786162090505744">ಕ್ವೈರಿ ಸ್ಥಳದಲ್ಲಿ %s ನೊಂದಿಗೆ URL</translation>
 <translation id="1546280085599573572">ನೀವು ಮುಖಪುಟದ ಬಟನ್ ಕ್ಲಿಕ್ ಮಾಡಿದಾಗ ತೋರಿಸಬೇಕಾದ ಪುಟವನ್ನು ಈ ವಿಸ್ತರಣೆಯು ಬದಲಾಯಿಸಿದೆ.</translation>
-<translation id="1547572086206517271">ರಿಫ್ರೆಶ್ ಅಗತ್ಯವಿದೆ</translation>
 <translation id="1548132948283577726">ಎಂದಿಗೂ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಉಳಿಸದೆ ಇರುವಂತಹ ಸೈಟ್‌ಗಳು ಇಲ್ಲಿ ಗೋಚರಿಸುತ್ತವೆ.</translation>
 <translation id="1549788673239553762"><ph name="APP_NAME" /> ಅಪ್ಲಿಕೇಶನ್ <ph name="VOLUME_NAME" /> ಅನ್ನು ಪ್ರವೇಶಿಸಲು ಬಯಸುತ್ತದೆ. ಅದು ನಿಮ್ಮ ಫೈಲ್‌ಗಳನ್ನು ಮಾರ್ಪಡಿಸಬಹುದು ಅಥವಾ ಅಳಿಸಬಹುದು.</translation>
 <translation id="1553538517812678578">ಸೀಮಿತವಲ್ಲದ</translation>
@@ -728,7 +727,6 @@
 <translation id="2128691215891724419">ಸಿಂಕ್ ದೋಷ: ಸಿಂಕ್ ಪಾಸ್‌ಫ್ರೇಸ್‌ ಅನ್ನು ನವೀಕರಿಸಿ...</translation>
 <translation id="2129825002735785149">ಪ್ಲಗಿನ್‌ ಅಪ್‌ಡೇಟ್‌ ಮಾಡಿ</translation>
 <translation id="2129904043921227933">ಸಿಂಕ್ ದೋಷ: ಸಿಂಕ್ ಪಾಸ್‌ಫ್ರೇಸ್ ಅನ್ನು ನವೀಕರಿಸಿ...</translation>
-<translation id="2130949041518253417">ನಿಮ್ಮ ಸಾಧನಗಳಾದ್ಯಂತ ವೈಯಕ್ತೀಕರಿಸಿದ ಬ್ರೌಸಿಂಗ್ ಅನುಭವವನ್ನು ಪಡೆಯಲು, ಸಾಧನಗಳನ್ನು ಸಿಂಕ್ ಮಾಡಿ</translation>
 <translation id="2131077480075264">"<ph name="APP_NAME" />" ಸ್ಥಾಪಿಸಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ ಏಕೆಂದರೆ ಇದನ್ನು "<ph name="IMPORT_NAME" />" ರಿಂದ ಅನುಮತಿಸಲಾಗುತ್ತಿಲ್ಲ</translation>
 <translation id="2135787500304447609">&amp;ಪುನರಾರಂಭಿಸು</translation>
 <translation id="2136372518715274136">ಹೊಸ ಪಾಸ್‌ವರ್ಡ್ ನಮೂದಿಸಿ</translation>
@@ -1680,7 +1678,6 @@
 <translation id="3576324189521867626">ಯಶಸ್ವಿಯಾಗಿ ಸ್ಥಾಪಿಸಲಾಗಿದೆ</translation>
 <translation id="3578594933904494462">ಈ ಟ್ಯಾಬ್ ವಿಷಯವನ್ನು ಹಂಚಲಾಗುತ್ತಿದೆ.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; ಅವರು ನೀವು ಹೊಂದಿರುವ ಸಮೂಹದ ಜೊತೆ &lt;strong&gt; <ph name="PRINTER_NAME" />&lt;/strong&gt; ಪ್ರಿಂಟರ್ ಅನ್ನು ಹಂಚಿಕೊಳ್ಳಲು ಬಯಸುತ್ತಾರೆ: &lt;strong&gt; <ph name="GROUP_NAME" />&lt;/strong&gt;. ನೀವು ಅಂಗೀಕರಿಸಿದಲ್ಲಿ, ಗುಂಪಿನ ಎಲ್ಲಾ ಸದಸ್ಯರಿಗೂ ಪ್ರಿಂಟರ್‌ಗೆ ಮುದ್ರಿಸಲು ಸಾಧ್ಯವಾಗುತ್ತದೆ.</translation>
-<translation id="3582972582564653026">ನಿಮ್ಮ ಎಲ್ಲಾ ಸಾಧನಗಳಲ್ಲಿ Chrome ಅನ್ನು ಸಿಂಕ್ ಮಾಡಿ ಮತ್ತು ವೈಯಕ್ತೀಕರಿಸಿ</translation>
 <translation id="3584169441612580296">ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ನಿಂದ ಫೋಟೋಗಳು, ಸಂಗೀತ, ಮತ್ತು ಇತರ ಮಾಧ್ಯಮವನ್ನು ಓದಿ ಮತ್ತು ಬದಲಿಸಿ</translation>
 <translation id="3587482841069643663">ಎಲ್ಲ</translation>
 <translation id="358796204584394954">"<ph name="DEVICE_NAME" />" ಗೆ ಜೋಡಿ ಮಾಡಲು ಈ ಕೋಡ್ ಅನ್ನು ಟೈಪ್ ಮಾಡಿ:</translation>
@@ -2213,7 +2210,6 @@
 <translation id="4448844063988177157">ವೈ-ಫೈ ನೆಟ್‌ವರ್ಕ್‌ಗಳಿಗಾಗಿ ಹುಡುಕಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="4449996769074858870">ಈ ಟ್ಯಾಬ್ ಆಡಿಯೋ ಪ್ಲೇ ಮಾಡುತ್ತಿದೆ.</translation>
 <translation id="4450974146388585462">ಪತ್ತೆಹಚ್ಚುವಿಕೆ</translation>
-<translation id="4452426408005428395">ಪರವಾಗಿಲ್ಲ</translation>
 <translation id="445923051607553918">ವೈ-ಫೈ ನೆಟ್‌ವರ್ಕ್‌ಗೆ ಸೇರಿ</translation>
 <translation id="4462159676511157176">ಕಸ್ಟಮ್ ಹೆಸರು ಸರ್ವರ್‌ಗಳು</translation>
 <translation id="4467100756425880649">Chrome ವೆಬ್‌ ಸ್ಟೋರ್‌ ಗ್ಯಾಲರಿ</translation>
@@ -2722,7 +2718,6 @@
 <translation id="5266113311903163739">ಪ್ರಮಾಣಪತ್ರದ ಅಧಿಕಾರ ಆಮದು ದೋಷ</translation>
 <translation id="5269977353971873915">ಮುದ್ರಣ ವಿಫಲಗೊಂಡಿದೆ</translation>
 <translation id="5271549068863921519">ಪಾಸ್‌ವರ್ಡ್ ಉಳಿಸಿ</translation>
-<translation id="5275194674756975076">ಸರಿ, ರಿಫ್ರೆಶ್ ಮಾಡು</translation>
 <translation id="5275352920323889391">ನಾಯಿ</translation>
 <translation id="5275973617553375938">Google ಡ್ರೈವ್‌ನಿಂದ ಮರುಪಡೆಯಲಾದ ಫೈಲ್‌ಗಳು</translation>
 <translation id="527605719918376753">ಟ್ಯಾಬ್ ಮ್ಯೂಟ್ ಮಾಡಿ</translation>
@@ -3848,7 +3843,6 @@
 <translation id="7006634003215061422">ಕೆಳಗಿನ ಅಂಚು</translation>
 <translation id="7006844981395428048">$1 ಆಡಿಯೊ</translation>
 <translation id="7007648447224463482">ಎಲ್ಲವನ್ನೂ ಹೊಸ ವಿಂಡೋದಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
-<translation id="7008270479623533562">ಈ ವಿಸ್ತರಣೆಯನ್ನು ರನ್ ಮಾಡಲು, ನೀವು ಪುಟ ರಿಫ್ರೆಶ್ ಮಾಡುವ ಅಗತ್ಯವಿದೆ. ನೀವು ವಿಸ್ತರಣೆ ಐಕಾನ್ ಮೇಲೆ ರೈಟ್-ಕ್ಲಿಕ್ ಮಾಡುವುದರ ಮೂಲಕ ಈ ಸೈಟ್‌ನಲ್ಲಿ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಈ ವಿಸ್ತರಣೆಯನ್ನು ರನ್ ಮಾಡಬಹುದು.</translation>
 <translation id="701080569351381435">ಮೂಲ ವೀಕ್ಷಿಸಿ</translation>
 <translation id="7012372675181957985">ನಿಮ್ಮ Google ಖಾತೆಯು <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> ನಲ್ಲಿ ಬ್ರೌಸಿಂಗ್ ಇತಿಹಾಸದ ಇತರ ಪ್ರಕಾರಗಳನ್ನು ಹೊಂದಿರಬಹುದು</translation>
 <translation id="7014174261166285193">ಸ್ಥಾಪನೆ ವಿಫಲವಾಗಿದೆ.</translation>

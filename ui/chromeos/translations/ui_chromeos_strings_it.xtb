@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="it">
+<translation id="1012876632442809908">Dispositivo USB-C (porta anteriore)</translation>
 <translation id="1023220960495960452">Traslitterazione (vanakkam → வணக்கம்)</translation>
 <translation id="1045157690796831147">Traslitterazione (namaskar → നമസ്കാരം)</translation>
 <translation id="1065449928621190041">Tastiera francese canadese</translation>
@@ -10,6 +11,7 @@
 <translation id="1155759005174418845">Catalan</translation>
 <translation id="1208421848177517699">Traslitterazione (namaste → નમસ્તે)</translation>
 <translation id="1278813325885878377">Tastiera ungherese QWERTY</translation>
+<translation id="1293264513303784526">Dispositivo USB-C (porta a sinistra)</translation>
 <translation id="1310751437842832374">Traslitterazione (mausam → ନମସ୍ତେ)</translation>
 <translation id="1337036551624197047">Tastiera ceca</translation>
 <translation id="1352103415082130575">Tastiera Thailandese (Pattachote)</translation>
@@ -25,6 +27,7 @@
 <translation id="164969095109328410">Dispositivo Chrome</translation>
 <translation id="1829129547161959350">Pinguino</translation>
 <translation id="184633654410729720">Tastiera Thailandese (Kedmanee)</translation>
+<translation id="1864454756846565995">Dispositivo USB-C (porta posteriore)</translation>
 <translation id="1921986354447415460">Tastiera Turco F</translation>
 <translation id="1931134289871235022">Slovacco</translation>
 <translation id="1936717151811561466">Finlandese</translation>
@@ -52,6 +55,7 @@
 <translation id="2771816809568414714">Formaggio</translation>
 <translation id="2781645665747935084">Belga</translation>
 <translation id="2790805296069989825">Tastiera russa</translation>
+<translation id="2844169650293029770">Dispositivo USB-C (porta anteriore sinistra)</translation>
 <translation id="2870836398458454343">Traslitterazione (marhaban ← مرحبا)</translation>
 <translation id="288024221176729610">Ceco</translation>
 <translation id="2894654529758326923">Informazioni</translation>
@@ -75,7 +79,9 @@
 <translation id="3280987981688031357">Disco in vinile</translation>
 <translation id="3296763833017966289">Georgiano</translation>
 <translation id="3338239663705455570">Tastiera slovena</translation>
+<translation id="3371140690572404006">Dispositivo USB-C (porta anteriore destra)</translation>
 <translation id="3399597614303179694">Tastiera macedone</translation>
+<translation id="3445925074670675829">Dispositivo USB-C</translation>
 <translation id="3494768541638400973">Metodo di immissione giapponese Google (per tastiera giapponese)</translation>
 <translation id="3519867315646775981">Traslitterazione (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Portoghese</translation>
@@ -95,6 +101,7 @@
 <translation id="3910699493603749297">Tastiera Khmer</translation>
 <translation id="391445228316373457">Tastiera Nepalese (fonetica)</translation>
 <translation id="3958548648197196644">Kiwi</translation>
+<translation id="3995138139523574647">Dispositivo USB-C (porta posteriore destra)</translation>
 <translation id="4070370845051020638">Metodo di immissione Cantonese</translation>
 <translation id="4072248638558688893">Tastiera Tamil (fonetica)</translation>
 <translation id="4124935795427217608">Unicorno</translation>
@@ -141,6 +148,7 @@
 <translation id="5257456363153333584">Libellula</translation>
 <translation id="5319782540886810524">Tastiera lettone</translation>
 <translation id="5323213332664049067">Spagnolo latino americano</translation>
+<translation id="5331975486040154427">Dispositivo USB-C (porta posteriore sinistra)</translation>
 <translation id="5402367795255837559">Braille</translation>
 <translation id="5412637665001827670">Tastiera bulgara</translation>
 <translation id="5418923334382419584">Tastiera Birmano</translation>
@@ -177,6 +185,7 @@
 <translation id="6358884629796491903">Drago</translation>
 <translation id="6462109140674788769">Tastiera greca</translation>
 <translation id="6466492211071551451">Tastiera Irlandese</translation>
+<translation id="6490471652906364588">Dispositivo USB-C (porta a destra)</translation>
 <translation id="6503256918647795660">Tastiera svizzera francese</translation>
 <translation id="6505918941256367791">Tastiera Tamil (InScript)</translation>
 <translation id="6509122719576673235">Norvegese</translation>
@@ -195,6 +204,7 @@
 <translation id="6937152069980083337">Metodo di immissione giapponese Google (per tastiera USA)</translation>
 <translation id="6939777852457331078">Tastiera Workman USA</translation>
 <translation id="6970230597523682626">Bulgaro</translation>
+<translation id="7098389117866926363">Dispositivo USB-C (porta posteriore sinistra)</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">Traslitterazione (salam → ሰላም)</translation>
 <translation id="7172053773111046550">Tastiera estone</translation>
@@ -255,6 +265,7 @@
 <translation id="8900820606136623064">Ungherese</translation>
 <translation id="8901822611024316615">Tastiera QWERTY Ceco</translation>
 <translation id="8919081441417203123">Danese</translation>
+<translation id="8938800817013097409">Dispositivo USB-C (porta posteriore destra)</translation>
 <translation id="8960999352790021682">Tastiera Bengalese (fonetica)</translation>
 <translation id="9017798300203431059">Fonetica russa</translation>
 <translation id="913758436357682283">Tastiera Birmano myansan</translation>

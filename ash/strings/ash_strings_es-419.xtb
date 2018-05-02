@@ -246,9 +246,6 @@
 <translation id="6521655319214113338">Entrada de escritura a mano</translation>
 <translation id="6528179044667508675">No interrumpir</translation>
 <translation id="6537270692134705506">Captura total de pantalla</translation>
-<translation id="6580955892089546165">Esta función te permite alternar de forma rápida entre los usuarios que hayan accedido a su cuenta, sin necesidad de escribir la contraseña.
-
-Usa esta función solo con cuentas de confianza.</translation>
 <translation id="6585808820553845416">La sesión terminará en <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Búsqueda+mayúscula+K</translation>
 <translation id="6650933572246256093">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" solicita permiso para sincronizarse. Ingresa la siguiente clave de contraseña en el dispositivo: <ph name="PASSKEY" />.</translation>
@@ -306,7 +303,6 @@ Usa esta función solo con cuentas de confianza.</translation>
 <translation id="7994370417837006925">Acceso múltiple</translation>
 <translation id="8000066093800657092">Sin red</translation>
 <translation id="8054466585765276473">Calculando duración de la batería...</translation>
-<translation id="8056430285089645882">Entendido. No volver a mostrar</translation>
 <translation id="8098591350844501178">Detener la transmisión de la pantalla a <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Conectado a <ph name="NAME" /></translation>
 <translation id="813913629614996137">Inicializando…</translation>

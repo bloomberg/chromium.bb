@@ -246,9 +246,6 @@
 <translation id="6521655319214113338">קלט בכתב-יד</translation>
 <translation id="6528179044667508675">נא לא להפריע</translation>
 <translation id="6537270692134705506">צילום מסך</translation>
-<translation id="6580955892089546165">תכונה זו מאפשרת לך לגשת במהירות לכל משתמש המחובר לחשבון, בלי שתצטרך להזין סיסמה.
-
-השתמש בתכונה הזו רק עם חשבונות שאתה סומך עליהם.</translation>
 <translation id="6585808820553845416">הפעילות באתר תסתיים בעוד <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">‏חיפוש+Shift‏+K</translation>
 <translation id="6650933572246256093">‏מכשיר ה-Bluetooth ‏"<ph name="DEVICE_NAME" />" מבקש הרשאה לביצוע התאמה. הזן את מפתח הסיסמה הבא במכשיר הזה: <ph name="PASSKEY" /></translation>
@@ -306,7 +303,6 @@
 <translation id="7994370417837006925">כניסה עם מספר חשבונות</translation>
 <translation id="8000066093800657092">אין רשת</translation>
 <translation id="8054466585765276473">מחשב זמן סוללה</translation>
-<translation id="8056430285089645882">הבנתי, אל תציג הודעה זו שוב.</translation>
 <translation id="8098591350844501178">הפסק להעביר את המסך אל <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">מחובר ל<ph name="NAME" /></translation>
 <translation id="813913629614996137">מאתחל...</translation>

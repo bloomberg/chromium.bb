@@ -367,7 +367,6 @@
 <translation id="1545775234664667895">ติดตั้งธีม "<ph name="THEME_NAME" />" แล้ว</translation>
 <translation id="1545786162090505744">URL ที่มี %s ในตำแหน่งข้อความค้นหา</translation>
 <translation id="1546280085599573572">ส่วนขยายนี้ได้เปลี่ยนหน้าที่จะแสดงเมื่อคุณคลิกปุ่มหน้าแรก</translation>
-<translation id="1547572086206517271">ต้องรีเฟรช</translation>
 <translation id="1548132948283577726">ไซต์ที่ไม่เคยบันทึกรหัสผ่านจะแสดงขึ้นที่นี่</translation>
 <translation id="1549788673239553762"><ph name="APP_NAME" /> ต้องการเข้าถึง <ph name="VOLUME_NAME" /> แอปอาจแก้ไขหรือลบไฟล์ของคุณได้</translation>
 <translation id="1553538517812678578">ไม่จำกัด</translation>
@@ -734,7 +733,6 @@
 <translation id="2128691215891724419">การซิงค์มีข้อผิดพลาด: อัปเดตข้อความรหัสผ่านของการซิงค์...</translation>
 <translation id="2129825002735785149">อัปเดตปลั๊กอิน</translation>
 <translation id="2129904043921227933">การซิงค์มีข้อผิดพลาด: อัปเดตข้อความรหัสผ่านของการซิงค์...</translation>
-<translation id="2130949041518253417">ซิงค์ประสบการณ์การท่องเว็บที่ปรับให้เข้ากับคุณในอุปกรณ์ทั้งหมด</translation>
 <translation id="2131077480075264">ไม่สามารถติดตั้ง "<ph name="APP_NAME" />" เนื่องจากไม่ได้รับอนุญาตจาก "<ph name="IMPORT_NAME" />"</translation>
 <translation id="2135787500304447609">&amp;ทำต่อ</translation>
 <translation id="2136372518715274136">ป้อนรหัสผ่านใหม่</translation>
@@ -1689,7 +1687,6 @@
 <translation id="3576324189521867626">ติดตั้งเรียบร้อยแล้ว</translation>
 <translation id="3578594933904494462">เนื้อหาของแท็บนี้กำลังถูกแชร์</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; ต้องการแชร์เครื่องพิมพ์ &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; กับกลุ่มที่คุณเป็นเจ้าของ: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt; หากคุณยอมรับ สมาชิกในกลุ่มทั้งหมดจะสามารถสั่งพิมพ์ไปยังเครื่องพิมพ์ดังกล่าวได้</translation>
-<translation id="3582972582564653026">ซิงค์และปรับเปลี่ยน Chrome ในอุปกรณ์ต่างๆ</translation>
 <translation id="3584169441612580296">อ่านและเปลี่ยนแปลงรูปภาพ เพลง และสื่ออื่นๆ จากคอมพิวเตอร์ของคุณ</translation>
 <translation id="3587482841069643663">ทั้งหมด</translation>
 <translation id="358796204584394954">พิมพ์รหัสนี้บน "<ph name="DEVICE_NAME" />" เพื่อจับคู่:</translation>
@@ -2226,7 +2223,6 @@
 <translation id="4448844063988177157">กำลังค้นหาเครือข่าย Wi-Fi...</translation>
 <translation id="4449996769074858870">แท็บนี้กำลังเล่นเสียง</translation>
 <translation id="4450974146388585462">วินิจฉัย</translation>
-<translation id="4452426408005428395">ไม่เป็นไร</translation>
 <translation id="445923051607553918">เข้าร่วมเครือข่าย Wi-Fi</translation>
 <translation id="4462159676511157176">เซิร์ฟเวอร์ชื่อที่กำหนดเอง</translation>
 <translation id="4467100756425880649">แกลเลอรี Chrome เว็บสโตร์</translation>
@@ -2736,7 +2732,6 @@
 <translation id="5266113311903163739">ข้อผิดพลาดเกี่ยวกับการนำเข้าผู้ออกใบรับรอง</translation>
 <translation id="5269977353971873915">การพิมพ์ล้มเหลว</translation>
 <translation id="5271549068863921519">บันทึกรหัสผ่าน</translation>
-<translation id="5275194674756975076">ตกลง รีเฟรชเลย</translation>
 <translation id="5275352920323889391">สุนัข</translation>
 <translation id="5275973617553375938">ไฟล์ที่กู้คืนจาก Google ไดรฟ์</translation>
 <translation id="527605719918376753">ปิดเสียงแท็บ</translation>
@@ -3871,7 +3866,6 @@
 <translation id="7006634003215061422">ขอบล่าง</translation>
 <translation id="7006844981395428048">เสียง $1</translation>
 <translation id="7007648447224463482">เปิดทั้งหมดในหน้าต่างใหม่</translation>
-<translation id="7008270479623533562">คุณต้องรีเฟรชหน้าดังกล่าวเพื่อให้ส่วนขยายนี้ทำงาน คุณสามารถเรียกใช้ส่วนขยายนี้โดยอัตโนมัติบนเว็บไซต์นี้โดยการคลิกขวาที่ไอคอนของส่วนขยาย</translation>
 <translation id="701080569351381435">ดูต้นฉบับ</translation>
 <translation id="7012372675181957985">บัญชี Google ของคุณอาจมีประวัติการท่องเว็บในรูปแบบอื่นๆ ที่ <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7014174261166285193">การติดตั้งล้มเหลว</translation>

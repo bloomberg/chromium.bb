@@ -367,7 +367,6 @@
 <translation id="1545775234664667895">已安裝「<ph name="THEME_NAME" />」主題</translation>
 <translation id="1545786162090505744">網址 (以 %s 取代查詢)</translation>
 <translation id="1546280085599573572">這個擴充功能已變更您點選 [首頁] 按鈕時所顯示的網頁。</translation>
-<translation id="1547572086206517271">請重新整理網頁</translation>
 <translation id="1548132948283577726">一律不儲存密碼的網站會顯示在這裡。</translation>
 <translation id="1549788673239553762">「<ph name="APP_NAME" />」要求存取 <ph name="VOLUME_NAME" />。您的檔案可能會遭到修改或刪除。</translation>
 <translation id="1553538517812678578">無限制</translation>
@@ -734,7 +733,6 @@
 <translation id="2128691215891724419">同步功能發生錯誤：請更新同步通關密語...</translation>
 <translation id="2129825002735785149">更新外掛程式</translation>
 <translation id="2129904043921227933">同步功能發生錯誤：請更新同步通關密語...</translation>
-<translation id="2130949041518253417">進行同步即可在所有裝置上享有個人化瀏覽體驗</translation>
 <translation id="2131077480075264">由於「<ph name="IMPORT_NAME" />」不允許，因此無法安裝「<ph name="APP_NAME" />」</translation>
 <translation id="2135787500304447609">繼續(&amp;R)</translation>
 <translation id="2136372518715274136">輸入新密碼</translation>
@@ -1689,7 +1687,6 @@
 <translation id="3576324189521867626">已成功安裝</translation>
 <translation id="3578594933904494462">正在分享這個分頁的內容。</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; 想要與你的群組 (<ph name="GROUP_NAME" />) 共用印表機 &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt;。你接受之後，所有群組成員即可使用這台印表機進行列印工作。</translation>
-<translation id="3582972582564653026">進行同步處理即可在你的所有裝置上享有個人化的 Chrome 體驗</translation>
 <translation id="3584169441612580296">讀取及變更你電腦中的相片、音樂及其他媒體</translation>
 <translation id="3587482841069643663">全部</translation>
 <translation id="358796204584394954">在「<ph name="DEVICE_NAME" />」上輸入此代碼即可配對：</translation>
@@ -2225,7 +2222,6 @@
 <translation id="4448844063988177157">正在搜尋 Wi-Fi 網路...</translation>
 <translation id="4449996769074858870">這個分頁正在播放音訊。</translation>
 <translation id="4450974146388585462">診斷</translation>
-<translation id="4452426408005428395">不用了</translation>
 <translation id="445923051607553918">加入 Wi-Fi 網路</translation>
 <translation id="4462159676511157176">自訂名稱伺服器</translation>
 <translation id="4467100756425880649">Chrome 線上應用程式商店擴充功能庫</translation>
@@ -2734,7 +2730,6 @@
 <translation id="5266113311903163739">憑證授權單位匯入錯誤</translation>
 <translation id="5269977353971873915">列印失敗</translation>
 <translation id="5271549068863921519">儲存密碼</translation>
-<translation id="5275194674756975076">好，重新整理網頁</translation>
 <translation id="5275352920323889391">狗</translation>
 <translation id="5275973617553375938">從 Google 雲端硬碟還原檔案</translation>
 <translation id="527605719918376753">關閉分頁音訊</translation>
@@ -3868,7 +3863,6 @@
 <translation id="7006634003215061422">下邊界</translation>
 <translation id="7006844981395428048">$1 音訊</translation>
 <translation id="7007648447224463482">在新視窗中開啟所有書籤</translation>
-<translation id="7008270479623533562">您必須重新整理網頁，才能執行這個擴充功能。如要在這個網站上自動執行這個擴充功能，請在擴充功能圖示上按一下滑鼠右鍵。</translation>
 <translation id="701080569351381435">檢視原始碼</translation>
 <translation id="7012372675181957985">你仍可前往 <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> 存取 Google 帳戶中保存的各種瀏覽記錄</translation>
 <translation id="7014174261166285193">安裝失敗。</translation>

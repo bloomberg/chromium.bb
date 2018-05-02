@@ -182,6 +182,7 @@
 <translation id="2650751991977523696">¿Deseas volver a descargar el archivo?</translation>
 <translation id="2653659639078652383">Enviar</translation>
 <translation id="2677748264148917807">Abandonar</translation>
+<translation id="2693813674743028984">Ocultar almacenamiento</translation>
 <translation id="2704606927547763573">Copiado</translation>
 <translation id="2707726405694321444">Actualizar página</translation>
 <translation id="2709516037105925701">Autocompletar</translation>
@@ -207,6 +208,7 @@
 <translation id="2956410042958133412"><ph name="PARENT_NAME_1" /> y <ph name="PARENT_NAME_2" /> administran esta cuenta.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Todos los derechos reservados.</translation>
 <translation id="2962095958535813455">Se seleccionaron las pestañas en modo de navegación de incógnito</translation>
+<translation id="2965945119655563012">Mostrar almacenamiento</translation>
 <translation id="2968755619301702150">Visualizador de certificados</translation>
 <translation id="2979025552038692506">Pestaña de incógnito seleccionada</translation>
 <translation id="2989523299700148168">Visitados recientemente</translation>
@@ -334,6 +336,7 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="4170011742729630528">El servicio no se encuentra disponible; vuelve a intentarlo más tarde.</translation>
 <translation id="4181841719683918333">Idiomas</translation>
 <translation id="4195643157523330669">Abrir en una pestaña nueva</translation>
+<translation id="4198423547019359126">No hay ubicaciones de descarga disponibles</translation>
 <translation id="4226663524361240545">Es posible que las notificaciones hagan vibrar el dispositivo</translation>
 <translation id="4242533952199664413">Abrir la configuración</translation>
 <translation id="424864128008805179">¿Quieres salir de Chrome?</translation>
@@ -699,6 +702,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="7455923816558154057">Presiona para ver</translation>
 <translation id="7473891865547856676">No, gracias</translation>
 <translation id="7475192538862203634">Si el mensaje aparece con frecuencia, intenta seguir estas <ph name="BEGIN_LINK" />sugerencias<ph name="END_LINK" />.</translation>
+<translation id="7475688122056506577">No se encontró la tarjeta SD. Es posible que falten algunos archivos.</translation>
 <translation id="748127970106343339">Confirmar eliminación de credencial de dispositivo</translation>
 <translation id="7481312909269577407">Reenviar</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (actualización: <ph name="TIME_SINCE_UPDATE" />)</translation>
@@ -762,6 +766,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="8026334261755873520">Eliminar datos de navegación</translation>
 <translation id="8035133914807600019">Nueva carpeta…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> días restantes</translation>
+<translation id="804335162455518893">No se encontró la tarjeta SD</translation>
 <translation id="805047784848435650">Según tu historial de navegación</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB disponibles</translation>
 <translation id="8058746566562539958">Abrir en una nueva pestaña de Chrome</translation>

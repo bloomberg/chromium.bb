@@ -246,9 +246,6 @@
 <translation id="6521655319214113338">Handschriftinvoer</translation>
 <translation id="6528179044667508675">Niet storen</translation>
 <translation id="6537270692134705506">Screenshot maken</translation>
-<translation id="6580955892089546165">Met deze functie kun je snel zonder wachtwoord toegang krijgen tot elke ingelogde gebruiker.
-
-Gebruik deze functie alleen met accounts die je vertrouwt.</translation>
 <translation id="6585808820553845416">Sessie loopt af over <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Zoeken+Shift+K</translation>
 <translation id="6650933572246256093">Bluetooth-apparaat '<ph name="DEVICE_NAME" />' wil toestemming om te koppelen. Voer de volgende toegangscode in op dat apparaat: <ph name="PASSKEY" /></translation>
@@ -306,7 +303,6 @@ Gebruik deze functie alleen met accounts die je vertrouwt.</translation>
 <translation id="7994370417837006925">Toegang tot meerdere accounts</translation>
 <translation id="8000066093800657092">Geen netwerk</translation>
 <translation id="8054466585765276473">Accuduur berekenen.</translation>
-<translation id="8056430285089645882">OK, dit niet meer weergeven.</translation>
 <translation id="8098591350844501178">Schermcast naar <ph name="RECEIVER_NAME" /> stopzetten</translation>
 <translation id="8132793192354020517">Verbonden met <ph name="NAME" /></translation>
 <translation id="813913629614996137">Starten...</translation>

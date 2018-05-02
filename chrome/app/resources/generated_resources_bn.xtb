@@ -365,7 +365,6 @@
 <translation id="1545775234664667895">ইনস্টল হওয়া থিম "<ph name="THEME_NAME" />"</translation>
 <translation id="1545786162090505744">কোয়্যারীর স্থানে %s সহ URL</translation>
 <translation id="1546280085599573572">আপনি হোম বোতাম ক্লিক করলে কোন পৃষ্ঠা দেখানো হবে তা এই এক্সটেনশানটি দ্বারা পরিবর্তন করা করেছে।</translation>
-<translation id="1547572086206517271">রিফ্রেশ করা প্রয়োজন</translation>
 <translation id="1548132948283577726">যে সাইটগুলি কখনও পাসওয়ার্ড সংরক্ষণ করে না সেগুলি এখানে উপস্থিত হবে৷</translation>
 <translation id="1549788673239553762"><ph name="APP_NAME" /> <ph name="VOLUME_NAME" /> অ্যাক্সেস করতে চায়৷ এটি আপনার ফাইলগুলিকে সংশোধন করতে বা মুছে ফেলতে পারে৷</translation>
 <translation id="1553538517812678578">সীমাহীন</translation>
@@ -728,7 +727,6 @@
 <translation id="2128691215891724419">সিঙ্ক ত্রুটি: সিঙ্ক পাসফ্রেজ আপডেট করুন...</translation>
 <translation id="2129825002735785149">প্ল্যাগ ইন আপডেট করুন</translation>
 <translation id="2129904043921227933">সিঙ্ক ত্রুটি: সিঙ্ক পাসফ্রেজ আপডেট করুন...</translation>
-<translation id="2130949041518253417">আপনার সব ডিভাইসে নিজের মতো সাজিয়ে নেওয়া ব্রাউজিংয়ের অভিজ্ঞতার জন্য সিঙ্ক করুন</translation>
 <translation id="2131077480075264">"<ph name="APP_NAME" />" ইনস্টল করতে অক্ষম কারণ এটি "<ph name="IMPORT_NAME" />" এর দ্বারা অনুমোদিত নয়</translation>
 <translation id="2135787500304447609">&amp;পুনঃসূচনা</translation>
 <translation id="2136372518715274136">নতুন পাসওয়ার্ড লিখুন</translation>
@@ -1677,7 +1675,6 @@
 <translation id="3576324189521867626">সফলভাবে ইনস্টল হয়েছে</translation>
 <translation id="3578594933904494462">এই ট্যাবের সামগ্রী শেয়ার করা হচ্ছে৷</translation>
 <translation id="357886715122934472">আপনার মালিকানাধীন একটি গোষ্ঠীর সাথে &lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; একটি প্রিন্টার শেয়ার করতে চান &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt;: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. যদি আপানি স্বীকার করেন তবে, গোষ্ঠীর সকল সদস্য প্রিন্টারটিকে প্রিন্ট করতে পারবেন৷</translation>
-<translation id="3582972582564653026">আপনার সব ডিভাইস জুড়ে Chrome সিঙ্ক করুন এবং নিজের মতো সাজিয়ে নিন</translation>
 <translation id="3584169441612580296">আপনার কম্পিউটার থেকে ফটো, সঙ্গীত ও অন্য মিডিয়া পডুন এবং পরিবর্তন করুন</translation>
 <translation id="3587482841069643663">সকল</translation>
 <translation id="358796204584394954">যুক্ত করতে "<ph name="DEVICE_NAME" />" এ এই কোডটি লিখুন:</translation>
@@ -2208,7 +2205,6 @@
 <translation id="4448844063988177157">ওয়াই-ফাই নেটওয়ার্কগুলির জন্য খুঁজুন...</translation>
 <translation id="4449996769074858870">এই ট্যাবটি অডিও প্লে করছে৷</translation>
 <translation id="4450974146388585462">নির্ণয় করুন</translation>
-<translation id="4452426408005428395">আরে, ঠিক আছে</translation>
 <translation id="445923051607553918">ওয়াই-ফাই  নেটওয়ার্কে যোগ দিন</translation>
 <translation id="4462159676511157176">কাস্টম নাম সার্ভার</translation>
 <translation id="4467100756425880649">Chrome ওয়েব দোকান গ্যালারি</translation>
@@ -2713,7 +2709,6 @@
 <translation id="5266113311903163739">শংসাকরণ কর্তৃপক্ষ আমদানি ত্রুটি</translation>
 <translation id="5269977353971873915">প্রিন্ট ব্যর্থ হয়েছে</translation>
 <translation id="5271549068863921519">পাসওয়ার্ড সেভ করুন</translation>
-<translation id="5275194674756975076">ঠিক আছে, রিফ্রেশ করুন</translation>
 <translation id="5275352920323889391">কুকুর</translation>
 <translation id="5275973617553375938">Google ড্রাইভ থেকে উদ্ধার করা ফাইলগুলি</translation>
 <translation id="527605719918376753">ট্যাব নিঃশব্দ করুন</translation>
@@ -3839,7 +3834,6 @@
 <translation id="7006634003215061422">নীচের মার্জিন</translation>
 <translation id="7006844981395428048">$1 টি অডিও</translation>
 <translation id="7007648447224463482">সবগুলি নতুন উইন্ডোতে খুলুন</translation>
-<translation id="7008270479623533562">এই এক্সটেনশানটি চালানোর জন্য, আপনাকে পৃষ্ঠাটি রিফ্রেশ করতে হবে। আপনি এক্সটেনশান আইকনে ডান ক্লিক করে এই সাইটে স্বয়ংক্রিয়ভাবে এই এক্সটেনশনটি চালাতে পারেন।</translation>
 <translation id="701080569351381435">উৎস দেখান</translation>
 <translation id="7012372675181957985"><ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> এ আপনার Google অ্যাকাউন্টের অন্যান্য ধরনের ব্রাউজিং ইতিহাস থাকতে পারে</translation>
 <translation id="7014174261166285193">ইনস্টলেশান ব্যর্থ হয়েছে৷</translation>

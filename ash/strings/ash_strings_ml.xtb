@@ -246,9 +246,6 @@
 <translation id="6521655319214113338">കൈയ്യക്ഷര ഇൻപുട്ട്</translation>
 <translation id="6528179044667508675">ശല്യപ്പെടുത്തരുത്</translation>
 <translation id="6537270692134705506">സ്‌ക്രീൻ ക്യാപ്‌ചർ ചെയ്യുക</translation>
-<translation id="6580955892089546165">സൈൻ ഇൻ ചെയ്‌ത ഏതൊരു ഉപയോക്താവിനെയും പാസ്‌വേഡ് ഇല്ലാതെ തന്നെ വേഗത്തിൽ ആക്‌സസ് ചെയ്യാൻ ഈ ഫീച്ചർ നിങ്ങളെ അനുവദിക്കുന്നു.
-
-നിങ്ങൾക്ക് വിശ്വാസമുള്ള അക്കൗണ്ടുകളിൽ മാത്രം ഈ ഫീച്ചർ ഉപയോഗിക്കുക.</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" />-നുള്ളിൽ സെഷൻ അവസാനിക്കുന്നു.</translation>
 <translation id="6627638273713273709">തിരയല്‍+Shift+K</translation>
 <translation id="6650933572246256093">"<ph name="DEVICE_NAME" />" എന്ന Bluetooth ഉപകരണം ജോടിയാക്കുന്നതിനുള്ള അനുമതി ആവശ്യപ്പെടുന്നു. ആ ഉപകരണത്തിൽ ഈ പാസ്‌കീ നൽകുക: <ph name="PASSKEY" /></translation>
@@ -306,7 +303,6 @@
 <translation id="7994370417837006925">ഒന്നിലധികം സൈൻ ഇൻ</translation>
 <translation id="8000066093800657092">നെറ്റ്‍വര്‍ക്ക് ഇല്ല</translation>
 <translation id="8054466585765276473">ബാറ്ററി സമയം കണക്കാക്കുന്നു.</translation>
-<translation id="8056430285089645882">മനസിലായി, ഇത് വീണ്ടും കാണിക്കരുത്.</translation>
 <translation id="8098591350844501178"><ph name="RECEIVER_NAME" /> എന്നതിലേക്ക് സ്‌ക്രീൻ കാസ്‌റ്റുചെയ്യുന്നത് നിർത്തുക</translation>
 <translation id="8132793192354020517"><ph name="NAME" /> എന്നതിലേക്ക് ബന്ധിപ്പിച്ചു</translation>
 <translation id="813913629614996137">ആരംഭിക്കുന്നു...</translation>

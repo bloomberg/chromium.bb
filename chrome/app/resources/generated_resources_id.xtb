@@ -367,7 +367,6 @@
 <translation id="1545775234664667895">Tema "<ph name="THEME_NAME" />" telah terinstal</translation>
 <translation id="1545786162090505744">URL dengan %s di tempat kueri</translation>
 <translation id="1546280085599573572">Ekstensi ini telah mengubah halaman apa yang ditampilkan saat Anda mengeklik tombol Beranda.</translation>
-<translation id="1547572086206517271">Segarkan halaman</translation>
 <translation id="1548132948283577726">Situs yang tidak pernah menyimpan sandi akan muncul di sini.</translation>
 <translation id="1549788673239553762"><ph name="APP_NAME" /> ingin mengakses <ph name="VOLUME_NAME" />. Ini dapat mengubah atau menghapus file Anda.</translation>
 <translation id="1553538517812678578">tidak terbatas</translation>
@@ -734,7 +733,6 @@
 <translation id="2128691215891724419">Kesalahan Sinkronisasi: Perbarui frasa sandi Sinkronisasi...</translation>
 <translation id="2129825002735785149">Perbarui plugin</translation>
 <translation id="2129904043921227933">Kesalahan Sinkronisasi: Perbarui Frasa Sandi Sinkronisasi...</translation>
-<translation id="2130949041518253417">Sinkronkan untuk mendapatkan pengalaman browsing yang dipersonalisasi, di seluruh perangkat</translation>
 <translation id="2131077480075264">Tidak dapat memasang "<ph name="APP_NAME" />" karena tidak diizinkan oleh "<ph name="IMPORT_NAME" />"</translation>
 <translation id="2135787500304447609">&amp;Lanjutkan</translation>
 <translation id="2136372518715274136">Masukkan sandi baru</translation>
@@ -1689,7 +1687,6 @@ Untuk informasi selengkapnya, kunjungi <ph name="BEGIN_LINK" />Pusat Bantuan<ph 
 <translation id="3576324189521867626">Berhasil dipasang</translation>
 <translation id="3578594933904494462">Konten tab ini sedang dibagikan.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; ingin membagikan printer &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; dengan grup yang Anda miliki: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Jika Anda menerima, semua anggota grup akan dapat mencetak pada printer tersebut.</translation>
-<translation id="3582972582564653026">Menyinkronkan dan mempersonalisasi Chrome di perangkat Anda</translation>
 <translation id="3584169441612580296">Membaca dan mengubah foto, musik, serta media lain dari komputer Anda</translation>
 <translation id="3587482841069643663">Semua</translation>
 <translation id="358796204584394954">Ketik kode ini di "<ph name="DEVICE_NAME" />" untuk menyandingkan:</translation>
@@ -2226,7 +2223,6 @@ Untuk informasi selengkapnya, kunjungi <ph name="BEGIN_LINK" />Pusat Bantuan<ph 
 <translation id="4448844063988177157">Menelusuri jaringan Wi-Fi...</translation>
 <translation id="4449996769074858870">Tab ini memutar audio.</translation>
 <translation id="4450974146388585462">Diagnosis</translation>
-<translation id="4452426408005428395">Abaikan saja</translation>
 <translation id="445923051607553918">Bergabung dengan jaringan Wi-Fi</translation>
 <translation id="4462159676511157176">Server nama khusus</translation>
 <translation id="4467100756425880649">Galeri Chrome Webstore</translation>
@@ -2736,7 +2732,6 @@ Untuk informasi selengkapnya, kunjungi <ph name="BEGIN_LINK" />Pusat Bantuan<ph 
 <translation id="5266113311903163739">Kesalahan Impor Otoritas Sertifikasi</translation>
 <translation id="5269977353971873915">Gagal Mencetak</translation>
 <translation id="5271549068863921519">Simpan sandi</translation>
-<translation id="5275194674756975076">Oke, segarkan</translation>
 <translation id="5275352920323889391">Anjing</translation>
 <translation id="5275973617553375938">File yang dipulihkan dari Google Drive</translation>
 <translation id="527605719918376753">Nonaktifkan tab</translation>
@@ -3871,7 +3866,6 @@ Untuk informasi selengkapnya, kunjungi <ph name="BEGIN_LINK" />Pusat Bantuan<ph 
 <translation id="7006634003215061422">Batas bawah</translation>
 <translation id="7006844981395428048">Audio $1</translation>
 <translation id="7007648447224463482">Buka semua di jendela baru</translation>
-<translation id="7008270479623533562">Untuk menjalankan ekstensi ini, Anda perlu menyegarkan halaman. Anda dapat menjalankan ekstensi ini secara otomatis di situs ini dengan mengeklik kanan ikon ekstensi.</translation>
 <translation id="701080569351381435">Lihat Sumber</translation>
 <translation id="7012372675181957985">Akun Google Anda mungkin memiliki bentuk histori penjelajahan lainnya di <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7014174261166285193">Pemasangan gagal.</translation>

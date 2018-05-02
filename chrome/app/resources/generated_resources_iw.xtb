@@ -364,7 +364,6 @@
 <translation id="1545775234664667895">נושא שהותקן "<ph name="THEME_NAME" />"</translation>
 <translation id="1545786162090505744">‏כתובת אתר עם %s במקום שאילתה</translation>
 <translation id="1546280085599573572">התוסף הזה שינה את הדף שמוצג כשאתה לוחץ על הלחצן 'דף הבית'.</translation>
-<translation id="1547572086206517271">נדרש רענון</translation>
 <translation id="1548132948283577726">אתרים שלעולם אינם שומרים סיסמאות יופיעו כאן.</translation>
 <translation id="1549788673239553762"><ph name="APP_NAME" /> רוצה לגשת אל <ph name="VOLUME_NAME" />. ייתכן שהוא יישנה או ימחק את הקבצים.</translation>
 <translation id="1553538517812678578">לא מוגבל</translation>
@@ -731,7 +730,6 @@
 <translation id="2128691215891724419">שגיאת סנכרון: עדכן משפט-סיסמה של סנכרון...</translation>
 <translation id="2129825002735785149">עדכן פלאגין</translation>
 <translation id="2129904043921227933">שגיאת סנכרון: עדכן את משפט-הסיסמה לסנכרון...</translation>
-<translation id="2130949041518253417">סינכרון מאפשר לך ליהנות מחוויית גלישה מותאמת אישית בכל המכשירים שברשותך</translation>
 <translation id="2131077480075264">לא ניתן להתקין את '<ph name="APP_NAME" />' מכיוון שהוא לא מאושר על ידי '<ph name="IMPORT_NAME" />'</translation>
 <translation id="2135787500304447609">&amp;המשך ביצוע</translation>
 <translation id="2136372518715274136">הזן סיסמה חדשה</translation>
@@ -1685,7 +1683,6 @@
 <translation id="3576324189521867626">הותקן בהצלחה</translation>
 <translation id="3578594933904494462">התוכן בכרטיסייה הזו משותף.</translation>
 <translation id="357886715122934472">‏&lt;strong&gt;‏<ph name="SENDER" />&lt;/strong&gt; רוצה לשתף את המדפסת &lt;strong&gt;‏<ph name="PRINTER_NAME" />&lt;/strong&gt; עם קבוצה בבעלותך: &lt;strong&gt;‏<ph name="GROUP_NAME" />&lt;/strong&gt;. אם תסכים, כל חברי הקבוצה יוכלו להדפיס במדפסת זו.</translation>
-<translation id="3582972582564653026">‏סינכרון והתאמה אישית של Chrome בכל המכשירים שברשותך</translation>
 <translation id="3584169441612580296">לקרוא ולשנות קובצי תמונות, מוזיקה ומדיה מסוגים נוספים מהמחשב שלך</translation>
 <translation id="3587482841069643663">הכל</translation>
 <translation id="358796204584394954">הקלד את הקוד הזה ב-"<ph name="DEVICE_NAME" />" כדי לבצע התאמה:</translation>
@@ -2222,7 +2219,6 @@
 <translation id="4448844063988177157">‏מחפש רשתות Wi-Fi...</translation>
 <translation id="4449996769074858870">הכרטיסייה הזו מפעילה תוכן אודיו.</translation>
 <translation id="4450974146388585462">אבחן</translation>
-<translation id="4452426408005428395">לא חשוב</translation>
 <translation id="445923051607553918">‏הצטרף לרשת Wi-Fi</translation>
 <translation id="4462159676511157176">שרתי שמות מותאמים אישית</translation>
 <translation id="4467100756425880649">‏הגלריה של חנות האינטרנט של Chrome</translation>
@@ -2733,7 +2729,6 @@
 <translation id="5266113311903163739">שגיאת ייבוא של רשות אישורים</translation>
 <translation id="5269977353971873915">ההדפסה נכשלה</translation>
 <translation id="5271549068863921519">שמור סיסמה</translation>
-<translation id="5275194674756975076">בסדר, רענן</translation>
 <translation id="5275352920323889391">כלב</translation>
 <translation id="5275973617553375938">‏קבצים ששוחזרו מ-Google Drive</translation>
 <translation id="527605719918376753">השתק כרטיסייה</translation>
@@ -3868,7 +3863,6 @@
 <translation id="7006634003215061422">שוליים תחתונים</translation>
 <translation id="7006844981395428048">אודיו $1</translation>
 <translation id="7007648447224463482">פתח הכול בחלון חדש</translation>
-<translation id="7008270479623533562">כדי להריץ תוסף זה, עליך לרענן את הדף. תוכל להריץ תוסף זה באופן אוטומטי באתר זה על ידי קליק ימני על סמל התוסף.</translation>
 <translation id="701080569351381435">הצג מקור</translation>
 <translation id="7012372675181957985">‏ייתכן שלחשבון Google שלך יש סוגים אחרים של היסטוריית גלישה שזמינים בכתובת <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7014174261166285193">ההתקנה נכשלה.</translation>

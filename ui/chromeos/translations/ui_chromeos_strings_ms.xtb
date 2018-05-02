@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ms">
+<translation id="1012876632442809908">Peranti USB-C (port depan)</translation>
 <translation id="1023220960495960452">Pengalihan huruf (vanakkam → வணக்கம்)</translation>
 <translation id="1045157690796831147">Pengalihan huruf (namaskar → നമസ്കാരം)</translation>
 <translation id="1065449928621190041">Papan kekunci Perancis Kanada</translation>
@@ -10,6 +11,7 @@
 <translation id="1155759005174418845">Bahasa Catalan</translation>
 <translation id="1208421848177517699">Pengalihan huruf (namaste → નમસ્તે)</translation>
 <translation id="1278813325885878377">Papan kekunci QWERTY Hungary</translation>
+<translation id="1293264513303784526">Peranti USB-C (port kiri)</translation>
 <translation id="1310751437842832374">Pengalihan huruf (mausam → ନମସ୍ତେ)</translation>
 <translation id="1337036551624197047">Papan kekunci Czech</translation>
 <translation id="1352103415082130575">Papan kekunci bahasa Thai (Pattachote)</translation>
@@ -25,6 +27,7 @@
 <translation id="164969095109328410">Peranti Chrome</translation>
 <translation id="1829129547161959350">Penguin</translation>
 <translation id="184633654410729720">Papan kekunci bahasa Thai (Kedmanee)</translation>
+<translation id="1864454756846565995">Peranti USB-C (port belakang)</translation>
 <translation id="1921986354447415460">Papan kekunci Turki-F</translation>
 <translation id="1931134289871235022">Bahasa Slovakia</translation>
 <translation id="1936717151811561466">Bahasa Finland</translation>
@@ -52,6 +55,7 @@
 <translation id="2771816809568414714">Keju</translation>
 <translation id="2781645665747935084">Bahasa Belgium</translation>
 <translation id="2790805296069989825">Papan kekunci Rusia</translation>
+<translation id="2844169650293029770">Peranti USB-C (port depan sebelah kiri)</translation>
 <translation id="2870836398458454343">Pengalihan huruf (marhaban ← مرحبا)</translation>
 <translation id="288024221176729610">Bahasa Czech</translation>
 <translation id="2894654529758326923">Maklumat</translation>
@@ -75,7 +79,9 @@
 <translation id="3280987981688031357">Rekod vinil</translation>
 <translation id="3296763833017966289">Bahasa Georgia</translation>
 <translation id="3338239663705455570">Papan kekunci Slovenia</translation>
+<translation id="3371140690572404006">Peranti USB-C (port depan sebelah kanan)</translation>
 <translation id="3399597614303179694">papan kekunci Macedonia</translation>
+<translation id="3445925074670675829">Peranti USB-C</translation>
 <translation id="3494768541638400973">Input Jepun Google (untuk papan kekunci Jepun)</translation>
 <translation id="3519867315646775981">Pengalihan huruf (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Bahasa Portugis</translation>
@@ -95,6 +101,7 @@
 <translation id="3910699493603749297">Papan kekunci bahasa Khmer</translation>
 <translation id="391445228316373457">Papan kekunci bahasa Nepal (Fonetik)</translation>
 <translation id="3958548648197196644">Kiwi</translation>
+<translation id="3995138139523574647">Peranti USB-C (port belakang sebelah kanan)</translation>
 <translation id="4070370845051020638">Kaedah input Kantonis</translation>
 <translation id="4072248638558688893">Papan kekunci bahasa Tamil (Fonetik)</translation>
 <translation id="4124935795427217608">Unikorn</translation>
@@ -141,6 +148,7 @@
 <translation id="5257456363153333584">Pepatung</translation>
 <translation id="5319782540886810524">Papan kekunci Latvia</translation>
 <translation id="5323213332664049067">Bahasa Amerika Latin</translation>
+<translation id="5331975486040154427">Peranti USB-C (port belakang sebelah kiri)</translation>
 <translation id="5402367795255837559">Braille</translation>
 <translation id="5412637665001827670">Papan kekunci Bulgaria</translation>
 <translation id="5418923334382419584">Papan kekunci bahasa Myanmar</translation>
@@ -177,6 +185,7 @@
 <translation id="6358884629796491903">Naga</translation>
 <translation id="6462109140674788769">Papan kekunci Yunani</translation>
 <translation id="6466492211071551451">Papan kekunci bahasa Ireland</translation>
+<translation id="6490471652906364588">Peranti USB-C (port kanan)</translation>
 <translation id="6503256918647795660">Papan kekunci Perancis Swiss</translation>
 <translation id="6505918941256367791">Papan kekunci bahasa Tamil (InSkrip)</translation>
 <translation id="6509122719576673235">Bahasa Norway</translation>
@@ -195,6 +204,7 @@
 <translation id="6937152069980083337">Input Jepun Google (untuk papan kekunci AS)</translation>
 <translation id="6939777852457331078">Papan kekunci US Workman</translation>
 <translation id="6970230597523682626">Bahasa Bulgaria</translation>
+<translation id="7098389117866926363">Peranti USB-C (port kiri di belakang)</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">Pengalihan huruf (salam → ሰላም)</translation>
 <translation id="7172053773111046550">Papan kekunci Estonia</translation>
@@ -255,6 +265,7 @@
 <translation id="8900820606136623064">Bahasa Hungary</translation>
 <translation id="8901822611024316615">Papan kekunci QWERTY bahasa Czech</translation>
 <translation id="8919081441417203123">Bahasa Denmark</translation>
+<translation id="8938800817013097409">Peranti USB-C (port kanan di belakang)</translation>
 <translation id="8960999352790021682">Papan kekunci bahasa Bengali (Fonetik)</translation>
 <translation id="9017798300203431059">Fonetik bahasa Rusia</translation>
 <translation id="913758436357682283">Papan kekunci bahasa Myanmar Myansan</translation>

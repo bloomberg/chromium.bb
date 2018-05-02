@@ -368,7 +368,6 @@
 <translation id="1545775234664667895">テーマ「<ph name="THEME_NAME" />」をインストールしました</translation>
 <translation id="1545786162090505744">URL（%s=検索語句）</translation>
 <translation id="1546280085599573572">この拡張機能により、ホームボタンをクリックしたときに表示されるページが変更されました。</translation>
-<translation id="1547572086206517271">更新が必要です</translation>
 <translation id="1548132948283577726">パスワードを保存していないサイトはこちらに表示されます。</translation>
 <translation id="1549788673239553762">「<ph name="APP_NAME" />」が <ph name="VOLUME_NAME" /> へのアクセスを求めています。ファイルが変更または削除される可能性があります。</translation>
 <translation id="1553538517812678578">無制限</translation>
@@ -735,7 +734,6 @@
 <translation id="2128691215891724419">同期エラー: 同期パスフレーズを更新...</translation>
 <translation id="2129825002735785149">プラグインを更新</translation>
 <translation id="2129904043921227933">同期エラー: 同期パスフレーズを更新...</translation>
-<translation id="2130949041518253417">同期により、自分用にカスタマイズされたブラウジング環境をどの端末でも使用できます</translation>
 <translation id="2131077480075264">「<ph name="APP_NAME" />」は「<ph name="IMPORT_NAME" />」で許可されていないためインストールできません</translation>
 <translation id="2135787500304447609">再開(&amp;R)</translation>
 <translation id="2136372518715274136">新しいパスワードを入力</translation>
@@ -1690,7 +1688,6 @@
 <translation id="3576324189521867626">インストールが完了しました</translation>
 <translation id="3578594933904494462">このタブのコンテンツは共有されています。</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; さんがあなたのグループ &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt; と &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; プリンタを共有することを希望しています。共有を許可すると、グループのメンバー全員がこのプリンタに印刷できるようになります。</translation>
-<translation id="3582972582564653026">同期してカスタマイズした Chrome をどの端末でも使用できます</translation>
 <translation id="3584169441612580296">パソコンからの写真、音楽、その他のメディアの読み取りと変更</translation>
 <translation id="3587482841069643663">すべて</translation>
 <translation id="358796204584394954">ペア設定するには「<ph name="DEVICE_NAME" />」で次のコードを入力してください:</translation>
@@ -2227,7 +2224,6 @@
 <translation id="4448844063988177157">Wi-Fi ネットワークを検出しています...</translation>
 <translation id="4449996769074858870">このタブは音声の再生中です。</translation>
 <translation id="4450974146388585462">診断</translation>
-<translation id="4452426408005428395">キャンセル</translation>
 <translation id="445923051607553918">Wi-Fi ネットワークへの接続</translation>
 <translation id="4462159676511157176">カスタム ネーム サーバー</translation>
 <translation id="4467100756425880649">Chrome ウェブストア ギャラリー</translation>
@@ -2737,7 +2733,6 @@
 <translation id="5266113311903163739">認証局インポート エラー</translation>
 <translation id="5269977353971873915">印刷の失敗</translation>
 <translation id="5271549068863921519">パスワードを保存</translation>
-<translation id="5275194674756975076">OK（更新）</translation>
 <translation id="5275352920323889391">犬</translation>
 <translation id="5275973617553375938">Google ドライブから復元されたファイル</translation>
 <translation id="527605719918376753">タブをミュート</translation>
@@ -3872,7 +3867,6 @@
 <translation id="7006634003215061422">下余白</translation>
 <translation id="7006844981395428048">$1 音声</translation>
 <translation id="7007648447224463482">すべてを新しいウィンドウで開く</translation>
-<translation id="7008270479623533562">この拡張機能を実行するにはページを更新する必要があります。拡張機能アイコンを右クリックして、この拡張機能をこのサイトで自動的に実行するよう指定できます。</translation>
 <translation id="701080569351381435">ソースを表示</translation>
 <translation id="7012372675181957985">Google アカウントでの他の形式の閲覧履歴が <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> に残ることがあります</translation>
 <translation id="7014174261166285193">インストールできませんでした。</translation>

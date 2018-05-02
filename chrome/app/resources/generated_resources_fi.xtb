@@ -367,7 +367,6 @@
 <translation id="1545775234664667895">Asennettin teema <ph name="THEME_NAME" /></translation>
 <translation id="1545786162090505744">URL-osoite jonka %s käytössä ennen hakua</translation>
 <translation id="1546280085599573572">Tämä laajennus on vaihtanut Etusivu-painikkeella avattavan sivun.</translation>
-<translation id="1547572086206517271">Päivitä sivu</translation>
 <translation id="1548132948283577726">Tässä näytetään sivustot, jotka eivät koskaan tallenna salasanoja.</translation>
 <translation id="1549788673239553762"><ph name="APP_NAME" /> haluaa käyttää tallennusvälinettä <ph name="VOLUME_NAME" />. Luvan saatuaan sovellus voi muokata tai poistaa tiedostojasi.</translation>
 <translation id="1553538517812678578">rajoittamaton</translation>
@@ -734,7 +733,6 @@
 <translation id="2128691215891724419">Synkronointivirhe: päivitä synkronoinnin tunnuslause...</translation>
 <translation id="2129825002735785149">Päivitä laajennus</translation>
 <translation id="2129904043921227933">Synkronointivirhe: päivitä synkronoinnin tunnuslause...</translation>
-<translation id="2130949041518253417">Synkronoimalla saat yksilöllisemmän selauskokemuksen kaikilla laitteillasi</translation>
 <translation id="2131077480075264">Kohteen <ph name="APP_NAME" /> asentaminen ei onnistu, koska <ph name="IMPORT_NAME" /> ei salli sitä.</translation>
 <translation id="2135787500304447609">&amp;Jatka</translation>
 <translation id="2136372518715274136">Anna uusi salasana</translation>
@@ -1690,7 +1688,6 @@ Lisätietoja saat <ph name="BEGIN_LINK" />ohjekeskuksestamme<ph name="END_LINK" 
 <translation id="3576324189521867626">Asennus onnistui.</translation>
 <translation id="3578594933904494462">Tämän välilehden sisältöä jaetaan.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; haluaa jakaa tulostimen &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; omistamasi ryhmän kanssa: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Jos hyväksyt, kaikki ryhmän jäsenet voivat tulostaa tulostimeen.</translation>
-<translation id="3582972582564653026">Voit synkronoida Chromen ja tehdä siitä yksilöllisemmän kaikilla laitteilla.</translation>
 <translation id="3584169441612580296">Käyttää ja muokata valokuvia, musiikkia ja muuta tietokoneesi mediaa</translation>
 <translation id="3587482841069643663">Kaikki</translation>
 <translation id="358796204584394954">Kirjoita tämä laitteessa <ph name="DEVICE_NAME" /> oleva koodi, jos haluat muodostaa laiteparin:</translation>
@@ -1741,7 +1738,7 @@ Lisätietoja saat <ph name="BEGIN_LINK" />ohjekeskuksestamme<ph name="END_LINK" 
 <translation id="3646789916214779970">Palauta oletusteema</translation>
 <translation id="3648348069317717750"><ph name="USB_DEVICE_NAME" /> havaittiin</translation>
 <translation id="3649138363871392317">Kuvakaappaus otettiin</translation>
-<translation id="3650952250015018111">Anna sovellukselle <ph name="APP_NAME" /> seuraava käyttöoikeus:</translation>
+<translation id="3650952250015018111">Anna sovellukselle "<ph name="APP_NAME" />" seuraava käyttöoikeus:</translation>
 <translation id="3651488188562686558">Katkaise Wi-Fi-yhteys</translation>
 <translation id="3652817283076144888">Alustetaan</translation>
 <translation id="3653999333232393305">Anna sivuston <ph name="HOST" /> käyttää edelleen mikrofoniasi</translation>
@@ -2224,7 +2221,6 @@ Lisätietoja saat <ph name="BEGIN_LINK" />ohjekeskuksestamme<ph name="END_LINK" 
 <translation id="4448844063988177157">Haetaan Wi-Fi-verkkoja...</translation>
 <translation id="4449996769074858870">Tämä välilehti toistaa ääntä.</translation>
 <translation id="4450974146388585462">Diagnosoi</translation>
-<translation id="4452426408005428395">Peruuta</translation>
 <translation id="445923051607553918">Yhdistä Wi-Fi-verkkoon</translation>
 <translation id="4462159676511157176">Omat nimipalvelimet</translation>
 <translation id="4467100756425880649">Chrome Web Store Gallery</translation>
@@ -2734,7 +2730,6 @@ Lisätietoja saat <ph name="BEGIN_LINK" />ohjekeskuksestamme<ph name="END_LINK" 
 <translation id="5266113311903163739">Varmenteen myöntäjän tuontivirhe</translation>
 <translation id="5269977353971873915">Tulostus epäonnistui</translation>
 <translation id="5271549068863921519">Tallenna salasana</translation>
-<translation id="5275194674756975076">OK, päivitä</translation>
 <translation id="5275352920323889391">Koira</translation>
 <translation id="5275973617553375938">Google Drivesta palautetut tiedostot</translation>
 <translation id="527605719918376753">Mykistä välilehti</translation>
@@ -3871,7 +3866,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7006634003215061422">Alareuna</translation>
 <translation id="7006844981395428048">Äänitiedosto ($1)</translation>
 <translation id="7007648447224463482">Avaa kaikki uudessa ikkunassa</translation>
-<translation id="7008270479623533562">Tämän laajennuksen käynnistäminen edellyttää sivun päivittämistä. Voit käynnistää laajennuksen tällä sivustolla automaattisesti klikkaamalla laajennuksen kuvaketta hiiren kakkospainikkeella.</translation>
 <translation id="701080569351381435">Näytä lähdekoodi</translation>
 <translation id="7012372675181957985">Google-tililläsi voi olla muita selaushistoriatietoja osoitteessa <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="7014174261166285193">Asennus epäonnistui.</translation>

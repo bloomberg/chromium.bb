@@ -182,6 +182,7 @@
 <translation id="2650751991977523696">Télécharger de nouveau le fichier ?</translation>
 <translation id="2653659639078652383">Valider</translation>
 <translation id="2677748264148917807">Quitter</translation>
+<translation id="2693813674743028984">Masquer les informations de stockage</translation>
 <translation id="2704606927547763573">Copié</translation>
 <translation id="2707726405694321444">Actualiser la page</translation>
 <translation id="2709516037105925701">Saisie automatique</translation>
@@ -207,6 +208,7 @@
 <translation id="2956410042958133412">Ce compte est géré par <ph name="PARENT_NAME_1" /> et <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Copyright Google Inc. <ph name="YEAR" />. Tous droits réservés.</translation>
 <translation id="2962095958535813455">Onglets de navigation privée sélectionnés</translation>
+<translation id="2965945119655563012">Afficher les informations de stockage</translation>
 <translation id="2968755619301702150">Lecteur de certificat</translation>
 <translation id="2979025552038692506">Onglet de navigation privée sélectionné</translation>
 <translation id="2989523299700148168">Consultations récentes</translation>
@@ -334,6 +336,7 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="4170011742729630528">Service indisponible. Veuillez réessayer plus tard.</translation>
 <translation id="4181841719683918333">Langues</translation>
 <translation id="4195643157523330669">Ouvrir dans un nouvel onglet</translation>
+<translation id="4198423547019359126">Aucun emplacement de téléchargements disponible</translation>
 <translation id="4226663524361240545">L'appareil vibrera en cas de notifications.</translation>
 <translation id="4242533952199664413">Ouvrir les paramètres</translation>
 <translation id="424864128008805179">Se déconnecter de Chrome ?</translation>
@@ -699,6 +702,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7455923816558154057">Appuyer pour afficher</translation>
 <translation id="7473891865547856676">Non, merci</translation>
 <translation id="7475192538862203634">Si vous rencontrez souvent ce problème, essayez les <ph name="BEGIN_LINK" />suggestions<ph name="END_LINK" /> suivantes.</translation>
+<translation id="7475688122056506577">Carte SD introuvable. Certains de vos fichiers risquent d'être manquants.</translation>
 <translation id="748127970106343339">Confirmer la suppression de l'identifiant de l'appareil</translation>
 <translation id="7481312909269577407">Avancer</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Dernière mise à jour <ph name="TIME_SINCE_UPDATE" />)</translation>
@@ -762,6 +766,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8026334261755873520">Effacer les données de navigation</translation>
 <translation id="8035133914807600019">Nouveau dossier…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> jours restants</translation>
+<translation id="804335162455518893">Carte SD introuvable</translation>
 <translation id="805047784848435650">En fonction de votre historique de navigation</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> Mo disponibles</translation>
 <translation id="8058746566562539958">Ouvrir dans nouvel onglet Chrome</translation>

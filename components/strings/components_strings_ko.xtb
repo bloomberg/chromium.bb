@@ -644,7 +644,6 @@
 <translation id="5492298309214877701">회사, 조직, 학교 인트라넷의 해당 사이트가 외부 웹사이트와 동일한 URL을 갖고 있습니다.
     <ph name="LINE_BREAK" />
     시스템 관리자에게 문의하세요.</translation>
-<translation id="5499929369096410817"><ph name="CREDIT_CARD" />의 보안 코드를 입력하세요. 이 코드는 저장되지 않습니다.</translation>
 <translation id="5509780412636533143">관리 북마크</translation>
 <translation id="5510766032865166053">이동되었거나 삭제되었을 수 있습니다.</translation>
 <translation id="5523118979700054094">정책 이름</translation>
@@ -704,7 +703,6 @@
 <translation id="5967867314010545767">기록에서 삭제</translation>
 <translation id="5972020793760134803">탭으로 전환</translation>
 <translation id="5975083100439434680">축소</translation>
-<translation id="597552863672748783">보안 코드 확인</translation>
 <translation id="598637245381783098">결제 앱을 열 수 없습니다.</translation>
 <translation id="5989320800837274978">고정 프록시 서버와 .pac 스크립트 URL이 모두 지정되지 않았습니다.</translation>
 <translation id="5990559369517809815">서버에 대한 요청이 확장 프로그램에 의해 차단되었습니다.</translation>

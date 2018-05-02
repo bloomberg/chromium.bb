@@ -367,7 +367,6 @@
 <translation id="1545775234664667895">Tema "<ph name="THEME_NAME" />" instalado</translation>
 <translation id="1545786162090505744">URL com %s no lugar da consulta</translation>
 <translation id="1546280085599573572">Esta extensão alterou a página que é exibida quando você clica no botão "Página inicial".</translation>
-<translation id="1547572086206517271">Atualização necessária</translation>
 <translation id="1548132948283577726">Sites que nunca salvam senhas serão mostrados aqui.</translation>
 <translation id="1549788673239553762"><ph name="APP_NAME" /> deseja acessar <ph name="VOLUME_NAME" />. Ele pode modificar ou excluir seus arquivos.</translation>
 <translation id="1553538517812678578">ilimitado</translation>
@@ -734,7 +733,6 @@
 <translation id="2128691215891724419">Erro de sincronização: atualize a senha de sincronização...</translation>
 <translation id="2129825002735785149">Atualizar plug-in</translation>
 <translation id="2129904043921227933">Erro de sincronização: atualize a senha de sincronização...</translation>
-<translation id="2130949041518253417">Sincronize para ter uma experiência de navegação personalizada entre seus dispositivos</translation>
 <translation id="2131077480075264">Não foi possível instalar o app "<ph name="APP_NAME" />" porque ele não é permitido por "<ph name="IMPORT_NAME" />"</translation>
 <translation id="2135787500304447609">&amp;Retomar</translation>
 <translation id="2136372518715274136">Digite a nova senha</translation>
@@ -1689,7 +1687,6 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <translation id="3576324189521867626">Instalação concluída</translation>
 <translation id="3578594933904494462">O conteúdo desta guia está sendo compartilhado.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; deseja compartilhar uma impressora &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; com um grupo de sua propriedade: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Se você aceitar, todos os membros do grupo poderão imprimir pela impressora.</translation>
-<translation id="3582972582564653026">Sincronize e personalize o Chrome em todos os seus dispositivos</translation>
 <translation id="3584169441612580296">Ler e alterar fotos, músicas e outras mídias do seu computador</translation>
 <translation id="3587482841069643663">Tudo</translation>
 <translation id="358796204584394954">Digite este código no "<ph name="DEVICE_NAME" />" para o pareamento:</translation>
@@ -2226,7 +2223,6 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <translation id="4448844063988177157">Procurando redes Wi-Fi...</translation>
 <translation id="4449996769074858870">Esta guia está reproduzindo áudio.</translation>
 <translation id="4450974146388585462">Diagnosticar</translation>
-<translation id="4452426408005428395">Ignorar</translation>
 <translation id="445923051607553918">Entrar na rede Wi-Fi</translation>
 <translation id="4462159676511157176">Servidores de nome personalizados</translation>
 <translation id="4467100756425880649">Galeria da Chrome Web Store</translation>
@@ -2736,7 +2732,6 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <translation id="5266113311903163739">Erro de importação da Autoridade de certificação</translation>
 <translation id="5269977353971873915">Falha ao imprimir</translation>
 <translation id="5271549068863921519">Salvar senha</translation>
-<translation id="5275194674756975076">OK, atualizar</translation>
 <translation id="5275352920323889391">Cachorro</translation>
 <translation id="5275973617553375938">Arquivos recuperados a partir do Google Drive</translation>
 <translation id="527605719918376753">Desativar som da guia</translation>
@@ -3873,7 +3868,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7006634003215061422">Margem inferior</translation>
 <translation id="7006844981395428048">Áudio $1</translation>
 <translation id="7007648447224463482">Abrir todos em uma nova janela</translation>
-<translation id="7008270479623533562">Para executar esta extensão, é necessário atualizar a página. Execute-a automaticamente neste site clicando com o botão direito do mouse no ícone da extensão.</translation>
 <translation id="701080569351381435">Exibir o código fonte</translation>
 <translation id="7012372675181957985">Sua Conta do Google pode ter outras formas de histórico de navegação em <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7014174261166285193">Falha na instalação.</translation>

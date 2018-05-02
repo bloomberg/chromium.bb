@@ -364,7 +364,6 @@
 <translation id="1545775234664667895">Design "<ph name="THEME_NAME" />" installiert</translation>
 <translation id="1545786162090505744">URL mit %s statt der Suchanfrage</translation>
 <translation id="1546280085599573572">Durch diese Erweiterung wurde die Seite geändert, die beim Klicken auf die Schaltfläche "Startseite" erscheint.</translation>
-<translation id="1547572086206517271">Seite muss aktualisiert werden</translation>
 <translation id="1548132948283577726">Hier erscheinen Websites, für die keine Passwörter gespeichert werden.</translation>
 <translation id="1549788673239553762"><ph name="APP_NAME" /> möchte auf <ph name="VOLUME_NAME" /> zugreifen. Ihre Dateien können geändert oder gelöscht werden.</translation>
 <translation id="1553538517812678578">unbegrenzt</translation>
@@ -451,6 +450,7 @@
 <translation id="166439687370499867">Freigegebene Netzwerkkonfigurationen dürfen nicht geändert werden</translation>
 <translation id="1665611772925418501">Die Datei konnte nicht geändert werden.</translation>
 <translation id="1670399744444387456">Grundlegend</translation>
+<translation id="167160931442925455">Am lautesten</translation>
 <translation id="1673103856845176271">Auf die Datei konnte aus Sicherheitsgründen nicht zugegriffen werden.</translation>
 <translation id="1673137583248014546"><ph name="URL" /> möchte den Hersteller und das Modell Ihres Sicherheitsschlüssels aufrufen</translation>
 <translation id="167832068858235403">Leiser</translation>
@@ -507,6 +507,7 @@
 <translation id="1758831820837444715">Ethernetnetzwerk konfigurieren</translation>
 <translation id="1763046204212875858">App-Verknüpfungen erstellen</translation>
 <translation id="1763108912552529023">Weiter erkunden</translation>
+<translation id="1763808908432309942">Wird in einem neuen Tab geöffnet</translation>
 <translation id="1764226536771329714">Beta</translation>
 <translation id="176587472219019965">Neues &amp;Fenster</translation>
 <translation id="1768278914020124551">Hoppla! Beim Kontaktieren des Anmeldeservers ist ein Problem aufgetreten. Überprüfen Sie bitte Ihre Netzwerkverbindung und den Domainnamen und versuchen Sie es noch einmal.</translation>
@@ -587,6 +588,7 @@
 <translation id="1871615898038944731">Ihr <ph name="DEVICE_TYPE" /> ist auf dem neuesten Stand</translation>
 <translation id="1875387611427697908">Dieser Artikel kann nur über den <ph name="CHROME_WEB_STORE" /> hinzugefügt werden</translation>
 <translation id="1877520246462554164">Authentifizierungs-Token konnte nicht abgerufen werden. Bitte melden Sie sich ab und dann wieder an, um es noch einmal zu versuchen.</translation>
+<translation id="1878302395768190018">Diese Option lässt sich jederzeit in den Chrome-Einstellungen anpassen</translation>
 <translation id="1878524442024357078">Verwendung von Plug-ins für den Zugriff auf Ihren Computer für keine Website zulassen</translation>
 <translation id="1880905663253319515">Zertifikat "<ph name="CERTIFICATE_NAME" />" löschen?</translation>
 <translation id="1886996562706621347">Registrierung von Websites als Standard-Handler für Protokolle zulassen (empfohlen)</translation>
@@ -728,7 +730,6 @@
 <translation id="2128691215891724419">Synchronisierungsfehler: Aktualisieren Sie die Passphrase für die Synchronisierung...</translation>
 <translation id="2129825002735785149">Plug-in aktualisieren</translation>
 <translation id="2129904043921227933">Synchronisierungsfehler: Aktualisieren Sie die Passphrase für die Synchronisierung...</translation>
-<translation id="2130949041518253417">Synchronisierung starten, um die Browsernutzung auf allen Ihren Geräten zu personalisieren</translation>
 <translation id="2131077480075264">"<ph name="APP_NAME" />" konnte nicht installiert werden, da dies vom "<ph name="IMPORT_NAME" />" nicht zugelassen wurde.</translation>
 <translation id="2135787500304447609">&amp;Fortsetzen</translation>
 <translation id="2136372518715274136">Neues Passwort eingeben</translation>
@@ -1001,6 +1002,7 @@ Ich glaube nicht, dass diese Website blockiert werden sollte.</translation>
 <translation id="2562685439590298522">Google Docs</translation>
 <translation id="2562743677925229011">Nicht in <ph name="SHORT_PRODUCT_NAME" /> angemeldet</translation>
 <translation id="2563856802393254086">Herzlichen Glückwunsch! Ihr Datendienst "<ph name="NAME" />" wurde aktiviert und ist einsatzbereit.</translation>
+<translation id="2564520396658920462">Die Ausführung von JavaScript über AppleScript ist deaktiviert. Wenn Sie diese Funktion aktivieren möchten, gehen Sie zu "Ansicht" &gt; "Entwickler" &gt; "JavaScript von Apple Events erlauben". Weitere Informationen finden Sie unter https://support.google.com/chrome/?p=applescript.</translation>
 <translation id="2566124945717127842">Durch einen Powerwash wird Ihr <ph name="IDS_SHORT_PRODUCT_NAME" />-Gerät auf den Werkszustand zurückgesetzt.</translation>
 <translation id="2567257616420533738">Passwort gespeichert. Sie können gespeicherte Passwörter unter <ph name="SAVED_PASSWORDS_LINK" /> aufrufen und verwalten</translation>
 <translation id="2568774940984945469">Infoleisten-Container</translation>
@@ -1078,6 +1080,7 @@ Ich glaube nicht, dass diese Website blockiert werden sollte.</translation>
 <translation id="2665394472441560184">Neues Wort hinzufügen</translation>
 <translation id="2665717534925640469">Diese Seite wird nun im Vollbildmodus angezeigt und hat den Mauszeiger deaktiviert.</translation>
 <translation id="2665919335226618153">Oh nein! Beim Formatieren ist ein Fehler aufgetreten.</translation>
+<translation id="2666990579225592931">Gastfenster öffnen</translation>
 <translation id="2667463864537187133">Rechtschreibprüfung verwalten</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> hat einen Chrome-Tab freigegeben.</translation>
 <translation id="2670429602441959756">Diese Seite enthält Funktionen, die noch nicht in VR unterstützt werden. Modus wird beendet…</translation>
@@ -1223,6 +1226,7 @@ Ich glaube nicht, dass diese Website blockiert werden sollte.</translation>
 <translation id="2882943222317434580"><ph name="IDS_SHORT_PRODUCT_NAME" /> wird in wenigen Augenblicken neu gestartet und zurückgesetzt.</translation>
 <translation id="2885378588091291677">Taskmanager</translation>
 <translation id="2886771036282400576">• <ph name="PERMISSION" /></translation>
+<translation id="2886800363598651778">Chrome auf allen Geräten synchronisieren und personalisieren</translation>
 <translation id="2887525882758501333">PDF-Dokument</translation>
 <translation id="2888807692577297075">Keine Elemente für &lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt; gefunden</translation>
 <translation id="2889064240420137087">Link öffnen mit...</translation>
@@ -1679,7 +1683,6 @@ Mehr dazu erfahren Sie in <ph name="BEGIN_LINK" />unserer Hilfe<ph name="END_LIN
 <translation id="3576324189521867626">Installation war erfolgreich</translation>
 <translation id="3578594933904494462">Der Inhalt dieses Tabs wird geteilt.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; möchte den Drucker &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; für eine Gruppe freigeben, deren Inhaber Sie sind: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Falls Sie zustimmen, können alle Gruppenmitglieder diesen Drucker nutzen.</translation>
-<translation id="3582972582564653026">Chrome wird auf allen Ihren Geräten synchronisiert und personalisiert</translation>
 <translation id="3584169441612580296">Fotos, Musik und andere Medien auf Ihrem Computer lesen und ändern</translation>
 <translation id="3587482841069643663">Alle</translation>
 <translation id="358796204584394954">Geben Sie zur Kopplung diesen Code auf "<ph name="DEVICE_NAME" />" ein:</translation>
@@ -1746,6 +1749,7 @@ Mehr dazu erfahren Sie in <ph name="BEGIN_LINK" />unserer Hilfe<ph name="END_LIN
 <translation id="3670229581627177274">Bluetooth aktivieren</translation>
 <translation id="3672681487849735243">Ein werkseitiger Fehler wurde festgestellt.</translation>
 <translation id="367645871420407123">Leer lassen, wenn Sie für das Root-Passwort den Standardtestwert festlegen möchten</translation>
+<translation id="3677657024345889897">Am leisesten</translation>
 <translation id="3678156199662914018">Erweiterung: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3681311097828166361">Vielen Dank für Ihr Feedback. Sie sind jetzt offline und Ihr Bericht wird später versendet.</translation>
 <translation id="3683023058278427253">Wir haben mehrere Lizenztypen für Ihre Domain erkannt. Bitte wählen Sie einen aus, um fortzufahren.</translation>
@@ -1943,6 +1947,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="3956702100721821638">Keine Verbindung zu Google Play</translation>
 <translation id="3958088479270651626">Lesezeichen und Einstellungen importieren</translation>
 <translation id="3960566196862329469">ONC</translation>
+<translation id="3965965397408324205"><ph name="PROFILE_NAME" /> beenden</translation>
 <translation id="3966072572894326936">Anderen Ordner wählen...</translation>
 <translation id="3966388904776714213">Audio-Player</translation>
 <translation id="3967822245660637423">Download abgeschlossen</translation>
@@ -1983,6 +1988,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4031910098617850788">F5</translation>
 <translation id="4033471457476425443">Neuen Ordner hinzufügen</translation>
 <translation id="4034042927394659004">Tastenhelligkeit verringern</translation>
+<translation id="4034824040120875894">Drucker</translation>
 <translation id="4035758313003622889">&amp;Taskmanager</translation>
 <translation id="4036758022112812315">Markieren Sie, was Sie hören möchten, und drücken Sie dann die Suchtaste + S. Oder halten Sie die Suchtaste gedrückt und klicken oder ziehen Sie dann, um Inhalte auszuwählen.</translation>
 <translation id="4037084878352560732">Pferd</translation>
@@ -2067,6 +2073,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4181602000363099176">20-fach</translation>
 <translation id="4181841719683918333">Sprachen</translation>
 <translation id="4184885522552335684">Zum Verschieben des Bildschirms ziehen</translation>
+<translation id="4192273449750167573">Einstellungen auf dem nächsten Bildschirm überprüfen</translation>
 <translation id="4193154014135846272">Google-Dokument</translation>
 <translation id="4194570336751258953">Tippen-statt-Klicken aktivieren</translation>
 <translation id="4195643157523330669">In neuem Tab öffnen</translation>
@@ -2212,7 +2219,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4448844063988177157">Suche nach WLAN-Netzwerken läuft...</translation>
 <translation id="4449996769074858870">Auf diesem Tab wird Audio wiedergegeben.</translation>
 <translation id="4450974146388585462">Diagnose</translation>
-<translation id="4452426408005428395">Abbrechen</translation>
 <translation id="445923051607553918">Mit WLAN verbinden</translation>
 <translation id="4462159676511157176">Benutzerdefinierte Nameserver</translation>
 <translation id="4467100756425880649">Chrome Web Store-Galerie</translation>
@@ -2314,6 +2320,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4632483769545853758">Stummschaltung des Tabs aufheben</translation>
 <translation id="4633003931260532286">Die Erweiterung erfordert "<ph name="IMPORT_NAME" />" mit der Mindestversion "<ph name="IMPORT_VERSION" />", es ist jedoch nur Version "<ph name="INSTALLED_VERSION" />" installiert</translation>
 <translation id="4634771451598206121">Erneut anmelden...</translation>
+<translation id="4635398712689569051"><ph name="PAGE_NAME" /> ist für Gastnutzer nicht verfügbar.</translation>
 <translation id="4640525840053037973">Mit Ihrem Google-Konto anmelden</translation>
 <translation id="4641539339823703554">Die Systemzeit konnte nicht eingestellt werden. Bitte überprüfen Sie die unten angegebene Uhrzeit und korrigieren Sie sie gegebenenfalls.</translation>
 <translation id="4643612240819915418">&amp;Video in neuem Tab öffnen</translation>
@@ -2350,6 +2357,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
     Falls dies eine unerwartete Aktion ist, wenden Sie sich bitte an den Support.</translation>
 <translation id="469230890969474295">OEM-Ordner</translation>
 <translation id="4692623383562244444">Suchmaschinen</translation>
+<translation id="4694024090038830733">Die Druckerkonfiguration wird vom Administrator vorgenommen.</translation>
 <translation id="4697551882387947560">Beim Beenden der Browsersitzung</translation>
 <translation id="4699172675775169585">Bilder und Dateien im Cache</translation>
 <translation id="4699357559218762027">(wird automatisch gestartet)</translation>
@@ -2358,6 +2366,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4707934200082538898">Weitere Informationen wurden per E-Mail an <ph name="BEGIN_BOLD" /><ph name="MANAGER_EMAIL" /><ph name="END_BOLD" /> gesendet.</translation>
 <translation id="4708794300267213770">Sperrbildschirm anzeigen, wenn der Ruhemodus beendet wird</translation>
 <translation id="4708849949179781599"><ph name="PRODUCT_NAME" /> beenden</translation>
+<translation id="4710251968215868702">Verwendet Inhalte von besuchten Websites sowie Browseraktivitäten und -interaktionen.</translation>
 <translation id="4711638718396952945">Einstellungen wiederherstellen</translation>
 <translation id="4713544552769165154">Diese Datei wurde für einen Computer mit Macintosh-Software entwickelt und ist nicht mit Ihrem Chrome OS-Gerät kompatibel. Suchen Sie im <ph name="BEGIN_LINK" />Chrome Web Store<ph name="END_LINK" /> nach einer geeigneten Ersatz-App. <ph name="BEGIN_LINK_HELP" />Weitere Informationen<ph name="END_LINK_HELP" /></translation>
 <translation id="4714531393479055912"><ph name="PRODUCT_NAME" /> kann nun Ihre Passwörter synchronisieren.</translation>
@@ -2719,12 +2728,12 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5266113311903163739">Zertifizierungsstelle - Fehler beim Import</translation>
 <translation id="5269977353971873915">Fehler beim Drucken</translation>
 <translation id="5271549068863921519">Passwort speichern</translation>
-<translation id="5275194674756975076">OK, aktualisieren</translation>
 <translation id="5275352920323889391">Hund</translation>
 <translation id="5275973617553375938">Wiederhergestellte Dateien von Google Drive</translation>
 <translation id="527605719918376753">Stummschalten</translation>
 <translation id="527605982717517565">JavaScript auf <ph name="HOST" /> immer zulassen</translation>
 <translation id="5280426389926346830">Verknüpfung erstellen?</translation>
+<translation id="528208740344463258">Um Android-Apps herunterladen und verwenden zu können, müssen Sie zuerst dieses erforderliche Update installieren. Sie können Ihr <ph name="DEVICE_TYPE" /> während des Updates nicht nutzen. Nach Abschluss der Installation wird Ihr <ph name="DEVICE_TYPE" /> neu gestartet.</translation>
 <translation id="5282733140964383898">Wenn Sie "Do Not Track" aktivieren, wird eine Anfrage in Ihre Browseraufrufe aufgenommen. Welche Auswirkungen dies hat, hängt davon ab, ob eine Website auf die Anfrage reagiert und wie diese interpretiert wird. Einige Websites reagieren möglicherweise auf die Anfrage, indem sie Anzeigen einblenden, die nicht auf anderen von Ihnen besuchten Websites basieren. Viele Websites erfassen und nutzen dennoch Ihre Browserdaten, etwa zur Verbesserung der Sicherheit, zur Bereitstellung von Inhalten, Diensten, Anzeigen und Empfehlungen auf der Website sowie zur Erstellung von Berichtsstatistiken. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
 <translation id="5283677936944177147">Hoppla! Das System konnte das Gerätemodell oder die Seriennummer nicht erkennen.</translation>
 <translation id="5284445933715251131">Download fortsetzen</translation>
@@ -3086,6 +3095,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5807290661599647102">Displaysperre einrichten</translation>
 <translation id="580926004266167721">Der Computer konnte der Domain nicht beitreten. Möglicherweise verfügt Ihr Konto nicht über die erforderlichen Berechtigungen für die Organisationseinheit.</translation>
 <translation id="580961539202306967">Nachfragen, wenn eine Website mir Push-Nachrichten senden möchte (empfohlen)</translation>
+<translation id="5809725759695043233">Sie haben Apps, die für Chromebooks optimiert sind</translation>
 <translation id="5814126672212206791">Verbindungstyp</translation>
 <translation id="5815645614496570556">X.400-Adresse</translation>
 <translation id="5817918615728894473">Koppeln</translation>
@@ -3448,9 +3458,11 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6383051423892982287">Alle synchronisierten Daten werden mit meiner eigenen <ph name="BEGIN_LINK" />Synchronisierungspassphrase<ph name="END_LINK" /> verschlüsselt</translation>
 <translation id="6384275966486438344">Sucheinstellungen in <ph name="SEARCH_HOST" /> ändern</translation>
 <translation id="6385543213911723544">Websites können Cookiedaten speichern und lesen.</translation>
+<translation id="6388429472088318283">Sprachen suchen</translation>
 <translation id="6388771388956873507">Suchen Sie den Fingerabdrucksensor Ihres Geräts und berühren Sie ihn mit dem Finger</translation>
 <translation id="6390799748543157332">In diesem Fenster aufgerufene Seiten erscheinen nicht im Browserverlauf und hinterlassen auch keine anderweitigen Spuren wie Cookies auf dem Computer, nachdem Sie alle geöffneten Gastmodus-Fenster geschlossen haben. Heruntergeladene Dateien bleiben jedoch erhalten.</translation>
 <translation id="6395423953133416962"><ph name="BEGIN_LINK1" />Systeminformationen<ph name="END_LINK1" /> und <ph name="BEGIN_LINK2" />Messwerte<ph name="END_LINK2" /> senden</translation>
+<translation id="6397094776139756010">Synchronisierungs- und Personalisierungsoptionen</translation>
 <translation id="6397592254427394018">Alle Lesezeichen in &amp;Inkognito-Fenster öffnen</translation>
 <translation id="6398715114293939307">Google Play Store entfernen</translation>
 <translation id="6398765197997659313">Vollbildmodus beenden</translation>
@@ -3640,6 +3652,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="6664237456442406323">Ihr Computer wurde mit einer ungültigen Hardware-ID konfiguriert. Daher kann Chrome OS keine aktuellen Sicherheitsupdates installieren und Ihr Computer ist <ph name="BEGIN_BOLD" />möglicherweise anfällig für schädliche Angriffe<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Beim Öffnen Ihres Profils ist ein Fehler aufgetreten. Melden Sie sich bitte ab und dann wieder an.</translation>
+<translation id="6670647982128220776">Funktionen zur Synchronisierung und Personalisierung sind jetzt über ein einzelnes Steuerelement verfügbar. Wenn Sie dieses aktivieren, können sich Ihre aktuellen Einstellungen ändern.</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">Soll Google diese Seite von <ph name="SOURCE_LANGUAGE" /> in <ph name="TARGET_LANGUAGE" /> übersetzen?</translation>
 <translation id="6675665718701918026">Zeigegerät verbunden</translation>
@@ -3754,6 +3767,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6841186874966388268">Fehler</translation>
 <translation id="6843725295806269523">Stumm</translation>
 <translation id="6845038076637626672">Maximiert öffnen</translation>
+<translation id="685040365210406336">Keine Änderungen vornehmen</translation>
 <translation id="6851497530878285708">App aktiviert</translation>
 <translation id="6853388645642883916">Updater im Ruhemodus</translation>
 <translation id="68541483639528434">Andere Tabs schließen</translation>
@@ -3848,7 +3862,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7006634003215061422">Unterer Rand</translation>
 <translation id="7006844981395428048">$1-Audio</translation>
 <translation id="7007648447224463482">Alle in neuem Fenster öffnen</translation>
-<translation id="7008270479623533562">Aktualisieren Sie die Seite, wenn Sie diese Erweiterung ausführen möchten. Sie können diese Erweiterung automatisch ausführen, indem Sie mit der rechten Maustaste auf das Erweiterungssymbol klicken.</translation>
 <translation id="701080569351381435">Quelltext anzeigen</translation>
 <translation id="7012372675181957985">Möglicherweise sind in Ihrem Google-Konto noch andere Formen des Browserverlaufs unter <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> vorhanden</translation>
 <translation id="7014174261166285193">Installation fehlgeschlagen</translation>
@@ -3953,6 +3966,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="716810439572026343"><ph name="FILE_NAME" /> wird heruntergeladen.</translation>
 <translation id="7168109975831002660">Mindestgröße</translation>
 <translation id="7170041865419449892">Außerhalb des Bereichs</translation>
+<translation id="7171559745792467651">Apps von Ihren anderen Geräten installieren</translation>
 <translation id="7173917244679555">Sie verwalten offenbar bereits einen Nutzer mit diesem Namen. Möchten Sie <ph name="BEGIN_LINK" /><ph name="PROFILE_NAME" /> auf dieses Gerät importieren<ph name="END_LINK" />?</translation>
 <translation id="7175037578838465313"><ph name="NAME" /> konfigurieren</translation>
 <translation id="7175353351958621980">Geladen von:</translation>
@@ -4095,6 +4109,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
         <ph name="END_BOLD" /></translation>
 <translation id="7387829944233909572">Dialog "Browserdaten löschen"</translation>
 <translation id="7388044238629873883">Sie haben es fast geschafft.</translation>
+<translation id="7388222713940428051">Gastfenster öffnen</translation>
 <translation id="7392118418926456391">Fehler beim Virenscan</translation>
 <translation id="7392915005464253525">Geschlossenes Fenster wieder öffn&amp;en</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> wird beim Systemstart gestartet und auch dann weiter im Hintergrund ausgeführt, wenn Sie alle anderen <ph name="PRODUCT_NAME" />-Fenster geschlossen haben.</translation>
@@ -4312,6 +4327,7 @@ Bei der Installation von "<ph name="APP_NAME" />" werden <ph name="DOWNLOAD_SIZE
 <translation id="773426152488311044">Sie sind momentan der einzige <ph name="PRODUCT_NAME" />-Nutzer.</translation>
 <translation id="7740996059027112821">Standard</translation>
 <translation id="7748528009589593815">Vorheriger Tab</translation>
+<translation id="7748626145866214022">Weitere Optionen auf der Aktionsleiste. Drücken Sie Alt + A, um den Fokus auf die Aktionsleiste zu legen.</translation>
 <translation id="7751260505918304024">Alle anzeigen</translation>
 <translation id="7754704193130578113">Vor dem Download von Dateien nach dem Speicherort fragen</translation>
 <translation id="7758450972308449809">Bildschirmbegrenzungen anpassen</translation>
@@ -4376,6 +4392,7 @@ Bei der Installation von "<ph name="APP_NAME" />" werden <ph name="DOWNLOAD_SIZE
 <translation id="7831491651892296503">Fehler bei der Netzwerkkonfiguration</translation>
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
 <translation id="7832084384634357321">Ende</translation>
+<translation id="7832327313660264358">Die mit Google synchronisierten Daten und die verwendeten Funktionen ändern sich nicht</translation>
 <translation id="7833720883933317473">Hier werden gespeicherte benutzerdefinierte Wörter angezeigt</translation>
 <translation id="7837307963048806839">•  $1</translation>
 <translation id="7837776265184002579">Ihre Startseite wurde in <ph name="URL" /> geändert.</translation>
@@ -4736,6 +4753,7 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8400146488506985033">Nutzer verwalten</translation>
 <translation id="8410073653152358832">Dieses Telefon verwenden</translation>
 <translation id="8410775397654368139">Google Play</translation>
+<translation id="8411022984399993066">Ja, Synchronisierung und Personalisierung aktivieren</translation>
 <translation id="8413385045638830869">Zuerst fragen (empfohlen)</translation>
 <translation id="8418445294933751433">Al&amp;s Tab anzeigen</translation>
 <translation id="8419098111404128271">Suchergebnisse für "<ph name="SEARCH_TEXT" />"</translation>
@@ -4780,6 +4798,7 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8470028084415844044">Wenn Sie Ihre Passwörter auf allen Ihren Geräten verfügbar haben möchten, aktivieren Sie die Synchronisierung.</translation>
 <translation id="8470513973197838199">Gespeicherte Passwörter für <ph name="ORIGIN" /></translation>
 <translation id="8472623782143987204">Hardwaregestützt</translation>
+<translation id="8474229360677287535">Alle Fenster schließen</translation>
 <translation id="8475313423285172237">Ein anderes Programm auf Ihrem Computer hat eine Erweiterung hinzugefügt, die sich möglicherweise auf die Funktionsweise von Chrome auswirkt.</translation>
 <translation id="8475647382427415476">"<ph name="FILENAME" />" konnte nicht in Google Drive synchronisiert werden. Google Drive versucht es später erneut.</translation>
 <translation id="8477241577829954800">Außer Kraft gesetzt</translation>

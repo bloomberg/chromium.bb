@@ -368,7 +368,6 @@
 <translation id="1545775234664667895">تم تثبيت المظهر "<ph name="THEME_NAME" />".</translation>
 <translation id="1545786162090505744">‏عنوان URL الذي يحتوي على % بدلاً من طلب البحث</translation>
 <translation id="1546280085599573572">غيّرت هذه الإضافة الصفحة التي تظهر عند النقر على زر الصفحة الرئيسية.</translation>
-<translation id="1547572086206517271">يلزم التحديث</translation>
 <translation id="1548132948283577726">تظهر هنا المواقع التي لا يتم حفظ كلمات المرور لها.</translation>
 <translation id="1549788673239553762">يريد <ph name="APP_NAME" /> الوصول إلى <ph name="VOLUME_NAME" />. قد يعدّل أو يحذف ملفاتك.</translation>
 <translation id="1553538517812678578">غير محدودة</translation>
@@ -735,7 +734,6 @@
 <translation id="2128691215891724419">خطأ في المزامنة: تحديث عبارة مرور المزامنة...</translation>
 <translation id="2129825002735785149">تحديث المكوِّن الإضافي</translation>
 <translation id="2129904043921227933">خطأ في المزامنة: تحديث عبارة مرور المزامنة...</translation>
-<translation id="2130949041518253417">يمكنك إجراء مزامنة للتمتع بتجربة تصفُّح مُخصَّصة على جميع أجهزتك.</translation>
 <translation id="2131077480075264">تعذّر تثبيت "<ph name="APP_NAME" />" لأنه لم يُسمح به من قبل "<ph name="IMPORT_NAME" />"</translation>
 <translation id="2135787500304447609">&amp;استئناف</translation>
 <translation id="2136372518715274136">أدخل كلمة المرور الجديدة</translation>
@@ -1688,7 +1686,6 @@
 <translation id="3576324189521867626">تم التثبيت بنجاح</translation>
 <translation id="3578594933904494462">تجري مشاركة محتوى علامة التبويب هذه.</translation>
 <translation id="357886715122934472">‏يريد &lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; مشاركة طابعة &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; مع مجموعة تمتلكها: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. في حال موافقتك، سيتمكن جميع أعضاء المجموعة من الطباعة بهذه الطابعة.</translation>
-<translation id="3582972582564653026">‏يمكنك مزامنة Chrome وتخصيصه على جميع أجهزتك.</translation>
 <translation id="3584169441612580296">التعرّف على الصور، والموسيقى، والوسائط الأخرى من الكمبيوتر وتغييرها</translation>
 <translation id="3587482841069643663">الكل</translation>
 <translation id="358796204584394954">اكتب هذه الشفرة في "<ph name="DEVICE_NAME" />" لإقرانه:</translation>
@@ -2222,7 +2219,6 @@
 <translation id="4448844063988177157">‏جارِ البحث عن شبكات Wi-Fi...</translation>
 <translation id="4449996769074858870">تشغّل علامة التبويب هذه صوتًا.</translation>
 <translation id="4450974146388585462">التشخيص</translation>
-<translation id="4452426408005428395">تجاهل ذلك</translation>
 <translation id="445923051607553918">‏الانضمام إلى شبكة Wi-Fi</translation>
 <translation id="4462159676511157176">خوادم أسماء مخصصة</translation>
 <translation id="4467100756425880649">‏معرض سوق Chrome الإلكتروني</translation>
@@ -2731,7 +2727,6 @@
 <translation id="5266113311903163739">خطأ استيراد مرجع مصدق</translation>
 <translation id="5269977353971873915">تعذّرت الطباعة</translation>
 <translation id="5271549068863921519">حفظ كلمة المرور</translation>
-<translation id="5275194674756975076">موافق، تحديث</translation>
 <translation id="5275352920323889391">كلب</translation>
 <translation id="5275973617553375938">‏الملفات المستردة من Google Drive</translation>
 <translation id="527605719918376753">تجاهل علامة التبويب</translation>
@@ -3867,7 +3862,6 @@
 <translation id="7006634003215061422">الهامش السفلي</translation>
 <translation id="7006844981395428048">ملف صوت $1</translation>
 <translation id="7007648447224463482">فتح الكل في نافذة جديدة</translation>
-<translation id="7008270479623533562">من أجل تشغيل هذه الإضافة، تحتاج لتحديث الصفحة. يمكنك تشغيل هذه الإضافة تلقائيًا على هذا الموقع بالنقر بزر الماوس الأيمن على رمز الإضافة.</translation>
 <translation id="701080569351381435">عرض المصدر</translation>
 <translation id="7012372675181957985">‏قد يتضمن حسابك في Google نماذج أخرى من سجلّ التصفح في <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7014174261166285193">تعذّر التثبيت.</translation>
@@ -5204,7 +5198,7 @@
 <translation id="9105212490906037469">F2</translation>
 <translation id="9109122242323516435">لتفريغ مساحة، احذف الملفات من سعة تخزين الجهاز.</translation>
 <translation id="9110990317705400362">‏نحن نبحث باستمرار عن طرق من شأنها زيادة أمان تجربة تصفحك. في السابق، كان من الممكن لأي موقع ويب أن يطالبك بتثبيت إضافة في متصفحك. أما في أحدث إصدارات Google Chrome، فيجب أن تبلغ Chrome صراحة أنك تريد تثبيت هذه الإضافات عن طريق إضافتها عبر صفحة الإضافات. <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
-<translation id="9111102763498581341">إلغاء التأمين</translation>
+<translation id="9111102763498581341">فتح القفل</translation>
 <translation id="9111395131601239814"><ph name="NETWORKDEVICE" />: <ph name="STATUS" /></translation>
 <translation id="9112748030372401671">تغيير الخلفية</translation>
 <translation id="9112987648460918699">بحث...</translation>

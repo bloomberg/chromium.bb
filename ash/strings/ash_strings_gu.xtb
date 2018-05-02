@@ -246,9 +246,6 @@
 <translation id="6521655319214113338">હસ્તલેખન ઇનપુટ</translation>
 <translation id="6528179044667508675">ખલેલ પાડશો નહીં</translation>
 <translation id="6537270692134705506">સ્ક્રીનને કૅપ્ચર કરો</translation>
-<translation id="6580955892089546165">આ સુવિધા તમને પાસવર્ડની જરૂર વગર ઝડપથી કોઇ સાઇન-ઇન થયેલ વપરાશકર્તાને ઍક્સેસ કરવાની પરવાનગી આપે છે.
-
-માત્ર તમે વિશ્વાસ ધરાવતા હો તે એકાઉન્ટ્સ સાથે જ આ સુવિધાનો ઉપયોગ કરો.</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" /> માં સત્ર સમાપ્ત થાય છે.</translation>
 <translation id="6627638273713273709">શોધ+Shift+K</translation>
 <translation id="6650933572246256093">Bluetooth ઉપકરણ "<ph name="DEVICE_NAME" />" ને જોડી બનાવવા માટે પરવાનગી જોઈએ છે. કૃપા કરીને તે ઉપકરણ પર આ પાસકીને દાખલ કરો: <ph name="PASSKEY" /></translation>
@@ -306,7 +303,6 @@
 <translation id="7994370417837006925">બહુવિધ સાઇન-ઇન</translation>
 <translation id="8000066093800657092">નેટવર્ક નથી</translation>
 <translation id="8054466585765276473">બેટરી સમયની ગણના કરે છે.</translation>
-<translation id="8056430285089645882">સમજાઈ ગયું, મને આ ફરી બતાવશો નહીં.</translation>
 <translation id="8098591350844501178"><ph name="RECEIVER_NAME" /> પર સ્ક્રીન કાસ્ટ કરવાનું રોકો</translation>
 <translation id="8132793192354020517"><ph name="NAME" /> થી કનેક્ટેડ છે</translation>
 <translation id="813913629614996137">પ્રારંભ કરી રહ્યું છે...</translation>

@@ -246,9 +246,6 @@
 <translation id="6521655319214113338">Унос рукописа</translation>
 <translation id="6528179044667508675">Не узнемиравај</translation>
 <translation id="6537270692134705506">Сними екран</translation>
-<translation id="6580955892089546165">Ова функција вам омогућава да брзо приступите било ком пријављеном кориснику без лозинке.
-
-Користите ову функцију само са налозима у које имате поверења.</translation>
 <translation id="6585808820553845416">Сесија се завршава за <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Тастер за претрагу+Shift+K</translation>
 <translation id="6650933572246256093">Bluetooth уређај „<ph name="DEVICE_NAME" />“ жели дозволу за упаривање. Унесите ову шифру на том уређају: <ph name="PASSKEY" /></translation>
@@ -306,7 +303,6 @@
 <translation id="7994370417837006925">Вишеструко пријављивање</translation>
 <translation id="8000066093800657092">Нема мреже</translation>
 <translation id="8054466585765276473">Израчунавање времена трајања батерије.</translation>
-<translation id="8056430285089645882">Важи, не приказуј ово поново.</translation>
 <translation id="8098591350844501178">Заустави пребацивање екрана на <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Успостављена је веза са <ph name="NAME" /></translation>
 <translation id="813913629614996137">Покреће се…</translation>

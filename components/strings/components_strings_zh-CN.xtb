@@ -641,7 +641,6 @@
 <translation id="5492298309214877701">这个位于公司、组织或学校内网中的网站使用的网址与某个外部网站的网址相同。
     <ph name="LINE_BREAK" />
     请尝试与您的系统管理员联系。</translation>
-<translation id="5499929369096410817">请输入“<ph name="CREDIT_CARD" />”的安全码。系统不会保存该代码。</translation>
 <translation id="5509780412636533143">受管理的书签</translation>
 <translation id="5510766032865166053">该文件可能已被移至别处或遭到删除。</translation>
 <translation id="5523118979700054094">政策名</translation>
@@ -701,7 +700,6 @@
 <translation id="5967867314010545767">从历史记录中移除</translation>
 <translation id="5972020793760134803">切换至标签页</translation>
 <translation id="5975083100439434680">缩小</translation>
-<translation id="597552863672748783">请确认安全码</translation>
 <translation id="598637245381783098">无法打开付款应用</translation>
 <translation id="5989320800837274978">固定代理服务器和 .pac 脚本网址均未指定。</translation>
 <translation id="5990559369517809815">对服务器的请求已遭到某个扩展程序的阻止。</translation>
@@ -737,7 +735,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> 书签</translation>
 <translation id="6264485186158353794">返回安全连接</translation>
 <translation id="6276112860590028508">您的阅读清单中的网页会显示在此处</translation>
-<translation id="627746635834430766">若想在下次购物时更快捷地付款，请将您的卡片信息和帐单邮寄地址保存到您的 Google 帐号中。</translation>
+<translation id="627746635834430766">若想在下次购物时更快捷地付款，请将您的付款卡信息和帐单邮寄地址保存到您的 Google 帐号中。</translation>
 <translation id="6280223929691119688">无法递送到此地址。请另选一个地址。</translation>
 <translation id="6282194474023008486">邮编</translation>
 <translation id="6290238015253830360">为您推荐的文章会显示在此处</translation>
@@ -752,7 +750,7 @@
 <translation id="6355080345576803305">覆盖公用自助终端</translation>
 <translation id="6358450015545214790">这分别意味着什么？</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 条其他建议}other{# 条其他建议}}</translation>
-<translation id="6387754724289022810">若想在下次购物时更快捷地付款，请将您的卡片信息和帐单邮寄地址保存到您的 Google 帐号和此设备中。</translation>
+<translation id="6387754724289022810">若想在下次购物时更快捷地付款，请将您的付款卡信息和帐单邮寄地址保存到您的 Google 帐号和此设备中。</translation>
 <translation id="6397451950548600259">您计算机上的软件导致 Chrome 无法安全地连接到网络</translation>
 <translation id="6404511346730675251">修改书签</translation>
 <translation id="6410264514553301377">请输入“<ph name="CREDIT_CARD" />”的到期日期和银行卡验证码 (CVC)</translation>

@@ -364,7 +364,6 @@
 <translation id="1545775234664667895">已安装主题背景“<ph name="THEME_NAME" />”</translation>
 <translation id="1545786162090505744">网址（用“%s”代替搜索字词）</translation>
 <translation id="1546280085599573572">此扩展程序更改了您点击“主页”按钮后系统显示的页面。</translation>
-<translation id="1547572086206517271">需要刷新</translation>
 <translation id="1548132948283577726">一律不保存密码的网站会显示在此处。</translation>
 <translation id="1549788673239553762">“<ph name="APP_NAME" />”想访问 <ph name="VOLUME_NAME" />。它可能会修改或删除您的文件。</translation>
 <translation id="1553538517812678578">无限制</translation>
@@ -731,7 +730,6 @@
 <translation id="2128691215891724419">发生同步错误：请更新同步密码...</translation>
 <translation id="2129825002735785149">更新插件</translation>
 <translation id="2129904043921227933">发生同步错误：请更新同步密码...</translation>
-<translation id="2130949041518253417">同步后即可在您的所有设备上畅享合乎个人需求的浏览体验</translation>
 <translation id="2131077480075264">“<ph name="IMPORT_NAME" />”不允许安装“<ph name="APP_NAME" />”，因为无法进行此项安装</translation>
 <translation id="2135787500304447609">继续(&amp;R)</translation>
 <translation id="2136372518715274136">输入新密码</translation>
@@ -1683,7 +1681,6 @@
 <translation id="3576324189521867626">已成功安装</translation>
 <translation id="3578594933904494462">此标签页的内容正在共享中。</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt;希望与您拥有的以下群组共享打印机&lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt;：&lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;。如果您接受，该群组的所有成员都可以将内容发送到该打印机进行打印。</translation>
-<translation id="3582972582564653026">在您的所有设备上同步并个性化设置 Chrome</translation>
 <translation id="3584169441612580296">读取和更改您计算机上的照片、音乐和其他媒体</translation>
 <translation id="3587482841069643663">全部</translation>
 <translation id="358796204584394954">请在“<ph name="DEVICE_NAME" />”上输入以下代码进行配对：</translation>
@@ -2219,7 +2216,6 @@
 <translation id="4448844063988177157">正在搜索 Wi-Fi 网络...</translation>
 <translation id="4449996769074858870">该标签页正在播放音频。</translation>
 <translation id="4450974146388585462">诊断</translation>
-<translation id="4452426408005428395">不用了</translation>
 <translation id="445923051607553918">加入Wi-Fi网络</translation>
 <translation id="4462159676511157176">自定义域名服务器</translation>
 <translation id="4467100756425880649">Chrome 网上应用店扩展程序列表</translation>
@@ -2723,7 +2719,6 @@
 <translation id="5266113311903163739">证书授权中心导入错误</translation>
 <translation id="5269977353971873915">打印失败</translation>
 <translation id="5271549068863921519">保存密码</translation>
-<translation id="5275194674756975076">好的，开始刷新</translation>
 <translation id="5275352920323889391">狗</translation>
 <translation id="5275973617553375938">从 Google 云端硬盘恢复的文件</translation>
 <translation id="527605719918376753">将此标签页静音</translation>
@@ -3857,7 +3852,6 @@
 <translation id="7006634003215061422">下边距</translation>
 <translation id="7006844981395428048">$1 音频</translation>
 <translation id="7007648447224463482">在新窗口中打开所有网址</translation>
-<translation id="7008270479623533562">您需要刷新页面才能运行此扩展程序。若想在该网站上自动运行此扩展程序，请右键点击相应的扩展程序图标。</translation>
 <translation id="701080569351381435">显示源代码</translation>
 <translation id="7012372675181957985">您的 Google 帐号在 <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> 上可能有其他形式的浏览记录</translation>
 <translation id="7014174261166285193">安装失败。</translation>

@@ -367,7 +367,6 @@
 <translation id="1545775234664667895">Zainstalowano motyw „<ph name="THEME_NAME" />”</translation>
 <translation id="1545786162090505744">URL z parametrem %s (zapytanie)</translation>
 <translation id="1546280085599573572">To rozszerzenie ustawiło inną stronę wyświetlaną po kliknięciu przycisku strony startowej.</translation>
-<translation id="1547572086206517271">Wymagane jest odświeżenie</translation>
 <translation id="1548132948283577726">Tutaj będą wyświetlane witryny, które nigdy nie zapisują haseł.</translation>
 <translation id="1549788673239553762"><ph name="APP_NAME" /> chce uzyskać dostęp do dysku <ph name="VOLUME_NAME" />. Będzie mogła tam zmieniać i usuwać pliki.</translation>
 <translation id="1553538517812678578">nieograniczona</translation>
@@ -734,7 +733,6 @@
 <translation id="2128691215891724419">Błąd synchronizacji: zaktualizuj hasło synchronizacji.</translation>
 <translation id="2129825002735785149">Aktualizuj wtyczkę</translation>
 <translation id="2129904043921227933">Błąd synchronizacji: zaktualizuj hasło synchronizacji.</translation>
-<translation id="2130949041518253417">Synchronizacja umożliwia spersonalizowanie przeglądanie na Twoich różnych urządzeniach</translation>
 <translation id="2131077480075264">Nie można zainstalować elementu „<ph name="APP_NAME" />”, bo nie zezwala na to element „<ph name="IMPORT_NAME" />”</translation>
 <translation id="2135787500304447609">&amp;Wznów</translation>
 <translation id="2136372518715274136">Wpisz nowe hasło</translation>
@@ -1689,7 +1687,6 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="3576324189521867626">Zainstalowano</translation>
 <translation id="3578594933904494462">Treść tej karty jest udostępniana.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; chce udostępnić drukarkę &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; należącej do Ciebie grupie: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Jeśli się na to zgodzisz, wszyscy członkowie grupy będą mogli na niej drukować.</translation>
-<translation id="3582972582564653026">Synchronizuj dane Chrome i korzystaj z własnych ustawień przeglądarki na wielu urządzeniach</translation>
 <translation id="3584169441612580296">Odczyt i zmiana zdjęć, muzyki oraz innych multimediów na komputerze</translation>
 <translation id="3587482841069643663">Wszystkie</translation>
 <translation id="358796204584394954">Aby sparować, wpisz ten kod na urządzeniu „<ph name="DEVICE_NAME" />”:</translation>
@@ -2226,7 +2223,6 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="4448844063988177157">Trwa wyszukiwanie sieci Wi-Fi...</translation>
 <translation id="4449996769074858870">Ta karta odtwarza dźwięk.</translation>
 <translation id="4450974146388585462">Diagnozuj</translation>
-<translation id="4452426408005428395">Anuluj</translation>
 <translation id="445923051607553918">Połącz się z siecią Wi-Fi</translation>
 <translation id="4462159676511157176">Własne serwery nazw</translation>
 <translation id="4467100756425880649">Galeria Chrome Web Store</translation>
@@ -2736,7 +2732,6 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="5266113311903163739">Błąd importowania urzędu certyfikacji</translation>
 <translation id="5269977353971873915">Niepowodzenie drukowania</translation>
 <translation id="5271549068863921519">Zapisz hasło</translation>
-<translation id="5275194674756975076">OK, odśwież</translation>
 <translation id="5275352920323889391">Pies</translation>
 <translation id="5275973617553375938">Pliki odzyskane z Dysku Google</translation>
 <translation id="527605719918376753">Wycisz kartę</translation>
@@ -3871,7 +3866,6 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="7006634003215061422">Dolny margines</translation>
 <translation id="7006844981395428048">Plik dźwiękowy ($1)</translation>
 <translation id="7007648447224463482">Otwórz wszystkie w nowym oknie</translation>
-<translation id="7008270479623533562">Aby użyć tego rozszerzenia, musisz odświeżyć stronę. Jeśli chcesz, by uruchamiało się ono automatycznie na tej stronie, kliknij ikonę rozszerzenia prawym przyciskiem myszy.</translation>
 <translation id="701080569351381435">Wyświetl źródło</translation>
 <translation id="7012372675181957985">Inne rodzaje historii przeglądania mogą być nadal dostępne na Twoim koncie Google na <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7014174261166285193">Instalacja nie powiodła się.</translation>

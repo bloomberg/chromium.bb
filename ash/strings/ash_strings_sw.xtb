@@ -246,9 +246,6 @@
 <translation id="6521655319214113338">Kuingiza data kwa mwandiko wa mkono</translation>
 <translation id="6528179044667508675">Usinisumbue</translation>
 <translation id="6537270692134705506">Piga skrini picha</translation>
-<translation id="6580955892089546165">Kipengele hiki hukuruhusu kufikia kwa haraka mtumiaji yeyote aliyeingia katika akaunti bila ya kuhitaji nenosiri.
-
-Tumia kipengele hiki kwa akaunti unazoamini pekee.</translation>
 <translation id="6585808820553845416">Kipindi kitakwisha baada ya <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Tafuta+Shift+K</translation>
 <translation id="6650933572246256093">Kifaa cha Bluetooth cha "<ph name="DEVICE_NAME" />" kinaomba idhini ya kuoanisha. Tafadhali weka nenosiri hili kwenye kifaa hicho: <ph name="PASSKEY" /></translation>
@@ -306,7 +303,6 @@ Tumia kipengele hiki kwa akaunti unazoamini pekee.</translation>
 <translation id="7994370417837006925">Uwezo wa kuingia katika akaunti nyingi kwa wakati mmoja</translation>
 <translation id="8000066093800657092">Hakuna mtandao</translation>
 <translation id="8054466585765276473">Inakokotoa muda wa betri.</translation>
-<translation id="8056430285089645882">Nimeelewa, usioneshe hili tena</translation>
 <translation id="8098591350844501178">Acha kutuma skrini kwenye <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Imeunganishwa kwenye <ph name="NAME" /></translation>
 <translation id="813913629614996137">Inaanzisha…</translation>

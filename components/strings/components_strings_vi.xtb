@@ -639,7 +639,6 @@
 <translation id="5492298309214877701">Trang web trên mạng nội bộ của công ty, tổ chức hoặc trường học này có URL tương tự như trang web bên ngoài.
     <ph name="LINE_BREAK" />
     Hãy thử liên hệ với quản trị viên hệ thống của bạn.</translation>
-<translation id="5499929369096410817">Nhập mã bảo mật dành cho <ph name="CREDIT_CARD" />.  Mã này sẽ không được lưu.</translation>
 <translation id="5509780412636533143">Dấu trang được quản lý</translation>
 <translation id="5510766032865166053">Tệp này có thể đã bị di chuyển hoặc xóa.</translation>
 <translation id="5523118979700054094">Tên chính sách</translation>
@@ -697,7 +696,6 @@
 <translation id="5967867314010545767">Xóa khỏi lịch sử</translation>
 <translation id="5972020793760134803">Chuyển tab</translation>
 <translation id="5975083100439434680">Thu nhỏ</translation>
-<translation id="597552863672748783">Xác nhận mã bảo mật</translation>
 <translation id="598637245381783098">Không thể mở ứng dụng thanh toán</translation>
 <translation id="5989320800837274978">Cả máy chủ proxy cố định và URL tập lệnh .pac đều chưa được chỉ định.</translation>
 <translation id="5990559369517809815">Tiện ích đã chặn yêu cầu tới máy chủ.</translation>

@@ -246,9 +246,6 @@
 <translation id="6521655319214113338">Håndskrift-inndata</translation>
 <translation id="6528179044667508675">Ikke forstyrr</translation>
 <translation id="6537270692134705506">Ta skjermdump av skjermen</translation>
-<translation id="6580955892089546165">Med denne funksjonen får du rask tilgang til påloggede brukere uten å måtte skrive inn passord.
-
-Du bør bare bruke denne funksjonen med kontoer du stoler på.</translation>
 <translation id="6585808820553845416">Økten slutter om <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Søk + Shift + K</translation>
 <translation id="6650933572246256093">Bluetooth-enheten «<ph name="DEVICE_NAME" />» ber om tillatelse til å koble til. Skriv inn denne tilgangskoden på den aktuelle enheten: <ph name="PASSKEY" /></translation>
@@ -306,7 +303,6 @@ Du bør bare bruke denne funksjonen med kontoer du stoler på.</translation>
 <translation id="7994370417837006925">Multipålogging</translation>
 <translation id="8000066093800657092">Ingen nettverk</translation>
 <translation id="8054466585765276473">Beregner batteritid.</translation>
-<translation id="8056430285089645882">Den er grei. Ikke vis meg dette igjen.</translation>
 <translation id="8098591350844501178">Slutt å caste skjermen til <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Tilkoblet <ph name="NAME" /></translation>
 <translation id="813913629614996137">Initialiserer …</translation>

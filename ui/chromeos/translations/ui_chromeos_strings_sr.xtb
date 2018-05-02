@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sr">
+<translation id="1012876632442809908">Уређај са USB прикључком типа C (предњи порт)</translation>
 <translation id="1023220960495960452">Транслитерација (vanakkam → வணக்கம்)</translation>
 <translation id="1045157690796831147">Транслитерација (namaskar → നമസ്കാരം)</translation>
 <translation id="1065449928621190041">Језик тастатуре: француски (Канада)</translation>
@@ -10,6 +11,7 @@
 <translation id="1155759005174418845">каталонски</translation>
 <translation id="1208421848177517699">Транслитерација (namaste → નમસ્તે)</translation>
 <translation id="1278813325885878377">Мађарска QWERTY тастатура</translation>
+<translation id="1293264513303784526">Уређај са USB прикључком типа C (леви порт)</translation>
 <translation id="1310751437842832374">Транслитерација (mausam → ନମସ୍ତେ)</translation>
 <translation id="1337036551624197047">Језик тастатуре: чешки</translation>
 <translation id="1352103415082130575">Тајска тастатура (Pattachote)</translation>
@@ -25,6 +27,7 @@
 <translation id="164969095109328410">Chrome уређај</translation>
 <translation id="1829129547161959350">Пингвин</translation>
 <translation id="184633654410729720">Тајска тастатура (Kedmanee)</translation>
+<translation id="1864454756846565995">Уређај са USB прикључком типа C (задњи порт)</translation>
 <translation id="1921986354447415460">турска F тастатура</translation>
 <translation id="1931134289871235022">словачки</translation>
 <translation id="1936717151811561466">фински</translation>
@@ -52,6 +55,7 @@
 <translation id="2771816809568414714">Сир</translation>
 <translation id="2781645665747935084">белгијска</translation>
 <translation id="2790805296069989825">Језик тастатуре: руски</translation>
+<translation id="2844169650293029770">Уређај са USB прикључком типа C (леви предњи порт)</translation>
 <translation id="2870836398458454343">Транслитерација (marhaban ← مرحبا)</translation>
 <translation id="288024221176729610">чешки</translation>
 <translation id="2894654529758326923">Информације</translation>
@@ -75,7 +79,9 @@
 <translation id="3280987981688031357">Грамофонска плоча</translation>
 <translation id="3296763833017966289">грузијски</translation>
 <translation id="3338239663705455570">Језик тастатуре: словеначки</translation>
+<translation id="3371140690572404006">Уређај са USB прикључком типа C (десни предњи порт)</translation>
 <translation id="3399597614303179694">Македонска тастатура</translation>
+<translation id="3445925074670675829">Уређај са USB прикључком типа C</translation>
 <translation id="3494768541638400973">Google јапански метод уноса (за јапанску тастатуру)</translation>
 <translation id="3519867315646775981">Транслитерација (shalom ← שלום)</translation>
 <translation id="3522708245912499433">португалски</translation>
@@ -95,6 +101,7 @@
 <translation id="3910699493603749297">Кмерска тастатура</translation>
 <translation id="391445228316373457">Непалска тастатура (фонетска)</translation>
 <translation id="3958548648197196644">Киви</translation>
+<translation id="3995138139523574647">Уређај са USB прикључком типа C (десни задњи порт)</translation>
 <translation id="4070370845051020638">Mетод уноса за кантонски</translation>
 <translation id="4072248638558688893">Тамилска тастатура (фонетска)</translation>
 <translation id="4124935795427217608">Једнорог</translation>
@@ -141,6 +148,7 @@
 <translation id="5257456363153333584">Вилин коњиц</translation>
 <translation id="5319782540886810524">Језик тастатуре: летонски</translation>
 <translation id="5323213332664049067">Латинска Америка</translation>
+<translation id="5331975486040154427">Уређај са USB прикључком типа C (леви задњи порт)</translation>
 <translation id="5402367795255837559">Брајева азбука</translation>
 <translation id="5412637665001827670">Језик тастатуре: бугарски</translation>
 <translation id="5418923334382419584">Мјанмарска тастатура</translation>
@@ -177,6 +185,7 @@
 <translation id="6358884629796491903">Змај</translation>
 <translation id="6462109140674788769">Језик тастатуре: грчки</translation>
 <translation id="6466492211071551451">Ирска тастатура</translation>
+<translation id="6490471652906364588">Уређај са USB прикључком типа C (десни порт)</translation>
 <translation id="6503256918647795660">Језик тастатуре: француски (Швајцарска)</translation>
 <translation id="6505918941256367791">Тамилска тастатура (индијско писмо)</translation>
 <translation id="6509122719576673235">норвешки</translation>
@@ -195,6 +204,7 @@
 <translation id="6937152069980083337">Google јапански метод уноса (за америчку тастатуру)</translation>
 <translation id="6939777852457331078">Америчка Workman тастатура</translation>
 <translation id="6970230597523682626">бугарски</translation>
+<translation id="7098389117866926363">Уређај са USB прикључком типа C (леви задњи порт)</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">Транслитерација (salam → ሰላም)</translation>
 <translation id="7172053773111046550">Језик тастатуре: естонски</translation>
@@ -255,6 +265,7 @@
 <translation id="8900820606136623064">мађарски</translation>
 <translation id="8901822611024316615">Чешка QWERTY тастатура</translation>
 <translation id="8919081441417203123">дански</translation>
+<translation id="8938800817013097409">Уређај са USB прикључком типа C (задњи десни порт)</translation>
 <translation id="8960999352790021682">Бенгалска тастатура (фонетска)</translation>
 <translation id="9017798300203431059">руска фонетска</translation>
 <translation id="913758436357682283">Мјанмарска мјансан тастатура</translation>

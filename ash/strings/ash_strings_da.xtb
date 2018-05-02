@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
 <translation id="1012876632442809908">USB-C-enhed (port foran)</translation>
-<translation id="1013923882670373915">Bluetooth-enheden "<ph name="DEVICE_NAME" />" vil gerne have parringstilladelse. Indtast denne pinkode på den pågældende enhed: <ph name="PINCODE" /></translation>
+<translation id="1013923882670373915">Bluetooth-enheden "<ph name="DEVICE_NAME" />" vil gerne have parringstilladelse. Angiv denne pinkode på den pågældende enhed: <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">Styluspennen er ved at løbe tør for batteri</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
 <translation id="112308213915226829">Skjul hylde automatisk</translation>
@@ -247,12 +247,9 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6521655319214113338">Indtastning via håndskrift</translation>
 <translation id="6528179044667508675">Vil ikke forstyrres</translation>
 <translation id="6537270692134705506">Tag screenshot</translation>
-<translation id="6580955892089546165">Denne funktion giver dig hurtig adgang til alle brugere, der er logget ind, uden at du behøver at angive en adgangskode.
-
-Brug kun denne funktion til konti, du har tillid til.</translation>
 <translation id="6585808820553845416">Sessionen slutter om <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Søgetast+Shift+K</translation>
-<translation id="6650933572246256093">Bluetooth-enheden "<ph name="DEVICE_NAME" />" vil gerne have parringstilladelse. Indtast din adgangsnøgle på enheden: <ph name="PASSKEY" /></translation>
+<translation id="6650933572246256093">Bluetooth-enheden "<ph name="DEVICE_NAME" />" vil gerne have parringstilladelse. Angiv din adgangsnøgle på enheden: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Adgangskode</translation>
 <translation id="6691659475504239918">Søg+Shift+H</translation>
 <translation id="6696025732084565524">Dit aftagelige tastatur kræver en vigtig opdatering</translation>
@@ -307,7 +304,6 @@ Brug kun denne funktion til konti, du har tillid til.</translation>
 <translation id="7994370417837006925">Samlet login fra flere konti</translation>
 <translation id="8000066093800657092">Intet netværk</translation>
 <translation id="8054466585765276473">Beregner batteritid.</translation>
-<translation id="8056430285089645882">Det er forstået. Vis det ikke igen.</translation>
 <translation id="8098591350844501178">Stop med at caste skærmen til <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Forbundet til <ph name="NAME" /></translation>
 <translation id="813913629614996137">Initialiserer...</translation>

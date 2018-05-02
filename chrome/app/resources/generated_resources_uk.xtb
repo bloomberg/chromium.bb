@@ -367,7 +367,6 @@
 <translation id="1545775234664667895">Встановлено тему "<ph name="THEME_NAME" />"</translation>
 <translation id="1545786162090505744">URL-адреса з %s замість запита</translation>
 <translation id="1546280085599573572">Це розширення змінило сторінку, яка відкривається під час натискання кнопки "Домашня сторінка".</translation>
-<translation id="1547572086206517271">Оновіть сторінку</translation>
 <translation id="1548132948283577726">Тут відображатимуться сайти, які ніколи не зберігають паролі.</translation>
 <translation id="1549788673239553762">Додатку <ph name="APP_NAME" /> потрібен доступ до тому <ph name="VOLUME_NAME" />. Він може змінювати або видаляти ваші файли.</translation>
 <translation id="1553538517812678578">без обмежень</translation>
@@ -734,7 +733,6 @@
 <translation id="2128691215891724419">Помилка синхронізації. Оновіть парольну фразу для синхронізації...</translation>
 <translation id="2129825002735785149">Оновити плагін</translation>
 <translation id="2129904043921227933">Помилка синхронізації. Оновіть парольну фразу для синхронізації...</translation>
-<translation id="2130949041518253417">Синхронізуйте, щоб персоналізувати роботу у веб-переглядачі на всіх пристроях</translation>
 <translation id="2131077480075264">Не вдається встановити додаток <ph name="APP_NAME" />, оскільки він заборонений в <ph name="IMPORT_NAME" /></translation>
 <translation id="2135787500304447609">&amp;Відновити</translation>
 <translation id="2136372518715274136">Введіть новий пароль</translation>
@@ -1689,7 +1687,6 @@
 <translation id="3576324189521867626">Установлено</translation>
 <translation id="3578594933904494462">До вмісту цієї вкладки надано доступ.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; хоче надати групі &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;, якою ви керуєте, доступ до принтера &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt;. Якщо ви приймете це запрошення, усі учасники групи зможуть користуватися цим принтером.</translation>
-<translation id="3582972582564653026">Синхронізуйте та персоналізуйте роботу Chrome на всіх своїх пристроях</translation>
 <translation id="3584169441612580296">Читати й змінювати фотографії, музику та інші медіафайли на комп’ютері</translation>
 <translation id="3587482841069643663">Все</translation>
 <translation id="358796204584394954">Введіть цей код на пристрої <ph name="DEVICE_NAME" />, щоб підключити:</translation>
@@ -1740,7 +1737,7 @@
 <translation id="3646789916214779970">Установити тему за умовчанням</translation>
 <translation id="3648348069317717750">Виявлено пристрій <ph name="USB_DEVICE_NAME" /></translation>
 <translation id="3649138363871392317">Фотографію збережено</translation>
-<translation id="3650952250015018111">Надати додатку <ph name="APP_NAME" /> доступ:</translation>
+<translation id="3650952250015018111">Надати додатку "<ph name="APP_NAME" />" доступ:</translation>
 <translation id="3651488188562686558">Відключитися від Wi-Fi</translation>
 <translation id="3652817283076144888">Ініціалізація</translation>
 <translation id="3653999333232393305">Продовжити надавати хосту <ph name="HOST" /> доступ до вашого мікрофона</translation>
@@ -2226,7 +2223,6 @@
 <translation id="4448844063988177157">Пошук Wi-Fi мереж...</translation>
 <translation id="4449996769074858870">На цій вкладці відтворюється аудіофайл.</translation>
 <translation id="4450974146388585462">Діагностувати</translation>
-<translation id="4452426408005428395">Скасувати</translation>
 <translation id="445923051607553918">Увійти в мережу Wi-Fi</translation>
 <translation id="4462159676511157176">Імена серверів – персоналізовано</translation>
 <translation id="4467100756425880649">Галерея Веб-магазину Chrome</translation>
@@ -2736,7 +2732,6 @@
 <translation id="5266113311903163739">Помилка імпортування центру сертифікації</translation>
 <translation id="5269977353971873915">Помилка друку</translation>
 <translation id="5271549068863921519">Зберегти пароль</translation>
-<translation id="5275194674756975076">Оновити</translation>
 <translation id="5275352920323889391">Собака</translation>
 <translation id="5275973617553375938">Відновлені файли з Google Диска</translation>
 <translation id="527605719918376753">Вимкнути звук на вкладці</translation>
@@ -3871,7 +3866,6 @@
 <translation id="7006634003215061422">Нижнє поле</translation>
 <translation id="7006844981395428048">Звук у форматі $1</translation>
 <translation id="7007648447224463482">Відкривати в новому вікні</translation>
-<translation id="7008270479623533562">Щоб розширення почало працювати, оновіть сторінку. Щоб розширення автоматично працювало на цьому веб-сайті, правою кнопкою миші натисніть його значок.</translation>
 <translation id="701080569351381435">Переглянути джерело</translation>
 <translation id="7012372675181957985">Історія веб-перегляду також може зберігатися у вашому обліковому записі Google на сторінці <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7014174261166285193">Помилка встановлення.</translation>

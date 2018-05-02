@@ -645,7 +645,6 @@
 <translation id="5492298309214877701">Tällä yrityksen, organisaation tai oppilaitoksen intranetissä olevalla sivustolla on sama URL-osoite kuin ulkoisella verkkosivustolla.
     <ph name="LINE_BREAK" />
     Ota yhteyttä järjestelmänvalvojaasi.</translation>
-<translation id="5499929369096410817">Anna kortin <ph name="CREDIT_CARD" /> turvakoodi. Tätä koodia ei tallenneta.</translation>
 <translation id="5509780412636533143">Hallinnoidut kirjanmerkit</translation>
 <translation id="5510766032865166053">Se on voitu siirtää tai poistaa.</translation>
 <translation id="5523118979700054094">Käytännön nimi</translation>
@@ -705,7 +704,6 @@
 <translation id="5967867314010545767">Poista historiasta</translation>
 <translation id="5972020793760134803">Vaihda välilehdelle</translation>
 <translation id="5975083100439434680">Loitonna</translation>
-<translation id="597552863672748783">Vahvista turvakoodi</translation>
 <translation id="598637245381783098">Maksusovelluksen avaaminen ei onnistu.</translation>
 <translation id="5989320800837274978">Kiinteitä välityspalvelimia tai .pac-URL-osoitetta ei ole määritetty.</translation>
 <translation id="5990559369517809815">Laajennus esti palvelinpyynnöt.</translation>

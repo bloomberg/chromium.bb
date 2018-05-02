@@ -412,6 +412,27 @@ Si cette règle n'est pas configurée, le paramètre "BlockPopups" est utilisé 
           Lorsque cette règle n'est pas définie, aucun avertissement ne s'affiche.
 
           Cette valeur, qui doit être inférieure ou égale au délai d'inactivité, est définie en millisecondes.</translation>
+<translation id="2289578386193672044">Définit la liste des applications et des extensions qui sont installées en arrière-plan,
+          sans aucune intervention de l'utilisateur, et qui ne peuvent pas être désinstallées
+          ni désactivées par ce dernier. Toutes les autorisations demandées par les applications
+          ou les extensions sont accordées implicitement, sans intervention de l'utilisateur,
+          y compris n'importe quelle autre autorisation demandée par les futures versions
+          de l'application ou de l'extension. En outre, les autorisations sont accordées
+          pour les API d'extension enterprise.deviceAttributes et enterprise.platformKeys
+          (ces deux API ne sont pas disponibles pour les applications/extensions dont l'installation
+          n'est pas forcée).
+
+          Cette règle prévaut lors d'un conflit avec la règle <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Si une application ou une extension dont l'installation a été forcée est supprimée de la liste, <ph name="PRODUCT_NAME" /> la désinstalle automatiquement.
+
+          Pour les instances Windows qui ne sont pas associées à un domaine <ph name="MS_AD_NAME" />, l'installation forcée est limitée aux applications et aux extensions répertoriées sur le Chrome Web Store.
+
+          Notez que le code source de toute extension peut être modifié par les utilisateurs (cela pouvant entraîner son dysfonctionnement) via les outils pour les développeurs. Si cela pose problème, la règle <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> doit être définie.
+
+          Chaque élément de la règle correspond à une chaîne constituée d'un ID d'extension et d'une URL de mise à jour séparés par un point-virgule (<ph name="SEMICOLON" />). L'ID d'extension est la chaîne de 32 lettres qui se trouve, par exemple, dans <ph name="CHROME_EXTENSIONS_LINK" /> en mode développeur. L'URL de mise à jour, si elle est spécifiée, doit renvoyer à un fichier manifeste de mise à jour au format XML, comme décrit sur la page <ph name="LINK_TO_EXTENSION_DOC1" />. Par défaut, l'URL de mise à jour du Chrome Web Store est utilisée (cette URL est actuellement la suivante : "https://clients2.google.com/service/update2/crx"). Notez que l'URL de mise à jour spécifiée dans cette règle n'est utilisée que pour l'installation initiale. Toute mise à jour ultérieure de l'extension est effectuée avec l'URL indiquée dans le fichier manifeste de l'extension. Notez également qu'il était obligatoire de spécifier clairement l'URL de mise à jour dans <ph name="PRODUCT_NAME" /> (jusqu'à la version 67 comprise).
+
+          Par exemple, <ph name="EXTENSION_POLICY_EXAMPLE" /> installe l'application <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> à partir de l'URL de mise à jour standard du Chrome Web Store. Pour en savoir plus sur l'hébergement des extensions, consultez la page <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Si cette règle n'est pas configurée, aucune application ni extension n'est installée automatiquement. Toute application ou extension de <ph name="PRODUCT_NAME" /> peut être désinstallée.</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME" /> peut utiliser un service Web de Google pour corriger les erreurs d'orthographe. En cas d'activation de ce paramètre, ce service est toujours utilisé. En cas de désactivation de ce paramètre, il n'est jamais utilisé.
 
       Il reste toutefois possible de procéder à la correction orthographique à l'aide d'un dictionnaire téléchargé. Cette règle ne contrôle que l'utilisation du service en ligne.
@@ -718,6 +739,16 @@ Si cette règle n'est pas configurée, le paramètre "AllowJavaScript" est utili
           Cette règle est facultative. Si vous ne la définissez pas, aucun remplacement des termes de recherche n'est effectué.
 
           Cette règle ne s'applique que si la règle 'DefaultSearchProviderEnabled' est activée.</translation>
+<translation id="3056439054015239107">
+      Cette règle s'applique à l'écran de connexion. Veuillez également consulter la règle <ph name="SITE_PER_PROCESS_POLICY_NAME" /> qui s'applique à la session utilisateur. Nous vous recommandons de définir les deux règles sur la même valeur. Si les valeurs sont différentes, un retard peut être constaté lors de l'accès à une session utilisateur du fait de l'application de la valeur spécifiée par la règle relative aux utilisateurs.
+      Nous vous conseillons d'examiner le paramètre de la règle IsolateOrigins
+      pour obtenir le meilleur résultat, c'est-à-dire l'isolation avec un impact limité
+      sur les utilisateurs, et d'utiliser IsolateOrigins avec une liste des sites
+      que vous souhaitez isoler. Le paramètre SitePerProcess isole tous les sites.
+      Si cette règle est activée, chaque site exécute son propre processus.
+      Si cette règle est désactivée, aucune isolation de sites explicite n'est effectuée, et les tests en conditions réelles de IsolateOrigins et SitePerProcess sont désactivés. Les utilisateurs peuvent toujours activer SitePerProcess manuellement.
+      Si cette règle n'est pas configurée, l'utilisateur peut modifier ce paramètre.
+      </translation>
 <translation id="306887062252197004">Cette règle permet aux utilisateurs de la fonctionnalité WebDriver d'ignorer
       les règles pouvant affecter son fonctionnement.
 
@@ -883,6 +914,7 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="3660562134618097814">Transférer des cookies de fournisseurs d'identité SAML lors de la connexion</translation>
 <translation id="3709266154059827597">Configurer la liste noire d'installation des extensions</translation>
 <translation id="3711895659073496551">Arrêter</translation>
+<translation id="3715569262675717862">Authentification basée sur les certificats client</translation>
 <translation id="3736879847913515635">Autoriser l'ajout de personnes dans le gestionnaire d'utilisateurs</translation>
 <translation id="3737544779868348650">Nom d'hôte du réseau de l'appareil</translation>
 <translation id="3740754010292550733">Définir la période d'affichage des notifications de redémarrage pour mise à jour</translation>
@@ -1930,6 +1962,15 @@ Si cette règle n'est pas configurée, la valeur par défaut globale est utilis�
       Dans le cas où la connexion à un autre compte ne doit pas être autorisée par l'intermédiaire du mode navigation privée, pensez à bloquer ce mode à l'aide de la règle IncognitoModeAvailability.
 
       Notez que les utilisateurs pourront accéder aux services Google dans un état non authentifié en bloquant leurs cookies.</translation>
+<translation id="6738326937072482736">Configure la disponibilité et le comportement de la fonctionnalité de mise à jour du micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+
+      Les paramètres individuels peuvent être spécifiés dans les propriétés JSON :
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" /> : si vous définissez cette règle sur <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, les utilisateurs peuvent déclencher le flux Powerwash pour installer une mise à jour du micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" /> : si vous définissez cette règle sur <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, les utilisateurs peuvent invoquer le flux de mise à jour du micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" /> qui préserve l'état au niveau de l'appareil (y compris l'inscription d'entreprise), mais perd les données utilisateur. Ce flux de mise à jour est disponible à partir de la version 68.
+
+      Si cette règle n'est pas définie, la fonctionnalité de mise à jour du micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" /> n'est pas disponible.</translation>
 <translation id="6757438632136860443">Cette règle permet de définir une liste de formats d'URL spécifiant les sites qui sont autorisés à exécuter le plug-in "<ph name="FLASH_PLUGIN_NAME" />".
 
           Si cette règle n'est pas configurée, la valeur par défaut globale sera utilisée pour tous les sites à partir de la règle "DefaultPluginsSetting", si elle est définie, ou à défaut, à partir de la configuration personnelle de l'utilisateur.</translation>
@@ -1950,6 +1991,16 @@ Si cette règle n'est pas configurée, la valeur par défaut globale est utilis�
       Les informations relatives à la mémoire sont tout de même consignées sur cette page, quelle que soit l'option retenue, mais les tailles indiquées sont
       quantifiées et la fréquence des mises à jour est limitée pour des raisons de sécurité. Pour obtenir des données en temps réel précises,
       veuillez utiliser un outil tel que Telemetry.</translation>
+<translation id="6870914592443697993">
+      Cette règle s'applique à l'écran de connexion. Veuillez également consulter la règle <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> qui s'applique à la session utilisateur. Nous vous recommandons de définir les deux règles sur la même valeur. Si les valeurs sont différentes, un retard peut être constaté lors de l'accès à une session utilisateur du fait de l'application de la valeur spécifiée par la règle relative aux utilisateurs.
+      Si cette règle est activée, chacune des origines définies et répertoriées
+      dans une liste d'éléments séparés par une virgule exécute son propre processus.
+      Elle isole également les origines par sous-domaines. Par exemple, si vous indiquez
+      "https://example.com/", https://foo.example.com/ est également isolé en tant que partie
+      du site https://example.com/.
+      Si cette règle est désactivée, aucune isolation de sites explicite n'est effectuée, et les tests en conditions réelles de IsolateOrigins et SitePerProcess sont désactivés. Les utilisateurs peuvent toujours activer IsolateOrigins manuellement.
+      Si cette règle n'est pas configurée, les paramètres d'isolation de site par défaut de la plate-forme sont utilisés pour l'écran de connexion.
+      </translation>
 <translation id="6894178810167845842">URL de la page "Nouvel onglet"</translation>
 <translation id="6899705656741990703">Détecter automatiquement les paramètres de proxy</translation>
 <translation id="6903814433019432303">Cette politique n'est active qu'en mode Point de vente.
@@ -2215,6 +2266,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Si cette règle est définie sur "False", la mise à jour des composants est désactivée. Toutefois, certains composants échappent à cette règle : les mises à jour des composants sans code exécutable, qui n'affectent pas de façon significative le comportement du navigateur ou qui sont essentiels à la sécurité du navigateur ne seront pas désactivées.
       Ces composants peuvent inclure les listes de révocation de certificats et les données de navigation sécurisée.
       Pour en savoir plus sur la navigation sécurisée, consultez la page https://developers.google.com/safe-browsing.</translation>
+<translation id="7566878661979235378">Type d'authentification pour les connexions SAML</translation>
 <translation id="757395965347379751">Lorsque ce paramètre est activé, <ph name="PRODUCT_NAME" /> autorise les certificats signés par SHA-1 tant qu'ils sont validés et que leurs chaînes renvoient à un certificat CA installé localement.
 
       Notez que cette règle dépend de la pile de validation des certificats du système d'exploitation qui autorise les signatures SHA-1. Si la mise à jour d'un OS modifie la gestion des certificats SHA-1 par l'OS, cette règle n'aura plus d'effet. En outre, cette règle sera supprimée dans les environs du 1er janvier 2019.
@@ -2391,6 +2443,16 @@ Si ce paramètre est activé, cette machine peut découvrir et se connecter à d
 
 Si ce paramètre est désactivé et que les connexions UDP sortantes sont filtrées par le pare-feu, cette machine peut uniquement se connecter aux machines hôte au sein du réseau local.</translation>
 <translation id="7976157349247117979">Nom de la destination <ph name="PRODUCT_NAME" /></translation>
+<translation id="7978060394348264922">
+      Nous vous conseillons d'examiner le paramètre de la règle pour obtenir
+      le meilleur résultat, c'est-à-dire l'isolation avec un impact limité sur les utilisateurs,
+      et d'utiliser IsolateOrigins avec une liste des sites que vous souhaitez isoler.
+      Le paramètre SitePerProcess isole tous les sites.
+      Si cette règle est activée, chaque site exécute son propre processus.
+      Si cette règle est désactivée, aucune isolation de sites explicite n'est effectuée, et les tests en conditions réelles de IsolateOrigins et SitePerProcess sont désactivés. Les utilisateurs peuvent toujours activer SitePerProcess manuellement.
+      Si cette règle n'est pas configurée, l'utilisateur peut modifier ce paramètre.
+      Pour <ph name="PRODUCT_OS_NAME" />, nous vous recommandons de définir également la règle relative aux appareils <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> sur la même valeur. Si les valeurs spécifiées par les deux règles sont différentes, un retard peut être constaté lors de l'accès à une session utilisateur du fait de l'application de la valeur spécifiée par la règle relative aux utilisateurs.
+      </translation>
 <translation id="7980227303582973781">Aucune restriction particulière</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Faire pivoter l'écran de 0 degré</translation>
@@ -2591,6 +2653,13 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
           Si vous utilisez plusieurs serveurs, séparez leur nom par une virgule. Les caractères génériques (*) sont autorisés.
 
           Si vous ne définissez pas cette règle, <ph name="PRODUCT_NAME" /> tente d'identifier si le serveur est sur l'Intranet, auquel cas il répond aux requêtes IWA. Si le serveur est sur Internet, les requêtes IWA sont ignorées par <ph name="PRODUCT_NAME" />.</translation>
+<translation id="8667812577403206506">Permet de définir si votre appareil Chrome OS peut exécuter ou non des machines virtuelles.
+
+      Si cette règle est définie sur "True", l'appareil est autorisé à exécuter des machines virtuelles.
+      Si cette règle est définie sur "False", l'appareil n'est pas autorisé à exécuter de machines virtuelles.
+      Si vous modifiez cette règle en la définissant sur "False", elle est appliquée aux machines virtuelles qui vont être lancées, mais elle n'arrête pas celles qui le sont déjà.
+      Si cette règle n'est pas définie sur un appareil géré, l'appareil n'est pas autorisé à exécuter de machines virtuelles.
+      Les appareils non gérés sont autorisés à exécuter des machines virtuelles.</translation>
 <translation id="8672321184841719703">Cibler une version pour les mises à jour automatiques</translation>
 <translation id="867410340948518937">U2F (Deuxième facteur universel)</translation>
 <translation id="8685024486845674965">L'avertissement relatif à la protection par mot de passe est déclenché par la réutilisation d'un mot de passe</translation>
@@ -2712,6 +2781,7 @@ indique uniquement les imprimantes qui peuvent être choisies.
 
       Cette règle ne doit pas être activée si la règle <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> l'est également, car elles partagent la même fonctionnalité côté client. Dans ce cas, le service de synchronisation hébergé par Google est totalement désactivé.</translation>
 <translation id="8955719471735800169">Haut de page</translation>
+<translation id="8959992920425111821">Configuration par défaut</translation>
 <translation id="8960850473856121830">Les modèles de cette liste sont rapprochés de la source de sécurité
       de l'URL à l'origine de la demande. En cas de correspondance,
       l'accès aux appareils d'enregistrement audio est autorisé sans confirmation requise.
@@ -2722,6 +2792,16 @@ indique uniquement les imprimantes qui peuvent être choisies.
 <translation id="8976248126101463034">Autoriser l'authentification gnubby pour les hôtes d'accès à distance</translation>
 <translation id="8976531594979650914">Utiliser l'imprimante système par défaut</translation>
 <translation id="8992176907758534924">Interdire à tous les sites d'afficher des images</translation>
+<translation id="9034729899149506577">
+      Si cette règle est activée, chacune des origines définies et répertoriées
+      dans une liste d'éléments séparés par une virgule exécute son propre processus.
+      Elle isole également les origines par sous-domaines. Par exemple, si vous indiquez
+      "https://example.com/", https://foo.example.com/ est également isolé en tant que partie
+      du site https://example.com/.
+      Si cette règle est désactivée, aucune isolation de sites explicite n'est effectuée, et les tests en conditions réelles de IsolateOrigins et SitePerProcess sont désactivés. Les utilisateurs peuvent toujours activer IsolateOrigins manuellement.
+      Si cette règle n'est pas configurée, l'utilisateur peut modifier ce paramètre.
+      Pour <ph name="PRODUCT_OS_NAME" />, nous vous recommandons de définir également la règle relative aux appareils <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> sur la même valeur. Si les valeurs spécifiées par les deux règles sont différentes, un retard peut être constaté lors de l'accès à une session utilisateur du fait de l'application de la valeur spécifiée par la règle relative aux utilisateurs.
+      </translation>
 <translation id="9035964157729712237">Identifiants d'extension à exclure de la liste noire</translation>
 <translation id="9042911395677044526">Permet de transférer l'application de la configuration réseau par utilisateur vers un appareil utilisant <ph name="PRODUCT_OS_NAME" />. La configuration réseau correspond à une chaîne formatée par JSON conformément au format de configuration de réseau ouvert, décrit sous <ph name="ONC_SPEC_URL" />.</translation>
 <translation id="9084985621503260744">Indiquer si l'activité vidéo a une incidence sur la gestion de l'alimentation</translation>
@@ -2773,6 +2853,13 @@ Si cette règle n'est pas configurée, ce paramètre est activé et l'utilisateu
 <translation id="9187743794267626640">Désactiver le montage de périphériques de stockage externe</translation>
 <translation id="9197740283131855199">Pourcentage d'adaptation du délai d'assombrissement de l'écran si l'utilisateur devient actif après la réduction de la luminosité</translation>
 <translation id="9200828125069750521">Paramètres pour l'URL d'image utilisant POST</translation>
+<translation id="9210953373038593554">Configure le type d'authentification pour les connexions SAML.
+
+      Si cette règle n'est pas configurée ou si elle est définie sur "Par défaut" (valeur 0), le comportement des connexions SAML est déterminé par le navigateur en fonction d'autres facteurs. Dans le cas le plus élémentaire, l'authentification des utilisateurs et la protection des données utilisateur mises en cache reposent sur les mots de passe saisis manuellement par les utilisateurs.
+
+      Si cette règle est définie sur "ClientCertificate" (valeur 1), l'authentification par certificat client est utilisée pour les nouveaux utilisateurs ajoutés qui se connectent via SAML. Ces derniers n'emploient pas de mot de passe, et leurs données locales mises en cache sont protégées par les clés de chiffrement correspondantes. Par exemple, ce paramètre permet de configurer l'authentification des utilisateurs par carte à puce (notez que les applications middleware utilisant une carte à puce doivent être installées conformément à la règle DeviceLoginScreenAppInstallList).
+
+      Cette règle ne concerne que les utilisateurs qui s'authentifient avec SAML.</translation>
 <translation id="9213347477683611358">Configurez l'image de fond d'écran qui s'affiche sur l'écran de connexion de l'appareil si aucun utilisateur ne s'est encore connecté à celui-ci. Pour définir cette règle, indiquez l'URL à laquelle l'appareil Chrome OS peut télécharger l'image de fond d'écran ainsi qu'un hachage chiffré, utilisé pour vérifier l'intégrité du téléchargement. L'image doit être au format JPEG et ne doit pas dépasser 16 Mo. L'URL doit être accessible sans authentification. L'image de fond d'écran est téléchargée et mise en cache. Elle est à nouveau téléchargée dès que l'URL ou le hachage sont modifiés.
 
       La règle doit prendre la forme d'une chaîne indiquant l'URL et le hachage au format JSON, conformément à l'exemple suivant :

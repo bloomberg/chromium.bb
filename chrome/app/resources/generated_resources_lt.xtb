@@ -367,7 +367,6 @@
 <translation id="1545775234664667895">Įdiegta „<ph name="THEME_NAME" />“ tema</translation>
 <translation id="1545786162090505744">URL su %s užklausos viet.</translation>
 <translation id="1546280085599573572">Šis plėtinys pakeitė puslapį, kuris rodomas spustelėjus pagrindinio puslapio mygtuką.</translation>
-<translation id="1547572086206517271">Būtina atnaujinti</translation>
 <translation id="1548132948283577726">Čia bus rodomos svetainės, kuriose niekada nesaugomi slaptažodžiai.</translation>
 <translation id="1549788673239553762">„<ph name="APP_NAME" />“ nori pasiekti „<ph name="VOLUME_NAME" />“. Programa galės keisti arba ištrinti failus.</translation>
 <translation id="1553538517812678578">neribotas</translation>
@@ -734,7 +733,6 @@
 <translation id="2128691215891724419">Sinchronizavimo klaida: atnaujinkite sinchronizavimo slaptafrazę...</translation>
 <translation id="2129825002735785149">Atnaujinti papildinį</translation>
 <translation id="2129904043921227933">Sinchronizavimo klaida: atnaujinkite sinchronizavimo slaptafrazę...</translation>
-<translation id="2130949041518253417">Sinchronizuokite, kad galėtumėte naudotis suasmenintomis naršymo funkcijomis skirtinguose įrenginiuose</translation>
 <translation id="2131077480075264">Nepavyko įdiegti „<ph name="APP_NAME" />“, nes to neleidžia „<ph name="IMPORT_NAME" />“</translation>
 <translation id="2135787500304447609">&amp;Atnaujinti</translation>
 <translation id="2136372518715274136">Įveskite naują slaptažodį</translation>
@@ -1689,7 +1687,6 @@ Jei reikia daugiau informacijos, apsilankykite <ph name="BEGIN_LINK" />pagalbos 
 <translation id="3576324189521867626">Sėkmingai įdiegta</translation>
 <translation id="3578594933904494462">Šio skirtuko lapo turinys bendrinamas.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; nori bendrinti spausdintuvą &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; su jums priklausančia grupe &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Jei sutiksite, visi grupės nariai galės spausdinti naudodami šį spausdintuvą.</translation>
-<translation id="3582972582564653026">Sinchronizuokite ir suasmeninkite „Chrome“ skirtinguose įrenginiuose</translation>
 <translation id="3584169441612580296">Skaityti ir keisti nuotraukas, muziką ir kitą mediją iš kompiuterio</translation>
 <translation id="3587482841069643663">Visi</translation>
 <translation id="358796204584394954">Įveskite šį kodą įrenginyje „<ph name="DEVICE_NAME" />“, kad jį susietumėte:</translation>
@@ -2226,7 +2223,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="4448844063988177157">Ieškoma „Wi-Fi“ tinklų...</translation>
 <translation id="4449996769074858870">Šiame skirtuko lape leidžiamas garso įrašas.</translation>
 <translation id="4450974146388585462">Diagnozuoti</translation>
-<translation id="4452426408005428395">Nepaisyti</translation>
 <translation id="445923051607553918">Prisijungti prie „Wi-Fi“ tinklo</translation>
 <translation id="4462159676511157176">Tinkintų pavadinimų serveriai</translation>
 <translation id="4467100756425880649">„Chrome“ internetinės parduotuvės galerija</translation>
@@ -2736,7 +2732,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="5266113311903163739">Sertifikavimo institucijos importavimo klaida</translation>
 <translation id="5269977353971873915">Spausdinant įvyko klaida</translation>
 <translation id="5271549068863921519">Išsaugoti slaptažodį</translation>
-<translation id="5275194674756975076">Gerai, atnaujinti</translation>
 <translation id="5275352920323889391">Šuo</translation>
 <translation id="5275973617553375938">Atkurti failai iš „Google“ disko</translation>
 <translation id="527605719918376753">Nutildyti skirtuko garsą</translation>
@@ -3872,7 +3867,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="7006634003215061422">Apatinė paraštė</translation>
 <translation id="7006844981395428048">$1 garso įrašas</translation>
 <translation id="7007648447224463482">Atidaryti viską naujame lange</translation>
-<translation id="7008270479623533562">Kad galėtumėte paleisti šį plėtinį, reikės atnaujinti puslapį. Šį plėtinį šioje svetainėje galite paleisti automatiškai dešiniuoju pelės klavišu spustelėję plėtinio piktogramą.</translation>
 <translation id="701080569351381435">Žiūrėti šaltinį</translation>
 <translation id="7012372675181957985">Adresu <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> gali būti pateikta kitų formų jūsų „Google“ paskyros naršymo istorija</translation>
 <translation id="7014174261166285193">Nepavyko įdiegti.</translation>

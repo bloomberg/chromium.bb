@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fa">
+<translation id="1012876632442809908">‏دستگاه USB-C (درگاه جلو)</translation>
 <translation id="1023220960495960452">‏نویسه‌گردانی (vanakkam ← ‏வணக்கம்)</translation>
 <translation id="1045157690796831147">‏نویسه‌گردانی (namaskar ← ‏നമസ്കാരം)</translation>
 <translation id="1065449928621190041">صفحه‌کلید کانادایی فرانسوی</translation>
@@ -10,6 +11,7 @@
 <translation id="1155759005174418845">کاتالان</translation>
 <translation id="1208421848177517699">‏نویسه‌گردانی (namaste ← ‏નમસ્તે)</translation>
 <translation id="1278813325885878377">‏صفحه‌کلید QWERTY مجارستانی</translation>
+<translation id="1293264513303784526">‏دستگاه USB-C (درگاه سمت چپ)</translation>
 <translation id="1310751437842832374">‏نویسه‌گردانی (mausam ← ‏ନମସ୍ତେ)</translation>
 <translation id="1337036551624197047">صفحه‌کلید چک</translation>
 <translation id="1352103415082130575">صفحه‌کلید تایلندی (پاتاشوت)</translation>
@@ -25,6 +27,7 @@
 <translation id="164969095109328410">‏دستگاه Chrome</translation>
 <translation id="1829129547161959350">پنگوئن</translation>
 <translation id="184633654410729720">صفحه‌کلید تایلندی (کدمانی)</translation>
+<translation id="1864454756846565995">‏دستگاه USB-C (درگاه عقب)</translation>
 <translation id="1921986354447415460">‏صفحه‌کلید ترکی F</translation>
 <translation id="1931134289871235022">اسلواکی</translation>
 <translation id="1936717151811561466">فنلاندی</translation>
@@ -52,6 +55,7 @@
 <translation id="2771816809568414714">پنیر</translation>
 <translation id="2781645665747935084">بلژیکی</translation>
 <translation id="2790805296069989825">صفحه‌کلید روسی</translation>
+<translation id="2844169650293029770">‏دستگاه USB-C (درگاه جلوی سمت چپ)</translation>
 <translation id="2870836398458454343">‏نویسه‌گردانی (marhaban ← مرحبا)</translation>
 <translation id="288024221176729610">چک</translation>
 <translation id="2894654529758326923">اطلاعات</translation>
@@ -75,7 +79,9 @@
 <translation id="3280987981688031357">صفحه گرامافون</translation>
 <translation id="3296763833017966289">گرجستانی</translation>
 <translation id="3338239663705455570">صفحه‌کلید اسلوونیایی</translation>
+<translation id="3371140690572404006">‏دستگاه USB-C (درگاه جلوی سمت راست)</translation>
 <translation id="3399597614303179694">صفحه‌کلید مقدونی</translation>
+<translation id="3445925074670675829">‏دستگاه USB-C</translation>
 <translation id="3494768541638400973">‏ورودی ژاپنی Google (برای صفحه‌کلید ژاپنی)</translation>
 <translation id="3519867315646775981">‏نویسه‌گردانی (shalom ← ‏שלום)</translation>
 <translation id="3522708245912499433">پرتغالی</translation>
@@ -95,6 +101,7 @@
 <translation id="3910699493603749297">صفحه‌کلید خمری</translation>
 <translation id="391445228316373457">صفحه‌کلید نپالی (آوایی)</translation>
 <translation id="3958548648197196644">کیوی</translation>
+<translation id="3995138139523574647">‏دستگاه USB-C (درگاه عقب سمت راست)</translation>
 <translation id="4070370845051020638">روش ورودی کانتونی</translation>
 <translation id="4072248638558688893">صفحه‌‌کلید تامیل (آوایی)</translation>
 <translation id="4124935795427217608">تک‌شاخ</translation>
@@ -141,6 +148,7 @@
 <translation id="5257456363153333584">سنجاقک</translation>
 <translation id="5319782540886810524">صفحه‌کلید لتونیایی</translation>
 <translation id="5323213332664049067">آمریکای لاتین</translation>
+<translation id="5331975486040154427">‏دستگاه USB-C (درگاه عقب سمت چپ)</translation>
 <translation id="5402367795255837559">بریل</translation>
 <translation id="5412637665001827670">صفحه‌کلید بلغاری</translation>
 <translation id="5418923334382419584">صفحه‌کلید میانماری</translation>
@@ -177,6 +185,7 @@
 <translation id="6358884629796491903">اژدها</translation>
 <translation id="6462109140674788769">صفحه‌کلید یونانی</translation>
 <translation id="6466492211071551451">صفحه‌کلید ایرلندی</translation>
+<translation id="6490471652906364588">‏دستگاه USB-C (درگاه سمت راست)</translation>
 <translation id="6503256918647795660">صفحه‌کلید سوئیسی فرانسوی</translation>
 <translation id="6505918941256367791">صفحه‌کلید تامیل (حروف هندی)</translation>
 <translation id="6509122719576673235">نروژی</translation>
@@ -195,6 +204,7 @@
 <translation id="6937152069980083337">‏ورودی ژاپنی Google (برای صفحه‌کلید آمریکایی)</translation>
 <translation id="6939777852457331078">‏صفحه‌کلید US Workman</translation>
 <translation id="6970230597523682626">بلغاری</translation>
+<translation id="7098389117866926363">‏دستگاه USB-C (درگاه عقب سمت چپ)</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">‏نویسه‌گردانی (salam ← ‏ሰላም)</translation>
 <translation id="7172053773111046550">صفحه‌کلید استونیایی</translation>
@@ -255,6 +265,7 @@
 <translation id="8900820606136623064">مجارستانی</translation>
 <translation id="8901822611024316615">‏صفحه‌کلید QWERTY چک</translation>
 <translation id="8919081441417203123">دانمارکی</translation>
+<translation id="8938800817013097409">‏دستگاه USB-C (درگاه عقب سمت راست)</translation>
 <translation id="8960999352790021682">صفحه‌کلید بنگالی (آوایی)</translation>
 <translation id="9017798300203431059">آوایی روسیه</translation>
 <translation id="913758436357682283">صفحه‌کلید میانسان میانماری</translation>

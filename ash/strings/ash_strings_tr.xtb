@@ -247,9 +247,6 @@
 <translation id="6521655319214113338">El yazısı girişi</translation>
 <translation id="6528179044667508675">Rahatsız etmeyin</translation>
 <translation id="6537270692134705506">Ekran görüntüsünü kaydet</translation>
-<translation id="6580955892089546165">Bu özellik oturum açmış tüm kullanıcılara şifre gerektirmeden hızlı bir şekilde erişmenize olanak verir.
-
-Bu özelliği sadece güvendiğiniz hesaplarda kullanın.</translation>
 <translation id="6585808820553845416">Oturumun süresi <ph name="SESSION_TIME_REMAINING" /> içinde bitiyor.</translation>
 <translation id="6627638273713273709">Ara+Üst Karakter+K</translation>
 <translation id="6650933572246256093">"<ph name="DEVICE_NAME" />" adlı Bluetooth cihaz eşleme izni istiyor. Lütfen söz konusu cihazda bu parolayı girin: <ph name="PASSKEY" /></translation>
@@ -307,7 +304,6 @@ Bu özelliği sadece güvendiğiniz hesaplarda kullanın.</translation>
 <translation id="7994370417837006925">Çoklu oturum açma</translation>
 <translation id="8000066093800657092">Ağ yok</translation>
 <translation id="8054466585765276473">Pilin süresi hesaplanıyor.</translation>
-<translation id="8056430285089645882">Anladım, bunu bir daha gösterme.</translation>
 <translation id="8098591350844501178">Ekranın <ph name="RECEIVER_NAME" /> cihazına yayınını durdur</translation>
 <translation id="8132793192354020517"><ph name="NAME" /> ağına bağlanıldı</translation>
 <translation id="813913629614996137">İlk kullanıma hazırlanıyor...</translation>

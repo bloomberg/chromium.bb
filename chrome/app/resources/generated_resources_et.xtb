@@ -367,7 +367,6 @@
 <translation id="1545775234664667895">Teema „<ph name="THEME_NAME" />“ installitud</translation>
 <translation id="1545786162090505744">URL, kus päringu kohal on %s</translation>
 <translation id="1546280085599573572">See laiendus muutis seda, milline leht kuvatakse avalehe nupul klõpsamisel.</translation>
-<translation id="1547572086206517271">Vajalik on värskendamine</translation>
 <translation id="1548132948283577726">Siin kuvatakse saidid, millel paroole ei salvestata.</translation>
 <translation id="1549788673239553762"><ph name="APP_NAME" /> soovib juurdepääsu seadmele <ph name="VOLUME_NAME" />. See võib teie faile muuta või need kustutada.</translation>
 <translation id="1553538517812678578">piiranguteta</translation>
@@ -731,7 +730,6 @@
 <translation id="2128691215891724419">Sünkroonimisviga: värskendage sünkroonimisparooli ...</translation>
 <translation id="2129825002735785149">Pistikprogrammi värskendamine</translation>
 <translation id="2129904043921227933">Sünkroonimisviga: värskendage sünkroonimisparooli ...</translation>
-<translation id="2130949041518253417">Kasutage sünkroonimist kõigis seadmetes sirvimiskogemuse isikupärastamiseks</translation>
 <translation id="2131077480075264">Rakendust <ph name="APP_NAME" /> ei saa installida, sest <ph name="IMPORT_NAME" /> ei luba seda</translation>
 <translation id="2135787500304447609">&amp;Taasta</translation>
 <translation id="2136372518715274136">Sisestage uus parool</translation>
@@ -1683,7 +1681,6 @@ Lisateabe saamiseks külastage meie <ph name="BEGIN_LINK" />abikeskust<ph name="
 <translation id="3576324189521867626">Installimine õnnestus</translation>
 <translation id="3578594933904494462">Selle vahekaardi sisu jagatakse.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; soovib jagada printerit &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; teie rühmaga &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Kui nõustute, saavad printerit kasutada ka kõik rühmaliikmed.</translation>
-<translation id="3582972582564653026">Sünkroonige ja isikupärastage Chrome kõigis oma seadmetes</translation>
 <translation id="3584169441612580296">Arvutis olevate fotode, muusika ja muu meedia lugemine ja muutmine</translation>
 <translation id="3587482841069643663">Kõik</translation>
 <translation id="358796204584394954">Sisestage seadmes „<ph name="DEVICE_NAME" />” sidumiseks see kood:</translation>
@@ -2216,7 +2213,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="4448844063988177157">WiFi võrkude otsimine ...</translation>
 <translation id="4449996769074858870">See vahekaart esitab heli.</translation>
 <translation id="4450974146388585462">Diagnoosi</translation>
-<translation id="4452426408005428395">Siiski mitte</translation>
 <translation id="445923051607553918">WiFi-võrguga ühinemine</translation>
 <translation id="4462159676511157176">Kohandatud nimeserverid</translation>
 <translation id="4467100756425880649">Chrome'i veebipoe galerii</translation>
@@ -2723,7 +2719,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="5266113311903163739">Sertifitseerimisorgani impordi viga</translation>
 <translation id="5269977353971873915">Printimine nurjus</translation>
 <translation id="5271549068863921519">Salvesta parool</translation>
-<translation id="5275194674756975076">OK, värskenda</translation>
 <translation id="5275352920323889391">Koer</translation>
 <translation id="5275973617553375938">Google Drive'ist taastatud failid</translation>
 <translation id="527605719918376753">Summuta vahekaart</translation>
@@ -3852,7 +3847,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="7006634003215061422">Alumine veeris</translation>
 <translation id="7006844981395428048">$1-heli</translation>
 <translation id="7007648447224463482">Ava kõik uues aknas</translation>
-<translation id="7008270479623533562">Selle laienduse käitamiseks peate lehte värskendama. Laienduse saate sellel saidil automaatselt käitada, kui paremklõpsate laienduse ikoonil.</translation>
 <translation id="701080569351381435">Kuva Lähtekood</translation>
 <translation id="7012372675181957985">Aadressil <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> võib teie Google'i kontol olla muus vormis sirvimisajalugu</translation>
 <translation id="7014174261166285193">Installimine ebaõnnestus.</translation>

@@ -249,9 +249,6 @@
 <translation id="6521655319214113338">Käsinkirjoitus</translation>
 <translation id="6528179044667508675">Älä häiritse</translation>
 <translation id="6537270692134705506">Tallenna kuvakaappaus koko näkymästä</translation>
-<translation id="6580955892089546165">Tämän ominaisuuden avulla kaikkia kirjautuneita käyttäjätilejä voi käyttää ilman salasanaa.
-
-Käytä tätä ominaisuutta vain luotettavien tilien kanssa.</translation>
 <translation id="6585808820553845416">Istunnon loppumiseen on <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Haku+Vaihto+K</translation>
 <translation id="6650933572246256093">Bluetooth-laite <ph name="DEVICE_NAME" /> pyytää lupaa laiteparin muodostamiseen. Anna tämä avain kyseisellä laitteella: <ph name="PASSKEY" /></translation>
@@ -309,7 +306,6 @@ Käytä tätä ominaisuutta vain luotettavien tilien kanssa.</translation>
 <translation id="7994370417837006925">Kirjautuminen useaan tiliin</translation>
 <translation id="8000066093800657092">Ei verkkoa</translation>
 <translation id="8054466585765276473">Lasketaan akun kesto.</translation>
-<translation id="8056430285089645882">Ymmärrän, älä näytä uudelleen.</translation>
 <translation id="8098591350844501178">Lopeta suoratoisto: <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Yhteys muodostettu verkkoon <ph name="NAME" /></translation>
 <translation id="813913629614996137">Käynnistetään…</translation>
