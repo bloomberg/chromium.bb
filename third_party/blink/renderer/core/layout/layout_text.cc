@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/inline_box_traversal.h"
 #include "third_party/blink/renderer/core/editing/iterators/text_iterator.h"
 #include "third_party/blink/renderer/core/editing/text_affinity.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -689,11 +690,9 @@ CreatePositionWithAffinityForBoxAfterAdjustingOffsetForBiDi(
 
     if (prev_box && prev_box->BidiLevel() > box->BidiLevel()) {
       // e.g. left of B in aDC12BAb
-      const InlineBox* leftmost_box;
-      do {
-        leftmost_box = prev_box;
-        prev_box = leftmost_box->PrevLeafChildIgnoringLineBreak();
-      } while (prev_box && prev_box->BidiLevel() > box->BidiLevel());
+      const InlineBox* leftmost_box =
+          InlineBoxTraversal::FindLeftBoundaryOfBidiRunIgnoringLineBreak(
+              *prev_box, box->BidiLevel());
       return CreatePositionWithAffinityForBox(
           leftmost_box, leftmost_box->CaretRightmostOffset(),
           should_affinity_be_downstream);
@@ -701,12 +700,9 @@ CreatePositionWithAffinityForBoxAfterAdjustingOffsetForBiDi(
 
     if (!prev_box || prev_box->BidiLevel() < box->BidiLevel()) {
       // e.g. left of D in aDC12BAb
-      const InlineBox* rightmost_box;
-      const InlineBox* next_box = box;
-      do {
-        rightmost_box = next_box;
-        next_box = rightmost_box->NextLeafChildIgnoringLineBreak();
-      } while (next_box && next_box->BidiLevel() >= box->BidiLevel());
+      const InlineBox* rightmost_box =
+          InlineBoxTraversal::FindRightBoundaryOfEntireBidiRunIgnoringLineBreak(
+              *box, box->BidiLevel());
       return CreatePositionWithAffinityForBox(
           rightmost_box,
           box->IsLeftToRightDirection() ? rightmost_box->CaretMaxOffset()
@@ -718,20 +714,19 @@ CreatePositionWithAffinityForBoxAfterAdjustingOffsetForBiDi(
                                             should_affinity_be_downstream);
   }
 
+  // offset is on the right edge
+
   const InlineBox* next_box = box->NextLeafChildIgnoringLineBreak();
   if (next_box && next_box->BidiLevel() == box->BidiLevel()) {
     return CreatePositionWithAffinityForBox(box, box->CaretRightmostOffset(),
                                             should_affinity_be_downstream);
   }
 
-  // offset is on the right edge
   if (next_box && next_box->BidiLevel() > box->BidiLevel()) {
     // e.g. right of C in aDC12BAb
-    const InlineBox* rightmost_box;
-    do {
-      rightmost_box = next_box;
-      next_box = rightmost_box->NextLeafChildIgnoringLineBreak();
-    } while (next_box && next_box->BidiLevel() > box->BidiLevel());
+    const InlineBox* rightmost_box =
+        InlineBoxTraversal::FindRightBoundaryOfBidiRunIgnoringLineBreak(
+            *next_box, box->BidiLevel());
     return CreatePositionWithAffinityForBox(
         rightmost_box, rightmost_box->CaretLeftmostOffset(),
         should_affinity_be_downstream);
@@ -739,12 +734,9 @@ CreatePositionWithAffinityForBoxAfterAdjustingOffsetForBiDi(
 
   if (!next_box || next_box->BidiLevel() < box->BidiLevel()) {
     // e.g. right of A in aDC12BAb
-    const InlineBox* leftmost_box;
-    const InlineBox* prev_box = box;
-    do {
-      leftmost_box = prev_box;
-      prev_box = leftmost_box->PrevLeafChildIgnoringLineBreak();
-    } while (prev_box && prev_box->BidiLevel() >= box->BidiLevel());
+    const InlineBox* leftmost_box =
+        InlineBoxTraversal::FindLeftBoundaryOfEntireBidiRunIgnoringLineBreak(
+            *box, box->BidiLevel());
     return CreatePositionWithAffinityForBox(
         leftmost_box,
         box->IsLeftToRightDirection() ? leftmost_box->CaretMinOffset()
