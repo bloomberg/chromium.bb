@@ -12,7 +12,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -30,6 +29,7 @@
 #include "components/password_manager/core/browser/form_fetcher_impl.h"
 #include "components/password_manager/core/browser/form_saver.h"
 #include "components/password_manager/core/browser/log_manager.h"
+#include "components/password_manager/core/browser/password_form_filling.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
@@ -63,11 +63,6 @@ bool DoesStringContainOnlyDigits(const base::string16& s) {
 // Heuristics to determine that a string is very unlikely to be a username.
 bool IsProbablyNotUsername(const base::string16& s) {
   return !s.empty() && DoesStringContainOnlyDigits(s) && s.size() < 3;
-}
-
-bool ShouldShowInitialPasswordAccountSuggestions() {
-  return base::FeatureList::IsEnabled(
-      password_manager::features::kFillOnAccountSelect);
 }
 
 // Update |credential| to reflect usage.
@@ -632,57 +627,12 @@ void PasswordFormManager::ProcessFrame(
 
 void PasswordFormManager::ProcessFrameInternal(
     const base::WeakPtr<PasswordManagerDriver>& driver) {
-  DCHECK_EQ(PasswordForm::SCHEME_HTML, observed_form_.scheme);
   if (!driver)
     return;
-
-  if (IsBlacklisted())
-    driver->MatchingBlacklistedFormFound();
-
-  driver->AllowPasswordGenerationForForm(observed_form_);
-
-  if (best_matches_.empty()) {
-    driver->InformNoSavedCredentials();
-    metrics_recorder_->RecordFillEvent(
-        PasswordFormMetricsRecorder::kManagerFillEventNoCredential);
-    return;
-  }
-
-  // Proceed to autofill.
-  // Note that we provide the choices but don't actually prefill a value if:
-  // (1) we are in Incognito mode, or
-  // (2) if it matched using public suffix domain matching, or
-  // (3) the form is change password form.
-  bool wait_for_username = client_->IsIncognito() ||
-                           preferred_match_->is_public_suffix_match ||
-                           observed_form_.IsPossibleChangePasswordForm();
-  if (wait_for_username) {
-    metrics_recorder_->SetManagerAction(
-        PasswordFormMetricsRecorder::kManagerActionNone);
-    metrics_recorder_->RecordFillEvent(
-        PasswordFormMetricsRecorder::kManagerFillEventBlockedOnInteraction);
-  } else {
-    metrics_recorder_->SetManagerAction(
-        PasswordFormMetricsRecorder::kManagerActionAutofilled);
-    metrics_recorder_->RecordFillEvent(
-        PasswordFormMetricsRecorder::kManagerFillEventAutofilled);
-    base::RecordAction(base::UserMetricsAction("PasswordManager_Autofilled"));
-  }
-  if (ShouldShowInitialPasswordAccountSuggestions()) {
-    // This is for the fill-on-account-select experiment. Instead of autofilling
-    // found usernames and passwords on load, this instructs the renderer to
-    // return with any found password forms so a list of password account
-    // suggestions can be drawn.
-    password_manager_->ShowInitialPasswordAccountSuggestions(
-        driver.get(), observed_form_, best_matches_, *preferred_match_,
-        wait_for_username);
-  } else {
-    // If fill-on-account-select is not enabled, continue with autofilling any
-    // password forms as traditionally has been done.
-    password_manager_->Autofill(driver.get(), observed_form_, best_matches_,
+  SendFillInformationToRenderer(*client_, driver.get(), IsBlacklisted(),
+                                observed_form_, best_matches_,
                                 form_fetcher_->GetFederatedMatches(),
-                                *preferred_match_, wait_for_username);
-  }
+                                preferred_match_, metrics_recorder());
 }
 
 void PasswordFormManager::ProcessLoginPrompt() {
