@@ -781,12 +781,6 @@ bool BlinkPlatformImpl::IsLowEndDevice() {
   return base::SysInfo::IsLowEndDevice();
 }
 
-uint32_t BlinkPlatformImpl::GetUniqueIdForProcess() {
-  // TODO(rickyz): Replace this with base::GetUniqueIdForProcess when that's
-  // ready.
-  return base::trace_event::TraceLog::GetInstance()->process_id();
-}
-
 bool BlinkPlatformImpl::IsMainThread() const {
   return main_thread_task_runner_.get() &&
          main_thread_task_runner_->BelongsToCurrentThread();
