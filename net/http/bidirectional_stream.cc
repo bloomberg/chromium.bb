@@ -26,9 +26,9 @@
 #include "net/log/net_log_source_type.h"
 #include "net/spdy/chromium/spdy_http_utils.h"
 #include "net/spdy/chromium/spdy_log_util.h"
-#include "net/spdy/core/spdy_header_block.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_config.h"
+#include "net/third_party/spdy/core/spdy_header_block.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "url/gurl.h"
 

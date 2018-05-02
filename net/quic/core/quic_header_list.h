@@ -14,8 +14,8 @@
 #include "net/quic/platform/api/quic_export.h"
 #include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_string_piece.h"
-#include "net/spdy/core/spdy_header_block.h"
-#include "net/spdy/core/spdy_headers_handler_interface.h"
+#include "net/third_party/spdy/core/spdy_header_block.h"
+#include "net/third_party/spdy/core/spdy_headers_handler_interface.h"
 
 namespace net {
 

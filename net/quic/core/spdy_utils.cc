@@ -15,10 +15,9 @@
 #include "net/quic/platform/api/quic_string_piece.h"
 #include "net/quic/platform/api/quic_text_utils.h"
 #include "net/quic/platform/api/quic_url_utils.h"
-#include "net/spdy/core/spdy_frame_builder.h"
-#include "net/spdy/core/spdy_framer.h"
-#include "net/spdy/core/spdy_protocol.h"
-
+#include "net/third_party/spdy/core/spdy_frame_builder.h"
+#include "net/third_party/spdy/core/spdy_framer.h"
+#include "net/third_party/spdy/core/spdy_protocol.h"
 
 namespace net {
 

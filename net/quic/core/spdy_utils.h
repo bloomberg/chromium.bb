@@ -13,7 +13,7 @@
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/platform/api/quic_export.h"
 #include "net/quic/platform/api/quic_string.h"
-#include "net/spdy/core/spdy_framer.h"
+#include "net/third_party/spdy/core/spdy_framer.h"
 
 namespace net {
 

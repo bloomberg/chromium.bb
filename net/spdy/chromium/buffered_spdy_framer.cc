@@ -9,7 +9,7 @@
 
 #include "base/logging.h"
 #include "base/strings/string_util.h"
-#include "net/spdy/platform/api/spdy_estimate_memory_usage.h"
+#include "net/third_party/spdy/platform/api/spdy_estimate_memory_usage.h"
 
 namespace net {
 

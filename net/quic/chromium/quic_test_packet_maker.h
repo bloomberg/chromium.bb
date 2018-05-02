@@ -19,8 +19,8 @@
 #include "net/quic/platform/api/quic_string_piece.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/mock_random.h"
-#include "net/spdy/core/spdy_framer.h"
-#include "net/spdy/core/spdy_protocol.h"
+#include "net/third_party/spdy/core/spdy_framer.h"
+#include "net/third_party/spdy/core/spdy_protocol.h"
 
 namespace net {
 namespace test {

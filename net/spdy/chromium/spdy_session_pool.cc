@@ -26,11 +26,11 @@
 #include "net/spdy/chromium/bidirectional_stream_spdy_impl.h"
 #include "net/spdy/chromium/spdy_http_stream.h"
 #include "net/spdy/chromium/spdy_session.h"
-#include "net/spdy/core/hpack/hpack_constants.h"
-#include "net/spdy/core/hpack/hpack_huffman_table.h"
-#include "net/spdy/core/hpack/hpack_static_table.h"
-#include "net/spdy/platform/api/spdy_estimate_memory_usage.h"
-#include "net/spdy/platform/api/spdy_string_utils.h"
+#include "net/third_party/spdy/core/hpack/hpack_constants.h"
+#include "net/third_party/spdy/core/hpack/hpack_huffman_table.h"
+#include "net/third_party/spdy/core/hpack/hpack_static_table.h"
+#include "net/third_party/spdy/platform/api/spdy_estimate_memory_usage.h"
+#include "net/third_party/spdy/platform/api/spdy_string_utils.h"
 
 namespace net {
 

@@ -24,7 +24,7 @@
 #include "net/http/http_status_code.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/http/http_util.h"
-#include "net/spdy/core/spdy_header_block.h"
+#include "net/third_party/spdy/core/spdy_header_block.h"
 #include "net/ssl/ssl_info.h"
 #include "net/url_request/http_user_agent_settings.h"
 #include "net/url_request/url_request_context.h"

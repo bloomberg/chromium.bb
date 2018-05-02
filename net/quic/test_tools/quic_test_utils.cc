@@ -25,7 +25,7 @@
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_config_peer.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
-#include "net/spdy/core/spdy_frame_builder.h"
+#include "net/third_party/spdy/core/spdy_frame_builder.h"
 #include "third_party/boringssl/src/include/openssl/sha.h"
 
 using std::string;

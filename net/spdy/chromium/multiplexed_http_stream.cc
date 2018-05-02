@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "net/http/http_raw_request_headers.h"
-#include "net/spdy/core/spdy_header_block.h"
+#include "net/third_party/spdy/core/spdy_header_block.h"
 
 namespace net {
 

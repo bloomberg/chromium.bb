@@ -14,7 +14,7 @@
 #include "net/log/net_log_source.h"
 #include "net/spdy/chromium/spdy_read_queue.h"
 #include "net/spdy/chromium/spdy_stream.h"
-#include "net/spdy/platform/api/spdy_string_piece.h"
+#include "net/third_party/spdy/platform/api/spdy_string_piece.h"
 
 namespace net {
 

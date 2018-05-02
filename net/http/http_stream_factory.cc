@@ -33,7 +33,7 @@
 #include "net/quic/core/quic_server_id.h"
 #include "net/spdy/chromium/bidirectional_stream_spdy_impl.h"
 #include "net/spdy/chromium/spdy_http_stream.h"
-#include "net/spdy/core/spdy_alt_svc_wire_format.h"
+#include "net/third_party/spdy/core/spdy_alt_svc_wire_format.h"
 #include "url/gurl.h"
 #include "url/scheme_host_port.h"
 #include "url/url_constants.h"

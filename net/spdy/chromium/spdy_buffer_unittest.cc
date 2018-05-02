@@ -12,8 +12,8 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "net/base/io_buffer.h"
-#include "net/spdy/core/spdy_protocol.h"
-#include "net/spdy/platform/api/spdy_string.h"
+#include "net/third_party/spdy/core/spdy_protocol.h"
+#include "net/third_party/spdy/platform/api/spdy_string.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {

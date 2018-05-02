@@ -14,7 +14,7 @@
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_map_util.h"
 #include "net/quic/platform/api/quic_text_utils.h"
-#include "net/spdy/core/spdy_protocol.h"
+#include "net/third_party/spdy/core/spdy_protocol.h"
 #include "net/tools/quic/quic_http_response_cache.h"
 #include "net/tools/quic/quic_simple_server_session.h"
 

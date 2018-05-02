@@ -15,8 +15,8 @@
 #include "net/base/escape.h"
 #include "net/http/http_log_util.h"
 #include "net/http/http_util.h"
-#include "net/spdy/platform/api/spdy_estimate_memory_usage.h"
-#include "net/spdy/platform/api/spdy_string.h"
+#include "net/third_party/spdy/platform/api/spdy_estimate_memory_usage.h"
+#include "net/third_party/spdy/platform/api/spdy_string.h"
 
 namespace net {
 namespace {

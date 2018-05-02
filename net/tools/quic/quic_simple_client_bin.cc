@@ -61,7 +61,7 @@
 #include "net/quic/platform/api/quic_string_piece.h"
 #include "net/quic/platform/api/quic_text_utils.h"
 #include "net/spdy/chromium/spdy_http_utils.h"
-#include "net/spdy/core/spdy_header_block.h"
+#include "net/third_party/spdy/core/spdy_header_block.h"
 #include "net/tools/quic/quic_simple_client.h"
 #include "net/tools/quic/synchronous_host_resolver.h"
 #include "url/gurl.h"

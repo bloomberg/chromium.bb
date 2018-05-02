@@ -28,9 +28,9 @@
 #include "net/spdy/chromium/http2_push_promise_index.h"
 #include "net/spdy/chromium/server_push_delegate.h"
 #include "net/spdy/chromium/spdy_session_key.h"
-#include "net/spdy/core/spdy_protocol.h"
-#include "net/spdy/platform/api/spdy_string.h"
 #include "net/ssl/ssl_config_service.h"
+#include "net/third_party/spdy/core/spdy_protocol.h"
+#include "net/third_party/spdy/platform/api/spdy_string.h"
 
 namespace base {
 namespace trace_event {
