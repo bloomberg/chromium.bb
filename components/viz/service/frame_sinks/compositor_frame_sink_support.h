@@ -138,6 +138,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   gfx::Size GetActiveFrameSize() override;
   void RequestCopyOfOutput(const LocalSurfaceId& local_surface_id,
                            std::unique_ptr<CopyOutputRequest> request) override;
+  const CompositorFrameMetadata* GetLastActivatedFrameMetadata() override;
 
   HitTestAggregator* GetHitTestAggregator();
 

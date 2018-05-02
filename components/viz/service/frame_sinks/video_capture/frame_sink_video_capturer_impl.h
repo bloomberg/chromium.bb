@@ -111,12 +111,6 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
   static constexpr media::ColorSpace kDefaultColorSpace =
       media::COLOR_SPACE_HD_REC709;
 
-  // Default values for variables in |last_frame_metadata_|.
-  static constexpr float kDefaultDeviceScaleFactor = 1.f;
-  static constexpr float kDefaultPageScaleFactor = 1.f;
-  static constexpr gfx::Vector2dF kDefaultRootScrollOffset =
-      gfx::Vector2dF(0, 0);
-
   // The maximum number of frames in-flight in the capture pipeline, reflecting
   // the storage capacity dedicated for this purpose. Example numbers, for a
   // frame pool that is fully-allocated with 10 frames of size 1920x1080, using
@@ -243,9 +237,6 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
   // The portion of the source content that has changed, but has not yet been
   // captured.
   gfx::Rect dirty_rect_;
-
-  // A cache of CompositorFrameMetadata used when a refresh frame is requested.
-  CompositorFrameMetadata last_frame_metadata_;
 
   // These are sequence counters used to ensure that the frames are being
   // delivered in the same order they are captured.

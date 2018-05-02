@@ -46,9 +46,6 @@ constexpr media::VideoPixelFormat
 // static
 constexpr media::ColorSpace FrameSinkVideoCapturerImpl::kDefaultColorSpace;
 
-// static
-constexpr gfx::Vector2dF FrameSinkVideoCapturerImpl::kDefaultRootScrollOffset;
-
 FrameSinkVideoCapturerImpl::FrameSinkVideoCapturerImpl(
     FrameSinkVideoCapturerManager* frame_sink_manager,
     mojom::FrameSinkVideoCapturerRequest request)
@@ -61,11 +58,6 @@ FrameSinkVideoCapturerImpl::FrameSinkVideoCapturerImpl(
       feedback_weak_factory_(&oracle_),
       capture_weak_factory_(this) {
   DCHECK(frame_sink_manager_);
-
-  // Initialize variables of |last_frame_metadata_| with default values.
-  last_frame_metadata_.device_scale_factor = kDefaultDeviceScaleFactor;
-  last_frame_metadata_.page_scale_factor = kDefaultPageScaleFactor;
-  last_frame_metadata_.root_scroll_offset = kDefaultRootScrollOffset;
 
   // Instantiate a default base::OneShotTimer instance.
   refresh_frame_retry_timer_.emplace();
@@ -320,7 +312,7 @@ void FrameSinkVideoCapturerImpl::RefreshSoon() {
 
   MaybeCaptureFrame(VideoCaptureOracle::kRefreshRequest,
                     gfx::Rect(oracle_.source_size()), clock_->NowTicks(),
-                    last_frame_metadata_);
+                    *resolved_target_->GetLastActivatedFrameMetadata());
 }
 
 void FrameSinkVideoCapturerImpl::OnFrameDamaged(
@@ -333,9 +325,6 @@ void FrameSinkVideoCapturerImpl::OnFrameDamaged(
   DCHECK(!damage_rect.IsEmpty());
   DCHECK(!expected_display_time.is_null());
   DCHECK(resolved_target_);
-
-  // Cache metadata so that it can be used for refresh frames.
-  last_frame_metadata_ = frame_metadata.Clone();
 
   if (frame_size == oracle_.source_size()) {
     dirty_rect_.Union(damage_rect);
