@@ -79,6 +79,7 @@ cr.define('cr.login', function() {
                      // not called before dispatching |authCopleted|.
                      // Default is |true|.
     'flow',          // One of 'default', 'enterprise', or 'theftprotection'.
+    'enterpriseDisplayDomain',     // Current domain name to be displayed.
     'enterpriseEnrollmentDomain',  // Domain in which hosting device is (or
                                    // should be) enrolled.
     'emailDomain',                 // Value used to prefill domain for email.
@@ -359,9 +360,8 @@ cr.define('cr.login', function() {
         url = appendParam(url, 'chrometype', data.chromeType);
       if (data.clientId)
         url = appendParam(url, 'client_id', data.clientId);
-      if (data.enterpriseEnrollmentDomain)
-        url =
-            appendParam(url, 'manageddomain', data.enterpriseEnrollmentDomain);
+      if (data.enterpriseDisplayDomain)
+        url = appendParam(url, 'manageddomain', data.enterpriseDisplayDomain);
       if (data.clientVersion)
         url = appendParam(url, 'client_version', data.clientVersion);
       if (data.platformVersion)
