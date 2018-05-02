@@ -187,6 +187,7 @@
 #include "net/url_request/url_request.h"
 #include "printing/buildflags/buildflags.h"
 #include "rlz/buildflags/buildflags.h"
+#include "services/service_manager/embedder/main_delegate.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -675,7 +676,8 @@ scoped_refptr<base::SequencedTaskRunner> CreateLocalStateTaskRunner() {
 // Initializes the shared instance of ResourceBundle and returns the locale. An
 // empty string return value indicates failure.
 std::string InitResourceBundleAndDetermineLocale(
-    const content::MainFunctionParams& params) {
+    const content::MainFunctionParams& params,
+    std::unique_ptr<ui::DataPack> data_pack) {
 #if defined(OS_MACOSX)
   // TODO(markusheintz): Read preference pref::kApplicationLocale in order
   // to enforce the application locale.
@@ -692,23 +694,8 @@ std::string InitResourceBundleAndDetermineLocale(
   // method InitSharedInstance is ignored.
   locale = ui::ResourceBundle::InitSharedInstanceWithLocale(
       locale, nullptr, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
-  if (locale.empty())
-    return locale;
 
-  // First run prefs needs data from the ResourceBundle, so load it now.
-  {
-    TRACE_EVENT0("startup",
-                 "ChromeBrowserMainParts::InitResourceBundleAndDetermineLocale:"
-                 ":AddDataPack");
-    base::FilePath resources_pack_path;
-    PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
-#if defined(OS_ANDROID)
-    ui::LoadMainAndroidPackFile("assets/resources.pak", resources_pack_path);
-#else
-    ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
-        resources_pack_path, ui::SCALE_FACTOR_NONE);
-#endif  // defined(OS_ANDROID)
-  }
+  ui::ResourceBundle::GetSharedInstance().AddDataPack(std::move(data_pack));
 
   return locale;
 }
@@ -861,7 +848,8 @@ class ChromeBrowserMainParts::DeferringTaskRunner
 // BrowserMainParts ------------------------------------------------------------
 
 ChromeBrowserMainParts::ChromeBrowserMainParts(
-    const content::MainFunctionParams& parameters)
+    const content::MainFunctionParams& parameters,
+    std::unique_ptr<ui::DataPack> data_pack)
     : parameters_(parameters),
       parsed_command_line_(parameters.command_line),
       result_code_(content::RESULT_CODE_NORMAL_EXIT),
@@ -871,7 +859,8 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
       should_call_pre_main_loop_start_startup_on_variations_service_(
           !parameters.ui_task),
       profile_(NULL),
-      run_message_loop_(true) {
+      run_message_loop_(true),
+      service_manifest_data_pack_(std::move(data_pack)) {
   // If we're running tests (ui_task is non-null).
   if (parameters.ui_task)
     browser_defaults::enable_help_app = false;
@@ -1183,7 +1172,9 @@ int ChromeBrowserMainParts::LoadLocalState(
 
   // First run prefs may use the ResourceBundle (and get data from it), so this
   // needs to be before ApplyFirstRunPrefs().
-  std::string locale = InitResourceBundleAndDetermineLocale(parameters());
+  std::string locale = InitResourceBundleAndDetermineLocale(
+      parameters(), std::move(service_manifest_data_pack_));
+
   if (locale.empty()) {
     *failed_to_load_resource_bundle = true;
     return chrome::RESULT_CODE_MISSING_DATA;

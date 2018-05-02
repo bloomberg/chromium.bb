@@ -12,7 +12,8 @@
 class ChromeBrowserMainPartsAndroid : public ChromeBrowserMainParts {
  public:
   explicit ChromeBrowserMainPartsAndroid(
-      const content::MainFunctionParams& parameters);
+      const content::MainFunctionParams& parameters,
+      std::unique_ptr<ui::DataPack> data_pack);
   ~ChromeBrowserMainPartsAndroid() override;
 
   // content::BrowserMainParts overrides.

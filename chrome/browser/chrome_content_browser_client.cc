@@ -940,7 +940,8 @@ void LaunchURL(
 
 }  // namespace
 
-ChromeContentBrowserClient::ChromeContentBrowserClient()
+ChromeContentBrowserClient::ChromeContentBrowserClient(
+    std::unique_ptr<ui::DataPack> data_pack)
     : weak_factory_(this) {
 #if BUILDFLAG(ENABLE_PLUGINS)
   for (size_t i = 0; i < arraysize(kPredefinedAllowedDevChannelOrigins); ++i)
@@ -969,6 +970,8 @@ ChromeContentBrowserClient::ChromeContentBrowserClient()
   gpu_binder_registry_.AddInterface(
       base::Bind(&metrics::CallStackProfileCollector::Create,
                  metrics::CallStackProfileParams::GPU_PROCESS));
+
+  service_manifest_data_pack_ = std::move(data_pack);
 }
 
 ChromeContentBrowserClient::~ChromeContentBrowserClient() {
@@ -1028,20 +1031,27 @@ content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
   ChromeBrowserMainParts* main_parts;
   // Construct the Main browser parts based on the OS type.
 #if defined(OS_WIN)
-  main_parts = new ChromeBrowserMainPartsWin(parameters);
+  main_parts = new ChromeBrowserMainPartsWin(
+      parameters, std::move(service_manifest_data_pack_));
 #elif defined(OS_MACOSX)
-  main_parts = new ChromeBrowserMainPartsMac(parameters);
+  main_parts = new ChromeBrowserMainPartsMac(
+      parameters, std::move(service_manifest_data_pack_));
 #elif defined(OS_CHROMEOS)
-  main_parts = new chromeos::ChromeBrowserMainPartsChromeos(parameters);
+  main_parts = new chromeos::ChromeBrowserMainPartsChromeos(
+      parameters, std::move(service_manifest_data_pack_));
 #elif defined(OS_LINUX)
-  main_parts = new ChromeBrowserMainPartsLinux(parameters);
+  main_parts = new ChromeBrowserMainPartsLinux(
+      parameters, std::move(service_manifest_data_pack_));
 #elif defined(OS_ANDROID)
-  main_parts = new ChromeBrowserMainPartsAndroid(parameters);
+  main_parts = new ChromeBrowserMainPartsAndroid(
+      parameters, std::move(service_manifest_data_pack_));
 #elif defined(OS_POSIX)
-  main_parts = new ChromeBrowserMainPartsPosix(parameters);
+  main_parts = new ChromeBrowserMainPartsPosix(
+      parameters, std::move(service_manifest_data_pack_));
 #else
   NOTREACHED();
-  main_parts = new ChromeBrowserMainParts(parameters);
+  main_parts = new ChromeBrowserMainParts(
+      parameters, std::move(service_manifest_data_pack_));
 #endif
 
   chrome::AddProfilesExtraParts(main_parts);
