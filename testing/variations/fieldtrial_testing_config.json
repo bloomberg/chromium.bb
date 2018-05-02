@@ -4207,21 +4207,6 @@
             ]
         }
     ],
-    "ViewsSimplifiedFullscreenUI": [
-        {
-            "platforms": [
-                "mac"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ViewsSimplifiedFullscreenUI"
-                    ]
-                }
-            ]
-        }
-    ],
     "VsyncAlignedInput": [
         {
             "platforms": [

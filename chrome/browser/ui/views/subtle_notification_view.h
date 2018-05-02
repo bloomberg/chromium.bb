@@ -11,8 +11,6 @@
 #include "ui/views/view.h"
 
 namespace views {
-class Link;
-class LinkListener;
 class Widget;
 }
 
@@ -24,18 +22,16 @@ class Widget;
 // rounded rectangle).
 class SubtleNotificationView : public views::View {
  public:
-  explicit SubtleNotificationView(views::LinkListener* link_listener);
+  SubtleNotificationView();
   ~SubtleNotificationView() override;
 
-  void UpdateContent(const base::string16& instruction_text,
-                     const base::string16& link_text);
+  // Display the |instruction_text| to the user. If |instruction_text| is
+  // empty hide the view.
+  void UpdateContent(const base::string16& instruction_text);
 
-  // Creates a Widget containing a SubtleNotificationView. If |accept_events|,
-  // the bubble will intercept mouse events (required if there is a clickable
-  // link); if not, events will go through to the underlying window.
+  // Creates a Widget containing a SubtleNotificationView.
   static views::Widget* CreatePopupWidget(gfx::NativeView parent_view,
-                                          SubtleNotificationView* view,
-                                          bool accept_events);
+                                          SubtleNotificationView* view);
   // views::View
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
@@ -44,9 +40,6 @@ class SubtleNotificationView : public views::View {
 
   // Text displayed in the bubble, with optional keyboard keys.
   InstructionView* instruction_view_;
-  // Clickable text link. If there is also an instruction view, this appears
-  // after the instruction text.
-  views::Link* link_;
 
   DISALLOW_COPY_AND_ASSIGN(SubtleNotificationView);
 };

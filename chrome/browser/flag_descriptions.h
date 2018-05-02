@@ -902,9 +902,6 @@ extern const char kSignedHTTPExchangeDescription[];
 extern const char kSimpleCacheBackendName[];
 extern const char kSimpleCacheBackendDescription[];
 
-extern const char kSimplifiedFullscreenUiName[];
-extern const char kSimplifiedFullscreenUiDescription[];
-
 extern const char kSimplifyHttpsIndicatorName[];
 extern const char kSimplifyHttpsIndicatorDescription[];
 

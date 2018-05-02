@@ -51,36 +51,23 @@ ExclusiveAccessBubbleViews::ExclusiveAccessBubbleViews(
       popup_(nullptr),
       bubble_first_hide_callback_(std::move(bubble_first_hide_callback)),
       animation_(new gfx::SlideAnimation(this)) {
-  // With the simplified fullscreen UI flag, initially hide the bubble;
-  // otherwise, initially show it.
-  double initial_value =
-      ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled() ? 0 : 1;
-  animation_->Reset(initial_value);
-
   // Create the contents view.
   ui::Accelerator accelerator(ui::VKEY_UNKNOWN, ui::EF_NONE);
   bool got_accelerator =
       bubble_view_context_->GetAcceleratorProvider()
           ->GetAcceleratorForCommandId(IDC_FULLSCREEN, &accelerator);
   DCHECK(got_accelerator);
-  view_ = new SubtleNotificationView(this);
+  view_ = new SubtleNotificationView();
   browser_fullscreen_exit_accelerator_ = accelerator.GetShortcutText();
   UpdateViewContent(bubble_type_);
 
-  // The simplified UI just shows a notice; clicks should go through to the
-  // underlying window.
-  bool accept_events =
-      !ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled();
   // Initialize the popup.
   popup_ = SubtleNotificationView::CreatePopupWidget(
-      bubble_view_context_->GetBubbleParentView(), view_, accept_events);
+      bubble_view_context_->GetBubbleParentView(), view_);
   gfx::Size size = GetPopupRect(true).size();
   // Bounds are in screen coordinates.
   popup_->SetBounds(GetPopupRect(false));
   view_->SetBounds(0, 0, size.width(), size.height());
-  if (!ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled())
-    popup_->ShowInactive();  // This does not activate the popup.
-
   popup_->AddObserver(this);
 
   registrar_.Add(this, chrome::NOTIFICATION_FULLSCREEN_CHANGED,
@@ -183,8 +170,6 @@ void ExclusiveAccessBubbleViews::UpdateViewContent(
     ExclusiveAccessBubbleType bubble_type) {
   DCHECK_NE(EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE, bubble_type);
 
-  bool link_visible =
-      !ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled();
   base::string16 accelerator;
   if (bubble_type ==
           EXCLUSIVE_ACCESS_BUBBLE_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION ||
@@ -193,10 +178,6 @@ void ExclusiveAccessBubbleViews::UpdateViewContent(
     accelerator = browser_fullscreen_exit_accelerator_;
   } else {
     accelerator = l10n_util::GetStringUTF16(IDS_APP_ESC_KEY);
-    if (bubble_type !=
-        EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_EXIT_INSTRUCTION) {
-      link_visible = false;
-    }
   }
 #if defined(OS_MACOSX)
   // Mac keyboards use lowercase for everything except function keys, which are
@@ -204,19 +185,7 @@ void ExclusiveAccessBubbleViews::UpdateViewContent(
   // to make it look like a keyboard key it looks weird to not follow suit.
   accelerator = base::i18n::ToLower(accelerator);
 #endif
-  base::string16 link_text;
-  base::string16 exit_instruction_text;
-  if (link_visible) {
-    link_text = l10n_util::GetStringUTF16(IDS_EXIT_FULLSCREEN_MODE);
-#if !defined(OS_CHROMEOS)
-    link_text += base::UTF8ToUTF16(" ") +
-                 l10n_util::GetStringFUTF16(
-                     IDS_EXIT_FULLSCREEN_MODE_ACCELERATOR, accelerator);
-#endif
-  } else {
-    exit_instruction_text = GetInstructionText(accelerator);
-  }
-  view_->UpdateContent(exit_instruction_text, link_text);
+  view_->UpdateContent(GetInstructionText(accelerator));
 }
 
 views::View* ExclusiveAccessBubbleViews::GetBrowserRootView() const {
@@ -335,11 +304,6 @@ void ExclusiveAccessBubbleViews::OnWidgetVisibilityChanged(
     views::Widget* widget,
     bool visible) {
   UpdateMouseWatcher();
-}
-
-void ExclusiveAccessBubbleViews::LinkClicked(views::Link* link,
-                                             int event_flags) {
-  ExitExclusiveAccess();
 }
 
 void ExclusiveAccessBubbleViews::RunHideCallbackIfNeeded(

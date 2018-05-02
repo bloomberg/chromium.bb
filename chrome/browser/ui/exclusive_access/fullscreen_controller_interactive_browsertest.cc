@@ -67,41 +67,6 @@ class FullscreenControllerInteractiveTest
                                      bool retry_until_success);
 };
 
-// Allow the test harness to pick the non-simplified fullscreen UI, which
-// prompts with an interactive dialog rather than just notifying the user how to
-// exit fullscreen. TODO(tapted): Remove this when "simplified" is the only way.
-enum TestType {
-  TEST_TYPE_START,
-  PROMPTING = TEST_TYPE_START,
-  SIMPLIFIED,
-  TEST_TYPE_END,
-};
-
-class ParamaterizedFullscreenControllerInteractiveTest
-    : public FullscreenControllerInteractiveTest,
-      public ::testing::WithParamInterface<int> {
- public:
-  ParamaterizedFullscreenControllerInteractiveTest() {
-    switch (GetParam()) {
-      case PROMPTING:
-        scoped_feature_list_.InitAndDisableFeature(
-            features::kSimplifiedFullscreenUI);
-        break;
-      case SIMPLIFIED:
-        scoped_feature_list_.InitAndEnableFeature(
-            features::kSimplifiedFullscreenUI);
-        break;
-      default:
-        NOTREACHED();
-    }
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(ParamaterizedFullscreenControllerInteractiveTest);
-};
-
 void FullscreenControllerInteractiveTest::ToggleTabFullscreen(
     bool enter_fullscreen) {
   ToggleTabFullscreen_Internal(enter_fullscreen, true);
@@ -564,7 +529,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
 
 // Tests mouse lock can be exited and re-entered by an application silently
 // with no UI distraction for users.
-IN_PROC_BROWSER_TEST_P(ParamaterizedFullscreenControllerInteractiveTest,
+IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
                        MAYBE_MouseLockSilentAfterTargetUnlock) {
   SetWebContentsGrantedSilentMouseLockPermission();
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -802,8 +767,3 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreenNoRetries(false));
   ASSERT_FALSE(IsWindowFullscreenForTabOrPending());
 }
-
-INSTANTIATE_TEST_CASE_P(
-    ParamaterizedFullscreenControllerInteractiveTestInstance,
-    ParamaterizedFullscreenControllerInteractiveTest,
-    ::testing::Range<int>(TEST_TYPE_START, TEST_TYPE_END));

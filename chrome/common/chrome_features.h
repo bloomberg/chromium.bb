@@ -288,8 +288,6 @@ extern const base::Feature kShowTrustedPublisherURL;
 
 extern const base::Feature kSiteSettings;
 
-extern const base::Feature kSimplifiedFullscreenUI;
-
 #if defined(OS_ANDROID)
 extern const base::Feature kSiteNotificationChannels;
 #endif

@@ -16,14 +16,13 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/controls/link.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
 
-// Space between the site info label and the link.
+// Space between the site info label.
 const int kMiddlePaddingPx = 30;
 
 const int kOuterPaddingHorizPx = 40;
@@ -141,9 +140,7 @@ void SubtleNotificationView::InstructionView::AddTextSegment(
   AddChildView(key);
 }
 
-SubtleNotificationView::SubtleNotificationView(
-    views::LinkListener* link_listener)
-    : instruction_view_(nullptr), link_(nullptr) {
+SubtleNotificationView::SubtleNotificationView() : instruction_view_(nullptr) {
   const SkColor kForegroundColor = SK_ColorWHITE;
 
   std::unique_ptr<views::BubbleBorder> bubble_border(new views::BubbleBorder(
@@ -155,17 +152,9 @@ SubtleNotificationView::SubtleNotificationView(
   instruction_view_ =
       new InstructionView(base::string16(), kForegroundColor, kBackgroundColor);
 
-  link_ = new views::Link(base::string16(), kInstructionTextContext);
-  link_->SetFocusBehavior(FocusBehavior::NEVER);
-  link_->set_listener(link_listener);
-  link_->SetEnabledColor(kForegroundColor);  // Override STYLE_LINK.
-  link_->SetBackgroundColor(kBackgroundColor);
-  link_->SetVisible(false);
-
   int outer_padding_horiz = kOuterPaddingHorizPx;
   int outer_padding_vert = kOuterPaddingVertPx;
   AddChildView(instruction_view_);
-  AddChildView(link_);
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal,
@@ -175,27 +164,23 @@ SubtleNotificationView::SubtleNotificationView(
 SubtleNotificationView::~SubtleNotificationView() {}
 
 void SubtleNotificationView::UpdateContent(
-    const base::string16& instruction_text,
-    const base::string16& link_text) {
+    const base::string16& instruction_text) {
   instruction_view_->SetText(instruction_text);
   instruction_view_->SetVisible(!instruction_text.empty());
-  link_->SetText(link_text);
-  link_->SetVisible(!link_text.empty());
   Layout();
 }
 
 // static
 views::Widget* SubtleNotificationView::CreatePopupWidget(
     gfx::NativeView parent_view,
-    SubtleNotificationView* view,
-    bool accept_events) {
+    SubtleNotificationView* view) {
   // Initialize the popup.
   views::Widget* popup = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.parent = parent_view;
-  params.accept_events = accept_events;
+  params.accept_events = false;
   popup->Init(params);
   popup->SetContentsView(view);
   // We set layout manager to nullptr to prevent the widget from sizing its
