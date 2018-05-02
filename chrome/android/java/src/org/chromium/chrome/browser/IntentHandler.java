@@ -22,10 +22,10 @@ import android.provider.MediaStore;
 import android.speech.RecognizerResultsIntent;
 import android.text.TextUtils;
 import android.util.Pair;
-import android.webkit.MimeTypeMap;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.FileUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryProcessType;
@@ -1093,7 +1093,11 @@ public class IntentHandler {
                 || (!TextUtils.isEmpty(type) && !type.equals("application/octet-stream"))) {
             return false;
         }
-        String extension = MimeTypeMap.getFileExtensionFromUrl(url);
+
+        // Get the file extension. We can't use MimeTypeMap.getFileExtensionFromUrl because it will
+        // reject urls with characters that are valid in filenames (such as "!").
+        String extension = FileUtils.getExtension(url);
+
         return extension.equals("mhtml") || extension.equals("mht");
     }
 
