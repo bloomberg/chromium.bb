@@ -175,6 +175,7 @@ class MockMediaStreamVideoRenderer : public MediaStreamVideoRenderer {
       const base::Closure& error_cb,
       const MediaStreamVideoRenderer::RepaintCB& repaint_cb)
       : started_(false),
+        standard_size_(kStandardWidth, kStandardHeight),
         task_runner_(task_runner),
         message_loop_controller_(message_loop_controller),
         error_cb_(error_cb),
@@ -197,6 +198,9 @@ class MockMediaStreamVideoRenderer : public MediaStreamVideoRenderer {
   bool Started() { return started_; }
   bool Paused() { return paused_; }
 
+  void set_standard_size(const gfx::Size& size) { standard_size_ = size; }
+  const gfx::Size& get_standard_size() { return standard_size_; }
+
  private:
   ~MockMediaStreamVideoRenderer() override {}
 
@@ -209,6 +213,7 @@ class MockMediaStreamVideoRenderer : public MediaStreamVideoRenderer {
 
   bool started_;
   bool paused_;
+  gfx::Size standard_size_;
 
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   ReusableMessageLoopEvent* const message_loop_controller_;
@@ -280,11 +285,12 @@ void MockMediaStreamVideoRenderer::QueueFrames(
     bool odd_size_frame,
     int double_size_index,
     media::VideoRotation rotation) {
-  gfx::Size standard_size = gfx::Size(kStandardWidth, kStandardHeight);
+  gfx::Size standard_size = standard_size_;
   for (size_t i = 0; i < timestamp_or_frame_type.size(); i++) {
     const int token = timestamp_or_frame_type[i];
     if (static_cast<int>(i) == double_size_index) {
-      standard_size = gfx::Size(kStandardWidth * 2, kStandardHeight * 2);
+      standard_size =
+          gfx::Size(standard_size_.width() * 2, standard_size_.height() * 2);
     }
     if (token < static_cast<int>(FrameType::MIN_TYPE)) {
       CHECK(false) << "Unrecognized frame type: " << token;
@@ -551,6 +557,11 @@ class WebMediaPlayerMSTest
   }
 
   void SetGpuMemoryBufferVideoForTesting() {
+#if defined(OS_WIN)
+    render_factory_->provider()->set_standard_size(
+        WebMediaPlayerMS::kUseGpuMemoryBufferVideoFramesMinResolution);
+#endif  // defined(OS_WIN)
+
     player_->SetGpuMemoryBufferVideoForTesting(
         new media::MockGpuMemoryBufferVideoFramePool(&frame_ready_cbs_));
   }
@@ -1094,8 +1105,7 @@ TEST_F(WebMediaPlayerMSTest, CreateHardwareFrames) {
                          blink::WebMediaPlayer::kReadyStateHaveMetadata));
   EXPECT_CALL(*this, DoReadyStateChanged(
                          blink::WebMediaPlayer::kReadyStateHaveEnoughData));
-  EXPECT_CALL(*this,
-              CheckSizeChanged(gfx::Size(kStandardWidth, kStandardHeight)));
+  EXPECT_CALL(*this, CheckSizeChanged(provider->get_standard_size()));
   std::move(frame_ready_cbs_[0]).Run();
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);
@@ -1126,8 +1136,7 @@ TEST_F(WebMediaPlayerMSTest, StopsCreatingHardwareFramesWhenHiddenOrClosed) {
                          blink::WebMediaPlayer::kReadyStateHaveMetadata));
   EXPECT_CALL(*this, DoReadyStateChanged(
                          blink::WebMediaPlayer::kReadyStateHaveEnoughData));
-  EXPECT_CALL(*this,
-              CheckSizeChanged(gfx::Size(kStandardWidth, kStandardHeight)));
+  EXPECT_CALL(*this, CheckSizeChanged(provider->get_standard_size()));
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);
   ASSERT_EQ(1u, frame_ready_cbs_.size());
