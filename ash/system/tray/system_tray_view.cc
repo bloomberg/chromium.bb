@@ -78,8 +78,12 @@ bool SystemTrayView::CreateItemViews(LoginStatus login_status) {
     switch (system_tray_type_) {
       case SYSTEM_TRAY_TYPE_DEFAULT:
         item_view = it->CreateDefaultView(login_status);
-        if (it->restore_focus())
+        if (it->restore_focus()) {
+          focus_view = it->GetItemToRestoreFocusTo()
+                           ? it->GetItemToRestoreFocusTo()
+                           : item_view;
           focus_view = item_view;
+        }
         break;
       case SYSTEM_TRAY_TYPE_DETAILED:
         item_view = it->CreateDetailedView(login_status);
