@@ -282,6 +282,7 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(network::URLLoaderCompletionStatus)
   IPC_STRUCT_TRAITS_MEMBER(error_code)
+  IPC_STRUCT_TRAITS_MEMBER(extended_error_code)
   IPC_STRUCT_TRAITS_MEMBER(exists_in_cache)
   IPC_STRUCT_TRAITS_MEMBER(completion_time)
   IPC_STRUCT_TRAITS_MEMBER(encoded_data_length)

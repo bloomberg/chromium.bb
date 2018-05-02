@@ -17,6 +17,9 @@
 
 namespace network {
 
+// NOTE: When adding/removing fields to this struct, don't forget to
+// update services/network/public/cpp/network_param_ipc_traits.h.
+
 struct COMPONENT_EXPORT(NETWORK_CPP_BASE) URLLoaderCompletionStatus {
   URLLoaderCompletionStatus();
   URLLoaderCompletionStatus(const URLLoaderCompletionStatus& status);
