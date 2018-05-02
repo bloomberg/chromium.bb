@@ -364,6 +364,46 @@ static INLINE int16x8_t predict_w8(const int16_t *pred_buf_q3,
   return vaddq_s16(vsignq_s16(scaled_luma, ac_sign), dc);
 }
 
+static INLINE int16x8x2_t predict_w16(const int16_t *pred_buf_q3,
+                                      int16x8_t alpha_sign, int abs_alpha_q12,
+                                      int16x8_t dc) {
+  const int16x8x2_t ac_q3 = vld2q_s16(pred_buf_q3);
+  const int16x8_t ac_sign_0 = veorq_s16(alpha_sign, ac_q3.val[0]);
+  const int16x8_t ac_sign_1 = veorq_s16(alpha_sign, ac_q3.val[1]);
+  const int16x8_t scaled_luma_0 =
+      vqrdmulhq_n_s16(vabsq_s16(ac_q3.val[0]), abs_alpha_q12);
+  const int16x8_t scaled_luma_1 =
+      vqrdmulhq_n_s16(vabsq_s16(ac_q3.val[1]), abs_alpha_q12);
+  int16x8x2_t result;
+  result.val[0] = vaddq_s16(vsignq_s16(scaled_luma_0, ac_sign_0), dc);
+  result.val[1] = vaddq_s16(vsignq_s16(scaled_luma_1, ac_sign_1), dc);
+  return result;
+}
+
+static INLINE int16x8x4_t predict_w32(const int16_t *pred_buf_q3,
+                                      int16x8_t alpha_sign, int abs_alpha_q12,
+                                      int16x8_t dc) {
+  const int16x8x4_t ac_q3 = vld4q_s16(pred_buf_q3);
+  const int16x8_t ac_sign_0 = veorq_s16(alpha_sign, ac_q3.val[0]);
+  const int16x8_t ac_sign_1 = veorq_s16(alpha_sign, ac_q3.val[1]);
+  const int16x8_t ac_sign_2 = veorq_s16(alpha_sign, ac_q3.val[2]);
+  const int16x8_t ac_sign_3 = veorq_s16(alpha_sign, ac_q3.val[3]);
+  const int16x8_t scaled_luma_0 =
+      vqrdmulhq_n_s16(vabsq_s16(ac_q3.val[0]), abs_alpha_q12);
+  const int16x8_t scaled_luma_1 =
+      vqrdmulhq_n_s16(vabsq_s16(ac_q3.val[1]), abs_alpha_q12);
+  const int16x8_t scaled_luma_2 =
+      vqrdmulhq_n_s16(vabsq_s16(ac_q3.val[2]), abs_alpha_q12);
+  const int16x8_t scaled_luma_3 =
+      vqrdmulhq_n_s16(vabsq_s16(ac_q3.val[3]), abs_alpha_q12);
+  int16x8x4_t result;
+  result.val[0] = vaddq_s16(vsignq_s16(scaled_luma_0, ac_sign_0), dc);
+  result.val[1] = vaddq_s16(vsignq_s16(scaled_luma_1, ac_sign_1), dc);
+  result.val[2] = vaddq_s16(vsignq_s16(scaled_luma_2, ac_sign_2), dc);
+  result.val[3] = vaddq_s16(vsignq_s16(scaled_luma_3, ac_sign_3), dc);
+  return result;
+}
+
 // Vector signed->unsigned narrowing half store
 static void vsthun_s16(uint8_t *dst, int16x4_t scaled_luma) {
   vsth_u8(dst, vqmovun_s16(vcombine_s16(scaled_luma, scaled_luma)));
@@ -430,6 +470,28 @@ static INLINE uint16x8_t clampq_s16(int16x8_t a, int16x8_t max) {
   return vreinterpretq_u16_s16(vmaxq_s16(vminq_s16(a, max), vdupq_n_s16(0)));
 }
 
+static INLINE uint16x8x2_t clamp2q_s16(int16x8x2_t a, int16x8_t max) {
+  uint16x8x2_t result;
+  result.val[0] = vreinterpretq_u16_s16(
+      vmaxq_s16(vminq_s16(a.val[0], max), vdupq_n_s16(0)));
+  result.val[1] = vreinterpretq_u16_s16(
+      vmaxq_s16(vminq_s16(a.val[1], max), vdupq_n_s16(0)));
+  return result;
+}
+
+static INLINE uint16x8x4_t clamp4q_s16(int16x8x4_t a, int16x8_t max) {
+  uint16x8x4_t result;
+  result.val[0] = vreinterpretq_u16_s16(
+      vmaxq_s16(vminq_s16(a.val[0], max), vdupq_n_s16(0)));
+  result.val[1] = vreinterpretq_u16_s16(
+      vmaxq_s16(vminq_s16(a.val[1], max), vdupq_n_s16(0)));
+  result.val[2] = vreinterpretq_u16_s16(
+      vmaxq_s16(vminq_s16(a.val[2], max), vdupq_n_s16(0)));
+  result.val[3] = vreinterpretq_u16_s16(
+      vmaxq_s16(vminq_s16(a.val[3], max), vdupq_n_s16(0)));
+  return result;
+}
+
 static INLINE void cfl_predict_hbd_neon(const int16_t *pred_buf_q3,
                                         uint16_t *dst, int dst_stride,
                                         int alpha_q3, int bd, int width,
@@ -452,21 +514,18 @@ static INLINE void cfl_predict_hbd_neon(const int16_t *pred_buf_q3,
     const int16x8_t dc = vdupq_n_s16(*dst);
     const int16x8_t max_16x8 = vdupq_n_s16(max);
     do {
-      const int16x8_t scaled_luma =
-          predict_w8(pred_buf_q3, alpha_sign, abs_alpha_q12, dc);
-      vst1q_u16(dst, clampq_s16(scaled_luma, max_16x8));
-      if (width >= 16) {
-        const int16x8_t scaled_luma_1 =
-            predict_w8(pred_buf_q3 + 8, alpha_sign, abs_alpha_q12, dc);
-        vst1q_u16(dst + 8, clampq_s16(scaled_luma_1, max_16x8));
-        if (width == 32) {
-          const int16x8_t scaled_luma_2 =
-              predict_w8(pred_buf_q3 + 16, alpha_sign, abs_alpha_q12, dc);
-          vst1q_u16(dst + 16, clampq_s16(scaled_luma_2, max_16x8));
-          const int16x8_t scaled_luma_3 =
-              predict_w8(pred_buf_q3 + 24, alpha_sign, abs_alpha_q12, dc);
-          vst1q_u16(dst + 24, clampq_s16(scaled_luma_3, max_16x8));
-        }
+      if (width == 8) {
+        const int16x8_t pred =
+            predict_w8(pred_buf_q3, alpha_sign, abs_alpha_q12, dc);
+        vst1q_u16(dst, clampq_s16(pred, max_16x8));
+      } else if (width == 16) {
+        const int16x8x2_t pred =
+            predict_w16(pred_buf_q3, alpha_sign, abs_alpha_q12, dc);
+        vst2q_u16(dst, clamp2q_s16(pred, max_16x8));
+      } else {
+        const int16x8x4_t pred =
+            predict_w32(pred_buf_q3, alpha_sign, abs_alpha_q12, dc);
+        vst4q_u16(dst, clamp4q_s16(pred, max_16x8));
       }
       dst += dst_stride;
     } while ((pred_buf_q3 += CFL_BUF_LINE) < end);
