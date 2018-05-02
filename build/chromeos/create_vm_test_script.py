@@ -58,16 +58,30 @@ def main(args):
 
   run_test_path = RelativizePathToScript(
       os.path.join(os.path.dirname(__file__), 'run_vm_test.py'))
+
   vm_test_args = [
       '--board', args.board,
-      '--test-exe', args.test_exe,
       '-v',
   ]
+  if args.test_exe:
+    vm_test_args.extend([
+        'vm-test',
+        '--test-exe',
+        args.test_exe,
+    ])
+  else:
+    vm_test_args.append('host-cmd')
+
   vm_test_path_args = [
-      ('--path-to-outdir', RelativizePathToScript(args.output_directory)),
-      ('--runtime-deps-path', RelativizePathToScript(args.runtime_deps_path)),
       ('--cros-cache', RelativizePathToScript(args.cros_cache)),
   ]
+  if args.runtime_deps_path:
+    vm_test_path_args.append(
+        ('--runtime-deps-path', RelativizePathToScript(args.runtime_deps_path)))
+  if args.output_directory:
+    vm_test_path_args.append(
+        ('--path-to-outdir', RelativizePathToScript(args.output_directory)))
+
   with open(args.script_output_path, 'w') as script:
     script.write(SCRIPT_TEMPLATE.format(
         vm_test_script=run_test_path,
