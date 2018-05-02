@@ -2270,7 +2270,7 @@ TEST_F(WallpaperControllerDisableLocalStateTest, IgnoreShowUserWallpaper) {
   // the wallpaper, and |OnReadyToSetWallpaper| is invoked.
   std::unique_ptr<TestingPrefServiceSimple> local_state =
       std::make_unique<TestingPrefServiceSimple>();
-  Shell::RegisterLocalStatePrefs(local_state->registry());
+  Shell::RegisterLocalStatePrefs(local_state->registry(), true);
   ShellTestApi().OnLocalStatePrefServiceInitialized(std::move(local_state));
 
   controller_->ShowUserWallpaper(InitializeUser(account_id_1));

@@ -277,7 +277,8 @@ class ASH_EXPORT Shell : public SessionObserver,
   static bool ShouldUseIMEService();
 
   // Registers all ash related local state prefs to the given |registry|.
-  static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
+  static void RegisterLocalStatePrefs(PrefRegistrySimple* registry,
+                                      bool for_test);
 
   // Registers all ash related signin/user profile prefs to the given
   // |registry|. Can be called before Shell is initialized. When |for_test| is
@@ -646,7 +647,8 @@ class ASH_EXPORT Shell : public SessionObserver,
   ~Shell() override;
 
   void Init(ui::ContextFactory* context_factory,
-            ui::ContextFactoryPrivate* context_factory_private);
+            ui::ContextFactoryPrivate* context_factory_private,
+            std::unique_ptr<base::Value> initial_display_prefs);
 
   // Initializes the display manager and related components.
   void InitializeDisplayManager();

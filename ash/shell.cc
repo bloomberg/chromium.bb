@@ -269,7 +269,8 @@ Shell* Shell::CreateInstance(ShellInitParams init_params) {
   instance_ = new Shell(std::move(init_params.delegate),
                         std::move(init_params.shell_port));
   instance_->Init(init_params.context_factory,
-                  init_params.context_factory_private);
+                  init_params.context_factory_private,
+                  std::move(init_params.initial_display_prefs));
   return instance_;
 }
 
@@ -403,12 +404,18 @@ bool Shell::ShouldUseIMEService() {
 }
 
 // static
-void Shell::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
-  DisplayPrefs::RegisterLocalStatePrefs(registry);
+void Shell::RegisterLocalStatePrefs(PrefRegistrySimple* registry,
+                                    bool for_test) {
   PaletteTray::RegisterLocalStatePrefs(registry);
   WallpaperController::RegisterLocalStatePrefs(registry);
   BluetoothPowerController::RegisterLocalStatePrefs(registry);
   DetachableBaseHandler::RegisterPrefs(registry);
+  // Note: DisplayPrefs are registered in chrome in AshShellInit::RegisterPrefs
+  // (see comment there for details).
+  if (for_test)
+    DisplayPrefs::RegisterLocalStatePrefs(registry);
+  else
+    DisplayPrefs::RegisterForeignPrefs(registry);
 }
 
 // static
@@ -943,7 +950,8 @@ Shell::~Shell() {
 }
 
 void Shell::Init(ui::ContextFactory* context_factory,
-                 ui::ContextFactoryPrivate* context_factory_private) {
+                 ui::ContextFactoryPrivate* context_factory_private,
+                 std::unique_ptr<base::Value> initial_display_prefs) {
   const Config config = shell_port_->GetAshConfig();
 
   // This creates the MessageCenter object which is used by some other objects
@@ -974,7 +982,7 @@ void Shell::Init(ui::ContextFactory* context_factory,
     // connecting to the profile pref service. The login screen has a temporary
     // user profile that is not associated with a real user.
     auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
-    RegisterLocalStatePrefs(pref_registry.get());
+    RegisterLocalStatePrefs(pref_registry.get(), false);
     prefs::ConnectToPrefService(
         shell_delegate_->GetShellConnector(), std::move(pref_registry),
         base::Bind(&Shell::OnLocalStatePrefServiceInitialized,
@@ -1014,6 +1022,13 @@ void Shell::Init(ui::ContextFactory* context_factory,
   }
 
   shell_delegate_->PreInit();
+
+  // In CLASSIC mode, |initial_display_prefs| contains the synchronously
+  // loaded display pref values. Otherwise |initial_display_prefs| is null and
+  // the pref values will be loaded once |local_state_| is available. (Any store
+  // requests in the meanwhile will be queued).
+  display_prefs_ =
+      std::make_unique<DisplayPrefs>(std::move(initial_display_prefs));
 
   InitializeDisplayManager();
 
@@ -1284,11 +1299,6 @@ void Shell::Init(ui::ContextFactory* context_factory,
 }
 
 void Shell::InitializeDisplayManager() {
-  // Construct DisplayPrefs here so that display_prefs()->StoreDisplayPrefs()
-  // can safely be called. DisplayPrefs will be loaded once |local_state_|
-  // is available and store requests will be queued in the meanwhile.
-  display_prefs_ = std::make_unique<DisplayPrefs>();
-
   const Config config = shell_port_->GetAshConfig();
   bool display_initialized = display_manager_->InitFromCommandLine();
 

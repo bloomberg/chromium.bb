@@ -63,8 +63,11 @@ class ASH_EXPORT WindowManager : public aura::WindowManagerDelegate,
                 bool show_primary_host_on_connect);
   ~WindowManager() override;
 
+  // |initial_display_prefs| contains a dictionary of initial display prefs to
+  // pass to Shell::Init for synchronous initial display configuraiton.
   void Init(std::unique_ptr<aura::WindowTreeClient> window_tree_client,
-            std::unique_ptr<ash::ShellDelegate> shell_delegate = nullptr);
+            std::unique_ptr<ash::ShellDelegate> shell_delegate,
+            std::unique_ptr<base::Value> initial_display_prefs);
 
   // Sets the callback that is run once the connection to mus is lost. If not
   // set shutdown occurs when the connection is lost (the Shell is deleted).
@@ -200,6 +203,8 @@ class ASH_EXPORT WindowManager : public aura::WindowManagerDelegate,
   // The ShellDelegate to install. This may be null, in which case
   // ShellDelegateMus is used.
   std::unique_ptr<ShellDelegate> shell_delegate_;
+
+  std::unique_ptr<base::Value> initial_display_prefs_;
 
   // State that is only valid during a drag.
   struct DragState;

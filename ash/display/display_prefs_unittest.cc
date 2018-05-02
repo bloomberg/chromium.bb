@@ -28,6 +28,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
+#include "chromeos/chromeos_switches.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/user_manager/user_type.h"
@@ -123,7 +124,7 @@ class DisplayPrefsTest : public AshTestBase {
     disable_provide_local_state();
     AshTestBase::SetUp();
     DisplayPrefs::RegisterLocalStatePrefs(local_state_.registry());
-    display_prefs()->set_local_state_for_test(&local_state_);
+    display_prefs()->SetPrefServiceForTest(&local_state_);
     observer_ = std::make_unique<DisplayConfigurationObserver>();
     observer_->OnDisplaysInitialized();
   }
@@ -137,10 +138,7 @@ class DisplayPrefsTest : public AshTestBase {
 
   void LoggedInAsGuest() { SimulateGuestLogin(); }
 
-  void LoadDisplayPreferences(bool first_run_after_boot) {
-    display_prefs()->LoadDisplayPreferences(first_run_after_boot,
-                                            local_state());
-  }
+  void LoadDisplayPreferences() { display_prefs()->LoadDisplayPreferences(); }
 
   // Do not use the implementation of display_prefs.cc directly to avoid
   // notifying the update to the system.
@@ -273,19 +271,21 @@ TEST_F(DisplayPrefsTest, ListedLayoutOverrides) {
   display_prefs()->StoreDisplayPowerStateForTest(
       chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON);
 
-  ash::Shell* shell = ash::Shell::Get();
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      chromeos::switches::kFirstExecAfterBoot);
+  LoadDisplayPreferences();
 
-  LoadDisplayPreferences(true);
   // DisplayPowerState should be ignored at boot.
   EXPECT_EQ(chromeos::DISPLAY_POWER_ALL_ON, GetRequestedPowerState());
 
-  shell->display_manager()->UpdateDisplays();
+  Shell::Get()->display_manager()->UpdateDisplays();
   // Check if the layout settings are notified to the system properly.
   // The new layout overrides old layout.
   // Inverted one of for specified pair (id1, id2).  Not used for the list
   // (id1, dummy_id) since dummy_id is not connected right now.
   EXPECT_EQ("id=2200000001, parent=2200000000, top, 20",
-            shell->display_manager()
+            Shell::Get()
+                ->display_manager()
                 ->GetCurrentDisplayLayout()
                 .placement_list[0]
                 .ToString());
@@ -802,7 +802,7 @@ TEST_F(DisplayPrefsTest, StorePowerStateNormalUser) {
 TEST_F(DisplayPrefsTest, DisplayPowerStateAfterRestart) {
   display_prefs()->StoreDisplayPowerStateForTest(
       chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON);
-  LoadDisplayPreferences(false);
+  LoadDisplayPreferences();
   EXPECT_EQ(chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON,
             GetRequestedPowerState());
 }
@@ -810,7 +810,7 @@ TEST_F(DisplayPrefsTest, DisplayPowerStateAfterRestart) {
 TEST_F(DisplayPrefsTest, DontSaveAndRestoreAllOff) {
   display_prefs()->StoreDisplayPowerStateForTest(
       chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON);
-  LoadDisplayPreferences(false);
+  LoadDisplayPreferences();
   // DisplayPowerState should be ignored at boot.
   EXPECT_EQ(chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON,
             GetRequestedPowerState());
@@ -824,7 +824,7 @@ TEST_F(DisplayPrefsTest, DontSaveAndRestoreAllOff) {
 
   // Don't try to load
   local_state()->SetString(prefs::kDisplayPowerState, "all_off");
-  LoadDisplayPreferences(false);
+  LoadDisplayPreferences();
   EXPECT_EQ(chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON,
             GetRequestedPowerState());
 }
@@ -978,7 +978,7 @@ TEST_F(DisplayPrefsTest, LoadRotationNoLogin) {
 
   display_prefs()->StoreDisplayRotationPrefsForTest(display::Display::ROTATE_90,
                                                     true);
-  LoadDisplayPreferences(false);
+  LoadDisplayPreferences();
 
   bool display_rotation_lock =
       display_manager()->registered_internal_display_rotation_lock();
@@ -1105,7 +1105,7 @@ TEST_F(DisplayPrefsTest, RestoreUnifiedMode) {
   StoreDisplayPropertyForList(
       list, "primary-id",
       std::make_unique<base::Value>(base::Int64ToString(first_display_id)));
-  LoadDisplayPreferences(false);
+  LoadDisplayPreferences();
 
   // Should not restore to unified unless unified desktop is enabled.
   display_info_list.emplace_back(second_display_info);
@@ -1115,7 +1115,7 @@ TEST_F(DisplayPrefsTest, RestoreUnifiedMode) {
   // Restored to unified.
   display_manager()->SetUnifiedDesktopEnabled(true);
   StoreDisplayBoolPropertyForList(list, "default_unified", true);
-  LoadDisplayPreferences(false);
+  LoadDisplayPreferences();
   display_manager()->OnNativeDisplaysChanged(display_info_list);
   EXPECT_TRUE(display_manager()->IsInUnifiedMode());
 
@@ -1130,7 +1130,7 @@ TEST_F(DisplayPrefsTest, RestoreUnifiedMode) {
       display::GetDisplayIdWithoutOutputIndex(second_display_id));
   StoreExternalDisplayMirrorInfo(external_display_mirror_info);
   StoreDisplayBoolPropertyForList(list, "default_unified", true);
-  LoadDisplayPreferences(false);
+  LoadDisplayPreferences();
   display_info_list.emplace_back(second_display_info);
   display_manager()->OnNativeDisplaysChanged(display_info_list);
   EXPECT_TRUE(display_manager()->IsInMirrorMode());
@@ -1147,7 +1147,7 @@ TEST_F(DisplayPrefsTest, RestoreUnifiedMode) {
   external_display_mirror_info.clear();
   StoreExternalDisplayMirrorInfo(external_display_mirror_info);
   StoreDisplayBoolPropertyForList(list, "default_unified", false);
-  LoadDisplayPreferences(false);
+  LoadDisplayPreferences();
   display_info_list.emplace_back(second_display_info);
   display_manager()->OnNativeDisplaysChanged(display_info_list);
   EXPECT_FALSE(display_manager()->IsInMirrorMode());
@@ -1187,7 +1187,7 @@ TEST_F(DisplayPrefsTest, RestoreThreeDisplays) {
   builder.AddDisplayPlacement(list[2], list[1],
                               display::DisplayPlacement::BOTTOM, 100);
   display_prefs()->StoreDisplayLayoutPrefForTest(list, *builder.Build());
-  LoadDisplayPreferences(false);
+  LoadDisplayPreferences();
 
   UpdateDisplay("200x200,200x200,300x300");
   display::DisplayIdList new_list =
@@ -1268,6 +1268,9 @@ TEST_F(DisplayPrefsTest, LegacyTouchCalibrationDataSupport) {
 TEST_F(DisplayPrefsTest, ExternalDisplayMirrorInfo) {
   LoggedInAsUser();
 
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      chromeos::switches::kFirstExecAfterBoot);
+
   const int64_t internal_display_id =
       display::test::DisplayManagerTestApi(display_manager())
           .SetFirstDisplayAsInternalDisplay();
@@ -1292,7 +1295,7 @@ TEST_F(DisplayPrefsTest, ExternalDisplayMirrorInfo) {
   std::set<int64_t> external_display_mirror_info;
   external_display_mirror_info.emplace(first_display_masked_id);
   StoreExternalDisplayMirrorInfo(external_display_mirror_info);
-  LoadDisplayPreferences(true);
+  LoadDisplayPreferences();
   const base::ListValue* pref_external_display_mirror_info =
       local_state()->GetList(prefs::kExternalDisplayMirrorInfo);
   EXPECT_EQ(1U, pref_external_display_mirror_info->GetSize());
@@ -1332,7 +1335,7 @@ TEST_F(DisplayPrefsTest, ExternalDisplayMirrorInfo) {
   external_display_mirror_info.clear();
   external_display_mirror_info.emplace(second_display_masked_id);
   StoreExternalDisplayMirrorInfo(external_display_mirror_info);
-  LoadDisplayPreferences(false);
+  LoadDisplayPreferences();
   pref_external_display_mirror_info =
       local_state()->GetList(prefs::kExternalDisplayMirrorInfo);
   EXPECT_EQ(1U, pref_external_display_mirror_info->GetSize());
@@ -1383,7 +1386,7 @@ TEST_F(DisplayPrefsTest, DisplayMixedMirrorMode) {
   base::Optional<display::MixedMirrorModeParams> mixed_params(
       base::in_place, internal_display_id, dst_ids);
   display_prefs()->StoreDisplayMixedMirrorModeParamsForTest(mixed_params);
-  LoadDisplayPreferences(false);
+  LoadDisplayPreferences();
 
   // Connect both first and second external display. Mixed mirror mode is
   // restored.

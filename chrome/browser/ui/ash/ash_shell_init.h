@@ -9,16 +9,24 @@
 
 #include "base/macros.h"
 
+class PrefRegistrySimple;
+
 namespace ash {
 class WindowManager;
 }  // namespace ash
 
-// Class responisble for initializing and destroying the Ash Shell for both
+// Class responsible for initializing and destroying the Ash Shell for both
 // CLASSIC and MUS modes.
 class AshShellInit {
  public:
   AshShellInit();
   ~AshShellInit();
+
+  // Registers ash display prefs so that they can be provided synchronously
+  // to Shell from the local state (which is loaded asynchronously in Shell).
+  // |registry| should be the PrefRegistry for local state prefs.
+  // TODO(stevenjb): Improve how we do this. https://crbug.com/678949.
+  static void RegisterDisplayPrefs(PrefRegistrySimple* registry);
 
  private:
   // Only created when running in ash::Config::MUS.
