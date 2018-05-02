@@ -22,6 +22,8 @@ blink_core_sources("script") {
     "html_parser_script_runner.h",
     "html_parser_script_runner_host.h",
     "ignore_destructive_write_count_incrementer.h",
+    "layered_api.cc",
+    "layered_api.h",
     "modulator.cc",
     "modulator.h",
     "modulator_impl_base.cc",
