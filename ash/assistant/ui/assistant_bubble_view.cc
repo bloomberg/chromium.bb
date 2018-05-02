@@ -7,6 +7,7 @@
 #include "ash/assistant/ash_assistant_controller.h"
 #include "ash/assistant/model/assistant_interaction_model.h"
 #include "ash/assistant/model/assistant_ui_element.h"
+#include "ash/assistant/ui/dialog_plate.h"
 #include "ash/public/cpp/app_list/answer_card_contents_registry.h"
 #include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
@@ -24,7 +25,7 @@ namespace ash {
 namespace {
 
 // Appearance.
-constexpr int kPaddingDip = 8;
+constexpr int kPaddingDip = 12;
 constexpr int kPreferredWidthDip = 364;
 constexpr int kSpacingDip = 8;
 constexpr SkColor kTextBackgroundColor = SkColorSetARGB(0x8A, 0x42, 0x85, 0xF4);
@@ -187,7 +188,7 @@ class InteractionContainer : public views::View {
     views::BoxLayout* layout =
         SetLayoutManager(std::make_unique<views::BoxLayout>(
             views::BoxLayout::Orientation::kHorizontal,
-            gfx::Insets(0, kPaddingDip), kSpacingDip));
+            gfx::Insets(0, kPaddingDip), 2 * kSpacingDip));
 
     layout->set_cross_axis_alignment(
         views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
@@ -391,8 +392,8 @@ void AssistantBubbleView::ChildVisibilityChanged(views::View* child) {
 
 void AssistantBubbleView::InitLayout() {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical, gfx::Insets(kPaddingDip, 0),
-      kSpacingDip));
+      views::BoxLayout::Orientation::kVertical,
+      gfx::Insets(kPaddingDip, 0, 0, 0), kSpacingDip));
 
   // Interaction container.
   AddChildView(interaction_container_);
@@ -404,6 +405,10 @@ void AssistantBubbleView::InitLayout() {
   // Suggestions container.
   suggestions_container_->SetVisible(false);
   AddChildView(suggestions_container_);
+
+  // Dialog plate.
+  DialogPlate* dialog_plate = new DialogPlate();
+  AddChildView(dialog_plate);
 }
 
 void AssistantBubbleView::SetProcessingUiElement(bool is_processing) {
