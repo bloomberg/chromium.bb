@@ -27,7 +27,7 @@ const CGFloat kLocationBarBorderColor = 0xA3A3A3;
 const CGFloat kLocationBarCornerRadius = 2.0f;
 const CGFloat kLocationBarShadowHeight = 2.0f;
 const CGFloat kLocationBarShadowInset = 1.0f;
-const CGFloat kIcongnitoLocationBackgroundColor = 0x737373;
+const CGFloat kIncognitoLocationBackgroundColor = 0x737373;
 
 const CGFloat kProgressBarHeight = 2.0f;
 
@@ -48,7 +48,7 @@ const CGFloat kLeadingLocationBarButtonImageInset = 15;
 const CGFloat kCancelButtonHorizontalInset = 8;
 
 const CGFloat kBlurBackgroundGrayscaleComponent = 0.98;
-const CGFloat kBlurBackgroundAlpha = 0.5;
+const CGFloat kBlurBackgroundAlpha = 0.4;
 
 const CGFloat kToolbarButtonTintColorAlpha = 0.5;
 const CGFloat kToolbarButtonTintColorAlphaHighlighted = 0.10;
@@ -64,7 +64,6 @@ const CGFloat kExpandedLocationBarHorizontalMargin = 8;
 const CGFloat kContractedLocationBarHorizontalMargin = 19;
 
 const CGFloat kAdaptiveLocationBarCornerRadius = 11;
-const CGFloat kIcongnitoAdaptiveLocationBackgroundColor = 0x6A6A6A;
 const CGFloat kAdaptiveLocationBarBackgroundAlpha = 0.12;
 const CGFloat kAdaptiveLocationBarVerticalMargin = 6.0f;
 

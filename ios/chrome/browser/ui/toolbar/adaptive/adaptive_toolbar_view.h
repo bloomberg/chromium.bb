@@ -23,7 +23,7 @@
 @property(nonatomic, strong, readonly) MDCProgressView* progressBar;
 
 // The blur visual effect view.
-@property(nonatomic, strong, readonly) UIVisualEffectView* blur;
+@property(nonatomic, strong, readonly) UIView* blur;
 
 // Button to navigate back.
 @property(nonatomic, strong, readonly) ToolbarButton* backButton;

@@ -27,12 +27,22 @@
 }
 
 - (UIBlurEffect*)blurEffect {
+  if (UIAccessibilityIsReduceTransparencyEnabled())
+    return nil;
+
   switch (self.style) {
     case NORMAL:
-      return [UIBlurEffect effectWithStyle:UIBlurEffectStyleLight];
+      return [UIBlurEffect effectWithStyle:UIBlurEffectStyleExtraLight];
     case INCOGNITO:
       return [UIBlurEffect effectWithStyle:UIBlurEffectStyleDark];
   }
+}
+
+- (UIColor*)blurBackgroundColor {
+  if (UIAccessibilityIsReduceTransparencyEnabled())
+    return [UIColor colorWithWhite:kBlurBackgroundGrayscaleComponent alpha:1];
+  return [UIColor colorWithWhite:kBlurBackgroundGrayscaleComponent
+                           alpha:kBlurBackgroundAlpha];
 }
 
 - (UIColor*)NTPBackgroundColor {
@@ -73,7 +83,7 @@
       case NORMAL:
         return [UIColor whiteColor];
       case INCOGNITO:
-        return UIColorFromRGB(kIcongnitoLocationBackgroundColor);
+        return UIColorFromRGB(kIncognitoLocationBackgroundColor);
     }
   }
 }

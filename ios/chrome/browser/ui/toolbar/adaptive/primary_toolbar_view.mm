@@ -27,7 +27,7 @@
 @property(nonatomic, strong) UIView* contentView;
 
 // The blur visual effect view, redefined as readwrite.
-@property(nonatomic, strong, readwrite) UIVisualEffectView* blur;
+@property(nonatomic, strong, readwrite) UIView* blur;
 
 // Container for the location bar, redefined as readwrite.
 @property(nonatomic, strong, readwrite) UIView* locationBarContainer;
@@ -149,7 +149,13 @@
 // Sets the blur effect on the toolbar background.
 - (void)setUpBlurredBackground {
   UIBlurEffect* blurEffect = self.buttonFactory.toolbarConfiguration.blurEffect;
-  self.blur = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
+  if (blurEffect) {
+    self.blur = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
+  } else {
+    self.blur = [[UIView alloc] init];
+  }
+  self.blur.backgroundColor =
+      self.buttonFactory.toolbarConfiguration.blurBackgroundColor;
   [self addSubview:self.blur];
 
   self.contentView = self;
@@ -163,7 +169,6 @@
     vibrancyView.translatesAutoresizingMaskIntoConstraints = NO;
     AddSameConstraints(self, vibrancyView);
   }
-
 
   self.blur.translatesAutoresizingMaskIntoConstraints = NO;
   AddSameConstraints(self.blur, self);

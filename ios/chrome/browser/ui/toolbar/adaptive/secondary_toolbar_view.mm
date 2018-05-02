@@ -25,7 +25,7 @@
 @property(nonatomic, strong, readwrite) NSArray<ToolbarButton*>* allButtons;
 
 // The blur visual effect view, redefined as readwrite.
-@property(nonatomic, strong, readwrite) UIVisualEffectView* blur;
+@property(nonatomic, strong, readwrite) UIView* blur;
 
 // The stack view containing the buttons.
 @property(nonatomic, strong) UIStackView* stackView;
@@ -85,7 +85,13 @@
   self.translatesAutoresizingMaskIntoConstraints = NO;
 
   UIBlurEffect* blurEffect = self.buttonFactory.toolbarConfiguration.blurEffect;
-  self.blur = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
+  if (blurEffect) {
+    self.blur = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
+  } else {
+    self.blur = [[UIView alloc] init];
+  }
+  self.blur.backgroundColor =
+      self.buttonFactory.toolbarConfiguration.blurBackgroundColor;
   [self addSubview:self.blur];
   self.blur.translatesAutoresizingMaskIntoConstraints = NO;
   AddSameConstraints(self.blur, self);

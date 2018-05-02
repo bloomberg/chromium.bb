@@ -110,8 +110,13 @@ const CGFloat kSearchIconLeftMargin = 9;
   ToolbarButtonFactory* buttonFactory =
       [[ToolbarButtonFactory alloc] initWithStyle:NORMAL];
   UIBlurEffect* blurEffect = buttonFactory.toolbarConfiguration.blurEffect;
-  UIVisualEffectView* blur =
-      [[UIVisualEffectView alloc] initWithEffect:blurEffect];
+  UIView* blur = nil;
+  if (blurEffect) {
+    blur = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
+  } else {
+    blur = [[UIView alloc] init];
+  }
+  blur.backgroundColor = buttonFactory.toolbarConfiguration.blurBackgroundColor;
   blur.layer.cornerRadius = kAdaptiveLocationBarCornerRadius;
   [searchField insertSubview:blur atIndex:0];
   blur.translatesAutoresizingMaskIntoConstraints = NO;
