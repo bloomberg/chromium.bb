@@ -110,36 +110,9 @@ class PLATFORM_EXPORT QueueingTimeEstimator {
     FrameStatus current_frame_status_ = FrameStatus::kNone;
   };
 
-  class State {
-   public:
-    explicit State(int steps_per_window);
-    void OnTopLevelTaskStarted(Client* client,
-                               base::TimeTicks task_start_time,
-                               MainThreadTaskQueue* queue);
-    void OnTopLevelTaskCompleted(Client* client, base::TimeTicks task_end_time);
-    void OnBeginNestedRunLoop();
-    void OnRendererStateChanged(Client* client,
-                                bool backgrounded,
-                                base::TimeTicks transition_time);
-
-    base::TimeDelta window_step_width;
-    base::TimeTicks step_start_time;
-    base::TimeTicks current_task_start_time;
-    // |renderer_backgrounded| is the renderer's current status.
-    bool renderer_backgrounded = kLaunchingProcessIsBackgrounded;
-    bool processing_task = false;
-    Calculator calculator_;
-
-   private:
-    void AdvanceTime(Client* client, base::TimeTicks current_time);
-    bool TimePastStepEnd(base::TimeTicks task_end_time);
-    bool in_nested_message_loop_ = false;
-  };
-
   QueueingTimeEstimator(Client* client,
                         base::TimeDelta window_duration,
                         int steps_per_window);
-  explicit QueueingTimeEstimator(const State& state);
 
   void OnTopLevelTaskStarted(base::TimeTicks task_start_time,
                              MainThreadTaskQueue* queue);
@@ -148,12 +121,19 @@ class PLATFORM_EXPORT QueueingTimeEstimator {
   void OnRendererStateChanged(bool backgrounded,
                               base::TimeTicks transition_time);
 
-  // Returns all state except for the current |client_|.
-  const State& GetState() const { return state_; }
-
  private:
+  void AdvanceTime(base::TimeTicks current_time);
+  bool TimePastStepEnd(base::TimeTicks task_end_time);
+
   Client* client_;  // NOT OWNED.
-  State state_;
+  const base::TimeDelta window_step_width_;
+  base::TimeTicks step_start_time_;
+  base::TimeTicks current_task_start_time_;
+  // |renderer_backgrounded_| is the renderer's current status.
+  bool renderer_backgrounded_;
+  bool processing_task_;
+  bool in_nested_message_loop_;
+  Calculator calculator_;
 
   DISALLOW_ASSIGN(QueueingTimeEstimator);
 };
