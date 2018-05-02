@@ -78,6 +78,8 @@ blink_modules_sources("media_controls") {
     "media_controls_resource_loader.h",
     "media_controls_rotate_to_fullscreen_delegate.cc",
     "media_controls_rotate_to_fullscreen_delegate.h",
+    "media_controls_window_event_listener.cc",
+    "media_controls_window_event_listener.h",
     "media_download_in_product_help_manager.cc",
     "media_download_in_product_help_manager.h",
   ]

@@ -148,6 +148,8 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   void DidDismissDownloadInProductHelp();
   MediaDownloadInProductHelpManager* DownloadInProductHelp();
 
+  void MaybeRecordOverflowTimeToAction();
+
   // Accessors for UI elements.
   const MediaControlCurrentTimeDisplayElement& CurrentTimeDisplay() const;
   MediaControlToggleClosedCaptionsButtonElement& ToggleClosedCaptions();
@@ -257,6 +259,8 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
 
   void ElementSizeChangedTimerFired(TimerBase*);
 
+  void HideAllMenus();
+
   // Hide elements that don't fit, and show those things that we want which
   // do fit.  This requires that m_effectiveWidth and m_effectiveHeight are
   // current.
@@ -342,6 +346,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   Member<MediaControlDownloadButtonElement> download_button_;
 
   Member<MediaControlsMediaEventListener> media_event_listener_;
+  Member<MediaControlsWindowEventListener> window_event_listener_;
   Member<MediaControlsOrientationLockDelegate> orientation_lock_delegate_;
   Member<MediaControlsRotateToFullscreenDelegate>
       rotate_to_fullscreen_delegate_;

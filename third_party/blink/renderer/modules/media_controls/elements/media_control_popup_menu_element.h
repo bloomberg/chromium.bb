@@ -21,9 +21,6 @@ class MediaControlPopupMenuElement : public MediaControlDivElement {
   // for the popup.
   virtual Element* PopupAnchor() const = 0;
 
-  // Callback run when an item is selected from the popup menu.
-  virtual void OnItemSelected();
-
   // Node override.
   void DefaultEventHandler(Event*) override;
   void RemovedFrom(ContainerNode*) override;
@@ -36,21 +33,19 @@ class MediaControlPopupMenuElement : public MediaControlDivElement {
   void SetPosition();
 
  private:
-  class EventListener;
+  class KeyboardEventListener;
 
   Element* EffectivePopupAnchor() const;
 
-  void HideIfNotFocused();
-
   void SelectFirstItem();
 
-  // Actions called by the EventListener object when specific evenst are
+  // Actions called by the KeyboardEventListener object when specific evenst are
   // received.
   void SelectNextItem();
   void SelectPreviousitem();
   void CloseFromKeyboard();
 
-  Member<EventListener> event_listener_;
+  Member<EventListener> keyboard_event_listener_;
 };
 
 }  // namespace blink

@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_current_time_display_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_download_button_element.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_mute_button_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_overflow_menu_list_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_remaining_time_display_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_timeline_element.h"
@@ -266,7 +267,7 @@ class MediaControlsImplTest : public PageTestBase,
 
   void ClickOverflowButton() {
     MediaControls()
-        .download_button_->OverflowElementForTests()
+        .mute_button_->OverflowElementForTests()
         ->DispatchSimulatedClick(nullptr, kSendNoEvents,
                                  SimulatedClickCreationScope::kFromUserAgent);
   }
@@ -1223,7 +1224,6 @@ TEST_F(MediaControlsImplTest, OverflowMenuMetricsTimeToAction) {
   ToggleOverflowMenu();
   AdvanceClock(90);
   ClickOverflowButton();
-
   GetHistogramTester().ExpectBucketCount(kTimeToActionHistogramName, 90, 1);
   GetHistogramTester().ExpectTotalCount(kTimeToActionHistogramName, 2);
 
