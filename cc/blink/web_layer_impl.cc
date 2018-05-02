@@ -155,9 +155,7 @@ WebFloatPoint WebLayerImpl::GetPosition() const {
   return layer_->position();
 }
 
-void WebLayerImpl::SetTransform(const SkMatrix44& matrix) {
-  gfx::Transform transform;
-  transform.matrix() = matrix;
+void WebLayerImpl::SetTransform(const gfx::Transform& transform) {
   layer_->SetTransform(transform);
 }
 
@@ -170,8 +168,8 @@ blink::WebFloatPoint3D WebLayerImpl::TransformOrigin() const {
   return layer_->transform_origin();
 }
 
-SkMatrix44 WebLayerImpl::Transform() const {
-  return layer_->transform().matrix();
+const gfx::Transform& WebLayerImpl::Transform() const {
+  return layer_->transform();
 }
 
 void WebLayerImpl::SetDrawsContent(bool draws_content) {

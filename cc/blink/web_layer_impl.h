@@ -63,10 +63,10 @@ class CC_BLINK_EXPORT WebLayerImpl : public blink::WebLayer {
   bool Opaque() const override;
   void SetPosition(const blink::WebFloatPoint& position) override;
   blink::WebFloatPoint GetPosition() const override;
-  void SetTransform(const SkMatrix44& transform) override;
+  void SetTransform(const gfx::Transform& transform) override;
   void SetTransformOrigin(const blink::WebFloatPoint3D& point) override;
   blink::WebFloatPoint3D TransformOrigin() const override;
-  SkMatrix44 Transform() const override;
+  const gfx::Transform& Transform() const override;
   void SetDrawsContent(bool draws_content) override;
   bool DrawsContent() const override;
   void SetDoubleSided(bool double_sided) override;

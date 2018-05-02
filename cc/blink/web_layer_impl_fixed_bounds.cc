@@ -7,7 +7,6 @@
 #include "cc/layers/layer.h"
 #include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_size.h"
-#include "third_party/skia/include/core/SkMatrix44.h"
 
 using cc::Layer;
 
@@ -46,14 +45,12 @@ blink::WebSize WebLayerImplFixedBounds::Bounds() const {
   return original_bounds_;
 }
 
-void WebLayerImplFixedBounds::SetTransform(const SkMatrix44& matrix) {
-  gfx::Transform transform;
-  transform.matrix() = matrix;
+void WebLayerImplFixedBounds::SetTransform(const gfx::Transform& transform) {
   SetTransformInternal(transform);
 }
 
-SkMatrix44 WebLayerImplFixedBounds::Transform() const {
-  return original_transform_.matrix();
+const gfx::Transform& WebLayerImplFixedBounds::Transform() const {
+  return original_transform_;
 }
 
 void WebLayerImplFixedBounds::SetFixedBounds(gfx::Size fixed_bounds) {

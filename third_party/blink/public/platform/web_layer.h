@@ -41,8 +41,6 @@
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/skia/include/core/SkColor.h"
 
-class SkMatrix44;
-
 namespace cc {
 class FilterOperations;
 class Layer;
@@ -54,6 +52,7 @@ struct ElementId;
 
 namespace gfx {
 class Rect;
+class Transform;
 }
 
 namespace blink {
@@ -116,8 +115,8 @@ class WebLayer {
   virtual void SetPosition(const WebFloatPoint&) = 0;
   virtual WebFloatPoint GetPosition() const = 0;
 
-  virtual void SetTransform(const SkMatrix44&) = 0;
-  virtual SkMatrix44 Transform() const = 0;
+  virtual void SetTransform(const gfx::Transform&) = 0;
+  virtual const gfx::Transform& Transform() const = 0;
 
   virtual void SetTransformOrigin(const WebFloatPoint3D&) {}
   virtual WebFloatPoint3D TransformOrigin() const { return WebFloatPoint3D(); }
