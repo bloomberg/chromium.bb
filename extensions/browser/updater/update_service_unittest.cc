@@ -482,7 +482,7 @@ TEST_F(UpdateServiceTest, InProgressUpdate_Successful) {
       base::BindOnce([](bool* executed) { *executed = true; }, &executed));
   EXPECT_FALSE(executed);
 
-  auto& request = update_client()->update_request(0);
+  const auto& request = update_client()->update_request(0);
   EXPECT_THAT(request.extension_ids,
               testing::ElementsAre("A", "B", "C", "D", "E"));
 
@@ -519,7 +519,7 @@ TEST_F(UpdateServiceTest, InProgressUpdate_Duplicate) {
 
   ASSERT_EQ(1, update_client()->num_update_requests());
 
-  auto& request = update_client()->update_request(0);
+  const auto& request = update_client()->update_request(0);
   EXPECT_THAT(request.extension_ids,
               testing::ElementsAre("A", "B", "C", "D", "E"));
 
@@ -553,8 +553,8 @@ TEST_F(UpdateServiceTest, InProgressUpdate_NonOverlapped) {
   EXPECT_FALSE(executed2);
 
   ASSERT_EQ(2, update_client()->num_update_requests());
-  auto& request1 = update_client()->update_request(0);
-  auto& request2 = update_client()->update_request(1);
+  const auto& request1 = update_client()->update_request(0);
+  const auto& request2 = update_client()->update_request(1);
 
   EXPECT_THAT(request1.extension_ids, testing::ElementsAre("A", "B", "C"));
   EXPECT_THAT(request2.extension_ids, testing::ElementsAre("D", "E"));
@@ -590,8 +590,8 @@ TEST_F(UpdateServiceTest, InProgressUpdate_Overlapped) {
       base::BindOnce([](bool* executed) { *executed = true; }, &executed2));
   EXPECT_FALSE(executed2);
 
-  auto& request1 = update_client()->update_request(0);
-  auto& request2 = update_client()->update_request(1);
+  const auto& request1 = update_client()->update_request(0);
+  const auto& request2 = update_client()->update_request(1);
 
   EXPECT_THAT(request1.extension_ids, testing::ElementsAre("A", "B", "C"));
   EXPECT_THAT(request2.extension_ids, testing::ElementsAre("D"));
@@ -643,8 +643,8 @@ TEST_F(UpdateServiceTest, InProgressUpdate_3Overlapped) {
   EXPECT_FALSE(executed3);
 
   ASSERT_EQ(2, update_client()->num_update_requests());
-  auto& request1 = update_client()->update_request(0);
-  auto& request2 = update_client()->update_request(1);
+  const auto& request1 = update_client()->update_request(0);
+  const auto& request2 = update_client()->update_request(1);
 
   EXPECT_THAT(request1.extension_ids, testing::ElementsAre("A", "B", "C"));
   EXPECT_THAT(request2.extension_ids, testing::ElementsAre("D", "E"));
@@ -709,9 +709,9 @@ TEST_F(UpdateServiceTest, InProgressUpdate_4Overlapped) {
   EXPECT_FALSE(executed4);
 
   ASSERT_EQ(3, update_client()->num_update_requests());
-  auto& request1 = update_client()->update_request(0);
-  auto& request2 = update_client()->update_request(1);
-  auto& request3 = update_client()->update_request(2);
+  const auto& request1 = update_client()->update_request(0);
+  const auto& request2 = update_client()->update_request(1);
+  const auto& request3 = update_client()->update_request(2);
 
   EXPECT_THAT(request1.extension_ids, testing::ElementsAre("A", "B", "C"));
   EXPECT_THAT(request2.extension_ids, testing::ElementsAre("D", "E"));
@@ -730,6 +730,113 @@ TEST_F(UpdateServiceTest, InProgressUpdate_4Overlapped) {
 
   update_client()->RunDelayedUpdate(2);
   ASSERT_TRUE(executed4);
+}
+
+TEST_F(UpdateServiceTest, InProgressUpdate_Batch) {
+  // Verify that extensions are batched when the number of extensions exceeds
+  // 20.
+  update_client()->set_delay_update();
+  ExtensionUpdateCheckParams uc;
+
+  for (int i = 0; i < 50; ++i)
+    uc.update_info[base::StringPrintf("A%02d", i)] = ExtensionUpdateData();
+
+  bool executed = false;
+  update_service()->StartUpdateCheck(
+      uc, base::BindOnce([](bool* executed) { *executed = true; }, &executed));
+  EXPECT_FALSE(executed);
+
+  ASSERT_EQ(3, update_client()->num_update_requests());
+
+  const auto& request1 = update_client()->update_request(0);
+  const auto& request2 = update_client()->update_request(1);
+  const auto& request3 = update_client()->update_request(2);
+
+  EXPECT_THAT(
+      request1.extension_ids,
+      testing::ElementsAre("A00", "A01", "A02", "A03", "A04", "A05", "A06",
+                           "A07", "A08", "A09", "A10", "A11", "A12", "A13",
+                           "A14", "A15", "A16", "A17", "A18", "A19"));
+  EXPECT_THAT(
+      request2.extension_ids,
+      testing::ElementsAre("A20", "A21", "A22", "A23", "A24", "A25", "A26",
+                           "A27", "A28", "A29", "A30", "A31", "A32", "A33",
+                           "A34", "A35", "A36", "A37", "A38", "A39"));
+  EXPECT_THAT(request3.extension_ids,
+              testing::ElementsAre("A40", "A41", "A42", "A43", "A44", "A45",
+                                   "A46", "A47", "A48", "A49"));
+
+  update_client()->RunDelayedUpdate(0);
+  EXPECT_FALSE(executed);
+
+  update_client()->RunDelayedUpdate(1);
+  EXPECT_FALSE(executed);
+
+  update_client()->RunDelayedUpdate(2);
+  EXPECT_TRUE(executed);
+}
+
+TEST_F(UpdateServiceTest, InProgressUpdate_NoBatchAndBatch) {
+  update_client()->set_delay_update();
+  ExtensionUpdateCheckParams uc1;
+  ExtensionUpdateCheckParams uc2;
+
+  uc1.update_info["AA"] = ExtensionUpdateData();
+  uc1.update_info["BB"] = ExtensionUpdateData();
+  uc1.update_info["CC"] = ExtensionUpdateData();
+  uc1.update_info["DD"] = ExtensionUpdateData();
+
+  for (int i = 0; i < 50; ++i)
+    uc2.update_info[base::StringPrintf("A%02d", i)] = ExtensionUpdateData();
+
+  bool executed1 = false;
+  update_service()->StartUpdateCheck(
+      uc1,
+      base::BindOnce([](bool* executed) { *executed = true; }, &executed1));
+  EXPECT_FALSE(executed1);
+
+  bool executed2 = false;
+  update_service()->StartUpdateCheck(
+      uc2,
+      base::BindOnce([](bool* executed) { *executed = true; }, &executed2));
+  EXPECT_FALSE(executed2);
+
+  ASSERT_EQ(4, update_client()->num_update_requests());
+
+  const auto& request1 = update_client()->update_request(0);
+  const auto& request2 = update_client()->update_request(1);
+  const auto& request3 = update_client()->update_request(2);
+  const auto& request4 = update_client()->update_request(3);
+
+  EXPECT_THAT(request1.extension_ids,
+              testing::ElementsAre("AA", "BB", "CC", "DD"));
+
+  EXPECT_THAT(
+      request2.extension_ids,
+      testing::ElementsAre("A00", "A01", "A02", "A03", "A04", "A05", "A06",
+                           "A07", "A08", "A09", "A10", "A11", "A12", "A13",
+                           "A14", "A15", "A16", "A17", "A18", "A19"));
+  EXPECT_THAT(
+      request3.extension_ids,
+      testing::ElementsAre("A20", "A21", "A22", "A23", "A24", "A25", "A26",
+                           "A27", "A28", "A29", "A30", "A31", "A32", "A33",
+                           "A34", "A35", "A36", "A37", "A38", "A39"));
+  EXPECT_THAT(request4.extension_ids,
+              testing::ElementsAre("A40", "A41", "A42", "A43", "A44", "A45",
+                                   "A46", "A47", "A48", "A49"));
+
+  update_client()->RunDelayedUpdate(0);
+  EXPECT_TRUE(executed1);
+  EXPECT_FALSE(executed2);
+
+  update_client()->RunDelayedUpdate(1);
+  EXPECT_FALSE(executed2);
+
+  update_client()->RunDelayedUpdate(2);
+  EXPECT_FALSE(executed2);
+
+  update_client()->RunDelayedUpdate(3);
+  EXPECT_TRUE(executed2);
 }
 
 class UpdateServiceCanUpdateTest : public UpdateServiceTest,
