@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/allocator/partition_allocator/partition_root_base-inl.h"
+#include "base/allocator/partition_allocator/partition_root_base.h"
 
 #include "base/allocator/partition_allocator/oom.h"
 #include "base/allocator/partition_allocator/partition_oom.h"
-#include "base/allocator/partition_allocator/partition_page-inl.h"
+#include "base/allocator/partition_allocator/partition_page.h"
 #include "build/build_config.h"
 
 namespace base {

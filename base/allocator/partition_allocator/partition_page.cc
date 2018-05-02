@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/allocator/partition_allocator/partition_direct_map_extent-inl.h"
-#include "base/allocator/partition_allocator/partition_page-inl.h"
-#include "base/allocator/partition_allocator/partition_root_base-inl.h"
+#include "base/allocator/partition_allocator/partition_page.h"
+
+#include "base/allocator/partition_allocator/partition_direct_map_extent.h"
+#include "base/allocator/partition_allocator/partition_root_base.h"
 
 namespace base {
 namespace internal {

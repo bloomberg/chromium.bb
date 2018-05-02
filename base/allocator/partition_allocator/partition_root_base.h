@@ -5,8 +5,11 @@
 #ifndef BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_ROOT_BASE_H_
 #define BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_ROOT_BASE_H_
 
+#include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
+#include "base/allocator/partition_allocator/partition_bucket.h"
 #include "base/allocator/partition_allocator/partition_direct_map_extent.h"
+#include "base/allocator/partition_allocator/partition_page.h"
 
 namespace base {
 namespace internal {
@@ -51,11 +54,26 @@ struct BASE_EXPORT PartitionRootBase {
 
   // Public API
 
+  // Allocates out of the given bucket. Properly, this function should probably
+  // be in PartitionBucket, but because the implementation needs to be inlined
+  // for performance, and because it needs to inspect PartitionPage,
+  // it becomes impossible to have it in PartitionBucket as this causes a
+  // cyclical dependency on PartitionPage function implementations.
+  //
+  // Moving it a layer lower couples PartitionRootBase and PartitionBucket, but
+  // preserves the layering of the includes.
+  //
+  // Note the matching Free() functions are in PartitionPage.
+  ALWAYS_INLINE void* AllocFromBucket(PartitionBucket* bucket,
+                                      int flags,
+                                      size_t size);
+
+  ALWAYS_INLINE static bool IsValidPage(PartitionPage* page);
+  ALWAYS_INLINE static PartitionRootBase* FromPage(PartitionPage* page);
+
   // gOomHandlingFunction is invoked when PartitionAlloc hits OutOfMemory.
   static void (*gOomHandlingFunction)();
   NOINLINE void OutOfMemory();
-
-  ALWAYS_INLINE static PartitionRootBase* FromPage(PartitionPage* page);
 
   ALWAYS_INLINE void IncreaseCommittedPages(size_t len);
   ALWAYS_INLINE void DecreaseCommittedPages(size_t len);
@@ -64,6 +82,94 @@ struct BASE_EXPORT PartitionRootBase {
 
   void DecommitEmptyPages();
 };
+
+ALWAYS_INLINE void* PartitionRootBase::AllocFromBucket(PartitionBucket* bucket,
+                                                       int flags,
+                                                       size_t size) {
+  PartitionPage* page = bucket->active_pages_head;
+  // Check that this page is neither full nor freed.
+  DCHECK(page->num_allocated_slots >= 0);
+  void* ret = page->freelist_head;
+  if (LIKELY(ret != 0)) {
+    // If these DCHECKs fire, you probably corrupted memory.
+    // TODO(palmer): See if we can afford to make this a CHECK.
+    DCHECK(PartitionRootBase::IsValidPage(page));
+    // All large allocations must go through the slow path to correctly
+    // update the size metadata.
+    DCHECK(page->get_raw_size() == 0);
+    internal::PartitionFreelistEntry* new_head =
+        internal::PartitionFreelistEntry::Transform(
+            static_cast<internal::PartitionFreelistEntry*>(ret)->next);
+    page->freelist_head = new_head;
+    page->num_allocated_slots++;
+  } else {
+    ret = bucket->SlowPathAlloc(this, flags, size);
+    // TODO(palmer): See if we can afford to make this a CHECK.
+    DCHECK(!ret ||
+           PartitionRootBase::IsValidPage(PartitionPage::FromPointer(ret)));
+  }
+#if DCHECK_IS_ON()
+  if (!ret)
+    return 0;
+  // Fill the uninitialized pattern, and write the cookies.
+  page = PartitionPage::FromPointer(ret);
+  // TODO(ajwong): Can |page->bucket| ever not be |this|? If not, can this just
+  // be bucket->slot_size?
+  size_t new_slot_size = page->bucket->slot_size;
+  size_t raw_size = page->get_raw_size();
+  if (raw_size) {
+    DCHECK(raw_size == size);
+    new_slot_size = raw_size;
+  }
+  size_t no_cookie_size = PartitionCookieSizeAdjustSubtract(new_slot_size);
+  char* char_ret = static_cast<char*>(ret);
+  // The value given to the application is actually just after the cookie.
+  ret = char_ret + kCookieSize;
+
+  // Debug fill region kUninitializedByte and surround it with 2 cookies.
+  PartitionCookieWriteValue(char_ret);
+  memset(ret, kUninitializedByte, no_cookie_size);
+  PartitionCookieWriteValue(char_ret + kCookieSize + no_cookie_size);
+#endif
+  return ret;
+}
+
+ALWAYS_INLINE bool PartitionRootBase::IsValidPage(PartitionPage* page) {
+  PartitionRootBase* root = PartitionRootBase::FromPage(page);
+  return root->inverted_self == ~reinterpret_cast<uintptr_t>(root);
+}
+
+ALWAYS_INLINE PartitionRootBase* PartitionRootBase::FromPage(
+    PartitionPage* page) {
+  PartitionSuperPageExtentEntry* extent_entry =
+      reinterpret_cast<PartitionSuperPageExtentEntry*>(
+          reinterpret_cast<uintptr_t>(page) & kSystemPageBaseMask);
+  return extent_entry->root;
+}
+
+ALWAYS_INLINE void PartitionRootBase::IncreaseCommittedPages(size_t len) {
+  total_size_of_committed_pages += len;
+  DCHECK(total_size_of_committed_pages <=
+         total_size_of_super_pages + total_size_of_direct_mapped_pages);
+}
+
+ALWAYS_INLINE void PartitionRootBase::DecreaseCommittedPages(size_t len) {
+  total_size_of_committed_pages -= len;
+  DCHECK(total_size_of_committed_pages <=
+         total_size_of_super_pages + total_size_of_direct_mapped_pages);
+}
+
+ALWAYS_INLINE void PartitionRootBase::DecommitSystemPages(void* address,
+                                                          size_t length) {
+  ::base::DecommitSystemPages(address, length);
+  DecreaseCommittedPages(length);
+}
+
+ALWAYS_INLINE void PartitionRootBase::RecommitSystemPages(void* address,
+                                                          size_t length) {
+  CHECK(::base::RecommitSystemPages(address, length, PageReadWrite));
+  IncreaseCommittedPages(length);
+}
 
 }  // namespace internal
 }  // namespace base

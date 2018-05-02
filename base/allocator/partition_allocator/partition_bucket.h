@@ -32,7 +32,6 @@ struct PartitionBucket {
   void Init(uint32_t new_slot_size);
 
   // Note the matching Free() functions are in PartitionPage.
-  BASE_EXPORT void* Alloc(PartitionRootBase* root, int flags, size_t size);
   BASE_EXPORT NOINLINE void* SlowPathAlloc(PartitionRootBase* root,
                                            int flags,
                                            size_t size);
