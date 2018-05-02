@@ -562,14 +562,12 @@ def _AnnotatePakResources(out_dir):
 
 
 # This method also used by //build/android/gyp/assert_static_initializers.py
-def AnalyzeStaticInitializers(apk_filename, tool_prefix, dump_sis, out_dir,
-                              ignored_libs):
+def AnalyzeStaticInitializers(apk_filename, tool_prefix, dump_sis, out_dir):
   # Static initializer counting mostly copies logic in
   # infra/scripts/legacy/scripts/slave/chromium/sizes.py.
   with zipfile.ZipFile(apk_filename) as z:
     so_files = [f for f in z.infolist()
-                if f.filename.endswith('.so') and f.file_size > 0
-                and os.path.basename(f.filename) not in ignored_libs]
+                if f.filename.endswith('.so') and f.file_size > 0]
   # Skip checking static initializers for 32 bit .so files when 64 bit .so files
   # are present since the 32 bit versions will be checked by bots that only
   # build the 32 bit version. This avoids the complexity of finding 32 bit .so
@@ -733,7 +731,7 @@ def main():
   _PrintDexAnalysis(args.apk, chartjson=chartjson)
 
   si_count = AnalyzeStaticInitializers(
-      args.apk, tool_prefix, args.dump_sis, out_dir, [])
+      args.apk, tool_prefix, args.dump_sis, out_dir)
   perf_tests_results_helper.ReportPerfResult(
       chartjson, 'StaticInitializersCount', 'count', si_count, 'count')
 
