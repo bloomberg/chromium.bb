@@ -45,17 +45,21 @@ TabCloseButton::~TabCloseButton() {}
 void TabCloseButton::SetTabColor(SkColor color, bool tab_color_is_dark) {
   SkColor hover_color = SkColorSetRGB(0xDB, 0x44, 0x37);
   SkColor pressed_color = SkColorSetRGB(0xA8, 0x35, 0x2A);
+  SkColor icon_color = SK_ColorWHITE;
   if (MD::GetMode() == MD::MATERIAL_REFRESH) {
     hover_color = tab_color_is_dark ? gfx::kGoogleGrey700 : gfx::kGoogleGrey200;
     pressed_color =
         tab_color_is_dark ? gfx::kGoogleGrey600 : gfx::kGoogleGrey300;
+    icon_color = color;
   }
-  GenerateImages(false, color, hover_color, pressed_color);
+  GenerateImages(false, color, icon_color, hover_color, pressed_color);
 }
 
 void TabCloseButton::ActiveStateChanged(const Tab* parent_tab) {
+  SkColor icon_color =
+      parent_tab->GetCloseTabButtonColor(views::Button::STATE_NORMAL);
   GenerateImages(
-      true, parent_tab->GetCloseTabButtonColor(views::Button::STATE_NORMAL),
+      true, icon_color, icon_color,
       parent_tab->GetCloseTabButtonColor(views::Button::STATE_HOVERED),
       parent_tab->GetCloseTabButtonColor(views::Button::STATE_PRESSED));
 }
@@ -134,26 +138,32 @@ bool TabCloseButton::GetHitTestMask(gfx::Path* mask) const {
 }
 
 void TabCloseButton::GenerateImages(bool is_touch,
-                                    SkColor normal_color,
-                                    SkColor hover_color,
-                                    SkColor pressed_color) {
+                                    SkColor normal_icon_color,
+                                    SkColor hover_pressed_icon_color,
+                                    SkColor hover_highlight_color,
+                                    SkColor pressed_highlight_color) {
   const gfx::VectorIcon& button_icon =
       is_touch ? kTabCloseButtonTouchIcon : kTabCloseNormalIcon;
   const gfx::VectorIcon& highlight = is_touch
                                          ? kTabCloseButtonTouchHighlightIcon
                                          : kTabCloseButtonHighlightIcon;
   const gfx::ImageSkia& normal =
-      gfx::CreateVectorIcon(button_icon, normal_color);
+      gfx::CreateVectorIcon(button_icon, normal_icon_color);
+  const gfx::ImageSkia& hover_pressed =
+      normal_icon_color != hover_pressed_icon_color
+          ? gfx::CreateVectorIcon(button_icon, hover_pressed_icon_color)
+          : normal;
+
   const gfx::ImageSkia& hover_highlight =
-      gfx::CreateVectorIcon(highlight, hover_color);
+      gfx::CreateVectorIcon(highlight, hover_pressed_icon_color);
   const gfx::ImageSkia& pressed_highlight =
-      gfx::CreateVectorIcon(highlight, pressed_color);
+      gfx::CreateVectorIcon(highlight, pressed_highlight_color);
   const gfx::ImageSkia& hover =
       gfx::ImageSkiaOperations::CreateSuperimposedImage(hover_highlight,
-                                                        normal);
+                                                        hover_pressed);
   const gfx::ImageSkia& pressed =
       gfx::ImageSkiaOperations::CreateSuperimposedImage(pressed_highlight,
-                                                        normal);
+                                                        hover_pressed);
   SetImage(views::Button::STATE_NORMAL, normal);
   SetImage(views::Button::STATE_HOVERED, hover);
   SetImage(views::Button::STATE_PRESSED, pressed);

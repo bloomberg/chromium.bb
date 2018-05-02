@@ -32,10 +32,12 @@ class TabCloseButton : public views::ImageButton,
   // This function must be called before the tab is painted so it knows what
   // color to use. It must also be called when the background color of the tab
   // changes (this class does not track tab activation state), and when the
-  // theme changes.
+  // theme changes. |tab_color_is_dark| will be true if the tab is a dark
+  // color. This will NOT be called when in newer material ui mode.
   void SetTabColor(SkColor color, bool tab_color_is_dark);
 
-  // This is called whenever the |parent_tab| changes its active state.
+  // This is called whenever the |parent_tab| changes its active state. This
+  // is only called when in newer material ui mode.
   void ActiveStateChanged(const Tab* parent_tab);
 
   // views::View:
@@ -52,9 +54,10 @@ class TabCloseButton : public views::ImageButton,
   bool GetHitTestMask(gfx::Path* mask) const override;
 
   void GenerateImages(bool is_touch,
-                      SkColor normal_color,
-                      SkColor hover_color,
-                      SkColor pressed_color);
+                      SkColor normal_icon_color,
+                      SkColor hover_pressed_icon_color,
+                      SkColor hover_highlight_color,
+                      SkColor pressed_highlight_color);
 
   MouseEventCallback mouse_event_callback_;
 
