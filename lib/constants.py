@@ -366,6 +366,7 @@ ANDROID_PI_BUILD_TARGETS = {
     'X86_NDK_TRANSLATION': ('linux-cheets_x86_ndk_translation-user', r'\.zip$'),
     'X86_64': ('linux-cheets_x86_64-user', r'\.zip$'),
     'ARM_USERDEBUG': ('linux-cheets_arm-userdebug', r'\.zip$'),
+    'X86_USERDEBUG': ('linux-cheets_x86-userdebug', r'\.zip$'),
     'X86_NDK_TRANSLATION_USERDEBUG': (
         'linux-cheets_x86_ndk_translation-userdebug', r'\.zip$'
     ),
