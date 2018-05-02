@@ -276,6 +276,17 @@ bool PrefService::IsUserModifiablePreference(
   return pref && pref->IsUserModifiable();
 }
 
+const base::Value* PrefService::Get(const std::string& path) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  const base::Value* value = GetPreferenceValue(path);
+  if (!value) {
+    NOTREACHED() << "Trying to read an unregistered pref: " << path;
+    return nullptr;
+  }
+  return value;
+}
+
 const base::DictionaryValue* PrefService::GetDictionary(
     const std::string& path) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

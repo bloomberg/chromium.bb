@@ -31,6 +31,7 @@
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
+#include "chrome/browser/ui/ash/ash_shell_init.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/common/chrome_features.h"
@@ -140,6 +141,8 @@ void Preferences::RegisterPrefs(PrefRegistrySimple* registry) {
       prefs::kSystemTimezoneAutomaticDetectionPolicy,
       enterprise_management::SystemTimezoneProto::USERS_DECIDE);
   registry->RegisterStringPref(prefs::kMinimumAllowedChromeVersion, "");
+
+  AshShellInit::RegisterDisplayPrefs(registry);
 }
 
 // static

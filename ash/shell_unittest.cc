@@ -563,7 +563,7 @@ TEST_F(ShellLocalStateTest, LocalState) {
   // Prefs service wrapper code creates a PrefService.
   std::unique_ptr<TestingPrefServiceSimple> local_state =
       std::make_unique<TestingPrefServiceSimple>();
-  Shell::RegisterLocalStatePrefs(local_state->registry());
+  Shell::RegisterLocalStatePrefs(local_state->registry(), true);
   TestingPrefServiceSimple* local_state_ptr = local_state.get();
   ShellTestApi().OnLocalStatePrefServiceInitialized(std::move(local_state));
   EXPECT_EQ(local_state_ptr, observer.last_local_state_);

@@ -20,3 +20,10 @@ include_rules = [
   "+components/user_manager",
   "+media",
 ]
+
+specific_include_rules = {
+  # AshShellInit supports CLASSIC and MUS modes so allow ash/ includes.
+  "ash_shell_init\.cc": [
+    "+ash",
+  ],
+}

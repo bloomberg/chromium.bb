@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/display/display_prefs.h"
 #include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
@@ -39,6 +40,13 @@ void CreateClassicShell() {
   shell_init_params.context_factory = content::GetContextFactory();
   shell_init_params.context_factory_private =
       content::GetContextFactoryPrivate();
+  // Pass the initial display prefs to ash::Shell as a Value dictionary.
+  // This is done this way to avoid complexities with registering the display
+  // prefs in multiple places (i.e. in g_browser_process->local_state() and
+  // ash::Shell::local_state_). See https://crbug.com/834775 for details.
+  shell_init_params.initial_display_prefs =
+      ash::DisplayPrefs::GetInitialDisplayPrefsFromPrefService(
+          g_browser_process->local_state());
 
   ash::Shell::CreateInstance(std::move(shell_init_params));
 }
@@ -64,23 +72,40 @@ std::unique_ptr<ash::WindowManager> CreateMusShell() {
           connector, window_manager.get(), window_manager.get(),
           automatically_create_display_roots, create_discardable_memory);
   aura::Env::GetInstance()->SetWindowTreeClient(window_tree_client.get());
+  // Pass the initial display prefs to the WindowManager to pass to ash::Shell
+  // as a Value dictionary. See note in CreateClassicShell().
   window_manager->Init(std::move(window_tree_client),
-                       std::make_unique<ChromeShellDelegate>());
+                       std::make_unique<ChromeShellDelegate>(),
+                       ash::DisplayPrefs::GetInitialDisplayPrefsFromPrefService(
+                           g_browser_process->local_state()));
   CHECK(window_manager->WaitForInitialDisplays());
   return window_manager;
 }
 
 }  // namespace
 
+// static
+void AshShellInit::RegisterDisplayPrefs(PrefRegistrySimple* registry) {
+  // Note: For CLASSIC/MUS, DisplayPrefs must be registered here so that
+  // the initial display prefs can be passed synchronously to ash::Shell.
+  ash::DisplayPrefs::RegisterLocalStatePrefs(registry);
+}
+
 AshShellInit::AshShellInit() {
   // Balanced by a call to DestroyInstance() in CloseAsh() below.
   ash::ShellContentState::SetInstance(new ChromeShellContentState);
 
-  if (chromeos::GetAshConfig() == ash::Config::MUS)
+  if (chromeos::GetAshConfig() == ash::Config::MUS) {
+    // Shell::CreateInstance will be called from WindowManager::CreateShell().
     window_manager_ = CreateMusShell();
-  else
+  } else if (chromeos::GetAshConfig() == ash::Config::CLASSIC) {
     CreateClassicShell();
-
+  } else {
+    // MASH does not call AshShellInit. Shell::CreateInstance will be called
+    // from ash::WindowManager::CreateShell() instantiated from
+    // ash::WindowManagerService::OnStart.
+    NOTREACHED();
+  }
   ash::Shell::GetPrimaryRootWindow()->GetHost()->Show();
 }
 

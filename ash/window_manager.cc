@@ -138,7 +138,8 @@ WindowManager::~WindowManager() {
 
 void WindowManager::Init(
     std::unique_ptr<aura::WindowTreeClient> window_tree_client,
-    std::unique_ptr<ShellDelegate> shell_delegate) {
+    std::unique_ptr<ShellDelegate> shell_delegate,
+    std::unique_ptr<base::Value> initial_display_prefs) {
   // Only create InputDeviceClient in MASH mode. For MUS mode WindowManager is
   // created by chrome, which creates InputDeviceClient.
   if (config_ == Config::MASH) {
@@ -174,8 +175,10 @@ void WindowManager::Init(
   window_tree_client_->capture_synchronizer()->AttachToCaptureClient(
       capture_client);
 
+  // AshTestHelper may set |shell_delegate_| directly.
   if (shell_delegate)
     shell_delegate_ = std::move(shell_delegate);
+  initial_display_prefs_ = std::move(initial_display_prefs);
 
   InitCursorOnKeyList();
 }
@@ -225,6 +228,7 @@ void WindowManager::CreateShell() {
   init_params.delegate = shell_delegate_
                              ? std::move(shell_delegate_)
                              : std::make_unique<ShellDelegateMus>(connector_);
+  init_params.initial_display_prefs = std::move(initial_display_prefs_);
   Shell::CreateInstance(std::move(init_params));
 }
 

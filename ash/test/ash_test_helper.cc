@@ -183,7 +183,7 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
 
   if (provide_local_state) {
     auto pref_service = std::make_unique<TestingPrefServiceSimple>();
-    Shell::RegisterLocalStatePrefs(pref_service->registry());
+    Shell::RegisterLocalStatePrefs(pref_service->registry(), true);
     Shell::Get()->OnLocalStatePrefServiceInitialized(std::move(pref_service));
   }
 

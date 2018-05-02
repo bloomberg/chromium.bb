@@ -78,7 +78,8 @@ void WindowManagerService::InitWindowManager(
   statistics_provider_->SetMachineStatistic("keyboard_layout", "");
 
   window_manager_->Init(std::move(window_tree_client),
-                        std::move(shell_delegate_));
+                        std::move(shell_delegate_),
+                        /*initial_display_prefs=*/nullptr);
 }
 
 void WindowManagerService::InitializeComponents(bool init_network_handler) {

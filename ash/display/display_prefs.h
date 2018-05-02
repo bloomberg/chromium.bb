@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 #include <array>
+#include <memory>
 
 #include "ash/ash_export.h"
 #include "ash/shell_observer.h"
@@ -15,8 +16,13 @@
 #include "ui/display/display.h"
 #include "ui/display/display_layout.h"
 
+class PrefRegistry;
 class PrefRegistrySimple;
 class PrefService;
+
+namespace base {
+class Value;
+}
 
 namespace gfx {
 class Point;
@@ -35,10 +41,15 @@ class DisplayPrefsTest;
 // for the session.
 class ASH_EXPORT DisplayPrefs : public ShellObserver {
  public:
+  // Returns a dictionary of display pref values stored in PrefService.
+  // See chrome/browser/ui/ash/ash_shell_init.cc for details.
+  static std::unique_ptr<base::Value> GetInitialDisplayPrefsFromPrefService(
+      PrefService* pref_service);
   // Registers the prefs associated with display settings.
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
+  static void RegisterForeignPrefs(PrefRegistry* registry);
 
-  DisplayPrefs();
+  explicit DisplayPrefs(std::unique_ptr<base::Value> initial_prefs);
   ~DisplayPrefs() override;
 
   // ShellObserver
@@ -69,24 +80,21 @@ class ASH_EXPORT DisplayPrefs : public ShellObserver {
   void StoreDisplayMixedMirrorModeParamsForTest(
       const base::Optional<display::MixedMirrorModeParams>& mixed_params);
 
-  void set_local_state_for_test(PrefService* local_state) {
-    local_state_ = local_state;
-  }
+  // Class wrapping a PrefService and a dictionary of initial pref values to use
+  // until OnLocalStatePrefServiceInitialized is called.
+  class LocalState;
 
  protected:
   friend class DisplayPrefsTest;
 
-  // Loads display preferences from |local_state| and sets |local_state_|.
-  // |first_run_after_boot| is used to determine whether power state preferences
-  // should be applied.
-  void LoadDisplayPreferences(bool first_run_after_boot,
-                              PrefService* local_state);
+  // Loads display preferences from |local_state_|.
+  void LoadDisplayPreferences();
+
+  // Constructs a LocalState instance with |pref_service| for testing.
+  void SetPrefServiceForTest(PrefService* pref_service);
 
  private:
-  // Set in LoadDisplayPreferences once the local pref store is available.
-  // While null, StoreDisplayPrefs just sets |store_requested_| and prefs are
-  // stored when |local_state_| is set.
-  PrefService* local_state_ = nullptr;
+  std::unique_ptr<LocalState> local_state_;
   bool store_requested_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayPrefs);

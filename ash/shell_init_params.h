@@ -9,6 +9,10 @@
 
 #include "ash/ash_export.h"
 
+namespace base {
+class Value;
+}
+
 namespace ui {
 class ContextFactory;
 class ContextFactoryPrivate;
@@ -28,6 +32,9 @@ struct ASH_EXPORT ShellInitParams {
   std::unique_ptr<ShellDelegate> delegate;
   ui::ContextFactory* context_factory = nullptr;                 // Non-owning.
   ui::ContextFactoryPrivate* context_factory_private = nullptr;  // Non-owning.
+  // Dictionary of pref values used by DisplayPrefs before
+  // ShellObserver::OnLocalStatePrefServiceInitialized is called.
+  std::unique_ptr<base::Value> initial_display_prefs;
 };
 
 }  // namespace ash
