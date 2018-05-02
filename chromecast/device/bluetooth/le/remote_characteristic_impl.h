@@ -37,8 +37,7 @@ class RemoteCharacteristicImpl : public RemoteCharacteristic {
                  bluetooth_v2_shlib::Gatt::WriteType write_type,
                  const std::vector<uint8_t>& value,
                  StatusCallback callback) override;
-  void Write(bluetooth_v2_shlib::Gatt::WriteType write_type,
-             const std::vector<uint8_t>& value,
+  void Write(const std::vector<uint8_t>& value,
              StatusCallback callback) override;
   bool NotificationEnabled() override;
   const bluetooth_v2_shlib::Gatt::Characteristic& characteristic()

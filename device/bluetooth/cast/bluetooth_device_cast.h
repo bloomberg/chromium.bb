@@ -132,7 +132,7 @@ class BluetoothDeviceCast : public BluetoothDevice {
   // Called back from disconnect requests.
   void OnDisconnect(bool success);
 
-  bool connected_ = false;
+  bool connected_;
   bool pending_connect_ = false;
   bool pending_disconnect_ = false;
 

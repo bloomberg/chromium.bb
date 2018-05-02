@@ -164,7 +164,6 @@ void BluetoothRemoteGattCharacteristicCast::WriteRemoteCharacteristic(
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   remote_characteristic_->Write(
-      chromecast::bluetooth_v2_shlib::Gatt::WriteType::WRITE_TYPE_DEFAULT,
       value,
       base::BindOnce(
           &BluetoothRemoteGattCharacteristicCast::OnWriteRemoteCharacteristic,
