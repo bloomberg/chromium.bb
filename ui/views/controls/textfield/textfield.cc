@@ -2163,7 +2163,9 @@ void Textfield::OnCaretBoundsChanged() {
 #if defined(OS_MACOSX)
   // On Mac, the context menu contains a look up item which displays the
   // selected text. As such, the menu needs to be updated if the selection has
-  // changed.
+  // changed. Be careful to reset the MenuRunner first so it doesn't reference
+  // the old model.
+  context_menu_runner_.reset();
   context_menu_contents_.reset();
 #endif
 
