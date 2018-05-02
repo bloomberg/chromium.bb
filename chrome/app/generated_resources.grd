@@ -3323,16 +3323,10 @@ are declared in build/common.gypi.
       <if expr="enable_extensions">
         <!-- Extension blocked action bubble -->
         <message name="IDS_EXTENSION_BLOCKED_ACTION_BUBBLE_HEADING" desc="Heading of the bubble to tell users that in order to run an extension, they'll need to refresh the page.">
-          Refresh required
-        </message>
-        <message name="IDS_EXTENSION_BLOCKED_ACTION_BUBBLE_CONTENT" desc="The content of the bubble to tell users that in order to run an extension, they'll need to refresh the page.">
-          In order to run this extension, you need to refresh the page. You can run this extension automatically on this site by right-clicking on the extension icon.
+          Reload page to use this extension
         </message>
         <message name="IDS_EXTENSION_BLOCKED_ACTION_BUBBLE_OK_BUTTON" desc="The text of the button to proceed with the page refresh for running an extension.">
-          OK, refresh
-        </message>
-        <message name="IDS_EXTENSION_BLOCKED_ACTION_BUBBLE_CANCEL_BUTTON" desc="The text of the button to close the bubble and not refresh the page or run the extension.">
-          Never mind
+          Reload
         </message>
       </if>
 

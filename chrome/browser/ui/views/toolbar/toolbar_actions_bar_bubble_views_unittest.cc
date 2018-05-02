@@ -209,6 +209,38 @@ TEST_F(ToolbarActionsBarBubbleViewsTest, TestBubbleLayoutListView) {
   CloseBubble();
 }
 
+TEST_F(ToolbarActionsBarBubbleViewsTest, TestBubbleLayoutNoBodyText) {
+  TestToolbarActionsBarBubbleDelegate delegate(
+      HeadingString(), base::string16(), ActionString());
+  ShowBubble(&delegate);
+
+  EXPECT_TRUE(bubble()->GetDialogClientView()->ok_button());
+  EXPECT_EQ(ActionString(),
+            bubble()->GetDialogClientView()->ok_button()->GetText());
+  EXPECT_FALSE(bubble()->GetDialogClientView()->cancel_button());
+  EXPECT_FALSE(bubble()->learn_more_button());
+  EXPECT_FALSE(bubble()->body_text());
+  EXPECT_FALSE(bubble()->item_list());
+
+  CloseBubble();
+}
+
+TEST_F(ToolbarActionsBarBubbleViewsTest, TestBubbleDefaultDialogButtons) {
+  TestToolbarActionsBarBubbleDelegate delegate(HeadingString(), BodyString(),
+                                               ActionString());
+  delegate.set_dismiss_button_text(DismissString());
+  delegate.set_default_dialog_button(ui::DIALOG_BUTTON_OK);
+  ShowBubble(&delegate);
+
+  ASSERT_TRUE(bubble()->GetDialogClientView()->ok_button());
+  EXPECT_TRUE(bubble()->GetDialogClientView()->ok_button()->is_default());
+
+  ASSERT_TRUE(bubble()->GetDialogClientView()->cancel_button());
+  EXPECT_FALSE(bubble()->GetDialogClientView()->cancel_button()->is_default());
+
+  CloseBubble();
+}
+
 TEST_F(ToolbarActionsBarBubbleViewsTest, TestShowAndCloseBubble) {
   std::unique_ptr<views::Widget> anchor_widget = CreateAnchorWidget();
   TestToolbarActionsBarBubbleDelegate delegate(HeadingString(), BodyString(),

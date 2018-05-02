@@ -33,6 +33,7 @@ class ExtensionMessageBubbleBridge : public ToolbarActionsBarBubbleDelegate {
   base::string16 GetItemListText() override;
   base::string16 GetActionButtonText() override;
   base::string16 GetDismissButtonText() override;
+  ui::DialogButton GetDefaultDialogButton() override;
   std::unique_ptr<ExtraViewInfo> GetExtraViewInfo() override;
   std::string GetAnchorActionId() override;
   void OnBubbleShown(const base::Closure& close_bubble_callback) override;
