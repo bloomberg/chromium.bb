@@ -75,6 +75,10 @@ constexpr gfx::Size kSourceSize = gfx::Size(100, 100);
 // The size of the VideoFrames produced by the capturer.
 constexpr gfx::Size kCaptureSize = gfx::Size(32, 18);
 
+constexpr float kDefaultDeviceScaleFactor = 1.f;
+constexpr float kDefaultPageScaleFactor = 1.f;
+constexpr gfx::Vector2dF kDefaultRootScrollOffset = gfx::Vector2dF(0, 0);
+
 // The location of the letterboxed content within each VideoFrame. All pixels
 // outside of this region should be black.
 constexpr gfx::Rect kContentRect = gfx::Rect(6, 0, 18, 18);
@@ -205,6 +209,12 @@ class SolidColorI420Result : public CopyOutputResult {
 
 class FakeCapturableFrameSink : public CapturableFrameSink {
  public:
+  FakeCapturableFrameSink() {
+    metadata_.root_scroll_offset = kDefaultRootScrollOffset;
+    metadata_.page_scale_factor = kDefaultPageScaleFactor;
+    metadata_.device_scale_factor = kDefaultDeviceScaleFactor;
+  }
+
   Client* attached_client() const { return client_; }
 
   void AttachCaptureClient(Client* client) override {
@@ -239,6 +249,14 @@ class FakeCapturableFrameSink : public CapturableFrameSink {
         std::move(request), std::move(result)));
   }
 
+  const CompositorFrameMetadata* GetLastActivatedFrameMetadata() override {
+    return &metadata_;
+  }
+
+  void set_metadata(const CompositorFrameMetadata& metadata) {
+    metadata_ = metadata.Clone();
+  }
+
   void SetCopyOutputColor(YUVColor color) { color_ = color; }
 
   int num_copy_results() const { return results_.size(); }
@@ -252,6 +270,7 @@ class FakeCapturableFrameSink : public CapturableFrameSink {
  private:
   CapturableFrameSink::Client* client_ = nullptr;
   YUVColor color_ = {0xde, 0xad, 0xbf};
+  CompositorFrameMetadata metadata_;
 
   std::vector<base::OnceClosure> results_;
 };
@@ -359,17 +378,16 @@ class FrameSinkVideoCapturerTest : public testing::Test {
   }
 
   void NotifyFrameDamaged(
-      float device_scale_factor =
-          FrameSinkVideoCapturerImpl::kDefaultDeviceScaleFactor,
-      float page_scale_factor =
-          FrameSinkVideoCapturerImpl::kDefaultPageScaleFactor,
-      gfx::Vector2dF root_scroll_offset =
-          FrameSinkVideoCapturerImpl::kDefaultRootScrollOffset) {
+      float device_scale_factor = kDefaultDeviceScaleFactor,
+      float page_scale_factor = kDefaultPageScaleFactor,
+      gfx::Vector2dF root_scroll_offset = kDefaultRootScrollOffset) {
     CompositorFrameMetadata metadata;
 
     metadata.device_scale_factor = device_scale_factor;
     metadata.page_scale_factor = page_scale_factor;
     metadata.root_scroll_offset = root_scroll_offset;
+
+    frame_sink_.set_metadata(metadata);
 
     capturer_.OnFrameDamaged(kSourceSize, gfx::Rect(kSourceSize),
                              GetNextVsync(), metadata);
@@ -918,10 +936,8 @@ TEST_F(FrameSinkVideoCapturerTest, CompositorFrameMetadataReachesConsumer) {
   frame_sink_.SendCopyOutputResult(cur_frame_index);
   EXPECT_EQ(expected_frames_count, consumer.num_frames_received());
   EXPECT_TRUE(CompareVarsInCompositorFrameMetadata(
-      *(consumer.TakeFrame(cur_frame_index)),
-      FrameSinkVideoCapturerImpl::kDefaultDeviceScaleFactor,
-      FrameSinkVideoCapturerImpl::kDefaultPageScaleFactor,
-      FrameSinkVideoCapturerImpl::kDefaultRootScrollOffset));
+      *(consumer.TakeFrame(cur_frame_index)), kDefaultDeviceScaleFactor,
+      kDefaultPageScaleFactor, kDefaultRootScrollOffset));
   consumer.SendDoneNotification(cur_frame_index);
 
   // The metadata used to signal a frame damage and verify that it reaches the

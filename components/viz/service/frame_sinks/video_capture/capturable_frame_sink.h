@@ -16,6 +16,7 @@ class Rect;
 
 namespace viz {
 
+class CompositorFrameMetadata;
 class CopyOutputRequest;
 class LocalSurfaceId;
 
@@ -61,6 +62,10 @@ class CapturableFrameSink {
   virtual void RequestCopyOfOutput(
       const LocalSurfaceId& local_surface_id,
       std::unique_ptr<CopyOutputRequest> request) = 0;
+
+  // Returns the CompositorFrameMetadata of the last activated CompositorFrame.
+  // Return null if no CompositorFrame has activated yet.
+  virtual const CompositorFrameMetadata* GetLastActivatedFrameMetadata() = 0;
 };
 
 }  // namespace viz

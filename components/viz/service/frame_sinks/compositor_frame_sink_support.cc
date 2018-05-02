@@ -507,6 +507,7 @@ gfx::Size CompositorFrameSinkSupport::GetActiveFrameSize() {
   if (last_activated_surface_id_.is_valid()) {
     Surface* current_surface =
         surface_manager_->GetSurfaceForId(last_activated_surface_id_);
+    DCHECK(current_surface);
     if (current_surface->HasActiveFrame()) {
       DCHECK(current_surface->GetActiveFrame().size_in_pixels() ==
              current_surface->size_in_pixels());
@@ -526,6 +527,16 @@ void CompositorFrameSinkSupport::RequestCopyOfOutput(
     ack.has_damage = true;
     surface_manager_->SurfaceModified(last_activated_surface_id_, ack);
   }
+}
+
+const CompositorFrameMetadata*
+CompositorFrameSinkSupport::GetLastActivatedFrameMetadata() {
+  if (!last_activated_surface_id_.is_valid())
+    return nullptr;
+  Surface* surface =
+      surface_manager_->GetSurfaceForId(last_activated_surface_id_);
+  DCHECK(surface);
+  return &surface->GetActiveFrame().metadata;
 }
 
 HitTestAggregator* CompositorFrameSinkSupport::GetHitTestAggregator() {
