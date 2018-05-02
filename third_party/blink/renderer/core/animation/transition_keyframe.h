@@ -26,6 +26,12 @@ class CORE_EXPORT TransitionKeyframe : public Keyframe {
     return base::AdoptRef(new TransitionKeyframe(property));
   }
   void SetValue(std::unique_ptr<TypedInterpolationValue> value) {
+    // Speculative CHECK to help investigate crbug.com/826627. The theory is
+    // that |SetValue| is being called with a |value| that has no underlying
+    // InterpolableValue. This then would later cause a crash in the
+    // TransitionInterpolation constructor.
+    // TODO(crbug.com/826627): Revert once bug is fixed.
+    CHECK(!!value->Value());
     value_ = std::move(value);
   }
   void SetCompositorValue(scoped_refptr<AnimatableValue>);
