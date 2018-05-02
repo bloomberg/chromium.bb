@@ -224,6 +224,24 @@ struct NET_EXPORT OCSPResponse {
   std::vector<der::Input> certs;
 };
 
+// Baseline Requirements 1.5.6, section 4.9.10:
+//   For the status of Subscriber Certificates: The CA SHALL update information
+//     provided via an Online Certificate Status Protocol at least every four
+//     days.  OCSP responses from this service MUST have a maximum expiration
+//     time of ten days.
+// TODO(mattm): Document the rationale for 7 days.
+constexpr base::TimeDelta kMaxOCSPLeafUpdateAge = base::TimeDelta::FromDays(7);
+
+// Baseline Requirements 1.5.6, section 4.9.10:
+//   For the status of Subordinate CA Certificates: The CA SHALL update
+//     information provided via an Online Certificate Status Protocol at least
+//     (i) every twelve months and (ii) within 24 hours after revoking a
+//     Subordinate CA Certificate.
+// Use 366 days to allow for leap years, though it is overly permissive in
+// other years.
+constexpr base::TimeDelta kMaxOCSPIntermediateUpdateAge =
+    base::TimeDelta::FromDays(366);
+
 // From RFC 6960:
 //
 // id-pkix-ocsp           OBJECT IDENTIFIER ::= { id-ad-ocsp }
@@ -281,6 +299,9 @@ NET_EXPORT_PRIVATE bool ParseOCSPResponse(const der::Input& raw_tlv,
 //  * |issuer_certificate_der|: The certificate that signed |certificate_der|.
 //        The caller must have already performed path verification.
 //  * |verify_time|: The time to use when checking revocation status.
+//  * |max_age|: The maximum age for an OCSP response, implemented as time since
+//        the |this_update| field in OCSPSingleResponse. Responses older than
+//        |max_age| will be considered invalid.
 //  * |response_details|: Additional details about failures.
 //      TODO(eroman): This is only being used for logging of Expect-Staple, can
 //      remove if that gets pulled out.
@@ -289,6 +310,7 @@ NET_EXPORT OCSPRevocationStatus CheckOCSP(
     base::StringPiece certificate_der,
     base::StringPiece issuer_certificate_der,
     const base::Time& verify_time,
+    const base::TimeDelta& max_age,
     OCSPVerifyResult::ResponseStatus* response_details) WARN_UNUSED_RESULT;
 
 // Returns true if |response|, a valid OCSP response with a thisUpdate field and
