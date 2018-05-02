@@ -163,7 +163,7 @@ void TestLayerTreeFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
   LocalSurfaceId local_surface_id =
       parent_local_surface_id_allocator_->GetCurrentLocalSurfaceId();
 
-  if (!local_surface_id.is_valid() || frame_size != display_size_ ||
+  if (frame_size != display_size_ ||
       device_scale_factor != device_scale_factor_) {
     local_surface_id = parent_local_surface_id_allocator_->GenerateId();
     display_->SetLocalSurfaceId(local_surface_id, device_scale_factor);

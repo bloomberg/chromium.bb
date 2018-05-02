@@ -378,7 +378,7 @@ class SurfaceAggregatorValidSurfaceTest : public SurfaceAggregatorTest {
 
   void SetUp() override {
     SurfaceAggregatorTest::SetUp();
-    root_local_surface_id_ = allocator_.GenerateId();
+    root_local_surface_id_ = allocator_.GetCurrentLocalSurfaceId();
     root_surface_ = manager_.surface_manager()->GetSurfaceForId(
         SurfaceId(support_->frame_sink_id(), root_local_surface_id_));
   }
