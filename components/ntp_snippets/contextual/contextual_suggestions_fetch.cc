@@ -65,6 +65,22 @@ Cluster PivotToCluster(const PivotCluster& pivot) {
   return cluster_builder.Build();
 }
 
+PeekConditions PeekConditionsFromResponse(
+    const GetPivotsResponse& response_proto) {
+  AutoPeekConditions proto_conditions =
+      response_proto.pivots().auto_peek_conditions();
+  PeekConditions peek_conditions;
+
+  peek_conditions.confidence = proto_conditions.confidence();
+  peek_conditions.page_scroll_percentage =
+      proto_conditions.page_scroll_percentage();
+  peek_conditions.minimum_seconds_on_page =
+      proto_conditions.minimum_seconds_on_page();
+  peek_conditions.maximum_number_of_peeks =
+      proto_conditions.maximum_number_of_peeks();
+  return peek_conditions;
+}
+
 std::vector<Cluster> ClustersFromResponse(
     const GetPivotsResponse& response_proto) {
   std::vector<Cluster> clusters;
@@ -121,6 +137,14 @@ const std::string SerializedPivotsRequest(const std::string& url,
   query->mutable_peek_text_params()->set_enabled(true);
 
   return pivot_request.SerializeAsString();
+}
+
+ContextualSuggestionsResult ResultFromResponse(
+    const GetPivotsResponse& response_proto) {
+  return ContextualSuggestionsResult(
+      PeekTextFromResponse(response_proto),
+      ClustersFromResponse(response_proto),
+      PeekConditionsFromResponse(response_proto));
 }
 
 }  // namespace
@@ -217,8 +241,7 @@ net::HttpRequestHeaders ContextualSuggestionsFetch::MakeHeaders() const {
 void ContextualSuggestionsFetch::OnURLLoaderComplete(
     ReportFetchMetricsCallback metrics_callback,
     std::unique_ptr<std::string> result) {
-  std::vector<Cluster> clusters;
-  std::string peek_text;
+  ContextualSuggestionsResult suggestions_result;
 
   int32_t response_code = 0;
   int32_t error_code = url_loader_->NetError();
@@ -236,8 +259,7 @@ void ContextualSuggestionsFetch::OnURLLoaderComplete(
       if (coded_stream.ReadVarint32(&response_size) && response_size != 0) {
         GetPivotsResponse response_proto;
         if (response_proto.MergePartialFromCodedStream(&coded_stream)) {
-          clusters = ClustersFromResponse(response_proto);
-          peek_text = PeekTextFromResponse(response_proto);
+          suggestions_result = ResultFromResponse(response_proto);
         }
       }
     }
@@ -246,10 +268,10 @@ void ContextualSuggestionsFetch::OnURLLoaderComplete(
                             static_cast<int>(result->length() / 1024));
   }
 
-  ReportFetchMetrics(error_code, response_code, clusters.size(),
+  ReportFetchMetrics(error_code, response_code,
+                     suggestions_result.clusters.size(),
                      std::move(metrics_callback));
-
-  std::move(request_completed_callback_).Run(peek_text, std::move(clusters));
+  std::move(request_completed_callback_).Run(std::move(suggestions_result));
 }
 
 void ContextualSuggestionsFetch::ReportFetchMetrics(

@@ -22,6 +22,7 @@ class SharedURLLoaderFactory;
 
 using contextual_suggestions::Cluster;
 using contextual_suggestions::ContextualSuggestionsFetch;
+using contextual_suggestions::ContextualSuggestionsResult;
 
 namespace ntp_snippets {
 
@@ -41,8 +42,7 @@ class ContextualSuggestionsFetcherImpl : public ContextualSuggestionsFetcher {
  private:
   void FetchFinished(ContextualSuggestionsFetch* fetch,
                      FetchClustersCallback callback,
-                     std::string peek_text,
-                     std::vector<Cluster> clusters);
+                     ContextualSuggestionsResult result);
 
   const scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
   /// BCP47 formatted language code to use.

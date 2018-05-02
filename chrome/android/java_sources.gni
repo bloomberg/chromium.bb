@@ -314,6 +314,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/contextual_suggestions/EnabledStateMonitor.java",
   "java/src/org/chromium/chrome/browser/contextual_suggestions/FetchHelper.java",
   "java/src/org/chromium/chrome/browser/contextual_suggestions/PageViewTimer.java",
+  "java/src/org/chromium/chrome/browser/contextual_suggestions/PeekConditions.java",
   "java/src/org/chromium/chrome/browser/contextual_suggestions/ToolbarCoordinator.java",
   "java/src/org/chromium/chrome/browser/contextual_suggestions/ToolbarView.java",
   "java/src/org/chromium/chrome/browser/contextual_suggestions/ToolbarViewBinder.java",

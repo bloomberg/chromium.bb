@@ -11,7 +11,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "components/ntp_snippets/contextual/cluster.h"
+#include "components/ntp_snippets/contextual/contextual_suggestions_result.h"
 #include "components/ntp_snippets/remote/cached_image_fetcher.h"
 #include "components/ntp_snippets/remote/remote_suggestions_database.h"
 #include "components/ntp_snippets/remote/remote_suggestions_provider_impl.h"
@@ -22,12 +22,16 @@ namespace ntp_snippets {
 
 using contextual_suggestions::Cluster;
 using contextual_suggestions::ContextualSuggestionsMetricsReporterProvider;
+using contextual_suggestions::ContextualSuggestionsResult;
 using contextual_suggestions::FetchClustersCallback;
+using contextual_suggestions::PeekConditions;
 
 namespace {
 bool IsEligibleURL(const GURL& url) {
   return url.is_valid() && url.SchemeIsHTTPOrHTTPS() && !url.HostIsIPAddress();
 }
+
+static constexpr float kMinimumConfidence = 0.75;
 
 }  // namespace
 
@@ -54,10 +58,14 @@ void ContextualContentSuggestionsService::FetchContextualSuggestionClusters(
     ReportFetchMetricsCallback metrics_callback) {
   // TODO(pnoland): Also check that the url is safe.
   if (IsEligibleURL(url)) {
+    FetchClustersCallback internal_callback = base::BindOnce(
+        &ContextualContentSuggestionsService::FetchDone, base::Unretained(this),
+        std::move(callback), metrics_callback);
     contextual_suggestions_fetcher_->FetchContextualSuggestionsClusters(
-        url, std::move(callback), std::move(metrics_callback));
+        url, std::move(internal_callback), metrics_callback);
   } else {
-    std::move(callback).Run("", {});
+    std::move(callback).Run(
+        ContextualSuggestionsResult("", {}, PeekConditions()));
   }
 }
 
@@ -84,6 +92,20 @@ void ContextualContentSuggestionsService::FetchContextualSuggestionImageLegacy(
 
   GURL image_url = image_url_iterator->second;
   FetchContextualSuggestionImage(suggestion_id, image_url, std::move(callback));
+}
+
+void ContextualContentSuggestionsService::FetchDone(
+    FetchClustersCallback callback,
+    ReportFetchMetricsCallback metrics_callback,
+    ContextualSuggestionsResult result) {
+  if (result.peek_conditions.confidence < kMinimumConfidence) {
+    metrics_callback.Run(contextual_suggestions::FETCH_BELOW_THRESHOLD);
+    std::move(callback).Run(
+        ContextualSuggestionsResult("", {}, PeekConditions()));
+    return;
+  }
+
+  std::move(callback).Run(result);
 }
 
 std::unique_ptr<

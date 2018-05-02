@@ -12,8 +12,8 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "components/ntp_snippets/contextual/cluster.h"
 #include "components/ntp_snippets/contextual/contextual_content_suggestions_service.h"
+#include "components/ntp_snippets/contextual/contextual_suggestions_result.h"
 
 class GURL;
 
@@ -62,8 +62,7 @@ class ContextualContentSuggestionsServiceProxy {
                       ntp_snippets::ImageFetchedCallback callback);
 
   void CacheSuggestions(ClustersCallback callback,
-                        std::string peek_text,
-                        std::vector<Cluster> clusters);
+                        ContextualSuggestionsResult result);
   // Pointer to the service.
   ntp_snippets::ContextualContentSuggestionsService* service_;
   // Cache of contextual suggestions.

@@ -28,6 +28,7 @@ public class ContextualSuggestionsBridge {
     public static class ContextualSuggestionsResult {
         private String mPeekText;
         private List<ContextualSuggestionsCluster> mClusters = new ArrayList<>();
+        private PeekConditions mPeekConditions = new PeekConditions();
 
         ContextualSuggestionsResult(String peekText) {
             mPeekText = peekText;
@@ -41,6 +42,16 @@ public class ContextualSuggestionsBridge {
         /** Clusters of suggestions. */
         public List<ContextualSuggestionsCluster> getClusters() {
             return mClusters;
+        }
+
+        /** Server-provided conditions for when to "peek" the suggestions UI. */
+        public PeekConditions getPeekConditions() {
+            return mPeekConditions;
+        }
+
+        /** Setter for mPeekConditions. */
+        public void setPeekConditions(PeekConditions peekConditions) {
+            mPeekConditions = peekConditions;
         }
     }
 
@@ -113,6 +124,14 @@ public class ContextualSuggestionsBridge {
     @CalledByNative
     private static ContextualSuggestionsResult createContextualSuggestionsResult(String peekText) {
         return new ContextualSuggestionsResult(peekText);
+    }
+
+    @CalledByNative
+    private static void setPeekConditionsOnResult(ContextualSuggestionsResult result,
+            float pageScrollPercentage, float minimumSecondsOnPage, float maximumNumberOfPeeks) {
+        PeekConditions peekConditions = new PeekConditions(
+                pageScrollPercentage, minimumSecondsOnPage, maximumNumberOfPeeks);
+        result.setPeekConditions(peekConditions);
     }
 
     @CalledByNative

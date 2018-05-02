@@ -126,15 +126,14 @@ void ContextualContentSuggestionsServiceProxy::FetchImageImpl(
 
 void ContextualContentSuggestionsServiceProxy::CacheSuggestions(
     ClustersCallback callback,
-    std::string peek_text,
-    std::vector<Cluster> clusters) {
+    ContextualSuggestionsResult result) {
   suggestions_.clear();
-  for (auto& cluster : clusters) {
+  for (auto& cluster : result.clusters) {
     for (auto& suggestion : cluster.suggestions) {
       suggestions_.emplace(std::make_pair(suggestion.id, suggestion));
     }
   }
-  std::move(callback).Run(peek_text, std::move(clusters));
+  std::move(callback).Run(std::move(result));
 }
 
 }  // namespace contextual_suggestions
