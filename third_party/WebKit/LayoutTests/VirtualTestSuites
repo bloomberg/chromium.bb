@@ -701,5 +701,11 @@
     "prefix": "webrtc-wpt-unified-plan",
     "base": "external/wpt/webrtc",
     "args": ["--enable-blink-features=RTCUnifiedPlanByDefault"]
+  },
+  {
+    "prefix": "video-surface-layer",
+    "base": "media",
+    "args": ["--enable-features=UseSurfaceLayerForVideo",
+             "--enable-display-compositor-pixel-dump"]
   }
 ]
