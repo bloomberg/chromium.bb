@@ -16,19 +16,27 @@ namespace zucchini {
 namespace patch {
 
 bool ParseElementMatch(BufferSource* source, ElementMatch* element_match) {
-  PatchElementHeader element_header;
-  if (!source->GetValue(&element_header)) {
+  PatchElementHeader unsafe_element_header;
+  if (!source->GetValue(&unsafe_element_header)) {
     LOG(ERROR) << "Impossible to read ElementMatch from source.";
-    LOG(ERROR) << base::debug::StackTrace().ToString();
     return false;
   }
   ExecutableType exe_type =
-      static_cast<ExecutableType>(element_header.exe_type);
-  if (CastToExecutableType(exe_type) == kExeTypeUnknown) {
-    LOG(ERROR) << "Invalid ExecutableType encountered.";
-    LOG(ERROR) << base::debug::StackTrace().ToString();
+      CastToExecutableType(unsafe_element_header.exe_type);
+  if (exe_type == kExeTypeUnknown) {
+    LOG(ERROR) << "Invalid ExecutableType found.";
     return false;
   }
+  if (!unsafe_element_header.old_length || !unsafe_element_header.new_length) {
+    LOG(ERROR) << "Empty patch element found.";
+    return false;
+  }
+  // |unsafe_element_header| is now considered to be safe as it has a valid
+  // |exe_type| and the length fields are of sufficient size.
+  const auto& element_header = unsafe_element_header;
+
+  // Caveat: Element offsets and lengths can still be invalid (e.g., exceeding
+  // archive bounds), but this will be checked later.
   element_match->old_element.offset = element_header.old_offset;
   element_match->new_element.offset = element_header.new_offset;
   element_match->old_element.size = element_header.old_length;
@@ -39,17 +47,20 @@ bool ParseElementMatch(BufferSource* source, ElementMatch* element_match) {
 }
 
 bool ParseBuffer(BufferSource* source, BufferSource* buffer) {
-  uint32_t size = 0;
-  if (!source->GetValue(&size)) {
+  uint32_t unsafe_size = 0;  // Bytes.
+  static_assert(sizeof(size_t) >= sizeof(unsafe_size),
+                "size_t is expected to be larger than uint32_t.");
+  if (!source->GetValue(&unsafe_size)) {
     LOG(ERROR) << "Impossible to read buffer size from source.";
-    LOG(ERROR) << base::debug::StackTrace().ToString();
     return false;
   }
-  if (!source->GetRegion(base::checked_cast<size_t>(size), buffer)) {
+  if (!source->GetRegion(static_cast<size_t>(unsafe_size), buffer)) {
     LOG(ERROR) << "Impossible to read buffer content from source.";
-    LOG(ERROR) << base::debug::StackTrace().ToString();
     return false;
   }
+  // Caveat: |buffer| is considered to be safe as it was possible to extract it
+  // from the patch. However, this does not mean its contents are safe and when
+  // parsed must be validated if possible.
   return true;
 }
 
@@ -104,6 +115,9 @@ base::Optional<Equivalence> EquivalenceSource::GetNext() {
   if (!previous_dst_offset_.IsValid())
     return base::nullopt;
 
+  // Caveat: |equivalence| is assumed to be safe only once the
+  // ValidateEquivalencesAndExtraData() method has returned true. Prior to this
+  // any equivalence returned is assumed to be unsafe.
   return equivalence;
 }
 
@@ -121,6 +135,7 @@ base::Optional<ConstBufferView> ExtraDataSource::GetNext(offset_t size) {
   ConstBufferView buffer;
   if (!extra_data_.GetRegion(size, &buffer))
     return base::nullopt;
+  // |buffer| is assumed to always be safe/valid.
   return buffer;
 }
 
@@ -139,7 +154,7 @@ base::Optional<RawDeltaUnit> RawDeltaSource::GetNext() {
   if (raw_delta_skip_.empty() || raw_delta_diff_.empty())
     return base::nullopt;
 
-  RawDeltaUnit delta = {};
+  RawDeltaUnit raw_delta = {};
   uint32_t copy_offset_diff = 0;
   if (!patch::ParseVarUInt<uint32_t>(&raw_delta_skip_, &copy_offset_diff))
     return base::nullopt;
@@ -147,17 +162,22 @@ base::Optional<RawDeltaUnit> RawDeltaSource::GetNext() {
       copy_offset_diff + copy_offset_compensation_;
   if (!copy_offset.IsValid())
     return base::nullopt;
-  delta.copy_offset = copy_offset.ValueOrDie();
+  raw_delta.copy_offset = copy_offset.ValueOrDie();
 
-  if (!raw_delta_diff_.GetValue<int8_t>(&delta.diff))
+  if (!raw_delta_diff_.GetValue<int8_t>(&raw_delta.diff))
+    return base::nullopt;
+
+  // A 0 value for a delta.diff is considered invalid since it has no meaning.
+  if (!raw_delta.diff)
     return base::nullopt;
 
   // We keep track of the compensation needed for next offset, taking into
-  // accound delta encoding and bias of -1.
+  // account delta encoding and bias of -1.
   copy_offset_compensation_ = copy_offset + 1;
   if (!copy_offset_compensation_.IsValid())
     return base::nullopt;
-  return delta;
+  // |raw_delta| is assumed to always be safe/valid.
+  return raw_delta;
 }
 
 /******** ReferenceDeltaSource ********/
@@ -168,16 +188,17 @@ ReferenceDeltaSource::ReferenceDeltaSource(const ReferenceDeltaSource&) =
 ReferenceDeltaSource::~ReferenceDeltaSource() = default;
 
 bool ReferenceDeltaSource::Initialize(BufferSource* source) {
-  return patch::ParseBuffer(source, &reference_delta_);
+  return patch::ParseBuffer(source, &source_);
 }
 
 base::Optional<int32_t> ReferenceDeltaSource::GetNext() {
-  if (reference_delta_.empty())
+  if (source_.empty())
     return base::nullopt;
-  int32_t delta = 0;
-  if (!patch::ParseVarInt<int32_t>(&reference_delta_, &delta))
+  int32_t ref_delta = 0;
+  if (!patch::ParseVarInt<int32_t>(&source_, &ref_delta))
     return base::nullopt;
-  return delta;
+  // |ref_delta| is assumed to always be safe/valid.
+  return ref_delta;
 }
 
 /******** TargetSource ********/
@@ -202,10 +223,12 @@ base::Optional<offset_t> TargetSource::GetNext() {
     return base::nullopt;
 
   // We keep track of the compensation needed for next target, taking into
-  // accound delta encoding and bias of -1.
+  // account delta encoding and bias of -1.
   target_compensation_ = target + 1;
   if (!target_compensation_.IsValid())
     return base::nullopt;
+  // Caveat: |target| will be a valid offset_t, but it's up to the caller to
+  // check whether it's a valid offset for an image.
   return offset_t(target.ValueOrDie());
 }
 
@@ -216,10 +239,11 @@ PatchElementReader::PatchElementReader(PatchElementReader&&) = default;
 PatchElementReader::~PatchElementReader() = default;
 
 bool PatchElementReader::Initialize(BufferSource* source) {
-  bool ok = patch::ParseElementMatch(source, &element_match_) &&
-            equivalences_.Initialize(source) && ValidateEquivalences() &&
-            extra_data_.Initialize(source) && raw_delta_.Initialize(source) &&
-            reference_delta_.Initialize(source);
+  bool ok =
+      patch::ParseElementMatch(source, &element_match_) &&
+      equivalences_.Initialize(source) && extra_data_.Initialize(source) &&
+      ValidateEquivalencesAndExtraData() && raw_delta_.Initialize(source) &&
+      reference_delta_.Initialize(source);
   if (!ok)
     return false;
   uint32_t pool_count = 0;
@@ -249,12 +273,13 @@ bool PatchElementReader::Initialize(BufferSource* source) {
   return true;
 }
 
-bool PatchElementReader::ValidateEquivalences() {
+bool PatchElementReader::ValidateEquivalencesAndExtraData() {
   EquivalenceSource equivalences_copy = equivalences_;
 
   const size_t old_region_size = element_match_.old_element.size;
   const size_t new_region_size = element_match_.new_element.size;
 
+  base::CheckedNumeric<uint32_t> total_length = 0;
   // Validate that each |equivalence| falls within the bounds of the
   // |element_match_| and are in order.
   offset_t prev_dst_end = 0;
@@ -272,6 +297,15 @@ bool PatchElementReader::ValidateEquivalences() {
       return false;
     }
     prev_dst_end = equivalence->dst_end();
+    total_length += equivalence->length;
+  }
+  if (!total_length.IsValid() ||
+      element_match_.new_element.region().size < total_length.ValueOrDie() ||
+      extra_data_.extra_data().size() !=
+          element_match_.new_element.region().size -
+              static_cast<size_t>(total_length.ValueOrDie())) {
+    LOG(ERROR) << "Incorrect amount of extra_data.";
+    return false;
   }
   return true;
 }
@@ -300,6 +334,7 @@ bool EnsemblePatchReader::Initialize(BufferSource* source) {
     LOG(ERROR) << "Patch contains invalid magic.";
     return false;
   }
+  // |header_| is assumed to be safe from this point forward.
 
   uint32_t element_count = 0;
   if (!source->GetValue(&element_count)) {
