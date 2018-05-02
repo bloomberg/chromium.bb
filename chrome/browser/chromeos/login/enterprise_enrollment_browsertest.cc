@@ -47,6 +47,7 @@ constexpr char kAdMachineDomainDN[] =
     "OU=leaf,OU=root,DC=machine,DC=domain,DC=com";
 constexpr const char* kAdOrganizationlUnit[] = {"leaf", "root"};
 constexpr char kAdTestUser[] = "test_user@user.domain.com";
+constexpr char kDMToken[] = "dm_token";
 
 class MockAuthPolicyClient : public FakeAuthPolicyClient {
  public:
@@ -179,7 +180,8 @@ class EnterpriseEnrollmentTest : public LoginManagerTest {
       const std::string& machine_domain,
       authpolicy::KerberosEncryptionTypes encryption_types,
       std::vector<std::string> organizational_unit,
-      const std::string& username) {
+      const std::string& username,
+      const std::string& dm_token) {
     auto request = std::make_unique<authpolicy::JoinDomainRequest>();
     if (!machine_name.empty())
       request->set_machine_name(machine_name);
@@ -189,6 +191,8 @@ class EnterpriseEnrollmentTest : public LoginManagerTest {
       request->add_machine_ou()->swap(it);
     if (!username.empty())
       request->set_user_principal_name(username);
+    if (!dm_token.empty())
+      request->set_dm_token(dm_token);
     request->set_kerberos_encryption_types(encryption_types);
     mock_auth_policy_client()->set_expected_request(std::move(request));
   }
@@ -230,12 +234,13 @@ class EnterpriseEnrollmentTest : public LoginManagerTest {
           EXPECT_CALL(*enrollment_helper,
                       EnrollUsingAuthCode("test_auth_code", _))
               .WillOnce(InvokeWithoutArgs([this, expected_domain]() {
-                this->enrollment_screen()->JoinDomain(base::BindOnce(
-                    [](const std::string& expected_domain,
-                       const std::string& domain) {
-                      ASSERT_EQ(expected_domain, domain);
-                    },
-                    expected_domain));
+                this->enrollment_screen()->JoinDomain(
+                    kDMToken, base::BindOnce(
+                                  [](const std::string& expected_domain,
+                                     const std::string& domain) {
+                                    ASSERT_EQ(expected_domain, domain);
+                                  },
+                                  expected_domain));
               }));
         });
   }
@@ -430,7 +435,7 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
   authpolicy::KerberosEncryptionTypes enc_types =
       authpolicy::KerberosEncryptionTypes::ENC_TYPES_ALL;
   SetExpectedJoinRequest("machine_name", "" /* machine_domain */, enc_types,
-                         {} /* machine_ou */, kAdTestUser);
+                         {} /* machine_ou */, kAdTestUser, kDMToken);
   SubmitActiveDirectoryCredentials("machine_name", "" /* machine_dn */,
                                    std::to_string(enc_types), kAdTestUser,
                                    "password");
@@ -467,7 +472,7 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
       std::vector<std::string>(
           kAdOrganizationlUnit,
           kAdOrganizationlUnit + arraysize(kAdOrganizationlUnit)),
-      kAdTestUser);
+      kAdTestUser, kDMToken);
   SubmitActiveDirectoryCredentials("machine_name", kAdMachineDomainDN,
                                    "" /* encryption_types */, kAdTestUser,
                                    "password");

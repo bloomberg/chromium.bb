@@ -553,6 +553,7 @@ void EnrollmentHandlerChromeOS::StartJoinAdDomain() {
   }
   DCHECK(ad_join_delegate_);
   ad_join_delegate_->JoinDomain(
+      client_->dm_token(),
       base::BindOnce(&EnrollmentHandlerChromeOS::OnAdDomainJoined,
                      weak_ptr_factory_.GetWeakPtr()));
 }

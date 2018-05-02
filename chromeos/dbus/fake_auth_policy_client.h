@@ -122,6 +122,7 @@ class CHROMEOS_EXPORT FakeAuthPolicyClient : public AuthPolicyClient {
   std::string display_name_;
   std::string given_name_;
   std::string machine_name_;
+  std::string dm_token_;
   authpolicy::ActiveDirectoryUserStatus::PasswordStatus password_status_ =
       authpolicy::ActiveDirectoryUserStatus::PASSWORD_VALID;
   authpolicy::ActiveDirectoryUserStatus::TgtStatus tgt_status_ =

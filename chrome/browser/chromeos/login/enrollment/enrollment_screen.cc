@@ -438,9 +438,11 @@ void EnrollmentScreen::RecordEnrollmentErrorMetrics() {
     UMA_ENROLLMENT_TIME(kMetricEnrollmentTimeFailure, elapsed_timer_);
 }
 
-void EnrollmentScreen::JoinDomain(OnDomainJoinedCallback on_joined_callback) {
+void EnrollmentScreen::JoinDomain(const std::string& dm_token,
+                                  OnDomainJoinedCallback on_joined_callback) {
   if (!authpolicy_login_helper_)
     authpolicy_login_helper_ = std::make_unique<AuthPolicyLoginHelper>();
+  authpolicy_login_helper_->set_dm_token(dm_token);
   on_joined_callback_ = std::move(on_joined_callback);
   view_->ShowActiveDirectoryScreen(std::string(), std::string(),
                                    authpolicy::ERROR_NONE);

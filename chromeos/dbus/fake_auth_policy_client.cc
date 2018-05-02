@@ -60,6 +60,7 @@ void RunSignalCallback(const std::string& interface_name,
 void StoreDevicePolicy(
     const em::ChromeDeviceSettingsProto& device_policy,
     const std::string& machine_name,
+    const std::string& dm_token,
     chromeos::AuthPolicyClient::RefreshPolicyCallback callback) {
   std::string payload;
   CHECK(device_policy.SerializeToString(&payload));
@@ -68,6 +69,7 @@ void StoreDevicePolicy(
   em::PolicyData policy_data;
   policy_data.set_policy_type("google/chromeos/device");
   policy_data.set_device_id(machine_name);
+  policy_data.set_request_token(dm_token);
   policy_data.set_policy_value(payload);
   policy_data.set_timestamp(base::Time::Now().ToJavaTime());
   response.set_policy_data(policy_data.SerializeAsString());
@@ -204,16 +206,17 @@ void FakeAuthPolicyClient::RefreshDevicePolicy(RefreshPolicyCallback callback) {
   SessionManagerClient* session_manager_client =
       DBusThreadManager::Get()->GetSessionManagerClient();
 
-  if (machine_name_.empty()) {
+  if (machine_name_.empty() || dm_token_.empty()) {
     // We need to set a new timestamp below. So we fetch the policy to get the
-    // machine name. So we could set it as well.
+    // machine name and dm_token. So we could set it as well.
     session_manager_client->RetrieveDevicePolicy(
         base::BindOnce(&FakeAuthPolicyClient::OnDevicePolicyRetrieved,
                        weak_factory_.GetWeakPtr(), std::move(callback)));
     return;
   }
 
-  StoreDevicePolicy(device_policy_, machine_name_, std::move(callback));
+  StoreDevicePolicy(device_policy_, machine_name_, dm_token_,
+                    std::move(callback));
 }
 
 void FakeAuthPolicyClient::RefreshUserPolicy(const AccountId& account_id,
@@ -272,7 +275,10 @@ void FakeAuthPolicyClient::OnDevicePolicyRetrieved(
   policy_data.ParseFromString(response.policy_data());
   if (policy_data.has_device_id())
     machine_name_ = policy_data.device_id();
-  StoreDevicePolicy(device_policy_, machine_name_, std::move(callback));
+  if (policy_data.has_request_token())
+    dm_token_ = policy_data.request_token();
+  StoreDevicePolicy(device_policy_, machine_name_, dm_token_,
+                    std::move(callback));
 }
 
 }  // namespace chromeos

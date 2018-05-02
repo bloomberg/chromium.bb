@@ -74,6 +74,10 @@ class CHROMEOS_EXPORT AuthPolicyLoginHelper {
   // Cancel pending requests and restarts AuthPolicy service.
   void CancelRequestsAndRestart();
 
+  // Sets the DM token. Will be sent to authpolicy with the domain join call.
+  // Authpolicy would set it in the device policy.
+  void set_dm_token(const std::string& dm_token) { dm_token_ = dm_token; }
+
  private:
   // Called from AuthPolicyClient::JoinAdDomain.
   void OnJoinCallback(JoinCallback callback,
@@ -91,6 +95,8 @@ class CHROMEOS_EXPORT AuthPolicyLoginHelper {
       AuthCallback callback,
       authpolicy::ErrorType error,
       const authpolicy::ActiveDirectoryAccountInfo& account_info);
+
+  std::string dm_token_;
 
   base::WeakPtrFactory<AuthPolicyLoginHelper> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(AuthPolicyLoginHelper);
