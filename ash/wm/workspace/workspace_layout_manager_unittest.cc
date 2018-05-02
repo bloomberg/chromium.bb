@@ -1561,6 +1561,7 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, OpenAppListInOverviewMode) {
 
   // Toggle overview button to enter overview mode.
   Shell::Get()->window_selector_controller()->ToggleOverview();
+  RunAllPendingInMessageLoop();
   EXPECT_FALSE(test_helper.GetBackdropWindow());
 
   ui::ScopedAnimationDurationScaleMode test_duration_mode(
