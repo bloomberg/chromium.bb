@@ -61,38 +61,30 @@
 #define MAYBE_CaptureMjpeg DISABLED_CaptureMjpeg
 #define MAYBE_TakePhoto TakePhoto
 #define MAYBE_GetPhotoState GetPhotoState
-#define MAYBE_CaptureWithSize CaptureWithSize
 #elif defined(OS_WIN)
 #define MAYBE_AllocateBadSize AllocateBadSize
 #define MAYBE_CaptureMjpeg CaptureMjpeg
 #define MAYBE_TakePhoto TakePhoto
 #define MAYBE_GetPhotoState GetPhotoState
-#define MAYBE_CaptureWithSize CaptureWithSize
 #elif defined(OS_ANDROID)
 #define MAYBE_AllocateBadSize AllocateBadSize
 #define MAYBE_CaptureMjpeg CaptureMjpeg
 #define MAYBE_TakePhoto TakePhoto
 #define MAYBE_GetPhotoState GetPhotoState
-#define MAYBE_CaptureWithSize CaptureWithSize
 #elif defined(OS_LINUX)
-// All tests are flaky on Linux: https://crbug.com/831514. Note: the stuff in
-// the next comment is a separate issue.
-
 // AllocateBadSize will hang when a real camera is attached and if more than one
 // test is trying to use the camera (even across processes). Do NOT renable
 // this test without fixing the many bugs associated with it:
 // http://crbug.com/94134 http://crbug.com/137260 http://crbug.com/417824
 #define MAYBE_AllocateBadSize DISABLED_AllocateBadSize
-#define MAYBE_CaptureMjpeg DISABLED_CaptureMjpeg
-#define MAYBE_TakePhoto DISABLED_TakePhoto
-#define MAYBE_GetPhotoState DISABLED_GetPhotoState
-#define MAYBE_CaptureWithSize DISABLED_CaptureWithSize
+#define MAYBE_CaptureMjpeg CaptureMjpeg
+#define MAYBE_TakePhoto TakePhoto
+#define MAYBE_GetPhotoState GetPhotoState
 #else
 #define MAYBE_AllocateBadSize AllocateBadSize
 #define MAYBE_CaptureMjpeg CaptureMjpeg
 #define MAYBE_TakePhoto DISABLED_TakePhoto
 #define MAYBE_GetPhotoState DISABLED_GetPhotoState
-#define MAYBE_CaptureWithSize CaptureWithSize
 #endif
 
 // Wrap the TEST_P macro into another one to allow to preprocess |test_name|
@@ -479,7 +471,7 @@ TEST(VideoCaptureDeviceDescriptor, RemoveTrailingWhitespaceFromDisplayName) {
 }
 
 // Allocates the first enumerated device, and expects a frame.
-WRAPPED_TEST_P(VideoCaptureDeviceTest, MAYBE_CaptureWithSize) {
+WRAPPED_TEST_P(VideoCaptureDeviceTest, CaptureWithSize) {
   const auto descriptor = FindUsableDeviceDescriptor();
   if (!descriptor)
     return;
