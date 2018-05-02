@@ -637,7 +637,7 @@ TEST_P(TabStripTest, NewTabButtonStaysVisible) {
 
   DoLayout();
 
-  EXPECT_LE(tab_strip_->GetNewTabButtonBounds().right(), kTabStripWidth);
+  EXPECT_LE(tab_strip_->new_tab_button_bounds().right(), kTabStripWidth);
 }
 
 TEST_P(TabStripTest, AttentionIndicatorHidesOnSelect) {

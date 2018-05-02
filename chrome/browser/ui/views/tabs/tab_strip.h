@@ -77,9 +77,8 @@ class TabStrip : public views::View,
   void AddObserver(TabStripObserver* observer);
   void RemoveObserver(TabStripObserver* observer);
 
-  // Max x-coordinate the tabstrip draws at, which is the right edge of the new
-  // tab button.
-  int GetMaxX() const;
+  // Returns the trailing edge of the last tab.
+  int GetTabsMaxX() const;
 
   // Set the background offset used by inactive tabs to match the frame image.
   void SetBackgroundOffset(const gfx::Point& offset);
@@ -126,7 +125,7 @@ class TabStrip : public views::View,
   void SetStackedLayout(bool stacked_layout);
 
   // Returns the bounds of the new tab button.
-  gfx::Rect GetNewTabButtonBounds();
+  gfx::Rect new_tab_button_bounds() const { return new_tab_button_bounds_; }
 
   // Returns true if the new tab button should be sized to the top of the tab
   // strip.

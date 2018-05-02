@@ -169,17 +169,28 @@ void BrowserNonClientFrameViewMus::UpdateClientArea() {
   if (browser_view()->IsTabStripVisible() && show_frame_decorations) {
     gfx::Rect tab_strip_bounds(GetBoundsForTabStrip(tab_strip_));
 
-    int tab_strip_max_x = tab_strip_->GetMaxX();
+    int tab_strip_max_x = tab_strip_->GetTabsMaxX();
     if (!tab_strip_bounds.IsEmpty() && tab_strip_max_x) {
       tab_strip_bounds.set_width(tab_strip_max_x);
+      // The new tab button may be inside or outside |tab_strip_bounds|.  If
+      // it's outside, handle it similarly to those bounds.  If it's inside,
+      // the Subtract() call below will leave it empty and it will be ignored
+      // later.
+      gfx::Rect new_tab_button_bounds = tab_strip_->new_tab_button_bounds();
+      new_tab_button_bounds.Subtract(tab_strip_bounds);
       if (immersive_mode_controller->IsEnabled()) {
         top_container_offset =
             immersive_mode_controller->GetTopContainerVerticalOffset(
                 browser_view()->top_container()->size());
         tab_strip_bounds.set_y(tab_strip_bounds.y() + top_container_offset);
-        tab_strip_bounds.Intersect(gfx::Rect(size()));
+        new_tab_button_bounds.set_y(new_tab_button_bounds.y() +
+                                    top_container_offset);
+        tab_strip_bounds.Intersect(GetLocalBounds());
+        new_tab_button_bounds.Intersect(GetLocalBounds());
       }
       additional_client_area.push_back(tab_strip_bounds);
+      if (!new_tab_button_bounds.IsEmpty())
+        additional_client_area.push_back(new_tab_button_bounds);
     }
   }
   aura::WindowTreeHostMus* window_tree_host_mus =

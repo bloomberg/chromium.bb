@@ -158,7 +158,7 @@ void BrowserNonClientFrameViewMac::Layout() {
     TabStrip* tabstrip = browser_view()->tabstrip();
     if (tabstrip && browser_view()->IsTabStripVisible()) {
       int new_tab_button_bottom =
-          tabstrip->bounds().y() + tabstrip->GetNewTabButtonBounds().height();
+          tabstrip->bounds().y() + tabstrip->new_tab_button_bounds().height();
       // Align the switcher's bottom to bottom of the new tab button;
       button_y = new_tab_button_bottom - button_size.height();
     }
