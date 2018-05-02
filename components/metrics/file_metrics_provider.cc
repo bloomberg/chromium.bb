@@ -497,6 +497,8 @@ FileMetricsProvider::AccessResult FileMetricsProvider::CheckAndMapMetricSource(
       base::PersistentMemoryAllocator::MEMORY_DELETED) {
     return ACCESS_RESULT_MEMORY_DELETED;
   }
+  if (memory_allocator->IsCorrupt())
+    return ACCESS_RESULT_DATA_CORRUPTION;
 
   // Create an allocator for the mapped file. Ownership passes to the allocator.
   source->allocator = std::make_unique<base::PersistentHistogramAllocator>(

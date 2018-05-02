@@ -225,6 +225,9 @@ class FileMetricsProvider : public MetricsProvider,
     // The file had no embedded system profile.
     ACCESS_RESULT_NO_PROFILE,
 
+    // The file had internal data corruption.
+    ACCESS_RESULT_DATA_CORRUPTION,
+
     ACCESS_RESULT_MAX
   };
 
