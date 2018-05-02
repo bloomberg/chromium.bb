@@ -1402,18 +1402,15 @@ TEST_F(AnimationCompositorAnimationsTest, canStartElementOnCompositorEffect) {
       CompositorAnimations::CheckCanStartElementOnCompositor(*target);
   EXPECT_EQ(code, CompositorAnimations::FailureCode::None());
   EXPECT_EQ(document->Timeline().PendingAnimationsCount(), 1u);
-  EXPECT_EQ(document->Timeline().MainThreadCompositableAnimationsCount(), 0u);
   CompositorAnimationHost* host =
       document->View()->GetCompositorAnimationHost();
   EXPECT_EQ(host->GetMainThreadAnimationsCountForTesting(), 0u);
-  EXPECT_EQ(host->GetMainThreadCompositableAnimationsCountForTesting(), 0u);
   EXPECT_EQ(host->GetCompositedAnimationsCountForTesting(), 1u);
 }
 
 // Regression test for https://crbug.com/781305. When we have a transform
 // animation on a SVG element, the effect can be started on compositor but the
-// element itself cannot. The animation should not be a main thread compositable
-// animation.
+// element itself cannot.
 TEST_F(AnimationCompositorAnimationsTest,
        cannotStartElementOnCompositorEffectSVG) {
   LoadTestData("transform-animation-on-svg.html");
@@ -1424,83 +1421,9 @@ TEST_F(AnimationCompositorAnimationsTest,
   EXPECT_EQ(code, CompositorAnimations::FailureCode::NonActionable(
                       "Element does not paint into own backing"));
   EXPECT_EQ(document->Timeline().PendingAnimationsCount(), 4u);
-  EXPECT_EQ(document->Timeline().MainThreadCompositableAnimationsCount(), 0u);
   CompositorAnimationHost* host =
       document->View()->GetCompositorAnimationHost();
   EXPECT_EQ(host->GetMainThreadAnimationsCountForTesting(), 4u);
-  EXPECT_EQ(host->GetMainThreadCompositableAnimationsCountForTesting(), 0u);
-  EXPECT_EQ(host->GetCompositedAnimationsCountForTesting(), 0u);
-}
-
-// A helper function for the next two tests to avoid duplicate code
-void CanStartOpacityTestHelper(CompositorAnimations::FailureCode code,
-                               Document* document,
-                               size_t composited_animations_count) {
-  EXPECT_EQ(code, CompositorAnimations::FailureCode::None());
-  EXPECT_EQ(document->Timeline().PendingAnimationsCount(), 1u);
-  EXPECT_EQ(document->Timeline().MainThreadCompositableAnimationsCount(), 0u);
-  CompositorAnimationHost* host =
-      document->View()->GetCompositorAnimationHost();
-  EXPECT_EQ(host->GetMainThreadAnimationsCountForTesting(), 0u);
-  EXPECT_EQ(host->GetMainThreadCompositableAnimationsCountForTesting(), 0u);
-  EXPECT_EQ(host->GetCompositedAnimationsCountForTesting(),
-            composited_animations_count);
-}
-
-// Regression tests for https://crbug.com/818809. When an element has an
-// animation that will be composited regardless of an experiment (such as
-// will-change: transform), then an opacity animation on this element will be
-// composited as well.
-TEST_F(AnimationCompositorAnimationsTest,
-       canStartOpacityWithWillChangeWithRuntimeFeature) {
-  ScopedTurnOff2DAndOpacityCompositorAnimationsForTest
-      turn_off_2d_and_opacity_compositors_animation(true);
-  LoadTestData("opacity-with-will-change-transform.html");
-  Document* document = GetFrame()->GetDocument();
-  Element* target = document->getElementById("target");
-  CompositorAnimations::FailureCode code =
-      CompositorAnimations::CheckCanStartElementOnCompositor(*target);
-  CanStartOpacityTestHelper(code, document, 1u);
-}
-
-TEST_F(AnimationCompositorAnimationsTest,
-       canStartOpacityWith3DTransformWithRuntimeFeature) {
-  ScopedTurnOff2DAndOpacityCompositorAnimationsForTest
-      turn_off_2d_and_opacity_compositors_animation(true);
-  LoadTestData("opacity-with-3d-transform.html");
-  Document* document = GetFrame()->GetDocument();
-  Element* target = document->getElementById("target");
-  CompositorAnimations::FailureCode code =
-      CompositorAnimations::CheckCanStartElementOnCompositor(*target);
-  CanStartOpacityTestHelper(code, document, 2u);
-}
-
-TEST_F(AnimationCompositorAnimationsTest,
-       cannotStartAnimationOnCompositorWithRuntimeFeature) {
-  ScopedTurnOff2DAndOpacityCompositorAnimationsForTest
-      turn_off_2d_and_opacity_compositors_animation(true);
-  LoadTestData("transform-animation.html");
-  Document* document = GetFrame()->GetDocument();
-  Element* target = document->getElementById("target");
-  const ObjectPaintProperties* properties =
-      target->GetLayoutObject()->FirstFragment().PaintProperties();
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
-    EXPECT_TRUE(properties->Transform()->HasDirectCompositingReasons());
-  LayoutObject* layout_object = target->GetLayoutObject();
-  DCHECK(layout_object && layout_object->PaintingLayer());
-  // LoadTestData calls ForceFullCompositingUpdate, which have called
-  // CheckCanStartAnimationOnCompositor on the target element. In this test,
-  // there is one single transform animation, and it should not be composited
-  // because the runtime flag is on.
-  CompositingReasons compositing_reasons =
-      layout_object->PaintingLayer()->GetCompositingReasons();
-  EXPECT_EQ(compositing_reasons, CompositingReason::kNone);
-  EXPECT_EQ(document->Timeline().PendingAnimationsCount(), 1u);
-  EXPECT_EQ(document->Timeline().MainThreadCompositableAnimationsCount(), 1u);
-  CompositorAnimationHost* host =
-      document->View()->GetCompositorAnimationHost();
-  EXPECT_EQ(host->GetMainThreadAnimationsCountForTesting(), 1u);
-  EXPECT_EQ(host->GetMainThreadCompositableAnimationsCountForTesting(), 1u);
   EXPECT_EQ(host->GetCompositedAnimationsCountForTesting(), 0u);
 }
 

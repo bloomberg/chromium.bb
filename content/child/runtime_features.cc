@@ -340,10 +340,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
                                                 false);
   }
 
-  if (base::FeatureList::IsEnabled(
-          features::kTurnOff2DAndOpacityCompositorAnimations))
-    WebRuntimeFeatures::EnableTurnOff2DAndOpacityCompositorAnimations(true);
-
   if (base::FeatureList::IsEnabled(features::kRasterInducingScroll))
     WebRuntimeFeatures::EnableRasterInducingScroll(true);
 

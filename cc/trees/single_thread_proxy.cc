@@ -381,10 +381,6 @@ size_t SingleThreadProxy::MainThreadAnimationsCount() const {
   return 0;
 }
 
-size_t SingleThreadProxy::MainThreadCompositableAnimationsCount() const {
-  return 0;
-}
-
 bool SingleThreadProxy::CurrentFrameHadRAF() const {
   return false;
 }

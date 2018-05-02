@@ -255,24 +255,6 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
         "animations");
   }
 
-  if (RuntimeEnabledFeatures::
-          TurnOff2DAndOpacityCompositorAnimationsEnabled()) {
-    LayoutObject* layout_object = target_element.GetLayoutObject();
-    if (layout_object && layout_object->PaintingLayer()) {
-      CompositingReasons compositing_reasons =
-          layout_object->PaintingLayer()->GetCompositingReasons();
-      bool has_other_compositing_reasons =
-          compositing_reasons != CompositingReason::kNone;
-      // If we are already compositing the element for other reasons, then not
-      // starting the animation on the compositor will not save memory and will
-      // have worse performance.
-      if (!has_other_compositing_reasons) {
-        return FailureCode::AcceleratableAnimNotAccelerated(
-            "Acceleratable animation not accelerated due to an experiment");
-      }
-    }
-  }
-
   return FailureCode::None();
 }
 
