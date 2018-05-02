@@ -78,6 +78,16 @@ class SkiaOutputSurfaceImpl : public SkiaOutputSurface,
   SkCanvas* GetSkCanvasForCurrentFrame() override;
   sk_sp<SkImage> MakePromiseSkImage(ResourceMetadata metadata) override;
   gpu::SyncToken SkiaSwapBuffers(OutputSurfaceFrame frame) override;
+  SkCanvas* BeginPaintRenderPass(const RenderPassId& id,
+                                 const gfx::Size& surface_size,
+                                 ResourceFormat format,
+                                 bool mipmap) override;
+  gpu::SyncToken FinishPaintRenderPass() override;
+  sk_sp<SkImage> MakePromiseSkImageFromRenderPass(const RenderPassId& id,
+                                                  const gfx::Size& size,
+                                                  ResourceFormat format,
+                                                  bool mipmap) override;
+  void RemoveRenderPassResource(std::vector<RenderPassId> ids) override;
 
   // gpu::ImageTransportSurfaceDelegate implementation:
   void DidSwapBuffersComplete(gpu::SwapBuffersCompleteParams params) override;
@@ -106,7 +116,11 @@ class SkiaOutputSurfaceImpl : public SkiaOutputSurface,
   void SwapBuffersOnGpuThread(OutputSurfaceFrame frame,
                               std::unique_ptr<SkDeferredDisplayList> ddl,
                               uint64_t sync_fence_release);
-
+  void FinishPaintRenderPassOnGpuThread(
+      RenderPassId id,
+      std::unique_ptr<SkDeferredDisplayList> ddl,
+      uint64_t sync_fence_release);
+  void RemoveRenderPassResourceOnGpuThread(std::vector<RenderPassId> ids);
   void RecreateRecorder();
   void DidSwapBuffersCompleteOnClientThread(
       gpu::SwapBuffersCompleteParams params);
@@ -115,14 +129,16 @@ class SkiaOutputSurfaceImpl : public SkiaOutputSurface,
   void BufferPresentedOnClientThread(uint64_t swap_id,
                                      const gfx::PresentationFeedback& feedback);
 
-  struct PromiseTextureInfo;
-  static void PromiseTextureFullfillStub(void* texture_context,
-                                         GrBackendTexture* backend_texture);
-  static void PromiseTextureReleaseStub(void* texture_context);
-  static void PromiseTextureDoneStub(void* texture_context);
+  template <class T>
+  class PromiseTextureHelper;
+
+  // Fullfill callback for promise SkImage created from a resource.
   void OnPromiseTextureFullfill(const ResourceMetadata& metadata,
                                 GrBackendTexture* backend_texture);
-  void OnPromiseTextureRelease(const ResourceMetadata& metadata);
+
+  // Fullfill callback for promise SkImage created from a render pass.
+  void OnPromiseTextureFullfill(const RenderPassId id,
+                                GrBackendTexture* backend_texture);
 
   const gpu::CommandBufferId command_buffer_id_;
   uint64_t sync_fence_release_ = 0;
@@ -140,9 +156,22 @@ class SkiaOutputSurfaceImpl : public SkiaOutputSurface,
   SkSurfaceCharacterization characterization_;
   std::unique_ptr<SkDeferredDisplayListRecorder> recorder_;
 
+  // The current render pass id set by BeginPaintRenderPass.
+  RenderPassId current_render_pass_id_ = 0;
+
+  // The SkDDL recorder created by BeginPaintRenderPass, and
+  // FinishPaintRenderPass will turn it into a SkDDL and play the SkDDL back on
+  // the GPU thread.
+  std::unique_ptr<SkDeferredDisplayListRecorder> offscreen_surface_recorder_;
+
+  // Offscreen surfaces for render passes. It must be accessed on the GPU
+  // thread.
+  base::flat_map<RenderPassId, sk_sp<SkSurface>> offscreen_surfaces_;
+
   // Sync tokens for resources which are used for the current frame.
   std::vector<gpu::SyncToken> resource_sync_tokens_;
 
+  // The task runner for running task on the client (compositor) thread.
   scoped_refptr<base::SingleThreadTaskRunner> client_thread_task_runner_;
 
   THREAD_CHECKER(client_thread_checker_);

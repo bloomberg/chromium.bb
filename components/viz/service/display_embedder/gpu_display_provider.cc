@@ -125,8 +125,7 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
 #else
     // Create an offscreen context_provider for SkiaOutputSurfaceImpl, because
     // SkiaRenderer still needs it to draw RenderPass into a texture.
-    // TODO(penghuang): remove this context when we figure out how to use DDL
-    // to draw RenderPass. https://crbug.com/825901
+    // TODO(penghuang): Remove this context_provider. https://crbug.com/825901
     auto context_provider = base::MakeRefCounted<VizProcessContextProvider>(
         gpu_service_, gpu::kNullSurfaceHandle, gpu_memory_buffer_manager_.get(),
         image_factory_, gpu_channel_manager_delegate_,

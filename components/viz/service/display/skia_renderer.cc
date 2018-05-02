@@ -323,8 +323,8 @@ void SkiaRenderer::BindFramebufferToOutputSurface() {
 #endif
 
   if (settings_->show_overdraw_feedback) {
-    const gfx::Size size(root_surface_->width(), root_surface_->height());
-    overdraw_surface_ = root_surface_->makeSurface(
+    const auto& size = current_frame()->device_viewport_size;
+    overdraw_surface_ = root_canvas_->makeSurface(
         SkImageInfo::MakeA8(size.width(), size.height()));
     nway_canvas_ = std::make_unique<SkNWayCanvas>(size.width(), size.height());
     overdraw_canvas_ =
@@ -340,22 +340,21 @@ void SkiaRenderer::BindFramebufferToOutputSurface() {
 }
 
 void SkiaRenderer::BindFramebufferToTexture(const RenderPassId render_pass_id) {
-  if (skia_output_surface_) {
-    // TODO(penghuang): Support it with DDL.
-    non_root_surface_ = nullptr;
-    current_canvas_ = nullptr;
-    current_surface_ = nullptr;
-    NOTIMPLEMENTED();
-    return;
-  }
   auto iter = render_pass_backings_.find(render_pass_id);
   DCHECK(render_pass_backings_.end() != iter);
   // This function is called after AllocateRenderPassResourceIfNeeded, so there
   // should be backing ready.
   RenderPassBacking& backing = iter->second;
-  non_root_surface_ = backing.render_pass_surface;
-  current_canvas_ = non_root_surface_->getCanvas();
-  current_surface_ = non_root_surface_.get();
+  if (skia_output_surface_) {
+    non_root_surface_ = nullptr;
+    current_canvas_ = skia_output_surface_->BeginPaintRenderPass(
+        render_pass_id, backing.size, backing.format, backing.mipmap);
+  } else {
+    non_root_surface_ = backing.render_pass_surface;
+    current_surface_ = non_root_surface_.get();
+    current_canvas_ = non_root_surface_->getCanvas();
+  }
+  is_drawing_render_pass_ = true;
 }
 
 void SkiaRenderer::SetScissorTestRect(const gfx::Rect& scissor_rect) {
@@ -669,10 +668,8 @@ bool SkiaRenderer::CalculateRPDQParams(sk_sp<SkImage> content,
   // should be backing ready.
   RenderPassBacking& content_texture = iter->second;
   DCHECK(!params->filters->IsEmpty());
-  gfx::Size size(content_texture.render_pass_surface->width(),
-                 content_texture.render_pass_surface->height());
   auto paint_filter = cc::RenderSurfaceFilters::BuildImageFilter(
-      *params->filters, gfx::SizeF(size));
+      *params->filters, gfx::SizeF(content_texture.size));
   auto filter = paint_filter ? paint_filter->cached_sk_filter_ : nullptr;
 
   // Apply filters to the content texture.
@@ -724,22 +721,21 @@ bool SkiaRenderer::CalculateRPDQParams(sk_sp<SkImage> content,
 }
 
 void SkiaRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad) {
-  if (skia_output_surface_) {
-    // TODO(penghuang): Support render pass quad.
-    DrawUnsupportedQuad(quad);
-    return;
-  }
   auto iter = render_pass_backings_.find(quad->render_pass_id);
   DCHECK(render_pass_backings_.end() != iter);
   // This function is called after AllocateRenderPassResourceIfNeeded, so there
   // should be backing ready.
-  RenderPassBacking& content_texture = iter->second;
+  RenderPassBacking& backing = iter->second;
 
   // TODO(weiliangc): GL Renderer has optimization that when Render Pass has a
   // single quad inside we would draw that directly. We could add similar
   // optimization here by using the quad's SkImage.
   sk_sp<SkImage> content =
-      content_texture.render_pass_surface->makeImageSnapshot();
+      skia_output_surface_
+          ? skia_output_surface_->MakePromiseSkImageFromRenderPass(
+                quad->render_pass_id, backing.size, backing.format,
+                backing.mipmap)
+          : backing.render_pass_surface->makeImageSnapshot();
 
   DrawRenderPassDrawQuadParams params;
   params.filters = FiltersForPass(quad->render_pass_id);
@@ -870,11 +866,16 @@ void SkiaRenderer::DidChangeVisibility() {
 }
 
 void SkiaRenderer::FinishDrawingQuadList() {
-  // TODO(penghuang): Flush a SkDDL surface will crash. Remove it when the issue
-  // is fixed in skia.
-  if (skia_output_surface_)
-    return;
-  current_canvas_->flush();
+  if (skia_output_surface_) {
+    if (is_drawing_render_pass_) {
+      gpu::SyncToken sync_token = skia_output_surface_->FinishPaintRenderPass();
+      promise_images_.clear();
+      lock_set_for_external_use_.UnlockResources(sync_token);
+      is_drawing_render_pass_ = false;
+    }
+  } else {
+    current_canvas_->flush();
+  }
 }
 
 void SkiaRenderer::GenerateMipmap() {
@@ -1033,10 +1034,8 @@ void SkiaRenderer::UpdateRenderPassTextures(
 
     const RenderPassRequirements& requirements = render_pass_it->second;
     const RenderPassBacking& backing = pair.second;
-    SkSurface* backing_surface = pair.second.render_pass_surface.get();
-    bool size_appropriate =
-        backing_surface->width() >= requirements.size.width() &&
-        backing_surface->height() >= requirements.size.height();
+    bool size_appropriate = backing.size.width() >= requirements.size.width() &&
+                            backing.size.height() >= requirements.size.height();
     bool mipmap_appropriate = !requirements.mipmap || backing.mipmap;
     if (!size_appropriate || !mipmap_appropriate)
       passes_to_delete.push_back(pair.first);
@@ -1048,6 +1047,10 @@ void SkiaRenderer::UpdateRenderPassTextures(
     auto it = render_pass_backings_.find(passes_to_delete[i]);
     render_pass_backings_.erase(it);
   }
+
+  if (skia_output_surface_ && !passes_to_delete.empty()) {
+    skia_output_surface_->RemoveRenderPassResource(std::move(passes_to_delete));
+  }
 }
 
 void SkiaRenderer::AllocateRenderPassResourceIfNeeded(
@@ -1057,16 +1060,22 @@ void SkiaRenderer::AllocateRenderPassResourceIfNeeded(
   if (it != render_pass_backings_.end())
     return;
 
-#if BUILDFLAG(ENABLE_VULKAN)
-  GrContext* gr_context =
-      output_surface_->vulkan_context_provider()->GetGrContext();
   // TODO(penghuang): check supported format correctly.
   gpu::Capabilities caps;
   caps.texture_format_bgra8888 = true;
+  GrContext* gr_context = nullptr;
+#if BUILDFLAG(ENABLE_VULKAN)
+  if (!skia_output_surface_) {
+    gr_context = output_surface_->vulkan_context_provider()->GetGrContext();
+    caps.texture_format_bgra8888 = true;
+  }
 #else
-  ContextProvider* context_provider = output_surface_->context_provider();
-  const gpu::Capabilities& caps = context_provider->ContextCapabilities();
-  GrContext* gr_context = context_provider->GrContext();
+  if (!skia_output_surface_) {
+    ContextProvider* context_provider = output_surface_->context_provider();
+    caps.texture_format_bgra8888 =
+        context_provider->ContextCapabilities().texture_format_bgra8888;
+    gr_context = context_provider->GrContext();
+  }
 #endif
   render_pass_backings_.insert(std::pair<RenderPassId, RenderPassBacking>(
       render_pass_id,
@@ -1081,8 +1090,7 @@ SkiaRenderer::RenderPassBacking::RenderPassBacking(
     const gfx::Size& size,
     bool mipmap,
     const gfx::ColorSpace& color_space)
-    : mipmap(mipmap), color_space(color_space) {
-  ResourceFormat format;
+    : size(size), mipmap(mipmap), color_space(color_space) {
   if (color_space.IsHDR()) {
     // If a platform does not support half-float renderbuffers then it should
     // not should request HDR rendering.
@@ -1092,15 +1100,18 @@ SkiaRenderer::RenderPassBacking::RenderPassBacking(
   } else {
     format = PlatformColor::BestSupportedTextureFormat(caps);
   }
-  // TODO(weiliangc): Use the right format for software compositing by checking
-  // the mode and passing it here.
-  SkColorType color_type =
-      ResourceFormatToClosestSkColorType(/*gpu_compositing=*/true, format);
+
+  // For DDL, we don't need create teh render_pass_surface here, and we will
+  // create the SkSurface by SkiaOutputSurface on Gpu thread.
+  if (!gr_context)
+    return;
 
   constexpr uint32_t flags = 0;
   // LegacyFontHost will get LCD text and skia figures out what type to use.
   SkSurfaceProps surface_props(flags, SkSurfaceProps::kLegacyFontHost_InitType);
   int msaa_sample_count = 0;
+  SkColorType color_type =
+      ResourceFormatToClosestSkColorType(true /* gpu_compositing*/, format);
   SkImageInfo image_info = SkImageInfo::Make(
       size.width(), size.height(), color_type, kPremul_SkAlphaType, nullptr);
   render_pass_surface = SkSurface::MakeRenderTarget(
@@ -1112,15 +1123,20 @@ SkiaRenderer::RenderPassBacking::~RenderPassBacking() {}
 
 SkiaRenderer::RenderPassBacking::RenderPassBacking(
     SkiaRenderer::RenderPassBacking&& other)
-    : mipmap(other.mipmap), color_space(other.color_space) {
+    : size(other.size),
+      mipmap(other.mipmap),
+      color_space(other.color_space),
+      format(other.format) {
   render_pass_surface = other.render_pass_surface;
   other.render_pass_surface = nullptr;
 }
 
 SkiaRenderer::RenderPassBacking& SkiaRenderer::RenderPassBacking::operator=(
     SkiaRenderer::RenderPassBacking&& other) {
+  size = other.size;
   mipmap = other.mipmap;
   color_space = other.color_space;
+  format = other.format;
   render_pass_surface = other.render_pass_surface;
   other.render_pass_surface = nullptr;
   return *this;
@@ -1136,8 +1152,7 @@ gfx::Size SkiaRenderer::GetRenderPassBackingPixelSize(
     const RenderPassId& render_pass_id) {
   auto it = render_pass_backings_.find(render_pass_id);
   DCHECK(it != render_pass_backings_.end());
-  SkSurface* texture = it->second.render_pass_surface.get();
-  return gfx::Size(texture->width(), texture->height());
+  return it->second.size;
 }
 
 }  // namespace viz
