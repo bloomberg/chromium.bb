@@ -6,10 +6,8 @@
 #define CHROME_BROWSER_CHROME_BROWSER_MAIN_H_
 
 #include <memory>
-#include <vector>
 
 #include "base/macros.h"
-#include "build/build_config.h"
 #include "chrome/browser/chrome_browser_field_trials.h"
 #include "chrome/browser/chrome_process_singleton.h"
 #include "chrome/browser/first_run/first_run.h"
@@ -18,6 +16,7 @@
 #include "chrome/common/thread_profiler.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/common/main_function_params.h"
+#include "ui/base/resource/data_pack.h"
 
 class BrowserProcessImpl;
 class ChromeBrowserMainExtraParts;
@@ -56,8 +55,8 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   class DeferringTaskRunner;
 #endif
 
-  explicit ChromeBrowserMainParts(
-      const content::MainFunctionParams& parameters);
+  explicit ChromeBrowserMainParts(const content::MainFunctionParams& parameters,
+                                  std::unique_ptr<ui::DataPack> data_pack);
 
   // content::BrowserMainParts overrides.
   bool ShouldContentCreateFeatureList() override;
@@ -210,6 +209,10 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // real task scheduler has been created.
   scoped_refptr<DeferringTaskRunner> initial_task_runner_;
 #endif
+
+  // This is used to store the ui data pack. The data pack is moved when
+  // resource bundle gets created.
+  std::unique_ptr<ui::DataPack> service_manifest_data_pack_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainParts);
 };

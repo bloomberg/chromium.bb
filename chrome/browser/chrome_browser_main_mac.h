@@ -11,7 +11,8 @@
 class ChromeBrowserMainPartsMac : public ChromeBrowserMainPartsPosix {
  public:
   explicit ChromeBrowserMainPartsMac(
-      const content::MainFunctionParams& parameters);
+      const content::MainFunctionParams& parameters,
+      std::unique_ptr<ui::DataPack> data_pack);
   ~ChromeBrowserMainPartsMac() override;
 
   // BrowserParts overrides.

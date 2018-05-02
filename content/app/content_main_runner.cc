@@ -436,6 +436,12 @@ void PreSandboxInit() {
 
 #endif  // OS_LINUX
 
+bool IsRootProcess() {
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  return command_line.GetSwitchValueASCII(switches::kProcessType).empty();
+}
+
 }  // namespace
 
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
@@ -729,8 +735,15 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     int exit_code = 0;
     if (delegate_ && delegate_->BasicStartupComplete(&exit_code))
       return exit_code;
-
     completed_basic_startup_ = true;
+
+    // We will need to use data from resources.pak in later cl, so load the file
+    // now.
+    if (IsRootProcess()) {
+      ui::DataPack* data_pack = delegate_->LoadServiceManifestDataPack();
+      // TODO(ranj): Read manifest from this data pack.
+      ignore_result(data_pack);
+    }
 
     const base::CommandLine& command_line =
         *base::CommandLine::ForCurrentProcess();
