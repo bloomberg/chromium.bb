@@ -10,6 +10,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/ui/blocked_content/popup_opener_tab_helper.h"
 #include "chrome/browser/ui/blocked_content/tab_under_navigation_throttle.h"
 #include "chrome/browser/ui/browser.h"
@@ -24,6 +25,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/test/test_extension_dir.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -35,7 +37,7 @@
 #include "chrome/browser/ui/blocked_content/framebust_block_tab_helper.h"
 #endif
 
-class TabUnderBlockerBrowserTest : public InProcessBrowserTest {
+class TabUnderBlockerBrowserTest : public ExtensionBrowserTest {
  public:
   TabUnderBlockerBrowserTest() {
     EXPECT_CALL(provider_, IsInitializationComplete(testing::_))
@@ -46,6 +48,7 @@ class TabUnderBlockerBrowserTest : public InProcessBrowserTest {
   ~TabUnderBlockerBrowserTest() override {}
 
   void SetUpOnMainThread() override {
+    ExtensionBrowserTest::SetUpOnMainThread();
     scoped_feature_list_.InitAndEnableFeature(
         TabUnderNavigationThrottle::kBlockTabUnders);
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -236,4 +239,35 @@ IN_PROC_BROWSER_TEST_F(TabUnderBlockerBrowserTest,
     EXPECT_FALSE(tab_under_observer.last_navigation_succeeded());
     EXPECT_TRUE(IsUiShownForUrl(opener, cross_origin_url));
   }
+}
+
+// TODO(csharrison): Add a test verifying that navigating _to_ an extension in a
+// tab-under is not blocked. This is a bit trickier to test since it involves
+// ensuring a background page is up and running for the extension, and using the
+// chrome.tabs API.
+IN_PROC_BROWSER_TEST_F(TabUnderBlockerBrowserTest,
+                       NavigateFromExtensions_Allowed) {
+  const extensions::Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("simple_with_file"));
+
+  const GURL extension_url = extension->GetResourceURL("file.html");
+  ui_test_utils::NavigateToURL(browser(), extension_url);
+  content::WebContents* opener =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  content::TestNavigationObserver navigation_observer(nullptr, 1);
+  navigation_observer.StartWatchingNewWebContents();
+  EXPECT_TRUE(content::ExecuteScript(opener, "window.open('/title1.html')"));
+  navigation_observer.Wait();
+
+  content::TestNavigationObserver tab_under_observer(opener, 1);
+  const GURL cross_origin_url =
+      embedded_test_server()->GetURL("b.com", "/title1.html");
+  EXPECT_TRUE(content::ExecuteScriptWithoutUserGesture(
+      opener, base::StringPrintf("window.location = '%s';",
+                                 cross_origin_url.spec().c_str())));
+  tab_under_observer.Wait();
+
+  EXPECT_TRUE(tab_under_observer.last_navigation_succeeded());
+  EXPECT_FALSE(IsUiShownForUrl(opener, cross_origin_url));
 }
