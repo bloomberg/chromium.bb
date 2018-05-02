@@ -155,7 +155,7 @@ void TabCloseButton::GenerateImages(bool is_touch,
           : normal;
 
   const gfx::ImageSkia& hover_highlight =
-      gfx::CreateVectorIcon(highlight, hover_pressed_icon_color);
+      gfx::CreateVectorIcon(highlight, hover_highlight_color);
   const gfx::ImageSkia& pressed_highlight =
       gfx::CreateVectorIcon(highlight, pressed_highlight_color);
   const gfx::ImageSkia& hover =
