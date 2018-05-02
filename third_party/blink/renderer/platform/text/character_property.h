@@ -15,6 +15,7 @@ enum class CharacterProperty : CharacterPropertyType {
   kIsCJKIdeographOrSymbol = 0x0001,
   kIsUprightInMixedVertical = 0x0002,
   kIsPotentialCustomElementNameChar = 0x0004,
+  kIsBidiControl = 0x0008,
 };
 
 inline CharacterProperty operator|(CharacterProperty a, CharacterProperty b) {
