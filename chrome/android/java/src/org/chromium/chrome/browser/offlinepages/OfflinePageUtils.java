@@ -427,6 +427,12 @@ public class OfflinePageUtils {
         // Return false if there is no offline page or sharing is not enabled.
         if (offlinePage == null || !OfflinePageBridge.isPageSharingEnabled()) return false;
 
+        // We share temporary pages by URL instead of sharing the page to prevent unanticipated side
+        // effects in the public directory.
+        // TODO(petewil): https://crbug.com/831780 - Desired long term behavior is to share the page
+        // with a content URI instead of as a URL, so all offline pages are shared as MHTML.
+        if (isTemporaryNamespace(offlinePage.getClientId().getNamespace())) return false;
+
         String offlinePath = offlinePage.getFilePath();
         Uri uri = Uri.parse(pageUri);
 
@@ -456,6 +462,18 @@ public class OfflinePageUtils {
         boolean isFileScheme = TextUtils.equals(uri.getScheme(), UrlConstants.FILE_SCHEME);
 
         return isContentScheme || isFileScheme;
+    }
+
+    /**
+     * Determines if the page is in one of the temporary namespaces.
+     * @param namespace Namespace of the page in question.
+     * @return true if the page is in a temporary namespace.
+     */
+    public static boolean isTemporaryNamespace(String namespace) {
+        return namespace.equals(OfflinePageBridge.BOOKMARK_NAMESPACE)
+                || namespace.equals(OfflinePageBridge.LAST_N_NAMESPACE)
+                || namespace.equals(OfflinePageBridge.CCT_NAMESPACE)
+                || namespace.equals(OfflinePageBridge.SUGGESTED_ARTICLES_NAMESPACE);
     }
 
     /**
