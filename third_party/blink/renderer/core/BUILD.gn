@@ -1341,7 +1341,7 @@ action("make_minimized_css") {
 action("make_core_generated_html_entity_table") {
   visibility = []  # Allow re-assignment of list.
   visibility = [ ":*" ]
-  script = "html/parser/create-html-entity-table"
+  script = "../build/scripts/make_html_entity_table.py"
 
   inputs = [
     "html/parser/html_entity_names.csv",
