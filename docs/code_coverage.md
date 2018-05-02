@@ -170,12 +170,27 @@ code coverage report. For single-process applications (e.g. fuzz targets), that
 means no coverage will be reported at all. For multi-process applications, the
 report will be incomplete.
 
+### Is it possible to obtain code coverage from a full Chromium build?
+
+Yes, with some important caveats. It is possible to build `chrome` target with
+code coverage instrumentation enabled. However, there are some inconveniences
+involved:
+
+* Linking may take a while
+* The binary is huge (~4GB)
+* The browser "works", but is noticeably slow and laggy
+* The sandbox needs to be disabled (`--no-sandbox`)
+* Coverage can be incomplete for child processes
+
+For more information, please see [crbug.com/834781].
+
 
 [chrome-code-coverage group]: https://groups.google.com/a/google.com/forum/#!forum/chrome-code-coverage
 [coverage script]: https://cs.chromium.org/chromium/src/tools/code_coverage/coverage.py
 [code coverage report directory view]: images/code_coverage_directory_view.png
 [code coverage report component view]: images/code_coverage_component_view.png
 [crbug.com/831939]: https://crbug.com/831939
+[crbug.com/834781]: https://crbug.com/834781
 [documentation]: https://clang.llvm.org/docs/SourceBasedCodeCoverage.html
 [file a bug]: https://bugs.chromium.org/p/chromium/issues/entry?components=Tools%3ECodeCoverage
 [file a new issue]: https://bugs.chromium.org/p/chromium/issues/entry?components=Tools%3ECodeCoverage
