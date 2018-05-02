@@ -4,15 +4,25 @@
 
 #include "chrome/browser/ui/views/harmony/material_refresh_layout_provider.h"
 
+#include "ui/views/layout/layout_provider.h"
+
+int MaterialRefreshLayoutProvider::GetDistanceMetric(int metric) const {
+  switch (metric) {
+    case views::DistanceMetric::DISTANCE_CONTROL_VERTICAL_TEXT_PADDING:
+      return 8;
+  }
+  return HarmonyLayoutProvider::GetDistanceMetric(metric);
+}
+
 int MaterialRefreshLayoutProvider::GetCornerRadiusMetric(
-    ChromeEmphasisMetric emphasis_metric,
+    views::EmphasisMetric emphasis_metric,
     const gfx::Size& size) const {
   switch (emphasis_metric) {
-    case EMPHASIS_LOW:
+    case views::EMPHASIS_LOW:
       return 4;
-    case EMPHASIS_MEDIUM:
+    case views::EMPHASIS_MEDIUM:
       return 8;
-    case EMPHASIS_HIGH:
+    case views::EMPHASIS_HIGH:
       return std::min(size.width(), size.height()) / 2;
     default:
       NOTREACHED();

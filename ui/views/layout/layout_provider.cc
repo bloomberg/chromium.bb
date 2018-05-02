@@ -141,4 +141,27 @@ gfx::Insets LayoutProvider::GetDialogInsetsForContentType(
                      dialog_insets.right());
 }
 
+int LayoutProvider::GetCornerRadiusMetric(EmphasisMetric emphasis_metric,
+                                          const gfx::Size& size) const {
+  const bool is_touch =
+      ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
+  switch (emphasis_metric) {
+    case EMPHASIS_LOW:
+      return is_touch ? 4 : 2;
+    case EMPHASIS_MEDIUM:
+      return is_touch ? 8 : 4;
+    case EMPHASIS_HIGH:
+      return std::min(size.width(), size.height()) / 2;
+    default:
+      NOTREACHED();
+      return 0;
+  }
+}
+
+int LayoutProvider::GetShadowElevationMetric(
+    EmphasisMetric emphasis_metric) const {
+  // Just return a value for now.
+  return 2;
+}
+
 }  // namespace views

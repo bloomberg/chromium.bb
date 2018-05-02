@@ -95,6 +95,11 @@ void MdTextButton::SetBgColorOverride(const base::Optional<SkColor>& color) {
   UpdateColors();
 }
 
+void MdTextButton::set_corner_radius(float radius) {
+  corner_radius_ = radius;
+  set_ink_drop_corner_radii(corner_radius_, corner_radius_);
+}
+
 void MdTextButton::OnPaintBackground(gfx::Canvas* canvas) {
   LabelButton::OnPaintBackground(canvas);
   if (hover_animation().is_animating() || state() == STATE_HOVERED) {
@@ -179,10 +184,10 @@ void MdTextButton::UpdateStyleToIndicateDefaultStatus() {
 
 MdTextButton::MdTextButton(ButtonListener* listener, int button_context)
     : LabelButton(listener, base::string16(), button_context),
-      is_prominent_(false),
-      corner_radius_(ink_drop_small_corner_radius()) {
+      is_prominent_(false) {
   SetInkDropMode(InkDropMode::ON);
   set_has_ink_drop_action_on_click(true);
+  set_corner_radius(LayoutProvider::Get()->GetCornerRadiusMetric(EMPHASIS_LOW));
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
   SetFocusForPlatform();
   const int minimum_width = LayoutProvider::Get()->GetDistanceMetric(
@@ -226,8 +231,9 @@ void MdTextButton::UpdatePadding() {
   // GetControlHeightForFont(). It can't because that only returns a correct
   // result with --secondary-ui-md, and MdTextButtons appear in top chrome
   // without that.
-  const int kBaseHeight = 28;
-  int target_height = std::max(kBaseHeight + size_delta * 2,
+  const int base_height =
+      ui::MaterialDesignController::IsNewerMaterialUi() ? 32 : 28;
+  int target_height = std::max(base_height + size_delta * 2,
                                label()->font_list().GetFontSize() * 2);
 
   int label_height = label()->GetPreferredSize().height();

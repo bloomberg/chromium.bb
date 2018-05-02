@@ -60,18 +60,6 @@ enum ChromeDistanceMetric {
   DISTANCE_BUBBLE_PREFERRED_WIDTH,
 };
 
-enum ChromeEmphasisMetric {
-  // No emphasis needed for shadows, corner radius, etc.
-  EMPHASIS_NONE,
-  // Use this to indicate low-emphasis interactive elements such as buttons and
-  // text fields
-  EMPHASIS_LOW,
-  // Use this for components with medium emphasis, such as tabs or dialogs.
-  EMPHASIS_MEDIUM,
-  // High-emphasis components like the omnibox or rich suggestions.
-  EMPHASIS_HIGH,
-};
-
 class ChromeLayoutProvider : public views::LayoutProvider {
  public:
   ChromeLayoutProvider();
@@ -108,19 +96,6 @@ class ChromeLayoutProvider : public views::LayoutProvider {
   //
   // TODO(pkasting): Fix callers and remove this.
   virtual bool IsHarmonyMode() const;
-
-  // TODO (https://crbug.com/822000): Possibly combine the following two
-  // functions into a single function returning a struct. Keeping them separate
-  // for now in case different emphasis is needed for different elements in the
-  // same context. Delete this TODO in Q4 2018.
-
-  // Returns the corner radius specific to the given emphasis metric.
-  virtual int GetCornerRadiusMetric(ChromeEmphasisMetric emphasis_metric,
-                                    const gfx::Size& size = gfx::Size()) const;
-
-  // Returns the shadow elevation metric for the given emphasis.
-  virtual int GetShadowElevationMetric(
-      ChromeEmphasisMetric emphasis_metric) const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeLayoutProvider);

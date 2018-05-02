@@ -118,18 +118,3 @@ bool ChromeLayoutProvider::ShouldShowWindowIcon() const {
 bool ChromeLayoutProvider::IsHarmonyMode() const {
   return false;
 }
-
-int ChromeLayoutProvider::GetCornerRadiusMetric(
-    ChromeEmphasisMetric emphasis_metric,
-    const gfx::Size& size) const {
-  // Use the current fixed value for non-EMPHASIS_HIGH.
-  return emphasis_metric == EMPHASIS_HIGH
-             ? std::min(size.width(), size.height()) / 2
-             : 4;
-}
-
-int ChromeLayoutProvider::GetShadowElevationMetric(
-    ChromeEmphasisMetric emphasis_metric) const {
-  // Just return a value for now.
-  return 2;
-}

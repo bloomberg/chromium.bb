@@ -13,7 +13,9 @@ class MaterialRefreshLayoutProvider : public HarmonyLayoutProvider {
   MaterialRefreshLayoutProvider() = default;
   ~MaterialRefreshLayoutProvider() override = default;
 
-  int GetCornerRadiusMetric(ChromeEmphasisMetric emphasis_metric,
+  // HarmonyLayoutProvider:
+  int GetDistanceMetric(int metric) const override;
+  int GetCornerRadiusMetric(views::EmphasisMetric emphasis_metric,
                             const gfx::Size& size = gfx::Size()) const override;
 };
 

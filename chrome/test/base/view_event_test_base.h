@@ -19,9 +19,9 @@
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
+#include "chrome/test/views/chrome_test_views_delegate.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/views/test/test_views_delegate.h"
 #include "ui/views/widget/widget_delegate.h"
 
 #if defined(OS_WIN)
@@ -153,7 +153,7 @@ class ViewEventTestBase : public views::WidgetDelegate,
 
   std::unique_ptr<ViewEventTestPlatformPart> platform_part_;
 
-  views::TestViewsDelegate views_delegate_;
+  ChromeTestViewsDelegate views_delegate_;
 
   base::RunLoop run_loop_;
 

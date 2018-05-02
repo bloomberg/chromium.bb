@@ -12,11 +12,11 @@
 #include "chrome/browser/ui/toolbar/test_toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/views/chrome_views_test_base.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_web_contents_factory.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/events/test/event_generator.h"
-#include "ui/views/test/views_test_base.h"
 
 namespace {
 
@@ -96,13 +96,13 @@ class OpenMenuListener : public views::ContextMenuController {
 
 }  // namespace
 
-class ToolbarActionViewUnitTest : public views::ViewsTestBase {
+class ToolbarActionViewUnitTest : public ChromeViewsTestBase {
  public:
   ToolbarActionViewUnitTest() : widget_(nullptr) {}
   ~ToolbarActionViewUnitTest() override {}
 
   void SetUp() override {
-    views::ViewsTestBase::SetUp();
+    ChromeViewsTestBase::SetUp();
 
     widget_ = new views::Widget;
     views::Widget::InitParams params =
@@ -110,10 +110,11 @@ class ToolbarActionViewUnitTest : public views::ViewsTestBase {
     params.bounds = gfx::Rect(0, 0, 200, 200);
     widget_->Init(params);
   }
+
   void TearDown() override {
     if (!widget_->IsClosed())
       widget_->Close();
-    views::ViewsTestBase::TearDown();
+    ChromeViewsTestBase::TearDown();
   }
 
   views::Widget* widget() { return widget_; }
