@@ -68,6 +68,7 @@ InterfaceFactoryImpl::~InterfaceFactoryImpl() {
 
 void InterfaceFactoryImpl::CreateAudioDecoder(
     mojo::InterfaceRequest<mojom::AudioDecoder> request) {
+  DVLOG(2) << __func__;
 #if BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER)
   scoped_refptr<base::SingleThreadTaskRunner> task_runner(
       base::ThreadTaskRunnerHandle::Get());
@@ -88,6 +89,7 @@ void InterfaceFactoryImpl::CreateAudioDecoder(
 
 void InterfaceFactoryImpl::CreateVideoDecoder(
     mojom::VideoDecoderRequest request) {
+  DVLOG(2) << __func__;
 #if BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
   video_decoder_bindings_.AddBinding(
       std::make_unique<MojoVideoDecoderService>(mojo_media_client_,
@@ -100,6 +102,7 @@ void InterfaceFactoryImpl::CreateRenderer(
     media::mojom::HostedRendererType type,
     const std::string& type_specific_id,
     mojo::InterfaceRequest<mojom::Renderer> request) {
+  DVLOG(2) << __func__;
 #if BUILDFLAG(ENABLE_MOJO_RENDERER)
   RendererFactory* renderer_factory = GetRendererFactory();
   if (!renderer_factory)
@@ -150,6 +153,7 @@ void InterfaceFactoryImpl::CreateRenderer(
 void InterfaceFactoryImpl::CreateCdm(
     const std::string& /* key_system */,
     mojo::InterfaceRequest<mojom::ContentDecryptionModule> request) {
+  DVLOG(2) << __func__;
 #if BUILDFLAG(ENABLE_MOJO_CDM)
   CdmFactory* cdm_factory = GetCdmFactory();
   if (!cdm_factory)
@@ -163,6 +167,7 @@ void InterfaceFactoryImpl::CreateCdm(
 
 void InterfaceFactoryImpl::CreateCdmProxy(const std::string& cdm_guid,
                                           mojom::CdmProxyRequest request) {
+  DVLOG(2) << __func__;
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   if (!base::IsValidGUID(cdm_guid)) {
     DLOG(ERROR) << "Invalid CDM GUID: " << cdm_guid;

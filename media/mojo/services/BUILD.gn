@@ -132,7 +132,11 @@ component("services") {
       "mojo_cdm_proxy_service.cc",
       "mojo_cdm_proxy_service.h",
     ]
-    deps += [ "//media/cdm:cdm_api" ]
+    deps += [
+      "//media/cdm:cdm_api",
+      "//media/cdm:cdm_paths",
+      "//media/cdm/library_cdm/clear_key_cdm:clear_key_cdm_proxy",
+    ]
 
     # TODO(xhwang): Ideally media should not worry about sandbox. Find a way to
     # remove this dependency.
@@ -237,6 +241,7 @@ service_test("media_service_unittests") {
     ":services",
     "//base",
     "//media:test_support",
+    "//media/cdm:cdm_paths",
     "//media/mojo/clients",
     "//media/mojo/common",
     "//media/mojo/interfaces",

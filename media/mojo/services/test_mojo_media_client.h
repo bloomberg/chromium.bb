@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "media/media_buildflags.h"
 #include "media/mojo/services/mojo_media_client.h"
 
 namespace base {
@@ -39,6 +40,9 @@ class TestMojoMediaClient : public MojoMediaClient {
       MediaLog* media_log) final;
   std::unique_ptr<CdmFactory> CreateCdmFactory(
       service_manager::mojom::InterfaceProvider* /* host_interfaces */) final;
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+  std::unique_ptr<CdmProxy> CreateCdmProxy(const std::string& cdm_guid) final;
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
  private:
   std::unique_ptr<AudioManager> audio_manager_;
