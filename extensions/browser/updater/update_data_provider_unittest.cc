@@ -374,11 +374,14 @@ TEST_F(UpdateDataProviderTest,
   const auto data =
       data_provider->GetData(update_data, {kExtensionId1, kExtensionId2});
 
-  ASSERT_EQ(1UL, data.size());
+  ASSERT_EQ(2UL, data.size());
+  ASSERT_NE(nullptr, data[0]);
   EXPECT_EQ(version, data[0]->version.GetString());
   EXPECT_NE(nullptr, data[0]->installer.get());
   EXPECT_EQ(0UL, data[0]->disabled_reasons.size());
   EXPECT_EQ("other", data[0]->install_location);
+
+  EXPECT_EQ(nullptr, data[1]);
 }
 
 TEST_F(UpdateDataProviderTest, GetData_MultipleExtensions_CorruptExtension) {

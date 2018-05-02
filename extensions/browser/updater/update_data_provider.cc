@@ -61,7 +61,7 @@ void UpdateDataProvider::Shutdown() {
 }
 
 std::vector<std::unique_ptr<update_client::CrxComponent>>
-UpdateDataProvider::GetData(const ExtensionUpdateDataMap& update_info,
+UpdateDataProvider::GetData(const ExtensionUpdateDataMap& update_crx_component,
                             const std::vector<std::string>& ids) {
   std::vector<std::unique_ptr<update_client::CrxComponent>> data;
   if (!browser_context_)
@@ -70,23 +70,24 @@ UpdateDataProvider::GetData(const ExtensionUpdateDataMap& update_info,
   const ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(browser_context_);
   for (const auto& id : ids) {
     const Extension* extension = registry->GetInstalledExtension(id);
+    data.push_back(extension ? std::make_unique<update_client::CrxComponent>()
+                             : nullptr);
     if (!extension)
       continue;
-    DCHECK_GT(update_info.count(id), 0ULL);
-    const ExtensionUpdateData& extension_data = update_info.at(id);
-    data.push_back(std::make_unique<update_client::CrxComponent>());
-    update_client::CrxComponent* info = data.back().get();
+    DCHECK_NE(0u, update_crx_component.count(id));
+    const ExtensionUpdateData& extension_data = update_crx_component.at(id);
+    update_client::CrxComponent* crx_component = data.back().get();
     std::string pubkey_bytes;
     base::Base64Decode(extension->public_key(), &pubkey_bytes);
-    info->pk_hash.resize(crypto::kSHA256Length, 0);
-    crypto::SHA256HashString(pubkey_bytes, info->pk_hash.data(),
-                             info->pk_hash.size());
-    info->version = extension_data.is_corrupt_reinstall
-                        ? base::Version("0.0.0.0")
-                        : extension->version();
-    info->allows_background_download = false;
-    info->requires_network_encryption = true;
-    info->installer = base::MakeRefCounted<ExtensionInstaller>(
+    crx_component->pk_hash.resize(crypto::kSHA256Length, 0);
+    crypto::SHA256HashString(pubkey_bytes, crx_component->pk_hash.data(),
+                             crx_component->pk_hash.size());
+    crx_component->version = extension_data.is_corrupt_reinstall
+                                 ? base::Version("0.0.0.0")
+                                 : extension->version();
+    crx_component->allows_background_download = false;
+    crx_component->requires_network_encryption = true;
+    crx_component->installer = base::MakeRefCounted<ExtensionInstaller>(
         id, extension->path(),
         base::BindOnce(&UpdateDataProvider::RunInstallCallback, this));
     if (!ExtensionsBrowserClient::Get()->IsExtensionEnabled(id,
@@ -94,17 +95,17 @@ UpdateDataProvider::GetData(const ExtensionUpdateDataMap& update_info,
       int disabled_reasons = extension_prefs->GetDisableReasons(id);
       if (disabled_reasons == extensions::disable_reason::DISABLE_NONE ||
           disabled_reasons >= extensions::disable_reason::DISABLE_REASON_LAST) {
-        info->disabled_reasons.push_back(0);
+        crx_component->disabled_reasons.push_back(0);
       }
       for (int enum_value = 1;
            enum_value < extensions::disable_reason::DISABLE_REASON_LAST;
            enum_value <<= 1) {
         if (disabled_reasons & enum_value)
-          info->disabled_reasons.push_back(enum_value);
+          crx_component->disabled_reasons.push_back(enum_value);
       }
     }
-    info->install_source = extension_data.install_source;
-    info->install_location =
+    crx_component->install_source = extension_data.install_source;
+    crx_component->install_location =
         ManifestFetchData::GetSimpleLocationString(extension->location());
   }
   return data;
