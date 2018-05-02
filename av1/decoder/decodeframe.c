@@ -3003,7 +3003,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     if (cm->intra_only) {
       pbi->refresh_frame_flags = aom_rb_read_literal(rb, REF_FRAMES);
       if (pbi->refresh_frame_flags == 0xFF) {
-        aom_internal_error(xd->error_info, AOM_CODEC_UNSUP_BITSTREAM,
+        aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
                            "Intra only frames cannot have refresh flags 0xFF");
       }
       if (pbi->need_resync) {
@@ -3194,7 +3194,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
             &ref_buf->sf, ref_buf->buf->y_crop_width,
             ref_buf->buf->y_crop_height, cm->width, cm->height);
         if ((!av1_is_valid_scale(&ref_buf->sf)))
-          aom_internal_error(xd->error_info, AOM_CODEC_UNSUP_BITSTREAM,
+          aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
                              "Reference frame has invalid dimensions");
       }
     }
