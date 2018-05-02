@@ -53,7 +53,7 @@ qemu_target = None
 # Imports Fuchsia runner modules. This is done dynamically only when FuchsiaPort
 # is instantiated to avoid dependency on Fuchsia runner on other platforms.
 def _import_fuchsia_runner():
-    sys.path.append(os.path.join(get_chromium_src_dir(), 'build/fuchsia'))
+    sys.path.insert(0, os.path.join(get_chromium_src_dir(), 'build/fuchsia'))
 
     # pylint: disable=import-error
     # pylint: disable=invalid-name
@@ -191,7 +191,6 @@ class FuchsiaPort(base.Port):
     FALLBACK_PATHS = {'fuchsia': ['fuchsia'] + linux.LinuxPort.latest_platform_fallback_path()}
 
     def __init__(self, host, port_name, **kwargs):
-        _import_fuchsia_runner()
         super(FuchsiaPort, self).__init__(host, port_name, **kwargs)
 
         self._operating_system = 'fuchsia'
@@ -207,6 +206,7 @@ class FuchsiaPort(base.Port):
 
         self._target_host = self.get_option('fuchsia_target')
         self._zircon_logger = None
+        _import_fuchsia_runner()
 
     def _driver_class(self):
         return ChromiumFuchsiaDriver
