@@ -132,8 +132,8 @@ class BASE_EXPORT Timer {
              TimeDelta delay,
              Receiver* receiver,
              void (Receiver::*method)()) {
-    Timer::Start(posted_from, delay,
-                 base::Bind(method, base::Unretained(receiver)));
+    Start(posted_from, delay,
+          base::BindRepeating(method, base::Unretained(receiver)));
   }
 
   // Call this method to stop and cancel the timer.  It is a no-op if the timer
