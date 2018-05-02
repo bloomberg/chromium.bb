@@ -7,7 +7,8 @@
 #include <memory>
 #include <string>
 
-#include "ash/wm/window_util.h"
+#include "ash/public/cpp/window_properties.h"
+#include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "ui/aura/env.h"
@@ -78,7 +79,8 @@ bool ArcKioskAppLauncher::CheckAndPinWindow(aura::Window* const window) {
     return false;
   // Stop observing as target window is already found.
   StopObserving();
-  ash::wm::PinWindow(window, true /* trusted */);
+  window->SetProperty(ash::kWindowPinTypeKey,
+                      ash::mojom::WindowPinType::TRUSTED_PINNED);
   if (delegate_)
     delegate_->OnAppWindowLaunched();
   return true;
