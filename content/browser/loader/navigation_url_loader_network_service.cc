@@ -995,7 +995,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
 
   void OnComplete(const network::URLLoaderCompletionStatus& status) override {
     UMA_HISTOGRAM_BOOLEAN(
-        "Navigation.URLLoaderNetworkService.OnCompleteHadSSLInfo",
+        "Navigation.URLLoaderNetworkService.OnCompleteHasSSLInfo",
         status.ssl_info.has_value());
     if (status.ssl_info.has_value()) {
       UMA_HISTOGRAM_MEMORY_KB(
