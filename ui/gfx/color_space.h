@@ -179,6 +179,9 @@ class COLOR_SPACE_EXPORT ColorSpace {
   // parametric).
   ColorSpace GetParametricApproximation() const;
 
+  // Return this color space with any YUV to RGB conversion stripped off.
+  ColorSpace GetAsRGB() const;
+
   // Return this color space with any range adjust or YUV to RGB conversion
   // stripped off.
   ColorSpace GetAsFullRangeRGB() const;

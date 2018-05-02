@@ -128,6 +128,15 @@ class GpuMemoryBufferVideoFramePoolTest : public ::testing::Test {
     return video_frame;
   }
 
+  // Note, the X portion is set to 1 since it may use ARGB instead of
+  // XRGB on some platforms.
+  uint32_t as_xr30(uint32_t r, uint32_t g, uint32_t b) {
+    return (3 << 30) | (r << 20) | (g << 10) | b;
+  }
+  uint32_t as_xb30(uint32_t r, uint32_t g, uint32_t b) {
+    return (3 << 30) | (b << 20) | (g << 10) | r;
+  }
+
  protected:
   base::SimpleTestTickClock test_clock_;
   std::unique_ptr<MockGpuVideoAcceleratorFactories> mock_gpu_factories_;
@@ -331,6 +340,62 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareXR30Frame) {
   EXPECT_EQ(1u, gles2_->gen_textures_count());
   EXPECT_TRUE(frame->metadata()->IsTrue(
       media::VideoFrameMetadata::READ_LOCK_FENCES_ENABLED));
+
+  EXPECT_EQ(1u, mock_gpu_factories_->created_memory_buffers().size());
+  mock_gpu_factories_->created_memory_buffers()[0]->Map();
+
+  void* memory = mock_gpu_factories_->created_memory_buffers()[0]->memory(0);
+  EXPECT_EQ(as_xr30(0, 311, 0), *static_cast<uint32_t*>(memory));
+}
+
+TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareXR30FrameBT709) {
+  scoped_refptr<VideoFrame> software_frame = CreateTestYUVVideoFrame(10, 10);
+  software_frame->set_color_space(gfx::ColorSpace::CreateREC709());
+  scoped_refptr<VideoFrame> frame;
+  mock_gpu_factories_->SetVideoFrameOutputFormat(
+      media::GpuVideoAcceleratorFactories::OutputFormat::XR30);
+  gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
+      software_frame, base::BindOnce(MaybeCreateHardwareFrameCallback, &frame));
+
+  RunUntilIdle();
+
+  EXPECT_NE(software_frame.get(), frame.get());
+  EXPECT_EQ(PIXEL_FORMAT_ARGB, frame->format());
+  EXPECT_EQ(1u, frame->NumTextures());
+  EXPECT_EQ(1u, gles2_->gen_textures_count());
+  EXPECT_TRUE(frame->metadata()->IsTrue(
+      media::VideoFrameMetadata::READ_LOCK_FENCES_ENABLED));
+
+  EXPECT_EQ(1u, mock_gpu_factories_->created_memory_buffers().size());
+  mock_gpu_factories_->created_memory_buffers()[0]->Map();
+
+  void* memory = mock_gpu_factories_->created_memory_buffers()[0]->memory(0);
+  EXPECT_EQ(as_xr30(0, 311, 0), *static_cast<uint32_t*>(memory));
+}
+
+TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareXR30FrameBT601) {
+  scoped_refptr<VideoFrame> software_frame = CreateTestYUVVideoFrame(10, 10);
+  software_frame->set_color_space(gfx::ColorSpace::CreateREC601());
+  scoped_refptr<VideoFrame> frame;
+  mock_gpu_factories_->SetVideoFrameOutputFormat(
+      media::GpuVideoAcceleratorFactories::OutputFormat::XR30);
+  gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
+      software_frame, base::BindOnce(MaybeCreateHardwareFrameCallback, &frame));
+
+  RunUntilIdle();
+
+  EXPECT_NE(software_frame.get(), frame.get());
+  EXPECT_EQ(PIXEL_FORMAT_ARGB, frame->format());
+  EXPECT_EQ(1u, frame->NumTextures());
+  EXPECT_EQ(1u, gles2_->gen_textures_count());
+  EXPECT_TRUE(frame->metadata()->IsTrue(
+      media::VideoFrameMetadata::READ_LOCK_FENCES_ENABLED));
+
+  EXPECT_EQ(1u, mock_gpu_factories_->created_memory_buffers().size());
+  mock_gpu_factories_->created_memory_buffers()[0]->Map();
+
+  void* memory = mock_gpu_factories_->created_memory_buffers()[0]->memory(0);
+  EXPECT_EQ(as_xr30(0, 543, 0), *static_cast<uint32_t*>(memory));
 }
 
 TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareXB30Frame) {
