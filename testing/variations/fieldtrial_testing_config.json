@@ -2304,7 +2304,8 @@
                     "name": "AndroidExperiments",
                     "enable_features": [
                         "OmniboxBreakWordsAtUnderscores",
-                        "OmniboxDisplayTitleForCurrentUrl"
+                        "OmniboxDisplayTitleForCurrentUrl",
+                        "OmniboxUIExperimentHideSteadyStateUrlSchemeAndSubdomains"
                     ]
                 }
             ]
