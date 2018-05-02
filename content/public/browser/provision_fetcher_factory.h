@@ -13,8 +13,8 @@ namespace media {
 class ProvisionFetcher;
 }
 
-namespace net {
-class URLRequestContextGetter;
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 namespace content {
@@ -23,7 +23,7 @@ namespace content {
 
 CONTENT_EXPORT
 std::unique_ptr<media::ProvisionFetcher> CreateProvisionFetcher(
-    net::URLRequestContextGetter* context_getter);
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
 }  // namespace content
 

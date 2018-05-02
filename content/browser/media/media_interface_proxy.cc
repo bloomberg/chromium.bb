@@ -27,7 +27,7 @@
 #include "content/public/browser/provision_fetcher_impl.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #endif
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
@@ -214,12 +214,12 @@ MediaInterfaceProxy::GetFrameServices(const std::string& cdm_guid,
 
 #if BUILDFLAG(ENABLE_MOJO_CDM)
   // TODO(slan): Wrap these into a RenderFrame specific ProvisionFetcher impl.
-  net::URLRequestContextGetter* context_getter =
-      BrowserContext::GetDefaultStoragePartition(
-          render_frame_host_->GetProcess()->GetBrowserContext())
-          ->GetURLRequestContext();
   provider->registry()->AddInterface(base::BindRepeating(
-      &ProvisionFetcherImpl::Create, base::RetainedRef(context_getter)));
+      &ProvisionFetcherImpl::Create,
+      base::RetainedRef(
+          BrowserContext::GetDefaultStoragePartition(
+              render_frame_host_->GetProcess()->GetBrowserContext())
+              ->GetURLLoaderFactoryForBrowserProcess())));
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   // Only provide CdmStorageImpl when we have a valid |cdm_file_system_id|,

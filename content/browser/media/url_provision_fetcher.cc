@@ -8,17 +8,19 @@
 #include "media/base/bind_to_current_loop.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-
-using net::URLFetcher;
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 
 namespace content {
 
 // Implementation of URLProvisionFetcher.
 
 URLProvisionFetcher::URLProvisionFetcher(
-    net::URLRequestContextGetter* context_getter)
-    : context_getter_(context_getter) {}
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+    : url_loader_factory_(std::move(url_loader_factory)) {
+  DCHECK(url_loader_factory_);
+}
 
 URLProvisionFetcher::~URLProvisionFetcher() {}
 
@@ -32,7 +34,7 @@ void URLProvisionFetcher::Retrieve(
       default_url + "&signedRequest=" + request_data;
   DVLOG(1) << __func__ << ": request:" << request_string;
 
-  DCHECK(!request_);
+  DCHECK(!simple_url_loader_);
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("url_prevision_fetcher", R"(
         semantics {
@@ -62,49 +64,48 @@ void URLProvisionFetcher::Retrieve(
             "Media Identifier permissions."
           policy_exception_justification: "Not implemented."
         })");
-  request_ = URLFetcher::Create(GURL(request_string), URLFetcher::POST, this,
-                                traffic_annotation);
-
-  // SetUploadData is mandatory even if we are not uploading anything.
-  request_->SetUploadData("", "");
-  request_->AddExtraRequestHeader("User-Agent: Widevine CDM v1.0");
-  request_->AddExtraRequestHeader("Content-Type: application/json");
-  request_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
-                         net::LOAD_DO_NOT_SEND_COOKIES);
-
-  DCHECK(context_getter_);
-  request_->SetRequestContext(context_getter_);
-
-  request_->Start();
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = GURL(request_string);
+  resource_request->load_flags =
+      net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES;
+  resource_request->method = "POST";
+  resource_request->headers.SetHeader("User-Agent", "Widevine CDM v1.0");
+  simple_url_loader_ = network::SimpleURLLoader::Create(
+      std::move(resource_request), traffic_annotation);
+  simple_url_loader_->AttachStringForUpload("", "application/json");
+  simple_url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory_.get(),
+      base::BindOnce(&URLProvisionFetcher::OnSimpleLoaderComplete,
+                     base::Unretained(this)));
 }
 
-void URLProvisionFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
-  DCHECK(source);
-
-  int response_code = source->GetResponseCode();
-  DVLOG(1) << __func__ << ": response code:" << source->GetResponseCode();
-
-  std::string response;
+void URLProvisionFetcher::OnSimpleLoaderComplete(
+    std::unique_ptr<std::string> response_body) {
   bool success = false;
-  if (response_code == 200) {
-    success = source->GetResponseAsString(&response);
-    DVLOG_IF(1, !success) << __func__ << ": GetResponseAsString() failed";
+  std::string response;
+  if (response_body) {
+    success = true;
+    response = std::move(*response_body);
   } else {
+    int response_code = -1;
+    if (simple_url_loader_->ResponseInfo() &&
+        simple_url_loader_->ResponseInfo()->headers) {
+      response_code =
+          simple_url_loader_->ResponseInfo()->headers->response_code();
+    }
     DVLOG(1) << "CDM provision: server returned error code " << response_code;
   }
 
-  request_.reset();
-  // URLFetcher implementation calls OnURLFetchComplete() on the same thread
-  // that called Start() and it does this asynchronously.
+  simple_url_loader_.reset();
   response_cb_.Run(success, response);
 }
 
 // Implementation of content public method CreateProvisionFetcher().
 
 std::unique_ptr<media::ProvisionFetcher> CreateProvisionFetcher(
-    net::URLRequestContextGetter* context_getter) {
-  DCHECK(context_getter);
-  return std::make_unique<URLProvisionFetcher>(context_getter);
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+  DCHECK(url_loader_factory);
+  return std::make_unique<URLProvisionFetcher>(std::move(url_loader_factory));
 }
 
 }  // namespace content

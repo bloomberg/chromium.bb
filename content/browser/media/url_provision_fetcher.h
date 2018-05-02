@@ -7,17 +7,20 @@
 
 #include "base/macros.h"
 #include "media/base/provision_fetcher.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
+
+namespace network {
+class SharedURLLoaderFactory;
+class SimpleURLLoader;
+}  // namespace network
 
 namespace content {
 
 // The ProvisionFetcher that retrieves the data by HTTP POST request.
 
-class URLProvisionFetcher : public media::ProvisionFetcher,
-                            public net::URLFetcherDelegate {
+class URLProvisionFetcher : public media::ProvisionFetcher {
  public:
-  explicit URLProvisionFetcher(net::URLRequestContextGetter* context_getter);
+  explicit URLProvisionFetcher(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~URLProvisionFetcher() override;
 
   // media::ProvisionFetcher implementation.
@@ -26,11 +29,10 @@ class URLProvisionFetcher : public media::ProvisionFetcher,
                 const ProvisionFetcher::ResponseCB& response_cb) override;
 
  private:
-  // net::URLFetcherDelegate implementation.
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
 
-  net::URLRequestContextGetter* context_getter_;
-  std::unique_ptr<net::URLFetcher> request_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+  std::unique_ptr<network::SimpleURLLoader> simple_url_loader_;
   media::ProvisionFetcher::ResponseCB response_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(URLProvisionFetcher);
