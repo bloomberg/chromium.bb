@@ -156,7 +156,13 @@ void NavigationControllerAndroid::ReloadBypassingCache(
   navigation_controller_->Reload(ReloadType::BYPASSING_CACHE, check_for_repost);
 }
 
-void NavigationControllerAndroid::RequestRestoreLoad(
+jboolean NavigationControllerAndroid::NeedsReload(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  return navigation_controller_->NeedsReload();
+}
+
+void NavigationControllerAndroid::SetNeedsReload(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   navigation_controller_->SetNeedsReload();

@@ -101,10 +101,14 @@ import org.chromium.content_public.common.ResourceRequestBody;
     }
 
     @Override
-    public void requestRestoreLoad() {
-        if (mNativeNavigationControllerAndroid != 0) {
-            nativeRequestRestoreLoad(mNativeNavigationControllerAndroid);
-        }
+    public boolean needsReload() {
+        return mNativeNavigationControllerAndroid != 0
+                && nativeNeedsReload(mNativeNavigationControllerAndroid);
+    }
+
+    @Override
+    public void setNeedsReload() {
+        nativeSetNeedsReload(mNativeNavigationControllerAndroid);
     }
 
     @Override
@@ -296,7 +300,8 @@ import org.chromium.content_public.common.ResourceRequestBody;
     private native boolean nativeCanGoForward(long nativeNavigationControllerAndroid);
     private native boolean nativeIsInitialNavigation(long nativeNavigationControllerAndroid);
     private native void nativeLoadIfNecessary(long nativeNavigationControllerAndroid);
-    private native void nativeRequestRestoreLoad(long nativeNavigationControllerAndroid);
+    private native boolean nativeNeedsReload(long nativeNavigationControllerAndroid);
+    private native void nativeSetNeedsReload(long nativeNavigationControllerAndroid);
     private native boolean nativeCanGoToOffset(
             long nativeNavigationControllerAndroid, int offset);
     private native void nativeGoBack(long nativeNavigationControllerAndroid);
