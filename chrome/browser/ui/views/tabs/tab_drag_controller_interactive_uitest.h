@@ -20,6 +20,10 @@ namespace content {
 class WebContents;
 }
 
+namespace ui {
+class GestureEvent;
+}
+
 // TabDragControllerTest is the basis for the two tests that exercise
 // TabDragController.
 class TabDragControllerTest : public InProcessBrowserTest {
@@ -44,6 +48,8 @@ class TabDragControllerTest : public InProcessBrowserTest {
   const BrowserList* browser_list;
 
  protected:
+  void HandleGestureEvent(TabStrip* tab_strip, ui::GestureEvent* event);
+
   // InProcessBrowserTest:
   void SetUp() override;
   void SetUpCommandLine(base::CommandLine* command_line) override;

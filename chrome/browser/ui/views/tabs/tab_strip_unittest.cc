@@ -147,7 +147,21 @@ class TabStripTest : public ChromeViewsTestBase,
     return tab->HitTestPoint(point_in_tab_coords);
   }
 
+  Tab* FindTabForEvent(const gfx::Point& point) {
+    return tab_strip_->FindTabForEvent(point);
+  }
+
   void DoLayout() { tab_strip_->DoLayout(); }
+
+  void AnimateToIdealBounds() { tab_strip_->AnimateToIdealBounds(); }
+
+  int current_inactive_width() const {
+    return tab_strip_->current_inactive_width_;
+  }
+
+  const StackedTabStripLayout* touch_layout() const {
+    return tab_strip_->touch_layout_.get();
+  }
 
   // Owned by TabStrip.
   FakeBaseTabStripController* controller_ = nullptr;
@@ -307,7 +321,7 @@ TEST_P(TabStripTest, TabForEventWhenStacked) {
 
   // Switch to stacked layout mode and force a layout to ensure tabs stack.
   tab_strip_->SetStackedLayout(true);
-  tab_strip_->DoLayout();
+  DoLayout();
 
   gfx::Point p;
   for (int y : {0, tab_strip_->height() / 2, tab_strip_->height() - 1}) {
@@ -315,7 +329,7 @@ TEST_P(TabStripTest, TabForEventWhenStacked) {
     int previous_tab = -1;
     for (int x = 0; x < tab_strip_->width(); ++x) {
       p.set_x(x);
-      int tab = tab_strip_->GetModelIndexOfTab(tab_strip_->FindTabForEvent(p));
+      int tab = tab_strip_->GetModelIndexOfTab(FindTabForEvent(p));
       if (tab == previous_tab)
         continue;
       if ((tab != -1) || (previous_tab != tab_strip_->tab_count() - 1))
@@ -351,9 +365,9 @@ TEST_P(TabStripTest, TabCloseButtonVisibilityWhenStacked) {
   EXPECT_TRUE(tab2->showing_close_button_);
 
   // Enter stacked layout mode and verify this sets |touch_layout_|.
-  ASSERT_FALSE(tab_strip_->touch_layout_.get());
+  ASSERT_FALSE(touch_layout());
   tab_strip_->SetStackedLayout(true);
-  ASSERT_TRUE(tab_strip_->touch_layout_.get());
+  ASSERT_TRUE(touch_layout());
 
   // Only the close button of the active tab should be visible in stacked
   // layout mode.
@@ -392,7 +406,7 @@ TEST_P(TabStripTest, TabCloseButtonVisibilityWhenStacked) {
 
   // All tab close buttons should be shown when disengaging stacked tab mode.
   tab_strip_->SetStackedLayout(false);
-  ASSERT_FALSE(tab_strip_->touch_layout_.get());
+  ASSERT_FALSE(touch_layout());
   EXPECT_TRUE(tab0->showing_close_button_);
   EXPECT_TRUE(tab2->showing_close_button_);
   EXPECT_TRUE(tab3->showing_close_button_);
@@ -424,7 +438,7 @@ TEST_P(TabStripTest, TabCloseButtonVisibilityWhenNotStacked) {
   ASSERT_FALSE(tab2->IsActive());
 
   // Ensure this is not in stacked layout mode.
-  ASSERT_FALSE(tab_strip_->touch_layout_.get());
+  ASSERT_FALSE(touch_layout());
 
   // Ensure that all tab close buttons are initially visible.
   EXPECT_TRUE(tab0->showing_close_button_);
@@ -476,7 +490,7 @@ TEST_P(TabStripTest, TabCloseButtonVisibilityWhenNotStacked) {
   tab_strip_->CloseTab(tab2, CLOSE_TAB_FROM_TOUCH);
   tab2 = nullptr;
   ASSERT_TRUE(tab3->IsActive());
-  tab_strip_->DoLayout();
+  DoLayout();
   EXPECT_FALSE(tab0->showing_close_button_);
   EXPECT_FALSE(tab1->showing_close_button_);
   EXPECT_TRUE(tab3->showing_close_button_);
@@ -657,9 +671,9 @@ TEST_P(TabStripTest, ActiveTabWidthWhenTabsAreTiny) {
   tab_strip_->GetWidget()->Show();
   tab_strip_->SetBounds(0, 0, 200, 20);
 
-  const int min_inactive_width = Tab::GetMinimumInactiveSize().width();
   // Create a lot of tabs in order to make inactive tabs tiny.
-  while (tab_strip_->current_inactive_width_ != min_inactive_width)
+  const int min_inactive_width = Tab::GetMinimumInactiveSize().width();
+  while (current_inactive_width() != min_inactive_width)
     controller_->CreateNewTab();
 
   const int min_active_width = Tab::GetMinimumActiveSize().width();
