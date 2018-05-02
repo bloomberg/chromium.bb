@@ -232,7 +232,6 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
         combined_text = nullptr;
     }
     if (combined_text) {
-      combined_text->UpdateFont();
       box_rect.SetWidth(combined_text->InlineWidthForLayout());
       // Justfication applies to before and after the combined text as if
       // it is an ideographic character, and is prohibited inside the
