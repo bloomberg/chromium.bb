@@ -56,6 +56,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/layout.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/label.h"
@@ -558,10 +559,17 @@ AvatarButtonStyle BrowserNonClientFrameViewAsh::GetAvatarButtonStyle() const {
 // BrowserNonClientFrameViewAsh, private:
 
 int BrowserNonClientFrameViewAsh::GetTabStripRightInset() const {
-  // Space between right edge of tabstrip and maximize button.
+  int inset = caption_button_container_->GetPreferredSize().width();
+
+  // For Material Refresh, the end of the tabstrip contains empty space to
+  // ensure the window remains draggable, which is sufficient padding to the
+  // other tabstrip contents.
+  using MD = ui::MaterialDesignController;
   constexpr int kTabstripRightSpacing = 10;
-  return kTabstripRightSpacing +
-      caption_button_container_->GetPreferredSize().width();
+  if (MD::GetMode() != MD::MATERIAL_REFRESH)
+    inset += kTabstripRightSpacing;
+
+  return inset;
 }
 
 bool BrowserNonClientFrameViewAsh::UsePackagedAppHeaderStyle() const {
