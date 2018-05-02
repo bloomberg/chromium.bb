@@ -8,10 +8,18 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/net/proxy_config_monitor.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 
 class ProxyConfigMonitor;
+
+namespace network {
+namespace mojom {
+class URLLoaderFactory;
+}
+class SharedURLLoaderFactory;
+}  // namespace network
 
 // Responsible for creating and managing access to the system NetworkContext.
 // Lives on the UI thread. The NetworkContext this owns is intended for requests
@@ -59,6 +67,10 @@ class SystemNetworkContextManager {
   // this method to get a URLLoaderFactory that can be used on other threads.
   network::mojom::URLLoaderFactory* GetURLLoaderFactory();
 
+  // Returns a SharedURLLoaderFactory owned by the SystemNetworkContextManager
+  // that is backed by the SystemNetworkContext.
+  scoped_refptr<network::SharedURLLoaderFactory> GetSharedURLLoaderFactory();
+
   // Permanently disables QUIC, both for NetworkContexts using the IOThread's
   // NetworkService, and for those using the network service (if enabled).
   void DisableQuic();
@@ -70,6 +82,8 @@ class SystemNetworkContextManager {
   void FlushNetworkInterfaceForTesting();
 
  private:
+  class URLLoaderFactoryForSystem;
+
   // Creates parameters for the NetworkContext. May only be called once, since
   // it initializes some class members.
   network::mojom::NetworkContextParamsPtr CreateNetworkContextParams();
@@ -87,6 +101,7 @@ class SystemNetworkContextManager {
 
   // URLLoaderFactory backed by the NetworkContext returned by GetContext(), so
   // consumers don't all need to create their own factory.
+  scoped_refptr<URLLoaderFactoryForSystem> shared_url_loader_factory_;
   network::mojom::URLLoaderFactoryPtr url_loader_factory_;
 
   bool is_quic_allowed_ = true;

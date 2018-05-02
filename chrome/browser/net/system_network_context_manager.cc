@@ -52,6 +52,56 @@ void DisableQuicOnIOThread(
 base::LazyInstance<SystemNetworkContextManager>::Leaky
     g_system_network_context_manager = LAZY_INSTANCE_INITIALIZER;
 
+// SharedURLLoaderFactory backed by a SystemNetworkContextManager and its
+// network context. Transparently handles crashes.
+class SystemNetworkContextManager::URLLoaderFactoryForSystem
+    : public network::SharedURLLoaderFactory {
+ public:
+  explicit URLLoaderFactoryForSystem(SystemNetworkContextManager* manager)
+      : manager_(manager) {}
+
+  // mojom::URLLoaderFactory implementation:
+
+  void CreateLoaderAndStart(network::mojom::URLLoaderRequest request,
+                            int32_t routing_id,
+                            int32_t request_id,
+                            uint32_t options,
+                            const network::ResourceRequest& url_request,
+                            network::mojom::URLLoaderClientPtr client,
+                            const net::MutableNetworkTrafficAnnotationTag&
+                                traffic_annotation) override {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    if (!manager_)
+      return;
+    manager_->GetURLLoaderFactory()->CreateLoaderAndStart(
+        std::move(request), routing_id, request_id, options, url_request,
+        std::move(client), traffic_annotation);
+  }
+
+  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
+    if (!manager_)
+      return;
+    manager_->GetURLLoaderFactory()->Clone(std::move(request));
+  }
+
+  // SharedURLLoaderFactory implementation:
+  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override {
+    NOTREACHED() << "This isn't supported. SharedURLLoaderFactory can only be"
+                    " used on the UI thread.";
+    return nullptr;
+  }
+
+  void Shutdown() { manager_ = nullptr; }
+
+ private:
+  friend class base::RefCounted<URLLoaderFactoryForSystem>;
+  ~URLLoaderFactoryForSystem() override {}
+
+  SystemNetworkContextManager* manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(URLLoaderFactoryForSystem);
+};
+
 network::mojom::NetworkContext* SystemNetworkContextManager::GetContext() {
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     // SetUp should already have been called.
@@ -74,11 +124,19 @@ network::mojom::NetworkContext* SystemNetworkContextManager::GetContext() {
 
 network::mojom::URLLoaderFactory*
 SystemNetworkContextManager::GetURLLoaderFactory() {
-  if (!url_loader_factory_ || url_loader_factory_.encountered_error()) {
-    GetContext()->CreateURLLoaderFactory(
-        mojo::MakeRequest(&url_loader_factory_), 0);
+  // Create the URLLoaderFactory as needed.
+  if (url_loader_factory_ && !url_loader_factory_.encountered_error()) {
+    return url_loader_factory_.get();
   }
+
+  GetContext()->CreateURLLoaderFactory(mojo::MakeRequest(&url_loader_factory_),
+                                       0);
   return url_loader_factory_.get();
+}
+
+scoped_refptr<network::SharedURLLoaderFactory>
+SystemNetworkContextManager::GetSharedURLLoaderFactory() {
+  return shared_url_loader_factory_;
 }
 
 void SystemNetworkContextManager::SetUp(
@@ -104,9 +162,12 @@ SystemNetworkContextManager::SystemNetworkContextManager() {
           .GetValue(policy::key::kQuicAllowed);
   if (value)
     value->GetAsBoolean(&is_quic_allowed_);
+  shared_url_loader_factory_ = new URLLoaderFactoryForSystem(this);
 }
 
-SystemNetworkContextManager::~SystemNetworkContextManager() {}
+SystemNetworkContextManager::~SystemNetworkContextManager() {
+  shared_url_loader_factory_->Shutdown();
+}
 
 void SystemNetworkContextManager::DisableQuic() {
   is_quic_allowed_ = false;
