@@ -1464,6 +1464,10 @@ void AutofillMetrics::FormEventLogger::OnDidFillSuggestion(
     if (credit_card.record_type() == CreditCard::MASKED_SERVER_CARD) {
       Log(AutofillMetrics::
               FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_FILLED_ONCE);
+      if (has_logged_bank_name_available_) {
+        Log(AutofillMetrics::
+                FORM_EVENT_SERVER_SUGGESTION_FILLED_WITH_BANK_NAME_AVAILABLE_ONCE);
+      }
     } else if (credit_card.record_type() == CreditCard::FULL_SERVER_CARD) {
       Log(AutofillMetrics::FORM_EVENT_SERVER_SUGGESTION_FILLED_ONCE);
       if (has_logged_bank_name_available_) {
