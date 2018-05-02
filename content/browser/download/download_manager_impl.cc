@@ -291,9 +291,9 @@ DownloadManagerImpl::DownloadManagerImpl(BrowserContext* browser_context)
       this, base::BindRepeating(&IsOriginSecure));
   in_progress_manager_->Initialize(
       IsOffTheRecord() ? base::FilePath() : browser_context_->GetPath(),
-      base::BindRepeating(
-          &DownloadManagerImpl::PostInitialization, weak_factory_.GetWeakPtr(),
-          DOWNLOAD_INITIALIZATION_DEPENDENCY_IN_PROGRESS_CACHE));
+      base::BindOnce(&DownloadManagerImpl::PostInitialization,
+                     weak_factory_.GetWeakPtr(),
+                     DOWNLOAD_INITIALIZATION_DEPENDENCY_IN_PROGRESS_CACHE));
 }
 
 DownloadManagerImpl::~DownloadManagerImpl() {

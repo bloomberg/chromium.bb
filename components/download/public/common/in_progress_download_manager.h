@@ -98,9 +98,8 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       scoped_refptr<DownloadURLLoaderFactoryGetter> url_loader_factory_getter);
 
-  // TODO(qinmin): change the |callback| to be an OnceClosure.
   void Initialize(const base::FilePath& metadata_cache_dir,
-                  const base::RepeatingClosure& callback);
+                  base::OnceClosure callback);
 
   void StartDownload(
       std::unique_ptr<DownloadCreateInfo> info,

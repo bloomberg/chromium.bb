@@ -136,14 +136,13 @@ InProgressCacheImpl::InProgressCacheImpl(
 
 InProgressCacheImpl::~InProgressCacheImpl() = default;
 
-void InProgressCacheImpl::Initialize(const base::RepeatingClosure& callback) {
+void InProgressCacheImpl::Initialize(base::OnceClosure callback) {
   // If it's already initialized, just run the callback.
   if (initialization_status_ == CACHE_INITIALIZED) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(callback));
     return;
   }
-
-  pending_actions_.push_back(callback);
 
   // If uninitialized, initialize |entries_| by reading from file.
   if (initialization_status_ == CACHE_UNINITIALIZED) {
@@ -151,11 +150,12 @@ void InProgressCacheImpl::Initialize(const base::RepeatingClosure& callback) {
         task_runner_.get(), FROM_HERE,
         base::BindOnce(&ReadEntriesFromFile, file_path_),
         base::BindOnce(&InProgressCacheImpl::OnInitialized,
-                       weak_ptr_factory_.GetWeakPtr()));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 }
 
-void InProgressCacheImpl::OnInitialized(const std::vector<char>& entries) {
+void InProgressCacheImpl::OnInitialized(base::OnceClosure callback,
+                                        const std::vector<char>& entries) {
   if (!entries.empty()) {
     if (!entries_.ParseFromArray(entries.data(), entries.size())) {
       // TODO(crbug.com/778425): Get UMA for errors.
@@ -167,11 +167,7 @@ void InProgressCacheImpl::OnInitialized(const std::vector<char>& entries) {
 
   initialization_status_ = CACHE_INITIALIZED;
 
-  while (!pending_actions_.empty()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  pending_actions_.front());
-    pending_actions_.pop_front();
-  }
+  std::move(callback).Run();
 }
 
 void InProgressCacheImpl::AddOrReplaceEntry(const DownloadEntry& entry) {
