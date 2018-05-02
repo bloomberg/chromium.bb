@@ -66,7 +66,6 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetAntialiased2dCanvasEnabled(bool) override;
   void SetAntialiasedClips2dCanvasEnabled(bool) override;
   void SetAutoZoomFocusedNodeToLegibleScale(bool) override;
-  void SetBrowserSideNavigationEnabled(bool) override;
   void SetClobberUserAgentInitialScaleQuirk(bool) override;
   void SetCookieEnabled(bool) override;
   void SetNavigateOnDragDrop(bool) override;

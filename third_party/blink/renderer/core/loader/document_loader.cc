@@ -880,13 +880,8 @@ void DocumentLoader::StartLoading() {
     return;
 
   DCHECK(!GetTiming().NavigationStart().is_null());
-
-  // PlzNavigate:
-  // The fetch has already started in the browser. Don't mark it again.
-  if (!frame_->GetSettings()->GetBrowserSideNavigationEnabled()) {
-    DCHECK(GetTiming().FetchStart().is_null());
-    GetTiming().MarkFetchStart();
-  }
+  // The fetch has already started in the browser,
+  // so we don't MarkFetchStart here.
 
   ResourceLoaderOptions options;
   options.data_buffering_policy = kDoNotBufferData;
