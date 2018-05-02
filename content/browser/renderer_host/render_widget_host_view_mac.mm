@@ -670,6 +670,10 @@ void RenderWidgetHostViewMac::SetShowingContextMenu(bool showing) {
   ns_view_bridge_->SetShowingContextMenu(showing);
 }
 
+uint32_t RenderWidgetHostViewMac::GetCaptureSequenceNumber() const {
+  return latest_capture_sequence_number_;
+}
+
 void RenderWidgetHostViewMac::CopyFromSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
@@ -679,7 +683,8 @@ void RenderWidgetHostViewMac::CopyFromSurface(
 }
 
 void RenderWidgetHostViewMac::EnsureSurfaceSynchronizedForLayoutTest() {
-  // TODO(vmpstr): Figure out what needs to be done here.
+  ++latest_capture_sequence_number_;
+  SynchronizeVisualProperties();
 }
 
 void RenderWidgetHostViewMac::SetNeedsBeginFrames(bool needs_begin_frames) {
