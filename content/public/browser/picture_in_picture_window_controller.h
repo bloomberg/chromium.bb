@@ -39,6 +39,7 @@ class PictureInPictureWindowController {
                             const gfx::Size& natural_size) = 0;
   virtual OverlayWindow* GetWindowForTesting() = 0;
   virtual void UpdateLayerBounds() = 0;
+  virtual WebContents* GetInitiatorWebContents() = 0;
 
   // Commands.
   // Returns true if the player is active (i.e. currently playing) after this

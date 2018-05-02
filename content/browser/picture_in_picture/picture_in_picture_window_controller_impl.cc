@@ -101,6 +101,10 @@ void PictureInPictureWindowControllerImpl::UpdateLayerBounds() {
     embedder_->UpdateLayerBounds();
 }
 
+WebContents* PictureInPictureWindowControllerImpl::GetInitiatorWebContents() {
+  return initiator_;
+}
+
 bool PictureInPictureWindowControllerImpl::TogglePlayPause() {
   DCHECK(window_ && window_->IsActive());
 

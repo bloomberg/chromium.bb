@@ -39,6 +39,7 @@ class PictureInPictureWindowControllerImpl
                                    const gfx::Size& natural_size) override;
   CONTENT_EXPORT OverlayWindow* GetWindowForTesting() override;
   CONTENT_EXPORT void UpdateLayerBounds() override;
+  CONTENT_EXPORT WebContents* GetInitiatorWebContents() override;
   CONTENT_EXPORT bool TogglePlayPause() override;
 
  private:
