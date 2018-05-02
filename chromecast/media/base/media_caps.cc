@@ -4,7 +4,10 @@
 
 #include "chromecast/media/base/media_caps.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
+#include "chromecast/base/chromecast_switches.h"
 #include "chromecast/public/avsettings.h"
 
 namespace chromecast {
@@ -20,6 +23,25 @@ gfx::Size MediaCapabilities::g_screen_resolution(0, 0);
 void MediaCapabilities::ScreenResolutionChanged(const gfx::Size& res) {
   VLOG(1) << __FUNCTION__ << " resolution=" << res.ToString();
   g_screen_resolution = res;
+
+  auto* cmd_line = base::CommandLine::ForCurrentProcess();
+  const auto& kHeightSwitch = switches::kForceMediaResolutionHeight;
+  int height = 0;
+  if (cmd_line->HasSwitch(kHeightSwitch) &&
+      base::StringToInt(cmd_line->GetSwitchValueASCII(kHeightSwitch),
+                        &height) &&
+      height > 0) {
+    LOG(INFO) << __func__ << ": overridden screen height=" << height;
+    g_screen_resolution.set_height(height);
+  }
+  const auto& kWidthSwitch = switches::kForceMediaResolutionWidth;
+  int width = 0;
+  if (cmd_line->HasSwitch(kWidthSwitch) &&
+      base::StringToInt(cmd_line->GetSwitchValueASCII(kWidthSwitch), &width) &&
+      width > 0) {
+    LOG(INFO) << __func__ << ": overridden screen width=" << width;
+    g_screen_resolution.set_width(width);
+  }
 }
 
 void MediaCapabilities::ScreenInfoChanged(int hdcp_version,
