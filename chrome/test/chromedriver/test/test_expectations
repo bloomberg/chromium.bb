@@ -85,9 +85,6 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'WindowTest.testCanMaximizeTheWindow',
     # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=528
     'PageLoadingTest.testShouldDoNothingIfThereIsNothingToGoBackTo',
-    # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=653
-    'PageLoadingTest.testShouldBeAbleToNavigateBackInTheBrowserHistoryInPresenceOfIframes',
-    'PageLoadingTest.testShouldBeAbleToNavigateBackInTheBrowserHistory',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1117
     'PageLoadingTest.testShouldBeAbleToAccessPagesWithAnInsecureSslCertificate',
     # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=1113
