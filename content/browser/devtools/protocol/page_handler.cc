@@ -47,6 +47,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/browser_side_navigation_policy.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
@@ -199,7 +200,9 @@ PageHandler::PageHandler(EmulationHandler* emulation_handler)
       observer_(this),
       weak_factory_(this) {
 #if !defined(OS_ANDROID)
-  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor)) {
+  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
+      base::FeatureList::IsEnabled(
+          features::kUseVideoCaptureApiForDevToolsSnapshots)) {
     video_consumer_ = std::make_unique<DevToolsVideoConsumer>(
         base::BindRepeating(&PageHandler::OnFrameFromVideoConsumer,
                             weak_factory_.GetWeakPtr()));
