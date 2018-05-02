@@ -119,8 +119,14 @@ class EncodedDataHelper {
 };
 
 // Read in golden MD5s for the thumbnailed rendering of this video
-void ReadGoldenThumbnailMD5s(const base::FilePath& md5_file_path,
-                             std::vector<std::string>* md5_strings);
+std::vector<std::string> ReadGoldenThumbnailMD5s(
+    const base::FilePath& md5_file_path);
+
+// Convert from RGBA to RGB.
+// Return false if any alpha channel is not 0xff, otherwise true.
+bool ConvertRGBAToRGB(const std::vector<unsigned char>& rgba,
+                      std::vector<unsigned char>* rgb);
+
 }  // namespace test
 }  // namespace media
 #endif  // MEDIA_GPU_TEST_VIDEO_DECODE_ACCELERATOR_UNITTEST_HELPERS_H_

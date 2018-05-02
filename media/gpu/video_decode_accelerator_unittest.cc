@@ -1251,32 +1251,15 @@ TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
     done.Wait();
 
     std::vector<unsigned char> rgb;
-    size_t num_pixels = rgba.size() / 4;
+    EXPECT_EQ(media::test::ConvertRGBAToRGB(rgba, &rgb), true)
+        << "RGBA frame had incorrect alpha";
 
-    rgb.resize(num_pixels * 3);
-    // Drop the alpha channel, but check as we go that it is all 0xff.
-    bool solid = true;
-    unsigned char* rgb_ptr = &rgb[0];
-    unsigned char* rgba_ptr = &rgba[0];
-    for (size_t i = 0; i < num_pixels; i++) {
-      *rgb_ptr++ = *rgba_ptr++;
-      *rgb_ptr++ = *rgba_ptr++;
-      *rgb_ptr++ = *rgba_ptr++;
-      solid = solid && (*rgba_ptr == 0xff);
-      rgba_ptr++;
-    }
-
-    EXPECT_EQ(solid, true) << "RGBA frame had incorrect alpha";
-
-    std::vector<std::string> golden_md5s;
     std::string md5_string = base::MD5String(
         base::StringPiece(reinterpret_cast<char*>(&rgb[0]), rgb.size()));
     base::FilePath filepath(test_video_files_[0]->file_name);
-    media::test::ReadGoldenThumbnailMD5s(
-        filepath.AddExtension(FILE_PATH_LITERAL(".md5")), &golden_md5s);
-    std::vector<std::string>::iterator match =
-        find(golden_md5s.begin(), golden_md5s.end(), md5_string);
-    if (match == golden_md5s.end()) {
+    auto golden_md5s = media::test::ReadGoldenThumbnailMD5s(
+        filepath.AddExtension(FILE_PATH_LITERAL(".md5")));
+    if (!base::ContainsValue(golden_md5s, md5_string)) {
       // Convert raw RGBA into PNG for export.
       std::vector<unsigned char> png;
       gfx::PNGCodec::Encode(&rgba[0], gfx::PNGCodec::FORMAT_RGBA,
@@ -1284,9 +1267,6 @@ TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
                             kThumbnailsPageSize.width() * 4, true,
                             std::vector<gfx::PNGCodec::Comment>(), &png);
 
-      LOG(ERROR) << "Unknown thumbnails MD5: " << md5_string;
-
-      base::FilePath filepath(test_video_files_[0]->file_name);
       if (!g_thumbnail_output_dir.empty() &&
           base::DirectoryExists(g_thumbnail_output_dir)) {
         // Write bad thumbnails image to where --thumbnail_output_dir assigned.
@@ -1298,15 +1278,15 @@ TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
         //       directory.
         filepath = GetTestDataFile(filepath);
       }
-      filepath = filepath.AddExtension(FILE_PATH_LITERAL(".bad_thumbnails"));
-      filepath = filepath.AddExtension(FILE_PATH_LITERAL(".png"));
+      filepath =
+          filepath.AddExtension(FILE_PATH_LITERAL(".bad_thumbnails.png"));
       LOG(INFO) << "Write bad thumbnails image to: "
                 << filepath.value().c_str();
       int num_bytes = base::WriteFile(
           filepath, reinterpret_cast<char*>(&png[0]), png.size());
       EXPECT_EQ(num_bytes, static_cast<int>(png.size()));
+      LOG(FATAL) << "Unknown thumbnails MD5: " << md5_string;
     }
-    EXPECT_NE(match, golden_md5s.end());
   }
 
   // Output the frame delivery time to file
