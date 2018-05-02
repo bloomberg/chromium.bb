@@ -7,8 +7,8 @@ layer at (0,0) size 1600x356
         LayoutText {#text} at (0,0) size 58x36
           text run at (0,0) width 58: "LTR"
       LayoutNGBlockFlow (anonymous) at (0,81) size 1568x37
-        LayoutText {#text} at (0,0) size 59x36
-          text run at (0,0) width 59: "RTL"
+        LayoutText {#text} at (0,0) size 58x36
+          text run at (0,0) width 58: "RTL"
       LayoutNGBlockFlow (anonymous) at (0,162) size 1568x37
         LayoutText {#text} at (0,0) size 367x36
           text run at (0,0) width 367: "LTR (text-overflow:ellipses)"

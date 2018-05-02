@@ -20,11 +20,29 @@ NGInlineItemsBuilderTemplate<
 
 template <typename OffsetMappingBuilder>
 String NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::ToString() {
-  // Segment Break Transformation Rules[1] defines to keep trailing new lines,
-  // but it will be removed in Phase II[2]. We prefer not to add trailing new
-  // lines and collapsible spaces in Phase I.
+  // Segment Break Transformation Rules[1] defines to keep trailing new lines in
+  // Phase I, but to remove after line break, in Phase II[2]. Although the spec
+  // defines so, trailing collapsible spaces at the end of an inline formatting
+  // context will be removed in Phase II and that removing here makes no
+  // differences.
+  //
+  // However, doing so reduces the opportunities to re-use NGInlineItem a lot in
+  // appending scenario, which is quite common. In order to re-use NGInlineItem
+  // as much as posssible, trailing spaces are removed in Phase II, exactly as
+  // defined in the spec.
+  //
   // [1] https://drafts.csswg.org/css-text-3/#line-break-transform
   // [2] https://drafts.csswg.org/css-text-3/#white-space-phase-2
+  return text_.ToString();
+}
+
+template <>
+String NGInlineItemsBuilderTemplate<NGOffsetMappingBuilder>::ToString() {
+  // While trailing collapsible space is kept as above, NGOffsetMappingBuilder
+  // assumes NGLineBreaker does not remove it. For now, remove only for
+  // NGOffsetMappingBuilder.
+  // TODO(kojii): Consider NGOffsetMappingBuilder to support NGLineBreaker to
+  // remove trailing spaces.
   RemoveTrailingCollapsibleSpaceIfExists();
 
   return text_.ToString();

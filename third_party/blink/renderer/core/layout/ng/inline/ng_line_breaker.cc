@@ -108,6 +108,19 @@ inline void NGLineBreaker::ComputeCanBreakAfter(
       auto_wrap_ && break_iterator_.IsBreakable(item_result->end_offset);
 }
 
+// True if |item| is trailing; i.e., |item| and all items after it are opaque to
+// whitespace collapsing.
+bool NGLineBreaker::IsTrailing(const NGInlineItem& item,
+                               const NGLineInfo& line_info) const {
+  const Vector<NGInlineItem>& items =
+      node_.Items(line_info.UseFirstLineStyle());
+  for (const NGInlineItem* it = &item; it != items.end(); ++it) {
+    if (it->EndCollapseType() != NGInlineItem::kOpaqueToCollapsing)
+      return false;
+  }
+  return true;
+}
+
 // @return if this is the "first formatted line".
 // https://www.w3.org/TR/CSS22/selector.html#first-formatted-line
 bool NGLineBreaker::IsFirstFormattedLine() const {
@@ -210,6 +223,7 @@ void NGLineBreaker::BreakLine(NGLineInfo* line_info) {
     // If we reach at the end of the block, this is the last line.
     DCHECK_LE(item_index_, items.size());
     if (item_index_ == items.size()) {
+      RemoveTrailingCollapsibleSpace(line_info);
       line_info->SetIsLastLine(true);
       return;
     }
@@ -251,7 +265,7 @@ void NGLineBreaker::BreakLine(NGLineInfo* line_info) {
     } else if (item.Type() == NGInlineItem::kOpenTag) {
       HandleOpenTag(item, AddItem(item, item_results));
     } else if (item.Type() == NGInlineItem::kFloating) {
-      HandleFloat(item, AddItem(item, item_results));
+      HandleFloat(item, line_info, AddItem(item, item_results));
     } else if (item.Type() == NGInlineItem::kOutOfFlowPositioned) {
       DCHECK_EQ(item.Length(), 0u);
       AddItem(item, item_results);
@@ -434,6 +448,7 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleTrailingSpaces(
 
     NGInlineItemResult* item_result = AddItem(item, end, item_results);
     item_result->has_only_trailing_spaces = true;
+    // TODO(kojii): Should reshape if it's not safe to break.
     item_result->shape_result = item.TextShapeResult()->SubRange(offset_, end);
     item_result->inline_size = item_result->shape_result->SnappedWidth();
     line_.position += item_result->inline_size;
@@ -449,6 +464,44 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleTrailingSpaces(
     return LineBreakState::kDone;
   item_index_++;
   return LineBreakState::kTrailing;
+}
+
+// Remove trailing collapsible spaces in |line_info|.
+// https://drafts.csswg.org/css-text-3/#white-space-phase-2
+void NGLineBreaker::RemoveTrailingCollapsibleSpace(NGLineInfo* line_info) {
+  NGInlineItemResults* item_results = &line_info->Results();
+  if (item_results->IsEmpty())
+    return;
+  for (auto it = item_results->rbegin(); it != item_results->rend(); ++it) {
+    NGInlineItemResult& item_result = *it;
+    DCHECK(item_result.item);
+    const NGInlineItem& item = *item_result.item;
+    if (item.EndCollapseType() == NGInlineItem::kOpaqueToCollapsing)
+      continue;
+    if (item.Type() != NGInlineItem::kText)
+      return;
+    const String& text = Text();
+    if (text[item_result.end_offset - 1] != kSpaceCharacter)
+      return;
+    DCHECK(item.Style());
+    if (!item.Style()->CollapseWhiteSpace())
+      return;
+
+    // We have a trailing collapsible space. Remove it.
+    line_.position -= item_result.inline_size;
+    --item_result.end_offset;
+    if (item_result.end_offset == item_result.start_offset) {
+      unsigned index = std::distance(item_results->begin(), &item_result);
+      item_results->EraseAt(index);
+    } else {
+      // TODO(kojii): Should reshape if it's not safe to break.
+      item_result.shape_result = item_result.shape_result->SubRange(
+          item_result.start_offset, item_result.end_offset);
+      item_result.inline_size = item_result.shape_result->SnappedWidth();
+      line_.position += item_result.inline_size;
+    }
+    return;
+  }
 }
 
 void NGLineBreaker::AppendHyphen(const NGInlineItem& item,
@@ -600,6 +653,7 @@ void NGLineBreaker::HandleAtomicInline(const NGInlineItem& item,
 //
 // TODO(glebl): Add the support of clearance for inline floats.
 void NGLineBreaker::HandleFloat(const NGInlineItem& item,
+                                NGLineInfo* line_info,
                                 NGInlineItemResult* item_result) {
   // When rewind occurs, an item may be handled multiple times.
   // Since floats are put into a separate list, avoid handling same floats
@@ -614,6 +668,13 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item,
   MoveToNextOf(item);
   if (item_index_ <= handled_floats_end_item_index_ || ignore_floats_)
     return;
+
+  // Floats need to know the current line width to determine whether to put it
+  // into the current line or to the next line. Remove trailing spaces if this
+  // float is trailing, because whitespace should be collapsed across floats,
+  // and this logic requires the width after trailing spaces are collapsed.
+  if (IsTrailing(item, *line_info))
+    RemoveTrailingCollapsibleSpace(line_info);
 
   NGBlockNode node(ToLayoutBox(item.GetLayoutObject()));
 

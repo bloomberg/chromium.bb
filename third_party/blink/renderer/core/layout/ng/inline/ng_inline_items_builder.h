@@ -149,6 +149,9 @@ class CORE_TEMPLATE_CLASS_EXPORT NGInlineItemsBuilderTemplate {
   void Exit(LayoutObject*);
 };
 
+template <>
+String NGInlineItemsBuilderTemplate<NGOffsetMappingBuilder>::ToString();
+
 extern template class CORE_EXTERN_TEMPLATE_EXPORT
     NGInlineItemsBuilderTemplate<EmptyOffsetMappingBuilder>;
 extern template class CORE_EXTERN_TEMPLATE_EXPORT

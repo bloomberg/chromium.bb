@@ -29,5 +29,5 @@ layer at (0,0) size 800x288
               text run at (0,200) width 588: "FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL"
               text run at (0,220) width 588: "FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL"
               text run at (0,240) width 588: "FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL"
-              text run at (0,260) width 149: "FAIL FAIL FAIL FAIL"
+              text run at (0,260) width 148: "FAIL FAIL FAIL FAIL"
           LayoutText {#text} at (0,0) size 0x0

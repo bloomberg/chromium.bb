@@ -228,7 +228,8 @@ const NGInlineNodeData& NGInlineNode::EnsureData() {
 const NGOffsetMapping* NGInlineNode::ComputeOffsetMappingIfNeeded() {
   DCHECK(!GetLayoutBlockFlow()->GetDocument().NeedsLayoutTreeUpdate());
 
-  if (!Data().offset_mapping_) {
+  NGInlineNodeData* data = MutableData();
+  if (!data->offset_mapping_) {
     // TODO(xiaochengh): ComputeOffsetMappingIfNeeded() discards the
     // NGInlineItems and text content built by |builder|, because they are
     // already there in NGInlineNodeData. For efficiency, we should make
@@ -236,17 +237,22 @@ const NGOffsetMapping* NGInlineNode::ComputeOffsetMappingIfNeeded() {
     Vector<NGInlineItem> items;
     NGInlineItemsBuilderForOffsetMapping builder(&items);
     CollectInlinesInternal(GetLayoutBlockFlow(), &builder);
-    builder.ToString();
+    String text = builder.ToString();
+
+    // The trailing space of the text for offset mapping may be removed. If not,
+    // share the string instance.
+    if (text == data->text_content_)
+      text = data->text_content_;
 
     // TODO(xiaochengh): This doesn't compute offset mapping correctly when
     // text-transform CSS property changes text length.
     NGOffsetMappingBuilder& mapping_builder = builder.GetOffsetMappingBuilder();
-    mapping_builder.SetDestinationString(Text());
-    MutableData()->offset_mapping_ =
+    mapping_builder.SetDestinationString(text);
+    data->offset_mapping_ =
         std::make_unique<NGOffsetMapping>(mapping_builder.Build());
   }
 
-  return Data().offset_mapping_.get();
+  return data->offset_mapping_.get();
 }
 
 // Depth-first-scan of all LayoutInline and LayoutText nodes that make up this

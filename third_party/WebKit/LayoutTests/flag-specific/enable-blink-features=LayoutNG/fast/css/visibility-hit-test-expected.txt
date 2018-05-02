@@ -7,5 +7,5 @@ layer at (0,0) size 800x600
         LayoutImage {IMG} at (0,0) size 300x300
       LayoutText {#text} at (300,285) size 4x19
         text run at (300,285) width 4: " "
-      LayoutText {#text} at (304,285) size 443x19
-        text run at (304,285) width 443: "The element at position (100, 100) should be the body. Result: BODY"
+      LayoutText {#text} at (304,285) size 442x19
+        text run at (304,285) width 442: "The element at position (100, 100) should be the body. Result: BODY"

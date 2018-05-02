@@ -130,6 +130,7 @@ class CORE_EXPORT NGLineBreaker {
                  LayoutUnit available_width,
                  NGLineInfo*);
   LineBreakState HandleTrailingSpaces(const NGInlineItem&, NGLineInfo*);
+  void RemoveTrailingCollapsibleSpace(NGLineInfo*);
   void AppendHyphen(const NGInlineItem& item, NGLineInfo*);
 
   LineBreakState HandleControlItem(const NGInlineItem&,
@@ -139,7 +140,7 @@ class CORE_EXPORT NGLineBreaker {
                                        LineBreakState,
                                        NGLineInfo*);
   void HandleAtomicInline(const NGInlineItem&, NGLineInfo*);
-  void HandleFloat(const NGInlineItem&, NGInlineItemResult*);
+  void HandleFloat(const NGInlineItem&, NGLineInfo*, NGInlineItemResult*);
 
   void HandleOpenTag(const NGInlineItem&, NGInlineItemResult*);
   void HandleCloseTag(const NGInlineItem&, NGInlineItemResults*);
@@ -157,6 +158,7 @@ class CORE_EXPORT NGLineBreaker {
 
   bool IsFirstFormattedLine() const;
   void ComputeBaseDirection();
+  bool IsTrailing(const NGInlineItem&, const NGLineInfo&) const;
 
   LineData line_;
   NGInlineNode node_;
