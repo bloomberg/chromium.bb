@@ -175,7 +175,6 @@ source_set("browser_impl") {
     "//components/net_log",
     "//components/network_time",
     "//components/open_from_clipboard",
-    "//components/physical_web/data_source",
     "//components/prefs",
     "//components/rappor",
     "//components/translate/core/browser",

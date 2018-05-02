@@ -438,11 +438,6 @@ TestingBrowserProcess::CachedDefaultWebClientState() {
   return shell_integration::UNKNOWN_DEFAULT;
 }
 
-physical_web::PhysicalWebDataSource*
-TestingBrowserProcess::GetPhysicalWebDataSource() {
-  return nullptr;
-}
-
 prefs::InProcessPrefServiceFactory*
 TestingBrowserProcess::pref_service_factory() const {
   return nullptr;

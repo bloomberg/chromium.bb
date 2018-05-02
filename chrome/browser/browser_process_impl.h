@@ -168,7 +168,6 @@ class BrowserProcessImpl : public BrowserProcess,
   resource_coordinator::TabManager* GetTabManager() override;
   shell_integration::DefaultWebClientState CachedDefaultWebClientState()
       override;
-  physical_web::PhysicalWebDataSource* GetPhysicalWebDataSource() override;
   prefs::InProcessPrefServiceFactory* pref_service_factory() const override;
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
@@ -381,9 +380,6 @@ class BrowserProcessImpl : public BrowserProcess,
 
   shell_integration::DefaultWebClientState cached_default_web_client_state_ =
       shell_integration::UNKNOWN_DEFAULT;
-
-  std::unique_ptr<physical_web::PhysicalWebDataSource>
-      physical_web_data_source_;
 
   std::unique_ptr<prefs::InProcessPrefServiceFactory> pref_service_factory_;
 

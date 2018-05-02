@@ -962,7 +962,6 @@ split_static_library("ui") {
     "//components/password_manager/sync/browser",
     "//components/payments/content:utils",
     "//components/pdf/browser",
-    "//components/physical_web/data_source",
     "//components/policy/core/browser",
     "//components/pref_registry",
     "//components/previews/content",
