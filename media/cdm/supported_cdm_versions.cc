@@ -13,7 +13,7 @@ namespace media {
 
 namespace {
 
-// Returns the overridden supported CDM interface version speficied on command
+// Returns the overridden supported CDM interface version specified on command
 // line, which can be null if not specified.
 base::Optional<int> GetSupportedCdmInterfaceVersionOverrideFromCommandLine() {
   auto* command_line = base::CommandLine::ForCurrentProcess();
@@ -28,21 +28,6 @@ base::Optional<int> GetSupportedCdmInterfaceVersionOverrideFromCommandLine() {
     return base::nullopt;
   else
     return version;
-}
-
-// Returns whether the CDM interface of |version| is enabled by default.
-constexpr bool IsCdmInterfaceVersionEnabledByDefault(int version) {
-  switch (version) {
-    // Supported versions in decreasing order.
-    case 11:
-      return CdmInterfaceTraits<11>::IsEnabledByDefault();
-    case 10:
-      return CdmInterfaceTraits<10>::IsEnabledByDefault();
-    case 9:
-      return CdmInterfaceTraits<9>::IsEnabledByDefault();
-    default:
-      return false;
-  }
 }
 
 }  // namespace
