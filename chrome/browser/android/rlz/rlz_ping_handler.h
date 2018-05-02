@@ -6,19 +6,24 @@
 #define CHROME_BROWSER_ANDROID_RLZ_RLZ_PING_HANDLER_H_
 
 #include <jni.h>
+#include <memory>
+#include <string>
 #include "base/android/scoped_java_ref.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "base/memory/ref_counted.h"
+
+namespace network {
+class SimpleURLLoader;
+class SharedURLLoaderFactory;
+}  // namespace network
 
 namespace chrome {
 namespace android {
 
 // JNI bridge for   RlzPingHandler.java
-class RlzPingHandler : public net::URLFetcherDelegate {
+class RlzPingHandler {
  public:
   explicit RlzPingHandler(const base::android::JavaRef<jobject>& jprofile);
-  ~RlzPingHandler() override;
+  ~RlzPingHandler();
 
   // Makes a GET request to the designated web end point with the given
   // parameters. |j_brand| is a 4 character priorly designated brand value.
@@ -32,12 +37,10 @@ class RlzPingHandler : public net::URLFetcherDelegate {
             const base::android::JavaParamRef<jobject>& j_callback);
 
  private:
-  // net::URLFetcherDelegate:
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
 
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
-
-  std::unique_ptr<net::URLFetcher> url_fetcher_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+  std::unique_ptr<network::SimpleURLLoader> simple_url_loader_;
   base::android::ScopedJavaGlobalRef<jobject> j_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(RlzPingHandler);

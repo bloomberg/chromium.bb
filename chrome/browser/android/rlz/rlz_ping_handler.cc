@@ -10,14 +10,19 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/storage_partition.h"
 #include "jni/RlzPingHandler_jni.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
-#include "net/http/http_status_code.h"
-#include "net/http/http_util.h"
+#include "net/http/http_response_headers.h"
+#include "net/http/http_response_info.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "rlz/lib/lib_values.h"
 #include "rlz/lib/net_response_check.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
 using base::android::ConvertJavaStringToUTF16;
@@ -36,7 +41,9 @@ namespace android {
 RlzPingHandler::RlzPingHandler(const JavaRef<jobject>& jprofile) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   DCHECK(profile);
-  request_context_ = profile->GetRequestContext();
+  url_loader_factory_ =
+      content::BrowserContext::GetDefaultStoragePartition(profile)
+          ->GetURLLoaderFactoryForBrowserProcess();
 }
 
 RlzPingHandler::~RlzPingHandler() = default;
@@ -102,31 +109,39 @@ void RlzPingHandler::Ping(
               "uploaded."
           })");
 
-  url_fetcher_ = net::URLFetcher::Create(0, request_url, net::URLFetcher::GET,
-                                         this, traffic_annotation);
-  url_fetcher_->SetMaxRetriesOn5xx(kMaxRetries);
-  url_fetcher_->SetAutomaticallyRetryOnNetworkChanges(kMaxRetries);
-  url_fetcher_->SetAutomaticallyRetryOn5xx(true);
-  url_fetcher_->SetRequestContext(request_context_.get());
-  url_fetcher_->SetLoadFlags(
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = request_url;
+  resource_request->load_flags =
       net::LOAD_DISABLE_CACHE | net::LOAD_DO_NOT_SEND_AUTH_DATA |
-      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES);
-  url_fetcher_->Start();
+      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+
+  simple_url_loader_ = network::SimpleURLLoader::Create(
+      std::move(resource_request), traffic_annotation);
+  simple_url_loader_->SetRetryOptions(
+      kMaxRetries, network::SimpleURLLoader::RETRY_ON_5XX |
+                       network::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE);
+  simple_url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory_.get(),
+      base::BindOnce(&RlzPingHandler::OnSimpleLoaderComplete,
+                     base::Unretained(this)));
 }
 
-void RlzPingHandler::OnURLFetchComplete(const net::URLFetcher* source) {
-  DCHECK_EQ(source, url_fetcher_.get());
-
+void RlzPingHandler::OnSimpleLoaderComplete(
+    std::unique_ptr<std::string> response_body) {
   bool valid = false;
-  if (!source->GetStatus().is_success() ||
-      source->GetResponseCode() != net::HTTP_OK) {
+  if (!response_body) {
+    int response_code = -1;
+    if (simple_url_loader_->ResponseInfo() &&
+        simple_url_loader_->ResponseInfo()->headers) {
+      response_code =
+          simple_url_loader_->ResponseInfo()->headers->response_code();
+    }
     LOG(WARNING) << base::StringPrintf("Rlz endpoint responded with code %d.",
-                                       source->GetResponseCode());
+                                       response_code);
   } else {
-    std::string response;
-    source->GetResponseAsString(&response);
     int response_length = -1;
-    valid = rlz_lib::IsPingResponseValid(response.c_str(), &response_length);
+    valid =
+        rlz_lib::IsPingResponseValid(response_body->c_str(), &response_length);
   }
 
   // TODO(yusufo) : Investigate what else can be checked for validity that is
