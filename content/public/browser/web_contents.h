@@ -191,7 +191,7 @@ class WebContents : public PageNavigator,
   // understand when SessionStorageNamespace objects should be cloned, why
   // they should not be shared by multiple WebContents, and what bad things
   // can happen if you share the object.
-  CONTENT_EXPORT static WebContents* CreateWithSessionStorage(
+  CONTENT_EXPORT static std::unique_ptr<WebContents> CreateWithSessionStorage(
       const CreateParams& params,
       const SessionStorageNamespaceMap& session_storage_namespace_map);
 

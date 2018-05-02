@@ -60,8 +60,8 @@ BackgroundContents::BackgroundContents(
     content::SessionStorageNamespaceMap session_storage_namespace_map;
     session_storage_namespace_map.insert(
         std::make_pair(partition_id, session_storage_namespace));
-    web_contents_.reset(WebContents::CreateWithSessionStorage(
-        create_params, session_storage_namespace_map));
+    web_contents_ = WebContents::CreateWithSessionStorage(
+        create_params, session_storage_namespace_map);
   } else {
     web_contents_ = WebContents::Create(create_params);
   }
