@@ -2689,18 +2689,22 @@ bubblePresenterForFeature:(const base::Feature&)feature
   if (![self isTabScrolledToTop:currentTab])
     return;
 
+  BubbleArrowDirection arrowDirection =
+      (IsUIRefreshPhase1Enabled() && IsSplitToolbarMode())
+          ? BubbleArrowDirectionDown
+          : BubbleArrowDirectionUp;
   NSString* text =
       l10n_util::GetNSStringWithFixup(IDS_IOS_NEW_TAB_IPH_PROMOTION_TEXT);
   CGPoint tabSwitcherAnchor;
   if (IsIPadIdiom()) {
     tabSwitcherAnchor = [self.tabStripCoordinator
-        anchorPointForTabSwitcherButton:BubbleArrowDirectionUp];
+        anchorPointForTabSwitcherButton:arrowDirection];
   } else {
     UILayoutGuide* guide =
         [NamedGuide guideWithName:kTabSwitcherGuide view:self.view];
     DCHECK(guide);
     CGPoint anchorPoint =
-        bubble_util::AnchorPoint(guide.layoutFrame, BubbleArrowDirectionUp);
+        bubble_util::AnchorPoint(guide.layoutFrame, arrowDirection);
     tabSwitcherAnchor = [guide.owningView convertPoint:anchorPoint
                                                 toView:guide.owningView.window];
   }
@@ -2710,7 +2714,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   // of the existing |tabTipBubblePresenter| to nil.
   BubbleViewControllerPresenter* presenter =
       [self bubblePresenterForFeature:feature_engagement::kIPHNewTabTipFeature
-                            direction:BubbleArrowDirectionUp
+                            direction:arrowDirection
                             alignment:BubbleAlignmentTrailing
                                  text:text];
   if (!presenter)
@@ -2756,6 +2760,10 @@ bubblePresenterForFeature:(const base::Feature&)feature
   if (![self isTabScrolledToTop:currentTab])
     return;
 
+  BubbleArrowDirection arrowDirection =
+      (IsUIRefreshPhase1Enabled() && IsSplitToolbarMode())
+          ? BubbleArrowDirectionDown
+          : BubbleArrowDirectionUp;
   NSString* text = l10n_util::GetNSStringWithFixup(
       IDS_IOS_NEW_INCOGNITO_TAB_IPH_PROMOTION_TEXT);
   CGPoint toolsButtonAnchor;
@@ -2763,7 +2771,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
       [NamedGuide guideWithName:kToolsMenuGuide view:self.view];
   DCHECK(guide);
   CGPoint anchorPoint =
-      bubble_util::AnchorPoint(guide.layoutFrame, BubbleArrowDirectionUp);
+      bubble_util::AnchorPoint(guide.layoutFrame, arrowDirection);
   toolsButtonAnchor = [guide.owningView convertPoint:anchorPoint
                                               toView:guide.owningView.window];
 
@@ -2773,7 +2781,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   BubbleViewControllerPresenter* presenter =
       [self bubblePresenterForFeature:feature_engagement::
                                           kIPHNewIncognitoTabTipFeature
-                            direction:BubbleArrowDirectionUp
+                            direction:arrowDirection
                             alignment:BubbleAlignmentTrailing
                                  text:text];
   if (!presenter)
