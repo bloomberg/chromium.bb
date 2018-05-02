@@ -23,7 +23,7 @@ class InProgressCache {
   virtual ~InProgressCache() = default;
 
   // Initializes the cache.
-  virtual void Initialize(const base::RepeatingClosure& callback) = 0;
+  virtual void Initialize(base::OnceClosure callback) = 0;
 
   // Adds or updates an existing entry.
   virtual void AddOrReplaceEntry(const DownloadEntry& entry) = 0;

@@ -238,7 +238,7 @@ void InProgressDownloadManager::InterceptDownloadFromNavigation(
 
 void InProgressDownloadManager::Initialize(
     const base::FilePath& metadata_cache_dir,
-    const base::RepeatingClosure& callback) {
+    base::OnceClosure callback) {
   download_metadata_cache_ = std::make_unique<InProgressCacheImpl>(
       metadata_cache_dir.empty() ? base::FilePath() :
           metadata_cache_dir.Append(kDownloadMetadataStoreFilename),
@@ -246,7 +246,7 @@ void InProgressDownloadManager::Initialize(
           {base::MayBlock(), base::TaskPriority::BACKGROUND,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}));
 
-  download_metadata_cache_->Initialize(callback);
+  download_metadata_cache_->Initialize(std::move(callback));
 }
 
 void InProgressDownloadManager::ShutDown() {
