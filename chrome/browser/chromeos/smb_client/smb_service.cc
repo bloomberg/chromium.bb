@@ -40,11 +40,14 @@ SmbService* SmbService::Get(content::BrowserContext* context) {
 void SmbService::Mount(const file_system_provider::MountOptions& options,
                        const base::FilePath& share_path,
                        MountResponse callback) {
+  // TODO(allenvic): Temporary workaround for https://crbug.com/837492.
+  CHECK(false);
+
   // TODO(allenvic): Implement passing of credentials. This currently passes
   // empty credentials to SmbProvider.
   GetSmbProviderClient()->Mount(
       share_path, "" /* workgroup */, "" /* username */,
-      temp_file_manager_.WritePasswordToFile("" /* password */),
+      temp_file_manager_->WritePasswordToFile("" /* password */),
       base::BindOnce(&SmbService::OnMountResponse, AsWeakPtr(),
                      base::Passed(&callback), options, share_path));
 }
