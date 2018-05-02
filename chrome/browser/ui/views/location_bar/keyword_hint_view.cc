@@ -107,7 +107,8 @@ void KeywordHintView::SetKeyword(const base::string16& keyword,
   // When the virtual keyboard is visible, we show a modified touch UI
   // containing only the chip and no surrounding labels.
   const bool was_touch_ui = leading_label_->text().empty();
-  const bool is_touch_ui = LocationBarView::IsVirtualKeyboardVisible();
+  const bool is_touch_ui =
+      LocationBarView::IsVirtualKeyboardVisible(GetWidget());
   if (is_touch_ui == was_touch_ui && keyword_ == keyword)
     return;
 

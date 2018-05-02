@@ -21,6 +21,7 @@ class Profile;
 
 namespace ui {
 class IMEEngineHandlerInterface;
+class InputMethodKeyboardController;
 }  // namespace ui
 
 namespace chromeos {
@@ -342,6 +343,10 @@ class UI_BASE_IME_EXPORT InputMethodManager {
   // Notifies when any of the extra inputs (emoji, handwriting, voice) enabled
   // status has changed.
   virtual void NotifyObserversImeExtraInputStateChange() = 0;
+
+  // Gets the implementation of the keyboard controller.
+  virtual ui::InputMethodKeyboardController*
+  GetInputMethodKeyboardController() = 0;
 };
 
 }  // namespace input_method

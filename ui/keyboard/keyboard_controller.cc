@@ -876,4 +876,31 @@ bool KeyboardController::SetDraggableArea(const gfx::Rect& rect) {
   return false;
 }
 
+bool KeyboardController::DisplayVirtualKeyboard() {
+  // Calling |ShowKeyboardInternal| may move the keyboard to another display.
+  if (IsKeyboardEnabled() && !keyboard_locked()) {
+    ShowKeyboardInternal(display::kInvalidDisplayId);
+    return true;
+  }
+  return false;
+}
+
+void KeyboardController::DismissVirtualKeyboard() {
+  HideKeyboard(HIDE_REASON_AUTOMATIC);
+}
+
+void KeyboardController::AddObserver(
+    ui::InputMethodKeyboardControllerObserver* observer) {
+  // TODO: Implement me
+}
+
+void KeyboardController::RemoveObserver(
+    ui::InputMethodKeyboardControllerObserver* observer) {
+  // TODO: Implement me
+}
+
+bool KeyboardController::IsKeyboardVisible() const {
+  return keyboard_visible();
+}
+
 }  // namespace keyboard

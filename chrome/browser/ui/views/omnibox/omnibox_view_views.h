@@ -187,6 +187,7 @@ class OmniboxViewViews : public OmniboxView,
   int GetWidth() const override;
   bool IsImeShowingPopup() const override;
   void ShowImeIfNeeded() override;
+  void HideImeIfNeeded() override;
   int GetOmniboxTextLength() const override;
   void SetEmphasis(bool emphasize, const gfx::Range& range) override;
   void UpdateSchemeStyle(const gfx::Range& range) override;
