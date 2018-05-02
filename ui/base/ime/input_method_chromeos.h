@@ -38,6 +38,7 @@ class UI_BASE_IME_EXPORT InputMethodChromeOS : public InputMethodBase {
   void OnCaretBoundsChanged(const TextInputClient* client) override;
   void CancelComposition(const TextInputClient* client) override;
   bool IsCandidatePopupOpen() const override;
+  InputMethodKeyboardController* GetInputMethodKeyboardController() override;
 
  protected:
   // Converts |text| into CompositionText.

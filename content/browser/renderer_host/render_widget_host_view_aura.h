@@ -59,9 +59,6 @@ class Rect;
 namespace ui {
 class InputMethod;
 class LocatedEvent;
-#if defined(OS_WIN)
-class OnScreenKeyboardObserver;
-#endif
 }
 
 namespace content {
@@ -628,7 +625,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Set to true if we requested the on screen keyboard to be displayed.
   bool virtual_keyboard_requested_;
 
-  std::unique_ptr<ui::OnScreenKeyboardObserver> keyboard_observer_;
+  friend class WinScreenKeyboardObserver;
+  std::unique_ptr<WinScreenKeyboardObserver> keyboard_observer_;
 
   gfx::Point last_mouse_move_location_;
 #endif

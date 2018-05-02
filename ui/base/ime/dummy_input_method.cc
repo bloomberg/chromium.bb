@@ -90,6 +90,11 @@ void DummyInputMethod::AddObserver(InputMethodObserver* observer) {
 void DummyInputMethod::RemoveObserver(InputMethodObserver* observer) {
 }
 
+InputMethodKeyboardController*
+DummyInputMethod::GetInputMethodKeyboardController() {
+  return nullptr;
+}
+
 const std::vector<std::unique_ptr<KeyEvent>>&
 DummyInputMethod::GetKeyEventsForTesting() {
   return key_events_for_testing_;

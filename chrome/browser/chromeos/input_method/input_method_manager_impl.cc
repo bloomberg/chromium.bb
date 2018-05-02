@@ -1354,5 +1354,10 @@ void InputMethodManagerImpl::NotifyObserversImeExtraInputStateChange() {
   }
 }
 
+ui::InputMethodKeyboardController*
+InputMethodManagerImpl::GetInputMethodKeyboardController() {
+  return keyboard::KeyboardController::GetInstance();
+}
+
 }  // namespace input_method
 }  // namespace chromeos

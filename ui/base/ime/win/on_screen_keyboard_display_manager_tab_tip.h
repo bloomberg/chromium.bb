@@ -2,30 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_IME_WIN_ON_SCREEN_KEYBOARD_DISPLAY_MANAGER_TAB_TIP_H_
-#define UI_BASE_IME_WIN_ON_SCREEN_KEYBOARD_DISPLAY_MANAGER_TAB_TIP_H_
+#ifndef UI_BASE_IME_WIN_ON_SCREEN_KEYBOARD_DISPLAY_MANAGER_TAP_TIP_H_
+#define UI_BASE_IME_WIN_ON_SCREEN_KEYBOARD_DISPLAY_MANAGER_TAP_TIP_H_
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
+#include "base/observer_list.h"
 #include "base/strings/string16.h"
+#include "ui/base/ime/input_method_keyboard_controller.h"
 #include "ui/base/ime/ui_base_ime_export.h"
-#include "ui/base/ime/win/osk_display_manager.h"
+#include "ui/base/ui_base_export.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace ui {
 
 class OnScreenKeyboardDetector;
 
-// This class provides an implementation of the OnScreenKeyboardDisplayManager
+// This class provides an implementation of the InputMethodKeyboardController
 // that uses heuristics and the TabTip.exe to display the on screen keyboard.
 // Used on Windows > 7 and Windows < 10.0.10240.0
 class UI_BASE_IME_EXPORT OnScreenKeyboardDisplayManagerTabTip
-    : public OnScreenKeyboardDisplayManager {
+    : public InputMethodKeyboardController {
  public:
+  OnScreenKeyboardDisplayManagerTabTip(HWND hwnd);
   ~OnScreenKeyboardDisplayManagerTabTip() override;
 
-  // OnScreenKeyboardDisplayManager overrides.
-  bool DisplayVirtualKeyboard(OnScreenKeyboardObserver* observer) final;
-  bool DismissVirtualKeyboard() final;
-  void RemoveObserver(OnScreenKeyboardObserver* observer) final;
+  // InputMethodKeyboardController overrides.
+  bool DisplayVirtualKeyboard() final;
+  void DismissVirtualKeyboard() final;
+  void AddObserver(InputMethodKeyboardControllerObserver* observer) final;
+  void RemoveObserver(InputMethodKeyboardControllerObserver* observer) final;
   bool IsKeyboardVisible() const final;
 
   // Returns the path of the on screen keyboard exe (TabTip.exe) in the
@@ -34,11 +40,15 @@ class UI_BASE_IME_EXPORT OnScreenKeyboardDisplayManagerTabTip
   bool GetOSKPath(base::string16* osk_path);
 
  private:
-  friend class OnScreenKeyboardDisplayManager;
   friend class OnScreenKeyboardTest;
-  OnScreenKeyboardDisplayManagerTabTip();
+  friend class OnScreenKeyboardDetector;
+
+  void NotifyKeyboardVisible(const gfx::Rect& occluded_rect);
+  void NotifyKeyboardHidden();
 
   std::unique_ptr<OnScreenKeyboardDetector> keyboard_detector_;
+  base::ObserverList<InputMethodKeyboardControllerObserver, false> observers_;
+  HWND hwnd_;
 
   // The location of TabTip.exe.
   base::string16 osk_path_;
@@ -48,4 +58,4 @@ class UI_BASE_IME_EXPORT OnScreenKeyboardDisplayManagerTabTip
 
 }  // namespace ui
 
-#endif  // UI_BASE_IME_WIN_ON_SCREEN_KEYBOARD_DISPLAY_MANAGER_TAB_TIP_H_
+#endif  // UI_BASE_IME_WIN_ON_SCREEN_KEYBOARD_DISPLAY_MANAGER_TAP_TIP_H_

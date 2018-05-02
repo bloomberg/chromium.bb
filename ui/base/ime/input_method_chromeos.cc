@@ -34,11 +34,11 @@ namespace ui {
 // InputMethodChromeOS implementation -----------------------------------------
 InputMethodChromeOS::InputMethodChromeOS(
     internal::InputMethodDelegate* delegate)
-    : composing_text_(false),
+    : InputMethodBase(delegate),
+      composing_text_(false),
       composition_changed_(false),
       handling_key_event_(false),
       weak_ptr_factory_(this) {
-  SetDelegate(delegate);
   ui::IMEBridge::Get()->SetInputContextHandler(this);
 
   UpdateContextFocusState();
@@ -276,6 +276,17 @@ void InputMethodChromeOS::CancelComposition(const TextInputClient* client) {
 bool InputMethodChromeOS::IsCandidatePopupOpen() const {
   // TODO(yukishiino): Implement this method.
   return false;
+}
+
+InputMethodKeyboardController*
+InputMethodChromeOS::GetInputMethodKeyboardController() {
+  chromeos::input_method::InputMethodManager* manager =
+      chromeos::input_method::InputMethodManager::Get();
+  if (manager) {
+    if (auto* controller = manager->GetInputMethodKeyboardController())
+      return controller;
+  }
+  return InputMethodBase::GetInputMethodKeyboardController();
 }
 
 void InputMethodChromeOS::OnWillChangeFocusedClient(

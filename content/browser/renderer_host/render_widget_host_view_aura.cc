@@ -106,8 +106,8 @@
 #include "content/browser/accessibility/browser_accessibility_manager_win.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #include "content/browser/renderer_host/legacy_render_widget_host_win.h"
-#include "ui/base/ime/win/osk_display_manager.h"
-#include "ui/base/ime/win/osk_display_observer.h"
+#include "ui/base/ime/input_method_keyboard_controller.h"
+#include "ui/base/ime/input_method_keyboard_controller_observer.h"
 #include "ui/base/win/hidden_window.h"
 #include "ui/display/win/screen_win.h"
 #include "ui/gfx/gdi_util.h"
@@ -137,26 +137,37 @@ namespace content {
 
 namespace {
 
+// Callback from embedding the renderer.
+void EmbedCallback(bool result) {
+  if (!result)
+    DVLOG(1) << "embed failed";
+}
+
+}  // namespace
+
 #if defined(OS_WIN)
 
-// This class implements the ui::OnScreenKeyboardObserver interface
+// This class implements the ui::InputMethodKeyboardControllerObserver interface
 // which provides notifications about the on screen keyboard on Windows getting
 // displayed or hidden in response to taps on editable fields.
 // It provides functionality to request blink to scroll the input field if it
 // is obscured by the on screen keyboard.
-class WinScreenKeyboardObserver : public ui::OnScreenKeyboardObserver {
+class WinScreenKeyboardObserver
+    : public ui::InputMethodKeyboardControllerObserver {
  public:
   WinScreenKeyboardObserver(RenderWidgetHostViewAura* host_view)
       : host_view_(host_view) {
     host_view_->SetInsets(gfx::Insets());
+    if (auto* input_method = host_view_->GetInputMethod())
+      input_method->GetInputMethodKeyboardController()->AddObserver(this);
   }
 
   ~WinScreenKeyboardObserver() override {
-    if (auto* instance = ui::OnScreenKeyboardDisplayManager::GetInstance())
-      instance->RemoveObserver(this);
+    if (auto* input_method = host_view_->GetInputMethod())
+      input_method->GetInputMethodKeyboardController()->RemoveObserver(this);
   }
 
-  // base::win::OnScreenKeyboardObserver overrides.
+  // InputMethodKeyboardControllerObserver overrides.
   void OnKeyboardVisible(const gfx::Rect& keyboard_rect) override {
     host_view_->SetInsets(gfx::Insets(
         0, 0, keyboard_rect.IsEmpty() ? 0 : keyboard_rect.height(), 0));
@@ -173,14 +184,6 @@ class WinScreenKeyboardObserver : public ui::OnScreenKeyboardObserver {
   DISALLOW_COPY_AND_ASSIGN(WinScreenKeyboardObserver);
 };
 #endif  // defined(OS_WIN)
-
-// Callback from embedding the renderer.
-void EmbedCallback(bool result) {
-  if (!result)
-    DVLOG(1) << "embed failed";
-}
-
-}  // namespace
 
 // We need to watch for mouse events outside a Web Popup or its parent
 // and dismiss the popup for certain events.
@@ -769,20 +772,20 @@ void RenderWidgetHostViewAura::SetInsets(const gfx::Insets& insets) {
   }
 }
 
-void RenderWidgetHostViewAura::FocusedNodeTouched(
-    bool editable) {
+void RenderWidgetHostViewAura::FocusedNodeTouched(bool editable) {
 #if defined(OS_WIN)
-  ui::OnScreenKeyboardDisplayManager* osk_display_manager =
-      ui::OnScreenKeyboardDisplayManager::GetInstance();
-  DCHECK(osk_display_manager);
+  auto* input_method = GetInputMethod();
+  if (!input_method)
+    return;
+  auto* controller = input_method->GetInputMethodKeyboardController();
   if (editable && host()->GetView() && host()->delegate()) {
     keyboard_observer_.reset(new WinScreenKeyboardObserver(this));
-    if (!osk_display_manager->DisplayVirtualKeyboard(keyboard_observer_.get()))
+    if (!controller->DisplayVirtualKeyboard())
       keyboard_observer_.reset(nullptr);
     virtual_keyboard_requested_ = keyboard_observer_.get();
   } else {
     virtual_keyboard_requested_ = false;
-    osk_display_manager->DismissVirtualKeyboard();
+    controller->DismissVirtualKeyboard();
   }
 #endif
 }
@@ -1660,16 +1663,19 @@ viz::SurfaceId RenderWidgetHostViewAura::GetCurrentSurfaceId() const {
 void RenderWidgetHostViewAura::FocusedNodeChanged(
     bool editable,
     const gfx::Rect& node_bounds_in_screen) {
-  if (GetInputMethod())
-    GetInputMethod()->CancelComposition(this);
+  auto* input_method = GetInputMethod();
+  if (input_method)
+    input_method->CancelComposition(this);
   has_composition_text_ = false;
 
 #if defined(OS_WIN)
-  if (!editable && virtual_keyboard_requested_) {
+  if (!editable && virtual_keyboard_requested_ && window_) {
     virtual_keyboard_requested_ = false;
 
-    DCHECK(ui::OnScreenKeyboardDisplayManager::GetInstance());
-    ui::OnScreenKeyboardDisplayManager::GetInstance()->DismissVirtualKeyboard();
+    if (input_method) {
+      input_method->GetInputMethodKeyboardController()
+          ->DismissVirtualKeyboard();
+    }
   }
 #endif
 }

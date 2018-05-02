@@ -170,6 +170,8 @@ bool OmniboxView::IsImeShowingPopup() const {
 void OmniboxView::ShowImeIfNeeded() {
 }
 
+void OmniboxView::HideImeIfNeeded() {}
+
 bool OmniboxView::IsIndicatingQueryRefinement() const {
   // The default implementation always returns false.  Mobile ports can override
   // this method and implement as needed.
