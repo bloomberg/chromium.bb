@@ -145,12 +145,18 @@ media::test::VideoDecodeAcceleratorTestEnvironment* g_env;
 // called.
 enum ResetPoint {
   // Reset() right after calling Flush() (before getting NotifyFlushDone()).
-  RESET_BEFORE_NOTIFY_FLUSH_DONE = -5,
+  RESET_BEFORE_NOTIFY_FLUSH_DONE,
   // Reset() just after calling Decode() with a fragment containing config info.
-  RESET_AFTER_FIRST_CONFIG_INFO = -4,
-  START_OF_STREAM_RESET = -3,
-  MID_STREAM_RESET = -2,
-  END_OF_STREAM_RESET = -1
+  RESET_AFTER_FIRST_CONFIG_INFO,
+  // Reset() just after finishing Initialize().
+  START_OF_STREAM_RESET,
+  // Reset() after a specific number of Decode() are executed.
+  MID_STREAM_RESET,
+  // Reset() after NotifyFlushDone().
+  END_OF_STREAM_RESET,
+  // This is the state that Reset() by RESET_AFTER_FIRST_CONFIG_INFO
+  // is executed().
+  DONE_RESET_AFTER_FIRST_CONFIG_INFO,
 };
 
 const int kMaxResetAfterFrameNum = 100;
@@ -161,6 +167,7 @@ const int kWebRtcDecodeCallsPerSecond = 30;
 // Simulate an adjustment to a larger number of pictures to make sure the
 // decoder supports an upwards adjustment.
 const int kExtraPictureBuffers = 2;
+const int kNoMidStreamReset = -1;
 
 struct TestVideoFile {
   explicit TestVideoFile(base::FilePath::StringType file_name)
@@ -172,7 +179,7 @@ struct TestVideoFile {
         min_fps_render(-1),
         min_fps_no_render(-1),
         profile(VIDEO_CODEC_PROFILE_UNKNOWN),
-        reset_after_frame_num(END_OF_STREAM_RESET) {}
+        reset_after_frame_num(-1) {}
 
   base::FilePath::StringType file_name;
   int width;
@@ -228,9 +235,11 @@ class GLRenderingVDAClient
   // Doesn't take ownership of |rendering_helper| or |note|, which must outlive
   // |*this|.
   // |num_play_throughs| indicates how many times to play through the video.
+  // |reset_point| indicates the timing of executing Reset().
   // |reset_after_frame_num| can be a frame number >=0 indicating a mid-stream
-  // Reset() should be done after that frame number is delivered, or
-  // END_OF_STREAM_RESET to indicate no mid-stream Reset().
+  // Reset() should be done.  This member argument is only meaningful and must
+  // not be less than 0 if |reset_point| == MID_STREAM_RESET.
+  // Unless |reset_point| == MID_STREAM_RESET, it must be kNoMidStreamReset.
   // |delete_decoder_state| indicates when the underlying decoder should be
   // Destroy()'d and deleted and can take values: N<0: delete after -N Decode()
   // calls have been made, N>=0 means interpret as ClientState.
@@ -246,6 +255,7 @@ class GLRenderingVDAClient
                        const std::string& encoded_data,
                        int num_in_flight_decodes,
                        int num_play_throughs,
+                       ResetPoint reset_point,
                        int reset_after_frame_num,
                        int delete_decoder_state,
                        int frame_width,
@@ -316,6 +326,7 @@ class GLRenderingVDAClient
       weak_vda_ptr_factory_;
   std::unique_ptr<GpuVideoDecodeAcceleratorFactory> vda_factory_;
   int remaining_play_throughs_;
+  ResetPoint reset_point_;
   int reset_after_frame_num_;
   int delete_decoder_state_;
   ClientState state_;
@@ -373,6 +384,7 @@ GLRenderingVDAClient::GLRenderingVDAClient(
     const std::string& encoded_data,
     int num_in_flight_decodes,
     int num_play_throughs,
+    ResetPoint reset_point,
     int reset_after_frame_num,
     int delete_decoder_state,
     int frame_width,
@@ -390,6 +402,7 @@ GLRenderingVDAClient::GLRenderingVDAClient(
       next_bitstream_buffer_id_(0),
       note_(note),
       remaining_play_throughs_(num_play_throughs),
+      reset_point_(reset_point),
       reset_after_frame_num_(reset_after_frame_num),
       delete_decoder_state_(delete_decoder_state),
       state_(CS_CREATED),
@@ -414,6 +427,13 @@ GLRenderingVDAClient::GLRenderingVDAClient(
   if (decode_calls_per_second_ > 0)
     LOG_ASSERT(1 == num_in_flight_decodes_);
   weak_this_ = weak_this_factory_.GetWeakPtr();
+  if (reset_point_ == MID_STREAM_RESET) {
+    EXPECT_GE(reset_after_frame_num_, 0)
+        << "reset_ater_frame_num_ must be >=0 "
+        << "when reset_point == MID_STREAM_RESET";
+  } else {
+    EXPECT_EQ(reset_after_frame_num, kNoMidStreamReset);
+  }
 }
 
 GLRenderingVDAClient::~GLRenderingVDAClient() {
@@ -567,9 +587,8 @@ void GLRenderingVDAClient::PictureReady(const Picture& picture) {
 
   // Mid-stream reset applies only to the last play-through per constructor
   // comment.
-  if (remaining_play_throughs_ == 1 &&
+  if (remaining_play_throughs_ == 1 && reset_point_ == MID_STREAM_RESET &&
       reset_after_frame_num_ == num_decoded_frames_) {
-    reset_after_frame_num_ = MID_STREAM_RESET;
     decoder_->Reset();
     // Re-start decoding from the beginning of the stream to avoid needing to
     // know how to find I-frames and so on in this test.
@@ -646,7 +665,7 @@ void GLRenderingVDAClient::NotifyEndOfBitstreamBuffer(
     if (state_ != CS_FLUSHING) {
       decoder_->Flush();
       SetState(CS_FLUSHING);
-      if (reset_after_frame_num_ == RESET_BEFORE_NOTIFY_FLUSH_DONE) {
+      if (reset_point_ == RESET_BEFORE_NOTIFY_FLUSH_DONE) {
         SetState(CS_FLUSHED);
         ResetDecoderAfterFlush();
       }
@@ -660,7 +679,7 @@ void GLRenderingVDAClient::NotifyFlushDone() {
   if (decoder_deleted())
     return;
 
-  if (reset_after_frame_num_ == RESET_BEFORE_NOTIFY_FLUSH_DONE) {
+  if (reset_point_ == RESET_BEFORE_NOTIFY_FLUSH_DONE) {
     // In ResetBeforeNotifyFlushDone case client is not necessary to wait for
     // NotifyFlushDone(). But if client gets here, it should be always before
     // NotifyResetDone().
@@ -676,15 +695,23 @@ void GLRenderingVDAClient::NotifyResetDone() {
   if (decoder_deleted())
     return;
 
-  if (reset_after_frame_num_ == MID_STREAM_RESET) {
-    reset_after_frame_num_ = END_OF_STREAM_RESET;
-    DecodeNextFragment();
-    return;
-  } else if (reset_after_frame_num_ == START_OF_STREAM_RESET) {
-    reset_after_frame_num_ = END_OF_STREAM_RESET;
-    for (int i = 0; i < num_in_flight_decodes_; ++i)
+  switch (reset_point_) {
+    case DONE_RESET_AFTER_FIRST_CONFIG_INFO:
+    case MID_STREAM_RESET:
+      reset_point_ = END_OF_STREAM_RESET;
       DecodeNextFragment();
-    return;
+      return;
+    case START_OF_STREAM_RESET:
+      reset_point_ = END_OF_STREAM_RESET;
+      for (int i = 0; i < num_in_flight_decodes_; ++i)
+        DecodeNextFragment();
+      return;
+    case END_OF_STREAM_RESET:
+    case RESET_BEFORE_NOTIFY_FLUSH_DONE:
+      break;
+    case RESET_AFTER_FIRST_CONFIG_INFO:
+      NOTREACHED();
+      break;
   }
 
   if (remaining_play_throughs_) {
@@ -731,8 +758,7 @@ void GLRenderingVDAClient::FinishInitialization() {
   SetState(CS_INITIALIZED);
   initialize_done_ticks_ = base::TimeTicks::Now();
 
-  if (reset_after_frame_num_ == START_OF_STREAM_RESET) {
-    reset_after_frame_num_ = MID_STREAM_RESET;
+  if (reset_point_ == START_OF_STREAM_RESET) {
     decoder_->Reset();
     return;
   }
@@ -770,12 +796,14 @@ void GLRenderingVDAClient::DecodeNextFragment() {
   // This tests how the VDA behaves when it gets a reset request before it has
   // a chance to ProvidePictureBuffers().
   bool reset_here = false;
-  if (reset_after_frame_num_ == RESET_AFTER_FIRST_CONFIG_INFO) {
+  if (reset_point_ == RESET_AFTER_FIRST_CONFIG_INFO) {
     reset_here = media::test::EncodedDataHelper::HasConfigInfo(
         reinterpret_cast<const uint8_t*>(next_fragment_bytes.data()),
         next_fragment_size, profile_);
+    // Set to DONE_RESET_AFTER_FIRST_CONFIG_INFO, to only Reset() for the first
+    // time.
     if (reset_here)
-      reset_after_frame_num_ = END_OF_STREAM_RESET;
+      reset_point_ = DONE_RESET_AFTER_FIRST_CONFIG_INFO;
   }
 
   // Populate the shared memory buffer w/ the fragment, duplicate its handle,
@@ -801,7 +829,6 @@ void GLRenderingVDAClient::DecodeNextFragment() {
   }
 
   if (reset_here) {
-    reset_after_frame_num_ = MID_STREAM_RESET;
     decoder_->Reset();
     // Restart from the beginning to re-Decode() the SPS we just sent.
     encoded_data_helper_->Rewind();
@@ -972,7 +999,7 @@ void VideoDecodeAcceleratorTest::UpdateTestVideoFileParams(
 
       video_file->num_frames += video_file->reset_after_frame_num;
     } else {
-      video_file->reset_after_frame_num = reset_point;
+      video_file->reset_after_frame_num = kNoMidStreamReset;
     }
 
     if (video_file->min_fps_render != -1)
@@ -1074,7 +1101,7 @@ TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
   size_t num_concurrent_decoders = std::get<0>(GetParam());
   const size_t num_in_flight_decodes = std::get<1>(GetParam());
   int num_play_throughs = std::get<2>(GetParam());
-  const int reset_point = std::get<3>(GetParam());
+  const ResetPoint reset_point = std::get<3>(GetParam());
   const int delete_decoder_state = std::get<4>(GetParam());
   bool test_reuse_delay = std::get<5>(GetParam());
   const bool render_as_thumbnails = std::get<6>(GetParam());
@@ -1116,10 +1143,10 @@ TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
         std::make_unique<GLRenderingVDAClient>(
             index, &rendering_helper_, notes_[index].get(),
             video_file->data_str, num_in_flight_decodes, num_play_throughs,
-            video_file->reset_after_frame_num, delete_decoder_state,
-            video_file->width, video_file->height, video_file->profile,
-            g_fake_decoder, delay_after_frame_num, 0, render_as_thumbnails);
-
+            reset_point, video_file->reset_after_frame_num,
+            delete_decoder_state, video_file->width, video_file->height,
+            video_file->profile, g_fake_decoder, delay_after_frame_num, 0,
+            render_as_thumbnails);
     clients_[index] = std::move(client);
   }
 
@@ -1191,12 +1218,11 @@ TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
     if (video_file->num_frames > 0) {
       // Expect the decoded frames may be more than the video frames as frames
       // could still be returned until resetting done.
-      if (video_file->reset_after_frame_num > 0)
+      if (reset_point == MID_STREAM_RESET)
         EXPECT_GE(client->num_decoded_frames(), video_file->num_frames);
       // In ResetBeforeNotifyFlushDone case the decoded frames may be less than
       // the video frames because decoder is reset before flush done.
-      else if (video_file->reset_after_frame_num !=
-               RESET_BEFORE_NOTIFY_FLUSH_DONE)
+      else if (reset_point != RESET_BEFORE_NOTIFY_FLUSH_DONE)
         EXPECT_EQ(client->num_decoded_frames(), video_file->num_frames);
     }
     if (reset_point == END_OF_STREAM_RESET) {
@@ -1471,8 +1497,8 @@ TEST_F(VideoDecodeAcceleratorTest, TestDecodeTimeMedian) {
   notes_.push_back(std::make_unique<ClientStateNotification<ClientState>>());
   clients_.push_back(std::make_unique<GLRenderingVDAClient>(
       0, &rendering_helper_, notes_[0].get(), test_video_files_[0]->data_str, 1,
-      1, test_video_files_[0]->reset_after_frame_num, CS_RESET,
-      test_video_files_[0]->width, test_video_files_[0]->height,
+      1, END_OF_STREAM_RESET, test_video_files_[0]->reset_after_frame_num,
+      CS_RESET, test_video_files_[0]->width, test_video_files_[0]->height,
       test_video_files_[0]->profile, g_fake_decoder,
       std::numeric_limits<int>::max(), kWebRtcDecodeCallsPerSecond, false));
   RenderingHelperParams helper_params;
@@ -1499,8 +1525,8 @@ TEST_F(VideoDecodeAcceleratorTest, NoCrash) {
   notes_.push_back(std::make_unique<ClientStateNotification<ClientState>>());
   clients_.push_back(std::make_unique<GLRenderingVDAClient>(
       0, &rendering_helper_, notes_[0].get(), test_video_files_[0]->data_str, 1,
-      1, test_video_files_[0]->reset_after_frame_num, CS_RESET,
-      test_video_files_[0]->width, test_video_files_[0]->height,
+      1, END_OF_STREAM_RESET, test_video_files_[0]->reset_after_frame_num,
+      CS_RESET, test_video_files_[0]->width, test_video_files_[0]->height,
       test_video_files_[0]->profile, g_fake_decoder,
       std::numeric_limits<int>::max(), 0, false));
   RenderingHelperParams helper_params;
