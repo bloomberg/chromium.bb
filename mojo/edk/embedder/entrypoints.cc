@@ -266,10 +266,6 @@ MojoResult MojoNotifyBadMessageImpl(MojoMessageHandle message,
   return g_core->NotifyBadMessage(message, error, error_num_bytes);
 }
 
-MojoResult MojoGetPropertyImpl(MojoPropertyType type, void* value) {
-  return g_core->GetProperty(type, value);
-}
-
 }  // extern "C"
 
 MojoSystemThunks g_thunks = {sizeof(MojoSystemThunks),
@@ -308,8 +304,7 @@ MojoSystemThunks g_thunks = {sizeof(MojoSystemThunks),
                              MojoUnwrapPlatformHandleImpl,
                              MojoWrapPlatformSharedBufferHandleImpl,
                              MojoUnwrapPlatformSharedBufferHandleImpl,
-                             MojoNotifyBadMessageImpl,
-                             MojoGetPropertyImpl};
+                             MojoNotifyBadMessageImpl};
 
 }  // namespace
 

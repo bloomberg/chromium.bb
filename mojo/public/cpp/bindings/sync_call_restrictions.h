@@ -55,20 +55,29 @@ class ScopedAllowSyncCallForTesting;
 //
 // Before processing a sync call, the bindings call
 // SyncCallRestrictions::AssertSyncCallAllowed() to check whether sync calls are
-// allowed. By default, it is determined by the mojo system property
-// MOJO_PROPERTY_TYPE_SYNC_CALL_ALLOWED. If the default setting says no but you
-// have a very compelling reason to disregard that (which should be very very
-// rare), you can override it by constructing a ScopedAllowSyncCall object,
-// which allows making sync calls on the current sequence during its lifetime.
+// allowed. By default sync calls are allowed but they may be globally
+// disallowed within a process by calling DisallowSyncCall().
+//
+// If globally disallowed but you but you have a very compelling reason to
+// disregard that (which should be very very rare), you can override it by
+// constructing a ScopedAllowSyncCall object which allows making sync calls on
+// the current sequence during its lifetime.
 class MOJO_CPP_BINDINGS_EXPORT SyncCallRestrictions {
  public:
 #if ENABLE_SYNC_CALL_RESTRICTIONS
   // Checks whether the current sequence is allowed to make sync calls, and
   // causes a DCHECK if not.
   static void AssertSyncCallAllowed();
+
+  // Disables sync calls within the calling process. Any caller who wishes to
+  // make sync calls once this has been invoked must do so within the extent of
+  // a ScopedAllowSyncCall or ScopedAllowSyncCallForTesting.
+  static void DisallowSyncCall();
+
 #else
   // Inline the empty definitions of functions so that they can be compiled out.
   static void AssertSyncCallAllowed() {}
+  static void DisallowSyncCall() {}
 #endif
 
  private:

@@ -70,15 +70,6 @@ MOJO_SYSTEM_IMPL_EXPORT MojoResult
 PassWrappedPlatformHandle(MojoHandle platform_handle_wrapper_handle,
                           ScopedPlatformHandle* platform_handle);
 
-// Sets system properties that can be read by the MojoGetProperty() API. See the
-// documentation for MojoPropertyType for supported property types and their
-// corresponding value type.
-//
-// Default property values:
-//   |MOJO_PROPERTY_TYPE_SYNC_CALL_ALLOWED| - true
-MOJO_SYSTEM_IMPL_EXPORT MojoResult SetProperty(MojoPropertyType type,
-                                               const void* value);
-
 // Initialialization/shutdown for interprocess communication (IPC) -------------
 
 // Retrieves the TaskRunner used for IPC I/O, as set by ScopedIPCSupport.

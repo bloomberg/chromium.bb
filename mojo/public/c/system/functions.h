@@ -77,16 +77,6 @@ MOJO_SYSTEM_EXPORT MojoResult
 MojoQueryHandleSignalsState(MojoHandle handle,
                             struct MojoHandleSignalsState* signals_state);
 
-// Retrieves system properties. See the documentation for |MojoPropertyType| for
-// supported property types and their corresponding output value type.
-//
-// Returns:
-//     |MOJO_RESULT_OK| on success.
-//     |MOJO_RESULT_INVALID_ARGUMENT| if |type| is not recognized. In this case,
-//         |value| is untouched.
-MOJO_SYSTEM_EXPORT MojoResult MojoGetProperty(MojoPropertyType type,
-                                              void* value);
-
 #ifdef __cplusplus
 }  // extern "C"
 #endif

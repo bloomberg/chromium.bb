@@ -323,13 +323,3 @@ handles, as everything beyond this point - including the passing of other
 interface pipes - can be handled eloquently using
 [public bindings APIs](/mojo#High_Level-Bindings-APIs).
 
-## Setting System Properties
-
-The public Mojo C System API exposes a
-[**`MojoGetProperty`**](/mojo/public/c/system#MojoGetProperty) function for
-querying global, embedder-defined property values. These can be set by calling:
-
-```
-mojo::edk::SetProperty(MojoPropertyType type, const void* value)
-```
-

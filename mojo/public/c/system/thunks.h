@@ -146,7 +146,6 @@ struct MojoSystemThunks {
   MojoResult (*NotifyBadMessage)(MojoMessageHandle message,
                                  const char* error,
                                  size_t error_num_bytes);
-  MojoResult (*GetProperty)(MojoPropertyType type, void* value);
 };
 #pragma pack(pop)
 

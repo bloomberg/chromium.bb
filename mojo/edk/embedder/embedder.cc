@@ -64,10 +64,6 @@ MojoResult PassWrappedPlatformHandle(MojoHandle platform_handle_wrapper_handle,
                                                 platform_handle);
 }
 
-MojoResult SetProperty(MojoPropertyType type, const void* value) {
-  return Core::Get()->SetProperty(type, value);
-}
-
 scoped_refptr<base::TaskRunner> GetIOTaskRunner() {
   return Core::Get()->GetNodeController()->io_task_runner();
 }
