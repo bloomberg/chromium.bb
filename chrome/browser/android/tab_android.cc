@@ -120,10 +120,14 @@ GURL GetPublisherURLForTrustedCDN(
 
   const net::HttpResponseHeaders* headers =
       navigation_handle->GetResponseHeaders();
+  if (!headers) {
+    // TODO(https://crbug.com/829323): In some cases other than offline pages
+    // we don't have headers.
+    LOG(WARNING) << "No headers for navigation to "
+                 << navigation_handle->GetURL();
+    return GURL();
+  }
 
-  // All other cases where there are no headers should have already been
-  // handled, either by the IsTrustedCDN() check or at the call site.
-  DCHECK(headers);
   std::string publisher_url;
   if (!headers->GetNormalizedHeader("x-amp-cache", &publisher_url))
     return GURL();
