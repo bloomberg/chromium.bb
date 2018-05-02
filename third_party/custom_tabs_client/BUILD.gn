@@ -63,6 +63,9 @@ android_library("custom_tabs_support_java") {
     "src/customtabs/src/android/support/customtabs/browseractions/BrowserActionsIntent.java",
     "src/customtabs/src/android/support/customtabs/browseractions/BrowserServiceFileProvider.java",
     "src/customtabs/src/android/support/customtabs/browseractions/BrowserServiceImageReadTask.java",
+    "src/customtabs/src/android/support/customtabs/trusted/TrustedWebActivityService.java",
+    "src/customtabs/src/android/support/customtabs/trusted/TrustedWebActivityServiceWrapper.java",
+    "src/customtabs/src/android/support/customtabs/trusted/TrustedWebActivityServiceConnectionManager.java",
     "src/customtabs/src/android/support/customtabs/CustomTabsCallback.java",
     "src/customtabs/src/android/support/customtabs/CustomTabsClient.java",
     "src/customtabs/src/android/support/customtabs/CustomTabsIntent.java",
@@ -93,5 +96,6 @@ android_aidl("chrome_custom_tabs_service_aidl") {
     "$java_in_dir/ICustomTabsCallback.aidl",
     "$java_in_dir/ICustomTabsService.aidl",
     "$java_in_dir/IPostMessageService.aidl",
+    "$java_in_dir/trusted/ITrustedWebActivityService.aidl",
   ]
 }
