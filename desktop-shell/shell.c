@@ -4190,6 +4190,11 @@ center_on_output(struct weston_view *view, struct weston_output *output)
 	int32_t surf_x, surf_y, width, height;
 	float x, y;
 
+	if (!output) {
+		weston_view_set_position(view, 0, 0);
+		return;
+	}
+
 	surface_subsurfaces_boundingbox(view->surface, &surf_x, &surf_y, &width, &height);
 
 	x = output->x + (output->width - width) / 2 - surf_x / 2;
