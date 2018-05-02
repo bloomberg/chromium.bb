@@ -112,9 +112,7 @@ bool TestKeyboardDelegate::HandleInput(ui::Event* e) {
       ui_interface_->OnInputEdited(EditedText(info, input_info_));
       break;
   }
-  // We want to continue handling this keypress if the Ctrl key is down so
-  // that we can do things like duming the tree in editing mode.
-  return !event->IsControlDown();
+  return true;
 }
 
 }  // namespace vr
