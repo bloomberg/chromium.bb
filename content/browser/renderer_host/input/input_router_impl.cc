@@ -130,7 +130,8 @@ void InputRouterImpl::SendGestureEvent(
 
   GestureEventWithLatencyInfo gesture_event(original_gesture_event);
 
-  if (touch_action_filter_.FilterGestureEvent(&gesture_event.event)) {
+  if (touch_action_filter_.FilterGestureEvent(&gesture_event.event) ==
+      FilterGestureEventResult::kFilterGestureEventFiltered) {
     disposition_handler_->OnGestureEventAck(gesture_event,
                                             InputEventAckSource::BROWSER,
                                             INPUT_EVENT_ACK_STATE_CONSUMED);
