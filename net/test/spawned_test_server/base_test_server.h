@@ -58,6 +58,10 @@ class BaseTestServer {
       // CERT_AUTO causes the testserver to generate a test certificate issued
       // by "Testing CA" (see net/data/ssl/certificates/ocsp-test-root.pem).
       CERT_AUTO,
+      // As with CERT_AUTO, but the chain will include a generated intermediate
+      // as well. The testserver will include the intermediate cert in the TLS
+      // handshake.
+      CERT_AUTO_WITH_INTERMEDIATE,
       // Generate an intermediate cert issued by "Testing CA", and generate a
       // test certificate issued by that intermediate with an AIA record for
       // retrieving the intermediate.
@@ -100,6 +104,7 @@ class BaseTestServer {
       OCSP_DATE_OLD,
       OCSP_DATE_EARLY,
       OCSP_DATE_LONG,
+      OCSP_DATE_LONGER,
     };
 
     // OCSPSingleResponse is used when specifying multiple stapled responses,
@@ -192,26 +197,65 @@ class BaseTestServer {
     // to testserver or the empty string if there is none.
     std::string GetOCSPProducedArgument() const;
 
+    // GetOCSPIntermediateArgument returns the value of any OCSP intermediate
+    // argument to testserver or the empty string if there is none.
+    std::string GetOCSPIntermediateArgument() const;
+
+    // GetOCSPIntermediateDateArgument returns the value of the OCSP
+    // intermediate date argument to testserver or the empty string if there is
+    // none.
+    std::string GetOCSPIntermediateDateArgument() const;
+
+    // GetOCSPIntermediateProducedArgument returns the value of the OCSP
+    // intermediate produced argument to testserver or the empty string if
+    // there is none.
+    std::string GetOCSPIntermediateProducedArgument() const;
+
     // The certificate to use when serving requests.
     ServerCertificate server_certificate = CERT_OK;
 
-    // If |server_certificate==CERT_AUTO| then this determines the type of OCSP
-    // response returned. Ignored if |ocsp_responses| is non-empty.
+    // If |server_certificate==CERT_AUTO| or |CERT_AUTO_WITH_INTERMEDIATE| then
+    // this determines the type of leaf OCSP response returned. Ignored if
+    // |ocsp_responses| is non-empty.
     OCSPStatus ocsp_status = OCSP_OK;
 
-    // If |server_certificate==CERT_AUTO| then this determines the date range
-    // set on the OCSP response returned. Ignore if |ocsp_responses| is
-    // non-empty.
+    // If |server_certificate==CERT_AUTO| or |CERT_AUTO_WITH_INTERMEDIATE| then
+    // this determines the date range set on the leaf OCSP response returned.
+    // Ignore if |ocsp_responses| is non-empty.
     OCSPDate ocsp_date = OCSP_DATE_VALID;
 
-    // If |server_certificate==CERT_AUTO|, contains the status and validity for
-    // multiple stapled responeses. Overrides |ocsp_status| and |ocsp_date| when
+    // If |server_certificate==CERT_AUTO| or |CERT_AUTO_WITH_INTERMEDIATE|,
+    // contains the status and validity for multiple stapled responeses.
+    // Overrides |ocsp_status| and |ocsp_date| when
     // non-empty.
     std::vector<OCSPSingleResponse> ocsp_responses;
 
-    // If |server_certificate==CERT_AUTO| then this determines the validity of
-    // the producedAt field on the returned OCSP response.
+    // If |server_certificate==CERT_AUTO| or |CERT_AUTO_WITH_INTERMEDIATE| then
+    // this determines the validity of the producedAt field on the returned
+    // leaf OCSP response.
     OCSPProduced ocsp_produced = OCSP_PRODUCED_VALID;
+
+    // If |server_certificate==CERT_AUTO_WITH_INTERMEDIATE| then this
+    // determines the type of intermediate OCSP response returned. Ignored if
+    // |ocsp_intermediate_responses| is non-empty.
+    OCSPStatus ocsp_intermediate_status = OCSP_OK;
+
+    // If |server_certificate==CERT_AUTO_WITH_INTERMEDIATE| then this
+    // determines the date range set on the intermediate OCSP response
+    // returned. Ignore if |ocsp_intermediate_responses| is non-empty.
+    OCSPDate ocsp_intermediate_date = OCSP_DATE_VALID;
+
+    // If |server_certificate==CERT_AUTO_WITH_INTERMEDIATE|, contains the
+    // status and validity for multiple stapled responeses. Overrides
+    // |ocsp_intermediate_status| and |ocsp_intermediate_date| when non-empty.
+    // TODO(mattm): testserver doesn't actually staple OCSP responses for
+    // intermediates.
+    std::vector<OCSPSingleResponse> ocsp_intermediate_responses;
+
+    // If |server_certificate==CERT_AUTO_WITH_INTERMEDIATE| then this
+    // determines the validity of the producedAt field on the returned
+    // intermediate OCSP response.
+    OCSPProduced ocsp_intermediate_produced = OCSP_PRODUCED_VALID;
 
     // If not zero, |cert_serial| will be the serial number of the
     // auto-generated leaf certificate when |server_certificate==CERT_AUTO|.

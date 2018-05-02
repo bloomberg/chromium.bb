@@ -151,7 +151,8 @@ TEST_P(CheckOCSPTest, FromFile) {
   // Test that CheckOCSP() works.
   OCSPVerifyResult::ResponseStatus response_status;
   OCSPRevocationStatus revocation_status =
-      CheckOCSP(ocsp_data, cert_data, ca_data, kVerifyTime, &response_status);
+      CheckOCSP(ocsp_data, cert_data, ca_data, kVerifyTime, kOCSPAgeOneWeek,
+                &response_status);
 
   EXPECT_EQ(params.expected_revocation_status, revocation_status);
   EXPECT_EQ(params.expected_response_status, response_status);

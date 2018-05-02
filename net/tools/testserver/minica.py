@@ -24,6 +24,7 @@ OCSP_DATE_VALID = 1
 OCSP_DATE_OLD = 2
 OCSP_DATE_EARLY = 3
 OCSP_DATE_LONG = 4
+OCSP_DATE_LONGER = 5
 
 OCSP_PRODUCED_VALID = 1
 OCSP_PRODUCED_BEFORE_CERT = 2
@@ -327,6 +328,9 @@ def MakeOCSPSingleResponse(
   elif ocsp_date == OCSP_DATE_LONG:
     thisUpdate = now - datetime.timedelta(days=365)
     nextUpdate = thisUpdate + datetime.timedelta(days=366)
+  elif ocsp_date == OCSP_DATE_LONGER:
+    thisUpdate = now - datetime.timedelta(days=367)
+    nextUpdate = thisUpdate + datetime.timedelta(days=368)
   else:
     raise ValueError('Bad OCSP date: ' + str(ocsp_date))
 
@@ -352,6 +356,34 @@ def MakeOCSPSingleResponse(
 
 def MakeOCSPResponse(
     issuer_cn, issuer_key, serial, ocsp_states, ocsp_dates, ocsp_produced):
+  if ocsp_states[0] == OCSP_STATE_UNAUTHORIZED:
+    return unauthorizedDER
+  elif ocsp_states[0] == OCSP_STATE_INVALID_RESPONSE:
+    return '3'
+  elif ocsp_states[0] == OCSP_STATE_TRY_LATER:
+    resp = asn1.SEQUENCE([
+      asn1.ENUMERATED(3),
+    ])
+    return asn1.ToDER(resp)
+  elif ocsp_states[0] == OCSP_STATE_INVALID_RESPONSE_DATA:
+    invalid_data = asn1.ToDER(asn1.OCTETSTRING('not ocsp data'))
+    basic_resp = asn1.SEQUENCE([
+      asn1.Raw(invalid_data),
+      asn1.SEQUENCE([
+        SHA256_WITH_RSA_ENCRYPTION,
+        None,
+      ]),
+      asn1.BitString(ROOT_KEY.Sign(invalid_data)),
+    ])
+    resp = asn1.SEQUENCE([
+      asn1.ENUMERATED(0),
+      asn1.Explicit(0, asn1.SEQUENCE([
+        OCSP_TYPE_BASIC,
+        asn1.OCTETSTRING(asn1.ToDER(basic_resp)),
+      ])),
+    ])
+    return asn1.ToDER(resp)
+
   # https://tools.ietf.org/html/rfc2560
   issuer_name_hash = asn1.OCTETSTRING(
       hashlib.sha1(asn1.ToDER(Name(cn = issuer_cn))).digest())
@@ -418,61 +450,70 @@ def GenerateCertKeyAndOCSP(subject = "127.0.0.1",
                            ocsp_states = None,
                            ocsp_dates = None,
                            ocsp_produced = OCSP_PRODUCED_VALID,
+                           ocsp_intermediate_url = None,
+                           ocsp_intermediate_states = None,
+                           ocsp_intermediate_dates = None,
+                           ocsp_intermediate_produced = OCSP_PRODUCED_VALID,
                            ip_sans = ["\x7F\x00\x00\x01"],
                            dns_sans = None,
                            serial = 0):
-  '''GenerateCertKeyAndOCSP returns a (cert_and_key_pem, ocsp_der) where:
+  '''GenerateCertKeyAndOCSP returns a (cert_and_key_pem,
+                                       (ocsp_der, ocsp_intermediate_der)) where:
        * cert_and_key_pem contains a certificate and private key in PEM format
          with the given subject common name and OCSP URL.
+         It also contains the intermediate certificate PEM if
+         ocsp_intermediate_url is not None.
        * ocsp_der contains a DER encoded OCSP response or None if ocsp_url is
-         None'''
+         None
+       * ocsp_intermediate_der contains a DER encoded OCSP response for the
+         intermediate or None if ocsp_intermediate_url is None'''
 
   if ocsp_states is None:
     ocsp_states = [OCSP_STATE_GOOD]
   if ocsp_dates is None:
     ocsp_dates = [OCSP_DATE_VALID]
 
+  issuer_cn = ROOT_CN
+  issuer_key = ROOT_KEY
+  intermediate_pem = ''
+  intermediate_ocsp_der = None
+
+  if ocsp_intermediate_url is not None:
+    ocsp_intermediate_url = bytes(ocsp_intermediate_url)
+    if ocsp_intermediate_states is None:
+      ocsp_intermediate_states = [OCSP_STATE_GOOD]
+    if ocsp_intermediate_dates is None:
+      ocsp_intermediate_dates = [OCSP_DATE_VALID]
+    intermediate_serial = RandomNumber(16)
+    intermediate_cn = "%s %X" % (INTERMEDIATE_CN_PREFIX, intermediate_serial)
+    intermediate_cert_der = MakeCertificate(ROOT_CN, intermediate_cn,
+                                            intermediate_serial,
+                                            INTERMEDIATE_KEY, ROOT_KEY,
+                                            ocsp_intermediate_url,
+                                            is_ca=True)
+    intermediate_pem = DERToPEM(intermediate_cert_der)
+    issuer_cn = intermediate_cn
+    issuer_key = INTERMEDIATE_KEY
+    intermediate_ocsp_der = MakeOCSPResponse(
+        ROOT_CN, ROOT_KEY, intermediate_serial, ocsp_intermediate_states,
+        ocsp_intermediate_dates, ocsp_intermediate_produced)
+
   if serial == 0:
     serial = RandomNumber(16)
-  cert_der = MakeCertificate(ROOT_CN, bytes(subject), serial, LEAF_KEY,
-                             ROOT_KEY, bytes(ocsp_url), ip_sans=ip_sans,
+  if ocsp_url is not None:
+    ocsp_url = bytes(ocsp_url)
+  cert_der = MakeCertificate(issuer_cn, bytes(subject), serial, LEAF_KEY,
+                             issuer_key, ocsp_url, ip_sans=ip_sans,
                              dns_sans=dns_sans)
   cert_pem = DERToPEM(cert_der)
 
   ocsp_der = None
   if ocsp_url is not None:
-    if ocsp_states[0] == OCSP_STATE_UNAUTHORIZED:
-      ocsp_der = unauthorizedDER
-    elif ocsp_states[0] == OCSP_STATE_INVALID_RESPONSE:
-      ocsp_der = '3'
-    elif ocsp_states[0] == OCSP_STATE_TRY_LATER:
-      resp = asn1.SEQUENCE([
-        asn1.ENUMERATED(3),
-      ])
-      ocsp_der = asn1.ToDER(resp)
-    elif ocsp_states[0] == OCSP_STATE_INVALID_RESPONSE_DATA:
-      invalid_data = asn1.ToDER(asn1.OCTETSTRING('not ocsp data'))
-      basic_resp = asn1.SEQUENCE([
-        asn1.Raw(invalid_data),
-        asn1.SEQUENCE([
-          SHA256_WITH_RSA_ENCRYPTION,
-          None,
-        ]),
-        asn1.BitString(ROOT_KEY.Sign(invalid_data)),
-      ])
-      resp = asn1.SEQUENCE([
-        asn1.ENUMERATED(0),
-        asn1.Explicit(0, asn1.SEQUENCE([
-          OCSP_TYPE_BASIC,
-          asn1.OCTETSTRING(asn1.ToDER(basic_resp)),
-        ])),
-      ])
-      ocsp_der = asn1.ToDER(resp)
-    else:
-      ocsp_der = MakeOCSPResponse(
-          ROOT_CN, ROOT_KEY, serial, ocsp_states, ocsp_dates, ocsp_produced)
+    ocsp_der = MakeOCSPResponse(
+        issuer_cn, issuer_key, serial, ocsp_states, ocsp_dates, ocsp_produced)
 
-  return (cert_pem + LEAF_KEY_PEM, ocsp_der)
+  return cert_pem + LEAF_KEY_PEM + intermediate_pem, (ocsp_der,
+                                                      intermediate_ocsp_der)
 
 
 def GenerateCertKeyAndIntermediate(subject,

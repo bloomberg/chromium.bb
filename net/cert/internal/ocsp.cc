@@ -678,11 +678,8 @@ OCSPRevocationStatus GetRevocationStatusForCert(
     const ParsedCertificate* cert,
     const ParsedCertificate* issuer_certificate,
     const base::Time& verify_time,
+    const base::TimeDelta& max_age,
     OCSPVerifyResult::ResponseStatus* response_details) {
-  // The maximum age for an OCSP response, implemented as time since the
-  // |this_update| field in OCSPSingleResponse. Responses older than |max_age|
-  // will be considered invalid.
-  base::TimeDelta max_age = base::TimeDelta::FromDays(7);
   OCSPRevocationStatus result = OCSPRevocationStatus::UNKNOWN;
   *response_details = OCSPVerifyResult::NO_MATCHING_RESPONSE;
 
@@ -734,6 +731,7 @@ OCSPRevocationStatus CheckOCSP(
     base::StringPiece certificate_der,
     base::StringPiece issuer_certificate_der,
     const base::Time& verify_time,
+    const base::TimeDelta& max_age,
     OCSPVerifyResult::ResponseStatus* response_details) {
   *response_details = OCSPVerifyResult::NOT_CHECKED;
 
@@ -801,7 +799,7 @@ OCSPRevocationStatus CheckOCSP(
   // and time).
   OCSPRevocationStatus status = GetRevocationStatusForCert(
       response_data, certificate.get(), issuer_certificate.get(), verify_time,
-      response_details);
+      max_age, response_details);
 
   // TODO(eroman): Process the OCSP extensions. In particular, must reject if
   // there are any critical extensions that are not understood.

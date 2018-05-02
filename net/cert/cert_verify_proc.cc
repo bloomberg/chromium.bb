@@ -249,7 +249,7 @@ void BestEffortCheckOCSP(const std::string& raw_response,
 
   verify_result->revocation_status =
       CheckOCSP(raw_response, cert_der, issuer_der, base::Time::Now(),
-                &verify_result->response_status);
+                kMaxOCSPLeafUpdateAge, &verify_result->response_status);
 }
 
 // Records histograms indicating whether the certificate |cert|, which

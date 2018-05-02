@@ -34,6 +34,7 @@ bool CheckCertRevocation(const ParsedCertificate* cert,
                          const ParsedCertificate* issuer_cert,
                          const RevocationPolicy& policy,
                          base::StringPiece stapled_ocsp_response,
+                         base::TimeDelta max_age,
                          CertNetFetcher* net_fetcher,
                          CertErrors* cert_errors) {
   // Check using stapled OCSP, if available.
@@ -44,7 +45,7 @@ bool CheckCertRevocation(const ParsedCertificate* cert,
     OCSPRevocationStatus ocsp_status =
         CheckOCSP(stapled_ocsp_response, cert->der_cert().AsStringPiece(),
                   issuer_cert->der_cert().AsStringPiece(), base::Time::Now(),
-                  &response_details);
+                  max_age, &response_details);
 
     // TODO(eroman): Save the stapled OCSP response to cache.
     switch (ocsp_status) {
@@ -129,7 +130,7 @@ bool CheckCertRevocation(const ParsedCertificate* cert,
               reinterpret_cast<const char*>(ocsp_response_bytes.data()),
               ocsp_response_bytes.size()),
           cert->der_cert().AsStringPiece(),
-          issuer_cert->der_cert().AsStringPiece(), base::Time::Now(),
+          issuer_cert->der_cert().AsStringPiece(), base::Time::Now(), max_age,
           &response_details);
 
       switch (ocsp_status) {
@@ -204,10 +205,13 @@ void CheckCertChainRevocation(const ParsedCertificateList& certs,
     base::StringPiece stapled_ocsp =
         (i == 0) ? stapled_leaf_ocsp_response : base::StringPiece();
 
+    base::TimeDelta max_age =
+        (i == 0) ? kMaxOCSPLeafUpdateAge : kMaxOCSPIntermediateUpdateAge;
+
     // Check whether this certificate's revocation status complies with the
     // policy.
     bool cert_ok =
-        CheckCertRevocation(cert, issuer_cert, policy, stapled_ocsp,
+        CheckCertRevocation(cert, issuer_cert, policy, stapled_ocsp, max_age,
                             net_fetcher, errors->GetErrorsForCert(i));
 
     if (!cert_ok) {
