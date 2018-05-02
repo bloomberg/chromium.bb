@@ -2176,6 +2176,13 @@ shell_configure_fullscreen(struct shell_surface *shsurf)
 	weston_layer_entry_insert(&shsurf->shell->fullscreen_layer.view_list,
 				  &shsurf->view->layer_link);
 
+	if (!shsurf->fullscreen_output) {
+		/* If there is no output, there's not much we can do.
+		 * Position the window somewhere, whatever. */
+		weston_view_set_position(shsurf->view, 0, 0);
+		return;
+	}
+
 	shell_ensure_fullscreen_black_view(shsurf);
 
 	surface_subsurfaces_boundingbox(surface, &surf_x, &surf_y,
