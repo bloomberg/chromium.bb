@@ -264,10 +264,10 @@ class _BuildHelper(object):
     self.use_goma = self.use_goma or has_goma_dir
     self.max_load_average = (self.max_load_average or
                              str(multiprocessing.cpu_count()))
-    if not self.max_jobs:
-      self.max_jobs = '10000' if self.use_goma else '500'
 
-    if os.path.exists(os.path.join(os.path.dirname(_SRC_ROOT), 'src-internal')):
+    has_internal = os.path.exists(
+        os.path.join(os.path.dirname(_SRC_ROOT), 'src-internal'))
+    if has_internal:
       self.extra_gn_args_str = (
           'is_chrome_branded=true ' + self.extra_gn_args_str)
     else:
@@ -278,6 +278,14 @@ class _BuildHelper(object):
       self.extra_gn_args_str = (
           'is_cfi=false generate_linker_map=true ' + self.extra_gn_args_str)
     self.extra_gn_args_str = ' ' + self.extra_gn_args_str.strip()
+
+    if not self.max_jobs:
+      if self.use_goma:
+        self.max_jobs = '10000'
+      elif has_internal:
+        self.max_jobs = '500'
+      else:
+        self.max_jobs = '50'
 
     if not self.target:
       if self.IsLinux():
