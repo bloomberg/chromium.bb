@@ -398,8 +398,8 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate {
     }
 
     @Override
-    public void setImportance(@ChildProcessImportance int importance) {
-        nativeSetImportance(mNativeWebContentsAndroid, importance);
+    public void setImportance(@ChildProcessImportance int mainFrameImportance) {
+        nativeSetImportance(mNativeWebContentsAndroid, mainFrameImportance);
     }
 
     @Override

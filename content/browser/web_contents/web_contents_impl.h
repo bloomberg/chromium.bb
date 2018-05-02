@@ -294,8 +294,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool HasRecentInteractiveInputEvent() const;
 
 #if defined(OS_ANDROID)
-  std::set<RenderWidgetHostImpl*> GetAllRenderWidgetHosts();
-  void SetImportance(ChildProcessImportance importance);
+  void SetMainFrameImportance(ChildProcessImportance importance);
 #endif
 
   // WebContents ------------------------------------------------------
