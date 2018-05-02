@@ -26,9 +26,7 @@
 #include "cc/trees/layer_tree_host.h"
 #include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
-#include "third_party/blink/public/platform/web_layer_position_constraint.h"
 #include "third_party/blink/public/platform/web_layer_scroll_client.h"
-#include "third_party/blink/public/platform/web_layer_sticky_position_constraint.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
 #include "ui/gfx/geometry/rect.h"
@@ -37,9 +35,6 @@
 
 using cc::Layer;
 using blink::WebLayer;
-using blink::WebFloatPoint;
-using blink::WebVector;
-using blink::WebSize;
 
 namespace cc_blink {
 
@@ -88,11 +83,11 @@ void WebLayerImpl::RemoveAllChildren() {
   layer_->RemoveAllChildren();
 }
 
-void WebLayerImpl::SetBounds(const WebSize& size) {
+void WebLayerImpl::SetBounds(const gfx::Size& size) {
   layer_->SetBounds(size);
 }
 
-WebSize WebLayerImpl::Bounds() const {
+const gfx::Size& WebLayerImpl::Bounds() const {
   return layer_->bounds();
 }
 
@@ -147,11 +142,11 @@ bool WebLayerImpl::Opaque() const {
   return layer_->contents_opaque();
 }
 
-void WebLayerImpl::SetPosition(const WebFloatPoint& position) {
+void WebLayerImpl::SetPosition(const gfx::PointF& position) {
   layer_->SetPosition(position);
 }
 
-WebFloatPoint WebLayerImpl::GetPosition() const {
+const gfx::PointF& WebLayerImpl::GetPosition() const {
   return layer_->position();
 }
 
@@ -159,12 +154,11 @@ void WebLayerImpl::SetTransform(const gfx::Transform& transform) {
   layer_->SetTransform(transform);
 }
 
-void WebLayerImpl::SetTransformOrigin(const blink::WebFloatPoint3D& point) {
-  gfx::Point3F gfx_point = point;
-  layer_->SetTransformOrigin(gfx_point);
+void WebLayerImpl::SetTransformOrigin(const gfx::Point3F& point) {
+  layer_->SetTransformOrigin(point);
 }
 
-blink::WebFloatPoint3D WebLayerImpl::TransformOrigin() const {
+const gfx::Point3F& WebLayerImpl::TransformOrigin() const {
   return layer_->transform_origin();
 }
 
@@ -209,7 +203,7 @@ void WebLayerImpl::SetFilters(const cc::FilterOperations& filters) {
   layer_->SetFilters(filters);
 }
 
-void WebLayerImpl::SetFiltersOrigin(const blink::WebFloatPoint& origin) {
+void WebLayerImpl::SetFiltersOrigin(const gfx::PointF& origin) {
   layer_->SetFiltersOrigin(origin);
 }
 
@@ -221,24 +215,23 @@ bool WebLayerImpl::HasTickingAnimationForTesting() {
   return layer_->HasTickingAnimationForTesting();
 }
 
-void WebLayerImpl::SetScrollable(const blink::WebSize& size) {
+void WebLayerImpl::SetScrollable(const gfx::Size& size) {
   layer_->SetScrollable(size);
 }
 
-void WebLayerImpl::SetScrollPosition(blink::WebFloatPoint position) {
-  layer_->SetScrollOffset(gfx::ScrollOffset(position.x, position.y));
+void WebLayerImpl::SetScrollPosition(const gfx::ScrollOffset& position) {
+  layer_->SetScrollOffset(position);
 }
 
-blink::WebFloatPoint WebLayerImpl::ScrollPosition() const {
-  return blink::WebFloatPoint(layer_->scroll_offset().x(),
-                              layer_->scroll_offset().y());
+const gfx::ScrollOffset& WebLayerImpl::ScrollPosition() const {
+  return layer_->scroll_offset();
 }
 
 bool WebLayerImpl::Scrollable() const {
   return layer_->scrollable();
 }
 
-blink::WebSize WebLayerImpl::ScrollContainerBoundsForTesting() const {
+const gfx::Size& WebLayerImpl::ScrollContainerBoundsForTesting() const {
   return layer_->scroll_container_bounds();
 }
 
@@ -312,87 +305,23 @@ void WebLayerImpl::SetIsResizedByBrowserControls(bool enable) {
   layer_->SetIsResizedByBrowserControls(enable);
 }
 
-static blink::WebLayerPositionConstraint ToWebLayerPositionConstraint(
-    const cc::LayerPositionConstraint& constraint) {
-  blink::WebLayerPositionConstraint web_constraint;
-  web_constraint.is_fixed_position = constraint.is_fixed_position();
-  web_constraint.is_fixed_to_right_edge = constraint.is_fixed_to_right_edge();
-  web_constraint.is_fixed_to_bottom_edge = constraint.is_fixed_to_bottom_edge();
-  return web_constraint;
-}
-
-static cc::LayerPositionConstraint ToLayerPositionConstraint(
-    const blink::WebLayerPositionConstraint& web_constraint) {
-  cc::LayerPositionConstraint constraint;
-  constraint.set_is_fixed_position(web_constraint.is_fixed_position);
-  constraint.set_is_fixed_to_right_edge(web_constraint.is_fixed_to_right_edge);
-  constraint.set_is_fixed_to_bottom_edge(
-      web_constraint.is_fixed_to_bottom_edge);
-  return constraint;
-}
-
 void WebLayerImpl::SetPositionConstraint(
-    const blink::WebLayerPositionConstraint& constraint) {
-  layer_->SetPositionConstraint(ToLayerPositionConstraint(constraint));
+    const cc::LayerPositionConstraint& constraint) {
+  layer_->SetPositionConstraint(constraint);
 }
 
-blink::WebLayerPositionConstraint WebLayerImpl::PositionConstraint() const {
-  return ToWebLayerPositionConstraint(layer_->position_constraint());
+const cc::LayerPositionConstraint& WebLayerImpl::PositionConstraint() const {
+  return layer_->position_constraint();
 }
 
-static blink::WebLayerStickyPositionConstraint
-ToWebLayerStickyPositionConstraint(
-    const cc::LayerStickyPositionConstraint& constraint) {
-  blink::WebLayerStickyPositionConstraint web_constraint;
-  web_constraint.is_sticky = constraint.is_sticky;
-  web_constraint.is_anchored_left = constraint.is_anchored_left;
-  web_constraint.is_anchored_right = constraint.is_anchored_right;
-  web_constraint.is_anchored_top = constraint.is_anchored_top;
-  web_constraint.is_anchored_bottom = constraint.is_anchored_bottom;
-  web_constraint.left_offset = constraint.left_offset;
-  web_constraint.right_offset = constraint.right_offset;
-  web_constraint.top_offset = constraint.top_offset;
-  web_constraint.bottom_offset = constraint.bottom_offset;
-  web_constraint.scroll_container_relative_sticky_box_rect =
-      constraint.scroll_container_relative_sticky_box_rect;
-  web_constraint.scroll_container_relative_containing_block_rect =
-      constraint.scroll_container_relative_containing_block_rect;
-  web_constraint.nearest_element_shifting_sticky_box =
-      constraint.nearest_element_shifting_sticky_box;
-  web_constraint.nearest_element_shifting_containing_block =
-      constraint.nearest_element_shifting_containing_block;
-  return web_constraint;
-}
-static cc::LayerStickyPositionConstraint ToStickyPositionConstraint(
-    const blink::WebLayerStickyPositionConstraint& web_constraint) {
-  cc::LayerStickyPositionConstraint constraint;
-  constraint.is_sticky = web_constraint.is_sticky;
-  constraint.is_anchored_left = web_constraint.is_anchored_left;
-  constraint.is_anchored_right = web_constraint.is_anchored_right;
-  constraint.is_anchored_top = web_constraint.is_anchored_top;
-  constraint.is_anchored_bottom = web_constraint.is_anchored_bottom;
-  constraint.left_offset = web_constraint.left_offset;
-  constraint.right_offset = web_constraint.right_offset;
-  constraint.top_offset = web_constraint.top_offset;
-  constraint.bottom_offset = web_constraint.bottom_offset;
-  constraint.scroll_container_relative_sticky_box_rect =
-      web_constraint.scroll_container_relative_sticky_box_rect;
-  constraint.scroll_container_relative_containing_block_rect =
-      web_constraint.scroll_container_relative_containing_block_rect;
-  constraint.nearest_element_shifting_sticky_box =
-      web_constraint.nearest_element_shifting_sticky_box;
-  constraint.nearest_element_shifting_containing_block =
-      web_constraint.nearest_element_shifting_containing_block;
-  return constraint;
-}
 void WebLayerImpl::SetStickyPositionConstraint(
-    const blink::WebLayerStickyPositionConstraint& constraint) {
-  layer_->SetStickyPositionConstraint(ToStickyPositionConstraint(constraint));
+    const cc::LayerStickyPositionConstraint& constraint) {
+  layer_->SetStickyPositionConstraint(constraint);
 }
-blink::WebLayerStickyPositionConstraint WebLayerImpl::StickyPositionConstraint()
-    const {
-  return ToWebLayerStickyPositionConstraint(
-      layer_->sticky_position_constraint());
+
+const cc::LayerStickyPositionConstraint&
+WebLayerImpl::StickyPositionConstraint() const {
+  return layer_->sticky_position_constraint();
 }
 
 void WebLayerImpl::SetScrollClient(blink::WebLayerScrollClient* scroll_client) {

@@ -26,7 +26,7 @@ TEST(WebLayerImplFixedBoundsTest, IdentityBounds) {
   WebLayerImplFixedBounds layer;
   layer.SetFixedBounds(gfx::Size(100, 100));
   layer.SetBounds(WebSize(100, 100));
-  EXPECT_EQ(WebSize(100, 100), layer.Bounds());
+  EXPECT_EQ(gfx::Size(100, 100), layer.Bounds());
   EXPECT_EQ(gfx::Size(100, 100), layer.layer()->bounds());
   EXPECT_EQ(gfx::Transform(), layer.layer()->transform());
 }
@@ -39,7 +39,7 @@ gfx::Point3F TransformPoint(const gfx::Transform& transform,
 }
 
 void CheckBoundsScaleSimple(WebLayerImplFixedBounds* layer,
-                            const WebSize& bounds,
+                            const gfx::Size& bounds,
                             const gfx::Size& fixed_bounds) {
   layer->SetBounds(bounds);
   layer->SetFixedBounds(fixed_bounds);
@@ -51,8 +51,8 @@ void CheckBoundsScaleSimple(WebLayerImplFixedBounds* layer,
   // An arbitrary point to check the scale and transforms.
   gfx::Point3F original_point(10, 20, 1);
   gfx::Point3F scaled_point(
-      original_point.x() * bounds.width / fixed_bounds.width(),
-      original_point.y() * bounds.height / fixed_bounds.height(),
+      original_point.x() * bounds.width() / fixed_bounds.width(),
+      original_point.y() * bounds.height() / fixed_bounds.height(),
       original_point.z());
   // Test if the bounds scale is correctly applied in transform.
   EXPECT_POINT3F_EQ(scaled_point, TransformPoint(layer->layer()->transform(),
@@ -61,11 +61,11 @@ void CheckBoundsScaleSimple(WebLayerImplFixedBounds* layer,
 
 TEST(WebLayerImplFixedBoundsTest, BoundsScaleSimple) {
   WebLayerImplFixedBounds layer;
-  CheckBoundsScaleSimple(&layer, WebSize(100, 200), gfx::Size(150, 250));
+  CheckBoundsScaleSimple(&layer, gfx::Size(100, 200), gfx::Size(150, 250));
   // Change fixed_bounds.
-  CheckBoundsScaleSimple(&layer, WebSize(100, 200), gfx::Size(75, 100));
+  CheckBoundsScaleSimple(&layer, gfx::Size(100, 200), gfx::Size(75, 100));
   // Change bounds.
-  CheckBoundsScaleSimple(&layer, WebSize(300, 100), gfx::Size(75, 100));
+  CheckBoundsScaleSimple(&layer, gfx::Size(300, 100), gfx::Size(75, 100));
 }
 
 void ExpectEqualLayerRectsInTarget(cc::Layer* layer1, cc::Layer* layer2) {

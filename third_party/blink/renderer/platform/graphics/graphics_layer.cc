@@ -461,7 +461,7 @@ void GraphicsLayer::UpdateContentsRect() {
   contents_layer->SetPosition(
       FloatPoint(contents_rect_.X(), contents_rect_.Y()));
   contents_layer->SetBounds(
-      IntSize(contents_rect_.Width(), contents_rect_.Height()));
+      gfx::Size(contents_rect_.Width(), contents_rect_.Height()));
 
   if (contents_clipping_mask_layer_) {
     if (contents_clipping_mask_layer_->Size() != contents_rect_.Size()) {
@@ -1007,7 +1007,7 @@ void GraphicsLayer::SetSize(const FloatSize& size) {
   // Invalidate the layer as a DisplayItemClient.
   SetDisplayItemsUncached();
 
-  layer_->Layer()->SetBounds(FlooredIntSize(size_));
+  layer_->Layer()->SetBounds(static_cast<gfx::Size>(FlooredIntSize(size_)));
   // Note that we don't resize m_contentsLayer. It's up the caller to do that.
 }
 
@@ -1274,7 +1274,7 @@ void GraphicsLayer::SetBackdropFilters(CompositorFilterOperations filters) {
 }
 
 void GraphicsLayer::SetStickyPositionConstraint(
-    const WebLayerStickyPositionConstraint& sticky_constraint) {
+    const cc::LayerStickyPositionConstraint& sticky_constraint) {
   layer_->Layer()->SetStickyPositionConstraint(sticky_constraint);
 }
 

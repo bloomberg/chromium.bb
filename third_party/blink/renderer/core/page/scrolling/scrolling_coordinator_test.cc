@@ -25,11 +25,11 @@
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
 
 #include "build/build_config.h"
+#include "cc/layers/layer_sticky_position_constraint.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_cache.h"
 #include "third_party/blink/public/platform/web_layer.h"
-#include "third_party/blink/public/platform/web_layer_position_constraint.h"
 #include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
@@ -223,8 +223,8 @@ TEST_P(ScrollingCoordinatorTest, fastFractionalScrollingDiv) {
   WebLayer* web_scroll_layer =
       composited_layer_mapping->ScrollingContentsLayer()->PlatformLayer();
   ASSERT_TRUE(web_scroll_layer);
-  ASSERT_NEAR(1.2f, web_scroll_layer->ScrollPosition().x, 0.01f);
-  ASSERT_NEAR(1.2f, web_scroll_layer->ScrollPosition().y, 0.01f);
+  ASSERT_NEAR(1.2f, web_scroll_layer->ScrollPosition().x(), 0.01f);
+  ASSERT_NEAR(1.2f, web_scroll_layer->ScrollPosition().y(), 0.01f);
 }
 
 static WebLayer* WebLayerFromElement(Element* element) {
@@ -262,80 +262,80 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingForFixedPosition) {
     ASSERT_TRUE(element);
     WebLayer* layer = WebLayerFromElement(element);
     ASSERT_TRUE(layer);
-    WebLayerPositionConstraint constraint = layer->PositionConstraint();
-    ASSERT_TRUE(constraint.is_fixed_position);
-    ASSERT_TRUE(!constraint.is_fixed_to_right_edge &&
-                !constraint.is_fixed_to_bottom_edge);
+    cc::LayerPositionConstraint constraint = layer->PositionConstraint();
+    ASSERT_TRUE(constraint.is_fixed_position());
+    ASSERT_TRUE(!constraint.is_fixed_to_right_edge() &&
+                !constraint.is_fixed_to_bottom_edge());
   }
   {
     Element* element = document->getElementById("div-tr");
     ASSERT_TRUE(element);
     WebLayer* layer = WebLayerFromElement(element);
     ASSERT_TRUE(layer);
-    WebLayerPositionConstraint constraint = layer->PositionConstraint();
-    ASSERT_TRUE(constraint.is_fixed_position);
-    ASSERT_TRUE(constraint.is_fixed_to_right_edge &&
-                !constraint.is_fixed_to_bottom_edge);
+    cc::LayerPositionConstraint constraint = layer->PositionConstraint();
+    ASSERT_TRUE(constraint.is_fixed_position());
+    ASSERT_TRUE(constraint.is_fixed_to_right_edge() &&
+                !constraint.is_fixed_to_bottom_edge());
   }
   {
     Element* element = document->getElementById("div-bl");
     ASSERT_TRUE(element);
     WebLayer* layer = WebLayerFromElement(element);
     ASSERT_TRUE(layer);
-    WebLayerPositionConstraint constraint = layer->PositionConstraint();
-    ASSERT_TRUE(constraint.is_fixed_position);
-    ASSERT_TRUE(!constraint.is_fixed_to_right_edge &&
-                constraint.is_fixed_to_bottom_edge);
+    cc::LayerPositionConstraint constraint = layer->PositionConstraint();
+    ASSERT_TRUE(constraint.is_fixed_position());
+    ASSERT_TRUE(!constraint.is_fixed_to_right_edge() &&
+                constraint.is_fixed_to_bottom_edge());
   }
   {
     Element* element = document->getElementById("div-br");
     ASSERT_TRUE(element);
     WebLayer* layer = WebLayerFromElement(element);
     ASSERT_TRUE(layer);
-    WebLayerPositionConstraint constraint = layer->PositionConstraint();
-    ASSERT_TRUE(constraint.is_fixed_position);
-    ASSERT_TRUE(constraint.is_fixed_to_right_edge &&
-                constraint.is_fixed_to_bottom_edge);
+    cc::LayerPositionConstraint constraint = layer->PositionConstraint();
+    ASSERT_TRUE(constraint.is_fixed_position());
+    ASSERT_TRUE(constraint.is_fixed_to_right_edge() &&
+                constraint.is_fixed_to_bottom_edge());
   }
   {
     Element* element = document->getElementById("span-tl");
     ASSERT_TRUE(element);
     WebLayer* layer = WebLayerFromElement(element);
     ASSERT_TRUE(layer);
-    WebLayerPositionConstraint constraint = layer->PositionConstraint();
-    ASSERT_TRUE(constraint.is_fixed_position);
-    ASSERT_TRUE(!constraint.is_fixed_to_right_edge &&
-                !constraint.is_fixed_to_bottom_edge);
+    cc::LayerPositionConstraint constraint = layer->PositionConstraint();
+    ASSERT_TRUE(constraint.is_fixed_position());
+    ASSERT_TRUE(!constraint.is_fixed_to_right_edge() &&
+                !constraint.is_fixed_to_bottom_edge());
   }
   {
     Element* element = document->getElementById("span-tr");
     ASSERT_TRUE(element);
     WebLayer* layer = WebLayerFromElement(element);
     ASSERT_TRUE(layer);
-    WebLayerPositionConstraint constraint = layer->PositionConstraint();
-    ASSERT_TRUE(constraint.is_fixed_position);
-    ASSERT_TRUE(constraint.is_fixed_to_right_edge &&
-                !constraint.is_fixed_to_bottom_edge);
+    cc::LayerPositionConstraint constraint = layer->PositionConstraint();
+    ASSERT_TRUE(constraint.is_fixed_position());
+    ASSERT_TRUE(constraint.is_fixed_to_right_edge() &&
+                !constraint.is_fixed_to_bottom_edge());
   }
   {
     Element* element = document->getElementById("span-bl");
     ASSERT_TRUE(element);
     WebLayer* layer = WebLayerFromElement(element);
     ASSERT_TRUE(layer);
-    WebLayerPositionConstraint constraint = layer->PositionConstraint();
-    ASSERT_TRUE(constraint.is_fixed_position);
-    ASSERT_TRUE(!constraint.is_fixed_to_right_edge &&
-                constraint.is_fixed_to_bottom_edge);
+    cc::LayerPositionConstraint constraint = layer->PositionConstraint();
+    ASSERT_TRUE(constraint.is_fixed_position());
+    ASSERT_TRUE(!constraint.is_fixed_to_right_edge() &&
+                constraint.is_fixed_to_bottom_edge());
   }
   {
     Element* element = document->getElementById("span-br");
     ASSERT_TRUE(element);
     WebLayer* layer = WebLayerFromElement(element);
     ASSERT_TRUE(layer);
-    WebLayerPositionConstraint constraint = layer->PositionConstraint();
-    ASSERT_TRUE(constraint.is_fixed_position);
-    ASSERT_TRUE(constraint.is_fixed_to_right_edge &&
-                constraint.is_fixed_to_bottom_edge);
+    cc::LayerPositionConstraint constraint = layer->PositionConstraint();
+    ASSERT_TRUE(constraint.is_fixed_position());
+    ASSERT_TRUE(constraint.is_fixed_to_right_edge() &&
+                constraint.is_fixed_to_bottom_edge());
   }
 }
 
@@ -355,7 +355,7 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingForStickyPosition) {
     ASSERT_TRUE(element);
     WebLayer* layer = WebLayerFromElement(element);
     ASSERT_TRUE(layer);
-    WebLayerStickyPositionConstraint constraint =
+    cc::LayerStickyPositionConstraint constraint =
         layer->StickyPositionConstraint();
     ASSERT_TRUE(constraint.is_sticky);
     EXPECT_TRUE(constraint.is_anchored_top && constraint.is_anchored_left &&
@@ -363,18 +363,17 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingForStickyPosition) {
                 !constraint.is_anchored_bottom);
     EXPECT_EQ(1.f, constraint.top_offset);
     EXPECT_EQ(1.f, constraint.left_offset);
-    EXPECT_EQ(IntRect(100, 100, 10, 10),
-              IntRect(constraint.scroll_container_relative_sticky_box_rect));
-    EXPECT_EQ(
-        IntRect(100, 100, 200, 200),
-        IntRect(constraint.scroll_container_relative_containing_block_rect));
+    EXPECT_EQ(gfx::Rect(100, 100, 10, 10),
+              constraint.scroll_container_relative_sticky_box_rect);
+    EXPECT_EQ(gfx::Rect(100, 100, 200, 200),
+              constraint.scroll_container_relative_containing_block_rect);
   }
   {
     Element* element = document->getElementById("div-tr");
     ASSERT_TRUE(element);
     WebLayer* layer = WebLayerFromElement(element);
     ASSERT_TRUE(layer);
-    WebLayerStickyPositionConstraint constraint =
+    cc::LayerStickyPositionConstraint constraint =
         layer->StickyPositionConstraint();
     ASSERT_TRUE(constraint.is_sticky);
     EXPECT_TRUE(constraint.is_anchored_top && !constraint.is_anchored_left &&
@@ -385,7 +384,7 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingForStickyPosition) {
     ASSERT_TRUE(element);
     WebLayer* layer = WebLayerFromElement(element);
     ASSERT_TRUE(layer);
-    WebLayerStickyPositionConstraint constraint =
+    cc::LayerStickyPositionConstraint constraint =
         layer->StickyPositionConstraint();
     ASSERT_TRUE(constraint.is_sticky);
     EXPECT_TRUE(!constraint.is_anchored_top && constraint.is_anchored_left &&
@@ -396,7 +395,7 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingForStickyPosition) {
     ASSERT_TRUE(element);
     WebLayer* layer = WebLayerFromElement(element);
     ASSERT_TRUE(layer);
-    WebLayerStickyPositionConstraint constraint =
+    cc::LayerStickyPositionConstraint constraint =
         layer->StickyPositionConstraint();
     ASSERT_TRUE(constraint.is_sticky);
     EXPECT_TRUE(!constraint.is_anchored_top && !constraint.is_anchored_left &&
@@ -407,7 +406,7 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingForStickyPosition) {
     ASSERT_TRUE(element);
     WebLayer* layer = WebLayerFromElement(element);
     ASSERT_TRUE(layer);
-    WebLayerStickyPositionConstraint constraint =
+    cc::LayerStickyPositionConstraint constraint =
         layer->StickyPositionConstraint();
     ASSERT_TRUE(constraint.is_sticky);
     EXPECT_TRUE(constraint.is_anchored_top && constraint.is_anchored_left &&
@@ -419,7 +418,7 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingForStickyPosition) {
     ASSERT_TRUE(element);
     WebLayer* layer = WebLayerFromElement(element);
     ASSERT_TRUE(layer);
-    WebLayerStickyPositionConstraint constraint =
+    cc::LayerStickyPositionConstraint constraint =
         layer->StickyPositionConstraint();
     ASSERT_TRUE(constraint.is_sticky);
     EXPECT_TRUE(constraint.is_anchored_top && constraint.is_anchored_left &&
@@ -434,15 +433,14 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingForStickyPosition) {
     ASSERT_TRUE(element);
     WebLayer* layer = WebLayerFromElement(element);
     ASSERT_TRUE(layer);
-    WebLayerStickyPositionConstraint constraint =
+    cc::LayerStickyPositionConstraint constraint =
         layer->StickyPositionConstraint();
     ASSERT_TRUE(constraint.is_sticky);
     EXPECT_TRUE(constraint.is_anchored_top);
-    EXPECT_EQ(IntRect(100, 110, 10, 10),
-              IntRect(constraint.scroll_container_relative_sticky_box_rect));
-    EXPECT_EQ(
-        IntRect(100, 100, 200, 200),
-        IntRect(constraint.scroll_container_relative_containing_block_rect));
+    EXPECT_EQ(gfx::Rect(100, 110, 10, 10),
+              constraint.scroll_container_relative_sticky_box_rect);
+    EXPECT_EQ(gfx::Rect(100, 100, 200, 200),
+              constraint.scroll_container_relative_containing_block_rect);
   }
 }
 
@@ -554,7 +552,7 @@ TEST_P(ScrollingCoordinatorTest, touchAction) {
       web_layer->TouchEventHandlerRegionForTouchActionForTesting(
           TouchAction::kTouchActionPanX | TouchAction::kTouchActionPanDown);
   EXPECT_EQ(region.GetRegionComplexity(), 1);
-  EXPECT_EQ(region.bounds(), IntRect(0, 0, 1000, 1000));
+  EXPECT_EQ(region.bounds(), gfx::Rect(0, 0, 1000, 1000));
 }
 
 TEST_P(ScrollingCoordinatorTest, touchActionRegions) {
@@ -578,17 +576,17 @@ TEST_P(ScrollingCoordinatorTest, touchActionRegions) {
       web_layer->TouchEventHandlerRegionForTouchActionForTesting(
           TouchAction::kTouchActionPanDown | TouchAction::kTouchActionPanX);
   EXPECT_EQ(region.GetRegionComplexity(), 1);
-  EXPECT_EQ(region.bounds(), IntRect(0, 0, 100, 100));
+  EXPECT_EQ(region.bounds(), gfx::Rect(0, 0, 100, 100));
 
   region = web_layer->TouchEventHandlerRegionForTouchActionForTesting(
       TouchAction::kTouchActionPanDown | TouchAction::kTouchActionPanRight);
   EXPECT_EQ(region.GetRegionComplexity(), 1);
-  EXPECT_EQ(region.bounds(), IntRect(0, 0, 50, 50));
+  EXPECT_EQ(region.bounds(), gfx::Rect(0, 0, 50, 50));
 
   region = web_layer->TouchEventHandlerRegionForTouchActionForTesting(
       TouchAction::kTouchActionPanDown);
   EXPECT_EQ(region.GetRegionComplexity(), 1);
-  EXPECT_EQ(region.bounds(), IntRect(0, 100, 100, 100));
+  EXPECT_EQ(region.bounds(), gfx::Rect(0, 100, 100, 100));
 }
 
 TEST_P(ScrollingCoordinatorTest, touchActionBlockingHandler) {
@@ -612,12 +610,12 @@ TEST_P(ScrollingCoordinatorTest, touchActionBlockingHandler) {
       web_layer->TouchEventHandlerRegionForTouchActionForTesting(
           TouchAction::kTouchActionNone);
   EXPECT_EQ(region.GetRegionComplexity(), 1);
-  EXPECT_EQ(region.bounds(), IntRect(0, 0, 100, 100));
+  EXPECT_EQ(region.bounds(), gfx::Rect(0, 0, 100, 100));
 
   region = web_layer->TouchEventHandlerRegionForTouchActionForTesting(
       TouchAction::kTouchActionPanY);
   EXPECT_EQ(region.GetRegionComplexity(), 1);
-  EXPECT_EQ(region.bounds(), IntRect(0, 0, 1000, 1000));
+  EXPECT_EQ(region.bounds(), gfx::Rect(0, 0, 1000, 1000));
 }
 
 TEST_P(ScrollingCoordinatorTest, overflowScrolling) {
@@ -827,7 +825,7 @@ TEST_P(ScrollingCoordinatorTest, rtlIframe) {
                      ->IsOverlayScrollbar()
                  ? 0
                  : 15);
-  ASSERT_EQ(expected_scroll_position, web_scroll_layer->ScrollPosition().x);
+  ASSERT_EQ(expected_scroll_position, web_scroll_layer->ScrollPosition().x());
 }
 
 TEST_P(ScrollingCoordinatorTest, setupScrollbarLayerShouldNotCrash) {

@@ -27,21 +27,21 @@ void WebLayerImplFixedBounds::InvalidateRect(const gfx::Rect& rect) {
 }
 
 void WebLayerImplFixedBounds::SetTransformOrigin(
-    const blink::WebFloatPoint3D& transform_origin) {
+    const gfx::Point3F& transform_origin) {
   if (transform_origin != this->TransformOrigin()) {
     layer_->SetTransformOrigin(transform_origin);
     UpdateLayerBoundsAndTransform();
   }
 }
 
-void WebLayerImplFixedBounds::SetBounds(const blink::WebSize& bounds) {
+void WebLayerImplFixedBounds::SetBounds(const gfx::Size& bounds) {
   if (original_bounds_ != gfx::Size(bounds)) {
     original_bounds_ = bounds;
     UpdateLayerBoundsAndTransform();
   }
 }
 
-blink::WebSize WebLayerImplFixedBounds::Bounds() const {
+const gfx::Size& WebLayerImplFixedBounds::Bounds() const {
   return original_bounds_;
 }
 
@@ -53,7 +53,7 @@ const gfx::Transform& WebLayerImplFixedBounds::Transform() const {
   return original_transform_;
 }
 
-void WebLayerImplFixedBounds::SetFixedBounds(gfx::Size fixed_bounds) {
+void WebLayerImplFixedBounds::SetFixedBounds(const gfx::Size& fixed_bounds) {
   if (fixed_bounds_ != fixed_bounds) {
     fixed_bounds_ = fixed_bounds;
     UpdateLayerBoundsAndTransform();
@@ -73,7 +73,7 @@ void WebLayerImplFixedBounds::UpdateLayerBoundsAndTransform() {
       fixed_bounds_ == original_bounds_ ||
       // For now fall back to non-fixed bounds for non-zero transform origin.
       // TODO(wangxianzhu): Support non-zero anchor point for fixed bounds.
-      TransformOrigin().x || TransformOrigin().y) {
+      TransformOrigin().x() || TransformOrigin().y()) {
     layer_->SetBounds(original_bounds_);
     layer_->SetTransform(original_transform_);
     return;

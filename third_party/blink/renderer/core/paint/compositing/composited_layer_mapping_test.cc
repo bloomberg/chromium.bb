@@ -2454,22 +2454,22 @@ TEST_P(CompositedLayerMappingTest, ScrollingContainerBoundsChange) {
 
   WebLayer* scrolling_layer =
       scrollable_area->LayerForScrolling()->PlatformLayer();
-  EXPECT_EQ(0, scrolling_layer->ScrollPosition().y);
-  EXPECT_EQ(150, scrolling_layer->Bounds().height);
-  EXPECT_EQ(100, scrolling_layer->ScrollContainerBoundsForTesting().height);
+  EXPECT_EQ(0, scrolling_layer->ScrollPosition().y());
+  EXPECT_EQ(150, scrolling_layer->Bounds().height());
+  EXPECT_EQ(100, scrolling_layer->ScrollContainerBoundsForTesting().height());
 
   scrollerElement->setScrollTop(300);
   scrollerElement->setAttribute(HTMLNames::styleAttr, "max-height: 25px;");
   GetDocument().View()->UpdateAllLifecyclePhases();
-  EXPECT_EQ(50, scrolling_layer->ScrollPosition().y);
-  EXPECT_EQ(150, scrolling_layer->Bounds().height);
-  EXPECT_EQ(25, scrolling_layer->ScrollContainerBoundsForTesting().height);
+  EXPECT_EQ(50, scrolling_layer->ScrollPosition().y());
+  EXPECT_EQ(150, scrolling_layer->Bounds().height());
+  EXPECT_EQ(25, scrolling_layer->ScrollContainerBoundsForTesting().height());
 
   scrollerElement->setAttribute(HTMLNames::styleAttr, "max-height: 300px;");
   GetDocument().View()->UpdateAllLifecyclePhases();
-  EXPECT_EQ(50, scrolling_layer->ScrollPosition().y);
-  EXPECT_EQ(150, scrolling_layer->Bounds().height);
-  EXPECT_EQ(100, scrolling_layer->ScrollContainerBoundsForTesting().height);
+  EXPECT_EQ(50, scrolling_layer->ScrollPosition().y());
+  EXPECT_EQ(150, scrolling_layer->Bounds().height());
+  EXPECT_EQ(100, scrolling_layer->ScrollContainerBoundsForTesting().height());
 }
 
 TEST_P(CompositedLayerMappingTest, MainFrameLayerBackgroundColor) {

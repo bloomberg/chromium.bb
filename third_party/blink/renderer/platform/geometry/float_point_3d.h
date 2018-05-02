@@ -27,6 +27,10 @@
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/skia/include/core/SkPoint3.h"
 
+namespace gfx {
+class Point3F;
+}
+
 namespace blink {
 
 class TextStream;
@@ -105,6 +109,7 @@ class PLATFORM_EXPORT FloatPoint3D {
   float DistanceTo(const FloatPoint3D& a) const;
 
   operator SkPoint3() const { return SkPoint3::Make(x_, y_, z_); }
+  operator gfx::Point3F() const;
 
   String ToString() const;
 

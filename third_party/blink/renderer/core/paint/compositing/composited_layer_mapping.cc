@@ -28,7 +28,6 @@
 #include <memory>
 
 #include "cc/input/overscroll_behavior.h"
-#include "third_party/blink/public/platform/web_layer_sticky_position_constraint.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -331,10 +330,10 @@ void CompositedLayerMapping::UpdateBackdropFilters() {
 
 void CompositedLayerMapping::UpdateStickyConstraints(
     const ComputedStyle& style) {
-  WebLayerStickyPositionConstraint web_constraint;
+  cc::LayerStickyPositionConstraint constraint;
   if (!UsesCompositedStickyPosition(owning_layer_)) {
     // Clear the previous sticky position constraint - if set.
-    graphics_layer_->SetStickyPositionConstraint(web_constraint);
+    graphics_layer_->SetStickyPositionConstraint(constraint);
     return;
   }
 
@@ -345,33 +344,32 @@ void CompositedLayerMapping::UpdateStickyConstraints(
   const StickyPositionScrollingConstraints& constraints =
       constraints_map.at(&owning_layer_);
 
-  web_constraint.is_sticky = true;
-  web_constraint.is_anchored_left =
+  constraint.is_sticky = true;
+  constraint.is_anchored_left =
       constraints.GetAnchorEdges() &
       StickyPositionScrollingConstraints::kAnchorEdgeLeft;
-  web_constraint.is_anchored_right =
+  constraint.is_anchored_right =
       constraints.GetAnchorEdges() &
       StickyPositionScrollingConstraints::kAnchorEdgeRight;
-  web_constraint.is_anchored_top =
+  constraint.is_anchored_top =
       constraints.GetAnchorEdges() &
       StickyPositionScrollingConstraints::kAnchorEdgeTop;
-  web_constraint.is_anchored_bottom =
+  constraint.is_anchored_bottom =
       constraints.GetAnchorEdges() &
       StickyPositionScrollingConstraints::kAnchorEdgeBottom;
-  web_constraint.left_offset = constraints.LeftOffset();
-  web_constraint.right_offset = constraints.RightOffset();
-  web_constraint.top_offset = constraints.TopOffset();
-  web_constraint.bottom_offset = constraints.BottomOffset();
-  web_constraint.scroll_container_relative_sticky_box_rect =
+  constraint.left_offset = constraints.LeftOffset();
+  constraint.right_offset = constraints.RightOffset();
+  constraint.top_offset = constraints.TopOffset();
+  constraint.bottom_offset = constraints.BottomOffset();
+  constraint.scroll_container_relative_sticky_box_rect =
       EnclosingIntRect(constraints.ScrollContainerRelativeStickyBoxRect());
-  web_constraint.scroll_container_relative_containing_block_rect =
-      EnclosingIntRect(
-          constraints.ScrollContainerRelativeContainingBlockRect());
+  constraint.scroll_container_relative_containing_block_rect = EnclosingIntRect(
+      constraints.ScrollContainerRelativeContainingBlockRect());
   PaintLayer* sticky_box_shifting_ancestor =
       constraints.NearestStickyLayerShiftingStickyBox();
   if (sticky_box_shifting_ancestor &&
       sticky_box_shifting_ancestor->GetCompositedLayerMapping()) {
-    web_constraint.nearest_element_shifting_sticky_box =
+    constraint.nearest_element_shifting_sticky_box =
         sticky_box_shifting_ancestor->GetCompositedLayerMapping()
             ->MainGraphicsLayer()
             ->GetElementId();
@@ -380,13 +378,13 @@ void CompositedLayerMapping::UpdateStickyConstraints(
       constraints.NearestStickyLayerShiftingContainingBlock();
   if (containing_block_shifting_ancestor &&
       containing_block_shifting_ancestor->GetCompositedLayerMapping()) {
-    web_constraint.nearest_element_shifting_containing_block =
+    constraint.nearest_element_shifting_containing_block =
         containing_block_shifting_ancestor->GetCompositedLayerMapping()
             ->MainGraphicsLayer()
             ->GetElementId();
   }
 
-  graphics_layer_->SetStickyPositionConstraint(web_constraint);
+  graphics_layer_->SetStickyPositionConstraint(constraint);
 }
 
 void CompositedLayerMapping::UpdateLayerBlendMode(const ComputedStyle& style) {

@@ -46,6 +46,7 @@ struct SkPoint;
 
 namespace gfx {
 class PointF;
+class ScrollOffset;
 }
 
 namespace blink {
@@ -137,6 +138,7 @@ class PLATFORM_EXPORT FloatPoint {
 
   operator SkPoint() const;
   operator gfx::PointF() const;
+  explicit operator gfx::ScrollOffset() const;
 
   String ToString() const;
 
