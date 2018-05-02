@@ -63,7 +63,7 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   void SetMaxVirtualTimeTaskStarvationCount(
       int max_task_starvation_count) override;
   void AudioStateChanged(bool is_audio_playing) override;
-  bool IsPlayingAudio() const override;
+  bool IsAudioPlaying() const override;
   bool IsExemptFromBudgetBasedThrottling() const override;
   bool HasActiveConnectionForTest() const override;
   void RequestBeginMainFrameNotExpected(bool new_state) override;
@@ -101,6 +101,12 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
  private:
   friend class FrameSchedulerImpl;
 
+  enum class AudioState {
+    kSilent,
+    kAudible,
+    kRecentlyAudible,
+  };
+
   CPUTimeBudgetPool* BackgroundCPUTimeBudgetPool();
   void MaybeInitializeBackgroundCPUTimeBudgetPool();
 
@@ -115,13 +121,17 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   // number of active connections.
   void UpdateBackgroundBudgetPoolThrottlingState();
 
+  void OnAudioSilent();
+
+  void UpdateFramePolicies();
+
   TraceableVariableController tracing_controller_;
   std::set<FrameSchedulerImpl*> frame_schedulers_;
   MainThreadSchedulerImpl* main_thread_scheduler_;
 
   PageVisibilityState page_visibility_;
   bool disable_background_timer_throttling_;
-  bool is_audio_playing_;
+  AudioState audio_state_;
   bool is_frozen_;
   bool reported_background_throttling_since_navigation_;
   bool has_active_connection_;
@@ -129,6 +139,7 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   bool is_main_frame_local_;
   CPUTimeBudgetPool* background_time_budget_pool_;  // Not owned.
   PageScheduler::Delegate* delegate_;               // Not owned.
+  CancelableClosureHolder on_audio_silent_closure_;
   base::WeakPtrFactory<PageSchedulerImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PageSchedulerImpl);

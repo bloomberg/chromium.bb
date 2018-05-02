@@ -32,6 +32,9 @@ constexpr double kDefaultMaxBackgroundThrottlingDelayInSeconds = 0;
 constexpr base::TimeDelta kMinimalBackgroundThrottlingDurationToReport =
     base::TimeDelta::FromSeconds(3);
 
+// We do not throttle anything while audio is played and shortly after that.
+constexpr base::TimeDelta kRecentAudioDelay = base::TimeDelta::FromSeconds(5);
+
 // Values coming from the field trial config are interpreted as follows:
 //   -1 is "not set". Scheduler should use a reasonable default.
 //   0 corresponds to base::nullopt.
@@ -100,7 +103,7 @@ PageSchedulerImpl::PageSchedulerImpl(
     : main_thread_scheduler_(main_thread_scheduler),
       page_visibility_(kDefaultPageVisibility),
       disable_background_timer_throttling_(disable_background_timer_throttling),
-      is_audio_playing_(false),
+      audio_state_(AudioState::kSilent),
       is_frozen_(false),
       reported_background_throttling_since_navigation_(false),
       has_active_connection_(false),
@@ -110,6 +113,8 @@ PageSchedulerImpl::PageSchedulerImpl(
       delegate_(delegate),
       weak_factory_(this) {
   main_thread_scheduler->AddPageScheduler(this);
+  on_audio_silent_closure_.Reset(base::BindRepeating(
+      &PageSchedulerImpl::OnAudioSilent, base::Unretained(this)));
 }
 
 PageSchedulerImpl::~PageSchedulerImpl() {
@@ -237,7 +242,28 @@ void PageSchedulerImpl::RemoveVirtualTimeObserver(
 }
 
 void PageSchedulerImpl::AudioStateChanged(bool is_audio_playing) {
-  is_audio_playing_ = is_audio_playing;
+  if (is_audio_playing) {
+    audio_state_ = AudioState::kAudible;
+    on_audio_silent_closure_.Cancel();
+    UpdateFramePolicies();
+  } else {
+    if (audio_state_ != AudioState::kAudible)
+      return;
+    on_audio_silent_closure_.Cancel();
+
+    audio_state_ = AudioState::kRecentlyAudible;
+    main_thread_scheduler_->ControlTaskQueue()->PostDelayedTask(
+        FROM_HERE, on_audio_silent_closure_.GetCallback(), kRecentAudioDelay);
+    // No need to call UpdateFramePolicies here, as for outside world
+    // kAudible and kRecentlyAudible are the same thing.
+  }
+  main_thread_scheduler_->OnAudioStateChanged();
+}
+
+void PageSchedulerImpl::OnAudioSilent() {
+  DCHECK_EQ(audio_state_, AudioState::kRecentlyAudible);
+  audio_state_ = AudioState::kSilent;
+  UpdateFramePolicies();
   main_thread_scheduler_->OnAudioStateChanged();
 }
 
@@ -253,8 +279,9 @@ void PageSchedulerImpl::RequestBeginMainFrameNotExpected(bool new_state) {
   delegate_->RequestBeginMainFrameNotExpected(new_state);
 }
 
-bool PageSchedulerImpl::IsPlayingAudio() const {
-  return is_audio_playing_;
+bool PageSchedulerImpl::IsAudioPlaying() const {
+  return audio_state_ == AudioState::kAudible ||
+         audio_state_ == AudioState::kRecentlyAudible;
 }
 
 bool PageSchedulerImpl::IsFrozen() const {
@@ -286,7 +313,7 @@ void PageSchedulerImpl::AsValueInto(
                     page_visibility_ == PageVisibilityState::kVisible);
   state->SetBoolean("disable_background_timer_throttling",
                     disable_background_timer_throttling_);
-  state->SetBoolean("is_audio_playing", is_audio_playing_);
+  state->SetBoolean("is_audio_playing", IsAudioPlaying());
   state->SetBoolean("is_frozen", is_frozen_);
   state->SetBoolean("reported_background_throttling_since_navigation",
                     reported_background_throttling_since_navigation_);
@@ -372,6 +399,11 @@ void PageSchedulerImpl::UpdateBackgroundBudgetPoolThrottlingState() {
   } else {
     background_time_budget_pool_->EnableThrottling(&lazy_now);
   }
+}
+
+void PageSchedulerImpl::UpdateFramePolicies() {
+  for (FrameSchedulerImpl* frame_scheduler : frame_schedulers_)
+    frame_scheduler->UpdatePolicy();
 }
 
 size_t PageSchedulerImpl::FrameCount() const {

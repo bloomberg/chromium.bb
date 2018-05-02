@@ -227,7 +227,7 @@ class RendererMetricsHelperTest : public testing::Test {
   RendererMetricsHelper* metrics_helper_;  // NOT OWNED
   std::unique_ptr<base::HistogramTester> histogram_tester_;
   std::unique_ptr<FakePageScheduler> playing_view_ =
-      FakePageScheduler::Builder().SetIsPlayingAudio(true).Build();
+      FakePageScheduler::Builder().SetIsAudioPlaying(true).Build();
   std::unique_ptr<FakePageScheduler> throtting_exempt_view_ =
       FakePageScheduler::Builder().SetIsThrottlingExempt(true).Build();
 

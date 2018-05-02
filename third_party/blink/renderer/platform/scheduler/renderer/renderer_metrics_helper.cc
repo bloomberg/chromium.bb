@@ -344,8 +344,7 @@ void RendererMetricsHelper::RecordTaskMetrics(
   if (main_thread_scheduler_->main_thread_only().renderer_hidden) {
     per_queue_type_reporters_.hidden.RecordTask(queue_type, duration);
 
-    if (main_thread_scheduler_->ShouldDisableThrottlingBecauseOfAudio(
-            start_time)) {
+    if (main_thread_scheduler_->IsAudioPlaying()) {
       per_queue_type_reporters_.hidden_music.RecordTask(queue_type, duration);
     }
   } else {
