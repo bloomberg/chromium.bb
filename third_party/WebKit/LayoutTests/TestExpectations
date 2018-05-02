@@ -873,6 +873,7 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/positioned-with-co
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/positive-leading.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/pushed-line-affected-by-float.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/relayout-and-push-float.html [ Failure ]
+crbug.com/591099 [ Mac ] virtual/layout_ng_experimental/fast/multicol/relpos-inside-inline-block.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/renderer-positioned-assert-crash.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/rule-in-nested-with-too-tall-line.html [ Failure ]
 crbug.com/714962 virtual/layout_ng_experimental/fast/multicol/scale-transform-text.html [ Failure ]

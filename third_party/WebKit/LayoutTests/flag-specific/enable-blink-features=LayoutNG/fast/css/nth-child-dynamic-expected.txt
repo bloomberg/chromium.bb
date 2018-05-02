@@ -18,14 +18,14 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (0,0) size 29x19
             text run at (0,0) width 29: "DIV"
         LayoutNGBlockFlow {P} at (11,46) size 747x20
-          LayoutText {#text} at (0,0) size 9x19
-            text run at (0,0) width 9: "P"
+          LayoutText {#text} at (0,0) size 8x19
+            text run at (0,0) width 8: "P"
         LayoutNGBlockFlow {DIV} at (6,66) size 752x20 [color=#FF0000] [bgcolor=#9999FF]
           LayoutText {#text} at (0,0) size 131x19
             text run at (0,0) width 131: "DIV red text blue bg"
         LayoutNGBlockFlow {P} at (11,86) size 747x20
-          LayoutText {#text} at (0,0) size 9x19
-            text run at (0,0) width 9: "P"
+          LayoutText {#text} at (0,0) size 8x19
+            text run at (0,0) width 8: "P"
         LayoutNGBlockFlow {DIV} at (6,106) size 752x20
           LayoutText {#text} at (0,0) size 29x19
             text run at (0,0) width 29: "DIV"
@@ -36,14 +36,14 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (0,0) size 29x19
             text run at (0,0) width 29: "DIV"
         LayoutNGBlockFlow {P} at (11,166) size 747x20
-          LayoutText {#text} at (0,0) size 9x19
-            text run at (0,0) width 9: "P"
+          LayoutText {#text} at (0,0) size 8x19
+            text run at (0,0) width 8: "P"
         LayoutNGBlockFlow {DIV} at (6,186) size 752x20 [color=#FF0000]
           LayoutText {#text} at (0,0) size 80x19
             text run at (0,0) width 80: "DIV red text"
         LayoutNGBlockFlow {P} at (11,206) size 747x20
-          LayoutText {#text} at (0,0) size 9x19
-            text run at (0,0) width 9: "P"
+          LayoutText {#text} at (0,0) size 8x19
+            text run at (0,0) width 8: "P"
       LayoutNGBlockFlow {DIV} at (10,314) size 764x252 [border: (1px solid #000000)]
         LayoutText {#text} at (6,6) size 261x19
           text run at (6,6) width 261: "child 0: PASS: found color rgb(255, 0, 0)"
