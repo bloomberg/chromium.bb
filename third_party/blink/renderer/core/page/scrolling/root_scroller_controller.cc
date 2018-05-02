@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/frame/browser_controls.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/fullscreen/document_fullscreen.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
@@ -48,7 +49,15 @@ bool FillsViewport(const Element& element, bool check_location) {
 
   LayoutRect bounding_box(quad.BoundingBox());
 
-  if (bounding_box.Size() != top_document.GetLayoutView()->GetLayoutSize())
+  LayoutSize icb_size =
+      LayoutSize(top_document.GetLayoutView()->GetLayoutSize());
+
+  float zoom = top_document.GetFrame()->PageZoomFactor();
+  LayoutSize controls_hidden_size = LayoutSize(
+      top_document.View()->ViewportSizeForViewportUnits().ScaledBy(zoom));
+
+  if (bounding_box.Size() != icb_size &&
+      bounding_box.Size() != controls_hidden_size)
     return false;
 
   if (!check_location)
