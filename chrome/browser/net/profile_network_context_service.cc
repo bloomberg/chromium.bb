@@ -20,6 +20,7 @@
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/pref_names.h"
+#include "components/network_session_configurator/common/network_features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
@@ -188,9 +189,15 @@ ProfileNetworkContextService::CreateNetworkContextParams(
     cookie_path = cookie_path.Append(chrome::kCookieFilename);
     network_context_params->cookie_path = cookie_path;
 
-    base::FilePath channel_id_path = path;
-    channel_id_path = channel_id_path.Append(chrome::kChannelIDFilename);
-    network_context_params->channel_id_path = channel_id_path;
+    // The same ChannelID store is used for both Channel ID and Token Binding,
+    // so if either are enabled the path must be set. If neither is enabled, the
+    // path must not be set.
+    if (base::FeatureList::IsEnabled(features::kTokenBinding) ||
+        base::FeatureList::IsEnabled(features::kChannelID)) {
+      base::FilePath channel_id_path = path;
+      channel_id_path = channel_id_path.Append(chrome::kChannelIDFilename);
+      network_context_params->channel_id_path = channel_id_path;
+    }
 
     if (relative_partition_path.empty()) {
       network_context_params->restore_old_session_cookies =

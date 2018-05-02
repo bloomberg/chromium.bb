@@ -136,6 +136,7 @@ class HttpProxyClientSocketWrapperTest
         allow_server_migration_, race_cert_verification_, estimate_initial_rtt_,
         client_headers_include_h2_stream_dependency_, connection_options_,
         client_connection_options_, /*enable_token_binding=*/false,
+        /*enable_channel_id=*/false,
         /*enable_socket_recv_optimization=*/false));
   }
 

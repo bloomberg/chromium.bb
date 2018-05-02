@@ -208,6 +208,8 @@ class NET_EXPORT HttpNetworkSession : public base::MemoryCoordinatorClient {
 
     // Enable support for Token Binding.
     bool enable_token_binding;
+    // Enable Channel ID. Channel ID is being deprecated.
+    bool enable_channel_id;
 
     // Enable HTTP/0.9 for HTTP/HTTPS on ports other than the default one for
     // each protocol.

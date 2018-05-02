@@ -30,7 +30,7 @@ SSLConfig::SSLConfig()
       version_max(kDefaultSSLVersionMax),
       tls13_variant(kDefaultTLS13Variant),
       version_interference_probe(false),
-      channel_id_enabled(true),
+      channel_id_enabled(false),
       false_start_enabled(true),
       require_ecdhe(false),
       send_client_cert(false),

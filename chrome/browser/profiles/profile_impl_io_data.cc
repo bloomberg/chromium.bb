@@ -600,13 +600,20 @@ net::URLRequestContext* ProfileImplIOData::InitializeAppRequestContext(
     channel_id_db = new net::SQLiteChannelIDStore(
         channel_id_path, cookie_background_task_runner);
   }
-  std::unique_ptr<net::ChannelIDService> channel_id_service(
-      new net::ChannelIDService(
-          new net::DefaultChannelIDStore(channel_id_db.get())));
-  cookie_config.channel_id_service = channel_id_service.get();
+  std::unique_ptr<net::ChannelIDService> channel_id_service;
+
+  // If |main_context| has Channel ID disabled, do not enable it for the App's
+  // context.
+  if (main_context->channel_id_service()) {
+    channel_id_service.reset(new net::ChannelIDService(
+        new net::DefaultChannelIDStore(channel_id_db.get())));
+    cookie_config.channel_id_service = channel_id_service.get();
+  }
   cookie_config.background_task_runner = cookie_background_task_runner;
   cookie_store = content::CreateCookieStore(cookie_config);
-  cookie_store->SetChannelIDServiceID(channel_id_service->GetUniqueID());
+  if (channel_id_service) {
+    cookie_store->SetChannelIDServiceID(channel_id_service->GetUniqueID());
+  }
 
   // Build a new HttpNetworkSession that uses the new ChannelIDService.
   // TODO(mmenke):  It's weird to combine state from
