@@ -21,7 +21,11 @@ MediaControlOverflowMenuListElement::MediaControlOverflowMenuListElement(
 
 void MediaControlOverflowMenuListElement::MaybeRecordTimeTaken(
     TimeTakenHistogram histogram_name) {
-  DCHECK(time_shown_);
+  // TODO(mlamouri): we may end up hitting a race where both actions and dismiss
+  // are fired very close to eachother. This change is meant to prevent a crash
+  // but doesn't avoid the sometimes incorrect metrics recording.
+  if (!time_shown_)
+    return;
 
   if (current_task_handle_.IsActive())
     current_task_handle_.Cancel();
@@ -65,12 +69,6 @@ void MediaControlOverflowMenuListElement::SetIsWanted(bool wanted) {
 
 Element* MediaControlOverflowMenuListElement::PopupAnchor() const {
   return &GetMediaControls().OverflowButton();
-}
-
-void MediaControlOverflowMenuListElement::OnItemSelected() {
-  MaybeRecordTimeTaken(kTimeToAction);
-
-  MediaControlPopupMenuElement::OnItemSelected();
 }
 
 }  // namespace blink

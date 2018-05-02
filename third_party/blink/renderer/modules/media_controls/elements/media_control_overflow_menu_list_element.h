@@ -24,15 +24,17 @@ class MediaControlOverflowMenuListElement final
   // Override MediaControlPopupMenuElement
   void SetIsWanted(bool) final;
   Element* PopupAnchor() const final;
-  void OnItemSelected() final;
 
- private:
+ protected:
+  friend class MediaControlsImpl;
+
   enum TimeTakenHistogram {
     kTimeToAction,
     kTimeToDismiss,
   };
   void MaybeRecordTimeTaken(TimeTakenHistogram);
 
+ private:
   void DefaultEventHandler(Event*) override;
 
   TaskHandle current_task_handle_;

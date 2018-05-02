@@ -86,6 +86,7 @@ void MediaControlToggleClosedCaptionsButtonElement::DefaultEventHandler(
     }
 
     UpdateDisplayType();
+    event->SetDefaultHandled();
   }
 
   MediaControlInputElement::DefaultEventHandler(event);
