@@ -103,6 +103,23 @@ class HttpNetworkTransactionSSLTest : public testing::Test {
   std::vector<std::unique_ptr<HttpRequestInfo>> request_info_vector_;
 };
 
+TEST_F(HttpNetworkTransactionSSLTest, ChannelID) {
+  ChannelIDService channel_id_service(new DefaultChannelIDStore(NULL));
+  session_context_.channel_id_service = &channel_id_service;
+
+  HttpNetworkSession::Params params;
+  params.enable_channel_id = true;
+  HttpNetworkSession session(params, session_context_);
+
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, &session);
+  TestCompletionCallback callback;
+  EXPECT_EQ(ERR_IO_PENDING,
+            trans.Start(GetRequestInfo("https://example.com"),
+                        callback.callback(), NetLogWithSource()));
+
+  EXPECT_TRUE(trans.server_ssl_config_.channel_id_enabled);
+}
+
 #if !defined(OS_IOS)
 TEST_F(HttpNetworkTransactionSSLTest, TokenBinding) {
   ChannelIDService channel_id_service(new DefaultChannelIDStore(NULL));

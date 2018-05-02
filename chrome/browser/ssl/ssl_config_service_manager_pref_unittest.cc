@@ -46,7 +46,7 @@ TEST_F(SSLConfigServiceManagerPrefTest, ChannelIDWithoutUserPrefs) {
 
   SSLConfig config;
   config_service->GetSSLConfig(&config);
-  EXPECT_TRUE(config.channel_id_enabled);
+  EXPECT_FALSE(config.channel_id_enabled);
 }
 
 // Test that cipher suites can be disabled. "Good" refers to the fact that

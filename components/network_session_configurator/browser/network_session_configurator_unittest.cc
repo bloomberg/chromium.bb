@@ -712,6 +712,26 @@ TEST_F(NetworkSessionConfiguratorTest, TokenBindingEnabled) {
   EXPECT_TRUE(params_.enable_token_binding);
 }
 
+TEST_F(NetworkSessionConfiguratorTest, ChannelIDEnabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kChannelID);
+
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  ParseCommandLineAndFieldTrials(command_line);
+
+  EXPECT_TRUE(params_.enable_channel_id);
+}
+
+TEST_F(NetworkSessionConfiguratorTest, ChannelIDDisabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kChannelID);
+
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  ParseCommandLineAndFieldTrials(command_line);
+
+  EXPECT_FALSE(params_.enable_channel_id);
+}
+
 TEST_F(NetworkSessionConfiguratorTest, DefaultCacheBackend) {
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
 #if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_CHROMEOS)

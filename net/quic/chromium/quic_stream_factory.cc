@@ -742,6 +742,7 @@ QuicStreamFactory::QuicStreamFactory(
     const QuicTagVector& connection_options,
     const QuicTagVector& client_connection_options,
     bool enable_token_binding,
+    bool enable_channel_id,
     bool enable_socket_recv_optimization)
     : require_confirmation_(true),
       net_log_(net_log),
@@ -819,7 +820,7 @@ QuicStreamFactory::QuicStreamFactory(
   crypto_config_.AddCanonicalSuffix(".googleusercontent.com");
   // TODO(rtenneti): http://crbug.com/487355. Temporary fix for b/20760730 until
   // channel_id_service is supported in cronet.
-  if (channel_id_service) {
+  if (enable_channel_id && channel_id_service) {
     crypto_config_.SetChannelIDSource(
         new ChannelIDSourceChromium(channel_id_service));
   }

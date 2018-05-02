@@ -584,6 +584,8 @@ void ParseCommandLineAndFieldTrials(const base::CommandLine& command_line,
 
   params->enable_token_binding =
       base::FeatureList::IsEnabled(features::kTokenBinding);
+  params->enable_channel_id =
+      base::FeatureList::IsEnabled(features::kChannelID);
 }
 
 net::URLRequestContextBuilder::HttpCacheParams::Type ChooseCacheType(
