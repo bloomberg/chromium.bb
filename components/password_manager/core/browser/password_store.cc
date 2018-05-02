@@ -17,6 +17,7 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
+#include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliated_match_helper.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
@@ -95,6 +96,11 @@ PasswordStore::FormDigest::FormDigest(autofill::PasswordForm::Scheme new_scheme,
 PasswordStore::FormDigest::FormDigest(const PasswordForm& form)
     : scheme(form.scheme),
       signon_realm(form.signon_realm),
+      origin(form.origin) {}
+
+PasswordStore::FormDigest::FormDigest(const autofill::FormData& form)
+    : scheme(PasswordForm::SCHEME_HTML),
+      signon_realm(form.origin.GetOrigin().spec()),
       origin(form.origin) {}
 
 PasswordStore::FormDigest::FormDigest(const FormDigest& other) = default;
