@@ -68,7 +68,7 @@ class BrowserNonClientFrameViewMus : public BrowserNonClientFrameView,
 
  private:
   // TabStripObserver:
-  void TabStripMaxXChanged(TabStrip* tab_strip) override;
+  void OnTabsMaxXChanged() override;
 
   // Distance between the right edge of the NonClientFrameView and the tab
   // strip.

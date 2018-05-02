@@ -60,11 +60,9 @@ class TabScrubber : public ui::EventHandler,
                const content::NotificationDetails& details) override;
 
   // TabStripObserver overrides.
-  void TabStripAddedTabAt(TabStrip* tab_strip, int index) override;
-  void TabStripMovedTab(TabStrip* tab_strip,
-                        int from_index,
-                        int to_index) override;
-  void TabStripRemovedTabAt(TabStrip* tab_strip, int index) override;
+  void OnTabAdded(int index) override;
+  void OnTabMoved(int from_index, int to_index) override;
+  void OnTabRemoved(int index) override;
 
   Browser* GetActiveBrowser();
 

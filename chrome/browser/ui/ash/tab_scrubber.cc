@@ -179,7 +179,7 @@ void TabScrubber::Observe(int type,
   }
 }
 
-void TabScrubber::TabStripAddedTabAt(TabStrip* tab_strip, int index) {
+void TabScrubber::OnTabAdded(int index) {
   if (highlighted_tab_ == -1)
     return;
 
@@ -187,9 +187,7 @@ void TabScrubber::TabStripAddedTabAt(TabStrip* tab_strip, int index) {
     ++highlighted_tab_;
 }
 
-void TabScrubber::TabStripMovedTab(TabStrip* tab_strip,
-                                   int from_index,
-                                   int to_index) {
+void TabScrubber::OnTabMoved(int from_index, int to_index) {
   if (highlighted_tab_ == -1)
     return;
 
@@ -201,7 +199,7 @@ void TabScrubber::TabStripMovedTab(TabStrip* tab_strip,
     ++highlighted_tab_;
 }
 
-void TabScrubber::TabStripRemovedTabAt(TabStrip* tab_strip, int index) {
+void TabScrubber::OnTabRemoved(int index) {
   if (highlighted_tab_ == -1)
     return;
   if (index == highlighted_tab_) {

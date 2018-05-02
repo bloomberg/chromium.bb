@@ -456,7 +456,7 @@ void TabStrip::AddTabAt(int model_index, TabRendererData data, bool is_active) {
   SwapLayoutIfNecessary();
 
   for (TabStripObserver& observer : observers_)
-    observer.TabStripAddedTabAt(this, model_index);
+    observer.OnTabAdded(model_index);
 
   // Stop dragging when a new tab is added and dragging a window. Doing
   // otherwise results in a confusing state if the user attempts to reattach. We
@@ -498,7 +498,7 @@ void TabStrip::MoveTab(int from_model_index,
   SwapLayoutIfNecessary();
 
   for (TabStripObserver& observer : observers_)
-    observer.TabStripMovedTab(this, from_model_index, to_model_index);
+    observer.OnTabMoved(from_model_index, to_model_index);
 }
 
 void TabStrip::RemoveTabAt(content::WebContents* contents, int model_index) {
@@ -520,7 +520,7 @@ void TabStrip::RemoveTabAt(content::WebContents* contents, int model_index) {
   SwapLayoutIfNecessary();
 
   for (TabStripObserver& observer : observers_)
-    observer.TabStripRemovedTabAt(this, model_index);
+    observer.OnTabRemoved(model_index);
 
   // Stop dragging when a new tab is removed and dragging a window. Doing
   // otherwise results in a confusing state if the user attempts to reattach. We
@@ -2162,7 +2162,7 @@ void TabStrip::GenerateIdealBounds() {
 
   if (GetTabsMaxX() != old_max_x) {
     for (TabStripObserver& observer : observers_)
-      observer.TabStripMaxXChanged(this);
+      observer.OnTabsMaxXChanged();
   }
 }
 

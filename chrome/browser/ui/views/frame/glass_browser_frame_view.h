@@ -63,8 +63,8 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   gfx::ImageSkia GetFaviconForTabIconView() override;
 
   // TabStripObserver:
-  void TabStripMaxXChanged(TabStrip* tab_strip) override;
-  void TabStripRemovedTabAt(TabStrip* tab_strip, int index) override;
+  void OnTabRemoved(int index) override;
+  void OnTabsMaxXChanged() override;
 
   bool IsMaximized() const;
 

@@ -375,18 +375,17 @@ gfx::ImageSkia GlassBrowserFrameView::GetFaviconForTabIconView() {
   return frame()->widget_delegate()->GetWindowIcon();
 }
 
-void GlassBrowserFrameView::TabStripMaxXChanged(TabStrip* tab_strip) {
-  // The profile switcher button's height depends on the position of the new
-  // tab button.
+void GlassBrowserFrameView::OnTabRemoved(int index) {
+  // The profile switcher button may need to change height here, too.
+  // TabStripMaxXChanged is not enough when a tab other than the last tab is
+  // closed.
   if (browser_view()->IsRegularOrGuestSession())
     LayoutProfileSwitcher();
 }
 
-void GlassBrowserFrameView::TabStripRemovedTabAt(TabStrip* tab_strip,
-                                                 int index) {
-  // The profile switcher button may need to change height here, too.
-  // TabStripMaxXChanged is not enough when a tab other than the last tab is
-  // closed.
+void GlassBrowserFrameView::OnTabsMaxXChanged() {
+  // The profile switcher button's height depends on the position of the new
+  // tab button, which may have changed if the tabs max X changed.
   if (browser_view()->IsRegularOrGuestSession())
     LayoutProfileSwitcher();
 }

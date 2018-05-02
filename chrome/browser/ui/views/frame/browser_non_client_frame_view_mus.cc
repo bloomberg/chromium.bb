@@ -382,7 +382,7 @@ AvatarButtonStyle BrowserNonClientFrameViewMus::GetAvatarButtonStyle() const {
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserNonClientFrameViewMus, private:
 
-void BrowserNonClientFrameViewMus::TabStripMaxXChanged(TabStrip* tab_strip) {
+void BrowserNonClientFrameViewMus::OnTabsMaxXChanged() {
   UpdateClientArea();
 }
 

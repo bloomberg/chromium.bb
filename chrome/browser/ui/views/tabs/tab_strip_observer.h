@@ -22,19 +22,17 @@ class TabStrip;
 ////////////////////////////////////////////////////////////////////////////////
 class CHROME_VIEWS_EXPORT TabStripObserver {
  public:
-  // A new tab was added to |tab_strip| at |index|.
-  virtual void TabStripAddedTabAt(TabStrip* tab_strip, int index);
+  // Sent when a new tab has been added at |index|.
+  virtual void OnTabAdded(int index);
 
-  // The tab at |from_index| was moved to |to_index| in |tab_strip|.
-  virtual void TabStripMovedTab(TabStrip* tab_strip,
-                                int from_index,
-                                int to_index);
+  // Sent when the tab at |from_index| has been moved to |to_index|.
+  virtual void OnTabMoved(int from_index, int to_index);
 
-  // The tab at |index| was removed from |tab_strip|.
-  virtual void TabStripRemovedTabAt(TabStrip* tab_strip, int index);
+  // Sent when the tab at |index| has been removed.
+  virtual void OnTabRemoved(int index);
 
-  // tab_strip->max_x() has changed.
-  virtual void TabStripMaxXChanged(TabStrip* tab_strip);
+  // Sent when the trailing edge of the last tab has changed.
+  virtual void OnTabsMaxXChanged();
 
  protected:
   virtual ~TabStripObserver() {}
