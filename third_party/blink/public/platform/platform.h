@@ -317,10 +317,6 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // Process -------------------------------------------------------------
 
-  // Returns a unique identifier for a process. This may not necessarily be
-  // the process's process ID.
-  virtual uint32_t GetUniqueIdForProcess() { return 0; }
-
   // Returns a unique FrameSinkID for the current renderer process
   virtual viz::FrameSinkId GenerateFrameSinkId() { return viz::FrameSinkId(); }
 
