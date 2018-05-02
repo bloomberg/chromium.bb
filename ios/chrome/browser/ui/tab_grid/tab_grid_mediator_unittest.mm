@@ -243,13 +243,49 @@ TEST_F(TabGridMediatorTest, CloseItemCommand) {
   EXPECT_EQ(2UL, consumer_.items.count);
 }
 
-// Tests that the |web_state_list_| is empty when |-closeAllItems| is called.
-// Tests that the consumer's item list is also empty.
+// Tests that the |web_state_list_| and consumer's list are empty when
+// |-closeAllItems| is called. Tests that |-undoCloseAllItems| does not restore
+// the |web_state_list_|.
 TEST_F(TabGridMediatorTest, CloseAllItemsCommand) {
   // Previously there were 3 items.
   [mediator_ closeAllItems];
   EXPECT_EQ(0, web_state_list_->count());
   EXPECT_EQ(0UL, consumer_.items.count);
+  [mediator_ undoCloseAllItems];
+  EXPECT_EQ(0, web_state_list_->count());
+}
+
+// Tests that the |web_state_list_| and consumer's list are empty when
+// |-saveAndCloseAllItems| is called.
+TEST_F(TabGridMediatorTest, SaveAndCloseAllItemsCommand) {
+  // Previously there were 3 items.
+  [mediator_ saveAndCloseAllItems];
+  EXPECT_EQ(0, web_state_list_->count());
+  EXPECT_EQ(0UL, consumer_.items.count);
+}
+
+// Tests that the |web_state_list_| is not restored to 3 items when
+// |-undoCloseAllItems| is called after |-discardSavedClosedItems| is called.
+TEST_F(TabGridMediatorTest, DiscardSavedClosedItemsCommand) {
+  // Previously there were 3 items.
+  [mediator_ saveAndCloseAllItems];
+  [mediator_ discardSavedClosedItems];
+  [mediator_ undoCloseAllItems];
+  EXPECT_EQ(0, web_state_list_->count());
+  EXPECT_EQ(0UL, consumer_.items.count);
+}
+
+// Tests that the |web_state_list_| is restored to 3 items when
+// |-undoCloseAllItems| is called.
+TEST_F(TabGridMediatorTest, UndoCloseAllItemsCommand) {
+  // Previously there were 3 items.
+  [mediator_ saveAndCloseAllItems];
+  [mediator_ undoCloseAllItems];
+  EXPECT_EQ(3, web_state_list_->count());
+  EXPECT_EQ(3UL, consumer_.items.count);
+  EXPECT_TRUE([original_identifiers_ containsObject:consumer_.items[0]]);
+  EXPECT_TRUE([original_identifiers_ containsObject:consumer_.items[1]]);
+  EXPECT_TRUE([original_identifiers_ containsObject:consumer_.items[2]]);
 }
 
 // Tests that when |-addNewItem| is called, the |web_state_list_| count is

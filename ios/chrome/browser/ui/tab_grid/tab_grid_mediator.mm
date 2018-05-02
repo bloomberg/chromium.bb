@@ -18,6 +18,7 @@
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
+#import "ios/chrome/browser/web_state_list/web_state_list_serialization.h"
 #include "ios/chrome/browser/web_state_list/web_state_opener.h"
 #include "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
@@ -71,6 +72,8 @@ int GetIndexOfTabWithId(WebStateList* webStateList, NSString* identifier) {
 @property(nonatomic, assign) WebStateList* webStateList;
 // The UI consumer to which updates are made.
 @property(nonatomic, weak) id<GridConsumer> consumer;
+// The saved session window just before close all tabs is called.
+@property(nonatomic, strong) SessionWindowIOS* closedSessionWindow;
 @end
 
 @implementation TabGridMediator {
@@ -89,6 +92,7 @@ int GetIndexOfTabWithId(WebStateList* webStateList, NSString* identifier) {
 // Private properties.
 @synthesize webStateList = _webStateList;
 @synthesize consumer = _consumer;
+@synthesize closedSessionWindow = _closedSessionWindow;
 
 - (instancetype)initWithConsumer:(id<GridConsumer>)consumer {
   if (self = [super init]) {
@@ -228,7 +232,30 @@ int GetIndexOfTabWithId(WebStateList* webStateList, NSString* identifier) {
 }
 
 - (void)closeAllItems {
+  // This is a no-op if |webStateList| is already empty.
   self.webStateList->CloseAllWebStates(WebStateList::CLOSE_USER_ACTION);
+}
+
+- (void)saveAndCloseAllItems {
+  if (self.webStateList->empty())
+    return;
+  self.closedSessionWindow = SerializeWebStateList(self.webStateList);
+  self.webStateList->CloseAllWebStates(WebStateList::CLOSE_USER_ACTION);
+}
+
+- (void)undoCloseAllItems {
+  if (!self.closedSessionWindow)
+    return;
+  web::WebState::CreateParams createParams(self.tabModel.browserState);
+  DeserializeWebStateList(
+      self.webStateList, self.closedSessionWindow,
+      base::BindRepeating(&web::WebState::CreateWithStorageSession,
+                          createParams));
+  self.closedSessionWindow = nil;
+}
+
+- (void)discardSavedClosedItems {
+  self.closedSessionWindow = nil;
 }
 
 #pragma mark - GridImageDataSource

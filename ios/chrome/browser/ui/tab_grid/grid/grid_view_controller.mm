@@ -176,24 +176,8 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   cell.accessibilityIdentifier =
       [NSString stringWithFormat:@"%@%ld", kGridCellIdentifierPrefix,
                                  base::checked_cast<long>(indexPath.item)];
-  cell.delegate = self;
-  cell.theme = self.theme;
   GridItem* item = self.items[indexPath.item];
-  cell.itemIdentifier = item.identifier;
-  cell.title = item.title;
-  NSString* itemIdentifier = item.identifier;
-  [self.imageDataSource
-      faviconForIdentifier:itemIdentifier
-                completion:^(UIImage* icon) {
-                  if (icon && cell.itemIdentifier == itemIdentifier)
-                    cell.icon = icon;
-                }];
-  [self.imageDataSource
-      snapshotForIdentifier:itemIdentifier
-                 completion:^(UIImage* snapshot) {
-                   if (snapshot && cell.itemIdentifier == itemIdentifier)
-                     cell.snapshot = snapshot;
-                 }];
+  [self configureCell:cell withItem:item];
   return cell;
 }
 
@@ -346,7 +330,9 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   self.items[index] = item;
   if (![self isViewVisible])
     return;
-  [self.collectionView reloadItemsAtIndexPaths:@[ CreateIndexPath(index) ]];
+  GridCell* cell = base::mac::ObjCCastStrict<GridCell>(
+      [self.collectionView cellForItemAtIndexPath:CreateIndexPath(index)]);
+  [self configureCell:cell withItem:item];
 }
 
 - (void)moveItemWithID:(NSString*)itemID toIndex:(NSUInteger)toIndex {
@@ -401,6 +387,34 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 // If the view is not visible, there is no need to update the collection view.
 - (BOOL)isViewVisible {
   return self.viewIfLoaded.window != nil;
+}
+
+// Configures |cell|'s title synchronously, and favicon and snapshot
+// asynchronously with information from |item|. Updates the |cell|'s theme to
+// this view controller's theme. This view controller becomes the delegate for
+// the cell.
+- (void)configureCell:(GridCell*)cell withItem:(GridItem*)item {
+  DCHECK(cell);
+  DCHECK(item);
+  cell.delegate = self;
+  cell.theme = self.theme;
+  cell.itemIdentifier = item.identifier;
+  cell.title = item.title;
+  NSString* itemIdentifier = item.identifier;
+  [self.imageDataSource faviconForIdentifier:itemIdentifier
+                                  completion:^(UIImage* icon) {
+                                    // Only update the icon if the cell is not
+                                    // already reused for another item.
+                                    if (cell.itemIdentifier == itemIdentifier)
+                                      cell.icon = icon;
+                                  }];
+  [self.imageDataSource snapshotForIdentifier:itemIdentifier
+                                   completion:^(UIImage* snapshot) {
+                                     // Only update the icon if the cell is not
+                                     // already reused for another item.
+                                     if (cell.itemIdentifier == itemIdentifier)
+                                       cell.snapshot = snapshot;
+                                   }];
 }
 
 // Animates the empty state into view.

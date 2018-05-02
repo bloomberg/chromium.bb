@@ -10,6 +10,9 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#import "ios/web/public/crw_navigation_item_storage.h"
+#import "ios/web/public/crw_session_storage.h"
+#import "ios/web/public/serializable_user_data_manager.h"
 #import "ios/web/public/web_state/ui/crw_content_view.h"
 #import "ios/web/public/web_state/web_state_policy_decider.h"
 #include "ui/gfx/image/image.h"
@@ -110,7 +113,13 @@ TestWebState::GetSessionCertificatePolicyCache() {
 }
 
 CRWSessionStorage* TestWebState::BuildSessionStorage() {
-  return nil;
+  std::unique_ptr<web::SerializableUserData> serializable_user_data =
+      web::SerializableUserDataManager::FromWebState(this)
+          ->CreateSerializableUserData();
+  CRWSessionStorage* session_storage = [[CRWSessionStorage alloc] init];
+  [session_storage setSerializableUserData:std::move(serializable_user_data)];
+  session_storage.itemStorages = @[ [[CRWNavigationItemStorage alloc] init] ];
+  return session_storage;
 }
 
 void TestWebState::SetNavigationManager(

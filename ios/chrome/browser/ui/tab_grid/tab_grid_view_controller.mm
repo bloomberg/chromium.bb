@@ -51,18 +51,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   }
   return static_cast<NSUInteger>(page);
 }
-
-// Temporary alert used while building this feature.
-UIAlertController* NotImplementedAlert() {
-  UIAlertController* alert =
-      [UIAlertController alertControllerWithTitle:@"Not implemented"
-                                          message:nil
-                                   preferredStyle:UIAlertControllerStyleAlert];
-  [alert addAction:[UIAlertAction actionWithTitle:@"OK"
-                                            style:UIAlertActionStyleCancel
-                                          handler:nil]];
-  return alert;
-}
 }  // namespace
 
 @interface TabGridViewController ()<GridViewControllerDelegate,
@@ -153,6 +141,7 @@ UIAlertController* NotImplementedAlert() {
 
 - (void)viewWillDisappear:(BOOL)animated {
   self.undoCloseAllAvailable = NO;
+  [self.regularTabsDelegate discardSavedClosedItems];
   if (animated && self.transitionCoordinator) {
     [self animateToolbarsForDisappearance];
   }
@@ -783,13 +772,10 @@ UIAlertController* NotImplementedAlert() {
       DCHECK_EQ(self.undoCloseAllAvailable,
                 self.regularTabsViewController.gridEmpty);
       if (self.undoCloseAllAvailable) {
-        // TODO(crbug.com/804567) : Implement Undo Close All.
-        [self presentViewController:NotImplementedAlert()
-                           animated:YES
-                         completion:nil];
+        [self.regularTabsDelegate undoCloseAllItems];
       } else {
         [self.incognitoTabsDelegate closeAllItems];
-        [self.regularTabsDelegate closeAllItems];
+        [self.regularTabsDelegate saveAndCloseAllItems];
       }
       self.undoCloseAllAvailable = !self.undoCloseAllAvailable;
       [self configureCloseAllButtonForCurrentPageAndUndoAvailability];
