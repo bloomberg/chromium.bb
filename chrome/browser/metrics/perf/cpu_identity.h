@@ -32,8 +32,8 @@ struct CPUIdentity {
 CPUIdentity GetCPUIdentity();
 
 // Return the CPU microarchitecture based on the family and model derived
-// from |cpuid|, and kCpuUarchTable, or the empty string for non-Intel or
-// unknown microarchitectures.
+// from |cpuid|, and kCpuUarchTable, or the empty string for unknown
+// microarchitectures.
 std::string GetCpuUarch(const CPUIdentity& cpuid);
 
 // Simplify a CPU model name. The rules are:

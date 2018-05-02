@@ -274,7 +274,8 @@ std::vector<RandomSelector::WeightAndValue> GetDefaultCommandsForCpu(
 // that is the narrowest match for the CPU identified by |cpuid|.
 // Valid CPU specifiers, in increasing order of specificity, are:
 // "default", a system architecture (e.g. "x86_64"), a CPU microarchitecture
-// (currently only Intel uarchs supported), or a CPU model name substring.
+// (currently only some Intel and AMD uarchs supported), or a CPU model name
+// substring.
 std::string FindBestCpuSpecifierFromParams(
     const std::map<std::string, std::string>& params,
     const CPUIdentity& cpuid);

@@ -37,6 +37,16 @@ TEST(CpuIdentityTest, DefaultCommandsBasedOnUarch_SandyBridge) {
   EXPECT_EQ("SandyBridge", GetCpuUarch(cpuid));
 }
 
+TEST(CpuIdentityTest, DefaultCommandsBasedOnUarch_Excavator) {
+  CPUIdentity cpuid;
+  cpuid.arch = "x86_64";
+  cpuid.vendor = "AuthenticAMD";
+  cpuid.family = 0x0f;
+  cpuid.model = 0x70;  // Excavator
+  cpuid.model_name = "";
+  EXPECT_EQ("Excavator", GetCpuUarch(cpuid));
+}
+
 TEST(CpuIdentityTest, DefaultCommandsBasedOnArch_x86_32) {
   CPUIdentity cpuid;
   cpuid.arch = "x86";
@@ -50,7 +60,7 @@ TEST(CpuIdentityTest, DefaultCommandsBasedOnArch_x86_32) {
 TEST(CpuIdentityTest, DefaultCommandsBasedOnArch_Unknown) {
   CPUIdentity cpuid;
   cpuid.arch = "x86_64";
-  cpuid.vendor = "NotIntel";
+  cpuid.vendor = "NotIntelOrAmd";
   cpuid.family = 0;
   cpuid.model = 0;
   cpuid.model_name = "";
