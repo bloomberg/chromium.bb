@@ -153,8 +153,6 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
   // may be called from any thread. Beware!
   void RequestShutdown(const base::Closure& callback);
 
-  MojoResult SetProperty(MojoPropertyType type, const void* value);
-
   // ---------------------------------------------------------------------------
 
   // The following methods are essentially implementations of the Mojo Core
@@ -213,7 +211,6 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
   MojoResult GetMessageContext(MojoMessageHandle message_handle,
                                const MojoGetMessageContextOptions* options,
                                uintptr_t* context);
-  MojoResult GetProperty(MojoPropertyType type, void* value);
 
   // These methods correspond to the API functions defined in
   // "mojo/public/c/system/message_pipe.h":
@@ -328,10 +325,6 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
   using MappingTable =
       std::unordered_map<void*, std::unique_ptr<PlatformSharedMemoryMapping>>;
   MappingTable mapping_table_;
-
-  base::Lock property_lock_;
-  // Properties that can be read using the MojoGetProperty() API.
-  bool property_sync_call_allowed_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(Core);
 };

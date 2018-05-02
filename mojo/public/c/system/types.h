@@ -206,20 +206,6 @@ struct MOJO_ALIGNAS(4) MojoHandleSignalsState {
 MOJO_STATIC_ASSERT(sizeof(MojoHandleSignalsState) == 8,
                    "MojoHandleSignalsState has wrong size");
 
-// |MojoPropertyType|: Property types that can be passed to |MojoGetProperty()|
-// to retrieve system properties. May take the following values:
-//   |MOJO_PROPERTY_TYPE_SYNC_CALL_ALLOWED| - Whether making synchronous calls
-//       (i.e., blocking to wait for a response to an outbound message) is
-//       allowed. The property value is of boolean type. If the value is true,
-//       users should refrain from making sync calls.
-typedef uint32_t MojoPropertyType;
-
-#ifdef __cplusplus
-const MojoPropertyType MOJO_PROPERTY_TYPE_SYNC_CALL_ALLOWED = 0;
-#else
-#define MOJO_PROPERTY_TYPE_SYNC_CALL_ALLOWED ((MojoPropertyType)0)
-#endif
-
 // TODO(https://crbug.com/819046): Remove these aliases.
 #define MOJO_WATCH_CONDITION_SATISFIED MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED
 #define MOJO_WATCH_CONDITION_NOT_SATISFIED \

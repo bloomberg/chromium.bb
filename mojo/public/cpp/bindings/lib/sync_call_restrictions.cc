@@ -7,85 +7,79 @@
 #if ENABLE_SYNC_CALL_RESTRICTIONS
 
 #include "base/debug/leak_annotations.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/threading/thread_local.h"
+#include "base/macros.h"
+#include "base/no_destructor.h"
+#include "base/synchronization/lock.h"
+#include "base/threading/sequence_local_storage_slot.h"
 #include "mojo/public/c/system/core.h"
 
 namespace mojo {
 
 namespace {
 
-class SyncCallSettings {
+class GlobalSyncCallSettings {
  public:
-  static SyncCallSettings* current();
+  GlobalSyncCallSettings() = default;
+  ~GlobalSyncCallSettings() = default;
 
-  bool allowed() const {
-    return scoped_allow_count_ > 0 || system_defined_value_;
+  bool sync_call_allowed_by_default() const {
+    base::AutoLock lock(lock_);
+    return sync_call_allowed_by_default_;
   }
 
-  void IncreaseScopedAllowCount() { scoped_allow_count_++; }
-  void DecreaseScopedAllowCount() {
-    DCHECK_LT(0u, scoped_allow_count_);
-    scoped_allow_count_--;
+  void DisallowSyncCallByDefault() {
+    base::AutoLock lock(lock_);
+    sync_call_allowed_by_default_ = false;
   }
 
  private:
-  SyncCallSettings();
-  ~SyncCallSettings();
+  mutable base::Lock lock_;
+  bool sync_call_allowed_by_default_ = true;
 
-  bool system_defined_value_ = true;
-  size_t scoped_allow_count_ = 0;
+  DISALLOW_COPY_AND_ASSIGN(GlobalSyncCallSettings);
 };
 
-base::LazyInstance<base::ThreadLocalPointer<SyncCallSettings>>::Leaky
-    g_sync_call_settings = LAZY_INSTANCE_INITIALIZER;
-
-// static
-SyncCallSettings* SyncCallSettings::current() {
-  SyncCallSettings* result = g_sync_call_settings.Pointer()->Get();
-  if (!result) {
-    result = new SyncCallSettings();
-    ANNOTATE_LEAKING_OBJECT_PTR(result);
-    DCHECK_EQ(result, g_sync_call_settings.Pointer()->Get());
-  }
-  return result;
+GlobalSyncCallSettings& GetGlobalSettings() {
+  static base::NoDestructor<GlobalSyncCallSettings> global_settings;
+  return *global_settings;
 }
 
-SyncCallSettings::SyncCallSettings() {
-  MojoResult result = MojoGetProperty(MOJO_PROPERTY_TYPE_SYNC_CALL_ALLOWED,
-                                      &system_defined_value_);
-  DCHECK_EQ(MOJO_RESULT_OK, result);
-
-  DCHECK(!g_sync_call_settings.Pointer()->Get());
-  g_sync_call_settings.Pointer()->Set(this);
-}
-
-SyncCallSettings::~SyncCallSettings() {
-  g_sync_call_settings.Pointer()->Set(nullptr);
+size_t& GetSequenceLocalScopedAllowCount() {
+  static base::NoDestructor<base::SequenceLocalStorageSlot<size_t>> count;
+  return count->Get();
 }
 
 }  // namespace
 
 // static
 void SyncCallRestrictions::AssertSyncCallAllowed() {
-  if (!SyncCallSettings::current()->allowed()) {
-      LOG(FATAL) << "Mojo sync calls are not allowed in this process because "
-                 << "they can lead to jank and deadlock. If you must make an "
-                 << "exception, please see "
-                 << "SyncCallRestrictions::ScopedAllowSyncCall and consult "
-                 << "mojo/OWNERS.";
-  }
+  if (GetGlobalSettings().sync_call_allowed_by_default())
+    return;
+  if (GetSequenceLocalScopedAllowCount() > 0)
+    return;
+
+  LOG(FATAL) << "Mojo sync calls are not allowed in this process because "
+             << "they can lead to jank and deadlock. If you must make an "
+             << "exception, please see "
+             << "SyncCallRestrictions::ScopedAllowSyncCall and consult "
+             << "mojo/OWNERS.";
+}
+
+// static
+void SyncCallRestrictions::DisallowSyncCall() {
+  GetGlobalSettings().DisallowSyncCallByDefault();
 }
 
 // static
 void SyncCallRestrictions::IncreaseScopedAllowCount() {
-  SyncCallSettings::current()->IncreaseScopedAllowCount();
+  ++GetSequenceLocalScopedAllowCount();
 }
 
 // static
 void SyncCallRestrictions::DecreaseScopedAllowCount() {
-  SyncCallSettings::current()->DecreaseScopedAllowCount();
+  DCHECK_GT(GetSequenceLocalScopedAllowCount(), 0u);
+  --GetSequenceLocalScopedAllowCount();
 }
 
 }  // namespace mojo

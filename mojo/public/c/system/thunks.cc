@@ -340,10 +340,6 @@ MojoResult MojoNotifyBadMessage(MojoMessageHandle message,
   return g_thunks.NotifyBadMessage(message, error, error_num_bytes);
 }
 
-MojoResult MojoGetProperty(MojoPropertyType type, void* value) {
-  return g_thunks.GetProperty(type, value);
-}
-
 }  // extern "C"
 
 void MojoEmbedderSetSystemThunks(const MojoSystemThunks* thunks) {
