@@ -187,7 +187,7 @@ class MonitoredProcessClient {
     // user data directory, the hang watcher verifies that the window name is an
     // existing directory. DIR_CURRENT is used to meet this constraint.
     base::FilePath existing_dir;
-    CHECK(PathService::Get(base::DIR_CURRENT, &existing_dir));
+    CHECK(base::PathService::Get(base::DIR_CURRENT, &existing_dir));
 
     message_window_.reset(new base::win::MessageWindow);
     *success = message_window_->CreateNamed(

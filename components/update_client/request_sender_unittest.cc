@@ -31,7 +31,7 @@ const char kUrlPath2[] = "path2";
 // TODO(sorin): refactor as a utility function for unit tests.
 base::FilePath test_file(const char* file) {
   base::FilePath path;
-  PathService::Get(base::DIR_SOURCE_ROOT, &path);
+  base::PathService::Get(base::DIR_SOURCE_ROOT, &path);
   return path.AppendASCII("components")
       .AppendASCII("test")
       .AppendASCII("data")

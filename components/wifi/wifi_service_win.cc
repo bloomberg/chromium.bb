@@ -999,7 +999,7 @@ void WiFiServiceImpl::SortNetworks(NetworkList* networks) {
 DWORD WiFiServiceImpl::LoadWlanLibrary() {
   // Use an absolute path to load the DLL to avoid DLL preloading attacks.
   base::FilePath path;
-  if (!PathService::Get(base::DIR_SYSTEM, &path)) {
+  if (!base::PathService::Get(base::DIR_SYSTEM, &path)) {
     LOG(ERROR) << "Unable to get system path.";
     return ERROR_NOT_FOUND;
   }

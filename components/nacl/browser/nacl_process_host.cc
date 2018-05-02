@@ -524,7 +524,7 @@ bool NaClProcessHost::LaunchSelLdr() {
     static const char kPath[] = "PATH";
     std::string old_path;
     base::FilePath module_path;
-    if (!PathService::Get(base::FILE_MODULE, &module_path)) {
+    if (!base::PathService::Get(base::FILE_MODULE, &module_path)) {
       SendErrorToRenderer("could not get path to current module");
       return false;
     }

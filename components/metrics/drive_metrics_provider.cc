@@ -65,7 +65,7 @@ void DriveMetricsProvider::QuerySeekPenalty(
   DCHECK(response);
 
   base::FilePath path;
-  if (!PathService::Get(path_service_key, &path))
+  if (!base::PathService::Get(path_service_key, &path))
     return;
 
   base::TimeTicks start = base::TimeTicks::Now();

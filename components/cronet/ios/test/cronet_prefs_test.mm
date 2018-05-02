@@ -81,7 +81,7 @@ class PrefsTest : public CronetTestBase {
 
 TEST_F(PrefsTest, HttpSeverProperties) {
   base::FilePath storage_path;
-  bool result = PathService::Get(base::DIR_CACHE, &storage_path);
+  bool result = base::PathService::Get(base::DIR_CACHE, &storage_path);
   ASSERT_TRUE(result);
   storage_path =
       storage_path.Append(FILE_PATH_LITERAL("cronet/prefs/local_prefs.json"));

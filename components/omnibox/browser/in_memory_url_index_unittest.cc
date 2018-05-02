@@ -247,7 +247,7 @@ void InMemoryURLIndexTest::SetUp() {
   // Execute the contents of a golden file to populate the [urls] and [visits]
   // tables.
   base::FilePath golden_path;
-  PathService::Get(base::DIR_SOURCE_ROOT, &golden_path);
+  base::PathService::Get(base::DIR_SOURCE_ROOT, &golden_path);
   golden_path = golden_path.AppendASCII("components/test/data/omnibox");
   golden_path = golden_path.Append(TestDBName());
   ASSERT_TRUE(base::PathExists(golden_path));

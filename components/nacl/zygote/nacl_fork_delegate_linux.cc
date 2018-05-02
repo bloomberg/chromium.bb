@@ -201,7 +201,7 @@ void NaClForkDelegate::Init(const int sandboxdesc,
   status_ = kNaClHelperUnused;
   base::FilePath helper_exe;
   base::FilePath helper_bootstrap_exe;
-  if (!PathService::Get(
+  if (!base::PathService::Get(
           nonsfi_mode_ ? nacl::FILE_NACL_HELPER_NONSFI : nacl::FILE_NACL_HELPER,
           &helper_exe)) {
     status_ = kNaClHelperMissing;

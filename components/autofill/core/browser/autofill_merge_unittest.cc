@@ -57,7 +57,7 @@ const ServerFieldType kProfileFieldTypes[] = {NAME_FIRST,
 const base::FilePath& GetTestDataDir() {
   CR_DEFINE_STATIC_LOCAL(base::FilePath, dir, ());
   if (dir.empty()) {
-    PathService::Get(base::DIR_SOURCE_ROOT, &dir);
+    base::PathService::Get(base::DIR_SOURCE_ROOT, &dir);
     dir = dir.AppendASCII("components");
     dir = dir.AppendASCII("test");
     dir = dir.AppendASCII("data");

@@ -17,7 +17,7 @@ namespace testing {
 
 std::string ReadTestFileToString(const base::StringPiece& file_name) {
   base::FilePath filepath;
-  PathService::Get(base::DIR_SOURCE_ROOT, &filepath);
+  base::PathService::Get(base::DIR_SOURCE_ROOT, &filepath);
   filepath = filepath.Append(FILE_PATH_LITERAL("components"));
   filepath = filepath.Append(FILE_PATH_LITERAL("test"));
   filepath = filepath.Append(FILE_PATH_LITERAL("data"));

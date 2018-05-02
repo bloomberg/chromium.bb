@@ -32,7 +32,7 @@ std::string MachineIdProvider::GetMachineId() {
   // This is fine as we do not support migrating Chrome installs to new drives.
   base::FilePath executable_path;
 
-  if (!PathService::Get(base::FILE_EXE, &executable_path)) {
+  if (!base::PathService::Get(base::FILE_EXE, &executable_path)) {
     NOTREACHED();
     return std::string();
   }

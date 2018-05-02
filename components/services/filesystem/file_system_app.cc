@@ -70,11 +70,11 @@ base::FilePath FileSystemApp::GetUserDataDir() {
     path = command_line->GetSwitchValuePath(kUserDataDir);
   } else {
 #if defined(OS_WIN)
-    CHECK(PathService::Get(base::DIR_LOCAL_APP_DATA, &path));
+    CHECK(base::PathService::Get(base::DIR_LOCAL_APP_DATA, &path));
 #elif defined(OS_MACOSX)
-    CHECK(PathService::Get(base::DIR_APP_DATA, &path));
+    CHECK(base::PathService::Get(base::DIR_APP_DATA, &path));
 #elif defined(OS_ANDROID)
-    CHECK(PathService::Get(base::DIR_ANDROID_APP_DATA, &path));
+    CHECK(base::PathService::Get(base::DIR_ANDROID_APP_DATA, &path));
 #elif defined(OS_LINUX)
     std::unique_ptr<base::Environment> env(base::Environment::Create());
     path = base::nix::GetXDGDirectory(

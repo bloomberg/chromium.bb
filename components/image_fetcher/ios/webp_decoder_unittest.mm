@@ -58,7 +58,7 @@ class WebpDecoderTest : public testing::Test {
 
   NSData* LoadImage(const base::FilePath& filename) {
     base::FilePath path;
-    PathService::Get(base::DIR_SOURCE_ROOT, &path);
+    base::PathService::Get(base::DIR_SOURCE_ROOT, &path);
     path = path.AppendASCII("components/test/data/webp_transcode")
                .Append(filename);
     return

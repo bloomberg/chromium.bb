@@ -67,13 +67,13 @@ class ComponentsTestSuite : public base::TestSuite {
 
     base::FilePath pak_path;
 #if defined(OS_ANDROID)
-    PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &pak_path);
+    base::PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &pak_path);
 #else
-    PathService::Get(base::DIR_MODULE, &pak_path);
+    base::PathService::Get(base::DIR_MODULE, &pak_path);
 #endif
 
     base::FilePath ui_test_pak_path;
-    ASSERT_TRUE(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
+    ASSERT_TRUE(base::PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
     ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
 
     ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(

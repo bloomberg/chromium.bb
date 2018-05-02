@@ -58,7 +58,7 @@ constexpr base::FilePath::CharType relative_install_dir[] =
 
 base::FilePath test_file(const char* file) {
   base::FilePath path;
-  PathService::Get(base::DIR_SOURCE_ROOT, &path);
+  base::PathService::Get(base::DIR_SOURCE_ROOT, &path);
   return path.AppendASCII("components")
       .AppendASCII("test")
       .AppendASCII("data")
@@ -311,7 +311,7 @@ TEST_F(ComponentInstallerTest, UnpackPathInstallSuccess) {
 
   base::ScopedPathOverride scoped_path_override(DIR_COMPONENT_USER);
   base::FilePath base_dir;
-  EXPECT_TRUE(PathService::Get(DIR_COMPONENT_USER, &base_dir));
+  EXPECT_TRUE(base::PathService::Get(DIR_COMPONENT_USER, &base_dir));
   base_dir = base_dir.Append(relative_install_dir);
   EXPECT_TRUE(base::CreateDirectory(base_dir));
   installer->Install(

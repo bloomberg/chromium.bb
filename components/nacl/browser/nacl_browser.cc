@@ -227,7 +227,7 @@ void NaClBrowser::InitIrtFilePath() {
 bool NaClBrowser::GetNaCl64ExePath(base::FilePath* exe_path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   base::FilePath module_path;
-  if (!PathService::Get(base::FILE_MODULE, &module_path)) {
+  if (!base::PathService::Get(base::FILE_MODULE, &module_path)) {
     LOG(ERROR) << "NaCl process launch failed: could not resolve module";
     return false;
   }

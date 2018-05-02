@@ -199,7 +199,7 @@ bool FakeAppInstance::GetFakeIcon(mojom::ScaleFactor scale_factor,
   }
 
   base::FilePath base_path;
-  CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &base_path));
+  CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &base_path));
   base::FilePath icon_file_path = base_path.AppendASCII("components")
                                       .AppendASCII("test")
                                       .AppendASCII("data")

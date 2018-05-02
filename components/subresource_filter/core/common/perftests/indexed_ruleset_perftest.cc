@@ -35,7 +35,7 @@ class IndexedRulesetPerftest : public testing::Test {
 
   void SetUp() override {
     base::FilePath dir_path;
-    PathService::Get(base::DIR_SOURCE_ROOT, &dir_path);
+    base::PathService::Get(base::DIR_SOURCE_ROOT, &dir_path);
     base::FilePath request_path = dir_path.AppendASCII(
         "components/subresource_filter/core/common/perftests/"
         "/data/httparchive_request_corpus.csv");

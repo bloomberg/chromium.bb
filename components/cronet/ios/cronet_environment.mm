@@ -319,7 +319,7 @@ void CronetEnvironment::InitializeOnNetworkThread() {
 
   // Cache
   base::FilePath storage_path;
-  if (!PathService::Get(base::DIR_CACHE, &storage_path))
+  if (!base::PathService::Get(base::DIR_CACHE, &storage_path))
     return;
   storage_path = storage_path.Append(FILE_PATH_LITERAL("cronet"));
 

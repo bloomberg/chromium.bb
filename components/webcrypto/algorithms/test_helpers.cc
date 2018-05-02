@@ -142,7 +142,7 @@ std::vector<uint8_t> MakeJsonVector(const base::DictionaryValue& dict) {
     const char* test_file_name,
     std::unique_ptr<base::Value>* value) {
   base::FilePath test_data_dir;
-  if (!PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir))
+  if (!base::PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir))
     return ::testing::AssertionFailure() << "Couldn't retrieve test dir";
 
   base::FilePath file_path = test_data_dir.AppendASCII("components")

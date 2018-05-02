@@ -210,7 +210,7 @@ class DataReductionProxyInterceptorWithServerTest : public testing::Test {
 
   void SetUp() override {
     base::FilePath root_path, proxy_file_path, direct_file_path;
-    PathService::Get(base::DIR_SOURCE_ROOT, &root_path);
+    base::PathService::Get(base::DIR_SOURCE_ROOT, &root_path);
     proxy_file_path = root_path.AppendASCII(
         "components/test/data/data_reduction_proxy/proxy");
     direct_file_path = root_path.AppendASCII(

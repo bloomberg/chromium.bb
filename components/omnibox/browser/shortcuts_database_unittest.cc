@@ -75,7 +75,7 @@ void CheckV2ColumnExistence(const base::FilePath& db_path, bool is_v2) {
 
 const base::FilePath GetTestDataDir() {
   base::FilePath path;
-  PathService::Get(base::DIR_SOURCE_ROOT, &path);
+  base::PathService::Get(base::DIR_SOURCE_ROOT, &path);
   return path.AppendASCII("components/test/data/omnibox");
 }
 

@@ -105,7 +105,7 @@ Result ComponentInstaller::InstallHelper(
   if (current_version_.CompareTo(manifest_version) > 0)
     return Result(InstallError::VERSION_NOT_UPGRADED);
   base::FilePath local_install_path;
-  if (!PathService::Get(DIR_COMPONENT_USER, &local_install_path))
+  if (!base::PathService::Get(DIR_COMPONENT_USER, &local_install_path))
     return Result(InstallError::NO_DIR_COMPONENT_USER);
   local_install_path =
       local_install_path.Append(installer_policy_->GetRelativeInstallDir())
@@ -257,7 +257,7 @@ void ComponentInstaller::StartRegistration(
 
   // First check for an installation set up alongside Chrome itself.
   base::FilePath root;
-  if (PathService::Get(DIR_COMPONENT_PREINSTALLED, &root) &&
+  if (base::PathService::Get(DIR_COMPONENT_PREINSTALLED, &root) &&
       FindPreinstallation(root, registration_info)) {
     latest_version = registration_info->version;
   }
@@ -265,7 +265,7 @@ void ComponentInstaller::StartRegistration(
   // If there is a distinct alternate root, check there as well, and override
   // anything found in the basic root.
   base::FilePath root_alternate;
-  if (PathService::Get(DIR_COMPONENT_PREINSTALLED_ALT, &root_alternate) &&
+  if (base::PathService::Get(DIR_COMPONENT_PREINSTALLED_ALT, &root_alternate) &&
       root != root_alternate &&
       FindPreinstallation(root_alternate, registration_info)) {
     latest_version = registration_info->version;
@@ -275,7 +275,7 @@ void ComponentInstaller::StartRegistration(
   base::FilePath latest_path;
   std::unique_ptr<base::DictionaryValue> latest_manifest;
   base::FilePath base_component_dir;
-  if (!PathService::Get(DIR_COMPONENT_USER, &base_component_dir))
+  if (!base::PathService::Get(DIR_COMPONENT_USER, &base_component_dir))
     return;
   base::FilePath base_dir =
       base_component_dir.Append(installer_policy_->GetRelativeInstallDir());
@@ -358,7 +358,7 @@ void ComponentInstaller::UninstallOnTaskRunner() {
 
   // Only try to delete any files that are in our user-level install path.
   base::FilePath userInstallPath;
-  if (!PathService::Get(DIR_COMPONENT_USER, &userInstallPath))
+  if (!base::PathService::Get(DIR_COMPONENT_USER, &userInstallPath))
     return;
   if (!userInstallPath.IsParent(current_install_dir_))
     return;

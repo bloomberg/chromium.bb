@@ -32,15 +32,16 @@ bool PathProvider(int key, base::FilePath* result) {
 
   switch (key) {
     case DIR_COMPONENT_PREINSTALLED:
-      return PathService::Get(g_components_preinstalled_root_key, result);
+      return base::PathService::Get(g_components_preinstalled_root_key, result);
     case DIR_COMPONENT_PREINSTALLED_ALT:
-      return PathService::Get(g_components_preinstalled_root_key_alt, result);
+      return base::PathService::Get(g_components_preinstalled_root_key_alt,
+                                    result);
     case DIR_COMPONENT_USER:
-      return PathService::Get(g_components_user_root_key, result);
+      return base::PathService::Get(g_components_user_root_key, result);
   }
 
   base::FilePath cur;
-  if (!PathService::Get(g_components_user_root_key, &cur))
+  if (!base::PathService::Get(g_components_user_root_key, &cur))
     return false;
 
   switch (key) {
@@ -85,7 +86,7 @@ void RegisterPathProvider(int components_preinstalled_root_key,
   g_components_preinstalled_root_key = components_preinstalled_root_key;
   g_components_preinstalled_root_key_alt = components_preinstalled_root_key_alt;
   g_components_user_root_key = components_user_root_key;
-  PathService::RegisterProvider(PathProvider, PATH_START, PATH_END);
+  base::PathService::RegisterProvider(PathProvider, PATH_START, PATH_END);
 }
 
 }  // namespace component_updater
