@@ -92,7 +92,7 @@ void BackgroundFetchContext::StartFetch(
       registration_id, requests, options, icon,
       base::BindOnce(&BackgroundFetchContext::DidCreateRegistration,
                      weak_factory_.GetWeakPtr(), registration_id, options, icon,
-                     std::move(callback)));
+                     requests.size(), std::move(callback)));
 }
 
 void BackgroundFetchContext::GetIconDisplaySize(
@@ -106,6 +106,7 @@ void BackgroundFetchContext::DidCreateRegistration(
     const BackgroundFetchRegistrationId& registration_id,
     const BackgroundFetchOptions& options,
     const SkBitmap& icon,
+    size_t num_requests,
     blink::mojom::BackgroundFetchService::FetchCallback callback,
     blink::mojom::BackgroundFetchError error,
     std::unique_ptr<BackgroundFetchRegistration> registration) {
@@ -119,7 +120,8 @@ void BackgroundFetchContext::DidCreateRegistration(
 
   DCHECK(registration);
   // Create the BackgroundFetchJobController to do the actual fetching.
-  CreateController(registration_id, options, icon, *registration.get());
+  CreateController(registration_id, options, icon, num_requests,
+                   *registration.get());
   std::move(callback).Run(error, *registration.get());
 }
 
@@ -171,6 +173,7 @@ void BackgroundFetchContext::CreateController(
     const BackgroundFetchRegistrationId& registration_id,
     const BackgroundFetchOptions& options,
     const SkBitmap& icon,
+    size_t num_requests,
     const BackgroundFetchRegistration& registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -188,8 +191,8 @@ void BackgroundFetchContext::CreateController(
   // each browser session. We need to initialize the number of downloads using
   // information loaded from the database.
   controller->InitializeRequestStatus(
-      0, /* completed_downloads*/
-      data_manager_.GetTotalNumberOfRequests(registration_id),
+      0,            /* completed_downloads */
+      num_requests, /* total_downloads */
       std::vector<std::string>() /* outstanding download GUIDs */);
 
   scheduler_->AddJobController(controller.get());
