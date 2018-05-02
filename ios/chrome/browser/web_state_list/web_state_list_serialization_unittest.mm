@@ -23,33 +23,17 @@
 
 namespace {
 
-// Serializable sub-class of TestWebState.
-class SerializableTestWebState : public web::TestWebState {
- public:
-  static std::unique_ptr<web::WebState> Create() {
-    return std::make_unique<SerializableTestWebState>();
-  }
+std::unique_ptr<web::WebState> CreateWebState() {
+  return std::make_unique<web::TestWebState>();
+}
 
-  static std::unique_ptr<web::WebState> CreateWithSessionStorage(
-      CRWSessionStorage* session_storage) {
-    std::unique_ptr<web::WebState> web_state = Create();
-    web::SerializableUserDataManager::FromWebState(web_state.get())
-        ->AddSerializableUserData(session_storage.userData);
-    return web_state;
-  }
-
- private:
-  // web::TestWebState implementation.
-  CRWSessionStorage* BuildSessionStorage() override {
-    std::unique_ptr<web::SerializableUserData> serializable_user_data =
-        web::SerializableUserDataManager::FromWebState(this)
-            ->CreateSerializableUserData();
-
-    CRWSessionStorage* session_storage = [[CRWSessionStorage alloc] init];
-    [session_storage setSerializableUserData:std::move(serializable_user_data)];
-    return session_storage;
-  }
-};
+std::unique_ptr<web::WebState> CreateWebStateWithSessionStorage(
+    CRWSessionStorage* session_storage) {
+  std::unique_ptr<web::WebState> web_state = CreateWebState();
+  web::SerializableUserDataManager::FromWebState(web_state.get())
+      ->AddSerializableUserData(session_storage.userData);
+  return web_state;
+}
 
 // Compares whether both WebStateList |original| and |restored| have the same
 // opener-opened relationship. The |restored| WebStateList may have additional
@@ -105,18 +89,17 @@ TEST_F(WebStateListSerializationTest, SerializationEmpty) {
 
 TEST_F(WebStateListSerializationTest, SerializationRoundTrip) {
   WebStateList original_web_state_list(web_state_list_delegate());
-  original_web_state_list.InsertWebState(0, SerializableTestWebState::Create(),
-                                         WebStateList::INSERT_FORCE_INDEX,
-                                         WebStateOpener());
   original_web_state_list.InsertWebState(
-      1, SerializableTestWebState::Create(),
+      0, CreateWebState(), WebStateList::INSERT_FORCE_INDEX, WebStateOpener());
+  original_web_state_list.InsertWebState(
+      1, CreateWebState(),
       WebStateList::INSERT_FORCE_INDEX | WebStateList::INSERT_ACTIVATE,
       WebStateOpener(original_web_state_list.GetWebStateAt(0), 3));
   original_web_state_list.InsertWebState(
-      2, SerializableTestWebState::Create(), WebStateList::INSERT_FORCE_INDEX,
+      2, CreateWebState(), WebStateList::INSERT_FORCE_INDEX,
       WebStateOpener(original_web_state_list.GetWebStateAt(0), 2));
   original_web_state_list.InsertWebState(
-      3, SerializableTestWebState::Create(), WebStateList::INSERT_FORCE_INDEX,
+      3, CreateWebState(), WebStateList::INSERT_FORCE_INDEX,
       WebStateOpener(original_web_state_list.GetWebStateAt(1), 1));
 
   SessionWindowIOS* session_window =
@@ -127,14 +110,13 @@ TEST_F(WebStateListSerializationTest, SerializationRoundTrip) {
 
   // Create a deserialized WebStateList and verify its contents.
   WebStateList restored_web_state_list(web_state_list_delegate());
-  restored_web_state_list.InsertWebState(0, SerializableTestWebState::Create(),
-                                         WebStateList::INSERT_FORCE_INDEX,
-                                         WebStateOpener());
+  restored_web_state_list.InsertWebState(
+      0, CreateWebState(), WebStateList::INSERT_FORCE_INDEX, WebStateOpener());
   ASSERT_EQ(1, restored_web_state_list.count());
 
   DeserializeWebStateList(
       &restored_web_state_list, session_window,
-      base::BindRepeating(&SerializableTestWebState::CreateWithSessionStorage));
+      base::BindRepeating(&CreateWebStateWithSessionStorage));
 
   EXPECT_EQ(5, restored_web_state_list.count());
   EXPECT_EQ(2, restored_web_state_list.active_index());
