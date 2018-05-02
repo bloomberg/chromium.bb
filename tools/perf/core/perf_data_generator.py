@@ -204,7 +204,7 @@ def get_waterfall_config():
     'android', swarming=[
       {
        'os': 'Android',
-       'pool': 'chrome.tests.perf',
+       'pool': 'chrome.tests.perf-webview',
        'device_ids': [
            'build188-b7--device1', 'build188-b7--device2',
            'build188-b7--device3', 'build188-b7--device4',
