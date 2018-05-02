@@ -157,45 +157,6 @@ class CountingInterceptorWithCallback : public net::URLRequestInterceptor {
   DISALLOW_COPY_AND_ASSIGN(CountingInterceptorWithCallback);
 };
 
-// URLRequestJob (and associated handler) which hangs.
-class HangingURLRequestJob : public net::URLRequestJob {
- public:
-  HangingURLRequestJob(net::URLRequest* request,
-                          net::NetworkDelegate* network_delegate)
-      : net::URLRequestJob(request, network_delegate) {
-  }
-
-  void Start() override {}
-
- private:
-  ~HangingURLRequestJob() override {}
-};
-
-class HangingFirstRequestInterceptor : public net::URLRequestInterceptor {
- public:
-  HangingFirstRequestInterceptor(
-      const base::FilePath& file,
-      base::Callback<void(net::URLRequest*)> callback)
-      : file_(file), callback_(callback), first_run_(true) {}
-  ~HangingFirstRequestInterceptor() override {}
-
-  net::URLRequestJob* MaybeInterceptRequest(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override {
-    if (first_run_) {
-      first_run_ = false;
-      if (!callback_.is_null())
-        callback_.Run(request);
-      return new HangingURLRequestJob(request, network_delegate);
-    }
-    return new net::URLRequestMockHTTPJob(request, network_delegate, file_);
-  }
-
- private:
-  base::FilePath file_;
-  base::Callback<void(net::URLRequest*)> callback_;
-  mutable bool first_run_;
-};
 
 // An ExternalProtocolHandler that blocks everything and asserts it never is
 // called.
@@ -237,17 +198,6 @@ class NeverRunsExternalProtocolHandlerDelegate
 
   void FinishedProcessingCheck() override { NOTREACHED(); }
 };
-
-void CreateHangingFirstRequestInterceptorOnIO(
-    const GURL& url,
-    const base::FilePath& file,
-    base::Callback<void(net::URLRequest*)> callback_io) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  std::unique_ptr<net::URLRequestInterceptor> interceptor(
-      new HangingFirstRequestInterceptor(file, callback_io));
-  net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
-      url, std::move(interceptor));
-}
 
 }  // namespace
 
@@ -848,33 +798,10 @@ void CreateCountingInterceptorOnIO(
       url, std::make_unique<CountingInterceptor>(file, counter));
 }
 
-void InterceptRequest(const GURL& url,
-                      base::Callback<void(net::URLRequest*)> callback_io) {
-  CountingInterceptorWithCallback::Initialize(url, nullptr, callback_io);
-}
-
-void InterceptRequestAndCount(
-    const GURL& url,
-    RequestCounter* counter,
-    base::Callback<void(net::URLRequest*)> callback_io) {
-  CountingInterceptorWithCallback::Initialize(url, counter, callback_io);
-}
-
 void CreateMockInterceptorOnIO(const GURL& url, const base::FilePath& file) {
   CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
       url, net::URLRequestMockHTTPJob::CreateInterceptorForSingleFile(file));
-}
-
-void CreateHangingFirstRequestInterceptor(
-    const GURL& url,
-    const base::FilePath& file,
-    base::Callback<void(net::URLRequest*)> callback_io) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&CreateHangingFirstRequestInterceptorOnIO, url, file,
-                     callback_io));
 }
 
 }  // namespace test_utils

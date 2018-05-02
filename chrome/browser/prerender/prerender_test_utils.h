@@ -439,30 +439,8 @@ void CreateCountingInterceptorOnIO(
     const base::FilePath& file,
     const base::WeakPtr<RequestCounter>& counter);
 
-// When the |url| hits the net::URLRequestFilter (on the IO thread), executes
-// the |callback_io| providing the request to it. Does not modify the behavior
-// or the request job.
-void InterceptRequest(const GURL& url,
-                      base::Callback<void(net::URLRequest*)> callback_io);
-
-// When the |url| hits the net::URLRequestFilter (on the IO thread), executes
-// the |callback_io| providing the request to it, also pings the |counter| on UI
-// thread. Does not modify the behavior or the request job.
-void InterceptRequestAndCount(
-    const GURL& url,
-    RequestCounter* counter,
-    base::Callback<void(net::URLRequest*)> callback_io);
-
 // Makes |url| respond to requests with the contents of |file|.
 void CreateMockInterceptorOnIO(const GURL& url, const base::FilePath& file);
-
-// Makes |url| never respond on the first load, and then with the contents of
-// |file| afterwards. When the first load has been scheduled, runs |callback_io|
-// on the IO thread.
-void CreateHangingFirstRequestInterceptor(
-    const GURL& url,
-    const base::FilePath& file,
-    base::Callback<void(net::URLRequest*)> callback_io);
 
 }  // namespace test_utils
 
