@@ -239,10 +239,6 @@ _ANDROID_NEGATIVE_FILTER['chromium'] = (
         'ChromeDriverTest.testShadowDomHover',
         'ChromeDriverTest.testMouseMoveTo',
         'ChromeDriverTest.testHoverOverElement',
-        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2388
-        'ChromeDriverTest.testTouchDoubleTapElement',
-        'ChromeDriverTest.testTouchLongPressElement',
-        'ChromeDriverTest.testTouchSingleTapElement',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
