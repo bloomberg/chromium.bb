@@ -77,7 +77,6 @@ bool FlingController::ShouldForwardForTapSuppression(
     case WebInputEvent::kGestureTapCancel:
     case WebInputEvent::kGestureTap:
     case WebInputEvent::kGestureDoubleTap:
-    case WebInputEvent::kGestureLongPress:
     case WebInputEvent::kGestureLongTap:
     case WebInputEvent::kGestureTwoFingerTap:
       if (gesture_event.event.SourceDevice() ==
