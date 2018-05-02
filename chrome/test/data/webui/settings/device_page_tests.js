@@ -911,7 +911,7 @@ cr.define('device_page_tests', function() {
           // Attach a dual-role USB device.
           const powerSource = {
             id: '2',
-            type: settings.PowerDeviceType.DUAL_ROLE_USB,
+            is_dedicated_charger: false,
             description: 'USB-C device',
           };
           setPowerSources([powerSource], '', false);
@@ -951,7 +951,7 @@ cr.define('device_page_tests', function() {
           // Attach a dual-role USB device.
           const powerSource = {
             id: '3',
-            type: settings.PowerDeviceType.DUAL_ROLE_USB,
+            is_dedicated_charger: false,
             description: 'USB-C device',
           };
           setPowerSources([powerSource], '', false);

@@ -187,7 +187,7 @@ class CHROMEOS_EXPORT PowerManagerClient : public DBusClient {
   virtual void IncreaseKeyboardBrightness() = 0;
 
   // Returns the last power status that was received from D-Bus, if any.
-  virtual base::Optional<power_manager::PowerSupplyProperties>
+  virtual const base::Optional<power_manager::PowerSupplyProperties>&
   GetLastStatus() = 0;
 
   // Requests an updated copy of the power status. Observer::PowerChanged()

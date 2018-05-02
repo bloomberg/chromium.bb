@@ -4,6 +4,7 @@
 
 #include "ash/system/power/battery_notification.h"
 
+#include "ash/public/cpp/power_utils.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -75,7 +76,7 @@ std::unique_ptr<Notification> CreateNotification(
   if (status.IsUsbChargerConnected()) {
     time_message = l10n_util::GetStringUTF16(
         IDS_ASH_STATUS_TRAY_BATTERY_CHARGING_UNRELIABLE);
-  } else if (PowerStatus::ShouldDisplayBatteryTime(time) &&
+  } else if (power_utils::ShouldDisplayBatteryTime(time) &&
              !status.IsBatteryDischargingOnLinePower()) {
     if (status.IsBatteryCharging()) {
       base::string16 duration;

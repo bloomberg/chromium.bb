@@ -1,6 +1,0 @@
-specific_include_rules = {
-  "device_power_handler(|_unittest)\.(h|cc)": [
-    # TODO(mash): Remove. http://crbug.com/770866
-    "+ash/system/power/power_status.h",
-  ],
-}

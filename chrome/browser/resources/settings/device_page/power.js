@@ -124,7 +124,7 @@ Polymer({
    */
   computeShowPowerSourceDropdown_: function(powerSources) {
     return powerSources.length > 0 && powerSources.every(function(source) {
-      return source.type == settings.PowerDeviceType.DUAL_ROLE_USB;
+      return !source.is_dedicated_charger;
     });
   },
 

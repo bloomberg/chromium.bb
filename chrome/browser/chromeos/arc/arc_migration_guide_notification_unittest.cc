@@ -30,7 +30,7 @@ TEST_F(ArcMigrationGuideNotificationTest, BatteryPercent) {
   auto* power_manager = power_manager_client.get();
   chromeos::DBusThreadManager::GetSetterForTesting()->SetPowerManagerClient(
       std::move(power_manager_client));
-  power_manager::PowerSupplyProperties props = power_manager->props();
+  power_manager::PowerSupplyProperties props = *power_manager->GetLastStatus();
   props.set_battery_percent(99);
   power_manager->UpdatePowerProperties(props);
 

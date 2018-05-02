@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/cpp/power_utils.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/strings/string_number_conversions.h"
@@ -16,6 +17,7 @@
 #include "base/values.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui.h"
@@ -30,7 +32,7 @@ namespace {
 base::string16 GetBatteryTimeText(base::TimeDelta time_left) {
   int hour = 0;
   int min = 0;
-  ash::PowerStatus::SplitTimeIntoHoursAndMinutes(time_left, &hour, &min);
+  ash::power_utils::SplitTimeIntoHoursAndMinutes(time_left, &hour, &min);
 
   base::string16 time_text;
   if (hour == 0 || min == 0) {
@@ -79,11 +81,8 @@ void PowerHandler::TestAPI::SetLidClosedBehavior(
 
 PowerHandler::PowerHandler(PrefService* prefs)
     : prefs_(prefs),
-      power_status_observer_(this),
       power_manager_client_observer_(this),
-      weak_ptr_factory_(this) {
-  power_status_ = ash::PowerStatus::Get();
-}
+      weak_ptr_factory_(this) {}
 
 PowerHandler::~PowerHandler() {}
 
@@ -110,8 +109,6 @@ void PowerHandler::RegisterMessages() {
 }
 
 void PowerHandler::OnJavascriptAllowed() {
-  power_status_observer_.Add(power_status_);
-
   PowerManagerClient* power_manager_client =
       DBusThreadManager::Get()->GetPowerManagerClient();
   power_manager_client_observer_.Add(power_manager_client);
@@ -138,12 +135,12 @@ void PowerHandler::OnJavascriptAllowed() {
 }
 
 void PowerHandler::OnJavascriptDisallowed() {
-  power_status_observer_.RemoveAll();
   power_manager_client_observer_.RemoveAll();
   pref_change_registrar_.reset();
 }
 
-void PowerHandler::OnPowerStatusChanged() {
+void PowerHandler::PowerChanged(
+    const power_manager::PowerSupplyProperties& proto) {
   SendBatteryStatus();
   SendPowerSources();
 }
@@ -162,7 +159,9 @@ void PowerHandler::LidEventReceived(PowerManagerClient::LidState state,
 
 void PowerHandler::HandleUpdatePowerStatus(const base::ListValue* args) {
   AllowJavascript();
-  power_status_->RequestStatusUpdate();
+  chromeos::DBusThreadManager::Get()
+      ->GetPowerManagerClient()
+      ->RequestStatusUpdate();
 }
 
 void PowerHandler::HandleSetPowerSource(const base::ListValue* args) {
@@ -170,7 +169,8 @@ void PowerHandler::HandleSetPowerSource(const base::ListValue* args) {
 
   std::string id;
   CHECK(args->GetString(0, &id));
-  power_status_->SetPowerSource(id);
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->SetPowerSource(
+      id);
 }
 
 void PowerHandler::HandleRequestPowerManagementSettings(
@@ -249,16 +249,22 @@ void PowerHandler::HandleSetLidClosedBehavior(const base::ListValue* args) {
 }
 
 void PowerHandler::SendBatteryStatus() {
-  bool charging = power_status_->IsBatteryCharging();
-  bool calculating = power_status_->IsBatteryTimeBeingCalculated();
-  int percent = power_status_->GetRoundedBatteryPercent();
+  const base::Optional<power_manager::PowerSupplyProperties>& proto =
+      DBusThreadManager::Get()->GetPowerManagerClient()->GetLastStatus();
+  DCHECK(proto);
+  bool charging = proto->battery_state() ==
+                  power_manager::PowerSupplyProperties_BatteryState_CHARGING;
+  bool calculating = proto->is_calculating_battery_time();
+  int percent =
+      ash::power_utils::GetRoundedBatteryPercent(proto->battery_percent());
   base::TimeDelta time_left;
   bool show_time = false;
 
   if (!calculating) {
-    time_left = charging ? power_status_->GetBatteryTimeToFull()
-                         : power_status_->GetBatteryTimeToEmpty();
-    show_time = ash::PowerStatus::ShouldDisplayBatteryTime(time_left);
+    time_left = base::TimeDelta::FromSeconds(
+        charging ? proto->battery_time_to_full_sec()
+                 : proto->battery_time_to_empty_sec());
+    show_time = ash::power_utils::ShouldDisplayBatteryTime(time_left);
   }
 
   base::string16 status_text;
@@ -273,7 +279,10 @@ void PowerHandler::SendBatteryStatus() {
   }
 
   base::DictionaryValue battery_dict;
-  battery_dict.SetBoolean("present", power_status_->IsBatteryPresent());
+  battery_dict.SetBoolean(
+      "present",
+      proto->battery_state() !=
+          power_manager::PowerSupplyProperties_BatteryState_NOT_PRESENT);
   battery_dict.SetBoolean("charging", charging);
   battery_dict.SetBoolean("calculating", calculating);
   battery_dict.SetInteger("percent", percent);
@@ -283,19 +292,25 @@ void PowerHandler::SendBatteryStatus() {
 }
 
 void PowerHandler::SendPowerSources() {
+  const base::Optional<power_manager::PowerSupplyProperties>& proto =
+      DBusThreadManager::Get()->GetPowerManagerClient()->GetLastStatus();
+  DCHECK(proto);
   base::ListValue sources_list;
-  for (const auto& source : power_status_->GetPowerSources()) {
+  for (int i = 0; i < proto->available_external_power_source_size(); i++) {
+    const auto& source = proto->available_external_power_source(i);
     std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-    dict->SetString("id", source.id);
-    dict->SetInteger("type", source.type);
+    dict->SetString("id", source.id());
+    dict->SetBoolean("is_dedicated_charger", source.active_by_default());
     dict->SetString("description",
-                    l10n_util::GetStringUTF16(source.description_id));
+                    ash::power_utils::PowerSourceToDisplayString(source));
     sources_list.Append(std::move(dict));
   }
 
-  FireWebUIListener("power-sources-changed", sources_list,
-                    base::Value(power_status_->GetCurrentPowerSourceID()),
-                    base::Value(power_status_->IsUsbChargerConnected()));
+  FireWebUIListener(
+      "power-sources-changed", sources_list,
+      base::Value(proto->external_power_source_id()),
+      base::Value(proto->external_power() ==
+                  power_manager::PowerSupplyProperties_ExternalPower_USB));
 }
 
 void PowerHandler::SendPowerManagementSettings(bool force) {
