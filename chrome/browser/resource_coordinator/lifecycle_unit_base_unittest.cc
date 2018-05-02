@@ -42,7 +42,6 @@ class DummyLifecycleUnit : public LifecycleUnitBase {
     return nullptr;
   }
   base::string16 GetTitle() const override { return base::string16(); }
-  std::string GetIconURL() const override { return std::string(); }
   base::ProcessHandle GetProcessHandle() const override {
     return base::ProcessHandle();
   }

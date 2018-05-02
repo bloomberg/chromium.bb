@@ -37,19 +37,11 @@ table td div.title-cell-container {
 table td div.favicon-div {
   height: 16px;
   margin: 3px;
-  padding: 0;
-  width: 16px;
-}
-
-table td div.favicon-div img {
-  height: 16px;
-  width: 16px;
+  min-width: 16px;
 }
 
 table td div.title-div {
-  margin: 0;
   overflow: hidden;
-  padding: 0;
   white-space: nowrap;
 }
 

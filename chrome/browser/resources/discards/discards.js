@@ -274,8 +274,8 @@ cr.define('discards', function() {
     // Update the content.
     row.querySelector('.utility-rank-cell').textContent =
         info.utilityRank.toString();
-    row.querySelector('.favicon').src =
-        info.faviconUrl ? info.faviconUrl : 'chrome://favicon';
+    row.querySelector('.favicon-div').style.backgroundImage =
+        cr.icon.getFavicon(info.tabUrl);
     row.querySelector('.title-div').textContent = info.title;
     row.querySelector('.tab-url-cell').textContent = info.tabUrl;
     row.querySelector('.visibility-cell').textContent =

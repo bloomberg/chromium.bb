@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_RESOURCE_COORDINATOR_LIFECYCLE_UNIT_H_
 
 #include <stdint.h>
-#include <string>
 #include <vector>
 
 #include "base/containers/flat_set.h"
@@ -60,10 +59,6 @@ class LifecycleUnit {
   // Returns a title describing this LifecycleUnit, or an empty string if no
   // title is available.
   virtual base::string16 GetTitle() const = 0;
-
-  // Returns the URL of an icon for this LifecycleUnit, or an empty string if no
-  // icon is available.
-  virtual std::string GetIconURL() const = 0;
 
   // Returns the process hosting this LifecycleUnit. Used to distribute OOM
   // scores.
