@@ -34,6 +34,8 @@ cc::ScrollState CreateScrollState(const ScrollEvent& scroll, bool is_end) {
 ScrollInputHandler::ScrollInputHandler(
     const base::WeakPtr<cc::InputHandler>& input_handler)
     : input_handler_(input_handler.get()) {
+  // TODO(crbug.com/838873): Take into account the possible invalidity of
+  // this WeakPtr (input_handler).
   input_handler_->BindToClient(this, false /* wheel_scroll_latching_enabled */);
 }
 
