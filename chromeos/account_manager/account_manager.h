@@ -23,10 +23,17 @@
 #include "chromeos/account_manager/tokens.pb.h"
 #include "chromeos/chromeos_export.h"
 
+class OAuth2AccessTokenFetcher;
+class OAuth2AccessTokenConsumer;
+
 namespace base {
 class SequencedTaskRunner;
 class ImportantFileWriter;
 }  // namespace base
+
+namespace net {
+class URLRequestContextGetter;
+}  // namespace net
 
 namespace chromeos {
 
@@ -91,6 +98,21 @@ class CHROMEOS_EXPORT AccountManager {
   // Removes an |AccountManager::Observer|. Does nothing if the |observer| is
   // not in the list of known observers.
   void RemoveObserver(Observer* observer);
+
+  // Creates and returns an |OAuth2AccessTokenFetcher| using the refresh token
+  // stored for |account_key|. |IsTokenAvailable| should be |true| for
+  // |account_key|, otherwise a |nullptr| is returned.
+  std::unique_ptr<OAuth2AccessTokenFetcher> CreateAccessTokenFetcher(
+      const AccountKey& account_key,
+      net::URLRequestContextGetter* getter,
+      OAuth2AccessTokenConsumer* consumer) const;
+
+  // Returns |true| if an LST is available for |account_key|.
+  // Note: An LST will not be available for |account_key| if it is an Active
+  // Directory account.
+  // Note: This method will return |false| if |AccountManager| has not been
+  // initialized yet.
+  bool IsTokenAvailable(const AccountKey& account_key) const;
 
  private:
   enum InitializationState {
