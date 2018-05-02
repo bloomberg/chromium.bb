@@ -75,7 +75,7 @@ const base::Feature kUseMonitorColorSpace{"UseMonitorColorSpace",
 // Enables the slider in display settings to modify the display zoom/size.
 // TODO(malaykeshav): Remove this in M68 when the feature has been in stable for
 // atleast one milestone.
-constexpr base::Feature kEnableDisplayZoomSetting{
+const base::Feature kEnableDisplayZoomSetting {
   "EnableDisplayZoomSetting",
 #if defined(OS_CHROMEOS)
       base::FEATURE_ENABLED_BY_DEFAULT
