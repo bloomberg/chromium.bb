@@ -489,26 +489,6 @@ bundle_data("resources_unit_tests") {
   ]
 }
 
-# These tests use external URLs and hit network.  They will fail if the network
-# is unavailable. Reference to crbug.com/694662.
-source_set("external_url_eg_tests") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "external_url_error_page_egtest.mm",
-  ]
-  deps = [
-    "//components/strings",
-    "//ios/chrome/test/app:test_support",
-    "//ios/chrome/test/earl_grey:test_support",
-    "//ios/web:earl_grey_test_support",
-    "//ios/web/public/test",
-    "//ios/web/public/test/http_server",
-    "//ui/base",
-  ]
-  libs = [ "XCTest.framework" ]
-}
-
 source_set("eg_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true

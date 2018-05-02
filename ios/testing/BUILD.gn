@@ -26,6 +26,19 @@ source_set("ios_test_support") {
   ]
 }
 
+source_set("embedded_test_server_support") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+
+  deps = [
+    "//net:test_support",
+  ]
+  sources = [
+    "embedded_test_server_handlers.cc",
+    "embedded_test_server_handlers.h",
+  ]
+}
+
 source_set("ocmock_support") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true

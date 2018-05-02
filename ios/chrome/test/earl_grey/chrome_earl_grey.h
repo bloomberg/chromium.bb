@@ -81,6 +81,10 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // within a timeout, a GREYAssert is induced.
 + (void)waitForWebViewContainingText:(std::string)text;
 
+// Waits for the current web view to contain a css selector matching |selector|.
+// If the condition is not met within a timeout, a GREYAssert is induced.
++ (void)waitForWebViewContainingCSSSelector:(std::string)selector;
+
 // Waits for there to be no web view containing |text|. If the condition is not
 // met within a timeout, a GREYAssert is induced.
 + (void)waitForWebViewNotContainingText:(std::string)text;
