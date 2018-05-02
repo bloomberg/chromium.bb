@@ -95,7 +95,6 @@
 #include "components/net_log/chrome_net_log.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/optimization_guide/optimization_guide_service.h"
-#include "components/physical_web/data_source/physical_web_data_source.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -148,9 +147,7 @@
 #include "chrome/browser/ui/ash/ash_util.h"
 #endif
 
-#if defined(OS_ANDROID)
-#include "chrome/browser/android/physical_web/physical_web_data_source_android.h"
-#else  // !defined(OS_ANDROID)
+#if !defined(OS_ANDROID)
 #include "chrome/browser/gcm/gcm_product_util.h"
 #include "components/gcm_driver/gcm_client_factory.h"
 #include "components/gcm_driver/gcm_desktop_utils.h"
@@ -867,20 +864,6 @@ BrowserProcessImpl::CachedDefaultWebClientState() {
   return cached_default_web_client_state_;
 }
 
-physical_web::PhysicalWebDataSource*
-BrowserProcessImpl::GetPhysicalWebDataSource() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-#if defined(OS_ANDROID)
-  if (!physical_web_data_source_) {
-    CreatePhysicalWebDataSource();
-    DCHECK(physical_web_data_source_);
-  }
-  return physical_web_data_source_.get();
-#else
-  return nullptr;
-#endif
-}
-
 prefs::InProcessPrefServiceFactory* BrowserProcessImpl::pref_service_factory()
     const {
   return pref_service_factory_.get();
@@ -1329,16 +1312,6 @@ void BrowserProcessImpl::CreateGCMDriver() {
           content::BrowserThread::IO),
       blocking_task_runner);
 #endif  // defined(OS_ANDROID)
-}
-
-void BrowserProcessImpl::CreatePhysicalWebDataSource() {
-  DCHECK(!physical_web_data_source_);
-
-#if defined(OS_ANDROID)
-  physical_web_data_source_ = std::make_unique<PhysicalWebDataSourceAndroid>();
-#else
-  NOTIMPLEMENTED();
-#endif
 }
 
 void BrowserProcessImpl::ApplyDefaultBrowserPolicy() {

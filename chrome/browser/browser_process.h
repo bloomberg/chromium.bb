@@ -94,10 +94,6 @@ namespace optimization_guide {
 class OptimizationGuideService;
 }
 
-namespace physical_web {
-class PhysicalWebDataSource;
-}
-
 namespace policy {
 class ChromeBrowserPolicyConnector;
 class PolicyService;
@@ -291,9 +287,6 @@ class BrowserProcess {
   // process startup and now.
   virtual shell_integration::DefaultWebClientState
   CachedDefaultWebClientState() = 0;
-
-  // Returns the Physical Web data source.
-  virtual physical_web::PhysicalWebDataSource* GetPhysicalWebDataSource() = 0;
 
   virtual prefs::InProcessPrefServiceFactory* pref_service_factory() const = 0;
 
