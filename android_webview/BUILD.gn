@@ -932,6 +932,7 @@ android_library("android_webview_java") {
 android_library("android_webview_variations_utils_java") {
   java_files = [ "java/src/org/chromium/android_webview/VariationsUtils.java" ]
   deps = [
+    "//android_webview/proto:aw_variations_seed_proto_java",
     "//components/variations/android:variations_java",
   ]
 }

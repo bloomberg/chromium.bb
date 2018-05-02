@@ -6,6 +6,10 @@ package org.chromium.android_webview;
 
 import android.support.annotation.Nullable;
 
+import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
+
+import org.chromium.android_webview.proto.AwVariationsSeedOuterClass.AwVariationsSeed;
 import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.components.variations.firstrun.VariationsSeedFetcher.SeedInfo;
@@ -82,21 +86,34 @@ public class VariationsUtils {
         }
     }
 
-    // Returns null in case of incomplete/corrupt/missing seed.
+    // Silently returns null in case of incomplete/corrupt/missing seed, which is expected in case
+    // of an incomplete downoad or copy. Other IO problems are actual errors, and are logged.
     @Nullable
     public static SeedInfo readSeedFile(File inFile) {
-        // Read and discard the seed file, then return a mock seed. TODO(paulmiller): Return the
-        // actual seed, once seed downloading and serialization are implemented.
         FileInputStream in = null;
         try {
             in = new FileInputStream(inFile);
-            byte[] data = new byte[1024];
-            while (in.read(data) > 0) {}
 
-            SeedInfo seed = new SeedInfo();
-            // Fill in a mock date so that seed.parseDate() doesn't crash.
-            seed.date = "Thu, 01 Jan 1970 12:34:56 GMT";
-            return seed;
+            AwVariationsSeed proto = null;
+            try {
+                proto = AwVariationsSeed.parseFrom(in);
+            } catch (InvalidProtocolBufferException e) {
+                return null;
+            }
+
+            if (!proto.hasSignature()        ||
+                !proto.hasCountry()          ||
+                !proto.hasDate()             ||
+                !proto.hasIsGzipCompressed() ||
+                !proto.hasSeedData()) return null;
+
+            SeedInfo info = new SeedInfo();
+            info.signature = proto.getSignature();
+            info.country = proto.getCountry();
+            info.date = proto.getDate();
+            info.isGzipCompressed = proto.getIsGzipCompressed();
+            info.seedData = proto.getSeedData().toByteArray();
+            return info;
         } catch (IOException e) {
             Log.e(TAG, "Failed reading seed file \"" + inFile + "\": " + e.getMessage());
             return null;
@@ -107,11 +124,15 @@ public class VariationsUtils {
 
     // Returns true on success. "out" will always be closed, regardless of success.
     public static boolean writeSeed(FileOutputStream out, SeedInfo info) {
-        // Write 3 KB of zeros (the current size of an actual WebView seed). TODO(paulmiller): Write
-        // the actual seed, once seed downloading and serialization are implemented.
-        byte[] zeros = new byte[3 * 1024];
         try {
-            out.write(zeros);
+            AwVariationsSeed proto = AwVariationsSeed.newBuilder()
+                .setSignature(info.signature)
+                .setCountry(info.country)
+                .setDate(info.date)
+                .setIsGzipCompressed(info.isGzipCompressed)
+                .setSeedData(ByteString.copyFrom(info.seedData))
+                .build();
+            proto.writeTo(out);
             return true;
         } catch (IOException e) {
             Log.e(TAG, "Failed writing seed file: " + e.getMessage());
