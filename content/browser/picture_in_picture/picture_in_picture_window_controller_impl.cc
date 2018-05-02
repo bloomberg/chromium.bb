@@ -40,6 +40,29 @@ PictureInPictureWindowControllerImpl::GetOrCreateForWebContents(
 PictureInPictureWindowControllerImpl::~PictureInPictureWindowControllerImpl() {
   if (window_)
     window_->Close();
+
+  // If the initiator WebContents is being destroyed, there is no need to put
+  // the video's media player in a post-Picture-in-Picture mode. In fact, some
+  // things, such as the MediaWebContentsObserver, may already been torn down.
+  if (initiator_->IsBeingDestroyed())
+    return;
+
+  content::MediaWebContentsObserver* observer =
+      static_cast<content::WebContentsImpl* const>(initiator_)
+          ->media_web_contents_observer();
+  DCHECK(observer);
+
+  base::Optional<content::WebContentsObserver::MediaPlayerId> player_id =
+      observer->GetPictureInPictureVideoMediaPlayerId();
+
+  // |this| is torn down when there is a new Picture-in-Picture initiator, such
+  // as when a video in another tab requests to enter Picture-in-Picture. In
+  // cases like this, pause the current video so there is only one video
+  // playing at a time.
+  if (player_id.has_value() && observer->IsPlayerActive(*player_id)) {
+    player_id->first->Send(new MediaPlayerDelegateMsg_Pause(
+        player_id->first->GetRoutingID(), player_id->second));
+  }
 }
 
 PictureInPictureWindowControllerImpl::PictureInPictureWindowControllerImpl(
