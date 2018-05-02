@@ -11,6 +11,8 @@ aggregate_vector_icons("ash_vector_icons") {
   icons = [
     "captive_portal.icon",
     "check_circle.icon",
+    "dictation_off.icon",
+    "dictation_on.icon",
     "ime_menu_emoticon.icon",
     "ime_menu_microphone.icon",
     "ime_menu_on_screen_keyboard.icon",

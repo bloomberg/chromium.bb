@@ -1010,10 +1010,20 @@ void AccessibilityManager::NotifyAccessibilityStatusChanged(
   if (GetAshConfig() == ash::Config::MASH)
     return;
 
+  if (details.notification_type == ACCESSIBILITY_TOGGLE_DICTATION) {
+    ash::Shell::Get()->accessibility_controller()->SetDictationActive(
+        details.enabled);
+    ash::Shell::Get()
+        ->accessibility_controller()
+        ->NotifyAccessibilityStatusChanged();
+    return;
+  }
+
   // Update system tray menu visibility. Prefs tracked inside ash handle their
   // own updates to avoid race conditions (pref updates are asynchronous between
   // chrome and ash).
-  if (details.notification_type == ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER) {
+  if (details.notification_type == ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER ||
+      details.notification_type == ACCESSIBILITY_TOGGLE_DICTATION) {
     ash::Shell::Get()
         ->accessibility_controller()
         ->NotifyAccessibilityStatusChanged();
@@ -1270,14 +1280,14 @@ void AccessibilityManager::SetSwitchAccessKeys(const std::set<int>& key_codes) {
     switch_access_event_handler_->SetKeysToCapture(key_codes);
 }
 
-void AccessibilityManager::ToggleDictation() {
+bool AccessibilityManager::ToggleDictation() {
   if (!profile_)
-    return;
+    return false;
 
   if (!dictation_.get())
     dictation_ = std::make_unique<DictationChromeos>(profile_);
 
-  dictation_->OnToggleDictation();
+  return dictation_->OnToggleDictation();
 }
 
 void AccessibilityManager::SetFocusRingColor(SkColor color) {

@@ -95,7 +95,8 @@ interface AccessibilityControllerClient {
   HandleAccessibilityGesture(ax.mojom.Gesture gesture);
 
   // Starts or stops dictation (type what you speak).
-  ToggleDictation();
+  // Returns the new dictation state after the toggle.
+  ToggleDictation() => (bool dictation_on);
 
   // Cancels all current and queued speech immediately.
   SilenceSpokenFeedback();

@@ -41,7 +41,11 @@ void TestAccessibilityControllerClient::HandleAccessibilityGesture(
   last_a11y_gesture_ = gesture;
 }
 
-void TestAccessibilityControllerClient::ToggleDictation() {}
+void TestAccessibilityControllerClient::ToggleDictation(
+    ToggleDictationCallback callback) {
+  is_dictation_active_ = !is_dictation_active_;
+  std::move(callback).Run(is_dictation_active_);
+}
 
 void TestAccessibilityControllerClient::SilenceSpokenFeedback() {}
 

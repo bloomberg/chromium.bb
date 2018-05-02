@@ -92,6 +92,9 @@ class ASH_EXPORT AccessibilityController
   void SetVirtualKeyboardEnabled(bool enabled);
   bool IsVirtualKeyboardEnabled() const;
 
+  bool IsDictationActive() const;
+  void SetDictationActive(bool is_active);
+
   // Triggers an accessibility alert to give the user feedback.
   void TriggerAccessibilityAlert(mojom::AccessibilityAlert alert);
 
@@ -196,6 +199,7 @@ class ASH_EXPORT AccessibilityController
   bool select_to_speak_enabled_ = false;
   bool sticky_keys_enabled_ = false;
   bool virtual_keyboard_enabled_ = false;
+  bool dictation_active_ = false;
 
   mojom::SelectToSpeakState select_to_speak_state_ =
       mojom::SelectToSpeakState::kSelectToSpeakStateInactive;

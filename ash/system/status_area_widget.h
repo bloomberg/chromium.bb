@@ -21,6 +21,7 @@ class FlagWarningTray;
 class ImeMenuTray;
 class LogoutButtonTray;
 class OverviewButtonTray;
+class DictationButtonTray;
 class PaletteTray;
 class Shelf;
 class StatusAreaWidgetDelegate;
@@ -72,6 +73,9 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget,
   WebNotificationTray* web_notification_tray() {
     return web_notification_tray_.get();
   }
+  DictationButtonTray* dictation_button_tray() {
+    return dictation_button_tray_.get();
+  }
   OverviewButtonTray* overview_button_tray() {
     return overview_button_tray_.get();
   }
@@ -116,6 +120,7 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget,
   StatusAreaWidgetDelegate* status_area_widget_delegate_;
 
   std::unique_ptr<OverviewButtonTray> overview_button_tray_;
+  std::unique_ptr<DictationButtonTray> dictation_button_tray_;
   std::unique_ptr<SystemTray> system_tray_;
   std::unique_ptr<UnifiedSystemTray> unified_system_tray_;
   std::unique_ptr<WebNotificationTray> web_notification_tray_;

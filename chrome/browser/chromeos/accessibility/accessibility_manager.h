@@ -57,6 +57,7 @@ enum AccessibilityNotificationType {
   ACCESSIBILITY_TOGGLE_CARET_HIGHLIGHT,
   ACCESSIBILITY_TOGGLE_CURSOR_HIGHLIGHT,
   ACCESSIBILITY_TOGGLE_FOCUS_HIGHLIGHT,
+  ACCESSIBILITY_TOGGLE_DICTATION,
 };
 
 struct AccessibilityStatusEventDetails {
@@ -276,7 +277,7 @@ class AccessibilityManager
   void SetSwitchAccessKeys(const std::set<int>& key_codes);
 
   // Starts or stops dictation (type what you speak).
-  void ToggleDictation();
+  bool ToggleDictation();
 
   // Sets the focus ring color.
   void SetFocusRingColor(SkColor color);
