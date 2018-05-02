@@ -56,13 +56,6 @@
 -FieldTrialListTest.ClearParamsFromSharedMemory
 -FieldTrialListTest.TestCopyFieldTrialStateToFlags
 
-# Flaky, https://crbug.com/768436, https://crbug.com/792310.
--TaskSchedulerWorkerPoolBlockingTest.MaximumWorkersTest
--TaskSchedulerWorkerPoolBlockingTest.MayBlockIncreaseCapacityNestedWillBlock
--TaskSchedulerWorkerPoolBlockingTest.PostBeforeBlocking
--TaskSchedulerWorkerPoolBlockingTest.ThreadBlockedUnblocked
--TaskSchedulerWorkerPoolBlockingTest.WorkersIdleWhenOverCapacity
-
 # Flaky, https://crbug.com/810077.
 -MessageLoopTypedTest.RecursivePosts/*
 
