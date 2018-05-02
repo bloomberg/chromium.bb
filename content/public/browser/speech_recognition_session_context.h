@@ -10,6 +10,7 @@
 #include "content/common/content_export.h"
 #include "content/public/common/media_stream_request.h"
 #include "ui/gfx/geometry/rect.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -37,9 +38,9 @@ struct CONTENT_EXPORT SpeechRecognitionSessionContext {
   // The request id provided by the originating SpeechRecognitionDispatcher.
   int request_id;
 
-  // A textual description of the context (website, extension name) that is
-  // requesting recognition, for prompting security notifications to the user.
-  std::string context_name;
+  // Origin that is requesting recognition, for prompting security notifications
+  // to the user.
+  url::Origin security_origin;
 
   // The label for the permission request, it is used for request abortion.
   std::string label;

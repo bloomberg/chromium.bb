@@ -85,7 +85,7 @@ void SpeechRecognitionDispatcher::Start(
   msg_params->max_hypotheses = static_cast<uint32_t>(params.MaxAlternatives());
   msg_params->continuous = params.Continuous();
   msg_params->interim_results = params.InterimResults();
-  msg_params->origin_url = params.Origin().ToString().Utf8();
+  msg_params->origin = params.Origin();
   msg_params->request_id = GetOrCreateIDForHandle(handle);
 
   GetSpeechRecognitionHost().StartRequest(std::move(msg_params));

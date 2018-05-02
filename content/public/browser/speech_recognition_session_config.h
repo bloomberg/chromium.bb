@@ -16,6 +16,7 @@
 #include "content/public/browser/speech_recognition_session_preamble.h"
 #include "content/public/common/speech_recognition_grammar.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -29,7 +30,7 @@ struct CONTENT_EXPORT SpeechRecognitionSessionConfig {
 
   std::string language;
   SpeechRecognitionGrammarArray grammars;
-  std::string origin_url;
+  url::Origin origin;
   bool filter_profanities;
   bool continuous;
   bool interim_results;
