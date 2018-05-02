@@ -152,10 +152,6 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
     return render_process_host_.get();
   }
 
-  std::map<int, int64_t> embedded_worker_id_service_worker_version_id_map() {
-    return embedded_worker_id_service_worker_version_id_map_;
-  }
-
   // Only used for tests that force creating a new render process.
   int new_render_process_id() const { return new_mock_render_process_id_; }
 
@@ -175,8 +171,8 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
 
  protected:
   // StartWorker IPC handler routed through MockEmbeddedWorkerInstanceClient.
-  // This simulates each legacy IPC sent from the renderer and binds |request|
-  // to MockServiceWorkerEventDispatcher by default.
+  // This simulates behaviors in the renderer process. Binds
+  // |dispatcher_request| to MockServiceWorkerEventDispatcher by default.
   virtual void OnStartWorker(
       int embedded_worker_id,
       int64_t service_worker_version_id,
@@ -185,7 +181,6 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
       bool pause_after_download,
       mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
       mojom::ControllerServiceWorkerRequest controller_request,
-      blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       blink::mojom::ServiceWorkerInstalledScriptsInfoPtr
@@ -276,12 +271,21 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
 
   EmbeddedWorkerRegistry* registry();
 
+  blink::mojom::ServiceWorkerHost* GetServiceWorkerHost(
+      int embedded_worker_id) {
+    return embedded_worker_id_host_map_[embedded_worker_id].get();
+  }
+
  private:
   class MockServiceWorkerEventDispatcher;
 
   void DidSimulateWorkerScriptCached(int embedded_worker_id,
                                      bool pause_after_download);
 
+  void OnInitializeGlobalScope(
+      int embedded_worker_id,
+      blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
+      blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info);
   void OnStartWorkerStub(mojom::EmbeddedWorkerStartParamsPtr params);
   void OnResumeAfterDownloadStub(int embedded_worker_id);
   void OnStopWorkerStub(int embedded_worker_id);
@@ -316,7 +320,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
       mojom::ServiceWorkerEventDispatcher::DispatchInstallEventCallback
           callback);
   void OnFetchEventStub(
-      int thread_id,
+      int embedded_worker_id,
       const network::ResourceRequest& request,
       mojom::FetchEventPreloadHandlePtr preload_handle,
       mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
@@ -372,8 +376,6 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
       dispatcher_hosts_;
 
   std::map<int, int64_t> embedded_worker_id_service_worker_version_id_map_;
-  std::map<int /* thread_id */, int /* embedded_worker_id */>
-      thread_id_embedded_worker_id_map_;
 
   std::map<
       int /* embedded_worker_id */,
@@ -384,6 +386,14 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   std::map<int /* embedded_worker_id */,
            blink::mojom::ServiceWorkerInstalledScriptsInfoPtr>
       embedded_worker_id_installed_scripts_info_map_;
+  std::map<
+      int /* embedded_worker_id */,
+      blink::mojom::ServiceWorkerHostAssociatedPtr /* service_worker_host */>
+      embedded_worker_id_host_map_;
+  std::map<int /* embedded_worker_id */,
+           blink::mojom::
+               ServiceWorkerRegistrationObjectInfoPtr /* registration_info */>
+      embedded_worker_id_registration_info_map_;
 
   std::vector<Event> events_;
   scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter_;

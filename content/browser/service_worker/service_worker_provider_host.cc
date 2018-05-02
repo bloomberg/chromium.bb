@@ -685,20 +685,11 @@ ServiceWorkerProviderHost::CompleteStartWorkerPreparation(
   DCHECK(dispatcher_host);
   render_process_id_ = process_id;
   dispatcher_host_ = dispatcher_host->AsWeakPtr();
-  SetDocumentUrl(running_hosted_version()->script_url());
-
-  // Retrieve the registration associated with |version|. The registration
-  // must be alive because the version keeps it during starting worker.
-  ServiceWorkerRegistration* registration = context_->GetLiveRegistration(
-      running_hosted_version()->registration_id());
-  DCHECK(registration);
 
   // Initialize provider_info.
   mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info =
       mojom::ServiceWorkerProviderInfoForStartWorker::New();
   provider_info->provider_id = provider_id();
-  provider_info->registration = CreateServiceWorkerRegistrationObjectInfo(
-      scoped_refptr<ServiceWorkerRegistration>(registration));
   provider_info->client_request = mojo::MakeRequest(&container_);
 
   network::mojom::URLLoaderFactoryAssociatedPtrInfo

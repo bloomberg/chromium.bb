@@ -56,14 +56,6 @@ class ProviderHostEndpoints : public mojom::ServiceWorkerContainerHost {
     // Just keep the endpoints.
     mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info =
         mojom::ServiceWorkerProviderInfoForStartWorker::New();
-    provider_info->registration =
-        blink::mojom::ServiceWorkerRegistrationObjectInfo::New();
-    provider_info->registration->options =
-        blink::mojom::ServiceWorkerRegistrationOptions::New();
-    registration_object_host_request_ =
-        mojo::MakeRequest(&(provider_info->registration->host_ptr_info));
-    provider_info->registration->request =
-        mojo::MakeRequest(&registration_object_ptr_);
     binding_.Bind(mojo::MakeRequest(&provider_info->host_ptr_info));
     provider_info->client_request = mojo::MakeRequest(&client_);
     mojo::MakeRequest(&provider_info->interface_provider);
@@ -101,10 +93,6 @@ class ProviderHostEndpoints : public mojom::ServiceWorkerContainerHost {
 
   mojom::ServiceWorkerContainerAssociatedPtr client_;
   mojo::AssociatedBinding<mojom::ServiceWorkerContainerHost> binding_;
-  blink::mojom::ServiceWorkerRegistrationObjectAssociatedPtr
-      registration_object_ptr_;
-  blink::mojom::ServiceWorkerRegistrationObjectHostAssociatedRequest
-      registration_object_host_request_;
 
   DISALLOW_COPY_AND_ASSIGN(ProviderHostEndpoints);
 };
@@ -202,7 +190,6 @@ class EmbeddedWorkerInstanceTest : public testing::Test,
     params->dispatcher_request = CreateEventDispatcher();
     params->controller_request = CreateController();
     params->installed_scripts_info = GetInstalledScriptsInfoPtr();
-    params->service_worker_host = GetServiceWorkerHostPtrInfo();
     return params;
   }
 
@@ -252,13 +239,6 @@ class EmbeddedWorkerInstanceTest : public testing::Test,
     return info;
   }
 
-  blink::mojom::ServiceWorkerHostAssociatedPtrInfo
-  GetServiceWorkerHostPtrInfo() {
-    blink::mojom::ServiceWorkerHostAssociatedPtrInfo ptr_info;
-    service_worker_host_requests_.push_back(mojo::MakeRequest(&ptr_info));
-    return ptr_info;
-  }
-
   ServiceWorkerContextCore* context() { return helper_->context(); }
 
   EmbeddedWorkerRegistry* embedded_worker_registry() {
@@ -281,8 +261,6 @@ class EmbeddedWorkerInstanceTest : public testing::Test,
       installed_scripts_managers_;
   std::vector<blink::mojom::ServiceWorkerInstalledScriptsManagerHostRequest>
       installed_scripts_manager_host_requests_;
-  std::vector<blink::mojom::ServiceWorkerHostAssociatedRequest>
-      service_worker_host_requests_;
   std::vector<std::unique_ptr<ProviderHostEndpoints>> provider_host_endpoints_;
 
   TestBrowserThreadBundle thread_bundle_;
@@ -308,7 +286,6 @@ class StalledInStartWorkerHelper : public EmbeddedWorkerTestHelper {
       bool pause_after_download,
       mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
       mojom::ControllerServiceWorkerRequest controller_request,
-      blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
@@ -322,9 +299,8 @@ class StalledInStartWorkerHelper : public EmbeddedWorkerTestHelper {
     EmbeddedWorkerTestHelper::OnStartWorker(
         embedded_worker_id, service_worker_version_id, scope, script_url,
         pause_after_download, std::move(dispatcher_request),
-        std::move(controller_request), std::move(service_worker_host),
-        std::move(instance_host), std::move(provider_info),
-        std::move(installed_scripts_info));
+        std::move(controller_request), std::move(instance_host),
+        std::move(provider_info), std::move(installed_scripts_info));
   }
 
   void OnStopWorker(int embedded_worker_id) override {

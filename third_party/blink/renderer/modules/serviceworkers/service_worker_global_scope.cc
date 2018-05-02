@@ -100,11 +100,26 @@ ServiceWorkerGlobalScope::ServiceWorkerGlobalScope(
 
 ServiceWorkerGlobalScope::~ServiceWorkerGlobalScope() = default;
 
+void ServiceWorkerGlobalScope::ReadyToEvaluateScript() {
+  DCHECK(!evaluate_script_ready_);
+  evaluate_script_ready_ = true;
+  if (evaluate_script_)
+    std::move(evaluate_script_).Run();
+}
+
 void ServiceWorkerGlobalScope::EvaluateClassicScript(
     const KURL& script_url,
     String source_code,
     std::unique_ptr<Vector<char>> cached_meta_data) {
   DCHECK(IsContextThread());
+
+  if (!evaluate_script_ready_) {
+    evaluate_script_ =
+        WTF::Bind(&ServiceWorkerGlobalScope::EvaluateClassicScript,
+                  WrapWeakPersistent(this), script_url, std::move(source_code),
+                  std::move(cached_meta_data));
+    return;
+  }
 
   // Receive the main script via script streaming if needed.
   InstalledScriptsManager* installed_scripts_manager =

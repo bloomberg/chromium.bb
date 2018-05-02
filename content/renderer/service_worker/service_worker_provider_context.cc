@@ -83,15 +83,6 @@ struct ServiceWorkerProviderContext::ProviderStateForClient {
   std::map<int64_t, WebServiceWorkerRegistrationImpl*> registrations_;
 };
 
-// Holds state for service worker execution contexts.
-struct ServiceWorkerProviderContext::ProviderStateForServiceWorker {
-  ProviderStateForServiceWorker() = default;
-  ~ProviderStateForServiceWorker() = default;
-  // |registration| is set by SetRegistrationForServiceWorkerGlobalScope() and
-  // taken by TakeRegistrationForServiceWorkerGlobalScope().
-  blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration;
-};
-
 // For service worker clients.
 ServiceWorkerProviderContext::ServiceWorkerProviderContext(
     int provider_id,
@@ -129,40 +120,10 @@ ServiceWorkerProviderContext::ServiceWorkerProviderContext(
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       binding_(this, std::move(request)),
       weak_factory_(this) {
-  state_for_service_worker_ = std::make_unique<ProviderStateForServiceWorker>();
-
   container_host_.Bind(std::move(host_ptr_info));
 }
 
 ServiceWorkerProviderContext::~ServiceWorkerProviderContext() = default;
-
-void ServiceWorkerProviderContext::SetRegistrationForServiceWorkerGlobalScope(
-    blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration) {
-  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
-  ProviderStateForServiceWorker* state = state_for_service_worker_.get();
-  DCHECK(state);
-  DCHECK(!state->registration);
-
-  state->registration = std::move(registration);
-}
-
-scoped_refptr<WebServiceWorkerRegistrationImpl>
-ServiceWorkerProviderContext::TakeRegistrationForServiceWorkerGlobalScope() {
-  DCHECK_EQ(blink::mojom::ServiceWorkerProviderType::kForServiceWorker,
-            provider_type_);
-  ProviderStateForServiceWorker* state = state_for_service_worker_.get();
-  DCHECK(state);
-  DCHECK(state->registration);
-  DCHECK(state->registration->host_ptr_info.is_valid());
-  DCHECK_NE(state->registration->registration_id,
-            blink::mojom::kInvalidServiceWorkerRegistrationId);
-
-  DCHECK(state->registration->request.is_pending());
-  scoped_refptr<WebServiceWorkerRegistrationImpl> registration =
-      WebServiceWorkerRegistrationImpl::CreateForServiceWorkerGlobalScope(
-          std::move(state->registration));
-  return registration;
-}
 
 blink::mojom::ServiceWorkerObjectInfoPtr
 ServiceWorkerProviderContext::TakeController() {
