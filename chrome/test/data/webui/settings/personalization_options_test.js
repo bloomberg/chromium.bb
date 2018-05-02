@@ -86,13 +86,12 @@ cr.define('settings_personalization_options', function() {
       });
 
       test('displaying toggles depending on unified consent', function() {
-        // TODO(scottchen): this property will become public in a follow-up CL.
-        testElement.unifiedConsentEnabled_ = false;
+        testElement.unifiedConsentEnabled = false;
         Polymer.dom.flush();
         assertEquals(
             7,
             testElement.root.querySelectorAll('settings-toggle-button').length);
-        testElement.unifiedConsentEnabled_ = true;
+        testElement.unifiedConsentEnabled = true;
         Polymer.dom.flush();
         // #spellCheckControl should be set to display: none by false dom-if.
         assertTrue(

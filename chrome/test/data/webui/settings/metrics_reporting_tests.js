@@ -19,33 +19,39 @@ suite('metrics reporting', function() {
   teardown(function() { page.remove(); });
 
   test('changes to whether metrics reporting is enabled/managed', function() {
-    return testBrowserProxy.whenCalled('getMetricsReporting').then(function() {
-      Polymer.dom.flush();
+    let toggled;
+    return testBrowserProxy.whenCalled('getMetricsReporting')
+        .then(function() {
+          return PolymerTest.flushTasks();
+        })
+        .then(function() {
+          const control = page.$$('settings-personalization-options')
+                              .$.metricsReportingControl;
+          assertEquals(
+              testBrowserProxy.metricsReporting.enabled, control.checked);
+          assertEquals(
+              testBrowserProxy.metricsReporting.managed,
+              !!control.pref.controlledBy);
 
-      const control = page.$.metricsReportingControl;
-      assertEquals(testBrowserProxy.metricsReporting.enabled, control.checked);
-      assertEquals(testBrowserProxy.metricsReporting.managed,
-                   !!control.pref.controlledBy);
+          const changedMetrics = {
+            enabled: !testBrowserProxy.metricsReporting.enabled,
+            managed: !testBrowserProxy.metricsReporting.managed,
+          };
+          cr.webUIListenerCallback('metrics-reporting-change', changedMetrics);
+          Polymer.dom.flush();
 
-      const changedMetrics = {
-        enabled: !testBrowserProxy.metricsReporting.enabled,
-        managed: !testBrowserProxy.metricsReporting.managed,
-      };
-      cr.webUIListenerCallback('metrics-reporting-change', changedMetrics);
-      Polymer.dom.flush();
+          assertEquals(changedMetrics.enabled, control.checked);
+          assertEquals(changedMetrics.managed, !!control.pref.controlledBy);
 
-      assertEquals(changedMetrics.enabled, control.checked);
-      assertEquals(changedMetrics.managed, !!control.pref.controlledBy);
+          toggled = !changedMetrics.enabled;
+          control.checked = toggled;
+          control.notifyChangedByUserInteraction();
 
-      const toggled = !changedMetrics.enabled;
-      control.checked = toggled;
-      control.notifyChangedByUserInteraction();
-
-      return testBrowserProxy.whenCalled('setMetricsReportingEnabled').then(
-          function(enabled) {
-            assertEquals(toggled, enabled);
-          });
-    });
+          return testBrowserProxy.whenCalled('setMetricsReportingEnabled');
+        })
+        .then(function(enabled) {
+          assertEquals(toggled, enabled);
+        });
   });
 
   test('metrics reporting restart button', function() {
@@ -53,17 +59,16 @@ suite('metrics reporting', function() {
       Polymer.dom.flush();
 
       // Restart button should be hidden by default (in any state).
-      assertFalse(!!page.$$('#restart'));
+      assertFalse(!!page.$$('settings-personalization-options').$$('#restart'));
 
       // Simulate toggling via policy.
       cr.webUIListenerCallback('metrics-reporting-change', {
         enabled: false,
         managed: true,
       });
-      Polymer.dom.flush();
 
       // No restart button should show because the value is managed.
-      assertFalse(!!page.$$('#restart'));
+      assertFalse(!!page.$$('settings-personalization-options').$$('#restart'));
 
       cr.webUIListenerCallback('metrics-reporting-change', {
         enabled: true,
@@ -73,7 +78,7 @@ suite('metrics reporting', function() {
 
       // Changes in policy should not show the restart button because the value
       // is still managed.
-      assertFalse(!!page.$$('#restart'));
+      assertFalse(!!page.$$('settings-personalization-options').$$('#restart'));
 
       // Remove the policy and toggle the value.
       cr.webUIListenerCallback('metrics-reporting-change', {
@@ -83,15 +88,15 @@ suite('metrics reporting', function() {
       Polymer.dom.flush();
 
       // Now the restart button should be showing.
-      assertTrue(!!page.$$('#restart'));
+      assertTrue(!!page.$$('settings-personalization-options').$$('#restart'));
 
       // Receiving the same values should have no effect.
-       cr.webUIListenerCallback('metrics-reporting-change', {
+      cr.webUIListenerCallback('metrics-reporting-change', {
         enabled: false,
         managed: false,
       });
       Polymer.dom.flush();
-      assertTrue(!!page.$$('#restart'));
+      assertTrue(!!page.$$('settings-personalization-options').$$('#restart'));
     });
   });
 });
