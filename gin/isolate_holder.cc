@@ -55,11 +55,15 @@ IsolateHolder::IsolateHolder(
   v8::ArrayBuffer::Allocator* allocator = g_array_buffer_allocator;
   CHECK(allocator) << "You need to invoke gin::IsolateHolder::Initialize first";
 
+  isolate_ = v8::Isolate::Allocate();
+  isolate_data_.reset(
+      new PerIsolateData(isolate_, allocator, access_mode_, task_runner));
   if (isolate_creation_mode == IsolateCreationMode::kCreateSnapshot) {
     // This branch is called when creating a V8 snapshot for Blink.
     // Note SnapshotCreator calls isolate->Enter() in its construction.
-    snapshot_creator_.reset(new v8::SnapshotCreator(g_reference_table));
-    isolate_ = snapshot_creator_->GetIsolate();
+    snapshot_creator_.reset(
+        new v8::SnapshotCreator(isolate_, g_reference_table));
+    DCHECK_EQ(isolate_, snapshot_creator_->GetIsolate());
   } else {
     v8::Isolate::CreateParams params;
     params.entry_hook = DebugImpl::GetFunctionEntryHook();
@@ -73,11 +77,9 @@ IsolateHolder::IsolateHolder(
     params.external_references = g_reference_table;
     params.only_terminate_in_safe_scope = true;
 
-    isolate_ = v8::Isolate::New(params);
+    v8::Isolate::Initialize(isolate_, params);
   }
 
-  isolate_data_.reset(
-      new PerIsolateData(isolate_, allocator, access_mode_, task_runner));
   isolate_memory_dump_provider_.reset(
       new V8IsolateMemoryDumpProvider(this, task_runner));
 #if defined(OS_WIN)
