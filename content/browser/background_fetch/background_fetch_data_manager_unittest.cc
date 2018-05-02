@@ -67,6 +67,26 @@ void DidGetRegistrationUserDataByKeyPrefix(base::Closure quit_closure,
   std::move(quit_closure).Run();
 }
 
+void GetNumUserData(base::Closure quit_closure,
+                    int* out_size,
+                    const std::vector<std::string>& data,
+                    ServiceWorkerStatusCode status) {
+  DCHECK(out_size);
+  DCHECK_EQ(SERVICE_WORKER_OK, status);
+  *out_size = data.size();
+  std::move(quit_closure).Run();
+}
+
+struct ResponseStateStats {
+  int pending_requests = 0;
+  int active_requests = 0;
+};
+
+bool operator==(const ResponseStateStats& s1, const ResponseStateStats& s2) {
+  return s1.pending_requests == s2.pending_requests &&
+         s1.active_requests == s2.active_requests;
+}
+
 }  // namespace
 
 class BackgroundFetchDataManagerTest
@@ -189,6 +209,22 @@ class BackgroundFetchDataManagerTest
   }
 
   // Synchronous version of
+  // BackgroundFetchDataManager::PopNextRequest().
+  void PopNextRequest(
+      const BackgroundFetchRegistrationId& registration_id,
+      scoped_refptr<BackgroundFetchRequestInfo>* out_request_info) {
+    DCHECK(out_request_info);
+
+    base::RunLoop run_loop;
+    background_fetch_data_manager_->PopNextRequest(
+        registration_id,
+        base::BindOnce(&BackgroundFetchDataManagerTest::DidPopNextRequest,
+                       base::Unretained(this), run_loop.QuitClosure(),
+                       out_request_info));
+    run_loop.Run();
+  }
+
+  // Synchronous version of
   // BackgroundFetchDataManager::MarkRegistrationForDeletion().
   void MarkRegistrationForDeletion(
       const BackgroundFetchRegistrationId& registration_id,
@@ -231,6 +267,35 @@ class BackgroundFetchDataManagerTest
     run_loop.Run();
 
     return data;
+  }
+
+  // Gets information about the number of background fetch requests by state.
+  ResponseStateStats GetRequestStats(int64_t service_worker_registration_id) {
+    ResponseStateStats stats;
+    {
+      base::RunLoop run_loop;
+      embedded_worker_test_helper()
+          ->context_wrapper()
+          ->GetRegistrationUserDataByKeyPrefix(
+              service_worker_registration_id,
+              background_fetch::kPendingRequestKeyPrefix,
+              base::BindOnce(&GetNumUserData, run_loop.QuitClosure(),
+                             &stats.pending_requests));
+      run_loop.Run();
+    }
+    {
+      base::RunLoop run_loop;
+      embedded_worker_test_helper()
+          ->context_wrapper()
+          ->GetRegistrationUserDataByKeyPrefix(
+              service_worker_registration_id,
+              background_fetch::kActiveRequestKeyPrefix,
+              base::BindOnce(&GetNumUserData, run_loop.QuitClosure(),
+                             &stats.active_requests));
+      run_loop.Run();
+    }
+
+    return stats;
   }
 
  protected:
@@ -279,6 +344,14 @@ class BackgroundFetchDataManagerTest
     *out_error = error;
     *out_ids = ids;
 
+    std::move(quit_closure).Run();
+  }
+
+  void DidPopNextRequest(
+      base::OnceClosure quit_closure,
+      scoped_refptr<BackgroundFetchRequestInfo>* out_request_info,
+      scoped_refptr<BackgroundFetchRequestInfo> request_info) {
+    *out_request_info = request_info;
     std::move(quit_closure).Run();
   }
 
@@ -585,6 +658,65 @@ TEST_P(BackgroundFetchDataManagerTest, CreateAndDeleteRegistration) {
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 }
 
+TEST_P(BackgroundFetchDataManagerTest, PopNextRequest) {
+  // This test only applies to persistent storage.
+  if (registration_storage_ ==
+      BackgroundFetchRegistrationStorage::kNonPersistent)
+    return;
+
+  int64_t sw_id = RegisterServiceWorker();
+  ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
+
+  scoped_refptr<BackgroundFetchRequestInfo> request_info;
+
+  BackgroundFetchRegistrationId registration_id(
+      sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
+
+  // There registration hasn't been created yet, so there are no pending
+  // requests.
+  PopNextRequest(registration_id, &request_info);
+  EXPECT_FALSE(request_info);
+  EXPECT_EQ(
+      GetRequestStats(sw_id),
+      (ResponseStateStats{0 /* pending_requests */, 0 /* active_requests */}));
+
+  std::vector<ServiceWorkerFetchRequest> requests(2u);
+  BackgroundFetchOptions options;
+  blink::mojom::BackgroundFetchError error;
+
+  CreateRegistration(registration_id, requests, options, &error);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+  EXPECT_EQ(
+      GetRequestStats(sw_id),
+      (ResponseStateStats{2 /* pending_requests */, 0 /* active_requests */}));
+
+  // Popping should work now.
+  PopNextRequest(registration_id, &request_info);
+  EXPECT_TRUE(request_info);
+  EXPECT_EQ(request_info->request_index(), 0);
+  EXPECT_FALSE(request_info->download_guid().empty());
+  EXPECT_EQ(
+      GetRequestStats(sw_id),
+      (ResponseStateStats{1 /* pending_requests */, 1 /* active_requests */}));
+
+  RestartDataManagerFromPersistentStorage();
+
+  PopNextRequest(registration_id, &request_info);
+  EXPECT_TRUE(request_info);
+  EXPECT_EQ(request_info->request_index(), 1);
+  EXPECT_FALSE(request_info->download_guid().empty());
+  EXPECT_EQ(
+      GetRequestStats(sw_id),
+      (ResponseStateStats{0 /* pending_requests */, 2 /* active_requests */}));
+
+  // We are out of pending requests.
+  PopNextRequest(registration_id, &request_info);
+  EXPECT_FALSE(request_info);
+  EXPECT_EQ(
+      GetRequestStats(sw_id),
+      (ResponseStateStats{0 /* pending_requests */, 2 /* active_requests */}));
+}
+
 TEST_P(BackgroundFetchDataManagerTest, Cleanup) {
   // Tests that the BackgroundFetchDataManager cleans up registrations
   // marked for deletion.
@@ -598,6 +730,7 @@ TEST_P(BackgroundFetchDataManagerTest, Cleanup) {
   BackgroundFetchRegistrationId registration_id(
       sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
 
+  // The requests are default-initialized, but valid.
   std::vector<ServiceWorkerFetchRequest> requests(2u);
   BackgroundFetchOptions options;
   blink::mojom::BackgroundFetchError error;

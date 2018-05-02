@@ -151,6 +151,12 @@ class CONTENT_EXPORT BackgroundFetchDataManager
 
   class RegistrationData;
 
+  void AddStartNextPendingRequestTask(
+      int64_t service_worker_registration_id,
+      NextRequestCallback callback,
+      blink::mojom::BackgroundFetchError error,
+      std::unique_ptr<proto::BackgroundFetchMetadata> metadata);
+
   void AddDatabaseTask(std::unique_ptr<background_fetch::DatabaseTask> task);
 
   void OnDatabaseTaskFinished(background_fetch::DatabaseTask* task);
