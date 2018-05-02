@@ -27,6 +27,7 @@
 #include "chrome/browser/vr/ui_input_manager.h"
 #include "chrome/browser/vr/ui_renderer.h"
 #include "chrome/browser/vr/ui_scene.h"
+#include "chrome/browser/vr/ui_unsupported_mode.h"
 #include "chrome/grit/vr_testapp_resources.h"
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/security_state/core/security_state.h"
@@ -229,6 +230,7 @@ void VrTestContext::HandleInput(ui::Event* event) {
       case ui::DomCode::US_Q:
         model_->active_modal_prompt_type =
             kModalPromptTypeGenericUnsupportedFeature;
+        model_->push_mode(kModeModalPrompt);
         break;
       default:
         break;
@@ -555,6 +557,7 @@ void VrTestContext::CloseHostedDialog() {}
 
 void VrTestContext::OnExitVrPromptResult(vr::ExitVrPromptChoice choice,
                                          vr::UiUnsupportedMode reason) {
+  DCHECK_NE(reason, UiUnsupportedMode::kCount);
   if (reason == UiUnsupportedMode::kVoiceSearchNeedsRecordAudioOsPermission &&
       choice == CHOICE_EXIT) {
     voice_search_enabled_ = true;
@@ -620,7 +623,9 @@ void VrTestContext::StopAutocomplete() {
   ui_->SetOmniboxSuggestions(std::make_unique<OmniboxSuggestions>());
 }
 
-void VrTestContext::ShowPageInfo() {}
+void VrTestContext::ShowPageInfo() {
+  ui_->ShowExitVrPrompt(UiUnsupportedMode::kUnhandledPageInfo);
+}
 
 void VrTestContext::CycleIndicators() {
   static size_t state = 0;

@@ -70,22 +70,6 @@ const std::set<UiElementName> kElementsVisibleInBrowsing = {
     kControllerHomeButton,
     kIndicatorBackplane,
 };
-const std::set<UiElementName> kElementsVisibleWithExitPrompt = {
-    kBackgroundFront,
-    kBackgroundLeft,
-    kBackgroundBack,
-    kBackgroundRight,
-    kBackgroundTop,
-    kBackgroundBottom,
-    kCeiling,
-    kFloor,
-    kExitPrompt,
-    kController,
-    kLaser,
-    kControllerTouchpadButton,
-    kControllerAppButton,
-    kControllerHomeButton,
-};
 const std::set<UiElementName> kElementsVisibleWithExitWarning = {
     kScreenDimmer, kExitWarningBackground, kExitWarningText};
 const std::set<UiElementName> kElementsVisibleWithVoiceSearch = {
@@ -350,28 +334,6 @@ TEST_F(UiTest, UiModeWebVr) {
   VerifyOnlyElementsVisible("Browsing after WebVR", kElementsVisibleInBrowsing);
 }
 
-TEST_F(UiTest, UiModeVoiceSearch) {
-  CreateScene(kNotInCct, kNotInWebVr);
-
-  EXPECT_EQ(model_->ui_modes.size(), 1u);
-  EXPECT_EQ(model_->ui_modes.back(), kModeBrowsing);
-  VerifyOnlyElementsVisible("Initial", kElementsVisibleInBrowsing);
-
-  ui_->SetSpeechRecognitionEnabled(true);
-  EXPECT_EQ(model_->ui_modes.size(), 2u);
-  EXPECT_EQ(model_->ui_modes[1], kModeVoiceSearch);
-  EXPECT_EQ(model_->ui_modes[0], kModeBrowsing);
-  ui_->SetSpeechRecognitionEnabled(true);
-  VerifyVisibility(kElementsVisibleWithVoiceSearch, true);
-
-  ui_->SetSpeechRecognitionEnabled(false);
-  EXPECT_EQ(model_->ui_modes.size(), 1u);
-  EXPECT_EQ(model_->ui_modes.back(), kModeBrowsing);
-  OnBeginFrame();
-  OnBeginFrame();
-  VerifyOnlyElementsVisible("Browsing", kElementsVisibleInBrowsing);
-}
-
 TEST_F(UiTest, UiModeOmniboxEditing) {
   CreateScene(kNotInCct, kNotInWebVr);
 
@@ -399,38 +361,36 @@ TEST_F(UiTest, UiModeVoiceSearchFromOmnibox) {
 
   EXPECT_EQ(model_->ui_modes.size(), 1u);
   EXPECT_EQ(model_->ui_modes.back(), kModeBrowsing);
-  EXPECT_EQ(NumVisibleInTree(kOmniboxRoot), 0);
-  VerifyOnlyElementsVisible("Initial", kElementsVisibleInBrowsing);
+  EXPECT_TRUE(IsVisible(kContentQuad));
+  EXPECT_FALSE(IsVisible(kOmniboxBackground));
 
   model_->push_mode(kModeEditingOmnibox);
-  OnBeginFrame();
+  EXPECT_FALSE(IsVisible(kContentQuad));
+  EXPECT_TRUE(IsVisible(kOmniboxBackground));
   EXPECT_EQ(model_->ui_modes.size(), 2u);
   EXPECT_EQ(model_->ui_modes[1], kModeEditingOmnibox);
   EXPECT_EQ(model_->ui_modes[0], kModeBrowsing);
-  EXPECT_GT(NumVisibleInTree(kOmniboxRoot), 0);
 
   ui_->SetSpeechRecognitionEnabled(true);
-  EXPECT_EQ(model_->ui_modes.size(), 3u);
+  EXPECT_FALSE(IsVisible(kOmniboxBackground));
+  EXPECT_EQ(model_->ui_modes.size(), 4u);
   EXPECT_EQ(model_->ui_modes[2], kModeVoiceSearch);
   EXPECT_EQ(model_->ui_modes[1], kModeEditingOmnibox);
   EXPECT_EQ(model_->ui_modes[0], kModeBrowsing);
-  OnBeginFrame();
-  EXPECT_EQ(NumVisibleInTree(kOmniboxRoot), 0);
   VerifyVisibility(kElementsVisibleWithVoiceSearch, true);
 
   ui_->SetSpeechRecognitionEnabled(false);
+  EXPECT_TRUE(IsVisible(kOmniboxBackground));
   EXPECT_EQ(model_->ui_modes.size(), 2u);
   EXPECT_EQ(model_->ui_modes[1], kModeEditingOmnibox);
   EXPECT_EQ(model_->ui_modes[0], kModeBrowsing);
-  OnBeginFrame();
-  OnBeginFrame();
-  EXPECT_GT(NumVisibleInTree(kOmniboxRoot), 0);
 
   model_->pop_mode(kModeEditingOmnibox);
   EXPECT_EQ(model_->ui_modes.size(), 1u);
   EXPECT_EQ(model_->ui_modes.back(), kModeBrowsing);
   OnBeginFrame();
-  VerifyOnlyElementsVisible("Browsing", kElementsVisibleInBrowsing);
+  EXPECT_FALSE(IsVisible(kOmniboxBackground));
+  EXPECT_TRUE(IsVisible(kContentQuad));
 }
 
 TEST_F(UiTest, WebVrAutopresented) {
@@ -623,30 +583,18 @@ TEST_F(UiTest, ExitWebInputEditingOnAppButtonClick) {
   EXPECT_FALSE(scene_->GetUiElementByName(kKeyboard)->IsVisible());
 }
 
-TEST_F(UiTest, UiUpdatesForShowingExitPrompt) {
+TEST_F(UiTest, ShowAndHideExitPrompt) {
   CreateScene(kNotInCct, kNotInWebVr);
 
-  // Initial state.
-  VerifyOnlyElementsVisible("Initial", kElementsVisibleInBrowsing);
-
-  // Showing exit VR prompt should make prompt visible.
   model_->active_modal_prompt_type = kModalPromptTypeExitVRForSiteInfo;
-  VerifyVisibility(kElementsVisibleWithExitPrompt, true);
-  EXPECT_EQ(NumVisibleInTree(k2dBrowsingForeground), 0);
-}
+  model_->push_mode(kModeModalPrompt);
+  EXPECT_TRUE(IsVisible(kExitPrompt));
+  EXPECT_TRUE(IsVisible(kContentQuad));
 
-TEST_F(UiTest, UiUpdatesForHidingExitPrompt) {
-  CreateScene(kNotInCct, kNotInWebVr);
-
-  // Initial state.
-  model_->active_modal_prompt_type = kModalPromptTypeExitVRForSiteInfo;
-  VerifyVisibility(kElementsVisibleWithExitPrompt, true);
-  EXPECT_EQ(NumVisibleInTree(k2dBrowsingForeground), 0);
-
-  // Hiding exit VR prompt should make prompt invisible.
   model_->active_modal_prompt_type = kModalPromptTypeNone;
-  EXPECT_TRUE(RunForMs(1000));
-  VerifyOnlyElementsVisible("Prompt invisible", kElementsVisibleInBrowsing);
+  model_->pop_mode(kModeModalPrompt);
+  EXPECT_FALSE(IsVisible(kExitPrompt));
+  EXPECT_TRUE(IsVisible(kContentQuad));
 }
 
 TEST_F(UiTest, PrimaryButtonClickTriggersOnExitPrompt) {
@@ -897,8 +845,6 @@ TEST_F(UiTest, SpeechRecognitionUiVisibility) {
   VerifyIsAnimating({k2dBrowsingForeground}, {OPACITY}, true);
   VerifyIsAnimating({kSpeechRecognitionListening, kSpeechRecognitionResult},
                     {OPACITY}, false);
-  ui_->SetSpeechRecognitionEnabled(true);
-  EXPECT_TRUE(RunForMs(10));
   VerifyIsAnimating({k2dBrowsingForeground, kSpeechRecognitionListening},
                     {OPACITY}, true);
 
@@ -918,8 +864,8 @@ TEST_F(UiTest, SpeechRecognitionUiVisibility) {
                     true);
 
   // Mock received speech result.
-  model_->speech.recognition_result = base::ASCIIToUTF16("test");
   model_->speech.speech_recognition_state = SPEECH_RECOGNITION_END;
+  ui_->SetRecognitionResult(base::ASCIIToUTF16("test"));
   ui_->SetSpeechRecognitionEnabled(false);
 
   EXPECT_TRUE(RunForMs(10));
@@ -935,7 +881,7 @@ TEST_F(UiTest, SpeechRecognitionUiVisibility) {
   // The visibility of Speech Recognition UI should not change at this point.
   EXPECT_FALSE(RunForMs(10));
 
-  EXPECT_TRUE(RunForSeconds(kSpeechRecognitionResultTimeoutSeconds));
+  EXPECT_TRUE(RunForMs(kSpeechRecognitionResultTimeoutMs));
   // Start hide speech recognition result and show browsing foreground.
   VerifyIsAnimating({k2dBrowsingForeground, kSpeechRecognitionResult},
                     {OPACITY}, true);
@@ -991,7 +937,6 @@ TEST_F(UiTest, OmniboxSuggestionBindings) {
   EXPECT_EQ(container->children().size(), 0u);
 
   model_->push_mode(kModeEditingOmnibox);
-  OnBeginFrame();
   EXPECT_EQ(container->children().size(), 0u);
   EXPECT_EQ(NumVisibleInTree(kOmniboxSuggestions), 0);
 

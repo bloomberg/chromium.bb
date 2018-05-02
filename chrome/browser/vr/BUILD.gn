@@ -180,6 +180,8 @@ static_library("vr_common") {
     "renderers/web_vr_renderer.h",
     "sample_queue.cc",
     "sample_queue.h",
+    "sequence.cc",
+    "sequence.h",
     "service/vr_device_manager.cc",
     "service/vr_device_manager.h",
     "service/vr_display_host.cc",

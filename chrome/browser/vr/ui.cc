@@ -27,6 +27,7 @@
 #include "chrome/browser/vr/ui_input_manager.h"
 #include "chrome/browser/vr/ui_renderer.h"
 #include "chrome/browser/vr/ui_scene.h"
+#include "chrome/browser/vr/ui_scene_constants.h"
 #include "chrome/browser/vr/ui_scene_creator.h"
 #include "chrome/browser/vr/ui_test_input.h"
 #include "chrome/common/chrome_features.h"
@@ -145,34 +146,36 @@ void Ui::ShowExitVrPrompt(UiUnsupportedMode reason) {
   switch (reason) {
     case UiUnsupportedMode::kUnhandledCodePoint:
       NOTREACHED();  // This mode does not prompt.
-      return;
+      break;
     case UiUnsupportedMode::kUnhandledPageInfo:
       model_->active_modal_prompt_type = kModalPromptTypeExitVRForSiteInfo;
-      return;
+      break;
     case UiUnsupportedMode::kVoiceSearchNeedsRecordAudioOsPermission:
       model_->active_modal_prompt_type =
           kModalPromptTypeExitVRForVoiceSearchRecordAudioOsPermission;
-      return;
+      break;
     case UiUnsupportedMode::kGenericUnsupportedFeature:
       model_->active_modal_prompt_type =
           kModalPromptTypeGenericUnsupportedFeature;
-      return;
+      break;
     case UiUnsupportedMode::kNeedsKeyboardUpdate:
       model_->active_modal_prompt_type = kModalPromptTypeUpdateKeyboard;
-      return;
+      break;
     case UiUnsupportedMode::kUnhandledConnectionInfo:
       model_->active_modal_prompt_type =
           kModalPromptTypeExitVRForConnectionInfo;
-      return;
+      break;
     // kSearchEnginePromo should DOFF directly. It should never try to change
     // the state of UI.
     case UiUnsupportedMode::kSearchEnginePromo:
     case UiUnsupportedMode::kCount:
       NOTREACHED();  // Should never be used as a mode (when |enabled| is true).
-      return;
+      break;
   }
 
-  NOTREACHED();
+  if (model_->active_modal_prompt_type != kModalPromptTypeNone) {
+    model_->push_mode(kModeModalPrompt);
+  }
 }
 
 void Ui::OnUiRequestedNavigation() {
@@ -181,14 +184,30 @@ void Ui::OnUiRequestedNavigation() {
 
 void Ui::SetSpeechRecognitionEnabled(bool enabled) {
   if (enabled) {
-    model_->push_mode(kModeVoiceSearch);
     model_->speech.recognition_result.clear();
+    DCHECK(!model_->has_mode_in_stack(kModeVoiceSearch));
+    model_->push_mode(kModeVoiceSearch);
+    model_->push_mode(kModeVoiceSearchListening);
   } else {
-    model_->pop_mode(kModeVoiceSearch);
-    if (model_->omnibox_editing_enabled() &&
-        !model_->speech.recognition_result.empty()) {
-      model_->pop_mode(kModeEditingOmnibox);
+    model_->pop_mode(kModeVoiceSearchListening);
+    if (model_->speech.recognition_result.empty()) {
+      OnSpeechRecognitionEnded();
+    } else {
+      auto sequence = std::make_unique<Sequence>();
+      sequence->Add(
+          base::BindOnce(&Ui::OnSpeechRecognitionEnded,
+                         weak_ptr_factory_.GetWeakPtr()),
+          base::TimeDelta::FromMilliseconds(kSpeechRecognitionResultTimeoutMs));
+      scene_->AddSequence(std::move(sequence));
     }
+  }
+}
+
+void Ui::OnSpeechRecognitionEnded() {
+  model_->pop_mode(kModeVoiceSearch);
+  if (model_->omnibox_editing_enabled() &&
+      !model_->speech.recognition_result.empty()) {
+    model_->pop_mode(kModeEditingOmnibox);
   }
 }
 

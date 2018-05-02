@@ -66,6 +66,7 @@ struct Model {
   void pop_mode();
   void pop_mode(UiMode mode);
   void toggle_mode(UiMode mode);
+  UiMode get_mode() const;
   UiMode get_last_opaque_mode() const;
   bool has_mode_in_stack(UiMode mode) const;
   bool browsing_enabled() const;

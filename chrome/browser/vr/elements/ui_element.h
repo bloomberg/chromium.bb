@@ -354,10 +354,6 @@ class UiElement : public cc::AnimationTarget {
     return bindings_;
   }
 
-  void set_visibility_bindings_depend_on_child_visibility(bool value) {
-    visibility_bindings_depend_on_child_visibility_ = value;
-  }
-
   gfx::Point3F GetCenter() const;
   gfx::Vector3dF GetNormal() const;
 
@@ -616,12 +612,6 @@ class UiElement : public cc::AnimationTarget {
   bool descendants_updated_ = false;
 
   std::vector<std::unique_ptr<BindingBase>> bindings_;
-
-  // This value causes us to recurse into our children in DoBeginFrame. This
-  // should not be necessary, but we currently have instances where a parent
-  // node's behavior depends on the visibility of its children.
-  // TODO(crbug.com/829880): remove this once we've simplified our bindings.
-  bool visibility_bindings_depend_on_child_visibility_ = false;
 
   UpdatePhase update_phase_ = kClean;
 

@@ -257,8 +257,7 @@ bool UiElement::DoBeginFrame(const gfx::Transform& head_pose) {
                 updated_bindings_this_frame_) &&
                was_visible_at_any_point;
 
-  if (!kEnableOptimizedTreeWalks || was_visible_at_any_point ||
-      visibility_bindings_depend_on_child_visibility_) {
+  if (!kEnableOptimizedTreeWalks || was_visible_at_any_point) {
     for (auto& child : children_)
       dirty |= child->DoBeginFrame(head_pose);
   }

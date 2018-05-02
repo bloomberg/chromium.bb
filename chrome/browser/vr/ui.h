@@ -179,6 +179,7 @@ class Ui : public BrowserUiInterface, public KeyboardUiInterface {
   gfx::Transform GetContentWorldSpaceTransform();
 
  private:
+  void OnSpeechRecognitionEnded();
   void InitializeModel(const UiInitialState& ui_initial_state);
   UiBrowserInterface* browser_;
   ContentElement* GetContentElement();

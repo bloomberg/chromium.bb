@@ -928,6 +928,7 @@ void VrShell::OnExitVrPromptResult(UiUnsupportedMode reason,
       break;
   }
 
+  DCHECK_NE(reason, UiUnsupportedMode::kCount);
   if (reason == UiUnsupportedMode::kVoiceSearchNeedsRecordAudioOsPermission) {
     // Note that we already measure the number of times the user exits VR
     // because of the record audio permission through

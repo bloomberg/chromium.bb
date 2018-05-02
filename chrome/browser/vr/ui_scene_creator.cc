@@ -281,22 +281,6 @@ std::unique_ptr<TransientElement> CreateTransientParent(UiElementName name,
   return element;
 }
 
-// Util to bind the visibility of the given control element to the given
-// property in the model and the visibility of the voice search UI root.
-#define BIND_VISIBILITY_CONTROL_FOR_VOICE(control_element, model, property) \
-  control_element->AddBinding(std::make_unique<Binding<bool>>(              \
-      VR_BIND_LAMBDA(                                                       \
-          [](Model* model, UiElement* voice_search_root) {                  \
-            return model->property &&                                       \
-                   voice_search_root->GetTargetOpacity() == 0.f;            \
-          },                                                                \
-          base::Unretained(model),                                          \
-          base::Unretained(                                                 \
-              scene_->GetUiElementByName(kSpeechRecognitionRoot))),         \
-      VR_BIND_LAMBDA([](UiElement* control,                                 \
-                        const bool& value) { control->SetVisible(value); }, \
-                     base::Unretained(control_element))))
-
 std::unique_ptr<UiElement> CreateSpacer(float width, float height) {
   auto spacer = Create<UiElement>(kNone, kPhaseNone);
   spacer->SetType(kTypeSpacer);
@@ -836,65 +820,34 @@ void UiSceneCreator::Create2dBrowsingSubtreeRoots() {
               repositioner.get(), if (value) { view->Reset(); }));
   scene_->AddUiElement(k2dBrowsingRoot, std::move(repositioner));
 
-  element = Create<UiElement>(k2dBrowsingVisibiltyControlForVoice, kPhaseNone);
-  element->set_bounds_contain_children(true);
-  scene_->AddUiElement(k2dBrowsingRepositioner, std::move(element));
+  auto hider = Create<UiElement>(k2dBrowsingVisibiltyHider, kPhaseNone);
+  hider->SetTransitionedProperties({OPACITY});
+  hider->SetTransitionDuration(base::TimeDelta::FromMilliseconds(
+      kSpeechRecognitionOpacityAnimationDurationMs));
+  VR_BIND_VISIBILITY(hider,
+                     model->get_last_opaque_mode() == kModeBrowsing ||
+                         model->get_last_opaque_mode() == kModeFullscreen);
+  scene_->AddUiElement(k2dBrowsingRepositioner, std::move(hider));
 
-  element =
-      Create<UiElement>(k2dBrowsingVisibilityControlForPrompt, kPhaseNone);
-  element->set_bounds_contain_children(true);
-  VR_BIND_VISIBILITY(
-      element,
-      model->active_modal_prompt_type == kModalPromptTypeNone ||
-          model->active_modal_prompt_type ==
-              kModalPromptTypeExitVRForVoiceSearchRecordAudioOsPermission ||
-          model->active_modal_prompt_type == kModalPromptTypeUpdateKeyboard);
-  scene_->AddUiElement(k2dBrowsingVisibiltyControlForVoice, std::move(element));
-
-  element = Create<UiElement>(k2dBrowsingVisibiltyControlForSiteInfoPrompt,
-                              kPhaseNone);
-  element->set_bounds_contain_children(true);
-  VR_BIND_VISIBILITY(element, model->active_modal_prompt_type !=
-                                  kModalPromptTypeExitVRForSiteInfo);
-  scene_->AddUiElement(k2dBrowsingVisibilityControlForPrompt,
-                       std::move(element));
-
-  element = Create<UiElement>(k2dBrowsingOpacityControlForAudioPermissionPrompt,
-                              kPhaseNone);
-  element->set_bounds_contain_children(true);
-  element->AddBinding(
-      VR_BIND(bool, Model, model_,
-              model->active_modal_prompt_type !=
-                  kModalPromptTypeExitVRForVoiceSearchRecordAudioOsPermission,
-              UiElement, element.get(),
-              view->SetOpacity(value ? 1.0 : kModalPromptFadeOpacity)));
-  scene_->AddUiElement(k2dBrowsingVisibiltyControlForSiteInfoPrompt,
-                       std::move(element));
-
-  element = Create<UiElement>(k2dBrowsingOpacityControlForUpdateKeyboardPrompt,
-                              kPhaseNone);
-  element->set_bounds_contain_children(true);
-  element->SetTransitionedProperties({OPACITY});
-  element->AddBinding(
-      VR_BIND(bool, Model, model_,
-              model->active_modal_prompt_type != kModalPromptTypeUpdateKeyboard,
-              UiElement, element.get(),
-              view->SetOpacity(value ? 1.0 : kModalPromptFadeOpacity)));
-  scene_->AddUiElement(k2dBrowsingOpacityControlForAudioPermissionPrompt,
-                       std::move(element));
-
-  element = Create<UiElement>(k2dBrowsingOpacityControlForNativeDialogPrompt,
-                              kPhaseNone);
-  element->set_bounds_contain_children(true);
-  element->SetTransitionedProperties({OPACITY});
-  element->AddBinding(
-      VR_BIND(bool, Model, model_,
-              !model->hosted_platform_ui.hosted_ui_enabled ||
-                  model->hosted_platform_ui.floating,
-              UiElement, element.get(),
-              view->SetOpacity(value ? 1.0 : kModalPromptFadeOpacity)));
-  scene_->AddUiElement(k2dBrowsingOpacityControlForUpdateKeyboardPrompt,
-                       std::move(element));
+  auto fader = Create<UiElement>(k2dBrowsingVisibiltyFader, kPhaseNone);
+  fader->SetTransitionedProperties({OPACITY});
+  fader->SetTransitionDuration(base::TimeDelta::FromMilliseconds(
+      kSpeechRecognitionOpacityAnimationDurationMs));
+  fader->AddBinding(std::make_unique<Binding<float>>(
+      VR_BIND_LAMBDA(
+          [](Model* model) {
+            if (model->has_mode_in_stack(kModeModalPrompt) ||
+                (model->hosted_platform_ui.hosted_ui_enabled &&
+                 !model->hosted_platform_ui.floating)) {
+              return kModalPromptFadeOpacity;
+            }
+            return 1.0f;
+          },
+          base::Unretained(model_)),
+      VR_BIND_LAMBDA(
+          [](UiElement* e, const float& value) { e->SetOpacity(value); },
+          base::Unretained(fader.get()))));
+  scene_->AddUiElement(k2dBrowsingVisibiltyHider, std::move(fader));
 
   element = Create<UiElement>(k2dBrowsingForeground, kPhaseNone);
   element->set_bounds_contain_children(true);
@@ -903,8 +856,7 @@ void UiSceneCreator::Create2dBrowsingSubtreeRoots() {
       kSpeechRecognitionOpacityAnimationDurationMs));
   VR_BIND_VISIBILITY(element, model->default_browsing_enabled() ||
                                   model->fullscreen_enabled());
-  scene_->AddUiElement(k2dBrowsingOpacityControlForNativeDialogPrompt,
-                       std::move(element));
+  scene_->AddUiElement(k2dBrowsingVisibiltyFader, std::move(element));
 
   element = Create<UiElement>(k2dBrowsingContentGroup, kPhaseNone);
   element->SetTranslate(0, kContentVerticalOffset, -kContentDistance);
@@ -1518,18 +1470,14 @@ void UiSceneCreator::CreateViewportAwareRoot() {
 void UiSceneCreator::CreateVoiceSearchUiGroup() {
   auto speech_recognition_root = std::make_unique<UiElement>();
   speech_recognition_root->SetName(kSpeechRecognitionRoot);
+  speech_recognition_root->SetVisible(false);
   speech_recognition_root->set_contributes_to_parent_bounds(false);
   speech_recognition_root->SetTranslate(0.f, 0.f, -kContentDistance);
   speech_recognition_root->SetTransitionedProperties({OPACITY});
-  speech_recognition_root->set_visibility_bindings_depend_on_child_visibility(
-      true);
   speech_recognition_root->SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(
           kSpeechRecognitionOpacityAnimationDurationMs));
-  // Set initial visibility so we don't see the voice search ui fade out.
-  speech_recognition_root->SetVisibleImmediately(false);
-  scene_->AddUiElement(k2dBrowsingRepositioner,
-                       std::move(speech_recognition_root));
+  VR_BIND_VISIBILITY(speech_recognition_root, model->voice_search_enabled());
 
   auto inner_circle = std::make_unique<Rect>();
   inner_circle->SetName(kSpeechRecognitionCircle);
@@ -1539,38 +1487,28 @@ void UiSceneCreator::CreateVoiceSearchUiGroup() {
   VR_BIND_COLOR(model_, inner_circle.get(),
                 &ColorScheme::speech_recognition_circle_background,
                 &Rect::SetColor);
-  scene_->AddUiElement(kSpeechRecognitionRoot, std::move(inner_circle));
 
   auto microphone_icon = std::make_unique<VectorIcon>(512);
   microphone_icon->SetIcon(vector_icons::kMicIcon);
   microphone_icon->SetName(kSpeechRecognitionMicrophoneIcon);
   microphone_icon->SetDrawPhase(kPhaseForeground);
   microphone_icon->SetSize(kCloseButtonDiameter, kCloseButtonDiameter);
-  scene_->AddUiElement(kSpeechRecognitionRoot, std::move(microphone_icon));
 
-  auto speech_result_parent = CreateTransientParent(
-      kSpeechRecognitionResult, kSpeechRecognitionResultTimeoutSeconds, false);
-
-  // We need to explicitly set the initial visibility of
-  // kSpeechRecognitionResult as k2dBrowsingForeground's visibility depends on
-  // it in a binding. However, k2dBrowsingForeground's binding updated before
-  // kSpeechRecognitionResult. So the initial value needs to be correctly set
-  // instead of depend on binding to kick in.
-  speech_result_parent->SetVisibleImmediately(false);
+  auto speech_result_parent =
+      Create<UiElement>(kSpeechRecognitionResult, kPhaseNone);
   speech_result_parent->SetTransitionedProperties({OPACITY});
   speech_result_parent->SetTransitionDuration(base::TimeDelta::FromMilliseconds(
       kSpeechRecognitionOpacityAnimationDurationMs));
   speech_result_parent->AddBinding(std::make_unique<Binding<bool>>(
       VR_BIND_LAMBDA(
-          [](Model* m) { return m->speech.recognition_result.empty(); },
+          [](Model* m) { return !m->speech.recognition_result.empty(); },
           base::Unretained(model_)),
       VR_BIND_LAMBDA(
           [](UiElement* e, const bool& v) {
-            if (v) {
-              e->SetVisible(false);
-            } else {
+            if (v)
               e->SetVisibleImmediately(true);
-            }
+            else
+              e->SetVisible(false);
           },
           speech_result_parent.get())));
   auto speech_result =
@@ -1594,37 +1532,9 @@ void UiSceneCreator::CreateVoiceSearchUiGroup() {
   speech_result_parent->AddChild(std::move(hit_target));
 
   auto speech_recognition_listening = std::make_unique<UiElement>();
-  UiElement* listening_ui_root = speech_recognition_listening.get();
   speech_recognition_listening->SetName(kSpeechRecognitionListening);
-  // We need to explicitly set the initial visibility of this element for the
-  // same reason as kSpeechRecognitionResult.
-  speech_recognition_listening->SetVisibleImmediately(false);
-  speech_recognition_listening->SetTransitionedProperties({OPACITY});
-  speech_recognition_listening->SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(
-          kSpeechRecognitionOpacityAnimationDurationMs));
-  speech_recognition_listening->AddBinding(
-      std::make_unique<Binding<std::pair<bool, float>>>(
-          VR_BIND_LAMBDA(
-              [](Model* m, UiElement* result_parent) {
-                return std::pair<bool, float>(
-                    m->voice_search_enabled(),
-                    result_parent->GetTargetOpacity());
-              },
-              base::Unretained(model_),
-              base::Unretained(speech_result_parent.get())),
-          VR_BIND_LAMBDA(
-              [](UiElement* listening, const std::pair<bool, float>& value) {
-                if (!value.first && value.second != 0.f) {
-                  listening->SetVisibleImmediately(false);
-                } else {
-                  listening->SetVisible(value.first);
-                }
-              },
-              base::Unretained(listening_ui_root))));
-  scene_->AddUiElement(kSpeechRecognitionRoot,
-                       std::move(speech_recognition_listening));
-  scene_->AddUiElement(kSpeechRecognitionRoot, std::move(speech_result_parent));
+  VR_BIND_VISIBILITY(speech_recognition_listening,
+                     model->speech.recognition_result.empty());
 
   auto growing_circle = std::make_unique<Throbber>();
   growing_circle->SetName(kSpeechRecognitionListeningGrowingCircle);
@@ -1641,7 +1551,6 @@ void UiSceneCreator::CreateVoiceSearchUiGroup() {
                   value == SPEECH_RECOGNITION_IN_SPEECH ||
                   value == SPEECH_RECOGNITION_RECOGNIZING ||
                   value == SPEECH_RECOGNITION_READY)));
-  scene_->AddUiElement(kSpeechRecognitionListening, std::move(growing_circle));
 
   auto close_button = Create<DiscButton>(
       kSpeechRecognitionListeningCloseButton, kPhaseForeground,
@@ -1657,34 +1566,17 @@ void UiSceneCreator::CreateVoiceSearchUiGroup() {
   VR_BIND_BUTTON_COLORS(model_, close_button.get(),
                         &ColorScheme::disc_button_colors,
                         &DiscButton::SetButtonColors);
-  scene_->AddUiElement(kSpeechRecognitionListening, std::move(close_button));
 
-  auto* root = scene_->GetUiElementByName(kSpeechRecognitionRoot);
-  root->AddBinding(std::make_unique<Binding<bool>>(
-      VR_BIND_LAMBDA(
-          [](Model* model, UiElement* speech_listening,
-             UiElement* speech_result_parent) {
-            // The speech recognition root should be visible as long as the
-            // speech listening or result subtree is visible.
-            return model->voice_search_enabled() ||
-                   speech_listening->GetTargetOpacity() != 0.f ||
-                   speech_result_parent->GetTargetOpacity() != 0.f;
-          },
-          base::Unretained(model_),
-          base::Unretained(
-              scene_->GetUiElementByName(kSpeechRecognitionListening)),
-          base::Unretained(
-              scene_->GetUiElementByName(kSpeechRecognitionResult))),
-      VR_BIND_LAMBDA(
-          [](UiElement* e, const bool& value) { e->SetVisible(value); },
-          base::Unretained(root))));
+  speech_recognition_listening->AddChild(std::move(growing_circle));
+  speech_recognition_listening->AddChild(std::move(close_button));
 
-  BIND_VISIBILITY_CONTROL_FOR_VOICE(
-      scene_->GetUiElementByName(k2dBrowsingVisibiltyControlForVoice), model_,
-      browsing_enabled());
-  BIND_VISIBILITY_CONTROL_FOR_VOICE(
-      scene_->GetUiElementByName(kOmniboxVisibiltyControlForVoice), model_,
-      omnibox_editing_enabled());
+  speech_recognition_root->AddChild(std::move(inner_circle));
+  speech_recognition_root->AddChild(std::move(microphone_icon));
+  speech_recognition_root->AddChild(std::move(speech_recognition_listening));
+  speech_recognition_root->AddChild(std::move(speech_result_parent));
+
+  scene_->AddUiElement(k2dBrowsingRepositioner,
+                       std::move(speech_recognition_root));
 }
 
 void UiSceneCreator::CreateContentRepositioningAffordance() {
@@ -1843,12 +1735,6 @@ void UiSceneCreator::CreateController() {
 }
 
 void UiSceneCreator::CreateKeyboard() {
-  auto visibility_control_root =
-      Create<UiElement>(kKeyboardVisibilityControlForVoice, kPhaseNone);
-  visibility_control_root->set_contributes_to_parent_bounds(false);
-  BIND_VISIBILITY_CONTROL_FOR_VOICE(visibility_control_root.get(), model_,
-                                    editing_enabled());
-
   auto scaler = std::make_unique<ScaledDepthAdjuster>(kKeyboardDistance);
   scaler->SetName(kKeyboardDmmRoot);
 
@@ -1883,16 +1769,15 @@ void UiSceneCreator::CreateKeyboard() {
             }
           },
           base::Unretained(keyboard.get()))));
-  VR_BIND_VISIBILITY(
-      keyboard, (model->editing_input || model->editing_web_input) &&
-                    model->active_modal_prompt_type == kModalPromptTypeNone);
+  VR_BIND_VISIBILITY(keyboard, (model->editing_input ||
+                                (model->editing_web_input &&
+                                 (model->get_mode() == kModeBrowsing ||
+                                  model->get_mode() == kModeFullscreen))));
   scene_->AddPerFrameCallback(base::BindRepeating(
       [](Keyboard* keyboard) { keyboard->AdvanceKeyboardFrameIfNeeded(); },
       base::Unretained(keyboard.get())));
   scaler->AddChild(std::move(keyboard));
-  visibility_control_root->AddChild(std::move(scaler));
-  scene_->AddUiElement(k2dBrowsingRepositioner,
-                       std::move(visibility_control_root));
+  scene_->AddUiElement(k2dBrowsingRepositioner, std::move(scaler));
 }
 
 void UiSceneCreator::CreateUrlBar() {
@@ -2381,29 +2266,15 @@ void UiSceneCreator::CreateOverflowMenu() {
 }
 
 void UiSceneCreator::CreateOmnibox() {
-  auto visibility_control_root =
-      Create<UiElement>(kOmniboxVisibiltyControlForVoice, kPhaseNone);
-  visibility_control_root->set_contributes_to_parent_bounds(false);
-
   auto scaler =
       Create<ScaledDepthAdjuster>(kOmniboxDmmRoot, kPhaseNone, kUrlBarDistance);
 
-  auto visibility_toggle_for_audio_permission = Create<UiElement>(
-      kOmniboxVisibilityControlForAudioPermissionPrompt, kPhaseNone);
-  // Note that when the audio permissions prompt is triggered from the omnibox
-  // editing mode, we don't change the opacity of the background like we do in
-  // the default browsing case.
-  visibility_toggle_for_audio_permission->AddBinding(VR_BIND_FUNC(
-      bool, Model, model_,
-      model->active_modal_prompt_type !=
-          kModalPromptTypeExitVRForVoiceSearchRecordAudioOsPermission,
-      UiElement, visibility_toggle_for_audio_permission.get(), SetVisible));
-
   auto omnibox_root = Create<UiElement>(kOmniboxRoot, kPhaseNone);
+  omnibox_root->SetVisible(false);
   omnibox_root->SetTransitionedProperties({OPACITY});
   omnibox_root->SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(kOmniboxTransitionMs));
-  VR_BIND_VISIBILITY(omnibox_root, model->omnibox_editing_enabled());
+  VR_BIND_VISIBILITY(omnibox_root, model->get_mode() == kModeEditingOmnibox);
 
   // The shadow also controls omnibox Y offset.
   auto shadow = Create<Shadow>(kOmniboxShadow, kPhaseForeground);
@@ -2525,16 +2396,6 @@ void UiSceneCreator::CreateOmnibox() {
           },
           base::Unretained(omnibox_text_field.get()),
           base::Unretained(model_))));
-  omnibox_text_field->AddBinding(std::make_unique<Binding<bool>>(
-      VR_BIND_LAMBDA(
-          [](Model* m) { return m->has_mode_in_stack(kModeEditingOmnibox); },
-          base::Unretained(model_)),
-      VR_BIND_LAMBDA(
-          [](TextInput* e, Model* m, const bool& unused) {
-            m->omnibox_text_field_info = EditedText();
-          },
-          base::Unretained(omnibox_text_field.get()),
-          base::Unretained(model_))));
   omnibox_text_field->AddBinding(VR_BIND_FUNC(
       bool, Model, model_, model->supports_selection, OmniboxTextField,
       omnibox_text_field.get(), set_allow_inline_autocomplete));
@@ -2650,13 +2511,21 @@ void UiSceneCreator::CreateOmnibox() {
   omnibox_root->AddChild(std::move(shadow));
   omnibox_root->AddChild(std::move(button_scaler));
 
-  visibility_toggle_for_audio_permission->AddChild(std::move(omnibox_root));
-  scaler->AddChild(std::move(visibility_toggle_for_audio_permission));
+  scaler->AddChild(std::move(omnibox_root));
 
-  visibility_control_root->AddChild(std::move(scaler));
+  UiElement* parent = scene_->GetUiElementByName(k2dBrowsingRepositioner);
+  parent->AddChild(std::move(scaler));
 
-  scene_->AddUiElement(k2dBrowsingRepositioner,
-                       std::move(visibility_control_root));
+  // This binding must run whether or not the omnibox is visible.
+  parent->AddBinding(std::make_unique<Binding<bool>>(
+      VR_BIND_LAMBDA(
+          [](Model* m) { return m->has_mode_in_stack(kModeEditingOmnibox); },
+          base::Unretained(model_)),
+      VR_BIND_LAMBDA(
+          [](Model* m, const bool& unused) {
+            m->omnibox_text_field_info = EditedText();
+          },
+          base::Unretained(model_))));
 }
 
 void UiSceneCreator::CreateCloseButton() {
@@ -2726,6 +2595,7 @@ void UiSceneCreator::CreatePrompts() {
         }
         browser->OnExitVrPromptResult(choice, mode);
         model->active_modal_prompt_type = kModalPromptTypeNone;
+        model->pop_mode(kModeModalPrompt);
       },
       base::Unretained(model_), base::Unretained(browser_));
   // Create audio permission prompt.
@@ -2734,6 +2604,8 @@ void UiSceneCreator::CreatePrompts() {
       IDS_VR_SHELL_AUDIO_PERMISSION_PROMPT_DESCRIPTION, vector_icons::kMicIcon,
       IDS_VR_SHELL_AUDIO_PERMISSION_PROMPT_CONTINUE_BUTTON,
       IDS_VR_SHELL_AUDIO_PERMISSION_PROMPT_ABORT_BUTTON, prompt_callback);
+  prompt.second->set_reason(
+      UiUnsupportedMode::kVoiceSearchNeedsRecordAudioOsPermission);
   VR_BIND_VISIBILITY(
       prompt.first,
       model->active_modal_prompt_type ==
@@ -2747,6 +2619,7 @@ void UiSceneCreator::CreatePrompts() {
       vector_icons::kInfoOutlineIcon,
       IDS_VR_SHELL_AUDIO_PERMISSION_PROMPT_CONTINUE_BUTTON,
       IDS_VR_SHELL_AUDIO_PERMISSION_PROMPT_ABORT_BUTTON, prompt_callback);
+  prompt.second->set_reason(UiUnsupportedMode::kNeedsKeyboardUpdate);
   VR_BIND_VISIBILITY(prompt.first, model->active_modal_prompt_type ==
                                        kModalPromptTypeUpdateKeyboard);
   scene_->AddUiElement(k2dBrowsingRepositioner, std::move(prompt.first));
@@ -2769,6 +2642,7 @@ void UiSceneCreator::CreatePrompts() {
         }
         browser->OnExitVrPromptResult(choice, mode);
         model->active_modal_prompt_type = kModalPromptTypeNone;
+        model->pop_mode(kModeModalPrompt);
       },
       base::Unretained(model_), base::Unretained(browser_));
   prompt = CreatePrompt(
