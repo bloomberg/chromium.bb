@@ -149,7 +149,7 @@ IN_PROC_BROWSER_TEST_F(AcceptHeaderTest, Check) {
   EXPECT_EQ("custom/type", GetFor("/xhr_with_accept_header"));
 
   shell()->web_contents()->GetManifest(
-      base::BindOnce([](const GURL&, const content::Manifest&) {}));
+      base::BindOnce([](const GURL&, const blink::Manifest&) {}));
 
   // RESOURCE_TYPE_SUB_RESOURCE
   EXPECT_EQ("*/*", GetFor("/manifest"));

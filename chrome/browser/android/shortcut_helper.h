@@ -34,7 +34,7 @@ class ShortcutHelper {
   // screen.
   static std::unique_ptr<ShortcutInfo> CreateShortcutInfo(
       const GURL& manifest_url,
-      const content::Manifest& manifest,
+      const blink::Manifest& manifest,
       const GURL& primary_icon_url,
       const GURL& badge_icon_url);
 

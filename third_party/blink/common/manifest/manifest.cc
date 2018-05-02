@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/common/manifest.h"
+#include "third_party/blink/public/common/manifest/manifest.h"
 
-namespace content {
+namespace blink {
 
 // We need to provide a value here which is out of the range of a 32-bit integer
 // since otherwise we would not be able to check whether a theme color was valid
@@ -57,4 +57,4 @@ bool Manifest::IsEmpty() const {
          scope.is_empty();
 }
 
-} // namespace content
+}  // namespace blink
