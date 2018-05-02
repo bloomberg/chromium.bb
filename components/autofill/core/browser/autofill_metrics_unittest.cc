@@ -225,15 +225,19 @@ class AutofillMetricsTest : public testing::Test {
   // Removes all existing profiles and creates one profile.
   void RecreateProfile();
 
-  // Removes all existing credit cards and creates 0 or 1 local profiles and
-  // 0 or 1 server profile according to the parameters.
+  // Removes all existing credit cards and creates a local, masked server,
+  // and/or full server credit card, according to the parameters.
   void RecreateCreditCards(bool include_local_credit_card,
                            bool include_masked_server_credit_card,
                            bool include_full_server_credit_card);
 
-  // Removes all existing credit cards and creates 1 server card with a bank
-  // name.
-  void RecreateServerCreditCardsWithBankName();
+  // Removes all existing credit cards and creates 1 masked server card with a
+  // bank name.
+  void RecreateMaskedServerCreditCardWithBankName();
+
+  // Removes all existing credit cards and creates 1 full server card with a
+  // bank name.
+  void RecreateFullServerCreditCardWithBankName();
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   ukm::TestAutoSetUkmRecorder test_ukm_recorder_;
@@ -339,7 +343,19 @@ void AutofillMetricsTest::RecreateCreditCards(
   personal_data_->Refresh();
 }
 
-void AutofillMetricsTest::RecreateServerCreditCardsWithBankName() {
+void AutofillMetricsTest::RecreateMaskedServerCreditCardWithBankName() {
+  personal_data_->ClearCreditCards();
+  CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, "server_id");
+  test::SetCreditCardInfo(&credit_card, "name", "1111" /* Visa */, "01", "2999",
+                          "");
+  credit_card.set_guid("10000000-0000-0000-0000-000000000002");
+  credit_card.SetNetworkForMaskedCard(kVisaCard);
+  credit_card.set_bank_name("Chase");
+  personal_data_->AddServerCreditCard(credit_card);
+  personal_data_->Refresh();
+}
+
+void AutofillMetricsTest::RecreateFullServerCreditCardWithBankName() {
   personal_data_->ClearCreditCards();
   CreditCard credit_card(CreditCard::FULL_SERVER_CARD, "server_id");
   test::SetCreditCardInfo(&credit_card, "name", "4111111111111111", "12", "24",
@@ -3099,8 +3115,56 @@ TEST_F(AutofillMetricsTest, CreditCardShownFormEvents) {
                      ["Autofill.FormEvents.CreditCard.BankNameDisplayed"]);
   }
 
-  // Recreate server cards with bank names.
-  RecreateServerCreditCardsWithBankName();
+  // Recreate masked server cards with bank names.
+  RecreateMaskedServerCreditCardWithBankName();
+
+  // Reset the autofill manager state.
+  autofill_manager_->Reset();
+  autofill_manager_->AddSeenForm(form, field_types, field_types);
+
+  {
+    // Simulating new popup being shown.
+    base::HistogramTester histogram_tester;
+    autofill_manager_->OnQueryFormFieldAutofill(0, form, field, gfx::RectF());
+    autofill_manager_->DidShowSuggestions(true /* is_new_popup */, form, field);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard",
+        AutofillMetrics::FORM_EVENT_SUGGESTIONS_SHOWN, 1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard",
+        AutofillMetrics::FORM_EVENT_SUGGESTIONS_SHOWN_ONCE, 1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard.BankNameDisplayed",
+        AutofillMetrics::
+            FORM_EVENT_SUGGESTIONS_SHOWN_WITH_BANK_NAME_AVAILABLE_ONCE,
+        1);
+  }
+
+  // Reset the autofill manager state.
+  autofill_manager_->Reset();
+  autofill_manager_->AddSeenForm(form, field_types, field_types);
+
+  {
+    // Simulating two popups in the same page load.
+    base::HistogramTester histogram_tester;
+    autofill_manager_->OnQueryFormFieldAutofill(0, form, field, gfx::RectF());
+    autofill_manager_->DidShowSuggestions(true /* is_new_popup */, form, field);
+    autofill_manager_->DidShowSuggestions(true /* is_new_popup */, form, field);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard",
+        AutofillMetrics::FORM_EVENT_SUGGESTIONS_SHOWN, 2);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard",
+        AutofillMetrics::FORM_EVENT_SUGGESTIONS_SHOWN_ONCE, 1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard.BankNameDisplayed",
+        AutofillMetrics::
+            FORM_EVENT_SUGGESTIONS_SHOWN_WITH_BANK_NAME_AVAILABLE_ONCE,
+        1);
+  }
+
+  // Recreate full server cards with bank names.
+  RecreateFullServerCreditCardWithBankName();
 
   // Reset the autofill manager state.
   autofill_manager_->Reset();
@@ -3343,8 +3407,59 @@ TEST_F(AutofillMetricsTest, CreditCardFilledFormEvents) {
         AutofillMetrics::FORM_EVENT_LOCAL_SUGGESTION_FILLED_ONCE, 1);
   }
 
-  // Recreate server cards with bank names.
-  RecreateServerCreditCardsWithBankName();
+  // Recreate masked server cards with bank names.
+  RecreateMaskedServerCreditCardWithBankName();
+
+  // Reset the autofill manager state.
+  autofill_manager_->Reset();
+  autofill_manager_->AddSeenForm(form, field_types, field_types);
+
+  {
+    // Simulating filling a masked card server suggestion.
+    base::HistogramTester histogram_tester;
+    std::string guid(
+        "10000000-0000-0000-0000-000000000002");  // masked server card
+    autofill_manager_->OnQueryFormFieldAutofill(0, form, field, gfx::RectF());
+    autofill_manager_->FillOrPreviewForm(
+        AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.back(),
+        autofill_manager_->MakeFrontendID(guid, std::string()));
+    autofill_manager_->OnDidGetRealPan(AutofillClient::SUCCESS,
+                                       "4444333322221111");
+    autofill_manager_->OnFormSubmitted(
+        form, false, SubmissionSource::FORM_SUBMISSION, TimeTicks::Now());
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard.BankNameDisplayed",
+        AutofillMetrics::
+            FORM_EVENT_SERVER_SUGGESTION_FILLED_WITH_BANK_NAME_AVAILABLE_ONCE,
+        1);
+  }
+
+  // Reset the autofill manager state.
+  autofill_manager_->Reset();
+  autofill_manager_->AddSeenForm(form, field_types, field_types);
+
+  {
+    // Simulating filling multiple times.
+    base::HistogramTester histogram_tester;
+    std::string guid(
+        "10000000-0000-0000-0000-000000000002");  // masked server card
+    autofill_manager_->OnQueryFormFieldAutofill(0, form, field, gfx::RectF());
+    autofill_manager_->FillOrPreviewForm(
+        AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.back(),
+        autofill_manager_->MakeFrontendID(guid, std::string()));
+    autofill_manager_->OnDidGetRealPan(AutofillClient::SUCCESS,
+                                       "4444333322221111");
+    autofill_manager_->OnFormSubmitted(
+        form, false, SubmissionSource::FORM_SUBMISSION, TimeTicks::Now());
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard.BankNameDisplayed",
+        AutofillMetrics::
+            FORM_EVENT_SERVER_SUGGESTION_FILLED_WITH_BANK_NAME_AVAILABLE_ONCE,
+        1);
+  }
+
+  // Recreate full server cards with bank names.
+  RecreateFullServerCreditCardWithBankName();
 
   // Reset the autofill manager state.
   autofill_manager_->Reset();
