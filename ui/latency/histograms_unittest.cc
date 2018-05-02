@@ -41,6 +41,32 @@ TEST(FrameMetricsHistogramsTest, VSyncBoundariesDirect) {
   }
 }
 
+// Results should be 0 if no samples have been added yet.
+TEST(FrameMetricsHistogramsTest, ResultsAreZeroWithoutSamples) {
+  RatioHistogram ratio_histogram;
+  EXPECT_EQ(0, ratio_histogram.ComputePercentiles().values[0]);
+  EXPECT_EQ(0, ratio_histogram.ComputePercentiles().values[1]);
+
+  VSyncHistogram vsync_histogram;
+  EXPECT_EQ(0, vsync_histogram.ComputePercentiles().values[0]);
+  EXPECT_EQ(0, vsync_histogram.ComputePercentiles().values[1]);
+}
+
+// A non-zero value implies samples were added since, even if those samples
+// were zero, they would go into the [0,N) bucket and result in a non-zero
+// estimate.
+TEST(FrameMetricsHistogramsTest, ResultsAreNonZeroWithSamplesOfZero) {
+  RatioHistogram ratio_histogram;
+  ratio_histogram.AddSample(0, 1);
+  EXPECT_LT(0, ratio_histogram.ComputePercentiles().values[0]);
+  EXPECT_LT(0, ratio_histogram.ComputePercentiles().values[1]);
+
+  VSyncHistogram vsync_histogram;
+  vsync_histogram.AddSample(0, 1);
+  EXPECT_LT(0, vsync_histogram.ComputePercentiles().values[0]);
+  EXPECT_LT(0, vsync_histogram.ComputePercentiles().values[1]);
+}
+
 template <typename ReferenceBoundaryT>
 void BoundaryTestCommon(const ReferenceBoundaryT& reference_boundaries,
                         std::unique_ptr<Histogram> histogram) {

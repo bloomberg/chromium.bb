@@ -9,6 +9,8 @@ jumbo_source_set("latency") {
   sources = [
     "fixed_point.cc",
     "fixed_point.h",
+    "frame_metrics.cc",
+    "frame_metrics.h",
     "histograms.cc",
     "histograms.h",
     "latency_histogram_macros.h",
@@ -48,6 +50,7 @@ test("latency_unittests") {
     "fixed_point_unittest.cc",
     "frame_metrics_test_common.cc",
     "frame_metrics_test_common.h",
+    "frame_metrics_unittest.cc",
     "histograms_unittest.cc",
     "latency_info_unittest.cc",
     "stream_analyzer_unittest.cc",

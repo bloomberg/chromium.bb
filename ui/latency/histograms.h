@@ -13,6 +13,10 @@
 namespace ui {
 
 // Used to communicate percentile results to clients.
+// If entries in |values| are zero, that means there were no samples.
+// A non-zero value implies samples were added since, even if those samples
+// were zero, they would go into the [0,N) bucket and result in a non-zero
+// estimate.
 struct PercentileResults {
   static constexpr double kPercentiles[] = {.50, .99};
   static constexpr size_t kCount = arraysize(kPercentiles);
