@@ -45,6 +45,8 @@
 @property(nonatomic, strong, readonly) UIViewController* viewController;
 // Returns YES if the consent view is scrolled to the bottom.
 @property(nonatomic, readonly) BOOL isScrolledToBottom;
+// Returns YES if the user tapped on the setting link.
+@property(nonatomic, readonly) BOOL settingsLinkWasTapped;
 
 // Starts this coordinator.
 - (void)start;

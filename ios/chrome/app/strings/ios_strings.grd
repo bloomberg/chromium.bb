@@ -140,12 +140,6 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_OK_BUTTON" desc="Title of the button to accept sign in and navigate away from the confirmation screen. [Length: 20m] [iOS only]">
         Ok, Got it
       </message>
-      <message name="IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SYNC_DATA" desc="Description on the sign-in consent dialog to explain the benefit to sign-in. [Length: unlimited] [iOS only]" translateable="false">
-      Your passwords, history &amp; more on all devices
-      </message>
-      <message name="IDS_IOS_ACCOUNT_UNIFIED_CONSENT_PERSONALIZED" desc="Description on the sign-in consent dialog to explain the benefit to sign-in. [Length: unlimited] [iOS only]" translateable="false">
-      Personalized Google services like Google Pay
-      </message>
       <message name="IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_OPEN_SETTINGS" desc="Description of how to configure sync and Google services on the sign-in confirmation screen. [Length: unlimited]">
         Manage Chrome Sync and personalization in <ph name="BEGIN_LINK">BEGIN_LINK</ph>Settings<ph name="END_LINK">END_LINK</ph>
       </message>
@@ -185,6 +179,18 @@ locale.  The strings in this file are specific to iOS.
       </message>
       <message name="IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SKIP_BUTTON" desc="Title of the button to skip the selection of an account. [Length: 20em] [iOS only]">
         Cancel
+      </message>
+      <message name="IDS_IOS_ACCOUNT_UNIFIED_CONSENT_ADD_ACCOUNT" desc="Title of the button to add an account [Length: 15m] [iOS only]">
+        ADD ACCOUNT
+      </message>
+      <message name="IDS_IOS_ACCOUNT_UNIFIED_CONSENT_OK_BUTTON" desc="Title of the button to validate the user consent [Length: 15m] [iOS only]">
+        YES, I'M IN
+      </message>
+      <message name="IDS_IOS_ACCOUNT_UNIFIED_CONSENT_PERSONALIZED" desc="Description on the sign-in consent dialog to explain the benefit to sign-in. [Length: unlimited] [iOS only]" translateable="false">
+      Personalized Google services like Google Pay
+      </message>
+      <message name="IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SYNC_DATA" desc="Description on the sign-in consent dialog to explain the benefit to sign-in. [Length: unlimited] [iOS only]" translateable="false">
+      Your passwords, history &amp; more on all devices
       </message>
       <message name="IDS_IOS_APPEX_PASSWORD_FORM_FILLED_SUCCESS" desc="Message displayed when an App Extension has successfully filled a sign-in form with username and password. [Length: 30em] [iOS only]">
         Forms filled.
