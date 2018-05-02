@@ -268,7 +268,6 @@ Solo debes usar esta función con las cuentas de confianza.</translation>
 <translation id="7029814467594812963">Cerrar sesión</translation>
 <translation id="7034339000180558234">Enviando <ph name="TAB_NAME" /> a <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Establecer fondo de pantalla...</translation>
-<translation id="7054808953701320293">No volver a mostrar.</translation>
 <translation id="7066646422045619941">El administrador ha inhabilitado esta red.</translation>
 <translation id="7067196344162293536">Rotación automática</translation>
 <translation id="7098389117866926363">Dispositivo USB tipo C (puerto izquierdo situado en la parte trasera)</translation>
@@ -308,7 +307,6 @@ Solo debes usar esta función con las cuentas de confianza.</translation>
 <translation id="8000066093800657092">Ninguna red</translation>
 <translation id="8054466585765276473">Calculando duración de la batería...</translation>
 <translation id="8056430285089645882">No volver a mostrar.</translation>
-<translation id="8088137642766812908">Ten cuidado con esta función</translation>
 <translation id="8098591350844501178">Dejar de enviar la pantalla a <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Conectado a <ph name="NAME" /></translation>
 <translation id="813913629614996137">Inicializando…</translation>
@@ -336,9 +334,6 @@ Solo debes usar esta función con las cuentas de confianza.</translation>
 <translation id="8734991477317290293">Es posible que esté intentando captar tus pulsaciones de teclas</translation>
 <translation id="8809737090443522491">Escribe el nombre de una aplicación o un documento</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="8814715559352963456">Si mueves ventanas a otro escritorio, es posible que se produzca un comportamiento inesperado.
-
-Puede que las notificaciones, las ventanas y los cuadros de diálogo que aparezcan después de realizar esta acción se dividan entre los escritorios.</translation>
 <translation id="8825534185036233643">No se puede proyectar contenido en más de dos pantallas.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8841375032071747811">Botón Atrás</translation>

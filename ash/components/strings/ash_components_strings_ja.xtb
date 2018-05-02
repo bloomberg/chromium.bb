@@ -102,6 +102,7 @@
 <translation id="5236674127086649162">キャッシュされたコンテンツを使用しないで現在のページを再読み込みする</translation>
 <translation id="526651782186312376">行頭までのテキストを選択する</translation>
 <translation id="5316716239522500219">モニターをミラーリングする</translation>
+<translation id="5487187679583934283">話した内容の入力を開始または停止します</translation>
 <translation id="5541719484267030947">タブをドラッグしながら、<ph name="ESC" /> キーを押す</translation>
 <translation id="5554139136362089836">現在のページ内を検索する</translation>
 <translation id="5563050856984839829"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> キーを押しながらリンクをクリックする</translation>
@@ -144,6 +145,7 @@
 <translation id="6981982820502123353">ユーザー補助機能</translation>
 <translation id="7020813747703216897">一致する結果は見つかりませんでした</translation>
 <translation id="7025325401470358758">次のウィンドウ</translation>
+<translation id="7076878155205969899">音声をミュートします</translation>
 <translation id="7077383985738259936">ブックマーク バーにフォーカスするかブックマーク バーをハイライト表示します（ブックマーク バーが表示されている場合）</translation>
 <translation id="7237562915163138771">アドレスバーにウェブアドレスを入力して、<ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /> キーを押します</translation>
 <translation id="7254764037241667478">端末をスリープモード（停止）にします</translation>

@@ -162,7 +162,6 @@
 <translation id="2496180316473517155">Історія переглядів</translation>
 <translation id="2498359688066513246">Довідка й відгуки</translation>
 <translation id="2501278716633472235">Назад</translation>
-<translation id="2503472621226270518">Розгорнути панель навігації</translation>
 <translation id="2512222046227390255">Автоматично заповняти форми</translation>
 <translation id="2526148617758225454">Заощадження трафіку ввімкнено. Ви можете керувати ним у налаштуваннях.</translation>
 <translation id="2532336938189706096">Веб-версія</translation>
@@ -183,6 +182,7 @@
 <translation id="2650751991977523696">Завантажити файл ще раз?</translation>
 <translation id="2653659639078652383">Надіслати</translation>
 <translation id="2677748264148917807">Вийти</translation>
+<translation id="2693813674743028984">Сховати дані про обсяг пам’яті</translation>
 <translation id="2704606927547763573">Скопійов.</translation>
 <translation id="2707726405694321444">Оновити сторінку</translation>
 <translation id="2709516037105925701">Автозаповнення</translation>
@@ -208,6 +208,7 @@
 <translation id="2956410042958133412">Цим обліковим записом керують <ph name="PARENT_NAME_1" /> і <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Авторське право <ph name="YEAR" /> Google Inc. Усі права захищено.</translation>
 <translation id="2962095958535813455">Ви перейшли на анонімні вкладки</translation>
+<translation id="2965945119655563012">Показати дані про обсяг пам’яті</translation>
 <translation id="2968755619301702150">Перегляд сертифікатів</translation>
 <translation id="2979025552038692506">Вибрана анонімна вкладка</translation>
 <translation id="2989523299700148168">Нещодавно відвідані</translation>
@@ -335,6 +336,7 @@
 <translation id="4170011742729630528">Служба не доступна. Повторіть спробу пізніше.</translation>
 <translation id="4181841719683918333">Мови</translation>
 <translation id="4195643157523330669">Відкрити в новій вкладці</translation>
+<translation id="4198423547019359126">Немає доступних місць для завантаження</translation>
 <translation id="4226663524361240545">Коли надходитимуть сповіщення, пристрій може вібрувати</translation>
 <translation id="4242533952199664413">Відкрити налаштування</translation>
 <translation id="424864128008805179">Вийти з Chrome?</translation>
@@ -700,6 +702,7 @@
 <translation id="7455923816558154057">Торкніться, щоб переглянути</translation>
 <translation id="7473891865547856676">Ні, дякую</translation>
 <translation id="7475192538862203634">Якщо ви часто бачите таку сторінку, скористайтеся цими <ph name="BEGIN_LINK" />пропозиціями<ph name="END_LINK" />.</translation>
+<translation id="7475688122056506577">Карту SD не знайдено. Деякі файли можуть бути відсутні.</translation>
 <translation id="748127970106343339">Підтвердити видалення облікових даних пристрою</translation>
 <translation id="7481312909269577407">Переслати</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (оновлено: <ph name="TIME_SINCE_UPDATE" />)</translation>
@@ -763,6 +766,7 @@
 <translation id="8026334261755873520">Очистити дані веб-перегляду</translation>
 <translation id="8035133914807600019">Нова папка…</translation>
 <translation id="8037750541064988519">Залишилося <ph name="DAYS" /> дн.</translation>
+<translation id="804335162455518893">Карту SD не знайдено</translation>
 <translation id="805047784848435650">На основі історії веб-перегляду</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> МБ доступно</translation>
 <translation id="8058746566562539958">Відкрити в новій вкладці Chrome</translation>

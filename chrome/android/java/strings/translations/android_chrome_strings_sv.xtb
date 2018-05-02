@@ -162,7 +162,6 @@
 <translation id="2496180316473517155">Webbhistorik</translation>
 <translation id="2498359688066513246">Hjälp och feedback</translation>
 <translation id="2501278716633472235">Föregående</translation>
-<translation id="2503472621226270518">Utöka navigeringspanelen</translation>
 <translation id="2512222046227390255">Fyll i formulär automatiskt</translation>
 <translation id="2526148617758225454">Databesparing är på. Hantera funktionen i Inställningar.</translation>
 <translation id="2532336938189706096">Webbvy</translation>
@@ -183,6 +182,7 @@
 <translation id="2650751991977523696">Vill du ladda ned filen igen?</translation>
 <translation id="2653659639078652383">Skicka</translation>
 <translation id="2677748264148917807">Lämna</translation>
+<translation id="2693813674743028984">Dölj lagringsutrymme</translation>
 <translation id="2704606927547763573">Kopierat</translation>
 <translation id="2707726405694321444">Uppdatera sidan</translation>
 <translation id="2709516037105925701">Autofyll</translation>
@@ -208,6 +208,7 @@
 <translation id="2956410042958133412">Det här kontot hanteras av <ph name="PARENT_NAME_1" /> och <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Upphovsrätt <ph name="YEAR" /> Google Inc. Med ensamrätt.</translation>
 <translation id="2962095958535813455">Byter till inkognitoflikar</translation>
+<translation id="2965945119655563012">Visa lagringsutrymme</translation>
 <translation id="2968755619301702150">Certifikatvisare</translation>
 <translation id="2979025552038692506">Vald inkognitoflik</translation>
 <translation id="2989523299700148168">Nyligen besökta</translation>
@@ -335,6 +336,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4170011742729630528">Tjänsten är inte tillgänglig, försök igen senare.</translation>
 <translation id="4181841719683918333">Språk</translation>
 <translation id="4195643157523330669">Öppna i ny flik</translation>
+<translation id="4198423547019359126">Det fins inga tillgängliga nedladdningsplatser</translation>
 <translation id="4226663524361240545">Aviseringar kan göra att enheten vibrerar</translation>
 <translation id="4242533952199664413">Öppna Inställningar</translation>
 <translation id="424864128008805179">Vill du logga ut från Chrome?</translation>
@@ -700,6 +702,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7455923816558154057">Visa genom att trycka här</translation>
 <translation id="7473891865547856676">Nej tack</translation>
 <translation id="7475192538862203634">Om du ser detta ofta provar du de här <ph name="BEGIN_LINK" />förslagen<ph name="END_LINK" />.</translation>
+<translation id="7475688122056506577">Det gick inte att hitta SD-kortet. Det kan saknas filer.</translation>
 <translation id="748127970106343339">Bekräfta borttagning av användaruppgifter för enheten</translation>
 <translation id="7481312909269577407">Framåt</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (uppdaterades <ph name="TIME_SINCE_UPDATE" />)</translation>
@@ -763,6 +766,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8026334261755873520">Rensa webbinformation</translation>
 <translation id="8035133914807600019">Ny mapp …</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> dagar kvar</translation>
+<translation id="804335162455518893">Det gick inte att hitta SD-kortet</translation>
 <translation id="805047784848435650">Utifrån din webbhistorik</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB tillgängliga</translation>
 <translation id="8058746566562539958">Öppna på ny flik i Chrome</translation>

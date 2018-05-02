@@ -102,6 +102,7 @@
 <translation id="5236674127086649162">Päivitä nykyinen sivu ilman välimuistin sisältöä</translation>
 <translation id="526651782186312376">Valitse teksti rivin alkuun asti</translation>
 <translation id="5316716239522500219">Peilaa näytöt</translation>
+<translation id="5487187679583934283">Aloittaa tai keskeyttää sanelun</translation>
 <translation id="5541719484267030947">Vedä välilehteä ja paina samalla <ph name="ESC" />.</translation>
 <translation id="5554139136362089836">Etsi nykyiseltä sivulta</translation>
 <translation id="5563050856984839829">Paina <ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> ja klikkaa linkkiä.</translation>
@@ -144,6 +145,7 @@
 <translation id="6981982820502123353">Esteettömyys</translation>
 <translation id="7020813747703216897">Hakua vastaavia tuloksia ei löytynyt.</translation>
 <translation id="7025325401470358758">Seuraava ruutu</translation>
+<translation id="7076878155205969899">Mykistä ääni</translation>
 <translation id="7077383985738259936">Kohdistaa kirjanmerkkipalkkiin tai korostaa sen (jos näkyvissä)</translation>
 <translation id="7237562915163138771">Kirjoita osoitepalkkiin verkko-osoite ja paina <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7254764037241667478">Siirtää laitteen virransäästötilaan (keskeytys)</translation>

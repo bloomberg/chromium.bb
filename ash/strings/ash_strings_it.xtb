@@ -268,7 +268,6 @@ Utilizza questa funzione solo con gli account che consideri attendibili.</transl
 <translation id="7029814467594812963">Esci da sessione</translation>
 <translation id="7034339000180558234">Trasmissione di <ph name="TAB_NAME" /> a <ph name="RECEIVER_NAME" /> in corso</translation>
 <translation id="7052914147756339792">Imposta sfondo...</translation>
-<translation id="7054808953701320293">Non mostrare più questo messaggio.</translation>
 <translation id="7066646422045619941">Questa rete è stata disattivata dall'amministratore.</translation>
 <translation id="7067196344162293536">Ruota in modo automatico</translation>
 <translation id="7098389117866926363">Dispositivo USB-C (porta posteriore sinistra)</translation>
@@ -308,7 +307,6 @@ Utilizza questa funzione solo con gli account che consideri attendibili.</transl
 <translation id="8000066093800657092">Nessuna rete</translation>
 <translation id="8054466585765276473">Calcolo della durata della batteria.</translation>
 <translation id="8056430285089645882">Non mostrare più questo messaggio.</translation>
-<translation id="8088137642766812908">Attenzione, questa funzione potrebbe essere pericolosa</translation>
 <translation id="8098591350844501178">Interrompi la trasmissione dello schermo su <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Connesso a <ph name="NAME" /></translation>
 <translation id="813913629614996137">Inizializzazione...</translation>
@@ -336,9 +334,6 @@ Utilizza questa funzione solo con gli account che consideri attendibili.</transl
 <translation id="8734991477317290293">Potrebbe essere un tentativo di rubare i tasti premuti</translation>
 <translation id="8809737090443522491">Digita il nome di un'app o un documento</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="8814715559352963456">Lo spostamento delle finestre su un altro desktop potrebbe causare comportamenti imprevisti.
-
-Le finestre, le notifiche e le finestre di dialogo successive potrebbero essere divise tra i desktop.</translation>
 <translation id="8825534185036233643">Il mirroring con più di due display non è supportato.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8841375032071747811">Pulsante Indietro</translation>

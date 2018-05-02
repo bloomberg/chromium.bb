@@ -268,7 +268,6 @@
 <translation id="7029814467594812963">Изход от сесията</translation>
 <translation id="7034339000180558234">„<ph name="TAB_NAME" />“ се предава към „<ph name="RECEIVER_NAME" />“</translation>
 <translation id="7052914147756339792">Задаване на тапет...</translation>
-<translation id="7054808953701320293">Разбрах, да не се показва повече.</translation>
 <translation id="7066646422045619941">Тази мрежа е деактивирана от администратора ви.</translation>
 <translation id="7067196344162293536">Автоматично завъртане</translation>
 <translation id="7098389117866926363">Устройство с USB-C (левият порт на гърба)</translation>
@@ -308,7 +307,6 @@
 <translation id="8000066093800657092">Няма мрежа</translation>
 <translation id="8054466585765276473">Издръжливостта на батерията се изчислява.</translation>
 <translation id="8056430285089645882">Разбрах, не показвайте това отново.</translation>
-<translation id="8088137642766812908">Внимателно, тази функция може да е опасна</translation>
 <translation id="8098591350844501178">Спиране на предаването на екрана към „<ph name="RECEIVER_NAME" />“</translation>
 <translation id="8132793192354020517">Установена е връзка с/ъс <ph name="NAME" /></translation>
 <translation id="813913629614996137">Подготвя се за работа...</translation>
@@ -336,9 +334,6 @@
 <translation id="8734991477317290293">Тя може да се опитва да записва кои клавиши натискате</translation>
 <translation id="8809737090443522491">Въведете името на приложение или документ</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="8814715559352963456">Преместването на прозорци към друг работен плот може да предизвика неочаквано поведение.
-
-Последващите известия, прозорци и диалогови прозорци може да бъдат разделени между работните плотове.</translation>
 <translation id="8825534185036233643">Дублирането с повече от два екрана не се поддържа.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8841375032071747811">Бутон за връщане назад</translation>

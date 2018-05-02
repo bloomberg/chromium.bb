@@ -268,7 +268,6 @@ Only use this feature with accounts that you trust.</translation>
 <translation id="7029814467594812963">Exit session</translation>
 <translation id="7034339000180558234">Casting <ph name="TAB_NAME" /> to <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Set wallpaper...</translation>
-<translation id="7054808953701320293">Got it, don't show me again.</translation>
 <translation id="7066646422045619941">This network is disabled by your administrator.</translation>
 <translation id="7067196344162293536">Auto rotate</translation>
 <translation id="7098389117866926363">USB-C device (left port in the back)</translation>
@@ -308,7 +307,6 @@ Only use this feature with accounts that you trust.</translation>
 <translation id="8000066093800657092">No network</translation>
 <translation id="8054466585765276473">Calculating battery time.</translation>
 <translation id="8056430285089645882">Got it, don't show me this again.</translation>
-<translation id="8088137642766812908">Careful, this feature may bite</translation>
 <translation id="8098591350844501178">Stop casting screen to <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Connected to <ph name="NAME" /></translation>
 <translation id="813913629614996137">Initialising...</translation>
@@ -336,9 +334,6 @@ Only use this feature with accounts that you trust.</translation>
 <translation id="8734991477317290293">It may be attempting to steal your keystrokes</translation>
 <translation id="8809737090443522491">Type the name of an app or document</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="8814715559352963456">Moving windows to another desktop may result in unexpected behaviour.
-
-Subsequent notifications, windows and dialogues may be split between desktops.</translation>
 <translation id="8825534185036233643">Mirroring with more than two displays is not supported.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8841375032071747811">Back button</translation>

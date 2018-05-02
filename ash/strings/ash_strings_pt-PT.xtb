@@ -268,7 +268,6 @@ Utilize esta funcionalidade apenas com contas fidedignas.</translation>
 <translation id="7029814467594812963">Sair da sessão</translation>
 <translation id="7034339000180558234">A transmitir <ph name="TAB_NAME" /> para <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Definir imagem de fundo...</translation>
-<translation id="7054808953701320293">Entendido, não voltar a mostrar esta mensagem.</translation>
 <translation id="7066646422045619941">Esta rede foi desativada pelo gestor.</translation>
 <translation id="7067196344162293536">Rotação automática</translation>
 <translation id="7098389117866926363">Dispositivo USB-C (porta traseira esquerda)</translation>
@@ -308,7 +307,6 @@ Utilize esta funcionalidade apenas com contas fidedignas.</translation>
 <translation id="8000066093800657092">Sem rede</translation>
 <translation id="8054466585765276473">A calcular tempo da bateria.</translation>
 <translation id="8056430285089645882">Entendido, não voltar a mostrar esta mensagem.</translation>
-<translation id="8088137642766812908">Tenha cuidado, esta funcionalidade pode criar problemas</translation>
 <translation id="8098591350844501178">Parar a transmissão do ecrã para <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Ligado a <ph name="NAME" /></translation>
 <translation id="813913629614996137">A inicializar...</translation>
@@ -336,9 +334,6 @@ Utilize esta funcionalidade apenas com contas fidedignas.</translation>
 <translation id="8734991477317290293">É possível que esteja a tentar roubar os seus toques de teclas.</translation>
 <translation id="8809737090443522491">Introduza o nome de uma aplicação ou de um documento.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="8814715559352963456">A movimentação de janelas para outro ambiente de trabalho pode provocar um comportamento inesperado.
-
-É possível dividir as notificações, as janelas e as caixas de diálogo subsequentes entre ambientes de trabalho.</translation>
 <translation id="8825534185036233643">O espelhamento com mais do que dois ecrãs não é suportado.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8841375032071747811">Botão Anterior</translation>

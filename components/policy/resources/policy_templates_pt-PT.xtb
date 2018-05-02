@@ -291,20 +291,6 @@
 
       Tenha em atenção que, se a plataforma suportar notificações sobre políticas, o atraso de atualização é definido para 24 horas (ao ignorar todas as predefinições e o valor desta política) porque é esperado que as notificações sobre políticas forcem uma atualização automaticamente, sempre que a política sofrer alterações, o que torna desnecessárias as atualizações mais frequentes.</translation>
 <translation id="2024476116966025075">Configurar o nome do domínio obrigatório para clientes de acesso remoto</translation>
-<translation id="202757291638965203">Configura uma lista de impressoras.
-
-      Esta política permite que os administradores facultem configurações de impressoras aos utilizadores.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> e <ph name="PRINTER_DESCRIPTION" /> são strings de forma livre que podem ser personalizadas para facilitar a seleção da impressora. <ph name="PRINTER_MANUFACTURER" /> e <ph name="PRINTER_MODEL" /> servem para facilitar a identificação da impressora por parte dos utilizadores finais. Representam o fabricante e o modelo da impressora. <ph name="PRINTER_URI" /> deve ser um endereço acessível a partir do computador do cliente, incluindo <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> e <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> é opcional. Se fornecido, é utilizado para ajudar a remover duplicados de impressoras <ph name="ZEROCONF_DISCOVERY" />.
-
-      <ph name="PRINTER_EFFECTIVE_MODEL" /> tem de corresponder a uma das strings que representam uma impressora compatível com <ph name="PRODUCT_NAME" />. A string será utilizada para identificar e instalar os PPDs adequados à impressora. Pode encontrar mais informações em https://support.google.com/chrome?p=noncloudprint.
-
-      A configuração das impressoras fica concluída com a primeira utilização de uma impressora. Os PPDs não são transferidos enquanto a impressora não for utilizada. Posteriormente, os PPDs utilizados com frequência são colocados em cache.
-
-      Esta política não influencia a possibilidade de os utilizadores poderem configurar impressoras em dispositivos individuais e destina-se a complementar a configuração das impressoras por parte de utilizadores individuais.
-
-      Para dispositivos geridos pelo Active Directory, esta política suporta a expansão de <ph name="MACHINE_NAME_VARIABLE" /> para o nome do computador do Active Directory ou uma substring do mesmo. Por exemplo, se o nome do computador for <ph name="MACHINE_NAME_EXAMPLE" />, <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> será substituído pelos 4 carateres a partir da 6.ª posição, ou seja, <ph name="MACHINE_NAME_PART_EXAMPLE" />. Tenha em atenção que a posição baseia-se em zero.
-      </translation>
 <translation id="2030905906517501646">Palavra-chave do fornecedor de pesquisas predefinido</translation>
 <translation id="203096360153626918">Esta política não tem qualquer efeito nas aplicações Android. Estas podem ser colocadas no modo de ecrã inteiro mesmo que esta política esteja definida como <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Impressoras empresariais desativadas</translation>
@@ -415,6 +401,28 @@
           Quando esta política não está definida, não é mostrada qualquer caixa de diálogo de aviso.
 
           O valor da política deve ser especificado em milissegundos. Os valores devem ser inferiores ou iguais ao atraso de inatividade.</translation>
+<translation id="2289578386193672044">Especifica uma lista de aplicações e de extensões que são instaladas em
+          segundo plano, sem a interação do utilizador, e que não podem ser
+          desinstaladas nem desativadas pelo utilizador. Todas as autorizações
+          pedidas pelas aplicações/extensões são concedidas implicitamente, sem
+          a interação do utilizador, incluindo quaisquer autorizações adicionais
+          necessárias para versões futuras da aplicação/extensão. Além disso, as
+          autorizações são concedidas para as APIs de extensões
+          enterprise.deviceAttributes e enterprise.platformKeys. (Estas duas APIs
+          não estão disponíveis para as aplicações/extensões que não sejam de
+          instalação forçada.)
+
+          Esta política tem precedência sobre uma política <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> potencialmente em conflito. Se uma aplicação ou uma extensão de instalação forçada anterior for removida desta lista, é desinstalada automaticamente pelo <ph name="PRODUCT_NAME" />.
+
+          Para as instâncias do Windows que não estão associadas a um domínio do <ph name="MS_AD_NAME" />, a instalação forçada está limitada às aplicações e às extensões indicadas na Web Store do Chrome.
+
+          Tenha em atenção que o código-fonte de qualquer extensão pode ser alterado pelos utilizadores através das Ferramentas para programadores (o que pode deixar a extensão disfuncional). Se tal for uma preocupação, deve definir a política <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+          Cada item de lista da política é uma string que inclui um ID de extensão e, opcionalmente, um URL de "atualização", separados por ponto e vírgula (<ph name="SEMICOLON" />). O ID de extensão é uma string de 32 letras encontrada, por exemplo, em <ph name="CHROME_EXTENSIONS_LINK" /> quando está no modo de programador. O URL de "atualização" deve indicar um documento XML de manifesto de atualização, tal como descrito em <ph name="LINK_TO_EXTENSION_DOC1" />. Por predefinição, é usado o URL de atualização da Web Store do Chrome (que é atualmente "https://clients2.google.com/service/update2/crx"). Tenha em atenção que o URL de "atualização" definido nesta política apenas é utilizado para a instalação inicial, uma vez que as atualizações subsequentes da extensão utilizam o URL de atualização indicado no manifesto da extensão. Tenha também em conta que a especificação explícita do URL de "atualização" era obrigatória nas versões do <ph name="PRODUCT_NAME" /> até à 67, inclusive.
+
+          Por exemplo, <ph name="EXTENSION_POLICY_EXAMPLE" /> instala a aplicação <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> a partir do URL de "atualização" padrão da Web Store do Chrome. Para obter mais informações acerca do alojamento de extensões, consulte: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Se deixar esta política por definir, não são instaladas automaticamente quaisquer aplicações ou extensões e o utilizador pode desinstalar qualquer aplicação ou extensão no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2292084646366244343">O <ph name="PRODUCT_NAME" /> pode utilizar um serviço Web do Google para corrigir erros ortográficos. Se esta definição estiver ativada, este serviço é sempre utilizado. Se esta definição estiver desativada, este serviço nunca é utilizado.
 
       A verificação ortográfica também pode ser efetuada através de um dicionário previamente transferido; esta política apenas controla a utilização do serviço online.
@@ -703,6 +711,16 @@
           Esta política é opcional. Se não for definida, não será efetuada qualquer substituição do termo de pesquisa.
 
           Esta política apenas é respeitada se a política 'DefaultSearchProviderEnabled' estiver ativa.</translation>
+<translation id="3056439054015239107">
+      Esta política aplica-se ao ecrã de início de sessão. Consulte também a política <ph name="SITE_PER_PROCESS_POLICY_NAME" /> que se aplica à sessão do utilizador. É recomendável definir ambas as políticas para o mesmo valor. Se os valores não coincidirem, pode ocorrer um atraso ao entrar numa sessão de utilizador enquanto o valor especificado pela Política do Utilizador é aplicado.
+      Recomendamos que consulte a definição da política IsolateOrigins para
+      obter o melhor de dois mundos: isolamento e impacto limitado para os
+      utilizadores, ao utilizar a IsolateOrigins com uma lista dos sites que
+      pretende isolar. Esta definição, SitePerProcess, isola todos os sites.
+      Se a política estiver ativada, cada site é executado no seu próprio processo.
+      Se a política estiver desativada, não ocorre um isolamento de sites explícito e os testes de campo IsolateOrigins e SitePerProcess serão desativados. Os utilizadores ainda conseguem ativar SitePerProcess manualmente.
+      Se a política não estiver configurada, o utilizador pode alterar esta definição.
+      </translation>
 <translation id="306887062252197004">Esta política permite aos utilizadores da funcionalidade WebDriver substituírem
       políticas que possam interferir na respetiva operação.
 
@@ -864,6 +882,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="3660562134618097814">Transferir cookies SAML IdP durante o início de sessão</translation>
 <translation id="3709266154059827597">Configurar lista negra de instalação de extensões</translation>
 <translation id="3711895659073496551">Suspenso</translation>
+<translation id="3715569262675717862">Autenticação baseada em certificados de cliente</translation>
 <translation id="3736879847913515635">Ativar a opção para adicionar uma pessoa no gestor de utilizadores</translation>
 <translation id="3737544779868348650">Nome do anfitrião da rede do dispositivo</translation>
 <translation id="3740754010292550733">Definir o período para as notificações de reinício para aplicação de atualizações</translation>
@@ -1845,6 +1864,15 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
       Caso o início de sessão numa conta diferente não deva ser permitido através do modo de navegação anónima, considere bloquear esse modo através da política IncognitoModeAvailability.
 
       Tenha em atenção que os utilizadores podem aceder aos serviços Google com um estado não autenticado através do bloqueio dos respetivos cookies.</translation>
+<translation id="6738326937072482736">Configura a disponibilidade e o comportamento da funcionalidade de atualização de firmware do <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+
+      É possível especificar definições individuais nas propriedades de JSON:
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: se estiver definida como <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, os utilizadores podem acionar o fluxo de Powerwash para instalar uma atualização de firmware do <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: se estiver definida como <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, os utilizadores podem invocar o fluxo de atualização de firmware do <ph name="TPM_FIRMWARE_UPDATE_TPM" /> que preserva o estado em todo o dispositivo (incluindo inscrição empresarial), mas perde dados dos utilizadores. Este fluxo de atualização está disponível desde a versão 68.
+
+     Se a política não estiver definida, a funcionalidade de atualização de firmware do <ph name="TPM_FIRMWARE_UPDATE_TPM" /> não estará disponível.</translation>
 <translation id="6757438632136860443">Permite-lhe definir uma lista de padrões de URL que especificam sites que estão autorizados a executar o plug-in <ph name="FLASH_PLUGIN_NAME" />.
 
           Se esta política não for definida, é utilizado o valor predefinido global para todos os sites da política "DefaultPluginsSetting", se esta estiver definida ou, caso contrário, a configuração pessoal do utilizador.</translation>
@@ -1865,6 +1893,17 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
       De qualquer forma, as informações de memória são enviadas num relatório por página, independentemente do valor da opção, mas os tamanhos dos relatórios são
       quantificados e a frequência de atualizações é limitada por motivos de segurança. Para obter dados exatos em tempo real,
       utilize ferramentas como a Telemetry.</translation>
+<translation id="6870914592443697993">
+      Esta política aplica-se ao ecrã de início de sessão. Consulte também a política <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> que se aplica à sessão do utilizador. É recomendável definir ambas as políticas para o mesmo valor. Se os valores não coincidirem, pode ocorrer um atraso ao entrar numa sessão de utilizador enquanto o valor especificado pela Política do Utilizador é aplicado.
+      Se a política estiver ativada, cada uma das origens nomeadas numa lista
+      separada por vírgulas é executada no seu próprio processo. Deste modo,
+      são também isoladas as origens nomeadas por subdomínios: por exemplo,
+      ao especificar https://example.com/ também fará com que
+      https://foo.example.com/ seja isolado como fazendo parte do site
+      https://example.com/.
+      Se a política estiver desativada, não ocorre qualquer isolamento de site e os testes de campo IsolateOrigins e SitePerProcess serão desativados. Os utilizadores ainda conseguem ativar IsolateOrigins manualmente.
+      Se a política não estiver configurada, são utilizadas as predefinições de isolamento de site da plataforma para o ecrã de início de sessão.
+      </translation>
 <translation id="6894178810167845842">URL da página Novo separador</translation>
 <translation id="6899705656741990703">Detetar automaticamente definições do proxy</translation>
 <translation id="6903814433019432303">Esta política está ativa apenas no modo de retalho.
@@ -2111,6 +2150,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
       Se estiver definida como falsa, as atualizações de componentes são desativadas. Contudo, alguns componentes estão isentos desta política: as atualizações de quaisquer componentes que não contenham código executável, que não alterem significativamente o comportamento do navegador ou que sejam essenciais para a respetiva segurança não são desativadas.
       Alguns exemplos destes componentes incluem as listas de revogação de certificados e os dados da Navegação segura.
       Consulte https://developers.google.com/safe-browsing para mais informações sobre a Navegação segura.</translation>
+<translation id="7566878661979235378">Tipo de autenticação de início de sessão SAML</translation>
 <translation id="757395965347379751">Quando esta definição está ativada, o <ph name="PRODUCT_NAME" /> permite certificados assinados SHA-1 desde que validem e incluam com êxito uma cadeia para certificados da AC (Autoridade de certificação) instalados localmente.
 
       Tenha em atenção que esta política depende da pilha de confirmação de certificados de sistema operativo que autoriza assinaturas SHA-1. Se uma atualização do SO alterar o processamento do SO de certificados SHA-1, esta política pode deixar de ter efeito. Além disso, esta política serve de solução temporária para dar às empresas mais tempo para se desvincularem do SHA-1. Esta política será removida em meados do dia 1 de janeiro de 2019.
@@ -2275,6 +2315,16 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="7961779417826583251">Desativar a aplicação da Transparência de certificados para uma lista de autoridades de certificação antigas</translation>
 <translation id="7974114691960514888">Esta política já não é suportada. Ativa a utilização de servidores STUN e de transmissão ao estabelecer ligação a um cliente remoto. Se esta definição estiver ativada, o computador poderá localizar e estabelecer ligação a computadores anfitrião remotos, mesmo que estejam separados por uma firewall. Se esta definição estiver desativada e as ligações UDP de saída forem filtradas pela firewall, este computador apenas poderá estabelecer ligação a computadores anfitrião dentro da rede local.</translation>
 <translation id="7976157349247117979">Nome do destino do <ph name="PRODUCT_NAME" /></translation>
+<translation id="7978060394348264922">
+      Recomendamos que consulte a definição da política IsolateOrigins para obter o
+      melhor de dois mundos: isolamento e impacto limitado para os utilizadores,
+      ao utilizar a IsolateOrigins com uma lista dos sites que pretende isolar.
+      Esta definição, SitePerProcess, isola todos os sites.
+      Se a política estiver ativada, cada site é executado no seu próprio processo.
+      Se a política estiver desativada, não ocorre qualquer isolamento de site e os testes de campo IsolateOrigins e SitePerProcess serão desativados. Os utilizadores ainda conseguem ativar SitePerProcess manualmente.
+      Se a política não estiver configurada, o utilizador pode alterar esta definição.
+      No <ph name="PRODUCT_OS_NAME" />, recomenda-se que defina também a política do dispositivo <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> para o mesmo valor. Se os valores especificados pelas duas políticas não coincidirem, pode ocorrer um atraso ao entrar numa sessão de utilizador enquanto o valor especificado pela Política do Utilizador é aplicado.
+      </translation>
 <translation id="7980227303582973781">Sem restrições especiais</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Rodar o ecrã 0 graus</translation>
@@ -2475,6 +2525,13 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
           Separe os vários nomes de servidor por vírgulas. Os carateres universais (*) são permitidos.
 
           Se esta política não estiver definida, o <ph name="PRODUCT_NAME" /> tentará detetar se um servidor está na Intranet e só nesse momento irá responder a pedidos IWA. Se um servidor for detetado como Internet, os pedidos IWA serão ignorados pelo <ph name="PRODUCT_NAME" />.</translation>
+<translation id="8667812577403206506">Permite-lhe controlar se as máquinas virtuais têm autorização para serem executadas no Chrome OS.
+
+      Se a política estiver definida como verdadeira, o dispositivo tem autorização para executar máquinas virtuais.
+      Se a política estiver definida como falsa, o dispositivo não tem autorização para executar máquinas virtuais.
+      Quando esta política é alterada para falsa, aplica-se à inicialização de novas máquinas virtuais e não encerra as que já se encontram em execução.
+      Quando esta política não está definida num dispositivo gerido, este não tem autorização para executar máquinas virtuais.
+      Os dispositivos não geridos têm autorização para executar máquinas virtuais.</translation>
 <translation id="8672321184841719703">Versão de Atualização Automática de Destino</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
 <translation id="8685024486845674965">O aviso de proteção por palavra-passe é acionado pela reutilização da palavra-passe.</translation>
@@ -2585,6 +2642,7 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 
       Não deve ativar esta política quando a política <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> estiver ativada, uma vez que essa funcionalidade partilha a mesma funcionalidade do lado do cliente. Neste caso, a sincronização alojada no Google é totalmente desativada.</translation>
 <translation id="8955719471735800169">Voltar ao início</translation>
+<translation id="8959992920425111821">Configuração predefinida</translation>
 <translation id="8960850473856121830">Os padrões nesta lista vão ser comparados com a origem
       de segurança do URL que faz o pedido. Caso seja encontrada uma correspondência,
       o acesso a dispositivos de captura de áudio é concedido imediatamente.
@@ -2595,6 +2653,16 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 <translation id="8976248126101463034">Permitir autenticação gnubby para anfitriões de acesso remoto</translation>
 <translation id="8976531594979650914">Utilizar a impressora predefinida do sistema como a predefinição</translation>
 <translation id="8992176907758534924">Não permitir que os sites mostrem imagens</translation>
+<translation id="9034729899149506577">
+      Se a política estiver ativada, cada uma das origens nomeadas numa
+      lista separada por vírgulas é executada no seu próprio processo. Deste
+      modo, são também isoladas as origens nomeadas por subdomínios. Por
+      exemplo, ao especificar https://example.com/, https://foo.example.com/
+      também é isolado como parte do site https://example.com/.
+      Se a política estiver desativada, não ocorre qualquer isolamento de site e os testes de campo de IsolateOrigins e SitePerProcess serão desativados. Os utilizadores ainda conseguem ativar IsolateOrigins manualmente.
+      Se a política não estiver configurada, o utilizador pode alterar esta definição.
+      No <ph name="PRODUCT_OS_NAME" />, recomenda-se que defina a política do dispositivo <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> para o mesmo valor. Se os valores especificados pelas duas políticas não coincidirem, pode ocorrer um atraso ao entrar numa sessão de utilizador enquanto o valor especificado pela Política do Utilizador é aplicado.
+      </translation>
 <translation id="9035964157729712237">IDs de extensões a excluir da lista negra</translation>
 <translation id="9042911395677044526">Permite que a configuração de rede seja aplicada por utilizador para um aparelho <ph name="PRODUCT_OS_NAME" />. A configuração de rede é uma cadeia de formato JSON, conforme definido pelo formato de Configuração de Rede Aberta descrito em <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Especificar se a atividade do vídeo afeta a gestão da energia</translation>
@@ -2639,6 +2707,13 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 <translation id="9187743794267626640">Desativar a montagem do armazenamento externo</translation>
 <translation id="9197740283131855199">Percentagem que determina a escala do atraso do esbatimento do ecrã se o utilizador se tornar ativo depois do esbatimento</translation>
 <translation id="9200828125069750521">Parâmetros do URL de imagem que utilize POST</translation>
+<translation id="9210953373038593554">Configura o tipo de autenticação para inícios de sessão SAML.
+
+      Quando esta política não está definida ou está definida como Predefinição (valor 0), o comportamento dos inícios de sessão SAML é determinado pelo navegador, dependendo de outros fatores. No cenário mais básico, a autenticação do utilizador e a proteção dos dados do utilizador em cache baseiam-se em palavras-passe introduzidas manualmente pelos utilizadores.
+
+      Quando esta política está definida como ClientCertificate (valor 1), utiliza-se a autenticação por certificado de cliente para utilizadores recentemente adicionados que iniciem sessão via SAML. Não são utilizadas palavras-passe para esse tipo de utilizadores e os seus dados locais em cache estão protegidos através das correspondentes chaves criptográficas. Por exemplo, esta definição permite configurar uma autenticação do utilizador baseada em smart card (tenha em atenção que as aplicações middleware do smart card têm de ser instaladas através da política DeviceLoginScreenAppInstallList).
+
+      Esta política afeta apenas utilizadores que autenticam através de SAML.</translation>
 <translation id="9213347477683611358">Configure uma imagem de fundo ao nível do dispositivo mostrada no ecrã de início de sessão se nenhum utilizador tiver iniciado sessão no dispositivo. A política é definida ao especificar o URL a partir do qual o dispositivo com o Chrome OS pode transferir a imagem de fundo e um hash criptográfico para verificar a integridade da transferência. A imagem tem de estar no formato JPEG e o tamanho do ficheiro não pode exceder 16 MB. O URL tem de ser acessível sem nenhuma autenticação. A imagem de fundo é transferida e colocada na cache. É transferida sempre que o URL ou o hash for alterado.
 
       A política deve ser especificada como uma string que expressa o URL e o hash no formato JSON, por exemplo,

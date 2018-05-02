@@ -268,7 +268,6 @@
 <translation id="7029814467594812963">Завершить сеанс</translation>
 <translation id="7034339000180558234">Трансляция вкладки "<ph name="TAB_NAME" />": <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Выбрать обои</translation>
-<translation id="7054808953701320293">Больше не показывать это сообщение.</translation>
 <translation id="7066646422045619941">Эта сеть отключена администратором.</translation>
 <translation id="7067196344162293536">Автоповорот</translation>
 <translation id="7098389117866926363">Устройство USB-C (порт слева на задней панели)</translation>
@@ -308,7 +307,6 @@
 <translation id="8000066093800657092">Нет сети</translation>
 <translation id="8054466585765276473">Подсчет оставшегося времени работы от батареи…</translation>
 <translation id="8056430285089645882">Больше не показывать это сообщение</translation>
-<translation id="8088137642766812908">Внимание! Непредсказуемые последствия</translation>
 <translation id="8098591350844501178">Остановить трансляцию содержимого экрана на устройство "<ph name="RECEIVER_NAME" />"</translation>
 <translation id="8132793192354020517">Подключено к сети <ph name="NAME" /></translation>
 <translation id="813913629614996137">Инициализация...</translation>
@@ -336,9 +334,6 @@
 <translation id="8734991477317290293">Это может быть попыткой узнать, какие клавиши вы нажимаете.</translation>
 <translation id="8809737090443522491">Введите название приложения или документа</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="8814715559352963456">При переносе окон на другой рабочий стол иногда возникают ошибки.
-
-Уведомления и диалоговые окна могут появляться на разных рабочих столах.</translation>
 <translation id="8825534185036233643">Зеркалирование более двух дисплеев не поддерживается.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8841375032071747811">Назад</translation>

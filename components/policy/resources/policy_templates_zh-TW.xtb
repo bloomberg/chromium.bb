@@ -291,21 +291,6 @@
 
       請注意，如果平台支援政策通知，由於政策通知通常會在政策變更時自動強制更新 (不需更高的更新頻率)，所以更新延遲時間會設為 24 小時 (忽略所有預設值和這項政策的值)。</translation>
 <translation id="2024476116966025075">設定遠端存取用戶端的網域名稱 (必要)</translation>
-<translation id="202757291638965203">設定印表機清單。
-
-      這項政策可讓管理員為每位使用者提供
-      印表機設定。
-
-      「<ph name="PRINTER_DISPLAY_NAME" />」和「<ph name="PRINTER_DESCRIPTION" />」是形式不拘的字串，可加以自訂方便選擇印表機。「<ph name="PRINTER_MANUFACTURER" />」和「<ph name="PRINTER_MODEL" />」則可讓使用者輕鬆識別印表機，兩者分別代表印表機的製造商和型號。「<ph name="PRINTER_URI" />」必須是可透過用戶端電腦連上的位址 (包括「<ph name="URI_SCHEME" />」、「<ph name="URI_PORT" />」和「<ph name="URI_QUEUE" />」)。「<ph name="PRINTER_UUID" />」可選用。如有提供，則會用於協助複製「<ph name="ZEROCONF_DISCOVERY" />」。
-
-      「<ph name="PRINTER_EFFECTIVE_MODEL" />」必須是其中一個代表 <ph name="PRODUCT_NAME" /> 支援印表機的字串。系統會利用這個字串找出印表機適用的 PPD 並加以安裝。詳情請參閱 https://support.google.com/chrome?p=noncloudprint。
-
-      首次使用印表機時，會完成印表機設定程序。PPD 則會在使用該印表機時才下載，之後系統會快取常用的 PPD。
-
-      這項政策旨在補足個別使用者的印表機設定， 對使用者能否在個別裝置上設定印表機沒有影響。
-
-      如果是受管理的 Active Directory 裝置，這項政策支援將「<ph name="MACHINE_NAME_VARIABLE" />」擴充為 Active Directory 電腦名稱或其子字串。舉例來說，如果電腦名稱為「<ph name="MACHINE_NAME_EXAMPLE" />」，「<ph name="MACHINE_NAME_VARIABLE_EXAMPLE" />」將會被第 6 個位置後的 4 個字元取代 (亦即「<ph name="MACHINE_NAME_PART_EXAMPLE" />」)。請注意，位置序數從 0 開始計算。
-      </translation>
 <translation id="2030905906517501646">預設搜尋引擎關鍵字</translation>
 <translation id="203096360153626918">這項政策對 Android 應用程式沒有影響。即使將這項政策設為 <ph name="FALSE" />，Android 應用程式仍可進入全螢幕模式。</translation>
 <translation id="2043770014371753404">停用的企業印表機</translation>
@@ -409,6 +394,27 @@
           如果未設定這項政策，系統不會顯示警告對話方塊。
 
           指定政策值時需以毫秒為單位。值必須小於或等於閒置延遲時間。</translation>
+<translation id="2289578386193672044">指定以無訊息方式安裝 (使用者無需操作) 的應用程式和
+          擴充功能清單 (使用者無法解除安裝或停用這些
+          應用程式和擴充功能)。系統會直接授予這些
+          應用程式/擴充功能要求的所有權限 (使用者無需操作)，
+          包括日後新版應用程式/擴充功能要求的任何其他權限。
+          此外，系統已將權限授予 enterprise.deviceAttributes
+          和 enterprise.platformKeys 擴充功能 API
+          (這兩個 API 不適用於非強制安裝的
+          應用程式/擴充功能)。
+
+          這項政策比可能發生衝突的 <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> 政策具備更高的優先順序。如果從清單中移除先前強制安裝的應用程式或擴充功能，<ph name="PRODUCT_NAME" /> 會自動解除安裝該應用程式/擴充功能。
+
+          如果 Windows 執行個體未加入 <ph name="MS_AD_NAME" /> 網域，系統只能強制安裝 Chrome 線上應用程式商店中的應用程式和擴充功能。
+
+          請注意，所有擴充功能的原始碼都可以使用開發人員工具變更 (可能會造成擴充功能無法正常運作)。如果你對此有所顧慮，建議你設定 <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> 政策。
+
+          這項政策的每個清單項目都是一條字串，其中包含以分號 (<ph name="SEMICOLON" />) 分隔的一個擴充功能 ID，和一個可自行選擇是否要指定的「更新」網址。擴充功能 ID 為 32 個字母的字串。如需查看範例，請在開發人員模式下前往 <ph name="CHROME_EXTENSIONS_LINK" />。「更新」網址 (如果有指定) 應指向更新資訊清單 XML 文件 (如 <ph name="LINK_TO_EXTENSION_DOC1" /> 所述)。根據預設，系統會使用 Chrome 線上應用程式商店的更新網址 (目前為此網址為「https://clients2.google.com/service/update2/crx」)。請注意，這項政策中設定的「更新」網址僅適用於初次安裝，後續的擴充功能更新將會使用擴充功能資訊清單中指定的更新網址。另請注意，在 67 以下版本的 <ph name="PRODUCT_NAME" /> 中，你一定要明確指定「更新」網址。
+
+          舉例來說，<ph name="EXTENSION_POLICY_EXAMPLE" /> 會透過標準 Chrome 線上應用程式商店「更新」網址安裝「<ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" />」應用程式。如需進一步瞭解如何代管擴充功能，請參閱 <ph name="LINK_TO_EXTENSION_DOC2" />。
+
+          如果未設定這項政策，則不會自動安裝任何應用程式或擴充功能，且使用者可以在 <ph name="PRODUCT_NAME" /> 中解除安裝任何應用程式或擴充功能。</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME" /> 可以透過 Google 網路服務來解決拼字錯誤。如果你啟用這項設定，系統就會一律使用這項服務；如果你停用這項設定，則系統將絕不使用這項服務。
 
       你仍可使用下載的字典執行拼字檢查，這項政策僅可控制是否使用線上服務。
@@ -697,6 +703,16 @@
           這個政策為選擇性，如果你並未設定這項政策，系統就不會取代任何搜尋字詞。
 
           只有當你啟用「DefaultSearchProviderEnabled」政策時，這項政策才會生效。</translation>
+<translation id="3056439054015239107">
+      這項政策適用於登入畫面；另請參閱適用於使用者工作階段的 <ph name="SITE_PER_PROCESS_POLICY_NAME" /> 政策。建議你為這兩項政策設定相同的值。如果兩項政策指定的值不相符，在套用使用者政策指定的值的情況下，進入使用者工作階段時可能會發生延遲情況。
+      為了盡可能減少隔離功能對使用者的影響，
+      建議你先查看 IsolateOrigins 政策設定，
+      使用 IsolateOrigins 設定需要隔離的網站清單。
+      SitePerProcess 這項設定會隔離所有網站。
+      如果啟用這項政策，每個網站就會以獨立程序執行。
+      如果停用這項政策，系統就不會明確隔離任何網站，且 IsolateOrigins 和 SitePerProcess 的實場測試將會停用。使用者還是可以手動啟用 SitePerProcess。
+      如果未設定這項政策，使用者就能變更這項設定。
+      </translation>
 <translation id="306887062252197004">這項政策可讓使用 WebDriver 功能的使用者覆寫
       可能干擾此功能運作的政策。
 
@@ -857,6 +873,7 @@
 <translation id="3660562134618097814">登入時移轉 SAML IdP Cookie</translation>
 <translation id="3709266154059827597">設定擴充功能安裝黑名單</translation>
 <translation id="3711895659073496551">暫停</translation>
+<translation id="3715569262675717862">根據用戶端憑證進行驗證</translation>
 <translation id="3736879847913515635">允許在使用者管理工具中新增使用者</translation>
 <translation id="3737544779868348650">裝置網路主機名稱</translation>
 <translation id="3740754010292550733">設定更新重新啟動通知期</translation>
@@ -1837,6 +1854,15 @@
       如要禁止透過無痕模式登入其他帳戶，建議你使用 IncognitoModeAvailability 政策封鎖該模式。
 
       請注意，使用者只要封鎖 Google 服務的 Cookie，即可在未經驗證狀態下存取 Google 服務。</translation>
+<translation id="6738326937072482736">設定 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 韌體更新功能的可用性和行為。
+
+      可在 JSON 屬性中指定個別設定：
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />：如果設為 <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />，則使用者可觸發 Powerwash 流程來安裝 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 韌體更新。
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />：如果設為 <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />，則使用者可叫用 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 韌體更新流程，這項流程會保留裝置通用狀態 (例如企業註冊)，但會捨棄使用者資料。68 以上版本皆支援這項更新流程。
+
+      如果未設定這項政策，則不提供 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 韌體更新功能。</translation>
 <translation id="6757438632136860443">允許你設定網址模式清單，指定允許執行 <ph name="FLASH_PLUGIN_NAME" /> 外掛程式的網站。
 
           如未設定這項政策，系統會從「DefaultPluginsSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
@@ -1855,6 +1881,16 @@
 <translation id="687046793986382807">我們已於 <ph name="PRODUCT_NAME" /> 35 版中移除這項政策。
 
       無論其選項值為何，系統都會在網頁上回報記憶體資訊；但基於安全性考量，系統會限制回報的資料量以及更新頻率。如要取得即時準確資料，請使用 Telemetry 等工具。</translation>
+<translation id="6870914592443697993">
+      這項政策適用於登入畫面。另請查看適用於使用者工作階段的 <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> 政策。建議你為這兩項政策設定相同的值。如果兩者的值不相符，在套用使用者政策指定的值的情況下，進入使用者工作階段時可能會發生延遲情況。
+      如果啟用這項政策，逗號分隔的清單中的已命名來源
+      就會以獨立程序執行。這也會隔離使用子網域名稱的來源；
+      例如，指定 https://example.com/
+      也會造成 https://foo.example.com/ 遭到隔離，
+      因為後者同樣屬於 https://example.com/ 網站。
+      如果停用這項政策，系統就不會明確隔離任何網站，且 IsolateOrigins 和 SitePerProcess 的實場測試將會停用。使用者還是可以手動啟用 IsolateOrigins。
+      如果未設定這項政策，登入畫面就會採用平台的預設網站隔離設定。
+      </translation>
 <translation id="6894178810167845842">新分頁網址</translation>
 <translation id="6899705656741990703">自動偵測 Proxy 設定</translation>
 <translation id="6903814433019432303">僅在零售模式下啟用這項政策。
@@ -2101,6 +2137,7 @@
       如果設為 False，則禁止更新元件。不過，部分元件不受這項政策規範：只要元件更新不含可執行的程式碼、不大幅變更瀏覽器的行為，或是對元件安全性至關重要，就不會遭到禁止。
       這類元件的範例包括憑證撤銷清單和安全瀏覽資料。
       如要進一步瞭解安全瀏覽功能，請前往 https://developers.google.com/safe-browsing。</translation>
+<translation id="7566878661979235378">SAML 登入驗證類型</translation>
 <translation id="757395965347379751">啟用這項設定時，只要 SHA-1 簽署憑證成功通過驗證並鏈結至本機安裝的 CA 憑證，即可在 <ph name="PRODUCT_NAME" /> 中使用。
 
       請注意，這項政策取決於允許 SHA-1 簽名的作業系統憑證驗證堆疊。如果作業系統更新變更了作業系統的 SHA-1 憑證處理方式，這項政策可能就會失效。此外，這項政策是暫時性的解決方案，目的是讓使用 SHA-1 憑證的企業有更多時間尋找其他解決方案。我們將於 2019 年 1 月 1 日左右移除這項政策。
@@ -2265,6 +2302,16 @@
 <translation id="7961779417826583251">不針對列出的舊版憑證授權單位強制執行憑證透明化政策</translation>
 <translation id="7974114691960514888">系統不再支援這項政策。連線至遠端用戶時，啟用 STUN 使用量和轉送伺服器。如果啟用這項設定，那麼即使遠端主機電腦被防火牆隔開，這台電腦也能發現遠端主機電腦並建立連結。如果停用這項設定，並且外傳 UDP 連結遭到防火牆篩選，則這台電腦只會與當地網路內的主機電腦建立連線。</translation>
 <translation id="7976157349247117979">「<ph name="PRODUCT_NAME" />」目的地名稱</translation>
+<translation id="7978060394348264922">
+      為了盡可能減少隔離功能對使用者的影響，
+      建議你先查看 IsolateOrigins 政策設定，
+      使用 IsolateOrigins 設定需要隔離的網站清單。
+      SitePerProcess 這項設定會隔離所有網站。
+      如果啟用這項政策，每個網站就會以獨立程序執行。
+      如果停用這項政策，系統就不會明確隔離任何網站，且 IsolateOrigins 和 SitePerProcess 的實場測試將會停用。使用者還是可以手動啟用 IsolateOrigins。
+      如果未設定這項政策，使用者將可以變更這項設定。
+      在 <ph name="PRODUCT_OS_NAME" /> 上，建議你也將 <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> 裝置政策設為相同的值。如果兩項政策指定的值不相符，在套用使用者政策指定的值的情況下，進入使用者工作階段時可能會發生延遲情況。
+      </translation>
 <translation id="7980227303582973781">無特殊限制</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">將畫面旋轉 0 度</translation>
@@ -2455,6 +2502,13 @@
           請以逗號分隔多個伺服器名稱。可允許萬用字元 (*)。
 
           如果未設定這項政策，<ph name="PRODUCT_NAME" /> 會嘗試偵測伺服器是否位於內部網路，然後回應伺服器傳來的 IWA 要求。如果伺服器位於網際網路，<ph name="PRODUCT_NAME" /> 就會忽略伺服器傳來的 IWA 要求。</translation>
+<translation id="8667812577403206506">讓你控制虛擬機器能否在 Chrome 作業系統上運作。
+
+      如果將這項政策設為 True，裝置將可以執行虛擬機器。
+      如果將這項政策設為 False，裝置將無法執行虛擬機器。
+      當這項政策變更為 False 時，會禁止裝置啟動新的虛擬機器，但不會關閉已在執行中的虛擬機器。
+      在受管理的裝置上，如果不設定這項政策，裝置將無法執行虛擬機器。
+      未受管理的裝置則可執行虛擬機器。</translation>
 <translation id="8672321184841719703">指定目標的自動更新版本</translation>
 <translation id="867410340948518937">U2F (通用雙重驗證)</translation>
 <translation id="8685024486845674965">密碼遭到重複使用時，會觸發密碼保護警告</translation>
@@ -2565,6 +2619,7 @@
 
       啟用 <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> 政策時，請勿啟用這項政策。原因是該功能具有同樣的用戶端功能，會導致 Google 代管的同步處理服務完全停用。</translation>
 <translation id="8955719471735800169">返回頁首</translation>
+<translation id="8959992920425111821">預設設定</translation>
 <translation id="8960850473856121830">系統會將這份清單中的模式與要求網址的安全性
       來源進行比對。如果找到相符的結果，系統就會授權存取
       音訊擷取裝置，並且不會提示使用者。
@@ -2575,6 +2630,16 @@
 <translation id="8976248126101463034">允許針對遠端存取主機進行 gnubby 驗證機制</translation>
 <translation id="8976531594979650914">使用系統預設印表機做為預設值</translation>
 <translation id="8992176907758534924">不允許任何網站顯示圖片</translation>
+<translation id="9034729899149506577">
+      如果啟用這項政策，逗號分隔的清單中的已命名來源
+      就會以獨立程序執行。這也會隔離使用子網域名稱的來源；
+      例如，指定 https://example.com/
+      也會造成 https://foo.example.com/ 遭到隔離，
+      因為後者同樣屬於 https://example.com/ 網站。
+      如果停用這項政策，系統就不會明確隔離任何網站，且 IsolateOrigins 和 SitePerProcess 的實場測試將會停用。使用者還是可以手動啟用 IsolateOrigins。
+      如果未設定這項政策，使用者將可以變更這項設定。
+      在 <ph name="PRODUCT_OS_NAME" /> 上，建議你也將 <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> 裝置政策設為相同的值。如果兩項政策指定的值不相符，在套用使用者政策指定的值的情況下，進入使用者工作階段時可能會發生延遲情況。
+      </translation>
 <translation id="9035964157729712237">要從黑名單上移除的擴充功能 ID</translation>
 <translation id="9042911395677044526">允許將網路設定按照使用者套用至安裝了 <ph name="PRODUCT_OS_NAME" /> 的裝置。本網路設定是由開放網路設定格式 (網址為：<ph name="ONC_SPEC_URL" />) 所定義的 JSON 格式字串。</translation>
 <translation id="9084985621503260744">指定會影響電源管理的視訊活動</translation>
@@ -2619,6 +2684,13 @@
 <translation id="9187743794267626640">停用外部儲存裝置掛載功能</translation>
 <translation id="9197740283131855199">使用者在螢幕調暗後繼續使用裝置時的螢幕調暗時間延長百分比</translation>
 <translation id="9200828125069750521">使用 POST 的圖片網址參數</translation>
+<translation id="9210953373038593554">設定 SAML 登入的驗證類型。
+
+      如果未設定這項政策或使用預設設定 (值為 0)，瀏覽器會依其他因素判斷是否要允許 SAML 登入行為。在最基本的情況下，如果是要驗證使用者和保護快取使用者資料，則判斷依據是使用者手動輸入的密碼。
+
+      如果將這項政策設為 ClientCertificate (值為 1)，則會依用戶端憑證驗證判斷是否要允許新使用者透過 SAML 登入。這類使用者不需要密碼，且其快取本機資料會受到對應加密金鑰的保護。舉例來說，如果使用這項設定，就能設定透過智慧型卡片驗證使用者 (請注意，你必須透過 DeviceLoginScreenAppInstallList 政策安裝智慧型卡片中介軟體應用程式)。
+
+      這項政策只會影響透過 SAML 進行驗證的使用者。</translation>
 <translation id="9213347477683611358">設定還沒有任何使用者登入裝置時，登入畫面顯示的裝置層級桌布圖片。如要設定這項政策，請指定 Chrome 作業系統裝置可下載桌布圖片的網址，以及用於驗證下載完整性的加密編譯雜湊值。圖片必須為 JPEG 格式，且大小不得超過 16MB。網址則必須可供直接存取，不必經過任何驗證。系統會下載並快取桌布圖片，每當網址或雜湊值有所變更即重新下載。
 
       指定政策時，請使用 JSON 格式的字串來表示網址和雜湊值。範例如下：

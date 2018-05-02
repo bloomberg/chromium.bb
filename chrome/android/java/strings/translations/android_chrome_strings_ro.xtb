@@ -162,7 +162,6 @@
 <translation id="2496180316473517155">Istoricul de navigare</translation>
 <translation id="2498359688066513246">Ajutor și feedback</translation>
 <translation id="2501278716633472235">Înapoi</translation>
-<translation id="2503472621226270518">Extinde panoul de navigare</translation>
 <translation id="2512222046227390255">Completează automat formularele</translation>
 <translation id="2526148617758225454">Economizorul de date este activat. Gestionează-l din setări.</translation>
 <translation id="2532336938189706096">Vizualizare pe web</translation>
@@ -183,6 +182,7 @@
 <translation id="2650751991977523696">Descarci din nou fișierul?</translation>
 <translation id="2653659639078652383">Trimite</translation>
 <translation id="2677748264148917807">Ieși</translation>
+<translation id="2693813674743028984">Ascunde informațiile despre stocare</translation>
 <translation id="2704606927547763573">Copiat</translation>
 <translation id="2707726405694321444">Actualizează pagina</translation>
 <translation id="2709516037105925701">Completare automată</translation>
@@ -208,6 +208,7 @@
 <translation id="2956410042958133412">Acest cont este gestionat de <ph name="PARENT_NAME_1" /> și de <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Toate drepturile rezervate.</translation>
 <translation id="2962095958535813455">Ai comutat la filele incognito</translation>
+<translation id="2965945119655563012">Afișează informațiile despre stocare</translation>
 <translation id="2968755619301702150">Vizualizator de certificate</translation>
 <translation id="2979025552038692506">Fila incognito selectată</translation>
 <translation id="2989523299700148168">Accesate recent</translation>
@@ -335,6 +336,7 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="4170011742729630528">Serviciul nu este disponibil. Încercați din nou mai târziu.</translation>
 <translation id="4181841719683918333">Limbi</translation>
 <translation id="4195643157523330669">Deschide în filă nouă</translation>
+<translation id="4198423547019359126">Nu există locații de descărcare disponibile</translation>
 <translation id="4226663524361240545">Notificările pot face dispozitivul să vibreze</translation>
 <translation id="4242533952199664413">Deschide setările</translation>
 <translation id="424864128008805179">Te deconectezi de la Chrome?</translation>
@@ -700,6 +702,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7455923816558154057">Atinge pentru a afișa</translation>
 <translation id="7473891865547856676">Nu, mulțumesc</translation>
 <translation id="7475192538862203634">Dacă acest mesaj apare frecvent, încearcă următoarele <ph name="BEGIN_LINK" />sugestii<ph name="END_LINK" />.</translation>
+<translation id="7475688122056506577">Nu s-a găsit cardul SD. Este posibil ca unele fișiere să lipsească.</translation>
 <translation id="748127970106343339">Confirmă ștergerea datelor de conectare de pe dispozitiv</translation>
 <translation id="7481312909269577407">Înainte</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Actualizată la <ph name="TIME_SINCE_UPDATE" />)</translation>
@@ -763,6 +766,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="8026334261755873520">Șterge datele de navigare</translation>
 <translation id="8035133914807600019">Dosar nou…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> zile rămase</translation>
+<translation id="804335162455518893">Nu s-a găsit cardul SD</translation>
 <translation id="805047784848435650">Pe baza istoricului de navigare</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MO disponibili</translation>
 <translation id="8058746566562539958">Deschide în filă Chrome nouă</translation>

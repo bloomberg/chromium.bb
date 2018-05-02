@@ -268,7 +268,6 @@ Tuto funkci používejte pouze s účty, kterým důvěřujete.</translation>
 <translation id="7029814467594812963">Ukončit relaci</translation>
 <translation id="7034339000180558234">Odesílání karty <ph name="TAB_NAME" /> do zařízení <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Nastavení tapety...</translation>
-<translation id="7054808953701320293">Chápu, už mi to nezobrazujte.</translation>
 <translation id="7066646422045619941">Tato síť je zakázána vaším administrátorem.</translation>
 <translation id="7067196344162293536">Automatické otáčení</translation>
 <translation id="7098389117866926363">Zařízení USB Type-C (levý zadní port)</translation>
@@ -308,7 +307,6 @@ Tuto funkci používejte pouze s účty, kterým důvěřujete.</translation>
 <translation id="8000066093800657092">Žádná síť</translation>
 <translation id="8054466585765276473">Výpočet doby výdrže baterie.</translation>
 <translation id="8056430285089645882">Chápu, už mi to nezobrazujte.</translation>
-<translation id="8088137642766812908">Pozor, tato funkce trochu zlobí</translation>
 <translation id="8098591350844501178">Ukončit odesílání obrazovky do přijímače <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Připojeno k síti <ph name="NAME" /></translation>
 <translation id="813913629614996137">Probíhá inicializace...</translation>
@@ -336,9 +334,6 @@ Tuto funkci používejte pouze s účty, kterým důvěřujete.</translation>
 <translation id="8734991477317290293">Je možné, že se pokouší odcizit vaše stisknutí kláves.</translation>
 <translation id="8809737090443522491">Zadejte název aplikace nebo dokumentu</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="8814715559352963456">Přesunutí oken na jinou plochu může způsobit neočekávané chování.
-
-Následné oznámení, okna a dialogy mohou být rozděleny mezi plochy.</translation>
 <translation id="8825534185036233643">Zrcadlení s více než dvěma obrazovkami není podporováno.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8841375032071747811">Tlačítko Zpět</translation>

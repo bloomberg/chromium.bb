@@ -268,7 +268,6 @@ Utilitza aquesta funció només amb comptes de confiança.</translation>
 <translation id="7029814467594812963">Tanca la sessió</translation>
 <translation id="7034339000180558234">S'està emetent <ph name="TAB_NAME" /> a <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Estableix fons de pantalla...</translation>
-<translation id="7054808953701320293">Entesos, no m'ho tornis a mostrar</translation>
 <translation id="7066646422045619941">L'administrador ha desactivat aquesta xarxa.</translation>
 <translation id="7067196344162293536">Rotació automàtica</translation>
 <translation id="7098389117866926363">Dispositiu USB-C (port posterior esquerre)</translation>
@@ -308,7 +307,6 @@ Utilitza aquesta funció només amb comptes de confiança.</translation>
 <translation id="8000066093800657092">No hi ha cap xarxa</translation>
 <translation id="8054466585765276473">S'està calculant el temps de la bateria.</translation>
 <translation id="8056430285089645882">Entesos, no ho tornis a mostrar</translation>
-<translation id="8088137642766812908">Aneu amb compte: és possible que aquesta funció tingui un comportament estrany.</translation>
 <translation id="8098591350844501178">Deixa d'emetre la pantalla a <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Connectat a <ph name="NAME" /></translation>
 <translation id="813913629614996137">S'està inicialitzant…</translation>
@@ -336,9 +334,6 @@ Utilitza aquesta funció només amb comptes de confiança.</translation>
 <translation id="8734991477317290293">Pot ser que estigui provant de robar-te les combinacions de tecles</translation>
 <translation id="8809737090443522491">Escriu el nom d'una aplicació o d'un document</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="8814715559352963456">Si moveu finestres a un altre escriptori, pot provocar un comportament imprevist.
-
-És possible que les notificacions, les finestres i els quadres de diàleg següents es divideixin entre els escriptoris.</translation>
 <translation id="8825534185036233643">No es pot projectar amb més de dues pantalles.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8841375032071747811">Botó Enrere</translation>

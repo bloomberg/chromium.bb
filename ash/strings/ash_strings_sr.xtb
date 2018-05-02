@@ -268,7 +268,6 @@
 <translation id="7029814467594812963">Изађи из сесије</translation>
 <translation id="7034339000180558234"><ph name="TAB_NAME" /> се пребацује на <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Подеси позадину...</translation>
-<translation id="7054808953701320293">Важи, не приказуј ми ово поново.</translation>
 <translation id="7066646422045619941">Ову мрежу је онемогућио администратор.</translation>
 <translation id="7067196344162293536">Аутоматски ротирај</translation>
 <translation id="7098389117866926363">Уређај са USB прикључком типа C (леви задњи порт)</translation>
@@ -308,7 +307,6 @@
 <translation id="8000066093800657092">Нема мреже</translation>
 <translation id="8054466585765276473">Израчунавање времена трајања батерије.</translation>
 <translation id="8056430285089645882">Важи, не приказуј ово поново.</translation>
-<translation id="8088137642766812908">Пазите, ова функција можда уједа</translation>
 <translation id="8098591350844501178">Заустави пребацивање екрана на <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Успостављена је веза са <ph name="NAME" /></translation>
 <translation id="813913629614996137">Покреће се…</translation>
@@ -336,9 +334,6 @@
 <translation id="8734991477317290293">Можда покушава да украде вашу комбинацију тастера</translation>
 <translation id="8809737090443522491">Унесите назив апликације или документа</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="8814715559352963456">Премештање прозора на други рачунар може да доведе до неочекиваног понашања.
-
-Накнадна обавештења, прозори и дијалози ће можда бити подељени између рачунара.</translation>
 <translation id="8825534185036233643">Пресликавање са више од два екрана није подржано.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8841375032071747811">Дугме Назад</translation>

@@ -268,7 +268,6 @@ Izmantojiet šo funkciju tikai uzticamiem kontiem.</translation>
 <translation id="7029814467594812963">Iziet no sesijas</translation>
 <translation id="7034339000180558234">Notiek cilnes <ph name="TAB_NAME" /> apraide šādā vietā: <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Iestatīt fona tapeti...</translation>
-<translation id="7054808953701320293">Sapratu, turpmāk vairs nerādīt!</translation>
 <translation id="7066646422045619941">Jūsu administrators atspējoja šo tīklu.</translation>
 <translation id="7067196344162293536">Pagriezt automātiski</translation>
 <translation id="7098389117866926363">USB-C ierīce (pieslēgvieta aizmugurē pa kreisi)</translation>
@@ -308,7 +307,6 @@ Izmantojiet šo funkciju tikai uzticamiem kontiem.</translation>
 <translation id="8000066093800657092">Nav tīkla</translation>
 <translation id="8054466585765276473">Notiek akumulatora darbības ilguma aprēķināšana.</translation>
 <translation id="8056430285089645882">Sapratu, turpmāk vairs nerādīt!</translation>
-<translation id="8088137642766812908">Uzmanīgi, šī funkcija var darboties neparedzami!</translation>
 <translation id="8098591350844501178">Apturēt ekrāna apraidi uztvērējā “<ph name="RECEIVER_NAME" />”</translation>
 <translation id="8132793192354020517">Savienots ar <ph name="NAME" /></translation>
 <translation id="813913629614996137">Notiek inicializēšana...</translation>
@@ -336,9 +334,6 @@ Izmantojiet šo funkciju tikai uzticamiem kontiem.</translation>
 <translation id="8734991477317290293">Tā, iespējams, mēģina piesavināties jūsu taustiņsitienus</translation>
 <translation id="8809737090443522491">Ievadiet lietotnes vai dokumenta nosaukumu</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="8814715559352963456">Logu pārvietošana uz citu darbvirsmu var izraisīt neparedzētu darbību.
-
-Turpmākie paziņojumi, logi un dialoglodziņi var tikt sadalīti pa darbvirsmām.</translation>
 <translation id="8825534185036233643">Spoguļošana ar vairāk nekā diviem ekrāniem netiek atbalstīta.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8841375032071747811">Poga Atpakaļ</translation>
