@@ -168,13 +168,13 @@ class ReferenceDeltaSource {
   // Core functions.
   bool Initialize(BufferSource* source);
   base::Optional<int32_t> GetNext();
-  bool Done() const { return reference_delta_.empty(); }
+  bool Done() const { return source_.empty(); }
 
   // Accessors for unittest.
-  BufferSource reference_delta() const { return reference_delta_; }
+  BufferSource reference_delta() const { return source_; }
 
  private:
-  BufferSource reference_delta_;
+  BufferSource source_;
 };
 
 // Source for additional targets.
@@ -236,9 +236,10 @@ class PatchElementReader {
 
  private:
   // Checks that "old" and "new" blocks of each item in |equivalences_| satisfy
-  // basic order and image bound constraints (using |element_match_| data).
-  // Returns true if successful.
-  bool ValidateEquivalences();
+  // basic order and image bound constraints (using |element_match_| data). Also
+  // validates that the amount of extra data is correct. Returns true if
+  // successful.
+  bool ValidateEquivalencesAndExtraData();
 
   ElementMatch element_match_;
 
