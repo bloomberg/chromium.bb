@@ -644,7 +644,6 @@
 <translation id="5492298309214877701">เว็บไซต์นี้บนอินทราเน็ตของบริษัท องค์กร หรือโรงเรียนมี URL เหมือนกับเว็บไซต์ภายนอก
     <ph name="LINE_BREAK" />
     โปรดลองติดต่อผู้ดูแลระบบของคุณ</translation>
-<translation id="5499929369096410817">ป้อนรหัสความปลอดภัยสำหรับ <ph name="CREDIT_CARD" /> ระบบจะไม่บันทึกรหัสนี้ไว้</translation>
 <translation id="5509780412636533143">บุ๊กมาร์กที่มีการจัดการ</translation>
 <translation id="5510766032865166053">ไฟล์อาจถูกย้ายหรือลบไปแล้ว</translation>
 <translation id="5523118979700054094">ชื่อนโยบาย</translation>
@@ -704,7 +703,6 @@
 <translation id="5967867314010545767">ลบจากประวัติการเข้าชม</translation>
 <translation id="5972020793760134803">เปลี่ยนเป็นแท็บ</translation>
 <translation id="5975083100439434680">ย่อ</translation>
-<translation id="597552863672748783">ยืนยันรหัสความปลอดภัย</translation>
 <translation id="598637245381783098">ไม่สามารถเปิดแอปการชำระเงิน</translation>
 <translation id="5989320800837274978">ไม่มีการระบุทั้งพร็อกซีเซิร์ฟเวอร์แบบคงที่หรือ URL สคริปต์ .pac</translation>
 <translation id="5990559369517809815">คำขอไปยังเซิร์ฟเวอร์ถูกบล็อกโดยส่วนขยาย</translation>

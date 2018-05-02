@@ -246,9 +246,6 @@
 <translation id="6521655319214113338">Käsitsikirjasisend</translation>
 <translation id="6528179044667508675">Mitte segada</translation>
 <translation id="6537270692134705506">Jäädvusta ekraanikuva</translation>
-<translation id="6580955892089546165">See funktsioon võimaldab teil parooli sisestamata pääseda kiirelt juurde kõigile sisselogitud kasutajatele.
-
-Kasutage seda funktsiooni vaid kontode puhul, mida usaldate.</translation>
 <translation id="6585808820553845416">Seansi lõpuni on jäänud <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Otsing + Tõstuklahv + K</translation>
 <translation id="6650933572246256093">Bluetoothi seade „<ph name="DEVICE_NAME" />” küsib luba sidumiseks. Sisestage seadmesse see parool: <ph name="PASSKEY" /></translation>
@@ -306,7 +303,6 @@ Kasutage seda funktsiooni vaid kontode puhul, mida usaldate.</translation>
 <translation id="7994370417837006925">Mitmele kontole sisselogimine</translation>
 <translation id="8000066093800657092">Võrku pole</translation>
 <translation id="8054466585765276473">Aku tööaja arvutamine.</translation>
-<translation id="8056430285089645882">Selge. Ära seda enam kuva.</translation>
 <translation id="8098591350844501178">Peata ekraani ülekandmine vastuvõtjasse <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Ühendus <ph name="NAME" />iga</translation>
 <translation id="813913629614996137">Lähtestamine …</translation>

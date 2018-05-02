@@ -640,7 +640,6 @@
 <translation id="5492298309214877701">Tato stránka v intranetu společnosti, organizace nebo školy má stejnou adresu URL jako externí web.
 <ph name="LINE_BREAK" />
 Kontaktujte administrátora systému.</translation>
-<translation id="5499929369096410817">Zadejte bezpečnostní kód pro kartu <ph name="CREDIT_CARD" />. Tento kód se neuloží.</translation>
 <translation id="5509780412636533143">Spravované záložky</translation>
 <translation id="5510766032865166053">Soubor mohl být přesunut nebo smazán.</translation>
 <translation id="5523118979700054094">Název zásady</translation>
@@ -700,7 +699,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="5967867314010545767">Odstranit z historie</translation>
 <translation id="5972020793760134803">Přepnout na kartu</translation>
 <translation id="5975083100439434680">Oddálit</translation>
-<translation id="597552863672748783">Potvrzení bezpečnostního kódu</translation>
 <translation id="598637245381783098">Platební aplikaci nelze otevřít</translation>
 <translation id="5989320800837274978">Nejsou určeny pevně dané servery proxy ani adresa URL skriptu PAC.</translation>
 <translation id="5990559369517809815">Žádosti na tento server jsou blokovány rozšířením.</translation>
@@ -988,7 +986,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="8201077131113104583">Neplatná adresa URL aktualizace rozšíření s ID <ph name="EXTENSION_ID" />.</translation>
 <translation id="8202097416529803614">Shrnutí objednávky</translation>
 <translation id="8205463626947051446">Tento web často zobrazuje rušivé reklamy</translation>
-<translation id="8211406090763984747">Spojení je bezpečné</translation>
+<translation id="8211406090763984747">Připojení je zabezpečené</translation>
 <translation id="8218327578424803826">Přiřazené místo:</translation>
 <translation id="8225771182978767009">Uživatel, který tento počítač nastavoval, se rozhodl tento web blokovat.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>

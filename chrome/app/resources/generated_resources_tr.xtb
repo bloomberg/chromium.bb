@@ -367,7 +367,6 @@
 <translation id="1545775234664667895">"<ph name="THEME_NAME" />" teması yüklendi</translation>
 <translation id="1545786162090505744">Sorgu yerine %s olan URL</translation>
 <translation id="1546280085599573572">Bu uzantı, Ana Sayfa düğmesini tıkladığınızda gösterilecek sayfayı değiştirdi.</translation>
-<translation id="1547572086206517271">Yenileme gerekiyor</translation>
 <translation id="1548132948283577726">Şifreleri hiçbir zaman kaydedilmeyecek siteler burada görünür.</translation>
 <translation id="1549788673239553762"><ph name="APP_NAME" />, <ph name="VOLUME_NAME" /> birimine erişmek istiyor. Uygulama, dosyalarınızı değiştirebilir veya silebilir.</translation>
 <translation id="1553538517812678578">sınırsız</translation>
@@ -734,7 +733,6 @@
 <translation id="2128691215891724419">Senkronizasyon Hatası: Senkronizasyon parolasını güncelleyin...</translation>
 <translation id="2129825002735785149">Eklentiyi güncelle</translation>
 <translation id="2129904043921227933">Senkronizasyon Hatası: Senkronizasyon Parolasını Güncelleyin...</translation>
-<translation id="2130949041518253417">Cihazlarınız arasında kişiselleştirilmiş bir tarama deneyimi için senkronizasyon gerçekleştirin</translation>
 <translation id="2131077480075264">"<ph name="IMPORT_NAME" />" tarafından izin verilmediğinden "<ph name="APP_NAME" />" yüklenemiyor</translation>
 <translation id="2135787500304447609">&amp;Devam Ettir</translation>
 <translation id="2136372518715274136">Yeni şifreyi girin</translation>
@@ -1689,7 +1687,6 @@ Daha fazla bilgi için <ph name="BEGIN_LINK" />Yardım Merkezimizi<ph name="END_
 <translation id="3576324189521867626">Başarıyla yüklendi</translation>
 <translation id="3578594933904494462">Bu sekmenin içeriği paylaşılıyor.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt;, bir yazıcıyı (&lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt;) sahibi olduğunuz bir grupla paylaşmak istiyor: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Kabul ederseniz tüm grup üyeleri yazdırma işlemlerini o yazıcıdan yaptırabilecek.</translation>
-<translation id="3582972582564653026">Chrome'u cihazlarınız arasında senkronize edin ve kişiselleştirin</translation>
 <translation id="3584169441612580296">Bilgisayarınızdaki fotoğrafları, müzikleri ve diğer medyaları okuma ve değiştirme</translation>
 <translation id="3587482841069643663">Tümü</translation>
 <translation id="358796204584394954">Eşlemek için "<ph name="DEVICE_NAME" />" cihazında şu kodu yazın:</translation>
@@ -2226,7 +2223,6 @@ Daha fazla bilgi için <ph name="BEGIN_LINK" />Yardım Merkezimizi<ph name="END_
 <translation id="4448844063988177157">Kablosuz ağlar aranıyor...</translation>
 <translation id="4449996769074858870">Bu sekmede ses çalınıyor.</translation>
 <translation id="4450974146388585462">Teşhis Et</translation>
-<translation id="4452426408005428395">Vazgeç</translation>
 <translation id="445923051607553918">Kablosuz ağa bağlan</translation>
 <translation id="4462159676511157176">Özel ad sunucuları</translation>
 <translation id="4467100756425880649">Chrome Web Mağazası Galerisi</translation>
@@ -2736,7 +2732,6 @@ Daha fazla bilgi için <ph name="BEGIN_LINK" />Yardım Merkezimizi<ph name="END_
 <translation id="5266113311903163739">Sertifika Yetkilisi İçe Aktarma Hatası</translation>
 <translation id="5269977353971873915">Yazdırma Başarısız</translation>
 <translation id="5271549068863921519">Şifreyi kaydet</translation>
-<translation id="5275194674756975076">Tamam, yenile</translation>
 <translation id="5275352920323889391">Köpek</translation>
 <translation id="5275973617553375938">Dosyalar Google Drive'dan geri yüklendi</translation>
 <translation id="527605719918376753">Sekmenin sesini kapat</translation>
@@ -3872,7 +3867,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7006634003215061422">Alt kenar boşluğu</translation>
 <translation id="7006844981395428048">$1 ses</translation>
 <translation id="7007648447224463482">Tümünü yeni pencerede aç</translation>
-<translation id="7008270479623533562">Bu uzantıyı çalıştırmak için sayfayı yenilemeniz gerekir. Uzantı simgesini sağ tıklayıp bu uzantıyı bu sitede otomatik olarak çalıştırabilirsiniz.</translation>
 <translation id="701080569351381435">Kaynağı Görüntüle</translation>
 <translation id="7012372675181957985"><ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> adresinde Google Hesabınıza ilişkin başka biçimlerde tarama geçmişi olabilir.</translation>
 <translation id="7014174261166285193">Yükleme işlemi başarısız oldu.</translation>

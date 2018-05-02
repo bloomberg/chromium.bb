@@ -643,7 +643,6 @@
 <translation id="5492298309214877701">Web-lokacija na intranetu tvrtke, organizacije ili škole ima isti URL kao i vanjska web-lokacija.
     <ph name="LINE_BREAK" />
     Pokušajte se obratiti administratoru sustava.</translation>
-<translation id="5499929369096410817">Unesite sigurnosni kôd za karticu <ph name="CREDIT_CARD" />. Taj se kôd neće spremiti.</translation>
 <translation id="5509780412636533143">Upravljane oznake</translation>
 <translation id="5510766032865166053">Datoteka je možda premještena ili izbrisana.</translation>
 <translation id="5523118979700054094">Naziv pravila</translation>
@@ -703,7 +702,6 @@
 <translation id="5967867314010545767">Ukloni iz povijesti</translation>
 <translation id="5972020793760134803">Prijeđi na karticu</translation>
 <translation id="5975083100439434680">Smanji</translation>
-<translation id="597552863672748783">Potvrdite sigurnosni kôd</translation>
 <translation id="598637245381783098">Aplikacija za plaćanje ne može se otvoriti</translation>
 <translation id="5989320800837274978">Nisu određeni fiksni proxy poslužitelji ni URL .pac skripte.</translation>
 <translation id="5990559369517809815">Zahtjevi poslužitelju blokirani su proširenjem.</translation>

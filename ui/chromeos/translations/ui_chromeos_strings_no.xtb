@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="no">
+<translation id="1012876632442809908">USB-C-enhet (porten foran)</translation>
 <translation id="1023220960495960452">Translitterasjon (vanakkam → வணக்கம்)</translation>
 <translation id="1045157690796831147">Translitterasjon (namaskar → നമസ്കാരം)</translation>
 <translation id="1065449928621190041">Fransk tastatur (Canada)</translation>
@@ -10,6 +11,7 @@
 <translation id="1155759005174418845">Katalansk</translation>
 <translation id="1208421848177517699">Translitterasjon (namaste → નમસ્તે)</translation>
 <translation id="1278813325885878377">Ungarsk QWERTY-tastatur</translation>
+<translation id="1293264513303784526">USB-C-enhet (porten på venstre side)</translation>
 <translation id="1310751437842832374">Translitterasjon (mausam → ନମସ୍ତେ)</translation>
 <translation id="1337036551624197047">Tsjekkisk tastatur</translation>
 <translation id="1352103415082130575">Thai-tastatur (Pattachote)</translation>
@@ -25,6 +27,7 @@
 <translation id="164969095109328410">Chrome-enhet</translation>
 <translation id="1829129547161959350">Pingviner</translation>
 <translation id="184633654410729720">Thai-tastatur (Kedmanee)</translation>
+<translation id="1864454756846565995">USB-C-enhet (porten på baksiden)</translation>
 <translation id="1921986354447415460">Tyrkisk F-tastatur</translation>
 <translation id="1931134289871235022">Slovakisk</translation>
 <translation id="1936717151811561466">Finsk</translation>
@@ -52,6 +55,7 @@
 <translation id="2771816809568414714">Ost</translation>
 <translation id="2781645665747935084">Belgisk</translation>
 <translation id="2790805296069989825">Russisk tastatur</translation>
+<translation id="2844169650293029770">USB-C-enhet (porten foran på venstre side)</translation>
 <translation id="2870836398458454343">Translitterasjon (marhaban ← مرحبا)</translation>
 <translation id="288024221176729610">Tsjekkisk</translation>
 <translation id="2894654529758326923">Informasjon</translation>
@@ -75,7 +79,9 @@
 <translation id="3280987981688031357">Vinylplate</translation>
 <translation id="3296763833017966289">Georgisk</translation>
 <translation id="3338239663705455570">Slovensk tastatur</translation>
+<translation id="3371140690572404006">USB-C-enhet (porten foran på høyre side)</translation>
 <translation id="3399597614303179694">Makedonsk tastatur</translation>
+<translation id="3445925074670675829">USB-C-enhet</translation>
 <translation id="3494768541638400973">Google-inndatametode for japansk (for japansk tastatur)</translation>
 <translation id="3519867315646775981">Translitterasjon (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Portugisisk</translation>
@@ -95,6 +101,7 @@
 <translation id="3910699493603749297">Khmer-tastatur</translation>
 <translation id="391445228316373457">Nepali-tastatur (fonetisk)</translation>
 <translation id="3958548648197196644">Kiwi</translation>
+<translation id="3995138139523574647">USB-C-enhet (porten bak på høyre side)</translation>
 <translation id="4070370845051020638">Kantonesisk inndatametode</translation>
 <translation id="4072248638558688893">Tamilsk tastatur (fonetisk)</translation>
 <translation id="4124935795427217608">Enhjørning</translation>
@@ -141,6 +148,7 @@
 <translation id="5257456363153333584">Øyenstikker</translation>
 <translation id="5319782540886810524">Latvisk tastatur</translation>
 <translation id="5323213332664049067">Latinamerikansk</translation>
+<translation id="5331975486040154427">USB-C-enhet (porten bak på venstre side)</translation>
 <translation id="5402367795255837559">Punktskrift</translation>
 <translation id="5412637665001827670">Bulgarsk tastatur</translation>
 <translation id="5418923334382419584">Myanmar-tastatur</translation>
@@ -177,6 +185,7 @@
 <translation id="6358884629796491903">Drage</translation>
 <translation id="6462109140674788769">Gresk tastatur</translation>
 <translation id="6466492211071551451">Irsk tastatur</translation>
+<translation id="6490471652906364588">USB-C-enhet (porten på høyre side)</translation>
 <translation id="6503256918647795660">Fransk tastatur (Sveits)</translation>
 <translation id="6505918941256367791">Tamilsk tastatur (InScript)</translation>
 <translation id="6509122719576673235">Norsk</translation>
@@ -195,6 +204,7 @@
 <translation id="6937152069980083337">Google-inndatametode for japansk (for amerikansk tastatur)</translation>
 <translation id="6939777852457331078">Workman-tastatur (USA)</translation>
 <translation id="6970230597523682626">Bulgarsk</translation>
+<translation id="7098389117866926363">USB-C-enhet (venstre port på baksiden)</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">Translitterasjon (salam → ሰላም)</translation>
 <translation id="7172053773111046550">Estisk tastatur</translation>
@@ -255,6 +265,7 @@
 <translation id="8900820606136623064">Ungarsk</translation>
 <translation id="8901822611024316615">Tsjekkisk QWERTY-tastatur</translation>
 <translation id="8919081441417203123">Dansk</translation>
+<translation id="8938800817013097409">USB-C-enhet (høyre port på baksiden)</translation>
 <translation id="8960999352790021682">Bengali-tastatur (fonetisk)</translation>
 <translation id="9017798300203431059">Russisk fonetisk</translation>
 <translation id="913758436357682283">Myanmar Myansan-tastatur</translation>

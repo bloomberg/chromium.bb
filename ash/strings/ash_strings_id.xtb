@@ -246,9 +246,6 @@
 <translation id="6521655319214113338">Masukan tulisan tangan</translation>
 <translation id="6528179044667508675">Jangan ganggu</translation>
 <translation id="6537270692134705506">Tangkap layar</translation>
-<translation id="6580955892089546165">Dengan fitur ini, Anda dapat dengan cepat mengakses setiap pengguna yang sudah masuk, tanpa perlu menggunakan sandi.
-
-Hanya gunakan fitur ini dengan akun yang Anda percayai.</translation>
 <translation id="6585808820553845416">Sesi berakhir dalam <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Tombol Penelusuran+Shift+K</translation>
 <translation id="6650933572246256093">Perangkat Bluetooth "<ph name="DEVICE_NAME" />" meminta izin untuk bersanding. Masukkan kunci sandi ini pada perangkat tersebut: <ph name="PASSKEY" /></translation>
@@ -306,7 +303,6 @@ Hanya gunakan fitur ini dengan akun yang Anda percayai.</translation>
 <translation id="7994370417837006925">Fitur masuk banyak akun</translation>
 <translation id="8000066093800657092">Tidak ada jaringan</translation>
 <translation id="8054466585765276473">Menghitung masa pakai baterai.</translation>
-<translation id="8056430285089645882">Mengerti, jangan tampilkan ini lagi.</translation>
 <translation id="8098591350844501178">Hentikan casting layar ke <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Tersambung ke <ph name="NAME" /></translation>
 <translation id="813913629614996137">Memulai...</translation>

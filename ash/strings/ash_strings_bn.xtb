@@ -247,9 +247,6 @@
 <translation id="6521655319214113338">হাতে লেখা ইনপুট</translation>
 <translation id="6528179044667508675">বিরক্ত করবেন না</translation>
 <translation id="6537270692134705506">স্ক্রীন ক্যাপচার করুন</translation>
-<translation id="6580955892089546165">এই বৈশিষ্ট্যটি আপনাকে কোনো পাসওয়ার্ড ছাড়াই যেকোনো সাইন ইন করা ব্যবহারকারীকে দ্রুত অ্যাক্সেস করার অনুমতি দেয়।
-
-আপনি বিশ্বাস করেন শুধুমাত্র এমন অ্যাকাউন্টগুলির সাথে এই বৈশিষ্ট্যটি ব্যবহার করুন।</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" /> এর মধ্যে সেশন শেষ হয়ে যাবে৷</translation>
 <translation id="6627638273713273709">অনুসন্ধান+Shift+K</translation>
 <translation id="6650933572246256093">ব্লুটুথ ডিভাইস "<ph name="DEVICE_NAME" />" যুক্ত করার অনুমতি চাইছে। দয়া করে ডিভাইসটিতে এই পাস কীটি প্রবেশ করুন: <ph name="PASSKEY" /></translation>
@@ -307,7 +304,6 @@
 <translation id="7994370417837006925">একাধিক সাইন-ইন</translation>
 <translation id="8000066093800657092">কোনও নেটওয়ার্ক নেই</translation>
 <translation id="8054466585765276473">ব্যাটারি সময় গণনা করা হচ্ছে।</translation>
-<translation id="8056430285089645882">বুঝেছি, আমাকে এটি পুনরায় দেখাবেন না৷</translation>
 <translation id="8098591350844501178"><ph name="RECEIVER_NAME" /> এ স্ক্রীন কাস্ট করা বন্ধ করুন</translation>
 <translation id="8132793192354020517"><ph name="NAME" /> তে সংযুক্ত</translation>
 <translation id="813913629614996137">আরম্ভ হচ্ছে…</translation>

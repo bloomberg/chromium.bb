@@ -367,7 +367,6 @@
 <translation id="1545775234664667895">Tema "<ph name="THEME_NAME" />" installato</translation>
 <translation id="1545786162090505744">URL con %s al posto della query</translation>
 <translation id="1546280085599573572">Questa estensione ha cambiato la pagina mostrata quando fai clic sul pulsante Pagina iniziale.</translation>
-<translation id="1547572086206517271">Aggiornamento necessario</translation>
 <translation id="1548132948283577726">I siti che non salvano mai le password verranno visualizzati qui.</translation>
 <translation id="1549788673239553762"><ph name="APP_NAME" /> vorrebbe accedere a <ph name="VOLUME_NAME" />. Potrebbe modificare o eliminare i tuoi file.</translation>
 <translation id="1553538517812678578">illimitato</translation>
@@ -731,7 +730,6 @@
 <translation id="2128691215891724419">Errore di sincronizzazione. Aggiorna la passphrase di sincronizzazione...</translation>
 <translation id="2129825002735785149">Aggiorna il plug-in</translation>
 <translation id="2129904043921227933">Errore di sincronizzazione. Aggiorna la passphrase di sincronizzazione...</translation>
-<translation id="2130949041518253417">Sincronizza per un'esperienza di navigazione personalizzata su tutti i tuoi dispositivi</translation>
 <translation id="2131077480075264">Impossibile installare "<ph name="APP_NAME" />" perché non è consentita da "<ph name="IMPORT_NAME" />"</translation>
 <translation id="2135787500304447609">&amp;Riprendi</translation>
 <translation id="2136372518715274136">Inserisci la nuova password</translation>
@@ -1680,7 +1678,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="3576324189521867626">Installata</translation>
 <translation id="3578594933904494462">I contenuti di questa scheda vengono condivisi.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; vuole condividere una stampante &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; con un gruppo gestito da te: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Se accetti, tutti i membri del gruppo potranno utilizzare la stampante.</translation>
-<translation id="3582972582564653026">Sincronizza e personalizza Chrome sui tuoi dispositivi</translation>
 <translation id="3584169441612580296">Lettura e modifica di foto, musica e altri contenuti multimediali del computer</translation>
 <translation id="3587482841069643663">Tutti</translation>
 <translation id="358796204584394954">Digita questo codice in "<ph name="DEVICE_NAME" />" per accoppiare:</translation>
@@ -2213,7 +2210,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="4448844063988177157">Ricerca di reti Wi-Fi in corso...</translation>
 <translation id="4449996769074858870">In questa scheda c'è audio in riproduzione.</translation>
 <translation id="4450974146388585462">Diagnostica</translation>
-<translation id="4452426408005428395">Non importa</translation>
 <translation id="445923051607553918">Connetti a rete Wi-Fi</translation>
 <translation id="4462159676511157176">Assegna nomi personalizzati a server</translation>
 <translation id="4467100756425880649">Chrome Web Store Gallery</translation>
@@ -2719,7 +2715,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="5266113311903163739">Errore di importazione dell'autorità di certificazione</translation>
 <translation id="5269977353971873915">Stampa non riuscita</translation>
 <translation id="5271549068863921519">Salva password</translation>
-<translation id="5275194674756975076">OK, aggiorna</translation>
 <translation id="5275352920323889391">Cane</translation>
 <translation id="5275973617553375938">File recuperati da Google Drive</translation>
 <translation id="527605719918376753">Disattiva audio scheda</translation>
@@ -3848,7 +3843,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="7006634003215061422">Margine inferiore</translation>
 <translation id="7006844981395428048">Audio $1</translation>
 <translation id="7007648447224463482">Apri tutto in una nuova finestra</translation>
-<translation id="7008270479623533562">Per eseguire l'estensione è necessario aggiornare la pagina. Puoi eseguire automaticamente l'estensione su questo sito facendo clic con il pulsante destro del mouse sulla relativa icona.</translation>
 <translation id="701080569351381435">Visualizza sorgente</translation>
 <translation id="7012372675181957985">Il tuo account Google potrebbe avere altre forme di cronologia di navigazione all'indirizzo <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7014174261166285193">Installazione non riuscita.</translation>

@@ -246,9 +246,6 @@
 <translation id="6521655319214113338">Рукописный ввод</translation>
 <translation id="6528179044667508675">Не беспокоить</translation>
 <translation id="6537270692134705506">Снимок экрана</translation>
-<translation id="6580955892089546165">Эта функция позволяет быстро и без пароля получить доступ к любому аккаунту, в который выполнен вход.
-
-Используйте ее только для надежных аккаунтов.</translation>
 <translation id="6585808820553845416">Сеанс закончится через <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Поиск + Shift + K</translation>
 <translation id="6650933572246256093">Устройству <ph name="DEVICE_NAME" /> требуется разрешение на подключение через Bluetooth. Введите на нем код: <ph name="PASSKEY" />.</translation>
@@ -306,7 +303,6 @@
 <translation id="7994370417837006925">Множественный вход</translation>
 <translation id="8000066093800657092">Нет сети</translation>
 <translation id="8054466585765276473">Подсчет оставшегося времени работы от батареи…</translation>
-<translation id="8056430285089645882">Больше не показывать это сообщение</translation>
 <translation id="8098591350844501178">Остановить трансляцию содержимого экрана на устройство "<ph name="RECEIVER_NAME" />"</translation>
 <translation id="8132793192354020517">Подключено к сети <ph name="NAME" /></translation>
 <translation id="813913629614996137">Инициализация...</translation>

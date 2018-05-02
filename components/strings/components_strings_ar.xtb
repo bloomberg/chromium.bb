@@ -644,7 +644,6 @@
 <translation id="5492298309214877701">‏يكون لموقع الويب هذا على الشبكة الداخلية للشركة أو المؤسسة أو المدرسة نفس عنوان URL لأحد مواقع الويب الخارجية.
     <ph name="LINE_BREAK" />
     حاول الاتصال بمشرف النظام.</translation>
-<translation id="5499929369096410817">أدخل رمز الأمان لبطاقة <ph name="CREDIT_CARD" />.  لن يتم حفظ هذا الرمز.</translation>
 <translation id="5509780412636533143">الإشارات المرجعية المُدارة</translation>
 <translation id="5510766032865166053">ربما يكون تم نقله أو حذفه.</translation>
 <translation id="5523118979700054094">اسم السياسة</translation>
@@ -704,7 +703,6 @@
 <translation id="5967867314010545767">إزالة من السجل</translation>
 <translation id="5972020793760134803">التبديل إلى علامة التبويب أخرى</translation>
 <translation id="5975083100439434680">تصغير</translation>
-<translation id="597552863672748783">تأكيد رمز الأمان</translation>
 <translation id="598637245381783098">لا يمكن فتح تطبيق الدفع</translation>
 <translation id="5989320800837274978">‏لم يتم تحديد أي من الخوادم الوكيلة الثابتة ولا عنوان URL للنص البرمجي pac.</translation>
 <translation id="5990559369517809815">تم حظر الطلبات المقدمة إلى الخادم بواسطة إحدى الإضافات.</translation>

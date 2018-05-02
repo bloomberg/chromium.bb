@@ -367,7 +367,6 @@
 <translation id="1545775234664667895">Naka-install na temang "<ph name="THEME_NAME" />"</translation>
 <translation id="1545786162090505744">URL na may mga % sa lugar ng query</translation>
 <translation id="1546280085599573572">Binago ng extension na ito ang ipinapakitang page kapag na-click mo ang button ng Home.</translation>
-<translation id="1547572086206517271">Kinakailangang i-refresh</translation>
 <translation id="1548132948283577726">Lalabas dito ang mga site na hindi kailanman nagsa-save ng mga password.</translation>
 <translation id="1549788673239553762">Gusto ng <ph name="APP_NAME" /> na i-access ang <ph name="VOLUME_NAME" />. Maaari nitong baguhin o i-delete ang iyong mga file.</translation>
 <translation id="1553538517812678578">walang limitasyon</translation>
@@ -734,7 +733,6 @@
 <translation id="2128691215891724419">Error sa Pag-sync: I-update ang Passphrase ng Pag-sync...</translation>
 <translation id="2129825002735785149">I-update ang plugin</translation>
 <translation id="2129904043921227933">Error sa Pag-sync: I-update ang Passphrase ng Pag-sync...</translation>
-<translation id="2130949041518253417">I-sync para sa isang naka-personalize na karanasan sa pag-browse, sa iyong mga device</translation>
 <translation id="2131077480075264">Hindi ma-install ang "<ph name="APP_NAME" />" dahil hindi ito pinayagan ng "<ph name="IMPORT_NAME" />"</translation>
 <translation id="2135787500304447609">&amp;Magpatuloy</translation>
 <translation id="2136372518715274136">Ilagay ang bagong password</translation>
@@ -1689,7 +1687,6 @@ Para sa higit pang impormasyon, bisitahin ang aming <ph name="BEGIN_LINK" />Help
 <translation id="3576324189521867626">Matagumpay na na-install</translation>
 <translation id="3578594933904494462">Ibinabahagi ang nilalaman ng tab na ito.</translation>
 <translation id="357886715122934472">Gustong magbahagi ng &lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; ng printer na &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; sa isang pangkat na pagmamay-ari mo: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Kung tatanggapin mo, makakapag-print ang lahat ng miyembro ng pangkat sa printer.</translation>
-<translation id="3582972582564653026">I-sync at i-personalize ang Chrome sa lahat ng iyong device</translation>
 <translation id="3584169441612580296">Basahin at baguhin ang mga larawan, musika at iba pang media sa iyong computer</translation>
 <translation id="3587482841069643663">Lahat</translation>
 <translation id="358796204584394954">I-type ang code na ito sa "<ph name="DEVICE_NAME" />" upang ipares:</translation>
@@ -2226,7 +2223,6 @@ Para sa higit pang impormasyon, bisitahin ang aming <ph name="BEGIN_LINK" />Help
 <translation id="4448844063988177157">Naghahanap ng mga network na Wi-Fi...</translation>
 <translation id="4449996769074858870">Nagpe-play ng audio ang tab na ito.</translation>
 <translation id="4450974146388585462">I-diagnose</translation>
-<translation id="4452426408005428395">Balewalain</translation>
 <translation id="445923051607553918">Sumali sa network ng Wi-Fi</translation>
 <translation id="4462159676511157176">Custom na mga server ng pangalan</translation>
 <translation id="4467100756425880649">Gallery ng Chrome Web Store</translation>
@@ -2736,7 +2732,6 @@ Para sa higit pang impormasyon, bisitahin ang aming <ph name="BEGIN_LINK" />Help
 <translation id="5266113311903163739">Error sa Pag-import ng Certification Authority</translation>
 <translation id="5269977353971873915">Nabigo ang Pag-print</translation>
 <translation id="5271549068863921519">I-save ang password</translation>
-<translation id="5275194674756975076">OK, i-refresh</translation>
 <translation id="5275352920323889391">Aso</translation>
 <translation id="5275973617553375938">Mga nabawing file mula sa Google Drive</translation>
 <translation id="527605719918376753">I-mute ang tab</translation>
@@ -3871,7 +3866,6 @@ Para sa higit pang impormasyon, bisitahin ang aming <ph name="BEGIN_LINK" />Help
 <translation id="7006634003215061422">Margin sa ibaba</translation>
 <translation id="7006844981395428048">Audio na $1</translation>
 <translation id="7007648447224463482">Buksan ang lahat sa bagong window</translation>
-<translation id="7008270479623533562">Upang mapagana ang extension na ito, kailangan mong i-refresh ang page. Maaari mong awtomatikong paganahin ang extension na iyon sa site na ito sa pamamagitan ng pagra-right-click sa icon ng extension.</translation>
 <translation id="701080569351381435">View Source</translation>
 <translation id="7012372675181957985">Ang iyong Google Account ay maaaring may iba pang mga form ng history ng pagba-browse sa <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7014174261166285193">Nabigo ang pag-install.</translation>

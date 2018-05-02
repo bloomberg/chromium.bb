@@ -367,7 +367,6 @@
 <translation id="1545775234664667895">S-a instalat tema „<ph name="THEME_NAME" />”</translation>
 <translation id="1545786162090505744">Adresă URL cu %s în loc de interogare</translation>
 <translation id="1546280085599573572">Această extensie a modificat ce pagină se afișează când dai clic pe butonul Pagină de pornire.</translation>
-<translation id="1547572086206517271">Este necesară actualizarea</translation>
 <translation id="1548132948283577726">Site-urile care nu salvează niciodată parole vor apărea aici.</translation>
 <translation id="1549788673239553762"><ph name="APP_NAME" /> dorește să acceseze <ph name="VOLUME_NAME" />. Poate modifica sau șterge fișierele.</translation>
 <translation id="1553538517812678578">nelimitat</translation>
@@ -734,7 +733,6 @@
 <translation id="2128691215891724419">Eroare de sincronizare: actualizați expresia de acces pentru sincronizare...</translation>
 <translation id="2129825002735785149">Actualizează pluginul</translation>
 <translation id="2129904043921227933">Eroare de sincronizare: actualizați expresia de acces pentru sincronizare...</translation>
-<translation id="2130949041518253417">Sincronizează pentru o experiență de navigare personalizată, pe toate dispozitivele</translation>
 <translation id="2131077480075264">„<ph name="APP_NAME" />” nu poate fi instalată, deoarece „<ph name="IMPORT_NAME" />” nu permite acest lucru</translation>
 <translation id="2135787500304447609">&amp;Reia</translation>
 <translation id="2136372518715274136">Introdu noua parolă</translation>
@@ -1689,7 +1687,6 @@ Pentru mai multe informații, accesează <ph name="BEGIN_LINK" />Centrul de ajut
 <translation id="3576324189521867626">S-a instalat</translation>
 <translation id="3578594933904494462">La conținutul acestei file se permite accesul.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; dorește să permită accesul la o imprimantă &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; pentru un grup pe care îl deții: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Dacă accepți, toți membrii grupului vor putea printa la imprimantă.</translation>
-<translation id="3582972582564653026">Sincronizează și personalizează Chrome pe toate dispozitivele</translation>
 <translation id="3584169441612580296">Citește și modifică fotografii, muzică și alte tipuri de conținut media de pe computer</translation>
 <translation id="3587482841069643663">Toate</translation>
 <translation id="358796204584394954">Pentru a conecta, introduceți acest cod pe „<ph name="DEVICE_NAME" />”:</translation>
@@ -2226,7 +2223,6 @@ Pentru mai multe informații, accesează <ph name="BEGIN_LINK" />Centrul de ajut
 <translation id="4448844063988177157">Se caută rețele Wi-Fi...</translation>
 <translation id="4449996769074858870">Această filă redă fișiere audio.</translation>
 <translation id="4450974146388585462">Diagnosticați</translation>
-<translation id="4452426408005428395">M-am răzgândit</translation>
 <translation id="445923051607553918">Conectează-te la rețeaua Wi-Fi</translation>
 <translation id="4462159676511157176">Servere de nume personalizate</translation>
 <translation id="4467100756425880649">Galeria Magazinului web Chrome</translation>
@@ -2736,7 +2732,6 @@ Pentru mai multe informații, accesează <ph name="BEGIN_LINK" />Centrul de ajut
 <translation id="5266113311903163739">Eroare la importarea Autorității de certificare</translation>
 <translation id="5269977353971873915">Printarea a eșuat</translation>
 <translation id="5271549068863921519">Salvează parola</translation>
-<translation id="5275194674756975076">OK, actualizează</translation>
 <translation id="5275352920323889391">Câine</translation>
 <translation id="5275973617553375938">Fișiere recuperate din Google Drive</translation>
 <translation id="527605719918376753">Dezactivează sunetul filei</translation>
@@ -3871,7 +3866,6 @@ Pentru mai multe informații, accesează <ph name="BEGIN_LINK" />Centrul de ajut
 <translation id="7006634003215061422">Margine jos</translation>
 <translation id="7006844981395428048">Fișier audio $1</translation>
 <translation id="7007648447224463482">Deschide totul într-o fereastră nouă</translation>
-<translation id="7008270479623533562">Pentru a rula această extensie, trebuie să actualizezi pagina. Poți rula extensia automat pe acest site dând clic dreapta pe pictograma extensiei.</translation>
 <translation id="701080569351381435">Afișează sursa</translation>
 <translation id="7012372675181957985">Contul Google poate să ofere alte forme ale istoricului de navigare la <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7014174261166285193">Instalarea nu a reușit.</translation>

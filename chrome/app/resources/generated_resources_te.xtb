@@ -367,7 +367,6 @@
 <translation id="1545775234664667895">వ్యవస్థాపితమైన థీమ్ "<ph name="THEME_NAME" />"</translation>
 <translation id="1545786162090505744">ప్రశ్న యొక్క ప్రదేశంలో %sతో URL</translation>
 <translation id="1546280085599573572">ఈ పొడిగింపు మీరు హోమ్ బటన్‌ను క్లిక్ చేసినప్పుడు చూపబడే పేజీని మార్చింది.</translation>
-<translation id="1547572086206517271">రిఫ్రెష్ చేయడం అవసరం</translation>
 <translation id="1548132948283577726">పాస్‌వర్డ్‌లు సేవ్ చెయ్యని సైట్‌లు ఇక్కడ కనిపిస్తాయి.</translation>
 <translation id="1549788673239553762"><ph name="APP_NAME" /> <ph name="VOLUME_NAME" />ని ప్రాప్యత చేయాలనుకుంటోంది. దీని వలన మీ ఫైల్‌లు మారవచ్చు లేదా తొలగించబడవచ్చు.</translation>
 <translation id="1553538517812678578">అపరిమిత</translation>
@@ -734,7 +733,6 @@
 <translation id="2128691215891724419">సమకాలీకరణ లోపం: సమకాలీకరణ సంకేతపదాన్ని నవీకరించండి...</translation>
 <translation id="2129825002735785149">ప్లగిన్‌ను నవీకరించండి</translation>
 <translation id="2129904043921227933">సమకాలీకరణ లోపం: సమకాలీకరణ సంకేతపదాన్ని నవీకరించండి...</translation>
-<translation id="2130949041518253417">మీ పరికరాలన్నింటిలో వ్యక్తిగతీకరించిన బ్రౌజింగ్ అనుభవం కోసం సమకాలీకరించండి</translation>
 <translation id="2131077480075264">"<ph name="APP_NAME" />"ని "<ph name="IMPORT_NAME" />" అనుమతించనందున దీన్ని ఇన్‌స్టాల్ చేయడం సాధ్యపడలేదు</translation>
 <translation id="2135787500304447609">&amp;మళ్ళీ ప్రారంభించు</translation>
 <translation id="2136372518715274136">కొత్త పాస్‌వర్డ్‌ను నమోదు చేయండి</translation>
@@ -1689,7 +1687,6 @@
 <translation id="3576324189521867626">విజయవంతంగా ఇన్‌స్టాల్ చేయబడింది</translation>
 <translation id="3578594933904494462">ఈ ట్యాబ్ యొక్క కంటెంట్ భాగస్వామ్యం చేయబడుతోంది.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; మీరు యజమానిగా ఉన్న సమూహంతో &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; ప్రింటర్‌ను భాగస్వామ్యం చేయాలనుకుంటున్నారు: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. మీరు ఆమోదిస్తే, సమూహ సభ్యులందరూ ప్రింటర్‌కు ముద్రించగలరు.</translation>
-<translation id="3582972582564653026">మీ పరికరాల అంతటా Chromeని సమకాలీకరించండి మరియు వ్యక్తిగతీకరించండి</translation>
 <translation id="3584169441612580296">మీ కంప్యూటర్‌లోని ఫోటోలు, సంగీతం మరియు ఇతర మీడియాను చదవడం మరియు మార్చడం</translation>
 <translation id="3587482841069643663">మొత్తం</translation>
 <translation id="358796204584394954">జత చేయడానికి "<ph name="DEVICE_NAME" />"లో ఈ కోడ్‌ను టైప్ చేయండి:</translation>
@@ -2226,7 +2223,6 @@
 <translation id="4448844063988177157">Wi-Fi నెట్‌వర్క్‌ల కోసం శోధిస్తోంది...</translation>
 <translation id="4449996769074858870">ఈ ట్యాబ్ ఆడియో‌ను ప్లే చేస్తోంది.</translation>
 <translation id="4450974146388585462">విశ్లేషించు</translation>
-<translation id="4452426408005428395">పర్వాలేదు</translation>
 <translation id="445923051607553918">Wi-Fi నెట్‌వర్క్‌లో చేరండి</translation>
 <translation id="4462159676511157176">అనుకూల పేరు సర్వర్‌లు</translation>
 <translation id="4467100756425880649">Chrome వెబ్ స్టోర్ గ్యాలరీ</translation>
@@ -2736,7 +2732,6 @@
 <translation id="5266113311903163739">ప్రమాణపత్రం అధికారి దిగుమతి లోపం</translation>
 <translation id="5269977353971873915">ముద్రణ విఫలమైంది</translation>
 <translation id="5271549068863921519">పాస్‌వర్డ్‌ను సేవ్ చెయ్యి</translation>
-<translation id="5275194674756975076">సరే, రిఫ్రెష్ చేయి</translation>
 <translation id="5275352920323889391">కుక్క</translation>
 <translation id="5275973617553375938">Google డిస్క్ నుండి పునరుద్ధరించబడిన ఫైల్‌లు</translation>
 <translation id="527605719918376753">ట్యాబ్‌ను మ్యూట్ చేయి</translation>
@@ -3871,7 +3866,6 @@
 <translation id="7006634003215061422">దిగువ అంచు</translation>
 <translation id="7006844981395428048">$1 ఆడియో</translation>
 <translation id="7007648447224463482">అన్ని కొత్త విండోలో తెరువు</translation>
-<translation id="7008270479623533562">ఈ పొడిగింపుని అమలు చేయడానికి, మీరు పేజీని రిఫ్రెష్ చేయాలి. మీరు పొడిగింపు చిహ్నంపై కుడి క్లిక్ చేయడం ద్వారా ఈ సైట్‌లో ఈ పొడిగింపుని స్వయంచాలకంగా అమలు చేయవచ్చు.</translation>
 <translation id="701080569351381435">సోర్స్‌ను చూడండి</translation>
 <translation id="7012372675181957985">మీ Google ఖాతా <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />లో ఇతర బ్రౌజింగ్ చరిత్ర రూపాలు ఉండవచ్చు.</translation>
 <translation id="7014174261166285193">వ్యవస్థాపన విఫలమైంది.</translation>

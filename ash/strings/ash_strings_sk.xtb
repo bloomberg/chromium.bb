@@ -246,9 +246,6 @@ Všetci používatelia sa musia odhlásiť a až potom môžu pokračovať.</tr
 <translation id="6521655319214113338">Vstup ručného písania</translation>
 <translation id="6528179044667508675">Nerušiť</translation>
 <translation id="6537270692134705506">Nasnímať obrazovku</translation>
-<translation id="6580955892089546165">Táto funkcia vám umožní rýchly prístup k ľubovoľnému prihlásenému používateľovi bez hesla.
-
-Túto funkciu používajte iba s dôveryhodnými účtami.</translation>
 <translation id="6585808820553845416">Relácia sa skončí o <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="6627638273713273709">Hľadať+Shift+K</translation>
 <translation id="6650933572246256093">Zariadenie Bluetooth s názvom <ph name="DEVICE_NAME" /> žiada o povolenie párovania. Zadajte na danom zariadení tento prístupový kľúč: <ph name="PASSKEY" /></translation>
@@ -306,7 +303,6 @@ Túto funkciu používajte iba s dôveryhodnými účtami.</translation>
 <translation id="7994370417837006925">Viacnásobné prihlásenie</translation>
 <translation id="8000066093800657092">Žiadna sieť</translation>
 <translation id="8054466585765276473">Výpočet času výdrže batérie.</translation>
-<translation id="8056430285089645882">Dobre, neukazovať znova.</translation>
 <translation id="8098591350844501178">Zastaviť prenos obrazovky do zariadenia <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Pripojené k stránke <ph name="NAME" /></translation>
 <translation id="813913629614996137">Prebieha inicializácia...</translation>

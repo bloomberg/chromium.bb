@@ -368,7 +368,6 @@
 <translation id="1545775234664667895">테마('<ph name="THEME_NAME" />')를 설치했습니다.</translation>
 <translation id="1545786162090505744">URL(검색어 자리에 % 입력)</translation>
 <translation id="1546280085599573572">홈 버튼을 클릭하면 표시되는 페이지가 이 확장 프로그램으로 인해 변경되었습니다.</translation>
-<translation id="1547572086206517271">새로고침 필요</translation>
 <translation id="1548132948283577726">비밀번호를 저장하지 않은 사이트가 표시됩니다.</translation>
 <translation id="1549788673239553762"><ph name="APP_NAME" />에서 <ph name="VOLUME_NAME" />에 액세스하려고 합니다. 내 파일을 수정하거나 삭제할 수 있습니다.</translation>
 <translation id="1553538517812678578">무제한</translation>
@@ -735,7 +734,6 @@
 <translation id="2128691215891724419">동기화 오류: 동기화 암호 업데이트...</translation>
 <translation id="2129825002735785149">플러그인 업데이트</translation>
 <translation id="2129904043921227933">동기화 오류: 동기화 암호 업데이트...</translation>
-<translation id="2130949041518253417">모든 기기에서 맞춤 탐색 환경을 동기화합니다.</translation>
 <translation id="2131077480075264"><ph name="IMPORT_NAME" />에서 허용하지 않으므로 '<ph name="APP_NAME" />'을(를) 설치할 수 없습니다.</translation>
 <translation id="2135787500304447609">다시 시작(&amp;R)</translation>
 <translation id="2136372518715274136">새 비밀번호 입력</translation>
@@ -1690,7 +1688,6 @@
 <translation id="3576324189521867626">설치되었습니다.</translation>
 <translation id="3578594933904494462">이 탭의 콘텐츠를 공유 중입니다.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt;님이 내가 소유한 그룹(&lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;)과의 프린터(&lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt;) 공유를 요청했습니다. 동의하면 모든 그룹 회원이 해당 프린터로 인쇄할 수 있게 됩니다.</translation>
-<translation id="3582972582564653026">모든 기기에서 Chrome을 동기화하고 맞춤설정하세요.</translation>
 <translation id="3584169441612580296">컴퓨터에서 사진, 음악, 기타 미디어 조회 및 변경</translation>
 <translation id="3587482841069643663">전체</translation>
 <translation id="358796204584394954">'<ph name="DEVICE_NAME" />'에서 이 코드를 입력하여 다음을 페어링:</translation>
@@ -2226,7 +2223,6 @@
 <translation id="4448844063988177157">Wi-Fi 네트워크를 검색하는 중...</translation>
 <translation id="4449996769074858870">이 탭은 오디오를 재생합니다.</translation>
 <translation id="4450974146388585462">진단</translation>
-<translation id="4452426408005428395">닫기</translation>
 <translation id="445923051607553918">WiFi 네트워크 연결</translation>
 <translation id="4462159676511157176">맞춤 이름 서버</translation>
 <translation id="4467100756425880649">Chrome 웹 스토어 갤러리</translation>
@@ -2736,7 +2732,6 @@
 <translation id="5266113311903163739">인증 기관 가져오기 오류</translation>
 <translation id="5269977353971873915">인쇄 실패</translation>
 <translation id="5271549068863921519">비밀번호 저장</translation>
-<translation id="5275194674756975076">새로고침</translation>
 <translation id="5275352920323889391">개</translation>
 <translation id="5275973617553375938">Google 드라이브에서 복구된 파일</translation>
 <translation id="527605719918376753">탭 음소거</translation>
@@ -3871,7 +3866,6 @@
 <translation id="7006634003215061422">하단 여백</translation>
 <translation id="7006844981395428048">$1 오디오</translation>
 <translation id="7007648447224463482">모두 새 창에서 열기</translation>
-<translation id="7008270479623533562">이 확장 프로그램을 실행하려면 페이지를 새로고침해야 합니다. 확장 프로그램 아이콘을 오른쪽 버튼으로 클릭하여 이 사이트에서 자동으로 확장 프로그램을 실행할 수 있습니다.</translation>
 <translation id="701080569351381435">소스 보기</translation>
 <translation id="7012372675181957985">Google 계정에 다른 형식의 탐색 기록이 <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />에 남아있을 수 있습니다.</translation>
 <translation id="7014174261166285193">설치에 실패했습니다.</translation>

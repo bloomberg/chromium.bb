@@ -246,9 +246,6 @@
 <translation id="6521655319214113338">Είσοδος με γραφή</translation>
 <translation id="6528179044667508675">Μην ενοχλείτε</translation>
 <translation id="6537270692134705506">Λήψη στιγμιότυπου οθόνης</translation>
-<translation id="6580955892089546165">Αυτή η δυνατότητα σάς επιτρέπει να έχετε γρήγορη πρόσβαση σε οποιονδήποτε συνδεδεμένο χρήστη, χωρίς να απαιτείται κωδικός πρόσβασης.
-
-Χρησιμοποιήστε αυτήν τη λειτουργία μόνο με λογαριασμούς που εμπιστεύεστε.</translation>
 <translation id="6585808820553845416">Η περίοδος σύνδεσης λήγει σε <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Αναζήτηση+Shift+K</translation>
 <translation id="6650933572246256093">Η συσκευή Bluetooth "<ph name="DEVICE_NAME" />" ζητά δικαιώματα σύζευξης. Καταχωρίστε αυτό το κλειδί πρόσβασης στη συγκεκριμένη συσκευή: <ph name="PASSKEY" /></translation>
@@ -306,7 +303,6 @@
 <translation id="7994370417837006925">Σύνδεση σε πολλούς λογαριασμούς</translation>
 <translation id="8000066093800657092">Κανένα δίκτυο</translation>
 <translation id="8054466585765276473">Υπολογισμός χρόνου μπαταρίας που απομένει.</translation>
-<translation id="8056430285089645882">Το έλαβα. Να μην εμφανιστεί ξανά.</translation>
 <translation id="8098591350844501178">Διακοπή μετάδοσης οθόνης σε <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Έγινε σύνδεση με το δίκτυο <ph name="NAME" /></translation>
 <translation id="813913629614996137">Εκκίνηση…</translation>

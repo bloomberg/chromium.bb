@@ -102,6 +102,7 @@
 <translation id="5236674127086649162">Aktuelle Seite ohne zwischengespeicherte Inhalte aktualisieren</translation>
 <translation id="526651782186312376">Text bis zum Zeilenanfang markieren</translation>
 <translation id="5316716239522500219">Monitore spiegeln</translation>
+<translation id="5487187679583934283">Tippen der Spracheingabe starten oder stoppen</translation>
 <translation id="5541719484267030947">Beim Ziehen des Tabs die Taste "<ph name="ESC" />" drücken</translation>
 <translation id="5554139136362089836">Auf der aktuellen Seite suchen</translation>
 <translation id="5563050856984839829">"<ph name="CTRL" />" <ph name="SEPARATOR" /> "<ph name="SHIFT" />" gedrückt halten und auf einen Link klicken</translation>
@@ -144,6 +145,7 @@
 <translation id="6981982820502123353">Bedienungshilfen</translation>
 <translation id="7020813747703216897">Keine passenden Ergebnisse gefunden</translation>
 <translation id="7025325401470358758">Nächster Bereich</translation>
+<translation id="7076878155205969899">Ton stummschalten</translation>
 <translation id="7077383985738259936">Lesezeichenleiste hervorheben oder markieren (falls eingeblendet)</translation>
 <translation id="7237562915163138771">Webadresse in Adressleiste eingeben und "<ph name="ALT" />" <ph name="SEPARATOR" /> "<ph name="ENTER" />" drücken</translation>
 <translation id="7254764037241667478">Gerät in den Ruhemodus versetzen (sperren)</translation>

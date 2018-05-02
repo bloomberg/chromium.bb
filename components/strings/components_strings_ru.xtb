@@ -643,7 +643,6 @@
 <translation id="5492298309214877701">Этот сайт в интранете организации или учебного заведения имеет тот же URL, что и сайт в Интернете.
     <ph name="LINE_BREAK" />
     Обратитесь к системному администратору.</translation>
-<translation id="5499929369096410817">Введите защитный код для карты <ph name="CREDIT_CARD" />. Он не будет сохранен.</translation>
 <translation id="5509780412636533143">Управляемые закладки</translation>
 <translation id="5510766032865166053">Возможно, он был перемещен или удален.</translation>
 <translation id="5523118979700054094">Название правила</translation>
@@ -703,7 +702,6 @@
 <translation id="5967867314010545767">Удалить из истории</translation>
 <translation id="5972020793760134803">Переключиться на вкладку</translation>
 <translation id="5975083100439434680">Уменьшить</translation>
-<translation id="597552863672748783">Подтвердите защитный код</translation>
 <translation id="598637245381783098">Не удалось открыть Payments</translation>
 <translation id="5989320800837274978">Ни фиксированные прокси-серверы, ни URL PAC-скриптов не указаны.</translation>
 <translation id="5990559369517809815">Расширение заблокировало отправку запроса на сервер.</translation>

@@ -364,7 +364,6 @@
 <translation id="1545775234664667895">طرح زمینه نصب شده "<ph name="THEME_NAME" />"</translation>
 <translation id="1545786162090505744">‏نشانی وب با %s به جای پرسش</translation>
 <translation id="1546280085599573572">این افزونه، صفحه‌ای را با کلیک روی دکمه صفحه اصلی نمایش داده می‌شود، تغییر داده است.</translation>
-<translation id="1547572086206517271">باید بازخوانی شود</translation>
 <translation id="1548132948283577726">سایت‌هایی که اصلاً گذرواژه ذخیره نمی‌کنند در اینجا ظاهر می‌شوند.</translation>
 <translation id="1549788673239553762"><ph name="APP_NAME" /> می‌خواهد به <ph name="VOLUME_NAME" /> دسترسی یابد. ممکن است فایل‌هایتان را تغییر داده یا حذف کند.</translation>
 <translation id="1553538517812678578">نامحدود</translation>
@@ -731,7 +730,6 @@
 <translation id="2128691215891724419">خطای همگام‌سازی: به‌روزرسانی رمز عبارتی همگام‌سازی...</translation>
 <translation id="2129825002735785149">به‌روزرسانی افزایه</translation>
 <translation id="2129904043921227933">خطای همگام‌سازی: به‌روزرسانی رمز عبارتی همگام‌سازی...</translation>
-<translation id="2130949041518253417">برای تجربه مرور شخصی‌سازی‌شده در تمام دستگاه‌هایتان، همگام‌سازی کنید</translation>
 <translation id="2131077480075264">نصب «<ph name="APP_NAME" />» انجام نشد، زیرا «<ph name="IMPORT_NAME" />» آن را مجاز نکرده است</translation>
 <translation id="2135787500304447609">&amp;ازسرگیری</translation>
 <translation id="2136372518715274136">گذرواژه جدید را وارد کنید</translation>
@@ -1281,7 +1279,7 @@
 <translation id="2966449113954629791">ممکن است کلیه میزان مجاز داده‌‌های دستگاه همراهتان را مصرف کرده باشید. برای خرید داده بیشتر از پورتال فعال‌سازی <ph name="NAME" /> بازدید کنید.</translation>
 <translation id="2966937470348689686">‏مدیریت تنظیمات برگزیده Android</translation>
 <translation id="2971213274238188218">کاهش روشنایی</translation>
-<translation id="2972557485845626008">میان افزار</translation>
+<translation id="2972557485845626008">سفت‌افزار</translation>
 <translation id="2972581237482394796">انجام مجدد</translation>
 <translation id="2972642118232180842">فقط محتوای مهم اجرا شود (توصیه می‌شود)</translation>
 <translation id="2973324205039581528">بی‌صدا کردن سایت</translation>
@@ -1685,7 +1683,6 @@
 <translation id="3576324189521867626">نصب موفقیت‌آمیز بود</translation>
 <translation id="3578594933904494462">محتوای این برگه اشتراک‌گذاری می‌شود.</translation>
 <translation id="357886715122934472">‏&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; می‌خواهد چاپگر &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; را با گروهی که شما مالک آن هستید، به اشتراک بگذارد: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. اگر بپذیرید، تمام اعضای گروه می‌توانند با چاپگر چاپ کنند.</translation>
-<translation id="3582972582564653026">‏Chrome را در همه دستگاه‌هایتان همگام‌سازی و شخصی‌سازی کنید</translation>
 <translation id="3584169441612580296">خواندن و تغییر عکس‌ها، موسیقی، و رسانه‌های دیگر از رایانه‌تان</translation>
 <translation id="3587482841069643663">همه</translation>
 <translation id="358796204584394954">برای مرتبط کردن، این کد را در «<ph name="DEVICE_NAME" />» تایپ کنید:</translation>
@@ -2222,7 +2219,6 @@
 <translation id="4448844063988177157">‏در حال جستجوی شبکه‌های Wi-Fi...</translation>
 <translation id="4449996769074858870">این برگه در حال پخش صدا است.</translation>
 <translation id="4450974146388585462">تشخیص</translation>
-<translation id="4452426408005428395">انصراف</translation>
 <translation id="445923051607553918">‏پیوستن به شبکه Wi-Fi</translation>
 <translation id="4462159676511157176">سرورهای نام سفارشی</translation>
 <translation id="4467100756425880649">‏گالری فروشگاه وب Chrome</translation>
@@ -2370,7 +2366,7 @@
 <translation id="4707934200082538898">برای اطلاعات بیشتر لطفاً رایانامه‌تان را در <ph name="BEGIN_BOLD" /><ph name="MANAGER_EMAIL" /><ph name="END_BOLD" /> بررسی کنید.</translation>
 <translation id="4708794300267213770">نمایش صفحه قفل هنگام بیدار شدن از حالت خواب</translation>
 <translation id="4708849949179781599">خروج از <ph name="PRODUCT_NAME" /></translation>
-<translation id="4710251968215868702">از محتوای سایت‌هایی که می‌روید و فعالیت و تعاملات مرورگر استفاده می‌کند.</translation>
+<translation id="4710251968215868702">از محتوای سایت‌هایی که بازدید می‌کنید و فعالیت و تعاملات مرورگر استفاده می‌کند.</translation>
 <translation id="4711638718396952945">بازیابی تنظیمات</translation>
 <translation id="4713544552769165154">‏این فایل برای رایانه‌ای طراحی شده است که از نرم‌افزار Macintosh استفاده می‌کند. این فایل با دستگاه شما که Chrome OS روی آن نصب است، سازگار نیست. لطفاً <ph name="BEGIN_LINK" />فروشگاه وب Chrome‏<ph name="END_LINK" /> را برای برنامه مناسب جایگزین بررسی کنید.<ph name="BEGIN_LINK_HELP" />بیشتر بدانید<ph name="END_LINK_HELP" /></translation>
 <translation id="4714531393479055912"><ph name="PRODUCT_NAME" /> اکنون می‌تواند رمزهای ورود شما را همگام‌سازی کند.</translation>
@@ -2732,7 +2728,6 @@
 <translation id="5266113311903163739">خطای ورود ارائه دهنده مجوز</translation>
 <translation id="5269977353971873915">چاپ نشد</translation>
 <translation id="5271549068863921519">ذخیره گذرواژه</translation>
-<translation id="5275194674756975076">بله، بازخوانی شود</translation>
 <translation id="5275352920323889391">سگ</translation>
 <translation id="5275973617553375938">‏فایل‌های بازیابی‌شده از Google Drive</translation>
 <translation id="527605719918376753">بی‌صدا کردن برگه</translation>
@@ -3607,7 +3602,7 @@
 <translation id="6592267180249644460">‏زمان ثبت گزارش WebRTC ‏<ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6596325263575161958">گزینه‌های رمزگذاری</translation>
 <translation id="6596745167571172521">‏غیرفعال کردن Caps Lock (قفل حروف بزرگ)</translation>
-<translation id="6596816719288285829">‏آدرس IP</translation>
+<translation id="6596816719288285829">‏نشانی IP</translation>
 <translation id="6597017209724497268">نمونه‌ها</translation>
 <translation id="659934686219830168">همگام‌سازی بعد از خروج از این صفحه شروع می‌شود</translation>
 <translation id="6602353599068390226">انتقال پنجره به نمایشگر دیگری</translation>
@@ -3838,7 +3833,7 @@
 <translation id="6972180789171089114">صوتی/تصویری</translation>
 <translation id="6973630695168034713">پوشه‌ها</translation>
 <translation id="6976108581241006975">کنسول جاوا اسکریپت</translation>
-<translation id="6977381486153291903">بازبینی میان‌افزار</translation>
+<translation id="6977381486153291903">بازبینی سفت‌افزار</translation>
 <translation id="6978121630131642226">موتورهای جستجو</translation>
 <translation id="6978611942794658017">‏این فایل برای رایانه‌ای که از نرم‌افزار Windows استفاده می‌کند طراحی شده است. این فایل با دستگاه شما که سیستم عامل Chrome را اجرا می‌کند، سازگار نیست. لطفاً «فروشگاه وب Chrome» را برای یک برنامه جایگزین مناسب جستجو کنید.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -3867,7 +3862,6 @@
 <translation id="7006634003215061422">حاشیه پایین</translation>
 <translation id="7006844981395428048">صدای $1</translation>
 <translation id="7007648447224463482">باز کردن همه در پنجره جدید</translation>
-<translation id="7008270479623533562">برای اجرای این افزونه، باید صفحه را بازخوانی کنید. با کلیک راست روی نماد افزونه می‌توانید آن را به‌صورت خودکار روی این سایت اجرا کنید.</translation>
 <translation id="701080569351381435">مشاهده منبع</translation>
 <translation id="7012372675181957985">‏ممکن است «حساب Google» شما سابقه مروری به شکل دیگری در <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> داشته باشد</translation>
 <translation id="7014174261166285193">نصب انجام نشد.</translation>
@@ -5030,7 +5024,7 @@
 <translation id="8820817407110198400">نشانک‌ها</translation>
 <translation id="8820961991571528294">در حال آزمایش</translation>
 <translation id="8821045908425223359">‏پیکربندی خودکار نشانی IP</translation>
-<translation id="882204272221080310">به‌روزرسانی میان‌افزار برای امنیت بیشتر.</translation>
+<translation id="882204272221080310">به‌روزرسانی سفت‌افزار برای امنیت بیشتر.</translation>
 <translation id="8823514049557262177">کپی کردن متن &amp;پیوند</translation>
 <translation id="8824701697284169214">افزودن &amp;صفحه...</translation>
 <translation id="8827752199525959199">عملکردهای بیشتر، گذرواژه برای <ph name="USERNAME" /> در <ph name="DOMAIN" /></translation>

@@ -368,7 +368,6 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="1545775234664667895">Nainstalován motiv <ph name="THEME_NAME" /></translation>
 <translation id="1545786162090505744">URL se značkou %s místo dotazu</translation>
 <translation id="1546280085599573572">Toto rozšíření změnilo stránku, která se zobrazí po kliknutí na tlačítko Domovská stránka.</translation>
-<translation id="1547572086206517271">Je vyžadováno obnovení</translation>
 <translation id="1548132948283577726">Zde se zobrazí weby, které nikdy neukládají heslo.</translation>
 <translation id="1549788673239553762">Aplikace <ph name="APP_NAME" /> chce získat přístup ke svazku <ph name="VOLUME_NAME" />. Bude moci upravit nebo smazat vaše soubory.</translation>
 <translation id="1553538517812678578">neomezené</translation>
@@ -735,7 +734,6 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="2128691215891724419">Chyba synchronizace: Aktualizujte heslovou frázi pro synchronizaci...</translation>
 <translation id="2129825002735785149">Aktualizovat plugin</translation>
 <translation id="2129904043921227933">Chyba synchronizace: Aktualizujte heslovou frázi pro synchronizaci...</translation>
-<translation id="2130949041518253417">Chcete-li využívat výhody personalizovaného prohlížení synchronizovaného mezi zařízeními, povolte synchronizaci</translation>
 <translation id="2131077480075264">Aplikaci <ph name="APP_NAME" /> nelze nainstalovat, protože není povolena rozhraním <ph name="IMPORT_NAME" /></translation>
 <translation id="2135787500304447609">&amp;Obnovit</translation>
 <translation id="2136372518715274136">Zadejte nové heslo</translation>
@@ -1688,7 +1686,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="3576324189521867626">Úspěšně nainstalováno</translation>
 <translation id="3578594933904494462">Obsah této karty je sdílen.</translation>
 <translation id="357886715122934472">Uživatel &lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; chce sdílet tiskárnu &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; se skupinou, kterou vlastníte: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Pokud tuto akci přijmete, pomocí této tiskárny budou moci tisknout všichni členové skupiny.</translation>
-<translation id="3582972582564653026">Synchronizujte a upravte si Chrome na různých zařízeních</translation>
 <translation id="3584169441612580296">Číst a měnit fotografie, hudbu a další média z počítače</translation>
 <translation id="3587482841069643663">Vše</translation>
 <translation id="358796204584394954">V zařízení „<ph name="DEVICE_NAME" />“ zadejte tento kód:</translation>
@@ -2224,7 +2221,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="4448844063988177157">Vyhledávání sítí Wi-Fi...</translation>
 <translation id="4449996769074858870">Tato karta přehrává zvuk.</translation>
 <translation id="4450974146388585462">Diagnostikovat</translation>
-<translation id="4452426408005428395">Zrušit</translation>
 <translation id="445923051607553918">Připojit se k síti Wi-Fi</translation>
 <translation id="4462159676511157176">Vlastní názvové servery</translation>
 <translation id="4467100756425880649">Galerie Internetového obchodu Chrome</translation>
@@ -2733,7 +2729,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="5266113311903163739">Chyba při importu certifikační autority</translation>
 <translation id="5269977353971873915">Tisk se nezdařil</translation>
 <translation id="5271549068863921519">Uložit heslo</translation>
-<translation id="5275194674756975076">OK, obnovit</translation>
 <translation id="5275352920323889391">Pes</translation>
 <translation id="5275973617553375938">Obnovené soubory z Disku Google</translation>
 <translation id="527605719918376753">Vypnout zvuk karty</translation>
@@ -3868,7 +3863,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="7006634003215061422">Dolní okraj</translation>
 <translation id="7006844981395428048">Zvuk ve formátu $1</translation>
 <translation id="7007648447224463482">Otevřít vše v novém okně</translation>
-<translation id="7008270479623533562">Chcete-li spustit toto rozšíření, je třeba obnovit stránku. Toto rozšíření na tomto webu můžete spustit automaticky tím, že pravým tlačítkem kliknete na ikonu rozšíření.</translation>
 <translation id="701080569351381435">Zobrazit zdrojový kód</translation>
 <translation id="7012372675181957985">Na adrese <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> mohou být k dispozici další formy historie prohlížení zaznamenané ve vašem účtu Google</translation>
 <translation id="7014174261166285193">Instalace se nezdařila.</translation>

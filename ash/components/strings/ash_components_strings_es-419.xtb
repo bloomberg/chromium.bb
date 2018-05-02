@@ -102,6 +102,7 @@
 <translation id="5236674127086649162">Volver a cargar la página actual sin usar el contenido almacenado en caché</translation>
 <translation id="526651782186312376">Seleccionar el texto hasta el principio de la línea</translation>
 <translation id="5316716239522500219">Reflejar monitores</translation>
+<translation id="5487187679583934283">Iniciar o detener la escritura mientras hablas</translation>
 <translation id="5541719484267030947">Mientras arrastras la pestaña, presiona <ph name="ESC" /></translation>
 <translation id="5554139136362089836">Buscar en la página actual</translation>
 <translation id="5563050856984839829">Presiona <ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> y haz clic en un vínculo</translation>
@@ -144,6 +145,7 @@
 <translation id="6981982820502123353">Accesibilidad</translation>
 <translation id="7020813747703216897">No se encontraron resultados que coincidan</translation>
 <translation id="7025325401470358758">Siguiente panel</translation>
+<translation id="7076878155205969899">Silenciar sonido</translation>
 <translation id="7077383985738259936">Enfocar o destacar la barra de favoritos (si se muestra)</translation>
 <translation id="7237562915163138771">Escribe una dirección web en la barra de direcciones y, luego, presiona <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7254764037241667478">Poner el dispositivo en modo de suspensión (suspendido)</translation>

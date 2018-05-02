@@ -368,7 +368,6 @@
 <translation id="1545775234664667895">Nameščena tema »<ph name="THEME_NAME" />«</translation>
 <translation id="1545786162090505744">URL z »%s« namesto poizvedbe</translation>
 <translation id="1546280085599573572">Zaradi te razširitve se je spremenila stran, ki je prikazana, ko kliknete gumb za začetno stran.</translation>
-<translation id="1547572086206517271">Potrebna je osvežitev</translation>
 <translation id="1548132948283577726">Mesta, ki nikoli ne shranjujejo gesel, bodo prikazana tukaj.</translation>
 <translation id="1549788673239553762">Aplikacija <ph name="APP_NAME" /> želi dostopati do <ph name="VOLUME_NAME" />. Morda bo spreminjala ali izbrisala vaše datoteke.</translation>
 <translation id="1553538517812678578">neomejeno</translation>
@@ -735,7 +734,6 @@
 <translation id="2128691215891724419">Napaka pri sinhronizaciji: Posodobite geslo za sinhronizacijo ...</translation>
 <translation id="2129825002735785149">Posodobitev vtičnika</translation>
 <translation id="2129904043921227933">Napaka pri sinhronizaciji: Posodobite geslo za sinhronizacijo ...</translation>
-<translation id="2130949041518253417">Sinhronizirajte, če želite prilagojeno izkušnjo brskanja v vseh napravah</translation>
 <translation id="2131077480075264">»<ph name="APP_NAME" />« ni mogoče namestiti, ker »<ph name="IMPORT_NAME" />« tega ne dovoli.</translation>
 <translation id="2135787500304447609">&amp;Nadaljuj</translation>
 <translation id="2136372518715274136">Vnesite novo geslo</translation>
@@ -1690,7 +1688,6 @@ Z ustvarjanjem zaščitenega uporabnika ne ustvarite Google Računa, njegovi zaz
 <translation id="3576324189521867626">Uspešno nameščeno</translation>
 <translation id="3578594933904494462">Vsebina tega zavihka je v skupni rabi.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; želi souporabljati tiskalnik &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; s skupino v vaši lasti: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Če sprejmete, bodo lahko tiskalnik uporabljali vsi člani skupine.</translation>
-<translation id="3582972582564653026">V vseh svojih napravah sinhronizirajte in prilagodite Chrome</translation>
 <translation id="3584169441612580296">Branje in spreminjanje fotografij, glasbe in drugih predstavnosti v računalniku</translation>
 <translation id="3587482841069643663">Vse</translation>
 <translation id="358796204584394954">Če želite začeti seznanjanje, v napravo »<ph name="DEVICE_NAME" />« vnesite to kodo:</translation>
@@ -2227,7 +2224,6 @@ Z ustvarjanjem zaščitenega uporabnika ne ustvarite Google Računa, njegovi zaz
 <translation id="4448844063988177157">Iskanje omrežij Wi-Fi</translation>
 <translation id="4449996769074858870">Na tem zavihku se predvaja zvok.</translation>
 <translation id="4450974146388585462">Diagnosticiraj</translation>
-<translation id="4452426408005428395">Prekliči</translation>
 <translation id="445923051607553918">Pridružite se omrežju Wi-Fi</translation>
 <translation id="4462159676511157176">Imenski strežniki po meri</translation>
 <translation id="4467100756425880649">Galerija za Spletno trgovino Chrome</translation>
@@ -2737,7 +2733,6 @@ Z ustvarjanjem zaščitenega uporabnika ne ustvarite Google Računa, njegovi zaz
 <translation id="5266113311903163739">Napaka pri uvozu overitelja potrdil</translation>
 <translation id="5269977353971873915">Tiskanje ni uspelo</translation>
 <translation id="5271549068863921519">Shrani geslo</translation>
-<translation id="5275194674756975076">V redu, osveži</translation>
 <translation id="5275352920323889391">Pes</translation>
 <translation id="5275973617553375938">Obnovljene datoteke iz Googla Drive</translation>
 <translation id="527605719918376753">Izklop zvoka zavihka</translation>
@@ -3872,7 +3867,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7006634003215061422">Spodnji rob</translation>
 <translation id="7006844981395428048">Zvočna datoteka $1</translation>
 <translation id="7007648447224463482">Odpri vse v novem oknu</translation>
-<translation id="7008270479623533562">Če želite zagnati to razširitev, morate osvežiti stran. Če z desnim gumbom miške kliknete ikono razširitve, lahko nastavite, da se razširitev na tem spletnem mestu zažene samodejno.</translation>
 <translation id="701080569351381435">Ogled izvorne kode</translation>
 <translation id="7012372675181957985">V Google Računu so morda druge vrste zgodovine brskanja na <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7014174261166285193">Namestitev ni uspela.</translation>

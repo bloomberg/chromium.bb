@@ -645,7 +645,6 @@
 <translation id="5492298309214877701">Šios svetainės URL įmonės, organizacijos ar mokyklos intranete toks pat kaip išorinės svetainės URL.
     <ph name="LINE_BREAK" />
     Pabandykite susisiekti su sistemos administratoriumi.</translation>
-<translation id="5499929369096410817">Įveskite kortelės „<ph name="CREDIT_CARD" />“ saugos kodą. Šis kodas nebus išsaugotas.</translation>
 <translation id="5509780412636533143">Tvarkomos žymės</translation>
 <translation id="5510766032865166053">Galbūt jis perkeltas arba ištrintas.</translation>
 <translation id="5523118979700054094">Politikos pavadinimas</translation>
@@ -705,7 +704,6 @@
 <translation id="5967867314010545767">Pašalinti iš istorijos</translation>
 <translation id="5972020793760134803">Perjungti skirtuką</translation>
 <translation id="5975083100439434680">Tolinti</translation>
-<translation id="597552863672748783">Patvirtinkite saugos kodą</translation>
 <translation id="598637245381783098">Nepavyksta atidaryti mokėjimo programos</translation>
 <translation id="5989320800837274978">Nenurodyti nei fiksuoti įgaliotieji serveriai, nei .pac scenarijaus URL.</translation>
 <translation id="5990559369517809815">Plėtinys užblokavo serveriui teikiamas užklausas.</translation>

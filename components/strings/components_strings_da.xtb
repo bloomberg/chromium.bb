@@ -234,7 +234,7 @@
 <translation id="2586657967955657006">Udklipsholder</translation>
 <translation id="2587730715158995865">Fra <ph name="ARTICLE_PUBLISHER" />. Læs denne og <ph name="OTHER_ARTICLE_COUNT" /> andre historier.</translation>
 <translation id="2587841377698384444">Id for Directory API:</translation>
-<translation id="2597378329261239068">Dette dokument er adgangskodebeskyttet. Indtast en adgangskode.</translation>
+<translation id="2597378329261239068">Dette dokument er adgangskodebeskyttet. Angiv en adgangskode.</translation>
 <translation id="2609632851001447353">Varianter</translation>
 <translation id="262424810616849754">{COUNT,plural, =0{Ingen}=1{1 app ($1)}=2{2 apps ($1, $2)}one{# app ($1, $2, $3)}other{# apps ($1, $2 $3)}}</translation>
 <translation id="2625385379895617796">Dit ur er foran</translation>
@@ -295,7 +295,7 @@
 <translation id="2991174974383378012">Deling med websites</translation>
 <translation id="2991571918955627853">Du kan ikke besøge <ph name="SITE" /> lige nu, da websitet bruger HSTS. Netværksfejl og angreb er normalt midlertidige, så siden vil sandsynligvis fungere senere.</translation>
 <translation id="3005723025932146533">Vis gemt kopi</translation>
-<translation id="3008447029300691911">Indtast kontrolkoden for <ph name="CREDIT_CARD" />. Når du bekræfter, deles dine kortoplysninger med dette website.</translation>
+<translation id="3008447029300691911">Angiv kontrolkoden for <ph name="CREDIT_CARD" />. Når du bekræfter, deles dine kortoplysninger med dette website.</translation>
 <translation id="3010559122411665027">Angiv posten "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
 <translation id="301521992641321250">Automatisk blokering</translation>
 <translation id="3024663005179499861">Forkert politiktype</translation>
@@ -330,7 +330,7 @@
 <translation id="3226128629678568754">Tryk på genindlæsningsknappen for at genindsende de data, der er nødvendige for at indlæse siden.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3228969707346345236">Oversættelsen mislykkedes, fordi siden allerede er på <ph name="LANGUAGE" />.</translation>
-<translation id="323107829343500871">Indtast kontrolkoden for <ph name="CREDIT_CARD" /></translation>
+<translation id="323107829343500871">Angiv kontrolkoden for <ph name="CREDIT_CARD" /></translation>
 <translation id="3234666976984236645">Registrer altid vigtigt indhold på dette website</translation>
 <translation id="3254409185687681395">Tilføj denne side som bogmærke</translation>
 <translation id="3270847123878663523">&amp;Fortryd omarrangering</translation>
@@ -338,7 +338,7 @@
 <translation id="3287510313208355388">Download, når du er online</translation>
 <translation id="3293642807462928945">Få flere oplysninger om politikken <ph name="POLICY_NAME" /></translation>
 <translation id="3303855915957856445">Der blev ikke fundet nogen søgeresultater</translation>
-<translation id="3305707030755673451">Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name="TIME" />. Indtast adgangssætningen for at starte synkroniseringen.</translation>
+<translation id="3305707030755673451">Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name="TIME" />. Angiv adgangssætningen for at starte synkroniseringen.</translation>
 <translation id="3320021301628644560">Tilføj faktureringsadresse</translation>
 <translation id="3338095232262050444">Sikker</translation>
 <translation id="3340978935015468852">indstillinger</translation>
@@ -558,7 +558,7 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{og 1 anden webside}one{og # anden webside}other{og # andre websider}}</translation>
 <translation id="4916962322362512664"><ph name="DEVICE_NAME" /></translation>
-<translation id="4919958102839282947">Indtast kontrolkoden for <ph name="CREDIT_CARD" />. Når du bekræfter, deles kortoplysningerne på din konto i Google Payments med dette website.</translation>
+<translation id="4919958102839282947">Angiv kontrolkoden for <ph name="CREDIT_CARD" />. Når du bekræfter, deles kortoplysningerne på din konto i Google Payments med dette website.</translation>
 <translation id="4923417429809017348">Denne side er oversat fra et ukendt sprog til <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4923459931733593730">Betaling</translation>
 <translation id="4926049483395192435">Skal angives.</translation>
@@ -644,7 +644,6 @@
 <translation id="5492298309214877701">Dette website på virksomhedens, organisationens eller skolens intranet har samme webadresse som et eksternt website.
     <ph name="LINE_BREAK" />
     Prøv at kontakte din systemadministrator.</translation>
-<translation id="5499929369096410817">Angiv sikkerhedskoden for <ph name="CREDIT_CARD" />. Koden gemmes ikke.</translation>
 <translation id="5509780412636533143">Administrerede bogmærker</translation>
 <translation id="5510766032865166053">Den kan være blevet flyttet eller slettet.</translation>
 <translation id="5523118979700054094">Navn på politik</translation>
@@ -704,7 +703,6 @@
 <translation id="5967867314010545767">Fjern fra historik</translation>
 <translation id="5972020793760134803">Skift til fanen</translation>
 <translation id="5975083100439434680">Zoom ud</translation>
-<translation id="597552863672748783">Bekræft sikkerhedskoden</translation>
 <translation id="598637245381783098">Betalingsappen kan ikke åbnes</translation>
 <translation id="5989320800837274978">Der er hverken angivet faste proxyservere eller en .pac-scriptwebadresse.</translation>
 <translation id="5990559369517809815">Anmodninger til serveren er blokeret af en udvidelse.</translation>
@@ -759,7 +757,7 @@
 <translation id="6387754724289022810">Gem dit kort og din faktureringsadresse på din Google-konto og denne enhed for at betale hurtigere næste gang.</translation>
 <translation id="6397451950548600259">Der er software på computeren, som forhindrer, at Chrome kan oprette en sikker forbindelse til nettet</translation>
 <translation id="6404511346730675251">Rediger bogmærke</translation>
-<translation id="6410264514553301377">Indtast udløbsdatoen og kontrolkoden for <ph name="CREDIT_CARD" /></translation>
+<translation id="6410264514553301377">Angiv udløbsdatoen og kontrolkoden for <ph name="CREDIT_CARD" /></translation>
 <translation id="6414888972213066896">Du har spurgt en af dine forældre, om det er i orden, at du besøger dette website.</translation>
 <translation id="6417515091412812850">Kan ikke kontrollere, om certifikatet er tilbagekaldt.</translation>
 <translation id="6433490469411711332">Rediger kontaktoplysninger</translation>
@@ -914,7 +912,7 @@
 <translation id="7600965453749440009">Oversæt aldrig <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Værdien er uden for intervallet <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Udløbsdato: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
-<translation id="7615602087246926389">Du har allerede data, der er krypteret med en anden version af adgangskoden til din Google-konto. Indtast adgangskoden i feltet nedenfor.</translation>
+<translation id="7615602087246926389">Du har allerede data, der er krypteret med en anden version af adgangskoden til din Google-konto. Angiv adgangskoden i feltet nedenfor.</translation>
 <translation id="7637571805876720304">Vil du fjerne kreditkortet fra Chromium?</translation>
 <translation id="765676359832457558">Skjul avancerede indstillinger...</translation>
 <translation id="7658239707568436148">Annuller</translation>
@@ -1117,7 +1115,7 @@
 <translation id="9170848237812810038">&amp;Fortryd</translation>
 <translation id="917450738466192189">Serverens certifikat er ugyldigt.</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> anvender en ikke-understøttet protokol.</translation>
-<translation id="9205078245616868884">Dine data er krypteret med din adgangssætning til synkronisering. Indtast den for at starte synkroniseringen.</translation>
+<translation id="9205078245616868884">Dine data er krypteret med din adgangssætning til synkronisering. Angiv den for at starte synkroniseringen.</translation>
 <translation id="9207861905230894330">Artiklen kunne ikke tilføjes.</translation>
 <translation id="9215416866750762878">En app forhindrer Chrome i at oprette sikker forbindelse til dette website</translation>
 <translation id="9219103736887031265">Billeder</translation>

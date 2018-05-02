@@ -364,7 +364,6 @@
 <translation id="1545775234664667895">Temaet <ph name="THEME_NAME" /> er installert</translation>
 <translation id="1545786162090505744">Nettadresse, med %s for søk</translation>
 <translation id="1546280085599573572">Denne utvidelsen har endret hvilken side som vises når du klikker på Startside-knappen.</translation>
-<translation id="1547572086206517271">Siden må lastes inn på nytt</translation>
 <translation id="1548132948283577726">Nettsteder som aldri lagrer passord, vises her.</translation>
 <translation id="1549788673239553762"><ph name="APP_NAME" /> vil ha tilgang til <ph name="VOLUME_NAME" />. Det kan føre til at filene dine endres eller slettes.</translation>
 <translation id="1553538517812678578">ubegrenset</translation>
@@ -728,7 +727,6 @@
 <translation id="2128691215891724419">Synkroniseringsfeil: Oppdater passordfrase for synkronisering</translation>
 <translation id="2129825002735785149">Oppdater programtillegget</translation>
 <translation id="2129904043921227933">Synkroniseringsfeil: Oppdater passordfrase</translation>
-<translation id="2130949041518253417">Synkroniser for å få en personlig surfeopplevelse på alle enhetene dine</translation>
 <translation id="2131077480075264">Kunne ikke installere «<ph name="APP_NAME" />» fordi det ikke er tillatt av «<ph name="IMPORT_NAME" />»</translation>
 <translation id="2135787500304447609">&amp;Fortsett</translation>
 <translation id="2136372518715274136">Skriv inn et nytt passord</translation>
@@ -1678,7 +1676,6 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="3576324189521867626">Installert</translation>
 <translation id="3578594933904494462">Innholdet i denne fanen blir delt.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; vil dele skriveren &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; med en gruppe du eier: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Hvis du godtar, kan alle gruppemedlemmene skrive ut til skriveren.</translation>
-<translation id="3582972582564653026">Synkroniser og gi Chrome et personlig preg på alle enhetene dine</translation>
 <translation id="3584169441612580296">lese og endre bilder, musikk og andre medier fra datamaskinen din</translation>
 <translation id="3587482841069643663">Alle</translation>
 <translation id="358796204584394954">Skriv inn denne koden på «<ph name="DEVICE_NAME" />» for å koble til:</translation>
@@ -2209,7 +2206,6 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="4448844063988177157">Søker etter Wi-Fi-nettverk ...</translation>
 <translation id="4449996769074858870">Denne fanen spiller av lyd.</translation>
 <translation id="4450974146388585462">Diagnostiser</translation>
-<translation id="4452426408005428395">Glem det</translation>
 <translation id="445923051607553918">Koble til Wi-Fi-nettverk</translation>
 <translation id="4462159676511157176">Egendefinerte navnetjenere</translation>
 <translation id="4467100756425880649">Chrome Nettmarked Galleri</translation>
@@ -2715,7 +2711,6 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="5266113311903163739">Feil ved importering av sertifiseringsinstans</translation>
 <translation id="5269977353971873915">Utskrift mislyktes</translation>
 <translation id="5271549068863921519">Lagre passord</translation>
-<translation id="5275194674756975076">OK, last inn på nytt</translation>
 <translation id="5275352920323889391">Hund</translation>
 <translation id="5275973617553375938">Gjenopprettede filer fra Google Disk</translation>
 <translation id="527605719918376753">Slå av lyden for fanen</translation>
@@ -3843,7 +3838,6 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="7006634003215061422">Bunnmarg</translation>
 <translation id="7006844981395428048">$1-lyd</translation>
 <translation id="7007648447224463482">Åpne alt i et nytt vindu</translation>
-<translation id="7008270479623533562">For å kjøre denne utvidelsen må du laste inn siden på nytt. Du kan kjøre denne utvidelsen automatisk på dette nettstedet ved å høyreklikke på ikonet for utvidelsen.</translation>
 <translation id="701080569351381435">Se kilde</translation>
 <translation id="7012372675181957985">Google-kontoen din kan ha andre typer nettlesingslogger på <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7014174261166285193">Installeringen mislyktes.</translation>

@@ -248,9 +248,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6521655319214113338">Entrada de texto manuscrito</translation>
 <translation id="6528179044667508675">Não perturbe</translation>
 <translation id="6537270692134705506">Capturar tela</translation>
-<translation id="6580955892089546165">Este recurso permite acessar rapidamente qualquer usuário conectado sem a necessidade de uma senha.
-
-Use esse recurso somente com contas nas quais você confia.</translation>
 <translation id="6585808820553845416">A sessão termina em <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Pesquisar+Shift+K</translation>
 <translation id="6650933572246256093">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" deseja permissão para realizar o pareamento. Digite esta senha no dispositivo: <ph name="PASSKEY" /></translation>
@@ -308,7 +305,6 @@ Use esse recurso somente com contas nas quais você confia.</translation>
 <translation id="7994370417837006925">Login múltiplo</translation>
 <translation id="8000066093800657092">Sem rede</translation>
 <translation id="8054466585765276473">Calculando duração da bateria.</translation>
-<translation id="8056430285089645882">Entendi; não mostre-me novamente.</translation>
 <translation id="8098591350844501178">Parar de transmitir tela para <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Conectado à <ph name="NAME" /></translation>
 <translation id="813913629614996137">Inicializando…</translation>

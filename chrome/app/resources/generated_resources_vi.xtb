@@ -368,7 +368,6 @@
 <translation id="1545775234664667895">Đã cài đặt chủ đề "<ph name="THEME_NAME" />"</translation>
 <translation id="1545786162090505744">URL có %s thay thế truy vấn</translation>
 <translation id="1546280085599573572">Tiện ích này đã thay đổi trang nào sẽ hiển thị khi bạn nhấp vào nút Trang chủ.</translation>
-<translation id="1547572086206517271">Yêu cầu làm mới</translation>
 <translation id="1548132948283577726">Trang web không bao giờ lưu mật khẩu sẽ hiển thị tại đây.</translation>
 <translation id="1549788673239553762"><ph name="APP_NAME" /> muốn truy cập <ph name="VOLUME_NAME" />. Ứng dụng này có thể sửa đổi hoặc xóa các tệp của bạn.</translation>
 <translation id="1553538517812678578">không giới hạn</translation>
@@ -732,7 +731,6 @@
 <translation id="2128691215891724419">Lỗi đồng bộ hóa: Cập nhật cụm mật khẩu đồng bộ hóa...</translation>
 <translation id="2129825002735785149">Cập nhật plugin</translation>
 <translation id="2129904043921227933">Lỗi đồng bộ hóa: Cập nhật cụm mật khẩu đồng bộ hóa...</translation>
-<translation id="2130949041518253417">Đồng bộ hóa trải nghiệm duyệt web tùy chỉnh theo cá nhân giữa các thiết bị</translation>
 <translation id="2131077480075264">Không thể cài đặt "<ph name="APP_NAME" />" vì "<ph name="IMPORT_NAME" />" không cho phép ứng dụng này</translation>
 <translation id="2135787500304447609">&amp;Tiếp tục</translation>
 <translation id="2136372518715274136">Nhập mật khẩu mới</translation>
@@ -1684,7 +1682,6 @@ Tạo người dùng được giám sát sẽ không tạo Tài khoản Google, 
 <translation id="3576324189521867626">Đã cài đặt thành công</translation>
 <translation id="3578594933904494462">Nội dung của tab này đang được chia sẻ.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; muốn chia sẻ máy in &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; với một nhóm bạn sở hữu: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Nếu bạn chấp nhận, tất cả thành viên của nhóm sẽ có thể in tới máy in.</translation>
-<translation id="3582972582564653026">Đồng bộ hóa và cá nhân hóa Chrome trên các thiết bị của bạn</translation>
 <translation id="3584169441612580296">Đọc và thay đổi ảnh, nhạc và phương tiện khác từ máy tính của bạn</translation>
 <translation id="3587482841069643663">Tất cả</translation>
 <translation id="358796204584394954">Nhập mã này vào "<ph name="DEVICE_NAME" />" để ghép nối:</translation>
@@ -2217,7 +2214,6 @@ Tạo người dùng được giám sát sẽ không tạo Tài khoản Google, 
 <translation id="4448844063988177157">Đang tìm kiếm mạng Wi-Fi...</translation>
 <translation id="4449996769074858870">Tab này đang phát âm thanh.</translation>
 <translation id="4450974146388585462">Chẩn đoán</translation>
-<translation id="4452426408005428395">Không sao</translation>
 <translation id="445923051607553918">Tham gia mạng Wi-Fi</translation>
 <translation id="4462159676511157176">Máy chủ có tên tùy chỉnh</translation>
 <translation id="4467100756425880649">Thư viện của Cửa hàng Chrome trực tuyến</translation>
@@ -2724,7 +2720,6 @@ Tạo người dùng được giám sát sẽ không tạo Tài khoản Google, 
 <translation id="5266113311903163739">Lỗi nhập Tổ chức phát hành chứng chỉ</translation>
 <translation id="5269977353971873915">In không thành công</translation>
 <translation id="5271549068863921519">Lưu mật khẩu</translation>
-<translation id="5275194674756975076">OK, làm mới</translation>
 <translation id="5275352920323889391">Cún</translation>
 <translation id="5275973617553375938">Tệp được khôi phục từ Google Drive</translation>
 <translation id="527605719918376753">Tắt tiếng tab</translation>
@@ -3853,7 +3848,6 @@ Tạo người dùng được giám sát sẽ không tạo Tài khoản Google, 
 <translation id="7006634003215061422">Lề dưới</translation>
 <translation id="7006844981395428048">Âm thanh $1</translation>
 <translation id="7007648447224463482">Mở tất cả trong cửa sổ mới</translation>
-<translation id="7008270479623533562">Để chạy tiện ích này, bạn cần phải làm mới trang. Bạn có thể chạy tiện ích này tự động trên trang web này bằng cách nhấp chuột phải vào biểu tượng tiện ích.</translation>
 <translation id="701080569351381435">Xem Nguồn</translation>
 <translation id="7012372675181957985">Tài khoản Google của bạn có thể có các biểu mẫu lịch sử duyệt web khác tại <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7014174261166285193">Cài đặt không thành công.</translation>

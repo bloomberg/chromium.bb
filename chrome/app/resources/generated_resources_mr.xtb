@@ -367,7 +367,6 @@
 <translation id="1545775234664667895">"<ph name="THEME_NAME" />" थीम इंस्टॉल केली</translation>
 <translation id="1545786162090505744">क्वेरीच्या जागेवर % सह URL</translation>
 <translation id="1546280085599573572">आपण होम बटण क्लिक करता तेव्हा कोणते पृष्ठ दर्शविले जाते हे या विस्ताराने बदलले आहे.</translation>
-<translation id="1547572086206517271">रिफ्रेश करण्याची आवश्यकता आहे</translation>
 <translation id="1548132948283577726">ज्या साइट पासवर्ड जतन करत नाहीत त्या येथे दिसून येतील.</translation>
 <translation id="1549788673239553762"><ph name="APP_NAME" /> <ph name="VOLUME_NAME" /> वर प्रवेश करू इच्छित आहे. हे आपल्या फायलींमध्ये फेरफार करू किंवा हटवू शकते.</translation>
 <translation id="1553538517812678578">अमर्यादित</translation>
@@ -733,7 +732,6 @@
 <translation id="2128691215891724419">समक्रमण एरर: समक्रमण वाक्यांश अपडेट करा... </translation>
 <translation id="2129825002735785149">प्लगिन अपडेट करा</translation>
 <translation id="2129904043921227933">समक्रमण एरर: समक्रमण वाक्यांश अपडेट करा...</translation>
-<translation id="2130949041518253417">तुमच्या डिव्हाइसवर, पर्सनलाइझ केलेल्या ब्राउझिंग अनुभवासाठी सिंक करा</translation>
 <translation id="2131077480075264">"<ph name="IMPORT_NAME" />" द्वारे "<ph name="APP_NAME" />" ला अनुमती नसल्‍याने तो स्‍थापित करण्‍यात अक्षम</translation>
 <translation id="2135787500304447609">&amp;पुन्हा करा</translation>
 <translation id="2136372518715274136">नवीन पासवर्ड एंटर करा</translation>
@@ -1685,7 +1683,6 @@
 <translation id="3576324189521867626">यशस्वीरित्या इंस्टॉल केला</translation>
 <translation id="3578594933904494462">या टॅबची सामग्री सामायिक केली जात आहे.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; आपल्‍या मालकीच्या गटासह &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; प्रिंटर सामायिक करू इच्‍छितो: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. आपण स्‍वीकार केल्यास, सर्व गट सदस्य प्रिंटरवर प्रिंट करण्‍यास सक्षम असतील.</translation>
-<translation id="3582972582564653026">तुमच्या डिव्हाइसवर Chrome सिंक आणि पर्सनलाइझ करा</translation>
 <translation id="3584169441612580296">आपल्या संगणकावरील फोटो, संगीत आणि अन्य मीडिया वाचा आणि बदला</translation>
 <translation id="3587482841069643663">सर्व</translation>
 <translation id="358796204584394954">जोडण्यासाठी "<ph name="DEVICE_NAME" />" वर हा कोड टाइप करा:</translation>
@@ -2221,7 +2218,6 @@
 <translation id="4448844063988177157">Wi-Fi नेटवर्कचा शोधत आहे...</translation>
 <translation id="4449996769074858870">हा टॅब ऑडिओ प्ले करत आहे.</translation>
 <translation id="4450974146388585462">निदान करा</translation>
-<translation id="4452426408005428395">काही हरकत नाही</translation>
 <translation id="445923051607553918">Wi-Fi  नेटवर्कमध्ये सामील व्हा</translation>
 <translation id="4462159676511157176">सानुकूल नाव सर्व्हर</translation>
 <translation id="4467100756425880649">Chrome वेब स्टोअर गॅलरी</translation>
@@ -2732,7 +2728,6 @@
 <translation id="5266113311903163739">प्रमाणन अधिकृतता आयात एरर</translation>
 <translation id="5269977353971873915">प्रिंट अयशस्वी</translation>
 <translation id="5271549068863921519">पासवर्ड सेव्ह करा</translation>
-<translation id="5275194674756975076">ठीक आहे, रिफ्रेश करा</translation>
 <translation id="5275352920323889391">कुत्रा</translation>
 <translation id="5275973617553375938">Google ड्राइव्ह वरून पुनर्प्राप्त केलेल्‍या फायली</translation>
 <translation id="527605719918376753">टॅब नि:शब्द करा</translation>
@@ -3868,7 +3863,6 @@
 <translation id="7006634003215061422">तळाचा समास</translation>
 <translation id="7006844981395428048">$1 ऑडिओ</translation>
 <translation id="7007648447224463482">सर्व नवीन विंडोमध्ये उघडा</translation>
-<translation id="7008270479623533562">हा विस्तार चालविण्यासाठी, आपण पृष्ठ रिफ्रेश करणे आवश्यक आहे. आपण विस्तार चिन्हावर उजवे-क्लिक करून या साइटवर स्वयंचलितपणे हा विस्तार चालवू शकता.</translation>
 <translation id="701080569351381435">स्त्रोत पहा</translation>
 <translation id="7012372675181957985">आपल्या Google खात्यात <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> वर ब्राउझिंग इतिहासाची अन्य स्वरूपे असू शकतात</translation>
 <translation id="7014174261166285193">स्थापना अयशस्वी.</translation>

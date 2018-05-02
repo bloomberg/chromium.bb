@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
+<translation id="1012876632442809908">Dispozitiv USB-C (portul din față)</translation>
 <translation id="1023220960495960452">Transliterație (vanakkam → வணக்கம்)</translation>
 <translation id="1045157690796831147">Transliterație (namaskar → നമസ്കാരം)</translation>
 <translation id="1065449928621190041">Tastatură franceză canadiană</translation>
@@ -10,6 +11,7 @@
 <translation id="1155759005174418845">Catalană</translation>
 <translation id="1208421848177517699">Transliterație (namaste → નમસ્તે)</translation>
 <translation id="1278813325885878377">Tastatură maghiară QWERTY</translation>
+<translation id="1293264513303784526">Dispozitiv USB-C (portul din stânga)</translation>
 <translation id="1310751437842832374">Transliterație (mausam → ନମସ୍ତେ)</translation>
 <translation id="1337036551624197047">Tastatură cehă</translation>
 <translation id="1352103415082130575">Tastatură thailandeză (Pattachote)</translation>
@@ -25,6 +27,7 @@
 <translation id="164969095109328410">Dispozitiv Chrome</translation>
 <translation id="1829129547161959350">Pinguin</translation>
 <translation id="184633654410729720">Tastatură thailandeză (Kedmanee)</translation>
+<translation id="1864454756846565995">Dispozitiv USB-C (portul din spate)</translation>
 <translation id="1921986354447415460">Tastatură turcă-F</translation>
 <translation id="1931134289871235022">Slovacă</translation>
 <translation id="1936717151811561466">Finlandeză</translation>
@@ -52,6 +55,7 @@
 <translation id="2771816809568414714">Brânză</translation>
 <translation id="2781645665747935084">Belgiană</translation>
 <translation id="2790805296069989825">Tastatură rusă</translation>
+<translation id="2844169650293029770">Dispozitiv USB-C (portul din stânga față)</translation>
 <translation id="2870836398458454343">Transliterație (marhaban ← مرحبا)</translation>
 <translation id="288024221176729610">Cehă</translation>
 <translation id="2894654529758326923">Informații</translation>
@@ -75,7 +79,9 @@
 <translation id="3280987981688031357">Disc de vinil</translation>
 <translation id="3296763833017966289">Georgiană</translation>
 <translation id="3338239663705455570">Tastatură slovenă</translation>
+<translation id="3371140690572404006">Dispozitiv USB-C (portul din dreapta față)</translation>
 <translation id="3399597614303179694">Tastatură macedoneană</translation>
+<translation id="3445925074670675829">Dispozitiv USB-C</translation>
 <translation id="3494768541638400973">Metoda de introducere Google pentru japoneză (la tastatura pentru japoneză)</translation>
 <translation id="3519867315646775981">Transliterație (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Portugheză</translation>
@@ -95,6 +101,7 @@
 <translation id="3910699493603749297">Tastatură khmeră</translation>
 <translation id="391445228316373457">Tastatură nepaleză (Fonetică)</translation>
 <translation id="3958548648197196644">Kiwi</translation>
+<translation id="3995138139523574647">Dispozitiv USB-C (portul din dreapta spate)</translation>
 <translation id="4070370845051020638">Metoda de introducere a textului în cantoneză</translation>
 <translation id="4072248638558688893">Tastatură tamilă (Fonetică)</translation>
 <translation id="4124935795427217608">Unicorn</translation>
@@ -141,6 +148,7 @@
 <translation id="5257456363153333584">Libelulă</translation>
 <translation id="5319782540886810524">Tastatură letonă</translation>
 <translation id="5323213332664049067">America Latină</translation>
+<translation id="5331975486040154427">Dispozitiv USB-C (portul din stânga spate)</translation>
 <translation id="5402367795255837559">Braille</translation>
 <translation id="5412637665001827670">Tastatură bulgară</translation>
 <translation id="5418923334382419584">Tastatură birmană</translation>
@@ -177,6 +185,7 @@
 <translation id="6358884629796491903">Dragon</translation>
 <translation id="6462109140674788769">Tastatură greacă</translation>
 <translation id="6466492211071551451">Tastatură irlandeză</translation>
+<translation id="6490471652906364588">Dispozitiv USB-C (portul din dreapta)</translation>
 <translation id="6503256918647795660">Tastatură franceză elvețiană</translation>
 <translation id="6505918941256367791">Tastatură tamilă (InScript)</translation>
 <translation id="6509122719576673235">Norvegiană</translation>
@@ -195,6 +204,7 @@
 <translation id="6937152069980083337">Metoda de introducere Google pentru japoneză (la tastatura americană)</translation>
 <translation id="6939777852457331078">Tastatură S.U.A. Workman</translation>
 <translation id="6970230597523682626">Bulgară</translation>
+<translation id="7098389117866926363">Dispozitiv USB-C (portul din stânga în spate)</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">Transliterație (salam → ሰላም)</translation>
 <translation id="7172053773111046550">Tastatură estonă</translation>
@@ -255,6 +265,7 @@
 <translation id="8900820606136623064">Maghiară</translation>
 <translation id="8901822611024316615">Tastatură QWERTY cehă</translation>
 <translation id="8919081441417203123">Daneză</translation>
+<translation id="8938800817013097409">Dispozitiv USB-C (portul din dreapta în spate)</translation>
 <translation id="8960999352790021682">Tastatură bengaleză (Fonetică)</translation>
 <translation id="9017798300203431059">Rusă fonetică</translation>
 <translation id="913758436357682283">Tastatură birmană Myansan</translation>

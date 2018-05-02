@@ -389,6 +389,28 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
           Wird diese Richtlinie nicht festgelegt, erscheint keine Warnung.
 
           Geben Sie den Richtlinienwert in Millisekunden an. Solange die Inaktivitätsspanne kleiner oder gleich diesem festgelegten Wert ist, erscheint keine Warnung.</translation>
+<translation id="2289578386193672044">Gibt eine Liste von Apps und Erweiterungen an, die automatisch,
+          ohne Zutun des Nutzers, installiert werden und die nicht von
+          ihm deinstalliert oder deaktiviert werden können. Alle von den Apps und Erweiterungen
+          angeforderten Berechtigungen werden implizit, ohne Eingriff durch den
+          Nutzer, gewährt. Dazu gehören auch alle weiteren Berechtigungen,
+          die von künftigen Versionen der App oder Erweiterung angefordert werden.
+          Außerdem werden den Erweiterungs-APIs "enterprise.deviceAttributes"
+          und "enterprise.platformKeys" Berechtigungen erteilt. Diese beiden APIs
+          stehen bei Apps oder Erweiterungen ohne erzwungene Installation
+          nicht zur Verfügung.
+
+          Diese Richtlinie hat Vorrang gegenüber einer möglicherweise damit in Konflikt stehenden "<ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />"-Richtlinie. Wenn eine App oder Erweiterung mit erzwungener Installation aus dieser Liste entfernt wird, wird sie automatisch von <ph name="PRODUCT_NAME" /> deinstalliert.
+
+          Bei Windows-Instanzen, die nicht Teil einer <ph name="MS_AD_NAME" />-Domain sind, bleibt die erzwungene Installation auf die im Chrome Web Store aufgeführten Apps und Erweiterungen beschränkt.
+
+          Beachten Sie, dass der Quellcode jeder Erweiterung mithilfe der Entwicklertools von den Nutzern geändert werden kann und die Erweiterung nach erfolgten Änderungen eventuell nicht mehr funktioniert. Präventiv können Sie hierbei die Richtlinie "<ph name="DEVELOPER_TOOLS_POLICY_NAME" />" festlegen.
+
+          Jedes Listenelement der Richtlinie ist ein String mit einer Erweiterungs-ID und einer optionalen Update-URL, die durch einen Strichpunkt (<ph name="SEMICOLON" />) getrennt wird. Die Erweiterungs-ID ist der String mit 32 Buchstaben, den Sie u. a. in <ph name="CHROME_EXTENSIONS_LINK" /> im Entwicklermodus sehen. Die Update-URL sollte, sofern festgelegt, auf ein Update-Manifest-XML-Dokument verweisen, wie in <ph name="LINK_TO_EXTENSION_DOC1" /> beschrieben. Standardmäßig kommt die Update-URL des Chrome Web Store zum Einsatz, die derzeit "https://clients2.google.com/service/update2/crx" lautet. Beachten Sie, dass die in dieser Richtlinie festgelegte Update-URL nur für die erste Installation verwendet wird. In nachfolgenden Updates der Erweiterung kommt die Update-URL, die im Manifest der Erweiterung angegeben wurde, zum Einsatz. Beachten Sie außerdem, dass die explizite Festlegung der Update-URL in <ph name="PRODUCT_NAME" />-Versionen bis einschließlich Version 67 obligatorisch war.
+
+          Beispiel: <ph name="EXTENSION_POLICY_EXAMPLE" /> installiert die App "<ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" />" über die standardmäßige Update-URL aus dem Chrome Web Store. Weitere Informationen zum Hosting von Erweiterungen finden Sie unter <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Wenn diese Richtlinie nicht konfiguriert ist, werden Apps und Erweiterungen nicht automatisch installiert und der Nutzer kann jede App oder Erweiterung in <ph name="PRODUCT_NAME" /> deinstallieren.</translation>
 <translation id="2292084646366244343">In <ph name="PRODUCT_NAME" /> können mithilfe eines Google-Webdienstes Rechtschreibfehler korrigiert werden. Wenn diese Einstellung aktiviert ist, wird dieser Dienst immer verwendet. Ist die Einstellung deaktiviert, wird dieser Dienst nie verwendet.
 
       Die Rechtschreibprüfung kann weiterhin mit einem heruntergeladenen Wörterbuch durchgeführt werden. Diese Richtlinie bezieht sich nur auf die Verwendung des Online-Dienstes.
@@ -677,6 +699,16 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
           Diese Richtlinie ist optional. Wenn sie nicht konfiguriert wird, erfolgt keine Ersetzung der Suchbegriffe.
 
           Diese Richtlinie wird nur angewendet, wenn die Richtlinie "DefaultSearchProviderEnabled" aktiviert ist.</translation>
+<translation id="3056439054015239107">
+      Diese Richtlinie gilt für die Anmeldeseite. Sehen Sie sich auch die Richtlinie "<ph name="SITE_PER_PROCESS_POLICY_NAME" />" an, die auf die Nutzersitzung angewendet wird. Es wird empfohlen, beide Richtlinien auf denselben Wert festzulegen. Wenn die Werte nicht übereinstimmen, kann es beim Beginn einer Nutzersitzung zu einer Verzögerung kommen, während der von der Nutzerrichtlinie angegebene Wert angewendet wird.
+      Sie sollten sich die "IsolateOrigins"-Richtlinieneinstellung ansehen,
+      um die Auswirkungen auf die Nutzer bei der Isolierung von Websites gering zu halten.
+      Verwenden Sie dazu "IsolateOrigins" mit einer Liste von Websites, die Sie isolieren möchten.
+      Mit der Einstellung "SitePerProcess" werden alle Websites isoliert.
+      Wenn die Richtlinie aktiviert ist, wird auf jeder Website ein eigener Prozess ausgeführt.
+      Wenn die Richtlinie deaktiviert ist, findet keine explizite Website-Isolierung statt und Feldtests von "IsolateOrigins" und "SitePerProcess" werden ebenfalls deaktiviert. Nutzer können aber "SitePerProcess" weiterhin manuell aktivieren.
+      Wenn die Richtlinie nicht konfiguriert ist, kann der Nutzer diese Einstellung ändern.
+      </translation>
 <translation id="306887062252197004">Diese Richtlinie erlaubt es Nutzern der WebDriver-Funktion, Richtlinien zu überschreiben, die die Verwendung von WebDriver beeinträchtigen können.
 
 Diese Richtlinie deaktiviert aktuell die Richtlinien SitePerProcess und IsolateOrigins.
@@ -834,6 +866,7 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
 <translation id="3660562134618097814">SAML-IdP-Cookies bei der Anmeldung übertragen</translation>
 <translation id="3709266154059827597">Schwarze Liste für Installation von Erweiterungen konfigurieren</translation>
 <translation id="3711895659073496551">Suspend-Modus</translation>
+<translation id="3715569262675717862">Authentifizierung auf Grundlage von Clientzertifikaten</translation>
 <translation id="3736879847913515635">"Person hinzufügen" im Nutzermanager aktivieren</translation>
 <translation id="3737544779868348650">Hostname im Gerätenetzwerk</translation>
 <translation id="3740754010292550733">Zeitraum für Neustartbenachrichtigungen für ein Update festlegen</translation>
@@ -1816,6 +1849,15 @@ Ist die Richtlinie nicht konfiguriert, wird die Netzwerkvorhersage aktiviert, ka
       Falls die Anmeldung in einem anderen Konto über den Inkognitomodus nicht erlaubt ist, können Sie diesen Modus mithilfe der IncognitoModeAvailability-Richtlinie blockieren.
 
       Hinweis: Nutzer können durch Blockieren von Cookies auf Google-Dienste, die nicht authentifiziert sind, zugreifen.</translation>
+<translation id="6738326937072482736">Hiermit werden Verfügbarkeit und Verhalten der Updatefunktion für die <ph name="TPM_FIRMWARE_UPDATE_TPM" />-Firmware konfiguriert.
+
+      Einzelne Einstellungen können in den JSON-Eigenschaften festgelegt werden:
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: Wenn diese Richtlinie auf <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" /> festgelegt ist, können Nutzer mithilfe von Powerwash ein Update der <ph name="TPM_FIRMWARE_UPDATE_TPM" />-Firmware installieren.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: Wenn diese Richtlinie auf <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" /> festgelegt ist, können Nutzer den <ph name="TPM_FIRMWARE_UPDATE_TPM" />-Firmwareupdatevorgang starten, bei dem der geräteübergreifende Status erhalten bleibt (einschließlich Unternehmensregistrierung), aber die Nutzerdaten verloren gehen. Dieser Updatevorgang ist ab Version 68 verfügbar.
+
+      Wenn diese Richtlinie nicht festgelegt ist, ist die Updatefunktion für die <ph name="TPM_FIRMWARE_UPDATE_TPM" />-Firmware nicht verfügbar.</translation>
 <translation id="6757438632136860443">Ermöglicht die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen die Ausführung des Plug-ins "<ph name="FLASH_PLUGIN_NAME" />" gestattet ist.
 
           Ist diese Richtlinie nicht festgelegt, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultPluginsSetting", sofern konfiguriert, oder die persönliche Konfiguration des Nutzers zum Einsatz.</translation>
@@ -1835,6 +1877,16 @@ Ist die Richtlinie nicht konfiguriert, wird die Netzwerkvorhersage aktiviert, ka
 <translation id="687046793986382807">Diese Richtlinie gilt ab <ph name="PRODUCT_NAME" /> Version 35 nicht mehr.
 
 Speicherinformationen werden unabhängig von der gewählten Option an die Seite weitergegeben, allerdings werden die gemeldeten Größen quantisiert und die Aktualisierungshäufigkeit wird aus Sicherheitsgründen begrenzt. Um genaue Daten in Echtzeit zu erhalten, können Sie Tools wie Telemetry verwenden.</translation>
+<translation id="6870914592443697993">
+      Diese Richtlinie gilt für die Anmeldeseite. Sehen Sie sich auch die Richtlinie "<ph name="ISOLATE_ORIGINS_POLICY_NAME" />" an, die auf die Nutzersitzung angewendet wird. Es wird empfohlen, beide Richtlinien auf denselben Wert festzulegen. Wenn die Werte nicht übereinstimmen, kann es beim Beginn einer Nutzersitzung zu einer Verzögerung kommen, während der von der Nutzerrichtlinie angegebene Wert angewendet wird.
+      Wenn die Richtlinie aktiviert ist, wird für jeden der benannten
+      Ursprünge in einer durch Kommas getrennten Liste ein eigener Prozess ausgeführt.
+      Dadurch werden auch durch Subdomains benannte Ursprünge isoliert; wenn
+      Sie z. B. https://example.com/ angeben, wird auch https://foo.example.com/ als Teil
+      der Website https://example.com/ isoliert.
+      Wenn die Richtlinie deaktiviert ist, findet keine Website-Isolierung statt und Feldtests von "IsolateOrigins" und "SitePerProcess" werden ebenfalls deaktiviert. Nutzer können aber "SitePerProcess" weiterhin manuell aktivieren.
+      Wenn die Richtlinie nicht konfiguriert ist, werden die standardmäßigen Website-Isolierungseinstellungen der Plattform für die Anmeldeseite verwendet.
+      </translation>
 <translation id="6894178810167845842">URL für "Neuer Tab"-Seite</translation>
 <translation id="6899705656741990703">Proxy-Einstellungen automatisch erkennen</translation>
 <translation id="6903814433019432303">Diese Richtlinie ist nur im Händlermodus aktiv.
@@ -2083,6 +2135,7 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
       Wurde "false" festgelegt, sind Komponentenupdates deaktiviert. Für einige Komponenten gelten diese Richtlinien aber nicht: Updates von Komponenten, die keinen ausführbaren Code enthalten, das Browserverhalten nicht maßgeblich verändern oder die Sicherheit nicht gefährden, werden nicht deaktiviert.
       Beispiele für solche Komponenten sind die Zertifikatssperrlisten sowie Safe Browsing-Daten.
       Weitere Informationen zu Safe Browsing finden Sie unter https://developers.google.com/safe-browsing.</translation>
+<translation id="7566878661979235378">SAML-Anmeldungsauthentifizierungstyp</translation>
 <translation id="757395965347379751">Wenn diese Einstellung aktiviert ist, werden von <ph name="PRODUCT_NAME" /> SHA-1-signierte Zertifikate genehmigt, vorausgesetzt sie werden erfolgreich überprüft und bilden eine Kette zu einem lokal installierten CA-Zertifikat.
 
       Diese Richtlinie setzt voraus, dass vom Zertifikatüberprüfungsstapel des Betriebssystems SHA-1-Signaturen zugelassen werden. Wenn sich durch ein Update des Betriebssystems die Handhabung von SHA-1-Zertifikaten ändert, ist diese Richtlinie nicht mehr wirksam. Diese Richtlinie dient zur vorübergehenden Problemumgehung, um Unternehmen mehr Zeit zu geben, SHA-1 zu ersetzen. Diese Richtlinie wird ab dem 1. Januar 2019 entfernt.
@@ -2247,6 +2300,16 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 <translation id="7961779417826583251">Erzwingung der Zertifikatstransparenz für eine Liste alter Zertifizierungsstellen deaktivieren</translation>
 <translation id="7974114691960514888">Diese Richtlinie wird nicht mehr unterstützt. Sie aktiviert beim Verbinden zu einem Remote-Client den Einsatz von STUN und Relay-Servern. Wenn diese Einstellung aktiviert wird, kann dieser Computer Remote-Hostcomputer finden und eine Verbindung herstellen, selbst wenn sie sich hinter einer Firewall befinden. Sollte die Einstellung deaktiviert sein und ausgehende UDP-Verbindungen von der Firewall gefiltert werden, dann kann dieser Computer nur Verbindungen zu Hostcomputern innerhalb des lokalen Netzwerks aufbauen.</translation>
 <translation id="7976157349247117979">Name des <ph name="PRODUCT_NAME" />-Ziels</translation>
+<translation id="7978060394348264922">
+      Sie sollten sich die "IsolateOrigins"-Richtlinieneinstellung ansehen,
+      um die Auswirkungen auf die Nutzer bei der Isolierung von Websites gering zu halten.
+      Verwenden Sie dazu "IsolateOrigins" mit einer Liste von Websites, die Sie isolieren möchten.
+      Mit dieser Einstellung, "SitePerProcess", werden alle Websites isoliert.
+      Wenn die Richtlinie aktiviert ist, wird auf jeder Website ein eigener Prozess ausgeführt.
+      Wenn die Richtlinie deaktiviert ist, findet keine explizite Website-Isolierung statt und Feldtests von "IsolateOrigins" und "SitePerProcess" werden ebenfalls deaktiviert. Nutzer können aber "SitePerProcess" weiterhin manuell aktivieren.
+      Wenn die Richtlinie nicht konfiguriert ist, kann der Nutzer diese Einstellung ändern.
+      Es wird empfohlen, unter <ph name="PRODUCT_OS_NAME" /> die Geräterichtlinie "<ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />" auf denselben Wert zu setzen. Wenn die von den beiden Richtlinien angegebenen Werte nicht übereinstimmen, kann es beim Beginn einer Nutzersitzung zu einer Verzögerung kommen, während der von der Nutzerrichtlinie angegebene Wert angewendet wird.
+      </translation>
 <translation id="7980227303582973781">Keine besonderen Einschränkungen</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Bildschirm um 0 Grad drehen</translation>
@@ -2437,6 +2500,13 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
           Fügen Sie zwischen den verschiedenen Servernamen ein Komma als Trennzeichen ein. Platzhalter (*) sind zulässig.
 
           Wenn Sie diese Richtlinie nicht konfigurieren, versucht <ph name="PRODUCT_NAME" /> zu ermitteln, ob der fragliche Server sich im Intranet befindet, und reagiert nur dann auf IWA-Anfragen. Wenn der Server sich dagegen im Internet befindet, werden dessen IWA-Anfragen von <ph name="PRODUCT_NAME" /> ignoriert.</translation>
+<translation id="8667812577403206506">Mit dieser Richtlinie können Sie festlegen, ob virtuelle Maschinen unter Chrome OS ausgeführt werden dürfen.
+
+      Wenn die Richtlinie auf "true" festgelegt ist, dürfen virtuelle Maschinen auf dem Gerät ausgeführt werden.
+      Wird die Richtlinie auf "false" festgelegt, dürfen keine virtuellen Maschinen auf dem Gerät ausgeführt werden.
+      Falls diese Richtlinie auf "false" geändert wird, gilt sie für den Start neuer virtueller Maschinen. Virtuelle Maschinen, die bereits laufen, werden davon nicht beendet.
+      Wenn diese Richtlinie auf einem verwalteten Gerät nicht konfiguriert ist, darf das Gerät virtuelle Maschinen nicht ausführen.
+      Auf nicht verwalteten Geräten dürfen virtuelle Maschinen ausgeführt werden.</translation>
 <translation id="8672321184841719703">Automatische Aktualisierung auf Zielversion</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
 <translation id="8685024486845674965">Die Passwortschutzwarnung wird durch die Wiederverwendung eines Passworts ausgelöst</translation>
@@ -2547,6 +2617,7 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
 
       Diese Richtlinie sollte nicht aktiviert werden, wenn die Richtlinie <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> bereits aktiviert ist, da die Funktion über dieselbe clientseitige Funktion verfügt. Die von Google gehostete Synchronisierung ist in diesem Fall vollständig deaktiviert.</translation>
 <translation id="8955719471735800169">Zurück nach oben</translation>
+<translation id="8959992920425111821">Standardkonfiguration</translation>
 <translation id="8960850473856121830">Muster in dieser Liste werden mit der Sicherheitsherkunft
       der anfragenden URL abgeglichen. Bei einer Übereinstimmung wird der
       Zugriff auf Audioaufnahmegeräte ohne Nachfrage gestattet.
@@ -2557,6 +2628,16 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
 <translation id="8976248126101463034">Gnubby-Authentifizierung für Remotezugriff-Hosts zulassen</translation>
 <translation id="8976531594979650914">Standarddrucker des Betriebssystems als Standardeinstellung verwenden</translation>
 <translation id="8992176907758534924">Anzeige von Bildern für alle Websites blockieren</translation>
+<translation id="9034729899149506577">
+      Wenn die Richtlinie aktiviert ist, wird für jeden der benannten
+      Ursprünge in einer durch Kommas getrennten Liste ein eigener Prozess
+      ausgeführt. Dadurch werden auch durch Subdomains benannte Ursprünge isoliert;
+      wenn Sie z. B. https://example.com/ angeben, wird auch https://foo.example.com/
+      als Teil der Website https://example.com/ isoliert.
+      Wenn die Richtlinie deaktiviert ist, findet keine explizite Website-Isolierung statt und Feldtests von "IsolateOrigins" und "SitePerProcess" werden ebenfalls deaktiviert. Nutzer können aber "SitePerProcess" weiterhin manuell aktivieren.
+      Wenn die Richtlinie nicht konfiguriert ist, kann der Nutzer diese Einstellung ändern.
+      Es wird empfohlen, unter <ph name="PRODUCT_OS_NAME" /> die Geräterichtlinie "<ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />" auf denselben Wert zu setzen. Wenn die von den beiden Richtlinien angegebenen Werte nicht übereinstimmen, kann es beim Beginn einer Nutzersitzung zu einer Verzögerung kommen, während der von der Nutzerrichtlinie angegebene Wert angewendet wird.
+      </translation>
 <translation id="9035964157729712237">Aus der schwarzen Liste auszuschließende Erweiterungs-IDs</translation>
 <translation id="9042911395677044526">Ermöglicht das Übernehmen einer per Push übertragenen Netzwerkkonfiguration pro Nutzer für ein <ph name="PRODUCT_OS_NAME" />-Gerät. Die Netzwerkkonfiguration ist ein JSON-formatierter String, der den Open Network Configuration-Vorgaben unter <ph name="ONC_SPEC_URL" /> entspricht.</translation>
 <translation id="9084985621503260744">Angaben zum Einfluss von Videoaktivitäten auf den Energiesparmodus</translation>
@@ -2602,6 +2683,13 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
 <translation id="9187743794267626640">Bereitstellen von externem Speicher deaktivieren</translation>
 <translation id="9197740283131855199">Prozentsatz für die Skalierung der Spanne für die Bildschirmabdunkelung, wenn der Nutzer nach der Abdunkelung aktiv wird</translation>
 <translation id="9200828125069750521">Parameter für URL der Bildsuche, die POST verwendet</translation>
+<translation id="9210953373038593554">Hiermit wird der Typ der Authentifizierung für SAML-Anmeldungen konfiguriert.
+
+      Wenn diese Richtlinie nicht konfiguriert oder auf dem Standardwert (Wert 0) belassen wird, wird das Verhalten bei SAML-Anmeldungen vom Browser festgelegt, abhängig von anderen Faktoren. Im einfachsten Fall basiert die Nutzerauthentifizierung und der Schutz der im Cache gespeicherten Nutzerdaten auf Passwörtern, die von den Nutzern manuell eingegeben werden.
+
+      Wenn diese Richtlinie auf "ClientCertificate" (Wert 1) festgelegt ist, kommt für neu hinzugefügte Nutzer, die sich über SAML anmelden, die Authentifizierung mit Clientzertifikat zum Einsatz. Für solche Nutzer werden keine Passwörter verwendet und ihre im Cache gespeicherten lokalen Daten werden durch entsprechende kryptografische Schlüssel geschützt. Diese Einstellung ermöglicht z. B. die Konfiguration einer Nutzerauthentifizierung auf Grundlage von Smartcards. Hinweis: In diesem Fall ist die Installation von Smartcard-Middleware-Apps über die Richtlinie "DeviceLoginScreenAppInstallList" erforderlich.
+
+      Diese Richtlinie betrifft nur Nutzer, die sich über SAML authentifizieren.</translation>
 <translation id="9213347477683611358">Hiermit kann das Hintergrundbild auf Geräteebene konfiguriert werden, das auf dem Anmeldebildschirm angezeigt wird, wenn sich noch kein Nutzer auf dem Gerät angemeldet hat. Die Richtlinie wird konfiguriert, indem die URL, über die das Chrome OS-Gerät das Hintergrundbild herunterladen kann, und ein kryptografischer Hash, mit dem die Integrität des Downloads überprüft wird, festgelegt werden. Das Bild muss das JPEG-Format aufweisen und darf eine Dateigröße von 16 MB nicht überschreiten. Die URL muss ohne Authentifizierung zugänglich sein. Das Hintergrundbild wird heruntergeladen und im Cache gespeichert. Es wird jedes Mal neu heruntergeladen, wenn sich die URL oder der Hash ändert.
 
       Die Richtlinie sollte als String angegeben werden, der die URL und den Hash im JSON-Format ausgibt, z. B.:

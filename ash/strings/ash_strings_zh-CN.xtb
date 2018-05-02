@@ -247,9 +247,6 @@
 <translation id="6521655319214113338">手写输入</translation>
 <translation id="6528179044667508675">请勿打扰</translation>
 <translation id="6537270692134705506">获取屏幕截图</translation>
-<translation id="6580955892089546165">利用此功能，您可以快速访问任何已登录的用户（无需使用密码）。
-
-请仅通过您信任的帐号使用此功能。</translation>
 <translation id="6585808820553845416">会话将在<ph name="SESSION_TIME_REMAINING" />后结束。</translation>
 <translation id="6627638273713273709">搜索键+Shift+K</translation>
 <translation id="6650933572246256093">蓝牙设备“<ph name="DEVICE_NAME" />”需要配对许可。请在该设备上输入以下配对密钥：<ph name="PASSKEY" /></translation>
@@ -307,7 +304,6 @@
 <translation id="7994370417837006925">多帐号登录</translation>
 <translation id="8000066093800657092">未连接任何网络</translation>
 <translation id="8054466585765276473">正在计算续航时间。</translation>
-<translation id="8056430285089645882">知道了，以后不要再显示此信息。</translation>
 <translation id="8098591350844501178">停止将屏幕投射到“<ph name="RECEIVER_NAME" />”</translation>
 <translation id="8132793192354020517">已连接到 <ph name="NAME" /></translation>
 <translation id="813913629614996137">正在初始化…</translation>

@@ -155,7 +155,7 @@
 <translation id="1962204205936693436">نشانک‌های <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">خطای ترتیب</translation>
 <translation id="1974060860693918893">پیشرفته</translation>
-<translation id="1978555033938440688">نسخه میان‌افزار</translation>
+<translation id="1978555033938440688">نسخه سفت‌افزار</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{و ۱ برنامه دیگر}one{و # برنامه دیگر}other{و # برنامه دیگر}}</translation>
 <translation id="2003709556000175978">هم‌اکنون گذرواژه‌تان را بازنشانی کنید</translation>
 <translation id="2025186561304664664">پروکسی بر روی پیکربندی خودکار تنظیم شده است.</translation>
@@ -644,7 +644,6 @@
 <translation id="5492298309214877701">نشانی وب این سایت در اینترانت شرکت، سازمان یا محل تحصیل با نشانی وب یک وب‌سایت خارجی یکسان است.
     <ph name="LINE_BREAK" />
     با سرپرست سیستم تماس بگیرید.</translation>
-<translation id="5499929369096410817">کد امنیتی <ph name="CREDIT_CARD" /> را وارد کنید.  این کد ذخیره نمی‌شود.</translation>
 <translation id="5509780412636533143">نشانک‌های مدیریت شده</translation>
 <translation id="5510766032865166053">ممکن است جابه‌جا یا حذف شده باشد.</translation>
 <translation id="5523118979700054094">نام خط‌مشی</translation>
@@ -704,7 +703,6 @@
 <translation id="5967867314010545767">حذف از سابقه</translation>
 <translation id="5972020793760134803">رفتن به برگه</translation>
 <translation id="5975083100439434680">کوچک نمایی</translation>
-<translation id="597552863672748783">تأیید کد امنیتی</translation>
 <translation id="598637245381783098">برنامه پرداخت باز نشد</translation>
 <translation id="5989320800837274978">‏سرور پروکسی ثابت و URL اسکریپت pac. تعیین نشده‌اند.</translation>
 <translation id="5990559369517809815">درخواست‌های ارسالی به سرور توسط یک برنامهٔ افزودنی مسدود شد.</translation>

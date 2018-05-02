@@ -201,7 +201,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="4659667755519643272">Åbn Faneskift</translation>
 <translation id="4666531726415300315">Logget ind som <ph name="EMAIL" />.
 
-Dine data er krypteret med din adgangssætning til synkronisering. Indtast den for at starte synkroniseringen.</translation>
+Dine data er krypteret med din adgangssætning til synkronisering. Angiv den for at starte synkroniseringen.</translation>
 <translation id="473775607612524610">Opdater</translation>
 <translation id="481968316161811770">Cookies, websitedata</translation>
 <translation id="4854345657858711387">Angiv en adgangskode</translation>
@@ -252,7 +252,7 @@ Handoff skal være aktiveret i afsnittet Generelt i Indstillinger, og dine enhed
 <translation id="5846482154967366008">Søgemaskine</translation>
 <translation id="5854790677617711513">Ældre end 30 dage</translation>
 <translation id="5857090052475505287">Ny mappe</translation>
-<translation id="5857770089550859117">Indtast adgangssætningen for at påbegynde synkroniseringen.</translation>
+<translation id="5857770089550859117">Angiv adgangssætningen for at påbegynde synkroniseringen.</translation>
 <translation id="5860033963881614850">Fra</translation>
 <translation id="5869029295770560994">OK</translation>
 <translation id="5871497086027727873">1 bogmærke blev flyttet</translation>
@@ -299,7 +299,7 @@ Handoff skal være aktiveret i afsnittet Generelt i Indstillinger, og dine enhed
 <translation id="6417838470969808600">Du har bogmærker, historik, adgangskoder og andre indstillinger fra <ph name="USER_EMAIL1" />.</translation>
 <translation id="641799622251403418">Logget ind som <ph name="EMAIL" />.
 
-Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name="TIME" />. Indtast adgangssætningen for at starte synkroniseringen.</translation>
+Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name="TIME" />. Angiv adgangssætningen for at starte synkroniseringen.</translation>
 <translation id="6418346271604475326">Forbereder PDF</translation>
 <translation id="6434591244308415567">Der opstod en fejl. Prøv igen senere.</translation>
 <translation id="6445051938772793705">Land</translation>

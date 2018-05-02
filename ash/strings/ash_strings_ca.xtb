@@ -246,9 +246,6 @@
 <translation id="6521655319214113338">Entrada d'escriptura a mà</translation>
 <translation id="6528179044667508675">No molestis</translation>
 <translation id="6537270692134705506">Captura la pantalla</translation>
-<translation id="6580955892089546165">Aquesta funció et permet accedir ràpidament als usuaris que han iniciat la sessió sense haver d'introduir la contrasenya.
-
-Utilitza aquesta funció només amb comptes de confiança.</translation>
 <translation id="6585808820553845416">La sessió finalitzarà d'aquí a <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Cerca+Maj+K</translation>
 <translation id="6650933572246256093">El dispositiu Bluetooth "<ph name="DEVICE_NAME" />" sol·licita permís per emparellar-se. Introduïu-hi aquesta contrasenya: <ph name="PASSKEY" />.</translation>
@@ -306,7 +303,6 @@ Utilitza aquesta funció només amb comptes de confiança.</translation>
 <translation id="7994370417837006925">Inici de sessió múltiple</translation>
 <translation id="8000066093800657092">No hi ha cap xarxa</translation>
 <translation id="8054466585765276473">S'està calculant el temps de la bateria.</translation>
-<translation id="8056430285089645882">Entesos, no ho tornis a mostrar</translation>
 <translation id="8098591350844501178">Deixa d'emetre la pantalla a <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Connectat a <ph name="NAME" /></translation>
 <translation id="813913629614996137">S'està inicialitzant…</translation>

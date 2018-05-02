@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="el">
+<translation id="1012876632442809908">Συσκευή USB-C (μπροστινή θύρα)</translation>
 <translation id="1023220960495960452">Μεταγραφή (vanakkam → வணக்கம்)</translation>
 <translation id="1045157690796831147">Μεταγραφή (namaskar → നമസ്കാരം)</translation>
 <translation id="1065449928621190041">Πληκτρολόγιο με γαλλικούς χαρακτήρες (Καναδά)</translation>
@@ -11,6 +12,7 @@
 </translation>
 <translation id="1208421848177517699">Μεταγραφή (namaste → નમસ્તે)</translation>
 <translation id="1278813325885878377">Πληκτρολόγιο Qwerty Ουγγρικών</translation>
+<translation id="1293264513303784526">Συσκευή USB-C (αριστερή θύρα)</translation>
 <translation id="1310751437842832374">Μεταγραφή (mausam → ନମସ୍ତେ)</translation>
 <translation id="1337036551624197047">Πληκτρολόγιο με τσέχικους χαρακτήρες</translation>
 <translation id="1352103415082130575">Πληκτρολόγιο Ταϊλανδικών (Pattachote)</translation>
@@ -26,6 +28,7 @@
 <translation id="164969095109328410">Συσκευή Chrome</translation>
 <translation id="1829129547161959350">Πιγκουίνος</translation>
 <translation id="184633654410729720">Πληκτρολόγιο Ταϊλανδικών (Kedmanee)</translation>
+<translation id="1864454756846565995">Συσκευή USB-C (πίσω θύρα)</translation>
 <translation id="1921986354447415460">Πληκτρολόγιο Τουρκικών-F</translation>
 <translation id="1931134289871235022">Σλοβακικά</translation>
 <translation id="1936717151811561466">Φινλανδικά
@@ -54,6 +57,7 @@
 <translation id="2771816809568414714">Τυρί</translation>
 <translation id="2781645665747935084">Βελγικά</translation>
 <translation id="2790805296069989825">Πληκτρολόγιο με ρωσικούς χαρακτήρες</translation>
+<translation id="2844169650293029770">Συσκευή USB-C (αριστερή μπροστινή θύρα)</translation>
 <translation id="2870836398458454343">Μεταγραφή (marhaban ← مرحبا)</translation>
 <translation id="288024221176729610">Τσεχικά
 </translation>
@@ -81,7 +85,9 @@
 <translation id="3296763833017966289">Γεωργιανά
 </translation>
 <translation id="3338239663705455570">Πληκτρολόγιο με σλοβενικούς χαρακτήρες</translation>
+<translation id="3371140690572404006">Συσκευή USB-C (δεξιά μπροστινή θύρα)</translation>
 <translation id="3399597614303179694">Πληκτρολόγιο Σλαβομακεδονικών</translation>
+<translation id="3445925074670675829">Συσκευή USB-C</translation>
 <translation id="3494768541638400973">Εισαγωγή Ιαπωνικών Google (για πληκτρολόγιο Ιαπωνικών)</translation>
 <translation id="3519867315646775981">Μεταγραφή (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Πορτογαλικά</translation>
@@ -103,6 +109,7 @@
 <translation id="3910699493603749297">Πληκτρολόγιο Κμερ</translation>
 <translation id="391445228316373457">Πληκτρολόγιο Νεπάλι (Φωνητικό)</translation>
 <translation id="3958548648197196644">Ακτινίδιο</translation>
+<translation id="3995138139523574647">Συσκευή USB-C (πίσω δεξιά θύρα)</translation>
 <translation id="4070370845051020638">Μέθοδος εισαγωγής Καντονέζικων</translation>
 <translation id="4072248638558688893">Πληκτρολόγιο Ταμίλ (Φωνητικό)</translation>
 <translation id="4124935795427217608">Μονόκερος</translation>
@@ -153,6 +160,7 @@
 <translation id="5257456363153333584">Λιβελλούλη</translation>
 <translation id="5319782540886810524">Πληκτρολόγιο με λεττονικούς χαρακτήρες</translation>
 <translation id="5323213332664049067">Λατινικής Αμερικής</translation>
+<translation id="5331975486040154427">Συσκευή USB-C (πίσω αριστερή θύρα)</translation>
 <translation id="5402367795255837559">Μπράιγ</translation>
 <translation id="5412637665001827670">Πληκτρολόγιο με βουλγαρικούς χαρακτήρες</translation>
 <translation id="5418923334382419584">Πληκτρολόγιο Μιανμάρ</translation>
@@ -190,6 +198,7 @@
 <translation id="6358884629796491903">Δράκος</translation>
 <translation id="6462109140674788769">Πληκτρολόγιο με ελληνικούς χαρακτήρες</translation>
 <translation id="6466492211071551451">Πληκτρολόγιο με ιρλανδικούς χαρακτήρες</translation>
+<translation id="6490471652906364588">Συσκευή USB-C (δεξιά θύρα)</translation>
 <translation id="6503256918647795660">Πληκτρολόγιο με γαλλικούς χαρακτήρες (Ελβετίας)</translation>
 <translation id="6505918941256367791">Πληκτρολόγιο Ταμίλ (InScript)</translation>
 <translation id="6509122719576673235">Νορβηγικά</translation>
@@ -209,6 +218,7 @@
 <translation id="6937152069980083337">Εισαγωγή Ιαπωνικών Google (για πληκτρολόγιο ΗΠΑ)</translation>
 <translation id="6939777852457331078">Πληκτρολόγιο ΗΠΑ Workman</translation>
 <translation id="6970230597523682626">Βουλγαρικά</translation>
+<translation id="7098389117866926363">Συσκευή USB-C (πίσω αριστερή θύρα)</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">Μεταγραφή (salam → ሰላም)</translation>
 <translation id="7172053773111046550">Πληκτρολόγιο με εσθονικούς χαρακτήρες</translation>
@@ -278,6 +288,7 @@
 <translation id="8901822611024316615">Τσεχικό πληκτρολόγιο QWERTY</translation>
 <translation id="8919081441417203123">Δανικά
 </translation>
+<translation id="8938800817013097409">Συσκευή USB-C (πίσω δεξιά θύρα)</translation>
 <translation id="8960999352790021682">Πληκτρολόγιο Μπενγκάλι (Φωνητικό)</translation>
 <translation id="9017798300203431059">Φωνητικό Ρωσικά</translation>
 <translation id="913758436357682283">Πληκτρολόγιο Μιανμάρ Myansan</translation>

@@ -246,8 +246,6 @@
 <translation id="6521655319214113338">Introducerea textului prin scrierea de mână</translation>
 <translation id="6528179044667508675">Nu deranja</translation>
 <translation id="6537270692134705506">Capturează ecranul</translation>
-<translation id="6580955892089546165">Cu această funcție poți să accesezi rapid orice utilizator conectat fără a se solicita parola.
-Folosește funcția numai pentru conturile în care ai încredere.</translation>
 <translation id="6585808820553845416">Sesiunea se încheie peste <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Tasta de căutare + Shift + K</translation>
 <translation id="6650933572246256093">Dispozitivul Bluetooth „<ph name="DEVICE_NAME" />” solicită permisiunea de a se conecta. Introduceți această parolă pe dispozitivul respectiv: <ph name="PASSKEY" /></translation>
@@ -305,7 +303,6 @@ Folosește funcția numai pentru conturile în care ai încredere.</translation>
 <translation id="7994370417837006925">Conectare multiplă</translation>
 <translation id="8000066093800657092">Nicio rețea</translation>
 <translation id="8054466585765276473">Se calculează durata bateriei.</translation>
-<translation id="8056430285089645882">Am înțeles, nu mai afișa acest mesaj.</translation>
 <translation id="8098591350844501178">Nu mai proiecta ecranul pe dispozitivul <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Conectat la <ph name="NAME" /></translation>
 <translation id="813913629614996137">Se inițializează...</translation>

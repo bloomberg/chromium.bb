@@ -182,6 +182,7 @@
 <translation id="2650751991977523696">Datei noch einmal herunterladen?</translation>
 <translation id="2653659639078652383">Senden</translation>
 <translation id="2677748264148917807">Verlassen</translation>
+<translation id="2693813674743028984">Speicher ausblenden</translation>
 <translation id="2704606927547763573">Kopiert</translation>
 <translation id="2707726405694321444">Seite aktualisieren</translation>
 <translation id="2709516037105925701">AutoFill</translation>
@@ -207,6 +208,7 @@
 <translation id="2956410042958133412">Dieses Konto wird von <ph name="PARENT_NAME_1" /> und <ph name="PARENT_NAME_2" /> verwaltet.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Alle Rechte vorbehalten.</translation>
 <translation id="2962095958535813455">Zu Inkognito-Tabs gewechselt</translation>
+<translation id="2965945119655563012">Speicher einblenden</translation>
 <translation id="2968755619301702150">Zertifikats-Viewer</translation>
 <translation id="2979025552038692506">Ausgewählter Inkognito-Tab</translation>
 <translation id="2989523299700148168">Kürzlich besucht</translation>
@@ -334,6 +336,7 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="4170011742729630528">Der Dienst ist momentan nicht verfügbar. Bitte versuchen Sie es später erneut.</translation>
 <translation id="4181841719683918333">Sprachen</translation>
 <translation id="4195643157523330669">In neuem Tab öffnen</translation>
+<translation id="4198423547019359126">Keine verfügbaren Speicherorte für Downloads</translation>
 <translation id="4226663524361240545">Bei Benachrichtigungen kann das Gerät vibrieren</translation>
 <translation id="4242533952199664413">Einstellungen öffnen</translation>
 <translation id="424864128008805179">Von Chrome abmelden?</translation>
@@ -700,6 +703,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7455923816558154057">Zum Ansehen tippen</translation>
 <translation id="7473891865547856676">Nein danke</translation>
 <translation id="7475192538862203634">Sollten Sie diese Meldung häufiger erhalten, sehen Sie sich unsere <ph name="BEGIN_LINK" />Empfehlungen<ph name="END_LINK" /> an.</translation>
+<translation id="7475688122056506577">SD-Karte nicht gefunden. Einige Ihrer Dateien fehlen möglicherweise.</translation>
 <translation id="748127970106343339">Löschen der Anmeldedaten des Geräts bestätigen</translation>
 <translation id="7481312909269577407">Vorwärts</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (aktualisiert <ph name="TIME_SINCE_UPDATE" />)</translation>
@@ -763,6 +767,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="8026334261755873520">Browserdaten löschen</translation>
 <translation id="8035133914807600019">Neuer Ordner…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> Tage übrig</translation>
+<translation id="804335162455518893">SD-Karte nicht gefunden</translation>
 <translation id="805047784848435650">Basierend auf Ihrem Browserverlauf</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB verfügbar</translation>
 <translation id="8058746566562539958">In neuem Chrome-Tab öffnen</translation>

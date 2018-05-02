@@ -367,7 +367,6 @@
 <translation id="1545775234664667895">Instalēts motīvs “<ph name="THEME_NAME" />”</translation>
 <translation id="1545786162090505744">URL ar zīmēm % vaicājuma vietā</translation>
 <translation id="1546280085599573572">Šis paplašinājums mainīja iestatījumu, kura lapa tiek parādīta, noklikšķinot uz pogas Sākums.</translation>
-<translation id="1547572086206517271">Nepieciešama atsvaidzināšana</translation>
 <translation id="1548132948283577726">Saites, kas nekad nesaglabā paroles, parādās šeit.</translation>
 <translation id="1549788673239553762">Lietotne <ph name="APP_NAME" /> vēlas piekļūt krātuvei <ph name="VOLUME_NAME" />. Tā var pārveidot vai dzēst failus.</translation>
 <translation id="1553538517812678578">neierobežots</translation>
@@ -734,7 +733,6 @@
 <translation id="2128691215891724419">Sinhronizācijas kļūda: atjauniniet sinhronizācijas ieejas frāzi...</translation>
 <translation id="2129825002735785149">Atjaunināt spraudni</translation>
 <translation id="2129904043921227933">Sinhronizācijas kļūda: atjauniniet sinhronizācijas ieejas frāzi...</translation>
-<translation id="2130949041518253417">Veiciet sinhronizāciju, lai personalizētu pārlūkošanas iespējas visās savās ierīcēs.</translation>
 <translation id="2131077480075264">Nevar instalēt lietotni “<ph name="APP_NAME" />”, jo to neatļauj “<ph name="IMPORT_NAME" />”.</translation>
 <translation id="2135787500304447609">Atsā&amp;kt</translation>
 <translation id="2136372518715274136">Ievadiet jauno paroli</translation>
@@ -1689,7 +1687,6 @@ Plašāku informāciju skatiet mūsu <ph name="BEGIN_LINK" />palīdzības centr�
 <translation id="3576324189521867626">Veiksmīgi instalēta</translation>
 <translation id="3578594933904494462">Šīs cilnes saturs tiek kopīgots.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; vēlas koplietot printeri &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; ar jums piederošo grupu: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Ja pieņemsiet uzaicinājumu, šo printeri varēs izmantot visi grupas dalībnieki.</translation>
-<translation id="3582972582564653026">Chrome sinhronizēšana un personalizēšana visās jūsu ierīcēs</translation>
 <translation id="3584169441612580296">Lasīt fotoattēus, mūziku un citu datorā esošu multivides saturu un mainīt to</translation>
 <translation id="3587482841069643663">Visi</translation>
 <translation id="358796204584394954">Lai izveidotu savienojumu pārī, ierīcē “<ph name="DEVICE_NAME" />” ievadiet šo kodu:</translation>
@@ -2226,7 +2223,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="4448844063988177157">Notiek Wi-Fi tīklu meklēšana...</translation>
 <translation id="4449996769074858870">Šī cilne atskaņo audio.</translation>
 <translation id="4450974146388585462">Diagnosticēt</translation>
-<translation id="4452426408005428395">Atcelt</translation>
 <translation id="445923051607553918">Pievienoties Wi-Fi tīklam</translation>
 <translation id="4462159676511157176">Pielāgoti nosaukumu serveri</translation>
 <translation id="4467100756425880649">Chrome interneta veikala galerija</translation>
@@ -2736,7 +2732,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="5266113311903163739">Sertifikāta izdevējiestādes importēšanas kļūda</translation>
 <translation id="5269977353971873915">Drukāšana neizdevās</translation>
 <translation id="5271549068863921519">Saglabāt paroli</translation>
-<translation id="5275194674756975076">Labi, atsvaidzināt</translation>
 <translation id="5275352920323889391">Suns</translation>
 <translation id="5275973617553375938">No Google diska atkoptie faili</translation>
 <translation id="527605719918376753">Izslēgt cilnes skaņu</translation>
@@ -3871,7 +3866,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="7006634003215061422">Apakšējā piemale</translation>
 <translation id="7006844981395428048">$1 audio</translation>
 <translation id="7007648447224463482">Atvērt visu jaunā logā</translation>
-<translation id="7008270479623533562">Lai palaistu šo paplašinājumu, jāatsvaidzina lapa. Varat palaist šo paplašinājumu automātiski šajā vietnē, ar peles labo pogu noklikšķinot uz paplašinājuma ikonas.</translation>
 <translation id="701080569351381435">Skatīt avotu</translation>
 <translation id="7012372675181957985">Jūsu Google kontam var būt cita veida pārlūkošanas vēstures dati vietnē <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="7014174261166285193">Instalēšana neizdevās.</translation>

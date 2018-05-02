@@ -642,7 +642,6 @@
 <translation id="5492298309214877701">Ennek a vállalati, szervezeti vagy iskolai intraneten található webhelynek az URL-címe megegyezik egy külső webhely URL-címével.
     <ph name="LINE_BREAK" />
     Javasoljuk, hogy forduljon a rendszergazdához.</translation>
-<translation id="5499929369096410817">Adja meg a következő kártya biztonsági kódját: <ph name="CREDIT_CARD" />. A kódot nem menti a rendszer.</translation>
 <translation id="5509780412636533143">Kezelt könyvjelzők</translation>
 <translation id="5510766032865166053">Előfordulhat, hogy át lett helyezve, vagy törölve lett.</translation>
 <translation id="5523118979700054094">Az irányelv neve</translation>
@@ -702,7 +701,6 @@
 <translation id="5967867314010545767">Eltávolítás az előzmények közül</translation>
 <translation id="5972020793760134803">Váltás lapra</translation>
 <translation id="5975083100439434680">Kicsinyítés</translation>
-<translation id="597552863672748783">Biztonsági kód megerősítése</translation>
 <translation id="598637245381783098">Nem sikerült megnyitni a fizetőalkalmazást</translation>
 <translation id="5989320800837274978">Sem fix proxyszerver, sem pedig .pac típusú szkript URL-címe nincs megadva.</translation>
 <translation id="5990559369517809815">A szerver felé irányuló kéréseket egy bővítmény blokkolja.</translation>

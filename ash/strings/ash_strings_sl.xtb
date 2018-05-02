@@ -246,9 +246,6 @@
 <translation id="6521655319214113338">Vnos z rokopisom</translation>
 <translation id="6528179044667508675">Ne moti</translation>
 <translation id="6537270692134705506">Zajem zaslona</translation>
-<translation id="6580955892089546165">S to funkcijo lahko hitro dostopate do poljubnega prijavljenega uporabnika, ne da bi vam bilo treba vnesti geslo.
-
-Uporabljajte to funkcijo samo z računi, ki jim zaupate.</translation>
 <translation id="6585808820553845416">Seja se konča čez <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Tipka za iskanje + Shift + K</translation>
 <translation id="6650933572246256093">Naprava Bluetooth »<ph name="DEVICE_NAME" />« želi vaše dovoljenje za seznanjanje. V napravi vnesite to geslo: <ph name="PASSKEY" /></translation>
@@ -306,7 +303,6 @@ Uporabljajte to funkcijo samo z računi, ki jim zaupate.</translation>
 <translation id="7994370417837006925">Prijava z več računi</translation>
 <translation id="8000066093800657092">Ni omrežja</translation>
 <translation id="8054466585765276473">Izračunavanje časa trajanja akumulatorja.</translation>
-<translation id="8056430285089645882">Razumem. Tega sporočila ne kaži več.</translation>
 <translation id="8098591350844501178">Ustavi predvajanje zaslona v napravi <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Povezava z <ph name="NAME" /> je vzpostavljena </translation>
 <translation id="813913629614996137">Inicializiranje ...</translation>

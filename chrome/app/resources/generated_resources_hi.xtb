@@ -367,7 +367,6 @@
 <translation id="1545775234664667895">थीम "<ph name="THEME_NAME" />" स्थापित की गई</translation>
 <translation id="1545786162090505744">क्वेरी के स्थान पर %s वाला URL</translation>
 <translation id="1546280085599573572">इस एक्सटेंशन ने यह बदल दिया है कि जब आप होम बटन क्लिक करते हैं तब कौन सा पेज दिखाया जाए.</translation>
-<translation id="1547572086206517271">रीफ्रेश करने की आवश्यकता है</translation>
 <translation id="1548132948283577726">वे साइटें जो कभी पासवर्ड नहीं सहेजती हैं, यहां दिखाई देंगी.</translation>
 <translation id="1549788673239553762"><ph name="APP_NAME" /> <ph name="VOLUME_NAME" /> को ऐक्‍सेस करना चाहता है. वह आपकी फ़ाइलों में बदलाव कर सकता है या उन्‍हें हटा सकता है.</translation>
 <translation id="1553538517812678578">असीमित</translation>
@@ -731,7 +730,6 @@
 <translation id="2128691215891724419">समन्‍वयन गड़बड़ी: समन्‍वयन पदबंध अपडेट करें...</translation>
 <translation id="2129825002735785149">प्‍लग इन अपडेट करें</translation>
 <translation id="2129904043921227933">समन्‍वयन गड़बड़ी: समन्‍वयन पदबंध अपडेट करें...</translation>
-<translation id="2130949041518253417">अपने सभी डिवाइस पर मनमुताबिक ब्राउज़िंग अनुभव के लिए सिंक करें</translation>
 <translation id="2131077480075264">"<ph name="APP_NAME" />" इंस्‍टॉल करने में असमर्थ क्‍योंकि "<ph name="IMPORT_NAME" />" द्वारा इसकी अनुमति नहीं है</translation>
 <translation id="2135787500304447609">&amp;फिर से शुरू करें</translation>
 <translation id="2136372518715274136">नया पासवर्ड डालें</translation>
@@ -1683,7 +1681,6 @@
 <translation id="3576324189521867626">सफलतापूर्वक इंस्टॉल हो गया है</translation>
 <translation id="3578594933904494462">इस टैब की सामग्री को साझा किया जा रहा है.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; आपके स्‍वामित्‍व वाले समूह: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt; से &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; प्रिंटर साझा करना चाहता है. यदि आप स्‍वीकार करते हैं, तो समूह के सभी सदस्‍य प्रिंटर से प्रिंट कर पाएंगे.</translation>
-<translation id="3582972582564653026">Chrome को अपने सभी डिवाइस पर सिंक करें और मनमुताबिक बनाएं</translation>
 <translation id="3584169441612580296">अपने कंप्यूटर से फ़ोटो, संगीत और अन्य मीडिया एक्सेस करें और उन्हें बदलें</translation>
 <translation id="3587482841069643663">सभी</translation>
 <translation id="358796204584394954">इन्हें युग्मित करने के लिए इस कोड को "<ph name="DEVICE_NAME" />" पर लिखें:</translation>
@@ -2215,7 +2212,6 @@
 <translation id="4448844063988177157">वाई-फ़ाई  नेटवर्क खोज रहा है...</translation>
 <translation id="4449996769074858870">यह टैब ऑडियो चला रहा है.</translation>
 <translation id="4450974146388585462">निदान करें</translation>
-<translation id="4452426408005428395">कोई बात नहीं</translation>
 <translation id="445923051607553918">वाई-फ़ाई  नेटवर्क से जुड़ें</translation>
 <translation id="4462159676511157176">कस्टम नाम सर्वर</translation>
 <translation id="4467100756425880649">Chrome वेब स्‍टोर गैलरी</translation>
@@ -2722,7 +2718,6 @@
 <translation id="5266113311903163739">प्रमाणन प्राधिकरण आयात गड़बड़ी</translation>
 <translation id="5269977353971873915">प्रिंट विफल</translation>
 <translation id="5271549068863921519">पासवर्ड सहेजें</translation>
-<translation id="5275194674756975076">ठीक, रीफ्रेश करें</translation>
 <translation id="5275352920323889391">श्‍वान</translation>
 <translation id="5275973617553375938">Google डिस्क से पुनर्प्राप्त की गई फ़ाइलें</translation>
 <translation id="527605719918376753">टैब म्यूट करें</translation>
@@ -3851,7 +3846,6 @@
 <translation id="7006634003215061422">निचला हाशिया</translation>
 <translation id="7006844981395428048">$1 ऑडियो</translation>
 <translation id="7007648447224463482">सभी को नई विंडो में खोलें</translation>
-<translation id="7008270479623533562">इस एक्सटेंशन को चलाने के लिए, आपको पेज को रीफ्रेश करना होगा. आप एक्सटेंशन आइकन पर राइट-क्लिक करके इस साइट पर एक्सटेंशन को अपने आप चला सकते हैं.</translation>
 <translation id="701080569351381435">स्रोत देखें</translation>
 <translation id="7012372675181957985">आपके Google खाते में <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> पर ब्राउज़िंग इतिहास के अन्य रूप उपलब्ध हो सकते हैं</translation>
 <translation id="7014174261166285193">स्थापना विफल.</translation>

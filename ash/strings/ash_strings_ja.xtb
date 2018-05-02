@@ -246,9 +246,6 @@
 <translation id="6521655319214113338">手書き入力</translation>
 <translation id="6528179044667508675">通知を一時的にミュート</translation>
 <translation id="6537270692134705506">画面をキャプチャ</translation>
-<translation id="6580955892089546165">この機能を使用すると、パスワードを入力せずにログイン ユーザーにアクセスできます。
-
-この機能は信頼できるアカウントにのみ使用してください。</translation>
 <translation id="6585808820553845416">セッション終了まであと <ph name="SESSION_TIME_REMAINING" />です。</translation>
 <translation id="6627638273713273709">検索+Shift+K</translation>
 <translation id="6650933572246256093">Bluetooth デバイス「<ph name="DEVICE_NAME" />」がペア設定の権限をリクエストしています。このデバイスに次のパスキーを入力してください: <ph name="PASSKEY" /></translation>
@@ -307,7 +304,6 @@
 <translation id="7994370417837006925">マルチ ログイン</translation>
 <translation id="8000066093800657092">ネットワーク接続なし</translation>
 <translation id="8054466585765276473">バッテリーの残り時間を計算しています。</translation>
-<translation id="8056430285089645882">了解。今後このメッセージを表示しない。</translation>
 <translation id="8098591350844501178"><ph name="RECEIVER_NAME" /> への画面のキャストを停止する</translation>
 <translation id="8132793192354020517"><ph name="NAME" /> に接続しました</translation>
 <translation id="813913629614996137">初期化しています...</translation>

@@ -367,7 +367,6 @@
 <translation id="1545775234664667895">Tema yang dipasang "<ph name="THEME_NAME" />"</translation>
 <translation id="1545786162090505744">URL dengan %s sebagai ganti pertanyaan</translation>
 <translation id="1546280085599573572">Sambungan ini telah menukar halaman yang ditunjukkan apabila anda mengklik butang Laman Utama.</translation>
-<translation id="1547572086206517271">Perlu muat semula</translation>
 <translation id="1548132948283577726">Tapak yang langsung tidak menyimpan kata laluan anda muncul di sini.</translation>
 <translation id="1549788673239553762"><ph name="APP_NAME" /> ingin mengakses <ph name="VOLUME_NAME" />. Apl mungkin mengubah suai atau memadamkan fail anda.</translation>
 <translation id="1553538517812678578">tidak terhad</translation>
@@ -734,7 +733,6 @@
 <translation id="2128691215891724419">Ralat Segerak: Kemas kini frasa laluan Segerak...</translation>
 <translation id="2129825002735785149">Kemas kini pemalam</translation>
 <translation id="2129904043921227933">Ralat Segerak: Kemas Kini Frasa Laluan Segerak...</translation>
-<translation id="2130949041518253417">Segerakkan untuk mendapatkan pengalaman penyemakan imbas yang diperibadikan merentas peranti anda</translation>
 <translation id="2131077480075264">Tidak dapat memasang "<ph name="APP_NAME" />" kerana tidak dibenarkan oleh "<ph name="IMPORT_NAME" />"</translation>
 <translation id="2135787500304447609">&amp;Sambung semula</translation>
 <translation id="2136372518715274136">Masukkan kata laluan baharu</translation>
@@ -1690,7 +1688,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="3576324189521867626">Berjaya dipasang</translation>
 <translation id="3578594933904494462">Kandungan tab ini sedang dikongsi.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; ingin berkongsi pencetak &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; dengan kumpulan yang anda miliki: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Jika anda terima, semua ahli kumpulan boleh menggunakan pencetak tersebut.</translation>
-<translation id="3582972582564653026">Segerakkan dan peribadikan Chrome pada semua peranti anda</translation>
 <translation id="3584169441612580296">Baca dan ubah foto, muzik dan media lain daripada komputer anda</translation>
 <translation id="3587482841069643663">Semua</translation>
 <translation id="358796204584394954">Taip kod ini pada "<ph name="DEVICE_NAME" />" untuk digandingkan:</translation>
@@ -2227,7 +2224,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="4448844063988177157">Mencari rangkaian Wi-Fi...</translation>
 <translation id="4449996769074858870">Tab ini sedang memainkan audio.</translation>
 <translation id="4450974146388585462">Diagnosis</translation>
-<translation id="4452426408005428395">Tidak perlu</translation>
 <translation id="445923051607553918">Sertai rangkaian Wi-Fi</translation>
 <translation id="4462159676511157176">Nama pelayan tersuai</translation>
 <translation id="4467100756425880649">Galeri Gedung Web Chrome</translation>
@@ -2737,7 +2733,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="5266113311903163739">Ralat Import Pihak Berkuasa Pensijilan</translation>
 <translation id="5269977353971873915">Cetakan Gagal</translation>
 <translation id="5271549068863921519">Simpan kata laluan</translation>
-<translation id="5275194674756975076">OK, muat semula</translation>
 <translation id="5275352920323889391">Anjing</translation>
 <translation id="5275973617553375938">Fail yang diperoleh semula dari Google Drive</translation>
 <translation id="527605719918376753">Redam tab</translation>
@@ -3872,7 +3867,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="7006634003215061422">Jidar bawah</translation>
 <translation id="7006844981395428048">Audio $1</translation>
 <translation id="7007648447224463482">Buka semua dalam tetingkap baharu</translation>
-<translation id="7008270479623533562">Untuk menjalankan sambungan ini, anda perlu memuatkan semula halaman. Anda boleh menjalankan sambungan ini secara automatik pada tapak ini dengan mengklik kanan pada ikon sambungan.</translation>
 <translation id="701080569351381435">Lihat Sumber</translation>
 <translation id="7012372675181957985">Akaun Google anda mungkin mempunyai sejarah penyemakan imbas dalam bentuk lain di <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7014174261166285193">Gagal pemasangan.</translation>

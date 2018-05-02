@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
+<translation id="1012876632442809908">USB-C デバイス（前面のポート）</translation>
 <translation id="1023220960495960452">文字変換（vanakkam → வணக்கம்）</translation>
 <translation id="1045157690796831147">文字変換（namaskar → നമസ്കാരം）</translation>
 <translation id="1065449928621190041">フランス語（カナダ）のキーボード</translation>
@@ -10,6 +11,7 @@
 <translation id="1155759005174418845">カタロニア語</translation>
 <translation id="1208421848177517699">文字変換（namaste → નમસ્તે）</translation>
 <translation id="1278813325885878377">ハンガリー語 QWERTY キーボード</translation>
+<translation id="1293264513303784526">USB-C デバイス（左側面のポート）</translation>
 <translation id="1310751437842832374">文字変換（mausam → ନମସ୍ତେ）</translation>
 <translation id="1337036551624197047">チェコ語のキーボード</translation>
 <translation id="1352103415082130575">タイ語キーボード（Pattachote）</translation>
@@ -25,6 +27,7 @@
 <translation id="164969095109328410">Chrome 搭載デバイス</translation>
 <translation id="1829129547161959350">ペンギン</translation>
 <translation id="184633654410729720">タイ語キーボード（Kedmanee）</translation>
+<translation id="1864454756846565995">USB-C デバイス（背面のポート）</translation>
 <translation id="1921986354447415460">トルコ語-F キーボード</translation>
 <translation id="1931134289871235022">スロバキア語</translation>
 <translation id="1936717151811561466">フィンランド語</translation>
@@ -52,6 +55,7 @@
 <translation id="2771816809568414714">チーズ</translation>
 <translation id="2781645665747935084">ベルギー語</translation>
 <translation id="2790805296069989825">ロシア語のキーボード</translation>
+<translation id="2844169650293029770">USB-C デバイス（左手前のポート）</translation>
 <translation id="2870836398458454343">文字変換（marhaban ← مرحبا）</translation>
 <translation id="288024221176729610">チェコ語</translation>
 <translation id="2894654529758326923">情報</translation>
@@ -75,7 +79,9 @@
 <translation id="3280987981688031357">レコード</translation>
 <translation id="3296763833017966289">グルジア語</translation>
 <translation id="3338239663705455570">スロベニア語のキーボード</translation>
+<translation id="3371140690572404006">USB-C デバイス（右手前のポート）</translation>
 <translation id="3399597614303179694">マケドニア語キーボード</translation>
+<translation id="3445925074670675829">USB-C デバイス</translation>
 <translation id="3494768541638400973">Google 日本語入力（日本語キーボード用）</translation>
 <translation id="3519867315646775981">文字変換（shalom ← שלום）</translation>
 <translation id="3522708245912499433">ポルトガル語</translation>
@@ -95,6 +101,7 @@
 <translation id="3910699493603749297">クメール語キーボード</translation>
 <translation id="391445228316373457">ネパール語キーボード（表音）</translation>
 <translation id="3958548648197196644">キウイ</translation>
+<translation id="3995138139523574647">USB-C デバイス（右奥のポート）</translation>
 <translation id="4070370845051020638">広東語入力方法</translation>
 <translation id="4072248638558688893">タミル語キーボード（表音）</translation>
 <translation id="4124935795427217608">ユニコーン</translation>
@@ -141,6 +148,7 @@
 <translation id="5257456363153333584">トンボ</translation>
 <translation id="5319782540886810524">ラトビア語のキーボード</translation>
 <translation id="5323213332664049067">ラテン アメリカ</translation>
+<translation id="5331975486040154427">USB-C デバイス（左奥のポート）</translation>
 <translation id="5402367795255837559">点字</translation>
 <translation id="5412637665001827670">ブルガリア語のキーボード</translation>
 <translation id="5418923334382419584">ミャンマー語キーボード</translation>
@@ -177,6 +185,7 @@
 <translation id="6358884629796491903">ドラゴン</translation>
 <translation id="6462109140674788769">ギリシャ語のキーボード</translation>
 <translation id="6466492211071551451">アイルランド語キーボード</translation>
+<translation id="6490471652906364588">USB-C デバイス（右側面のポート）</translation>
 <translation id="6503256918647795660">フランス語（スイス）のキーボード</translation>
 <translation id="6505918941256367791">タミル語キーボード（字母）</translation>
 <translation id="6509122719576673235">ノルウェー語</translation>
@@ -195,6 +204,7 @@
 <translation id="6937152069980083337">Google 日本語入力（US キーボード用）</translation>
 <translation id="6939777852457331078">US Workman キーボード</translation>
 <translation id="6970230597523682626">ブルガリア語</translation>
+<translation id="7098389117866926363">USB-C デバイス（背面左のポート）</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">文字変換（salam → ሰላም）</translation>
 <translation id="7172053773111046550">エストニア語のキーボード</translation>
@@ -255,6 +265,7 @@
 <translation id="8900820606136623064">ハンガリー語</translation>
 <translation id="8901822611024316615">チェコ語 QWERTY 配列キーボード</translation>
 <translation id="8919081441417203123">デンマーク語</translation>
+<translation id="8938800817013097409">USB-C デバイス（背面右のポート）</translation>
 <translation id="8960999352790021682">ベンガル語キーボード（表音）</translation>
 <translation id="9017798300203431059">ロシア語（表音）</translation>
 <translation id="913758436357682283">ミャンマー Myansan キーボード</translation>

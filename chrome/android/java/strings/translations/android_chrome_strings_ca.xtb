@@ -182,6 +182,7 @@
 <translation id="2650751991977523696">Vols tornar a baixar el fitxer?</translation>
 <translation id="2653659639078652383">Envia</translation>
 <translation id="2677748264148917807">Surt</translation>
+<translation id="2693813674743028984">Amaga l'emmagatzematge</translation>
 <translation id="2704606927547763573">Copiada</translation>
 <translation id="2707726405694321444">Actualitza la pàgina</translation>
 <translation id="2709516037105925701">Emplenament autom.</translation>
@@ -207,6 +208,7 @@
 <translation id="2956410042958133412"><ph name="PARENT_NAME_1" /> i <ph name="PARENT_NAME_2" /> gestionen aquest compte.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Tots els drets reservats.</translation>
 <translation id="2962095958535813455">S'ha canviat a les pestanyes d'incògnit</translation>
+<translation id="2965945119655563012">Mostra l'emmagatzematge</translation>
 <translation id="2968755619301702150">Lector de certificats</translation>
 <translation id="2979025552038692506">Pestanya d'incògnit seleccionada</translation>
 <translation id="2989523299700148168">Visitats últimament</translation>
@@ -334,6 +336,7 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="4170011742729630528">El servei no està disponible. Torneu-ho a provar més tard.</translation>
 <translation id="4181841719683918333">Idiomes</translation>
 <translation id="4195643157523330669">Obre en una pestanya nova</translation>
+<translation id="4198423547019359126">No hi ha cap ubicació de baixada disponible</translation>
 <translation id="4226663524361240545">És possible que les notificacions facin vibrar el dispositiu</translation>
 <translation id="4242533952199664413">Obre la configuració</translation>
 <translation id="424864128008805179">Voleu tancar la sessió de Chrome?</translation>
@@ -699,6 +702,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7455923816558154057">Toca per veure-ho</translation>
 <translation id="7473891865547856676">No, gràcies</translation>
 <translation id="7475192538862203634">Si això passa sovint, proveu aquests <ph name="BEGIN_LINK" />suggeriments<ph name="END_LINK" />.</translation>
+<translation id="7475688122056506577">La targeta SD no s'ha trobat. Pot ser que faltin alguns fitxers.</translation>
 <translation id="748127970106343339">Confirma la supressió de les credencials del dispositiu</translation>
 <translation id="7481312909269577407">Endavant</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (última actualització: <ph name="TIME_SINCE_UPDATE" />)</translation>
@@ -762,6 +766,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="8026334261755873520">Esborra les dades de navegació</translation>
 <translation id="8035133914807600019">Carpeta nova…</translation>
 <translation id="8037750541064988519">Queden <ph name="DAYS" /> dies</translation>
+<translation id="804335162455518893">La targeta SD no s'ha trobat</translation>
 <translation id="805047784848435650">Segons l'historial de navegació</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB disponibles</translation>
 <translation id="8058746566562539958">Obre en pestanya nova a Chrome</translation>

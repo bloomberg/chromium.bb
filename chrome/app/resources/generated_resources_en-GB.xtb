@@ -368,7 +368,6 @@
 <translation id="1545775234664667895">Installed theme "<ph name="THEME_NAME" />"</translation>
 <translation id="1545786162090505744">URL with %s in place of query</translation>
 <translation id="1546280085599573572">This extension has changed the page that is shown when you click the Home button.</translation>
-<translation id="1547572086206517271">Refresh required</translation>
 <translation id="1548132948283577726">Sites which never save passwords will appear here.</translation>
 <translation id="1549788673239553762"><ph name="APP_NAME" /> wants to access <ph name="VOLUME_NAME" />. It may modify or delete your files.</translation>
 <translation id="1553538517812678578">unlimited</translation>
@@ -735,7 +734,6 @@
 <translation id="2128691215891724419">Sync Error: Update Sync passphrase...</translation>
 <translation id="2129825002735785149">Update plug-in</translation>
 <translation id="2129904043921227933">Sync Error: Update Sync Passphrase...</translation>
-<translation id="2130949041518253417">Sync for a personalised browsing experience, across your devices</translation>
 <translation id="2131077480075264">Unable to install "<ph name="APP_NAME" />" because it is not allowed by "<ph name="IMPORT_NAME" />"</translation>
 <translation id="2135787500304447609">&amp;Resume</translation>
 <translation id="2136372518715274136">Enter new password</translation>
@@ -1689,7 +1687,6 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="3576324189521867626">Successfully installed</translation>
 <translation id="3578594933904494462">This tab's content is being shared.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; wants to share a printer &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; with a group that you own: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. If you accept, all group members will be able to print to the printer.</translation>
-<translation id="3582972582564653026">Sync and personalise Chrome across your devices</translation>
 <translation id="3584169441612580296">Read and change photos, music and other media from your computer</translation>
 <translation id="3587482841069643663">All</translation>
 <translation id="358796204584394954">Type this code on "<ph name="DEVICE_NAME" />" to pair:</translation>
@@ -2226,7 +2223,6 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="4448844063988177157">Searching for Wi-Fi networks...</translation>
 <translation id="4449996769074858870">This tab is playing audio.</translation>
 <translation id="4450974146388585462">Diagnose</translation>
-<translation id="4452426408005428395">Never mind</translation>
 <translation id="445923051607553918">Join Wi-Fi network</translation>
 <translation id="4462159676511157176">Custom name servers</translation>
 <translation id="4467100756425880649">Chrome Web Store Gallery</translation>
@@ -2736,7 +2732,6 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="5266113311903163739">Certification Authority Import Error</translation>
 <translation id="5269977353971873915">Print Failed</translation>
 <translation id="5271549068863921519">Save password</translation>
-<translation id="5275194674756975076">OK, refresh</translation>
 <translation id="5275352920323889391">Dog</translation>
 <translation id="5275973617553375938">Recovered files from Google Drive</translation>
 <translation id="527605719918376753">Mute tab</translation>
@@ -3871,7 +3866,6 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="7006634003215061422">Bottom margin</translation>
 <translation id="7006844981395428048">$1 audio</translation>
 <translation id="7007648447224463482">Open all in new window</translation>
-<translation id="7008270479623533562">In order to run this extension, you need to refresh the page. You can run this extension automatically on this site by right-clicking on the extension icon.</translation>
 <translation id="701080569351381435">View Source</translation>
 <translation id="7012372675181957985">Your Google account may have other forms of browsing history at <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7014174261166285193">Installation failed.</translation>

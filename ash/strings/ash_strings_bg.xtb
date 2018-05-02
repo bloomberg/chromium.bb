@@ -246,9 +246,6 @@
 <translation id="6521655319214113338">Ръкописно въвеждане</translation>
 <translation id="6528179044667508675">Не безпокойте</translation>
 <translation id="6537270692134705506">Заснемане на екрана</translation>
-<translation id="6580955892089546165">С тази функция получавате бърз достъп без парола до всеки влязъл потребител.
-
-Използвайте я само с надеждни профили.</translation>
 <translation id="6585808820553845416">Сесията приключва след <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">клавиш „търсене“ + Shift + K</translation>
 <translation id="6650933572246256093">Устройството с Bluetooth „<ph name="DEVICE_NAME" />“ иска разрешение за сдвояване. Моля, въведете на него следния ключ за достъп: <ph name="PASSKEY" /></translation>
@@ -306,7 +303,6 @@
 <translation id="7994370417837006925">Централизиран вход</translation>
 <translation id="8000066093800657092">Няма мрежа</translation>
 <translation id="8054466585765276473">Издръжливостта на батерията се изчислява.</translation>
-<translation id="8056430285089645882">Разбрах, не показвайте това отново.</translation>
 <translation id="8098591350844501178">Спиране на предаването на екрана към „<ph name="RECEIVER_NAME" />“</translation>
 <translation id="8132793192354020517">Установена е връзка с/ъс <ph name="NAME" /></translation>
 <translation id="813913629614996137">Подготвя се за работа...</translation>

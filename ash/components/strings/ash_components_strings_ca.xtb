@@ -102,6 +102,7 @@
 <translation id="5236674127086649162">Torna a carregar la pàgina actual sense utilitzar contingut desat a la memòria cau</translation>
 <translation id="526651782186312376">Selecciona text fins al principi de la línia</translation>
 <translation id="5316716239522500219">Replica els monitors</translation>
+<translation id="5487187679583934283">Comença a escriure el que pronuncies o deixa de fer-ho</translation>
 <translation id="5541719484267030947">Mentre arrossegues la pestanya, prem <ph name="ESC" /></translation>
 <translation id="5554139136362089836">Fes una cerca a la pàgina actual</translation>
 <translation id="5563050856984839829">Prem <ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> i fes clic en un enllaç</translation>
@@ -144,6 +145,7 @@
 <translation id="6981982820502123353">Accessibilitat</translation>
 <translation id="7020813747703216897">No s'ha trobat cap resultat coincident</translation>
 <translation id="7025325401470358758">Subfinestra següent</translation>
+<translation id="7076878155205969899">Silencia el so</translation>
 <translation id="7077383985738259936">Situa el focus a la barra d'adreces d'interès o la destaca (si es mostra)</translation>
 <translation id="7237562915163138771">Escriu una adreça web a la barra d'adreces i prem <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7254764037241667478">Posa el dispositiu en mode de repòs (suspès)</translation>

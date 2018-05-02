@@ -246,9 +246,6 @@
 <translation id="6521655319214113338">필기 입력</translation>
 <translation id="6528179044667508675">알림 일시중지</translation>
 <translation id="6537270692134705506">화면 캡처</translation>
-<translation id="6580955892089546165">이 기능을 사용하면 로그인한 모든 사용자에게 비밀번호 없이 액세스할 수 있습니다.
-
-이 기능은 신뢰할 수 있는 계정에만 사용하시기 바랍니다.</translation>
 <translation id="6585808820553845416">세션이 <ph name="SESSION_TIME_REMAINING" /> 후에 종료됩니다.</translation>
 <translation id="6627638273713273709">검색+Shift+K</translation>
 <translation id="6650933572246256093">블루투스 기기 '<ph name="DEVICE_NAME" />'에서 페어링 허가를 요청합니다. 해당 기기에서 다음 패스키를 입력하세요. <ph name="PASSKEY" /></translation>
@@ -306,7 +303,6 @@
 <translation id="7994370417837006925">멀티 로그인</translation>
 <translation id="8000066093800657092">네트워크 없음</translation>
 <translation id="8054466585765276473">배터리 시간 계산 중</translation>
-<translation id="8056430285089645882">확인했습니다. 다시 표시하지 않습니다.</translation>
 <translation id="8098591350844501178"><ph name="RECEIVER_NAME" />에 화면 전송 중지</translation>
 <translation id="8132793192354020517"><ph name="NAME" />에 연결됨</translation>
 <translation id="813913629614996137">초기화 중...</translation>

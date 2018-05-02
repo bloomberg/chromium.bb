@@ -367,7 +367,6 @@
 <translation id="1545775234664667895">Instalirana tema "<ph name="THEME_NAME" />"</translation>
 <translation id="1545786162090505744">URL s %s na mjestu upita</translation>
 <translation id="1546280085599573572">Ovo proširenje promijenilo je stranicu koja se prikazuje kada se klikne gumb Početna.</translation>
-<translation id="1547572086206517271">Morate osvježiti stranicu</translation>
 <translation id="1548132948283577726">Ovdje će se pojaviti web-lokacije koje nikad ne spremaju zaporke.</translation>
 <translation id="1549788673239553762"><ph name="APP_NAME" /> želi pristupiti jedinici <ph name="VOLUME_NAME" />. Ta aplikacija može izmijeniti ili izbrisati vaše datoteke.</translation>
 <translation id="1553538517812678578">neograničeno</translation>
@@ -734,7 +733,6 @@
 <translation id="2128691215891724419">Pogreška u sinkronizaciji: ažurirajte pristupni izraz...</translation>
 <translation id="2129825002735785149">Ažurirajte dodatak</translation>
 <translation id="2129904043921227933">Pogreška u sinkronizaciji: ažurirajte pristupni izraz...</translation>
-<translation id="2130949041518253417">Uključite sinkronizaciju da bi pregledavanje bilo prilagođeno vama na svim vašim uređajima</translation>
 <translation id="2131077480075264">Nije moguće instalirati aplikaciju "<ph name="APP_NAME" />" jer je "<ph name="IMPORT_NAME" />" ne dopušta</translation>
 <translation id="2135787500304447609">&amp;Nastavi</translation>
 <translation id="2136372518715274136">Unesite novu zaporku</translation>
@@ -1689,7 +1687,6 @@ Više informacija potražite u našem <ph name="BEGIN_LINK" />centru za pomoć<p
 <translation id="3576324189521867626">Uspješno instalirano</translation>
 <translation id="3578594933904494462">Sadržaj ove kartice dijeli se.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; želi dijeliti pisač &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; s grupom čiji ste vlasnik: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Ako prihvatite, svi članovi grupe moći će ispisivati putem pisača.</translation>
-<translation id="3582972582564653026">Uključite sinkronizaciju Chromea kako bi vam bio prilagođen na svim vašim uređajima</translation>
 <translation id="3584169441612580296">čitati i mijenjati fotografije, glazbu i druge medije s vašeg računala</translation>
 <translation id="3587482841069643663">Sve</translation>
 <translation id="358796204584394954">Upišite ovaj kôd na uređaju <ph name="DEVICE_NAME" /> da biste ga uparili:</translation>
@@ -2226,7 +2223,6 @@ Više informacija potražite u našem <ph name="BEGIN_LINK" />centru za pomoć<p
 <translation id="4448844063988177157">Traženje Wi-Fi mreža...</translation>
 <translation id="4449996769074858870">Ta kartica reproducira zvuk.</translation>
 <translation id="4450974146388585462">Dijagnosticiranje</translation>
-<translation id="4452426408005428395">Zanemari</translation>
 <translation id="445923051607553918">Spoji se s Wi-Fi mrežom</translation>
 <translation id="4462159676511157176">Prilagođeni poslužitelji naziva</translation>
 <translation id="4467100756425880649">Galerija Chrome web-trgovine</translation>
@@ -2736,7 +2732,6 @@ Više informacija potražite u našem <ph name="BEGIN_LINK" />centru za pomoć<p
 <translation id="5266113311903163739">Pogreška pri uvozu tijela za izdavanje certifikata</translation>
 <translation id="5269977353971873915">Ispis nije uspio</translation>
 <translation id="5271549068863921519">Spremi zaporku</translation>
-<translation id="5275194674756975076">U redu, osvježi</translation>
 <translation id="5275352920323889391">Pas</translation>
 <translation id="5275973617553375938">Oporavljene datoteke s Google diska</translation>
 <translation id="527605719918376753">Isključi zvuk kartice</translation>
@@ -3871,7 +3866,6 @@ Više informacija potražite u našem <ph name="BEGIN_LINK" />centru za pomoć<p
 <translation id="7006634003215061422">Donja margina</translation>
 <translation id="7006844981395428048">$1 audiozapis</translation>
 <translation id="7007648447224463482">Otvori sve u novom prozoru</translation>
-<translation id="7008270479623533562">Da biste pokrenuli proširenje, morate osvježiti stranicu. Proširenje se može pokrenuti automatski na ovoj web-lokaciji tako da kliknete njegovu ikonu desnom tipkom.</translation>
 <translation id="701080569351381435">Prikaži izvor</translation>
 <translation id="7012372675181957985">Na Google računu možda postoje drugi oblici povijesti pregledavanja na stranici <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7014174261166285193">Instalacija nije uspjela.</translation>

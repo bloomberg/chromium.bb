@@ -367,7 +367,6 @@
 <translation id="1545775234664667895">የተጫነ ገጽታ '<ph name="THEME_NAME" />'</translation>
 <translation id="1545786162090505744">ከመጠይቅ ይልቅ %s ያለው ዩአርኤል</translation>
 <translation id="1546280085599573572">ይህ ቅጥያ የመነሻ አዝራሩን ጠቅ ሲያደርጉ የሚታየውን ገጽ ቀይሮታል።</translation>
-<translation id="1547572086206517271">ማደስ ያስፈልጋል</translation>
 <translation id="1548132948283577726">የይለፍ ቃላትን በጭራሽ የማያስቀምጡ ድር ጣቢያዎች እዚህ ይታያሉ።</translation>
 <translation id="1549788673239553762"><ph name="APP_NAME" /> <ph name="VOLUME_NAME" />ን ሊደርስበት ይፈልጋል። የእርስዎን ፋይሎች ሊያሻሽል ወይም ሊሰርዝ ይችላል።</translation>
 <translation id="1553538517812678578">ገደብ የለሽ</translation>
@@ -734,7 +733,6 @@
 <translation id="2128691215891724419">የማመሳሰል ስህተት፦ የማመሳሰል ይለፍ ሐረግ ያዘምኑ...</translation>
 <translation id="2129825002735785149">ተሰኪን አዘምን</translation>
 <translation id="2129904043921227933">የማመሳሰል ስህተት፦ የይለፍ ሐረግ ያዘምኑ...</translation>
-<translation id="2130949041518253417">ግላዊነት የተላበሰ የአሰሳ ተሞክሮን ለማግኘት ያስምሩ፣ በመላ መሣሪያዎችዎ ላይ</translation>
 <translation id="2131077480075264">በ«<ph name="IMPORT_NAME" />» ስላልተፈቀደ «<ph name="APP_NAME" />»ን መጫን አልተቻለም</translation>
 <translation id="2135787500304447609">&amp;ከቆመበት ቀጥል</translation>
 <translation id="2136372518715274136">አዲስ የይለፍ ቃል ያስገቡ</translation>
@@ -1689,7 +1687,6 @@
 <translation id="3576324189521867626">በተሳካ ሁኔታ ተጭኗል</translation>
 <translation id="3578594933904494462">የዚህ ትር ይዘት በመጋራት ላይ ነው።</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; የ&lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; አታሚ እርስዎ ባለቤት ለሆኑበት ቡድን ማጋራት ይፈልጋሉ፦ &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;። ከተቀበሉ ሁሉም የቡድን አባላት ወደ አታሚው ማተም ይችላሉ።</translation>
-<translation id="3582972582564653026">Chromeን በመላ መሣሪያዎችዎ ላይ ያስምሩ እና ግላዊነት ያላብሱ</translation>
 <translation id="3584169441612580296">በኮምፒውተርዎ ላይ ያሉ ፎቶዎችን፣ ሙዚቃን እና ሌላ ማህደረመረጃ ያነብባል እና ይቀይራል</translation>
 <translation id="3587482841069643663">ሁሉም</translation>
 <translation id="358796204584394954">ለማጣመር ይህን ኮድ በ«<ph name="DEVICE_NAME" />» ላይ ይተይቡ፦</translation>
@@ -2224,7 +2221,6 @@
 <translation id="4448844063988177157">የWi-Fi አውታረ መረቦችን በመፈለግ ላይ…</translation>
 <translation id="4449996769074858870">ይህ ትር ድምጽ እያጫወተ ነው።</translation>
 <translation id="4450974146388585462">መርምር</translation>
-<translation id="4452426408005428395">ግድ የለም</translation>
 <translation id="445923051607553918">የWi-Fi አውታረ መረብ ይቀላቀሉ</translation>
 <translation id="4462159676511157176">የብጁ ስም አገልጋዮች</translation>
 <translation id="4467100756425880649">የChrome የድር መደብር የሥነ ጥበብ ማዕከል</translation>
@@ -2734,7 +2730,6 @@
 <translation id="5266113311903163739">የእውቅና ማረጋገጫ ስልጣን የማስመጣት ስህተት</translation>
 <translation id="5269977353971873915">ማተም አልተሳካም</translation>
 <translation id="5271549068863921519">የይለፍ ቃሉን አስቀምጥ</translation>
-<translation id="5275194674756975076">እሺ፣ አድስ</translation>
 <translation id="5275352920323889391">ውሻ</translation>
 <translation id="5275973617553375938">ከGoogle Drive መልሰው የተገኙ ፋይሎች</translation>
 <translation id="527605719918376753">ትር ላይ ድምጸ-ከል አድርግ</translation>
@@ -3868,7 +3863,6 @@
 <translation id="7006634003215061422">የታች ኅዳግ</translation>
 <translation id="7006844981395428048">$1 ድምጽ</translation>
 <translation id="7007648447224463482">ሁሉንም በአዲስ መስኮት ውስጥ ክፈት</translation>
-<translation id="7008270479623533562">ይህን ቅጥያ ማሄድ እንዲቻል ገጹን ማደስ አለብዎት። በቅጥያ አዶው ላይ በቀኝ-ጠቅ በማድረግ በዚህ ጣቢያ ላይ ይህን ቅጥያ በራስ-ስር ማስሄድ ይችላሉ።</translation>
 <translation id="701080569351381435">ሶርስ አሳይ</translation>
 <translation id="7012372675181957985">የእርስዎ Google መለያ <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> ላይ ሌሎች የአሰሳ ታሪክ ዓይነቶች ሊኖረው ይችላል</translation>
 <translation id="7014174261166285193">መጫን አልተሳካም።</translation>

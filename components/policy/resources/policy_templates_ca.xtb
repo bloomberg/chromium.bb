@@ -391,6 +391,27 @@
           Si aquesta política no es defineix, no es mostra cap quadre de diàleg d'advertiment.
 
           El valor de la política s'ha d'especificar en mil·lisegons. Els valors es restringeixen perquè siguin menors que o iguals al retard d'inactivitat.</translation>
+<translation id="2289578386193672044">Especifica una llista d'aplicacions i d'extensions que s'instal·len de manera silenciosa,
+          sense la interacció de l'usuari, i que l'usuari no pot
+          desinstal·lar ni desactivar. Tots els permisos que les
+          aplicacions o les extensions sol·liciten es concedeixen de manera implícita, sense cap interacció de l'usuari,
+          inclosos els permisos addicionals que sol·licitin les versions futures de
+          l'aplicació o l'extensió. A més, es concedeixen permisos a les API de les extensions
+          enterprise.deviceAttributes i enterprise.platformKeys.
+          Aquestes dues API no estan disponibles per a les aplicacions ni les extensions que
+          no s'instal·lin a la força.
+
+          Aquesta política preval sobre una política <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> amb què pugui entrar en conflicte. Si se suprimeix d'aquesta llista una aplicació o una extensió que prèviament s'havia instal·lat a la força, <ph name="PRODUCT_NAME" /> la desinstal·larà automàticament.
+
+          En el cas de les instàncies de Windows que no estan vinculades a un domini <ph name="MS_AD_NAME" />, la instal·lació forçada es limita a les aplicacions i les extensions incloses a Chrome Web Store.
+
+          Tingues en compte que els usuaris poden modificar el codi font de qualsevol extensió amb les Eines per a desenvolupadors (la qual cosa podria provocar problemes de funcionament de l'extensió). Si et preocupa aquesta possibilitat, defineix la política <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+          Cada element de la llista de la política és una cadena que conté un identificador d'extensió i, opcionalment, un URL d'actualització separats per punt i coma (<ph name="SEMICOLON" />). L'identificador d'extensió és la cadena de 32 lletres que, per exemple, es troba a <ph name="CHROME_EXTENSIONS_LINK" /> quan el mode desenvolupador està activat. L'URL d'actualització, si s'especifica, ha de dirigir a un document XML de manifest d'actualització, tal com es descriu a <ph name="LINK_TO_EXTENSION_DOC1" />. De manera predeterminada, s'utilitza l'URL d'actualització de Chrome Web Store, que actualment és https://clients2.google.com/service/update2/crx. Tingues en compte que l'URL d'actualització definit en aquesta política només s'utilitza per a la instal·lació inicial; les properes actualitzacions de l'extensió faran servir l'URL d'actualització indicat al manifest de l'extensió. Recorda que, de la versió <ph name="PRODUCT_NAME" /> a la 67 (inclosa) del producte també calia especificar de manera obligatòria i explícita l'URL d'actualització.
+
+          Per exemple, <ph name="EXTENSION_POLICY_EXAMPLE" /> instal·la l'aplicació <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> des de l'URL d'actualització de Chrome Web Store estàndard. Per obtenir més informació sobre com s'allotgen les extensions, consulta: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Si aquesta política es deixa sense establir, no s'instal·larà automàticament cap aplicació ni cap extensió i l'usuari podrà desinstal·lar-ne qualsevol a <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME" /> pot utilitzar un servei web de Google per corregir errors ortogràfics. Si activeu aquest paràmetre, sempre s'utilitzarà aquest servei. Si el desactiveu, el servei no s'utilitzarà mai.
 
       Podeu continuar comprovant la correcció ortogràfica amb un diccionari que hàgiu baixat. Aquesta política només controla l'ús del servei en línia.
@@ -678,6 +699,16 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
           Aquesta política és opcional. Si no es defineix, no es produirà cap substitució dels termes de cerca.
 
           Aquesta política només es respecta si la política "DefaultSearchProviderEnabled" està activada.</translation>
+<translation id="3056439054015239107">
+      Aquesta política s'aplica a la pantalla d'inici de sessió. Consulta també la política <ph name="SITE_PER_PROCESS_POLICY_NAME" /> que s'aplica a la sessió d'usuari. Es recomana definir el mateix valor en totes dues polítiques. En cas contrari, pot haver-hi un retard en iniciar una sessió d'usuari mentre s'aplica el valor especificat per la política de l'usuari.
+      Pots utilitzar la política IsolateOrigins amb una llista
+      dels llocs web que vols aïllar per treure el màxim partit de les dues opcions:
+      aïllar llocs web amb el mínim impacte possible per als usuaris. L'opció
+      SitePerProcess aïlla tots els llocs web.
+      Si la política s'activa, cada lloc web s'executarà amb el seu propi procés.
+      Si la política es desactiva, es produirà l'aïllament de llocs web no explícits i es desactivaran les proves de camp de les polítiques IsolateOrigins i SitePerProcess. Els usuaris podran activar SitePerProcess manualment.
+      Si no es configura la política, l'usuari podrà canviar aquesta opció de configuració.
+      </translation>
 <translation id="306887062252197004">Aquesta política permet que els usuaris de la funció WebDriver substitueixin
       polítiques que podrien interferir amb el seu funcionament.
 
@@ -838,6 +869,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="3660562134618097814">Transfereix les galetes del proveïdor d'identitat SAML durant l'inici de sessió</translation>
 <translation id="3709266154059827597">Configura la llista negra d'instal·lació d'extensions</translation>
 <translation id="3711895659073496551">Suspèn</translation>
+<translation id="3715569262675717862">Autenticació basada en certificats del client</translation>
 <translation id="3736879847913515635">Activa l'opció Afegeix una persona al gestor d'usuaris</translation>
 <translation id="3737544779868348650">Nom d'amfitrió de la xarxa del dispositiu</translation>
 <translation id="3740754010292550733">Estableix el període per actualitzar les notificacions de reinici</translation>
@@ -1813,6 +1845,15 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       En cas que no vulguis permetre l'inici de sessió a un altre compte mitjançant el mode d'incògnit, pots bloquejar aquest mode amb la política IncognitoModeAvailability.
 
       Tingues en compte que els usuaris poden bloquejar les galetes per accedir als serveis de Google sense autenticar-se.</translation>
+<translation id="6738326937072482736">Configura la disponibilitat i el comportament de la funcionalitat d'actualització del microprogramari de <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+
+      Les opcions de configuració individuals es poden especificar a les propietats de JSON:
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: si es defineix en <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, els usuaris podran activar el flux de Powerwash per instal·lar una actualització del microprogramari de <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: si es defineix en <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, els usuaris podran invocar el flux d'actualització del microprogramari de <ph name="TPM_FIRMWARE_UPDATE_TPM" />, que conserva l'estat en tot el dispositiu (inclosa la inscripció d'empresa), però perd les dades de l'usuari. Aquest flux d'actualització està disponible a partir de la versió 68.
+
+      Si la política no es defineix, la funcionalitat d'actualització del microprogramari de <ph name="TPM_FIRMWARE_UPDATE_TPM" /> no estarà disponible.</translation>
 <translation id="6757438632136860443">Permet definir una llista de patrons d'URL que especifiquin llocs que poden executar el connector <ph name="FLASH_PLUGIN_NAME" />.
 
           Si aquesta política no es defineix, s'utilitzarà per a tots els llocs el valor global predeterminat indicat en la política "DefaultPluginsSetting" (si s'ha definit) o el valor personalitzat que hagi definit l'usuari.</translation>
@@ -1833,6 +1874,16 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       De tota manera, la informació de la memòria es notifica sense importar el valor de l'opció, però les mides de les quals s'envia la notificació es
       quantifiquen i el percentatge d'actualitzacions es limita per motius de seguretat. Per obtenir dades precises en temps real,
       utilitzeu eines com ara Telemetry.</translation>
+<translation id="6870914592443697993">
+      Aquesta política s'aplica a la pantalla d'inici de sessió. Consulta també la política <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> que s'aplica a la sessió d'usuari. Es recomana definir el mateix valor en totes dues polítiques. En cas contrari, pot haver-hi un retard en iniciar una sessió d'usuari mentre s'aplica el valor especificat per la política de l'usuari.
+      Si la política s'activa, cadascun dels orígens indicats en una
+      llista separada per comes s'executarà amb el seu propi procés. Així mateix,
+      també s'aïllaran els orígens indicats per subdominis (per exemple, en especificar https://example.com/,
+      l'adreça https://foo.example.com/ també s'aïllarà com a part del lloc web
+      https://example.com/).
+      Si la política es desactiva, es produirà l'aïllament de llocs web no explícits i es desactivaran les proves de camp de les polítiques IsolateOrigins i SitePerProcess. Els usuaris podran activar IsolateOrigins manualment.
+      Si la política no es configura, a la pantalla d'inici de sessió s'utilitzarà la configuració d'aïllament del lloc web predeterminat a la plataforma.
+      </translation>
 <translation id="6894178810167845842">URL de la pàgina Pestanya nova</translation>
 <translation id="6899705656741990703">Configuració de la detecció automàtica de servidors intermediaris</translation>
 <translation id="6903814433019432303">Aquesta política només està activa al mode de venta.
@@ -2071,6 +2122,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Si s'estableix en "false", les actualitzacions dels components es desactiven. Tanmateix, aquesta política no afecta tots els components, com ara els que no contenen codi executable, els que no afecten de manera considerable el funcionament del navegador ni els que són essencials per protegir-lo.
       Aquests components inclouen, entre d'altres, les llistes de revocació de certificats i les dades de Navegació segura.
       Per obtenir més informació sobre Navegació segura, consulta https://developers.google.com/safe-browsing.</translation>
+<translation id="7566878661979235378">Tipus d'autenticació d'inici de sessió de SAML</translation>
 <translation id="757395965347379751">Quan s'aplica aquesta opció de configuració, <ph name="PRODUCT_NAME" /> admet certificats SHA-1 signats, sempre que estiguin correctament validats i encadenats a certificats de CA instal·lats localment.
 
       Tingues en compte que aquesta política depèn que la pila de verificació de certificats del sistema operatiu admeti signatures SHA-1. Si una actualització del SO canvia la gestió de certificats SHA-1, és possible que aquesta política ja no tingui efecte. A més, aquesta política és una solució temporal per donar més temps a les empreses per desvincular-se d'SHA-1, i se suprimirà l'1 de gener del 2019 o un dia proper a aquesta data.
@@ -2234,6 +2286,16 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7961779417826583251">Desactiva l'aplicació de la Transparència de certificats a les autoritats certificadores heretades incloses en una llista</translation>
 <translation id="7974114691960514888">Aquesta política ja no és compatible. Activa l'ús de servidors STUN i de relé quan us connecteu a un client remot. Si s'activa aquest paràmetre, aquest equip pot descobrir i connectar-se a equips amfitrions remots, fins i tot si estan separats per un tallafoc. Si es desactiva aquest paràmetre i el tallafoc filtra les connexions UDP de sortida, aquest equip només es podrà connectar als equips amfitrions de la xarxa local.</translation>
 <translation id="7976157349247117979">Nom de la destinació per a <ph name="PRODUCT_NAME" /></translation>
+<translation id="7978060394348264922">
+      Pots utilitzar la política IsolateOrigins amb una llista
+      dels llocs web que vols aïllar per treure el màxim partit de les dues opcions:
+      aïllar llocs web amb el mínim impacte possible per als usuaris. L'opció
+      SitePerProcess aïlla tots els llocs web.
+      Si la política s'activa, cada lloc web s'executarà amb el seu propi procés.
+      Si la política es desactiva, es produirà l'aïllament de llocs web no explícits i es desactivaran les proves de camp de les polítiques IsolateOrigins i SitePerProcess. Els usuaris podran activar SitePerProcess manualment.
+      Si no es configura la política, l'usuari podrà canviar aquesta opció de configuració.
+      A <ph name="PRODUCT_OS_NAME" />, es recomana establir també el mateix valor a la política de dispositius <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. En cas contrari, pot haver-hi un retard en iniciar una sessió d'usuari mentre s'aplica el valor especificat per la política de l'usuari.
+      </translation>
 <translation id="7980227303582973781">Sense restriccions especials</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Gira la pantalla 0 graus</translation>
@@ -2434,6 +2496,13 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
           Separeu els diversos noms de servidor amb comes. Es permet l'ús de comodins (*).
 
           Si deixeu aquesta política sense definir, <ph name="PRODUCT_NAME" /> provarà de detectar si un servidor es troba a la intranet i, en aquest cas, respondrà a les sol·licituds IWA. Si es detecta un servidor com a Internet, aleshores <ph name="PRODUCT_NAME" /> ometrà les sol·licituds IWA que enviï.</translation>
+<translation id="8667812577403206506">Et permet controlar si es poden executar màquines virtuals a Chrome OS.
+
+      Si la política es defineix en "true", el dispositiu podrà executar màquines virtuals.
+      Si la política es defineix en "false", el dispositiu no podrà executar màquines virtuals.
+      Si la política es canvia a "false", afectarà l'execució de màquines virtuals noves, però no desactivarà les que ja s'estan executant.
+      Si la política no es defineix en un dispositiu gestionat, el dispositiu no tindrà permís per executar màquines virtuals.
+      Els dispositius no gestionats tenen permís per executar màquines virtuals.</translation>
 <translation id="8672321184841719703">Versió objectiu de l'actualització automàtica</translation>
 <translation id="867410340948518937">U2F (segon factor universal)</translation>
 <translation id="8685024486845674965">L'advertiment sobre la protecció de contrasenyes s'activa quan es reutilitza una contrasenya</translation>
@@ -2544,6 +2613,7 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
 
       Aquesta política no s'ha d'activar si la política <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> està activada, ja que aquesta funció comparteix la mateixa funcionalitat al costat del client. En aquest cas, la sincronització allotjada a Google es desactiva completament.</translation>
 <translation id="8955719471735800169">Torna a dalt</translation>
+<translation id="8959992920425111821">Configuració predeterminada</translation>
 <translation id="8960850473856121830">Els patrons d'aquesta llista es compararan amb l'origen de seguretat
       de l'URL que heu sol·licitat. Si es troba alguna coincidència, es permetrà l'accés
       als dispositius de captura d'àudio sense confirmació.
@@ -2554,6 +2624,16 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
 <translation id="8976248126101463034">Permet l'autenticació Gnubby als amfitrions d'accés remot</translation>
 <translation id="8976531594979650914">Utilitza la impressora predeterminada del sistema com a predeterminada</translation>
 <translation id="8992176907758534924">No permetis que cap lloc mostri imatges</translation>
+<translation id="9034729899149506577">
+      Si la política s'activa, cadascun dels orígens indicats en una
+      llista separada per comes s'executarà amb el seu propi procés. Així mateix, també s'aïllaran
+      els orígens indicats per subdominis (per exemple, en especificar https://example.com/,
+      l'adreça https://foo.example.com/ també s'aïllarà com a part del lloc web 
+      https://example.com/).
+      Si la política es desactiva, es produirà l'aïllament de llocs web no explícits i es desactivaran les proves de camp de les polítiques IsolateOrigins i SitePerProcess. Els usuaris podran activar IsolateOrigins manualment.
+      Si no es configura la política, l'usuari podrà canviar aquesta opció de configuració.
+      A <ph name="PRODUCT_OS_NAME" />, es recomana establir també el mateix valor a la política de dispositius <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. En cas contrari, pot haver-hi un retard en iniciar una sessió d'usuari, mentre s'aplica el valor especificat per la política d'usuari.
+      </translation>
 <translation id="9035964157729712237">ID de les extensions que s'han d'excloure de la llista negra</translation>
 <translation id="9042911395677044526">Permet aplicar la configuració de la xarxa per usuari a un dispositiu <ph name="PRODUCT_OS_NAME" />. La configuració de la xarxa és una cadena en format JSON, segons la definició del format de la configuració de xarxa oberta que apareix a <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Especifica si l'activitat de vídeo afecta la gestió d'alimentació</translation>
@@ -2598,6 +2678,13 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
 <translation id="9187743794267626640">Desactivació del muntatge d'emmagatzematge extern</translation>
 <translation id="9197740283131855199">Percentatge que permet ajustar el temps d'espera d'inactivitat de la pantalla si l'usuari passa a estar actiu després de la inactivitat.</translation>
 <translation id="9200828125069750521">Paràmetres de l'URL de la imatge que utilitza POST</translation>
+<translation id="9210953373038593554">Configura el tipus d'autenticació per a inicis de sessió amb SAML.
+
+      Si aquesta política no es defineix o es defineix en el valor predeterminat (0), el comportament dels inicis de sessió amb SAML el determina el navegador en funció d'altres factors. En l'escenari més bàsic, l'autenticació de l'usuari i la protecció de les dades de l'usuari emmagatzemades a la memòria cau es basen en contrasenyes introduïdes manualment pels usuaris.
+
+      Si aquesta política s'estableix en “ClientCertificate” (valor 1), l'autentificació del certificat de client s'utilitza per a usuaris afegits recentment que inicien la sessió amb SAML. Per a aquests usuaris no s'utilitza cap contrasenya i les dades locals emmagatzemades a la memòria cau es protegeixen utilitzant les claus criptogràfiques corresponents. Per exemple, aquesta opció de configuració permet configurar l'autenticació de l'usuari basada en una targeta intel·ligent. Tingues en compte que les aplicacions de programari intermediari de la targeta intel·ligent s'han d'instal·lar mitjançant la política DeviceLoginScreenAppInstallList.
+
+      Aquesta política només afecta els usuaris que s'autentiquen amb SAML.</translation>
 <translation id="9213347477683611358">Configura la imatge de fons de la pantalla d'inici de sessió d'un dispositiu si ningú no hi ha iniciat la sessió. Per establir la política, cal especificar l'URL que pot fer servir el dispositiu de Chrome OS per baixar la imatge i un resum criptogràfic per verificar la integritat de la baixada. La imatge ha de ser en format JPEG i no ha de superar els 16 MB. S'ha de poder accedir a l'URL sense cap tipus d'autenticació. La imatge de fons de pantalla es baixa i es desa a la memòria cau, i es tornarà a baixar si es modifica l'URL o el resum.
 
       La política s'ha d'especificar en forma de cadena amb l'URL i el resum en format JSON. Per exemple:

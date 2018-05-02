@@ -247,8 +247,6 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="6521655319214113338">ಕೈಬರಹ ಇನ್‌ಪುಟ್</translation>
 <translation id="6528179044667508675">ಅಡಚಣೆ ಮಾಡಬೇಡಿ</translation>
 <translation id="6537270692134705506">ಸೆರೆಹಿಡಿಯುವ ಪರದೆ</translation>
-<translation id="6580955892089546165">ಈ ವೈಶಿಷ್ಟ್ಯವು ಪಾಸ್‌ವರ್ಡ್‌ನ ಅಗತ್ಯವಿಲ್ಲದೆಯೇ ತ್ವರಿತವಾಗಿ ಯಾವುದೇ ಸೈನ್‌-ಇನ್‌ ಮಾಡಿದ ಬಳಕೆದಾರರನ್ನು ಪ್ರವೇಶಿಸಲು ನಿಮಗೆ ಅನುಮತಿಸುತ್ತದೆ.
-ನೀವು ನಂಬುವಂತಹ ಖಾತೆಗಳೊಂದಿಗೆ ಮಾತ್ರ ಈ ವೈಶಿಷ್ಟ್ಯವನ್ನು ಬಳಸಿ.</translation>
 <translation id="6585808820553845416">ಸೆಷನ್ <ph name="SESSION_TIME_REMAINING" /> ರಲ್ಲಿ ಕೊನೆಗೊಳ್ಳಲಿದೆ.</translation>
 <translation id="6627638273713273709">ಹುಡುಕಾಟ+Shift+K</translation>
 <translation id="6650933572246256093">ಬ್ಲೂಟೂತ್‌ ಸಾಧನವು "<ph name="DEVICE_NAME" />" ಜೋಡಣೆಗಾಗಿ ಅನುಮತಿಯನ್ನು ಬಯಸುತ್ತದೆ. ಆ ಸಾಧನದಲ್ಲಿ ಈ ಪಾಸ್‌ಕೀಲಿಯನ್ನು ನಮೂದಿಸಿ: <ph name="PASSKEY" /></translation>
@@ -306,7 +304,6 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="7994370417837006925">ಬಹು ಸೈನ್-ಇನ್</translation>
 <translation id="8000066093800657092">ನೆಟ್‌ವರ್ಕ್ ಇಲ್ಲ</translation>
 <translation id="8054466585765276473">ಬ್ಯಾಟರಿ ಸಮಯವನ್ನು ಲೆಕ್ಕಾಚಾರ ಮಾಡಲಾಗುತ್ತಿದೆ.</translation>
-<translation id="8056430285089645882">ಅರ್ಥವಾಯಿತು, ಇದನ್ನು ಮತ್ತೆ ನನಗೆ ತೋರಿಸಬೇಡ.</translation>
 <translation id="8098591350844501178">ಪರದೆಯನ್ನು <ph name="RECEIVER_NAME" /> ಗೆ ಬಿತ್ತರಿಸುವುದನ್ನು ನಿಲ್ಲಿಸಿ</translation>
 <translation id="8132793192354020517"><ph name="NAME" /> ಗೆ ಸಂಪರ್ಕಗೊಂಡಿದೆ</translation>
 <translation id="813913629614996137">ಪ್ರಾರಂಭಿಸಲಾಗುತ್ತಿದೆ...</translation>

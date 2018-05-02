@@ -364,7 +364,6 @@
 <translation id="1545775234664667895">Инсталирана је тема „<ph name="THEME_NAME" />“</translation>
 <translation id="1545786162090505744">URL са %s уместо упита</translation>
 <translation id="1546280085599573572">Овај додатак је променио страницу која се приказује када кликнете на дугме Почетна.</translation>
-<translation id="1547572086206517271">Треба да освежите</translation>
 <translation id="1548132948283577726">Овде ће се приказати сајтови који никада не чувају лозинке.</translation>
 <translation id="1549788673239553762"><ph name="APP_NAME" /> жели да приступа <ph name="VOLUME_NAME" />. Можда ће да мења или брише датотеке.</translation>
 <translation id="1553538517812678578">неограничено</translation>
@@ -731,7 +730,6 @@
 <translation id="2128691215891724419">Грешка при синхронизацији: Ажурирајте фразу за приступ синхронизацији...</translation>
 <translation id="2129825002735785149">Ажурирај додатну компоненту</translation>
 <translation id="2129904043921227933">Грешка при синхронизацији: Ажурирајте фразу за приступ синхронизацији...</translation>
-<translation id="2130949041518253417">Синхронизујте за персонализовани доживљај прегледања на свим уређајима</translation>
 <translation id="2131077480075264">Није успело инсталирање „<ph name="APP_NAME" />“ јер то не дозвољава „<ph name="IMPORT_NAME" />“</translation>
 <translation id="2135787500304447609">&amp;Настави</translation>
 <translation id="2136372518715274136">Унесите нову лозинку</translation>
@@ -1685,7 +1683,6 @@
 <translation id="3576324189521867626">Инсталирано је</translation>
 <translation id="3578594933904494462">Садржај ове картице се дели.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; жели да дели штампач &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; са групом чији сте власник: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Ако прихватите, сви чланови групе ће моћи да штампају помоћу штампача.</translation>
-<translation id="3582972582564653026">Синхронизујте и персонализујте Chrome на свим уређајима</translation>
 <translation id="3584169441612580296">Читање слика, музике и других медија са рачунара и мењање тих медија</translation>
 <translation id="3587482841069643663">Све</translation>
 <translation id="358796204584394954">Унесите овај кôд на „<ph name="DEVICE_NAME" />“ да бисте обавили упаривање:</translation>
@@ -2222,7 +2219,6 @@
 <translation id="4448844063988177157">Тражење Wi-Fi мрежа...</translation>
 <translation id="4449996769074858870">Ова картица репродукује звук.</translation>
 <translation id="4450974146388585462">Дијагностикуј</translation>
-<translation id="4452426408005428395">Нема везе</translation>
 <translation id="445923051607553918">Придружите се Wi-Fi мрежи</translation>
 <translation id="4462159676511157176">Прилагођени сервери назива</translation>
 <translation id="4467100756425880649">Галерија Chrome веб-продавнице</translation>
@@ -2732,7 +2728,6 @@
 <translation id="5266113311903163739">Грешка при увозу ауторитета за издавање сертификата</translation>
 <translation id="5269977353971873915">Штампање није успело</translation>
 <translation id="5271549068863921519">Сачувај лозинку</translation>
-<translation id="5275194674756975076">Важи, освежи</translation>
 <translation id="5275352920323889391">Пас</translation>
 <translation id="5275973617553375938">Враћене датотеке са Google диска</translation>
 <translation id="527605719918376753">Искључи звук картице</translation>
@@ -3868,7 +3863,6 @@
 <translation id="7006634003215061422">Доња маргина</translation>
 <translation id="7006844981395428048">$1 аудио датотека</translation>
 <translation id="7007648447224463482">Отвори све у новом прозору</translation>
-<translation id="7008270479623533562">Да бисте покренули овај додатак, треба да освежите страницу. Овај додатак можете аутоматски да покрећете на овом сајту ако кликнете десним тастером на икону додатка.</translation>
 <translation id="701080569351381435">Прикажи извор</translation>
 <translation id="7012372675181957985">Google налог има друге облике историје прегледања на <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7014174261166285193">Инсталација није успела.</translation>

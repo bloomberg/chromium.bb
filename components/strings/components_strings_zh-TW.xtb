@@ -644,7 +644,6 @@
 <translation id="5492298309214877701">這個位於公司、機構或學校內部網路的網站使用的網址與某個外部網站相同。
     <ph name="LINE_BREAK" />
     請與您的系統管理員聯絡。</translation>
-<translation id="5499929369096410817">輸入 <ph name="CREDIT_CARD" /> 的安全碼 (系統不會加以儲存)。</translation>
 <translation id="5509780412636533143">受管理書籤</translation>
 <translation id="5510766032865166053">檔案可能已移至其他位置或遭到刪除。</translation>
 <translation id="5523118979700054094">政策名稱</translation>
@@ -704,7 +703,6 @@
 <translation id="5967867314010545767">從記錄中移除</translation>
 <translation id="5972020793760134803">切換至分頁</translation>
 <translation id="5975083100439434680">縮小</translation>
-<translation id="597552863672748783">確認安全碼</translation>
 <translation id="598637245381783098">無法開啟付款應用程式</translation>
 <translation id="5989320800837274978">沒有指定固定的 Proxy 伺服器和 .pac 指令碼網址。</translation>
 <translation id="5990559369517809815">擴充功能已封鎖要傳送至伺服器的要求。</translation>

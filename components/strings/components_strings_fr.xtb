@@ -49,6 +49,7 @@
     &lt;li&gt;Assurez-vous que votre connexion Internet fonctionne normalement.&lt;/li&gt;
     &lt;li&gt;Contactez le propriétaire du site.&lt;/li&gt;
     &lt;/ol&gt;</translation>
+<translation id="1257286744552378071">Vous avez saisi votre mot de passe sur un site qui n'est pas géré par votre organisation. Pour protéger votre compte, ne réutilisez pas ce mot de passe dans d'autres applications ni sur d'autres sites.</translation>
 <translation id="1263231323834454256">Liste de lecture</translation>
 <translation id="1264126396475825575">Rapport d'erreur enregistré le <ph name="CRASH_TIME" /> (pas encore importé ou ignoré)</translation>
 <translation id="1270502636509132238">Mode d'enlèvement</translation>
@@ -187,6 +188,7 @@
 <translation id="2212735316055980242">Règle introuvable.</translation>
 <translation id="2213606439339815911">Obtention des entrées en cours…</translation>
 <translation id="2218879909401188352">Les pirates informatiques qui contrôlent le site <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> peuvent installer des applications dangereuses qui endommagent votre appareil, ajoutent des frais cachés à votre facture de téléphonie mobile ou dérobent vos informations personnelles. <ph name="BEGIN_LEARN_MORE_LINK" />En savoir plus<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="2224337661447660594">Aucun accès à Internet</translation>
 <translation id="2230458221926704099">Vérifiez la connexion à l'aide de l'<ph name="BEGIN_LINK" />application de diagnostic<ph name="END_LINK" />.</translation>
 <translation id="2239100178324503013">Envoyer maintenant</translation>
 <translation id="225207911366869382">Cette valeur n'est plus utilisée dans le cadre de cette règle.</translation>
@@ -360,6 +362,7 @@
 <translation id="3422472998109090673"><ph name="HOST_NAME" /> est actuellement inaccessible.</translation>
 <translation id="3427092606871434483">Autoriser (par défaut)</translation>
 <translation id="3427342743765426898">&amp;Rétablir la modification</translation>
+<translation id="342781501876943858">L'équipe Chromium vous recommande de réinitialiser votre mot de passe si vous l'avez réutilisé sur d'autres sites.</translation>
 <translation id="3431636764301398940">Enregistrer cette carte sur cet appareil</translation>
 <translation id="3447661539832366887">Le propriétaire de cet appareil a désactivé le jeu avec le dinosaure.</translation>
 <translation id="3447884698081792621">Afficher le certificat (émis par <ph name="ISSUER" />)</translation>
@@ -499,6 +502,7 @@
 <translation id="4340982228985273705">Cet ordinateur n'est pas détecté comme étant géré par une entreprise. Selon la règle définie, seules les extensions hébergées par le Chrome Web Store peuvent y être installées. L'URL de mise à jour du Chrome Web Store est "<ph name="CWS_UPDATE_URL" />".</translation>
 <translation id="4346197816712207223">Cartes de crédit acceptées</translation>
 <translation id="4356973930735388585">Des individus malveillants à l'œuvre sur ce site pourraient tenter d'installer des applications dangereuses sur votre ordinateur afin de récupérer ou de supprimer certaines informations : photos, mots de passe, messages, numéros de carte de paiement, etc.</translation>
+<translation id="4358461427845829800">Gérer les modes de paiement…</translation>
 <translation id="4372948949327679948">Valeur attendue : <ph name="VALUE_TYPE" />.</translation>
 <translation id="4377125064752653719">Vous avez tenté d'accéder à <ph name="DOMAIN" />, mais le certificat présenté par le serveur a été révoqué par son émetteur. Cela signifie que le certificat présenté par le serveur ne doit pas être approuvé. Il est donc possible que vous communiquiez avec un pirate informatique.</translation>
 <translation id="4406896451731180161">résultats de recherche</translation>
@@ -585,6 +589,7 @@
 <translation id="5115563688576182185">(64 bits)</translation>
 <translation id="5121084798328133320">Une fois la validation terminée, les informations relatives à la carte de votre compte Google Payments seront partagées avec ce site.</translation>
 <translation id="5128122789703661928">Impossible de supprimer la session qui porte ce nom.</translation>
+<translation id="5135404736266831032">Gérer les adresses…</translation>
 <translation id="5141240743006678641">Chiffrer les mots de passe synchronisés avec vos informations de connexion Google</translation>
 <translation id="5145883236150621069">Code d'erreur présent dans la réponse de la règle.</translation>
 <translation id="5159010409087891077">Ouvrir la page dans une nouvelle fenêtre de navigation privée (⇧⌘N)</translation>
@@ -639,7 +644,6 @@
 <translation id="5492298309214877701">Ce site situé sur l'intranet de l'entreprise, de l'organisation ou de l'établissement scolaire possède la même URL qu'un site Web externe.
     <ph name="LINE_BREAK" />
     Essayez de contacter votre administrateur système.</translation>
-<translation id="5499929369096410817">Saisissez le code de sécurité de la carte <ph name="CREDIT_CARD" />. Ce code ne sera pas enregistré.</translation>
 <translation id="5509780412636533143">Favoris gérés</translation>
 <translation id="5510766032865166053">Il a peut-être été déplacé ou supprimé.</translation>
 <translation id="5523118979700054094">Nom de la règle</translation>
@@ -670,9 +674,11 @@
 <translation id="5685654322157854305">Ajouter une adresse de livraison</translation>
 <translation id="5689199277474810259">Exporter au format JSON</translation>
 <translation id="5689516760719285838">Position</translation>
+<translation id="570530837424789914">Gérer…</translation>
 <translation id="5710435578057952990">L'identité de ce site Web n'a pas été vérifiée.</translation>
 <translation id="5719499550583120431">Les cartes prépayées sont acceptées.</translation>
 <translation id="5720705177508910913">Utilisateur actuel</translation>
+<translation id="5730040223043577876">L'équipe Chrome vous recommande de réinitialiser votre mot de passe si vous l'avez réutilisé sur d'autres sites.</translation>
 <translation id="5732392974455271431">Tes parents peuvent te le débloquer</translation>
 <translation id="5763042198335101085">Saisissez une adresse e-mail valide</translation>
 <translation id="5765072501007116331">Sélectionnez une adresse pour consulter les modes et conditions de livraison disponibles</translation>
@@ -697,7 +703,6 @@
 <translation id="5967867314010545767">Supprimer de l'historique</translation>
 <translation id="5972020793760134803">Ouvrir un autre onglet</translation>
 <translation id="5975083100439434680">Zoom arrière</translation>
-<translation id="597552863672748783">Confirmer le code de sécurité</translation>
 <translation id="598637245381783098">Impossible d'ouvrir l'application de paiement</translation>
 <translation id="5989320800837274978">Aucun serveur proxy déterminé ou URL de script .pac n'a été indiqué.</translation>
 <translation id="5990559369517809815">Les requêtes vers le serveur ont été bloquées par une extension.</translation>
@@ -760,6 +765,7 @@
 <translation id="6446608382365791566">Ajouter d'autres informations</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6451458296329894277">Confirmer le nouvel envoi du formulaire</translation>
+<translation id="6465306955648956876">Gérer les mots de passe…</translation>
 <translation id="647261751007945333">Règles relatives aux appareils</translation>
 <translation id="6477321094435799029">Chrome a détecté un code inhabituel sur cette page et a bloqué cette dernière pour protéger vos informations personnelles (mots de passe, numéros de téléphone et de cartes de paiement).</translation>
 <translation id="6489534406876378309">Lancer l'importation des plantages</translation>
@@ -779,6 +785,7 @@
 <translation id="6628463337424475685">Recherche <ph name="ENGINE" /></translation>
 <translation id="6630809736994426279">Des individus malveillants à l'œuvre sur le site <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> pourraient tenter d'installer des programmes dangereux sur votre Mac afin de récupérer ou de supprimer certaines informations (photos, mots de passe, messages ou numéros de carte de crédit, par exemple). <ph name="BEGIN_LEARN_MORE_LINK" />En savoir plus<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6644283850729428850">Cette règle est obsolète.</translation>
+<translation id="6646269444027925224">{COUNT,plural, =0{Aucun}=1{De 1 site (vous ne serez pas déconnecté de votre compte Google)}one{De # site (vous ne serez pas déconnecté de votre compte Google)}other{De # sites (vous ne serez pas déconnecté de votre compte Google)}}</translation>
 <translation id="6657585470893396449">Mot de passe</translation>
 <translation id="6671697161687535275">Supprimer la suggestion de saisie de formulaire de Chromium ?</translation>
 <translation id="6685834062052613830">Déconnectez-vous et complétez la configuration.</translation>
@@ -805,6 +812,7 @@
 <translation id="6915804003454593391">Utilisateur :</translation>
 <translation id="6945221475159498467">Sélectionner</translation>
 <translation id="6948701128805548767">Sélectionnez une adresse pour consulter les modes et conditions d'enlèvement disponibles</translation>
+<translation id="6949872517221025916">Réinitialiser le mot de passe</translation>
 <translation id="6957887021205513506">Le certificat du serveur semble être contrefait.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965978654500191972">Périphérique</translation>
@@ -827,6 +835,7 @@
 <translation id="7139724024395191329">Émirat</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> et <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> autre}one{<ph name="PAYMENT_METHOD_PREVIEW" /> et <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> autre}other{<ph name="PAYMENT_METHOD_PREVIEW" /> et <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> autres}}</translation>
 <translation id="7155487117670177674">Paiement non sécurisé</translation>
+<translation id="717330890047184534">Identifiant GAIA :</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> et <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> autre}one{<ph name="SHIPPING_OPTION_PREVIEW" /> et <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> autre}other{<ph name="SHIPPING_OPTION_PREVIEW" /> et <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> autres}}</translation>
 <translation id="7180611975245234373">Actualiser</translation>
 <translation id="7182878459783632708">Aucune règle n'est définie</translation>
@@ -1028,6 +1037,7 @@
 <translation id="8553075262323480129">La traduction a échoué, car nous n'avons pas pu déterminer la langue de la page.</translation>
 <translation id="8557066899867184262">Le code CVC figure au recto de votre carte.</translation>
 <translation id="8559762987265718583">Impossible d'établir une connexion privée à <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> : la date et l'heure de votre appareil (<ph name="DATE_AND_TIME" />) sont incorrectes.</translation>
+<translation id="8564985650692024650">L'équipe Chromium vous recommande de réinitialiser votre mot de passe <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> si vous l'avez réutilisé sur d'autres sites.</translation>
 <translation id="8571890674111243710">Traduction de la page en <ph name="LANGUAGE" />...</translation>
 <translation id="858637041960032120">Saisir num tél</translation>
 <translation id="859285277496340001">Le certificat n'indique aucun mécanisme permettant de vérifier s'il a été révoqué.</translation>
@@ -1054,6 +1064,7 @@
 <translation id="884264119367021077">Adresse de livraison</translation>
 <translation id="884923133447025588">Aucun système de révocation trouvé</translation>
 <translation id="885730110891505394">Partage avec Google</translation>
+<translation id="8858065207712248076">L'équipe Chrome vous recommande de réinitialiser votre mot de passe <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> si vous l'avez réutilisé sur d'autres sites.</translation>
 <translation id="8866481888320382733">Erreur d'analyse des paramètres de la règle.</translation>
 <translation id="8870413625673593573">Récemment fermés</translation>
 <translation id="8874824191258364635">Saisissez un numéro de carte valide</translation>

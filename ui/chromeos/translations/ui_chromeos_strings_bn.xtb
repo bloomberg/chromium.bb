@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bn">
+<translation id="1012876632442809908">USB-C ডিভাইস (সামনের পোর্ট)</translation>
 <translation id="1023220960495960452">লিপ্যন্তরকরণ (vanakkam → வணக்கம்)</translation>
 <translation id="1045157690796831147">লিপ্যন্তরকরণ (namaskar → നമസ്കാരം)</translation>
 <translation id="1065449928621190041">কানাডিয় ফরাসী কীবোর্ড</translation>
@@ -10,6 +11,7 @@
 <translation id="1155759005174418845">ক্যাটালান</translation>
 <translation id="1208421848177517699">লিপ্যন্তরকরণ (namaste → નમસ્તે)</translation>
 <translation id="1278813325885878377">হাঙ্গেরিয়ান কোয়ার্টি কীবোর্ড</translation>
+<translation id="1293264513303784526">USB-C ডিভাইস (বাঁ পোর্ট)</translation>
 <translation id="1310751437842832374">লিপ্যন্তরকরণ (mausam → ନମସ୍ତେ)</translation>
 <translation id="1337036551624197047">চেক কীবোর্ড</translation>
 <translation id="1352103415082130575">থাই কীবোর্ড (পাট্টাচোটে)</translation>
@@ -25,6 +27,7 @@
 <translation id="164969095109328410">Chrome ডিভাইস</translation>
 <translation id="1829129547161959350">পেঙ্গুইন</translation>
 <translation id="184633654410729720">থাই কীবোর্ড (কেদমানি)</translation>
+<translation id="1864454756846565995">USB-C ডিভাইস (পিছনের পোর্ট)</translation>
 <translation id="1921986354447415460">তুর্কি-এফ কীবোর্ড</translation>
 <translation id="1931134289871235022">স্লোভাক</translation>
 <translation id="1936717151811561466">ফিনিশ</translation>
@@ -52,6 +55,7 @@
 <translation id="2771816809568414714">চিজ</translation>
 <translation id="2781645665747935084">বেলজিয়ান</translation>
 <translation id="2790805296069989825">রাশিয়ান কীবোর্ড</translation>
+<translation id="2844169650293029770">USB-C ডিভাইস (বাঁ দিকের সামনের পোর্ট)</translation>
 <translation id="2870836398458454343">লিপ্যন্তরকরণ (marhaban ← مرحبا)</translation>
 <translation id="288024221176729610">চেক</translation>
 <translation id="2894654529758326923">তথ্য</translation>
@@ -75,7 +79,9 @@
 <translation id="3280987981688031357">ভিনাইল রেকর্ড</translation>
 <translation id="3296763833017966289">জর্জিয়ান</translation>
 <translation id="3338239663705455570">স্লোভেনিয় কীবোর্ড</translation>
+<translation id="3371140690572404006">USB-C ডিভাইস (ডান দিকের সামনের পোর্ট)</translation>
 <translation id="3399597614303179694">ম্যাসেডোনীয় কীবোর্ড</translation>
+<translation id="3445925074670675829">USB-C ডিভাইস</translation>
 <translation id="3494768541638400973">Google জাপানিয় ইনপুট (জাপানি কীবোর্ডের জন্য)</translation>
 <translation id="3519867315646775981">লিপ্যন্তরকরণ (shalom ← שלום)</translation>
 <translation id="3522708245912499433">পর্তুগিজ</translation>
@@ -95,6 +101,7 @@
 <translation id="3910699493603749297">খেমের কীবোর্ড</translation>
 <translation id="391445228316373457">নেপালি কীবোর্ড (ফোনেটিক)</translation>
 <translation id="3958548648197196644">কিউই</translation>
+<translation id="3995138139523574647">USB-C ডিভাইস (ডান দিকের পিছনের পোর্ট)</translation>
 <translation id="4070370845051020638">ক্যান্টনীজ ইনপুট পদ্ধতি</translation>
 <translation id="4072248638558688893">তামিল কীবোর্ড (ফোনেটিক)</translation>
 <translation id="4124935795427217608">ইউনিকর্ন</translation>
@@ -141,6 +148,7 @@
 <translation id="5257456363153333584">ফড়িং</translation>
 <translation id="5319782540886810524">লাটভিও কীবোর্ড</translation>
 <translation id="5323213332664049067">লাতিন আমেরিকান</translation>
+<translation id="5331975486040154427">USB-C ডিভাইস (বাঁ দিকের পিছনের পোর্ট)</translation>
 <translation id="5402367795255837559">ব্রেইল</translation>
 <translation id="5412637665001827670">বুলগেরিয় কীবোর্ড</translation>
 <translation id="5418923334382419584">মায়ানমার কীবোর্ড</translation>
@@ -177,6 +185,7 @@
 <translation id="6358884629796491903">ড্রাগন</translation>
 <translation id="6462109140674788769">গ্রিক কীবোর্ড</translation>
 <translation id="6466492211071551451">আইরিশ কীবোর্ড</translation>
+<translation id="6490471652906364588">USB-C ডিভাইস (ডান পোর্ট)</translation>
 <translation id="6503256918647795660">সুইশ ফরাসী কীবোর্ড</translation>
 <translation id="6505918941256367791">তামিল কীবোর্ড (ইনস্ক্রিপ্ট)</translation>
 <translation id="6509122719576673235">নরওয়েয়ীয়</translation>
@@ -195,6 +204,7 @@
 <translation id="6937152069980083337">Google জাপানিয় ইনপুট (ইউএস কীবোর্ডের জন্য)</translation>
 <translation id="6939777852457331078">মার্কিন ওয়ার্কম্যান কীবোর্ড</translation>
 <translation id="6970230597523682626">বুলগেরীয়</translation>
+<translation id="7098389117866926363">USB-C ডিভাইস (পিছনের বাঁ পোর্ট)</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">লিপ্যন্তরকরণ (salam → ሰላም)</translation>
 <translation id="7172053773111046550">এস্তোনীয় কীবোর্ড</translation>
@@ -255,6 +265,7 @@
 <translation id="8900820606136623064">হাঙ্গেরিয়</translation>
 <translation id="8901822611024316615">চেক QWERTY কীবোর্ড</translation>
 <translation id="8919081441417203123">ডেনিশ</translation>
+<translation id="8938800817013097409">USB-C ডিভাইস (পিছনের ডান পোর্ট)</translation>
 <translation id="8960999352790021682">বাংলা কীবোর্ড (ফোনেটিক)</translation>
 <translation id="9017798300203431059">রাশিয়ান ফনেটিক</translation>
 <translation id="913758436357682283">মায়ানমার মায়ানসান কীবোর্ড</translation>
