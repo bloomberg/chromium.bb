@@ -53,6 +53,7 @@ class ASH_EXPORT TrayAudio : public TrayImageItem,
   void OnDefaultViewDestroyed() override;
   void OnDetailedViewDestroyed() override;
   bool ShouldShowShelf() const override;
+  views::View* GetItemToRestoreFocusTo() override;
 
   // Overridden from CrasAudioHandler::AudioObserver.
   void OnOutputNodeVolumeChanged(uint64_t node_id, int volume) override;

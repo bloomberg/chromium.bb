@@ -93,6 +93,15 @@ bool TrayAudio::ShouldShowShelf() const {
   return !pop_up_volume_view_;
 }
 
+views::View* TrayAudio::GetItemToRestoreFocusTo() {
+  if (!volume_view_)
+    return nullptr;
+
+  // The more button on |volume_view_| is the view that triggered the detail
+  // view, so it should grab focus when going back to the default view.
+  return volume_view_->more_button();
+}
+
 void TrayAudio::OnOutputNodeVolumeChanged(uint64_t /* node_id */,
                                           int /* volume */) {
   float percent = CrasAudioHandler::Get()->GetOutputVolumePercent() / 100.0f;

@@ -35,6 +35,8 @@ class VolumeView : public views::View,
   // Sets volume level on slider_, |percent| is ranged from [0.00] to [1.00].
   void SetVolumeLevel(float percent);
 
+  views::Button* more_button() { return more_button_; }
+
  private:
   // Updates device_type_ icon and more_ button.
   void UpdateDeviceTypeAndMore();

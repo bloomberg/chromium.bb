@@ -73,4 +73,8 @@ bool SystemTrayItem::IsUnifiedBubbleShown() {
                                                        ->IsBubbleShown();
 }
 
+views::View* SystemTrayItem::GetItemToRestoreFocusTo() {
+  return nullptr;
+}
+
 }  // namespace ash

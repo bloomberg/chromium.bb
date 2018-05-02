@@ -135,6 +135,11 @@ class ASH_EXPORT SystemTrayItem {
   // Returns true if the bubble of UnifiedSystemTray is shown.
   bool IsUnifiedBubbleShown();
 
+  // Returns the view that should be focused when leaving a detailed view to the
+  // default view. Returns nullptr if the view that should be focused is just
+  // the default view.
+  virtual views::View* GetItemToRestoreFocusTo();
+
   // Returns the system tray that this item belongs to.
   SystemTray* system_tray() const { return system_tray_; }
 
