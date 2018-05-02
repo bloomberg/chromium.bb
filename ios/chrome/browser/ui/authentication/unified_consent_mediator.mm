@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_mediator.h"
+#include "ios/chrome/browser/ui/authentication/unified_consent_mediator.h"
 
 #include "base/logging.h"
 #import "ios/chrome/browser/chrome_browser_provider_observer_bridge.h"
 #import "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
-#include "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_view_controller.h"
+#include "ios/chrome/browser/ui/authentication/unified_consent_view_controller.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

@@ -37,7 +37,7 @@
 #import "ios/chrome/browser/ui/authentication/authentication_ui_util.h"
 #include "ios/chrome/browser/ui/authentication/signin_account_selector_view_controller.h"
 #include "ios/chrome/browser/ui/authentication/signin_confirmation_view_controller.h"
-#include "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_coordinator.h"
+#include "ios/chrome/browser/ui/authentication/unified_consent_coordinator.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
