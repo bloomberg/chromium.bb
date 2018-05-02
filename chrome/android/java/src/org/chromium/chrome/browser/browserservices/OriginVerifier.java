@@ -102,6 +102,7 @@ public class OriginVerifier {
      */
     public static void addVerifiedOriginForPackage(
             String packageName, Origin origin, @Relation int relation) {
+        Log.d(TAG, "Adding: %s for %s", packageName, origin);
         ThreadUtils.assertOnUiThread();
         if (sPackageToCachedOrigins == null) sPackageToCachedOrigins = new HashMap<>();
         Set<Origin> cachedOrigins =
@@ -111,6 +112,9 @@ public class OriginVerifier {
             sPackageToCachedOrigins.put(new Pair<>(packageName, relation), cachedOrigins);
         }
         cachedOrigins.add(origin);
+
+        TrustedWebActivityClient.registerClient(ContextUtils.getApplicationContext(),
+                origin, packageName);
     }
 
     /**

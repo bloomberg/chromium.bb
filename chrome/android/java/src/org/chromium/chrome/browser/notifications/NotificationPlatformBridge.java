@@ -29,6 +29,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.browserservices.TrustedWebActivityClient;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
@@ -80,6 +81,8 @@ public class NotificationPlatformBridge {
 
     private long mLastNotificationClickMs;
 
+    private TrustedWebActivityClient mTwaClient;
+
     /**
      * Creates a new instance of the NotificationPlatformBridge.
      *
@@ -130,6 +133,7 @@ public class NotificationPlatformBridge {
             mNotificationManager = new NotificationManagerProxyImpl(
                     (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE));
         }
+        mTwaClient = new TrustedWebActivityClient(context);
     }
 
     /**
@@ -596,6 +600,9 @@ public class NotificationPlatformBridge {
         if (forWebApk) {
             WebApkServiceClient.getInstance().notifyNotification(
                     webApkPackage, notificationBuilder, notificationId, PLATFORM_ID);
+        } else if (mTwaClient.twaExistsForScope(Uri.parse(scopeUrl))) {
+            mTwaClient.notifyNotification(Uri.parse(scopeUrl), notificationId, PLATFORM_ID,
+                    notificationBuilder);
         } else {
             // Set up a pending intent for going to the settings screen for |origin|.
             Intent settingsIntent = PreferencesLauncher.createIntentForSettingsPage(
@@ -712,24 +719,37 @@ public class NotificationPlatformBridge {
                             @Override
                             public void onChecked(boolean doesBrowserBackWebApk) {
                                 closeNotificationInternal(notificationId,
-                                        doesBrowserBackWebApk ? webApkPackageFound : null);
+                                        doesBrowserBackWebApk ? webApkPackageFound : null,
+                                        scopeUrl);
                             }
                         };
                 ChromeWebApkHost.checkChromeBacksWebApkAsync(webApkPackageFound, callback);
                 return;
             }
         }
-        closeNotificationInternal(notificationId, webApkPackage);
+        closeNotificationInternal(notificationId, webApkPackage, scopeUrl);
     }
 
     /** Called after querying whether the browser backs the given WebAPK. */
-    private void closeNotificationInternal(String notificationId, String webApkPackage) {
-        if (TextUtils.isEmpty(webApkPackage)) {
-            mNotificationManager.cancel(notificationId, PLATFORM_ID);
-        } else {
+    private void closeNotificationInternal(String notificationId, String webApkPackage,
+            String scopeUrl) {
+        if (!TextUtils.isEmpty(webApkPackage)) {
             WebApkServiceClient.getInstance().cancelNotification(
                     webApkPackage, notificationId, PLATFORM_ID);
+            return;
         }
+
+        if (mTwaClient.twaExistsForScope(Uri.parse(scopeUrl))) {
+            mTwaClient.cancelNotification(Uri.parse(scopeUrl), notificationId, PLATFORM_ID);
+
+            // There's an edge case where a notification was displayed by Chrome, a Trusted Web
+            // Activity is then installed and run then the notification is cancelled by javascript.
+            // Chrome will attempt to close the notification through the TWA client and not itself.
+            // Since NotificationManager#cancel is safe to call if the requested notification
+            // isn't being shown, we just call that as well to ensure notifications are cleared.
+        }
+
+        mNotificationManager.cancel(notificationId, PLATFORM_ID);
     }
 
     /**
