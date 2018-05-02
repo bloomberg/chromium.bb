@@ -53,16 +53,12 @@ class TestTabStripObserver : public TabStripObserver {
     tab_strip_->AddObserver(this);
   }
 
-  ~TestTabStripObserver() override {
-    if (tab_strip_)
-      tab_strip_->RemoveObserver(this);
-  }
+  ~TestTabStripObserver() override { tab_strip_->RemoveObserver(this); }
 
   int last_tab_added() const { return last_tab_added_; }
   int last_tab_removed() const { return last_tab_removed_; }
   int last_tab_moved_from() const { return last_tab_moved_from_; }
   int last_tab_moved_to() const { return last_tab_moved_to_; }
-  bool tabstrip_deleted() const { return tabstrip_deleted_; }
 
  private:
   // TabStripObserver overrides.
@@ -81,17 +77,11 @@ class TestTabStripObserver : public TabStripObserver {
     last_tab_removed_ = index;
   }
 
-  void TabStripDeleted(TabStrip* tab_strip) override {
-    tabstrip_deleted_ = true;
-    tab_strip_ = nullptr;
-  }
-
   TabStrip* tab_strip_;
   int last_tab_added_ = -1;
   int last_tab_removed_ = -1;
   int last_tab_moved_from_ = -1;
   int last_tab_moved_to_ = -1;
-  bool tabstrip_deleted_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestTabStripObserver);
 };
@@ -193,17 +183,6 @@ TEST_P(TabStripTest, AddTabAt) {
   EXPECT_EQ(0, observer.last_tab_added());
   Tab* tab = tab_strip_->tab_at(0);
   EXPECT_FALSE(tab == NULL);
-}
-
-// Confirms that TabStripObserver::TabStripDeleted() is sent.
-TEST_P(TabStripTest, TabStripDeleted) {
-  FakeBaseTabStripController* controller = new FakeBaseTabStripController;
-  std::unique_ptr<TabStrip> tab_strip(
-      new TabStrip(std::unique_ptr<TabStripController>(controller)));
-  controller->set_tab_strip(tab_strip.get());
-  TestTabStripObserver observer(tab_strip.get());
-  tab_strip.reset();
-  EXPECT_TRUE(observer.tabstrip_deleted());
 }
 
 TEST_P(TabStripTest, MoveTab) {

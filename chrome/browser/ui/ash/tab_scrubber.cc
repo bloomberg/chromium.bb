@@ -212,11 +212,6 @@ void TabScrubber::TabStripRemovedTabAt(TabStrip* tab_strip, int index) {
     --highlighted_tab_;
 }
 
-void TabScrubber::TabStripDeleted(TabStrip* tab_strip) {
-  if (highlighted_tab_ == -1)
-    return;
-}
-
 Browser* TabScrubber::GetActiveBrowser() {
   Browser* browser = chrome::FindLastActive();
   if (!browser || browser->type() != Browser::TYPE_TABBED ||

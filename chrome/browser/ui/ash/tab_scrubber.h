@@ -65,7 +65,6 @@ class TabScrubber : public ui::EventHandler,
                         int from_index,
                         int to_index) override;
   void TabStripRemovedTabAt(TabStrip* tab_strip, int index) override;
-  void TabStripDeleted(TabStrip* tab_strip) override;
 
   Browser* GetActiveBrowser();
 

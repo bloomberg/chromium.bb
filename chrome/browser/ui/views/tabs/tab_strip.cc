@@ -289,9 +289,6 @@ TabStrip::TabStrip(std::unique_ptr<TabStripController> controller)
 }
 
 TabStrip::~TabStrip() {
-  for (TabStripObserver& observer : observers_)
-    observer.TabStripDeleted(this);
-
   // The animations may reference the tabs. Shut down the animation before we
   // delete the tabs.
   StopAnimating(false);
