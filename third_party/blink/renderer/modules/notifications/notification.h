@@ -93,7 +93,7 @@ class MODULES_EXPORT Notification final
   // NonPersistentNotificationListener interface.
   void OnShow() override;
   void OnClick() override;
-  void OnClose() override;
+  void OnClose(OnCloseCallback completed_closure) override;
 
   String title() const;
   String dir() const;

@@ -27,11 +27,8 @@ void NonPersistentNotificationHandler::OnClose(
     bool by_user,
     base::OnceClosure completed_closure) {
   content::NotificationEventDispatcher::GetInstance()
-      ->DispatchNonPersistentCloseEvent(notification_id);
-
-  // TODO(crbug.com/787459): Implement event acknowledgements once
-  // non-persistent notifications have updated to use Mojo instead of IPC.
-  std::move(completed_closure).Run();
+      ->DispatchNonPersistentCloseEvent(notification_id,
+                                        std::move(completed_closure));
 }
 
 void NonPersistentNotificationHandler::OnClick(

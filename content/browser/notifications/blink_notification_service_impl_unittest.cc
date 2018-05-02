@@ -54,7 +54,9 @@ class MockNonPersistentNotificationListener
   // NonPersistentNotificationListener interface.
   void OnShow() override {}
   void OnClick() override {}
-  void OnClose() override {}
+  void OnClose(OnCloseCallback completed_closure) override {
+    std::move(completed_closure).Run();
+  }
 
  private:
   mojo::Binding<blink::mojom::NonPersistentNotificationListener> binding_;
