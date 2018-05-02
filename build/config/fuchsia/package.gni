@@ -61,6 +61,7 @@ template("package") {
     # Include the SDK's core dynamic libraries in the package.
     data = [
       dist_libroot,
+      "${sysroot}/dist",
     ]
 
     args = [
