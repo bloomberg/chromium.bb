@@ -280,7 +280,7 @@ class PrerenderContents : public content::NotificationObserver,
     return notification_registrar_;
   }
 
-  content::WebContents* CreateWebContents(
+  std::unique_ptr<content::WebContents> CreateWebContents(
       content::SessionStorageNamespace* session_storage_namespace);
 
   PrerenderMode prerender_mode_;

@@ -67,8 +67,8 @@ std::unique_ptr<WebContents> CreateRestoredTab(
         base_web_contents->GetContainerBounds().size();
   }
   std::unique_ptr<WebContents> web_contents =
-      base::WrapUnique(content::WebContents::CreateWithSessionStorage(
-          create_params, session_storage_namespace_map));
+      content::WebContents::CreateWithSessionStorage(
+          create_params, session_storage_namespace_map);
   if (from_session_restore)
     SessionRestore::OnWillRestoreTab(web_contents.get());
   extensions::TabHelper::CreateForWebContents(web_contents.get());
