@@ -58,9 +58,10 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::InkDropHostView,
   // Creates a shadow around the notification and changes slide-out behavior.
   void SetIsNested();
 
+  bool IsCloseButtonFocused() const;
+  void RequestFocusOnCloseButton();
+
   virtual NotificationControlButtonsView* GetControlButtonsView() const = 0;
-  virtual bool IsCloseButtonFocused() const = 0;
-  virtual void RequestFocusOnCloseButton() = 0;
   virtual void UpdateControlButtonsVisibility() = 0;
 
   virtual void SetExpanded(bool expanded);

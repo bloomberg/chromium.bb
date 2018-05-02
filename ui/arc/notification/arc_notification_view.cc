@@ -83,14 +83,6 @@ void ArcNotificationView::SetDrawBackgroundAsActive(bool active) {
   message_center::MessageView::SetDrawBackgroundAsActive(active);
 }
 
-bool ArcNotificationView::IsCloseButtonFocused() const {
-  return content_view_->GetControlButtonsView()->IsCloseButtonFocused();
-}
-
-void ArcNotificationView::RequestFocusOnCloseButton() {
-  content_view_->RequestFocusOnCloseButton();
-}
-
 void ArcNotificationView::UpdateControlButtonsVisibility() {
   content_view_->UpdateControlButtonsVisibility();
 }

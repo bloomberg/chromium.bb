@@ -814,14 +814,6 @@ void NotificationViewMD::OnNotificationInputSubmit(size_t index,
                                                            index, text);
 }
 
-bool NotificationViewMD::IsCloseButtonFocused() const {
-  return control_buttons_view_->IsCloseButtonFocused();
-}
-
-void NotificationViewMD::RequestFocusOnCloseButton() {
-  control_buttons_view_->RequestFocusOnCloseButton();
-}
-
 void NotificationViewMD::CreateOrUpdateContextTitleView(
     const Notification& notification) {
   header_row_->SetAccentColor(notification.accent_color() == SK_ColorTRANSPARENT

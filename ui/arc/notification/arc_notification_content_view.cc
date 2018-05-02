@@ -342,14 +342,6 @@ void ArcNotificationContentView::UpdateControlButtonsVisibility() {
     floating_control_buttons_widget_->Hide();
 }
 
-void ArcNotificationContentView::RequestFocusOnCloseButton() {
-  if (!control_buttons_view_.GetWidget())
-    return;
-
-  control_buttons_view_.RequestFocusOnCloseButton();
-  UpdateControlButtonsVisibility();
-}
-
 void ArcNotificationContentView::OnSlideChanged() {
   if (slide_helper_)
     slide_helper_->Update();
