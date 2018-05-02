@@ -32,20 +32,26 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
+namespace media {
+
+namespace {
+
+using testing::_;
 using testing::Invoke;
 using testing::InvokeWithoutArgs;
 using testing::NiceMock;
 using testing::StrictMock;
 
-namespace media {
-namespace {
+MATCHER_P(MatchesResult, success, "") {
+  return arg->success == success;
+}
 
 #if BUILDFLAG(ENABLE_MOJO_CDM) && !defined(OS_ANDROID)
 const char kClearKeyKeySystem[] = "org.w3.clearkey";
 const char kInvalidKeySystem[] = "invalid.key.system";
 #endif
 
-const char kSecurityOrigin[] = "http://foo.com";
+const char kSecurityOrigin[] = "https://foo.com";
 
 class MockRendererClient : public mojom::RendererClient {
  public:
@@ -96,21 +102,18 @@ class MediaServiceTest : public service_manager::test::ServiceTest {
     run_loop_.reset(new base::RunLoop());
   }
 
-  // MOCK_METHOD* doesn't support move only types. Work around this by having
-  // an extra method.
-  MOCK_METHOD2(OnCdmInitializedInternal, void(bool result, int cdm_id));
-  void OnCdmInitialized(mojom::CdmPromiseResultPtr result,
-                        int cdm_id,
-                        mojom::DecryptorPtr decryptor) {
-    OnCdmInitializedInternal(result->success, cdm_id);
-  }
+  MOCK_METHOD3(OnCdmInitialized,
+               void(mojom::CdmPromiseResultPtr result,
+                    int cdm_id,
+                    mojom::DecryptorPtr decryptor));
 
   void InitializeCdm(const std::string& key_system,
                      bool expected_result,
                      int cdm_id) {
     interface_factory_->CreateCdm(key_system, mojo::MakeRequest(&cdm_));
 
-    EXPECT_CALL(*this, OnCdmInitializedInternal(expected_result, cdm_id))
+    EXPECT_CALL(*this,
+                OnCdmInitialized(MatchesResult(expected_result), cdm_id, _))
         .WillOnce(InvokeWithoutArgs(run_loop_.get(), &base::RunLoop::Quit));
     cdm_->Initialize(key_system, url::Origin::Create(GURL(kSecurityOrigin)),
                      CdmConfig(),
