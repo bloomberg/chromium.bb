@@ -25,6 +25,12 @@ class SelectToSpeakEventHandler : public ui::EventHandler {
   SelectToSpeakEventHandler();
   ~SelectToSpeakEventHandler() override;
 
+  // Called when the Select-to-Speak extension changes state. |is_selecting| is
+  // true if the extension wants to begin capturing mouse or touch events, in
+  // which case this handler needs to start forwarding those events if it was
+  // in an inactive state.
+  void SetSelectToSpeakStateSelecting(bool is_selecting);
+
   void CaptureForwardedEventsForTesting(
       SelectToSpeakEventDelegateForTesting* delegate);
 
@@ -32,6 +38,7 @@ class SelectToSpeakEventHandler : public ui::EventHandler {
   // EventHandler
   void OnKeyEvent(ui::KeyEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
+  void OnTouchEvent(ui::TouchEvent* event) override;
 
   // Returns true if Select to Speak is enabled.
   bool IsSelectToSpeakEnabled();
@@ -41,8 +48,12 @@ class SelectToSpeakEventHandler : public ui::EventHandler {
   // Converts an event in pixels to the same event in DIPs.
   void ConvertMouseEventToDIPs(ui::MouseEvent* mouse_event);
 
+  // Forwards a mouse event to the Select-to-Speak extension.
+  void ForwardMouseEventToExtension(ui::MouseEvent* event);
+
   enum State {
-    // The search key is not down. No other keys or mouse events are captured.
+    // The search key is not down, no selection has been requested.
+    // No other keys or mouse events are captured.
     INACTIVE,
 
     // The Search key is down but the mouse button and 'S' key are not.
@@ -79,7 +90,21 @@ class SelectToSpeakEventHandler : public ui::EventHandler {
 
     // The Search key was released while the selection key was still down. Stay
     // in this mode until the speak selection key is released too.
-    WAIT_FOR_SPEAK_SELECTION_KEY_RELEASE
+    WAIT_FOR_SPEAK_SELECTION_KEY_RELEASE,
+
+    // The user has clicked a button in the Chrome UI indicating they want to
+    // start capturing mouse or touch events. The next mouse or touch events
+    // should be captured.
+    SELECTION_REQUESTED,
+
+    // Mouse events are being captured, but do not need to wait for any key
+    // events when the mouse is released, unlike WAIT_FOR_MOUSE_RELEASE.
+    // Only mouse events will be captured until the mouse released event is
+    // received.
+    CAPTURING_MOUSE_ONLY,
+
+    // Touch events are being captured, similar to CAPTURING_MOUSE_ONLY.
+    CAPTURING_TOUCH_ONLY
   };
 
   State state_ = INACTIVE;
