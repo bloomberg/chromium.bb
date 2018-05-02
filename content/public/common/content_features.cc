@@ -170,6 +170,9 @@ const char kIsolateOriginsFieldTrialParamName[] = "OriginsList";
 const base::Feature kKeyboardLockAPI{"KeyboardLockAPI",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kLayeredAPI{"LayeredAPI",
+                                base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kLazyFrameLoading{"LazyFrameLoading",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 

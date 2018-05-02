@@ -3851,6 +3851,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kIncreaseInputAudioBufferSize)},
 #endif  // OS_WIN
 
+    {"enable-layered-api", flag_descriptions::kLayeredAPIName,
+     flag_descriptions::kLayeredAPIDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kLayeredAPI)},
+
     {"enable-lazy-frame-loading",
      flag_descriptions::kEnableLazyFrameLoadingName,
      flag_descriptions::kEnableLazyFrameLoadingDescription, kOsAll,
