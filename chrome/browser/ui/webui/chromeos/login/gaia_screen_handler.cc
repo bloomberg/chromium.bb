@@ -224,7 +224,12 @@ void GetVersionAndConsent(std::string* out_version, bool* out_consent) {
 user_manager::UserType GetUsertypeFromServicesString(
     const ::login::StringList& services) {
   bool is_child = false;
-  const base::flat_set<std::string> known_flags = {"uca", "usm"};
+  const bool support_usm =
+      base::FeatureList::IsEnabled(features::kCrOSEnableUSMUserService);
+  using KnownFlags = base::flat_set<std::string>;
+  const KnownFlags known_flags =
+      support_usm ? KnownFlags({"uca", "usm"}) : KnownFlags({"uca"});
+
   size_t i = 0;
   for (const std::string& item : services) {
     if (known_flags.find(item) != known_flags.end()) {
