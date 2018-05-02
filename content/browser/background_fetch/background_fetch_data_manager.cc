@@ -596,12 +596,6 @@ void BackgroundFetchDataManager::GetDeveloperIdsForServiceWorker(
                           developer_ids);
 }
 
-int BackgroundFetchDataManager::GetTotalNumberOfRequests(
-    const BackgroundFetchRegistrationId& registration_id) const {
-  return registrations_.find(registration_id.unique_id())
-      ->second->GetTotalNumberOfRequests();
-}
-
 bool BackgroundFetchDataManager::IsActive(
     const BackgroundFetchRegistrationId& registration_id) {
   auto developer_id_tuple =

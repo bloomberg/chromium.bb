@@ -113,6 +113,7 @@ class CONTENT_EXPORT BackgroundFetchContext
   void CreateController(const BackgroundFetchRegistrationId& registration_id,
                         const BackgroundFetchOptions& options,
                         const SkBitmap& icon,
+                        size_t num_requests,
                         const BackgroundFetchRegistration& registration);
 
   // Called when an existing registration has been retrieved from the data
@@ -127,6 +128,7 @@ class CONTENT_EXPORT BackgroundFetchContext
       const BackgroundFetchRegistrationId& registration_id,
       const BackgroundFetchOptions& options,
       const SkBitmap& icon,
+      size_t num_requests,
       blink::mojom::BackgroundFetchService::FetchCallback callback,
       blink::mojom::BackgroundFetchError error,
       std::unique_ptr<BackgroundFetchRegistration> registration);

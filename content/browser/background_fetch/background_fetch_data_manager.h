@@ -133,9 +133,6 @@ class CONTENT_EXPORT BackgroundFetchDataManager
       const url::Origin& origin,
       blink::mojom::BackgroundFetchService::GetDeveloperIdsCallback callback);
 
-  int GetTotalNumberOfRequests(
-      const BackgroundFetchRegistrationId& registration_id) const;
-
   // BackgroundFetchScheduler::RequestProvider implementation:
   void PopNextRequest(const BackgroundFetchRegistrationId& registration_id,
                       NextRequestCallback callback) override;
