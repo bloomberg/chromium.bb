@@ -83,7 +83,7 @@ include("${AOM_ROOT}/test/test.cmake")
 include("${AOM_ROOT}/build/cmake/sanitizers.cmake")
 include("${AOM_ROOT}/build/cmake/util.cmake")
 
-set(AOM_RTCD_SOURCES
+list(APPEND AOM_RTCD_SOURCES
     "${AOM_CONFIG_DIR}/aom_dsp_rtcd.h"
     "${AOM_CONFIG_DIR}/aom_scale_rtcd.h"
     "${AOM_CONFIG_DIR}/av1_rtcd.h"
@@ -96,7 +96,7 @@ set(AOM_RTCD_SOURCES
     "${AOM_ROOT}/build/make/rtcd.pl")
 
 # TODO(tomfinegan): Use libwebm's cmake support directly.
-set(AOM_LIBWEBM_SOURCES
+list(APPEND AOM_LIBWEBM_SOURCES
     "${AOM_ROOT}/third_party/libwebm/common/hdr_util.cc"
     "${AOM_ROOT}/third_party/libwebm/common/hdr_util.h"
     "${AOM_ROOT}/third_party/libwebm/common/webmids.h"
@@ -112,7 +112,7 @@ set(AOM_LIBWEBM_SOURCES
     "${AOM_ROOT}/third_party/libwebm/mkvparser/mkvreader.cc"
     "${AOM_ROOT}/third_party/libwebm/mkvparser/mkvreader.h")
 
-set(AOM_LIBYUV_SOURCES
+list(APPEND AOM_LIBYUV_SOURCES
     "${AOM_ROOT}/third_party/libyuv/include/libyuv/basic_types.h"
     "${AOM_ROOT}/third_party/libyuv/include/libyuv/convert.h"
     "${AOM_ROOT}/third_party/libyuv/include/libyuv/convert_argb.h"
@@ -141,7 +141,7 @@ set(AOM_LIBYUV_SOURCES
     "${AOM_ROOT}/third_party/libyuv/source/scale_neon64.cc"
     "${AOM_ROOT}/third_party/libyuv/source/scale_win.cc")
 
-set(AOM_SOURCES
+list(APPEND AOM_SOURCES
     "${AOM_CONFIG_DIR}/aom_config.c"
     "${AOM_CONFIG_DIR}/aom_config.h"
     "${AOM_ROOT}/aom/aom.h"
@@ -160,7 +160,7 @@ set(AOM_SOURCES
     "${AOM_ROOT}/aom/src/aom_image.c"
     "${AOM_ROOT}/aom/src/aom_integer.c")
 
-set(AOM_COMMON_APP_UTIL_SOURCES
+list(APPEND AOM_COMMON_APP_UTIL_SOURCES
     "${AOM_ROOT}/args.c"
     "${AOM_ROOT}/args.h"
     "${AOM_ROOT}/md5_utils.c"
@@ -171,7 +171,7 @@ set(AOM_COMMON_APP_UTIL_SOURCES
     "${AOM_ROOT}/y4menc.c"
     "${AOM_ROOT}/y4menc.h")
 
-set(AOM_DECODER_APP_UTIL_SOURCES
+list(APPEND AOM_DECODER_APP_UTIL_SOURCES
     "${AOM_ROOT}/ivfdec.c"
     "${AOM_ROOT}/ivfdec.h"
     "${AOM_ROOT}/obudec.c"
@@ -179,7 +179,7 @@ set(AOM_DECODER_APP_UTIL_SOURCES
     "${AOM_ROOT}/video_reader.c"
     "${AOM_ROOT}/video_reader.h")
 
-set(AOM_ENCODER_APP_UTIL_SOURCES
+list(APPEND AOM_ENCODER_APP_UTIL_SOURCES
     "${AOM_ROOT}/ivfenc.c"
     "${AOM_ROOT}/ivfenc.h"
     "${AOM_ROOT}/video_writer.c"
@@ -191,21 +191,21 @@ set(AOM_ENCODER_APP_UTIL_SOURCES
     "${AOM_ROOT}/examples/encoder_util.h"
     "${AOM_ROOT}/examples/encoder_util.c")
 
-set(AOM_ENCODER_STATS_SOURCES
+list(APPEND AOM_ENCODER_STATS_SOURCES
     "${AOM_ROOT}/aomstats.c"
     "${AOM_ROOT}/aomstats.h"
     "${AOM_ROOT}/rate_hist.c"
     "${AOM_ROOT}/rate_hist.h")
 
-set(AOM_PKG_CONFIG_SOURCES "${AOM_CONFIG_DIR}/aom.pc")
+list(APPEND AOM_PKG_CONFIG_SOURCES "${AOM_CONFIG_DIR}/aom.pc")
 
-set(AOM_VERSION_SOURCES "${AOM_CONFIG_DIR}/aom_version.h")
+list(APPEND AOM_VERSION_SOURCES "${AOM_CONFIG_DIR}/aom_version.h")
 
-set(AOM_WEBM_DECODER_SOURCES
+list(APPEND AOM_WEBM_DECODER_SOURCES
     "${AOM_ROOT}/webmdec.cc"
     "${AOM_ROOT}/webmdec.h")
 
-set(AOM_WEBM_ENCODER_SOURCES
+list(APPEND AOM_WEBM_ENCODER_SOURCES
     "${AOM_ROOT}/webmenc.cc"
     "${AOM_ROOT}/webmenc.h")
 
@@ -342,7 +342,7 @@ if (CONFIG_AV1_DECODER AND ENABLE_EXAMPLES)
                  "${AOM_ROOT}/examples/scalable_decoder.c"
                  $<TARGET_OBJECTS:aom_common_app_util>
                  $<TARGET_OBJECTS:aom_decoder_app_util>)
-  
+
   if (CONFIG_ANALYZER)
     add_executable(analyzer
                    "${AOM_ROOT}/examples/analyzer.cc"
@@ -350,8 +350,8 @@ if (CONFIG_AV1_DECODER AND ENABLE_EXAMPLES)
                    $<TARGET_OBJECTS:aom_decoder_app_util>)
     target_link_libraries(analyzer
                           ${AOM_LIB_LINK_TYPE} ${wxWidgets_LIBRARIES})
-    set(AOM_APP_TARGETS ${AOM_APP_TARGETS} analyzer)
-    set(AOM_DECODER_EXAMPLE_TARGETS ${AOM_DECODER_EXAMPLE_TARGETS} analyzer)
+    list(APPEND AOM_APP_TARGETS analyzer)
+    list(APPEND AOM_DECODER_EXAMPLE_TARGETS analyzer)
   endif ()
 
   if (CONFIG_INSPECTION)
@@ -359,7 +359,7 @@ if (CONFIG_AV1_DECODER AND ENABLE_EXAMPLES)
                    "${AOM_ROOT}/examples/inspect.c"
                    $<TARGET_OBJECTS:aom_common_app_util>
                    $<TARGET_OBJECTS:aom_decoder_app_util>)
-    set(AOM_DECODER_EXAMPLE_TARGETS ${AOM_DECODER_EXAMPLE_TARGETS} inspect)
+    list(APPEND AOM_DECODER_EXAMPLE_TARGETS inspect)
 
     if (EMSCRIPTEN)
       add_preproc_definition(_POSIX_SOURCE)
@@ -379,14 +379,11 @@ if (CONFIG_AV1_DECODER AND ENABLE_EXAMPLES)
   endif ()
 
   # Maintain a list of decoder example targets.
-  set(AOM_DECODER_EXAMPLE_TARGETS ${AOM_DECODER_EXAMPLE_TARGETS}
-      aomdec decode_to_md5 decode_with_drops simple_decoder)
+  list(APPEND AOM_DECODER_EXAMPLE_TARGETS
+       aomdec decode_to_md5 decode_with_drops scalable_decoder simple_decoder)
 
-    set(AOM_DECODER_EXAMPLE_TARGETS ${AOM_DECODER_EXAMPLE_TARGETS}
-        scalable_decoder)
-  
   # Add decoder examples to the app targets list.
-  set(AOM_APP_TARGETS ${AOM_APP_TARGETS} ${AOM_DECODER_EXAMPLE_TARGETS})
+  list(APPEND AOM_APP_TARGETS ${AOM_DECODER_EXAMPLE_TARGETS})
 endif ()
 
 if (CONFIG_AV1_ENCODER)
@@ -422,12 +419,9 @@ if (CONFIG_AV1_ENCODER)
                    $<TARGET_OBJECTS:aom_encoder_app_util>)
 
     # Maintain a list of encoder example targets.
-    set(AOM_ENCODER_EXAMPLE_TARGETS
-        aomenc lossless_encoder noise_model set_maps simple_encoder twopass_encoder)
-
-      set(AOM_ENCODER_EXAMPLE_TARGETS ${AOM_ENCODER_EXAMPLE_TARGETS}
-          scalable_encoder)
-
+    list(APPEND AOM_ENCODER_EXAMPLE_TARGETS
+         aomenc lossless_encoder noise_model set_maps simple_encoder
+         scalable_encoder twopass_encoder)
   endif ()
 
   if (ENABLE_TOOLS)
@@ -442,22 +436,21 @@ if (CONFIG_AV1_ENCODER)
                      $<TARGET_OBJECTS:aom_encoder_app_util>)
 
       # Maintain a list of encoder tool targets.
-      set(AOM_ENCODER_TOOL_TARGETS
-          ${AOM_ENCODER_TOOL_TARGETS} aom_entropy_optimizer)
+      list(APPEND AOM_ENCODER_TOOL_TARGETS aom_entropy_optimizer)
     endif ()
   endif ()
 
   # Add encoder examples and tools to the targets list.
-  set(AOM_APP_TARGETS ${AOM_APP_TARGETS}
-      ${AOM_ENCODER_EXAMPLE_TARGETS} ${AOM_ENCODER_TOOL_TARGETS})
+  list(APPEND AOM_APP_TARGETS
+       ${AOM_ENCODER_EXAMPLE_TARGETS} ${AOM_ENCODER_TOOL_TARGETS})
 endif ()
 
 if (ENABLE_EXAMPLES)
   # Maintain a separate variable listing only the examples to facilitate
   # installation of example programs into an examples sub directory of
   # $AOM_DIST_DIR/bin when building the dist target.
-  set(AOM_EXAMPLE_TARGETS
-      ${AOM_DECODER_EXAMPLE_TARGETS} ${AOM_ENCODER_EXAMPLE_TARGETS})
+  list(APPEND AOM_EXAMPLE_TARGETS
+       ${AOM_DECODER_EXAMPLE_TARGETS} ${AOM_ENCODER_EXAMPLE_TARGETS})
 endif ()
 
 if (ENABLE_TOOLS)
@@ -494,8 +487,8 @@ if (ENABLE_EXAMPLES AND CONFIG_AV1_DECODER AND CONFIG_AV1_ENCODER)
                  "${AOM_ROOT}/examples/aom_cx_set_ref.c"
                  $<TARGET_OBJECTS:aom_common_app_util>
                  $<TARGET_OBJECTS:aom_encoder_app_util>)
-  set(AOM_EXAMPLE_TARGETS ${AOM_EXAMPLE_TARGETS} aom_cx_set_ref)
-  set(AOM_APP_TARGETS ${AOM_APP_TARGETS} aom_cx_set_ref)
+  list(APPEND AOM_EXAMPLE_TARGETS aom_cx_set_ref)
+  list(APPEND AOM_APP_TARGETS aom_cx_set_ref)
 endif ()
 
 foreach (aom_app ${AOM_APP_TARGETS})
@@ -615,34 +608,32 @@ if (ENABLE_DOCS)
 endif ()
 
 # Aomedia install rule.
-set(AOM_INSTALL_INCS
-    "${AOM_ROOT}/aom/aom.h"
-    "${AOM_ROOT}/aom/aom_codec.h"
-    "${AOM_ROOT}/aom/aom_frame_buffer.h"
-    "${AOM_ROOT}/aom/aom_image.h"
-    "${AOM_ROOT}/aom/aom_integer.h"
-    "${AOM_ROOT}/aom/aom.h")
+list(APPEND AOM_INSTALL_INCS
+     "${AOM_ROOT}/aom/aom.h"
+     "${AOM_ROOT}/aom/aom_codec.h"
+     "${AOM_ROOT}/aom/aom_frame_buffer.h"
+     "${AOM_ROOT}/aom/aom_image.h"
+     "${AOM_ROOT}/aom/aom_integer.h"
+     "${AOM_ROOT}/aom/aom.h")
 
 if (CONFIG_AV1_DECODER)
   if (ENABLE_EXAMPLES)
-    set(AOM_INSTALL_BINS ${AOM_INSTALL_BINS} aomdec)
+    list(APPEND AOM_INSTALL_BINS aomdec)
   endif ()
 
-  set(AOM_INSTALL_INCS
-      ${AOM_INSTALL_INCS}
+  list(APPEND AOM_INSTALL_INCS
       "${AOM_ROOT}/aom/aom_decoder.h"
       "${AOM_ROOT}/aom/aomdx.h")
 endif ()
 
 if (CONFIG_AV1_ENCODER)
   if (ENABLE_EXAMPLES)
-    set(AOM_INSTALL_BINS ${AOM_INSTALL_BINS} aomenc)
+    list(APPEND AOM_INSTALL_BINS aomenc)
   endif ()
 
-  set(AOM_INSTALL_INCS
-      ${AOM_INSTALL_INCS}
-      "${AOM_ROOT}/aom/aomcx.h"
-      "${AOM_ROOT}/aom/aom_encoder.h")
+  list(APPEND AOM_INSTALL_INCS
+       "${AOM_ROOT}/aom/aomcx.h"
+       "${AOM_ROOT}/aom/aom_encoder.h")
 endif ()
 
 set(AOM_INSTALL_LIBS aom)
@@ -659,10 +650,10 @@ endif ()
 
 # Aomedia dist rule.
 if (CONFIG_AV1_DECODER AND ENABLE_EXAMPLES)
-  set(AOM_DIST_APPS ${AOM_DIST_APPS} $<TARGET_FILE:aomdec>)
+  list(APPEND AOM_DIST_APPS $<TARGET_FILE:aomdec>)
 endif ()
 if (CONFIG_AV1_ENCODER AND ENABLE_EXAMPLES)
-  set(AOM_DIST_APPS ${AOM_DIST_APPS} $<TARGET_FILE:aomenc>)
+  list(APPEND AOM_DIST_APPS $<TARGET_FILE:aomenc>)
 endif ()
 
 if (ENABLE_EXAMPLES)
