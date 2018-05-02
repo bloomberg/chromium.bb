@@ -694,6 +694,21 @@ class CleanUpStageTest(generic_stages_unittest.StageTestCase):
     stage = self.ConstructStage()
     self.assertFalse(stage.CanReuseChroot(chroot_path))
 
+  def testChrootReuseChrootReplace(self):
+    self._Prepare(
+        extra_config={'chroot_use_image': False, 'chroot_replace': True})
+
+    self.PatchObject(
+        build_stages.CleanUpStage,
+        '_GetPreviousBuildStatus',
+        return_value=build_summary.BuildSummary(
+            build_number=314,
+            status=constants.BUILDER_STATUS_PASSED))
+
+    chroot_path = os.path.join(self.build_root, 'chroot')
+    stage = self.ConstructStage()
+    self.assertFalse(stage.CanReuseChroot(chroot_path))
+
   def testChrootReusePreviousFailed(self):
     self.PatchObject(
         build_stages.CleanUpStage,

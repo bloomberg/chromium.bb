@@ -217,8 +217,9 @@ class CleanUpStage(generic_stages.BuilderStage):
     A chroot can be reused if all of the following are true:
         1.  The existence of chroot.img matches what is requested in the config,
             i.e. exists when chroot_use_image is True or vice versa.
-        2.  The previous local build succeeded.
-        3.  If there was a previous master build, that build also succeeded.
+        2.  The build config doesn't request chroot_replace.
+        3.  The previous local build succeeded.
+        4.  If there was a previous master build, that build also succeeded.
 
     Args:
       chroot_path: Path to the chroot we want to reuse.
@@ -234,6 +235,10 @@ class CleanUpStage(generic_stages.BuilderStage):
                    'Cannot reuse chroot.', chroot_img,
                    'exists' if chroot_img_exists else "doesn't exist",
                    self._run.config.chroot_use_image)
+      return False
+
+    if self._run.config.chroot_replace and self._run.options.build:
+      logging.info('Build config has chroot_replace=True. Cannot reuse chroot.')
       return False
 
     previous_state = self._GetPreviousBuildStatus()
@@ -307,8 +312,7 @@ class CleanUpStage(generic_stages.BuilderStage):
                self._DeleteAutotestSitePackages]
       if self._run.options.chrome_root:
         tasks.append(self._DeleteChromeBuildOutput)
-      if ((self._run.config.chroot_replace and self._run.options.build) or
-          delete_chroot):
+      if delete_chroot:
         tasks.append(self._DeleteChroot)
       else:
         tasks.append(self._CleanChroot)
