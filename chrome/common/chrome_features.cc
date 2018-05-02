@@ -650,6 +650,11 @@ const base::Feature kEasyUnlockPromotions{"EasyUnlockPromotions",
 const base::Feature kTPMFirmwareUpdate{"TPMFirmwareUpdate",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables or disables "usm" service in the list of user services returned by
+// userInfo Gaia message.
+const base::Feature kCrOSEnableUSMUserService{
+    "CrOSEnableUSMUserService", base::FEATURE_DISABLED_BY_DEFAULT};
+
 #endif  // defined(OS_CHROMEOS)
 
 }  // namespace features

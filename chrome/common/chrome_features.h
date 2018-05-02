@@ -351,6 +351,8 @@ extern const base::Feature kInstantTethering;
 extern const base::Feature kEasyUnlockPromotions;
 
 extern const base::Feature kTPMFirmwareUpdate;
+
+extern const base::Feature kCrOSEnableUSMUserService;
 #endif  // defined(OS_CHROMEOS)
 
 bool PrefServiceEnabled();
