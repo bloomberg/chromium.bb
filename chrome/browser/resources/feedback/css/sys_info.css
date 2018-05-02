@@ -5,6 +5,7 @@
 html,
 body {
   overflow: visible;
+  user-select: auto;
 }
 
 #detailsTable {
