@@ -396,9 +396,6 @@ void MediaDevicesManager::StartMonitoring() {
   }
 
 #if defined(OS_MACOSX)
-  // TODO(crbug.com/835765): Do not force NO_CACHE for video input once the
-  // monitor for video-input devices is fixed.
-  SetCachePolicy(MEDIA_DEVICE_TYPE_VIDEO_INPUT, CachePolicy::NO_CACHE);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&MediaDevicesManager::StartMonitoringOnUIThread,
