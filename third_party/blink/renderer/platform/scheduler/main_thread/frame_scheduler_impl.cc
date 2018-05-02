@@ -138,7 +138,6 @@ FrameSchedulerImpl::FrameSchedulerImpl(
                              &tracing_controller_,
                              YesNoStateToString),
       weak_factory_(this) {
-  DCHECK_EQ(throttling_state_, CalculateThrottlingState());
 }
 
 namespace {
@@ -203,16 +202,16 @@ std::unique_ptr<FrameScheduler::ThrottlingObserverHandle>
 FrameSchedulerImpl::AddThrottlingObserver(ObserverType type,
                                           Observer* observer) {
   DCHECK(observer);
-  observer->OnThrottlingStateChanged(CalculateThrottlingState());
-  loader_observers_.insert(observer);
+  observer->OnThrottlingStateChanged(CalculateThrottlingState(type));
+  throttling_observers_[observer] = type;
   return std::make_unique<ThrottlingObserverHandleImpl>(this, observer);
 }
 
 void FrameSchedulerImpl::RemoveThrottlingObserver(Observer* observer) {
   DCHECK(observer);
-  const auto found = loader_observers_.find(observer);
-  DCHECK(loader_observers_.end() != found);
-  loader_observers_.erase(found);
+  const auto found = throttling_observers_.find(observer);
+  DCHECK(throttling_observers_.end() != found);
+  throttling_observers_.erase(found);
 }
 
 void FrameSchedulerImpl::SetFrameVisible(bool frame_visible) {
@@ -581,16 +580,14 @@ void FrameSchedulerImpl::UpdateQueuePolicy(
 }
 
 void FrameSchedulerImpl::NotifyThrottlingObservers() {
-  FrameScheduler::ThrottlingState throttling_state = CalculateThrottlingState();
-  if (throttling_state == throttling_state_)
-    return;
-  throttling_state_ = throttling_state;
-  for (auto* observer : loader_observers_)
-    observer->OnThrottlingStateChanged(throttling_state_);
+  for (const auto& observer : throttling_observers_) {
+    observer.first->OnThrottlingStateChanged(
+        CalculateThrottlingState(observer.second));
+  }
 }
 
-FrameScheduler::ThrottlingState FrameSchedulerImpl::CalculateThrottlingState()
-    const {
+FrameScheduler::ThrottlingState FrameSchedulerImpl::CalculateThrottlingState(
+    ObserverType type) const {
   if (RuntimeEnabledFeatures::StopLoadingInBackgroundEnabled() &&
       page_frozen_ && !keep_active_) {
     DCHECK(page_visibility_ == PageVisibilityState::kHidden);

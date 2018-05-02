@@ -613,6 +613,9 @@ bool ResourceLoadScheduler::IsThrottablePriority(
 
 void ResourceLoadScheduler::OnThrottlingStateChanged(
     FrameScheduler::ThrottlingState state) {
+  if (frame_scheduler_throttling_state_ == state)
+    return;
+
   if (traffic_monitor_)
     traffic_monitor_->OnThrottlingStateChanged(state);
 
