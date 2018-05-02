@@ -1168,6 +1168,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             mContextualSearchManager = null;
         }
 
+        if (mModalDialogManager != null) {
+            mModalDialogManager.destroy();
+            mModalDialogManager = null;
+        }
+
         if (mTabModelSelectorTabObserver != null) {
             mTabModelSelectorTabObserver.destroy();
             mTabModelSelectorTabObserver = null;
