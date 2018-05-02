@@ -461,6 +461,20 @@ void ScrollingCoordinator::ScrollableAreaScrollbarLayerDidChange(
   }
 }
 
+bool ScrollingCoordinator::UpdateCompositedScrollOffset(
+    ScrollableArea* scrollable_area) {
+  GraphicsLayer* scroll_layer = scrollable_area->LayerForScrolling();
+  if (!scroll_layer || scroll_layer->GetScrollableArea() != scrollable_area)
+    return false;
+
+  WebLayer* web_layer = toWebLayer(scrollable_area->LayerForScrolling());
+  if (!web_layer)
+    return false;
+
+  web_layer->SetScrollPosition(scrollable_area->ScrollPosition());
+  return true;
+}
+
 bool ScrollingCoordinator::ScrollableAreaScrollLayerDidChange(
     ScrollableArea* scrollable_area) {
   if (!page_ || !page_->MainFrame())
