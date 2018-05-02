@@ -20,8 +20,8 @@ ScriptPromise Keyboard::lock(ScriptState* state,
   return keyboard_lock_->lock(state, keycodes);
 }
 
-void Keyboard::unlock() {
-  keyboard_lock_->unlock();
+void Keyboard::unlock(ScriptState* state) {
+  keyboard_lock_->unlock(state);
 }
 
 void Keyboard::Trace(blink::Visitor* visitor) {
