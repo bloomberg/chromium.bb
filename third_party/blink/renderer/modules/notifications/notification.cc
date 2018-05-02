@@ -258,14 +258,14 @@ void Notification::OnClick() {
   DispatchEvent(Event::Create(EventTypeNames::click));
 }
 
-void Notification::OnClose() {
+void Notification::OnClose(OnCloseCallback completed_closure) {
   // The notification should be Showing if the user initiated the close, or it
   // should be Closing if the developer initiated the close.
-  if (state_ != State::kShowing && state_ != State::kClosing)
-    return;
-
-  state_ = State::kClosed;
-  DispatchEvent(Event::Create(EventTypeNames::close));
+  if (state_ == State::kShowing || state_ == State::kClosing) {
+    state_ = State::kClosed;
+    DispatchEvent(Event::Create(EventTypeNames::close));
+  }
+  std::move(completed_closure).Run();
 }
 
 void Notification::DispatchErrorEvent() {

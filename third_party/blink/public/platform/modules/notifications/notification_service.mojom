@@ -17,7 +17,7 @@ interface NonPersistentNotificationListener {
 
   // Called when the notification was closed; either programatically, or by the
   // developer calling Notification.close().
-  OnClose();
+  OnClose() => ();
 };
 
 // Possible things that can go wrong when displaying a notification created by

@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "content/common/content_export.h"
@@ -42,7 +43,8 @@ class CONTENT_EXPORT NotificationEventDispatcherImpl
   void DispatchNonPersistentClickEvent(
       const std::string& notification_id) override;
   void DispatchNonPersistentCloseEvent(
-      const std::string& notification_id) override;
+      const std::string& notification_id,
+      base::OnceClosure completed_closure) override;
 
   // Registers |listener| to receive the show, click and close events of the
   // non-persistent notification identified by |notification_id|.
@@ -56,6 +58,13 @@ class CONTENT_EXPORT NotificationEventDispatcherImpl
 
   NotificationEventDispatcherImpl();
   ~NotificationEventDispatcherImpl() override;
+
+  // Removes all references to the listener registered to receive events
+  // from the non-persistent notification identified by |notification_id|,
+  // and executes |completed_closure|. This method is called after OnClose has
+  // been dispatched to the non-persistent notification listener.
+  void OnNonPersistentCloseComplete(const std::string& notification_id,
+                                    base::OnceClosure completed_closure);
 
   // Removes all references to the listener registered to receive events
   // from the non-persistent notification identified by |notification_id|.

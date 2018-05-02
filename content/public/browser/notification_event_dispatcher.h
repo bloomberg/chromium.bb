@@ -61,7 +61,8 @@ class CONTENT_EXPORT NotificationEventDispatcher {
   virtual void DispatchNonPersistentClickEvent(
       const std::string& notification_id) = 0;
   virtual void DispatchNonPersistentCloseEvent(
-      const std::string& notification_id) = 0;
+      const std::string& notification_id,
+      base::OnceClosure completed_closure) = 0;
 
  protected:
   virtual ~NotificationEventDispatcher() {}

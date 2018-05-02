@@ -4,6 +4,7 @@
 
 #include "content/browser/notifications/notification_event_dispatcher_impl.h"
 
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/optional.h"
@@ -422,7 +423,7 @@ void NotificationEventDispatcherImpl::RegisterNonPersistentNotificationListener(
     // from the JavaScript point of view there will be two notification objects,
     // and the old one needs to receive a close event before the new one
     // receives a show event.
-    DispatchNonPersistentCloseEvent(notification_id);
+    DispatchNonPersistentCloseEvent(notification_id, base::DoNothing());
   }
 
   blink::mojom::NonPersistentNotificationListenerPtr listener_ptr(
@@ -455,11 +456,25 @@ void NotificationEventDispatcherImpl::DispatchNonPersistentClickEvent(
 }
 
 void NotificationEventDispatcherImpl::DispatchNonPersistentCloseEvent(
-    const std::string& notification_id) {
-  if (!non_persistent_notification_listeners_.count(notification_id))
+    const std::string& notification_id,
+    base::OnceClosure completed_closure) {
+  if (!non_persistent_notification_listeners_.count(notification_id)) {
+    std::move(completed_closure).Run();
     return;
-  non_persistent_notification_listeners_[notification_id]->OnClose();
+  }
+  // Listeners get freed together with |this|, thus the Unretained is safe.
+  non_persistent_notification_listeners_[notification_id]->OnClose(
+      base::BindOnce(
+          &NotificationEventDispatcherImpl::OnNonPersistentCloseComplete,
+          base::Unretained(this), notification_id,
+          std::move(completed_closure)));
+}
+
+void NotificationEventDispatcherImpl::OnNonPersistentCloseComplete(
+    const std::string& notification_id,
+    base::OnceClosure completed_closure) {
   non_persistent_notification_listeners_.erase(notification_id);
+  std::move(completed_closure).Run();
 }
 
 void NotificationEventDispatcherImpl::

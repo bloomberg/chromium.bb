@@ -142,8 +142,10 @@ void BlinkNotificationServiceImpl::CloseNonPersistentNotificationOnUIThread(
     const std::string& notification_id) {
   Service()->CloseNotification(browser_context_, notification_id);
 
+  // TODO(https://crbug.com/442141): Pass a callback here to focus the tab
+  // which created the notification, unless the event is canceled.
   NotificationEventDispatcherImpl::GetInstance()
-      ->DispatchNonPersistentCloseEvent(notification_id);
+      ->DispatchNonPersistentCloseEvent(notification_id, base::DoNothing());
 }
 
 blink::mojom::PermissionStatus

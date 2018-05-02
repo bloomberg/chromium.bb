@@ -51,7 +51,10 @@ class TestNotificationListener
   // blink::mojom::NonPersistentNotificationListener implementation.
   void OnShow() override { on_show_count_++; }
   void OnClick() override { on_click_count_++; }
-  void OnClose() override { on_close_count_++; }
+  void OnClose(OnCloseCallback completed_closure) override {
+    on_close_count_++;
+    std::move(completed_closure).Run();
+  }
 
  private:
   int on_show_count_ = 0;
@@ -165,14 +168,16 @@ TEST_F(NotificationEventDispatcherImplTest,
   dispatcher_->RegisterNonPersistentNotificationListener(
       kSomeOtherUniqueId, other_listener->GetPtr().PassInterface());
 
-  dispatcher_->DispatchNonPersistentCloseEvent(kPrimaryUniqueId);
+  dispatcher_->DispatchNonPersistentCloseEvent(kPrimaryUniqueId,
+                                               base::DoNothing());
 
   WaitForMojoTasksToComplete();
 
   EXPECT_EQ(listener->on_close_count(), 1);
   EXPECT_EQ(other_listener->on_close_count(), 0);
 
-  dispatcher_->DispatchNonPersistentCloseEvent(kSomeOtherUniqueId);
+  dispatcher_->DispatchNonPersistentCloseEvent(kSomeOtherUniqueId,
+                                               base::DoNothing());
 
   WaitForMojoTasksToComplete();
 
@@ -188,7 +193,8 @@ TEST_F(NotificationEventDispatcherImplTest,
 
   dispatcher_->DispatchNonPersistentShowEvent(kPrimaryUniqueId);
   dispatcher_->DispatchNonPersistentClickEvent(kPrimaryUniqueId);
-  dispatcher_->DispatchNonPersistentCloseEvent(kPrimaryUniqueId);
+  dispatcher_->DispatchNonPersistentCloseEvent(kPrimaryUniqueId,
+                                               base::DoNothing());
 
   WaitForMojoTasksToComplete();
 
