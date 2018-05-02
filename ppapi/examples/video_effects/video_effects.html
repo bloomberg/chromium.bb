@@ -51,7 +51,7 @@ textarea {
 <script>
 var getUserMedia = navigator.webkitGetUserMedia.bind(navigator);
 var attachMediaStream = function(element, stream) {
-  element.src = URL.createObjectURL(stream);
+  element.srcObject = stream;
 };
 var startButton = document.getElementById('startButton');
 var toggleEffectButton = document.getElementById('toggleEffectButton');
@@ -94,7 +94,7 @@ function start() {
 }
 
 function onRegisterStreamDone() {
-  vidprocessedlocal.src = URL.createObjectURL(processedLocalstream);
+  vidprocessedlocal.srcObject = processedLocalstream;
   toggleEffectButton.disabled = false;
 }
 
@@ -176,7 +176,7 @@ function hangup() {
 }
 
 function gotRemoteStream(e){
-  vidremote.src = URL.createObjectURL(e.stream);
+  vidremote.srcObject = e.stream;
   trace("Received remote stream");
 }
 

@@ -145,7 +145,7 @@ Polymer({
 
     var successCallback = function(stream) {
       if (this.cameraStartInProgress_) {
-        this.$.cameraVideo.src = URL.createObjectURL(stream);
+        this.$.cameraVideo.srcObject = stream;
         this.cameraStream_ = stream;
       } else {
         this.stopVideoTracks_(stream);
@@ -170,9 +170,11 @@ Polymer({
   stopCamera: function() {
     this.$.userImageStreamCrop.classList.remove('preview');
     this.cameraOnline_ = false;
-    this.$.cameraVideo.src = '';
-    if (this.cameraStream_)
+    this.$.cameraVideo.srcObject = null;
+    if (this.cameraStream_) {
       this.stopVideoTracks_(this.cameraStream_);
+      this.cameraStream_ = null;
+    }
     // Cancel any pending getUserMedia() checks.
     this.cameraStartInProgress_ = false;
   },

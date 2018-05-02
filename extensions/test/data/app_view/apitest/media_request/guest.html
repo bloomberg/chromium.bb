@@ -14,7 +14,7 @@
       navigator.webkitGetUserMedia(
         { video: true, audio: true },
         function(stream) {
-          video.src = window.URL.createObjectURL(stream);
+          video.srcObject = stream;
         }, function(err) { window.console.log(err); }
       );
     }

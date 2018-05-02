@@ -102,7 +102,7 @@ function waitForExpectedColors(colorDeviation) {
     this.video.width = width;
     this.video.height = height;
     this.video.addEventListener("error", chrome.test.fail);
-    this.video.src = URL.createObjectURL(receiveStream);
+    this.video.srcObject = receiveStream;
     this.video.play();
 
     this.readbackCanvas = document.createElement("canvas");
@@ -144,7 +144,7 @@ function waitForExpectedColors(colorDeviation) {
       // Destroy the video, which will disconnect the consumer of the
       // MediaStream.
       this.video.removeEventListener("error", chrome.test.fail);
-      this.video.src = '';
+      this.video.srcObject = null;
       this.video = null;
 
       // Wait one second, then execute the second round of testing. This tests

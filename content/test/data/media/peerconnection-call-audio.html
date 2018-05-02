@@ -167,8 +167,7 @@
   }
 
   function displayAndRemember(localStream) {
-    var localStreamUrl = URL.createObjectURL(localStream);
-    $('local-view').src = localStreamUrl;
+    $('local-view').srcObject = localStream;
 
     gLocalStream = localStream;
   }
@@ -195,9 +194,8 @@
   function onRemoteStream(e, target) {
     console.log("Receiving remote stream...");
     gRemoteStreams[target] = e.stream;
-    var remoteStreamUrl = URL.createObjectURL(e.stream);
     var remoteVideo = $(target);
-    remoteVideo.src = remoteStreamUrl;
+    remoteVideo.srcObject = e.stream;
   }
 
   </script>

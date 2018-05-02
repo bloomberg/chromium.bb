@@ -158,7 +158,7 @@ function initialize() {
 
 function gotStream(stream) {
   trace('Received local stream');
-  localVideo.src = webkitURL.createObjectURL(stream);
+  localVideo.srcObject = stream;
   localStream = stream;
   pcClient.addStream(localStream);
   renegotiateClient();
@@ -217,7 +217,7 @@ function onServerGotStream(e) {
     // html, otherwise we can't detect video in it.
     throw 'Received video with unexpected id ' + e.stream.id;
   }
-  remoteVideo.src = webkitURL.createObjectURL(e.stream);
+  remoteVideo.srcObject = e.stream;
 }
 
 function onClientIceCandidate(event) {
