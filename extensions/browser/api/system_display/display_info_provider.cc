@@ -48,15 +48,9 @@ DisplayInfoProvider* DisplayInfoProvider::Get() {
 // static
 void DisplayInfoProvider::InitializeForTesting(
     DisplayInfoProvider* display_info_provider) {
-  DCHECK(display_info_provider);
-  g_display_info_provider = display_info_provider;
-}
-
-// static
-void DisplayInfoProvider::ResetForTesting() {
   if (g_display_info_provider)
     delete g_display_info_provider;
-  g_display_info_provider = nullptr;
+  g_display_info_provider = display_info_provider;
 }
 
 // static
@@ -150,10 +144,6 @@ void DisplayInfoProvider::ShowNativeTouchCalibration(const std::string& id,
   NOTREACHED();  // Implemented on Chrome OS only in override.
 }
 
-bool DisplayInfoProvider::IsNativeTouchCalibrationActive() {
-  return false;
-}
-
 bool DisplayInfoProvider::StartCustomTouchCalibration(const std::string& id) {
   NOTREACHED();  // Implemented on Chrome OS only in override.
   return false;
@@ -168,10 +158,6 @@ bool DisplayInfoProvider::CompleteCustomTouchCalibration(
 
 bool DisplayInfoProvider::ClearTouchCalibration(const std::string& id) {
   NOTREACHED();  // Implemented on Chrome OS only in override.
-  return false;
-}
-
-bool DisplayInfoProvider::IsCustomTouchCalibrationActive() {
   return false;
 }
 

@@ -218,15 +218,15 @@ namespace system.display {
     // desktop (see $(ref:enableUnifiedDesktop) for details). If set to false,
     // unified desktop mode will be disabled. This is only valid for the
     // primary display. If provided, mirroringSourceId must not be provided and
-    // other properties may not apply. This is has no effect if not provided.
+    // other properties will be ignored. This is has no effect if not provided.
     boolean? isUnified;
 
-    // Deprecated. Please use $(ref:setMirrorMode) instead.
-    // Chrome OS only. If set and not empty, enables mirroring for this display.
-    // Otherwise disables mirroring for this display. This value should indicate
-    // the id of the source display to mirror, which must not be the same as the
-    // id passed to setDisplayProperties. If set, no other property may be set.
-    DOMString? mirroringSourceId;
+    // Chrome OS only. If set and not empty, enables mirroring for this display
+    // only. Otherwise disables mirroring for all displays. This value should
+    // indicate the id of the source display to mirror, which must not be the
+    // same as the id passed to setDisplayProperties. If set, no other property
+    // may be set.
+    [deprecated="Use $(ref:setMirrorMode)."] DOMString? mirroringSourceId;
 
     // If set to true, makes the display primary. No-op if set to false.
     // Note: If set, the display is considered primary for all other properties

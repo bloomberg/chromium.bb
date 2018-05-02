@@ -96,8 +96,6 @@ class DisplayInfoProvider {
   // calibration has completed.
   virtual void ShowNativeTouchCalibration(const std::string& id,
                                           ErrorCallback callback);
-  // Returns true if native touch calibration is in progress.
-  virtual bool IsNativeTouchCalibrationActive();
 
   // These methods implement custom touch calibration. They will return false
   // if |id| is invalid or if the operation is invalid.
@@ -106,8 +104,6 @@ class DisplayInfoProvider {
       const api::system_display::TouchCalibrationPairQuad& pairs,
       const api::system_display::Bounds& bounds);
   virtual bool ClearTouchCalibration(const std::string& id);
-  // Returns true if custom touch calibration is in progress.
-  virtual bool IsCustomTouchCalibrationActive();
 
   // Sets the display mode to the specified mirror mode. See system_display.idl.
   // |info|: Mirror mode properties to apply.
