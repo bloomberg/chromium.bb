@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_ACTIVE_DIRECTORY_JOIN_DELEGATE_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_ACTIVE_DIRECTORY_JOIN_DELEGATE_H_
 
+#include <string>
+
 #include "base/callback.h"
 
 namespace chromeos {
@@ -21,8 +23,10 @@ using OnDomainJoinedCallback =
 class ActiveDirectoryJoinDelegate {
  public:
   ActiveDirectoryJoinDelegate() = default;
-  // Start the Active Directory domain join flow.
-  void virtual JoinDomain(OnDomainJoinedCallback on_joined_callback) = 0;
+  // Start the Active Directory domain join flow. |dm_token| will be stored in
+  // the device policy.
+  virtual void JoinDomain(const std::string& dm_token,
+                          OnDomainJoinedCallback on_joined_callback) = 0;
 
  protected:
   ~ActiveDirectoryJoinDelegate() = default;

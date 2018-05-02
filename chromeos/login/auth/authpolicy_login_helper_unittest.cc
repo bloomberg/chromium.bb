@@ -13,6 +13,8 @@
 namespace chromeos {
 namespace {
 
+constexpr char kDMToken[] = "dm_token";
+
 class MockAuthPolicyClient : public FakeAuthPolicyClient {
  public:
   MockAuthPolicyClient() = default;
@@ -24,6 +26,7 @@ class MockAuthPolicyClient : public FakeAuthPolicyClient {
     EXPECT_FALSE(join_ad_domain_called_);
     EXPECT_FALSE(refresh_device_policy_called_);
     join_ad_domain_called_ = true;
+    dm_token_ = request.dm_token();
     std::move(callback).Run(authpolicy::ERROR_NONE, std::string());
   }
 
@@ -38,11 +41,13 @@ class MockAuthPolicyClient : public FakeAuthPolicyClient {
   void CheckExpectations() {
     EXPECT_TRUE(join_ad_domain_called_);
     EXPECT_TRUE(refresh_device_policy_called_);
+    EXPECT_EQ(dm_token_, kDMToken);
   }
 
  private:
   bool join_ad_domain_called_ = false;
   bool refresh_device_policy_called_ = false;
+  std::string dm_token_;
 
   DISALLOW_COPY_AND_ASSIGN(MockAuthPolicyClient);
 };
@@ -59,6 +64,7 @@ TEST(AuthPolicyLoginHelper, JoinFollowedByRefreshDevicePolicy) {
   DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
       std::make_unique<FakeCryptohomeClient>());
   AuthPolicyLoginHelper helper;
+  helper.set_dm_token(kDMToken);
   helper.JoinAdDomain(std::string(), std::string(),
                       authpolicy::KerberosEncryptionTypes(), std::string(),
                       std::string(),

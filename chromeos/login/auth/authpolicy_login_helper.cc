@@ -124,6 +124,8 @@ void AuthPolicyLoginHelper::JoinAdDomain(const std::string& machine_name,
       static_cast<authpolicy::KerberosEncryptionTypes>(encryption_types));
   if (!username.empty())
     request.set_user_principal_name(username);
+  DCHECK(!dm_token_.empty());
+  request.set_dm_token(dm_token_);
 
   chromeos::DBusThreadManager::Get()->GetAuthPolicyClient()->JoinAdDomain(
       request, GetDataReadPipe(password).get(),
@@ -147,6 +149,7 @@ void AuthPolicyLoginHelper::AuthenticateUser(const std::string& username,
 
 void AuthPolicyLoginHelper::CancelRequestsAndRestart() {
   weak_factory_.InvalidateWeakPtrs();
+  dm_token_.clear();
   AuthPolicyLoginHelper::Restart();
 }
 

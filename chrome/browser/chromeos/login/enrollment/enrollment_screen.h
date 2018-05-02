@@ -88,7 +88,8 @@ class EnrollmentScreen
   void OnDeviceAttributeUpdatePermission(bool granted) override;
 
   // ActiveDirectoryJoinDelegate implementation:
-  void JoinDomain(OnDomainJoinedCallback on_joined_callback) override;
+  void JoinDomain(const std::string& dm_token,
+                  OnDomainJoinedCallback on_joined_callback) override;
 
   // Used for testing.
   EnrollmentScreenView* GetView() { return view_; }

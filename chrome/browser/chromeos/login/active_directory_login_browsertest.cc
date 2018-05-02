@@ -64,6 +64,7 @@ constexpr char kAdNewPassword1Input[] = "newPassword1";
 constexpr char kAdNewPassword2Input[] = "newPassword2";
 constexpr char kNewPassword[] = "new_password";
 constexpr char kDifferentNewPassword[] = "different_new_password";
+constexpr char kDMToken[] = "dm_token";
 
 constexpr char kCloseButtonId[] = "closeButton";
 
@@ -138,6 +139,7 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
     AuthPolicyLoginHelper helper;
     {
       base::RunLoop loop;
+      helper.set_dm_token(kDMToken);
       helper.JoinAdDomain(
           kAdMachineName, "" /* distinguished_name */,
           authpolicy::KerberosEncryptionTypes::ENC_TYPES_STRONG,
