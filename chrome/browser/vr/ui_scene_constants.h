@@ -166,11 +166,12 @@ static constexpr float kLaserWidth = 0.01f;
 static constexpr float kReticleWidth = 0.025f;
 static constexpr float kReticleHeight = 0.025f;
 
-static constexpr float kOmniboxWidthDMM = 0.848f;
+static constexpr float kOmniboxWidthDMM = 0.672f;
 static constexpr float kOmniboxHeightDMM = 0.088f;
 static constexpr float kOmniboxVerticalOffsetDMM = -0.2f;
 static constexpr float kOmniboxTextHeightDMM = 0.032f;
 static constexpr float kOmniboxTextMarginDMM = 0.024f;
+static constexpr float kOmniboxMicIconRightMarginDMM = 0.012f;
 static constexpr float kOmniboxCloseButtonDiameterDMM = kButtonDiameterDMM;
 static constexpr float kOmniboxCloseButtonVerticalOffsetDMM = -0.75f;
 static constexpr float kOmniboxCornerRadiusDMM = 0.006f;
