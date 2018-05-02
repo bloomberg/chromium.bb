@@ -32,6 +32,7 @@
 #import "ios/chrome/browser/ui/settings/sync_utils/sync_presenter.h"
 #import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_activity_indicator_header_footer_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_disclosure_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_signin_promo_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
@@ -418,6 +419,7 @@ const int kRelativeTimeMaxHours = 4;
           [[TableViewTextItem alloc] initWithType:ItemTypeOtherDevicesSyncOff];
       dummyCell.text =
           l10n_util::GetNSString(IDS_IOS_OPEN_TABS_ENABLE_SYNC_MOBILE);
+      dummyCell.textAlignment = NSTextAlignmentCenter;
       break;
     case SessionsSyncUserState::USER_SIGNED_IN_SYNC_ON_NO_SESSIONS:
       dummyCell = [[TableViewTextItem alloc]

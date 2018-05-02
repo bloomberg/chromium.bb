@@ -23,6 +23,7 @@
 #include "ios/chrome/browser/ui/history/history_local_commands.h"
 #import "ios/chrome/browser/ui/history/history_ui_constants.h"
 #include "ios/chrome/browser/ui/history/history_util.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
 #import "ios/chrome/browser/ui/url_loader.h"
@@ -186,6 +187,7 @@ const int kMaxFetchCount = 100;
   TableViewTextItem* entriesStatusItem =
       [[TableViewTextItem alloc] initWithType:ItemTypeEntriesStatus];
   entriesStatusItem.text = @"Loading";
+  entriesStatusItem.textColor = TextItemColorBlack;
   [self.tableViewModel addItem:entriesStatusItem
        toSectionWithIdentifier:kEntriesStatusSectionIdentifier];
 
@@ -547,14 +549,17 @@ const int kMaxFetchCount = 100;
 // section.
 - (void)updateEntriesStatusMessage {
   NSString* messageText = nil;
+  TextItemColor messageColor;
   if (self.empty) {
     messageText = self.searchController.isActive
                       ? l10n_util::GetNSString(IDS_HISTORY_NO_SEARCH_RESULTS)
                       : l10n_util::GetNSString(IDS_HISTORY_NO_RESULTS);
+    messageColor = TextItemColorBlack;
   } else if (self.shouldShowNoticeAboutOtherFormsOfBrowsingHistory &&
              !self.searchController.isActive) {
     messageText =
         l10n_util::GetNSString(IDS_IOS_HISTORY_OTHER_FORMS_OF_HISTORY);
+    messageColor = TextItemColorLightGrey;
   }
 
   // Get the number of items currently at the StatusMessageSection.
@@ -586,6 +591,7 @@ const int kMaxFetchCount = 100;
     if ([messageText isEqualToString:oldEntriesStatusTextItem.text])
       return;
     oldEntriesStatusTextItem.text = messageText;
+    oldEntriesStatusTextItem.textColor = messageColor;
     NSIndexPath* statusMessageIndexPath = [self.tableViewModel
         indexPathForItemType:ItemTypeEntriesStatus
            sectionIdentifier:kEntriesStatusSectionIdentifier];
@@ -596,6 +602,7 @@ const int kMaxFetchCount = 100;
     TableViewTextItem* entriesStatusItem =
         [[TableViewTextItem alloc] initWithType:ItemTypeEntriesStatus];
     entriesStatusItem.text = messageText;
+    entriesStatusItem.textColor = messageColor;
     [self.tableViewModel addItem:entriesStatusItem
          toSectionWithIdentifier:kEntriesStatusSectionIdentifier];
     NSIndexPath* statusMessageIndexPath =
