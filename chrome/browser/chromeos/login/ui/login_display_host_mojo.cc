@@ -161,17 +161,24 @@ bool LoginDisplayHostMojo::IsVoiceInteractionOobe() {
   return false;
 }
 
-void LoginDisplayHostMojo::UpdateGaiaDialogVisibility(bool visible) {
+void LoginDisplayHostMojo::UpdateGaiaDialogVisibility(
+    bool visible,
+    const base::Optional<AccountId>& account) {
   DCHECK(dialog_);
+
   if (visible) {
+    // Make sure gaia displays |account| if requested.
+    if (account)
+      GetOobeUI()->GetGaiaScreenView()->ShowGaiaAsync(account);
+
     dialog_->Show(true /*closable_by_esc*/);
     return;
   }
 
   if (users_.empty() && GetOobeUI()) {
-    // Dialog could not be closed if there's no user in the login screen,
-    // refreshing the dialog instead.
-    GetOobeUI()->GetGaiaScreenView()->ShowGaiaAsync();
+    // The dialog can not be closed if there is no user on the login screen.
+    // Refresh the dialog instead.
+    GetOobeUI()->GetGaiaScreenView()->ShowGaiaAsync(base::nullopt);
     return;
   }
 

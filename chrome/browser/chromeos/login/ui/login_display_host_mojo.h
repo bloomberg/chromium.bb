@@ -59,7 +59,9 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   void OnBrowserCreated() override;
   void StartVoiceInteractionOobe() override;
   bool IsVoiceInteractionOobe() override;
-  void UpdateGaiaDialogVisibility(bool visible) override;
+  void UpdateGaiaDialogVisibility(
+      bool visible,
+      const base::Optional<AccountId>& account) override;
   void UpdateGaiaDialogSize(int width, int height) override;
   const user_manager::UserList GetUsers() override;
 

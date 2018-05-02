@@ -26,6 +26,7 @@
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/interpolated_transform.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
@@ -48,6 +49,9 @@ const int kDistanceFromPinKeyboardToBigUserViewBottom = 50;
 
 // Distance from the top of the user view to the user icon.
 constexpr int kDistanceFromTopOfBigUserViewToUserIconDp = 54;
+
+// The color of the online sign-in message text.
+constexpr SkColor kOnlineSignInMessageColor = SkColorSetRGB(0xE6, 0x7C, 0x73);
 
 // Returns an observer that will hide |view| when it fires. The observer will
 // delete itself after firing. Make sure to call |observer->SetReady()| after
@@ -101,6 +105,10 @@ LoginPinView* LoginAuthUserView::TestApi::pin_view() const {
   return view_->pin_view_;
 }
 
+views::Button* LoginAuthUserView::TestApi::online_sign_in_message() const {
+  return view_->online_sign_in_message_;
+}
+
 LoginAuthUserView::Callbacks::Callbacks() = default;
 
 LoginAuthUserView::Callbacks::Callbacks(const Callbacks& other) = default;
@@ -150,6 +158,14 @@ LoginAuthUserView::LoginAuthUserView(const mojom::LoginUserInfoPtr& user,
       callbacks.on_easy_unlock_icon_hovered,
       callbacks.on_easy_unlock_icon_tapped);
 
+  // TODO(crbug.com/836336): Update the spec. Currently the text must be set in
+  // |UpdateForUser| because it's dependent on the user name.
+  online_sign_in_message_ = new views::LabelButton(this, base::string16()),
+  online_sign_in_message_->SetPaintToLayer();
+  online_sign_in_message_->SetTextSubpixelRenderingEnabled(false);
+  online_sign_in_message_->SetTextColor(views::Button::STATE_NORMAL,
+                                        kOnlineSignInMessageColor);
+
   SetPaintToLayer(ui::LayerType::LAYER_NOT_DRAWN);
 
   // Build layout.
@@ -160,6 +176,7 @@ LoginAuthUserView::LoginAuthUserView(const mojom::LoginUserInfoPtr& user,
 
   // Add views in tabbing order; they are rendered in a different order below.
   AddChildView(password_view_);
+  AddChildView(online_sign_in_message_);
   AddChildView(wrapped_pin_view);
   AddChildView(wrapped_user_view);
 
@@ -184,6 +201,7 @@ LoginAuthUserView::LoginAuthUserView(const mojom::LoginUserInfoPtr& user,
   add_view(wrapped_user_view);
   add_padding(kDistanceBetweenUserViewAndPasswordDp);
   add_view(password_view_);
+  add_view(online_sign_in_message_);
   add_padding(kDistanceBetweenPasswordFieldAndPinKeyboard);
   add_view(wrapped_pin_view);
   add_padding(kDistanceFromPinKeyboardToBigUserViewBottom);
@@ -202,6 +220,9 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods) {
   bool has_password = HasAuthMethod(AUTH_PASSWORD);
   bool has_pin = HasAuthMethod(AUTH_PIN);
   bool has_tap = HasAuthMethod(AUTH_TAP);
+  bool force_online_sign_in = HasAuthMethod(AUTH_ONLINE_SIGN_IN);
+
+  online_sign_in_message_->SetVisible(force_online_sign_in);
 
   password_view_->SetEnabled(has_password);
   password_view_->SetFocusEnabledForChildViews(has_password);
@@ -227,7 +248,7 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods) {
   // Only the active auth user view has a password displayed. If that is the
   // case, then render the user view as if it was always focused, since clicking
   // on it will not do anything (such as swapping users).
-  user_view_->SetForceOpaque(has_password);
+  user_view_->SetForceOpaque(has_password || force_online_sign_in);
   user_view_->SetTapEnabled(!has_password);
 
   PreferredSizeChanged();
@@ -339,6 +360,8 @@ void LoginAuthUserView::UpdateForUser(const mojom::LoginUserInfoPtr& user) {
   user_view_->UpdateForUser(user, true /*animate*/);
   password_view_->UpdateForUser(user);
   password_view_->Clear();
+  online_sign_in_message_->SetText(
+      base::UTF8ToUTF16(user->basic_user_info->display_name));
 }
 
 const mojom::LoginUserInfoPtr& LoginAuthUserView::current_user() const {
@@ -355,6 +378,12 @@ gfx::Size LoginAuthUserView::CalculatePreferredSize() const {
 
 void LoginAuthUserView::RequestFocus() {
   password_view_->RequestFocus();
+}
+
+void LoginAuthUserView::ButtonPressed(views::Button* sender,
+                                      const ui::Event& event) {
+  DCHECK_EQ(online_sign_in_message_, sender);
+  OnOnlineSignInMessageTap();
 }
 
 void LoginAuthUserView::OnAuthSubmit(const base::string16& password) {
@@ -396,9 +425,17 @@ void LoginAuthUserView::OnUserViewTap() {
   if (HasAuthMethod(AUTH_TAP)) {
     Shell::Get()->login_screen_controller()->AttemptUnlock(
         current_user()->basic_user_info->account_id);
+  } else if (HasAuthMethod(AUTH_ONLINE_SIGN_IN)) {
+    // Tapping anywhere in the user view is the same with tapping the message.
+    OnOnlineSignInMessageTap();
   } else {
     on_tap_.Run();
   }
+}
+
+void LoginAuthUserView::OnOnlineSignInMessageTap() {
+  Shell::Get()->login_screen_controller()->ShowGaiaSignin(
+      current_user()->basic_user_info->account_id);
 }
 
 bool LoginAuthUserView::HasAuthMethod(AuthMethods auth_method) const {

@@ -71,7 +71,9 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   bool IsVoiceInteractionOobe() override;
   void StartVoiceInteractionOobe() override;
   void OnBrowserCreated() override;
-  void UpdateGaiaDialogVisibility(bool visible) override;
+  void UpdateGaiaDialogVisibility(
+      bool visible,
+      const base::Optional<AccountId>& account) override;
   void UpdateGaiaDialogSize(int width, int height) override;
   const user_manager::UserList GetUsers() override;
 

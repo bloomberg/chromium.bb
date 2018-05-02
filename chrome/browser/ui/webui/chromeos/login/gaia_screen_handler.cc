@@ -803,8 +803,10 @@ void GaiaScreenHandler::HandleUpdateGaiaDialogSize(int width, int height) {
 }
 
 void GaiaScreenHandler::HandleUpdateGaiaDialogVisibility(bool visible) {
-  if (LoginDisplayHost::default_host())
-    LoginDisplayHost::default_host()->UpdateGaiaDialogVisibility(visible);
+  if (LoginDisplayHost::default_host()) {
+    LoginDisplayHost::default_host()->UpdateGaiaDialogVisibility(visible,
+                                                                 base::nullopt);
+  }
 }
 
 void GaiaScreenHandler::HandleShowAddUser(const base::ListValue* args) {
@@ -826,7 +828,7 @@ void GaiaScreenHandler::HandleShowAddUser(const base::ListValue* args) {
 void GaiaScreenHandler::OnShowAddUser() {
   signin_screen_handler_->is_account_picker_showing_first_time_ = false;
   lock_screen_utils::EnforcePolicyInputMethods(std::string());
-  ShowGaiaAsync();
+  ShowGaiaAsync(base::nullopt);
 }
 
 void GaiaScreenHandler::DoCompleteLogin(const std::string& gaia_id,
@@ -945,7 +947,10 @@ void GaiaScreenHandler::SetSAMLPrincipalsAPIUsed(bool api_used) {
   UMA_HISTOGRAM_BOOLEAN("ChromeOS.SAML.APIUsed", api_used);
 }
 
-void GaiaScreenHandler::ShowGaiaAsync() {
+void GaiaScreenHandler::ShowGaiaAsync(
+    const base::Optional<AccountId>& account_id) {
+  if (account_id)
+    populated_email_ = account_id->GetUserEmail();
   show_when_dns_and_cookies_cleared_ = true;
   if (gaia_silent_load_ && populated_email_.empty()) {
     dns_cleared_ = true;

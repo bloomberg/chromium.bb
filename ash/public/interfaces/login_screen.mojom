@@ -175,8 +175,9 @@ interface LoginScreenClient {
   // |reverse|:   Whether the tab order is reversed.
   FocusLockScreenApps(bool reverse);
 
-  // Show Gaia signin dialog in chrome.
-  ShowGaiaSignin();
+  // Show the gaia sign-in dialog. If available, |account_id| is used for
+  // prefilling information.
+  ShowGaiaSignin(signin.mojom.AccountId? account_id);
 
   // Notification that the remove user warning was shown.
   OnRemoveUserWarningShown();
