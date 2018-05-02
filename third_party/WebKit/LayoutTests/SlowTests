@@ -53,8 +53,10 @@ crbug.com/24182 external/wpt/html/semantics/embedded-content/media-elements/trac
 crbug.com/24182 external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-cues-enter-exit.html [ Slow ]
 crbug.com/24182 media/controls/controls-cast-do-not-fade-out.html [ Slow ]
 crbug.com/24182 virtual/new-remote-playback-pipeline/media/controls/controls-cast-do-not-fade-out.html [ Slow ]
+crbug.com/24182 virtual/video-surface-layer/media/controls/controls-cast-do-not-fade-out.html [ Slow ]
 crbug.com/24182 media/controls/controls-cast-overlay-slow-fade.html [ Slow ]
 crbug.com/24182 virtual/new-remote-playback-pipeline/media/controls/controls-cast-overlay-slow-fade.html [ Slow ]
+crbug.com/24182 virtual/video-surface-layer/media/controls/controls-cast-overlay-slow-fade.html [ Slow ]
 crbug.com/24182 svg/filters/big-sized-filter.svg [ Slow ]
 crbug.com/24182 tables/mozilla/other/slashlogo.html [ Slow ]
 crbug.com/24182 virtual/color_space/fast/canvas/color-space/canvas-colorManaged-toBlob-toDataURL.html [ Slow ]
@@ -455,6 +457,7 @@ crbug.com/779956 [ Linux ] external/wpt/offscreen-canvas/drawing-images-to-the-c
 crbug.com/779956 [ Linux ] external/wpt/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.zerosource.worker.html [ Slow ]
 
 crbug.com/793771 virtual/modern-media-controls/media/controls/modern/scrubbing.html [ Slow ]
+crbug.com/793771 virtual/video-surface-layer/media/controls/modern/scrubbing.html [ Slow ]
 
 # These tests need to do many iterations and so can't be fast.
 crbug.com/748418 http/tests/streams/chromium/deep-recursion-getwriter.html [ Slow ]
