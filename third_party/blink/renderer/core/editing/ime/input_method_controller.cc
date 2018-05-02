@@ -1389,9 +1389,6 @@ int InputMethodController::ComputeWebTextInputNextPreviousFlags() const {
 }
 
 WebTextInputMode InputMethodController::InputModeOfFocusedElement() const {
-  if (!RuntimeEnabledFeatures::InputModeAttributeEnabled())
-    return kWebTextInputModeDefault;
-
   AtomicString mode = GetInputModeAttribute(GetDocument().FocusedElement());
 
   if (mode.IsEmpty())

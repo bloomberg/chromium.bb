@@ -603,10 +603,6 @@
       status: "experimental",
     },
     {
-      name: "InputModeAttribute",
-      status: "stable",
-    },
-    {
       name: "InputMultipleFieldsUI",
       status: "stable",
     },
