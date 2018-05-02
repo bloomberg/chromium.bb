@@ -20,6 +20,7 @@
 #include "content/browser/background_fetch/storage/get_developer_ids_task.h"
 #include "content/browser/background_fetch/storage/get_metadata_task.h"
 #include "content/browser/background_fetch/storage/mark_registration_for_deletion_task.h"
+#include "content/browser/background_fetch/storage/start_next_pending_request_task.h"
 #include "content/browser/background_fetch/storage/update_registration_ui_task.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -343,8 +344,24 @@ void BackgroundFetchDataManager::PopNextRequest(
     NextRequestCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBackgroundFetchPersistence)) {
+    auto start_next_request = base::BindOnce(
+        &BackgroundFetchDataManager::AddStartNextPendingRequestTask,
+        weak_ptr_factory_.GetWeakPtr(),
+        registration_id.service_worker_registration_id(), std::move(callback));
+
+    // Get the associated metadata, and add a StartNextPendingRequestTask.
+    GetMetadata(registration_id.service_worker_registration_id(),
+                registration_id.origin(), registration_id.developer_id(),
+                std::move(start_next_request));
+
+    return;
+  }
+
   if (!IsActive(registration_id)) {
-    // Stop giving out requests as registration aborted (or otherwise finished).
+    // Stop giving out requests as registration was aborted (or otherwise
+    // finished).
     std::move(callback).Run(nullptr /* request */);
     return;
   }
@@ -359,6 +376,24 @@ void BackgroundFetchDataManager::PopNextRequest(
     next_request = registration_data->PopNextPendingRequest();
 
   std::move(callback).Run(std::move(next_request));
+}
+
+void BackgroundFetchDataManager::AddStartNextPendingRequestTask(
+    int64_t service_worker_registration_id,
+    NextRequestCallback callback,
+    blink::mojom::BackgroundFetchError error,
+    std::unique_ptr<proto::BackgroundFetchMetadata> metadata) {
+  if (!metadata) {
+    // Stop giving out requests as registration aborted (or otherwise finished).
+    std::move(callback).Run(nullptr /* request */);
+    return;
+  }
+  DCHECK_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+
+  AddDatabaseTask(
+      std::make_unique<background_fetch::StartNextPendingRequestTask>(
+          this, service_worker_registration_id, std::move(metadata),
+          std::move(callback)));
 }
 
 void BackgroundFetchDataManager::MarkRequestAsComplete(
