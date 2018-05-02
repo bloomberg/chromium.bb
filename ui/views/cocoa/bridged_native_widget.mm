@@ -534,8 +534,9 @@ void BridgedNativeWidget::SetVisibilityState(WindowVisibilityState new_state) {
     // duration of the animation, but would keep it smooth. The window also
     // hasn't yet received a frame from the compositor at this stage, so it is
     // fully transparent until the GPU sends a frame swap IPC. For the blocking
-    // option, the animation needs to wait until AcceleratedWidgetSwapCompleted
-    // has been called at least once, otherwise it will animate nothing.
+    // option, the animation needs to wait until
+    // AcceleratedWidgetCALayerParamsUpdated has been called at least once,
+    // otherwise it will animate nothing.
     [show_animation_ setAnimationBlockingMode:NSAnimationNonblocking];
     [show_animation_ startAnimation];
   }
@@ -1036,11 +1037,18 @@ NSView* BridgedNativeWidget::AcceleratedWidgetGetNSView() const {
   return compositor_superview_;
 }
 
-void BridgedNativeWidget::AcceleratedWidgetSwapCompleted() {
+void BridgedNativeWidget::AcceleratedWidgetCALayerParamsUpdated() {
   // Ignore frames arriving "late" for an old size. A frame at the new size
   // should arrive soon.
   if (!compositor_widget_->HasFrameOfSize(GetClientAreaSize()))
     return;
+
+  // Update the DisplayCALayerTree with the most recent CALayerParams, to make
+  // the content display on-screen.
+  const gfx::CALayerParams* ca_layer_params =
+      compositor_widget_->GetCALayerParams();
+  if (ca_layer_params)
+    display_ca_layer_tree_->UpdateCALayerTree(*ca_layer_params);
 
   if (initial_visibility_suppressed_) {
     initial_visibility_suppressed_ = false;
@@ -1232,11 +1240,11 @@ void BridgedNativeWidget::AddCompositorSuperview() {
     [compositor_superview_ setWantsBestResolutionOpenGLSurface:YES];
   }
 
+  // Set the layer first to create a layer-hosting view (not layer-backed), and
+  // set the compositor output to go to that layer.
   base::scoped_nsobject<CALayer> background_layer([[CALayer alloc] init]);
-  [background_layer
-      setAutoresizingMask:kCALayerWidthSizable | kCALayerHeightSizable];
-
-  // Set the layer first to create a layer-hosting view (not layer-backed).
+  display_ca_layer_tree_ =
+      std::make_unique<ui::DisplayCALayerTree>(background_layer.get());
   [compositor_superview_ setLayer:background_layer];
   [compositor_superview_ setWantsLayer:YES];
 

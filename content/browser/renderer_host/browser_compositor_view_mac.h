@@ -61,6 +61,10 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
   // potentially visible).
   void ClearCompositorFrame();
 
+  // Return the parameters of the most recently received frame, or nullptr if
+  // no valid frame is available.
+  const gfx::CALayerParams* GetLastCALayerParams() const;
+
   gfx::AcceleratedWidget GetAcceleratedWidget();
   void DidCreateNewRendererCompositorFrameSink(
       viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink);

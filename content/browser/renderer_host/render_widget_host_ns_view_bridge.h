@@ -18,6 +18,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace gfx {
+struct CALayerParams;
 class Point;
 class Range;
 class Rect;
@@ -54,6 +55,9 @@ class RenderWidgetHostNSViewBridge {
   // Set the bounds of the NSView or its enclosing NSWindow (depending on the
   // window type).
   virtual void SetBounds(const gfx::Rect& rect) = 0;
+
+  // Set the contents to display in the NSView.
+  virtual void SetCALayerParams(const gfx::CALayerParams& ca_layer_params) = 0;
 
   // Set the background color of the hosted CALayer.
   virtual void SetBackgroundColor(SkColor color) = 0;

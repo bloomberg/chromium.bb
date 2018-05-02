@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #import "ui/accelerated_widget_mac/accelerated_widget_mac.h"
+#include "ui/accelerated_widget_mac/display_ca_layer_tree.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/compositor/layer_owner.h"
 #import "ui/views/cocoa/bridged_native_widget_owner.h"
@@ -271,7 +272,7 @@ class VIEWS_EXPORT BridgedNativeWidget
 
   // Overridden from ui::AcceleratedWidgetMac:
   NSView* AcceleratedWidgetGetNSView() const override;
-  void AcceleratedWidgetSwapCompleted() override;
+  void AcceleratedWidgetCALayerParamsUpdated() override;
 
   // Overridden from BridgedNativeWidgetOwner:
   NSWindow* GetNSWindow() override;
@@ -300,6 +301,7 @@ class VIEWS_EXPORT BridgedNativeWidget
 
   base::scoped_nsobject<NSView> compositor_superview_;
   std::unique_ptr<ui::AcceleratedWidgetMac> compositor_widget_;
+  std::unique_ptr<ui::DisplayCALayerTree> display_ca_layer_tree_;
   std::unique_ptr<ui::Compositor> compositor_;
   viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
 

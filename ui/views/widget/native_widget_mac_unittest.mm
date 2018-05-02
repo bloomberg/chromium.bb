@@ -109,7 +109,7 @@ class BridgedNativeWidgetTestApi {
     ca_layer_params.pixel_size = size;
     ca_layer_params.scale_factor = kScaleFactor;
     ca_layer_frame_sink->UpdateCALayerTree(ca_layer_params);
-    bridge_->AcceleratedWidgetSwapCompleted();
+    bridge_->AcceleratedWidgetCALayerParamsUpdated();
   }
 
   NSAnimation* show_animation() {

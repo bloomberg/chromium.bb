@@ -16,6 +16,8 @@ namespace ui {
 // in its heirarchy.
 class ACCELERATED_WIDGET_MAC_EXPORT CALayerFrameSink {
  public:
+  virtual ~CALayerFrameSink() {}
+
   // Translate from a gfx::AcceleratedWidget to the gfx::CALayerFrameSink
   // interface through which frames may be submitted. This may return nullptr.
   static CALayerFrameSink* FromAcceleratedWidget(gfx::AcceleratedWidget widget);
