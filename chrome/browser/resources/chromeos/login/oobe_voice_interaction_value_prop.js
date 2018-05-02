@@ -32,7 +32,7 @@ Polymer({
     defaultUrl: {
       type: String,
       value:
-          'https://www.gstatic.com/opa-chromeos/oobe/en/value_proposition.html',
+          'https://www.gstatic.com/opa-android/oobe/a02187e41eed9e42/v1_omni_en_us.html',
     },
   },
 
@@ -140,8 +140,9 @@ Polymer({
   reloadValueProp: function() {
     this.valuePropError_ = false;
     this.headerReceived_ = false;
-    this.valueView_.src = 'https://www.gstatic.com/opa-chromeos/oobe/' +
-        this.locale + '/value_proposition.html';
+    this.valueView_.src =
+        'https://www.gstatic.com/opa-android/oobe/a02187e41eed9e42/v1_omni_' +
+        this.locale + '.html';
 
     window.clearTimeout(this.animationTimeout_);
     window.clearTimeout(this.loadingTimeout_);
@@ -223,8 +224,7 @@ Polymer({
       } else {
         this.onValueViewErrorOccurred();
       }
-    }
-    if (details.statusCode != '200') {
+    } else if (details.statusCode != '200') {
       this.onValueViewErrorOccurred();
     }
   },
@@ -235,6 +235,7 @@ Polymer({
   onShow: function() {
     var requestFilter = {urls: ['<all_urls>'], types: ['main_frame']};
     this.valueView_ = this.$['value-prop-view'];
+    this.locale = this.locale.replace('-', '_').toLowerCase();
 
     if (!this.initialized_) {
       this.valueView_.request.onErrorOccurred.addListener(
