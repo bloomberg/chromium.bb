@@ -458,6 +458,20 @@ void LockContentsView::OnClickToUnlockEnabledForUserChanged(
     LayoutAuth(big_user, nullptr /*opt_to_hide*/, true /*animate*/);
 }
 
+void LockContentsView::OnForceOnlineSignInForUser(const AccountId& user) {
+  LockContentsView::UserState* state = FindStateForUser(user);
+  if (!state) {
+    LOG(ERROR) << "Unable to find user forcing online sign in";
+    return;
+  }
+  state->force_online_sign_in = true;
+
+  LoginBigUserView* big_user =
+      TryToFindBigUser(user, true /*require_auth_active*/);
+  if (big_user && big_user->auth_user())
+    LayoutAuth(big_user, nullptr /*opt_to_hide*/, true /*animate*/);
+}
+
 void LockContentsView::OnShowEasyUnlockIcon(
     const AccountId& user,
     const mojom::EasyUnlockIconOptionsPtr& icon) {
@@ -1152,16 +1166,22 @@ void LockContentsView::UpdateAuthForAuthUser(LoginAuthUserView* opt_to_update,
 
   // Update auth methods for |opt_to_update|. Disable auth on |opt_to_hide|.
   if (opt_to_update) {
-    uint32_t to_update_auth = LoginAuthUserView::AUTH_PASSWORD;
     UserState* state = FindStateForUser(
         opt_to_update->current_user()->basic_user_info->account_id);
-    keyboard::KeyboardController* keyboard_controller = GetKeyboardController();
-    const bool keyboard_visible =
-        keyboard_controller ? keyboard_controller->keyboard_visible() : false;
-    if (state->show_pin && !keyboard_visible)
-      to_update_auth |= LoginAuthUserView::AUTH_PIN;
-    if (state->enable_tap_auth)
-      to_update_auth |= LoginAuthUserView::AUTH_TAP;
+    uint32_t to_update_auth;
+    if (state->force_online_sign_in) {
+      to_update_auth = LoginAuthUserView::AUTH_ONLINE_SIGN_IN;
+    } else {
+      to_update_auth = LoginAuthUserView::AUTH_PASSWORD;
+      keyboard::KeyboardController* keyboard_controller =
+          GetKeyboardController();
+      const bool keyboard_visible =
+          keyboard_controller ? keyboard_controller->keyboard_visible() : false;
+      if (state->show_pin && !keyboard_visible)
+        to_update_auth |= LoginAuthUserView::AUTH_PIN;
+      if (state->enable_tap_auth)
+        to_update_auth |= LoginAuthUserView::AUTH_TAP;
+    }
     opt_to_update->SetAuthMethods(to_update_auth);
   }
   if (opt_to_hide)

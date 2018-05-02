@@ -248,7 +248,7 @@ void LoginShelfView::ButtonPressed(views::Button* sender,
       Shell::Get()->login_screen_controller()->LoginAsGuest();
       break;
     case kAddUser:
-      Shell::Get()->login_screen_controller()->ShowGaiaSignin();
+      Shell::Get()->login_screen_controller()->ShowGaiaSignin(base::nullopt);
       break;
     default:
       NOTREACHED();

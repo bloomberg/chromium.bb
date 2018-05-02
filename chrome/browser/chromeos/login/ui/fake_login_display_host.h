@@ -53,7 +53,9 @@ class FakeLoginDisplayHost : public LoginDisplayHost {
   void LoadWallpaper(const AccountId& account_id) override;
   void LoadSigninWallpaper() override;
   bool IsUserWhitelisted(const AccountId& account_id) override;
-  void UpdateGaiaDialogVisibility(bool visible) override;
+  void UpdateGaiaDialogVisibility(
+      bool visible,
+      const base::Optional<AccountId>& account) override;
   void UpdateGaiaDialogSize(int width, int height) override;
   const user_manager::UserList GetUsers() override;
 

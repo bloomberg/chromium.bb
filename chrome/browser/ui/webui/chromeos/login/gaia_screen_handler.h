@@ -52,7 +52,7 @@ class GaiaScreenHandler : public BaseScreenHandler,
   // GaiaView:
   void MaybePreloadAuthExtension() override;
   void DisableRestrictiveProxyCheckForTest() override;
-  void ShowGaiaAsync() override;
+  void ShowGaiaAsync(const base::Optional<AccountId>& account_id) override;
 
  private:
   // TODO (xiaoyinh): remove this dependency.

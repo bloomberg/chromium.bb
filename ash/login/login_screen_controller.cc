@@ -194,10 +194,11 @@ void LoginScreenController::FocusLockScreenApps(bool reverse) {
   login_screen_client_->FocusLockScreenApps(reverse);
 }
 
-void LoginScreenController::ShowGaiaSignin() {
+void LoginScreenController::ShowGaiaSignin(
+    const base::Optional<AccountId>& account_id) {
   if (!login_screen_client_)
     return;
-  login_screen_client_->ShowGaiaSignin();
+  login_screen_client_->ShowGaiaSignin(account_id);
 }
 
 void LoginScreenController::OnRemoveUserWarningShown() {
@@ -300,6 +301,8 @@ void LoginScreenController::SetAuthType(
   if (auth_type == proximity_auth::mojom::AuthType::USER_CLICK) {
     DataDispatcher()->SetClickToUnlockEnabledForUser(account_id,
                                                      true /*enabled*/);
+  } else if (auth_type == proximity_auth::mojom::AuthType::ONLINE_SIGN_IN) {
+    DataDispatcher()->SetForceOnlineSignInForUser(account_id);
   } else {
     NOTIMPLEMENTED();
   }

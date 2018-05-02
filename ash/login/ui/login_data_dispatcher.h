@@ -53,6 +53,10 @@ class ASH_EXPORT LoginDataDispatcher {
     virtual void OnClickToUnlockEnabledForUserChanged(const AccountId& user,
                                                       bool enabled);
 
+    // Called when |user| must authenticate online (e.g. when OAuth refresh
+    // token is revoked).
+    virtual void OnForceOnlineSignInForUser(const AccountId& user);
+
     // Called when the lock screen note state changes.
     virtual void OnLockScreenNoteStateChanged(mojom::TrayActionState state);
 
@@ -103,6 +107,7 @@ class ASH_EXPORT LoginDataDispatcher {
   void NotifyUsers(const std::vector<mojom::LoginUserInfoPtr>& users);
   void SetPinEnabledForUser(const AccountId& user, bool enabled);
   void SetClickToUnlockEnabledForUser(const AccountId& user, bool enabled);
+  void SetForceOnlineSignInForUser(const AccountId& user);
   void SetLockScreenNoteState(mojom::TrayActionState state);
   void ShowEasyUnlockIcon(const AccountId& user,
                           const mojom::EasyUnlockIconOptionsPtr& icon);

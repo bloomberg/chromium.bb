@@ -120,6 +120,7 @@ class ASH_EXPORT LockContentsView : public NonAccessibleView,
   void OnLockScreenNoteStateChanged(mojom::TrayActionState state) override;
   void OnClickToUnlockEnabledForUserChanged(const AccountId& user,
                                             bool enabled) override;
+  void OnForceOnlineSignInForUser(const AccountId& user) override;
   void OnShowEasyUnlockIcon(
       const AccountId& user,
       const mojom::EasyUnlockIconOptionsPtr& icon) override;
@@ -171,6 +172,7 @@ class ASH_EXPORT LockContentsView : public NonAccessibleView,
     AccountId account_id;
     bool show_pin = false;
     bool enable_tap_auth = false;
+    bool force_online_sign_in = false;
     mojom::EasyUnlockIconOptionsPtr easy_unlock_state;
 
    private:

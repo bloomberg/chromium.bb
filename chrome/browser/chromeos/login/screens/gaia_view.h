@@ -10,7 +10,10 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
+
+class AccountId;
 
 namespace chromeos {
 
@@ -29,8 +32,9 @@ class GaiaView {
 
   // Show the sign-in screen. Depending on internal state, the screen will
   // either be shown immediately or after an asynchronous clean-up process that
-  // cleans DNS cache and cookies.
-  virtual void ShowGaiaAsync() = 0;
+  // cleans DNS cache and cookies. If available, |account_id| is used for
+  // prefilling information.
+  virtual void ShowGaiaAsync(const base::Optional<AccountId>& account_id) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GaiaView);

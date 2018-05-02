@@ -19,6 +19,9 @@ void LoginDataDispatcher::Observer::OnClickToUnlockEnabledForUserChanged(
     const AccountId& user,
     bool enabled) {}
 
+void LoginDataDispatcher::Observer::OnForceOnlineSignInForUser(
+    const AccountId& user) {}
+
 void LoginDataDispatcher::Observer::OnLockScreenNoteStateChanged(
     mojom::TrayActionState state) {}
 
@@ -77,6 +80,11 @@ void LoginDataDispatcher::SetClickToUnlockEnabledForUser(const AccountId& user,
                                                          bool enabled) {
   for (auto& observer : observers_)
     observer.OnClickToUnlockEnabledForUserChanged(user, enabled);
+}
+
+void LoginDataDispatcher::SetForceOnlineSignInForUser(const AccountId& user) {
+  for (auto& observer : observers_)
+    observer.OnForceOnlineSignInForUser(user);
 }
 
 void LoginDataDispatcher::SetLockScreenNoteState(mojom::TrayActionState state) {
