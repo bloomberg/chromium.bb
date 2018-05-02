@@ -11,11 +11,9 @@
         /* Gray color to be used when disabled, either as a background or as a
            text color depending on the type of button. */
         --disabled-color: rgb(241, 243, 244);
-        --flat-keyboard-focus-border-color: rgba(26, 115, 232, 0.4);
         /* Blue-ish color used either as a background or as a text color,
            depending on the type of button. */
         --text-or-bg-color: rgb(26, 115, 232);
-        --paper-button-ink-color: var(--paper-grey-600);
 
         border: 1px solid rgb(218, 220, 224);
         border-radius: 4px;
@@ -29,9 +27,15 @@
         text-transform: none;
       }
 
-      paper-button.keyboard-focus,
-      paper-button.action-button.keyboard-focus {
-        border-color: var(--flat-keyboard-focus-border-color);
+      /* Override paper-button's default transition. |animated| is automatically
+         added to all paper-button instances, unfortunately. */
+      paper-button[animated] {
+        transition: none;
+      }
+
+      paper-button:not([raised]).keyboard-focus,
+      paper-button:not([raised]).action-button.keyboard-focus {
+        box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.4);
         /* Override default paper-button's internal font-weight style. */
         font-weight: 500;
       }
@@ -42,10 +46,9 @@
       }
 
       paper-button.action-button {
-        /** TODO(dpapad): Get exact value from UX. */
-        --paper-button-ink-color: rgb(26, 115, 252);
-        background: var(--text-or-bg-color) padding-box;
-        border-color: transparent;
+        --paper-button-ink-color: black;
+        background-color: var(--text-or-bg-color);
+        border: none;
         color: white;
       }
 
