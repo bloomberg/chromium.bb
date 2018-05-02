@@ -1413,6 +1413,9 @@ FloatSize LocalFrameView::ViewportSizeForViewportUnits() const {
     // use the viewport with browser controls hidden for vh (to match Safari).
     int viewport_width = frame_->GetPage()->GetVisualViewport().Size().Width();
     if (frame_->IsMainFrame() && layout_size.Width() && viewport_width) {
+      // TODO(bokan/eirage): BrowserControl height may need to account for the
+      // zoom factor when use-zoom-for-dsf is enabled on Android. Confirm this
+      // works correctly when that's turned on. https://crbug.com/737777.
       float page_scale_at_layout_width = viewport_width / layout_size.Width();
       layout_size.Expand(
           0, browser_controls.TotalHeight() / page_scale_at_layout_width);

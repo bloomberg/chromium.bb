@@ -1266,6 +1266,11 @@ class RootScrollerSimTest : public testing::WithParamInterface<bool>,
       : ScopedRootLayerScrollingForTest(GetParam()),
         implicit_root_scroller_for_test_(false) {}
 
+  void SetUp() override {
+    SimTest::SetUp();
+    WebView().GetPage()->GetSettings().SetViewportEnabled(true);
+  }
+
  private:
   ScopedImplicitRootScrollerForTest implicit_root_scroller_for_test_;
 };
@@ -1760,6 +1765,90 @@ TEST_F(ImplicitRootScrollerSimTest,
   EXPECT_EQ(GetDocument().getElementById("container"),
             GetDocument().GetRootScrollerController().EffectiveRootScroller())
       << "Once loaded, the iframe should be promoted.";
+}
+
+// Test that a root scroller is considered to fill the viewport at both the URL
+// bar shown and URL bar hidden height.
+TEST_F(ImplicitRootScrollerSimTest,
+       RootScrollerFillsViewportAtBothURLBarStates) {
+  WebView().ResizeWithBrowserControls(IntSize(800, 600), 50, 0, true);
+  SimRequest main_request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  main_request.Complete(R"HTML(
+          <!DOCTYPE html>
+          <style>
+            ::-webkit-scrollbar {
+              width: 0px;
+              height: 0px;
+            }
+            body, html {
+              width: 100%;
+              height: 100%;
+              margin: 0px;
+            }
+            #container {
+              width: 100%;
+              height: 100%;
+              overflow: auto;
+              border: 0;
+            }
+          </style>
+          <div id="container">
+            <div style="height: 2000px;"></div>
+          </div>
+          <script>
+            onresize = () => {
+              document.getElementById("container").style.height =
+                  window.innerHeight + "px";
+            };
+          </script>
+      )HTML");
+  Element* container = GetDocument().getElementById("container");
+  GetDocument().setRootScroller(container);
+
+  Compositor().BeginFrame();
+
+  ASSERT_EQ(container,
+            GetDocument().GetRootScrollerController().EffectiveRootScroller());
+
+  // Simulate hiding the top controls. The root scroller should remain valid at
+  // the new height.
+  WebView().GetPage()->GetBrowserControls().SetShownRatio(0);
+  WebView().ResizeWithBrowserControls(IntSize(800, 650), 50, 0, false);
+  Compositor().BeginFrame();
+  EXPECT_EQ(container,
+            GetDocument().GetRootScrollerController().EffectiveRootScroller());
+
+  // Simulate showing the top controls. The root scroller should remain valid.
+  WebView().GetPage()->GetBrowserControls().SetShownRatio(1);
+  WebView().ResizeWithBrowserControls(IntSize(800, 600), 50, 0, true);
+  Compositor().BeginFrame();
+  EXPECT_EQ(container,
+            GetDocument().GetRootScrollerController().EffectiveRootScroller());
+
+  // Set the height explicitly to a new value in-between. The root scroller
+  // should be demoted.
+  container->style()->setProperty(&GetDocument(), "height", "601px", String(),
+                                  ASSERT_NO_EXCEPTION);
+  Compositor().BeginFrame();
+  EXPECT_EQ(GetDocument(),
+            GetDocument().GetRootScrollerController().EffectiveRootScroller());
+
+  // Reset back to valid and hide the top controls. Zoom to 2x. Ensure we're
+  // still considered valid.
+  container->style()->setProperty(&GetDocument(), "height", "", String(),
+                                  ASSERT_NO_EXCEPTION);
+  Compositor().BeginFrame();
+  EXPECT_EQ(container,
+            GetDocument().GetRootScrollerController().EffectiveRootScroller());
+  EXPECT_EQ(ToLayoutBox(container->GetLayoutObject())->Size().Height(), 600);
+  WebView().SetZoomLevel(WebView::ZoomFactorToZoomLevel(2.0));
+  WebView().GetPage()->GetBrowserControls().SetShownRatio(0);
+  WebView().ResizeWithBrowserControls(IntSize(800, 650), 50, 0, false);
+  Compositor().BeginFrame();
+  EXPECT_EQ(container->clientHeight(), 325);
+  EXPECT_EQ(container,
+            GetDocument().GetRootScrollerController().EffectiveRootScroller());
 }
 
 // Tests that we don't explode when a layout occurs and the effective
