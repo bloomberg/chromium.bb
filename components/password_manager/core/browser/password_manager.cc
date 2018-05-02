@@ -558,7 +558,7 @@ void PasswordManager::CreatePendingLoginManagers(
 
   if (base::FeatureList::IsEnabled(
           password_manager::features::kNewPasswordFormParsing)) {
-    CreateFormManagers(forms);
+    CreateFormManagers(driver, forms);
   }
 
   const PasswordForm::Scheme effective_form_scheme =
@@ -661,6 +661,7 @@ void PasswordManager::CreatePendingLoginManagers(
 }
 
 void PasswordManager::CreateFormManagers(
+    password_manager::PasswordManagerDriver* driver,
     const std::vector<autofill::PasswordForm>& forms) {
   // Find new forms.
   std::vector<const autofill::FormData*> new_forms;
@@ -676,8 +677,10 @@ void PasswordManager::CreateFormManagers(
 
   // Create form manager for new forms.
   for (const autofill::FormData* new_form : new_forms) {
-    form_managers_.push_back(
-        std::make_unique<NewPasswordFormManager>(client_, *new_form));
+    form_managers_.push_back(std::make_unique<NewPasswordFormManager>(
+        client_,
+        driver ? driver->AsWeakPtr() : base::WeakPtr<PasswordManagerDriver>(),
+        *new_form, nullptr));
   }
 }
 

@@ -34,6 +34,7 @@
 class PrefService;
 
 namespace autofill {
+struct FormData;
 struct PasswordForm;
 }
 
@@ -82,6 +83,7 @@ class PasswordStore : protected PasswordStoreSync,
                const std::string& signon_realm,
                const GURL& origin);
     explicit FormDigest(const autofill::PasswordForm& form);
+    explicit FormDigest(const autofill::FormData& form);
     FormDigest(const FormDigest& other);
     FormDigest(FormDigest&& other);
     FormDigest& operator=(const FormDigest& other);

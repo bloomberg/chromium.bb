@@ -627,6 +627,9 @@ void PasswordFormManager::ProcessFrame(
 
 void PasswordFormManager::ProcessFrameInternal(
     const base::WeakPtr<PasswordManagerDriver>& driver) {
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kNewPasswordFormParsing))
+    return;
   if (!driver)
     return;
   SendFillInformationToRenderer(*client_, driver.get(), IsBlacklisted(),

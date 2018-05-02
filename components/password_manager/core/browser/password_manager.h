@@ -259,7 +259,8 @@ class PasswordManager : public LoginModel {
 
   // Checks for every form in |forms| whether |form_managers_| already contain a
   // manager for that form. If not, adds a manager for each such form.
-  void CreateFormManagers(const std::vector<autofill::PasswordForm>& forms);
+  void CreateFormManagers(password_manager::PasswordManagerDriver* driver,
+                          const std::vector<autofill::PasswordForm>& forms);
 
   // Returns the best match in |pending_login_managers_| for |form|. May return
   // nullptr if no match exists.
