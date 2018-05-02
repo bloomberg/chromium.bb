@@ -5501,4 +5501,25 @@ TEST_P(PaintPropertyTreeBuilderTest, ClipHitTestChangeDoesNotCauseFullRepaint) {
   EXPECT_FALSE(child_layer->NeedsRepaint());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, ClipPathInheritanceWithoutMutation) {
+  // This test verifies we properly included the path-based clip-path in
+  // context when the clipping element didn't need paint property update.
+  SetBodyInnerHTML(R"HTML(
+    <div style="clip-path:circle();">
+      <div id="child" style="position:relative; width:100px; height:100px; background:green;"></div>
+    </div>
+  )HTML");
+
+  auto* child = ToLayoutBox(GetLayoutObjectByElementId("child"));
+  const auto* old_clip_state =
+      child->FirstFragment().LocalBorderBoxProperties().Clip();
+
+  child->SetNeedsPaintPropertyUpdate();
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  const auto* new_clip_state =
+      child->FirstFragment().LocalBorderBoxProperties().Clip();
+  EXPECT_EQ(old_clip_state, new_clip_state);
+}
+
 }  // namespace blink
