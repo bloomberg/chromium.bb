@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/workers/execution_context_worker_registry.h"
 
+#include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
+
 namespace blink {
 
 const char ExecutionContextWorkerRegistry::kSupplementName[] =
@@ -11,7 +13,13 @@ const char ExecutionContextWorkerRegistry::kSupplementName[] =
 
 ExecutionContextWorkerRegistry::ExecutionContextWorkerRegistry(
     ExecutionContext& context)
-    : Supplement<ExecutionContext>(context) {}
+    : Supplement<ExecutionContext>(context), weak_factory_(this) {
+  TraceEvent::AddAsyncEnabledStateObserver(weak_factory_.GetWeakPtr());
+}
+
+ExecutionContextWorkerRegistry::~ExecutionContextWorkerRegistry() {
+  TraceEvent::RemoveAsyncEnabledStateObserver(this);
+}
 
 ExecutionContextWorkerRegistry* ExecutionContextWorkerRegistry::From(
     ExecutionContext& context) {
@@ -29,6 +37,7 @@ ExecutionContextWorkerRegistry* ExecutionContextWorkerRegistry::From(
 void ExecutionContextWorkerRegistry::AddWorkerInspectorProxy(
     WorkerInspectorProxy* proxy) {
   proxies_.insert(proxy);
+  EmitTraceEvent(proxy);
 }
 
 void ExecutionContextWorkerRegistry::RemoveWorkerInspectorProxy(
@@ -39,6 +48,25 @@ void ExecutionContextWorkerRegistry::RemoveWorkerInspectorProxy(
 const HeapHashSet<Member<WorkerInspectorProxy>>&
 ExecutionContextWorkerRegistry::GetWorkerInspectorProxies() {
   return proxies_;
+}
+
+void ExecutionContextWorkerRegistry::OnTraceLogEnabled() {
+  for (WorkerInspectorProxy* proxy : proxies_)
+    EmitTraceEvent(proxy);
+}
+
+void ExecutionContextWorkerRegistry::OnTraceLogDisabled() {}
+
+void ExecutionContextWorkerRegistry::EmitTraceEvent(
+    WorkerInspectorProxy* proxy) {
+  ExecutionContext* context = GetSupplementable();
+  LocalFrame* frame =
+      context->IsDocument() ? ToDocument(context)->GetFrame() : nullptr;
+  TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
+                       "TracingSessionIdForWorker", TRACE_EVENT_SCOPE_THREAD,
+                       "data",
+                       InspectorTracingSessionIdForWorkerEvent::Data(
+                           frame, proxy->Url(), proxy->GetWorkerThread()));
 }
 
 void ExecutionContextWorkerRegistry::Trace(Visitor* visitor) {

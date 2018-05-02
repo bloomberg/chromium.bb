@@ -11,13 +11,11 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/inspector/inspector_base_agent.h"
 #include "third_party/blink/renderer/core/inspector/protocol/Tracing.h"
-#include "third_party/blink/renderer/core/loader/frame_loader_types.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
 class InspectedFrames;
-class WorkerInspectorProxy;
 
 class CORE_EXPORT InspectorTracingAgent final
     : public InspectorBaseAgent<protocol::Tracing::Metainfo> {
@@ -30,9 +28,6 @@ class CORE_EXPORT InspectorTracingAgent final
   // Base agent methods.
   void Restore() override;
   protocol::Response disable() override;
-
-  // InspectorInstrumentation methods
-  void DidStartWorker(WorkerInspectorProxy*, bool);
 
   // Protocol method implementations.
   void start(protocol::Maybe<String> categories,

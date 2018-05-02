@@ -8,8 +8,6 @@
 #include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
 #include "third_party/blink/renderer/core/inspector/inspected_frames.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
-#include "third_party/blink/renderer/core/workers/execution_context_worker_registry.h"
-#include "third_party/blink/renderer/core/workers/worker_inspector_proxy.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
 namespace blink {
@@ -38,23 +36,8 @@ void InspectorTracingAgent::Trace(blink::Visitor* visitor) {
 
 void InspectorTracingAgent::Restore() {
   state_->getString(TracingAgentState::kSessionId, &session_id_);
-  if (IsStarted()) {
-    instrumenting_agents_->addInspectorTracingAgent(this);
+  if (IsStarted())
     EmitMetadataEvents();
-  }
-}
-
-void InspectorTracingAgent::DidStartWorker(WorkerInspectorProxy* proxy, bool) {
-  // For now we assume this is document. TODO(kinuko): Fix this.
-  DCHECK(proxy->GetExecutionContext()->IsDocument());
-  LocalFrame* frame = ToDocument(proxy->GetExecutionContext())->GetFrame();
-  if (proxy->GetWorkerThread() && frame && inspected_frames_->Contains(frame)) {
-    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
-                         "TracingSessionIdForWorker", TRACE_EVENT_SCOPE_THREAD,
-                         "data",
-                         InspectorTracingSessionIdForWorkerEvent::Data(
-                             frame, proxy->Url(), proxy->GetWorkerThread()));
-  }
 }
 
 void InspectorTracingAgent::start(Maybe<String> categories,
@@ -71,7 +54,6 @@ void InspectorTracingAgent::start(Maybe<String> categories,
     return;
   }
 
-  instrumenting_agents_->addInspectorTracingAgent(this);
   session_id_ = IdentifiersFactory::CreateIdentifier();
   state_->setString(TracingAgentState::kSessionId, session_id_);
 
@@ -101,14 +83,6 @@ void InspectorTracingAgent::EmitMetadataEvents() {
                        TRACE_EVENT_SCOPE_THREAD, "data",
                        InspectorTracingStartedInFrame::Data(
                            session_id_, inspected_frames_->Root()));
-
-  for (LocalFrame* frame : *inspected_frames_) {
-    for (WorkerInspectorProxy* proxy :
-         ExecutionContextWorkerRegistry::From(*frame->GetDocument())
-             ->GetWorkerInspectorProxies()) {
-      DidStartWorker(proxy, false);
-    }
-  }
 }
 
 Response InspectorTracingAgent::disable() {
@@ -117,7 +91,6 @@ Response InspectorTracingAgent::disable() {
 }
 
 void InspectorTracingAgent::InnerDisable() {
-  instrumenting_agents_->removeInspectorTracingAgent(this);
   state_->remove(TracingAgentState::kSessionId);
   session_id_ = String();
 }
