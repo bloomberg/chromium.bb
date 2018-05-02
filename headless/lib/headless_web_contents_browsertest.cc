@@ -71,7 +71,7 @@ class MockHeadlessBrowserContextObserver
                void(HeadlessWebContents*, HeadlessWebContents*));
 
   MockHeadlessBrowserContextObserver() = default;
-  virtual ~MockHeadlessBrowserContextObserver() = default;
+  ~MockHeadlessBrowserContextObserver() override = default;
 
   HeadlessWebContents* last_parent;
   HeadlessWebContents* last_child;
