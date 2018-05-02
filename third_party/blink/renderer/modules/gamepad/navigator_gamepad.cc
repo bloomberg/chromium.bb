@@ -85,6 +85,13 @@ static void SampleGamepad(unsigned index,
     gamepad.SetMapping(device_gamepad.mapping);
     gamepad.SetVibrationActuator(device_gamepad.vibration_actuator);
     gamepad.SetDisplayId(device_gamepad.display_id);
+  } else if (!gamepad.vibrationActuator() &&
+             device_gamepad.vibration_actuator.not_null) {
+    // Some gamepads require additional steps to determine haptics capability.
+    // These gamepads may initially set |vibration_actuator| to null and then
+    // update it some time later. Make sure such devices can correctly propagate
+    // the changed capabilities.
+    gamepad.SetVibrationActuator(device_gamepad.vibration_actuator);
   }
 }
 
