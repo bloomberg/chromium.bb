@@ -13,6 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "media/blink/webmediaplayer_delegate.h"
 #include "media/blink/webmediaplayer_util.h"
@@ -194,6 +195,10 @@ class CONTENT_EXPORT WebMediaPlayerMS
 
  private:
   friend class WebMediaPlayerMSTest;
+
+#if defined(OS_WIN)
+  static const gfx::Size kUseGpuMemoryBufferVideoFramesMinResolution;
+#endif  // defined(OS_WIN)
 
   void OnFirstFrameReceived(media::VideoRotation video_rotation,
                             bool is_opaque);

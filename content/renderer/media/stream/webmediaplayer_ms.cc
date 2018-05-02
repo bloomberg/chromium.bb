@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "build/build_config.h"
 #include "cc/blink/web_layer_impl.h"
 #include "cc/layers/video_frame_provider_client_impl.h"
 #include "cc/layers/video_layer.h"
@@ -48,9 +47,20 @@ enum class RendererReloadAction {
   REMOVE_RENDERER,
   NEW_RENDERER
 };
+
 }  // namespace
 
 namespace content {
+
+#if defined(OS_WIN)
+// Since we do not have native GMB support in Windows, using GMBs can cause a
+// CPU regression. This is more apparent and can have adverse affects in lower
+// resolution content which are defined by these thresholds, see
+// https://crbug.com/835752.
+// static
+const gfx::Size WebMediaPlayerMS::kUseGpuMemoryBufferVideoFramesMinResolution =
+    gfx::Size(1920, 1080);
+#endif  // defined(OS_WIN)
 
 // FrameDeliverer is responsible for delivering frames received on
 // the IO thread by calling of EnqueueFrame() method of |compositor_|.
@@ -105,11 +115,21 @@ class WebMediaPlayerMS::FrameDeliverer {
       return;
     }
 
+#if defined(OS_WIN)
+    const bool skip_creating_gpu_memory_buffer =
+        frame->visible_rect().width() <
+            kUseGpuMemoryBufferVideoFramesMinResolution.width() ||
+        frame->visible_rect().height() <
+            kUseGpuMemoryBufferVideoFramesMinResolution.height();
+#else
+    const bool skip_creating_gpu_memory_buffer = false;
+#endif  // defined(OS_WIN)
+
     // If |render_frame_suspended_|, we can keep passing the frames to keep the
     // latest frame in compositor up to date. However, creating GMB backed
     // frames is unnecessary, because the frames are not going to be shown for
     // the time period.
-    if (render_frame_suspended_) {
+    if (render_frame_suspended_ || skip_creating_gpu_memory_buffer) {
       EnqueueFrame(std::move(frame));
       // If there are any existing MaybeCreateHardwareFrame() calls, we do not
       // want those frames to be placed after the current one, so just drop
