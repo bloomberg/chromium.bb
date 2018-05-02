@@ -10,7 +10,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/forms/form_controller.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
-#include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 
 namespace blink {
@@ -21,9 +20,7 @@ class HTMLSelectElementTest : public PageTestBase {
 };
 
 void HTMLSelectElementTest::SetUp() {
-  Page::PageClients page_clients;
-  FillWithEmptyClients(page_clients);
-  PageTestBase::SetupPageWithClients(&page_clients);
+  PageTestBase::SetUp();
   GetDocument().SetMimeType("text/html");
 }
 
