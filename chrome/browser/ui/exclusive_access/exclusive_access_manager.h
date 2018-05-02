@@ -53,8 +53,6 @@ class ExclusiveAccessManager {
 
   GURL GetExclusiveAccessBubbleURL() const;
 
-  static bool IsSimplifiedFullscreenUIEnabled();
-
   // Callbacks ////////////////////////////////////////////////////////////////
 
   // Called by Browser::TabDeactivated.

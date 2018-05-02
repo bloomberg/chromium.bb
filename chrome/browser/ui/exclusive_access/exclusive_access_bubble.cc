@@ -44,9 +44,6 @@ ExclusiveAccessBubble::~ExclusiveAccessBubble() {
 }
 
 void ExclusiveAccessBubble::OnUserInput() {
-  if (!ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled())
-    return;
-
   // We got some user input; reset the idle timer.
   idle_timeout_.Stop();  // If the timer isn't running, this is a no-op.
   idle_timeout_.Start(FROM_HERE,
@@ -68,15 +65,7 @@ void ExclusiveAccessBubble::OnUserInput() {
 
 void ExclusiveAccessBubble::StartWatchingMouse() {
   // Start the initial delay timer and begin watching the mouse.
-  if (ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled()) {
-    ShowAndStartTimers();
-  } else {
-    hide_timeout_.Start(FROM_HERE,
-                        base::TimeDelta::FromMilliseconds(kInitialDelayMs),
-                        this, &ExclusiveAccessBubble::CheckMousePosition);
-
-    last_mouse_pos_ = GetCursorScreenPoint();
-  }
+  ShowAndStartTimers();
   mouse_position_checker_.Start(
       FROM_HERE, base::TimeDelta::FromMilliseconds(1000 / kPositionCheckHz),
       this, &ExclusiveAccessBubble::CheckMousePosition);
@@ -93,61 +82,8 @@ bool ExclusiveAccessBubble::IsWatchingMouse() const {
 }
 
 void ExclusiveAccessBubble::CheckMousePosition() {
-  // Desired behavior (without the "simplified" flag):
-  //
-  // +------------+-----------------------------+------------+
-  // | _  _  _  _ | Exit full screen mode (F11) | _  _  _  _ |  Slide-in region
-  // | _  _  _  _ \_____________________________/ _  _  _  _ |  Neutral region
-  // |                                                       |  Slide-out region
-  // :                                                       :
-  //
-  // * If app is not active, we hide the popup.
-  // * If the mouse is offscreen or in the slide-out region, we hide the popup.
-  // * If the mouse goes idle, we hide the popup.
-  // * If the mouse is in the slide-in-region and not idle, we show the popup.
-  // * If the mouse is in the neutral region and not idle, and the popup is
-  //   currently sliding out, we show it again.  This facilitates users
-  //   correcting us if they try to mouse horizontally towards the popup and
-  //   unintentionally drop too low.
-  // * Otherwise, we do nothing, because the mouse is in the neutral region and
-  //   either the popup is hidden or the mouse is not idle, so we don't want to
-  //   change anything's state.
-  //
-  // With the "simplified" flag, we ignore all this and just show and hide based
-  // on timers (not mouse position).
-
-  gfx::Point cursor_pos;
-  if (!ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled()) {
-    cursor_pos = GetCursorScreenPoint();
-
-    // Check to see whether the mouse is idle.
-    if (cursor_pos != last_mouse_pos_) {
-      // OnUserInput() will reset the idle timer in simplified mode. In classic
-      // mode, we need to do this here.
-      idle_timeout_.Stop();  // If the timer isn't running, this is a no-op.
-      idle_timeout_.Start(FROM_HERE,
-                          base::TimeDelta::FromMilliseconds(kIdleTimeMs), this,
-                          &ExclusiveAccessBubble::CheckMousePosition);
-    }
-    last_mouse_pos_ = cursor_pos;
-  }
-
-  if (ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled() ||
-      !IsWindowActive() || !WindowContainsPoint(cursor_pos) ||
-      cursor_pos.y() >= GetPopupRect(true).bottom() ||
-      !idle_timeout_.IsRunning()) {
-    // Classic mode: The cursor is offscreen, in the slide-out region, or idle.
-    // Simplified mode: Always come here (never check for mouse entering the top
-    // of screen).
-    if (!hide_timeout_.IsRunning())
-      Hide();
-  } else if (cursor_pos.y() < kSlideInRegionHeightPx && CanTriggerOnMouse()) {
-    Show();
-  } else if (IsAnimating()) {
-    // The cursor is not idle and either it's in the slide-in region or it's in
-    // the neutral region and we're sliding in or out.
-    Show();
-  }
+  if (!hide_timeout_.IsRunning())
+    Hide();
 }
 
 void ExclusiveAccessBubble::ExitExclusiveAccess() {

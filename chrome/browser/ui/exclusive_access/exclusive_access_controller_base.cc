@@ -72,8 +72,7 @@ void ExclusiveAccessControllerBase::RecordBubbleReshownUMA() {
 void ExclusiveAccessControllerBase::RecordExitingUMA() {
   // Record the number of bubble reshows during this session. Only if simplified
   // fullscreen is enabled.
-  if (ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled())
-    RecordBubbleReshowsHistogram(bubble_reshow_count_);
+  RecordBubbleReshowsHistogram(bubble_reshow_count_);
 
   bubble_reshow_count_ = 0;
 }

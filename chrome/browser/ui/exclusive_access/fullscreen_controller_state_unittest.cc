@@ -431,10 +431,7 @@ TEST_F(FullscreenControllerStateUnitTest, ExitTabFullscreenViaSwitchingTab) {
 
   // Do a simple test that histograms are being recorded upon exiting the
   // fullscreen session (when simplified-fullscreen-ui is enabled).
-  if (ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled())
-    histogram_tester.ExpectUniqueSample(kFullscreenReshowHistogramName, 0, 1);
-  else
-    histogram_tester.ExpectTotalCount(kFullscreenReshowHistogramName, 0);
+  histogram_tester.ExpectUniqueSample(kFullscreenReshowHistogramName, 0, 1);
 }
 
 // Test that switching tabs via detaching the active tab (which is in tab
