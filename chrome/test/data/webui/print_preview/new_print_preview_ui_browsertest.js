@@ -444,3 +444,34 @@ TEST_F('PrintPreviewDestinationSelectTest', 'SystemDefaultPrinterPolicy',
       destination_select_test.TestNames.SystemDefaultPrinterPolicy);
 });
 GEN('#endif');
+
+PrintPreviewDestinationDialogTest = class extends NewPrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/new/destination_dialog.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      ROOT_PATH + 'chrome/test/data/webui/settings/test_util.js',
+      ROOT_PATH + 'ui/webui/resources/js/webui_listener_tracker.js',
+      ROOT_PATH + 'ui/webui/resources/js/cr/event_target.js',
+      '../test_browser_proxy.js',
+      'cloud_print_interface_stub.js',
+      'native_layer_stub.js',
+      'print_preview_test_utils.js',
+      'destination_dialog_test.js',
+    ]);
+  }
+
+  /** @override */
+  get suiteName() {
+    return destination_dialog_test.suiteName;
+  }
+};
+
+TEST_F('PrintPreviewDestinationDialogTest', 'PrinterList',
+       function() {
+  this.runMochaTest(destination_dialog_test.TestNames.PrinterList);
+});

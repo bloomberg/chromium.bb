@@ -129,6 +129,34 @@ cr.define('print_preview_test_utils', function() {
         opt => opt.is_default).type;
   }
 
+  /**
+   * Creates 5 local destinations, adds them to |localDestinations| and
+   * sets the capabilities in |nativeLayer|.
+   * @param {!print_preview.NativeLayerStub} nativeLayer
+   * @param {!Array<!print_preview.LocalDestinationInfo>} localDestinations
+   * @return {!Array<!print_preview.Destination>}
+   */
+  function getDestinations(nativeLayer, localDestinations) {
+    let destinations = [];
+    const origin = cr.isChromeOS ? print_preview.DestinationOrigin.CROS :
+                                   print_preview.DestinationOrigin.LOCAL;
+    // Five destinations. FooDevice is the system default.
+    [ { id: 'ID1', name: 'One' },
+      { id: 'ID2', name: 'Two' },
+      { id: 'ID3', name: 'Three'},
+      { id: 'ID4', name: 'Four'},
+      { id: 'FooDevice', name: 'FooName' }].forEach((info, index) => {
+      const destination = new print_preview.Destination(
+        info.id, print_preview.DestinationType.LOCAL, origin, info.name,
+        false, print_preview.DestinationConnectionStatus.ONLINE);
+      nativeLayer.setLocalDestinationCapabilities(
+          print_preview_test_utils.getCddTemplate(info.id, info.name));
+      localDestinations.push({ printerName: info.name, deviceName: info.id });
+      destinations.push(destination);
+    });
+    return destinations;
+  }
+
   return {
     getDefaultInitialSettings: getDefaultInitialSettings,
     getCddTemplate: getCddTemplate,
@@ -136,5 +164,6 @@ cr.define('print_preview_test_utils', function() {
     getDefaultOrientation: getDefaultOrientation,
     createDestinationWithCertificateStatus:
         createDestinationWithCertificateStatus,
+    getDestinations: getDestinations,
   };
 });
