@@ -7897,8 +7897,8 @@ static INLINE int build_cur_mv(int_mv *cur_mv, int this_mode,
 static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
                                  BLOCK_SIZE bsize, RD_STATS *rd_stats,
                                  RD_STATS *rd_stats_y, RD_STATS *rd_stats_uv,
-                                 int *disable_skip, int_mv *cur_mv, int mi_row,
-                                 int mi_col, HandleInterModeArgs *args,
+                                 int *disable_skip, int mi_row, int mi_col,
+                                 HandleInterModeArgs *args,
                                  const int64_t ref_best_rd) {
   const AV1_COMMON *cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
@@ -7998,6 +7998,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
       rd_stats->rate += x->comp_idx_cost[comp_index_ctx][0];
     }
 
+    int_mv cur_mv[2];
     if (!build_cur_mv(cur_mv, this_mode, cm, x)) {
       early_terminate = INT64_MAX;
       continue;
@@ -9696,10 +9697,9 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
         args.single_newmv_valid = search_state.single_newmv_valid[0];
         args.modelled_rd = search_state.modelled_rd;
 
-        int_mv cur_mvs[2];
-        this_rd = handle_inter_mode(
-            cpi, x, bsize, &rd_stats, &rd_stats_y, &rd_stats_uv, &disable_skip,
-            cur_mvs, mi_row, mi_col, &args, search_state.best_rd);
+        this_rd = handle_inter_mode(cpi, x, bsize, &rd_stats, &rd_stats_y,
+                                    &rd_stats_uv, &disable_skip, mi_row, mi_col,
+                                    &args, search_state.best_rd);
 
         rate2 = rd_stats.rate;
         skippable = rd_stats.skip;
@@ -9825,11 +9825,10 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
             args.single_newmv_valid =
                 search_state.single_newmv_valid[mbmi->ref_mv_idx];
 
-            int_mv cur_mvs[2];
-            tmp_alt_rd = handle_inter_mode(cpi, x, bsize, &tmp_rd_stats,
-                                           &tmp_rd_stats_y, &tmp_rd_stats_uv,
-                                           &dummy_disable_skip, cur_mvs, mi_row,
-                                           mi_col, &args, search_state.best_rd);
+            tmp_alt_rd =
+                handle_inter_mode(cpi, x, bsize, &tmp_rd_stats, &tmp_rd_stats_y,
+                                  &tmp_rd_stats_uv, &dummy_disable_skip, mi_row,
+                                  mi_col, &args, search_state.best_rd);
             // Prevent pointers from escaping local scope
             args.single_newmv = search_state.single_newmv[0];
             args.single_newmv_rate = search_state.single_newmv_rate[0];
