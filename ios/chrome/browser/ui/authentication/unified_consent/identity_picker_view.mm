@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/authentication/identity_picker_view.h"
+#import "ios/chrome/browser/ui/authentication/unified_consent/identity_picker_view.h"
 
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
