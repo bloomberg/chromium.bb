@@ -43,6 +43,8 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.ui.test.util.UiRestriction;
 
+import java.util.List;
+
 /**
  * Tests for displaying and functioning of modal dialogs on tabs.
  */
@@ -86,14 +88,16 @@ public class ModalDialogManagerTest {
     @SmallTest
     public void testOneDialog() throws Exception {
         // Initially there are no dialogs in the pending list. Browser controls are not restricted.
-        checkPendingSize(0);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 0);
         checkBrowserControls(false);
         checkCurrentPresenter(null);
 
         // Show a dialog. The pending list should be empty, and the dialog should be showing.
         // Browser controls should be restricted.
         showDialog(0, ModalDialogManager.TAB_MODAL);
-        checkPendingSize(0);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 0);
         onView(withId(R.id.tab_modal_dialog_container))
                 .check(matches(hasDescendant(withText("0"))));
         checkBrowserControls(true);
@@ -101,7 +105,8 @@ public class ModalDialogManagerTest {
 
         // Dismiss the dialog by clicking positive button.
         onView(withText(R.string.ok)).perform(click());
-        checkPendingSize(0);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 0);
         onView(withId(R.id.tab_modal_dialog_container))
                 .check(matches(not(hasDescendant(withText("0")))));
         checkBrowserControls(false);
@@ -112,7 +117,8 @@ public class ModalDialogManagerTest {
     @SmallTest
     public void testTwoDialogs() throws Exception {
         // Initially there are no dialogs in the pending list. Browser controls are not restricted.
-        checkPendingSize(0);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 0);
         checkBrowserControls(false);
         checkCurrentPresenter(null);
 
@@ -121,7 +127,8 @@ public class ModalDialogManagerTest {
         // The tab modal container shouldn't be in the window hierarchy when an app modal dialog is
         // showing.
         showDialog(0, ModalDialogManager.APP_MODAL);
-        checkPendingSize(0);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 0);
         onView(withText("0")).check(matches(isDisplayed()));
         onView(withId(R.id.tab_modal_dialog_container)).check(doesNotExist());
         checkCurrentPresenter(ModalDialogManager.APP_MODAL);
@@ -129,7 +136,8 @@ public class ModalDialogManagerTest {
         // Show the second dialog. It should be added to the pending list, and the first dialog
         // should still be shown.
         showDialog(1, ModalDialogManager.TAB_MODAL);
-        checkPendingSize(1);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 1);
         onView(withText("0")).check(matches(isDisplayed()));
         onView(withId(R.id.tab_modal_dialog_container)).check(doesNotExist());
         checkCurrentPresenter(ModalDialogManager.APP_MODAL);
@@ -137,7 +145,8 @@ public class ModalDialogManagerTest {
         // Dismiss the first dialog by clicking cancel. The second dialog should be removed from
         // pending list and shown immediately after.
         onView(withText(R.string.cancel)).perform(click());
-        checkPendingSize(0);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 0);
         onView(withText("0")).check(doesNotExist());
         onView(withId(R.id.tab_modal_dialog_container))
                 .check(matches(
@@ -148,7 +157,8 @@ public class ModalDialogManagerTest {
         // Dismiss the second dialog by clicking ok. Browser controls should no longer be
         // restricted.
         onView(withText(R.string.ok)).perform(click());
-        checkPendingSize(0);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 0);
         onView(withText("0")).check(doesNotExist());
         onView(withId(R.id.tab_modal_dialog_container))
                 .check(matches(allOf(
@@ -161,7 +171,8 @@ public class ModalDialogManagerTest {
     @SmallTest
     public void testThreeDialogs() throws Exception {
         // Initially there are no dialogs in the pending list. Browser controls are not restricted.
-        checkPendingSize(0);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 0);
         checkBrowserControls(false);
         checkCurrentPresenter(null);
 
@@ -169,7 +180,8 @@ public class ModalDialogManagerTest {
         // The pending list should be empty, and the dialog should be showing.
         // Browser controls should be restricted.
         showDialog(0, ModalDialogManager.TAB_MODAL);
-        checkPendingSize(0);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 0);
         onView(withId(R.id.tab_modal_dialog_container))
                 .check(matches(hasDescendant(withText("0"))));
         checkBrowserControls(true);
@@ -178,62 +190,116 @@ public class ModalDialogManagerTest {
         // Show the second dialog. It should be added to the pending list, and the first dialog
         // should still be shown.
         showDialog(1, ModalDialogManager.TAB_MODAL);
-        checkPendingSize(1);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 1);
         onView(withId(R.id.tab_modal_dialog_container))
                 .check(matches(
                         allOf(hasDescendant(withText("0")), not(hasDescendant(withText("1"))))));
         checkBrowserControls(true);
         checkCurrentPresenter(ModalDialogManager.TAB_MODAL);
 
-        // Show the third dialog. It should be added to the pending list, and the first dialog
-        // should still be shown.
+        // Show the third dialog (app modal). The first tab modal dialog should be back to the
+        // pending list and this app modal dialog should be shown right after.
         showDialog(2, ModalDialogManager.APP_MODAL);
-        checkPendingSize(2);
-        onView(withText("2")).check(doesNotExist());
-        onView(withId(R.id.tab_modal_dialog_container))
-                .check(matches(allOf(hasDescendant(withText("0")),
-                        not(hasDescendant(withText("1"))), not(hasDescendant(withText("2"))))));
-        checkBrowserControls(true);
-        checkCurrentPresenter(ModalDialogManager.TAB_MODAL);
-
-        // Stimulate dismissing the dialog by non-user action. The second dialog should be removed
-        // from pending list without showing.
-        dismissDialog(1);
-        checkPendingSize(1);
-        onView(withText("2")).check(doesNotExist());
-        onView(withId(R.id.tab_modal_dialog_container))
-                .check(matches(allOf(hasDescendant(withText("0")),
-                        not(hasDescendant(withText("1"))), not(hasDescendant(withText("2"))))));
-        checkBrowserControls(true);
-        checkCurrentPresenter(ModalDialogManager.TAB_MODAL);
-
-        // Dismiss the second dialog twice and verify nothing breaks.
-        dismissDialog(1);
-        checkPendingSize(1);
-        onView(withText("2")).check(doesNotExist());
-        onView(withId(R.id.tab_modal_dialog_container))
-                .check(matches(allOf(hasDescendant(withText("0")),
-                        not(hasDescendant(withText("1"))), not(hasDescendant(withText("2"))))));
-        checkCurrentPresenter(ModalDialogManager.TAB_MODAL);
-
-        // Dismiss the first dialog. The third dialog should be removed from pending list and
-        // shown immediately after. The tab modal container shouldn't be in the window hierarchy
-        // when an app modal dialog is showing.
-        dismissDialog(0);
-        checkPendingSize(0);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 2);
         onView(withText("2")).check(matches(isDisplayed()));
         onView(withId(R.id.tab_modal_dialog_container)).check(doesNotExist());
         checkCurrentPresenter(ModalDialogManager.APP_MODAL);
 
-        // Dismiss the third dialog by clicking OK. Browser controls should no longer be restricted.
+        // Simulate dismissing the dialog by non-user action. The second dialog should be removed
+        // from pending list without showing.
+        dismissDialog(1);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 1);
+        onView(withText("2")).check(matches(isDisplayed()));
+        onView(withId(R.id.tab_modal_dialog_container)).check(doesNotExist());
+        checkCurrentPresenter(ModalDialogManager.APP_MODAL);
+
+        // Dismiss the second dialog twice and verify nothing breaks.
+        dismissDialog(1);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 1);
+        onView(withText("2")).check(matches(isDisplayed()));
+        onView(withId(R.id.tab_modal_dialog_container)).check(doesNotExist());
+        checkCurrentPresenter(ModalDialogManager.APP_MODAL);
+
+        // Dismiss the third dialog. The first dialog should be removed from pending list and
+        // shown immediately after. The tab modal container shouldn't be in the window hierarchy
+        // when an app modal dialog is showing.
+        dismissDialog(2);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 0);
+        onView(withText("2")).check(doesNotExist());
+        onView(withId(R.id.tab_modal_dialog_container))
+                .check(matches(allOf(hasDescendant(withText("0")),
+                        not(hasDescendant(withText("1"))), not(hasDescendant(withText("2"))))));
+        checkBrowserControls(true);
+        checkCurrentPresenter(ModalDialogManager.TAB_MODAL);
+
+        // Dismiss the first dialog by clicking OK. Browser controls should no longer be restricted.
         onView(withText(R.string.ok)).perform(click());
-        checkPendingSize(0);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 0);
         onView(withText("2")).check(doesNotExist());
         onView(withId(R.id.tab_modal_dialog_container))
                 .check(matches(allOf(not(hasDescendant(withText("0"))),
                         not(hasDescendant(withText("1"))), not(hasDescendant(withText("2"))))));
         checkBrowserControls(false);
         checkCurrentPresenter(null);
+    }
+
+    @Test
+    @SmallTest
+    public void testShow_ShowNext() throws Exception {
+        // Initially there are no dialogs in the pending list. Browser controls are not restricted.
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 0);
+        checkBrowserControls(false);
+        checkCurrentPresenter(null);
+
+        // Insert a tab modal dialog and two app modal dialogs for showing.
+        showDialog(0, ModalDialogManager.TAB_MODAL);
+        showDialog(1, ModalDialogManager.TAB_MODAL);
+        showDialog(2, ModalDialogManager.APP_MODAL);
+        showDialog(3, ModalDialogManager.APP_MODAL);
+
+        // The first inserted app modal dialog show be shown.
+        checkPendingSize(ModalDialogManager.APP_MODAL, 1);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 2);
+        onView(withText("2")).check(matches(isDisplayed()));
+        onView(withId(R.id.tab_modal_dialog_container)).check(doesNotExist());
+        checkCurrentPresenter(ModalDialogManager.APP_MODAL);
+
+        // Dismiss the dialog by clicking OK. The second inserted app modal dialog should be shown.
+        onView(withText(R.string.ok)).perform(click());
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 2);
+        onView(withText("3")).check(matches(isDisplayed()));
+        onView(withId(R.id.tab_modal_dialog_container)).check(doesNotExist());
+        checkCurrentPresenter(ModalDialogManager.APP_MODAL);
+
+        // Dismiss the dialog by clicking OK. The first tab modal dialog should be shown.
+        onView(withText(R.string.ok)).perform(click());
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 1);
+        onView(withId(R.id.tab_modal_dialog_container))
+                .check(matches(allOf(hasDescendant(withText("0")),
+                        not(hasDescendant(withText("1"))), not(hasDescendant(withText("2"))),
+                        not(hasDescendant(withText("3"))))));
+        checkBrowserControls(true);
+        checkCurrentPresenter(ModalDialogManager.TAB_MODAL);
+
+        // Dismiss the dialog by clicking OK. The second tab modal dialog should be shown.
+        onView(withText(R.string.ok)).perform(click());
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 0);
+        onView(withId(R.id.tab_modal_dialog_container))
+                .check(matches(allOf(hasDescendant(withText("1")),
+                        not(hasDescendant(withText("0"))), not(hasDescendant(withText("2"))),
+                        not(hasDescendant(withText("3"))))));
+        checkBrowserControls(true);
+        checkCurrentPresenter(ModalDialogManager.TAB_MODAL);
     }
 
     @Test
@@ -282,14 +348,16 @@ public class ModalDialogManagerTest {
     @DisabledTest(message = "crbug.com/804858")
     public void testSuspend_ToggleOverview() throws Exception {
         // Initially there are no dialogs in the pending list. Browser controls are not restricted.
-        checkPendingSize(0);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 0);
         checkBrowserControls(false);
         checkCurrentPresenter(null);
 
         // Add two dialogs available for showing.
         showDialog(0, ModalDialogManager.TAB_MODAL);
         showDialog(1, ModalDialogManager.TAB_MODAL);
-        checkPendingSize(1);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 1);
         onView(withId(R.id.tab_modal_dialog_container))
                 .check(matches(
                         allOf(hasDescendant(withText("0")), not(hasDescendant(withText("1"))))));
@@ -298,7 +366,8 @@ public class ModalDialogManagerTest {
 
         //  Tab modal dialogs should be suspended on entering tab switcher.
         onView(withId(R.id.tab_switcher_button)).perform(click());
-        checkPendingSize(2);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 2);
         onView(withId(R.id.tab_modal_dialog_container))
                 .check(matches(allOf(
                         not(hasDescendant(withText("0"))), not(hasDescendant(withText("1"))))));
@@ -307,7 +376,8 @@ public class ModalDialogManagerTest {
 
         // Exit overview mode. The first dialog should be showing again.
         onView(withId(R.id.tab_switcher_button)).perform(click());
-        checkPendingSize(1);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 1);
         onView(withId(R.id.tab_modal_dialog_container))
                 .check(matches(
                         allOf(hasDescendant(withText("0")), not(hasDescendant(withText("1"))))));
@@ -316,7 +386,8 @@ public class ModalDialogManagerTest {
 
         // Dismiss the first dialog. The second dialog should be shown.
         onView(withText(R.string.ok)).perform(click());
-        checkPendingSize(0);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 0);
         onView(withId(R.id.tab_modal_dialog_container))
                 .check(matches(
                         allOf(not(hasDescendant(withText("0"))), hasDescendant(withText("1")))));
@@ -330,14 +401,15 @@ public class ModalDialogManagerTest {
     @DisabledTest(message = "crbug.com/804858")
     public void testSuspend_ShowNext() throws Exception {
         // Initially there are no dialogs in the pending list. Browser controls are not restricted.
-        checkPendingSize(0);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 0);
         checkBrowserControls(false);
         checkCurrentPresenter(null);
 
-        // Add a tab modal and an app modal dialogs available for showing.
+        // Add a tab modal dialog available for showing.
         showDialog(0, ModalDialogManager.TAB_MODAL);
-        showDialog(1, ModalDialogManager.APP_MODAL);
-        checkPendingSize(1);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 1);
         onView(withId(R.id.tab_modal_dialog_container))
                 .check(matches(hasDescendant(withText("0"))));
         checkBrowserControls(true);
@@ -346,7 +418,13 @@ public class ModalDialogManagerTest {
         // Tab modal dialogs should be suspended on entering tab switcher. App modal dialog should
         // be showing.
         onView(withId(R.id.tab_switcher_button)).perform(click());
-        checkPendingSize(1);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 0);
+
+        // An app modal dialog can be shown in tab switcher.
+        showDialog(1, ModalDialogManager.APP_MODAL);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 0);
         onView(withId(R.id.tab_modal_dialog_container)).check(doesNotExist());
         onView(withText("1")).check(matches(isDisplayed()));
         checkCurrentPresenter(ModalDialogManager.APP_MODAL);
@@ -354,9 +432,11 @@ public class ModalDialogManagerTest {
         // Close the app modal dialog and exit overview mode. The first dialog should be showing
         // again.
         onView(withText(R.string.ok)).perform(click());
-        checkPendingSize(1);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 1);
         onView(withId(R.id.tab_switcher_button)).perform(click());
-        checkPendingSize(0);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 0);
         onView(withId(R.id.tab_modal_dialog_container))
                 .check(matches(hasDescendant(withText("0"))));
         checkBrowserControls(true);
@@ -373,13 +453,15 @@ public class ModalDialogManagerTest {
         }
 
         // Initially there are no dialogs in the pending list. Browser controls are not restricted.
-        checkPendingSize(0);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 0);
         checkBrowserControls(false);
         checkCurrentPresenter(null);
 
-        // Add a tab modal and an app modal dialogs available for showing.
+        // Add a tab modal dialog available for showing.
         showDialog(0, ModalDialogManager.TAB_MODAL);
-        checkPendingSize(0);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 0);
         onView(withId(R.id.tab_modal_dialog_container))
                 .check(matches(hasDescendant(withText("0"))));
         checkBrowserControls(true);
@@ -387,13 +469,15 @@ public class ModalDialogManagerTest {
 
         // Tab modal dialogs should be suspended on entering tab switcher.
         onView(withId(R.id.tab_switcher_button)).perform(click());
-        checkPendingSize(1);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 1);
         checkBrowserControls(false);
         checkCurrentPresenter(null);
 
         // Close the only tab in the tab switcher.
         ChromeTabUtils.closeCurrentTab(InstrumentationRegistry.getInstrumentation(), mActivity);
-        checkPendingSize(0);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 0);
         checkBrowserControls(false);
         checkCurrentPresenter(null);
     }
@@ -405,13 +489,15 @@ public class ModalDialogManagerTest {
         mActivityTestRule.loadUrlInNewTab("about:blank");
 
         // Initially there are no dialogs in the pending list. Browser controls are not restricted.
-        checkPendingSize(0);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 0);
         checkBrowserControls(false);
         checkCurrentPresenter(null);
 
-        // Add a tab modal and an app modal dialogs available for showing.
+        // Add a tab modal dialog available for showing.
         showDialog(0, ModalDialogManager.TAB_MODAL);
-        checkPendingSize(0);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 0);
         onView(withId(R.id.tab_modal_dialog_container))
                 .check(matches(hasDescendant(withText("0"))));
         checkBrowserControls(true);
@@ -419,25 +505,29 @@ public class ModalDialogManagerTest {
 
         // Tab modal dialogs should be suspended on entering tab switcher.
         onView(withId(R.id.tab_switcher_button)).perform(click());
-        checkPendingSize(1);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 1);
         checkBrowserControls(false);
         checkCurrentPresenter(null);
 
         // Close current tab in the tab switcher.
         ChromeTabUtils.closeCurrentTab(InstrumentationRegistry.getInstrumentation(), mActivity);
-        checkPendingSize(0);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 0);
         checkBrowserControls(false);
         checkCurrentPresenter(null);
 
         // Show a new tab modal dialog, and it should be suspended in tab switcher.
         showDialog(1, ModalDialogManager.TAB_MODAL);
-        checkPendingSize(1);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 1);
         checkBrowserControls(false);
         checkCurrentPresenter(null);
 
         // Show an app modal dialog. The app modal dialog should be shown.
         showDialog(2, ModalDialogManager.APP_MODAL);
-        checkPendingSize(1);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 1);
         onView(withText("2")).check(matches(isDisplayed()));
         checkCurrentPresenter(ModalDialogManager.APP_MODAL);
     }
@@ -450,13 +540,15 @@ public class ModalDialogManagerTest {
         ChromeTabUtils.switchTabInCurrentTabModel(mActivity, 0);
 
         // Initially there are no dialogs in the pending list. Browser controls are not restricted.
-        checkPendingSize(0);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 0);
         checkBrowserControls(false);
         checkCurrentPresenter(null);
 
-        // Add a tab modal and an app modal dialogs available for showing.
+        // Add a tab modal dialog available for showing.
         showDialog(0, ModalDialogManager.TAB_MODAL);
-        checkPendingSize(0);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 0);
         onView(withId(R.id.tab_modal_dialog_container))
                 .check(matches(hasDescendant(withText("0"))));
         checkBrowserControls(true);
@@ -464,13 +556,15 @@ public class ModalDialogManagerTest {
 
         // Dialog should be dismissed after switching to a different tab.
         ChromeTabUtils.switchTabInCurrentTabModel(mActivity, 1);
-        checkPendingSize(0);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 0);
         checkBrowserControls(false);
         checkCurrentPresenter(null);
 
         // Open a tab modal dialog in the current tab. The dialog should be shown.
         showDialog(1, ModalDialogManager.TAB_MODAL);
-        checkPendingSize(0);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 0);
         onView(withId(R.id.tab_modal_dialog_container))
                 .check(matches(hasDescendant(withText("1"))));
         checkBrowserControls(true);
@@ -481,15 +575,27 @@ public class ModalDialogManagerTest {
     @SmallTest
     public void testDismiss_BackPressed() throws Exception {
         // Initially there are no dialogs in the pending list. Browser controls are not restricted.
-        checkPendingSize(0);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 0);
         checkBrowserControls(false);
         checkCurrentPresenter(null);
 
-        // Add two dialogs available for showing.
+        // Add three dialogs available for showing. The app modal dialog should be shown first.
         showDialog(0, ModalDialogManager.TAB_MODAL);
         showDialog(1, ModalDialogManager.TAB_MODAL);
         showDialog(2, ModalDialogManager.APP_MODAL);
-        checkPendingSize(2);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 2);
+        onView(withText("2")).check(matches(isDisplayed()));
+        onView(withId(R.id.tab_modal_dialog_container)).check(doesNotExist());
+        checkCurrentPresenter(ModalDialogManager.APP_MODAL);
+
+        // Perform back press. The app modal dialog should be dismissed.
+        // The first tab modal dialog should be shown. The tab modal container shouldn't be in the
+        // window hierarchy when an app modal dialog is showing.
+        Espresso.pressBack();
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 1);
         onView(withText("2")).check(doesNotExist());
         onView(withId(R.id.tab_modal_dialog_container))
                 .check(matches(allOf(hasDescendant(withText("0")),
@@ -497,10 +603,10 @@ public class ModalDialogManagerTest {
         checkBrowserControls(true);
         checkCurrentPresenter(ModalDialogManager.TAB_MODAL);
 
-        // Perform back press. The first dialog should be dismissed.
-        // The second dialog should be shown.
+        // Perform a second back press. The first tab modal dialog should be dismissed.
         Espresso.pressBack();
-        checkPendingSize(1);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 0);
         onView(withText("2")).check(doesNotExist());
         onView(withId(R.id.tab_modal_dialog_container))
                 .check(matches(allOf(not(hasDescendant(withText("0"))),
@@ -508,18 +614,10 @@ public class ModalDialogManagerTest {
         checkBrowserControls(true);
         checkCurrentPresenter(ModalDialogManager.TAB_MODAL);
 
-        // Perform a second back press. The second dialog should be dismissed.
-        // The tab modal container shouldn't be in the window hierarchy when an app modal dialog is
-        // showing.
+        // Perform a third back press. The second tab modal dialog should be dismissed.
         Espresso.pressBack();
-        checkPendingSize(0);
-        onView(withText("2")).check(matches(isDisplayed()));
-        onView(withId(R.id.tab_modal_dialog_container)).check(doesNotExist());
-        checkCurrentPresenter(ModalDialogManager.APP_MODAL);
-
-        // Perform a third back press. The third dialog should be dismissed.
-        Espresso.pressBack();
-        checkPendingSize(0);
+        checkPendingSize(ModalDialogManager.APP_MODAL, 0);
+        checkPendingSize(ModalDialogManager.TAB_MODAL, 0);
         onView(withText("2")).check(doesNotExist());
         onView(withId(R.id.tab_modal_dialog_container))
                 .check(matches(allOf(not(hasDescendant(withText("0"))),
@@ -568,9 +666,11 @@ public class ModalDialogManagerTest {
                 () -> { mManager.dismissDialog(mModalDialogViews[index]); });
     }
 
-    private void checkPendingSize(final int expected) {
+    private void checkPendingSize(
+            final @ModalDialogManager.ModalDialogType int dialogType, final int expected) {
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            Assert.assertEquals(expected, mManager.getPendingDialogsForTest().size());
+            List list = mManager.getPendingDialogsForTest(dialogType);
+            Assert.assertEquals(expected, list != null ? list.size() : 0);
         });
     }
 
