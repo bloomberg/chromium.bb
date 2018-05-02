@@ -5,11 +5,9 @@
 #ifndef CONTENT_RENDERER_MANIFEST_MANIFEST_UMA_UTIL_H_
 #define CONTENT_RENDERER_MANIFEST_MANIFEST_UMA_UTIL_H_
 
-namespace blink {
-struct Manifest;
-}
-
 namespace content {
+
+struct Manifest;
 
 class ManifestUmaUtil {
  public:
@@ -22,7 +20,7 @@ class ManifestUmaUtil {
   // Record that the Manifest was successfully parsed. If it is an empty
   // Manifest, it will recorded as so and nothing will happen. Otherwise, the
   // presence of each properties will be recorded.
-  static void ParseSucceeded(const blink::Manifest& manifest);
+  static void ParseSucceeded(const Manifest& manifest);
 
   // Record that the Manifest parsing failed.
   static void ParseFailed();

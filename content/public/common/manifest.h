@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_MANIFEST_MANIFEST_H_
-#define THIRD_PARTY_BLINK_PUBLIC_COMMON_MANIFEST_MANIFEST_H_
+#ifndef CONTENT_PUBLIC_COMMON_MANIFEST_H_
+#define CONTENT_PUBLIC_COMMON_MANIFEST_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -13,21 +13,21 @@
 #include "base/optional.h"
 #include "base/strings/nullable_string16.h"
 #include "base/strings/string16.h"
-#include "third_party/blink/common/common_export.h"
-#include "third_party/blink/public/common/manifest/web_display_mode.h"
+#include "content/common/content_export.h"
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_lock_type.h"
+#include "third_party/blink/public/platform/web_display_mode.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
-namespace blink {
+namespace content {
 
 // The Manifest structure is an internal representation of the Manifest file
 // described in the "Manifest for Web Application" document:
 // http://w3c.github.io/manifest/
-struct BLINK_COMMON_EXPORT Manifest {
+struct CONTENT_EXPORT Manifest {
   // Structure representing an icon as per the Manifest specification, see:
   // http://w3c.github.io/manifest/#dfn-icon-object
-  struct BLINK_COMMON_EXPORT Icon {
+  struct CONTENT_EXPORT Icon {
     enum IconPurpose {
       ANY = 0,
       BADGE,
@@ -61,7 +61,7 @@ struct BLINK_COMMON_EXPORT Manifest {
   };
 
   // Structure representing how a Web Share target handles an incoming share.
-  struct BLINK_COMMON_EXPORT ShareTarget {
+  struct CONTENT_EXPORT ShareTarget {
     ShareTarget();
     ~ShareTarget();
 
@@ -71,7 +71,7 @@ struct BLINK_COMMON_EXPORT Manifest {
   };
 
   // Structure representing a related application.
-  struct BLINK_COMMON_EXPORT RelatedApplication {
+  struct CONTENT_EXPORT RelatedApplication {
     RelatedApplication();
     ~RelatedApplication();
 
@@ -172,6 +172,6 @@ struct BLINK_COMMON_EXPORT Manifest {
   static const int64_t kInvalidOrMissingColor;
 };
 
-}  // namespace blink
+} // namespace content
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_MANIFEST_MANIFEST_H_
+#endif // CONTENT_PUBLIC_COMMON_MANIFEST_H_
