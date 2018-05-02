@@ -91,7 +91,7 @@ void SetString(RegistryDict* dict,
 class PRegParserTest : public testing::Test {
  protected:
   void SetUp() override {
-    ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir_));
+    ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir_));
     test_data_dir_ = test_data_dir_.AppendASCII(kRegistryPolBaseDir);
   }
 

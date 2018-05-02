@@ -417,7 +417,7 @@ void CrashHandlerHostLinux::WriteDumpFile(BreakpadInfo* info,
   info->distro = distro_str;
 
   base::FilePath dumps_path("/tmp");
-  PathService::Get(base::DIR_TEMP, &dumps_path);
+  base::PathService::Get(base::DIR_TEMP, &dumps_path);
   if (!info->upload)
     dumps_path = dumps_path_;
   const std::string minidump_filename =

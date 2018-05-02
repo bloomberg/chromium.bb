@@ -133,7 +133,7 @@ std::string FixupHomedir(const std::string& text) {
     if (home_directory_override)
       file_path = base::FilePath(home_directory_override);
     else
-      PathService::Get(base::DIR_HOME, &file_path);
+      base::PathService::Get(base::DIR_HOME, &file_path);
 
     // We'll probably break elsewhere if $HOME is undefined, but check here
     // just in case.

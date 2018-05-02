@@ -131,7 +131,7 @@ class FileCacheTest : public testing::Test {
 
 TEST_F(FileCacheTest, RecoverFilesFromCacheDirectory) {
   base::FilePath dir_source_root;
-  EXPECT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &dir_source_root));
+  EXPECT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &dir_source_root));
   const base::FilePath src_path =
       dir_source_root.AppendASCII("chrome/test/data/chromeos/drive/image.png");
 

@@ -342,7 +342,7 @@ TEST_F(AffiliationDatabaseTest, MigrateFromVersion1) {
   CloseDatabase();
   AffiliationDatabase::Delete(db_path());
   base::FilePath src_root_dir;
-  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &src_root_dir));
+  ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &src_root_dir));
   base::FilePath sql_path_v1 = src_root_dir.AppendASCII("components")
                                    .AppendASCII("test")
                                    .AppendASCII("data")
@@ -383,7 +383,7 @@ TEST_F(AffiliationDatabaseTest, InitializeFromVersion2) {
   CloseDatabase();
   AffiliationDatabase::Delete(db_path());
   base::FilePath src_root_dir;
-  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &src_root_dir));
+  ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &src_root_dir));
   base::FilePath sql_path_v2 = src_root_dir.AppendASCII("components")
                                    .AppendASCII("test")
                                    .AppendASCII("data")

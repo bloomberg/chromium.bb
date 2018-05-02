@@ -133,10 +133,10 @@ void PageRenovatorBrowserTest::SetUpOnMainThread() {
   // load our renovation script.
   base::FilePath pak_dir;
 #if defined(OS_ANDROID)
-  PathService::Get(base::DIR_ANDROID_APP_DATA, &pak_dir);
+  base::PathService::Get(base::DIR_ANDROID_APP_DATA, &pak_dir);
   pak_dir = pak_dir.Append(FILE_PATH_LITERAL("paks"));
 #else
-  PathService::Get(base::DIR_MODULE, &pak_dir);
+  base::PathService::Get(base::DIR_MODULE, &pak_dir);
 #endif  // OS_ANDROID
   base::FilePath pak_file =
       pak_dir.Append(FILE_PATH_LITERAL("components_tests_resources.pak"));

@@ -23,7 +23,7 @@ const base::FilePath::CharType kInternalNaClHelperBootstrapFileName[] =
 
 bool GetNaClHelperPath(const base::FilePath::CharType* filename,
                        base::FilePath* output) {
-  if (!PathService::Get(base::DIR_MODULE, output))
+  if (!base::PathService::Get(base::DIR_MODULE, output))
     return false;
   *output = output->Append(filename);
   return true;
@@ -53,7 +53,7 @@ bool PathProvider(int key, base::FilePath* result) {
 // This cannot be done as a static initializer sadly since Visual Studio will
 // eliminate this object file if there is no direct entry point into it.
 void RegisterPathProvider() {
-  PathService::RegisterProvider(PathProvider, PATH_START, PATH_END);
+  base::PathService::RegisterProvider(PathProvider, PATH_START, PATH_END);
 }
 
 }  // namespace nacl

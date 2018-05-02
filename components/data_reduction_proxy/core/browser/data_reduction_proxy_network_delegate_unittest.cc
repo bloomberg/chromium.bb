@@ -501,7 +501,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
     // Get the path of data directory.
     const size_t kDefaultBufferSize = 4096;
     base::FilePath data_dir;
-    PathService::Get(base::DIR_SOURCE_ROOT, &data_dir);
+    base::PathService::Get(base::DIR_SOURCE_ROOT, &data_dir);
     data_dir = data_dir.AppendASCII("net");
     data_dir = data_dir.AppendASCII("data");
     data_dir = data_dir.AppendASCII("filter_unittests");

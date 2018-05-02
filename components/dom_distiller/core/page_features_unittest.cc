@@ -24,7 +24,7 @@ namespace dom_distiller {
 // done in Chromium matches that in the training pipeline.
 TEST(DomDistillerPageFeaturesTest, TestCalculateDerivedFeatures) {
   base::FilePath dir_source_root;
-  EXPECT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &dir_source_root));
+  EXPECT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &dir_source_root));
   std::string input_data;
   ASSERT_TRUE(base::ReadFileToString(
       dir_source_root.AppendASCII(

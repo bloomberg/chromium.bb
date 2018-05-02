@@ -49,7 +49,7 @@ bool LocalSyncTestServer::AddCommandLineArguments(
 bool LocalSyncTestServer::GetTestServerPath(
     base::FilePath* testserver_path) const {
   base::FilePath testserver_dir;
-  if (!PathService::Get(base::DIR_SOURCE_ROOT, &testserver_dir)) {
+  if (!base::PathService::Get(base::DIR_SOURCE_ROOT, &testserver_dir)) {
     LOG(ERROR) << "Failed to get DIR_SOURCE_ROOT";
     return false;
   }

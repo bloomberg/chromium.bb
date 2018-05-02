@@ -317,7 +317,7 @@ TEST(GoogleNewLogoApiTest, ParsesCapturedApiResult) {
   const GURL base_url("https://base.doo/");
 
   base::FilePath test_data_dir;
-  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
+  ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
   test_data_dir = test_data_dir.AppendASCII("components")
                       .AppendASCII("test")
                       .AppendASCII("data")

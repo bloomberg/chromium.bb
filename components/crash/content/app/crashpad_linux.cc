@@ -132,9 +132,9 @@ bool BuildHandlerArgs(base::FilePath* handler_path,
                       std::vector<std::string>* arguments) {
   base::FilePath exe_dir;
 #if defined(OS_ANDROID)
-  if (!PathService::Get(base::DIR_MODULE, &exe_dir)) {
+  if (!base::PathService::Get(base::DIR_MODULE, &exe_dir)) {
 #else
-  if (!PathService::Get(base::DIR_EXE, &exe_dir)) {
+  if (!base::PathService::Get(base::DIR_EXE, &exe_dir)) {
 #endif  // OS_ANDROID
     DCHECK(false);
     return false;

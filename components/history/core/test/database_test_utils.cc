@@ -11,7 +11,7 @@
 namespace history {
 
 WARN_UNUSED_RESULT bool GetTestDataHistoryDir(base::FilePath* dir) {
-  if (!PathService::Get(base::DIR_SOURCE_ROOT, dir))
+  if (!base::PathService::Get(base::DIR_SOURCE_ROOT, dir))
     return false;
   *dir = dir->AppendASCII("components");
   *dir = dir->AppendASCII("test");

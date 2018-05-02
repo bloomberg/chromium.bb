@@ -105,7 +105,7 @@ void NaClBrokerListener::OnLaunchLoaderThroughBroker(
   // Create the path to the nacl broker/loader executable - it's the executable
   // this code is running in.
   base::FilePath exe_path;
-  PathService::Get(base::FILE_EXE, &exe_path);
+  base::PathService::Get(base::FILE_EXE, &exe_path);
   if (!exe_path.empty()) {
     base::CommandLine* cmd_line = new base::CommandLine(exe_path);
     nacl::CopyNaClCommandLineArguments(cmd_line);

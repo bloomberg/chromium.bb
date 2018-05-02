@@ -22,7 +22,7 @@ namespace zucchini {
 
 base::FilePath MakeTestPath(const std::string& filename) {
   base::FilePath path;
-  DCHECK(PathService::Get(base::DIR_SOURCE_ROOT, &path));
+  DCHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &path));
   return path.AppendASCII("chrome")
       .AppendASCII("installer")
       .AppendASCII("zucchini")
