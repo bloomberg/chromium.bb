@@ -5,13 +5,14 @@
 """Implements commands for running and interacting with Fuchsia on devices."""
 
 import boot_data
-import common
 import logging
 import os
 import subprocess
 import target
 import time
 import uuid
+
+from common import SDK_ROOT, EnsurePathExists
 
 CONNECT_RETRY_COUNT = 20
 CONNECT_RETRY_WAIT_SECS = 1
@@ -34,7 +35,8 @@ class DeviceTarget(target.Target):
     self._new_instance = True
 
     if self._auto:
-      self._ssh_config_path = boot_data.GetSSHConfigPath(output_dir)
+      self._ssh_config_path = EnsurePathExists(
+          boot_data.GetSSHConfigPath(output_dir))
     else:
       self._ssh_config_path = os.path.expanduser(ssh_config)
       self._host = host
@@ -46,7 +48,7 @@ class DeviceTarget(target.Target):
     """Returns the IP address and port of a Fuchsia instance discovered on
     the local area network."""
 
-    netaddr_path = os.path.join(common.SDK_ROOT, 'tools', 'netaddr')
+    netaddr_path = os.path.join(SDK_ROOT, 'tools', 'netaddr')
     command = [netaddr_path, '--fuchsia', '--nowait', node_name]
     logging.debug(' '.join(command))
     proc = subprocess.Popen(command,
@@ -69,25 +71,25 @@ class DeviceTarget(target.Target):
 
       logging.info('Netbooting Fuchsia. ' +
                    'Please ensure that your device is in bootloader mode.')
-      bootserver_path = os.path.join(common.SDK_ROOT, 'tools', 'bootserver')
-      data_fvm_path = boot_data.ConfigureDataFVM(self._output_dir,
-                                                 boot_data.FVM_TYPE_SPARSE)
-      bootserver_command = [bootserver_path,
-                            '-1',
-                            '--efi',
-                            boot_data.GetTargetFile(self._GetTargetSdkArch(),
-                                                    'local.esp.blk'),
-                            '--fvm',
-                            boot_data.GetTargetFile(self._GetTargetSdkArch(),
-                                                    'fvm.sparse.blk'),
-                            '--fvm',
-                            data_fvm_path,
-                            boot_data.GetTargetFile(self._GetTargetSdkArch(),
-                                                    'zircon.bin'),
-                            boot_data.GetTargetFile(self._GetTargetSdkArch(),
-                                                    'bootdata-blob.bin'),
-                            '--'] + \
-                            boot_data.GetKernelArgs(self._output_dir)
+      bootserver_path = os.path.join(SDK_ROOT, 'tools', 'bootserver')
+      bootserver_command = [
+          bootserver_path,
+          '-1',
+          '--efi',
+          EnsurePathExists(boot_data.GetTargetFile(self._GetTargetSdkArch(),
+                                                   'local.esp.blk')),
+          '--fvm',
+          EnsurePathExists(boot_data.GetTargetFile(self._GetTargetSdkArch(),
+                                                   'fvm.sparse.blk')),
+          '--fvm',
+          EnsurePathExists(
+              boot_data.ConfigureDataFVM(self._output_dir,
+                                         boot_data.FVM_TYPE_SPARSE)),
+          EnsurePathExists(boot_data.GetTargetFile(self._GetTargetSdkArch(),
+                                                   'zircon.bin')),
+          EnsurePathExists(boot_data.GetTargetFile(self._GetTargetSdkArch(),
+                                                   'bootdata-blob.bin')),
+          '--'] + boot_data.GetKernelArgs(self._output_dir)
       logging.debug(' '.join(bootserver_command))
       subprocess.check_call(bootserver_command)
 
