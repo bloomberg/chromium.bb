@@ -46,11 +46,10 @@ void PasswordGenerationManager::DetectFormsEligibleForGeneration(
     const AutofillField* generation_field = nullptr;
     const AutofillField* confirmation_field = nullptr;
     for (const std::unique_ptr<AutofillField>& field : *form) {
-      if (field->overall_server_type() == autofill::ACCOUNT_CREATION_PASSWORD ||
-          field->overall_server_type() == autofill::NEW_PASSWORD) {
+      if (field->server_type() == autofill::ACCOUNT_CREATION_PASSWORD ||
+          field->server_type() == autofill::NEW_PASSWORD) {
         generation_field = field.get();
-      } else if (field->overall_server_type() ==
-                 autofill::CONFIRMATION_PASSWORD) {
+      } else if (field->server_type() == autofill::CONFIRMATION_PASSWORD) {
         confirmation_field = field.get();
       }
     }

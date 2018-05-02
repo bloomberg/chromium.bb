@@ -4912,8 +4912,7 @@ TEST_F(AutofillManagerTest, DisambiguateUploadTypes) {
     // Assign the specified predicted type for each field in the test case.
     FormStructure form_structure(form);
     for (size_t i = 0; i < test_fields.size(); ++i) {
-      form_structure.field(i)->set_overall_server_type(
-          test_fields[i].predicted_type);
+      form_structure.field(i)->set_server_type(test_fields[i].predicted_type);
     }
 
     AutofillManager::DeterminePossibleFieldTypesForUpload(

@@ -514,7 +514,7 @@ void FormStructure::ParseQueryResponse(
       if (heuristic_type != UNKNOWN_TYPE)
         heuristics_detected_fillable_field = true;
 
-      field->set_overall_server_type(field_type);
+      field->set_server_type(field_type);
       std::vector<AutofillQueryResponseContents::Field::FieldPrediction>
           server_predictions;
       if (current_field->predictions_size() == 0) {
@@ -537,10 +537,10 @@ void FormStructure::ParseQueryResponse(
         !query_response_has_no_server_data);
 
     form->UpdateAutofillCount();
-    form->IdentifySections(false);
-
     if (base::FeatureList::IsEnabled(kAutofillRationalizeFieldTypePredictions))
       form->RationalizeFieldTypePredictions();
+
+    form->IdentifySections(false);
   }
 
   AutofillMetrics::ServerQueryMetric metric;
@@ -579,7 +579,7 @@ std::vector<FormDataPredictions> FormStructure::GetFieldTypePredictions(
       annotated_field.heuristic_type =
           AutofillType(field->heuristic_type()).ToString();
       annotated_field.server_type =
-          AutofillType(field->overall_server_type()).ToString();
+          AutofillType(field->server_type()).ToString();
       annotated_field.overall_type = field->Type().ToString();
       annotated_field.parseable_name =
           base::UTF16ToUTF8(field->parseable_name());
@@ -715,8 +715,7 @@ void FormStructure::RetrieveFromCache(
         // default values are equivalent to empty fields.
         field->value = base::string16();
       }
-      field->set_overall_server_type(
-          cached_field->second->overall_server_type());
+      field->set_server_type(cached_field->second->server_type());
       field->set_previously_autofilled(
           cached_field->second->previously_autofilled());
     }
@@ -1087,7 +1086,8 @@ void FormStructure::RationalizeCreditCardFieldPredictions() {
   size_t num_months_found = 0;
   size_t num_other_fields_found = 0;
   for (const auto& field : fields_) {
-    ServerFieldType current_field_type = field->Type().GetStorableType();
+    ServerFieldType current_field_type =
+        field->ComputedType().GetStorableType();
     switch (current_field_type) {
       case CREDIT_CARD_NAME_FIRST:
         cc_first_name_found = true;
@@ -1164,15 +1164,15 @@ void FormStructure::RationalizeCreditCardFieldPredictions() {
     switch (current_field_type) {
       case CREDIT_CARD_NAME_FIRST:
         if (!keep_cc_fields)
-          field->SetTypeTo(NAME_FIRST);
+          field->SetTypeTo(AutofillType(NAME_FIRST));
         break;
       case CREDIT_CARD_NAME_LAST:
         if (!keep_cc_fields)
-          field->SetTypeTo(NAME_LAST);
+          field->SetTypeTo(AutofillType(NAME_LAST));
         break;
       case CREDIT_CARD_NAME_FULL:
         if (!keep_cc_fields)
-          field->SetTypeTo(NAME_FULL);
+          field->SetTypeTo(AutofillType(NAME_FULL));
         break;
       case CREDIT_CARD_NUMBER:
       case CREDIT_CARD_TYPE:
@@ -1180,7 +1180,7 @@ void FormStructure::RationalizeCreditCardFieldPredictions() {
       case CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR:
       case CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR:
         if (!keep_cc_fields)
-          field->SetTypeTo(UNKNOWN_TYPE);
+          field->SetTypeTo(AutofillType(UNKNOWN_TYPE));
         break;
       case CREDIT_CARD_EXP_MONTH:
         // Do not preserve an expiry month prediction if any of the following
@@ -1193,16 +1193,16 @@ void FormStructure::RationalizeCreditCardFieldPredictions() {
         //       that also has one or more quantity fields. Suppress the expiry
         //       month field(s) not immediately preceding an expiry year field.
         if (!keep_cc_fields || !cc_date_found) {
-          field->SetTypeTo(UNKNOWN_TYPE);
+          field->SetTypeTo(AutofillType(UNKNOWN_TYPE));
         } else if (num_months_found > 1) {
           auto it2 = it + 1;
           if (it2 == fields_.end()) {
-            field->SetTypeTo(UNKNOWN_TYPE);
+            field->SetTypeTo(AutofillType(UNKNOWN_TYPE));
           } else {
             ServerFieldType next_field_type = (*it2)->Type().GetStorableType();
             if (next_field_type != CREDIT_CARD_EXP_2_DIGIT_YEAR &&
                 next_field_type != CREDIT_CARD_EXP_4_DIGIT_YEAR) {
-              field->SetTypeTo(UNKNOWN_TYPE);
+              field->SetTypeTo(AutofillType(UNKNOWN_TYPE));
             }
           }
         }
@@ -1210,7 +1210,7 @@ void FormStructure::RationalizeCreditCardFieldPredictions() {
       case CREDIT_CARD_EXP_2_DIGIT_YEAR:
       case CREDIT_CARD_EXP_4_DIGIT_YEAR:
         if (!keep_cc_fields || !cc_date_found)
-          field->SetTypeTo(UNKNOWN_TYPE);
+          field->SetTypeTo(AutofillType(UNKNOWN_TYPE));
         break;
       default:
         break;
@@ -1233,6 +1233,9 @@ void FormStructure::RationalizePhoneNumbersInSection(std::string section) {
 
 void FormStructure::RationalizeFieldTypePredictions() {
   RationalizeCreditCardFieldPredictions();
+  for (const auto& field : fields_) {
+    field->SetTypeTo(field->Type());
+  }
 }
 
 void FormStructure::EncodeFormForQuery(

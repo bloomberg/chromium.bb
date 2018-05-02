@@ -29,19 +29,19 @@ TEST_F(AutofillRationalizationUtilTest, PhoneNumber_FirstNumberIsWholeNumber) {
   std::vector<AutofillField*> field_list;
 
   AutofillField field0;
-  field0.SetTypeTo(NAME_FULL);
+  field0.SetTypeTo(AutofillType(NAME_FULL));
   field_list.push_back(&field0);
 
   AutofillField field1;
-  field1.SetTypeTo(ADDRESS_HOME_LINE1);
+  field1.SetTypeTo(AutofillType(ADDRESS_HOME_LINE1));
   field_list.push_back(&field1);
 
   AutofillField field2;
-  field2.SetTypeTo(PHONE_HOME_WHOLE_NUMBER);
+  field2.SetTypeTo(AutofillType(PHONE_HOME_WHOLE_NUMBER));
   field_list.push_back(&field2);
 
   AutofillField field3;
-  field3.SetTypeTo(PHONE_HOME_CITY_AND_NUMBER);
+  field3.SetTypeTo(AutofillType(PHONE_HOME_CITY_AND_NUMBER));
   field_list.push_back(&field3);
 
   rationalization_util::RationalizePhoneNumberFields(field_list);
@@ -57,41 +57,41 @@ TEST_F(AutofillRationalizationUtilTest,
   std::vector<AutofillField*> field_list;
 
   AutofillField field0;
-  field0.SetTypeTo(NAME_FULL);
+  field0.SetTypeTo(AutofillType(NAME_FULL));
   field_list.push_back(&field0);
 
   AutofillField field1;
-  field1.SetTypeTo(ADDRESS_HOME_LINE1);
+  field1.SetTypeTo(AutofillType(ADDRESS_HOME_LINE1));
   field_list.push_back(&field1);
 
   AutofillField field2;
   field2.max_length = 2;
-  field2.SetTypeTo(PHONE_HOME_COUNTRY_CODE);
+  field2.SetTypeTo(AutofillType(PHONE_HOME_COUNTRY_CODE));
   field_list.push_back(&field2);
 
   AutofillField field3;
   field3.max_length = 3;
-  field3.SetTypeTo(PHONE_HOME_CITY_CODE);
+  field3.SetTypeTo(AutofillType(PHONE_HOME_CITY_CODE));
   field_list.push_back(&field3);
 
   AutofillField field4;
   field4.max_length = 7;
-  field4.SetTypeTo(PHONE_HOME_NUMBER);
+  field4.SetTypeTo(AutofillType(PHONE_HOME_NUMBER));
   field_list.push_back(&field4);
 
   AutofillField field5;
   field5.max_length = 2;
-  field5.SetTypeTo(PHONE_HOME_COUNTRY_CODE);
+  field5.SetTypeTo(AutofillType(PHONE_HOME_COUNTRY_CODE));
   field_list.push_back(&field5);
 
   AutofillField field6;
   field6.max_length = 3;
-  field6.SetTypeTo(PHONE_HOME_CITY_CODE);
+  field6.SetTypeTo(AutofillType(PHONE_HOME_CITY_CODE));
   field_list.push_back(&field6);
 
   AutofillField field7;
   field7.max_length = 7;
-  field7.SetTypeTo(PHONE_HOME_NUMBER);
+  field7.SetTypeTo(AutofillType(PHONE_HOME_NUMBER));
   field_list.push_back(&field7);
 
   rationalization_util::RationalizePhoneNumberFields(field_list);
@@ -112,19 +112,19 @@ TEST_F(AutofillRationalizationUtilTest,
   std::vector<AutofillField*> field_list;
 
   AutofillField field0;
-  field0.SetTypeTo(NAME_FULL);
+  field0.SetTypeTo(AutofillType(NAME_FULL));
   field_list.push_back(&field0);
 
   AutofillField field1;
-  field1.SetTypeTo(ADDRESS_HOME_LINE1);
+  field1.SetTypeTo(AutofillType(ADDRESS_HOME_LINE1));
   field_list.push_back(&field1);
 
   AutofillField field2;
-  field2.SetTypeTo(PHONE_HOME_COUNTRY_CODE);
+  field2.SetTypeTo(AutofillType(PHONE_HOME_COUNTRY_CODE));
   field_list.push_back(&field2);
 
   AutofillField field3;
-  field3.SetTypeTo(PHONE_HOME_CITY_CODE);
+  field3.SetTypeTo(AutofillType(PHONE_HOME_CITY_CODE));
   field_list.push_back(&field3);
 
   rationalization_util::RationalizePhoneNumberFields(field_list);
@@ -139,29 +139,29 @@ TEST_F(AutofillRationalizationUtilTest, PhoneNumber_FillPhonePartsOnceOnly) {
   std::vector<AutofillField*> field_list;
 
   AutofillField field0;
-  field0.SetTypeTo(NAME_FULL);
+  field0.SetTypeTo(AutofillType(NAME_FULL));
   field_list.push_back(&field0);
 
   AutofillField field1;
-  field1.SetTypeTo(ADDRESS_HOME_LINE1);
+  field1.SetTypeTo(AutofillType(ADDRESS_HOME_LINE1));
   field_list.push_back(&field1);
 
   AutofillField field2;
-  field2.SetTypeTo(PHONE_HOME_CITY_CODE);
+  field2.SetTypeTo(AutofillType(PHONE_HOME_CITY_CODE));
   field_list.push_back(&field2);
 
   AutofillField field3;
   field3.max_length = 10;
-  field3.SetTypeTo(PHONE_HOME_NUMBER);
+  field3.SetTypeTo(AutofillType(PHONE_HOME_NUMBER));
   field_list.push_back(&field3);
 
   AutofillField field4;
   field4.max_length = 12;
-  field4.SetTypeTo(PHONE_HOME_WHOLE_NUMBER);
+  field4.SetTypeTo(AutofillType(PHONE_HOME_WHOLE_NUMBER));
   field_list.push_back(&field4);
 
   AutofillField field5;
-  field5.SetTypeTo(PHONE_HOME_CITY_CODE);
+  field5.SetTypeTo(AutofillType(PHONE_HOME_CITY_CODE));
   field_list.push_back(&field5);
 
   rationalization_util::RationalizePhoneNumberFields(field_list);
@@ -179,20 +179,20 @@ TEST_F(AutofillRationalizationUtilTest,
   std::vector<AutofillField*> field_list;
 
   AutofillField field0;
-  field0.SetTypeTo(NAME_FULL);
+  field0.SetTypeTo(AutofillType(NAME_FULL));
   field_list.push_back(&field0);
 
   AutofillField field1;
-  field1.SetTypeTo(ADDRESS_HOME_LINE1);
+  field1.SetTypeTo(AutofillType(ADDRESS_HOME_LINE1));
   field_list.push_back(&field1);
 
   AutofillField field2;
   field2.is_focusable = false;
-  field2.SetTypeTo(PHONE_HOME_CITY_AND_NUMBER);
+  field2.SetTypeTo(AutofillType(PHONE_HOME_CITY_AND_NUMBER));
   field_list.push_back(&field2);
 
   AutofillField field3;
-  field3.SetTypeTo(PHONE_HOME_WHOLE_NUMBER);
+  field3.SetTypeTo(AutofillType(PHONE_HOME_WHOLE_NUMBER));
   field_list.push_back(&field3);
 
   rationalization_util::RationalizePhoneNumberFields(field_list);
