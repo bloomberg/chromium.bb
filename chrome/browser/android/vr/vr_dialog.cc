@@ -11,7 +11,6 @@
 #include "base/callback_helpers.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/vr/vr_shell_delegate.h"
-#include "third_party/blink/public/platform/web_gesture_event.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
 
 using base::android::JavaParamRef;
@@ -31,8 +30,39 @@ void VrDialog::SetSize(int width, int height) {
   width_ = width;
   height_ = height;
 }
+void VrDialog::OnContentEnter(const gfx::PointF& normalized_hit_point) {}
 
-void VrDialog::SendGestureToTarget(
+void VrDialog::OnContentLeave() {}
+
+void VrDialog::OnContentMove(const gfx::PointF& normalized_hit_point) {
+  SendGestureToDialog(
+      MakeMouseEvent(blink::WebInputEvent::kMouseMove, normalized_hit_point));
+}
+
+void VrDialog::OnContentDown(const gfx::PointF& normalized_hit_point) {
+  SendGestureToDialog(
+      MakeMouseEvent(blink::WebInputEvent::kMouseDown, normalized_hit_point));
+}
+
+void VrDialog::OnContentUp(const gfx::PointF& normalized_hit_point) {
+  SendGestureToDialog(
+      MakeMouseEvent(blink::WebInputEvent::kMouseUp, normalized_hit_point));
+}
+
+void VrDialog::OnContentFlingCancel(
+    std::unique_ptr<blink::WebGestureEvent> gesture,
+    const gfx::PointF& normalized_hit_point) {}
+void VrDialog::OnContentScrollBegin(
+    std::unique_ptr<blink::WebGestureEvent> gesture,
+    const gfx::PointF& normalized_hit_point) {}
+void VrDialog::OnContentScrollUpdate(
+    std::unique_ptr<blink::WebGestureEvent> gesture,
+    const gfx::PointF& normalized_hit_point) {}
+void VrDialog::OnContentScrollEnd(
+    std::unique_ptr<blink::WebGestureEvent> gesture,
+    const gfx::PointF& normalized_hit_point) {}
+
+void VrDialog::SendGestureToDialog(
     std::unique_ptr<blink::WebInputEvent> event) {
   if (!event || !dialog_)
     return;
@@ -59,12 +89,6 @@ std::unique_ptr<blink::WebMouseEvent> VrDialog::MakeMouseEvent(
   mouse_event->SetPositionInWidget(location.x(), location.y());
   mouse_event->click_count = 1;
   return mouse_event;
-}
-
-void VrDialog::UpdateGesture(const gfx::PointF& normalized_content_hit_point,
-                             blink::WebGestureEvent& gesture) {
-  gesture.SetPositionInWidget(
-      ScalePoint(normalized_content_hit_point, width_, height_));
 }
 
 }  //  namespace vr
