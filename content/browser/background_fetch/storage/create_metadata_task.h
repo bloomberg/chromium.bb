@@ -45,9 +45,6 @@ class CreateMetadataTask : public DatabaseTask {
 
   void InitializeMetadataProto();
 
-  proto::ServiceWorkerFetchRequest CreateServiceWorkerFetchRequestProto(
-      const ServiceWorkerFetchRequest& request);
-
   BackgroundFetchRegistrationId registration_id_;
   std::vector<ServiceWorkerFetchRequest> requests_;
   BackgroundFetchOptions options_;

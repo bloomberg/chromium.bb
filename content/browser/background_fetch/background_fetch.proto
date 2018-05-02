@@ -115,8 +115,20 @@ message BackgroundFetchPendingRequest {
 //
 // Next Tag: 5
 message BackgroundFetchActiveRequest {
-  optional string download_guid = 1;
-  optional string unique_id = 2;
-  optional int32 request_index = 3;
-  optional ServiceWorkerFetchRequest request = 4;
+  optional string unique_id = 1;
+  optional int32 request_index = 2;
+  optional ServiceWorkerFetchRequest request = 3;
+  optional string download_guid = 4;
+}
+
+// A background fetch request in the completed state. This means that
+// the DownloadManager returned the download.
+//
+// Next Tag: 6
+message BackgroundFetchCompletedRequest {
+  optional string unique_id = 1;
+  optional int32 request_index = 2;
+  optional ServiceWorkerFetchRequest request = 3;
+  optional string download_guid = 4;
+  optional bool succeeded = 5;
 }

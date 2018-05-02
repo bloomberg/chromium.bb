@@ -20,6 +20,7 @@
 #include "content/browser/background_fetch/storage/get_developer_ids_task.h"
 #include "content/browser/background_fetch/storage/get_metadata_task.h"
 #include "content/browser/background_fetch/storage/mark_registration_for_deletion_task.h"
+#include "content/browser/background_fetch/storage/mark_request_complete_task.h"
 #include "content/browser/background_fetch/storage/start_next_pending_request_task.h"
 #include "content/browser/background_fetch/storage/update_registration_ui_task.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
@@ -402,6 +403,13 @@ void BackgroundFetchDataManager::MarkRequestAsComplete(
     BackgroundFetchScheduler::MarkedCompleteCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBackgroundFetchPersistence)) {
+    AddDatabaseTask(std::make_unique<background_fetch::MarkRequestCompleteTask>(
+        this, registration_id, request, std::move(callback)));
+    return;
+  }
+
   auto iter = registrations_.find(registration_id.unique_id());
   DCHECK(iter != registrations_.end());
 
@@ -439,58 +447,10 @@ void BackgroundFetchDataManager::GetSettledFetchesForRegistration(
     // The |filter| decides which values can be passed on to the Service Worker.
     BackgroundFetchCrossOriginFilter filter(registration_id.origin(), *request);
 
-    settled_fetch.response.url_list = request->GetURLChain();
-    settled_fetch.response.response_type =
-        network::mojom::FetchResponseType::kDefault;
-
-    // Include the status code, status text and the response's body as a blob
-    // when this is allowed by the CORS protocol.
-    if (filter.CanPopulateBody()) {
-      settled_fetch.response.status_code = request->GetResponseCode();
-      settled_fetch.response.status_text = request->GetResponseText();
-      settled_fetch.response.headers.insert(
-          request->GetResponseHeaders().begin(),
-          request->GetResponseHeaders().end());
-
-      if (request->GetFileSize() > 0) {
-        DCHECK(!request->GetFilePath().empty());
-        DCHECK(blob_storage_context_);
-
-        auto blob_builder =
-            std::make_unique<storage::BlobDataBuilder>(base::GenerateGUID());
-        blob_builder->AppendFile(request->GetFilePath(), 0 /* offset */,
-                                 request->GetFileSize(),
-                                 base::Time() /* expected_modification_time */);
-
-        auto blob_data_handle =
-            GetBlobStorageContext(blob_storage_context_.get())
-                ->AddFinishedBlob(std::move(blob_builder));
-
-        // TODO(peter): Appropriately handle !blob_data_handle
-        if (blob_data_handle) {
-          settled_fetch.response.blob_uuid = blob_data_handle->uuid();
-          settled_fetch.response.blob_size = blob_data_handle->size();
-          blink::mojom::BlobPtr blob_ptr;
-          storage::BlobImpl::Create(
-              std::make_unique<storage::BlobDataHandle>(*blob_data_handle),
-              MakeRequest(&blob_ptr));
-
-          settled_fetch.response.blob =
-              base::MakeRefCounted<storage::BlobHandle>(std::move(blob_ptr));
-          blob_data_handles.push_back(std::move(blob_data_handle));
-        }
-      }
-    } else {
-      // TODO(crbug.com/711354): Consider Background Fetches as failed when the
-      // response cannot be relayed to the developer.
-      background_fetch_succeeded = false;
-    }
-
-    // TODO(delphick): settled_fetch.response.error
-    settled_fetch.response.response_time = request->GetResponseTime();
-    // TODO(delphick): settled_fetch.response.cors_exposed_header_names
-
-    background_fetch_succeeded = background_fetch_succeeded && IsOK(*request);
+    background_fetch_succeeded =
+        FillServiceWorkerResponse(*request, registration_id.origin(),
+                                  &settled_fetch.response) &&
+        background_fetch_succeeded;
 
     settled_fetches.push_back(settled_fetch);
   }
@@ -498,6 +458,62 @@ void BackgroundFetchDataManager::GetSettledFetchesForRegistration(
   std::move(callback).Run(
       blink::mojom::BackgroundFetchError::NONE, background_fetch_succeeded,
       std::move(settled_fetches), std::move(blob_data_handles));
+}
+
+bool BackgroundFetchDataManager::FillServiceWorkerResponse(
+    const BackgroundFetchRequestInfo& request,
+    const url::Origin& origin,
+    ServiceWorkerResponse* response) {
+  DCHECK(response);
+
+  response->url_list = request.GetURLChain();
+  response->response_type = network::mojom::FetchResponseType::kDefault;
+  // TODO(crbug.com/838837): settled_fetch.response.error
+  response->response_time = request.GetResponseTime();
+  // TODO(crbug.com/838837): settled_fetch.response.cors_exposed_header_names
+
+  BackgroundFetchCrossOriginFilter filter(origin, request);
+  if (!filter.CanPopulateBody()) {
+    // TODO(crbug.com/711354): Consider Background Fetches as failed when the
+    // response cannot be relayed to the developer.
+    return false;
+  }
+
+  // Include the status code, status text and the response's body as a blob
+  // when this is allowed by the CORS protocol.
+  response->status_code = request.GetResponseCode();
+  response->status_text = request.GetResponseText();
+  response->headers.insert(request.GetResponseHeaders().begin(),
+                           request.GetResponseHeaders().end());
+
+  if (request.GetFileSize() > 0) {
+    DCHECK(!request.GetFilePath().empty());
+    DCHECK(blob_storage_context_);
+
+    auto blob_builder =
+        std::make_unique<storage::BlobDataBuilder>(base::GenerateGUID());
+    blob_builder->AppendFile(request.GetFilePath(), 0 /* offset */,
+                             request.GetFileSize(),
+                             base::Time() /* expected_modification_time */);
+
+    auto blob_data_handle = GetBlobStorageContext(blob_storage_context_.get())
+                                ->AddFinishedBlob(std::move(blob_builder));
+
+    // TODO(peter): Appropriately handle !blob_data_handle
+    if (blob_data_handle) {
+      response->blob_uuid = blob_data_handle->uuid();
+      response->blob_size = blob_data_handle->size();
+      blink::mojom::BlobPtr blob_ptr;
+      storage::BlobImpl::Create(
+          std::make_unique<storage::BlobDataHandle>(*blob_data_handle),
+          MakeRequest(&blob_ptr));
+
+      response->blob =
+          base::MakeRefCounted<storage::BlobHandle>(std::move(blob_ptr));
+    }
+  }
+
+  return IsOK(request);
 }
 
 void BackgroundFetchDataManager::MarkRegistrationForDeletion(

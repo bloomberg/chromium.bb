@@ -7,7 +7,9 @@
 
 #include <string>
 
+#include "content/browser/background_fetch/background_fetch.pb.h"
 #include "content/common/service_worker/service_worker_status_code.h"
+#include "content/common/service_worker/service_worker_types.h"
 
 namespace content {
 
@@ -25,6 +27,7 @@ const char kActiveRegistrationUniqueIdKeyPrefix[] =
 const char kRegistrationKeyPrefix[] = "bgfetch_registration_";
 const char kPendingRequestKeyPrefix[] = "bgfetch_pending_request_";
 const char kActiveRequestKeyPrefix[] = "bgfetch_active_request_";
+const char kCompletedRequestKeyPrefix[] = "bgfetch_completed_request_";
 
 std::string ActiveRegistrationUniqueIdKey(const std::string& developer_id);
 
@@ -38,9 +41,18 @@ std::string ActiveRequestKeyPrefix(const std::string& unique_id);
 
 std::string ActiveRequestKey(const std::string& unique_id, int request_index);
 
+std::string CompletedRequestKeyPrefix(const std::string& unique_id);
+
+std::string CompletedRequestKey(const std::string& unique_id,
+                                int request_index);
+
 enum class DatabaseStatus { kOk, kFailed, kNotFound };
 
 DatabaseStatus ToDatabaseStatus(ServiceWorkerStatusCode status);
+
+void FillServiceWorkerFetchRequestProto(
+    const ServiceWorkerFetchRequest& request,
+    proto::ServiceWorkerFetchRequest* request_proto);
 
 }  // namespace background_fetch
 
