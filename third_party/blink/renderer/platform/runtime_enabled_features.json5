@@ -627,6 +627,10 @@
       name: "LangAttributeAwareFormControlUI",
     },
     {
+      name: "LayeredAPI",
+      implied_by: ["ExperimentalProductivityFeatures"],
+    },
+    {
       name: "LayoutNG",
       implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFlexBox"],
     },

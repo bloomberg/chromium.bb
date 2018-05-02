@@ -436,6 +436,12 @@ const char kEnableHttpFormWarningDescription[] =
     "Attaches a warning UI to any password or credit card fields detected when "
     "the top-level page is not HTTPS";
 
+const char kLayeredAPIName[] = "Experimental layered APIs";
+const char kLayeredAPIDescription[] =
+    "Enable layered API infrastructure, as well as several experimental "
+    "layered APIs. The syntax and the APIs exposed are experimental and will "
+    "change over time.";
+
 const char kEnableLazyFrameLoadingName[] = "Enable lazy frame loading";
 const char kEnableLazyFrameLoadingDescription[] =
     "Defers the loading of certain cross-origin frames until the page is "

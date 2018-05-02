@@ -368,6 +368,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::EnableResourceLoadScheduler(
       base::FeatureList::IsEnabled(features::kResourceLoadScheduler));
 
+  if (base::FeatureList::IsEnabled(features::kLayeredAPI))
+    WebRuntimeFeatures::EnableLayeredAPI(true);
+
   WebRuntimeFeatures::EnableLazyInitializeMediaControls(
       base::FeatureList::IsEnabled(features::kLazyInitializeMediaControls));
 

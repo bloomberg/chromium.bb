@@ -299,6 +299,9 @@ extern const char kEnableHDRDescription[];
 extern const char kEnableHttpFormWarningName[];
 extern const char kEnableHttpFormWarningDescription[];
 
+extern const char kLayeredAPIName[];
+extern const char kLayeredAPIDescription[];
+
 extern const char kEnableLazyFrameLoadingName[];
 extern const char kEnableLazyFrameLoadingDescription[];
 
