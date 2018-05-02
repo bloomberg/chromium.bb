@@ -47,9 +47,11 @@ class PrefRegistrySyncable : public PrefRegistrySimple {
     SYNCABLE_PREF = 1 << 0,
 
     // The pref will be synced. The pref will never be encrypted and will be
-    // synced before other datatypes. Because they're never encrypted, on first
-    // sync, they can be synced down before the user is prompted for a
-    // passphrase.
+    // synced before other datatypes.
+    // Because they're never encrypted:
+    // -- they can be synced down on first sync before the user is prompted for
+    //    a passphrase.
+    // -- they are preferred for receiving server-provided data.
     SYNCABLE_PRIORITY_PREF = 1 << 1,
   };
 
