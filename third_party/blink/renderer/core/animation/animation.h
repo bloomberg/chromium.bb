@@ -223,10 +223,6 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
 
   void InvalidateKeyframeEffect(const TreeScope&);
 
-  bool IsNonCompositedCompositable() const {
-    return is_non_composited_compositable_;
-  }
-
   void Trace(blink::Visitor*) override;
 
   bool CompositorPendingForTesting() const { return compositor_pending_; }
@@ -390,15 +386,6 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   bool state_is_being_updated_;
 
   bool effect_suppressed_;
-
-  // crbug.com/758439: In order to have better animation targeting metrics, we'd
-  // like to track whether there are main-thread animations which could be
-  // composited, but is not due to running experiment. This variable is
-  // initially false, it is set to be true after the call to
-  // "CheckCanStartAnimationOnCompositor" according to its return value. In
-  // other words, this bit is true only for an animation that hits the
-  // "Experiment group" for the experiment described in crbug.com/754471.
-  bool is_non_composited_compositable_ = false;
 
   FRIEND_TEST_ALL_PREFIXES(AnimationAnimationTest,
                            NoCompositeWithoutCompositedElementId);

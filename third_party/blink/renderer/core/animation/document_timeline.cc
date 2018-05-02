@@ -204,16 +204,6 @@ void DocumentTimeline::DocumentTimelineTiming::Trace(blink::Visitor* visitor) {
   DocumentTimeline::PlatformTiming::Trace(visitor);
 }
 
-size_t DocumentTimeline::MainThreadCompositableAnimationsCount() const {
-  size_t main_thread_compositable_animations_count = 0;
-  for (Animation* animation : animations_needing_update_) {
-    if (animation->IsNonCompositedCompositable() &&
-        animation->PlayStateInternal() != Animation::kFinished)
-      main_thread_compositable_animations_count++;
-  }
-  return main_thread_compositable_animations_count;
-}
-
 double DocumentTimeline::ZeroTime() {
   if (!zero_time_initialized_ && document_ && document_->Loader()) {
     zero_time_ =

@@ -81,18 +81,15 @@ void DocumentAnimations::UpdateAnimations(
     if (CompositorAnimationHost* host =
             document.View()->GetCompositorAnimationHost()) {
       int total_animations_count = 0;
-      int main_thread_compositable_animations_count = 0;
       if (document.Timeline().HasAnimations()) {
         total_animations_count = document.Timeline().PendingAnimationsCount();
-        main_thread_compositable_animations_count =
-            document.Timeline().MainThreadCompositableAnimationsCount();
       }
       // In the CompositorTimingHistory::DidDraw where we know that there is
       // visual update, we will use document.CurrentFrameHadRAF as a signal to
       // record UMA or not.
-      host->SetAnimationCounts(
-          total_animations_count, main_thread_compositable_animations_count,
-          document.CurrentFrameHadRAF(), document.NextFrameHasPendingRAF());
+      host->SetAnimationCounts(total_animations_count,
+                               document.CurrentFrameHadRAF(),
+                               document.NextFrameHasPendingRAF());
     }
   }
 

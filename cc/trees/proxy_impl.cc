@@ -367,10 +367,6 @@ size_t ProxyImpl::MainThreadAnimationsCount() const {
   return host_impl_->mutator_host()->MainThreadAnimationsCount();
 }
 
-size_t ProxyImpl::MainThreadCompositableAnimationsCount() const {
-  return host_impl_->mutator_host()->MainThreadCompositableAnimationsCount();
-}
-
 bool ProxyImpl::CurrentFrameHadRAF() const {
   return host_impl_->mutator_host()->CurrentFrameHadRAF();
 }

@@ -92,7 +92,6 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
       base::TimeTicks time) override;
   size_t CompositedAnimationsCount() const override;
   size_t MainThreadAnimationsCount() const override;
-  size_t MainThreadCompositableAnimationsCount() const override;
   bool CurrentFrameHadRAF() const override;
   bool NextFrameHasPendingRAF() const override;
 

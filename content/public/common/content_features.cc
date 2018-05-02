@@ -406,11 +406,6 @@ const base::Feature kTopDocumentIsolation{"top-document-isolation",
 const base::Feature kTouchpadAndWheelScrollLatching{
     "TouchpadAndWheelScrollLatching", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// An experiment to turn off compositing for 2D transform & opacity animations.
-const base::Feature kTurnOff2DAndOpacityCompositorAnimations{
-    "TurnOff2DAndOpacityCompositorAnimations",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables unified touch adjustment which adjusts touch events target to a best
 // nearby node.
 const base::Feature kUnifiedTouchAdjustment{"UnifiedTouchAdjustment",

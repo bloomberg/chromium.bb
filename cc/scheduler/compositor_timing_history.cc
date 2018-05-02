@@ -54,8 +54,6 @@ class CompositorTimingHistory::UMAReporter {
       base::TimeDelta duration) = 0;
   virtual void AddDrawIntervalWithMainThreadAnimations(
       base::TimeDelta duration) = 0;
-  virtual void AddDrawIntervalWithMainThreadCompositableAnimations(
-      base::TimeDelta duration) = 0;
 
   // Synchronization measurements
   virtual void AddMainAndImplFrameTimeDelta(base::TimeDelta delta) = 0;
@@ -198,13 +196,6 @@ class RendererUMAReporter : public CompositorTimingHistory::UMAReporter {
         "Scheduling.Renderer.DrawIntervalWithMainThreadAnimations", interval);
   }
 
-  void AddDrawIntervalWithMainThreadCompositableAnimations(
-      base::TimeDelta interval) override {
-    UMA_HISTOGRAM_CUSTOM_TIMES_VSYNC_ALIGNED(
-        "Scheduling.Renderer.DrawIntervalWithMainThreadCompositableAnimations",
-        interval);
-  }
-
   void AddBeginImplFrameLatency(base::TimeDelta delta) override {
     UMA_HISTOGRAM_CUSTOM_TIMES_DURATION(
         "Scheduling.Renderer.BeginImplFrameLatency", delta);
@@ -325,15 +316,6 @@ class BrowserUMAReporter : public CompositorTimingHistory::UMAReporter {
         "Scheduling.Browser.DrawIntervalWithMainThreadAnimations", interval);
   }
 
-  void AddDrawIntervalWithMainThreadCompositableAnimations(
-      base::TimeDelta interval) override {
-    // Still report, but the data is not meaningful.
-    UMA_HISTOGRAM_CUSTOM_TIMES_VSYNC_ALIGNED(
-        "Scheduling.Browser."
-        "DrawIntervalWithMainThreadCompositableAnimations",
-        interval);
-  }
-
   void AddBeginImplFrameLatency(base::TimeDelta delta) override {
     UMA_HISTOGRAM_CUSTOM_TIMES_DURATION(
         "Scheduling.Browser.BeginImplFrameLatency", delta);
@@ -428,8 +410,6 @@ class NullUMAReporter : public CompositorTimingHistory::UMAReporter {
       base::TimeDelta inverval) override {}
   void AddDrawIntervalWithMainThreadAnimations(
       base::TimeDelta inverval) override {}
-  void AddDrawIntervalWithMainThreadCompositableAnimations(
-      base::TimeDelta interval) override {}
   void AddBeginImplFrameLatency(base::TimeDelta delta) override {}
   void AddBeginMainFrameQueueDurationCriticalDuration(
       base::TimeDelta duration) override {}
@@ -883,7 +863,6 @@ void CompositorTimingHistory::DidDraw(
     base::TimeTicks impl_frame_time,
     size_t composited_animations_count,
     size_t main_thread_animations_count,
-    size_t main_thread_compositable_animations_count,
     bool current_frame_had_raf,
     bool next_frame_has_pending_raf) {
   DCHECK_NE(base::TimeTicks(), draw_start_time_);
@@ -936,17 +915,8 @@ void CompositorTimingHistory::DidDraw(
           draw_end_time - new_active_tree_draw_end_time_prev_;
       uma_reporter_->AddDrawIntervalWithMainThreadAnimations(draw_interval);
     }
-    if (main_thread_compositable_animations_count > 0 &&
-        previous_frame_had_main_thread_compositable_animations_) {
-      base::TimeDelta draw_interval =
-          draw_end_time - new_active_tree_draw_end_time_prev_;
-      uma_reporter_->AddDrawIntervalWithMainThreadCompositableAnimations(
-          draw_interval);
-    }
     previous_frame_had_main_thread_animations_ =
         main_thread_animations_count > 0;
-    previous_frame_had_main_thread_compositable_animations_ =
-        main_thread_compositable_animations_count > 0;
     // It's possible that two consecutive main frames both run a rAF but are
     // separated by idle time (for example: calling requestAnimationFrame from a
     // setInterval function, with nothing else producing a main frame
