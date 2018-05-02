@@ -66,8 +66,8 @@ TEST_F(SyncPrefsTest, DefaultTypes) {
   SyncPrefs sync_prefs(&pref_service_);
   sync_prefs.SetKeepEverythingSynced(false);
 
-  // Only bookmarks and device info are enabled by default.
-  ModelTypeSet expected(BOOKMARKS, DEVICE_INFO);
+  // Only device info is enabled by default.
+  ModelTypeSet expected(DEVICE_INFO);
   ModelTypeSet preferred_types = sync_prefs.GetPreferredDataTypes(UserTypes());
   EXPECT_EQ(expected, preferred_types);
 
