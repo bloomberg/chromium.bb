@@ -285,6 +285,10 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // with what is visible on screen.
   virtual void ClearCompositorFrame() = 0;
 
+  // Requests a new CompositorFrame from the renderer. This is done by
+  // allocating a new viz::LocalSurfaceId which forces a commit and draw.
+  virtual bool RequestRepaintForTesting();
+
   // Because the associated remote WebKit instance can asynchronously
   // prevent-default on a dispatched touch event, the touch events are queued in
   // the GestureRecognizer until invocation of ProcessAckedTouchEvent releases

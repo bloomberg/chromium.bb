@@ -919,6 +919,11 @@ void RenderWidgetHostViewAura::ClearCompositorFrame() {
     delegated_frame_host_->ClearDelegatedFrame();
 }
 
+bool RenderWidgetHostViewAura::RequestRepaintForTesting() {
+  return SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
+                                     base::nullopt);
+}
+
 void RenderWidgetHostViewAura::DidStopFlinging() {
   selection_controller_client_->OnScrollCompleted();
 }
@@ -1991,14 +1996,14 @@ void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
   }
 }
 
-void RenderWidgetHostViewAura::SynchronizeVisualProperties(
+bool RenderWidgetHostViewAura::SynchronizeVisualProperties(
     const cc::DeadlinePolicy& deadline_policy,
     const base::Optional<viz::LocalSurfaceId>&
         child_allocated_local_surface_id) {
   DCHECK(window_);
   window_->UpdateLocalSurfaceIdFromEmbeddedClient(
       child_allocated_local_surface_id);
-  SyncSurfaceProperties(deadline_policy);
+  return SyncSurfaceProperties(deadline_policy);
 }
 
 ui::InputMethod* RenderWidgetHostViewAura::GetInputMethod() const {
@@ -2136,10 +2141,10 @@ void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {
 #endif
 }
 
-void RenderWidgetHostViewAura::SyncSurfaceProperties(
+bool RenderWidgetHostViewAura::SyncSurfaceProperties(
     const cc::DeadlinePolicy& deadline_policy) {
   if (IsLocalSurfaceIdAllocationSuppressed())
-    return;
+    return false;
 
   if (delegated_frame_host_) {
     delegated_frame_host_->SynchronizeVisualProperties(
@@ -2149,7 +2154,7 @@ void RenderWidgetHostViewAura::SyncSurfaceProperties(
   // Note that |host_| will retrieve resize parameters from
   // |delegated_frame_host_|, so it must have SynchronizeVisualProperties called
   // after.
-  host()->SynchronizeVisualProperties();
+  return host()->SynchronizeVisualProperties();
 }
 
 #if defined(OS_WIN)
@@ -2439,7 +2444,8 @@ viz::ScopedSurfaceIdAllocator RenderWidgetHostViewAura::ResizeDueToAutoResize(
     const gfx::Size& new_size,
     const viz::LocalSurfaceId& child_local_surface_id) {
   base::OnceCallback<void()> allocation_task = base::BindOnce(
-      &RenderWidgetHostViewAura::SynchronizeVisualProperties,
+      base::IgnoreResult(
+          &RenderWidgetHostViewAura::SynchronizeVisualProperties),
       weak_ptr_factory_.GetWeakPtr(), cc::DeadlinePolicy::UseDefaultDeadline(),
       child_local_surface_id);
   return window_->GetSurfaceIdAllocator(std::move(allocation_task));

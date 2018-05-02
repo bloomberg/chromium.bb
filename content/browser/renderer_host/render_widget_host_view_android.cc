@@ -261,10 +261,10 @@ void RenderWidgetHostViewAndroid::InitAsFullscreen(
   NOTIMPLEMENTED();
 }
 
-void RenderWidgetHostViewAndroid::SynchronizeVisualProperties() {
+bool RenderWidgetHostViewAndroid::SynchronizeVisualProperties() {
   if (delegated_frame_host_)
     delegated_frame_host_->SynchronizeVisualProperties();
-  host()->SynchronizeVisualProperties();
+  return host()->SynchronizeVisualProperties();
 }
 
 void RenderWidgetHostViewAndroid::SetSize(const gfx::Size& size) {
@@ -1015,6 +1015,10 @@ void RenderWidgetHostViewAndroid::AcknowledgeBeginFrame(
 
 void RenderWidgetHostViewAndroid::ClearCompositorFrame() {
   DestroyDelegatedContent();
+}
+
+bool RenderWidgetHostViewAndroid::RequestRepaintForTesting() {
+  return SynchronizeVisualProperties();
 }
 
 void RenderWidgetHostViewAndroid::SynchronousFrameMetadata(

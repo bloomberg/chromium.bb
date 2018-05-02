@@ -182,6 +182,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       viz::mojom::HitTestRegionListPtr hit_test_region_list) override;
   void OnDidNotProduceFrame(const viz::BeginFrameAck& ack) override;
   void ClearCompositorFrame() override;
+  bool RequestRepaintForTesting() override;
   void DidStopFlinging() override;
   void OnDidNavigateMainFrameToNewPage() override;
   viz::FrameSinkId GetFrameSinkId() override;
@@ -445,7 +446,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   void UpdateCursorIfOverSelf();
 
-  void SynchronizeVisualProperties(const cc::DeadlinePolicy& deadline_policy,
+  bool SynchronizeVisualProperties(const cc::DeadlinePolicy& deadline_policy,
                                    const base::Optional<viz::LocalSurfaceId>&
                                        child_allocated_local_surface_id);
 
@@ -459,7 +460,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void InternalSetBounds(const gfx::Rect& rect);
 
   // Handles propagation of surface properties when they are changed.
-  void SyncSurfaceProperties(const cc::DeadlinePolicy& deadline_policy);
+  bool SyncSurfaceProperties(const cc::DeadlinePolicy& deadline_policy);
 
 #if defined(OS_WIN)
   // Creates and/or updates the legacy dummy window which corresponds to

@@ -864,22 +864,22 @@ void RenderWidgetHostImpl::SetInitialVisualProperties(
       std::make_unique<VisualProperties>(visual_properties);
 }
 
-void RenderWidgetHostImpl::SynchronizeVisualProperties() {
-  SynchronizeVisualProperties(false);
+bool RenderWidgetHostImpl::SynchronizeVisualProperties() {
+  return SynchronizeVisualProperties(false);
 }
 
-void RenderWidgetHostImpl::SynchronizeVisualProperties(
+bool RenderWidgetHostImpl::SynchronizeVisualProperties(
     bool scroll_focused_node_into_view) {
   // Skip if the |delegate_| has already been detached because
   // it's web contents is being deleted.
   if (resize_ack_pending_ || !process_->HasConnection() || !view_ ||
       !view_->HasSize() || !renderer_initialized_ || !delegate_) {
-    return;
+    return false;
   }
 
   std::unique_ptr<VisualProperties> visual_properties(new VisualProperties);
   if (!GetVisualProperties(visual_properties.get()))
-    return;
+    return false;
   visual_properties->scroll_focused_node_into_view =
       scroll_focused_node_into_view;
 
@@ -887,15 +887,19 @@ void RenderWidgetHostImpl::SynchronizeVisualProperties(
   bool width_changed =
       !old_visual_properties_ || old_visual_properties_->new_size.width() !=
                                      visual_properties->new_size.width();
+  bool sent_visual_properties = false;
   if (Send(new ViewMsg_SynchronizeVisualProperties(routing_id_,
                                                    *visual_properties))) {
     resize_ack_pending_ = visual_properties->needs_resize_ack;
     next_resize_needs_resize_ack_ = false;
     old_visual_properties_.swap(visual_properties);
+    sent_visual_properties = true;
   }
 
   if (delegate_)
     delegate_->RenderWidgetWasResized(this, screen_info, width_changed);
+
+  return sent_visual_properties;
 }
 
 void RenderWidgetHostImpl::GotFocus() {
@@ -1056,19 +1060,11 @@ void RenderWidgetHostImpl::PauseForPendingResizeOrRepaints() {
 }
 #endif
 
-bool RenderWidgetHostImpl::ScheduleComposite() {
-  if (is_hidden_ || current_size_.IsEmpty() || repaint_ack_pending_ ||
-      resize_ack_pending_) {
+bool RenderWidgetHostImpl::RequestRepaintForTesting() {
+  if (!view_)
     return false;
-  }
 
-  // Send out a request to the renderer to paint the view if required.
-  repaint_start_time_ = clock_->NowTicks();
-  repaint_ack_pending_ = true;
-  TRACE_EVENT_ASYNC_BEGIN0(
-      "renderer_host", "RenderWidgetHostImpl::repaint_ack_pending_", this);
-  Send(new ViewMsg_Repaint(routing_id_, current_size_));
-  return true;
+  return view_->RequestRepaintForTesting();
 }
 
 void RenderWidgetHostImpl::ProcessIgnoreInputEventsChanged(
