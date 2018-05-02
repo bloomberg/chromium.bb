@@ -121,7 +121,6 @@ TEST_F(SurfaceHittestTest, Hittest_BadCompositorFrameDoesNotCrash) {
 
   // Submit the root frame.
   ParentLocalSurfaceIdAllocator root_allocator;
-  root_allocator.GenerateId();
   SurfaceId root_surface_id(kRootFrameSink,
                             root_allocator.GetCurrentLocalSurfaceId());
   root_support().SubmitCompositorFrame(
@@ -146,7 +145,6 @@ TEST_F(SurfaceHittestTest, Hittest_SingleSurface) {
 
   // Submit the root frame.
   ParentLocalSurfaceIdAllocator root_allocator;
-  root_allocator.GenerateId();
   SurfaceId root_surface_id(kRootFrameSink,
                             root_allocator.GetCurrentLocalSurfaceId());
   root_support().SubmitCompositorFrame(
@@ -167,7 +165,6 @@ TEST_F(SurfaceHittestTest, Hittest_ChildSurface) {
 
   // Add a reference to the child surface on the root surface.
   ParentLocalSurfaceIdAllocator child_allocator;
-  child_allocator.GenerateId();
   SurfaceId child_surface_id(kChildFrameSink,
                              child_allocator.GetCurrentLocalSurfaceId());
   gfx::Rect child_rect(200, 200);
@@ -179,7 +176,6 @@ TEST_F(SurfaceHittestTest, Hittest_ChildSurface) {
 
   // Submit the root frame.
   ParentLocalSurfaceIdAllocator root_allocator;
-  root_allocator.GenerateId();
   SurfaceId root_surface_id(kRootFrameSink,
                             root_allocator.GetCurrentLocalSurfaceId());
   root_support().SubmitCompositorFrame(
@@ -267,7 +263,6 @@ TEST_F(SurfaceHittestTest, Hittest_OccludedChildSurface) {
 
   // Add a reference to the child surface on the root surface.
   ParentLocalSurfaceIdAllocator child_allocator;
-  child_allocator.GenerateId();
   SurfaceId child_surface_id(kChildFrameSink,
                              child_allocator.GetCurrentLocalSurfaceId());
   gfx::Rect child_rect(200, 200);
@@ -279,7 +274,6 @@ TEST_F(SurfaceHittestTest, Hittest_OccludedChildSurface) {
 
   // Submit the root frame.
   ParentLocalSurfaceIdAllocator root_allocator;
-  root_allocator.GenerateId();
   SurfaceId root_surface_id(kRootFrameSink,
                             root_allocator.GetCurrentLocalSurfaceId());
   root_support().SubmitCompositorFrame(
@@ -332,7 +326,8 @@ TEST_F(SurfaceHittestTest, Hittest_InvalidRenderPassDrawQuad) {
 
   // Add a reference to the child surface on the root surface.
   ParentLocalSurfaceIdAllocator child_allocator;
-  LocalSurfaceId child_local_surface_id = child_allocator.GenerateId();
+  LocalSurfaceId child_local_surface_id =
+      child_allocator.GetCurrentLocalSurfaceId();
   SurfaceId child_surface_id(kChildFrameSink, child_local_surface_id);
   gfx::Rect child_rect(200, 200);
   CreateSurfaceDrawQuad(
@@ -343,7 +338,6 @@ TEST_F(SurfaceHittestTest, Hittest_InvalidRenderPassDrawQuad) {
 
   // Submit the root frame.
   ParentLocalSurfaceIdAllocator root_allocator;
-  root_allocator.GenerateId();
   SurfaceId root_surface_id(kRootFrameSink,
                             root_allocator.GetCurrentLocalSurfaceId());
   root_support().SubmitCompositorFrame(
@@ -416,7 +410,6 @@ TEST_F(SurfaceHittestTest, Hittest_RenderPassDrawQuad) {
 
   // Submit the root frame.
   ParentLocalSurfaceIdAllocator root_allocator;
-  root_allocator.GenerateId();
   SurfaceId root_surface_id(kRootFrameSink,
                             root_allocator.GetCurrentLocalSurfaceId());
   root_support().SubmitCompositorFrame(
@@ -451,7 +444,6 @@ TEST_F(SurfaceHittestTest, Hittest_SingleSurface_WithInsetsDelegate) {
 
   // Add a reference to the child surface on the root surface.
   ParentLocalSurfaceIdAllocator child_allocator;
-  child_allocator.GenerateId();
   SurfaceId child_surface_id(kChildFrameSink,
                              child_allocator.GetCurrentLocalSurfaceId());
   gfx::Rect child_rect(200, 200);
@@ -463,7 +455,6 @@ TEST_F(SurfaceHittestTest, Hittest_SingleSurface_WithInsetsDelegate) {
 
   // Submit the root frame.
   ParentLocalSurfaceIdAllocator root_allocator;
-  root_allocator.GenerateId();
   SurfaceId root_surface_id(kRootFrameSink,
                             root_allocator.GetCurrentLocalSurfaceId());
   root_support().SubmitCompositorFrame(
