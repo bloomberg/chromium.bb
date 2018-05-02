@@ -1342,6 +1342,12 @@ interface DOMRect : DOMRectReadOnly
     setter width
     setter x
     setter y
+interface DOMRectList
+    attribute @@toStringTag
+    getter length
+    method @@iterator
+    method constructor
+    method item
 interface DOMRectReadOnly
     static method fromRect
     attribute @@toStringTag

@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 485 tests; 473 PASS, 12 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 485 tests; 482 PASS, 3 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test driver
 PASS DOMPointReadOnly interface: existence and properties of interface object
 PASS DOMPointReadOnly interface object length
@@ -145,17 +145,17 @@ PASS DOMRectReadOnly interface: new DOMRect() must inherit property "bottom" wit
 PASS DOMRectReadOnly interface: new DOMRect() must inherit property "left" with the proper type
 PASS DOMRectReadOnly interface: new DOMRect() must inherit property "toJSON()" with the proper type
 PASS Test default toJSON operation of DOMRect
-FAIL DOMRectList interface: existence and properties of interface object assert_own_property: self does not have own property "DOMRectList" expected property "DOMRectList" missing
-FAIL DOMRectList interface object length assert_own_property: self does not have own property "DOMRectList" expected property "DOMRectList" missing
-FAIL DOMRectList interface object name assert_own_property: self does not have own property "DOMRectList" expected property "DOMRectList" missing
-FAIL DOMRectList interface: existence and properties of interface prototype object assert_own_property: self does not have own property "DOMRectList" expected property "DOMRectList" missing
-FAIL DOMRectList interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "DOMRectList" expected property "DOMRectList" missing
-FAIL DOMRectList interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "DOMRectList" expected property "DOMRectList" missing
-FAIL DOMRectList interface: attribute length assert_own_property: self does not have own property "DOMRectList" expected property "DOMRectList" missing
+PASS DOMRectList interface: existence and properties of interface object
+PASS DOMRectList interface object length
+PASS DOMRectList interface object name
+PASS DOMRectList interface: existence and properties of interface prototype object
+PASS DOMRectList interface: existence and properties of interface prototype object's "constructor" property
+PASS DOMRectList interface: existence and properties of interface prototype object's @@unscopables property
+PASS DOMRectList interface: attribute length
 PASS Unscopable handled correctly for length property on DOMRectList
-FAIL DOMRectList interface: operation item(unsigned long) assert_own_property: self does not have own property "DOMRectList" expected property "DOMRectList" missing
+PASS DOMRectList interface: operation item(unsigned long)
 PASS Unscopable handled correctly for item(unsigned long) on DOMRectList
-FAIL DOMRectList must be primary interface of [object DOMRectList] assert_own_property: self does not have own property "DOMRectList" expected property "DOMRectList" missing
+PASS DOMRectList must be primary interface of [object DOMRectList]
 PASS Stringification of [object DOMRectList]
 PASS DOMRectList interface: [object DOMRectList] must inherit property "length" with the proper type
 PASS DOMRectList interface: [object DOMRectList] must inherit property "item(unsigned long)" with the proper type
