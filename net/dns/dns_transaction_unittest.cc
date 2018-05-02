@@ -352,19 +352,6 @@ class TransactionHelper {
     return has_completed();
   }
 
-  bool FastForwardByTimeout(DnsSession* session,
-                            unsigned server_index,
-                            int attempt) {
-    NetTestSuite::GetScopedTaskEnvironment()->FastForwardBy(
-        session->NextTimeout(server_index, attempt));
-    return has_completed();
-  }
-
-  bool FastForwardAll() {
-    NetTestSuite::GetScopedTaskEnvironment()->FastForwardUntilNoTasksRemain();
-    return has_completed();
-  }
-
   TestURLRequestContext* request_context() { return &request_context_; }
 
   NetLog* net_log() { return &net_log_; }
@@ -556,9 +543,10 @@ class URLRequestMockDohJob : public URLRequestJob, public AsyncSocket {
   base::WeakPtrFactory<URLRequestMockDohJob> weak_factory_;
 };
 
-class DnsTransactionTest : public testing::Test {
+class DnsTransactionTestBase : public testing::Test {
  public:
-  DnsTransactionTest() = default;
+  DnsTransactionTestBase() = default;
+  ~DnsTransactionTestBase() override = default;
 
   // Generates |nameservers| for DnsConfig.
   void ConfigureNumServers(unsigned num_servers) {
@@ -570,103 +558,14 @@ class DnsTransactionTest : public testing::Test {
     }
   }
 
-  // Generates |nameservers| for DnsConfig.
-  void ConfigureDohServers(unsigned num_servers, bool use_post) {
-    CHECK_LE(num_servers, 255u);
-    for (unsigned i = 0; i < num_servers; ++i) {
-      GURL url(URLRequestMockDohJob::GetMockHttpsUrl(
-          base::StringPrintf("doh_test_%d", i)));
-      config_.dns_over_https_servers.push_back(
-          DnsConfig::DnsOverHttpsServerConfig(url, use_post));
-    }
-  }
-
-  // Configures the DnsConfig with one dns over https server, which either
-  // accepts GET or POST requests based on use_post. If |clear_udp| is true,
-  // existing IP name servers are removed from the DnsConfig. If a
-  // ResponseModifierCallback is provided it will be called to contruct the
-  // HTTPResponse.
-  void ConfigDohServers(bool clear_udp,
-                        bool use_post,
-                        int num_doh_servers = 1) {
-    if (clear_udp)
-      ConfigureNumServers(0);
-    NetTestSuite::SetScopedTaskEnvironment(
-        base::test::ScopedTaskEnvironment::MainThreadType::IO);
-    GURL url(URLRequestMockDohJob::GetMockHttpsUrl("doh_test"));
-    URLRequestFilter* filter = URLRequestFilter::GetInstance();
-    filter->AddHostnameInterceptor(url.scheme(), url.host(),
-                                   std::make_unique<DohJobInterceptor>(this));
-    ConfigureDohServers(num_doh_servers, use_post);
-    ConfigureFactory();
-  }
-
-  URLRequestJob* MaybeInterceptRequest(URLRequest* request,
-                                       NetworkDelegate* network_delegate) {
-    // If the path indicates a redirct, skip checking the list of
-    // configured servers, because it won't be there and we still want
-    // to handle it.
-    bool server_found = request->url().path() == "/redirect-destination";
-    for (auto server : config_.dns_over_https_servers) {
-      if (server_found)
-        break;
-      GURL url(request->url());
-      GURL server_url = server.server;
-      if (url.has_query()) {
-        server_url = GURL(server_url.spec() + "?" + url.query());
-      }
-      if (server_url == url) {
-        EXPECT_TRUE((server.use_post ? "POST" : "GET") == request->method());
-        server_found = true;
-      }
-    }
-    EXPECT_TRUE(server_found);
-
-    HttpRequestHeaders* headers = nullptr;
-    if (request->GetFullRequestHeaders(headers)) {
-      EXPECT_FALSE(headers->HasHeader(HttpRequestHeaders::kCookie));
-    }
-    EXPECT_FALSE(request->extra_request_headers().HasHeader(
-        HttpRequestHeaders::kCookie));
-
-    std::string accept;
-    EXPECT_TRUE(request->extra_request_headers().GetHeader("Accept", &accept));
-    EXPECT_EQ(accept, "application/dns-udpwireformat");
-
-    SocketDataProvider* provider = socket_factory_->mock_data().GetNext();
-
-    if (doh_job_maker_)
-      return doh_job_maker_.Run(request, network_delegate, provider);
-
-    return new URLRequestMockDohJob(request, network_delegate, provider,
-                                    response_modifier_);
-  }
-
-  class DohJobInterceptor : public URLRequestInterceptor {
-   public:
-    explicit DohJobInterceptor(DnsTransactionTest* test) : test_(test) {}
-    ~DohJobInterceptor() override {}
-
-    // URLRequestInterceptor implementation:
-    URLRequestJob* MaybeInterceptRequest(
-        URLRequest* request,
-        NetworkDelegate* network_delegate) const override {
-      return test_->MaybeInterceptRequest(request, network_delegate);
-    }
-
-   private:
-    DnsTransactionTest* test_;
-
-    DISALLOW_COPY_AND_ASSIGN(DohJobInterceptor);
-  };
-
   // Called after fully configuring |config|.
   void ConfigureFactory() {
     socket_factory_.reset(new TestSocketFactory());
     session_ = new DnsSession(
-        config_, DnsSocketPool::CreateNull(socket_factory_.get(),
-                                           base::Bind(base::RandInt)),
-        base::Bind(&DnsTransactionTest::GetNextId, base::Unretained(this)),
+        config_,
+        DnsSocketPool::CreateNull(socket_factory_.get(),
+                                  base::Bind(base::RandInt)),
+        base::Bind(&DnsTransactionTestBase::GetNextId, base::Unretained(this)),
         NULL /* NetLog */);
     transaction_factory_ = DnsTransactionFactory::CreateFactory(session_.get());
   }
@@ -775,9 +674,6 @@ class DnsTransactionTest : public testing::Test {
   }
 
   void SetUp() override {
-    NetTestSuite::SetScopedTaskEnvironment(
-        base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
-
     // By default set one server,
     ConfigureNumServers(1);
     // and no retransmissions,
@@ -789,22 +685,9 @@ class DnsTransactionTest : public testing::Test {
 
   void TearDown() override {
     // Check that all socket data was at least written to.
-    if (base::MessageLoopForIO::IsCurrent()) {
-      URLRequestFilter* filter = URLRequestFilter::GetInstance();
-      filter->ClearHandlers();
-    }
     for (size_t i = 0; i < socket_data_.size(); ++i) {
       EXPECT_TRUE(socket_data_[i]->GetProvider()->AllWriteDataConsumed()) << i;
     }
-    NetTestSuite::ResetScopedTaskEnvironment();
-  }
-
-  void SetResponseModifierCallback(ResponseModifierCallback response_modifier) {
-    response_modifier_ = response_modifier;
-  }
-
-  void SetDohJobMakerCallback(DohJobMakerCallback doh_job_maker) {
-    doh_job_maker_ = doh_job_maker;
   }
 
  protected:
@@ -825,9 +708,134 @@ class DnsTransactionTest : public testing::Test {
   std::unique_ptr<TestSocketFactory> socket_factory_;
   scoped_refptr<DnsSession> session_;
   std::unique_ptr<DnsTransactionFactory> transaction_factory_;
+};
 
+class DnsTransactionTest : public DnsTransactionTestBase {
+ public:
+  DnsTransactionTest() = default;
+  ~DnsTransactionTest() override = default;
+
+  // Generates |nameservers| for DnsConfig.
+  void ConfigureDohServers(unsigned num_servers, bool use_post) {
+    CHECK_LE(num_servers, 255u);
+    for (unsigned i = 0; i < num_servers; ++i) {
+      GURL url(URLRequestMockDohJob::GetMockHttpsUrl(
+          base::StringPrintf("doh_test_%d", i)));
+      config_.dns_over_https_servers.push_back(
+          DnsConfig::DnsOverHttpsServerConfig(url, use_post));
+    }
+  }
+
+  // Configures the DnsConfig with one dns over https server, which either
+  // accepts GET or POST requests based on use_post. If |clear_udp| is true,
+  // existing IP name servers are removed from the DnsConfig. If a
+  // ResponseModifierCallback is provided it will be called to contruct the
+  // HTTPResponse.
+  void ConfigDohServers(bool clear_udp,
+                        bool use_post,
+                        int num_doh_servers = 1) {
+    if (clear_udp)
+      ConfigureNumServers(0);
+    GURL url(URLRequestMockDohJob::GetMockHttpsUrl("doh_test"));
+    URLRequestFilter* filter = URLRequestFilter::GetInstance();
+    filter->AddHostnameInterceptor(url.scheme(), url.host(),
+                                   std::make_unique<DohJobInterceptor>(this));
+    ConfigureDohServers(num_doh_servers, use_post);
+    ConfigureFactory();
+  }
+
+  URLRequestJob* MaybeInterceptRequest(URLRequest* request,
+                                       NetworkDelegate* network_delegate) {
+    // If the path indicates a redirct, skip checking the list of
+    // configured servers, because it won't be there and we still want
+    // to handle it.
+    bool server_found = request->url().path() == "/redirect-destination";
+    for (auto server : config_.dns_over_https_servers) {
+      if (server_found)
+        break;
+      GURL url(request->url());
+      GURL server_url = server.server;
+      if (url.has_query()) {
+        server_url = GURL(server_url.spec() + "?" + url.query());
+      }
+      if (server_url == url) {
+        EXPECT_TRUE((server.use_post ? "POST" : "GET") == request->method());
+        server_found = true;
+      }
+    }
+    EXPECT_TRUE(server_found);
+
+    HttpRequestHeaders* headers = nullptr;
+    if (request->GetFullRequestHeaders(headers)) {
+      EXPECT_FALSE(headers->HasHeader(HttpRequestHeaders::kCookie));
+    }
+    EXPECT_FALSE(request->extra_request_headers().HasHeader(
+        HttpRequestHeaders::kCookie));
+
+    std::string accept;
+    EXPECT_TRUE(request->extra_request_headers().GetHeader("Accept", &accept));
+    EXPECT_EQ(accept, "application/dns-udpwireformat");
+
+    SocketDataProvider* provider = socket_factory_->mock_data().GetNext();
+
+    if (doh_job_maker_)
+      return doh_job_maker_.Run(request, network_delegate, provider);
+
+    return new URLRequestMockDohJob(request, network_delegate, provider,
+                                    response_modifier_);
+  }
+
+  class DohJobInterceptor : public URLRequestInterceptor {
+   public:
+    explicit DohJobInterceptor(DnsTransactionTest* test) : test_(test) {}
+    ~DohJobInterceptor() override {}
+
+    // URLRequestInterceptor implementation:
+    URLRequestJob* MaybeInterceptRequest(
+        URLRequest* request,
+        NetworkDelegate* network_delegate) const override {
+      return test_->MaybeInterceptRequest(request, network_delegate);
+    }
+
+   private:
+    DnsTransactionTest* test_;
+
+    DISALLOW_COPY_AND_ASSIGN(DohJobInterceptor);
+  };
+
+  void TearDown() override {
+    URLRequestFilter* filter = URLRequestFilter::GetInstance();
+    filter->ClearHandlers();
+  }
+
+  void SetResponseModifierCallback(ResponseModifierCallback response_modifier) {
+    response_modifier_ = response_modifier;
+  }
+
+  void SetDohJobMakerCallback(DohJobMakerCallback doh_job_maker) {
+    doh_job_maker_ = doh_job_maker;
+  }
+
+ private:
   ResponseModifierCallback response_modifier_;
   DohJobMakerCallback doh_job_maker_;
+};
+
+class DnsTransactionTestWithMockTime : public DnsTransactionTestBase {
+ protected:
+  DnsTransactionTestWithMockTime() = default;
+  ~DnsTransactionTestWithMockTime() override = default;
+
+  void SetUp() override {
+    DnsTransactionTestBase::SetUp();
+    NetTestSuite::SetScopedTaskEnvironment(
+        base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
+  }
+
+  void TearDown() override {
+    NetTestSuite::ResetScopedTaskEnvironment();
+    DnsTransactionTestBase::TearDown();
+  }
 };
 
 TEST_F(DnsTransactionTest, Lookup) {
@@ -973,7 +981,7 @@ TEST_F(DnsTransactionTest, MismatchedResponseAsync) {
   EXPECT_TRUE(helper0.Run(transaction_factory_.get()));
 }
 
-TEST_F(DnsTransactionTest, MismatchedResponseFail) {
+TEST_F(DnsTransactionTestWithMockTime, MismatchedResponseFail) {
   ConfigureFactory();
 
   // Attempt receives mismatched response but times out because only one attempt
@@ -983,7 +991,9 @@ TEST_F(DnsTransactionTest, MismatchedResponseFail) {
 
   TransactionHelper helper0(kT0HostName, kT0Qtype, ERR_DNS_TIMED_OUT);
   EXPECT_FALSE(helper0.Run(transaction_factory_.get()));
-  EXPECT_TRUE(helper0.FastForwardByTimeout(session_.get(), 0, 0));
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardBy(
+      session_->NextTimeout(0, 0));
+  EXPECT_TRUE(helper0.has_completed());
 }
 
 TEST_F(DnsTransactionTest, MismatchedResponseNxdomain) {
@@ -1019,7 +1029,7 @@ TEST_F(DnsTransactionTest, NoDomain) {
   EXPECT_TRUE(helper0.Run(transaction_factory_.get()));
 }
 
-TEST_F(DnsTransactionTest, Timeout) {
+TEST_F(DnsTransactionTestWithMockTime, Timeout) {
   config_.attempts = 3;
   ConfigureFactory();
 
@@ -1031,12 +1041,18 @@ TEST_F(DnsTransactionTest, Timeout) {
 
   // Finish when the third attempt times out.
   EXPECT_FALSE(helper0.Run(transaction_factory_.get()));
-  EXPECT_FALSE(helper0.FastForwardByTimeout(session_.get(), 0, 0));
-  EXPECT_FALSE(helper0.FastForwardByTimeout(session_.get(), 0, 1));
-  EXPECT_TRUE(helper0.FastForwardByTimeout(session_.get(), 0, 2));
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardBy(
+      session_->NextTimeout(0, 0));
+  EXPECT_FALSE(helper0.has_completed());
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardBy(
+      session_->NextTimeout(0, 1));
+  EXPECT_FALSE(helper0.has_completed());
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardBy(
+      session_->NextTimeout(0, 2));
+  EXPECT_TRUE(helper0.has_completed());
 }
 
-TEST_F(DnsTransactionTest, ServerFallbackAndRotate) {
+TEST_F(DnsTransactionTestWithMockTime, ServerFallbackAndRotate) {
   // Test that we fallback on both server failure and timeout.
   config_.attempts = 2;
   // The next request should start from the next server.
@@ -1059,7 +1075,8 @@ TEST_F(DnsTransactionTest, ServerFallbackAndRotate) {
   TransactionHelper helper1(kT1HostName, kT1Qtype, ERR_NAME_NOT_RESOLVED);
 
   EXPECT_FALSE(helper0.Run(transaction_factory_.get()));
-  EXPECT_TRUE(helper0.FastForwardAll());
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardUntilNoTasksRemain();
+  EXPECT_TRUE(helper0.has_completed());
   EXPECT_TRUE(helper1.Run(transaction_factory_.get()));
 
   unsigned kOrder[] = {
@@ -1901,7 +1918,7 @@ TEST_F(DnsTransactionTest, TCPMalformed) {
   EXPECT_TRUE(helper0.Run(transaction_factory_.get()));
 }
 
-TEST_F(DnsTransactionTest, TCPTimeout) {
+TEST_F(DnsTransactionTestWithMockTime, TCPTimeout) {
   ConfigureFactory();
   AddAsyncQueryAndRcode(kT0HostName, kT0Qtype,
                         dns_protocol::kRcodeNOERROR | dns_protocol::kFlagTC);
@@ -1910,7 +1927,8 @@ TEST_F(DnsTransactionTest, TCPTimeout) {
 
   TransactionHelper helper0(kT0HostName, kT0Qtype, ERR_DNS_TIMED_OUT);
   EXPECT_FALSE(helper0.Run(transaction_factory_.get()));
-  EXPECT_TRUE(helper0.FastForwardAll());
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardUntilNoTasksRemain();
+  EXPECT_TRUE(helper0.has_completed());
 }
 
 TEST_F(DnsTransactionTest, TCPReadReturnsZeroAsync) {
