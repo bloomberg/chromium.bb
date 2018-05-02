@@ -184,11 +184,16 @@ int main(int argc, char **argv) {
   aom_codec_enc_cfg_t cfg;
   unsigned int frame_in = 0;
   aom_image_t raw;
+  aom_image_t raw_shift;
   aom_image_t ext_ref;
   aom_codec_err_t res;
   AvxVideoInfo info;
   AvxVideoWriter *writer = NULL;
   const AvxInterface *encoder = NULL;
+  int flags = 0;
+  int allocated_raw_shift = 0;
+  aom_img_fmt_t raw_fmt = AOM_IMG_FMT_I420;
+  aom_img_fmt_t ref_fmt = AOM_IMG_FMT_I420;
 
   // Test encoder/decoder mismatch.
   int test_decode = 1;
@@ -254,12 +259,15 @@ int main(int argc, char **argv) {
     die("Invalid frame size: %dx%d", info.frame_width, info.frame_height);
   }
 
-  if (!aom_img_alloc_with_border(&raw, AOM_IMG_FMT_I420, info.frame_width,
-                                 info.frame_height, 1, 8, 0)) {
+  // In this test, the bit depth of input video is 8-bit, and the input format
+  // is AOM_IMG_FMT_I420.
+  if (!aom_img_alloc(&raw, raw_fmt, info.frame_width, info.frame_height, 32)) {
     die("Failed to allocate image.");
   }
+
+  if (!CONFIG_LOWBITDEPTH) ref_fmt |= AOM_IMG_FMT_HIGHBITDEPTH;
   // Allocate memory with the border so that it can be used as a reference.
-  if (!aom_img_alloc_with_border(&ext_ref, AOM_IMG_FMT_I420, info.frame_width,
+  if (!aom_img_alloc_with_border(&ext_ref, ref_fmt, info.frame_width,
                                  info.frame_height, 32, 8,
                                  AOM_BORDER_IN_PIXELS)) {
     die("Failed to allocate image.");
@@ -276,6 +284,11 @@ int main(int argc, char **argv) {
   cfg.g_timebase.den = info.time_base.denominator;
   cfg.rc_target_bitrate = bitrate;
   cfg.g_lag_in_frames = 3;
+  cfg.g_bit_depth = AOM_BITS_8;
+
+  flags |= (cfg.g_bit_depth > AOM_BITS_8 || !CONFIG_LOWBITDEPTH)
+               ? AOM_CODEC_USE_HIGHBITDEPTH
+               : 0;
 
   writer = aom_video_writer_open(outfile_arg, kContainerIVF, &info);
   if (!writer) die("Failed to open %s for writing.", outfile_arg);
@@ -283,7 +296,7 @@ int main(int argc, char **argv) {
   if (!(infile = fopen(infile_arg, "rb")))
     die("Failed to open %s for reading.", infile_arg);
 
-  if (aom_codec_enc_init(&ecodec, encoder->codec_interface(), &cfg, 0))
+  if (aom_codec_enc_init(&ecodec, encoder->codec_interface(), &cfg, flags))
     die_codec(&ecodec, "Failed to initialize encoder");
 
   // Disable alt_ref.
@@ -299,6 +312,22 @@ int main(int argc, char **argv) {
   // Encode frames.
   while (aom_img_read(&raw, infile)) {
     if (limit && frame_in >= limit) break;
+    aom_image_t *frame_to_encode;
+
+    if (!CONFIG_LOWBITDEPTH) {
+      // Need to allocate larger buffer to use hbd internal.
+      int input_shift = 0;
+      if (!allocated_raw_shift) {
+        aom_img_alloc(&raw_shift, raw_fmt | AOM_IMG_FMT_HIGHBITDEPTH,
+                      info.frame_width, info.frame_height, 32);
+        allocated_raw_shift = 1;
+      }
+      aom_img_upshift(&raw_shift, &raw, input_shift);
+      frame_to_encode = &raw_shift;
+    } else {
+      frame_to_encode = &raw;
+    }
+
     if (update_frame_num > 1 && frame_out + 1 == update_frame_num) {
       av1_ref_frame_t ref;
       ref.idx = 0;
@@ -318,8 +347,8 @@ int main(int argc, char **argv) {
       }
     }
 
-    encode_frame(&ecodec, &raw, frame_in, writer, test_decode, &dcodec,
-                 &frame_out, &mismatch_seen, &ext_ref);
+    encode_frame(&ecodec, frame_to_encode, frame_in, writer, test_decode,
+                 &dcodec, &frame_out, &mismatch_seen, &ext_ref);
     frame_in++;
     if (mismatch_seen) break;
   }
@@ -345,6 +374,8 @@ int main(int argc, char **argv) {
     if (aom_codec_destroy(&dcodec))
       die_codec(&dcodec, "Failed to destroy decoder");
 
+  if (allocated_raw_shift) aom_img_free(&raw_shift);
+  aom_img_free(&ext_ref);
   aom_img_free(&raw);
   if (aom_codec_destroy(&ecodec))
     die_codec(&ecodec, "Failed to destroy encoder.");
