@@ -441,12 +441,31 @@ Profile* CreatePrimaryProfile(const content::MainFunctionParams& parameters,
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::CreateProfile")
 
   base::Time start = base::Time::Now();
+
+  bool set_last_used_profile = false;
+
+// If the browser is launched due to activation on Windows native
+// notification, the profile id encoded in the notification launch id should
+// be chosen over all others.
+#if defined(OS_WIN)
+  if (parsed_command_line.HasSwitch(switches::kNotificationLaunchId)) {
+    profiles::SetLastUsedProfile(
+        base::UTF16ToUTF8(parsed_command_line.GetSwitchValueNative(
+            switches::kNotificationLaunchId)));
+    set_last_used_profile = true;
+  }
+#endif  // defined(OS_WIN)
+
   bool profile_dir_specified =
       profiles::IsMultipleProfilesEnabled() &&
       parsed_command_line.HasSwitch(switches::kProfileDirectory);
-  if (profile_dir_specified) {
+  if (!set_last_used_profile && profile_dir_specified) {
     profiles::SetLastUsedProfile(
         parsed_command_line.GetSwitchValueASCII(switches::kProfileDirectory));
+    set_last_used_profile = true;
+  }
+
+  if (set_last_used_profile) {
     // Clear kProfilesLastActive since the user only wants to launch a specific
     // profile.
     ListPrefUpdate update(g_browser_process->local_state(),
@@ -472,7 +491,7 @@ Profile* CreatePrimaryProfile(const content::MainFunctionParams& parameters,
 #else
   profile = GetStartupProfile(user_data_dir, parsed_command_line);
 
-  if (!profile && !profile_dir_specified)
+  if (!profile && !set_last_used_profile)
     profile = GetFallbackStartupProfile();
 
   if (!profile) {

@@ -786,7 +786,7 @@ bool StartupBrowserCreator::LaunchBrowserForLastProfiles(
     }
 
 #if defined(OS_WIN)
-    if (command_line.HasSwitch(switches::kNotificationLaunchId)) {
+    if (was_windows_notification_launch) {
       LogUserManagerShowupStatus(
           UserManagerShowupStatus::kLastUsedProfileCannotOpen);
     }
