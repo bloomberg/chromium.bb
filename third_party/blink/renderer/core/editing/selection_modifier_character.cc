@@ -245,19 +245,24 @@ bool IsAfterAtomicInlineOrLineBreak(const InlineBox& box, int offset) {
 
 template <typename Traversal>
 const InlineBox* LeadingBoxOfEntireSecondaryRun(const InlineBox* box) {
-  unsigned char level = box->BidiLevel();
-  // TODO(xiaochengh): Use another runner variable instead of |box|.
+  const InlineBox* runner = box;
   while (true) {
-    box = Traversal::FindBackwardBoundaryOfEntireBidiRun(*box, level);
-    if (box->BidiLevel() == level)
-      break;
-    level = box->BidiLevel();
-    box = Traversal::FindForwardBoundaryOfEntireBidiRun(*box, level);
-    if (box->BidiLevel() == level)
-      break;
-    level = box->BidiLevel();
+    const InlineBox* const backward_box =
+        Traversal::FindBackwardBoundaryOfEntireBidiRun(*runner,
+                                                       runner->BidiLevel());
+    if (backward_box->BidiLevel() == runner->BidiLevel())
+      return backward_box;
+    DCHECK_GT(backward_box->BidiLevel(), runner->BidiLevel());
+    runner = backward_box;
+
+    const InlineBox* const forward_box =
+        Traversal::FindForwardBoundaryOfEntireBidiRun(*runner,
+                                                      runner->BidiLevel());
+    if (forward_box->BidiLevel() == runner->BidiLevel())
+      return forward_box;
+    DCHECK_GT(forward_box->BidiLevel(), runner->BidiLevel());
+    runner = forward_box;
   }
-  return box;
 }
 
 template <typename Strategy, typename Traversal>
