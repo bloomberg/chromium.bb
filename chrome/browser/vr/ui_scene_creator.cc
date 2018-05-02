@@ -2570,6 +2570,13 @@ void UiSceneCreator::CreateOmnibox() {
   VR_BIND_BUTTON_COLORS(model_, mic_button.get(), &ColorScheme::url_bar_button,
                         &Button::SetButtonColors);
 
+  auto mic_button_spacer =
+      CreateSpacer(kOmniboxMicIconRightMarginDMM, kOmniboxHeightDMM);
+  VR_BIND_VISIBILITY(mic_button_spacer,
+                     model->speech.has_or_can_request_audio_permission &&
+                         !model->incognito &&
+                         !model->capturing_state.audio_capture_enabled);
+
   auto text_field_layout = Create<LinearLayout>(
       kOmniboxTextFieldLayout, kPhaseNone, LinearLayout::kRight);
   text_field_layout->AddChild(
@@ -2578,8 +2585,7 @@ void UiSceneCreator::CreateOmnibox() {
   text_field_layout->AddChild(
       CreateSpacer(kOmniboxTextMarginDMM, kOmniboxHeightDMM));
   text_field_layout->AddChild(std::move(mic_button));
-  text_field_layout->AddChild(
-      CreateSpacer(kOmniboxTextFieldRightMargin, kOmniboxHeightDMM));
+  text_field_layout->AddChild(std::move(mic_button_spacer));
 
   // Set up the vector binding to manage suggestions dynamically.
   SuggestionSetBinding::ModelAddedCallback added_callback = base::BindRepeating(
