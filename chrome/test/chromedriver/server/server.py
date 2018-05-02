@@ -30,8 +30,7 @@ class Server(object):
     if log_path:
       chromedriver_args.extend(['--log-path=%s' %log_path])
       if verbose:
-        chromedriver_args.extend(['--verbose',
-                                  '--vmodule=*/chrome/test/chromedriver/*=4'])
+        chromedriver_args.extend(['--verbose'])
     self._process = subprocess.Popen(chromedriver_args)
     self._url = 'http://127.0.0.1:%d' % port
     if self._process is None:
