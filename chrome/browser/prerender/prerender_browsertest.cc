@@ -530,17 +530,6 @@ page_load_metrics::PageLoadExtraInfo GenericPageLoadExtraInfo(
       dest_url, false /* started_in_foreground */);
 }
 
-// Helper function, to allow passing a UI closure to
-// CreateHangingFirstRequestInterceptor() instead of a IO callback.
-base::Callback<void(net::URLRequest*)> GetIOCallbackFromUIClosure(
-    base::Closure ui_closure) {
-  auto lambda = [](base::Closure closure, net::URLRequest*) {
-    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                     closure);
-  };
-  return base::Bind(lambda, ui_closure);
-}
-
 }  // namespace
 
 class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
@@ -916,31 +905,23 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
   void CreateHangingFirstRequestInterceptor(const GURL& url,
                                             const base::FilePath& file,
                                             base::Closure closure) {
-    // TODO(jam): use the URLLoaderInterceptor for the non-network service path
-    // once http://crbug.com/740130 is fixed.
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      DCHECK(!interceptor_);
-      interceptor_ = std::make_unique<content::URLLoaderInterceptor>(
-          base::BindLambdaForTesting(
-              [=](content::URLLoaderInterceptor::RequestParams* params) {
-                if (params->url_request.url == url) {
-                  static bool first = true;
-                  if (first) {
-                    first = false;
-                    // Need to leak the client pipe, or else the renderer will
-                    // get a disconnect error and load the error page.
-                    auto* leak_client = new network::mojom::URLLoaderClientPtr;
-                    *leak_client = std::move(params->client);
-                    closure.Run();
-                    return true;
-                  }
+    DCHECK(!interceptor_);
+    interceptor_ = std::make_unique<content::URLLoaderInterceptor>(
+        base::BindLambdaForTesting(
+            [=](content::URLLoaderInterceptor::RequestParams* params) {
+              if (params->url_request.url == url) {
+                static bool first = true;
+                if (first) {
+                  first = false;
+                  // Need to leak the client pipe, or else the renderer will
+                  // get a disconnect error and load the error page.
+                  (void)params->client.PassInterface().PassHandle().release();
+                  closure.Run();
+                  return true;
                 }
-                return false;
-              }));
-    } else {
-      test_utils::CreateHangingFirstRequestInterceptor(
-          url, file, GetIOCallbackFromUIClosure(closure));
-    }
+              }
+              return false;
+            }));
   }
 
  private:

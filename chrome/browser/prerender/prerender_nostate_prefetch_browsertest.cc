@@ -88,28 +88,6 @@ class NoStatePrefetchBrowserTest
     host_resolver()->AddRule("*", "127.0.0.1");
   }
 
-  // Set up a request counter for |path|, which is also the location of the data
-  // served by the request.
-  void CountRequestFor(const std::string& path_str, RequestCounter* counter) {
-    url::StringPieceReplacements<base::FilePath::StringType> replacement;
-    base::FilePath file_path = base::FilePath::FromUTF8Unsafe(path_str);
-    replacement.SetPathStr(file_path.value());
-    const GURL url = src_server()->base_url().ReplaceComponents(replacement);
-    CountRequestForUrl(url, path_str, counter);
-  }
-
-  // As above, but specify the data path and URL separately.
-  void CountRequestForUrl(const GURL& url,
-                          const std::string& path_str,
-                          RequestCounter* counter) {
-    base::FilePath url_file = ui_test_utils::GetTestFilePath(
-        base::FilePath(), base::FilePath::FromUTF8Unsafe(path_str));
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&prerender::test_utils::CreateCountingInterceptorOnIO,
-                       url, url_file, counter->AsWeakPtr()));
-  }
-
   void OverridePrerenderManagerTimeTicks() {
     // The default zero time causes the prerender manager to do strange things.
     clock_.Advance(base::TimeDelta::FromSeconds(1));
@@ -279,16 +257,6 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchLoadFlag) {
   GURL prefetch_page = src_server()->GetURL(kPrefetchPage);
   GURL prefetch_script = src_server()->GetURL(kPrefetchScript);
 
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    // Until http://crbug.com/747130 is fixed, navigation requests won't go
-    // through URLLoader.
-    prerender::test_utils::InterceptRequest(
-        prefetch_page,
-        base::Bind([](net::URLRequest* request) {
-          EXPECT_TRUE(request->load_flags() & net::LOAD_PREFETCH);
-        }));
-  }
-
   content::URLLoaderInterceptor interceptor(base::Bind(
       [](const GURL& prefetch_page, const GURL& prefetch_script,
          content::URLLoaderInterceptor::RequestParams* params) {
@@ -446,12 +414,6 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, Prefetch301LoadFlags) {
   auto verify_prefetch_only = base::Bind([](net::URLRequest* request) {
     EXPECT_TRUE(request->load_flags() & net::LOAD_PREFETCH);
   });
-
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    // Until http://crbug.com/747130 is fixed, navigation requests won't go
-    // through URLLoader.
-    prerender::test_utils::InterceptRequest(page_url, verify_prefetch_only);
-  }
 
   content::URLLoaderInterceptor interceptor(base::Bind(
       [](const GURL& page_url,
