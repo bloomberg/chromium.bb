@@ -26,6 +26,7 @@
 
 #if BUILDFLAG(USE_EGL_ON_MAC)
 #include "ui/gl/gl_image_io_surface_egl.h"
+#include "ui/gl/gl_implementation.h"
 #endif  // BUILDFLAG(USE_EGL_ON_MAC)
 
 // Note that this must be included after gl_bindings.h to avoid conflicts.
@@ -182,9 +183,12 @@ GLenum ConvertRequestedInternalFormat(GLenum internalformat) {
 GLImageIOSurface* GLImageIOSurface::Create(const gfx::Size& size,
                                            unsigned internalformat) {
 #if BUILDFLAG(USE_EGL_ON_MAC)
-  if (GLContext::GetCurrent()->GetVersionInfo()->is_angle ||
-      GLContext::GetCurrent()->GetVersionInfo()->is_swiftshader) {
-    return new GLImageIOSurfaceEGL(size, internalformat);
+  switch (GetGLImplementation()) {
+    case kGLImplementationEGLGLES2:
+    case kGLImplementationSwiftShaderGL:
+      return new GLImageIOSurfaceEGL(size, internalformat);
+    default:
+      break;
   }
 #endif  // BUILDFLAG(USE_EGL_ON_MAC)
 
