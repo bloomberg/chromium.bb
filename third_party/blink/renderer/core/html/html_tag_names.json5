@@ -39,7 +39,7 @@
     },
     {
       name: "audio",
-      interfaceHeaderDir: "core/html/media",
+      interfaceHeaderDir: "third_party/blink/renderer/core/html/media",
     },
     {
       name: "b",
@@ -78,11 +78,11 @@
     },
     {
       name: "button",
-      interfaceHeaderDir: "core/html/forms",
+      interfaceHeaderDir: "third_party/blink/renderer/core/html/forms",
     },
     {
       name: "canvas",
-      interfaceHeaderDir: "core/html/canvas",
+      interfaceHeaderDir: "third_party/blink/renderer/core/html/canvas",
     },
     {
       name: "caption",
@@ -123,7 +123,7 @@
     {
       name: "datalist",
       interfaceName: "HTMLDataListElement",
-      interfaceHeaderDir: "core/html/forms",
+      interfaceHeaderDir: "third_party/blink/renderer/core/html/forms",
     },
     {
       name: "dd",
@@ -163,7 +163,7 @@
     {
       name: "fieldset",
       interfaceName: "HTMLFieldSetElement",
-      interfaceHeaderDir: "core/html/forms",
+      interfaceHeaderDir: "third_party/blink/renderer/core/html/forms",
     },
     {
       name: "figcaption",
@@ -180,7 +180,7 @@
     },
     {
       name: "form",
-      interfaceHeaderDir: "core/html/forms",
+      interfaceHeaderDir: "third_party/blink/renderer/core/html/forms",
     },
     "frame",
     {
@@ -245,7 +245,7 @@
     {
       name: "input",
       constructorNeedsCreateElementFlags: true,
-      interfaceHeaderDir: "core/html/forms",
+      interfaceHeaderDir: "third_party/blink/renderer/core/html/forms",
     },
     {
       name: "ins",
@@ -261,7 +261,7 @@
     },
     {
       name: "label",
-      interfaceHeaderDir: "core/html/forms",
+      interfaceHeaderDir: "third_party/blink/renderer/core/html/forms",
     },
     {
       name: "layer",
@@ -269,7 +269,7 @@
     },
     {
       name: "legend",
-      interfaceHeaderDir: "core/html/forms",
+      interfaceHeaderDir: "third_party/blink/renderer/core/html/forms",
     },
     {
       name: "li",
@@ -331,15 +331,15 @@
     {
       name: "optgroup",
       interfaceName: "HTMLOptGroupElement",
-      interfaceHeaderDir: "core/html/forms",
+      interfaceHeaderDir: "third_party/blink/renderer/core/html/forms",
     },
     {
       name: "option",
-      interfaceHeaderDir: "core/html/forms",
+      interfaceHeaderDir: "third_party/blink/renderer/core/html/forms",
     },
     {
       name: "output",
-      interfaceHeaderDir: "core/html/forms",
+      interfaceHeaderDir: "third_party/blink/renderer/core/html/forms",
     },
     {
       name: "shadow",
@@ -407,8 +407,8 @@
     },
     {
       name: "select",
-      interfaceHeaderDir: "core/html/forms",
-    },      
+      interfaceHeaderDir: "third_party/blink/renderer/core/html/forms",
+    },
     {
       name: "slot",
       interfaceName: "HTMLSlotElement",
@@ -457,7 +457,7 @@
     {
       name: "textarea",
       interfaceName: "HTMLTextAreaElement",
-      interfaceHeaderDir: "core/html/forms",
+      interfaceHeaderDir: "third_party/blink/renderer/core/html/forms",
     },
     {
       name: "tfoot",
@@ -482,7 +482,7 @@
     },
     {
       name: "track",
-      interfaceHeaderDir: "core/html/track",
+      interfaceHeaderDir: "third_party/blink/renderer/core/html/track",
     },
     {
       name: "tt",
@@ -502,7 +502,7 @@
     },
     {
       name: "video",
-      interfaceHeaderDir: "core/html/media",
+      interfaceHeaderDir: "third_party/blink/renderer/core/html/media",
     },
     {
       name: "wbr",

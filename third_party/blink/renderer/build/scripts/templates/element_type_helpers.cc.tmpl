@@ -3,7 +3,7 @@
 
 {{source_files_for_generated_file(template_file, input_files)}}
 
-#include "core/{{namespace|lower}}_element_type_helpers.h"
+#include "third_party/blink/renderer/core/{{namespace|lower}}_element_type_helpers.h"
 
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -49,4 +49,4 @@ HTMLElementType htmlElementTypeForTag(const AtomicString& tagName) {
   return it->value;
 }
 {% endif %}
-} // namespace blink
+}  // namespace blink

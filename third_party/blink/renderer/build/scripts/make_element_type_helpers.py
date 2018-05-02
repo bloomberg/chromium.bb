@@ -56,7 +56,8 @@ class MakeElementTypeHelpersWriter(json5_generator.Writer):
             (basename + '.cc'): self.generate_helper_implementation,
         }
 
-        base_element_header = 'core/%s/%s_element.h' % (self.namespace.lower(), self.namespace.lower())
+        base_element_header = 'third_party/blink/renderer/core/' \
+                              '{0}/{0}_element.h'.format(self.namespace.lower())
         self._template_context = {
             'base_element_header': base_element_header,
             'input_files': self._input_files,
