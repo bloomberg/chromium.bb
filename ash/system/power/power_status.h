@@ -105,28 +105,12 @@ class ASH_EXPORT PowerStatus : public chromeos::PowerManagerClient::Observer {
   // Gets the global instance. Initialize must be called first.
   static PowerStatus* Get();
 
-  // Returns true if |time|, a time returned by GetBatteryTimeToEmpty() or
-  // GetBatteryTimeToFull(), should be displayed in the UI.
-  // Less-than-a-minute or very large values aren't displayed.
-  static bool ShouldDisplayBatteryTime(const base::TimeDelta& time);
-
-  // Copies the hour and minute components of |time| to |hours| and |minutes|.
-  // The minute component is rounded rather than truncated: a |time| value
-  // corresponding to 92 seconds will produce a |minutes| value of 2, for
-  // example.
-  static void SplitTimeIntoHoursAndMinutes(const base::TimeDelta& time,
-                                           int* hours,
-                                           int* minutes);
-
   // Adds or removes an observer.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
   // Requests updated status from the power manager.
   void RequestStatusUpdate();
-
-  // Changes the power source to the source with the given ID.
-  void SetPowerSource(const std::string& id);
 
   // Returns true if a battery is present.
   bool IsBatteryPresent() const;

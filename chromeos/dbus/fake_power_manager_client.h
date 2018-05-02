@@ -33,7 +33,6 @@ class CHROMEOS_EXPORT FakePowerManagerClient : public PowerManagerClient {
   ~FakePowerManagerClient() override;
 
   const power_manager::PowerManagementPolicy& policy() { return policy_; }
-  const power_manager::PowerSupplyProperties& props() const { return props_; }
   int num_request_restart_calls() const { return num_request_restart_calls_; }
   int num_request_shutdown_calls() const { return num_request_shutdown_calls_; }
   int num_set_policy_calls() const { return num_set_policy_calls_; }
@@ -75,7 +74,8 @@ class CHROMEOS_EXPORT FakePowerManagerClient : public PowerManagerClient {
   void GetScreenBrightnessPercent(DBusMethodCallback<double> callback) override;
   void DecreaseKeyboardBrightness() override;
   void IncreaseKeyboardBrightness() override;
-  base::Optional<power_manager::PowerSupplyProperties> GetLastStatus() override;
+  const base::Optional<power_manager::PowerSupplyProperties>& GetLastStatus()
+      override;
   void RequestStatusUpdate() override;
   void RequestSuspend() override;
   void RequestRestart(power_manager::RequestRestartReason reason,
@@ -165,7 +165,7 @@ class CHROMEOS_EXPORT FakePowerManagerClient : public PowerManagerClient {
   power_manager::PowerManagementPolicy policy_;
 
   // Power status received from the power manager.
-  power_manager::PowerSupplyProperties props_;
+  base::Optional<power_manager::PowerSupplyProperties> props_;
 
   // Number of times that various methods have been called.
   int num_request_restart_calls_ = 0;

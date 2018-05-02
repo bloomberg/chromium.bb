@@ -56,6 +56,8 @@ component("cpp") {
     "menu_utils.h",
     "mus_property_mirror_ash.cc",
     "mus_property_mirror_ash.h",
+    "power_utils.cc",
+    "power_utils.h",
     "remote_shelf_item_delegate.cc",
     "remote_shelf_item_delegate.h",
     "scale_utility.cc",
@@ -90,9 +92,11 @@ component("cpp") {
   defines = [ "ASH_PUBLIC_IMPLEMENTATION" ]
 
   deps = [
+    "//chromeos:power_manager_proto",
     "//components/prefs",
     "//skia/public/interfaces",
     "//ui/aura",
+    "//ui/chromeos/strings",
     "//ui/display",
     "//ui/events/devices",
     "//ui/views",
@@ -129,6 +133,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "menu_utils_unittest.cc",
+    "power_utils_unittest.cc",
     "shelf_model_unittest.cc",
     "shelf_struct_mojom_traits_unittest.cc",
   ]

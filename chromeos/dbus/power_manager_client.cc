@@ -167,7 +167,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
         power_manager::kIncreaseKeyboardBrightnessMethod);
   }
 
-  base::Optional<power_manager::PowerSupplyProperties> GetLastStatus()
+  const base::Optional<power_manager::PowerSupplyProperties>& GetLastStatus()
       override {
     return proto_;
   }

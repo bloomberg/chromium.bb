@@ -6,18 +6,9 @@
 cr.exportPath('settings');
 
 /**
- * Mirrors DeviceType from ash/system/power/power_status.h.
- * @enum {number}
- */
-settings.PowerDeviceType = {
-  DEDICATED_CHARGER: 0,
-  DUAL_ROLE_USB: 1,
-};
-
-/**
  * @typedef {{
  *   id: string,
- *   type: settings.PowerDeviceType,
+ *   is_dedicated_charger: boolean,
  *   description: string
  * }}
  */

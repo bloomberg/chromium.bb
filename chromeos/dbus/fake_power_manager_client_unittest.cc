@@ -60,21 +60,21 @@ TEST(FakePowerManagerClientTest, UpdatePowerPropertiesTest) {
   SetTestProperties(&props);
   client.UpdatePowerProperties(props);
 
-  EXPECT_EQ(kInitialBatteryPercent, client.props().battery_percent());
-  EXPECT_TRUE(client.props().is_calculating_battery_time());
-  EXPECT_EQ(kInitialBatteryState, client.props().battery_state());
-  EXPECT_EQ(kInitialExternalPower, client.props().external_power());
+  EXPECT_EQ(kInitialBatteryPercent, client.GetLastStatus()->battery_percent());
+  EXPECT_TRUE(client.GetLastStatus()->is_calculating_battery_time());
+  EXPECT_EQ(kInitialBatteryState, client.GetLastStatus()->battery_state());
+  EXPECT_EQ(kInitialExternalPower, client.GetLastStatus()->external_power());
 
   // Test if when the values are changed, the correct data is set in the
   // FakePowerManagerClient.
-  props = client.props();
+  props = *client.GetLastStatus();
   props.set_battery_percent(kUpdatedBatteryPercent);
   client.UpdatePowerProperties(props);
 
-  EXPECT_EQ(kUpdatedBatteryPercent, client.props().battery_percent());
-  EXPECT_TRUE(client.props().is_calculating_battery_time());
-  EXPECT_EQ(kInitialBatteryState, client.props().battery_state());
-  EXPECT_EQ(kInitialExternalPower, client.props().external_power());
+  EXPECT_EQ(kUpdatedBatteryPercent, client.GetLastStatus()->battery_percent());
+  EXPECT_TRUE(client.GetLastStatus()->is_calculating_battery_time());
+  EXPECT_EQ(kInitialBatteryState, client.GetLastStatus()->battery_state());
+  EXPECT_EQ(kInitialExternalPower, client.GetLastStatus()->external_power());
 }
 
 TEST(FakePowerManagerClientTest, NotifyObserversTest) {
@@ -115,7 +115,7 @@ TEST(FakePowerManagerClientTest, NotifyObserversTest) {
 
   // Check when values are changed, the correct values are propagated to the
   // observer
-  props = client.props();
+  props = *client.GetLastStatus();
   props.set_battery_percent(kUpdatedBatteryPercent);
   props.set_external_power(
       power_manager::PowerSupplyProperties_ExternalPower_AC);

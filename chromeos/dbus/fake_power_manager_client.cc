@@ -20,19 +20,20 @@ namespace {
 constexpr double kUsbMinAcWatts = 24;
 }  // namespace
 
-FakePowerManagerClient::FakePowerManagerClient() : weak_ptr_factory_(this) {}
+FakePowerManagerClient::FakePowerManagerClient()
+    : props_(power_manager::PowerSupplyProperties()), weak_ptr_factory_(this) {}
 
 FakePowerManagerClient::~FakePowerManagerClient() = default;
 
 void FakePowerManagerClient::Init(dbus::Bus* bus) {
-  props_.set_battery_percent(50);
-  props_.set_is_calculating_battery_time(false);
-  props_.set_battery_state(
+  props_->set_battery_percent(50);
+  props_->set_is_calculating_battery_time(false);
+  props_->set_battery_state(
       power_manager::PowerSupplyProperties_BatteryState_DISCHARGING);
-  props_.set_external_power(
+  props_->set_external_power(
       power_manager::PowerSupplyProperties_ExternalPower_DISCONNECTED);
-  props_.set_battery_time_to_full_sec(0);
-  props_.set_battery_time_to_empty_sec(18000);
+  props_->set_battery_time_to_full_sec(0);
+  props_->set_battery_time_to_empty_sec(18000);
 }
 
 void FakePowerManagerClient::AddObserver(Observer* observer) {
@@ -81,7 +82,7 @@ void FakePowerManagerClient::DecreaseKeyboardBrightness() {}
 
 void FakePowerManagerClient::IncreaseKeyboardBrightness() {}
 
-base::Optional<power_manager::PowerSupplyProperties>
+const base::Optional<power_manager::PowerSupplyProperties>&
 FakePowerManagerClient::GetLastStatus() {
   return props_;
 }
@@ -134,12 +135,12 @@ void FakePowerManagerClient::SetIsProjecting(bool is_projecting) {
 }
 
 void FakePowerManagerClient::SetPowerSource(const std::string& id) {
-  props_.set_external_power_source_id(id);
-  props_.set_external_power(
+  props_->set_external_power_source_id(id);
+  props_->set_external_power(
       power_manager::PowerSupplyProperties_ExternalPower_DISCONNECTED);
-  for (const auto& source : props_.available_external_power_source()) {
+  for (const auto& source : props_->available_external_power_source()) {
     if (source.id() == id) {
-      props_.set_external_power(
+      props_->set_external_power(
           !source.active_by_default() || source.max_power() < kUsbMinAcWatts
               ? power_manager::PowerSupplyProperties_ExternalPower_USB
               : power_manager::PowerSupplyProperties_ExternalPower_AC);
@@ -284,7 +285,7 @@ void FakePowerManagerClient::UpdatePowerProperties(
 
 void FakePowerManagerClient::NotifyObservers() {
   for (auto& observer : observers_)
-    observer.PowerChanged(props_);
+    observer.PowerChanged(*props_);
 }
 
 void FakePowerManagerClient::HandleSuspendReadiness() {

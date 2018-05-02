@@ -368,7 +368,7 @@ void DeviceEmulatorMessageHandler::UpdateBatteryPercent(
   int new_percent;
   if (args->GetInteger(0, &new_percent)) {
     power_manager::PowerSupplyProperties props =
-        fake_power_manager_client_->props();
+        *fake_power_manager_client_->GetLastStatus();
     props.set_battery_percent(new_percent);
     fake_power_manager_client_->UpdatePowerProperties(props);
   }
@@ -379,7 +379,7 @@ void DeviceEmulatorMessageHandler::UpdateBatteryState(
   int battery_state;
   if (args->GetInteger(0, &battery_state)) {
     power_manager::PowerSupplyProperties props =
-        fake_power_manager_client_->props();
+        *fake_power_manager_client_->GetLastStatus();
     props.set_battery_state(
         static_cast<power_manager::PowerSupplyProperties_BatteryState>(
             battery_state));
@@ -392,7 +392,7 @@ void DeviceEmulatorMessageHandler::UpdateTimeToEmpty(
   int new_time;
   if (args->GetInteger(0, &new_time)) {
     power_manager::PowerSupplyProperties props =
-        fake_power_manager_client_->props();
+        *fake_power_manager_client_->GetLastStatus();
     props.set_battery_time_to_empty_sec(new_time);
     fake_power_manager_client_->UpdatePowerProperties(props);
   }
@@ -403,7 +403,7 @@ void DeviceEmulatorMessageHandler::UpdateTimeToFull(
   int new_time;
   if (args->GetInteger(0, &new_time)) {
     power_manager::PowerSupplyProperties props =
-        fake_power_manager_client_->props();
+        *fake_power_manager_client_->GetLastStatus();
     props.set_battery_time_to_full_sec(new_time);
     fake_power_manager_client_->UpdatePowerProperties(props);
   }
@@ -414,7 +414,7 @@ void DeviceEmulatorMessageHandler::UpdatePowerSources(
   const base::ListValue* sources;
   CHECK(args->GetList(0, &sources));
   power_manager::PowerSupplyProperties props =
-      fake_power_manager_client_->props();
+      *fake_power_manager_client_->GetLastStatus();
 
   std::string selected_id = props.external_power_source_id();
 
