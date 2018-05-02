@@ -24,7 +24,9 @@ source_set("support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "rule_stream_test.cc",
+    "rule_stream_unittest.cc",
+    "ruleset_test_util.cc",
+    "ruleset_test_util.h",
   ]
   deps = [
     ":support",

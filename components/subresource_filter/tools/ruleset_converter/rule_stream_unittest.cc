@@ -5,9 +5,6 @@
 #include "components/subresource_filter/tools/ruleset_converter/rule_stream.h"
 
 #include <algorithm>
-#include <fstream>
-#include <ios>
-#include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
@@ -18,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "components/subresource_filter/tools/rule_parser/rule_parser.h"
+#include "components/subresource_filter/tools/ruleset_converter/ruleset_test_util.h"
 #include "components/url_pattern_index/proto/rules.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,83 +23,6 @@
 namespace subresource_filter {
 
 namespace {
-
-// Stores lists of the rules that a test ruleset consists of.
-struct TestRulesetContents {
-  std::vector<url_pattern_index::proto::UrlRule> url_rules;
-  std::vector<url_pattern_index::proto::CssRule> css_rules;
-};
-
-// Stores identification information about a temporary File with a ruleset.
-// Deletes the file automatically on destruction.
-class ScopedTempRulesetFile {
- public:
-  // Creates a temporary file of the specified |format|.
-  explicit ScopedTempRulesetFile(RulesetFormat format) : format_(format) {
-    // Cannot ASSERT due to returning in constructor.
-    CHECK(scoped_dir_.CreateUniqueTempDir());
-    CHECK(
-        base::CreateTemporaryFileInDir(scoped_dir_.GetPath(), &ruleset_path_));
-  }
-
-  ~ScopedTempRulesetFile() {}
-
-  const base::FilePath& ruleset_path() const { return ruleset_path_; }
-  RulesetFormat format() const { return format_; }
-
- private:
-  base::ScopedTempDir scoped_dir_;
-  base::FilePath ruleset_path_;
-  const RulesetFormat format_;  // The format of the |file|.
-};
-
-bool IsEqualRules(const url_pattern_index::proto::UrlRule& first,
-                  const url_pattern_index::proto::UrlRule& second) {
-  return first.SerializeAsString() == second.SerializeAsString();
-}
-
-bool IsEqualRules(const url_pattern_index::proto::CssRule& first,
-                  const url_pattern_index::proto::CssRule& second) {
-  return first.SerializeAsString() == second.SerializeAsString();
-}
-
-void AssertEqualContents(const TestRulesetContents& lhs,
-                         const TestRulesetContents& rhs) {
-  ASSERT_EQ(lhs.url_rules.size(), rhs.url_rules.size());
-  for (size_t i = 0, size = lhs.url_rules.size(); i != size; ++i) {
-    ASSERT_TRUE(IsEqualRules(lhs.url_rules[i], rhs.url_rules[i]))
-        << i << ' ' << ToString(lhs.url_rules[i]) << ' '
-        << ToString(rhs.url_rules[i]);
-  }
-
-  ASSERT_EQ(lhs.css_rules.size(), rhs.css_rules.size());
-  for (size_t i = 0, size = lhs.css_rules.size(); i != size; ++i) {
-    ASSERT_TRUE(IsEqualRules(lhs.css_rules[i], rhs.css_rules[i]))
-        << i << ' ' << ToString(lhs.css_rules[i]) << ' '
-        << ToString(rhs.css_rules[i]);
-  }
-}
-
-// Opens the |ruleset_file| and creates an empty rule output stream to this
-// file. Returns the stream or nullptr if it failed to be created.
-std::unique_ptr<RuleOutputStream> OpenNewRuleset(
-    const ScopedTempRulesetFile& ruleset_file) {
-  return RuleOutputStream::Create(
-      std::make_unique<std::ofstream>(
-          ruleset_file.ruleset_path().MaybeAsASCII(),
-          std::ios::binary | std::ios::out),
-      ruleset_file.format());
-}
-
-// Opens the |ruleset_file| with already existing ruleset and returns the
-// corresponding input stream, or nullptr if it failed to be created.
-std::unique_ptr<RuleInputStream> OpenRuleset(
-    const ScopedTempRulesetFile& ruleset_file) {
-  return RuleInputStream::Create(std::make_unique<std::ifstream>(
-                                     ruleset_file.ruleset_path().MaybeAsASCII(),
-                                     std::ios::binary | std::ios::in),
-                                 ruleset_file.format());
-}
 
 // Returns a small number of predefined rules in text format.
 std::vector<std::string> GetSomeRules() {
@@ -175,73 +96,13 @@ std::vector<std::string> GetManyRules() {
   return text_rules;
 }
 
-// Parses |text_rules| and appends them to the |ruleset|.
-void PrepareRuleset(TestRulesetContents* ruleset,
-                    const std::vector<std::string>& text_rules,
-                    bool allow_errors = false) {
-  RuleParser parser;
-  for (const std::string& text_rule : text_rules) {
-    url_pattern_index::proto::RuleType rule_type = parser.Parse(text_rule);
-    switch (rule_type) {
-      case url_pattern_index::proto::RULE_TYPE_URL:
-        ruleset->url_rules.push_back(parser.url_rule().ToProtobuf());
-        break;
-      case url_pattern_index::proto::RULE_TYPE_CSS:
-        ruleset->css_rules.push_back(parser.css_rule().ToProtobuf());
-        break;
-      case url_pattern_index::proto::RULE_TYPE_UNSPECIFIED:
-        ASSERT_TRUE(allow_errors);
-        break;
-      default:
-        ASSERT_TRUE(false);
-    }
-  }
-}
-
-// Opens the |ruleset_file|, and writes the test ruleset |contents| to it in the
-// corresponding format.
-void WriteTestRuleset(const ScopedTempRulesetFile& ruleset_file,
-                      const TestRulesetContents& contents) {
-  std::unique_ptr<RuleOutputStream> output = OpenNewRuleset(ruleset_file);
-  ASSERT_NE(nullptr, output);
-
-  for (const auto& rule : contents.url_rules)
-    EXPECT_TRUE(output->PutUrlRule(rule));
-  for (const auto& rule : contents.css_rules)
-    EXPECT_TRUE(output->PutCssRule(rule));
-  EXPECT_TRUE(output->Finish());
-}
-
-// Reads the provided |ruleset_file| back, and EXPECTs that it contains exactly
-// all the rules from |expected_contents| in the same order.
-void ReadTestRulesetAndExpectContents(
-    const ScopedTempRulesetFile& ruleset_file,
-    const TestRulesetContents& expected_contents) {
-  std::unique_ptr<RuleInputStream> input = OpenRuleset(ruleset_file);
-
-  TestRulesetContents contents;
-  url_pattern_index::proto::RuleType rule_type =
-      url_pattern_index::proto::RULE_TYPE_UNSPECIFIED;
-  while ((rule_type = input->FetchNextRule()) !=
-         url_pattern_index::proto::RULE_TYPE_UNSPECIFIED) {
-    if (rule_type == url_pattern_index::proto::RULE_TYPE_URL) {
-      contents.url_rules.push_back(input->GetUrlRule());
-    } else {
-      ASSERT_EQ(url_pattern_index::proto::RULE_TYPE_CSS, rule_type);
-      contents.css_rules.push_back(input->GetCssRule());
-    }
-  }
-
-  AssertEqualContents(contents, expected_contents);
-}
-
 // Reads the provided |ruleset_file| skipping every second rule (independently
 // for URL and CSS rules), and EXPECTs that it contains exactly all the rules
 // from |expected_contents| in the same order.
 void ReadHalfRulesOfTestRulesetAndExpectContents(
     const ScopedTempRulesetFile& ruleset_file,
     const TestRulesetContents& expected_contents) {
-  std::unique_ptr<RuleInputStream> input = OpenRuleset(ruleset_file);
+  std::unique_ptr<RuleInputStream> input = ruleset_file.OpenForInput();
 
   TestRulesetContents contents;
 
@@ -263,7 +124,7 @@ void ReadHalfRulesOfTestRulesetAndExpectContents(
     }
   }
 
-  AssertEqualContents(contents, expected_contents);
+  EXPECT_EQ(contents, expected_contents);
 }
 
 }  // namespace
@@ -272,9 +133,9 @@ TEST(RuleStreamTest, WriteAndReadRuleset) {
   for (int small_or_big = 0; small_or_big < 2; ++small_or_big) {
     TestRulesetContents contents;
     if (small_or_big)
-      PrepareRuleset(&contents, GetManyRules());
+      contents.AppendRules(GetManyRules());
     else
-      PrepareRuleset(&contents, GetSomeRules());
+      contents.AppendRules(GetSomeRules());
 
     TestRulesetContents only_url_rules;
     only_url_rules.url_rules = contents.url_rules;
@@ -282,19 +143,18 @@ TEST(RuleStreamTest, WriteAndReadRuleset) {
     for (auto format : {RulesetFormat::kFilterList, RulesetFormat::kProto,
                         RulesetFormat::kUnindexedRuleset}) {
       ScopedTempRulesetFile ruleset_file(format);
-      WriteTestRuleset(ruleset_file, contents);
+      ruleset_file.WriteRuleset(contents);
       // Note: kUnindexedRuleset discards CSS rules, test it differently.
-      ReadTestRulesetAndExpectContents(
-          ruleset_file, format == RulesetFormat::kUnindexedRuleset
-                            ? only_url_rules
-                            : contents);
+      EXPECT_EQ(ruleset_file.ReadContents(),
+                format == RulesetFormat::kUnindexedRuleset ? only_url_rules
+                                                           : contents);
     }
   }
 }
 
 TEST(RuleStreamTest, WriteAndReadHalfRuleset) {
   TestRulesetContents contents;
-  PrepareRuleset(&contents, GetManyRules());
+  contents.AppendRules(GetManyRules());
 
   TestRulesetContents half_contents;
   for (size_t i = 0, size = contents.url_rules.size(); i < size; i += 2)
@@ -308,7 +168,7 @@ TEST(RuleStreamTest, WriteAndReadHalfRuleset) {
   for (auto format : {RulesetFormat::kFilterList, RulesetFormat::kProto,
                       RulesetFormat::kUnindexedRuleset}) {
     ScopedTempRulesetFile ruleset_file(format);
-    WriteTestRuleset(ruleset_file, contents);
+    ruleset_file.WriteRuleset(contents);
     // Note: kUnindexedRuleset discards CSS rules, test it differently.
     ReadHalfRulesOfTestRulesetAndExpectContents(
         ruleset_file, format == RulesetFormat::kUnindexedRuleset
@@ -319,74 +179,74 @@ TEST(RuleStreamTest, WriteAndReadHalfRuleset) {
 
 TEST(RuleStreamTest, TransferAllRulesToSameStream) {
   TestRulesetContents contents;
-  PrepareRuleset(&contents, GetManyRules());
+  contents.AppendRules(GetManyRules());
 
   ScopedTempRulesetFile source_ruleset(RulesetFormat::kFilterList);
   ScopedTempRulesetFile target_ruleset(RulesetFormat::kFilterList);
-  WriteTestRuleset(source_ruleset, contents);
+  source_ruleset.WriteRuleset(contents);
 
-  std::unique_ptr<RuleInputStream> input = OpenRuleset(source_ruleset);
-  std::unique_ptr<RuleOutputStream> output = OpenNewRuleset(target_ruleset);
+  std::unique_ptr<RuleInputStream> input = source_ruleset.OpenForInput();
+  std::unique_ptr<RuleOutputStream> output = target_ruleset.OpenForOutput();
   TransferRules(input.get(), output.get(), output.get());
   EXPECT_TRUE(output->Finish());
   input.reset();
   output.reset();
 
-  ReadTestRulesetAndExpectContents(target_ruleset, contents);
+  EXPECT_EQ(target_ruleset.ReadContents(), contents);
 }
 
 TEST(RuleStreamTest, TransferUrlRulesToOneStream) {
   TestRulesetContents contents;
-  PrepareRuleset(&contents, GetManyRules());
+  contents.AppendRules(GetManyRules());
 
   ScopedTempRulesetFile source_ruleset(RulesetFormat::kFilterList);
   ScopedTempRulesetFile target_ruleset(RulesetFormat::kFilterList);
-  WriteTestRuleset(source_ruleset, contents);
+  source_ruleset.WriteRuleset(contents);
 
-  std::unique_ptr<RuleInputStream> input = OpenRuleset(source_ruleset);
-  std::unique_ptr<RuleOutputStream> output = OpenNewRuleset(target_ruleset);
+  std::unique_ptr<RuleInputStream> input = source_ruleset.OpenForInput();
+  std::unique_ptr<RuleOutputStream> output = target_ruleset.OpenForOutput();
   TransferRules(input.get(), output.get(), nullptr);
   EXPECT_TRUE(output->Finish());
   input.reset();
   output.reset();
 
   contents.css_rules.clear();
-  ReadTestRulesetAndExpectContents(target_ruleset, contents);
+  EXPECT_EQ(target_ruleset.ReadContents(), contents);
 }
 
 TEST(RuleStreamTest, TransferCssRulesToOneStream) {
   TestRulesetContents contents;
-  PrepareRuleset(&contents, GetManyRules());
+  contents.AppendRules(GetManyRules());
 
   ScopedTempRulesetFile source_ruleset(RulesetFormat::kFilterList);
   ScopedTempRulesetFile target_ruleset(RulesetFormat::kFilterList);
-  WriteTestRuleset(source_ruleset, contents);
+  source_ruleset.WriteRuleset(contents);
 
-  std::unique_ptr<RuleInputStream> input = OpenRuleset(source_ruleset);
-  std::unique_ptr<RuleOutputStream> output = OpenNewRuleset(target_ruleset);
+  std::unique_ptr<RuleInputStream> input = source_ruleset.OpenForInput();
+  std::unique_ptr<RuleOutputStream> output = target_ruleset.OpenForOutput();
   TransferRules(input.get(), nullptr, output.get());
   EXPECT_TRUE(output->Finish());
   input.reset();
   output.reset();
 
   contents.url_rules.clear();
-  ReadTestRulesetAndExpectContents(target_ruleset, contents);
+  EXPECT_EQ(target_ruleset.ReadContents(), contents);
 }
 
 TEST(RuleStreamTest, TransferAllRulesToDifferentStreams) {
   TestRulesetContents contents;
-  PrepareRuleset(&contents, GetManyRules());
+  contents.AppendRules(GetManyRules());
 
   ScopedTempRulesetFile source_ruleset(RulesetFormat::kFilterList);
   ScopedTempRulesetFile target_ruleset_url(RulesetFormat::kFilterList);
   ScopedTempRulesetFile target_ruleset_css(RulesetFormat::kFilterList);
-  WriteTestRuleset(source_ruleset, contents);
+  source_ruleset.WriteRuleset(contents);
 
-  std::unique_ptr<RuleInputStream> input = OpenRuleset(source_ruleset);
+  std::unique_ptr<RuleInputStream> input = source_ruleset.OpenForInput();
   std::unique_ptr<RuleOutputStream> output_url =
-      OpenNewRuleset(target_ruleset_url);
+      target_ruleset_url.OpenForOutput();
   std::unique_ptr<RuleOutputStream> output_css =
-      OpenNewRuleset(target_ruleset_css);
+      target_ruleset_css.OpenForOutput();
   TransferRules(input.get(), output_url.get(), output_css.get());
   EXPECT_TRUE(output_url->Finish());
   EXPECT_TRUE(output_css->Finish());
@@ -396,22 +256,22 @@ TEST(RuleStreamTest, TransferAllRulesToDifferentStreams) {
 
   TestRulesetContents only_url_rules;
   only_url_rules.url_rules = contents.url_rules;
-  ReadTestRulesetAndExpectContents(target_ruleset_url, only_url_rules);
+  EXPECT_EQ(target_ruleset_url.ReadContents(), only_url_rules);
 
   contents.url_rules.clear();
-  ReadTestRulesetAndExpectContents(target_ruleset_css, contents);
+  EXPECT_EQ(target_ruleset_css.ReadContents(), contents);
 }
 
 TEST(RuleStreamTest, TransferRulesAndDiscardRegexpRules) {
   TestRulesetContents contents;
-  PrepareRuleset(&contents, GetManyRules());
+  contents.AppendRules(GetManyRules());
 
   ScopedTempRulesetFile source_ruleset(RulesetFormat::kFilterList);
   ScopedTempRulesetFile target_ruleset(RulesetFormat::kFilterList);
-  WriteTestRuleset(source_ruleset, contents);
+  source_ruleset.WriteRuleset(contents);
 
-  std::unique_ptr<RuleInputStream> input = OpenRuleset(source_ruleset);
-  std::unique_ptr<RuleOutputStream> output = OpenNewRuleset(target_ruleset);
+  std::unique_ptr<RuleInputStream> input = source_ruleset.OpenForInput();
+  std::unique_ptr<RuleOutputStream> output = target_ruleset.OpenForOutput();
   TransferRules(input.get(), output.get(), nullptr, 54 /* chrome_version */);
   EXPECT_TRUE(output->Finish());
   input.reset();
@@ -425,16 +285,16 @@ TEST(RuleStreamTest, TransferRulesAndDiscardRegexpRules) {
                      }),
       contents.url_rules.end());
   contents.css_rules.clear();
-  ReadTestRulesetAndExpectContents(target_ruleset, contents);
+  EXPECT_EQ(target_ruleset.ReadContents(), contents);
 }
 
 TEST(RuleStreamTest, TransferRulesChromeVersion) {
   TestRulesetContents contents;
-  PrepareRuleset(&contents, GetSomeChromeUnfriendlyRules());
-  PrepareRuleset(&contents, GetManyRules());
+  contents.AppendRules(GetSomeChromeUnfriendlyRules());
+  contents.AppendRules(GetManyRules());
 
   ScopedTempRulesetFile source_ruleset(RulesetFormat::kFilterList);
-  WriteTestRuleset(source_ruleset, contents);
+  source_ruleset.WriteRuleset(contents);
 
   for (int chrome_version : {0, 54, 59}) {
     TestRulesetContents expected_contents;
@@ -445,14 +305,14 @@ TEST(RuleStreamTest, TransferRulesChromeVersion) {
     }
 
     ScopedTempRulesetFile target_ruleset(RulesetFormat::kFilterList);
-    std::unique_ptr<RuleOutputStream> output = OpenNewRuleset(target_ruleset);
-    std::unique_ptr<RuleInputStream> input = OpenRuleset(source_ruleset);
+    std::unique_ptr<RuleOutputStream> output = target_ruleset.OpenForOutput();
+    std::unique_ptr<RuleInputStream> input = source_ruleset.OpenForInput();
     TransferRules(input.get(), output.get(), nullptr, chrome_version);
     EXPECT_TRUE(output->Finish());
     input.reset();
     output.reset();
 
-    ReadTestRulesetAndExpectContents(target_ruleset, expected_contents);
+    EXPECT_EQ(target_ruleset.ReadContents(), expected_contents);
   }
 }
 
@@ -476,19 +336,19 @@ TEST(RuleStreamTest, TransferRulesFromFilterListWithUnsupportedOptions) {
 
   // Filter out the rules with parse errors, and save the rest to |contents|.
   TestRulesetContents contents;
-  PrepareRuleset(&contents, text_rules, true /* allow_errors */);
+  contents.AppendRules(text_rules, true /* allow_errors */);
 
   // Make sure all the rules with no errors were transferred.
   {
-    std::unique_ptr<RuleInputStream> input = OpenRuleset(source_ruleset);
-    std::unique_ptr<RuleOutputStream> output = OpenNewRuleset(target_ruleset);
+    std::unique_ptr<RuleInputStream> input = source_ruleset.OpenForInput();
+    std::unique_ptr<RuleOutputStream> output = target_ruleset.OpenForOutput();
     TransferRules(input.get(), output.get(), output.get());
     EXPECT_TRUE(output->Finish());
   }
 
   EXPECT_EQ(number_of_correct_rules,
             contents.url_rules.size() + contents.css_rules.size());
-  ReadTestRulesetAndExpectContents(target_ruleset, contents);
+  EXPECT_EQ(target_ruleset.ReadContents(), contents);
 }
 
 TEST(RuleStreamTest, DeleteUrlRuleOrAmend) {
@@ -534,20 +394,20 @@ TEST(RuleStreamTest, DeleteUrlRuleOrAmend) {
 
     url_pattern_index::proto::UrlRule modified_rule = current_rule;
     EXPECT_FALSE(DeleteUrlRuleOrAmend(&modified_rule, 0));
-    EXPECT_TRUE(IsEqualRules(modified_rule, current_rule));
+    EXPECT_TRUE(AreUrlRulesEqual(modified_rule, current_rule));
 
     modified_rule = current_rule;
     EXPECT_EQ(!test.chrome_54_rule, DeleteUrlRuleOrAmend(&modified_rule, 54));
     if (test.chrome_54_rule) {
-      EXPECT_TRUE(IsEqualRules(modified_rule,
-                               get_target_rule(test, test.chrome_54_rule)));
+      EXPECT_TRUE(AreUrlRulesEqual(modified_rule,
+                                   get_target_rule(test, test.chrome_54_rule)));
     }
 
     modified_rule = current_rule;
     EXPECT_EQ(!test.chrome_59_rule, DeleteUrlRuleOrAmend(&modified_rule, 59));
     if (test.chrome_59_rule) {
-      EXPECT_TRUE(IsEqualRules(modified_rule,
-                               get_target_rule(test, test.chrome_59_rule)));
+      EXPECT_TRUE(AreUrlRulesEqual(modified_rule,
+                                   get_target_rule(test, test.chrome_59_rule)));
     }
   }
 }
