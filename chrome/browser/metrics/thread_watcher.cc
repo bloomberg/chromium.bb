@@ -19,7 +19,6 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/metrics/thread_watcher_report_hang.h"
 #include "chrome/common/channel_info.h"
@@ -318,6 +317,16 @@ bool ThreadWatcher::IsVeryUnresponsive() {
   return unresponsive_count_ >= unresponsive_threshold_;
 }
 
+namespace {
+// StartupTimeBomb::DisarmStartupTimeBomb() proxy, to avoid ifdefing out
+// individual calls by ThreadWatcherList methods.
+static void DisarmStartupTimeBomb() {
+#if !defined(OS_ANDROID)
+  StartupTimeBomb::DisarmStartupTimeBomb();
+#endif
+}
+}  // namespace
+
 // ThreadWatcherList methods and members.
 //
 // static
@@ -358,7 +367,7 @@ void ThreadWatcherList::StartWatchingAll(
           base::TimeDelta::FromSeconds(g_initialize_delay_seconds))) {
     // Disarm() the startup timebomb, if we couldn't post the task to start the
     // ThreadWatcher (becasue WatchDog thread is not running).
-    StartupTimeBomb::DisarmStartupTimeBomb();
+    DisarmStartupTimeBomb();
   }
 }
 
@@ -502,9 +511,8 @@ void ThreadWatcherList::InitializeAndStartWatching(
   DCHECK(WatchDogThread::CurrentlyOnWatchDogThread());
 
   // Disarm the startup timebomb, even if stop has been called.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&StartupTimeBomb::DisarmStartupTimeBomb));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::BindOnce(&DisarmStartupTimeBomb));
 
   // This method is deferred in relationship to its StopWatchingAll()
   // counterpart. If a previous initialization has already happened, or if
@@ -762,6 +770,9 @@ void WatchDogThread::CleanUp() {
   g_watchdog_thread = nullptr;
 }
 
+// StartupTimeBomb and ShutdownWatcherHelper are not available on Android.
+#if !defined(OS_ANDROID)
+
 namespace {
 
 // StartupWatchDogThread methods and members.
@@ -781,13 +792,9 @@ class StartupWatchDogThread : public base::Watchdog {
   void Alarm() override {
 #if !defined(NDEBUG)
     metrics::StartupHang();
-    return;
-#elif !defined(OS_ANDROID)
-    WatchDogThread::PostTask(FROM_HERE, base::Bind(&metrics::StartupHang));
-    return;
 #else
-    // TODO(rtenneti): Enable crashing for Android.
-#endif  // OS_ANDROID
+    WatchDogThread::PostTask(FROM_HERE, base::Bind(&metrics::StartupHang));
+#endif
   }
 
  private:
@@ -918,3 +925,5 @@ void ShutdownWatcherHelper::Arm(const base::TimeDelta& duration) {
   shutdown_watchdog_ = new ShutdownWatchDogThread(actual_duration);
   shutdown_watchdog_->Arm();
 }
+
+#endif  // !defined(OS_ANDROID)

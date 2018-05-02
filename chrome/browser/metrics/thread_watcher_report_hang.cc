@@ -11,7 +11,6 @@ MSVC_PUSH_DISABLE_WARNING(4748)
 
 #include "base/debug/debugger.h"
 #include "base/debug/dump_without_crashing.h"
-#include "build/build_config.h"
 
 namespace metrics {
 
@@ -28,7 +27,8 @@ NOINLINE void ReportThreadHang() {
 #endif
 }
 
-#if !defined(OS_ANDROID) || !defined(NDEBUG)
+#if !defined(OS_ANDROID)
+
 NOINLINE void StartupHang() {
   volatile int inhibit_comdat = __LINE__;
   ALLOW_UNUSED_LOCAL(inhibit_comdat);
@@ -36,13 +36,14 @@ NOINLINE void StartupHang() {
   // positive startup hang data.
   // ReportThreadHang();
 }
-#endif  // OS_ANDROID
 
 NOINLINE void ShutdownHang() {
   volatile int inhibit_comdat = __LINE__;
   ALLOW_UNUSED_LOCAL(inhibit_comdat);
   ReportThreadHang();
 }
+
+#endif  // !defined(OS_ANDROID)
 
 NOINLINE void ThreadUnresponsive_UI() {
   volatile int inhibit_comdat = __LINE__;
