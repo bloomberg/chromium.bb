@@ -375,7 +375,7 @@ CompositorFilterOperations FilterEffectBuilder::BuildFilterOperations(
       }
       case FilterOperation::DROP_SHADOW: {
         const ShadowData& shadow = ToDropShadowFilterOperation(*op).Shadow();
-        filters.AppendDropShadowFilter(WebPoint(shadow.X(), shadow.Y()),
+        filters.AppendDropShadowFilter(FlooredIntPoint(shadow.Location()),
                                        shadow.Blur(),
                                        shadow.GetColor().GetColor());
         break;
