@@ -4,8 +4,8 @@ The tests in wpt are imported from https://github.com/w3c/web-platform-tests,
 and changes in the wpt directory are automatically upstreamed, usually within
 24 hours.
 
-Use Tools/Scripts/wpt-import to update the tests from the tip of tree
-in those repositories.
+Use tools/wpt_import.py to update the tests from the tip of tree in those
+repositories.
 
 It is safe and okay to check in generic baselines for any tests that fail.
 The baselines will not be overwritten or upstreamed.

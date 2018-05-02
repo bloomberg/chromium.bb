@@ -872,7 +872,7 @@ if (!is_ios) {
   }
 
   # Layout tests runner
-  # third_party/WebKit/Tools/Scripts/run-webkit-tests
+  # third_party/blink/tools/run_web_tests.py
   group("run_webkit_tests") {
     testonly = true
     deps = [

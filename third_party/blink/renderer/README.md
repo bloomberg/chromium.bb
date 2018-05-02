@@ -95,7 +95,7 @@ defined in Chromium. For example, Blink should not use std::vector
 (except places where a conversion between std::vector and WTF::Vector is needed).
 
 To prevent use of random types, we control allowed types by whitelisting
-them in DEPS and a [presubmit script](../Tools/Scripts/audit-non-blink-usage.py).
+them in DEPS and a [presubmit script](../tools/audit_non_blink_usage.py).
 
 ## Mojo
 
