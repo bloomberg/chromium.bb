@@ -274,6 +274,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
                        base::TimeTicks end,
                        base::Optional<base::TimeDelta> thread_time);
 
+  bool IsAudioPlaying() const;
+
   // base::trace_event::TraceLog::EnabledStateObserver implementation:
   void OnTraceLogEnabled() override;
   void OnTraceLogDisabled() override;
@@ -557,8 +559,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   static const char* ExpensiveTaskPolicyToString(
       ExpensiveTaskPolicy expensive_task_policy);
 
-  bool ShouldDisableThrottlingBecauseOfAudio(base::TimeTicks now);
-
   void AddQueueToWakeUpBudgetPool(MainThreadTaskQueue* queue);
 
   void PauseRendererImpl();
@@ -663,7 +663,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     base::TimeDelta compositor_frame_interval;
     TraceableCounter<base::TimeDelta, kTracingCategoryNameDebug>
         longest_jank_free_task_duration;
-    base::Optional<base::TimeTicks> last_audio_state_change;
     TraceableCounter<int, kTracingCategoryNameInfo>
         renderer_pause_count;  // Renderer is paused if non-zero.
     TraceableCounter<int, kTracingCategoryNameDebug>

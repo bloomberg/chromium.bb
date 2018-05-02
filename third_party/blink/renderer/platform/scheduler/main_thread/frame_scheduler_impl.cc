@@ -611,6 +611,8 @@ FrameSchedulerImpl::OnActiveConnectionCreated() {
 }
 
 bool FrameSchedulerImpl::ShouldThrottleTimers() const {
+  if (parent_page_scheduler_ && parent_page_scheduler_->IsAudioPlaying())
+    return false;
   if (page_visibility_ == PageVisibilityState::kHidden)
     return true;
   return RuntimeEnabledFeatures::TimerThrottlingForHiddenFramesEnabled() &&

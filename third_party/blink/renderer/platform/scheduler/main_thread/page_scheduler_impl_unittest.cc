@@ -1170,6 +1170,58 @@ TEST_F(PageSchedulerImplTest, PageFreeze) {
   EXPECT_EQ(5, counter);
 }
 
+TEST_F(PageSchedulerImplTest, AudioState) {
+  page_scheduler_->AudioStateChanged(true);
+  EXPECT_TRUE(page_scheduler_->IsAudioPlaying());
+
+  page_scheduler_->AudioStateChanged(false);
+  // We are audible for a certain period after raw signal disappearing.
+  EXPECT_TRUE(page_scheduler_->IsAudioPlaying());
+
+  mock_task_runner_->RunForPeriod(base::TimeDelta::FromSeconds(3));
+
+  page_scheduler_->AudioStateChanged(false);
+  // We are still audible. A new call to AudioStateChanged shouldn't change
+  // anything.
+  EXPECT_TRUE(page_scheduler_->IsAudioPlaying());
+
+  mock_task_runner_->RunForPeriod(base::TimeDelta::FromSeconds(3));
+
+  // Audio is finally silent.
+  EXPECT_FALSE(page_scheduler_->IsAudioPlaying());
+}
+
+TEST_F(PageSchedulerImplTest, PageSchedulerDestroyedWhileAudioChangePending) {
+  page_scheduler_->AudioStateChanged(true);
+  EXPECT_TRUE(page_scheduler_->IsAudioPlaying());
+  page_scheduler_->AudioStateChanged(false);
+
+  page_scheduler_.reset();
+
+  mock_task_runner_->RunUntilIdle();
+}
+
+TEST_F(PageSchedulerImplTest, AudiblePagesAreNotThrottled) {
+  page_scheduler_->SetPageVisible(false);
+  EXPECT_TRUE(scheduler_->task_queue_throttler()->IsThrottled(
+      ThrottleableTaskQueue().get()));
+
+  // No throttling when the page is audible.
+  page_scheduler_->AudioStateChanged(true);
+  EXPECT_FALSE(scheduler_->task_queue_throttler()->IsThrottled(
+      ThrottleableTaskQueue().get()));
+
+  // No throttling for some time after audio signal disappears.
+  page_scheduler_->AudioStateChanged(false);
+  EXPECT_FALSE(scheduler_->task_queue_throttler()->IsThrottled(
+      ThrottleableTaskQueue().get()));
+
+  // Eventually throttling is reenabled again.
+  mock_task_runner_->RunUntilIdle();
+  EXPECT_TRUE(scheduler_->task_queue_throttler()->IsThrottled(
+      ThrottleableTaskQueue().get()));
+}
+
 }  // namespace page_scheduler_impl_unittest
 }  // namespace scheduler
 }  // namespace blink

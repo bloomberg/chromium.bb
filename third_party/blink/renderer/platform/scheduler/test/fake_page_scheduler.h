@@ -12,16 +12,16 @@ namespace scheduler {
 
 class FakePageScheduler final : public PageScheduler {
  public:
-  FakePageScheduler(bool is_playing_audio, bool is_throttling_exempt)
-      : is_playing_audio_(is_playing_audio),
+  FakePageScheduler(bool is_audio_playing, bool is_throttling_exempt)
+      : is_audio_playing_(is_audio_playing),
         is_throttling_exempt_(is_throttling_exempt) {}
 
   class Builder {
    public:
     Builder() = default;
 
-    Builder& SetIsPlayingAudio(bool is_playing_audio) {
-      is_playing_audio_ = is_playing_audio;
+    Builder& SetIsAudioPlaying(bool is_audio_playing) {
+      is_audio_playing_ = is_audio_playing;
       return *this;
     }
 
@@ -31,18 +31,18 @@ class FakePageScheduler final : public PageScheduler {
     }
 
     std::unique_ptr<FakePageScheduler> Build() {
-      return std::make_unique<FakePageScheduler>(is_playing_audio_,
+      return std::make_unique<FakePageScheduler>(is_audio_playing_,
                                                  is_throttling_exempt_);
     }
 
    private:
-    bool is_playing_audio_ = false;
+    bool is_audio_playing_ = false;
     bool is_throttling_exempt_ = false;
 
     DISALLOW_COPY_AND_ASSIGN(Builder);
   };
 
-  bool IsPlayingAudio() const override { return is_playing_audio_; }
+  bool IsAudioPlaying() const override { return is_audio_playing_; }
 
   bool IsExemptFromBudgetBasedThrottling() const override {
     return is_throttling_exempt_;
@@ -75,7 +75,7 @@ class FakePageScheduler final : public PageScheduler {
   void RequestBeginMainFrameNotExpected(bool new_state) override {}
 
  private:
-  bool is_playing_audio_;
+  bool is_audio_playing_;
   bool is_throttling_exempt_;
 
   DISALLOW_COPY_AND_ASSIGN(FakePageScheduler);

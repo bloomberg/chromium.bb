@@ -88,6 +88,8 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
   scoped_refptr<TaskQueue> ControlTaskQueue();
   void SetPageVisibility(PageVisibilityState page_visibility);
 
+  void UpdatePolicy();
+
   bool has_active_connection() const { return has_active_connection_; }
 
   void OnTraceLogEnabled() { tracing_controller_.OnTraceLogEnabled(); }
@@ -128,7 +130,6 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
   bool ShouldThrottleTimers() const;
   FrameScheduler::ThrottlingState CalculateThrottlingState() const;
   void RemoveThrottlingObserver(Observer* observer);
-  void UpdatePolicy();
   void UpdateQueuePolicy(const scoped_refptr<MainThreadTaskQueue>& queue,
                          TaskQueue::QueueEnabledVoter* voter);
   void UpdateThrottling();

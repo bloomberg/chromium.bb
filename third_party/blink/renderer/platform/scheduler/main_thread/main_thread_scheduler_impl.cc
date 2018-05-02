@@ -54,9 +54,6 @@ const double kShortIdlePeriodDurationPercentile = 50;
 // Amount of idle time left in a frame (as a ratio of the vsync interval) above
 // which main thread compositing can be considered fast.
 const double kFastCompositingIdleTimeThreshold = .2;
-// We do not throttle anything while audio is played and shortly after that.
-constexpr base::TimeDelta kThrottlingDelayAfterAudioIsPlayed =
-    base::TimeDelta::FromSeconds(5);
 constexpr base::TimeDelta kQueueingTimeWindowDuration =
     base::TimeDelta::FromSeconds(1);
 const double kSamplingRateForTaskUkm = 0.0001;
@@ -986,16 +983,13 @@ void MainThreadSchedulerImpl::ResumeTimersForAndroidWebView() {
 void MainThreadSchedulerImpl::OnAudioStateChanged() {
   bool is_audio_playing = false;
   for (PageSchedulerImpl* page_scheduler : main_thread_only().page_schedulers) {
-    is_audio_playing = is_audio_playing || page_scheduler->IsPlayingAudio();
+    is_audio_playing = is_audio_playing || page_scheduler->IsAudioPlaying();
   }
 
   if (is_audio_playing == main_thread_only().is_audio_playing)
     return;
 
-  main_thread_only().last_audio_state_change = helper_.NowTicks();
   main_thread_only().is_audio_playing = is_audio_playing;
-
-  UpdatePolicy();
 }
 
 std::unique_ptr<MainThreadSchedulerImpl::RendererPauseHandle>
@@ -1390,17 +1384,6 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
     new_policy_duration = touchstart_expected_flag_valid_for_duration;
   }
 
-  // Do not throttle while audio is playing or for a short period after that
-  // to make sure that pages playing short audio clips powered by timers
-  // work.
-  if (main_thread_only().last_audio_state_change &&
-      !main_thread_only().is_audio_playing) {
-    UpdatePolicyDuration(now,
-                         main_thread_only().last_audio_state_change.value() +
-                             kThrottlingDelayAfterAudioIsPlayed,
-                         &new_policy_duration);
-  }
-
   bool previously_frozen_when_backgrounded =
       main_thread_only().frozen_when_backgrounded;
   bool newly_frozen = false;
@@ -1582,7 +1565,6 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   }
 
   new_policy.should_disable_throttling() =
-      ShouldDisableThrottlingBecauseOfAudio(now) ||
       main_thread_only().use_virtual_time;
 
   // Tracing is done before the early out check, because it's quite possible we
@@ -2620,19 +2602,6 @@ MainThreadSchedulerImpl::GetVirtualTimeDomain() {
   return virtual_time_domain_.get();
 }
 
-bool MainThreadSchedulerImpl::ShouldDisableThrottlingBecauseOfAudio(
-    base::TimeTicks now) {
-  if (!main_thread_only().last_audio_state_change)
-    return false;
-
-  if (main_thread_only().is_audio_playing)
-    return true;
-
-  return main_thread_only().last_audio_state_change.value() +
-             kThrottlingDelayAfterAudioIsPlayed >
-         now;
-}
-
 void MainThreadSchedulerImpl::AddQueueToWakeUpBudgetPool(
     MainThreadTaskQueue* queue) {
   if (!main_thread_only().wake_up_budget_pool) {
@@ -2666,6 +2635,10 @@ void MainThreadSchedulerImpl::OnTraceLogDisabled() {}
 
 base::WeakPtr<MainThreadSchedulerImpl> MainThreadSchedulerImpl::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
+}
+
+bool MainThreadSchedulerImpl::IsAudioPlaying() const {
+  return main_thread_only().is_audio_playing;
 }
 
 bool MainThreadSchedulerImpl::ShouldRecordTaskUkm() {

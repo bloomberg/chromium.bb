@@ -41,7 +41,7 @@ FrameThrottlingState GetFrameThrottlingState(
   }
 
   PageScheduler* page_scheduler = frame_scheduler.GetPageScheduler();
-  if (page_scheduler && page_scheduler->IsPlayingAudio()) {
+  if (page_scheduler && page_scheduler->IsAudioPlaying()) {
     if (frame_scheduler.IsFrameVisible())
       return FrameThrottlingState::kVisibleService;
     return FrameThrottlingState::kHiddenService;
