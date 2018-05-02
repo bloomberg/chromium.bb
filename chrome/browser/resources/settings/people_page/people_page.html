@@ -140,8 +140,12 @@
             syncStatus.syncSystemEnabled, syncStatus.signinAllowed)]]">
           <settings-sync-account-control
               sync-status="[[syncStatus]]"
-              promo-label="$i18n{peopleSignInPrompt}"
-              promo-secondary-label="$i18n{peopleSignInPromptSecondary}">
+              promo-label-with-account="$i18n{peopleSignInPrompt}"
+              promo-label-with-no-account="$i18n{peopleSignInPrompt}"
+              promo-secondary-label-with-account=
+                  "$i18n{peopleSignInPromptSecondaryWithAccount}"
+              promo-secondary-label-with-no-account=
+                  "$i18n{peopleSignInPromptSecondaryWithNoAccount}">
           </settings-sync-account-control>
         </template>
         <template is="dom-if" if="[[!diceEnabled_]]">
