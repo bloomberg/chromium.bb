@@ -27,9 +27,10 @@ per-file database_*=jsbell@chromium.org
 per-file database_*=michaeln@chromium.org
 per-file database_*=pwnall@chromium.org
 
-# Offscreen Canvas
-per-file offscreen_canvas*.*=xlai@chromium.org
-per-file offscreen_canvas*.*=xidachen@chromium.org
-per-file offscreen_canvas*.*=junov@chromium.org
+# Embedded Frame Sinks (eg. Offscreen Canvas)
+per-file embedded_frame_sink*.*=xlai@chromium.org
+per-file embedded_frame_sink*.*=xidachen@chromium.org
+per-file embedded_frame_sink*.*=junov@chromium.org
+per-file embedded_frame_sink*.*=kylechar@chromium.org
 
 # COMPONENT: Internals>Core

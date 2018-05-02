@@ -12,7 +12,7 @@
 #include "components/viz/common/surfaces/surface_info.h"
 #include "media/base/media_switches.h"
 #include "third_party/blink/public/platform/interface_provider.h"
-#include "third_party/blink/public/platform/modules/offscreencanvas/offscreen_canvas_surface.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/frame_sinks/embedded_frame_sink.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_compositor_support.h"
 #include "third_party/blink/public/platform/web_layer.h"
@@ -30,16 +30,16 @@ SurfaceLayerBridge::SurfaceLayerBridge(WebLayerTreeView* layer_tree_view,
       frame_sink_id_(Platform::Current()->GenerateFrameSinkId()),
       parent_frame_sink_id_(layer_tree_view ? layer_tree_view->GetFrameSinkId()
                                             : viz::FrameSinkId()) {
-  mojom::blink::OffscreenCanvasProviderPtr provider;
+  mojom::blink::EmbeddedFrameSinkProviderPtr provider;
   Platform::Current()->GetInterfaceProvider()->GetInterface(
       mojo::MakeRequest(&provider));
   // TODO(xlai): Ensure OffscreenCanvas commit() is still functional when a
   // frame-less HTML canvas's document is reparenting under another frame.
   // See crbug.com/683172.
-  blink::mojom::blink::OffscreenCanvasSurfaceClientPtr client;
+  blink::mojom::blink::EmbeddedFrameSinkClientPtr client;
   binding_.Bind(mojo::MakeRequest(&client));
-  provider->CreateOffscreenCanvasSurface(parent_frame_sink_id_, frame_sink_id_,
-                                         std::move(client));
+  provider->RegisterEmbeddedFrameSink(parent_frame_sink_id_, frame_sink_id_,
+                                      std::move(client));
 }
 
 SurfaceLayerBridge::~SurfaceLayerBridge() {

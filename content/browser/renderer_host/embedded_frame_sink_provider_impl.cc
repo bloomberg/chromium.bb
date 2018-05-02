@@ -2,31 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/offscreen_canvas_provider_impl.h"
+#include "content/browser/renderer_host/embedded_frame_sink_provider_impl.h"
 
 #include "base/bind.h"
 #include "components/viz/host/host_frame_sink_manager.h"
-#include "content/browser/renderer_host/offscreen_canvas_surface_impl.h"
+#include "content/browser/renderer_host/embedded_frame_sink_impl.h"
 
 namespace content {
 
-OffscreenCanvasProviderImpl::OffscreenCanvasProviderImpl(
+EmbeddedFrameSinkProviderImpl::EmbeddedFrameSinkProviderImpl(
     viz::HostFrameSinkManager* host_frame_sink_manager,
     uint32_t renderer_client_id)
     : host_frame_sink_manager_(host_frame_sink_manager),
       renderer_client_id_(renderer_client_id) {}
 
-OffscreenCanvasProviderImpl::~OffscreenCanvasProviderImpl() = default;
+EmbeddedFrameSinkProviderImpl::~EmbeddedFrameSinkProviderImpl() = default;
 
-void OffscreenCanvasProviderImpl::Add(
-    blink::mojom::OffscreenCanvasProviderRequest request) {
+void EmbeddedFrameSinkProviderImpl::Add(
+    blink::mojom::EmbeddedFrameSinkProviderRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
-void OffscreenCanvasProviderImpl::CreateOffscreenCanvasSurface(
+void EmbeddedFrameSinkProviderImpl::RegisterEmbeddedFrameSink(
     const viz::FrameSinkId& parent_frame_sink_id,
     const viz::FrameSinkId& frame_sink_id,
-    blink::mojom::OffscreenCanvasSurfaceClientPtr client) {
+    blink::mojom::EmbeddedFrameSinkClientPtr client) {
   // TODO(kylechar): Kill the renderer too.
   if (parent_frame_sink_id.client_id() != renderer_client_id_) {
     DLOG(ERROR) << "Invalid parent client id " << parent_frame_sink_id;
@@ -37,16 +37,16 @@ void OffscreenCanvasProviderImpl::CreateOffscreenCanvasSurface(
     return;
   }
 
-  auto destroy_callback = base::BindOnce(
-      &OffscreenCanvasProviderImpl::DestroyOffscreenCanvasSurface,
-      base::Unretained(this), frame_sink_id);
+  auto destroy_callback =
+      base::BindOnce(&EmbeddedFrameSinkProviderImpl::DestroyEmbeddedFrameSink,
+                     base::Unretained(this), frame_sink_id);
 
-  canvas_map_[frame_sink_id] = std::make_unique<OffscreenCanvasSurfaceImpl>(
+  frame_sink_map_[frame_sink_id] = std::make_unique<EmbeddedFrameSinkImpl>(
       host_frame_sink_manager_, parent_frame_sink_id, frame_sink_id,
       std::move(client), std::move(destroy_callback));
 }
 
-void OffscreenCanvasProviderImpl::CreateCompositorFrameSink(
+void EmbeddedFrameSinkProviderImpl::CreateCompositorFrameSink(
     const viz::FrameSinkId& frame_sink_id,
     viz::mojom::CompositorFrameSinkClientPtr client,
     viz::mojom::CompositorFrameSinkRequest request) {
@@ -56,9 +56,9 @@ void OffscreenCanvasProviderImpl::CreateCompositorFrameSink(
     return;
   }
 
-  auto iter = canvas_map_.find(frame_sink_id);
-  if (iter == canvas_map_.end()) {
-    DLOG(ERROR) << "No OffscreenCanvasSurfaceImpl for " << frame_sink_id;
+  auto iter = frame_sink_map_.find(frame_sink_id);
+  if (iter == frame_sink_map_.end()) {
+    DLOG(ERROR) << "No EmbeddedFrameSinkImpl for " << frame_sink_id;
     return;
   }
 
@@ -66,21 +66,22 @@ void OffscreenCanvasProviderImpl::CreateCompositorFrameSink(
                                           std::move(request));
 }
 
-void OffscreenCanvasProviderImpl::CreateSimpleCompositorFrameSink(
+void EmbeddedFrameSinkProviderImpl::CreateSimpleCompositorFrameSink(
     const viz::FrameSinkId& parent_frame_sink_id,
     const viz::FrameSinkId& frame_sink_id,
-    blink::mojom::OffscreenCanvasSurfaceClientPtr surface_client,
-    viz::mojom::CompositorFrameSinkClientPtr client,
-    viz::mojom::CompositorFrameSinkRequest request) {
-  CreateOffscreenCanvasSurface(parent_frame_sink_id, frame_sink_id,
-                               std::move(surface_client));
-  CreateCompositorFrameSink(frame_sink_id, std::move(client),
-                            std::move(request));
+    blink::mojom::EmbeddedFrameSinkClientPtr embedded_frame_sink_client,
+    viz::mojom::CompositorFrameSinkClientPtr compositor_frame_sink_client,
+    viz::mojom::CompositorFrameSinkRequest compositor_frame_sink_request) {
+  RegisterEmbeddedFrameSink(parent_frame_sink_id, frame_sink_id,
+                            std::move(embedded_frame_sink_client));
+  CreateCompositorFrameSink(frame_sink_id,
+                            std::move(compositor_frame_sink_client),
+                            std::move(compositor_frame_sink_request));
 }
 
-void OffscreenCanvasProviderImpl::DestroyOffscreenCanvasSurface(
+void EmbeddedFrameSinkProviderImpl::DestroyEmbeddedFrameSink(
     viz::FrameSinkId frame_sink_id) {
-  canvas_map_.erase(frame_sink_id);
+  frame_sink_map_.erase(frame_sink_id);
 }
 
 }  // namespace content

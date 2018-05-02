@@ -10,7 +10,7 @@
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "third_party/blink/public/platform/interface_provider.h"
-#include "third_party/blink/public/platform/modules/offscreencanvas/offscreen_canvas_surface.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/frame_sinks/embedded_frame_sink.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
@@ -50,7 +50,7 @@ OffscreenCanvasFrameDispatcher::OffscreenCanvasFrameDispatcher(
     current_local_surface_id_ =
         parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
     DCHECK(!sink_.is_bound());
-    mojom::blink::OffscreenCanvasProviderPtr provider;
+    mojom::blink::EmbeddedFrameSinkProviderPtr provider;
     Platform::Current()->GetInterfaceProvider()->GetInterface(
         mojo::MakeRequest(&provider));
 

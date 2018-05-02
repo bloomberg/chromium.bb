@@ -109,12 +109,12 @@
 #include "content/browser/permissions/permission_service_impl.h"
 #include "content/browser/push_messaging/push_messaging_manager.h"
 #include "content/browser/renderer_host/clipboard_host_impl.h"
+#include "content/browser/renderer_host/embedded_frame_sink_provider_impl.h"
 #include "content/browser/renderer_host/file_utilities_host_impl.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/peer_connection_tracker_host.h"
 #include "content/browser/renderer_host/media/render_frame_audio_input_stream_factory.h"
 #include "content/browser/renderer_host/media/video_capture_host.h"
-#include "content/browser/renderer_host/offscreen_canvas_provider_impl.h"
 #include "content/browser/renderer_host/pepper/pepper_message_filter.h"
 #include "content/browser/renderer_host/pepper/pepper_renderer_connection.h"
 #include "content/browser/renderer_host/render_message_filter.h"
@@ -1910,7 +1910,7 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 
   AddUIThreadInterface(
       registry.get(),
-      base::Bind(&RenderProcessHostImpl::CreateOffscreenCanvasProvider,
+      base::Bind(&RenderProcessHostImpl::CreateEmbeddedFrameSinkProvider,
                  base::Unretained(this)));
 
   AddUIThreadInterface(registry.get(),
@@ -2099,16 +2099,17 @@ void RenderProcessHostImpl::GetBlobURLLoaderFactory(
       std::move(request));
 }
 
-void RenderProcessHostImpl::CreateOffscreenCanvasProvider(
-    blink::mojom::OffscreenCanvasProviderRequest request) {
+void RenderProcessHostImpl::CreateEmbeddedFrameSinkProvider(
+    blink::mojom::EmbeddedFrameSinkProviderRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!offscreen_canvas_provider_) {
+  if (!embedded_frame_sink_provider_) {
     // The client id gets converted to a uint32_t in FrameSinkId.
     uint32_t renderer_client_id = base::checked_cast<uint32_t>(id_);
-    offscreen_canvas_provider_ = std::make_unique<OffscreenCanvasProviderImpl>(
-        GetHostFrameSinkManager(), renderer_client_id);
+    embedded_frame_sink_provider_ =
+        std::make_unique<EmbeddedFrameSinkProviderImpl>(
+            GetHostFrameSinkManager(), renderer_client_id);
   }
-  offscreen_canvas_provider_->Add(std::move(request));
+  embedded_frame_sink_provider_->Add(std::move(request));
 }
 
 void RenderProcessHostImpl::BindFrameSinkProvider(

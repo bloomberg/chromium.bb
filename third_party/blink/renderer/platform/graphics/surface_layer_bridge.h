@@ -9,7 +9,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "third_party/blink/public/platform/modules/offscreencanvas/offscreen_canvas_surface.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/frame_sinks/embedded_frame_sink.mojom-blink.h"
 #include "third_party/blink/public/platform/web_surface_layer_bridge.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
@@ -29,7 +29,7 @@ class WebLayerTreeView;
 // The SurfaceLayerBridge facilitates communication about changes to a Surface
 // between the Render and Browser processes.
 class PLATFORM_EXPORT SurfaceLayerBridge
-    : public blink::mojom::blink::OffscreenCanvasSurfaceClient,
+    : public blink::mojom::blink::EmbeddedFrameSinkClient,
       public WebSurfaceLayerBridge {
  public:
   SurfaceLayerBridge(WebLayerTreeView*, WebSurfaceLayerBridgeObserver*);
@@ -37,7 +37,7 @@ class PLATFORM_EXPORT SurfaceLayerBridge
 
   void CreateSolidColorLayer();
 
-  // Implementation of blink::mojom::blink::OffscreenCanvasSurfaceClient
+  // Implementation of blink::mojom::blink::EmbeddedFrameSinkClient
   void OnFirstSurfaceActivation(const viz::SurfaceInfo&) override;
 
   // Implementation of WebSurfaceLayerBridge.
@@ -53,7 +53,7 @@ class PLATFORM_EXPORT SurfaceLayerBridge
 
   WebSurfaceLayerBridgeObserver* observer_;
 
-  mojo::Binding<blink::mojom::blink::OffscreenCanvasSurfaceClient> binding_;
+  mojo::Binding<blink::mojom::blink::EmbeddedFrameSinkClient> binding_;
 
   const viz::FrameSinkId frame_sink_id_;
   viz::SurfaceId current_surface_id_;

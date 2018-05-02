@@ -14,7 +14,7 @@
 #include "media/base/video_frame.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
-#include "third_party/blink/public/platform/modules/offscreencanvas/offscreen_canvas_surface.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/frame_sinks/embedded_frame_sink.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 
 namespace blink {
@@ -93,14 +93,13 @@ void VideoFrameSubmitter::StartSubmitting(const viz::FrameSinkId& id) {
   DCHECK_CALLED_ON_VALID_THREAD(media_thread_checker_);
   DCHECK(id.is_valid());
 
-  // TODO(lethalantidote): Class to be renamed.
-  mojom::blink::OffscreenCanvasProviderPtr canvas_provider;
+  mojom::blink::EmbeddedFrameSinkProviderPtr provider;
   Platform::Current()->GetInterfaceProvider()->GetInterface(
-      mojo::MakeRequest(&canvas_provider));
+      mojo::MakeRequest(&provider));
 
   viz::mojom::blink::CompositorFrameSinkClientPtr client;
   binding_.Bind(mojo::MakeRequest(&client));
-  canvas_provider->CreateCompositorFrameSink(
+  provider->CreateCompositorFrameSink(
       id, std::move(client), mojo::MakeRequest(&compositor_frame_sink_));
 
   scoped_refptr<media::VideoFrame> video_frame = provider_->GetCurrentFrame();

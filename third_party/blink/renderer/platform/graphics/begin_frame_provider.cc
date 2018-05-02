@@ -17,7 +17,7 @@ BeginFrameProvider::BeginFrameProvider(
     BeginFrameProviderClient* client)
     : needs_begin_frame_(false),
       cfs_binding_(this),
-      ocs_binding_(this),
+      efs_binding_(this),
       frame_sink_id_(begin_frame_provider_params.frame_sink_id),
       parent_frame_sink_id_(begin_frame_provider_params.parent_frame_sink_id),
       begin_frame_client_(client) {}
@@ -25,23 +25,23 @@ BeginFrameProvider::BeginFrameProvider(
 void BeginFrameProvider::CreateCompositorFrameSink() {
   DCHECK(frame_sink_id_.is_valid());
 
-  mojom::blink::OffscreenCanvasProviderPtr canvas_provider;
+  mojom::blink::EmbeddedFrameSinkProviderPtr provider;
   Platform::Current()->GetInterfaceProvider()->GetInterface(
-      mojo::MakeRequest(&canvas_provider));
+      mojo::MakeRequest(&provider));
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner;
   auto* scheduler = blink::Platform::Current()->CurrentThread()->Scheduler();
   if (scheduler)
     task_runner = scheduler->CompositorTaskRunner();
 
-  mojom::blink::OffscreenCanvasSurfaceClientPtr ocs_client;
-  ocs_binding_.Bind(mojo::MakeRequest(&ocs_client), task_runner);
+  mojom::blink::EmbeddedFrameSinkClientPtr efs_client;
+  efs_binding_.Bind(mojo::MakeRequest(&efs_client), task_runner);
 
   viz::mojom::blink::CompositorFrameSinkClientPtr client;
   cfs_binding_.Bind(mojo::MakeRequest(&client), task_runner);
 
-  canvas_provider->CreateSimpleCompositorFrameSink(
-      parent_frame_sink_id_, frame_sink_id_, std::move(ocs_client),
+  provider->CreateSimpleCompositorFrameSink(
+      parent_frame_sink_id_, frame_sink_id_, std::move(efs_client),
       std::move(client), mojo::MakeRequest(&compositor_frame_sink_));
 }
 
