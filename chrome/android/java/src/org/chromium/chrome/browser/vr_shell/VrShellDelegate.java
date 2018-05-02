@@ -775,6 +775,14 @@ public class VrShellDelegate
     }
 
     /**
+     * See VrClassesWrapper#bootsToVr().
+     */
+    public static boolean bootsToVr() {
+        if (getVrClassesWrapper() == null) return false;
+        return getVrClassesWrapper().bootsToVr();
+    }
+
+    /**
      * @return A helper class for creating VR-specific classes that may not be available at compile
      * time.
      */
