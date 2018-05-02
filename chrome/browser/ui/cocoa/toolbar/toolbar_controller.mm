@@ -95,9 +95,6 @@ const CGFloat kElementPadding = 4;
 // wide inset.
 const CGFloat kButtonInset = 2;
 
-// The y-offset of the browser actions container from the location bar.
-const CGFloat kContainerYOffset = 2;
-
 // The minimum width of the location bar in pixels.
 const CGFloat kMinimumLocationBarWidth = 100.0;
 
@@ -351,8 +348,8 @@ class NotificationBridge : public AppMenuIconController::Delegate {
   // Correctly position the extension buttons' container view.
   NSRect containerFrame = [browserActionsContainerView_ frame];
   containerFrame.size.width += kButtonInset;
-  containerFrame.origin.y = locationBarFrame.origin.y + kContainerYOffset;
-  containerFrame.size.height = toolbarButtonSize.height;
+  containerFrame.origin.y = locationBarFrame.origin.y;
+  containerFrame.size.height = kLocationBarHeight;
   if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout())
     containerFrame.origin.x = NSMinX(locationBarFrame) - kButtonInset;
   [browserActionsContainerView_ setFrame:containerFrame];
@@ -869,7 +866,7 @@ class NotificationBridge : public AppMenuIconController::Delegate {
     // it afterwards.
     [browserActionsContainerView_ stopAnimation];
     NSRect containerFrame = [browserActionsContainerView_ frame];
-    containerFrame.origin.y = [locationBar_ frame].origin.y + kContainerYOffset;
+    containerFrame.origin.y = [locationBar_ frame].origin.y;
     [browserActionsContainerView_ setFrame:containerFrame];
     [self pinLocationBarBeforeBrowserActionsContainerAndAnimate:NO];
   }
