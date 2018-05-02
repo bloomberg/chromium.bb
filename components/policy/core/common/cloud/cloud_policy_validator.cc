@@ -569,12 +569,13 @@ bool CloudPolicyValidatorBase::VerifySignature(const std::string& data,
       return false;
   }
 
-  if (!verifier.VerifyInit(algorithm, base::as_bytes<const char>(signature),
-                           base::as_bytes<const char>(key))) {
+  if (!verifier.VerifyInit(algorithm,
+                           base::as_bytes(base::make_span(signature)),
+                           base::as_bytes(base::make_span(key)))) {
     DLOG(ERROR) << "Invalid verification signature/key format";
     return false;
   }
-  verifier.VerifyUpdate(base::as_bytes<const char>(data));
+  verifier.VerifyUpdate(base::as_bytes(base::make_span(data)));
   return verifier.VerifyFinal();
 }
 

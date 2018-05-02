@@ -22,58 +22,81 @@ using ::testing::Pointwise;
 namespace base {
 
 TEST(SpanTest, DefaultConstructor) {
-  span<int> span;
-  EXPECT_EQ(nullptr, span.data());
-  EXPECT_EQ(0u, span.size());
+  span<int> dynamic_span;
+  EXPECT_EQ(nullptr, dynamic_span.data());
+  EXPECT_EQ(0u, dynamic_span.size());
+
+  constexpr span<int, 0> static_span;
+  static_assert(nullptr == static_span.data(), "");
+  static_assert(0u == static_span.size(), "");
 }
 
 TEST(SpanTest, ConstructFromDataAndSize) {
-  {
-    span<int> empty_span(nullptr, 0);
-    EXPECT_TRUE(empty_span.empty());
-    EXPECT_EQ(nullptr, empty_span.data());
-  }
+  constexpr span<int> empty_span(nullptr, 0);
+  EXPECT_TRUE(empty_span.empty());
+  EXPECT_EQ(nullptr, empty_span.data());
 
-  {
-    std::vector<int> vector = {1, 1, 2, 3, 5, 8};
+  std::vector<int> vector = {1, 1, 2, 3, 5, 8};
 
-    span<int> span(vector.data(), vector.size());
-    EXPECT_EQ(vector.data(), span.data());
-    EXPECT_EQ(vector.size(), span.size());
+  span<int> dynamic_span(vector.data(), vector.size());
+  EXPECT_EQ(vector.data(), dynamic_span.data());
+  EXPECT_EQ(vector.size(), dynamic_span.size());
 
-    for (size_t i = 0; i < span.size(); ++i)
-      EXPECT_EQ(vector[i], span[i]);
-  }
+  for (size_t i = 0; i < dynamic_span.size(); ++i)
+    EXPECT_EQ(vector[i], dynamic_span[i]);
+
+  span<int, 6> static_span(vector.data(), vector.size());
+  EXPECT_EQ(vector.data(), static_span.data());
+  EXPECT_EQ(vector.size(), static_span.size());
+
+  for (size_t i = 0; i < static_span.size(); ++i)
+    EXPECT_EQ(vector[i], static_span[i]);
 }
 
 TEST(SpanTest, ConstructFromPointerPair) {
-  {
-    span<int> empty_span(nullptr, nullptr);
-    EXPECT_TRUE(empty_span.empty());
-    EXPECT_EQ(nullptr, empty_span.data());
-  }
+  constexpr span<int> empty_span(nullptr, nullptr);
+  EXPECT_TRUE(empty_span.empty());
+  EXPECT_EQ(nullptr, empty_span.data());
 
-  {
-    std::vector<int> vector = {1, 1, 2, 3, 5, 8};
+  std::vector<int> vector = {1, 1, 2, 3, 5, 8};
 
-    span<int> span(vector.data(), vector.data() + vector.size() / 2);
-    EXPECT_EQ(vector.data(), span.data());
-    EXPECT_EQ(vector.size() / 2, span.size());
+  span<int> dynamic_span(vector.data(), vector.data() + vector.size() / 2);
+  EXPECT_EQ(vector.data(), dynamic_span.data());
+  EXPECT_EQ(vector.size() / 2, dynamic_span.size());
 
-    for (size_t i = 0; i < span.size(); ++i)
-      EXPECT_EQ(vector[i], span[i]);
-  }
+  for (size_t i = 0; i < dynamic_span.size(); ++i)
+    EXPECT_EQ(vector[i], dynamic_span[i]);
+
+  span<int, 3> static_span(vector.data(), vector.data() + vector.size() / 2);
+  EXPECT_EQ(vector.data(), static_span.data());
+  EXPECT_EQ(vector.size() / 2, static_span.size());
+
+  for (size_t i = 0; i < static_span.size(); ++i)
+    EXPECT_EQ(vector[i], static_span[i]);
 }
 
 TEST(SpanTest, ConstructFromConstexprArray) {
   static constexpr int kArray[] = {5, 4, 3, 2, 1};
 
-  constexpr span<const int> span(kArray);
-  EXPECT_EQ(kArray, span.data());
-  EXPECT_EQ(arraysize(kArray), span.size());
+  constexpr span<const int> dynamic_span(kArray);
+  static_assert(kArray == dynamic_span.data(), "");
+  static_assert(base::size(kArray) == dynamic_span.size(), "");
 
-  for (size_t i = 0; i < span.size(); ++i)
-    EXPECT_EQ(kArray[i], span[i]);
+  static_assert(kArray[0] == dynamic_span[0], "");
+  static_assert(kArray[1] == dynamic_span[1], "");
+  static_assert(kArray[2] == dynamic_span[2], "");
+  static_assert(kArray[3] == dynamic_span[3], "");
+  static_assert(kArray[4] == dynamic_span[4], "");
+
+  constexpr span<const int, base::size(kArray)> static_span(kArray);
+  static_assert(kArray == static_span.data(), "");
+  static_assert(base::size(kArray) == static_span.size(), "");
+
+  static_assert(kArray[0] == static_span[0], "");
+  static_assert(kArray[1] == static_span[1], "");
+  static_assert(kArray[2] == static_span[2], "");
+  static_assert(kArray[3] == static_span[3], "");
+  static_assert(kArray[4] == static_span[4], "");
 }
 
 TEST(SpanTest, ConstructFromArray) {
@@ -85,11 +108,17 @@ TEST(SpanTest, ConstructFromArray) {
   for (size_t i = 0; i < const_span.size(); ++i)
     EXPECT_EQ(array[i], const_span[i]);
 
-  span<int> span(array);
-  EXPECT_EQ(array, span.data());
-  EXPECT_EQ(arraysize(array), span.size());
-  for (size_t i = 0; i < span.size(); ++i)
-    EXPECT_EQ(array[i], span[i]);
+  span<int> dynamic_span(array);
+  EXPECT_EQ(array, dynamic_span.data());
+  EXPECT_EQ(base::size(array), dynamic_span.size());
+  for (size_t i = 0; i < dynamic_span.size(); ++i)
+    EXPECT_EQ(array[i], dynamic_span[i]);
+
+  span<int, base::size(array)> static_span(array);
+  EXPECT_EQ(array, static_span.data());
+  EXPECT_EQ(base::size(array), static_span.size());
+  for (size_t i = 0; i < static_span.size(); ++i)
+    EXPECT_EQ(array[i], static_span[i]);
 }
 
 TEST(SpanTest, ConstructFromStdArray) {
@@ -103,11 +132,17 @@ TEST(SpanTest, ConstructFromStdArray) {
   for (size_t i = 0; i < const_span.size(); ++i)
     EXPECT_EQ(array[i], const_span[i]);
 
-  span<int> span(array);
-  EXPECT_EQ(array.data(), span.data());
-  EXPECT_EQ(array.size(), span.size());
-  for (size_t i = 0; i < span.size(); ++i)
-    EXPECT_EQ(array[i], span[i]);
+  span<int> dynamic_span(array);
+  EXPECT_EQ(array.data(), dynamic_span.data());
+  EXPECT_EQ(array.size(), dynamic_span.size());
+  for (size_t i = 0; i < dynamic_span.size(); ++i)
+    EXPECT_EQ(array[i], dynamic_span[i]);
+
+  span<int, base::size(array)> static_span(array);
+  EXPECT_EQ(array.data(), static_span.data());
+  EXPECT_EQ(array.size(), static_span.size());
+  for (size_t i = 0; i < static_span.size(); ++i)
+    EXPECT_EQ(array[i], static_span[i]);
 }
 
 TEST(SpanTest, ConstructFromInitializerList) {
@@ -119,6 +154,13 @@ TEST(SpanTest, ConstructFromInitializerList) {
 
   for (size_t i = 0; i < const_span.size(); ++i)
     EXPECT_EQ(il.begin()[i], const_span[i]);
+
+  span<const int, 6> static_span(il);
+  EXPECT_EQ(il.begin(), static_span.data());
+  EXPECT_EQ(il.size(), static_span.size());
+
+  for (size_t i = 0; i < static_span.size(); ++i)
+    EXPECT_EQ(il.begin()[i], static_span[i]);
 }
 
 TEST(SpanTest, ConstructFromStdString) {
@@ -131,12 +173,19 @@ TEST(SpanTest, ConstructFromStdString) {
   for (size_t i = 0; i < const_span.size(); ++i)
     EXPECT_EQ(str[i], const_span[i]);
 
-  span<char> span(str);
-  EXPECT_EQ(str.data(), span.data());
-  EXPECT_EQ(str.size(), span.size());
+  span<char> dynamic_span(str);
+  EXPECT_EQ(str.data(), dynamic_span.data());
+  EXPECT_EQ(str.size(), dynamic_span.size());
 
-  for (size_t i = 0; i < span.size(); ++i)
-    EXPECT_EQ(str[i], span[i]);
+  for (size_t i = 0; i < dynamic_span.size(); ++i)
+    EXPECT_EQ(str[i], dynamic_span[i]);
+
+  span<char, 6> static_span(str);
+  EXPECT_EQ(str.data(), static_span.data());
+  EXPECT_EQ(str.size(), static_span.size());
+
+  for (size_t i = 0; i < static_span.size(); ++i)
+    EXPECT_EQ(str[i], static_span[i]);
 }
 
 TEST(SpanTest, ConstructFromConstContainer) {
@@ -148,6 +197,13 @@ TEST(SpanTest, ConstructFromConstContainer) {
 
   for (size_t i = 0; i < const_span.size(); ++i)
     EXPECT_EQ(vector[i], const_span[i]);
+
+  span<const int, 6> static_span(vector);
+  EXPECT_EQ(vector.data(), static_span.data());
+  EXPECT_EQ(vector.size(), static_span.size());
+
+  for (size_t i = 0; i < static_span.size(); ++i)
+    EXPECT_EQ(vector[i], static_span[i]);
 }
 
 TEST(SpanTest, ConstructFromContainer) {
@@ -160,12 +216,19 @@ TEST(SpanTest, ConstructFromContainer) {
   for (size_t i = 0; i < const_span.size(); ++i)
     EXPECT_EQ(vector[i], const_span[i]);
 
-  span<int> span(vector);
-  EXPECT_EQ(vector.data(), span.data());
-  EXPECT_EQ(vector.size(), span.size());
+  span<int> dynamic_span(vector);
+  EXPECT_EQ(vector.data(), dynamic_span.data());
+  EXPECT_EQ(vector.size(), dynamic_span.size());
 
-  for (size_t i = 0; i < span.size(); ++i)
-    EXPECT_EQ(vector[i], span[i]);
+  for (size_t i = 0; i < dynamic_span.size(); ++i)
+    EXPECT_EQ(vector[i], dynamic_span[i]);
+
+  span<int, 6> static_span(vector);
+  EXPECT_EQ(vector.data(), static_span.data());
+  EXPECT_EQ(vector.size(), static_span.size());
+
+  for (size_t i = 0; i < static_span.size(); ++i)
+    EXPECT_EQ(vector[i], static_span[i]);
 }
 
 TEST(SpanTest, ConvertNonConstIntegralToConst) {
@@ -174,6 +237,10 @@ TEST(SpanTest, ConvertNonConstIntegralToConst) {
   span<int> int_span(vector.data(), vector.size());
   span<const int> const_span(int_span);
   EXPECT_THAT(const_span, Pointwise(Eq(), int_span));
+
+  span<int, 6> static_int_span(vector.data(), vector.size());
+  span<const int, 6> static_const_span(static_int_span);
+  EXPECT_THAT(static_const_span, Pointwise(Eq(), static_int_span));
 }
 
 TEST(SpanTest, ConvertNonConstPointerToConst) {
@@ -192,6 +259,12 @@ TEST(SpanTest, ConvertNonConstPointerToConst) {
   // Note: no test for conversion from span<int*> to span<const int* const>,
   // due to CWG Defect 330:
   // http://open-std.org/JTC1/SC22/WG21/docs/cwg_defects.html#330
+
+  span<int*, 3> static_non_const_pointer_span(vector);
+  EXPECT_THAT(static_non_const_pointer_span, Pointwise(Eq(), vector));
+  span<int* const, 3> static_const_pointer_span(static_non_const_pointer_span);
+  EXPECT_THAT(static_const_pointer_span,
+              Pointwise(Eq(), static_non_const_pointer_span));
 }
 
 TEST(SpanTest, ConvertBetweenEquivalentTypes) {
@@ -200,6 +273,390 @@ TEST(SpanTest, ConvertBetweenEquivalentTypes) {
   span<int32_t> int32_t_span(vector);
   span<int> converted_span(int32_t_span);
   EXPECT_EQ(int32_t_span, converted_span);
+
+  span<int32_t, 5> static_int32_t_span(vector);
+  span<int, 5> static_converted_span(static_int32_t_span);
+  EXPECT_EQ(static_int32_t_span, static_converted_span);
+}
+
+TEST(SpanTest, TemplatedFirst) {
+  static constexpr int array[] = {1, 2, 3};
+  constexpr span<const int, 3> span(array);
+
+  {
+    constexpr auto subspan = span.first<0>();
+    static_assert(span.data() == subspan.data(), "");
+    static_assert(0u == subspan.size(), "");
+    static_assert(0u == decltype(subspan)::extent, "");
+  }
+
+  {
+    constexpr auto subspan = span.first<1>();
+    static_assert(span.data() == subspan.data(), "");
+    static_assert(1u == subspan.size(), "");
+    static_assert(1u == decltype(subspan)::extent, "");
+    static_assert(1 == subspan[0], "");
+  }
+
+  {
+    constexpr auto subspan = span.first<2>();
+    static_assert(span.data() == subspan.data(), "");
+    static_assert(2u == subspan.size(), "");
+    static_assert(2u == decltype(subspan)::extent, "");
+    static_assert(1 == subspan[0], "");
+    static_assert(2 == subspan[1], "");
+  }
+
+  {
+    constexpr auto subspan = span.first<3>();
+    static_assert(span.data() == subspan.data(), "");
+    static_assert(3u == subspan.size(), "");
+    static_assert(3u == decltype(subspan)::extent, "");
+    static_assert(1 == subspan[0], "");
+    static_assert(2 == subspan[1], "");
+    static_assert(3 == subspan[2], "");
+  }
+}
+
+TEST(SpanTest, TemplatedLast) {
+  static constexpr int array[] = {1, 2, 3};
+  constexpr span<const int, 3> span(array);
+
+  {
+    constexpr auto subspan = span.last<0>();
+    static_assert(span.data() + 3 == subspan.data(), "");
+    static_assert(0u == subspan.size(), "");
+    static_assert(0u == decltype(subspan)::extent, "");
+  }
+
+  {
+    constexpr auto subspan = span.last<1>();
+    static_assert(span.data() + 2 == subspan.data(), "");
+    static_assert(1u == subspan.size(), "");
+    static_assert(1u == decltype(subspan)::extent, "");
+    static_assert(3 == subspan[0], "");
+  }
+
+  {
+    constexpr auto subspan = span.last<2>();
+    static_assert(span.data() + 1 == subspan.data(), "");
+    static_assert(2u == subspan.size(), "");
+    static_assert(2u == decltype(subspan)::extent, "");
+    static_assert(2 == subspan[0], "");
+    static_assert(3 == subspan[1], "");
+  }
+
+  {
+    constexpr auto subspan = span.last<3>();
+    static_assert(span.data() == subspan.data(), "");
+    static_assert(3u == subspan.size(), "");
+    static_assert(3u == decltype(subspan)::extent, "");
+    static_assert(1 == subspan[0], "");
+    static_assert(2 == subspan[1], "");
+    static_assert(3 == subspan[2], "");
+  }
+}
+
+TEST(SpanTest, TemplatedSubspan) {
+  static constexpr int array[] = {1, 2, 3};
+  constexpr span<const int, 3> span(array);
+
+  {
+    constexpr auto subspan = span.subspan<0>();
+    static_assert(span.data() == subspan.data(), "");
+    static_assert(3u == subspan.size(), "");
+    static_assert(3u == decltype(subspan)::extent, "");
+    static_assert(1 == subspan[0], "");
+    static_assert(2 == subspan[1], "");
+    static_assert(3 == subspan[2], "");
+  }
+
+  {
+    constexpr auto subspan = span.subspan<1>();
+    static_assert(span.data() + 1 == subspan.data(), "");
+    static_assert(2u == subspan.size(), "");
+    static_assert(2u == decltype(subspan)::extent, "");
+    static_assert(2 == subspan[0], "");
+    static_assert(3 == subspan[1], "");
+  }
+
+  {
+    constexpr auto subspan = span.subspan<2>();
+    static_assert(span.data() + 2 == subspan.data(), "");
+    static_assert(1u == subspan.size(), "");
+    static_assert(1u == decltype(subspan)::extent, "");
+    static_assert(3 == subspan[0], "");
+  }
+
+  {
+    constexpr auto subspan = span.subspan<3>();
+    static_assert(span.data() + 3 == subspan.data(), "");
+    static_assert(0u == subspan.size(), "");
+    static_assert(0u == decltype(subspan)::extent, "");
+  }
+
+  {
+    constexpr auto subspan = span.subspan<0, 0>();
+    static_assert(span.data() == subspan.data(), "");
+    static_assert(0u == subspan.size(), "");
+    static_assert(0u == decltype(subspan)::extent, "");
+  }
+
+  {
+    constexpr auto subspan = span.subspan<1, 0>();
+    static_assert(span.data() + 1 == subspan.data(), "");
+    static_assert(0u == subspan.size(), "");
+    static_assert(0u == decltype(subspan)::extent, "");
+  }
+
+  {
+    constexpr auto subspan = span.subspan<2, 0>();
+    static_assert(span.data() + 2 == subspan.data(), "");
+    static_assert(0u == subspan.size(), "");
+    static_assert(0u == decltype(subspan)::extent, "");
+  }
+
+  {
+    constexpr auto subspan = span.subspan<0, 1>();
+    static_assert(span.data() == subspan.data(), "");
+    static_assert(1u == subspan.size(), "");
+    static_assert(1u == decltype(subspan)::extent, "");
+    static_assert(1 == subspan[0], "");
+  }
+
+  {
+    constexpr auto subspan = span.subspan<1, 1>();
+    static_assert(span.data() + 1 == subspan.data(), "");
+    static_assert(1u == subspan.size(), "");
+    static_assert(1u == decltype(subspan)::extent, "");
+    static_assert(2 == subspan[0], "");
+  }
+
+  {
+    constexpr auto subspan = span.subspan<2, 1>();
+    static_assert(span.data() + 2 == subspan.data(), "");
+    static_assert(1u == subspan.size(), "");
+    static_assert(1u == decltype(subspan)::extent, "");
+    static_assert(3 == subspan[0], "");
+  }
+
+  {
+    constexpr auto subspan = span.subspan<0, 2>();
+    static_assert(span.data() == subspan.data(), "");
+    static_assert(2u == subspan.size(), "");
+    static_assert(2u == decltype(subspan)::extent, "");
+    static_assert(1 == subspan[0], "");
+    static_assert(2 == subspan[1], "");
+  }
+
+  {
+    constexpr auto subspan = span.subspan<1, 2>();
+    static_assert(span.data() + 1 == subspan.data(), "");
+    static_assert(2u == subspan.size(), "");
+    static_assert(2u == decltype(subspan)::extent, "");
+    static_assert(2 == subspan[0], "");
+    static_assert(3 == subspan[1], "");
+  }
+
+  {
+    constexpr auto subspan = span.subspan<0, 3>();
+    static_assert(span.data() == subspan.data(), "");
+    static_assert(3u == subspan.size(), "");
+    static_assert(3u == decltype(subspan)::extent, "");
+    static_assert(1 == subspan[0], "");
+    static_assert(2 == subspan[1], "");
+    static_assert(3 == subspan[2], "");
+  }
+}
+
+TEST(SpanTest, TemplatedFirstOnDynamicSpan) {
+  int array[] = {1, 2, 3};
+  span<const int> span(array);
+
+  {
+    auto subspan = span.first<0>();
+    EXPECT_EQ(span.data(), subspan.data());
+    EXPECT_EQ(0u, subspan.size());
+    static_assert(0u == decltype(subspan)::extent, "");
+  }
+
+  {
+    auto subspan = span.first<1>();
+    EXPECT_EQ(span.data(), subspan.data());
+    EXPECT_EQ(1u, subspan.size());
+    static_assert(1u == decltype(subspan)::extent, "");
+    EXPECT_EQ(1, subspan[0]);
+  }
+
+  {
+    auto subspan = span.first<2>();
+    EXPECT_EQ(span.data(), subspan.data());
+    EXPECT_EQ(2u, subspan.size());
+    static_assert(2u == decltype(subspan)::extent, "");
+    EXPECT_EQ(1, subspan[0]);
+    EXPECT_EQ(2, subspan[1]);
+  }
+
+  {
+    auto subspan = span.first<3>();
+    EXPECT_EQ(span.data(), subspan.data());
+    EXPECT_EQ(3u, subspan.size());
+    static_assert(3u == decltype(subspan)::extent, "");
+    EXPECT_EQ(1, subspan[0]);
+    EXPECT_EQ(2, subspan[1]);
+    EXPECT_EQ(3, subspan[2]);
+  }
+}
+
+TEST(SpanTest, TemplatedLastOnDynamicSpan) {
+  int array[] = {1, 2, 3};
+  span<int> span(array);
+
+  {
+    auto subspan = span.last<0>();
+    EXPECT_EQ(span.data() + 3, subspan.data());
+    EXPECT_EQ(0u, subspan.size());
+    static_assert(0u == decltype(subspan)::extent, "");
+  }
+
+  {
+    auto subspan = span.last<1>();
+    EXPECT_EQ(span.data() + 2, subspan.data());
+    EXPECT_EQ(1u, subspan.size());
+    static_assert(1u == decltype(subspan)::extent, "");
+    EXPECT_EQ(3, subspan[0]);
+  }
+
+  {
+    auto subspan = span.last<2>();
+    EXPECT_EQ(span.data() + 1, subspan.data());
+    EXPECT_EQ(2u, subspan.size());
+    static_assert(2u == decltype(subspan)::extent, "");
+    EXPECT_EQ(2, subspan[0]);
+    EXPECT_EQ(3, subspan[1]);
+  }
+
+  {
+    auto subspan = span.last<3>();
+    EXPECT_EQ(span.data(), subspan.data());
+    EXPECT_EQ(3u, subspan.size());
+    static_assert(3u == decltype(subspan)::extent, "");
+    EXPECT_EQ(1, subspan[0]);
+    EXPECT_EQ(2, subspan[1]);
+    EXPECT_EQ(3, subspan[2]);
+  }
+}
+
+TEST(SpanTest, TemplatedSubspanFromDynamicSpan) {
+  int array[] = {1, 2, 3};
+  span<int, 3> span(array);
+
+  {
+    auto subspan = span.subspan<0>();
+    EXPECT_EQ(span.data(), subspan.data());
+    static_assert(3u == decltype(subspan)::extent, "");
+    EXPECT_EQ(3u, subspan.size());
+    EXPECT_EQ(1, subspan[0]);
+    EXPECT_EQ(2, subspan[1]);
+    EXPECT_EQ(3, subspan[2]);
+  }
+
+  {
+    auto subspan = span.subspan<1>();
+    EXPECT_EQ(span.data() + 1, subspan.data());
+    EXPECT_EQ(2u, subspan.size());
+    static_assert(2u == decltype(subspan)::extent, "");
+    EXPECT_EQ(2, subspan[0]);
+    EXPECT_EQ(3, subspan[1]);
+  }
+
+  {
+    auto subspan = span.subspan<2>();
+    EXPECT_EQ(span.data() + 2, subspan.data());
+    EXPECT_EQ(1u, subspan.size());
+    static_assert(1u == decltype(subspan)::extent, "");
+    EXPECT_EQ(3, subspan[0]);
+  }
+
+  {
+    auto subspan = span.subspan<3>();
+    EXPECT_EQ(span.data() + 3, subspan.data());
+    EXPECT_EQ(0u, subspan.size());
+    static_assert(0u == decltype(subspan)::extent, "");
+  }
+
+  {
+    auto subspan = span.subspan<0, 0>();
+    EXPECT_EQ(span.data(), subspan.data());
+    EXPECT_EQ(0u, subspan.size());
+    static_assert(0u == decltype(subspan)::extent, "");
+  }
+
+  {
+    auto subspan = span.subspan<1, 0>();
+    EXPECT_EQ(span.data() + 1, subspan.data());
+    EXPECT_EQ(0u, subspan.size());
+    static_assert(0u == decltype(subspan)::extent, "");
+  }
+
+  {
+    auto subspan = span.subspan<2, 0>();
+    EXPECT_EQ(span.data() + 2, subspan.data());
+    EXPECT_EQ(0u, subspan.size());
+    static_assert(0u == decltype(subspan)::extent, "");
+  }
+
+  {
+    auto subspan = span.subspan<0, 1>();
+    EXPECT_EQ(span.data(), subspan.data());
+    EXPECT_EQ(1u, subspan.size());
+    static_assert(1u == decltype(subspan)::extent, "");
+    EXPECT_EQ(1, subspan[0]);
+  }
+
+  {
+    auto subspan = span.subspan<1, 1>();
+    EXPECT_EQ(span.data() + 1, subspan.data());
+    EXPECT_EQ(1u, subspan.size());
+    static_assert(1u == decltype(subspan)::extent, "");
+    EXPECT_EQ(2, subspan[0]);
+  }
+
+  {
+    auto subspan = span.subspan<2, 1>();
+    EXPECT_EQ(span.data() + 2, subspan.data());
+    EXPECT_EQ(1u, subspan.size());
+    static_assert(1u == decltype(subspan)::extent, "");
+    EXPECT_EQ(3, subspan[0]);
+  }
+
+  {
+    auto subspan = span.subspan<0, 2>();
+    EXPECT_EQ(span.data(), subspan.data());
+    EXPECT_EQ(2u, subspan.size());
+    static_assert(2u == decltype(subspan)::extent, "");
+    EXPECT_EQ(1, subspan[0]);
+    EXPECT_EQ(2, subspan[1]);
+  }
+
+  {
+    auto subspan = span.subspan<1, 2>();
+    EXPECT_EQ(span.data() + 1, subspan.data());
+    EXPECT_EQ(2u, subspan.size());
+    static_assert(2u == decltype(subspan)::extent, "");
+    EXPECT_EQ(2, subspan[0]);
+    EXPECT_EQ(3, subspan[1]);
+  }
+
+  {
+    auto subspan = span.subspan<0, 3>();
+    EXPECT_EQ(span.data(), subspan.data());
+    EXPECT_EQ(3u, subspan.size());
+    static_assert(3u == decltype(subspan)::extent, "");
+    EXPECT_EQ(1, subspan[0]);
+    EXPECT_EQ(2, subspan[1]);
+    EXPECT_EQ(3, subspan[2]);
+  }
 }
 
 TEST(SpanTest, First) {
@@ -451,7 +908,7 @@ TEST(SpanTest, Equality) {
   static constexpr int kArray1[] = {3, 1, 4, 1, 5};
   static constexpr int kArray2[] = {3, 1, 4, 1, 5};
   constexpr span<const int> span1(kArray1);
-  constexpr span<const int> span2(kArray2);
+  constexpr span<const int, 5> span2(kArray2);
 
   EXPECT_EQ(span1, span2);
 
@@ -461,7 +918,7 @@ TEST(SpanTest, Equality) {
   EXPECT_FALSE(span1 == span3);
 
   static double kArray4[] = {2.0, 7.0, 1.0, 8.0, 3.0};
-  span<double> span4(kArray4);
+  span<double, 5> span4(kArray4);
 
   EXPECT_EQ(span3, span4);
 }
@@ -470,7 +927,7 @@ TEST(SpanTest, Inequality) {
   static constexpr int kArray1[] = {2, 3, 5, 7, 11};
   static constexpr int kArray2[] = {1, 4, 6, 8, 9};
   constexpr span<const int> span1(kArray1);
-  constexpr span<const int> span2(kArray2);
+  constexpr span<const int, 5> span2(kArray2);
 
   EXPECT_NE(span1, span2);
 
@@ -480,7 +937,7 @@ TEST(SpanTest, Inequality) {
   EXPECT_FALSE(span1 != span3);
 
   static double kArray4[] = {1.0, 4.0, 6.0, 8.0, 9.0};
-  span<double> span4(kArray4);
+  span<double, 5> span4(kArray4);
 
   EXPECT_NE(span3, span4);
 }
@@ -489,7 +946,7 @@ TEST(SpanTest, LessThan) {
   static constexpr int kArray1[] = {2, 3, 5, 7, 11};
   static constexpr int kArray2[] = {2, 3, 5, 7, 11, 13};
   constexpr span<const int> span1(kArray1);
-  constexpr span<const int> span2(kArray2);
+  constexpr span<const int, 6> span2(kArray2);
 
   EXPECT_LT(span1, span2);
 
@@ -499,7 +956,7 @@ TEST(SpanTest, LessThan) {
   EXPECT_FALSE(span1 < span3);
 
   static double kArray4[] = {2.0, 3.0, 5.0, 7.0, 11.0, 13.0};
-  span<double> span4(kArray4);
+  span<double, 6> span4(kArray4);
 
   EXPECT_LT(span3, span4);
 }
@@ -508,7 +965,7 @@ TEST(SpanTest, LessEqual) {
   static constexpr int kArray1[] = {2, 3, 5, 7, 11};
   static constexpr int kArray2[] = {2, 3, 5, 7, 11, 13};
   constexpr span<const int> span1(kArray1);
-  constexpr span<const int> span2(kArray2);
+  constexpr span<const int, 6> span2(kArray2);
 
   EXPECT_LE(span1, span1);
   EXPECT_LE(span1, span2);
@@ -519,7 +976,7 @@ TEST(SpanTest, LessEqual) {
   EXPECT_FALSE(span1 <= span3);
 
   static double kArray4[] = {2.0, 3.0, 5.0, 7.0, 11.0, 13.0};
-  span<double> span4(kArray4);
+  span<double, 6> span4(kArray4);
 
   EXPECT_LE(span3, span4);
 }
@@ -528,7 +985,7 @@ TEST(SpanTest, GreaterThan) {
   static constexpr int kArray1[] = {2, 3, 5, 7, 11, 13};
   static constexpr int kArray2[] = {2, 3, 5, 7, 11};
   constexpr span<const int> span1(kArray1);
-  constexpr span<const int> span2(kArray2);
+  constexpr span<const int, 5> span2(kArray2);
 
   EXPECT_GT(span1, span2);
 
@@ -538,7 +995,7 @@ TEST(SpanTest, GreaterThan) {
   EXPECT_FALSE(span1 > span3);
 
   static double kArray4[] = {2.0, 3.0, 5.0, 7.0, 11.0};
-  span<double> span4(kArray4);
+  span<double, 5> span4(kArray4);
 
   EXPECT_GT(span3, span4);
 }
@@ -547,7 +1004,7 @@ TEST(SpanTest, GreaterEqual) {
   static constexpr int kArray1[] = {2, 3, 5, 7, 11, 13};
   static constexpr int kArray2[] = {2, 3, 5, 7, 11};
   constexpr span<const int> span1(kArray1);
-  constexpr span<const int> span2(kArray2);
+  constexpr span<const int, 5> span2(kArray2);
 
   EXPECT_GE(span1, span1);
   EXPECT_GE(span1, span2);
@@ -558,7 +1015,7 @@ TEST(SpanTest, GreaterEqual) {
   EXPECT_FALSE(span1 >= span3);
 
   static double kArray4[] = {2.0, 3.0, 5.0, 7.0, 11.0};
-  span<double> span4(kArray4);
+  span<double, 5> span4(kArray4);
 
   EXPECT_GE(span3, span4);
 }
@@ -566,7 +1023,8 @@ TEST(SpanTest, GreaterEqual) {
 TEST(SpanTest, AsBytes) {
   {
     constexpr int kArray[] = {2, 3, 5, 7, 11, 13};
-    span<const uint8_t> bytes_span = as_bytes(make_span(kArray));
+    span<const uint8_t, sizeof(kArray)> bytes_span =
+        as_bytes(make_span(kArray));
     EXPECT_EQ(reinterpret_cast<const uint8_t*>(kArray), bytes_span.data());
     EXPECT_EQ(sizeof(kArray), bytes_span.size());
     EXPECT_EQ(bytes_span.size(), bytes_span.size_bytes());
@@ -604,7 +1062,9 @@ TEST(SpanTest, MakeSpanFromDataAndSize) {
 
   std::vector<int> vector = {1, 1, 2, 3, 5, 8};
   span<int> span(vector.data(), vector.size());
-  EXPECT_EQ(span, make_span(vector.data(), vector.size()));
+  auto made_span = make_span(vector.data(), vector.size());
+  EXPECT_EQ(span, made_span);
+  static_assert(decltype(made_span)::extent == dynamic_extent, "");
 }
 
 TEST(SpanTest, MakeSpanFromPointerPair) {
@@ -615,34 +1075,40 @@ TEST(SpanTest, MakeSpanFromPointerPair) {
 
   std::vector<int> vector = {1, 1, 2, 3, 5, 8};
   span<int> span(vector.data(), vector.size());
-  EXPECT_EQ(span, make_span(vector.data(), vector.data() + vector.size()));
+  auto made_span = make_span(vector.data(), vector.data() + vector.size());
+  EXPECT_EQ(span, made_span);
+  static_assert(decltype(made_span)::extent == dynamic_extent, "");
 }
 
 TEST(SpanTest, MakeSpanFromConstexprArray) {
   static constexpr int kArray[] = {1, 2, 3, 4, 5};
   constexpr span<const int> span(kArray);
   EXPECT_EQ(span, make_span(kArray));
+  static_assert(decltype(make_span(kArray))::extent == 5, "");
 }
 
 TEST(SpanTest, MakeSpanFromStdArray) {
   const std::array<int, 5> kArray = {{1, 2, 3, 4, 5}};
   span<const int> span(kArray);
   EXPECT_EQ(span, make_span(kArray));
+  static_assert(decltype(make_span(kArray))::extent == 5, "");
 }
 
 TEST(SpanTest, MakeSpanFromConstContainer) {
   const std::vector<int> vector = {-1, -2, -3, -4, -5};
   span<const int> span(vector);
   EXPECT_EQ(span, make_span(vector));
+  static_assert(decltype(make_span(vector))::extent == dynamic_extent, "");
 }
 
 TEST(SpanTest, MakeSpanFromContainer) {
   std::vector<int> vector = {-1, -2, -3, -4, -5};
   span<int> span(vector);
   EXPECT_EQ(span, make_span(vector));
+  static_assert(decltype(make_span(vector))::extent == dynamic_extent, "");
 }
 
-TEST(SpanTest, MakeSpanFromSpan) {
+TEST(SpanTest, MakeSpanFromDynamicSpan) {
   static constexpr int kArray[] = {1, 2, 3, 4, 5};
   constexpr span<const int> span(kArray);
   static_assert(std::is_same<decltype(span)::element_type,
@@ -654,6 +1120,26 @@ TEST(SpanTest, MakeSpanFromSpan) {
 
   static_assert(span.size() == make_span(span).size(),
                 "make_span(span) should have the same size() as span");
+
+  static_assert(decltype(make_span(span))::extent == decltype(span)::extent,
+                "make_span(span) should have the same extent as span");
+}
+
+TEST(SpanTest, MakeSpanFromStaticSpan) {
+  static constexpr int kArray[] = {1, 2, 3, 4, 5};
+  constexpr span<const int, 5> span(kArray);
+  static_assert(std::is_same<decltype(span)::element_type,
+                             decltype(make_span(span))::element_type>::value,
+                "make_span(span) should have the same element_type as span");
+
+  static_assert(span.data() == make_span(span).data(),
+                "make_span(span) should have the same data() as span");
+
+  static_assert(span.size() == make_span(span).size(),
+                "make_span(span) should have the same size() as span");
+
+  static_assert(decltype(make_span(span))::extent == decltype(span)::extent,
+                "make_span(span) should have the same extent as span");
 }
 
 TEST(SpanTest, EnsureConstexprGoodness) {

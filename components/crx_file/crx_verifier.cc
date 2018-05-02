@@ -163,12 +163,13 @@ VerifierResult VerifyCrx3(
       auto v = std::make_unique<crypto::SignatureVerifier>();
       static_assert(sizeof(unsigned char) == sizeof(uint8_t),
                     "Unsupported char size.");
-      if (!v->VerifyInit(proof_type.second, base::as_bytes<const char>(sig),
-                         base::as_bytes<const char>(key)))
+      if (!v->VerifyInit(proof_type.second,
+                         base::as_bytes(base::make_span(sig)),
+                         base::as_bytes(base::make_span(key))))
         return VerifierResult::ERROR_SIGNATURE_INITIALIZATION_FAILED;
       v->VerifyUpdate(kSignatureContext);
       v->VerifyUpdate(header_size_octets);
-      v->VerifyUpdate(base::as_bytes<const char>(signed_header_data_str));
+      v->VerifyUpdate(base::as_bytes(base::make_span(signed_header_data_str)));
       verifiers.push_back(std::move(v));
     }
   }
