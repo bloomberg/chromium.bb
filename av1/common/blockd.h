@@ -529,14 +529,14 @@ typedef struct macroblockd {
   const YV12_BUFFER_CONFIG *cur_buf;
 
   ENTROPY_CONTEXT *above_context[MAX_MB_PLANE];
-  ENTROPY_CONTEXT left_context[MAX_MB_PLANE][2 * MAX_MIB_SIZE];
+  ENTROPY_CONTEXT left_context[MAX_MB_PLANE][MAX_MIB_SIZE];
 
   PARTITION_CONTEXT *above_seg_context;
   PARTITION_CONTEXT left_seg_context[MAX_MIB_SIZE];
 
   TXFM_CONTEXT *above_txfm_context;
   TXFM_CONTEXT *left_txfm_context;
-  TXFM_CONTEXT left_txfm_context_buffer[2 * MAX_MIB_SIZE];
+  TXFM_CONTEXT left_txfm_context_buffer[MAX_MIB_SIZE];
 
   WienerInfo wiener_info[MAX_MB_PLANE];
   SgrprojInfo sgrproj_info[MAX_MB_PLANE];

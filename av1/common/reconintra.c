@@ -426,8 +426,7 @@ static int has_bottom_left(const AV1_COMMON *cm, BLOCK_SIZE bsize, int mi_row,
                                             tx_size_wide_log2[0]) >>
                                     ss_y;
       const int row_off_in_sb = blk_start_row_off + row_off;
-      const int sb_height_unit =
-          sb_mi_size << (MI_SIZE_LOG2 - tx_size_wide_log2[0]) >> ss_y;
+      const int sb_height_unit = sb_mi_size >> ss_y;
       return row_off_in_sb + bottom_left_count_unit < sb_height_unit;
     }
 
@@ -1580,13 +1579,11 @@ void av1_predict_intra_block(
   // the frame bottom edge
   const int yd = (xd->mb_to_bottom_edge >> (3 + pd->subsampling_y)) +
                  (hpx - y - txhpx) - yd_chr_offset;
-  const int right_available = mi_col + ((col_off + txw) << pd->subsampling_x >>
-                                        (MI_SIZE_LOG2 - tx_size_wide_log2[0])) <
-                              xd->tile.mi_col_end;
+  const int right_available =
+      mi_col + ((col_off + txw) << pd->subsampling_x) < xd->tile.mi_col_end;
   const int bottom_available =
-      (yd > 0) && (mi_row + (((row_off + txh) << pd->subsampling_y) >>
-                             (MI_SIZE_LOG2 - tx_size_high_log2[0])) <
-                   xd->tile.mi_row_end);
+      (yd > 0) &&
+      (mi_row + ((row_off + txh) << pd->subsampling_y) < xd->tile.mi_row_end);
 
   const PARTITION_TYPE partition = mbmi->partition;
 

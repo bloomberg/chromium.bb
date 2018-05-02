@@ -772,10 +772,9 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
   mbmi->palette_mode_info.palette_size[1] = 0;
   mbmi->filter_intra_mode_info.use_filter_intra = 0;
 
-  xd->above_txfm_context =
-      cm->above_txfm_context + (mi_col << TX_UNIT_WIDE_LOG2);
-  xd->left_txfm_context = xd->left_txfm_context_buffer +
-                          ((mi_row & MAX_MIB_MASK) << TX_UNIT_HIGH_LOG2);
+  xd->above_txfm_context = cm->above_txfm_context + mi_col;
+  xd->left_txfm_context =
+      xd->left_txfm_context_buffer + (mi_row & MAX_MIB_MASK);
 
   if (av1_allow_intrabc(cm)) {
     read_intrabc_info(cm, xd, mi_row, mi_col, r);
@@ -1545,10 +1544,9 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
 
   mbmi->current_q_index = xd->current_qindex;
 
-  xd->above_txfm_context =
-      cm->above_txfm_context + (mi_col << TX_UNIT_WIDE_LOG2);
-  xd->left_txfm_context = xd->left_txfm_context_buffer +
-                          ((mi_row & MAX_MIB_MASK) << TX_UNIT_HIGH_LOG2);
+  xd->above_txfm_context = cm->above_txfm_context + mi_col;
+  xd->left_txfm_context =
+      xd->left_txfm_context_buffer + (mi_row & MAX_MIB_MASK);
 
   if (inter_block)
     read_inter_block_mode_info(pbi, xd, mbmi, mi_row, mi_col, r);

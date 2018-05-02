@@ -749,9 +749,8 @@ static INLINE void set_skip_context(MACROBLOCKD *xd, int mi_row, int mi_col,
       row_offset = mi_row - 1;
     if (pd->subsampling_x && (mi_col & 0x01) && (mi_size_wide[bsize] == 1))
       col_offset = mi_col - 1;
-    int above_idx = col_offset << (MI_SIZE_LOG2 - tx_size_wide_log2[0]);
-    int left_idx = (row_offset & MAX_MIB_MASK)
-                   << (MI_SIZE_LOG2 - tx_size_high_log2[0]);
+    int above_idx = col_offset;
+    int left_idx = row_offset & MAX_MIB_MASK;
     pd->above_context = &xd->above_context[i][above_idx >> pd->subsampling_x];
     pd->left_context = &xd->left_context[i][left_idx >> pd->subsampling_y];
   }
@@ -1073,8 +1072,8 @@ static INLINE void av1_zero_above_context(AV1_COMMON *const cm,
   const int aligned_width =
       ALIGN_POWER_OF_TWO(width, cm->seq_params.mib_size_log2);
 
-  const int offset_y = mi_col_start << (MI_SIZE_LOG2 - tx_size_wide_log2[0]);
-  const int width_y = aligned_width << (MI_SIZE_LOG2 - tx_size_wide_log2[0]);
+  const int offset_y = mi_col_start;
+  const int width_y = aligned_width;
   const int offset_uv = offset_y >> cm->subsampling_x;
   const int width_uv = width_y >> cm->subsampling_x;
 
@@ -1091,9 +1090,9 @@ static INLINE void av1_zero_above_context(AV1_COMMON *const cm,
 
   av1_zero_array(cm->above_seg_context + mi_col_start, aligned_width);
 
-  memset(cm->above_txfm_context + (mi_col_start << TX_UNIT_WIDE_LOG2),
+  memset(cm->above_txfm_context + mi_col_start,
          tx_size_wide[TX_SIZES_LARGEST],
-         (aligned_width << TX_UNIT_WIDE_LOG2) * sizeof(TXFM_CONTEXT));
+         aligned_width * sizeof(TXFM_CONTEXT));
 }
 
 static INLINE void av1_zero_left_context(MACROBLOCKD *const xd) {
@@ -1131,16 +1130,16 @@ static INLINE void set_txfm_ctxs(TX_SIZE tx_size, int n8_w, int n8_h, int skip,
     bh = n8_h * MI_SIZE;
   }
 
-  set_txfm_ctx(xd->above_txfm_context, bw, n8_w << TX_UNIT_WIDE_LOG2);
-  set_txfm_ctx(xd->left_txfm_context, bh, n8_h << TX_UNIT_HIGH_LOG2);
+  set_txfm_ctx(xd->above_txfm_context, bw, n8_w);
+  set_txfm_ctx(xd->left_txfm_context, bh, n8_h);
 }
 
 static INLINE void txfm_partition_update(TXFM_CONTEXT *above_ctx,
                                          TXFM_CONTEXT *left_ctx,
                                          TX_SIZE tx_size, TX_SIZE txb_size) {
   BLOCK_SIZE bsize = txsize_to_bsize[txb_size];
-  int bh = mi_size_high[bsize] << TX_UNIT_HIGH_LOG2;
-  int bw = mi_size_wide[bsize] << TX_UNIT_WIDE_LOG2;
+  int bh = mi_size_high[bsize];
+  int bw = mi_size_wide[bsize];
   uint8_t txw = tx_size_wide[tx_size];
   uint8_t txh = tx_size_high[tx_size];
   int i;

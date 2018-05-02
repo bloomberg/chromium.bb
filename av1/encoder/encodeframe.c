@@ -228,10 +228,9 @@ static void set_offsets_without_segment_id(const AV1_COMP *const cpi,
   set_mode_info_offsets(cpi, x, xd, mi_row, mi_col);
 
   set_skip_context(xd, mi_row, mi_col, num_planes);
-  xd->above_txfm_context =
-      cm->above_txfm_context + (mi_col << TX_UNIT_WIDE_LOG2);
-  xd->left_txfm_context = xd->left_txfm_context_buffer +
-                          ((mi_row & MAX_MIB_MASK) << TX_UNIT_HIGH_LOG2);
+  xd->above_txfm_context = cm->above_txfm_context + mi_col;
+  xd->left_txfm_context =
+      xd->left_txfm_context_buffer + (mi_row & MAX_MIB_MASK);
 
   // Set up destination pointers.
   av1_setup_dst_planes(xd->plane, bsize, get_frame_new_buffer(cm), mi_row,
@@ -1373,10 +1372,8 @@ static void restore_context(MACROBLOCK *x,
   int mi_width = mi_size_wide[bsize];
   int mi_height = mi_size_high[bsize];
   for (p = 0; p < num_planes; p++) {
-    int tx_col;
-    int tx_row;
-    tx_col = mi_col << (MI_SIZE_LOG2 - tx_size_wide_log2[0]);
-    tx_row = (mi_row & MAX_MIB_MASK) << (MI_SIZE_LOG2 - tx_size_high_log2[0]);
+    int tx_col = mi_col;
+    int tx_row = mi_row & MAX_MIB_MASK;
     memcpy(xd->above_context[p] + (tx_col >> xd->plane[p].subsampling_x),
            ctx->a + num_4x4_blocks_wide * p,
            (sizeof(ENTROPY_CONTEXT) * num_4x4_blocks_wide) >>
@@ -1393,9 +1390,9 @@ static void restore_context(MACROBLOCK *x,
   xd->above_txfm_context = ctx->p_ta;
   xd->left_txfm_context = ctx->p_tl;
   memcpy(xd->above_txfm_context, ctx->ta,
-         sizeof(*xd->above_txfm_context) * (mi_width << TX_UNIT_WIDE_LOG2));
+         sizeof(*xd->above_txfm_context) * mi_width);
   memcpy(xd->left_txfm_context, ctx->tl,
-         sizeof(*xd->left_txfm_context) * (mi_height << TX_UNIT_HIGH_LOG2));
+         sizeof(*xd->left_txfm_context) * mi_height);
 }
 
 static void save_context(const MACROBLOCK *x, RD_SEARCH_MACROBLOCK_CONTEXT *ctx,
@@ -1412,10 +1409,8 @@ static void save_context(const MACROBLOCK *x, RD_SEARCH_MACROBLOCK_CONTEXT *ctx,
 
   // buffer the above/left context information of the block in search.
   for (p = 0; p < num_planes; ++p) {
-    int tx_col;
-    int tx_row;
-    tx_col = mi_col << (MI_SIZE_LOG2 - tx_size_wide_log2[0]);
-    tx_row = (mi_row & MAX_MIB_MASK) << (MI_SIZE_LOG2 - tx_size_high_log2[0]);
+    int tx_col = mi_col;
+    int tx_row = mi_row & MAX_MIB_MASK;
     memcpy(ctx->a + num_4x4_blocks_wide * p,
            xd->above_context[p] + (tx_col >> xd->plane[p].subsampling_x),
            (sizeof(ENTROPY_CONTEXT) * num_4x4_blocks_wide) >>
@@ -1430,9 +1425,9 @@ static void save_context(const MACROBLOCK *x, RD_SEARCH_MACROBLOCK_CONTEXT *ctx,
   memcpy(ctx->sl, xd->left_seg_context + (mi_row & MAX_MIB_MASK),
          sizeof(xd->left_seg_context[0]) * mi_height);
   memcpy(ctx->ta, xd->above_txfm_context,
-         sizeof(*xd->above_txfm_context) * (mi_width << TX_UNIT_WIDE_LOG2));
+         sizeof(*xd->above_txfm_context) * mi_width);
   memcpy(ctx->tl, xd->left_txfm_context,
-         sizeof(*xd->left_txfm_context) * (mi_height << TX_UNIT_HIGH_LOG2));
+         sizeof(*xd->left_txfm_context) * mi_height);
   ctx->p_ta = xd->above_txfm_context;
   ctx->p_tl = xd->left_txfm_context;
 }
@@ -1717,10 +1712,9 @@ static void rd_use_partition(AV1_COMP *cpi, ThreadData *td,
 
   pc_tree->partitioning = partition;
 
-  xd->above_txfm_context =
-      cm->above_txfm_context + (mi_col << TX_UNIT_WIDE_LOG2);
-  xd->left_txfm_context = xd->left_txfm_context_buffer +
-                          ((mi_row & MAX_MIB_MASK) << TX_UNIT_HIGH_LOG2);
+  xd->above_txfm_context = cm->above_txfm_context + mi_col;
+  xd->left_txfm_context =
+      xd->left_txfm_context_buffer + (mi_row & MAX_MIB_MASK);
   save_context(x, &x_ctx, mi_row, mi_col, bsize, num_planes);
 
   if (bsize == BLOCK_16X16 && cpi->vaq_refresh) {
@@ -2425,10 +2419,9 @@ static void rd_pick_sqr_partition(const AV1_COMP *const cpi, ThreadData *td,
   if (bsize == BLOCK_16X16 && cpi->vaq_refresh)
     x->mb_energy = av1_block_energy(cpi, x, bsize);
 
-  xd->above_txfm_context =
-      cm->above_txfm_context + (mi_col << TX_UNIT_WIDE_LOG2);
-  xd->left_txfm_context = xd->left_txfm_context_buffer +
-                          ((mi_row & MAX_MIB_MASK) << TX_UNIT_HIGH_LOG2);
+  xd->above_txfm_context = cm->above_txfm_context + mi_col;
+  xd->left_txfm_context =
+      xd->left_txfm_context_buffer + (mi_row & MAX_MIB_MASK);
   save_context(x, &x_ctx, mi_row, mi_col, bsize, num_planes);
 
   // PARTITION_NONE
@@ -2752,10 +2745,9 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
     }
   }
 
-  xd->above_txfm_context =
-      cm->above_txfm_context + (mi_col << TX_UNIT_WIDE_LOG2);
-  xd->left_txfm_context = xd->left_txfm_context_buffer +
-                          ((mi_row & MAX_MIB_MASK) << TX_UNIT_HIGH_LOG2);
+  xd->above_txfm_context = cm->above_txfm_context + mi_col;
+  xd->left_txfm_context =
+      xd->left_txfm_context_buffer + (mi_row & MAX_MIB_MASK);
   save_context(x, &x_ctx, mi_row, mi_col, bsize, num_planes);
 
 #if CONFIG_FP_MB_STATS
@@ -4597,10 +4589,9 @@ static void tx_partition_count_update(const AV1_COMMON *const cm, MACROBLOCK *x,
   const int bw = tx_size_wide_unit[max_tx_size];
   int idx, idy;
 
-  xd->above_txfm_context =
-      cm->above_txfm_context + (mi_col << TX_UNIT_WIDE_LOG2);
-  xd->left_txfm_context = xd->left_txfm_context_buffer +
-                          ((mi_row & MAX_MIB_MASK) << TX_UNIT_HIGH_LOG2);
+  xd->above_txfm_context = cm->above_txfm_context + mi_col;
+  xd->left_txfm_context =
+      xd->left_txfm_context_buffer + (mi_row & MAX_MIB_MASK);
 
   for (idy = 0; idy < mi_height; idy += bh)
     for (idx = 0; idx < mi_width; idx += bw)
@@ -4656,10 +4647,9 @@ static void tx_partition_set_contexts(const AV1_COMMON *const cm,
   const int bw = tx_size_wide_unit[max_tx_size];
   int idx, idy;
 
-  xd->above_txfm_context =
-      cm->above_txfm_context + (mi_col << TX_UNIT_WIDE_LOG2);
-  xd->left_txfm_context = xd->left_txfm_context_buffer +
-                          ((mi_row & MAX_MIB_MASK) << TX_UNIT_HIGH_LOG2);
+  xd->above_txfm_context = cm->above_txfm_context + mi_col;
+  xd->left_txfm_context =
+      xd->left_txfm_context_buffer + (mi_row & MAX_MIB_MASK);
 
   for (idy = 0; idy < mi_height; idy += bh)
     for (idx = 0; idx < mi_width; idx += bw)

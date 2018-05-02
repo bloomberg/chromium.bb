@@ -400,9 +400,6 @@ static const int tx_size_high_log2[TX_SIZES_ALL] = {
   2, 3, 4, 5, 6, 3, 2, 4, 3, 5, 4, 6, 5, 4, 2, 5, 3, 6, 4,
 };
 
-#define TX_UNIT_WIDE_LOG2 (MI_SIZE_LOG2 - tx_size_wide_log2[0])
-#define TX_UNIT_HIGH_LOG2 (MI_SIZE_LOG2 - tx_size_high_log2[0])
-
 static const int tx_size_2d[TX_SIZES_ALL + 1] = {
   16,  64,   256,  1024, 4096, 32,  32,  128,  128,  512,
   512, 2048, 2048, 64,   64,   256, 256, 1024, 1024,

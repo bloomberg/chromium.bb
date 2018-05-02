@@ -1354,10 +1354,9 @@ static void write_mbmi_b(AV1_COMP *cpi, const TileInfo *const tile,
 
   set_mi_row_col(xd, tile, mi_row, bh, mi_col, bw, cm->mi_rows, cm->mi_cols);
 
-  xd->above_txfm_context =
-      cm->above_txfm_context + (mi_col << TX_UNIT_WIDE_LOG2);
-  xd->left_txfm_context = xd->left_txfm_context_buffer +
-                          ((mi_row & MAX_MIB_MASK) << TX_UNIT_HIGH_LOG2);
+  xd->above_txfm_context = cm->above_txfm_context + mi_col;
+  xd->left_txfm_context =
+      xd->left_txfm_context_buffer + (mi_row & MAX_MIB_MASK);
 
   if (frame_is_intra_only(cm)) {
     write_mb_modes_kf(cpi, xd, cpi->td.mb.mbmi_ext, mi_row, mi_col, w);
