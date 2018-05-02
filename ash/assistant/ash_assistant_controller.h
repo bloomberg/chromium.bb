@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "ash/assistant/model/assistant_interaction_model.h"
+#include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/public/interfaces/ash_assistant_controller.mojom.h"
 #include "ash/public/interfaces/assistant_card_renderer.mojom.h"
 #include "base/macros.h"
@@ -28,7 +29,8 @@ class AssistantInteractionModelObserver;
 
 class AshAssistantController
     : public mojom::AshAssistantController,
-      public chromeos::assistant::mojom::AssistantEventSubscriber {
+      public chromeos::assistant::mojom::AssistantEventSubscriber,
+      public AssistantInteractionModelObserver {
  public:
   AshAssistantController();
   ~AshAssistantController() override;
@@ -69,6 +71,9 @@ class AshAssistantController
 
   // Invoked on suggestion chip pressed event.
   void OnSuggestionChipPressed(const std::string& text);
+
+  // AssistantInteractionModelObserver:
+  void OnInteractionStateChanged(InteractionState interaction_state) override;
 
   // chromeos::assistant::mojom::AssistantEventSubscriber:
   void OnInteractionStarted() override;

@@ -99,9 +99,13 @@ class AssistantContainerView : public views::BubbleDialogDelegateView {
 // AssistantBubble -------------------------------------------------------------
 
 AssistantBubble::AssistantBubble(AshAssistantController* assistant_controller)
-    : assistant_controller_(assistant_controller) {}
+    : assistant_controller_(assistant_controller) {
+  assistant_controller_->AddInteractionModelObserver(this);
+}
 
 AssistantBubble::~AssistantBubble() {
+  assistant_controller_->RemoveInteractionModelObserver(this);
+
   if (container_view_)
     container_view_->GetWidget()->RemoveObserver(this);
 }
@@ -109,6 +113,18 @@ AssistantBubble::~AssistantBubble() {
 void AssistantBubble::OnWidgetClosing(views::Widget* widget) {
   widget->RemoveObserver(this);
   container_view_ = nullptr;
+}
+
+void AssistantBubble::OnInteractionStateChanged(
+    InteractionState interaction_state) {
+  switch (interaction_state) {
+    case InteractionState::kActive:
+      Show();
+      break;
+    case InteractionState::kInactive:
+      Dismiss();
+      break;
+  }
 }
 
 void AssistantBubble::Show() {
@@ -122,10 +138,6 @@ void AssistantBubble::Show() {
 void AssistantBubble::Dismiss() {
   if (container_view_)
     container_view_->GetWidget()->Close();
-}
-
-bool AssistantBubble::IsShowing() const {
-  return container_view_ && container_view_->GetWidget()->IsVisible();
 }
 
 }  // namespace ash

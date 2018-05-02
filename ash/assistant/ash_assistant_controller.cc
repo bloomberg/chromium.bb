@@ -24,9 +24,12 @@ AshAssistantController::AshAssistantController()
     : assistant_controller_binding_(this),
       assistant_event_subscriber_binding_(this),
       assistant_bubble_(std::make_unique<AssistantBubble>(this)) {
+  AddInteractionModelObserver(this);
 }
 
 AshAssistantController::~AshAssistantController() {
+  RemoveInteractionModelObserver(this);
+
   assistant_controller_binding_.Close();
   assistant_event_subscriber_binding_.Close();
 }
@@ -95,32 +98,39 @@ void AshAssistantController::RemoveInteractionModelObserver(
 
 void AshAssistantController::StartInteraction() {
   // TODO(dmblack): Instruct underlying service to start listening if current
-  // input modality is VOICE. Also modify to check against state in
-  // AssistantInteractionModel when available.
-  if (!assistant_bubble_->IsShowing())
+  // input modality is VOICE.
+  if (assistant_interaction_model_.interaction_state() ==
+      InteractionState::kInactive) {
     OnInteractionStarted();
+  }
 }
 
 void AshAssistantController::StopInteraction() {
-  // TODO(dmblack): Instruct underlying service to stop listening. Also modify
-  // to check against state in AssistantInteractionModel when available.
-  if (assistant_bubble_->IsShowing())
+  // TODO(dmblack): Instruct underlying service to stop listening.
+  if (assistant_interaction_model_.interaction_state() !=
+      InteractionState::kInactive) {
     OnInteractionDismissed();
+  }
 }
 
 void AshAssistantController::ToggleInteraction() {
-  // TODO(dmblack): Add interaction state to AssistantInteractionModel. Bubble
-  // should observe interaction model state changes and show/hide itself
-  // appropriately.
-  if (!assistant_bubble_->IsShowing())
+  if (assistant_interaction_model_.interaction_state() ==
+      InteractionState::kInactive) {
     StartInteraction();
-  else
+  } else {
     StopInteraction();
+  }
+}
+
+void AshAssistantController::OnInteractionStateChanged(
+    InteractionState interaction_state) {
+  if (interaction_state == InteractionState::kInactive)
+    assistant_interaction_model_.ClearInteraction();
 }
 
 void AshAssistantController::OnInteractionStarted() {
   assistant_bubble_timer_.Stop();
-  assistant_bubble_->Show();
+  assistant_interaction_model_.SetInteractionState(InteractionState::kActive);
 }
 
 void AshAssistantController::OnInteractionFinished(
@@ -132,8 +142,7 @@ void AshAssistantController::OnInteractionFinished(
 
 void AshAssistantController::OnInteractionDismissed() {
   assistant_bubble_timer_.Stop();
-  assistant_bubble_->Dismiss();
-  assistant_interaction_model_.ClearInteraction();
+  assistant_interaction_model_.SetInteractionState(InteractionState::kInactive);
 }
 
 void AshAssistantController::OnHtmlResponse(const std::string& response) {
