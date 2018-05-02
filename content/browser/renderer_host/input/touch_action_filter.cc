@@ -41,9 +41,10 @@ TouchActionFilter::TouchActionFilter()
       force_enable_zoom_(false),
       allowed_touch_action_(cc::kTouchActionAuto) {}
 
-bool TouchActionFilter::FilterGestureEvent(WebGestureEvent* gesture_event) {
+FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
+    WebGestureEvent* gesture_event) {
   if (gesture_event->SourceDevice() != blink::kWebGestureDeviceTouchscreen)
-    return false;
+    return FilterGestureEventResult::kFilterGestureEventAllowed;
 
   // Filter for allowable touch actions first (eg. before the TouchEventQueue
   // can decide to send a touch cancel event).
@@ -52,11 +53,13 @@ bool TouchActionFilter::FilterGestureEvent(WebGestureEvent* gesture_event) {
       DCHECK(!suppress_manipulation_events_);
       suppress_manipulation_events_ =
           ShouldSuppressManipulation(*gesture_event);
-      return suppress_manipulation_events_;
+      return suppress_manipulation_events_
+                 ? FilterGestureEventResult::kFilterGestureEventFiltered
+                 : FilterGestureEventResult::kFilterGestureEventAllowed;
 
     case WebInputEvent::kGestureScrollUpdate:
       if (suppress_manipulation_events_)
-        return true;
+        return FilterGestureEventResult::kFilterGestureEventFiltered;
 
       // Scrolls restricted to a specific axis shouldn't permit movement
       // in the perpendicular axis.
@@ -94,17 +97,23 @@ bool TouchActionFilter::FilterGestureEvent(WebGestureEvent* gesture_event) {
           gesture_event->SetType(WebInputEvent::kGestureScrollEnd);
         }
       }
-      return FilterManipulationEventAndResetState();
+      return FilterManipulationEventAndResetState()
+                 ? FilterGestureEventResult::kFilterGestureEventFiltered
+                 : FilterGestureEventResult::kFilterGestureEventAllowed;
 
     case WebInputEvent::kGestureScrollEnd:
       ReportGestureEventFiltered(suppress_manipulation_events_);
-      return FilterManipulationEventAndResetState();
+      return FilterManipulationEventAndResetState()
+                 ? FilterGestureEventResult::kFilterGestureEventFiltered
+                 : FilterGestureEventResult::kFilterGestureEventAllowed;
 
     case WebInputEvent::kGesturePinchBegin:
     case WebInputEvent::kGesturePinchUpdate:
     case WebInputEvent::kGesturePinchEnd:
       ReportGestureEventFiltered(suppress_manipulation_events_);
-      return suppress_manipulation_events_;
+      return suppress_manipulation_events_
+                 ? FilterGestureEventResult::kFilterGestureEventFiltered
+                 : FilterGestureEventResult::kFilterGestureEventAllowed;
 
     // The double tap gesture is a tap ending event. If a double tap gesture is
     // filtered out, replace it with a tap event.
@@ -134,7 +143,7 @@ bool TouchActionFilter::FilterGestureEvent(WebGestureEvent* gesture_event) {
     case WebInputEvent::kGestureTapCancel:
       if (drop_current_tap_ending_event_) {
         drop_current_tap_ending_event_ = false;
-        return true;
+        return FilterGestureEventResult::kFilterGestureEventFiltered;
       }
       break;
 
@@ -148,7 +157,7 @@ bool TouchActionFilter::FilterGestureEvent(WebGestureEvent* gesture_event) {
       break;
   }
 
-  return false;
+  return FilterGestureEventResult::kFilterGestureEventAllowed;
 }
 
 bool TouchActionFilter::FilterManipulationEventAndResetState() {
