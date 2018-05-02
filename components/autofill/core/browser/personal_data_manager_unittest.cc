@@ -5692,14 +5692,9 @@ TEST_F(PersonalDataManagerTest, RemoveExpiredCreditCardsNotUsedSinceTimestamp) {
   }
 }
 
-#if !defined(OS_IOS)
-#define MAYBE_CreateDataForTest CreateDataForTest
-#else
-#define MAYBE_CreateDataForTest DISABLED_CreateDataForTest
-#endif
-TEST_F(PersonalDataManagerTest, MAYBE_CreateDataForTest) {
+TEST_F(PersonalDataManagerTest, CreateDataForTest) {
   // Disable sync so the data gets created.
-  sync_service_.SetPreferredDataTypes(syncer::ModelType::UNSPECIFIED);
+  sync_service_.SetPreferredDataTypes(syncer::ModelTypeSet());
 
   // By default, the creation of test data is disabled.
   ResetPersonalDataManager(USER_MODE_NORMAL);
