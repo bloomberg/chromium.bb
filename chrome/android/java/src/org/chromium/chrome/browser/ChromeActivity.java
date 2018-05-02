@@ -310,7 +310,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     public void preInflationStartup() {
         super.preInflationStartup();
 
-        if (VrShellDelegate.getVrClassesWrapper().bootsToVr()) {
+        if (VrShellDelegate.bootsToVr()) {
             // TODO(mthiesse): Remove this once b/78108624 is fixed. This is a workaround for a
             // platform bug where Chrome crashes on launch for standalone devices if not launched
             // onto the primary display (There's a virtual display 2D apps are default launched onto
