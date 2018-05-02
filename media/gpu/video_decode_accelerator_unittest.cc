@@ -141,6 +141,24 @@ base::FilePath g_thumbnail_output_dir;
 // Environment to store rendering thread.
 media::test::VideoDecodeAcceleratorTestEnvironment* g_env;
 
+const int kMaxResetAfterFrameNum = 100;
+const int kMaxFramesToDelayReuse = 64;
+const base::TimeDelta kReuseDelay = base::TimeDelta::FromSeconds(1);
+// Simulate WebRTC and call VDA::Decode 30 times per second.
+const int kWebRtcDecodeCallsPerSecond = 30;
+// Simulate an adjustment to a larger number of pictures to make sure the
+// decoder supports an upwards adjustment.
+const int kExtraPictureBuffers = 2;
+const int kNoMidStreamReset = -1;
+
+const gfx::Size kThumbnailsPageSize(1600, 1200);
+const gfx::Size kThumbnailSize(160, 120);
+
+// We assert a minimal number of concurrent decoders we expect to succeed.
+// Different platforms can support more concurrent decoders, so we don't assert
+// failure above this.
+const size_t kMinSupportedNumConcurrentDecoders = 3;
+
 // Magic constants for differentiating the reasons for NotifyResetDone being
 // called.
 enum ResetPoint {
@@ -159,15 +177,20 @@ enum ResetPoint {
   DONE_RESET_AFTER_FIRST_CONFIG_INFO,
 };
 
-const int kMaxResetAfterFrameNum = 100;
-const int kMaxFramesToDelayReuse = 64;
-const base::TimeDelta kReuseDelay = base::TimeDelta::FromSeconds(1);
-// Simulate WebRTC and call VDA::Decode 30 times per second.
-const int kWebRtcDecodeCallsPerSecond = 30;
-// Simulate an adjustment to a larger number of pictures to make sure the
-// decoder supports an upwards adjustment.
-const int kExtraPictureBuffers = 2;
-const int kNoMidStreamReset = -1;
+// State of the GLRenderingVDAClient below.  Order matters here as the test
+// makes assumptions about it.
+enum ClientState {
+  CS_CREATED = 0,
+  CS_DECODER_SET = 1,
+  CS_INITIALIZED = 2,
+  CS_FLUSHING = 3,
+  CS_FLUSHED = 4,
+  CS_RESETTING = 5,
+  CS_RESET = 6,
+  CS_ERROR = 7,
+  CS_DESTROYED = 8,
+  CS_MAX,  // Must be last entry.
+};
 
 struct TestVideoFile {
   explicit TestVideoFile(base::FilePath::StringType file_name)
@@ -193,9 +216,6 @@ struct TestVideoFile {
   std::string data_str;
 };
 
-const gfx::Size kThumbnailsPageSize(1600, 1200);
-const gfx::Size kThumbnailSize(160, 120);
-
 base::FilePath GetTestDataFile(const base::FilePath& input_file) {
   if (input_file.IsAbsolute())
     return input_file;
@@ -208,21 +228,6 @@ base::FilePath GetTestDataFile(const base::FilePath& input_file) {
       << " is not an existing path.";
   return abs_path;
 }
-
-// State of the GLRenderingVDAClient below.  Order matters here as the test
-// makes assumptions about it.
-enum ClientState {
-  CS_CREATED = 0,
-  CS_DECODER_SET = 1,
-  CS_INITIALIZED = 2,
-  CS_FLUSHING = 3,
-  CS_FLUSHED = 4,
-  CS_RESETTING = 5,
-  CS_RESET = 6,
-  CS_ERROR = 7,
-  CS_DESTROYED = 8,
-  CS_MAX,  // Must be last entry.
-};
 
 // Client that can accept callbacks from a VideoDecodeAccelerator and is used by
 // the TESTs below.
@@ -1090,11 +1095,6 @@ static void AssertWaitForStateOrDeleted(
       << ", instead of " << expected_state;
 }
 
-// We assert a minimal number of concurrent decoders we expect to succeed.
-// Different platforms can support more concurrent decoders, so we don't assert
-// failure above this.
-enum { kMinSupportedNumConcurrentDecoders = 3 };
-
 // Test the most straightforward case possible: data is decoded from a single
 // chunk and rendered to the screen.
 TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
@@ -1437,22 +1437,20 @@ INSTANTIATE_TEST_CASE_P(
 INSTANTIATE_TEST_CASE_P(
     ResourceExhaustion,
     VideoDecodeAcceleratorParamTest,
-    ::testing::Values(
-        // +0 hack below to promote enum to int.
-        std::make_tuple(kMinSupportedNumConcurrentDecoders + 0,
-                        1,
-                        1,
-                        END_OF_STREAM_RESET,
-                        CS_RESET,
-                        false,
-                        false),
-        std::make_tuple(kMinSupportedNumConcurrentDecoders + 1,
-                        1,
-                        1,
-                        END_OF_STREAM_RESET,
-                        CS_RESET,
-                        false,
-                        false)));
+    ::testing::Values(std::make_tuple(kMinSupportedNumConcurrentDecoders,
+                                      1,
+                                      1,
+                                      END_OF_STREAM_RESET,
+                                      CS_RESET,
+                                      false,
+                                      false),
+                      std::make_tuple(kMinSupportedNumConcurrentDecoders + 1,
+                                      1,
+                                      1,
+                                      END_OF_STREAM_RESET,
+                                      CS_RESET,
+                                      false,
+                                      false)));
 
 // Allow MAYBE macro substitution.
 #define WRAPPED_INSTANTIATE_TEST_CASE_P(a, b, c) \
