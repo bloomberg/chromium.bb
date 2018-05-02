@@ -14,9 +14,9 @@
 #include "media/base/provision_fetcher.h"
 #include "media/mojo/interfaces/provision_fetcher.mojom.h"
 
-namespace net {
-class URLRequestContextGetter;
-}
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
 
 namespace content {
 
@@ -25,8 +25,9 @@ namespace content {
 class CONTENT_EXPORT ProvisionFetcherImpl
     : public media::mojom::ProvisionFetcher {
  public:
-  static void Create(net::URLRequestContextGetter* context_getter,
-                     media::mojom::ProvisionFetcherRequest request);
+  static void Create(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      media::mojom::ProvisionFetcherRequest request);
 
   explicit ProvisionFetcherImpl(
       std::unique_ptr<media::ProvisionFetcher> provision_fetcher);

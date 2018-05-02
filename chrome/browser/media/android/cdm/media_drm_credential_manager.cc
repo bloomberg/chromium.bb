@@ -12,10 +12,12 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "content/public/browser/provision_fetcher_factory.h"
 #include "jni/MediaDrmCredentialManager_jni.h"
 #include "media/base/android/media_drm_bridge.h"
 #include "media/base/provision_fetcher.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
@@ -92,7 +94,8 @@ void MediaDrmCredentialManager::ResetCredentialsInternal(
   // Create provision fetcher for the default browser http request context.
   media::CreateFetcherCB create_fetcher_cb =
       base::Bind(&content::CreateProvisionFetcher,
-                 base::Unretained(g_browser_process->system_request_context()));
+                 g_browser_process->system_network_context_manager()
+                     ->GetSharedURLLoaderFactory());
 
   ResetCredentialsCB reset_credentials_cb =
       base::Bind(&MediaDrmCredentialManager::OnResetCredentialsCompleted,
