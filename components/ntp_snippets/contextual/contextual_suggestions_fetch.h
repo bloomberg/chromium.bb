@@ -10,8 +10,8 @@
 #include <utility>
 
 #include "base/callback.h"
-#include "components/ntp_snippets/contextual/cluster.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_metrics_reporter.h"
+#include "components/ntp_snippets/contextual/contextual_suggestions_result.h"
 #include "net/http/http_request_headers.h"
 #include "url/gurl.h"
 

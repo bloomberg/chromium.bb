@@ -27,6 +27,7 @@ class ContextualContentSuggestionsServiceProxy;
 namespace ntp_snippets {
 
 using contextual_suggestions::Cluster;
+using contextual_suggestions::ContextualSuggestionsResult;
 using contextual_suggestions::FetchClustersCallback;
 using contextual_suggestions::ReportFetchMetricsCallback;
 
@@ -66,6 +67,10 @@ class ContextualContentSuggestionsService : public KeyedService {
   virtual void FetchContextualSuggestionImageLegacy(
       const ContentSuggestion::ID& suggestion_id,
       ImageFetchedCallback callback);
+
+  void FetchDone(FetchClustersCallback callback,
+                 ReportFetchMetricsCallback metrics_callback,
+                 ContextualSuggestionsResult result);
 
   std::unique_ptr<
       contextual_suggestions::ContextualContentSuggestionsServiceProxy>

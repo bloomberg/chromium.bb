@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "components/ntp_snippets/contextual/contextual_content_suggestions_service.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_metrics_reporter.h"
+#include "components/ntp_snippets/contextual/contextual_suggestions_test_utils.h"
 #include "components/ntp_snippets/remote/cached_image_fetcher.h"
 #include "components/ntp_snippets/remote/remote_suggestions_database.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -41,15 +42,15 @@ class FakeContextualContentSuggestionsService
     clusters_callback_ = std::move(callback);
   }
 
-  void RunClustersCallback(std::string peek_text,
-                           std::vector<Cluster> clusters) {
-    std::move(clusters_callback_)
-        .Run(std::move(peek_text), std::move(clusters));
+  void RunClustersCallback(ContextualSuggestionsResult result) {
+    std::move(clusters_callback_).Run(std::move(result));
   }
 
  private:
   ClustersCallback clusters_callback_;
 };
+
+}  // namespace
 
 FakeContextualContentSuggestionsService::
     FakeContextualContentSuggestionsService()
@@ -57,27 +58,6 @@ FakeContextualContentSuggestionsService::
 
 FakeContextualContentSuggestionsService::
     ~FakeContextualContentSuggestionsService() {}
-
-// GMock does not support movable-only types (Cluster).
-// Instead WrappedRun is used as callback and it redirects the call to a
-// method without movable-only types, which is then mocked.
-class MockClustersCallback {
- public:
-  void WrappedRun(std::string peek_text, std::vector<Cluster> clusters) {
-    Run(peek_text, &clusters);
-  }
-
-  ClustersCallback ToOnceCallback() {
-    return base::BindOnce(&MockClustersCallback::WrappedRun,
-                          base::Unretained(this));
-  }
-
-  MOCK_METHOD2(Run,
-               void(const std::string& peek_text,
-                    std::vector<Cluster>* clusters));
-};
-
-}  // namespace
 
 class ContextualContentSuggestionsServiceProxyTest : public testing::Test {
  public:
@@ -106,8 +86,8 @@ TEST_F(ContextualContentSuggestionsServiceProxyTest,
 
   proxy()->FetchContextualSuggestions(GURL(kValidFromUrl),
                                       mock_cluster_callback.ToOnceCallback());
-  EXPECT_CALL(mock_cluster_callback, Run(kTestPeekText, Pointee(IsEmpty())));
-  service()->RunClustersCallback(kTestPeekText, std::vector<Cluster>());
+  service()->RunClustersCallback(ContextualSuggestionsResult());
+  EXPECT_TRUE(mock_cluster_callback.has_run);
 }
 
 // TODO(fgorski): More tests will be added, once we have the suggestions

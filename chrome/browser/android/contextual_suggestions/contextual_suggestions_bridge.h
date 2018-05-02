@@ -66,8 +66,7 @@ class ContextualSuggestionsBridge {
 
   void OnSuggestionsAvailable(
       base::android::ScopedJavaGlobalRef<jobject> j_callback,
-      std::string peek_text,
-      std::vector<ntp_snippets::Cluster> clusters);
+      ContextualSuggestionsResult result);
 
   void OnImageFetched(base::android::ScopedJavaGlobalRef<jobject> j_callback,
                       const gfx::Image& image);

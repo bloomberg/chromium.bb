@@ -5,9 +5,9 @@
 #ifndef COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_CONTEXTUAL_SUGGESTIONS_FETCHER_H_
 #define COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_CONTEXTUAL_SUGGESTIONS_FETCHER_H_
 
-#include "components/ntp_snippets/contextual/cluster.h"
 #include "components/ntp_snippets/contextual/contextual_suggestion.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_metrics_reporter.h"
+#include "components/ntp_snippets/contextual/contextual_suggestions_result.h"
 
 using contextual_suggestions::FetchClustersCallback;
 using contextual_suggestions::ReportFetchMetricsCallback;
