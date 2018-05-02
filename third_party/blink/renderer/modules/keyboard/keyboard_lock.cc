@@ -41,6 +41,11 @@ ScriptPromise KeyboardLock::lock(ScriptState* state,
                                  const Vector<String>& keycodes) {
   DCHECK(state);
 
+  if (!CalledFromSupportedContext(ExecutionContext::From(state))) {
+    return ScriptPromise::RejectWithDOMException(
+        state, DOMException::Create(kInvalidStateError, kChildFrameErrorMsg));
+  }
+
   if (!EnsureServiceConnected()) {
     return ScriptPromise::RejectWithDOMException(
         state,
@@ -55,11 +60,14 @@ ScriptPromise KeyboardLock::lock(ScriptState* state,
   return request_keylock_resolver_->Promise();
 }
 
-void KeyboardLock::unlock() {
-  if (!EnsureServiceConnected()) {
-    // Current frame is detached.
+void KeyboardLock::unlock(ScriptState* state) {
+  DCHECK(state);
+
+  if (!CalledFromSupportedContext(ExecutionContext::From(state)))
     return;
-  }
+
+  if (!EnsureServiceConnected())
+    return;
 
   service_->CancelKeyboardLock();
 }
@@ -75,6 +83,12 @@ bool KeyboardLock::EnsureServiceConnected() {
 
   DCHECK(service_);
   return true;
+}
+
+bool KeyboardLock::CalledFromSupportedContext(ExecutionContext* context) {
+  // KeyboardLock API is only accessible from a top level browsing context.
+  LocalFrame* frame = GetFrame();
+  return frame && frame->IsMainFrame();
 }
 
 void KeyboardLock::LockRequestFinished(

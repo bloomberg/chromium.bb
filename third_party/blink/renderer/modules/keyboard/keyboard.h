@@ -24,7 +24,7 @@ class Keyboard final : public ScriptWrappable {
 
   // KeyboardLock API: https://w3c.github.io/keyboard-lock/
   ScriptPromise lock(ScriptState*, const Vector<String>&);
-  void unlock();
+  void unlock(ScriptState*);
 
   // ScriptWrappable override.
   void Trace(blink::Visitor*) override;

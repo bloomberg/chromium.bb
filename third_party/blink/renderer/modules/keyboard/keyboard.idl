@@ -11,5 +11,7 @@
      MeasureAs=KeyboardApiLock
     ] Promise<void> lock(optional sequence<DOMString> keyCodes = []);
 
-    [MeasureAs=KeyboardApiUnlock] void unlock();
+    [CallWith=ScriptState,
+     MeasureAs=KeyboardApiUnlock
+    ] void unlock();
 };
