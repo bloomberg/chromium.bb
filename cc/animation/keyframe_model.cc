@@ -70,7 +70,6 @@ KeyframeModel::KeyframeModel(std::unique_ptr<AnimationCurve> curve,
       fill_mode_(FillMode::BOTH),
       needs_synchronized_start_time_(false),
       received_finished_event_(false),
-      suspended_(false),
       is_controlling_instance_(false),
       is_impl_only_(false),
       affects_active_elements_(true),
@@ -83,9 +82,6 @@ KeyframeModel::~KeyframeModel() {
 
 void KeyframeModel::SetRunState(RunState run_state,
                                 base::TimeTicks monotonic_time) {
-  if (suspended_)
-    return;
-
   char name_buffer[256];
   base::snprintf(name_buffer, sizeof(name_buffer), "%s-%d-%d",
                  s_curveTypeNames[curve_->Type()], target_property_id_, group_);
@@ -120,16 +116,6 @@ void KeyframeModel::SetRunState(RunState run_state,
   TRACE_EVENT_INSTANT2(
       "cc", "ElementAnimations::SetRunState", TRACE_EVENT_SCOPE_THREAD, "Name",
       TRACE_STR_COPY(name_buffer), "State", TRACE_STR_COPY(state_buffer));
-}
-
-void KeyframeModel::Suspend(base::TimeTicks monotonic_time) {
-  SetRunState(PAUSED, monotonic_time);
-  suspended_ = true;
-}
-
-void KeyframeModel::Resume(base::TimeTicks monotonic_time) {
-  suspended_ = false;
-  SetRunState(RUNNING, monotonic_time);
 }
 
 bool KeyframeModel::IsFinishedAt(base::TimeTicks monotonic_time) const {

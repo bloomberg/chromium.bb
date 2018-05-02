@@ -488,51 +488,6 @@ TEST(KeyframeModelTest, TrimTimePauseResumeReverse) {
              .InSecondsF());
 }
 
-TEST(KeyframeModelTest, TrimTimeSuspendResume) {
-  std::unique_ptr<KeyframeModel> keyframe_model(CreateKeyframeModel(1));
-  keyframe_model->SetRunState(KeyframeModel::RUNNING, TicksFromSecondsF(0.0));
-  EXPECT_EQ(0,
-            keyframe_model->TrimTimeToCurrentIteration(TicksFromSecondsF(0.0))
-                .InSecondsF());
-  EXPECT_EQ(0.5,
-            keyframe_model->TrimTimeToCurrentIteration(TicksFromSecondsF(0.5))
-                .InSecondsF());
-  keyframe_model->Suspend(TicksFromSecondsF(0.5));
-  EXPECT_EQ(
-      0.5, keyframe_model->TrimTimeToCurrentIteration(TicksFromSecondsF(1024.0))
-               .InSecondsF());
-  keyframe_model->Resume(TicksFromSecondsF(1024));
-  EXPECT_EQ(
-      0.5, keyframe_model->TrimTimeToCurrentIteration(TicksFromSecondsF(1024.0))
-               .InSecondsF());
-  EXPECT_EQ(
-      1, keyframe_model->TrimTimeToCurrentIteration(TicksFromSecondsF(1024.5))
-             .InSecondsF());
-}
-
-TEST(KeyframeModelTest, TrimTimeSuspendResumeReverse) {
-  std::unique_ptr<KeyframeModel> keyframe_model(CreateKeyframeModel(1));
-  keyframe_model->set_direction(KeyframeModel::Direction::REVERSE);
-  keyframe_model->SetRunState(KeyframeModel::RUNNING, TicksFromSecondsF(0.0));
-  EXPECT_EQ(1.0,
-            keyframe_model->TrimTimeToCurrentIteration(TicksFromSecondsF(0.0))
-                .InSecondsF());
-  EXPECT_EQ(0.75,
-            keyframe_model->TrimTimeToCurrentIteration(TicksFromSecondsF(0.25))
-                .InSecondsF());
-  keyframe_model->Suspend(TicksFromSecondsF(0.75));
-  EXPECT_EQ(0.25, keyframe_model
-                      ->TrimTimeToCurrentIteration(TicksFromSecondsF(1024.0))
-                      .InSecondsF());
-  keyframe_model->Resume(TicksFromSecondsF(1024));
-  EXPECT_EQ(0.25, keyframe_model
-                      ->TrimTimeToCurrentIteration(TicksFromSecondsF(1024.0))
-                      .InSecondsF());
-  EXPECT_EQ(
-      0, keyframe_model->TrimTimeToCurrentIteration(TicksFromSecondsF(1024.25))
-             .InSecondsF());
-}
-
 TEST(KeyframeModelTest, TrimTimeZeroDuration) {
   std::unique_ptr<KeyframeModel> keyframe_model(CreateKeyframeModel(0, 0));
   keyframe_model->SetRunState(KeyframeModel::RUNNING, TicksFromSecondsF(0.0));
@@ -714,17 +669,6 @@ TEST(KeyframeModelTest, IsFinishedNeedsSynchronizedStartTime) {
   EXPECT_TRUE(keyframe_model->is_finished());
   keyframe_model->SetRunState(KeyframeModel::ABORTED, TicksFromSecondsF(0.0));
   EXPECT_TRUE(keyframe_model->is_finished());
-}
-
-TEST(KeyframeModelTest, RunStateChangesIgnoredWhileSuspended) {
-  std::unique_ptr<KeyframeModel> keyframe_model(CreateKeyframeModel(1));
-  keyframe_model->Suspend(TicksFromSecondsF(0));
-  EXPECT_EQ(KeyframeModel::PAUSED, keyframe_model->run_state());
-  keyframe_model->SetRunState(KeyframeModel::RUNNING, TicksFromSecondsF(0.0));
-  EXPECT_EQ(KeyframeModel::PAUSED, keyframe_model->run_state());
-  keyframe_model->Resume(TicksFromSecondsF(0));
-  keyframe_model->SetRunState(KeyframeModel::RUNNING, TicksFromSecondsF(0.0));
-  EXPECT_EQ(KeyframeModel::RUNNING, keyframe_model->run_state());
 }
 
 TEST(KeyframeModelTest, TrimTimePlaybackNormal) {
