@@ -5,10 +5,13 @@
 #ifndef IOS_CHROME_BROWSER_UI_POPUP_MENU_POPUP_MENU_CONSTANTS_H_
 #define IOS_CHROME_BROWSER_UI_POPUP_MENU_POPUP_MENU_CONSTANTS_H_
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 // Accessibility IDs for the table view in various kinds of popup menus.
 extern NSString* const kPopupMenuToolsMenuTableViewId;
 extern NSString* const kPopupMenuNavigationTableViewId;
+
+// Alpha for the background color of the highlighted items.
+extern const CGFloat kSelectedItemBackgroundAlpha;
 
 #endif  // IOS_CHROME_BROWSER_UI_POPUP_MENU_POPUP_MENU_CONSTANTS_H_
