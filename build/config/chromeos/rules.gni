@@ -31,20 +31,28 @@ template("generate_vm_runner_script") {
       _qemu_dir,
     ]
 
-    # Arguments used at build time by the runner script generator.
+    # Required arguments used at build time by the runner script generator.
     args = [
       "--script-output-path",
       rebase_path(invoker.generated_script, root_build_dir),
-      "--output-directory",
-      rebase_path(root_out_dir, root_build_dir),
-      "--test-exe",
-      rebase_path(invoker.test_exe, root_build_dir),
-      "--runtime-deps-path",
-      rebase_path(invoker.runtime_deps_file, root_build_dir),
       "--cros-cache",
       rebase_path("//build/cros_cache/", root_build_dir),
       "--board",
       cros_board,
     ]
+
+    # When --test-exe is specified, run_vm_test will push the exe to the VM and
+    # execute it. Otherwise it wraps a host-side command and just takes care
+    # launching & tearing-down the VM.
+    if (defined(invoker.test_exe)) {
+      args += [
+        "--test-exe",
+        rebase_path(invoker.test_exe, root_build_dir),
+        "--output-directory",
+        rebase_path(root_out_dir, root_build_dir),
+        "--runtime-deps-path",
+        rebase_path(invoker.runtime_deps_file, root_build_dir),
+      ]
+    }
   }
 }

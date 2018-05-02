@@ -18,6 +18,11 @@ CHROMIUM_SRC_PATH = os.path.abspath(os.path.join(
     os.path.dirname(__file__), '..', '..'))
 CHROMITE_PATH = os.path.abspath(os.path.join(
     CHROMIUM_SRC_PATH, 'third_party', 'chromite'))
+# cros_vm is a tool for managing VMs.
+CROS_VM_PATH = os.path.abspath(os.path.join(
+    CHROMITE_PATH, 'bin', 'cros_vm'))
+# cros_run_vm_test is a helper tool for running tests inside VMs and wraps
+# cros_vm.
 CROS_RUN_VM_TEST_PATH = os.path.abspath(os.path.join(
     CHROMITE_PATH, 'bin', 'cros_run_vm_test'))
 
@@ -48,51 +53,35 @@ def read_runtime_files(runtime_deps_path, outdir):
   return rel_file_paths
 
 
-def main():
-  parser = argparse.ArgumentParser()
-  parser.add_argument('--verbose', '-v', action='store_true')
-  parser.add_argument(
-      '--path-to-outdir', type=str, required=True,
-      help='Path to output directory, all of whose contents will be deployed '
-           'to the device.')
-  parser.add_argument(
-      '--board', type=str, required=True, help='Type of CrOS device.')
-  parser.add_argument(
-      '--test-exe', type=str, required=True,
-      help='Path to test executable to run inside VM.')
-  parser.add_argument(
-      '--runtime-deps-path', type=str,
-      help='Runtime data dependency file from GN.')
-  parser.add_argument(
-      '--cros-cache', type=str, required=True, help='Path to cros cache.')
-  # Gtest args.
-  parser.add_argument(
-      '--test-launcher-summary-output', type=str,
-      help='When set, will pass the same option down to the test and retrieve '
-           'its result file at the specified location.')
-  parser.add_argument(
-      '--test-launcher-shard-index',
-      type=int, default=os.environ.get('GTEST_SHARD_INDEX', 0),
-      help='Index of the external shard to run.')
-  parser.add_argument(
-      '--test-launcher-total-shards',
-      type=int, default=os.environ.get('GTEST_TOTAL_SHARDS', 1),
-      help='Total number of external shards.')
-  args, unknown_args = parser.parse_known_args()
-
-  if unknown_args:
-    logging.warning('Ignoring unknown args: %s' % unknown_args)
-
-  if not os.path.exists('/dev/kvm'):
-    logging.error('/dev/kvm is missing. Is KVM installed on this machine?')
-    return 1
-  elif not os.access('/dev/kvm', os.W_OK):
-    logging.warning(
-        '/dev/kvm is not writable as current user. Perhaps you should be root?')
+def host_cmd(args):
+  if not args.cmd:
+    logging.error('Must specify command to run on the host.')
     return 1
 
-  args.cros_cache = os.path.abspath(os.path.join(
-      args.path_to_outdir, args.cros_cache))
+  cros_vm_cmd_args = [
+      CROS_VM_PATH,
+      '--board', args.board,
+      '--cache-dir', args.cros_cache,
+  ]
+  if args.verbose:
+    cros_vm_cmd_args.append('--debug')
+
+  rc = subprocess.call(
+      cros_vm_cmd_args + ['--start'], stdout=sys.stdout, stderr=sys.stderr)
+  if rc:
+    logging.error('VM start-up failed. Quitting early.')
+    return rc
+
+  try:
+    return subprocess.call(args.cmd, stdout=sys.stdout, stderr=sys.stderr)
+  finally:
+    rc = subprocess.call(
+        cros_vm_cmd_args + ['--stop'], stdout=sys.stdout, stderr=sys.stderr)
+    if rc:
+      logging.error('VM tear-down failed.')
+
+
+def vm_test(args):
   cros_run_vm_test_cmd = [
       CROS_RUN_VM_TEST_PATH,
       '--start',
@@ -100,8 +89,6 @@ def main():
       '--cache-dir', args.cros_cache,
       '--cwd', os.path.relpath(args.path_to_outdir, CHROMIUM_SRC_PATH),
   ]
-  if args.verbose:
-    cros_run_vm_test_cmd.append('--debug')
 
   # cros_run_vm_test has trouble with relative paths that go up directories, so
   # cd to src/, which should be the root of all data deps.
@@ -154,6 +141,65 @@ def main():
       f.write(json_contents)
 
   return vm_proc.returncode
+
+
+def main():
+  parser = argparse.ArgumentParser()
+  parser.add_argument('--verbose', '-v', action='store_true')
+  # Required args.
+  parser.add_argument(
+      '--board', type=str, required=True, help='Type of CrOS device.')
+  subparsers = parser.add_subparsers(dest='test_type')
+  # Host-side test args.
+  host_cmd_parser = subparsers.add_parser(
+      'host-cmd',
+      help='Runs a host-side test. Pass the host-side command to run after '
+           '"--". Hostname and port for the VM will be 127.0.0.1:9222.')
+  host_cmd_parser.set_defaults(func=host_cmd)
+  host_cmd_parser.add_argument(
+      '--cros-cache', type=str, required=True, help='Path to cros cache.')
+  host_cmd_parser.add_argument('cmd', nargs=argparse.REMAINDER)
+  # VM-side test args.
+  vm_test_parser = subparsers.add_parser(
+      'vm-test',
+      help='Runs a vm-side gtest.')
+  vm_test_parser.set_defaults(func=vm_test)
+  vm_test_parser.add_argument(
+      '--cros-cache', type=str, required=True, help='Path to cros cache.')
+  vm_test_parser.add_argument(
+      '--test-exe', type=str, required=True,
+      help='Path to test executable to run inside VM.')
+  vm_test_parser.add_argument(
+      '--path-to-outdir', type=str, required=True,
+      help='Path to output directory, all of whose contents will be deployed '
+           'to the device.')
+  vm_test_parser.add_argument(
+      '--runtime-deps-path', type=str,
+      help='Runtime data dependency file from GN.')
+  vm_test_parser.add_argument(
+      '--test-launcher-summary-output', type=str,
+      help='When set, will pass the same option down to the test and retrieve '
+           'its result file at the specified location.')
+  vm_test_parser.add_argument(
+      '--test-launcher-shard-index',
+      type=int, default=os.environ.get('GTEST_SHARD_INDEX', 0),
+      help='Index of the external shard to run.')
+  vm_test_parser.add_argument(
+      '--test-launcher-total-shards',
+      type=int, default=os.environ.get('GTEST_TOTAL_SHARDS', 1),
+      help='Total number of external shards.')
+  args = parser.parse_args()
+
+  if not os.path.exists('/dev/kvm'):
+    logging.error('/dev/kvm is missing. Is KVM installed on this machine?')
+    return 1
+  elif not os.access('/dev/kvm', os.W_OK):
+    logging.error(
+        '/dev/kvm is not writable as current user. Perhaps you should be root?')
+    return 1
+
+  args.cros_cache = os.path.abspath(args.cros_cache)
+  return args.func(args)
 
 
 if __name__ == '__main__':
