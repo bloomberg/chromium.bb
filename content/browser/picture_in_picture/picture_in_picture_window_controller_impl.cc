@@ -62,6 +62,8 @@ PictureInPictureWindowControllerImpl::~PictureInPictureWindowControllerImpl() {
   if (player_id.has_value() && observer->IsPlayerActive(*player_id)) {
     player_id->first->Send(new MediaPlayerDelegateMsg_Pause(
         player_id->first->GetRoutingID(), player_id->second));
+    player_id->first->Send(new MediaPlayerDelegateMsg_EndPictureInPictureMode(
+        player_id->first->GetRoutingID(), player_id->second));
   }
 }
 
