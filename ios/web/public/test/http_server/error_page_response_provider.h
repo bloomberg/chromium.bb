@@ -12,8 +12,6 @@
 #include "url/gurl.h"
 
 // A HtmlResponseProvider that supports the following additional URLs:
-// - GetRedirectToDnsFailureUrl - the response is a redirect to
-//   |GetDnsFailureUrl|.
 // - GetDnsFailureUrl - triggers a DNS error.
 class ErrorPageResponseProvider : public HtmlResponseProvider {
  public:
@@ -23,15 +21,6 @@ class ErrorPageResponseProvider : public HtmlResponseProvider {
       : HtmlResponseProvider(responses) {}
   // Returns a URL that causes a DNS failure.
   static GURL GetDnsFailureUrl();
-  // Returns a URL that redirects to a bad URL.
-  static GURL GetRedirectToDnsFailureUrl();
-
-  // HtmlResponseProvider implementation.
-  bool CanHandleRequest(const Request& request) override;
-  void GetResponseHeadersAndBody(
-      const Request& request,
-      scoped_refptr<net::HttpResponseHeaders>* headers,
-      std::string* response_body) override;
 };
 
 #endif  // IOS_WEB_PUBLIC_TEST_HTTP_SERVER_ERROR_PAGE_RESPONSE_PROVIDER_H_

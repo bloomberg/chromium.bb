@@ -10,6 +10,7 @@
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 
@@ -38,21 +39,26 @@ NSString* GetErrorMessage() {
 - (void)setUp {
   [super setUp];
 
-  // Tests handler which replies with URL query if serverRespondsWithContent set
-  // to YES. Otherwise the handler closes the socket.
+  // Tests handler which replies with URL query for /echo-query path if
+  // serverRespondsWithContent set to YES. Otherwise the handler closes the
+  // socket.
   using net::test_server::HttpRequest;
   using net::test_server::HttpResponse;
   auto handler = ^std::unique_ptr<HttpResponse>(const HttpRequest& request) {
-    if (!self.serverRespondsWithContent) {
-      return std::make_unique<net::test_server::RawHttpResponse>(
-          /*headers=*/"", /*contents=*/"");
+    if (request.GetURL().path() == "/echo-query") {
+      if (!self.serverRespondsWithContent) {
+        return std::make_unique<net::test_server::RawHttpResponse>(
+            /*headers=*/"", /*contents=*/"");
+      }
+      auto response = std::make_unique<net::test_server::BasicHttpResponse>();
+      response->set_content_type("text/html");
+      response->set_content(request.GetURL().query());
+      return std::move(response);
     }
-    auto response = std::make_unique<net::test_server::BasicHttpResponse>();
-    response->set_content_type("text/html");
-    response->set_content(request.GetURL().query());
-    return std::move(response);
+    return nullptr;
   };
   self.testServer->RegisterDefaultHandler(base::BindBlockArc(handler));
+  RegisterDefaultHandlers(self.testServer);
 
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
 }
@@ -61,13 +67,22 @@ NSString* GetErrorMessage() {
 - (void)testReload {
   // No response leads to ERR_INTERNET_DISCONNECTED error.
   self.serverRespondsWithContent = NO;
-  [ChromeEarlGrey loadURL:self.testServer->GetURL("/?foo")];
+  [ChromeEarlGrey loadURL:self.testServer->GetURL("/echo-query?foo")];
   [ChromeEarlGrey waitForStaticHTMLViewContainingText:GetErrorMessage()];
 
   // Reload the page, which should load without errors.
   self.serverRespondsWithContent = YES;
   [ChromeEarlGrey reload];
   [ChromeEarlGrey waitForWebViewContainingText:"foo"];
+}
+
+// Loads the URL which redirects to unresponsive server.
+- (void)testRedirectToFailingURL {
+  // No response leads to ERR_INTERNET_DISCONNECTED error.
+  self.serverRespondsWithContent = NO;
+  [ChromeEarlGrey
+      loadURL:self.testServer->GetURL("/server-redirect?echo-query")];
+  [ChromeEarlGrey waitForStaticHTMLViewContainingText:GetErrorMessage()];
 }
 
 @end
