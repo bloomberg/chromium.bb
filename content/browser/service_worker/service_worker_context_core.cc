@@ -550,11 +550,10 @@ void ServiceWorkerContextCore::RegistrationComplete(
 
   DCHECK(registration);
   std::move(callback).Run(status, status_message, registration->id());
-  // TODO(falken): At this point the registration promise is resolved, but we
-  // haven't persisted anything to storage yet. So we should either call
-  // OnRegistrationStored somewhere else or change its name.
+  // At this point the registration promise is resolved, but we haven't
+  // persisted anything to storage yet.
   observer_list_->Notify(
-      FROM_HERE, &ServiceWorkerContextCoreObserver::OnRegistrationStored,
+      FROM_HERE, &ServiceWorkerContextCoreObserver::OnRegistrationCompleted,
       registration->id(), pattern);
 }
 

@@ -306,11 +306,11 @@ class ServiceWorkerInternalsUI::PartitionObserver
     web_ui_->CallJavascriptFunctionUnsafe(
         "serviceworker.onConsoleMessageReported", ConvertToRawPtrVector(args));
   }
-  void OnRegistrationStored(int64_t registration_id,
-                            const GURL& pattern) override {
+  void OnRegistrationCompleted(int64_t registration_id,
+                               const GURL& pattern) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    web_ui_->CallJavascriptFunctionUnsafe("serviceworker.onRegistrationStored",
-                                          Value(pattern.spec()));
+    web_ui_->CallJavascriptFunctionUnsafe(
+        "serviceworker.onRegistrationCompleted", Value(pattern.spec()));
   }
   void OnRegistrationDeleted(int64_t registration_id,
                              const GURL& pattern) override {
