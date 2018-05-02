@@ -53,7 +53,7 @@ TEST(VerifiedContents, Simple) {
   // Initialize the VerifiedContents object.
   std::string public_key;
   ASSERT_TRUE(GetPublicKey(path.AppendASCII(kPublicKeyPem), &public_key));
-  VerifiedContents contents(base::as_bytes<const char>(public_key));
+  VerifiedContents contents(base::as_bytes(base::make_span(public_key)));
   base::FilePath verified_contents_path =
       path.AppendASCII("verified_contents.json");
 
@@ -146,7 +146,7 @@ TEST(VerifiedContents, FailsOnBase64) {
   // Initialize the VerifiedContents object.
   std::string public_key;
   ASSERT_TRUE(GetPublicKey(path.AppendASCII(kPublicKeyPem), &public_key));
-  VerifiedContents contents(base::as_bytes<const char>(public_key));
+  VerifiedContents contents(base::as_bytes(base::make_span(public_key)));
 
   base::FilePath verified_contents_path =
       path.AppendASCII("verified_contents_base64.json");

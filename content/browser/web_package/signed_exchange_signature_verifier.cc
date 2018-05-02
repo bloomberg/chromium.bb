@@ -169,7 +169,7 @@ bool VerifySignature(base::span<const uint8_t> sig,
   // check.
   crypto::SignatureVerifier verifier;
   if (!verifier.VerifyInit(crypto::SignatureVerifier::RSA_PSS_SHA256, sig,
-                           base::as_bytes<const char>(spki))) {
+                           base::as_bytes(base::make_span(spki)))) {
     signed_exchange_utils::ReportErrorAndEndTraceEvent(
         devtools_proxy, "VerifySignature", "VerifyInit failed.");
     return false;

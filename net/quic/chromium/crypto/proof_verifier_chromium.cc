@@ -535,21 +535,18 @@ bool ProofVerifierChromium::Job::VerifySignature(
   }
 
   crypto::SignatureVerifier verifier;
-  if (!verifier.VerifyInit(algorithm, base::as_bytes<const char>(signature),
-                           base::as_bytes<const char>(spki))) {
+  if (!verifier.VerifyInit(algorithm,
+                           base::as_bytes(base::make_span(signature)),
+                           base::as_bytes(base::make_span(spki)))) {
     DLOG(WARNING) << "VerifyInit failed";
     return false;
   }
 
-  verifier.VerifyUpdate(
-      base::make_span(reinterpret_cast<const uint8_t*>(kProofSignatureLabel),
-                      sizeof(kProofSignatureLabel)));
+  verifier.VerifyUpdate(base::as_bytes(base::make_span(kProofSignatureLabel)));
   uint32_t len = chlo_hash.length();
-  verifier.VerifyUpdate(
-      base::make_span(reinterpret_cast<const uint8_t*>(&len), sizeof(len)));
-  verifier.VerifyUpdate(base::as_bytes<const char>(chlo_hash));
-
-  verifier.VerifyUpdate(base::as_bytes<const char>(signed_data));
+  verifier.VerifyUpdate(base::as_bytes(base::make_span(&len, 1)));
+  verifier.VerifyUpdate(base::as_bytes(base::make_span(chlo_hash)));
+  verifier.VerifyUpdate(base::as_bytes(base::make_span(signed_data)));
 
   if (!verifier.VerifyFinal()) {
     DLOG(WARNING) << "VerifyFinal failed";

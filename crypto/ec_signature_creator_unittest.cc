@@ -47,6 +47,6 @@ TEST(ECSignatureCreatorTest, BasicTest) {
   ASSERT_TRUE(verifier.VerifyInit(crypto::SignatureVerifier::ECDSA_SHA256,
                                   signature, public_key_info));
 
-  verifier.VerifyUpdate(base::as_bytes<const char>(data));
+  verifier.VerifyUpdate(base::as_bytes(base::make_span(data)));
   ASSERT_TRUE(verifier.VerifyFinal());
 }
