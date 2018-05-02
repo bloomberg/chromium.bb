@@ -71,7 +71,7 @@ class DirectFileAccessor : public FileAccessor {
   }
 
   std::vector<DirectoryContentEntry> ListDirectoryContent(
-      const base::FilePath& dir) {
+      const base::FilePath& dir) override {
     std::vector<DirectoryContentEntry> files;
     base::FileEnumerator file_enumerator(
         dir, false /* recursive */,
