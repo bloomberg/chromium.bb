@@ -101,8 +101,11 @@
         syncStatus.signinAllowed)]]">
       <settings-sync-account-control always-show-promo
           sync-status="[[syncStatus]]"
-          promo-label="$i18n{syncSignInPrompt}"
-          promo-secondary-label="$i18n{syncSignInPromptSecondary}">
+          promo-label-with-account="$i18n{syncSignInPromptWithAccount}"
+          promo-label-with-no-account="$i18n{syncSignInPromptWithNoAccount}"
+          promo-secondary-label-with-account="$i18n{syncSignInPromptSecondary}"
+          promo-secondary-label-with-no-account=
+              "$i18n{syncSignInPromptSecondary}">
       </settings-sync-account-control>
     </template>
 </if>

@@ -132,9 +132,13 @@
     <div class="settings-box first two-line" id="promo-header"
         hidden="[[syncStatus.signedIn]]">
       <div class="start">
-        <div id="promo-title">[[promoLabel]]</div>
-        <div id="promo-description" class="secondary">
-          [[promoSecondaryLabel]]
+        <div id="promo-title">
+          [[getLabel_(promoLabelWithAccount,
+              promoLabelWithNoAccount, shownAccount_)]]
+        </div>
+        <div class="secondary">
+          [[getLabel_(promoSecondaryLabelWithAccount,
+              promoSecondaryLabelWithNoAccount, shownAccount_)]]
         </div>
       </div>
       <div id="promo-separator" class="separator"
