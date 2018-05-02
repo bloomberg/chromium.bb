@@ -31,12 +31,12 @@
 # -PageLoadMetricsBrowserTest.*
 # -DnsProbeBrowserTest.*
 # -FullscreenControllerTest.*
--InfoBarUiTest.*
--PrefsFunctionalTest.*
--BrowserTest.*
--DownloadTest.*
--PolicyTest.*
--SessionRestoreTest.*
+# -InfoBarUiTest.*
+# -PrefsFunctionalTest.*
+# -BrowserTest.*
+# -DownloadTest.*
+# -PolicyTest.*
+# -SessionRestoreTest.*
 -InstallableManagerBrowserTest.*
 -ContextMenuBrowserTest.*
 -ChromeSitePerProcessTest.*
