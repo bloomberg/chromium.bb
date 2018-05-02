@@ -52,31 +52,6 @@ using web::test::HttpServer;
 
 #pragma mark - tests
 
-// Tests whether the error page is displayed if it is behind a redirect.
-- (void)testErrorPageRedirect {
-// TODO(crbug.com/694662): This test relies on external URL because of the bug.
-// Re-enable this test on device once the bug is fixed.
-#if !TARGET_IPHONE_SIMULATOR
-  EARL_GREY_TEST_DISABLED(@"Test disabled on device.");
-#endif
-
-  std::unique_ptr<web::DataResponseProvider> provider(
-      new ErrorPageResponseProvider());
-  web::test::SetUpHttpServer(std::move(provider));
-
-  // Load a URL that redirects to the DNS-failing URL.
-  [ChromeEarlGrey
-      loadURL:ErrorPageResponseProvider::GetRedirectToDnsFailureUrl()];
-
-  // Verify that the redirect occurred before checking for the DNS error.
-  const std::string& redirectedURL =
-      ErrorPageResponseProvider::GetDnsFailureUrl().GetContent();
-  [[EarlGrey selectElementWithMatcher:OmniboxText(redirectedURL)]
-      assertWithMatcher:grey_notNil()];
-
-  [ChromeEarlGrey waitForErrorPage];
-}
-
 // Tests that the error page is not displayed if the bad URL is in a <iframe>
 // tag.
 - (void)testErrorPageInIFrame {

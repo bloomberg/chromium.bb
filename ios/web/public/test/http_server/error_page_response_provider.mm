@@ -4,10 +4,6 @@
 
 #import "ios/web/public/test/http_server/error_page_response_provider.h"
 
-#include "base/logging.h"
-#import "ios/web/public/test/http_server/http_server.h"
-#include "net/http/http_status_code.h"
-
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
@@ -15,31 +11,4 @@
 // static
 GURL ErrorPageResponseProvider::GetDnsFailureUrl() {
   return GURL("http://mock/bad");
-}
-
-// static
-GURL ErrorPageResponseProvider::GetRedirectToDnsFailureUrl() {
-  return web::test::HttpServer::MakeUrl("http://mock/redirect");
-}
-
-// Returns true for |RedirectToDnsFailureUrl|.
-bool ErrorPageResponseProvider::CanHandleRequest(const Request& request) {
-  return (HtmlResponseProvider::CanHandleRequest(request) ||
-          request.url ==
-              ErrorPageResponseProvider::GetRedirectToDnsFailureUrl());
-}
-
-void ErrorPageResponseProvider::GetResponseHeadersAndBody(
-    const Request& request,
-    scoped_refptr<net::HttpResponseHeaders>* headers,
-    std::string* response_body) {
-  if (HtmlResponseProvider::CanHandleRequest(request)) {
-    HtmlResponseProvider::GetResponseHeadersAndBody(request, headers,
-                                                    response_body);
-  } else if (request.url == GetRedirectToDnsFailureUrl()) {
-    *headers = web::ResponseProvider::GetRedirectResponseHeaders(
-        ErrorPageResponseProvider::GetDnsFailureUrl().spec(), net::HTTP_FOUND);
-  } else {
-    NOTREACHED();
-  }
 }
