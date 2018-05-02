@@ -214,60 +214,62 @@ void Keyboard::AckKeyboardKey(uint32_t serial, bool handled) {
 // ui::EventHandler overrides:
 
 void Keyboard::OnKeyEvent(ui::KeyEvent* event) {
+  if (!focus_)
+    return;
+
   // Process reserved accelerators before sending it to client.
-  if (focus_ && ProcessAcceleratorIfReserved(focus_, event)) {
+  if (ProcessAcceleratorIfReserved(focus_, event)) {
     // Discard a key press event if it's a reserved accelerator and it's
     // enabled.
     event->SetHandled();
-    // Send leave/enter event instead of key event, so the client can know the
-    // actual state of the keyboard.
-    SetFocus(focus_);
-    return;
   }
 
   // When IME ate a key event, we use the event only for tracking key states and
   // ignore for further processing. Otherwise it is handled in two places (IME
   // and client) and causes undesired behavior.
-  bool consumed_by_ime = focus_ ? ConsumedByIme(focus_, event) : false;
+  bool consumed_by_ime = ConsumedByIme(focus_, event);
 
-  if (focus_ && !consumed_by_ime && !event->handled()) {
-    int modifier_flags = event->flags() & kModifierMask;
-    if (modifier_flags != modifier_flags_) {
-      modifier_flags_ = modifier_flags;
-      delegate_->OnKeyboardModifiers(modifier_flags_);
-    }
+  // Always update modifiers.
+  int modifier_flags = event->flags() & kModifierMask;
+  if (modifier_flags != modifier_flags_) {
+    modifier_flags_ = modifier_flags;
+    delegate_->OnKeyboardModifiers(modifier_flags_);
+  }
 
-    switch (event->type()) {
-      case ui::ET_KEY_PRESSED:
-        if (pressed_keys_.insert(event->code()).second) {
-          uint32_t serial = delegate_->OnKeyboardKey(event->time_stamp(),
-                                                     event->code(), true);
-          if (are_keyboard_key_acks_needed_) {
-            pending_key_acks_.insert(
-                {serial,
-                 {*event, base::TimeTicks::Now() +
-                              expiration_delay_for_pending_key_acks_}});
-            event->SetHandled();
-          }
+  switch (event->type()) {
+    case ui::ET_KEY_PRESSED:
+      // Process key press event if not already handled and not
+      // already pressed.
+      if (!consumed_by_ime && !event->handled() &&
+          pressed_keys_.insert(event->code()).second) {
+        uint32_t serial =
+            delegate_->OnKeyboardKey(event->time_stamp(), event->code(), true);
+        if (are_keyboard_key_acks_needed_) {
+          pending_key_acks_.insert(
+              {serial,
+               {*event, base::TimeTicks::Now() +
+                            expiration_delay_for_pending_key_acks_}});
+          event->SetHandled();
         }
-        break;
-      case ui::ET_KEY_RELEASED:
-        if (pressed_keys_.erase(event->code())) {
-          uint32_t serial = delegate_->OnKeyboardKey(event->time_stamp(),
-                                                     event->code(), false);
-          if (are_keyboard_key_acks_needed_) {
-            pending_key_acks_.insert(
-                {serial,
-                 {*event, base::TimeTicks::Now() +
-                              expiration_delay_for_pending_key_acks_}});
-            event->SetHandled();
-          }
+      }
+      break;
+    case ui::ET_KEY_RELEASED:
+      // Process key release event if currently pressed.
+      if (pressed_keys_.erase(event->code())) {
+        uint32_t serial =
+            delegate_->OnKeyboardKey(event->time_stamp(), event->code(), false);
+        if (are_keyboard_key_acks_needed_) {
+          pending_key_acks_.insert(
+              {serial,
+               {*event, base::TimeTicks::Now() +
+                            expiration_delay_for_pending_key_acks_}});
+          event->SetHandled();
         }
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
+      }
+      break;
+    default:
+      NOTREACHED();
+      break;
   }
 
   if (pending_key_acks_.empty())
