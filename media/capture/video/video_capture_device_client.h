@@ -53,10 +53,16 @@ class CAPTURE_EXPORT VideoCaptureDeviceClient
   void OnIncomingCapturedData(const uint8_t* data,
                               int length,
                               const VideoCaptureFormat& frame_format,
-                              int rotation,
+                              int clockwise_rotation,
                               base::TimeTicks reference_time,
                               base::TimeDelta timestamp,
                               int frame_feedback_id = 0) override;
+  void OnIncomingCapturedGfxBuffer(gfx::GpuMemoryBuffer* buffer,
+                                   const VideoCaptureFormat& frame_format,
+                                   int clockwise_rotation,
+                                   base::TimeTicks reference_time,
+                                   base::TimeDelta timestamp,
+                                   int frame_feedback_id = 0) override;
   Buffer ReserveOutputBuffer(const gfx::Size& dimensions,
                              VideoPixelFormat format,
                              int frame_feedback_id) override;

@@ -73,6 +73,13 @@ class MockDeviceClient : public media::VideoCaptureDevice::Client {
                     base::TimeTicks reference_time,
                     base::TimeDelta timestamp,
                     int frame_feedback_id));
+  MOCK_METHOD6(OnIncomingCapturedGfxBuffer,
+               void(gfx::GpuMemoryBuffer* buffer,
+                    const media::VideoCaptureFormat& frame_format,
+                    int clockwise_rotation,
+                    base::TimeTicks reference_time,
+                    base::TimeDelta timestamp,
+                    int frame_feedback_id));
   MOCK_METHOD0(DoReserveOutputBuffer, void(void));
   MOCK_METHOD0(DoOnIncomingCapturedBuffer, void(void));
   MOCK_METHOD0(DoOnIncomingCapturedVideoFrame, void(void));

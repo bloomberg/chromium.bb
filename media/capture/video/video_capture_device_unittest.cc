@@ -71,6 +71,13 @@
 #define MAYBE_CaptureMjpeg CaptureMjpeg
 #define MAYBE_TakePhoto TakePhoto
 #define MAYBE_GetPhotoState GetPhotoState
+#define MAYBE_CaptureWithSize CaptureWithSize
+#elif defined(OS_CHROMEOS)
+#define MAYBE_AllocateBadSize DISABLED_AllocateBadSize
+#define MAYBE_CaptureMjpeg CaptureMjpeg
+#define MAYBE_TakePhoto TakePhoto
+#define MAYBE_GetPhotoState GetPhotoState
+#define MAYBE_CaptureWithSize CaptureWithSize
 #elif defined(OS_LINUX)
 // AllocateBadSize will hang when a real camera is attached and if more than one
 // test is trying to use the camera (even across processes). Do NOT renable
@@ -166,6 +173,17 @@ class MockVideoCaptureClient : public VideoCaptureDevice::Client {
     ASSERT_GT(length, 0);
     ASSERT_TRUE(data);
     main_thread_->PostTask(FROM_HERE, base::BindOnce(frame_cb_, format));
+  }
+
+  void OnIncomingCapturedGfxBuffer(gfx::GpuMemoryBuffer* buffer,
+                                   const VideoCaptureFormat& frame_format,
+                                   int clockwise_rotation,
+                                   base::TimeTicks reference_time,
+                                   base::TimeDelta timestamp,
+                                   int frame_feedback_id = 0) override {
+    ASSERT_TRUE(buffer);
+    ASSERT_GT(buffer->GetSize().width() * buffer->GetSize().height(), 0);
+    main_thread_->PostTask(FROM_HERE, base::BindOnce(frame_cb_, frame_format));
   }
 
   // Trampoline methods to workaround GMOCK problems with std::unique_ptr<>.

@@ -483,17 +483,9 @@ void StreamBufferManager::SubmitCaptureResult(uint32_t frame_number) {
   if (partial_result.buffer->status !=
       cros::mojom::Camera3BufferStatus::CAMERA3_BUFFER_STATUS_ERROR) {
     gfx::GpuMemoryBuffer* buffer = stream_context_->buffers[buffer_id].get();
-    auto buffer_handle = buffer->GetHandle();
-    size_t mapped_size = 0;
-    for (const auto& plane : buffer_handle.native_pixmap_handle.planes) {
-      mapped_size += plane.size;
-    }
-    // We are relying on the GpuMemoryBuffer being mapped contiguously on the
-    // virtual memory address space.
-    device_context_->SubmitCapturedData(
-        reinterpret_cast<uint8_t*>(buffer->memory(0)), mapped_size,
-        stream_context_->capture_format, partial_result.reference_time,
-        partial_result.timestamp);
+    device_context_->SubmitCapturedData(buffer, stream_context_->capture_format,
+                                        partial_result.reference_time,
+                                        partial_result.timestamp);
   }
   stream_context_->free_buffers.push(buffer_id);
   partial_results_.erase(frame_number);

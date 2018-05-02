@@ -13,8 +13,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "media/capture/video/chromeos/mock_camera_module.h"
-#include "media/capture/video/chromeos/mock_gpu_memory_buffer_manager.h"
 #include "media/capture/video/chromeos/video_capture_device_factory_chromeos.h"
+#include "media/capture/video/mock_gpu_memory_buffer_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -153,9 +153,8 @@ TEST_F(CameraHalDelegateTest, GetBuiltinCameraInfo) {
                                     gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE,
                                     gpu::kNullSurfaceHandle))
       .Times(1)
-      .WillOnce(Invoke(
-          &mock_gpu_memory_buffer_manager_,
-          &unittest_internal::MockGpuMemoryBufferManager::ReturnValidBuffer));
+      .WillOnce(Invoke(&unittest_internal::MockGpuMemoryBufferManager::
+                           CreateFakeGpuMemoryBuffer));
 
   VideoCaptureFormats supported_formats;
   camera_hal_delegate_->GetSupportedFormats(descriptors[0], &supported_formats);
