@@ -10,7 +10,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner.h"
-#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/common/importer/imported_bookmark_entry.h"
 #include "chrome/common/importer/importer_autofill_form_data_entry.h"
@@ -32,11 +31,10 @@ const int kNumAutofillFormDataToSend = 100;
 } // namespace
 
 ExternalProcessImporterBridge::ExternalProcessImporterBridge(
-    base::Value localized_strings,
+    const base::flat_map<uint32_t, std::string>& localized_strings,
     scoped_refptr<chrome::mojom::ThreadSafeProfileImportObserverPtr> observer)
-    : observer_(std::move(observer)) {
-  localized_strings_ = std::move(localized_strings);
-}
+    : localized_strings_(std::move(localized_strings)),
+      observer_(std::move(observer)) {}
 
 void ExternalProcessImporterBridge::AddBookmarks(
     const std::vector<ImportedBookmarkEntry>& bookmarks,
@@ -177,10 +175,8 @@ void ExternalProcessImporterBridge::NotifyEnded() {
 
 base::string16 ExternalProcessImporterBridge::GetLocalizedString(
     int message_id) {
-  base::Value* message_value =
-      localized_strings_.FindKey(base::IntToString(message_id));
-  DCHECK(message_value);
-  return base::UTF8ToUTF16(message_value->GetString());
+  DCHECK(localized_strings_.count(message_id));
+  return base::UTF8ToUTF16(localized_strings_[message_id]);
 }
 
 ExternalProcessImporterBridge::~ExternalProcessImporterBridge() {}

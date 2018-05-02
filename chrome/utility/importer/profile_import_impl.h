@@ -11,7 +11,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "base/values.h"
 #include "chrome/common/importer/profile_import.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
@@ -35,10 +34,11 @@ class ProfileImportImpl : public chrome::mojom::ProfileImport {
 
  private:
   // chrome::mojom::ProfileImport:
-  void StartImport(const importer::SourceProfile& source_profile,
-                   uint16_t items,
-                   base::Value localized_strings,
-                   chrome::mojom::ProfileImportObserverPtr observer) override;
+  void StartImport(
+      const importer::SourceProfile& source_profile,
+      uint16_t items,
+      const base::flat_map<uint32_t, std::string>& localized_strings,
+      chrome::mojom::ProfileImportObserverPtr observer) override;
   void CancelImport() override;
   void ReportImportItemFinished(importer::ImportItem item) override;
 
