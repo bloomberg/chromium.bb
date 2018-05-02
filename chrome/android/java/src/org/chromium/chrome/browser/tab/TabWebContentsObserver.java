@@ -110,9 +110,7 @@ public class TabWebContentsObserver extends WebContentsObserver {
                 || activityState == ActivityState.STOPPED
                 || activityState == ActivityState.DESTROYED) {
             // The tab crashed in background or was killed by the OS out-of-memory killer.
-            // TODO(crbug.com/829381): why not reuse the native needsReload flag found in
-            // NavigationController?
-            mTab.setNeedsReload(true);
+            mTab.setNeedsReload();
             if (applicationRunning) {
                 rendererCrashStatus = TAB_RENDERER_CRASH_STATUS_HIDDEN_IN_FOREGROUND_APP;
             } else {

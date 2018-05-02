@@ -117,8 +117,12 @@ public class NavigationPopupTest {
         }
 
         @Override
-        public void requestRestoreLoad() {
+        public boolean needsReload() {
+            return false;
         }
+
+        @Override
+        public void setNeedsReload() {}
 
         @Override
         public void reload(boolean checkForRepost) {

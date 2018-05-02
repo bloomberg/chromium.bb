@@ -300,13 +300,6 @@ public class Tab
     private boolean mShouldPreserve;
 
     /**
-     * Indicates if the tab needs to be reloaded upon next display. This is set to true when the tab
-     * crashes while in background, or if a speculative restore in background gets cancelled before
-     * it completes.
-     */
-    private boolean mNeedsReload;
-
-    /**
      * True while a page load is in progress.
      */
     private boolean mIsLoading;
@@ -735,15 +728,6 @@ public class Tab
      */
     public void loadIfNecessary() {
         if (getWebContents() != null) getWebContents().getNavigationController().loadIfNecessary();
-    }
-
-    /**
-     * Requests the current navigation to be loaded upon the next call to loadIfNecessary().
-     */
-    protected void requestRestoreLoad() {
-        if (getWebContents() != null) {
-            getWebContents().getNavigationController().requestRestoreLoad();
-        }
     }
 
     /**
@@ -1698,9 +1682,6 @@ public class Tab
     protected void didStartPageLoad(String validatedUrl, boolean showingErrorPage) {
         updateTitle();
         removeSadTabIfPresent();
-        // A page load means that any pending reload is no longer necessary.
-        mNeedsReload = false;
-
         mDataSavedOnStartPageLoad =
                 DataReductionProxySettings.getInstance().getContentLengthSavedInHistorySummary();
 
@@ -2113,8 +2094,6 @@ public class Tab
         }
 
         mControlsOffsetHelper.clearPreviousPositions();
-
-        mNeedsReload = false;
     }
 
     /**
@@ -2268,13 +2247,7 @@ public class Tab
                 // Restore is needed for a tab that is loaded for the first time. WebContents will
                 // be restored from a saved state.
                 unfreezeContents();
-            } else if (mNeedsReload) {
-                // Restore is needed for a tab that was previously loaded, but its renderer was
-                // killed by the oom killer.
-                mNeedsReload = false;
-                requestRestoreLoad();
-            } else {
-                // No restore needed.
+            } else if (!needsReload()) {
                 return;
             }
 
@@ -2399,17 +2372,18 @@ public class Tab
     }
 
     /**
-     * @return Whether the Tab needs to be reloaded. {@see #mNeedsReload}
+     * @return Whether the Tab has requested a reload.
      */
     public boolean needsReload() {
-        return mNeedsReload;
+        return getWebContents() != null && getWebContents().getNavigationController().needsReload();
     }
 
     /**
-     * Set whether the Tab needs to be reloaded. {@see #mNeedsReload}
+     * Set whether the Tab needs to be reloaded.
      */
-    protected void setNeedsReload(boolean needsReload) {
-        mNeedsReload = needsReload;
+    protected void setNeedsReload() {
+        assert getWebContents() != null;
+        getWebContents().getNavigationController().setNeedsReload();
     }
 
     /**
