@@ -13,7 +13,7 @@ function $(id) {
 function success(stream) {
   track = stream.getVideoTracks()[0];
   var video = $('video')
-  video.src = URL.createObjectURL(stream);
+  video.srcObject = stream;
   video.track = track;
   video.play();
 

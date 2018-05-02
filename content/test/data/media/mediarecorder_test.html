@@ -65,8 +65,7 @@ function setupPeerConnection(stream) {
       }
     };
     remotePeerConnection.onaddstream = function(event) {
-      document.getElementById('remoteVideo').src = URL.createObjectURL(
-          event.stream);
+      document.getElementById('remoteVideo').srcObject = event.stream;
       resolve(event.stream);
     };
 
@@ -78,14 +77,13 @@ function setupPeerConnection(stream) {
       createAnswer(description);
     }, function(error) { failTest(error.toString()); });
 
-    document.getElementById('video').src = URL.createObjectURL(
-        localStream);
+    document.getElementById('video').srcObject = localStream;
   });
 }
 
 function createAndStartMediaRecorder(stream, mimeType, slice) {
   return new Promise(function(resolve, reject) {
-    document.getElementById('video').src = URL.createObjectURL(stream);
+    document.getElementById('video').srcObject = stream;
     var recorder = new MediaRecorder(stream, {'mimeType' : mimeType});
     console.log('Recorder object created, mimeType = ' + mimeType);
     if (slice != undefined) {

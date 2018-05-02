@@ -193,7 +193,7 @@
       var videoElement = document.createElement('video');
 
       // No crash for this operation.
-      videoElement.src = URL.createObjectURL(newStream);
+      videoElement.srcObject = newStream;
       detectVideoPlaying('remote-view-2')
           .then(reportTestSuccess);
     })
@@ -516,8 +516,7 @@
   }
 
   function displayAndRemember(localStream) {
-    var localStreamUrl = URL.createObjectURL(localStream);
-    $('local-view').src = localStreamUrl;
+    $('local-view').srcObject = localStream;
 
     gLocalStream = localStream;
   }
@@ -655,9 +654,8 @@
           e.stream.id + ' was received.');
     }
     gRemoteStreams[target] = e.stream;
-    var remoteStreamUrl = URL.createObjectURL(e.stream);
     var remoteVideo = $(target);
-    remoteVideo.src = remoteStreamUrl;
+    remoteVideo.srcObject = e.stream;
   }
 
   // Check that applyConstraints() fails on remote tracks because there is

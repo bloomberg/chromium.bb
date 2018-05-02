@@ -231,9 +231,11 @@ cr.define('options', function() {
     stopCamera: function() {
       this.cameraOnline = false;
       if (this.cameraVideo_)
-        this.cameraVideo_.src = '';
-      if (this.cameraStream_)
+        this.cameraVideo_.srcObject = null;
+      if (this.cameraStream_) {
         this.stopVideoTracks_(this.cameraStream_);
+        this.cameraStream_ = null;
+      }
       // Cancel any pending getUserMedia() checks.
       this.cameraStartInProgress_ = false;
     },
@@ -258,7 +260,7 @@ cr.define('options', function() {
      */
     handleCameraAvailable_: function(onAvailable, stream) {
       if (this.cameraStartInProgress_ && onAvailable()) {
-        this.cameraVideo_.src = URL.createObjectURL(stream);
+        this.cameraVideo_.srcObject = stream;
         this.cameraStream_ = stream;
       } else {
         this.stopVideoTracks_(stream);

@@ -210,8 +210,7 @@
   }
 
   function attachMediaStream(stream, videoElement) {
-    var localStreamUrl = URL.createObjectURL(stream);
-    $(videoElement).src = localStreamUrl;
+    $(videoElement).srcObject = stream;
   }
 
   function detectVideoInLocalView1(stream) {

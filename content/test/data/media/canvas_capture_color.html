@@ -99,7 +99,7 @@ function connectStream(contextType) {
   var canvas = document.getElementById('canvas-' + contextType);
   var video = document.getElementById('canvas-' + contextType + '-local-view');
   var stream = canvas.captureStream();
-  video.src = URL.createObjectURL(stream);
+  video.srcObject = stream;
   video.load();
 }
 

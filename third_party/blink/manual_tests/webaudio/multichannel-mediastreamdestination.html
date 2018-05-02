@@ -75,7 +75,7 @@
       }
 
       var audioElement = new Audio();
-      audioElement.src = URL.createObjectURL(mediaStreamDestination.stream);
+      audioElement.srcObject = mediaStreamDestination.stream;
       audioElement.play();
 
       // The ChannelMerger for the individual channel access.

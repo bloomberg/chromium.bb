@@ -7,16 +7,14 @@
 async_test(function(t) {
     var video = document.querySelector("video");
     navigator.webkitGetUserMedia({video:true}, function(stream) {
-        var previewURL = URL.createObjectURL(stream);
-
         video.ontimeupdate = t.step_func(function() {
             // restart preview.
-            video.src = previewURL;
+            video.srcObject = stream;
             video.ontimeupdate = t.step_func_done();
         });
 
         //start preview.
-        video.src = previewURL;
+        video.srcObject = stream;
     }, getStreamFailed);
 
     function getStreamFailed(error) {

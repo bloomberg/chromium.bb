@@ -44,7 +44,7 @@ function connectToVideoAndRunTest(stream) {
   var start_time = new Date().getTime();
 
   // Play the LocalMediaStream in the video element.
-  video.src = URL.createObjectURL(stream);
+  video.srcObject = stream;
   video.play();
 
   var frame = 0;

@@ -23,7 +23,7 @@
 
   function gotStreamCallback(stream) {
     var localView = $('local-view');
-    localView.src = URL.createObjectURL(stream);
+    localView.srcObject = stream;
 
     var videoTracks = stream.getVideoTracks();
     if (videoTracks.length == 0) {

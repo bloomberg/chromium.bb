@@ -132,7 +132,7 @@ function waitForAnExpectedColor(
   // If not yet done, plug the LocalMediaStream into the video element.
   if (!this.stream || this.stream != stream) {
     this.stream = stream;
-    video.src = URL.createObjectURL(stream);
+    video.srcObject = stream;
     video.play();
   }
 
