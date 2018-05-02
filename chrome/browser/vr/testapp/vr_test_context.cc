@@ -232,6 +232,9 @@ void VrTestContext::HandleInput(ui::Event* event) {
             kModalPromptTypeGenericUnsupportedFeature;
         model_->push_mode(kModeModalPrompt);
         break;
+      case ui::DomCode::US_L:
+        model_->standalone_vr_device = !model_->standalone_vr_device;
+        break;
       default:
         break;
     }
