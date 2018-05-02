@@ -379,15 +379,13 @@ void GlassBrowserFrameView::OnTabRemoved(int index) {
   // The profile switcher button may need to change height here, too.
   // TabStripMaxXChanged is not enough when a tab other than the last tab is
   // closed.
-  if (browser_view()->IsRegularOrGuestSession())
-    LayoutProfileSwitcher();
+  LayoutProfileSwitcher();
 }
 
 void GlassBrowserFrameView::OnTabsMaxXChanged() {
   // The profile switcher button's height depends on the position of the new
   // tab button, which may have changed if the tabs max X changed.
-  if (browser_view()->IsRegularOrGuestSession())
-    LayoutProfileSwitcher();
+  LayoutProfileSwitcher();
 }
 
 bool GlassBrowserFrameView::IsMaximized() const {
@@ -416,8 +414,7 @@ void GlassBrowserFrameView::Layout() {
   if (ShouldCustomDrawSystemTitlebar())
     LayoutCaptionButtons();
 
-  if (browser_view()->IsRegularOrGuestSession())
-    LayoutProfileSwitcher();
+  LayoutProfileSwitcher();
 
   // The incognito area must be laid out even if we're not in incognito as
   // tab-strip insets depend on it. When not in incognito the bounds will be
@@ -754,7 +751,8 @@ void GlassBrowserFrameView::FillClientEdgeRects(int x,
 }
 
 void GlassBrowserFrameView::LayoutProfileSwitcher() {
-  DCHECK(browser_view()->IsRegularOrGuestSession());
+  if (!browser_view()->IsRegularOrGuestSession())
+    return;
 
   View* profile_switcher = GetProfileSwitcherButton();
   if (!profile_switcher)
