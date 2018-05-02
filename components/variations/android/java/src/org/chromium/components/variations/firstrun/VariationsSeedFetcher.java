@@ -24,6 +24,7 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
@@ -122,6 +123,7 @@ public class VariationsSeedFetcher {
      * Object holding the seed data and related fields retrieved from HTTP headers.
      */
     public static class SeedInfo {
+        // If you add fields, see VariationsTestUtils.
         public String signature;
         public String country;
         public String date;
@@ -134,7 +136,15 @@ public class VariationsSeedFetcher {
             // instantiate a new one for each call.
             return new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US).parse(date);
         }
+
+        @Override
+        public String toString() {
+            return "SeedInfo{signature=\"" + signature + "\" country=\"" + country
+                    + "\" date=\"" + date + " isGzipCompressed=" + isGzipCompressed
+                    + " seedData=" + Arrays.toString(seedData);
+        }
     }
+
 
     /**
      * Fetch the first run variations seed.

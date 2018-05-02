@@ -20,6 +20,7 @@ import org.chromium.android_webview.VariationsSeedLoader;
 import org.chromium.android_webview.VariationsUtils;
 import org.chromium.android_webview.services.ServiceInit;
 import org.chromium.android_webview.test.services.MockVariationsSeedServer;
+import org.chromium.android_webview.test.util.VariationsTestUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
@@ -85,20 +86,6 @@ public class VariationsSeedLoaderTest {
         }
     }
 
-    private static void deleteIfExists(File file) throws IOException {
-        if (file.exists()) {
-            if (!file.delete()) {
-                throw new IOException("Failed to delete " + file);
-            }
-        }
-    }
-
-    private static void deleteSeeds() throws IOException {
-        deleteIfExists(VariationsUtils.getSeedFile());
-        deleteIfExists(VariationsUtils.getNewSeedFile());
-        deleteIfExists(VariationsUtils.getStampFile());
-    }
-
     private Handler mMainHandler;
 
     // Create a TestLoader, run it on the UI thread, and block until it's finished. The return value
@@ -131,13 +118,13 @@ public class VariationsSeedLoaderTest {
                         .getTargetContext().getApplicationContext());
         ServiceInit.setPrivateDataDirectorySuffix();
         RecordHistogram.setDisabledForTests(true);
-        deleteSeeds();
+        VariationsTestUtils.deleteSeeds();
     }
 
     @After
     public void tearDown() throws IOException {
         RecordHistogram.setDisabledForTests(false);
-        deleteSeeds();
+        VariationsTestUtils.deleteSeeds();
     }
 
     // Test the case that:
@@ -152,7 +139,7 @@ public class VariationsSeedLoaderTest {
             // Since there was no seed, another seed should be requested.
             Assert.assertTrue("No seed requested", seedRequested);
         } finally {
-            deleteSeeds();
+            VariationsTestUtils.deleteSeeds();
         }
     }
 
@@ -163,8 +150,9 @@ public class VariationsSeedLoaderTest {
     @MediumTest
     public void testHaveFreshSeed() throws Exception {
         try {
-            Assert.assertTrue("Seed file already exists",
-                    VariationsUtils.getSeedFile().createNewFile());
+            File oldFile = VariationsUtils.getSeedFile();
+            Assert.assertTrue("Seed file already exists", oldFile.createNewFile());
+            VariationsTestUtils.writeMockSeed(oldFile);
 
             boolean seedRequested = runTestLoaderBlocking();
 
@@ -172,7 +160,7 @@ public class VariationsSeedLoaderTest {
             Assert.assertFalse("New seed was requested when it should not have been",
                     seedRequested);
         } finally {
-            deleteSeeds();
+            VariationsTestUtils.deleteSeeds();
         }
     }
 
@@ -185,6 +173,7 @@ public class VariationsSeedLoaderTest {
         try {
             File oldFile = VariationsUtils.getSeedFile();
             Assert.assertTrue("Seed file already exists", oldFile.createNewFile());
+            VariationsTestUtils.writeMockSeed(oldFile);
             oldFile.setLastModified(0);
 
             boolean seedRequested = runTestLoaderBlocking();
@@ -192,7 +181,7 @@ public class VariationsSeedLoaderTest {
             // Since the seed was expired, another seed should be requested.
             Assert.assertTrue("No seed requested", seedRequested);
         } finally {
-            deleteSeeds();
+            VariationsTestUtils.deleteSeeds();
         }
     }
 
@@ -206,6 +195,7 @@ public class VariationsSeedLoaderTest {
             File oldFile = VariationsUtils.getSeedFile();
             File newFile = VariationsUtils.getNewSeedFile();
             Assert.assertTrue("New seed file already exists", newFile.createNewFile());
+            VariationsTestUtils.writeMockSeed(newFile);
 
             boolean seedRequested = runTestLoaderBlocking();
 
@@ -217,7 +207,7 @@ public class VariationsSeedLoaderTest {
             Assert.assertFalse("New seed was requested when it should not have been",
                     seedRequested);
         } finally {
-            deleteSeeds();
+            VariationsTestUtils.deleteSeeds();
         }
     }
 
@@ -231,6 +221,7 @@ public class VariationsSeedLoaderTest {
             File oldFile = VariationsUtils.getSeedFile();
             File newFile = VariationsUtils.getNewSeedFile();
             Assert.assertTrue("Seed file already exists", newFile.createNewFile());
+            VariationsTestUtils.writeMockSeed(newFile);
             newFile.setLastModified(0);
 
             boolean seedRequested = runTestLoaderBlocking();
@@ -244,7 +235,7 @@ public class VariationsSeedLoaderTest {
             // Since the "new" seed was expired, another seed should be requested.
             Assert.assertTrue("No seed requested", seedRequested);
         } finally {
-            deleteSeeds();
+            VariationsTestUtils.deleteSeeds();
         }
     }
 
@@ -257,10 +248,12 @@ public class VariationsSeedLoaderTest {
         try {
             File oldFile = VariationsUtils.getSeedFile();
             Assert.assertTrue("Old seed file already exists", oldFile.createNewFile());
+            VariationsTestUtils.writeMockSeed(oldFile);
             oldFile.setLastModified(0);
 
             File newFile = VariationsUtils.getNewSeedFile();
             Assert.assertTrue("New seed file already exists", newFile.createNewFile());
+            VariationsTestUtils.writeMockSeed(newFile);
             newFile.setLastModified(TimeUnit.DAYS.toMillis(1));
 
             boolean seedRequested = runTestLoaderBlocking();
@@ -274,7 +267,7 @@ public class VariationsSeedLoaderTest {
             // Since the "new" seed was expired, another seed should be requested.
             Assert.assertTrue("No seed requested", seedRequested);
         } finally {
-            deleteSeeds();
+            VariationsTestUtils.deleteSeeds();
         }
     }
 
@@ -293,7 +286,7 @@ public class VariationsSeedLoaderTest {
             Assert.assertFalse("New seed was requested when it should not have been",
                     seedRequested);
         } finally {
-            deleteSeeds();
+            VariationsTestUtils.deleteSeeds();
         }
     }
 }
