@@ -1409,10 +1409,13 @@ void Browser::OnDidBlockFramebust(content::WebContents* web_contents,
 
 void Browser::UpdatePictureInPictureSurfaceId(const viz::SurfaceId& surface_id,
                                               const gfx::Size& natural_size) {
-  if (!pip_window_controller_)
-    pip_window_controller_.reset(
+  if (!pip_window_controller_ ||
+      pip_window_controller_->GetInitiatorWebContents() !=
+          tab_strip_model_->GetActiveWebContents()) {
+    pip_window_controller_ =
         content::PictureInPictureWindowController::GetOrCreateForWebContents(
-            tab_strip_model_->GetActiveWebContents()));
+            tab_strip_model_->GetActiveWebContents());
+  }
   pip_window_controller_->EmbedSurface(surface_id, natural_size);
   pip_window_controller_->Show();
 }
