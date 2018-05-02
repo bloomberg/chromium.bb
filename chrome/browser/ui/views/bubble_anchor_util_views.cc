@@ -23,15 +23,13 @@ views::View* GetPageInfoAnchorView(Browser* browser, Anchor anchor) {
 #endif
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
 
-  if (anchor == kLocationBar &&
-      browser_view->GetLocationBarView()->visible()) {
+  if (anchor == kLocationBar && browser_view->GetLocationBarView()->IsDrawn())
     return browser_view->GetLocationBarView()->GetSecurityBubbleAnchorView();
-  }
   // Fall back to menu button if no location bar present.
 
   views::View* app_menu_button =
       browser_view->toolbar_button_provider()->GetAppMenuButton();
-  if (app_menu_button && app_menu_button->visible())
+  if (app_menu_button && app_menu_button->IsDrawn())
     return app_menu_button;
   return nullptr;
 }
