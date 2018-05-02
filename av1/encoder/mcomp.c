@@ -2152,8 +2152,6 @@ int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
         }
       }
       break;
-
-      break;
     default: assert(0 && "Invalid search method.");
   }
 
