@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
+#include "services/network/network_usage_accumulator.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/resource_scheduler_client.h"
 #include "services/network/url_loader.h"
@@ -39,6 +40,15 @@ URLLoaderFactory::~URLLoaderFactory() {
   if (context_->network_service()) {
     context_->network_service()->keepalive_statistics_recorder()->Unregister(
         process_id_);
+    // Reset bytes transferred for the process if this is the last
+    // |URLLoaderFactory|.
+    if (!context_->network_service()
+             ->keepalive_statistics_recorder()
+             ->HasRecordForProcess(process_id_)) {
+      context_->network_service()
+          ->network_usage_accumulator()
+          ->ClearBytesTransferredForProcess(process_id_);
+    }
   }
 }
 
@@ -61,11 +71,14 @@ void URLLoaderFactory::CreateLoaderAndStart(
 
   mojom::NetworkServiceClient* network_service_client = nullptr;
   base::WeakPtr<KeepaliveStatisticsRecorder> keepalive_statistics_recorder;
+  base::WeakPtr<NetworkUsageAccumulator> network_usage_accumulator;
   if (context_->network_service()) {
     network_service_client = context_->network_service()->client();
     keepalive_statistics_recorder = context_->network_service()
                                         ->keepalive_statistics_recorder()
                                         ->AsWeakPtr();
+    network_usage_accumulator =
+        context_->network_service()->network_usage_accumulator()->AsWeakPtr();
   }
 
   if (url_request.keepalive && keepalive_statistics_recorder) {
@@ -110,7 +123,8 @@ void URLLoaderFactory::CreateLoaderAndStart(
       std::move(client),
       static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
       process_id_, request_id, resource_scheduler_client_,
-      std::move(keepalive_statistics_recorder)));
+      std::move(keepalive_statistics_recorder),
+      std::move(network_usage_accumulator)));
 }
 
 void URLLoaderFactory::Clone(mojom::URLLoaderFactoryRequest request) {

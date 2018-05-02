@@ -24,6 +24,7 @@
 #include "services/network/chunked_data_pipe_upload_data_stream.h"
 #include "services/network/data_pipe_element_reader.h"
 #include "services/network/loader_util.h"
+#include "services/network/network_usage_accumulator.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/net_adapters.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -272,7 +273,8 @@ URLLoader::URLLoader(
     uint32_t process_id,
     uint32_t request_id,
     scoped_refptr<ResourceSchedulerClient> resource_scheduler_client,
-    base::WeakPtr<KeepaliveStatisticsRecorder> keepalive_statistics_recorder)
+    base::WeakPtr<KeepaliveStatisticsRecorder> keepalive_statistics_recorder,
+    base::WeakPtr<NetworkUsageAccumulator> network_usage_accumulator)
     : url_request_context_(url_request_context),
       network_service_client_(network_service_client),
       delete_callback_(std::move(delete_callback)),
@@ -295,6 +297,7 @@ URLLoader::URLLoader(
       report_raw_headers_(report_raw_headers),
       resource_scheduler_client_(std::move(resource_scheduler_client)),
       keepalive_statistics_recorder_(std::move(keepalive_statistics_recorder)),
+      network_usage_accumulator_(std::move(network_usage_accumulator)),
       first_auth_attempt_(true),
       weak_ptr_factory_(this) {
   DCHECK(delete_callback_);
@@ -740,6 +743,12 @@ void URLLoader::NotifyCompleted(int error_code) {
       net::IsCertStatusError(url_request_->ssl_info().cert_status) &&
       !net::IsCertStatusMinorError(url_request_->ssl_info().cert_status)) {
     status.ssl_info = url_request_->ssl_info();
+  }
+
+  if (network_usage_accumulator_) {
+    network_usage_accumulator_->OnBytesTransferred(
+        process_id_, render_frame_id_, url_request_->GetTotalReceivedBytes(),
+        url_request_->GetTotalSentBytes());
   }
 
   url_loader_client_->OnComplete(status);

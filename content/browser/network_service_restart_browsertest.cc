@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/test/scoped_feature_list.h"
+#include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -11,12 +12,14 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/simple_url_loader_test_helper.h"
+#include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "net/dns/mock_host_resolver.h"
@@ -148,6 +151,41 @@ void ReleaseOnIOThread(
           std::move(shared_factory)));
 }
 
+std::vector<network::mojom::NetworkUsagePtr> GetTotalNetworkUsages() {
+  std::vector<network::mojom::NetworkUsagePtr> network_usages;
+  base::RunLoop run_loop;
+  GetNetworkService()->GetTotalNetworkUsages(base::BindOnce(
+      [](std::vector<network::mojom::NetworkUsagePtr>* p_network_usages,
+         base::OnceClosure quit_closure,
+         std::vector<network::mojom::NetworkUsagePtr> returned_usages) {
+        *p_network_usages = std::move(returned_usages);
+        std::move(quit_closure).Run();
+      },
+      base::Unretained(&network_usages), run_loop.QuitClosure()));
+  run_loop.Run();
+  return network_usages;
+}
+
+bool CheckContainsProcessID(
+    const std::vector<network::mojom::NetworkUsagePtr>& usages,
+    int process_id) {
+  for (const auto& usage : usages) {
+    if ((int)usage->process_id == process_id)
+      return true;
+  }
+  return false;
+}
+
+// Wait until |condition| returns true.
+void WaitForCondition(base::RepeatingCallback<bool()> condition) {
+  while (!condition.Run()) {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+    run_loop.Run();
+  }
+}
+
 }  // namespace
 
 // This test source has been excluded from Android as Android doesn't have
@@ -182,7 +220,7 @@ class NetworkServiceRestartBrowserTest : public ContentBrowserTest {
         shell()->web_contents()->GetMainFrame());
   }
 
-  bool CheckCanLoadHttp(const std::string& relative_url) {
+  bool CheckCanLoadHttp(Shell* shell, const std::string& relative_url) {
     GURL test_url = embedded_test_server()->GetURL(relative_url);
     std::string script(
         "var xhr = new XMLHttpRequest();"
@@ -201,7 +239,7 @@ class NetworkServiceRestartBrowserTest : public ContentBrowserTest {
     bool xhr_result = false;
     // The JS call will fail if disallowed because the process will be killed.
     bool execute_result =
-        ExecuteScriptAndExtractBool(shell(), script, &xhr_result);
+        ExecuteScriptAndExtractBool(shell, script, &xhr_result);
     return xhr_result && execute_result;
   }
 
@@ -458,7 +496,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, BasicXHR) {
       BrowserContext::GetDefaultStoragePartition(browser_context()));
 
   EXPECT_TRUE(NavigateToURL(shell(), embedded_test_server()->GetURL("/echo")));
-  EXPECT_TRUE(CheckCanLoadHttp("/title1.html"));
+  EXPECT_TRUE(CheckCanLoadHttp(shell(), "/title1.html"));
   EXPECT_EQ(last_request_relative_url(), "/title1.html");
 
   // Crash the NetworkService process. Existing interfaces should receive error
@@ -471,7 +509,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, BasicXHR) {
   // frame.
   main_frame()->FlushNetworkAndNavigationInterfacesForTesting();
 
-  EXPECT_TRUE(CheckCanLoadHttp("/title2.html"));
+  EXPECT_TRUE(CheckCanLoadHttp(shell(), "/title2.html"));
   EXPECT_EQ(last_request_relative_url(), "/title2.html");
 }
 
@@ -670,6 +708,81 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, MultipleWorkerFetch) {
 
   EXPECT_TRUE(CheckCanWorkerFetch("worker2", "/title2.html"));
   EXPECT_EQ(last_request_relative_url(), "/title2.html");
+}
+
+// Make sure the entry in |NetworkService::GetTotalNetworkUsages()| was cleared
+// after process closed.
+IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
+                       GetNetworkUsagesClosed) {
+  EXPECT_TRUE(NavigateToURL(shell(), GetTestURL()));
+  Shell* shell2 = CreateBrowser();
+  EXPECT_TRUE(NavigateToURL(shell2, GetTestURL()));
+
+  int process_id1 =
+      shell()->web_contents()->GetMainFrame()->GetProcess()->GetID();
+  int process_id2 =
+      shell2->web_contents()->GetMainFrame()->GetProcess()->GetID();
+
+  // Load resource on the renderer to make sure the traffic was recorded.
+  EXPECT_TRUE(CheckCanLoadHttp(shell(), "/title2.html"));
+  EXPECT_TRUE(CheckCanLoadHttp(shell2, "/title3.html"));
+
+  // Both processes should have traffic recorded.
+  auto network_usages = GetTotalNetworkUsages();
+  EXPECT_TRUE(CheckContainsProcessID(network_usages, process_id1));
+  EXPECT_TRUE(CheckContainsProcessID(network_usages, process_id2));
+
+  // Closing |shell2| should cause the entry to be cleared.
+  shell2->Close();
+  shell2 = nullptr;
+
+  // Wait until the Network Service has noticed the change. We don't have a
+  // better way to force a flush on the Network Service side.
+  WaitForCondition(base::BindRepeating(
+      [](int process_id) {
+        auto usages = GetTotalNetworkUsages();
+        return !CheckContainsProcessID(usages, process_id);
+      },
+      process_id2));
+
+  network_usages = GetTotalNetworkUsages();
+  EXPECT_TRUE(CheckContainsProcessID(network_usages, process_id1));
+  EXPECT_FALSE(CheckContainsProcessID(network_usages, process_id2));
+}
+
+// Make sure |NetworkService::GetTotalNetworkUsages()| continues to work after
+// crash. See 'network_usage_accumulator_unittest' for quantified tests.
+IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
+                       GetNetworkUsagesCrashed) {
+  EXPECT_TRUE(NavigateToURL(shell(), GetTestURL()));
+  Shell* shell2 = CreateBrowser();
+  EXPECT_TRUE(NavigateToURL(shell2, GetTestURL()));
+
+  int process_id1 =
+      shell()->web_contents()->GetMainFrame()->GetProcess()->GetID();
+  int process_id2 =
+      shell2->web_contents()->GetMainFrame()->GetProcess()->GetID();
+
+  // Load resource on the renderer to make sure the traffic was recorded.
+  EXPECT_TRUE(CheckCanLoadHttp(shell(), "/title2.html"));
+  EXPECT_TRUE(CheckCanLoadHttp(shell2, "/title3.html"));
+
+  // Both processes should have traffic recorded.
+  auto network_usages = GetTotalNetworkUsages();
+  EXPECT_TRUE(CheckContainsProcessID(network_usages, process_id1));
+  EXPECT_TRUE(CheckContainsProcessID(network_usages, process_id2));
+
+  // Crashing Network Service should cause all entries to be cleared.
+  SimulateNetworkServiceCrash();
+  network_usages = GetTotalNetworkUsages();
+  EXPECT_FALSE(CheckContainsProcessID(network_usages, process_id1));
+  EXPECT_FALSE(CheckContainsProcessID(network_usages, process_id2));
+
+  // Should still be able to recored new traffic after crash.
+  EXPECT_TRUE(CheckCanLoadHttp(shell(), "/title2.html"));
+  network_usages = GetTotalNetworkUsages();
+  EXPECT_TRUE(CheckContainsProcessID(network_usages, process_id1));
+  EXPECT_FALSE(CheckContainsProcessID(network_usages, process_id2));
 }
 
 }  // namespace content

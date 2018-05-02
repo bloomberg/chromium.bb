@@ -36,6 +36,7 @@ class URLRequestContext;
 namespace network {
 
 class NetToMojoPendingBuffer;
+class NetworkUsageAccumulator;
 class KeepaliveStatisticsRecorder;
 struct ResourceResponse;
 
@@ -61,7 +62,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
       uint32_t process_id,
       uint32_t request_id,
       scoped_refptr<ResourceSchedulerClient> resource_scheduler_client,
-      base::WeakPtr<KeepaliveStatisticsRecorder> keepalive_statistics_recorder);
+      base::WeakPtr<KeepaliveStatisticsRecorder> keepalive_statistics_recorder,
+      base::WeakPtr<NetworkUsageAccumulator> network_usage_accumulator);
   ~URLLoader() override;
 
   // mojom::URLLoader implementation:
@@ -178,6 +180,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   mojom::SSLPrivateKeyPtr ssl_private_key_;
 
   base::WeakPtr<KeepaliveStatisticsRecorder> keepalive_statistics_recorder_;
+
+  base::WeakPtr<NetworkUsageAccumulator> network_usage_accumulator_;
 
   bool first_auth_attempt_;
 
