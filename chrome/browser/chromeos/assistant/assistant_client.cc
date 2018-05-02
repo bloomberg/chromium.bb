@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "ash/public/interfaces/voice_interaction_controller.mojom.h"
+#include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
 #include "chrome/browser/chromeos/assistant/assistant_card_renderer.h"
 #include "chromeos/services/assistant/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -50,7 +52,9 @@ void AssistantClient::Start(service_manager::Connector* connector) {
 }
 
 void AssistantClient::OnAssistantStatusChanged(bool running) {
-  running_ = running;
+  arc::VoiceInteractionControllerClient::Get()->NotifyStatusChanged(
+      running ? ash::mojom::VoiceInteractionState::RUNNING
+              : ash::mojom::VoiceInteractionState::STOPPED);
 }
 
 }  // namespace assistant

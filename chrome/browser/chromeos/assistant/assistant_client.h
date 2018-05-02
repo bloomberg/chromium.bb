@@ -41,7 +41,6 @@ class AssistantClient : mojom::Client {
   mojo::Binding<mojom::AudioInput> audio_input_binding_;
 
   PlatformAudioInputHost audio_input_;
-  bool running_ = false;
 
   std::unique_ptr<AssistantCardRenderer> assistant_card_renderer_;
 
