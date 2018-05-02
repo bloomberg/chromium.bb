@@ -1516,6 +1516,44 @@ void GLES2DecoderTestBase::DoTexImage3D(GLenum target,
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
+void GLES2DecoderTestBase::DoCopyTexImage2D(
+    GLenum target,
+    GLint level,
+    GLenum internal_format,
+    GLint x,
+    GLint y,
+    GLsizei width,
+    GLsizei height,
+    GLint border) {
+  // For GL_BGRA_EXT, we have to fall back to TexImage2D and
+  // CopyTexSubImage2D, since GL_BGRA_EXT is not accepted by CopyTexImage2D.
+  // In some cases this fallback further triggers set and restore of
+  // GL_UNPACK_ALIGNMENT.
+  if (internal_format == GL_BGRA_EXT) {
+    EXPECT_CALL(*gl_, PixelStorei(GL_UNPACK_ALIGNMENT, _))
+        .Times(2)
+        .RetiresOnSaturation();
+
+    EXPECT_CALL(*gl_, TexImage2D(target, level, internal_format,
+                                 width, height, border,
+                                 internal_format, GL_UNSIGNED_BYTE, _))
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, CopyTexSubImage2D(target, level, 0, 0, 0, 0,
+                                        width, height))
+        .Times(1)
+        .RetiresOnSaturation();
+  } else {
+    EXPECT_CALL(*gl_, CopyTexImage2D(target, level, internal_format, 0, 0,
+                                     width, height, border))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
+  cmds::CopyTexImage2D cmd;
+  cmd.Init(target, level, internal_format, 0, 0, width, height);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+}
+
 void GLES2DecoderTestBase::DoRenderbufferStorage(
     GLenum target, GLenum internal_format, GLenum actual_format,
     GLsizei width, GLsizei height,  GLenum error) {

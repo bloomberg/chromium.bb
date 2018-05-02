@@ -699,13 +699,7 @@ TEST_P(GLES2DecoderManualInitTest, CopyTexImage2DUnsizedInternalFormat) {
     DoBindFramebuffer(GL_FRAMEBUFFER, 0, 0);
     GLenum internal_format = kUnsizedInternalFormats[i];
     DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
-    EXPECT_CALL(*gl_, CopyTexImage2D(target, level, internal_format, 0, 0,
-                                     width, height, border))
-        .Times(1)
-        .RetiresOnSaturation();
-    CopyTexImage2D cmd;
-    cmd.Init(target, level, internal_format, 0, 0, width, height);
-    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+    DoCopyTexImage2D(target, level, internal_format, 0, 0, width, height, border);
     EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
     TextureRef* ref = manager->GetTexture(client_texture_id_);
@@ -732,16 +726,13 @@ TEST_P(GLES2DecoderManualInitTest, CopyTexImage2DUnsizedInternalFormat) {
     bool complete =
         (DoCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
     if (complete) {
-      EXPECT_CALL(*gl_, CopyTexImage2D(target, level, internal_format, 0, 0,
-                                       width, height, border))
-          .Times(1)
-          .RetiresOnSaturation();
-    }
-    cmd.Init(target, level, internal_format, 0, 0, width, height);
-    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-    if (complete) {
+      DoCopyTexImage2D(target, level, internal_format,
+                       0, 0, width, height, border);
       EXPECT_EQ(GL_NO_ERROR, GetGLError());
     } else {
+      CopyTexImage2D cmd;
+      cmd.Init(target, level, internal_format, 0, 0, width, height);
+      EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
       EXPECT_EQ(GL_INVALID_FRAMEBUFFER_OPERATION, GetGLError());
     }
   }
@@ -789,13 +780,8 @@ TEST_P(GLES2DecoderManualInitTest, CopyTexImage2DUnsizedInternalFormatES3) {
     DoBindFramebuffer(GL_FRAMEBUFFER, 0, 0);
     GLenum internal_format = kUnsizedInternalFormats[i].unsized;
     DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
-    EXPECT_CALL(*gl_, CopyTexImage2D(target, level, internal_format, 0, 0,
-                                     width, height, border))
-        .Times(1)
-        .RetiresOnSaturation();
-    CopyTexImage2D cmd;
-    cmd.Init(target, level, internal_format, 0, 0, width, height);
-    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+    DoCopyTexImage2D(target, level, internal_format,
+                     0, 0, width, height, border);
     EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
     TextureRef* ref = manager->GetTexture(client_texture_id_);
@@ -827,16 +813,13 @@ TEST_P(GLES2DecoderManualInitTest, CopyTexImage2DUnsizedInternalFormatES3) {
     bool complete =
         (DoCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
     if (complete) {
-      EXPECT_CALL(*gl_, CopyTexImage2D(target, level, internal_format, 0, 0,
-                                       width, height, border))
-          .Times(1)
-          .RetiresOnSaturation();
-    }
-    cmd.Init(target, level, internal_format, 0, 0, width, height);
-    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-    if (complete) {
+      DoCopyTexImage2D(target, level, internal_format,
+                       0, 0, width, height, border);
       EXPECT_EQ(GL_NO_ERROR, GetGLError());
     } else {
+      CopyTexImage2D cmd;
+      cmd.Init(target, level, internal_format, 0, 0, width, height);
+      EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
       EXPECT_EQ(GL_INVALID_FRAMEBUFFER_OPERATION, GetGLError());
     }
   }

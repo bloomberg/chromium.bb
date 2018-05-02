@@ -14807,7 +14807,10 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
   }
 
   if (src.x() != x || src.y() != y ||
-      src.width() != width || src.height() != height) {
+      src.width() != width || src.height() != height ||
+      final_internal_format == GL_BGRA_EXT) {
+    // GL_BGRA_EXT is not allowed as internalformat for glCopyTexImage2D,
+    // which is a bit of a quirk in the spec, but this path works.
     {
       // Add extra scope to destroy zero and the object it owns right
       // after its usage.
