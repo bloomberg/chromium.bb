@@ -700,6 +700,11 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, SentDataObserved) {
       ->ExecuteJavaScriptForTests(base::UTF8ToUTF16(test_js));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerStatToExceed(
       MatchTab("network use"), ColumnSpecifier::TOTAL_NETWORK_USE, 16000000));
+  // There shouldn't be too much usage on the browser process. Note that it
+  // should be the first row since tasks are sorted by process ID then by task
+  // ID.
+  EXPECT_GE(20000,
+            model()->GetColumnValue(ColumnSpecifier::TOTAL_NETWORK_USE, 0));
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, TotalSentDataObserved) {
@@ -743,6 +748,11 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, TotalSentDataObserved) {
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerStatToExceed(
       MatchTab("network use"), ColumnSpecifier::TOTAL_NETWORK_USE,
       16000000 * 2));
+  // There shouldn't be too much usage on the browser process. Note that it
+  // should be the first row since tasks are sorted by process ID then by task
+  // ID.
+  EXPECT_GE(20000,
+            model()->GetColumnValue(ColumnSpecifier::TOTAL_NETWORK_USE, 0));
 }
 
 // Checks that task manager counts idle wakeups.

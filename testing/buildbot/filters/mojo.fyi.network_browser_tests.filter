@@ -72,10 +72,6 @@
 -PageLoadMetricsBrowserTest.PayloadSize
 -PageLoadMetricsBrowserTest.PayloadSizeChildFrame
 
-# http://crbug.com/822415 Plumb metrics from network process to browser.
--TaskManagerBrowserTest.SentDataObserved
--TaskManagerBrowserTest.TotalSentDataObserved
-
 # http://crbug.com/823297 StoragePartition::ClearData needs to use
 # CookieManager.
 -BrowsingDataRemoverBrowserTest.CookieDeletion
