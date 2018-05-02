@@ -7,12 +7,15 @@
 
 #include <stdint.h>
 
+#include <memory>
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "url/gurl.h"
 
 namespace identity {
@@ -20,7 +23,7 @@ class IdentityManager;
 }
 
 namespace network {
-class SharedURLLoaderFactoryInfo;
+class SharedURLLoaderFactory;
 }
 
 namespace feed {
@@ -38,8 +41,10 @@ class FeedNetworkingHost {
       base::OnceCallback<void(int32_t status_code,
                               std::vector<uint8_t> response_bytes)>;
 
-  FeedNetworkingHost(identity::IdentityManager* identity_manager,
-                     const std::string& api_key);
+  FeedNetworkingHost(
+      identity::IdentityManager* identity_manager,
+      const std::string& api_key,
+      scoped_refptr<network::SharedURLLoaderFactory> loader_factory);
 
   ~FeedNetworkingHost();
 
@@ -50,10 +55,8 @@ class FeedNetworkingHost {
   // Start a request to |url| of type |request_type| with body |request_body|.
   // |callback| will be called when the response is received or if there is
   // an error, including non-protocol errors. The contents of |request_body|
-  // will be gzipped. Uses |loader_factory| to construct the url loader that
-  // performs the request.
+  // will be gzipped.
   void Send(
-      std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
       const GURL& url,
       const std::string& request_type,
       std::vector<uint8_t> request_body,
@@ -69,6 +72,7 @@ class FeedNetworkingHost {
       pending_requests_;
   identity::IdentityManager* identity_manager_;
   const std::string api_key_;
+  scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FeedNetworkingHost);
 };

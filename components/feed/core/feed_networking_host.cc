@@ -4,6 +4,8 @@
 
 #include "components/feed/core/feed_networking_host.h"
 
+#include <utility>
+
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/values.h"
@@ -45,13 +47,12 @@ namespace feed {
 // second to the specified url.
 class NetworkFetch {
  public:
-  NetworkFetch(
-      const GURL& url,
-      const std::string& request_type,
-      std::vector<uint8_t> request_body,
-      IdentityManager* identity_manager,
-      std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
-      const std::string& api_key);
+  NetworkFetch(const GURL& url,
+               const std::string& request_type,
+               std::vector<uint8_t> request_body,
+               IdentityManager* identity_manager,
+               network::SharedURLLoaderFactory* loader_factory,
+               const std::string& api_key);
 
   void Start(FeedNetworkingHost::ResponseCallback done);
 
@@ -71,27 +72,25 @@ class NetworkFetch {
   const std::vector<uint8_t> request_body_;
   IdentityManager* const identity_manager_;
   std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher> token_fetcher_;
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info_;
   std::unique_ptr<network::SimpleURLLoader> simple_loader_;
   FeedNetworkingHost::ResponseCallback done_callback_;
-  scoped_refptr<network::SharedURLLoaderFactory> loader_factory_ = nullptr;
+  network::SharedURLLoaderFactory* loader_factory_;
   const std::string api_key_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkFetch);
 };
 
-NetworkFetch::NetworkFetch(
-    const GURL& url,
-    const std::string& request_type,
-    std::vector<uint8_t> request_body,
-    IdentityManager* identity_manager,
-    std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
-    const std::string& api_key)
+NetworkFetch::NetworkFetch(const GURL& url,
+                           const std::string& request_type,
+                           std::vector<uint8_t> request_body,
+                           IdentityManager* identity_manager,
+                           network::SharedURLLoaderFactory* loader_factory,
+                           const std::string& api_key)
     : url_(url),
       request_type_(request_type),
       request_body_(std::move(request_body)),
       identity_manager_(identity_manager),
-      loader_factory_info_(std::move(loader_factory_info)),
+      loader_factory_(loader_factory),
       api_key_(api_key) {}
 
 void NetworkFetch::Start(FeedNetworkingHost::ResponseCallback done_callback) {
@@ -125,12 +124,9 @@ void NetworkFetch::AccessTokenFetchFinished(const GoogleServiceAuthError& error,
 
 void NetworkFetch::StartLoader(const std::string& access_token) {
   simple_loader_ = MakeLoader(access_token);
-  loader_factory_ =
-      network::SharedURLLoaderFactory::Create(std::move(loader_factory_info_));
   simple_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-      loader_factory_.get(),
-      base::BindOnce(&NetworkFetch::OnSimpleLoaderComplete,
-                     base::Unretained(this)));
+      loader_factory_, base::BindOnce(&NetworkFetch::OnSimpleLoaderComplete,
+                                      base::Unretained(this)));
 }
 
 std::unique_ptr<network::SimpleURLLoader> NetworkFetch::MakeLoader(
@@ -249,8 +245,11 @@ void NetworkFetch::OnSimpleLoaderComplete(
 
 FeedNetworkingHost::FeedNetworkingHost(
     identity::IdentityManager* identity_manager,
-    const std::string& api_key)
-    : identity_manager_(identity_manager), api_key_(api_key) {}
+    const std::string& api_key,
+    scoped_refptr<network::SharedURLLoaderFactory> loader_factory)
+    : identity_manager_(identity_manager),
+      api_key_(api_key),
+      loader_factory_(loader_factory) {}
 
 FeedNetworkingHost::~FeedNetworkingHost() = default;
 
@@ -259,14 +258,13 @@ void FeedNetworkingHost::CancelRequests() {
 }
 
 void FeedNetworkingHost::Send(
-    std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
     const GURL& url,
     const std::string& request_type,
     std::vector<uint8_t> request_body,
     ResponseCallback callback) {
   auto fetch = std::make_unique<NetworkFetch>(
       url, request_type, std::move(request_body), identity_manager_,
-      std::move(loader_factory_info), api_key_);
+      loader_factory_.get(), api_key_);
   NetworkFetch* fetch_unowned = fetch.get();
   pending_requests_.emplace(std::move(fetch));
 
