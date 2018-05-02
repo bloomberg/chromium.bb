@@ -44,13 +44,13 @@ class OmniboxMatchCellView : public views::View {
   const char* GetClassName() const override;
 
   // Returns the height of the the description section of answer suggestions.
-  int GetAnswerHeight() const;
+  int GetOldStyleAnswerHeight() const;
 
-  void LayoutAnswer();
+  void LayoutOldStyleAnswer();
   void LayoutEntity();
   void LayoutSplit();
 
-  bool is_answer_;
+  bool is_old_style_answer_;
   bool is_entity_;
   bool is_search_type_;
   int text_height_;
