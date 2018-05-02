@@ -121,20 +121,25 @@ TEST_F(PageSchedulerImplTest, TestDestructionOfFrameSchedulersAfter) {
 
 namespace {
 
-void RunRepeatingTask(scoped_refptr<TaskQueue>, int* run_count);
+void RunRepeatingTask(scoped_refptr<TaskQueue>,
+                      int* run_count,
+                      base::TimeDelta delay);
 
 base::OnceClosure MakeRepeatingTask(scoped_refptr<TaskQueue> task_queue,
-                                    int* run_count) {
+                                    int* run_count,
+                                    base::TimeDelta delay) {
   return base::BindOnce(&RunRepeatingTask, std::move(task_queue),
-                        base::Unretained(run_count));
+                        base::Unretained(run_count), delay);
 }
 
-void RunRepeatingTask(scoped_refptr<TaskQueue> task_queue, int* run_count) {
+void RunRepeatingTask(scoped_refptr<TaskQueue> task_queue,
+                      int* run_count,
+                      base::TimeDelta delay) {
   ++*run_count;
   TaskQueue* task_queue_ptr = task_queue.get();
   task_queue_ptr->PostDelayedTask(
-      FROM_HERE, MakeRepeatingTask(std::move(task_queue_ptr), run_count),
-      base::TimeDelta::FromMilliseconds(1));
+      FROM_HERE, MakeRepeatingTask(std::move(task_queue_ptr), run_count, delay),
+      delay);
 }
 
 }  // namespace
@@ -144,7 +149,9 @@ TEST_F(PageSchedulerImplTest, RepeatingTimer_PageInForeground) {
 
   int run_count = 0;
   ThrottleableTaskQueue()->PostDelayedTask(
-      FROM_HERE, MakeRepeatingTask(ThrottleableTaskQueue(), &run_count),
+      FROM_HERE,
+      MakeRepeatingTask(ThrottleableTaskQueue(), &run_count,
+                        base::TimeDelta::FromMilliseconds(1)),
       base::TimeDelta::FromMilliseconds(1));
 
   mock_task_runner_->RunForPeriod(base::TimeDelta::FromSeconds(1));
@@ -156,7 +163,9 @@ TEST_F(PageSchedulerImplTest, RepeatingTimer_PageInBackgroundThenForeground) {
 
   int run_count = 0;
   ThrottleableTaskQueue()->PostDelayedTask(
-      FROM_HERE, MakeRepeatingTask(ThrottleableTaskQueue(), &run_count),
+      FROM_HERE,
+      MakeRepeatingTask(ThrottleableTaskQueue(), &run_count,
+                        base::TimeDelta::FromMilliseconds(1)),
       base::TimeDelta::FromMilliseconds(1));
 
   mock_task_runner_->RunForPeriod(base::TimeDelta::FromSeconds(1));
@@ -178,7 +187,9 @@ TEST_F(PageSchedulerImplTest, RepeatingLoadingTask_PageInBackground) {
 
   int run_count = 0;
   LoadingTaskQueue()->PostDelayedTask(
-      FROM_HERE, MakeRepeatingTask(LoadingTaskQueue(), &run_count),
+      FROM_HERE,
+      MakeRepeatingTask(LoadingTaskQueue(), &run_count,
+                        base::TimeDelta::FromMilliseconds(1)),
       base::TimeDelta::FromMilliseconds(1));
 
   mock_task_runner_->RunForPeriod(base::TimeDelta::FromSeconds(1));
@@ -198,14 +209,17 @@ TEST_F(PageSchedulerImplTest, RepeatingTimers_OneBackgroundOneForeground) {
   int run_count1 = 0;
   int run_count2 = 0;
   ThrottleableTaskQueue()->PostDelayedTask(
-      FROM_HERE, MakeRepeatingTask(ThrottleableTaskQueue(), &run_count1),
+      FROM_HERE,
+      MakeRepeatingTask(ThrottleableTaskQueue(), &run_count1,
+                        base::TimeDelta::FromMilliseconds(1)),
       base::TimeDelta::FromMilliseconds(1));
   ThrottleableTaskQueueForScheduler(frame_scheduler2.get())
-      ->PostDelayedTask(FROM_HERE,
-                        MakeRepeatingTask(ThrottleableTaskQueueForScheduler(
-                                              frame_scheduler2.get()),
-                                          &run_count2),
-                        base::TimeDelta::FromMilliseconds(1));
+      ->PostDelayedTask(
+          FROM_HERE,
+          MakeRepeatingTask(
+              ThrottleableTaskQueueForScheduler(frame_scheduler2.get()),
+              &run_count2, base::TimeDelta::FromMilliseconds(1)),
+          base::TimeDelta::FromMilliseconds(1));
 
   mock_task_runner_->RunForPeriod(base::TimeDelta::FromSeconds(1));
   EXPECT_EQ(1000, run_count1);
@@ -323,7 +337,9 @@ TEST_F(PageSchedulerImplTest,
 
   int run_count = 0;
   ThrottleableTaskQueue()->PostDelayedTask(
-      FROM_HERE, MakeRepeatingTask(ThrottleableTaskQueue(), &run_count),
+      FROM_HERE,
+      MakeRepeatingTask(ThrottleableTaskQueue(), &run_count,
+                        base::TimeDelta::FromMilliseconds(1)),
       base::TimeDelta::FromMilliseconds(1));
 
   mock_task_runner_->RunTasksWhile(mock_task_runner_->TaskRunCountBelow(2000));
@@ -422,7 +438,9 @@ TEST_F(PageSchedulerImplTestWithDisabledBackgroundTimerThrottling,
 
   int run_count = 0;
   ThrottleableTaskQueue()->PostDelayedTask(
-      FROM_HERE, MakeRepeatingTask(ThrottleableTaskQueue(), &run_count),
+      FROM_HERE,
+      MakeRepeatingTask(ThrottleableTaskQueue(), &run_count,
+                        base::TimeDelta::FromMilliseconds(1)),
       base::TimeDelta::FromMilliseconds(1));
 
   mock_task_runner_->RunForPeriod(base::TimeDelta::FromSeconds(1));
@@ -496,8 +514,10 @@ TEST_F(PageSchedulerImplTest, DeleteThrottledQueue_InTask) {
 
   int run_count = 0;
   timer_task_queue->PostDelayedTask(
-      FROM_HERE, MakeRepeatingTask(timer_task_queue, &run_count),
-      base::TimeDelta::FromMilliseconds(1));
+      FROM_HERE,
+      MakeRepeatingTask(timer_task_queue, &run_count,
+                        base::TimeDelta::FromMilliseconds(100)),
+      base::TimeDelta::FromMilliseconds(100));
 
   // Note this will run at time t = 10s since we start at time t = 5000us.
   // However, we still should run all tasks after frame scheduler deletion.
@@ -505,8 +525,8 @@ TEST_F(PageSchedulerImplTest, DeleteThrottledQueue_InTask) {
                                     MakeDeletionTask(frame_scheduler),
                                     base::TimeDelta::FromMilliseconds(9990));
 
-  mock_task_runner_->RunForPeriod(base::TimeDelta::FromSeconds(100));
-  EXPECT_EQ(90015, run_count);
+  mock_task_runner_->RunForPeriod(base::TimeDelta::FromSeconds(20));
+  EXPECT_EQ(110, run_count);
 }
 
 TEST_F(PageSchedulerImplTest, VirtualTimePauseCount_DETERMINISTIC_LOADING) {
