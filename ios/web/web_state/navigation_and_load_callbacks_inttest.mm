@@ -367,7 +367,11 @@ ACTION_P4(VerifyReloadStartedContext, web_state, url, context, nav_id) {
   EXPECT_FALSE((*context)->HasCommitted());
   EXPECT_FALSE((*context)->IsDownload());
   EXPECT_FALSE((*context)->GetError());
-  EXPECT_TRUE((*context)->IsRendererInitiated());
+  // TODO(crbug.com/676129): Reload should not be renderer-initiated, but only
+  // marked so because LegacyNavigationManager doesn't create a pending item.
+  // WKBasedNavigationManager fixes this problem.
+  EXPECT_EQ(!web::GetWebClient()->IsSlimNavigationManagerEnabled(),
+            (*context)->IsRendererInitiated());
   EXPECT_FALSE((*context)->GetResponseHeaders());
   // TODO(crbug.com/676129): Reload does not create a pending item. Check
   // pending item once the bug is fixed. The slim navigation manager fixes this
@@ -403,7 +407,11 @@ ACTION_P5(VerifyReloadFinishedContext,
   EXPECT_TRUE((*context)->HasCommitted());
   EXPECT_FALSE((*context)->IsDownload());
   EXPECT_FALSE((*context)->GetError());
-  EXPECT_TRUE((*context)->IsRendererInitiated());
+  // TODO(crbug.com/676129): Reload should not be renderer-initiated, but only
+  // marked so because LegacyNavigationManager doesn't create a pending item.
+  // WKBasedNavigationManager fixes this problem.
+  EXPECT_EQ(!web::GetWebClient()->IsSlimNavigationManagerEnabled(),
+            (*context)->IsRendererInitiated());
   if (is_web_page) {
     ASSERT_TRUE((*context)->GetResponseHeaders());
     std::string mime_type;
@@ -650,8 +658,13 @@ TEST_F(NavigationAndLoadCallbacksTest, WebPageReloadNavigation) {
   // Reload web page.
   NavigationContext* context = nullptr;
   int32_t nav_id = 0;
-  EXPECT_CALL(observer_, DidStartLoading(web_state()));
-  EXPECT_CALL(*decider_, ShouldAllowRequest(_, _)).WillOnce(Return(true));
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    EXPECT_CALL(*decider_, ShouldAllowRequest(_, _)).WillOnce(Return(true));
+    EXPECT_CALL(observer_, DidStartLoading(web_state()));
+  } else {
+    EXPECT_CALL(observer_, DidStartLoading(web_state()));
+    EXPECT_CALL(*decider_, ShouldAllowRequest(_, _)).WillOnce(Return(true));
+  }
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
       .WillOnce(
           VerifyReloadStartedContext(web_state(), url, &context, &nav_id));
