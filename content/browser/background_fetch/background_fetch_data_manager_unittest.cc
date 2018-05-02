@@ -19,6 +19,7 @@
 #include "content/browser/background_fetch/background_fetch_test_base.h"
 #include "content/browser/background_fetch/storage/database_helpers.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/public/browser/background_fetch_response.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -67,6 +68,15 @@ void DidGetRegistrationUserDataByKeyPrefix(base::Closure quit_closure,
   std::move(quit_closure).Run();
 }
 
+void AnnotateRequestInfoWithFakeDownloadManagerData(
+    BackgroundFetchRequestInfo* request_info) {
+  // Fill |request_info| with a failed result.
+  request_info->SetResult(std::make_unique<BackgroundFetchResult>(
+      base::Time::Now(), BackgroundFetchResult::FailureReason::UNKNOWN));
+  request_info->PopulateWithResponse(
+      std::make_unique<BackgroundFetchResponse>(std::vector<GURL>(1), nullptr));
+}
+
 void GetNumUserData(base::Closure quit_closure,
                     int* out_size,
                     const std::vector<std::string>& data,
@@ -80,11 +90,13 @@ void GetNumUserData(base::Closure quit_closure,
 struct ResponseStateStats {
   int pending_requests = 0;
   int active_requests = 0;
+  int completed_requests = 0;
 };
 
 bool operator==(const ResponseStateStats& s1, const ResponseStateStats& s2) {
   return s1.pending_requests == s2.pending_requests &&
-         s1.active_requests == s2.active_requests;
+         s1.active_requests == s2.active_requests &&
+         s1.completed_requests == s2.completed_requests;
 }
 
 }  // namespace
@@ -250,6 +262,19 @@ class BackgroundFetchDataManagerTest
     run_loop.Run();
   }
 
+  // Synchronous version of ServiceWorkerContextWrapper::MarkRequestAsComplete.
+  void MarkRequestAsComplete(
+      const BackgroundFetchRegistrationId& registration_id,
+      BackgroundFetchRequestInfo* request_info) {
+    base::RunLoop run_loop;
+    background_fetch_data_manager_->MarkRequestAsComplete(
+        registration_id, request_info,
+        base::BindOnce(
+            &BackgroundFetchDataManagerTest::DidMarkRequestAsComplete,
+            base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+  }
+
   // Synchronous version of
   // ServiceWorkerContextWrapper::GetRegistrationUserDataByKeyPrefix.
   std::vector<std::string> GetRegistrationUserDataByKeyPrefix(
@@ -294,7 +319,17 @@ class BackgroundFetchDataManagerTest
                              &stats.active_requests));
       run_loop.Run();
     }
-
+    {
+      base::RunLoop run_loop;
+      embedded_worker_test_helper()
+          ->context_wrapper()
+          ->GetRegistrationUserDataByKeyPrefix(
+              service_worker_registration_id,
+              background_fetch::kCompletedRequestKeyPrefix,
+              base::BindOnce(&GetNumUserData, run_loop.QuitClosure(),
+                             &stats.completed_requests));
+      run_loop.Run();
+    }
     return stats;
   }
 
@@ -352,6 +387,10 @@ class BackgroundFetchDataManagerTest
       scoped_refptr<BackgroundFetchRequestInfo>* out_request_info,
       scoped_refptr<BackgroundFetchRequestInfo> request_info) {
     *out_request_info = request_info;
+    std::move(quit_closure).Run();
+  }
+
+  void DidMarkRequestAsComplete(base::OnceClosure quit_closure) {
     std::move(quit_closure).Run();
   }
 
@@ -658,7 +697,7 @@ TEST_P(BackgroundFetchDataManagerTest, CreateAndDeleteRegistration) {
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 }
 
-TEST_P(BackgroundFetchDataManagerTest, PopNextRequest) {
+TEST_P(BackgroundFetchDataManagerTest, PopNextRequestAndMarkAsComplete) {
   // This test only applies to persistent storage.
   if (registration_storage_ ==
       BackgroundFetchRegistrationStorage::kNonPersistent)
@@ -678,7 +717,8 @@ TEST_P(BackgroundFetchDataManagerTest, PopNextRequest) {
   EXPECT_FALSE(request_info);
   EXPECT_EQ(
       GetRequestStats(sw_id),
-      (ResponseStateStats{0 /* pending_requests */, 0 /* active_requests */}));
+      (ResponseStateStats{0 /* pending_requests */, 0 /* active_requests */,
+                          0 /* completed_requests */}));
 
   std::vector<ServiceWorkerFetchRequest> requests(2u);
   BackgroundFetchOptions options;
@@ -688,7 +728,8 @@ TEST_P(BackgroundFetchDataManagerTest, PopNextRequest) {
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   EXPECT_EQ(
       GetRequestStats(sw_id),
-      (ResponseStateStats{2 /* pending_requests */, 0 /* active_requests */}));
+      (ResponseStateStats{2 /* pending_requests */, 0 /* active_requests */,
+                          0 /* completed_requests */}));
 
   // Popping should work now.
   PopNextRequest(registration_id, &request_info);
@@ -697,7 +738,16 @@ TEST_P(BackgroundFetchDataManagerTest, PopNextRequest) {
   EXPECT_FALSE(request_info->download_guid().empty());
   EXPECT_EQ(
       GetRequestStats(sw_id),
-      (ResponseStateStats{1 /* pending_requests */, 1 /* active_requests */}));
+      (ResponseStateStats{1 /* pending_requests */, 1 /* active_requests */,
+                          0 /* completed_requests */}));
+
+  // Mark as complete.
+  AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get());
+  MarkRequestAsComplete(registration_id, request_info.get());
+  ASSERT_EQ(
+      GetRequestStats(sw_id),
+      (ResponseStateStats{1 /* pending_requests */, 0 /* active_requests */,
+                          1 /* completed_requests */}));
 
   RestartDataManagerFromPersistentStorage();
 
@@ -707,14 +757,24 @@ TEST_P(BackgroundFetchDataManagerTest, PopNextRequest) {
   EXPECT_FALSE(request_info->download_guid().empty());
   EXPECT_EQ(
       GetRequestStats(sw_id),
-      (ResponseStateStats{0 /* pending_requests */, 2 /* active_requests */}));
+      (ResponseStateStats{0 /* pending_requests */, 1 /* active_requests */,
+                          1 /* completed_requests */}));
+
+  // Mark as complete.
+  AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get());
+  MarkRequestAsComplete(registration_id, request_info.get());
+  ASSERT_EQ(
+      GetRequestStats(sw_id),
+      (ResponseStateStats{0 /* pending_requests */, 0 /* active_requests */,
+                          2 /* completed_requests */}));
 
   // We are out of pending requests.
   PopNextRequest(registration_id, &request_info);
   EXPECT_FALSE(request_info);
   EXPECT_EQ(
       GetRequestStats(sw_id),
-      (ResponseStateStats{0 /* pending_requests */, 2 /* active_requests */}));
+      (ResponseStateStats{0 /* pending_requests */, 0 /* active_requests */,
+                          2 /* completed_requests */}));
 }
 
 TEST_P(BackgroundFetchDataManagerTest, Cleanup) {

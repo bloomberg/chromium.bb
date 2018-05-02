@@ -34,6 +34,11 @@ key: "bgfetch_active_request_<unique_id>_<request_index>"
 value: "<serialized content::proto::BackgroundFetchActiveRequest>"
 ```
 
+```
+key: "bgfetch_completed_request_<unique_id>_<request_index>"
+value: "<serialized content::proto::BackgroundFetchCompletedRequest>"
+```
+
 ### Expansions
 * `<unique_id>` is a GUID (v4) that identifies a background fetch registration.
 E.g.  `17467386-60b4-4c5b-b66c-aabf793fd39b`

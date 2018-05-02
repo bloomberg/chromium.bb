@@ -144,6 +144,12 @@ class CONTENT_EXPORT BackgroundFetchDataManager
       BackgroundFetchRequestInfo* request,
       BackgroundFetchScheduler::MarkedCompleteCallback callback) override;
 
+  // TODO(rayankans): Move this function to MarkRequestCompleteTask after
+  // non-persistent background fetch support is removed.
+  bool FillServiceWorkerResponse(const BackgroundFetchRequestInfo& request,
+                                 const url::Origin& origin,
+                                 ServiceWorkerResponse* response);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(BackgroundFetchDataManagerTest, Cleanup);
   friend class BackgroundFetchDataManagerTest;

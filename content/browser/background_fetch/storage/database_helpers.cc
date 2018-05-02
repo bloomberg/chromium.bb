@@ -39,6 +39,15 @@ std::string ActiveRequestKey(const std::string& unique_id, int request_index) {
   return ActiveRequestKeyPrefix(unique_id) + std::to_string(request_index);
 }
 
+std::string CompletedRequestKeyPrefix(const std::string& unique_id) {
+  return kCompletedRequestKeyPrefix + unique_id + kSeparator;
+}
+
+std::string CompletedRequestKey(const std::string& unique_id,
+                                int request_index) {
+  return CompletedRequestKeyPrefix(unique_id) + std::to_string(request_index);
+}
+
 DatabaseStatus ToDatabaseStatus(ServiceWorkerStatusCode status) {
   switch (status) {
     case SERVICE_WORKER_OK:
@@ -73,6 +82,19 @@ DatabaseStatus ToDatabaseStatus(ServiceWorkerStatusCode status) {
   }
   NOTREACHED();
   return DatabaseStatus::kFailed;
+}
+
+void FillServiceWorkerFetchRequestProto(
+    const ServiceWorkerFetchRequest& request,
+    proto::ServiceWorkerFetchRequest* request_proto) {
+  DCHECK(request_proto);
+  request_proto->set_url(request.url.spec());
+  request_proto->set_method(request.method);
+  request_proto->mutable_headers()->insert(request.headers.begin(),
+                                           request.headers.end());
+  request_proto->mutable_referrer()->set_url(request.referrer.url.spec());
+  request_proto->mutable_referrer()->set_policy(request.referrer.policy);
+  request_proto->set_is_reload(request.is_reload);
 }
 
 }  // namespace background_fetch

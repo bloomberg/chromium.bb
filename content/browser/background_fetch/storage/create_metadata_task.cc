@@ -88,21 +88,6 @@ void CreateMetadataTask::InitializeMetadataProto() {
   metadata_proto_->set_ui_title(options_.title);
 }
 
-proto::ServiceWorkerFetchRequest
-CreateMetadataTask::CreateServiceWorkerFetchRequestProto(
-    const ServiceWorkerFetchRequest& request) {
-  proto::ServiceWorkerFetchRequest request_proto;
-  request_proto.set_url(request.url.spec());
-  request_proto.set_method(request.method);
-  request_proto.mutable_headers()->insert(request.headers.begin(),
-                                          request.headers.end());
-  request_proto.mutable_referrer()->set_url(request.referrer.url.spec());
-  request_proto.mutable_referrer()->set_policy(request.referrer.policy);
-  request_proto.set_is_reload(request.is_reload);
-
-  return request_proto;
-}
-
 void CreateMetadataTask::StoreMetadata() {
   std::vector<std::pair<std::string, std::string>> entries;
   entries.reserve(requests_.size() * 2 + 1);
@@ -129,8 +114,8 @@ void CreateMetadataTask::StoreMetadata() {
     proto::BackgroundFetchPendingRequest pending_request_proto;
     pending_request_proto.set_unique_id(registration_id_.unique_id());
     pending_request_proto.set_request_index(i);
-    *pending_request_proto.mutable_request() =
-        CreateServiceWorkerFetchRequestProto(requests_[i]);
+    FillServiceWorkerFetchRequestProto(requests_[i],
+                                       pending_request_proto.mutable_request());
     entries.emplace_back(PendingRequestKey(registration_id_.unique_id(), i),
                          pending_request_proto.SerializeAsString());
   }
