@@ -330,7 +330,7 @@ bool LocationBarView::IsRounded() {
 
 float LocationBarView::GetBorderRadius() {
   return IsRounded() ? ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
-                           EMPHASIS_HIGH, size())
+                           views::EMPHASIS_HIGH, size())
                      : GetLayoutConstant(LOCATION_BAR_BUBBLE_CORNER_RADIUS);
 }
 

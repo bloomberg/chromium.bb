@@ -36,7 +36,7 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
 
   // Override the default corner radius of the round rect used for the
   // background and ink drop effects.
-  void set_corner_radius(float radius) { corner_radius_ = radius; }
+  void set_corner_radius(float radius);
 
   // View:
   void OnPaintBackground(gfx::Canvas* canvas) override;

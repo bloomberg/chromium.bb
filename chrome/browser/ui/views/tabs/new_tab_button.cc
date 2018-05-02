@@ -379,7 +379,7 @@ gfx::Rect NewTabButton::GetVisibleBounds() const {
 
 int NewTabButton::GetCornerRadius() const {
   return ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
-      EMPHASIS_HIGH, GetLayoutSize(NEW_TAB_BUTTON, is_incognito_));
+      views::EMPHASIS_HIGH, GetLayoutSize(NEW_TAB_BUTTON, is_incognito_));
 }
 
 void NewTabButton::GetBorderPath(float button_y,
