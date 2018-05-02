@@ -10,6 +10,7 @@
 
 #include "content/public/browser/resource_request_info.h"
 #include "net/http/http_response_headers.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_test_util.h"
 
 namespace {
@@ -233,7 +234,8 @@ std::unique_ptr<net::URLRequest> CreateURLRequest(
     content::ResourceType resource_type,
     bool is_main_frame) {
   std::unique_ptr<net::URLRequest> request = url_request_context.CreateRequest(
-      url, priority, &g_empty_url_request_delegate);
+      url, priority, &g_empty_url_request_delegate,
+      TRAFFIC_ANNOTATION_FOR_TESTS);
   request->set_site_for_cookies(url);
   content::ResourceRequestInfo::AllocateForTesting(
       request.get(), resource_type, nullptr, -1, -1, -1, is_main_frame, false,
