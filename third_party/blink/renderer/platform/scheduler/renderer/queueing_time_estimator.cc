@@ -69,33 +69,87 @@ QueueingTimeEstimator::QueueingTimeEstimator(
     QueueingTimeEstimator::Client* client,
     base::TimeDelta window_duration,
     int steps_per_window)
-    : client_(client), state_(steps_per_window) {
+    : client_(client),
+      window_step_width_(window_duration / steps_per_window),
+      renderer_backgrounded_(kLaunchingProcessIsBackgrounded),
+      processing_task_(false),
+      in_nested_message_loop_(false),
+      calculator_(steps_per_window) {
   DCHECK_GE(steps_per_window, 1);
-  state_.window_step_width = window_duration / steps_per_window;
 }
-
-QueueingTimeEstimator::QueueingTimeEstimator(const State& state)
-    : client_(nullptr), state_(state) {}
 
 void QueueingTimeEstimator::OnTopLevelTaskStarted(
     base::TimeTicks task_start_time,
     MainThreadTaskQueue* queue) {
-  state_.OnTopLevelTaskStarted(client_, task_start_time, queue);
+  AdvanceTime(task_start_time);
+  current_task_start_time_ = task_start_time;
+  processing_task_ = true;
+  calculator_.UpdateStatusFromTaskQueue(queue);
 }
 
 void QueueingTimeEstimator::OnTopLevelTaskCompleted(
     base::TimeTicks task_end_time) {
-  state_.OnTopLevelTaskCompleted(client_, task_end_time);
+  DCHECK(processing_task_);
+  AdvanceTime(task_end_time);
+  processing_task_ = false;
+  current_task_start_time_ = base::TimeTicks();
+  in_nested_message_loop_ = false;
 }
 
 void QueueingTimeEstimator::OnBeginNestedRunLoop() {
-  state_.OnBeginNestedRunLoop();
+  in_nested_message_loop_ = true;
 }
 
 void QueueingTimeEstimator::OnRendererStateChanged(
     bool backgrounded,
     base::TimeTicks transition_time) {
-  state_.OnRendererStateChanged(client_, backgrounded, transition_time);
+  DCHECK_NE(backgrounded, renderer_backgrounded_);
+  if (!processing_task_)
+    AdvanceTime(transition_time);
+  renderer_backgrounded_ = backgrounded;
+}
+
+void QueueingTimeEstimator::AdvanceTime(base::TimeTicks current_time) {
+  if (step_start_time_.is_null()) {
+    // Ignore any time before the first task.
+    if (!processing_task_)
+      return;
+
+    step_start_time_ = current_task_start_time_;
+  }
+  base::TimeTicks reference_time =
+      processing_task_ ? current_task_start_time_ : step_start_time_;
+  if (in_nested_message_loop_ || renderer_backgrounded_ ||
+      current_time - reference_time > kInvalidPeriodThreshold) {
+    // Skip steps when the renderer was backgrounded, when we are at a nested
+    // message loop, when a task took too long, or when we remained idle for
+    // too long. May cause |step_start_time_| to go slightly into the future.
+    // TODO(npm): crbug.com/776013. Base skipping long tasks/idling on a signal
+    // that we've been suspended.
+    step_start_time_ =
+        current_time.SnappedToNextTick(step_start_time_, window_step_width_);
+    calculator_.ResetStep();
+    return;
+  }
+  while (TimePastStepEnd(current_time)) {
+    if (processing_task_) {
+      // Include the current task in this window.
+      calculator_.AddQueueingTime(ExpectedQueueingTimeFromTask(
+          current_task_start_time_, current_time, step_start_time_,
+          step_start_time_ + window_step_width_));
+    }
+    calculator_.EndStep(client_);
+    step_start_time_ += window_step_width_;
+  }
+  if (processing_task_) {
+    calculator_.AddQueueingTime(ExpectedQueueingTimeFromTask(
+        current_task_start_time_, current_time, step_start_time_,
+        step_start_time_ + window_step_width_));
+  }
+}
+
+bool QueueingTimeEstimator::TimePastStepEnd(base::TimeTicks time) {
+  return time >= step_start_time_ + window_step_width_;
 }
 
 QueueingTimeEstimator::Calculator::Calculator(int steps_per_window)
@@ -236,88 +290,6 @@ void QueueingTimeEstimator::Calculator::EndStep(
 
 void QueueingTimeEstimator::Calculator::ResetStep() {
   step_expected_queueing_time_ = base::TimeDelta();
-}
-
-QueueingTimeEstimator::State::State(int steps_per_window)
-    : calculator_(steps_per_window) {}
-
-void QueueingTimeEstimator::State::OnTopLevelTaskStarted(
-    QueueingTimeEstimator::Client* client,
-    base::TimeTicks task_start_time,
-    MainThreadTaskQueue* queue) {
-  AdvanceTime(client, task_start_time);
-  current_task_start_time = task_start_time;
-  processing_task = true;
-  calculator_.UpdateStatusFromTaskQueue(queue);
-}
-
-void QueueingTimeEstimator::State::OnTopLevelTaskCompleted(
-    QueueingTimeEstimator::Client* client,
-    base::TimeTicks task_end_time) {
-  DCHECK(processing_task);
-  AdvanceTime(client, task_end_time);
-  processing_task = false;
-  current_task_start_time = base::TimeTicks();
-  in_nested_message_loop_ = false;
-}
-
-void QueueingTimeEstimator::State::OnBeginNestedRunLoop() {
-  in_nested_message_loop_ = true;
-}
-
-void QueueingTimeEstimator::State::OnRendererStateChanged(
-    QueueingTimeEstimator::Client* client,
-    bool backgrounded,
-    base::TimeTicks transition_time) {
-  DCHECK_NE(backgrounded, renderer_backgrounded);
-  if (!processing_task)
-    AdvanceTime(client, transition_time);
-  renderer_backgrounded = backgrounded;
-}
-
-void QueueingTimeEstimator::State::AdvanceTime(
-    QueueingTimeEstimator::Client* client,
-    base::TimeTicks current_time) {
-  if (step_start_time.is_null()) {
-    // Ignore any time before the first task.
-    if (!processing_task)
-      return;
-
-    step_start_time = current_task_start_time;
-  }
-  base::TimeTicks reference_time =
-      processing_task ? current_task_start_time : step_start_time;
-  if (in_nested_message_loop_ || renderer_backgrounded ||
-      current_time - reference_time > kInvalidPeriodThreshold) {
-    // Skip steps when the renderer was backgrounded, when we are at a nested
-    // message loop, when a task took too long, or when we remained idle for
-    // too long. May cause |step_start_time| to go slightly into the future.
-    // TODO(npm): crbug.com/776013. Base skipping long tasks/idling on a signal
-    // that we've been suspended.
-    step_start_time =
-        current_time.SnappedToNextTick(step_start_time, window_step_width);
-    calculator_.ResetStep();
-    return;
-  }
-  while (TimePastStepEnd(current_time)) {
-    if (processing_task) {
-      // Include the current task in this window.
-      calculator_.AddQueueingTime(ExpectedQueueingTimeFromTask(
-          current_task_start_time, current_time, step_start_time,
-          step_start_time + window_step_width));
-    }
-    calculator_.EndStep(client);
-    step_start_time += window_step_width;
-  }
-  if (processing_task) {
-    calculator_.AddQueueingTime(ExpectedQueueingTimeFromTask(
-        current_task_start_time, current_time, step_start_time,
-        step_start_time + window_step_width));
-  }
-}
-
-bool QueueingTimeEstimator::State::TimePastStepEnd(base::TimeTicks time) {
-  return time >= step_start_time + window_step_width;
 }
 
 QueueingTimeEstimator::RunningAverage::RunningAverage(int size) {
