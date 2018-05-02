@@ -25,8 +25,6 @@ VideoFrameSubmitter::VideoFrameSubmitter(
       resource_provider_(std::move(resource_provider)),
       is_rendering_(false),
       weak_ptr_factory_(this) {
-  current_local_surface_id_ =
-      parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
   DETACH_FROM_THREAD(media_thread_checker_);
 }
 
@@ -143,13 +141,14 @@ void VideoFrameSubmitter::SubmitFrame(
   compositor_frame.render_pass_list.push_back(std::move(render_pass));
 
   if (compositor_frame.size_in_pixels() != current_size_in_pixels_) {
-    current_local_surface_id_ = parent_local_surface_id_allocator_.GenerateId();
+    parent_local_surface_id_allocator_.GenerateId();
     current_size_in_pixels_ = compositor_frame.size_in_pixels();
   }
 
   // TODO(lethalantidote): Address third/fourth arg in SubmitCompositorFrame.
   compositor_frame_sink_->SubmitCompositorFrame(
-      current_local_surface_id_, std::move(compositor_frame), nullptr, 0);
+      parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
+      std::move(compositor_frame), nullptr, 0);
   resource_provider_->ReleaseFrameResources();
 }
 
