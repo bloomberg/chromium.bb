@@ -386,11 +386,6 @@ void BrowserNonClientFrameViewMus::TabStripMaxXChanged(TabStrip* tab_strip) {
   UpdateClientArea();
 }
 
-void BrowserNonClientFrameViewMus::TabStripDeleted(TabStrip* tab_strip) {
-  tab_strip_->RemoveObserver(this);
-  tab_strip_ = nullptr;
-}
-
 int BrowserNonClientFrameViewMus::GetTabStripRightInset() const {
   int right_inset = frame_values().normal_insets.right() +
                     frame_values().max_title_bar_button_width;

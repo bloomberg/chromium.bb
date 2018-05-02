@@ -33,10 +33,6 @@ class CHROME_VIEWS_EXPORT TabStripObserver {
   // The tab at |index| was removed from |tab_strip|.
   virtual void TabStripRemovedTabAt(TabStrip* tab_strip, int index);
 
-  // Sent when the |tabstrip| is about to be deleted and any reference held must
-  // be dropped.
-  virtual void TabStripDeleted(TabStrip* tab_strip);
-
   // tab_strip->max_x() has changed.
   virtual void TabStripMaxXChanged(TabStrip* tab_strip);
 

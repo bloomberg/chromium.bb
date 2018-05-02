@@ -391,12 +391,6 @@ void GlassBrowserFrameView::TabStripRemovedTabAt(TabStrip* tab_strip,
     LayoutProfileSwitcher();
 }
 
-void GlassBrowserFrameView::TabStripDeleted(TabStrip* tab_strip) {
-  // The tab strip is currently never deleted before the frame. If that changes
-  // tab_strip_observer_.Remove(tab_strip) may be needed here.
-  NOTREACHED();
-}
-
 bool GlassBrowserFrameView::IsMaximized() const {
   return frame()->IsMaximized();
 }

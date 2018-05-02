@@ -64,7 +64,6 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
 
   // TabStripObserver:
   void TabStripMaxXChanged(TabStrip* tab_strip) override;
-  void TabStripDeleted(TabStrip* tab_strip) override;
   void TabStripRemovedTabAt(TabStrip* tab_strip, int index) override;
 
   bool IsMaximized() const;
