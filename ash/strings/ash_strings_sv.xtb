@@ -268,7 +268,6 @@ Använd bara den här funktionen med konton som du litar på.</translation>
 <translation id="7029814467594812963">Avsluta session</translation>
 <translation id="7034339000180558234">Castar <ph name="TAB_NAME" /> till <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Ange bakgrund ...</translation>
-<translation id="7054808953701320293">Visa inte det här igen.</translation>
 <translation id="7066646422045619941">Det här nätverket har inaktiverats av administratören.</translation>
 <translation id="7067196344162293536">Rotera automatiskt</translation>
 <translation id="7098389117866926363">USB-C-enhet (vänstra porten på baksidan)</translation>
@@ -308,7 +307,6 @@ Använd bara den här funktionen med konton som du litar på.</translation>
 <translation id="8000066093800657092">Inget nätverk</translation>
 <translation id="8054466585765276473">Batteritiden beräknas.</translation>
 <translation id="8056430285089645882">Visa inte det här igen.</translation>
-<translation id="8088137642766812908">Se upp, funktionen kanske bits</translation>
 <translation id="8098591350844501178">Sluta casta skärmen till <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Ansluten till <ph name="NAME" /></translation>
 <translation id="813913629614996137">Initierar …</translation>
@@ -336,9 +334,6 @@ Använd bara den här funktionen med konton som du litar på.</translation>
 <translation id="8734991477317290293">Det kan försöka stjäla dina tangenttryckningar</translation>
 <translation id="8809737090443522491">Skriv namnet på en app eller ett dokument</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="8814715559352963456">Om du flyttar fönster till ett annat skrivbord kan det leda till oväntat beteende.
-
-Efterföljande meddelanden, fönster och dialogrutor kan delas upp mellan skrivbord.</translation>
 <translation id="8825534185036233643">Det finns inte stöd för spegling på fler än två skärmar.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8841375032071747811">Bakåtknapp</translation>

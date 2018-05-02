@@ -269,7 +269,6 @@ Brug kun denne funktion til konti, du har tillid til.</translation>
 <translation id="7029814467594812963">Afslut session</translation>
 <translation id="7034339000180558234">Caster <ph name="TAB_NAME" /> til <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Vælg baggrund...</translation>
-<translation id="7054808953701320293">Det er forstået. Vis ikke igen.</translation>
 <translation id="7066646422045619941">Din administrator har deaktiveret dette netværk.</translation>
 <translation id="7067196344162293536">Automatisk rotering</translation>
 <translation id="7098389117866926363">USB-C-enhed (porten bagpå i venstre side)</translation>
@@ -309,7 +308,6 @@ Brug kun denne funktion til konti, du har tillid til.</translation>
 <translation id="8000066093800657092">Intet netværk</translation>
 <translation id="8054466585765276473">Beregner batteritid.</translation>
 <translation id="8056430285089645882">Det er forstået. Vis det ikke igen.</translation>
-<translation id="8088137642766812908">Giv agt, denne funktion kan bide</translation>
 <translation id="8098591350844501178">Stop med at caste skærmen til <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Forbundet til <ph name="NAME" /></translation>
 <translation id="813913629614996137">Initialiserer...</translation>
@@ -337,9 +335,6 @@ Brug kun denne funktion til konti, du har tillid til.</translation>
 <translation id="8734991477317290293">Det forsøger muligvis at stjæle dine indtastninger</translation>
 <translation id="8809737090443522491">Skriv navnet på en app eller et dokument</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="8814715559352963456">Hvis du flytter vinduer til et andet skrivebord, kan det resultere i uventet adfærd.
-
-Efterfølgende underretninger, vinduer og dialogbokse kan blive delt mellem skriveborde.</translation>
 <translation id="8825534185036233643">Spejling med mere end to skærme understøttes ikke.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8841375032071747811">Knappen Tilbage</translation>

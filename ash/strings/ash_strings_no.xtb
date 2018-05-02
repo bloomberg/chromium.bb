@@ -268,7 +268,6 @@ Du bør bare bruke denne funksjonen med kontoer du stoler på.</translation>
 <translation id="7029814467594812963">Avslutt økten</translation>
 <translation id="7034339000180558234">Caster <ph name="TAB_NAME" /> til <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Angi bakgrunn</translation>
-<translation id="7054808953701320293">Den er grei. Ikke vis meg dette igjen.</translation>
 <translation id="7066646422045619941">Administratoren din har slått av dette nettverket.</translation>
 <translation id="7067196344162293536">Automatisk retning</translation>
 <translation id="7098389117866926363">USB-C-enhet (venstre port på baksiden)</translation>
@@ -308,7 +307,6 @@ Du bør bare bruke denne funksjonen med kontoer du stoler på.</translation>
 <translation id="8000066093800657092">Ingen nettverk</translation>
 <translation id="8054466585765276473">Beregner batteritid.</translation>
 <translation id="8056430285089645882">Den er grei. Ikke vis meg dette igjen.</translation>
-<translation id="8088137642766812908">Forsiktig, denne funksjonen kan bite</translation>
 <translation id="8098591350844501178">Slutt å caste skjermen til <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Tilkoblet <ph name="NAME" /></translation>
 <translation id="813913629614996137">Initialiserer …</translation>
@@ -336,9 +334,6 @@ Du bør bare bruke denne funksjonen med kontoer du stoler på.</translation>
 <translation id="8734991477317290293">Det brukes kanskje til å stjele tastetrykkene dine.</translation>
 <translation id="8809737090443522491">Skriv inn navnet på en app eller et dokument</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="8814715559352963456">Flytting av vinduer til et annet skrivebord kan føre til uventet atferd.
-
-Følgende varsler, vinduer og dialogbokser kan bli delt mellom skrivebordene.</translation>
 <translation id="8825534185036233643">Speiling med mer enn to skjermer støttes ikke.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8841375032071747811">Tilbakeknapp</translation>

@@ -268,7 +268,6 @@
 <translation id="7029814467594812963">세션 종료</translation>
 <translation id="7034339000180558234"><ph name="TAB_NAME" />을(를) <ph name="RECEIVER_NAME" />(으)로 전송 중</translation>
 <translation id="7052914147756339792">배경화면 설정...</translation>
-<translation id="7054808953701320293">확인했습니다. 다시 표시하지 않습니다.</translation>
 <translation id="7066646422045619941">관리자가 사용 중지한 네트워크입니다.</translation>
 <translation id="7067196344162293536">자동 회전</translation>
 <translation id="7098389117866926363">USB-C 기기(좌측 후면 포트)</translation>
@@ -308,7 +307,6 @@
 <translation id="8000066093800657092">네트워크 없음</translation>
 <translation id="8054466585765276473">배터리 시간 계산 중</translation>
 <translation id="8056430285089645882">확인했습니다. 다시 표시하지 않습니다.</translation>
-<translation id="8088137642766812908">주의하세요. 이 기능은 문제를 일으킬 수 있습니다.</translation>
 <translation id="8098591350844501178"><ph name="RECEIVER_NAME" />에 화면 전송 중지</translation>
 <translation id="8132793192354020517"><ph name="NAME" />에 연결됨</translation>
 <translation id="813913629614996137">초기화 중...</translation>
@@ -336,9 +334,6 @@
 <translation id="8734991477317290293">키 입력 내용을 도용하려는 시도일 수 있습니다.</translation>
 <translation id="8809737090443522491">앱 또는 문서 이름 입력</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="8814715559352963456">창을 다른 데스크톱으로 이동하면 예기치 못한 동작이 나타날 수 있습니다.
-
-이후의 알림, 창, 대화상자가 데스크톱 간에 분할될 수 있습니다.</translation>
 <translation id="8825534185036233643">3개 이상의 디스플레이 미러링은 지원되지 않습니다.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8841375032071747811">뒤로 버튼</translation>

@@ -269,7 +269,6 @@ Używaj jej tylko w przypadku kont, którym ufasz.</translation>
 <translation id="7029814467594812963">Zakończ sesję</translation>
 <translation id="7034339000180558234">Przesyłam kartę <ph name="TAB_NAME" /> do: <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Ustaw tapetę...</translation>
-<translation id="7054808953701320293">Rozumiem. Nie pokazuj tego więcej.</translation>
 <translation id="7066646422045619941">Ta sieć została wyłączona przez administratora.</translation>
 <translation id="7067196344162293536">Obracanie automatyczne</translation>
 <translation id="7098389117866926363">Urządzenie USB-C (lewy port z tyłu)</translation>
@@ -309,7 +308,6 @@ Używaj jej tylko w przypadku kont, którym ufasz.</translation>
 <translation id="8000066093800657092">Brak sieci</translation>
 <translation id="8054466585765276473">Obliczanie czasu pracy na baterii.</translation>
 <translation id="8056430285089645882">Rozumiem. Nie pokazuj tego więcej.</translation>
-<translation id="8088137642766812908">Ostrożnie, ta funkcja może sprawiać problemy</translation>
 <translation id="8098591350844501178">Zakończ przesyłanie ekranu do: <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Połączono z <ph name="NAME" /></translation>
 <translation id="813913629614996137">Inicjuję…</translation>
@@ -337,9 +335,6 @@ Używaj jej tylko w przypadku kont, którym ufasz.</translation>
 <translation id="8734991477317290293">Klawiatura może próbować przechwycić naciskane klawisze</translation>
 <translation id="8809737090443522491">Wpisz nazwę aplikacji lub dokumentu</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="8814715559352963456">Przenoszenie okien na inny pulpit może spowodować nieoczekiwane zachowanie.
-
-Kolejne powiadomienia, okna i okna dialogowe mogą być dzielone między pulpitami.</translation>
 <translation id="8825534185036233643">Odbicie lustrzane na więcej niż dwóch wyświetlaczach nie jest obsługiwane.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8841375032071747811">Przycisk Wstecz</translation>

@@ -268,7 +268,6 @@ Tu značajku upotrebljavajte samo s pouzdanim računima.</translation>
 <translation id="7029814467594812963">Izlazak iz sesije</translation>
 <translation id="7034339000180558234">Emitiranje kartice <ph name="TAB_NAME" /> na <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Postavljanje pozadinske slike...</translation>
-<translation id="7054808953701320293">U redu, više mi ne prikazuj to upozorenje.</translation>
 <translation id="7066646422045619941">Tu mrežu onemogućio je vaš administrator.</translation>
 <translation id="7067196344162293536">Automatski izmjenjuj</translation>
 <translation id="7098389117866926363">USB-C uređaj (lijevi priključak sa stražnje strane)</translation>
@@ -308,7 +307,6 @@ Tu značajku upotrebljavajte samo s pouzdanim računima.</translation>
 <translation id="8000066093800657092">Nema mreže</translation>
 <translation id="8054466585765276473">Izračun vremena baterije.</translation>
 <translation id="8056430285089645882">U redu, više mi ne prikazuj tu poruku.</translation>
-<translation id="8088137642766812908">Oprezno, ta značajka može biti probematična</translation>
 <translation id="8098591350844501178">Zaustavi emitiranje zaslona na prijamniku <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Povezano s <ph name="NAME" /></translation>
 <translation id="813913629614996137">Pokretanje...</translation>
@@ -336,9 +334,6 @@ Tu značajku upotrebljavajte samo s pouzdanim računima.</translation>
 <translation id="8734991477317290293">Možda pokušava ukrasti podatke o pritisnutim tipkama</translation>
 <translation id="8809737090443522491">Unesite naziv aplikacije ili dokumenta</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="8814715559352963456">Premještanje prozora na drugu radnu površinu može dovesti do neočekivanog ponašanja.
-
-Naknadne obavijesti, prozori i dijaloški okviri mogu biti podijeljeni između radnih površina.</translation>
 <translation id="8825534185036233643">Zrcaljenje s više od dva zaslona nije podržano.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8841375032071747811">Gumb Natrag</translation>

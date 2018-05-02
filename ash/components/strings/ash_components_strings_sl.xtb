@@ -102,6 +102,7 @@
 <translation id="5236674127086649162">Vnovično nalaganje trenutne strani brez uporabe predpomnjene vsebine</translation>
 <translation id="526651782186312376">Izbira besedila do začetka vrstice</translation>
 <translation id="5316716239522500219">Zrcaljenje monitorjev</translation>
+<translation id="5487187679583934283">Začenjanje ali ustavitev vnašanja govora</translation>
 <translation id="5541719484267030947">Med vlečenjem zavihka pritisnite <ph name="ESC" /></translation>
 <translation id="5554139136362089836">Iskanje po trenutni strani</translation>
 <translation id="5563050856984839829">Pritisnite <ph name="CTRL" /> <ph name="SEPARATOR" /> <ph name="SHIFT" /> in kliknite povezavo</translation>
@@ -144,6 +145,7 @@
 <translation id="6981982820502123353">Dostopnost</translation>
 <translation id="7020813747703216897">Ni ustreznih rezultatov</translation>
 <translation id="7025325401470358758">Naslednje podokno</translation>
+<translation id="7076878155205969899">Izklop zvoka</translation>
 <translation id="7077383985738259936">Izbira ali označevanje vrstice z zaznamki (če je vidna)</translation>
 <translation id="7237562915163138771">Vnesite spletni naslov v naslovno vrstico, nato pritisnite <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7254764037241667478">Preklop naprave v način pripravljenosti (onemogočanje)</translation>

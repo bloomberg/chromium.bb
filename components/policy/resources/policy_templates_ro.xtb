@@ -292,21 +292,6 @@
 
       Reține că dacă platforma acceptă notificări privind politica, întârzierea actualizării va fi setată la 24 de ore (vor fi ignorate valorile prestabilite și valoarea acestei politici), deoarece se așteaptă ca notificările privind politica să forțeze automat o actualizare ori de câte ori politica se modifică, actualizările mai frecvente fiind inutile.</translation>
 <translation id="2024476116966025075">Configurează numele de domeniu necesar pentru clienții cu acces la distanță</translation>
-<translation id="202757291638965203">Configurează o listă de imprimante.
-
-      Această politică permite administratorilor să ofere utilizatorilor configurații ale
-      imprimantelor.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> și <ph name="PRINTER_DESCRIPTION" /> sunt șiruri cu formă liberă care pot fi personalizate pentru a selecta mai ușor o imprimantă. <ph name="PRINTER_MANUFACTURER" /> și <ph name="PRINTER_MODEL" /> sunt folosite pentru a simplifica identificarea imprimantei de către utilizatorii finali. Acestea reprezintă producătorul și modelul imprimantei. <ph name="PRINTER_URI" /> trebuie să fie o adresă care poate fi accesată de pe computerul unui client, inclusiv <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> și <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> este opțional. Dacă este specificat, acesta este folosit pentru a deduplica imprimantele <ph name="ZEROCONF_DISCOVERY" />.
-
-      <ph name="PRINTER_EFFECTIVE_MODEL" /> trebuie să corespundă unuia dintre șirurile care reprezintă o imprimantă <ph name="PRODUCT_NAME" /> compatibilă. Șirul va fi folosit pentru a identifica și instala PPD-ul corespunzător imprimantei. Mai multe informații sunt disponibile la https://support.google.com/chrome?p=noncloudprint.
-
-      Configurarea imprimantei este finalizată la prima folosire a acesteia. PPD-urile nu sunt descărcate înainte de folosirea imprimantei. După aceea, PPD-urile folosite frecvent sunt stocate în memoria cache.
-
-      Această politică nu afectează opțiunea utilizatorilor de a configura imprimantele pe dispozitive individuale. Este menită să fie suplimentară față de configurarea imprimantelor de către utilizatori individuali.
-
-      Pentru dispozitivele gestionate cu Active Directory, această politică acceptă extinderea <ph name="MACHINE_NAME_VARIABLE" /> la numele computerului cu Active Directory sau la un subșir al acestuia. De exemplu, dacă numele computerului este <ph name="MACHINE_NAME_EXAMPLE" />, <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> va fi înlocuit de cele 4 caractere care urmează după cea de-a 6-a poziție, adică <ph name="MACHINE_NAME_PART_EXAMPLE" />. Reține că poziția începe de la zero.
-      </translation>
 <translation id="2030905906517501646">Cuvânt cheie pentru furnizorul de căutare prestabilit</translation>
 <translation id="203096360153626918">Această politică nu afectează aplicațiile Android. Acestea vor putea fi deschise în modul ecran complet, chiar dacă politica este setată la <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Imprimantele dezactivate ale companiei</translation>
@@ -410,6 +395,27 @@
           Dacă setarea acestei politici este anulată, nu apar casete de dialog de avertizare.
 
           Valoarea acestei politici trebuie indicată în milisecunde. Valorile sunt fixate la un număr mai mic decât sau egal cu intervalul de inactivitate.</translation>
+<translation id="2289578386193672044">Specifică o listă de aplicații și extensii instalate în fundal,
+         fără intervenția utilizatorului și care nu pot fi instalate sau
+          dezinstalate de acesta. Toate permisiunile solicitate
+          de aplicații/extensii sunt acordate în mod prestabilit, fără intervenția utilizatorului,
+          inclusiv orice permisiune suplimentară solicitată de viitoarele versiuni
+          ale aplicației/extensiei. În plus, permisiunile sunt acordate pentru
+          API-urile extensiei enterprise.deviceAttributes și enterprise.platformKeys.
+          (Aceste două API-uri nu sunt disponibile pentru aplicațiile/extensiile
+          care nu sunt instalate forțat).
+
+          Această politică are prioritate față de o politică <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> care poate crea conflicte. Dacă o aplicație sau o extensie care a fost instalată forțat anterior este eliminată din listă, aceasta este dezinstalată automat de <ph name="PRODUCT_NAME" />.
+
+          Pentru instanțele Windows neasociate unui domeniu <ph name="MS_AD_NAME" />, instalarea forțată se limitează la aplicațiile și extensiile afișate în Magazinul web Chrome.
+
+          Reține că utilizatorii pot să modifice codul sursă al oricărei extensii cu ajutorul Instrumentelor pentru dezvoltatori (ceea ce poate face extensia nefuncțională). Dacă acest aspect creează probleme, trebuie să se seteze politica <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+          Fiecare element din lista politicii este un șir care include un ID al extensiei și, opțional, o adresă URL de „actualizare”, separate prin punct și virgulă (<ph name="SEMICOLON" />). ID-ul de extensie este un șir alcătuit din 32 de litere găsit, de exemplu, la <ph name="CHROME_EXTENSIONS_LINK" /> în modul pentru dezvoltatori. Adresa URL de „actualizare”, dacă este specificată, trebuie să trimită la un document XML cu manifestul de actualizare, conform descrierii de la <ph name="LINK_TO_EXTENSION_DOC1" />. În mod prestabilit, se folosește adresa URL de actualizare a Magazinului web Chrome (care acum este „https://clients2.google.com/service/update2/crx”). Reține că adresa URL de „actualizare” setată în această politică este folosită numai la instalarea inițială. Actualizările ulterioare ale extensiei vor folosi adresa URL de actualizare indicată în manifestul extensiei. Reține și că specificarea explicită a adresei URL de „actualizare” era obligatorie în versiunile <ph name="PRODUCT_NAME" /> de până la 67, inclusiv.
+
+          De exemplu, <ph name="EXTENSION_POLICY_EXAMPLE" /> instalează aplicația <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> de la adresa URL standard de „actualizare” din Magazinul web Chrome. Pentru mai multe informații despre găzduirea extensiilor, accesează: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Dacă politica nu este configurată, nicio aplicație sau extensie nu va fi instalată automat, iar utilizatorul poate dezinstala orice aplicație sau extensie din <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME" /> poate utiliza un serviciu web Google pentru a ajuta la soluționarea greșelilor de ortografie. Dacă setarea este activată, atunci se va utiliza întotdeauna acest serviciu. Dacă setarea este dezactivată, atunci acest serviciu nu va fi utilizat niciodată.
 
       Totuși, verificarea ortografiei se poate face cu un dicționar descărcat; această politică afectează numai utilizarea serviciului web.
@@ -700,6 +706,16 @@
           Această politică este opțională. Dacă nu este setată, nu se va efectua înlocuirea termenilor de căutare.
 
           Această politică este respectată doar dacă este activată politica „DefaultSearchProviderEnabled”.</translation>
+<translation id="3056439054015239107">
+      Această politică se aplică pentru ecranul de conectare. Consultă și politica <ph name="SITE_PER_PROCESS_POLICY_NAME" />, care se aplică pentru sesiunea utilizatorului. Se recomandă setarea ambelor politici la aceeași valoare. Dacă valorile nu corespund, poate apărea o întârziere la intrarea în sesiunea utilizatorului până ce se aplică valoarea specificată în politica privind utilizatorii.
+      Îți recomandăm să verifici setarea pentru politica IsolateOrigins pentru a
+      beneficia la maximum de fiecare, de izolare și de impact limitat asupra
+      utilizatorilor, folosind IsolateOrigins cu o listă a site-urilor pe care vrei
+      să le izolezi. Această setare, SitePerProcess, izolează toate site-urile.
+      Dacă politica este activată, fiecare site va rula propriul proces.
+      Dacă politica este dezactivată, nu va avea loc o izolare explicită a site-ului, iar testările limitate de IsolateOrigins și SitePerProcess vor fi dezactivate. Utilizatorii vor putea activa manual SitePerProcess.
+      Dacă politica nu este configurată, utilizatorul va putea modifica această setare.
+      </translation>
 <translation id="306887062252197004">Această politică permite utilizatorilor funcției WebDriver să ignore
       politicile care pot afecta funcționarea acesteia.
 
@@ -861,6 +877,7 @@
 <translation id="3660562134618097814">Transferă cookie-urile unui furnizor de identitate SAML în timpul conectării</translation>
 <translation id="3709266154059827597">Configurează lista neagră pentru instalarea extensiilor</translation>
 <translation id="3711895659073496551">Suspendați</translation>
+<translation id="3715569262675717862">Autentificare pe baza certificatelor de client</translation>
 <translation id="3736879847913515635">Activează adăugarea de persoane în managerul de utilizatori</translation>
 <translation id="3737544779868348650">Numele de gazdă al rețelei dispozitivului</translation>
 <translation id="3740754010292550733">Setează perioada pentru notificările privind relansarea după actualizare</translation>
@@ -1852,6 +1869,14 @@
       În cazul în care conectarea la alt cont nu ar trebui permisă în modul incognito, îți recomandăm să blochezi acest mod prin folosirea politicii IncognitoModeAvailability.
 
       Reține că utilizatorii vor putea să acceseze serviciile Google într-o stare neautentificată prin blocarea cookie-urilor.</translation>
+<translation id="6738326937072482736">Configurează disponibilitatea și comportamentul funcției de actualizare a firmware-ului <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+
+      Setările individuale pot fi specificate în proprietățile JSON:
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: dacă opțiunea este setată la <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, utilizatorii vor putea să declanșeze fluxul de powerwash pentru a instala o actualizare a firmware-ului <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: dacă opțiunea este setată la <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, utilizatorii vor putea invoca fluxul de actualizare a firmware-ului <ph name="TPM_FIRMWARE_UPDATE_TPM" /> care păstrează starea la nivelul întregului dispozitiv (inclusiv înscrierea pentru întreprindere), dar pierde datele utilizatorilor. Acest flux de actualizare este disponibil începând cu versiunea 68.
+
+      Dacă politica nu este configurată, funcția de actualizare a firmware-ului <ph name="TPM_FIRMWARE_UPDATE_TPM" /> nu va fi disponibilă.</translation>
 <translation id="6757438632136860443">Îți permite să setezi o listă de șabloane de adrese URL care specifică site-urile care au permisiunea să ruleze pluginul <ph name="FLASH_PLUGIN_NAME" />.
 
           Dacă această politică nu este configurată, va fi folosită valoarea prestabilită la nivel global pentru toate site-urile, fie din politica „DefaultCookiesSetting”, în cazul în care aceasta este configurată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
@@ -1872,6 +1897,16 @@
       Informațiile privind memoria sunt raportate oricum în pagină, indiferent de valoarea opțiunii, dar dimensiunile raportate sunt
       cuantificate, iar frecvența actualizărilor este limitată din motive de securitate. Pentru a obține date exacte în timp real,
       folosiți instrumente ca Telemetrie.</translation>
+<translation id="6870914592443697993">
+      Această politică se aplică pentru ecranul de conectare. Consultă și politica <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, care se aplică pentru sesiunea utilizatorului. Se recomandă setarea ambelor politici la aceeași valoare. Dacă valorile nu corespund, poate apărea o întârziere la intrarea în sesiunea utilizatorului până ce se aplică valoarea specificată în politica privind utilizatorii.
+      Dacă politica este activată, fiecare dintre originile indicate
+      într-o listă de valori separate prin virgulă va rula propriul proces. Aceasta va izola
+      și originile denumite după subdomenii; de exemplu, specificarea
+      https://example.com/ va cauza și izolarea https://foo.example.com/ ca parte
+      a site-ului https://example.com/.
+      Dacă politica este dezactivată, nu va avea loc o izolare explicită a site-ului, iar testările limitate de IsolateOrigins și SitePerProcess vor fi dezactivate. Utilizatorii vor putea activa IsolateOrigins manual.
+      Dacă politica nu este configurată, pentru ecranul de conectare vor fi folosite setările de izolare a site-ului prestabilite pentru platforma respectivă.
+      </translation>
 <translation id="6894178810167845842">Adresa URL a paginii Filă nouă</translation>
 <translation id="6899705656741990703">Detectare automată a setărilor proxy</translation>
 <translation id="6903814433019432303">Această politică este activă numai în modul Vânzare. 
@@ -2118,6 +2153,7 @@ nu poate fi stabilit de utilizator din setările browserului.
       Dacă este dezactivată, actualizările componentelor sunt dezactivate. Totuși, anumite componente nu se supun acestei politici: nu vor fi dezactivate actualizările oricărei componente care nu conține un cod executabil sau care nu modifică semnificativ comportamentul browserului ori care este critică pentru securitatea sa.
       Printre exemple se numără listele de revocare a certificatelor și datele de navigare sigură.
       Consultă https://developers.google.com/safe-browsing pentru mai multe informații despre Navigarea sigură.</translation>
+<translation id="7566878661979235378">Tipul de autentificare pentru conectare SAML</translation>
 <translation id="757395965347379751">Când setarea este activată, <ph name="PRODUCT_NAME" /> acceptă certificatele semnate cu SHA-1, cu condiția ca acestea să valideze și să se asocieze unor certificate CA instalate local.
 
       Reține că această politică depinde de acceptarea semnăturilor SHA-1 de către stiva de verificare a certificatelor sistemului de operare. Dacă o actualizare a sistemului de operare modifică modul în care sistemul de operare gestionează certificatele semnate cu SHA-1, este posibil ca această politică să nu se mai aplice. Mai mult, această politică are rolul de soluție temporară, pentru a le oferi companiilor mai mult timp să renunțe la standardul SHA-1. Această politică va fi eliminată în data de 1 ianuarie 2019 sau în jurul acestei date.
@@ -2282,6 +2318,16 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="7961779417826583251">Dezactivează aplicarea politicii privind Transparența certificatului pentru o listă de autorități de certificare vechi</translation>
 <translation id="7974114691960514888">Această politică nu mai este acceptată. Permite utilizarea de servere STUN și de retransmisie în cazul conectării la un client la distanță. Dacă această setare este activată, atunci acest computer poate să descopere computere gazdă la distanță și să se conecteze la acestea, chiar dacă există un firewall. Dacă această setare este dezactivată, iar conexiunile UDP de ieșire sunt filtrate de firewall, atunci acest computer se poate conecta numai la computerele gazdă aflate în rețeaua locală.</translation>
 <translation id="7976157349247117979">Numele destinației pentru <ph name="PRODUCT_NAME" /></translation>
+<translation id="7978060394348264922">
+      Îți recomandăm să verifici setarea pentru politica IsolateOrigins pentru a
+      beneficia la maximum de fiecare, de izolare și de impact limitat asupra
+      utilizatorilor, folosind IsolateOrigins cu o listă a site-urilor pe care
+      vrei să le izolezi. Această setare, SitePerProcess, izolează toate site-urile.
+      Dacă politica este activată, fiecare site va rula propriul proces.
+      Dacă politica este dezactivată, nu va avea loc o izolare explicită a site-ului, iar testările limitate de IsolateOrigins și SitePerProcess vor fi dezactivate. Utilizatorii vor putea activa SitePerProcess manual.
+      Dacă politica nu este configurată, utilizatorul va putea modifica această setare.
+      În <ph name="PRODUCT_OS_NAME" />, se recomandă setarea politicii privind dispozitivele <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> la aceeași valoare. Dacă valorile specificate în cele două politici nu corespund, poate apărea o întârziere la intrarea în sesiunea utilizatorului până ce se aplică valoarea specificată în politica privind utilizatorii.
+      </translation>
 <translation id="7980227303582973781">Fără restricții speciale</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Rotește ecranul la 0 grade</translation>
@@ -2480,6 +2526,13 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
           Separă numele serverelor prin virgulă. Sunt permise metacaracterele (*).
 
           Dacă politica nu este configurată, <ph name="PRODUCT_NAME" /> va încerca să detecteze dacă un anumit server se află în intranet și numai după aceea va răspunde la solicitările IWA. Dacă un server este detectat ca fiind pe internet, <ph name="PRODUCT_NAME" /> va ignora solicitările IWA trimise de acesta.</translation>
+<translation id="8667812577403206506">Îți permite să controlezi dacă mașinile virtuale au permisiunea de a rula pe sistemul de operare Chrome.
+
+      Dacă politica este activată, dispozitivul are permisiunea de a rula mașini virtuale.
+      Dacă politica este dezactivată, dispozitivul nu va avea permisiunea de a rula mașini virtuale.
+      Atunci când se dezactivează politica, ea se aplică mașinilor virtuale noi care pornesc, dar nu le închide pe cele care rulează deja.
+      Atunci când politica nu este setată pe un dispozitiv gestionat, acesta nu are permisiunea de a rula mașini virtuale.
+      Dispozitivele care nu sunt gestionate au permisiunea de a rula mașini virtuale.</translation>
 <translation id="8672321184841719703">Versiune țintă pentru actualizări automate</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
 <translation id="8685024486845674965">Avertismentul privind protecția prin parolă este declanșat de refolosirea parolei</translation>
@@ -2592,6 +2645,7 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
 
       Această politică nu trebuie să fie activată când politica <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> este activată, deoarece funcția respectivă folosește aceeași funcționalitate pe parte de client. În acest caz, sincronizarea găzduită de Google este dezactivată integral.</translation>
 <translation id="8955719471735800169">Înapoi sus</translation>
+<translation id="8959992920425111821">Configurația prestabilită</translation>
 <translation id="8960850473856121830">Șabloanele din această listă vor fi comparate cu originea
       de securitate a adresei URL solicitante. Dacă este identificată o potrivire,
       accesul la dispozitivele de capturare a conținutului audio va fi acordat automat.
@@ -2602,6 +2656,16 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
 <translation id="8976248126101463034">Permite autentificarea gnubby pentru gazdele de acces la distanță</translation>
 <translation id="8976531594979650914">Folosește imprimanta prestabilită a sistemului ca setare prestabilită</translation>
 <translation id="8992176907758534924">Nu permite niciunui site să afișeze imagini</translation>
+<translation id="9034729899149506577">
+      Dacă politica este activată, fiecare dintre originile indicate într-o listă
+      de valori separate prin virgulă va rula propriul proces. Aceasta va izola
+      și originile denumite după subdomenii; de exemplu, specificarea
+      https://example.com/ va cauza și izolarea https://foo.example.com/ ca parte
+      a site-ului https://example.com/.
+      Dacă politica este dezactivată, nu va avea loc o izolare explicită a site-ului, iar testările limitate de IsolateOrigins și SitePerProcess vor fi dezactivate. Utilizatorii vor putea activa manual IsolateOrigins.
+      Dacă politica nu este configurată, utilizatorul va putea modifica această setare.
+      În <ph name="PRODUCT_OS_NAME" />, se recomandă setarea politicii privind dispozitivele <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> la aceeași valoare. Dacă valorile specificate în cele două politici nu corespund, poate apărea o întârziere la intrarea în sesiunea utilizatorului până ce se aplică valoarea specificată în politica privind utilizatorii.
+      </translation>
 <translation id="9035964157729712237">ID-urile extensiilor excluse din lista neagră</translation>
 <translation id="9042911395677044526">Această politică permite trimiterea configurației rețelei pentru a fi aplicată pentru fiecare utilizator pe un dispozitiv cu <ph name="PRODUCT_OS_NAME" />. Configurația rețelei este un șir în formatul JSON, conform definirii acestuia de către formatul Open Network Configuration descris la <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Specificați dacă activitatea video afectează gestionarea consumului de energie</translation>
@@ -2646,6 +2710,13 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
 <translation id="9187743794267626640">Dezactivați conectarea dispozitivelor de stocare externe</translation>
 <translation id="9197740283131855199">Procentul cu care se va ajusta intervalul de reducere a luminozității ecranului dacă utilizatorul devine activ după reducerea luminozității</translation>
 <translation id="9200828125069750521">Parametrii pentru adresa URL a imaginii care utilizează POST</translation>
+<translation id="9210953373038593554">Configurează tipul de autentificare pentru conectările SAML.
+
+      Când această politică nu este setată sau este setată la valoarea prestabilită (0), comportamentul conectărilor SAML este stabilit de browser, în funcție de alți factori. În scenariul cel mai simplu, autentificarea utilizatorului și protecția datelor utilizatorului din memoria cache se bazează pe parole introduse manual de utilizatori.
+
+      Când această politică este setată la ClientCertificate (valoarea 1), autentificarea certificatelor de client este folosită pentru utilizatorii nou adăugați care se conectează prin SAML. Pentru astfel de utilizatori nu se folosesc parole, iar datele locale din memoria cache sunt protejate cu ajutorul cheilor criptografice corespunzătoare. De exemplu, această setare permite configurarea utilizatorilor pe bază de carduri inteligente (reține că aplicațiile intermediare pentru carduri inteligente trebuie să fie instalate prin politica DeviceLoginScreenAppInstallList).
+
+      Această politică afectează doar utilizatorii care se autentifică prin SAML.</translation>
 <translation id="9213347477683611358">Configurează imaginea de fundal la nivel de dispozitiv afișată pe ecranul de conectare, dacă încă nu s-a conectat niciun utilizator pe dispozitiv. Politica se configurează prin specificarea adresei URL de la care dispozitivul cu sistemul de operare Chrome poate descărca imaginea de fundal și a unui cod hash criptografic folosit pentru a verifica integritatea descărcării. Imaginea trebuie să fie în format JPEG, iar dimensiunea fișierului nu trebuie să depășească 16 MB. Adresa URL trebuie să poată fi accesată fără autentificare. Imaginea de fundal este descărcată și stocată în memoria cache. Aceasta va fi descărcată din nou, ori de câte ori adresa URL sau codul hash se modifică.
 
       Politica trebuie să fie specificată ca șir ce exprimă adresa URL și codul hash în format JSON, de ex.,

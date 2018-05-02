@@ -102,6 +102,7 @@
 <translation id="5236674127086649162">重新加载当前网页（不使用缓存的内容）</translation>
 <translation id="526651782186312376">选择直到行首的文字</translation>
 <translation id="5316716239522500219">镜像显示器</translation>
+<translation id="5487187679583934283">开始或停止输入您所说的内容</translation>
 <translation id="5541719484267030947">在拖动标签页的同时按 <ph name="ESC" /> 键</translation>
 <translation id="5554139136362089836">在当前网页中搜索</translation>
 <translation id="5563050856984839829">在按 <ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> 的同时点击链接</translation>
@@ -144,6 +145,7 @@
 <translation id="6981982820502123353">无障碍</translation>
 <translation id="7020813747703216897">找不到相符的搜索结果</translation>
 <translation id="7025325401470358758">下一窗格</translation>
+<translation id="7076878155205969899">静音</translation>
 <translation id="7077383985738259936">聚焦于或突出显示书签栏（若显示）</translation>
 <translation id="7237562915163138771">在地址栏中输入网址，然后按 <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7254764037241667478">让设备进入睡眠模式（暂停使用）</translation>

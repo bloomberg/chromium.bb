@@ -269,7 +269,6 @@
 <translation id="7029814467594812963">退出会话</translation>
 <translation id="7034339000180558234">正在将“<ph name="TAB_NAME" />”投射到“<ph name="RECEIVER_NAME" />”</translation>
 <translation id="7052914147756339792">设置壁纸...</translation>
-<translation id="7054808953701320293">知道了，以后不要再显示此信息。</translation>
 <translation id="7066646422045619941">您的管理员已禁用此网络。</translation>
 <translation id="7067196344162293536">自动旋转</translation>
 <translation id="7098389117866926363">USB-C 设备（背面左侧端口）</translation>
@@ -309,7 +308,6 @@
 <translation id="8000066093800657092">未连接任何网络</translation>
 <translation id="8054466585765276473">正在计算续航时间。</translation>
 <translation id="8056430285089645882">知道了，以后不要再显示此信息。</translation>
-<translation id="8088137642766812908">请注意，使用此功能可能会出现问题</translation>
 <translation id="8098591350844501178">停止将屏幕投射到“<ph name="RECEIVER_NAME" />”</translation>
 <translation id="8132793192354020517">已连接到 <ph name="NAME" /></translation>
 <translation id="813913629614996137">正在初始化…</translation>
@@ -337,9 +335,6 @@
 <translation id="8734991477317290293">当前连接的键盘可能会试图窃取您的击键操作</translation>
 <translation id="8809737090443522491">输入应用或文档的名称</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="8814715559352963456">将窗口移至其他桌面可能会导致出现意外行为。
-
-后续通知、窗口和对话框可能会在不同的桌面上分开显示。</translation>
 <translation id="8825534185036233643">系统不支持镜像两个以上的显示屏。</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8841375032071747811">“返回”按钮</translation>

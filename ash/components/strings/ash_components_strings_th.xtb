@@ -102,6 +102,7 @@
 <translation id="5236674127086649162">โหลดหน้าเว็บปัจจุบันซ้ำโดยไม่ใช้เนื้อหาที่แคช</translation>
 <translation id="526651782186312376">เลือกข้อความไปจนถึงต้นบรรทัด</translation>
 <translation id="5316716239522500219">แสดงผลบนหน้าจอ</translation>
+<translation id="5487187679583934283">เริ่มหรือหยุดพิมพ์สิ่งที่คุณพูด</translation>
 <translation id="5541719484267030947">กด <ph name="ESC" /> ขณะที่ลากแท็บ</translation>
 <translation id="5554139136362089836">ค้นหาในหน้าปัจจุบัน</translation>
 <translation id="5563050856984839829">กด <ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> และคลิกลิงก์</translation>
@@ -144,6 +145,7 @@
 <translation id="6981982820502123353">การเข้าถึง</translation>
 <translation id="7020813747703216897">ไม่พบผลการค้นหาที่ตรงกัน</translation>
 <translation id="7025325401470358758">แผงถัดไป</translation>
+<translation id="7076878155205969899">ปิดเสียง</translation>
 <translation id="7077383985738259936">โฟกัสหรือไฮไลต์แถบบุ๊กมาร์ก (หากแสดงอยู่)</translation>
 <translation id="7237562915163138771">พิมพ์ที่อยู่เว็บในแถบที่อยู่แล้วกด <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7254764037241667478">ตั้งค่าอุปกรณ์ให้อยู่ในโหมดสลีป (ระงับ)</translation>

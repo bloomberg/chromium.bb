@@ -268,7 +268,6 @@
 <translation id="7029814467594812963">Завершити сеанс</translation>
 <translation id="7034339000180558234">Вкладка "<ph name="TAB_NAME" />" транслюється на пристрій "<ph name="RECEIVER_NAME" />"</translation>
 <translation id="7052914147756339792">Установити фоновий малюнок...</translation>
-<translation id="7054808953701320293">Зрозуміло. Більше не показувати.</translation>
 <translation id="7066646422045619941">Ваш адміністратор вимкнув цю мережу.</translation>
 <translation id="7067196344162293536">Автоматичне обертання</translation>
 <translation id="7098389117866926363">Пристрій, під’єднаний до порту USB-C (ліворуч на задній панелі)</translation>
@@ -308,7 +307,6 @@
 <translation id="8000066093800657092">Немає мережі</translation>
 <translation id="8054466585765276473">Обчислення часу роботи акумулятора.</translation>
 <translation id="8056430285089645882">Зрозуміло. Більше не показувати.</translation>
-<translation id="8088137642766812908">Увага, ця функція непередбачувана!</translation>
 <translation id="8098591350844501178">Зупинити трансляцію екрана на пристрій "<ph name="RECEIVER_NAME" />"</translation>
 <translation id="8132793192354020517">З'єднано з <ph name="NAME" /></translation>
 <translation id="813913629614996137">Ініціалізація...</translation>
@@ -336,9 +334,6 @@
 <translation id="8734991477317290293">Можливо, це спроба викрасти введенні символи.</translation>
 <translation id="8809737090443522491">Введіть назву додатка або документа</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="8814715559352963456">Переміщення вікон на інший робочий стіл може спричинити неочікувану поведінку.
-
-Нові сповіщення та вікна можуть розділятися між робочими столами.</translation>
 <translation id="8825534185036233643">Дзеркалювання на більше ніж двох дисплеях не підтримується.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8841375032071747811">Кнопка "Назад"</translation>

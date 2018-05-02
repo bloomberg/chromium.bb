@@ -268,7 +268,6 @@ Hanya gunakan fitur ini dengan akun yang Anda percayai.</translation>
 <translation id="7029814467594812963">Keluar dari sesi</translation>
 <translation id="7034339000180558234">Mentransmisi <ph name="TAB_NAME" /> ke <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Setel wallpaper...</translation>
-<translation id="7054808953701320293">Mengerti, jangan tampilkan lagi.</translation>
 <translation id="7066646422045619941">Jaringan ini dinonaktifkan oleh administrator Anda.</translation>
 <translation id="7067196344162293536">Putar otomatis</translation>
 <translation id="7098389117866926363">Perangkat USB-C (port belakang sebelah kiri)</translation>
@@ -308,7 +307,6 @@ Hanya gunakan fitur ini dengan akun yang Anda percayai.</translation>
 <translation id="8000066093800657092">Tidak ada jaringan</translation>
 <translation id="8054466585765276473">Menghitung masa pakai baterai.</translation>
 <translation id="8056430285089645882">Mengerti, jangan tampilkan ini lagi.</translation>
-<translation id="8088137642766812908">Hati-hati, fitur ini mungkin berbahaya</translation>
 <translation id="8098591350844501178">Hentikan casting layar ke <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Tersambung ke <ph name="NAME" /></translation>
 <translation id="813913629614996137">Memulai...</translation>
@@ -336,9 +334,6 @@ Hanya gunakan fitur ini dengan akun yang Anda percayai.</translation>
 <translation id="8734991477317290293">Keyboard mungkin mencoba mencuri ketukan tombol Anda</translation>
 <translation id="8809737090443522491">Ketik nama aplikasi atau dokumen</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="8814715559352963456">Memindahkan jendela ke desktop lain dapat mengakibatkan perilaku tak terduga.
-
-Notifikasi, jendela, dan dialog berikutnya dapat terpisah antar-desktop.</translation>
 <translation id="8825534185036233643">Pencerminan dengan lebih dari dua layar tidak didukung.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8841375032071747811">Tombol kembali</translation>
