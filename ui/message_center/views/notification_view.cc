@@ -343,14 +343,6 @@ void NotificationView::ButtonPressed(views::Button* sender,
   NOTREACHED();
 }
 
-bool NotificationView::IsCloseButtonFocused() const {
-  return control_buttons_view_->IsCloseButtonFocused();
-}
-
-void NotificationView::RequestFocusOnCloseButton() {
-  control_buttons_view_->RequestFocusOnCloseButton();
-}
-
 void NotificationView::CreateOrUpdateTitleView(
     const Notification& notification) {
   if (notification.title().empty()) {

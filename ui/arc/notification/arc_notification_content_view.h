@@ -55,7 +55,6 @@ class ArcNotificationContentView
               const message_center::Notification& notification);
   message_center::NotificationControlButtonsView* GetControlButtonsView();
   void UpdateControlButtonsVisibility();
-  void RequestFocusOnCloseButton();
   void OnSlideChanged();
   void OnContainerAnimationStarted();
   void OnContainerAnimationEnded();

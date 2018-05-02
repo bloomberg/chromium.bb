@@ -38,8 +38,6 @@ class ArcNotificationView : public message_center::MessageView,
   void UpdateWithNotification(
       const message_center::Notification& notification) override;
   void SetDrawBackgroundAsActive(bool active) override;
-  bool IsCloseButtonFocused() const override;
-  void RequestFocusOnCloseButton() override;
   void UpdateControlButtonsVisibility() override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   message_center::NotificationControlButtonsView* GetControlButtonsView()

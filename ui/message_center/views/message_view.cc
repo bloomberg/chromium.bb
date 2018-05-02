@@ -18,6 +18,7 @@
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/features.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
+#include "ui/message_center/views/notification_control_buttons_view.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -127,6 +128,21 @@ void MessageView::SetIsNested() {
           -gfx::ShadowValue::GetMargin(shadow.values)));
     }
   }
+}
+
+bool MessageView::IsCloseButtonFocused() const {
+  auto* control_buttons_view = GetControlButtonsView();
+  return control_buttons_view ? control_buttons_view->IsCloseButtonFocused()
+                              : false;
+}
+
+void MessageView::RequestFocusOnCloseButton() {
+  auto* control_buttons_view = GetControlButtonsView();
+  if (!control_buttons_view)
+    return;
+
+  control_buttons_view->RequestFocusOnCloseButton();
+  UpdateControlButtonsVisibility();
 }
 
 void MessageView::SetExpanded(bool expanded) {
