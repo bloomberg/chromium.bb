@@ -406,8 +406,12 @@ void CastContentBrowserClient::AppendExtraCommandLineSwitches(
   if (process_type == switches::kRendererProcess) {
     // Any browser command-line switches that should be propagated to
     // the renderer go here.
-    if (browser_command_line->HasSwitch(switches::kAllowHiddenMediaPlayback))
-      command_line->AppendSwitch(switches::kAllowHiddenMediaPlayback);
+    static const char* const kForwardSwitches[] = {
+        switches::kAllowHiddenMediaPlayback,
+        switches::kForceMediaResolutionHeight,
+        switches::kForceMediaResolutionWidth};
+    command_line->CopySwitchesFrom(*browser_command_line, kForwardSwitches,
+                                   arraysize(kForwardSwitches));
   } else if (process_type == switches::kUtilityProcess) {
     if (browser_command_line->HasSwitch(switches::kAudioOutputChannels)) {
       command_line->AppendSwitchASCII(switches::kAudioOutputChannels,
