@@ -9,7 +9,6 @@
 
 #include "base/containers/queue.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "components/policy/policy_export.h"
@@ -72,7 +71,7 @@ class POLICY_EXPORT RemoteCommandsQueue {
   // Attempts to start a new command.
   void ScheduleNextJob();
 
-  base::queue<linked_ptr<RemoteCommandJob>> incoming_commands_;
+  base::queue<std::unique_ptr<RemoteCommandJob>> incoming_commands_;
 
   std::unique_ptr<RemoteCommandJob> running_command_;
 

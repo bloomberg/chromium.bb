@@ -35,7 +35,7 @@ void RemoteCommandsQueue::RemoveObserver(Observer* observer) {
 }
 
 void RemoteCommandsQueue::AddJob(std::unique_ptr<RemoteCommandJob> job) {
-  incoming_commands_.push(linked_ptr<RemoteCommandJob>(job.release()));
+  incoming_commands_.emplace(std::move(job));
 
   if (!running_command_)
     ScheduleNextJob();
@@ -74,7 +74,7 @@ void RemoteCommandsQueue::ScheduleNextJob() {
     return;
   DCHECK(!execution_timeout_timer_.IsRunning());
 
-  running_command_.reset(incoming_commands_.front().release());
+  running_command_ = std::move(incoming_commands_.front());
   incoming_commands_.pop();
 
   execution_timeout_timer_.Start(FROM_HERE,
