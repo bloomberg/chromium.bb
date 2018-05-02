@@ -1606,12 +1606,14 @@ void RenderFrameHostImpl::DidCommitProvisionalLoad(
     OnBeforeUnloadACK(true, approx_renderer_start_time, base::TimeTicks::Now());
   }
 
-  // If we're waiting for an unload ack from this renderer and we receive a
-  // Navigate message, then the renderer was navigating before it received the
-  // unload request.  It will either respond to the unload request soon or our
-  // timer will expire.  Either way, we should ignore this message, because we
-  // have already committed to closing this renderer.
-  if (IsWaitingForUnloadACK())
+  // If we're waiting for an unload ack from this frame and we receive a commit
+  // message, then the frame was navigating before it received the unload
+  // request.  It will either respond to the unload request soon or our timer
+  // will expire.  Either way, we should ignore this message, because we have
+  // already committed to destroying this RenderFrameHost.  Note that we
+  // intentionally do not ignore commits that happen while the current tab is
+  // being closed - see https://crbug.com/805705.
+  if (is_waiting_for_swapout_ack_)
     return;
 
   // Retroactive sanity check:
@@ -1684,14 +1686,16 @@ void RenderFrameHostImpl::DidCommitSameDocumentNavigation(
       frame_tree_node()->frame_tree()->root()->current_origin());
   ScopedCommitStateResetter commit_state_resetter(this);
 
-  // If we're waiting for an unload ack from this renderer and we receive a
-  // Navigate message, then the renderer was navigating before it received the
-  // unload request.  It will either respond to the unload request soon or our
-  // timer will expire.  Either way, we should ignore this message, because we
-  // have already committed to closing this renderer.
+  // If we're waiting for an unload ack from this frame and we receive a commit
+  // message, then the frame was navigating before it received the unload
+  // request.  It will either respond to the unload request soon or our timer
+  // will expire.  Either way, we should ignore this message, because we have
+  // already committed to destroying this RenderFrameHost.  Note that we
+  // intentionally do not ignore commits that happen while the current tab is
+  // being closed - see https://crbug.com/805705.
   // TODO(ahemery): Investigate to see if this can be removed when the
   // NavigationClient interface is implemented.
-  if (IsWaitingForUnloadACK())
+  if (is_waiting_for_swapout_ack_)
     return;
 
   TRACE_EVENT2("navigation",
@@ -2073,6 +2077,8 @@ void RenderFrameHostImpl::OnRunJavaScriptDialog(
   if (dialog_type == JavaScriptDialogType::JAVASCRIPT_DIALOG_TYPE_ALERT)
     GetFrameResourceCoordinator()->OnAlertFired();
 
+  // Don't show the dialog if it's triggered on a frame that's pending deletion
+  // (e.g., from an unload handler), or when the tab is being closed.
   if (IsWaitingForUnloadACK()) {
     SendJavaScriptDialogReply(reply_msg, true, base::string16());
     return;
@@ -2411,6 +2417,9 @@ void RenderFrameHostImpl::OnForwardResourceTimingToParent(
   if (!is_active())
     return;
 
+  // We should never be receiving this message from a speculative RFH.
+  DCHECK(IsCurrent());
+
   DEBUG_ALIAS_FOR_CSTR(resource_name, resource_timing.name.c_str(), 128);
   base::debug::Alias(&view_is_closing);
   base::debug::Alias(&widget_is_closing);
@@ -2556,6 +2565,9 @@ void RenderFrameHostImpl::OnDispatchLoad() {
   // the frame navigates away. See https://crbug.com/626802.
   if (!is_active())
     return;
+
+  // We should never be receiving this message from a speculative RFH.
+  DCHECK(IsCurrent());
 
   // Only frames with an out-of-process parent frame should be sending this
   // message.

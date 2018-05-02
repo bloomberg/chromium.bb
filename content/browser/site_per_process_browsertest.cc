@@ -11704,4 +11704,80 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_LE(compositing_rect.y(), expected_offset + 2);
 }
 
+namespace {
+
+// Helper class to intercept DidCommitProvisionalLoad messages and inject a
+// call to close the current tab right before them.
+class ClosePageBeforeCommitHelper : public DidCommitProvisionalLoadInterceptor {
+ public:
+  explicit ClosePageBeforeCommitHelper(WebContents* web_contents)
+      : DidCommitProvisionalLoadInterceptor(web_contents) {}
+
+  void Wait() {
+    run_loop_.reset(new base::RunLoop());
+    run_loop_->Run();
+    run_loop_.reset();
+  }
+
+ private:
+  // DidCommitProvisionalLoadInterceptor:
+  void WillDispatchDidCommitProvisionalLoad(
+      RenderFrameHost* render_frame_host,
+      ::FrameHostMsg_DidCommitProvisionalLoad_Params* params,
+      service_manager::mojom::InterfaceProviderRequest*
+          interface_provider_request) override {
+    RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
+        render_frame_host->GetRenderViewHost());
+    EXPECT_TRUE(rvh->is_active());
+    rvh->ClosePage();
+    if (run_loop_)
+      run_loop_->Quit();
+  }
+
+  std::unique_ptr<base::RunLoop> run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(ClosePageBeforeCommitHelper);
+};
+
+}  // namespace
+
+// Verify that when a tab is closed just before a commit IPC arrives for a
+// subframe in the tab, a subsequent resource timing IPC from the subframe RFH
+// won't generate a renderer kill.  See https://crbug.com/805705.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       CloseTabBeforeSubframeCommits) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+
+  // Open a popup in a.com to keep that process alive.
+  GURL same_site_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  Shell* new_shell = OpenPopup(root, same_site_url, "");
+
+  // Add a blank grandchild frame.
+  RenderFrameHostCreatedObserver frame_observer(shell()->web_contents(), 1);
+  EXPECT_TRUE(ExecuteScript(
+      root->child_at(0),
+      "document.body.appendChild(document.createElement('iframe'));"));
+  frame_observer.Wait();
+  FrameTreeNode* grandchild = root->child_at(0)->child_at(0);
+
+  // Navigate grandchild to an a.com URL.  Note that only a frame's initial
+  // navigation forwards resource timing info to parent, so it's important that
+  // this iframe was initially blank.
+  //
+  // Just before this URL commits, close the page.
+  ClosePageBeforeCommitHelper close_page_helper(web_contents());
+  EXPECT_TRUE(
+      ExecuteScript(grandchild, "location = '" + same_site_url.spec() + "';"));
+  close_page_helper.Wait();
+
+  // Test passes if the a.com renderer doesn't crash. Ping to verify.
+  bool success;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      new_shell, "window.domAutomationController.send(true);", &success));
+  EXPECT_TRUE(success);
+}
+
 }  // namespace content
