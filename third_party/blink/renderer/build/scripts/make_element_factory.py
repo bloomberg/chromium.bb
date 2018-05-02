@@ -120,7 +120,7 @@ class MakeElementFactoryWriter(MakeQualifiedNamesWriter):
     def _interface_header_dir(self, tag):
         if tag['interfaceHeaderDir']:
             return tag['interfaceHeaderDir']
-        return 'core/' + self.namespace.lower()
+        return 'third_party/blink/renderer/core/' + self.namespace.lower()
 
 
 if __name__ == "__main__":

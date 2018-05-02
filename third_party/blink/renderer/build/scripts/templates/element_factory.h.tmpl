@@ -3,8 +3,8 @@
 
 {{source_files_for_generated_file(template_file, input_files)}}
 
-#ifndef BLINK_CORE_{{namespace|upper}}_ELEMENT_FACTORY_H_
-#define BLINK_CORE_{{namespace|upper}}_ELEMENT_FACTORY_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_{{namespace|upper}}_ELEMENT_FACTORY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_{{namespace|upper}}_ELEMENT_FACTORY_H_
 
 #include "third_party/blink/renderer/core/dom/create_element_flags.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -23,6 +23,6 @@ class {{namespace}}ElementFactory {
       const CreateElementFlags flags);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_{{namespace|upper}}_ELEMENT_FACTORY_H_

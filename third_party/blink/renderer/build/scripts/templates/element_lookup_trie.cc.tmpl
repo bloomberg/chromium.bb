@@ -5,9 +5,9 @@
 
 {{source_files_for_generated_file(template_file, input_files)}}
 
-#include "core/{{namespace|lower}}_element_lookup_trie.h"
+#include "third_party/blink/renderer/core/{{namespace|lower}}_element_lookup_trie.h"
 
-#include "core/{{namespace|lower}}_names.h"
+#include "third_party/blink/renderer/core/{{namespace|lower}}_names.h"
 
 namespace blink {
 
@@ -21,4 +21,4 @@ const AtomicString& lookup{{namespace}}Tag(const UChar* data, unsigned length) {
   return g_null_atom;
 }
 
-} // namespace blink
+}  // namespace blink

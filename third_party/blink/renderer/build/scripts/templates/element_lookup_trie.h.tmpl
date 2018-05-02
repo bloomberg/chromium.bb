@@ -3,8 +3,8 @@
 
 {{source_files_for_generated_file(template_file, input_files)}}
 
-#ifndef BLINK_CORE_{{namespace|upper}}_ELEMENT_LOOKUP_TRIE_H_
-#define BLINK_CORE_{{namespace|upper}}_ELEMENT_LOOKUP_TRIE_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_{{namespace|upper}}_ELEMENT_LOOKUP_TRIE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_{{namespace|upper}}_ELEMENT_LOOKUP_TRIE_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
@@ -13,6 +13,6 @@ namespace blink {
 
 CORE_EXPORT const AtomicString& lookup{{namespace}}Tag(const UChar* data, unsigned length);
 
-} // namespace blink
+}  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_{{namespace|upper}}_ELEMENT_LOOKUP_TRIE_H_

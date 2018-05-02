@@ -3,14 +3,14 @@
 
 {{source_files_for_generated_file(template_file, input_files)}}
 
-#include "core/{{namespace|lower}}_element_factory.h"
+#include "third_party/blink/renderer/core/{{namespace|lower}}_element_factory.h"
 
-#include "core/{{namespace|lower}}_names.h"
+#include "third_party/blink/renderer/core/{{namespace|lower}}_names.h"
 {% for header in tags|groupby('interface_header') %}
 #include "{{header[0]}}"
 {% endfor %}
 {% if fallback_interface %}
-#include "core/{{namespace|lower}}/{{fallback_interface_header}}"
+#include "third_party/blink/renderer/core/{{namespace|lower}}/{{fallback_interface_header}}"
 {% endif %}
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -71,4 +71,4 @@ static void create{{namespace}}FunctionMap() {
   return nullptr;
 }
 
-} // namespace blink
+}  // namespace blink
