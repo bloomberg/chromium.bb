@@ -723,8 +723,9 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest, SrcObjectAddVideoTrack) {
   ExecuteJavascriptAndWaitForOk("srcObjectAddVideoTrack()");
 }
 
+// Flaky on all platforms. https://crbug.com/835332
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
-                       SrcObjectRemoveVideoTrack) {
+                       DISABLED_SrcObjectRemoveVideoTrack) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
   NavigateToURL(shell(), url);
