@@ -258,9 +258,9 @@ class TestVolume {
   }
 
  private:
-  std::string name_;
   base::ScopedTempDir root_;
   bool root_initialized_ = false;
+  std::string name_;
 };
 
 }  // anonymous namespace
