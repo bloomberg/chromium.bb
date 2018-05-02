@@ -284,6 +284,10 @@ gfx::NativeViewAccessible
   return nullptr;
 }
 
+bool RenderWidgetHostViewBase::RequestRepaintForTesting() {
+  return false;
+}
+
 void RenderWidgetHostViewBase::UpdateScreenInfo(gfx::NativeView view) {
   if (host() && host()->delegate())
     host()->delegate()->SendScreenRects();

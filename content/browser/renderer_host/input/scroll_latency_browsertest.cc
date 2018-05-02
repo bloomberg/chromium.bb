@@ -68,7 +68,7 @@ class ScrollLatencyBrowserTest : public ContentBrowserTest {
   }
 
   void WaitAFrame() {
-    while (!GetWidgetHost()->ScheduleComposite())
+    while (!GetWidgetHost()->RequestRepaintForTesting())
       GiveItSomeTime();
     frame_observer_->Wait();
   }

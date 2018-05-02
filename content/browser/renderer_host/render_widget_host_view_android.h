@@ -159,6 +159,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       viz::mojom::HitTestRegionListPtr hit_test_region_list) override;
   void OnDidNotProduceFrame(const viz::BeginFrameAck& ack) override;
   void ClearCompositorFrame() override;
+  bool RequestRepaintForTesting() override;
   void SetIsInVR(bool is_in_vr) override;
   bool IsInVR() const override;
   void DidOverscroll(const ui::DidOverscrollParams& params) override;
@@ -285,7 +286,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void SetDoubleTapSupportEnabled(bool enabled);
   void SetMultiTouchZoomSupportEnabled(bool enabled);
 
-  void SynchronizeVisualProperties();
+  bool SynchronizeVisualProperties();
 
   bool HasValidFrame() const;
 

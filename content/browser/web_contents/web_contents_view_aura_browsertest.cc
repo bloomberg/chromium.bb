@@ -289,7 +289,7 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
   }
 
   void WaitAFrame() {
-    while (!GetRenderWidgetHost()->ScheduleComposite())
+    while (!GetRenderWidgetHost()->RequestRepaintForTesting())
       GiveItSomeTime();
     frame_observer_->WaitForAnyFrameSubmission();
   }

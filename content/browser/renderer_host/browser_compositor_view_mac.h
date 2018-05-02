@@ -32,7 +32,7 @@ class BrowserCompositorMacClient {
   virtual void OnFrameTokenChanged(uint32_t frame_token) = 0;
   virtual void DidReceiveFirstFrameAfterNavigation() = 0;
   virtual void DestroyCompositorForShutdown() = 0;
-  virtual void SynchronizeVisualProperties() = 0;
+  virtual bool SynchronizeVisualProperties() = 0;
 };
 
 // This class owns a DelegatedFrameHost, and will dynamically attach and
@@ -60,6 +60,8 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
   // Ensure that the currect compositor frame be cleared (even if it is
   // potentially visible).
   void ClearCompositorFrame();
+
+  bool RequestRepaintForTesting();
 
   // Return the parameters of the most recently received frame, or nullptr if
   // no valid frame is available.

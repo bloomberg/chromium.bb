@@ -192,7 +192,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void RestartHangMonitorTimeoutIfNecessary() override;
   bool IsCurrentlyUnresponsive() const override;
   void SetIgnoreInputEvents(bool ignore_input_events) override;
-  void SynchronizeVisualProperties() override;
+  bool SynchronizeVisualProperties() override;
   void AddKeyPressEventCallback(const KeyPressEventCallback& callback) override;
   void RemoveKeyPressEventCallback(
       const KeyPressEventCallback& callback) override;
@@ -362,10 +362,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   bool resize_ack_pending_for_testing() { return resize_ack_pending_; }
 
-  // GPU accelerated version of GetBackingStore function. This will
-  // trigger a re-composite to the view. It may fail if a resize is pending, or
-  // if a composite has already been requested and not acked yet.
-  bool ScheduleComposite();
+  // Requests the generation of a new CompositorFrame from the renderer.
+  // It will return false if the renderer is not ready (e.g. there's an
+  // in flight change).
+  bool RequestRepaintForTesting();
 
   // Called by the RenderProcessHost to handle the case when the process
   // changed its state of ignoring input events.
@@ -568,7 +568,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // Pushes updated visual properties to the renderer as well as whether the
   // focused node should be scrolled into view.
-  void SynchronizeVisualProperties(bool scroll_focused_node_into_view);
+  bool SynchronizeVisualProperties(bool scroll_focused_node_into_view);
 
   // Called when we receive a notification indicating that the renderer process
   // is gone. This will reset our state so that our state will be consistent if

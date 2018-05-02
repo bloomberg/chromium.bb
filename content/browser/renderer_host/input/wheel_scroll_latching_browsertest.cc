@@ -118,7 +118,7 @@ class WheelScrollLatchingBrowserTest : public ContentBrowserTest {
     host->GetView()->SetSize(gfx::Size(600, 600));
 
     // The page is loaded in the renderer, wait for a new frame to arrive.
-    while (!host->ScheduleComposite())
+    while (!host->RequestRepaintForTesting())
       GiveItSomeTime();
   }
   int ExecuteScriptAndExtractInt(const std::string& script) {

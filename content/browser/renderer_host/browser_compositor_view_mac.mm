@@ -230,6 +230,15 @@ void BrowserCompositorMac::ClearCompositorFrame() {
     delegated_frame_host_->ClearDelegatedFrame();
 }
 
+bool BrowserCompositorMac::RequestRepaintForTesting() {
+  const viz::LocalSurfaceId& new_local_surface_id =
+      dfh_local_surface_id_allocator_.GenerateId();
+  delegated_frame_host_->SynchronizeVisualProperties(
+      new_local_surface_id, dfh_size_dip_,
+      cc::DeadlinePolicy::UseExistingDeadline());
+  return client_->SynchronizeVisualProperties();
+}
+
 const gfx::CALayerParams* BrowserCompositorMac::GetLastCALayerParams() const {
   if (!recyclable_compositor_)
     return nullptr;

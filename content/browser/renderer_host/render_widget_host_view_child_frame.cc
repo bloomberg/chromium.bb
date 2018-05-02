@@ -1055,7 +1055,8 @@ RenderWidgetHostViewChildFrame::ResizeDueToAutoResize(
     const gfx::Size& new_size,
     const viz::LocalSurfaceId& local_surface_id) {
   base::OnceCallback<void()> allocation_task = base::BindOnce(
-      &RenderWidgetHostViewChildFrame::OnResizeDueToAutoResizeComplete,
+      base::IgnoreResult(
+          &RenderWidgetHostViewChildFrame::OnResizeDueToAutoResizeComplete),
       weak_factory_.GetWeakPtr(), local_surface_id);
   return viz::ScopedSurfaceIdAllocator(std::move(allocation_task));
 }

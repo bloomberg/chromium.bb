@@ -92,8 +92,8 @@ void RenderWidgetHostViewMac::DestroyCompositorForShutdown() {
   Destroy();
 }
 
-void RenderWidgetHostViewMac::SynchronizeVisualProperties() {
-  host()->SynchronizeVisualProperties();
+bool RenderWidgetHostViewMac::SynchronizeVisualProperties() {
+  return host()->SynchronizeVisualProperties();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -341,7 +341,7 @@ void RenderWidgetHostViewMac::Show() {
 
   // If there is not a frame being currently drawn, kick one, so that the below
   // pause will have a frame to wait on.
-  host()->ScheduleComposite();
+  host()->RequestRepaintForTesting();
   PauseForPendingResizeOrRepaintsAndDraw();
 }
 
@@ -578,7 +578,8 @@ viz::ScopedSurfaceIdAllocator RenderWidgetHostViewMac::ResizeDueToAutoResize(
     const gfx::Size& new_size,
     const viz::LocalSurfaceId& child_local_surface_id) {
   base::OnceCallback<void()> allocation_task = base::BindOnce(
-      &RenderWidgetHostViewMac::OnResizeDueToAutoResizeComplete,
+      base::IgnoreResult(
+          &RenderWidgetHostViewMac::OnResizeDueToAutoResizeComplete),
       weak_factory_.GetWeakPtr(), new_size, child_local_surface_id);
   return browser_compositor_->GetScopedRendererSurfaceIdAllocator(
       std::move(allocation_task));
@@ -940,6 +941,10 @@ void RenderWidgetHostViewMac::OnDidNotProduceFrame(
 
 void RenderWidgetHostViewMac::ClearCompositorFrame() {
   browser_compositor_->ClearCompositorFrame();
+}
+
+bool RenderWidgetHostViewMac::RequestRepaintForTesting() {
+  return browser_compositor_->RequestRepaintForTesting();
 }
 
 gfx::Vector2d RenderWidgetHostViewMac::GetOffsetFromRootSurface() {
