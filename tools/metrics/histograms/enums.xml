@@ -19513,6 +19513,7 @@ Called by update_net_error_codes.py.-->
   <int value="12" label="File made for too many bytes in the directory."/>
   <int value="13" label="File was skipped because it belongs to this process."/>
   <int value="14" label="File did not have required embedded profile."/>
+  <int value="15" label="File had internal data corruption."/>
 </enum>
 
 <enum name="FileMetricsProviderEmbeddedProfileResult">
