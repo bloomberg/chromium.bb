@@ -61,7 +61,8 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
                  const gfx::Size& device_viewport_size);
 
   // Public interface implemented by subclasses.
-  virtual void SwapBuffers(std::vector<ui::LatencyInfo> latency_info) = 0;
+  virtual void SwapBuffers(std::vector<ui::LatencyInfo> latency_info,
+                           bool need_presentation_feedback) = 0;
   virtual void SwapBuffersComplete() {}
   virtual void DidReceiveTextureInUseResponses(
       const gpu::TextureInUseResponses& responses) {}

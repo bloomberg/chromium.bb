@@ -935,6 +935,19 @@ bool Validators::StringTypeValidator::IsValid(const GLenum value) const {
   return false;
 };
 
+bool Validators::SwapBuffersFlagsValidator::IsValid(
+    const GLbitfield value) const {
+  switch (value) {
+    case 0:
+    case gpu::SwapBuffersFlags::kPresentationFeedback:
+    case gpu::SwapBuffersFlags::kVSyncParams:
+    case gpu::SwapBuffersFlags::kPresentationFeedback |
+        gpu::SwapBuffersFlags::kVSyncParams:
+      return true;
+  }
+  return false;
+};
+
 static const GLbitfield valid_sync_flush_flags_table[] = {
     GL_SYNC_FLUSH_COMMANDS_BIT, 0,
 };

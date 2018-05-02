@@ -1050,6 +1050,8 @@ void InProcessCommandBuffer::OnRescheduleAfterFinished() {
   }
 }
 
+void InProcessCommandBuffer::OnSwapBuffers(uint32_t flags) {}
+
 void InProcessCommandBuffer::SignalSyncTokenOnGpuThread(
     const SyncToken& sync_token,
     base::OnceClosure callback) {

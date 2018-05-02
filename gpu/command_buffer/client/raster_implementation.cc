@@ -314,21 +314,22 @@ void RasterImplementation::SetAggressivelyFreeResources(
   }
 }
 
-void RasterImplementation::Swap() {
+void RasterImplementation::Swap(uint32_t /* flags */) {
   NOTREACHED();
 }
 
-void RasterImplementation::SwapWithBounds(const std::vector<gfx::Rect>&
-                                          /* rects */) {
+void RasterImplementation::SwapWithBounds(
+    const std::vector<gfx::Rect>& /* rects */,
+    uint32_t /* flags */) {
   NOTREACHED();
 }
 
-void RasterImplementation::PartialSwapBuffers(
-    const gfx::Rect& /* sub_buffer */) {
+void RasterImplementation::PartialSwapBuffers(const gfx::Rect& /* sub_buffer */,
+                                              uint32_t /* flags */) {
   NOTREACHED();
 }
 
-void RasterImplementation::CommitOverlayPlanes() {
+void RasterImplementation::CommitOverlayPlanes(uint32_t /* flags */) {
   NOTREACHED();
 }
 

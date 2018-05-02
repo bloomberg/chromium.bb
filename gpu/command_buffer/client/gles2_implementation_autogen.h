@@ -845,7 +845,7 @@ GLboolean IsVertexArrayOES(GLuint array) override;
 
 void BindVertexArrayOES(GLuint array) override;
 
-void SwapBuffers() override;
+void SwapBuffers(GLbitfield flags = 0) override;
 
 GLuint GetMaxValueInBufferCHROMIUM(GLuint buffer_id,
                                    GLsizei count,
@@ -935,7 +935,8 @@ void GetTranslatedShaderSourceANGLE(GLuint shader,
 void PostSubBufferCHROMIUM(GLint x,
                            GLint y,
                            GLint width,
-                           GLint height) override;
+                           GLint height,
+                           GLbitfield flags = 0) override;
 
 void CopyTextureCHROMIUM(GLuint source_id,
                          GLint source_level,
@@ -1056,7 +1057,7 @@ void ScheduleCALayerCHROMIUM(GLuint contents_texture_id,
 void ScheduleCALayerInUseQueryCHROMIUM(GLsizei count,
                                        const GLuint* textures) override;
 
-void CommitOverlayPlanesCHROMIUM() override;
+void CommitOverlayPlanesCHROMIUM(GLbitfield flags = 0) override;
 
 void FlushDriverCachesCHROMIUM() override;
 
@@ -1223,7 +1224,9 @@ void OverlayPromotionHintCHROMIUM(GLuint texture,
                                   GLint display_width,
                                   GLint display_height) override;
 
-void SwapBuffersWithBoundsCHROMIUM(GLsizei count, const GLint* rects) override;
+void SwapBuffersWithBoundsCHROMIUM(GLsizei count,
+                                   const GLint* rects,
+                                   GLbitfield flags = 0) override;
 
 void SetDrawRectangleCHROMIUM(GLint x,
                               GLint y,

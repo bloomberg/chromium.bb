@@ -3940,10 +3940,11 @@ TEST_F(GLES2FormatTest, BindVertexArrayOES) {
 
 TEST_F(GLES2FormatTest, SwapBuffers) {
   cmds::SwapBuffers& cmd = *GetBufferAs<cmds::SwapBuffers>();
-  void* next_cmd = cmd.Set(&cmd);
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLbitfield>(11));
   EXPECT_EQ(static_cast<uint32_t>(cmds::SwapBuffers::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLbitfield>(11), cmd.flags);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
@@ -4147,7 +4148,8 @@ TEST_F(GLES2FormatTest, PostSubBufferCHROMIUM) {
   cmds::PostSubBufferCHROMIUM& cmd =
       *GetBufferAs<cmds::PostSubBufferCHROMIUM>();
   void* next_cmd = cmd.Set(&cmd, static_cast<GLint>(11), static_cast<GLint>(12),
-                           static_cast<GLint>(13), static_cast<GLint>(14));
+                           static_cast<GLint>(13), static_cast<GLint>(14),
+                           static_cast<GLbitfield>(15));
   EXPECT_EQ(static_cast<uint32_t>(cmds::PostSubBufferCHROMIUM::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
@@ -4155,6 +4157,7 @@ TEST_F(GLES2FormatTest, PostSubBufferCHROMIUM) {
   EXPECT_EQ(static_cast<GLint>(12), cmd.y);
   EXPECT_EQ(static_cast<GLint>(13), cmd.width);
   EXPECT_EQ(static_cast<GLint>(14), cmd.height);
+  EXPECT_EQ(static_cast<GLbitfield>(15), cmd.flags);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
@@ -4610,10 +4613,11 @@ TEST_F(GLES2FormatTest, ScheduleCALayerInUseQueryCHROMIUMImmediate) {
 TEST_F(GLES2FormatTest, CommitOverlayPlanesCHROMIUM) {
   cmds::CommitOverlayPlanesCHROMIUM& cmd =
       *GetBufferAs<cmds::CommitOverlayPlanesCHROMIUM>();
-  void* next_cmd = cmd.Set(&cmd);
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLbitfield>(11));
   EXPECT_EQ(static_cast<uint32_t>(cmds::CommitOverlayPlanesCHROMIUM::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLbitfield>(11), cmd.flags);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
@@ -5248,12 +5252,14 @@ TEST_F(GLES2FormatTest, SwapBuffersWithBoundsCHROMIUMImmediate) {
   const GLsizei kNumElements = 1;
   const size_t kExpectedCmdSize =
       sizeof(cmd) + kNumElements * sizeof(GLint) * 4;
-  void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(1), data);
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLsizei>(1), data, static_cast<GLbitfield>(3));
   EXPECT_EQ(static_cast<uint32_t>(
                 cmds::SwapBuffersWithBoundsCHROMIUMImmediate::kCmdId),
             cmd.header.command);
   EXPECT_EQ(kExpectedCmdSize, cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLsizei>(1), cmd.count);
+  EXPECT_EQ(static_cast<GLbitfield>(3), cmd.flags);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
 }

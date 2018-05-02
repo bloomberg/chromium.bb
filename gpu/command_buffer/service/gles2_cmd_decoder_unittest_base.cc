@@ -147,6 +147,7 @@ bool GLES2DecoderTestBase::OnWaitSyncToken(const gpu::SyncToken&) {
 }
 void GLES2DecoderTestBase::OnDescheduleUntilFinished() {}
 void GLES2DecoderTestBase::OnRescheduleAfterFinished() {}
+void GLES2DecoderTestBase::OnSwapBuffers(uint32_t flags) {}
 
 void GLES2DecoderTestBase::SetUp() {
   InitState init;
@@ -2398,6 +2399,7 @@ bool GLES2DecoderPassthroughTestBase::OnWaitSyncToken(const gpu::SyncToken&) {
 }
 void GLES2DecoderPassthroughTestBase::OnDescheduleUntilFinished() {}
 void GLES2DecoderPassthroughTestBase::OnRescheduleAfterFinished() {}
+void GLES2DecoderPassthroughTestBase::OnSwapBuffers(uint32_t flags) {}
 
 void GLES2DecoderPassthroughTestBase::SetUp() {
   base::CommandLine::Init(0, NULL);

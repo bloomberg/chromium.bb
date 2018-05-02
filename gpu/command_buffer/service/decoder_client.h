@@ -47,6 +47,10 @@ class GPU_EXPORT DecoderClient {
   // Called from PerformPollingWork when the decoder needs to be rescheduled
   // because the fence completed.
   virtual void OnRescheduleAfterFinished() = 0;
+
+  // Called when SwapBuffers, PostSubBufferCHROMIUM,
+  // SwapBuffersWithBoundsCHROMIUM or CommitOverlayPlanesCHROMIUM is called.
+  virtual void OnSwapBuffers(uint32_t flags) = 0;
 };
 
 }  // namespace gpu

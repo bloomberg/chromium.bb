@@ -3908,7 +3908,10 @@ error::Error GLES2DecoderPassthroughImpl::HandleBindVertexArrayOES(
 error::Error GLES2DecoderPassthroughImpl::HandleSwapBuffers(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  error::Error error = DoSwapBuffers();
+  const volatile gles2::cmds::SwapBuffers& c =
+      *static_cast<const volatile gles2::cmds::SwapBuffers*>(cmd_data);
+  GLbitfield flags = static_cast<GLbitfield>(c.flags);
+  error::Error error = DoSwapBuffers(flags);
   if (error != error::kNoError) {
     return error;
   }
@@ -4272,7 +4275,11 @@ GLES2DecoderPassthroughImpl::HandleScheduleCALayerInUseQueryCHROMIUMImmediate(
 error::Error GLES2DecoderPassthroughImpl::HandleCommitOverlayPlanesCHROMIUM(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  error::Error error = DoCommitOverlayPlanesCHROMIUM();
+  const volatile gles2::cmds::CommitOverlayPlanesCHROMIUM& c =
+      *static_cast<const volatile gles2::cmds::CommitOverlayPlanesCHROMIUM*>(
+          cmd_data);
+  GLbitfield flags = static_cast<GLbitfield>(c.flags);
+  error::Error error = DoCommitOverlayPlanesCHROMIUM(flags);
   if (error != error::kNoError) {
     return error;
   }
@@ -4497,10 +4504,11 @@ GLES2DecoderPassthroughImpl::HandleSwapBuffersWithBoundsCHROMIUMImmediate(
   }
   volatile const GLint* rects = GetImmediateDataAs<volatile const GLint*>(
       c, data_size, immediate_data_size);
+  GLbitfield flags = static_cast<GLbitfield>(c.flags);
   if (rects == nullptr) {
     return error::kOutOfBounds;
   }
-  error::Error error = DoSwapBuffersWithBoundsCHROMIUM(count, rects);
+  error::Error error = DoSwapBuffersWithBoundsCHROMIUM(count, rects, flags);
   if (error != error::kNoError) {
     return error;
   }

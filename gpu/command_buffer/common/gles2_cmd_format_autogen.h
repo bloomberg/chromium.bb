@@ -11748,19 +11748,25 @@ struct SwapBuffers {
 
   void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init() { SetHeader(); }
+  void Init(GLbitfield _flags) {
+    SetHeader();
+    flags = _flags;
+  }
 
-  void* Set(void* cmd) {
-    static_cast<ValueType*>(cmd)->Init();
+  void* Set(void* cmd, GLbitfield _flags) {
+    static_cast<ValueType*>(cmd)->Init(_flags);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   gpu::CommandHeader header;
+  uint32_t flags;
 };
 
-static_assert(sizeof(SwapBuffers) == 4, "size of SwapBuffers should be 4");
+static_assert(sizeof(SwapBuffers) == 8, "size of SwapBuffers should be 8");
 static_assert(offsetof(SwapBuffers, header) == 0,
               "offset of SwapBuffers header should be 0");
+static_assert(offsetof(SwapBuffers, flags) == 4,
+              "offset of SwapBuffers flags should be 4");
 
 struct GetMaxValueInBufferCHROMIUM {
   typedef GetMaxValueInBufferCHROMIUM ValueType;
@@ -12407,16 +12413,26 @@ struct PostSubBufferCHROMIUM {
 
   void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(GLint _x, GLint _y, GLint _width, GLint _height) {
+  void Init(GLint _x,
+            GLint _y,
+            GLint _width,
+            GLint _height,
+            GLbitfield _flags) {
     SetHeader();
     x = _x;
     y = _y;
     width = _width;
     height = _height;
+    flags = _flags;
   }
 
-  void* Set(void* cmd, GLint _x, GLint _y, GLint _width, GLint _height) {
-    static_cast<ValueType*>(cmd)->Init(_x, _y, _width, _height);
+  void* Set(void* cmd,
+            GLint _x,
+            GLint _y,
+            GLint _width,
+            GLint _height,
+            GLbitfield _flags) {
+    static_cast<ValueType*>(cmd)->Init(_x, _y, _width, _height, _flags);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -12425,10 +12441,11 @@ struct PostSubBufferCHROMIUM {
   int32_t y;
   int32_t width;
   int32_t height;
+  uint32_t flags;
 };
 
-static_assert(sizeof(PostSubBufferCHROMIUM) == 20,
-              "size of PostSubBufferCHROMIUM should be 20");
+static_assert(sizeof(PostSubBufferCHROMIUM) == 24,
+              "size of PostSubBufferCHROMIUM should be 24");
 static_assert(offsetof(PostSubBufferCHROMIUM, header) == 0,
               "offset of PostSubBufferCHROMIUM header should be 0");
 static_assert(offsetof(PostSubBufferCHROMIUM, x) == 4,
@@ -12439,6 +12456,8 @@ static_assert(offsetof(PostSubBufferCHROMIUM, width) == 12,
               "offset of PostSubBufferCHROMIUM width should be 12");
 static_assert(offsetof(PostSubBufferCHROMIUM, height) == 16,
               "offset of PostSubBufferCHROMIUM height should be 16");
+static_assert(offsetof(PostSubBufferCHROMIUM, flags) == 20,
+              "offset of PostSubBufferCHROMIUM flags should be 20");
 
 struct CopyTextureCHROMIUM {
   typedef CopyTextureCHROMIUM ValueType;
@@ -13777,20 +13796,26 @@ struct CommitOverlayPlanesCHROMIUM {
 
   void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init() { SetHeader(); }
+  void Init(GLbitfield _flags) {
+    SetHeader();
+    flags = _flags;
+  }
 
-  void* Set(void* cmd) {
-    static_cast<ValueType*>(cmd)->Init();
+  void* Set(void* cmd, GLbitfield _flags) {
+    static_cast<ValueType*>(cmd)->Init(_flags);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   gpu::CommandHeader header;
+  uint32_t flags;
 };
 
-static_assert(sizeof(CommitOverlayPlanesCHROMIUM) == 4,
-              "size of CommitOverlayPlanesCHROMIUM should be 4");
+static_assert(sizeof(CommitOverlayPlanesCHROMIUM) == 8,
+              "size of CommitOverlayPlanesCHROMIUM should be 8");
 static_assert(offsetof(CommitOverlayPlanesCHROMIUM, header) == 0,
               "offset of CommitOverlayPlanesCHROMIUM header should be 0");
+static_assert(offsetof(CommitOverlayPlanesCHROMIUM, flags) == 4,
+              "offset of CommitOverlayPlanesCHROMIUM flags should be 4");
 
 struct FlushDriverCachesCHROMIUM {
   typedef FlushDriverCachesCHROMIUM ValueType;
@@ -15815,30 +15840,35 @@ struct SwapBuffersWithBoundsCHROMIUMImmediate {
     header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
   }
 
-  void Init(GLsizei _count, const GLint* _rects) {
+  void Init(GLsizei _count, const GLint* _rects, GLbitfield _flags) {
     SetHeader(_count);
     count = _count;
+    flags = _flags;
     memcpy(ImmediateDataAddress(this), _rects, ComputeDataSize(_count));
   }
 
-  void* Set(void* cmd, GLsizei _count, const GLint* _rects) {
-    static_cast<ValueType*>(cmd)->Init(_count, _rects);
+  void* Set(void* cmd, GLsizei _count, const GLint* _rects, GLbitfield _flags) {
+    static_cast<ValueType*>(cmd)->Init(_count, _rects, _flags);
     const uint32_t size = ComputeSize(_count);
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }
 
   gpu::CommandHeader header;
   int32_t count;
+  uint32_t flags;
 };
 
-static_assert(sizeof(SwapBuffersWithBoundsCHROMIUMImmediate) == 8,
-              "size of SwapBuffersWithBoundsCHROMIUMImmediate should be 8");
+static_assert(sizeof(SwapBuffersWithBoundsCHROMIUMImmediate) == 12,
+              "size of SwapBuffersWithBoundsCHROMIUMImmediate should be 12");
 static_assert(
     offsetof(SwapBuffersWithBoundsCHROMIUMImmediate, header) == 0,
     "offset of SwapBuffersWithBoundsCHROMIUMImmediate header should be 0");
 static_assert(
     offsetof(SwapBuffersWithBoundsCHROMIUMImmediate, count) == 4,
     "offset of SwapBuffersWithBoundsCHROMIUMImmediate count should be 4");
+static_assert(
+    offsetof(SwapBuffersWithBoundsCHROMIUMImmediate, flags) == 8,
+    "offset of SwapBuffersWithBoundsCHROMIUMImmediate flags should be 8");
 
 struct SetDrawRectangleCHROMIUM {
   typedef SetDrawRectangleCHROMIUM ValueType;
