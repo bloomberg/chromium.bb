@@ -118,6 +118,10 @@ bool Character::IsPotentialCustomElementNameChar(UChar32 character) {
   RETURN_HAS_PROPERTY(character, kIsPotentialCustomElementNameChar);
 }
 
+bool Character::IsBidiControl(UChar32 character) {
+  RETURN_HAS_PROPERTY(character, kIsBidiControl);
+}
+
 unsigned Character::ExpansionOpportunityCount(const LChar* characters,
                                               size_t length,
                                               TextDirection direction,

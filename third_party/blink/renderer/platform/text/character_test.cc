@@ -331,4 +331,22 @@ TEST(CharacterTest, Truncation) {
   EXPECT_FALSE(Character::IsNormalizedCanvasSpaceCharacter(test_char));
 }
 
+TEST(CharacterTest, IsBidiControl) {
+  EXPECT_TRUE(Character::IsBidiControl(0x202A));  // LEFT-TO-RIGHT EMBEDDING
+  EXPECT_TRUE(Character::IsBidiControl(0x202B));  // RIGHT-TO-LEFT EMBEDDING
+  EXPECT_TRUE(Character::IsBidiControl(0x202D));  // LEFT-TO-RIGHT OVERRIDE
+  EXPECT_TRUE(Character::IsBidiControl(0x202E));  // RIGHT-TO-LEFT OVERRIDE
+  EXPECT_TRUE(Character::IsBidiControl(0x202C));  // POP DIRECTIONAL FORMATTING
+  EXPECT_TRUE(Character::IsBidiControl(0x2066));  // LEFT-TO-RIGHT ISOLATE
+  EXPECT_TRUE(Character::IsBidiControl(0x2067));  // RIGHT-TO-LEFT ISOLATE
+  EXPECT_TRUE(Character::IsBidiControl(0x2068));  // FIRST STRONG ISOLATE
+  EXPECT_TRUE(Character::IsBidiControl(0x2069));  // POP DIRECTIONAL ISOLATE
+  EXPECT_TRUE(Character::IsBidiControl(0x200E));  // LEFT-TO-RIGHT MARK
+  EXPECT_TRUE(Character::IsBidiControl(0x200F));  // RIGHT-TO-LEFT MARK
+  EXPECT_TRUE(Character::IsBidiControl(0x061C));  // ARABIC LETTER MARK
+  EXPECT_FALSE(Character::IsBidiControl('A'));
+  EXPECT_FALSE(Character::IsBidiControl('0'));
+  EXPECT_FALSE(Character::IsBidiControl(0x05D0));
+}
+
 }  // namespace blink

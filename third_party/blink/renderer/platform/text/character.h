@@ -102,6 +102,9 @@ class PLATFORM_EXPORT Character {
   }
   static bool IsPotentialCustomElementNameChar(UChar32 character);
 
+  // http://unicode.org/reports/tr9/#Directional_Formatting_Characters
+  static bool IsBidiControl(UChar32 character);
+
   static bool TreatAsSpace(UChar32 c) {
     return c == kSpaceCharacter || c == kTabulationCharacter ||
            c == kNewlineCharacter || c == kNoBreakSpaceCharacter;

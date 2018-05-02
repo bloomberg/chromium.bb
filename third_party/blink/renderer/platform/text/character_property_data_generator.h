@@ -223,6 +223,13 @@ static const UChar32 kIsPotentialCustomElementNameCharRanges[] = {
     0xF900, 0xFDCF, 0xFDF0, 0xFFFD, 0x10000, 0xEFFFF,
 };
 
+// http://unicode.org/reports/tr9/#Directional_Formatting_Characters
+static const UChar32 kIsBidiControlArray[] = {0x061C, 0x200E, 0x200F};
+
+static const UChar32 kIsBidiControlRanges[] = {
+    0x202A, 0x202E, 0x2066, 0x2069,
+};
+
 }  // namespace blink
 
 #endif
