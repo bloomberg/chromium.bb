@@ -223,6 +223,7 @@ void VideoRendererImpl::Initialize(
   DCHECK(!time_progressing_);
 
   video_frame_stream_.reset(new VideoFrameStream(
+      std::make_unique<VideoFrameStream::StreamTraits>(media_log_),
       task_runner_, create_video_decoders_cb_, media_log_));
   video_frame_stream_->set_config_change_observer(base::Bind(
       &VideoRendererImpl::OnConfigChange, weak_factory_.GetWeakPtr()));

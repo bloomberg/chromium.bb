@@ -302,17 +302,29 @@ bool FFmpegAudioDecoder::ConfigureDecoder(const AudioDecoderConfig& config) {
   if (!config.should_discard_decoder_delay())
     codec_context_->flags2 |= AV_CODEC_FLAG2_SKIP_MANUAL;
 
-  if (config.codec() == kCodecOpus)
+  AVDictionary* codec_options = NULL;
+  if (config.codec() == kCodecOpus) {
     codec_context_->request_sample_fmt = AV_SAMPLE_FMT_FLT;
 
+    // Disable phase inversion to avoid artifacts in mono downmix. See
+    // http://crbug.com/806219
+    if (config.target_output_channel_layout() == CHANNEL_LAYOUT_MONO) {
+      int result = av_dict_set(&codec_options, "apply_phase_inv", "0", 0);
+      DCHECK_GE(result, 0);
+    }
+  }
+
   AVCodec* codec = avcodec_find_decoder(codec_context_->codec_id);
-  if (!codec || avcodec_open2(codec_context_.get(), codec, NULL) < 0) {
+  if (!codec ||
+      avcodec_open2(codec_context_.get(), codec, &codec_options) < 0) {
     DLOG(ERROR) << "Could not initialize audio decoder: "
                 << codec_context_->codec_id;
     ReleaseFFmpegResources();
     state_ = kUninitialized;
     return false;
   }
+  // Verify avcodec_open2() used all given options.
+  DCHECK_EQ(0, av_dict_count(codec_options));
 
   // Success!
   av_sample_format_ = codec_context_->sample_fmt;
