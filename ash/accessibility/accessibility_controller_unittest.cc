@@ -439,6 +439,25 @@ TEST_F(AccessibilityControllerTest,
   EXPECT_EQ(kChromeVoxEnabled, (*notifications.begin())->message());
 }
 
+TEST_F(AccessibilityControllerTest, SelectToSpeakStateChanges) {
+  AccessibilityController* controller =
+      Shell::Get()->accessibility_controller();
+  TestAccessibilityObserver observer;
+  controller->AddObserver(&observer);
+
+  controller->SetSelectToSpeakState(
+      ash::mojom::SelectToSpeakState::kSelectToSpeakStateSelecting);
+  EXPECT_EQ(controller->GetSelectToSpeakState(),
+            ash::mojom::SelectToSpeakState::kSelectToSpeakStateSelecting);
+  EXPECT_EQ(observer.status_changed_count_, 1);
+
+  controller->SetSelectToSpeakState(
+      ash::mojom::SelectToSpeakState::kSelectToSpeakStateSpeaking);
+  EXPECT_EQ(controller->GetSelectToSpeakState(),
+            ash::mojom::SelectToSpeakState::kSelectToSpeakStateSpeaking);
+  EXPECT_EQ(observer.status_changed_count_, 2);
+}
+
 namespace {
 
 enum class TestUserLoginType {

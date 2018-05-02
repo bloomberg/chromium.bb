@@ -39,6 +39,7 @@ class TestAccessibilityControllerClient
   void ShouldToggleSpokenFeedbackViaTouch(
       ShouldToggleSpokenFeedbackViaTouchCallback callback) override;
   void PlaySpokenFeedbackToggleCountdown(int tick_count) override;
+  void RequestSelectToSpeakStateChange() override;
 
   int32_t GetPlayedEarconAndReset();
 

@@ -138,6 +138,10 @@ void AccessibilityControllerClient::PlaySpokenFeedbackToggleCountdown(
       tick_count);
 }
 
+void AccessibilityControllerClient::RequestSelectToSpeakStateChange() {
+  chromeos::AccessibilityManager::Get()->RequestSelectToSpeakStateChange();
+}
+
 void AccessibilityControllerClient::FlushForTesting() {
   accessibility_controller_.FlushForTesting();
 }

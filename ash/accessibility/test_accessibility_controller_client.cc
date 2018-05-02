@@ -57,6 +57,8 @@ void TestAccessibilityControllerClient::ShouldToggleSpokenFeedbackViaTouch(
 void TestAccessibilityControllerClient::PlaySpokenFeedbackToggleCountdown(
     int tick_count) {}
 
+void TestAccessibilityControllerClient::RequestSelectToSpeakStateChange() {}
+
 int32_t TestAccessibilityControllerClient::GetPlayedEarconAndReset() {
   int32_t tmp = sound_key_;
   sound_key_ = -1;
