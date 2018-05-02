@@ -21,6 +21,8 @@ class FullscreenControlView : public views::View,
       const base::RepeatingClosure& on_button_pressed);
   ~FullscreenControlView() override;
 
+  static constexpr int kCircleButtonDiameter = 48;
+
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 

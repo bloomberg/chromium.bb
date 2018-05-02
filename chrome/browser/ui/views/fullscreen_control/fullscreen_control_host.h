@@ -61,15 +61,19 @@ class FullscreenControlHost : public ui::EventHandler {
 
   void ShowForInputEntryMethod(InputEntryMethod input_entry_method);
   void OnVisibilityChanged();
-  void OnTouchPopupTimeout();
+  void StartPopupTimeout(InputEntryMethod expected_input_method);
+  void OnPopupTimeout(InputEntryMethod expected_input_method);
   bool IsExitUiNeeded();
+  float CalculateCursorBufferHeight() const;
 
   InputEntryMethod input_entry_method_ = InputEntryMethod::NOT_ACTIVE;
+
+  bool in_mouse_cooldown_mode_ = false;
 
   BrowserView* const browser_view_;
 
   FullscreenControlPopup fullscreen_control_popup_;
-  base::OneShotTimer touch_timeout_timer_;
+  base::OneShotTimer popup_timeout_timer_;
   base::OneShotTimer key_press_delay_timer_;
 
   // Used to allow tests to wait for popup visibility changes.
