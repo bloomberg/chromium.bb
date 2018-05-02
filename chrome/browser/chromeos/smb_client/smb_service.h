@@ -85,7 +85,7 @@ class SmbService : public KeyedService,
 
   const ProviderId provider_id_;
   Profile* profile_;
-  TempFileManager temp_file_manager_;
+  std::unique_ptr<TempFileManager> temp_file_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(SmbService);
 };
