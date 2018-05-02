@@ -37,6 +37,7 @@ static const char kNavigatorPlatform[] = "navigatorPlatform";
 static const char kVirtualTimeBudget[] = "virtualTimeBudget";
 static const char kVirtualTimeBudgetInitalOffset[] =
     "virtualTimeBudgetInitalOffset";
+static const char kInitialVirtualTime[] = "initialVirtualTime";
 static const char kVirtualTimeOffset[] = "virtualTimeOffset";
 static const char kVirtualTimePolicy[] = "virtualTimePolicy";
 static const char kVirtualTimeTaskStarvationCount[] =
@@ -97,6 +98,9 @@ void InspectorEmulationAgent::Restore() {
 
     // Tell the scheduler about the saved virtual time progress to ensure that
     // virtual time monotonically advances despite the cross origin navigation.
+    double initial_virtual_time = 0;
+    bool has_initial_time = state_->getDouble(
+        EmulationAgentState::kInitialVirtualTime, &initial_virtual_time);
     web_local_frame_->View()->Scheduler()->SetInitialVirtualTimeOffset(
         base::TimeDelta::FromMillisecondsD(offset));
 
@@ -107,6 +111,8 @@ void InspectorEmulationAgent::Restore() {
         virtual_time_policy, budget_remaining, starvation_count,
         virtual_time_policy == protocol::Emulation::VirtualTimePolicyEnum::
                                    PauseIfNetworkFetchesPending,
+        has_initial_time ? protocol::Maybe<double>()
+                         : protocol::Maybe<double>(initial_virtual_time),
         &virtual_time_base_ms, &virtual_time_ticks_base_ms);
   }
 }
@@ -174,6 +180,7 @@ Response InspectorEmulationAgent::setVirtualTimePolicy(
     Maybe<double> virtual_time_budget_ms,
     protocol::Maybe<int> max_virtual_time_task_starvation_count,
     protocol::Maybe<bool> wait_for_navigation,
+    protocol::Maybe<double> initial_virtual_time,
     double* virtual_time_base_ms,
     double* virtual_time_ticks_base_ms) {
   state_->setString(EmulationAgentState::kVirtualTimePolicy, policy);
@@ -213,6 +220,14 @@ Response InspectorEmulationAgent::setVirtualTimePolicy(
     instrumenting_agents_->addInspectorEmulationAgent(this);
     web_local_frame_->View()->Scheduler()->AddVirtualTimeObserver(this);
     virtual_time_setup_ = true;
+  }
+
+  // This needs to happen before we apply virtual time.
+  if (initial_virtual_time.isJust()) {
+    state_->setDouble(EmulationAgentState::kInitialVirtualTime,
+                      initial_virtual_time.fromJust());
+    web_local_frame_->View()->Scheduler()->SetInitialVirtualTime(
+        base::Time::FromDoubleT(initial_virtual_time.fromJust()));
   }
 
   if (wait_for_navigation.fromMaybe(false)) {

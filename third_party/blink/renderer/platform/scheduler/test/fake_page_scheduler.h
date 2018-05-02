@@ -66,6 +66,7 @@ class FakePageScheduler final : public PageScheduler {
   void SetVirtualTimePolicy(VirtualTimePolicy policy) override {}
   void AddVirtualTimeObserver(VirtualTimeObserver* observer) override {}
   void RemoveVirtualTimeObserver(VirtualTimeObserver* observer) override {}
+  void SetInitialVirtualTime(base::Time time) override {}
   void SetInitialVirtualTimeOffset(base::TimeDelta offset) override {}
   void GrantVirtualTimeBudget(base::TimeDelta budget,
                               base::OnceClosure callback) override {}
