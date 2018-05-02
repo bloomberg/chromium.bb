@@ -112,6 +112,11 @@ class CORE_EXPORT ScrollingCoordinator final
       bool is_left_side_vertical_scrollbar);
 
   void WillDestroyScrollableArea(ScrollableArea*);
+
+  // Udates scroll offset, if the appropriate composited layers exist,
+  // and if successful, returns true. Otherwise returns false.
+  bool UpdateCompositedScrollOffset(ScrollableArea* scrollable_area);
+
   // Updates the compositor layers and returns true if the scrolling coordinator
   // handled this change.
   // TODO(pdr): Factor the container bounds change out of this function. The

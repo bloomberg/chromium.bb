@@ -2130,7 +2130,7 @@ void PaintLayerScrollableArea::UpdateCompositingLayersAfterScroll() {
     ScrollingCoordinator* scrolling_coordinator = GetScrollingCoordinator();
     bool handled_scroll =
         Layer()->IsRootLayer() && scrolling_coordinator &&
-        scrolling_coordinator->ScrollableAreaScrollLayerDidChange(this);
+        scrolling_coordinator->UpdateCompositedScrollOffset(this);
 
     if (!handled_scroll) {
       Layer()->GetCompositedLayerMapping()->SetNeedsGraphicsLayerUpdate(
