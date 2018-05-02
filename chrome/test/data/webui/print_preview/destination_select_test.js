@@ -33,7 +33,8 @@ cr.define('destination_select_test', function() {
       initialSettings = print_preview_test_utils.getDefaultInitialSettings();
       nativeLayer = new print_preview.NativeLayerStub();
       localDestinations = [];
-      destinations = getDestinationsArray();
+      destinations = print_preview_test_utils.getDestinations(
+          nativeLayer, localDestinations);
     });
 
     /*
@@ -53,32 +54,6 @@ cr.define('destination_select_test', function() {
         nativeLayer.whenCalled('getInitialSettings'),
         nativeLayer.whenCalled('getPrinterCapabilities')
       ]);
-    }
-
-    /**
-     * Creates 5 local destinations, adds them to |localDestinations| and
-     * sets the capabilities in |nativeLayer|.
-     * @return {!Array<!print_preview.Destination>}
-     */
-    function getDestinationsArray() {
-      let destinations = [];
-      const origin = cr.isChromeOS ? print_preview.DestinationOrigin.CROS :
-                                     print_preview.DestinationOrigin.LOCAL;
-      // Five destinations. FooDevice is the system default.
-      [ { id: 'ID1', name: 'One' },
-        { id: 'ID2', name: 'Two' },
-        { id: 'ID3', name: 'Three'},
-        { id: 'ID4', name: 'Four'},
-        { id: 'FooDevice', name: 'FooName' }].forEach((info, index) => {
-        const destination = new print_preview.Destination(
-          info.id, print_preview.DestinationType.LOCAL, origin, info.name,
-          false, print_preview.DestinationConnectionStatus.ONLINE);
-        nativeLayer.setLocalDestinationCapabilities(
-            print_preview_test_utils.getCddTemplate(info.id));
-        localDestinations.push({ printerName: info.name, deviceName: info.id });
-        destinations.push(destination);
-      });
-      return destinations;
     }
 
     /**
