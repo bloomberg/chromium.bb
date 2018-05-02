@@ -326,16 +326,7 @@ void TabStrip::RemoveObserver(TabStripObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-int TabStrip::GetMaxX() const {
-  // This function should not currently be called for TRAILING mode; if it is,
-  // the API will need changing, since callers assume the tabstrip uses
-  // contiguous space from 0 to GetMaxX() and not after, and TRAILING doesn't
-  // work like that.
-  const auto position = GetNewTabButtonPosition();
-  DCHECK_NE(TRAILING, position);
-
-  if (position == AFTER_TABS)
-    return new_tab_button_bounds_.right();
+int TabStrip::GetTabsMaxX() const {
   // There might be no tabs yet during startup.
   return tab_count() ? ideal_bounds(tab_count() - 1).right() : 0;
 }
@@ -422,10 +413,6 @@ void TabStrip::SetStackedLayout(bool stacked_layout) {
 
   for (int i = 0; i < tab_count(); ++i)
     tab_at(i)->HideCloseButtonForInactiveTabsChanged();
-}
-
-gfx::Rect TabStrip::GetNewTabButtonBounds() {
-  return new_tab_button_->bounds();
 }
 
 bool TabStrip::SizeTabButtonToTopOfTabStrip() {
@@ -2158,7 +2145,7 @@ void TabStrip::GenerateIdealBounds() {
   if (tab_count() == 0)
     return;  // Should only happen during creation/destruction, ignore.
 
-  const int old_max_x = GetMaxX();
+  const int old_max_x = GetTabsMaxX();
 
   if (!touch_layout_) {
     const int available_width = (available_width_for_tabs_ < 0)
@@ -2176,7 +2163,7 @@ void TabStrip::GenerateIdealBounds() {
 
   new_tab_button_bounds_.set_origin(gfx::Point(NewTabButtonX(), 0));
 
-  if (GetMaxX() != old_max_x) {
+  if (GetTabsMaxX() != old_max_x) {
     for (TabStripObserver& observer : observers_)
       observer.TabStripMaxXChanged(this);
   }
