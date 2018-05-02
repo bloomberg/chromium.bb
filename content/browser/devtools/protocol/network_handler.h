@@ -157,8 +157,6 @@ class NetworkHandler : public DevToolsDomainHandler,
       const char* resource_type,
       const network::URLLoaderCompletionStatus& completion_status);
 
-  void NavigationFailed(NavigationRequest* navigation_request);
-
   bool enabled() const { return enabled_; }
 
   Network::Frontend* frontend() const { return frontend_.get(); }
