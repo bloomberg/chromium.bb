@@ -716,10 +716,13 @@ void AccessibilityManager::RequestSelectToSpeakStateChange() {
 
 void AccessibilityManager::OnSelectToSpeakStateChanged(
     ash::mojom::SelectToSpeakState state) {
-  // TODO(katie): Forward the state change event to
-  // select_to_speak_event_handler_. The extension may have requested that the
-  // handler enter SELECTING state. Prepare to start capturing events from
-  // stylus, mouse or touch. http://crbug.com/753018.
+  // Forward the state change event to select_to_speak_event_handler_.
+  // The extension may have requested that the handler enter SELECTING state.
+  // Prepare to start capturing events from stylus, mouse or touch.
+  if (select_to_speak_event_handler_) {
+    select_to_speak_event_handler_->SetSelectToSpeakStateSelecting(
+        state == ash::mojom::SelectToSpeakState::kSelectToSpeakStateSelecting);
+  }
 
   accessibility_controller_->SetSelectToSpeakState(state);
 }

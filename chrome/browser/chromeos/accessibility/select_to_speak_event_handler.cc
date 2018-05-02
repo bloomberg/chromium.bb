@@ -62,6 +62,18 @@ SelectToSpeakEventHandler::~SelectToSpeakEventHandler() {
     aura::Env::GetInstanceDontCreate()->RemovePreTargetHandler(this);
 }
 
+void SelectToSpeakEventHandler::SetSelectToSpeakStateSelecting(
+    bool is_selecting) {
+  if (is_selecting && state_ == INACTIVE) {
+    // The extension has requested that it enter SELECTING state, and we
+    // aren't already in a SELECTING state. Prepare to start capturing events
+    // from stylus, mouse or touch.
+    // If we are already in any state besides INACTIVE then there is no
+    // work that needs to be done.
+    state_ = SELECTION_REQUESTED;
+  }
+}
+
 void SelectToSpeakEventHandler::CaptureForwardedEventsForTesting(
     SelectToSpeakEventDelegateForTesting* delegate) {
   event_delegate_for_testing_ = delegate;
@@ -152,9 +164,11 @@ void SelectToSpeakEventHandler::OnMouseEvent(ui::MouseEvent* event) {
   if (state_ == INACTIVE)
     return;
 
-  if ((state_ == SEARCH_DOWN || state_ == MOUSE_RELEASED) &&
-      event->type() == ui::ET_MOUSE_PRESSED) {
-    state_ = CAPTURING_MOUSE;
+  if (event->type() == ui::ET_MOUSE_PRESSED) {
+    if (state_ == SEARCH_DOWN || state_ == MOUSE_RELEASED)
+      state_ = CAPTURING_MOUSE;
+    else if (state_ == SELECTION_REQUESTED)
+      state_ = CAPTURING_MOUSE_ONLY;
   }
 
   if (state_ == WAIT_FOR_MOUSE_RELEASE &&
@@ -163,37 +177,94 @@ void SelectToSpeakEventHandler::OnMouseEvent(ui::MouseEvent* event) {
     return;
   }
 
-  if (state_ != CAPTURING_MOUSE)
+  // Only forward the event to the extension if we are capturing mouse
+  // events.
+  if (state_ != CAPTURING_MOUSE && state_ != CAPTURING_MOUSE_ONLY)
     return;
 
-  if (event->type() == ui::ET_MOUSE_RELEASED)
-    state_ = MOUSE_RELEASED;
+  if (event->type() == ui::ET_MOUSE_RELEASED) {
+    if (state_ == CAPTURING_MOUSE)
+      state_ = MOUSE_RELEASED;
+    else if (state_ == CAPTURING_MOUSE_ONLY)
+      state_ = INACTIVE;
+  }
 
   ui::MouseEvent mutable_event(*event);
-
-  // If we're in the capturing mouse state, forward the mouse event to
-  // select-to-speak.
-  if (event_delegate_for_testing_) {
-    event_delegate_for_testing_->OnForwardEventToSelectToSpeakExtension(
-        mutable_event);
-  } else {
-    extensions::ExtensionHost* host = chromeos::GetAccessibilityExtensionHost(
-        extension_misc::kSelectToSpeakExtensionId);
-    if (!host)
-      return;
-
-    content::RenderViewHost* rvh = host->render_view_host();
-    if (!rvh)
-      return;
-
-    const blink::WebMouseEvent web_event = ui::MakeWebMouseEvent(
-        mutable_event, base::Bind(&GetScreenLocationFromEvent));
-    rvh->GetWidget()->ForwardMouseEvent(web_event);
-  }
+  ForwardMouseEventToExtension(&mutable_event);
 
   if (event->type() == ui::ET_MOUSE_PRESSED ||
       event->type() == ui::ET_MOUSE_RELEASED)
     CancelEvent(event);
+}
+
+void SelectToSpeakEventHandler::OnTouchEvent(ui::TouchEvent* event) {
+  if (!IsSelectToSpeakEnabled())
+    return;
+
+  DCHECK(event);
+  // Only capture touch events if selection was requested or we are capturing
+  // touch events already.
+  if (state_ != SELECTION_REQUESTED && state_ != CAPTURING_TOUCH_ONLY)
+    return;
+
+  // On a touch-down event, if selection was requested, we begin capturing
+  // touch events.
+  if (event->type() == ui::ET_TOUCH_PRESSED && state_ == SELECTION_REQUESTED)
+    state_ = CAPTURING_TOUCH_ONLY;
+
+  // On a touch-up event, we go back to inactive state, but still forward the
+  // event to the extension.
+  if (event->type() == ui::ET_TOUCH_RELEASED && state_ == CAPTURING_TOUCH_ONLY)
+    state_ = INACTIVE;
+
+  // Create a mouse event to send to the extension, describing the touch.
+  // This is done because there is no RenderWidgetHost::ForwardTouchEvent,
+  // and we already have mouse event plumbing in place for Select-to-Speak.
+  ui::EventType type;
+  switch (event->type()) {
+    case ui::ET_TOUCH_PRESSED:
+      type = ui::ET_MOUSE_PRESSED;
+      break;
+    case ui::ET_TOUCH_RELEASED:
+    case ui::ET_TOUCH_CANCELLED:
+      type = ui::ET_MOUSE_RELEASED;
+      break;
+    case ui::ET_TOUCH_MOVED:
+      type = ui::ET_MOUSE_DRAGGED;
+      break;
+    default:
+      return;
+  }
+  int flags = ui::EF_LEFT_MOUSE_BUTTON;
+  ui::MouseEvent mutable_event(type, event->location(), event->root_location(),
+                               event->time_stamp(), flags, flags);
+
+  ForwardMouseEventToExtension(&mutable_event);
+
+  if (event->type() != ui::ET_TOUCH_MOVED) {
+    // Don't cancel move events in case focus needs to change.
+    CancelEvent(event);
+  }
+}
+
+void SelectToSpeakEventHandler::ForwardMouseEventToExtension(
+    ui::MouseEvent* event) {
+  if (event_delegate_for_testing_) {
+    event_delegate_for_testing_->OnForwardEventToSelectToSpeakExtension(*event);
+    return;
+  }
+  extensions::ExtensionHost* host = chromeos::GetAccessibilityExtensionHost(
+      extension_misc::kSelectToSpeakExtensionId);
+  if (!host)
+    return;
+
+  content::RenderViewHost* rvh = host->render_view_host();
+  if (!rvh)
+    return;
+
+  const blink::WebMouseEvent web_event =
+      ui::MakeWebMouseEvent(*event, base::Bind(&GetScreenLocationFromEvent));
+  rvh->GetWidget()->ForwardMouseEvent(web_event);
 }
 
 void SelectToSpeakEventHandler::CancelEvent(ui::Event* event) {
