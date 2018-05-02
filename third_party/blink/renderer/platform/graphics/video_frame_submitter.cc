@@ -25,7 +25,8 @@ VideoFrameSubmitter::VideoFrameSubmitter(
       resource_provider_(std::move(resource_provider)),
       is_rendering_(false),
       weak_ptr_factory_(this) {
-  current_local_surface_id_ = parent_local_surface_id_allocator_.GenerateId();
+  current_local_surface_id_ =
+      parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
   DETACH_FROM_THREAD(media_thread_checker_);
 }
 
