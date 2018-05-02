@@ -5,21 +5,20 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 
 #include "base/mac/foundation_util.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-namespace {
-// The inner insets of the Cell content.
-const CGFloat kMargin = 16;
-}
-
 #pragma mark - TableViewTextItem
 
 @implementation TableViewTextItem
 @synthesize text = _text;
+@synthesize textAlignment = _textAlignment;
+@synthesize textColor = _textColor;
 
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
@@ -36,6 +35,12 @@ const CGFloat kMargin = 16;
       base::mac::ObjCCastStrict<TableViewTextCell>(tableCell);
   cell.textLabel.text = self.text;
   cell.textLabel.backgroundColor = styler.tableViewBackgroundColor;
+  cell.textLabel.textColor = self.textColor
+                                 ? UIColorFromRGB(self.textColor, 1.0)
+                                 : UIColorFromRGB(TextItemColorLightGrey, 1.0);
+  cell.textLabel.textAlignment =
+      self.textAlignment ? self.textAlignment : NSTextAlignmentLeft;
+  cell.selectionStyle = UITableViewCellSelectionStyleNone;
 }
 
 @end
@@ -52,39 +57,28 @@ const CGFloat kMargin = 16;
     // Text Label, set font sizes using dynamic type.
     _textLabel = [[UILabel alloc] init];
     _textLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    _textLabel.numberOfLines = 0;
+    _textLabel.lineBreakMode = NSLineBreakByWordWrapping;
     _textLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
 
-    // Container View.
-    UIView* containerView = [[UIView alloc] init];
-    containerView.translatesAutoresizingMaskIntoConstraints = NO;
-
     // Add subviews to View Hierarchy.
-    [containerView addSubview:_textLabel];
-    [self.contentView addSubview:containerView];
+    [self.contentView addSubview:_textLabel];
 
     // Set and activate constraints.
     [NSLayoutConstraint activateConstraints:@[
-      // Container Constraints.
-      [containerView.leadingAnchor
-          constraintEqualToAnchor:self.contentView.leadingAnchor
-                         constant:kMargin],
-      [containerView.trailingAnchor
-          constraintEqualToAnchor:self.contentView.trailingAnchor
-                         constant:-kMargin],
-      [containerView.topAnchor
-          constraintGreaterThanOrEqualToAnchor:self.contentView.topAnchor
-                                      constant:kMargin],
-      [containerView.bottomAnchor
-          constraintLessThanOrEqualToAnchor:self.contentView.bottomAnchor
-                                   constant:-kMargin],
-      [containerView.centerYAnchor
-          constraintEqualToAnchor:self.contentView.centerYAnchor],
       // Title Label Constraints.
       [_textLabel.leadingAnchor
-          constraintEqualToAnchor:containerView.leadingAnchor],
-      [_textLabel.topAnchor constraintEqualToAnchor:containerView.topAnchor],
+          constraintEqualToAnchor:self.contentView.leadingAnchor
+                         constant:kTableViewHorizontalSpacing],
+      [_textLabel.topAnchor
+          constraintEqualToAnchor:self.contentView.topAnchor
+                         constant:kTableViewLabelVerticalSpacing],
       [_textLabel.bottomAnchor
-          constraintEqualToAnchor:containerView.bottomAnchor],
+          constraintEqualToAnchor:self.contentView.bottomAnchor
+                         constant:-kTableViewLabelVerticalSpacing],
+      [_textLabel.trailingAnchor
+          constraintEqualToAnchor:self.contentView.trailingAnchor
+                         constant:-kTableViewHorizontalSpacing]
     ]];
   }
   return self;
