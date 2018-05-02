@@ -24,6 +24,7 @@
 #include "content/public/browser/web_contents.h"
 #include "skia/ext/image_operations.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle_win.h"
 #include "ui/base/theme_provider.h"
 #include "ui/display/win/dpi.h"
@@ -133,39 +134,8 @@ gfx::Rect GlassBrowserFrameView::GetBoundsForTabStrip(
     views::View* tabstrip) const {
   const int x = GetTabStripLeftInset();
   int end_x = width() - ClientBorderThickness(false);
-  if (!CaptionButtonsOnLeadingEdge()) {
-    // In restored mode, the New Tab button isn't at the same height as the
-    // caption buttons, but the space will look cluttered if it actually slides
-    // under them, so we stop it when the gap between the two is down to 5 px.
-    constexpr int kNewTabCaptionRestoredSpacing = 5;
-    // In maximized mode, where the New Tab button and the caption buttons are
-    // at similar vertical coordinates, we need to reserve a larger, 16 px gap
-    // to avoid looking too cluttered.
-    constexpr int kNewTabCaptionMaximizedSpacing = 16;
-    end_x = std::min(MinimizeButtonX(), end_x) -
-            (IsMaximized() ? kNewTabCaptionMaximizedSpacing
-                           : kNewTabCaptionRestoredSpacing);
-
-    // The profile switcher button is optionally displayed to the left of the
-    // minimize button.
-    views::View* profile_switcher = GetProfileSwitcherButton();
-    if (profile_switcher) {
-      const int old_end_x = end_x;
-      end_x -= profile_switcher->width() + kProfileSwitcherButtonOffset;
-
-      // In non-maximized mode, allow the new tab button to slide completely
-      // under the profile switcher button.
-      if (!IsMaximized()) {
-        const int new_tab_button_width =
-            GetLayoutSize(NEW_TAB_BUTTON,
-                          browser_view()->tabstrip()->IsIncognito())
-                .width();
-        end_x = std::min(
-            end_x + new_tab_button_width + kNewTabCaptionRestoredSpacing,
-            old_end_x);
-      }
-    }
-  }
+  if (!CaptionButtonsOnLeadingEdge())
+    end_x = std::min(MinimizeButtonX() - TabStripCaptionSpacing(), end_x);
   return gfx::Rect(x, TopAreaHeight(false), std::max(0, end_x - x),
                    tabstrip->GetPreferredSize().height());
 }
@@ -590,6 +560,44 @@ int GlassBrowserFrameView::MinimizeButtonX() const {
   // custom drawing the caption buttons, remove GetMinimizeButtonOffset().
   return ShouldCustomDrawSystemTitlebar() ? minimize_button_->x()
                                           : frame()->GetMinimizeButtonOffset();
+}
+
+int GlassBrowserFrameView::TabStripCaptionSpacing() const {
+  // For Material Refresh, the end of the tabstrip contains empty space to
+  // ensure the window remains draggable, which is sufficient padding to the
+  // other tabstrip contents.
+  using MD = ui::MaterialDesignController;
+  if (MD::GetMode() == MD::MATERIAL_REFRESH)
+    return 0;
+
+  // In restored mode, the New Tab button isn't at the same height as the
+  // caption buttons, but the space will look cluttered if it actually slides
+  // under them, so we stop it when the gap between the two is down to 5 px.
+  constexpr int kNewTabCaptionRestoredSpacing = 5;
+  // In maximized mode, where the New Tab button and the caption buttons are at
+  // similar vertical coordinates, we need to reserve a larger, 16 px gap to
+  // avoid looking too cluttered.
+  constexpr int kNewTabCaptionMaximizedSpacing = 16;
+  const int caption_spacing = IsMaximized() ? kNewTabCaptionMaximizedSpacing
+                                            : kNewTabCaptionRestoredSpacing;
+
+  // The profile switcher button is optionally displayed to the left of the
+  // minimize button.
+  views::View* profile_switcher = GetProfileSwitcherButton();
+  if (!profile_switcher)
+    return caption_spacing;
+
+  int profile_spacing =
+      profile_switcher->width() + kProfileSwitcherButtonOffset;
+
+  // In non-maximized mode, allow the new tab button to slide completely under
+  // the profile switcher button.
+  if (!IsMaximized()) {
+    const bool incognito = browser_view()->tabstrip()->IsIncognito();
+    profile_spacing -= GetLayoutSize(NEW_TAB_BUTTON, incognito).width();
+  }
+
+  return std::max(caption_spacing, profile_spacing);
 }
 
 bool GlassBrowserFrameView::IsToolbarVisible() const {

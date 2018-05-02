@@ -126,6 +126,10 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   // edge of the caption buttons.
   int MinimizeButtonX() const;
 
+  // Returns the spacing between the trailing edge of the tabstrip and the start
+  // of the caption buttons.
+  int TabStripCaptionSpacing() const;
+
   // Returns whether the toolbar is currently visible.
   bool IsToolbarVisible() const;
 

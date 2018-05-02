@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/signin/core/browser/profile_management_switches.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/font.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
@@ -100,7 +101,7 @@ gfx::Rect OpaqueBrowserFrameViewLayout::GetBoundsForTabStrip(
     const gfx::Size& tabstrip_preferred_size,
     int available_width) const {
   const int x = GetTabStripLeftInset();
-  available_width -= x + NewTabCaptionSpacing() + trailing_button_start_;
+  available_width -= x + TabStripCaptionSpacing() + trailing_button_start_;
   return gfx::Rect(x, GetTabStripInsetsTop(false), std::max(0, available_width),
                    tabstrip_preferred_size.height());
 }
@@ -120,7 +121,7 @@ gfx::Size OpaqueBrowserFrameViewLayout::GetMinimumSize(
   if (delegate_->IsTabStripVisible()) {
     gfx::Size preferred_size = delegate_->GetTabstripPreferredSize();
     const int min_tabstrip_width = preferred_size.width();
-    const int caption_spacing = NewTabCaptionSpacing();
+    const int caption_spacing = TabStripCaptionSpacing();
     min_size.Enlarge(min_tabstrip_width + caption_spacing, 0);
   }
 
@@ -314,7 +315,14 @@ bool OpaqueBrowserFrameViewLayout::ShouldIncognitoIconBeOnRight() const {
   return trailing_buttons_.size() < leading_buttons_.size();
 }
 
-int OpaqueBrowserFrameViewLayout::NewTabCaptionSpacing() const {
+int OpaqueBrowserFrameViewLayout::TabStripCaptionSpacing() const {
+  // For Material Refresh, the end of the tabstrip contains empty space to
+  // ensure the window remains draggable, which is sufficient padding to the
+  // other tabstrip contents.
+  using MD = ui::MaterialDesignController;
+  if (MD::GetMode() == MD::MATERIAL_REFRESH)
+    return 0;
+
   return (has_trailing_buttons_ && IsTitleBarCondensed()) ?
       kNewTabCaptionCondensedSpacing : kCaptionSpacing;
 }

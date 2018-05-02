@@ -381,11 +381,16 @@ void BrowserNonClientFrameViewMus::TabStripDeleted(TabStrip* tab_strip) {
 }
 
 int BrowserNonClientFrameViewMus::GetTabStripRightInset() const {
-  // Space between right edge of tabstrip and maximize button.
+  int right_inset = frame_values().normal_insets.right() +
+                    frame_values().max_title_bar_button_width;
+
+  // For Material Refresh, the end of the tabstrip contains empty space to
+  // ensure the window remains draggable, which is sufficient padding to the
+  // other tabstrip contents.
+  using MD = ui::MaterialDesignController;
   constexpr int kTabstripRightSpacing = 10;
-  const int frame_right_insets = frame_values().normal_insets.right() +
-                                 frame_values().max_title_bar_button_width;
-  int right_inset = kTabstripRightSpacing + frame_right_insets;
+  if (MD::GetMode() != MD::MATERIAL_REFRESH)
+    right_inset += kTabstripRightSpacing;
 
 #if defined(FRAME_AVATAR_BUTTON)
   views::View* profile_switcher_view = GetProfileSwitcherButton();
@@ -409,7 +414,7 @@ void BrowserNonClientFrameViewMus::LayoutProfileSwitcher() {
 #if defined(FRAME_AVATAR_BUTTON)
   views::View* profile_switcher_view = GetProfileSwitcherButton();
   gfx::Size button_size = profile_switcher_view->GetPreferredSize();
-  int button_x = width() - GetTabStripRightInset() + kAvatarButtonOffset;
+  int button_x = width() - GetTabStripRightInset();
   profile_switcher_view->SetBounds(button_x, 0, button_size.width(),
                                    button_size.height());
 #endif

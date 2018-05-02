@@ -169,9 +169,9 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   // the tab strip (instead of the usual left).
   bool ShouldIncognitoIconBeOnRight() const;
 
-  // Determines the amount of spacing between the New Tab button and the element
-  // to its immediate right.
-  int NewTabCaptionSpacing() const;
+  // Determines the amount of spacing between the tabstrip and the caption
+  // buttons.
+  int TabStripCaptionSpacing() const;
 
   // Layout various sub-components of this view.
   void LayoutWindowControls(views::View* host);
