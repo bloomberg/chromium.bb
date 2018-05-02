@@ -853,8 +853,6 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
     : parameters_(parameters),
       parsed_command_line_(parameters.command_line),
       result_code_(content::RESULT_CODE_NORMAL_EXIT),
-      startup_watcher_(new StartupTimeBomb()),
-      shutdown_watcher_(new ShutdownWatcherHelper()),
       ui_thread_profiler_(ThreadProfiler::CreateAndStartOnMainThread()),
       should_call_pre_main_loop_start_startup_on_variations_service_(
           !parameters.ui_task),
@@ -876,11 +874,14 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
           chrome_metrics::kNumExpiredHistograms));
 
 #if !defined(OS_ANDROID)
+  startup_watcher_ = std::make_unique<StartupTimeBomb>();
+  shutdown_watcher_ = std::make_unique<ShutdownWatcherHelper>();
+
   // This needs to be created in the constructor as Chrome OS now creates some
   // classes that depend upon a ThreadTaskRunnerHandle in
   // PreEarlyInitialization().
   initial_task_runner_ = base::MakeRefCounted<DeferringTaskRunner>();
-#endif
+#endif  // !defined(OS_ANDROID)
 }
 
 ChromeBrowserMainParts::~ChromeBrowserMainParts() {
@@ -1929,6 +1930,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   language_usage_metrics::LanguageUsageMetrics::RecordApplicationLanguage(
       browser_process_->GetApplicationLocale());
 
+// StartupTimeBomb is disabled on Android, see https://crbug.com/366699.
+#if !defined(OS_ANDROID)
   // Start watching for hangs during startup. We disarm this hang detector when
   // ThreadWatcher takes over or when browser is shutdown or when
   // startup_watcher_ is deleted.
@@ -1936,10 +1939,11 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
       metrics::ExecutionPhase::STARTUP_TIMEBOMB_ARM,
       g_browser_process->local_state());
   startup_watcher_->Arm(base::TimeDelta::FromSeconds(600));
+#endif  // !defined(OS_ANDROID)
 
-  // On mobile, need for clean shutdown arises only when the application comes
-  // to foreground (i.e. MetricsService::OnAppEnterForeground is called).
-  // http://crbug.com/179143
+// On mobile, need for clean shutdown arises only when the application comes
+// to foreground (i.e. MetricsService::OnAppEnterForeground is called).
+// http://crbug.com/179143
 #if !defined(OS_ANDROID)
   // Start watching for a hang.
   browser_process_->metrics_service()->LogNeedForCleanShutdown();

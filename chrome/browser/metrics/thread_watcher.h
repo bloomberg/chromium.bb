@@ -57,6 +57,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/watchdog.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/metrics/call_stack_profile_params.h"
 #include "components/omnibox/browser/omnibox_event_global_tracker.h"
 #include "content/public/browser/browser_thread.h"
@@ -533,6 +534,14 @@ class WatchDogThread : public base::Thread {
   DISALLOW_COPY_AND_ASSIGN(WatchDogThread);
 };
 
+// StartupTimeBomb is disabled on Android, see https://crbug.com/366699.
+// NOTE: uncomment body of DisarmStartupTimeBomb() global function once
+//       StartupTimeBomb is enabled on Android.
+// ShutdownWatcherHelper is useless on Android because there is no shutdown,
+// Chrome is always killed one way or another (swiped away in the task
+// switcher, OOM-killed, etc.).
+#if !defined(OS_ANDROID)
+
 // This is a wrapper class for getting the crash dumps of the hangs during
 // startup.
 class StartupTimeBomb {
@@ -596,5 +605,7 @@ class ShutdownWatcherHelper {
 
   DISALLOW_COPY_AND_ASSIGN(ShutdownWatcherHelper);
 };
+
+#endif  // !defined(OS_ANDROID)
 
 #endif  // CHROME_BROWSER_METRICS_THREAD_WATCHER_H_

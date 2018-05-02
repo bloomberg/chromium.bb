@@ -147,6 +147,9 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   const base::CommandLine& parsed_command_line_;
   int result_code_;
 
+  ChromeBrowserFieldTrials browser_field_trials_;
+
+#if !defined(OS_ANDROID)
   // Create StartupTimeBomb object for watching jank during startup.
   std::unique_ptr<StartupTimeBomb> startup_watcher_;
 
@@ -155,11 +158,8 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // it is destroyed last.
   std::unique_ptr<ShutdownWatcherHelper> shutdown_watcher_;
 
-  ChromeBrowserFieldTrials browser_field_trials_;
-
-#if !defined(OS_ANDROID)
   std::unique_ptr<WebUsbDetector> web_usb_detector_;
-#endif
+#endif  // !defined(OS_ANDROID)
 
   // Vector of additional ChromeBrowserMainExtraParts.
   // Parts are deleted in the inverse order they are added.
