@@ -11785,7 +11785,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -11802,7 +11802,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -11825,7 +11825,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -11844,7 +11844,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -11864,7 +11864,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -11881,7 +11881,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -11895,7 +11895,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -11909,7 +11909,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -11942,7 +11942,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -11969,7 +11969,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -11995,7 +11995,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -12021,7 +12021,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -12047,7 +12047,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -12073,7 +12073,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -13327,7 +13327,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -13344,7 +13344,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -13362,7 +13362,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -13379,7 +13379,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -13400,7 +13400,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -13423,7 +13423,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -13441,7 +13441,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -13460,7 +13460,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -13477,7 +13477,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -13496,7 +13496,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -13516,7 +13516,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -13533,7 +13533,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -13547,7 +13547,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -13561,7 +13561,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -13581,7 +13581,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -13601,7 +13601,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -13630,7 +13630,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -13655,7 +13655,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -13680,7 +13680,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -13705,7 +13705,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -13734,7 +13734,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -13766,7 +13766,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -13806,7 +13806,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -13832,7 +13832,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -13857,7 +13857,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -13884,7 +13884,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -13910,7 +13910,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -13936,7 +13936,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -13962,7 +13962,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -13988,7 +13988,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -14014,7 +14014,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
