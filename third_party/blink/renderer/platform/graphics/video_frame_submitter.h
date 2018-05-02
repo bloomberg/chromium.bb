@@ -81,7 +81,6 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   viz::mojom::blink::CompositorFrameSinkPtr compositor_frame_sink_;
   mojo::Binding<viz::mojom::blink::CompositorFrameSinkClient> binding_;
   viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
-  viz::LocalSurfaceId current_local_surface_id_;
   std::unique_ptr<VideoFrameResourceProvider> resource_provider_;
 
   bool is_rendering_;
