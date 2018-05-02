@@ -1550,31 +1550,14 @@ bool WebContentsImpl::HasRecentInteractiveInputEvent() const {
 }
 
 #if defined(OS_ANDROID)
-std::set<RenderWidgetHostImpl*> WebContentsImpl::GetAllRenderWidgetHosts() {
-  std::set<RenderWidgetHostImpl*> set;
+void WebContentsImpl::SetMainFrameImportance(
+    ChildProcessImportance importance) {
+  GetMainFrame()->GetRenderWidgetHost()->SetImportance(importance);
   if (ShowingInterstitialPage()) {
-    auto* host =
-        static_cast<RenderFrameHostImpl*>(interstitial_page_->GetMainFrame())
-            ->GetRenderWidgetHost();
-    DCHECK(host);
-    set.insert(host);
+    static_cast<RenderFrameHostImpl*>(interstitial_page_->GetMainFrame())
+        ->GetRenderWidgetHost()
+        ->SetImportance(importance);
   }
-  for (RenderFrameHost* rfh : GetAllFrames()) {
-    auto* host = static_cast<RenderFrameHostImpl*>(rfh)->GetRenderWidgetHost();
-    DCHECK(host);
-    set.insert(host);
-  }
-  return set;
-}
-
-void WebContentsImpl::SetImportance(ChildProcessImportance importance) {
-  // Importance should be set on interstitial page as well, which is included
-  // the set returned by |GetAllRenderWidgetHosts()|.
-  for (auto* host : GetAllRenderWidgetHosts())
-    host->SetImportance(importance);
-
-  // TODO(boliu): If this is ever used on platforms other than Android, make
-  // sure to also update inner WebContents.
 }
 #endif
 
@@ -4675,16 +4658,13 @@ void WebContentsImpl::NotifyViewSwapped(RenderViewHost* old_host,
 void WebContentsImpl::NotifyFrameSwapped(RenderFrameHost* old_host,
                                          RenderFrameHost* new_host) {
 #if defined(OS_ANDROID)
-  // Try to copy importance from either |old_host| or parent of |new_host|.
-  // If both are null, then this is the very first frame host created from Init.
-  // There is no need to pass importance in this case because there is no chance
-  // for anything to call SetImportance yet.
-  RenderFrameHostImpl* importance_host = static_cast<RenderFrameHostImpl*>(
-      old_host ? old_host : new_host->GetParent());
-  if (importance_host) {
+  // Copy importance from |old_host| if |new_host| is a main frame.
+  if (old_host && !new_host->GetParent()) {
     static_cast<RenderFrameHostImpl*>(new_host)
         ->GetRenderWidgetHost()
-        ->SetImportance(importance_host->GetRenderWidgetHost()->importance());
+        ->SetImportance(static_cast<RenderFrameHostImpl*>(old_host)
+                            ->GetRenderWidgetHost()
+                            ->importance());
   }
 #endif
   for (auto& observer : observers_)
