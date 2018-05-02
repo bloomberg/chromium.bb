@@ -33,7 +33,6 @@ class LayoutTextCombine final : public LayoutText {
  public:
   LayoutTextCombine(Node*, scoped_refptr<StringImpl>);
 
-  void UpdateFont();
   bool IsCombined() const { return is_combined_; }
   float CombinedTextWidth(const Font& font) const {
     return font.GetFontDescription().ComputedSize();
@@ -59,17 +58,16 @@ class LayoutTextCombine final : public LayoutText {
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
   void SetTextInternal(scoped_refptr<StringImpl>) override;
   void UpdateIsCombined();
+  void UpdateFontStyleForCombinedText();
 
   float combined_text_width_;
   float scale_x_;
   bool is_combined_ : 1;
-  bool needs_font_update_ : 1;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTextCombine, IsCombineText());
 
 inline LayoutUnit LayoutTextCombine::InlineWidthForLayout() const {
-  DCHECK(!needs_font_update_);
   return LayoutUnit::FromFloatCeil(combined_text_width_);
 }
 

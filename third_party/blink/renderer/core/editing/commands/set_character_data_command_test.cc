@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/editing/commands/editing_state.h"
 #include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
+#include "third_party/blink/renderer/core/layout/layout_text_combine.h"
 
 namespace blink {
 
@@ -115,6 +116,36 @@ TEST_F(SetCharacterDataCommandTest, replaceEntireNode) {
   EXPECT_EQ(
       "Hello",
       ToText(GetDocument().body()->firstChild()->firstChild())->wholeText());
+}
+
+TEST_F(SetCharacterDataCommandTest, CombinedText) {
+  SetBodyContent(
+      "<div contenteditable style='writing-mode:vertical-lr; "
+      "-webkit-text-combine:horizontal' />");
+
+  Text* text_node = ToText(GetDocument().body()->firstChild()->appendChild(
+      GetDocument().CreateEditingTextNode("")));
+  UpdateAllLifecyclePhases();
+
+  ASSERT_TRUE(text_node->GetLayoutObject());
+  ASSERT_TRUE(text_node->GetLayoutObject()->IsCombineText());
+  EXPECT_FALSE(ToLayoutTextCombine(text_node->GetLayoutObject())->IsCombined());
+
+  SimpleEditCommand* command =
+      SetCharacterDataCommand::Create(text_node, 0, 0, "text");
+  command->DoReapply();
+  UpdateAllLifecyclePhases();
+
+  ASSERT_TRUE(text_node->GetLayoutObject());
+  ASSERT_TRUE(text_node->GetLayoutObject()->IsCombineText());
+  EXPECT_TRUE(ToLayoutTextCombine(text_node->GetLayoutObject())->IsCombined());
+
+  command->DoUnapply();
+  UpdateAllLifecyclePhases();
+
+  ASSERT_TRUE(text_node->GetLayoutObject());
+  ASSERT_TRUE(text_node->GetLayoutObject()->IsCombineText());
+  EXPECT_FALSE(ToLayoutTextCombine(text_node->GetLayoutObject())->IsCombined());
 }
 
 }  // namespace blink

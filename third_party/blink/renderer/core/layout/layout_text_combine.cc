@@ -31,21 +31,44 @@ LayoutTextCombine::LayoutTextCombine(Node* node,
     : LayoutText(node, std::move(string)),
       combined_text_width_(0),
       scale_x_(1.0f),
-      is_combined_(false),
-      needs_font_update_(false) {}
+      is_combined_(false) {}
 
 void LayoutTextCombine::StyleDidChange(StyleDifference diff,
                                        const ComputedStyle* old_style) {
-  SetStyleInternal(ComputedStyle::Clone(StyleRef()));
   LayoutText::StyleDidChange(diff, old_style);
-
   UpdateIsCombined();
+  if (!IsCombined())
+    return;
+
+  // We need to call LayoutText::StyleDidChange before updating combined text
+  // font because StyleDidChange may change the text through text-transform.
+  UpdateFontStyleForCombinedText();
 }
 
 void LayoutTextCombine::SetTextInternal(scoped_refptr<StringImpl> text) {
   LayoutText::SetTextInternal(std::move(text));
 
+  bool was_combined = IsCombined();
   UpdateIsCombined();
+
+  // SetTextInternal may be called on construction for applying text-transform
+  // in which case Parent() is nullptr. However, was_combined should be false
+  // since it initially is.
+  DCHECK(!was_combined || Parent());
+
+  if (was_combined) {
+    // Re-set the ComputedStyle from the parent to base the measurements in
+    // UpdateFontStyleForCombinedText on the original font and not what was
+    // previously set for combined text. If IsCombined() is now false, we are
+    // simply resetting the style to the parent style.
+    SetStyle(Parent()->MutableStyle());
+  } else if (IsCombined()) {
+    // If the text was previously not combined, SetStyle would have been a no-op
+    // since the before and after style would be the same ComputedStyle
+    // instance and StyleDidChange would not be called. Instead, call
+    // UpdateFontStyleForCombinedText directly.
+    UpdateFontStyleForCombinedText();
+  }
 }
 
 float LayoutTextCombine::Width(unsigned from,
@@ -82,7 +105,6 @@ void ScaleHorizontallyAndTranslate(GraphicsContext& context,
 void LayoutTextCombine::TransformToInlineCoordinates(GraphicsContext& context,
                                                      const LayoutRect& box_rect,
                                                      bool clip) const {
-  DCHECK_EQ(needs_font_update_, false);
   DCHECK(is_combined_);
 
   // No transform needed if we don't have a font.
@@ -130,37 +152,31 @@ void LayoutTextCombine::UpdateIsCombined() {
   is_combined_ = !Style()->IsHorizontalWritingMode()
                  // Nothing to combine.
                  && !HasEmptyText();
-
-  if (is_combined_)
-    needs_font_update_ = true;
 }
 
-void LayoutTextCombine::UpdateFont() {
-  if (!needs_font_update_)
-    return;
+void LayoutTextCombine::UpdateFontStyleForCombinedText() {
+  DCHECK(is_combined_);
 
-  needs_font_update_ = false;
-
-  if (!is_combined_)
-    return;
+  scoped_refptr<ComputedStyle> style = ComputedStyle::Clone(StyleRef());
+  SetStyleInternal(style);
 
   unsigned offset = 0;
-  TextRun run = ConstructTextRun(OriginalFont(), this, offset, TextLength(),
-                                 StyleRef(), Style()->Direction());
-  FontDescription description = OriginalFont().GetFontDescription();
+  TextRun run = ConstructTextRun(style->GetFont(), this, offset, TextLength(),
+                                 *style, style->Direction());
+  FontDescription description = style->GetFont().GetFontDescription();
   float em_width = description.ComputedSize();
-  if (!EnumHasFlags(Style()->TextDecorationsInEffect(),
+  if (!EnumHasFlags(style->TextDecorationsInEffect(),
                     TextDecoration::kUnderline | TextDecoration::kOverline))
     em_width *= kTextCombineMargin;
 
   // We are going to draw combined text horizontally.
   description.SetOrientation(FontOrientation::kHorizontal);
-  combined_text_width_ = OriginalFont().Width(run);
+  combined_text_width_ = style->GetFont().Width(run);
 
-  FontSelector* font_selector = Style()->GetFont().GetFontSelector();
+  FontSelector* font_selector = style->GetFont().GetFontSelector();
 
-  bool should_update_font = MutableStyleRef().SetFontDescription(
-      description);  // Need to change font orientation to horizontal.
+  // Need to change font orientation to horizontal.
+  bool should_update_font = style->SetFontDescription(description);
 
   if (combined_text_width_ <= em_width) {
     scale_x_ = 1.0f;
@@ -177,7 +193,7 @@ void LayoutTextCombine::UpdateFont() {
         combined_text_width_ = run_width;
 
         // Replace my font with the new one.
-        should_update_font = MutableStyleRef().SetFontDescription(description);
+        should_update_font = style->SetFontDescription(description);
         break;
       }
     }
@@ -194,7 +210,7 @@ void LayoutTextCombine::UpdateFont() {
   }
 
   if (should_update_font)
-    Style()->GetFont().Update(font_selector);
+    style->GetFont().Update(font_selector);
 }
 
 }  // namespace blink
