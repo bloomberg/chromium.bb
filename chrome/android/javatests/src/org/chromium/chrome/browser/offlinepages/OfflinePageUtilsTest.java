@@ -311,7 +311,7 @@ public class OfflinePageUtilsTest {
     @Test
     @MediumTest
     @CommandLineFlags.Add({"enable-features=OfflinePagesSharing"})
-    public void testSharePrivateOfflinePage() throws Exception {
+    public void testShareTemporaryOfflinePage() throws Exception {
         loadOfflinePage(BOOKMARK_ID);
         final Semaphore semaphore = new Semaphore(0);
         final TestShareCallback shareCallback = new TestShareCallback(semaphore);
@@ -322,29 +322,20 @@ public class OfflinePageUtilsTest {
                 boolean shared =
                         OfflinePageUtils.maybeShareOfflinePage(mActivityTestRule.getActivity(),
                                 mActivityTestRule.getActivity().getActivityTab(), shareCallback);
-                // The attempt to share a page from our private internal directory should succeed.
-                Assert.assertTrue(shared);
+                // The attempt to share a temporary page should fall back to sharing the URL.
+                Assert.assertFalse(shared);
             }
         });
-
-        // Wait for share callback to get called.
-        Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
-        // Assert that URI is what we expected.
-        String foundUri = shareCallback.getSharedUri();
-        Uri uri = Uri.parse(foundUri);
-        String uriPath = uri.getPath();
-        Assert.assertEquals(TEST_PAGE, uriPath);
     }
 
     // Checks on the UI thread if an offline path corresponds to a sharable file.
     private void checkIfOfflinePageIsSharable(
-            final String filePath, final String uriPath, boolean sharable) {
+            final String filePath, final String uriPath, final String namespace, boolean sharable) {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                OfflinePageItem privateOfflinePageItem =
-                        new OfflinePageItem(uriPath, OFFLINE_ID, OfflinePageBridge.ASYNC_NAMESPACE,
-                                PAGE_ID, TITLE, filePath, FILE_SIZE, 0, 0, 0, REQUEST_ORIGIN);
+                OfflinePageItem privateOfflinePageItem = new OfflinePageItem(uriPath, OFFLINE_ID,
+                        namespace, PAGE_ID, TITLE, filePath, FILE_SIZE, 0, 0, 0, REQUEST_ORIGIN);
                 OfflinePageBridge offlinePageBridge = OfflinePageBridge.getForProfile(
                         mActivityTestRule.getActivity().getActivityTab().getProfile());
 
@@ -362,30 +353,41 @@ public class OfflinePageUtilsTest {
         // default.
         final String privatePath = activity().getApplicationContext().getCacheDir().getPath();
         final String publicPath = Environment.getExternalStorageDirectory().getPath();
+        final String async = OfflinePageBridge.ASYNC_NAMESPACE;
 
         // Check that an offline page item in the private directory is sharable, since we can
         // upgrade it.
         final String fullPrivatePath = privatePath + CACHE_SUBDIR + NEW_FILE;
-        checkIfOfflinePageIsSharable(fullPrivatePath, SHARED_URI, true);
+        checkIfOfflinePageIsSharable(fullPrivatePath, SHARED_URI, async, true);
 
         // Check that an offline page item with no file path is not sharable.
-        checkIfOfflinePageIsSharable(EMPTY_PATH, SHARED_URI, false);
+        checkIfOfflinePageIsSharable(EMPTY_PATH, SHARED_URI, async, false);
 
         // Check that a public offline page item with a file path is sharable.
         final String fullPublicPath = publicPath + NEW_FILE;
-        checkIfOfflinePageIsSharable(fullPublicPath, SHARED_URI, true);
+        checkIfOfflinePageIsSharable(fullPublicPath, SHARED_URI, async, true);
 
         // Check that a page with a content URI and no file path is sharable.
-        checkIfOfflinePageIsSharable(EMPTY_PATH, CONTENT_URI, true);
+        checkIfOfflinePageIsSharable(EMPTY_PATH, CONTENT_URI, async, true);
 
         // Check that a page with a file URI and no file path is sharable.
-        checkIfOfflinePageIsSharable(EMPTY_PATH, FILE_URI, true);
+        checkIfOfflinePageIsSharable(EMPTY_PATH, FILE_URI, async, true);
 
         // Check that a malformed URI is not sharable.
-        checkIfOfflinePageIsSharable(EMPTY_PATH, INVALID_URI, false);
+        checkIfOfflinePageIsSharable(EMPTY_PATH, INVALID_URI, async, false);
 
         // Check that an empty URL is not sharable.
-        checkIfOfflinePageIsSharable(fullPublicPath, EMPTY_URI, false);
+        checkIfOfflinePageIsSharable(fullPublicPath, EMPTY_URI, async, false);
+
+        // Check that pages with temporary namespaces are not sharable.
+        checkIfOfflinePageIsSharable(
+                fullPrivatePath, SHARED_URI, OfflinePageBridge.BOOKMARK_NAMESPACE, false);
+        checkIfOfflinePageIsSharable(
+                fullPrivatePath, SHARED_URI, OfflinePageBridge.LAST_N_NAMESPACE, false);
+        checkIfOfflinePageIsSharable(
+                fullPrivatePath, SHARED_URI, OfflinePageBridge.CCT_NAMESPACE, false);
+        checkIfOfflinePageIsSharable(
+                fullPrivatePath, SHARED_URI, OfflinePageBridge.SUGGESTED_ARTICLES_NAMESPACE, false);
     }
 
     @Test
