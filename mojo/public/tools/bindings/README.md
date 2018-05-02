@@ -1,5 +1,5 @@
 # Mojom IDL and Bindings Generator
-This document is a subset of the [Mojo documentation](/mojo).
+This document is a subset of the [Mojo documentation](/mojo/README.md).
 
 [TOC]
 
@@ -372,9 +372,9 @@ interesting attributes supported today.
 :   The `Sync` attribute may be specified for any interface method which expects
     a response. This makes it so that callers of the method can wait
     synchronously for a response. See
-    [Synchronous Calls](/mojo/public/cpp/bindings#Synchronous-Calls) in the C++
-    bindings documentation. Note that sync calls are not currently supported in
-    other target languages.
+    [Synchronous Calls](/mojo/public/cpp/bindings/README.md#Synchronous-Calls)
+    in the C++ bindings documentation. Note that sync calls are not currently
+    supported in other target languages.
 
 **`[Extensible]`**
 :   The `Extensible` attribute may be specified for any enum definition. This
@@ -386,9 +386,9 @@ interesting attributes supported today.
 :   The `Native` attribute may be specified for an empty struct declaration to
     provide a nominal bridge between Mojo IPC and legacy `IPC::ParamTraits` or
     `IPC_STRUCT_TRAITS*` macros.
-    See [Using Legacy IPC Traits](/ipc#Using-Legacy-IPC-Traits) for more
-    details. Note support for this attribute is strictly limited to C++ bindings
-    generation.
+    See [Using Legacy IPC Traits](/ipc/README.md#Using-Legacy-IPC-Traits) for
+    more details. Note support for this attribute is strictly limited to C++
+    bindings generation.
 
 **`[MinVersion=N]`**
 :   The `MinVersion` attribute is used to specify the version at which a given
@@ -410,9 +410,9 @@ corresponding code for each supported target language. For more details on how
 Mojom concepts translate to a given target langauge, please refer to the
 bindings API documentation for that language:
 
-* [C++ Bindings](/mojo/public/cpp/bindings)
-* [JavaScript Bindings](/mojo/public/js)
-* [Java Bindings](/mojo/public/java/bindings)
+* [C++ Bindings](/mojo/public/cpp/bindings/README.md)
+* [JavaScript Bindings](/mojo/public/js/README.md)
+* [Java Bindings](/mojo/public/java/bindings/README.md)
 
 ## Message Validation
 
@@ -424,9 +424,11 @@ is added.
 
 If a message fails validation, it is never dispatched. Instead a **connection
 error** is raised on the binding object (see
-[C++ Connection Errors](/mojo/public/cpp/bindings#Connection-Errors),
-[Java Connection Errors](/mojo/public/java/bindings#Connection-Errors), or
-[JavaScript Connection Errors](/mojo/public/js#Connection-Errors) for details.)
+[C++ Connection Errors](/mojo/public/cpp/bindings/README.md#Connection-Errors),
+[Java Connection Errors](/mojo/public/java/bindings/README.md#Connection-Errors),
+or
+[JavaScript Connection Errors](/mojo/public/js/README.md#Connection-Errors) for
+details.)
 
 Some baseline level of validation is done automatically for primitive Mojom
 types.
@@ -475,9 +477,9 @@ manually encode their own bindings messages.
 
 It's also possible for developers to define custom validation logic for specific
 Mojom struct types by exploiting the
-[type mapping](/mojo/public/cpp/bindings#Type-Mapping) system for C++ bindings.
-Messages rejected by custom validation logic trigger the same validation failure
-behavior as the built-in type validation routines.
+[type mapping](/mojo/public/cpp/bindings/README.md#Type-Mapping) system for C++
+bindings. Messages rejected by custom validation logic trigger the same
+validation failure behavior as the built-in type validation routines.
 
 ## Associated Interfaces
 
@@ -493,7 +495,7 @@ more other interfaces, as they allow interfaces to share a single pipe.
 
 Currenly associated interfaces are only supported in generated C++ bindings.
 See the documentation for
-[C++ Associated Interfaces](/mojo/public/cpp/bindings#Associated-Interfaces).
+[C++ Associated Interfaces](/mojo/public/cpp/bindings/README.md#Associated-Interfaces).
 
 ## Versioning
 
@@ -630,8 +632,9 @@ assert the remote version from a client handle (*e.g.*, an
 `InterfacePtr<T>` in C++ bindings.)
 
 See
-[C++ Versioning Considerations](/mojo/public/cpp/bindings#Versioning-Considerations)
-and [Java Versioning Considerations](/mojo/public/java/bindings#Versioning-Considerations)
+[C++ Versioning Considerations](/mojo/public/cpp/bindings/README.md#Versioning-Considerations)
+and
+[Java Versioning Considerations](/mojo/public/java/bindings/README.md#Versioning-Considerations)
 
 ### Versioned Enums
 
@@ -669,7 +672,7 @@ is strictly for documentation purposes. It has no impact on the generated code.
 
 With extensible enums, bound interface implementations may receive unknown enum
 values and will need to deal with them gracefully. See
-[C++ Versioning Considerations](/mojo/public/cpp/bindings#Versioning-Considerations)
+[C++ Versioning Considerations](/mojo/public/cpp/bindings/README.md#Versioning-Considerations)
 for details.
 
 ## Grammar Reference

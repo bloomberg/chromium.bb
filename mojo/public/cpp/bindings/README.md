@@ -1,19 +1,20 @@
 # Mojo C++ Bindings API
-This document is a subset of the [Mojo documentation](/mojo).
+This document is a subset of the [Mojo documentation](/mojo/README.md).
 
 [TOC]
 
 ## Overview
 The Mojo C++ Bindings API leverages the
-[C++ System API](/mojo/public/cpp/system) to provide a more natural set of
-primitives for communicating over Mojo message pipes. Combined with generated
-code from the [Mojom IDL and bindings generator](/mojo/public/tools/bindings),
-users can easily connect interface clients and implementations across arbitrary
-intra- and inter-process bounaries.
+[C++ System API](/mojo/public/cpp/system/README.md) to provide a more natural
+set of primitives for communicating over Mojo message pipes. Combined with
+generated code from the
+[Mojom IDL and bindings generator](/mojo/public/tools/bindings/README.md), users
+can easily connect interface clients and implementations across arbitrary intra-
+and inter-process bounaries.
 
 This document provides a detailed guide to bindings API usage with example code
 snippets. For a detailed API references please consult the headers in
-[//mojo/public/cpp/bindings](https://cs.chromium.org/chromium/src/mojo/public/cpp/bindings/).
+[//mojo/public/cpp/bindings](https://cs.chromium.org/chromium/src/mojo/public/cpp/bindings/README.md).
 
 ## Getting Started
 
@@ -499,12 +500,12 @@ connection error and break out of the run loop.
 
 ### Enums
 
-[Mojom enums](/mojo/public/tools/bindings#Enumeration-Types) translate directly
-to equivalent strongly-typed C++11 enum classes with `int32_t` as the underlying
-type. The typename and value names are identical between Mojom and C++. Mojo
-also always defines a special enumerator `kMaxValue` that shares the value of
-the highest enumerator: this makes it easy to record Mojo enums in histograms
-and interoperate with legacy IPC.
+[Mojom enums](/mojo/public/tools/bindings/README.md#Enumeration-Types) translate
+directly to equivalent strongly-typed C++11 enum classes with `int32_t` as the
+underlying type. The typename and value names are identical between Mojom and
+C++. Mojo also always defines a special enumerator `kMaxValue` that shares the
+value of the highest enumerator: this makes it easy to record Mojo enums in
+histograms and interoperate with legacy IPC.
 
 For example, consider the following Mojom definition:
 
@@ -537,8 +538,8 @@ enum class Department : int32_t {
 
 ### Structs
 
-[Mojom structs](mojo/public/tools/bindings#Structs) can be used to define
-logical groupings of fields into a new composite type. Every Mojom struct
+[Mojom structs](mojo/public/tools/bindings/README.md#Structs) can be used to
+define logical groupings of fields into a new composite type. Every Mojom struct
 elicits the generation of an identically named, representative C++ class, with
 identically named public fields of corresponding C++ types, and several helpful
 public methods.
@@ -735,7 +736,7 @@ interface Database {
 ```
 
 As noted in the
-[Mojom IDL documentation](/mojo/public/tools/bindings#Primitive-Types),
+[Mojom IDL documentation](/mojo/public/tools/bindings/README.md#Primitive-Types),
 the `Table&` syntax denotes a `Table` interface request. This corresponds
 precisely to the `InterfaceRequest<T>` type discussed in the sections above, and
 in fact the generated code for these interfaces is approximately:
@@ -1437,7 +1438,7 @@ depend on `"//sample:interfaces_blink"`.
 ## Versioning Considerations
 
 For general documentation of versioning in the Mojom IDL see
-[Versioning](/mojo/public/tools/bindings#Versioning).
+[Versioning](/mojo/public/tools/bindings/README.md#Versiwoning).
 
 This section briefly discusses some C++-specific considerations relevant to
 versioned Mojom types.
@@ -1488,7 +1489,7 @@ inline bool IsKnownEnumValue(Department value);
 
 ### Using Mojo Bindings in Chrome
 
-See [Converting Legacy Chrome IPC To Mojo](/ipc).
+See [Converting Legacy Chrome IPC To Mojo](/ipc/README.md).
 
 ### Additional Documentation
 

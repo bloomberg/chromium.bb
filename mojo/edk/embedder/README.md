@@ -1,5 +1,5 @@
 # Mojo Embedder Development Kit (EDK)
-This document is a subset of the [Mojo documentation](/mojo).
+This document is a subset of the [Mojo documentation](/mojo/README.md).
 
 [TOC]
 
@@ -321,5 +321,5 @@ Once you've bootstrapped your process connection with a real mojom interface,
 you can avoid any further mucking around with EDK APIs or raw message pipe
 handles, as everything beyond this point - including the passing of other
 interface pipes - can be handled eloquently using
-[public bindings APIs](/mojo#High_Level-Bindings-APIs).
+[public bindings APIs](/mojo/README.md#High_Level-Bindings-APIs).
 
