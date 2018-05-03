@@ -521,6 +521,11 @@ GURL AutocompleteMatch::GURLToStrippedGURL(
     needs_replacement = true;
   }
 
+  if (!input.parts().ref.is_nonempty() && url.has_ref()) {
+    replacements.ClearRef();
+    needs_replacement = true;
+  }
+
   if (needs_replacement)
     stripped_destination_url = stripped_destination_url.ReplaceComponents(
         replacements);

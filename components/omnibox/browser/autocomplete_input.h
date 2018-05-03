@@ -61,6 +61,11 @@ class AutocompleteInput {
   // Converts |type| to a string representation.  Used in logging.
   static std::string TypeToString(metrics::OmniboxInputType type);
 
+  // Parses the |path| and |ref| fields of |parts| from a file path input.
+  static void ParseFilePath(const base::string16& text,
+                            size_t offset,
+                            url::Parsed* parts);
+
   // Parses |text| (including an optional |desired_tld|) and returns the type of
   // input this will be interpreted as.  |scheme_classifier| is used to check
   // the scheme in |text| is known and registered in the current environment.
