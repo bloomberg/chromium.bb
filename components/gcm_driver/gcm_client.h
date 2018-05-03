@@ -129,6 +129,7 @@ class GCMClient {
     base::Time last_checkin;
     base::Time next_checkin;
     uint64_t android_id;
+    uint64_t android_secret;
     std::vector<std::string> registered_app_ids;
     int send_queue_size;
     int resend_queue_size;

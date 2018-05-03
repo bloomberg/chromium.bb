@@ -21,6 +21,7 @@ extern const char kSetGcmInternalsRecording[];
 // GCM internal info.
 // Must match the constants used in the resource files.
 extern const char kAndroidId[];
+extern const char kAndroidSecret[];
 extern const char kCheckinInfo[];
 extern const char kConnectionClientCreated[];
 extern const char kConnectionInfo[];

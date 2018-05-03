@@ -6,6 +6,7 @@ cr.define('gcmInternals', function() {
   'use strict';
 
   var isRecording = false;
+  var keyPressState = 0;
 
   /**
    * If the info dictionary has property prop, then set the text content of
@@ -32,6 +33,7 @@ cr.define('gcmInternals', function() {
    */
   function displayDeviceInfo(info) {
     setIfExists(info, 'androidId', 'android-id');
+    setIfExists(info, 'androidSecret', 'android-secret');
     setIfExists(info, 'profileServiceCreated', 'profile-service-created');
     setIfExists(info, 'gcmEnabled', 'gcm-enabled');
     setIfExists(info, 'gcmClientCreated', 'gcm-client-created');
@@ -113,6 +115,28 @@ cr.define('gcmInternals', function() {
   }
 
   /**
+   * Allows displaying the Android Secret by typing a secret phrase.
+   *
+   * There are good reasons for displaying the Android Secret associated with
+   * the local connection info, but we also need to be careful to make sure that
+   * users don't share this value by accident. Therefore we require a secret
+   * phrase to be typed into the page for making it visible.
+   *
+   * @param {!Event} event The keypress event handler.
+   */
+  function handleKeyPress(event) {
+    var PHRASE = 'secret';
+    if (PHRASE.charCodeAt(keyPressState) === event.keyCode) {
+      if (++keyPressState < PHRASE.length)
+        return;
+
+      $('android-secret-container').classList.remove('invisible');
+    }
+
+    keyPressState = 0;
+  }
+
+  /**
    * Refresh the log html table by clearing it first. If data is not empty, then
    * it will be used to populate the table.
    * @param {string} tableId ID of the log html table.
@@ -154,8 +178,10 @@ cr.define('gcmInternals', function() {
   // Return an object with all of the exports.
   return {
     initialize: initialize,
+    handleKeyPress: handleKeyPress,
     setGcmInternalsInfo: setGcmInternalsInfo,
   };
 });
 
 document.addEventListener('DOMContentLoaded', gcmInternals.initialize);
+document.addEventListener('keypress', gcmInternals.handleKeyPress);
