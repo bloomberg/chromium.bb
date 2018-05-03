@@ -34,9 +34,7 @@ const char kDeviceKindAudioOutput[] = "audiooutput";
 // It needs to be a browser test (and not content browser test) to be able to
 // test that labels are cleared or not depending on if access to devices has
 // been granted.
-class WebRtcGetMediaDevicesBrowserTest
-    : public WebRtcTestBase,
-      public testing::WithParamInterface<bool> {
+class WebRtcGetMediaDevicesBrowserTest : public WebRtcTestBase {
  public:
   WebRtcGetMediaDevicesBrowserTest()
       : has_audio_output_devices_initialized_(false),
@@ -83,8 +81,7 @@ class WebRtcGetMediaDevicesBrowserTest
     bool found_audio_input = false;
     bool found_video_input = false;
 
-    for (base::ListValue::iterator it = values->begin();
-         it != values->end(); ++it) {
+    for (auto it = values->begin(); it != values->end(); ++it) {
       const base::DictionaryValue* dict;
       MediaDeviceInfo device;
       ASSERT_TRUE(it->GetAsDictionary(&dict));
@@ -123,12 +120,7 @@ class WebRtcGetMediaDevicesBrowserTest
   bool has_audio_output_devices_;
 };
 
-static const bool kParamsToRunTestsWith[] = { false, true };
-INSTANTIATE_TEST_CASE_P(WebRtcGetMediaDevicesBrowserTests,
-                        WebRtcGetMediaDevicesBrowserTest,
-                        testing::ValuesIn(kParamsToRunTestsWith));
-
-IN_PROC_BROWSER_TEST_P(WebRtcGetMediaDevicesBrowserTest,
+IN_PROC_BROWSER_TEST_F(WebRtcGetMediaDevicesBrowserTest,
                        EnumerateDevicesWithoutAccess) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage));
@@ -140,13 +132,12 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetMediaDevicesBrowserTest,
   EnumerateDevices(tab, &devices);
 
   // Labels should be empty if access has not been allowed.
-  for (std::vector<MediaDeviceInfo>::iterator it = devices.begin();
-       it != devices.end(); ++it) {
-    EXPECT_TRUE(it->label.empty());
+  for (const auto& device_info : devices) {
+    EXPECT_TRUE(device_info.label.empty());
   }
 }
 
-IN_PROC_BROWSER_TEST_P(WebRtcGetMediaDevicesBrowserTest,
+IN_PROC_BROWSER_TEST_F(WebRtcGetMediaDevicesBrowserTest,
                        EnumerateDevicesWithAccess) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage));
@@ -160,8 +151,41 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetMediaDevicesBrowserTest,
   EnumerateDevices(tab, &devices);
 
   // Labels should be non-empty if access has been allowed.
-  for (std::vector<MediaDeviceInfo>::iterator it = devices.begin();
-       it != devices.end(); ++it) {
-    EXPECT_TRUE(!it->label.empty());
+  for (const auto& device_info : devices) {
+    EXPECT_TRUE(!device_info.label.empty());
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(WebRtcGetMediaDevicesBrowserTest,
+                       DeviceIdEqualsGroupIdDiffersAcrossTabs) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage));
+  ui_test_utils::NavigateToURL(browser(), url);
+  content::WebContents* tab1 =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  std::vector<MediaDeviceInfo> devices;
+  EnumerateDevices(tab1, &devices);
+
+  chrome::AddTabAt(browser(), GURL(), -1, true);
+  ui_test_utils::NavigateToURL(browser(), url);
+  content::WebContents* tab2 =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  std::vector<MediaDeviceInfo> devices2;
+  EnumerateDevices(tab2, &devices2);
+
+  EXPECT_NE(tab1, tab2);
+  EXPECT_EQ(devices.size(), devices2.size());
+  for (auto& device : devices) {
+    auto it = std::find_if(devices2.begin(), devices2.end(),
+                           [&device](const MediaDeviceInfo& device_info) {
+                             return device.device_id == device_info.device_id;
+                           });
+    EXPECT_NE(it, devices2.end());
+
+    it = std::find_if(devices2.begin(), devices2.end(),
+                      [&device](const MediaDeviceInfo& device_info) {
+                        return device.group_id == device_info.group_id;
+                      });
+    EXPECT_EQ(it, devices2.end());
   }
 }

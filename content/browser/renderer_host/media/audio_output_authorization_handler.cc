@@ -28,15 +28,14 @@ void CheckAccessOnUIThread(
     int render_frame_id,
     bool override_permissions,
     bool permissions_override_value,
-    base::OnceCallback<void(std::string, const url::Origin&, bool)> cb) {
+    base::OnceCallback<void(std::string, url::Origin, bool)> cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  const auto& salt_and_origin =
+  MediaDeviceSaltAndOrigin salt_and_origin =
       GetMediaDeviceSaltAndOrigin(render_process_id, render_frame_id);
-  std::string salt = salt_and_origin.first;
-  const url::Origin& origin = salt_and_origin.second;
 
-  if (!MediaStreamManager::IsOriginAllowed(render_process_id, origin)) {
+  if (!MediaStreamManager::IsOriginAllowed(render_process_id,
+                                           salt_and_origin.origin)) {
     // In this case, it's likely a navigation has occurred while processing this
     // request.
     std::move(cb).Run(std::string(), url::Origin(), false);
@@ -46,12 +45,15 @@ void CheckAccessOnUIThread(
   // Check that MediaStream device permissions have been granted for
   // nondefault devices.
   if (override_permissions) {
-    std::move(cb).Run(std::move(salt), origin, permissions_override_value);
+    std::move(cb).Run(std::move(salt_and_origin.device_id_salt),
+                      std::move(salt_and_origin.origin),
+                      permissions_override_value);
     return;
   }
 
   std::move(cb).Run(
-      std::move(salt), origin,
+      std::move(salt_and_origin.device_id_salt),
+      std::move(salt_and_origin.origin),
       MediaDevicesPermissionChecker().CheckPermissionOnUIThread(
           MEDIA_DEVICE_TYPE_AUDIO_OUTPUT, render_process_id, render_frame_id));
 }
@@ -147,11 +149,11 @@ void AudioOutputAuthorizationHandler::UMALogDeviceAuthorizationTime(
 void AudioOutputAuthorizationHandler::HashDeviceId(
     AuthorizationCompletedCallback cb,
     const std::string& raw_device_id,
-    const std::pair<std::string, url::Origin>& salt_and_origin) const {
+    const MediaDeviceSaltAndOrigin& salt_and_origin) const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!raw_device_id.empty());
   std::string hashed_device_id = GetHMACForMediaDeviceID(
-      salt_and_origin.first, salt_and_origin.second, raw_device_id);
+      salt_and_origin.device_id_salt, salt_and_origin.origin, raw_device_id);
   audio_system_->GetOutputStreamParameters(
       raw_device_id,
       base::BindOnce(&AudioOutputAuthorizationHandler::DeviceParametersReceived,
@@ -163,7 +165,7 @@ void AudioOutputAuthorizationHandler::AccessChecked(
     AuthorizationCompletedCallback cb,
     const std::string& device_id,
     std::string salt,
-    const url::Origin& security_origin,
+    url::Origin security_origin,
     bool has_access) const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -180,7 +182,7 @@ void AudioOutputAuthorizationHandler::AccessChecked(
       devices_to_enumerate,
       base::Bind(&AudioOutputAuthorizationHandler::TranslateDeviceID,
                  weak_factory_.GetWeakPtr(), base::Passed(&cb), device_id,
-                 std::move(salt), security_origin));
+                 std::move(salt), std::move(security_origin)));
 }
 
 void AudioOutputAuthorizationHandler::TranslateDeviceID(

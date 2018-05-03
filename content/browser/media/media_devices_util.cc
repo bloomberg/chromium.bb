@@ -13,10 +13,12 @@
 #include "base/strings/string_tokenizer.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/media_device_id.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/media_stream_request.h"
 #include "media/base/media_switches.h"
 
@@ -91,6 +93,15 @@ std::string GetDefaultMediaDeviceIDFromCommandLine(
 
 }  // namespace
 
+MediaDeviceSaltAndOrigin::MediaDeviceSaltAndOrigin() = default;
+
+MediaDeviceSaltAndOrigin::MediaDeviceSaltAndOrigin(std::string device_id_salt,
+                                                   std::string group_id_salt,
+                                                   url::Origin origin)
+    : device_id_salt(std::move(device_id_salt)),
+      group_id_salt(std::move(group_id_salt)),
+      origin(std::move(origin)) {}
+
 void GetDefaultMediaDeviceID(
     MediaDeviceType device_type,
     int render_process_id,
@@ -113,46 +124,53 @@ void GetDefaultMediaDeviceID(
       callback);
 }
 
-std::pair<std::string, url::Origin> GetMediaDeviceSaltAndOrigin(
-    int render_process_id,
-    int render_frame_id) {
+MediaDeviceSaltAndOrigin GetMediaDeviceSaltAndOrigin(int render_process_id,
+                                                     int render_frame_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderFrameHost* frame_host =
       RenderFrameHost::FromID(render_process_id, render_frame_id);
   RenderProcessHost* process_host =
       RenderProcessHost::FromID(render_process_id);
-  return std::make_pair(
+  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
+      WebContents::FromRenderFrameHost(frame_host));
+
+  std::string device_id_salt =
       process_host ? process_host->GetBrowserContext()->GetMediaDeviceIDSalt()
-                   : std::string(),
-      frame_host ? frame_host->GetLastCommittedOrigin() : url::Origin());
+                   : std::string();
+  std::string group_id_salt =
+      device_id_salt + (web_contents
+                            ? web_contents->GetMediaDeviceGroupIDSaltBase()
+                            : std::string());
+  url::Origin origin =
+      frame_host ? frame_host->GetLastCommittedOrigin() : url::Origin();
+
+  return {std::move(device_id_salt), std::move(group_id_salt),
+          std::move(origin)};
 }
 
-MediaDeviceInfo TranslateMediaDeviceInfo(bool has_permission,
-                                         const std::string& device_id_salt,
-                                         const std::string& group_id_salt,
-                                         const url::Origin& security_origin,
-                                         const MediaDeviceInfo& device_info) {
+MediaDeviceInfo TranslateMediaDeviceInfo(
+    bool has_permission,
+    const MediaDeviceSaltAndOrigin& salt_and_origin,
+    const MediaDeviceInfo& device_info) {
   return MediaDeviceInfo(
-      GetHMACForMediaDeviceID(device_id_salt, security_origin,
-                              device_info.device_id),
+      GetHMACForMediaDeviceID(salt_and_origin.device_id_salt,
+                              salt_and_origin.origin, device_info.device_id),
       has_permission ? device_info.label : std::string(),
       device_info.group_id.empty()
           ? std::string()
-          : GetHMACForMediaDeviceID(group_id_salt, security_origin,
+          : GetHMACForMediaDeviceID(salt_and_origin.group_id_salt,
+                                    salt_and_origin.origin,
                                     device_info.group_id));
 }
 
 MediaDeviceInfoArray TranslateMediaDeviceInfoArray(
     bool has_permission,
-    const std::string& device_id_salt,
-    const std::string& group_id_salt,
-    const url::Origin& security_origin,
+    const MediaDeviceSaltAndOrigin& salt_and_origin,
     const MediaDeviceInfoArray& device_infos) {
   MediaDeviceInfoArray result;
   for (const auto& device_info : device_infos) {
-    result.push_back(TranslateMediaDeviceInfo(has_permission, device_id_salt,
-                                              group_id_salt, security_origin,
-                                              device_info));
+    result.push_back(
+        TranslateMediaDeviceInfo(has_permission, salt_and_origin, device_info));
   }
   return result;
 }

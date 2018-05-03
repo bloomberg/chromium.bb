@@ -17,10 +17,6 @@
 #include "content/common/media/media_stream_controls.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 
-namespace url {
-class Origin;
-}
-
 namespace content {
 
 class MediaStreamManager;
@@ -72,17 +68,16 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
                                bool is_secure) override;
   void OnStreamStarted(const std::string& label) override;
 
-  void DoGenerateStream(
-      int32_t request_id,
-      const StreamControls& controls,
-      bool user_gesture,
-      GenerateStreamCallback callback,
-      const std::pair<std::string, url::Origin>& salt_and_origin);
+  void DoGenerateStream(int32_t request_id,
+                        const StreamControls& controls,
+                        bool user_gesture,
+                        GenerateStreamCallback callback,
+                        const MediaDeviceSaltAndOrigin& salt_and_origin);
   void DoOpenDevice(int32_t request_id,
                     const std::string& device_id,
                     MediaStreamType type,
                     OpenDeviceCallback callback,
-                    const std::pair<std::string, url::Origin>& salt_and_origin);
+                    const MediaDeviceSaltAndOrigin& salt_and_origin);
 
   void OnDeviceStopped(const std::string& label,
                        const MediaStreamDevice& device);

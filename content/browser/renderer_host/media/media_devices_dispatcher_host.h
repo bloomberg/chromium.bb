@@ -63,24 +63,22 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
 
   void GetDefaultVideoInputDeviceID(
       GetVideoInputCapabilitiesCallback client_callback,
-      const std::pair<std::string, url::Origin>& salt_and_origin);
+      MediaDeviceSaltAndOrigin salt_and_origin);
 
   void GotDefaultVideoInputDeviceID(
       GetVideoInputCapabilitiesCallback client_callback,
-      std::string device_id_salt,
-      const url::Origin& security_origin,
+      MediaDeviceSaltAndOrigin salt_and_origin,
       const std::string& default_device_id);
 
   void FinalizeGetVideoInputCapabilities(
       GetVideoInputCapabilitiesCallback client_callback,
-      const std::string& device_id_salt,
-      const url::Origin& security_origin,
+      const MediaDeviceSaltAndOrigin& salt_and_origin,
       const std::string& default_device_id,
       const media::VideoCaptureDeviceDescriptors& device_descriptors);
 
   void GetDefaultAudioInputDeviceID(
       GetAudioInputCapabilitiesCallback client_callback,
-      const std::pair<std::string, url::Origin>& salt_and_origin);
+      const MediaDeviceSaltAndOrigin& salt_and_origin);
 
   void GotDefaultAudioInputDeviceID(const std::string& default_device_id);
 
@@ -101,7 +99,7 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
       GetVideoInputDeviceFormatsCallback client_callback,
       const std::string& device_id,
       bool try_in_use_first,
-      const std::pair<std::string, url::Origin>& salt_and_origin);
+      const MediaDeviceSaltAndOrigin& salt_and_origin);
   void FinalizeGetVideoInputDeviceFormats(
       GetVideoInputDeviceFormatsCallback client_callback,
       const std::string& device_id,
@@ -113,11 +111,6 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
   // The following const fields can be accessed on any thread.
   const int render_process_id_;
   const int render_frame_id_;
-  // This value is combined with the device ID salt to produce a salt for group
-  // IDs that, unlike the device ID salt, is not persistent across browsing
-  // sessions, but like the device ID salt, is reset when the user clears
-  // browsing data.
-  const std::string group_id_salt_base_;
 
   // The following fields can only be accessed on the IO thread.
   MediaStreamManager* media_stream_manager_;
