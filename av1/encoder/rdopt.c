@@ -9163,7 +9163,7 @@ static void set_params_rd_pick_inter_mode(
   }
 
   mode_skip_mask[INTRA_FRAME] |=
-      ~(sf->intra_y_mode_mask[max_txsize_rect_lookup[bsize]]);
+      ~(sf->intra_y_mode_mask[max_txsize_lookup[bsize]]);
 
   if (cpi->sf.tx_type_search.fast_intra_tx_type_search)
     x->use_default_intra_tx_type = 1;
