@@ -16,6 +16,7 @@
 #include "ui/platform_window/platform_window_delegate.h"
 
 namespace ui {
+enum class DomCode;
 class KeyboardHook;
 }  // namespace ui
 
@@ -78,9 +79,9 @@ class AURA_EXPORT WindowTreeHostPlatform : public WindowTreeHost,
 
   // Overridden from aura::WindowTreeHost:
   bool CaptureSystemKeyEventsImpl(
-      base::Optional<base::flat_set<int>> native_key_codes) override;
+      base::Optional<base::flat_set<ui::DomCode>> dom_codes) override;
   void ReleaseSystemKeyEventCapture() override;
-  bool IsKeyLocked(int native_key_code) override;
+  bool IsKeyLocked(ui::DomCode dom_code) override;
 
  private:
   gfx::AcceleratedWidget widget_;

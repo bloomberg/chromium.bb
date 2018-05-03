@@ -17,6 +17,7 @@
 #import "ui/base/cocoa/animation_utils.h"
 #include "ui/display/display_observer.h"
 #include "ui/display/screen.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
 
 namespace content {
@@ -55,7 +56,7 @@ class RenderWidgetHostViewNSViewBridgeLocal
   void ShowDictionaryOverlay(
       const mac::AttributedStringCoder::EncodedString& encoded_string,
       gfx::Point baseline_point) override;
-  void LockKeyboard(base::Optional<base::flat_set<int>> keys) override;
+  void LockKeyboard(base::Optional<base::flat_set<ui::DomCode>> codes) override;
   void UnlockKeyboard() override;
 
  private:
@@ -289,8 +290,8 @@ void RenderWidgetHostViewNSViewBridgeLocal::ShowDictionaryOverlay(
 }
 
 void RenderWidgetHostViewNSViewBridgeLocal::LockKeyboard(
-    base::Optional<base::flat_set<int>> keys) {
-  [cocoa_view_ lockKeyboard:std::move(keys)];
+    base::Optional<base::flat_set<ui::DomCode>> dom_codes) {
+  [cocoa_view_ lockKeyboard:std::move(dom_codes)];
 }
 
 void RenderWidgetHostViewNSViewBridgeLocal::UnlockKeyboard() {

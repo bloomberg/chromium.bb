@@ -24,6 +24,10 @@ class Range;
 class Rect;
 }  // namespace gfx
 
+namespace ui {
+enum class DomCode;
+}  // namespace ui
+
 namespace content {
 
 class RenderWidgetHostNSViewClient;
@@ -99,7 +103,8 @@ class RenderWidgetHostNSViewBridge {
       gfx::Point baseline_point) = 0;
 
   // Start intercepting keyboard events.
-  virtual void LockKeyboard(base::Optional<base::flat_set<int>> keys) = 0;
+  virtual void LockKeyboard(
+      base::Optional<base::flat_set<ui::DomCode>> dom_codes) = 0;
 
   // Stop intercepting keyboard events.
   virtual void UnlockKeyboard() = 0;

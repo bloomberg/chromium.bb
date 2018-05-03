@@ -34,6 +34,7 @@ class Transform;
 
 namespace ui {
 class Compositor;
+enum class DomCode;
 class EventSink;
 class InputMethod;
 class ViewProp;
@@ -204,11 +205,11 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   float device_scale_factor() const { return device_scale_factor_; }
 
   // Requests that |keys| be intercepted at the platform level and routed
-  // directly to the web content.  If |keys| is empty, all keys will be
+  // directly to the web content.  If |codes| is empty, all keys will be
   // intercepted.  Returns a ScopedKeyboardHook instance which stops capturing
   // system key events when destroyed.
   std::unique_ptr<ScopedKeyboardHook> CaptureSystemKeyEvents(
-      base::Optional<base::flat_set<int>> keys);
+      base::Optional<base::flat_set<ui::DomCode>> codes);
 
  protected:
   friend class ScopedKeyboardHook;
@@ -270,13 +271,13 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
 
   // Begins capturing system key events.  Returns true if successful.
   virtual bool CaptureSystemKeyEventsImpl(
-      base::Optional<base::flat_set<int>> keys) = 0;
+      base::Optional<base::flat_set<ui::DomCode>> dom_codes) = 0;
 
   // Stops capturing system keyboard events.
   virtual void ReleaseSystemKeyEventCapture() = 0;
 
-  // True if |native_key_code| is reserved for an active KeyboardLock request.
-  virtual bool IsKeyLocked(int native_key_code) = 0;
+  // True if |dom_code| is reserved for an active KeyboardLock request.
+  virtual bool IsKeyLocked(ui::DomCode dom_code) = 0;
 
   virtual gfx::Rect GetTransformedRootWindowBoundsInPixels(
       const gfx::Size& size_in_pixels) const;

@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "ui/events/event.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 
 namespace ui {
 
@@ -18,7 +19,7 @@ namespace {
 // A default implementation for Ozone platform.
 class KeyboardHookOzone : public KeyboardHookBase {
  public:
-  KeyboardHookOzone(base::Optional<base::flat_set<int>> key_codes,
+  KeyboardHookOzone(base::Optional<base::flat_set<DomCode>> dom_codes,
                     KeyEventCallback callback);
   ~KeyboardHookOzone() override;
 
@@ -29,9 +30,9 @@ class KeyboardHookOzone : public KeyboardHookBase {
 };
 
 KeyboardHookOzone::KeyboardHookOzone(
-    base::Optional<base::flat_set<int>> key_codes,
+    base::Optional<base::flat_set<DomCode>> dom_codes,
     KeyEventCallback callback)
-    : KeyboardHookBase(std::move(key_codes), std::move(callback)) {}
+    : KeyboardHookBase(std::move(dom_codes), std::move(callback)) {}
 
 KeyboardHookOzone::~KeyboardHookOzone() = default;
 
@@ -45,10 +46,10 @@ bool KeyboardHookOzone::Register() {
 
 // static
 std::unique_ptr<KeyboardHook> KeyboardHook::Create(
-    base::Optional<base::flat_set<int>> key_codes,
+    base::Optional<base::flat_set<DomCode>> dom_codes,
     KeyEventCallback callback) {
   std::unique_ptr<KeyboardHookOzone> keyboard_hook =
-      std::make_unique<KeyboardHookOzone>(std::move(key_codes),
+      std::make_unique<KeyboardHookOzone>(std::move(dom_codes),
                                           std::move(callback));
 
   if (!keyboard_hook->Register())

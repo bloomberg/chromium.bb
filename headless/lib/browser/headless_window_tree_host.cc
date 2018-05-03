@@ -9,6 +9,7 @@
 #include "headless/lib/browser/headless_focus_client.h"
 #include "headless/lib/browser/headless_window_parenting_client.h"
 #include "ui/aura/window.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/gfx/icc_profile.h"
 
 namespace headless {
@@ -79,13 +80,13 @@ void HeadlessWindowTreeHost::SetCapture() {}
 void HeadlessWindowTreeHost::ReleaseCapture() {}
 
 bool HeadlessWindowTreeHost::CaptureSystemKeyEventsImpl(
-    base::Optional<base::flat_set<int>> keys) {
+    base::Optional<base::flat_set<ui::DomCode>> codes) {
   return false;
 }
 
 void HeadlessWindowTreeHost::ReleaseSystemKeyEventCapture() {}
 
-bool HeadlessWindowTreeHost::IsKeyLocked(int native_key_code) {
+bool HeadlessWindowTreeHost::IsKeyLocked(ui::DomCode dom_code) {
   return false;
 }
 

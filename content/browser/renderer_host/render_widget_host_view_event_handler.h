@@ -30,6 +30,7 @@ class WebTouchEvent;
 }  // namespace blink
 
 namespace ui {
+enum class DomCode;
 class TextInputClient;
 class TouchSelectionController;
 }
@@ -144,7 +145,7 @@ class CONTENT_EXPORT RenderWidgetHostViewEventHandler
   void UnlockMouse();
 
   // Start/Stop processing of future system keyboard events.
-  bool LockKeyboard(base::Optional<base::flat_set<int>> keys);
+  bool LockKeyboard(base::Optional<base::flat_set<ui::DomCode>> codes);
   void UnlockKeyboard();
   bool IsKeyboardLocked() const;
 

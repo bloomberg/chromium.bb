@@ -12,20 +12,21 @@
 
 namespace ui {
 
+enum class DomCode;
 class KeyEvent;
 
 class KeyboardHookBase : public KeyboardHook {
  public:
-  KeyboardHookBase(base::Optional<base::flat_set<int>> native_key_codes,
+  KeyboardHookBase(base::Optional<base::flat_set<DomCode>> dom_codes,
                    KeyEventCallback callback);
   ~KeyboardHookBase() override;
 
   // KeyboardHook implementation.
-  bool IsKeyLocked(int native_key_code) override;
+  bool IsKeyLocked(DomCode dom_code) override;
 
  protected:
-  // Indicates whether |key_code| should be intercepted by the keyboard hook.
-  bool ShouldCaptureKeyEvent(int key_code) const;
+  // Indicates whether |dom_code| should be intercepted by the keyboard hook.
+  bool ShouldCaptureKeyEvent(DomCode dom_code) const;
 
   // Forwards the key event using |key_event_callback_|.
   void ForwardCapturedKeyEvent(std::unique_ptr<KeyEvent> event);
@@ -35,7 +36,7 @@ class KeyboardHookBase : public KeyboardHook {
   KeyEventCallback key_event_callback_;
 
   // The set of keys which should be intercepted by the keyboard hook.
-  base::Optional<base::flat_set<int>> key_codes_;
+  base::Optional<base::flat_set<DomCode>> dom_codes_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardHookBase);
 };

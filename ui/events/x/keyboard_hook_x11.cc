@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "ui/events/keyboard_hook_base.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 
 namespace ui {
 
@@ -15,7 +16,7 @@ namespace {
 // A default implementation for the X11 platform.
 class KeyboardHookX11 : public KeyboardHookBase {
  public:
-  KeyboardHookX11(base::Optional<base::flat_set<int>> native_key_codes,
+  KeyboardHookX11(base::Optional<base::flat_set<DomCode>> dom_codes,
                   KeyEventCallback callback);
   ~KeyboardHookX11() override;
 
@@ -25,9 +26,10 @@ class KeyboardHookX11 : public KeyboardHookBase {
   DISALLOW_COPY_AND_ASSIGN(KeyboardHookX11);
 };
 
-KeyboardHookX11::KeyboardHookX11(base::Optional<base::flat_set<int>> key_codes,
-                                 KeyEventCallback callback)
-    : KeyboardHookBase(std::move(key_codes), std::move(callback)) {}
+KeyboardHookX11::KeyboardHookX11(
+    base::Optional<base::flat_set<DomCode>> dom_codes,
+    KeyEventCallback callback)
+    : KeyboardHookBase(std::move(dom_codes), std::move(callback)) {}
 
 KeyboardHookX11::~KeyboardHookX11() = default;
 
@@ -41,10 +43,10 @@ bool KeyboardHookX11::Register() {
 
 // static
 std::unique_ptr<KeyboardHook> KeyboardHook::Create(
-    base::Optional<base::flat_set<int>> native_key_codes,
+    base::Optional<base::flat_set<DomCode>> dom_codes,
     KeyboardHook::KeyEventCallback callback) {
   std::unique_ptr<KeyboardHookX11> keyboard_hook =
-      std::make_unique<KeyboardHookX11>(std::move(native_key_codes),
+      std::make_unique<KeyboardHookX11>(std::move(dom_codes),
                                         std::move(callback));
 
   if (!keyboard_hook->Register())
