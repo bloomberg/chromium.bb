@@ -139,6 +139,11 @@ _GCLIENT_SCHEMA = schema.Schema(_NodeDictSchema({
         schema.Optional(basestring): _GCLIENT_DEPS_SCHEMA,
     }),
 
+    # Dependency to get gclient_gn_args* settings from. This allows these values
+    # to be set in a recursedeps file, rather than requiring that they exist in
+    # the top-level solution.
+    schema.Optional('gclient_gn_args_from'): basestring,
+
     # Path to GN args file to write selected variables.
     schema.Optional('gclient_gn_args_file'): basestring,
 

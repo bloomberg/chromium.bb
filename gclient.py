@@ -397,6 +397,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     # hosts will be allowed. Non-empty set means whitelist of hosts.
     # allowed_hosts var is scoped to its DEPS file, and so it isn't recursive.
     self._allowed_hosts = frozenset()
+    self._gn_args_from = None
     # Spec for .gni output to write (if any).
     self._gn_args_file = None
     self._gn_args = []
@@ -785,8 +786,14 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
             'ParseDepsFile(%s): allowed_hosts must be absent '
             'or a non-empty iterable' % self.name)
 
+    self._gn_args_from = local_scope.get('gclient_gn_args_from')
     self._gn_args_file = local_scope.get('gclient_gn_args_file')
     self._gn_args = local_scope.get('gclient_gn_args', [])
+    # It doesn't make sense to set all of these, since setting gn_args_from to
+    # another DEPS will make gclient ignore any other local gn_args* settings.
+    assert not (self._gn_args_from and self._gn_args_file), \
+        'Only specify one of "gclient_gn_args_from" or ' \
+        '"gclient_gn_args_file + gclient_gn_args".'
 
     self._vars = local_scope.get('vars', {})
     if self.parent:
@@ -837,6 +844,10 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
           rel_deps[
               os.path.normpath(os.path.join(rel_prefix, depname))] = options
         self.recursedeps = rel_deps
+    # To get gn_args from another DEPS, that DEPS must be recursed into.
+    if self._gn_args_from:
+      assert self.recursedeps and self._gn_args_from in self.recursedeps, \
+              'The "gclient_gn_args_from" value must be in recursedeps.'
 
     # If present, save 'target_os' in the local_target_os property.
     if 'target_os' in local_scope:
@@ -1166,12 +1177,6 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     for s in self.dependencies:
       result.extend(s.GetHooks(options))
     return result
-
-  def WriteGNArgsFilesRecursively(self, dependencies):
-    for dep in dependencies:
-      if dep.HasGNArgsFile():
-        dep.WriteGNArgsFile()
-      self.WriteGNArgsFilesRecursively(dep.dependencies)
 
   def RunHooksRecursively(self, options, progress):
     assert self.hooks_ran == False
@@ -1718,9 +1723,14 @@ it or fix the checkout.
       self._cipd_root.run(command)
 
     # Once all the dependencies have been processed, it's now safe to write
-    # out any gn_args_files and run the hooks.
+    # out the gn_args_file and run the hooks.
     if command == 'update':
-      self.WriteGNArgsFilesRecursively(self.dependencies)
+      gn_args_dep = self.dependencies[0]
+      if gn_args_dep._gn_args_from:
+        deps_map = dict([(dep.name, dep) for dep in gn_args_dep.dependencies])
+        gn_args_dep = deps_map.get(gn_args_dep._gn_args_from)
+      if gn_args_dep and gn_args_dep.HasGNArgsFile():
+        gn_args_dep.WriteGNArgsFile()
 
     if not self._options.nohooks:
       if should_show_progress:
@@ -2229,10 +2239,10 @@ class Flattener(object):
       for dep in os_deps.itervalues():
         add_deps_file(dep)
 
+    gn_args_dep = self._deps.get(self._client.dependencies[0]._gn_args_from,
+                                 self._client.dependencies[0])
     self._deps_string = '\n'.join(
-        _GNSettingsToLines(
-            self._client.dependencies[0]._gn_args_file,
-            self._client.dependencies[0]._gn_args) +
+        _GNSettingsToLines(gn_args_dep._gn_args_file, gn_args_dep._gn_args) +
         _AllowedHostsToLines(self._allowed_hosts) +
         _DepsToLines(self._deps) +
         _DepsOsToLines(self._deps_os) +

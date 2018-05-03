@@ -620,6 +620,13 @@ deps_os ={
 
     self._commit_git('repo_9', {
       'DEPS': """
+vars = {
+  'str_var': 'xyz',
+}
+gclient_gn_args_file = 'src/repo2/gclient.args'
+gclient_gn_args = [
+  'str_var',
+]
 deps = {
   'src/repo8': '/repo_8',
 
@@ -644,6 +651,7 @@ recursedeps = [
 
     self._commit_git('repo_10', {
       'DEPS': """
+gclient_gn_args_from = 'src/repo9'
 deps = {
   'src/repo9': '/repo_9',
 

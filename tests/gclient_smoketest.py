@@ -1219,6 +1219,8 @@ class GClientSmokeGIT(GClientSmokeBase):
       deps_contents = f.read()
 
     self.assertEqual([
+        'gclient_gn_args_file = "src/repo2/gclient.args"',
+        "gclient_gn_args = ['str_var']",
         'deps = {',
         '  # src',
         '  "src": {',
@@ -1294,6 +1296,12 @@ class GClientSmokeGIT(GClientSmokeBase):
         '    },',
         '',
         '  },',
+        '',
+        '}',
+        '',
+        'vars = {',
+        '  # src -> src/repo9',
+        '  "str_var": \'xyz\',',
         '',
         '}',
         '',
