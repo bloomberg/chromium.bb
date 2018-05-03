@@ -868,39 +868,6 @@ class ScopedSubstFont {
   DISALLOW_COPY_AND_ASSIGN(ScopedSubstFont);
 };
 
-class PDFiumEngineExports : public PDFEngineExports {
- public:
-  PDFiumEngineExports() {}
-
-// PDFEngineExports:
-#if defined(OS_WIN)
-  bool RenderPDFPageToDC(const void* pdf_buffer,
-                         int buffer_size,
-                         int page_number,
-                         const RenderingSettings& settings,
-                         HDC dc) override;
-  void SetPDFEnsureTypefaceCharactersAccessible(
-      PDFEnsureTypefaceCharactersAccessible func) override;
-
-  void SetPDFUseGDIPrinting(bool enable) override;
-  void SetPDFUsePrintMode(int mode) override;
-#endif  // defined(OS_WIN)
-  bool RenderPDFPageToBitmap(const void* pdf_buffer,
-                             int pdf_buffer_size,
-                             int page_number,
-                             const RenderingSettings& settings,
-                             void* bitmap_buffer) override;
-  bool GetPDFDocInfo(const void* pdf_buffer,
-                     int buffer_size,
-                     int* page_count,
-                     double* max_page_width) override;
-  bool GetPDFPageSizeByIndex(const void* pdf_buffer,
-                             int pdf_buffer_size,
-                             int page_number,
-                             double* width,
-                             double* height) override;
-};
-
 }  // namespace chrome_pdf
 
 #endif  // PDF_PDFIUM_PDFIUM_ENGINE_H_

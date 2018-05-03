@@ -449,6 +449,7 @@ class PDFEngineExports {
 
   PDFEngineExports() {}
   virtual ~PDFEngineExports() {}
+
   static PDFEngineExports* Get();
 
 #if defined(OS_WIN)
