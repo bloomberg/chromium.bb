@@ -1292,6 +1292,9 @@ GCMClient::GCMStatistics GCMClientImpl::GetStatistics() const {
   }
   if (device_checkin_info_.android_id > 0)
     stats.android_id = device_checkin_info_.android_id;
+  if (device_checkin_info_.secret > 0)
+    stats.android_secret = device_checkin_info_.secret;
+
   recorder_.CollectActivities(&stats.recorded_activities);
 
   for (RegistrationInfoMap::const_iterator it = registrations_.begin();

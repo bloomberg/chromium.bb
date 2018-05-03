@@ -17,6 +17,7 @@ const char kSetGcmInternalsRecording[] = "setGcmInternalsRecording";
 
 // GCM internal info.
 const char kAndroidId[] = "androidId";
+const char kAndroidSecret[] = "androidSecret";
 const char kCheckinInfo[] = "checkinInfo";
 const char kConnectionClientCreated[] = "connectionClientCreated";
 const char kConnectionInfo[] = "connectionInfo";

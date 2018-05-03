@@ -32,7 +32,7 @@ th {
   padding: 0px 4px;
 }
 
-#device-info tr :first-child {
+#device-info tr > :first-child {
   font-weight: bold;
   padding-right: 10px;
   text-align: end;
@@ -40,4 +40,8 @@ th {
 
 .log-table {
   padding: 4px;
+}
+
+#android-secret-container.invisible {
+  display: none;
 }

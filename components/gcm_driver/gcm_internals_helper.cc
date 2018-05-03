@@ -133,6 +133,10 @@ void SetGCMInternalsInfo(const gcm::GCMClient::GCMStatistics* stats,
       device_info->SetString(
           kAndroidId, base::StringPrintf("0x%" PRIx64, stats->android_id));
     }
+    if (stats->android_secret > 0) {
+      device_info->SetString(kAndroidSecret,
+                             base::NumberToString(stats->android_secret));
+    }
     device_info->SetInteger(kSendQueueSize, stats->send_queue_size);
     device_info->SetInteger(kResendQueueSize, stats->resend_queue_size);
     results->Set(kDeviceInfo, std::move(device_info));
