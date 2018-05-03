@@ -255,9 +255,17 @@ bool PreviewsIOData::ShouldAllowPreviewAtECT(
       net::EFFECTIVE_CONNECTION_TYPE_LAST) {
     net::NetworkQualityEstimator* network_quality_estimator =
         request.context()->network_quality_estimator();
-    if (!network_quality_estimator ||
-        network_quality_estimator->GetEffectiveConnectionType() <
-            net::EFFECTIVE_CONNECTION_TYPE_OFFLINE) {
+    const net::EffectiveConnectionType observed_effective_connection_type =
+        network_quality_estimator
+            ? network_quality_estimator->GetEffectiveConnectionType()
+            : net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+    // Network quality estimator may sometimes return effective connection type
+    // as offline when the Android APIs incorrectly return device connectivity
+    // as null. See https://crbug.com/838969. So, we do not trigger previews
+    // when |observed_effective_connection_type| is
+    // net::EFFECTIVE_CONNECTION_TYPE_OFFLINE.
+    if (observed_effective_connection_type <=
+        net::EFFECTIVE_CONNECTION_TYPE_OFFLINE) {
       LogPreviewDecisionMade(
           PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE, request.url(),
           base::Time::Now(), type, std::move(passed_reasons), page_id);
@@ -266,7 +274,7 @@ bool PreviewsIOData::ShouldAllowPreviewAtECT(
     passed_reasons.push_back(
         PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE);
 
-    if (network_quality_estimator->GetEffectiveConnectionType() >
+    if (observed_effective_connection_type >
         effective_connection_type_threshold) {
       LogPreviewDecisionMade(PreviewsEligibilityReason::NETWORK_NOT_SLOW,
                              request.url(), base::Time::Now(), type,

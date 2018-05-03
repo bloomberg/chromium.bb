@@ -33,9 +33,12 @@ enum EffectiveConnectionType {
   // Effective connection type reported when the network quality is unknown.
   EFFECTIVE_CONNECTION_TYPE_UNKNOWN = 0,
 
-  // Effective connection type reported when the Internet is unreachable, either
-  // because the device does not have a connection or because the
-  // connection is too slow to be usable.
+  // Effective connection type reported when the Internet is unreachable
+  // because the device does not have a connection (as reported by underlying
+  // platform APIs). Note that due to rare but  potential bugs in the platform
+  // APIs, it is possible that effective connection type is reported as
+  // EFFECTIVE_CONNECTION_TYPE_OFFLINE. Callers must use caution when using
+  // acting on this.
   EFFECTIVE_CONNECTION_TYPE_OFFLINE,
 
   // Effective connection type reported when the network has the quality of a
