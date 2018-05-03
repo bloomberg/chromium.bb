@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "components/feed/core/feed_image_manager.h"
 #include "components/feed/core/feed_networking_host.h"
 #include "components/keyed_service/core/keyed_service.h"
 
@@ -20,11 +21,15 @@ namespace feed {
 // yet.
 class FeedHostService : public KeyedService {
  public:
-  explicit FeedHostService(std::unique_ptr<FeedNetworkingHost> networking_host);
+  FeedHostService(std::unique_ptr<FeedImageManager> image_manager,
+                  std::unique_ptr<FeedNetworkingHost> networking_host);
   ~FeedHostService() override;
+
+  FeedImageManager* GetFeedImageManager();
   FeedNetworkingHost* GetFeedNetworkingHost();
 
  private:
+  std::unique_ptr<FeedImageManager> image_manager_;
   std::unique_ptr<FeedNetworkingHost> networking_host_;
 
   DISALLOW_COPY_AND_ASSIGN(FeedHostService);
