@@ -629,4 +629,54 @@ TEST_F(CompositedLayerRasterInvalidatorTest, TransformPropertyChange) {
   invalidator.SetTracksRasterInvalidations(false);
 }
 
+TEST_F(CompositedLayerRasterInvalidatorTest, TransformPropertyTinyChange) {
+  CompositedLayerRasterInvalidator invalidator(kNoopRasterInvalidation);
+
+  auto layer_transform = CreateTransform(TransformPaintPropertyNode::Root(),
+                                         TransformationMatrix().Scale(5));
+  auto chunk_transform = CreateTransform(
+      layer_transform, TransformationMatrix().Translate(10, 20));
+
+  PropertyTreeState layer_state(layer_transform.get(),
+                                ClipPaintPropertyNode::Root(),
+                                EffectPaintPropertyNode::Root());
+  auto artifact = Chunk(0).Properties(chunk_transform.get()).Build();
+
+  GeometryMapperTransformCache::ClearCache();
+  invalidator.SetTracksRasterInvalidations(true);
+  invalidator.Generate(artifact, kDefaultLayerBounds, layer_state);
+  EXPECT_TRUE(TrackedRasterInvalidations(invalidator).IsEmpty());
+
+  // Change chunk_transform by tiny difference, which should be ignored.
+  chunk_transform->Update(layer_state.Transform(),
+                          TransformPaintPropertyNode::State{
+                              TransformationMatrix(chunk_transform->Matrix())
+                                  .Translate(0.0000001, -0.0000001)
+                                  .Scale(1.0000001)
+                                  .Rotate(0.0000001)});
+  auto new_artifact = Chunk(0).Properties(chunk_transform.get()).Build();
+
+  GeometryMapperTransformCache::ClearCache();
+  invalidator.Generate(new_artifact, kDefaultLayerBounds, layer_state);
+  EXPECT_TRUE(TrackedRasterInvalidations(invalidator).IsEmpty());
+
+  // Tiny differences should accumulate and cause invalidation when the
+  // accumulation is large enough.
+  bool invalidated = false;
+  for (int i = 0; i < 100 && !invalidated; i++) {
+    chunk_transform->Update(layer_state.Transform(),
+                            TransformPaintPropertyNode::State{
+                                TransformationMatrix(chunk_transform->Matrix())
+                                    .Translate(0.0000001, -0.0000001)
+                                    .Scale(1.0000001)
+                                    .Rotate(0.0000001)});
+    auto new_artifact = Chunk(0).Properties(chunk_transform.get()).Build();
+
+    GeometryMapperTransformCache::ClearCache();
+    invalidator.Generate(new_artifact, kDefaultLayerBounds, layer_state);
+    invalidated = !TrackedRasterInvalidations(invalidator).IsEmpty();
+  }
+  EXPECT_TRUE(invalidated);
+}
+
 }  // namespace blink

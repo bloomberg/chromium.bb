@@ -45,6 +45,15 @@ size_t CompositedLayerRasterInvalidator::MatchNewChunkToOldChunk(
   return kNotFound;
 }
 
+static bool ApproximatelyEqual(const SkMatrix& a, const SkMatrix& b) {
+  static constexpr float kTolerance = 1e-5f;
+  for (int i = 0; i < 9; i++) {
+    if (std::abs(a[i] - b[i]) > kTolerance)
+      return false;
+  }
+  return true;
+}
+
 PaintInvalidationReason
 CompositedLayerRasterInvalidator::ChunkPropertiesChanged(
     const RefCountedPropertyTreeState& new_chunk_state,
@@ -55,7 +64,8 @@ CompositedLayerRasterInvalidator::ChunkPropertiesChanged(
   // transform nodes when no raster invalidation is needed. For example, when
   // a composited layer previously not transformed now gets transformed.
   // Check for real accumulated transform change instead.
-  if (new_chunk.chunk_to_layer_transform != old_chunk.chunk_to_layer_transform)
+  if (!ApproximatelyEqual(new_chunk.chunk_to_layer_transform,
+                          old_chunk.chunk_to_layer_transform))
     return PaintInvalidationReason::kPaintProperty;
 
   // Treat the chunk property as changed if the effect node pointer is
@@ -111,7 +121,7 @@ void CompositedLayerRasterInvalidator::GenerateRasterInvalidations(
   size_t max_matched_old_index = 0;
   for (const auto& new_chunk : new_chunks) {
     mapper.SwitchToChunk(new_chunk);
-    const auto& new_chunk_info =
+    auto& new_chunk_info =
         new_chunks_info.emplace_back(*this, mapper, new_chunk);
 
     if (!new_chunk.is_cacheable) {
@@ -150,6 +160,13 @@ void CompositedLayerRasterInvalidator::GenerateRasterInvalidations(
       // Ignore the display item raster invalidations because we have fully
       // invalidated the chunk.
     } else {
+      // We may have ignored tiny changes of transform, in which case we should
+      // use the old chunk_to_layer_transform for later comparison to correctly
+      // invalidate animating transform in tiny increments when the accumulated
+      // change exceeds the tolerance.
+      new_chunk_info.chunk_to_layer_transform =
+          old_chunk_info.chunk_to_layer_transform;
+
       if (reason == PaintInvalidationReason::kIncremental)
         IncrementallyInvalidateChunk(old_chunk_info, new_chunk_info);
 
