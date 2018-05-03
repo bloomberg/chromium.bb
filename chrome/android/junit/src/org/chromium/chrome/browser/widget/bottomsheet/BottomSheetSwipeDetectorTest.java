@@ -91,8 +91,10 @@ public final class BottomSheetSwipeDetectorTest {
         }
 
         @Override
-        public float getContainerHeightPx() {
-            return mMaxOffset;
+        public boolean isTouchEventInToolbar(MotionEvent event) {
+            // This will be implementation specific in practice. This checks that the motion event
+            // occured above the bottom of the toolbar.
+            return event.getRawY() < (mMaxOffset - mCurrentSheetOffset) + mMinOffset;
         }
 
         @Override
