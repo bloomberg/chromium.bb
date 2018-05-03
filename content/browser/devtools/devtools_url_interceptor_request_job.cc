@@ -120,6 +120,13 @@ DevToolsURLInterceptorRequestJob::SubRequest::SubRequest(
   request_->SetResponseHeadersCallback(
       devtools_interceptor_request_job->response_headers_callback_);
 
+  net::URLRequest* original_request =
+      devtools_interceptor_request_job_->request();
+  request_->set_attach_same_site_cookies(
+      original_request->attach_same_site_cookies());
+  request_->set_site_for_cookies(original_request->site_for_cookies());
+  request_->set_initiator(original_request->initiator());
+
   // Mimic the ResourceRequestInfoImpl of the original request.
   const ResourceRequestInfoImpl* resource_request_info =
       static_cast<const ResourceRequestInfoImpl*>(
