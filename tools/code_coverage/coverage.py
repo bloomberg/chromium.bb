@@ -68,6 +68,7 @@ import logging
 import os
 import re
 import shlex
+import shutil
 import subprocess
 import urllib2
 
@@ -487,6 +488,16 @@ def _GeneratePerFileLineByLineCoverageInHtml(binary_paths, profdata_file_path,
     subprocess_cmd.append('-ignore-filename-regex=%s' % ignore_filename_regex)
 
   subprocess.check_call(subprocess_cmd)
+
+  # llvm-cov creates "coverage" subdir in the output dir. We would like to use
+  # the platform name instead, as it simplifies the report dir structure when
+  # the same report is generated for different platforms.
+  default_report_subdir_path = os.path.join(OUTPUT_DIR, 'coverage')
+  platform_report_subdir_path = os.path.join(OUTPUT_DIR, _GetHostPlatform())
+  if os.path.exists(platform_report_subdir_path):
+    shutil.rmtree(platform_report_subdir_path)
+  os.rename(default_report_subdir_path, platform_report_subdir_path)
+
   logging.debug('Finished running "llvm-cov show" command')
 
 
@@ -743,7 +754,7 @@ def _GetCoverageHtmlReportPathForComponent(component_name):
 
 def _GetCoverageReportRootDirPath():
   """The root directory that contains all generated coverage html reports."""
-  return os.path.join(os.path.abspath(OUTPUT_DIR), 'coverage')
+  return os.path.join(os.path.abspath(OUTPUT_DIR), _GetHostPlatform())
 
 
 def _CreateCoverageProfileDataForTargets(targets, commands, jobs_count=None):
