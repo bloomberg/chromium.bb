@@ -1090,6 +1090,20 @@
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },
+      'linux-chromium-tests-staging-builder': {
+        'additional_compile_targets': [
+          'all'
+        ],
+        'test_suites': {
+          'scripts': 'check_network_annotations_script',
+        }
+      },
+      'linux-chromium-tests-staging-tests': {
+        'test_suites': {
+          'gtest_tests': 'chromium_linux_gtests',
+          'isolated_scripts': 'chromium_linux_rel_isolated_scripts',
+        },
+      },
       'Mac Builder (dbg) Goma Canary': {
         'additional_compile_targets': [
           'all',
