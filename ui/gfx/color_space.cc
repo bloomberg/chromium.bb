@@ -938,7 +938,7 @@ void ColorSpace::GetRangeAdjustMatrix(SkMatrix44* matrix) const {
   }
 }
 
-bool ColorSpace::ToSkYUVColorSpace(SkYUVColorSpace* out) {
+bool ColorSpace::ToSkYUVColorSpace(SkYUVColorSpace* out) const {
   if (range_ == RangeID::FULL) {
     *out = kJPEG_SkYUVColorSpace;
     return true;

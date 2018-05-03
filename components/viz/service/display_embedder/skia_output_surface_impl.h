@@ -25,6 +25,7 @@ class GLSurface;
 
 namespace gpu {
 class SyncPointClientState;
+class TextureBase;
 }
 
 namespace viz {
@@ -77,6 +78,9 @@ class SkiaOutputSurfaceImpl : public SkiaOutputSurface,
   // SkiaOutputSurface implementation:
   SkCanvas* GetSkCanvasForCurrentFrame() override;
   sk_sp<SkImage> MakePromiseSkImage(ResourceMetadata metadata) override;
+  sk_sp<SkImage> MakePromiseSkImageFromYUV(
+      std::vector<ResourceMetadata> metadatas,
+      SkYUVColorSpace yuv_color_space) override;
   gpu::SyncToken SkiaSwapBuffers(OutputSurfaceFrame frame) override;
   SkCanvas* BeginPaintRenderPass(const RenderPassId& id,
                                  const gfx::Size& surface_size,
@@ -104,6 +108,7 @@ class SkiaOutputSurfaceImpl : public SkiaOutputSurface,
   int32_t GetRouteID() const override;
 
  private:
+  class YUVResourceMetadata;
   void InitializeOnGpuThread(base::WaitableEvent* event);
   void DestroyOnGpuThread(base::WaitableEvent* event);
   void ReshapeOnGpuThread(const gfx::Size& size,
@@ -113,15 +118,21 @@ class SkiaOutputSurfaceImpl : public SkiaOutputSurface,
                           bool use_stencil,
                           SkSurfaceCharacterization* characterization,
                           base::WaitableEvent* event);
-  void SwapBuffersOnGpuThread(OutputSurfaceFrame frame,
-                              std::unique_ptr<SkDeferredDisplayList> ddl,
-                              uint64_t sync_fence_release);
+  void SwapBuffersOnGpuThread(
+      OutputSurfaceFrame frame,
+      std::unique_ptr<SkDeferredDisplayList> ddl,
+      std::vector<YUVResourceMetadata*> yuv_resource_metadatas,
+      uint64_t sync_fence_release);
   void FinishPaintRenderPassOnGpuThread(
       RenderPassId id,
       std::unique_ptr<SkDeferredDisplayList> ddl,
+      std::vector<YUVResourceMetadata*> yuv_resource_metadatas,
       uint64_t sync_fence_release);
   void RemoveRenderPassResourceOnGpuThread(std::vector<RenderPassId> ids);
   void RecreateRecorder();
+  void PreprocessYUVResources(
+      std::vector<YUVResourceMetadata*> yuv_resource_metadatas);
+  void BindOrCopyTextureIfNecessary(gpu::TextureBase* texture_base);
   void DidSwapBuffersCompleteOnClientThread(
       gpu::SwapBuffersCompleteParams params);
   void UpdateVSyncParametersOnClientThread(base::TimeTicks timebase,
@@ -131,11 +142,12 @@ class SkiaOutputSurfaceImpl : public SkiaOutputSurface,
 
   template <class T>
   class PromiseTextureHelper;
-
   // Fullfill callback for promise SkImage created from a resource.
   void OnPromiseTextureFullfill(const ResourceMetadata& metadata,
                                 GrBackendTexture* backend_texture);
-
+  // Fullfill callback for promise SkImage created from YUV resources.
+  void OnPromiseTextureFullfill(const YUVResourceMetadata& metadata,
+                                GrBackendTexture* backend_texture);
   // Fullfill callback for promise SkImage created from a render pass.
   void OnPromiseTextureFullfill(const RenderPassId id,
                                 GrBackendTexture* backend_texture);
@@ -170,6 +182,12 @@ class SkiaOutputSurfaceImpl : public SkiaOutputSurface,
 
   // Sync tokens for resources which are used for the current frame.
   std::vector<gpu::SyncToken> resource_sync_tokens_;
+
+  // YUV resource metadatas for the current frame or the current render pass.
+  // They should be preprocessed for playing recorded frame into a surface.
+  // TODO(penghuang): Remove it when Skia supports drawing YUV textures
+  // directly.
+  std::vector<YUVResourceMetadata*> yuv_resource_metadatas_;
 
   // The task runner for running task on the client (compositor) thread.
   scoped_refptr<base::SingleThreadTaskRunner> client_thread_task_runner_;

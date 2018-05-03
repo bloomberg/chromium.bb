@@ -17,6 +17,7 @@
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
+#include "components/viz/common/quads/yuv_video_draw_quad.h"
 #include "components/viz/common/resources/platform_color.h"
 #include "components/viz/common/resources/resource_fence.h"
 #include "components/viz/common/resources/resource_format_utils.h"
@@ -83,7 +84,7 @@ bool IsTextureResource(cc::DisplayResourceProvider* resource_provider,
 class SkiaRenderer::ScopedSkImageBuilder {
  public:
   ScopedSkImageBuilder(SkiaRenderer* skia_renderer, ResourceId resource_id);
-  ~ScopedSkImageBuilder();
+  ~ScopedSkImageBuilder() = default;
 
   const SkImage* sk_image() const { return sk_image_; }
 
@@ -115,17 +116,76 @@ SkiaRenderer::ScopedSkImageBuilder::ScopedSkImageBuilder(
     if (!image) {
       auto metadata =
           skia_renderer->lock_set_for_external_use_.LockResource(resource_id);
-      if (!metadata.mailbox.IsZero()) {
-        image = skia_renderer->skia_output_surface_->MakePromiseSkImage(
-            std::move(metadata));
-        DCHECK(image);
-      }
+      DCHECK(!metadata.mailbox.IsZero());
+      image = skia_renderer->skia_output_surface_->MakePromiseSkImage(
+          std::move(metadata));
+      DCHECK(image);
     }
     sk_image_ = image.get();
   }
 }
 
-SkiaRenderer::ScopedSkImageBuilder::~ScopedSkImageBuilder() = default;
+class SkiaRenderer::ScopedYUVSkImageBuilder {
+ public:
+  ScopedYUVSkImageBuilder(SkiaRenderer* skia_renderer,
+                          const YUVVideoDrawQuad* quad) {
+    DCHECK(skia_renderer->skia_output_surface_);
+    DCHECK(IsTextureResource(skia_renderer->resource_provider_,
+                             quad->y_plane_resource_id()));
+    DCHECK(IsTextureResource(skia_renderer->resource_provider_,
+                             quad->u_plane_resource_id()));
+    DCHECK(IsTextureResource(skia_renderer->resource_provider_,
+                             quad->v_plane_resource_id()));
+    DCHECK(quad->a_plane_resource_id() == kInvalidResourceId ||
+           IsTextureResource(skia_renderer->resource_provider_,
+                             quad->a_plane_resource_id()));
+
+    YUVIds ids(quad->y_plane_resource_id(), quad->u_plane_resource_id(),
+               quad->v_plane_resource_id(), quad->a_plane_resource_id());
+    auto& image = skia_renderer->yuv_promise_images_[std::move(ids)];
+
+    if (!image) {
+      auto yuv_color_space = kRec601_SkYUVColorSpace;
+      quad->video_color_space.ToSkYUVColorSpace(&yuv_color_space);
+
+      std::vector<ResourceMetadata> metadatas;
+      bool is_yuv = quad->u_plane_resource_id() != quad->v_plane_resource_id();
+      metadatas.reserve(is_yuv ? 3 : 2);
+      auto y_metadata = skia_renderer->lock_set_for_external_use_.LockResource(
+          quad->y_plane_resource_id());
+      metadatas.push_back(std::move(y_metadata));
+      auto u_metadata = skia_renderer->lock_set_for_external_use_.LockResource(
+          quad->u_plane_resource_id());
+      metadatas.push_back(std::move(u_metadata));
+      if (is_yuv) {
+        auto v_metadata =
+            skia_renderer->lock_set_for_external_use_.LockResource(
+                quad->v_plane_resource_id());
+        metadatas.push_back(std::move(v_metadata));
+      }
+
+      if (quad->a_plane_resource_id() != kInvalidResourceId) {
+        // TODO(penghuang): Handle alpha channel when Skia supports YUVA format.
+        NOTIMPLEMENTED();
+      }
+
+      image = skia_renderer->skia_output_surface_->MakePromiseSkImageFromYUV(
+          std::move(metadatas), yuv_color_space);
+      DCHECK(image);
+    }
+    sk_image_ = image.get();
+  }
+
+  ~ScopedYUVSkImageBuilder() = default;
+
+  const SkImage* sk_image() const { return sk_image_; }
+
+ private:
+  std::unique_ptr<cc::DisplayResourceProvider::ScopedReadLockSkImage> lock_;
+  SkImage* sk_image_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedYUVSkImageBuilder);
+};
 
 SkiaRenderer::SkiaRenderer(const RendererSettings* settings,
                            OutputSurface* output_surface,
@@ -241,6 +301,7 @@ void SkiaRenderer::SwapBuffers(std::vector<ui::LatencyInfo> latency_info,
     auto sync_token =
         skia_output_surface_->SkiaSwapBuffers(std::move(output_frame));
     promise_images_.clear();
+    yuv_promise_images_.clear();
     lock_set_for_external_use_.UnlockResources(sync_token);
   } else {
     // TODO(penghuang): remove it when SkiaRenderer and SkDDL are always used.
@@ -508,8 +569,15 @@ void SkiaRenderer::DoDrawQuad(const DrawQuad* quad,
       // reaching a direct renderer.
       NOTREACHED();
       break;
-    case DrawQuad::INVALID:
     case DrawQuad::YUV_VIDEO_CONTENT:
+      if (skia_output_surface_) {
+        DrawYUVVideoQuad(YUVVideoDrawQuad::MaterialCast(quad));
+      } else {
+        DrawUnsupportedQuad(quad);
+        NOTIMPLEMENTED();
+      }
+      break;
+    case DrawQuad::INVALID:
     case DrawQuad::STREAM_VIDEO_CONTENT:
       DrawUnsupportedQuad(quad);
       NOTREACHED();
@@ -650,6 +718,26 @@ void SkiaRenderer::DrawTileQuad(const TileDrawQuad* quad) {
   SkRect uv_rect = gfx::RectFToSkRect(visible_tex_coord_rect);
   current_paint_.setFilterQuality(
       quad->nearest_neighbor ? kNone_SkFilterQuality : kLow_SkFilterQuality);
+  current_canvas_->drawImageRect(image, uv_rect,
+                                 gfx::RectFToSkRect(visible_quad_vertex_rect),
+                                 &current_paint_);
+}
+
+void SkiaRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad) {
+  DCHECK(resource_provider_);
+  ScopedYUVSkImageBuilder builder(this, quad);
+  const SkImage* image = builder.sk_image();
+  if (!image)
+    return;
+  gfx::RectF visible_tex_coord_rect = cc::MathUtil::ScaleRectProportional(
+      quad->ya_tex_coord_rect, gfx::RectF(quad->rect),
+      gfx::RectF(quad->visible_rect));
+  gfx::RectF visible_quad_vertex_rect = cc::MathUtil::ScaleRectProportional(
+      QuadVertexRect(), gfx::RectF(quad->rect), gfx::RectF(quad->visible_rect));
+
+  SkRect uv_rect = gfx::RectFToSkRect(visible_tex_coord_rect);
+  // TODO(penghuang): figure out how to set correct filter quality.
+  current_paint_.setFilterQuality(kLow_SkFilterQuality);
   current_canvas_->drawImageRect(image, uv_rect,
                                  gfx::RectFToSkRect(visible_quad_vertex_rect),
                                  &current_paint_);
@@ -870,6 +958,7 @@ void SkiaRenderer::FinishDrawingQuadList() {
     if (is_drawing_render_pass_) {
       gpu::SyncToken sync_token = skia_output_surface_->FinishPaintRenderPass();
       promise_images_.clear();
+      yuv_promise_images_.clear();
       lock_set_for_external_use_.UnlockResources(sync_token);
       is_drawing_render_pass_ = false;
     }

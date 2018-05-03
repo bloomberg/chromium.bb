@@ -200,7 +200,7 @@ class COLOR_SPACE_EXPORT ColorSpace {
 
   // For YUV color spaces, return the closest SkYUVColorSpace.
   // Returns true if a close match is found.
-  bool ToSkYUVColorSpace(SkYUVColorSpace* out);
+  bool ToSkYUVColorSpace(SkYUVColorSpace* out) const;
 
   void GetPrimaryMatrix(SkMatrix44* to_XYZD50) const;
   bool GetTransferFunction(SkColorSpaceTransferFn* fn) const;
