@@ -422,6 +422,7 @@ class DriveTestVolume : public TestVolume {
                        const std::string& target_name,
                        const base::Time& modification_time) {
     google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
+
     std::unique_ptr<google_apis::FileResource> entry;
     fake_drive_service_->AddNewDirectory(
         parent_id, target_name, drive::AddNewDirectoryOptions(),
@@ -436,6 +437,7 @@ class DriveTestVolume : public TestVolume {
     base::RunLoop().RunUntilIdle();
     ASSERT_TRUE(error == google_apis::HTTP_SUCCESS);
     ASSERT_TRUE(entry);
+
     CheckForUpdates();
   }
 
