@@ -4,10 +4,15 @@
 
 module media.mojom;
 
-import "media/mojo/interfaces/media_types.mojom";
+import "gpu/ipc/common/mailbox_holder.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/values.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
+
+enum VideoCapturePixelFormat {
+  I420,
+  Y16
+};
 
 enum ResolutionChangePolicy {
   FIXED_RESOLUTION,
@@ -41,15 +46,10 @@ enum VideoCaptureTransportType {
   OTHER_TRANSPORT
 };
 
-union VideoBufferHandle {
-  handle<shared_buffer> shared_buffer_handle;
-  media.mojom.MailboxVideoFrameData mailbox_handles;
-};
-
 struct VideoCaptureFormat {
   gfx.mojom.Size frame_size;
   float frame_rate;
-  VideoPixelFormat pixel_format;
+  VideoCapturePixelFormat pixel_format;
 };
 
 struct VideoCaptureParams {
@@ -61,7 +61,7 @@ struct VideoCaptureParams {
 struct VideoFrameInfo{
   mojo_base.mojom.TimeDelta timestamp;
   mojo_base.mojom.DictionaryValue metadata;
-  VideoPixelFormat pixel_format;
+  VideoCapturePixelFormat pixel_format;
   gfx.mojom.Size coded_size;
   gfx.mojom.Rect visible_rect;
 };
@@ -86,3 +86,14 @@ struct VideoCaptureDeviceInfo {
   VideoCaptureDeviceDescriptor descriptor;
   array<VideoCaptureFormat> supported_formats;
 };
+
+struct MailboxBufferHandleSet {
+  // Size must be kept in sync with media::VideoFrame::kMaxPlanes.
+  array<gpu.mojom.MailboxHolder, 4> mailbox_holder;
+};
+
+union VideoBufferHandle {
+  handle<shared_buffer> shared_buffer_handle;
+  MailboxBufferHandleSet mailbox_handles;
+};
+

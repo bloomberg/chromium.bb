@@ -77,10 +77,10 @@ struct VideoCaptureImpl::BufferContext
   }
 
   void InitializeFromMailbox(
-      media::mojom::MailboxVideoFrameDataPtr mailbox_data) {
+      media::mojom::MailboxBufferHandleSetPtr mailbox_handles) {
     DCHECK_EQ(media::VideoFrame::kMaxPlanes,
-              mailbox_data->mailbox_holder.size());
-    mailbox_holders_ = std::move(mailbox_data->mailbox_holder);
+              mailbox_handles->mailbox_holder.size());
+    mailbox_holders_ = std::move(mailbox_handles->mailbox_holder);
   }
 
   friend class base::RefCountedThreadSafe<BufferContext>;

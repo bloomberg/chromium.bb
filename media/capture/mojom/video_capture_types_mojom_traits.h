@@ -32,6 +32,15 @@ struct EnumTraits<media::mojom::PowerLineFrequency, media::PowerLineFrequency> {
 };
 
 template <>
+struct EnumTraits<media::mojom::VideoCapturePixelFormat,
+                  media::VideoPixelFormat> {
+  static media::mojom::VideoCapturePixelFormat ToMojom(
+      media::VideoPixelFormat input);
+  static bool FromMojom(media::mojom::VideoCapturePixelFormat input,
+                        media::VideoPixelFormat* output);
+};
+
+template <>
 struct EnumTraits<media::mojom::VideoCaptureApi, media::VideoCaptureApi> {
   static media::mojom::VideoCaptureApi ToMojom(media::VideoCaptureApi input);
   static bool FromMojom(media::mojom::VideoCaptureApi input,

@@ -40,10 +40,6 @@ class MockVideoCaptureControllerEventHandler
                     media::mojom::VideoBufferHandlePtr* buffer_handle,
                     int length,
                     int buffer_id));
-  MOCK_METHOD3(DoOnNewMailboxHolderBufferHandle,
-               void(VideoCaptureControllerID id,
-                    int buffer_id,
-                    media::mojom::MailboxVideoFrameDataPtr* texture_handles));
   MOCK_METHOD2(OnBufferDestroyed,
                void(VideoCaptureControllerID, int buffer_id));
   MOCK_METHOD3(OnBufferReady,
