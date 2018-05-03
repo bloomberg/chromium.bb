@@ -21,6 +21,7 @@
 #include "content/public/common/content_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/web/web_fullscreen_options.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
@@ -218,6 +219,169 @@ IN_PROC_BROWSER_TEST_F(FullscreenControlViewTest,
   ASSERT_FALSE(host->IsVisible());
 
   ASSERT_TRUE(browser_view->IsFullscreen());
+}
+
+#if defined(OS_MACOSX)
+// Entering fullscreen is flaky on Mac: http://crbug.com/824517
+#define MAYBE_TouchPopupInteraction DISABLED_TouchPopupInteraction
+#else
+#define MAYBE_TouchPopupInteraction TouchPopupInteraction
+#endif
+IN_PROC_BROWSER_TEST_F(FullscreenControlViewTest, MAYBE_TouchPopupInteraction) {
+  EnterActiveTabFullscreen();
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
+  ASSERT_TRUE(browser_view->IsFullscreen());
+
+  FullscreenControlHost* host = GetFullscreenControlHost();
+  host->Hide(false);
+  ASSERT_FALSE(host->IsVisible());
+
+  // Simulate a short tap that doesn't trigger the popup.
+  ui::TouchEvent touch_event(
+      ui::ET_TOUCH_PRESSED, gfx::Point(1, 1), ui::EventTimeForNow(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  host->OnTouchEvent(&touch_event);
+
+  touch_event = ui::TouchEvent(
+      ui::ET_TOUCH_RELEASED, gfx::Point(1, 1), ui::EventTimeForNow(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  host->OnTouchEvent(&touch_event);
+
+  ASSERT_FALSE(host->IsVisible());
+
+  // Simulate a press-and-hold.
+  touch_event = ui::TouchEvent(
+      ui::ET_TOUCH_PRESSED, gfx::Point(1, 1), ui::EventTimeForNow(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  host->OnTouchEvent(&touch_event);
+
+  ui::GestureEvent gesture(1, 1, 0, ui::EventTimeForNow(),
+                           ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
+  host->OnGestureEvent(&gesture);
+
+  // Wait until the popup is fully shown then release the touch.
+  RunLoopUntilVisibilityChanges();
+  touch_event = ui::TouchEvent(
+      ui::ET_TOUCH_RELEASED, gfx::Point(1, 1), ui::EventTimeForNow(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  host->OnTouchEvent(&touch_event);
+
+  ASSERT_TRUE(host->IsVisible());
+  // Wait for the popup to time out.
+  RunLoopUntilVisibilityChanges();
+  ASSERT_FALSE(host->IsVisible());
+
+  // Simulate a press-and-hold again.
+  touch_event = ui::TouchEvent(
+      ui::ET_TOUCH_PRESSED, gfx::Point(1, 1), ui::EventTimeForNow(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  host->OnTouchEvent(&touch_event);
+
+  gesture =
+      ui::GestureEvent(1, 1, 0, ui::EventTimeForNow(),
+                       ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
+  host->OnGestureEvent(&gesture);
+
+  RunLoopUntilVisibilityChanges();
+
+  touch_event = ui::TouchEvent(
+      ui::ET_TOUCH_RELEASED, gfx::Point(1, 1), ui::EventTimeForNow(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  host->OnTouchEvent(&touch_event);
+  ASSERT_TRUE(host->IsVisible());
+
+  // Simulate pressing the button.
+  touch_event = ui::TouchEvent(
+      ui::ET_TOUCH_PRESSED, gfx::Point(1, 1), ui::EventTimeForNow(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  GetFullscreenControlView()->ButtonPressed(GetFullscreenExitButton(),
+                                            touch_event);
+
+  ASSERT_FALSE(host->IsVisible());
+  ASSERT_FALSE(browser_view->IsFullscreen());
+}
+
+#if defined(OS_MACOSX)
+// Entering fullscreen is flaky on Mac: http://crbug.com/824517
+#define MAYBE_MouseAndTouchInteraction_NoInterference \
+  DISABLED_MouseAndTouchInteraction_NoInterference
+#else
+#define MAYBE_MouseAndTouchInteraction_NoInterference \
+  MouseAndTouchInteraction_NoInterference
+#endif
+IN_PROC_BROWSER_TEST_F(FullscreenControlViewTest,
+                       MAYBE_MouseAndTouchInteraction_NoInterference) {
+  EnterActiveTabFullscreen();
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
+  ASSERT_TRUE(browser_view->IsFullscreen());
+
+  FullscreenControlHost* host = GetFullscreenControlHost();
+  host->Hide(false);
+  ASSERT_FALSE(host->IsVisible());
+
+  // Move cursor to the top.
+  ui::MouseEvent mouse_move(ui::ET_MOUSE_MOVED, gfx::Point(1, 1), gfx::Point(),
+                            base::TimeTicks(), 0, 0);
+  host->OnMouseEvent(&mouse_move);
+  RunLoopUntilVisibilityChanges();
+  ASSERT_TRUE(host->IsVisible());
+
+  // Simulate a press-and-hold.
+  ui::TouchEvent touch_event(
+      ui::ET_TOUCH_PRESSED, gfx::Point(1, 1), ui::EventTimeForNow(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  host->OnTouchEvent(&touch_event);
+  ui::GestureEvent gesture(1, 1, 0, ui::EventTimeForNow(),
+                           ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
+  host->OnGestureEvent(&gesture);
+
+  // Move cursor out of the buffer area, which should hide the exit UI.
+  mouse_move = ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(2, 1000),
+                              gfx::Point(), base::TimeTicks(), 0, 0);
+  host->OnMouseEvent(&mouse_move);
+  RunLoopUntilVisibilityChanges();
+  ASSERT_FALSE(host->IsVisible());
+
+  // Release the touch, which should have no effect.
+  touch_event = ui::TouchEvent(
+      ui::ET_TOUCH_RELEASED, gfx::Point(1, 1), ui::EventTimeForNow(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  host->OnTouchEvent(&touch_event);
+  ASSERT_FALSE(host->IsVisible());
+
+  // Simulate a press-and-hold to trigger the UI.
+  touch_event = ui::TouchEvent(
+      ui::ET_TOUCH_PRESSED, gfx::Point(1, 1), ui::EventTimeForNow(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  host->OnTouchEvent(&touch_event);
+  gesture =
+      ui::GestureEvent(1, 1, 0, ui::EventTimeForNow(),
+                       ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
+  host->OnGestureEvent(&gesture);
+  RunLoopUntilVisibilityChanges();
+  ASSERT_TRUE(host->IsVisible());
+
+  // Move the cursor to the top.
+  mouse_move = ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(1, 1),
+                              gfx::Point(), base::TimeTicks(), 0, 0);
+  host->OnMouseEvent(&mouse_move);
+  ASSERT_TRUE(host->IsVisible());
+
+  // Move the cursor out of the buffer area, which will have no effect.
+  mouse_move = ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(2, 1000),
+                              gfx::Point(), base::TimeTicks(), 0, 0);
+  host->OnMouseEvent(&mouse_move);
+  // This simply times out.
+  RunLoopUntilVisibilityChanges();
+  ASSERT_TRUE(host->IsVisible());
+
+  // Release the touch. The UI should then timeout.
+  touch_event = ui::TouchEvent(
+      ui::ET_TOUCH_RELEASED, gfx::Point(1, 1), ui::EventTimeForNow(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  host->OnTouchEvent(&touch_event);
+  RunLoopUntilVisibilityChanges();
+  ASSERT_FALSE(host->IsVisible());
 }
 
 #if defined(OS_MACOSX)
