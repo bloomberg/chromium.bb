@@ -5,7 +5,6 @@
 module video_capture.mojom;
 
 import "media/capture/mojom/video_capture_types.mojom";
-import "media/mojo/interfaces/media_types.mojom";
 
 // Empty interface for encapsulating scoped access permission to a Buffer.
 interface ScopedAccessPermission {};

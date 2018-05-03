@@ -4,8 +4,6 @@
 
 module video_capture.mojom;
 
-import "media/mojo/interfaces/media_types.mojom";
-
 // An interface for providing buffer info updates to the producer of
 // video frames for the associated |VirtualDevice| interface.
 interface Producer {

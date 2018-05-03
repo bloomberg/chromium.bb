@@ -8,6 +8,8 @@
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/mirroring/service/fake_video_capture_host.h"
+#include "media/base/video_frame.h"
+#include "media/base/video_frame_metadata.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

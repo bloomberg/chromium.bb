@@ -83,6 +83,65 @@ bool EnumTraits<media::mojom::PowerLineFrequency, media::PowerLineFrequency>::
 }
 
 // static
+media::mojom::VideoCapturePixelFormat
+EnumTraits<media::mojom::VideoCapturePixelFormat,
+           media::VideoPixelFormat>::ToMojom(media::VideoPixelFormat input) {
+  switch (input) {
+    case media::VideoPixelFormat::PIXEL_FORMAT_I420:
+      return media::mojom::VideoCapturePixelFormat::I420;
+    case media::VideoPixelFormat::PIXEL_FORMAT_Y16:
+      return media::mojom::VideoCapturePixelFormat::Y16;
+    case media::VideoPixelFormat::PIXEL_FORMAT_UNKNOWN:
+    case media::VideoPixelFormat::PIXEL_FORMAT_YV12:
+    case media::VideoPixelFormat::PIXEL_FORMAT_I422:
+    case media::VideoPixelFormat::PIXEL_FORMAT_I420A:
+    case media::VideoPixelFormat::PIXEL_FORMAT_I444:
+    case media::VideoPixelFormat::PIXEL_FORMAT_NV12:
+    case media::VideoPixelFormat::PIXEL_FORMAT_NV21:
+    case media::VideoPixelFormat::PIXEL_FORMAT_UYVY:
+    case media::VideoPixelFormat::PIXEL_FORMAT_YUY2:
+    case media::VideoPixelFormat::PIXEL_FORMAT_ARGB:
+    case media::VideoPixelFormat::PIXEL_FORMAT_XRGB:
+    case media::VideoPixelFormat::PIXEL_FORMAT_RGB24:
+    case media::VideoPixelFormat::PIXEL_FORMAT_RGB32:
+    case media::VideoPixelFormat::PIXEL_FORMAT_MJPEG:
+    case media::VideoPixelFormat::PIXEL_FORMAT_MT21:
+    case media::VideoPixelFormat::PIXEL_FORMAT_YUV420P9:
+    case media::VideoPixelFormat::PIXEL_FORMAT_YUV420P10:
+    case media::VideoPixelFormat::PIXEL_FORMAT_YUV422P9:
+    case media::VideoPixelFormat::PIXEL_FORMAT_YUV422P10:
+    case media::VideoPixelFormat::PIXEL_FORMAT_YUV444P9:
+    case media::VideoPixelFormat::PIXEL_FORMAT_YUV444P10:
+    case media::VideoPixelFormat::PIXEL_FORMAT_YUV420P12:
+    case media::VideoPixelFormat::PIXEL_FORMAT_YUV422P12:
+    case media::VideoPixelFormat::PIXEL_FORMAT_YUV444P12:
+      // Any pixel format requested via a media::VideoPixelFormat that is not
+      // supported by the video capture service is interpreted as requesting
+      // I420.
+      return media::mojom::VideoCapturePixelFormat::I420;
+  }
+  NOTREACHED();
+  return media::mojom::VideoCapturePixelFormat::I420;
+}
+
+// static
+bool EnumTraits<media::mojom::VideoCapturePixelFormat,
+                media::VideoPixelFormat>::
+    FromMojom(media::mojom::VideoCapturePixelFormat input,
+              media::VideoPixelFormat* output) {
+  switch (input) {
+    case media::mojom::VideoCapturePixelFormat::I420:
+      *output = media::VideoPixelFormat::PIXEL_FORMAT_I420;
+      return true;
+    case media::mojom::VideoCapturePixelFormat::Y16:
+      *output = media::VideoPixelFormat::PIXEL_FORMAT_Y16;
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
+// static
 media::mojom::VideoCaptureApi
 EnumTraits<media::mojom::VideoCaptureApi, media::VideoCaptureApi>::ToMojom(
     media::VideoCaptureApi input) {

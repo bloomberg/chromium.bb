@@ -5,7 +5,6 @@
 module video_capture.mojom;
 
 import "media/capture/mojom/video_capture_types.mojom";
-import "media/mojo/interfaces/media_types.mojom";
 import "services/video_capture/public/mojom/producer.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
@@ -35,7 +34,7 @@ interface VirtualDevice {
   // |Producer.OnNewBufferHandle| and/or |Producer.OnBufferRetired|
   // will be invoked.
   RequestFrameBuffer(gfx.mojom.Size dimension,
-                 media.mojom.VideoPixelFormat pixel_format)
+                 media.mojom.VideoCapturePixelFormat pixel_format)
       => (int32 buffer_id);
 
   // Called to indicate that a video frame is ready in the given buffer
