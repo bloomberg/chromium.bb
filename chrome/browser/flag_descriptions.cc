@@ -1648,6 +1648,11 @@ const char kTouchAdjustmentDescription[] =
     "Refine the position of a touch gesture in order to compensate for touches "
     "having poor resolution compared to a mouse.";
 
+const char kTouchableAppContextMenuName[] = "Touchable App Context Menu";
+const char kTouchableAppContextMenuDescription[] =
+    "Enable the touchable app context menu, which enlarges app context menus "
+    "in the Launcher and Shelf to make room for new features.";
+
 const char kTouchDragDropName[] = "Touch initiated drag and drop";
 const char kTouchDragDropDescription[] =
     "Touch drag and drop can be initiated through long press on a draggable "
