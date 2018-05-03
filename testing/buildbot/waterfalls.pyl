@@ -163,6 +163,13 @@
         'use_swarming': False,
         'os_type': 'android',
       },
+      'Android WebView O (dbg)': {
+        'test_suites': {
+          'cts_tests': 'android_o_cts_tests',
+        },
+        'use_swarming': False,
+        'os_type': 'android',
+      },
       'KitKat Phone Tester (dbg)': {
         'test_suites': {
           'gtest_tests': 'chromium_android_gtests',

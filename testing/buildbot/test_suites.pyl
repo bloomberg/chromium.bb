@@ -38,6 +38,11 @@
     'platform': 'N',
   },
 
+  'android_o_cts_tests': {
+    'arch': 'arm64',
+    'platform': 'O',
+  },
+
   'android_fyi_instrumentation_tests': {
     'chrome_public_test_apk': {},
     'chrome_sync_shell_test_apk': {},

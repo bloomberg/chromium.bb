@@ -514,6 +514,14 @@
       }
     ]
   },
+  "Android WebView O (dbg)": {
+    "cts_tests": [
+      {
+        "arch": "arm64",
+        "platform": "O"
+      }
+    ]
+  },
   "Android arm Builder (dbg)": {
     "additional_compile_targets": [
       "dump_syms",
