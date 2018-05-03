@@ -40,13 +40,14 @@ const base::Feature kAsyncWheelEvents{"AsyncWheelEvents",
 const base::Feature kAudioServiceOutOfProcess{
     "AudioServiceOutOfProcess", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Allows swipe left/right from touchpad change browser navigation.
+// Allows swipe left/right from touchpad change browser navigation. Currently
+// only enabled by default on CrOS.
 const base::Feature kTouchpadOverscrollHistoryNavigation {
   "TouchpadOverscrollHistoryNavigation",
-#if defined(OS_WIN) || defined(OS_LINUX)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#else
+#if defined(OS_CHROMEOS)
       base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 };
 
