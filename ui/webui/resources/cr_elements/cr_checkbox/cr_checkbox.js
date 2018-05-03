@@ -5,7 +5,9 @@
 /**
  * @fileoverview 'cr-checkbox' is a component similar to native checkbox. It
  * fires a 'change' event *only* when its state changes as a result of a user
- * interaction.
+ * interaction. By default it assumes there will be child(ren) passed in to be
+ * used as labels. If no label will be provided, a .no-label class should be
+ * added to hide the spacing between the checkbox and the label container.
  */
 Polymer({
   is: 'cr-checkbox',
@@ -71,9 +73,21 @@ Polymer({
     this.$$('paper-ripple').holdDown = false;
   },
 
-  /** @private */
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  shouldHandleEvent_: function(e) {
+    // Actions on a link within the label should not change checkbox state.
+    return !this.disabled && e.target.tagName != 'A';
+  },
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
   onClick_: function(e) {
-    if (this.disabled)
+    if (!this.shouldHandleEvent_(e))
       return;
 
     // Prevent |click| event from bubbling. It can cause parents of this
@@ -104,13 +118,11 @@ Polymer({
    * @private
    */
   onKeyPress_: function(e) {
-    if (this.disabled)
+    if (!this.shouldHandleEvent_(e) || (e.code != 'Space' && e.code != 'Enter'))
       return;
 
-    if (e.code == 'Space' || e.code == 'Enter') {
-      e.preventDefault();
-      this.toggleState_(true);
-    }
+    e.preventDefault();
+    this.toggleState_(true);
   },
 
   // customize the element's ripple

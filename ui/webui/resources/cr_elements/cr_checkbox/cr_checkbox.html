@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-behaviors/paper-ripple-behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 
@@ -7,14 +8,16 @@
   <template>
     <style>
       :host {
+        align-items: center;
         cursor: pointer;
-        line-height: 0;
+        display: flex;
         outline: none;
         user-select: none;
       }
 
       :host([disabled]) {
         cursor: initial;
+        opacity: 0.38;
         pointer-events: none;
       }
 
@@ -22,19 +25,17 @@
         background: none;
         border: none;
         cursor: pointer;
-        display: inline-block;
         height: 16px;
         margin: 0;
         outline: none;
         padding: 0;
         position: relative;
         transform: none;  /* Checkboxes shouldn't flip even in RTL. */
-        vertical-align: middle;
         width: 16px;
       }
 
       #checkmark {
-        border: 2px solid var(--secondary-text-color);
+        border: 2px solid var(--google-grey-700);
         border-radius: 2px;
         display: block;
         height: 12px;
@@ -58,8 +59,8 @@
       }
 
       :host([checked]) #checkmark {
-        background: var(--google-blue-500);
-        border-color: var(--google-blue-500);
+        background: var(--google-blue-600);
+        border-color: var(--google-blue-600);
       }
 
       :host([checked]) #checkmark::after {
@@ -70,10 +71,13 @@
       }
 
       paper-ripple {
-        color: var(--primary-text-color);
+        color: var(--cr-controls-background-grey);
         height: 40px;
         left: -12px;
-        opacity: 0.5;
+        /* TODO(scottchen): this depends on opacity: 0.4 to compound with
+           paper-ripple's internal opacity: 0.25 to become 0.1. Use custom
+           property instead once paper-ripple supports it. */
+        opacity: 0.4;
         pointer-events: none;
         top: -12px;
         transition: color linear 80ms;
@@ -81,12 +85,20 @@
       }
 
       :host([checked]) paper-ripple {
-        color: var(--primary-color);
+        color: var(--google-blue-600);
       }
 
       :host-context([dir=rtl]) paper-ripple {
         left: auto;
         right: -12px;
+      }
+
+      #label-container {
+        -webkit-padding-start: 20px;
+      }
+
+      :host(.no-label) #label-container {
+        display: none;
       }
     </style>
     <!-- Mousing down then moving cursor out of this element should not trigger
@@ -95,6 +107,7 @@
     <button id="checkbox" tabindex="-1">
       <span id="checkmark"></span>
     </button>
+    <div id="label-container"><slot></slot></div>
   </template>
   <script src="cr_checkbox.js"></script>
 </dom-module>

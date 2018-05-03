@@ -175,9 +175,8 @@
           on-mousedown="onItemMousedown_"
           on-click="onItemClick_">
         <cr-checkbox id="checkbox" checked="[[selected]]" unresolved
-            on-mousedown="onCheckboxClick_"
-            on-keydown="onCheckboxClick_"
-            on-change="onCheckboxChange_"
+            on-mousedown="onCheckboxClick_" on-keydown="onCheckboxClick_"
+            on-change="onCheckboxChange_" class="no-label"
             hidden="[[selectionNotAllowed_]]"
             disabled="[[selectionNotAllowed_]]"
             aria-label$="[[getEntrySummary_(item)]]"></cr-checkbox>
