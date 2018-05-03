@@ -1055,42 +1055,47 @@ void ProfileIOData::Init(
 
   builder->set_ssl_config_service(profile_params_->ssl_config_service);
 
-  std::unique_ptr<ChromeNetworkDelegate> chrome_network_delegate(
-      new ChromeNetworkDelegate(
+  ChromeNetworkDelegate* chrome_network_delegate_unowned = nullptr;
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    std::unique_ptr<ChromeNetworkDelegate> chrome_network_delegate(
+        new ChromeNetworkDelegate(
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-          io_thread_globals->extension_event_router_forwarder.get(),
+            io_thread_globals->extension_event_router_forwarder.get(),
 #else
-          NULL,
+            NULL,
 #endif
-          &enable_referrers_));
+            &enable_referrers_));
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  chrome_network_delegate->set_extension_info_map(
-      profile_params_->extension_info_map.get());
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableExtensionsHttpThrottling)) {
-    extension_throttle_manager_.reset(
-        new extensions::ExtensionThrottleManager());
-  }
+    chrome_network_delegate->set_extension_info_map(
+        profile_params_->extension_info_map.get());
+    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableExtensionsHttpThrottling)) {
+      extension_throttle_manager_.reset(
+          new extensions::ExtensionThrottleManager());
+    }
 #endif
 
-  chrome_network_delegate->set_profile(profile_params_->profile);
-  chrome_network_delegate->set_profile_path(profile_params_->path);
-  chrome_network_delegate->set_cookie_settings(
-      profile_params_->cookie_settings.get());
-  chrome_network_delegate->set_force_google_safe_search(
-      &force_google_safesearch_);
-  chrome_network_delegate->set_force_youtube_restrict(&force_youtube_restrict_);
-  chrome_network_delegate->set_allowed_domains_for_apps(
-      &allowed_domains_for_apps_);
-  chrome_network_delegate->set_data_use_aggregator(
-      io_thread_globals->data_use_aggregator.get(), IsOffTheRecord());
+    chrome_network_delegate->set_profile(profile_params_->profile);
+    chrome_network_delegate->set_profile_path(profile_params_->path);
+    chrome_network_delegate->set_cookie_settings(
+        profile_params_->cookie_settings.get());
+    chrome_network_delegate->set_force_google_safe_search(
+        &force_google_safesearch_);
+    chrome_network_delegate->set_force_youtube_restrict(
+        &force_youtube_restrict_);
+    chrome_network_delegate->set_allowed_domains_for_apps(
+        &allowed_domains_for_apps_);
+    chrome_network_delegate->set_data_use_aggregator(
+        io_thread_globals->data_use_aggregator.get(), IsOffTheRecord());
 
-  ChromeNetworkDelegate* chrome_network_delegate_unowned =
-      chrome_network_delegate.get();
+    chrome_network_delegate_unowned = chrome_network_delegate.get();
 
-  std::unique_ptr<net::NetworkDelegate> network_delegate =
-      ConfigureNetworkDelegate(profile_params_->io_thread,
-                               std::move(chrome_network_delegate));
+    std::unique_ptr<net::NetworkDelegate> network_delegate =
+        ConfigureNetworkDelegate(profile_params_->io_thread,
+                                 std::move(chrome_network_delegate));
+
+    builder->set_network_delegate(std::move(network_delegate));
+  }
 
   builder->set_shared_host_resolver(
       io_thread_globals->system_request_context->host_resolver());
@@ -1099,8 +1104,6 @@ void ProfileIOData::Init(
       io_thread_globals->system_request_context->http_auth_handler_factory());
 
   io_thread->SetUpProxyService(builder.get());
-
-  builder->set_network_delegate(std::move(network_delegate));
 
   if (!IsOffTheRecord())
     builder->set_transport_security_persister_path(profile_params_->path);
@@ -1218,7 +1221,8 @@ void ProfileIOData::Init(
             std::move(builder), &main_request_context_);
   }
 
-  if (chrome_network_delegate_unowned->domain_reliability_monitor()) {
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService) &&
+      chrome_network_delegate_unowned->domain_reliability_monitor()) {
     // Save a pointer to shut down Domain Reliability cleanly before the
     // URLRequestContext is dismantled.
     domain_reliability_monitor_unowned_ =
