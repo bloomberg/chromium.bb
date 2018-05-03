@@ -27,7 +27,7 @@ ContentInputDelegate::~ContentInputDelegate() = default;
 
 void ContentInputDelegate::OnContentEnter(
     const gfx::PointF& normalized_hit_point) {
-  SendGestureToContent(
+  SendGestureToTarget(
       MakeMouseEvent(blink::WebInputEvent::kMouseEnter, normalized_hit_point));
 }
 
@@ -37,25 +37,25 @@ void ContentInputDelegate::OnContentLeave() {
   // Layout. Sending a mouse leave event at 0,0 will result continuous
   // MouseMove events sent to the content if the content keeps relayout itself.
   // See crbug.com/762573 for details.
-  SendGestureToContent(
+  SendGestureToTarget(
       MakeMouseEvent(blink::WebInputEvent::kMouseLeave, kOutOfBoundsPoint));
 }
 
 void ContentInputDelegate::OnContentMove(
     const gfx::PointF& normalized_hit_point) {
-  SendGestureToContent(
+  SendGestureToTarget(
       MakeMouseEvent(blink::WebInputEvent::kMouseMove, normalized_hit_point));
 }
 
 void ContentInputDelegate::OnContentDown(
     const gfx::PointF& normalized_hit_point) {
-  SendGestureToContent(
+  SendGestureToTarget(
       MakeMouseEvent(blink::WebInputEvent::kMouseDown, normalized_hit_point));
 }
 
 void ContentInputDelegate::OnContentUp(
     const gfx::PointF& normalized_hit_point) {
-  SendGestureToContent(
+  SendGestureToTarget(
       MakeMouseEvent(blink::WebInputEvent::kMouseUp, normalized_hit_point));
 }
 
@@ -87,28 +87,28 @@ void ContentInputDelegate::OnContentFlingCancel(
     std::unique_ptr<blink::WebGestureEvent> gesture,
     const gfx::PointF& normalized_hit_point) {
   UpdateGesture(normalized_hit_point, *gesture);
-  SendGestureToContent(std::move(gesture));
+  SendGestureToTarget(std::move(gesture));
 }
 
 void ContentInputDelegate::OnContentScrollBegin(
     std::unique_ptr<blink::WebGestureEvent> gesture,
     const gfx::PointF& normalized_hit_point) {
   UpdateGesture(normalized_hit_point, *gesture);
-  SendGestureToContent(std::move(gesture));
+  SendGestureToTarget(std::move(gesture));
 }
 
 void ContentInputDelegate::OnContentScrollUpdate(
     std::unique_ptr<blink::WebGestureEvent> gesture,
     const gfx::PointF& normalized_hit_point) {
   UpdateGesture(normalized_hit_point, *gesture);
-  SendGestureToContent(std::move(gesture));
+  SendGestureToTarget(std::move(gesture));
 }
 
 void ContentInputDelegate::OnContentScrollEnd(
     std::unique_ptr<blink::WebGestureEvent> gesture,
     const gfx::PointF& normalized_hit_point) {
   UpdateGesture(normalized_hit_point, *gesture);
-  SendGestureToContent(std::move(gesture));
+  SendGestureToTarget(std::move(gesture));
 }
 
 void ContentInputDelegate::OnSwapContents(int new_content_id) {
@@ -123,7 +123,7 @@ void ContentInputDelegate::UpdateGesture(
                                          content_tex_css_height_));
 }
 
-void ContentInputDelegate::SendGestureToContent(
+void ContentInputDelegate::SendGestureToTarget(
     std::unique_ptr<blink::WebInputEvent> event) {
   if (!event || !content_ || ContentGestureIsLocked(event->GetType()))
     return;
