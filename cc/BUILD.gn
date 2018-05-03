@@ -1,4 +1,4 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright 2014 T/e Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -509,6 +509,8 @@ cc_static_library("test_support") {
     "test/test_layer_tree_host_base.cc",
     "test/test_layer_tree_host_base.h",
     "test/test_occlusion_tracker.h",
+    "test/test_options_provider.cc",
+    "test/test_options_provider.h",
     "test/test_skcanvas.cc",
     "test/test_skcanvas.h",
     "test/test_task_graph_runner.cc",
@@ -527,6 +529,7 @@ cc_static_library("test_support") {
     ":cc",
     "//cc/animation",
     "//gpu:test_support",
+    "//testing/gmock",
   ]
   deps = [
     "//base",
@@ -545,7 +548,6 @@ cc_static_library("test_support") {
     "//gpu/skia_bindings",
     "//media",
     "//skia",
-    "//testing/gmock",
     "//testing/gtest",
     "//ui/gfx",
     "//ui/gfx:test_support",

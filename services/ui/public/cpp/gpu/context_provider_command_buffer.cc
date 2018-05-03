@@ -405,7 +405,8 @@ gpu::raster::RasterInterface* ContextProviderCommandBuffer::RasterInterface() {
     return nullptr;
 
   raster_interface_ = std::make_unique<gpu::raster::RasterImplementationGLES>(
-      gles2_impl_.get(), gles2_impl_.get(), ContextCapabilities());
+      gles2_impl_.get(), gles2_impl_.get(), command_buffer_.get(),
+      ContextCapabilities());
   return raster_interface_.get();
 }
 

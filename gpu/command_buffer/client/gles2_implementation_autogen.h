@@ -1250,6 +1250,8 @@ void BeginRasterCHROMIUM(GLuint texture_id,
 
 void* MapRasterCHROMIUM(GLsizeiptr size) override;
 
+void* MapFontBufferCHROMIUM(GLsizeiptr size) override;
+
 void UnmapRasterCHROMIUM(GLsizeiptr written_size) override;
 
 void EndRasterCHROMIUM() override;

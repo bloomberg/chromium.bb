@@ -1212,6 +1212,9 @@ void GLES2InterfaceStub::BeginRasterCHROMIUM(
 void* GLES2InterfaceStub::MapRasterCHROMIUM(GLsizeiptr /* size */) {
   return 0;
 }
+void* GLES2InterfaceStub::MapFontBufferCHROMIUM(GLsizeiptr /* size */) {
+  return 0;
+}
 void GLES2InterfaceStub::UnmapRasterCHROMIUM(GLsizeiptr /* written_size */) {}
 void GLES2InterfaceStub::EndRasterCHROMIUM() {}
 void GLES2InterfaceStub::TexStorage2DImageCHROMIUM(GLenum /* target */,

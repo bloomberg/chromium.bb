@@ -19,16 +19,13 @@ class SkRRect;
 namespace cc {
 
 class DrawImage;
-class ImageProvider;
 class PaintShader;
-class TransferCacheSerializeHelper;
 
 class CC_PAINT_EXPORT PaintOpWriter {
  public:
   PaintOpWriter(void* memory,
                 size_t size,
-                TransferCacheSerializeHelper* transfer_cache,
-                ImageProvider* image_provider,
+                const PaintOp::SerializeOptions& options,
                 bool enable_security_constraints = false);
   ~PaintOpWriter();
 
@@ -98,7 +95,6 @@ class CC_PAINT_EXPORT PaintOpWriter {
   void WriteSimple(const T& val);
 
   void WriteFlattenable(const SkFlattenable* val);
-  void Write(const sk_sp<SkTextBlob>& blob);
 
   // The main entry point is Write(const PaintFilter* filter) which casts the
   // filter and calls one of the following functions.
@@ -136,8 +132,7 @@ class CC_PAINT_EXPORT PaintOpWriter {
   char* memory_ = nullptr;
   size_t size_ = 0u;
   size_t remaining_bytes_ = 0u;
-  TransferCacheSerializeHelper* transfer_cache_;
-  ImageProvider* image_provider_;
+  const PaintOp::SerializeOptions& options_;
   bool valid_ = true;
 
   // Indicates that the following security constraints must be applied during

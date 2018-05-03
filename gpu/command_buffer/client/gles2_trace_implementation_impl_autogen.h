@@ -2584,6 +2584,11 @@ void* GLES2TraceImplementation::MapRasterCHROMIUM(GLsizeiptr size) {
   return gl_->MapRasterCHROMIUM(size);
 }
 
+void* GLES2TraceImplementation::MapFontBufferCHROMIUM(GLsizeiptr size) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::MapFontBufferCHROMIUM");
+  return gl_->MapFontBufferCHROMIUM(size);
+}
+
 void GLES2TraceImplementation::UnmapRasterCHROMIUM(GLsizeiptr written_size) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::UnmapRasterCHROMIUM");
   gl_->UnmapRasterCHROMIUM(written_size);

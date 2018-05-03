@@ -13,6 +13,19 @@ namespace gpu {
 
 class Buffer;
 
+struct SerializableSkiaHandle {
+  SerializableSkiaHandle() = default;
+  SerializableSkiaHandle(uint32_t handle_id,
+                         uint32_t shm_id,
+                         uint32_t byte_offset)
+      : handle_id(handle_id), shm_id(shm_id), byte_offset(byte_offset) {}
+  ~SerializableSkiaHandle() = default;
+
+  uint32_t handle_id = 0u;
+  uint32_t shm_id = 0u;
+  uint32_t byte_offset = 0u;
+};
+
 // DiscardableHandleBase is the base class for the discardable handle
 // implementation. In order to facilitate transfering handles across the
 // command buffer, DiscardableHandleBase is backed by a gpu::Buffer and an
@@ -102,6 +115,7 @@ class GPU_EXPORT ClientDiscardableHandle : public DiscardableHandleBase {
 // and can unlock and delete this handle.
 class GPU_EXPORT ServiceDiscardableHandle : public DiscardableHandleBase {
  public:
+  ServiceDiscardableHandle();  // Constructs an invalid handle.
   ServiceDiscardableHandle(scoped_refptr<Buffer> buffer,
                            uint32_t byte_offset,
                            int32_t shm_id);

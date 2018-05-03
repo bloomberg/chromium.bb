@@ -3931,10 +3931,13 @@ _FUNCTION_INFO = {
     'extension_flag': 'chromium_raster_transport',
   },
   'RasterCHROMIUM': {
-    'type': 'Data',
-    'internal': True,
     'decoder_func': 'DoRasterCHROMIUM',
-    'data_transfer_methods': ['shm'],
+    'internal': True,
+    'impl_func': True,
+    'unit_test': False,
+    'cmd_args': 'GLuint raster_shm_id, GLuint raster_shm_offset,'
+                'GLsizeiptr raster_shm_size, GLuint font_shm_id,'
+                'GLuint font_shm_offset, GLsizeiptr font_shm_size',
     'extension': 'CHROMIUM_raster_transport',
     'extension_flag': 'chromium_raster_transport',
   },
@@ -3943,6 +3946,10 @@ _FUNCTION_INFO = {
     'extension': "CHROMIUM_raster_transport",
   },
   'UnmapRasterCHROMIUM': {
+    'type': 'NoCommand',
+    'extension': "CHROMIUM_raster_transport",
+  },
+  'MapFontBufferCHROMIUM': {
     'type': 'NoCommand',
     'extension': "CHROMIUM_raster_transport",
   },

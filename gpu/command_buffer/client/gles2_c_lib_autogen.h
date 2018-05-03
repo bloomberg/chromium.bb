@@ -1779,6 +1779,9 @@ GLES2BeginRasterCHROMIUM(GLuint texture_id,
 void* GL_APIENTRY GLES2MapRasterCHROMIUM(GLsizeiptr size) {
   return gles2::GetGLContext()->MapRasterCHROMIUM(size);
 }
+void* GL_APIENTRY GLES2MapFontBufferCHROMIUM(GLsizeiptr size) {
+  return gles2::GetGLContext()->MapFontBufferCHROMIUM(size);
+}
 void GL_APIENTRY GLES2UnmapRasterCHROMIUM(GLsizeiptr written_size) {
   gles2::GetGLContext()->UnmapRasterCHROMIUM(written_size);
 }
@@ -3149,6 +3152,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glMapRasterCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(glMapRasterCHROMIUM),
+    },
+    {
+        "glMapFontBufferCHROMIUM",
+        reinterpret_cast<GLES2FunctionPointer>(glMapFontBufferCHROMIUM),
     },
     {
         "glUnmapRasterCHROMIUM",

@@ -14,6 +14,7 @@
 #include "cc/paint/display_item_list.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/GLES2/gl2extchromium.h"
+#include "gpu/command_buffer/client/client_test_helper.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface_stub.h"
 #include "gpu/command_buffer/common/capabilities.h"
@@ -239,14 +240,15 @@ class RasterImplementationGLESTest : public testing::Test {
   void SetUp() override {
     gl_.reset(new RasterMockGLES2Interface());
 
-    ri_.reset(new RasterImplementationGLES(gl_.get(), &support_,
-                                           gpu::Capabilities()));
+    ri_.reset(new RasterImplementationGLES(
+        gl_.get(), &support_, &command_buffer_, gpu::Capabilities()));
   }
 
   void TearDown() override {}
 
   void SetUpWithCapabilities(const gpu::Capabilities& capabilities) {
-    ri_.reset(new RasterImplementationGLES(gl_.get(), &support_, capabilities));
+    ri_.reset(new RasterImplementationGLES(gl_.get(), &support_,
+                                           &command_buffer_, capabilities));
   }
 
   void ExpectBindTexture(GLenum target, GLuint texture_id) {
@@ -268,6 +270,7 @@ class RasterImplementationGLESTest : public testing::Test {
   }
 
   ContextSupportStub support_;
+  MockClientCommandBuffer command_buffer_;
   std::unique_ptr<RasterMockGLES2Interface> gl_;
   std::unique_ptr<RasterImplementationGLES> ri_;
 
@@ -667,7 +670,7 @@ TEST_F(RasterImplementationGLESTest, LockDiscardableTextureCHROMIUM) {
   EXPECT_EQ(false, ret);
 }
 
-TEST_F(RasterImplementationGLESTest, BeginRasterCHROMIUM) {
+TEST_F(RasterImplementationGLESTest, RasterCHROMIUM) {
   const GLuint texture_id = 23;
   const GLuint sk_color = 0x226688AAu;
   const GLuint msaa_sample_count = 4;
@@ -683,9 +686,7 @@ TEST_F(RasterImplementationGLESTest, BeginRasterCHROMIUM) {
       .Times(1);
   ri_->BeginRasterCHROMIUM(texture_id, sk_color, msaa_sample_count,
                            can_use_lcd_text, color_type, raster_color_space);
-}
 
-TEST_F(RasterImplementationGLESTest, RasterCHROMIUM) {
   scoped_refptr<cc::DisplayItemList> display_list = new cc::DisplayItemList;
   display_list->StartPaint();
   display_list->push<cc::DrawColorOp>(SK_ColorRED, SkBlendMode::kSrc);
@@ -710,9 +711,7 @@ TEST_F(RasterImplementationGLESTest, RasterCHROMIUM) {
   ri_->RasterCHROMIUM(display_list.get(), &image_provider, content_size,
                       full_raster_rect, playback_rect, post_translate,
                       post_scale, requires_clear);
-}
 
-TEST_F(RasterImplementationGLESTest, EndRasterCHROMIUM) {
   EXPECT_CALL(*gl_, EndRasterCHROMIUM()).Times(1);
   ri_->EndRasterCHROMIUM();
 }

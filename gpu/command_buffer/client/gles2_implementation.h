@@ -722,6 +722,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface,
 
   std::unique_ptr<BufferTracker> buffer_tracker_;
 
+  base::Optional<ScopedMappedMemoryPtr> font_mapped_buffer_;
   base::Optional<ScopedTransferBufferPtr> raster_mapped_buffer_;
 
   base::Callback<void(const char*, int32_t)> error_message_callback_;

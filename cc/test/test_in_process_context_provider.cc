@@ -80,6 +80,7 @@ TestInProcessContextProvider::TestInProcessContextProvider(
         std::make_unique<gpu::raster::RasterImplementationGLES>(
             gles2_context_->GetImplementation(),
             gles2_context_->GetImplementation(),
+            gles2_context_->GetImplementation()->command_buffer(),
             gles2_context_->GetCapabilities());
   } else {
     gpu::ContextCreationAttribs attribs;

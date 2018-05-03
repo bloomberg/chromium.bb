@@ -204,7 +204,8 @@ TestContextProvider::TestContextProvider(
   context_gl_->set_test_context(context3d_.get());
   context3d_->set_test_support(support_.get());
   raster_context_ = std::make_unique<gpu::raster::RasterImplementationGLES>(
-      context_gl_.get(), support_.get(), context3d_->test_capabilities());
+      context_gl_.get(), support_.get(), nullptr,
+      context3d_->test_capabilities());
   // Just pass nullptr to the ContextCacheController for its task runner.
   // Idle handling is tested directly in ContextCacheController's
   // unittests, and isn't needed here.

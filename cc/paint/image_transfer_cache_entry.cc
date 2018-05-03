@@ -59,7 +59,8 @@ uint32_t ClientImageTransferCacheEntry::Id() const {
 bool ClientImageTransferCacheEntry::Serialize(base::span<uint8_t> data) const {
   DCHECK_GE(data.size(), SerializedSize());
 
-  PaintOpWriter writer(data.data(), data.size(), nullptr, nullptr);
+  PaintOp::SerializeOptions options;
+  PaintOpWriter writer(data.data(), data.size(), options);
   writer.Write(pixmap_->colorType());
   writer.Write(pixmap_->width());
   writer.Write(pixmap_->height());
@@ -90,7 +91,8 @@ size_t ServiceImageTransferCacheEntry::CachedSize() const {
 bool ServiceImageTransferCacheEntry::Deserialize(
     GrContext* context,
     base::span<const uint8_t> data) {
-  PaintOpReader reader(data.data(), data.size(), nullptr);
+  PaintOp::DeserializeOptions options;
+  PaintOpReader reader(data.data(), data.size(), options);
   SkColorType color_type;
   reader.Read(&color_type);
   uint32_t width;

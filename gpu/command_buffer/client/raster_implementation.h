@@ -17,6 +17,7 @@
 #include "base/optional.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "gpu/command_buffer/client/client_discardable_texture_manager.h"
+#include "gpu/command_buffer/client/client_font_manager.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gpu_control_client.h"
 #include "gpu/command_buffer/client/implementation_base.h"
@@ -45,7 +46,8 @@ class RasterCmdHelper;
 // buffer management.
 class RASTER_EXPORT RasterImplementation : public RasterInterface,
                                            public ImplementationBase,
-                                           public gles2::QueryTrackerClient {
+                                           public gles2::QueryTrackerClient,
+                                           public ClientFontManager::Client {
  public:
   RasterImplementation(RasterCmdHelper* helper,
                        TransferBufferInterface* transfer_buffer,
@@ -148,6 +150,9 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
 
   void* MapRasterCHROMIUM(GLsizeiptr size);
   void UnmapRasterCHROMIUM(GLsizeiptr written_size);
+
+  // ClientFontManager::Client implementation.
+  void* MapFontBuffer(size_t size) override;
 
  private:
   friend class RasterImplementationTest;
@@ -252,6 +257,7 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
   // Used to check for single threaded access.
   int use_count_;
 
+  base::Optional<ScopedMappedMemoryPtr> font_mapped_buffer_;
   base::Optional<ScopedTransferBufferPtr> raster_mapped_buffer_;
 
   base::RepeatingCallback<void(const char*, int32_t)> error_message_callback_;
@@ -265,12 +271,22 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
   IdAllocator texture_id_allocator_;
   IdAllocator query_id_allocator_;
 
+  ClientFontManager font_manager_;
   ClientDiscardableTextureManager discardable_texture_manager_;
 
   mutable base::Lock lost_lock_;
   bool lost_;
 
-  SkColor background_color_;
+  struct RasterProperties {
+    RasterProperties(SkColor background_color,
+                     bool can_use_lcd_text,
+                     sk_sp<SkColorSpace> color_space);
+    ~RasterProperties();
+    SkColor background_color = SK_ColorWHITE;
+    bool can_use_lcd_text = false;
+    sk_sp<SkColorSpace> color_space;
+  };
+  base::Optional<RasterProperties> raster_properties_;
 
   DISALLOW_COPY_AND_ASSIGN(RasterImplementation);
 };

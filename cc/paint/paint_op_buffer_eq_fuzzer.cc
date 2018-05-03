@@ -7,7 +7,7 @@
 
 #include "cc/paint/paint_op_buffer.h"
 #include "cc/test/paint_op_helper.h"
-#include "cc/test/transfer_cache_test_helper.h"
+#include "cc/test/test_options_provider.h"
 #include "third_party/skia/include/utils/SkNoDrawCanvas.h"
 
 // paint_op_buffer_eq_fuzzer deserializes and reserializes paint ops to
@@ -36,14 +36,8 @@
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   const size_t kMaxSerializedSize = 1000000;
 
-  // TODO(enne): add an image provider here once deserializing supports that.
   SkNoDrawCanvas canvas(100, 100);
-  cc::TransferCacheTestHelper transfer_cache_helper;
-  cc::PaintOp::SerializeOptions serialize_options;
-  serialize_options.transfer_cache = &transfer_cache_helper;
-  serialize_options.canvas = &canvas;
-  cc::PaintOp::DeserializeOptions deserialize_options;
-  deserialize_options.transfer_cache = &transfer_cache_helper;
+  cc::TestOptionsProvider test_options_provider;
 
   // Need 4 bytes to be able to read the type/skip.
   if (size < 4)
@@ -63,7 +57,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   size_t bytes_read1 = 0;
   cc::PaintOp* deserialized_op1 = cc::PaintOp::Deserialize(
       data, size, deserialized1.get(), sizeof(cc::LargestPaintOp), &bytes_read1,
-      deserialize_options);
+      test_options_provider.deserialize_options());
 
   // Failed to deserialize, so abort.
   if (!deserialized_op1)
@@ -94,8 +88,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
       static_cast<char*>(base::AlignedAlloc(serialized_size,
                                             cc::PaintOpBuffer::PaintOpAlign)));
   memset(serialized2.get(), 0, serialized_size);
-  size_t written_bytes2 = deserialized_op1->Serialize(
-      serialized2.get(), serialized_size, serialize_options);
+  size_t written_bytes2 =
+      deserialized_op1->Serialize(serialized2.get(), serialized_size,
+                                  test_options_provider.serialize_options());
   CHECK_LE(written_bytes2, serialized_size);
 
   std::unique_ptr<char, base::AlignedFreeDeleter> deserialized2(
@@ -104,7 +99,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   size_t bytes_read2 = 0;
   cc::PaintOp* deserialized_op2 = cc::PaintOp::Deserialize(
       data, size, deserialized2.get(), sizeof(cc::LargestPaintOp), &bytes_read2,
-      deserialize_options);
+      test_options_provider.deserialize_options());
   CHECK(deserialized_op2);
   CHECK_EQ(bytes_read1, bytes_read2);
 
@@ -112,8 +107,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
       static_cast<char*>(
           base::AlignedAlloc(written_bytes2, cc::PaintOpBuffer::PaintOpAlign)));
   memset(serialized3.get(), 0, written_bytes2);
-  size_t written_bytes3 = deserialized_op2->Serialize(
-      serialized3.get(), written_bytes2, serialize_options);
+  size_t written_bytes3 =
+      deserialized_op2->Serialize(serialized3.get(), written_bytes2,
+                                  test_options_provider.serialize_options());
   CHECK_EQ(written_bytes2, written_bytes3);
 
   CHECK(*deserialized_op1 == *deserialized_op2)
