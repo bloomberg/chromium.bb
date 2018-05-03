@@ -3022,9 +3022,14 @@ IN_PROC_BROWSER_TEST_P(
 }
 #endif  // defined(USE_AURA) || defined(OS_ANDROID)
 
-// Flaky, see crbug.com/838835
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
-                       DISABLED_InputEventRouterTouchpadGestureTargetTest) {
+                       InputEventRouterTouchpadGestureTargetTest) {
+  // TODO(838835): Flaky with viz hit testing
+  if (features::IsVizHitTestingEnabled()) {
+    LOG(INFO) << "Skipping test due to https://crbug.com/838835";
+    return;
+  }
+
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_nested_frames.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
