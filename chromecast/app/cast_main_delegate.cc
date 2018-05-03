@@ -38,7 +38,6 @@
 #include "ui/base/resource/resource_bundle_android.h"
 #elif defined(OS_LINUX)
 #include "chromecast/app/linux/cast_crash_reporter_client.h"
-#include "services/service_manager/sandbox/switches.h"
 #endif  // defined(OS_LINUX)
 
 namespace {
@@ -148,7 +147,7 @@ void CastMainDelegate::PreSandboxStartup() {
 #elif defined(OS_LINUX)
   crash_reporter::SetCrashReporterClient(g_crash_reporter_client.Pointer());
 
-  if (process_type != service_manager::switches::kZygoteProcess) {
+  if (process_type != switches::kZygoteProcess) {
     CastCrashReporterClient::InitCrashReporter(process_type);
   }
 #endif  // defined(OS_LINUX)

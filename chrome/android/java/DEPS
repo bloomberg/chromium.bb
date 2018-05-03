@@ -35,6 +35,7 @@ include_rules = [
 
   "+device/gamepad/android/java",
   "+device/geolocation/android/java",
+  "+services/service_manager/public/java",
 ]
 
 specific_include_rules = {

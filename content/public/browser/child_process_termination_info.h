@@ -18,7 +18,7 @@ struct ChildProcessTerminationInfo {
   // contain a platform specific launch failure error code. Otherwise, it will
   // contain the exit code for the process (e.g. status from waitpid if on
   // posix, from GetExitCodeProcess on Windows).
-  int exit_code = service_manager::RESULT_CODE_NORMAL_EXIT;
+  int exit_code = RESULT_CODE_NORMAL_EXIT;
 
 #if defined(OS_ANDROID)
   // True if child service has strong or moderate binding at time of death.
