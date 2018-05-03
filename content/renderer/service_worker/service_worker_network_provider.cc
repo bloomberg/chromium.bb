@@ -313,10 +313,14 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
 // Constructor for service worker execution contexts.
 ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
     mojom::ServiceWorkerProviderInfoForStartWorkerPtr info) {
+  // Initialize the provider context with info for
+  // ServiceWorkerGlobalScope#registration.
   ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance();
   context_ = base::MakeRefCounted<ServiceWorkerProviderContext>(
       info->provider_id, std::move(info->client_request),
       std::move(info->host_ptr_info));
+  context_->SetRegistrationForServiceWorkerGlobalScope(
+      std::move(info->registration));
 
   if (info->script_loader_factory_ptr_info.is_valid()) {
     script_loader_factory_.Bind(

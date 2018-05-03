@@ -76,7 +76,6 @@ class ServiceWorkerGlobalScopeProxy final
   ~ServiceWorkerGlobalScopeProxy() override;
 
   // WebServiceWorkerContextProxy overrides:
-  void ReadyToEvaluateScript() override;
   void SetRegistration(
       std::unique_ptr<WebServiceWorkerRegistration::Handle>) override;
   void DispatchActivateEvent(int) override;

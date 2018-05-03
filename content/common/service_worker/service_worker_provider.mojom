@@ -30,6 +30,9 @@ struct ServiceWorkerProviderInfoForSharedWorker {
 // worker.
 struct ServiceWorkerProviderInfoForStartWorker {
   int32 provider_id;
+  // |registration| is information about the service worker's
+  // registration used to populate ServiceWorkerGlobalScope#registration.
+  blink.mojom.ServiceWorkerRegistrationObjectInfo registration;
 
   associated ServiceWorkerContainerHost host_ptr_info;
   associated ServiceWorkerContainer& client_request;

@@ -45,12 +45,44 @@ class MessageReceiver : public EmbeddedWorkerTestHelper {
   void SimulateSetCachedMetadata(int embedded_worker_id,
                                  const GURL& url,
                                  const std::vector<uint8_t>& data) {
-    GetServiceWorkerHost(embedded_worker_id)->SetCachedMetadata(url, data);
+    ASSERT_TRUE(service_worker_host_map_[embedded_worker_id]);
+    service_worker_host_map_[embedded_worker_id]->SetCachedMetadata(url, data);
   }
 
   void SimulateClearCachedMetadata(int embedded_worker_id, const GURL& url) {
-    GetServiceWorkerHost(embedded_worker_id)->ClearCachedMetadata(url);
+    ASSERT_TRUE(service_worker_host_map_[embedded_worker_id]);
+    service_worker_host_map_[embedded_worker_id]->ClearCachedMetadata(url);
   }
+
+ protected:
+  void OnStartWorker(
+      int embedded_worker_id,
+      int64_t service_worker_version_id,
+      const GURL& scope,
+      const GURL& script_url,
+      bool pause_after_download,
+      mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
+      mojom::ControllerServiceWorkerRequest controller_request,
+      blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
+      mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
+      mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
+      blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
+      override {
+    service_worker_host_map_[embedded_worker_id].Bind(
+        std::move(service_worker_host));
+    EmbeddedWorkerTestHelper::OnStartWorker(
+        embedded_worker_id, service_worker_version_id, scope, script_url,
+        pause_after_download, std::move(dispatcher_request),
+        std::move(controller_request), nullptr /* service_worker_host */,
+        std::move(instance_host), std::move(provider_info),
+        std::move(installed_scripts_info));
+  }
+
+ private:
+  std::map<
+      int /* embedded_worker_id */,
+      blink::mojom::ServiceWorkerHostAssociatedPtr /* service_worker_host */>
+      service_worker_host_map_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageReceiver);
 };
@@ -235,6 +267,7 @@ class MessageReceiverDisallowStart : public MessageReceiver {
       bool pause_after_download,
       mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
       mojom::ControllerServiceWorkerRequest controller_request,
+      blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
@@ -262,8 +295,9 @@ class MessageReceiverDisallowStart : public MessageReceiver {
         MessageReceiver::OnStartWorker(
             embedded_worker_id, service_worker_version_id, scope, script_url,
             pause_after_download, std::move(dispatcher_request),
-            std::move(controller_request), std::move(instance_host),
-            std::move(provider_info), std::move(installed_scripts_info));
+            std::move(controller_request), std::move(service_worker_host),
+            std::move(instance_host), std::move(provider_info),
+            std::move(installed_scripts_info));
         break;
     }
     current_mock_instance_index_++;

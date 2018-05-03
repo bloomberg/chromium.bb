@@ -468,8 +468,9 @@ class DelayHelper : public EmbeddedWorkerTestHelper {
     EmbeddedWorkerTestHelper::OnStartWorker(
         embedded_worker_id_, service_worker_version_id_, scope_, script_url_,
         pause_after_download_, std::move(start_worker_request_),
-        std::move(controller_request_), std::move(start_worker_instance_host_),
-        std::move(provider_info_), std::move(installed_scripts_info_));
+        std::move(controller_request_), std::move(service_worker_host_),
+        std::move(start_worker_instance_host_), std::move(provider_info_),
+        std::move(installed_scripts_info_));
   }
 
   void Respond() {
@@ -499,6 +500,7 @@ class DelayHelper : public EmbeddedWorkerTestHelper {
       bool pause_after_download,
       mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
       mojom::ControllerServiceWorkerRequest controller_request,
+      blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
@@ -510,6 +512,7 @@ class DelayHelper : public EmbeddedWorkerTestHelper {
     pause_after_download_ = pause_after_download;
     start_worker_request_ = std::move(dispatcher_request);
     controller_request_ = std::move(controller_request);
+    service_worker_host_ = std::move(service_worker_host);
     start_worker_instance_host_ = std::move(instance_host);
     provider_info_ = std::move(provider_info);
     installed_scripts_info_ = std::move(installed_scripts_info);
@@ -535,6 +538,7 @@ class DelayHelper : public EmbeddedWorkerTestHelper {
   bool pause_after_download_;
   mojom::ServiceWorkerEventDispatcherRequest start_worker_request_;
   mojom::ControllerServiceWorkerRequest controller_request_;
+  blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host_;
   mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo
       start_worker_instance_host_;
   mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info_;

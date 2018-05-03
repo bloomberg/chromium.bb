@@ -458,8 +458,6 @@ struct ServiceWorkerContextClient::WorkerContextData {
 
   mojo::Binding<mojom::ServiceWorkerEventDispatcher> event_dispatcher_binding;
 
-  // Bound by the first Mojo call received on the service worker thread
-  // ServiceWorkerEventDispatcher::InitializeGlobalScope().
   blink::mojom::ServiceWorkerHostAssociatedPtr service_worker_host;
 
   // Maps for inflight event callbacks.
@@ -686,18 +684,22 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
     bool is_script_streaming,
     mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
     mojom::ControllerServiceWorkerRequest controller_request,
+    blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
     mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
     mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
     std::unique_ptr<EmbeddedWorkerInstanceClientImpl> embedded_worker_client,
-    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner)
     : embedded_worker_id_(embedded_worker_id),
       service_worker_version_id_(service_worker_version_id),
       service_worker_scope_(service_worker_scope),
       script_url_(script_url),
       main_thread_task_runner_(std::move(main_thread_task_runner)),
+      io_thread_task_runner_(io_thread_task_runner),
       proxy_(nullptr),
       pending_dispatcher_request_(std::move(dispatcher_request)),
       pending_controller_request_(std::move(controller_request)),
+      pending_service_worker_host_(std::move(service_worker_host)),
       embedded_worker_client_(std::move(embedded_worker_client)) {
   instance_host_ =
       mojom::ThreadSafeEmbeddedWorkerInstanceHostAssociatedPtr::Create(
@@ -756,11 +758,13 @@ void ServiceWorkerContextClient::OpenPaymentHandlerWindow(
 void ServiceWorkerContextClient::SetCachedMetadata(const blink::WebURL& url,
                                                    const char* data,
                                                    size_t size) {
+  DCHECK(context_->service_worker_host);
   context_->service_worker_host->SetCachedMetadata(
       url, std::vector<uint8_t>(data, data + size));
 }
 
 void ServiceWorkerContextClient::ClearCachedMetadata(const blink::WebURL& url) {
+  DCHECK(context_->service_worker_host);
   context_->service_worker_host->ClearCachedMetadata(url);
 }
 
@@ -821,6 +825,13 @@ void ServiceWorkerContextClient::WorkerContextStarted(
     context_->controller_impl = std::make_unique<ControllerServiceWorkerImpl>(
         std::move(pending_controller_request_), GetWeakPtr());
   }
+
+  DCHECK(pending_service_worker_host_.is_valid());
+  DCHECK(!context_->service_worker_host);
+  context_->service_worker_host.Bind(std::move(pending_service_worker_host_));
+  // Set ServiceWorkerGlobalScope#registration.
+  proxy_->SetRegistration(WebServiceWorkerRegistrationImpl::CreateHandle(
+      provider_context_->TakeRegistrationForServiceWorkerGlobalScope()));
 
   (*instance_host_)->OnThreadStarted(WorkerThread::GetCurrentId());
 
@@ -1243,6 +1254,7 @@ void ServiceWorkerContextClient::Navigate(
 void ServiceWorkerContextClient::SkipWaiting(
     std::unique_ptr<blink::WebServiceWorkerSkipWaitingCallbacks> callbacks) {
   DCHECK(callbacks);
+  DCHECK(context_->service_worker_host);
   context_->service_worker_host->SkipWaiting(
       base::BindOnce(&DidSkipWaiting, std::move(callbacks)));
 }
@@ -1250,6 +1262,7 @@ void ServiceWorkerContextClient::SkipWaiting(
 void ServiceWorkerContextClient::Claim(
     std::unique_ptr<blink::WebServiceWorkerClientsClaimCallbacks> callbacks) {
   DCHECK(callbacks);
+  DCHECK(context_->service_worker_host);
   context_->service_worker_host->ClaimClients(
       base::BindOnce(&DidClaimClients, std::move(callbacks)));
 }
@@ -1440,25 +1453,6 @@ void ServiceWorkerContextClient::DispatchBackgroundFetchedEvent(
   proxy_->DispatchBackgroundFetchedEvent(
       request_id, blink::WebString::FromUTF8(developer_id),
       blink::WebString::FromUTF8(unique_id), web_fetches);
-}
-
-void ServiceWorkerContextClient::InitializeGlobalScope(
-    blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
-    blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info) {
-  DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
-  // Connect to the blink::mojom::ServiceWorkerHost.
-  DCHECK(!context_->service_worker_host);
-  context_->service_worker_host.Bind(std::move(service_worker_host));
-  // Set ServiceWorkerGlobalScope#registration.
-  DCHECK_NE(registration_info->registration_id,
-            blink::mojom::kInvalidServiceWorkerRegistrationId);
-  DCHECK(registration_info->host_ptr_info.is_valid());
-  DCHECK(registration_info->request.is_pending());
-  proxy_->SetRegistration(WebServiceWorkerRegistrationImpl::CreateHandle(
-      WebServiceWorkerRegistrationImpl::CreateForServiceWorkerGlobalScope(
-          std::move(registration_info))));
-
-  proxy_->ReadyToEvaluateScript();
 }
 
 void ServiceWorkerContextClient::DispatchInstallEvent(
