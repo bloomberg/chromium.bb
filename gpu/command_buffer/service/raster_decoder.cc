@@ -1024,8 +1024,11 @@ gl::GLContext* RasterDecoderImpl::GetGLContext() {
 
 Capabilities RasterDecoderImpl::GetCapabilities() {
   Capabilities caps;
-  caps.gpu_rasterization = true;
-  caps.supports_oop_raster = true;
+  caps.gpu_rasterization =
+      group_->gpu_feature_info()
+          .status_values[GPU_FEATURE_TYPE_GPU_RASTERIZATION] ==
+      kGpuFeatureStatusEnabled;
+  caps.supports_oop_raster = supports_oop_raster_;
   caps.texture_target_exception_list =
       group_->gpu_preferences().texture_target_exception_list;
   caps.texture_format_bgra8888 =

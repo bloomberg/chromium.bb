@@ -5,6 +5,8 @@
 #ifndef GPU_IPC_COMMON_GPU_PREFERENCES_STRUCT_TRAITS_H_
 #define GPU_IPC_COMMON_GPU_PREFERENCES_STRUCT_TRAITS_H_
 
+#include <vector>
+
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/ipc/common/gpu_preferences.mojom.h"
 #include "ui/gfx/mojo/buffer_types_struct_traits.h"
@@ -94,7 +96,6 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
         prefs.enable_threaded_texture_mailboxes();
     out->gl_shader_interm_output = prefs.gl_shader_interm_output();
     out->emulate_shader_precision = prefs.emulate_shader_precision();
-    out->enable_raster_decoder = prefs.enable_raster_decoder();
     out->enable_gpu_service_logging = prefs.enable_gpu_service_logging();
     out->enable_gpu_service_tracing = prefs.enable_gpu_service_tracing();
     out->use_passthrough_cmd_decoder = prefs.use_passthrough_cmd_decoder();
@@ -114,6 +115,7 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
     out->disable_gpu_driver_bug_workarounds =
         prefs.disable_gpu_driver_bug_workarounds();
     out->ignore_gpu_blacklist = prefs.ignore_gpu_blacklist();
+    out->enable_oop_rasterization = prefs.enable_oop_rasterization();
     return true;
   }
 
@@ -214,9 +216,6 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
   static bool emulate_shader_precision(const gpu::GpuPreferences& prefs) {
     return prefs.emulate_shader_precision;
   }
-  static bool enable_raster_decoder(const gpu::GpuPreferences& prefs) {
-    return prefs.enable_raster_decoder;
-  }
   static bool enable_gpu_service_logging(const gpu::GpuPreferences& prefs) {
     return prefs.enable_gpu_service_logging;
   }
@@ -240,6 +239,9 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
   }
   static bool ignore_gpu_blacklist(const gpu::GpuPreferences& prefs) {
     return prefs.ignore_gpu_blacklist;
+  }
+  static bool enable_oop_rasterization(const gpu::GpuPreferences& prefs) {
+    return prefs.enable_oop_rasterization;
   }
 };
 

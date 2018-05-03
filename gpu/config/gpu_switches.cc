@@ -23,9 +23,6 @@ const char kEnableGpuRasterization[] = "enable-gpu-rasterization";
 // would have been used.  Enables the chromium_raster_transport extension.
 const char kEnableOOPRasterization[] = "enable-oop-rasterization";
 
-// Use a dedicated RasterDecoder instead of generic GLES2Decoder.
-const char kEnableRasterDecoder[] = "enable-raster-decoder";
-
 // Passes encoded GpuPreferences to GPU process.
 const char kGpuPreferences[] = "gpu-preferences";
 

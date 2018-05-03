@@ -237,7 +237,7 @@ gpu::ContextResult ContextProviderCommandBuffer::BindToCurrentThread() {
     return bind_result_;
   }
 
-  if (attributes_.enable_raster_decoder) {
+  if (attributes_.enable_oop_rasterization) {
     DCHECK(attributes_.enable_raster_interface);
     DCHECK(!attributes_.enable_gles2_interface);
     DCHECK(!support_grcontext_);
@@ -400,7 +400,6 @@ gpu::raster::RasterInterface* ContextProviderCommandBuffer::RasterInterface() {
     return nullptr;
   }
 
-  DCHECK(!attributes_.enable_raster_decoder);
   if (!gles2_impl_.get())
     return nullptr;
 
@@ -424,7 +423,7 @@ class GrContext* ContextProviderCommandBuffer::GrContext() {
   if (gr_context_)
     return gr_context_->get();
 
-  if (attributes_.enable_raster_decoder)
+  if (attributes_.enable_oop_rasterization)
     return nullptr;
 
   // TODO(vmiura): crbug.com/793508 Disable access to GrContext if

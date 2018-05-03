@@ -375,16 +375,11 @@ scoped_refptr<ui::ContextProviderCommandBuffer> CreateOffscreenContext(
   attributes.lose_context_when_out_of_memory = true;
   attributes.enable_gles2_interface = support_gles2_interface;
   attributes.enable_raster_interface = support_raster_interface;
-  attributes.enable_oop_rasterization = support_oop_rasterization;
-
-  bool enable_raster_decoder =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableRasterDecoder);
-  // --enable-raster-decoder supports raster interface, but not
-  // gles2 interface
-  attributes.enable_raster_decoder = enable_raster_decoder &&
-                                     support_raster_interface &&
-                                     !support_gles2_interface;
+  // Using RasterDecoder for OOP-R backend, so we need support_raster_interface
+  // and !support_gles2_interface.
+  attributes.enable_oop_rasterization = support_oop_rasterization &&
+                                        support_raster_interface &&
+                                        !support_gles2_interface;
 
   const bool automatic_flushes = false;
   return base::MakeRefCounted<ui::ContextProviderCommandBuffer>(

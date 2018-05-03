@@ -146,8 +146,6 @@ GpuPreferences ParseGpuPreferences(const base::CommandLine* command_line) {
       command_line->HasSwitch(switches::kGLShaderIntermOutput);
   gpu_preferences.emulate_shader_precision =
       command_line->HasSwitch(switches::kEmulateShaderPrecision);
-  gpu_preferences.enable_raster_decoder =
-      command_line->HasSwitch(switches::kEnableRasterDecoder);
   gpu_preferences.enable_gpu_service_logging =
       command_line->HasSwitch(switches::kEnableGPUServiceLogging);
   gpu_preferences.enable_gpu_service_tracing =
@@ -158,6 +156,8 @@ GpuPreferences ParseGpuPreferences(const base::CommandLine* command_line) {
       command_line->HasSwitch(switches::kDisableGpuDriverBugWorkarounds);
   gpu_preferences.ignore_gpu_blacklist =
       command_line->HasSwitch(switches::kIgnoreGpuBlacklist);
+  gpu_preferences.enable_oop_rasterization =
+      command_line->HasSwitch(switches::kEnableOOPRasterization);
   return gpu_preferences;
 }
 
