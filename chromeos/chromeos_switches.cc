@@ -157,6 +157,9 @@ const char kCrosRegionsModeHide[] = "hide";
 // "Override" value for kCrosRegionsMode (region's data is read first).
 const char kCrosRegionsModeOverride[] = "override";
 
+// Enable Crostini Files in Files app.
+const char kCrostiniFiles[] = "crostini-files";
+
 // Optional value for Data Saver prompt on cellular networks.
 const char kDataSaverPromptDemoMode[] = "demo";
 
