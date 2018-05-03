@@ -45,6 +45,9 @@ class TestAccessibilityControllerClient
 
   mojom::AccessibilityAlert last_a11y_alert() const { return last_a11y_alert_; }
   ax::mojom::Gesture last_a11y_gesture() const { return last_a11y_gesture_; }
+  int select_to_speak_change_change_requests() const {
+    return select_to_speak_state_change_requests_;
+  }
 
  private:
   mojom::AccessibilityAlert last_a11y_alert_ = mojom::AccessibilityAlert::NONE;
@@ -53,6 +56,8 @@ class TestAccessibilityControllerClient
   bool is_dictation_active_ = false;
 
   ax::mojom::Gesture last_a11y_gesture_ = ax::mojom::Gesture::kNone;
+
+  int select_to_speak_state_change_requests_ = 0;
 
   mojo::Binding<mojom::AccessibilityControllerClient> binding_;
 
