@@ -3328,6 +3328,8 @@ bool LocalFrameView::UpdateLifecyclePhasesInternal(
   }
 
   {
+    TRACE_EVENT0("blink,benchmark",
+                 "LocalFrameView::UpdateViewportIntersectionsForSubtree");
     SCOPED_UMA_AND_UKM_TIMER("Blink.IntersectionObservation.UpdateTime",
                              UkmMetricNames::kIntersectionObservation);
     UpdateViewportIntersectionsForSubtree(target_state);
@@ -3362,7 +3364,7 @@ void LocalFrameView::PerformScrollAnchoringAdjustments() {
 }
 
 void LocalFrameView::PrePaint() {
-  TRACE_EVENT0("blink", "LocalFrameView::prePaint");
+  TRACE_EVENT0("blink,benchmark", "LocalFrameView::prePaint");
 
   if (!paint_controller_)
     paint_controller_ = PaintController::Create();
@@ -3424,7 +3426,7 @@ static void CollectDrawableLayersForLayerListRecursively(
 }
 
 void LocalFrameView::PaintTree() {
-  TRACE_EVENT0("blink", "LocalFrameView::paintTree");
+  TRACE_EVENT0("blink,benchmark", "LocalFrameView::paintTree");
   SCOPED_UMA_AND_UKM_TIMER("Blink.Paint.UpdateTime", UkmMetricNames::kPaint);
 
   DCHECK(GetFrame() == GetPage()->MainFrame() ||
@@ -3550,7 +3552,7 @@ void LocalFrameView::UpdateStyleAndLayoutIfNeededRecursiveInternal() {
     return;
 
   ScopedFrameBlamer frame_blamer(frame_);
-  TRACE_EVENT0("blink",
+  TRACE_EVENT0("blink,benchmark",
                "LocalFrameView::updateStyleAndLayoutIfNeededRecursive");
 
   // We have to crawl our entire subtree looking for any FrameViews that need
