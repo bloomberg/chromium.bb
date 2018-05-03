@@ -738,7 +738,7 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     usb_volume_.reset(new FakeTestVolume("fake-usb",
                                          VOLUME_TYPE_REMOVABLE_DISK_PARTITION,
                                          chromeos::DEVICE_TYPE_USB));
-    usb_volume_->Mount(profile());
+    ASSERT_TRUE(usb_volume_->Mount(profile()));
     return;
   }
 
@@ -747,7 +747,7 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
                                          chromeos::DEVICE_TYPE_UNKNOWN));
     ASSERT_TRUE(mtp_volume_->PrepareTestEntries(profile()));
 
-    mtp_volume_->Mount(profile());
+    ASSERT_TRUE(mtp_volume_->Mount(profile()));
     return;
   }
 
