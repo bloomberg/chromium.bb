@@ -754,17 +754,16 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
   if (name == "clickNotificationButton") {
     std::string extension_id;
     std::string notification_id;
-    int index;
     ASSERT_TRUE(value.GetString("extensionId", &extension_id));
     ASSERT_TRUE(value.GetString("notificationId", &notification_id));
-    ASSERT_TRUE(value.GetInteger("index", &index));
 
-    const std::string delegate_id = extension_id + "-" + notification_id;
-
+    const auto delegate_id = extension_id + "-" + notification_id;
     base::Optional<message_center::Notification> notification =
         display_service_->GetNotification(delegate_id);
     EXPECT_TRUE(notification);
 
+    int index;
+    ASSERT_TRUE(value.GetInteger("index", &index));
     display_service_->SimulateClick(NotificationHandler::Type::EXTENSION,
                                     delegate_id, index, base::nullopt);
     return;
