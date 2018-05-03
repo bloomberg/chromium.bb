@@ -759,7 +759,6 @@ bool StartupBrowserCreator::LaunchBrowserForLastProfiles(
   // On Windows, when chrome is launched by notification activation where the
   // kNotificationLaunchId switch is used, always use |last_used_profile| which
   // contains the profile id extracted from the notification launch id.
-  // TODO(chengx): Investigate adding a test for this startup behavior.
   bool was_windows_notification_launch = false;
 #if defined(OS_WIN)
   was_windows_notification_launch =
