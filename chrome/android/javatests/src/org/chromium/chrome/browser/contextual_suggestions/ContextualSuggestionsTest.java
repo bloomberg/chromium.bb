@@ -50,6 +50,7 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
+import org.chromium.chrome.test.util.RenderTestRule;
 import org.chromium.chrome.test.util.ViewUtils;
 import org.chromium.chrome.test.util.browser.ChromeModernDesign;
 import org.chromium.chrome.test.util.browser.Features;
@@ -87,6 +88,8 @@ public class ContextualSuggestionsTest {
     public ScreenShooter mScreenShooter = new ScreenShooter();
     @Rule
     public TestRule mDisableChromeAnimations = new DisableChromeAnimations();
+    @Rule
+    public RenderTestRule mRenderTestRule = new RenderTestRule();
 
     private static final String TEST_PAGE =
             "/chrome/test/data/android/contextual_suggestions/contextual_suggestions_test.html";
@@ -486,6 +489,48 @@ public class ContextualSuggestionsTest {
         mScreenShooter.shoot("Contextual suggestions: scrolled");
     }
 
+    @Test
+    @MediumTest
+    @Feature({"ContextualSuggestions", "RenderTest"})
+    @DisableFeatures(FeatureConstants.CONTEXTUAL_SUGGESTIONS_FEATURE)
+    public void testRender() throws Exception {
+        // Force suggestions to populate in the bottom sheet, then render the peeking bar.
+        forceShowSuggestions();
+        BottomSheetTestRule.waitForWindowUpdates();
+        mRenderTestRule.render(
+                mBottomSheet.getCurrentSheetContent().getToolbarView(), "peeking_bar");
+
+        // Open the sheet to cause the suggestions to be bound in the RecyclerView, then capture
+        // a suggestion with its thumbnail loading.
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_FULL, false));
+        BottomSheetTestRule.waitForWindowUpdates();
+        mRenderTestRule.render(getFirstSuggestionViewHolder().itemView, "suggestion_image_loading");
+
+        // Run the image fetch callback so images load, then capture a suggestion with its
+        // thumbnail loaded.
+        ThreadUtils.runOnUiThreadBlocking(() -> mFakeSource.runImageFetchCallbacks());
+        BottomSheetTestRule.waitForWindowUpdates();
+        mRenderTestRule.render(getFirstSuggestionViewHolder().itemView, "suggestion_image_loaded");
+
+        // Render a thumbnail with an offline badge.
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> getSuggestionViewHolder(2).setOfflineBadgeVisibilityForTesting(true));
+        mRenderTestRule.render(getSuggestionViewHolder(2).itemView, "suggestion_offline");
+
+        // Render the full suggestions sheet.
+        mRenderTestRule.render(mBottomSheet, "full_height");
+
+        // Scroll the suggestions and render the full suggestions sheet.
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            RecyclerView view =
+                    (RecyclerView) mBottomSheet.getCurrentSheetContent().getContentView();
+            view.scrollToPosition(5);
+        });
+        BottomSheetTestRule.waitForWindowUpdates();
+        mRenderTestRule.render(mBottomSheet, "full_height_scrolled");
+    }
+
     private void forceShowSuggestions() throws InterruptedException, TimeoutException {
         assertEquals("Model has incorrect number of items.",
                 (int) FakeContextualSuggestionsSource.TOTAL_ITEM_COUNT,
@@ -527,12 +572,20 @@ public class ContextualSuggestionsTest {
     }
 
     private SnippetArticleViewHolder getFirstSuggestionViewHolder(BottomSheet bottomSheet) {
+        return getSuggestionViewHolder(bottomSheet, 0);
+    }
+
+    private SnippetArticleViewHolder getSuggestionViewHolder(int index) {
+        return getSuggestionViewHolder(mBottomSheet, index);
+    }
+
+    private SnippetArticleViewHolder getSuggestionViewHolder(BottomSheet bottomSheet, int index) {
         ContextualSuggestionsBottomSheetContent content =
                 (ContextualSuggestionsBottomSheetContent) bottomSheet.getCurrentSheetContent();
         RecyclerView recyclerView = (RecyclerView) content.getContentView();
 
         RecyclerViewTestUtils.waitForStableRecyclerView(recyclerView);
 
-        return (SnippetArticleViewHolder) recyclerView.findViewHolderForAdapterPosition(0);
+        return (SnippetArticleViewHolder) recyclerView.findViewHolderForAdapterPosition(index);
     }
 }

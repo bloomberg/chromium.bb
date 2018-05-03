@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.ntp.snippets;
 
 import android.support.annotation.LayoutRes;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.metrics.ImpressionTracker;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
@@ -244,5 +245,10 @@ public class SnippetArticleViewHolder extends CardViewHolder {
 
         mUiDelegate.getEventReporter().onSuggestionShown(mArticle);
         mRecyclerView.onSnippetImpression();
+    }
+
+    @VisibleForTesting
+    public void setOfflineBadgeVisibilityForTesting(boolean visible) {
+        mSuggestionsBinder.updateOfflineBadgeVisibility(visible);
     }
 }
