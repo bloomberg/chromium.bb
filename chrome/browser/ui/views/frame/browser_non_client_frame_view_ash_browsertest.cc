@@ -22,6 +22,7 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
+#include "base/strings/string_util.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -121,30 +122,29 @@ BrowserNonClientFrameViewAsh* GetFrameViewAsh(BrowserView* browser_view) {
 }
 
 // Generates the test names suffixes based on the value of the test param.
-std::string TouchOptimizedUiStatusToString(
-    const ::testing::TestParamInfo<bool>& info) {
-  return info.param ? "TouchOptimizedUiEnabled" : "TouchOptimizedUiDisabled";
+std::string TopChromeMdParamToString(
+    const ::testing::TestParamInfo<const char*>& info) {
+  std::string result;
+  base::ReplaceChars(info.param, "-", "_", &result);
+  return result;
 }
 
 // Template to be used as a base class for touch-optimized UI parameterized test
 // fixtures.
 template <class BaseTest>
-class TouchOptimizedUiParamTest : public BaseTest,
-                                  public ::testing::WithParamInterface<bool> {
+class TopChromeMdParamTest : public BaseTest,
+                             public ::testing::WithParamInterface<const char*> {
  public:
-  TouchOptimizedUiParamTest() = default;
-  ~TouchOptimizedUiParamTest() override = default;
+  TopChromeMdParamTest() = default;
+  ~TopChromeMdParamTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchASCII(
-        switches::kTopChromeMD,
-        GetParam() ? switches::kTopChromeMDMaterialTouchOptimized
-                   : switches::kTopChromeMDMaterial);
+    command_line->AppendSwitchASCII(switches::kTopChromeMD, GetParam());
     BaseTest::SetUpCommandLine(command_line);
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TouchOptimizedUiParamTest);
+  DISALLOW_COPY_AND_ASSIGN(TopChromeMdParamTest);
 };
 
 }  // namespace
@@ -152,7 +152,7 @@ class TouchOptimizedUiParamTest : public BaseTest,
 using views::Widget;
 
 using BrowserNonClientFrameViewAshTest =
-    TouchOptimizedUiParamTest<InProcessBrowserTest>;
+    TopChromeMdParamTest<InProcessBrowserTest>;
 
 IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest, NonClientHitTest) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
@@ -305,9 +305,11 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   manager->ShowWindowForUser(window, account_id2);
   EXPECT_TRUE(MultiUserWindowManager::ShouldShowAvatar(window));
 
-  // An icon should show on the top left corner of the teleported browser
-  // window.
-  EXPECT_TRUE(frame_view->profile_indicator_icon());
+  if (GetParam() != switches::kTopChromeMDMaterialRefresh) {
+    // An icon should show on the top left corner of the teleported browser
+    // window.
+    EXPECT_TRUE(frame_view->profile_indicator_icon());
+  }
 
   // Teleport the window back to owner desktop.
   manager->ShowWindowForUser(window, account_id1);
@@ -325,7 +327,9 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
                            profiles::kAvatarIconHeight / 2);
   // The increased header height in the touch-optimized UI affects the expected
   // result.
-  int expected_value = GetParam() ? HTCAPTION : HTCLIENT;
+  int expected_value =
+      GetParam() == switches::kTopChromeMDMaterialTouchOptimized ? HTCAPTION
+                                                                 : HTCLIENT;
   EXPECT_EQ(expected_value, frame_view->NonClientHitTest(avatar_center));
   EXPECT_FALSE(frame_view->profile_indicator_icon());
 
@@ -338,10 +342,12 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   const AccountId account_id2(AccountId::FromUserEmail("user2"));
   manager->ShowWindowForUser(browser()->window()->GetNativeWindow(),
                              account_id2);
-  // Clicking on the avatar icon should have same behaviour like clicking on
-  // the caption area, i.e., allow the user to drag the browser window around.
-  EXPECT_EQ(HTCAPTION, frame_view->NonClientHitTest(avatar_center));
-  EXPECT_TRUE(frame_view->profile_indicator_icon());
+  if (GetParam() != switches::kTopChromeMDMaterialRefresh) {
+    // Clicking on the avatar icon should have same behaviour like clicking on
+    // the caption area, i.e., allow the user to drag the browser window around.
+    EXPECT_EQ(HTCAPTION, frame_view->NonClientHitTest(avatar_center));
+    EXPECT_TRUE(frame_view->profile_indicator_icon());
+  }
 }
 
 // Tests that for an incognito browser, there is an avatar icon view, unless in
@@ -352,7 +358,7 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest, IncognitoAvatar) {
       BrowserView::GetBrowserViewForBrowser(incognito_browser);
   BrowserNonClientFrameViewAsh* frame_view = GetFrameViewAsh(browser_view);
 
-  const bool should_have_avatar = !GetParam();
+  const bool should_have_avatar = GetParam() == switches::kTopChromeMDMaterial;
   const bool has_avatar = !!frame_view->profile_indicator_icon();
   EXPECT_EQ(should_have_avatar, has_avatar);
 }
@@ -486,7 +492,7 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
 namespace {
 
 class ImmersiveModeBrowserViewTest
-    : public TouchOptimizedUiParamTest<InProcessBrowserTest>,
+    : public TopChromeMdParamTest<InProcessBrowserTest>,
       public ImmersiveModeController::Observer {
  public:
   ImmersiveModeBrowserViewTest() = default;
@@ -594,7 +600,7 @@ IN_PROC_BROWSER_TEST_P(ImmersiveModeBrowserViewTest,
 namespace {
 
 class HostedAppNonClientFrameViewAshTest
-    : public TouchOptimizedUiParamTest<BrowserActionsBarBrowserTest> {
+    : public TopChromeMdParamTest<BrowserActionsBarBrowserTest> {
  public:
   HostedAppNonClientFrameViewAshTest() = default;
   ~HostedAppNonClientFrameViewAshTest() override = default;
@@ -610,8 +616,7 @@ class HostedAppNonClientFrameViewAshTest
   views::MenuButton* app_menu_button_ = nullptr;
 
   void SetUpOnMainThread() override {
-    TouchOptimizedUiParamTest<
-        BrowserActionsBarBrowserTest>::SetUpOnMainThread();
+    TopChromeMdParamTest<BrowserActionsBarBrowserTest>::SetUpOnMainThread();
 
     scoped_feature_list_.InitAndEnableFeature(features::kDesktopPWAWindowing);
     HostedAppButtonContainer::DisableAnimationForTesting();
@@ -810,7 +815,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, BrowserActions) {
 namespace {
 
 class BrowserNonClientFrameViewAshBackButtonTest
-    : public TouchOptimizedUiParamTest<InProcessBrowserTest> {
+    : public TopChromeMdParamTest<InProcessBrowserTest> {
  public:
   BrowserNonClientFrameViewAshBackButtonTest() = default;
   ~BrowserNonClientFrameViewAshBackButtonTest() override = default;
@@ -1048,9 +1053,13 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   EXPECT_EQ(inset_normal, inset_in_overview_mode);
 }
 
-#define INSTANTIATE_TEST_CASE(name)                               \
-  INSTANTIATE_TEST_CASE_P(, name, ::testing::Values(true, false), \
-                          &TouchOptimizedUiStatusToString)
+#define INSTANTIATE_TEST_CASE(name)                                   \
+  INSTANTIATE_TEST_CASE_P(                                            \
+      , name,                                                         \
+      ::testing::Values(switches::kTopChromeMDMaterial,               \
+                        switches::kTopChromeMDMaterialTouchOptimized, \
+                        switches::kTopChromeMDMaterialRefresh),       \
+      &TopChromeMdParamToString)
 
 INSTANTIATE_TEST_CASE(BrowserNonClientFrameViewAshTest);
 INSTANTIATE_TEST_CASE(ImmersiveModeBrowserViewTest);
