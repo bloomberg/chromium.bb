@@ -7,11 +7,9 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_module.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_tree_linker_registry.h"
-#include "third_party/blink/renderer/core/script/layered_api.h"
 #include "third_party/blink/renderer/core/script/module_script.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loading_log.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "v8/include/v8.h"
 
@@ -130,37 +128,14 @@ void ModuleTreeLinker::AdvanceState(State new_state) {
 }
 
 // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-script-tree
-void ModuleTreeLinker::FetchRoot(const KURL& original_url,
+void ModuleTreeLinker::FetchRoot(const KURL& url,
                                  const ScriptFetchOptions& options) {
 #if DCHECK_IS_ON()
-  original_url_ = original_url;
+  url_ = url;
   root_is_inline_ = false;
 #endif
 
   AdvanceState(State::kFetchingSelf);
-
-  KURL url = original_url;
-  // <spec
-  // href="https://github.com/drufball/layered-apis/blob/master/spec.md#fetch-a-module-script-graph"
-  // step="1">Set url to the layered API fetching URL for url.</spec>
-  if (RuntimeEnabledFeatures::LayeredAPIEnabled())
-    url = blink::layered_api::ResolveFetchingURL(url);
-
-#if DCHECK_IS_ON()
-  url_ = url;
-#endif
-
-  // <spec
-  // href="https://github.com/drufball/layered-apis/blob/master/spec.md#fetch-a-module-script-graph"
-  // step="2">If url is failure, asynchronously complete this algorithm with
-  // null.</spec>
-  if (!url.IsValid()) {
-    result_ = nullptr;
-    modulator_->TaskRunner()->PostTask(
-        FROM_HERE, WTF::Bind(&ModuleTreeLinker::AdvanceState,
-                             WrapPersistent(this), State::kFinished));
-    return;
-  }
 
   // Step 1. Let visited set be << url >>.
   visited_set_.insert(url);
@@ -179,8 +154,7 @@ void ModuleTreeLinker::FetchRootInline(ModuleScript* module_script) {
   // Top-level entry point for [FDaI] for an inline module script.
   DCHECK(module_script);
 #if DCHECK_IS_ON()
-  original_url_ = module_script->BaseURL();
-  url_ = original_url_;
+  url_ = module_script->BaseURL();
   root_is_inline_ = true;
 #endif
 
@@ -513,7 +487,6 @@ ScriptValue ModuleTreeLinker::FindFirstParseError(
 #if DCHECK_IS_ON()
 std::ostream& operator<<(std::ostream& stream, const ModuleTreeLinker& linker) {
   stream << "ModuleTreeLinker[" << &linker
-         << ", original_url=" << linker.original_url_.GetString()
          << ", url=" << linker.url_.GetString()
          << ", inline=" << linker.root_is_inline_ << "]";
   return stream;
