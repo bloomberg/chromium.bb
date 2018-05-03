@@ -11,6 +11,13 @@
 // cookies, caches, passwords, and autofill).
 @interface ClearBrowsingDataTableViewController : ChromeTableViewController
 
+// Initializers.
+- (instancetype)init NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithTableViewStyle:(UITableViewStyle)style
+                           appBarStyle:
+                               (ChromeTableViewControllerStyle)appBarStyle
+    NS_UNAVAILABLE;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_HISTORY_CLEAR_BROWSING_DATA_TABLE_VIEW_CONTROLLER_H_

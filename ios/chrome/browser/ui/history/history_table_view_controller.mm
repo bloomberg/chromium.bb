@@ -110,6 +110,11 @@ const int kMaxFetchCount = 100;
 
 #pragma mark - ViewController Lifecycle.
 
+- (instancetype)init {
+  return [super initWithTableViewStyle:UITableViewStylePlain
+                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+}
+
 - (void)viewDidLoad {
   [super viewDidLoad];
   [self loadModel];
@@ -474,6 +479,8 @@ const int kMaxFetchCount = 100;
 #pragma mark - UIScrollViewDelegate
 
 - (void)scrollViewDidScroll:(UIScrollView*)scrollView {
+  [super scrollViewDidScroll:scrollView];
+
   if (self.hasFinishedLoading)
     return;
 

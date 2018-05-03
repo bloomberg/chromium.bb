@@ -33,6 +33,11 @@ const CGFloat kScrollIndicatorVerticalInsets = 11;
 @synthesize commandHandler = _commandHandler;
 @synthesize dispatcher = _dispatcher;
 
+- (instancetype)init {
+  return [super initWithTableViewStyle:UITableViewStyleGrouped
+                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+}
+
 #pragma mark - UIViewController
 
 - (void)viewDidLoad {
