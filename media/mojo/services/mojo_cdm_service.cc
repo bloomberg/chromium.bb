@@ -169,7 +169,10 @@ void MojoCdmService::OnCdmCreated(
   mojom::DecryptorPtr decryptor_ptr;
   CdmContext* const cdm_context = cdm_->GetCdmContext();
   if (cdm_context && cdm_context->GetDecryptor()) {
-    decryptor_.reset(new MojoDecryptorService(cdm_context->GetDecryptor()));
+    // Both |cdm_| and |decryptor_| are owned by |this|, so we don't need to
+    // pass in a CdmContextRef.
+    decryptor_.reset(
+        new MojoDecryptorService(cdm_context->GetDecryptor(), nullptr));
     decryptor_binding_ = std::make_unique<mojo::Binding<mojom::Decryptor>>(
         decryptor_.get(), MakeRequest(&decryptor_ptr));
     decryptor_binding_->set_connection_error_handler(base::BindOnce(

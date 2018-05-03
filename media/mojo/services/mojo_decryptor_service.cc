@@ -45,10 +45,16 @@ class FrameResourceReleaserImpl final : public mojom::FrameResourceReleaser {
 
 }  // namespace
 
-MojoDecryptorService::MojoDecryptorService(media::Decryptor* decryptor)
-    : decryptor_(decryptor), weak_factory_(this) {
+MojoDecryptorService::MojoDecryptorService(
+    media::Decryptor* decryptor,
+    std::unique_ptr<CdmContextRef> cdm_context_ref)
+    : decryptor_(decryptor),
+      cdm_context_ref_(std::move(cdm_context_ref)),
+      weak_factory_(this) {
   DVLOG(1) << __func__;
   DCHECK(decryptor_);
+  // |cdm_context_ref_| could be null, in which case the owner of |this| will
+  // make sure |decryptor_| is always valid.
   weak_this_ = weak_factory_.GetWeakPtr();
 }
 

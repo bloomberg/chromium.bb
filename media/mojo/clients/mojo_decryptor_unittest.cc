@@ -45,7 +45,8 @@ class MojoDecryptorTest : public ::testing::Test {
     decryptor_.reset(new StrictMock<MockDecryptor>());
 
     mojom::DecryptorPtr remote_decryptor;
-    mojo_decryptor_service_.reset(new MojoDecryptorService(decryptor_.get()));
+    mojo_decryptor_service_.reset(
+        new MojoDecryptorService(decryptor_.get(), nullptr));
     binding_ = std::make_unique<mojo::Binding<mojom::Decryptor>>(
         mojo_decryptor_service_.get(), MakeRequest(&remote_decryptor));
     binding_->set_connection_error_handler(base::BindOnce(
