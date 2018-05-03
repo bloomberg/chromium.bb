@@ -239,10 +239,6 @@ void OmniboxResultView::Invalidate() {
                                           keyword_match->description_class);
     keyword_view_->description()->Dim();
   }
-
-  // TODO(dschuyler): without this Layout call the text will shift slightly when
-  // hovered. Look into removing this call (without the text shifting).
-  Layout();
 }
 
 void OmniboxResultView::OnSelected() {
