@@ -444,6 +444,9 @@ void Shell::PlatformSetContents() {
     aura::Window* parent = platform_->host()->window();
     if (!parent->Contains(content)) {
       parent->AddChild(content);
+      // Move the cursor to a fixed position before tests run to avoid getting
+      // an unpredictable result from mouse events.
+      content->MoveCursorTo(gfx::Point());
       content->Show();
     }
     content->SetBounds(gfx::Rect(content_size_));

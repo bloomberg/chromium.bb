@@ -28,6 +28,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/compositor/dip_util.h"
+#include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/gestures/gesture_recognizer.h"
@@ -227,10 +228,7 @@ void WindowEventDispatcher::ReleasePointerMoves() {
 
 gfx::Point WindowEventDispatcher::GetLastMouseLocationInRoot() const {
   gfx::Point location = Env::GetInstance()->last_mouse_location();
-  client::ScreenPositionClient* client =
-      client::GetScreenPositionClient(window());
-  if (client)
-    client->ConvertPointFromScreen(window(), &location);
+  ConvertPointFromScreen(&location);
   return location;
 }
 
@@ -262,6 +260,13 @@ Window* WindowEventDispatcher::window() {
 
 const Window* WindowEventDispatcher::window() const {
   return host_->window();
+}
+
+void WindowEventDispatcher::ConvertPointFromScreen(gfx::Point* point) const {
+  client::ScreenPositionClient* client =
+      client::GetScreenPositionClient(window());
+  if (client)
+    client->ConvertPointFromScreen(window(), point);
 }
 
 void WindowEventDispatcher::TransformEventForDeviceScaleFactor(
@@ -860,10 +865,14 @@ ui::EventDispatchDetails WindowEventDispatcher::SynthesizeMouseMoveEvent() {
   if (Env::GetInstance()->mouse_button_flags())
     return details;
 
-  gfx::Point root_mouse_location = GetLastMouseLocationInRoot();
-  if (!window()->bounds().Contains(root_mouse_location))
+  // Do not use GetLastMouseLocationInRoot here because it's not updated when
+  // the mouse is not over the window or when the window is minimized.
+  gfx::Point mouse_location =
+      display::Screen::GetScreen()->GetCursorScreenPoint();
+  ConvertPointFromScreen(&mouse_location);
+  if (!window()->bounds().Contains(mouse_location))
     return details;
-  gfx::Point host_mouse_location = root_mouse_location;
+  gfx::Point host_mouse_location = mouse_location;
   host_->ConvertDIPToPixels(&host_mouse_location);
   ui::MouseEvent event(ui::ET_MOUSE_MOVED, host_mouse_location,
                        host_mouse_location, ui::EventTimeForNow(),
