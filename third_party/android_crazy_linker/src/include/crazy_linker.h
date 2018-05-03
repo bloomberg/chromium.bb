@@ -14,8 +14,11 @@
 //
 //   - It can use an arbitrary search path.
 //
-//   - It can load a library at a memory fixed address, or from a fixed
-//     file offset (both must be page-aligned).
+//   - It can load a library at a memory fixed address.
+//
+//   - It can load libraries from zip archives (as long as they are
+//     page aligned and uncompressed). Even when running on pre-Android M
+//     systems.
 //
 //   - It can share the RELRO section between two libraries
 //     loaded at the same address in two distinct processes.
@@ -79,15 +82,6 @@ void crazy_context_set_load_address(crazy_context_t* context,
 
 // Return the current load address in a context.
 size_t crazy_context_get_load_address(crazy_context_t* context) _CRAZY_PUBLIC;
-
-// Set the explicit file offset in a context object. The value should
-// always page-aligned, or the load will fail.
-// Note you can not use the same file with multiple offsets. See crbug/388223.
-void crazy_context_set_file_offset(crazy_context_t* context,
-                                   size_t file_offset) _CRAZY_PUBLIC;
-
-// Return the current file offset in a context object.
-size_t crazy_context_get_file_offset(crazy_context_t* context);
 
 // Add one or more paths to the list of library search paths held
 // by a given context. |path| is a string using a column (:) as a
