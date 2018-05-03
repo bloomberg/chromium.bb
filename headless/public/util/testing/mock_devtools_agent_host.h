@@ -19,8 +19,6 @@ class MockDevToolsAgentHost : public content::DevToolsAgentHost {
   MOCK_METHOD1(AttachClient, void(content::DevToolsAgentHostClient* client));
   MOCK_METHOD1(AttachRestrictedClient,
                bool(content::DevToolsAgentHostClient* client));
-  MOCK_METHOD1(ForceAttachClient,
-               void(content::DevToolsAgentHostClient* client));
   MOCK_METHOD1(DetachClient, bool(content::DevToolsAgentHostClient* client));
   MOCK_METHOD2(DispatchProtocolMessage,
                bool(content::DevToolsAgentHostClient* client,

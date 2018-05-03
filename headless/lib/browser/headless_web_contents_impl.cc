@@ -514,15 +514,8 @@ HeadlessDevToolsTarget* HeadlessWebContentsImpl::GetDevToolsTarget() {
   return web_contents()->GetMainFrame()->IsRenderFrameLive() ? this : nullptr;
 }
 
-bool HeadlessWebContentsImpl::AttachClient(HeadlessDevToolsClient* client) {
-  return HeadlessDevToolsClientImpl::From(client)->AttachToHost(
-      agent_host_.get());
-}
-
-void HeadlessWebContentsImpl::ForceAttachClient(
-    HeadlessDevToolsClient* client) {
-  HeadlessDevToolsClientImpl::From(client)->ForceAttachToHost(
-      agent_host_.get());
+void HeadlessWebContentsImpl::AttachClient(HeadlessDevToolsClient* client) {
+  HeadlessDevToolsClientImpl::From(client)->AttachToHost(agent_host_.get());
 }
 
 void HeadlessWebContentsImpl::DetachClient(HeadlessDevToolsClient* client) {
