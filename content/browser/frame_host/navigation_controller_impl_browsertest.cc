@@ -1430,79 +1430,73 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 // Verify that reloading a page with url anchor scrolls to correct position.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, ReloadWithUrlAnchor) {
-  GURL url1(embedded_test_server()->GetURL(
-      "/navigation_controller/reload-with-url-anchor.html#d2"));
-  EXPECT_TRUE(NavigateToURL(shell(), url1));
+  GURL url(embedded_test_server()->GetURL(
+      "/navigation_controller/reload-with-url-anchor.html#center-element"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
 
-  std::string script =
-      "domAutomationController.send(document.getElementById('div').scrollTop)";
-  double value = 0;
-  EXPECT_TRUE(ExecuteScriptAndExtractDouble(shell(), script, &value));
+  double window_scroll_y = 0;
+  std::string get_window_scroll_y =
+      "domAutomationController.send(window.scrollY);";
+  EXPECT_TRUE(ExecuteScriptAndExtractDouble(shell(), get_window_scroll_y,
+                                            &window_scroll_y));
 
-  double expected = 100;
+  // The 'center-element' y-position is 2000px. 2000px is an arbitrary value.
+  double expected_window_scroll_y = 2000;
   if (IsUseZoomForDSFEnabled()) {
     float device_scale_factor = shell()
                                     ->web_contents()
                                     ->GetRenderWidgetHostView()
                                     ->GetDeviceScaleFactor();
-    expected = floor(device_scale_factor * expected) / device_scale_factor;
+    expected_window_scroll_y =
+        floor(device_scale_factor * expected_window_scroll_y) /
+        device_scale_factor;
   }
-  EXPECT_FLOAT_EQ(expected, value);
+  EXPECT_FLOAT_EQ(expected_window_scroll_y, window_scroll_y);
 
   // Reload.
   ReloadBlockUntilNavigationsComplete(shell(), 1);
 
-  EXPECT_TRUE(ExecuteScriptAndExtractDouble(shell(), script, &value));
-  EXPECT_FLOAT_EQ(expected, value);
+  EXPECT_TRUE(ExecuteScriptAndExtractDouble(shell(), get_window_scroll_y,
+                                            &window_scroll_y));
+  EXPECT_FLOAT_EQ(expected_window_scroll_y, window_scroll_y);
 }
 
 // Verify that reloading a page with url anchor and scroll scrolls to correct
 // position.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                        ReloadWithUrlAnchorAndScroll) {
-  GURL url1(embedded_test_server()->GetURL(
-      "/navigation_controller/reload-with-url-anchor.html#d2"));
-  EXPECT_TRUE(NavigateToURL(shell(), url1));
+  GURL url(embedded_test_server()->GetURL(
+      "/navigation_controller/reload-with-url-anchor.html#center-element"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
 
-  std::string script_scroll_down = "window.scroll(0, 10)";
+  // The 'center-element' y-position is 2000px. This script scrolls the view
+  // 100px below this element. 2000px and 100px are arbitrary values.
+  std::string script_scroll_down = "window.scroll(0, 2100)";
   EXPECT_TRUE(ExecuteScript(shell(), script_scroll_down));
 
-  std::string get_div_scroll_top =
-      "domAutomationController.send(document.getElementById('div').scrollTop)";
   std::string get_window_scroll_y =
       "domAutomationController.send(window.scrollY)";
-  double div_scroll_top = 0;
   double window_scroll_y = 0;
-  EXPECT_TRUE(ExecuteScriptAndExtractDouble(shell(), get_div_scroll_top,
-                                            &div_scroll_top));
   EXPECT_TRUE(ExecuteScriptAndExtractDouble(shell(), get_window_scroll_y,
                                             &window_scroll_y));
 
-  double expected_div_scroll_top = 100;
-  double expected_window_scroll_y = 10;
+  double expected_window_scroll_y = 2100;
   if (IsUseZoomForDSFEnabled()) {
     float device_scale_factor = shell()
                                     ->web_contents()
                                     ->GetRenderWidgetHostView()
                                     ->GetDeviceScaleFactor();
-    expected_div_scroll_top =
-        floor(device_scale_factor * expected_div_scroll_top) /
-        device_scale_factor;
     expected_window_scroll_y =
         floor(device_scale_factor * expected_window_scroll_y) /
         device_scale_factor;
   }
-  EXPECT_FLOAT_EQ(expected_div_scroll_top, div_scroll_top);
   EXPECT_FLOAT_EQ(expected_window_scroll_y, window_scroll_y);
 
   // Reload.
   ReloadBlockUntilNavigationsComplete(shell(), 1);
 
-  EXPECT_TRUE(ExecuteScriptAndExtractDouble(shell(), get_div_scroll_top,
-                                            &div_scroll_top));
   EXPECT_TRUE(ExecuteScriptAndExtractDouble(shell(), get_window_scroll_y,
                                             &window_scroll_y));
-  EXPECT_FLOAT_EQ(expected_div_scroll_top, div_scroll_top);
   EXPECT_FLOAT_EQ(expected_window_scroll_y, window_scroll_y);
 }
 
