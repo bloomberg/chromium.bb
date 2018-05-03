@@ -33,14 +33,17 @@ AnimationEvent::AnimationEvent(const AtomicString& type,
                                const AnimationEventInit& initializer)
     : Event(type, initializer),
       animation_name_(initializer.animationName()),
-      elapsed_time_(initializer.elapsedTime()) {}
+      elapsed_time_(initializer.elapsedTime()),
+      pseudo_element_(initializer.pseudoElement()) {}
 
 AnimationEvent::AnimationEvent(const AtomicString& type,
                                const String& animation_name,
-                               double elapsed_time)
+                               double elapsed_time,
+                               const String& pseudo_element)
     : Event(type, Bubbles::kYes, Cancelable::kYes),
       animation_name_(animation_name),
-      elapsed_time_(elapsed_time) {}
+      elapsed_time_(elapsed_time),
+      pseudo_element_(pseudo_element) {}
 
 AnimationEvent::~AnimationEvent() = default;
 
@@ -50,6 +53,10 @@ const String& AnimationEvent::animationName() const {
 
 double AnimationEvent::elapsedTime() const {
   return elapsed_time_;
+}
+
+const String& AnimationEvent::pseudoElement() const {
+  return pseudo_element_;
 }
 
 const AtomicString& AnimationEvent::InterfaceName() const {

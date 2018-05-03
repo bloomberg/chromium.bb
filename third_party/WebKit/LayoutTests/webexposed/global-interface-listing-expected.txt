@@ -202,6 +202,7 @@ interface AnimationEvent : Event
     attribute @@toStringTag
     getter animationName
     getter elapsedTime
+    getter pseudoElement
     method constructor
 interface AnimationPlaybackEvent : Event
     attribute @@toStringTag
@@ -8742,6 +8743,7 @@ interface WebKitAnimationEvent : Event
     attribute @@toStringTag
     getter animationName
     getter elapsedTime
+    getter pseudoElement
     method constructor
 interface WebKitCSSMatrix : DOMMatrixReadOnly
     attribute @@toStringTag

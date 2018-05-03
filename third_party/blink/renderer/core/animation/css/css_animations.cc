@@ -1109,8 +1109,10 @@ void CSSAnimations::AnimationEventDelegate::MaybeDispatch(
     const AtomicString& event_name,
     double elapsed_time) {
   if (animation_target_->GetDocument().HasListenerType(listener_type)) {
-    AnimationEvent* event =
-        AnimationEvent::Create(event_name, name_, elapsed_time);
+    String pseudo_element_name = PseudoElement::PseudoElementNameForEvents(
+        animation_target_->GetPseudoId());
+    AnimationEvent* event = AnimationEvent::Create(
+        event_name, name_, elapsed_time, pseudo_element_name);
     event->SetTarget(GetEventTarget());
     GetDocument().EnqueueAnimationFrameEvent(event);
   }
