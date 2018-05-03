@@ -49,7 +49,7 @@ class SessionTest : public SessionClient, public ::testing::Test {
     OnGetVideoCaptureHost();
   }
 
-  void GetNewWorkContext(
+  void GetNetWorkContext(
       network::mojom::NetworkContextRequest request) override {
     network_context_ = std::make_unique<MockNetworkContext>(std::move(request));
     OnGetNetworkContext();
