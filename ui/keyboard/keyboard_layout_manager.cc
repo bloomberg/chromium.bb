@@ -27,11 +27,6 @@ void KeyboardLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
   controller_->GetContainerWindow()->SetBounds(gfx::Rect());
 }
 
-void KeyboardLayoutManager::OnWindowRemovedFromLayout(aura::Window* child) {
-  DCHECK_EQ(child, contents_window_);
-  contents_window_ = nullptr;
-}
-
 void KeyboardLayoutManager::SetChildBounds(aura::Window* child,
                                            const gfx::Rect& requested_bounds) {
   DCHECK(child == contents_window_);

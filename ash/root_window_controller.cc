@@ -568,7 +568,7 @@ void RootWindowController::ActivateKeyboard(
   }
 
   aura::Window* keyboard_window = keyboard_controller->GetContainerWindow();
-  DCHECK(!keyboard_window->parent());
+  DCHECK(keyboard_window->parent() == nullptr);
 
   Shell::Get()->NotifyVirtualKeyboardActivated(true, GetRootWindow());
   aura::Window* vk_container =

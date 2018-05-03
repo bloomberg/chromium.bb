@@ -95,11 +95,6 @@ bool isAllowedStateTransition(keyboard::KeyboardControllerState from,
           // HideKeyboard can be called at anytime for example on shutdown.
           {keyboard::KeyboardControllerState::SHOWN,
            keyboard::KeyboardControllerState::HIDDEN},
-
-          // Reset KeyboardUI scenario
-          // HIDDEN -> INITIAL
-          {keyboard::KeyboardControllerState::HIDDEN,
-           keyboard::KeyboardControllerState::INITIAL},
       };
   return kAllowedStateTransition.count(std::make_pair(from, to)) == 1;
 };
@@ -342,28 +337,6 @@ bool KeyboardController::HasObserver(
 
 void KeyboardController::RemoveObserver(KeyboardControllerObserver* observer) {
   observer_list_.RemoveObserver(observer);
-}
-
-void KeyboardController::ResetKeyboardUI(std::unique_ptr<KeyboardUI> new_ui) {
-  HideKeyboard(HIDE_REASON_AUTOMATIC);
-  // |state_| should be one of HIDDEN, INITIAL and LOADING_EXTENSION here.
-  DCHECK(state_ == KeyboardControllerState::INITIAL ||
-         state_ == KeyboardControllerState::HIDDEN ||
-         state_ == KeyboardControllerState::LOADING_EXTENSION);
-  if (state_ == KeyboardControllerState::LOADING_EXTENSION)
-    ChangeState(KeyboardControllerState::HIDDEN);
-  ChangeState(KeyboardControllerState::INITIAL);
-
-  ui_->GetInputMethod()->RemoveObserver(this);
-  for (KeyboardControllerObserver& observer : observer_list_)
-    observer.OnKeyboardClosed();
-  ui_->SetController(nullptr);
-
-  ui_ = std::move(new_ui);
-  if (ui_) {
-    ui_->GetInputMethod()->AddObserver(this);
-    ui_->SetController(this);
-  }
 }
 
 void KeyboardController::MoveToDisplayWithTransition(

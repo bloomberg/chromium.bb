@@ -318,9 +318,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   // controller. Destroys the old keyboard controller if it already exists.
   void CreateKeyboard();
 
-  // Reloads the UI of a keyboard controller without destroying the controller.
-  void ReloadKeyboard();
-
   // Destroys the virtual keyboard.
   void DestroyKeyboard();
 
