@@ -271,6 +271,7 @@ crbug.com/819617 [ Linux ] fast/text/descent-clip-in-scaled-page.html [ Failure 
 crbug.com/796943 fast/text/international/shape-across-elements-simple.html [ Failure ]
 
 ### virtual/layout_ng/external/wpt/css/CSS2/floats
+crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-in-table-caption-001.html [ Failure ]
 crbug.com/711704 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-rule3-outside-left-002.xht [ Failure ]
 crbug.com/711704 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-rule3-outside-right-002.xht [ Failure ]
 crbug.com/711704 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-rule7-outside-left-001.xht [ Failure ]
@@ -278,6 +279,7 @@ crbug.com/711704 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-rule7-out
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-bfc-006.xht [ Failure ]
 
 ### virtual/layout_ng/external/wpt/css/CSS2/normal-flow
+crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/margin-collapsing-in-table-caption-002.html [ Failure ]
 crbug.com/704961 [ Mac ] virtual/layout_ng/external/wpt/css/CSS2/normal-flow/width-inherit-001.xht [ Failure ]
 
 # Inline: border in continuations. Fail in Blink.
