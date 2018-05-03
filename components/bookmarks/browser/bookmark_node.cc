@@ -26,19 +26,15 @@ const base::char16 kInvalidChars[] = {
 
 // BookmarkNode ---------------------------------------------------------------
 
+// static
 const int64_t BookmarkNode::kInvalidSyncTransactionVersion = -1;
 
-BookmarkNode::BookmarkNode(const GURL& url)
-    : url_(url) {
-  Initialize(0);
-}
+BookmarkNode::BookmarkNode(const GURL& url) : BookmarkNode(0, url, false) {}
 
-BookmarkNode::BookmarkNode(int64_t id, const GURL& url) : url_(url) {
-  Initialize(id);
-}
+BookmarkNode::BookmarkNode(int64_t id, const GURL& url)
+    : BookmarkNode(id, url, false) {}
 
-BookmarkNode::~BookmarkNode() {
-}
+BookmarkNode::~BookmarkNode() = default;
 
 void BookmarkNode::SetTitle(const base::string16& title) {
   // Replace newlines and other problematic whitespace characters in
@@ -111,16 +107,13 @@ const GURL& BookmarkNode::GetTitledUrlNodeUrl() const {
   return url_;
 }
 
-void BookmarkNode::Initialize(int64_t id) {
-  id_ = id;
-  type_ = url_.is_empty() ? FOLDER : URL;
-  date_added_ = base::Time::Now();
-  favicon_type_ = favicon_base::IconType::kInvalid;
-  favicon_state_ = INVALID_FAVICON;
-  favicon_load_task_id_ = base::CancelableTaskTracker::kBadTaskId;
-  meta_info_map_.reset();
-  sync_transaction_version_ = kInvalidSyncTransactionVersion;
-}
+BookmarkNode::BookmarkNode(int64_t id, const GURL& url, bool is_permanent_node)
+    : id_(id),
+      url_(url),
+      type_(url_.is_empty() ? FOLDER : URL),
+      date_added_(base::Time::Now()),
+      favicon_type_(favicon_base::IconType::kInvalid),
+      is_permanent_node_(is_permanent_node) {}
 
 void BookmarkNode::InvalidateFavicon() {
   icon_url_.reset();
@@ -132,10 +125,9 @@ void BookmarkNode::InvalidateFavicon() {
 // BookmarkPermanentNode -------------------------------------------------------
 
 BookmarkPermanentNode::BookmarkPermanentNode(int64_t id)
-    : BookmarkNode(id, GURL()), visible_(true) {}
+    : BookmarkNode(id, GURL(), true) {}
 
-BookmarkPermanentNode::~BookmarkPermanentNode() {
-}
+BookmarkPermanentNode::~BookmarkPermanentNode() = default;
 
 bool BookmarkPermanentNode::IsVisible() const {
   return visible_ || !empty();

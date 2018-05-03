@@ -26,7 +26,9 @@ class SequencedTaskRunner;
 
 namespace bookmarks {
 
+class BookmarkClient;
 class BookmarkModel;
+class BookmarkNode;
 
 // A list of BookmarkPermanentNodes that owns them.
 using BookmarkPermanentNodeList =
@@ -35,7 +37,8 @@ using BookmarkPermanentNodeList =
 // A callback that generates a BookmarkPermanentNodeList, given a max ID to
 // use. The max ID argument will be updated after any new nodes have been
 // created and assigned IDs.
-using LoadExtraCallback = base::Callback<BookmarkPermanentNodeList(int64_t*)>;
+using LoadExtraCallback =
+    base::OnceCallback<BookmarkPermanentNodeList(int64_t*)>;
 
 // BookmarkLoadDetails is used by BookmarkStorage when loading bookmarks.
 // BookmarkModel creates a BookmarkLoadDetails and passes it (including
@@ -47,38 +50,21 @@ using LoadExtraCallback = base::Callback<BookmarkPermanentNodeList(int64_t*)>;
 // threading problems.
 class BookmarkLoadDetails {
  public:
-  BookmarkLoadDetails(BookmarkPermanentNode* bb_node,
-                      BookmarkPermanentNode* other_folder_node,
-                      BookmarkPermanentNode* mobile_folder_node,
-                      const LoadExtraCallback& load_extra_callback,
-                      std::unique_ptr<TitledUrlIndex> index,
-                      int64_t max_id);
+  explicit BookmarkLoadDetails(BookmarkClient* client);
   ~BookmarkLoadDetails();
 
-  void LoadExtraNodes();
+  // Loads the extra nodes and adds them to |root_|. Returns true if at least
+  // one node was added that has children.
+  bool LoadExtraNodes();
 
-  BookmarkPermanentNode* bb_node() { return bb_node_.get(); }
-  std::unique_ptr<BookmarkPermanentNode> owned_bb_node() {
-    return std::move(bb_node_);
+  std::unique_ptr<BookmarkNode> owned_root_node() {
+    return std::move(root_node_);
   }
-  BookmarkPermanentNode* mobile_folder_node() {
-    return mobile_folder_node_.get();
-  }
-  std::unique_ptr<BookmarkPermanentNode> owned_mobile_folder_node() {
-    return std::move(mobile_folder_node_);
-  }
-  BookmarkPermanentNode* other_folder_node() {
-    return other_folder_node_.get();
-  }
-  std::unique_ptr<BookmarkPermanentNode> owned_other_folder_node() {
-    return std::move(other_folder_node_);
-  }
-  const BookmarkPermanentNodeList& extra_nodes() {
-    return extra_nodes_;
-  }
-  BookmarkPermanentNodeList owned_extra_nodes() {
-    return std::move(extra_nodes_);
-  }
+  BookmarkNode* root_node() { return root_node_ptr_; }
+  BookmarkPermanentNode* bb_node() { return bb_node_; }
+  BookmarkPermanentNode* mobile_folder_node() { return mobile_folder_node_; }
+  BookmarkPermanentNode* other_folder_node() { return other_folder_node_; }
+
   TitledUrlIndex* index() { return index_.get(); }
   std::unique_ptr<TitledUrlIndex> owned_index() { return std::move(index_); }
 
@@ -120,21 +106,32 @@ class BookmarkLoadDetails {
   bool ids_reassigned() const { return ids_reassigned_; }
 
  private:
-  std::unique_ptr<BookmarkPermanentNode> bb_node_;
-  std::unique_ptr<BookmarkPermanentNode> other_folder_node_;
-  std::unique_ptr<BookmarkPermanentNode> mobile_folder_node_;
+  // Creates one of the possible permanent nodes (bookmark bar node, other node
+  // and mobile node) from |type|. The node is added to (and owned by) |root_|.
+  BookmarkPermanentNode* CreatePermanentNode(BookmarkClient* client,
+                                             BookmarkNode::Type type);
+
+  std::unique_ptr<BookmarkNode> root_node_;
+  BookmarkNode* root_node_ptr_;
+  BookmarkPermanentNode* bb_node_ = nullptr;
+  BookmarkPermanentNode* other_folder_node_ = nullptr;
+  BookmarkPermanentNode* mobile_folder_node_ = nullptr;
   LoadExtraCallback load_extra_callback_;
-  BookmarkPermanentNodeList extra_nodes_;
   std::unique_ptr<TitledUrlIndex> index_;
   BookmarkNode::MetaInfoMap model_meta_info_map_;
   int64_t model_sync_transaction_version_;
-  int64_t max_id_;
+  int64_t max_id_ = 1;
   std::string computed_checksum_;
   std::string stored_checksum_;
-  bool ids_reassigned_;
+  bool ids_reassigned_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkLoadDetails);
 };
+
+// Loads the bookmarks. This is intended to be called on the background thread.
+// Updates state in |details| based on the load.
+void LoadBookmarks(const base::FilePath& profile_path,
+                   BookmarkLoadDetails* details);
 
 // BookmarkStorage handles reading/write the bookmark bar model. The
 // BookmarkModel uses the BookmarkStorage to load bookmarks from disk, as well
@@ -151,22 +148,12 @@ class BookmarkStorage : public base::ImportantFileWriter::DataSerializer {
                   base::SequencedTaskRunner* sequenced_task_runner);
   ~BookmarkStorage() override;
 
-  // Loads the bookmarks into the model, notifying the model when done. This
-  // takes ownership of |details| and send the |OnLoadFinished| callback from
-  // a task in |task_runner|. See BookmarkLoadDetails for details.
-  void LoadBookmarks(
-      std::unique_ptr<BookmarkLoadDetails> details,
-      const scoped_refptr<base::SequencedTaskRunner>& task_runner);
-
   // Schedules saving the bookmark bar model to disk.
   void ScheduleSave();
 
   // Notification the bookmark bar model is going to be deleted. If there is
   // a pending save, it is saved immediately.
   void BookmarkModelDeleted();
-
-  // Callback from backend after loading the bookmark file.
-  void OnLoadFinished(std::unique_ptr<BookmarkLoadDetails> details);
 
   // ImportantFileWriter::DataSerializer implementation.
   bool SerializeData(std::string* output) override;

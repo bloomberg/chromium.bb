@@ -16,6 +16,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
@@ -76,10 +77,9 @@ class BookmarkModel : public BookmarkUndoProvider,
   // KeyedService:
   void Shutdown() override;
 
-  // Loads the bookmarks. This is called upon creation of the
-  // BookmarkModel. You need not invoke this directly.
-  // All load operations will be executed on |io_task_runner| and the completion
-  // callback will be called from |ui_task_runner|.
+  // Loads the bookmarks. This is called upon creation of the BookmarkModel. You
+  // need not invoke this directly. All load operations will be executed on
+  // |io_task_runner|. |ui_task_runner| is the task runner the model runs on.
   void Load(PrefService* pref_service,
             const base::FilePath& profile_path,
             const scoped_refptr<base::SequencedTaskRunner>& io_task_runner,
@@ -90,7 +90,7 @@ class BookmarkModel : public BookmarkUndoProvider,
 
   // Returns the root node. The 'bookmark bar' node and 'other' node are
   // children of the root node.
-  const BookmarkNode* root_node() const { return &root_; }
+  const BookmarkNode* root_node() const { return root_.get(); }
 
   // Returns the 'bookmark bar' node. This is NULL until loaded.
   const BookmarkNode* bookmark_bar_node() const { return bookmark_bar_node_; }
@@ -101,13 +101,15 @@ class BookmarkModel : public BookmarkUndoProvider,
   // Returns the 'mobile' node. This is NULL until loaded.
   const BookmarkNode* mobile_node() const { return mobile_node_; }
 
-  bool is_root_node(const BookmarkNode* node) const { return node == &root_; }
+  bool is_root_node(const BookmarkNode* node) const {
+    return node == root_.get();
+  }
 
   // Returns whether the given |node| is one of the permanent nodes - root node,
   // 'bookmark bar' node, 'other' node or 'mobile' node, or one of the root
   // nodes supplied by the |client_|.
   bool is_permanent_node(const BookmarkNode* node) const {
-    return node && (node == &root_ || node->parent() == &root_);
+    return node && (node == root_.get() || node->parent() == root_.get());
   }
 
   void AddObserver(BookmarkModelObserver* observer);
@@ -346,8 +348,7 @@ class BookmarkModel : public BookmarkUndoProvider,
   // This does NOT delete the node.
   void RemoveNode(BookmarkNode* node, std::set<GURL>* removed_urls);
 
-  // Invoked when loading is finished. Sets |loaded_| and notifies observers.
-  // BookmarkModel takes ownership of |details|.
+  // Called when done loading. Updates internal state and notifies observers.
   void DoneLoading(std::unique_ptr<BookmarkLoadDetails> details);
 
   // Populates |nodes_ordered_by_url_set_| from root.
@@ -380,10 +381,6 @@ class BookmarkModel : public BookmarkUndoProvider,
   // Returns true if the parent and index are valid.
   bool IsValidIndex(const BookmarkNode* parent, int index, bool allow_end);
 
-  // Creates one of the possible permanent nodes (bookmark bar node, other node
-  // and mobile node) from |type|.
-  BookmarkPermanentNode* CreatePermanentNode(BookmarkNode::Type type);
-
   // Notification that a favicon has finished loading. If we can decode the
   // favicon, FaviconLoaded is invoked.
   void OnFaviconDataAvailable(
@@ -414,27 +411,23 @@ class BookmarkModel : public BookmarkUndoProvider,
   // decoding since during decoding codec assigns node IDs.
   void set_next_node_id(int64_t id) { next_node_id_ = id; }
 
-  // Creates and returns a new BookmarkLoadDetails. It's up to the caller to
-  // delete the returned object.
-  std::unique_ptr<BookmarkLoadDetails> CreateLoadDetails();
-
   BookmarkUndoDelegate* undo_delegate() const;
 
   std::unique_ptr<BookmarkClient> client_;
 
   // Whether the initial set of data has been loaded.
-  bool loaded_;
+  bool loaded_ = false;
 
   // The root node. This contains the bookmark bar node, the 'other' node and
   // the mobile node as children.
-  BookmarkNode root_;
+  std::unique_ptr<BookmarkNode> root_;
 
-  BookmarkPermanentNode* bookmark_bar_node_;
-  BookmarkPermanentNode* other_node_;
-  BookmarkPermanentNode* mobile_node_;
+  BookmarkPermanentNode* bookmark_bar_node_ = nullptr;
+  BookmarkPermanentNode* other_node_ = nullptr;
+  BookmarkPermanentNode* mobile_node_ = nullptr;
 
   // The maximum ID assigned to the bookmark nodes in the model.
-  int64_t next_node_id_;
+  int64_t next_node_id_ = 1;
 
   // The observers.
   base::ObserverList<BookmarkModelObserver> observers_;
@@ -458,14 +451,16 @@ class BookmarkModel : public BookmarkUndoProvider,
   base::WaitableEvent loaded_signal_;
 
   // See description of IsDoingExtensiveChanges above.
-  int extensive_changes_;
+  int extensive_changes_ = 0;
 
   std::unique_ptr<BookmarkExpandedStateTracker> expanded_state_tracker_;
 
   std::set<std::string> non_cloned_keys_;
 
-  BookmarkUndoDelegate* undo_delegate_;
+  BookmarkUndoDelegate* undo_delegate_ = nullptr;
   std::unique_ptr<BookmarkUndoDelegate> empty_undo_delegate_;
+
+  base::WeakPtrFactory<BookmarkModel> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkModel);
 };
