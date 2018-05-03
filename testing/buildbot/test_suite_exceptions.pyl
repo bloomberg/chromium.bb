@@ -84,10 +84,6 @@
     ],
   },
   'base_unittests': {
-    'remove_from': [
-      # chromium.linux
-      'Fuchsia x64',
-    ],
     'modifications': {
       # chromium.android
       'KitKat Tablet Tester': {
