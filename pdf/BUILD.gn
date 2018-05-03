@@ -82,6 +82,8 @@ if (enable_pdf) {
         "pdfium/pdfium_assert_matching_enums.cc",
         "pdfium/pdfium_engine.cc",
         "pdfium/pdfium_engine.h",
+        "pdfium/pdfium_engine_exports.cc",
+        "pdfium/pdfium_engine_exports.h",
         "pdfium/pdfium_mem_buffer_file_read.cc",
         "pdfium/pdfium_mem_buffer_file_read.h",
         "pdfium/pdfium_mem_buffer_file_write.cc",
