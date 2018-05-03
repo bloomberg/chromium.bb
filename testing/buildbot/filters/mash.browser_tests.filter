@@ -46,9 +46,6 @@
 -HostedAppNonClientFrameViewAshTest.*
 -ImmersiveModeControllerAshHostedAppBrowserTest.*
 
-# Incorrect window bounds. Probably WindowSizerAsh problem.
--BrowserTestTabbedOrApp/BrowserTestParam.*
-
 # ash::Shell access from ChromeViewsDelegate::CreateDefaultNonClientFrameView()
 # e.g. from chromeos::CaptivePortalWindowProxy::Show().
 # See https://crbug.com/838974
