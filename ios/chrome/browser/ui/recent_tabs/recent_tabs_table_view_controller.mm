@@ -119,7 +119,8 @@ const int kRelativeTimeMaxHours = 4;
 #pragma mark - Public Interface
 
 - (instancetype)init {
-  self = [super initWithStyle:UITableViewStylePlain];
+  self = [super initWithTableViewStyle:UITableViewStylePlain
+                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
   if (self) {
     _sessionState = SessionsSyncUserState::USER_SIGNED_OUT;
     _syncedSessions.reset(new synced_sessions::SyncedSessions());

@@ -161,8 +161,7 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
   self.requestStartTime = [NSDate timeIntervalSinceReferenceDate];
 
   PopupMenuTableViewController* tableViewController =
-      [[PopupMenuTableViewController alloc]
-          initWithStyle:UITableViewStyleGrouped];
+      [[PopupMenuTableViewController alloc] init];
   tableViewController.dispatcher =
       static_cast<id<ApplicationCommands, BrowserCommands>>(self.dispatcher);
   tableViewController.baseViewController = self.baseViewController;

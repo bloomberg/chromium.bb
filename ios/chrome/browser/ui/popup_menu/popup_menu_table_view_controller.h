@@ -27,6 +27,13 @@
 // result of an interaction with the popup.
 @property(nonatomic, weak) UIViewController* baseViewController;
 
+// Initializers.
+- (instancetype)init NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithTableViewStyle:(UITableViewStyle)style
+                           appBarStyle:
+                               (ChromeTableViewControllerStyle)appBarStyle
+    NS_UNAVAILABLE;
+
 // Sets the |items| to be displayed by this Table View. Removes all the
 // currently presented items.
 - (void)setPopupMenuItems:

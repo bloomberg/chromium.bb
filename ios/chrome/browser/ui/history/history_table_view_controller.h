@@ -29,6 +29,13 @@ class ChromeBrowserState;
 // Delegate for this HistoryTableView.
 @property(nonatomic, weak) id<HistoryLocalCommands> localDispatcher;
 
+// Initializers.
+- (instancetype)init NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithTableViewStyle:(UITableViewStyle)style
+                           appBarStyle:
+                               (ChromeTableViewControllerStyle)appBarStyle
+    NS_UNAVAILABLE;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_HISTORY_HISTORY_TABLE_VIEW_CONTROLLER_H_

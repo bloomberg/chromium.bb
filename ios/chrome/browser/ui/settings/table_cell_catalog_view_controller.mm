@@ -33,7 +33,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @implementation TableCellCatalogViewController
 
 - (instancetype)init {
-  if ((self = [super initWithStyle:UITableViewStyleGrouped])) {
+  if ((self = [super
+           initWithTableViewStyle:UITableViewStyleGrouped
+                      appBarStyle:ChromeTableViewControllerStyleWithAppBar])) {
   }
   return self;
 }

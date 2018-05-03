@@ -15,6 +15,11 @@
 
 #pragma mark - ViewController Lifecycle.
 
+- (instancetype)init {
+  return [super initWithTableViewStyle:UITableViewStylePlain
+                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+}
+
 - (void)viewDidLoad {
   // TableView configuration
   self.tableView.estimatedRowHeight = 56;
