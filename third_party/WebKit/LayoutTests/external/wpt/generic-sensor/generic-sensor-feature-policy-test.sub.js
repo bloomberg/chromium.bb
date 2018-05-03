@@ -17,19 +17,17 @@ const cross_origin_src =
   "https://{{domains[www]}}:{{ports[https][0]}}" + same_origin_src;
 const base_src = "/feature-policy/resources/redirect-on-load.html#";
 
-function run_fp_tests_disabled(sensorName) {
-  const sensorType = self[sensorName];
+function run_fp_tests_disabled(sensorType) {
+  const sensorName = sensorType.name;
   const featureNameList = feature_policies[sensorName];
   const header = "Feature-Policy header " + featureNameList.join(" 'none';") + " 'none'";
   const desc = "'new " + sensorName + "()'";
 
   test(() => {
-    assert_true(sensorName in self);
     assert_throws("SecurityError", () => {new sensorType()});
   }, `${sensorName}: ${header} disallows the top-level document.`);
 
   async_test(t => {
-    assert_true(sensorName in self);
     test_feature_availability(
       desc,
       t,
@@ -39,7 +37,6 @@ function run_fp_tests_disabled(sensorName) {
   }, `${sensorName}: ${header} disallows same-origin iframes.`);
 
   async_test(t => {
-    assert_true(sensorName in self);
     test_feature_availability(
       desc,
       t,
@@ -49,18 +46,17 @@ function run_fp_tests_disabled(sensorName) {
   }, `${sensorName}: ${header} disallows cross-origin iframes.`);
 }
 
-function run_fp_tests_enabled(sensorName) {
-  const sensorType = self[sensorName];
+function run_fp_tests_enabled(sensorType) {
+  const sensorName = sensorType.name;
   const featureNameList = feature_policies[sensorName];
   const header = "Feature-Policy header " + featureNameList.join(" *;") + " *";
   const desc = "'new " + sensorName + "()'";
 
   test(() => {
-    assert_true(sensorName in self);
+    assert_true(sensorName in window);
   }, `${sensorName}: ${header} allows the top-level document.`);
 
   async_test(t => {
-    assert_true(sensorName in self);
     test_feature_availability(
       desc,
       t,
@@ -70,7 +66,6 @@ function run_fp_tests_enabled(sensorName) {
   }, `${sensorName}: ${header} allows same-origin iframes.`);
 
   async_test(t => {
-    assert_true(sensorName in self);
     test_feature_availability(
       desc,
       t,
@@ -80,14 +75,13 @@ function run_fp_tests_enabled(sensorName) {
   }, `${sensorName}: ${header} allows cross-origin iframes.`);
 }
 
-function run_fp_tests_enabled_by_attribute(sensorName) {
-  const sensorType = self[sensorName];
+function run_fp_tests_enabled_by_attribute(sensorType) {
+  const sensorName = sensorType.name;
   const featureNameList = feature_policies[sensorName];
   const header = "Feature-Policy allow='" + featureNameList.join(" ") + "' attribute";
   const desc = "'new " + sensorName + "()'";
 
   async_test(t => {
-    assert_true(sensorName in self);
     test_feature_availability(
       desc,
       t,
@@ -98,7 +92,6 @@ function run_fp_tests_enabled_by_attribute(sensorName) {
   }, `${sensorName}: ${header} allows same-origin iframe`);
 
   async_test(t => {
-    assert_true(sensorName in self);
     test_feature_availability(
       desc,
       t,
@@ -109,14 +102,13 @@ function run_fp_tests_enabled_by_attribute(sensorName) {
   }, `${sensorName}: ${header} allows cross-origin iframe`);
 }
 
-function run_fp_tests_enabled_by_attribute_redirect_on_load(sensorName) {
-  const sensorType = self[sensorName];
+function run_fp_tests_enabled_by_attribute_redirect_on_load(sensorType) {
+  const sensorName = sensorType.name;
   const featureNameList = feature_policies[sensorName];
   const header = "Feature-Policy allow='" + featureNameList.join(" ") + "' attribute";
   const desc = "'new " + sensorName + "()'";
 
   async_test(t => {
-    assert_true(sensorName in self);
     test_feature_availability(
       desc,
       t,
@@ -127,7 +119,6 @@ function run_fp_tests_enabled_by_attribute_redirect_on_load(sensorName) {
   }, `${sensorName}: ${header} allows same-origin relocation`);
 
   async_test(t => {
-    assert_true(sensorName in self);
     test_feature_availability(
       desc,
       t,
@@ -138,18 +129,17 @@ function run_fp_tests_enabled_by_attribute_redirect_on_load(sensorName) {
   }, `${sensorName}: ${header} disallows cross-origin relocation`);
 }
 
-function run_fp_tests_enabled_on_self_origin(sensorName) {
-  const sensorType = self[sensorName];
+function run_fp_tests_enabled_on_self_origin(sensorType) {
+  const sensorName = sensorType.name;
   const featureNameList = feature_policies[sensorName];
   const header = "Feature-Policy header " + featureNameList.join(" 'self';") + " 'self'";
   const desc = "'new " + sensorName + "()'";
 
   test(() => {
-    assert_true(sensorName in self);
+    assert_true(sensorName in window);
   }, `${sensorName}: ${header} allows the top-level document.`);
 
   async_test(t => {
-    assert_true(sensorName in self);
     test_feature_availability(
       desc,
       t,
@@ -159,7 +149,6 @@ function run_fp_tests_enabled_on_self_origin(sensorName) {
   }, `${sensorName}: ${header} allows same-origin iframes.`);
 
   async_test(t => {
-    assert_true(sensorName in self);
     test_feature_availability(
       desc,
       t,

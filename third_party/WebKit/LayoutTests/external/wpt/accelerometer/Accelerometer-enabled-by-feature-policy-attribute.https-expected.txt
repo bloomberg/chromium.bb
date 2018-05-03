@@ -1,9 +1,8 @@
 This is a testharness.js-based test.
+Harness Error. harness_status.status = 1 , harness_status.message = Uncaught ReferenceError: GravitySensor is not defined
 PASS Accelerometer: Feature-Policy allow='accelerometer' attribute allows same-origin iframe
 PASS Accelerometer: Feature-Policy allow='accelerometer' attribute allows cross-origin iframe
 PASS LinearAccelerationSensor: Feature-Policy allow='accelerometer' attribute allows same-origin iframe
 PASS LinearAccelerationSensor: Feature-Policy allow='accelerometer' attribute allows cross-origin iframe
-FAIL GravitySensor: Feature-Policy allow='accelerometer' attribute allows same-origin iframe assert_true: expected true got false
-FAIL GravitySensor: Feature-Policy allow='accelerometer' attribute allows cross-origin iframe assert_true: expected true got false
 Harness: the test ran to completion.
 
