@@ -251,10 +251,10 @@ def get_waterfall_config():
       {
        'gpu': '8086:1616',
        'os': 'Windows-10',
-       'pool': 'Chrome-perf',
+       'pool': 'chrome.test.perf',
        'device_ids': [
-           'build117-b1', 'build118-b1',
-           'build119-b1', 'build120-b1',
+           'build194-b7', 'build195-b7',
+           'build196-b7', 'build197-b7',
            'build180-b4' # Added in https://crbug.com/695613
           ]
       }
