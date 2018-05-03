@@ -163,6 +163,16 @@ used when committed.
     built, with associated desciptions.
 *   [IPC Fuzzer](ipc_fuzzer.md) - Fuzz testing of Chromium IPC interfaces.
 
+### GPU-related docs
+*   [GPU Pixel Wrangling](gpu/pixel_wrangling.md) - Instructions for GPU
+    pixel wrangling (the GPU sheriffing rotation).
+*   [Debugging GPU related code](gpu/debugging_gpu_related_code.md) - Hints for
+    debugging GPU- and graphics-related code.
+*   [GPU Testing](gpu/gpu_testing.md) - Description of Chromium's GPU testing
+    infrastructure.
+*   [GPU Bot Details](gpu/gpu_testing_bot_details.md) - In-depth description of
+    how the bots are maintained.
+
 ### Misc Linux-Specific Docs
 *   [Linux Proxy Config](linux_proxy_config.md) - Network proxy sources on Linux
 *   [Debugging SSL on Linux](linux_debugging_ssl.md) - Tips on debugging SSL
