@@ -1083,8 +1083,10 @@ scoped_refptr<PaintTextBlob> buildTextBlob() {
   SkRect bounds = SkRect::MakeWH(100, 100);
   const int glyphCount = 10;
   const auto& runBuffer = builder.AllocRunPosH(font, glyphCount, 0, &bounds);
-  for (int i = 0; i < glyphCount; i++)
+  for (int i = 0; i < glyphCount; i++) {
     runBuffer.glyphs[i] = static_cast<SkGlyphID>(i);
+    runBuffer.pos[i] = SkIntToScalar(i);
+  }
   return builder.TakeTextBlob();
 }
 
