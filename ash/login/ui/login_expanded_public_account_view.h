@@ -43,6 +43,7 @@ class ASH_EXPORT LoginExpandedPublicAccountView : public NonAccessibleView {
   void ProcessPressedEvent(const ui::LocatedEvent* event);
   void UpdateForUser(const mojom::LoginUserInfoPtr& user);
   const mojom::LoginUserInfoPtr& current_user() const;
+  void Hide();
 
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
