@@ -8,6 +8,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "components/mirroring/service/interface.h"
+#include "components/mirroring/service/message_dispatcher.h"
+#include "components/mirroring/service/mirror_settings.h"
 #include "components/mirroring/service/rtp_stream.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/net/cast_transport_defines.h"
@@ -22,20 +24,31 @@ class CastTransport;
 
 namespace mirroring {
 
+struct ReceiverResponse;
 class VideoCaptureClient;
 
+// Controls a mirroring session, including audio/video capturing and Cast
+// Streaming. When constructed, it does OFFER/ANSWER exchange with the mirroring
+// receiver. Mirroring starts when the exchange succeeds and stops when this
+// class is destructed or error occurs. |observer| will get notified when status
+// changes. |outbound_channel| is responsible for sending messages to the
+// mirroring receiver through Cast Channel.
 class Session final : public RtpStreamClient {
  public:
-  Session(SessionType session_type,
-          const net::IPEndPoint& receiver_endpoint,
-          SessionClient* client);
+  Session(int32_t session_id,
+          const CastSinkInfo& sink_info,
+          const gfx::Size& max_resolution,
+          SessionObserver* observer,
+          ResourceProvider* resource_provider,
+          CastMessageChannel* outbound_channel);
+  // TODO(xjz): Add mojom::CastMessageChannelRequest |inbound_channel| to
+  // receive inbound messages.
+
   ~Session() override;
 
   // RtpStreamClient implemenation.
   void OnError(const std::string& message) override;
   void RequestRefreshFrame() override;
-  media::VideoEncodeAccelerator::SupportedProfiles
-  GetSupportedVideoEncodeAcceleratorProfiles() override;
   void CreateVideoEncodeAccelerator(
       const media::cast::ReceiveVideoEncodeAcceleratorCallback& callback)
       override;
@@ -49,16 +62,23 @@ class Session final : public RtpStreamClient {
       std::unique_ptr<std::vector<media::cast::FrameEvent>> frame_events,
       std::unique_ptr<std::vector<media::cast::PacketEvent>> packet_events);
 
- private:
-  // Callback when OFFER/ANSWER message exchange finishes. Starts a mirroing
-  // session.
-  void StartInternal(const net::IPEndPoint& receiver_endpoint,
-                     const media::cast::FrameSenderConfig& audio_config,
-                     const media::cast::FrameSenderConfig& video_config);
+  // Callback for ANSWER response. If the ANSWER is invalid, |observer_| will
+  // get notified with error, and session is stopped. Otherwise, capturing and
+  // streaming are started with the selected configs.
+  void OnAnswer(
+      const std::string& cast_mode,
+      const std::vector<media::cast::FrameSenderConfig>& audio_configs,
+      const std::vector<media::cast::FrameSenderConfig>& video_configs,
+      const ReceiverResponse& response);
 
+  // Called by |message_dispatcher_| when error occurs while parsing the
+  // responses.
+  void OnResponseParsingError(const std::string& error_message);
+
+ private:
   void StopSession();
 
-  // Notify |client_| that error occurred and close the session.
+  // Notify |observer_| that error occurred and close the session.
   void ReportError(SessionError error);
 
   // Callback by Audio/VideoSender to indicate encoder status change.
@@ -67,12 +87,22 @@ class Session final : public RtpStreamClient {
   // Callback by media::cast::VideoSender to set a new target playout delay.
   void SetTargetPlayoutDelay(base::TimeDelta playout_delay);
 
-  // Callback by |start_timeout_timer_|.
-  void OnOfferAnswerExchangeTimeout();
+  media::VideoEncodeAccelerator::SupportedProfiles GetSupportedVeaProfiles();
 
-  SessionClient* client_ = nullptr;
+  // Create and send OFFER message.
+  void CreateAndSendOffer();
 
-  // Create on StartInternal().
+  // Provided by Cast Media Route Provider (MRP).
+  const int32_t session_id_;
+  const CastSinkInfo sink_info_;
+
+  SessionObserver* observer_ = nullptr;
+  ResourceProvider* resource_provider_ = nullptr;
+  MirrorSettings mirror_settings_;
+
+  MessageDispatcher message_dispatcher_;
+
+  // Created after OFFER/ANSWER exchange succeeds.
   std::unique_ptr<AudioRtpStream> audio_stream_;
   std::unique_ptr<VideoRtpStream> video_stream_;
   std::unique_ptr<VideoCaptureClient> video_capture_client_;
@@ -80,9 +110,6 @@ class Session final : public RtpStreamClient {
   std::unique_ptr<media::cast::CastTransport> cast_transport_;
   scoped_refptr<base::SingleThreadTaskRunner> audio_encode_thread_ = nullptr;
   scoped_refptr<base::SingleThreadTaskRunner> video_encode_thread_ = nullptr;
-
-  // Fire if the OFFER/ANSWER exchange times out.
-  base::OneShotTimer start_timeout_timer_;
 
   base::WeakPtrFactory<Session> weak_factory_;
 };

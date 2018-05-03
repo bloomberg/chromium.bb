@@ -6,7 +6,6 @@
 #define COMPONENTS_MIRRORING_SERVICE_INTERFACE_H_
 
 #include <string>
-#include <vector>
 
 #include "base/callback.h"
 #include "base/values.h"
@@ -22,14 +21,22 @@ namespace mirroring {
 
 // Errors occurred in a mirroring session.
 enum SessionError {
-  SESSION_START_ERROR,   // Error occurred while starting.
-  AUDIO_CAPTURE_ERROR,   // Error occurred in audio capturing.
-  VIDEO_CAPTURE_ERROR,   // Error occurred in video capturing.
-  CAST_STREAMING_ERROR,  // Error occurred in cast streaming.
-  CAST_TRANSPORT_ERROR,  // Error occurred in cast transport.
+  ANSWER_TIME_OUT,                // ANSWER timeout.
+  ANSWER_NOT_OK,                  // Not OK answer response.
+  ANSWER_MISMATCHED_CAST_MODE,    // ANSWER cast mode mismatched.
+  ANSWER_MISMATCHED_SSRC_LENGTH,  // ANSWER ssrc length mismatched with indexes.
+  ANSWER_SELECT_MULTIPLE_AUDIO,   // Multiple audio streams selected by ANSWER.
+  ANSWER_SELECT_MULTIPLE_VIDEO,   // Multiple video streams selected by ANSWER.
+  ANSWER_SELECT_INVALID_INDEX,    // Invalid index was selected.
+  ANSWER_NO_AUDIO_OR_VIDEO,       // ANSWER not select audio or video.
+  AUDIO_CAPTURE_ERROR,            // Error occurred in audio capturing.
+  VIDEO_CAPTURE_ERROR,            // Error occurred in video capturing.
+  RTP_STREAM_ERROR,               // Error reported by RtpStream.
+  ENCODING_ERROR,                 // Error occurred in encoding.
+  CAST_TRANSPORT_ERROR,           // Error occurred in cast transport.
 };
 
-enum SessionType {
+enum DeviceCapability {
   AUDIO_ONLY,
   VIDEO_ONLY,
   AUDIO_AND_VIDEO,
@@ -49,9 +56,20 @@ class CastMessageChannel {
   virtual void Send(const CastMessage& message) = 0;
 };
 
-class SessionClient {
+struct CastSinkInfo {
+  CastSinkInfo();
+  ~CastSinkInfo();
+  CastSinkInfo(const CastSinkInfo& sink_info);
+
+  net::IPAddress ip_address;
+  std::string model_name;
+  std::string friendly_name;
+  DeviceCapability capability;
+};
+
+class SessionObserver {
  public:
-  virtual ~SessionClient() {}
+  virtual ~SessionObserver() {}
 
   // Called when error occurred. The session will be stopped.
   virtual void OnError(SessionError error) = 0;
@@ -61,25 +79,19 @@ class SessionClient {
 
   // Called when the session is stopped.
   virtual void DidStop() = 0;
+};
+
+class ResourceProvider {
+ public:
+  virtual ~ResourceProvider() {}
 
   virtual void GetVideoCaptureHost(
       media::mojom::VideoCaptureHostRequest request) = 0;
-  virtual void GetNetWorkContext(
+  virtual void GetNetworkContext(
       network::mojom::NetworkContextRequest request) = 0;
   // TODO(xjz): Add interface to get AudioCaptureHost.
   // TODO(xjz): Add interface for HW encoder profiles query and VEA create
   // support.
-
-  // TODO(xjz): Change this with an interface to send/receive messages to/from
-  // receiver through cast channel, and generate/parse the OFFER/ANSWER message
-  // in Mirroing service.
-  using GetAnswerCallback = base::OnceCallback<void(
-      const media::cast::FrameSenderConfig& audio_config,
-      const media::cast::FrameSenderConfig& video_config)>;
-  virtual void DoOfferAnswerExchange(
-      const std::vector<media::cast::FrameSenderConfig>& audio_configs,
-      const std::vector<media::cast::FrameSenderConfig>& video_configs,
-      GetAnswerCallback callback) = 0;
 };
 
 }  // namespace mirroring
