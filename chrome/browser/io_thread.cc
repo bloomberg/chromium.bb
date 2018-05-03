@@ -760,15 +760,17 @@ void IOThread::ConstructSystemRequestContext() {
   std::unique_ptr<network::URLRequestContextBuilderMojo> builder =
       std::make_unique<network::URLRequestContextBuilderMojo>();
 
-  auto chrome_network_delegate = std::make_unique<ChromeNetworkDelegate>(
-      extension_event_router_forwarder(), &system_enable_referrers_);
-  // By default, data usage is considered off the record.
-  chrome_network_delegate->set_data_use_aggregator(
-      globals_->data_use_aggregator.get(),
-      true /* is_data_usage_off_the_record */);
-  builder->set_network_delegate(
-      globals_->data_use_ascriber->CreateNetworkDelegate(
-          std::move(chrome_network_delegate), GetMetricsDataUseForwarder()));
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    auto chrome_network_delegate = std::make_unique<ChromeNetworkDelegate>(
+        extension_event_router_forwarder(), &system_enable_referrers_);
+    // By default, data usage is considered off the record.
+    chrome_network_delegate->set_data_use_aggregator(
+        globals_->data_use_aggregator.get(),
+        true /* is_data_usage_off_the_record */);
+    builder->set_network_delegate(
+        globals_->data_use_ascriber->CreateNetworkDelegate(
+            std::move(chrome_network_delegate), GetMetricsDataUseForwarder()));
+  }
   std::unique_ptr<net::HostResolver> host_resolver(
       CreateGlobalHostResolver(net_log_));
 

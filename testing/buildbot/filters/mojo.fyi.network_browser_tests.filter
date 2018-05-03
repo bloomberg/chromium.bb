@@ -149,6 +149,8 @@
 -ExtensionWebRequestApiTest.WebRequestDeclarative2
 -ExtensionWebRequestApiTest.WebRequestDiceHeaderProtection
 -ExtensionWebRequestApiTest.WebRequestTypes
+-ExtensionWebRequestApiTest.WebRequestTestOSDD
+-ExtensionWebRequestApiTest.WebRequestURLFetcherInterception
 -LocalNTPInterceptionWebRequestAPITest.OneGoogleBarRequestsHidden
 
 # https://crbug.com/721400
@@ -235,6 +237,7 @@
 
 # Requires a replacement for ChromeNetworkDelegate.
 -VariationsHttpHeadersBrowserTest.TestStrippingHeadersFromResourceRequest
+-VariationsHttpHeadersBrowserTest.TestStrippingHeadersFromInternalRequest
 
 # Fails because of missing support to navigate to filesystem: URLs.
 # https://crbug.com/797292
