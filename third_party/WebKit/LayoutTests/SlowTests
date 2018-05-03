@@ -456,7 +456,7 @@ crbug.com/779956 [ Linux ] external/wpt/offscreen-canvas/drawing-images-to-the-c
 crbug.com/779956 [ Linux ] external/wpt/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.zerosource.image.worker.html [ Slow ]
 crbug.com/779956 [ Linux ] external/wpt/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.zerosource.worker.html [ Slow ]
 
-crbug.com/793771 virtual/modern-media-controls/media/controls/modern/scrubbing.html [ Slow ]
+crbug.com/793771 media/controls/modern/scrubbing.html [ Slow ]
 crbug.com/793771 virtual/video-surface-layer/media/controls/modern/scrubbing.html [ Slow ]
 
 # These tests need to do many iterations and so can't be fast.

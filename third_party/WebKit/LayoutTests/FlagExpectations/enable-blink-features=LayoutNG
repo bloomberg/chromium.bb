@@ -2060,7 +2060,7 @@ crbug.com/714962 virtual/incremental-shadow-dom/shadow-dom/focus-navigation-with
 crbug.com/591099 virtual/layout_ng/ [ Skip ]
 crbug.com/824918 virtual/layout_ng_experimental/ [ Skip ]
 crbug.com/836297 virtual/layout_ng_experimental/printing/webgl-oversized-printing.html [ Pass Timeout ]
-crbug.com/591099 virtual/modern-media-controls/media/controls/modern/tap-to-hide-controls.html [ Failure ]
+crbug.com/591099 media/controls/modern/tap-to-hide-controls.html [ Failure ]
 crbug.com/714962 virtual/mouseevent_fractional/fast/events/drag-in-frames.html [ Failure ]
 crbug.com/714962 virtual/mouseevent_fractional/fast/events/event-on-culled_inline.html [ Failure ]
 crbug.com/591099 virtual/mouseevent_fractional/fast/events/hr-timestamp/input-events.html [ Failure Pass ]
