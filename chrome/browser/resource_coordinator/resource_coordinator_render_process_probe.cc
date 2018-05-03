@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/values.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -26,9 +25,6 @@ namespace {
 
 constexpr base::TimeDelta kDefaultMeasurementInterval =
     base::TimeDelta::FromMinutes(10);
-
-base::LazyInstance<ResourceCoordinatorRenderProcessProbe>::DestructorAtExit
-    g_probe = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -49,7 +45,8 @@ ResourceCoordinatorRenderProcessProbe::
 // static
 ResourceCoordinatorRenderProcessProbe*
 ResourceCoordinatorRenderProcessProbe::GetInstance() {
-  return g_probe.Pointer();
+  static base::NoDestructor<ResourceCoordinatorRenderProcessProbe> probe;
+  return probe.get();
 }
 
 // static
@@ -132,15 +129,23 @@ void ResourceCoordinatorRenderProcessProbe::
 
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&ResourceCoordinatorRenderProcessProbe::
-                         CollectAndDispatchRenderProcessMetricsOnIOThread,
-                     base::Unretained(this)));
+      base::BindOnce(
+          &ResourceCoordinatorRenderProcessProbe::
+              CollectRenderProcessMetricsAndStartMemoryDumpOnIOThread,
+          base::Unretained(this)));
 }
 
 void ResourceCoordinatorRenderProcessProbe::
-    CollectAndDispatchRenderProcessMetricsOnIOThread() {
+    CollectRenderProcessMetricsAndStartMemoryDumpOnIOThread() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(is_gathering_);
+
+  // Dispatch the memory collection request.
+  memory_instrumentation::MemoryInstrumentation::GetInstance()
+      ->RequestGlobalDump(
+          base::BindRepeating(&ResourceCoordinatorRenderProcessProbe::
+                                  ProcessGlobalMemoryDumpAndDispatchOnIOThread,
+                              base::Unretained(this)));
 
   RenderProcessInfoMap::iterator iter = render_process_info_map_.begin();
   while (iter != render_process_info_map_.end()) {
@@ -157,12 +162,21 @@ void ResourceCoordinatorRenderProcessProbe::
       continue;
     }
   }
+}
 
+void ResourceCoordinatorRenderProcessProbe::
+    ProcessGlobalMemoryDumpAndDispatchOnIOThread(
+        bool global_success,
+        std::unique_ptr<memory_instrumentation::GlobalMemoryDump> dump) {
   // Create the measurement batch.
   mojom::ProcessResourceMeasurementBatchPtr batch =
       mojom::ProcessResourceMeasurementBatch::New();
 
-  for (auto& render_process_info_map_entry : render_process_info_map_) {
+  // TODO(siggi): Add start/end times. This will need some support from
+  //     the memory_instrumentation code.
+
+  // Start by adding the render process hosts we know about to the batch.
+  for (const auto& render_process_info_map_entry : render_process_info_map_) {
     auto& render_process_info = render_process_info_map_entry.second;
     // TODO(oysteine): Move the multiplier used to avoid precision loss
     // into a shared location, when this property gets used.
@@ -171,13 +185,35 @@ void ResourceCoordinatorRenderProcessProbe::
 
     measurement->pid = render_process_info.process.Pid();
     measurement->cpu_usage = render_process_info.cpu_usage;
-    // TODO(siggi): Add the private footprint.
 
     batch->measurements.push_back(std::move(measurement));
   }
 
-  bool should_restart = DispatchMetrics(std::move(batch));
+  if (dump) {
+    // Then amend the ones we have memory metrics for with their private
+    // footprint. The global dump may contain non-renderer processes, it may
+    // contain renderer processes we didn't capture at the start of the cycle,
+    // and it may not contain all the renderer processes we know about.
+    // This may happen due to the inherent race between the request and
+    // starting/stopping renderers, or because of other failures
+    // This may therefore provide incomplete information.
+    for (const auto& dump_entry : dump->process_dumps()) {
+      base::ProcessId pid = dump_entry.pid();
 
+      for (const auto& measurement : batch->measurements) {
+        if (measurement->pid == pid) {
+          measurement->private_footprint_kb =
+              dump_entry.os_dump().private_footprint_kb;
+          break;
+        }
+      }
+    }
+  } else {
+    // We should only get a nullptr in case of failure.
+    DCHECK(!global_success);
+  }
+
+  bool should_restart = DispatchMetrics(std::move(batch));
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
       base::BindOnce(
