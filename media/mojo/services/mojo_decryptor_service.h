@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "media/base/cdm_context.h"
 #include "media/base/decryptor.h"
 #include "media/mojo/interfaces/decryptor.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
@@ -30,8 +31,11 @@ class MEDIA_MOJO_EXPORT MojoDecryptorService : public mojom::Decryptor {
   using StreamType = media::Decryptor::StreamType;
   using Status = media::Decryptor::Status;
 
-  // Caller must ensure that |decryptor| outlives |this|.
-  explicit MojoDecryptorService(media::Decryptor* decryptor);
+  // If |cdm_context_ref| is null, caller must ensure that |decryptor| outlives
+  // |this|. Otherwise, |decryptor| is guaranteed to be valid as long as
+  // |cdm_context_ref| is held.
+  MojoDecryptorService(media::Decryptor* decryptor,
+                       std::unique_ptr<CdmContextRef> cdm_context_ref);
 
   ~MojoDecryptorService() final;
 
@@ -97,6 +101,7 @@ class MEDIA_MOJO_EXPORT MojoDecryptorService : public mojom::Decryptor {
   std::unique_ptr<MojoDecoderBufferWriter> decrypted_buffer_writer_;
 
   media::Decryptor* decryptor_;
+  std::unique_ptr<CdmContextRef> cdm_context_ref_;
 
   base::WeakPtr<MojoDecryptorService> weak_this_;
   base::WeakPtrFactory<MojoDecryptorService> weak_factory_;
