@@ -1949,6 +1949,11 @@ void DXVAVideoDecodeAccelerator::DoDecode(const gfx::ColorSpace& color_space) {
         // No more output from the decoder. Stop playback.
         SetState(kStopped);
         return;
+      } else if (hr == E_FAIL) {
+        // This shouldn't happen, but does, log it and ignore it.
+        // https://crbug.com/839057
+        LOG(ERROR) << "Received E_FAIL in DoDecode()";
+        return;
       } else {
         // Unknown error, stop playback and log error.
         SetState(kStopped);
