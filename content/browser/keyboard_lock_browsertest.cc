@@ -31,13 +31,6 @@ namespace content {
 
 namespace {
 
-// TODO(joedow): Enable tests on additional platforms as they are implemented.
-#if defined(OS_WIN) || defined(OS_MACOSX)
-#define MAYBE_RUN(test_name) test_name
-#else
-#define MAYBE_RUN(test_name) DISABLED_##test_name
-#endif
-
 constexpr char kFullscreenFrameName[] = "/fullscreen_frame.html";
 
 constexpr char kKeyboardLockMethodExistanceCheck[] =
@@ -370,42 +363,38 @@ void KeyboardLockDisabledBrowserTest::SetUpFeatureList() {
   feature_list()->InitAndDisableFeature(features::kKeyboardLockAPI);
 }
 
-IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest, MAYBE_RUN(SingleLockCall)) {
+IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest, SingleLockCall) {
   NavigateToTestURL();
   RequestKeyboardLock(FROM_HERE);
   // Don't explicitly call CancelKeyboardLock().
 }
 
-IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest,
-                       MAYBE_RUN(SingleLockCallForSomeKeys)) {
+IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest, SingleLockCallForSomeKeys) {
   NavigateToTestURL();
   RequestKeyboardLock(FROM_HERE, /*lock_all_keys=*/false);
   // Don't explicitly call CancelKeyboardLock().
 }
 
-IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest,
-                       MAYBE_RUN(SingleLockWithCancelCall)) {
+IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest, SingleLockWithCancelCall) {
   NavigateToTestURL();
   RequestKeyboardLock(FROM_HERE);
   CancelKeyboardLock(FROM_HERE);
 }
 
-IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest,
-                       MAYBE_RUN(LockCalledBeforeFullscreen)) {
+IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest, LockCalledBeforeFullscreen) {
   NavigateToTestURL();
   RequestKeyboardLock(FROM_HERE);
   EnterFullscreen(FROM_HERE);
 }
 
-IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest,
-                       MAYBE_RUN(LockCalledAfterFullscreen)) {
+IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest, LockCalledAfterFullscreen) {
   NavigateToTestURL();
   EnterFullscreen(FROM_HERE);
   RequestKeyboardLock(FROM_HERE);
 }
 
 IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest,
-                       MAYBE_RUN(LockAndCancelCyclingNoActivation)) {
+                       LockAndCancelCyclingNoActivation) {
   NavigateToTestURL();
 
   RequestKeyboardLock(FROM_HERE);
@@ -419,7 +408,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest,
-                       MAYBE_RUN(LockAndCancelCyclingInFullscreen)) {
+                       LockAndCancelCyclingInFullscreen) {
   NavigateToTestURL();
 
   EnterFullscreen(FROM_HERE);
@@ -436,7 +425,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest,
   CancelKeyboardLock(FROM_HERE);
 }
 
-IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest, MAYBE_RUN(CancelInFullscreen)) {
+IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest, CancelInFullscreen) {
   NavigateToTestURL();
 
   RequestKeyboardLock(FROM_HERE);
@@ -445,8 +434,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest, MAYBE_RUN(CancelInFullscreen)) {
   ExitFullscreen(FROM_HERE);
 }
 
-IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest,
-                       MAYBE_RUN(EnterAndExitFullscreenCycling)) {
+IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest, EnterAndExitFullscreenCycling) {
   NavigateToTestURL();
 
   RequestKeyboardLock(FROM_HERE);
@@ -461,8 +449,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest,
   ExitFullscreen(FROM_HERE);
 }
 
-IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest,
-                       MAYBE_RUN(GainAndLoseFocusInWindowMode)) {
+IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest, GainAndLoseFocusInWindowMode) {
   NavigateToTestURL();
 
   RequestKeyboardLock(FROM_HERE);
@@ -473,8 +460,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest,
   BlurContent(FROM_HERE);
 }
 
-IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest,
-                       MAYBE_RUN(EnterFullscreenWithoutFocus)) {
+IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest, EnterFullscreenWithoutFocus) {
   NavigateToTestURL();
 
   RequestKeyboardLock(FROM_HERE);
@@ -488,7 +474,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest,
-                       MAYBE_RUN(GainAndLoseFocusCyclingInFullscreen)) {
+                       GainAndLoseFocusCyclingInFullscreen) {
   NavigateToTestURL();
 
   RequestKeyboardLock(FROM_HERE);
@@ -508,13 +494,13 @@ IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest,
   ExitFullscreen(FROM_HERE);
 }
 
-IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest, MAYBE_RUN(CancelWithoutLock)) {
+IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest, CancelWithoutLock) {
   NavigateToTestURL();
   CancelKeyboardLock(FROM_HERE);
   CancelKeyboardLock(FROM_HERE);
 }
 
-IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest, MAYBE_RUN(MultipleLockCalls)) {
+IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest, MultipleLockCalls) {
   NavigateToTestURL();
 
   RequestKeyboardLock(FROM_HERE);
@@ -522,8 +508,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest, MAYBE_RUN(MultipleLockCalls)) {
   RequestKeyboardLock(FROM_HERE);
 }
 
-IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest,
-                       MAYBE_RUN(MultipleCancelCalls)) {
+IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest, MultipleCancelCalls) {
   NavigateToTestURL();
 
   RequestKeyboardLock(FROM_HERE);
@@ -533,8 +518,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest,
   CancelKeyboardLock(FROM_HERE);
 }
 
-IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest,
-                       MAYBE_RUN(LockCallWithAllInvalidKeys)) {
+IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest, LockCallWithAllInvalidKeys) {
   NavigateToTestURL();
 
   bool result;
@@ -548,8 +532,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest,
   EnterFullscreen(FROM_HERE);
 }
 
-IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest,
-                       MAYBE_RUN(LockCallWithSomeInvalidKeys)) {
+IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest, LockCallWithSomeInvalidKeys) {
   NavigateToTestURL();
 
   bool result;
@@ -564,37 +547,37 @@ IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(KeyboardLockDisabledBrowserTest,
-                       MAYBE_RUN(NoKeyboardLockWhenDisabled)) {
+                       NoKeyboardLockWhenDisabled) {
   ASSERT_TRUE(NavigateToURL(shell(), https_fullscreen_frame()));
   ASSERT_FALSE(KeyboardLockApiExists());
 }
 
 IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest,
-                       MAYBE_RUN(KeyboardLockNotAllowedForIFrame)) {
+                       KeyboardLockNotAllowedForIFrame) {
   // TODO(joedow): IMPLEMENT.
 }
 
 IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest,
-                       MAYBE_RUN(KeyboardUnlockedWhenNavigatingAway)) {
+                       KeyboardUnlockedWhenNavigatingAway) {
   // TODO(joedow): IMPLEMENT.
 }
 
 IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest,
-                       MAYBE_RUN(CrossOriginIFrameDoesNotReceiveInput)) {
+                       CrossOriginIFrameDoesNotReceiveInput) {
   // TODO(joedow): Added per code review feedback.
   // Steps: Main frame initiates keyboard lock and goes fullscreen.  Is input
   // delivered to cross-origin iFrame?
 }
 
 IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest,
-                       MAYBE_RUN(CrossOriginIFrameRequestsFullscreen)) {
+                       CrossOriginIFrameRequestsFullscreen) {
   // TODO(joedow): Added per code review feedback.
   // Steps: Main frame requests keyboard lock, cross-origin iFrame goes
   // fullscreen.  Should KeyboardLock be triggered in that case (presumably no).
 }
 
 IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest,
-                       MAYBE_RUN(LockRequestWhileIFrameIsFullscreen)) {
+                       LockRequestWhileIFrameIsFullscreen) {
   // TODO(joedow): Added per code review feedback.
   // Steps: 1. Load a page with a cross-site iframe: call main frame "A" and the
   //           subframe "B"
@@ -603,14 +586,14 @@ IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest,
-                       MAYBE_RUN(LockRequestFailsFromInnerWebContents)) {
+                       LockRequestFailsFromInnerWebContents) {
   // TODO(joedow): Added per code review feedback.
   // Steps: Try requesting KeyboardLock from with an inner WebContents context.
   // See: CreateAndAttachInnerContents() helper method in
   // https://cs.chromium.org/chromium/src/content/public/test/test_utils.h
 }
 
-IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest, MAYBE_RUN(HistogramTest)) {
+IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest, HistogramTest) {
   // TODO(joedow): Added per code review feedback.
   // Steps: Call the API methods and verify the histogram data is accurate using
   // base::HistogramTester.  Alternatively, this could be integrated with the
