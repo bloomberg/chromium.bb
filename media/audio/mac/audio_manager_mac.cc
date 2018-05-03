@@ -144,6 +144,11 @@ static void GetAudioDeviceInfo(bool is_input,
     if (!label)
       continue;
 
+    // Filter out aggregate devices, e.g. those that get created by using
+    // kAudioUnitSubType_VoiceProcessingIO.
+    if (core_audio_mac::IsPrivateAggregateDevice(device_id))
+      continue;
+
     device_names->emplace_back(std::move(*label), std::move(*unique_id));
   }
 
@@ -639,9 +644,16 @@ AudioParameters AudioManagerMac::GetInputStreamParameters(
     params.set_effects(AudioParameters::NOISE_SUPPRESSION);
   }
 
+  // VoiceProcessingIO is only supported on MacOS 10.12 and cannot be used on
+  // aggregate devices, since it creates an aggregate device itself.  It also
+  // only runs in mono, but we allow upmixing to stereo since we can't claim a
+  // device works either in stereo without echo cancellation or mono with echo
+  // cancellation.
   if (base::mac::IsAtLeastOS10_12() &&
       (params.channel_layout() == CHANNEL_LAYOUT_MONO ||
-       params.channel_layout() == CHANNEL_LAYOUT_STEREO)) {
+       params.channel_layout() == CHANNEL_LAYOUT_STEREO) &&
+      core_audio_mac::GetDeviceTransportType(device) !=
+          kAudioDeviceTransportTypeAggregate) {
     params.set_effects(params.effects() |
                        AudioParameters::EXPERIMENTAL_ECHO_CANCELLER);
   }
