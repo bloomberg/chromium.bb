@@ -923,7 +923,7 @@ public class CompositorViewHolder extends FrameLayout
             onPhysicalBackingSizeChanged(
                     webContents, mCompositorView.getWidth(), mCompositorView.getHeight());
         }
-        if (tab.isNativePage() || tab.getView() == null) return;
+        if (tab.getView() == null) return;
         tab.setTopControlsHeight(getTopControlsHeightPixels(), controlsResizeView());
         tab.setBottomControlsHeight(getBottomControlsHeightPixels());
     }
