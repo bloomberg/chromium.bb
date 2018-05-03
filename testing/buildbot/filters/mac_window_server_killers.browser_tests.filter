@@ -37,8 +37,8 @@
 # -DownloadTest.*
 # -PolicyTest.*
 # -SessionRestoreTest.*
--InstallableManagerBrowserTest.*
--ContextMenuBrowserTest.*
--ChromeSitePerProcessTest.*
--InterstitialUITest.*
+# -InstallableManagerBrowserTest.*
+# -ContextMenuBrowserTest.*
+# -ChromeSitePerProcessTest.*
+# -InterstitialUITest.*
 -ConstrainedWebDialogBrowserTest.*
