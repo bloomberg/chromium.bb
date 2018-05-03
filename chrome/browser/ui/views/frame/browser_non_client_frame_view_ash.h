@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "chrome/browser/command_observer.h"
 #include "chrome/browser/ui/ash/tablet_mode_client_observer.h"
+#include "chrome/browser/ui/views/frame/browser_frame_header_ash.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/tab_icon_view_model.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -28,18 +29,19 @@ class TabIconView;
 namespace ash {
 class FrameCaptionButton;
 class FrameCaptionButtonContainerView;
-class FrameHeader;
 class FrameHeaderOriginText;
 }
 
 // Provides the BrowserNonClientFrameView for Chrome OS.
-class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
-                                     public ash::ShellObserver,
-                                     public TabletModeClientObserver,
-                                     public TabIconViewModel,
-                                     public CommandObserver,
-                                     public ash::mojom::SplitViewObserver,
-                                     public aura::WindowObserver {
+class BrowserNonClientFrameViewAsh
+    : public BrowserNonClientFrameView,
+      public BrowserFrameHeaderAsh::AppearanceProvider,
+      public ash::ShellObserver,
+      public TabletModeClientObserver,
+      public TabIconViewModel,
+      public CommandObserver,
+      public ash::mojom::SplitViewObserver,
+      public aura::WindowObserver {
  public:
   BrowserNonClientFrameViewAsh(BrowserFrame* frame, BrowserView* browser_view);
   ~BrowserNonClientFrameViewAsh() override;
@@ -73,6 +75,12 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   gfx::Size GetMinimumSize() const override;
   void ChildPreferredSizeChanged(views::View* child) override;
+
+  // BrowserFrameHeaderAsh::AppearanceProvider:
+  SkColor GetFrameHeaderColor(bool active) override;
+  gfx::ImageSkia GetFrameHeaderImage(bool active) override;
+  gfx::ImageSkia GetFrameHeaderOverlayImage(bool active) override;
+  bool IsTabletMode() override;
 
   // ash::ShellObserver:
   void OnOverviewModeStarting() override;
@@ -138,8 +146,8 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
   // scheme than browser windows.
   bool UsePackagedAppHeaderStyle() const;
 
-  // Returns true if there is anything to paint. Some fullscreen windows do not
-  // need their frames painted.
+  // Returns true if there is anything to paint. Some fullscreen windows do
+  // not need their frames painted.
   bool ShouldPaint() const;
 
   // Helps to hide or show the header as needed when overview mode starts or
@@ -149,8 +157,8 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
   // Creates the frame header for the browser window.
   std::unique_ptr<ash::FrameHeader> CreateFrameHeader();
 
-  // Triggers the hosted app origin and icon animations, assumes the hosted app
-  // UI elements exist.
+  // Triggers the hosted app origin and icon animations, assumes the hosted
+  // app UI elements exist.
   void StartHostedAppAnimation();
 
   // View which contains the window controls.

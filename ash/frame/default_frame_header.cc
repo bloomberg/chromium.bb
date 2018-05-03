@@ -368,8 +368,7 @@ gfx::Rect DefaultFrameHeader::GetLocalBounds() const {
 gfx::Rect DefaultFrameHeader::GetAvailableTitleBounds() const {
   views::View* left_view = left_header_view_ ? left_header_view_ : back_button_;
   return FrameHeaderUtil::GetAvailableTitleBounds(
-      left_view, caption_button_container_,
-      views::NativeWidgetAura::GetWindowTitleFontList(), GetHeaderHeight());
+      left_view, caption_button_container_, GetHeaderHeight());
 }
 
 bool DefaultFrameHeader::UsesCustomFrameColors() const {

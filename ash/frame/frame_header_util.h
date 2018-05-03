@@ -9,7 +9,6 @@
 #include "base/macros.h"
 
 namespace gfx {
-class FontList;
 class Rect;
 }  // namespace gfx
 namespace views {
@@ -39,7 +38,6 @@ class ASH_EXPORT FrameHeaderUtil {
   // if there is no view to the left of the title.
   static gfx::Rect GetAvailableTitleBounds(const views::View* left_view,
                                            const views::View* right_view,
-                                           const gfx::FontList& title_font_list,
                                            int header_height);
 
   // Returns true if the header for |widget| can animate to new visuals when the
