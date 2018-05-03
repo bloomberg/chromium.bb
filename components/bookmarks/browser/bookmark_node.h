@@ -53,6 +53,10 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode>, public TitledUrlNode {
 
   ~BookmarkNode() override;
 
+  // Returns true if the node is a BookmarkPermanentNode (which does not include
+  // the root).
+  bool is_permanent_node() const { return is_permanent_node_; }
+
   // Set the node's internal title. Note that this neither invokes observers
   // nor updates any bookmark model this node may be in. For that functionality,
   // BookmarkModel::SetTitle(..) should be used instead.
@@ -123,11 +127,11 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode>, public TitledUrlNode {
   // TODO(sky): Consider adding last visit time here, it'll greatly simplify
   // HistoryContentsProvider.
 
+ protected:
+  BookmarkNode(int64_t id, const GURL& url, bool is_permanent_node);
+
  private:
   friend class BookmarkModel;
-
-  // A helper function to initialize various fields during construction.
-  void Initialize(int64_t id);
 
   // Called when the favicon becomes invalid.
   void InvalidateFavicon();
@@ -182,18 +186,21 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode>, public TitledUrlNode {
   std::unique_ptr<GURL> icon_url_;
 
   // The loading state of the favicon.
-  FaviconState favicon_state_;
+  FaviconState favicon_state_ = INVALID_FAVICON;
 
   // If not base::CancelableTaskTracker::kBadTaskId, it indicates
   // we're loading the
   // favicon and the task is tracked by CancelabelTaskTracker.
-  base::CancelableTaskTracker::TaskId favicon_load_task_id_;
+  base::CancelableTaskTracker::TaskId favicon_load_task_id_ =
+      base::CancelableTaskTracker::kBadTaskId;
 
   // A map that stores arbitrary meta information about the node.
   std::unique_ptr<MetaInfoMap> meta_info_map_;
 
-  // The sync transaction version. Defaults to kInvalidSyncTransactionVersion.
-  int64_t sync_transaction_version_;
+  // The sync transaction version.
+  int64_t sync_transaction_version_ = kInvalidSyncTransactionVersion;
+
+  const bool is_permanent_node_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkNode);
 };
@@ -213,7 +220,7 @@ class BookmarkPermanentNode : public BookmarkNode {
   bool IsVisible() const override;
 
  private:
-  bool visible_;
+  bool visible_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkPermanentNode);
 };

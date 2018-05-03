@@ -27,6 +27,7 @@
 #include "components/bookmarks/browser/titled_url_match.h"
 #include "components/bookmarks/browser/typed_count_sorter.h"
 #include "components/bookmarks/browser/url_and_title.h"
+#include "components/bookmarks/common/bookmark_constants.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -55,10 +56,14 @@ class VisibilityComparator {
   explicit VisibilityComparator(BookmarkClient* client) : client_(client) {}
 
   // Returns true if |n1| precedes |n2|.
-  bool operator()(const std::unique_ptr<BookmarkPermanentNode>& n1,
-                  const std::unique_ptr<BookmarkPermanentNode>& n2) {
-    bool n1_visible = client_->IsPermanentNodeVisible(n1.get());
-    bool n2_visible = client_->IsPermanentNodeVisible(n2.get());
+  bool operator()(const std::unique_ptr<BookmarkNode>& n1,
+                  const std::unique_ptr<BookmarkNode>& n2) {
+    DCHECK(n1->is_permanent_node());
+    DCHECK(n2->is_permanent_node());
+    bool n1_visible = client_->IsPermanentNodeVisible(
+        static_cast<BookmarkPermanentNode*>(n1.get()));
+    bool n2_visible = client_->IsPermanentNodeVisible(
+        static_cast<BookmarkPermanentNode*>(n2.get()));
     return n1_visible != n2_visible && n1_visible;
   }
 
@@ -107,24 +112,34 @@ class EmptyUndoDelegate : public BookmarkUndoDelegate {
   DISALLOW_COPY_AND_ASSIGN(EmptyUndoDelegate);
 };
 
+void FinishedLoadOnMainThread(
+    base::OnceCallback<void(std::unique_ptr<BookmarkLoadDetails>)> callback,
+    std::unique_ptr<BookmarkLoadDetails> details) {
+  std::move(callback).Run(std::move(details));
+}
+
+void DoLoadOnBackgroundThread(
+    const base::FilePath& profile_path,
+    scoped_refptr<base::SequencedTaskRunner> result_task_runner,
+    base::OnceCallback<void(std::unique_ptr<BookmarkLoadDetails>)> callback,
+    std::unique_ptr<BookmarkLoadDetails> details) {
+  LoadBookmarks(profile_path, details.get());
+  result_task_runner->PostTask(
+      FROM_HERE, base::BindOnce(&FinishedLoadOnMainThread, std::move(callback),
+                                std::move(details)));
+}
+
 }  // namespace
 
 // BookmarkModel --------------------------------------------------------------
 
 BookmarkModel::BookmarkModel(std::unique_ptr<BookmarkClient> client)
     : client_(std::move(client)),
-      loaded_(false),
-      root_(GURL()),
-      bookmark_bar_node_(nullptr),
-      other_node_(nullptr),
-      mobile_node_(nullptr),
-      next_node_id_(1),
+      root_(std::make_unique<BookmarkNode>(GURL())),
       observers_(base::ObserverListPolicy::EXISTING_ONLY),
       loaded_signal_(base::WaitableEvent::ResetPolicy::MANUAL,
                      base::WaitableEvent::InitialState::NOT_SIGNALED),
-      extensive_changes_(0),
-      undo_delegate_(nullptr),
-      empty_undo_delegate_(new EmptyUndoDelegate) {
+      empty_undo_delegate_(std::make_unique<EmptyUndoDelegate>()) {
   DCHECK(client_);
   client_->Init(this);
 }
@@ -154,19 +169,23 @@ void BookmarkModel::Load(
     const base::FilePath& profile_path,
     const scoped_refptr<base::SequencedTaskRunner>& io_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner) {
-  if (store_.get()) {
-    // If the store is non-null, it means Load was already invoked. Load should
-    // only be invoked once.
-    NOTREACHED();
-    return;
-  }
+  // If the store is non-null, it means Load was already invoked. Load should
+  // only be invoked once.
+  DCHECK(!store_);
 
-  expanded_state_tracker_.reset(
-      new BookmarkExpandedStateTracker(this, pref_service));
+  expanded_state_tracker_ =
+      std::make_unique<BookmarkExpandedStateTracker>(this, pref_service);
 
-  // Load the bookmarks. BookmarkStorage notifies us when done.
-  store_.reset(new BookmarkStorage(this, profile_path, io_task_runner.get()));
-  store_->LoadBookmarks(CreateLoadDetails(), ui_task_runner);
+  store_ = std::make_unique<BookmarkStorage>(this, profile_path,
+                                             io_task_runner.get());
+  auto done_loading_callback =
+      base::BindOnce(&BookmarkModel::DoneLoading, weak_factory_.GetWeakPtr());
+  io_task_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(&DoLoadOnBackgroundThread,
+                     profile_path.Append(kBookmarksFileName), ui_task_runner,
+                     std::move(done_loading_callback),
+                     std::make_unique<BookmarkLoadDetails>(client_.get())));
 }
 
 void BookmarkModel::AddObserver(BookmarkModelObserver* observer) {
@@ -228,8 +247,8 @@ void BookmarkModel::RemoveAllUserBookmarks() {
   // all children of non-root permanent nodes.
   {
     base::AutoLock url_lock(url_lock_);
-    for (int i = 0; i < root_.child_count(); ++i) {
-      const BookmarkNode* permanent_node = root_.GetChild(i);
+    for (int i = 0; i < root_->child_count(); ++i) {
+      const BookmarkNode* permanent_node = root_->GetChild(i);
 
       if (!client_->CanBeEditedByUser(permanent_node))
         continue;
@@ -789,10 +808,9 @@ bool BookmarkModel::IsBookmarkedNoLock(const GURL& url) {
 
 void BookmarkModel::RemoveNode(BookmarkNode* node,
                                std::set<GURL>* removed_urls) {
-  if (!loaded_ || !node || is_permanent_node(node)) {
-    NOTREACHED();
-    return;
-  }
+  DCHECK(node);
+  DCHECK(loaded_);
+  DCHECK(!is_permanent_node(node));
 
   url_lock_.AssertAcquired();
   if (node->is_url()) {
@@ -809,11 +827,7 @@ void BookmarkModel::RemoveNode(BookmarkNode* node,
 
 void BookmarkModel::DoneLoading(std::unique_ptr<BookmarkLoadDetails> details) {
   DCHECK(details);
-  if (loaded_) {
-    // We should only ever be loaded once.
-    NOTREACHED();
-    return;
-  }
+  DCHECK(!loaded_);
 
   next_node_id_ = details->max_id();
   if (details->computed_checksum() != details->stored_checksum() ||
@@ -822,49 +836,30 @@ void BookmarkModel::DoneLoading(std::unique_ptr<BookmarkLoadDetails> details) {
     // externally. In that case, the decoder may have reassigned IDs to make
     // them unique. So when the file has changed externally, we should save the
     // bookmarks file to persist new IDs.
-    if (store_.get())
+    if (store_)
       store_->ScheduleSave();
   }
-  std::unique_ptr<BookmarkPermanentNode> owned_bb_node =
-      details->owned_bb_node();
-  std::unique_ptr<BookmarkPermanentNode> owned_other_folder_node =
-      details->owned_other_folder_node();
-  std::unique_ptr<BookmarkPermanentNode> owned_mobile_folder_node =
-      details->owned_mobile_folder_node();
+
+  root_ = details->owned_root_node();
+  bookmark_bar_node_ = details->bb_node();
+  other_node_ = details->other_folder_node();
+  mobile_node_ = details->mobile_folder_node();
+
   index_ = details->owned_index();
   index_->SetNodeSorter(std::make_unique<TypedCountSorter>(client_.get()));
-
-  bookmark_bar_node_ = owned_bb_node.get();
-  other_node_ = owned_other_folder_node.get();
-  mobile_node_ = owned_mobile_folder_node.get();
-
-  // Get any extra nodes and take ownership of them at the |root_|.
-  std::vector<std::unique_ptr<BookmarkPermanentNode>> extra_nodes =
-      details->owned_extra_nodes();
-
-  // WARNING: order is important here, various places assume the order is
-  // constant (but can vary between embedders with the initial visibility
-  // of permanent nodes).
-  std::vector<std::unique_ptr<BookmarkPermanentNode>> root_children;
-  root_children.push_back(std::move(owned_bb_node));
-  root_children.push_back(std::move(owned_other_folder_node));
-  root_children.push_back(std::move(owned_mobile_folder_node));
-  std::move(extra_nodes.begin(), extra_nodes.end(),
-            std::back_inserter(root_children));
-
-  std::stable_sort(root_children.begin(),
-                   root_children.end(),
+  // Sorting the permanent nodes has to happen on the main thread, so we do it
+  // here, after loading completes.
+  std::stable_sort(root_->children().begin(), root_->children().end(),
                    VisibilityComparator(client_.get()));
-  for (size_t i = 0; i < root_children.size(); ++i)
-    root_.Add(std::move(root_children[i]), static_cast<int>(i));
 
-  root_.SetMetaInfoMap(details->model_meta_info_map());
-  root_.set_sync_transaction_version(details->model_sync_transaction_version());
+  root_->SetMetaInfoMap(details->model_meta_info_map());
+  root_->set_sync_transaction_version(
+      details->model_sync_transaction_version());
 
   {
     base::AutoLock url_lock(url_lock_);
     // Update nodes_ordered_by_url_set_ from the nodes.
-    PopulateNodesByURL(&root_);
+    PopulateNodesByURL(root_.get());
   }
 
   loaded_ = true;
@@ -983,36 +978,6 @@ bool BookmarkModel::IsValidIndex(const BookmarkNode* parent,
                           (allow_end && index == parent->child_count()))));
 }
 
-BookmarkPermanentNode* BookmarkModel::CreatePermanentNode(
-    BookmarkNode::Type type) {
-  DCHECK(type == BookmarkNode::BOOKMARK_BAR ||
-         type == BookmarkNode::OTHER_NODE ||
-         type == BookmarkNode::MOBILE);
-  BookmarkPermanentNode* node =
-      new BookmarkPermanentNode(generate_next_node_id());
-  node->set_type(type);
-  node->set_visible(client_->IsPermanentNodeVisible(node));
-
-  int title_id;
-  switch (type) {
-    case BookmarkNode::BOOKMARK_BAR:
-      title_id = IDS_BOOKMARK_BAR_FOLDER_NAME;
-      break;
-    case BookmarkNode::OTHER_NODE:
-      title_id = IDS_BOOKMARK_BAR_OTHER_FOLDER_NAME;
-      break;
-    case BookmarkNode::MOBILE:
-      title_id = IDS_BOOKMARK_BAR_MOBILE_FOLDER_NAME;
-      break;
-    default:
-      NOTREACHED();
-      title_id = IDS_BOOKMARK_BAR_FOLDER_NAME;
-      break;
-  }
-  node->SetTitle(l10n_util::GetStringUTF16(title_id));
-  return node;
-}
-
 void BookmarkModel::OnFaviconDataAvailable(
     BookmarkNode* node,
     favicon_base::IconType icon_type,
@@ -1078,19 +1043,8 @@ void BookmarkModel::PopulateNodesByURL(BookmarkNode* node) {
 }
 
 int64_t BookmarkModel::generate_next_node_id() {
+  DCHECK(loaded_);
   return next_node_id_++;
-}
-
-std::unique_ptr<BookmarkLoadDetails> BookmarkModel::CreateLoadDetails() {
-  BookmarkPermanentNode* bb_node =
-      CreatePermanentNode(BookmarkNode::BOOKMARK_BAR);
-  BookmarkPermanentNode* other_node =
-      CreatePermanentNode(BookmarkNode::OTHER_NODE);
-  BookmarkPermanentNode* mobile_node =
-      CreatePermanentNode(BookmarkNode::MOBILE);
-  return std::make_unique<BookmarkLoadDetails>(
-      bb_node, other_node, mobile_node, client_->GetLoadExtraNodesCallback(),
-      std::make_unique<TitledUrlIndex>(), next_node_id_);
 }
 
 void BookmarkModel::SetUndoDelegate(BookmarkUndoDelegate* undo_delegate) {
