@@ -237,6 +237,9 @@ AccessibilityManager::AccessibilityManager()
                       bundle.GetRawDataResource(IDR_SOUND_DICTATION_END_WAV));
   manager->Initialize(SOUND_DICTATION_START,
                       bundle.GetRawDataResource(IDR_SOUND_DICTATION_START_WAV));
+  manager->Initialize(
+      SOUND_DICTATION_CANCEL,
+      bundle.GetRawDataResource(IDR_SOUND_DICTATION_CANCEL_WAV));
 
   base::FilePath resources_path;
   if (!PathService::Get(chrome::DIR_RESOURCES, &resources_path))

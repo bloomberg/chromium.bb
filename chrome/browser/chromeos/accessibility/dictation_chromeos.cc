@@ -35,7 +35,7 @@ DictationChromeos::~DictationChromeos() = default;
 
 bool DictationChromeos::OnToggleDictation() {
   if (speech_recognizer_) {
-    media::SoundsManager::Get()->Play(chromeos::SOUND_DICTATION_END);
+    media::SoundsManager::Get()->Play(chromeos::SOUND_DICTATION_CANCEL);
     speech_recognizer_.reset();
     return false;
   }
@@ -57,6 +57,7 @@ void DictationChromeos::OnSpeechResult(const base::string16& query,
   if (input_context)
     input_context->CommitText(base::UTF16ToASCII(query));
 
+  media::SoundsManager::Get()->Play(chromeos::SOUND_DICTATION_END);
   chromeos::AccessibilityStatusEventDetails details(
       chromeos::AccessibilityNotificationType::ACCESSIBILITY_TOGGLE_DICTATION,
       /*enabled=*/false);

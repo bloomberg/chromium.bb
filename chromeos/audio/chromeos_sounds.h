@@ -28,6 +28,7 @@ enum {
   SOUND_COUNT,
   SOUND_DICTATION_END,
   SOUND_DICTATION_START,
+  SOUND_DICTATION_CANCEL,
 };
 
 }  // namespace chromeos
