@@ -163,7 +163,7 @@ int MockRenderProcessHost::VisibleClientCount() const {
   return count;
 }
 
-unsigned int MockRenderProcessHost::GetFrameDepthForTesting() const {
+unsigned int MockRenderProcessHost::GetFrameDepth() const {
   NOTIMPLEMENTED();
   return 0u;
 }

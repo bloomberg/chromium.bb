@@ -37,6 +37,12 @@ void PopulateTerminationInfo(
 
 }  // namespace
 
+CrashDumpObserver::TerminationInfo::TerminationInfo() = default;
+CrashDumpObserver::TerminationInfo::TerminationInfo(
+    const TerminationInfo& other) = default;
+CrashDumpObserver::TerminationInfo& CrashDumpObserver::TerminationInfo::
+operator=(const TerminationInfo& other) = default;
+
 // static
 void CrashDumpObserver::Create() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -112,10 +118,11 @@ void CrashDumpObserver::BrowserChildProcessHostDisconnected(
     info = it->second;
     browser_child_process_info_.erase(it);
   } else {
-    info = TerminationInfo{data.id, data.handle,
-                           static_cast<content::ProcessType>(data.process_type),
-                           base::android::ApplicationStatusListener::GetState(),
-                           true /* normal_termination */};
+    info.process_host_id = data.id;
+    info.pid = data.handle;
+    info.process_type = static_cast<content::ProcessType>(data.process_type);
+    info.app_state = base::android::ApplicationStatusListener::GetState();
+    info.normal_termination = true;
   }
   OnChildExit(info);
 }
@@ -125,9 +132,11 @@ void CrashDumpObserver::BrowserChildProcessKilled(
     const content::ChildProcessTerminationInfo& content_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!base::ContainsKey(browser_child_process_info_, data.id));
-  TerminationInfo info{data.id, data.handle,
-                       static_cast<content::ProcessType>(data.process_type),
-                       base::android::ApplicationStatusListener::GetState()};
+  TerminationInfo info;
+  info.process_host_id = data.id;
+  info.pid = data.handle;
+  info.process_type = static_cast<content::ProcessType>(data.process_type);
+  info.app_state = base::android::ApplicationStatusListener::GetState();
   PopulateTerminationInfo(content_info, &info);
   browser_child_process_info_.emplace(data.id, info);
   // Subsequent BrowserChildProcessHostDisconnected will call OnChildExit.
@@ -139,10 +148,13 @@ void CrashDumpObserver::Observe(int type,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   content::RenderProcessHost* rph =
       content::Source<content::RenderProcessHost>(source).ptr();
-  TerminationInfo info{rph->GetID(), rph->GetProcess().Handle(),
-                       content::PROCESS_TYPE_RENDERER,
-                       base::android::APPLICATION_STATE_UNKNOWN};
+  TerminationInfo info;
+  info.process_host_id = rph->GetID();
+  info.pid = rph->GetProcess().Handle();
+  info.process_type = content::PROCESS_TYPE_RENDERER;
+  info.app_state = base::android::APPLICATION_STATE_UNKNOWN;
   info.renderer_has_visible_clients = rph->VisibleClientCount() > 0;
+  info.renderer_was_subframe = rph->GetFrameDepth() > 0u;
   switch (type) {
     case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED: {
       // NOTIFICATION_RENDERER_PROCESS_TERMINATED is sent when the renderer

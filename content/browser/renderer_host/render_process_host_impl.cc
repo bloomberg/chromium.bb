@@ -2389,7 +2389,7 @@ int RenderProcessHostImpl::VisibleClientCount() const {
   return visible_clients_;
 }
 
-unsigned int RenderProcessHostImpl::GetFrameDepthForTesting() const {
+unsigned int RenderProcessHostImpl::GetFrameDepth() const {
   return frame_depth_;
 }
 

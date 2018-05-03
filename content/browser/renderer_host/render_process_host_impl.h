@@ -153,7 +153,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void ShutdownForBadMessage(CrashReportMode crash_report_mode) override;
   void UpdateClientPriority(PriorityClient* client) override;
   int VisibleClientCount() const override;
-  unsigned int GetFrameDepthForTesting() const override;
+  unsigned int GetFrameDepth() const override;
   bool IsForGuestsOnly() const override;
   StoragePartition* GetStoragePartition() const override;
   bool Shutdown(int exit_code) override;

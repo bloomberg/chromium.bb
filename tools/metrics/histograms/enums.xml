@@ -965,6 +965,14 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2" label="Renderer intentional kill">
     Renderer is killed to free renderer slot while and app is foreground.
   </int>
+  <int value="3" label="Visible subframe renderer foreground oom">
+    Renderer hosting visible subframe is killed by Android due to OOM while app
+    is foreground.
+  </int>
+  <int value="4" label="Visible subframe renderer foreground intentional kill">
+    Renderer hosting visible subframe is killed to free renderer slot while app
+    is foreground.
+  </int>
 </enum>
 
 <enum name="AndroidResourceExtractionStatus">
