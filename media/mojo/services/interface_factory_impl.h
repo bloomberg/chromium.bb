@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "media/mojo/buildflags.h"
 #include "media/mojo/interfaces/interface_factory.mojom.h"
+#include "media/mojo/services/deferred_destroy_strong_binding_set.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -22,7 +23,7 @@ class MediaLog;
 class MojoMediaClient;
 class RendererFactory;
 
-class InterfaceFactoryImpl : public mojom::InterfaceFactory {
+class InterfaceFactoryImpl : public DeferredDestroy<mojom::InterfaceFactory> {
  public:
   InterfaceFactoryImpl(
       service_manager::mojom::InterfaceProviderPtr interfaces,
@@ -42,7 +43,17 @@ class InterfaceFactoryImpl : public mojom::InterfaceFactory {
   void CreateCdmProxy(const std::string& cdm_guid,
                       mojom::CdmProxyRequest request) final;
 
+  // DeferredDestroy<mojom::InterfaceFactory> implemenation.
+  void OnDestroyPending(base::OnceClosure destroy_cb) final;
+
  private:
+  // Returns true when there is no media component (audio/video decoder,
+  // renderer, cdm and cdm proxy) bindings exist.
+  bool IsEmpty();
+
+  void SetBindingConnectionErrorHandler();
+  void OnBindingConnectionError();
+
 #if BUILDFLAG(ENABLE_MOJO_RENDERER)
   RendererFactory* GetRendererFactory();
 #endif  // BUILDFLAG(ENABLE_MOJO_RENDERER)
@@ -82,6 +93,7 @@ class InterfaceFactoryImpl : public mojom::InterfaceFactory {
 
   std::unique_ptr<service_manager::ServiceContextRef> connection_ref_;
   MojoMediaClient* mojo_media_client_;
+  base::OnceClosure destroy_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(InterfaceFactoryImpl);
 };

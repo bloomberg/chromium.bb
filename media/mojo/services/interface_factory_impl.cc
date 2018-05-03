@@ -58,6 +58,8 @@ InterfaceFactoryImpl::InterfaceFactoryImpl(
       mojo_media_client_(mojo_media_client) {
   DVLOG(1) << __func__;
   DCHECK(mojo_media_client_);
+
+  SetBindingConnectionErrorHandler();
 }
 
 InterfaceFactoryImpl::~InterfaceFactoryImpl() {
@@ -185,6 +187,77 @@ void InterfaceFactoryImpl::CreateCdmProxy(const std::string& cdm_guid,
                                             &cdm_service_context_),
       std::move(request));
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+}
+
+void InterfaceFactoryImpl::OnDestroyPending(base::OnceClosure destroy_cb) {
+  DVLOG(1) << __func__;
+  destroy_cb_ = std::move(destroy_cb);
+  if (IsEmpty())
+    std::move(destroy_cb_).Run();
+  // else the callback will be called when IsEmpty() becomes true.
+}
+
+bool InterfaceFactoryImpl::IsEmpty() {
+#if BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER)
+  if (!audio_decoder_bindings_.empty())
+    return false;
+#endif  // BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER)
+
+#if BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
+  if (!video_decoder_bindings_.empty())
+    return false;
+#endif  // BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
+
+#if BUILDFLAG(ENABLE_MOJO_RENDERER)
+  if (!renderer_bindings_.empty())
+    return false;
+#endif  // BUILDFLAG(ENABLE_MOJO_RENDERER)
+
+#if BUILDFLAG(ENABLE_MOJO_CDM)
+  if (!cdm_bindings_.empty())
+    return false;
+#endif  // BUILDFLAG(ENABLE_MOJO_CDM)
+
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+  if (!cdm_proxy_bindings_.empty())
+    return false;
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+
+  return true;
+}
+
+void InterfaceFactoryImpl::SetBindingConnectionErrorHandler() {
+  // base::Unretained is safe because all bindings are owned by |this|. If
+  // |this| is destructed, the bindings will be destructed as well and the
+  // connection error handler should never be called.
+  auto connection_error_cb = base::BindRepeating(
+      &InterfaceFactoryImpl::OnBindingConnectionError, base::Unretained(this));
+
+#if BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER)
+  audio_decoder_bindings_.set_connection_error_handler(connection_error_cb);
+#endif  // BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER)
+
+#if BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
+  video_decoder_bindings_.set_connection_error_handler(connection_error_cb);
+#endif  // BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
+
+#if BUILDFLAG(ENABLE_MOJO_RENDERER)
+  renderer_bindings_.set_connection_error_handler(connection_error_cb);
+#endif  // BUILDFLAG(ENABLE_MOJO_RENDERER)
+
+#if BUILDFLAG(ENABLE_MOJO_CDM)
+  cdm_bindings_.set_connection_error_handler(connection_error_cb);
+#endif  // BUILDFLAG(ENABLE_MOJO_CDM)
+
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+  cdm_proxy_bindings_.set_connection_error_handler(connection_error_cb);
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+}
+
+void InterfaceFactoryImpl::OnBindingConnectionError() {
+  DVLOG(2) << __func__;
+  if (destroy_cb_ && IsEmpty())
+    std::move(destroy_cb_).Run();
 }
 
 #if BUILDFLAG(ENABLE_MOJO_RENDERER)

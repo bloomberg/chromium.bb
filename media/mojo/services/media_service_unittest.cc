@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
 #include "media/base/cdm_config.h"
 #include "media/base/mock_filters.h"
@@ -46,6 +47,7 @@ using testing::Invoke;
 using testing::InvokeWithoutArgs;
 using testing::NiceMock;
 using testing::StrictMock;
+using testing::WithoutArgs;
 
 MATCHER_P(MatchesResult, success, "") {
   return arg->success == success;
@@ -96,6 +98,15 @@ class MockRendererClient : public mojom::RendererClient {
   DISALLOW_COPY_AND_ASSIGN(MockRendererClient);
 };
 
+ACTION_P(QuitLoop, run_loop) {
+  base::PostTask(FROM_HERE, run_loop->QuitClosure());
+}
+
+// Tests MediaService built into a standalone mojo service binary (see
+// ServiceMain() in main.cc) where MediaService uses TestMojoMediaClient.
+// TestMojoMediaClient supports CDM creation using DefaultCdmFactory (only
+// supports Clear Key key system), and Renderer creation using
+// DefaultRendererFactory that always create media::RendererImpl.
 class MediaServiceTest : public service_manager::test::ServiceTest {
  public:
   MediaServiceTest()
@@ -116,27 +127,31 @@ class MediaServiceTest : public service_manager::test::ServiceTest {
         mojo::MakeRequest(&interfaces));
     media_service->CreateInterfaceFactory(
         mojo::MakeRequest(&interface_factory_), std::move(interfaces));
-
-    run_loop_.reset(new base::RunLoop());
   }
 
   MOCK_METHOD3(OnCdmInitialized,
                void(mojom::CdmPromiseResultPtr result,
                     int cdm_id,
                     mojom::DecryptorPtr decryptor));
+  MOCK_METHOD0(OnCdmConnectionError, void());
 
   void InitializeCdm(const std::string& key_system,
                      bool expected_result,
                      int cdm_id) {
+    base::RunLoop run_loop;
     interface_factory_->CreateCdm(key_system, mojo::MakeRequest(&cdm_));
+    cdm_.set_connection_error_handler(base::BindRepeating(
+        &MediaServiceTest::OnCdmConnectionError, base::Unretained(this)));
 
+    // Have to use WithoutArgs since move-only types do not work with actions.
     EXPECT_CALL(*this,
                 OnCdmInitialized(MatchesResult(expected_result), cdm_id, _))
-        .WillOnce(InvokeWithoutArgs(run_loop_.get(), &base::RunLoop::Quit));
+        .WillOnce(WithoutArgs(QuitLoop(&run_loop)));
     cdm_->Initialize(key_system, url::Origin::Create(GURL(kSecurityOrigin)),
                      CdmConfig(),
                      base::BindOnce(&MediaServiceTest::OnCdmInitialized,
                                     base::Unretained(this)));
+    run_loop.Run();
   }
 
   MOCK_METHOD4(OnCdmProxyInitialized,
@@ -146,23 +161,26 @@ class MediaServiceTest : public service_manager::test::ServiceTest {
                     int cdm_id));
 
   void InitializeCdmProxy(const std::string& cdm_guid) {
+    base::RunLoop run_loop;
     interface_factory_->CreateCdmProxy(cdm_guid,
                                        mojo::MakeRequest(&cdm_proxy_));
 
     EXPECT_CALL(*this, OnCdmProxyInitialized(CdmProxy::Status::kOk, _, _, _))
-        .WillOnce(InvokeWithoutArgs(run_loop_.get(), &base::RunLoop::Quit));
+        .WillOnce(QuitLoop(&run_loop));
     mojom::CdmProxyClientAssociatedPtrInfo client_ptr_info;
     cdm_proxy_client_binding_.Bind(mojo::MakeRequest(&client_ptr_info));
     cdm_proxy_->Initialize(
         std::move(client_ptr_info),
         base::BindOnce(&MediaServiceTest::OnCdmProxyInitialized,
                        base::Unretained(this)));
+    run_loop.Run();
   }
 
   MOCK_METHOD1(OnRendererInitialized, void(bool));
 
   void InitializeRenderer(const VideoDecoderConfig& video_config,
                           bool expected_result) {
+    base::RunLoop run_loop;
     interface_factory_->CreateRenderer(
         media::mojom::HostedRendererType::kDefault, std::string(),
         mojo::MakeRequest(&renderer_));
@@ -177,7 +195,7 @@ class MediaServiceTest : public service_manager::test::ServiceTest {
     renderer_client_binding_.Bind(mojo::MakeRequest(&client_ptr_info));
 
     EXPECT_CALL(*this, OnRendererInitialized(expected_result))
-        .WillOnce(InvokeWithoutArgs(run_loop_.get(), &base::RunLoop::Quit));
+        .WillOnce(QuitLoop(&run_loop));
     std::vector<mojom::DemuxerStreamPtrInfo> streams;
     streams.push_back(std::move(video_stream_proxy_info));
     renderer_->Initialize(
@@ -185,13 +203,12 @@ class MediaServiceTest : public service_manager::test::ServiceTest {
         base::nullopt,
         base::BindOnce(&MediaServiceTest::OnRendererInitialized,
                        base::Unretained(this)));
+    run_loop.Run();
   }
 
-  MOCK_METHOD0(ConnectionClosed, void());
+  MOCK_METHOD0(MediaServiceConnectionClosed, void());
 
  protected:
-  std::unique_ptr<base::RunLoop> run_loop_;
-
   mojom::InterfaceFactoryPtr interface_factory_;
   mojom::ContentDecryptionModulePtr cdm_;
   mojom::CdmProxyPtr cdm_proxy_;
@@ -214,54 +231,105 @@ class MediaServiceTest : public service_manager::test::ServiceTest {
 
 // Note: base::RunLoop::RunUntilIdle() does not work well in these tests because
 // even when the loop is idle, we may still have pending events in the pipe.
+// - If you have an InterfacePtr hosted by the service in the service process,
+//   you can use InterfacePtr::FlushForTesting().
+// - If you expect a callback on an InterfacePtr call or connection error, use
+//   base::RunLoop::Run() and QuitLoop().
 
 // TODO(crbug.com/829233): Enable these tests on Android.
 #if BUILDFLAG(ENABLE_MOJO_CDM) && !defined(OS_ANDROID)
 TEST_F(MediaServiceTest, InitializeCdm_Success) {
   InitializeCdm(kClearKeyKeySystem, true, 1);
-  run_loop_->Run();
 }
 
 TEST_F(MediaServiceTest, InitializeCdm_InvalidKeySystem) {
   InitializeCdm(kInvalidKeySystem, false, 0);
-  run_loop_->Run();
 }
 #endif  // BUILDFLAG(ENABLE_MOJO_CDM) && !defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_MOJO_RENDERER)
 TEST_F(MediaServiceTest, InitializeRenderer) {
   InitializeRenderer(TestVideoConfig::Normal(), true);
-  run_loop_->Run();
 }
 #endif  // BUILDFLAG(ENABLE_MOJO_RENDERER)
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 TEST_F(MediaServiceTest, CdmProxy) {
   InitializeCdmProxy(kClearKeyCdmGuid);
-  run_loop_->Run();
 }
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 TEST_F(MediaServiceTest, Lifetime) {
   // The lifetime of the media service is controlled by the number of
-  // live InterfaceFactory impls, not MediaService impls, so this pipe should
-  // be closed when the last InterfaceFactory is destroyed.
+  // live InterfaceFactory impls, which are then deferred destroyed until no
+  // media components (CDM or Renderer) are hosted.
   media::mojom::MediaServicePtr media_service;
   connector()->BindInterface(media::mojom::kMediaServiceName, &media_service);
-  media_service.set_connection_error_handler(
-      base::Bind(&MediaServiceTest::ConnectionClosed, base::Unretained(this)));
+  media_service.set_connection_error_handler(base::BindRepeating(
+      &MediaServiceTest::MediaServiceConnectionClosed, base::Unretained(this)));
 
-  // Disconnecting CDM and Renderer services doesn't terminate the app.
+#if BUILDFLAG(ENABLE_MOJO_CDM) && !defined(OS_ANDROID)
+  InitializeCdm(kClearKeyKeySystem, true, 1);
+#endif
+
+#if BUILDFLAG(ENABLE_MOJO_RENDERER)
+  InitializeRenderer(TestVideoConfig::Normal(), true);
+#endif
+
+  // Disconnecting CDM and Renderer services doesn't terminate MediaService
+  // since |interface_factory_| is still alive.
   cdm_.reset();
   renderer_.reset();
+  interface_factory_.FlushForTesting();
 
-  // Disconnecting InterfaceFactory service should terminate the app, which will
-  // close the connection.
-  EXPECT_CALL(*this, ConnectionClosed())
-      .WillOnce(Invoke(run_loop_.get(), &base::RunLoop::Quit));
+  // Disconnecting InterfaceFactory will now terminate the MediaService.
+  base::RunLoop run_loop;
+  EXPECT_CALL(*this, MediaServiceConnectionClosed())
+      .WillOnce(QuitLoop(&run_loop));
   interface_factory_.reset();
-
-  run_loop_->Run();
+  run_loop.Run();
 }
+
+#if (BUILDFLAG(ENABLE_MOJO_CDM) && !defined(OS_ANDROID)) || \
+    BUILDFLAG(ENABLE_MOJO_RENDERER)
+TEST_F(MediaServiceTest, DeferredDestruction) {
+  // The lifetime of the media service is controlled by the number of
+  // live InterfaceFactory impls, which are then deferred destroyed until no
+  // media components (CDM or Renderer) are hosted.
+  media::mojom::MediaServicePtr media_service;
+  connector()->BindInterface(media::mojom::kMediaServiceName, &media_service);
+  media_service.set_connection_error_handler(base::BindRepeating(
+      &MediaServiceTest::MediaServiceConnectionClosed, base::Unretained(this)));
+
+#if BUILDFLAG(ENABLE_MOJO_CDM) && !defined(OS_ANDROID)
+  InitializeCdm(kClearKeyKeySystem, true, 1);
+#endif
+
+#if BUILDFLAG(ENABLE_MOJO_RENDERER)
+  InitializeRenderer(TestVideoConfig::Normal(), true);
+#endif
+
+  ASSERT_TRUE(cdm_ || renderer_);
+
+  // Disconnecting InterfaceFactory should not terminate the MediaService since
+  // there are still media components (CDM or Renderer) hosted.
+  interface_factory_.reset();
+  if (cdm_)
+    cdm_.FlushForTesting();
+  else if (renderer_)
+    renderer_.FlushForTesting();
+  else
+    NOTREACHED();
+
+  // Disconnecting CDM and Renderer will now terminate the MediaService.
+  base::RunLoop run_loop;
+  cdm_.reset();
+  renderer_.reset();
+  EXPECT_CALL(*this, MediaServiceConnectionClosed())
+      .WillOnce(QuitLoop(&run_loop));
+  run_loop.Run();
+}
+#endif  // (BUILDFLAG(ENABLE_MOJO_CDM) && !defined(OS_ANDROID)) ||
+        //  BUILDFLAG(ENABLE_MOJO_RENDERER)
 
 }  // namespace media
