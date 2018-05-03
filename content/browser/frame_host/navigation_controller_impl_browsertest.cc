@@ -4495,9 +4495,9 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, CloneNamedWindow) {
   EXPECT_TRUE(NavigateToURL(shell(), url_2));
 
   // Clone the tab and load the page.
-  std::unique_ptr<WebContentsImpl> new_tab(
-      static_cast<WebContentsImpl*>(shell()->web_contents()->Clone()));
-  NavigationController& new_controller = new_tab->GetController();
+  std::unique_ptr<WebContents> new_tab = shell()->web_contents()->Clone();
+  WebContentsImpl* new_tab_impl = static_cast<WebContentsImpl*>(new_tab.get());
+  NavigationController& new_controller = new_tab_impl->GetController();
   EXPECT_TRUE(new_controller.IsInitialNavigation());
   EXPECT_TRUE(new_controller.NeedsReload());
   {
@@ -4532,9 +4532,9 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), url_1));
 
   // Clone the tab and load the page.
-  std::unique_ptr<WebContentsImpl> new_tab(
-      static_cast<WebContentsImpl*>(shell()->web_contents()->Clone()));
-  NavigationController& new_controller = new_tab->GetController();
+  std::unique_ptr<WebContents> new_tab = shell()->web_contents()->Clone();
+  WebContentsImpl* new_tab_impl = static_cast<WebContentsImpl*>(new_tab.get());
+  NavigationController& new_controller = new_tab_impl->GetController();
   EXPECT_TRUE(new_controller.IsInitialNavigation());
   EXPECT_TRUE(new_controller.NeedsReload());
   {
@@ -4568,9 +4568,9 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), url_2));
 
   // Clone the tab but don't load last committed page.
-  std::unique_ptr<WebContentsImpl> new_tab(
-      static_cast<WebContentsImpl*>(shell()->web_contents()->Clone()));
-  NavigationController& new_controller = new_tab->GetController();
+  std::unique_ptr<WebContents> new_tab = shell()->web_contents()->Clone();
+  WebContentsImpl* new_tab_impl = static_cast<WebContentsImpl*>(new_tab.get());
+  NavigationController& new_controller = new_tab_impl->GetController();
   EXPECT_TRUE(new_controller.IsInitialNavigation());
   EXPECT_TRUE(new_controller.NeedsReload());
 
@@ -4583,7 +4583,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
   // Make sure the new tab isn't still loading.
   EXPECT_EQ(url_1, new_controller.GetLastCommittedEntry()->GetURL());
-  EXPECT_FALSE(new_tab->IsLoading());
+  EXPECT_FALSE(new_tab_impl->IsLoading());
 
   // Also check going back in the original tab after a renderer crash.
   NavigationController& controller = shell()->web_contents()->GetController();
@@ -6275,10 +6275,10 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(url_1, root->current_url());
 
   // Clone the tab without navigating it.
-  std::unique_ptr<WebContentsImpl> new_tab(
-      static_cast<WebContentsImpl*>(shell()->web_contents()->Clone()));
-  NavigationController& new_controller = new_tab->GetController();
-  FrameTreeNode* new_root = new_tab->GetFrameTree()->root();
+  std::unique_ptr<WebContents> new_tab = shell()->web_contents()->Clone();
+  WebContentsImpl* new_tab_impl = static_cast<WebContentsImpl*>(new_tab.get());
+  NavigationController& new_controller = new_tab_impl->GetController();
+  FrameTreeNode* new_root = new_tab_impl->GetFrameTree()->root();
   EXPECT_TRUE(new_controller.IsInitialNavigation());
   EXPECT_TRUE(new_controller.NeedsReload());
 

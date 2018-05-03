@@ -495,7 +495,7 @@ class WebContents : public PageNavigator,
 
   // Creates a new WebContents with the same state as this one. The returned
   // heap-allocated pointer is owned by the caller.
-  virtual WebContents* Clone() = 0;
+  virtual std::unique_ptr<WebContents> Clone() = 0;
 
   // Reloads the focused frame.
   virtual void ReloadFocusedFrame(bool bypass_cache) = 0;

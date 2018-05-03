@@ -117,7 +117,7 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
 
   // Returns a clone of this TestWebContents. The returned object is also a
   // TestWebContents. The caller owns the returned object.
-  WebContents* Clone() override;
+  std::unique_ptr<WebContents> Clone() override;
 
   // Allow mocking of the RenderViewHostDelegateView.
   RenderViewHostDelegateView* GetDelegateView() override;

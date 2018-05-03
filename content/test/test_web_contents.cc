@@ -261,9 +261,9 @@ bool TestWebContents::CreateRenderViewForRenderManager(
   return true;
 }
 
-WebContents* TestWebContents::Clone() {
-  WebContentsImpl* contents =
-      Create(GetBrowserContext(), SiteInstance::Create(GetBrowserContext()));
+std::unique_ptr<WebContents> TestWebContents::Clone() {
+  std::unique_ptr<WebContentsImpl> contents = base::WrapUnique(
+      Create(GetBrowserContext(), SiteInstance::Create(GetBrowserContext())));
   contents->GetController().CopyStateFrom(controller_, true);
   return contents;
 }
