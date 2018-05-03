@@ -334,7 +334,7 @@ class DownloadsTestVolume : public LocalTestVolume {
   }
 };
 
-// FakeTestVolume: local test volume with a specified volume and device type.
+// FakeTestVolume: local test volume with a given volume and device type.
 class FakeTestVolume : public LocalTestVolume {
  public:
   FakeTestVolume(const std::string& name,
@@ -345,11 +345,13 @@ class FakeTestVolume : public LocalTestVolume {
         device_type_(device_type) {}
   ~FakeTestVolume() override {}
 
-  // Simple test entries used for testing, e.g., read-only volumes.
+  // Add the fake test volume entries.
   bool PrepareTestEntries(Profile* profile) {
     if (!CreateRootDirectory(profile))
       return false;
-    // Must be in sync with BASIC_FAKE_ENTRY_SET in the JS test code.
+
+    // Note: must be kept in sync with BASIC_FAKE_ENTRY_SET defined in the
+    // integration_tests/file_manager JS code.
     CreateEntry(TestEntryInfo(FILE, "text.txt", "hello.txt", "text/plain", NONE,
                               base::Time::Now()));
     CreateEntry(TestEntryInfo(DIRECTORY, std::string(), "A", std::string(),
@@ -360,25 +362,29 @@ class FakeTestVolume : public LocalTestVolume {
   bool Mount(Profile* profile) override {
     if (!CreateRootDirectory(profile))
       return false;
-    storage::ExternalMountPoints* const mount_points =
-        storage::ExternalMountPoints::GetSystemInstance();
 
-    // First revoke the existing mount point (if any).
-    mount_points->RevokeFileSystem(name());
-    const bool result = mount_points->RegisterFileSystem(
+    // Revoke name() mount point first, then re-add its mount point.
+    GetMountPoints()->RevokeFileSystem(name());
+    const bool added = GetMountPoints()->RegisterFileSystem(
         name(), storage::kFileSystemTypeNativeLocal,
         storage::FileSystemMountOption(), root_path());
-    if (!result)
+    if (!added)
       return false;
 
-    VolumeManager::Get(profile)->AddVolumeForTesting(
-        root_path(), volume_type_, device_type_, false /* read_only */);
+    // Expose the mount point with the given volume and device type.
+    VolumeManager::Get(profile)->AddVolumeForTesting(root_path(), volume_type_,
+                                                     device_type_, read_only_);
     return true;
   }
 
  private:
+  storage::ExternalMountPoints* GetMountPoints() {
+    return storage::ExternalMountPoints::GetSystemInstance();
+  }
+
   const VolumeType volume_type_;
   const chromeos::DeviceType device_type_;
+  const bool read_only_ = false;
 };
 
 // DriveTestVolume: test volume for Google Drive.
