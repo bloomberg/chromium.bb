@@ -125,7 +125,9 @@ void WinWindow::SetCursor(PlatformCursor cursor) {
   ::SetCursor(cursor);
 }
 
-void WinWindow::MoveCursorTo(const gfx::Point& location) {}
+void WinWindow::MoveCursorTo(const gfx::Point& location) {
+  ::SetCursorPos(location.x(), location.y());
+}
 
 void WinWindow::ConfineCursorToBounds(const gfx::Rect& bounds) {
 }
