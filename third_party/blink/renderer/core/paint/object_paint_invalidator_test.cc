@@ -281,6 +281,10 @@ TEST_F(ObjectPaintInvalidatorTest, InvalidatePaintRectangle) {
   EXPECT_EQ(LayoutRect(10, 10, 80, 80), target->PartialInvalidationRect());
   EXPECT_TRUE(target->MayNeedPaintInvalidation());
 
+  GetDocument().View()->UpdateLifecycleToPrePaintClean();
+  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled() ||
+      !RuntimeEnabledFeatures::PartialRasterInvalidationEnabled())
+    EXPECT_EQ(LayoutRect(), target->PartialInvalidationRect());
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(LayoutRect(), target->PartialInvalidationRect());
 

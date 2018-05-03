@@ -3809,7 +3809,8 @@ void LayoutObject::ClearPaintInvalidationFlags() {
 #if DCHECK_IS_ON()
   DCHECK(!ShouldCheckForPaintInvalidation() || PaintInvalidationStateIsDirty());
 #endif
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled() ||
+      !RuntimeEnabledFeatures::PartialRasterInvalidationEnabled())
     fragment_.SetPartialInvalidationRect(LayoutRect());
 
   ClearShouldDoFullPaintInvalidation();
