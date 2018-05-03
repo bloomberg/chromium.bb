@@ -113,7 +113,6 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
   size_t num_incomplete_fetches_ = 0;
 
 #if DCHECK_IS_ON()
-  KURL original_url_;
   KURL url_;
   bool root_is_inline_;
 
