@@ -720,16 +720,9 @@ class TestExpectationsModel(object):
             expectations.remove(SKIP)
 
         for expectation in expectations:
-            retval.append(self.expectation_to_string(expectation))
+            retval.append(TestExpectations.expectation_to_string(expectation))
 
         return ' '.join(retval)
-
-    def expectation_to_string(self, expectation):
-        """Return the uppercased string equivalent of a given expectation."""
-        for item in TestExpectations.EXPECTATIONS.items():
-            if item[1] == expectation:
-                return item[0].upper()
-        raise ValueError(expectation)
 
     def remove_expectation_line(self, test):
         if not self.has_test(test.name):
@@ -926,7 +919,7 @@ class TestExpectations(object):
         TestExpectationParser.REBASELINE_MODIFIER: REBASELINE,
     }
 
-    EXPECTATIONS_TO_STRING = dict((k, v) for (v, k) in EXPECTATIONS.iteritems())
+    EXPECTATIONS_TO_STRING = {k: v.upper() for (v, k) in EXPECTATIONS.iteritems()}
 
     # (aggregated by category, pass/fail/skip, type)
     EXPECTATION_DESCRIPTIONS = {
@@ -964,6 +957,14 @@ class TestExpectations(object):
     def expectation_from_string(cls, string):
         assert ' ' not in string  # This only handles one expectation at a time.
         return cls.EXPECTATIONS.get(string.lower())
+
+    @classmethod
+    def expectation_to_string(cls, expectation):
+        """Return the uppercased string equivalent of a given expectation."""
+        try:
+            return cls.EXPECTATIONS_TO_STRING[expectation]
+        except KeyError:
+            raise ValueError(expectation)
 
     @staticmethod
     def result_was_expected(result, expected_results, test_needs_rebaselining):
@@ -1117,9 +1118,6 @@ class TestExpectations(object):
 
     def get_expectations_string(self, test):
         return self._model.get_expectations_string(test)
-
-    def expectation_to_string(self, expectation):
-        return self._model.expectation_to_string(expectation)
 
     def matches_an_expected_result(self, test, result, pixel_tests_are_enabled, sanitizer_is_enabled):
         expected_results = self._model.get_expectations(test)
