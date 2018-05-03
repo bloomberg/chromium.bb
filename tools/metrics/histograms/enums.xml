@@ -39419,6 +39419,15 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="BLACKLISTED"/>
 </enum>
 
+<enum name="SafeBrowsingUserConsentVsUrlCheckRaceResult">
+  <int value="0" label="URL check finished first, URL is safe"/>
+  <int value="1" label="URL check finished first, URL is malicious"/>
+  <int value="2" label="User opted in, URL is safe"/>
+  <int value="3" label="User opted in, URL is malicious"/>
+  <int value="4" label="User opted out, URL is safe"/>
+  <int value="5" label="User opted out, URL is malicious"/>
+</enum>
+
 <enum name="SafeBrowsingUserOptIn">
   <int value="0" label="User has opted-out"/>
   <int value="1" label="User has opted-in"/>
