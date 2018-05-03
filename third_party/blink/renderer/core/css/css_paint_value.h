@@ -15,7 +15,7 @@
 
 namespace blink {
 
-class CSSPaintValue : public CSSImageGeneratorValue {
+class CORE_EXPORT CSSPaintValue : public CSSImageGeneratorValue {
  public:
   static CSSPaintValue* Create(CSSCustomIdentValue* name) {
     return new CSSPaintValue(name);

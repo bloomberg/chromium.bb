@@ -721,6 +721,11 @@ bool ComputedStyle::DiffNeedsPaintInvalidationObject(
 bool ComputedStyle::DiffNeedsPaintInvalidationObjectForPaintImage(
     const StyleImage& image,
     const ComputedStyle& other) const {
+  // https://crbug.com/835589: early exit when paint target is associated with
+  // a link.
+  if (InsideLink() != EInsideLink::kNotInsideLink)
+    return false;
+
   CSSPaintValue* value = ToCSSPaintValue(image.CssValue());
 
   // NOTE: If the invalidation properties vectors are null, we are invalid as
