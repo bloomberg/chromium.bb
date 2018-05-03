@@ -146,7 +146,7 @@ class OneGoogleBarFetcherImpl::AuthenticatedURLFetcher {
   void Start();
 
  private:
-  std::string GetExtraRequestHeaders() const;
+  net::HttpRequestHeaders GetRequestHeaders() const;
 
   void OnURLLoaderComplete(std::unique_ptr<std::string> response_body);
 
@@ -174,9 +174,8 @@ OneGoogleBarFetcherImpl::AuthenticatedURLFetcher::AuthenticatedURLFetcher(
 #endif
       callback_(std::move(callback)) {}
 
-std::string
-OneGoogleBarFetcherImpl::AuthenticatedURLFetcher::GetExtraRequestHeaders()
-    const {
+net::HttpRequestHeaders
+OneGoogleBarFetcherImpl::AuthenticatedURLFetcher::GetRequestHeaders() const {
   net::HttpRequestHeaders headers;
   // Note: It's OK to pass SignedIn::kNo if it's unknown, as it does not affect
   // transmission of experiments coming from the variations server.
@@ -205,7 +204,7 @@ OneGoogleBarFetcherImpl::AuthenticatedURLFetcher::GetExtraRequestHeaders()
                       chrome_connected_header_value);
   }
 #endif
-  return headers.ToString();
+  return headers;
 }
 
 void OneGoogleBarFetcherImpl::AuthenticatedURLFetcher::Start() {
@@ -237,7 +236,7 @@ void OneGoogleBarFetcherImpl::AuthenticatedURLFetcher::Start() {
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = api_url_;
   resource_request->load_flags = net::LOAD_DO_NOT_SEND_AUTH_DATA;
-  resource_request->headers.AddHeadersFromString(GetExtraRequestHeaders());
+  resource_request->headers = GetRequestHeaders();
   resource_request->request_initiator =
       url::Origin::Create(GURL(chrome::kChromeUINewTabURL));
 
