@@ -21,6 +21,7 @@
 #include "media/mojo/services/mojo_cdm_promise.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"
 #include "media/mojo/services/mojo_decryptor_service.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 namespace media {
 
@@ -106,6 +107,7 @@ class MEDIA_MOJO_EXPORT MojoCdmService : public mojom::ContentDecryptionModule {
   // MojoDecryptorService is passed the Decryptor from |cdm_|, so
   // |decryptor_| must not outlive |cdm_|.
   std::unique_ptr<MojoDecryptorService> decryptor_;
+  std::unique_ptr<mojo::Binding<mojom::Decryptor>> decryptor_binding_;
 
   // Set to a valid CDM ID if the |cdm_| is successfully created.
   int cdm_id_;

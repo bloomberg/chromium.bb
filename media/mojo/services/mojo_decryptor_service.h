@@ -16,7 +16,6 @@
 #include "media/base/decryptor.h"
 #include "media/mojo/interfaces/decryptor.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
-#include "mojo/public/cpp/bindings/binding.h"
 
 namespace media {
 
@@ -24,19 +23,15 @@ class DecoderBuffer;
 class MojoDecoderBufferReader;
 class MojoDecoderBufferWriter;
 
-// A mojom::Decryptor implementation. This object is owned by the creator,
-// and uses a weak binding across the mojo interface.
+// A mojom::Decryptor implementation that proxies decryptor calls to a
+// media::Decryptor.
 class MEDIA_MOJO_EXPORT MojoDecryptorService : public mojom::Decryptor {
  public:
   using StreamType = media::Decryptor::StreamType;
   using Status = media::Decryptor::Status;
 
-  // Constructs a MojoDecryptorService and binds it to the |request|.
-  // |error_handler| will be called if a connection error occurs.
   // Caller must ensure that |decryptor| outlives |this|.
-  MojoDecryptorService(media::Decryptor* decryptor,
-                       mojo::InterfaceRequest<mojom::Decryptor> request,
-                       const base::Closure& error_handler);
+  explicit MojoDecryptorService(media::Decryptor* decryptor);
 
   ~MojoDecryptorService() final;
 
@@ -92,9 +87,6 @@ class MEDIA_MOJO_EXPORT MojoDecryptorService : public mojom::Decryptor {
 
   // Returns audio/video buffer reader according to the |stream_type|.
   MojoDecoderBufferReader* GetBufferReader(StreamType stream_type) const;
-
-  // A weak binding is used to connect to the MojoDecryptor.
-  mojo::Binding<mojom::Decryptor> binding_;
 
   // Helper classes to receive encrypted DecoderBuffer from the client.
   std::unique_ptr<MojoDecoderBufferReader> audio_buffer_reader_;
