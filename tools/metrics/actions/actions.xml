@@ -19264,6 +19264,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="TouchscreenScroll">
+  <obsolete>
+    Not needed as of 05/2018 since performance metrics for ScrollBegin show the
+    frequency of GSBs.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <description>
     Logged at the beginning of touchscreen based scrolling. In M56 and earlier,
@@ -19298,6 +19302,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="TrackpadScroll">
+  <obsolete>
+    Not needed as of 05/2018 since performance metrics for ScrollBegin show the
+    frequency of GSBs.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <description>
     Logged on trackpad scroll events. Logging was removed in M57, because it
