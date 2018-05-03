@@ -11,7 +11,7 @@
 
 namespace blink {
 
-class CSSCustomIdentValue : public CSSValue {
+class CORE_EXPORT CSSCustomIdentValue : public CSSValue {
  public:
   static CSSCustomIdentValue* Create(const AtomicString& str) {
     return new CSSCustomIdentValue(str);
