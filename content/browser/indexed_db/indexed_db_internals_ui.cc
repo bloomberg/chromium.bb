@@ -41,7 +41,7 @@ namespace {
 bool AllowWhitelistedPaths(const std::vector<base::FilePath>& allowed_paths,
                            const base::FilePath& candidate_path) {
   for (const base::FilePath& allowed_path : allowed_paths) {
-    if (allowed_path.IsParent(candidate_path))
+    if (candidate_path == allowed_path || allowed_path.IsParent(candidate_path))
       return true;
   }
   return false;
