@@ -75,9 +75,6 @@ config("skia_config") {
     ]
   }
 
-  defines += [ "SK_USE_SKCMS" ]
-  include_dirs += [ "//third_party/skia/third_party/skcms" ]
-
   if (skia_support_gpu) {
     include_dirs += [
       "//third_party/skia/src/gpu",
@@ -147,7 +144,7 @@ config("skia_library_config") {
   # TODO: remove after Skia shader relocation (https://skia-review.googlesource.com/c/17927)
   include_dirs += [ "//third_party/skia/src/effects/gradients" ]
 
-  defines = []
+  defines = [ "SK_USE_SKCMS" ]
 
   if (!is_ios && !use_system_freetype) {
     defines += [ "SK_FREETYPE_MINIMUM_RUNTIME_VERSION=(((FREETYPE_MAJOR) * 0x01000000) | ((FREETYPE_MINOR) * 0x00010000) | ((FREETYPE_PATCH) * 0x00000100))" ]
@@ -347,12 +344,6 @@ component("skia") {
   if (current_cpu == "arm") {
     sources += [ "//third_party/skia/src/core/SkUtilsArm.cpp" ]
   }
-
-  # skcms
-  sources += [
-    "//third_party/skia/src/core/SkColorSpaceXform_skcms.cpp",
-    "//third_party/skia/third_party/skcms/skcms.c",
-  ]
 
   # GPU
   if (skia_support_gpu) {
@@ -560,6 +551,10 @@ component("skia") {
   if (is_fuchsia) {
     deps += [ "//third_party/expat" ]
   }
+
+  # skcms
+  deps += [ "//third_party/skia/third_party/skcms" ]
+  sources += [ "//third_party/skia/src/core/SkColorSpaceXform_skcms.cpp" ]
 }
 
 # Template for things that are logically part of :skia, but need to be split out
