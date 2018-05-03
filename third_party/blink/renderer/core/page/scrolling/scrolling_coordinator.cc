@@ -1075,7 +1075,7 @@ Region ScrollingCoordinator::ComputeShouldHandleScrollGestureOnMainThreadRegion(
 static void AccumulateDocumentTouchEventTargetRects(
     LayerHitTestRects& rects,
     EventHandlerRegistry::EventHandlerClass event_class,
-    const Document* document,
+    Document* document,
     TouchAction supported_fast_actions) {
   DCHECK(document);
   const EventTargetSet* targets =
@@ -1094,55 +1094,53 @@ static void AccumulateDocumentTouchEventTargetRects(
   // implemented by replacing the root cc::layer with the video layer so doing
   // this optimization causes the compositor to think that there are no
   // handlers, therefore skip it.
-  if (!document->GetLayoutView()->Compositor()->InOverlayFullscreenVideo()) {
-    for (const auto& event_target : *targets) {
-      EventTarget* target = event_target.key;
-      Node* node = target->ToNode();
-      LocalDOMWindow* window = target->ToLocalDOMWindow();
-      // If the target is inside a throttled frame, skip it.
-      if (window && window->GetFrame()->View() &&
-          window->GetFrame()->View()->ShouldThrottleRendering())
-        continue;
-      if (node && node->GetDocument().View() &&
-          node->GetDocument().View()->ShouldThrottleRendering())
-        continue;
-      if (window || node == document || node == document->documentElement() ||
-          node == document->body()) {
-        if (auto* layout_view = document->GetLayoutView()) {
-          layout_view->ComputeLayerHitTestRects(rects, supported_fast_actions);
-        }
-        return;
-      }
+  if (!document->GetLayoutView()->Compositor()->InOverlayFullscreenVideo() &&
+      (!document->View() || !document->View()->ShouldThrottleRendering())) {
+    if (targets->Contains(document) ||
+        (document->documentElement() &&
+         targets->Contains(document->documentElement())) ||
+        (document->body() && targets->Contains(document->body())) ||
+        targets->Contains(document->GetFrame()->DomWindow())) {
+      document->GetLayoutView()->ComputeLayerHitTestRects(
+          rects, supported_fast_actions);
+      return;
     }
   }
 
   for (const auto& event_target : *targets) {
     EventTarget* target = event_target.key;
     Node* node = target->ToNode();
-    if (!node || !node->isConnected())
+    LocalDOMWindow* window = target->ToLocalDOMWindow();
+    if (!window && (!node || !node->isConnected()))
       continue;
+
+    Document& document_node =
+        window ? *window->document() : node->GetDocument();
 
     // If the document belongs to an invisible subframe it does not have a
     // composited layer and should be skipped.
-    if (node->GetDocument().IsInInvisibleSubframe())
+    if (document_node.IsInInvisibleSubframe())
       continue;
 
     // If the node belongs to a throttled frame, skip it.
-    if (node->GetDocument().View() &&
-        node->GetDocument().View()->ShouldThrottleRendering())
+    if (document_node.View() && document_node.View()->ShouldThrottleRendering())
       continue;
 
     // Ignore events which apply to a different LocalFrameRoot, as they have
     // their own lifecycle. Any events that apply to them will get processed
     // accordingly.
-    if (node->GetDocument().GetFrame()->LocalFrameRoot() !=
-        document->GetFrame()->LocalFrameRoot())
+    if (document_node.GetFrame()->LocalFrameRoot() !=
+        document->GetFrame()->LocalFrameRoot()) {
       continue;
+    }
 
-    if (node->IsDocumentNode() && node != document) {
+    if ((window || node->IsDocumentNode()) && &document_node != document) {
       AccumulateDocumentTouchEventTargetRects(
-          rects, event_class, ToDocument(node), supported_fast_actions);
-    } else if (LayoutObject* layout_object = node->GetLayoutObject()) {
+          rects, event_class, &document_node, supported_fast_actions);
+    } else if (node) {
+      LayoutObject* layout_object = node->GetLayoutObject();
+      if (!layout_object)
+        continue;
       // If the set also contains one of our ancestor nodes then processing
       // this node would be redundant.
       bool has_touch_event_target_ancestor = false;

@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator_context.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/platform/geometry/int_point.h"
@@ -616,6 +617,53 @@ TEST_P(ScrollingCoordinatorTest, touchActionBlockingHandler) {
       TouchAction::kTouchActionPanY);
   EXPECT_EQ(region.GetRegionComplexity(), 1);
   EXPECT_EQ(region.bounds(), gfx::Rect(0, 0, 1000, 1000));
+}
+
+TEST_P(ScrollingCoordinatorTest, IframeWindowTouchHandler) {
+  LoadHTML(
+      R"(<iframe style="width: 275px; height: 250px;"></iframe>)");
+  WebLocalFrameImpl* child_frame =
+      ToWebLocalFrameImpl(GetWebView()->MainFrameImpl()->FirstChild());
+  FrameTestHelpers::LoadHTMLString(child_frame,
+                                   R"(<body>
+                                   <p style="margin: 1000px"> Hello </p>
+        <script>
+          window.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+          }, {passive: false});
+        </script>
+      </body>)",
+                                   URLTestHelpers::ToKURL("about:blank"));
+  ForceFullCompositingUpdate();
+
+  PaintLayer* paint_layer_child_frame =
+      child_frame->GetFrame()->GetDocument()->GetLayoutView()->Layer();
+  cc::Region region_child_frame =
+      paint_layer_child_frame
+          ->EnclosingLayerForPaintInvalidationCrossingFrameBoundaries()
+          ->GraphicsLayerBacking(&paint_layer_child_frame->GetLayoutObject())
+          ->PlatformLayer()
+          ->TouchEventHandlerRegionForTouchActionForTesting(
+              TouchAction::kTouchActionNone);
+  PaintLayer* paint_layer_main_frame = GetWebView()
+                                           ->MainFrameImpl()
+                                           ->GetFrame()
+                                           ->GetDocument()
+                                           ->GetLayoutView()
+                                           ->Layer();
+  cc::Region region_main_frame =
+      paint_layer_main_frame
+          ->EnclosingLayerForPaintInvalidationCrossingFrameBoundaries()
+          ->GraphicsLayerBacking(&paint_layer_main_frame->GetLayoutObject())
+          ->PlatformLayer()
+          ->TouchEventHandlerRegionForTouchActionForTesting(
+              TouchAction::kTouchActionNone);
+  EXPECT_TRUE(region_main_frame.bounds().IsEmpty());
+  EXPECT_FALSE(region_child_frame.bounds().IsEmpty());
+  // We only check for the content size for verification as the offset is 0x0
+  // due to child frame having its own composited layer.
+  EXPECT_EQ(child_frame->GetFrameView()->ContentsSize(),
+            IntRect(region_child_frame.bounds()).Size());
 }
 
 TEST_P(ScrollingCoordinatorTest, overflowScrolling) {
