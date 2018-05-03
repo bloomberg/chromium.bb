@@ -219,8 +219,7 @@ WebContents* GetTabAndRevertIfNecessary(Browser* browser,
   switch (disposition) {
     case WindowOpenDisposition::NEW_FOREGROUND_TAB:
     case WindowOpenDisposition::NEW_BACKGROUND_TAB: {
-      std::unique_ptr<WebContents> new_tab =
-          base::WrapUnique(current_tab->Clone());
+      std::unique_ptr<WebContents> new_tab = current_tab->Clone();
       WebContents* raw_new_tab = new_tab.get();
       if (disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB)
         new_tab->WasHidden();
@@ -232,8 +231,7 @@ WebContents* GetTabAndRevertIfNecessary(Browser* browser,
       return raw_new_tab;
     }
     case WindowOpenDisposition::NEW_WINDOW: {
-      std::unique_ptr<WebContents> new_tab =
-          base::WrapUnique(current_tab->Clone());
+      std::unique_ptr<WebContents> new_tab = current_tab->Clone();
       WebContents* raw_new_tab = new_tab.get();
       Browser* new_browser =
           new Browser(Browser::CreateParams(browser->profile(), true));
@@ -670,8 +668,7 @@ bool CanDuplicateTab(const Browser* browser) {
 WebContents* DuplicateTabAt(Browser* browser, int index) {
   WebContents* contents = browser->tab_strip_model()->GetWebContentsAt(index);
   CHECK(contents);
-  std::unique_ptr<WebContents> contents_dupe =
-      base::WrapUnique(contents->Clone());
+  std::unique_ptr<WebContents> contents_dupe = contents->Clone();
   WebContents* raw_contents_dupe = contents_dupe.get();
 
   bool pinned = false;

@@ -1690,7 +1690,7 @@ void WebContentsImpl::FreezePage() {
   SendPageMessage(new PageMsg_FreezePage(MSG_ROUTING_NONE));
 }
 
-WebContents* WebContentsImpl::Clone() {
+std::unique_ptr<WebContents> WebContentsImpl::Clone() {
   // We use our current SiteInstance since the cloned entry will use it anyway.
   // We pass our own opener so that the cloned page can access it if it was set
   // before.
@@ -1700,10 +1700,11 @@ WebContents* WebContentsImpl::Clone() {
   RenderFrameHostImpl* opener_rfh = nullptr;
   if (opener)
     opener_rfh = opener->current_frame_host();
-  WebContentsImpl* tc = CreateWithOpener(create_params, opener_rfh);
+  std::unique_ptr<WebContentsImpl> tc =
+      base::WrapUnique(CreateWithOpener(create_params, opener_rfh));
   tc->GetController().CopyStateFrom(controller_, true);
   for (auto& observer : observers_)
-    observer.DidCloneToNewWebContents(this, tc);
+    observer.DidCloneToNewWebContents(this, tc.get());
   return tc;
 }
 
