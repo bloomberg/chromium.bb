@@ -92,11 +92,8 @@ void LayoutMedia::UpdateLayout() {
 
     LayoutBox* layout_box = ToLayoutBox(child);
     layout_box->SetLocation(new_rect.Location());
-    // TODO(foolip): Remove the mutableStyleRef() and depend on CSS
-    // width/height: inherit to match the media element size.
-    layout_box->MutableStyleRef().SetHeight(Length(new_rect.Height(), kFixed));
-    layout_box->MutableStyleRef().SetWidth(Length(width, kFixed));
-
+    layout_box->SetOverrideLogicalWidth(width);
+    layout_box->SetOverrideLogicalHeight(new_rect.Height());
     layout_box->ForceLayout();
   }
 
