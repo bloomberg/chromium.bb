@@ -117,8 +117,8 @@ class DemuxerStreamAdapterTest : public ::testing::Test {
     constexpr size_t kDataPipeCapacity = 256;
     demuxer_stream_.reset(new FakeDemuxerStream(true));  // audio.
     const MojoCreateDataPipeOptions data_pipe_options{
-        sizeof(MojoCreateDataPipeOptions),
-        MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE, 1, kDataPipeCapacity};
+        sizeof(MojoCreateDataPipeOptions), MOJO_CREATE_DATA_PIPE_FLAG_NONE, 1,
+        kDataPipeCapacity};
     mojom::RemotingDataStreamSenderPtr stream_sender;
     mojo::ScopedDataPipeProducerHandle producer_end;
     mojo::ScopedDataPipeConsumerHandle consumer_end;

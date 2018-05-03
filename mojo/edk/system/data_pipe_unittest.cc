@@ -80,9 +80,11 @@ class DataPipeTest : public test::MojoTestBase {
   MojoResult WriteData(const void* elements,
                        uint32_t* num_bytes,
                        bool all_or_none = false) {
-    return MojoWriteData(producer_, elements, num_bytes,
-                         all_or_none ? MOJO_WRITE_DATA_FLAG_ALL_OR_NONE
-                                     : MOJO_WRITE_DATA_FLAG_NONE);
+    MojoWriteDataOptions options;
+    options.struct_size = sizeof(options);
+    options.flags = all_or_none ? MOJO_WRITE_DATA_FLAG_ALL_OR_NONE
+                                : MOJO_WRITE_DATA_FLAG_NONE;
+    return MojoWriteData(producer_, elements, num_bytes, &options);
   }
 
   MojoResult ReadData(void* elements,
@@ -94,41 +96,44 @@ class DataPipeTest : public test::MojoTestBase {
       flags |= MOJO_READ_DATA_FLAG_ALL_OR_NONE;
     if (peek)
       flags |= MOJO_READ_DATA_FLAG_PEEK;
-    return MojoReadData(consumer_, elements, num_bytes, flags);
+
+    MojoReadDataOptions options;
+    options.struct_size = sizeof(options);
+    options.flags = flags;
+    return MojoReadData(consumer_, &options, elements, num_bytes);
   }
 
   MojoResult QueryData(uint32_t* num_bytes) {
-    return MojoReadData(consumer_, nullptr, num_bytes,
-                        MOJO_READ_DATA_FLAG_QUERY);
+    MojoReadDataOptions options;
+    options.struct_size = sizeof(options);
+    options.flags = MOJO_READ_DATA_FLAG_QUERY;
+    return MojoReadData(consumer_, &options, nullptr, num_bytes);
   }
 
   MojoResult DiscardData(uint32_t* num_bytes, bool all_or_none = false) {
     MojoReadDataFlags flags = MOJO_READ_DATA_FLAG_DISCARD;
     if (all_or_none)
       flags |= MOJO_READ_DATA_FLAG_ALL_OR_NONE;
-    return MojoReadData(consumer_, nullptr, num_bytes, flags);
+    MojoReadDataOptions options;
+    options.struct_size = sizeof(options);
+    options.flags = flags;
+    return MojoReadData(consumer_, &options, nullptr, num_bytes);
   }
 
   MojoResult BeginReadData(const void** elements, uint32_t* num_bytes) {
-    return MojoBeginReadData(consumer_, elements, num_bytes,
-                             MOJO_READ_DATA_FLAG_NONE);
+    return MojoBeginReadData(consumer_, nullptr, elements, num_bytes);
   }
 
   MojoResult EndReadData(uint32_t num_bytes_read) {
-    return MojoEndReadData(consumer_, num_bytes_read);
+    return MojoEndReadData(consumer_, num_bytes_read, nullptr);
   }
 
-  MojoResult BeginWriteData(void** elements,
-                            uint32_t* num_bytes,
-                            bool all_or_none = false) {
-    MojoReadDataFlags flags = MOJO_WRITE_DATA_FLAG_NONE;
-    if (all_or_none)
-      flags |= MOJO_WRITE_DATA_FLAG_ALL_OR_NONE;
-    return MojoBeginWriteData(producer_, elements, num_bytes, flags);
+  MojoResult BeginWriteData(void** elements, uint32_t* num_bytes) {
+    return MojoBeginWriteData(producer_, nullptr, elements, num_bytes);
   }
 
   MojoResult EndWriteData(uint32_t num_bytes_written) {
-    return MojoEndWriteData(producer_, num_bytes_written);
+    return MojoEndWriteData(producer_, num_bytes_written, nullptr);
   }
 
   MojoResult CloseProducer() {
@@ -151,10 +156,10 @@ class DataPipeTest : public test::MojoTestBase {
 
 TEST_F(DataPipeTest, Basic) {
   const MojoCreateDataPipeOptions options = {
-      kSizeOfOptions,                           // |struct_size|.
-      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
-      static_cast<uint32_t>(sizeof(int32_t)),   // |element_num_bytes|.
-      1000 * sizeof(int32_t)                    // |capacity_num_bytes|.
+      kSizeOfOptions,                          // |struct_size|.
+      MOJO_CREATE_DATA_PIPE_FLAG_NONE,         // |flags|.
+      static_cast<uint32_t>(sizeof(int32_t)),  // |element_num_bytes|.
+      1000 * sizeof(int32_t)                   // |capacity_num_bytes|.
   };
 
   ASSERT_EQ(MOJO_RESULT_OK, Create(&options));
@@ -191,20 +196,20 @@ TEST_F(DataPipeTest, CreateAndMaybeTransfer) {
       // Default options.
       {},
       // Trivial element size, non-default capacity.
-      {kSizeOfOptions,                           // |struct_size|.
-       MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
-       1,                                        // |element_num_bytes|.
-       1000},                                    // |capacity_num_bytes|.
+      {kSizeOfOptions,                   // |struct_size|.
+       MOJO_CREATE_DATA_PIPE_FLAG_NONE,  // |flags|.
+       1,                                // |element_num_bytes|.
+       1000},                            // |capacity_num_bytes|.
       // Nontrivial element size, non-default capacity.
-      {kSizeOfOptions,                           // |struct_size|.
-       MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
-       4,                                        // |element_num_bytes|.
-       4000},                                    // |capacity_num_bytes|.
+      {kSizeOfOptions,                   // |struct_size|.
+       MOJO_CREATE_DATA_PIPE_FLAG_NONE,  // |flags|.
+       4,                                // |element_num_bytes|.
+       4000},                            // |capacity_num_bytes|.
       // Nontrivial element size, default capacity.
-      {kSizeOfOptions,                           // |struct_size|.
-       MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
-       100,                                      // |element_num_bytes|.
-       0}                                        // |capacity_num_bytes|.
+      {kSizeOfOptions,                   // |struct_size|.
+       MOJO_CREATE_DATA_PIPE_FLAG_NONE,  // |flags|.
+       100,                              // |element_num_bytes|.
+       0}                                // |capacity_num_bytes|.
   };
   for (size_t i = 0; i < arraysize(test_options); i++) {
     MojoHandle producer_handle, consumer_handle;
@@ -218,10 +223,10 @@ TEST_F(DataPipeTest, CreateAndMaybeTransfer) {
 
 TEST_F(DataPipeTest, SimpleReadWrite) {
   const MojoCreateDataPipeOptions options = {
-      kSizeOfOptions,                           // |struct_size|.
-      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
-      static_cast<uint32_t>(sizeof(int32_t)),   // |element_num_bytes|.
-      1000 * sizeof(int32_t)                    // |capacity_num_bytes|.
+      kSizeOfOptions,                          // |struct_size|.
+      MOJO_CREATE_DATA_PIPE_FLAG_NONE,         // |flags|.
+      static_cast<uint32_t>(sizeof(int32_t)),  // |element_num_bytes|.
+      1000 * sizeof(int32_t)                   // |capacity_num_bytes|.
   };
 
   ASSERT_EQ(MOJO_RESULT_OK, Create(&options));
@@ -337,10 +342,10 @@ TEST_F(DataPipeTest, BasicProducerWaiting) {
   // the API.
 
   const MojoCreateDataPipeOptions options = {
-      kSizeOfOptions,                           // |struct_size|.
-      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
-      static_cast<uint32_t>(sizeof(int32_t)),   // |element_num_bytes|.
-      2 * sizeof(int32_t)                       // |capacity_num_bytes|.
+      kSizeOfOptions,                          // |struct_size|.
+      MOJO_CREATE_DATA_PIPE_FLAG_NONE,         // |flags|.
+      static_cast<uint32_t>(sizeof(int32_t)),  // |element_num_bytes|.
+      2 * sizeof(int32_t)                      // |capacity_num_bytes|.
   };
   Create(&options);
   MojoHandleSignalsState hss;
@@ -427,10 +432,10 @@ TEST_F(DataPipeTest, BasicProducerWaiting) {
 
 TEST_F(DataPipeTest, PeerClosedProducerWaiting) {
   const MojoCreateDataPipeOptions options = {
-      kSizeOfOptions,                           // |struct_size|.
-      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
-      static_cast<uint32_t>(sizeof(int32_t)),   // |element_num_bytes|.
-      2 * sizeof(int32_t)                       // |capacity_num_bytes|.
+      kSizeOfOptions,                          // |struct_size|.
+      MOJO_CREATE_DATA_PIPE_FLAG_NONE,         // |flags|.
+      static_cast<uint32_t>(sizeof(int32_t)),  // |element_num_bytes|.
+      2 * sizeof(int32_t)                      // |capacity_num_bytes|.
   };
   ASSERT_EQ(MOJO_RESULT_OK, Create(&options));
   MojoHandleSignalsState hss;
@@ -448,10 +453,10 @@ TEST_F(DataPipeTest, PeerClosedProducerWaiting) {
 
 TEST_F(DataPipeTest, PeerClosedConsumerWaiting) {
   const MojoCreateDataPipeOptions options = {
-      kSizeOfOptions,                           // |struct_size|.
-      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
-      static_cast<uint32_t>(sizeof(int32_t)),   // |element_num_bytes|.
-      2 * sizeof(int32_t)                       // |capacity_num_bytes|.
+      kSizeOfOptions,                          // |struct_size|.
+      MOJO_CREATE_DATA_PIPE_FLAG_NONE,         // |flags|.
+      static_cast<uint32_t>(sizeof(int32_t)),  // |element_num_bytes|.
+      2 * sizeof(int32_t)                      // |capacity_num_bytes|.
   };
   ASSERT_EQ(MOJO_RESULT_OK, Create(&options));
   MojoHandleSignalsState hss;
@@ -469,10 +474,10 @@ TEST_F(DataPipeTest, PeerClosedConsumerWaiting) {
 
 TEST_F(DataPipeTest, BasicConsumerWaiting) {
   const MojoCreateDataPipeOptions options = {
-      kSizeOfOptions,                           // |struct_size|.
-      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
-      static_cast<uint32_t>(sizeof(int32_t)),   // |element_num_bytes|.
-      1000 * sizeof(int32_t)                    // |capacity_num_bytes|.
+      kSizeOfOptions,                          // |struct_size|.
+      MOJO_CREATE_DATA_PIPE_FLAG_NONE,         // |flags|.
+      static_cast<uint32_t>(sizeof(int32_t)),  // |element_num_bytes|.
+      1000 * sizeof(int32_t)                   // |capacity_num_bytes|.
   };
   ASSERT_EQ(MOJO_RESULT_OK, Create(&options));
   MojoHandleSignalsState hss;
@@ -604,13 +609,13 @@ TEST_F(DataPipeTest, BasicConsumerWaiting) {
 }
 
 TEST_F(DataPipeTest, ConsumerNewDataReadable) {
-  const MojoCreateDataPipeOptions options = {
-      kSizeOfOptions,                           // |struct_size|.
-      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
-      static_cast<uint32_t>(sizeof(int32_t)),   // |element_num_bytes|.
-      1000 * sizeof(int32_t)                    // |capacity_num_bytes|.
+  const MojoCreateDataPipeOptions create_options = {
+      kSizeOfOptions,                          // |struct_size|.
+      MOJO_CREATE_DATA_PIPE_FLAG_NONE,         // |flags|.
+      static_cast<uint32_t>(sizeof(int32_t)),  // |element_num_bytes|.
+      1000 * sizeof(int32_t)                   // |capacity_num_bytes|.
   };
-  EXPECT_EQ(MOJO_RESULT_OK, Create(&options));
+  EXPECT_EQ(MOJO_RESULT_OK, Create(&create_options));
 
   int32_t elements[2] = {123, 456};
   uint32_t num_bytes = static_cast<uint32_t>(2u * sizeof(elements[0]));
@@ -625,9 +630,12 @@ TEST_F(DataPipeTest, ConsumerNewDataReadable) {
   // Now try to read a minimum of 6 elements.
   int32_t read_elements[6];
   uint32_t num_read_bytes = sizeof(read_elements);
-  EXPECT_EQ(MOJO_RESULT_OUT_OF_RANGE,
-            MojoReadData(consumer_, read_elements, &num_read_bytes,
-                         MOJO_READ_DATA_FLAG_ALL_OR_NONE));
+  MojoReadDataOptions read_options;
+  read_options.struct_size = sizeof(read_options);
+  read_options.flags = MOJO_READ_DATA_FLAG_ALL_OR_NONE;
+  EXPECT_EQ(
+      MOJO_RESULT_OUT_OF_RANGE,
+      MojoReadData(consumer_, &read_options, read_elements, &num_read_bytes));
 
   // The consumer should still appear to be readable but not with new data.
   EXPECT_TRUE(GetSignalsState(consumer_).satisfied_signals &
@@ -644,9 +652,8 @@ TEST_F(DataPipeTest, ConsumerNewDataReadable) {
             WaitForSignals(consumer_, MOJO_HANDLE_SIGNAL_READABLE));
 
   // Try again to read a minimum of 6 elements. Should succeed this time.
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoReadData(consumer_, read_elements, &num_read_bytes,
-                         MOJO_READ_DATA_FLAG_ALL_OR_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoReadData(consumer_, &read_options,
+                                         read_elements, &num_read_bytes));
 
   // And now the consumer is unreadable.
   EXPECT_FALSE(GetSignalsState(consumer_).satisfied_signals &
@@ -659,10 +666,10 @@ TEST_F(DataPipeTest, ConsumerNewDataReadable) {
 // consumer waiter.
 TEST_F(DataPipeTest, ConsumerWaitingTwoPhase) {
   const MojoCreateDataPipeOptions options = {
-      kSizeOfOptions,                           // |struct_size|.
-      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
-      static_cast<uint32_t>(sizeof(int32_t)),   // |element_num_bytes|.
-      1000 * sizeof(int32_t)                    // |capacity_num_bytes|.
+      kSizeOfOptions,                          // |struct_size|.
+      MOJO_CREATE_DATA_PIPE_FLAG_NONE,         // |flags|.
+      static_cast<uint32_t>(sizeof(int32_t)),  // |element_num_bytes|.
+      1000 * sizeof(int32_t)                   // |capacity_num_bytes|.
   };
   ASSERT_EQ(MOJO_RESULT_OK, Create(&options));
   MojoHandleSignalsState hss;
@@ -672,7 +679,7 @@ TEST_F(DataPipeTest, ConsumerWaitingTwoPhase) {
   void* buffer = nullptr;
   // Request room for three (but we'll only write two).
   uint32_t num_bytes = static_cast<uint32_t>(3u * sizeof(elements[0]));
-  ASSERT_EQ(MOJO_RESULT_OK, BeginWriteData(&buffer, &num_bytes, false));
+  ASSERT_EQ(MOJO_RESULT_OK, BeginWriteData(&buffer, &num_bytes));
   EXPECT_TRUE(buffer);
   EXPECT_GE(num_bytes, static_cast<uint32_t>(3u * sizeof(elements[0])));
   elements = static_cast<int32_t*>(buffer);
@@ -736,10 +743,10 @@ TEST_F(DataPipeTest, ConsumerWaitingTwoPhase) {
 // Tests that data pipes aren't writable/readable during two-phase writes/reads.
 TEST_F(DataPipeTest, BasicTwoPhaseWaiting) {
   const MojoCreateDataPipeOptions options = {
-      kSizeOfOptions,                           // |struct_size|.
-      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
-      static_cast<uint32_t>(sizeof(int32_t)),   // |element_num_bytes|.
-      1000 * sizeof(int32_t)                    // |capacity_num_bytes|.
+      kSizeOfOptions,                          // |struct_size|.
+      MOJO_CREATE_DATA_PIPE_FLAG_NONE,         // |flags|.
+      static_cast<uint32_t>(sizeof(int32_t)),  // |element_num_bytes|.
+      1000 * sizeof(int32_t)                   // |capacity_num_bytes|.
   };
   ASSERT_EQ(MOJO_RESULT_OK, Create(&options));
   MojoHandleSignalsState hss;
@@ -856,10 +863,10 @@ void Seq(int32_t start, size_t count, int32_t* out) {
 
 TEST_F(DataPipeTest, AllOrNone) {
   const MojoCreateDataPipeOptions options = {
-      kSizeOfOptions,                           // |struct_size|.
-      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
-      static_cast<uint32_t>(sizeof(int32_t)),   // |element_num_bytes|.
-      10 * sizeof(int32_t)                      // |capacity_num_bytes|.
+      kSizeOfOptions,                          // |struct_size|.
+      MOJO_CREATE_DATA_PIPE_FLAG_NONE,         // |flags|.
+      static_cast<uint32_t>(sizeof(int32_t)),  // |element_num_bytes|.
+      10 * sizeof(int32_t)                     // |capacity_num_bytes|.
   };
   ASSERT_EQ(MOJO_RESULT_OK, Create(&options));
   MojoHandleSignalsState hss;
@@ -1026,10 +1033,10 @@ TEST_F(DataPipeTest, WrapAround) {
     test_data[i] = static_cast<unsigned char>(i);
 
   const MojoCreateDataPipeOptions options = {
-      kSizeOfOptions,                           // |struct_size|.
-      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
-      1u,                                       // |element_num_bytes|.
-      100u                                      // |capacity_num_bytes|.
+      kSizeOfOptions,                   // |struct_size|.
+      MOJO_CREATE_DATA_PIPE_FLAG_NONE,  // |flags|.
+      1u,                               // |element_num_bytes|.
+      100u                              // |capacity_num_bytes|.
   };
 
   ASSERT_EQ(MOJO_RESULT_OK, Create(&options));
@@ -1060,8 +1067,7 @@ TEST_F(DataPipeTest, WrapAround) {
   // checks an implementation detail; this behavior is not guaranteed.)
   void* write_buffer_ptr = nullptr;
   num_bytes = 0u;
-  ASSERT_EQ(MOJO_RESULT_OK,
-            BeginWriteData(&write_buffer_ptr, &num_bytes, false));
+  ASSERT_EQ(MOJO_RESULT_OK, BeginWriteData(&write_buffer_ptr, &num_bytes));
   EXPECT_TRUE(write_buffer_ptr);
   ASSERT_EQ(80u, num_bytes);
   ASSERT_EQ(MOJO_RESULT_OK, EndWriteData(0));
@@ -1114,10 +1120,10 @@ TEST_F(DataPipeTest, WriteCloseProducerRead) {
   const uint32_t kTestDataSize = static_cast<uint32_t>(sizeof(kTestData));
 
   const MojoCreateDataPipeOptions options = {
-      kSizeOfOptions,                           // |struct_size|.
-      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
-      1u,                                       // |element_num_bytes|.
-      1000u                                     // |capacity_num_bytes|.
+      kSizeOfOptions,                   // |struct_size|.
+      MOJO_CREATE_DATA_PIPE_FLAG_NONE,  // |flags|.
+      1u,                               // |element_num_bytes|.
+      1000u                             // |capacity_num_bytes|.
   };
   ASSERT_EQ(MOJO_RESULT_OK, Create(&options));
 
@@ -1134,8 +1140,7 @@ TEST_F(DataPipeTest, WriteCloseProducerRead) {
   // Start two-phase write.
   void* write_buffer_ptr = nullptr;
   num_bytes = 0u;
-  ASSERT_EQ(MOJO_RESULT_OK,
-            BeginWriteData(&write_buffer_ptr, &num_bytes, false));
+  ASSERT_EQ(MOJO_RESULT_OK, BeginWriteData(&write_buffer_ptr, &num_bytes));
   EXPECT_TRUE(write_buffer_ptr);
   EXPECT_GT(num_bytes, 0u);
 
@@ -1179,10 +1184,10 @@ TEST_F(DataPipeTest, TwoPhaseWriteReadCloseConsumer) {
   const uint32_t kTestDataSize = static_cast<uint32_t>(sizeof(kTestData));
 
   const MojoCreateDataPipeOptions options = {
-      kSizeOfOptions,                           // |struct_size|.
-      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
-      1u,                                       // |element_num_bytes|.
-      1000u                                     // |capacity_num_bytes|.
+      kSizeOfOptions,                   // |struct_size|.
+      MOJO_CREATE_DATA_PIPE_FLAG_NONE,  // |flags|.
+      1u,                               // |element_num_bytes|.
+      1000u                             // |capacity_num_bytes|.
   };
   ASSERT_EQ(MOJO_RESULT_OK, Create(&options));
   MojoHandleSignalsState hss;
@@ -1252,10 +1257,10 @@ TEST_F(DataPipeTest, TwoPhaseWriteCloseBoth) {
   const uint32_t kTestDataSize = 15u;
 
   const MojoCreateDataPipeOptions options = {
-      kSizeOfOptions,                           // |struct_size|.
-      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
-      1u,                                       // |element_num_bytes|.
-      1000u                                     // |capacity_num_bytes|.
+      kSizeOfOptions,                   // |struct_size|.
+      MOJO_CREATE_DATA_PIPE_FLAG_NONE,  // |flags|.
+      1u,                               // |element_num_bytes|.
+      1000u                             // |capacity_num_bytes|.
   };
   ASSERT_EQ(MOJO_RESULT_OK, Create(&options));
 
@@ -1274,10 +1279,10 @@ TEST_F(DataPipeTest, WriteCloseProducerReadNoData) {
   const uint32_t kTestDataSize = static_cast<uint32_t>(sizeof(kTestData));
 
   const MojoCreateDataPipeOptions options = {
-      kSizeOfOptions,                           // |struct_size|.
-      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
-      1u,                                       // |element_num_bytes|.
-      1000u                                     // |capacity_num_bytes|.
+      kSizeOfOptions,                   // |struct_size|.
+      MOJO_CREATE_DATA_PIPE_FLAG_NONE,  // |flags|.
+      1u,                               // |element_num_bytes|.
+      1000u                             // |capacity_num_bytes|.
   };
   ASSERT_EQ(MOJO_RESULT_OK, Create(&options));
   MojoHandleSignalsState hss;
@@ -1338,10 +1343,10 @@ TEST_F(DataPipeTest, TwoPhaseReadMemoryStable) {
   const uint32_t kTestDataSize = static_cast<uint32_t>(sizeof(kTestData));
 
   const MojoCreateDataPipeOptions options = {
-      kSizeOfOptions,                           // |struct_size|.
-      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
-      1u,                                       // |element_num_bytes|.
-      1000u                                     // |capacity_num_bytes|.
+      kSizeOfOptions,                   // |struct_size|.
+      MOJO_CREATE_DATA_PIPE_FLAG_NONE,  // |flags|.
+      1u,                               // |element_num_bytes|.
+      1000u                             // |capacity_num_bytes|.
   };
   ASSERT_EQ(MOJO_RESULT_OK, Create(&options));
   MojoHandleSignalsState hss;
@@ -1396,10 +1401,10 @@ TEST_F(DataPipeTest, TwoPhaseReadMemoryStable) {
 // arguments.
 TEST_F(DataPipeTest, TwoPhaseMoreInvalidArguments) {
   const MojoCreateDataPipeOptions options = {
-      kSizeOfOptions,                           // |struct_size|.
-      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
-      static_cast<uint32_t>(sizeof(int32_t)),   // |element_num_bytes|.
-      10 * sizeof(int32_t)                      // |capacity_num_bytes|.
+      kSizeOfOptions,                          // |struct_size|.
+      MOJO_CREATE_DATA_PIPE_FLAG_NONE,         // |flags|.
+      static_cast<uint32_t>(sizeof(int32_t)),  // |element_num_bytes|.
+      10 * sizeof(int32_t)                     // |capacity_num_bytes|.
   };
   ASSERT_EQ(MOJO_RESULT_OK, Create(&options));
   MojoHandleSignalsState hss;
@@ -1522,10 +1527,10 @@ TEST_F(DataPipeTest, SendProducer) {
   const uint32_t kTestDataSize = static_cast<uint32_t>(sizeof(kTestData));
 
   const MojoCreateDataPipeOptions options = {
-      kSizeOfOptions,                           // |struct_size|.
-      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
-      1u,                                       // |element_num_bytes|.
-      1000u                                     // |capacity_num_bytes|.
+      kSizeOfOptions,                   // |struct_size|.
+      MOJO_CREATE_DATA_PIPE_FLAG_NONE,  // |flags|.
+      1u,                               // |element_num_bytes|.
+      1000u                             // |capacity_num_bytes|.
   };
   ASSERT_EQ(MOJO_RESULT_OK, Create(&options));
   MojoHandleSignalsState hss;
@@ -1598,10 +1603,10 @@ TEST_F(DataPipeTest, SendProducer) {
 // peer.
 TEST_F(DataPipeTest, ConsumerWithClosedProducerSent) {
   const MojoCreateDataPipeOptions options = {
-      kSizeOfOptions,                           // |struct_size|.
-      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
-      static_cast<uint32_t>(sizeof(int32_t)),   // |element_num_bytes|.
-      1000 * sizeof(int32_t)                    // |capacity_num_bytes|.
+      kSizeOfOptions,                          // |struct_size|.
+      MOJO_CREATE_DATA_PIPE_FLAG_NONE,         // |flags|.
+      static_cast<uint32_t>(sizeof(int32_t)),  // |element_num_bytes|.
+      1000 * sizeof(int32_t)                   // |capacity_num_bytes|.
   };
 
   ASSERT_EQ(MOJO_RESULT_OK, Create(&options));
@@ -1659,8 +1664,8 @@ bool WriteAllData(MojoHandle producer,
   for (size_t i = 0; i < kMaxPoll; i++) {
     // Write as much data as we can.
     uint32_t write_bytes = num_bytes;
-    MojoResult result = MojoWriteData(producer, elements, &write_bytes,
-                                      MOJO_WRITE_DATA_FLAG_NONE);
+    MojoResult result =
+        MojoWriteData(producer, elements, &write_bytes, nullptr);
     if (result == MOJO_RESULT_OK) {
       num_bytes -= write_bytes;
       elements = static_cast<const uint8_t*>(elements) + write_bytes;
@@ -1690,8 +1695,7 @@ bool ReadAllData(MojoHandle consumer,
   for (size_t i = 0; i < kMaxPoll; i++) {
     // Read as much data as we can.
     uint32_t read_bytes = num_bytes;
-    MojoResult result =
-        MojoReadData(consumer, elements, &read_bytes, MOJO_READ_DATA_FLAG_NONE);
+    MojoResult result = MojoReadData(consumer, nullptr, elements, &read_bytes);
     if (result == MOJO_RESULT_OK) {
       num_bytes -= read_bytes;
       elements = static_cast<uint8_t*>(elements) + read_bytes;
@@ -1699,8 +1703,10 @@ bool ReadAllData(MojoHandle consumer,
         if (expect_empty) {
           // Expect no more data.
           test::Sleep(test::TinyDeadline());
-          MojoReadData(consumer, nullptr, &num_bytes,
-                       MOJO_READ_DATA_FLAG_QUERY);
+          MojoReadDataOptions options;
+          options.struct_size = sizeof(options);
+          options.flags = MOJO_READ_DATA_FLAG_QUERY;
+          MojoReadData(consumer, &options, nullptr, &num_bytes);
           EXPECT_EQ(0u, num_bytes);
         }
         return true;
@@ -1727,10 +1733,10 @@ TEST_F(DataPipeTest, Multiprocess) {
   const uint32_t kTestDataSize =
       static_cast<uint32_t>(sizeof(kMultiprocessTestData));
   const MojoCreateDataPipeOptions options = {
-      kSizeOfOptions,                           // |struct_size|.
-      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
-      1,                                        // |element_num_bytes|.
-      kMultiprocessCapacity                     // |capacity_num_bytes|.
+      kSizeOfOptions,                   // |struct_size|.
+      MOJO_CREATE_DATA_PIPE_FLAG_NONE,  // |flags|.
+      1,                                // |element_num_bytes|.
+      kMultiprocessCapacity             // |capacity_num_bytes|.
   };
   ASSERT_EQ(MOJO_RESULT_OK, Create(&options));
 
@@ -1848,8 +1854,8 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(WriteAndCloseProducer, DataPipeTest, h) {
 
   // Write some data to the producer and close it.
   uint32_t num_bytes = static_cast<uint32_t>(message.size());
-  EXPECT_EQ(MOJO_RESULT_OK, MojoWriteData(p, message.data(), &num_bytes,
-                                          MOJO_WRITE_DATA_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoWriteData(p, message.data(), &num_bytes, nullptr));
   EXPECT_EQ(num_bytes, static_cast<uint32_t>(message.size()));
 
   // Close the producer before quitting.
@@ -1869,8 +1875,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReadAndCloseConsumer, DataPipeTest, h) {
   // Drain the consumer and expect to find the given message.
   uint32_t num_bytes = static_cast<uint32_t>(expected_message.size());
   std::vector<char> bytes(expected_message.size());
-  EXPECT_EQ(MOJO_RESULT_OK, MojoReadData(c, bytes.data(), &num_bytes,
-                                         MOJO_READ_DATA_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoReadData(c, nullptr, bytes.data(), &num_bytes));
   EXPECT_EQ(num_bytes, static_cast<uint32_t>(bytes.size()));
 
   std::string message(bytes.data(), bytes.size());
@@ -1902,10 +1907,10 @@ TEST_F(DataPipeTest, SendConsumerAndCloseProducer) {
 
 DEFINE_TEST_CLIENT_TEST_WITH_PIPE(CreateAndWrite, DataPipeTest, h) {
   const MojoCreateDataPipeOptions options = {
-      kSizeOfOptions,                           // |struct_size|.
-      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
-      1,                                        // |element_num_bytes|.
-      kMultiprocessCapacity                     // |capacity_num_bytes|.
+      kSizeOfOptions,                   // |struct_size|.
+      MOJO_CREATE_DATA_PIPE_FLAG_NONE,  // |flags|.
+      1,                                // |element_num_bytes|.
+      kMultiprocessCapacity             // |capacity_num_bytes|.
   };
 
   MojoHandle p, c;
@@ -1916,8 +1921,8 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(CreateAndWrite, DataPipeTest, h) {
 
   // Write some data to the producer and close it.
   uint32_t num_bytes = static_cast<uint32_t>(kMessage.size());
-  EXPECT_EQ(MOJO_RESULT_OK, MojoWriteData(p, kMessage.data(), &num_bytes,
-                                          MOJO_WRITE_DATA_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoWriteData(p, kMessage.data(), &num_bytes, nullptr));
   EXPECT_EQ(num_bytes, static_cast<uint32_t>(kMessage.size()));
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(p));
 
@@ -1936,8 +1941,8 @@ TEST_F(DataPipeTest, CreateInChild) {
     // Drain the consumer and expect to find the given message.
     uint32_t num_bytes = static_cast<uint32_t>(expected_message.size());
     std::vector<char> bytes(expected_message.size());
-    EXPECT_EQ(MOJO_RESULT_OK, MojoReadData(c, bytes.data(), &num_bytes,
-                                           MOJO_READ_DATA_FLAG_NONE));
+    EXPECT_EQ(MOJO_RESULT_OK,
+              MojoReadData(c, nullptr, bytes.data(), &num_bytes));
     EXPECT_EQ(num_bytes, static_cast<uint32_t>(bytes.size()));
 
     std::string message(bytes.data(), bytes.size());
@@ -1998,8 +2003,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(DataPipeStatusChangeInTransitClient,
   MojoResult result;
   do {
     uint32_t num_bytes = 0;
-    result = MojoWriteData(producers[2], nullptr, &num_bytes,
-                           MOJO_WRITE_DATA_FLAG_NONE);
+    result = MojoWriteData(producers[2], nullptr, &num_bytes, nullptr);
   } while (result == MOJO_RESULT_OK);
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, result);
 
@@ -2007,8 +2011,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(DataPipeStatusChangeInTransitClient,
   do {
     char byte;
     uint32_t num_bytes = 1;
-    result =
-        MojoReadData(consumers[2], &byte, &num_bytes, MOJO_READ_DATA_FLAG_NONE);
+    result = MojoReadData(consumers[2], nullptr, &byte, &num_bytes);
   } while (result == MOJO_RESULT_SHOULD_WAIT);
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, result);
 

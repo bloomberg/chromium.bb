@@ -448,9 +448,11 @@ TEST_F(WatcherTest, WatchDataPipeConsumerNewDataReadable) {
   // NEW_DATA_READABLE signal.
   char large_buffer[512];
   uint32_t large_read_size = 512;
+  MojoReadDataOptions options;
+  options.struct_size = sizeof(options);
+  options.flags = MOJO_READ_DATA_FLAG_ALL_OR_NONE;
   EXPECT_EQ(MOJO_RESULT_OUT_OF_RANGE,
-            MojoReadData(consumer, large_buffer, &large_read_size,
-                         MOJO_READ_DATA_FLAG_ALL_OR_NONE));
+            MojoReadData(consumer, &options, large_buffer, &large_read_size));
 
   // Attempt to arm again. Should succeed.
   EXPECT_EQ(MOJO_RESULT_OK,
@@ -1746,10 +1748,8 @@ void ReadAllMessages(const MojoTrapEvent* event) {
   if (event->result == MOJO_RESULT_OK) {
     MojoHandle handle = static_cast<MojoHandle>(event->trigger_context);
     MojoMessageHandle message;
-    while (MojoReadMessage(handle, &message, MOJO_READ_MESSAGE_FLAG_NONE) ==
-           MOJO_RESULT_OK) {
+    while (MojoReadMessage(handle, nullptr, &message) == MOJO_RESULT_OK)
       MojoDestroyMessage(message);
-    }
   }
 
   constexpr size_t kNumRandomThingsToDoOnNotify = 5;
@@ -1780,7 +1780,7 @@ void DoRandomThing(MojoHandle* watchers,
       ASSERT_EQ(MOJO_RESULT_OK,
                 MojoSetMessageContext(message, 1, nullptr, nullptr, nullptr));
       MojoWriteMessage(RandomHandle(watched_handles, num_watched_handles),
-                       message, MOJO_WRITE_MESSAGE_FLAG_NONE);
+                       message, nullptr);
       break;
     }
     case 5:

@@ -313,14 +313,14 @@ TEST_F(EmbedderTest, MultiprocessBaseSharedMemory) {
 
     // 2. Map |sb1| and write something into it.
     char* buffer = nullptr;
-    ASSERT_EQ(MOJO_RESULT_OK,
-              MojoMapBuffer(sb1, 0, 123, reinterpret_cast<void**>(&buffer), 0));
+    ASSERT_EQ(MOJO_RESULT_OK, MojoMapBuffer(sb1, 0, 123, nullptr,
+                                            reinterpret_cast<void**>(&buffer)));
     ASSERT_TRUE(buffer);
     memcpy(buffer, kHelloWorld, sizeof(kHelloWorld));
 
     // 3. Duplicate |sb1| into |sb2| and pass to |server_mp|.
     MojoHandle sb2 = MOJO_HANDLE_INVALID;
-    EXPECT_EQ(MOJO_RESULT_OK, MojoDuplicateBufferHandle(sb1, 0, &sb2));
+    EXPECT_EQ(MOJO_RESULT_OK, MojoDuplicateBufferHandle(sb1, nullptr, &sb2));
     EXPECT_NE(MOJO_HANDLE_INVALID, sb2);
     WriteMessageWithHandles(server_mp, "hello", &sb2, 1);
 
@@ -350,8 +350,8 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(MultiprocessSharedMemoryClient,
 
   // 2. Map |sb1|.
   char* buffer = nullptr;
-  ASSERT_EQ(MOJO_RESULT_OK,
-            MojoMapBuffer(sb1, 0, 123, reinterpret_cast<void**>(&buffer), 0));
+  ASSERT_EQ(MOJO_RESULT_OK, MojoMapBuffer(sb1, 0, 123, nullptr,
+                                          reinterpret_cast<void**>(&buffer)));
   ASSERT_TRUE(buffer);
 
   // 3. Ensure |buffer| contains the values we expect.

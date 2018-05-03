@@ -20,81 +20,34 @@
 #pragma pack(push, 8)
 struct MojoSystemThunks {
   size_t size;  // Should be set to sizeof(MojoSystemThunks).
+
   MojoResult (*Initialize)(const struct MojoInitializeOptions* options);
+
   MojoTimeTicks (*GetTimeTicksNow)();
+
+  // Generic handle API.
   MojoResult (*Close)(MojoHandle handle);
   MojoResult (*QueryHandleSignalsState)(
       MojoHandle handle,
       struct MojoHandleSignalsState* signals_state);
+
+  // Message pipe API.
   MojoResult (*CreateMessagePipe)(
       const struct MojoCreateMessagePipeOptions* options,
       MojoHandle* message_pipe_handle0,
       MojoHandle* message_pipe_handle1);
   MojoResult (*WriteMessage)(MojoHandle message_pipe_handle,
                              MojoMessageHandle message_handle,
-                             MojoWriteMessageFlags flags);
+                             const struct MojoWriteMessageOptions* options);
   MojoResult (*ReadMessage)(MojoHandle message_pipe_handle,
-                            MojoMessageHandle* message_handle,
-                            MojoReadMessageFlags flags);
-  MojoResult (*CreateDataPipe)(const struct MojoCreateDataPipeOptions* options,
-                               MojoHandle* data_pipe_producer_handle,
-                               MojoHandle* data_pipe_consumer_handle);
-  MojoResult (*WriteData)(MojoHandle data_pipe_producer_handle,
-                          const void* elements,
-                          uint32_t* num_elements,
-                          MojoWriteDataFlags flags);
-  MojoResult (*BeginWriteData)(MojoHandle data_pipe_producer_handle,
-                               void** buffer,
-                               uint32_t* buffer_num_elements,
-                               MojoWriteDataFlags flags);
-  MojoResult (*EndWriteData)(MojoHandle data_pipe_producer_handle,
-                             uint32_t num_elements_written);
-  MojoResult (*ReadData)(MojoHandle data_pipe_consumer_handle,
-                         void* elements,
-                         uint32_t* num_elements,
-                         MojoReadDataFlags flags);
-  MojoResult (*BeginReadData)(MojoHandle data_pipe_consumer_handle,
-                              const void** buffer,
-                              uint32_t* buffer_num_elements,
-                              MojoReadDataFlags flags);
-  MojoResult (*EndReadData)(MojoHandle data_pipe_consumer_handle,
-                            uint32_t num_elements_read);
-  MojoResult (*CreateSharedBuffer)(
-      const struct MojoCreateSharedBufferOptions* options,
-      uint64_t num_bytes,
-      MojoHandle* shared_buffer_handle);
-  MojoResult (*DuplicateBufferHandle)(
-      MojoHandle buffer_handle,
-      const struct MojoDuplicateBufferHandleOptions* options,
-      MojoHandle* new_buffer_handle);
-  MojoResult (*MapBuffer)(MojoHandle buffer_handle,
-                          uint64_t offset,
-                          uint64_t num_bytes,
-                          void** buffer,
-                          MojoMapBufferFlags flags);
-  MojoResult (*UnmapBuffer)(void* buffer);
-  MojoResult (*GetBufferInfo)(MojoHandle buffer_handle,
-                              const struct MojoSharedBufferOptions* options,
-                              struct MojoSharedBufferInfo* info);
-  MojoResult (*CreateTrap)(MojoTrapEventHandler handler,
-                           const struct MojoCreateTrapOptions* options,
-                           MojoHandle* trap_handle);
-  MojoResult (*AddTrigger)(MojoHandle trap_handle,
-                           MojoHandle handle,
-                           MojoHandleSignals signals,
-                           MojoTriggerCondition condition,
-                           uintptr_t context,
-                           const struct MojoAddTriggerOptions* options);
-  MojoResult (*RemoveTrigger)(MojoHandle trap_handle,
-                              uintptr_t context,
-                              const struct MojoRemoveTriggerOptions* options);
-  MojoResult (*ArmTrap)(MojoHandle trap_handle,
-                        const struct MojoArmTrapOptions* options,
-                        uint32_t* num_ready_triggers,
-                        uintptr_t* ready_triggers,
-                        MojoResult* ready_results,
-                        MojoHandleSignalsState* ready_signals_states);
-  MojoResult (*FuseMessagePipes)(MojoHandle handle0, MojoHandle handle1);
+                            const struct MojoReadMessageOptions* options,
+                            MojoMessageHandle* message_handle);
+  MojoResult (*FuseMessagePipes)(
+      MojoHandle handle0,
+      MojoHandle handle1,
+      const struct MojoFuseMessagePipesOptions* options);
+
+  // Message object API.
   MojoResult (*CreateMessage)(const struct MojoCreateMessageOptions* options,
                               MojoMessageHandle* message);
   MojoResult (*DestroyMessage)(MojoMessageHandle message);
@@ -125,6 +78,79 @@ struct MojoSystemThunks {
       MojoMessageHandle message,
       const struct MojoGetMessageContextOptions* options,
       uintptr_t* context);
+  MojoResult (*NotifyBadMessage)(
+      MojoMessageHandle message,
+      const char* error,
+      size_t error_num_bytes,
+      const struct MojoNotifyBadMessageOptions* options);
+
+  // Data pipe API.
+  MojoResult (*CreateDataPipe)(const struct MojoCreateDataPipeOptions* options,
+                               MojoHandle* data_pipe_producer_handle,
+                               MojoHandle* data_pipe_consumer_handle);
+  MojoResult (*WriteData)(MojoHandle data_pipe_producer_handle,
+                          const void* elements,
+                          uint32_t* num_elements,
+                          const struct MojoWriteDataOptions* options);
+  MojoResult (*BeginWriteData)(MojoHandle data_pipe_producer_handle,
+                               const struct MojoBeginWriteDataOptions* options,
+                               void** buffer,
+                               uint32_t* buffer_num_elements);
+  MojoResult (*EndWriteData)(MojoHandle data_pipe_producer_handle,
+                             uint32_t num_elements_written,
+                             const struct MojoEndWriteDataOptions* options);
+  MojoResult (*ReadData)(MojoHandle data_pipe_consumer_handle,
+                         const struct MojoReadDataOptions* options,
+                         void* elements,
+                         uint32_t* num_elements);
+  MojoResult (*BeginReadData)(MojoHandle data_pipe_consumer_handle,
+                              const struct MojoBeginReadDataOptions* options,
+                              const void** buffer,
+                              uint32_t* buffer_num_elements);
+  MojoResult (*EndReadData)(MojoHandle data_pipe_consumer_handle,
+                            uint32_t num_elements_read,
+                            const struct MojoEndReadDataOptions* options);
+
+  // Shared buffer API.
+  MojoResult (*CreateSharedBuffer)(
+      uint64_t num_bytes,
+      const struct MojoCreateSharedBufferOptions* options,
+      MojoHandle* shared_buffer_handle);
+  MojoResult (*DuplicateBufferHandle)(
+      MojoHandle buffer_handle,
+      const struct MojoDuplicateBufferHandleOptions* options,
+      MojoHandle* new_buffer_handle);
+  MojoResult (*MapBuffer)(MojoHandle buffer_handle,
+                          uint64_t offset,
+                          uint64_t num_bytes,
+                          const struct MojoMapBufferOptions* options,
+                          void** buffer);
+  MojoResult (*UnmapBuffer)(void* buffer);
+  MojoResult (*GetBufferInfo)(MojoHandle buffer_handle,
+                              const struct MojoGetBufferInfoOptions* options,
+                              struct MojoSharedBufferInfo* info);
+
+  // Traps API.
+  MojoResult (*CreateTrap)(MojoTrapEventHandler handler,
+                           const struct MojoCreateTrapOptions* options,
+                           MojoHandle* trap_handle);
+  MojoResult (*AddTrigger)(MojoHandle trap_handle,
+                           MojoHandle handle,
+                           MojoHandleSignals signals,
+                           MojoTriggerCondition condition,
+                           uintptr_t context,
+                           const struct MojoAddTriggerOptions* options);
+  MojoResult (*RemoveTrigger)(MojoHandle trap_handle,
+                              uintptr_t context,
+                              const struct MojoRemoveTriggerOptions* options);
+  MojoResult (*ArmTrap)(MojoHandle trap_handle,
+                        const struct MojoArmTrapOptions* options,
+                        uint32_t* num_ready_triggers,
+                        uintptr_t* ready_triggers,
+                        MojoResult* ready_results,
+                        MojoHandleSignalsState* ready_signals_states);
+
+  // Platform handle API.
   MojoResult (*WrapPlatformHandle)(
       const struct MojoPlatformHandle* platform_handle,
       MojoHandle* mojo_handle);
@@ -143,9 +169,6 @@ struct MojoSystemThunks {
       size_t* num_bytes,
       struct MojoSharedBufferGuid* guid,
       MojoPlatformSharedBufferHandleFlags* flags);
-  MojoResult (*NotifyBadMessage)(MojoMessageHandle message,
-                                 const char* error,
-                                 size_t error_num_bytes);
 };
 #pragma pack(pop)
 

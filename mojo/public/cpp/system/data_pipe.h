@@ -32,21 +32,27 @@ class DataPipeProducerHandle : public Handle {
   MojoResult WriteData(const void* elements,
                        uint32_t* num_bytes,
                        MojoWriteDataFlags flags) const {
-    return MojoWriteData(value(), elements, num_bytes, flags);
+    MojoWriteDataOptions options;
+    options.struct_size = sizeof(options);
+    options.flags = flags;
+    return MojoWriteData(value(), elements, num_bytes, &options);
   }
 
   // Begins a two-phase write to a data pipe. See |MojoBeginWriteData()| for
   // complete documentation.
   MojoResult BeginWriteData(void** buffer,
                             uint32_t* buffer_num_bytes,
-                            MojoWriteDataFlags flags) const {
-    return MojoBeginWriteData(value(), buffer, buffer_num_bytes, flags);
+                            MojoBeginWriteDataFlags flags) const {
+    MojoBeginWriteDataOptions options;
+    options.struct_size = sizeof(options);
+    options.flags = flags;
+    return MojoBeginWriteData(value(), &options, buffer, buffer_num_bytes);
   }
 
   // Completes a two-phase write to a data pipe. See |MojoEndWriteData()| for
   // complete documentation.
   MojoResult EndWriteData(uint32_t num_bytes_written) const {
-    return MojoEndWriteData(value(), num_bytes_written);
+    return MojoEndWriteData(value(), num_bytes_written, nullptr);
   }
 
   // Copying and assignment allowed.
@@ -71,21 +77,27 @@ class DataPipeConsumerHandle : public Handle {
   MojoResult ReadData(void* elements,
                       uint32_t* num_bytes,
                       MojoReadDataFlags flags) const {
-    return MojoReadData(value(), elements, num_bytes, flags);
+    MojoReadDataOptions options;
+    options.struct_size = sizeof(options);
+    options.flags = flags;
+    return MojoReadData(value(), &options, elements, num_bytes);
   }
 
   // Begins a two-phase read from a data pipe. See |MojoBeginReadData()| for
   // complete documentation.
   MojoResult BeginReadData(const void** buffer,
                            uint32_t* buffer_num_bytes,
-                           MojoReadDataFlags flags) const {
-    return MojoBeginReadData(value(), buffer, buffer_num_bytes, flags);
+                           MojoBeginReadDataFlags flags) const {
+    MojoBeginReadDataOptions options;
+    options.struct_size = sizeof(options);
+    options.flags = flags;
+    return MojoBeginReadData(value(), &options, buffer, buffer_num_bytes);
   }
 
   // Completes a two-phase read from a data pipe. See |MojoEndReadData()| for
   // complete documentation.
   MojoResult EndReadData(uint32_t num_bytes_read) const {
-    return MojoEndReadData(value(), num_bytes_read);
+    return MojoEndReadData(value(), num_bytes_read, nullptr);
   }
 
   // Copying and assignment allowed.
@@ -144,7 +156,7 @@ inline DataPipe::DataPipe() {
 inline DataPipe::DataPipe(uint32_t capacity_num_bytes) {
   MojoCreateDataPipeOptions options;
   options.struct_size = sizeof(MojoCreateDataPipeOptions);
-  options.flags = MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE;
+  options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
   options.element_num_bytes = 1;
   options.capacity_num_bytes = capacity_num_bytes;
   mojo::DataPipe data_pipe(options);

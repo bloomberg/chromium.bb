@@ -41,8 +41,7 @@ class MockDispatcher : public Dispatcher {
   }
 
   MojoResult WriteMessage(
-      std::unique_ptr<ports::UserMessageEvent> message_event,
-      MojoWriteMessageFlags /*flags*/) override {
+      std::unique_ptr<ports::UserMessageEvent> message_event) override {
     info_->IncrementWriteMessageCallCount();
     return MOJO_RESULT_OK;
   }
@@ -55,14 +54,13 @@ class MockDispatcher : public Dispatcher {
 
   MojoResult WriteData(const void* elements,
                        uint32_t* num_bytes,
-                       MojoWriteDataFlags flags) override {
+                       const MojoWriteDataOptions& options) override {
     info_->IncrementWriteDataCallCount();
     return MOJO_RESULT_UNIMPLEMENTED;
   }
 
   MojoResult BeginWriteData(void** buffer,
-                            uint32_t* buffer_num_bytes,
-                            MojoWriteDataFlags flags) override {
+                            uint32_t* buffer_num_bytes) override {
     info_->IncrementBeginWriteDataCallCount();
     return MOJO_RESULT_UNIMPLEMENTED;
   }
@@ -72,16 +70,15 @@ class MockDispatcher : public Dispatcher {
     return MOJO_RESULT_UNIMPLEMENTED;
   }
 
-  MojoResult ReadData(void* elements,
-                      uint32_t* num_bytes,
-                      MojoReadDataFlags flags) override {
+  MojoResult ReadData(const MojoReadDataOptions& options,
+                      void* elements,
+                      uint32_t* num_bytes) override {
     info_->IncrementReadDataCallCount();
     return MOJO_RESULT_UNIMPLEMENTED;
   }
 
   MojoResult BeginReadData(const void** buffer,
-                           uint32_t* buffer_num_bytes,
-                           MojoReadDataFlags flags) override {
+                           uint32_t* buffer_num_bytes) override {
     info_->IncrementBeginReadDataCallCount();
     return MOJO_RESULT_UNIMPLEMENTED;
   }

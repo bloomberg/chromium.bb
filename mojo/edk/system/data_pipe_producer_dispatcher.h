@@ -44,10 +44,8 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeProducerDispatcher final
   MojoResult Close() override;
   MojoResult WriteData(const void* elements,
                        uint32_t* num_bytes,
-                       MojoReadDataFlags flags) override;
-  MojoResult BeginWriteData(void** buffer,
-                            uint32_t* buffer_num_bytes,
-                            MojoWriteDataFlags flags) override;
+                       const MojoWriteDataOptions& options) override;
+  MojoResult BeginWriteData(void** buffer, uint32_t* buffer_num_bytes) override;
   MojoResult EndWriteData(uint32_t num_bytes_written) override;
   HandleSignalsState GetHandleSignalsState() const override;
   MojoResult AddWatcherRef(const scoped_refptr<WatcherDispatcher>& watcher,

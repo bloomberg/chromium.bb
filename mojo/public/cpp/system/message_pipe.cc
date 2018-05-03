@@ -18,15 +18,15 @@ MojoResult WriteMessageRaw(MessagePipeHandle message_pipe,
   MojoResult rv = CreateMessage(&message_handle);
   DCHECK_EQ(MOJO_RESULT_OK, rv);
 
-  MojoAppendMessageDataOptions options;
-  options.struct_size = sizeof(options);
-  options.flags = MOJO_APPEND_MESSAGE_DATA_FLAG_COMMIT_SIZE;
+  MojoAppendMessageDataOptions append_options;
+  append_options.struct_size = sizeof(append_options);
+  append_options.flags = MOJO_APPEND_MESSAGE_DATA_FLAG_COMMIT_SIZE;
   void* buffer;
   uint32_t buffer_size;
   rv = MojoAppendMessageData(message_handle->value(),
                              base::checked_cast<uint32_t>(num_bytes), handles,
                              base::checked_cast<uint32_t>(num_handles),
-                             &options, &buffer, &buffer_size);
+                             &append_options, &buffer, &buffer_size);
   if (rv != MOJO_RESULT_OK)
     return MOJO_RESULT_ABORTED;
 
@@ -34,8 +34,11 @@ MojoResult WriteMessageRaw(MessagePipeHandle message_pipe,
   DCHECK_GE(buffer_size, base::checked_cast<uint32_t>(num_bytes));
   memcpy(buffer, bytes, num_bytes);
 
+  MojoWriteMessageOptions write_options;
+  write_options.struct_size = sizeof(write_options);
+  write_options.flags = flags;
   return MojoWriteMessage(message_pipe.value(),
-                          message_handle.release().value(), flags);
+                          message_handle.release().value(), &write_options);
 }
 
 MojoResult ReadMessageRaw(MessagePipeHandle message_pipe,

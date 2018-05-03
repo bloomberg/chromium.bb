@@ -95,9 +95,10 @@ MojoResult DataPipeProducerDispatcher::Close() {
   return CloseNoLock();
 }
 
-MojoResult DataPipeProducerDispatcher::WriteData(const void* elements,
-                                                 uint32_t* num_bytes,
-                                                 MojoWriteDataFlags flags) {
+MojoResult DataPipeProducerDispatcher::WriteData(
+    const void* elements,
+    uint32_t* num_bytes,
+    const MojoWriteDataOptions& options) {
   base::AutoLock lock(lock_);
   if (!shared_ring_buffer_.IsValid() || in_transit_)
     return MOJO_RESULT_INVALID_ARGUMENT;
@@ -113,7 +114,7 @@ MojoResult DataPipeProducerDispatcher::WriteData(const void* elements,
   if (*num_bytes == 0)
     return MOJO_RESULT_OK;  // Nothing to do.
 
-  if ((flags & MOJO_WRITE_DATA_FLAG_ALL_OR_NONE) &&
+  if ((options.flags & MOJO_WRITE_DATA_FLAG_ALL_OR_NONE) &&
       (*num_bytes > available_capacity_)) {
     // Don't return "should wait" since you can't wait for a specified amount of
     // data.
@@ -159,14 +160,9 @@ MojoResult DataPipeProducerDispatcher::WriteData(const void* elements,
 
 MojoResult DataPipeProducerDispatcher::BeginWriteData(
     void** buffer,
-    uint32_t* buffer_num_bytes,
-    MojoWriteDataFlags flags) {
+    uint32_t* buffer_num_bytes) {
   base::AutoLock lock(lock_);
   if (!shared_ring_buffer_.IsValid() || in_transit_)
-    return MOJO_RESULT_INVALID_ARGUMENT;
-
-  // These flags may not be used in two-phase mode.
-  if (flags & MOJO_WRITE_DATA_FLAG_ALL_OR_NONE)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   if (in_two_phase_write_)

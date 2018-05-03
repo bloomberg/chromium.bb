@@ -206,7 +206,7 @@ void MojoTestBase::VerifyEcho(MojoHandle mp, const std::string& message) {
 // static
 MojoHandle MojoTestBase::CreateBuffer(uint64_t size) {
   MojoHandle h;
-  EXPECT_EQ(MojoCreateSharedBuffer(nullptr, size, &h), MOJO_RESULT_OK);
+  EXPECT_EQ(MojoCreateSharedBuffer(size, nullptr, &h), MOJO_RESULT_OK);
   return h;
 }
 
@@ -215,9 +215,9 @@ MojoHandle MojoTestBase::DuplicateBuffer(MojoHandle h, bool read_only) {
   MojoHandle new_handle;
   MojoDuplicateBufferHandleOptions options = {
       sizeof(MojoDuplicateBufferHandleOptions),
-      MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_NONE};
+      MOJO_DUPLICATE_BUFFER_HANDLE_FLAG_NONE};
   if (read_only)
-    options.flags |= MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_READ_ONLY;
+    options.flags |= MOJO_DUPLICATE_BUFFER_HANDLE_FLAG_READ_ONLY;
   EXPECT_EQ(MOJO_RESULT_OK,
             MojoDuplicateBufferHandle(h, &options, &new_handle));
   return new_handle;
@@ -228,9 +228,8 @@ void MojoTestBase::WriteToBuffer(MojoHandle h,
                                  size_t offset,
                                  const base::StringPiece& s) {
   char* data;
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoMapBuffer(h, offset, s.size(), reinterpret_cast<void**>(&data),
-                          MOJO_MAP_BUFFER_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoMapBuffer(h, offset, s.size(), nullptr,
+                                          reinterpret_cast<void**>(&data)));
   memcpy(data, s.data(), s.size());
   EXPECT_EQ(MOJO_RESULT_OK, MojoUnmapBuffer(static_cast<void*>(data)));
 }
@@ -240,9 +239,8 @@ void MojoTestBase::ExpectBufferContents(MojoHandle h,
                                         size_t offset,
                                         const base::StringPiece& s) {
   char* data;
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoMapBuffer(h, offset, s.size(), reinterpret_cast<void**>(&data),
-                          MOJO_MAP_BUFFER_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoMapBuffer(h, offset, s.size(), nullptr,
+                                          reinterpret_cast<void**>(&data)));
   EXPECT_EQ(s, base::StringPiece(data, s.size()));
   EXPECT_EQ(MOJO_RESULT_OK, MojoUnmapBuffer(static_cast<void*>(data)));
 }
@@ -253,7 +251,7 @@ void MojoTestBase::CreateDataPipe(MojoHandle* p0,
                                   size_t capacity) {
   MojoCreateDataPipeOptions options;
   options.struct_size = static_cast<uint32_t>(sizeof(options));
-  options.flags = MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE;
+  options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
   options.element_num_bytes = 1;
   options.capacity_num_bytes = static_cast<uint32_t>(capacity);
 
@@ -267,8 +265,10 @@ void MojoTestBase::WriteData(MojoHandle producer, const std::string& data) {
   CHECK_EQ(WaitForSignals(producer, MOJO_HANDLE_SIGNAL_WRITABLE),
            MOJO_RESULT_OK);
   uint32_t num_bytes = static_cast<uint32_t>(data.size());
-  CHECK_EQ(MojoWriteData(producer, data.data(), &num_bytes,
-                         MOJO_WRITE_DATA_FLAG_ALL_OR_NONE),
+  MojoWriteDataOptions options;
+  options.struct_size = sizeof(options);
+  options.flags = MOJO_WRITE_DATA_FLAG_ALL_OR_NONE;
+  CHECK_EQ(MojoWriteData(producer, data.data(), &num_bytes, &options),
            MOJO_RESULT_OK);
   CHECK_EQ(num_bytes, static_cast<uint32_t>(data.size()));
 }
@@ -279,8 +279,10 @@ std::string MojoTestBase::ReadData(MojoHandle consumer, size_t size) {
            MOJO_RESULT_OK);
   std::vector<char> buffer(size);
   uint32_t num_bytes = static_cast<uint32_t>(size);
-  CHECK_EQ(MojoReadData(consumer, buffer.data(), &num_bytes,
-                        MOJO_WRITE_DATA_FLAG_ALL_OR_NONE),
+  MojoReadDataOptions options;
+  options.struct_size = sizeof(options);
+  options.flags = MOJO_READ_DATA_FLAG_ALL_OR_NONE;
+  CHECK_EQ(MojoReadData(consumer, &options, buffer.data(), &num_bytes),
            MOJO_RESULT_OK);
   CHECK_EQ(num_bytes, static_cast<uint32_t>(size));
 

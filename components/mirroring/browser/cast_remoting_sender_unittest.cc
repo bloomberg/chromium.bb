@@ -124,8 +124,8 @@ class CastRemotingSenderTest : public ::testing::Test {
     remoting_sender_->OnReceivedRtt(base::TimeDelta::FromMilliseconds(1));
 
     const MojoCreateDataPipeOptions data_pipe_options{
-        sizeof(MojoCreateDataPipeOptions),
-        MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE, 1, kDataPipeCapacity};
+        sizeof(MojoCreateDataPipeOptions), MOJO_CREATE_DATA_PIPE_FLAG_NONE, 1,
+        kDataPipeCapacity};
     mojo::ScopedDataPipeConsumerHandle consumer_end;
     CHECK_EQ(MOJO_RESULT_OK,
              mojo::CreateDataPipe(&data_pipe_options, &producer_end_,

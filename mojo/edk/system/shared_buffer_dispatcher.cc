@@ -48,14 +48,14 @@ static_assert(sizeof(SerializedState) % 8 == 0,
 const MojoCreateSharedBufferOptions
     SharedBufferDispatcher::kDefaultCreateOptions = {
         static_cast<uint32_t>(sizeof(MojoCreateSharedBufferOptions)),
-        MOJO_CREATE_SHARED_BUFFER_OPTIONS_FLAG_NONE};
+        MOJO_CREATE_SHARED_BUFFER_FLAG_NONE};
 
 // static
 MojoResult SharedBufferDispatcher::ValidateCreateOptions(
     const MojoCreateSharedBufferOptions* in_options,
     MojoCreateSharedBufferOptions* out_options) {
-  const MojoCreateSharedBufferOptionsFlags kKnownFlags =
-      MOJO_CREATE_SHARED_BUFFER_OPTIONS_FLAG_NONE;
+  const MojoCreateSharedBufferFlags kKnownFlags =
+      MOJO_CREATE_SHARED_BUFFER_FLAG_NONE;
 
   *out_options = kDefaultCreateOptions;
   if (!in_options)
@@ -200,8 +200,7 @@ MojoResult SharedBufferDispatcher::DuplicateBufferHandle(
   if (in_transit_)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  if ((validated_options.flags &
-       MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_READ_ONLY)) {
+  if ((validated_options.flags & MOJO_DUPLICATE_BUFFER_HANDLE_FLAG_READ_ONLY)) {
     // If a read-only duplicate is requested and this handle is not already
     // read-only, we need to make it read-only before duplicating. If it's
     // unsafe it can't be made read-only, and we must fail instead.
@@ -249,7 +248,6 @@ MojoResult SharedBufferDispatcher::DuplicateBufferHandle(
 MojoResult SharedBufferDispatcher::MapBuffer(
     uint64_t offset,
     uint64_t num_bytes,
-    MojoMapBufferFlags flags,
     std::unique_ptr<PlatformSharedMemoryMapping>* mapping) {
   if (offset > static_cast<uint64_t>(std::numeric_limits<size_t>::max()))
     return MOJO_RESULT_INVALID_ARGUMENT;
@@ -279,6 +277,7 @@ MojoResult SharedBufferDispatcher::GetBufferInfo(MojoSharedBufferInfo* info) {
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   base::AutoLock lock(lock_);
+  info->struct_size = sizeof(*info);
   info->size = region_.GetSize();
   return MOJO_RESULT_OK;
 }
@@ -354,11 +353,11 @@ scoped_refptr<SharedBufferDispatcher> SharedBufferDispatcher::CreateInternal(
 MojoResult SharedBufferDispatcher::ValidateDuplicateOptions(
     const MojoDuplicateBufferHandleOptions* in_options,
     MojoDuplicateBufferHandleOptions* out_options) {
-  const MojoDuplicateBufferHandleOptionsFlags kKnownFlags =
-      MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_READ_ONLY;
+  const MojoDuplicateBufferHandleFlags kKnownFlags =
+      MOJO_DUPLICATE_BUFFER_HANDLE_FLAG_READ_ONLY;
   static const MojoDuplicateBufferHandleOptions kDefaultOptions = {
       static_cast<uint32_t>(sizeof(MojoDuplicateBufferHandleOptions)),
-      MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_NONE};
+      MOJO_DUPLICATE_BUFFER_HANDLE_FLAG_NONE};
 
   *out_options = kDefaultOptions;
   if (!in_options)

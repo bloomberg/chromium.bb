@@ -219,14 +219,17 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
                                MojoHandle* message_pipe_handle1);
   MojoResult WriteMessage(MojoHandle message_pipe_handle,
                           MojoMessageHandle message_handle,
-                          MojoWriteMessageFlags flags);
+                          const MojoWriteMessageOptions* options);
   MojoResult ReadMessage(MojoHandle message_pipe_handle,
-                         MojoMessageHandle* message_handle,
-                         MojoReadMessageFlags flags);
-  MojoResult FuseMessagePipes(MojoHandle handle0, MojoHandle handle1);
+                         const MojoReadMessageOptions* options,
+                         MojoMessageHandle* message_handle);
+  MojoResult FuseMessagePipes(MojoHandle handle0,
+                              MojoHandle handle1,
+                              const MojoFuseMessagePipesOptions* options);
   MojoResult NotifyBadMessage(MojoMessageHandle message_handle,
                               const char* error,
-                              size_t error_num_bytes);
+                              size_t error_num_bytes,
+                              const MojoNotifyBadMessageOptions* options);
 
   // These methods correspond to the API functions defined in
   // "mojo/public/c/system/data_pipe.h":
@@ -236,28 +239,30 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
   MojoResult WriteData(MojoHandle data_pipe_producer_handle,
                        const void* elements,
                        uint32_t* num_bytes,
-                       MojoWriteDataFlags flags);
+                       const MojoWriteDataOptions* options);
   MojoResult BeginWriteData(MojoHandle data_pipe_producer_handle,
+                            const MojoBeginWriteDataOptions* options,
                             void** buffer,
-                            uint32_t* buffer_num_bytes,
-                            MojoWriteDataFlags flags);
+                            uint32_t* buffer_num_bytes);
   MojoResult EndWriteData(MojoHandle data_pipe_producer_handle,
-                          uint32_t num_bytes_written);
+                          uint32_t num_bytes_written,
+                          const MojoEndWriteDataOptions* options);
   MojoResult ReadData(MojoHandle data_pipe_consumer_handle,
+                      const MojoReadDataOptions* options,
                       void* elements,
-                      uint32_t* num_bytes,
-                      MojoReadDataFlags flags);
+                      uint32_t* num_bytes);
   MojoResult BeginReadData(MojoHandle data_pipe_consumer_handle,
+                           const MojoBeginReadDataOptions* options,
                            const void** buffer,
-                           uint32_t* buffer_num_bytes,
-                           MojoReadDataFlags flags);
+                           uint32_t* buffer_num_bytes);
   MojoResult EndReadData(MojoHandle data_pipe_consumer_handle,
-                         uint32_t num_bytes_read);
+                         uint32_t num_bytes_read,
+                         const MojoEndReadDataOptions* options);
 
   // These methods correspond to the API functions defined in
   // "mojo/public/c/system/buffer.h":
-  MojoResult CreateSharedBuffer(const MojoCreateSharedBufferOptions* options,
-                                uint64_t num_bytes,
+  MojoResult CreateSharedBuffer(uint64_t num_bytes,
+                                const MojoCreateSharedBufferOptions* options,
                                 MojoHandle* shared_buffer_handle);
   MojoResult DuplicateBufferHandle(
       MojoHandle buffer_handle,
@@ -266,11 +271,11 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
   MojoResult MapBuffer(MojoHandle buffer_handle,
                        uint64_t offset,
                        uint64_t num_bytes,
-                       void** buffer,
-                       MojoMapBufferFlags flags);
+                       const MojoMapBufferOptions* options,
+                       void** buffer);
   MojoResult UnmapBuffer(void* buffer);
   MojoResult GetBufferInfo(MojoHandle buffer_handle,
-                           const MojoSharedBufferOptions* options,
+                           const MojoGetBufferInfoOptions* options,
                            MojoSharedBufferInfo* info);
 
   // These methods correspond to the API functions defined in

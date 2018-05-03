@@ -85,8 +85,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
   ///////////// Message pipe API /////////////
 
   virtual MojoResult WriteMessage(
-      std::unique_ptr<ports::UserMessageEvent> message,
-      MojoWriteMessageFlags flags);
+      std::unique_ptr<ports::UserMessageEvent> message);
 
   virtual MojoResult ReadMessage(
       std::unique_ptr<ports::UserMessageEvent>* message);
@@ -103,20 +102,18 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
   virtual MojoResult MapBuffer(
       uint64_t offset,
       uint64_t num_bytes,
-      MojoMapBufferFlags flags,
       std::unique_ptr<PlatformSharedMemoryMapping>* mapping);
 
   virtual MojoResult GetBufferInfo(MojoSharedBufferInfo* info);
 
   ///////////// Data pipe consumer API /////////////
 
-  virtual MojoResult ReadData(void* elements,
-                              uint32_t* num_bytes,
-                              MojoReadDataFlags flags);
+  virtual MojoResult ReadData(const MojoReadDataOptions& options,
+                              void* elements,
+                              uint32_t* num_bytes);
 
   virtual MojoResult BeginReadData(const void** buffer,
-                                   uint32_t* buffer_num_bytes,
-                                   MojoReadDataFlags flags);
+                                   uint32_t* buffer_num_bytes);
 
   virtual MojoResult EndReadData(uint32_t num_bytes_read);
 
@@ -124,11 +121,9 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
 
   virtual MojoResult WriteData(const void* elements,
                                uint32_t* num_bytes,
-                               MojoWriteDataFlags flags);
+                               const MojoWriteDataOptions& options);
 
-  virtual MojoResult BeginWriteData(void** buffer,
-                                    uint32_t* buffer_num_bytes,
-                                    MojoWriteDataFlags flags);
+  virtual MojoResult BeginWriteData(void** buffer, uint32_t* buffer_num_bytes);
 
   virtual MojoResult EndWriteData(uint32_t num_bytes_written);
 

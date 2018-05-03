@@ -64,10 +64,10 @@ TEST_F(SharedBufferDispatcherTest, ValidateCreateOptionsValid) {
   }
 
   // Different flags.
-  MojoCreateSharedBufferOptionsFlags flags_values[] = {
-      MOJO_CREATE_SHARED_BUFFER_OPTIONS_FLAG_NONE};
+  MojoCreateSharedBufferFlags flags_values[] = {
+      MOJO_CREATE_SHARED_BUFFER_FLAG_NONE};
   for (size_t i = 0; i < arraysize(flags_values); i++) {
-    const MojoCreateSharedBufferOptionsFlags flags = flags_values[i];
+    const MojoCreateSharedBufferFlags flags = flags_values[i];
 
     // Different capacities (size 1).
     for (uint32_t capacity = 1; capacity <= 100 * 1000 * 1000; capacity *= 10) {
@@ -90,8 +90,8 @@ TEST_F(SharedBufferDispatcherTest, ValidateCreateOptionsInvalid) {
   // Invalid |struct_size|.
   {
     MojoCreateSharedBufferOptions options = {
-        1,                                           // |struct_size|.
-        MOJO_CREATE_SHARED_BUFFER_OPTIONS_FLAG_NONE  // |flags|.
+        1,                                   // |struct_size|.
+        MOJO_CREATE_SHARED_BUFFER_FLAG_NONE  // |flags|.
     };
     MojoCreateSharedBufferOptions unused;
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
@@ -122,8 +122,7 @@ TEST_F(SharedBufferDispatcherTest, CreateAndMapBuffer) {
 
   // Make a couple of mappings.
   std::unique_ptr<PlatformSharedMemoryMapping> mapping1;
-  EXPECT_EQ(MOJO_RESULT_OK, dispatcher->MapBuffer(
-                                0, 100, MOJO_MAP_BUFFER_FLAG_NONE, &mapping1));
+  EXPECT_EQ(MOJO_RESULT_OK, dispatcher->MapBuffer(0, 100, &mapping1));
   ASSERT_TRUE(mapping1);
   ASSERT_TRUE(mapping1->GetBase());
   EXPECT_EQ(100u, mapping1->GetLength());
@@ -131,8 +130,7 @@ TEST_F(SharedBufferDispatcherTest, CreateAndMapBuffer) {
   static_cast<char*>(mapping1->GetBase())[50] = 'x';
 
   std::unique_ptr<PlatformSharedMemoryMapping> mapping2;
-  EXPECT_EQ(MOJO_RESULT_OK, dispatcher->MapBuffer(
-                                50, 50, MOJO_MAP_BUFFER_FLAG_NONE, &mapping2));
+  EXPECT_EQ(MOJO_RESULT_OK, dispatcher->MapBuffer(50, 50, &mapping2));
   ASSERT_TRUE(mapping2);
   ASSERT_TRUE(mapping2->GetBase());
   EXPECT_EQ(50u, mapping2->GetLength());
@@ -161,8 +159,7 @@ TEST_F(SharedBufferDispatcherTest, CreateAndMapBufferFromPlatformBuffer) {
 
   // Make a couple of mappings.
   std::unique_ptr<PlatformSharedMemoryMapping> mapping1;
-  EXPECT_EQ(MOJO_RESULT_OK, dispatcher->MapBuffer(
-                                0, 100, MOJO_MAP_BUFFER_FLAG_NONE, &mapping1));
+  EXPECT_EQ(MOJO_RESULT_OK, dispatcher->MapBuffer(0, 100, &mapping1));
   ASSERT_TRUE(mapping1);
   ASSERT_TRUE(mapping1->GetBase());
   EXPECT_EQ(100u, mapping1->GetLength());
@@ -170,8 +167,7 @@ TEST_F(SharedBufferDispatcherTest, CreateAndMapBufferFromPlatformBuffer) {
   static_cast<char*>(mapping1->GetBase())[50] = 'x';
 
   std::unique_ptr<PlatformSharedMemoryMapping> mapping2;
-  EXPECT_EQ(MOJO_RESULT_OK, dispatcher->MapBuffer(
-                                50, 50, MOJO_MAP_BUFFER_FLAG_NONE, &mapping2));
+  EXPECT_EQ(MOJO_RESULT_OK, dispatcher->MapBuffer(50, 50, &mapping2));
   ASSERT_TRUE(mapping2);
   ASSERT_TRUE(mapping2->GetBase());
   EXPECT_EQ(50u, mapping2->GetLength());
@@ -193,8 +189,7 @@ TEST_F(SharedBufferDispatcherTest, DuplicateBufferHandle) {
 
   // Map and write something.
   std::unique_ptr<PlatformSharedMemoryMapping> mapping;
-  EXPECT_EQ(MOJO_RESULT_OK, dispatcher1->MapBuffer(
-                                0, 100, MOJO_MAP_BUFFER_FLAG_NONE, &mapping));
+  EXPECT_EQ(MOJO_RESULT_OK, dispatcher1->MapBuffer(0, 100, &mapping));
   static_cast<char*>(mapping->GetBase())[0] = 'x';
   mapping.reset();
 
@@ -208,8 +203,7 @@ TEST_F(SharedBufferDispatcherTest, DuplicateBufferHandle) {
   EXPECT_EQ(MOJO_RESULT_OK, dispatcher1->Close());
 
   // Map |dispatcher2| and read something.
-  EXPECT_EQ(MOJO_RESULT_OK, dispatcher2->MapBuffer(
-                                0, 100, MOJO_MAP_BUFFER_FLAG_NONE, &mapping));
+  EXPECT_EQ(MOJO_RESULT_OK, dispatcher2->MapBuffer(0, 100, &mapping));
   EXPECT_EQ('x', static_cast<char*>(mapping->GetBase())[0]);
 
   EXPECT_EQ(MOJO_RESULT_OK, dispatcher2->Close());
@@ -228,7 +222,7 @@ TEST_F(SharedBufferDispatcherTest, DuplicateBufferHandleOptionsValid) {
 
   MojoDuplicateBufferHandleOptions kReadOnlyOptions = {
       sizeof(MojoCreateSharedBufferOptions),
-      MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_READ_ONLY};
+      MOJO_DUPLICATE_BUFFER_HANDLE_FLAG_READ_ONLY};
 
   // NOTE: We forbid handles from being duplicated read-only after they've been
   // duplicated non-read-only; conversely we also forbid handles from being
@@ -243,7 +237,7 @@ TEST_F(SharedBufferDispatcherTest, DuplicateBufferHandleOptionsValid) {
   {
     std::unique_ptr<PlatformSharedMemoryMapping> mapping;
     EXPECT_EQ(MOJO_RESULT_OK,
-              writable_duped_dispatcher1->MapBuffer(0, 100, 0, &mapping));
+              writable_duped_dispatcher1->MapBuffer(0, 100, &mapping));
   }
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
             dispatcher1->DuplicateBufferHandle(&kReadOnlyOptions,
@@ -261,7 +255,7 @@ TEST_F(SharedBufferDispatcherTest, DuplicateBufferHandleOptionsValid) {
   {
     std::unique_ptr<PlatformSharedMemoryMapping> mapping;
     EXPECT_EQ(MOJO_RESULT_OK,
-              read_only_duped_dispatcher2->MapBuffer(0, 100, 0, &mapping));
+              read_only_duped_dispatcher2->MapBuffer(0, 100, &mapping));
   }
   EXPECT_EQ(
       MOJO_RESULT_FAILED_PRECONDITION,
@@ -283,7 +277,7 @@ TEST_F(SharedBufferDispatcherTest, DuplicateBufferHandleOptionsInvalid) {
   // Invalid |struct_size|.
   {
     MojoDuplicateBufferHandleOptions options = {
-        1u, MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_NONE};
+        1u, MOJO_DUPLICATE_BUFFER_HANDLE_FLAG_NONE};
     scoped_refptr<Dispatcher> dispatcher2;
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
               dispatcher1->DuplicateBufferHandle(&options, &dispatcher2));
@@ -331,17 +325,15 @@ TEST_F(SharedBufferDispatcherTest, MapBufferInvalidArguments) {
 
   std::unique_ptr<PlatformSharedMemoryMapping> mapping;
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            dispatcher->MapBuffer(0, info.size + 1, MOJO_MAP_BUFFER_FLAG_NONE,
-                                  &mapping));
-  EXPECT_FALSE(mapping);
-
-  EXPECT_EQ(
-      MOJO_RESULT_INVALID_ARGUMENT,
-      dispatcher->MapBuffer(1, info.size, MOJO_MAP_BUFFER_FLAG_NONE, &mapping));
+            dispatcher->MapBuffer(0, info.size + 1, &mapping));
   EXPECT_FALSE(mapping);
 
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            dispatcher->MapBuffer(0, 0, MOJO_MAP_BUFFER_FLAG_NONE, &mapping));
+            dispatcher->MapBuffer(1, info.size, &mapping));
+  EXPECT_FALSE(mapping);
+
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+            dispatcher->MapBuffer(0, 0, &mapping));
   EXPECT_FALSE(mapping);
 
   EXPECT_EQ(MOJO_RESULT_OK, dispatcher->Close());

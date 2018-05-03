@@ -146,16 +146,22 @@ void MojoHandle::writeData(const ArrayBufferOrArrayBufferView& buffer,
     num_bytes = view->byteLength();
   }
 
+  ::MojoWriteDataOptions options;
+  options.struct_size = sizeof(options);
+  options.flags = flags;
   MojoResult result =
-      MojoWriteData(handle_.get().value(), elements, &num_bytes, flags);
+      MojoWriteData(handle_.get().value(), elements, &num_bytes, &options);
   result_dict.setResult(result);
   result_dict.setNumBytes(result == MOJO_RESULT_OK ? num_bytes : 0);
 }
 
 void MojoHandle::queryData(MojoReadDataResult& result_dict) {
   uint32_t num_bytes = 0;
-  MojoResult result = MojoReadData(handle_.get().value(), nullptr, &num_bytes,
-                                   MOJO_READ_DATA_FLAG_QUERY);
+  ::MojoReadDataOptions options;
+  options.struct_size = sizeof(options);
+  options.flags = MOJO_READ_DATA_FLAG_QUERY;
+  MojoResult result =
+      MojoReadData(handle_.get().value(), &options, nullptr, &num_bytes);
   result_dict.setResult(result);
   result_dict.setNumBytes(num_bytes);
 }
@@ -167,8 +173,11 @@ void MojoHandle::discardData(unsigned num_bytes,
   if (options_dict.allOrNone())
     flags |= MOJO_READ_DATA_FLAG_ALL_OR_NONE;
 
+  ::MojoReadDataOptions options;
+  options.struct_size = sizeof(options);
+  options.flags = flags;
   MojoResult result =
-      MojoReadData(handle_.get().value(), nullptr, &num_bytes, flags);
+      MojoReadData(handle_.get().value(), &options, nullptr, &num_bytes);
   result_dict.setResult(result);
   result_dict.setNumBytes(result == MOJO_RESULT_OK ? num_bytes : 0);
 }
@@ -194,8 +203,11 @@ void MojoHandle::readData(ArrayBufferOrArrayBufferView& buffer,
     num_bytes = view->byteLength();
   }
 
+  ::MojoReadDataOptions options;
+  options.struct_size = sizeof(options);
+  options.flags = flags;
   MojoResult result =
-      MojoReadData(handle_.get().value(), elements, &num_bytes, flags);
+      MojoReadData(handle_.get().value(), &options, elements, &num_bytes);
   result_dict.setResult(result);
   result_dict.setNumBytes(result == MOJO_RESULT_OK ? num_bytes : 0);
 }
@@ -204,8 +216,8 @@ void MojoHandle::mapBuffer(unsigned offset,
                            unsigned num_bytes,
                            MojoMapBufferResult& result_dict) {
   void* data = nullptr;
-  MojoResult result = MojoMapBuffer(handle_.get().value(), offset, num_bytes,
-                                    &data, MOJO_MAP_BUFFER_FLAG_NONE);
+  MojoResult result =
+      MojoMapBuffer(handle_.get().value(), offset, num_bytes, nullptr, &data);
   result_dict.setResult(result);
   if (result == MOJO_RESULT_OK) {
     WTF::ArrayBufferContents::DataHandle data_handle(
@@ -223,9 +235,9 @@ void MojoHandle::duplicateBufferHandle(
     const MojoDuplicateBufferHandleOptions& options_dict,
     MojoCreateSharedBufferResult& result_dict) {
   ::MojoDuplicateBufferHandleOptions options = {
-      sizeof(options), MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_NONE};
+      sizeof(options), MOJO_DUPLICATE_BUFFER_HANDLE_FLAG_NONE};
   if (options_dict.readOnly())
-    options.flags |= MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_READ_ONLY;
+    options.flags |= MOJO_DUPLICATE_BUFFER_HANDLE_FLAG_READ_ONLY;
 
   mojo::Handle handle;
   MojoResult result = MojoDuplicateBufferHandle(handle_.get().value(), &options,

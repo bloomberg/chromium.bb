@@ -38,36 +38,31 @@ MojoResult MojoQueryHandleSignalsStateImpl(
   return g_core->QueryHandleSignalsState(handle, signals_state);
 }
 
-MojoResult MojoCreateTrapImpl(MojoTrapEventHandler handler,
-                              const MojoCreateTrapOptions* options,
-                              MojoHandle* trap_handle) {
-  return g_core->CreateTrap(handler, options, trap_handle);
+MojoResult MojoCreateMessagePipeImpl(
+    const MojoCreateMessagePipeOptions* options,
+    MojoHandle* message_pipe_handle0,
+    MojoHandle* message_pipe_handle1) {
+  return g_core->CreateMessagePipe(options, message_pipe_handle0,
+                                   message_pipe_handle1);
 }
 
-MojoResult MojoArmTrapImpl(MojoHandle trap_handle,
-                           const MojoArmTrapOptions* options,
-                           uint32_t* num_ready_triggers,
-                           uintptr_t* ready_triggers,
-                           MojoResult* ready_results,
-                           MojoHandleSignalsState* ready_signals_states) {
-  return g_core->ArmTrap(trap_handle, options, num_ready_triggers,
-                         ready_triggers, ready_results, ready_signals_states);
+MojoResult MojoWriteMessageImpl(MojoHandle message_pipe_handle,
+                                MojoMessageHandle message,
+                                const MojoWriteMessageOptions* options) {
+  return g_core->WriteMessage(message_pipe_handle, message, options);
 }
 
-MojoResult MojoAddTriggerImpl(MojoHandle trap_handle,
-                              MojoHandle handle,
-                              MojoHandleSignals signals,
-                              MojoTriggerCondition condition,
-                              uintptr_t context,
-                              const MojoAddTriggerOptions* options) {
-  return g_core->AddTrigger(trap_handle, handle, signals, condition, context,
-                            options);
+MojoResult MojoReadMessageImpl(MojoHandle message_pipe_handle,
+                               const MojoReadMessageOptions* options,
+                               MojoMessageHandle* message) {
+  return g_core->ReadMessage(message_pipe_handle, options, message);
 }
 
-MojoResult MojoRemoveTriggerImpl(MojoHandle trap_handle,
-                                 uintptr_t context,
-                                 const MojoRemoveTriggerOptions* options) {
-  return g_core->RemoveTrigger(trap_handle, context, options);
+MojoResult MojoFuseMessagePipesImpl(
+    MojoHandle handle0,
+    MojoHandle handle1,
+    const MojoFuseMessagePipesOptions* options) {
+  return g_core->FuseMessagePipes(handle0, handle1, options);
 }
 
 MojoResult MojoCreateMessageImpl(const MojoCreateMessageOptions* options,
@@ -75,14 +70,14 @@ MojoResult MojoCreateMessageImpl(const MojoCreateMessageOptions* options,
   return g_core->CreateMessage(options, message);
 }
 
+MojoResult MojoDestroyMessageImpl(MojoMessageHandle message) {
+  return g_core->DestroyMessage(message);
+}
+
 MojoResult MojoSerializeMessageImpl(
     MojoMessageHandle message,
     const MojoSerializeMessageOptions* options) {
   return g_core->SerializeMessage(message, options);
-}
-
-MojoResult MojoDestroyMessageImpl(MojoMessageHandle message) {
-  return g_core->DestroyMessage(message);
 }
 
 MojoResult MojoAppendMessageDataImpl(
@@ -124,28 +119,12 @@ MojoResult MojoGetMessageContextImpl(
   return g_core->GetMessageContext(message, options, context);
 }
 
-MojoResult MojoCreateMessagePipeImpl(
-    const MojoCreateMessagePipeOptions* options,
-    MojoHandle* message_pipe_handle0,
-    MojoHandle* message_pipe_handle1) {
-  return g_core->CreateMessagePipe(options, message_pipe_handle0,
-                                   message_pipe_handle1);
-}
-
-MojoResult MojoWriteMessageImpl(MojoHandle message_pipe_handle,
-                                MojoMessageHandle message,
-                                MojoWriteMessageFlags flags) {
-  return g_core->WriteMessage(message_pipe_handle, message, flags);
-}
-
-MojoResult MojoReadMessageImpl(MojoHandle message_pipe_handle,
-                               MojoMessageHandle* message,
-                               MojoReadMessageFlags flags) {
-  return g_core->ReadMessage(message_pipe_handle, message, flags);
-}
-
-MojoResult MojoFuseMessagePipesImpl(MojoHandle handle0, MojoHandle handle1) {
-  return g_core->FuseMessagePipes(handle0, handle1);
+MojoResult MojoNotifyBadMessageImpl(
+    MojoMessageHandle message,
+    const char* error,
+    size_t error_num_bytes,
+    const MojoNotifyBadMessageOptions* options) {
+  return g_core->NotifyBadMessage(message, error, error_num_bytes, options);
 }
 
 MojoResult MojoCreateDataPipeImpl(const MojoCreateDataPipeOptions* options,
@@ -158,50 +137,54 @@ MojoResult MojoCreateDataPipeImpl(const MojoCreateDataPipeOptions* options,
 MojoResult MojoWriteDataImpl(MojoHandle data_pipe_producer_handle,
                              const void* elements,
                              uint32_t* num_elements,
-                             MojoWriteDataFlags flags) {
+                             const MojoWriteDataOptions* options) {
   return g_core->WriteData(data_pipe_producer_handle, elements, num_elements,
-                           flags);
+                           options);
 }
 
 MojoResult MojoBeginWriteDataImpl(MojoHandle data_pipe_producer_handle,
+                                  const MojoBeginWriteDataOptions* options,
                                   void** buffer,
-                                  uint32_t* buffer_num_elements,
-                                  MojoWriteDataFlags flags) {
-  return g_core->BeginWriteData(data_pipe_producer_handle, buffer,
-                                buffer_num_elements, flags);
+                                  uint32_t* buffer_num_elements) {
+  return g_core->BeginWriteData(data_pipe_producer_handle, options, buffer,
+                                buffer_num_elements);
 }
 
 MojoResult MojoEndWriteDataImpl(MojoHandle data_pipe_producer_handle,
-                                uint32_t num_elements_written) {
-  return g_core->EndWriteData(data_pipe_producer_handle, num_elements_written);
+                                uint32_t num_elements_written,
+                                const MojoEndWriteDataOptions* options) {
+  return g_core->EndWriteData(data_pipe_producer_handle, num_elements_written,
+                              options);
 }
 
 MojoResult MojoReadDataImpl(MojoHandle data_pipe_consumer_handle,
+                            const MojoReadDataOptions* options,
                             void* elements,
-                            uint32_t* num_elements,
-                            MojoReadDataFlags flags) {
-  return g_core->ReadData(data_pipe_consumer_handle, elements, num_elements,
-                          flags);
+                            uint32_t* num_elements) {
+  return g_core->ReadData(data_pipe_consumer_handle, options, elements,
+                          num_elements);
 }
 
 MojoResult MojoBeginReadDataImpl(MojoHandle data_pipe_consumer_handle,
+                                 const MojoBeginReadDataOptions* options,
                                  const void** buffer,
-                                 uint32_t* buffer_num_elements,
-                                 MojoReadDataFlags flags) {
-  return g_core->BeginReadData(data_pipe_consumer_handle, buffer,
-                               buffer_num_elements, flags);
+                                 uint32_t* buffer_num_elements) {
+  return g_core->BeginReadData(data_pipe_consumer_handle, options, buffer,
+                               buffer_num_elements);
 }
 
 MojoResult MojoEndReadDataImpl(MojoHandle data_pipe_consumer_handle,
-                               uint32_t num_elements_read) {
-  return g_core->EndReadData(data_pipe_consumer_handle, num_elements_read);
+                               uint32_t num_elements_read,
+                               const MojoEndReadDataOptions* options) {
+  return g_core->EndReadData(data_pipe_consumer_handle, num_elements_read,
+                             options);
 }
 
 MojoResult MojoCreateSharedBufferImpl(
-    const MojoCreateSharedBufferOptions* options,
     uint64_t num_bytes,
+    const MojoCreateSharedBufferOptions* options,
     MojoHandle* shared_buffer_handle) {
-  return g_core->CreateSharedBuffer(options, num_bytes, shared_buffer_handle);
+  return g_core->CreateSharedBuffer(num_bytes, options, shared_buffer_handle);
 }
 
 MojoResult MojoDuplicateBufferHandleImpl(
@@ -215,9 +198,9 @@ MojoResult MojoDuplicateBufferHandleImpl(
 MojoResult MojoMapBufferImpl(MojoHandle buffer_handle,
                              uint64_t offset,
                              uint64_t num_bytes,
-                             void** buffer,
-                             MojoMapBufferFlags flags) {
-  return g_core->MapBuffer(buffer_handle, offset, num_bytes, buffer, flags);
+                             const MojoMapBufferOptions* options,
+                             void** buffer) {
+  return g_core->MapBuffer(buffer_handle, offset, num_bytes, options, buffer);
 }
 
 MojoResult MojoUnmapBufferImpl(void* buffer) {
@@ -225,9 +208,41 @@ MojoResult MojoUnmapBufferImpl(void* buffer) {
 }
 
 MojoResult MojoGetBufferInfoImpl(MojoHandle buffer_handle,
-                                 const MojoSharedBufferOptions* options,
+                                 const MojoGetBufferInfoOptions* options,
                                  MojoSharedBufferInfo* info) {
   return g_core->GetBufferInfo(buffer_handle, options, info);
+}
+
+MojoResult MojoCreateTrapImpl(MojoTrapEventHandler handler,
+                              const MojoCreateTrapOptions* options,
+                              MojoHandle* trap_handle) {
+  return g_core->CreateTrap(handler, options, trap_handle);
+}
+
+MojoResult MojoAddTriggerImpl(MojoHandle trap_handle,
+                              MojoHandle handle,
+                              MojoHandleSignals signals,
+                              MojoTriggerCondition condition,
+                              uintptr_t context,
+                              const MojoAddTriggerOptions* options) {
+  return g_core->AddTrigger(trap_handle, handle, signals, condition, context,
+                            options);
+}
+
+MojoResult MojoRemoveTriggerImpl(MojoHandle trap_handle,
+                                 uintptr_t context,
+                                 const MojoRemoveTriggerOptions* options) {
+  return g_core->RemoveTrigger(trap_handle, context, options);
+}
+
+MojoResult MojoArmTrapImpl(MojoHandle trap_handle,
+                           const MojoArmTrapOptions* options,
+                           uint32_t* num_ready_triggers,
+                           uintptr_t* ready_triggers,
+                           MojoResult* ready_results,
+                           MojoHandleSignalsState* ready_signals_states) {
+  return g_core->ArmTrap(trap_handle, options, num_ready_triggers,
+                         ready_triggers, ready_results, ready_signals_states);
 }
 
 MojoResult MojoWrapPlatformHandleImpl(const MojoPlatformHandle* platform_handle,
@@ -260,12 +275,6 @@ MojoResult MojoUnwrapPlatformSharedBufferHandleImpl(
                                                   num_bytes, guid, flags);
 }
 
-MojoResult MojoNotifyBadMessageImpl(MojoMessageHandle message,
-                                    const char* error,
-                                    size_t error_num_bytes) {
-  return g_core->NotifyBadMessage(message, error, error_num_bytes);
-}
-
 }  // extern "C"
 
 MojoSystemThunks g_thunks = {sizeof(MojoSystemThunks),
@@ -276,6 +285,15 @@ MojoSystemThunks g_thunks = {sizeof(MojoSystemThunks),
                              MojoCreateMessagePipeImpl,
                              MojoWriteMessageImpl,
                              MojoReadMessageImpl,
+                             MojoFuseMessagePipesImpl,
+                             MojoCreateMessageImpl,
+                             MojoDestroyMessageImpl,
+                             MojoSerializeMessageImpl,
+                             MojoAppendMessageDataImpl,
+                             MojoGetMessageDataImpl,
+                             MojoSetMessageContextImpl,
+                             MojoGetMessageContextImpl,
+                             MojoNotifyBadMessageImpl,
                              MojoCreateDataPipeImpl,
                              MojoWriteDataImpl,
                              MojoBeginWriteDataImpl,
@@ -292,19 +310,10 @@ MojoSystemThunks g_thunks = {sizeof(MojoSystemThunks),
                              MojoAddTriggerImpl,
                              MojoRemoveTriggerImpl,
                              MojoArmTrapImpl,
-                             MojoFuseMessagePipesImpl,
-                             MojoCreateMessageImpl,
-                             MojoDestroyMessageImpl,
-                             MojoSerializeMessageImpl,
-                             MojoAppendMessageDataImpl,
-                             MojoGetMessageDataImpl,
-                             MojoSetMessageContextImpl,
-                             MojoGetMessageContextImpl,
                              MojoWrapPlatformHandleImpl,
                              MojoUnwrapPlatformHandleImpl,
                              MojoWrapPlatformSharedBufferHandleImpl,
-                             MojoUnwrapPlatformSharedBufferHandleImpl,
-                             MojoNotifyBadMessageImpl};
+                             MojoUnwrapPlatformSharedBufferHandleImpl};
 
 }  // namespace
 

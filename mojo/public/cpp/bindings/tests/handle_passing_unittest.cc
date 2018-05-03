@@ -260,8 +260,7 @@ TEST_P(HandlePassingTest, DataPipe) {
   ScopedDataPipeProducerHandle producer_handle;
   ScopedDataPipeConsumerHandle consumer_handle;
   MojoCreateDataPipeOptions options = {sizeof(MojoCreateDataPipeOptions),
-                                       MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,
-                                       1,
+                                       MOJO_CREATE_DATA_PIPE_FLAG_NONE, 1,
                                        1024};
   ASSERT_EQ(MOJO_RESULT_OK,
             CreateDataPipe(&options, &producer_handle, &consumer_handle));

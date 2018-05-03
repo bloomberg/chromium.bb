@@ -146,8 +146,7 @@ class CorePerftest : public testing::Test {
   static void MessagePipe_EmptyRead(void* closure) {
     CorePerftest* self = static_cast<CorePerftest*>(closure);
     MojoMessageHandle message;
-    MojoResult result =
-        MojoReadMessage(self->h0_, &message, MOJO_READ_MESSAGE_FLAG_NONE);
+    MojoResult result = MojoReadMessage(self->h0_, nullptr, &message);
     ALLOW_UNUSED_LOCAL(result);
     assert(result == MOJO_RESULT_SHOULD_WAIT);
   }

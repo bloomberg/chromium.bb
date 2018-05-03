@@ -522,8 +522,7 @@ class URLLoaderTest : public testing::Test {
 
       const void* buffer;
       uint32_t num_bytes;
-      MojoResult rv = MojoBeginReadData(consumer, &buffer, &num_bytes,
-                                        MOJO_READ_DATA_FLAG_NONE);
+      MojoResult rv = MojoBeginReadData(consumer, nullptr, &buffer, &num_bytes);
       // If no data has been received yet, spin the message loop until it has.
       if (rv == MOJO_RESULT_SHOULD_WAIT) {
         mojo::SimpleWatcher watcher(
@@ -550,7 +549,7 @@ class URLLoaderTest : public testing::Test {
       CHECK_EQ(rv, MOJO_RESULT_OK);
 
       body.append(static_cast<const char*>(buffer), num_bytes);
-      MojoEndReadData(consumer, num_bytes);
+      MojoEndReadData(consumer, num_bytes, nullptr);
     }
 
     return body;
@@ -560,15 +559,16 @@ class URLLoaderTest : public testing::Test {
     MojoHandle consumer = client()->response_body().value();
 
     uint32_t num_bytes = 0;
-    MojoResult result =
-        MojoReadData(consumer, nullptr, &num_bytes, MOJO_READ_DATA_FLAG_QUERY);
+    MojoReadDataOptions options;
+    options.struct_size = sizeof(options);
+    options.flags = MOJO_READ_DATA_FLAG_QUERY;
+    MojoResult result = MojoReadData(consumer, &options, nullptr, &num_bytes);
     CHECK_EQ(MOJO_RESULT_OK, result);
     if (num_bytes == 0)
       return std::string();
 
     std::vector<char> buffer(num_bytes);
-    result = MojoReadData(consumer, buffer.data(), &num_bytes,
-                          MOJO_READ_DATA_FLAG_NONE);
+    result = MojoReadData(consumer, nullptr, buffer.data(), &num_bytes);
     CHECK_EQ(MOJO_RESULT_OK, result);
     CHECK_EQ(num_bytes, buffer.size());
 

@@ -90,7 +90,8 @@ inline MojoResult GetMessageData(MessageHandle message,
 inline MojoResult NotifyBadMessage(MessageHandle message,
                                    const base::StringPiece& error) {
   DCHECK(message.is_valid());
-  return MojoNotifyBadMessage(message.value(), error.data(), error.size());
+  return MojoNotifyBadMessage(message.value(), error.data(), error.size(),
+                              nullptr);
 }
 
 }  // namespace mojo

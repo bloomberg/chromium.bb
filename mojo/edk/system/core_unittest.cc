@@ -51,46 +51,41 @@ TEST_F(CoreTest, Basic) {
   ASSERT_EQ(0u, info.GetWriteMessageCallCount());
   MojoMessageHandle message;
   ASSERT_EQ(MOJO_RESULT_OK, core()->CreateMessage(nullptr, &message));
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->WriteMessage(h, message, MOJO_WRITE_MESSAGE_FLAG_NONE));
+  ASSERT_EQ(MOJO_RESULT_OK, core()->WriteMessage(h, message, nullptr));
   ASSERT_EQ(1u, info.GetWriteMessageCallCount());
 
   ASSERT_EQ(0u, info.GetReadMessageCallCount());
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->ReadMessage(h, &message, MOJO_READ_MESSAGE_FLAG_NONE));
+  ASSERT_EQ(MOJO_RESULT_OK, core()->ReadMessage(h, nullptr, &message));
   ASSERT_EQ(1u, info.GetReadMessageCallCount());
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->ReadMessage(h, &message, MOJO_READ_MESSAGE_FLAG_NONE));
+  ASSERT_EQ(MOJO_RESULT_OK, core()->ReadMessage(h, nullptr, &message));
   ASSERT_EQ(2u, info.GetReadMessageCallCount());
 
   ASSERT_EQ(0u, info.GetWriteDataCallCount());
   ASSERT_EQ(MOJO_RESULT_UNIMPLEMENTED,
-            core()->WriteData(h, nullptr, nullptr, MOJO_WRITE_DATA_FLAG_NONE));
+            core()->WriteData(h, nullptr, nullptr, nullptr));
   ASSERT_EQ(1u, info.GetWriteDataCallCount());
 
   ASSERT_EQ(0u, info.GetBeginWriteDataCallCount());
-  ASSERT_EQ(
-      MOJO_RESULT_UNIMPLEMENTED,
-      core()->BeginWriteData(h, nullptr, nullptr, MOJO_WRITE_DATA_FLAG_NONE));
+  ASSERT_EQ(MOJO_RESULT_UNIMPLEMENTED,
+            core()->BeginWriteData(h, nullptr, nullptr, nullptr));
   ASSERT_EQ(1u, info.GetBeginWriteDataCallCount());
 
   ASSERT_EQ(0u, info.GetEndWriteDataCallCount());
-  ASSERT_EQ(MOJO_RESULT_UNIMPLEMENTED, core()->EndWriteData(h, 0));
+  ASSERT_EQ(MOJO_RESULT_UNIMPLEMENTED, core()->EndWriteData(h, 0, nullptr));
   ASSERT_EQ(1u, info.GetEndWriteDataCallCount());
 
   ASSERT_EQ(0u, info.GetReadDataCallCount());
   ASSERT_EQ(MOJO_RESULT_UNIMPLEMENTED,
-            core()->ReadData(h, nullptr, nullptr, MOJO_READ_DATA_FLAG_NONE));
+            core()->ReadData(h, nullptr, nullptr, nullptr));
   ASSERT_EQ(1u, info.GetReadDataCallCount());
 
   ASSERT_EQ(0u, info.GetBeginReadDataCallCount());
-  ASSERT_EQ(
-      MOJO_RESULT_UNIMPLEMENTED,
-      core()->BeginReadData(h, nullptr, nullptr, MOJO_READ_DATA_FLAG_NONE));
+  ASSERT_EQ(MOJO_RESULT_UNIMPLEMENTED,
+            core()->BeginReadData(h, nullptr, nullptr, nullptr));
   ASSERT_EQ(1u, info.GetBeginReadDataCallCount());
 
   ASSERT_EQ(0u, info.GetEndReadDataCallCount());
-  ASSERT_EQ(MOJO_RESULT_UNIMPLEMENTED, core()->EndReadData(h, 0));
+  ASSERT_EQ(MOJO_RESULT_UNIMPLEMENTED, core()->EndReadData(h, 0, nullptr));
   ASSERT_EQ(1u, info.GetEndReadDataCallCount());
 
   ASSERT_EQ(0u, info.GetDtorCallCount());
@@ -122,23 +117,20 @@ TEST_F(CoreTest, InvalidArguments) {
   // |WriteMessageNew()|:
   // Only check arguments checked by |Core|, namely |handle|, |handles|, and
   // |num_handles|.
-  {
-    ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              core()->WriteMessage(MOJO_HANDLE_INVALID, 0,
-                                   MOJO_WRITE_MESSAGE_FLAG_NONE));
-  }
+  ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+            core()->WriteMessage(MOJO_HANDLE_INVALID, 0, nullptr));
 
   // |ReadMessageNew()|:
   // Only check arguments checked by |Core|, namely |handle|, |handles|, and
   // |num_handles|.
   {
     ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              core()->ReadMessage(MOJO_HANDLE_INVALID, nullptr,
-                                  MOJO_READ_MESSAGE_FLAG_NONE));
+              core()->ReadMessage(MOJO_HANDLE_INVALID, nullptr, nullptr));
+
     MockHandleInfo info;
     MojoHandle h = CreateMockHandle(&info);
     ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              core()->ReadMessage(h, nullptr, MOJO_READ_MESSAGE_FLAG_NONE));
+              core()->ReadMessage(h, nullptr, nullptr));
     // Checked by |Core|, shouldn't go through to the dispatcher.
     ASSERT_EQ(0u, info.GetReadMessageCallCount());
     ASSERT_EQ(MOJO_RESULT_OK, core()->Close(h));
@@ -168,7 +160,7 @@ TEST_F(CoreTest, MessagePipe) {
   // Try to read anyway.
   MojoMessageHandle message;
   ASSERT_EQ(MOJO_RESULT_SHOULD_WAIT,
-            core()->ReadMessage(h[0], &message, MOJO_READ_MESSAGE_FLAG_NONE));
+            core()->ReadMessage(h[0], nullptr, &message));
 
   // Write to |h[1]|.
   const uintptr_t kTestMessageContext = 123;
@@ -176,16 +168,14 @@ TEST_F(CoreTest, MessagePipe) {
   ASSERT_EQ(MOJO_RESULT_OK,
             core()->SetMessageContext(message, kTestMessageContext, nullptr,
                                       nullptr, nullptr));
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->WriteMessage(h[1], message, MOJO_WRITE_MESSAGE_FLAG_NONE));
+  ASSERT_EQ(MOJO_RESULT_OK, core()->WriteMessage(h[1], message, nullptr));
 
   // Wait for |h[0]| to become readable.
   EXPECT_EQ(MOJO_RESULT_OK, mojo::Wait(mojo::Handle(h[0]),
                                        MOJO_HANDLE_SIGNAL_READABLE, &hss[0]));
 
   // Read from |h[0]|.
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->ReadMessage(h[0], &message, MOJO_READ_MESSAGE_FLAG_NONE));
+  ASSERT_EQ(MOJO_RESULT_OK, core()->ReadMessage(h[0], nullptr, &message));
   uintptr_t context;
   ASSERT_EQ(MOJO_RESULT_OK,
             core()->GetMessageContext(message, nullptr, &context));
@@ -205,8 +195,7 @@ TEST_F(CoreTest, MessagePipe) {
   ASSERT_EQ(MOJO_RESULT_OK,
             core()->SetMessageContext(message, kTestMessageContext, nullptr,
                                       nullptr, nullptr));
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->WriteMessage(h[0], message, MOJO_WRITE_MESSAGE_FLAG_NONE));
+  ASSERT_EQ(MOJO_RESULT_OK, core()->WriteMessage(h[0], message, nullptr));
 
   // Close |h[0]|.
   ASSERT_EQ(MOJO_RESULT_OK, core()->Close(h[0]));
@@ -229,8 +218,7 @@ TEST_F(CoreTest, MessagePipe) {
             hss[1].satisfiable_signals);
 
   // Discard a message from |h[1]|.
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->ReadMessage(h[1], &message, MOJO_READ_MESSAGE_FLAG_NONE));
+  ASSERT_EQ(MOJO_RESULT_OK, core()->ReadMessage(h[1], nullptr, &message));
   ASSERT_EQ(MOJO_RESULT_OK, core()->DestroyMessage(message));
 
   // |h[1]| is no longer readable (and will never be).
@@ -245,7 +233,7 @@ TEST_F(CoreTest, MessagePipe) {
             core()->SetMessageContext(message, kTestMessageContext, nullptr,
                                       nullptr, nullptr));
   ASSERT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            core()->WriteMessage(h[1], message, MOJO_WRITE_MESSAGE_FLAG_NONE));
+            core()->WriteMessage(h[1], message, nullptr));
 
   ASSERT_EQ(MOJO_RESULT_OK, core()->Close(h[1]));
 }
@@ -264,8 +252,8 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing1) {
   ASSERT_EQ(MOJO_RESULT_OK,
             core()->SetMessageContext(message, kTestMessageContext, nullptr,
                                       nullptr, nullptr));
-  ASSERT_EQ(MOJO_RESULT_OK, core()->WriteMessage(h_passing[0], message,
-                                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
+  ASSERT_EQ(MOJO_RESULT_OK,
+            core()->WriteMessage(h_passing[0], message, nullptr));
   hss = kEmptyMojoHandleSignalsState;
   EXPECT_EQ(MOJO_RESULT_OK, mojo::Wait(mojo::Handle(h_passing[1]),
                                        MOJO_HANDLE_SIGNAL_READABLE, &hss));
@@ -273,8 +261,8 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing1) {
             hss.satisfied_signals);
   ASSERT_EQ(kAllSignals, hss.satisfiable_signals);
   MojoMessageHandle message_handle;
-  ASSERT_EQ(MOJO_RESULT_OK, core()->ReadMessage(h_passing[1], &message_handle,
-                                                MOJO_READ_MESSAGE_FLAG_NONE));
+  ASSERT_EQ(MOJO_RESULT_OK,
+            core()->ReadMessage(h_passing[1], nullptr, &message_handle));
   uintptr_t context;
   ASSERT_EQ(MOJO_RESULT_OK,
             core()->GetMessageContext(message_handle, nullptr, &context));
@@ -317,8 +305,8 @@ TEST_F(CoreTest, DataPipe) {
   // Write.
   signed char elements[2] = {'A', 'B'};
   uint32_t num_bytes = 2u;
-  ASSERT_EQ(MOJO_RESULT_OK, core()->WriteData(ph, elements, &num_bytes,
-                                              MOJO_WRITE_DATA_FLAG_NONE));
+  ASSERT_EQ(MOJO_RESULT_OK,
+            core()->WriteData(ph, elements, &num_bytes, nullptr));
   ASSERT_EQ(2u, num_bytes);
 
   // Wait for the data to arrive to the consumer.
@@ -339,9 +327,11 @@ TEST_F(CoreTest, DataPipe) {
   elements[0] = -1;
   elements[1] = -1;
   num_bytes = 1u;
-  ASSERT_EQ(MOJO_RESULT_OK, core()->ReadData(ch, elements, &num_bytes,
-                                             MOJO_READ_DATA_FLAG_NONE |
-                                                 MOJO_READ_DATA_FLAG_PEEK));
+  MojoReadDataOptions read_options;
+  read_options.struct_size = sizeof(read_options);
+  read_options.flags = MOJO_READ_DATA_FLAG_NONE | MOJO_READ_DATA_FLAG_PEEK;
+  ASSERT_EQ(MOJO_RESULT_OK,
+            core()->ReadData(ch, &read_options, elements, &num_bytes));
   ASSERT_EQ('A', elements[0]);
   ASSERT_EQ(-1, elements[1]);
 
@@ -349,30 +339,31 @@ TEST_F(CoreTest, DataPipe) {
   elements[0] = -1;
   elements[1] = -1;
   num_bytes = 1u;
-  ASSERT_EQ(MOJO_RESULT_OK, core()->ReadData(ch, elements, &num_bytes,
-                                             MOJO_READ_DATA_FLAG_NONE));
+  read_options.flags = MOJO_READ_DATA_FLAG_NONE;
+  ASSERT_EQ(MOJO_RESULT_OK,
+            core()->ReadData(ch, &read_options, elements, &num_bytes));
   ASSERT_EQ('A', elements[0]);
   ASSERT_EQ(-1, elements[1]);
 
   // Two-phase write.
   void* write_ptr = nullptr;
   num_bytes = 0u;
-  ASSERT_EQ(MOJO_RESULT_OK, core()->BeginWriteData(ph, &write_ptr, &num_bytes,
-                                                   MOJO_WRITE_DATA_FLAG_NONE));
+  ASSERT_EQ(MOJO_RESULT_OK,
+            core()->BeginWriteData(ph, nullptr, &write_ptr, &num_bytes));
   // We count on the default options providing a decent buffer size.
   ASSERT_GE(num_bytes, 3u);
 
   // Trying to do a normal write during a two-phase write should fail.
   elements[0] = 'X';
   num_bytes = 1u;
-  ASSERT_EQ(MOJO_RESULT_BUSY, core()->WriteData(ph, elements, &num_bytes,
-                                                MOJO_WRITE_DATA_FLAG_NONE));
+  ASSERT_EQ(MOJO_RESULT_BUSY,
+            core()->WriteData(ph, elements, &num_bytes, nullptr));
 
   // Actually write the data, and complete it now.
   static_cast<char*>(write_ptr)[0] = 'C';
   static_cast<char*>(write_ptr)[1] = 'D';
   static_cast<char*>(write_ptr)[2] = 'E';
-  ASSERT_EQ(MOJO_RESULT_OK, core()->EndWriteData(ph, 3u));
+  ASSERT_EQ(MOJO_RESULT_OK, core()->EndWriteData(ph, 3u, nullptr));
 
   // Wait for the data to arrive to the consumer.
   ASSERT_EQ(MOJO_RESULT_OK,
@@ -380,73 +371,61 @@ TEST_F(CoreTest, DataPipe) {
 
   // Query how much data we have.
   num_bytes = 0;
-  ASSERT_EQ(MOJO_RESULT_OK, core()->ReadData(ch, nullptr, &num_bytes,
-                                             MOJO_READ_DATA_FLAG_QUERY));
+  read_options.flags = MOJO_READ_DATA_FLAG_QUERY;
+  ASSERT_EQ(MOJO_RESULT_OK,
+            core()->ReadData(ch, &read_options, nullptr, &num_bytes));
   ASSERT_GE(num_bytes, 1u);
 
   // Try to query with peek. Should fail.
   num_bytes = 0;
-  ASSERT_EQ(
-      MOJO_RESULT_INVALID_ARGUMENT,
-      core()->ReadData(ch, nullptr, &num_bytes,
-                       MOJO_READ_DATA_FLAG_QUERY | MOJO_READ_DATA_FLAG_PEEK));
+  read_options.flags = MOJO_READ_DATA_FLAG_QUERY | MOJO_READ_DATA_FLAG_PEEK;
+  ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+            core()->ReadData(ch, &read_options, nullptr, &num_bytes));
   ASSERT_EQ(0u, num_bytes);
 
   // Try to discard ten characters, in all-or-none mode. Should fail.
   num_bytes = 10;
+  read_options.flags =
+      MOJO_READ_DATA_FLAG_DISCARD | MOJO_READ_DATA_FLAG_ALL_OR_NONE;
   ASSERT_EQ(MOJO_RESULT_OUT_OF_RANGE,
-            core()->ReadData(
-                ch, nullptr, &num_bytes,
-                MOJO_READ_DATA_FLAG_DISCARD | MOJO_READ_DATA_FLAG_ALL_OR_NONE));
+            core()->ReadData(ch, &read_options, nullptr, &num_bytes));
 
   // Try to discard two characters, in peek mode. Should fail.
   num_bytes = 2;
-  ASSERT_EQ(
-      MOJO_RESULT_INVALID_ARGUMENT,
-      core()->ReadData(ch, nullptr, &num_bytes,
-                       MOJO_READ_DATA_FLAG_DISCARD | MOJO_READ_DATA_FLAG_PEEK));
+  read_options.flags = MOJO_READ_DATA_FLAG_DISCARD | MOJO_READ_DATA_FLAG_PEEK;
+  ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+            core()->ReadData(ch, &read_options, nullptr, &num_bytes));
 
   // Discard a character.
   num_bytes = 1;
+  read_options.flags =
+      MOJO_READ_DATA_FLAG_DISCARD | MOJO_READ_DATA_FLAG_ALL_OR_NONE;
   ASSERT_EQ(MOJO_RESULT_OK,
-            core()->ReadData(
-                ch, nullptr, &num_bytes,
-                MOJO_READ_DATA_FLAG_DISCARD | MOJO_READ_DATA_FLAG_ALL_OR_NONE));
+            core()->ReadData(ch, &read_options, nullptr, &num_bytes));
 
   // Ensure the 3 bytes were read.
   ASSERT_EQ(MOJO_RESULT_OK,
             mojo::Wait(mojo::Handle(ch), MOJO_HANDLE_SIGNAL_READABLE, &hss));
 
-  // Try a two-phase read of the remaining three bytes with peek. Should fail.
+  // Read the remaining three characters, in two-phase mode.
   const void* read_ptr = nullptr;
   num_bytes = 3;
-  ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            core()->BeginReadData(ch, &read_ptr, &num_bytes,
-                                  MOJO_READ_DATA_FLAG_PEEK));
-
-  // Try a two-phase read of the remaining two bytes with all-or-none. Should
-  // fail.
-  ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            core()->BeginReadData(ch, &read_ptr, &num_bytes,
-                                  MOJO_READ_DATA_FLAG_ALL_OR_NONE));
-
-  // Read the remaining three characters, in two-phase mode.
-  num_bytes = 3;
-  ASSERT_EQ(MOJO_RESULT_OK, core()->BeginReadData(ch, &read_ptr, &num_bytes,
-                                                  MOJO_READ_DATA_FLAG_NONE));
+  ASSERT_EQ(MOJO_RESULT_OK,
+            core()->BeginReadData(ch, nullptr, &read_ptr, &num_bytes));
   // Note: Count on still being able to do the contiguous read here.
   ASSERT_EQ(3u, num_bytes);
 
   // Discarding right now should fail.
   num_bytes = 1;
-  ASSERT_EQ(MOJO_RESULT_BUSY, core()->ReadData(ch, nullptr, &num_bytes,
-                                               MOJO_READ_DATA_FLAG_DISCARD));
+  read_options.flags = MOJO_READ_DATA_FLAG_DISCARD;
+  ASSERT_EQ(MOJO_RESULT_BUSY,
+            core()->ReadData(ch, &read_options, nullptr, &num_bytes));
 
   // Actually check our data and end the two-phase read.
   ASSERT_EQ('C', static_cast<const char*>(read_ptr)[0]);
   ASSERT_EQ('D', static_cast<const char*>(read_ptr)[1]);
   ASSERT_EQ('E', static_cast<const char*>(read_ptr)[2]);
-  ASSERT_EQ(MOJO_RESULT_OK, core()->EndReadData(ch, 3u));
+  ASSERT_EQ(MOJO_RESULT_OK, core()->EndReadData(ch, 3u, nullptr));
 
   // Consumer should now be no longer readable.
   hss = kFullMojoHandleSignalsState;

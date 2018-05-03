@@ -96,9 +96,10 @@ MojoResult DataPipeConsumerDispatcher::Close() {
   return CloseNoLock();
 }
 
-MojoResult DataPipeConsumerDispatcher::ReadData(void* elements,
-                                                uint32_t* num_bytes,
-                                                MojoReadDataFlags flags) {
+MojoResult DataPipeConsumerDispatcher::ReadData(
+    const MojoReadDataOptions& options,
+    void* elements,
+    uint32_t* num_bytes) {
   base::AutoLock lock(lock_);
 
   if (!shared_ring_buffer_.IsValid() || in_transit_)
@@ -110,11 +111,11 @@ MojoResult DataPipeConsumerDispatcher::ReadData(void* elements,
   const bool had_new_data = new_data_available_;
   new_data_available_ = false;
 
-  if ((flags & MOJO_READ_DATA_FLAG_QUERY)) {
-    if ((flags & MOJO_READ_DATA_FLAG_PEEK) ||
-        (flags & MOJO_READ_DATA_FLAG_DISCARD))
+  if ((options.flags & MOJO_READ_DATA_FLAG_QUERY)) {
+    if ((options.flags & MOJO_READ_DATA_FLAG_PEEK) ||
+        (options.flags & MOJO_READ_DATA_FLAG_DISCARD))
       return MOJO_RESULT_INVALID_ARGUMENT;
-    DCHECK(!(flags & MOJO_READ_DATA_FLAG_DISCARD));  // Handled above.
+    DCHECK(!(options.flags & MOJO_READ_DATA_FLAG_DISCARD));  // Handled above.
     DVLOG_IF(2, elements) << "Query mode: ignoring non-null |elements|";
     *num_bytes = static_cast<uint32_t>(bytes_available_);
 
@@ -124,9 +125,9 @@ MojoResult DataPipeConsumerDispatcher::ReadData(void* elements,
   }
 
   bool discard = false;
-  if ((flags & MOJO_READ_DATA_FLAG_DISCARD)) {
+  if ((options.flags & MOJO_READ_DATA_FLAG_DISCARD)) {
     // These flags are mutally exclusive.
-    if (flags & MOJO_READ_DATA_FLAG_PEEK)
+    if (options.flags & MOJO_READ_DATA_FLAG_PEEK)
       return MOJO_RESULT_INVALID_ARGUMENT;
     DVLOG_IF(2, elements) << "Discard mode: ignoring non-null |elements|";
     discard = true;
@@ -136,7 +137,7 @@ MojoResult DataPipeConsumerDispatcher::ReadData(void* elements,
   if (max_num_bytes_to_read % options_.element_num_bytes != 0)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  bool all_or_none = flags & MOJO_READ_DATA_FLAG_ALL_OR_NONE;
+  bool all_or_none = options.flags & MOJO_READ_DATA_FLAG_ALL_OR_NONE;
   uint32_t min_num_bytes_to_read = all_or_none ? max_num_bytes_to_read : 0;
 
   if (min_num_bytes_to_read > bytes_available_) {
@@ -173,7 +174,7 @@ MojoResult DataPipeConsumerDispatcher::ReadData(void* elements,
   }
   *num_bytes = bytes_to_read;
 
-  bool peek = !!(flags & MOJO_READ_DATA_FLAG_PEEK);
+  bool peek = !!(options.flags & MOJO_READ_DATA_FLAG_PEEK);
   if (discard || !peek) {
     read_offset_ = (read_offset_ + bytes_to_read) % options_.capacity_num_bytes;
     bytes_available_ -= bytes_to_read;
@@ -189,22 +190,15 @@ MojoResult DataPipeConsumerDispatcher::ReadData(void* elements,
   return MOJO_RESULT_OK;
 }
 
-MojoResult DataPipeConsumerDispatcher::BeginReadData(const void** buffer,
-                                                     uint32_t* buffer_num_bytes,
-                                                     MojoReadDataFlags flags) {
+MojoResult DataPipeConsumerDispatcher::BeginReadData(
+    const void** buffer,
+    uint32_t* buffer_num_bytes) {
   base::AutoLock lock(lock_);
   if (!shared_ring_buffer_.IsValid() || in_transit_)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   if (in_two_phase_read_)
     return MOJO_RESULT_BUSY;
-
-  // These flags may not be used in two-phase mode.
-  if ((flags & MOJO_READ_DATA_FLAG_DISCARD) ||
-      (flags & MOJO_READ_DATA_FLAG_QUERY) ||
-      (flags & MOJO_READ_DATA_FLAG_PEEK) ||
-      (flags & MOJO_READ_DATA_FLAG_ALL_OR_NONE))
-    return MOJO_RESULT_INVALID_ARGUMENT;
 
   const bool had_new_data = new_data_available_;
   new_data_available_ = false;
