@@ -14,8 +14,6 @@ import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Animatable;
 import org.chromium.chrome.browser.compositor.layouts.Layout.Orientation;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
-import org.chromium.chrome.browser.compositor.layouts.phone.StackLayout;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
 /**
@@ -77,7 +75,7 @@ public abstract class StackAnimation {
 
     protected final float mWidth;
     protected final float mHeight;
-    protected final float mHeightMinusBrowserControls;
+    protected final float mTopBrowserControlsHeight;
     protected final float mBorderTopHeight;
     protected final float mBorderTopOpaqueHeight;
     protected final float mBorderLeftWidth;
@@ -94,13 +92,13 @@ public abstract class StackAnimation {
      * @param borderFramePaddingTopOpaque The opaque top padding of the border frame in dp.
      * @param borderFramePaddingLeft      The left padding of the border frame in dp.
      */
-    protected StackAnimation(Stack stack, float width, float height,
-            float heightMinusBrowserControls, float borderFramePaddingTop,
-            float borderFramePaddingTopOpaque, float borderFramePaddingLeft) {
+    protected StackAnimation(Stack stack, float width, float height, float topBrowserControlsHeight,
+            float borderFramePaddingTop, float borderFramePaddingTopOpaque,
+            float borderFramePaddingLeft) {
         mStack = stack;
         mWidth = width;
         mHeight = height;
-        mHeightMinusBrowserControls = heightMinusBrowserControls;
+        mTopBrowserControlsHeight = topBrowserControlsHeight;
 
         mBorderTopHeight = borderFramePaddingTop;
         mBorderTopOpaqueHeight = borderFramePaddingTopOpaque;
@@ -123,20 +121,19 @@ public abstract class StackAnimation {
      * @return                            The TabSwitcherAnimationFactory instance.
      */
     public static StackAnimation createAnimationFactory(Stack stack, float width, float height,
-            float heightMinusBrowserControls, float borderFramePaddingTop,
+            float topBrowserControlsHeight, float borderFramePaddingTop,
             float borderFramePaddingTopOpaque, float borderFramePaddingLeft, int orientation) {
         StackAnimation factory = null;
         switch (orientation) {
             case Orientation.LANDSCAPE:
                 factory = new StackAnimationLandscape(stack, width, height,
-                        heightMinusBrowserControls, borderFramePaddingTop,
+                        topBrowserControlsHeight, borderFramePaddingTop,
                         borderFramePaddingTopOpaque, borderFramePaddingLeft);
                 break;
             case Orientation.PORTRAIT:
             default:
-                factory = new StackAnimationPortrait(stack, width, height,
-                        heightMinusBrowserControls, borderFramePaddingTop,
-                        borderFramePaddingTopOpaque, borderFramePaddingLeft);
+                factory = new StackAnimationPortrait(stack, width, height, topBrowserControlsHeight,
+                        borderFramePaddingTop, borderFramePaddingTopOpaque, borderFramePaddingLeft);
                 break;
         }
 
@@ -418,22 +415,13 @@ public abstract class StackAnimation {
      *         border.
      */
     protected float getToolbarOffsetToLineUpWithBorder() {
-        final float toolbarHeight = mHeight - mHeightMinusBrowserControls;
-        return toolbarHeight - mBorderTopOpaqueHeight;
+        return mTopBrowserControlsHeight - mBorderTopOpaqueHeight;
     }
 
     /**
      * @return The position of the static tab when entering or exiting the tab switcher.
      */
     protected float getStaticTabPosition() {
-        // The y position of the tab will depend on whether or not the toolbar is at the top or
-        // bottom of the screen. All values are in DP.
-        float yPos = -mBorderTopHeight;
-        if (!FeatureUtilities.isChromeHomeEnabled()) {
-            yPos += mHeight - mHeightMinusBrowserControls;
-        } else {
-            yPos -= StackLayout.MODERN_TOP_MARGIN_DP;
-        }
-        return yPos;
+        return mTopBrowserControlsHeight - mBorderTopHeight;
     }
 }

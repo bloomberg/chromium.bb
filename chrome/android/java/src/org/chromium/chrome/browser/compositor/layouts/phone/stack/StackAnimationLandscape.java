@@ -30,9 +30,9 @@ class StackAnimationLandscape extends StackAnimation {
      * Only Constructor.
      */
     public StackAnimationLandscape(Stack stack, float width, float height,
-            float heightMinusBrowserControls, float borderFramePaddingTop,
+            float topBrowserControlsHeight, float borderFramePaddingTop,
             float borderFramePaddingTopOpaque, float borderFramePaddingLeft) {
-        super(stack, width, height, heightMinusBrowserControls, borderFramePaddingTop,
+        super(stack, width, height, topBrowserControlsHeight, borderFramePaddingTop,
                 borderFramePaddingTopOpaque, borderFramePaddingLeft);
     }
 

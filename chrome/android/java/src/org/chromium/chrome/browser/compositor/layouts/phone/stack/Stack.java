@@ -2326,7 +2326,7 @@ public class Stack {
         setWarpState(true, false);
         final float opaqueTopPadding = mBorderTopPadding - mBorderTransparentTop;
         mAnimationFactory = StackAnimation.createAnimationFactory(this, mLayout.getWidth(),
-                mLayout.getHeight(), mLayout.getHeightMinusBrowserControls(), mBorderTopPadding,
+                mLayout.getHeight(), mLayout.getTopBrowserControlsHeight(), mBorderTopPadding,
                 opaqueTopPadding, mBorderLeftPadding, mCurrentMode);
         float dpToPx = mLayout.getContext().getResources().getDisplayMetrics().density;
         mViewAnimationFactory = new StackViewAnimation(dpToPx, mLayout.getWidth());
