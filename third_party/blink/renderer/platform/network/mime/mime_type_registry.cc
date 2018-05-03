@@ -104,12 +104,17 @@ bool MIMETypeRegistry::IsSupportedImagePrefixedMIMEType(
 
 bool MIMETypeRegistry::IsSupportedImageMIMETypeForEncoding(
     const String& mime_type) {
-  if (DeprecatedEqualIgnoringCase(mime_type, "image/jpeg") ||
-      DeprecatedEqualIgnoringCase(mime_type, "image/png"))
-    return true;
-  if (DeprecatedEqualIgnoringCase(mime_type, "image/webp"))
-    return true;
-  return false;
+  return (EqualIgnoringASCIICase(mime_type, "image/jpeg") ||
+          EqualIgnoringASCIICase(mime_type, "image/png") ||
+          EqualIgnoringASCIICase(mime_type, "image/webp"));
+}
+
+bool MIMETypeRegistry::IsModernImageMIMEType(const String& mime_type) {
+  return (EqualIgnoringASCIICase(mime_type, "image/gif") ||
+          EqualIgnoringASCIICase(mime_type, "image/jpeg") ||
+          EqualIgnoringASCIICase(mime_type, "image/png") ||
+          EqualIgnoringASCIICase(mime_type, "image/svg+xml") ||
+          EqualIgnoringASCIICase(mime_type, "image/webp"));
 }
 
 bool MIMETypeRegistry::IsSupportedJavaScriptMIMEType(const String& mime_type) {
@@ -184,7 +189,7 @@ bool MIMETypeRegistry::IsJavaAppletMIMEType(const String& mime_type) {
 }
 
 bool MIMETypeRegistry::IsSupportedStyleSheetMIMEType(const String& mime_type) {
-  return DeprecatedEqualIgnoringCase(mime_type, "text/css");
+  return EqualIgnoringASCIICase(mime_type, "text/css");
 }
 
 bool MIMETypeRegistry::IsSupportedFontMIMEType(const String& mime_type) {
@@ -197,7 +202,7 @@ bool MIMETypeRegistry::IsSupportedFontMIMEType(const String& mime_type) {
 }
 
 bool MIMETypeRegistry::IsSupportedTextTrackMIMEType(const String& mime_type) {
-  return DeprecatedEqualIgnoringCase(mime_type, "text/vtt");
+  return EqualIgnoringASCIICase(mime_type, "text/vtt");
 }
 
 }  // namespace blink
