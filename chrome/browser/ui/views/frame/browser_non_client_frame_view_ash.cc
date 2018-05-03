@@ -436,6 +436,27 @@ void BrowserNonClientFrameViewAsh::ChildPreferredSizeChanged(
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// BrowserFrameHeaderAsh::AppearanceProvider:
+
+SkColor BrowserNonClientFrameViewAsh::GetFrameHeaderColor(bool active) {
+  return GetFrameColor(active);
+}
+
+gfx::ImageSkia BrowserNonClientFrameViewAsh::GetFrameHeaderImage(bool active) {
+  return GetFrameImage(active);
+}
+
+gfx::ImageSkia BrowserNonClientFrameViewAsh::GetFrameHeaderOverlayImage(
+    bool active) {
+  return GetFrameOverlayImage(active);
+}
+
+bool BrowserNonClientFrameViewAsh::IsTabletMode() {
+  return TabletModeClient::Get() &&
+         TabletModeClient::Get()->tablet_mode_enabled();
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // ash::ShellObserver:
 
 void BrowserNonClientFrameViewAsh::OnOverviewModeStarting() {
@@ -619,8 +640,9 @@ BrowserNonClientFrameViewAsh::CreateFrameHeader() {
   Browser* browser = browser_view()->browser();
   if (!UsePackagedAppHeaderStyle()) {
     auto browser_frame_header = std::make_unique<BrowserFrameHeaderAsh>();
-    browser_frame_header->Init(frame(), browser_view(), this, window_icon_,
-                               caption_button_container_, back_button_);
+    browser_frame_header->Init(
+        this, this, !browser_view()->IsRegularOrGuestSession(), window_icon_,
+        caption_button_container_, back_button_);
     return browser_frame_header;
   }
   std::unique_ptr<ash::DefaultFrameHeader> default_frame_header =

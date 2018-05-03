@@ -12,6 +12,7 @@
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -62,11 +63,11 @@ int FrameHeaderUtil::GetThemeBackgroundXInset() {
 gfx::Rect FrameHeaderUtil::GetAvailableTitleBounds(
     const views::View* left_view,
     const views::View* right_view,
-    const gfx::FontList& title_font_list,
     int header_height) {
   const int x = left_view ? left_view->bounds().right() + kTitleIconOffsetX
                           : kTitleNoIconOffsetX;
-  const int title_height = title_font_list.GetHeight();
+  const int title_height =
+      views::NativeWidgetAura::GetWindowTitleFontList().GetHeight();
   DCHECK_LE(right_view->height(), header_height);
   // We want to align the center points of the header and title vertically.
   // Note that we can't just do (header_height - title_height) / 2, since this

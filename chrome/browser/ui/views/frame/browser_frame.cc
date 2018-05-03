@@ -61,13 +61,6 @@ BrowserFrame::BrowserFrame(BrowserView* browser_view)
 BrowserFrame::~BrowserFrame() {
 }
 
-// static
-const gfx::FontList& BrowserFrame::GetTitleFontList() {
-  static const gfx::FontList* title_font_list = new gfx::FontList();
-  ANNOTATE_LEAKING_OBJECT_PTR(title_font_list);
-  return *title_font_list;
-}
-
 void BrowserFrame::InitBrowserFrame() {
   native_browser_frame_ =
       NativeBrowserFrameFactory::CreateNativeBrowserFrame(this, browser_view_);

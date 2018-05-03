@@ -110,9 +110,7 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(
     window_icon_->Update();
   }
 
-  window_title_ = new views::Label(browser_view->GetWindowTitle(),
-                                   views::Label::CustomFont{gfx::FontList(
-                                       BrowserFrame::GetTitleFontList())});
+  window_title_ = new views::Label(browser_view->GetWindowTitle());
   window_title_->SetVisible(browser_view->ShouldShowWindowTitle());
   window_title_->SetEnabledColor(SK_ColorWHITE);
   window_title_->SetSubpixelRenderingEnabled(false);
@@ -383,8 +381,7 @@ int OpaqueBrowserFrameView::GetIconSize() const {
 #else
   // The icon never shrinks below 16 px on a side.
   const int kIconMinimumSize = 16;
-  return std::max(BrowserFrame::GetTitleFontList().GetHeight(),
-                  kIconMinimumSize);
+  return std::max(gfx::FontList().GetHeight(), kIconMinimumSize);
 #endif
 }
 

@@ -24,7 +24,6 @@ struct NativeWebKeyboardEvent;
 }
 
 namespace gfx {
-class FontList;
 class Rect;
 }
 
@@ -46,8 +45,6 @@ class BrowserFrame
  public:
   explicit BrowserFrame(BrowserView* browser_view);
   ~BrowserFrame() override;
-
-  static const gfx::FontList& GetTitleFontList();
 
   // Initialize the frame (creates the underlying native window).
   void InitBrowserFrame();
