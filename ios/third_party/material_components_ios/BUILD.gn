@@ -287,6 +287,11 @@ source_set("material_components_ios") {
     "src/components/schemes/Color/src/MDCSemanticColorScheme.h",
     "src/components/schemes/Color/src/MDCSemanticColorScheme.m",
     "src/components/schemes/Color/src/MaterialColorScheme.h",
+    "src/components/schemes/Typography/src/MDCLegacyFontScheme.h",
+    "src/components/schemes/Typography/src/MDCLegacyFontScheme.m",
+    "src/components/schemes/Typography/src/MDCTypographyScheme.h",
+    "src/components/schemes/Typography/src/MDCTypographyScheme.m",
+    "src/components/schemes/Typography/src/MaterialTypographyScheme.h",
   ]
   include_dirs = [
     "src/components/ActivityIndicator/src",
