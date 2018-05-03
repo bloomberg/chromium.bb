@@ -126,7 +126,7 @@ void MediaStreamDispatcherHost::DoGenerateStream(
     const StreamControls& controls,
     bool user_gesture,
     GenerateStreamCallback callback,
-    const MediaDeviceSaltAndOrigin& salt_and_origin) {
+    MediaDeviceSaltAndOrigin salt_and_origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!MediaStreamManager::IsOriginAllowed(render_process_id_,
                                            salt_and_origin.origin)) {
@@ -136,9 +136,8 @@ void MediaStreamDispatcherHost::DoGenerateStream(
   }
 
   media_stream_manager_->GenerateStream(
-      render_process_id_, render_frame_id_, salt_and_origin.device_id_salt,
-      page_request_id, controls, salt_and_origin.origin, user_gesture,
-      std::move(callback),
+      render_process_id_, render_frame_id_, page_request_id, controls,
+      std::move(salt_and_origin), user_gesture, std::move(callback),
       base::BindRepeating(&MediaStreamDispatcherHost::OnDeviceStopped,
                           weak_factory_.GetWeakPtr()));
 }
@@ -178,7 +177,7 @@ void MediaStreamDispatcherHost::DoOpenDevice(
     const std::string& device_id,
     MediaStreamType type,
     OpenDeviceCallback callback,
-    const MediaDeviceSaltAndOrigin& salt_and_origin) {
+    MediaDeviceSaltAndOrigin salt_and_origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!MediaStreamManager::IsOriginAllowed(render_process_id_,
                                            salt_and_origin.origin)) {
@@ -188,9 +187,8 @@ void MediaStreamDispatcherHost::DoOpenDevice(
   }
 
   media_stream_manager_->OpenDevice(
-      render_process_id_, render_frame_id_, salt_and_origin.device_id_salt,
-      page_request_id, device_id, type, salt_and_origin.origin,
-      std::move(callback),
+      render_process_id_, render_frame_id_, page_request_id, device_id, type,
+      std::move(salt_and_origin), std::move(callback),
       base::BindRepeating(&MediaStreamDispatcherHost::OnDeviceStopped,
                           weak_factory_.GetWeakPtr()));
 }

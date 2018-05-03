@@ -41,11 +41,17 @@ MediaStreamDevice::MediaStreamDevice(MediaStreamType type,
       video_facing(media::MEDIA_VIDEO_FACING_NONE),
       name(name) {}
 
-MediaStreamDevice::MediaStreamDevice(MediaStreamType type,
-                                     const std::string& id,
-                                     const std::string& name,
-                                     media::VideoFacingMode facing)
-    : type(type), id(id), video_facing(facing), name(name) {}
+MediaStreamDevice::MediaStreamDevice(
+    MediaStreamType type,
+    const std::string& id,
+    const std::string& name,
+    media::VideoFacingMode facing,
+    const base::Optional<std::string>& group_id)
+    : type(type),
+      id(id),
+      video_facing(facing),
+      group_id(group_id),
+      name(name) {}
 
 MediaStreamDevice::MediaStreamDevice(MediaStreamType type,
                                      const std::string& id,

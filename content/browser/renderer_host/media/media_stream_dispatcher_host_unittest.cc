@@ -861,14 +861,21 @@ TEST_F(MediaStreamDispatcherHostTest, Salt) {
   EXPECT_EQ(host_->video_devices_.size(), 1u);
   const std::string label1 = host_->label_;
   const std::string device_id1 = host_->video_devices_.front().id;
+  EXPECT_TRUE(host_->video_devices_.front().group_id.has_value());
+  const std::string group_id1 = *host_->video_devices_.front().group_id;
+  EXPECT_FALSE(group_id1.empty());
   const int session_id1 = host_->video_devices_.front().session_id;
 
   // Generate second stream.
   OpenVideoDeviceAndWaitForResult(kPageRequestId, device_id1);
   const std::string device_id2 = host_->opened_device_.id;
+  EXPECT_TRUE(host_->opened_device_.group_id.has_value());
+  const std::string group_id2 = *host_->opened_device_.group_id;
+  EXPECT_FALSE(group_id2.empty());
   const int session_id2 = host_->opened_device_.session_id;
   const std::string label2 = host_->label_;
   EXPECT_EQ(device_id1, device_id2);
+  EXPECT_EQ(group_id1, group_id2);
   EXPECT_NE(session_id1, session_id2);
   EXPECT_NE(label1, label2);
 
@@ -879,6 +886,7 @@ TEST_F(MediaStreamDispatcherHostTest, Salt) {
   // Last open device ID and session are from the second stream.
   EXPECT_EQ(session_id2, host_->opened_device_.session_id);
   EXPECT_EQ(device_id2, host_->opened_device_.id);
+  EXPECT_EQ(group_id2, host_->opened_device_.group_id);
 }
 
 };  // namespace content

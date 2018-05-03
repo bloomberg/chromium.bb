@@ -72,12 +72,12 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
                         const StreamControls& controls,
                         bool user_gesture,
                         GenerateStreamCallback callback,
-                        const MediaDeviceSaltAndOrigin& salt_and_origin);
+                        MediaDeviceSaltAndOrigin salt_and_origin);
   void DoOpenDevice(int32_t request_id,
                     const std::string& device_id,
                     MediaStreamType type,
                     OpenDeviceCallback callback,
-                    const MediaDeviceSaltAndOrigin& salt_and_origin);
+                    MediaDeviceSaltAndOrigin salt_and_origin);
 
   void OnDeviceStopped(const std::string& label,
                        const MediaStreamDevice& device);
