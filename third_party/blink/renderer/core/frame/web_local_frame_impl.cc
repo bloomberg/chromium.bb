@@ -2537,6 +2537,7 @@ void WebLocalFrameImpl::SetSpellCheckPanelHostClient(
 }
 
 WebFrameWidgetBase* WebLocalFrameImpl::LocalRootFrameWidget() {
+  CHECK(LocalRoot());
   return LocalRoot()->FrameWidgetImpl();
 }
 

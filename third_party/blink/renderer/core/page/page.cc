@@ -810,6 +810,13 @@ void Page::RequestBeginMainFrameNotExpected(bool new_state) {
   if (!main_frame_ || !main_frame_->IsLocalFrame())
     return;
 
+  base::debug::StackTrace main_frame_created_trace =
+      main_frame_->CreateStackForDebugging();
+  base::debug::Alias(&main_frame_created_trace);
+  base::debug::StackTrace main_frame_detached_trace =
+      main_frame_->DetachStackForDebugging();
+  base::debug::Alias(&main_frame_detached_trace);
+  CHECK(main_frame_->IsAttached());
   if (LocalFrame* main_frame = DeprecatedLocalMainFrame()) {
     if (WebLayerTreeView* layer_tree_view =
             chrome_client_->GetWebLayerTreeView(main_frame)) {
