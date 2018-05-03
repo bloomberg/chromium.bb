@@ -25,6 +25,7 @@
 #include "net/cert/x509_certificate.h"
 #include "net/dns/host_resolver.h"
 #include "net/log/net_log_with_source.h"
+#include "net/test/test_data_directory.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -177,6 +178,12 @@ std::string OCSPProducedToString(
       NOTREACHED();
       return std::string();
   }
+}
+
+bool RegisterRootCertsInternal(const base::FilePath& file_path) {
+  TestRootCerts* root_certs = TestRootCerts::GetInstance();
+  return root_certs->AddFromFile(file_path.AppendASCII("ocsp-test-root.pem")) &&
+         root_certs->AddFromFile(file_path.AppendASCII("root_ca_cert.pem"));
 }
 
 }  // namespace
@@ -435,6 +442,11 @@ bool BaseTestServer::GetFilePathWithReplacements(
   return true;
 }
 
+void BaseTestServer::RegisterTestCerts() {
+  bool added_root_certs = RegisterRootCertsInternal(GetTestCertsDirectory());
+  DCHECK(added_root_certs);
+}
+
 bool BaseTestServer::LoadTestRootCert() const {
   TestRootCerts* root_certs = TestRootCerts::GetInstance();
   if (!root_certs)
@@ -445,17 +457,7 @@ bool BaseTestServer::LoadTestRootCert() const {
   if (!GetLocalCertificatesDir(certificates_dir_, &root_certificate_path))
     return false;
 
-  if (ssl_options_.server_certificate == SSLOptions::CERT_AUTO ||
-      ssl_options_.server_certificate ==
-          SSLOptions::CERT_AUTO_WITH_INTERMEDIATE ||
-      ssl_options_.server_certificate ==
-          SSLOptions::CERT_AUTO_AIA_INTERMEDIATE) {
-    return root_certs->AddFromFile(
-        root_certificate_path.AppendASCII("ocsp-test-root.pem"));
-  } else {
-    return root_certs->AddFromFile(
-        root_certificate_path.AppendASCII("root_ca_cert.pem"));
-  }
+  return RegisterRootCertsInternal(root_certificate_path);
 }
 
 scoped_refptr<X509Certificate> BaseTestServer::GetCertificate() const {

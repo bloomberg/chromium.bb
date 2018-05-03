@@ -419,6 +419,9 @@ class BaseTestServer {
     redirect_connect_to_localhost_ = redirect_connect_to_localhost;
   }
 
+  // Registers the test server's certs for the current process.
+  static void RegisterTestCerts();
+
   // Marks the root certificate of an HTTPS test server as trusted for
   // the duration of tests.
   bool LoadTestRootCert() const WARN_UNUSED_RESULT;

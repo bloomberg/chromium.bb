@@ -22,6 +22,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/transport_security_state.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/test_data_directory.h"
 #include "services/network/network_context.h"
 #include "services/network/public/cpp/features.h"
@@ -148,6 +149,7 @@ void NetworkServiceTestHelper::RegisterNetworkBinders(
     base::InitAndroidTestPaths(base::android::GetIsolatedTestRoot());
 #endif
     net::EmbeddedTestServer::RegisterTestCerts();
+    net::SpawnedTestServer::RegisterTestCerts();
 
     // Also add the QUIC test certificate.
     net::TestRootCerts* root_certs = net::TestRootCerts::GetInstance();
