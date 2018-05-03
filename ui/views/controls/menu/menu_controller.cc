@@ -165,7 +165,7 @@ View* GetNextFocusableView(View* ancestor, View* start_at, bool forward) {
   return NULL;
 }
 
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#if defined(OS_WIN)
 // Determines the correct coordinates and window to repost |event| to, if it is
 // a mouse or touch event.
 static void RepostEventImpl(const ui::LocatedEvent* event,
@@ -252,7 +252,7 @@ static void RepostEventImpl(const ui::LocatedEvent* event,
     PostMessage(target_window, event_type, target, window_coords);
     return;
   }
-#endif
+#endif  // defined(OS_WIN)
 
 #if defined(USE_AURA)
   if (!window)
@@ -276,7 +276,7 @@ static void RepostEventImpl(const ui::LocatedEvent* event,
   root->GetHost()->dispatcher()->RepostEvent(located_event.get());
 #endif  // defined(USE_AURA)
 }
-#endif  // defined(OS_WIN) || defined(OS_CHROMEOS)
+#endif  // defined(OS_WIN)
 
 }  // namespace
 
@@ -2477,14 +2477,6 @@ void MenuController::RepostEventAndCancel(SubmenuView* source,
       exit_type = EXIT_OUTERMOST;
   }
   Cancel(exit_type);
-
-#if defined(OS_CHROMEOS)
-  // We're going to exit the menu and want to repost the event so that is
-  // is handled normally after the context menu has exited. We call
-  // RepostEvent after Cancel so that event capture has been released so
-  // that finding the event target is unaffected by the current capture.
-  RepostEventImpl(event, screen_loc, native_view, window);
-#endif
 }
 
 void MenuController::SetDropMenuItem(
