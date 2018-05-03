@@ -58,6 +58,6 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test:rules:1.0.1'
     implementation 'com.android.support:appcompat-v7:25.4.0'
-    implementation 'org.chromium.net:cronet-embedded:@MAJOR@.@MINOR@.@BUILD@.@PATCH@'
+    implementation 'org.chromium.net:cronet-embedded:@MAJOR@.@BUILD@.@PATCH@'
     androidTestUtil 'com.android.support.test:orchestrator:1.0.1'
 }

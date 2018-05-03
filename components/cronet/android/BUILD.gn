@@ -1596,6 +1596,8 @@ group("cronet_test_package") {
 _maven_dir = "$_package_dir/maven-$current_cpu"
 _maven_modules_dir = "$_maven_dir/org/chromium/net"
 _maven_test_dir = "$_maven_dir/test"
+_maven_version =
+    "$chrome_version_major.$chrome_version_build.$chrome_version_patch"
 
 copy("cronet_maven_test_copy") {
   sources = [
@@ -1663,7 +1665,7 @@ template("cronet_maven_module") {
       "//build/util/LASTCHANGE",
       "//chrome/VERSION",
     ]
-    output = "$_maven_modules_dir/$_module_name/$chrome_version_full/$_module_name-$chrome_version_full.pom"
+    output = "$_maven_modules_dir/$_module_name/$_maven_version/$_module_name-$_maven_version.pom"
   }
 
   if (defined(invoker.resource_dir)) {
@@ -1699,7 +1701,7 @@ template("cronet_maven_module") {
   copy(_aar_copy_target_name) {
     sources = get_target_outputs(":$_aar_target_name")
     outputs = [
-      "$_maven_modules_dir/$_module_name/$chrome_version_full/$_module_name-$chrome_version_full.aar",
+      "$_maven_modules_dir/$_module_name/$_maven_version/$_module_name-$_maven_version.aar",
     ]
     deps = [
       ":$_aar_target_name",
@@ -1712,7 +1714,7 @@ template("cronet_maven_module") {
     copy(_copy_target_name) {
       sources = get_target_outputs(invoker.src_jar_dep)
       outputs = [
-        "$_maven_modules_dir/$_module_name/$chrome_version_full/$_module_name-$chrome_version_full-sources.jar",
+        "$_maven_modules_dir/$_module_name/$_maven_version/$_module_name-$_maven_version-sources.jar",
       ]
       deps = [
         invoker.src_jar_dep,
@@ -1726,7 +1728,7 @@ template("cronet_maven_module") {
     copy(_copy_target_name) {
       sources = get_target_outputs(invoker.javadoc_jar_dep)
       outputs = [
-        "$_maven_modules_dir/$_module_name/$chrome_version_full/$_module_name-$chrome_version_full-javadoc.jar",
+        "$_maven_modules_dir/$_module_name/$_maven_version/$_module_name-$_maven_version-javadoc.jar",
       ]
       deps = [
         invoker.javadoc_jar_dep,
