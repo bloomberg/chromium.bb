@@ -457,7 +457,7 @@ TEST_F(ClientControlledShellSurfaceTest, Frame) {
   gfx::Rect client_bounds(20, 50, 300, 200);
   gfx::Rect fullscreen_bounds(0, 0, 800, 500);
   // The window bounds is the client bounds + frame size.
-  gfx::Rect normal_window_bounds(20, 17, 300, 233);
+  gfx::Rect normal_window_bounds(20, 18, 300, 232);
 
   auto shell_surface =
       exo_test_helper()->CreateClientControlledShellSurface(surface.get());
@@ -484,7 +484,7 @@ TEST_F(ClientControlledShellSurfaceTest, Frame) {
   EXPECT_TRUE(frame_view->visible());
   EXPECT_EQ(fullscreen_bounds, widget->GetWindowBoundsInScreen());
   EXPECT_EQ(
-      gfx::Size(800, 467),
+      gfx::Size(800, 468),
       frame_view->GetClientBoundsForWindowBounds(fullscreen_bounds).size());
 
   // AutoHide

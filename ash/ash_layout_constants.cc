@@ -21,7 +21,7 @@ gfx::Size GetAshLayoutSize(AshLayoutSize size) {
       return gfx::Size(kButtonWidth, kBrowserRestoredCaptionButtonHeight[mode]);
     }
     case AshLayoutSize::kNonBrowserCaption:
-      return gfx::Size(kButtonWidth, 33);
+      return gfx::Size(kButtonWidth, 32);
   }
 
   NOTREACHED();

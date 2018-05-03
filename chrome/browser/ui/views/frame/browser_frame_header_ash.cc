@@ -148,7 +148,7 @@ void BrowserFrameHeaderAsh::Init(
 
   back_button_ = back_button;
   if (back_button_)
-    back_button_->set_background_color(frame_color);
+    back_button_->SetBackgroundColor(frame_color);
 }
 
 int BrowserFrameHeaderAsh::GetMinimumHeaderWidth() const {
@@ -217,7 +217,7 @@ void BrowserFrameHeaderAsh::SetPaintAsActive(bool paint_as_active) {
   caption_button_container_->SetBackgroundColor(frame_color);
   if (back_button_) {
     back_button_->set_paint_as_active(paint_as_active);
-    back_button_->set_background_color(frame_color);
+    back_button_->SetBackgroundColor(frame_color);
   }
 }
 

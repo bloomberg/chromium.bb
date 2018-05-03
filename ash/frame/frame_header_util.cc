@@ -67,10 +67,15 @@ gfx::Rect FrameHeaderUtil::GetAvailableTitleBounds(
   const int x = left_view ? left_view->bounds().right() + kTitleIconOffsetX
                           : kTitleNoIconOffsetX;
   const int title_height = title_font_list.GetHeight();
-  // Floor when computing the center of |caption_button_container| and when
-  // computing the center of the text.
   DCHECK_LE(right_view->height(), header_height);
-  const int y = std::max(0, (header_height - title_height) / 2);
+  // We want to align the center points of the header and title vertically.
+  // Note that we can't just do (header_height - title_height) / 2, since this
+  // won't make the center points align perfectly vertically due to rounding.
+  // Floor when computing the center of |header_height| and when computing the
+  // center of the text.
+  const int header_center_y = header_height / 2;
+  const int title_center_y = title_height / 2;
+  const int y = std::max(0, header_center_y - title_center_y);
   const int width =
       std::max(0, right_view->x() - kTitleCaptionButtonSpacing - x);
   return gfx::Rect(x, y, width, title_height);

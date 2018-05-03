@@ -28,12 +28,6 @@ ASH_EXPORT extern const int kResizeInsideBoundsSize;
 // Background color used for the Chrome OS boot splash screen.
 extern const SkColor kChromeOsBootColor;
 
-// The alpha to draw inactive browser frame icons with.
-ASH_EXPORT extern const float kInactiveFrameButtonIconAlphaRatio;
-
-// Similar to the above but for touch-optimized UI.
-ASH_EXPORT extern const float kInactiveFrameButtonIconAlphaRatioTouch;
-
 // The border color of keyboard focus for launcher items and system tray.
 constexpr SkColor kFocusBorderColor = SK_ColorTRANSPARENT;
 constexpr int kFocusBorderThickness = 0;

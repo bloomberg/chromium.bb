@@ -16,7 +16,7 @@ function openSingleImage(testVolumeName, volumeType) {
   var launchedPromise = launch(testVolumeName, volumeType, [ENTRIES.desktop]);
   return launchedPromise.then(function(args) {
     var WIDTH = 880;
-    var HEIGHT = 603; /* Inner height 570px + native header 33px. */
+    var HEIGHT = 602; /* Inner height 570px + native header 32px. */
     var appId = args.appId;
     var resizedWindowPromise = gallery.callRemoteTestUtil(
         'resizeWindow', appId, [WIDTH, HEIGHT]
