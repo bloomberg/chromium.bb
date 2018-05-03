@@ -38,6 +38,7 @@ audio {
 
 audio::-webkit-media-controls,
 video::-webkit-media-controls {
+    writing-mode: horizontal-tb;
     width: inherit;
     height: inherit;
     position: relative;

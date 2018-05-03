@@ -24,6 +24,7 @@ video:-webkit-full-page-media {
 
 audio::-webkit-media-controls,
 video::-webkit-media-controls {
+  writing-mode: horizontal-tb;
   width: inherit;
   height: inherit;
   position: relative;
@@ -913,4 +914,3 @@ video::-webkit-media-controls.test-mode *,
 video::-webkit-media-controls.test-mode input[pseudo="-webkit-media-controls-overlay-play-button" i]::-internal-media-controls-overlay-play-button-internal {
   transition: none !important;
 }
-
