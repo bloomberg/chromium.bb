@@ -23,18 +23,6 @@ struct DataReductionProxyTypeInfo;
 // DataReductionProxyInterceptor.
 class DataReductionProxyBypassProtocol {
  public:
-  // Enum values that can be reported for the
-  // DataReductionProxy.ResponseProxyServerStatus histogram. These values must
-  // be kept in sync with their counterparts in histograms.xml. Visible here for
-  // testing purposes.
-  enum ResponseProxyServerStatus {
-    RESPONSE_PROXY_SERVER_STATUS_EMPTY = 0,
-    RESPONSE_PROXY_SERVER_STATUS_DRP,
-    RESPONSE_PROXY_SERVER_STATUS_NON_DRP_NO_VIA,
-    RESPONSE_PROXY_SERVER_STATUS_NON_DRP_WITH_VIA,
-    RESPONSE_PROXY_SERVER_STATUS_MAX
-  };
-
   // Constructs a DataReductionProxyBypassProtocol object. |config| must be
   // non-NULL and outlive |this|.
   DataReductionProxyBypassProtocol(DataReductionProxyConfig* config);
@@ -57,7 +45,7 @@ class DataReductionProxyBypassProtocol {
   // put it on the proxy retry map. Returns true if the request should be
   // retried. Should be called only when the response of the |request| had null
   // response headers.
-  bool HandleInValidResponseHeadersCase(
+  bool HandleInvalidResponseHeadersCase(
       const net::URLRequest& request,
       DataReductionProxyInfo* data_reduction_proxy_info,
       DataReductionProxyTypeInfo* data_reduction_proxy_type_info,
