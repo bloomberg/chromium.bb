@@ -2404,8 +2404,10 @@ crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/synthetic-eve
 crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/scroll-behavior/scroll-customization/scroll-customization-property.html [ Skip ]
 crbug.com/613672 [ Mac ] media/controls/modern/tap-to-hide-controls.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/video-surface-layer/media/controls/modern/tap-to-hide-controls.html [ Skip ]
+crbug.com/613672 [ Mac ] virtual/new-remote-playback-pipeline/media/controls/modern/tap-to-hide-controls.html [ Skip ]
 crbug.com/613672 [ Mac ] media/controls/modern/singletouch-on-play-button.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/video-surface-layer/media/controls/modern/singletouch-on-play-button.html [ Skip ]
+crbug.com/613672 [ Mac ] virtual/new-remote-playback-pipeline/media/controls/modern/singletouch-on-play-button.html [ Skip ]
 
 # We should send PointerLeave events for stylus devices.
 crbug.com/583413 external/wpt/pointerevents/pointerevent_pointerleave_pen-manual.html  [ Failure ]
@@ -4397,6 +4399,11 @@ crbug.com/783154 [ Mac ] virtual/video-surface-layer/media/controls/modern/doubl
 crbug.com/783154 [ Mac ] virtual/video-surface-layer/media/controls/modern/doubletap-to-jump-forwards-too-short.html [ Skip ]
 crbug.com/783154 [ Mac ] virtual/video-surface-layer/media/controls/modern/doubletap-on-play-button.html [ Skip ]
 crbug.com/783154 [ Mac ] virtual/video-surface-layer/media/controls/modern/doubletap-to-toggle-fullscreen.html [ Skip ]
+crbug.com/783154 [ Mac ] virtual/new-remote-playback-pipeline/media/controls/modern/doubletap-to-jump-backwards.html [ Skip ]
+crbug.com/783154 [ Mac ] virtual/new-remote-playback-pipeline/media/controls/modern/doubletap-to-jump-forwards.html [ Skip ]
+crbug.com/783154 [ Mac ] virtual/new-remote-playback-pipeline/media/controls/modern/doubletap-to-jump-forwards-too-short.html [ Skip ]
+crbug.com/783154 [ Mac ] virtual/new-remote-playback-pipeline/media/controls/modern/doubletap-on-play-button.html [ Skip ]
+crbug.com/783154 [ Mac ] virtual/new-remote-playback-pipeline/media/controls/modern/doubletap-to-toggle-fullscreen.html [ Skip ]
 
 # Seen flaky on Linux, suppressing on Windows as well
 crbug.com/831720 [ Win Linux ] media/controls/modern/doubletap-to-jump-forwards-too-short.html [ Pass Failure ]
@@ -4422,6 +4429,7 @@ crbug.com/798572 virtual/enable_wasm/external/wpt/wasm/wasm_service_worker_test.
 
 # Does not work on Mac
 crbug.com/793771 [ Mac ] media/controls/modern/scrubbing.html [ Skip ]
+crbug.com/793771 [ Mac ] virtual/new-remote-playback-pipeline/media/controls/modern/scrubbing.html [ Skip ]
 
 crbug.com/797138 external/wpt/credential-management/federatedcredential-framed-get.sub.https.html [ Crash ]
 crbug.com/797138 external/wpt/credential-management/passwordcredential-framed-get.sub.https.html [ Crash ]
