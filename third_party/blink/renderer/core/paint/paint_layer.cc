@@ -2657,9 +2657,9 @@ GraphicsLayer* PaintLayer::GraphicsLayerBacking(const LayoutObject* obj) const {
 BackgroundPaintLocation PaintLayer::GetBackgroundPaintLocation(
     uint32_t* reasons) const {
   BackgroundPaintLocation location;
-  bool has_scrolling_layers =
-      scrollable_area_ && scrollable_area_->NeedsCompositedScrolling();
-  if (!ScrollsOverflow() && !has_scrolling_layers) {
+  bool may_have_scrolling_layers_without_scrolling =
+      IsRootLayer() && RuntimeEnabledFeatures::RootLayerScrollingEnabled();
+  if (!ScrollsOverflow() && !may_have_scrolling_layers_without_scrolling) {
     location = kBackgroundPaintInGraphicsLayer;
   } else if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
     // If we care about LCD text, paint root backgrounds into scrolling contents
