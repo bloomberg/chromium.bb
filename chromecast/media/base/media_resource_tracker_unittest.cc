@@ -204,6 +204,8 @@ TEST_F(MediaResourceTrackerTest, ScopedUsage) {
   }
   EXPECT_EQ(0u, resource_tracker_->media_use_count());
 
+  EXPECT_CALL(*test_mocks_, Finalize()).Times(1);
+  EXPECT_CALL(*test_mocks_, Destroyed()).Times(1);
   resource_tracker_->FinalizeAndDestroy();
   base::RunLoop().RunUntilIdle();
 }

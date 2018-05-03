@@ -22,6 +22,8 @@ namespace {
 
 class MockAudioDecoder : public MediaPipelineBackend::AudioDecoder {
  public:
+  MockAudioDecoder() { EXPECT_CALL(*this, SetDelegate(_)); }
+
   MOCK_METHOD1(SetDelegate, void(Delegate*));
   MOCK_METHOD1(PushBuffer, BufferStatus(CastDecoderBuffer*));
   MOCK_METHOD1(SetConfig, bool(const AudioConfig&));
