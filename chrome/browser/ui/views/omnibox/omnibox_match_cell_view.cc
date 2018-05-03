@@ -145,9 +145,7 @@ int OmniboxMatchCellView::GetOldStyleAnswerHeight() const {
   int answer_icon_size = image_view_->visible()
                              ? image_view_->height() + kAnswerIconToTextPadding
                              : 0;
-  // TODO(dschuyler): The GetIconAlignmentOffset() is applied an extra time to
-  // match the math in Layout(). This seems like a (minor) mistake.
-  int deduction = (GetIconAlignmentOffset() * 2) + icon_width +
+  int deduction = GetIconAlignmentOffset() + icon_width +
                   (HorizontalPadding() * 3) + answer_icon_size;
   int description_width = std::max(width() - deduction, 0);
   return description_view_->GetHeightForWidth(description_width) +
@@ -187,7 +185,7 @@ void OmniboxMatchCellView::Layout() {
 
 void OmniboxMatchCellView::LayoutOldStyleAnswer() {
   const int start_x = GetIconAlignmentOffset() + HorizontalPadding();
-  int x = start_x + LocationBarView::GetBorderThicknessDip();
+  int x = start_x;
   int y = GetVerticalInsets(text_height_, /*is_old_style_answer=*/true).top();
   icon_view_->SetSize(icon_view_->CalculatePreferredSize());
   icon_view_->SetPosition(
@@ -213,8 +211,7 @@ void OmniboxMatchCellView::LayoutOldStyleAnswer() {
 }
 
 void OmniboxMatchCellView::LayoutRichSuggestion() {
-  int x = GetIconAlignmentOffset() + HorizontalPadding() +
-          LocationBarView::GetBorderThicknessDip();
+  int x = GetIconAlignmentOffset() + HorizontalPadding();
   int y = GetVerticalInsets(text_height_, /*is_old_style_answer=*/false).top();
   int image_edge_length = text_height_ * 2;
   image_view_->SetImageSize(gfx::Size(image_edge_length, image_edge_length));
@@ -226,8 +223,7 @@ void OmniboxMatchCellView::LayoutRichSuggestion() {
 }
 
 void OmniboxMatchCellView::LayoutSplit() {
-  int x = GetIconAlignmentOffset() + HorizontalPadding() +
-          LocationBarView::GetBorderThicknessDip();
+  int x = GetIconAlignmentOffset() + HorizontalPadding();
   icon_view_->SetSize(icon_view_->CalculatePreferredSize());
   int y = GetVerticalInsets(text_height_, /*is_old_style_answer=*/false).top();
   icon_view_->SetPosition(
