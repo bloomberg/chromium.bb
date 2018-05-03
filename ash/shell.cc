@@ -492,20 +492,6 @@ void Shell::CreateKeyboard() {
       keyboard::KeyboardController::GetInstance());
 }
 
-void Shell::ReloadKeyboard() {
-  auto* keyboard_controller = keyboard::KeyboardController::GetInstance();
-  if (keyboard_controller) {
-    for (auto* const controller : GetAllRootWindowControllers())
-      controller->DeactivateKeyboard(keyboard_controller);
-
-    keyboard_controller->ResetKeyboardUI(shell_delegate_->CreateKeyboardUI());
-
-    GetPrimaryRootWindowController()->ActivateKeyboard(keyboard_controller);
-  } else {
-    CreateKeyboard();
-  }
-}
-
 void Shell::DestroyKeyboard() {
   // TODO(jamescook): Move keyboard create and hide into ShellPort.
   keyboard_ui_->Hide();
@@ -1475,7 +1461,7 @@ void Shell::OnSessionStateChanged(session_manager::SessionState state) {
         // proper IME. |LOGGED_IN_NOT_ACTIVE| is needed so that the virtual
         // keyboard works on supervised user creation, http://crbug.com/712873.
         // |ACTIVE| is also needed for guest user workflow.
-        ReloadKeyboard();
+        CreateKeyboard();
         break;
       default:
         break;

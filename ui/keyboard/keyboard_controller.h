@@ -107,8 +107,6 @@ class KEYBOARD_EXPORT KeyboardController
 
   KeyboardUI* ui() { return ui_.get(); }
 
-  void ResetKeyboardUI(std::unique_ptr<KeyboardUI> new_ui);
-
   void set_keyboard_locked(bool lock) { keyboard_locked_ = lock; }
 
   bool keyboard_locked() const { return keyboard_locked_; }

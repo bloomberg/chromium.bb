@@ -915,7 +915,7 @@ void AccessibilityController::UpdateVirtualKeyboardFromPref() {
   // that the a11y keyboard is being disabled, an on-screen keyboard might still
   // be enabled and a forced reset is required to pick up the layout change.
   if (keyboard::IsKeyboardEnabled())
-    Shell::Get()->ReloadKeyboard();
+    Shell::Get()->CreateKeyboard();
   else
     Shell::Get()->DestroyKeyboard();
 }
