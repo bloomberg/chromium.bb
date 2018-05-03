@@ -81,6 +81,10 @@ TEST_F('PrintPreviewSettingsSectionsTest', 'MediaSize', function() {
   this.runMochaTest(settings_sections_tests.TestNames.MediaSize);
 });
 
+TEST_F('PrintPreviewSettingsSectionsTest', 'MediaSizeCustomNames', function() {
+  this.runMochaTest(settings_sections_tests.TestNames.MediaSizeCustomNames);
+});
+
 TEST_F('PrintPreviewSettingsSectionsTest', 'Margins', function() {
   this.runMochaTest(settings_sections_tests.TestNames.Margins);
 });
@@ -135,6 +139,31 @@ TEST_F('PrintPreviewSettingsSectionsTest', 'SetScaling', function() {
 
 TEST_F('PrintPreviewSettingsSectionsTest', 'SetOther', function() {
   this.runMochaTest(settings_sections_tests.TestNames.SetOther);
+});
+
+PrintPreviewSettingsSelectTest = class extends NewPrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/new/settings_select.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'print_preview_test_utils.js',
+      'settings_select_test.js',
+    ]);
+  }
+
+  /** @override */
+  get suiteName() {
+    return settings_select_test.suiteName;
+  }
+};
+
+TEST_F('PrintPreviewSettingsSelectTest', 'CustomMediaNames',
+       function() {
+  this.runMochaTest(settings_select_test.TestNames.CustomMediaNames);
 });
 
 PrintPreviewRestoreStateTest = class extends NewPrintPreviewTest {

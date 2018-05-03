@@ -157,6 +157,35 @@ cr.define('print_preview_test_utils', function() {
     return destinations;
   }
 
+  /**
+   * Returns a media size capability with custom and localized names.
+   * @return {!{ option: Array<!print_preview_new.SelectOption> }}
+   */
+  function getMediaSizeCapabilityWithCustomNames() {
+    const customLocalizedMediaName = 'Vendor defined localized media name';
+    const customMediaName = 'Vendor defined media name';
+
+    return {
+      option: [
+        { name: 'CUSTOM',
+          width_microns: 15900,
+          height_microns: 79400,
+          is_default: true,
+          custom_display_name_localized: [
+            { locale: navigator.language,
+              value: customLocalizedMediaName
+            }
+          ]
+        },
+        { name: 'CUSTOM',
+          width_microns: 15900,
+          height_microns: 79400,
+          custom_display_name: customMediaName
+        }
+      ]
+    };
+  }
+
   return {
     getDefaultInitialSettings: getDefaultInitialSettings,
     getCddTemplate: getCddTemplate,
@@ -165,5 +194,7 @@ cr.define('print_preview_test_utils', function() {
     createDestinationWithCertificateStatus:
         createDestinationWithCertificateStatus,
     getDestinations: getDestinations,
+    getMediaSizeCapabilityWithCustomNames:
+        getMediaSizeCapabilityWithCustomNames,
   };
 });

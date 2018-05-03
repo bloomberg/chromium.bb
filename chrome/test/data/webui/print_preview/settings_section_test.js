@@ -9,6 +9,7 @@ cr.define('settings_sections_tests', function() {
     Layout: 'layout',
     Color: 'color',
     MediaSize: 'media size',
+    MediaSizeCustomNames: 'media size custom names',
     Margins: 'margins',
     Dpi: 'dpi',
     Scaling: 'scaling',
@@ -271,6 +272,31 @@ cr.define('settings_sections_tests', function() {
       // Set HTML document type, should now show the section.
       initDocumentInfo(false, false);
       assertFalse(mediaSizeElement.hidden);
+    });
+
+    test(assert(TestNames.MediaSizeCustomNames), function() {
+      const customLocalizedMediaName = 'Vendor defined localized media name';
+      const customMediaName = 'Vendor defined media name';
+      const mediaSizeElement = page.$$('print-preview-media-size-settings');
+
+      // Expand more settings to reveal the element.
+      toggleMoreSettings();
+      assertFalse(mediaSizeElement.hidden);
+
+      // Change capability to have custom paper sizes.
+      let capabilities =
+          print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
+      capabilities.printer.media_size =
+          print_preview_test_utils.getMediaSizeCapabilityWithCustomNames();
+      page.set('destination_.capabilities', capabilities);
+      Polymer.dom.flush();
+
+      const settingsSelect =
+          mediaSizeElement.$$('print-preview-settings-select');
+
+      assertEquals(capabilities.printer.media_size, settingsSelect.capability);
+      assertFalse(settingsSelect.disabled);
+      assertEquals('mediaSize', settingsSelect.settingName);
     });
 
     test(assert(TestNames.Margins), function() {
