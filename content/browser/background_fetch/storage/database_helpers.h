@@ -25,6 +25,7 @@ const char kSeparator[] = "_";
 const char kActiveRegistrationUniqueIdKeyPrefix[] =
     "bgfetch_active_registration_unique_id_";
 const char kRegistrationKeyPrefix[] = "bgfetch_registration_";
+const char kTitleKeyPrefix[] = "bgfetch_title_";
 const char kPendingRequestKeyPrefix[] = "bgfetch_pending_request_";
 const char kActiveRequestKeyPrefix[] = "bgfetch_active_request_";
 const char kCompletedRequestKeyPrefix[] = "bgfetch_completed_request_";
@@ -32,6 +33,8 @@ const char kCompletedRequestKeyPrefix[] = "bgfetch_completed_request_";
 std::string ActiveRegistrationUniqueIdKey(const std::string& developer_id);
 
 std::string RegistrationKey(const std::string& unique_id);
+
+std::string TitleKey(const std::string& unique_id);
 
 std::string PendingRequestKeyPrefix(const std::string& unique_id);
 

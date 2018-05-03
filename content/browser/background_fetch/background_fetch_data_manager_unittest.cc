@@ -576,6 +576,7 @@ TEST_P(BackgroundFetchDataManagerTest, GetMetadata) {
   ASSERT_TRUE(metadata);
   EXPECT_EQ(metadata->origin(), origin().Serialize());
   EXPECT_NE(metadata->creation_microseconds_since_unix_epoch(), 0);
+  EXPECT_EQ(metadata->num_fetches(), static_cast<int>(requests.size()));
 
   // Verify that retrieving using the wrong developer id doesn't work.
   metadata = GetMetadata(sw_id, origin(), kAlternativeDeveloperId, &error);
@@ -590,6 +591,7 @@ TEST_P(BackgroundFetchDataManagerTest, GetMetadata) {
   ASSERT_TRUE(metadata);
   EXPECT_EQ(metadata->origin(), origin().Serialize());
   EXPECT_NE(metadata->creation_microseconds_since_unix_epoch(), 0);
+  EXPECT_EQ(metadata->num_fetches(), static_cast<int>(requests.size()));
 }
 
 TEST_P(BackgroundFetchDataManagerTest, UpdateRegistrationUI) {
@@ -609,15 +611,20 @@ TEST_P(BackgroundFetchDataManagerTest, UpdateRegistrationUI) {
   options.title = kInitialTitle;
   blink::mojom::BackgroundFetchError error;
 
+  // There should be no title before the registration.
+  std::vector<std::string> title = GetRegistrationUserDataByKeyPrefix(
+      sw_id, background_fetch::kTitleKeyPrefix);
+  EXPECT_TRUE(title.empty());
+
   // Create a single registration.
   CreateRegistration(registration_id, requests, options, &error);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
   // Verify that the title can be retrieved.
-  auto metadata = GetMetadata(sw_id, origin(), kExampleDeveloperId, &error);
-  ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
-  ASSERT_TRUE(metadata);
-  EXPECT_EQ(metadata->ui_title(), kInitialTitle);
+  title = GetRegistrationUserDataByKeyPrefix(sw_id,
+                                             background_fetch::kTitleKeyPrefix);
+  EXPECT_EQ(title.size(), 1u);
+  ASSERT_EQ(title.front(), kInitialTitle);
 
   // Update the title.
   UpdateRegistrationUI(registration_id, kUpdatedTitle, &error);
@@ -625,10 +632,10 @@ TEST_P(BackgroundFetchDataManagerTest, UpdateRegistrationUI) {
   RestartDataManagerFromPersistentStorage();
 
   // After a restart, GetMetadata should find the new title.
-  metadata = GetMetadata(sw_id, origin(), kExampleDeveloperId, &error);
-  ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
-  ASSERT_TRUE(metadata);
-  EXPECT_EQ(metadata->ui_title(), kUpdatedTitle);
+  title = GetRegistrationUserDataByKeyPrefix(sw_id,
+                                             background_fetch::kTitleKeyPrefix);
+  EXPECT_EQ(title.size(), 1u);
+  ASSERT_EQ(title.front(), kUpdatedTitle);
 }
 
 TEST_P(BackgroundFetchDataManagerTest, CreateAndDeleteRegistration) {
@@ -828,7 +835,7 @@ TEST_P(BackgroundFetchDataManagerTest, Cleanup) {
                       sw_id, background_fetch::kPendingRequestKeyPrefix)
                       .size());
     EXPECT_EQ(
-        1u,  // All the registration data is stored in the metadata proto.
+        2u,  // Metadata proto + title.
         GetRegistrationUserDataByKeyPrefix(sw_id, kUserDataPrefix).size());
   }
 

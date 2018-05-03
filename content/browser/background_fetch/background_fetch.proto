@@ -95,10 +95,8 @@ message BackgroundFetchMetadata {
   optional BackgroundFetchRegistration registration = 3;
   optional BackgroundFetchOptions options = 4;
 
-  // Defaults to BackgroundFetchOptions.title.
-  // Can be updated by calling `BackgroundFetchUpdateEvent.updateUI`.
-  // https://wicg.github.io/background-fetch/#backgroundfetchupdateevent.
-  optional string ui_title = 5;
+  // Number of fetches initiated by the developer.
+  optional int32 num_fetches = 5;
 }
 
 // A background fetch request that is still in a pending state.
