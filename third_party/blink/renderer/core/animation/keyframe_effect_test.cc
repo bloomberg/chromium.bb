@@ -31,12 +31,7 @@ class KeyframeEffectTest : public PageTestBase {
   void SetUp() override {
     PageTestBase::SetUp(IntSize());
     element = GetDocument().CreateElementForBinding("foo");
-
-    GetDocument().GetAnimationClock().ResetTimeForTesting(
-        base::TimeTicks() +
-        base::TimeDelta::FromSecondsD(GetDocument().Timeline().ZeroTime()));
     GetDocument().documentElement()->AppendChild(element.Get());
-    EXPECT_EQ(0, GetDocument().Timeline().currentTime());
   }
 
   KeyframeEffectModelBase* CreateEmptyEffectModel() {
