@@ -1235,12 +1235,8 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
 
 #endif
 #if BUILDFLAG(ENABLE_NACL)
-  net::URLRequestContextGetter* context =
-      host->GetStoragePartition()->GetURLRequestContext();
-  host->AddFilter(new nacl::NaClHostMessageFilter(
-      id, profile->IsOffTheRecord(),
-      profile->GetPath(),
-      context));
+  host->AddFilter(new nacl::NaClHostMessageFilter(id, profile->IsOffTheRecord(),
+                                                  profile->GetPath()));
 #endif
 
   bool is_incognito_process = profile->IsOffTheRecord();

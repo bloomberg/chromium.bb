@@ -109,10 +109,8 @@ void ShellContentBrowserClient::RenderProcessWillLaunch(
   // the concept of disabled plugins.
 #if BUILDFLAG(ENABLE_NACL)
   host->AddFilter(new nacl::NaClHostMessageFilter(
-      render_process_id,
-      browser_context->IsOffTheRecord(),
-      browser_context->GetPath(),
-      host->GetStoragePartition()->GetURLRequestContext()));
+      render_process_id, browser_context->IsOffTheRecord(),
+      browser_context->GetPath()));
 #endif
 }
 

@@ -22,11 +22,6 @@ struct NaClResourcePrefetchResult;
 struct PnaclCacheInfo;
 }
 
-namespace net {
-class HostResolver;
-class URLRequestContextGetter;
-}
-
 namespace nacl {
 
 // This class filters out incoming Chrome-specific IPC messages for the renderer
@@ -35,8 +30,7 @@ class NaClHostMessageFilter : public content::BrowserMessageFilter {
  public:
   NaClHostMessageFilter(int render_process_id,
                         bool is_off_the_record,
-                        const base::FilePath& profile_directory,
-                        net::URLRequestContextGetter* request_context);
+                        const base::FilePath& profile_directory);
 
   // content::BrowserMessageFilter methods:
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -45,7 +39,6 @@ class NaClHostMessageFilter : public content::BrowserMessageFilter {
   int render_process_id() { return render_process_id_; }
   bool off_the_record() { return off_the_record_; }
   const base::FilePath& profile_directory() const { return profile_directory_; }
-  net::HostResolver* GetHostResolver();
 
  private:
   friend class content::BrowserThread;
@@ -93,7 +86,6 @@ class NaClHostMessageFilter : public content::BrowserMessageFilter {
   // read on the IO thread.
   bool off_the_record_;
   base::FilePath profile_directory_;
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
 
   base::WeakPtrFactory<NaClHostMessageFilter> weak_ptr_factory_;
 
