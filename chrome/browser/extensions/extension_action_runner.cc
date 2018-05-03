@@ -193,7 +193,7 @@ void ExtensionActionRunner::RunForTesting(const Extension* extension) {
   }
 }
 
-PermissionsData::AccessType
+PermissionsData::PageAccess
 ExtensionActionRunner::RequiresUserConsentForScriptInjection(
     const Extension* extension,
     UserScript::InjectionType type) {
@@ -201,7 +201,7 @@ ExtensionActionRunner::RequiresUserConsentForScriptInjection(
 
   // Allow the extension if it's been explicitly granted permission.
   if (permitted_extensions_.count(extension->id()) > 0)
-    return PermissionsData::ACCESS_ALLOWED;
+    return PermissionsData::PageAccess::kAllowed;
 
   GURL url = web_contents()->GetVisibleURL();
   int tab_id = SessionTabHelper::IdForTab(web_contents()).id();
@@ -215,7 +215,7 @@ ExtensionActionRunner::RequiresUserConsentForScriptInjection(
   }
 
   NOTREACHED();
-  return PermissionsData::ACCESS_DENIED;
+  return PermissionsData::PageAccess::kDenied;
 }
 
 void ExtensionActionRunner::RequestScriptInjection(
@@ -284,10 +284,10 @@ void ExtensionActionRunner::OnRequestScriptInjectionPermission(
   ++num_page_requests_;
 
   switch (RequiresUserConsentForScriptInjection(extension, script_type)) {
-    case PermissionsData::ACCESS_ALLOWED:
+    case PermissionsData::PageAccess::kAllowed:
       PermitScriptInjection(request_id);
       break;
-    case PermissionsData::ACCESS_WITHHELD:
+    case PermissionsData::PageAccess::kWithheld:
       // This base::Unretained() is safe, because the callback is only invoked
       // by this object.
       RequestScriptInjection(
@@ -295,7 +295,7 @@ void ExtensionActionRunner::OnRequestScriptInjectionPermission(
           base::Bind(&ExtensionActionRunner::PermitScriptInjection,
                      base::Unretained(this), request_id));
       break;
-    case PermissionsData::ACCESS_DENIED:
+    case PermissionsData::PageAccess::kDenied:
       // We should usually only get a "deny access" if the page changed (as the
       // renderer wouldn't have requested permission if the answer was always
       // "no"). Just let the request fizzle and die.

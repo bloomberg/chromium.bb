@@ -881,19 +881,19 @@ TEST(PermissionsDataTest, ChromeWebstoreUrl) {
     extension->permissions_data()->UpdateTabSpecificPermissions(
         kTabId, tab_permissions);
     for (const GURL& url : kWebstoreUrls) {
-      EXPECT_EQ(PermissionsData::ACCESS_DENIED,
+      EXPECT_EQ(PermissionsData::PageAccess::kDenied,
                 extension->permissions_data()->GetPageAccess(extension, url, -1,
                                                              &error))
           << extension->name() << ": " << url;
-      EXPECT_EQ(PermissionsData::ACCESS_DENIED,
+      EXPECT_EQ(PermissionsData::PageAccess::kDenied,
                 extension->permissions_data()->GetContentScriptAccess(
                     extension, url, -1, &error))
           << extension->name() << ": " << url;
-      EXPECT_EQ(PermissionsData::ACCESS_DENIED,
+      EXPECT_EQ(PermissionsData::PageAccess::kDenied,
                 extension->permissions_data()->GetPageAccess(extension, url,
                                                              kTabId, &error))
           << extension->name() << ": " << url;
-      EXPECT_EQ(PermissionsData::ACCESS_DENIED,
+      EXPECT_EQ(PermissionsData::PageAccess::kDenied,
                 extension->permissions_data()->GetContentScriptAccess(
                     extension, url, kTabId, &error))
           << extension->name() << ": " << url;

@@ -295,7 +295,7 @@ bool RulesetManager::ShouldEvaluateRulesetForRequest(
   // have to do for split mode incognito extensions, pass false for
   // |crosses_incognito|.
   const bool crosses_incognito = false;
-  PermissionsData::AccessType result =
+  PermissionsData::PageAccess result =
       WebRequestPermissions::CanExtensionAccessURL(
           info_map_, ruleset.extension_id, request.url, tab_id,
           crosses_incognito,
@@ -303,7 +303,7 @@ bool RulesetManager::ShouldEvaluateRulesetForRequest(
           request.initiator);
 
   // TODO(crbug.com/809680): Handle ACCESS_WITHHELD.
-  return result == PermissionsData::ACCESS_ALLOWED;
+  return result == PermissionsData::PageAccess::kAllowed;
 }
 
 }  // namespace declarative_net_request

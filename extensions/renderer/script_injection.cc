@@ -204,13 +204,13 @@ ScriptInjection::InjectionResult ScriptInjection::TryToInject(
   switch (injector_->CanExecuteOnFrame(
       injection_host_.get(), web_frame,
       ExtensionFrameHelper::Get(render_frame_)->tab_id())) {
-    case PermissionsData::ACCESS_DENIED:
+    case PermissionsData::PageAccess::kDenied:
       NotifyWillNotInject(ScriptInjector::NOT_ALLOWED);
       return INJECTION_FINISHED;  // We're done.
-    case PermissionsData::ACCESS_WITHHELD:
+    case PermissionsData::PageAccess::kWithheld:
       RequestPermissionFromBrowser();
       return INJECTION_WAITING;  // Wait around for permission.
-    case PermissionsData::ACCESS_ALLOWED:
+    case PermissionsData::PageAccess::kAllowed:
       InjectionResult result =
           Inject(scripts_run_info, std::move(async_run_info));
       // If the injection is blocked, we need to set the manager so we can
