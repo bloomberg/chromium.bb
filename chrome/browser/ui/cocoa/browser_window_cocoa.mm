@@ -697,7 +697,7 @@ int
 BrowserWindowCocoa::GetRenderViewHeightInsetWithDetachedBookmarkBar() {
   if (browser_->bookmark_bar_state() != BookmarkBar::DETACHED)
     return 0;
-  return GetLayoutConstant(BOOKMARK_BAR_NTP_HEIGHT);
+  return GetCocoaLayoutConstant(BOOKMARK_BAR_NTP_HEIGHT);
 }
 
 void BrowserWindowCocoa::ExecuteExtensionCommand(

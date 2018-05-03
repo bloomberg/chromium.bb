@@ -378,7 +378,7 @@ const CGFloat kKernAmount = 0.2;
   // Return the space needed to display the image and title, with a little
   // distance between them.
   cellSize = NSMakeSize(kIconLeadingPadding + [[self image] size].width,
-                        GetLayoutConstant(BOOKMARK_BAR_HEIGHT));
+                        GetCocoaLayoutConstant(BOOKMARK_BAR_HEIGHT));
   NSString* title = [self visibleTitle];
   if ([title length] > 0) {
     CGFloat textWidth =

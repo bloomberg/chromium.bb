@@ -182,8 +182,8 @@ class BookmarkBarFolderControllerTest : public CocoaProfileTest {
     NSRect frame = [[test_window() contentView] frame];
     frame = NSMakeRect(
         frame.origin.x,
-        frame.size.height - GetLayoutConstant(BOOKMARK_BAR_NTP_HEIGHT),
-        frame.size.width, GetLayoutConstant(BOOKMARK_BAR_NTP_HEIGHT));
+        frame.size.height - GetCocoaLayoutConstant(BOOKMARK_BAR_NTP_HEIGHT),
+        frame.size.width, GetCocoaLayoutConstant(BOOKMARK_BAR_NTP_HEIGHT));
     NSView* fakeToolbarView = [[[NSView alloc] initWithFrame:frame]
                                 autorelease];
     [[test_window() contentView] addSubview:fakeToolbarView];

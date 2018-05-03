@@ -189,7 +189,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 }
 
 CGFloat GetBookmarkButtonHeightMinusPadding() {
-  return GetLayoutConstant(BOOKMARK_BAR_HEIGHT) -
+  return GetCocoaLayoutConstant(BOOKMARK_BAR_HEIGHT) -
          bookmarks::kBookmarkVerticalPadding * 2;
 }
 
@@ -571,7 +571,7 @@ bool operator!=(const BookmarkBarLayout& lhs, const BookmarkBarLayout& rhs) {
   // The state of our morph (if any); 1 is total bubble, 0 is the regular bar.
   CGFloat morph = [self detachedMorphProgress];
   CGFloat padding = 0;
-  padding = GetLayoutConstant(BOOKMARK_BAR_NTP_PADDING);
+  padding = GetCocoaLayoutConstant(BOOKMARK_BAR_NTP_PADDING);
   buttonViewFrame =
       NSInsetRect(buttonViewFrame, morph * padding, morph * padding);
   [buttonView_ setFrame:buttonViewFrame];
@@ -952,10 +952,10 @@ bool operator!=(const BookmarkBarLayout& lhs, const BookmarkBarLayout& rhs) {
     [view setHidden:NO];
     // Height takes into account the extra height we have since the toolbar
     // only compresses when we're done.
-    [view
-        animateToNewHeight:(GetLayoutConstant(BOOKMARK_BAR_HEIGHT_NO_OVERLAP) -
-                            bookmarks::kBookmarkBarOverlap)
-                  duration:kBookmarkBarAnimationDuration];
+    [view animateToNewHeight:(GetCocoaLayoutConstant(
+                                  BOOKMARK_BAR_HEIGHT_NO_OVERLAP) -
+                              bookmarks::kBookmarkBarOverlap)
+                    duration:kBookmarkBarAnimationDuration];
   } else if ([self isAnimatingFromState:BookmarkBar::SHOW
                                 toState:BookmarkBar::HIDDEN]) {
     [view setShowsDivider:YES];
@@ -966,7 +966,7 @@ bool operator!=(const BookmarkBarLayout& lhs, const BookmarkBarLayout& rhs) {
                                 toState:BookmarkBar::DETACHED]) {
     [view setShowsDivider:YES];
     [view setHidden:NO];
-    [view animateToNewHeight:GetLayoutConstant(BOOKMARK_BAR_NTP_HEIGHT)
+    [view animateToNewHeight:GetCocoaLayoutConstant(BOOKMARK_BAR_NTP_HEIGHT)
                     duration:kBookmarkBarAnimationDuration];
   } else if ([self isAnimatingFromState:BookmarkBar::DETACHED
                                 toState:BookmarkBar::SHOW]) {
@@ -974,10 +974,10 @@ bool operator!=(const BookmarkBarLayout& lhs, const BookmarkBarLayout& rhs) {
     [view setHidden:NO];
     // Height takes into account the extra height we have since the toolbar
     // only compresses when we're done.
-    [view
-        animateToNewHeight:(GetLayoutConstant(BOOKMARK_BAR_HEIGHT_NO_OVERLAP) -
-                            bookmarks::kBookmarkBarOverlap)
-                  duration:kBookmarkBarAnimationDuration];
+    [view animateToNewHeight:(GetCocoaLayoutConstant(
+                                  BOOKMARK_BAR_HEIGHT_NO_OVERLAP) -
+                              bookmarks::kBookmarkBarOverlap)
+                    duration:kBookmarkBarAnimationDuration];
   } else {
     // Oops! An animation we don't know how to handle.
     return NO;
@@ -1003,9 +1003,9 @@ bool operator!=(const BookmarkBarLayout& lhs, const BookmarkBarLayout& rhs) {
 
   switch (currentState_) {
     case BookmarkBar::SHOW:
-      return GetLayoutConstant(BOOKMARK_BAR_HEIGHT_NO_OVERLAP);
+      return GetCocoaLayoutConstant(BOOKMARK_BAR_HEIGHT_NO_OVERLAP);
     case BookmarkBar::DETACHED:
-      return GetLayoutConstant(BOOKMARK_BAR_NTP_HEIGHT);
+      return GetCocoaLayoutConstant(BOOKMARK_BAR_NTP_HEIGHT);
     case BookmarkBar::HIDDEN:
       return 0;
   }
