@@ -282,6 +282,36 @@ class BBJSONGenerator(object):
       return []
     return exception.get('key_removals', {}).get(tester_name, [])
 
+  def maybe_fixup_args_array(self, arr):
+    # The incoming array of strings may be an array of command line
+    # arguments. To make it easier to turn on certain features per-bot
+    # or per-test-suite, look specifically for any --enable-features
+    # flags, and merge them into comma-separated lists. (This might
+    # need to be extended to handle other arguments in the future,
+    # too.)
+    enable_str = '--enable-features='
+    enable_str_len = len(enable_str)
+    enable_features_args = []
+    idx = 0
+    first_idx = -1
+    while idx < len(arr):
+      flag = arr[idx]
+      delete_current_entry = False
+      if flag.startswith(enable_str):
+        arg = flag[enable_str_len:]
+        enable_features_args.extend(arg.split(','))
+        if first_idx < 0:
+          first_idx = idx
+        else:
+          delete_current_entry = True
+      if delete_current_entry:
+        del arr[idx]
+      else:
+        idx += 1
+    if first_idx >= 0:
+      arr[first_idx] = enable_str + ','.join(enable_features_args)
+    return arr
+
   def dictionary_merge(self, a, b, path=None, update=True):
     """http://stackoverflow.com/questions/7204805/
         python-dictionaries-of-dictionaries-merge
@@ -301,7 +331,7 @@ class BBJSONGenerator(object):
           # arguments adjacent (like --time-out-ms [arg], etc.)
           if all(isinstance(x, str)
                  for x in itertools.chain(a[key], b[key])):
-            a[key] = a[key] + b[key]
+            a[key] = self.maybe_fixup_args_array(a[key] + b[key])
           else:
             # TODO(kbr): this only works properly if the two arrays are
             # the same length, which is currently always the case in the
@@ -327,10 +357,9 @@ class BBJSONGenerator(object):
     return a
 
   def initialize_args_for_test(self, generated_test, tester_config):
-    if 'args' in tester_config:
-      if 'args' not in generated_test:
-        generated_test['args'] = []
-      generated_test['args'].extend(tester_config['args'])
+    if 'args' in tester_config or 'args' in generated_test:
+      generated_test['args'] = self.maybe_fixup_args_array(
+        generated_test.get('args', []) + tester_config.get('args', []))
 
   def initialize_swarming_dictionary_for_test(self, generated_test,
                                               tester_config):
