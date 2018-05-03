@@ -91,10 +91,12 @@ struct CONTENT_EXPORT MediaStreamDevice {
                     const std::string& id,
                     const std::string& name);
 
-  MediaStreamDevice(MediaStreamType type,
-                    const std::string& id,
-                    const std::string& name,
-                    media::VideoFacingMode facing);
+  MediaStreamDevice(
+      MediaStreamType type,
+      const std::string& id,
+      const std::string& name,
+      media::VideoFacingMode facing,
+      const base::Optional<std::string>& group_id = base::nullopt);
 
   MediaStreamDevice(MediaStreamType type,
                     const std::string& id,
@@ -117,6 +119,9 @@ struct CONTENT_EXPORT MediaStreamDevice {
 
   // The facing mode for video capture device.
   media::VideoFacingMode video_facing;
+
+  // The device's group ID.
+  base::Optional<std::string> group_id;
 
   // The device id of a matched output device if any (otherwise empty).
   // Only applicable to audio devices.

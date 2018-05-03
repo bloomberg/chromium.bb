@@ -42,6 +42,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
+#include "content/browser/media/media_devices_util.h"
 #include "content/browser/renderer_host/media/media_devices_manager.h"
 #include "content/browser/renderer_host/media/media_stream_provider.h"
 #include "content/common/content_export.h"
@@ -159,10 +160,9 @@ class CONTENT_EXPORT MediaStreamManager
   // is set to receive device stopped notifications.
   void GenerateStream(int render_process_id,
                       int render_frame_id,
-                      const std::string& salt,
                       int page_request_id,
                       const StreamControls& controls,
-                      const url::Origin& security_origin,
+                      MediaDeviceSaltAndOrigin salt_and_origin,
                       bool user_gesture,
                       GenerateStreamCallback generate_stream_cb,
                       DeviceStoppedCallback device_stopped_cb);
@@ -191,11 +191,10 @@ class CONTENT_EXPORT MediaStreamManager
   // request is identified using string returned to the caller.
   void OpenDevice(int render_process_id,
                   int render_frame_id,
-                  const std::string& salt,
                   int page_request_id,
                   const std::string& device_id,
                   MediaStreamType type,
-                  const url::Origin& security_origin,
+                  MediaDeviceSaltAndOrigin salt_and_origin,
                   OpenDeviceCallback open_device_cb,
                   DeviceStoppedCallback device_stopped_cb);
 
@@ -322,8 +321,7 @@ class CONTENT_EXPORT MediaStreamManager
   // Helpers.
   // Checks if all devices that was requested in the request identififed by
   // |label| has been opened and set the request state accordingly.
-  void HandleRequestDone(const std::string& label,
-                         DeviceRequest* request);
+  void HandleRequestDone(const std::string& label, DeviceRequest* request);
   // Stop the use of the device associated with |session_id| of type |type| in
   // all |requests_|. The device is removed from the request. If a request
   /// doesn't use any devices as a consequence, the request is deleted.
@@ -394,8 +392,7 @@ class CONTENT_EXPORT MediaStreamManager
   // valid alternate device ID.
   // Returns false if the required device ID is present and invalid.
   // Otherwise, if no valid device is found, device_id is unchanged.
-  bool PickDeviceId(const std::string& salt,
-                    const url::Origin& security_origin,
+  bool PickDeviceId(const MediaDeviceSaltAndOrigin& salt_and_origin,
                     const TrackControls& controls,
                     const MediaDeviceInfoArray& devices,
                     std::string* device_id) const;
@@ -417,7 +414,8 @@ class CONTENT_EXPORT MediaStreamManager
                                gfx::NativeViewId window_id);
 
   // Runs on the IO thread and does the actual [un]registration of callbacks.
-  void DoNativeLogCallbackRegistration(int renderer_host_id,
+  void DoNativeLogCallbackRegistration(
+      int renderer_host_id,
       const base::Callback<void(const std::string&)>& callback);
   void DoNativeLogCallbackUnregistration(int renderer_host_id);
 

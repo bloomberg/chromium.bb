@@ -153,10 +153,11 @@ class VideoCaptureTest : public testing::Test,
     {
       base::RunLoop run_loop;
       media_stream_manager_->OpenDevice(
-          render_process_id, render_frame_id,
-          browser_context_.GetMediaDeviceIDSalt(), page_request_id,
+          render_process_id, render_frame_id, page_request_id,
           video_devices[0].device_id, MEDIA_DEVICE_VIDEO_CAPTURE,
-          security_origin,
+          MediaDeviceSaltAndOrigin{browser_context_.GetMediaDeviceIDSalt(),
+                                   browser_context_.GetMediaDeviceIDSalt(),
+                                   security_origin},
           base::BindOnce(&VideoCaptureTest::OnDeviceOpened,
                          base::Unretained(this), run_loop.QuitClosure()),
           MediaStreamManager::DeviceStoppedCallback());

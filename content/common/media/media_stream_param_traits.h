@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // IPC messages for the media streaming.
-// Multiply-included message file, hence no include guard.
+// no-include-guard-because-multiply-included
 
 #include "content/common/content_export.h"
 #include "content/public/common/media_stream_request.h"
@@ -23,6 +23,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::VideoFacingMode,
 IPC_STRUCT_TRAITS_BEGIN(content::MediaStreamDevice)
   IPC_STRUCT_TRAITS_MEMBER(type)
   IPC_STRUCT_TRAITS_MEMBER(id)
+  IPC_STRUCT_TRAITS_MEMBER(group_id)
   IPC_STRUCT_TRAITS_MEMBER(video_facing)
   IPC_STRUCT_TRAITS_MEMBER(matched_output_device_id)
   IPC_STRUCT_TRAITS_MEMBER(name)
