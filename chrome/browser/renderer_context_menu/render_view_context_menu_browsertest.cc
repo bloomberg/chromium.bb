@@ -69,9 +69,6 @@
 #include "extensions/browser/guest_view/mime_handler_view/test_mime_handler_view_guest.h"
 #include "net/base/load_flags.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "net/url_request/url_request.h"
-#include "net/url_request/url_request_filter.h"
-#include "net/url_request/url_request_interceptor.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/platform/web_input_event.h"
@@ -289,8 +286,8 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
                        ContextMenuEntriesAreDisabledInLockedFullscreen) {
   int entries_to_test[] = {
-    IDC_VIEW_SOURCE, IDC_CONTENT_CONTEXT_OPENLINKNEWTAB,
-    IDC_CONTENT_CONTEXT_INSPECTELEMENT,
+      IDC_VIEW_SOURCE, IDC_CONTENT_CONTEXT_OPENLINKNEWTAB,
+      IDC_CONTENT_CONTEXT_INSPECTELEMENT,
   };
   std::unique_ptr<TestRenderViewContextMenu> menu =
       CreateContextMenuMediaTypeNone(GURL("http://www.google.com/"),
@@ -468,8 +465,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
                                           IDC_OPEN_LINK_IN_PROFILE_LAST));
 }
 
-IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
-                       OpenEntryAbsentForFilteredURLs) {
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenEntryAbsentForFilteredURLs) {
   std::unique_ptr<TestRenderViewContextMenu> menu =
       CreateContextMenuMediaTypeNone(GURL("chrome://history"), GURL());
 
@@ -611,8 +607,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenInNewTabReferrer) {
   // Verify that the referrer on the page matches |kCorrectReferrer|.
   std::string page_referrer;
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      tab,
-      "window.domAutomationController.send(window.document.referrer);",
+      tab, "window.domAutomationController.send(window.document.referrer);",
       &page_referrer));
   ASSERT_EQ(kCorrectReferrer, page_referrer);
 }
@@ -663,8 +658,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenIncognitoNoneReferrer) {
   // Verify that the referrer on the page matches |kEmptyReferrer|.
   std::string page_referrer;
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      tab,
-      "window.domAutomationController.send(window.document.referrer);",
+      tab, "window.domAutomationController.send(window.document.referrer);",
       &page_referrer));
   ASSERT_EQ(kEmptyReferrer, page_referrer);
 }
@@ -778,8 +772,8 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, DataSaverOpenOrigImageInNewTab) {
       CreateContextMenuMediaTypeImage(GURL("http://url.com/image.png"));
 
   ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB));
-  ASSERT_TRUE(menu->IsItemPresent(
-      IDC_CONTENT_CONTEXT_OPEN_ORIGINAL_IMAGE_NEW_TAB));
+  ASSERT_TRUE(
+      menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPEN_ORIGINAL_IMAGE_NEW_TAB));
 }
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
@@ -898,8 +892,8 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenLinkInProfile) {
   for (int i = 0; i < num_profiles; ++i) {
     Profile* profile = CreateSecondaryProfile(i);
     ProfileAttributesEntry* entry;
-    ASSERT_TRUE(storage.GetProfileAttributesWithPath(profile->GetPath(),
-                                                     &entry));
+    ASSERT_TRUE(
+        storage.GetProfileAttributesWithPath(profile->GetPath(), &entry));
     // Open a browser window for the profile if and only if the profile is not
     // omitted nor needing signin.
     if (std::binary_search(profiles_omit.begin(), profiles_omit.end(), i)) {
@@ -1106,71 +1100,24 @@ IN_PROC_BROWSER_TEST_F(PdfPluginContextMenuBrowserTest,
   TestContextMenuOfPdfInsideWebPage(FILE_PATH_LITERAL("test-iframe-pdf.html"));
 }
 
-class LoadImageRequestInterceptor : public net::URLRequestInterceptor {
+class LoadImageRequestObserver : public content::WebContentsObserver {
  public:
-  LoadImageRequestInterceptor() : num_requests_(0),
-                                  requests_to_wait_for_(-1),
-                                  weak_factory_(this) {
+  LoadImageRequestObserver(content::WebContents* web_contents,
+                           const std::string& path)
+      : content::WebContentsObserver(web_contents), path_(path) {}
+
+  void ResourceLoadComplete(
+      const content::mojom::ResourceLoadInfo& resource_load_info,
+      bool is_main_frame) override {
+    if (resource_load_info.url.path() == path_)
+      run_loop_.Quit();
   }
 
-  ~LoadImageRequestInterceptor() override {}
-
-  // net::URLRequestInterceptor implementation
-  net::URLRequestJob* MaybeInterceptRequest(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    EXPECT_TRUE(request->load_flags() & net::LOAD_BYPASS_CACHE);
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&LoadImageRequestInterceptor::RequestCreated,
-                       weak_factory_.GetWeakPtr()));
-    return nullptr;
-  }
-
-  void WaitForRequests(int requests_to_wait_for) {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    DCHECK_EQ(-1, requests_to_wait_for_);
-    DCHECK(!run_loop_);
-
-    if (num_requests_ >= requests_to_wait_for)
-      return;
-
-    requests_to_wait_for_ = requests_to_wait_for;
-    run_loop_ = std::make_unique<base::RunLoop>();
-    run_loop_->Run();
-    run_loop_.reset();
-    requests_to_wait_for_ = -1;
-    EXPECT_EQ(num_requests_, requests_to_wait_for);
-  }
-
-  // It is up to the caller to wait until all relevant requests has been
-  // created, either through calling WaitForRequests or some other manner,
-  // before calling this method.
-  int num_requests() const {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    return num_requests_;
-  }
+  void WaitForRequest() { run_loop_.Run(); }
 
  private:
-  void RequestCreated() {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-    num_requests_++;
-    if (num_requests_ == requests_to_wait_for_)
-      run_loop_->Quit();
-  }
-
-  // These are only used on the UI thread.
-  int num_requests_;
-  int requests_to_wait_for_;
-  std::unique_ptr<base::RunLoop> run_loop_;
-
-  // This prevents any risk of flake if any test doesn't wait for a request
-  // it sent.  Mutable so it can be accessed from a const function.
-  mutable base::WeakPtrFactory<LoadImageRequestInterceptor> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(LoadImageRequestInterceptor);
+  std::string path_;
+  base::RunLoop run_loop_;
 };
 
 class LoadImageBrowserTest : public InProcessBrowserTest {
@@ -1187,17 +1134,6 @@ class LoadImageBrowserTest : public InProcessBrowserTest {
     ui_test_utils::NavigateToURL(browser(), page);
   }
 
-  void AddLoadImageInterceptor(const std::string& image_path) {
-    interceptor_ = new LoadImageRequestInterceptor();
-    std::unique_ptr<net::URLRequestInterceptor> owned_interceptor(interceptor_);
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&LoadImageBrowserTest::AddInterceptorForURL,
-                       base::Unretained(this),
-                       GURL(embedded_test_server()->GetURL(image_path).spec()),
-                       std::move(owned_interceptor)));
-  }
-
   void AttemptLoadImage() {
     // Right-click where the image should be.
     // |menu_observer_| will cause the "Load image" menu item to be clicked.
@@ -1209,16 +1145,6 @@ class LoadImageBrowserTest : public InProcessBrowserTest {
                                   gfx::Point(15, 15));
   }
 
-  void AddInterceptorForURL(
-      const GURL& url,
-      std::unique_ptr<net::URLRequestInterceptor> handler) {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    net::URLRequestFilter::GetInstance()->AddUrlInterceptor(url,
-                                                            std::move(handler));
-  }
-
-  LoadImageRequestInterceptor* interceptor_;
-
  private:
   std::unique_ptr<ContextMenuNotificationObserver> menu_observer_;
 };
@@ -1226,10 +1152,12 @@ class LoadImageBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(LoadImageBrowserTest, LoadImage) {
   static const char kValidImage[] = "/load_image/image.png";
   SetupAndLoadImagePage(kValidImage);
-  AddLoadImageInterceptor(kValidImage);
+
+  WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  LoadImageRequestObserver observer(web_contents, kValidImage);
   AttemptLoadImage();
-  interceptor_->WaitForRequests(1);
-  EXPECT_EQ(1, interceptor_->num_requests());
+  observer.WaitForRequest();
 }
 
 }  // namespace
