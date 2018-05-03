@@ -27,10 +27,6 @@
 #import "ui/base/cocoa/nsview_additions.h"
 #import "ui/base/cocoa/touch_bar_forward_declarations.h"
 
-@interface FramedBrowserWindow ()
-- (void)childWindowsDidChange;
-@end
-
 @implementation FramedBrowserWindow
 
 + (CGFloat)browserFrameViewPaintHeight {
@@ -210,23 +206,6 @@
     return [NSColor whiteColor];
   else
     return [NSColor windowFrameTextColor];
-}
-
-- (void)addChildWindow:(NSWindow*)childWindow
-               ordered:(NSWindowOrderingMode)orderingMode {
-  [super addChildWindow:childWindow ordered:orderingMode];
-  [self childWindowsDidChange];
-}
-
-- (void)removeChildWindow:(NSWindow*)childWindow {
-  [super removeChildWindow:childWindow];
-  [self childWindowsDidChange];
-}
-
-- (void)childWindowsDidChange {
-  id delegate = [self delegate];
-  if ([delegate respondsToSelector:@selector(childWindowsDidChange)])
-    [delegate childWindowsDidChange];
 }
 
 @end
