@@ -208,6 +208,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_SPOKEN_FEEDBACK_ENABLED" desc="The message shown on a notification when spoken feedback is enabled">
         Press Ctrl + Alt + Z to disable spoken feedback.
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_SPOKEN_FEEDBACK_ENABLED_TABLET" desc="The message shown on a notification when spoken feedback is enabled on a tablet">
+        Press and hold both volume keys for five seconds to disable spoken feedback.
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_SPOKEN_FEEDBACK_ENABLED_TITLE" desc="The title message shown on a notification when spoken feedback is enabled">
         ChromeVox enabled
       </message>
