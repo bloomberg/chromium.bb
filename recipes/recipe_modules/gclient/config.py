@@ -359,8 +359,7 @@ def recipes_py_bare(c):
 def catapult(c):
   soln = c.solutions.add()
   soln.name = 'catapult'
-  soln.url = ('https://chromium.googlesource.com/external/github.com/'
-              'catapult-project/catapult.git')
+  soln.url = 'https://chromium.googlesource.com/catapult'
   c.got_revision_mapping['catapult'] = 'got_revision'
 
 @config_ctx(includes=['infra_internal'])
@@ -385,8 +384,7 @@ def custom_tabs_client(c):
   soln = c.solutions.add()
   soln.name = 'custom_tabs_client'
   # TODO(pasko): test custom-tabs-client within a full chromium checkout.
-  soln.url = ('https://chromium.googlesource.com/external/github.com/'
-              'GoogleChrome/custom-tabs-client.git')
+  soln.url = 'https://chromium.googlesource.com/custom-tabs-client'
   c.got_revision_mapping['custom_tabs_client'] = 'got_revision'
 
 @config_ctx()
