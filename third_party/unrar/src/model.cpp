@@ -43,13 +43,27 @@ void ModelPPM::RestartModelRare()
   InitRL=-(MaxOrder < 12 ? MaxOrder:12)-1;
   MinContext = MaxContext = (RARPPM_CONTEXT*) SubAlloc.AllocContext();
   if (MinContext == NULL)
+  {
+#if defined(UNRAR_NO_EXCEPTIONS)
+    base::Process::Current().Terminate(RARX_MEMORY, false);
+#else
     throw std::bad_alloc();
+#endif  // defined(UNRAR_NO_EXCEPTIONS)
+  }
+
   MinContext->Suffix=NULL;
   OrderFall=MaxOrder;
   MinContext->U.SummFreq=(MinContext->NumStats=256)+1;
   FoundState=MinContext->U.Stats=(RARPPM_STATE*)SubAlloc.AllocUnits(256/2);
   if (FoundState == NULL)
+  {
+#if defined(UNRAR_NO_EXCEPTIONS)
+    base::Process::Current().Terminate(RARX_MEMORY, false);
+#else
     throw std::bad_alloc();
+#endif  // defined(UNRAR_NO_EXCEPTIONS)
+  }
+
   for (RunLength=InitRL, PrevSuccess=i=0;i < 256;i++) 
   {
     MinContext->U.Stats[i].Symbol=i;      

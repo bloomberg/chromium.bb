@@ -57,14 +57,8 @@ if (safe_browsing_mode == 1) {
       "src/volume.cpp",
     ]
 
-    configs -= [
-      "//build/config/compiler:chromium_code",
-      "//build/config/compiler:no_exceptions",
-    ]
-    configs += [
-      "//build/config/compiler:no_chromium_code",
-      "//build/config/compiler:exceptions",
-    ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
 
     defines = [
       "_FILE_OFFSET_BITS=64",
@@ -74,6 +68,13 @@ if (safe_browsing_mode == 1) {
       # The following is set to disable certain macro definitions in the unrar
       # source code.
       "CHROMIUM_UNRAR",
+
+      # Disables exceptions in unrar, replaces them with process termination.
+      "UNRAR_NO_EXCEPTIONS",
+    ]
+
+    deps = [
+      "//base",
     ]
   }
 }

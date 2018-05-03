@@ -11,3 +11,9 @@ Description:
 This library is used to decompress and analyze .RAR and other related files that
 have been downloaded by the user to check their Safe Browsing reputation. It is
 only for Chromium on desktop.
+
+Warning:
+Please note that changes have been made to this library to terminate the current
+process in which this library is running, when it encounters some error
+conditions. This is acceptable for Chromium because the library executes inside
+a sandbox, but may not apply more broadly.
