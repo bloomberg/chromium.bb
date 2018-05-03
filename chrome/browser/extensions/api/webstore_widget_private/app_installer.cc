@@ -42,6 +42,7 @@ AppInstaller::AppInstaller(content::WebContents* web_contents,
       callback_(callback),
       web_contents_(web_contents),
       web_contents_observer_(new WebContentsObserver(web_contents, this)) {
+  DCHECK(web_contents_);
 }
 
 AppInstaller::~AppInstaller() {

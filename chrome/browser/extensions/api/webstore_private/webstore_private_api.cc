@@ -36,6 +36,7 @@
 #include "content/public/browser/gpu_feature_checker.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_function_constants.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
@@ -309,7 +310,7 @@ void WebstorePrivateBeginInstallWithManifest3Function::OnWebstoreParseSuccess(
     return;
   }
 
-  content::WebContents* web_contents = GetAssociatedWebContentsDeprecated();
+  content::WebContents* web_contents = GetSenderWebContents();
   if (!web_contents) {
     // The browser window has gone away.
     Respond(BuildResponse(api::webstore_private::RESULT_USER_CANCELLED,
@@ -445,6 +446,12 @@ WebstorePrivateCompleteInstallFunction::Run() {
                             params->expected_id));
   }
 
+  content::WebContents* web_contents = GetSenderWebContents();
+  if (!web_contents) {
+    return RespondNow(
+        Error(function_constants::kCouldNotFindSenderWebContents));
+  }
+
   scoped_active_install_.reset(new ScopedActiveInstall(
       InstallTracker::Get(browser_context()), params->expected_id));
 
@@ -454,8 +461,7 @@ WebstorePrivateCompleteInstallFunction::Run() {
   // The extension will install through the normal extension install flow, but
   // the whitelist entry will bypass the normal permissions install dialog.
   scoped_refptr<WebstoreInstaller> installer = new WebstoreInstaller(
-      chrome_details_.GetProfile(), this,
-      chrome_details_.GetAssociatedWebContentsDeprecated(), params->expected_id,
+      chrome_details_.GetProfile(), this, web_contents, params->expected_id,
       std::move(approval_), WebstoreInstaller::INSTALL_SOURCE_OTHER);
   installer->Start();
 
