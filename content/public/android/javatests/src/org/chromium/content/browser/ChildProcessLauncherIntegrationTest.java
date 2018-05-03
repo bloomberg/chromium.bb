@@ -106,8 +106,10 @@ public class ChildProcessLauncherIntegrationTest {
         ChildProcessLauncherHelper.setSandboxServicesSettingsForTesting(factory,
                 10 /* arbitrary number, only realy need 2 */, null /* use default service name */);
 
-        ContentShellActivity activity =
-                mActivityTestRule.launchContentShellWithUrlSync("content/test/data/title1.html");
+        // TODO(boliu,nasko): Ensure navigation is actually successful
+        // before proceeding.
+        ContentShellActivity activity = mActivityTestRule.launchContentShellWithUrlSync(
+                "content/test/data/android/title1.html");
         NavigationController navigationController =
                 mActivityTestRule.getWebContents().getNavigationController();
         TestCallbackHelperContainer testCallbackHelperContainer =
