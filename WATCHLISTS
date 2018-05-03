@@ -1067,9 +1067,10 @@
       'filepath': 'chrome/android/(java|junit)/src/org/chromium/chrome/browser/media/router/' \
                   '|chrome/browser/media/router/' \
                   '|chrome/browser/resources/media_router/' \
+                  '|chrome/browser/ui/media_router/' \
                   '|chrome/browser/ui/views/media_router/' \
                   '|chrome/browser/ui/webui/media_router/' \
-                  '|chrome/common/media/router/' \
+                  '|chrome/common/media_router/' \
                   '|chrome/test/data/webui/media_router/' \
                   '|chrome/test/media_router/' \
                   '|chrome/utility/media_router/'
@@ -2158,7 +2159,8 @@
                        'xjz+watch@chromium.org'],
     'media_router': ['amp+watch@chromium.org',
                      'imcheng+watch@chromium.org',
-                     'mfoltz+watch@chromium.org'],
+                     'mfoltz+watch@chromium.org',
+                     'takumif+watch@chromium.org'],
     'memory_coordinator': ['chrome-grc-reviews+memory@chromium.org'],
     'message_loop': ['sadrul@chromium.org'],
     'metrics': ['asvitkine+watch@chromium.org'],
