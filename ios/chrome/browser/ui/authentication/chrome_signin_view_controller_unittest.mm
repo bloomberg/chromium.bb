@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/ui/authentication/chrome_signin_view_controller.h"
 
+#include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
@@ -308,44 +309,80 @@ class ChromeSigninViewControllerTest
     return IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_OPEN_SETTINGS;
   }
 
-  bool IsMoreButtonVisible() {
-    UIButton* primary_button = vc_.primaryButton;
-    NSString* primary_title = primary_button.currentTitle;
-    BOOL is_more_button =
-        [primary_title
-            caseInsensitiveCompare:
-                l10n_util::GetNSString(
-                    IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_SCROLL_BUTTON)] ==
-        NSOrderedSame;
-    return !primary_button.isHidden && is_more_button;
+  // Returns true if the primary button is visible and its tile is equal the
+  // |string_id| (case insensitive).
+  bool IsPrimaryButtonVisibleWithTitle(int string_id) {
+    if (vc_.primaryButton.isHidden)
+      return false;
+    NSString* primary_title = vc_.primaryButton.currentTitle;
+    return [primary_title
+               caseInsensitiveCompare:l10n_util::GetNSString(string_id)] ==
+           NSOrderedSame;
+  }
+
+  // Returns |view| if it is kind of UIScrollView or returns the UIScrollView-
+  // kind in the subviews (recursive search). At most one UIScrollView is
+  // expected.
+  UIScrollView* FindConsentScrollView(UIView* view) {
+    if ([view isKindOfClass:[UIScrollView class]])
+      return base::mac::ObjCCastStrict<UIScrollView>(view);
+    UIScrollView* found_scroll_view = nil;
+    for (UIView* subview in view.subviews) {
+      UIScrollView* scroll_view_from_subview = FindConsentScrollView(subview);
+      if (scroll_view_from_subview) {
+        EXPECT_EQ(nil, found_scroll_view);
+        found_scroll_view = scroll_view_from_subview;
+      }
+    }
+    return found_scroll_view;
+  }
+
+  // Scrolls to the bottom if needed and returns once the primary button is
+  // found with the confirmation title (based on ConfirmationStringId()).
+  // The scroll is done without animation. Otherwise, the scroll view doesn't
+  // scroll correctly inside testing::WaitUntilConditionOrTimeout().
+  void ScrollConsentViewToBottom() {
+    ConditionBlock condition = ^bool() {
+      if (IsPrimaryButtonVisibleWithTitle(
+              IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_SCROLL_BUTTON)) {
+        UIScrollView* consent_scroll_view = FindConsentScrollView(vc_.view);
+        CGPoint bottom_offset =
+            CGPointMake(0, consent_scroll_view.contentSize.height -
+                               consent_scroll_view.bounds.size.height +
+                               consent_scroll_view.contentInset.bottom);
+        [consent_scroll_view setContentOffset:bottom_offset animated:NO];
+      }
+      return IsPrimaryButtonVisibleWithTitle(ConfirmationStringId());
+    };
+    bool condition_met = testing::WaitUntilConditionOrTimeout(10, condition);
+    EXPECT_TRUE(condition_met);
   }
 
   // Waits until all expected strings are on the screen.
   void WaitAndExpectAllStringsOnScreen() {
-    __block NSSet<NSString*>* notFoundStrings = nil;
-    __block NSSet<NSString*>* notExpectedStrings = nil;
+    __block NSSet<NSString*>* not_found_strings = nil;
+    __block NSSet<NSString*>* not_expected_strings = nil;
+    // Make sure the consent view is scrolled to the button to show the
+    // confirmation button (instead of the "more" button).
+    ScrollConsentViewToBottom();
     ConditionBlock condition = ^bool() {
-      if (IsMoreButtonVisible()) {
-        [vc_.primaryButton
-            sendActionsForControlEvents:UIControlEventTouchUpInside];
-      }
-      NSSet<NSString*>* foundStrings = LocalizedStringOnScreen();
-      NSSet<NSString*>* expectedStrings = LocalizedExpectedStringsOnScreen();
-      notFoundStrings = [expectedStrings
+      NSSet<NSString*>* found_strings = LocalizedStringOnScreen();
+      NSSet<NSString*>* expected_strings = LocalizedExpectedStringsOnScreen();
+      not_found_strings = [expected_strings
           objectsPassingTest:^BOOL(NSString* string, BOOL* stop) {
-            return ![foundStrings containsObject:string];
+            return ![found_strings containsObject:string];
           }];
-      notExpectedStrings =
-          [foundStrings objectsPassingTest:^BOOL(NSString* string, BOOL* stop) {
-            return ![expectedStrings containsObject:string];
+      not_expected_strings = [found_strings
+          objectsPassingTest:^BOOL(NSString* string, BOOL* stop) {
+            return ![expected_strings containsObject:string];
           }];
-      return [foundStrings isEqual:expectedStrings];
+      return [found_strings isEqual:expected_strings];
     };
-    bool conditionMet = testing::WaitUntilConditionOrTimeout(10, condition);
+    bool condition_met = testing::WaitUntilConditionOrTimeout(10, condition);
     NSString* failureExplaination = [NSString
         stringWithFormat:@"Strings not found: %@, Strings not expected: %@",
-                         notFoundStrings, notExpectedStrings];
-    EXPECT_TRUE(conditionMet) << base::SysNSStringToUTF8(failureExplaination);
+                         not_found_strings, not_expected_strings];
+    EXPECT_TRUE(condition_met) << base::SysNSStringToUTF8(failureExplaination);
   }
 
   bool unified_consent_enabled_;
@@ -369,15 +406,13 @@ INSTANTIATE_TEST_CASE_P(,
 // list defined in FakeConsentAuditor::ExpectedConsentStringIds()), or are part
 // of the white list strings defined in
 // FakeConsentAuditor::WhiteListLocalizedStrings().
-// TODO(crbug.com/839001): Reenable this test.
-TEST_F(ChromeSigninViewControllerTest, DISABLED_TestAllStrings) {
+TEST_P(ChromeSigninViewControllerTest, TestAllStrings) {
   WaitAndExpectAllStringsOnScreen();
 }
 
 // Tests when the user taps on "OK GOT IT", that RecordGaiaConsent() is called
 // with the expected list of string ids, and confirmation string id.
-// TODO(crbug.com/839001): Reenable this test.
-TEST_F(ChromeSigninViewControllerTest, DISABLED_TestConsentWithOKGOTIT) {
+TEST_P(ChromeSigninViewControllerTest, TestConsentWithOKGOTIT) {
   WaitAndExpectAllStringsOnScreen();
   [vc_.primaryButton sendActionsForControlEvents:UIControlEventTouchUpInside];
   ConditionBlock condition = ^bool() {
@@ -399,8 +434,7 @@ TEST_F(ChromeSigninViewControllerTest, DISABLED_TestConsentWithOKGOTIT) {
 }
 
 // Tests that RecordGaiaConsent() is not called when the user taps on UNDO.
-// TODO(crbug.com/839001): Reenable this test.
-TEST_F(ChromeSigninViewControllerTest, DISABLED_TestRefusingConsent) {
+TEST_P(ChromeSigninViewControllerTest, TestRefusingConsent) {
   WaitAndExpectAllStringsOnScreen();
   [vc_.secondaryButton sendActionsForControlEvents:UIControlEventTouchUpInside];
   const std::vector<int>& recorded_ids = fake_consent_auditor_->recorded_ids();
@@ -410,8 +444,7 @@ TEST_F(ChromeSigninViewControllerTest, DISABLED_TestRefusingConsent) {
 
 // Tests that RecordGaiaConsent() is called with the expected list of string
 // ids, and settings confirmation string id.
-// TODO(crbug.com/839001): Reenable this test.
-TEST_F(ChromeSigninViewControllerTest, DISABLED_TestConsentWithSettings) {
+TEST_P(ChromeSigninViewControllerTest, TestConsentWithSettings) {
   WaitAndExpectAllStringsOnScreen();
   [vc_ signinConfirmationControllerDidTapSettingsLink:vc_.confirmationVC];
   const std::vector<int>& recorded_ids = fake_consent_auditor_->recorded_ids();
