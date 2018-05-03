@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/arc/auth/arc_active_directory_enrollment_token_fetcher.h"
 #include "components/arc/common/auth.mojom.h"
@@ -20,6 +21,10 @@ class Profile;
 namespace content {
 class BrowserContext;
 }  // namespace content
+
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
 
 namespace arc {
 
@@ -54,6 +59,9 @@ class ArcAuthService : public KeyedService,
   void ReportMetrics(mojom::MetricsType metrics_type, int32_t value) override;
   void ReportAccountCheckStatus(mojom::AccountCheckStatus status) override;
 
+  void SetURLLoaderFactoryForTesting(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+
  private:
   // Callbacks when auth info is fetched.
   void OnEnrollmentTokenFetched(
@@ -68,6 +76,7 @@ class ArcAuthService : public KeyedService,
 
   Profile* const profile_;
   ArcBridgeService* const arc_bridge_service_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   std::unique_ptr<ArcFetcherBase> fetcher_;
 

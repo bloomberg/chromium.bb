@@ -20,9 +20,13 @@
 class Profile;
 
 namespace net {
-class URLFetcher;
 class URLRequestContextGetter;
 }  // namespace net
+
+namespace network {
+class SimpleURLLoader;
+class SharedURLLoaderFactory;
+}  // namespace network
 
 namespace arc {
 
@@ -32,12 +36,13 @@ extern const char kAuthTokenExchangeEndPoint[];
 // The instance is not reusable, so for each Fetch(), the instance must be
 // re-created. Deleting the instance cancels inflight operation.
 class ArcBackgroundAuthCodeFetcher : public ArcAuthCodeFetcher,
-                                     public OAuth2TokenService::Consumer,
-                                     public net::URLFetcherDelegate {
+                                     public OAuth2TokenService::Consumer {
  public:
-  ArcBackgroundAuthCodeFetcher(Profile* profile,
-                               ArcAuthContext* context,
-                               bool initial_signin);
+  ArcBackgroundAuthCodeFetcher(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      Profile* profile,
+      ArcAuthContext* context,
+      bool initial_signin);
   ~ArcBackgroundAuthCodeFetcher() override;
 
   // ArcAuthCodeFetcher:
@@ -54,21 +59,19 @@ class ArcBackgroundAuthCodeFetcher : public ArcAuthCodeFetcher,
   void OnGetTokenFailure(const OAuth2TokenService::Request* request,
                          const GoogleServiceAuthError& error) override;
 
-  // net::URLFetcherDelegate:
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
 
   void ReportResult(const std::string& auth_code,
                     OptInSilentAuthCode uma_status);
 
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   // Unowned pointers.
   Profile* const profile_;
   ArcAuthContext* const context_;
-  net::URLRequestContextGetter* request_context_getter_ = nullptr;
-
   FetchCallback callback_;
 
   std::unique_ptr<OAuth2TokenService::Request> login_token_request_;
-  std::unique_ptr<net::URLFetcher> auth_code_fetcher_;
+  std::unique_ptr<network::SimpleURLLoader> simple_url_loader_;
 
   // Keeps context of account code request. |initial_signin_| is true if request
   // is made for initial sign-in flow.
