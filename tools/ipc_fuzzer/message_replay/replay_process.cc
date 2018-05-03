@@ -18,7 +18,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/public/common/connection_filter.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/mojo_channel_switches.h"
 #include "content/public/common/service_manager_connection.h"
 #include "ipc/ipc.mojom.h"
 #include "ipc/ipc_channel_mojo.h"
@@ -27,10 +26,11 @@
 #include "mojo/edk/embedder/incoming_broker_client_invitation.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_ipc_support.h"
+#include "services/service_manager/embedder/switches.h"
 
 #if defined(OS_POSIX)
 #include "base/posix/global_descriptors.h"
-#include "content/public/common/content_descriptors.h"
+#include "services/service_manager/embedder/descriptors.h"
 #endif
 
 namespace ipc_fuzzer {
@@ -76,8 +76,9 @@ InitializeMojoIPCChannel() {
       mojo::edk::PlatformChannelPair::PassClientHandleFromParentProcess(
           *base::CommandLine::ForCurrentProcess());
 #elif defined(OS_POSIX)
-  platform_channel.reset(mojo::edk::PlatformHandle(
-      base::GlobalDescriptors::GetInstance()->Get(kMojoIPCChannel)));
+  platform_channel.reset(
+      mojo::edk::PlatformHandle(base::GlobalDescriptors::GetInstance()->Get(
+          service_manager::kMojoIPCChannel)));
 #endif
   CHECK(platform_channel.is_valid());
   return mojo::edk::IncomingBrokerClientInvitation::Accept(
@@ -125,8 +126,9 @@ bool ReplayProcess::Initialize(int argc, const char** argv) {
 
 #if defined(OS_POSIX)
   base::GlobalDescriptors* g_fds = base::GlobalDescriptors::GetInstance();
-  g_fds->Set(kMojoIPCChannel,
-             kMojoIPCChannel + base::GlobalDescriptors::kBaseDescriptor);
+  g_fds->Set(service_manager::kMojoIPCChannel,
+             service_manager::kMojoIPCChannel +
+                 base::GlobalDescriptors::kBaseDescriptor);
 #endif
 
   mojo_ipc_support_.reset(new mojo::edk::ScopedIPCSupport(
@@ -143,7 +145,7 @@ void ReplayProcess::OpenChannel() {
       service_manager::mojom::ServiceRequest(
           broker_client_invitation_->ExtractMessagePipe(
               base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-                  switches::kServiceRequestChannelToken))),
+                  service_manager::switches::kServiceRequestChannelToken))),
       io_thread_.task_runner());
   mojo::MessagePipe ipc_pipe;
   service_manager_connection_->AddConnectionFilter(

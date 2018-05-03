@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_COMMON_ZYGOTE_HANDLE_H_
-#define CONTENT_PUBLIC_COMMON_ZYGOTE_HANDLE_H_
+#ifndef SERVICES_SERVICE_MANAGER_ZYGOTE_COMMON_ZYGOTE_HANDLE_H_
+#define SERVICES_SERVICE_MANAGER_ZYGOTE_COMMON_ZYGOTE_HANDLE_H_
 
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/component_export.h"
 #include "base/files/scoped_file.h"
 #include "build/build_config.h"
-#include "content/common/content_export.h"
-#include "content/public/common/zygote_buildflags.h"
+#include "services/service_manager/zygote/common/zygote_buildflags.h"
 
 #if !BUILDFLAG(USE_ZYGOTE_HANDLE)
 #error "Can not use zygote handles without USE_ZYGOTE_HANDLE"
 #endif
 
-namespace content {
+namespace service_manager {
 
 #if defined(OS_POSIX)
 class ZygoteCommunication;
@@ -31,15 +31,17 @@ using ZygoteHandle = ZygoteCommunication*;
 // should actually launch the process, after adding additional command line
 // switches to the ones composed by this function. It returns the pid created,
 // and provides a control fd for it.
-CONTENT_EXPORT ZygoteHandle CreateGenericZygote(
+
+COMPONENT_EXPORT(SERVICE_MANAGER_ZYGOTE)
+ZygoteHandle CreateGenericZygote(
     base::OnceCallback<pid_t(base::CommandLine*, base::ScopedFD*)> launcher);
 
 // Returns a handle to a global generic zygote object. This function allows the
 // browser to launch and use a single zygote process until the performance
 // issues around launching multiple zygotes are resolved.
 // http://crbug.com/569191
-CONTENT_EXPORT ZygoteHandle GetGenericZygote();
+COMPONENT_EXPORT(SERVICE_MANAGER_ZYGOTE) ZygoteHandle GetGenericZygote();
 
-}  // namespace content
+}  // namespace service_manager
 
-#endif  // CONTENT_PUBLIC_COMMON_ZYGOTE_HANDLE_H_
+#endif  // SERVICES_SERVICE_MANAGER_ZYGOTE_COMMON_ZYGOTE_HANDLE_H_

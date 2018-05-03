@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "content/public/common/content_switches.h"
 #include "headless/public/version.h"
+#include "services/service_manager/embedder/switches.h"
 
 namespace headless {
 
@@ -56,7 +57,7 @@ bool HeadlessCrashReporterClient::EnableBreakpadForProcess(
     const std::string& process_type) {
   return process_type == switches::kRendererProcess ||
          process_type == switches::kPpapiPluginProcess ||
-         process_type == switches::kZygoteProcess ||
+         process_type == service_manager::switches::kZygoteProcess ||
          process_type == switches::kGpuProcess;
 }
 

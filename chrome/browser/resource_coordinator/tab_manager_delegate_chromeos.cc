@@ -46,7 +46,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host.h"
-#include "content/public/browser/zygote_host_linux.h"
+#include "services/service_manager/zygote/zygote_host_linux.h"
 #include "ui/wm/public/activation_client.h"
 
 using base::ProcessHandle;

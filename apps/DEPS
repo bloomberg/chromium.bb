@@ -8,6 +8,7 @@ include_rules = [
   # app_shell may depend on apps, but not vice versa.
   "-extensions/shell",
   "+net/base",
+  "+services/service_manager",
 ]
 
 specific_include_rules = {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_COMMON_ZYGOTE_FORK_DELEGATE_LINUX_H_
-#define CONTENT_PUBLIC_COMMON_ZYGOTE_FORK_DELEGATE_LINUX_H_
+#ifndef SERVICES_SERVICE_MANAGER_ZYGOTE_COMMON_ZYGOTE_FORK_DELEGATE_LINUX_H_
+#define SERVICES_SERVICE_MANAGER_ZYGOTE_COMMON_ZYGOTE_FORK_DELEGATE_LINUX_H_
 
 #include <unistd.h>
 
@@ -14,7 +14,7 @@
 // to C++11.
 #include "base/process/kill.h"
 
-namespace content {
+namespace service_manager {
 
 // The ZygoteForkDelegate allows the Chrome Linux zygote to delegate
 // fork operations to another class that knows how to do some
@@ -44,8 +44,10 @@ class ZygoteForkDelegate {
   // Returns 'true' if the delegate would like to handle a given fork
   // request.  Otherwise returns false.  Optionally, fills in uma_name et al
   // with a report the helper wants to make via UMA_HISTOGRAM_ENUMERATION.
-  virtual bool CanHelp(const std::string& process_type, std::string* uma_name,
-                       int* uma_sample, int* uma_boundary_value) = 0;
+  virtual bool CanHelp(const std::string& process_type,
+                       std::string* uma_name,
+                       int* uma_sample,
+                       int* uma_boundary_value) = 0;
 
   // Indexes of FDs in the vector passed to Fork().
   enum {
@@ -77,11 +79,12 @@ class ZygoteForkDelegate {
   // |known_dead| indicates that the process is already dead and that a
   // blocking wait() should be performed. In this case, GetTerminationStatus()
   // will send a SIGKILL to the target process first.
-  virtual bool GetTerminationStatus(pid_t pid, bool known_dead,
+  virtual bool GetTerminationStatus(pid_t pid,
+                                    bool known_dead,
                                     base::TerminationStatus* status,
                                     int* exit_code) = 0;
 };
 
-}  // namespace content
+}  // namespace service_manager
 
-#endif  // CONTENT_PUBLIC_COMMON_ZYGOTE_FORK_DELEGATE_LINUX_H_
+#endif  // SERVICES_SERVICE_MANAGER_ZYGOTE_COMMON_ZYGOTE_FORK_DELEGATE_LINUX_H_

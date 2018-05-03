@@ -51,7 +51,6 @@ if (enable_nacl) {
     sources = [
       "//content/public/common/content_descriptors.h",
       "//content/public/common/content_switches.h",
-      "//content/public/common/mojo_channel_switches.h",
       "//content/public/common/process_type.h",
     ]
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_ZYGOTE_ZYGOTE_LINUX_H_
-#define CONTENT_ZYGOTE_ZYGOTE_LINUX_H_
+#ifndef SERVICES_SERVICE_MANAGER_ZYGOTE_ZYGOTE_LINUX_H_
+#define SERVICES_SERVICE_MANAGER_ZYGOTE_ZYGOTE_LINUX_H_
 
 #include <stddef.h>
 
@@ -23,7 +23,7 @@ namespace base {
 class PickleIterator;
 }
 
-namespace content {
+namespace service_manager {
 
 class ZygoteForkDelegate;
 
@@ -76,18 +76,19 @@ class Zygote {
   // appears outside of the sandbox.
   // Return true if it managed to get the termination status and return the
   // status in |status| and the exit code in |exit_code|.
-  bool GetTerminationStatus(base::ProcessHandle real_pid, bool known_dead,
+  bool GetTerminationStatus(base::ProcessHandle real_pid,
+                            bool known_dead,
                             base::TerminationStatus* status,
                             int* exit_code);
 
-  void HandleGetTerminationStatus(int fd,
-                                  base::PickleIterator iter);
+  void HandleGetTerminationStatus(int fd, base::PickleIterator iter);
 
   // This is equivalent to fork(), except that, when using the SUID sandbox, it
   // returns the real PID of the child process as it appears outside the
   // sandbox, rather than returning the PID inside the sandbox.  The child's
-  // real PID is determined by having it call content::SendZygoteChildPing(int)
-  // using the |pid_oracle| descriptor.
+  // real PID is determined by having it call
+  // service_manager::SendZygoteChildPing(int) using the |pid_oracle|
+  // descriptor.
   // Finally, when using a ZygoteForkDelegate helper, |uma_name|, |uma_sample|,
   // and |uma_boundary_value| may be set if the helper wants to make a UMA
   // report via UMA_HISTOGRAM_ENUMERATION.
@@ -116,8 +117,7 @@ class Zygote {
                          base::PickleIterator iter,
                          std::vector<base::ScopedFD> fds);
 
-  bool HandleGetSandboxStatus(int fd,
-                              base::PickleIterator iter);
+  bool HandleGetSandboxStatus(int fd, base::PickleIterator iter);
 
   // Attempt to reap the child process by calling waitpid, and return
   // whether successful.  If the process has not terminated within
@@ -147,6 +147,6 @@ class Zygote {
   base::GlobalDescriptors::Descriptor ipc_backchannel_;
 };
 
-}  // namespace content
+}  // namespace service_manager
 
-#endif  // CONTENT_ZYGOTE_ZYGOTE_LINUX_H_
+#endif  // SERVICES_SERVICE_MANAGER_ZYGOTE_ZYGOTE_LINUX_H_

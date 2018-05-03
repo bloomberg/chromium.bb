@@ -9,6 +9,7 @@
 #include "chromecast/crash/linux/crash_util.h"
 #include "components/crash/content/app/breakpad_linux.h"
 #include "content/public/common/content_switches.h"
+#include "services/service_manager/sandbox/switches.h"
 
 namespace chromecast {
 
@@ -51,7 +52,7 @@ CastCrashReporterClient::~CastCrashReporterClient() {
 bool CastCrashReporterClient::EnableBreakpadForProcess(
     const std::string& process_type) {
   return process_type == switches::kRendererProcess ||
-         process_type == switches::kZygoteProcess ||
+         process_type == service_manager::switches::kZygoteProcess ||
          process_type == switches::kGpuProcess ||
          process_type == switches::kUtilityProcess;
 }

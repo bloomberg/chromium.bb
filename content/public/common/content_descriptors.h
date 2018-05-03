@@ -7,16 +7,13 @@
 
 #include "build/build_config.h"
 
+#include "services/service_manager/embedder/descriptors.h"
+
 // This is a list of global descriptor keys to be used with the
 // base::GlobalDescriptors object (see base/posix/global_descriptors.h)
 enum {
-  kCrashDumpSignal = 0,
-  kSandboxIPCChannel,  // https://chromium.googlesource.com/chromium/src/+/master/docs/linux_sandbox_ipc.md
-  kMojoIPCChannel,
-  kFieldTrialDescriptor,
-
 #if defined(OS_ANDROID)
-  kAndroidPropertyDescriptor,
+  kAndroidPropertyDescriptor = service_manager::kFirstEmbedderDescriptor,
   kAndroidICUDataDescriptor,
 #endif
 

@@ -91,11 +91,9 @@ int32_t PepperTrueTypeFontLinux::GetTableTags(std::vector<uint32_t>* tags) {
   // Get the 2 byte numTables field at an offset of 4 in the font.
   uint8_t num_tables_buf[2];
   size_t output_length = sizeof(num_tables_buf);
-  if (!GetFontTable(fd_.get(),
-                    0 /* tag */,
-                    4 /* offset */,
-                    reinterpret_cast<uint8_t*>(&num_tables_buf),
-                    &output_length))
+  if (!content::GetFontTable(fd_.get(), 0 /* tag */, 4 /* offset */,
+                             reinterpret_cast<uint8_t*>(&num_tables_buf),
+                             &output_length))
     return PP_ERROR_FAILED;
   DCHECK(output_length == sizeof(num_tables_buf));
   // Font data is stored in big-endian order.
@@ -107,11 +105,9 @@ int32_t PepperTrueTypeFontLinux::GetTableTags(std::vector<uint32_t>* tags) {
   output_length = num_tables * kTableEntrySize;
   std::unique_ptr<uint8_t[]> table_entries(new uint8_t[output_length]);
   // Get the table directory entries, which follow the font header.
-  if (!GetFontTable(fd_.get(),
-                    0 /* tag */,
-                    kFontHeaderSize /* offset */,
-                    table_entries.get(),
-                    &output_length))
+  if (!content::GetFontTable(fd_.get(), 0 /* tag */,
+                             kFontHeaderSize /* offset */, table_entries.get(),
+                             &output_length))
     return PP_ERROR_FAILED;
   DCHECK(output_length == num_tables * kTableEntrySize);
 
@@ -138,16 +134,15 @@ int32_t PepperTrueTypeFontLinux::GetTable(uint32_t table_tag,
   size_t table_size = 0;
   // Tags are byte swapped on Linux.
   table_tag = base::ByteSwap(table_tag);
-  if (!GetFontTable(fd_.get(), table_tag, offset, nullptr, &table_size))
+  if (!content::GetFontTable(fd_.get(), table_tag, offset, nullptr,
+                             &table_size))
     return PP_ERROR_FAILED;
   // Only retrieve as much as the caller requested.
   table_size = std::min(table_size, static_cast<size_t>(max_data_length));
   data->resize(table_size);
-  if (!GetFontTable(fd_.get(),
-                    table_tag,
-                    offset,
-                    reinterpret_cast<uint8_t*>(&(*data)[0]),
-                    &table_size))
+  if (!content::GetFontTable(fd_.get(), table_tag, offset,
+                             reinterpret_cast<uint8_t*>(&(*data)[0]),
+                             &table_size))
     return PP_ERROR_FAILED;
 
   return base::checked_cast<int32_t>(table_size);
