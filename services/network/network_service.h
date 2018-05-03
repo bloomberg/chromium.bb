@@ -12,6 +12,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "net/log/net_log.h"
 #include "services/network/keepalive_statistics_recorder.h"
 #include "services/network/network_change_manager.h"
 #include "services/network/network_service.h"
@@ -23,7 +24,6 @@
 namespace net {
 class HostResolver;
 class LoggingNetworkChangeObserver;
-class NetLog;
 class NetworkQualityEstimator;
 class URLRequestContext;
 }  // namespace net
@@ -86,6 +86,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   // destroyed.
   void RegisterNetworkContext(NetworkContext* network_context);
   void DeregisterNetworkContext(NetworkContext* network_context);
+
+  // Invokes net::CreateNetLogEntriesForActiveObjects(observer) on all
+  // URLRequestContext's known to |this|.
+  void CreateNetLogEntriesForActiveObjects(
+      net::NetLog::ThreadSafeObserver* observer);
 
   // mojom::NetworkService implementation:
   void SetClient(mojom::NetworkServiceClientPtr client) override;
