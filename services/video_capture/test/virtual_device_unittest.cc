@@ -8,9 +8,9 @@
 #include "base/test/mock_callback.h"
 #include "media/capture/video/video_capture_device_info.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
+#include "services/video_capture/shared_memory_virtual_device_mojo_adapter.h"
 #include "services/video_capture/test/mock_producer.h"
 #include "services/video_capture/test/mock_receiver.h"
-#include "services/video_capture/virtual_device_mojo_adapter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
@@ -40,8 +40,8 @@ class VirtualDeviceTest : public ::testing::Test {
     mojom::ProducerPtr producer_proxy;
     producer_ =
         std::make_unique<MockProducer>(mojo::MakeRequest(&producer_proxy));
-    device_adapter_ = std::make_unique<VirtualDeviceMojoAdapter>(
-        ref_factory_.CreateRef(), device_info_, std::move(producer_proxy));
+    device_adapter_ = std::make_unique<SharedMemoryVirtualDeviceMojoAdapter>(
+        ref_factory_.CreateRef(), std::move(producer_proxy));
   }
 
   void OnFrameBufferReceived(bool valid_buffer_expected, int32_t buffer_id) {
@@ -57,7 +57,8 @@ class VirtualDeviceTest : public ::testing::Test {
   void VerifyAndGetMaxFrameBuffers() {
     base::RunLoop wait_loop;
     EXPECT_CALL(*producer_, DoOnNewBufferHandle(_, _, _))
-        .Times(VirtualDeviceMojoAdapter::max_buffer_pool_buffer_count())
+        .Times(SharedMemoryVirtualDeviceMojoAdapter::
+                   max_buffer_pool_buffer_count())
         .WillRepeatedly(
             Invoke([](int32_t buffer_id, mojo::ScopedSharedBufferHandle* handle,
                       mojom::Producer::OnNewBufferHandleCallback& callback) {
@@ -65,7 +66,9 @@ class VirtualDeviceTest : public ::testing::Test {
             }));
     // Should receive valid buffer for up to the maximum buffer count.
     for (int i = 0;
-         i < VirtualDeviceMojoAdapter::max_buffer_pool_buffer_count(); i++) {
+         i <
+         SharedMemoryVirtualDeviceMojoAdapter::max_buffer_pool_buffer_count();
+         i++) {
       device_adapter_->RequestFrameBuffer(
           kTestFrameSize, kTestPixelFormat,
           base::Bind(&VirtualDeviceTest::OnFrameBufferReceived,
@@ -80,12 +83,13 @@ class VirtualDeviceTest : public ::testing::Test {
 
     wait_loop.RunUntilIdle();
     Mock::VerifyAndClearExpectations(producer_.get());
-    EXPECT_EQ(VirtualDeviceMojoAdapter::max_buffer_pool_buffer_count(),
-              static_cast<int>(received_buffer_ids_.size()));
+    EXPECT_EQ(
+        SharedMemoryVirtualDeviceMojoAdapter::max_buffer_pool_buffer_count(),
+        static_cast<int>(received_buffer_ids_.size()));
   }
 
  protected:
-  std::unique_ptr<VirtualDeviceMojoAdapter> device_adapter_;
+  std::unique_ptr<SharedMemoryVirtualDeviceMojoAdapter> device_adapter_;
   // ID of buffers received and owned by the producer.
   std::vector<int> received_buffer_ids_;
   std::unique_ptr<MockProducer> producer_;
@@ -95,12 +99,6 @@ class VirtualDeviceTest : public ::testing::Test {
   service_manager::ServiceContextRefFactory ref_factory_;
   media::VideoCaptureDeviceInfo device_info_;
 };
-
-TEST_F(VirtualDeviceTest, VerifyDeviceInfo) {
-  EXPECT_EQ(kTestDeviceId, device_adapter_->device_info().descriptor.device_id);
-  EXPECT_EQ(kTestDeviceName,
-            device_adapter_->device_info().descriptor.display_name());
-}
 
 TEST_F(VirtualDeviceTest, OnFrameReadyInBufferWithoutReceiver) {
   // Obtain maximum number of buffers.
@@ -135,9 +133,11 @@ TEST_F(VirtualDeviceTest, OnFrameReadyInBufferWithReceiver) {
   MockReceiver receiver(mojo::MakeRequest(&receiver_proxy));
   EXPECT_CALL(receiver, OnStarted());
   EXPECT_CALL(receiver, DoOnNewBuffer(_, _))
-      .Times(VirtualDeviceMojoAdapter::max_buffer_pool_buffer_count());
+      .Times(
+          SharedMemoryVirtualDeviceMojoAdapter::max_buffer_pool_buffer_count());
   EXPECT_CALL(receiver, DoOnFrameReadyInBuffer(_, _, _, _))
-      .Times(VirtualDeviceMojoAdapter::max_buffer_pool_buffer_count());
+      .Times(
+          SharedMemoryVirtualDeviceMojoAdapter::max_buffer_pool_buffer_count());
   device_adapter_->Start(media::VideoCaptureParams(),
                          std::move(receiver_proxy));
   for (auto buffer_id : received_buffer_ids_) {
@@ -152,7 +152,8 @@ TEST_F(VirtualDeviceTest, OnFrameReadyInBufferWithReceiver) {
   // the available buffer in the pool.
   base::RunLoop wait_loop2;
   EXPECT_CALL(*producer_, DoOnNewBufferHandle(_, _, _)).Times(0);
-  base::MockCallback<mojom::VirtualDevice::RequestFrameBufferCallback>
+  base::MockCallback<
+      mojom::SharedMemoryVirtualDevice::RequestFrameBufferCallback>
       request_frame_buffer_callback;
   EXPECT_CALL(request_frame_buffer_callback, Run(_))
       .Times(1)

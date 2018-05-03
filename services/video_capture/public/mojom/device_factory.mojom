@@ -46,8 +46,15 @@ interface DeviceFactory {
   // appear to clients of the device as if they were produced by the device.
   // The virtual device is removed either when the caller releases
   // |virtual_device| or the given |producer| is closed.
-  AddVirtualDevice(
+  AddSharedMemoryVirtualDevice(
       media.mojom.VideoCaptureDeviceInfo device_info,
       Producer producer,
-      VirtualDevice& virtual_device);
+      SharedMemoryVirtualDevice& virtual_device);
+
+  // Similar to AddSharedMemoryVirtualDevice() but for virtual devices that
+  // are fed with textures (via MailboxHolders) allocated by the caller instead
+  // of shared memory buffers provided by the service on demand.
+  AddTextureVirtualDevice(
+      media.mojom.VideoCaptureDeviceInfo device_info,
+      TextureVirtualDevice& virtual_device);
 };

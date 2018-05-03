@@ -59,11 +59,17 @@ class MockDeviceFactory : public video_capture::mojom::DeviceFactory {
                     CreateDeviceCallback callback) override {
     DoCreateDevice(device_id, &device_request, callback);
   }
-  void AddVirtualDevice(const media::VideoCaptureDeviceInfo& device_info,
-                        video_capture::mojom::ProducerPtr producer,
-                        video_capture::mojom::VirtualDeviceRequest
-                            virtual_device_request) override {
-    DoAddVirtualDevice(device_info, producer.get(), &virtual_device_request);
+  void AddSharedMemoryVirtualDevice(
+      const media::VideoCaptureDeviceInfo& device_info,
+      video_capture::mojom::ProducerPtr producer,
+      video_capture::mojom::SharedMemoryVirtualDeviceRequest virtual_device)
+      override {
+    DoAddVirtualDevice(device_info, producer.get(), &virtual_device);
+  }
+  void AddTextureVirtualDevice(const media::VideoCaptureDeviceInfo& device_info,
+                               video_capture::mojom::TextureVirtualDeviceRequest
+                                   virtual_device) override {
+    NOTIMPLEMENTED();
   }
 
   MOCK_METHOD1(DoGetDeviceInfos, void(GetDeviceInfosCallback& callback));
@@ -71,11 +77,11 @@ class MockDeviceFactory : public video_capture::mojom::DeviceFactory {
                void(const std::string& device_id,
                     video_capture::mojom::DeviceRequest* device_request,
                     CreateDeviceCallback& callback));
-  MOCK_METHOD3(
-      DoAddVirtualDevice,
-      void(const media::VideoCaptureDeviceInfo& device_info,
-           video_capture::mojom::ProducerProxy* producer,
-           video_capture::mojom::VirtualDeviceRequest* virtual_device_request));
+  MOCK_METHOD3(DoAddVirtualDevice,
+               void(const media::VideoCaptureDeviceInfo& device_info,
+                    video_capture::mojom::ProducerProxy* producer,
+                    video_capture::mojom::SharedMemoryVirtualDeviceRequest*
+                        virtual_device_request));
 };
 
 class MockVideoCaptureDeviceLauncherCallbacks

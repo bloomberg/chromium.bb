@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/video_capture/virtual_device_mojo_adapter.h"
+#include "services/video_capture/shared_memory_virtual_device_mojo_adapter.h"
 
 #include "base/logging.h"
 #include "media/base/bind_to_current_loop.h"
@@ -17,7 +17,8 @@
 namespace {
 
 void OnNewBufferHandleAcknowleged(
-    video_capture::mojom::VirtualDevice::RequestFrameBufferCallback callback,
+    video_capture::mojom::SharedMemoryVirtualDevice::RequestFrameBufferCallback
+        callback,
     int32_t buffer_id) {
   std::move(callback).Run(buffer_id);
 }
@@ -26,22 +27,20 @@ void OnNewBufferHandleAcknowleged(
 
 namespace video_capture {
 
-VirtualDeviceMojoAdapter::VirtualDeviceMojoAdapter(
+SharedMemoryVirtualDeviceMojoAdapter::SharedMemoryVirtualDeviceMojoAdapter(
     std::unique_ptr<service_manager::ServiceContextRef> service_ref,
-    const media::VideoCaptureDeviceInfo& device_info,
     mojom::ProducerPtr producer)
     : service_ref_(std::move(service_ref)),
-      device_info_(device_info),
       producer_(std::move(producer)),
       buffer_pool_(new media::VideoCaptureBufferPoolImpl(
           std::make_unique<media::VideoCaptureBufferTrackerFactoryImpl>(),
           max_buffer_pool_buffer_count())) {}
 
-VirtualDeviceMojoAdapter::~VirtualDeviceMojoAdapter() {
+SharedMemoryVirtualDeviceMojoAdapter::~SharedMemoryVirtualDeviceMojoAdapter() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-int VirtualDeviceMojoAdapter::max_buffer_pool_buffer_count() {
+int SharedMemoryVirtualDeviceMojoAdapter::max_buffer_pool_buffer_count() {
   // The maximum number of video frame buffers in-flight at any one time
   // If all buffers are still in use by consumers when new frames are produced
   // those frames get dropped.
@@ -50,7 +49,7 @@ int VirtualDeviceMojoAdapter::max_buffer_pool_buffer_count() {
   return kMaxBufferCount;
 }
 
-void VirtualDeviceMojoAdapter::RequestFrameBuffer(
+void SharedMemoryVirtualDeviceMojoAdapter::RequestFrameBuffer(
     const gfx::Size& dimension,
     media::VideoPixelFormat pixel_format,
     RequestFrameBufferCallback callback) {
@@ -85,7 +84,7 @@ void VirtualDeviceMojoAdapter::RequestFrameBuffer(
           media::mojom::VideoBufferHandle::New();
       buffer_handle->set_shared_buffer_handle(
           buffer_pool_->GetHandleForInterProcessTransit(buffer_id,
-                                                        true /* read_only */));
+                                                        true /*read_only*/));
       receiver_->OnNewBuffer(buffer_id, std::move(buffer_handle));
     }
     known_buffer_ids_.push_back(buffer_id);
@@ -106,7 +105,7 @@ void VirtualDeviceMojoAdapter::RequestFrameBuffer(
   std::move(callback).Run(buffer_id);
 }
 
-void VirtualDeviceMojoAdapter::OnFrameReadyInBuffer(
+void SharedMemoryVirtualDeviceMojoAdapter::OnFrameReadyInBuffer(
     int32_t buffer_id,
     ::media::mojom::VideoFrameInfoPtr frame_info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -133,13 +132,13 @@ void VirtualDeviceMojoAdapter::OnFrameReadyInBuffer(
   buffer_pool_->RelinquishProducerReservation(buffer_id);
 }
 
-void VirtualDeviceMojoAdapter::Start(
+void SharedMemoryVirtualDeviceMojoAdapter::Start(
     const media::VideoCaptureParams& requested_settings,
     mojom::ReceiverPtr receiver) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  receiver.set_connection_error_handler(
-      base::Bind(&VirtualDeviceMojoAdapter::OnReceiverConnectionErrorOrClose,
-                 base::Unretained(this)));
+  receiver.set_connection_error_handler(base::BindOnce(
+      &SharedMemoryVirtualDeviceMojoAdapter::OnReceiverConnectionErrorOrClose,
+      base::Unretained(this)));
   receiver_ = std::move(receiver);
   receiver_->OnStarted();
 
@@ -149,54 +148,56 @@ void VirtualDeviceMojoAdapter::Start(
         media::mojom::VideoBufferHandle::New();
     buffer_handle->set_shared_buffer_handle(
         buffer_pool_->GetHandleForInterProcessTransit(buffer_id,
-                                                      true /* read_only */));
+                                                      true /*read_only*/));
     receiver_->OnNewBuffer(buffer_id, std::move(buffer_handle));
   }
 }
 
-void VirtualDeviceMojoAdapter::OnReceiverReportingUtilization(
+void SharedMemoryVirtualDeviceMojoAdapter::OnReceiverReportingUtilization(
     int32_t frame_feedback_id,
     double utilization) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void VirtualDeviceMojoAdapter::RequestRefreshFrame() {
+void SharedMemoryVirtualDeviceMojoAdapter::RequestRefreshFrame() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void VirtualDeviceMojoAdapter::MaybeSuspend() {
+void SharedMemoryVirtualDeviceMojoAdapter::MaybeSuspend() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void VirtualDeviceMojoAdapter::Resume() {
+void SharedMemoryVirtualDeviceMojoAdapter::Resume() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void VirtualDeviceMojoAdapter::GetPhotoState(GetPhotoStateCallback callback) {
+void SharedMemoryVirtualDeviceMojoAdapter::GetPhotoState(
+    GetPhotoStateCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::move(callback).Run(nullptr);
 }
 
-void VirtualDeviceMojoAdapter::SetPhotoOptions(
+void SharedMemoryVirtualDeviceMojoAdapter::SetPhotoOptions(
     media::mojom::PhotoSettingsPtr settings,
     SetPhotoOptionsCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void VirtualDeviceMojoAdapter::TakePhoto(TakePhotoCallback callback) {
+void SharedMemoryVirtualDeviceMojoAdapter::TakePhoto(
+    TakePhotoCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void VirtualDeviceMojoAdapter::Stop() {
+void SharedMemoryVirtualDeviceMojoAdapter::Stop() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!receiver_.is_bound())
     return;
   // Unsubscribe from connection error callbacks.
-  receiver_.set_connection_error_handler(base::Closure());
+  receiver_.set_connection_error_handler(base::OnceClosure());
   receiver_.reset();
 }
 
-void VirtualDeviceMojoAdapter::OnReceiverConnectionErrorOrClose() {
+void SharedMemoryVirtualDeviceMojoAdapter::OnReceiverConnectionErrorOrClose() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   Stop();
 }

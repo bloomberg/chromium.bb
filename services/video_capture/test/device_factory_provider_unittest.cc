@@ -10,8 +10,8 @@
 #include "services/video_capture/test/device_factory_provider_test.h"
 #include "services/video_capture/test/mock_producer.h"
 
-using testing::Exactly;
 using testing::_;
+using testing::Exactly;
 using testing::Invoke;
 using testing::InvokeWithoutArgs;
 
@@ -60,7 +60,7 @@ TEST_F(VideoCaptureServiceDeviceFactoryProviderTest,
   const std::string virtual_device_id = "/virtual/device";
   media::VideoCaptureDeviceInfo info;
   info.descriptor.device_id = virtual_device_id;
-  mojom::VirtualDevicePtr virtual_device_proxy;
+  mojom::SharedMemoryVirtualDevicePtr virtual_device_proxy;
   mojom::ProducerPtr producer_proxy;
   MockProducer producer(mojo::MakeRequest(&producer_proxy));
   EXPECT_CALL(device_info_receiver_, Run(_))
@@ -78,8 +78,9 @@ TEST_F(VideoCaptureServiceDeviceFactoryProviderTest,
             EXPECT_TRUE(virtual_device_enumerated);
             wait_loop.Quit();
           }));
-  factory_->AddVirtualDevice(info, std::move(producer_proxy),
-                             mojo::MakeRequest(&virtual_device_proxy));
+  factory_->AddSharedMemoryVirtualDevice(
+      info, std::move(producer_proxy),
+      mojo::MakeRequest(&virtual_device_proxy));
   factory_->GetDeviceInfos(device_info_receiver_.Get());
   wait_loop.Run();
 }
@@ -113,7 +114,7 @@ TEST_F(VideoCaptureServiceDeviceFactoryProviderTest,
   media::VideoCaptureDeviceInfo info;
   info.descriptor.device_id = virtual_device_id;
   mojom::DevicePtr device_proxy;
-  mojom::VirtualDevicePtr virtual_device_proxy;
+  mojom::SharedMemoryVirtualDevicePtr virtual_device_proxy;
   mojom::ProducerPtr producer_proxy;
   MockProducer producer(mojo::MakeRequest(&producer_proxy));
   base::MockCallback<mojom::DeviceFactory::CreateDeviceCallback>
@@ -122,8 +123,9 @@ TEST_F(VideoCaptureServiceDeviceFactoryProviderTest,
               Run(mojom::DeviceAccessResultCode::SUCCESS))
       .Times(1)
       .WillOnce(InvokeWithoutArgs([&wait_loop]() { wait_loop.Quit(); }));
-  factory_->AddVirtualDevice(info, std::move(producer_proxy),
-                             mojo::MakeRequest(&virtual_device_proxy));
+  factory_->AddSharedMemoryVirtualDevice(
+      info, std::move(producer_proxy),
+      mojo::MakeRequest(&virtual_device_proxy));
   factory_->CreateDevice(virtual_device_id, mojo::MakeRequest(&device_proxy),
                          create_device_proxy_callback.Get());
   wait_loop.Run();

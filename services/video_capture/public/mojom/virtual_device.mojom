@@ -6,6 +6,7 @@ module video_capture.mojom;
 
 import "media/capture/mojom/video_capture_types.mojom";
 import "services/video_capture/public/mojom/producer.mojom";
+import "services/video_capture/public/mojom/scoped_access_permission.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
 // Interface for a producer to feed video frames into a virtual
@@ -23,7 +24,7 @@ import "ui/gfx/geometry/mojo/geometry.mojom";
 // request, a separate interface |Producer| is used for notifying the
 // producer with the buffer information changes. It is producer's
 // responsibility for caching the buffer information.
-interface VirtualDevice {
+interface SharedMemoryVirtualDevice {
   // This is used by the producer for requesting a buffer to store frame
   // data. The frame can subsequently be pushed via |OnFrameReadyInBuffer|.
   // An invalid buffer ID |Constants.kInvalidBufferId| will be returned
@@ -41,4 +42,23 @@ interface VirtualDevice {
   // |buffer_id|.
   OnFrameReadyInBuffer(int32 buffer_id,
                        media.mojom.VideoFrameInfo frame_info);
+};
+
+// Similar to SharedMemoryVirtualDevice but uses MailboxHolders instead of
+// shared memory for transporting frames. The MailboxHolders are to be
+// provided by the caller.
+interface TextureVirtualDevice {
+  // Registers a new set of mailbox holders for subsequent transport of
+  // frames.
+  OnNewMailboxHolderBufferHandle(
+      int32 buffer_id, media.mojom.MailboxBufferHandleSet mailbox_handles);
+  // The invoker must guarantee that the textures with |buffer_id| stay valid
+  // until |access_permission| is released by the invocation target.
+  OnFrameReadyInBuffer(int32 buffer_id,
+                       ScopedAccessPermission access_permission,
+                       media.mojom.VideoFrameInfo frame_info);
+  // Unregisters a set of mailbox holders previously registered via
+  // OnNewMailboxHolderBufferHandle(). Note, that this should not be called
+  // while the corresponding buffer is still in use via OnFrameReadyInBuffer().
+  OnBufferRetired(int32 buffer_id);
 };
