@@ -602,12 +602,30 @@ static INLINE int get_bitdepth_data_path_index(const MACROBLOCKD *xd) {
   return xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH ? 1 : 0;
 }
 
-static INLINE BLOCK_SIZE get_subsize(BLOCK_SIZE bsize,
-                                     PARTITION_TYPE partition) {
-  if (partition == PARTITION_INVALID)
+static INLINE int get_sqr_bsize_idx(BLOCK_SIZE bsize) {
+  switch (bsize) {
+    case BLOCK_4X4: return 0;
+    case BLOCK_8X8: return 1;
+    case BLOCK_16X16: return 2;
+    case BLOCK_32X32: return 3;
+    case BLOCK_64X64: return 4;
+    case BLOCK_128X128: return 5;
+    default: return SQR_BLOCK_SIZES;
+  }
+}
+
+// Note: the input block size should be square.
+// Otherwise it's considered invalid.
+static INLINE BLOCK_SIZE get_partition_subsize(BLOCK_SIZE bsize,
+                                               PARTITION_TYPE partition) {
+  if (partition == PARTITION_INVALID) {
     return BLOCK_INVALID;
-  else
-    return subsize_lookup[partition][bsize];
+  } else {
+    const int sqr_bsize_idx = get_sqr_bsize_idx(bsize);
+    return sqr_bsize_idx >= SQR_BLOCK_SIZES
+               ? BLOCK_INVALID
+               : subsize_lookup[partition][sqr_bsize_idx];
+  }
 }
 
 static TX_TYPE intra_mode_to_tx_type(const MB_MODE_INFO *mbmi,
@@ -747,6 +765,7 @@ static INLINE TX_TYPE get_default_tx_type(PLANE_TYPE plane_type,
 
 static INLINE BLOCK_SIZE
 get_plane_block_size(BLOCK_SIZE bsize, const struct macroblockd_plane *pd) {
+  if (bsize == BLOCK_INVALID) return BLOCK_INVALID;
   return ss_size_lookup[bsize][pd->subsampling_x][pd->subsampling_y];
 }
 

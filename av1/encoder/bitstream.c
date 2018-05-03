@@ -1594,7 +1594,7 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
   const int quarter_step = mi_size_wide[bsize] / 4;
   int i;
   const PARTITION_TYPE partition = get_partition(cm, mi_row, mi_col, bsize);
-  const BLOCK_SIZE subsize = get_subsize(bsize, partition);
+  const BLOCK_SIZE subsize = get_partition_subsize(bsize, partition);
 
   if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
 

@@ -149,7 +149,7 @@ static void count_segs_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
       break;
 
     case PARTITION_SPLIT: {
-      const BLOCK_SIZE subsize = subsize_lookup[PARTITION_SPLIT][bsize];
+      const BLOCK_SIZE subsize = get_partition_subsize(bsize, PARTITION_SPLIT);
       int n;
 
       assert(num_8x8_blocks_wide_lookup[mi[0]->sb_type] < bs &&

@@ -733,7 +733,7 @@ static void setup_block_mask(AV1_COMMON *const cm, int mi_row, int mi_col,
   if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
 
   const PARTITION_TYPE partition = get_partition(cm, mi_row, mi_col, bsize);
-  const BLOCK_SIZE subsize = get_subsize(bsize, partition);
+  const BLOCK_SIZE subsize = get_partition_subsize(bsize, partition);
   const int hbs = mi_size_wide[bsize] / 2;
   const int quarter_step = mi_size_wide[bsize] / 4;
   const int bw = mi_size_wide[bsize];

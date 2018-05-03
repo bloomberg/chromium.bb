@@ -1488,10 +1488,10 @@ static void encode_sb(const AV1_COMP *const cpi, ThreadData *td,
                       ? partition_plane_context(xd, mi_row, mi_col, bsize)
                       : -1;
   const PARTITION_TYPE partition = pc_tree->partitioning;
-  const BLOCK_SIZE subsize = get_subsize(bsize, partition);
+  const BLOCK_SIZE subsize = get_partition_subsize(bsize, partition);
   int quarter_step = mi_size_wide[bsize] / 4;
   int i;
-  BLOCK_SIZE bsize2 = get_subsize(bsize, PARTITION_SPLIT);
+  BLOCK_SIZE bsize2 = get_partition_subsize(bsize, PARTITION_SPLIT);
 
   if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
 
@@ -1693,7 +1693,7 @@ static void rd_use_partition(AV1_COMP *cpi, ThreadData *td,
   const PARTITION_TYPE partition =
       (bsize >= BLOCK_8X8) ? get_partition(cm, mi_row, mi_col, bsize)
                            : PARTITION_NONE;
-  const BLOCK_SIZE subsize = get_subsize(bsize, partition);
+  const BLOCK_SIZE subsize = get_partition_subsize(bsize, partition);
   RD_SEARCH_MACROBLOCK_CONTEXT x_ctx;
   RD_STATS last_part_rdc, none_rdc, chosen_rdc;
   BLOCK_SIZE sub_subsize = BLOCK_4X4;
@@ -1727,7 +1727,7 @@ static void rd_use_partition(AV1_COMP *cpi, ThreadData *td,
       cpi->sf.adjust_partitioning_from_last_frame) {
     // Check if any of the sub blocks are further split.
     if (partition == PARTITION_SPLIT && subsize > BLOCK_8X8) {
-      sub_subsize = get_subsize(subsize, PARTITION_SPLIT);
+      sub_subsize = get_partition_subsize(subsize, PARTITION_SPLIT);
       splits_below = 1;
       for (i = 0; i < 4; i++) {
         int jj = i >> 1, ii = i & 0x01;
@@ -1855,7 +1855,7 @@ static void rd_use_partition(AV1_COMP *cpi, ThreadData *td,
       partition != PARTITION_SPLIT && bsize > BLOCK_8X8 &&
       (mi_row + bs < cm->mi_rows || mi_row + hbs == cm->mi_rows) &&
       (mi_col + bs < cm->mi_cols || mi_col + hbs == cm->mi_cols)) {
-    BLOCK_SIZE split_subsize = get_subsize(bsize, PARTITION_SPLIT);
+    BLOCK_SIZE split_subsize = get_partition_subsize(bsize, PARTITION_SPLIT);
     chosen_rdc.rate = 0;
     chosen_rdc.dist = 0;
 
@@ -2330,7 +2330,7 @@ static void reset_partition(PC_TREE *pc_tree, BLOCK_SIZE bsize) {
   pc_tree->cb_search_range = SEARCH_FULL_PLANE;
 
   if (bsize >= BLOCK_8X8) {
-    BLOCK_SIZE subsize = get_subsize(bsize, PARTITION_SPLIT);
+    BLOCK_SIZE subsize = get_partition_subsize(bsize, PARTITION_SPLIT);
     for (int idx = 0; idx < 4; ++idx)
       reset_partition(pc_tree->split[idx], subsize);
   }
@@ -2491,7 +2491,7 @@ static void rd_pick_sqr_partition(const AV1_COMP *const cpi, ThreadData *td,
   // PARTITION_SPLIT
   if (do_square_split) {
     int reached_last_index = 0;
-    subsize = get_subsize(bsize, PARTITION_SPLIT);
+    subsize = get_partition_subsize(bsize, PARTITION_SPLIT);
     int idx;
 
     for (idx = 0; idx < 4 && sum_rdc.rdcost < temp_best_rdcost; ++idx) {
@@ -2631,7 +2631,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   int split_ctx_is_ready[2] = { 0, 0 };
   int horz_ctx_is_ready = 0;
   int vert_ctx_is_ready = 0;
-  BLOCK_SIZE bsize2 = get_subsize(bsize, PARTITION_SPLIT);
+  BLOCK_SIZE bsize2 = get_partition_subsize(bsize, PARTITION_SPLIT);
 
   if (bsize == cm->seq_params.sb_size) x->must_find_valid_partition = 0;
 
@@ -2921,7 +2921,7 @@ BEGIN_PARTITION_SEARCH:
   if (do_square_split) {
     av1_init_rd_stats(&sum_rdc);
     int reached_last_index = 0;
-    subsize = get_subsize(bsize, PARTITION_SPLIT);
+    subsize = get_partition_subsize(bsize, PARTITION_SPLIT);
     int idx;
 
     for (idx = 0; idx < 4 && sum_rdc.rdcost < best_rdc.rdcost; ++idx) {
@@ -2996,7 +2996,7 @@ BEGIN_PARTITION_SEARCH:
   if (partition_horz_allowed &&
       (do_rectangular_split || av1_active_h_edge(cpi, mi_row, mi_step))) {
     av1_init_rd_stats(&sum_rdc);
-    subsize = get_subsize(bsize, PARTITION_HORZ);
+    subsize = get_partition_subsize(bsize, PARTITION_HORZ);
     if (cpi->sf.adaptive_motion_search) load_pred_mv(x, ctx_none);
     if (cpi->sf.adaptive_pred_interp_filter && bsize == BLOCK_8X8 &&
         partition_none_allowed)
@@ -3080,7 +3080,7 @@ BEGIN_PARTITION_SEARCH:
   if (partition_vert_allowed &&
       (do_rectangular_split || av1_active_v_edge(cpi, mi_col, mi_step))) {
     av1_init_rd_stats(&sum_rdc);
-    subsize = get_subsize(bsize, PARTITION_VERT);
+    subsize = get_partition_subsize(bsize, PARTITION_VERT);
 
     if (cpi->sf.adaptive_motion_search) load_pred_mv(x, ctx_none);
 
@@ -3203,7 +3203,7 @@ BEGIN_PARTITION_SEARCH:
 
   // PARTITION_HORZ_A
   if (partition_horz_allowed && horza_partition_allowed) {
-    subsize = get_subsize(bsize, PARTITION_HORZ_A);
+    subsize = get_partition_subsize(bsize, PARTITION_HORZ_A);
     pc_tree->horizontala[0].rd_mode_is_ready = 0;
     pc_tree->horizontala[1].rd_mode_is_ready = 0;
     pc_tree->horizontala[2].rd_mode_is_ready = 0;
@@ -3227,7 +3227,7 @@ BEGIN_PARTITION_SEARCH:
   }
   // PARTITION_HORZ_B
   if (partition_horz_allowed && horzb_partition_allowed) {
-    subsize = get_subsize(bsize, PARTITION_HORZ_B);
+    subsize = get_partition_subsize(bsize, PARTITION_HORZ_B);
     pc_tree->horizontalb[0].rd_mode_is_ready = 0;
     pc_tree->horizontalb[1].rd_mode_is_ready = 0;
     pc_tree->horizontalb[2].rd_mode_is_ready = 0;
@@ -3255,7 +3255,7 @@ BEGIN_PARTITION_SEARCH:
 
   // PARTITION_VERT_A
   if (partition_vert_allowed && verta_partition_allowed) {
-    subsize = get_subsize(bsize, PARTITION_VERT_A);
+    subsize = get_partition_subsize(bsize, PARTITION_VERT_A);
     pc_tree->verticala[0].rd_mode_is_ready = 0;
     pc_tree->verticala[1].rd_mode_is_ready = 0;
     pc_tree->verticala[2].rd_mode_is_ready = 0;
@@ -3273,7 +3273,7 @@ BEGIN_PARTITION_SEARCH:
   }
   // PARTITION_VERT_B
   if (partition_vert_allowed && vertb_partition_allowed) {
-    subsize = get_subsize(bsize, PARTITION_VERT_B);
+    subsize = get_partition_subsize(bsize, PARTITION_VERT_B);
     pc_tree->verticalb[0].rd_mode_is_ready = 0;
     pc_tree->verticalb[1].rd_mode_is_ready = 0;
     pc_tree->verticalb[2].rd_mode_is_ready = 0;
@@ -3305,7 +3305,7 @@ BEGIN_PARTITION_SEARCH:
     const int quarter_step = mi_size_high[bsize] / 4;
     PICK_MODE_CONTEXT *ctx_prev = ctx_none;
 
-    subsize = get_subsize(bsize, PARTITION_HORZ_4);
+    subsize = get_partition_subsize(bsize, PARTITION_HORZ_4);
 
     for (int i = 0; i < 4; ++i) {
       int this_mi_row = mi_row + i * quarter_step;
@@ -3349,7 +3349,7 @@ BEGIN_PARTITION_SEARCH:
     const int quarter_step = mi_size_wide[bsize] / 4;
     PICK_MODE_CONTEXT *ctx_prev = ctx_none;
 
-    subsize = get_subsize(bsize, PARTITION_VERT_4);
+    subsize = get_partition_subsize(bsize, PARTITION_VERT_4);
 
     for (int i = 0; i < 4; ++i) {
       int this_mi_col = mi_col + i * quarter_step;

@@ -65,178 +65,37 @@ static const uint8_t num_pels_log2_lookup[BLOCK_SIZES_ALL] = {
 };
 
 /* clang-format off */
-static const BLOCK_SIZE subsize_lookup[EXT_PARTITION_TYPES][BLOCK_SIZES_ALL] =
-{
+static const BLOCK_SIZE subsize_lookup[EXT_PARTITION_TYPES][SQR_BLOCK_SIZES] = {
   {     // PARTITION_NONE
-    //                            4X4
-                                  BLOCK_4X4,
-    // 4X8,        8X4,           8X8
-    BLOCK_4X8,     BLOCK_8X4,     BLOCK_8X8,
-    // 8X16,       16X8,          16X16
-    BLOCK_8X16,    BLOCK_16X8,    BLOCK_16X16,
-    // 16X32,      32X16,         32X32
-    BLOCK_16X32,   BLOCK_32X16,   BLOCK_32X32,
-    // 32X64,      64X32,         64X64
-    BLOCK_32X64,   BLOCK_64X32,   BLOCK_64X64,
-    // 64x128,     128x64,        128x128
-    BLOCK_64X128,  BLOCK_128X64,  BLOCK_128X128,
-    // 4X16,       16X4,          8X32
-    BLOCK_4X16,    BLOCK_16X4,    BLOCK_8X32,
-    // 32X8,       16X64,         64X16
-    BLOCK_32X8,    BLOCK_16X64,   BLOCK_64X16
+    BLOCK_4X4, BLOCK_8X8, BLOCK_16X16,
+    BLOCK_32X32, BLOCK_64X64, BLOCK_128X128
   }, {  // PARTITION_HORZ
-    //                            4X4
-                                  BLOCK_INVALID,
-    // 4X8,        8X4,           8X8
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_8X4,
-    // 8X16,       16X8,          16X16
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_16X8,
-    // 16X32,      32X16,         32X32
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_32X16,
-    // 32X64,      64X32,         64X64
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_64X32,
-    // 64x128,     128x64,        128x128
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_128X64,
-    // 4X16,       16X4,          8X32
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_INVALID,
-    // 32X8,       16X64,         64X16
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_INVALID
+    BLOCK_INVALID, BLOCK_8X4, BLOCK_16X8,
+    BLOCK_32X16, BLOCK_64X32, BLOCK_128X64
   }, {  // PARTITION_VERT
-    //                            4X4
-                                  BLOCK_INVALID,
-    // 4X8,        8X4,           8X8
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_4X8,
-    // 8X16,       16X8,          16X16
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_8X16,
-    // 16X32,      32X16,         32X32
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_16X32,
-    // 32X64,      64X32,         64X64
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_32X64,
-    // 64x128,     128x64,        128x128
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_64X128,
-    // 4X16,       16X4,          8X32
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_INVALID,
-    // 32X8,       16X64,         64X16
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_INVALID
+    BLOCK_INVALID, BLOCK_4X8, BLOCK_8X16,
+    BLOCK_16X32, BLOCK_32X64, BLOCK_64X128
   }, {  // PARTITION_SPLIT
-    //                            4X4
-                                  BLOCK_INVALID,
-    // 4X8,        8X4,           8X8
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_4X4,
-    // 8X16,       16X8,          16X16
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_8X8,
-    // 16X32,      32X16,         32X32
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_16X16,
-    // 32X64,      64X32,         64X64
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_32X32,
-    // 64x128,     128x64,        128x128
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_64X64,
-    // 4X16,       16X4,          8X32
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_INVALID,
-    // 32X8,       16X64,         64X16
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_INVALID
+    BLOCK_INVALID, BLOCK_4X4, BLOCK_8X8,
+    BLOCK_16X16, BLOCK_32X32, BLOCK_64X64
   }, {  // PARTITION_HORZ_A
-    //                            4X4
-                                  BLOCK_INVALID,
-    // 4X8,        8X4,           8X8
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_8X4,
-    // 8X16,       16X8,          16X16
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_16X8,
-    // 16X32,      32X16,         32X32
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_32X16,
-    // 32X64,      64X32,         64X64
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_64X32,
-    // 64x128,     128x64,        128x128
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_128X64,
-    // 4X16,       16X4,          8X32
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_INVALID,
-    // 32X8,       16X64,         64X16
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_INVALID,
+    BLOCK_INVALID, BLOCK_8X4, BLOCK_16X8,
+    BLOCK_32X16, BLOCK_64X32, BLOCK_128X64
   }, {  // PARTITION_HORZ_B
-    //                            4X4
-                                  BLOCK_INVALID,
-    // 4X8,        8X4,           8X8
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_8X4,
-    // 8X16,       16X8,          16X16
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_16X8,
-    // 16X32,      32X16,         32X32
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_32X16,
-    // 32X64,      64X32,         64X64
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_64X32,
-    // 64x128,     128x64,        128x128
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_128X64,
-    // 4X16,       16X4,          8X32
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_INVALID,
-    // 32X8,       16X64,         64X16
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_INVALID
+    BLOCK_INVALID, BLOCK_8X4, BLOCK_16X8,
+    BLOCK_32X16, BLOCK_64X32, BLOCK_128X64
   }, {  // PARTITION_VERT_A
-    //                            4X4
-                                  BLOCK_INVALID,
-    // 4X8,        8X4,           8X8
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_4X8,
-    // 8X16,       16X8,          16X16
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_8X16,
-    // 16X32,      32X16,         32X32
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_16X32,
-    // 32X64,      64X32,         64X64
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_32X64,
-    // 64x128,     128x64,        128x128
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_64X128,
-    // 4X16,       16X4,          8X32
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_INVALID,
-    // 32X8,       16X64,         64X16
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_INVALID
+    BLOCK_INVALID, BLOCK_4X8, BLOCK_8X16,
+    BLOCK_16X32, BLOCK_32X64, BLOCK_64X128
   }, {  // PARTITION_VERT_B
-    //                            4X4
-                                  BLOCK_INVALID,
-    // 4X8,        8X4,           8X8
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_4X8,
-    // 8X16,       16X8,          16X16
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_8X16,
-    // 16X32,      32X16,         32X32
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_16X32,
-    // 32X64,      64X32,         64X64
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_32X64,
-    // 64x128,     128x64,        128x128
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_64X128,
-    // 4X16,       16X4,          8X32
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_INVALID,
-    // 32X8,       16X64,         64X16
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_INVALID
+    BLOCK_INVALID, BLOCK_4X8, BLOCK_8X16,
+    BLOCK_16X32, BLOCK_32X64, BLOCK_64X128
   }, {  // PARTITION_HORZ_4
-    //                            4X4
-                                  BLOCK_INVALID,
-    // 4X8,        8X4,           8X8
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_INVALID,
-    // 8X16,       16X8,          16X16
     BLOCK_INVALID, BLOCK_INVALID, BLOCK_16X4,
-    // 16X32,      32X16,         32X32
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_32X8,
-    // 32X64,      64X32,         64X64
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_64X16,
-    // 64x128,     128x64,        128x128
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_INVALID,
-    // 4X16,       16X4,          8X32
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_INVALID,
-    // 32X8,       16X64,         64X16
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_INVALID
+    BLOCK_32X8, BLOCK_64X16, BLOCK_INVALID
   }, {  // PARTITION_VERT_4
-    //                            4X4
-                                  BLOCK_INVALID,
-    // 4X8,        8X4,           8X8
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_INVALID,
-    // 8X16,       16X8,          16X16
     BLOCK_INVALID, BLOCK_INVALID, BLOCK_4X16,
-    // 16X32,      32X16,         32X32
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_8X32,
-    // 32X64,      64X32,         64X64
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_16X64,
-    // 64x128,     128x64,        128x128
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_INVALID,
-    // 4X16,       16X4,          8X32
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_INVALID,
-    // 32X8,       16X64,         64X16
-    BLOCK_INVALID, BLOCK_INVALID, BLOCK_INVALID
+    BLOCK_8X32, BLOCK_16X64, BLOCK_INVALID
   }
 };
 

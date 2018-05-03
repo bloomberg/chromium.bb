@@ -2107,7 +2107,8 @@ static void get_2x2_normalized_sses_and_sads(
     int src_stride, const uint8_t *const dst, int dst_stride,
     const int16_t *const src_diff, int diff_stride, double *const sse_norm_arr,
     double *const sad_norm_arr) {
-  const BLOCK_SIZE tx_bsize_half = subsize_lookup[PARTITION_SPLIT][tx_bsize];
+  const BLOCK_SIZE tx_bsize_half =
+      get_partition_subsize(tx_bsize, PARTITION_SPLIT);
   if (tx_bsize_half == BLOCK_INVALID) {  // manually calculate stats
     const int half_width = block_size_wide[tx_bsize] / 2;
     const int half_height = block_size_high[tx_bsize] / 2;
