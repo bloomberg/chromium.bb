@@ -43,6 +43,11 @@ class APILastError {
   // Returns true if the given context has an active error.
   bool HasError(v8::Local<v8::Context> context);
 
+  // Reports an unchecked error by logging it to the console. This is used when
+  // an error occurs, and there is no way it could be checked.
+  void ReportUncheckedError(v8::Local<v8::Context> context,
+                            const std::string& error);
+
  private:
   // Sets the lastError property on the primary parent object (in practice, this
   // is chrome.runtime.lastError);

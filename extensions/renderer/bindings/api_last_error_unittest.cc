@@ -148,6 +148,45 @@ TEST_F(APILastErrorTest, ReportIfUnchecked) {
   }
 }
 
+TEST_F(APILastErrorTest, ReportUncheckedError) {
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+  v8::Local<v8::Object> parent_object = v8::Object::New(isolate());
+
+  base::Optional<std::string> console_error;
+  auto log_error = [](base::Optional<std::string>* console_error,
+                      v8::Local<v8::Context> context,
+                      const std::string& error) { *console_error = error; };
+
+  ParentList parents = {{context, parent_object}};
+  APILastError last_error(base::BindRepeating(&GetParent, parents),
+                          base::BindRepeating(log_error, &console_error));
+
+  // lastError should start unset.
+  EXPECT_FALSE(last_error.HasError(context));
+  EXPECT_EQ("undefined", GetLastErrorMessage(parent_object, context));
+  EXPECT_FALSE(
+      parent_object->Has(context, gin::StringToV8(isolate(), "lastError"))
+          .ToChecked());
+
+  {
+    v8::TryCatch try_catch(isolate());
+    // Report an unchecked error. We should log the error, but not throw an
+    // exception to avoid disrupting JS execution.
+    last_error.ReportUncheckedError(context, "A last error");
+    ASSERT_TRUE(console_error);
+    EXPECT_EQ("Unchecked runtime.lastError: A last error", *console_error);
+    EXPECT_FALSE(try_catch.HasCaught());
+  }
+
+  // lastError should remain unset.
+  EXPECT_FALSE(last_error.HasError(context));
+  EXPECT_EQ("undefined", GetLastErrorMessage(parent_object, context));
+  EXPECT_FALSE(
+      parent_object->Has(context, gin::StringToV8(isolate(), "lastError"))
+          .ToChecked());
+}
+
 // Test behavior when something else sets a lastError property on the parent
 // object.
 TEST_F(APILastErrorTest, NonLastErrorObject) {

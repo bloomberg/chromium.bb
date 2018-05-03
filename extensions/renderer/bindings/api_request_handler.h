@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "extensions/renderer/bindings/api_binding_types.h"
 #include "extensions/renderer/bindings/api_last_error.h"
 #include "third_party/blink/public/web/web_user_gesture_token.h"
@@ -97,23 +98,32 @@ class APIRequestHandler {
   std::set<int> GetPendingRequestIdsForTesting() const;
 
  private:
+  class ArgumentAdapter;
+
   struct PendingRequest {
-    PendingRequest(v8::Isolate* isolate,
-                   v8::Local<v8::Function> callback,
-                   v8::Local<v8::Context> context,
-                   const std::vector<v8::Local<v8::Value>>& callback_args,
-                   const std::string& method_name);
+    PendingRequest(
+        v8::Isolate* isolate,
+        v8::Local<v8::Context> context,
+        const std::string& method_name,
+        v8::Local<v8::Function> callback,
+        const base::Optional<std::vector<v8::Local<v8::Value>>>& callback_args);
     ~PendingRequest();
     PendingRequest(PendingRequest&&);
     PendingRequest& operator=(PendingRequest&&);
 
     v8::Isolate* isolate;
     v8::Global<v8::Context> context;
-    v8::Global<v8::Function> callback;
-    std::vector<v8::Global<v8::Value>> callback_arguments;
     std::string method_name;
-    blink::WebUserGestureToken user_gesture_token;
+
+    // The following are only populated for requests with a callback.
+    base::Optional<v8::Global<v8::Function>> callback;
+    base::Optional<std::vector<v8::Global<v8::Value>>> callback_arguments;
+    base::Optional<blink::WebUserGestureToken> user_gesture_token;
   };
+
+  void CompleteRequestImpl(int request_id,
+                           const ArgumentAdapter& arguments,
+                           const std::string& error);
 
   // The next available request identifier.
   int next_request_id_ = 0;
