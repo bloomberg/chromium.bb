@@ -85,10 +85,11 @@ class BrowserSideFlingBrowserTest : public ContentBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(BrowserSideFlingBrowserTest);
 };
 
-#if !defined(OS_ANDROID)
-#define MAYBE_AutoscrollFling AutoscrollFling
-#else
+// TODO(sahel): This test is flaking on OS_CHROMEOS https://crbug.com/838769
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
 #define MAYBE_AutoscrollFling DISABLED_AutoscrollFling
+#else
+#define MAYBE_AutoscrollFling AutoscrollFling
 #endif
 IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest, MAYBE_AutoscrollFling) {
   LoadURL(kBrowserFlingDataURL);
