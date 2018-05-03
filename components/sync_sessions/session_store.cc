@@ -574,7 +574,10 @@ std::unique_ptr<syncer::DataBatch> SessionStore::GetSessionDataForKeys(
           [](syncer::MutableDataBatch* batch, const std::string& session_name,
              sync_pb::SessionSpecifics* specifics) {
             // Local variable used to avoid assuming argument evaluation order.
-            const std::string storage_key = GetStorageKey(*specifics);
+            // We also avoid GetStorageKey() because specifics might not be
+            // valid according to AreValidSpecifics().
+            const std::string storage_key = EncodeStorageKey(
+                specifics->session_tag(), specifics->tab_node_id());
             batch->Put(storage_key, MoveToEntityData(session_name, specifics));
           },
           batch.get()));
@@ -589,7 +592,10 @@ std::unique_ptr<syncer::DataBatch> SessionStore::GetAllSessionData() const {
           [](syncer::MutableDataBatch* batch, const std::string& session_name,
              sync_pb::SessionSpecifics* specifics) {
             // Local variable used to avoid assuming argument evaluation order.
-            const std::string storage_key = GetStorageKey(*specifics);
+            // We also avoid GetStorageKey() because specifics might not be
+            // valid according to AreValidSpecifics().
+            const std::string storage_key = EncodeStorageKey(
+                specifics->session_tag(), specifics->tab_node_id());
             batch->Put(storage_key, MoveToEntityData(session_name, specifics));
           },
           batch.get()));
