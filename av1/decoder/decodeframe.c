@@ -62,6 +62,9 @@
 #define MAX_AV1_HEADER_SIZE 80
 #define ACCT_STR __func__
 
+// This is needed by ext_tile related unit tests.
+#define EXT_TILE_DEBUG 1
+
 // Checks that the remaining bits start with a 1 and ends with 0s.
 // It consumes an additional byte, if already byte aligned before the check.
 int av1_check_trailing_bits(AV1Decoder *pbi, struct aom_read_bit_buffer *rb) {
@@ -1532,6 +1535,7 @@ static void set_single_tile_decoding_mode(AV1_COMMON *const cm) {
 static void read_tile_info(AV1Decoder *const pbi,
                            struct aom_read_bit_buffer *const rb) {
   AV1_COMMON *const cm = &pbi->common;
+#if EXT_TILE_DEBUG
   if (cm->large_scale_tile) {
     // Read the tile width/height
     if (cm->seq_params.sb_size == BLOCK_128X128) {
@@ -1570,6 +1574,7 @@ static void read_tile_info(AV1Decoder *const pbi,
     }
     return;
   }
+#endif  // EXT_TILE_DEBUG
 
   read_tile_info_max_tile(cm, rb);
 
@@ -1593,6 +1598,7 @@ static size_t mem_get_varsize(const uint8_t *src, int sz) {
   }
 }
 
+#if EXT_TILE_DEBUG
 // Reads the next tile returning its size and adjusting '*data' accordingly
 // based on 'is_last'.
 static void get_ls_tile_buffer(
@@ -1728,6 +1734,7 @@ static void get_ls_tile_buffers(
     }
   }
 }
+#endif  // EXT_TILE_DEBUG
 
 // Reads the next tile returning its size and adjusting '*data' accordingly
 // based on 'is_last'.
@@ -1902,9 +1909,11 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
   assert(tile_rows <= MAX_TILE_ROWS);
   assert(tile_cols <= MAX_TILE_COLS);
 
+#if EXT_TILE_DEBUG
   if (cm->large_scale_tile)
     get_ls_tile_buffers(pbi, data, data_end, tile_buffers);
   else
+#endif  // EXT_TILE_DEBUG
     get_tile_buffers(pbi, data, data_end, tile_buffers, startTile, endTile);
 
   if (pbi->tile_data == NULL || n_tiles != pbi->allocated_tiles) {
@@ -2118,10 +2127,12 @@ static const uint8_t *decode_tiles_mt(AV1Decoder *pbi, const uint8_t *data,
     }
   }
 
-  // get tile size in tile group
+    // get tile size in tile group
+#if EXT_TILE_DEBUG
   if (cm->large_scale_tile)
     get_ls_tile_buffers(pbi, data, data_end, tile_buffers);
   else
+#endif  // EXT_TILE_DEBUG
     get_tile_buffers(pbi, data, data_end, tile_buffers, startTile, endTile);
 
   if (pbi->tile_data == NULL || n_tiles != pbi->allocated_tiles) {
