@@ -243,6 +243,7 @@ PasswordStoreFactory::BuildServiceInstanceFor(
         " for more information about password storage options.";
   }
 
+  login_db->disable_encryption();
   ps = new PasswordStoreX(std::move(login_db), std::move(backend));
   RecordBackendStatistics(desktop_env, store_type, used_backend);
 #elif defined(USE_OZONE)

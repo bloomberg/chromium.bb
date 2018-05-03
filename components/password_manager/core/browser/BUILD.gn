@@ -400,6 +400,7 @@ source_set("unit_tests") {
     "//components/autofill/core/browser:test_support",
     "//components/autofill/core/browser/proto",
     "//components/autofill/core/common",
+    "//components/os_crypt",
     "//components/os_crypt:test_support",
     "//components/password_manager/core/browser:proto",
     "//components/password_manager/core/browser/form_parsing/fuzzer:unit_tests",

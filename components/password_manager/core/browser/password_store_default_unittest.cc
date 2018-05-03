@@ -16,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
+#include "components/os_crypt/os_crypt_mocker.h"
 #include "components/password_manager/core/browser/login_database.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_store_change.h"
@@ -106,6 +107,7 @@ class PasswordStoreDefaultTestDelegate {
 PasswordStoreDefaultTestDelegate::PasswordStoreDefaultTestDelegate()
     : scoped_task_environment_(
           base::test::ScopedTaskEnvironment::MainThreadType::UI) {
+  OSCryptMocker::SetUp();
   SetupTempDir();
   store_ = CreateInitializedStore(
       std::make_unique<LoginDatabase>(test_login_db_file_path()));
@@ -115,12 +117,14 @@ PasswordStoreDefaultTestDelegate::PasswordStoreDefaultTestDelegate(
     std::unique_ptr<LoginDatabase> database)
     : scoped_task_environment_(
           base::test::ScopedTaskEnvironment::MainThreadType::UI) {
+  OSCryptMocker::SetUp();
   SetupTempDir();
   store_ = CreateInitializedStore(std::move(database));
 }
 
 PasswordStoreDefaultTestDelegate::~PasswordStoreDefaultTestDelegate() {
   ClosePasswordStore();
+  OSCryptMocker::TearDown();
 }
 
 void PasswordStoreDefaultTestDelegate::FinishAsyncProcessing() {
