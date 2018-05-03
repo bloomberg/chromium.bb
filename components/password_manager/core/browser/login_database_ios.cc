@@ -31,7 +31,7 @@ namespace password_manager {
 
 LoginDatabase::EncryptionResult LoginDatabase::EncryptedString(
     const base::string16& plain_text,
-    std::string* cipher_text) {
+    std::string* cipher_text) const {
   if (plain_text.size() == 0) {
     *cipher_text = std::string();
     return ENCRYPTION_RESULT_SUCCESS;
@@ -73,7 +73,7 @@ LoginDatabase::EncryptionResult LoginDatabase::EncryptedString(
 
 LoginDatabase::EncryptionResult LoginDatabase::DecryptedString(
     const std::string& cipher_text,
-    base::string16* plain_text) {
+    base::string16* plain_text) const {
   if (cipher_text.size() == 0) {
     *plain_text = base::string16();
     return ENCRYPTION_RESULT_SUCCESS;

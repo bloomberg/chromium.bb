@@ -147,6 +147,11 @@ class LoginDatabase {
 
   StatisticsTable& stats_table() { return stats_table_; }
 
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+  // This instance should not encrypt/decrypt password values using OSCrypt.
+  void disable_encryption() { use_encryption_ = false; }
+#endif  // defined(OS_POSIX)
+
  private:
 #if defined(OS_IOS)
   friend class LoginDatabaseIOSTest;
@@ -175,23 +180,25 @@ class LoginDatabase {
   // successful, or returning false and leaving cipher_text unchanged if
   // encryption fails (e.g., if the underlying OS encryption system is
   // temporarily unavailable).
-  static EncryptionResult EncryptedString(const base::string16& plain_text,
-                                          std::string* cipher_text);
+  EncryptionResult EncryptedString(const base::string16& plain_text,
+                                   std::string* cipher_text) const
+      WARN_UNUSED_RESULT;
 
   // Decrypts cipher_text, setting the value of plain_text and returning true if
   // successful, or returning false and leaving plain_text unchanged if
   // decryption fails (e.g., if the underlying OS encryption system is
   // temporarily unavailable).
-  static EncryptionResult DecryptedString(const std::string& cipher_text,
-                                          base::string16* plain_text);
+  EncryptionResult DecryptedString(const std::string& cipher_text,
+                                   base::string16* plain_text) const
+      WARN_UNUSED_RESULT;
 
   // Fills |form| from the values in the given statement (which is assumed to
   // be of the form used by the Get*Logins methods).
   // Returns the EncryptionResult from decrypting the password in |s|; if not
   // ENCRYPTION_RESULT_SUCCESS, |form| is not filled.
-  static EncryptionResult InitPasswordFormFromStatement(
-      autofill::PasswordForm* form,
-      const sql::Statement& s);
+  EncryptionResult InitPasswordFormFromStatement(autofill::PasswordForm* form,
+                                                 const sql::Statement& s) const
+      WARN_UNUSED_RESULT;
 
   // Gets all blacklisted or all non-blacklisted (depending on |blacklisted|)
   // credentials. On success returns true and overwrites |forms| with the
@@ -203,10 +210,10 @@ class LoginDatabase {
   // Overwrites |forms| with credentials retrieved from |statement|. If
   // |matched_form| is not null, filters out all results but those PSL-matching
   // |*matched_form| or federated credentials for it. On success returns true.
-  static bool StatementToForms(
-      sql::Statement* statement,
-      const PasswordStore::FormDigest* matched_form,
-      std::vector<std::unique_ptr<autofill::PasswordForm>>* forms);
+  bool StatementToForms(sql::Statement* statement,
+                        const PasswordStore::FormDigest* matched_form,
+                        std::vector<std::unique_ptr<autofill::PasswordForm>>*
+                            forms) const WARN_UNUSED_RESULT;
 
   // Initializes all the *_statement_ data members with appropriate SQL
   // fragments based on |builder|.
@@ -232,6 +239,13 @@ class LoginDatabase {
   std::string synced_statement_;
   std::string blacklisted_statement_;
   std::string encrypted_statement_;
+
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+  // Whether password values should be encrypted.
+  // TODO(crbug.com/571003) Only linux doesn't use encryption. Remove this once
+  // Linux is fully migrated into LoginDatabase.
+  bool use_encryption_ = true;
+#endif  // defined(OS_POSIX)
 
   DISALLOW_COPY_AND_ASSIGN(LoginDatabase);
 };

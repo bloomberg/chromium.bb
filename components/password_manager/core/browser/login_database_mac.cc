@@ -8,19 +8,17 @@
 
 namespace password_manager {
 
-// static
 LoginDatabase::EncryptionResult LoginDatabase::EncryptedString(
     const base::string16& plain_text,
-    std::string* cipher_text) {
+    std::string* cipher_text) const {
   return OSCrypt::EncryptString16(plain_text, cipher_text)
              ? ENCRYPTION_RESULT_SUCCESS
              : ENCRYPTION_RESULT_SERVICE_FAILURE;
 }
 
-// static
 LoginDatabase::EncryptionResult LoginDatabase::DecryptedString(
     const std::string& cipher_text,
-    base::string16* plain_text) {
+    base::string16* plain_text) const {
   return OSCrypt::DecryptString16(cipher_text, plain_text)
              ? ENCRYPTION_RESULT_SUCCESS
              : ENCRYPTION_RESULT_SERVICE_FAILURE;
