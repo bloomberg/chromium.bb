@@ -455,8 +455,12 @@ LayoutRect FixedAttachmentPositioningArea(const LayoutBoxModelObject& obj,
   if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
     // The LayoutView is the only object that can paint a fixed background into
     // its scrolling contents layer, so it gets a special adjustment here.
-    if (obj.IsLayoutView())
-      rect.SetLocation(IntPoint(ToLayoutView(obj).ScrolledContentOffset()));
+    if (obj.IsLayoutView()) {
+      CompositedLayerMapping* mapping =
+          obj.Layer()->GetCompositedLayerMapping();
+      if (mapping && mapping->BackgroundPaintsOntoScrollingContentsLayer())
+        rect.SetLocation(IntPoint(ToLayoutView(obj).ScrolledContentOffset()));
+    }
   } else {
     rect.SetLocation(IntPoint(frame_view->ScrollOffsetInt()));
   }
