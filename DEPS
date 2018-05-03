@@ -1876,8 +1876,9 @@ hooks = [
                 '--no_resume',
                 '--no_auth',
                 '--num_threads=4',
-                '--bucket', 'chromium-binary-patching',
-                '-d', 'src/components/zucchini/testdata',
+                '--bucket', 'chromium-binary-patching/zucchini_testdata',
+                '--recursive',
+                '-d', 'src/components/zucchini',
     ],
   },
 
