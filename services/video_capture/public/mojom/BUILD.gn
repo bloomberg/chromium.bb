@@ -11,6 +11,7 @@ mojom("mojom") {
     "device_factory_provider.mojom",
     "producer.mojom",
     "receiver.mojom",
+    "scoped_access_permission.mojom",
     "testing_controls.mojom",
     "virtual_device.mojom",
   ]

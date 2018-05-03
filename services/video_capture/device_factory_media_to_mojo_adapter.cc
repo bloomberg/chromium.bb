@@ -130,10 +130,16 @@ void DeviceFactoryMediaToMojoAdapter::CreateDevice(
                  base::Passed(&create_and_add_new_device_cb)));
 }
 
-void DeviceFactoryMediaToMojoAdapter::AddVirtualDevice(
+void DeviceFactoryMediaToMojoAdapter::AddSharedMemoryVirtualDevice(
     const media::VideoCaptureDeviceInfo& device_info,
     mojom::ProducerPtr producer,
-    mojom::VirtualDeviceRequest virtual_device_request) {
+    mojom::SharedMemoryVirtualDeviceRequest virtual_device_request) {
+  NOTIMPLEMENTED();
+}
+
+void DeviceFactoryMediaToMojoAdapter::AddTextureVirtualDevice(
+    const media::VideoCaptureDeviceInfo& device_info,
+    mojom::TextureVirtualDeviceRequest virtual_device_request) {
   NOTIMPLEMENTED();
 }
 
