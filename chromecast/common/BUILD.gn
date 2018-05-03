@@ -30,6 +30,8 @@ cast_source_set("common") {
     sources += [
       "cast_extensions_client.cc",
       "cast_extensions_client.h",
+      "extensions_api/cast_extension_messages.cc",
+      "extensions_api/cast_extension_messages.h",
     ]
 
     deps += [
