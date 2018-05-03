@@ -384,7 +384,7 @@ class FakeTestVolume : public LocalTestVolume {
 // DriveTestVolume: test volume for Google Drive.
 class DriveTestVolume : public TestVolume {
  public:
-  DriveTestVolume() : TestVolume("drive"), integration_service_(NULL) {}
+  DriveTestVolume() : TestVolume("drive") {}
   ~DriveTestVolume() override {}
 
   void CreateEntry(const TestEntryInfo& entry) {
@@ -490,21 +490,31 @@ class DriveTestVolume : public TestVolume {
 
   drive::DriveIntegrationService* CreateDriveIntegrationService(
       Profile* profile) {
+    if (!CreateRootDirectory(profile))
+      return nullptr;
+
+    EXPECT_FALSE(profile_);
     profile_ = profile;
+
+    EXPECT_FALSE(fake_drive_service_);
     fake_drive_service_ = new drive::FakeDriveService;
     fake_drive_service_->LoadAppListForDriveApi("drive/applist.json");
 
-    if (!CreateRootDirectory(profile))
-      return NULL;
+    EXPECT_FALSE(integration_service_);
     integration_service_ = new drive::DriveIntegrationService(
-        profile, NULL, fake_drive_service_, std::string(), root_path(), NULL);
+        profile, nullptr, fake_drive_service_, std::string(), root_path(),
+        nullptr);
+
     return integration_service_;
   }
 
  private:
-  Profile* profile_;
-  drive::FakeDriveService* fake_drive_service_;
-  drive::DriveIntegrationService* integration_service_;
+  // Profile associated with this volume: not owned.
+  Profile* profile_ = nullptr;
+  // Fake drive service used for testing: not owned.
+  drive::FakeDriveService* fake_drive_service_ = nullptr;
+  // Integration service used for testing: not owned.
+  drive::DriveIntegrationService* integration_service_ = nullptr;
 };
 
 FileManagerBrowserTestBase::FileManagerBrowserTestBase() = default;
