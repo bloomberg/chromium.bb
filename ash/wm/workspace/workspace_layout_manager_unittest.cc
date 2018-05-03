@@ -1547,7 +1547,8 @@ TEST_F(WorkspaceLayoutManagerBackdropTest,
   GetAppListTestHelper()->Dismiss();
 }
 
-TEST_F(WorkspaceLayoutManagerBackdropTest, OpenAppListInOverviewMode) {
+// TODO(minch): This test has a high flake rate. https://crbug.com/838756
+TEST_F(WorkspaceLayoutManagerBackdropTest, DISABLED_OpenAppListInOverviewMode) {
   WorkspaceController* wc = ShellTestApi(Shell::Get()).workspace_controller();
   WorkspaceControllerTestApi test_helper(wc);
 
