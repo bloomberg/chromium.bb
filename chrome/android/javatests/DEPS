@@ -33,6 +33,8 @@ include_rules = [
 
   "+device/geolocation/android/java",
   "+device/geolocation/android/javatests",
+
+  "+services/service_manager/public/java",
 ]
 
 specific_include_rules = {

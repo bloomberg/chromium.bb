@@ -5,7 +5,11 @@
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 
 #include "build/build_config.h"
-#include "services/service_manager/zygote/common/zygote_buildflags.h"
+#include "content/public/common/zygote_buildflags.h"
+
+#if BUILDFLAG(USE_ZYGOTE_HANDLE)
+#include "content/public/common/zygote_handle.h"
+#endif
 
 namespace content {
 
@@ -33,7 +37,7 @@ bool SandboxedProcessLauncherDelegate::ShouldLaunchElevated() {
 #endif  // defined(OS_WIN)
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
-service_manager::ZygoteHandle SandboxedProcessLauncherDelegate::GetZygote() {
+ZygoteHandle SandboxedProcessLauncherDelegate::GetZygote() {
   return nullptr;
 }
 #endif  // BUILDFLAG(USE_ZYGOTE_HANDLE)

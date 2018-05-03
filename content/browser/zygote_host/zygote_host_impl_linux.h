@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_SERVICE_MANAGER_ZYGOTE_HOST_ZYGOTE_HOST_IMPL_LINUX_H_
-#define SERVICES_SERVICE_MANAGER_ZYGOTE_HOST_ZYGOTE_HOST_IMPL_LINUX_H_
+#ifndef CONTENT_BROWSER_ZYGOTE_HOST_ZYGOTE_HOST_IMPL_LINUX_H_
+#define CONTENT_BROWSER_ZYGOTE_HOST_ZYGOTE_HOST_IMPL_LINUX_H_
 
 #include <sys/types.h>
 
@@ -11,23 +11,20 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/component_export.h"
 #include "base/files/scoped_file.h"
 #include "base/process/launch.h"
 #include "base/process/process_handle.h"
 #include "base/synchronization/lock.h"
-
-#include "services/service_manager/zygote/zygote_host_linux.h"
+#include "content/public/browser/zygote_host_linux.h"
 
 namespace base {
-template <typename Type>
+template<typename Type>
 struct DefaultSingletonTraits;
 }  // namespace base
 
-namespace service_manager {
+namespace content {
 
-class COMPONENT_EXPORT(SERVICE_MANAGER_ZYGOTE) ZygoteHostImpl
-    : public ZygoteHost {
+class CONTENT_EXPORT ZygoteHostImpl : public ZygoteHost {
  public:
   // Returns the singleton instance.
   static ZygoteHostImpl* GetInstance();
@@ -69,6 +66,6 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_ZYGOTE) ZygoteHostImpl
   std::set<pid_t> zygote_pids_;
 };
 
-}  // namespace service_manager
+}  // namespace content
 
-#endif  // SERVICES_SERVICE_MANAGER_ZYGOTE_HOST_ZYGOTE_HOST_IMPL_LINUX_H_
+#endif  // CONTENT_BROWSER_ZYGOTE_HOST_ZYGOTE_HOST_IMPL_LINUX_H_

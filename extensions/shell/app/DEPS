@@ -8,5 +8,4 @@ include_rules = [
   "+content/public/browser",
   "+content/public/utility",
   "+sandbox",
-  "+services/service_manager/embedder",
 ]

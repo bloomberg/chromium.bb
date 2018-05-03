@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_SERVICE_MANAGER_ZYGOTE_COMMON_ZYGOTE_COMMANDS_LINUX_H_
-#define SERVICES_SERVICE_MANAGER_ZYGOTE_COMMON_ZYGOTE_COMMANDS_LINUX_H_
+#ifndef CONTENT_COMMON_ZYGOTE_COMMANDS_LINUX_H_
+#define CONTENT_COMMON_ZYGOTE_COMMANDS_LINUX_H_
 
 #include <stddef.h>
 
 #include "base/posix/global_descriptors.h"
 
-namespace service_manager {
+namespace content {
 
 // Contents of the initial message sent from the zygote to the browser right
 // after it starts.
@@ -49,6 +49,6 @@ enum {
   kZygoteCommandForkRealPID = 4
 };
 
-}  // namespace service_manager
+}  // namespace content
 
-#endif  // SERVICES_SERVICE_MANAGER_ZYGOTE_COMMON_ZYGOTE_COMMANDS_LINUX_H_
+#endif  // CONTENT_COMMON_ZYGOTE_COMMANDS_LINUX_H_

@@ -24,11 +24,7 @@ SERVICE_MANAGER_EMBEDDER_SWITCHES_EXPORT extern const char
     kProcessTypeServiceManager[];
 SERVICE_MANAGER_EMBEDDER_SWITCHES_EXPORT extern const char
     kProcessTypeService[];
-SERVICE_MANAGER_EMBEDDER_SWITCHES_EXPORT extern const char
-    kServiceRequestChannelToken[];
 SERVICE_MANAGER_EMBEDDER_SWITCHES_EXPORT extern const char kSharedFiles[];
-SERVICE_MANAGER_EMBEDDER_SWITCHES_EXPORT extern const char kZygoteCmdPrefix[];
-SERVICE_MANAGER_EMBEDDER_SWITCHES_EXPORT extern const char kZygoteProcess[];
 
 }  // namespace switches
 }  // namespace service_manager
