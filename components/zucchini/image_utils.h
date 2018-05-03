@@ -183,7 +183,9 @@ constexpr ExecutableType CastToExecutableType(uint32_t possible_exe_type) {
 
 inline std::string CastExecutableTypeToString(ExecutableType exe_type) {
   uint32_t v = static_cast<uint32_t>(exe_type);
-  return {v & 0xFF, (v >> 8) & 0xFF, (v >> 16) & 0xFF, (v >> 24) & 0xFF};
+  char result[] = {v & 0xFF, (v >> 8) & 0xFF, (v >> 16) & 0xFF,
+                   (v >> 24) & 0xFF, 0};
+  return result;
 }
 
 // A region in an image with associated executable type |exe_type|. If
