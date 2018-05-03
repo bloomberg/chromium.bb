@@ -11,6 +11,7 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -19,11 +20,13 @@
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/test/gtest_util.h"
 #include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/network_session_configurator/browser/network_session_configurator.h"
@@ -56,6 +59,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_job_factory.h"
+#include "services/network/mojo_net_log.h"
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
@@ -1348,6 +1352,179 @@ TEST_F(NetworkContextTest, GssapiLibraryName) {
                                   ->GssapiLibraryName());
 }
 #endif
+
+TEST_F(NetworkContextTest, CreateNetLogExporter) {
+  // Basic flow around start/stop.
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  mojom::NetLogExporterPtr net_log_exporter;
+  network_context->CreateNetLogExporter(mojo::MakeRequest(&net_log_exporter));
+
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath out_path(temp_dir.GetPath().AppendASCII("out.json"));
+  base::File out_file(out_path,
+                      base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+  ASSERT_TRUE(out_file.IsValid());
+
+  base::Value dict_start(base::Value::Type::DICTIONARY);
+  const char kKeyEarly[] = "early";
+  const char kValEarly[] = "morning";
+  dict_start.SetKey(kKeyEarly, base::Value(kValEarly));
+
+  net::TestCompletionCallback cb;
+  net_log_exporter->Start(std::move(out_file), std::move(dict_start),
+                          mojom::NetLogExporter_CaptureMode::DEFAULT,
+                          100 * 1024, cb.callback());
+  EXPECT_EQ(net::OK, cb.WaitForResult());
+
+  base::Value dict_late(base::Value::Type::DICTIONARY);
+  const char kKeyLate[] = "late";
+  const char kValLate[] = "snowval";
+  dict_late.SetKey(kKeyLate, base::Value(kValLate));
+
+  net_log_exporter->Stop(std::move(dict_late), cb.callback());
+  EXPECT_EQ(net::OK, cb.WaitForResult());
+
+  // Check that file got written.
+  std::string contents;
+  ASSERT_TRUE(base::ReadFileToString(out_path, &contents));
+
+  // Contents should have net constants, without the client needing any
+  // net:: methods.
+  EXPECT_NE(std::string::npos, contents.find("ERR_IO_PENDING")) << contents;
+
+  // The additional stuff inject should also occur someplace.
+  EXPECT_NE(std::string::npos, contents.find(kKeyEarly)) << contents;
+  EXPECT_NE(std::string::npos, contents.find(kValEarly)) << contents;
+  EXPECT_NE(std::string::npos, contents.find(kKeyLate)) << contents;
+  EXPECT_NE(std::string::npos, contents.find(kValLate)) << contents;
+}
+
+TEST_F(NetworkContextTest, CreateNetLogExporterUnbounded) {
+  // Make sure that exporting without size limit works.
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  mojom::NetLogExporterPtr net_log_exporter;
+  network_context->CreateNetLogExporter(mojo::MakeRequest(&net_log_exporter));
+
+  base::FilePath temp_path;
+  ASSERT_TRUE(base::CreateTemporaryFile(&temp_path));
+  base::File out_file(temp_path,
+                      base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
+  ASSERT_TRUE(out_file.IsValid());
+
+  net::TestCompletionCallback cb;
+  net_log_exporter->Start(
+      std::move(out_file), base::Value(base::Value::Type::DICTIONARY),
+      network::mojom::NetLogExporter::CaptureMode::DEFAULT,
+      network::mojom::NetLogExporter::kUnlimitedFileSize, cb.callback());
+  EXPECT_EQ(net::OK, cb.WaitForResult());
+
+  net_log_exporter->Stop(base::Value(base::Value::Type::DICTIONARY),
+                         cb.callback());
+  EXPECT_EQ(net::OK, cb.WaitForResult());
+
+  // Check that file got written.
+  std::string contents;
+  ASSERT_TRUE(base::ReadFileToString(temp_path, &contents));
+
+  // Contents should have net constants, without the client needing any
+  // net:: methods.
+  EXPECT_NE(std::string::npos, contents.find("ERR_IO_PENDING")) << contents;
+
+  base::DeleteFile(temp_path, false);
+}
+
+TEST_F(NetworkContextTest, CreateNetLogExporterErrors) {
+  // Some basic state machine misuses.
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  mojom::NetLogExporterPtr net_log_exporter;
+  network_context->CreateNetLogExporter(mojo::MakeRequest(&net_log_exporter));
+
+  net::TestCompletionCallback cb;
+  net_log_exporter->Stop(base::Value(base::Value::Type::DICTIONARY),
+                         cb.callback());
+  EXPECT_EQ(net::ERR_UNEXPECTED, cb.WaitForResult());
+
+  base::FilePath temp_path;
+  ASSERT_TRUE(base::CreateTemporaryFile(&temp_path));
+  base::File temp_file(temp_path,
+                       base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
+  ASSERT_TRUE(temp_file.IsValid());
+
+  net_log_exporter->Start(
+      std::move(temp_file), base::Value(base::Value::Type::DICTIONARY),
+      mojom::NetLogExporter_CaptureMode::DEFAULT, 100 * 1024, cb.callback());
+  EXPECT_EQ(net::OK, cb.WaitForResult());
+
+  // Can't start twice.
+  base::FilePath temp_path2;
+  ASSERT_TRUE(base::CreateTemporaryFile(&temp_path2));
+  base::File temp_file2(
+      temp_path2, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
+  ASSERT_TRUE(temp_file2.IsValid());
+
+  net_log_exporter->Start(
+      std::move(temp_file2), base::Value(base::Value::Type::DICTIONARY),
+      mojom::NetLogExporter_CaptureMode::DEFAULT, 100 * 1024, cb.callback());
+  EXPECT_EQ(net::ERR_UNEXPECTED, cb.WaitForResult());
+
+  base::DeleteFile(temp_path, false);
+  base::DeleteFile(temp_path2, false);
+
+  // Forgetting to stop is recovered from.
+}
+
+TEST_F(NetworkContextTest, DestroyNetLogExporterWhileCreatingScratchDir) {
+  // Make sure that things behave OK if NetLogExporter is destroyed during the
+  // brief window it owns the scratch directory.
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  std::unique_ptr<NetLogExporter> net_log_exporter =
+      std::make_unique<NetLogExporter>(network_context.get());
+
+  base::WaitableEvent block_mktemp(
+      base::WaitableEvent::ResetPolicy::MANUAL,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
+
+  base::ScopedTempDir dir;
+  ASSERT_TRUE(dir.CreateUniqueTempDir());
+  base::FilePath path = dir.Take();
+  EXPECT_TRUE(base::PathExists(path));
+
+  net_log_exporter->SetCreateScratchDirHandlerForTesting(base::BindRepeating(
+      [](base::WaitableEvent* block_on,
+         const base::FilePath& path) -> base::FilePath {
+        base::ScopedAllowBaseSyncPrimitivesForTesting need_to_block;
+        block_on->Wait();
+        return path;
+      },
+      &block_mktemp, path));
+
+  base::FilePath temp_path;
+  ASSERT_TRUE(base::CreateTemporaryFile(&temp_path));
+  base::File temp_file(temp_path,
+                       base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
+  ASSERT_TRUE(temp_file.IsValid());
+
+  net_log_exporter->Start(std::move(temp_file),
+                          base::Value(base::Value::Type::DICTIONARY),
+                          mojom::NetLogExporter_CaptureMode::DEFAULT, 100,
+                          base::BindOnce([](int) {}));
+  net_log_exporter = nullptr;
+  block_mktemp.Signal();
+
+  scoped_task_environment_.RunUntilIdle();
+
+  EXPECT_FALSE(base::PathExists(path));
+  base::DeleteFile(temp_path, false);
+}
 
 }  // namespace
 

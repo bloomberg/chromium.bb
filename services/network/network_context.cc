@@ -48,6 +48,7 @@
 #include "net/url_request/url_request_context_builder.h"
 #include "services/network/http_server_properties_pref_delegate.h"
 #include "services/network/ignore_errors_cert_verifier.h"
+#include "services/network/mojo_net_log.h"
 #include "services/network/network_service.h"
 #include "services/network/proxy_config_service_mojo.h"
 #include "services/network/public/cpp/features.h"
@@ -668,6 +669,12 @@ void NetworkContext::CreateWebSocket(mojom::WebSocketRequest request,
   websocket_factory_->CreateWebSocket(std::move(request), process_id,
                                       render_frame_id, origin);
 #endif  // !defined(OS_IOS)
+}
+
+void NetworkContext::CreateNetLogExporter(
+    mojom::NetLogExporterRequest request) {
+  net_log_exporter_bindings_.AddBinding(std::make_unique<NetLogExporter>(this),
+                                        std::move(request));
 }
 
 void NetworkContext::AddHSTSForTesting(const std::string& host,

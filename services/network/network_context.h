@@ -15,6 +15,7 @@
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "base/containers/unique_ptr_adapters.h"
+#include "base/files/file.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -152,6 +153,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
                        int32_t process_id,
                        int32_t render_frame_id,
                        const url::Origin& origin) override;
+  void CreateNetLogExporter(mojom::NetLogExporterRequest request) override;
   void AddHSTSForTesting(const std::string& host,
                          base::Time expiry,
                          bool include_subdomains,
@@ -228,6 +230,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // outlives all the URLLoaderFactories and URLLoaders that depend on it.
   std::set<std::unique_ptr<URLLoaderFactory>, base::UniquePtrComparator>
       url_loader_factories_;
+
+  mojo::StrongBindingSet<mojom::NetLogExporter> net_log_exporter_bindings_;
 
   int current_resource_scheduler_client_id_ = 0;
 
