@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
@@ -14,6 +15,29 @@
 #include "content/public/test/test_storage_partition.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+
+namespace {
+
+class TestSchemeClassifier : public AutocompleteSchemeClassifier {
+ public:
+  TestSchemeClassifier() = default;
+  ~TestSchemeClassifier() override = default;
+
+  // Overridden from AutocompleteInputSchemeClassifier:
+  metrics::OmniboxInputType GetInputTypeForScheme(
+      const std::string& scheme) const override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestSchemeClassifier);
+};
+
+metrics::OmniboxInputType TestSchemeClassifier::GetInputTypeForScheme(
+    const std::string& scheme) const {
+  return scheme.empty() ? metrics::OmniboxInputType::INVALID
+                        : metrics::OmniboxInputType::URL;
+}
+
+};  // namespace
 
 class ChromeAutocompleteProviderClientTest : public testing::Test {
  public:
@@ -70,4 +94,51 @@ TEST_F(ChromeAutocompleteProviderClientTest,
   client_->StartServiceWorker(destination_url);
   EXPECT_FALSE(service_worker_context_
                    .start_service_worker_for_navigation_hint_called());
+}
+
+TEST_F(ChromeAutocompleteProviderClientTest, TestStrippedURLsAreEqual) {
+  struct {
+    const char* url1;
+    const char* url2;
+    const char* input;
+    bool equal;
+  } test_cases[] = {
+      // Sanity check cases.
+      {"http://google.com", "http://google.com", "", true},
+      {"http://google.com", "http://www.google.com", "", true},
+      {"http://google.com", "http://facebook.com", "", false},
+      {"http://google.com", "https://google.com", "", true},
+      // Because we provided scheme, must match in scheme.
+      {"http://google.com", "https://google.com", "http://google.com", false},
+      // Ignore ref if not in input.
+      {"http://drive.google.com/doc/blablabla#page=10",
+       "http://drive.google.com/doc/blablabla#page=111", "", true},
+      {"http://drive.google.com/doc/blablabla#page=10",
+       "http://drive.google.com/doc/blablabla#page=111",
+       "http://drive.google.com/doc/blablabla", true},
+      {"file:///usr/local/bin/tuxpenguin#ref1",
+       "file:///usr/local/bin/tuxpenguin#ref2", "", true},
+      {"file:///usr/local/bin/tuxpenguin#ref1",
+       "file:///usr/local/bin/tuxpenguin#ref2",
+       "file:///usr/local/bin/tuxpenguin", true},
+      // Do not ignore ref if in input.
+      {"http://drive.google.com/doc/blablabla#page=10",
+       "http://drive.google.com/doc/blablabla#page=111",
+       "http://drive.google.com/doc/blablabla#p", false},
+      {"file:///usr/local/bin/tuxpenguin#ref1",
+       "file:///usr/local/bin/tuxpenguin#ref2",
+       "file:///usr/local/bin/tuxpenguin#r", false}};
+
+  for (const auto& test_case : test_cases) {
+    SCOPED_TRACE(std::string(test_case.url1) + " vs " + test_case.url2 +
+                 ", input '" + test_case.input + "'");
+    AutocompleteInput input(base::ASCIIToUTF16(test_case.input),
+                            test_case.input[0]
+                                ? metrics::OmniboxEventProto::OTHER
+                                : metrics::OmniboxEventProto::BLANK,
+                            TestSchemeClassifier());
+    EXPECT_EQ(test_case.equal,
+              client_->StrippedURLsAreEqual(GURL(test_case.url1),
+                                            GURL(test_case.url2), &input));
+  }
 }

@@ -175,6 +175,21 @@ std::string AutocompleteInput::TypeToString(metrics::OmniboxInputType type) {
 }
 
 // static
+void AutocompleteInput::ParseFilePath(const base::string16& text,
+                                      size_t offset,
+                                      url::Parsed* parts) {
+  parts->path.begin = offset;
+  size_t hash_offset = text.find('#', offset);
+  if (hash_offset != text.npos) {
+    parts->path.len = hash_offset - offset;
+    parts->ref.begin = hash_offset + 1;
+    parts->ref.len = text.size() - parts->ref.begin;
+  } else {
+    parts->path.len = text.size() - offset;
+  }
+}
+
+// static
 metrics::OmniboxInputType AutocompleteInput::Parse(
     const base::string16& text,
     const std::string& desired_tld,
@@ -213,6 +228,8 @@ metrics::OmniboxInputType AutocompleteInput::Parse(
     // A user might or might not type a scheme when entering a file URL.  In
     // either case, |parsed_scheme_utf8| will tell us that this is a file URL,
     // but |parts->scheme| might be empty, e.g. if the user typed "C:\foo".
+    ParseFilePath(text, parts->scheme.is_nonempty() ? parts->scheme.end() : 0,
+                  parts);
     return metrics::OmniboxInputType::URL;
   }
 
