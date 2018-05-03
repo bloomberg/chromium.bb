@@ -50,8 +50,8 @@ class FileManagerBrowserTestBase : public ExtensionApiTest {
   void StartTest();
 
   // Overrides for each FileManagerBrowserTest test extension type.
-  virtual GuestMode GetGuestModeParam() const = 0;
-  virtual const char* GetTestCaseNameParam() const = 0;
+  virtual GuestMode GetGuestMode() const = 0;
+  virtual const char* GetTestCaseName() const = 0;
   virtual const char* GetTestExtensionManifestName() const = 0;
 
  private:

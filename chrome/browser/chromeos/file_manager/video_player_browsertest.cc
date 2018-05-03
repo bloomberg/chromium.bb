@@ -17,9 +17,9 @@ class VideoPlayerBrowserTestBase : public FileManagerBrowserTestBase {
     FileManagerBrowserTestBase::SetUpCommandLine(command_line);
   }
 
-  GuestMode GetGuestModeParam() const override { return MODE; }
+  GuestMode GetGuestMode() const override { return MODE; }
 
-  const char* GetTestCaseNameParam() const override {
+  const char* GetTestCaseName() const override {
     return test_case_name_.c_str();
   }
 

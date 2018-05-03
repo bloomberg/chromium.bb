@@ -9,9 +9,9 @@ namespace file_manager {
 template <GuestMode MODE>
 class AudioPlayerBrowserTestBase : public FileManagerBrowserTestBase {
  public:
-  GuestMode GetGuestModeParam() const override { return MODE; }
+  GuestMode GetGuestMode() const override { return MODE; }
 
-  const char* GetTestCaseNameParam() const override {
+  const char* GetTestCaseName() const override {
     return test_case_name_.c_str();
   }
 
