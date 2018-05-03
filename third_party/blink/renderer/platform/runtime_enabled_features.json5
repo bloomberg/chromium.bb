@@ -538,7 +538,7 @@
     },
     {
       name: "FullscreenOptions",
-      status: "test",
+      status: "experimental",
     },
     {
       name: "FullscreenUnprefixed",
