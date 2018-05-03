@@ -14,6 +14,8 @@
 #include "chrome/browser/android/webapk/webapk_web_manifest_checker.h"
 #include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/manifest.h"
 #include "jni/WebApkUpdateDataFetcher_jni.h"
@@ -151,7 +153,10 @@ void WebApkUpdateDataFetcher::OnDidGetInstallableData(
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
 
   WebApkIconHasher::DownloadAndComputeMurmur2Hash(
-      profile->GetRequestContext(), info_.best_primary_icon_url,
+      content::BrowserContext::GetDefaultStoragePartition(profile)
+          ->GetURLLoaderFactoryForBrowserProcess()
+          .get(),
+      info_.best_primary_icon_url,
       base::Bind(&WebApkUpdateDataFetcher::OnGotPrimaryIconMurmur2Hash,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -167,7 +172,10 @@ void WebApkUpdateDataFetcher::OnGotPrimaryIconMurmur2Hash(
         Profile::FromBrowserContext(web_contents()->GetBrowserContext());
 
     WebApkIconHasher::DownloadAndComputeMurmur2Hash(
-        profile->GetRequestContext(), info_.best_badge_icon_url,
+        content::BrowserContext::GetDefaultStoragePartition(profile)
+            ->GetURLLoaderFactoryForBrowserProcess()
+            .get(),
+        info_.best_badge_icon_url,
         base::Bind(&WebApkUpdateDataFetcher::OnDataAvailable,
                    weak_ptr_factory_.GetWeakPtr(), primary_icon_murmur2_hash,
                    true));

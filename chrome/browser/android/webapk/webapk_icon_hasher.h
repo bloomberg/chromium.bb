@@ -11,16 +11,17 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
-#include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
-namespace net {
-class URLFetcher;
-class URLRequestContextGetter;
-}
+namespace network {
+class SimpleURLLoader;
+namespace mojom {
+class URLLoaderFactory;
+}  // namespace mojom
+}  // namespace network
 
 // Downloads an icon and takes a Murmur2 hash of the downloaded image.
-class WebApkIconHasher : public net::URLFetcherDelegate {
+class WebApkIconHasher {
  public:
   using Murmur2HashCallback =
       base::Callback<void(const std::string& /* icon_murmur2_hash */)>;
@@ -31,25 +32,24 @@ class WebApkIconHasher : public net::URLFetcherDelegate {
   // encoding/decoding beforehand). |callback| is called with an empty string if
   // the image cannot not be downloaded in time (e.g. 404 HTTP error code).
   static void DownloadAndComputeMurmur2Hash(
-      net::URLRequestContextGetter* request_context_getter,
+      network::mojom::URLLoaderFactory* url_loader_factory,
       const GURL& icon_url,
       const Murmur2HashCallback& callback);
 
   static void DownloadAndComputeMurmur2HashWithTimeout(
-      net::URLRequestContextGetter* request_context_getter,
+      network::mojom::URLLoaderFactory* url_loader_factory,
       const GURL& icon_url,
       int timeout_ms,
       const Murmur2HashCallback& callback);
 
  private:
-  WebApkIconHasher(net::URLRequestContextGetter* request_context_getter,
+  WebApkIconHasher(network::mojom::URLLoaderFactory* url_loader_factory,
                    const GURL& icon_url,
                    int timeout_ms,
                    const Murmur2HashCallback& callback);
-  ~WebApkIconHasher() override;
+  ~WebApkIconHasher();
 
-  // net::URLFetcherDelegate:
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
 
   // Called if downloading the icon takes too long.
   void OnDownloadTimedOut();
@@ -60,7 +60,7 @@ class WebApkIconHasher : public net::URLFetcherDelegate {
   // Called with the image hash.
   Murmur2HashCallback callback_;
 
-  std::unique_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<network::SimpleURLLoader> simple_url_loader_;
 
   // Fails WebApkIconHasher if the download takes too long.
   base::OneShotTimer download_timeout_timer_;

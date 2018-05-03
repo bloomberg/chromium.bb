@@ -8,9 +8,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/data_url.h"
-#include "net/http/http_status_code.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/smhasher/src/MurmurHash2.h"
 
 namespace {
@@ -36,17 +36,16 @@ std::string ComputeMurmur2Hash(const std::string& raw_image_data) {
 
 // static
 void WebApkIconHasher::DownloadAndComputeMurmur2Hash(
-    net::URLRequestContextGetter* request_context_getter,
+    network::mojom::URLLoaderFactory* url_loader_factory,
     const GURL& icon_url,
     const Murmur2HashCallback& callback) {
-  DownloadAndComputeMurmur2HashWithTimeout(request_context_getter, icon_url,
-                                           kDownloadTimeoutInMilliseconds,
-                                           callback);
+  DownloadAndComputeMurmur2HashWithTimeout(
+      url_loader_factory, icon_url, kDownloadTimeoutInMilliseconds, callback);
 }
 
 // static
 void WebApkIconHasher::DownloadAndComputeMurmur2HashWithTimeout(
-    net::URLRequestContextGetter* request_context_getter,
+    network::mojom::URLLoaderFactory* url_loader_factory,
     const GURL& icon_url,
     int timeout_ms,
     const Murmur2HashCallback& callback) {
@@ -69,47 +68,53 @@ void WebApkIconHasher::DownloadAndComputeMurmur2HashWithTimeout(
   }
 
   // The icon hasher will delete itself when it is done.
-  new WebApkIconHasher(request_context_getter, icon_url, timeout_ms, callback);
+  new WebApkIconHasher(url_loader_factory, icon_url, timeout_ms, callback);
 }
 
 WebApkIconHasher::WebApkIconHasher(
-    net::URLRequestContextGetter* url_request_context_getter,
+    network::mojom::URLLoaderFactory* url_loader_factory,
     const GURL& icon_url,
     int timeout_ms,
     const Murmur2HashCallback& callback)
     : callback_(callback) {
+  DCHECK(url_loader_factory);
+
   download_timeout_timer_.Start(
       FROM_HERE, base::TimeDelta::FromMilliseconds(timeout_ms),
       base::Bind(&WebApkIconHasher::OnDownloadTimedOut,
                  base::Unretained(this)));
 
-  url_fetcher_ = net::URLFetcher::Create(icon_url, net::URLFetcher::GET, this);
-  url_fetcher_->SetRequestContext(url_request_context_getter);
-  url_fetcher_->Start();
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = icon_url;
+  simple_url_loader_ = network::SimpleURLLoader::Create(
+      std::move(resource_request), NO_TRAFFIC_ANNOTATION_YET);
+  simple_url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory,
+      base::BindOnce(&WebApkIconHasher::OnSimpleLoaderComplete,
+                     base::Unretained(this)));
 }
 
 WebApkIconHasher::~WebApkIconHasher() {}
 
-void WebApkIconHasher::OnURLFetchComplete(const net::URLFetcher* source) {
+void WebApkIconHasher::OnSimpleLoaderComplete(
+    std::unique_ptr<std::string> response_body) {
   download_timeout_timer_.Stop();
 
-  if (!source->GetStatus().is_success() ||
-      source->GetResponseCode() != net::HTTP_OK) {
+  // Check for non-empty body in case of HTTP 204 (no content) response.
+  if (!response_body || response_body->empty()) {
     RunCallback("");
     return;
   }
 
-  // WARNING: We are running in the browser process. |raw_image_data| is the
-  // image's raw, unsanitized bytes from the web. |raw_image_data| may contain
+  // WARNING: We are running in the browser process. |*response_body| is the
+  // image's raw, unsanitized bytes from the web. |*response_body| may contain
   // malicious data. Decoding unsanitized bitmap data to an SkBitmap in the
   // browser process is a security bug.
-  std::string raw_image_data;
-  source->GetResponseAsString(&raw_image_data);
-  RunCallback(ComputeMurmur2Hash(raw_image_data));
+  RunCallback(ComputeMurmur2Hash(*response_body));
 }
 
 void WebApkIconHasher::OnDownloadTimedOut() {
-  url_fetcher_.reset();
+  simple_url_loader_.reset();
 
   RunCallback("");
 }

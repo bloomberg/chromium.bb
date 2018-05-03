@@ -36,8 +36,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_remover.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/manifest_util.h"
 #include "jni/WebApkInstaller_jni.h"
 #include "net/base/load_flags.h"
@@ -580,7 +582,9 @@ void WebApkInstaller::OnHaveSufficientSpaceForInstall() {
   // We redownload the icon in order to take the Murmur2 hash. The redownload
   // should be fast because the icon should be in the HTTP cache.
   WebApkIconHasher::DownloadAndComputeMurmur2Hash(
-      GetRequestContext(browser_context_),
+      content::BrowserContext::GetDefaultStoragePartition(browser_context_)
+          ->GetURLLoaderFactoryForBrowserProcess()
+          .get(),
       install_shortcut_info_->best_primary_icon_url,
       base::Bind(&WebApkInstaller::OnGotPrimaryIconMurmur2Hash,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -598,7 +602,9 @@ void WebApkInstaller::OnGotPrimaryIconMurmur2Hash(
       install_shortcut_info_->best_badge_icon_url !=
           install_shortcut_info_->best_primary_icon_url) {
     WebApkIconHasher::DownloadAndComputeMurmur2Hash(
-        GetRequestContext(browser_context_),
+        content::BrowserContext::GetDefaultStoragePartition(browser_context_)
+            ->GetURLLoaderFactoryForBrowserProcess()
+            .get(),
         install_shortcut_info_->best_badge_icon_url,
         base::Bind(&WebApkInstaller::OnGotBadgeIconMurmur2Hash,
                    weak_ptr_factory_.GetWeakPtr(), true, primary_icon_hash));
