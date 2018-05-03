@@ -3820,7 +3820,7 @@ const FeatureEntry kFeatureEntries[] = {
 #if defined(OS_MACOSX)
     {"enable-emoji-context-menu",
      flag_descriptions::kEnableEmojiContextMenuName,
-     flag_descriptions::kEnableEmojiContextMenuDescription, kOsDesktop,
+     flag_descriptions::kEnableEmojiContextMenuDescription, kOsMac,
      FEATURE_VALUE_TYPE(features::kEnableEmojiContextMenu)},
 #endif  // OS_MACOSX
 
@@ -3895,6 +3895,18 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableOverviewSwipeToCloseDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kOverviewSwipeToClose)},
 #endif  // OS_CHROMEOS
+
+    {"ntp-backgrounds", flag_descriptions::kNtpBackgroundsName,
+     flag_descriptions::kNtpBackgroundsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kNtpBackgrounds)},
+
+    {"ntp-icons", flag_descriptions::kNtpIconsName,
+     flag_descriptions::kNtpIconsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kNtpIcons)},
+
+    {"ntp-ui-md", flag_descriptions::kNtpUIMdName,
+     flag_descriptions::kNtpUIMdDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kNtpUIMd)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
