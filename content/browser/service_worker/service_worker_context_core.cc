@@ -494,9 +494,9 @@ void ServiceWorkerContextCore::DeleteForOrigin(const GURL& origin,
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   storage()->GetRegistrationsForOrigin(
       origin,
-      AdaptCallbackForRepeating(base::BindOnce(
+      base::BindOnce(
           &ServiceWorkerContextCore::DidGetRegistrationsForDeleteForOrigin,
-          AsWeakPtr(), std::move(callback))));
+          AsWeakPtr(), std::move(callback)));
 }
 
 void ServiceWorkerContextCore::DidGetRegistrationsForDeleteForOrigin(
@@ -524,8 +524,7 @@ void ServiceWorkerContextCore::DidGetRegistrationsForDeleteForOrigin(
     }
     UnregisterServiceWorker(
         registration->pattern(),
-        AdaptCallbackForRepeating(base::BindOnce(&SuccessCollectorCallback,
-                                                 barrier, overall_success)));
+        base::BindOnce(&SuccessCollectorCallback, barrier, overall_success));
   }
 }
 
