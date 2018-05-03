@@ -1053,9 +1053,7 @@ def parse_args():
   parse.add_option(
       '--disable-syntax-validation', action='store_true',
       help='Disable validation of .gclient and DEPS syntax.')
-  parse.add_option('--no-apply-patch-on-gclient',
-                   dest='apply_patch_on_gclient', action='store_false',
-                   default=True,
+  parse.add_option('--apply-patch-on-gclient', action='store_true',
                    help='Patch the gerrit ref in gclient instead of here.')
 
   options, args = parse.parse_args()
