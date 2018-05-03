@@ -66,9 +66,13 @@ views::Widget::InitParams BrowserFrameMus::GetWidgetParams() {
   properties[ui::mojom::WindowManager::kShelfItemType_Property] =
       mojo::ConvertTo<std::vector<uint8_t>>(
           static_cast<int64_t>(ash::TYPE_BROWSER_SHORTCUT));
+
+  // TODO(estade): to match classic Ash, this property should be toggled to true
+  // for non-popups after the window is initially shown.
   properties[ash::mojom::kWindowPositionManaged_Property] =
-      mojo::ConvertTo<std::vector<uint8_t>>(
-          static_cast<int64_t>(browser->is_type_popup()));
+      mojo::ConvertTo<std::vector<uint8_t>>(static_cast<int64_t>(
+          !browser->bounds_overridden() && !browser->is_session_restore() &&
+          !browser->is_type_popup()));
   properties[ash::mojom::kCanConsumeSystemKeys_Property] =
       mojo::ConvertTo<std::vector<uint8_t>>(
           static_cast<int64_t>(browser->is_app()));
