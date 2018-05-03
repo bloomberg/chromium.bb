@@ -434,6 +434,35 @@ TEST_F(APIRequestHandlerTest, SettingLastError) {
     EXPECT_EQ("Unchecked runtime.lastError: some error", *logged_error);
     logged_error.reset();
   }
+
+  {
+    // Test a function call resulting in an error with only a custom callback,
+    // and no author-script-provided callback. The error should be logged.
+    v8::Local<v8::Function> custom_callback =
+        FunctionFromString(context, "(function() {})");
+    int request_id = request_handler.StartRequest(
+        context, kMethod, std::make_unique<base::ListValue>(),
+        v8::Local<v8::Function>(), custom_callback, binding::RequestThread::UI);
+    request_handler.CompleteRequest(request_id, base::ListValue(),
+                                    "some error");
+    ASSERT_TRUE(logged_error);
+    EXPECT_EQ("Unchecked runtime.lastError: some error", *logged_error);
+    logged_error.reset();
+  }
+
+  {
+    // Test a function call resulting in an error that does not have an
+    // associated callback callback. The error should be logged.
+    int request_id = request_handler.StartRequest(
+        context, kMethod, std::make_unique<base::ListValue>(),
+        v8::Local<v8::Function>(), v8::Local<v8::Function>(),
+        binding::RequestThread::UI);
+    request_handler.CompleteRequest(request_id, base::ListValue(),
+                                    "some error");
+    ASSERT_TRUE(logged_error);
+    EXPECT_EQ("Unchecked runtime.lastError: some error", *logged_error);
+    logged_error.reset();
+  }
 }
 
 TEST_F(APIRequestHandlerTest, AddPendingRequest) {

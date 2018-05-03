@@ -14,8 +14,9 @@ namespace extensions {
 
 namespace {
 
-const char kLastErrorProperty[] = "lastError";
-const char kScriptSuppliedValueKey[] = "script_supplied_value";
+constexpr char kLastErrorProperty[] = "lastError";
+constexpr char kScriptSuppliedValueKey[] = "script_supplied_value";
+constexpr char kUncheckedErrorPrefix[] = "Unchecked runtime.lastError: ";
 
 // The object corresponding to the lastError property, containing a single
 // property ('message') with the last error. This object is stored on the parent
@@ -169,10 +170,8 @@ void APILastError::ClearError(v8::Local<v8::Context> context,
     }
   }
 
-  if (report_if_unchecked && !last_error->accessed()) {
-    add_console_error_.Run(
-        context, "Unchecked runtime.lastError: " + last_error->error());
-  }
+  if (report_if_unchecked && !last_error->accessed())
+    ReportUncheckedError(context, last_error->error());
 
   // See comment in SetError().
   v8::TryCatch try_catch(isolate);
@@ -211,6 +210,11 @@ bool APILastError::HasError(v8::Local<v8::Context> context) {
   LastErrorObject* last_error = nullptr;
   return gin::Converter<LastErrorObject*>::FromV8(context->GetIsolate(), error,
                                                   &last_error);
+}
+
+void APILastError::ReportUncheckedError(v8::Local<v8::Context> context,
+                                        const std::string& error) {
+  add_console_error_.Run(context, kUncheckedErrorPrefix + error);
 }
 
 void APILastError::SetErrorOnPrimaryParent(v8::Local<v8::Context> context,
