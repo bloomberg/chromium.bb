@@ -123,9 +123,7 @@ class MockDialMediaSinkService : public DialMediaSinkService {
   MockDialMediaSinkService();
   ~MockDialMediaSinkService() override;
 
-  MOCK_METHOD2(Start,
-               void(const OnSinksDiscoveredCallback&,
-                    const OnDialSinkAddedCallback&));
+  MOCK_METHOD1(Start, void(const OnSinksDiscoveredCallback&));
   MOCK_METHOD0(OnUserGesture, void());
 };
 
@@ -135,8 +133,7 @@ class MockCastMediaSinkService : public CastMediaSinkService {
   ~MockCastMediaSinkService() override;
 
   MOCK_METHOD2(Start,
-               void(const OnSinksDiscoveredCallback&,
-                    CastMediaSinkServiceImpl::Observer*));
+               void(const OnSinksDiscoveredCallback&, MediaSinkServiceBase*));
   MOCK_METHOD0(OnUserGesture, void());
   MOCK_METHOD0(StartMdnsDiscovery, void());
 };

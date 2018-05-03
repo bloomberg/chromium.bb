@@ -7,69 +7,105 @@
 #include <vector>
 
 namespace {
-// Time interval when media sink service sends sinks to MRP.
-const int kFetchCompleteTimeoutSecs = 3;
+// Timeout amount for |discovery_timer_|.
+const constexpr base::TimeDelta kDiscoveryTimeout =
+    base::TimeDelta::FromSeconds(3);
 }  // namespace
 
 namespace media_router {
 
 MediaSinkServiceBase::MediaSinkServiceBase(
     const OnSinksDiscoveredCallback& callback)
-    : on_sinks_discovered_cb_(callback) {
+    : discovery_timer_(std::make_unique<base::OneShotTimer>()),
+      on_sinks_discovered_cb_(callback) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
-  DCHECK(!on_sinks_discovered_cb_.is_null());
 }
 
 MediaSinkServiceBase::~MediaSinkServiceBase() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void MediaSinkServiceBase::SetTimerForTest(std::unique_ptr<base::Timer> timer) {
-  DCHECK(!discovery_timer_);
-  discovery_timer_ = std::move(timer);
+void MediaSinkServiceBase::AddObserver(Observer* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  observers_.AddObserver(observer);
 }
 
-void MediaSinkServiceBase::OnDiscoveryComplete() {
+void MediaSinkServiceBase::RemoveObserver(Observer* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (current_sinks_ == mrp_sinks_) {
-    DVLOG(2) << "No update to sink list.";
+  observers_.RemoveObserver(observer);
+}
+
+const base::flat_map<MediaSink::Id, MediaSinkInternal>&
+MediaSinkServiceBase::GetSinks() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return sinks_;
+}
+
+const MediaSinkInternal* MediaSinkServiceBase::GetSinkById(
+    const MediaSink::Id& sink_id) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  auto it = sinks_.find(sink_id);
+  return it != sinks_.end() ? &it->second : nullptr;
+}
+
+void MediaSinkServiceBase::AddOrUpdateSink(const MediaSinkInternal& sink) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  sinks_.insert_or_assign(sink.sink().id(), sink);
+  for (auto& observer : observers_)
+    observer.OnSinkAddedOrUpdated(sink);
+
+  StartTimer();
+}
+
+void MediaSinkServiceBase::RemoveSink(const MediaSinkInternal& sink) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Make a copy of the sink to avoid potential use-after-free.
+  MediaSink::Id sink_id = sink.sink().id();
+  MediaSinkInternal sink_copy = sink;
+  if (!sinks_.erase(sink_id))
     return;
-  }
 
-  DVLOG(2) << "Send sinks to media router, [size]: " << current_sinks_.size();
+  for (auto& observer : observers_)
+    observer.OnSinkRemoved(sink_copy);
 
-  std::vector<MediaSinkInternal> sinks;
-  for (const auto& sink_it : current_sinks_)
-    sinks.push_back(sink_it.second);
+  StartTimer();
+}
 
-  on_sinks_discovered_cb_.Run(std::move(sinks));
-  mrp_sinks_ = current_sinks_;
-  discovery_timer_->Stop();
-  RecordDeviceCounts();
+void MediaSinkServiceBase::SetTimerForTest(std::unique_ptr<base::Timer> timer) {
+  discovery_timer_ = std::move(timer);
 }
 
 void MediaSinkServiceBase::StartTimer() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // |discovery_timer_| is already set to a mock timer in unit tests only.
-  if (!discovery_timer_)
-    discovery_timer_.reset(new base::OneShotTimer());
+  if (discovery_timer_->IsRunning())
+    return;
 
-  DoStart();
-}
-
-void MediaSinkServiceBase::RestartTimer() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!discovery_timer_->IsRunning())
-    DoStart();
-}
-
-void MediaSinkServiceBase::DoStart() {
-  base::TimeDelta finish_delay =
-      base::TimeDelta::FromSeconds(kFetchCompleteTimeoutSecs);
   discovery_timer_->Start(
-      FROM_HERE, finish_delay,
+      FROM_HERE, kDiscoveryTimeout,
       base::BindRepeating(&MediaSinkServiceBase::OnDiscoveryComplete,
                           base::Unretained(this)));
+}
+
+void MediaSinkServiceBase::OnDiscoveryComplete() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  discovery_timer_->Stop();
+  RecordDeviceCounts();
+
+  // Only send discovered sinks back to MediaRouter if the list changed.
+  if (sinks_ == previous_sinks_) {
+    DVLOG(2) << "No update to sink list.";
+    return;
+  }
+
+  DVLOG(2) << "Send sinks to media router, [size]: " << sinks_.size();
+
+  std::vector<MediaSinkInternal> sinks;
+  for (const auto& sink_it : sinks_)
+    sinks.push_back(sink_it.second);
+
+  on_sinks_discovered_cb_.Run(std::move(sinks));
+  previous_sinks_ = sinks_;
 }
 
 }  // namespace media_router

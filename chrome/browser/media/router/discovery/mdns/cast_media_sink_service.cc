@@ -32,7 +32,7 @@ CastMediaSinkService::~CastMediaSinkService() {
 
 void CastMediaSinkService::Start(
     const OnSinksDiscoveredCallback& sinks_discovered_cb,
-    CastMediaSinkServiceImpl::Observer* observer) {
+    MediaSinkServiceBase* dial_media_sink_service) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!impl_);
 
@@ -49,7 +49,7 @@ void CastMediaSinkService::Start(
                      base::BindRepeating(
                          &CastMediaSinkService::RunSinksDiscoveredCallback,
                          weak_ptr_factory_.GetWeakPtr(), sinks_discovered_cb)),
-                 observer);
+                 dial_media_sink_service);
   impl_->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&CastMediaSinkServiceImpl::Start,
                                 base::Unretained(impl_.get())));
@@ -62,7 +62,7 @@ void CastMediaSinkService::Start(
 std::unique_ptr<CastMediaSinkServiceImpl, base::OnTaskRunnerDeleter>
 CastMediaSinkService::CreateImpl(
     const OnSinksDiscoveredCallback& sinks_discovered_cb,
-    CastMediaSinkServiceImpl::Observer* observer) {
+    MediaSinkServiceBase* dial_media_sink_service) {
   cast_channel::CastSocketService* cast_socket_service =
       cast_channel::CastSocketService::GetInstance();
   scoped_refptr<base::SequencedTaskRunner> task_runner =
@@ -75,8 +75,8 @@ CastMediaSinkService::CreateImpl(
                           base::Unretained(this)));
   return std::unique_ptr<CastMediaSinkServiceImpl, base::OnTaskRunnerDeleter>(
       new CastMediaSinkServiceImpl(
-          sinks_discovered_cb, observer, cast_socket_service,
-          DiscoveryNetworkMonitor::GetInstance(),
+          sinks_discovered_cb, cast_socket_service,
+          DiscoveryNetworkMonitor::GetInstance(), dial_media_sink_service,
           GetCastAllowAllIPsPref(g_browser_process->local_state())),
       base::OnTaskRunnerDeleter(task_runner));
 }
@@ -109,7 +109,7 @@ void CastMediaSinkService::OnUserGesture() {
   DVLOG(2) << "OnUserGesture: open channel now for " << cast_sinks_.size()
            << " devices discovered in latest round of mDNS";
   impl_->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&CastMediaSinkServiceImpl::AttemptConnection,
+      FROM_HERE, base::BindOnce(&CastMediaSinkServiceImpl::OpenChannelsNow,
                                 base::Unretained(impl_.get()), cast_sinks_));
 }
 
@@ -146,10 +146,6 @@ void CastMediaSinkService::OnDnsSdEvent(
       base::BindOnce(&CastMediaSinkServiceImpl::OpenChannelsWithRandomizedDelay,
                      base::Unretained(impl_.get()), cast_sinks_,
                      CastMediaSinkServiceImpl::SinkSource::kMdns));
-}
-
-OnDialSinkAddedCallback CastMediaSinkService::GetDialSinkAddedCallback() {
-  return impl_->GetDialSinkAddedCallback();
 }
 
 void CastMediaSinkService::RunSinksDiscoveredCallback(

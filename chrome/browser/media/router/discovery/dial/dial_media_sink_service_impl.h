@@ -39,6 +39,8 @@ class DialMediaSinkServiceImpl : public MediaSinkServiceBase,
   // Callbacks invoked when the list of available sinks for |app_name| changes.
   // The client can call |GetAvailableSinks()| to obtain the latest sink list.
   // |app_name|: app name, e.g. YouTube.
+  // TODO(imcheng): Move sink query logic into DialAppDiscoveryService and
+  // have it use MediaSinkServiceBase::Observer to observe sinks.
   using SinkQueryByAppFunc = void(const std::string& app_name);
   using SinkQueryByAppCallback = base::RepeatingCallback<SinkQueryByAppFunc>;
   using SinkQueryByAppCallbackList = base::CallbackList<SinkQueryByAppFunc>;
@@ -51,20 +53,18 @@ class DialMediaSinkServiceImpl : public MediaSinkServiceBase,
   // |connector|: connector to the ServiceManager suitable to use on
   // |task_runner|.
   // |on_sinks_discovered_cb|: Callback for MediaSinkServiceBase.
-  // |dial_sink_added_cb|: If not null, callback to invoke when a DIAL sink has
-  // been discovered.
   // Note that both callbacks are invoked on |task_runner|.
   // |task_runner|: The SequencedTaskRunner this class runs in.
   DialMediaSinkServiceImpl(
       std::unique_ptr<service_manager::Connector> connector,
       const OnSinksDiscoveredCallback& on_sinks_discovered_cb,
-      const OnDialSinkAddedCallback& dial_sink_added_cb,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
   ~DialMediaSinkServiceImpl() override;
 
   virtual void Start();
 
-  void OnUserGesture();
+  // MediaSinkServiceBase implementation.
+  void OnUserGesture() override;
 
   // Returns the SequencedTaskRunner that should be used to invoke methods on
   // this instance. Can be invoked on any thread.
@@ -97,9 +97,6 @@ class DialMediaSinkServiceImpl : public MediaSinkServiceBase,
   void SetAppDiscoveryServiceForTest(
       std::unique_ptr<DialAppDiscoveryService> app_discovery_service);
 
-  // MediaSinkServiceBase implementation.
-  void OnDiscoveryComplete() override;
-
  private:
   friend class DialMediaSinkServiceImplTest;
   friend class MockDialMediaSinkServiceImpl;
@@ -111,8 +108,6 @@ class DialMediaSinkServiceImpl : public MediaSinkServiceBase,
                            OnDeviceDescriptionAvailable);
   FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceImplTest,
                            OnDeviceDescriptionAvailableIPAddressChanged);
-  FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceImplTest,
-                           OnDialSinkAddedCallback);
   FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceImplTest,
                            StartStopMonitoringAvailableSinksForApp);
   FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceImplTest,
@@ -171,6 +166,7 @@ class DialMediaSinkServiceImpl : public MediaSinkServiceBase,
       SinkQueryByAppCallbackList* callback_list);
 
   // MediaSinkServiceBase implementation.
+  void OnDiscoveryComplete() override;
   void RecordDeviceCounts() override;
 
   // Connector to ServiceManager for safe XML parsing requests.
@@ -182,8 +178,6 @@ class DialMediaSinkServiceImpl : public MediaSinkServiceBase,
   // Initialized in |Start()|.
   std::unique_ptr<DialAppDiscoveryService> app_discovery_service_;
 
-  OnDialSinkAddedCallback dial_sink_added_cb_;
-
   // Raw pointer to DialRegistry singleton.
   DialRegistry* dial_registry_ = nullptr;
 
@@ -192,6 +186,11 @@ class DialMediaSinkServiceImpl : public MediaSinkServiceBase,
 
   // Device data list from current round of discovery.
   DialRegistry::DeviceList current_devices_;
+
+  // Sinks that are added during the latest round of discovery. In
+  // |OnDiscoveryCompleted()| this will be merged into
+  // |MediaSinkServiceBase::sinks_| and then cleared.
+  base::flat_map<MediaSink::Id, MediaSinkInternal> latest_sinks_;
 
   // Map of app status, keyed by <sink id:app name>.
   base::flat_map<std::string, SinkAppStatus> app_statuses_;

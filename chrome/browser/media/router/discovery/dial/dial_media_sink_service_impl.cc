@@ -52,11 +52,9 @@ SinkAppStatus GetSinkAppStatusFromResponse(const DialAppInfoResult& result) {
 DialMediaSinkServiceImpl::DialMediaSinkServiceImpl(
     std::unique_ptr<service_manager::Connector> connector,
     const OnSinksDiscoveredCallback& on_sinks_discovered_cb,
-    const OnDialSinkAddedCallback& dial_sink_added_cb,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : MediaSinkServiceBase(on_sinks_discovered_cb),
       connector_(std::move(connector)),
-      dial_sink_added_cb_(dial_sink_added_cb),
       task_runner_(task_runner) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
@@ -86,7 +84,7 @@ void DialMediaSinkServiceImpl::Start() {
   app_discovery_service_ =
       std::make_unique<DialAppDiscoveryService>(connector_.get());
 
-  MediaSinkServiceBase::StartTimer();
+  StartTimer();
 
   dial_registry_ =
       test_dial_registry_ ? test_dial_registry_ : DialRegistry::GetInstance();
@@ -96,18 +94,6 @@ void DialMediaSinkServiceImpl::Start() {
 
 void DialMediaSinkServiceImpl::OnUserGesture() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // Re-sync sinks to CastMediaSinkService. It's possible that a DIAL-discovered
-  // sink was added to CastMediaSinkService earlier, but was removed due to
-  // flaky network. This gives CastMediaSinkService an opportunity to recover
-  // even if mDNS is not working for some reason.
-  DVLOG(2) << "OnUserGesture: re-syncing " << current_sinks_.size()
-           << " sinks to CastMediaSinkService";
-
-  if (dial_sink_added_cb_) {
-    for (const auto& sink_it : current_sinks_)
-      dial_sink_added_cb_.Run(sink_it.second);
-  }
-
   RescanAppInfo();
 }
 
@@ -125,8 +111,8 @@ DialMediaSinkServiceImpl::StartMonitoringAvailableSinksForApp(
         base::Unretained(this), app_name, callback_list.get()));
 
     // Start checking if |app_name| is available on existing sinks.
-    for (const auto& dial_sink_it : current_sinks_)
-      FetchAppInfoForSink(dial_sink_it.second, app_name);
+    for (const auto& sink : GetSinks())
+      FetchAppInfoForSink(sink.second, app_name);
   }
 
   return callback_list->Add(callback);
@@ -149,9 +135,35 @@ void DialMediaSinkServiceImpl::SetAppDiscoveryServiceForTest(
 }
 
 void DialMediaSinkServiceImpl::OnDiscoveryComplete() {
-  MediaSinkServiceBase::OnDiscoveryComplete();
+  std::vector<MediaSinkInternal> sinks_to_update;
+  std::vector<MediaSinkInternal> sinks_to_remove;
+  for (const auto& sink : GetSinks()) {
+    if (!base::ContainsKey(latest_sinks_, sink.first))
+      sinks_to_remove.push_back(sink.second);
+  }
+
+  for (const auto& latest_sink : latest_sinks_) {
+    // Sink is added or updated.
+    const MediaSinkInternal* sink = GetSinkById(latest_sink.first);
+    if (!sink || *sink != latest_sink.second)
+      sinks_to_update.push_back(latest_sink.second);
+  }
+
+  // Note: calling |AddOrUpdateSink()| or |RemoveSink()| here won't cause the
+  // discovery timer to fire again, since it is considered to be still running.
+  for (const auto& sink : sinks_to_update)
+    AddOrUpdateSink(sink);
+
+  for (const auto& sink : sinks_to_remove)
+    RemoveSink(sink);
+
+  latest_sinks_.clear();
+
+  // If discovered sinks are updated, then query results might have changed.
   for (const auto& query : sink_queries_)
     query.second->Notify(query.first);
+
+  MediaSinkServiceBase::OnDiscoveryComplete();
 }
 
 void DialMediaSinkServiceImpl::OnDialDeviceEvent(
@@ -160,13 +172,12 @@ void DialMediaSinkServiceImpl::OnDialDeviceEvent(
   DVLOG(2) << "DialMediaSinkServiceImpl::OnDialDeviceEvent found "
            << devices.size() << " devices";
 
-  current_sinks_.clear();
   current_devices_ = devices;
 
   description_service_->GetDeviceDescriptions(devices);
 
   // Makes sure the timer fires even if there is no device.
-  MediaSinkServiceBase::RestartTimer();
+  StartTimer();
 }
 
 void DialMediaSinkServiceImpl::OnDialError(DialRegistry::DialErrorCode type) {
@@ -185,7 +196,8 @@ void DialMediaSinkServiceImpl::OnDeviceDescriptionAvailable(
 
   std::string processed_uuid =
       MediaSinkInternal::ProcessDeviceUUID(description_data.unique_id);
-  std::string sink_id = base::StringPrintf("dial:<%s>", processed_uuid.c_str());
+  MediaSink::Id sink_id =
+      base::StringPrintf("dial:<%s>", processed_uuid.c_str());
   MediaSink sink(sink_id, description_data.friendly_name, SinkIconType::GENERIC,
                  MediaRouteProviderId::DIAL);
   DialSinkExtraData extra_data;
@@ -198,19 +210,14 @@ void DialMediaSinkServiceImpl::OnDeviceDescriptionAvailable(
   }
 
   MediaSinkInternal dial_sink(sink, extra_data);
-  current_sinks_.insert_or_assign(sink_id, dial_sink);
-  if (dial_sink_added_cb_)
-    dial_sink_added_cb_.Run(dial_sink);
+  latest_sinks_.insert_or_assign(sink_id, dial_sink);
+  StartTimer();
 
   if (!IsDiscoveryOnly(description_data.model_name)) {
     // Start checking if all registered apps are available on |dial_sink|.
     for (const auto& query : sink_queries_)
       FetchAppInfoForSink(dial_sink, query.first);
   }
-
-  // Start fetch timer again if device description comes back after
-  // |finish_timer_| fires.
-  MediaSinkServiceBase::RestartTimer();
 }
 
 void DialMediaSinkServiceImpl::OnDeviceDescriptionError(
@@ -244,7 +251,7 @@ void DialMediaSinkServiceImpl::OnAppInfoParseCompleted(
   // The sink might've been removed before the parse was complete. In that case
   // the callbacks won't be notified, but the app status will be saved for later
   // use.
-  if (!base::ContainsKey(current_sinks_, sink_id))
+  if (!GetSinkById(sink_id))
     return;
 
   auto query_it = sink_queries_.find(app_name);
@@ -274,17 +281,16 @@ void DialMediaSinkServiceImpl::FetchAppInfoForSink(
 }
 
 void DialMediaSinkServiceImpl::RescanAppInfo() {
-  for (const auto& dial_sink_it : current_sinks_) {
-    std::string model_name = dial_sink_it.second.dial_data().model_name;
+  for (const auto& sink : GetSinks()) {
+    std::string model_name = sink.second.dial_data().model_name;
     if (IsDiscoveryOnly(model_name)) {
       DVLOG(2) << "Model name does not support DIAL app availability: "
                << model_name;
       continue;
     }
 
-    for (const auto& query : sink_queries_) {
-      FetchAppInfoForSink(dial_sink_it.second, query.first);
-    }
+    for (const auto& query : sink_queries_)
+      FetchAppInfoForSink(sink.second, query.first);
   }
 }
 
@@ -306,7 +312,7 @@ void DialMediaSinkServiceImpl::SetAppStatus(const std::string& sink_id,
 
 void DialMediaSinkServiceImpl::RecordDeviceCounts() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  metrics_.RecordDeviceCountsIfNeeded(current_sinks_.size(),
+  metrics_.RecordDeviceCountsIfNeeded(GetSinks().size(),
                                       current_devices_.size());
 }
 
@@ -324,10 +330,9 @@ std::vector<MediaSinkInternal> DialMediaSinkServiceImpl::GetAvailableSinks(
     const std::string& app_name) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::vector<MediaSinkInternal> sinks;
-  for (const auto& sink_it : current_sinks_) {
-    std::string sink_id = sink_it.second.sink().id();
-    if (GetAppStatus(sink_id, app_name) == SinkAppStatus::kAvailable)
-      sinks.push_back(sink_it.second);
+  for (const auto& sink : GetSinks()) {
+    if (GetAppStatus(sink.first, app_name) == SinkAppStatus::kAvailable)
+      sinks.push_back(sink.second);
   }
   return sinks;
 }

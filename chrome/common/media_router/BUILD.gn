@@ -50,3 +50,18 @@ static_library("router") {
     deps += [ "//components/cast_channel:cast_channel" ]
   }
 }
+
+static_library("test_support") {
+  testonly = true
+  deps = [
+    "//base:base",
+    "//chrome/test:test_support",
+  ]
+  public_deps = [
+    ":router",
+  ]
+  sources = [
+    "test/test_helper.cc",
+    "test/test_helper.h",
+  ]
+}

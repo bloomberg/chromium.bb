@@ -29,6 +29,9 @@ using OnDialSinkAddedCallback =
 // Service to discover DIAL media sinks.  All public methods must be invoked on
 // the UI thread.  Delegates to DialMediaSinkServiceImpl by posting tasks to its
 // SequencedTaskRunner.
+// TODO(imcheng): Remove this class and moving the logic into a part
+// of DialMediaSinkServiceImpl that runs on the UI thread, and renaming
+// DialMediaSinkServiceImpl to DialMediaSinkService.
 class DialMediaSinkService {
  public:
   DialMediaSinkService();
@@ -37,19 +40,8 @@ class DialMediaSinkService {
   // Starts discovery of DIAL sinks. Can only be called once.
   // |sink_discovery_cb|: Callback to invoke on UI thread when the list of
   // discovered sinks has been updated.
-  // |dial_sink_added_cb|: Callback to invoke when a new DIAL sink has been
-  // discovered. The callback may be invoked on any thread, and may be invoked
-  // after |this| is destroyed. Can be null.
   // Marked virtual for tests.
-  virtual void Start(const OnSinksDiscoveredCallback& sink_discovery_cb,
-                     const OnDialSinkAddedCallback& dial_sink_added_cb);
-
-  // Initiates discovery immediately in response to a user gesture
-  // (i.e., opening the Media Router dialog). This method can only be called
-  // after |Start()|.
-  // TODO(imcheng): Rename to ManuallyInitiateDiscovery() or similar.
-  // Marked virtual for tests.
-  virtual void OnUserGesture();
+  virtual void Start(const OnSinksDiscoveredCallback& sink_discovery_cb);
 
   // Returns a raw pointer to |impl_|. This method is only valid to call after
   // |Start()| has been called. Always returns non-null.
@@ -61,8 +53,7 @@ class DialMediaSinkService {
  private:
   // Marked virtual for tests.
   virtual std::unique_ptr<DialMediaSinkServiceImpl, base::OnTaskRunnerDeleter>
-  CreateImpl(const OnSinksDiscoveredCallback& sink_discovery_cb,
-             const OnDialSinkAddedCallback& dial_sink_added_cb);
+  CreateImpl(const OnSinksDiscoveredCallback& sink_discovery_cb);
 
   void RunSinksDiscoveredCallback(
       const OnSinksDiscoveredCallback& sinks_discovered_cb,

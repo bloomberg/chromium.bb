@@ -40,19 +40,25 @@ bool ShouldRefreshAppAvailability(
 CastAppDiscoveryService::CastAppDiscoveryService(
     cast_channel::CastMessageHandler* message_handler,
     cast_channel::CastSocketService* socket_service,
+    MediaSinkServiceBase* media_sink_service,
     const base::TickClock* clock)
     : message_handler_(message_handler),
       socket_service_(socket_service),
+      media_sink_service_(media_sink_service),
       clock_(clock),
       weak_ptr_factory_(this) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK(message_handler_);
   DCHECK(socket_service_);
   DCHECK(clock_);
+  socket_service_->task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&CastAppDiscoveryService::Init, base::Unretained(this)));
 }
 
 CastAppDiscoveryService::~CastAppDiscoveryService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  media_sink_service_->RemoveObserver(this);
 }
 
 CastAppDiscoveryService::Subscription
@@ -81,10 +87,11 @@ CastAppDiscoveryService::StartObservingMediaSinks(
     // it changed.
     base::flat_set<std::string> new_app_ids =
         availability_tracker_.RegisterSource(source);
+    const auto& sinks = media_sink_service_->GetSinks();
     for (const auto& app_id : new_app_ids) {
-      // Note: The following logic assumes |sinks_| will not change as it is
+      // Note: The following logic assumes |sinks| will not change as it is
       // being iterated.
-      for (const auto& sink : sinks_) {
+      for (const auto& sink : sinks) {
         int channel_id = sink.second.cast_data().cast_channel_id;
         cast_channel::CastSocket* socket =
             socket_service_->GetSocket(channel_id);
@@ -102,11 +109,13 @@ CastAppDiscoveryService::StartObservingMediaSinks(
 }
 
 void CastAppDiscoveryService::Refresh() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const auto app_ids = availability_tracker_.GetRegisteredApps();
   base::TimeTicks now = clock_->NowTicks();
-  // Note: The following logic assumes |sinks_| will not change as it is
+  const auto& sinks = media_sink_service_->GetSinks();
+  // Note: The following logic assumes |sinks| will not change as it is
   // being iterated.
-  for (const auto& sink : sinks_) {
+  for (const auto& sink : sinks) {
     for (const auto& app_id : app_ids) {
       if (ShouldRefreshAppAvailability(
               availability_tracker_.GetAvailability(sink.first, app_id), now)) {
@@ -136,12 +145,21 @@ void CastAppDiscoveryService::MaybeRemoveSinkQueryEntry(
   }
 }
 
-void CastAppDiscoveryService::OnSinkAddedOrUpdated(
-    const MediaSinkInternal& sink,
-    cast_channel::CastSocket* socket) {
+void CastAppDiscoveryService::Init() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  media_sink_service_->AddObserver(this);
+}
+
+void CastAppDiscoveryService::OnSinkAddedOrUpdated(
+    const MediaSinkInternal& sink) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  cast_channel::CastSocket* socket =
+      socket_service_->GetSocket(sink.cast_data().cast_channel_id);
+  if (!socket)
+    return;
+
   const MediaSink::Id& sink_id = sink.sink().id();
-  sinks_.insert_or_assign(sink_id, sink);
   for (const std::string& app_id : availability_tracker_.GetRegisteredApps()) {
     auto availability = availability_tracker_.GetAvailability(sink_id, app_id);
     if (availability.first != cast_channel::GetAppAvailabilityResult::kUnknown)
@@ -154,7 +172,6 @@ void CastAppDiscoveryService::OnSinkAddedOrUpdated(
 void CastAppDiscoveryService::OnSinkRemoved(const MediaSinkInternal& sink) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const MediaSink::Id& sink_id = sink.sink().id();
-  sinks_.erase(sink_id);
   UpdateSinkQueries(availability_tracker_.RemoveResultsForSink(sink_id));
 }
 
@@ -176,7 +193,7 @@ void CastAppDiscoveryService::UpdateAppAvailability(
     cast_channel::GetAppAvailabilityResult availability) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   RecordAppAvailabilityResult(availability, clock_->NowTicks() - start_time);
-  if (!base::ContainsKey(sinks_, sink_id))
+  if (!media_sink_service_->GetSinkById(sink_id))
     return;
 
   DVLOG(1) << "App " << app_id << " on sink " << sink_id << " is "
@@ -203,9 +220,9 @@ std::vector<MediaSinkInternal> CastAppDiscoveryService::GetSinksByIds(
     const base::flat_set<MediaSink::Id>& sink_ids) const {
   std::vector<MediaSinkInternal> sinks;
   for (const auto& sink_id : sink_ids) {
-    auto it = sinks_.find(sink_id);
-    if (it != sinks_.end())
-      sinks.push_back(it->second);
+    const MediaSinkInternal* sink = media_sink_service_->GetSinkById(sink_id);
+    if (sink)
+      sinks.push_back(*sink);
   }
   return sinks;
 }
