@@ -873,20 +873,23 @@ static INLINE TX_SIZE depth_to_tx_size(int depth, BLOCK_SIZE bsize) {
   return tx_size;
 }
 
-static INLINE TX_SIZE
-av1_get_max_uv_txsize(BLOCK_SIZE bsize, const struct macroblockd_plane *pd) {
-  const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
-  assert(plane_bsize < BLOCK_SIZES_ALL);
-  TX_SIZE uv_tx = max_txsize_rect_lookup[plane_bsize];
-  switch (uv_tx) {
+static INLINE TX_SIZE av1_get_adjusted_tx_size(TX_SIZE tx_size) {
+  switch (tx_size) {
     case TX_64X64:
     case TX_64X32:
     case TX_32X64: return TX_32X32;
     case TX_64X16: return TX_32X16;
     case TX_16X64: return TX_16X32;
-    default: break;
+    default: return tx_size;
   }
-  return uv_tx;
+}
+
+static INLINE TX_SIZE
+av1_get_max_uv_txsize(BLOCK_SIZE bsize, const struct macroblockd_plane *pd) {
+  const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
+  assert(plane_bsize < BLOCK_SIZES_ALL);
+  const TX_SIZE uv_tx = max_txsize_rect_lookup[plane_bsize];
+  return av1_get_adjusted_tx_size(uv_tx);
 }
 
 static INLINE TX_SIZE av1_get_tx_size(int plane, const MACROBLOCKD *xd) {
@@ -1169,19 +1172,6 @@ static INLINE int av1_get_max_eob(TX_SIZE tx_size) {
     return 512;
   }
   return tx_size_2d[tx_size];
-}
-
-static INLINE TX_SIZE av1_get_adjusted_tx_size(TX_SIZE tx_size) {
-  if (tx_size == TX_64X64 || tx_size == TX_64X32 || tx_size == TX_32X64) {
-    return TX_32X32;
-  }
-  if (tx_size == TX_16X64) {
-    return TX_16X32;
-  }
-  if (tx_size == TX_64X16) {
-    return TX_32X16;
-  }
-  return tx_size;
 }
 
 #ifdef __cplusplus
