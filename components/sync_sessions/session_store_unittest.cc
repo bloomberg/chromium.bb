@@ -575,5 +575,65 @@ TEST_F(SessionStoreTest, ShouldReturnForeignUnmappedTabs) {
                            /*urls=*/_)))));
 }
 
+TEST_F(SessionStoreTest, ShouldReturnForeignOrphanTabs) {
+  const std::string kForeignSessionTag = "SomeForeignTag";
+  const int kWindowId = 5;
+  const int kTabId = 7;
+  // Both tab nodes point to the same tab ID.
+  const int kTabNodeId1 = 2;
+  const int kTabNodeId2 = 3;
+
+  const std::string local_header_storage_key =
+      SessionStore::GetHeaderStorageKey(kLocalSessionTag);
+  const std::string foreign_header_storage_key =
+      SessionStore::GetHeaderStorageKey(kForeignSessionTag);
+  const std::string foreign_tab_storage_key1 =
+      SessionStore::GetTabStorageKey(kForeignSessionTag, kTabNodeId1);
+  const std::string foreign_tab_storage_key2 =
+      SessionStore::GetTabStorageKey(kForeignSessionTag, kTabNodeId2);
+
+  // Local header entity is present initially.
+  ASSERT_THAT(BatchToEntityDataMap(session_store()->GetAllSessionData()),
+              ElementsAre(Pair(local_header_storage_key, _)));
+
+  SessionSpecifics tab1;
+  tab1.set_session_tag(kForeignSessionTag);
+  tab1.set_tab_node_id(kTabNodeId1);
+  tab1.mutable_tab()->set_window_id(kWindowId);
+  tab1.mutable_tab()->set_tab_id(kTabId);
+  ASSERT_TRUE(SessionStore::AreValidSpecifics(tab1));
+
+  SessionSpecifics tab2;
+  tab2.set_session_tag(kForeignSessionTag);
+  tab2.set_tab_node_id(kTabNodeId2);
+  tab2.mutable_tab()->set_window_id(kWindowId);
+  tab2.mutable_tab()->set_tab_id(kTabId);
+  ASSERT_TRUE(SessionStore::AreValidSpecifics(tab2));
+
+  std::unique_ptr<SessionStore::WriteBatch> batch =
+      session_store()->CreateWriteBatch(/*error_handler=*/base::DoNothing());
+  ASSERT_THAT(batch, NotNull());
+  batch->PutAndUpdateTracker(tab1, base::Time::Now());
+  batch->PutAndUpdateTracker(tab2, base::Time::Now());
+  SessionStore::WriteBatch::Commit(std::move(batch));
+
+  EXPECT_THAT(BatchToEntityDataMap(session_store()->GetAllSessionData()),
+              UnorderedElementsAre(
+                  Pair(local_header_storage_key, _),
+                  Pair(foreign_header_storage_key,
+                       EntityDataHasSpecifics(MatchesHeader(kForeignSessionTag,
+                                                            /*window_ids=*/{},
+                                                            /*tab_ids=*/{}))),
+                  Pair(foreign_tab_storage_key1,
+                       EntityDataHasSpecifics(
+                           MatchesTab(kForeignSessionTag, /*window_id=*/0,
+                                      /*tab_id=*/-1, kTabNodeId1,
+                                      /*urls=*/_))),
+                  Pair(foreign_tab_storage_key2,
+                       EntityDataHasSpecifics(MatchesTab(
+                           kForeignSessionTag, kWindowId, kTabId, kTabNodeId2,
+                           /*urls=*/_)))));
+}
+
 }  // namespace
 }  // namespace sync_sessions

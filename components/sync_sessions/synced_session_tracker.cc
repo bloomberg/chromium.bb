@@ -773,7 +773,9 @@ void SerializePartialTrackerToSpecifics(
         // Associated tab node.
         const sessions::SessionTab* tab =
             tracker.LookupSessionTab(session_tag, tab_id);
-        DCHECK(tab);
+        // TODO(crbug.com/837517): Replace with DCHECK once the crasher
+        // investigation is finalized.
+        CHECK(tab);
 
         sync_pb::SessionSpecifics tab_pb;
         tab_pb.set_session_tag(session_tag);
