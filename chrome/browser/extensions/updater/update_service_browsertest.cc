@@ -221,6 +221,42 @@ IN_PROC_BROWSER_TEST_F(UpdateServiceTest, PolicyCorrupted) {
                                   disable_reason::DISABLE_CORRUPTED)));
 }
 
+IN_PROC_BROWSER_TEST_F(UpdateServiceTest, UninstallExtensionWhileUpdating) {
+  // This test is to verify that the extension updater engine (update client)
+  // works correctly when an extension is uninstalled when the extension updater
+  // is in progress.
+  base::ScopedAllowBlockingForTesting allow_io;
+
+  const base::FilePath crx_path = test_data_dir_.AppendASCII("updater/v1.crx");
+
+  const Extension* extension =
+      InstallExtension(crx_path, 1, Manifest::EXTERNAL_POLICY_DOWNLOAD);
+  ASSERT_TRUE(extension);
+  EXPECT_EQ(kExtensionId, extension->id());
+
+  base::RunLoop run_loop;
+
+  extensions::ExtensionUpdater::CheckParams params;
+  params.ids = {kExtensionId};
+  params.callback = run_loop.QuitClosure();
+  extension_service()->updater()->CheckNow(std::move(params));
+
+  // Uninstall the extension right before the message loop is executed to
+  // emulate uninstalling an extension in the middle of an extension update.
+  extension_service()->UninstallExtension(
+      kExtensionId, extensions::UNINSTALL_REASON_COMPONENT_REMOVED, nullptr);
+
+  // Update client should issue an update error event for this extension.
+  ASSERT_EQ(UpdateClientEvents::COMPONENT_UPDATE_ERROR,
+            WaitOnComponentUpdaterCompleteEvent(kExtensionId));
+
+  run_loop.Run();
+
+  EXPECT_EQ(0, update_interceptor_->GetCount())
+      << update_interceptor_->GetRequestsAsString();
+  EXPECT_EQ(0, get_interceptor_->GetHitCount());
+}
+
 class PolicyUpdateServiceTest : public ExtensionUpdateClientBaseTest {
  public:
   PolicyUpdateServiceTest() {}
