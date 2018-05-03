@@ -942,7 +942,8 @@ sk_sp<SkImage> SkiaRenderer::ApplyBackgroundFilters(
                         src_image->alphaType(), nullptr);
 
 #if BUILDFLAG(ENABLE_VULKAN)
-// TODO(xing.xu):  Handle Vulkan related logic here.
+  // TODO(xing.xu):  Handle Vulkan related logic here.
+  return nullptr;
 #else
   GrContext* gr_context = output_surface_->context_provider()->GrContext();
   // TODO(weiliangc): Set up correct can_use_lcd_text for SkSurfaceProps flags.
@@ -952,7 +953,6 @@ sk_sp<SkImage> SkiaRenderer::ApplyBackgroundFilters(
   sk_sp<SkSurface> surface = SkSurface::MakeRenderTarget(
       gr_context, SkBudgeted::kNo, image_info, 0, kBottomLeft_GrSurfaceOrigin,
       &surface_props, false);
-#endif
 
   if (!surface) {
     return nullptr;
@@ -966,6 +966,7 @@ sk_sp<SkImage> SkiaRenderer::ApplyBackgroundFilters(
   surface->getCanvas()->drawImage(src_image, rect.x(), rect.y(), &paint);
 
   return surface->makeImageSnapshot();
+#endif
 }
 
 sk_sp<SkShader> SkiaRenderer::GetBackgroundFilterShader(
