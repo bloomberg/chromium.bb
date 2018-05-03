@@ -63,8 +63,7 @@ class TargetHandler : public DevToolsDomainHandler,
   Response CloseTarget(const std::string& target_id,
                        bool* out_success) override;
   Response CreateBrowserContext(std::string* out_context_id) override;
-  Response DisposeBrowserContext(const std::string& context_id,
-                                 bool* out_success) override;
+  Response DisposeBrowserContext(const std::string& context_id) override;
   Response CreateTarget(const std::string& url,
                         Maybe<int> width,
                         Maybe<int> height,

@@ -392,8 +392,7 @@ Response TargetHandler::CreateBrowserContext(std::string* out_context_id) {
   return Response::Error("Not supported");
 }
 
-Response TargetHandler::DisposeBrowserContext(const std::string& context_id,
-                                              bool* out_success) {
+Response TargetHandler::DisposeBrowserContext(const std::string& context_id) {
   return Response::Error("Not supported");
 }
 
