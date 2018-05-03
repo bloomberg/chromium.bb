@@ -38,6 +38,14 @@ COMPONENT_EXPORT(DEVICE_FIDO)
 base::Optional<std::vector<uint8_t>> ConvertToU2fRegisterCommand(
     const CtapMakeCredentialRequest& request);
 
+// Extracts APDU encoded U2F check only sign command from
+// CtapMakeCredentialRequest. Invoked when U2F register operation includes key
+// handles in exclude list.
+COMPONENT_EXPORT(DEVICE_FIDO)
+base::Optional<std::vector<uint8_t>> ConvertToU2fCheckOnlySignCommand(
+    const CtapMakeCredentialRequest& request,
+    const PublicKeyCredentialDescriptor& key_handle);
+
 // Extracts APDU encoded U2F sign command from CtapGetAssertionRequest.
 COMPONENT_EXPORT(DEVICE_FIDO)
 base::Optional<std::vector<uint8_t>> ConvertToU2fSignCommand(

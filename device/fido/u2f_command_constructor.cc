@@ -44,6 +44,17 @@ base::Optional<std::vector<uint8_t>> ConvertToU2fRegisterCommand(
       request.client_data_hash());
 }
 
+base::Optional<std::vector<uint8_t>> ConvertToU2fCheckOnlySignCommand(
+    const CtapMakeCredentialRequest& request,
+    const PublicKeyCredentialDescriptor& key_handle) {
+  if (key_handle.credential_type() != kPublicKey)
+    return base::nullopt;
+
+  return ConstructU2fSignCommand(
+      fido_parsing_utils::CreateSHA256Hash(request.rp().rp_id()),
+      request.client_data_hash(), key_handle.id(), true /* check_only */);
+}
+
 base::Optional<std::vector<uint8_t>> ConvertToU2fSignCommand(
     const CtapGetAssertionRequest& request,
     ApplicationParameterType application_parameter_type,
