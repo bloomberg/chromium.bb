@@ -158,7 +158,6 @@ bool BluetoothLowEnergyConnectionFinder::IsRightDevice(
   if (!service_data)
     return false;
 
-  PA_LOG(INFO) << "Generating EIDs for: " << device->GetAddress();
   std::string service_data_string(service_data->begin(), service_data->end());
   std::vector<cryptauth::DataWithTimestamp> nearest_eids =
       eid_generator_->GenerateNearestEids(remote_device_.beacon_seeds);
