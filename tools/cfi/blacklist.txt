@@ -172,6 +172,7 @@ src:*media/cdm/*
 src:*third_party/swiftshader/*
 src:*base/native_library_unittest.cc
 src:*chrome/browser/ui/libgtkui/app_indicator_icon.cc
+src:*chrome/browser/ui/libgtkui/unity_service.cc
 src:*components/cronet/native/*
 
 # chrome/browser/ui/views/frame/global_menu_bar_x11.cc
