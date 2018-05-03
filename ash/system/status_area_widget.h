@@ -23,6 +23,7 @@ class LogoutButtonTray;
 class OverviewButtonTray;
 class DictationButtonTray;
 class PaletteTray;
+class SelectToSpeakTray;
 class Shelf;
 class StatusAreaWidgetDelegate;
 class SystemTray;
@@ -81,6 +82,9 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget,
   }
   PaletteTray* palette_tray() { return palette_tray_.get(); }
   ImeMenuTray* ime_menu_tray() { return ime_menu_tray_.get(); }
+  SelectToSpeakTray* select_to_speak_tray() {
+    return select_to_speak_tray_.get();
+  }
 
   Shelf* shelf() { return shelf_; }
 
@@ -128,6 +132,7 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget,
   std::unique_ptr<PaletteTray> palette_tray_;
   std::unique_ptr<VirtualKeyboardTray> virtual_keyboard_tray_;
   std::unique_ptr<ImeMenuTray> ime_menu_tray_;
+  std::unique_ptr<SelectToSpeakTray> select_to_speak_tray_;
   std::unique_ptr<FlagWarningTray> flag_warning_tray_;
 
   LoginStatus login_status_ = LoginStatus::NOT_LOGGED_IN;
