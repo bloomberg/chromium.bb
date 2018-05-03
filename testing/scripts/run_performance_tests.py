@@ -244,15 +244,21 @@ def main():
       sharding = None
       sharding = sharding_map[shard_index]['benchmarks']
 
+      # We don't execute tests on the reference build on android webview
+      # since telemetry doesn't support it.  See crbug.com/612455
+      is_webview = any(('browser' in a and 'webview' in a) for a in rest_args)
+
       for benchmark in sharding:
         # Need to run the benchmark twice on browser and reference build
         return_code = (execute_benchmark(
             benchmark, isolated_out_dir, args, rest_args, False) or return_code)
         # We ignore the return code of the reference build since we do not
         # monitor it.
-        execute_benchmark(benchmark, isolated_out_dir, args, rest_args, True)
+        if not is_webview:
+          execute_benchmark(benchmark, isolated_out_dir, args, rest_args, True)
 
   return return_code
+
 
 # This is not really a "script test" so does not need to manually add
 # any additional compile targets.

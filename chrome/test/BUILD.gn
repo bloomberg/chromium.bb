@@ -2180,6 +2180,16 @@ group("performance_test_suite") {
   ]
 }
 
+# Difference between this and performance_test_suite is that this runs a devil
+# script before the build, to remove the system webview. See
+# //testing/buildbot/gn_isolate_map.pyl
+group("performance_webview_test_suite") {
+  testonly = true
+  deps = [
+    "//chrome/test:performance_test_suite",
+  ]
+}
+
 # Difference between this and telemetry_perf_tests is that this runs a devil
 # script before the build, to remove the system webview. See
 # //testing/buildbot/gn_isolate_map.pyl
