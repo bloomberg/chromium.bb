@@ -258,8 +258,7 @@ _OS_NEGATIVE_FILTER['android:chrome_stable'] = (
         'CorrectEventFiringTest.testShouldEmitClickEventWhenClickingOnATextInputElement',
     ]
 )
-
-_OS_NEGATIVE_FILTER['android:chromium'] = (
+_OS_NEGATIVE_FILTER['android:chrome_beta'] = (
     _OS_NEGATIVE_FILTER['android:chrome'] + [
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2286
         'CorrectEventFiringTest.*',
@@ -285,14 +284,30 @@ _OS_NEGATIVE_FILTER['android:chromium'] = (
         'JavascriptEnabledDriverTest.testIssue80ClickShouldGenerateClickEvent',
     ]
 )
-_OS_NEGATIVE_FILTER['android:chrome_beta'] = (
+_OS_NEGATIVE_FILTER['android:chromium'] = (
     _OS_NEGATIVE_FILTER['android:chrome'] + [
-         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2025
-        'PageLoadingTest.testShouldBeAbleToGetAFragmentOnTheCurrentPage',
-         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2076
-        'CorrectEventFiringTest.testShouldReportTheXAndYCoordinatesWhenClicking',
-         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2077
-        'CorrectEventFiringTest.testShouldEmitClickEventWhenClickingOnATextInputElement',
+        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2286
+        'CorrectEventFiringTest.*',
+        'FormHandlingTest.testShouldSubmitAFormUsingTheEnterKey',
+        'FormHandlingTest.testShouldSubmitAFormUsingTheNewlineLiteral',
+        'JavascriptEnabledDriverTest.testShouldBeAbleToFindElementAfterJavascriptCausesANewPageToLoad',
+        'JavascriptEnabledDriverTest.testShouldBeAbleToDetermineTheLocationOfAnElement',
+        'JavascriptEnabledDriverTest.testShouldBeAbleToSwitchToFocusedElement',
+        'JavascriptEnabledDriverTest.testIfNoElementHasFocusTheActiveElementIsTheBody',
+        'JavascriptEnabledDriverTest.testShouldWaitForLoadsToCompleteAfterJavascriptCausesANewPageToLoad',
+        'TypingTest.testShouldBeAbleToUseArrowKeys',
+        'TypingTest.testShouldReportKeyCodeOfArrowKeysUpDownEvents',
+        'TypingTest.testShouldBeAbleToMixUpperAndLowerCaseLetters',
+        'BasicMouseInterfaceTest.testDoubleClickThenGet',
+        'MiscTest.testShouldReturnTheSourceOfAPage',
+        'MiscTest.testClickingShouldNotTrampleWOrHInGlobalScope',
+        'MiscTest.testShouldReportTheCurrentUrlCorrectly',
+        'MiscTest.testStimulatesStrangeOnloadInteractionInFirefox',
+        'ElementAttributeTest.testShouldCorrectlyReportValueOfColspan',
+        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2376
+        'ImplicitWaitTest.*',
+        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2401
+        'JavascriptEnabledDriverTest.testIssue80ClickShouldGenerateClickEvent',
     ]
 )
 _OS_NEGATIVE_FILTER['android:chromedriver_webview_shell'] = (

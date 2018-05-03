@@ -216,30 +216,15 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
 )
 _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
     _ANDROID_NEGATIVE_FILTER['chrome'] + [
-        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2025
-        'ChromeDriverTest.testDoesntHangOnFragmentNavigation',
-        # https://bugs.chromium.org/p/chromium/issues/detail?id=746266
-        'ChromeDriverSiteIsolation.testCanClickOOPIF',
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2350
         'ChromeDriverTest.testSlowIFrame',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chrome_beta'] = (
-    _ANDROID_NEGATIVE_FILTER['chrome'] + [
-        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2025
-        'ChromeDriverTest.testDoesntHangOnFragmentNavigation',
-        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2350
-        'ChromeDriverTest.testSlowIFrame',
-    ]
+    _ANDROID_NEGATIVE_FILTER['chrome'] + []
 )
 _ANDROID_NEGATIVE_FILTER['chromium'] = (
-    _ANDROID_NEGATIVE_FILTER['chrome'] + [
-        'ChromeDriverTest.testSwitchToWindow',
-        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1503
-        'ChromeDriverTest.testShadowDomHover',
-        'ChromeDriverTest.testMouseMoveTo',
-        'ChromeDriverTest.testHoverOverElement',
-    ]
+    _ANDROID_NEGATIVE_FILTER['chrome'] + []
 )
 _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
     _ANDROID_NEGATIVE_FILTER['chrome_stable'] + [
