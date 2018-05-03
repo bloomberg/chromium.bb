@@ -113,4 +113,21 @@ bool GetImageNeedsPlatformSpecificTextureTarget(gfx::BufferFormat format,
 #endif
 }
 
+std::vector<gfx::BufferUsageAndFormat>
+CreateBufferUsageAndFormatExceptionList() {
+  std::vector<gfx::BufferUsageAndFormat> usage_format_list;
+  for (int usage_idx = 0; usage_idx <= static_cast<int>(gfx::BufferUsage::LAST);
+       ++usage_idx) {
+    gfx::BufferUsage usage = static_cast<gfx::BufferUsage>(usage_idx);
+    for (int format_idx = 0;
+         format_idx <= static_cast<int>(gfx::BufferFormat::LAST);
+         ++format_idx) {
+      gfx::BufferFormat format = static_cast<gfx::BufferFormat>(format_idx);
+      if (gpu::GetImageNeedsPlatformSpecificTextureTarget(format, usage))
+        usage_format_list.push_back(gfx::BufferUsageAndFormat(usage, format));
+    }
+  }
+  return usage_format_list;
+}
+
 }  // namespace gpu

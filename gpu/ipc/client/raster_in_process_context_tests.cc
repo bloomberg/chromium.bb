@@ -7,10 +7,13 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/viz/common/resources/resource_format.h"
+#include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/client/raster_implementation.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
+#include "gpu/ipc/host/gpu_memory_buffer_support.h"
 #include "gpu/ipc/raster_in_process_context.h"
+#include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/color_space.h"
 
@@ -39,7 +42,7 @@ class RasterInProcessCommandBufferTest : public ::testing::TestWithParam<bool> {
     auto result = context->Initialize(
         /*service=*/nullptr, attributes, SharedMemoryLimits(),
         gpu_memory_buffer_manager_.get(),
-        /*image_factory=*/nullptr,
+        gpu_memory_buffer_factory_->AsImageFactory(),
         /*gpu_channel_manager_delegate=*/nullptr,
         base::ThreadTaskRunnerHandle::Get());
     DCHECK_EQ(result, ContextResult::kSuccess);
@@ -47,6 +50,7 @@ class RasterInProcessCommandBufferTest : public ::testing::TestWithParam<bool> {
   }
 
   void SetUp() override {
+    gpu_memory_buffer_factory_ = GpuMemoryBufferFactory::CreateNativeType();
     gpu_memory_buffer_manager_ =
         std::make_unique<viz::TestGpuMemoryBufferManager>();
     context_ = CreateRasterInProcessContext();
@@ -56,13 +60,13 @@ class RasterInProcessCommandBufferTest : public ::testing::TestWithParam<bool> {
   void TearDown() override {
     context_.reset();
     gpu_memory_buffer_manager_.reset();
+    gpu_memory_buffer_factory_.reset();
   }
 
  protected:
   raster::RasterInterface* ri_;  // not owned
+  std::unique_ptr<GpuMemoryBufferFactory> gpu_memory_buffer_factory_;
   std::unique_ptr<GpuMemoryBufferManager> gpu_memory_buffer_manager_;
-
- private:
   std::unique_ptr<RasterInProcessContext> context_;
 };
 
@@ -112,6 +116,43 @@ TEST_P(RasterInProcessCommandBufferTest, SetColorSpaceMetadata) {
   gfx::ColorSpace color_space;
   ri_->SetColorSpaceMetadata(texture_id,
                              reinterpret_cast<GLColorSpace>(&color_space));
+  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), ri_->GetError());
+}
+
+TEST_P(RasterInProcessCommandBufferTest, TexStorage2DImage) {
+  // Check for GPU and driver support
+  if (!context_->GetCapabilities().texture_storage_image) {
+    return;
+  }
+  std::vector<gfx::BufferUsageAndFormat> supported_formats =
+      CreateBufferUsageAndFormatExceptionList();
+  if (supported_formats.empty()) {
+    return;
+  }
+
+  // Find a supported_format with a matching resource_format.
+  bool found = false;
+  gfx::BufferUsageAndFormat supported_format = supported_formats[0];
+  viz::ResourceFormat resource_format = static_cast<viz::ResourceFormat>(0);
+  for (size_t i = 0; !found && i < supported_formats.size(); ++i) {
+    supported_format = supported_formats[i];
+    for (size_t j = 0; !found && j <= viz::RESOURCE_FORMAT_MAX; ++j) {
+      resource_format = static_cast<viz::ResourceFormat>(j);
+      if (supported_format.format == viz::BufferFormat(resource_format)) {
+        found = true;
+      }
+    }
+  }
+
+  if (!found) {
+    return;
+  }
+
+  // Create a buffer backed texture and allocate storage.
+  GLuint texture_id = ri_->CreateTexture(
+      /*use_buffer=*/true, supported_format.usage, resource_format);
+  ri_->TexStorage2D(texture_id, 1, kBufferSize.width(), kBufferSize.height());
+
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), ri_->GetError());
 }
 

@@ -253,6 +253,7 @@ test("gl_tests") {
     "//gpu/command_buffer/client:raster",
     "//gpu/command_buffer/common:gles2_utils",
     "//gpu/ipc:gl_in_process_context",
+    "//gpu/ipc/host",
     "//gpu/ipc/service",
     "//testing/gmock",
     "//testing/gtest",

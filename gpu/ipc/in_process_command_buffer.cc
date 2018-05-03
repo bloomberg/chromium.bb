@@ -50,6 +50,7 @@
 #include "gpu/config/gpu_crash_keys.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/ipc/gpu_in_process_thread_service.h"
+#include "gpu/ipc/host/gpu_memory_buffer_support.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
 #include "gpu/ipc/service/image_transport_surface.h"
 #include "ui/gfx/geometry/size.h"
@@ -105,9 +106,12 @@ class GpuInProcessThreadHolder : public base::Thread {
       DCHECK(base::CommandLine::InitializedForCurrentProcess());
       const base::CommandLine* command_line =
           base::CommandLine::ForCurrentProcess();
+      GpuPreferences gpu_preferences = gles2::ParseGpuPreferences(command_line);
+      gpu_preferences.texture_target_exception_list =
+          CreateBufferUsageAndFormatExceptionList();
       gpu_thread_service_ = base::MakeRefCounted<GpuInProcessThreadService>(
           task_runner(), sync_point_manager_.get(), nullptr, nullptr,
-          gpu_feature_info_, gles2::ParseGpuPreferences(command_line));
+          gpu_feature_info_, gpu_preferences);
     }
     return gpu_thread_service_;
   }
@@ -323,7 +327,7 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
         service_->shader_translator_cache(),
         service_->framebuffer_completeness_cache(), feature_info,
         params.attribs.bind_generates_resource, service_->image_manager(),
-        nullptr /* image_factory */, nullptr /* progress_reporter */,
+        params.image_factory, nullptr /* progress_reporter */,
         service_->gpu_feature_info(), service_->discardable_manager());
   }
 
