@@ -23,7 +23,6 @@ class CastScreen;
 class ConnectivityChecker;
 
 namespace metrics {
-class CastMetricsHelper;
 class CastMetricsServiceClient;
 }  // namespace metrics
 
@@ -47,8 +46,6 @@ class CastBrowserProcess {
 #if defined(USE_AURA)
   void SetCastScreen(std::unique_ptr<CastScreen> cast_screen);
 #endif  // defined(USE_AURA)
-  void SetMetricsHelper(
-      std::unique_ptr<metrics::CastMetricsHelper> metrics_helper);
   void SetMetricsServiceClient(
       std::unique_ptr<metrics::CastMetricsServiceClient>
           metrics_service_client);
@@ -82,7 +79,6 @@ class CastBrowserProcess {
  private:
   // Note: The following order should match the order they are set in
   // CastBrowserMainParts.
-  std::unique_ptr<metrics::CastMetricsHelper> metrics_helper_;
 #if defined(USE_AURA)
   std::unique_ptr<CastScreen> cast_screen_;
 #endif  // defined(USE_AURA)

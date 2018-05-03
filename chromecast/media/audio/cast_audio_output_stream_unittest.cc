@@ -13,7 +13,6 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
-#include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/media/audio/cast_audio_manager.h"
 #include "chromecast/media/audio/cast_audio_mixer.h"
 #include "chromecast/media/cma/backend/cma_backend.h"
@@ -252,7 +251,6 @@ class CastAudioOutputStreamTest : public ::testing::Test {
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  metrics::CastMetricsHelper cast_metrics_helper_;
   base::Thread media_thread_;
   std::unique_ptr<CastAudioManager> audio_manager_;
   FakeCmaBackend* media_pipeline_backend_;

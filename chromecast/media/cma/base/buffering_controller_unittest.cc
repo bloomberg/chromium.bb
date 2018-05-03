@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
-#include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/media/cma/base/buffering_state.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,7 +33,6 @@ class BufferingControllerTest : public testing::Test {
   BufferingControllerTest();
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  metrics::CastMetricsHelper cast_metrics_helper_;
   std::unique_ptr<BufferingController> buffering_controller_;
 
   MockBufferingControllerClient client_;
