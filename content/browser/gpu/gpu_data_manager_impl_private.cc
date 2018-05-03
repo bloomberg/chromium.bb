@@ -24,7 +24,6 @@
 #include "cc/base/switches.h"
 #include "components/viz/common/features.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
-#include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
@@ -45,6 +44,7 @@
 #include "gpu/config/software_rendering_list_autogen.h"
 #include "gpu/ipc/common/gpu_preferences_util.h"
 #include "gpu/ipc/common/memory_stats.h"
+#include "gpu/ipc/host/gpu_memory_buffer_support.h"
 #include "gpu/ipc/host/shader_disk_cache.h"
 #include "media/media_buildflags.h"
 #include "ui/base/ui_base_switches.h"
@@ -195,7 +195,7 @@ void DisplayReconfigCallback(CGDirectDisplayID display,
                              CGDisplayChangeSummaryFlags flags,
                              void* gpu_data_manager) {
   if (flags == kCGDisplayBeginConfigurationFlag)
-    return; // This call contains no information about the display change
+    return;  // This call contains no information about the display change
 
   GpuDataManagerImpl* manager =
       reinterpret_cast<GpuDataManagerImpl*>(gpu_data_manager);
@@ -261,7 +261,7 @@ void UpdateGpuInfoOnIO(const gpu::GPUInfo& gpu_info) {
           gpu_info));
 }
 
-}  // namespace anonymous
+}  // anonymous namespace
 
 void GpuDataManagerImplPrivate::BlacklistWebGLForTesting() {
   // This function is for testing only, so disable histograms.
@@ -538,7 +538,6 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
     command_line->AppendSwitch(switches::kOverrideUseSoftwareGLForTests);
   }
 #endif  // !OS_MACOSX
-
 }
 
 void GpuDataManagerImplPrivate::UpdateGpuPreferences(
@@ -560,7 +559,7 @@ void GpuDataManagerImplPrivate::UpdateGpuPreferences(
       gpu::ShaderDiskCache::CacheSizeBytes();
 
   gpu_preferences->texture_target_exception_list =
-      CreateBufferUsageAndFormatExceptionList();
+      gpu::CreateBufferUsageAndFormatExceptionList();
 }
 
 void GpuDataManagerImplPrivate::DisableHardwareAcceleration() {

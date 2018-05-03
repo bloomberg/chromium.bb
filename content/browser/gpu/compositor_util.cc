@@ -5,8 +5,9 @@
 #include "content/browser/gpu/compositor_util.h"
 
 #include <stddef.h>
-#include <memory>
 
+#include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/command_line.h"
@@ -25,7 +26,6 @@
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/config/gpu_blacklist.h"
 #include "gpu/config/gpu_driver_bug_list.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
@@ -475,23 +475,6 @@ std::unique_ptr<base::ListValue> GetProblemsForHardwareGpu() {
 
 std::vector<std::string> GetDriverBugWorkaroundsForHardwareGpu() {
   return GetDriverBugWorkaroundsImpl(GpuFeatureInfoType::kForHardwareGpu);
-}
-
-std::vector<gfx::BufferUsageAndFormat>
-CreateBufferUsageAndFormatExceptionList() {
-  std::vector<gfx::BufferUsageAndFormat> usage_format_list;
-  for (int usage_idx = 0; usage_idx <= static_cast<int>(gfx::BufferUsage::LAST);
-       ++usage_idx) {
-    gfx::BufferUsage usage = static_cast<gfx::BufferUsage>(usage_idx);
-    for (int format_idx = 0;
-         format_idx <= static_cast<int>(gfx::BufferFormat::LAST);
-         ++format_idx) {
-      gfx::BufferFormat format = static_cast<gfx::BufferFormat>(format_idx);
-      if (gpu::GetImageNeedsPlatformSpecificTextureTarget(format, usage))
-        usage_format_list.push_back(gfx::BufferUsageAndFormat(usage, format));
-    }
-  }
-  return usage_format_list;
 }
 
 }  // namespace content

@@ -45,6 +45,7 @@
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/gles2_cmd_copy_tex_image.h"
 #include "gpu/command_buffer/service/gles2_cmd_copy_texture_chromium.h"
+#include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/indexed_buffer_binding_host.h"
 #include "gpu/command_buffer/service/logger.h"
@@ -62,6 +63,7 @@
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/ipc/color/gfx_param_traits.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_gl_api_implementation.h"
@@ -505,9 +507,7 @@ class RasterDecoderImpl final : public RasterDecoder,
   void TexStorage2DImage(TextureRef* texture_ref,
                          const TextureMetadata& texture_metadata,
                          GLsizei width,
-                         GLsizei height) {
-    NOTIMPLEMENTED();
-  }
+                         GLsizei height);
   void TexStorage2D(TextureRef* texture_ref,
                     const TextureMetadata& texture_metadata,
                     GLint levels,
@@ -2106,6 +2106,74 @@ void RasterDecoderImpl::DoProduceTextureDirect(GLuint client_id,
   group_->mailbox_manager()->ProduceTexture(mailbox, produced);
 }
 
+void RasterDecoderImpl::TexStorage2DImage(
+    TextureRef* texture_ref,
+    const TextureMetadata& texture_metadata,
+    GLsizei width,
+    GLsizei height) {
+  TRACE_EVENT2("gpu", "RasterDecoderImpl::TexStorage2DImage", "width", width,
+               "height", height);
+
+  gpu::gles2::Texture* texture = texture_ref->texture();
+  if (texture->IsImmutable()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glTexStorage2DImage",
+                       "texture is immutable");
+    return;
+  }
+
+  gfx::BufferFormat buffer_format =
+      viz::BufferFormat(texture_metadata.format());
+  switch (buffer_format) {
+    case gfx::BufferFormat::RGBA_8888:
+    case gfx::BufferFormat::BGRA_8888:
+    case gfx::BufferFormat::RGBA_F16:
+    case gfx::BufferFormat::R_8:
+      break;
+    default:
+      LOCAL_SET_GL_ERROR(GL_INVALID_ENUM, "glTexStorage2DImage",
+                         "Invalid buffer format");
+      return;
+  }
+  GLint untyped_format = viz::GLDataFormat(texture_metadata.format());
+
+  if (!GetContextGroup()->image_factory()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glTexStorage2DImage",
+                       "Cannot create GL image");
+    return;
+  }
+
+  bool is_cleared = false;
+  scoped_refptr<gl::GLImage> image =
+      GetContextGroup()->image_factory()->CreateAnonymousImage(
+          gfx::Size(width, height), buffer_format, gfx::BufferUsage::SCANOUT,
+          untyped_format, &is_cleared);
+
+  ScopedTextureBinder binder(&state_, texture_manager(), texture_ref,
+                             texture_metadata.target());
+  if (!texture_manager()->ValidForTarget(texture_metadata.target(), 0, width,
+                                         height, 1)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexStorage2DImage",
+                       "dimensions out of range");
+    return;
+  }
+  if (!image || !image->BindTexImage(texture_metadata.target())) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glTexStorage2DImage",
+                       "Failed to create or bind GL Image");
+    return;
+  }
+
+  gfx::Rect cleared_rect;
+  if (is_cleared)
+    cleared_rect = gfx::Rect(width, height);
+
+  texture_manager()->SetLevelInfo(texture_ref, texture_metadata.target(), 0,
+                                  image->GetInternalFormat(), width, height, 1,
+                                  0, image->GetInternalFormat(),
+                                  GL_UNSIGNED_BYTE, cleared_rect);
+  texture_manager()->SetLevelImage(texture_ref, texture_metadata.target(), 0,
+                                   image.get(), gpu::gles2::Texture::BOUND);
+}
+
 void RasterDecoderImpl::TexStorage2D(TextureRef* texture_ref,
                                      const TextureMetadata& texture_metadata,
                                      GLint levels,
@@ -2532,6 +2600,7 @@ void RasterDecoderImpl::DoCopySubTexture(GLuint source_id,
                                                        source_level)) {
       GLfloat transform_matrix[16];
       image->GetTextureMatrix(transform_matrix);
+
       copy_texture_chromium_->DoCopySubTextureWithTransform(
           this, source_target, source_texture->service_id(), source_level,
           source_internal_format, dest_target, dest_texture->service_id(),
