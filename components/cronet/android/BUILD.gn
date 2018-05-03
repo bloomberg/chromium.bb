@@ -1593,7 +1593,7 @@ group("cronet_test_package") {
   }
 }
 
-_maven_dir = "$_package_dir/maven"
+_maven_dir = "$_package_dir/maven-$current_cpu"
 _maven_modules_dir = "$_maven_dir/org/chromium/net"
 _maven_test_dir = "$_maven_dir/test"
 
