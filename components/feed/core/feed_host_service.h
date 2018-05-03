@@ -5,7 +5,10 @@
 #ifndef COMPONENTS_FEED_CORE_FEED_HOST_SERVICE_H_
 #define COMPONENTS_FEED_CORE_FEED_HOST_SERVICE_H_
 
+#include <memory>
+
 #include "base/macros.h"
+#include "components/feed/core/feed_networking_host.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace feed {
@@ -17,10 +20,13 @@ namespace feed {
 // yet.
 class FeedHostService : public KeyedService {
  public:
-  FeedHostService();
+  explicit FeedHostService(std::unique_ptr<FeedNetworkingHost> networking_host);
   ~FeedHostService() override;
+  FeedNetworkingHost* GetFeedNetworkingHost();
 
  private:
+  std::unique_ptr<FeedNetworkingHost> networking_host_;
+
   DISALLOW_COPY_AND_ASSIGN(FeedHostService);
 };
 

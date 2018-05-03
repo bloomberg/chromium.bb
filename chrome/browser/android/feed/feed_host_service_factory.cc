@@ -4,9 +4,19 @@
 
 #include "chrome/browser/android/feed/feed_host_service_factory.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/common/channel_info.h"
 #include "components/feed/core/feed_host_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/storage_partition.h"
+#include "google_apis/google_api_keys.h"
 
 namespace feed {
 
@@ -31,7 +41,24 @@ FeedHostServiceFactory::~FeedHostServiceFactory() = default;
 
 KeyedService* FeedHostServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new FeedHostService();
+  Profile* profile = Profile::FromBrowserContext(context);
+  content::StoragePartition* storage_partition =
+      content::BrowserContext::GetDefaultStoragePartition(context);
+
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
+  std::string api_key;
+  if (google_apis::IsGoogleChromeAPIKeyUsed()) {
+    bool is_stable_channel =
+        chrome::GetChannel() == version_info::Channel::STABLE;
+    api_key = is_stable_channel ? google_apis::GetAPIKey()
+                                : google_apis::GetNonStableAPIKey();
+  }
+  auto networking_host = std::make_unique<FeedNetworkingHost>(
+      identity_manager, api_key,
+      storage_partition->GetURLLoaderFactoryForBrowserProcess());
+
+  return new FeedHostService(std::move(networking_host));
 }
 
 content::BrowserContext* FeedHostServiceFactory::GetBrowserContextToUse(
