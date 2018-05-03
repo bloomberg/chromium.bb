@@ -535,7 +535,8 @@ static int main_loop(int argc, const char **argv_) {
   memset(&webm_ctx, 0, sizeof(webm_ctx));
   input.webm_ctx = &webm_ctx;
 #endif
-  struct ObuDecInputContext obu_ctx = { NULL, NULL, 0, 0, 0, 0 };
+  struct ObuDecInputContext obu_ctx = { NULL, NULL, 0,
+                                        0,    0,    IGNORE_ENHANCEMENT_LAYERS };
   obu_ctx.avx_ctx = &aom_input_ctx;
   input.obu_ctx = &obu_ctx;
   input.aom_input_ctx = &aom_input_ctx;
