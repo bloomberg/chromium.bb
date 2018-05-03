@@ -212,7 +212,8 @@ class CONTENT_EXPORT MediaDevicesManager
   void DevicesEnumerated(MediaDeviceType type,
                          const MediaDeviceInfoArray& snapshot);
   void UpdateSnapshot(MediaDeviceType type,
-                      const MediaDeviceInfoArray& new_snapshot);
+                      const MediaDeviceInfoArray& new_snapshot,
+                      bool ignore_group_id = true);
   void ProcessRequests();
   bool IsEnumerationRequestReady(const EnumerationRequest& request_info);
 
