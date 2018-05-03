@@ -80,7 +80,7 @@ static ScopedJavaLocalRef<jobject> JNI_CoreImpl_CreateSharedBuffer(
     DCHECK_EQ(options->struct_size, buffer_size);
   }
   MojoHandle handle;
-  MojoResult result = MojoCreateSharedBuffer(options, num_bytes, &handle);
+  MojoResult result = MojoCreateSharedBuffer(num_bytes, options, &handle);
   return Java_CoreImpl_newResultAndInteger(env, result, handle);
 }
 
@@ -187,8 +187,11 @@ static ScopedJavaLocalRef<jobject> JNI_CoreImpl_ReadData(
     DCHECK(buffer_start);
     DCHECK(elements_capacity <= env->GetDirectBufferCapacity(elements));
   }
+  MojoReadDataOptions options;
+  options.struct_size = sizeof(options);
+  options.flags = flags;
   MojoResult result =
-      MojoReadData(mojo_handle, buffer_start, &buffer_size, flags);
+      MojoReadData(mojo_handle, &options, buffer_start, &buffer_size);
   return Java_CoreImpl_newResultAndInteger(
       env, result, (result == MOJO_RESULT_OK) ? buffer_size : 0);
 }
@@ -201,8 +204,12 @@ static ScopedJavaLocalRef<jobject> JNI_CoreImpl_BeginReadData(
     jint flags) {
   void const* buffer = 0;
   uint32_t buffer_size = num_bytes;
+
+  MojoBeginReadDataOptions options;
+  options.struct_size = sizeof(options);
+  options.flags = flags;
   MojoResult result =
-      MojoBeginReadData(mojo_handle, &buffer, &buffer_size, flags);
+      MojoBeginReadData(mojo_handle, &options, &buffer, &buffer_size);
   if (result == MOJO_RESULT_OK) {
     ScopedJavaLocalRef<jobject> byte_buffer(
         env, env->NewDirectByteBuffer(const_cast<void*>(buffer), buffer_size));
@@ -216,7 +223,7 @@ static jint JNI_CoreImpl_EndReadData(JNIEnv* env,
                                      const JavaParamRef<jobject>& jcaller,
                                      jint mojo_handle,
                                      jint num_bytes_read) {
-  return MojoEndReadData(mojo_handle, num_bytes_read);
+  return MojoEndReadData(mojo_handle, num_bytes_read, nullptr);
 }
 
 static ScopedJavaLocalRef<jobject> JNI_CoreImpl_WriteData(
@@ -230,8 +237,12 @@ static ScopedJavaLocalRef<jobject> JNI_CoreImpl_WriteData(
   DCHECK(buffer_start);
   DCHECK(limit <= env->GetDirectBufferCapacity(elements));
   uint32_t buffer_size = limit;
+
+  MojoWriteDataOptions options;
+  options.struct_size = sizeof(options);
+  options.flags = flags;
   MojoResult result =
-      MojoWriteData(mojo_handle, buffer_start, &buffer_size, flags);
+      MojoWriteData(mojo_handle, buffer_start, &buffer_size, &options);
   return Java_CoreImpl_newResultAndInteger(
       env, result, (result == MOJO_RESULT_OK) ? buffer_size : 0);
 }
@@ -244,8 +255,11 @@ static ScopedJavaLocalRef<jobject> JNI_CoreImpl_BeginWriteData(
     jint flags) {
   void* buffer = 0;
   uint32_t buffer_size = num_bytes;
+  MojoBeginWriteDataOptions options;
+  options.struct_size = sizeof(options);
+  options.flags = flags;
   MojoResult result =
-      MojoBeginWriteData(mojo_handle, &buffer, &buffer_size, flags);
+      MojoBeginWriteData(mojo_handle, &options, &buffer, &buffer_size);
   if (result == MOJO_RESULT_OK) {
     ScopedJavaLocalRef<jobject> byte_buffer(
         env, env->NewDirectByteBuffer(buffer, buffer_size));
@@ -259,7 +273,7 @@ static jint JNI_CoreImpl_EndWriteData(JNIEnv* env,
                                       const JavaParamRef<jobject>& jcaller,
                                       jint mojo_handle,
                                       jint num_bytes_written) {
-  return MojoEndWriteData(mojo_handle, num_bytes_written);
+  return MojoEndWriteData(mojo_handle, num_bytes_written, nullptr);
 }
 
 static ScopedJavaLocalRef<jobject> JNI_CoreImpl_Duplicate(
@@ -290,8 +304,11 @@ static ScopedJavaLocalRef<jobject> JNI_CoreImpl_Map(
     jlong num_bytes,
     jint flags) {
   void* buffer = 0;
+  MojoMapBufferOptions options;
+  options.struct_size = sizeof(options);
+  options.flags = flags;
   MojoResult result =
-      MojoMapBuffer(mojo_handle, offset, num_bytes, &buffer, flags);
+      MojoMapBuffer(mojo_handle, offset, num_bytes, &options, &buffer);
   if (result == MOJO_RESULT_OK) {
     ScopedJavaLocalRef<jobject> byte_buffer(
         env, env->NewDirectByteBuffer(buffer, num_bytes));

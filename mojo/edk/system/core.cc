@@ -6,6 +6,7 @@
 
 #include <string.h>
 
+#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
@@ -606,7 +607,7 @@ MojoResult Core::CreateMessagePipe(const MojoCreateMessagePipeOptions* options,
 
 MojoResult Core::WriteMessage(MojoHandle message_pipe_handle,
                               MojoMessageHandle message_handle,
-                              MojoWriteMessageFlags flags) {
+                              const MojoWriteMessageOptions* options) {
   RequestContext request_context;
   if (!message_handle)
     return MOJO_RESULT_INVALID_ARGUMENT;
@@ -618,12 +619,12 @@ MojoResult Core::WriteMessage(MojoHandle message_pipe_handle,
   auto dispatcher = GetDispatcher(message_pipe_handle);
   if (!dispatcher)
     return MOJO_RESULT_INVALID_ARGUMENT;
-  return dispatcher->WriteMessage(std::move(message_event), flags);
+  return dispatcher->WriteMessage(std::move(message_event));
 }
 
 MojoResult Core::ReadMessage(MojoHandle message_pipe_handle,
-                             MojoMessageHandle* message_handle,
-                             MojoReadMessageFlags flags) {
+                             const MojoReadMessageOptions* options,
+                             MojoMessageHandle* message_handle) {
   RequestContext request_context;
   auto dispatcher = GetDispatcher(message_pipe_handle);
   if (!dispatcher || !message_handle)
@@ -639,7 +640,9 @@ MojoResult Core::ReadMessage(MojoHandle message_pipe_handle,
   return MOJO_RESULT_OK;
 }
 
-MojoResult Core::FuseMessagePipes(MojoHandle handle0, MojoHandle handle1) {
+MojoResult Core::FuseMessagePipes(MojoHandle handle0,
+                                  MojoHandle handle1,
+                                  const MojoFuseMessagePipesOptions* options) {
   RequestContext request_context;
   scoped_refptr<Dispatcher> dispatcher0;
   scoped_refptr<Dispatcher> dispatcher1;
@@ -678,7 +681,8 @@ MojoResult Core::FuseMessagePipes(MojoHandle handle0, MojoHandle handle1) {
 
 MojoResult Core::NotifyBadMessage(MojoMessageHandle message_handle,
                                   const char* error,
-                                  size_t error_num_bytes) {
+                                  size_t error_num_bytes,
+                                  const MojoNotifyBadMessageOptions* options) {
   if (!message_handle)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
@@ -785,80 +789,131 @@ MojoResult Core::CreateDataPipe(const MojoCreateDataPipeOptions* options,
 MojoResult Core::WriteData(MojoHandle data_pipe_producer_handle,
                            const void* elements,
                            uint32_t* num_bytes,
-                           MojoWriteDataFlags flags) {
+                           const MojoWriteDataOptions* options) {
   RequestContext request_context;
   scoped_refptr<Dispatcher> dispatcher(
       GetDispatcher(data_pipe_producer_handle));
   if (!dispatcher)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  return dispatcher->WriteData(elements, num_bytes, flags);
+  MojoWriteDataOptions validated_options;
+  if (options) {
+    if (options->struct_size < sizeof(*options))
+      return MOJO_RESULT_INVALID_ARGUMENT;
+
+    constexpr MojoWriteDataFlags kSupportedFlags =
+        MOJO_WRITE_DATA_FLAG_NONE | MOJO_WRITE_DATA_FLAG_ALL_OR_NONE;
+    if (options->flags & ~kSupportedFlags)
+      return MOJO_RESULT_UNIMPLEMENTED;
+    validated_options.flags = options->flags;
+  } else {
+    validated_options.flags = MOJO_WRITE_DATA_FLAG_NONE;
+  }
+  return dispatcher->WriteData(elements, num_bytes, validated_options);
 }
 
 MojoResult Core::BeginWriteData(MojoHandle data_pipe_producer_handle,
+                                const MojoBeginWriteDataOptions* options,
                                 void** buffer,
-                                uint32_t* buffer_num_bytes,
-                                MojoWriteDataFlags flags) {
+                                uint32_t* buffer_num_bytes) {
   RequestContext request_context;
   scoped_refptr<Dispatcher> dispatcher(
       GetDispatcher(data_pipe_producer_handle));
   if (!dispatcher)
     return MOJO_RESULT_INVALID_ARGUMENT;
-
-  return dispatcher->BeginWriteData(buffer, buffer_num_bytes, flags);
+  if (options) {
+    if (options->struct_size < sizeof(*options))
+      return MOJO_RESULT_INVALID_ARGUMENT;
+    if (options->flags != MOJO_BEGIN_WRITE_DATA_FLAG_NONE)
+      return MOJO_RESULT_UNIMPLEMENTED;
+  }
+  return dispatcher->BeginWriteData(buffer, buffer_num_bytes);
 }
 
 MojoResult Core::EndWriteData(MojoHandle data_pipe_producer_handle,
-                              uint32_t num_bytes_written) {
+                              uint32_t num_bytes_written,
+                              const MojoEndWriteDataOptions* options) {
   RequestContext request_context;
   scoped_refptr<Dispatcher> dispatcher(
       GetDispatcher(data_pipe_producer_handle));
   if (!dispatcher)
     return MOJO_RESULT_INVALID_ARGUMENT;
-
+  if (options) {
+    if (options->struct_size < sizeof(*options))
+      return MOJO_RESULT_INVALID_ARGUMENT;
+    if (options->flags != MOJO_END_WRITE_DATA_FLAG_NONE)
+      return MOJO_RESULT_UNIMPLEMENTED;
+  }
   return dispatcher->EndWriteData(num_bytes_written);
 }
 
 MojoResult Core::ReadData(MojoHandle data_pipe_consumer_handle,
+                          const MojoReadDataOptions* options,
                           void* elements,
-                          uint32_t* num_bytes,
-                          MojoReadDataFlags flags) {
+                          uint32_t* num_bytes) {
   RequestContext request_context;
   scoped_refptr<Dispatcher> dispatcher(
       GetDispatcher(data_pipe_consumer_handle));
   if (!dispatcher)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  return dispatcher->ReadData(elements, num_bytes, flags);
+  MojoReadDataOptions validated_options;
+  if (options) {
+    if (options->struct_size < sizeof(*options))
+      return MOJO_RESULT_INVALID_ARGUMENT;
+
+    constexpr MojoReadDataFlags kSupportedFlags =
+        MOJO_READ_DATA_FLAG_NONE | MOJO_READ_DATA_FLAG_ALL_OR_NONE |
+        MOJO_READ_DATA_FLAG_DISCARD | MOJO_READ_DATA_FLAG_QUERY |
+        MOJO_READ_DATA_FLAG_PEEK;
+    if (options->flags & ~kSupportedFlags)
+      return MOJO_RESULT_UNIMPLEMENTED;
+    validated_options.flags = options->flags;
+  } else {
+    validated_options.flags = MOJO_WRITE_DATA_FLAG_NONE;
+  }
+  return dispatcher->ReadData(validated_options, elements, num_bytes);
 }
 
 MojoResult Core::BeginReadData(MojoHandle data_pipe_consumer_handle,
+                               const MojoBeginReadDataOptions* options,
                                const void** buffer,
-                               uint32_t* buffer_num_bytes,
-                               MojoReadDataFlags flags) {
+                               uint32_t* buffer_num_bytes) {
   RequestContext request_context;
   scoped_refptr<Dispatcher> dispatcher(
       GetDispatcher(data_pipe_consumer_handle));
   if (!dispatcher)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  return dispatcher->BeginReadData(buffer, buffer_num_bytes, flags);
+  if (options) {
+    if (options->struct_size < sizeof(*options))
+      return MOJO_RESULT_INVALID_ARGUMENT;
+    if (options->flags != MOJO_BEGIN_READ_DATA_FLAG_NONE)
+      return MOJO_RESULT_UNIMPLEMENTED;
+  }
+  return dispatcher->BeginReadData(buffer, buffer_num_bytes);
 }
 
 MojoResult Core::EndReadData(MojoHandle data_pipe_consumer_handle,
-                             uint32_t num_bytes_read) {
+                             uint32_t num_bytes_read,
+                             const MojoEndReadDataOptions* options) {
   RequestContext request_context;
   scoped_refptr<Dispatcher> dispatcher(
       GetDispatcher(data_pipe_consumer_handle));
   if (!dispatcher)
     return MOJO_RESULT_INVALID_ARGUMENT;
-
+  if (options) {
+    if (options->struct_size < sizeof(*options))
+      return MOJO_RESULT_INVALID_ARGUMENT;
+    if (options->flags != MOJO_END_READ_DATA_FLAG_NONE)
+      return MOJO_RESULT_UNIMPLEMENTED;
+  }
   return dispatcher->EndReadData(num_bytes_read);
 }
 
 MojoResult Core::CreateSharedBuffer(
-    const MojoCreateSharedBufferOptions* options,
     uint64_t num_bytes,
+    const MojoCreateSharedBufferOptions* options,
     MojoHandle* shared_buffer_handle) {
   RequestContext request_context;
   MojoCreateSharedBufferOptions validated_options = {};
@@ -914,14 +969,20 @@ MojoResult Core::DuplicateBufferHandle(
 MojoResult Core::MapBuffer(MojoHandle buffer_handle,
                            uint64_t offset,
                            uint64_t num_bytes,
-                           void** buffer,
-                           MojoMapBufferFlags flags) {
+                           const MojoMapBufferOptions* options,
+                           void** buffer) {
   scoped_refptr<Dispatcher> dispatcher(GetDispatcher(buffer_handle));
   if (!dispatcher)
     return MOJO_RESULT_INVALID_ARGUMENT;
+  if (options) {
+    if (options->struct_size < sizeof(*options))
+      return MOJO_RESULT_INVALID_ARGUMENT;
+    if (options->flags != MOJO_MAP_BUFFER_FLAG_NONE)
+      return MOJO_RESULT_UNIMPLEMENTED;
+  }
 
   std::unique_ptr<PlatformSharedMemoryMapping> mapping;
-  MojoResult result = dispatcher->MapBuffer(offset, num_bytes, flags, &mapping);
+  MojoResult result = dispatcher->MapBuffer(offset, num_bytes, &mapping);
   if (result != MOJO_RESULT_OK)
     return result;
 
@@ -956,11 +1017,15 @@ MojoResult Core::UnmapBuffer(void* buffer) {
 }
 
 MojoResult Core::GetBufferInfo(MojoHandle buffer_handle,
-                               const MojoSharedBufferOptions* options,
+                               const MojoGetBufferInfoOptions* options,
                                MojoSharedBufferInfo* info) {
-  if (options && options->struct_size != sizeof(MojoSharedBufferOptions))
-    return MOJO_RESULT_INVALID_ARGUMENT;
-  if (!info || info->struct_size != sizeof(MojoSharedBufferInfo))
+  if (options) {
+    if (options->struct_size < sizeof(*options))
+      return MOJO_RESULT_INVALID_ARGUMENT;
+    if (options->flags != MOJO_GET_BUFFER_INFO_FLAG_NONE)
+      return MOJO_RESULT_UNIMPLEMENTED;
+  }
+  if (!info || info->struct_size < sizeof(MojoSharedBufferInfo))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   scoped_refptr<Dispatcher> dispatcher(GetDispatcher(buffer_handle));

@@ -15,75 +15,89 @@
 #include "mojo/public/c/system/system_export.h"
 #include "mojo/public/c/system/types.h"
 
-// |MojoMessageHandle|: Used to refer to message objects.
-
+// Used to refer to message objects created by |MojoCreateMessage()|.
 typedef uintptr_t MojoMessageHandle;
 
-#ifdef __cplusplus
-const MojoMessageHandle MOJO_MESSAGE_HANDLE_INVALID = 0;
-#else
 #define MOJO_MESSAGE_HANDLE_INVALID ((MojoMessageHandle)0)
-#endif
 
-// |MojoCreateMessagePipeOptions|: Used to specify creation parameters for a
-// message pipe to |MojoCreateMessagePipe()|.
-//   |uint32_t struct_size|: Set to the size of the
-//       |MojoCreateMessagePipeOptions| struct. (Used to allow for future
-//       extensions.)
-//   |MojoCreateMessagePipeOptionsFlags flags|: Used to specify different modes
-//       of operation.
-//       |MOJO_CREATE_MESSAGE_PIPE_OPTIONS_FLAG_NONE|: No flags; default mode.
+// Flags passed to |MojoCreateMessagePipe()| via |MojoCreateMessagePipeOptions|.
+// See values defined below.
+typedef uint32_t MojoCreateMessagePipeFlags;
 
-typedef uint32_t MojoCreateMessagePipeOptionsFlags;
+// No flags. Default behavior.
+#define MOJO_CREATE_MESSAGE_PIPE_FLAG_NONE ((uint32_t)0)
 
-#ifdef __cplusplus
-const MojoCreateMessagePipeOptionsFlags
-    MOJO_CREATE_MESSAGE_PIPE_OPTIONS_FLAG_NONE = 0;
-#else
-#define MOJO_CREATE_MESSAGE_PIPE_OPTIONS_FLAG_NONE \
-  ((MojoCreateMessagePipeOptionsFlags)0)
-#endif
-
-MOJO_STATIC_ASSERT(MOJO_ALIGNOF(int64_t) == 8, "int64_t has weird alignment");
+// Options passed to |MojoCreateMessagePipe()|.
 struct MOJO_ALIGNAS(8) MojoCreateMessagePipeOptions {
+  // The size of this structure, used for versioning.
   uint32_t struct_size;
-  MojoCreateMessagePipeOptionsFlags flags;
+
+  // See |MojoCreateMessagePipeFlags|.
+  MojoCreateMessagePipeFlags flags;
 };
+MOJO_STATIC_ASSERT(MOJO_ALIGNOF(int64_t) == 8, "int64_t has weird alignment");
 MOJO_STATIC_ASSERT(sizeof(MojoCreateMessagePipeOptions) == 8,
                    "MojoCreateMessagePipeOptions has wrong size");
 
-// |MojoWriteMessageFlags|: Used to specify different modes to
-// |MojoWriteMessage()|.
-//   |MOJO_WRITE_MESSAGE_FLAG_NONE| - No flags; default mode.
-
+// Flags passed to |MojoWriteMessage()| via |MojoWriteMessageOptions|. See
+// values defined below.
 typedef uint32_t MojoWriteMessageFlags;
 
-#ifdef __cplusplus
-const MojoWriteMessageFlags MOJO_WRITE_MESSAGE_FLAG_NONE = 0;
-#else
-#define MOJO_WRITE_MESSAGE_FLAG_NONE ((MojoWriteMessageFlags)0)
-#endif
+// No flags. Default behavior.
+#define MOJO_WRITE_MESSAGE_FLAG_NONE ((uint32_t)0)
 
-// |MojoReadMessageFlags|: Used to specify different modes to
-// |MojoReadMessage()|.
-//   |MOJO_READ_MESSAGE_FLAG_NONE| - No flags; default mode.
+// Options passed to |MojoWriteMessage()|.
+struct MOJO_ALIGNAS(8) MojoWriteMessageOptions {
+  // The size of this structure, used for versioning.
+  uint32_t struct_size;
 
+  // See |MojoWriteMessageFlags|.
+  MojoWriteMessageFlags flags;
+};
+MOJO_STATIC_ASSERT(sizeof(MojoWriteMessageOptions) == 8,
+                   "MojoWriteMessageOptions has wrong size");
+
+// Flags passed to |MojoReadMessage()| via |MojoReadMessageOptions|. See values
+// defined below.
 typedef uint32_t MojoReadMessageFlags;
 
-#ifdef __cplusplus
-const MojoReadMessageFlags MOJO_READ_MESSAGE_FLAG_NONE = 0;
-#else
-#define MOJO_READ_MESSAGE_FLAG_NONE ((MojoReadMessageFlags)0)
-#endif
+// No flags. Default behavior.
+#define MOJO_READ_MESSAGE_FLAG_NONE ((uint32_t)0)
+
+// Options passed to |MojoReadMessage()|.
+struct MOJO_ALIGNAS(8) MojoReadMessageOptions {
+  // The size of this structure, used for versioning.
+  uint32_t struct_size;
+
+  // See |MojoReadMessageFlags|.
+  MojoReadMessageFlags flags;
+};
+MOJO_STATIC_ASSERT(sizeof(MojoReadMessageOptions) == 8,
+                   "MojoReadMessageOptions has wrong size");
+
+// Flags passed to |MojoFuseMessagePipes()| via |MojoFuseMessagePipeOptions|.
+// See values defined below.
+typedef uint32_t MojoFuseMessagePipesFlags;
+
+// No flags. Default behavior.
+#define MOJO_FUSE_MESSAGE_PIPES_FLAG_NONE ((uint32_t)0)
+
+// Options passed to |MojoFuseMessagePipes()|.
+struct MOJO_ALIGNAS(8) MojoFuseMessagePipesOptions {
+  // The size of this structure, used for versioning.
+  uint32_t struct_size;
+
+  // See |MojoFuseMessagePipesFlags|.
+  MojoFuseMessagePipesFlags flags;
+};
+MOJO_STATIC_ASSERT(sizeof(MojoFuseMessagePipesOptions) == 8,
+                   "MojoFuseMessagePipesOptions has wrong size");
 
 // Flags passed to |MojoCreateMessage()| via |MojoCreateMessageOptions|.
 typedef uint32_t MojoCreateMessageFlags;
 
-#ifdef __cplusplus
-const MojoCreateMessageFlags MOJO_CREATE_MESSAGE__FLAG_NONE = 0;
-#else
-#define MOJO_CREATE_MESSAGE_FLAG_NONE ((MojoCreateMessageFlags)0)
-#endif
+// No flags. Default behavior.
+#define MOJO_CREATE_MESSAGE_FLAG_NONE ((uint32_t)0)
 
 // Options passed to |MojoCreateMessage()|.
 struct MOJO_ALIGNAS(8) MojoCreateMessageOptions {
@@ -93,15 +107,14 @@ struct MOJO_ALIGNAS(8) MojoCreateMessageOptions {
   // See |MojoCreateMessageFlags|.
   MojoCreateMessageFlags flags;
 };
+MOJO_STATIC_ASSERT(sizeof(MojoCreateMessageOptions) == 8,
+                   "MojoCreateMessageOptions has wrong size");
 
 // Flags passed to |MojoSerializeMessage()| via |MojoSerializeMessageOptions|.
 typedef uint32_t MojoSerializeMessageFlags;
 
-#ifdef __cplusplus
-const MojoSerializeMessageFlags MOJO_SERIALIZE_MESSAGE_FLAG_NONE = 0;
-#else
-#define MOJO_SERIALIZE_MESSAGE_FLAG_NONE ((MojoSerializeMessageFlags)0)
-#endif
+// No flags. Default behavior.
+#define MOJO_SERIALIZE_MESSAGE_FLAG_NONE ((uint32_t)0)
 
 // Options passed to |MojoSerializeMessage()|.
 struct MOJO_ALIGNAS(8) MojoSerializeMessageOptions {
@@ -111,18 +124,19 @@ struct MOJO_ALIGNAS(8) MojoSerializeMessageOptions {
   // See |MojoSerializeMessageFlags|.
   MojoSerializeMessageFlags flags;
 };
+MOJO_STATIC_ASSERT(sizeof(MojoSerializeMessageOptions) == 8,
+                   "MojoSerializeMessageOptions has wrong size");
 
 // Flags passed to |MojoAppendMessageData()| via |MojoAppendMessageDataOptions|.
 typedef uint32_t MojoAppendMessageDataFlags;
 
-#ifdef __cplusplus
-const MojoAppendMessageDataFlags MOJO_APPEND_MESSAGE_DATA_FLAG_NONE = 0;
-const MojoAppendMessageDataFlags MOJO_APPEND_MESSAGE_DATA_FLAG_COMMIT_SIZE = 1;
-#else
-#define MOJO_APPEND_MESSAGE_DATA_FLAG_NONE ((MojoAppendMessageDataFlags)0)
+// No flags. Default behavior.
+#define MOJO_APPEND_MESSAGE_DATA_FLAG_NONE ((uint32_t)0)
+
+// If set, this comments the resulting (post-append) message size as the final
+// size of the message payload, in terms of both bytes and attached handles.
 #define MOJO_APPEND_MESSAGE_DATA_FLAG_COMMIT_SIZE \
   ((MojoAppendMessageDataFlags)1)
-#endif
 
 // Options passed to |MojoAppendMessageData()|.
 struct MOJO_ALIGNAS(8) MojoAppendMessageDataOptions {
@@ -132,17 +146,18 @@ struct MOJO_ALIGNAS(8) MojoAppendMessageDataOptions {
   // See |MojoAppendMessageDataFlags|.
   MojoAppendMessageDataFlags flags;
 };
+MOJO_STATIC_ASSERT(sizeof(MojoAppendMessageDataOptions) == 8,
+                   "MojoAppendMessageDataOptions has wrong size");
 
 // Flags passed to |MojoGetMessageData()| via |MojoGetMessageDataOptions|.
 typedef uint32_t MojoGetMessageDataFlags;
 
-#ifdef __cplusplus
-const MojoGetMessageDataFlags MOJO_GET_MESSAGE_DATA_FLAG_NONE = 0;
-const MojoGetMessageDataFlags MOJO_GET_MESSAGE_DATA_FLAG_IGNORE_HANDLES = 1;
-#else
-#define MOJO_GET_MESSAGE_DATA_FLAG_NONE ((MojoGetMessageDataFlags)0)
-#define MOJO_GET_MESSAGE_DATA_FLAG_IGNORE_HANDLES ((MojoGetMessageDataFlags)1);
-#endif
+// No flags. Default behavior.
+#define MOJO_GET_MESSAGE_DATA_FLAG_NONE ((uint32_t)0)
+
+// Ignores attached handles when retrieving message data. This leaves any
+// attached handles intact and owned by the message object.
+#define MOJO_GET_MESSAGE_DATA_FLAG_IGNORE_HANDLES ((uint32_t)1)
 
 // Options passed to |MojoGetMessageData()|.
 struct MOJO_ALIGNAS(8) MojoGetMessageDataOptions {
@@ -152,15 +167,14 @@ struct MOJO_ALIGNAS(8) MojoGetMessageDataOptions {
   // See |MojoGetMessageDataFlags|.
   MojoGetMessageDataFlags flags;
 };
+MOJO_STATIC_ASSERT(sizeof(MojoGetMessageDataOptions) == 8,
+                   "MojoGetMessageDataOptions has wrong size");
 
 // Flags passed to |MojoSetMessageContext()| via |MojoSetMessageContextOptions|.
 typedef uint32_t MojoSetMessageContextFlags;
 
-#ifdef __cplusplus
-const MojoSetMessageContextFlags MOJO_SET_MESSAGE_CONTEXT_FLAG_NONE = 0;
-#else
-#define MOJO_SET_MESSAGE_CONTEXT_FLAG_NONE ((MojoSetMessageContextFlags)0)
-#endif
+// No flags. Default behavior.
+#define MOJO_SET_MESSAGE_CONTEXT_FLAG_NONE ((uint32_t)0)
 
 // Options passed to |MojoSetMessageContext()|.
 struct MOJO_ALIGNAS(8) MojoSetMessageContextOptions {
@@ -170,15 +184,14 @@ struct MOJO_ALIGNAS(8) MojoSetMessageContextOptions {
   // See |MojoSetMessageContextFlags|.
   MojoSetMessageContextFlags flags;
 };
+MOJO_STATIC_ASSERT(sizeof(MojoSetMessageContextOptions) == 8,
+                   "MojoSetMessageContextOptions has wrong size");
 
 // Flags passed to |MojoGetMessageContext()| via |MojoGetMessageContextOptions|.
 typedef uint32_t MojoGetMessageContextFlags;
 
-#ifdef __cplusplus
-const MojoGetMessageContextFlags MOJO_GET_MESSAGE_CONTEXT_FLAG_NONE = 0;
-#else
-#define MOJO_GET_MESSAGE_CONTEXT_FLAG_NONE ((MojoGetMessageContextFlags)0)
-#endif
+// No flags. Default behavior.
+#define MOJO_GET_MESSAGE_CONTEXT_FLAG_NONE ((uint32_t)0)
 
 // Options passed to |MojoGetMessageContext()|.
 struct MOJO_ALIGNAS(8) MojoGetMessageContextOptions {
@@ -188,6 +201,25 @@ struct MOJO_ALIGNAS(8) MojoGetMessageContextOptions {
   // See |MojoGetMessageContextFlags|.
   MojoGetMessageContextFlags flags;
 };
+MOJO_STATIC_ASSERT(sizeof(MojoGetMessageContextOptions) == 8,
+                   "MojoGetMessageContextOptions has wrong size");
+
+// Flags passed to |MojoNotifyBadMessage()| via |MojoNotifyBadMessageOptions|.
+typedef uint32_t MojoNotifyBadMessageFlags;
+
+// No flags. Default behavior.
+#define MOJO_NOTIFY_BAD_MESSAGE_FLAG_NONE ((uint32_t)0)
+
+// Options passed to |MojoNotifyBadMessage()|.
+struct MOJO_ALIGNAS(8) MojoNotifyBadMessageOptions {
+  // The size of this structure, used for versioning.
+  uint32_t struct_size;
+
+  // See |MojoNotifyBadMessageFlags|.
+  MojoNotifyBadMessageFlags flags;
+};
+MOJO_STATIC_ASSERT(sizeof(MojoNotifyBadMessageOptions) == 8,
+                   "MojoNotifyBadMessageOptions has wrong size");
 
 #ifdef __cplusplus
 extern "C" {
@@ -239,6 +271,8 @@ MOJO_SYSTEM_EXPORT MojoResult MojoCreateMessagePipe(
 // Note that regardless of success or failure, |message| is destroyed by this
 // call and therefore invalidated.
 //
+// |options| may be null.
+//
 // Returns:
 //   |MOJO_RESULT_OK| on success (i.e., the message was enqueued).
 //   |MOJO_RESULT_INVALID_ARGUMENT| if |message_pipe_handle| or |message| is
@@ -249,9 +283,10 @@ MOJO_SYSTEM_EXPORT MojoResult MojoCreateMessagePipe(
 //       endpoint has been closed (in which case the message would be dropped).
 //   |MOJO_RESULT_NOT_FOUND| if |message| has neither a context nor serialized
 //       buffer attached and therefore has nothing to be written.
-MOJO_SYSTEM_EXPORT MojoResult MojoWriteMessage(MojoHandle message_pipe_handle,
-                                               MojoMessageHandle message,
-                                               MojoWriteMessageFlags flags);
+MOJO_SYSTEM_EXPORT MojoResult
+MojoWriteMessage(MojoHandle message_pipe_handle,
+                 MojoMessageHandle message,
+                 const struct MojoWriteMessageOptions* options);
 
 // Reads the next message from a message pipe and returns a message as an opaque
 // message handle. The returned message must eventually be destroyed using
@@ -261,7 +296,7 @@ MOJO_SYSTEM_EXPORT MojoResult MojoWriteMessage(MojoHandle message_pipe_handle,
 // Unserialized messages, context may be accessed using
 // |MojoGetMessageContext()|.
 //
-// |message| must be non-null.
+// |options| may be null. |message| must be non-null.
 //
 // Returns:
 //   |MOJO_RESULT_OK| on success (i.e., a message was actually read).
@@ -269,9 +304,10 @@ MOJO_SYSTEM_EXPORT MojoResult MojoWriteMessage(MojoHandle message_pipe_handle,
 //   |MOJO_RESULT_FAILED_PRECONDITION| if the other endpoint has been closed
 //       and there are no more messages to read.
 //   |MOJO_RESULT_SHOULD_WAIT| if no message was available to be read.
-MOJO_SYSTEM_EXPORT MojoResult MojoReadMessage(MojoHandle message_pipe_handle,
-                                              MojoMessageHandle* message,
-                                              MojoReadMessageFlags flags);
+MOJO_SYSTEM_EXPORT MojoResult
+MojoReadMessage(MojoHandle message_pipe_handle,
+                const struct MojoReadMessageOptions* options,
+                MojoMessageHandle* message);
 
 // Fuses two message pipe endpoints together. Given two pipes:
 //
@@ -288,6 +324,8 @@ MOJO_SYSTEM_EXPORT MojoResult MojoReadMessage(MojoHandle message_pipe_handle,
 // NOTE: A handle may only be fused if it is an open message pipe handle which
 // has not been written to.
 //
+// |options| may be null.
+//
 // Returns:
 //   |MOJO_RESULT_OK| on success.
 //   |MOJO_RESULT_FAILED_PRECONDITION| if both handles were valid message pipe
@@ -295,7 +333,9 @@ MOJO_SYSTEM_EXPORT MojoResult MojoReadMessage(MojoHandle message_pipe_handle,
 //   |MOJO_INVALID_ARGUMENT| if either handle is not a fusable message pipe
 //       handle.
 MOJO_SYSTEM_EXPORT MojoResult
-    MojoFuseMessagePipes(MojoHandle handle0, MojoHandle handle1);
+MojoFuseMessagePipes(MojoHandle handle0,
+                     MojoHandle handle1,
+                     const struct MojoFuseMessagePipesOptions* options);
 
 // Creates a new message object which may be sent over a message pipe via
 // |MojoWriteMessage()|. Returns a handle to the new message object in
@@ -543,13 +583,16 @@ MojoGetMessageContext(MojoMessageHandle message,
 //     notified of this error.
 // |error_num_bytes|: The length of |error| in bytes.
 //
+// |options| may be null.
+//
 // Returns:
 //   |MOJO_RESULT_OK| if successful.
 //   |MOJO_RESULT_INVALID_ARGUMENT| if |message| is not a valid message.
 MOJO_SYSTEM_EXPORT MojoResult
 MojoNotifyBadMessage(MojoMessageHandle message,
                      const char* error,
-                     size_t error_num_bytes);
+                     size_t error_num_bytes,
+                     const struct MojoNotifyBadMessageOptions* options);
 
 #ifdef __cplusplus
 }  // extern "C"

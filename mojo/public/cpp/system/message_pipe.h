@@ -91,8 +91,11 @@ ReadMessageRaw(MessagePipeHandle message_pipe,
 inline MojoResult WriteMessageNew(MessagePipeHandle message_pipe,
                                   ScopedMessageHandle message,
                                   MojoWriteMessageFlags flags) {
+  MojoWriteMessageOptions options;
+  options.struct_size = sizeof(options);
+  options.flags = flags;
   return MojoWriteMessage(message_pipe.value(), message.release().value(),
-                          flags);
+                          &options);
 }
 
 // Reads from a message pipe. See |MojoReadMessage()| for complete
@@ -100,8 +103,11 @@ inline MojoResult WriteMessageNew(MessagePipeHandle message_pipe,
 inline MojoResult ReadMessageNew(MessagePipeHandle message_pipe,
                                  ScopedMessageHandle* message,
                                  MojoReadMessageFlags flags) {
+  MojoReadMessageOptions options;
+  options.struct_size = sizeof(options);
+  options.flags = flags;
   MojoMessageHandle raw_message;
-  MojoResult rv = MojoReadMessage(message_pipe.value(), &raw_message, flags);
+  MojoResult rv = MojoReadMessage(message_pipe.value(), &options, &raw_message);
   if (rv != MOJO_RESULT_OK)
     return rv;
 
@@ -114,7 +120,7 @@ inline MojoResult ReadMessageNew(MessagePipeHandle message_pipe,
 inline MojoResult FuseMessagePipes(ScopedMessagePipeHandle message_pipe0,
                                    ScopedMessagePipeHandle message_pipe1) {
   return MojoFuseMessagePipes(message_pipe0.release().value(),
-                              message_pipe1.release().value());
+                              message_pipe1.release().value(), nullptr);
 }
 
 // A wrapper class that automatically creates a message pipe and owns both

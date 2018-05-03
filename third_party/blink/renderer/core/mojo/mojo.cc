@@ -29,7 +29,7 @@ namespace blink {
 void Mojo::createMessagePipe(MojoCreateMessagePipeResult& result_dict) {
   MojoCreateMessagePipeOptions options = {0};
   options.struct_size = sizeof(::MojoCreateMessagePipeOptions);
-  options.flags = MOJO_CREATE_MESSAGE_PIPE_OPTIONS_FLAG_NONE;
+  options.flags = MOJO_CREATE_MESSAGE_PIPE_FLAG_NONE;
 
   mojo::ScopedMessagePipeHandle handle0, handle1;
   MojoResult result = mojo::CreateMessagePipe(&options, &handle0, &handle1);
@@ -54,7 +54,7 @@ void Mojo::createDataPipe(const MojoCreateDataPipeOptions& options_dict,
 
   ::MojoCreateDataPipeOptions options = {0};
   options.struct_size = sizeof(options);
-  options.flags = MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE;
+  options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
   options.element_num_bytes = options_dict.elementNumBytes();
   options.capacity_num_bytes = options_dict.capacityNumBytes();
 
@@ -76,7 +76,7 @@ void Mojo::createSharedBuffer(unsigned num_bytes,
   MojoCreateSharedBufferOptions* options = nullptr;
   mojo::Handle handle;
   MojoResult result =
-      MojoCreateSharedBuffer(options, num_bytes, handle.mutable_value());
+      MojoCreateSharedBuffer(num_bytes, options, handle.mutable_value());
 
   result_dict.setResult(result);
   if (result == MOJO_RESULT_OK) {

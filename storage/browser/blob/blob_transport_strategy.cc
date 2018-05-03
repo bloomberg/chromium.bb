@@ -149,7 +149,7 @@ class DataPipeTransportStrategy : public BlobTransportStrategy {
     mojo::ScopedDataPipeProducerHandle producer_handle;
     MojoCreateDataPipeOptions options;
     options.struct_size = sizeof(MojoCreateDataPipeOptions);
-    options.flags = MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE;
+    options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
     options.element_num_bytes = 1;
     options.capacity_num_bytes =
         std::min(expected_source_size, limits_.max_shared_memory_size);

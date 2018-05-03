@@ -18,16 +18,14 @@ TEST(MojoCoreTest, SanityCheck) {
   EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessage(nullptr, &m));
   EXPECT_EQ(MOJO_RESULT_OK,
             MojoSetMessageContext(m, 42, nullptr, nullptr, nullptr));
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWriteMessage(a, m, MOJO_WRITE_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoWriteMessage(a, m, nullptr));
   m = MOJO_MESSAGE_HANDLE_INVALID;
 
   MojoHandleSignalsState state;
   EXPECT_EQ(MOJO_RESULT_OK, MojoQueryHandleSignalsState(b, &state));
   EXPECT_TRUE(state.satisfied_signals & MOJO_HANDLE_SIGNAL_READABLE);
 
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoReadMessage(b, &m, MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoReadMessage(b, nullptr, &m));
 
   uintptr_t context = 0;
   EXPECT_EQ(MOJO_RESULT_OK, MojoGetMessageContext(m, nullptr, &context));

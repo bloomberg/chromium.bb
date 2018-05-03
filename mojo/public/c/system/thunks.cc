@@ -122,15 +122,20 @@ MojoResult MojoCreateMessagePipe(const MojoCreateMessagePipeOptions* options,
 
 MojoResult MojoWriteMessage(MojoHandle message_pipe_handle,
                             MojoMessageHandle message_handle,
-                            MojoWriteMessageFlags flags) {
-  return g_thunks.WriteMessage(message_pipe_handle, message_handle, flags);
+                            const MojoWriteMessageOptions* options) {
+  return g_thunks.WriteMessage(message_pipe_handle, message_handle, options);
 }
 
 MojoResult MojoReadMessage(MojoHandle message_pipe_handle,
-                           MojoMessageHandle* message_handle,
-                           MojoReadMessageFlags flags) {
-  assert(g_thunks.ReadMessage);
-  return g_thunks.ReadMessage(message_pipe_handle, message_handle, flags);
+                           const MojoReadMessageOptions* options,
+                           MojoMessageHandle* message_handle) {
+  return g_thunks.ReadMessage(message_pipe_handle, options, message_handle);
+}
+
+MojoResult MojoFuseMessagePipes(MojoHandle handle0,
+                                MojoHandle handle1,
+                                const MojoFuseMessagePipesOptions* options) {
+  return g_thunks.FuseMessagePipes(handle0, handle1, options);
 }
 
 MojoResult MojoCreateDataPipe(const MojoCreateDataPipeOptions* options,
@@ -143,55 +148,58 @@ MojoResult MojoCreateDataPipe(const MojoCreateDataPipeOptions* options,
 MojoResult MojoWriteData(MojoHandle data_pipe_producer_handle,
                          const void* elements,
                          uint32_t* num_elements,
-                         MojoWriteDataFlags flags) {
+                         const MojoWriteDataOptions* options) {
   return g_thunks.WriteData(data_pipe_producer_handle, elements, num_elements,
-                            flags);
+                            options);
 }
 
 MojoResult MojoBeginWriteData(MojoHandle data_pipe_producer_handle,
+                              const MojoBeginWriteDataOptions* options,
                               void** buffer,
-                              uint32_t* buffer_num_elements,
-                              MojoWriteDataFlags flags) {
-  return g_thunks.BeginWriteData(data_pipe_producer_handle, buffer,
-                                 buffer_num_elements, flags);
+                              uint32_t* buffer_num_elements) {
+  return g_thunks.BeginWriteData(data_pipe_producer_handle, options, buffer,
+                                 buffer_num_elements);
 }
 
 MojoResult MojoEndWriteData(MojoHandle data_pipe_producer_handle,
-                            uint32_t num_elements_written) {
-  return g_thunks.EndWriteData(data_pipe_producer_handle, num_elements_written);
+                            uint32_t num_elements_written,
+                            const MojoEndWriteDataOptions* options) {
+  return g_thunks.EndWriteData(data_pipe_producer_handle, num_elements_written,
+                               options);
 }
 
 MojoResult MojoReadData(MojoHandle data_pipe_consumer_handle,
+                        const MojoReadDataOptions* options,
                         void* elements,
-                        uint32_t* num_elements,
-                        MojoReadDataFlags flags) {
-  return g_thunks.ReadData(data_pipe_consumer_handle, elements, num_elements,
-                           flags);
+                        uint32_t* num_elements) {
+  return g_thunks.ReadData(data_pipe_consumer_handle, options, elements,
+                           num_elements);
 }
 
 MojoResult MojoBeginReadData(MojoHandle data_pipe_consumer_handle,
+                             const MojoBeginReadDataOptions* options,
                              const void** buffer,
-                             uint32_t* buffer_num_elements,
-                             MojoReadDataFlags flags) {
-  return g_thunks.BeginReadData(data_pipe_consumer_handle, buffer,
-                                buffer_num_elements, flags);
+                             uint32_t* buffer_num_elements) {
+  return g_thunks.BeginReadData(data_pipe_consumer_handle, options, buffer,
+                                buffer_num_elements);
 }
 
 MojoResult MojoEndReadData(MojoHandle data_pipe_consumer_handle,
-                           uint32_t num_elements_read) {
-  return g_thunks.EndReadData(data_pipe_consumer_handle, num_elements_read);
+                           uint32_t num_elements_read,
+                           const MojoEndReadDataOptions* options) {
+  return g_thunks.EndReadData(data_pipe_consumer_handle, num_elements_read,
+                              options);
 }
 
-MojoResult MojoCreateSharedBuffer(
-    const struct MojoCreateSharedBufferOptions* options,
-    uint64_t num_bytes,
-    MojoHandle* shared_buffer_handle) {
-  return g_thunks.CreateSharedBuffer(options, num_bytes, shared_buffer_handle);
+MojoResult MojoCreateSharedBuffer(uint64_t num_bytes,
+                                  const MojoCreateSharedBufferOptions* options,
+                                  MojoHandle* shared_buffer_handle) {
+  return g_thunks.CreateSharedBuffer(num_bytes, options, shared_buffer_handle);
 }
 
 MojoResult MojoDuplicateBufferHandle(
     MojoHandle buffer_handle,
-    const struct MojoDuplicateBufferHandleOptions* options,
+    const MojoDuplicateBufferHandleOptions* options,
     MojoHandle* new_buffer_handle) {
   return g_thunks.DuplicateBufferHandle(buffer_handle, options,
                                         new_buffer_handle);
@@ -200,9 +208,9 @@ MojoResult MojoDuplicateBufferHandle(
 MojoResult MojoMapBuffer(MojoHandle buffer_handle,
                          uint64_t offset,
                          uint64_t num_bytes,
-                         void** buffer,
-                         MojoMapBufferFlags flags) {
-  return g_thunks.MapBuffer(buffer_handle, offset, num_bytes, buffer, flags);
+                         const MojoMapBufferOptions* options,
+                         void** buffer) {
+  return g_thunks.MapBuffer(buffer_handle, offset, num_bytes, options, buffer);
 }
 
 MojoResult MojoUnmapBuffer(void* buffer) {
@@ -210,9 +218,8 @@ MojoResult MojoUnmapBuffer(void* buffer) {
 }
 
 MojoResult MojoGetBufferInfo(MojoHandle buffer_handle,
-                             const struct MojoSharedBufferOptions* options,
-                             struct MojoSharedBufferInfo* info) {
-  assert(g_thunks.GetBufferInfo);
+                             const MojoGetBufferInfoOptions* options,
+                             MojoSharedBufferInfo* info) {
   return g_thunks.GetBufferInfo(buffer_handle, options, info);
 }
 
@@ -246,10 +253,6 @@ MojoResult MojoArmTrap(MojoHandle trap_handle,
                        MojoHandleSignalsState* ready_signals_states) {
   return g_thunks.ArmTrap(trap_handle, options, num_ready_triggers,
                           ready_triggers, ready_results, ready_signals_states);
-}
-
-MojoResult MojoFuseMessagePipes(MojoHandle handle0, MojoHandle handle1) {
-  return g_thunks.FuseMessagePipes(handle0, handle1);
 }
 
 MojoResult MojoCreateMessage(const MojoCreateMessageOptions* options,
@@ -302,6 +305,13 @@ MojoResult MojoGetMessageContext(MojoMessageHandle message,
   return g_thunks.GetMessageContext(message, options, context);
 }
 
+MojoResult MojoNotifyBadMessage(MojoMessageHandle message,
+                                const char* error,
+                                size_t error_num_bytes,
+                                const MojoNotifyBadMessageOptions* options) {
+  return g_thunks.NotifyBadMessage(message, error, error_num_bytes, options);
+}
+
 MojoResult MojoWrapPlatformHandle(
     const struct MojoPlatformHandle* platform_handle,
     MojoHandle* mojo_handle) {
@@ -332,12 +342,6 @@ MojoResult MojoUnwrapPlatformSharedBufferHandle(
     MojoPlatformSharedBufferHandleFlags* flags) {
   return g_thunks.UnwrapPlatformSharedBufferHandle(mojo_handle, platform_handle,
                                                    num_bytes, guid, flags);
-}
-
-MojoResult MojoNotifyBadMessage(MojoMessageHandle message,
-                                const char* error,
-                                size_t error_num_bytes) {
-  return g_thunks.NotifyBadMessage(message, error, error_num_bytes);
 }
 
 }  // extern "C"

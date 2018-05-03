@@ -42,8 +42,7 @@ MojoResult Dispatcher::Arm(uint32_t* num_ready_contexts,
 }
 
 MojoResult Dispatcher::WriteMessage(
-    std::unique_ptr<ports::UserMessageEvent> message,
-    MojoWriteMessageFlags flags) {
+    std::unique_ptr<ports::UserMessageEvent> message) {
   return MOJO_RESULT_INVALID_ARGUMENT;
 }
 
@@ -61,7 +60,6 @@ MojoResult Dispatcher::DuplicateBufferHandle(
 MojoResult Dispatcher::MapBuffer(
     uint64_t offset,
     uint64_t num_bytes,
-    MojoMapBufferFlags flags,
     std::unique_ptr<PlatformSharedMemoryMapping>* mapping) {
   return MOJO_RESULT_INVALID_ARGUMENT;
 }
@@ -70,15 +68,14 @@ MojoResult Dispatcher::GetBufferInfo(MojoSharedBufferInfo* info) {
   return MOJO_RESULT_INVALID_ARGUMENT;
 }
 
-MojoResult Dispatcher::ReadData(void* elements,
-                                uint32_t* num_bytes,
-                                MojoReadDataFlags flags) {
+MojoResult Dispatcher::ReadData(const MojoReadDataOptions& options,
+                                void* elements,
+                                uint32_t* num_bytes) {
   return MOJO_RESULT_INVALID_ARGUMENT;
 }
 
 MojoResult Dispatcher::BeginReadData(const void** buffer,
-                                     uint32_t* buffer_num_bytes,
-                                     MojoReadDataFlags flags) {
+                                     uint32_t* buffer_num_bytes) {
   return MOJO_RESULT_INVALID_ARGUMENT;
 }
 
@@ -88,13 +85,12 @@ MojoResult Dispatcher::EndReadData(uint32_t num_bytes_read) {
 
 MojoResult Dispatcher::WriteData(const void* elements,
                                  uint32_t* num_bytes,
-                                 MojoWriteDataFlags flags) {
+                                 const MojoWriteDataOptions& options) {
   return MOJO_RESULT_INVALID_ARGUMENT;
 }
 
 MojoResult Dispatcher::BeginWriteData(void** buffer,
-                                      uint32_t* buffer_num_bytes,
-                                      MojoWriteDataFlags flags) {
+                                      uint32_t* buffer_num_bytes) {
   return MOJO_RESULT_INVALID_ARGUMENT;
 }
 

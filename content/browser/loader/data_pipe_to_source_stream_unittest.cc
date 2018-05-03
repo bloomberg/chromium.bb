@@ -49,8 +49,8 @@ class DataPipeToSourceStreamTest
   void Init(base::StringPiece message) {
     message_ = message;
     const MojoCreateDataPipeOptions data_pipe_options{
-        sizeof(MojoCreateDataPipeOptions),
-        MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE, 1, GetParam().pipe_capacity};
+        sizeof(MojoCreateDataPipeOptions), MOJO_CREATE_DATA_PIPE_FLAG_NONE, 1,
+        GetParam().pipe_capacity};
     mojo::ScopedDataPipeConsumerHandle consumer_end;
     CHECK_EQ(MOJO_RESULT_OK,
              mojo::CreateDataPipe(&data_pipe_options, &producer_end_,

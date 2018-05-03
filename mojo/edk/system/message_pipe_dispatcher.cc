@@ -136,8 +136,7 @@ MojoResult MessagePipeDispatcher::Close() {
 }
 
 MojoResult MessagePipeDispatcher::WriteMessage(
-    std::unique_ptr<ports::UserMessageEvent> message,
-    MojoWriteMessageFlags flags) {
+    std::unique_ptr<ports::UserMessageEvent> message) {
   if (port_closed_ || in_transit_)
     return MOJO_RESULT_INVALID_ARGUMENT;
 

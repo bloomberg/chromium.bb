@@ -59,11 +59,9 @@ const char* MinimalCTest(void) {
   EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessage(NULL, &message));
   EXPECT_EQ(MOJO_RESULT_OK,
             MojoSetMessageContext(message, 42, NULL, NULL, NULL));
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWriteMessage(handle0, message, MOJO_WRITE_DATA_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoWriteMessage(handle0, message, NULL));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoReadMessage(handle1, NULL, &message));
 
-  EXPECT_EQ(MOJO_RESULT_OK, MojoReadMessage(handle1, &message,
-                                             MOJO_READ_MESSAGE_FLAG_NONE));
   uintptr_t context;
   EXPECT_EQ(MOJO_RESULT_OK, MojoGetMessageContext(message, NULL, &context));
   EXPECT_EQ(MOJO_RESULT_OK,

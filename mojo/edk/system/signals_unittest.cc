@@ -159,7 +159,7 @@ TEST_F(SignalsTest, RemotePeers) {
     // And so should |c| after we fuse |d| to |a|.
     MojoHandle c, d;
     CreateMessagePipe(&c, &d);
-    EXPECT_EQ(MOJO_RESULT_OK, MojoFuseMessagePipes(d, a));
+    EXPECT_EQ(MOJO_RESULT_OK, MojoFuseMessagePipes(d, a, nullptr));
     EXPECT_EQ(MOJO_RESULT_OK,
               WaitForSignals(c, MOJO_HANDLE_SIGNAL_PEER_REMOTE,
                              MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED));

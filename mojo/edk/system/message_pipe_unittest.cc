@@ -54,8 +54,8 @@ class MessagePipeTest : public test::MojoTestBase {
                          uint32_t* num_bytes,
                          bool may_discard = false) {
     MojoMessageHandle message_handle;
-    MojoResult rv = MojoReadMessage(message_pipe_handle, &message_handle,
-                                    MOJO_READ_MESSAGE_FLAG_NONE);
+    MojoResult rv =
+        MojoReadMessage(message_pipe_handle, nullptr, &message_handle);
     if (rv != MOJO_RESULT_OK)
       return rv;
 
@@ -376,7 +376,7 @@ TEST_F(MessagePipeTest, DISABLED_DataPipeProducerHandlePingPong) {
 TEST_F(MessagePipeTest, SharedBufferHandlePingPong) {
   MojoHandle buffers[kPingPongHandlesPerIteration];
   for (size_t i = 0; i < kPingPongHandlesPerIteration; ++i)
-    EXPECT_EQ(MOJO_RESULT_OK, MojoCreateSharedBuffer(nullptr, 1, &buffers[i]));
+    EXPECT_EQ(MOJO_RESULT_OK, MojoCreateSharedBuffer(1, nullptr, &buffers[i]));
 
   RunTestClient("HandlePingPong", [&](MojoHandle h) {
     for (size_t i = 0; i < kPingPongIterations; i++) {
@@ -398,7 +398,7 @@ TEST_F(FuseMessagePipeTest, Basic) {
   CreateMessagePipe(&a, &b);
   CreateMessagePipe(&c, &d);
 
-  EXPECT_EQ(MOJO_RESULT_OK, MojoFuseMessagePipes(b, c));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoFuseMessagePipes(b, c, nullptr));
 
   // Handles b and c should be closed.
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(b));
@@ -429,7 +429,7 @@ TEST_F(FuseMessagePipeTest, FuseAfterPeerWrite) {
   WriteMessage(a, kTestMessage1);
   WriteMessage(d, kTestMessage2);
 
-  EXPECT_EQ(MOJO_RESULT_OK, MojoFuseMessagePipes(b, c));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoFuseMessagePipes(b, c, nullptr));
 
   // Handles b and c should be closed.
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(b));
@@ -450,7 +450,8 @@ TEST_F(FuseMessagePipeTest, NoFuseAfterWrite) {
   CreateMessagePipe(&c, &d);
 
   WriteMessage(b, "shouldn't have done that!");
-  EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, MojoFuseMessagePipes(b, c));
+  EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
+            MojoFuseMessagePipes(b, c, nullptr));
 
   // Handles b and c should be closed.
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(b));
@@ -466,7 +467,8 @@ TEST_F(FuseMessagePipeTest, NoFuseSelf) {
   MojoHandle a, b;
   CreateMessagePipe(&a, &b);
 
-  EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, MojoFuseMessagePipes(a, b));
+  EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
+            MojoFuseMessagePipes(a, b, nullptr));
 
   // Handles a and b should be closed.
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(a));
@@ -481,7 +483,7 @@ TEST_F(FuseMessagePipeTest, FuseInvalidArguments) {
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(b));
 
   // Can't fuse an invalid handle.
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoFuseMessagePipes(b, c));
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoFuseMessagePipes(b, c, nullptr));
 
   // Handle c should be closed.
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(c));
@@ -490,7 +492,7 @@ TEST_F(FuseMessagePipeTest, FuseInvalidArguments) {
   MojoHandle e, f;
   CreateDataPipe(&e, &f, 16);
 
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoFuseMessagePipes(e, d));
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoFuseMessagePipes(e, d, nullptr));
 
   // Handles d and e should be closed.
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(d));
@@ -508,7 +510,7 @@ TEST_F(FuseMessagePipeTest, FuseAfterPeerClosure) {
   CreateMessagePipe(&c, &d);
 
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(a));
-  EXPECT_EQ(MOJO_RESULT_OK, MojoFuseMessagePipes(b, c));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoFuseMessagePipes(b, c, nullptr));
 
   // Handles b and c should be closed.
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(b));
@@ -530,7 +532,7 @@ TEST_F(FuseMessagePipeTest, FuseAfterPeerWriteAndClosure) {
   WriteMessage(a, kTestMessage);
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(a));
 
-  EXPECT_EQ(MOJO_RESULT_OK, MojoFuseMessagePipes(b, c));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoFuseMessagePipes(b, c, nullptr));
 
   // Handles b and c should be closed.
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(b));

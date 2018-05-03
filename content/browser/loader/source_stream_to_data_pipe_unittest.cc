@@ -53,8 +53,8 @@ class SourceStreamToDataPipeTest
     source_ = source.get();
 
     const MojoCreateDataPipeOptions data_pipe_options{
-        sizeof(MojoCreateDataPipeOptions),
-        MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE, 1, GetParam().pipe_capacity};
+        sizeof(MojoCreateDataPipeOptions), MOJO_CREATE_DATA_PIPE_FLAG_NONE, 1,
+        GetParam().pipe_capacity};
     mojo::ScopedDataPipeProducerHandle producer_end;
     CHECK_EQ(MOJO_RESULT_OK,
              mojo::CreateDataPipe(&data_pipe_options, &producer_end,

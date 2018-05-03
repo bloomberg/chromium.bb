@@ -47,8 +47,8 @@ class MessagePipeDispatcher : public Dispatcher {
   // Dispatcher:
   Type GetType() const override;
   MojoResult Close() override;
-  MojoResult WriteMessage(std::unique_ptr<ports::UserMessageEvent> message,
-                          MojoWriteMessageFlags flags) override;
+  MojoResult WriteMessage(
+      std::unique_ptr<ports::UserMessageEvent> message) override;
   MojoResult ReadMessage(
       std::unique_ptr<ports::UserMessageEvent>* message) override;
   HandleSignalsState GetHandleSignalsState() const override;

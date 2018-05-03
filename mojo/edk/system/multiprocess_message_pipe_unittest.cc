@@ -284,9 +284,7 @@ DEFINE_TEST_CLIENT_WITH_PIPE(CheckSharedBuffer,
 
   // Make a mapping.
   void* buffer;
-  CHECK_EQ(MojoMapBuffer(handles[0], 0, 100, &buffer,
-                         MOJO_CREATE_SHARED_BUFFER_OPTIONS_FLAG_NONE),
-           MOJO_RESULT_OK);
+  CHECK_EQ(MojoMapBuffer(handles[0], 0, 100, nullptr, &buffer), MOJO_RESULT_OK);
 
   // Write some stuff to the shared buffer.
   static const char kHello[] = "hello";
@@ -333,11 +331,11 @@ TEST_F(MultiprocessMessagePipeTest, SharedBufferPassing) {
     // Make a shared buffer.
     MojoCreateSharedBufferOptions options;
     options.struct_size = sizeof(options);
-    options.flags = MOJO_CREATE_SHARED_BUFFER_OPTIONS_FLAG_NONE;
+    options.flags = MOJO_CREATE_SHARED_BUFFER_FLAG_NONE;
 
     MojoHandle shared_buffer;
     ASSERT_EQ(MOJO_RESULT_OK,
-              MojoCreateSharedBuffer(&options, 100, &shared_buffer));
+              MojoCreateSharedBuffer(100, &options, &shared_buffer));
     MojoSharedBufferInfo buffer_info;
     buffer_info.struct_size = sizeof(buffer_info);
     ASSERT_EQ(MOJO_RESULT_OK,
@@ -381,8 +379,7 @@ TEST_F(MultiprocessMessagePipeTest, SharedBufferPassing) {
     // buffer.
     static const char kHello[] = "hello";
     void* buffer;
-    CHECK_EQ(MojoMapBuffer(shared_buffer, 0, 100, &buffer,
-                           MOJO_CREATE_SHARED_BUFFER_OPTIONS_FLAG_NONE),
+    CHECK_EQ(MojoMapBuffer(shared_buffer, 0, 100, nullptr, &buffer),
              MOJO_RESULT_OK);
     ASSERT_EQ(0, memcmp(buffer, kHello, sizeof(kHello)));
 
@@ -561,7 +558,7 @@ TEST_P(MultiprocessMessagePipeTestWithPeerSupport, MessagePipePassing) {
   RunTestClient("CheckMessagePipe", [&](MojoHandle h) {
     MojoCreateSharedBufferOptions options;
     options.struct_size = sizeof(options);
-    options.flags = MOJO_CREATE_SHARED_BUFFER_OPTIONS_FLAG_NONE;
+    options.flags = MOJO_CREATE_SHARED_BUFFER_FLAG_NONE;
 
     MojoHandle mp1, mp2;
     ASSERT_EQ(MOJO_RESULT_OK, MojoCreateMessagePipe(nullptr, &mp1, &mp2));
@@ -679,7 +676,7 @@ TEST_F(MultiprocessMessagePipeTest, DataPipeConsumer) {
   RunTestClient("DataPipeConsumer", [&](MojoHandle h) {
     MojoCreateSharedBufferOptions options;
     options.struct_size = sizeof(options);
-    options.flags = MOJO_CREATE_SHARED_BUFFER_OPTIONS_FLAG_NONE;
+    options.flags = MOJO_CREATE_SHARED_BUFFER_FLAG_NONE;
 
     MojoHandle mp1, mp2;
     ASSERT_EQ(MOJO_RESULT_OK, MojoCreateMessagePipe(nullptr, &mp2, &mp1));
@@ -1374,20 +1371,18 @@ TEST_F(MultiprocessMessagePipeTest, NotifyBadMessage) {
       // Read a message from the pipe we sent to child1 and flag it as bad.
       ASSERT_EQ(MOJO_RESULT_OK, WaitForSignals(a, MOJO_HANDLE_SIGNAL_READABLE));
       MojoMessageHandle message;
-      ASSERT_EQ(MOJO_RESULT_OK,
-                ::MojoReadMessage(a, &message, MOJO_READ_MESSAGE_FLAG_NONE));
+      ASSERT_EQ(MOJO_RESULT_OK, ::MojoReadMessage(a, nullptr, &message));
       EXPECT_EQ(MOJO_RESULT_OK,
                 MojoNotifyBadMessage(message, kFirstErrorMessage.data(),
-                                     kFirstErrorMessage.size()));
+                                     kFirstErrorMessage.size(), nullptr));
       EXPECT_EQ(MOJO_RESULT_OK, MojoDestroyMessage(message));
 
       // Read a message from the pipe we sent to child2 and flag it as bad.
       ASSERT_EQ(MOJO_RESULT_OK, WaitForSignals(c, MOJO_HANDLE_SIGNAL_READABLE));
-      ASSERT_EQ(MOJO_RESULT_OK,
-                ::MojoReadMessage(c, &message, MOJO_READ_MESSAGE_FLAG_NONE));
+      ASSERT_EQ(MOJO_RESULT_OK, ::MojoReadMessage(c, nullptr, &message));
       EXPECT_EQ(MOJO_RESULT_OK,
                 MojoNotifyBadMessage(message, kSecondErrorMessage.data(),
-                                     kSecondErrorMessage.size()));
+                                     kSecondErrorMessage.size(), nullptr));
       EXPECT_EQ(MOJO_RESULT_OK, MojoDestroyMessage(message));
 
       WriteMessage(child2, "bye");
