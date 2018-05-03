@@ -27,10 +27,17 @@ namespace resource_coordinator {
 class TestingResourceCoordinatorRenderProcessProbe
     : public ResourceCoordinatorRenderProcessProbe {
  public:
+  // Make these types public for testing.
+  using ResourceCoordinatorRenderProcessProbe::RenderProcessInfo;
+  using ResourceCoordinatorRenderProcessProbe::RenderProcessInfoMap;
+
   TestingResourceCoordinatorRenderProcessProbe() = default;
   ~TestingResourceCoordinatorRenderProcessProbe() override = default;
 
-  bool DispatchMetrics() override {
+  bool DispatchMetrics(
+      mojom::ProcessResourceMeasurementBatchPtr batch) override {
+    last_measurement_batch_ = std::move(batch);
+
     return false;
   }
 
@@ -53,6 +60,11 @@ class TestingResourceCoordinatorRenderProcessProbe
       }
     }
     return true;
+  }
+
+  const mojom::ProcessResourceMeasurementBatchPtr& last_measurement_batch()
+      const {
+    return last_measurement_batch_;
   }
 
   const RenderProcessInfoMap& render_process_info_map() const {
@@ -78,6 +90,8 @@ class TestingResourceCoordinatorRenderProcessProbe
 
  private:
   base::RunLoop* current_run_loop_ = nullptr;
+
+  mojom::ProcessResourceMeasurementBatchPtr last_measurement_batch_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingResourceCoordinatorRenderProcessProbe);
 };
@@ -118,6 +132,11 @@ IN_PROC_BROWSER_TEST_F(ResourceCoordinatorRenderProcessProbeBrowserTest,
   EXPECT_LE(1u, initial_size);
   EXPECT_GE(2u, initial_size);  // If a spare RenderProcessHost is present.
   EXPECT_TRUE(probe.AllMeasurementsAreAtCurrentCycle());
+  EXPECT_EQ(initial_size, probe.last_measurement_batch()->measurements.size());
+  // A quirk of the process_metrics implementation is that the first CPU
+  // measurement returns zero.
+  for (const auto& measurement : probe.last_measurement_batch()->measurements)
+    EXPECT_EQ(0.0, measurement->cpu_usage);
 
   // Open a second tab and complete a navigation.
   ui_test_utils::NavigateToURLWithDisposition(
@@ -128,10 +147,14 @@ IN_PROC_BROWSER_TEST_F(ResourceCoordinatorRenderProcessProbeBrowserTest,
   probe.StartGatherCycleAndWait();
   EXPECT_EQ(2u, probe.current_gather_cycle());
   EXPECT_EQ(initial_size + 1u, probe.render_process_info_map().size());
+  EXPECT_EQ(initial_size + 1u,
+            probe.last_measurement_batch()->measurements.size());
   EXPECT_TRUE(probe.AllMeasurementsAreAtCurrentCycle());
 
   // Verify that the elements in the map are reused across multiple
   // measurement cycles.
+  using RenderProcessInfo =
+      TestingResourceCoordinatorRenderProcessProbe::RenderProcessInfo;
   std::map<int, const RenderProcessInfo*> info_map;
   for (const auto& entry : probe.render_process_info_map()) {
     const RenderProcessInfo& info = entry.second;
@@ -140,6 +163,9 @@ IN_PROC_BROWSER_TEST_F(ResourceCoordinatorRenderProcessProbeBrowserTest,
 
   size_t info_map_size = info_map.size();
   probe.StartGatherCycleAndWait();
+  // The second and subsequent CPU measurements should return some data.
+  for (const auto& measurement : probe.last_measurement_batch()->measurements)
+    EXPECT_LE(0.0, measurement->cpu_usage);
 
   EXPECT_EQ(info_map_size, info_map.size());
   for (const auto& entry : probe.render_process_info_map()) {
@@ -159,6 +185,7 @@ IN_PROC_BROWSER_TEST_F(ResourceCoordinatorRenderProcessProbeBrowserTest,
   probe.StartGatherCycleAndWait();
   EXPECT_EQ(4u, probe.current_gather_cycle());
   EXPECT_EQ(initial_size, probe.render_process_info_map().size());
+  EXPECT_EQ(initial_size, probe.last_measurement_batch()->measurements.size());
   EXPECT_TRUE(probe.AllMeasurementsAreAtCurrentCycle());
 }
 

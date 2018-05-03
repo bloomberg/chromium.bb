@@ -14,28 +14,15 @@
 #include "base/process/process.h"
 #include "base/process/process_metrics.h"
 #include "base/timer/timer.h"
+#include "services/resource_coordinator/public/cpp/system_resource_coordinator.h"
 
 namespace resource_coordinator {
-
-class SystemResourceCoordinator;
-
-struct RenderProcessInfo {
-  RenderProcessInfo();
-  ~RenderProcessInfo();
-  base::Process process;
-  double cpu_usage = -1.0;
-  size_t last_gather_cycle_active;
-  std::unique_ptr<base::ProcessMetrics> metrics;
-};
-
-// This map is keyed by the RenderProcessHost's ID from the GetID function.
-using RenderProcessInfoMap = std::map<int, RenderProcessInfo>;
 
 // |ResourceCoordinatorRenderProcessProbe| collects measurements about render
 // processes and propagates them to the |resource_coordinator| service.
 // Currently this is only supported for Chrome Metrics experiments.
-// The measurements are initiated and results are dispatched from the UI
-// thread, while acquiring the measurements is done on the IO thread.
+// The measurements are initiated from the UI thread, while acquiring and
+// dispatching the measurements is done on the IO thread.
 class ResourceCoordinatorRenderProcessProbe {
  public:
   // Returns the current |ResourceCoordinatorRenderProcessProbe| instance
@@ -54,6 +41,16 @@ class ResourceCoordinatorRenderProcessProbe {
   void StartSingleGather();
 
  protected:
+  struct RenderProcessInfo {
+    RenderProcessInfo();
+    ~RenderProcessInfo();
+    base::Process process;
+    double cpu_usage = -1.0;
+    size_t last_gather_cycle_active = -1;
+    std::unique_ptr<base::ProcessMetrics> metrics;
+  };
+  using RenderProcessInfoMap = std::map<int, RenderProcessInfo>;
+
   // Internal state protected for testing.
   friend struct base::LazyInstanceTraitsBase<
       ResourceCoordinatorRenderProcessProbe>;
@@ -80,7 +77,7 @@ class ResourceCoordinatorRenderProcessProbe {
 
   // Dispatch the collected metrics, return true if the cycle should restart.
   // Virtual for testing.
-  virtual bool DispatchMetrics();
+  virtual bool DispatchMetrics(mojom::ProcessResourceMeasurementBatchPtr batch);
 
   // A map of currently running render process host IDs to process.
   // This map is accessed alternatively from the UI thread and the IO thread,
