@@ -45,17 +45,11 @@ class FrameResourceReleaserImpl final : public mojom::FrameResourceReleaser {
 
 }  // namespace
 
-MojoDecryptorService::MojoDecryptorService(
-    media::Decryptor* decryptor,
-    mojo::InterfaceRequest<mojom::Decryptor> request,
-    const base::Closure& error_handler)
-    : binding_(this, std::move(request)),
-      decryptor_(decryptor),
-      weak_factory_(this) {
+MojoDecryptorService::MojoDecryptorService(media::Decryptor* decryptor)
+    : decryptor_(decryptor), weak_factory_(this) {
   DVLOG(1) << __func__;
   DCHECK(decryptor_);
   weak_this_ = weak_factory_.GetWeakPtr();
-  binding_.set_connection_error_handler(error_handler);
 }
 
 MojoDecryptorService::~MojoDecryptorService() {
