@@ -142,6 +142,9 @@ class CONTENT_EXPORT MediaStreamAudioSource : public MediaStreamSource {
   // Sets muted state and notifies it to all registered tracks.
   void SetMutedState(bool state);
 
+  // Gets the TaskRunner for the main thread, for subclasses that need it.
+  base::SingleThreadTaskRunner* GetTaskRunner() const;
+
  private:
   // MediaStreamSource override.
   void DoStopSource() final;

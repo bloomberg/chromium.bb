@@ -168,4 +168,8 @@ void MediaStreamAudioSource::SetMutedState(bool muted_state) {
                                         GetWeakPtr(), muted_state));
 }
 
+base::SingleThreadTaskRunner* MediaStreamAudioSource::GetTaskRunner() const {
+  return task_runner_.get();
+}
+
 }  // namespace content
