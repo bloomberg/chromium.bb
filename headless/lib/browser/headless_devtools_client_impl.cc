@@ -210,22 +210,9 @@ bool HeadlessDevToolsClientImpl::DispatchEvent(
       NOTREACHED() << "Badly formed event parameters";
       return false;
     }
-    // DevTools assumes event handling is async so we must post a task here or
-    // we risk breaking things.
-    browser_main_thread_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&HeadlessDevToolsClientImpl::DispatchEventTask,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       std::move(owning_message), &it->second, result_dict));
+    it->second.Run(*result_dict);
   }
   return true;
-}
-
-void HeadlessDevToolsClientImpl::DispatchEventTask(
-    std::unique_ptr<base::Value> owning_message,
-    const EventHandler* event_handler,
-    const base::DictionaryValue* result_dict) {
-  event_handler->Run(*result_dict);
 }
 
 void HeadlessDevToolsClientImpl::AgentHostClosed(
