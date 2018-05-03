@@ -51,7 +51,7 @@ class BookmarkLoadDetails {
                       BookmarkPermanentNode* other_folder_node,
                       BookmarkPermanentNode* mobile_folder_node,
                       const LoadExtraCallback& load_extra_callback,
-                      TitledUrlIndex* index,
+                      std::unique_ptr<TitledUrlIndex> index,
                       int64_t max_id);
   ~BookmarkLoadDetails();
 

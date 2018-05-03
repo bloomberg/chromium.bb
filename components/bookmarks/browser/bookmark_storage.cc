@@ -134,13 +134,13 @@ BookmarkLoadDetails::BookmarkLoadDetails(
     BookmarkPermanentNode* other_folder_node,
     BookmarkPermanentNode* mobile_folder_node,
     const LoadExtraCallback& load_extra_callback,
-    TitledUrlIndex* index,
+    std::unique_ptr<TitledUrlIndex> index,
     int64_t max_id)
     : bb_node_(bb_node),
       other_folder_node_(other_folder_node),
       mobile_folder_node_(mobile_folder_node),
       load_extra_callback_(load_extra_callback),
-      index_(index),
+      index_(std::move(index)),
       model_sync_transaction_version_(
           BookmarkNode::kInvalidSyncTransactionVersion),
       max_id_(max_id),

@@ -832,6 +832,7 @@ void BookmarkModel::DoneLoading(std::unique_ptr<BookmarkLoadDetails> details) {
   std::unique_ptr<BookmarkPermanentNode> owned_mobile_folder_node =
       details->owned_mobile_folder_node();
   index_ = details->owned_index();
+  index_->SetNodeSorter(std::make_unique<TypedCountSorter>(client_.get()));
 
   bookmark_bar_node_ = owned_bb_node.get();
   other_node_ = owned_other_folder_node.get();
@@ -1087,11 +1088,9 @@ std::unique_ptr<BookmarkLoadDetails> BookmarkModel::CreateLoadDetails() {
       CreatePermanentNode(BookmarkNode::OTHER_NODE);
   BookmarkPermanentNode* mobile_node =
       CreatePermanentNode(BookmarkNode::MOBILE);
-  std::unique_ptr<TitledUrlNodeSorter> node_sorter =
-      std::make_unique<TypedCountSorter>(client_.get());
-  return std::unique_ptr<BookmarkLoadDetails>(new BookmarkLoadDetails(
+  return std::make_unique<BookmarkLoadDetails>(
       bb_node, other_node, mobile_node, client_->GetLoadExtraNodesCallback(),
-      new TitledUrlIndex(std::move(node_sorter)), next_node_id_));
+      std::make_unique<TitledUrlIndex>(), next_node_id_);
 }
 
 void BookmarkModel::SetUndoDelegate(BookmarkUndoDelegate* undo_delegate) {

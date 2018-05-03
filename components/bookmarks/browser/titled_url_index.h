@@ -14,12 +14,13 @@
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "components/bookmarks/browser/titled_url_node_sorter.h"
 #include "components/query_parser/query_parser.h"
 
 namespace bookmarks {
 
 class TitledUrlNode;
-class TitledUrlNodeSorter;
+
 struct TitledUrlMatch;
 
 // TitledUrlIndex maintains an index of paired titles and URLs for quick lookup.
@@ -32,8 +33,11 @@ class TitledUrlIndex {
   // Constructs a TitledUrlIndex. |sorter| is used to construct a sorted list
   // of matches when matches are returned from the index. If null, matches are
   // returned unsorted.
-  TitledUrlIndex(std::unique_ptr<TitledUrlNodeSorter> sorter);
+  explicit TitledUrlIndex(
+      std::unique_ptr<TitledUrlNodeSorter> sorter = nullptr);
   ~TitledUrlIndex();
+
+  void SetNodeSorter(std::unique_ptr<TitledUrlNodeSorter> sorter);
 
   // Invoked when a title/URL pair has been added to the model.
   void Add(const TitledUrlNode* node);
