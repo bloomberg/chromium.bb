@@ -14,6 +14,7 @@
 #include "components/crx_file/id_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/view_type_utils.h"
 
 namespace extensions {
 
@@ -106,10 +107,11 @@ InlineInstallPrivateInstallFunction::Run() {
     return RespondNow(CreateResponse("Must be called with a user gesture",
                                      webstore_install::NOT_PERMITTED));
 
-  content::WebContents* web_contents = GetAssociatedWebContentsDeprecated();
-  if (!web_contents)
+  content::WebContents* web_contents = GetSenderWebContents();
+  if (!web_contents || GetViewType(web_contents) != VIEW_TYPE_APP_WINDOW) {
     return RespondNow(CreateResponse("Must be called from a foreground page",
                                      webstore_install::NOT_PERMITTED));
+  }
 
   ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context());
   if (registry->GetExtensionById(params->id, ExtensionRegistry::EVERYTHING))

@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/webstore_widget_private.h"
 #include "chrome/grit/generated_resources.h"
+#include "extensions/browser/extension_function_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 
@@ -90,9 +91,14 @@ WebstoreWidgetPrivateInstallWebstoreItemFunction::Run() {
       &WebstoreWidgetPrivateInstallWebstoreItemFunction::OnInstallComplete,
       this);
 
+  content::WebContents* web_contents = GetSenderWebContents();
+  if (!web_contents) {
+    return RespondNow(
+        Error(function_constants::kCouldNotFindSenderWebContents));
+  }
   scoped_refptr<webstore_widget::AppInstaller> installer(
       new webstore_widget::AppInstaller(
-          GetAssociatedWebContentsDeprecated(), params->item_id,
+          web_contents, params->item_id,
           Profile::FromBrowserContext(browser_context()),
           params->silent_installation, callback));
   // installer will be AddRef()'d in BeginInstall().
