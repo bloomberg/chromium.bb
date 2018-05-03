@@ -47,11 +47,11 @@ class OmniboxMatchCellView : public views::View {
   int GetOldStyleAnswerHeight() const;
 
   void LayoutOldStyleAnswer();
-  void LayoutEntity();
+  void LayoutRichSuggestion();
   void LayoutSplit();
 
   bool is_old_style_answer_;
-  bool is_entity_;
+  bool is_rich_suggestion_;
   bool is_search_type_;
   int text_height_;
 
