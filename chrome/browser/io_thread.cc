@@ -419,14 +419,6 @@ IOThread::IOThread(
   ntlm_v2_enabled_.MoveToThread(io_thread_proxy);
 #endif
 
-  quick_check_enabled_.Init(prefs::kQuickCheckEnabled,
-                            local_state);
-  quick_check_enabled_.MoveToThread(io_thread_proxy);
-
-  pac_https_url_stripping_enabled_.Init(prefs::kPacHttpsUrlStrippingEnabled,
-                                        local_state);
-  pac_https_url_stripping_enabled_.MoveToThread(io_thread_proxy);
-
   chrome_browser_net::SetGlobalSTHDistributor(
       std::make_unique<certificate_transparency::STHDistributor>());
 
@@ -624,8 +616,6 @@ void IOThread::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kBuiltInDnsClientEnabled, true);
   registry->RegisterListPref(prefs::kDnsOverHttpsServers);
   registry->RegisterListPref(prefs::kDnsOverHttpsServerMethods);
-  registry->RegisterBooleanPref(prefs::kQuickCheckEnabled, true);
-  registry->RegisterBooleanPref(prefs::kPacHttpsUrlStrippingEnabled, true);
 #if defined(OS_POSIX)
   registry->RegisterBooleanPref(prefs::kNtlmV2Enabled, true);
 #endif
@@ -754,26 +744,12 @@ void IOThread::UnregisterSTHObserver(
   chrome_browser_net::GetGlobalSTHDistributor()->UnregisterObserver(observer);
 }
 
-bool IOThread::WpadQuickCheckEnabled() const {
-  return quick_check_enabled_.GetValue();
-}
-
-bool IOThread::PacHttpsUrlStrippingEnabled() const {
-  return pac_https_url_stripping_enabled_.GetValue();
-}
-
 void IOThread::SetUpProxyService(
     network::URLRequestContextBuilderMojo* builder) const {
 #if defined(OS_CHROMEOS)
   builder->SetDhcpFetcherFactory(
       std::make_unique<chromeos::DhcpPacFileFetcherFactoryChromeos>());
 #endif
-
-  builder->set_pac_quick_check_enabled(WpadQuickCheckEnabled());
-  builder->set_pac_sanitize_url_policy(
-      PacHttpsUrlStrippingEnabled()
-          ? net::ProxyResolutionService::SanitizeUrlPolicy::SAFE
-          : net::ProxyResolutionService::SanitizeUrlPolicy::UNSAFE);
 }
 
 certificate_transparency::TreeStateTracker* IOThread::ct_tree_tracker() const {

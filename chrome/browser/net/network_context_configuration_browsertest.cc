@@ -4,11 +4,13 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
+#include "base/location.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -16,6 +18,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/net/default_network_context_params.h"
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/net/system_network_context_manager.h"
@@ -30,6 +33,7 @@
 #include "components/proxy_config/proxy_config_dictionary.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
@@ -40,9 +44,11 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/http/http_response_headers.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server_connection_listener.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
@@ -125,6 +131,9 @@ class NetworkContextConfigurationBrowserTest
   }
 
   void SetUpOnMainThread() override {
+    // Used in a bunch of proxy tests. Should not resolve.
+    host_resolver()->AddSimulatedFailure("does.not.resolve.test");
+
     controllable_http_response_ =
         std::make_unique<net::test_server::ControllableHttpResponse>(
             embedded_test_server(), kControllablePath);
@@ -151,7 +160,7 @@ class NetworkContextConfigurationBrowserTest
   // a proxy.
   std::string GetPacScript() const {
     return base::StringPrintf(
-        "function FindProxyForURL(url, host){ return 'PROXY %s;'; }",
+        "function FindProxyForURL(url, host){ return 'PROXY %s;' }",
         net::HostPortPair::FromURL(embedded_test_server()->base_url())
             .ToString()
             .c_str());
@@ -259,7 +268,7 @@ class NetworkContextConfigurationBrowserTest
     std::unique_ptr<network::ResourceRequest> request =
         std::make_unique<network::ResourceRequest>();
     // This URL should be directed to the test server because of the proxy.
-    request->url = GURL("http://jabberwocky.test:1872/echo");
+    request->url = GURL("http://does.not.resolve.test:1872/echo");
 
     content::SimpleURLLoaderTestHelper simple_loader_helper;
     std::unique_ptr<network::SimpleURLLoader> simple_loader =
@@ -820,7 +829,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationFtpPacBrowserTest, FtpPac) {
   std::unique_ptr<network::ResourceRequest> request =
       std::make_unique<network::ResourceRequest>();
   // This URL should be directed to the test server because of the proxy.
-  request->url = GURL("http://jabberwocky.test:1872/echo");
+  request->url = GURL("http://does.not.resolve.test:1872/echo");
 
   content::SimpleURLLoaderTestHelper simple_loader_helper;
   std::unique_ptr<network::SimpleURLLoader> simple_loader =
@@ -831,6 +840,113 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationFtpPacBrowserTest, FtpPac) {
       loader_factory(), simple_loader_helper.GetCallback());
   simple_loader_helper.WaitForCallback();
 
+  EXPECT_EQ(net::ERR_PROXY_CONNECTION_FAILED, simple_loader->NetError());
+}
+
+// Used to test that PAC HTTPS URL stripping works. A different test server is
+// used as the "proxy" based on whether the PAC script sees the full path or
+// not. The servers aren't correctly set up to mimic HTTP proxies that tunnel
+// to an HTTPS test server, so the test fixture just watches for any incoming
+// connection.
+class NetworkContextConfigurationHttpsStrippingPacBrowserTest
+    : public NetworkContextConfigurationBrowserTest {
+ public:
+  NetworkContextConfigurationHttpsStrippingPacBrowserTest() {}
+
+  ~NetworkContextConfigurationHttpsStrippingPacBrowserTest() override {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // Test server HostPortPair, as a string.
+    std::string test_server_host_port_pair =
+        net::HostPortPair::FromURL(embedded_test_server()->base_url())
+            .ToString();
+    // Set up a PAC file that directs to different servers based on the URL it
+    // sees.
+    std::string pac_script = base::StringPrintf(
+        "function FindProxyForURL(url, host) {"
+        // With the test URL stripped of the path, try to use the embedded test
+        // server to establish a an SSL tunnel over an HTTP proxy. The request
+        // will fail with ERR_TUNNEL_CONNECTION_FAILED.
+        "  if (url == 'https://does.not.resolve.test:1872/')"
+        "    return 'PROXY %s';"
+        // With the full test URL, try to use a domain that does not resolve as
+        // a proxy. Errors connecting to the proxy result in
+        // ERR_PROXY_CONNECTION_FAILED.
+        "  if (url == 'https://does.not.resolve.test:1872/foo')"
+        "    return 'PROXY does.not.resolve.test';"
+        // Otherwise, use direct. If a connection to "does.not.resolve.test"
+        // tries to use a direction connection, it will fail with
+        // ERR_NAME_NOT_RESOLVED. This path will also
+        // be used by the initial request in NetworkServiceState::kRestarted
+        // tests to make sure the network service process is fully started
+        // before it's crashed and restarted. Using direct in this case avoids
+        // that request failing with an unexpeced error when being directed to a
+        // bogus proxy.
+        "  return 'DIRECT';"
+        "}",
+        test_server_host_port_pair.c_str());
+
+    command_line->AppendSwitchASCII(switches::kProxyPacUrl,
+                                    "data:," + pac_script);
+  }
+};
+
+// Start Chrome and check that PAC HTTPS path stripping is enabled.
+IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationHttpsStrippingPacBrowserTest,
+                       PRE_PacHttpsUrlStripping) {
+  ASSERT_FALSE(CreateDefaultNetworkContextParams()
+                   ->dangerously_allow_pac_access_to_secure_urls);
+
+  std::unique_ptr<network::ResourceRequest> request =
+      std::make_unique<network::ResourceRequest>();
+  // This URL should be directed to the proxy that fails with
+  // ERR_TUNNEL_CONNECTION_FAILED.
+  request->url = GURL("https://does.not.resolve.test:1872/foo");
+
+  content::SimpleURLLoaderTestHelper simple_loader_helper;
+  std::unique_ptr<network::SimpleURLLoader> simple_loader =
+      network::SimpleURLLoader::Create(std::move(request),
+                                       TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      loader_factory(), simple_loader_helper.GetCallback());
+  simple_loader_helper.WaitForCallback();
+  EXPECT_FALSE(simple_loader_helper.response_body());
+  EXPECT_EQ(net::ERR_TUNNEL_CONNECTION_FAILED, simple_loader->NetError());
+
+  // Disable stripping paths from HTTPS PAC URLs for the next test.
+  g_browser_process->local_state()->SetBoolean(
+      prefs::kPacHttpsUrlStrippingEnabled, false);
+  // Check that the changed setting is reflected in the network context params.
+  // The changes aren't applied to existing URLRequestContexts, however, so have
+  // to restart to see the setting change respected.
+  EXPECT_TRUE(CreateDefaultNetworkContextParams()
+                  ->dangerously_allow_pac_access_to_secure_urls);
+}
+
+// Restart Chrome and check the case where PAC HTTPS path stripping is disabled.
+// Have to restart Chrome because the setting is only checked on NetworkContext
+// creation.
+IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationHttpsStrippingPacBrowserTest,
+                       PacHttpsUrlStripping) {
+  ASSERT_TRUE(CreateDefaultNetworkContextParams()
+                  ->dangerously_allow_pac_access_to_secure_urls);
+
+  std::unique_ptr<network::ResourceRequest> request =
+      std::make_unique<network::ResourceRequest>();
+  // This URL should be directed to the proxy that fails with
+  // ERR_PROXY_CONNECTION_FAILED.
+  request->url = GURL("https://does.not.resolve.test:1872/foo");
+
+  content::SimpleURLLoaderTestHelper simple_loader_helper;
+  std::unique_ptr<network::SimpleURLLoader> simple_loader =
+      network::SimpleURLLoader::Create(std::move(request),
+                                       TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      loader_factory(), simple_loader_helper.GetCallback());
+  simple_loader_helper.WaitForCallback();
+  EXPECT_FALSE(simple_loader_helper.response_body());
   EXPECT_EQ(net::ERR_PROXY_CONNECTION_FAILED, simple_loader->NetError());
 }
 
@@ -907,5 +1023,7 @@ INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(
     NetworkContextConfigurationDataPacBrowserTest);
 INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(
     NetworkContextConfigurationFtpPacBrowserTest);
+INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(
+    NetworkContextConfigurationHttpsStrippingPacBrowserTest);
 
 }  // namespace

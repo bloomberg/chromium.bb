@@ -15,9 +15,12 @@
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/policy_constants.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "components/version_info/version_info.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -59,6 +62,12 @@ network::mojom::NetworkContextParamsPtr CreateDefaultNetworkContextParams() {
     }
   }
 
+  PrefService* local_state = g_browser_process->local_state();
+  network_context_params->pac_quick_check_enabled =
+      local_state->GetBoolean(prefs::kQuickCheckEnabled);
+  network_context_params->dangerously_allow_pac_access_to_secure_urls =
+      !local_state->GetBoolean(prefs::kPacHttpsUrlStrippingEnabled);
+
   bool http_09_on_non_default_ports_enabled = false;
   const base::Value* value =
       g_browser_process->policy_service()
@@ -71,4 +80,9 @@ network::mojom::NetworkContextParamsPtr CreateDefaultNetworkContextParams() {
       http_09_on_non_default_ports_enabled;
 
   return network_context_params;
+}
+
+void RegisterNetworkContextCreationPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(prefs::kQuickCheckEnabled, true);
+  registry->RegisterBooleanPref(prefs::kPacHttpsUrlStrippingEnabled, true);
 }

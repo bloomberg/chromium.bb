@@ -110,6 +110,17 @@ struct NetworkContextParams {
   // ProxyConfigServices be modified not to need this notification?
   ProxyConfigPollerClient? proxy_config_poller_client;
 
+  // When PAC quick checking is enabled, DNS lookups for PAC script's host are
+  // timed out aggressively. This prevents hanging all network request on DNS
+  // lookups that are slow or are blockholed, at the cost of making it more
+  // likely that the network service erroneously fails to fetch a PAC file.
+  bool pac_quick_check_enabled = true;
+
+  // When enabled, exposes full URLs to PAC scripts. This setting will be
+  // removed in the future.
+  // See https://crbug.com/619087
+  bool dangerously_allow_pac_access_to_secure_urls = false;
+
   // Only used on OS_CHROMEOS platform.
   bool allow_gssapi_library_load = false;
 

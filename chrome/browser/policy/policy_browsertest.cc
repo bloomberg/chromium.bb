@@ -64,6 +64,7 @@
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_devices_controller.h"
+#include "chrome/browser/net/default_network_context_params.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
@@ -212,6 +213,7 @@
 #include "net/url_request/url_request_interceptor.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -1341,24 +1343,10 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, Disable3DAPIs) {
 
 namespace {
 
-// The following helpers retrieve whether https:// URL stripping is
-// enabled for PAC scripts. It needs to run on the IO thread.
-void GetPacHttpsUrlStrippingEnabledOnIOThread(IOThread* io_thread,
-                                              bool* enabled) {
-  *enabled = io_thread->PacHttpsUrlStrippingEnabled();
-}
-
 bool GetPacHttpsUrlStrippingEnabled() {
-  bool enabled;
-  base::RunLoop loop;
-  BrowserThread::PostTaskAndReply(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&GetPacHttpsUrlStrippingEnabledOnIOThread,
-                     g_browser_process->io_thread(),
-                     base::Unretained(&enabled)),
-      loop.QuitClosure());
-  loop.Run();
-  return enabled;
+  network::mojom::NetworkContextParamsPtr network_context_params =
+      CreateDefaultNetworkContextParams();
+  return !network_context_params->dangerously_allow_pac_access_to_secure_urls;
 }
 
 }  // namespace
@@ -1368,6 +1356,8 @@ bool GetPacHttpsUrlStrippingEnabled() {
 // default.
 IN_PROC_BROWSER_TEST_F(PolicyTest, DisablePacHttpsUrlStripping) {
   // Stripping is enabled by default.
+  EXPECT_TRUE(g_browser_process->local_state()->GetBoolean(
+      prefs::kPacHttpsUrlStrippingEnabled));
   EXPECT_TRUE(GetPacHttpsUrlStrippingEnabled());
 
   // Disable it via a policy.
@@ -1379,6 +1369,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DisablePacHttpsUrlStripping) {
   content::RunAllPendingInMessageLoop();
 
   // It should now reflect as disabled.
+  EXPECT_FALSE(g_browser_process->local_state()->GetBoolean(
+      prefs::kPacHttpsUrlStrippingEnabled));
   EXPECT_FALSE(GetPacHttpsUrlStrippingEnabled());
 }
 

@@ -298,9 +298,13 @@ class NET_EXPORT ProxyResolutionService
   void set_quick_check_enabled(bool value) {
     quick_check_enabled_ = value;
   }
+  bool quick_check_enabled_for_testing() const { return quick_check_enabled_; }
 
   void set_sanitize_url_policy(SanitizeUrlPolicy policy) {
     sanitize_url_policy_ = policy;
+  }
+  SanitizeUrlPolicy sanitize_url_policy_for_testing() const {
+    return sanitize_url_policy_;
   }
 
  private:

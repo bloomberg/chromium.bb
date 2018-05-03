@@ -431,6 +431,12 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
       std::move(network_context_params->proxy_config_client_request),
       std::move(network_context_params->initial_proxy_config),
       std::move(network_context_params->proxy_config_poller_client)));
+  builder->set_pac_quick_check_enabled(
+      network_context_params->pac_quick_check_enabled);
+  builder->set_pac_sanitize_url_policy(
+      network_context_params->dangerously_allow_pac_access_to_secure_urls
+          ? net::ProxyResolutionService::SanitizeUrlPolicy::UNSAFE
+          : net::ProxyResolutionService::SanitizeUrlPolicy::SAFE);
 
   std::unique_ptr<PrefService> pref_service;
   if (network_context_params->http_server_properties_path) {
