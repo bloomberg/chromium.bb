@@ -18,15 +18,18 @@
       }
     </style>
     <template is="dom-if" if="[[enableSiteSettings_]]">
-      <div class="settings-box first" category$="[[ALL_SITES]]"
+      <div class="settings-box first line-only">
+        <h2 class="first">$i18n{siteSettingsAllSites}</h2>
+      </div>
+      <div class="settings-box first line-only" category$="[[ALL_SITES]]"
           data-route="SITE_SETTINGS_ALL" on-click="onTapNavigate_" actionable>
-        <iron-icon icon="settings:list"></iron-icon>
-        <div class="middle">$i18n{siteSettingsCategoryAllSites}</div>
+        <div class="start">$i18n{siteSettingsAllSitesDescription}</div>
         <paper-icon-button-light class="subpage-arrow">
-          <button aria-label="$i18n{siteSettingsCategoryAllSites}"></button>
+          <button aria-label="$i18n{siteSettingsAllSitesDescription}"></button>
         </paper-icon-button-light>
       </div>
-      <div class="settings-box line-only">
+      <div class="settings-box first line-only">
+        <h2>$i18n{siteSettingsPermissions}</h2>
       </div>
     </template>
     <div id="cookies" class="settings-box two-line first"
