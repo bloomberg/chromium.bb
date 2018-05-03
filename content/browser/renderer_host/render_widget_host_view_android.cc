@@ -1079,20 +1079,23 @@ void RenderWidgetHostViewAndroid::MoveCaret(const gfx::PointF& position) {
 
 void RenderWidgetHostViewAndroid::MoveRangeSelectionExtent(
     const gfx::PointF& extent) {
-  DCHECK(selection_popup_controller_);
+  if (!selection_popup_controller_)
+    return;
   selection_popup_controller_->MoveRangeSelectionExtent(extent);
 }
 
 void RenderWidgetHostViewAndroid::SelectBetweenCoordinates(
     const gfx::PointF& base,
     const gfx::PointF& extent) {
-  DCHECK(selection_popup_controller_);
+  if (!selection_popup_controller_)
+    return;
   selection_popup_controller_->SelectBetweenCoordinates(base, extent);
 }
 
 void RenderWidgetHostViewAndroid::OnSelectionEvent(
     ui::SelectionEventType event) {
-  DCHECK(selection_popup_controller_);
+  if (!selection_popup_controller_)
+    return;
   DCHECK(touch_selection_controller_);
   // If a selection drag has started, it has taken over the active touch
   // sequence. Immediately cancel gesture detection and any downstream touch
@@ -1106,7 +1109,8 @@ void RenderWidgetHostViewAndroid::OnSelectionEvent(
 }
 
 void RenderWidgetHostViewAndroid::OnDragUpdate(const gfx::PointF& position) {
-  DCHECK(selection_popup_controller_);
+  if (!selection_popup_controller_)
+    return;
   selection_popup_controller_->OnDragUpdate(position);
 }
 
@@ -1131,7 +1135,8 @@ RenderWidgetHostViewAndroid::CreateDrawable() {
     return std::unique_ptr<ui::TouchHandleDrawable>(
         sync_compositor_->client()->CreateDrawable());
   }
-  DCHECK(selection_popup_controller_);
+  if (!selection_popup_controller_)
+    return nullptr;
   return selection_popup_controller_->CreateTouchHandleDrawable();
 }
 
