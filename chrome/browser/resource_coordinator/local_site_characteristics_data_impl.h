@@ -19,6 +19,7 @@ namespace resource_coordinator {
 
 class LocalSiteCharacteristicsDataStore;
 class LocalSiteCharacteristicsDataReaderTest;
+class LocalSiteCharacteristicsDataWriterTest;
 
 namespace internal {
 
@@ -84,6 +85,7 @@ class LocalSiteCharacteristicsDataImpl
   friend class LocalSiteCharacteristicsDataImplTest;
   friend class resource_coordinator::LocalSiteCharacteristicsDataReaderTest;
   friend class resource_coordinator::LocalSiteCharacteristicsDataStore;
+  friend class resource_coordinator::LocalSiteCharacteristicsDataWriterTest;
 
   LocalSiteCharacteristicsDataImpl(const std::string& origin_str,
                                    OnDestroyDelegate* delegate);

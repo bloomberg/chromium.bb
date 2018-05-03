@@ -5,11 +5,14 @@
 #ifndef CHROME_BROWSER_RESOURCE_COORDINATOR_LOCAL_SITE_CHARACTERISTICS_DATA_STORE_H_
 #define CHROME_BROWSER_RESOURCE_COORDINATOR_LOCAL_SITE_CHARACTERISTICS_DATA_STORE_H_
 
+#include <string>
+
 #include "base/containers/flat_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_impl.h"
+#include "chrome/browser/resource_coordinator/local_site_characteristics_data_writer.h"
 #include "chrome/browser/resource_coordinator/site_characteristics_data_store.h"
 #include "components/history/core/browser/history_service_observer.h"
 
@@ -33,6 +36,9 @@ class LocalSiteCharacteristicsDataStore
   // SiteCharacteristicDataStore:
   std::unique_ptr<SiteCharacteristicsDataReader> GetReaderForOrigin(
       const std::string& origin_str) override;
+
+  std::unique_ptr<LocalSiteCharacteristicsDataWriter> GetWriterForOrigin(
+      const std::string& origin_str);
 
   const LocalSiteCharacteristicsMap& origin_data_map_for_testing() const {
     return origin_data_map_;

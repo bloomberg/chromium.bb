@@ -2622,6 +2622,8 @@ jumbo_split_static_library("browser") {
       "resource_coordinator/local_site_characteristics_data_reader.h",
       "resource_coordinator/local_site_characteristics_data_store.cc",
       "resource_coordinator/local_site_characteristics_data_store.h",
+      "resource_coordinator/local_site_characteristics_data_writer.cc",
+      "resource_coordinator/local_site_characteristics_data_writer.h",
       "resource_coordinator/local_site_characteristics_feature_usage.h",
       "resource_coordinator/site_characteristics_data_reader.h",
       "resource_coordinator/site_characteristics_data_store.h",

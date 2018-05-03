@@ -33,19 +33,10 @@ class LocalSiteCharacteristicsDataReaderTest : public ::testing::Test {
 
   ~LocalSiteCharacteristicsDataReaderTest() override {
     test_impl_->NotifySiteUnloaded();
-    reader_.reset();
-    test_impl_ = nullptr;
   }
 
   base::SimpleTestTickClock test_clock_;
   ScopedSetTickClockForTesting scoped_set_tick_clock_for_testing_;
-
-  // The LocalSiteCharacteristicsDataImpl object used in these tests.
-  scoped_refptr<internal::LocalSiteCharacteristicsDataImpl> test_impl_;
-
-  // A LocalSiteCharacteristicsDataReader object associated with the origin used
-  // to create this object.
-  std::unique_ptr<LocalSiteCharacteristicsDataReader> reader_;
 
   // The mock delegate used by the LocalSiteCharacteristicsDataImpl objects
   // created by this class, NiceMock is used to avoid having to set expectations
@@ -53,6 +44,13 @@ class LocalSiteCharacteristicsDataReaderTest : public ::testing::Test {
   ::testing::NiceMock<
       testing::MockLocalSiteCharacteristicsDataImplOnDestroyDelegate>
       delegate_;
+
+  // The LocalSiteCharacteristicsDataImpl object used in these tests.
+  scoped_refptr<internal::LocalSiteCharacteristicsDataImpl> test_impl_;
+
+  // A LocalSiteCharacteristicsDataReader object associated with the origin used
+  // to create this object.
+  std::unique_ptr<LocalSiteCharacteristicsDataReader> reader_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalSiteCharacteristicsDataReaderTest);
 };

@@ -40,20 +40,19 @@ class LocalSiteCharacteristicsDataStoreTest : public ::testing::Test {
 
 TEST_F(LocalSiteCharacteristicsDataStoreTest, EndToEnd) {
   auto reader = data_store_.GetReaderForOrigin(kTestOrigin);
-  EXPECT_NE(nullptr, reader.get());
-  EXPECT_EQ(1U, data_store_.origin_data_map_for_testing().size());
+  EXPECT_TRUE(reader);
+  auto writer = data_store_.GetWriterForOrigin(kTestOrigin);
+  EXPECT_TRUE(writer);
 
-  internal::LocalSiteCharacteristicsDataImpl* data =
-      data_store_.origin_data_map_for_testing().find(kTestOrigin)->second;
-  EXPECT_NE(nullptr, data);
+  EXPECT_EQ(1U, data_store_.origin_data_map_for_testing().size());
 
   EXPECT_EQ(SiteFeatureUsage::kSiteFeatureUsageUnknown,
             reader->UpdatesTitleInBackground());
-  data->NotifySiteLoaded();
-  data->NotifyUpdatesTitleInBackground();
+  writer->NotifySiteLoaded();
+  writer->NotifyUpdatesTitleInBackground();
   EXPECT_EQ(SiteFeatureUsage::kSiteFeatureInUse,
             reader->UpdatesTitleInBackground());
-  data->NotifySiteUnloaded();
+  writer->NotifySiteUnloaded();
   EXPECT_EQ(SiteFeatureUsage::kSiteFeatureInUse,
             reader->UpdatesTitleInBackground());
 
@@ -66,6 +65,7 @@ TEST_F(LocalSiteCharacteristicsDataStoreTest, EndToEnd) {
   reader_copy.reset();
 
   reader.reset();
+  writer.reset();
   EXPECT_TRUE(data_store_.origin_data_map_for_testing().empty());
 
   data_store_.OnURLsDeleted(nullptr, history::DeletionTimeRange::AllTime(),
@@ -78,6 +78,9 @@ TEST_F(LocalSiteCharacteristicsDataStoreTest, HistoryServiceObserver) {
   const std::string kOrigin1Url = GURL(kTestOrigin).GetOrigin().GetContent();
   auto reader = data_store_.GetReaderForOrigin(kOrigin1Url);
   EXPECT_TRUE(reader);
+  auto writer = data_store_.GetWriterForOrigin(kOrigin1Url);
+  EXPECT_TRUE(writer);
+
   internal::LocalSiteCharacteristicsDataImpl* data =
       data_store_.origin_data_map_for_testing().find(kOrigin1Url)->second;
   EXPECT_NE(nullptr, data);
@@ -86,9 +89,9 @@ TEST_F(LocalSiteCharacteristicsDataStoreTest, HistoryServiceObserver) {
 
   EXPECT_EQ(SiteFeatureUsage::kSiteFeatureUsageUnknown,
             reader->UpdatesTitleInBackground());
-  data->NotifySiteLoaded();
+  writer->NotifySiteLoaded();
   base::TimeDelta last_loaded_time = data->last_loaded_time_for_testing();
-  data->NotifyUpdatesTitleInBackground();
+  writer->NotifyUpdatesTitleInBackground();
   EXPECT_EQ(SiteFeatureUsage::kSiteFeatureInUse,
             reader->UpdatesTitleInBackground());
   test_clock_.Advance(kDelay);
@@ -97,11 +100,13 @@ TEST_F(LocalSiteCharacteristicsDataStoreTest, HistoryServiceObserver) {
   const std::string kOrigin2Url = GURL(kTestOrigin2).GetOrigin().GetContent();
   auto reader2 = data_store_.GetReaderForOrigin(kOrigin2Url);
   EXPECT_TRUE(reader2);
+  auto writer2 = data_store_.GetWriterForOrigin(kOrigin2Url);
+  EXPECT_TRUE(writer2);
   internal::LocalSiteCharacteristicsDataImpl* data2 =
       data_store_.origin_data_map_for_testing().find(kOrigin2Url)->second;
   EXPECT_NE(nullptr, data2);
-  data2->NotifySiteLoaded();
-  data2->NotifyUpdatesFaviconInBackground();
+  writer2->NotifySiteLoaded();
+  writer2->NotifyUpdatesFaviconInBackground();
 
   // This site hasn'be been unloaded yet, so the last loaded time shouldn't have
   // changed.
@@ -138,8 +143,8 @@ TEST_F(LocalSiteCharacteristicsDataStoreTest, HistoryServiceObserver) {
   EXPECT_EQ(data2->last_loaded_time_for_testing(),
             test_clock_.NowTicks() - base::TimeTicks::UnixEpoch());
 
-  data->NotifySiteUnloaded();
-  data2->NotifySiteUnloaded();
+  writer->NotifySiteUnloaded();
+  writer2->NotifySiteUnloaded();
 }
 
 }  // namespace resource_coordinator

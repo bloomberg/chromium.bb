@@ -2940,6 +2940,7 @@ test("unit_tests") {
       "../browser/resource_coordinator/local_site_characteristics_data_store_unittest.cc",
       "../browser/resource_coordinator/local_site_characteristics_data_unittest_utils.cc",
       "../browser/resource_coordinator/local_site_characteristics_data_unittest_utils.h",
+      "../browser/resource_coordinator/local_site_characteristics_data_writer_unittest.cc",
       "../browser/resource_coordinator/tab_activity_watcher_unittest.cc",
       "../browser/resource_coordinator/tab_lifecycle_unit_source_unittest.cc",
       "../browser/resource_coordinator/tab_lifecycle_unit_unittest.cc",

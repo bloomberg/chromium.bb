@@ -30,10 +30,21 @@ LocalSiteCharacteristicsDataStore::GetReaderForOrigin(
     const std::string& origin_str) {
   internal::LocalSiteCharacteristicsDataImpl* impl =
       GetOrCreateFeatureImpl(origin_str);
-  DCHECK_NE(nullptr, impl);
+  DCHECK(impl);
   SiteCharacteristicsDataReader* data_reader =
       new LocalSiteCharacteristicsDataReader(impl);
   return base::WrapUnique(data_reader);
+}
+
+std::unique_ptr<LocalSiteCharacteristicsDataWriter>
+LocalSiteCharacteristicsDataStore::GetWriterForOrigin(
+    const std::string& origin_str) {
+  internal::LocalSiteCharacteristicsDataImpl* impl =
+      GetOrCreateFeatureImpl(origin_str);
+  DCHECK(impl);
+  LocalSiteCharacteristicsDataWriter* data_writer =
+      new LocalSiteCharacteristicsDataWriter(impl);
+  return base::WrapUnique(data_writer);
 }
 
 internal::LocalSiteCharacteristicsDataImpl*
@@ -57,7 +68,7 @@ LocalSiteCharacteristicsDataStore::GetOrCreateFeatureImpl(
 void LocalSiteCharacteristicsDataStore::
     OnLocalSiteCharacteristicsDataImplDestroyed(
         internal::LocalSiteCharacteristicsDataImpl* impl) {
-  DCHECK_NE(nullptr, impl);
+  DCHECK(impl);
   DCHECK(base::ContainsKey(origin_data_map_, impl->origin_str()));
   // Remove the entry for this origin as this is about to get destroyed.
   auto num_erased = origin_data_map_.erase(impl->origin_str());
