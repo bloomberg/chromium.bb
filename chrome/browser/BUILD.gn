@@ -211,6 +211,8 @@ jumbo_split_static_library("browser") {
     "browsing_data/counters/site_data_counter.h",
     "browsing_data/counters/site_data_counting_helper.cc",
     "browsing_data/counters/site_data_counting_helper.h",
+    "browsing_data/counters/site_settings_counter.cc",
+    "browsing_data/counters/site_settings_counter.h",
     "browsing_data/local_data_container.cc",
     "browsing_data/local_data_container.h",
     "browsing_data/navigation_entry_remover.cc",

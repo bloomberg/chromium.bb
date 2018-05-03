@@ -391,6 +391,82 @@ TEST_F(ProtocolHandlerRegistryTest, SaveAndLoad) {
   ASSERT_TRUE(registry()->IsIgnored(stuff_protocol_handler));
 }
 
+TEST_F(ProtocolHandlerRegistryTest, Encode) {
+  base::Time now = base::Time::Now();
+  ProtocolHandler handler("test", GURL("http://example.com"), now);
+  auto value = handler.Encode();
+  ProtocolHandler recreated =
+      ProtocolHandler::CreateProtocolHandler(value.get());
+  EXPECT_EQ("test", recreated.protocol());
+  EXPECT_EQ(GURL("http://example.com"), recreated.url());
+  EXPECT_EQ(now, recreated.last_modified());
+}
+
+TEST_F(ProtocolHandlerRegistryTest, GetHandlersBetween) {
+  base::Time now = base::Time::Now();
+  base::Time one_hour_ago = now - base::TimeDelta::FromHours(1);
+  base::Time two_hours_ago = now - base::TimeDelta::FromHours(2);
+  ProtocolHandler handler1("test1", GURL("http://example.com"), two_hours_ago);
+  ProtocolHandler handler2("test2", GURL("http://example.com"), one_hour_ago);
+  ProtocolHandler handler3("test3", GURL("http://example.com"), now);
+  registry()->OnAcceptRegisterProtocolHandler(handler1);
+  registry()->OnAcceptRegisterProtocolHandler(handler2);
+  registry()->OnAcceptRegisterProtocolHandler(handler3);
+
+  EXPECT_EQ(
+      std::vector<ProtocolHandler>({handler1, handler2, handler3}),
+      registry()->GetUserDefinedHandlers(base::Time(), base::Time::Max()));
+  EXPECT_EQ(
+      std::vector<ProtocolHandler>({handler2, handler3}),
+      registry()->GetUserDefinedHandlers(one_hour_ago, base::Time::Max()));
+  EXPECT_EQ(std::vector<ProtocolHandler>({handler1, handler2}),
+            registry()->GetUserDefinedHandlers(base::Time(), now));
+}
+
+TEST_F(ProtocolHandlerRegistryTest, ClearHandlersBetween) {
+  base::Time now = base::Time::Now();
+  base::Time one_hour_ago = now - base::TimeDelta::FromHours(1);
+  base::Time two_hours_ago = now - base::TimeDelta::FromHours(2);
+  GURL url("http://example.com");
+  ProtocolHandler handler1("test1", url, two_hours_ago);
+  ProtocolHandler handler2("test2", url, one_hour_ago);
+  ProtocolHandler handler3("test3", url, now);
+  ProtocolHandler ignored1("ignored1", url, two_hours_ago);
+  ProtocolHandler ignored2("ignored2", url, one_hour_ago);
+  ProtocolHandler ignored3("ignored3", url, now);
+  registry()->OnAcceptRegisterProtocolHandler(handler1);
+  registry()->OnAcceptRegisterProtocolHandler(handler2);
+  registry()->OnAcceptRegisterProtocolHandler(handler3);
+  registry()->OnIgnoreRegisterProtocolHandler(ignored1);
+  registry()->OnIgnoreRegisterProtocolHandler(ignored2);
+  registry()->OnIgnoreRegisterProtocolHandler(ignored3);
+
+  EXPECT_TRUE(registry()->IsHandledProtocol("test1"));
+  EXPECT_TRUE(registry()->IsHandledProtocol("test2"));
+  EXPECT_TRUE(registry()->IsHandledProtocol("test3"));
+  EXPECT_TRUE(registry()->IsIgnored(ignored1));
+  EXPECT_TRUE(registry()->IsIgnored(ignored2));
+  EXPECT_TRUE(registry()->IsIgnored(ignored3));
+
+  // Delete handler2 and ignored2.
+  registry()->ClearUserDefinedHandlers(one_hour_ago, now);
+  EXPECT_TRUE(registry()->IsHandledProtocol("test1"));
+  EXPECT_FALSE(registry()->IsHandledProtocol("test2"));
+  EXPECT_TRUE(registry()->IsHandledProtocol("test3"));
+  EXPECT_TRUE(registry()->IsIgnored(ignored1));
+  EXPECT_FALSE(registry()->IsIgnored(ignored2));
+  EXPECT_TRUE(registry()->IsIgnored(ignored3));
+
+  // Delete all.
+  registry()->ClearUserDefinedHandlers(base::Time(), base::Time::Max());
+  EXPECT_FALSE(registry()->IsHandledProtocol("test1"));
+  EXPECT_FALSE(registry()->IsHandledProtocol("test2"));
+  EXPECT_FALSE(registry()->IsHandledProtocol("test3"));
+  EXPECT_FALSE(registry()->IsIgnored(ignored1));
+  EXPECT_FALSE(registry()->IsIgnored(ignored2));
+  EXPECT_FALSE(registry()->IsIgnored(ignored3));
+}
+
 TEST_F(ProtocolHandlerRegistryTest, TestEnabledDisabled) {
   registry()->Disable();
   ASSERT_FALSE(registry()->enabled());
@@ -838,6 +914,12 @@ TEST_F(ProtocolHandlerRegistryTest, TestInstallDefaultHandler) {
   std::vector<std::string> protocols;
   registry()->GetRegisteredProtocols(&protocols);
   ASSERT_EQ(static_cast<size_t>(1), protocols.size());
+  EXPECT_TRUE(registry()->IsHandledProtocol("test"));
+  auto handlers =
+      registry()->GetUserDefinedHandlers(base::Time(), base::Time::Max());
+  EXPECT_TRUE(handlers.empty());
+  registry()->ClearUserDefinedHandlers(base::Time(), base::Time::Max());
+  EXPECT_TRUE(registry()->IsHandledProtocol("test"));
 }
 
 #define URL_p1u1 "http://p1u1.com/%s"

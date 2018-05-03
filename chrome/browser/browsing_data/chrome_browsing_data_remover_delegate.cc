@@ -24,6 +24,8 @@
 #include "chrome/browser/browsing_data/navigation_entry_remover.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
+#include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
@@ -757,6 +759,12 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
           info->website_settings_info()->type(), delete_begin_, delete_end_,
           HostContentSettingsMap::PatternSourcePredicate());
     }
+
+    auto* handler_registry =
+        ProtocolHandlerRegistryFactory::GetForBrowserContext(profile_);
+    if (handler_registry)
+      handler_registry->ClearUserDefinedHandlers(delete_begin_, delete_end_);
+
 #if !defined(OS_ANDROID)
     content::HostZoomMap* zoom_map =
         content::HostZoomMap::GetDefaultForBrowserContext(profile_);

@@ -12,7 +12,9 @@
 #include "chrome/browser/browsing_data/counters/downloads_counter.h"
 #include "chrome/browser/browsing_data/counters/media_licenses_counter.h"
 #include "chrome/browser/browsing_data/counters/site_data_counter.h"
+#include "chrome/browser/browsing_data/counters/site_settings_counter.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
@@ -20,7 +22,6 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "components/browser_sync/profile_sync_service.h"
-#include "components/browsing_data/content/counters/site_settings_counter.h"
 #include "components/browsing_data/core/counters/autofill_counter.h"
 #include "components/browsing_data/core/counters/browsing_data_counter.h"
 #include "components/browsing_data/core/counters/history_counter.h"
@@ -99,14 +100,14 @@ BrowsingDataCounterFactory::GetForProfileAndPref(Profile* profile,
   }
 
   if (pref_name == browsing_data::prefs::kDeleteSiteSettings) {
-    return std::make_unique<browsing_data::SiteSettingsCounter>(
+    return std::make_unique<SiteSettingsCounter>(
         HostContentSettingsMapFactory::GetForProfile(profile),
 #if !defined(OS_ANDROID)
-        content::HostZoomMap::GetDefaultForBrowserContext(profile)
+        content::HostZoomMap::GetDefaultForBrowserContext(profile),
 #else
-        nullptr
+        nullptr,
 #endif
-            );
+        ProtocolHandlerRegistryFactory::GetForBrowserContext(profile));
   }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

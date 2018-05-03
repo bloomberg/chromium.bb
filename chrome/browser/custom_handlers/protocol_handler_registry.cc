@@ -454,6 +454,41 @@ ProtocolHandlerRegistry::GetHandlersFor(
 }
 
 ProtocolHandlerRegistry::ProtocolHandlerList
+ProtocolHandlerRegistry::GetUserDefinedHandlers(base::Time begin,
+                                                base::Time end) const {
+  ProtocolHandlerRegistry::ProtocolHandlerList result;
+  for (const auto& entry : user_protocol_handlers_) {
+    for (const ProtocolHandler& handler : entry.second) {
+      if (base::ContainsValue(predefined_protocol_handlers_, handler))
+        continue;
+      if (begin <= handler.last_modified() && handler.last_modified() < end)
+        result.push_back(handler);
+    }
+  }
+  return result;
+}
+
+ProtocolHandlerRegistry::ProtocolHandlerList
+ProtocolHandlerRegistry::GetUserIgnoredHandlers(base::Time begin,
+                                                base::Time end) const {
+  ProtocolHandlerRegistry::ProtocolHandlerList result;
+  for (const ProtocolHandler& handler : user_ignored_protocol_handlers_) {
+    if (begin <= handler.last_modified() && handler.last_modified() < end)
+      result.push_back(handler);
+  }
+  return result;
+}
+
+void ProtocolHandlerRegistry::ClearUserDefinedHandlers(base::Time begin,
+                                                       base::Time end) {
+  for (const ProtocolHandler& handler : GetUserDefinedHandlers(begin, end))
+    RemoveHandler(handler);
+
+  for (const ProtocolHandler& handler : GetUserIgnoredHandlers(begin, end))
+    RemoveIgnoredHandler(handler);
+}
+
+ProtocolHandlerRegistry::ProtocolHandlerList
 ProtocolHandlerRegistry::GetIgnoredHandlers() {
   return ignored_protocol_handlers_;
 }
@@ -906,6 +941,7 @@ void ProtocolHandlerRegistry::AddPredefinedHandler(
   DCHECK(!is_loaded_);  // Must be called prior InitProtocolSettings.
   RegisterProtocolHandler(handler, USER);
   SetDefault(handler);
+  predefined_protocol_handlers_.push_back(handler);
 }
 
 shell_integration::DefaultWebClientWorkerCallback

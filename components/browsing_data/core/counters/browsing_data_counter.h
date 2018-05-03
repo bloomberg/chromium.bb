@@ -77,7 +77,7 @@ class BrowsingDataCounter {
     DISALLOW_COPY_AND_ASSIGN(SyncResult);
   };
 
-  typedef base::Callback<void(std::unique_ptr<Result>)> Callback;
+  typedef base::RepeatingCallback<void(std::unique_ptr<Result>)> Callback;
 
   // Every calculation progresses through a state machine. At initialization,
   // the counter is IDLE. If a result is calculated within a given time
