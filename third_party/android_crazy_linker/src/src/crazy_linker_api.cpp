@@ -34,7 +34,6 @@ struct crazy_context_t {
  public:
   crazy_context_t()
       : load_address(0),
-        file_offset(0),
         error(),
         search_paths(),
         java_vm(NULL),
@@ -47,7 +46,6 @@ struct crazy_context_t {
   void ResetSearchPaths();
 
   size_t load_address;
-  size_t file_offset;
   Error error;
   SearchPathList search_paths;
   void* java_vm;
@@ -93,15 +91,6 @@ void crazy_context_set_load_address(crazy_context_t* context,
 
 size_t crazy_context_get_load_address(crazy_context_t* context) {
   return context->load_address;
-}
-
-void crazy_context_set_file_offset(crazy_context_t* context,
-                                   size_t file_offset) {
-  context->file_offset = file_offset;
-}
-
-size_t crazy_context_get_file_offset(crazy_context_t* context) {
-  return context->file_offset;
 }
 
 crazy_status_t crazy_context_add_search_path(crazy_context_t* context,
@@ -205,8 +194,8 @@ crazy_status_t crazy_library_open(crazy_library_t** library,
   ScopedDelayedCallbackPoster poster(context, globals->rdebug());
 
   LibraryView* wrap = globals->libraries()->LoadLibrary(
-      lib_name, RTLD_NOW, context->load_address, context->file_offset,
-      &context->search_paths, false, &context->error);
+      lib_name, RTLD_NOW, context->load_address, 0, &context->search_paths,
+      false, &context->error);
 
   if (!wrap)
     return CRAZY_STATUS_FAILURE;
