@@ -19,6 +19,7 @@ extern const char kAutofillEnabled[];
 extern const char kAutofillLastVersionDeduped[];
 extern const char kAutofillLastVersionDisusedAddressesDeleted[];
 extern const char kAutofillLastVersionDisusedCreditCardsDeleted[];
+extern const char kAutofillOrphanRowsRemoved[];
 extern const char kAutofillProfileUseDatesFixed[];
 extern const char kAutofillWalletImportEnabled[];
 extern const char kAutofillWalletImportStorageCheckboxState[];

@@ -1854,6 +1854,31 @@ bool AutofillTable::ClearModelTypeState(syncer::ModelType model_type) {
   return s.Run();
 }
 
+bool AutofillTable::RemoveOrphanAutofillTableRows() {
+  // Get all the orphan guids.
+  std::set<std::string> orphan_guids;
+  sql::Statement s_orphan_profile_pieces_get(db_->GetUniqueStatement(
+      "SELECT guid FROM (SELECT guid FROM autofill_profile_names UNION SELECT "
+      "guid FROM autofill_profile_emails UNION SELECT guid FROM "
+      "autofill_profile_phones) WHERE guid NOT IN (SELECT guid FROM "
+      "autofill_profiles)"));
+
+  // Put the orphan guids in a set.
+  while (s_orphan_profile_pieces_get.Step())
+    orphan_guids.insert(s_orphan_profile_pieces_get.ColumnString(0));
+
+  if (!s_orphan_profile_pieces_get.Succeeded())
+    return false;
+
+  // Remove the profile pieces for the orphan guids.
+  for (const std::string& guid : orphan_guids) {
+    if (!RemoveAutofillProfilePieces(guid, db_))
+      return false;
+  }
+
+  return true;
+}
+
 bool AutofillTable::InitMainTable() {
   if (!db_->DoesTableExist("autofill")) {
     if (!db_->Execute("CREATE TABLE autofill ("

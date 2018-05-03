@@ -248,6 +248,7 @@ void AutofillManager::RegisterProfilePrefs(
   registry->RegisterIntegerPref(
       prefs::kAutofillLastVersionDisusedCreditCardsDeleted, 0);
   registry->RegisterBooleanPref(prefs::kAutofillCreditCardEnabled, true);
+  registry->RegisterBooleanPref(prefs::kAutofillOrphanRowsRemoved, false);
 }
 
 void AutofillManager::SetExternalDelegate(AutofillExternalDelegate* delegate) {

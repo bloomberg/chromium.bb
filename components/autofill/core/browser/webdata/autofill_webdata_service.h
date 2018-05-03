@@ -108,6 +108,8 @@ class AutofillWebDataService : public AutofillWebData,
   void RemoveOriginURLsModifiedBetween(const base::Time& delete_begin,
                                        const base::Time& delete_end) override;
 
+  void RemoveOrphanAutofillTableRows() override;
+
   void AddObserver(AutofillWebDataServiceObserverOnDBSequence* observer);
   void RemoveObserver(AutofillWebDataServiceObserverOnDBSequence* observer);
 

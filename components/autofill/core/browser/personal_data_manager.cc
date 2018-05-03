@@ -418,20 +418,14 @@ void PersonalDataManager::OnSyncServiceInitialized(
   // If the sync service is not enabled for autofill address profiles then run
   // address cleanup/startup code here. Otherwise, defer until after sync has
   // started.
-  if (!IsSyncEnabledFor(sync_service, syncer::AUTOFILL_PROFILE)) {
-    ApplyProfileUseDatesFix();  // One-time fix, otherwise NOP.
-    ApplyDedupingRoutine();     // Once per major version, otherwise NOP.
-    DeleteDisusedAddresses();   // Once per major version, otherwise NOP.
-    CreateTestAddresses();      // Once per user profile startup.
-  }
+  if (!IsSyncEnabledFor(sync_service, syncer::AUTOFILL_PROFILE))
+    ApplyAddressFixesAndCleanups();
 
   // Similarly, if the sync service is not enabled for autofill credit cards
   // then run credit card address cleanup/startup code here. Otherwise, defer
   // until after sync has started.
-  if (!IsSyncEnabledFor(sync_service, syncer::AUTOFILL_WALLET_DATA)) {
-    DeleteDisusedCreditCards();  // Once per major version, otherwise NOP.
-    CreateTestCreditCards();     // Once per user profile startup.
-  }
+  if (!IsSyncEnabledFor(sync_service, syncer::AUTOFILL_WALLET_DATA))
+    ApplyCardFixesAndCleanups();
 
   if (sync_service_ != sync_service) {
     // Before the sync service pointer gets changed, remove the observer.
@@ -522,19 +516,13 @@ void PersonalDataManager::AutofillMultipleChanged() {
 void PersonalDataManager::SyncStarted(syncer::ModelType model_type) {
   // Run deferred autofill address profile startup code.
   // See: OnSyncServiceInitialized
-  if (model_type == syncer::AUTOFILL_PROFILE) {
-    ApplyProfileUseDatesFix();  // One-time fix, otherwise NOP.
-    ApplyDedupingRoutine();     // Once per major version, otherwise NOP.
-    DeleteDisusedAddresses();   // Once per major version, otherwise NOP.
-    CreateTestAddresses();      // Once per user profile startup.
-  }
+  if (model_type == syncer::AUTOFILL_PROFILE)
+    ApplyAddressFixesAndCleanups();
 
   // Run deferred credit card startup code.
   // See: OnSyncServiceInitialized
-  if (model_type == syncer::AUTOFILL_WALLET_DATA) {
-    DeleteDisusedCreditCards();  // Once per major version, otherwise NOP.
-    CreateTestCreditCards();     // Once per user profile startup.
-  }
+  if (model_type == syncer::AUTOFILL_WALLET_DATA)
+    ApplyCardFixesAndCleanups();
 }
 
 void PersonalDataManager::OnStateChanged(syncer::SyncService* sync_service) {
@@ -1723,6 +1711,20 @@ void PersonalDataManager::ApplyProfileUseDatesFix() {
     SetProfiles(&profiles);
 }
 
+void PersonalDataManager::RemoveOrphanAutofillTableRows() {
+  // Don't run if the fix has already been applied.
+  if (pref_service_->GetBoolean(prefs::kAutofillOrphanRowsRemoved))
+    return;
+
+  if (!database_)
+    return;
+
+  database_->RemoveOrphanAutofillTableRows();
+
+  // Set the pref so that this fix is never run again.
+  pref_service_->SetBoolean(prefs::kAutofillOrphanRowsRemoved, true);
+}
+
 bool PersonalDataManager::ApplyDedupingRoutine() {
   if (!is_autofill_profile_cleanup_pending_)
     return false;
@@ -2067,7 +2069,7 @@ std::string PersonalDataManager::MergeServerAddressesIntoProfiles(
   return guid;
 }
 
-void PersonalDataManager::CreateTestAddresses() {
+void PersonalDataManager::MaybeCreateTestAddresses() {
   if (has_created_test_addresses_)
     return;
 
@@ -2080,7 +2082,7 @@ void PersonalDataManager::CreateTestAddresses() {
   AddProfile(CreateDisusedDeletableTestAddress(app_locale_));
 }
 
-void PersonalDataManager::CreateTestCreditCards() {
+void PersonalDataManager::MaybeCreateTestCreditCards() {
   if (has_created_test_credit_cards_)
     return;
 
@@ -2229,6 +2231,19 @@ bool PersonalDataManager::ShouldSuggestServerCards() const {
   return syncer::GetUploadToGoogleState(
              sync_service_, syncer::ModelType::AUTOFILL_WALLET_DATA) ==
          syncer::UploadState::ACTIVE;
+}
+
+void PersonalDataManager::ApplyAddressFixesAndCleanups() {
+  ApplyProfileUseDatesFix();        // One-time fix, otherwise NOP.
+  RemoveOrphanAutofillTableRows();  // One-time fix, otherwise NOP.
+  ApplyDedupingRoutine();           // Once per major version, otherwise NOP.
+  DeleteDisusedAddresses();         // Once per major version, otherwise NOP.
+  MaybeCreateTestAddresses();       // Once per user profile startup.
+}
+
+void PersonalDataManager::ApplyCardFixesAndCleanups() {
+  DeleteDisusedCreditCards();    // Once per major version, otherwise NOP.
+  MaybeCreateTestCreditCards();  // Once per user profile startup.
 }
 
 }  // namespace autofill

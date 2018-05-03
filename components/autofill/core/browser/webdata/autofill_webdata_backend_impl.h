@@ -179,6 +179,10 @@ class AutofillWebDataBackendImpl
       const base::Time& delete_end,
       WebDatabase* db);
 
+  // Removes the orphan rows in the autofill_profile_names,
+  // autofill_profile_emails and autofill_profile_phones tables.
+  WebDatabase::State RemoveOrphanAutofillTableRows(WebDatabase* db);
+
  protected:
   ~AutofillWebDataBackendImpl() override;
 
