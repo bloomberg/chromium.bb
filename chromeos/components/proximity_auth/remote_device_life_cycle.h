@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_COMPONENTS_PROXIMITY_AUTH_REMOTE_DEVICE_LIFE_CYCLE_H_
 #define CHROMEOS_COMPONENTS_PROXIMITY_AUTH_REMOTE_DEVICE_LIFE_CYCLE_H_
 
+#include <ostream>
+
 #include "base/macros.h"
 #include "components/cryptauth/connection.h"
 #include "components/cryptauth/remote_device.h"
@@ -75,6 +77,9 @@ class RemoteDeviceLifeCycle {
   // Removes an observer.
   virtual void RemoveObserver(Observer* observer) = 0;
 };
+
+std::ostream& operator<<(std::ostream& stream,
+                         const RemoteDeviceLifeCycle::State& state);
 
 }  // namespace proximity_auth
 

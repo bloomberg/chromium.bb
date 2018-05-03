@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_COMPONENTS_PROXIMITY_AUTH_SCREENLOCK_STATE_H_
 #define CHROMEOS_COMPONENTS_PROXIMITY_AUTH_SCREENLOCK_STATE_H_
 
+#include <ostream>
+
 namespace proximity_auth {
 
 // Possible user states of the proximity auth feature on the lock or sign-in
@@ -45,6 +47,8 @@ enum class ScreenlockState {
   // has elapsed since their last password entry.
   PASSWORD_REAUTH,
 };
+
+std::ostream& operator<<(std::ostream& stream, const ScreenlockState& state);
 
 }  // namespace proximity_auth
 

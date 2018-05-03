@@ -116,4 +116,21 @@ std::string Connection::GetDeviceInfoLogString() {
   return ss.str();
 }
 
+std::ostream& operator<<(std::ostream& stream,
+                         const Connection::Status& status) {
+  switch (status) {
+    case Connection::Status::DISCONNECTED:
+      stream << "[disconnected]";
+      break;
+    case Connection::Status::IN_PROGRESS:
+      stream << "[in progress]";
+      break;
+    case Connection::Status::CONNECTED:
+      stream << "[connected]";
+      break;
+  }
+
+  return stream;
+}
+
 }  // namespace cryptauth

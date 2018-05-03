@@ -6,6 +6,7 @@
 #define COMPONENTS_CRYPTAUTH_CONNECTION_H_
 
 #include <memory>
+#include <ostream>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -116,6 +117,9 @@ class Connection {
 
   DISALLOW_COPY_AND_ASSIGN(Connection);
 };
+
+std::ostream& operator<<(std::ostream& stream,
+                         const Connection::Status& status);
 
 }  // namespace cryptauth
 

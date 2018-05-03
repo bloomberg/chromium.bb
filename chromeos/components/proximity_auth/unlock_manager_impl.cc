@@ -151,8 +151,6 @@ void UnlockManagerImpl::SetRemoteDeviceLifeCycle(
 
 void UnlockManagerImpl::OnLifeCycleStateChanged() {
   RemoteDeviceLifeCycle::State state = life_cycle_->GetState();
-  PA_LOG(INFO) << "RemoteDeviceLifeCycle state changed: "
-               << static_cast<int>(state);
 
   remote_screenlock_state_.reset();
   if (state == RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED) {
@@ -419,9 +417,8 @@ void UnlockManagerImpl::UpdateLockScreen() {
   if (screenlock_state_ == new_state)
     return;
 
-  PA_LOG(INFO) << "Updating screenlock state from "
-               << static_cast<int>(screenlock_state_) << " to "
-               << static_cast<int>(new_state);
+  PA_LOG(INFO) << "Updating screenlock state from " << screenlock_state_
+               << " to " << new_state;
   proximity_auth_client_->UpdateScreenlockState(new_state);
   screenlock_state_ = new_state;
 }

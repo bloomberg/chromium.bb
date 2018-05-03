@@ -207,8 +207,6 @@ void BluetoothLowEnergyWeaveClientConnection::SetConnectionLatency() {
     return;
   }
 
-  PA_LOG(INFO) << "Setting connection latency for " << GetDeviceInfoLogString()
-               << ".";
   bluetooth_device->SetConnectionLatency(
       device::BluetoothDevice::ConnectionLatency::CONNECTION_LATENCY_LOW,
       base::Bind(&BluetoothLowEnergyWeaveClientConnection::CreateGattConnection,
