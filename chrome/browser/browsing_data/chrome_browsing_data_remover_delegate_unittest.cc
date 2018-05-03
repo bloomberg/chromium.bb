@@ -26,6 +26,8 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
+#include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_core_service_factory.h"
@@ -571,6 +573,13 @@ std::unique_ptr<KeyedService> TestingDomainReliabilityServiceFactoryFunction(
 
   data->attached = true;
   return base::WrapUnique(data->service);
+}
+
+std::unique_ptr<KeyedService> BuildProtocolHandlerRegistry(
+    content::BrowserContext* context) {
+  Profile* profile = Profile::FromBrowserContext(context);
+  return std::make_unique<ProtocolHandlerRegistry>(
+      profile, new ProtocolHandlerRegistry::Delegate());
 }
 
 class ClearDomainReliabilityTester {
@@ -1148,6 +1157,9 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
       : profile_(new BrowsingDataRemoverTestingProfile()),
         clear_domain_reliability_tester_(profile_.get()) {
     remover_ = content::BrowserContext::GetBrowsingDataRemover(profile_.get());
+
+    ProtocolHandlerRegistryFactory::GetInstance()->SetTestingFactory(
+        profile_.get(), &BuildProtocolHandlerRegistry);
 
 #if defined(OS_ANDROID)
     static_cast<ChromeBrowsingDataRemoverDelegate*>(
@@ -2066,6 +2078,40 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveContentSettings) {
             host_settings[0].primary_pattern)
       << host_settings[0].primary_pattern.ToString();
   EXPECT_EQ(CONTENT_SETTING_ALLOW, host_settings[0].GetContentSetting());
+}
+
+TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveProtocolHandler) {
+  auto* registry =
+      ProtocolHandlerRegistryFactory::GetForBrowserContext(GetProfile());
+  base::Time one_hour_ago = base::Time::Now() - base::TimeDelta::FromHours(1);
+  base::Time yesterday = base::Time::Now() - base::TimeDelta::FromDays(1);
+  registry->OnAcceptRegisterProtocolHandler(
+      ProtocolHandler::CreateProtocolHandler("test1", kOrigin1));
+  registry->OnAcceptRegisterProtocolHandler(
+      ProtocolHandler("test2", kOrigin1, yesterday));
+  EXPECT_TRUE(registry->IsHandledProtocol("test1"));
+  EXPECT_TRUE(registry->IsHandledProtocol("test2"));
+  EXPECT_EQ(
+      2U,
+      registry->GetUserDefinedHandlers(base::Time(), base::Time::Max()).size());
+  // Delete last hour.
+  BlockUntilBrowsingDataRemoved(
+      one_hour_ago, base::Time::Max(),
+      ChromeBrowsingDataRemoverDelegate::DATA_TYPE_CONTENT_SETTINGS, false);
+  EXPECT_FALSE(registry->IsHandledProtocol("test1"));
+  EXPECT_TRUE(registry->IsHandledProtocol("test2"));
+  EXPECT_EQ(
+      1U,
+      registry->GetUserDefinedHandlers(base::Time(), base::Time::Max()).size());
+  // Delete everything.
+  BlockUntilBrowsingDataRemoved(
+      base::Time(), base::Time::Max(),
+      ChromeBrowsingDataRemoverDelegate::DATA_TYPE_CONTENT_SETTINGS, false);
+  EXPECT_FALSE(registry->IsHandledProtocol("test1"));
+  EXPECT_FALSE(registry->IsHandledProtocol("test2"));
+  EXPECT_EQ(
+      0U,
+      registry->GetUserDefinedHandlers(base::Time(), base::Time::Max()).size());
 }
 
 TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveSelectedClientHints) {

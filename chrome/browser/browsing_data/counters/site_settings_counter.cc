@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/browsing_data/content/counters/site_settings_counter.h"
+#include "chrome/browser/browsing_data/counters/site_settings_counter.h"
 
 #include <set>
 #include "build/build_config.h"
+#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
@@ -14,12 +15,13 @@
 #include "content/public/browser/host_zoom_map.h"
 #endif
 
-namespace browsing_data {
-
-SiteSettingsCounter::SiteSettingsCounter(HostContentSettingsMap* map,
-                                         content::HostZoomMap* zoom_map)
-    : map_(map), zoom_map_(zoom_map) {
+SiteSettingsCounter::SiteSettingsCounter(
+    HostContentSettingsMap* map,
+    content::HostZoomMap* zoom_map,
+    ProtocolHandlerRegistry* handler_registry)
+    : map_(map), zoom_map_(zoom_map), handler_registry_(handler_registry) {
   DCHECK(map_);
+  DCHECK(handler_registry_);
 #if !defined(OS_ANDROID)
   DCHECK(zoom_map_);
 #else
@@ -40,6 +42,7 @@ void SiteSettingsCounter::Count() {
   int empty_host_pattern = 0;
   base::Time period_start = GetPeriodStart();
   base::Time period_end = GetPeriodEnd();
+
   auto* registry = content_settings::ContentSettingsRegistry::GetInstance();
   for (const content_settings::ContentSettingsInfo* info : *registry) {
     ContentSettingsType type = info->website_settings_info()->type();
@@ -75,7 +78,10 @@ void SiteSettingsCounter::Count() {
   }
 #endif
 
+  auto handlers =
+      handler_registry_->GetUserDefinedHandlers(period_start, period_end);
+  for (const ProtocolHandler& handler : handlers)
+    hosts.insert(handler.url().host());
+
   ReportResult(hosts.size() + empty_host_pattern);
 }
-
-}  // namespace browsing_data

@@ -159,6 +159,15 @@ class ProtocolHandlerRegistry : public KeyedService {
   // Get the list of protocol handlers for the given scheme.
   ProtocolHandlerList GetHandlersFor(const std::string& scheme) const;
 
+  // Get a list of protocol handlers registered in [begin, end).
+  // Does not include predefined or policy installed handlers.
+  ProtocolHandlerList GetUserDefinedHandlers(base::Time begin,
+                                             base::Time end) const;
+
+  // Clear all protocol handlers registered in [begin, end).
+  // Does not delete predefined or policy installed handlers.
+  void ClearUserDefinedHandlers(base::Time begin, base::Time end);
+
   // Get the list of ignored protocol handlers.
   ProtocolHandlerList GetIgnoredHandlers();
 
@@ -283,6 +292,16 @@ class ProtocolHandlerRegistry : public KeyedService {
   void RegisterProtocolHandlersFromPref(const char* pref_name,
                                         const HandlerSource source);
 
+  // Get all handlers with a timestamp in [begin,end) from |handlers|.
+  ProtocolHandlerList GetHandlersBetween(
+      const ProtocolHandlerMultiMap& handlers,
+      base::Time begin,
+      base::Time end) const;
+
+  // Get all ignored handlers with a timestamp in [begin,end).
+  ProtocolHandlerList GetUserIgnoredHandlers(base::Time begin,
+                                             base::Time end) const;
+
   // Get the DictionaryValues stored under the given pref name that are valid
   // ProtocolHandler values.
   std::vector<const base::DictionaryValue*> GetHandlersFromPref(
@@ -336,6 +355,9 @@ class ProtocolHandlerRegistry : public KeyedService {
   // one of the user or policy lists.
   ProtocolHandlerList user_ignored_protocol_handlers_;
   ProtocolHandlerList policy_ignored_protocol_handlers_;
+
+  // A list of handlers that were preinstalled.
+  ProtocolHandlerList predefined_protocol_handlers_;
 
   // Protocol handlers that are the defaults for a given protocol.
   ProtocolHandlerMap default_handlers_;

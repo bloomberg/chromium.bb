@@ -6,21 +6,22 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/value_conversions.h"
 #include "chrome/grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
 
 ProtocolHandler::ProtocolHandler(const std::string& protocol,
-                                 const GURL& url)
-    : protocol_(protocol),
-      url_(url) {
-}
+                                 const GURL& url,
+                                 base::Time last_modified)
+    : protocol_(base::ToLowerASCII(protocol)),
+      url_(url),
+      last_modified_(last_modified) {}
 
 ProtocolHandler ProtocolHandler::CreateProtocolHandler(
     const std::string& protocol,
     const GURL& url) {
-  std::string lower_protocol = base::ToLowerASCII(protocol);
-  return ProtocolHandler(lower_protocol, url);
+  return ProtocolHandler(protocol, url, base::Time::Now());
 }
 
 ProtocolHandler::ProtocolHandler() {
@@ -28,6 +29,7 @@ ProtocolHandler::ProtocolHandler() {
 
 bool ProtocolHandler::IsValidDict(const base::DictionaryValue* value) {
   // Note that "title" parameter is ignored.
+  // The |last_modified| field is optional as it was introduced in M68.
   return value->HasKey("protocol") && value->HasKey("url");
 }
 
@@ -47,9 +49,17 @@ ProtocolHandler ProtocolHandler::CreateProtocolHandler(
     return EmptyProtocolHandler();
   }
   std::string protocol, url;
+  // |time| defaults to the beginning of time if it is not specified.
+  base::Time time;
   value->GetString("protocol", &protocol);
   value->GetString("url", &url);
-  return ProtocolHandler::CreateProtocolHandler(protocol, GURL(url));
+  const base::Value* time_value = value->FindKey("last_modified");
+  if (time_value) {
+    base::TimeDelta time_delta;
+    if (base::GetValueAsTimeDelta(*time_value, &time_delta))
+      time = base::Time::FromDeltaSinceWindowsEpoch(time_delta);
+  }
+  return ProtocolHandler(protocol, GURL(url), time);
 }
 
 GURL ProtocolHandler::TranslateUrl(const GURL& url) const {
@@ -64,6 +74,8 @@ std::unique_ptr<base::DictionaryValue> ProtocolHandler::Encode() const {
   auto d = std::make_unique<base::DictionaryValue>();
   d->SetString("protocol", protocol_);
   d->SetString("url", url_.spec());
+  d->Set("last_modified",
+         base::CreateTimeDeltaValue(last_modified_.ToDeltaSinceWindowsEpoch()));
   return d;
 }
 
