@@ -9,7 +9,7 @@
 namespace blink {
 
 WebURLError::WebURLError(int reason, const WebURL& url)
-    : reason_(reason), extended_reason_(0), url_(url) {
+    : reason_(reason), url_(url) {
   DCHECK_NE(reason_, 0);
 }
 
