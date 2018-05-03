@@ -44,7 +44,9 @@
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
-#include "net/url_request/test_url_fetcher_factory.h"
+#include "content/public/common/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -204,16 +206,20 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
 // Chrome supplies the info configured in SetAccountAndProfile() method.
 IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, SuccessfulBackgroundFetch) {
   SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
-  net::FakeURLFetcherFactory factory(nullptr);
-  factory.SetFakeResponse(
-      GURL(arc::kAuthTokenExchangeEndPoint),
-      "{ \"token\" : \"" + std::string(kFakeAuthCode) + "\" }", net::HTTP_OK,
-      net::URLRequestStatus::SUCCESS);
+  network::TestURLLoaderFactory test_url_loader_factory;
+  test_url_loader_factory.AddResponse(
+      arc::kAuthTokenExchangeEndPoint,
+      "{ \"token\" : \"" + std::string(kFakeAuthCode) + "\" }");
 
   FakeAuthInstance auth_instance;
   ArcAuthService* auth_service =
       ArcAuthService::GetForBrowserContext(profile());
   ASSERT_TRUE(auth_service);
+
+  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory =
+      base::MakeRefCounted<content::WeakWrapperSharedURLLoaderFactory>(
+          &test_url_loader_factory);
+  auth_service->SetURLLoaderFactoryForTesting(test_shared_loader_factory);
 
   ArcBridgeService* arc_bridge_service =
       ArcServiceManager::Get()->arc_bridge_service();
@@ -258,16 +264,20 @@ class ArcAuthServiceChildAccountTest : public ArcAuthServiceTest {
 IN_PROC_BROWSER_TEST_F(ArcAuthServiceChildAccountTest, ChildAccountFetch) {
   SetAccountAndProfile(user_manager::USER_TYPE_CHILD);
   EXPECT_TRUE(profile()->IsChild());
-  net::FakeURLFetcherFactory factory(nullptr);
-  factory.SetFakeResponse(
-      GURL(arc::kAuthTokenExchangeEndPoint),
-      "{ \"token\" : \"" + std::string(kFakeAuthCode) + "\" }", net::HTTP_OK,
-      net::URLRequestStatus::SUCCESS);
+  network::TestURLLoaderFactory test_url_loader_factory;
+  test_url_loader_factory.AddResponse(
+      arc::kAuthTokenExchangeEndPoint,
+      "{ \"token\" : \"" + std::string(kFakeAuthCode) + "\" }");
 
   FakeAuthInstance auth_instance;
   ArcAuthService* auth_service =
       ArcAuthService::GetForBrowserContext(profile());
   ASSERT_TRUE(auth_service);
+
+  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory =
+      base::MakeRefCounted<content::WeakWrapperSharedURLLoaderFactory>(
+          &test_url_loader_factory);
+  auth_service->SetURLLoaderFactoryForTesting(test_shared_loader_factory);
 
   ArcBridgeService* arc_bridge_service =
       ArcServiceManager::Get()->arc_bridge_service();
