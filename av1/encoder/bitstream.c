@@ -1389,8 +1389,7 @@ static void write_inter_txb_coeff(AV1_COMMON *const cm, MACROBLOCK *const x,
 
   const BLOCK_SIZE plane_bsize = get_plane_block_size(bsizec, pd);
 
-  TX_SIZE max_tx_size = get_vartx_max_txsize(
-      xd, plane_bsize, pd->subsampling_x || pd->subsampling_y);
+  const TX_SIZE max_tx_size = get_vartx_max_txsize(xd, plane_bsize, plane);
   const int step =
       tx_size_wide_unit[max_tx_size] * tx_size_high_unit[max_tx_size];
   const int bkw = tx_size_wide_unit[max_tx_size];

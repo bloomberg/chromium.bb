@@ -4566,8 +4566,7 @@ int inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *rd_stats,
     const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
     const int mi_width = mi_size_wide[plane_bsize];
     const int mi_height = mi_size_high[plane_bsize];
-    const TX_SIZE max_tx_size = get_vartx_max_txsize(
-        xd, plane_bsize, pd->subsampling_x || pd->subsampling_y);
+    const TX_SIZE max_tx_size = get_vartx_max_txsize(xd, plane_bsize, 0);
     const int bh = tx_size_high_unit[max_tx_size];
     const int bw = tx_size_wide_unit[max_tx_size];
     const int init_depth = get_search_init_depth(mi_width, mi_height, &cpi->sf);
@@ -5052,8 +5051,7 @@ int inter_block_uvrd(const AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *rd_stats,
       const int mi_width = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
       const int mi_height =
           block_size_high[plane_bsize] >> tx_size_high_log2[0];
-      TX_SIZE max_tx_size = get_vartx_max_txsize(
-          xd, plane_bsize, pd->subsampling_x || pd->subsampling_y);
+      const TX_SIZE max_tx_size = get_vartx_max_txsize(xd, plane_bsize, plane);
       const int bh = tx_size_high_unit[max_tx_size];
       const int bw = tx_size_wide_unit[max_tx_size];
       int idx, idy;

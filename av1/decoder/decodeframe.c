@@ -471,8 +471,8 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
                 scale_chroma_bsize(bsize, pd->subsampling_x, pd->subsampling_y);
             const BLOCK_SIZE plane_bsize = get_plane_block_size(bsizec, pd);
 
-            TX_SIZE max_tx_size = get_vartx_max_txsize(
-                xd, plane_bsize, pd->subsampling_x || pd->subsampling_y);
+            const TX_SIZE max_tx_size =
+                get_vartx_max_txsize(xd, plane_bsize, plane);
             const int bh_var_tx = tx_size_high_unit[max_tx_size];
             const int bw_var_tx = tx_size_wide_unit[max_tx_size];
             int block = 0;
