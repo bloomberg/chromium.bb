@@ -199,17 +199,6 @@ class IOThread : public content::BrowserThreadDelegate {
   // Un-registers the |observer|.
   void UnregisterSTHObserver(certificate_transparency::STHObserver* observer);
 
-  // Returns true if the indicated proxy resolution features are
-  // enabled. These features are controlled through
-  // preferences/policy/commandline.
-  //
-  // For a description of what these features are, and how they are
-  // configured, see the comments in pref_names.cc for
-  // |kQuickCheckEnabled| and |kPacHttpsUrlStrippingEnabled
-  // respectively.
-  bool WpadQuickCheckEnabled() const;
-  bool PacHttpsUrlStrippingEnabled() const;
-
   // Configures |builder|'s ProxyResolutionService based on prefs and policies.
   void SetUpProxyService(network::URLRequestContextBuilderMojo* builder) const;
 
@@ -274,10 +263,6 @@ class IOThread : public content::BrowserThreadDelegate {
   BooleanPrefMember system_enable_referrers_;
 
   BooleanPrefMember dns_client_enabled_;
-
-  BooleanPrefMember quick_check_enabled_;
-
-  BooleanPrefMember pac_https_url_stripping_enabled_;
 
   StringListPrefMember dns_over_https_servers_;
 

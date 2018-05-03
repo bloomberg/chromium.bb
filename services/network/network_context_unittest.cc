@@ -1158,6 +1158,59 @@ TEST_F(NetworkContextTest, NoInitialProxyConfig) {
   EXPECT_EQ("foopy", proxy_info.proxy_server().host_port_pair().host());
 }
 
+TEST_F(NetworkContextTest, PacQuickCheck) {
+  // Check the default value.
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+  EXPECT_TRUE(network_context->url_request_context()
+                  ->proxy_resolution_service()
+                  ->quick_check_enabled_for_testing());
+
+  // Explicitly enable.
+  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
+  context_params->pac_quick_check_enabled = true;
+  network_context = CreateContextWithParams(std::move(context_params));
+  EXPECT_TRUE(network_context->url_request_context()
+                  ->proxy_resolution_service()
+                  ->quick_check_enabled_for_testing());
+
+  // Explicitly disable.
+  context_params = CreateContextParams();
+  context_params->pac_quick_check_enabled = false;
+  network_context = CreateContextWithParams(std::move(context_params));
+  EXPECT_FALSE(network_context->url_request_context()
+                   ->proxy_resolution_service()
+                   ->quick_check_enabled_for_testing());
+}
+
+TEST_F(NetworkContextTest, DangerouslyAllowPacAccessToSecureURLs) {
+  // Check the default value.
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+  EXPECT_EQ(net::ProxyResolutionService::SanitizeUrlPolicy::SAFE,
+            network_context->url_request_context()
+                ->proxy_resolution_service()
+                ->sanitize_url_policy_for_testing());
+
+  // Explicitly disable.
+  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
+  context_params->dangerously_allow_pac_access_to_secure_urls = false;
+  network_context = CreateContextWithParams(std::move(context_params));
+  EXPECT_EQ(net::ProxyResolutionService::SanitizeUrlPolicy::SAFE,
+            network_context->url_request_context()
+                ->proxy_resolution_service()
+                ->sanitize_url_policy_for_testing());
+
+  // Explicitly enable.
+  context_params = CreateContextParams();
+  context_params->dangerously_allow_pac_access_to_secure_urls = true;
+  network_context = CreateContextWithParams(std::move(context_params));
+  EXPECT_EQ(net::ProxyResolutionService::SanitizeUrlPolicy::UNSAFE,
+            network_context->url_request_context()
+                ->proxy_resolution_service()
+                ->sanitize_url_policy_for_testing());
+}
+
 class TestProxyConfigLazyPoller : public mojom::ProxyConfigPollerClient {
  public:
   TestProxyConfigLazyPoller() : binding_(this) {}
