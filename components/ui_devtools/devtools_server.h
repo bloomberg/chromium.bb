@@ -44,11 +44,10 @@ class UI_DEVTOOLS_EXPORT UiDevToolsServer
   int port() const { return port_; }
 
  private:
-  UiDevToolsServer(network::mojom::NetworkContext* network_context,
-                   const char* enable_devtools_flag,
-                   int default_port);
+  UiDevToolsServer(const char* enable_devtools_flag, int default_port);
 
-  void Start(const std::string& address_string);
+  void Start(network::mojom::NetworkContext* network_context,
+             const std::string& address_string);
   void MakeServer(network::mojom::TCPServerSocketPtr server_socket,
                   int result,
                   const base::Optional<net::IPEndPoint>& local_addr);
@@ -70,7 +69,6 @@ class UI_DEVTOOLS_EXPORT UiDevToolsServer
   ConnectionsMap connections_;
 
   std::unique_ptr<network::server::HttpServer> server_;
-  network::mojom::NetworkContext* network_context_;
 
   // The port the devtools server listens on
   const int port_;

@@ -67,12 +67,9 @@ constexpr net::NetworkTrafficAnnotationTag kUIDevtoolsServer =
 
 UiDevToolsServer* UiDevToolsServer::devtools_server_ = nullptr;
 
-UiDevToolsServer::UiDevToolsServer(
-    network::mojom::NetworkContext* network_context,
-    const char* enable_devtools_flag,
-    int default_port)
-    : network_context_(network_context),
-      port_(GetUiDevToolsPort(enable_devtools_flag, default_port)),
+UiDevToolsServer::UiDevToolsServer(const char* enable_devtools_flag,
+                                   int default_port)
+    : port_(GetUiDevToolsPort(enable_devtools_flag, default_port)),
       weak_ptr_factory_(this) {
   DCHECK(!devtools_server_);
   devtools_server_ = this;
@@ -90,9 +87,8 @@ std::unique_ptr<UiDevToolsServer> UiDevToolsServer::Create(
   std::unique_ptr<UiDevToolsServer> server;
   if (IsDevToolsEnabled(enable_devtools_flag) && !devtools_server_) {
     // TODO(mhashmi): Change port if more than one inspectable clients
-    server.reset(new UiDevToolsServer(network_context, enable_devtools_flag,
-                                      default_port));
-    server->Start("0.0.0.0");
+    server.reset(new UiDevToolsServer(enable_devtools_flag, default_port));
+    server->Start(network_context, "0.0.0.0");
   }
   return server;
 }
@@ -125,7 +121,8 @@ void UiDevToolsServer::SendOverWebSocket(int connection_id,
   server_->SendOverWebSocket(connection_id, message, kUIDevtoolsServer);
 }
 
-void UiDevToolsServer::Start(const std::string& address_string) {
+void UiDevToolsServer::Start(network::mojom::NetworkContext* network_context,
+                             const std::string& address_string) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(devtools_server_sequence_);
   DCHECK(!server_);
 
@@ -136,7 +133,7 @@ void UiDevToolsServer::Start(const std::string& address_string) {
     return;
 
   constexpr int kBacklog = 1;
-  network_context_->CreateTCPServerSocket(
+  network_context->CreateTCPServerSocket(
       net::IPEndPoint(address, port_), kBacklog,
       net::MutableNetworkTrafficAnnotationTag(kUIDevtoolsServer),
       mojo::MakeRequest(&server_socket),
