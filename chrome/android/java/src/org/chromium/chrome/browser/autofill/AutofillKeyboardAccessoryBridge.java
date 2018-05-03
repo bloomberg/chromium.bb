@@ -119,10 +119,7 @@ public class AutofillKeyboardAccessoryBridge
     @CalledByNative
     private void show(AutofillSuggestion[] suggestions, boolean isRtl) {
         if (mAutofillSuggestions != null) mAutofillSuggestions.setSuggestions(suggestions, isRtl);
-        if (mKeyboardAccessory != null) {
-            mKeyboardAccessory.setSuggestions(mAutofillSuggestions);
-            mKeyboardAccessory.show();
-        }
+        if (mKeyboardAccessory != null) mKeyboardAccessory.setSuggestions(mAutofillSuggestions);
     }
 
     // Helper methods for AutofillSuggestion. These are copied from AutofillPopupBridge (which

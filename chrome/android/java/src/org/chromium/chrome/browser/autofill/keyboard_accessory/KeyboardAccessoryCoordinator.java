@@ -46,13 +46,6 @@ public class KeyboardAccessoryCoordinator {
     }
 
     /**
-     * Show the keyboard accessory. Independent from the keyboard.
-     */
-    public void show() {
-        mMediator.show();
-    }
-
-    /**
      * A {@link KeyboardAccessoryData.Tab} passed into this function will be represented as item at
      * the start of the accessory. It is meant to trigger various bottom sheets.
      * @param tab The tab which contains representation data and links back to a bottom sheet.
