@@ -114,7 +114,7 @@ class DISPLAY_EXPORT ScreenWin : public Screen,
 
   // Set a callback to use to query the status of HDR. This callback will be
   // called when the status of HDR may have changed.
-  using RequestHDRStatusCallback = base::Callback<void()>;
+  using RequestHDRStatusCallback = base::RepeatingCallback<void()>;
   static void SetRequestHDRStatusCallback(
       RequestHDRStatusCallback request_hdr_status_callback);
 

@@ -457,13 +457,13 @@ class HDRProxy {
  public:
   static void Initialize() {
     display::win::ScreenWin::SetRequestHDRStatusCallback(
-        base::Bind(&HDRProxy::RequestHDRStatus));
+        base::BindRepeating(&HDRProxy::RequestHDRStatus));
   }
 
   static void RequestHDRStatus() {
     // The request must be sent to the GPU process from the IO thread.
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::Bind(&HDRProxy::RequestOnIOThread));
+                            base::BindOnce(&HDRProxy::RequestOnIOThread));
   }
 
  private:
@@ -472,7 +472,7 @@ class HDRProxy {
         GpuProcessHost::Get(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED, false);
     if (gpu_process_host) {
       gpu_process_host->RequestHDRStatus(
-          base::Bind(&HDRProxy::GotResultOnIOThread));
+          base::BindRepeating(&HDRProxy::GotResultOnIOThread));
     } else {
       bool hdr_enabled = false;
       GotResultOnIOThread(hdr_enabled);
@@ -480,7 +480,7 @@ class HDRProxy {
   }
   static void GotResultOnIOThread(bool hdr_enabled) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(&HDRProxy::GotResult, hdr_enabled));
+                            base::BindOnce(&HDRProxy::GotResult, hdr_enabled));
   }
   static void GotResult(bool hdr_enabled) {
     display::win::ScreenWin::SetHDREnabled(hdr_enabled);
