@@ -104,6 +104,8 @@ void RegisterAutofillPrefs(user_prefs::PrefRegistrySyncable* registry) {
                                 atoi(version_info::GetVersionNumber().c_str()));
   registry->RegisterDoublePref(autofill::prefs::kAutofillBillingCustomerNumber,
                                0.0);
+  registry->RegisterBooleanPref(autofill::prefs::kAutofillOrphanRowsRemoved,
+                                true);
 }
 
 void RunAndSignal(base::OnceClosure cb, WaitableEvent* event) {

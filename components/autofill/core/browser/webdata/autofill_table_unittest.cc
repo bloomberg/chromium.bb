@@ -2437,4 +2437,153 @@ TEST_F(AutofillTableTest, AutofillCorruptModelTypeState) {
   EXPECT_FALSE(table_->GetAllSyncMetadata(syncer::AUTOFILL, &metadata_batch));
 }
 
+TEST_F(AutofillTableTest, RemoveOrphanAutofillTableRows) {
+  // Populate the different tables.
+  ASSERT_TRUE(db_->GetSQLConnection()->Execute(
+      // Add a profile in all the tables
+      "INSERT INTO autofill_profiles (guid, date_modified) "
+      "VALUES('00000000-0000-0000-0000-000000000000', 11);"
+      "INSERT INTO autofill_profile_names (guid, full_name) "
+      "VALUES('00000000-0000-0000-0000-000000000000', 'John Jones');"
+      "INSERT INTO autofill_profile_emails (guid, email) "
+      "VALUES('00000000-0000-0000-0000-000000000000', 'john@jones.com');"
+      "INSERT INTO autofill_profile_phones (guid, number) "
+      "VALUES('00000000-0000-0000-0000-000000000000', '111-111-1111');"
+
+      // Add a profile in profiles, names and emails tables.
+      "INSERT INTO autofill_profiles (guid, date_modified) "
+      "VALUES('00000000-0000-0000-0000-000000000001', 21);"
+      "INSERT INTO autofill_profile_names (guid, full_name) "
+      "VALUES('00000000-0000-0000-0000-000000000001', 'John Jones2');"
+      "INSERT INTO autofill_profile_emails (guid, email) "
+      "VALUES('00000000-0000-0000-0000-000000000001', 'john@jones2.com');"
+
+      // Add a profile in profiles, names and phones tables.
+      "INSERT INTO autofill_profiles (guid, date_modified) "
+      "VALUES('00000000-0000-0000-0000-000000000002', 31);"
+      "INSERT INTO autofill_profile_names (guid, full_name) "
+      "VALUES('00000000-0000-0000-0000-000000000002', 'John Jones3');"
+      "INSERT INTO autofill_profile_phones (guid, number) "
+      "VALUES('00000000-0000-0000-0000-000000000002', '333-333-3333');"
+
+      // Add a profile in profiles, emails and phones tables.
+      "INSERT INTO autofill_profiles (guid, date_modified) "
+      "VALUES('00000000-0000-0000-0000-000000000003', 41);"
+      "INSERT INTO autofill_profile_emails (guid, email) "
+      "VALUES('00000000-0000-0000-0000-000000000003', 'john@jones4.com');"
+      "INSERT INTO autofill_profile_phones (guid, number) "
+      "VALUES('00000000-0000-0000-0000-000000000003', '444-444-4444');"
+
+      // Add a orphan profile in names, emails and phones tables.
+      "INSERT INTO autofill_profile_names (guid, full_name) "
+      "VALUES('00000000-0000-0000-0000-000000000004', 'John Jones5');"
+      "INSERT INTO autofill_profile_emails (guid, email) "
+      "VALUES('00000000-0000-0000-0000-000000000004', 'john@jones5.com');"
+      "INSERT INTO autofill_profile_phones (guid, number) "
+      "VALUES('00000000-0000-0000-0000-000000000004', '555-555-5555');"
+
+      // Add a orphan profile in names and emails tables.
+      "INSERT INTO autofill_profile_names (guid, full_name) "
+      "VALUES('00000000-0000-0000-0000-000000000005', 'John Jones6');"
+      "INSERT INTO autofill_profile_emails (guid, email) "
+      "VALUES('00000000-0000-0000-0000-000000000005', 'john@jones6.com');"
+
+      // Add a orphan profile in names and phones tables.
+      "INSERT INTO autofill_profile_names (guid, full_name) "
+      "VALUES('00000000-0000-0000-0000-000000000006', 'John Jones7');"
+      "INSERT INTO autofill_profile_phones (guid, number) "
+      "VALUES('00000000-0000-0000-0000-000000000006', '777-777-7777');"
+
+      // Add a orphan profile in emails and phones tables.
+      "INSERT INTO autofill_profile_emails (guid, email) "
+      "VALUES('00000000-0000-0000-0000-000000000007', 'john@jones8.com');"
+      "INSERT INTO autofill_profile_phones (guid, number) "
+      "VALUES('00000000-0000-0000-0000-000000000007', '999-999-9999');"
+
+      // Add a orphan profile in the names table.
+      "INSERT INTO autofill_profile_names (guid, full_name) "
+      "VALUES('00000000-0000-0000-0000-000000000008', 'John Jones9');"
+
+      // Add a orphan profile in the emails table.
+      "INSERT INTO autofill_profile_emails (guid, email) "
+      "VALUES('00000000-0000-0000-0000-000000000009', 'john@jones10.com');"
+
+      // Add a orphan profile in the phones table.
+      "INSERT INTO autofill_profile_phones (guid, number) "
+      "VALUES('00000000-0000-0000-0000-000000000010', '101-010-1010');"));
+
+  ASSERT_TRUE(table_->RemoveOrphanAutofillTableRows());
+
+  // Make sure that all the rows in the autofill_profiles table are still
+  // present.
+  sql::Statement s_autofill_profiles(
+      db_->GetSQLConnection()->GetUniqueStatement(
+          "SELECT guid FROM autofill_profiles"));
+  ASSERT_TRUE(s_autofill_profiles.is_valid());
+  ASSERT_TRUE(s_autofill_profiles.Step());
+  EXPECT_EQ("00000000-0000-0000-0000-000000000000",
+            s_autofill_profiles.ColumnString(0));
+  ASSERT_TRUE(s_autofill_profiles.Step());
+  EXPECT_EQ("00000000-0000-0000-0000-000000000001",
+            s_autofill_profiles.ColumnString(0));
+  ASSERT_TRUE(s_autofill_profiles.Step());
+  EXPECT_EQ("00000000-0000-0000-0000-000000000002",
+            s_autofill_profiles.ColumnString(0));
+  ASSERT_TRUE(s_autofill_profiles.Step());
+  EXPECT_EQ("00000000-0000-0000-0000-000000000003",
+            s_autofill_profiles.ColumnString(0));
+  EXPECT_FALSE(s_autofill_profiles.Step());
+
+  // Make sure that only the rows present in the autofill_profiles table are
+  // present in the autofill_profile_names table.
+  sql::Statement s_autofill_profile_names(
+      db_->GetSQLConnection()->GetUniqueStatement(
+          "SELECT guid FROM autofill_profile_names"));
+  ASSERT_TRUE(s_autofill_profile_names.is_valid());
+  ASSERT_TRUE(s_autofill_profile_names.Step());
+  EXPECT_EQ("00000000-0000-0000-0000-000000000000",
+            s_autofill_profile_names.ColumnString(0));
+  ASSERT_TRUE(s_autofill_profile_names.Step());
+  EXPECT_EQ("00000000-0000-0000-0000-000000000001",
+            s_autofill_profile_names.ColumnString(0));
+  ASSERT_TRUE(s_autofill_profile_names.Step());
+  EXPECT_EQ("00000000-0000-0000-0000-000000000002",
+            s_autofill_profile_names.ColumnString(0));
+  EXPECT_FALSE(s_autofill_profile_names.Step());
+
+  // Make sure that only the rows present in the autofill_profiles table are
+  // present in the autofill_profile_emails table.
+  sql::Statement s_autofill_profile_emails(
+      db_->GetSQLConnection()->GetUniqueStatement(
+          "SELECT guid FROM autofill_profile_emails"));
+  ASSERT_TRUE(s_autofill_profile_emails.is_valid());
+  ASSERT_TRUE(s_autofill_profile_emails.Step());
+  EXPECT_EQ("00000000-0000-0000-0000-000000000000",
+            s_autofill_profile_emails.ColumnString(0));
+  ASSERT_TRUE(s_autofill_profile_emails.Step());
+  EXPECT_EQ("00000000-0000-0000-0000-000000000001",
+            s_autofill_profile_emails.ColumnString(0));
+  ASSERT_TRUE(s_autofill_profile_emails.Step());
+  EXPECT_EQ("00000000-0000-0000-0000-000000000003",
+            s_autofill_profile_emails.ColumnString(0));
+  EXPECT_FALSE(s_autofill_profile_emails.Step());
+
+  // Make sure that only the rows present in the autofill_profiles table are
+  // present in the autofill_profile_phones table.
+  sql::Statement s_autofill_profile_phones(
+      db_->GetSQLConnection()->GetUniqueStatement(
+          "SELECT guid FROM autofill_profile_phones"));
+  ASSERT_TRUE(s_autofill_profile_phones.is_valid());
+  ASSERT_TRUE(s_autofill_profile_phones.Step());
+  EXPECT_EQ("00000000-0000-0000-0000-000000000000",
+            s_autofill_profile_phones.ColumnString(0));
+  ASSERT_TRUE(s_autofill_profile_phones.Step());
+  EXPECT_EQ("00000000-0000-0000-0000-000000000002",
+            s_autofill_profile_phones.ColumnString(0));
+  ASSERT_TRUE(s_autofill_profile_phones.Step());
+  EXPECT_EQ("00000000-0000-0000-0000-000000000003",
+            s_autofill_profile_phones.ColumnString(0));
+  EXPECT_FALSE(s_autofill_profile_phones.Step());
+}
+
 }  // namespace autofill

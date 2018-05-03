@@ -126,6 +126,10 @@ class AutofillWebData {
   // the database.
   virtual void RemoveOriginURLsModifiedBetween(
       const base::Time& delete_begin, const base::Time& delete_end) = 0;
+
+  // Removes the orphan rows in the autofill_profile_names,
+  // autofill_profile_emails and autofill_profile_phones tables.
+  virtual void RemoveOrphanAutofillTableRows() = 0;
 };
 
 }  // namespace autofill

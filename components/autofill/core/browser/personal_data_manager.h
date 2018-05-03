@@ -504,6 +504,10 @@ class PersonalDataManager : public KeyedService,
   // whether the routine was run.
   void ApplyProfileUseDatesFix();
 
+  // Runs the routine that removes the orphan rows in the autofill tables if
+  // it's never been done.
+  void RemoveOrphanAutofillTableRows();
+
   // Applies the deduping routine once per major version if the feature is
   // enabled. Calls DedupeProfiles with the content of |web_profiles_| as a
   // parameter. Removes the profiles to delete from the database and updates the
@@ -582,15 +586,21 @@ class PersonalDataManager : public KeyedService,
   // If the AutofillCreateDataForTest feature is enabled, this helper creates
   // autofill address data that would otherwise be difficult to create
   // manually using the UI.
-  void CreateTestAddresses();
+  void MaybeCreateTestAddresses();
 
   // If the AutofillCreateDataForTest feature is enabled, this helper creates
   // autofill credit card data that would otherwise be difficult to create
   // manually using the UI.
-  void CreateTestCreditCards();
+  void MaybeCreateTestCreditCards();
 
   // Whether the server cards are enabled and should be suggested to the user.
   bool ShouldSuggestServerCards() const;
+
+  // Applies various fixes and cleanups on autofill addresses.
+  void ApplyAddressFixesAndCleanups();
+
+  // Applies various fixes and cleanups on autofill credit cards.
+  void ApplyCardFixesAndCleanups();
 
   const std::string app_locale_;
 
