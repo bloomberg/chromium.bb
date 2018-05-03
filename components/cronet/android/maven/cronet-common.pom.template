@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.chromium.net</groupId>
   <artifactId>cronet-common</artifactId>
-  <version>@MAJOR@.@MINOR@.@BUILD@.@PATCH@</version>
+  <version>@MAJOR@.@BUILD@.@PATCH@</version>
   <packaging>aar</packaging>
   <name>Cronet</name>
   <description>Cronet shared implementation. Not a complete implementation; apps and libraries should not depend on this target directly.</description>
@@ -13,4 +13,11 @@
       <version>${project.version}</version>
     </dependency>
   </dependencies>
+  <licenses>
+    <license>
+      <name>Chromium and built-in dependencies</name>
+      <url>https://storage.cloud.google.com/chromium-cronet/android/@MAJOR@.@MINOR@.@BUILD@.@PATCH@/Release/cronet/LICENSE</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
 </project>
