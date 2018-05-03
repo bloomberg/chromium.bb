@@ -16,13 +16,13 @@ namespace cryptauth {
 
 Connection::Connection(const RemoteDevice& remote_device)
     : remote_device_(remote_device),
-      status_(DISCONNECTED),
+      status_(Status::DISCONNECTED),
       is_sending_message_(false) {}
 
 Connection::~Connection() {}
 
 bool Connection::IsConnected() const {
-  return status_ == CONNECTED;
+  return status_ == Status::CONNECTED;
 }
 
 void Connection::SendMessage(std::unique_ptr<WireMessage> message) {

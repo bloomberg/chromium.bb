@@ -28,14 +28,14 @@ FakeConnection::~FakeConnection() {
 
 void FakeConnection::Connect() {
   if (should_auto_connect_) {
-    SetStatus(CONNECTED);
+    SetStatus(Status::CONNECTED);
   } else {
-    SetStatus(IN_PROGRESS);
+    SetStatus(Status::IN_PROGRESS);
   }
 }
 
 void FakeConnection::Disconnect() {
-  SetStatus(DISCONNECTED);
+  SetStatus(Status::DISCONNECTED);
 }
 
 std::string FakeConnection::GetDeviceAddress() {
@@ -56,12 +56,12 @@ void FakeConnection::RemoveObserver(ConnectionObserver* observer) {
 
 void FakeConnection::CompleteInProgressConnection(bool success) {
   DCHECK(!should_auto_connect_);
-  DCHECK(status() == IN_PROGRESS);
+  DCHECK(status() == Status::IN_PROGRESS);
 
   if (success) {
-    SetStatus(CONNECTED);
+    SetStatus(Status::CONNECTED);
   } else {
-    SetStatus(DISCONNECTED);
+    SetStatus(Status::DISCONNECTED);
   }
 }
 

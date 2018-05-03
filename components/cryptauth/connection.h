@@ -22,7 +22,7 @@ class WireMessage;
 // persistent bidirectional channel for sending and receiving wire messages.
 class Connection {
  public:
-  enum Status {
+  enum class Status {
     DISCONNECTED,
     IN_PROGRESS,
     CONNECTED,

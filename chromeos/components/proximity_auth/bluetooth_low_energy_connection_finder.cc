@@ -251,7 +251,7 @@ void BluetoothLowEnergyConnectionFinder::OnConnectionStatusChanged(
         FROM_HERE,
         base::BindOnce(&BluetoothLowEnergyConnectionFinder::InvokeCallbackAsync,
                        weak_ptr_factory_.GetWeakPtr()));
-  } else if (old_status == cryptauth::Connection::IN_PROGRESS) {
+  } else if (old_status == cryptauth::Connection::Status::IN_PROGRESS) {
     PA_LOG(WARNING) << "Connection failed. Retrying.";
     connection_->RemoveObserver(this);
     connection_.reset();
