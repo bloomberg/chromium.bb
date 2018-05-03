@@ -60,12 +60,13 @@ class UserView : public views::View,
   void AddLogoutButton(LoginStatus login);
   void AddUserCard(LoginStatus login);
 
-  // Create the menu option to add another user. If |disabled| is set the user
-  // cannot actively click on the item.
-  void ToggleUserDropdownWidget();
+  // Create the menu option to add another user.
+  void ToggleUserDropdownWidget(bool toggled_by_key_event);
 
   // Removes the add user menu option.
   void HideUserDropdownWidget();
+
+  views::Widget* GetBubbleWidget();
 
   // If |user_card_view_| is clickable, this is a ButtonFromView that wraps it.
   // If |user_card_view_| is not clickable, this will be equal to
@@ -80,6 +81,9 @@ class UserView : public views::View,
 
   views::View* logout_button_ = nullptr;
   std::unique_ptr<views::Widget> user_dropdown_widget_;
+  // Tracks whether |user_dropdown_widget_| was opened with a key event. If
+  // true, HideUserDropdownWidget() will return focus to |user_card_container_|.
+  bool user_dropdown_widget_toggled_by_key_event_ = false;
 
   // False when the add user panel is visible but not activatable.
   bool add_user_enabled_ = true;
