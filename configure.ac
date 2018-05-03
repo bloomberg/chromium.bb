@@ -77,6 +77,17 @@ AC_HEADER_STDC
 AC_LIBTOOL_WIN32_DLL
 AC_PROG_LIBTOOL
 
+# catch as many warnings as possible with the help of the gnulib manywarnings module
+gl_MANYWARN_ALL_GCC([warnings])
+# Set up the list of the pointless, undesired warnings.
+nw=
+nw="$nw -Wsystem-headers"       # Don't let system headers trigger warnings
+# Enable all GCC warnings not in this list.
+gl_MANYWARN_COMPLEMENT([warnings], [$warnings], [$nw])
+for w in $warnings; do
+  gl_WARN_ADD([$w])
+done
+
 # define an additional recursive make target to format the sources.
 # Also check if clang-format is installed
 AM_EXTRA_RECURSIVE_TARGETS([format-sources])
