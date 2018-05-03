@@ -1281,6 +1281,11 @@ def Main():
   assert os.path.abspath(os.getcwd()) == SRC_ROOT_PATH, ('This script must be '
                                                          'called from the root '
                                                          'of checkout.')
+
+  # This helps to setup coverage binaries even when script is called with
+  # empty params. This is used by coverage bot for initial setup.
+  DownloadCoverageToolsIfNeeded()
+
   args = _ParseCommandArguments()
   global BUILD_DIR
   BUILD_DIR = args.build_dir
@@ -1303,8 +1308,6 @@ def Main():
   _ValidateCurrentPlatformIsSupported()
   _ValidateBuildingWithClangCoverage()
   _VerifyTargetExecutablesAreInBuildDirectory(args.command)
-
-  DownloadCoverageToolsIfNeeded()
 
   absolute_filter_paths = []
   if args.filters:
