@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_MIRRORING_SERVICE_INTERFACE_H_
 #define COMPONENTS_MIRRORING_SERVICE_INTERFACE_H_
 
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -34,6 +35,20 @@ enum SessionType {
   AUDIO_AND_VIDEO,
 };
 
+constexpr char kRemotingNamespace[] = "urn:x-cast:com.google.cast.remoting";
+constexpr char kWebRtcNamespace[] = "urn:x-cast:com.google.cast.webrtc";
+
+struct CastMessage {
+  std::string message_namespace;
+  base::Value data;
+};
+
+class CastMessageChannel {
+ public:
+  virtual ~CastMessageChannel() {}
+  virtual void Send(const CastMessage& message) = 0;
+};
+
 class SessionClient {
  public:
   virtual ~SessionClient() {}
@@ -49,7 +64,7 @@ class SessionClient {
 
   virtual void GetVideoCaptureHost(
       media::mojom::VideoCaptureHostRequest request) = 0;
-  virtual void GetNewWorkContext(
+  virtual void GetNetWorkContext(
       network::mojom::NetworkContextRequest request) = 0;
   // TODO(xjz): Add interface to get AudioCaptureHost.
   // TODO(xjz): Add interface for HW encoder profiles query and VEA create

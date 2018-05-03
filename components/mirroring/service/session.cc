@@ -139,7 +139,7 @@ void Session::StartInternal(const net::IPEndPoint& receiver_endpoint,
       base::ThreadTaskRunnerHandle::Get(), audio_encode_thread_,
       video_encode_thread_);
   network::mojom::NetworkContextPtr network_context;
-  client_->GetNewWorkContext(mojo::MakeRequest(&network_context));
+  client_->GetNetWorkContext(mojo::MakeRequest(&network_context));
   auto udp_client = std::make_unique<UdpSocketClient>(
       receiver_endpoint, std::move(network_context),
       base::BindOnce(&Session::ReportError, weak_factory_.GetWeakPtr(),
