@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "components/version_info/android/channel_getter.h"
 #include "components/version_info/version_info.h"
 
 namespace android_webview {
@@ -45,9 +46,7 @@ AwVariationsServiceClient::GetNetworkTimeTracker() {
 }
 
 version_info::Channel AwVariationsServiceClient::GetChannel() {
-  // TODO(kmilka): Investigate the proper value to return here so experiments
-  // are correctly filtered.
-  return version_info::Channel::UNKNOWN;
+  return version_info::GetChannel();
 }
 
 bool AwVariationsServiceClient::OverridesRestrictParameter(
