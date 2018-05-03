@@ -141,6 +141,27 @@ void ExpectSyncedDevicesAreEqual(
       EXPECT_TRUE(seed.has_end_time_millis());
       EXPECT_EQ(expected_seed.end_time_millis(), seed.end_time_millis());
     }
+
+    EXPECT_EQ(expected_device.has_arc_plus_plus(), device.has_arc_plus_plus());
+    EXPECT_EQ(expected_device.arc_plus_plus(), device.arc_plus_plus());
+
+    EXPECT_EQ(expected_device.has_pixel_phone(), device.has_pixel_phone());
+    EXPECT_EQ(expected_device.pixel_phone(), device.pixel_phone());
+
+    ASSERT_EQ(expected_device.supported_software_features_size(),
+              device.supported_software_features_size());
+    for (int i = 0; i < expected_device.supported_software_features_size();
+         i++) {
+      EXPECT_EQ(expected_device.supported_software_features(i),
+                device.supported_software_features(i));
+    }
+
+    ASSERT_EQ(expected_device.enabled_software_features_size(),
+              device.enabled_software_features_size());
+    for (int i = 0; i < expected_device.enabled_software_features_size(); i++) {
+      EXPECT_EQ(expected_device.enabled_software_features(i),
+                device.enabled_software_features(i));
+    }
   }
 }
 
@@ -243,7 +264,7 @@ void ExpectSyncedDevicesAndPrefAreEqual(
 
     const base::ListValue* beacon_seeds_from_prefs;
     if (device_dictionary->GetList("beacon_seeds", &beacon_seeds_from_prefs)) {
-      ASSERT_EQ((size_t)expected_device.beacon_seeds_size(),
+      ASSERT_EQ(static_cast<size_t>(expected_device.beacon_seeds_size()),
                 beacon_seeds_from_prefs->GetSize());
       for (size_t i = 0; i < beacon_seeds_from_prefs->GetSize(); i++) {
         const base::DictionaryValue* seed;
@@ -270,6 +291,58 @@ void ExpectSyncedDevicesAndPrefAreEqual(
       }
     } else {
       EXPECT_FALSE(expected_device.beacon_seeds_size());
+    }
+
+    bool arc_plus_plus;
+    if (device_dictionary->GetBoolean("arc_plus_plus", &arc_plus_plus)) {
+      EXPECT_TRUE(expected_device.has_arc_plus_plus());
+      EXPECT_EQ(expected_device.arc_plus_plus(), arc_plus_plus);
+    } else {
+      EXPECT_FALSE(expected_device.has_arc_plus_plus());
+    }
+
+    bool pixel_phone;
+    if (device_dictionary->GetBoolean("pixel_phone", &pixel_phone)) {
+      EXPECT_TRUE(expected_device.has_pixel_phone());
+      EXPECT_EQ(expected_device.pixel_phone(), pixel_phone);
+    } else {
+      EXPECT_FALSE(expected_device.has_pixel_phone());
+    }
+
+    const base::ListValue* supported_software_features_from_prefs;
+    if (device_dictionary->GetList("supported_software_features",
+                                   &supported_software_features_from_prefs)) {
+      ASSERT_EQ(static_cast<size_t>(
+                    expected_device.supported_software_features_size()),
+                supported_software_features_from_prefs->GetSize());
+      for (size_t i = 0; i < supported_software_features_from_prefs->GetSize();
+           i++) {
+        int supported_software_feature;
+        ASSERT_TRUE(supported_software_features_from_prefs->GetInteger(
+            i, &supported_software_feature));
+        EXPECT_EQ(expected_device.supported_software_features(i),
+                  supported_software_feature);
+      }
+    } else {
+      EXPECT_FALSE(expected_device.supported_software_features_size());
+    }
+
+    const base::ListValue* enabled_software_features_from_prefs;
+    if (device_dictionary->GetList("enabled_software_features",
+                                   &enabled_software_features_from_prefs)) {
+      ASSERT_EQ(
+          static_cast<size_t>(expected_device.enabled_software_features_size()),
+          enabled_software_features_from_prefs->GetSize());
+      for (size_t i = 0; i < enabled_software_features_from_prefs->GetSize();
+           i++) {
+        int enabled_software_feature;
+        ASSERT_TRUE(enabled_software_features_from_prefs->GetInteger(
+            i, &enabled_software_feature));
+        EXPECT_EQ(expected_device.enabled_software_features(i),
+                  enabled_software_feature);
+      }
+    } else {
+      EXPECT_FALSE(expected_device.enabled_software_features_size());
     }
   }
 }
@@ -340,6 +413,12 @@ class CryptAuthDeviceManagerImplTest
     seed2->set_end_time_millis(kBeaconSeed2EndTime);
     unlock_key.set_arc_plus_plus(kArcPlusPlus1);
     unlock_key.set_pixel_phone(kPixelPhone1);
+    unlock_key.add_supported_software_features(
+        SoftwareFeature::BETTER_TOGETHER_HOST);
+    unlock_key.add_supported_software_features(
+        SoftwareFeature::BETTER_TOGETHER_CLIENT);
+    unlock_key.add_enabled_software_features(
+        SoftwareFeature::BETTER_TOGETHER_HOST);
     devices_in_response_.push_back(unlock_key);
 
     ExternalDeviceInfo unlockable_device;
@@ -358,6 +437,12 @@ class CryptAuthDeviceManagerImplTest
     seed4->set_end_time_millis(kBeaconSeed4EndTime);
     unlockable_device.set_arc_plus_plus(kArcPlusPlus2);
     unlockable_device.set_pixel_phone(kPixelPhone2);
+    unlock_key.add_supported_software_features(
+        SoftwareFeature::MAGIC_TETHER_HOST);
+    unlock_key.add_supported_software_features(
+        SoftwareFeature::MAGIC_TETHER_CLIENT);
+    unlock_key.add_enabled_software_features(
+        SoftwareFeature::MAGIC_TETHER_HOST);
     devices_in_response_.push_back(unlockable_device);
   }
 
@@ -397,9 +482,13 @@ class CryptAuthDeviceManagerImplTest
     device_dictionary->SetString("bluetooth_address", bluetooth_address_b64);
     device_dictionary->SetBoolean("unlock_key", kStoredUnlockKey);
     device_dictionary->SetBoolean("unlockable", kStoredUnlockable);
-    device_dictionary->Set("beacon_seeds", std::make_unique<base::ListValue>());
     device_dictionary->SetBoolean("mobile_hotspot_supported",
                                   kStoredMobileHotspotSupported);
+    device_dictionary->Set("beacon_seeds", std::make_unique<base::ListValue>());
+    device_dictionary->Set("supported_software_features",
+                           std::make_unique<base::ListValue>());
+    device_dictionary->Set("enabled_software_features",
+                           std::make_unique<base::ListValue>());
     {
       ListPrefUpdate update(&pref_service_,
                             prefs::kCryptAuthDeviceSyncUnlockKeys);
@@ -797,8 +886,6 @@ TEST_F(CryptAuthDeviceManagerImplTest, SyncDeviceWithNoContents) {
 }
 
 TEST_F(CryptAuthDeviceManagerImplTest, SyncFullyDetailedExternalDeviceInfos) {
-  GetMyDevicesResponse response;
-
   // First, use a device with only a public key (a public key is the only
   // required field). This ensures devices work properly when they do not have
   // all fields filled out.
@@ -809,7 +896,6 @@ TEST_F(CryptAuthDeviceManagerImplTest, SyncFullyDetailedExternalDeviceInfos) {
   // TODO(khorimoto): Remove this when support for storing all types of devices
   // is added.
   device_with_only_public_key.set_unlock_key(true);
-  response.add_devices()->CopyFrom(device_with_only_public_key);
 
   // Second, use a device with all fields filled out. This ensures that all
   // device details are properly saved.
@@ -822,17 +908,29 @@ TEST_F(CryptAuthDeviceManagerImplTest, SyncFullyDetailedExternalDeviceInfos) {
   device_with_all_fields.set_last_update_time_millis(123456789L);
   device_with_all_fields.set_mobile_hotspot_supported(true);
   device_with_all_fields.set_device_type(DeviceType::ANDROIDOS);
+
   BeaconSeed seed1;
   seed1.set_data(kBeaconSeed1Data);
   seed1.set_start_time_millis(kBeaconSeed1StartTime);
   seed1.set_end_time_millis(kBeaconSeed1EndTime);
   device_with_all_fields.add_beacon_seeds()->CopyFrom(seed1);
+
   BeaconSeed seed2;
   seed2.set_data(kBeaconSeed2Data);
   seed2.set_start_time_millis(kBeaconSeed2StartTime);
   seed2.set_end_time_millis(kBeaconSeed2EndTime);
   device_with_all_fields.add_beacon_seeds()->CopyFrom(seed2);
-  response.add_devices()->CopyFrom(device_with_all_fields);
+
+  device_with_all_fields.set_arc_plus_plus(true);
+  device_with_all_fields.set_pixel_phone(true);
+
+  device_with_all_fields.add_supported_software_features(
+      SoftwareFeature::EASY_UNLOCK_HOST);
+  device_with_all_fields.add_supported_software_features(
+      SoftwareFeature::MAGIC_TETHER_HOST);
+
+  device_with_all_fields.add_enabled_software_features(
+      SoftwareFeature::MAGIC_TETHER_HOST);
 
   std::vector<ExternalDeviceInfo> expected_devices;
   expected_devices.push_back(device_with_only_public_key);
@@ -844,6 +942,10 @@ TEST_F(CryptAuthDeviceManagerImplTest, SyncFullyDetailedExternalDeviceInfos) {
   EXPECT_CALL(*this, OnSyncFinishedProxy(
                          CryptAuthDeviceManager::SyncResult::SUCCESS,
                          CryptAuthDeviceManager::DeviceChangeResult::CHANGED));
+
+  GetMyDevicesResponse response;
+  response.add_devices()->CopyFrom(device_with_only_public_key);
+  response.add_devices()->CopyFrom(device_with_all_fields);
   success_callback_.Run(response);
 
   ExpectSyncedDevicesAndPrefAreEqual(

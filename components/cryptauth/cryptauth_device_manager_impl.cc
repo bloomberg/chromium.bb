@@ -50,6 +50,12 @@ const char kExternalDeviceKeyDeviceType[] = "device_type";
 const char kExternalDeviceKeyBeaconSeeds[] = "beacon_seeds";
 const char kExternalDeviceKeyArcPlusPlus[] = "arc_plus_plus";
 const char kExternalDeviceKeyPixelPhone[] = "pixel_phone";
+const char kExternalDeviceKeySupportedSoftwareFeatures[] =
+    "supported_software_features";
+const char kExternalDeviceKeyEnabledSoftwareFeatures[] =
+    "enabled_software_features";
+
+// Keys for ExternalDeviceInfo's BeaconSeed.
 const char kExternalDeviceKeyBeaconSeedData[] = "beacon_seed_data";
 const char kExternalDeviceKeyBeaconSeedStartMs[] = "beacon_seed_start_ms";
 const char kExternalDeviceKeyBeaconSeedEndMs[] = "beacon_seed_end_ms";
@@ -91,6 +97,16 @@ std::unique_ptr<base::ListValue> BeaconSeedsToListValue(
     list->Append(std::move(beacon_seed_value));
   }
 
+  return list;
+}
+
+// Converts SoftwareFeature protos to a list value that can be stored in user
+// prefs.
+std::unique_ptr<base::ListValue> SoftwareFeaturesToListValue(
+    const google::protobuf::RepeatedField<int>& software_features) {
+  std::unique_ptr<base::ListValue> list = std::make_unique<base::ListValue>();
+  for (auto software_feature : software_features)
+    list->AppendInteger(software_feature);
   return list;
 }
 
@@ -153,6 +169,9 @@ std::unique_ptr<base::DictionaryValue> UnlockKeyToDictionary(
     dictionary->SetInteger(kExternalDeviceKeyDeviceType, device.device_type());
   }
 
+  dictionary->Set(kExternalDeviceKeyBeaconSeeds,
+                  BeaconSeedsToListValue(device.beacon_seeds()));
+
   if (device.has_arc_plus_plus()) {
     dictionary->SetBoolean(kExternalDeviceKeyArcPlusPlus,
                            device.arc_plus_plus());
@@ -162,15 +181,18 @@ std::unique_ptr<base::DictionaryValue> UnlockKeyToDictionary(
     dictionary->SetBoolean(kExternalDeviceKeyPixelPhone, device.pixel_phone());
   }
 
-  std::unique_ptr<base::ListValue> beacon_seed_list =
-      BeaconSeedsToListValue(device.beacon_seeds());
-  dictionary->Set(kExternalDeviceKeyBeaconSeeds, std::move(beacon_seed_list));
+  dictionary->Set(
+      kExternalDeviceKeySupportedSoftwareFeatures,
+      SoftwareFeaturesToListValue(device.supported_software_features()));
+  dictionary->Set(
+      kExternalDeviceKeyEnabledSoftwareFeatures,
+      SoftwareFeaturesToListValue(device.enabled_software_features()));
 
   return dictionary;
 }
 
 void AddBeaconSeedsToExternalDevice(const base::ListValue& beacon_seeds,
-                                    ExternalDeviceInfo& external_device) {
+                                    ExternalDeviceInfo* external_device) {
   for (size_t i = 0; i < beacon_seeds.GetSize(); i++) {
     const base::DictionaryValue* seed_dictionary = nullptr;
     if (!beacon_seeds.GetDictionary(i, &seed_dictionary)) {
@@ -208,10 +230,43 @@ void AddBeaconSeedsToExternalDevice(const base::ListValue& beacon_seeds,
       continue;
     }
 
-    BeaconSeed* seed = external_device.add_beacon_seeds();
+    BeaconSeed* seed = external_device->add_beacon_seeds();
     seed->set_data(seed_data);
     seed->set_start_time_millis(start_time_millis);
     seed->set_end_time_millis(end_time_millis);
+  }
+}
+
+void AddSoftwareFeaturesToExternalDevice(
+    const base::DictionaryValue& dictionary,
+    const std::string& software_feature_dictionary_key,
+    ExternalDeviceInfo* external_device) {
+  DCHECK(software_feature_dictionary_key ==
+             kExternalDeviceKeySupportedSoftwareFeatures ||
+         software_feature_dictionary_key ==
+             kExternalDeviceKeyEnabledSoftwareFeatures);
+
+  const base::ListValue* software_features;
+  if (!dictionary.GetList(software_feature_dictionary_key, &software_features))
+    return;
+
+  for (size_t i = 0; i < software_features->GetSize(); i++) {
+    int software_feature;
+    if (!software_features->GetInteger(i, &software_feature) ||
+        !SoftwareFeature_IsValid(software_feature)) {
+      PA_LOG(WARNING) << "Unable to retrieve SoftwareFeature; skipping.";
+      continue;
+    }
+
+    if (software_feature_dictionary_key ==
+        kExternalDeviceKeySupportedSoftwareFeatures) {
+      external_device->add_supported_software_features(
+          static_cast<SoftwareFeature>(software_feature));
+    } else if (software_feature_dictionary_key ==
+               kExternalDeviceKeyEnabledSoftwareFeatures) {
+      external_device->add_enabled_software_features(
+          static_cast<SoftwareFeature>(software_feature));
+    }
   }
 }
 
@@ -294,7 +349,7 @@ bool DictionaryToUnlockKey(const base::DictionaryValue& dictionary,
   const base::ListValue* beacon_seeds = nullptr;
   dictionary.GetList(kExternalDeviceKeyBeaconSeeds, &beacon_seeds);
   if (beacon_seeds)
-    AddBeaconSeedsToExternalDevice(*beacon_seeds, *external_device);
+    AddBeaconSeedsToExternalDevice(*beacon_seeds, external_device);
 
   bool arc_plus_plus;
   if (dictionary.GetBoolean(kExternalDeviceKeyArcPlusPlus, &arc_plus_plus))
@@ -303,6 +358,11 @@ bool DictionaryToUnlockKey(const base::DictionaryValue& dictionary,
   bool pixel_phone;
   if (dictionary.GetBoolean(kExternalDeviceKeyPixelPhone, &pixel_phone))
     external_device->set_pixel_phone(pixel_phone);
+
+  AddSoftwareFeaturesToExternalDevice(
+      dictionary, kExternalDeviceKeySupportedSoftwareFeatures, external_device);
+  AddSoftwareFeaturesToExternalDevice(
+      dictionary, kExternalDeviceKeyEnabledSoftwareFeatures, external_device);
 
   return true;
 }
