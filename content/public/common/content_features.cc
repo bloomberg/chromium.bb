@@ -313,7 +313,7 @@ const base::Feature kResamplingInputEvents{"ResamplingInputEvents",
 
 // Loading Dispatcher v0 support with ResourceLoadScheduler (crbug.com/729954).
 const base::Feature kResourceLoadScheduler{"ResourceLoadScheduler",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Use common overflow scroll mechanism for frames. See http://crbug.com/417782.
 const base::Feature kRootLayerScrolling{"RootLayerScrolling",
