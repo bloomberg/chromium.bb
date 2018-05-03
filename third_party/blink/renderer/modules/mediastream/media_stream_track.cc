@@ -435,6 +435,8 @@ void MediaStreamTrack::getSettings(MediaTrackSettings& settings) {
       settings.setFocalLengthY(platform_settings.focal_length_y);
   }
   settings.setDeviceId(platform_settings.device_id);
+  if (!platform_settings.group_id.IsNull())
+    settings.setGroupId(platform_settings.group_id);
   if (platform_settings.HasFacingMode()) {
     switch (platform_settings.facing_mode) {
       case WebMediaStreamTrack::FacingMode::kUser:

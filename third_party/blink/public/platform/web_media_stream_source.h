@@ -116,6 +116,9 @@ class WebMediaStreamSource {
   BLINK_PLATFORM_EXPORT WebString GetName() const;
   BLINK_PLATFORM_EXPORT bool Remote() const;
 
+  BLINK_PLATFORM_EXPORT void SetGroupId(const WebString& group_id);
+  BLINK_PLATFORM_EXPORT WebString GroupId() const;
+
   BLINK_PLATFORM_EXPORT void SetReadyState(ReadyState);
   BLINK_PLATFORM_EXPORT ReadyState GetReadyState() const;
 

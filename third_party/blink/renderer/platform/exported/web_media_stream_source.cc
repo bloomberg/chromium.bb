@@ -127,6 +127,16 @@ bool WebMediaStreamSource::Remote() const {
   return private_.Get()->Remote();
 }
 
+void WebMediaStreamSource::SetGroupId(const blink::WebString& group_id) {
+  DCHECK(!private_.IsNull());
+  private_->SetGroupId(group_id);
+}
+
+WebString WebMediaStreamSource::GroupId() const {
+  DCHECK(!private_.IsNull());
+  return private_->GroupId();
+}
+
 void WebMediaStreamSource::SetReadyState(ReadyState state) {
   DCHECK(!private_.IsNull());
   private_->SetReadyState(static_cast<MediaStreamSource::ReadyState>(state));

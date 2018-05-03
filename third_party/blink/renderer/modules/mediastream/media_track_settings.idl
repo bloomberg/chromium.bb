@@ -21,8 +21,7 @@ dictionary MediaTrackSettings {
     // double latency;
     // long channelCount;
     DOMString deviceId;
-    // groupId is not implemented.
-    // DOMString groupId;
+    DOMString groupId;
     // Media Capture Depth Stream Extensions
     // https://w3c.github.io/mediacapture-depth/#mediatracksettings-dictionary
     // TODO(aleksandar.stojiljkovic): videoKind, depthNear, depthFar,

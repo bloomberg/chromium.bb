@@ -84,6 +84,9 @@ class PLATFORM_EXPORT MediaStreamSource final
   const String& GetName() const { return name_; }
   bool Remote() const { return remote_; }
 
+  void SetGroupId(const String& group_id);
+  const String& GroupId() { return group_id_; }
+
   void SetReadyState(ReadyState);
   ReadyState GetReadyState() const { return ready_state_; }
 
@@ -138,6 +141,7 @@ class PLATFORM_EXPORT MediaStreamSource final
   String id_;
   StreamType type_;
   String name_;
+  String group_id_;
   bool remote_;
   ReadyState ready_state_;
   bool requires_consumer_;
