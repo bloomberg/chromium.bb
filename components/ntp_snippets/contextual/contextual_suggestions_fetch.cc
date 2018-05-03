@@ -117,7 +117,7 @@ const std::string SerializedPivotsRequest(const std::string& url,
   GetPivotsRequest pivot_request;
 
   SearchApiRequestContext* search_context = pivot_request.mutable_context();
-  search_context->mutable_localization_context()->set_spoken_language(
+  search_context->mutable_localization_context()->set_language_code(
       bcp_language);
 
   GetPivotsQuery* query = pivot_request.mutable_query();
