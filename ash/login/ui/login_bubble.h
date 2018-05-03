@@ -15,6 +15,7 @@
 
 namespace ash {
 class LoginButton;
+class LoginMenuView;
 
 // A wrapper for the bubble view in the login screen.
 // This class observes keyboard events, mouse clicks and touch down events
@@ -58,9 +59,17 @@ class ASH_EXPORT LoginBubble : public views::WidgetObserver,
   // Shows a tooltip.
   void ShowTooltip(const base::string16& message, views::View* anchor_view);
 
+  // Shows a selection menu.
+  void ShowSelectionMenu(LoginMenuView* menu, LoginButton* bubble_opener);
+
   // Schedule animation for closing the bubble.
   // The bubble widget will be closed when the animation is ended.
   void Close();
+
+  // Close the bubble immediately, without scheduling animation.
+  // Used to clean up old bubble widget when a new bubble is going to be
+  // created or it will be called before anchor view is hidden.
+  void CloseImmediately();
 
   // True if the bubble is visible.
   bool IsVisible();
@@ -80,16 +89,11 @@ class ASH_EXPORT LoginBubble : public views::WidgetObserver,
   void OnLayerAnimationScheduled(
       ui::LayerAnimationSequence* sequence) override{};
 
-  LoginBaseBubbleView* bubble_view_for_test() { return bubble_view_; }
+  LoginBaseBubbleView* bubble_view() { return bubble_view_; }
 
  private:
   // Show the bubble widget and schedule animation for bubble showing.
   void Show();
-
-  // Close the bubble immediately, without scheduling animation.
-  // Used to clean up old bubble widget when a new bubble is
-  // going to be created.
-  void CloseImmediately();
 
   void ProcessPressedEvent(const ui::LocatedEvent* event);
 

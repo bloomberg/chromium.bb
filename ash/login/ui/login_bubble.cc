@@ -13,6 +13,7 @@
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/lock_window.h"
 #include "ash/login/ui/login_button.h"
+#include "ash/login/ui/login_menu_view.h"
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
@@ -404,7 +405,7 @@ void LoginBubble::ShowUserMenu(const base::string16& username,
   bool had_focus = bubble_opener_->HasFocus();
   Show();
   if (had_focus) {
-    // Try to focus the bubble view only if the tooltip was focused.
+    // Try to focus the bubble view only if the bubble opener was focused.
     bubble_view_->RequestFocus();
   }
 }
@@ -419,8 +420,34 @@ void LoginBubble::ShowTooltip(const base::string16& message,
   Show();
 }
 
+void LoginBubble::ShowSelectionMenu(LoginMenuView* menu,
+                                    LoginButton* bubble_opener) {
+  if (bubble_view_)
+    CloseImmediately();
+
+  flags_ = kFlagsNone;
+  bubble_opener_ = bubble_opener;
+  const bool had_focus = bubble_opener_->HasFocus();
+
+  // Transfer the ownership of |menu| to bubble widget.
+  bubble_view_ = menu;
+  Show();
+
+  if (had_focus) {
+    // Try to focus the bubble view only if the bubble opener was focused.
+    bubble_view_->RequestFocus();
+  }
+}
+
 void LoginBubble::Close() {
   ScheduleAnimation(false /*visible*/);
+}
+
+void LoginBubble::CloseImmediately() {
+  DCHECK(bubble_view_);
+  bubble_view_->layer()->GetAnimator()->RemoveObserver(this);
+  bubble_view_->GetWidget()->Close();
+  is_visible_ = false;
 }
 
 bool LoginBubble::IsVisible() {
@@ -488,13 +515,6 @@ void LoginBubble::Show() {
 
   // Fire an alert so ChromeVox will read the contents of the bubble.
   bubble_view_->NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
-}
-
-void LoginBubble::CloseImmediately() {
-  DCHECK(bubble_view_);
-  bubble_view_->layer()->GetAnimator()->RemoveObserver(this);
-  bubble_view_->GetWidget()->Close();
-  is_visible_ = false;
 }
 
 void LoginBubble::ProcessPressedEvent(const ui::LocatedEvent* event) {

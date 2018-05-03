@@ -6,6 +6,9 @@
 
 #include "ash/login/login_screen_controller.h"
 #include "ash/login/ui/arrow_button_view.h"
+#include "ash/login/ui/login_bubble.h"
+#include "ash/login/ui/login_button.h"
+#include "ash/login/ui/login_menu_view.h"
 #include "ash/login/ui/login_user_view.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
@@ -80,15 +83,16 @@ views::Label* CreateLabel(const base::string16& text, SkColor color) {
 }  // namespace
 
 // Button with text on the left side and an icon on the right side.
-class SelectionButtonView : public views::Button {
+class SelectionButtonView : public LoginButton {
  public:
   SelectionButtonView(const base::string16& text,
                       views::ButtonListener* listener)
-      : views::Button(listener) {
+      : LoginButton(listener) {
     SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
     SetFocusBehavior(FocusBehavior::ALWAYS);
     SetLayoutManager(std::make_unique<views::FillLayout>());
+    SetInkDropMode(InkDropHostView::InkDropMode::OFF);
 
     auto add_horizontal_margin = [&](int width,
                                      views::View* parent) -> views::View* {
@@ -148,6 +152,11 @@ class SelectionButtonView : public views::Button {
   }
 
   void SetTextColor(SkColor color) { label_->SetEnabledColor(color); }
+  void SetText(const base::string16& text) {
+    SetAccessibleName(text);
+    label_->SetText(text);
+    Layout();
+  }
 
   void SetIcon(const gfx::VectorIcon& icon, SkColor color) {
     icon_->SetImage(gfx::CreateVectorIcon(icon, color));
@@ -169,7 +178,10 @@ class RightPaneView : public NonAccessibleView,
                       public views::ButtonListener,
                       public views::StyledLabelListener {
  public:
-  RightPaneView() {
+  RightPaneView()
+      : language_menu_(std::make_unique<LoginBubble>()),
+        keyboard_menu_(std::make_unique<LoginBubble>()),
+        weak_factory_(this) {
     SetPreferredSize(
         gfx::Size(kExpandedViewWidthDp / 2, kExpandedViewHeightDp));
     SetBorder(views::CreateEmptyBorder(gfx::Insets(kRightPaneMarginDp)));
@@ -313,15 +325,35 @@ class RightPaneView : public NonAccessibleView,
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
     if (sender == advanced_view_button_) {
       show_advanced_view_ = !show_advanced_view_;
+      show_advanced_changed_by_user_ = true;
       Layout();
     } else if (sender == submit_button_) {
       Shell::Get()->login_screen_controller()->LaunchPublicSession(
-          current_user_->basic_user_info->account_id, selected_locale_,
-          selected_keyboard_);
+          current_user_->basic_user_info->account_id,
+          selected_language_item_.value, selected_keyboard_item_.value);
+    } else if (sender == language_selection_) {
+      if (!language_menu_->IsVisible()) {
+        LoginMenuView* view = new LoginMenuView(
+            language_items_, language_selection_ /*anchor_view*/,
+            base::BindRepeating(&RightPaneView::OnLanguageSelected,
+                                weak_factory_.GetWeakPtr()));
+        language_menu_->ShowSelectionMenu(
+            view, language_selection_ /*bubble_opener*/);
+      } else {
+        language_menu_->Close();
+      }
+    } else if (sender == keyboard_selection_) {
+      if (!keyboard_menu_->IsVisible()) {
+        LoginMenuView* view = new LoginMenuView(
+            keyboard_items_, keyboard_selection_ /*anchor_view*/,
+            base::BindRepeating(&RightPaneView::OnKeyboardSelected,
+                                weak_factory_.GetWeakPtr()));
+        keyboard_menu_->ShowSelectionMenu(
+            view, keyboard_selection_ /*bubble_opener*/);
+      } else {
+        keyboard_menu_->Close();
+      }
     }
-
-    // TODO(crbug.com/809635): Show language and keyboard menu when clicks on
-    // language_selection_ and keyboard_selection_.
   }
 
   // "Learn more" is clicked to show additional information of what the device
@@ -336,13 +368,110 @@ class RightPaneView : public NonAccessibleView,
     DCHECK_EQ(user->basic_user_info->type,
               user_manager::USER_TYPE_PUBLIC_ACCOUNT);
     current_user_ = user->Clone();
-    if (selected_locale_.empty())
-      selected_locale_ = user->public_account_info->default_locale;
+    if (!language_changed_by_user_)
+      selected_language_item_.value = user->public_account_info->default_locale;
 
-    show_advanced_view_ = user->public_account_info->show_advanced_view;
+    PopulateLanguageItems(user->public_account_info->available_locales);
+    PopulateKeyboardItems(user->public_account_info->keyboard_layouts);
+    language_selection_->SetText(
+        base::UTF8ToUTF16(selected_language_item_.title));
+    keyboard_selection_->SetText(
+        base::UTF8ToUTF16(selected_keyboard_item_.title));
+
+    if (!show_advanced_changed_by_user_)
+      show_advanced_view_ = user->public_account_info->show_advanced_view;
+
     Layout();
+  }
 
-    // TODO(crbug.com/809635): pre-populate keyboard list in LoginUserInfoPtr.
+  void OnLanguageSelected(LoginMenuView::Item item) {
+    language_changed_by_user_ = true;
+    selected_language_item_ = item;
+    language_selection_->SetText(base::UTF8ToUTF16(item.title));
+    current_user_->public_account_info->default_locale = item.value;
+
+    // User changed the preferred locale, request to get corresponding keyboard
+    // layouts.
+    Shell::Get()
+        ->login_screen_controller()
+        ->RequestPublicSessionKeyboardLayouts(
+            current_user_->basic_user_info->account_id, item.value);
+  }
+
+  void OnKeyboardSelected(LoginMenuView::Item item) {
+    selected_keyboard_item_ = item;
+    keyboard_selection_->SetText(base::UTF8ToUTF16(item.title));
+  }
+
+  void PopulateLanguageItems(const base::Value& locales) {
+    if (!locales.is_list())
+      return;
+    language_items_.clear();
+
+    for (const auto& locale : locales.GetList()) {
+      const base::DictionaryValue* dictionary;
+      if (!locale.GetAsDictionary(&dictionary))
+        continue;
+
+      std::string value;
+      std::string title;
+      std::string group_name;
+      dictionary->GetString("value", &value);
+      dictionary->GetString("title", &title);
+      dictionary->GetString("optionGroupName", &group_name);
+      LoginMenuView::Item item;
+      if (!group_name.empty()) {
+        item.title = group_name;
+        item.is_group = true;
+      } else {
+        item.title = title;
+        item.value = value;
+        item.is_group = false;
+        item.selected = selected_language_item_.value == value;
+      }
+      language_items_.push_back(item);
+
+      if (selected_language_item_.value == value)
+        selected_language_item_ = item;
+    }
+  }
+
+  void PopulateKeyboardItems(
+      const std::vector<mojom::InputMethodItemPtr>& keyboard_layouts) {
+    keyboard_items_.clear();
+    for (const auto& keyboard : keyboard_layouts) {
+      LoginMenuView::Item item;
+      item.title = keyboard->title;
+      item.value = keyboard->ime_id;
+      item.is_group = false;
+      item.selected = keyboard->selected;
+      keyboard_items_.push_back(item);
+
+      if (keyboard->selected)
+        selected_keyboard_item_ = item;
+    }
+  }
+
+  LoginBaseBubbleView* GetLanguageMenuView() {
+    if (language_menu_ && language_menu_->bubble_view())
+      return language_menu_->bubble_view();
+    return nullptr;
+  }
+
+  LoginBaseBubbleView* GetKeyboardMenuView() {
+    if (keyboard_menu_ && keyboard_menu_->bubble_view())
+      return keyboard_menu_->bubble_view();
+    return nullptr;
+  }
+
+  // Close language and keyboard menus and reset local states.
+  void Reset() {
+    if (language_menu_ && language_menu_->IsVisible())
+      language_menu_->CloseImmediately();
+    if (keyboard_menu_ && keyboard_menu_->IsVisible())
+      keyboard_menu_->CloseImmediately();
+    show_advanced_changed_by_user_ = false;
+    language_changed_by_user_ = false;
   }
 
   SelectionButtonView* advanced_view_button() { return advanced_view_button_; }
@@ -352,8 +481,6 @@ class RightPaneView : public NonAccessibleView,
  private:
   bool show_advanced_view_ = false;
   mojom::LoginUserInfoPtr current_user_;
-  std::string selected_locale_;
-  std::string selected_keyboard_;
 
   views::View* labels_view_ = nullptr;
   SelectionButtonView* advanced_view_button_ = nullptr;
@@ -361,6 +488,24 @@ class RightPaneView : public NonAccessibleView,
   SelectionButtonView* language_selection_ = nullptr;
   SelectionButtonView* keyboard_selection_ = nullptr;
   ArrowButtonView* submit_button_ = nullptr;
+
+  std::unique_ptr<LoginBubble> language_menu_;
+  std::unique_ptr<LoginBubble> keyboard_menu_;
+  LoginMenuView::Item selected_language_item_;
+  LoginMenuView::Item selected_keyboard_item_;
+  std::vector<LoginMenuView::Item> language_items_;
+  std::vector<LoginMenuView::Item> keyboard_items_;
+
+  // Local states to check if the locale and whether to show advanced view
+  // has been changed by the user. This ensures user action won't be overridden
+  // by the default settings and it will be reset after this view is hidden.
+  // Keyboard selection is not tracked here because it's depending on which
+  // locale user selects, so the previously selected keyboard might not be
+  // applicable for the current locale.
+  bool show_advanced_changed_by_user_ = false;
+  bool language_changed_by_user_ = false;
+
+  base::WeakPtrFactory<RightPaneView> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RightPaneView);
 };
@@ -429,8 +574,24 @@ void LoginExpandedPublicAccountView::ProcessPressedEvent(
   if (GetBoundsInScreen().Contains(event->root_location()))
     return;
 
-  SetVisible(false);
-  on_dismissed_.Run();
+  // Ignore press event inside the language and keyboard menu.
+  LoginBaseBubbleView* language_menu_view = right_pane_->GetLanguageMenuView();
+  LoginBaseBubbleView* keyboard_menu_view = right_pane_->GetKeyboardMenuView();
+  if (language_menu_view) {
+    const gfx::Rect bounds =
+        language_menu_view->GetWidget()->GetWindowBoundsInScreen();
+    if (bounds.Contains(event->root_location()))
+      return;
+  }
+
+  if (keyboard_menu_view) {
+    const gfx::Rect bounds =
+        keyboard_menu_view->GetWidget()->GetWindowBoundsInScreen();
+    if (bounds.Contains(event->root_location()))
+      return;
+  }
+
+  Hide();
 }
 
 void LoginExpandedPublicAccountView::UpdateForUser(
@@ -442,6 +603,12 @@ void LoginExpandedPublicAccountView::UpdateForUser(
 const mojom::LoginUserInfoPtr& LoginExpandedPublicAccountView::current_user()
     const {
   return user_view_->current_user();
+}
+
+void LoginExpandedPublicAccountView::Hide() {
+  SetVisible(false);
+  right_pane_->Reset();
+  on_dismissed_.Run();
 }
 
 void LoginExpandedPublicAccountView::OnPaint(gfx::Canvas* canvas) {
@@ -471,8 +638,7 @@ void LoginExpandedPublicAccountView::OnKeyEvent(ui::KeyEvent* event) {
     return;
 
   if (event->key_code() == ui::KeyboardCode::VKEY_ESCAPE) {
-    SetVisible(false);
-    on_dismissed_.Run();
+    Hide();
   }
 }
 

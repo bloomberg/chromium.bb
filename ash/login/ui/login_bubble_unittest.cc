@@ -7,8 +7,10 @@
 
 #include "ash/login/ui/login_bubble.h"
 #include "ash/login/ui/login_button.h"
+#include "ash/login/ui/login_menu_view.h"
 #include "ash/login/ui/login_test_base.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/animation/test/ink_drop_host_view_test_api.h"
@@ -34,6 +36,29 @@ constexpr int kBubbleBottomMarginDp = 18;
 
 // Non zero size for the bubble anchor view.
 constexpr int kBubbleAnchorViewSizeDp = 100;
+
+std::vector<LoginMenuView::Item> PopulateMenuItems() {
+  std::vector<LoginMenuView::Item> items;
+  // Add one regular item.
+  LoginMenuView::Item item1;
+  item1.title = "Regular Item 1";
+  item1.is_group = false;
+  item1.selected = true;
+  items.push_back(item1);
+
+  // Add one group item.
+  LoginMenuView::Item item2;
+  item2.title = "Group Item 2";
+  item2.is_group = true;
+  items.push_back(item2);
+
+  // Add another regular item.
+  LoginMenuView::Item item3;
+  item3.title = "Regular Item 2";
+  item3.is_group = false;
+  items.push_back(item3);
+  return items;
+}
 
 class LoginBubbleTest : public LoginTestBase {
  protected:
@@ -79,6 +104,12 @@ class LoginBubbleTest : public LoginTestBase {
         std::move(on_remove_show_warning), std::move(on_remove));
   }
 
+  void ShowSelectionMenu(const LoginMenuView::OnSelect& on_select) {
+    LoginMenuView* view =
+        new LoginMenuView(PopulateMenuItems(), container_, on_select);
+    bubble_->ShowSelectionMenu(view, bubble_opener_);
+  }
+
   // Owned by test widget view hierarchy.
   views::View* container_ = nullptr;
   // Owned by test widget view hierarchy.
@@ -99,7 +130,7 @@ TEST_F(LoginBubbleTest, BaseBubbleSettings) {
   bubble_->ShowTooltip(base::string16(), bubble_opener_);
   EXPECT_TRUE(bubble_->IsVisible());
 
-  LoginBaseBubbleView* bubble_view = bubble_->bubble_view_for_test();
+  LoginBaseBubbleView* bubble_view = bubble_->bubble_view();
   EXPECT_EQ(bubble_view->GetDialogButtons(), ui::DIALOG_BUTTON_NONE);
   EXPECT_EQ(bubble_view->width(), kBubbleTotalWidthDp);
   EXPECT_EQ(bubble_view->color(), SK_ColorBLACK);
@@ -151,7 +182,7 @@ TEST_F(LoginBubbleTest, BubbleMouseEventHandling) {
 
   // Verifies that mouse event on the bubble itself won't close the bubble.
   generator.MoveMouseTo(
-      bubble_->bubble_view_for_test()->GetBoundsInScreen().CenterPoint());
+      bubble_->bubble_view()->GetBoundsInScreen().CenterPoint());
   generator.ClickLeftButton();
   EXPECT_TRUE(bubble_->IsVisible());
 
@@ -179,7 +210,7 @@ TEST_F(LoginBubbleTest, BubbleGestureEventHandling) {
 
   // Verifies that gesture event on the bubble itself won't close the bubble.
   generator.GestureTapAt(
-      bubble_->bubble_view_for_test()->GetBoundsInScreen().CenterPoint());
+      bubble_->bubble_view()->GetBoundsInScreen().CenterPoint());
   EXPECT_TRUE(bubble_->IsVisible());
 
   // Verifies that gesture event on the other view will close the bubble.
@@ -229,9 +260,8 @@ TEST_F(LoginBubbleTest, RemoveUserRequiresTwoActivations) {
   EXPECT_TRUE(bubble_->IsVisible());
 
   // Focus the remove user button.
-  views::View* remove_user_button =
-      bubble_->bubble_view_for_test()->GetViewByID(
-          LoginBubble::kUserMenuRemoveUserButtonIdForTest);
+  views::View* remove_user_button = bubble_->bubble_view()->GetViewByID(
+      LoginBubble::kUserMenuRemoveUserButtonIdForTest);
   remove_user_button->RequestFocus();
   EXPECT_TRUE(remove_user_button->HasFocus());
 
@@ -276,7 +306,7 @@ TEST_F(LoginBubbleTest, ErrorBubbleMouseEventHandling) {
 
   // Verifies that mouse event on the bubble itself won't close the bubble.
   generator.MoveMouseTo(
-      bubble_->bubble_view_for_test()->GetBoundsInScreen().CenterPoint());
+      bubble_->bubble_view()->GetBoundsInScreen().CenterPoint());
   generator.ClickLeftButton();
   EXPECT_TRUE(bubble_->IsVisible());
 
@@ -296,7 +326,7 @@ TEST_F(LoginBubbleTest, ErrorBubbleGestureEventHandling) {
 
   // Verifies that gesture event on the bubble itself won't close the bubble.
   generator.GestureTapAt(
-      bubble_->bubble_view_for_test()->GetBoundsInScreen().CenterPoint());
+      bubble_->bubble_view()->GetBoundsInScreen().CenterPoint());
   EXPECT_TRUE(bubble_->IsVisible());
 
   // Verifies that gesture event on the other view will close the bubble.
@@ -315,7 +345,7 @@ TEST_F(LoginBubbleTest, PersistentErrorBubbleEventHandling) {
 
   // Verifies that mouse event on the bubble itself won't close the bubble.
   generator.MoveMouseTo(
-      bubble_->bubble_view_for_test()->GetBoundsInScreen().CenterPoint());
+      bubble_->bubble_view()->GetBoundsInScreen().CenterPoint());
   generator.ClickLeftButton();
   EXPECT_TRUE(bubble_->IsVisible());
 
@@ -326,7 +356,7 @@ TEST_F(LoginBubbleTest, PersistentErrorBubbleEventHandling) {
 
   // Verifies that gesture event on the bubble itself won't close the bubble.
   generator.GestureTapAt(
-      bubble_->bubble_view_for_test()->GetBoundsInScreen().CenterPoint());
+      bubble_->bubble_view()->GetBoundsInScreen().CenterPoint());
   EXPECT_TRUE(bubble_->IsVisible());
 
   // Verifies that gesture event on the other view won't close the bubble.
@@ -339,6 +369,59 @@ TEST_F(LoginBubbleTest, PersistentErrorBubbleEventHandling) {
   EXPECT_TRUE(bubble_->IsVisible());
 
   // LoginBubble::Close should close the persistent error bubble.
+  bubble_->Close();
+  EXPECT_FALSE(bubble_->IsVisible());
+}
+
+TEST_F(LoginBubbleTest, TestShowSelectionMenu) {
+  ui::test::EventGenerator& generator = GetEventGenerator();
+
+  EXPECT_FALSE(bubble_->IsVisible());
+  LoginMenuView::Item selected_item;
+  bool selected = false;
+  ShowSelectionMenu(base::BindLambdaForTesting([&](LoginMenuView::Item item) {
+    selected_item = item;
+    selected = true;
+  }));
+  EXPECT_TRUE(bubble_->IsVisible());
+
+  // Verifies that regular item 1 is selectable.
+  LoginMenuView* menu_view =
+      static_cast<LoginMenuView*>(bubble_->bubble_view());
+  LoginMenuView::TestApi test_api1(menu_view);
+  EXPECT_TRUE(test_api1.contents()->child_at(0)->HasFocus());
+  generator.PressKey(ui::KeyboardCode::VKEY_RETURN, 0 /*flag*/);
+  EXPECT_FALSE(bubble_->IsVisible());
+  EXPECT_EQ(selected_item.title, "Regular Item 1");
+  EXPECT_TRUE(selected);
+
+  // Verfies that group item 2 is not selectable.
+  selected = false;
+  ShowSelectionMenu(base::BindLambdaForTesting([&](LoginMenuView::Item item) {
+    selected_item = item;
+    selected = true;
+  }));
+  EXPECT_TRUE(bubble_->IsVisible());
+  menu_view = static_cast<LoginMenuView*>(bubble_->bubble_view());
+  LoginMenuView::TestApi test_api2(menu_view);
+  test_api2.contents()->child_at(1)->RequestFocus();
+  generator.PressKey(ui::KeyboardCode::VKEY_RETURN, 0 /*flag*/);
+  EXPECT_TRUE(bubble_->IsVisible());
+  EXPECT_FALSE(selected);
+
+  // Verifies up/down arrow key can navigate menu entries.
+  generator.PressKey(ui::KeyboardCode::VKEY_UP, 0 /*flag*/);
+  EXPECT_TRUE(test_api2.contents()->child_at(0)->HasFocus());
+  generator.PressKey(ui::KeyboardCode::VKEY_UP, 0 /*flag*/);
+  EXPECT_TRUE(test_api2.contents()->child_at(0)->HasFocus());
+
+  generator.PressKey(ui::KeyboardCode::VKEY_DOWN, 0 /*flag*/);
+  // Group item is skipped in up/down key navigation.
+  EXPECT_TRUE(test_api2.contents()->child_at(2)->HasFocus());
+  generator.PressKey(ui::KeyboardCode::VKEY_DOWN, 0 /*flag*/);
+  EXPECT_TRUE(test_api2.contents()->child_at(2)->HasFocus());
+  EXPECT_TRUE(bubble_->IsVisible());
+
   bubble_->Close();
   EXPECT_FALSE(bubble_->IsVisible());
 }

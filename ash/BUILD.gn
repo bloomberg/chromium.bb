@@ -334,6 +334,8 @@ component("ash") {
     "login/ui/login_detachable_base_model.h",
     "login/ui/login_expanded_public_account_view.cc",
     "login/ui/login_expanded_public_account_view.h",
+    "login/ui/login_menu_view.cc",
+    "login/ui/login_menu_view.h",
     "login/ui/login_password_view.cc",
     "login/ui/login_password_view.h",
     "login/ui/login_pin_view.cc",
