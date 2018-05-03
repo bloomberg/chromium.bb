@@ -6,8 +6,6 @@
 
 #include "build/build_config.h"
 
-#include <limits.h>
-
 #if defined(OS_WIN)
 #include <Windows.h>  // For GetComputerNameW()
 #endif
@@ -16,6 +14,10 @@
 #import <SystemConfiguration/SCDynamicStoreCopySpecific.h>
 #include <stddef.h>
 #include <sys/sysctl.h>
+#endif
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#include <limits.h>  // For HOST_NAME_MAX
 #endif
 
 #include <utility>
