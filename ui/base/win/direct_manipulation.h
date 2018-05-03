@@ -40,7 +40,8 @@ class DirectManipulationHandler
               Microsoft::WRL::FtmBase,
               IDirectManipulationViewportEventHandler>> {
  public:
-  explicit DirectManipulationHandler(DirectManipulationHelper* helper);
+  explicit DirectManipulationHandler(DirectManipulationHelper* helper,
+                                     WindowEventTarget* event_target);
 
   // WindowEventTarget updates for every DM_POINTERHITTEST in case window
   // hierarchy changed.
@@ -99,7 +100,9 @@ class UI_BASE_EXPORT DirectManipulationHelper {
   // Creates and initializes an instance of this class if Direct Manipulation is
   // enabled on the platform. Returns nullptr if it disabled or failed on
   // initialization.
-  static std::unique_ptr<DirectManipulationHelper> CreateInstance(HWND window);
+  static std::unique_ptr<DirectManipulationHelper> CreateInstance(
+      HWND window,
+      WindowEventTarget* event_target);
 
   // Creates and initializes an instance for testing.
   static std::unique_ptr<DirectManipulationHelper> CreateInstanceForTesting(
@@ -135,7 +138,7 @@ class UI_BASE_EXPORT DirectManipulationHelper {
 
   // This function instantiates Direct Manipulation and creates a viewport for
   // the passed in |window|. Return false if initialize failed.
-  bool Initialize();
+  bool Initialize(WindowEventTarget* event_target);
 
   void SetDeviceScaleFactorForTesting(float factor);
 

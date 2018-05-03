@@ -18,7 +18,8 @@ namespace win {
 
 // static
 std::unique_ptr<DirectManipulationHelper>
-DirectManipulationHelper::CreateInstance(HWND window) {
+DirectManipulationHelper::CreateInstance(HWND window,
+                                         WindowEventTarget* event_target) {
   if (!::IsWindow(window))
     return nullptr;
 
@@ -33,7 +34,7 @@ DirectManipulationHelper::CreateInstance(HWND window) {
       base::WrapUnique(new DirectManipulationHelper());
   instance->window_ = window;
 
-  if (instance->Initialize())
+  if (instance->Initialize(event_target))
     return instance;
 
   return nullptr;
@@ -54,9 +55,8 @@ DirectManipulationHelper::CreateInstanceForTesting(
   std::unique_ptr<DirectManipulationHelper> instance =
       base::WrapUnique(new DirectManipulationHelper());
 
-  instance->event_handler_ =
-      Microsoft::WRL::Make<DirectManipulationHandler>(instance.get());
-  instance->event_handler_->SetWindowEventTarget(event_target);
+  instance->event_handler_ = Microsoft::WRL::Make<DirectManipulationHandler>(
+      instance.get(), event_target);
 
   instance->viewport_ = viewport;
 
@@ -74,7 +74,7 @@ DirectManipulationHelper::DirectManipulationHelper() {}
 // the fake viewport.
 const RECT VIEWPORT_DEFAULT_RECT = {0, 0, 1000, 1000};
 
-bool DirectManipulationHelper::Initialize() {
+bool DirectManipulationHelper::Initialize(WindowEventTarget* event_target) {
   // IDirectManipulationUpdateManager is the first COM object created by the
   // application to retrieve other objects in the Direct Manipulation API.
   // It also serves to activate and deactivate Direct Manipulation functionality
@@ -115,7 +115,8 @@ bool DirectManipulationHelper::Initialize() {
   if (!SUCCEEDED(hr))
     return false;
 
-  event_handler_ = Microsoft::WRL::Make<DirectManipulationHandler>(this);
+  event_handler_ =
+      Microsoft::WRL::Make<DirectManipulationHandler>(this, event_target);
   if (!SUCCEEDED(hr))
     return false;
 
@@ -208,8 +209,9 @@ DirectManipulationHandler::DirectManipulationHandler() {
 }
 
 DirectManipulationHandler::DirectManipulationHandler(
-    DirectManipulationHelper* helper)
-    : helper_(helper) {}
+    DirectManipulationHelper* helper,
+    WindowEventTarget* event_target)
+    : helper_(helper), event_target_(event_target) {}
 
 DirectManipulationHandler::~DirectManipulationHandler() {}
 
