@@ -1095,6 +1095,21 @@
       "../../tools/perf/run_benchmark",
     ],
   },
+  "performance_webview_test_suite": {
+    "label": "//chrome/test:performance_webview_test_suite",
+    "type": "script",
+    "script": "//third_party/catapult/devil/devil/android/tools/system_app.py",
+    "args": [
+      "remove",
+      "--package",
+      "com.android.webview",
+      "com.google.android.webview",
+      "-v",
+      "--",
+      "../../testing/scripts/run_performance_tests.py",
+      "../../tools/perf/run_benchmark",
+    ],
+  },
   "telemetry_perf_webview_tests": {
     "label": "//chrome/test:telemetry_perf_webview_tests",
     "type": "script",

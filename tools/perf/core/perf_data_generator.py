@@ -1024,6 +1024,40 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
       },
       'device_ids': [
       ],
+    },
+    'android-pixel2_webview-perf': {
+      'tests': [
+        {
+          'isolate': 'performance_webview_test_suite',
+          'num_shards': 7
+        }
+      ],
+      'platform': 'android-webview',
+      'dimension': {
+        'pool': 'chrome.test.perf-webview-fyi',
+        'os': 'Android',
+        'device_type': 'walleye',
+        'device_is': 'O'
+      },
+      'device_ids': [
+      ],
+    },
+    'android-pixel2-perf': {
+      'tests': [
+        {
+          'isolate': 'performance_test_suite',
+          'num_shards': 7
+        }
+      ],
+      'platform': 'android',
+      'dimension': {
+        'pool': 'chrome.test.perf-fyi',
+        'os': 'Android',
+        'device_type': 'walleye',
+        'device_is': 'O'
+      },
+      'device_ids': [
+      ],
     }
   }
 }
@@ -1146,10 +1180,9 @@ def generate_telemetry_args(tester_config):
   if tester_config.get('testing', False):
     browser_name = 'reference'
   elif tester_config['platform'] == 'android':
-    if tester_config.get('replace_system_webview', False):
-      browser_name = 'android-webview'
-    else:
-      browser_name = 'android-chromium'
+    browser_name = 'android-chromium'
+  elif tester_config['platform'] == 'android-webview':
+    browser_name = 'android-webview'
   elif (tester_config['platform'] == 'win'
     and tester_config['target_bits'] == 64):
     browser_name = 'release_x64'

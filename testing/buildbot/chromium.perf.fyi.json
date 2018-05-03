@@ -695,5 +695,100 @@
         }
       }
     ]
+  },
+  "android-pixel2-perf": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "-v",
+          "--browser=android-chromium",
+          "--upload-results"
+        ],
+        "isolate_name": "performance_test_suite",
+        "merge": {
+          "args": [
+            "--service-account-file",
+            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "performance_test_suite",
+        "override_compile_targets": [
+          "performance_test_suite"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_is": "O",
+              "device_type": "walleye",
+              "os": "Android",
+              "pool": "chrome.test.perf-fyi"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 36000,
+          "ignore_task_failure": false,
+          "io_timeout": 1800,
+          "shards": 7,
+          "upload_test_results": true
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/perf_device_trigger.py"
+        }
+      }
+    ]
+  },
+  "android-pixel2_webview-perf": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "-v",
+          "--browser=android-webview",
+          "--upload-results",
+          "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
+        ],
+        "isolate_name": "performance_webview_test_suite",
+        "merge": {
+          "args": [
+            "--service-account-file",
+            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "performance_webview_test_suite",
+        "override_compile_targets": [
+          "performance_webview_test_suite"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_is": "O",
+              "device_type": "walleye",
+              "os": "Android",
+              "pool": "chrome.test.perf-webview-fyi"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 36000,
+          "ignore_task_failure": false,
+          "io_timeout": 1800,
+          "shards": 7,
+          "upload_test_results": true
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/perf_device_trigger.py"
+        }
+      }
+    ]
   }
 }
