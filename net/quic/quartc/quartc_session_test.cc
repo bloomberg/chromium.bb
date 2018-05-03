@@ -10,6 +10,7 @@
 #include "net/quic/core/tls_client_handshaker.h"
 #include "net/quic/core/tls_server_handshaker.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
+#include "net/quic/platform/api/quic_test.h"
 #include "net/quic/platform/api/quic_test_mem_slice_vector.h"
 #include "net/quic/quartc/quartc_factory.h"
 #include "net/quic/quartc/quartc_factory_interface.h"
@@ -402,7 +403,7 @@ class QuartcSessionForTest : public QuartcSession,
   std::unique_ptr<FakeQuartcSessionDelegate> session_delegate_;
 };
 
-class QuartcSessionTest : public ::testing::Test,
+class QuartcSessionTest : public QuicTest,
                           public QuicConnectionHelperInterface {
  public:
   ~QuartcSessionTest() override {}
