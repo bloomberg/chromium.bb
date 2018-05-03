@@ -41,7 +41,7 @@
             <View
                 android:id="@+id/bottom_sheet_toolbar"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="@dimen/bottom_control_container_peek_height"
                 android:background="@color/modern_primary_color" />
         </view>
 

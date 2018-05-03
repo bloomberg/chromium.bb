@@ -153,6 +153,9 @@ public class BottomSheet extends FrameLayout
     /** The visible rect for the screen taking the keyboard into account. */
     private final Rect mVisibleViewportRect = new Rect();
 
+    /** An out-array for use with getLocationInWindow to prevent constant allocations. */
+    private final int[] mCachedLocation = new int[2];
+
     /** The minimum distance between half and full states to allow the half state. */
     private final float mMinHalfFullDistance;
 
@@ -717,6 +720,15 @@ public class BottomSheet extends FrameLayout
         return (swipeToDismissEnabled() ? getHiddenRatio() : getPeekRatio()) * mContainerHeight;
     }
 
+    @Override
+    public boolean isTouchEventInToolbar(MotionEvent event) {
+        mToolbarHolder.getLocationInWindow(mCachedLocation);
+        // This check only tests for collision for the Y component since the sheet is the full width
+        // of the screen. We only care if the touch event is above the bottom of the toolbar since
+        // we won't receive an event if the touch is outside the sheet.
+        return mCachedLocation[1] + mToolbarHolder.getHeight() > event.getRawY();
+    }
+
     /**
      * @return Whether flinging down hard enough will close the sheet.
      */
@@ -735,11 +747,6 @@ public class BottomSheet extends FrameLayout
     @Override
     public float getMaxOffsetPx() {
         return getFullRatio() * mContainerHeight;
-    }
-
-    @Override
-    public float getContainerHeightPx() {
-        return mContainerHeight;
     }
 
     /**
