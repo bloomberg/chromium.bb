@@ -151,6 +151,8 @@ if (is_android) {
       "src/src/crazy_linker_system_unittest.cpp",
       "src/src/crazy_linker_thread_unittest.cpp",
       "src/src/crazy_linker_util_unittest.cpp",
+      "src/src/crazy_linker_zip_test_data.cpp",
+      "src/src/crazy_linker_zip_test_data.h",
       "src/src/crazy_linker_zip_unittest.cpp",
     ]
 
