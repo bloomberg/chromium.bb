@@ -78,7 +78,7 @@ struct WebURLError {
   int reason_;
 
   // Additional information based on the reason_.
-  int extended_reason_;
+  int extended_reason_ = 0;
 
   // A flag showing whether or not we have a (possibly stale) copy of the
   // requested resource in the cache.
