@@ -410,7 +410,7 @@ void BrowserActionsContainer::Layout() {
     }
   }
   if (separator_) {
-    if (width() < resize_area_->width() + GetSeparatorAreaWidth()) {
+    if (width() < GetResizeAreaWidth() + GetSeparatorAreaWidth()) {
       separator_->SetVisible(false);
     } else {
       // Position separator_ in the center of the separator area.
