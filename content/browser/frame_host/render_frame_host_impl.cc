@@ -1477,9 +1477,10 @@ void RenderFrameHostImpl::OnOpenURL(const FrameHostMsg_OpenURL_Params& params) {
     // Try to find a FrameNavigationEntry that matches this frame instead, based
     // on the frame's unique name.  If this can't be found, fall back to the
     // default params using RequestOpenURL below.
-    if (frame_tree_node_->navigator()->NavigateNewChildFrame(this,
-                                                             validated_url))
+    if (frame_tree_node_->navigator()->StartHistoryNavigationInNewSubframe(
+            this, validated_url)) {
       return;
+    }
   }
 
   TRACE_EVENT1("navigation", "RenderFrameHostImpl::OpenURL", "url",

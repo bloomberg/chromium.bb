@@ -63,8 +63,19 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
       ReloadType reload_type,
       bool is_same_document_history_load,
       std::unique_ptr<NavigationUIData> navigation_ui_data) override;
-  bool NavigateNewChildFrame(RenderFrameHostImpl* render_frame_host,
-                             const GURL& default_url) override;
+  bool NavigateToEntry(
+      FrameTreeNode* frame_tree_node,
+      const FrameNavigationEntry& frame_entry,
+      const NavigationEntryImpl& entry,
+      ReloadType reload_type,
+      bool is_same_document_history_load,
+      bool is_history_navigation_in_new_child,
+      bool is_pending_entry,
+      const scoped_refptr<network::ResourceRequestBody>& post_body,
+      std::unique_ptr<NavigationUIData> navigation_ui_data) override;
+  bool StartHistoryNavigationInNewSubframe(
+      RenderFrameHostImpl* render_frame_host,
+      const GURL& default_url) override;
   void RequestOpenURL(
       RenderFrameHostImpl* render_frame_host,
       const GURL& url,
@@ -77,14 +88,12 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
       bool user_gesture,
       blink::WebTriggeringEventInfo triggering_event_info,
       const base::Optional<std::string>& suggested_filename) override;
-  void RequestTransferURL(
+  void NavigateFromFrameProxy(
       RenderFrameHostImpl* render_frame_host,
       const GURL& url,
       SiteInstance* source_site_instance,
-      const std::vector<GURL>& redirect_chain,
       const Referrer& referrer,
       ui::PageTransition page_transition,
-      const GlobalRequestID& transferred_global_request_id,
       bool should_replace_current_entry,
       const std::string& method,
       scoped_refptr<network::ResourceRequestBody> post_body,
@@ -117,20 +126,6 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
 
   friend class NavigatorTestWithBrowserSideNavigation;
   ~NavigatorImpl() override;
-
-  // Navigates to the given entry, which might be the pending entry (if
-  // |is_pending_entry| is true).  Private because all callers should use either
-  // NavigateToPendingEntry or NavigateToNewChildFrame.
-  bool NavigateToEntry(
-      FrameTreeNode* frame_tree_node,
-      const FrameNavigationEntry& frame_entry,
-      const NavigationEntryImpl& entry,
-      ReloadType reload_type,
-      bool is_same_document_history_load,
-      bool is_history_navigation_in_new_child,
-      bool is_pending_entry,
-      const scoped_refptr<network::ResourceRequestBody>& post_body,
-      std::unique_ptr<NavigationUIData> navigation_ui_data);
 
   // If needed, sends a BeforeUnload IPC to the renderer to ask it to execute
   // the beforeUnload event. Otherwise, the navigation request will be started.

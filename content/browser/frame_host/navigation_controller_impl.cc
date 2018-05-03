@@ -1845,6 +1845,156 @@ void NavigationControllerImpl::DeleteNavigationEntries(
   delegate()->NotifyNavigationEntriesDeleted();
 }
 
+void NavigationControllerImpl::DiscardPendingEntry(bool was_failure) {
+  // It is not safe to call DiscardPendingEntry while NavigateToEntry is in
+  // progress, since this will cause a use-after-free.  (We only allow this
+  // when the tab is being destroyed for shutdown, since it won't return to
+  // NavigateToEntry in that case.)  http://crbug.com/347742.
+  CHECK(!in_navigate_to_pending_entry_ || delegate_->IsBeingDestroyed());
+
+  if (was_failure && pending_entry_) {
+    failed_pending_entry_id_ = pending_entry_->GetUniqueID();
+  } else {
+    failed_pending_entry_id_ = 0;
+  }
+
+  if (pending_entry_) {
+    if (pending_entry_index_ == -1)
+      delete pending_entry_;
+    pending_entry_index_ = -1;
+    pending_entry_ = nullptr;
+  }
+}
+
+void NavigationControllerImpl::SetPendingNavigationSSLError(bool error) {
+  if (pending_entry_)
+    pending_entry_->set_ssl_error(error);
+}
+
+bool NavigationControllerImpl::StartHistoryNavigationInNewSubframe(
+    RenderFrameHostImpl* render_frame_host,
+    const GURL& default_url) {
+  NavigationEntryImpl* entry =
+      GetEntryWithUniqueID(render_frame_host->nav_entry_id());
+  if (!entry)
+    return false;
+
+  FrameNavigationEntry* frame_entry =
+      entry->GetFrameEntry(render_frame_host->frame_tree_node());
+  if (!frame_entry)
+    return false;
+
+  // Track how often history navigations load a different URL into a subframe
+  // than the frame's default URL.
+  bool restoring_different_url = frame_entry->url() != default_url;
+  UMA_HISTOGRAM_BOOLEAN("SessionRestore.RestoredSubframeURL",
+                        restoring_different_url);
+  // If this frame's unique name uses a frame path, record the name length.
+  // If these names are long in practice, then a proposed plan to truncate
+  // unique names might affect restore behavior, since it is complex to deal
+  // with truncated names inside frame paths.
+  if (restoring_different_url) {
+    const std::string& unique_name =
+        render_frame_host->frame_tree_node()->unique_name();
+    const char kFramePathPrefix[] = "<!--framePath ";
+    if (base::StartsWith(unique_name, kFramePathPrefix,
+                         base::CompareCase::SENSITIVE)) {
+      UMA_HISTOGRAM_COUNTS("SessionRestore.RestoreSubframeFramePathLength",
+                           unique_name.size());
+    }
+  }
+
+  // TODO(clamy): Create a NavigationRequest here and pass it to Navigator for
+  // navigating.
+  return render_frame_host->frame_tree_node()->navigator()->NavigateToEntry(
+      render_frame_host->frame_tree_node(), *frame_entry, *entry,
+      ReloadType::NONE, false, true, false, nullptr,
+      nullptr /* navigation_ui_data */);
+}
+
+void NavigationControllerImpl::NavigateFromFrameProxy(
+    RenderFrameHostImpl* render_frame_host,
+    const GURL& url,
+    bool is_renderer_initiated,
+    SiteInstance* source_site_instance,
+    const Referrer& referrer,
+    ui::PageTransition page_transition,
+    bool should_replace_current_entry,
+    const std::string& method,
+    scoped_refptr<network::ResourceRequestBody> post_body,
+    const std::string& extra_headers,
+    const base::Optional<std::string>& suggested_filename) {
+  FrameTreeNode* node = render_frame_host->frame_tree_node();
+  // Create a NavigationEntry for the transfer, without making it the pending
+  // entry. Subframe transfers should have a clone of the last committed entry
+  // with a FrameNavigationEntry for the target frame. Main frame transfers
+  // should have a new NavigationEntry.
+  // TODO(creis): Make this unnecessary by creating (and validating) the params
+  // directly, passing them to the destination RenderFrameHost.  See
+  // https://crbug.com/536906.
+  std::unique_ptr<NavigationEntryImpl> entry;
+  if (!node->IsMainFrame()) {
+    // Subframe case: create FrameNavigationEntry.
+    if (GetLastCommittedEntry()) {
+      entry = GetLastCommittedEntry()->Clone();
+      entry->set_extra_headers(extra_headers);
+      // TODO(arthursonzogni): What about |is_renderer_initiated|?
+      // Renderer-initiated navigation that target a remote frame are currently
+      // classified as browser-initiated when this one has already navigated.
+      // See https://crbug.com/722251.
+    } else {
+      // If there's no last committed entry, create an entry for about:blank
+      // with a subframe entry for our destination.
+      // TODO(creis): Ensure this case can't exist in https://crbug.com/524208.
+      entry = NavigationEntryImpl::FromNavigationEntry(CreateNavigationEntry(
+          GURL(url::kAboutBlankURL), referrer, page_transition,
+          is_renderer_initiated, extra_headers, browser_context_));
+    }
+    entry->AddOrUpdateFrameEntry(
+        node, -1, -1, nullptr,
+        static_cast<SiteInstanceImpl*>(source_site_instance), url, referrer,
+        std::vector<GURL>(), PageState(), method, -1);
+  } else {
+    // Main frame case.
+    entry = NavigationEntryImpl::FromNavigationEntry(CreateNavigationEntry(
+        url, referrer, page_transition, is_renderer_initiated, extra_headers,
+        browser_context_));
+    entry->root_node()->frame_entry->set_source_site_instance(
+        static_cast<SiteInstanceImpl*>(source_site_instance));
+    entry->root_node()->frame_entry->set_method(method);
+  }
+  entry->set_suggested_filename(suggested_filename);
+
+  // Don't allow an entry replacement if there is no entry to replace.
+  // http://crbug.com/457149
+  if (should_replace_current_entry && GetEntryCount() > 0)
+    entry->set_should_replace_entry(true);
+  if (GetLastCommittedEntry() &&
+      GetLastCommittedEntry()->GetIsOverridingUserAgent()) {
+    entry->SetIsOverridingUserAgent(true);
+  }
+  // TODO(creis): Set user gesture and intent received timestamp on Android.
+
+  // We may not have successfully added the FrameNavigationEntry to |entry|
+  // above (per https://crbug.com/608402), in which case we create it from
+  // scratch.  This works because we do not depend on |frame_entry| being inside
+  // |entry| during NavigateToEntry.  This will go away when we shortcut this
+  // further in https://crbug.com/536906.
+  scoped_refptr<FrameNavigationEntry> frame_entry(entry->GetFrameEntry(node));
+  if (!frame_entry) {
+    frame_entry = new FrameNavigationEntry(
+        node->unique_name(), -1, -1, nullptr,
+        static_cast<SiteInstanceImpl*>(source_site_instance), url, referrer,
+        std::vector<GURL>(), PageState(), method, -1);
+  }
+
+  // TODO(clamy): Create a NavigationRequest here and pass it to Navigator for
+  // navigating.
+  render_frame_host->frame_tree_node()->navigator()->NavigateToEntry(
+      node, *frame_entry, *entry.get(), ReloadType::NONE, false, false, false,
+      post_body, nullptr /* navigation_ui_data */);
+}
+
 void NavigationControllerImpl::ClearAllScreenshots() {
   screenshot_manager_->ClearAllScreenshots();
 }
@@ -2297,32 +2447,6 @@ void NavigationControllerImpl::FinishRestore(int selected_index,
 void NavigationControllerImpl::DiscardNonCommittedEntriesInternal() {
   DiscardPendingEntry(false);
   DiscardTransientEntry();
-}
-
-void NavigationControllerImpl::DiscardPendingEntry(bool was_failure) {
-  // It is not safe to call DiscardPendingEntry while NavigateToEntry is in
-  // progress, since this will cause a use-after-free.  (We only allow this
-  // when the tab is being destroyed for shutdown, since it won't return to
-  // NavigateToEntry in that case.)  http://crbug.com/347742.
-  CHECK(!in_navigate_to_pending_entry_ || delegate_->IsBeingDestroyed());
-
-  if (was_failure && pending_entry_) {
-    failed_pending_entry_id_ = pending_entry_->GetUniqueID();
-  } else {
-    failed_pending_entry_id_ = 0;
-  }
-
-  if (pending_entry_) {
-    if (pending_entry_index_ == -1)
-      delete pending_entry_;
-    pending_entry_index_ = -1;
-    pending_entry_ = nullptr;
-  }
-}
-
-void NavigationControllerImpl::SetPendingNavigationSSLError(bool error) {
-  if (pending_entry_)
-    pending_entry_->set_ssl_error(error);
 }
 
 void NavigationControllerImpl::DiscardTransientEntry() {

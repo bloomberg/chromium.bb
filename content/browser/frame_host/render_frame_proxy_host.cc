@@ -300,12 +300,13 @@ void RenderFrameProxyHost::OnOpenURL(
   // RequestTransferURL method once both RenderFrameProxyHost and
   // RenderFrameHostImpl call RequestOpenURL from their OnOpenURL handlers.
   // See also https://crbug.com/647772.
-  frame_tree_node_->navigator()->RequestTransferURL(
-      current_rfh, validated_url, site_instance_.get(), std::vector<GURL>(),
-      params.referrer, ui::PAGE_TRANSITION_LINK, GlobalRequestID(),
-      params.should_replace_current_entry, params.uses_post ? "POST" : "GET",
-      params.resource_request_body, params.extra_headers,
-      params.suggested_filename);
+  // TODO(clamy): The transition should probably be changed for POST navigations
+  // to PAGE_TRANSITION_FORM_SUBMIT. See https://crbug.com/829827.
+  frame_tree_node_->navigator()->NavigateFromFrameProxy(
+      current_rfh, validated_url, site_instance_.get(), params.referrer,
+      ui::PAGE_TRANSITION_LINK, params.should_replace_current_entry,
+      params.uses_post ? "POST" : "GET", params.resource_request_body,
+      params.extra_headers, params.suggested_filename);
 }
 
 void RenderFrameProxyHost::OnCheckCompleted() {

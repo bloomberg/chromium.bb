@@ -651,8 +651,6 @@ void CheckNavigationEntryMatchLoadParams(
     EXPECT_EQ(should_override, entry->GetIsOverridingUserAgent());
   }
   EXPECT_EQ(load_params.post_data, entry->GetPostData());
-  EXPECT_EQ(load_params.transferred_global_request_id,
-      entry->transferred_global_request_id());
 }
 
 TEST_F(NavigationControllerTest, LoadURLWithParams) {

@@ -393,42 +393,11 @@ bool NavigatorImpl::NavigateToPendingEntry(
                          std::move(navigation_ui_data));
 }
 
-bool NavigatorImpl::NavigateNewChildFrame(
+bool NavigatorImpl::StartHistoryNavigationInNewSubframe(
     RenderFrameHostImpl* render_frame_host,
     const GURL& default_url) {
-  NavigationEntryImpl* entry =
-      controller_->GetEntryWithUniqueID(render_frame_host->nav_entry_id());
-  if (!entry)
-    return false;
-
-  FrameNavigationEntry* frame_entry =
-      entry->GetFrameEntry(render_frame_host->frame_tree_node());
-  if (!frame_entry)
-    return false;
-
-  // Track how often history navigations load a different URL into a subframe
-  // than the frame's default URL.
-  bool restoring_different_url = frame_entry->url() != default_url;
-  UMA_HISTOGRAM_BOOLEAN("SessionRestore.RestoredSubframeURL",
-                        restoring_different_url);
-  // If this frame's unique name uses a frame path, record the name length.
-  // If these names are long in practice, then a proposed plan to truncate
-  // unique names might affect restore behavior, since it is complex to deal
-  // with truncated names inside frame paths.
-  if (restoring_different_url) {
-    const std::string& unique_name =
-        render_frame_host->frame_tree_node()->unique_name();
-    const char kFramePathPrefix[] = "<!--framePath ";
-    if (base::StartsWith(unique_name, kFramePathPrefix,
-                         base::CompareCase::SENSITIVE)) {
-      UMA_HISTOGRAM_COUNTS("SessionRestore.RestoreSubframeFramePathLength",
-                           unique_name.size());
-    }
-  }
-
-  return NavigateToEntry(render_frame_host->frame_tree_node(), *frame_entry,
-                         *entry, ReloadType::NONE, false, true, false, nullptr,
-                         nullptr /* navigation_ui_data */);
+  return controller_->StartHistoryNavigationInNewSubframe(render_frame_host,
+                                                          default_url);
 }
 
 void NavigatorImpl::DidNavigate(
@@ -607,7 +576,7 @@ void NavigatorImpl::RequestOpenURL(
   // redirects.  http://crbug.com/311721.
   std::vector<GURL> redirect_chain;
 
-  // Note that unlike RequestTransferURL, this uses the navigating
+  // Note that unlike NavigateFromFrameProxy, this uses the navigating
   // RenderFrameHost's current SiteInstance, as that's where this navigation
   // originated.
   GURL dest_url(url);
@@ -643,7 +612,7 @@ void NavigatorImpl::RequestOpenURL(
   // RequestOpenURL is used only for local frames, so we can get here only if
   // the navigation is initiated by a frame in the same SiteInstance as this
   // frame.  Note that navigations on RenderFrameProxies do not use
-  // RequestOpenURL and go through RequestTransferURL instead.
+  // RequestOpenURL and go through NavigateFromFrameProxy instead.
   params.source_site_instance = current_site_instance;
 
   params.source_render_frame_id = render_frame_host->GetRoutingID();
@@ -668,14 +637,12 @@ void NavigatorImpl::RequestOpenURL(
     delegate_->OpenURL(params);
 }
 
-void NavigatorImpl::RequestTransferURL(
+void NavigatorImpl::NavigateFromFrameProxy(
     RenderFrameHostImpl* render_frame_host,
     const GURL& url,
     SiteInstance* source_site_instance,
-    const std::vector<GURL>& redirect_chain,
     const Referrer& referrer,
     ui::PageTransition page_transition,
-    const GlobalRequestID& transferred_global_request_id,
     bool should_replace_current_entry,
     const std::string& method,
     scoped_refptr<network::ResourceRequestBody> post_body,
@@ -692,20 +659,18 @@ void NavigatorImpl::RequestTransferURL(
           render_frame_host->frame_tree_node()->IsMainFrame()))
     return;
 
-  GURL dest_url(url);
   Referrer referrer_to_use(referrer);
-  FrameTreeNode* node = render_frame_host->frame_tree_node();
   SiteInstance* current_site_instance = render_frame_host->GetSiteInstance();
   // It is important to pass in the source_site_instance if it is available
   // (such as when navigating a proxy).  See https://crbug.com/656752.
   if (!GetContentClient()->browser()->ShouldAllowOpenURL(
           source_site_instance ? source_site_instance : current_site_instance,
           url)) {
-    // It is important to return here, rather than rewrite the dest_url to
+    // It is important to return here, rather than rewrite the url to
     // about:blank.  The latter won't actually have any effect when
     // transferring, as NavigateToEntry will think that the transfer is to the
-    // same RFH that started the navigation and let the existing navigation
-    // (for the disallowed URL) proceed.
+    // same RFH that started the navigation and let the existing navigation (for
+    // the disallowed URL) proceed.
     return;
   }
 
@@ -727,76 +692,10 @@ void NavigatorImpl::RequestTransferURL(
       current_site_instance, &page_transition, &is_renderer_initiated,
       &referrer_to_use);
 
-  // Create a NavigationEntry for the transfer, without making it the pending
-  // entry.  Subframe transfers should only be possible in OOPIF-enabled modes,
-  // and should have a clone of the last committed entry with a
-  // FrameNavigationEntry for the target frame.  Main frame transfers should
-  // have a new NavigationEntry.
-  // TODO(creis): Make this unnecessary by creating (and validating) the params
-  // directly, passing them to the destination RenderFrameHost.  See
-  // https://crbug.com/536906.
-  std::unique_ptr<NavigationEntryImpl> entry;
-  if (!node->IsMainFrame()) {
-    // Subframe case: create FrameNavigationEntry.
-    if (controller_->GetLastCommittedEntry()) {
-      entry = controller_->GetLastCommittedEntry()->Clone();
-      entry->set_extra_headers(extra_headers);
-      // TODO(arthursonzogni): What about |is_renderer_initiated|?
-      // Renderer-initiated navigation that target a remote frame are currently
-      // classified as browser-initiated when this one has already navigated.
-      // See https://crbug.com/722251.
-    } else {
-      // If there's no last committed entry, create an entry for about:blank
-      // with a subframe entry for our destination.
-      // TODO(creis): Ensure this case can't exist in https://crbug.com/524208.
-      entry = NavigationEntryImpl::FromNavigationEntry(
-          controller_->CreateNavigationEntry(
-              GURL(url::kAboutBlankURL), referrer_to_use, page_transition,
-              is_renderer_initiated, extra_headers,
-              controller_->GetBrowserContext()));
-    }
-    entry->AddOrUpdateFrameEntry(
-        node, -1, -1, nullptr,
-        static_cast<SiteInstanceImpl*>(source_site_instance), dest_url,
-        referrer_to_use, redirect_chain, PageState(), method, -1);
-  } else {
-    // Main frame case.
-    entry = NavigationEntryImpl::FromNavigationEntry(
-        controller_->CreateNavigationEntry(
-            dest_url, referrer_to_use, page_transition, is_renderer_initiated,
-            extra_headers, controller_->GetBrowserContext()));
-    entry->root_node()->frame_entry->set_source_site_instance(
-        static_cast<SiteInstanceImpl*>(source_site_instance));
-    entry->root_node()->frame_entry->set_method(method);
-    entry->SetRedirectChain(redirect_chain);
-  }
-  entry->set_suggested_filename(suggested_filename);
-
-  // Don't allow an entry replacement if there is no entry to replace.
-  // http://crbug.com/457149
-  if (should_replace_current_entry && controller_->GetEntryCount() > 0)
-    entry->set_should_replace_entry(true);
-  if (controller_->GetLastCommittedEntry() &&
-      controller_->GetLastCommittedEntry()->GetIsOverridingUserAgent()) {
-    entry->SetIsOverridingUserAgent(true);
-  }
-  entry->set_transferred_global_request_id(transferred_global_request_id);
-  // TODO(creis): Set user gesture and intent received timestamp on Android.
-
-  // We may not have successfully added the FrameNavigationEntry to |entry|
-  // above (per https://crbug.com/608402), in which case we create it from
-  // scratch.  This works because we do not depend on |frame_entry| being inside
-  // |entry| during NavigateToEntry.  This will go away when we shortcut this
-  // further in https://crbug.com/536906.
-  scoped_refptr<FrameNavigationEntry> frame_entry(entry->GetFrameEntry(node));
-  if (!frame_entry) {
-    frame_entry = new FrameNavigationEntry(
-        node->unique_name(), -1, -1, nullptr,
-        static_cast<SiteInstanceImpl*>(source_site_instance), dest_url,
-        referrer_to_use, redirect_chain, PageState(), method, -1);
-  }
-  NavigateToEntry(node, *frame_entry, *entry.get(), ReloadType::NONE, false,
-                  false, false, post_body, nullptr /* navigation_ui_data */);
+  controller_->NavigateFromFrameProxy(
+      render_frame_host, url, is_renderer_initiated, source_site_instance,
+      referrer_to_use, page_transition, should_replace_current_entry, method,
+      post_body, extra_headers, suggested_filename);
 }
 
 void NavigatorImpl::OnBeforeUnloadACK(FrameTreeNode* frame_tree_node,
