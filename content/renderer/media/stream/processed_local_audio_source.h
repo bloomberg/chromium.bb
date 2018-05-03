@@ -110,10 +110,6 @@ class CONTENT_EXPORT ProcessedLocalAudioSource final
 
   PeerConnectionDependencyFactory* const pc_factory_;
 
-  // In debug builds, check that all methods that could cause object graph
-  // or data flow changes are being called on the main thread.
-  base::ThreadChecker thread_checker_;
-
   AudioProcessingProperties audio_processing_properties_;
 
   // Callback that's called when the audio source has been initialized.
@@ -126,9 +122,6 @@ class CONTENT_EXPORT ProcessedLocalAudioSource final
   // The device created by the AudioDeviceFactory in EnsureSourceIsStarted().
   scoped_refptr<media::AudioCapturerSource> source_;
 
-  // Lock used to ensure thread-safe access to |source_| by SetVolume().
-  mutable base::Lock source_lock_;
-
   // Stores latest microphone volume received in a CaptureData() callback.
   // Range is [0, 255].
   base::subtle::Atomic32 volume_;
@@ -137,6 +130,9 @@ class CONTENT_EXPORT ProcessedLocalAudioSource final
   MediaStreamAudioLevelCalculator level_calculator_;
 
   bool allow_invalid_render_frame_id_for_testing_;
+
+  // Provides weak pointers for tasks posted by this instance.
+  base::WeakPtrFactory<ProcessedLocalAudioSource> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessedLocalAudioSource);
 };
