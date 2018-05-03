@@ -196,7 +196,7 @@ PasswordsPrivateExportPasswordsFunction::Run() {
       base::BindOnce(
           &PasswordsPrivateExportPasswordsFunction::ExportRequestCompleted,
           this),
-      GetAssociatedWebContentsDeprecated());
+      GetSenderWebContents());
   return RespondLater();
 }
 
