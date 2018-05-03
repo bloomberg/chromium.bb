@@ -5,16 +5,19 @@
 #include <string>
 #include <vector>
 
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/files/file_path_watcher.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/authpolicy/auth_policy_credentials_manager.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/helper.h"
@@ -50,6 +53,8 @@
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
 #include "components/policy/core/common/cloud/policy_builder.h"
+#include "components/policy/core/common/mock_configuration_policy_provider.h"
+#include "components/policy/policy_constants.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_service.h"
@@ -85,6 +90,7 @@ const char kUserNotMatchingWhitelist[] = "user@another_mail.com";
 const char kSupervisedUserID[] = "supervised_user@locally-managed.localhost";
 const char kPassword[] = "test_password";
 const char kActiveDirectoryRealm[] = "active.directory.realm";
+const char kKrb5CCFilePrefix[] = "FILE:";
 
 const char kPublicSessionUserEmail[] = "public_session_user@localhost";
 const int kAutoLoginNoDelay = 0;
@@ -755,9 +761,14 @@ class ExistingUserControllerActiveDirectoryTest
   // Overriden from ExistingUserControllerTest:
   void SetUpInProcessBrowserTestFixture() override {
     ExistingUserControllerTest::SetUpInProcessBrowserTestFixture();
+    fake_authpolicy_client()->DisableOperationDelayForTesting();
     ASSERT_TRUE(AuthPolicyLoginHelper::LockDeviceActiveDirectoryForTesting(
         kActiveDirectoryRealm));
     RefreshDevicePolicy();
+    EXPECT_CALL(policy_provider_, IsInitializationComplete(_))
+        .WillRepeatedly(Return(true));
+    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
+        &policy_provider_);
   }
 
   void TearDownOnMainThread() override {
@@ -766,6 +777,15 @@ class ExistingUserControllerActiveDirectoryTest
   }
 
  protected:
+  chromeos::FakeAuthPolicyClient* fake_authpolicy_client() {
+    return static_cast<chromeos::FakeAuthPolicyClient*>(
+        chromeos::DBusThreadManager::Get()->GetAuthPolicyClient());
+  }
+
+  void UpdateProviderPolicy(const policy::PolicyMap& policy) {
+    policy_provider_.UpdateChromePolicy(policy);
+  }
+
   void ExpectLoginFailure() {
     EXPECT_CALL(*mock_login_display_, SetUIEnabled(false)).Times(2);
     EXPECT_CALL(*mock_login_display_,
@@ -785,6 +805,77 @@ class ExistingUserControllerActiveDirectoryTest
     EXPECT_CALL(*mock_login_display_, SetUIEnabled(false)).Times(2);
     EXPECT_CALL(*mock_login_display_, SetUIEnabled(true)).Times(1);
   }
+
+  std::string GetExpectedKerberosConfig(bool enable_dns_cname_lookup) {
+    std::string config(base::StringPrintf(
+        kKrb5CnameSettings, enable_dns_cname_lookup ? "true" : "false"));
+    config += "configuration";
+    return config;
+  }
+
+  std::string GetKerberosConfigFileName() {
+    std::unique_ptr<base::Environment> env(base::Environment::Create());
+    std::string config_file;
+    EXPECT_TRUE(env->GetVar("KRB5_CONFIG", &config_file));
+    return config_file;
+  }
+
+  std::string GetKerberosCredentialsCacheFileName() {
+    std::unique_ptr<base::Environment> env(base::Environment::Create());
+    std::string creds_file;
+    EXPECT_TRUE(env->GetVar("KRB5CCNAME", &creds_file));
+    EXPECT_EQ(kKrb5CCFilePrefix,
+              creds_file.substr(0, strlen(kKrb5CCFilePrefix)));
+    return creds_file.substr(strlen(kKrb5CCFilePrefix));
+  }
+
+  void CheckKerberosFiles(bool enable_dns_cname_lookup) {
+    std::string file_contents;
+    EXPECT_TRUE(base::ReadFileToString(
+        base::FilePath(GetKerberosConfigFileName()), &file_contents));
+    EXPECT_EQ(GetExpectedKerberosConfig(enable_dns_cname_lookup),
+              file_contents);
+
+    EXPECT_TRUE(base::ReadFileToString(
+        base::FilePath(GetKerberosCredentialsCacheFileName()), &file_contents));
+    EXPECT_EQ(file_contents, "credentials");
+  }
+
+  // Applies policy and waits until both config and credentials files changed.
+  void ApplyPolicyAndWaitFilesChanged(bool enable_dns_cname_lookup) {
+    base::RunLoop loop;
+    base::RepeatingClosure barrier_closure(
+        base::BarrierClosure(2, loop.QuitClosure()));
+
+    auto watch_callback = base::BindRepeating(
+        [](const base::RepeatingClosure& barrier_closure,
+           const base::FilePath& path, bool error) -> void {
+          LOG(ERROR) << "Changed " << path.value();
+          EXPECT_FALSE(error);
+          barrier_closure.Run();
+        },
+        barrier_closure);
+
+    base::FilePathWatcher config_watcher;
+    config_watcher.Watch(base::FilePath(GetKerberosConfigFileName()),
+                         false /* recursive */, watch_callback);
+
+    base::FilePathWatcher creds_watcher;
+    creds_watcher.Watch(base::FilePath(GetKerberosCredentialsCacheFileName()),
+                        false /* recursive */, watch_callback);
+
+    policy::PolicyMap policies;
+    policies.Set(policy::key::kDisableAuthNegotiateCnameLookup,
+                 policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+                 policy::POLICY_SOURCE_CLOUD,
+                 std::make_unique<base::Value>(!enable_dns_cname_lookup),
+                 nullptr);
+    UpdateProviderPolicy(policies);
+    loop.Run();
+  }
+
+ private:
+  policy::MockConfigurationPolicyProvider policy_provider_;
 };
 
 class ExistingUserControllerActiveDirectoryUserWhitelistTest
@@ -795,13 +886,10 @@ class ExistingUserControllerActiveDirectoryUserWhitelistTest
   void SetUpInProcessBrowserTestFixture() override {
     ExistingUserControllerActiveDirectoryTest::
         SetUpInProcessBrowserTestFixture();
-    chromeos::FakeAuthPolicyClient* fake_authpolicy_client =
-        static_cast<chromeos::FakeAuthPolicyClient*>(
-            chromeos::DBusThreadManager::Get()->GetAuthPolicyClient());
     em::ChromeDeviceSettingsProto device_policy;
     device_policy.mutable_user_whitelist()->add_user_whitelist()->assign(
         kUserWhitelist);
-    fake_authpolicy_client->set_device_policy(device_policy);
+    fake_authpolicy_client()->set_device_policy(device_policy);
   }
 
   void SetUpLoginDisplay() override {
@@ -833,6 +921,32 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryTest,
   existing_user_controller()->CompleteLogin(user_context);
 
   profile_prepared_observer.Wait();
+  CheckKerberosFiles(true /* enable_dns_cname_lookup */);
+}
+
+// Tests if DisabledAuthNegotiateCnameLookup changes trigger updating user
+// Kerberos files.
+IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryTest,
+                       PolicyChangeTriggersFileUpdate) {
+  ExpectLoginSuccess();
+  UserContext user_context(ad_account_id_);
+  user_context.SetKey(Key(kPassword));
+  user_context.SetUserIDHash(ad_account_id_.GetUserEmail());
+  user_context.SetAuthFlow(UserContext::AUTH_FLOW_ACTIVE_DIRECTORY);
+  user_context.SetUserType(user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY);
+  content::WindowedNotificationObserver profile_prepared_observer(
+      chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
+      content::NotificationService::AllSources());
+  existing_user_controller()->CompleteLogin(user_context);
+
+  profile_prepared_observer.Wait();
+  CheckKerberosFiles(true /* enable_dns_cname_lookup */);
+
+  ApplyPolicyAndWaitFilesChanged(false /* enable_dns_cname_lookup */);
+  CheckKerberosFiles(false /* enable_dns_cname_lookup */);
+
+  ApplyPolicyAndWaitFilesChanged(true /* enable_dns_cname_lookup */);
+  CheckKerberosFiles(true /* enable_dns_cname_lookup */);
 }
 
 // Tests that Active Directory offline login succeeds on the Active Directory
@@ -844,12 +958,14 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryTest,
   user_context.SetKey(Key(kPassword));
   user_context.SetUserIDHash(ad_account_id_.GetUserEmail());
   user_context.SetUserType(user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY);
+
   content::WindowedNotificationObserver profile_prepared_observer(
       chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
       content::NotificationService::AllSources());
   existing_user_controller()->Login(user_context, SigninSpecifics());
 
   profile_prepared_observer.Wait();
+  CheckKerberosFiles(true /* enable_dns_cname_lookup */);
 }
 
 // Tests that Gaia login fails on the Active Directory managed device.

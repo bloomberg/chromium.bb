@@ -13,6 +13,8 @@
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/test/base/scoped_testing_local_state.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_auth_policy_client.h"
@@ -42,7 +44,8 @@ MATCHER_P(UserAccountDataEq, value, "Compares two UserAccountData") {
 class AuthPolicyCredentialsManagerTest : public testing::Test {
  public:
   AuthPolicyCredentialsManagerTest()
-      : user_manager_enabler_(std::make_unique<MockUserManager>()) {}
+      : user_manager_enabler_(std::make_unique<MockUserManager>()),
+        local_state_(TestingBrowserProcess::GetGlobal()) {}
   ~AuthPolicyCredentialsManagerTest() override = default;
 
   void SetUp() override {
@@ -76,6 +79,7 @@ class AuthPolicyCredentialsManagerTest : public testing::Test {
 
   void TearDown() override {
     EXPECT_CALL(*mock_user_manager(), Shutdown());
+    profile_.reset();
     chromeos::NetworkHandler::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
@@ -128,6 +132,8 @@ class AuthPolicyCredentialsManagerTest : public testing::Test {
   user_manager::ScopedUserManager user_manager_enabler_;
 
   std::unique_ptr<NotificationDisplayServiceTester> display_service_;
+
+  ScopedTestingLocalState local_state_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AuthPolicyCredentialsManagerTest);
