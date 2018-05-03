@@ -1527,6 +1527,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEasyUnlockPromotionsName,
      flag_descriptions::kEasyUnlockPromotionsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kEasyUnlockPromotions)},
+    {"enable-touchable-app-context-menu",
+     flag_descriptions::kTouchableAppContextMenuName,
+     flag_descriptions::kTouchableAppContextMenuDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kTouchableAppContextMenu)},
     {
         "enable-pinch", flag_descriptions::kPinchScaleName,
         flag_descriptions::kPinchScaleDescription, kOsLinux | kOsWin | kOsCrOS,

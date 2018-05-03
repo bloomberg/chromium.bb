@@ -1011,6 +1011,9 @@ extern const char kTopSitesFromSiteEngagementDescription[];
 extern const char kTouchAdjustmentName[];
 extern const char kTouchAdjustmentDescription[];
 
+extern const char kTouchableAppContextMenuName[];
+extern const char kTouchableAppContextMenuDescription[];
+
 extern const char kTouchDragDropName[];
 extern const char kTouchDragDropDescription[];
 
