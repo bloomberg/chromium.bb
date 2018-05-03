@@ -831,7 +831,9 @@ bool ChromeClientImpl::ShouldOpenModalDialogDuringPageDismissal(
 }
 
 WebLayerTreeView* ChromeClientImpl::GetWebLayerTreeView(LocalFrame* frame) {
+  CHECK(frame);
   WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(frame);
+  CHECK(web_frame);
   if (WebFrameWidgetBase* frame_widget = web_frame->LocalRootFrameWidget())
     return frame_widget->GetLayerTreeView();
   return nullptr;

@@ -75,6 +75,7 @@ void Frame::Trace(blink::Visitor* visitor) {
 
 void Frame::Detach(FrameDetachType type) {
   DCHECK(client_);
+  detach_stack_ = base::debug::StackTrace();
   // By the time this method is called, the subclasses should have already
   // advanced to the Detaching state.
   DCHECK_EQ(lifecycle_.GetState(), FrameLifecycle::kDetaching);
@@ -279,7 +280,8 @@ Frame::Frame(FrameClient* client,
       client_(client),
       window_proxy_manager_(window_proxy_manager),
       is_loading_(false),
-      devtools_frame_token_(client->GetDevToolsFrameToken()) {
+      devtools_frame_token_(client->GetDevToolsFrameToken()),
+      create_stack_(base::debug::StackTrace()) {
   InstanceCounters::IncrementCounter(InstanceCounters::kFrameCounter);
 
   if (owner_)
