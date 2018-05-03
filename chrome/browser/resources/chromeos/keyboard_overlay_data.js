@@ -4180,6 +4180,7 @@ var keyboardOverlayData = {
     'd<>CTRL': 'keyboardOverlayBookmarkCurrentPage',
     'd<>CTRL<>SEARCH': 'keyboardOverlayToggleDockedMagnifier',
     'd<>CTRL<>SHIFT': 'keyboardOverlayBookmarkAllTabs',
+    'd<>SEARCH': 'keyboardOverlayToggleDictation',
     'down<>ALT': 'keyboardOverlayPageDown',
     'down<>ALT<>CTRL': 'keyboardOverlayEnd',
     'down<>SEARCH': 'keyboardOverlayPageDown',
@@ -4296,6 +4297,5 @@ var keyboardOverlayData = {
     'z<>ALT<>CTRL': 'keyboardOverlayToggleChromevoxSpokenFeedback',
     'z<>CTRL': 'keyboardOverlayUndo',
     'a<>SEARCH': 'keyboardOverlayVoiceInteraction',
-    's<>SEARCH<>SHIFT': 'keyboardOverlayToggleDictation'
   }
 };

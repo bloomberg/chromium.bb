@@ -3431,6 +3431,9 @@
   <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_CHROMEVOX_SPOKEN_FEEDBACK" desc="The text in the keyboard overlay to explain the shortcut (enable or disable spoken feedback).">
     ChromeVox (spoken feedback)
   </message>
+  <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_DICTATION" desc="The text in the keyboard overlay to explain the shortcut (start or stop speak to type).">
+    Dictation
+  </message>
   <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_DOCKED_MAGNIFIER" desc="The text in the keyboard overlay to explain the shortcut (toggle the Docked Magnifier on/off).">
     Toggle Docked Magnifier
   </message>

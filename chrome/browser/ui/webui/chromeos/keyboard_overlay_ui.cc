@@ -274,6 +274,7 @@ struct I18nContentToMessage {
     {"keyboardOverlayDisableCapsLock", IDS_KEYBOARD_OVERLAY_DISABLE_CAPS_LOCK},
     {"keyboardOverlayToggleChromevoxSpokenFeedback",
      IDS_KEYBOARD_OVERLAY_TOGGLE_CHROMEVOX_SPOKEN_FEEDBACK},
+    {"keyboardOverlayToggleDictation", IDS_KEYBOARD_OVERLAY_TOGGLE_DICTATION},
     {"keyboardOverlayToggleDockedMagnifier",
      IDS_KEYBOARD_OVERLAY_TOGGLE_DOCKED_MAGNIFIER},
     {"keyboardOverlayToggleFullscreenMagnifier",
