@@ -22,6 +22,7 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/storage_partition.h"
 
 // static
 OneGoogleBarService* OneGoogleBarServiceFactory::GetForProfile(
@@ -65,10 +66,13 @@ KeyedService* OneGoogleBarServiceFactory::BuildServiceInstanceFor(
   }
   content_settings::CookieSettings* cookie_settings =
       CookieSettingsFactory::GetForProfile(profile).get();
+  auto url_loader_factory =
+      content::BrowserContext::GetDefaultStoragePartition(context)
+          ->GetURLLoaderFactoryForBrowserProcess();
   return new OneGoogleBarService(
       cookie_service,
       std::make_unique<OneGoogleBarFetcherImpl>(
-          profile->GetRequestContext(), google_url_tracker,
+          url_loader_factory, google_url_tracker,
           g_browser_process->GetApplicationLocale(), override_api_url,
           AccountConsistencyModeManager::IsMirrorEnabledForProfile(profile) &&
               signin::SettingsAllowSigninCookies(cookie_settings)));
