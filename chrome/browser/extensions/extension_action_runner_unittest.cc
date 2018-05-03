@@ -126,12 +126,12 @@ const Extension* ExtensionActionRunnerUnitTest::ReloadExtension() {
 
 bool ExtensionActionRunnerUnitTest::RequiresUserConsent(
     const Extension* extension) const {
-  PermissionsData::AccessType access_type =
+  PermissionsData::PageAccess access_type =
       runner()->RequiresUserConsentForScriptInjectionForTesting(
           extension, UserScript::PROGRAMMATIC_SCRIPT);
   // We should never downright refuse access in these tests.
-  DCHECK_NE(PermissionsData::ACCESS_DENIED, access_type);
-  return access_type == PermissionsData::ACCESS_WITHHELD;
+  DCHECK_NE(PermissionsData::PageAccess::kDenied, access_type);
+  return access_type == PermissionsData::PageAccess::kWithheld;
 }
 
 void ExtensionActionRunnerUnitTest::RequestInjection(

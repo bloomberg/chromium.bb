@@ -29,7 +29,7 @@ class InjectionHost {
   virtual const std::string& name() const = 0;
 
   // Returns true if the script should execute.
-  virtual extensions::PermissionsData::AccessType CanExecuteOnFrame(
+  virtual extensions::PermissionsData::PageAccess CanExecuteOnFrame(
       const GURL& document_url,
       content::RenderFrame* render_frame,
       int tab_id,

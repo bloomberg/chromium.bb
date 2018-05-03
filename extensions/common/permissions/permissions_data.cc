@@ -319,13 +319,14 @@ bool PermissionsData::CanAccessPage(const Extension* extension,
                                     const GURL& document_url,
                                     int tab_id,
                                     std::string* error) const {
-  AccessType result = GetPageAccess(extension, document_url, tab_id, error);
+  PageAccess result = GetPageAccess(extension, document_url, tab_id, error);
 
-  // TODO(rdevlin.cronin) Update callers so that they only need ACCESS_ALLOWED.
-  return result == ACCESS_ALLOWED || result == ACCESS_WITHHELD;
+  // TODO(rdevlin.cronin) Update callers so that they only need
+  // PageAccess::kAllowed.
+  return result == PageAccess::kAllowed || result == PageAccess::kWithheld;
 }
 
-PermissionsData::AccessType PermissionsData::GetPageAccess(
+PermissionsData::PageAccess PermissionsData::GetPageAccess(
     const Extension* extension,
     const GURL& document_url,
     int tab_id,
@@ -344,14 +345,15 @@ bool PermissionsData::CanRunContentScriptOnPage(const Extension* extension,
                                                 const GURL& document_url,
                                                 int tab_id,
                                                 std::string* error) const {
-  AccessType result =
+  PageAccess result =
       GetContentScriptAccess(extension, document_url, tab_id, error);
 
-  // TODO(rdevlin.cronin) Update callers so that they only need ACCESS_ALLOWED.
-  return result == ACCESS_ALLOWED || result == ACCESS_WITHHELD;
+  // TODO(rdevlin.cronin) Update callers so that they only need
+  // PageAccess::kAllowed.
+  return result == PageAccess::kAllowed || result == PageAccess::kWithheld;
 }
 
-PermissionsData::AccessType PermissionsData::GetContentScriptAccess(
+PermissionsData::PageAccess PermissionsData::GetContentScriptAccess(
     const Extension* extension,
     const GURL& document_url,
     int tab_id,
@@ -384,7 +386,8 @@ bool PermissionsData::CanCaptureVisiblePage(const GURL& document_url,
   // GetPageAccess() will still (correctly) return false if, for instance, the
   // URL is a file:// URL and the extension does not have file access.
   // See https://crbug.com/810220.
-  if (GetPageAccess(extension, document_url, tab_id, error) != ACCESS_ALLOWED) {
+  if (GetPageAccess(extension, document_url, tab_id, error) !=
+      PageAccess::kAllowed) {
     if (!document_url.SchemeIs(content::kChromeUIScheme))
       return false;
 
@@ -434,7 +437,7 @@ bool PermissionsData::IsRuntimeBlockedHostUnsafe(const GURL& url) const {
          !PolicyAllowedHostsUnsafe().MatchesURL(url);
 }
 
-PermissionsData::AccessType PermissionsData::CanRunOnPage(
+PermissionsData::PageAccess PermissionsData::CanRunOnPage(
     const Extension* extension,
     const GURL& document_url,
     int tab_id,
@@ -445,26 +448,26 @@ PermissionsData::AccessType PermissionsData::CanRunOnPage(
   runtime_lock_.AssertAcquired();
   if (g_policy_delegate && !g_policy_delegate->CanExecuteScriptOnPage(
                                extension, document_url, tab_id, error))
-    return ACCESS_DENIED;
+    return PageAccess::kDenied;
 
   if (extension->location() != Manifest::COMPONENT &&
       extension->permissions_data()->IsRuntimeBlockedHostUnsafe(document_url)) {
     if (error)
       *error = extension_misc::kPolicyBlockedScripting;
-    return ACCESS_DENIED;
+    return PageAccess::kDenied;
   }
 
   if (IsRestrictedUrl(document_url, extension, error))
-    return ACCESS_DENIED;
+    return PageAccess::kDenied;
 
   if (tab_url_patterns && tab_url_patterns->MatchesURL(document_url))
-    return ACCESS_ALLOWED;
+    return PageAccess::kAllowed;
 
   if (permitted_url_patterns.MatchesURL(document_url))
-    return ACCESS_ALLOWED;
+    return PageAccess::kAllowed;
 
   if (withheld_url_patterns.MatchesURL(document_url))
-    return ACCESS_WITHHELD;
+    return PageAccess::kWithheld;
 
   if (error) {
     if (extension->permissions_data()->active_permissions().HasAPIPermission(
@@ -476,7 +479,7 @@ PermissionsData::AccessType PermissionsData::CanRunOnPage(
     }
   }
 
-  return ACCESS_DENIED;
+  return PageAccess::kDenied;
 }
 
 }  // namespace extensions

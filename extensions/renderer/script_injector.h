@@ -66,7 +66,7 @@ class ScriptInjector {
       const std::set<std::string>& injected_stylesheets) const = 0;
 
   // Returns true if the script should execute on the given |frame|.
-  virtual PermissionsData::AccessType CanExecuteOnFrame(
+  virtual PermissionsData::PageAccess CanExecuteOnFrame(
       const InjectionHost* injection_host,
       blink::WebLocalFrame* web_frame,
       int tab_id) = 0;

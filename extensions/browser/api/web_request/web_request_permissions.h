@@ -50,7 +50,7 @@ class WebRequestPermissions {
 
   // |host_permission_check| controls how permissions are checked with regard to
   // |url| and |initiator| if an initiator exists.
-  static extensions::PermissionsData::AccessType CanExtensionAccessURL(
+  static extensions::PermissionsData::PageAccess CanExtensionAccessURL(
       const extensions::InfoMap* extension_info_map,
       const std::string& extension_id,
       const GURL& url,

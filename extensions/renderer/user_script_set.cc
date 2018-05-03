@@ -224,11 +224,8 @@ std::unique_ptr<ScriptInjection> UserScriptSet::GetInjectionForScript(
   std::unique_ptr<ScriptInjector> injector(
       new UserScriptInjector(script, this, is_declarative));
 
-  if (injector->CanExecuteOnFrame(
-          injection_host.get(),
-          web_frame,
-          tab_id) ==
-      PermissionsData::ACCESS_DENIED) {
+  if (injector->CanExecuteOnFrame(injection_host.get(), web_frame, tab_id) ==
+      PermissionsData::PageAccess::kDenied) {
     return injection;
   }
 

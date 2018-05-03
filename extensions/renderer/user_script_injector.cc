@@ -169,14 +169,14 @@ bool UserScriptInjector::ShouldInjectCss(
          ShouldInjectScripts(script_->css_scripts(), injected_stylesheets);
 }
 
-PermissionsData::AccessType UserScriptInjector::CanExecuteOnFrame(
+PermissionsData::PageAccess UserScriptInjector::CanExecuteOnFrame(
     const InjectionHost* injection_host,
     blink::WebLocalFrame* web_frame,
     int tab_id) {
   // There is no harm in allowing the injection when the script is gone,
   // because there is nothing to inject.
   if (!script_)
-    return PermissionsData::ACCESS_ALLOWED;
+    return PermissionsData::PageAccess::kAllowed;
 
   if (script_->consumer_instance_type() ==
           UserScript::ConsumerInstanceType::WEBVIEW) {
@@ -202,8 +202,8 @@ PermissionsData::AccessType UserScriptInjector::CanExecuteOnFrame(
       map.insert(std::pair<RoutingInfoKey, bool>(key, allowed));
     }
 
-    return allowed ? PermissionsData::ACCESS_ALLOWED
-                   : PermissionsData::ACCESS_DENIED;
+    return allowed ? PermissionsData::PageAccess::kAllowed
+                   : PermissionsData::PageAccess::kDenied;
   }
 
   GURL effective_document_url = ScriptContext::GetEffectiveDocumentURL(

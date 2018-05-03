@@ -24,11 +24,11 @@ const std::string& WebUIInjectionHost::name() const {
   return id().id();
 }
 
-extensions::PermissionsData::AccessType WebUIInjectionHost::CanExecuteOnFrame(
+extensions::PermissionsData::PageAccess WebUIInjectionHost::CanExecuteOnFrame(
     const GURL& document_url,
     content::RenderFrame* render_frame,
     int tab_id,
     bool is_declarative) const {
   // Content scripts are allowed to inject on webviews created by WebUI.
-  return extensions::PermissionsData::AccessType::ACCESS_ALLOWED;
+  return extensions::PermissionsData::PageAccess::kAllowed;
 }

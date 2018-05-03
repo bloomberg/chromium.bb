@@ -1463,7 +1463,7 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
     }
 
     if (!request->is_web_view) {
-      PermissionsData::AccessType access =
+      PermissionsData::PageAccess access =
           WebRequestPermissions::CanExtensionAccessURL(
               extension_info_map, listener->id.extension_id, request->url,
               request->frame_data ? request->frame_data->tab_id : -1,
@@ -1471,8 +1471,8 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
               WebRequestPermissions::REQUIRE_HOST_PERMISSION_FOR_URL,
               request->initiator);
 
-      if (access != PermissionsData::ACCESS_ALLOWED) {
-        if (access == PermissionsData::ACCESS_WITHHELD &&
+      if (access != PermissionsData::PageAccess::kAllowed) {
+        if (access == PermissionsData::PageAccess::kWithheld &&
             web_request_event_router_delegate_) {
           web_request_event_router_delegate_->NotifyWebRequestWithheld(
               request->render_process_id, request->frame_id,

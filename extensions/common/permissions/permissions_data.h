@@ -38,12 +38,16 @@ class URLPatternSet;
 // permissions while another thread changes them.
 class PermissionsData {
  public:
-  // The possible types of access for a given frame.
-  enum AccessType {
-    ACCESS_DENIED,   // The extension is not allowed to access the given page.
-    ACCESS_ALLOWED,  // The extension is allowed to access the given page.
-    ACCESS_WITHHELD  // The browser must determine if the extension can access
-                     // the given page.
+  // The possible types of access for a given page.
+  // TODO(devlin): Sometimes, this is used for things beyond just a "page",
+  // such as network request interception or access to a particular frame.
+  // Should we update this?  If so, we should also update the titles of the
+  // GetPageAccess()/CanAccessPage() methods below.
+  enum class PageAccess {
+    kDenied,    // The extension is not allowed to access the given page.
+    kAllowed,   // The extension is allowed to access the given page.
+    kWithheld,  // The browser must determine if the extension can access
+                // the given page.
   };
 
   using TabPermissionsMap = std::map<int, std::unique_ptr<const PermissionSet>>;
@@ -187,7 +191,7 @@ class PermissionsData {
   // Like CanAccessPage, but also takes withheld permissions into account.
   // TODO(rdevlin.cronin) We shouldn't have two functions, but not all callers
   // know how to wait for permission.
-  AccessType GetPageAccess(const Extension* extension,
+  PageAccess GetPageAccess(const Extension* extension,
                            const GURL& document_url,
                            int tab_id,
                            std::string* error) const;
@@ -206,7 +210,7 @@ class PermissionsData {
   // account.
   // TODO(rdevlin.cronin) We shouldn't have two functions, but not all callers
   // know how to wait for permission.
-  AccessType GetContentScriptAccess(const Extension* extension,
+  PageAccess GetContentScriptAccess(const Extension* extension,
                                     const GURL& document_url,
                                     int tab_id,
                                     std::string* error) const;
@@ -287,7 +291,7 @@ class PermissionsData {
   // checking against |permitted_url_patterns| and |tab_url_patterns| in
   // addition to blocking special sites (like the webstore or chrome:// urls).
   // Must be called with |runtime_lock_| acquired.
-  AccessType CanRunOnPage(const Extension* extension,
+  PageAccess CanRunOnPage(const Extension* extension,
                           const GURL& document_url,
                           int tab_id,
                           const URLPatternSet& permitted_url_patterns,

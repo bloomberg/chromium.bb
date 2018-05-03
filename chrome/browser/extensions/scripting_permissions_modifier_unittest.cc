@@ -314,20 +314,20 @@ TEST_F(ScriptingPermissionsModifierUnitTest, GrantHostPermission) {
     return permissions->GetPageAccess(extension.get(), url, 0, nullptr);
   };
 
-  EXPECT_EQ(PermissionsData::ACCESS_WITHHELD, get_page_access(kUrl));
-  EXPECT_EQ(PermissionsData::ACCESS_WITHHELD, get_page_access(kUrl2));
+  EXPECT_EQ(PermissionsData::PageAccess::kWithheld, get_page_access(kUrl));
+  EXPECT_EQ(PermissionsData::PageAccess::kWithheld, get_page_access(kUrl2));
 
   modifier.GrantHostPermission(kUrl);
   EXPECT_TRUE(modifier.HasGrantedHostPermission(kUrl));
   EXPECT_FALSE(modifier.HasGrantedHostPermission(kUrl2));
-  EXPECT_EQ(PermissionsData::ACCESS_ALLOWED, get_page_access(kUrl));
-  EXPECT_EQ(PermissionsData::ACCESS_WITHHELD, get_page_access(kUrl2));
+  EXPECT_EQ(PermissionsData::PageAccess::kAllowed, get_page_access(kUrl));
+  EXPECT_EQ(PermissionsData::PageAccess::kWithheld, get_page_access(kUrl2));
 
   modifier.RemoveGrantedHostPermission(kUrl);
   EXPECT_FALSE(modifier.HasGrantedHostPermission(kUrl));
   EXPECT_FALSE(modifier.HasGrantedHostPermission(kUrl2));
-  EXPECT_EQ(PermissionsData::ACCESS_WITHHELD, get_page_access(kUrl));
-  EXPECT_EQ(PermissionsData::ACCESS_WITHHELD, get_page_access(kUrl2));
+  EXPECT_EQ(PermissionsData::PageAccess::kWithheld, get_page_access(kUrl));
+  EXPECT_EQ(PermissionsData::PageAccess::kWithheld, get_page_access(kUrl2));
 }
 
 // Checks that policy-installed extensions don't have permissions withheld and
