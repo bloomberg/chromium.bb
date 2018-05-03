@@ -64,6 +64,7 @@
 #include "chrome/browser/ui/views/autofill/save_card_icon_view.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
+#include "chrome/browser/ui/views/confirm_quit_bubble_controller.h"
 #include "chrome/browser/ui/views/download/download_in_progress_dialog_view.h"
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
@@ -95,6 +96,7 @@
 #include "chrome/browser/ui/views/update_recommended_message_box.h"
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
 #include "chrome/common/channel_info.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/command.h"
 #include "chrome/common/pref_names.h"
@@ -1323,6 +1325,14 @@ content::KeyboardEventProcessingResult BrowserView::PreHandleKeyboardEvent(
     return content::KeyboardEventProcessingResult::NOT_HANDLED;
   }
 
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+  if (base::FeatureList::IsEnabled(features::kWarnBeforeQuitting) &&
+      ConfirmQuitBubbleController::GetInstance()->HandleKeyboardEvent(
+          accelerator)) {
+    return content::KeyboardEventProcessingResult::HANDLED_WANTS_KEY_UP;
+  }
+#endif  // defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+
 #if defined(OS_CHROMEOS)
   if (ash_util::IsAcceleratorDeprecated(accelerator)) {
     return (event.GetType() == blink::WebInputEvent::kRawKeyDown)
@@ -2089,6 +2099,14 @@ void BrowserView::OnThemeChanged() {
 // BrowserView, ui::AcceleratorTarget overrides:
 
 bool BrowserView::AcceleratorPressed(const ui::Accelerator& accelerator) {
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+  if (base::FeatureList::IsEnabled(features::kWarnBeforeQuitting) &&
+      ConfirmQuitBubbleController::GetInstance()->HandleKeyboardEvent(
+          accelerator)) {
+    return true;
+  }
+#endif  // defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+
   int command_id;
   // Though AcceleratorManager should not send unknown |accelerator| to us, it's
   // still possible the command cannot be executed now.

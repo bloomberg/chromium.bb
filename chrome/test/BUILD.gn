@@ -3189,6 +3189,11 @@ test("unit_tests") {
     }
   }
 
+  if (is_win || (is_linux && !is_chromeos)) {
+    sources +=
+        [ "../browser/ui/views/confirm_quit_bubble_controller_unittest.cc" ]
+  }
+
   if (enable_native_notifications) {
     if (is_desktop_linux) {
       sources += [ "../browser/notifications/notification_platform_bridge_linux_unittest.cc" ]
