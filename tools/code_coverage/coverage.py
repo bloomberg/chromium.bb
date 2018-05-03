@@ -743,7 +743,7 @@ def _GetCoverageHtmlReportPathForComponent(component_name):
 
 def _GetCoverageReportRootDirPath():
   """The root directory that contains all generated coverage html reports."""
-  return os.path.join(os.path.abspath(OUTPUT_DIR), _GetHostPlatform())
+  return os.path.join(os.path.abspath(OUTPUT_DIR), 'coverage')
 
 
 def _CreateCoverageProfileDataForTargets(targets, commands, jobs_count=None):
