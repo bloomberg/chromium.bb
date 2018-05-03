@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <utility>
 
-#include "base/lazy_instance.h"
+#include "base/no_destructor.h"
 #include "printing/units.h"
 #include "third_party/pdfium/public/cpp/fpdf_scopers.h"
 #include "third_party/pdfium/public/fpdfview.h"
@@ -18,9 +18,6 @@ using printing::kPointsPerInch;
 namespace chrome_pdf {
 
 namespace {
-
-base::LazyInstance<PDFiumEngineExports>::Leaky g_pdf_engine_exports =
-    LAZY_INSTANCE_INITIALIZER;
 
 int CalculatePosition(FPDF_PAGE page,
                       const PDFiumEngineExports::RenderingSettings& settings,
@@ -117,7 +114,8 @@ PDFEngineExports::RenderingSettings::RenderingSettings(
     const RenderingSettings& that) = default;
 
 PDFEngineExports* PDFEngineExports::Get() {
-  return g_pdf_engine_exports.Pointer();
+  static base::NoDestructor<PDFiumEngineExports> exports;
+  return exports.get();
 }
 
 PDFiumEngineExports::PDFiumEngineExports() {}
@@ -134,7 +132,7 @@ bool PDFiumEngineExports::RenderPDFPageToDC(const void* pdf_buffer,
       FPDF_LoadMemDocument(pdf_buffer, buffer_size, nullptr));
   if (!doc)
     return false;
-  FPDF_PAGE page = FPDF_LoadPage(doc.get(), page_number);
+  ScopedFPDFPage page(FPDF_LoadPage(doc.get(), page_number));
   if (!page)
     return false;
 
@@ -146,7 +144,7 @@ bool PDFiumEngineExports::RenderPDFPageToDC(const void* pdf_buffer,
     new_settings.dpi_y = GetDeviceCaps(dc, LOGPIXELSY);
 
   pp::Rect dest;
-  int rotate = CalculatePosition(page, new_settings, &dest);
+  int rotate = CalculatePosition(page.get(), new_settings, &dest);
 
   int save_state = SaveDC(dc);
   // The caller wanted all drawing to happen within the bounds specified.
@@ -168,13 +166,14 @@ bool PDFiumEngineExports::RenderPDFPageToDC(const void* pdf_buffer,
   // supplied a printer DC.
   int device_type = GetDeviceCaps(dc, TECHNOLOGY);
   if (device_type == DT_RASPRINTER || device_type == DT_PLOTTER) {
-    FPDF_BITMAP bitmap =
-        FPDFBitmap_Create(dest.width(), dest.height(), FPDFBitmap_BGRx);
+    ScopedFPDFBitmap bitmap(
+        FPDFBitmap_Create(dest.width(), dest.height(), FPDFBitmap_BGRx));
     // Clear the bitmap
-    FPDFBitmap_FillRect(bitmap, 0, 0, dest.width(), dest.height(), 0xFFFFFFFF);
-    FPDF_RenderPageBitmap(bitmap, page, 0, 0, dest.width(), dest.height(),
-                          rotate, flags);
-    int stride = FPDFBitmap_GetStride(bitmap);
+    FPDFBitmap_FillRect(bitmap.get(), 0, 0, dest.width(), dest.height(),
+                        0xFFFFFFFF);
+    FPDF_RenderPageBitmap(bitmap.get(), page.get(), 0, 0, dest.width(),
+                          dest.height(), rotate, flags);
+    int stride = FPDFBitmap_GetStride(bitmap.get());
     BITMAPINFO bmi;
     memset(&bmi, 0, sizeof(bmi));
     bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
@@ -185,15 +184,14 @@ bool PDFiumEngineExports::RenderPDFPageToDC(const void* pdf_buffer,
     bmi.bmiHeader.biCompression = BI_RGB;
     bmi.bmiHeader.biSizeImage = stride * dest.height();
     StretchDIBits(dc, dest.x(), dest.y(), dest.width(), dest.height(), 0, 0,
-                  dest.width(), dest.height(), FPDFBitmap_GetBuffer(bitmap),
-                  &bmi, DIB_RGB_COLORS, SRCCOPY);
-    FPDFBitmap_Destroy(bitmap);
+                  dest.width(), dest.height(),
+                  FPDFBitmap_GetBuffer(bitmap.get()), &bmi, DIB_RGB_COLORS,
+                  SRCCOPY);
   } else {
-    FPDF_RenderPage(dc, page, dest.x(), dest.y(), dest.width(), dest.height(),
-                    rotate, flags);
+    FPDF_RenderPage(dc, page.get(), dest.x(), dest.y(), dest.width(),
+                    dest.height(), rotate, flags);
   }
   RestoreDC(dc, save_state);
-  FPDF_ClosePage(page);
   return true;
 }
 
@@ -222,18 +220,18 @@ bool PDFiumEngineExports::RenderPDFPageToBitmap(
       FPDF_LoadMemDocument(pdf_buffer, pdf_buffer_size, nullptr));
   if (!doc)
     return false;
-  FPDF_PAGE page = FPDF_LoadPage(doc.get(), page_number);
+  ScopedFPDFPage page(FPDF_LoadPage(doc.get(), page_number));
   if (!page)
     return false;
 
   pp::Rect dest;
-  int rotate = CalculatePosition(page, settings, &dest);
+  int rotate = CalculatePosition(page.get(), settings, &dest);
 
-  FPDF_BITMAP bitmap = FPDFBitmap_CreateEx(
+  ScopedFPDFBitmap bitmap(FPDFBitmap_CreateEx(
       settings.bounds.width(), settings.bounds.height(), FPDFBitmap_BGRA,
-      bitmap_buffer, settings.bounds.width() * 4);
+      bitmap_buffer, settings.bounds.width() * 4));
   // Clear the bitmap
-  FPDFBitmap_FillRect(bitmap, 0, 0, settings.bounds.width(),
+  FPDFBitmap_FillRect(bitmap.get(), 0, 0, settings.bounds.width(),
                       settings.bounds.height(), 0xFFFFFFFF);
   // Shift top-left corner of bounds to (0, 0) if it's not there.
   dest.set_point(dest.point() - settings.bounds.point());
@@ -242,10 +240,8 @@ bool PDFiumEngineExports::RenderPDFPageToBitmap(
   if (!settings.use_color)
     flags |= FPDF_GRAYSCALE;
 
-  FPDF_RenderPageBitmap(bitmap, page, dest.x(), dest.y(), dest.width(),
-                        dest.height(), rotate, flags);
-  FPDFBitmap_Destroy(bitmap);
-  FPDF_ClosePage(page);
+  FPDF_RenderPageBitmap(bitmap.get(), page.get(), dest.x(), dest.y(),
+                        dest.width(), dest.height(), rotate, flags);
   return true;
 }
 
