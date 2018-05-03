@@ -178,7 +178,7 @@ int dri_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t forma
 		dri_use |= __DRI_IMAGE_USE_SCANOUT;
 	if (use_flags & BO_USE_CURSOR)
 		dri_use |= __DRI_IMAGE_USE_CURSOR;
-	if (use_flags & (BO_USE_LINEAR | BO_USE_SW))
+	if (use_flags & BO_USE_LINEAR)
 		dri_use |= __DRI_IMAGE_USE_LINEAR;
 
 	bo->priv = dri->image_extension->createImage(dri->device, width, height, dri_format,
