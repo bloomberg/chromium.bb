@@ -28,6 +28,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/optional.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
 #include "third_party/blink/public/platform/web_menu_source_type.h"
@@ -51,6 +52,7 @@
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_traits.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -398,7 +400,13 @@ class CORE_EXPORT EventHandler final
   bool long_tap_should_invoke_context_menu_;
 
   TaskRunnerTimer<EventHandler> active_interval_timer_;
-  double last_show_press_timestamp_;
+
+  // last_show_press_timestamp_ prevents the active state rewrited by following
+  // events too soon (less than 0.15s).
+  // It is ok we only record last_show_press_timestamp_ in root frame since
+  // root frame will have subframe as active element if subframe has active
+  // element.
+  base::Optional<WTF::TimeTicks> last_show_press_timestamp_;
   Member<Element> last_deferred_tap_element_;
 
   // Set on GestureTapDown if unique_touch_event_id_ matches cached adjusted
