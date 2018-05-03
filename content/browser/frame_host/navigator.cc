@@ -26,8 +26,22 @@ bool Navigator::NavigateToPendingEntry(
   return false;
 }
 
-bool Navigator::NavigateNewChildFrame(RenderFrameHostImpl* render_frame_host,
-                                      const GURL& default_url) {
+bool Navigator::NavigateToEntry(
+    FrameTreeNode* frame_tree_node,
+    const FrameNavigationEntry& frame_entry,
+    const NavigationEntryImpl& entry,
+    ReloadType reload_type,
+    bool is_same_document_history_load,
+    bool is_history_navigation_in_new_child,
+    bool is_pending_entry,
+    const scoped_refptr<network::ResourceRequestBody>& post_body,
+    std::unique_ptr<NavigationUIData> navigation_ui_data) {
+  return false;
+}
+
+bool Navigator::StartHistoryNavigationInNewSubframe(
+    RenderFrameHostImpl* render_frame_host,
+    const GURL& default_url) {
   return false;
 }
 
