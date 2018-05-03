@@ -172,8 +172,9 @@ const SkColor kDefaultIconColor = SkColorSetARGB(0xA0, 0x00, 0x00, 0x00);
       break;
   }
 
-  const gfx::ImageSkia& iconImage = gfx::CreateVectorIcon(
-      kTabCloseNormalIcon, kTabCloseButtonSize, iconColor_);
+  const gfx::ImageSkia& iconImage =
+      gfx::CreateVectorIcon(kTabCloseNormalIcon, kTabCloseButtonSize,
+                            vectorHighlightIcon ? SK_ColorWHITE : iconColor_);
 
   if (vectorHighlightIcon) {
     const gfx::ImageSkia& highlight = gfx::CreateVectorIcon(
