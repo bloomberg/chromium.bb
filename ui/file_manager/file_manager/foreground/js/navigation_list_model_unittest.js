@@ -27,10 +27,36 @@ function testModel() {
   var volumeManager = new MockVolumeManagerWrapper();
   var shortcutListModel = new MockFolderShortcutDataModel(
       [new MockFileEntry(drive, '/root/shortcut')]);
-  var menuModel = new NavigationModelMenuItem(
+  var fakeEntry = {
+    toURL: function() {
+      return 'fake-entry://recent';
+    }
+  };
+  var recentItem = new NavigationModelRecentItem('recent-label', fakeEntry);
+  var addNewServicesItem = new NavigationModelMenuItem(
       'menu-button-label', '#add-new-services', 'menu-button-icon');
   var model = new NavigationListModel(
-      volumeManager, shortcutListModel, menuModel);
+      volumeManager, shortcutListModel, recentItem, addNewServicesItem);
+
+  assertEquals(5, model.length);
+  assertEquals('drive', model.item(0).volumeInfo.volumeId);
+  assertEquals('downloads', model.item(1).volumeInfo.volumeId);
+  assertEquals('fake-entry://recent', model.item(2).entry.toURL());
+  assertEquals('/root/shortcut', model.item(3).entry.fullPath);
+  assertEquals('menu-button-label', model.item(4).label);
+  assertEquals('#add-new-services', model.item(4).menu);
+  assertEquals('menu-button-icon', model.item(4).icon);
+}
+
+function testNoRecent() {
+  var volumeManager = new MockVolumeManagerWrapper();
+  var shortcutListModel = new MockFolderShortcutDataModel(
+      [new MockFileEntry(drive, '/root/shortcut')]);
+  var recentItem = null;
+  var addNewServicesItem = new NavigationModelMenuItem(
+      'menu-button-label', '#add-new-services', 'menu-button-icon');
+  var model = new NavigationListModel(
+      volumeManager, shortcutListModel, recentItem, addNewServicesItem);
 
   assertEquals(4, model.length);
   assertEquals('drive', model.item(0).volumeInfo.volumeId);
@@ -45,7 +71,10 @@ function testAddAndRemoveShortcuts() {
   var volumeManager = new MockVolumeManagerWrapper();
   var shortcutListModel = new MockFolderShortcutDataModel(
       [new MockFileEntry(drive, '/root/shortcut')]);
-  var model = new NavigationListModel(volumeManager, shortcutListModel, null);
+  var recentItem = null;
+  var addNewServicesItem = null;
+  var model = new NavigationListModel(
+      volumeManager, shortcutListModel, recentItem, addNewServicesItem);
 
   assertEquals(3, model.length);
 
@@ -77,7 +106,10 @@ function testAddAndRemoveVolumes() {
   var volumeManager = new MockVolumeManagerWrapper();
   var shortcutListModel = new MockFolderShortcutDataModel(
       [new MockFileEntry(drive, '/root/shortcut')]);
-  var model = new NavigationListModel(volumeManager, shortcutListModel, null);
+  var recentItem = null;
+  var addNewServicesItem = null;
+  var model = new NavigationListModel(
+      volumeManager, shortcutListModel, recentItem, addNewServicesItem);
 
   assertEquals(3, model.length);
 
