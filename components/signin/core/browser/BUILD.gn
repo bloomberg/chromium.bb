@@ -71,6 +71,8 @@ static_library("browser") {
     "child_account_info_fetcher_impl.h",
     "chrome_connected_header_helper.cc",
     "chrome_connected_header_helper.h",
+    "cookie_settings_util.cc",
+    "cookie_settings_util.h",
     "dice_account_reconcilor_delegate.cc",
     "dice_account_reconcilor_delegate.h",
     "dice_header_helper.cc",

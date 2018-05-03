@@ -60,10 +60,12 @@ enum class LoadTokenFromDBStatus {
   // Token was loaded.
   TOKEN_LOADED = 0,
   // Token was revoked as part of Dice migration.
-  TOKEN_REVOKED_DICE_MIGRATION,
+  TOKEN_REVOKED_DICE_MIGRATION = 1,
   // Token was revoked because it is a secondary account and account consistency
   // is disabled.
-  TOKEN_REVOKED_SECONDARY_ACCOUNT,
+  TOKEN_REVOKED_SECONDARY_ACCOUNT = 2,
+  // Token was revoked on load due to cookie settings.
+  TOKEN_REVOKED_ON_LOAD = 3,
 
   NUM_LOAD_TOKEN_FROM_DB_STATUS
 };
@@ -339,7 +341,8 @@ MutableProfileOAuth2TokenServiceDelegate::
         SigninClient* client,
         SigninErrorController* signin_error_controller,
         AccountTrackerService* account_tracker_service,
-        signin::AccountConsistencyMethod account_consistency)
+        signin::AccountConsistencyMethod account_consistency,
+        bool revoke_all_tokens_on_load)
     : web_data_service_request_(0),
       load_credentials_state_(LOAD_CREDENTIALS_NOT_STARTED),
       backoff_entry_(&backoff_policy_),
@@ -347,7 +350,8 @@ MutableProfileOAuth2TokenServiceDelegate::
       client_(client),
       signin_error_controller_(signin_error_controller),
       account_tracker_service_(account_tracker_service),
-      account_consistency_(account_consistency) {
+      account_consistency_(account_consistency),
+      revoke_all_tokens_on_load_(revoke_all_tokens_on_load) {
   VLOG(1) << "MutablePO2TS::MutablePO2TS";
   DCHECK(client);
   DCHECK(signin_error_controller);
@@ -684,6 +688,17 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadAllCredentialsIntoMemory(
             load_token_status =
                 LoadTokenFromDBStatus::TOKEN_REVOKED_DICE_MIGRATION;
           }
+        }
+
+        if (load_account && revoke_all_tokens_on_load_) {
+          if (account_id == loading_primary_account_id_) {
+            RevokeCredentialsOnServer(refresh_token);
+            refresh_token = kInvalidRefreshToken;
+            PersistCredentials(account_id, refresh_token);
+          } else {
+            load_account = false;
+          }
+          load_token_status = LoadTokenFromDBStatus::TOKEN_REVOKED_ON_LOAD;
         }
 
         UMA_HISTOGRAM_ENUMERATION(

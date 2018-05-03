@@ -4,8 +4,8 @@
 
 #include "ios/web_view/internal/signin/ios_web_view_signin_client.h"
 
+#include "components/signin/core/browser/cookie_settings_util.h"
 #include "components/signin/core/browser/signin_cookie_change_subscription.h"
-#include "components/signin/core/browser/signin_header_helper.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
