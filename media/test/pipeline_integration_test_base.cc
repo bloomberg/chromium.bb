@@ -203,20 +203,17 @@ void PipelineIntegrationTestBase::OnEnded() {
 }
 
 bool PipelineIntegrationTestBase::WaitUntilOnEnded() {
-  if (!ended_) {
-    base::RunLoop run_loop;
-    RunUntilIdleOrEnded(&run_loop);
-    EXPECT_TRUE(ended_);
-  } else {
-    scoped_task_environment_.RunUntilIdle();
-  }
-  return ended_ && (pipeline_status_ == PIPELINE_OK);
+  EXPECT_EQ(pipeline_status_, PIPELINE_OK);
+  PipelineStatus status = WaitUntilEndedOrError();
+  EXPECT_TRUE(ended_);
+  EXPECT_EQ(pipeline_status_, PIPELINE_OK);
+  return ended_ && (status == PIPELINE_OK);
 }
 
 PipelineStatus PipelineIntegrationTestBase::WaitUntilEndedOrError() {
   if (!ended_ && pipeline_status_ == PIPELINE_OK) {
     base::RunLoop run_loop;
-    RunUntilIdleOrEndedOrError(&run_loop);
+    RunUntilQuitOrEndedOrError(&run_loop);
   } else {
     scoped_task_environment_.RunUntilIdle();
   }
@@ -293,7 +290,7 @@ PipelineStatus PipelineIntegrationTestBase::StartInternal(
       this,
       base::Bind(&PipelineIntegrationTestBase::OnStatusCallback,
                  base::Unretained(this), run_loop.QuitWhenIdleClosure()));
-  RunUntilIdleOrEndedOrError(&run_loop);
+  RunUntilQuitOrEndedOrError(&run_loop);
   return pipeline_status_;
 }
 
@@ -361,7 +358,7 @@ bool PipelineIntegrationTestBase::Seek(base::TimeDelta seek_time) {
 
   pipeline_->Seek(seek_time, base::Bind(&PipelineIntegrationTestBase::OnSeeked,
                                         base::Unretained(this), seek_time));
-  RunUntilIdle(&run_loop);
+  RunUntilQuit(&run_loop);
   return (pipeline_status_ == PIPELINE_OK);
 }
 
@@ -370,7 +367,7 @@ bool PipelineIntegrationTestBase::Suspend() {
   pipeline_->Suspend(base::Bind(&PipelineIntegrationTestBase::OnStatusCallback,
                                 base::Unretained(this),
                                 run_loop.QuitWhenIdleClosure()));
-  RunUntilIdle(&run_loop);
+  RunUntilQuit(&run_loop);
   return (pipeline_status_ == PIPELINE_OK);
 }
 
@@ -385,7 +382,7 @@ bool PipelineIntegrationTestBase::Resume(base::TimeDelta seek_time) {
                     seek_time,
                     base::Bind(&PipelineIntegrationTestBase::OnSeeked,
                                base::Unretained(this), seek_time));
-  RunUntilIdle(&run_loop);
+  RunUntilQuit(&run_loop);
   return (pipeline_status_ == PIPELINE_OK);
 }
 
@@ -431,7 +428,7 @@ bool PipelineIntegrationTestBase::WaitUntilCurrentTimeIsAfter(
                      run_loop.QuitWhenIdleClosure()),
       base::TimeDelta::FromMilliseconds(10));
 
-  RunUntilIdleOrEndedOrError(&run_loop);
+  RunUntilQuitOrEndedOrError(&run_loop);
 
   return (pipeline_status_ == PIPELINE_OK);
 }
@@ -649,7 +646,7 @@ PipelineStatus PipelineIntegrationTestBase::StartPipelineWithMediaSource(
                    base::Unretained(encrypted_media)));
   }
 
-  RunUntilIdleOrEndedOrError(&run_loop);
+  RunUntilQuitOrEndedOrError(&run_loop);
 
   for (auto* stream : demuxer_->GetAllStreams()) {
     EXPECT_TRUE(stream->SupportsConfigChanges());
@@ -658,35 +655,21 @@ PipelineStatus PipelineIntegrationTestBase::StartPipelineWithMediaSource(
   return pipeline_status_;
 }
 
-void PipelineIntegrationTestBase::RunUntilIdle(base::RunLoop* run_loop) {
-  RunUntilIdleEndedOrErrorInternal(run_loop, false, false);
+void PipelineIntegrationTestBase::RunUntilQuit(base::RunLoop* run_loop) {
+  run_loop->Run();
+  on_ended_closure_ = base::OnceClosure();
+  on_error_closure_ = base::OnceClosure();
+  scoped_task_environment_.RunUntilIdle();
 }
 
-void PipelineIntegrationTestBase::RunUntilIdleOrEnded(base::RunLoop* run_loop) {
-  RunUntilIdleEndedOrErrorInternal(run_loop, true, false);
-}
-
-void PipelineIntegrationTestBase::RunUntilIdleOrEndedOrError(
+void PipelineIntegrationTestBase::RunUntilQuitOrEndedOrError(
     base::RunLoop* run_loop) {
-  RunUntilIdleEndedOrErrorInternal(run_loop, true, true);
-}
-
-void PipelineIntegrationTestBase::RunUntilIdleEndedOrErrorInternal(
-    base::RunLoop* run_loop,
-    bool run_until_ended,
-    bool run_until_error) {
   DCHECK(on_ended_closure_.is_null());
   DCHECK(on_error_closure_.is_null());
 
-  if (run_until_ended)
-    on_ended_closure_ = run_loop->QuitWhenIdleClosure();
-  if (run_until_error)
-    on_error_closure_ = run_loop->QuitWhenIdleClosure();
-  run_loop->Run();
-  on_ended_closure_ = base::Closure();
-  on_error_closure_ = base::Closure();
-
-  scoped_task_environment_.RunUntilIdle();
+  on_ended_closure_ = run_loop->QuitWhenIdleClosure();
+  on_error_closure_ = run_loop->QuitWhenIdleClosure();
+  RunUntilQuit(run_loop);
 }
 
 base::TimeTicks DummyTickClock::NowTicks() const {

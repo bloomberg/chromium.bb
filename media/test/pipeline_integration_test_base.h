@@ -252,19 +252,16 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
   MOCK_METHOD1(OnVideoDecoderChange, void(const std::string&));
 
  private:
-  // Helpers that run |*run_loop|, where OnEnded() or OnError() are each
-  // conditionally setup to quit |*run_loop| when it becomes idle. Once
-  // |*run_loop|'s Run() Quits, these helpers also run
-  // |scoped_task_environment_| until Idle.
-  void RunUntilIdle(base::RunLoop* run_loop);
-  void RunUntilIdleOrEnded(base::RunLoop* run_loop);
-  void RunUntilIdleOrEndedOrError(base::RunLoop* run_loop);
-  void RunUntilIdleEndedOrErrorInternal(base::RunLoop* run_loop,
-                                        bool run_until_ended,
-                                        bool run_until_error);
+  // Runs |run_loop| until it is explicitly Quit() by some part of the calling
+  // test fixture. The |scoped_task_environment_| is RunUntilIdle() after the
+  // RunLoop finishes running, before returning to the caller.
+  void RunUntilQuit(base::RunLoop* run_loop);
+  // Configures |on_ended_closure_| and |on_error_closure_| to quit |run_loop|
+  // and then calls RunUntilQuit() on it.
+  void RunUntilQuitOrEndedOrError(base::RunLoop* run_loop);
 
-  base::Closure on_ended_closure_;
-  base::Closure on_error_closure_;
+  base::OnceClosure on_ended_closure_;
+  base::OnceClosure on_error_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(PipelineIntegrationTestBase);
 };
