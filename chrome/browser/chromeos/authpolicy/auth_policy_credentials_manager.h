@@ -14,6 +14,7 @@
 #include "components/account_id/account_id.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/prefs/pref_member.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 class Profile;
@@ -32,6 +33,11 @@ class Signal;
 }
 
 namespace chromeos {
+
+// Kerberos defaults for canonicalization SPN. (see
+// https://web.mit.edu/kerberos/krb5-1.12/doc/admin/conf_files/krb5_conf.html)
+// Exported for browsertests.
+extern const char* kKrb5CnameSettings;
 
 // A service responsible for tracking user credential status. Created for each
 // Active Directory user profile.
@@ -96,6 +102,9 @@ class AuthPolicyCredentialsManager
                                  const std::string& signal_name,
                                  bool success);
 
+  // Called whenever prefs::kDisableAuthNegotiateCnameLookup is changed.
+  void OnDisabledAuthNegotiateCnameLookupChanged();
+
   Profile* const profile_;
   AccountId account_id_;
   std::string display_name_;
@@ -109,6 +118,7 @@ class AuthPolicyCredentialsManager
   std::set<int> shown_notifications_;
   authpolicy::ErrorType last_error_ = authpolicy::ERROR_NONE;
   base::CancelableClosure scheduled_get_user_status_call_;
+  PrefMember<bool> negotiate_disable_cname_lookup_;
 
   base::WeakPtrFactory<AuthPolicyCredentialsManager> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(AuthPolicyCredentialsManager);

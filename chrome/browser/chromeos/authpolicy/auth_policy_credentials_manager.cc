@@ -19,6 +19,7 @@
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
@@ -71,9 +72,24 @@ void WriteFile(const std::string& file_name, const std::string& blob) {
   }
 }
 
+// Put canonicalization settings first depending on user policy. Whatever
+// setting comes first wins, so even if krb5.conf sets rdns or
+// dns_canonicalize_hostname below, it would get overridden.
+std::string AdjustConfig(const std::string& config, bool is_dns_cname_enabled) {
+  std::string adjusted_config = base::StringPrintf(
+      chromeos::kKrb5CnameSettings, is_dns_cname_enabled ? "true" : "false");
+  adjusted_config.append(config);
+  return adjusted_config;
+}
+
 }  // namespace
 
 namespace chromeos {
+
+const char* kKrb5CnameSettings =
+    "[libdefaults]\n"
+    "\tdns_canonicalize_hostname = %s\n"
+    "\trdns = false\n";
 
 AuthPolicyCredentialsManager::AuthPolicyCredentialsManager(Profile* profile)
     : profile_(profile) {
@@ -93,6 +109,12 @@ AuthPolicyCredentialsManager::AuthPolicyCredentialsManager(Profile* profile)
   env->SetVar(kKrb5CCEnvName,
               kKrb5CCFilePrefix + path.Append(kKrb5CCFile).value());
   env->SetVar(kKrb5ConfEnvName, path.Append(kKrb5ConfFile).value());
+
+  negotiate_disable_cname_lookup_.Init(
+      prefs::kDisableAuthNegotiateCnameLookup, g_browser_process->local_state(),
+      base::BindRepeating(&AuthPolicyCredentialsManager::
+                              OnDisabledAuthNegotiateCnameLookupChanged,
+                          weak_factory_.GetWeakPtr()));
 
   // Connecting to the signal sent by authpolicyd notifying that Kerberos files
   // have changed.
@@ -220,7 +242,10 @@ void AuthPolicyCredentialsManager::OnGetUserKerberosFilesCallback(
         FROM_HERE,
         {base::MayBlock(), base::TaskPriority::BACKGROUND,
          base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-        base::BindOnce(&WriteFile, kKrb5ConfFile, kerberos_files.krb5conf()));
+        base::BindOnce(
+            &WriteFile, kKrb5ConfFile,
+            AdjustConfig(kerberos_files.krb5conf(),
+                         !negotiate_disable_cname_lookup_.GetValue())));
   }
 }
 
@@ -337,6 +362,10 @@ void AuthPolicyCredentialsManager::OnSignalConnectedCallback(
   DCHECK_EQ(interface_name, authpolicy::kAuthPolicyInterface);
   DCHECK_EQ(signal_name, authpolicy::kUserKerberosFilesChangedSignal);
   DCHECK(success);
+}
+
+void AuthPolicyCredentialsManager::OnDisabledAuthNegotiateCnameLookupChanged() {
+  GetUserKerberosFiles();
 }
 
 // static
