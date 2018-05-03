@@ -1491,50 +1491,6 @@ static void score_2D_transform_pow8(float *scores_2D, float shift) {
   for (i = 0; i < 16; i++) scores_2D[i] /= sum;
 }
 
-static const float prune_tx_split_thresholds[] = {
-  100.0f,  // BLOCK_4X4,
-  1.00f,   // BLOCK_4X8,
-  1.22f,   // BLOCK_8X4,
-  1.26f,   // BLOCK_8X8,
-  0.28f,   // BLOCK_8X16,
-  0.52f,   // BLOCK_16X8,
-  0.65f,   // BLOCK_16X16,
-  100.0f,  // BLOCK_16X32,
-  100.0f,  // BLOCK_32X16,
-  100.0f,  // BLOCK_32X32,
-  100.0f,  // BLOCK_32X64,
-  100.0f,  // BLOCK_64X32,
-  100.0f,  // BLOCK_64X64,
-  100.0f,  // BLOCK_64X128,
-  100.0f,  // BLOCK_128X64,
-  100.0f,  // BLOCK_128X128,
-  100.0f,  // BLOCK_4X16,
-  100.0f,  // BLOCK_16X4,
-  100.0f,  // BLOCK_8X32,
-  100.0f,  // BLOCK_32X8,
-  100.0f,  // BLOCK_16X64,
-  100.0f,  // BLOCK_64X16,
-};
-
-static void prune_tx_split(BLOCK_SIZE bsize, MACROBLOCK *x) {
-  const NN_CONFIG *nn_config = av1_tx_split_nnconfig_map[bsize];
-  if (!nn_config) return;
-  aom_clear_system_state();
-  const struct macroblock_plane *const p = &x->plane[0];
-  const int bw = block_size_wide[bsize], bh = block_size_high[bsize];
-  float features[17];
-  const int feature_num = (bw / 4) * (bh / 4) + 1;
-  assert(feature_num <= 17);
-  float hcorr, vcorr;
-  get_horver_correlation_full(p->src_diff, bw, bw, bh, &hcorr, &vcorr);
-  get_2D_energy_distribution(p->src_diff, bw, bw, bh, features);
-  features[feature_num - 2] = hcorr;
-  features[feature_num - 1] = vcorr;
-  float score;
-  av1_nn_predict(features, nn_config, &score);
-  x->tx_split_prune_flag = score > prune_tx_split_thresholds[bsize];
-}
-
 // These thresholds were calibrated to provide a certain number of TX types
 // pruned by the model on average, i.e. selecting a threshold with index i
 // will lead to pruning i+1 TX types on average
@@ -1681,8 +1637,7 @@ static int prune_tx_2D(MACROBLOCK *x, BLOCK_SIZE bsize, TX_SIZE tx_size,
 }
 
 static void prune_tx(const AV1_COMP *cpi, BLOCK_SIZE bsize, MACROBLOCK *x,
-                     const MACROBLOCKD *const xd, int tx_set_type,
-                     int use_tx_split_prune) {
+                     const MACROBLOCKD *const xd, int tx_set_type) {
   av1_zero(x->tx_search_prune);
   x->tx_split_prune_flag = 0;
   const MB_MODE_INFO *mbmi = xd->mi[0];
@@ -1713,12 +1668,7 @@ static void prune_tx(const AV1_COMP *cpi, BLOCK_SIZE bsize, MACROBLOCK *x,
           prune_two_for_sby(cpi, bsize, x, xd, 1, 1);
       break;
     case PRUNE_2D_ACCURATE:
-    case PRUNE_2D_FAST:
-      // TODO(huisu@google.com): temporarily turn prune_tx_split off while
-      // testing new models for tx size prediction.
-      // if (use_tx_split_prune) prune_tx_split(bsize, x);
-      (void)use_tx_split_prune;
-      break;
+    case PRUNE_2D_FAST: break;
     default: assert(0);
   }
 }
@@ -2998,7 +2948,7 @@ static void choose_largest_tx_size(const AV1_COMP *const cpi, MACROBLOCK *x,
   mbmi->tx_size = tx_size_from_tx_mode(bs, cm->tx_mode);
   const TxSetType tx_set_type =
       av1_get_ext_tx_set_type(mbmi->tx_size, is_inter, cm->reduced_tx_set_used);
-  prune_tx(cpi, bs, x, xd, tx_set_type, 0);
+  prune_tx(cpi, bs, x, xd, tx_set_type);
   txfm_rd_in_plane(x, cpi, rd_stats, ref_best_rd, AOM_PLANE_Y, bs,
                    mbmi->tx_size, cpi->sf.use_fast_coef_costing);
   // Reset the pruning flags.
@@ -3071,7 +3021,7 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
     depth = MAX_TX_DEPTH;
   }
 
-  prune_tx(cpi, bs, x, xd, EXT_TX_SET_ALL16, 0);
+  prune_tx(cpi, bs, x, xd, EXT_TX_SET_ALL16);
 
   for (n = start_tx; depth <= MAX_TX_DEPTH; depth++, n = sub_tx_size_map[n]) {
     RD_STATS this_rd_stats;
@@ -4086,6 +4036,114 @@ static void tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
   }
 }
 
+static void get_mean_and_dev(const int16_t *data, int stride, int bw, int bh,
+                             float *mean, float *dev) {
+  int x_sum = 0;
+  int x2_sum = 0;
+  for (int i = 0; i < bh; ++i) {
+    for (int j = 0; j < bw; ++j) {
+      const int val = data[j];
+      x_sum += val;
+      x2_sum += val * val;
+    }
+    data += stride;
+  }
+
+  const int num = bw * bh;
+  const float e_x = (float)x_sum / num;
+  const float e_x2 = (float)x2_sum / num;
+  const float diff = e_x2 - e_x * e_x;
+  *dev = (diff > 0) ? sqrtf(diff) : 0;
+  *mean = e_x;
+}
+
+static void get_mean_and_dev_float(const float *data, int stride, int bw,
+                                   int bh, float *mean, float *dev) {
+  float x_sum = 0;
+  float x2_sum = 0;
+  for (int i = 0; i < bh; ++i) {
+    for (int j = 0; j < bw; ++j) {
+      const float val = data[j];
+      x_sum += val;
+      x2_sum += val * val;
+    }
+    data += stride;
+  }
+
+  const int num = bw * bh;
+  const float e_x = x_sum / num;
+  const float e_x2 = x2_sum / num;
+  const float diff = e_x2 - e_x * e_x;
+  *dev = (diff > 0) ? sqrtf(diff) : 0;
+  *mean = e_x;
+}
+
+// Feature used by the model to predict tx split: the mean and standard
+// deviation values of the block and sub-blocks.
+static void get_mean_dev_features(const int16_t *data, int stride, int bw,
+                                  int bh, int levels, float *feature) {
+  int feature_idx = 0;
+  int width = bw;
+  int height = bh;
+  const int16_t *const data_ptr = &data[0];
+  for (int lv = 0; lv < levels; ++lv) {
+    if (width < 2 || height < 2) break;
+    float mean_buf[16];
+    float dev_buf[16];
+    int blk_idx = 0;
+    for (int row = 0; row < bh; row += height) {
+      for (int col = 0; col < bw; col += width) {
+        float mean, dev;
+        get_mean_and_dev(data_ptr + row * stride + col, stride, width, height,
+                         &mean, &dev);
+        feature[feature_idx++] = mean;
+        feature[feature_idx++] = dev;
+        mean_buf[blk_idx] = mean;
+        dev_buf[blk_idx++] = dev;
+      }
+    }
+    if (blk_idx > 1) {
+      float mean, dev;
+      // Deviation of means.
+      get_mean_and_dev_float(mean_buf, 1, 1, blk_idx, &mean, &dev);
+      feature[feature_idx++] = dev;
+      // Mean of deviations.
+      get_mean_and_dev_float(dev_buf, 1, 1, blk_idx, &mean, &dev);
+      feature[feature_idx++] = mean;
+    }
+    // Reduce the block size when proceeding to the next level.
+    if (height == width) {
+      height = height >> 1;
+      width = width >> 1;
+    } else if (height > width) {
+      height = height >> 1;
+    } else {
+      width = width >> 1;
+    }
+  }
+}
+
+static int ml_predict_tx_split(MACROBLOCK *x, BLOCK_SIZE bsize, int blk_row,
+                               int blk_col, TX_SIZE tx_size) {
+  const NN_CONFIG *nn_config = av1_tx_split_nnconfig_map[tx_size];
+  if (!nn_config) return -1;
+
+  const int diff_stride = block_size_wide[bsize];
+  const int16_t *diff =
+      x->plane[0].src_diff + 4 * blk_row * diff_stride + 4 * blk_col;
+  const int bw = tx_size_wide[tx_size];
+  const int bh = tx_size_high[tx_size];
+  aom_clear_system_state();
+
+  float features[64] = { 0.0f };
+  get_mean_dev_features(diff, diff_stride, bw, bh, 2, features);
+
+  float score = 0.0f;
+  av1_nn_predict(features, nn_config, &score);
+  score = 1.0f / (1.0f + (float)exp(-score));
+  return (int)(score * 100);
+}
+
 // Search for the best tx partition/type for a given luma block.
 static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
                             int blk_col, int block, TX_SIZE tx_size, int depth,
@@ -4115,11 +4173,14 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
                                          mbmi->sb_type, tx_size);
   struct macroblock_plane *const p = &x->plane[0];
 
+  const int try_no_split = 1;
+  int try_split = tx_size > TX_4X4 && depth < MAX_VARTX_DEPTH;
+
   int64_t no_split_rd = INT64_MAX;
   int no_split_txb_entropy_ctx = 0;
   TX_TYPE no_split_tx_type = TX_TYPES;
   // TX no split
-  {
+  if (try_no_split) {
     const TX_SIZE txs_ctx = get_txsize_entropy_ctx(tx_size);
     TXB_CTX txb_ctx;
     get_txb_ctx(plane_bsize, tx_size, 0, pta, ptl, &txb_ctx);
@@ -4168,25 +4229,30 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
     const int txk_type_idx =
         av1_get_txk_type_index(plane_bsize, blk_row, blk_col);
     no_split_tx_type = mbmi->txk_type[txk_type_idx];
+
+    if (cpi->sf.txb_split_cap)
+      if (p->eobs[block] == 0) try_split = 0;
   }
 
-  int tx_split_prune_flag = 0;
-  if (cpi->sf.tx_type_search.prune_mode >= PRUNE_2D_ACCURATE)
-    tx_split_prune_flag = x->tx_split_prune_flag;
-
-  if (cpi->sf.txb_split_cap)
-    if (p->eobs[block] == 0) tx_split_prune_flag = 1;
+  if (!x->cb_partition_scan && try_split) {
+    const int threshold = cpi->sf.tx_type_search.ml_tx_split_thresh;
+    if (threshold >= 0) {
+      const int split_score =
+          ml_predict_tx_split(x, plane_bsize, blk_row, blk_col, tx_size);
+      if (split_score >= 0 && split_score < threshold) try_split = 0;
+    }
+  }
 
 #if COLLECT_TX_SIZE_DATA
   // Do not skip tx_split when collecting tx size data.
-  tx_split_prune_flag = 0;
+  try_split = 1;
 #endif
 
   // TX split
   int64_t split_rd = INT64_MAX;
   RD_STATS split_rd_stats;
   av1_init_rd_stats(&split_rd_stats);
-  if (tx_size > TX_4X4 && depth < MAX_VARTX_DEPTH && tx_split_prune_flag == 0) {
+  if (try_split) {
     const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
     const int bsw = tx_size_wide_unit[sub_txs];
     const int bsh = tx_size_high_unit[sub_txs];
@@ -5043,8 +5109,7 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
         find_tx_size_rd_records(x, bsize, mi_row, mi_col, matched_rd_info);
   }
 
-  prune_tx(cpi, bsize, x, xd, tx_set_type,
-           cpi->sf.tx_type_search.use_tx_size_pruning);
+  prune_tx(cpi, bsize, x, xd, tx_set_type);
 
   int found = 0;
 
