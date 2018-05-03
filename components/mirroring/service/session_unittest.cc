@@ -7,13 +7,14 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "components/mirroring/service/fake_network_service.h"
 #include "components/mirroring/service/fake_video_capture_host.h"
 #include "components/mirroring/service/interface.h"
+#include "components/mirroring/service/mirror_settings.h"
+#include "components/mirroring/service/receiver_response.h"
 #include "media/cast/test/utility/default_config.h"
 #include "media/cast/test/utility/net_utility.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -27,21 +28,46 @@ using media::cast::Packet;
 
 namespace mirroring {
 
-class SessionTest : public SessionClient, public ::testing::Test {
+const int kSessionId = 5;
+
+class SessionTest : public ResourceProvider,
+                    public SessionObserver,
+                    public CastMessageChannel,
+                    public ::testing::Test {
  public:
-  SessionTest() : weak_factory_(this) {
+  SessionTest() : receiver_endpoint_(media::cast::test::GetFreeLocalPort()) {
     testing_clock_.Advance(base::TimeTicks::Now() - base::TimeTicks());
   }
 
   ~SessionTest() override { scoped_task_environment_.RunUntilIdle(); }
 
-  // SessionClient implemenation.
+  // SessionObserver implemenation.
   MOCK_METHOD1(OnError, void(SessionError));
   MOCK_METHOD0(DidStart, void());
   MOCK_METHOD0(DidStop, void());
-  MOCK_METHOD0(OnOfferAnswerExchange, void());
+
+  // ResourceProvider implemenation.
   MOCK_METHOD0(OnGetVideoCaptureHost, void());
   MOCK_METHOD0(OnGetNetworkContext, void());
+
+  // Called when sends OFFER message.
+  MOCK_METHOD0(OnOffer, void());
+
+  // CastMessageHandler implementation. For outbound messages.
+  void Send(const CastMessage& message) {
+    EXPECT_TRUE(message.message_namespace == kWebRtcNamespace ||
+                message.message_namespace == kRemotingNamespace);
+    std::string message_type;
+    auto* found = message.data.FindKey("type");
+    if (found && found->is_string())
+      message_type = found->GetString();
+    if (message_type == "OFFER") {
+      auto* found = message.data.FindKey("seqNum");
+      if (found && found->is_int())
+        offer_sequence_number_ = found->GetInt();
+      OnOffer();
+    }
+  }
 
   void GetVideoCaptureHost(
       media::mojom::VideoCaptureHostRequest request) override {
@@ -49,52 +75,79 @@ class SessionTest : public SessionClient, public ::testing::Test {
     OnGetVideoCaptureHost();
   }
 
-  void GetNetWorkContext(
+  void GetNetworkContext(
       network::mojom::NetworkContextRequest request) override {
     network_context_ = std::make_unique<MockNetworkContext>(std::move(request));
     OnGetNetworkContext();
   }
 
-  void DoOfferAnswerExchange(
-      const std::vector<FrameSenderConfig>& audio_configs,
-      const std::vector<FrameSenderConfig>& video_configs,
-      GetAnswerCallback callback) override {
-    OnOfferAnswerExchange();
-    std::move(callback).Run(FrameSenderConfig(),
-                            media::cast::GetDefaultVideoSenderConfig());
+  void SendAnswer() {
+    FrameSenderConfig config = MirrorSettings::GetDefaultVideoConfig(
+        media::cast::RtpPayloadType::VIDEO_VP8,
+        media::cast::Codec::CODEC_VIDEO_VP8);
+    std::vector<FrameSenderConfig> video_configs;
+    video_configs.emplace_back(config);
+
+    auto answer = std::make_unique<Answer>();
+    answer->udp_port = receiver_endpoint_.port();
+    answer->send_indexes.push_back(0);
+    answer->ssrcs.push_back(32);
+    answer->cast_mode = "mirroring";
+
+    ReceiverResponse response;
+    response.result = "ok";
+    response.type = ResponseType::ANSWER;
+    response.sequence_number = offer_sequence_number_;
+    response.answer = std::move(answer);
+
+    session_->OnAnswer("mirroring", std::vector<FrameSenderConfig>(),
+                       video_configs, response);
   }
 
  protected:
+  void CreateSession() {
+    CastSinkInfo sink_info;
+    sink_info.ip_address = receiver_endpoint_.address();
+    sink_info.capability = DeviceCapability::AUDIO_AND_VIDEO;
+    // Expect to receive OFFER message when session is created.
+    base::RunLoop run_loop;
+    EXPECT_CALL(*this, OnError(_)).Times(0);
+    EXPECT_CALL(*this, OnOffer())
+        .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
+    session_ = std::make_unique<Session>(
+        kSessionId, sink_info, gfx::Size(1920, 1080), this, this, this);
+    run_loop.Run();
+  }
+
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  const net::IPEndPoint receiver_endpoint_;
   base::SimpleTestTickClock testing_clock_;
 
   std::unique_ptr<Session> session_;
   std::unique_ptr<FakeVideoCaptureHost> video_host_;
   std::unique_ptr<MockNetworkContext> network_context_;
 
-  base::WeakPtrFactory<SessionTest> weak_factory_;
+  int32_t offer_sequence_number_ = -1;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SessionTest);
 };
 
 TEST_F(SessionTest, Mirroring) {
-  // Start a mirroring session.
+  CreateSession();
+  scoped_task_environment_.RunUntilIdle();
   {
+    // Except mirroing session starts after receiving ANSWER message.
     base::RunLoop run_loop;
     EXPECT_CALL(*this, OnGetVideoCaptureHost()).Times(1);
     EXPECT_CALL(*this, OnGetNetworkContext()).Times(1);
-    EXPECT_CALL(*this, OnOfferAnswerExchange()).Times(1);
+    EXPECT_CALL(*this, OnError(_)).Times(0);
     EXPECT_CALL(*this, DidStart())
         .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
-    session_ =
-        std::make_unique<Session>(SessionType::AUDIO_AND_VIDEO,
-                                  media::cast::test::GetFreeLocalPort(), this);
+    SendAnswer();
     run_loop.Run();
   }
-
   scoped_task_environment_.RunUntilIdle();
-
   {
     base::RunLoop run_loop;
     // Expect to send out some UDP packets.
@@ -106,7 +159,6 @@ TEST_F(SessionTest, Mirroring) {
     video_host_->SendOneFrame(gfx::Size(64, 32), testing_clock_.NowTicks());
     run_loop.Run();
   }
-
   scoped_task_environment_.RunUntilIdle();
 
   // Stop the session.
@@ -116,6 +168,24 @@ TEST_F(SessionTest, Mirroring) {
     EXPECT_CALL(*this, DidStop())
         .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
     session_.reset();
+    run_loop.Run();
+  }
+  scoped_task_environment_.RunUntilIdle();
+}
+
+TEST_F(SessionTest, AnswerTimeout) {
+  CreateSession();
+  scoped_task_environment_.RunUntilIdle();
+  {
+    // Expect error.
+    base::RunLoop run_loop;
+    EXPECT_CALL(*this, OnGetVideoCaptureHost()).Times(0);
+    EXPECT_CALL(*this, OnGetNetworkContext()).Times(0);
+    EXPECT_CALL(*this, DidStop()).Times(1);
+    EXPECT_CALL(*this, OnError(ANSWER_TIME_OUT))
+        .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
+    session_->OnAnswer("mirroring", std::vector<FrameSenderConfig>(),
+                       std::vector<FrameSenderConfig>(), ReceiverResponse());
     run_loop.Run();
   }
   scoped_task_environment_.RunUntilIdle();

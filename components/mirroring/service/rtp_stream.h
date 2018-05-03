@@ -44,10 +44,6 @@ class RtpStreamClient {
 
   // The following are for hardware video encoding.
 
-  // Query the supported hardware encoding profiles.
-  virtual media::VideoEncodeAccelerator::SupportedProfiles
-  GetSupportedVideoEncodeAcceleratorProfiles() = 0;
-
   virtual void CreateVideoEncodeAccelerator(
       const media::cast::ReceiveVideoEncodeAcceleratorCallback& callback) = 0;
 
@@ -70,9 +66,6 @@ class VideoRtpStream {
   VideoRtpStream(std::unique_ptr<media::cast::VideoSender> video_sender,
                  base::WeakPtr<RtpStreamClient> client);
   ~VideoRtpStream();
-
-  static std::vector<media::cast::FrameSenderConfig> GetSupportedConfigs(
-      RtpStreamClient* client);
 
   // Called by VideoCaptureClient when a video frame is received.
   // |video_frame| is required to provide REFERENCE_TIME in the metadata.
@@ -114,8 +107,6 @@ class AudioRtpStream {
   AudioRtpStream(std::unique_ptr<media::cast::AudioSender> audio_sender,
                  base::WeakPtr<RtpStreamClient> client);
   ~AudioRtpStream();
-
-  static std::vector<media::cast::FrameSenderConfig> GetSupportedConfigs();
 
   // Called by AudioCaptureClient when new audio data is available.
   void InsertAudio(std::unique_ptr<media::AudioBus> audio_bus,

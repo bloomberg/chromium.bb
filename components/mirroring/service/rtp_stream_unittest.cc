@@ -43,10 +43,6 @@ class DummyClient final : public RtpStreamClient {
   void CreateVideoEncodeMemory(
       size_t size,
       const media::cast::ReceiveVideoEncodeMemoryCallback& callback) override {}
-  media::VideoEncodeAccelerator::SupportedProfiles
-  GetSupportedVideoEncodeAcceleratorProfiles() override {
-    return media::VideoEncodeAccelerator::SupportedProfiles();
-  }
 
   base::WeakPtr<RtpStreamClient> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();

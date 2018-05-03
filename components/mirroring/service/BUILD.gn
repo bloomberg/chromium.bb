@@ -6,6 +6,7 @@ import("//testing/test.gni")
 
 source_set("interface") {
   sources = [
+    "interface.cc",
     "interface.h",
   ]
 
@@ -26,6 +27,8 @@ source_set("service") {
   sources = [
     "message_dispatcher.cc",
     "message_dispatcher.h",
+    "mirror_settings.cc",
+    "mirror_settings.h",
     "receiver_response.cc",
     "receiver_response.h",
     "rtp_stream.cc",
@@ -46,6 +49,7 @@ source_set("service") {
 
   deps = [
     ":interface",
+    "//crypto",
     "//media",
     "//media/capture/mojom:video_capture",
     "//media/cast:common",
