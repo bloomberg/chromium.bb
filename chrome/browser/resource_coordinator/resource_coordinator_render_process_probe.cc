@@ -14,7 +14,6 @@
 #include "content/public/common/service_manager_connection.h"
 #include "services/resource_coordinator/public/cpp/process_resource_coordinator.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
-#include "services/resource_coordinator/public/cpp/system_resource_coordinator.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
 
 #if defined(OS_MACOSX)
@@ -33,9 +32,11 @@ base::LazyInstance<ResourceCoordinatorRenderProcessProbe>::DestructorAtExit
 
 }  // namespace
 
-RenderProcessInfo::RenderProcessInfo() = default;
+ResourceCoordinatorRenderProcessProbe::RenderProcessInfo::RenderProcessInfo() =
+    default;
 
-RenderProcessInfo::~RenderProcessInfo() = default;
+ResourceCoordinatorRenderProcessProbe::RenderProcessInfo::~RenderProcessInfo() =
+    default;
 
 ResourceCoordinatorRenderProcessProbe::ResourceCoordinatorRenderProcessProbe()
     : interval_(kDefaultMeasurementInterval) {
@@ -157,7 +158,25 @@ void ResourceCoordinatorRenderProcessProbe::
     }
   }
 
-  bool should_restart = DispatchMetrics();
+  // Create the measurement batch.
+  mojom::ProcessResourceMeasurementBatchPtr batch =
+      mojom::ProcessResourceMeasurementBatch::New();
+
+  for (auto& render_process_info_map_entry : render_process_info_map_) {
+    auto& render_process_info = render_process_info_map_entry.second;
+    // TODO(oysteine): Move the multiplier used to avoid precision loss
+    // into a shared location, when this property gets used.
+    mojom::ProcessResourceMeasurementPtr measurement =
+        mojom::ProcessResourceMeasurement::New();
+
+    measurement->pid = render_process_info.process.Pid();
+    measurement->cpu_usage = render_process_info.cpu_usage;
+    // TODO(siggi): Add the private footprint.
+
+    batch->measurements.push_back(std::move(measurement));
+  }
+
+  bool should_restart = DispatchMetrics(std::move(batch));
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
@@ -203,32 +222,14 @@ ResourceCoordinatorRenderProcessProbe::EnsureSystemResourceCoordinator() {
   return system_resource_coordinator_.get();
 }
 
-bool ResourceCoordinatorRenderProcessProbe::DispatchMetrics() {
+bool ResourceCoordinatorRenderProcessProbe::DispatchMetrics(
+    mojom::ProcessResourceMeasurementBatchPtr batch) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   SystemResourceCoordinator* system_resource_coordinator =
       EnsureSystemResourceCoordinator();
 
-  if (system_resource_coordinator) {
-    mojom::ProcessResourceMeasurementBatchPtr batch =
-        mojom::ProcessResourceMeasurementBatch::New();
-
-    for (auto& render_process_info_map_entry : render_process_info_map_) {
-      auto& render_process_info = render_process_info_map_entry.second;
-      // TODO(oysteine): Move the multiplier used to avoid precision loss
-      // into a shared location, when this property gets used.
-      mojom::ProcessResourceMeasurementPtr measurement =
-          mojom::ProcessResourceMeasurement::New();
-
-      measurement->pid = render_process_info.process.Pid();
-      measurement->cpu_usage = render_process_info.cpu_usage;
-      // TODO(siggi): Add the private footprint.
-
-      batch->measurements.push_back(std::move(measurement));
-    }
-
-    if (!batch->measurements.empty())
-      system_resource_coordinator->DistributeMeasurementBatch(std::move(batch));
-  }
+  if (system_resource_coordinator && !batch->measurements.empty())
+    system_resource_coordinator->DistributeMeasurementBatch(std::move(batch));
 
   return true;
 }
