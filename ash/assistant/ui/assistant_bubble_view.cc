@@ -407,8 +407,7 @@ void AssistantBubbleView::InitLayout() {
   AddChildView(suggestions_container_);
 
   // Dialog plate.
-  DialogPlate* dialog_plate = new DialogPlate();
-  AddChildView(dialog_plate);
+  AddChildView(new DialogPlate(assistant_controller_));
 }
 
 void AssistantBubbleView::SetProcessingUiElement(bool is_processing) {

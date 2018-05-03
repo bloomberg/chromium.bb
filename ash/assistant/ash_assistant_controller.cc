@@ -145,6 +145,24 @@ void AshAssistantController::OnInteractionDismissed() {
   assistant_interaction_model_.SetInteractionState(InteractionState::kInactive);
 }
 
+void AshAssistantController::OnDialogPlateContentsChanged(
+    const std::string& text) {
+  // TODO(dmblack): Close the mic if necessary.
+  assistant_bubble_timer_.Stop();
+}
+
+void AshAssistantController::OnDialogPlateContentsCommitted(
+    const std::string& text) {
+  Query query;
+  query.high_confidence_text = text;
+
+  assistant_interaction_model_.ClearInteraction();
+  assistant_interaction_model_.SetQuery(query);
+
+  DCHECK(assistant_);
+  assistant_->SendTextQuery(text);
+}
+
 void AshAssistantController::OnHtmlResponse(const std::string& response) {
   assistant_interaction_model_.AddUiElement(
       std::make_unique<AssistantCardElement>(response));

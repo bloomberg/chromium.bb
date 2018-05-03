@@ -69,6 +69,12 @@ class AshAssistantController
   void StopInteraction();
   void ToggleInteraction();
 
+  // Invoked on dialog plate contents changed event.
+  void OnDialogPlateContentsChanged(const std::string& text);
+
+  // Invoked on dialog plate contents committed event.
+  void OnDialogPlateContentsCommitted(const std::string& text);
+
   // Invoked on suggestion chip pressed event.
   void OnSuggestionChipPressed(const std::string& text);
 

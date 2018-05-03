@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/assistant/ash_assistant_controller.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/background.h"
@@ -19,7 +20,7 @@ namespace {
 
 // Appearance.
 constexpr SkColor kBackgroundColor = SkColorSetA(SK_ColorBLACK, 0x1F);
-constexpr int kIconSize = 24;
+constexpr int kIconSizeDip = 24;
 constexpr int kPaddingHorizontalDip = 12;
 constexpr int kPaddingVerticalDip = 8;
 constexpr int kSpacingDip = 8;
@@ -64,7 +65,8 @@ class RoundRectBackground : public views::Background {
 
 // DialogPlate -----------------------------------------------------------------
 
-DialogPlate::DialogPlate() {
+DialogPlate::DialogPlate(AshAssistantController* assistant_controller)
+    : assistant_controller_(assistant_controller) {
   InitLayout();
 }
 
@@ -86,6 +88,7 @@ void DialogPlate::InitLayout() {
   views::Textfield* textfield = new views::Textfield();
   textfield->SetBackgroundColor(SK_ColorTRANSPARENT);
   textfield->SetBorder(views::NullBorder());
+  textfield->set_controller(this);
   textfield->SetFontList(font_list);
   textfield->set_placeholder_font_list(font_list);
   textfield->set_placeholder_text(base::UTF8ToUTF16(kHint));
@@ -98,10 +101,38 @@ void DialogPlate::InitLayout() {
   // TODO(dmblack): Replace w/ stateful icon.
   // Icon placeholder.
   views::View* icon_placeholder = new views::View();
-  icon_placeholder->SetBackground(
-      std::make_unique<RoundRectBackground>(kPlaceholderColor, kIconSize / 2));
-  icon_placeholder->SetPreferredSize(gfx::Size(kIconSize, kIconSize));
+  icon_placeholder->SetBackground(std::make_unique<RoundRectBackground>(
+      kPlaceholderColor, kIconSizeDip / 2));
+  icon_placeholder->SetPreferredSize(gfx::Size(kIconSizeDip, kIconSizeDip));
   AddChildView(icon_placeholder);
+}
+
+void DialogPlate::ContentsChanged(views::Textfield* textfield,
+                                  const base::string16& new_contents) {
+  assistant_controller_->OnDialogPlateContentsChanged(
+      base::UTF16ToUTF8(new_contents));
+}
+
+bool DialogPlate::HandleKeyEvent(views::Textfield* textfield,
+                                 const ui::KeyEvent& key_event) {
+  if (key_event.key_code() != ui::KeyboardCode::VKEY_RETURN)
+    return false;
+
+  if (key_event.type() != ui::EventType::ET_KEY_PRESSED)
+    return false;
+
+  const base::StringPiece16& text =
+      base::TrimWhitespace(textfield->text(), base::TrimPositions::TRIM_ALL);
+
+  if (text.empty())
+    return false;
+
+  assistant_controller_->OnDialogPlateContentsCommitted(
+      base::UTF16ToUTF8(text));
+
+  textfield->SetText(base::string16());
+
+  return true;
 }
 
 }  // namespace ash

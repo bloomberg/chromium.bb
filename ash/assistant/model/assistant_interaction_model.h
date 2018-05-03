@@ -33,6 +33,9 @@ enum class InteractionState {
   kInactive,
 };
 
+// TODO(dmblack): It is awkward to use this struct for both text and voice
+// queries. Break this out into a class and subclass TextQuery and VoiceQuery
+// respectively.
 // Models the state of the query. For a text query, only the high confidence
 // text portion will be populated. At start of a voice query, both the high and
 // low confidence text portions will be empty. As speech recognition continues,

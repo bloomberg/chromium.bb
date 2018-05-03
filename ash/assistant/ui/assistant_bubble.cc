@@ -35,7 +35,7 @@ class AssistantContainerView : public views::BubbleDialogDelegateView {
     set_accept_events(true);
     SetAnchor();
     set_arrow(views::BubbleBorder::Arrow::BOTTOM_LEFT);
-    set_can_activate(false);
+    set_close_on_deactivate(false);
     set_color(kBackgroundColor);
     set_margins(gfx::Insets());
     set_shadow(views::BubbleBorder::Shadow::NO_ASSETS);
