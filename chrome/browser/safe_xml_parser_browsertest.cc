@@ -73,7 +73,7 @@ class SafeXmlParserTest : public InProcessBrowserTest {
                       std::unique_ptr<base::Value> expected_value,
                       std::unique_ptr<base::Value> actual_value,
                       const base::Optional<std::string>& error) {
-    base::ScopedClosureRunner(std::move(quit_loop_closure));
+    base::ScopedClosureRunner runner(std::move(quit_loop_closure));
     if (!expected_value) {
       EXPECT_FALSE(actual_value);
       EXPECT_TRUE(error);
