@@ -222,7 +222,7 @@ chrome.automation.StateType = {
   EXPANDED: 'expanded',
   FOCUSABLE: 'focusable',
   FOCUSED: 'focused',
-  HASPOPUP: 'haspopup',
+  HAS_POPUP: 'hasPopup',
   HORIZONTAL: 'horizontal',
   HOVERED: 'hovered',
   IGNORED: 'ignored',
@@ -302,6 +302,19 @@ chrome.automation.NameFromType = {
 chrome.automation.Restriction = {
   DISABLED: 'disabled',
   READ_ONLY: 'readOnly',
+};
+
+/**
+ * @enum {string}
+ * @see https://developer.chrome.com/extensions/automation#type-HasPopup
+ */
+chrome.automation.HasPopup = {
+  TRUE: 'true',
+  MENU: 'menu',
+  LISTBOX: 'listbox',
+  TREE: 'tree',
+  GRID: 'grid',
+  DIALOG: 'dialog',
 };
 
 /**
@@ -1099,6 +1112,12 @@ chrome.automation.AutomationNode.prototype.imageDataUrl;
  * @see https://developer.chrome.com/extensions/automation#type-language
  */
 chrome.automation.AutomationNode.prototype.language;
+
+/**
+ * @type {(string|undefined)}
+ * @see https://developer.chrome.com/extensions/automation#type-hasPopup
+ */
+chrome.automation.AutomationNode.prototype.hasPopup;
 
 /**
  * Input restriction, if any, such as readonly or disabled: undefined - enabled control or other object that is not disabled Restriction.DISABLED - disallows input in itself + any descendants Restriction.READONLY - allow focus/selection but not input

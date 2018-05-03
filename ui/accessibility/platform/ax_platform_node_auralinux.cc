@@ -982,7 +982,7 @@ void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
     atk_state_set_add_state(atk_state_set, ATK_STATE_FOCUSABLE);
 #if defined(ATK_CHECK_VERSION)
 #if ATK_CHECK_VERSION(2, 11, 2)
-  if (data.HasState(ax::mojom::State::kHaspopup))
+  if (data.HasIntAttribute(ax::mojom::IntAttribute::kHasPopup))
     atk_state_set_add_state(atk_state_set, ATK_STATE_HAS_POPUP);
 #endif
 #endif

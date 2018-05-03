@@ -1133,7 +1133,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 - (NSNumber*)hasPopup {
   if (![self instanceActive])
     return nil;
-  return browserAccessibility_->HasState(ax::mojom::State::kHaspopup) ? @YES
+  return browserAccessibility_->HasState(ax::mojom::State::kHasPopup) ? @YES
                                                                       : @NO;
 }
 
@@ -3071,7 +3071,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     [ret addObjectsFromArray:@[ NSAccessibilityGrabbedAttribute ]];
   }
 
-  if (browserAccessibility_->HasState(ax::mojom::State::kHaspopup)) {
+  if (browserAccessibility_->HasState(ax::mojom::State::kHasPopup)) {
     [ret addObjectsFromArray:@[ NSAccessibilityHasPopupAttribute ]];
   }
 

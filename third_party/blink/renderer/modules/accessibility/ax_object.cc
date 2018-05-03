@@ -2762,7 +2762,7 @@ AccessibilityRole AXObject::ButtonRoleType() const {
   // http://www.w3.org/TR/wai-aria/states_and_properties#aria-pressed
   if (AriaPressedIsPresent())
     return kToggleButtonRole;
-  if (AriaHasPopup())
+  if (HasPopup())
     return kPopUpButtonRole;
   // We don't contemplate RadioButtonRole, as it depends on the input
   // type.

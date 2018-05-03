@@ -768,7 +768,7 @@ const char* ToString(ax::mojom::State state) {
       return "expanded";
     case ax::mojom::State::kFocusable:
       return "focusable";
-    case ax::mojom::State::kHaspopup:
+    case ax::mojom::State::kHasPopup:
       return "haspopup";
     case ax::mojom::State::kHorizontal:
       return "horizontal";
@@ -813,7 +813,7 @@ ax::mojom::State ParseState(const char* state) {
   if (0 == strcmp(state, "focusable"))
     return ax::mojom::State::kFocusable;
   if (0 == strcmp(state, "haspopup"))
-    return ax::mojom::State::kHaspopup;
+    return ax::mojom::State::kHasPopup;
   if (0 == strcmp(state, "horizontal"))
     return ax::mojom::State::kHorizontal;
   if (0 == strcmp(state, "hovered"))
@@ -1251,6 +1251,8 @@ const char* ToString(ax::mojom::IntAttribute int_attribute) {
       return "backgroundColor";
     case ax::mojom::IntAttribute::kColor:
       return "color";
+    case ax::mojom::IntAttribute::kHasPopup:
+      return "haspopup";
     case ax::mojom::IntAttribute::kInvalidState:
       return "invalidState";
     case ax::mojom::IntAttribute::kCheckedState:
@@ -1357,6 +1359,8 @@ ax::mojom::IntAttribute ParseIntAttribute(const char* int_attribute) {
     return ax::mojom::IntAttribute::kBackgroundColor;
   if (0 == strcmp(int_attribute, "color"))
     return ax::mojom::IntAttribute::kColor;
+  if (0 == strcmp(int_attribute, "haspopup"))
+    return ax::mojom::IntAttribute::kHasPopup;
   if (0 == strcmp(int_attribute, "invalidState"))
     return ax::mojom::IntAttribute::kInvalidState;
   if (0 == strcmp(int_attribute, "checkedState"))
@@ -1860,6 +1864,44 @@ ax::mojom::AriaCurrentState ParseAriaCurrentState(
   if (0 == strcmp(aria_current_state, "time"))
     return ax::mojom::AriaCurrentState::kTime;
   return ax::mojom::AriaCurrentState::kNone;
+}
+
+const char* ToString(ax::mojom::HasPopup has_popup) {
+  switch (has_popup) {
+    case ax::mojom::HasPopup::kFalse:
+      return "";
+    case ax::mojom::HasPopup::kTrue:
+      return "true";
+    case ax::mojom::HasPopup::kMenu:
+      return "menu";
+    case ax::mojom::HasPopup::kListbox:
+      return "listbox";
+    case ax::mojom::HasPopup::kTree:
+      return "tree";
+    case ax::mojom::HasPopup::kGrid:
+      return "grid";
+    case ax::mojom::HasPopup::kDialog:
+      return "dialog";
+  }
+
+  return "";
+}
+
+ax::mojom::HasPopup ParseHasPopup(const char* has_popup) {
+  if (0 == strcmp(has_popup, "true"))
+    return ax::mojom::HasPopup::kTrue;
+  if (0 == strcmp(has_popup, "menu"))
+    return ax::mojom::HasPopup::kMenu;
+  if (0 == strcmp(has_popup, "listbox"))
+    return ax::mojom::HasPopup::kListbox;
+  if (0 == strcmp(has_popup, "tree"))
+    return ax::mojom::HasPopup::kTree;
+  if (0 == strcmp(has_popup, "grid"))
+    return ax::mojom::HasPopup::kGrid;
+  if (0 == strcmp(has_popup, "dialog"))
+    return ax::mojom::HasPopup::kDialog;
+
+  return ax::mojom::HasPopup::kFalse;
 }
 
 const char* ToString(ax::mojom::InvalidState invalid_state) {

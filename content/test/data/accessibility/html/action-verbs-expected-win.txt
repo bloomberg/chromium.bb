@@ -17,7 +17,7 @@ ROLE_SYSTEM_DOCUMENT name='Action verbs' READONLY FOCUSABLE
 ++ROLE_SYSTEM_GROUPING
 ++++ROLE_SYSTEM_PUSHBUTTON name='Summary' COLLAPSED FOCUSABLE default_action='press' action_name='press'
 ++++++ROLE_SYSTEM_STATICTEXT name='Summary'
-++ROLE_SYSTEM_COMBOBOX COLLAPSED FOCUSABLE HASPOPUP default_action='open' action_name='open'
+++ROLE_SYSTEM_COMBOBOX COLLAPSED FOCUSABLE HASPOPUP haspopup:menu default_action='open' action_name='open'
 ++++ROLE_SYSTEM_LIST INVISIBLE
 ++++++ROLE_SYSTEM_LISTITEM name='Pop-up button' SELECTED FOCUSABLE default_action='select' action_name='select'
 ++IA2_ROLE_SECTION default_action='click' action_name='click'

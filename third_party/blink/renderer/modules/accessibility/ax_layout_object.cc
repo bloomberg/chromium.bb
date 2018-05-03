@@ -258,7 +258,7 @@ AccessibilityRole AXLayoutObject::NativeAccessibilityRoleIgnoringAria() const {
     if (node && node->IsLink())
       return kImageMapRole;
     if (IsHTMLInputElement(node))
-      return AriaHasPopup() ? kPopUpButtonRole : kButtonRole;
+      return HasPopup() ? kPopUpButtonRole : kButtonRole;
     if (IsSVGImage())
       return kSVGRootRole;
     return kImageRole;
@@ -1351,14 +1351,39 @@ void AXLayoutObject::AriaDescribedbyElements(
                                        describedby);
 }
 
-bool AXLayoutObject::AriaHasPopup() const {
+AXHasPopup AXLayoutObject::HasPopup() const {
   const AtomicString& has_popup =
       GetAOMPropertyOrARIAAttribute(AOMStringProperty::kHasPopUp);
-  if (!has_popup.IsNull())
-    return !has_popup.IsEmpty() && !EqualIgnoringASCIICase(has_popup, "false");
+  if (!has_popup.IsNull()) {
+    if (EqualIgnoringASCIICase(has_popup, "false"))
+      return kAXHasPopupFalse;
 
-  return RoleValue() == kComboBoxMenuButtonRole ||
-         RoleValue() == kTextFieldWithComboBoxRole;
+    if (EqualIgnoringASCIICase(has_popup, "listbox"))
+      return kAXHasPopupListbox;
+
+    if (EqualIgnoringASCIICase(has_popup, "tree"))
+      return kAXHasPopupTree;
+
+    if (EqualIgnoringASCIICase(has_popup, "grid"))
+      return kAXHasPopupGrid;
+
+    if (EqualIgnoringASCIICase(has_popup, "dialog"))
+      return kAXHasPopupDialog;
+
+    // To provide backward compatibility with ARIA 1.0 content,
+    // user agents MUST treat an aria-haspopup value of true
+    // as equivalent to a value of menu.
+    // And unknown value also return menu too.
+    if (EqualIgnoringASCIICase(has_popup, "true") ||
+        EqualIgnoringASCIICase(has_popup, "menu") || !has_popup.IsEmpty())
+      return kAXHasPopupMenu;
+  }
+
+  if (RoleValue() == kComboBoxMenuButtonRole ||
+      RoleValue() == kTextFieldWithComboBoxRole)
+    return kAXHasPopupMenu;
+
+  return AXObject::HasPopup();
 }
 
 // TODO : Aria-dropeffect and aria-grabbed are deprecated in aria 1.1

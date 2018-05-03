@@ -112,7 +112,6 @@ class WebAXObjectProxy : public gin::Wrappable<WebAXObjectProxy> {
   bool IsVisible();
   bool IsOffScreen();
   bool IsCollapsed();
-  bool HasPopup();
   bool IsValid();
   bool IsReadOnly();
   std::string Restriction();
@@ -125,6 +124,7 @@ class WebAXObjectProxy : public gin::Wrappable<WebAXObjectProxy> {
   float FontSize();
   std::string Autocomplete();
   std::string Current();
+  std::string HasPopup();
   std::string Invalid();
   std::string KeyShortcuts();
   std::string Live();

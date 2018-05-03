@@ -61,17 +61,15 @@ test(function(t) {
 }, "AccessibleNode.current");
 </script>
 
-<div role="textbox" id="hasPopUp"></div>
+<div role="textbox" id="hasPopUp" aria-haspopup="false"></div>
 
 <script>
 test(function(t) {
     var node = document.getElementById("hasPopUp");
     var axNode = accessibilityController.accessibleElementById("hasPopUp");
-    assert_equals(axNode.hasPopup, false);
-    node.accessibleNode.hasPopUp = true;
-    assert_equals(axNode.hasPopup, true);
-    // TODO(dmazzoni): Test support for ARIA 1.1 values like "dialog", "tree", etc.
-    // when those are mapped through to platform APIs.
+    assert_equals(axNode.hasPopup, "");
+    node.accessibleNode.hasPopUp = "dialog";
+    assert_equals(axNode.hasPopup, "dialog");
 }, "AccessibleNode.hasPopUp");
 </script>
 

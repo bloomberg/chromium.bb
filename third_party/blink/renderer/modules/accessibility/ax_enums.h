@@ -217,6 +217,16 @@ enum AriaCurrentState {
   kAriaCurrentStateTime
 };
 
+enum AXHasPopup {
+  kAXHasPopupFalse = 0,
+  kAXHasPopupTrue,
+  kAXHasPopupMenu,
+  kAXHasPopupListbox,
+  kAXHasPopupTree,
+  kAXHasPopupGrid,
+  kAXHasPopupDialog
+};
+
 enum InvalidState {
   kInvalidStateUndefined = 0,
   kInvalidStateFalse,

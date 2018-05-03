@@ -171,7 +171,7 @@ void MenuItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
   switch (GetType()) {
     case SUBMENU:
-      node_data->AddState(ax::mojom::State::kHaspopup);
+      node_data->SetHasPopup(ax::mojom::HasPopup::kMenu);
       break;
     case CHECKBOX:
     case RADIO: {

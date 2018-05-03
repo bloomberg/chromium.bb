@@ -3,7 +3,7 @@
 <script src="../resources/testharnessreport.js"></script>
 
 <div id="contenteditable-combobox" role="combobox" contenteditable="true"
-    aria-expanded="true" aria-haspopup="true" aria-autocomplete="list"
+    aria-expanded="true" aria-haspopup="menu" aria-autocomplete="list"
     aria-activedescendant="list1-option1">
     <ul id="list1" role="listbox" style="display: none;">
         <li id="list1-option1" role="option">Option 1</li>
@@ -13,7 +13,7 @@
 </div>
 
 <input id="input-combobox" role="combobox" type="text" aria-expanded="true"
-    aria-haspopup="true" aria-autocomplete="list"
+    aria-haspopup="menu" aria-autocomplete="list"
     aria-activedescendant="list2-option1" aria-owns="list2">
 
 <ul id="list2" role="listbox" style="display: none;">
@@ -23,7 +23,7 @@
 </ul>
 
 <input id="input-searchbox" role="combobox" type="search" aria-expanded="true"
-    aria-haspopup="true" aria-autocomplete="list"
+    aria-haspopup="menu" aria-autocomplete="list"
     aria-activedescendant="list3-option1" aria-owns="list3">
 
 <ul id="list3" role="listbox" style="display: none;">
@@ -33,7 +33,7 @@
 </ul>
 
 <textarea id="textarea-combobox" role="combobox" aria-expanded="true"
-    aria-haspopup="true" aria-autocomplete="list"
+    aria-haspopup="menu" aria-autocomplete="list"
     aria-activedescendant="list4-option1" aria-owns="list4"></textarea>
 
 <ul id="list4" role="listbox" style="display: none;">
@@ -43,7 +43,7 @@
 </ul>
 
 <div id="combobox-composite-widget" role="combobox" aria-expanded="true"
-    aria-haspopup="true" aria-autocomplete="list">
+    aria-haspopup="menu" aria-autocomplete="list">
   <input id="input-type-text"  type="text" aria-controls="list5"
       aria-activedescendant="list5-option1">
 </div>
@@ -69,8 +69,8 @@ function testExpectations(widgetId, textboxId, listboxId) {
   var option2 = accessibilityController.accessibleElementById(listboxId + "-option2");
   var option3 = accessibilityController.accessibleElementById(listboxId + "-option3");
 
-        assert_true(axWidget.isExpanded, widgetId + ".isExpanded");
-  assert_true(axWidget.hasPopup, widgetId + ".hasPopup");
+  assert_true(axWidget.isExpanded, widgetId + ".isExpanded");
+  assert_equals(axWidget.hasPopup, "menu");
 
   assert_true(option1.isFocusable, listboxId + "-option1.isFocusable");
   assert_true(option1.isSelectable, listboxId + "-option1.isSelectable");
