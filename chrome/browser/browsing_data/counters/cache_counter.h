@@ -12,10 +12,6 @@
 
 class Profile;
 
-namespace browsing_data {
-class ConditionalCacheCountingHelper;
-}
-
 class CacheCounter : public browsing_data::BrowsingDataCounter {
  public:
   class CacheResult : public FinishedResult {
@@ -43,8 +39,6 @@ class CacheCounter : public browsing_data::BrowsingDataCounter {
  private:
   void Count() override;
   void OnCacheSizeCalculated(bool is_upper_limit, int64_t cache_bytes);
-  void FetchEstimate(
-      base::WeakPtr<browsing_data::ConditionalCacheCountingHelper>);
 
   Profile* profile_;
   int64_t calculated_size_;
