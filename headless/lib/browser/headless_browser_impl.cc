@@ -260,16 +260,9 @@ HeadlessDevToolsTarget* HeadlessBrowserImpl::GetDevToolsTarget() {
   return agent_host_ ? this : nullptr;
 }
 
-bool HeadlessBrowserImpl::AttachClient(HeadlessDevToolsClient* client) {
+void HeadlessBrowserImpl::AttachClient(HeadlessDevToolsClient* client) {
   DCHECK(agent_host_);
-  return HeadlessDevToolsClientImpl::From(client)->AttachToHost(
-      agent_host_.get());
-}
-
-void HeadlessBrowserImpl::ForceAttachClient(HeadlessDevToolsClient* client) {
-  DCHECK(agent_host_);
-  HeadlessDevToolsClientImpl::From(client)->ForceAttachToHost(
-      agent_host_.get());
+  HeadlessDevToolsClientImpl::From(client)->AttachToHost(agent_host_.get());
 }
 
 void HeadlessBrowserImpl::DetachClient(HeadlessDevToolsClient* client) {

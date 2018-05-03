@@ -124,8 +124,7 @@ class HEADLESS_EXPORT HeadlessDevToolsClientImpl
       const char* method,
       base::RepeatingCallback<void(const base::Value&)> callback) override;
 
-  bool AttachToHost(content::DevToolsAgentHost* agent_host);
-  void ForceAttachToHost(content::DevToolsAgentHost* agent_host);
+  void AttachToHost(content::DevToolsAgentHost* agent_host);
   void DetachFromHost(content::DevToolsAgentHost* agent_host);
 
   void SetTaskRunnerForTests(

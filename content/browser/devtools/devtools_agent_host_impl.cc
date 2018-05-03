@@ -208,16 +208,6 @@ bool DevToolsAgentHostImpl::AttachRestrictedClient(
   return InnerAttachClient(client, true /* restricted */);
 }
 
-void DevToolsAgentHostImpl::ForceAttachClient(DevToolsAgentHostClient* client) {
-  if (SessionByClient(client))
-    return;
-  scoped_refptr<DevToolsAgentHostImpl> protect(this);
-  if (!sessions_.empty())
-    ForceDetachAllSessions();
-  DCHECK(sessions_.empty());
-  InnerAttachClient(client, false /* restricted */);
-}
-
 bool DevToolsAgentHostImpl::DetachClient(DevToolsAgentHostClient* client) {
   if (!SessionByClient(client))
     return false;

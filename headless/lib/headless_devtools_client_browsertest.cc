@@ -945,13 +945,11 @@ class HeadlessDevToolsClientAttachTest
     HeadlessDevToolsTarget* devtools_target =
         web_contents_->GetDevToolsTarget();
 
-    // Try attaching: there's already a client attached.
-    EXPECT_FALSE(devtools_target->AttachClient(other_devtools_client_.get()));
     EXPECT_TRUE(devtools_target->IsAttached());
     // Detach the existing client, attach the other client.
     devtools_target->DetachClient(devtools_client_.get());
     EXPECT_FALSE(devtools_target->IsAttached());
-    EXPECT_TRUE(devtools_target->AttachClient(other_devtools_client_.get()));
+    devtools_target->AttachClient(other_devtools_client_.get());
     EXPECT_TRUE(devtools_target->IsAttached());
 
     // Now, let's make sure this devtools client works.
@@ -968,9 +966,10 @@ class HeadlessDevToolsClientAttachTest
     HeadlessDevToolsTarget* devtools_target =
         web_contents_->GetDevToolsTarget();
 
-    // Try attach, then force-attach the original client.
-    EXPECT_FALSE(devtools_target->AttachClient(devtools_client_.get()));
-    devtools_target->ForceAttachClient(devtools_client_.get());
+    EXPECT_TRUE(devtools_target->IsAttached());
+    devtools_target->DetachClient(other_devtools_client_.get());
+    EXPECT_FALSE(devtools_target->IsAttached());
+    devtools_target->AttachClient(devtools_client_.get());
     EXPECT_TRUE(devtools_target->IsAttached());
 
     devtools_client_->GetRuntime()->Evaluate(

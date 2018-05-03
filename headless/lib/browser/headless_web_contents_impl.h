@@ -71,8 +71,7 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
   std::string GetMainFrameDevToolsId() const override;
 
   // HeadlessDevToolsTarget implementation:
-  bool AttachClient(HeadlessDevToolsClient* client) override;
-  void ForceAttachClient(HeadlessDevToolsClient* client) override;
+  void AttachClient(HeadlessDevToolsClient* client) override;
   void DetachClient(HeadlessDevToolsClient* client) override;
   bool IsAttached() override;
 

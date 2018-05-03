@@ -121,10 +121,6 @@ class CONTENT_EXPORT DevToolsAgentHost
   // Returns |true| on success.
   virtual bool AttachRestrictedClient(DevToolsAgentHostClient* client) = 0;
 
-  // Attaches |client| to this agent host to start debugging. Disconnects
-  // any existing clients.
-  virtual void ForceAttachClient(DevToolsAgentHostClient* client) = 0;
-
   // Already attached client detaches from this agent host to stop debugging it.
   // Returns true iff detach succeeded.
   virtual bool DetachClient(DevToolsAgentHostClient* client) = 0;

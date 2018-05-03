@@ -30,7 +30,6 @@ class VirtualTimeControllerTest : public ::testing::Test {
     client_.SetTaskRunnerForTests(task_runner_);
     mock_host_ = base::MakeRefCounted<MockDevToolsAgentHost>();
 
-    EXPECT_CALL(*mock_host_, IsAttached()).WillOnce(Return(false));
     EXPECT_CALL(*mock_host_, AttachClient(&client_));
     client_.AttachToHost(mock_host_.get());
     controller_ = std::make_unique<VirtualTimeController>(&client_, 0);
