@@ -114,6 +114,12 @@ void ContentViewRenderView::SetOverlayVideoMode(
   compositor_->SetNeedsComposite();
 }
 
+void ContentViewRenderView::SetNeedsComposite(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  compositor_->SetNeedsComposite();
+}
+
 void ContentViewRenderView::UpdateLayerTreeHost() {
   // TODO(wkorman): Rename Layout to UpdateLayerTreeHost in all Android
   // Compositor related classes.

@@ -48,6 +48,8 @@ class ContentViewRenderView : public CompositorClient {
   void SetOverlayVideoMode(JNIEnv* env,
                            const base::android::JavaParamRef<jobject>& obj,
                            bool enabled);
+  void SetNeedsComposite(JNIEnv* env,
+                         const base::android::JavaParamRef<jobject>& obj);
 
   // CompositorClient implementation
   void UpdateLayerTreeHost() override;
