@@ -124,7 +124,6 @@ void ResourceCoordinatorRenderProcessProbe::
       render_process_info.metrics = base::ProcessMetrics::CreateProcessMetrics(
           render_process_info.process.Handle());
 #endif
-      render_process_info.render_process_host_id = host->GetID();
     }
   }
 
@@ -133,12 +132,12 @@ void ResourceCoordinatorRenderProcessProbe::
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::BindOnce(&ResourceCoordinatorRenderProcessProbe::
-                         CollectRenderProcessMetricsOnIOThread,
+                         CollectAndDispatchRenderProcessMetricsOnIOThread,
                      base::Unretained(this)));
 }
 
 void ResourceCoordinatorRenderProcessProbe::
-    CollectRenderProcessMetricsOnIOThread() {
+    CollectAndDispatchRenderProcessMetricsOnIOThread() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(is_gathering_);
 
@@ -158,20 +157,22 @@ void ResourceCoordinatorRenderProcessProbe::
     }
   }
 
+  bool should_restart = DispatchMetrics();
+
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&ResourceCoordinatorRenderProcessProbe::
-                         HandleRenderProcessMetricsOnUIThread,
-                     base::Unretained(this)));
+      base::BindOnce(
+          &ResourceCoordinatorRenderProcessProbe::FinishCollectionOnUIThread,
+          base::Unretained(this), should_restart));
 }
 
-void ResourceCoordinatorRenderProcessProbe::
-    HandleRenderProcessMetricsOnUIThread() {
+void ResourceCoordinatorRenderProcessProbe::FinishCollectionOnUIThread(
+    bool restart_cycle) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(is_gathering_);
   is_gathering_ = false;
 
-  if (DispatchMetrics() && is_gather_cycle_started_) {
+  if (restart_cycle && is_gather_cycle_started_) {
     timer_.Start(FROM_HERE, interval_, this,
                  &ResourceCoordinatorRenderProcessProbe::
                      RegisterAliveRenderProcessesOnUIThread);
@@ -190,7 +191,6 @@ void ResourceCoordinatorRenderProcessProbe::UpdateWithFieldTrialParams() {
 
 SystemResourceCoordinator*
 ResourceCoordinatorRenderProcessProbe::EnsureSystemResourceCoordinator() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!system_resource_coordinator_) {
     content::ServiceManagerConnection* connection =
         content::ServiceManagerConnection::GetForProcess();
@@ -204,29 +204,30 @@ ResourceCoordinatorRenderProcessProbe::EnsureSystemResourceCoordinator() {
 }
 
 bool ResourceCoordinatorRenderProcessProbe::DispatchMetrics() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   SystemResourceCoordinator* system_resource_coordinator =
       EnsureSystemResourceCoordinator();
 
   if (system_resource_coordinator) {
-    bool dispatched_measurement = false;
+    mojom::ProcessResourceMeasurementBatchPtr batch =
+        mojom::ProcessResourceMeasurementBatch::New();
+
     for (auto& render_process_info_map_entry : render_process_info_map_) {
       auto& render_process_info = render_process_info_map_entry.second;
       // TODO(oysteine): Move the multiplier used to avoid precision loss
       // into a shared location, when this property gets used.
+      mojom::ProcessResourceMeasurementPtr measurement =
+          mojom::ProcessResourceMeasurement::New();
 
-      // Note that the RPH may have been deleted while the CPU metrics were
-      // acquired on a blocking thread.
-      content::RenderProcessHost* host = content::RenderProcessHost::FromID(
-          render_process_info.render_process_host_id);
-      if (host) {
-        dispatched_measurement = true;
-        host->GetProcessResourceCoordinator()->SetCPUUsage(
-            render_process_info.cpu_usage);
-      }
+      measurement->pid = render_process_info.process.Pid();
+      measurement->cpu_usage = render_process_info.cpu_usage;
+      // TODO(siggi): Add the private footprint.
+
+      batch->measurements.push_back(std::move(measurement));
     }
 
-    if (dispatched_measurement)
-      system_resource_coordinator->OnProcessCPUUsageReady();
+    if (!batch->measurements.empty())
+      system_resource_coordinator->DistributeMeasurementBatch(std::move(batch));
   }
 
   return true;

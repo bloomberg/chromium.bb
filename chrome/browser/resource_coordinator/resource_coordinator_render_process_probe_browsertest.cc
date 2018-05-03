@@ -31,8 +31,14 @@ class TestingResourceCoordinatorRenderProcessProbe
   ~TestingResourceCoordinatorRenderProcessProbe() override = default;
 
   bool DispatchMetrics() override {
-    current_run_loop_->QuitWhenIdle();
     return false;
+  }
+
+  void FinishCollectionOnUIThread(bool restart_cycle) override {
+    ResourceCoordinatorRenderProcessProbe::FinishCollectionOnUIThread(
+        restart_cycle);
+
+    current_run_loop_->QuitWhenIdle();
   }
 
   // Returns |true| if all of the elements in |*render_process_info_map_|
@@ -128,9 +134,7 @@ IN_PROC_BROWSER_TEST_F(ResourceCoordinatorRenderProcessProbeBrowserTest,
   // measurement cycles.
   std::map<int, const RenderProcessInfo*> info_map;
   for (const auto& entry : probe.render_process_info_map()) {
-    const int key = entry.first;
     const RenderProcessInfo& info = entry.second;
-    EXPECT_EQ(key, info.render_process_host_id);
     EXPECT_TRUE(info_map.insert(std::make_pair(entry.first, &info)).second);
   }
 

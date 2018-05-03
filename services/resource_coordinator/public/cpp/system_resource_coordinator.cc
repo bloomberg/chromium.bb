@@ -15,10 +15,11 @@ SystemResourceCoordinator::SystemResourceCoordinator(
 
 SystemResourceCoordinator::~SystemResourceCoordinator() = default;
 
-void SystemResourceCoordinator::OnProcessCPUUsageReady() {
+void SystemResourceCoordinator::DistributeMeasurementBatch(
+    mojom::ProcessResourceMeasurementBatchPtr batch) {
   if (!service_)
     return;
-  service_->OnProcessCPUUsageReady();
+  service_->DistributeMeasurementBatch(std::move(batch));
 }
 
 void SystemResourceCoordinator::ConnectToService(

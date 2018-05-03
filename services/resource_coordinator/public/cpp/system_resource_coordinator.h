@@ -18,7 +18,8 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT SystemResourceCoordinator
   SystemResourceCoordinator(service_manager::Connector* connector);
   ~SystemResourceCoordinator() override;
 
-  void OnProcessCPUUsageReady();
+  void DistributeMeasurementBatch(
+      mojom::ProcessResourceMeasurementBatchPtr batch);
 
  private:
   void ConnectToService(mojom::CoordinationUnitProviderPtr& provider,

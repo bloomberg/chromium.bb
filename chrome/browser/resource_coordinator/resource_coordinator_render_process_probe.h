@@ -24,14 +24,11 @@ struct RenderProcessInfo {
   ~RenderProcessInfo();
   base::Process process;
   double cpu_usage = -1.0;
-  // This structure bounces from the UI thread to blocking threads and back.
-  // It's therefore not safe to store RenderProcessHost pointers, so the ID is
-  // used instead.
-  int render_process_host_id = 0;
   size_t last_gather_cycle_active;
   std::unique_ptr<base::ProcessMetrics> metrics;
 };
 
+// This map is keyed by the RenderProcessHost's ID from the GetID function.
 using RenderProcessInfoMap = std::map<int, RenderProcessInfo>;
 
 // |ResourceCoordinatorRenderProcessProbe| collects measurements about render
@@ -67,27 +64,27 @@ class ResourceCoordinatorRenderProcessProbe {
   // (1) Identify all of the render processes that are active to measure.
   // Child render processes can only be discovered in the browser's UI thread.
   void RegisterAliveRenderProcessesOnUIThread();
-  // (2) Collect render process metrics.
-  void CollectRenderProcessMetricsOnIOThread();
-  // (3) Send the collected render process metrics to the appropriate
-  // coordination units in the |resource_coordinator| service. Then
-  // initiates the next render process metrics collection cycle, which
-  // consists of a delayed call to perform (1) via a timer.
-  void HandleRenderProcessMetricsOnUIThread();
+  // (2) Collect and dispatch the render process metrics to the system
+  // coordination unit.
+  void CollectAndDispatchRenderProcessMetricsOnIOThread();
+  // (3) Initiate the next render process metrics collection cycle if the
+  // cycle has been started and |restart_cycle| is true, which consists of a
+  // delayed call to perform (1) via a timer.
+  // Virtual for testing.
+  virtual void FinishCollectionOnUIThread(bool restart_cycle);
 
   // Allows FieldTrial parameters to override defaults.
   void UpdateWithFieldTrialParams();
 
   SystemResourceCoordinator* EnsureSystemResourceCoordinator();
 
-  // Dispatch the collected metrics. Returns |true| if another metrics
-  // collection gather cycle should be initiated. Virtual for testing.
-  // Default implementation sends collected metrics back to the resource
-  // coordinator service and initiates another render process metrics gather
-  // cycle.
+  // Dispatch the collected metrics, return true if the cycle should restart.
+  // Virtual for testing.
   virtual bool DispatchMetrics();
 
-  // A map of currently running render process host IDs to Process.
+  // A map of currently running render process host IDs to process.
+  // This map is accessed alternatively from the UI thread and the IO thread,
+  // but only one of the two at a time.
   RenderProcessInfoMap render_process_info_map_;
 
   // Time duration between measurements.
