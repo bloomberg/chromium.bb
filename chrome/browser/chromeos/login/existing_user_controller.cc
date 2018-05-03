@@ -585,8 +585,12 @@ void ExistingUserController::PerformLogin(
   }
   if (user_context.GetAccountId().GetAccountType() ==
           AccountType::ACTIVE_DIRECTORY &&
-      user_context.GetAuthFlow() == UserContext::AUTH_FLOW_OFFLINE) {
-    DCHECK(user_context.GetKey()->GetKeyType() == Key::KEY_TYPE_PASSWORD_PLAIN);
+      user_context.GetAuthFlow() == UserContext::AUTH_FLOW_OFFLINE &&
+      user_context.GetKey()->GetKeyType() == Key::KEY_TYPE_PASSWORD_PLAIN) {
+    // Skip TryAuthenticateUser() below when password is hashed. Views-based
+    // login sends hashed password back and TryAuthenticateUser() is called
+    // there before it sends back the hashed password
+
     // Try to get kerberos TGT while we have user's password typed on the pod
     // screen. Failure to get TGT here is OK - that could mean e.g. Active
     // Directory server is not reachable. We don't want to have user wait for
