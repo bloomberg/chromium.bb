@@ -517,6 +517,16 @@ void aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
     cm->temporal_layer_id = obu_header.temporal_layer_id;
     cm->enhancement_layer_id = obu_header.enhancement_layer_id;
 
+    if (obu_header.type != OBU_TEMPORAL_DELIMITER &&
+        obu_header.type != OBU_SEQUENCE_HEADER &&
+        obu_header.type != OBU_PADDING) {
+      // don't decode obu if it's not in current operating mode
+      if (!is_obu_in_current_operating_point(pbi, obu_header)) {
+        data += payload_size;
+        continue;
+      }
+    }
+
     av1_init_read_bit_buffer(pbi, &rb, data, data_end);
 
     switch (obu_header.type) {
@@ -541,11 +551,6 @@ void aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
       case OBU_FRAME_HEADER:
       case OBU_REDUNDANT_FRAME_HEADER:
       case OBU_FRAME:
-        // don't decode obu if it's not in current operating mode
-        if (!is_obu_in_current_operating_point(pbi, obu_header)) {
-          decoded_payload_size = payload_size;
-          break;
-        }
         // Only decode first frame header received
         if (!frame_header_received) {
           av1_init_read_bit_buffer(pbi, &rb, data, data_end);
@@ -571,11 +576,6 @@ void aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
           cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
           return;
         }
-        // don't decode obu if it's not in current operating mode
-        if (!is_obu_in_current_operating_point(pbi, obu_header)) {
-          decoded_payload_size = payload_size;
-          break;
-        }
         decoded_payload_size += read_one_tile_group_obu(
             pbi, &rb, is_first_tg_obu_received, data + obu_payload_offset,
             data + payload_size, p_data_end, &frame_decoding_finished,
@@ -583,11 +583,6 @@ void aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
         is_first_tg_obu_received = 0;
         break;
       case OBU_METADATA:
-        // don't decode obu if it's not in current operating mode
-        if (!is_obu_in_current_operating_point(pbi, obu_header)) {
-          decoded_payload_size = payload_size;
-          break;
-        }
         if (data_end < data + payload_size) {
           cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
           return;
