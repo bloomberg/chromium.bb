@@ -6,12 +6,12 @@
 
 #include <memory>
 
-#include "base/test/scoped_task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/conflicts/module_database_win.h"
 #include "chrome/common/conflicts/module_watcher_win.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include <windows.h>
@@ -45,7 +45,7 @@ class ModuleEventSinkImplTest : public testing::Test {
   }
 
   // Must be before |module_database_|.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
   ScopedTestingLocalState scoped_testing_local_state_;
   std::unique_ptr<ModuleDatabase> module_database_;
   std::unique_ptr<ModuleEventSinkImpl> module_event_sink_impl_;
