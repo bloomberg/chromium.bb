@@ -84,7 +84,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
                               BufferCreationStatus status)>;
 
   using RequestGPUInfoCallback = base::Callback<void(const gpu::GPUInfo&)>;
-  using RequestHDRStatusCallback = base::Callback<void(bool)>;
+  using RequestHDRStatusCallback = base::RepeatingCallback<void(bool)>;
 
   static int GetGpuCrashCount();
 
