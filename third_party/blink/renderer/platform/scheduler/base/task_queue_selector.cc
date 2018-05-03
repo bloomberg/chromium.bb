@@ -313,22 +313,34 @@ void TaskQueueSelector::DidSelectQueueWithPriority(
       break;
     case TaskQueue::kHighestPriority:
       low_priority_starvation_score_ +=
-          kSmallScoreIncrementForLowPriorityStarvation;
+          HasTasksWithPriority(TaskQueue::kLowPriority)
+              ? kSmallScoreIncrementForLowPriorityStarvation
+              : 0;
       normal_priority_starvation_score_ +=
-          kSmallScoreIncrementForNormalPriorityStarvation;
+          HasTasksWithPriority(TaskQueue::kNormalPriority)
+              ? kSmallScoreIncrementForNormalPriorityStarvation
+              : 0;
       high_priority_starvation_score_ +=
-          kSmallScoreIncrementForHighPriorityStarvation;
+          HasTasksWithPriority(TaskQueue::kHighPriority)
+              ? kSmallScoreIncrementForHighPriorityStarvation
+              : 0;
       break;
     case TaskQueue::kHighPriority:
       low_priority_starvation_score_ +=
-          kLargeScoreIncrementForLowPriorityStarvation;
+          HasTasksWithPriority(TaskQueue::kLowPriority)
+              ? kLargeScoreIncrementForLowPriorityStarvation
+              : 0;
       normal_priority_starvation_score_ +=
-          kLargeScoreIncrementForNormalPriorityStarvation;
+          HasTasksWithPriority(TaskQueue::kNormalPriority)
+              ? kLargeScoreIncrementForNormalPriorityStarvation
+              : 0;
       high_priority_starvation_score_ = 0;
       break;
     case TaskQueue::kNormalPriority:
       low_priority_starvation_score_ +=
-          kLargeScoreIncrementForLowPriorityStarvation;
+          HasTasksWithPriority(TaskQueue::kLowPriority)
+              ? kLargeScoreIncrementForLowPriorityStarvation
+              : 0;
       normal_priority_starvation_score_ = 0;
       break;
     case TaskQueue::kLowPriority:
@@ -381,6 +393,14 @@ bool TaskQueueSelector::AllEnabledWorkQueuesAreEmpty() const {
 void TaskQueueSelector::SetImmediateStarvationCountForTest(
     size_t immediate_starvation_count) {
   immediate_starvation_count_ = immediate_starvation_count;
+}
+
+bool TaskQueueSelector::HasTasksWithPriority(
+    TaskQueue::QueuePriority priority) {
+  return !prioritizing_selector_.delayed_work_queue_sets()->IsSetEmpty(
+             priority) ||
+         !prioritizing_selector_.immediate_work_queue_sets()->IsSetEmpty(
+             priority);
 }
 
 }  // namespace internal
