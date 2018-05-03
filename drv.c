@@ -440,6 +440,7 @@ void *drv_bo_map(struct bo *bo, const struct rectangle *rect, uint32_t map_flags
 	}
 
 	mapping.vma = calloc(1, sizeof(*mapping.vma));
+	memcpy(mapping.vma->map_strides, bo->strides, sizeof(mapping.vma->map_strides));
 	addr = bo->drv->backend->bo_map(bo, mapping.vma, plane, map_flags);
 	if (addr == MAP_FAILED) {
 		*map_data = NULL;

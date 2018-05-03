@@ -260,11 +260,11 @@ int dri_bo_destroy(struct bo *bo)
 void *dri_bo_map(struct bo *bo, struct vma *vma, size_t plane, uint32_t map_flags)
 {
 	struct dri_driver *dri = bo->drv->priv;
-	int stride;
 
 	/* GBM flags and DRI flags are the same. */
-	vma->addr = dri->image_extension->mapImage(dri->context, bo->priv, 0, 0, bo->width,
-						   bo->height, map_flags, &stride, &vma->priv);
+	vma->addr =
+	    dri->image_extension->mapImage(dri->context, bo->priv, 0, 0, bo->width, bo->height,
+					   map_flags, (int *)&vma->map_strides[plane], &vma->priv);
 	if (!vma->addr)
 		return MAP_FAILED;
 

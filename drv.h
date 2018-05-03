@@ -84,6 +84,7 @@ struct vma {
 	uint32_t handle;
 	uint32_t map_flags;
 	int32_t refcount;
+	uint32_t map_strides[DRV_MAX_PLANES];
 	void *priv;
 };
 

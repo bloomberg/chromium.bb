@@ -233,7 +233,6 @@ PUBLIC void *gbm_bo_map(struct gbm_bo *bo, uint32_t x, uint32_t y, uint32_t widt
 	if (!bo || width == 0 || height == 0 || !stride || !map_data)
 		return NULL;
 
-	*stride = gbm_bo_get_plane_stride(bo, plane);
 	map_flags = (transfer_flags & GBM_BO_TRANSFER_READ) ? BO_MAP_READ : BO_MAP_NONE;
 	map_flags |= (transfer_flags & GBM_BO_TRANSFER_WRITE) ? BO_MAP_WRITE : BO_MAP_NONE;
 
@@ -241,7 +240,9 @@ PUBLIC void *gbm_bo_map(struct gbm_bo *bo, uint32_t x, uint32_t y, uint32_t widt
 	if (addr == MAP_FAILED)
 		return MAP_FAILED;
 
-	offset = gbm_bo_get_plane_stride(bo, plane) * rect.y;
+	*stride = ((struct mapping *)*map_data)->vma->map_strides[plane];
+
+	offset = *stride * rect.y;
 	offset += drv_stride_from_format(bo->gbm_format, rect.x, plane);
 	return (void *)((uint8_t *)addr + offset);
 }
