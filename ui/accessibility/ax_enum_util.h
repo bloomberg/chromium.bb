@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef UI_ACCESSIBILITY_AX_ENUM_UTIL_H_
+#define UI_ACCESSIBILITY_AX_ENUM_UTIL_H_
+
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_export.h"
 
@@ -85,6 +88,10 @@ AX_EXPORT const char* ToString(ax::mojom::AriaCurrentState aria_current_state);
 AX_EXPORT ax::mojom::AriaCurrentState ParseAriaCurrentState(
     const char* aria_current_state);
 
+// ax::mojom::HasPopup
+AX_EXPORT const char* ToString(ax::mojom::HasPopup has_popup);
+AX_EXPORT ax::mojom::HasPopup ParseHasPopup(const char* has_popup);
+
 // ax::mojom::InvalidState
 AX_EXPORT const char* ToString(ax::mojom::InvalidState invalid_state);
 AX_EXPORT ax::mojom::InvalidState ParseInvalidState(const char* invalid_state);
@@ -128,3 +135,5 @@ AX_EXPORT const char* ToString(ax::mojom::TreeOrder tree_order);
 AX_EXPORT ax::mojom::TreeOrder ParseTreeOrder(const char* tree_order);
 
 }  // namespace ui
+
+#endif  // UI_ACCESSIBILITY_AX_ENUM_UTIL_H_

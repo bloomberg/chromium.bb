@@ -180,6 +180,14 @@ STATIC_ASSERT_ENUM(kWebAXAriaCurrentStateLocation, kAriaCurrentStateLocation);
 STATIC_ASSERT_ENUM(kWebAXAriaCurrentStateDate, kAriaCurrentStateDate);
 STATIC_ASSERT_ENUM(kWebAXAriaCurrentStateTime, kAriaCurrentStateTime);
 
+STATIC_ASSERT_ENUM(kWebAXHasPopupFalse, kAXHasPopupFalse);
+STATIC_ASSERT_ENUM(kWebAXHasPopupTrue, kAXHasPopupTrue);
+STATIC_ASSERT_ENUM(kWebAXHasPopupMenu, kAXHasPopupMenu);
+STATIC_ASSERT_ENUM(kWebAXHasPopupListbox, kAXHasPopupListbox);
+STATIC_ASSERT_ENUM(kWebAXHasPopupTree, kAXHasPopupTree);
+STATIC_ASSERT_ENUM(kWebAXHasPopupGrid, kAXHasPopupGrid);
+STATIC_ASSERT_ENUM(kWebAXHasPopupDialog, kAXHasPopupDialog);
+
 STATIC_ASSERT_ENUM(kWebAXInvalidStateUndefined, kInvalidStateUndefined);
 STATIC_ASSERT_ENUM(kWebAXInvalidStateFalse, kInvalidStateFalse);
 STATIC_ASSERT_ENUM(kWebAXInvalidStateTrue, kInvalidStateTrue);

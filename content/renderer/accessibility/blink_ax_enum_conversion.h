@@ -39,6 +39,8 @@ ax::mojom::TextStyle AXTextStyleFromBlink(blink::WebAXTextStyle text_style);
 ax::mojom::AriaCurrentState AXAriaCurrentStateFromBlink(
     blink::WebAXAriaCurrentState aria_current_state);
 
+ax::mojom::HasPopup AXHasPopupFromBlink(blink::WebAXHasPopup has_popup);
+
 ax::mojom::InvalidState AXInvalidStateFromBlink(
     blink::WebAXInvalidState invalid_state);
 

@@ -167,7 +167,7 @@ void PickerIndicatorElement::DidNotifySubtreeInsertionsToDocument() {
   if (LayoutTestSupport::IsRunningLayoutTest())
     return;
   setAttribute(tabindexAttr, "0");
-  setAttribute(aria_haspopupAttr, "true");
+  setAttribute(aria_haspopupAttr, "menu");
   setAttribute(roleAttr, "button");
 }
 

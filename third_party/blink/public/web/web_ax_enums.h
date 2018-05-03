@@ -276,6 +276,16 @@ enum WebAXAriaCurrentState {
   kWebAXAriaCurrentStateTime
 };
 
+enum WebAXHasPopup {
+  kWebAXHasPopupFalse = 0,
+  kWebAXHasPopupTrue,
+  kWebAXHasPopupMenu,
+  kWebAXHasPopupListbox,
+  kWebAXHasPopupTree,
+  kWebAXHasPopupGrid,
+  kWebAXHasPopupDialog
+};
+
 // Only used by HTML form controls and any other element that has
 // an aria-invalid attribute specified.
 enum WebAXInvalidState {

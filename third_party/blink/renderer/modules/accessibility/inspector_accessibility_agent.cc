@@ -39,6 +39,44 @@ namespace {
 
 static const AXID kIDForInspectedNodeWithNoAXNode = 0;
 
+void AddHasPopupProperty(AXHasPopup has_popup,
+                         protocol::Array<AXProperty>& properties) {
+  switch (has_popup) {
+    case kAXHasPopupFalse:
+      break;
+    case kAXHasPopupTrue:
+      properties.addItem(
+          CreateProperty(AXPropertyNameEnum::HasPopup,
+                         CreateValue("true", AXValueTypeEnum::Token)));
+      break;
+    case kAXHasPopupMenu:
+      properties.addItem(
+          CreateProperty(AXPropertyNameEnum::HasPopup,
+                         CreateValue("menu", AXValueTypeEnum::Token)));
+      break;
+    case kAXHasPopupListbox:
+      properties.addItem(
+          CreateProperty(AXPropertyNameEnum::HasPopup,
+                         CreateValue("listbox", AXValueTypeEnum::Token)));
+      break;
+    case kAXHasPopupTree:
+      properties.addItem(
+          CreateProperty(AXPropertyNameEnum::HasPopup,
+                         CreateValue("tree", AXValueTypeEnum::Token)));
+      break;
+    case kAXHasPopupGrid:
+      properties.addItem(
+          CreateProperty(AXPropertyNameEnum::HasPopup,
+                         CreateValue("grid", AXValueTypeEnum::Token)));
+      break;
+    case kAXHasPopupDialog:
+      properties.addItem(
+          CreateProperty(AXPropertyNameEnum::HasPopup,
+                         CreateValue("dialog", AXValueTypeEnum::Token)));
+      break;
+  }
+}
+
 void FillLiveRegionProperties(AXObject& ax_object,
                               protocol::Array<AXProperty>& properties) {
   if (!ax_object.LiveRegionRoot())
@@ -77,6 +115,8 @@ void FillGlobalStates(AXObject& ax_object,
         CreateProperty(AXPropertyNameEnum::HiddenRoot,
                        CreateRelatedNodeListValue(*hidden_root)));
   }
+
+  AddHasPopupProperty(ax_object.HasPopup(), properties);
 
   InvalidState invalid_state = ax_object.GetInvalidState();
   switch (invalid_state) {
@@ -153,11 +193,7 @@ void FillWidgetProperties(AXObject& ax_object,
         CreateProperty(AXPropertyNameEnum::Autocomplete,
                        CreateValue(autocomplete, AXValueTypeEnum::Token)));
 
-  bool has_popup = ax_object.AriaHasPopup();
-  if (has_popup || ax_object.HasAttribute(HTMLNames::aria_haspopupAttr)) {
-    properties.addItem(CreateProperty(AXPropertyNameEnum::Haspopup,
-                                      CreateBooleanValue(has_popup)));
-  }
+  AddHasPopupProperty(ax_object.HasPopup(), properties);
 
   int heading_level = ax_object.HeadingLevel();
   if (heading_level > 0) {

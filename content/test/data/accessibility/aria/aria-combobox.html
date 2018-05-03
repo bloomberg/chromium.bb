@@ -5,8 +5,10 @@
 @MAC-ALLOW:AXTitleUIElement*
 @WIN-DENY:description*
 @WIN-ALLOW:FOCUS*
+@WIN-ALLOW:haspopup*
 @WIN-ALLOW:ia2_hypertext=*
 @WIN-ALLOW:SELECT*
+@BLINK-ALLOW:haspopup*
 -->
 <html>
   <body>
@@ -15,7 +17,7 @@
         role="combobox"
         aria-autocomplete="list"
         aria-expanded="true"
-        aria-haspopup="true"
+        aria-haspopup="listbox"
         aria-labelledby="state_label"
         aria-owns="state_list"
         aria-readonly="true"

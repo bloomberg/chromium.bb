@@ -71,6 +71,8 @@ std::string AccessibilityTreeFormatterBlink::IntAttrToString(
       return ui::ToString(static_cast<ax::mojom::DefaultActionVerb>(value));
     case ax::mojom::IntAttribute::kDescriptionFrom:
       return ui::ToString(static_cast<ax::mojom::DescriptionFrom>(value));
+    case ax::mojom::IntAttribute::kHasPopup:
+      return ui::ToString(static_cast<ax::mojom::HasPopup>(value));
     case ax::mojom::IntAttribute::kInvalidState:
       return ui::ToString(static_cast<ax::mojom::InvalidState>(value));
     case ax::mojom::IntAttribute::kNameFrom:

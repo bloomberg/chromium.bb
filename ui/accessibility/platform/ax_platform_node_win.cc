@@ -3103,6 +3103,37 @@ std::vector<base::string16> AXPlatformNodeWin::ComputeIA2Attributes() {
     result.push_back(L"explicit-name:true");
   }
 
+  // Expose the aria-haspopup attribute.
+  int32_t has_popup;
+  if (GetIntAttribute(ax::mojom::IntAttribute::kHasPopup, &has_popup)) {
+    switch (static_cast<ax::mojom::HasPopup>(has_popup)) {
+      case ax::mojom::HasPopup::kFalse:
+        break;
+      case ax::mojom::HasPopup::kTrue:
+        result.push_back(L"haspopup:true");
+        break;
+      case ax::mojom::HasPopup::kMenu:
+        result.push_back(L"haspopup:menu");
+        break;
+      case ax::mojom::HasPopup::kListbox:
+        result.push_back(L"haspopup:listbox");
+        break;
+      case ax::mojom::HasPopup::kTree:
+        result.push_back(L"haspopup:tree");
+        break;
+      case ax::mojom::HasPopup::kGrid:
+        result.push_back(L"haspopup:grid");
+        break;
+      case ax::mojom::HasPopup::kDialog:
+        result.push_back(L"haspopup:dialog");
+        break;
+    }
+  } else if (IsAutofillField()) {
+    // Note: autofill is special-cased here because there is no way for the
+    // browser to know when the autofill popup is shown.
+    result.push_back(L"haspopup:menu");
+  }
+
   // Expose the aria-current attribute.
   int32_t aria_current_state;
   if (GetIntAttribute(ax::mojom::IntAttribute::kAriaCurrentState,
@@ -3450,7 +3481,8 @@ int AXPlatformNodeWin::MSAAState() {
 
   // Note: autofill is special-cased here because there is no way for the
   // browser to know when the autofill popup is shown.
-  if (data.HasState(ax::mojom::State::kHaspopup) || IsAutofillField())
+  if (data.HasIntAttribute(ax::mojom::IntAttribute::kHasPopup) ||
+      IsAutofillField())
     msaa_state |= STATE_SYSTEM_HASPOPUP;
 
   // TODO(dougt) unhandled ux::ax::mojom::State::kHorizontal

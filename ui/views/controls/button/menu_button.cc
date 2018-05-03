@@ -287,7 +287,7 @@ bool MenuButton::OnKeyReleased(const ui::KeyEvent& event) {
 void MenuButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   Button::GetAccessibleNodeData(node_data);
   node_data->role = ax::mojom::Role::kPopUpButton;
-  node_data->AddState(ax::mojom::State::kHaspopup);
+  node_data->SetHasPopup(ax::mojom::HasPopup::kMenu);
   if (enabled())
     node_data->SetDefaultActionVerb(ax::mojom::DefaultActionVerb::kOpen);
 }

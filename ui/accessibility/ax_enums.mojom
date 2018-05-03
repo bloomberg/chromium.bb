@@ -229,7 +229,7 @@ enum State {
   kEditable,
   kExpanded,
   kFocusable,
-  kHaspopup,
+  kHasPopup,
    // Grows horizontally, e.g. most toolbars and separators.
   kHorizontal,
   kHovered,
@@ -472,6 +472,8 @@ enum IntAttribute {
   kBackgroundColor,
   kColor,
 
+  kHasPopup,
+
    // Indicates if a form control has invalid input or
    // if an element has an aria-invalid attribute.
   kInvalidState,
@@ -689,6 +691,17 @@ enum AriaCurrentState {
   kUnclippedLocation,
   kDate,
   kTime,
+};
+
+enum HasPopup {
+  kFalse = 0,
+  kTrue,
+  kMenu,
+  kListbox,
+  kTree,
+  kGrid,
+  kDialog,
+  kLast = kDialog,
 };
 
 enum InvalidState {

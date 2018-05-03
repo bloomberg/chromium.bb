@@ -549,6 +549,11 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
       dst->AddFloatAttribute(ax::mojom::FloatAttribute::kFontSize,
                              src.FontSize());
 
+    if (src.HasPopup())
+      dst->SetHasPopup(AXHasPopupFromBlink(src.HasPopup()));
+    else if (src.Role() == blink::kWebAXRolePopUpButton)
+      dst->SetHasPopup(ax::mojom::HasPopup::kMenu);
+
     if (src.AriaCurrentState()) {
       dst->AddIntAttribute(ax::mojom::IntAttribute::kAriaCurrentState,
                            static_cast<int32_t>(AXAriaCurrentStateFromBlink(

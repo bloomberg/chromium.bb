@@ -208,7 +208,7 @@
     expanded,
     focusable,
     focused,
-    haspopup,
+    hasPopup,
     horizontal,
     hovered,
     ignored,
@@ -307,6 +307,16 @@
   enum Restriction {
     disabled,
     readOnly
+  };
+
+  // Indicates the availability and type of interactive popup element
+  enum HasPopup {
+    true,
+    menu,
+    listbox,
+    tree,
+    grid,
+    dialog
   };
 
   // Describes possible actions when performing a do default action.
@@ -760,6 +770,15 @@
 
     // The language code for this subtree.
     DOMString? language;
+
+    // Indicates the availability and type of interactive popup element
+    // true - the popup is a menu
+    // menu - the popup is a menu
+    // listbox - the popup is a listbox
+    // tree - the popup is a tree
+    // grid - the popup is a grid
+    // dialog - the popup is a dialog
+    DOMString? hasPopup;
 
     // Input restriction, if any, such as readonly or disabled:
     // undefined - enabled control or other object that is not disabled

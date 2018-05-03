@@ -366,7 +366,7 @@ bool BrowserAccessibilityAndroid::AreInlineTextBoxesLoaded() const {
 }
 
 bool BrowserAccessibilityAndroid::CanOpenPopup() const {
-  return HasState(ax::mojom::State::kHaspopup);
+  return HasIntAttribute(ax::mojom::IntAttribute::kHasPopup);
 }
 
 const char* BrowserAccessibilityAndroid::GetClassName() const {
