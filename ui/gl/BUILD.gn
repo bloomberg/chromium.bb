@@ -216,8 +216,9 @@ component("gl") {
       }
     }
 
-    if (is_posix && !is_fuchsia) {
-      # Windows has USE_EGL but doesn't support base::FileDescriptor
+    if (is_posix && !is_fuchsia && !is_mac) {
+      # Windows has USE_EGL but doesn't support base::FileDescriptor.
+      # libsync isn't supported or needed on MacOSX.
       # Fuchsia is excluded due to a libsync dependency and because it's
       # unknown if the required EGL_ANDROID_native_fence_sync extension works
       # there. If it does and there's a use case, this could be revisited.
