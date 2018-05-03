@@ -15,7 +15,6 @@
 -ExpectCTBrowserTest.TestDynamicExpectCTHeaderProcessing
 -ExpectCTBrowserTest.TestDynamicExpectCTReporting
 -ExtensionApiTest.Debugger
--ExtensionApiTest.XHRFileURLs
 -ExtensionApiTestWithSwitch.ExtensionDebugger
 -ExtensionUnloadBrowserTest.UnloadWithContentScripts
 -MediaGalleriesPlatformAppBrowserTest.ToURL
@@ -32,7 +31,6 @@
 -ProfileWindowBrowserTest.GuestClearsCookies
 -ProxySettingsApiTest.ProxyEventsInvalidProxy
 -RegisterProtocolHandlerBrowserTest.CustomHandler
--SafeBrowsingTriggeredPopupBlockerBrowserTest.NoFeature_NoMessages
 -SubresourceFilterBrowserTest.FailedProvisionalLoadInMainframe
 -TaskManagerUtilityProcessBrowserTest.UtilityJSHeapMemory
 -WebstoreInstallerBrowserTest.SimultaneousInstall
@@ -96,7 +94,6 @@
 -ContinueWhereILeftOffTest.CookiesClearedOnExit
 -DevToolsSanityTest.TestNetworkPushTime
 -DownloadExtensionTest.DownloadExtensionTest_Download_FileSystemURL
--LoadImageBrowserTest.LoadImage
 -MimeHandlerViewTests/MimeHandlerViewTest.SingleRequest/0
 -PolicyTest.ExtensionInstallSources
 -PolicyTest.ForceGoogleSafeSearch
