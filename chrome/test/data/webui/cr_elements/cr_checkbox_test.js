@@ -7,8 +7,15 @@ suite('cr-checkbox', function() {
 
   setup(function() {
     PolymerTest.clearBody();
-    checkbox = document.createElement('cr-checkbox');
-    document.body.appendChild(checkbox);
+    document.body.innerHTML = `
+      <cr-checkbox id="checkbox">
+        <div id="label">label
+          <a id="link">link</a>
+        </div>
+      </cr-checkbox>
+    `;
+
+    checkbox = document.getElementById('checkbox');
     assertNotChecked();
   });
 
@@ -39,13 +46,17 @@ suite('cr-checkbox', function() {
     assertEquals('false', checkbox.getAttribute('aria-disabled'));
   }
 
-  /** @param {string} keyName The name of the key to trigger. */
-  function triggerKeyPressEvent(keyName) {
+  /**
+   * @param {string} keyName The name of the key to trigger.
+   * @param {HTMLElement=} element
+   */
+  function triggerKeyPressEvent(keyName, element) {
+    element = element || checkbox;
     // Note: MockInteractions incorrectly populates |keyCode| and |code| with
     // the same value. Since the prod code only cares about |code| being 'Enter'
     // or 'Space', passing a string as a 2nd param, instead of a number.
     MockInteractions.keyEventOn(
-        checkbox, 'keypress', keyName, undefined, keyName);
+        element, 'keypress', keyName, undefined, keyName);
   }
 
   // Test that the control is checked when the user taps on it (no movement
@@ -80,6 +91,7 @@ suite('cr-checkbox', function() {
     checkbox.checked = false;
     assertNotChecked();
 
+    // Wait 1 cycle to make sure change-event was not fired.
     setTimeout(done);
   });
 
@@ -111,6 +123,34 @@ suite('cr-checkbox', function() {
 
     checkbox.click();
     triggerKeyPressEvent('Enter');
+
+    // Wait 1 cycle to make sure change-event was not fired.
+    setTimeout(done);
+  });
+
+  test('LabelDisplay', function() {
+    const labelContainer = checkbox.$['label-container'];
+    // Test that there's actually a label that's more than just the padding.
+    assertTrue(labelContainer.offsetWidth > 20);
+
+    checkbox.classList.add('no-label');
+    assertEquals('none', getComputedStyle(labelContainer).display);
+  });
+
+  test('ClickedOnLinkDoesNotToggleCheckbox', function(done) {
+    test_util.eventToPromise('change', checkbox).then(function() {
+      assertFalse(true);
+    });
+
+    assertNotChecked();
+    link = document.getElementById('link');
+    link.click();
+    assertNotChecked();
+
+    triggerKeyPressEvent('Enter', link);
+    assertNotChecked();
+
+    // Wait 1 cycle to make sure change-event was not fired.
     setTimeout(done);
   });
 });

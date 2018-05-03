@@ -97,7 +97,7 @@ cr.define('settings_reset_page', function() {
         const dialog = resetPage.$$('settings-reset-profile-dialog');
         assertTrue(!!dialog);
 
-        const checkbox = dialog.$$('[slot=footer] paper-checkbox');
+        const checkbox = dialog.$$('[slot=footer] cr-checkbox');
         assertTrue(checkbox.checked);
         const showReportedSettingsLink = dialog.$$('[slot=footer] a');
         assertTrue(!!showReportedSettingsLink);
