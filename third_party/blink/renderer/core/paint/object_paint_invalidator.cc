@@ -533,10 +533,12 @@ void ObjectPaintInvalidatorWithContext::InvalidateSelection(
     return;
 
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    // PaintController will handle raster invalidation of the partial rect.
-    object_.GetMutableForPainting().SetPartialInvalidationRect(
-        UnionRect(object_.PartialInvalidationRect(),
-                  UnionRect(new_selection_rect, old_selection_rect)));
+    if (RuntimeEnabledFeatures::PartialRasterInvalidationEnabled()) {
+      // PaintController will handle raster invalidation of the partial rect.
+      object_.GetMutableForPainting().SetPartialInvalidationRect(
+          UnionRect(object_.PartialInvalidationRect(),
+                    UnionRect(new_selection_rect, old_selection_rect)));
+    }
   } else {
     FullyInvalidatePaint(PaintInvalidationReason::kSelection,
                          old_selection_rect, new_selection_rect);
@@ -555,13 +557,18 @@ void ObjectPaintInvalidatorWithContext::InvalidatePartialRect(
   if (rect.IsEmpty())
     return;
 
-  context_.MapLocalRectToVisualRectInBacking(object_, rect);
-  if (rect.IsEmpty())
-    return;
+  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled() ||
+      RuntimeEnabledFeatures::PartialRasterInvalidationEnabled()) {
+    context_.MapLocalRectToVisualRectInBacking(object_, rect);
+    if (rect.IsEmpty())
+      return;
+  }
 
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    // PaintController will handle raster invalidation of the partial rect.
-    object_.GetMutableForPainting().SetPartialInvalidationRect(rect);
+    if (RuntimeEnabledFeatures::PartialRasterInvalidationEnabled()) {
+      // PaintController will handle raster invalidation of the partial rect.
+      object_.GetMutableForPainting().SetPartialInvalidationRect(rect);
+    }
   } else {
     InvalidatePaintRectangleWithContext(rect,
                                         PaintInvalidationReason::kRectangle);
