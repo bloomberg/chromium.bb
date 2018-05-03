@@ -265,13 +265,6 @@ class PasswordManagerTest : public testing::Test {
     manager()->OnPasswordFormSubmitted(&driver_, form);
   }
 
-  PasswordManager::PasswordSubmittedCallback SubmissionCallback() {
-    return base::Bind(&PasswordManagerTest::FormSubmitted,
-                      base::Unretained(this));
-  }
-
-  void FormSubmitted(const PasswordForm& form) { submitted_form_ = form; }
-
   const GURL test_url_;
   base::MessageLoop message_loop_;
   scoped_refptr<MockPasswordStore> store_;
@@ -751,18 +744,6 @@ TEST_F(PasswordManagerTest, FillPasswordsOnDisabledManager) {
   EXPECT_CALL(*store_, GetLogins(_, _))
       .WillOnce(WithArg<1>(InvokeConsumer(form)));
   manager()->OnPasswordFormsParsed(&driver_, observed);
-}
-
-TEST_F(PasswordManagerTest, SubmissionCallbackTest) {
-  manager()->AddSubmissionCallback(SubmissionCallback());
-  PasswordForm form = MakeSimpleForm();
-  // Prefs are needed for failure logging about having no matching observed
-  // form.
-  EXPECT_CALL(client_, GetPrefs()).WillRepeatedly(Return(nullptr));
-  EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
-      .WillRepeatedly(Return(true));
-  OnPasswordFormSubmitted(form);
-  EXPECT_EQ(form, submitted_form_);
 }
 
 TEST_F(PasswordManagerTest, PasswordFormReappearance) {
