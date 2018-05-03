@@ -25,38 +25,48 @@ const char String::kEmpty[] = "";
 String::String() { Init(); }
 
 String::String(const String& other) {
-  Init();
-  Assign(other.ptr_, other.size_);
+  InitFrom(other.ptr_, other.size_);
+}
+
+String::String(String&& other)
+    : ptr_(other.ptr_), size_(other.size_), capacity_(other.capacity_) {
+  other.Init();
 }
 
 String::String(const char* str) {
-  Init();
-  Assign(str, strlen(str));
+  InitFrom(str, ::strlen(str));
 }
 
 String::String(char ch) {
-  Init();
-  Assign(&ch, 1);
+  InitFrom(&ch, 1);
 }
 
 String::~String() {
-  if (ptr_ != const_cast<char*>(kEmpty)) {
+  if (HasValidPointer()) {
     free(ptr_);
     ptr_ = const_cast<char*>(kEmpty);
   }
 }
 
 String::String(const char* str, size_t len) {
-  Init();
-  Assign(str, len);
+  InitFrom(str, len);
+}
+
+String& String::operator=(String&& other) {
+  if (this != &other) {
+    this->~String();  // Free pointer if needed.
+    ptr_ = other.ptr_;
+    size_ = other.size_;
+    capacity_ = other.capacity_;
+    other.Init();
+  }
+  return *this;
 }
 
 void String::Assign(const char* str, size_t len) {
   Resize(len);
   if (len > 0) {
     memcpy(ptr_, str, len);
-    ptr_[len] = '\0';
-    size_ = len;
   }
 }
 
@@ -81,12 +91,13 @@ void String::Resize(size_t new_size) {
     memset(ptr_ + size_, '\0', new_size - size_);
 
   size_ = new_size;
-  if (ptr_ != kEmpty)
+  if (HasValidPointer()) {
     ptr_[size_] = '\0';
+  }
 }
 
 void String::Reserve(size_t new_capacity) {
-  char* old_ptr = (ptr_ == const_cast<char*>(kEmpty)) ? NULL : ptr_;
+  char* old_ptr = HasValidPointer() ? ptr_ : nullptr;
   // Always allocate one more byte for the trailing \0
   ptr_ = reinterpret_cast<char*>(realloc(old_ptr, new_capacity + 1));
   ptr_[new_capacity] = '\0';
@@ -96,29 +107,12 @@ void String::Reserve(size_t new_capacity) {
     size_ = new_capacity;
 }
 
-#if 0
-String Format(const char* fmt, ...) {
-  va_list args;
-  va_start(args, fmt);
-  String result(FormatArgs(fmt, args));
-  va_end(args);
-  return result;
-}
-
-String FormatArgs(const char* fmt, va_list args) {
-  String result;
-  for (;;) {
-    va_list args2;
-    va_copy(args2, args);
-    int ret = vsnprintf(&result[0], result.capacity(), fmt, args2);
-    va_end(args2);
-    if (static_cast<size_t>(ret) <= result.capacity())
-      break;
-
-    result.Resize(static_cast<size_t>(ret));
+void String::InitFrom(const char* str, size_t len) {
+  Init();
+  if (str != nullptr && len != 0) {
+    Resize(len);
+    memcpy(ptr_, str, len);
   }
-  return result;
 }
-#endif
 
 }  // namespace crazy

@@ -68,6 +68,8 @@ class String {
   String();
   String(const char* str, size_t len);
   String(const String& other);
+  String(String&& other);
+
   explicit String(const char* str);
   explicit String(char ch);
 
@@ -78,6 +80,15 @@ class String {
   size_t size() const { return size_; }
   size_t capacity() const { return capacity_; }
 
+  const char* begin() const { return ptr_; }
+  const char* end() const { return ptr_ + size_; }
+
+  char* begin() { return ptr_; }
+  char* end() { return ptr_ + size_; }
+
+  const char* cbegin() const { return ptr_; }
+  const char* cend() const { return ptr_ + size_; }
+
   bool IsEmpty() const { return size_ == 0; }
 
   char& operator[](size_t index) { return ptr_[index]; }
@@ -86,6 +97,8 @@ class String {
     Assign(other.ptr_, other.size_);
     return *this;
   }
+
+  String& operator=(String&& other);
 
   String& operator=(const char* str) {
     Assign(str, strlen(str));
@@ -129,11 +142,17 @@ class String {
   void Append(const char* str) { Append(str, strlen(str)); }
 
  private:
-  void Init(void) {
+  inline void Init() {
     ptr_ = const_cast<char*>(kEmpty);
     size_ = 0;
     capacity_ = 0;
   }
+
+  inline bool HasValidPointer() const {
+    return ptr_ != const_cast<char*>(kEmpty);
+  }
+
+  void InitFrom(const char* str, size_t len);
 
   static const char kEmpty[];
 
@@ -142,7 +161,7 @@ class String {
   size_t capacity_;
 };
 
-// Helper template used to implement a simple vector or POD-struct items.
+// Helper template used to implement a simple vector of POD-struct items.
 // I.e. this uses memmove() to move items during insertion / removal.
 //
 // Required because crazy linker should only link against the system
@@ -151,7 +170,7 @@ class String {
 template <class T>
 class Vector {
  public:
-  Vector() : items_(0), count_(0), capacity_(0) {}
+  Vector() = default;
 
   ~Vector() { free(items_); }
 
@@ -160,7 +179,12 @@ class Vector {
   Vector(const Vector& other) = delete;
   Vector& operator=(const Vector& other) = delete;
 
+  // Allow move operations.
+  Vector(Vector&& other);
+  Vector& operator=(Vector&& other);
+
   const T& operator[](size_t index) const { return items_[index]; }
+
   T& operator[](size_t index) { return items_[index]; }
 
   bool IsEmpty() const { return count_ == 0; }
@@ -200,9 +224,15 @@ class Vector {
   void Resize(size_t new_count);
 
  private:
-  T* items_;
-  size_t count_;
-  size_t capacity_;
+  void DoReset() {
+    items_ = nullptr;
+    count_ = 0;
+    capacity_ = 0;
+  }
+
+  T* items_ = nullptr;
+  size_t count_ = 0;
+  size_t capacity_ = 0;
 };
 
 template <class T>
@@ -212,6 +242,28 @@ int Vector<T>::IndexOf(T item) const {
       return static_cast<int>(n);
   }
   return -1;
+}
+
+template <class T>
+Vector<T>::Vector(Vector&& other)
+    : items_(other.items_), count_(other.count_), capacity_(other.capacity_) {
+  other.items_ = nullptr;
+  other.count_ = 0;
+  other.capacity_ = 0;
+}
+
+template <class T>
+Vector<T>& Vector<T>::operator=(Vector&& other) {
+  if (this != &other) {
+    free(items_);
+    items_ = other.items_;
+    count_ = other.count_;
+    capacity_ = other.capacity_;
+    other.items_ = nullptr;
+    other.count_ = 0;
+    other.capacity_ = 0;
+  }
+  return *this;
 }
 
 template <class T>
