@@ -12,6 +12,7 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/no_destructor.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -27,6 +28,10 @@ namespace metrics {
 // Helper class for tracking complex metrics. This particularly includes
 // playback metrics that span events across time, such as "time from app launch
 // to video being rendered."
+// Currently, browser startup code should instantiate this once; it can be
+// accessed thereafter through GetInstance. It's not deleted since it may be
+// called during teardown of other global objects.
+// TODO(halliwell): convert to mojo service, eliminate singleton pattern.
 class CastMetricsHelper {
  public:
   enum BufferingType {
@@ -63,11 +68,6 @@ class CastMetricsHelper {
       std::string* sdk_version);
 
   static CastMetricsHelper* GetInstance();
-
-  CastMetricsHelper(scoped_refptr<base::SequencedTaskRunner> task_runner =
-                        base::SequencedTaskRunnerHandle::Get(),
-                    const base::TickClock* tick_clock = nullptr);
-  virtual ~CastMetricsHelper();
 
   // This records the startup time of an app load (note: another app
   // may be running and still collecting metrics).
@@ -131,6 +131,17 @@ class CastMetricsHelper {
       const std::string& app_id,
       const std::string& session_id,
       const std::string& sdk_version);
+
+  friend class base::NoDestructor<CastMetricsHelper>;
+  friend class CastMetricsHelperTest;
+  friend class MockCastMetricsHelper;
+
+  // |tick_clock| just provided for unit test to construct; normally it should
+  // be nullptr when accessed through GetInstance.
+  CastMetricsHelper(scoped_refptr<base::SequencedTaskRunner> task_runner =
+                        base::SequencedTaskRunnerHandle::Get(),
+                    const base::TickClock* tick_clock = nullptr);
+  virtual ~CastMetricsHelper();
 
   void LogEnumerationHistogramEvent(const std::string& name,
                                     int value, int num_buckets);

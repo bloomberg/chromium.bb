@@ -7,7 +7,7 @@
 namespace chromecast {
 namespace metrics {
 
-MockCastMetricsHelper::MockCastMetricsHelper() = default;
+MockCastMetricsHelper::MockCastMetricsHelper() : CastMetricsHelper() {}
 
 MockCastMetricsHelper::~MockCastMetricsHelper() = default;
 

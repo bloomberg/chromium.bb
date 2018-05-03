@@ -10,7 +10,6 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/media/base/decrypt_context_impl.h"
 #include "chromecast/media/cdm/cast_cdm_context.h"
 #include "chromecast/media/cma/pipeline/av_pipeline_client.h"
@@ -271,7 +270,6 @@ class AudioVideoPipelineImplTest
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  metrics::CastMetricsHelper cast_metrics_helper_;
   std::unique_ptr<PipelineHelper> pipeline_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioVideoPipelineImplTest);
@@ -363,7 +361,6 @@ class EncryptedAVPipelineImplTest : public ::testing::Test {
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  metrics::CastMetricsHelper cast_metrics_helper_;
   std::unique_ptr<PipelineHelper> pipeline_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(EncryptedAVPipelineImplTest);

@@ -386,9 +386,8 @@ void CastBrowserMainParts::PreMainMessageLoopStart() {
 }
 
 void CastBrowserMainParts::PostMainMessageLoopStart() {
-  cast_browser_process_->SetMetricsHelper(
-      std::make_unique<metrics::CastMetricsHelper>(
-          base::ThreadTaskRunnerHandle::Get()));
+  // Ensure CastMetricsHelper initialized on UI thread.
+  metrics::CastMetricsHelper::GetInstance();
 
 #if defined(OS_ANDROID)
   base::MessageLoopCurrentForUI::Get()->Start();

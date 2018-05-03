@@ -33,8 +33,6 @@ namespace metrics {
 
 namespace {
 
-CastMetricsHelper* g_instance = nullptr;
-
 const char kMetricsNameAppInfoDelimiter = '#';
 
 constexpr base::TimeDelta kAppLoadTimeout = base::TimeDelta::FromMinutes(5);
@@ -88,8 +86,8 @@ std::string CastMetricsHelper::EncodeAppInfoIntoMetricsName(
 
 // static
 CastMetricsHelper* CastMetricsHelper::GetInstance() {
-  DCHECK(g_instance);
-  return g_instance;
+  static base::NoDestructor<CastMetricsHelper> instance;
+  return instance.get();
 }
 
 CastMetricsHelper::CastMetricsHelper(
@@ -102,14 +100,9 @@ CastMetricsHelper::CastMetricsHelper(
       record_action_callback_(
           base::BindRepeating(&base::RecordComputedAction)) {
   DCHECK(task_runner_);
-  DCHECK(!g_instance);
-  g_instance = this;
 }
 
-CastMetricsHelper::~CastMetricsHelper() {
-  DCHECK_EQ(g_instance, this);
-  g_instance = nullptr;
-}
+CastMetricsHelper::~CastMetricsHelper() {}
 
 void CastMetricsHelper::DidStartLoad(const std::string& app_id) {
   MAKE_SURE_SEQUENCE(DidStartLoad, app_id);
