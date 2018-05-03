@@ -2053,10 +2053,13 @@ TEST_F(ShelfViewTest, ShelfDragViewAndContextMenu) {
   EXPECT_TRUE(shelf_view_->IsShowingMenu());
   EXPECT_FALSE(shelf_view_->drag_view());
 
-  // Press left button. Menu should close and drag view is set to |button|.
+  // Press left button. Menu should close.
+  generator.PressLeftButton();
+  generator.ReleaseLeftButton();
+  EXPECT_FALSE(shelf_view_->IsShowingMenu());
+  // Press left button. Drag view is set to |button|.
   generator.PressLeftButton();
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(shelf_view_->IsShowingMenu());
   EXPECT_EQ(shelf_view_->drag_view(), button);
   generator.ReleaseLeftButton();
   EXPECT_FALSE(shelf_view_->drag_view());

@@ -1869,7 +1869,11 @@ class BookmarkBarViewTest20 : public BookmarkBarViewEventTestBase {
   }
 
   void Step3() {
+#if defined(OS_CHROMEOS)
+    ASSERT_EQ(test_view_->press_count(), 1);
+#else
     ASSERT_EQ(test_view_->press_count(), 2);
+#endif
     ASSERT_TRUE(bb_view_->GetMenu() == NULL);
     Done();
   }
