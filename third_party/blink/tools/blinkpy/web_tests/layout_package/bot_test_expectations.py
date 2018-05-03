@@ -188,7 +188,7 @@ class BotTestExpectations(object):
     def unexpected_results_by_path(self):
         """For tests with unexpected results, returns original expectations + results."""
         def exp_to_string(exp):
-            return TestExpectations.EXPECTATIONS_TO_STRING.get(exp, None).upper()
+            return TestExpectations.EXPECTATIONS_TO_STRING.get(exp, None)
 
         def string_to_exp(string):
             # Needs a bit more logic than the method above,

@@ -401,12 +401,12 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
     def test_gtest_repeat(self):
         tests_to_run = ['passes/image.html', 'passes/text.html']
         tests_run = get_tests_run(['--gtest_repeat', '2', '--order', 'natural'] + tests_to_run)
-        self.assertEqual(tests_run, ['passes/image.html', 'passes/text.html', 'passes/image.html', 'passes/text.html'])
+        self.assertEqual(tests_run, ['passes/image.html', 'passes/image.html', 'passes/text.html', 'passes/text.html'])
 
-    def test_gtest_repeat_overrides_iterations(self):
+    def test_gtest_repeat_overrides_repeat_each(self):
         tests_to_run = ['passes/image.html', 'passes/text.html']
-        tests_run = get_tests_run(['--iterations', '4', '--gtest_repeat', '2', '--order', 'natural'] + tests_to_run)
-        self.assertEqual(tests_run, ['passes/image.html', 'passes/text.html', 'passes/image.html', 'passes/text.html'])
+        tests_run = get_tests_run(['--repeat-each', '4', '--gtest_repeat', '2', '--order', 'natural'] + tests_to_run)
+        self.assertEqual(tests_run, ['passes/image.html', 'passes/image.html', 'passes/text.html', 'passes/text.html'])
 
     def test_ignore_flag(self):
         # Note that passes/image.html is expected to be run since we specified it directly.

@@ -395,6 +395,10 @@ class Manager(object):
 
         test_inputs = []
         for _ in xrange(iterations):
+            # TODO(crbug.com/650747): We may want to switch the two loops below
+            # to make the behavior consistent with gtest runner (--gtest_repeat
+            # is an alias for --repeat-each now), which looks like "ABCABCABC".
+            # And remember to update the help text when we do so.
             for test in tests_to_run:
                 for _ in xrange(repeat_each):
                     test_inputs.append(self._test_input_for_file(test))

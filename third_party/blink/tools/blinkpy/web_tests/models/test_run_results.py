@@ -27,8 +27,8 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import collections
 import logging
-import signal
 import time
 
 from blinkpy.web_tests.models import test_expectations
@@ -50,28 +50,42 @@ class TestRunResults(object):
         self.total = num_tests
         self.remaining = self.total
         self.expectations = expectations
+
+        # Various counters:
         self.expected = 0
         self.expected_failures = 0
+        self.expected_skips = 0
+        self.total_failures = 0
         self.unexpected = 0
-        self.unexpected_failures = 0
         self.unexpected_crashes = 0
+        self.unexpected_failures = 0
         self.unexpected_timeouts = 0
+
+        # The wall clock time spent running the tests (layout_test_runner.run()).
+        self.run_time = 0
+
+        # Map of test name to the *last* result for the test.
+        self.results_by_name = {}
+
+        # Map of test name to the *last* unexpected result for the test.
+        self.unexpected_results_by_name = {}
+
+        # All results from a run except SKIP, including all iterations.
+        self.all_results = []
+
+        # Map of test name to the *last* failures for the test.
+        self.failures_by_name = {}
+
         self.tests_by_expectation = {}
         self.tests_by_timeline = {}
-        self.results_by_name = {}  # Map of test name to the last result for the test.
-        self.all_results = []  # All results from a run, including every iteration of every test.
-        self.unexpected_results_by_name = {}
-        self.failures_by_name = {}
-        self.total_failures = 0
-        self.expected_skips = 0
         for expectation in test_expectations.TestExpectations.EXPECTATIONS.values():
             self.tests_by_expectation[expectation] = set()
         for timeline in test_expectations.TestExpectations.TIMELINES.values():
             self.tests_by_timeline[timeline] = expectations.get_tests_with_timeline(timeline)
+
         self.slow_tests = set()
         self.interrupted = False
         self.keyboard_interrupted = False
-        self.run_time = 0  # The wall clock time spent running the tests (layout_test_runner.run()).
 
     def add(self, test_result, expected, test_is_slow):
         result_type_for_stats = test_result.type
@@ -163,84 +177,116 @@ def summarize_results(port_obj, expectations, initial_results,
     # FIXME: Remove this. It is redundant with results['num_failures_by_type'].
     results['skipped'] = len(tbt[test_expectations.NOW] & tbe[test_expectations.SKIP])
 
+    # TODO(dpranke): Some or all of these counters can be removed.
     num_passes = 0
     num_flaky = 0
     num_regressions = 0
-    keywords = {}
-    for expectation_string, expectation_enum in test_expectations.TestExpectations.EXPECTATIONS.iteritems():
-        keywords[expectation_enum] = expectation_string.upper()
 
+    keywords = test_expectations.TestExpectations.EXPECTATIONS_TO_STRING
+
+    # Calculate the number of failures by types (only in initial results).
     num_failures_by_type = {}
     for expectation in initial_results.tests_by_expectation:
         tests = initial_results.tests_by_expectation[expectation]
         if expectation != test_expectations.WONTFIX:
             tests &= tbt[test_expectations.NOW]
         num_failures_by_type[keywords[expectation]] = len(tests)
-    # The number of failures by type.
     results['num_failures_by_type'] = num_failures_by_type
 
+    # Combine all iterations and retries together into a dictionary with the
+    # following structure:
+    #    { test_name: [ (result, is_unexpected), ... ], ... }
+    # where result is a single TestResult, is_unexpected is a boolean
+    # representing whether the result is unexpected in that run.
+    merged_results_by_name = collections.defaultdict(list)
+    for test_run_results in [initial_results] + all_retry_results:
+        # all_results does not include SKIP, so we need results_by_name.
+        for test_name, result in test_run_results.results_by_name.iteritems():
+            if result.type == test_expectations.SKIP:
+                is_unexpected = test_name in test_run_results.unexpected_results_by_name
+                merged_results_by_name[test_name].append((result, is_unexpected))
+
+        # results_by_name only includes the last result, so we need all_results.
+        for result in test_run_results.all_results:
+            test_name = result.test_name
+            is_unexpected = test_name in test_run_results.unexpected_results_by_name
+            merged_results_by_name[test_name].append((result, is_unexpected))
+
+    # Finally, compute the tests dict.
     tests = {}
+    for test_name, merged_results in merged_results_by_name.iteritems():
+        initial_result = merged_results[0][0]
 
-    for test_name, result in initial_results.results_by_name.iteritems():
-        expected = expectations.get_expectations_string(test_name)
-        actual = [keywords[result.type]]
-        actual_types = [result.type]
-        crash_sites = [result.crash_site]
-
-        if only_include_failing and result.type == test_expectations.SKIP:
+        if only_include_failing and initial_result.type == test_expectations.SKIP:
             continue
 
-        if result.type == test_expectations.PASS:
-            num_passes += 1
-            if not result.has_stderr and only_include_failing:
-                continue
-        elif (result.type != test_expectations.SKIP and
-              test_name in initial_results.unexpected_results_by_name):
-            # Loop through retry results to collate results and determine
-            # whether this is a regression, unexpected pass, or flaky test.
-            is_flaky = False
-            has_unexpected_pass = False
-            for retry_attempt_results in all_retry_results:
-                # If a test passes on one of the retries, it won't be in the subsequent retries.
-                if test_name not in retry_attempt_results.results_by_name:
-                    break
+        expected = expectations.get_expectations_string(test_name)
+        actual = []
+        actual_types = []
+        crash_sites = []
 
-                retry_result = retry_attempt_results.results_by_name[test_name]
-                retry_result_type = retry_result.type
-                actual.append(keywords[retry_result_type])
-                actual_types.append(retry_result_type)
-                crash_sites.append(retry_result.crash_site)
-                if test_name in retry_attempt_results.unexpected_results_by_name:
-                    if retry_result_type == test_expectations.PASS:
-                        # The test failed unexpectedly at first, then passed
-                        # unexpectedly on a subsequent run -> unexpected pass.
-                        has_unexpected_pass = True
-                else:
-                    # The test failed unexpectedly at first but then ran as
-                    # expected on a subsequent run -> flaky.
-                    is_flaky = True
+        all_pass = True
+        has_expected = False
+        has_unexpected = False
+        has_unexpected_pass = False
+        has_stderr = False
+        for result, is_unexpected in merged_results:
+            actual.append(keywords[result.type])
+            actual_types.append(result.type)
+            crash_sites.append(result.crash_site)
 
-            if len(set(actual)) == 1:
-                actual = [actual[0]]
-                actual_types = [actual_types[0]]
-
-            if is_flaky:
-                num_flaky += 1
-            elif has_unexpected_pass:
-                num_passes += 1
-                if not result.has_stderr and only_include_failing:
-                    continue
+            if result.type != test_expectations.PASS:
+                all_pass = False
+            if result.has_stderr:
+                has_stderr = True
+            if is_unexpected:
+                has_unexpected = True
+                if result.type == test_expectations.PASS:
+                    has_unexpected_pass = True
             else:
-                # Either no retries or all retries failed unexpectedly.
-                num_regressions += 1
+                has_expected = True
+        # A test is flaky if it has both expected and unexpected runs (NOT pass
+        # and failure).
+        is_flaky = has_expected and has_unexpected
+
+        if len(set(actual)) == 1:
+            actual = [actual[0]]
+            actual_types = [actual_types[0]]
+
+        if is_flaky:
+            num_flaky += 1
+        elif all_pass or has_unexpected_pass:
+            # We count two situations as a "pass":
+            # 1. All test runs pass (which is obviously non-flaky, but does not
+            #    imply whether the runs are expected, e.g. they can be all
+            #    unexpected passes).
+            # 2. The test isn't flaky and has at least one unexpected pass
+            #    (which implies all runs are unexpected). One tricky example
+            #    that doesn't satisfy #1 is that if a test is expected to
+            #    crash but in fact fails and then passes, it will be counted
+            #    as "pass".
+            num_passes += 1
+            if not has_stderr and only_include_failing:
+                continue
+        elif has_unexpected and result.type != test_expectations.SKIP:
+            # Either no retries or all retries failed unexpectedly.
+            # TODO(robertma): When will there be unexpected skip? Do we really
+            # want to ignore them when counting regressions?
+            num_regressions += 1
 
         test_dict = {}
 
-        rounded_run_time = round(result.test_run_time, 1)
+        test_dict['expected'] = expected
+        test_dict['actual'] = ' '.join(actual)
+
+        # Fields below are optional. To avoid bloating the output results json
+        # too much, only add them when they are True or non-empty.
+
+        rounded_run_time = round(initial_result.test_run_time, 1)
         if rounded_run_time:
             test_dict['time'] = rounded_run_time
 
-        if result.has_stderr:
+        if has_stderr:
             test_dict['has_stderr'] = True
 
         expectation_line = expectations.model().get_expectation_line(test_name)
@@ -254,40 +300,38 @@ def summarize_results(port_obj, expectations, initial_results,
         if base_expectations:
             test_dict['base_expectations'] = base_expectations
 
-        if result.reftest_type:
-            test_dict.update(reftest_type=list(result.reftest_type))
-
-        test_dict['expected'] = expected
-        test_dict['actual'] = ' '.join(actual)
+        if initial_result.reftest_type:
+            test_dict.update(reftest_type=list(initial_result.reftest_type))
 
         crash_sites = [site for site in crash_sites if site]
         if len(crash_sites) > 0:
             test_dict['crash_site'] = crash_sites[0]
 
-        if test_failures.has_failure_type(test_failures.FailureTextMismatch, result.failures):
-            for failure in result.failures:
+        if test_failures.has_failure_type(test_failures.FailureTextMismatch, initial_result.failures):
+            for failure in initial_result.failures:
                 if isinstance(failure, test_failures.FailureTextMismatch):
                     test_dict['text_mismatch'] = failure.text_mismatch_category()
                     break
 
         def is_expected(actual_result):
             return expectations.matches_an_expected_result(test_name, actual_result,
-                                                           port_obj.get_option('pixel_tests') or result.reftest_type,
+                                                           port_obj.get_option('pixel_tests') or initial_result.reftest_type,
                                                            port_obj.get_option('enable_sanitizer'))
 
-        # To avoid bloating the output results json too much, only add an entry for whether the failure is unexpected.
+        # Note: is_unexpected is intended to capture the *last* result. In the
+        # normal use case (stop retrying failures once they pass), this is
+        # equivalent to checking if none of the results is expected.
         if not any(is_expected(actual_result) for actual_result in actual_types):
             test_dict['is_unexpected'] = True
 
-        test_dict.update(_interpret_test_failures(result.failures))
-
-        for retry_attempt_results in all_retry_results:
-            retry_result = retry_attempt_results.unexpected_results_by_name.get(test_name)
-            if retry_result:
-                test_dict.update(_interpret_test_failures(retry_result.failures))
-
-        if result.has_repaint_overlay:
+        if initial_result.has_repaint_overlay:
             test_dict['has_repaint_overlay'] = True
+
+        test_dict.update(_interpret_test_failures(initial_result.failures))
+        for retry_result, is_unexpected in merged_results[1:]:
+            # TODO(robertma): Why do we only update unexpected retry failures?
+            if is_unexpected:
+                test_dict.update(_interpret_test_failures(retry_result.failures))
 
         # Store test hierarchically by directory. e.g.
         # foo/bar/baz.html: test_dict
@@ -311,10 +355,8 @@ def summarize_results(port_obj, expectations, initial_results,
             current_map = current_map[part]
 
     results['tests'] = tests
-    # FIXME: Remove this. It is redundant with results['num_failures_by_type'].
     results['num_passes'] = num_passes
     results['num_flaky'] = num_flaky
-    # FIXME: Remove this. It is redundant with results['num_failures_by_type'].
     results['num_regressions'] = num_regressions
     # Does results.html have enough information to compute this itself? (by
     # checking total number of results vs. total number of tests?)

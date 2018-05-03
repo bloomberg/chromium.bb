@@ -398,6 +398,27 @@ class SummarizedResultsTest(unittest.TestCase):
         self.assertEquals(summary['num_passes'], 0)
         self.assertEquals(summary['num_regressions'], 0)
 
+    def test_summarized_results_with_iterations(self):
+        test_name = 'passes/text.html'
+        expectations = test_expectations.TestExpectations(self.port, [test_name])
+        initial_results = test_run_results.TestRunResults(expectations, 3)
+        initial_results.add(get_result(test_name, test_expectations.CRASH), False, False)
+        initial_results.add(get_result(test_name, test_expectations.IMAGE), False, False)
+        initial_results.add(get_result(test_name, test_expectations.TIMEOUT), False, False)
+        all_retry_results = [test_run_results.TestRunResults(expectations, 2)]
+        all_retry_results[0].add(get_result(test_name, test_expectations.TEXT), False, False)
+        all_retry_results[0].add(get_result(test_name, test_expectations.LEAK), False, False)
+
+        summary = test_run_results.summarize_results(
+            self.port, expectations, initial_results, all_retry_results,
+            enabled_pixel_tests_in_retry=True)
+        print summary
+        self.assertEquals(summary['tests']['passes']['text.html']['expected'], 'PASS')
+        self.assertEquals(summary['tests']['passes']['text.html']['actual'], 'CRASH IMAGE TIMEOUT TEXT LEAK')
+        self.assertEquals(summary['num_flaky'], 0)
+        self.assertEquals(summary['num_passes'], 0)
+        self.assertEquals(summary['num_regressions'], 1)
+
     def test_summarized_results_regression(self):
         summary = summarized_results(self.port, expected=False, passing=False, flaky=False)
 
