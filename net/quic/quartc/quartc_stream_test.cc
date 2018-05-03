@@ -9,6 +9,7 @@
 #include "net/quic/core/quic_session.h"
 #include "net/quic/core/quic_simple_buffer_allocator.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
+#include "net/quic/platform/api/quic_test.h"
 #include "net/quic/platform/api/quic_test_mem_slice_vector.h"
 #include "net/quic/quartc/quartc_clock_interface.h"
 #include "net/quic/quartc/quartc_factory.h"
@@ -155,8 +156,7 @@ class MockQuartcStreamDelegate : public QuartcStreamInterface::Delegate {
   uint64_t last_bytes_buffered_ = 0;
 };
 
-class QuartcStreamTest : public ::testing::Test,
-                         public QuicConnectionHelperInterface {
+class QuartcStreamTest : public QuicTest, public QuicConnectionHelperInterface {
  public:
   void CreateReliableQuicStream() {
     // Arbitrary values for QuicConnection.
