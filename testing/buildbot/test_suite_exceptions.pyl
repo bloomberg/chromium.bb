@@ -1509,8 +1509,10 @@
       'Out of Process Profiling Linux',
       'ThinLTO Linux ToT',
       # chromium.memory
-      'Linux MSan Tests',  # https://crbug.com/830659
-      'Linux ChromiumOS MSan Tests',  # https://crbug.com/830659
+      # Can't run on MSAN because gl_tests uses the hardware driver,
+      # which isn't instrumented.
+      'Linux MSan Tests',
+      'Linux ChromiumOS MSan Tests',
     ],
     'modifications': {
       'KitKat Tablet Tester': {
@@ -1524,7 +1526,6 @@
         },
       },
       # chromium.memory
-      # https://crbug.com/830659
       # TODO(kbr): figure out a better way to specify blocks of
       # arguments like this for tests on multiple machines.
       'Linux ASan LSan Tests (1)': {
