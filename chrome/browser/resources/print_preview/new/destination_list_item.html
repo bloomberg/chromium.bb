@@ -51,11 +51,6 @@
         color: rgb(51, 103, 214);
       }
 
-      :host .register-promo {
-        -webkit-margin-start: 1em;
-        flex: 0 0 auto;
-      }
-
       :host .extension-controlled-indicator {
         display: flex;
         flex: 1;
@@ -112,11 +107,6 @@
         on-click="onLearnMoreLinkClick_">
       $i18n{learnMore}
     </a>
-    <span class="register-promo" hidden$="[[!destination.isUnregistered]]">
-      <button class="register-promo-button">
-        $i18n{registerPromoButtonText}
-      </button>
-    </span>
     <span class="extension-controlled-indicator"
         hidden$="[[!destination.isExtension]]">
       <span class="extension-name searchable">
