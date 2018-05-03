@@ -15,7 +15,6 @@
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/browser/titled_url_match.h"
 #include "components/bookmarks/browser/titled_url_node.h"
-#include "components/bookmarks/browser/titled_url_node_sorter.h"
 #include "components/query_parser/snippet.h"
 #include "third_party/icu/source/common/unicode/normalizer2.h"
 #include "third_party/icu/source/common/unicode/utypes.h"
@@ -53,6 +52,11 @@ TitledUrlIndex::TitledUrlIndex(std::unique_ptr<TitledUrlNodeSorter> sorter)
 }
 
 TitledUrlIndex::~TitledUrlIndex() {
+}
+
+void TitledUrlIndex::SetNodeSorter(
+    std::unique_ptr<TitledUrlNodeSorter> sorter) {
+  sorter_ = std::move(sorter);
 }
 
 void TitledUrlIndex::Add(const TitledUrlNode* node) {
