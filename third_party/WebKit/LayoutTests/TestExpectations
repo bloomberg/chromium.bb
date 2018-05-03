@@ -2814,9 +2814,6 @@ crbug.com/829567 [ Linux Win ] virtual/scroll_customization/fast/events/touch/sc
 crbug.com/832071 external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]
 crbug.com/832071 virtual/navigation-mojo-response/external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]
 
-crbug.com/833215 [ Mac10.12 Mac10.13 Retina ] external/wpt/accelerometer/Accelerometer.https.html [ Pass Timeout ]
-crbug.com/833215 [ Linux ] external/wpt/accelerometer/Accelerometer.https.html [ Pass Failure ]
-
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 external/wpt/css/css-fonts/font-feature-settings-descriptor-01.html [ Failure ]
 crbug.com/626703 [ Linux Win10 ] external/wpt/fetch/api/redirect/redirect-count.any.worker.html [ Timeout ]
