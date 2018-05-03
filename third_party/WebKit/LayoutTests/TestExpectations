@@ -4669,3 +4669,5 @@ crbug.com/836275 [ Linux Mac ] fast/spatial-navigation/snav-two-elements-one-lin
 crbug.com/836783 fast/peerconnection/RTCRtpSender-setParameters.html [ Pass Timeout ]
 
 crbug.com/838254 virtual/video-surface-layer/media/webkit-media-controls-webkit-appearance.html [ Failure ]
+
+crbug.com/839332 [ Mac ] virtual/video-surface-layer/media/video-no-audio.html [ Pass Failure ]
