@@ -241,18 +241,18 @@ void FrameCaptionButtonContainerView::SetPaintAsActive(bool paint_as_active) {
 
 void FrameCaptionButtonContainerView::SetColorMode(
     FrameCaptionButton::ColorMode color_mode) {
-  menu_button_->set_color_mode(color_mode);
-  minimize_button_->set_color_mode(color_mode);
-  size_button_->set_color_mode(color_mode);
-  close_button_->set_color_mode(color_mode);
+  menu_button_->SetColorMode(color_mode);
+  minimize_button_->SetColorMode(color_mode);
+  size_button_->SetColorMode(color_mode);
+  close_button_->SetColorMode(color_mode);
 }
 
 void FrameCaptionButtonContainerView::SetBackgroundColor(
     SkColor background_color) {
-  menu_button_->set_background_color(background_color);
-  minimize_button_->set_background_color(background_color);
-  size_button_->set_background_color(background_color);
-  close_button_->set_background_color(background_color);
+  menu_button_->SetBackgroundColor(background_color);
+  minimize_button_->SetBackgroundColor(background_color);
+  size_button_->SetBackgroundColor(background_color);
+  close_button_->SetBackgroundColor(background_color);
 }
 
 void FrameCaptionButtonContainerView::ResetWindowControls() {

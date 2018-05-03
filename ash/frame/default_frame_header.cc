@@ -39,7 +39,7 @@ namespace {
 const SkColor kTitleTextColor = SkColorSetRGB(40, 40, 40);
 const SkColor kLightTitleTextColor = SK_ColorWHITE;
 // The default color of the frame.
-const SkColor kDefaultFrameColor = SkColorSetRGB(242, 242, 242);
+const SkColor kDefaultFrameColor = SkColorSetRGB(0xFD, 0xFE, 0xFF);
 // Duration of crossfade animation for activating and deactivating frame.
 const int kActivationCrossfadeDurationMs = 200;
 
@@ -171,8 +171,8 @@ void DefaultFrameHeader::LayoutHeader() {
 
   int origin = 0;
   if (back_button_) {
-    back_button_->set_background_color(GetCurrentFrameColor());
-    back_button_->set_color_mode(button_color_mode_);
+    back_button_->SetBackgroundColor(GetCurrentFrameColor());
+    back_button_->SetColorMode(button_color_mode_);
     gfx::Size size = back_button_->GetPreferredSize();
     back_button_->SetBounds(0, 0, size.width(),
                             caption_button_container_size.height());
@@ -319,8 +319,8 @@ void DefaultFrameHeader::UpdateAllButtonImages() {
   caption_button_container_->SetBackgroundColor(GetCurrentFrameColor());
   caption_button_container_->SetColorMode(button_color_mode_);
   if (back_button_) {
-    back_button_->set_background_color(GetCurrentFrameColor());
-    back_button_->set_color_mode(button_color_mode_);
+    back_button_->SetBackgroundColor(GetCurrentFrameColor());
+    back_button_->SetColorMode(button_color_mode_);
     back_button_->SetImage(CAPTION_BUTTON_ICON_BACK,
                            FrameCaptionButton::ANIMATE_NO,
                            kWindowControlBackIcon);

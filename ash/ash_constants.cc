@@ -16,10 +16,6 @@ const int kResizeInsideBoundsSize = 1;
 
 const SkColor kChromeOsBootColor = SkColorSetRGB(0xfe, 0xfe, 0xfe);
 
-const float kInactiveFrameButtonIconAlphaRatio = 0.2f;
-
-const float kInactiveFrameButtonIconAlphaRatioTouch = 0.43f;
-
 const int kDefaultLargeCursorSize = 64;
 
 }  // namespace ash

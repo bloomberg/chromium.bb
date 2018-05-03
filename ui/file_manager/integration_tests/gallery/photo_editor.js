@@ -105,8 +105,8 @@ function cropImage(testVolumeName, volumeType) {
         then(function() {
           return gallery.waitForSlideImage(
               appId,
-              532,
-              398,
+              534,
+              400,
               'My Desktop Background');
         }).
         then(function() {
@@ -375,7 +375,7 @@ testcase.resizeImageOnDownloads = function() {
  */
 testcase.resizeImageOnDrive = function() {
   return resizeImage('drive', 'drive');
-}
+};
 
 /**
  * The enableDisableOverwriteOriginalCheckbox test for Downloads.

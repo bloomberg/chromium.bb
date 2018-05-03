@@ -523,7 +523,7 @@ TEST_F(CustomFrameViewAshTest, FrameVisibility) {
       delegate, kShellWindowId_DefaultContainer, window_bounds);
 
   // The height is smaller by the top border height.
-  gfx::Size client_bounds(200, 67);
+  gfx::Size client_bounds(200, 68);
   CustomFrameViewAsh* custom_frame_view = delegate->custom_frame_view();
   EXPECT_EQ(client_bounds, widget->client_view()->GetLocalBounds().size());
 
@@ -539,8 +539,8 @@ TEST_F(CustomFrameViewAshTest, FrameVisibility) {
   widget->GetRootView()->Layout();
   EXPECT_EQ(client_bounds, widget->client_view()->GetLocalBounds().size());
   EXPECT_TRUE(widget->non_client_view()->frame_view()->visible());
-  EXPECT_EQ(33, delegate->GetCustomFrameViewTopBorderHeight());
-  EXPECT_EQ(gfx::Rect(gfx::Point(10, 43), client_bounds),
+  EXPECT_EQ(32, delegate->GetCustomFrameViewTopBorderHeight());
+  EXPECT_EQ(gfx::Rect(gfx::Point(10, 42), client_bounds),
             custom_frame_view->GetClientBoundsForWindowBounds(window_bounds));
 }
 
@@ -668,7 +668,7 @@ TEST_F(CustomFrameViewAshTest, WideFrame) {
   EXPECT_FALSE(wide_header_view->in_immersive_mode());
   // visible fraction should be ignored in non immersive.
   wide_header_view->SetVisibleFraction(0.5);
-  EXPECT_EQ(33, wide_header_view->GetPreferredOnScreenHeight());
+  EXPECT_EQ(32, wide_header_view->GetPreferredOnScreenHeight());
 
   UpdateDisplay("1234x800");
   EXPECT_EQ(1234,
