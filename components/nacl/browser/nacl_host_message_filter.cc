@@ -23,8 +23,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "ipc/ipc_platform_file.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 #include "url/gurl.h"
 
@@ -77,15 +75,12 @@ ppapi::PpapiPermissions GetPpapiPermissions(uint32_t permission_bits,
 NaClHostMessageFilter::NaClHostMessageFilter(
     int render_process_id,
     bool is_off_the_record,
-    const base::FilePath& profile_directory,
-    net::URLRequestContextGetter* request_context)
+    const base::FilePath& profile_directory)
     : BrowserMessageFilter(NaClHostMsgStart),
       render_process_id_(render_process_id),
       off_the_record_(is_off_the_record),
       profile_directory_(profile_directory),
-      request_context_(request_context),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 NaClHostMessageFilter::~NaClHostMessageFilter() {
 }
@@ -120,10 +115,6 @@ bool NaClHostMessageFilter::OnMessageReceived(const IPC::Message& message) {
   IPC_END_MESSAGE_MAP()
 
   return handled;
-}
-
-net::HostResolver* NaClHostMessageFilter::GetHostResolver() {
-  return request_context_->GetURLRequestContext()->host_resolver();
 }
 
 void NaClHostMessageFilter::OnLaunchNaCl(
