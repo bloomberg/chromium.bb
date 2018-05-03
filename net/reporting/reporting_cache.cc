@@ -335,14 +335,11 @@ class ReportingCacheImpl : public ReportingCache {
         std::vector<base::Value> endpoint_list;
         for (const ReportingClient* client : clients) {
           base::Value endpoint_dict(base::Value::Type::DICTIONARY);
-          // Reporting defines the group as a whole to have an expiration time
-          // and subdomains flag, not the individual endpoints within the group.
+          // Reporting defines the group as a whole to have an expiration time,
+          // not the individual endpoints within the group.
           group_dict.SetKey(
               "expires",
               base::Value(NetLog::TickCountToString(client->expires)));
-          group_dict.SetKey("includeSubdomains",
-                            base::Value(client->subdomains ==
-                                        ReportingClient::Subdomains::INCLUDE));
           endpoint_dict.SetKey("url", base::Value(client->endpoint.spec()));
           endpoint_dict.SetKey("priority", base::Value(client->priority));
           endpoint_dict.SetKey("weight", base::Value(client->weight));
