@@ -536,13 +536,13 @@ void FileManagerBrowserTestBase::SetUp() {
 
 void FileManagerBrowserTestBase::SetUpCommandLine(
     base::CommandLine* command_line) {
-  if (GetGuestModeParam() == IN_GUEST_MODE) {
+  if (GetGuestMode() == IN_GUEST_MODE) {
     command_line->AppendSwitch(chromeos::switches::kGuestSession);
     command_line->AppendSwitchNative(chromeos::switches::kLoginUser, "");
     command_line->AppendSwitch(switches::kIncognito);
   }
 
-  if (GetGuestModeParam() == IN_INCOGNITO) {
+  if (GetGuestMode() == IN_INCOGNITO) {
     command_line->AppendSwitch(switches::kIncognito);
   }
 
@@ -554,7 +554,7 @@ void FileManagerBrowserTestBase::SetUpInProcessBrowserTestFixture() {
 
   local_volume_.reset(new DownloadsTestVolume);
 
-  if (GetGuestModeParam() != IN_GUEST_MODE) {
+  if (GetGuestMode() != IN_GUEST_MODE) {
     create_drive_integration_service_ =
         base::Bind(&FileManagerBrowserTestBase::CreateDriveIntegrationService,
                    base::Unretained(this));
@@ -570,7 +570,7 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
 
   CHECK(local_volume_->Mount(profile()));
 
-  if (GetGuestModeParam() != IN_GUEST_MODE) {
+  if (GetGuestMode() != IN_GUEST_MODE) {
     // Start the embedded test server to serve the mocked share dialog.
     CHECK(embedded_test_server()->Start());
     const GURL share_url_base(embedded_test_server()->GetURL(
@@ -604,7 +604,7 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
 }
 
 void FileManagerBrowserTestBase::StartTest() {
-  LOG(INFO) << "FileManagerBrowserTest::StartTest " << GetTestCaseNameParam();
+  LOG(INFO) << "FileManagerBrowserTest::StartTest " << GetTestCaseName();
   static const base::FilePath test_extension_dir =
       base::FilePath(FILE_PATH_LITERAL("ui/file_manager/integration_tests"));
   LaunchExtension(test_extension_dir, GetTestExtensionManifestName());
@@ -654,7 +654,7 @@ void FileManagerBrowserTestBase::RunTestMessageLoop() {
     }
 
     // Test FAILED: while processing the command.
-    LOG(INFO) << "[FAILED] " << GetTestCaseNameParam();
+    LOG(INFO) << "[FAILED] " << GetTestCaseName();
     return;
   }
 }
@@ -666,7 +666,7 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
 
   if (name == "getTestName") {
     // Obtain the test case name.
-    *output = GetTestCaseNameParam();
+    *output = GetTestCaseName();
     return;
   }
 
@@ -686,7 +686,7 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
 
   if (name == "isInGuestMode") {
     // Obtain whether the test is in guest mode or not.
-    *output = GetGuestModeParam() != NOT_IN_GUEST_MODE ? "true" : "false";
+    *output = GetGuestMode() != NOT_IN_GUEST_MODE ? "true" : "false";
     return;
   }
 

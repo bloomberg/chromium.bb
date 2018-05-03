@@ -36,11 +36,11 @@ class FileManagerBrowserTest :
     }
   }
 
-  GuestMode GetGuestModeParam() const override {
+  GuestMode GetGuestMode() const override {
     return std::get<0>(GetParam());
   }
 
-  const char* GetTestCaseNameParam() const override {
+  const char* GetTestCaseName() const override {
     return std::get<1>(GetParam());
   }
 
@@ -50,7 +50,7 @@ class FileManagerBrowserTest :
 
  private:
   bool shouldEnableLegacyEventDispatch() {
-    const std::string test_case_name = GetTestCaseNameParam();
+    const std::string test_case_name = GetTestCaseName();
     // crbug.com/482121 crbug.com/480491
     return test_case_name.find("tabindex") != std::string::npos;
   }
@@ -639,9 +639,9 @@ class MultiProfileFileManagerBrowserTest : public FileManagerBrowserTestBase {
                                                  "refresh_token");
   }
 
-  GuestMode GetGuestModeParam() const override { return NOT_IN_GUEST_MODE; }
+  GuestMode GetGuestMode() const override { return NOT_IN_GUEST_MODE; }
 
-  const char* GetTestCaseNameParam() const override {
+  const char* GetTestCaseName() const override {
     return test_case_name_.c_str();
   }
 
