@@ -14,7 +14,7 @@
 namespace media {
 struct AudioDeviceDescription;
 struct VideoCaptureDeviceDescriptor;
-}
+}  // namespace media
 
 namespace content {
 
@@ -29,9 +29,11 @@ struct CONTENT_EXPORT MediaDeviceInfo {
   MediaDeviceInfo();
   MediaDeviceInfo(const MediaDeviceInfo& other);
   MediaDeviceInfo(MediaDeviceInfo&& other);
-  MediaDeviceInfo(const std::string& device_id,
-                  const std::string& label,
-                  const std::string& group_id);
+  MediaDeviceInfo(
+      const std::string& device_id,
+      const std::string& label,
+      const std::string& group_id,
+      media::VideoFacingMode video_facing = media::MEDIA_VIDEO_FACING_NONE);
   explicit MediaDeviceInfo(const media::AudioDeviceDescription& description);
   explicit MediaDeviceInfo(
       const media::VideoCaptureDeviceDescriptor& descriptor);

@@ -17,11 +17,12 @@ MediaDeviceInfo::MediaDeviceInfo(MediaDeviceInfo&& other) = default;
 
 MediaDeviceInfo::MediaDeviceInfo(const std::string& device_id,
                                  const std::string& label,
-                                 const std::string& group_id)
+                                 const std::string& group_id,
+                                 media::VideoFacingMode video_facing)
     : device_id(device_id),
       label(label),
       group_id(group_id),
-      video_facing(media::VideoFacingMode::MEDIA_VIDEO_FACING_NONE) {}
+      video_facing(video_facing) {}
 
 MediaDeviceInfo::MediaDeviceInfo(
     const media::AudioDeviceDescription& device_description)
@@ -44,9 +45,11 @@ MediaDeviceInfo& MediaDeviceInfo::operator=(const MediaDeviceInfo& other) =
 MediaDeviceInfo& MediaDeviceInfo::operator=(MediaDeviceInfo&& other) = default;
 
 bool operator==(const MediaDeviceInfo& first, const MediaDeviceInfo& second) {
-  return first.device_id == second.device_id && first.label == second.label &&
-         first.group_id == second.group_id &&
-         first.video_facing == second.video_facing;
+  // Do not use the |group_id| and |video_facing| fields for equality comparison
+  // since they are currently not fully supported by the video-capture layer.
+  // The modification of those fields by heuristics in upper layers does not
+  // result in a different device.
+  return first.device_id == second.device_id && first.label == second.label;
 }
 
 }  // namespace content

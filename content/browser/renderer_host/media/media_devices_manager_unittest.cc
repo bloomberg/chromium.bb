@@ -149,6 +149,15 @@ class MockMediaDevicesListener : public blink::mojom::MediaDevicesListener {
   mojo::BindingSet<blink::mojom::MediaDevicesListener> bindings_;
 };
 
+void VerifyDeviceAndGroupID(const std::vector<MediaDeviceInfoArray>& array) {
+  for (const auto& device_infos : array) {
+    for (const auto& device_info : device_infos) {
+      EXPECT_FALSE(device_info.device_id.empty());
+      EXPECT_FALSE(device_info.group_id.empty());
+    }
+  }
+}
+
 }  // namespace
 
 class MediaDevicesManagerTest : public ::testing::Test {
@@ -162,6 +171,12 @@ class MediaDevicesManagerTest : public ::testing::Test {
 
   void EnumerateCallback(base::RunLoop* run_loop,
                          const MediaDeviceEnumeration& result) {
+    for (int i = 0; i < NUM_MEDIA_DEVICE_TYPES; ++i) {
+      for (const auto& device_info : result[i]) {
+        EXPECT_FALSE(device_info.device_id.empty());
+        EXPECT_FALSE(device_info.group_id.empty());
+      }
+    }
     MockCallback(result);
     run_loop->Quit();
   }
@@ -597,6 +612,10 @@ TEST_F(MediaDevicesManagerTest, SubscribeDeviceChanges) {
   EXPECT_EQ(num_audio_input_devices, notification_all_audio_input.size());
   EXPECT_EQ(num_video_input_devices, notification_all_video_input.size());
   EXPECT_EQ(num_audio_output_devices, notification_all_audio_output.size());
+  VerifyDeviceAndGroupID(
+      {notification_audio_input, notification_video_input,
+       notification_audio_output, notification_all_audio_input,
+       notification_all_video_input, notification_all_audio_output});
 
   media_devices_manager_->UnsubscribeDeviceChangeNotifications(
       audio_input_subscription_id);
@@ -621,6 +640,9 @@ TEST_F(MediaDevicesManagerTest, SubscribeDeviceChanges) {
   EXPECT_EQ(num_audio_input_devices, notification_all_audio_input.size());
   EXPECT_EQ(num_video_input_devices, notification_all_video_input.size());
   EXPECT_EQ(num_audio_output_devices, notification_all_audio_output.size());
+  VerifyDeviceAndGroupID({notification_all_audio_input,
+                          notification_all_video_input,
+                          notification_all_audio_output});
 }
 
 TEST_F(MediaDevicesManagerTest, GuessVideoGroupID) {

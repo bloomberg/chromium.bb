@@ -160,7 +160,9 @@ MediaDeviceInfo TranslateMediaDeviceInfo(
           ? std::string()
           : GetHMACForMediaDeviceID(salt_and_origin.group_id_salt,
                                     salt_and_origin.origin,
-                                    device_info.group_id));
+                                    device_info.group_id),
+      has_permission ? device_info.video_facing
+                     : media::MEDIA_VIDEO_FACING_NONE);
 }
 
 MediaDeviceInfoArray TranslateMediaDeviceInfoArray(

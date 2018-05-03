@@ -110,6 +110,11 @@ bool IsRealAudioDeviceID(const std::string& device_id) {
          !media::AudioDeviceDescription::IsCommunicationsDevice(device_id);
 }
 
+static bool EqualDeviceAndGroupID(const MediaDeviceInfo& lhs,
+                                  const MediaDeviceInfo& rhs) {
+  return lhs == rhs && lhs.group_id == rhs.group_id;
+}
+
 }  // namespace
 
 std::string GuessVideoGroupID(const MediaDeviceInfoArray& audio_infos,
@@ -521,8 +526,23 @@ void MediaDevicesManager::OnPermissionsCheckDone(
     MediaDeviceSaltAndOrigin salt_and_origin,
     const MediaDevicesManager::BoolDeviceTypes& has_permissions) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // The video-capture subsystem currently does not support group IDs.
+  // If video input devices are requested, also request audio input devices in
+  // order to be able to use an heuristic that guesses group IDs for video
+  // devices by finding matches in audio input devices.
+  // TODO(crbug.com/627793): Remove |internal_requested_types| and use
+  // |requested_types| directly when video capture supports group IDs.
+  BoolDeviceTypes internal_requested_types;
+  internal_requested_types[MEDIA_DEVICE_TYPE_AUDIO_INPUT] =
+      requested_types[MEDIA_DEVICE_TYPE_AUDIO_INPUT] ||
+      requested_types[MEDIA_DEVICE_TYPE_VIDEO_INPUT];
+  internal_requested_types[MEDIA_DEVICE_TYPE_VIDEO_INPUT] =
+      requested_types[MEDIA_DEVICE_TYPE_VIDEO_INPUT];
+  internal_requested_types[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] =
+      requested_types[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT];
+
   EnumerateDevices(
-      requested_types,
+      internal_requested_types,
       base::BindRepeating(&MediaDevicesManager::OnDevicesEnumerated,
                           weak_factory_.GetWeakPtr(), requested_types,
                           request_video_input_capabilities,
@@ -542,31 +562,14 @@ void MediaDevicesManager::OnDevicesEnumerated(
       has_permissions[MEDIA_DEVICE_TYPE_VIDEO_INPUT] &&
       request_video_input_capabilities;
 
-  MediaDeviceInfoArray video_device_infos =
-      enumeration[MEDIA_DEVICE_TYPE_VIDEO_INPUT];
-  for (auto& video_device_info : video_device_infos) {
-    video_device_info.group_id = GuessVideoGroupID(
-        enumeration[MEDIA_DEVICE_TYPE_AUDIO_INPUT], video_device_info);
-  }
-
   std::vector<MediaDeviceInfoArray> result(NUM_MEDIA_DEVICE_TYPES);
   for (size_t i = 0; i < NUM_MEDIA_DEVICE_TYPES; ++i) {
     if (!requested_types[i])
       continue;
 
-    if (i == MEDIA_DEVICE_TYPE_VIDEO_INPUT) {
-      for (const auto& device_info : video_device_infos) {
-        MediaDeviceInfo translated_device_info = TranslateMediaDeviceInfo(
-            has_permissions[i], salt_and_origin, device_info);
-        if (video_input_capabilities_requested)
-          translated_device_info.video_facing = device_info.video_facing;
-        result[i].push_back(translated_device_info);
-      }
-    } else {
-      for (const auto& device_info : enumeration[i]) {
-        result[i].push_back(TranslateMediaDeviceInfo(
-            has_permissions[i], salt_and_origin, device_info));
-      }
+    for (const auto& device_info : enumeration[i]) {
+      result[i].push_back(TranslateMediaDeviceInfo(
+          has_permissions[i], salt_and_origin, device_info));
     }
   }
 
@@ -685,19 +688,29 @@ void MediaDevicesManager::DevicesEnumerated(
 
 void MediaDevicesManager::UpdateSnapshot(
     MediaDeviceType type,
-    const MediaDeviceInfoArray& new_snapshot) {
+    const MediaDeviceInfoArray& new_snapshot,
+    bool ignore_group_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(IsValidMediaDeviceType(type));
 
-  // Only cache the device list when the device list has been changed.
   bool need_update_device_change_subscribers = false;
   MediaDeviceInfoArray& old_snapshot = current_snapshot_[type];
 
+  // Update the cached snapshot and send notifications only if the device list
+  // has changed.
   if (old_snapshot.size() != new_snapshot.size() ||
       !std::equal(new_snapshot.begin(), new_snapshot.end(),
-                  old_snapshot.begin())) {
-    if (type == MEDIA_DEVICE_TYPE_AUDIO_INPUT ||
-        type == MEDIA_DEVICE_TYPE_VIDEO_INPUT) {
+                  old_snapshot.begin(),
+                  ignore_group_id ? operator== : EqualDeviceAndGroupID)) {
+    // Prevent sending notifications until group IDs are updated using
+    // a heuristic in ProcessRequests().
+    // TODO(crbug.com/627793): Remove |is_video_with_group_ids| and the
+    // corresponding checks when the video-capture subsystem supports
+    // group IDs.
+    bool is_video_with_good_group_ids =
+        type == MEDIA_DEVICE_TYPE_VIDEO_INPUT &&
+        (new_snapshot.size() == 0 || !new_snapshot[0].group_id.empty());
+    if (type == MEDIA_DEVICE_TYPE_AUDIO_INPUT || is_video_with_good_group_ids) {
       NotifyMediaStreamManager(type, new_snapshot);
     }
 
@@ -705,7 +718,8 @@ void MediaDevicesManager::UpdateSnapshot(
     // result, since it is not due to an actual device change.
     need_update_device_change_subscribers =
         has_seen_result_[type] &&
-        (old_snapshot.size() != 0 || new_snapshot.size() != 0);
+        (old_snapshot.size() != 0 || new_snapshot.size() != 0) &&
+        (type != MEDIA_DEVICE_TYPE_VIDEO_INPUT || is_video_with_good_group_ids);
     current_snapshot_[type] = new_snapshot;
   }
 
@@ -715,6 +729,21 @@ void MediaDevicesManager::UpdateSnapshot(
 
 void MediaDevicesManager::ProcessRequests() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // Populate the group ID field for video devices using a heuristic that looks
+  // for device coincidences with audio input devices.
+  // TODO(crbug.com/627793): Remove this once the video-capture subsystem
+  // supports group IDs.
+  if (has_seen_result_[MEDIA_DEVICE_TYPE_VIDEO_INPUT]) {
+    MediaDeviceInfoArray video_devices =
+        current_snapshot_[MEDIA_DEVICE_TYPE_VIDEO_INPUT];
+    for (auto& video_device_info : video_devices) {
+      video_device_info.group_id = GuessVideoGroupID(
+          current_snapshot_[MEDIA_DEVICE_TYPE_AUDIO_INPUT], video_device_info);
+    }
+    UpdateSnapshot(MEDIA_DEVICE_TYPE_VIDEO_INPUT, video_devices,
+                   false /* ignore_group_id */);
+  }
+
   requests_.erase(std::remove_if(requests_.begin(), requests_.end(),
                                  [this](const EnumerationRequest& request) {
                                    if (IsEnumerationRequestReady(request)) {
