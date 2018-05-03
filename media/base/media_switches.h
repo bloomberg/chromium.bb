@@ -139,6 +139,7 @@ MEDIA_EXPORT extern const base::Feature kVideoFullscreenOrientationLock;
 MEDIA_EXPORT extern const base::Feature kVideoRotateToFullscreen;
 MEDIA_EXPORT extern const base::Feature kMediaDrmPersistentLicense;
 MEDIA_EXPORT extern const base::Feature kCafMediaRouterImpl;
+MEDIA_EXPORT extern const base::Feature kAImageReaderVideoOutput;
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN)

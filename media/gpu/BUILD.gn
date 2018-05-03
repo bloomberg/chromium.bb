@@ -147,6 +147,9 @@ component("gpu") {
 
   if (is_android) {
     sources += [
+      "android/android_image_reader_abi.h",
+      "android/android_image_reader_compat.cc",
+      "android/android_image_reader_compat.h",
       "android/android_video_decode_accelerator.cc",
       "android/android_video_decode_accelerator.h",
       "android/android_video_surface_chooser.h",
@@ -427,6 +430,7 @@ source_set("android_video_decode_accelerator_unittests") {
   if (is_android) {
     testonly = true
     sources = [
+      "android/android_image_reader_compat_unittest.cc",
       "android/android_video_decode_accelerator_unittest.cc",
       "android/android_video_surface_chooser_impl_unittest.cc",
       "android/avda_codec_allocator_unittest.cc",

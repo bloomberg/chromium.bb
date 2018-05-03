@@ -334,6 +334,9 @@ const base::Feature kMediaDrmPersistentLicense{
 const base::Feature kCafMediaRouterImpl{"CafMediaRouterImpl",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the Android Image Reader path for Video decoding(for AVDA and MCVD)
+const base::Feature kAImageReaderVideoOutput{"AImageReaderVideoOutput",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 #if defined(OS_WIN)
