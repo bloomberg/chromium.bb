@@ -914,11 +914,9 @@ int SSLClientSocketImpl::Init() {
   SSL_set_mode(ssl_.get(), mode.set_mask);
   SSL_clear_mode(ssl_.get(), mode.clear_mask);
 
-  // Use BoringSSL defaults, but disable HMAC-SHA256 and HMAC-SHA384 ciphers
-  // (note that SHA256 and SHA384 only select legacy CBC ciphers).
-  // Additionally disable HMAC-SHA1 ciphers in ECDSA. These are the remaining
-  // CBC-mode ECDSA ciphers.
-  std::string command("ALL:!SHA256:!SHA384:!aPSK:!ECDSA+SHA1");
+  // Use BoringSSL defaults, but disable HMAC-SHA1 ciphers in ECDSA. These are
+  // the remaining CBC-mode ECDSA ciphers.
+  std::string command("ALL::!aPSK:!ECDSA+SHA1");
 
   if (ssl_config_.require_ecdhe)
     command.append(":!kRSA");

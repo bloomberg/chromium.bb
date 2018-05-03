@@ -885,7 +885,7 @@ void SSLServerContextImpl::Init() {
   // disabled by default. Note that !SHA256 and !SHA384 only remove HMAC-SHA256
   // and HMAC-SHA384 cipher suites, not GCM cipher suites with SHA256 or SHA384
   // as the handshake hash.
-  std::string command("DEFAULT:!SHA256:!SHA384:!AESGCM+AES256:!aPSK");
+  std::string command("DEFAULT:!AESGCM+AES256:!aPSK");
 
   // SSLPrivateKey only supports ECDHE-based ciphers because it lacks decrypt.
   if (ssl_server_config_.require_ecdhe || (!key_ && private_key_))
