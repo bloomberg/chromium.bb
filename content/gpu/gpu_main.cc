@@ -339,7 +339,7 @@ int GpuMain(const MainFunctionParams& parameters) {
       nullptr);
 #endif
 
-  if (command_line.HasSwitch(switches::kEnableOOPRasterization)) {
+  if (gpu_preferences.enable_oop_rasterization) {
     SkGraphics::Init();
 #if defined(OS_LINUX)
     // Set up the font IPC so that the GPU process can create typefaces.

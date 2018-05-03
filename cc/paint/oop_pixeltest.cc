@@ -54,15 +54,6 @@ class OopPixelTestBase : public testing::Test {
   virtual bool UseRasterDecoder() = 0;
 
   void SetUp() override {
-    // Add an OOP rasterization command line flag so that we set
-    // |chromium_raster_transport| features flag.
-    // TODO(vmpstr): Is there a better way to do this?
-    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableOOPRasterization)) {
-      base::CommandLine::ForCurrentProcess()->AppendSwitch(
-          switches::kEnableOOPRasterization);
-    }
-
     raster_context_provider_ =
         base::MakeRefCounted<TestInProcessContextProvider>(
             /*enable_oop_rasterization=*/true,

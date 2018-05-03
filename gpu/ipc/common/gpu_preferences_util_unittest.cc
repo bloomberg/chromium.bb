@@ -58,7 +58,6 @@ void CheckGpuPreferencesEqual(GpuPreferences left, GpuPreferences right) {
             right.enable_threaded_texture_mailboxes);
   EXPECT_EQ(left.gl_shader_interm_output, right.gl_shader_interm_output);
   EXPECT_EQ(left.emulate_shader_precision, right.emulate_shader_precision);
-  EXPECT_EQ(left.enable_raster_decoder, right.enable_raster_decoder);
   EXPECT_EQ(left.enable_gpu_service_logging, right.enable_gpu_service_logging);
   EXPECT_EQ(left.enable_gpu_service_tracing, right.enable_gpu_service_tracing);
   EXPECT_EQ(left.use_passthrough_cmd_decoder,
@@ -70,6 +69,7 @@ void CheckGpuPreferencesEqual(GpuPreferences left, GpuPreferences right) {
   EXPECT_EQ(left.disable_gpu_driver_bug_workarounds,
             right.disable_gpu_driver_bug_workarounds);
   EXPECT_EQ(left.ignore_gpu_blacklist, right.ignore_gpu_blacklist);
+  EXPECT_EQ(left.enable_oop_rasterization, right.enable_oop_rasterization);
 }
 
 }  // namespace
@@ -135,7 +135,6 @@ TEST(GpuPreferencesUtilTest, EncodeDecode) {
     GPU_PREFERENCES_FIELD(enable_threaded_texture_mailboxes, true)
     GPU_PREFERENCES_FIELD(gl_shader_interm_output, true)
     GPU_PREFERENCES_FIELD(emulate_shader_precision, true)
-    GPU_PREFERENCES_FIELD(enable_raster_decoder, true)
     GPU_PREFERENCES_FIELD(enable_gpu_service_logging, true)
     GPU_PREFERENCES_FIELD(enable_gpu_service_tracing, true)
     GPU_PREFERENCES_FIELD(use_passthrough_cmd_decoder, true)
@@ -143,6 +142,7 @@ TEST(GpuPreferencesUtilTest, EncodeDecode) {
                           true)
     GPU_PREFERENCES_FIELD(disable_gpu_driver_bug_workarounds, true)
     GPU_PREFERENCES_FIELD(ignore_gpu_blacklist, true)
+    GPU_PREFERENCES_FIELD(enable_oop_rasterization, true)
 
     input_prefs.texture_target_exception_list.emplace_back(
         gfx::BufferUsage::SCANOUT, gfx::BufferFormat::RGBA_8888);

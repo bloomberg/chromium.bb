@@ -613,10 +613,12 @@ void GpuChannel::OnCreateCommandBuffer(
   }
 
   std::unique_ptr<CommandBufferStub> stub;
-  // Check gpu_preferences() as well as attribs.enable_raster_decoder to prevent
-  // compromised renderer from unilaterally enabling RasterDecoder.
-  if (gpu_channel_manager_->gpu_preferences().enable_raster_decoder &&
-      init_params.attribs.enable_raster_decoder &&
+
+  // Check gpu_preferences() as well as attribs.enable_oop_rasterization to
+  // preventcompromised renderer from unilaterally enabling RasterDecoder until
+  // we have fuzzed it (https://crbug.com/829469).
+  if (gpu_channel_manager_->gpu_preferences().enable_oop_rasterization &&
+      init_params.attribs.enable_oop_rasterization &&
       init_params.attribs.enable_raster_interface &&
       !init_params.attribs.enable_gles2_interface) {
     stub = std::make_unique<RasterCommandBufferStub>(

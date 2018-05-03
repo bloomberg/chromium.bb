@@ -136,9 +136,6 @@ struct GPU_EXPORT GpuPreferences {
   // round intermediate values in ANGLE.
   bool emulate_shader_precision = false;
 
-  // Use a dedicated RasterDecoder instead of generic GLES2Decoder.
-  bool enable_raster_decoder = false;
-
   // ===================================
   // Settings from //ui/gl/gl_switches.h
 
@@ -169,10 +166,13 @@ struct GPU_EXPORT GpuPreferences {
   // Ignores GPU blacklist.
   bool ignore_gpu_blacklist = false;
 
+  // Enable GPU rasterization in the GPU process.
+  bool enable_oop_rasterization = false;
+
   // Please update gpu_preferences_util_unittest.cc when making additions or
   // changes to this struct.
 };
 
 }  // namespace gpu
 
-#endif // GPU_COMMAND_BUFFER_SERVICE_GPU_PREFERENCES_H_
+#endif  // GPU_COMMAND_BUFFER_SERVICE_GPU_PREFERENCES_H_

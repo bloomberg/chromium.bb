@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/raster_cmd_helper.h"
@@ -17,6 +18,7 @@
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/context_creation_attribs.h"
 #include "gpu/config/gpu_feature_info.h"
+#include "gpu/config/gpu_switches.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "gpu/skia_bindings/gles2_implementation_with_grcontext_support.h"
 
@@ -57,6 +59,16 @@ ContextResult RasterInProcessContext::Initialize(
     return ContextResult::kFatalFailure;
   }
 
+  // TODO(backer): Remove this. Currently used to set
+  // |chromium_raster_transport| features flag (https://crbug.com/786591) and
+  // enable_oop_rasterization in GpuPreferences (https://crbug.com/829469).
+  if (attribs.enable_oop_rasterization &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableOOPRasterization)) {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableOOPRasterization);
+  }
+
   command_buffer_ = std::make_unique<InProcessCommandBuffer>(service);
   auto result = command_buffer_->Initialize(
       nullptr /* surface */, true /* is_offscreen */, kNullSurfaceHandle,
@@ -94,7 +106,11 @@ ContextResult RasterInProcessContext::Initialize(
         gles2_implementation_->command_buffer(), GetCapabilities());
     helper_ = std::move(gles2_helper);
   } else {
-    DCHECK(attribs.enable_raster_decoder);
+    // TODO(https://crbug.com/829469): Remove check once we fuzz RasterDecoder.
+    // enable_oop_rasterization is currently necessary to create RasterDecoder
+    // in InProcessCommandBuffer.
+    DCHECK(attribs.enable_oop_rasterization);
+
     // Create the RasterCmdHelper, which writes the command buffer protocol.
     auto raster_helper =
         std::make_unique<raster::RasterCmdHelper>(command_buffer_.get());

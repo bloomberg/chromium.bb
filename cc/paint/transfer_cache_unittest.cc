@@ -45,19 +45,7 @@ class TransferCacheTest : public testing::TestWithParam<bool> {
     // Enable OOP rasterization.
     attribs.enable_oop_rasterization = true;
     attribs.enable_raster_interface = true;
-
-    // |true| will test RasterDecoder, |false| will test GLES2Decoder.
-    attribs.enable_raster_decoder = UseRasterDecoder();
     attribs.enable_gles2_interface = !UseRasterDecoder();
-
-    // Add an OOP rasterization command line flag so that we set
-    // |chromium_raster_transport| features flag.
-    // TODO(vmpstr): Is there a better way to do this?
-    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableOOPRasterization)) {
-      base::CommandLine::ForCurrentProcess()->AppendSwitch(
-          switches::kEnableOOPRasterization);
-    }
 
     context_ = std::make_unique<gpu::RasterInProcessContext>();
     auto result = context_->Initialize(

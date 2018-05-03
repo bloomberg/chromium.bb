@@ -49,6 +49,7 @@
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
 #include "gpu/config/gpu_crash_keys.h"
 #include "gpu/config/gpu_feature_info.h"
+#include "gpu/config/gpu_switches.h"
 #include "gpu/ipc/gpu_in_process_thread_service.h"
 #include "gpu/ipc/host/gpu_memory_buffer_support.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
@@ -350,7 +351,11 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
   command_buffer_ = std::make_unique<CommandBufferService>(
       this, transfer_buffer_manager_.get());
 
-  if (params.attribs.enable_raster_decoder &&
+  // Check gpu_preferences() as well as attribs.enable_oop_rasterization to
+  // prevent compromised renderer from unilaterally enabling RasterDecoder until
+  // we have fuzzed it (https://crbug.com/829469).
+  if (service_->gpu_preferences().enable_oop_rasterization &&
+      params.attribs.enable_oop_rasterization &&
       params.attribs.enable_raster_interface &&
       !params.attribs.enable_gles2_interface) {
     decoder_.reset(raster::RasterDecoder::Create(this, command_buffer_.get(),

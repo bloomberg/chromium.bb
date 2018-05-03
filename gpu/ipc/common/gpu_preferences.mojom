@@ -51,7 +51,6 @@ struct GpuPreferences {
   bool enable_threaded_texture_mailboxes;
   bool gl_shader_interm_output;
   bool emulate_shader_precision;
-  bool enable_raster_decoder;
   bool enable_gpu_service_logging;
   bool enable_gpu_service_tracing;
   bool use_passthrough_cmd_decoder;
@@ -60,4 +59,5 @@ struct GpuPreferences {
 
   bool disable_gpu_driver_bug_workarounds;
   bool ignore_gpu_blacklist;
+  bool enable_oop_rasterization;
 };

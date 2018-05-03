@@ -2712,7 +2712,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnablePreciseMemoryInfo,
     switches::kEnablePrintBrowser,
     switches::kEnablePreferCompositingToLCDText,
-    switches::kEnableRasterDecoder,
     switches::kEnableRGBA4444Textures,
     switches::kEnableSkiaBenchmarking,
     switches::kEnableSlimmingPaintV175,

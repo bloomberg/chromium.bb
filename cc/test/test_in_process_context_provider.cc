@@ -66,29 +66,14 @@ std::unique_ptr<gpu::GLInProcessContext> CreateTestInProcessContext() {
 TestInProcessContextProvider::TestInProcessContextProvider(
     bool enable_oop_rasterization,
     bool support_gles2_interface) {
-  if (support_gles2_interface) {
-    // TODO(enne): make this always support oop rasterization.  Some tests
-    // fail to create the context when oop rasterization is turned on.
-    gles2_context_ = CreateGLInProcessContext(
-        &gpu_memory_buffer_manager_, &image_factory_,
-        base::ThreadTaskRunnerHandle::Get(), enable_oop_rasterization);
-    cache_controller_.reset(
-        new viz::ContextCacheController(gles2_context_->GetImplementation(),
-                                        base::ThreadTaskRunnerHandle::Get()));
-
-    raster_implementation_gles2_ =
-        std::make_unique<gpu::raster::RasterImplementationGLES>(
-            gles2_context_->GetImplementation(),
-            gles2_context_->GetImplementation(),
-            gles2_context_->GetImplementation()->command_buffer(),
-            gles2_context_->GetCapabilities());
-  } else {
+  if (enable_oop_rasterization) {
     gpu::ContextCreationAttribs attribs;
     attribs.bind_generates_resource = false;
-    attribs.enable_oop_rasterization = enable_oop_rasterization;
+    attribs.enable_oop_rasterization = true;
     attribs.enable_raster_interface = true;
-    attribs.enable_gles2_interface = false;
-    attribs.enable_raster_decoder = true;
+    // TODO(crbug.com/834313): Remove this once we start tearing down OOP-R in
+    // GLES2Decoder.
+    attribs.enable_gles2_interface = support_gles2_interface;
 
     raster_context_.reset(new gpu::RasterInProcessContext);
     auto result = raster_context_->Initialize(
@@ -101,6 +86,19 @@ TestInProcessContextProvider::TestInProcessContextProvider(
     cache_controller_.reset(
         new viz::ContextCacheController(raster_context_->GetContextSupport(),
                                         base::ThreadTaskRunnerHandle::Get()));
+  } else {
+    gles2_context_ = CreateGLInProcessContext(
+        &gpu_memory_buffer_manager_, &image_factory_,
+        base::ThreadTaskRunnerHandle::Get(), enable_oop_rasterization);
+    cache_controller_.reset(
+        new viz::ContextCacheController(gles2_context_->GetImplementation(),
+                                        base::ThreadTaskRunnerHandle::Get()));
+    raster_implementation_gles2_ =
+        std::make_unique<gpu::raster::RasterImplementationGLES>(
+            gles2_context_->GetImplementation(),
+            gles2_context_->GetImplementation(),
+            gles2_context_->GetImplementation()->command_buffer(),
+            gles2_context_->GetCapabilities());
   }
 }
 

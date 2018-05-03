@@ -26,17 +26,14 @@ constexpr gfx::BufferUsage kBufferUsage = gfx::BufferUsage::SCANOUT;
 constexpr viz::ResourceFormat kResourceFormat = viz::RGBA_8888;
 constexpr gfx::Size kBufferSize(100, 100);
 
-class RasterInProcessCommandBufferTest : public ::testing::TestWithParam<bool> {
+class RasterInProcessCommandBufferTest : public ::testing::Test {
  public:
   std::unique_ptr<RasterInProcessContext> CreateRasterInProcessContext() {
     ContextCreationAttribs attributes;
-    attributes.enable_raster_interface = true;
     attributes.bind_generates_resource = false;
-
-    // TODO(backer): Remove this once RasterDecoder is the default
-    // implementation of RasterInterface.
-    attributes.enable_gles2_interface = !GetParam();
-    attributes.enable_raster_decoder = GetParam();
+    attributes.enable_oop_rasterization = true;
+    attributes.enable_gles2_interface = false;
+    attributes.enable_raster_interface = true;
 
     auto context = std::make_unique<RasterInProcessContext>();
     auto result = context->Initialize(
@@ -72,7 +69,7 @@ class RasterInProcessCommandBufferTest : public ::testing::TestWithParam<bool> {
 
 }  // namespace
 
-TEST_P(RasterInProcessCommandBufferTest, CreateImage) {
+TEST_F(RasterInProcessCommandBufferTest, CreateImage) {
   // Calling CreateImageCHROMIUM() should allocate an image id.
   std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer1 =
       gpu_memory_buffer_manager_->CreateGpuMemoryBuffer(
@@ -99,7 +96,7 @@ TEST_P(RasterInProcessCommandBufferTest, CreateImage) {
   EXPECT_NE(image_id1, image_id2);
 }
 
-TEST_P(RasterInProcessCommandBufferTest, SetColorSpaceMetadata) {
+TEST_F(RasterInProcessCommandBufferTest, SetColorSpaceMetadata) {
   GLuint texture_id =
       ri_->CreateTexture(/*use_buffer=*/true, kBufferUsage, kResourceFormat);
 
@@ -119,7 +116,7 @@ TEST_P(RasterInProcessCommandBufferTest, SetColorSpaceMetadata) {
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), ri_->GetError());
 }
 
-TEST_P(RasterInProcessCommandBufferTest, TexStorage2DImage) {
+TEST_F(RasterInProcessCommandBufferTest, TexStorage2DImage) {
   // Check for GPU and driver support
   if (!context_->GetCapabilities().texture_storage_image) {
     return;
@@ -155,7 +152,5 @@ TEST_P(RasterInProcessCommandBufferTest, TexStorage2DImage) {
 
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), ri_->GetError());
 }
-
-INSTANTIATE_TEST_CASE_P(P, RasterInProcessCommandBufferTest, ::testing::Bool());
 
 }  // namespace gpu
