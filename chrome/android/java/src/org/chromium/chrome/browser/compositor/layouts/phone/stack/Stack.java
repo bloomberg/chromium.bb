@@ -2457,7 +2457,7 @@ public class Stack {
     public void swipeUpdated(long time, float x, float y, float dx, float dy, float tx, float ty) {
         if (!mInSwipe) return;
 
-        final float toolbarSize = mLayout.getHeight() - mLayout.getHeightMinusBrowserControls();
+        final float toolbarSize = mLayout.getTopBrowserControlsHeight();
         if (ty > toolbarSize) mSwipeCanScroll = true;
         if (!mSwipeCanScroll) return;
 
