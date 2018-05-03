@@ -15,6 +15,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service_observer.h"
 #include "components/prefs/pref_member.h"
@@ -104,8 +105,8 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
   // daily original and received content lengths.
   int64_t GetDataReductionLastUpdateTime();
 
-  // Clears all data saving statistics.
-  void ClearDataSavingStatistics();
+  // Clears all data saving statistics for the given |reason|.
+  void ClearDataSavingStatistics(DataReductionProxySavingsClearedReason reason);
 
   // Returns the difference between the total original size of all HTTP content
   // received from the network and the actual size of the HTTP content received.

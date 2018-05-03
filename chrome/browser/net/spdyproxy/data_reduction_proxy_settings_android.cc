@@ -104,8 +104,11 @@ jlong DataReductionProxySettingsAndroid::GetDataReductionLastUpdateTime(
 
 void DataReductionProxySettingsAndroid::ClearDataSavingStatistics(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj) {
-  Settings()->ClearDataSavingStatistics();
+    const base::android::JavaParamRef<jobject>& obj,
+    jint reason) {
+  Settings()->ClearDataSavingStatistics(
+      static_cast<data_reduction_proxy::DataReductionProxySavingsClearedReason>(
+          reason));
 }
 
 base::android::ScopedJavaLocalRef<jobject>

@@ -202,15 +202,11 @@ void RecordDailyContentLengthHistograms(
       percent_savings_via_data_reduction_proxy);
 }
 
-void RecordSavingsClearedMetric(
-    DataReductionProxyCompressionStats::DataReductionProxySavingsClearedReason
-        reason) {
-  DCHECK_GT(DataReductionProxyCompressionStats::
-                DataReductionProxySavingsClearedReason::kCount,
-            reason);
-  UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.SavingsCleared.Reason", reason,
-                            DataReductionProxyCompressionStats::
-                                DataReductionProxySavingsClearedReason::kCount);
+void RecordSavingsClearedMetric(DataReductionProxySavingsClearedReason reason) {
+  DCHECK_GT(DataReductionProxySavingsClearedReason::REASON_COUNT, reason);
+  UMA_HISTOGRAM_ENUMERATION(
+      "DataReductionProxy.SavingsCleared.Reason", reason,
+      DataReductionProxySavingsClearedReason::REASON_COUNT);
 }
 
 }  // namespace
@@ -636,6 +632,9 @@ void DataReductionProxyCompressionStats::DeleteBrowsingHistory(
   }
 
   service_->DeleteBrowsingHistory(start, end);
+
+  RecordSavingsClearedMetric(DataReductionProxySavingsClearedReason::
+                                 USER_ACTION_DELETE_BROWSING_HISTORY);
 }
 
 void DataReductionProxyCompressionStats::OnCurrentDataUsageLoaded(
@@ -668,6 +667,12 @@ void DataReductionProxyCompressionStats::OnCurrentDataUsageLoaded(
 
   data_usage_map_last_updated_ =
       base::Time::FromInternalValue(data_usage->last_updated_timestamp());
+  // Record if there was a read error.
+  if (data_usage->had_read_error()) {
+    RecordSavingsClearedMetric(
+        DataReductionProxySavingsClearedReason::PREFS_PARSE_ERROR);
+  }
+
   current_data_usage_load_status_ = LOADED;
 }
 
@@ -680,7 +685,8 @@ void DataReductionProxyCompressionStats::SetDataUsageReportingEnabled(
   }
 }
 
-void DataReductionProxyCompressionStats::ClearDataSavingStatistics() {
+void DataReductionProxyCompressionStats::ClearDataSavingStatistics(
+    DataReductionProxySavingsClearedReason reason) {
   DeleteHistoricalDataUsage();
 
   pref_service_->ClearPref(prefs::kDailyHttpContentLengthLastUpdateDate);
@@ -743,6 +749,8 @@ void DataReductionProxyCompressionStats::ClearDataSavingStatistics() {
        ++iter) {
     iter->second->Clear();
   }
+
+  RecordSavingsClearedMetric(reason);
 }
 
 void DataReductionProxyCompressionStats::DelayedWritePrefs() {
@@ -969,7 +977,7 @@ void DataReductionProxyCompressionStats::RecordRequestSizePrefs(
 
     if (days_since_last_update < -1) {
       RecordSavingsClearedMetric(
-          DataReductionProxySavingsClearedReason::kSystemClockMovedBack);
+          DataReductionProxySavingsClearedReason::SYSTEM_CLOCK_MOVED_BACK);
     }
 
     // The system may go backwards in time by up to a day for legitimate

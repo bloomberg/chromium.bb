@@ -13,7 +13,6 @@
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "build/build_config.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
@@ -151,11 +150,12 @@ int64_t DataReductionProxySettings::GetDataReductionLastUpdateTime() {
       data_reduction_proxy_service_->compression_stats()->GetLastUpdateTime();
 }
 
-void DataReductionProxySettings::ClearDataSavingStatistics() {
+void DataReductionProxySettings::ClearDataSavingStatistics(
+    DataReductionProxySavingsClearedReason reason) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(data_reduction_proxy_service_->compression_stats());
-  data_reduction_proxy_service_->compression_stats()
-      ->ClearDataSavingStatistics();
+  data_reduction_proxy_service_->compression_stats()->ClearDataSavingStatistics(
+      reason);
 }
 
 int64_t DataReductionProxySettings::GetTotalHttpContentLengthSaved() {
