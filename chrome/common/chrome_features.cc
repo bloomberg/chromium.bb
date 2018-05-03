@@ -420,6 +420,21 @@ const base::Feature kNtlmV2Enabled{"NtlmV2Enabled",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
+// If enabled, the user will see a configuration UI, and be able to select
+// background images to set on the New Tab Page.
+const base::Feature kNtpBackgrounds{"NewTabPageBackgrounds",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// If enabled, the user will see custom link icons instead of Most Visited tiles
+// on the New Tab Page.
+const base::Feature kNtpIcons{"NewTabPageIcons",
+                              base::FEATURE_DISABLED_BY_DEFAULT};
+
+// If enabled, the user will see the New Tab Page updated with Material Design
+// elements.
+const base::Feature kNtpUIMd{"NewTabPageUIMd",
+                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If enabled, the list of content suggestions on the New Tab page will contain
 // pages that the user downloaded for later use.
 // DO NOT check directly whether this feature is enabled (i.e. do not use

@@ -662,6 +662,15 @@ extern const char kNtlmV2EnabledName[];
 extern const char kNtlmV2EnabledDescription[];
 #endif
 
+extern const char kNtpBackgroundsName[];
+extern const char kNtpBackgroundsDescription[];
+
+extern const char kNtpIconsName[];
+extern const char kNtpIconsDescription[];
+
+extern const char kNtpUIMdName[];
+extern const char kNtpUIMdDescription[];
+
 extern const char kNumRasterThreadsName[];
 extern const char kNumRasterThreadsDescription[];
 extern const char kNumRasterThreadsOne[];

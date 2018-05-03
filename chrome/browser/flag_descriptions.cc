@@ -1047,6 +1047,19 @@ const char kNtlmV2EnabledDescription[] =
     "Enable NTLMv2 HTTP Authentication. This disables NTLMv1 support.";
 #endif
 
+const char kNtpBackgroundsName[] = "New Tab Page Background Selection";
+const char kNtpBackgroundsDescription[] =
+    "Allow selection of a custom background image on the New Tab Page.";
+
+const char kNtpIconsName[] = "New Tab Page Custom Link Icons";
+const char kNtpIconsDescription[] =
+    "Show custom link icons on the New Tab Page, instead of Most Visited "
+    "tiles.";
+
+const char kNtpUIMdName[] = "New Tab Page Material Design UI";
+const char kNtpUIMdDescription[] =
+    "Updates the New Tab Page with Material Design elements.";
+
 const char kNumRasterThreadsName[] = "Number of raster threads";
 const char kNumRasterThreadsDescription[] =
     "Specify the number of raster threads.";
