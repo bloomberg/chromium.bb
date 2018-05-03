@@ -553,15 +553,35 @@ TEST_F(PreviewsIODataTest, TestAllowOffline) {
   scoped_feature_list.InitAndEnableFeature(features::kPreviews);
   InitializeUIService();
 
-  network_quality_estimator()->set_effective_connection_type(
-      net::EFFECTIVE_CONNECTION_TYPE_2G);
+  const struct {
+    net::EffectiveConnectionType effective_connection_type;
+    bool expected_offline_allowed;
+  } tests[] = {
+      {net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN, false},
+      {net::EFFECTIVE_CONNECTION_TYPE_OFFLINE, false},
+      {net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G, true},
+      {net::EFFECTIVE_CONNECTION_TYPE_2G, true},
+      {net::EFFECTIVE_CONNECTION_TYPE_3G, false},
+  };
+  for (const auto& test : tests) {
+    network_quality_estimator()->set_effective_connection_type(
+        test.effective_connection_type);
 
-  base::HistogramTester histogram_tester;
-  EXPECT_TRUE(
-      io_data()->ShouldAllowPreview(*CreateRequest(), PreviewsType::OFFLINE));
-  histogram_tester.ExpectUniqueSample(
-      "Previews.EligibilityReason.Offline",
-      static_cast<int>(PreviewsEligibilityReason::ALLOWED), 1);
+    base::HistogramTester histogram_tester;
+    EXPECT_EQ(
+        test.expected_offline_allowed,
+        io_data()->ShouldAllowPreview(*CreateRequest(), PreviewsType::OFFLINE))
+        << " effective_connection_type=" << test.effective_connection_type;
+    if (test.expected_offline_allowed) {
+      histogram_tester.ExpectUniqueSample(
+          "Previews.EligibilityReason.Offline",
+          static_cast<int>(PreviewsEligibilityReason::ALLOWED), 1);
+    } else {
+      histogram_tester.ExpectBucketCount(
+          "Previews.EligibilityReason.Offline",
+          static_cast<int>(PreviewsEligibilityReason::ALLOWED), 0);
+    }
+  }
 }
 
 TEST_F(PreviewsIODataTest, ClientLoFiDisallowedWhenFeatureDisabled) {
@@ -632,17 +652,39 @@ TEST_F(PreviewsIODataTest, ClientLoFiAllowed) {
 
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
             params::EffectiveConnectionTypeThresholdForClientLoFi());
-  network_quality_estimator()->set_effective_connection_type(
-      net::EFFECTIVE_CONNECTION_TYPE_2G);
 
-  base::HistogramTester histogram_tester;
-  EXPECT_TRUE(io_data()->ShouldAllowPreviewAtECT(
-      *CreateRequest(), PreviewsType::LOFI,
-      params::EffectiveConnectionTypeThresholdForClientLoFi(),
-      params::GetBlackListedHostsForClientLoFiFieldTrial()));
-  histogram_tester.ExpectUniqueSample(
-      "Previews.EligibilityReason.LoFi",
-      static_cast<int>(PreviewsEligibilityReason::ALLOWED), 1);
+  const struct {
+    net::EffectiveConnectionType effective_connection_type;
+    bool expected_client_lofi_allowed;
+  } tests[] = {
+      {net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN, false},
+      {net::EFFECTIVE_CONNECTION_TYPE_OFFLINE, false},
+      {net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G, true},
+      {net::EFFECTIVE_CONNECTION_TYPE_2G, true},
+      {net::EFFECTIVE_CONNECTION_TYPE_3G, false},
+  };
+
+  for (const auto& test : tests) {
+    network_quality_estimator()->set_effective_connection_type(
+        test.effective_connection_type);
+
+    base::HistogramTester histogram_tester;
+    EXPECT_EQ(test.expected_client_lofi_allowed,
+              io_data()->ShouldAllowPreviewAtECT(
+                  *CreateRequest(), PreviewsType::LOFI,
+                  params::EffectiveConnectionTypeThresholdForClientLoFi(),
+                  params::GetBlackListedHostsForClientLoFiFieldTrial()))
+        << " effective_connection_type=" << test.effective_connection_type;
+    if (test.expected_client_lofi_allowed) {
+      histogram_tester.ExpectUniqueSample(
+          "Previews.EligibilityReason.LoFi",
+          static_cast<int>(PreviewsEligibilityReason::ALLOWED), 1);
+    } else {
+      histogram_tester.ExpectBucketCount(
+          "Previews.EligibilityReason.LoFi",
+          static_cast<int>(PreviewsEligibilityReason::ALLOWED), 0);
+    }
+  }
 }
 
 TEST_F(PreviewsIODataTest, MissingHostDisallowed) {
@@ -759,20 +801,43 @@ TEST_F(PreviewsIODataTest, NoScriptAllowedByFeature) {
       {features::kPreviews, features::kNoScriptPreviews}, {});
   InitializeUIService();
 
-  network_quality_estimator()->set_effective_connection_type(
-      net::EFFECTIVE_CONNECTION_TYPE_2G);
+  const struct {
+    net::EffectiveConnectionType effective_connection_type;
+    bool expected_noscript_allowed;
+  } tests[] = {
+      {net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN, false},
+      {net::EFFECTIVE_CONNECTION_TYPE_OFFLINE, false},
+      {net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G, true},
+      {net::EFFECTIVE_CONNECTION_TYPE_2G, true},
+      {net::EFFECTIVE_CONNECTION_TYPE_3G, false},
+  };
 
-  base::HistogramTester histogram_tester;
-  EXPECT_TRUE(io_data()->ShouldAllowPreviewAtECT(
-      *CreateHttpsRequest(), PreviewsType::NOSCRIPT,
-      previews::params::GetECTThresholdForPreview(
-          previews::PreviewsType::NOSCRIPT),
-      std::vector<std::string>()));
-  histogram_tester.ExpectUniqueSample(
-      "Previews.EligibilityReason.NoScript",
-      static_cast<int>(
-          PreviewsEligibilityReason::ALLOWED_WITHOUT_OPTIMIZATION_HINTS),
-      1);
+  for (const auto& test : tests) {
+    network_quality_estimator()->set_effective_connection_type(
+        test.effective_connection_type);
+
+    base::HistogramTester histogram_tester;
+    EXPECT_EQ(test.expected_noscript_allowed,
+              io_data()->ShouldAllowPreviewAtECT(
+                  *CreateHttpsRequest(), PreviewsType::NOSCRIPT,
+                  previews::params::GetECTThresholdForPreview(
+                      previews::PreviewsType::NOSCRIPT),
+                  std::vector<std::string>()))
+        << " effective_connection_type=" << test.effective_connection_type;
+    if (test.expected_noscript_allowed) {
+      histogram_tester.ExpectUniqueSample(
+          "Previews.EligibilityReason.NoScript",
+          static_cast<int>(
+              PreviewsEligibilityReason::ALLOWED_WITHOUT_OPTIMIZATION_HINTS),
+          1);
+    } else {
+      histogram_tester.ExpectBucketCount(
+          "Previews.EligibilityReason.NoScript",
+          static_cast<int>(
+              PreviewsEligibilityReason::ALLOWED_WITHOUT_OPTIMIZATION_HINTS),
+          0);
+    }
+  }
 }
 
 TEST_F(PreviewsIODataTest, NoScriptAllowedByFeatureWithWhitelist) {
