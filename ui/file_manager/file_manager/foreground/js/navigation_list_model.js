@@ -135,15 +135,13 @@ NavigationModelRecentItem.prototype = /** @struct */ {
  * @param {!VolumeManagerWrapper} volumeManager VolumeManagerWrapper instance.
  * @param {(!cr.ui.ArrayDataModel|!FolderShortcutsDataModel)} shortcutListModel
  *     The list of folder shortcut.
- * @param {NavigationModelMenuItem} menuModelItem Menu button at the end of the
- *     list.
- * @param {NavigationModelRecentItem} recentModelItem Recent folder below the
- *     Downloads volume in the list.
+ * @param {NavigationModelRecentItem} recentModelItem Recent folder.
+ * @param {NavigationModelMenuItem} addNewServicesItem Add new services item.
  * @constructor
  * @extends {cr.EventTarget}
  */
 function NavigationListModel(
-    volumeManager, shortcutListModel, menuModelItem, recentModelItem) {
+    volumeManager, shortcutListModel, recentModelItem, addNewServicesItem) {
   cr.EventTarget.call(this);
 
   /**
@@ -159,16 +157,23 @@ function NavigationListModel(
   this.shortcutListModel_ = shortcutListModel;
 
   /**
-   * @private {NavigationModelMenuItem}
-   * @const
-   */
-  this.menuModelItem_ = menuModelItem;
-
-  /**
    * @private {NavigationModelRecentItem}
    * @const
    */
   this.recentModelItem_ = recentModelItem;
+
+  /**
+   * @private {NavigationModelMenuItem}
+   * @const
+   */
+  this.addNewServicesItem_ = addNewServicesItem;
+
+
+  /**
+   * All root navigation items in display order.
+   * @private {!Array<!NavigationModelItem>}
+   */
+  this.navigationItems_ = [];
 
   var volumeInfoToModelItem = function(volumeInfo) {
     return new NavigationModelVolumeItem(
@@ -205,7 +210,11 @@ function NavigationListModel(
     this.shortcutList_.push(entryToModelItem(shortcutEntry));
   }
 
-  // Generates a combined 'permuted' event from an event of either list.
+  // Reorder volumes, shortcuts, and optional items.
+  this.reorderNavigationItems_();
+
+  // Generates a combined 'permuted' event from an event of either volumeList or
+  // shortcutList.
   var permutedHandler = function(listType, event) {
     var permutation;
 
@@ -288,6 +297,9 @@ function NavigationListModel(
       this.shortcutList_ = newList;
     }
 
+    // Reorder items after permutation.
+    this.reorderNavigationItems_();
+
     // Dispatch permuted event.
     var permutedEvent = new Event('permuted');
     permutedEvent.newLength =
@@ -317,27 +329,33 @@ NavigationListModel.prototype = {
 };
 
 /**
+ * Reorder navigation items in the following order:
+ *  1. Volumes.
+ *  2. If Downloads exists, then immediately after Downloads should be:
+ *  2a. Recent if it exists.
+ *  3. Shortcuts.
+ *  4. Add new services if it exists.
+ * @private
+ */
+NavigationListModel.prototype.reorderNavigationItems_ = function() {
+  // Items as per required order.
+  this.navigationItems_ = this.volumeList_.slice();
+  var downloadsVolumeIndex = this.findDownloadsVolumeIndex_();
+  if (this.recentModelItem_ && downloadsVolumeIndex >= 0)
+    this.navigationItems_.splice(
+        downloadsVolumeIndex + 1, 0, this.recentModelItem_);
+  Array.prototype.push.apply(this.navigationItems_, this.shortcutList_);
+  if (this.addNewServicesItem_)
+    this.navigationItems_.push(this.addNewServicesItem_);
+};
+
+/**
  * Returns the item at the given index.
  * @param {number} index The index of the entry to get.
  * @return {NavigationModelItem|undefined} The item at the given index.
  */
 NavigationListModel.prototype.item = function(index) {
-  // If we should show "Recent" folder, insert it just below Downloads volume.
-  var downloadsVolumeIndex = this.findDownloadsVolumeIndex_();
-  var indexWithoutRecent = index;
-  if (this.recentModelItem_ && downloadsVolumeIndex >= 0) {
-    if (index == downloadsVolumeIndex + 1)
-      return this.recentModelItem_;
-    if (index > downloadsVolumeIndex + 1)
-      indexWithoutRecent--;
-  }
-  if (indexWithoutRecent < this.volumeList_.length)
-    return this.volumeList_[indexWithoutRecent];
-  if (indexWithoutRecent < this.volumeList_.length + this.shortcutList_.length)
-    return this.shortcutList_[indexWithoutRecent - this.volumeList_.length];
-  if (index === this.length_() - 1)
-    return this.menuModelItem_;
-  return undefined;
+  return this.navigationItems_[index];
 };
 
 /**
@@ -346,9 +364,7 @@ NavigationListModel.prototype.item = function(index) {
  * @private
  */
 NavigationListModel.prototype.length_ = function() {
-  return this.volumeList_.length + this.shortcutList_.length +
-      (this.menuModelItem_ ? 1 : 0) +
-      (this.recentModelItem_ && this.findDownloadsVolumeIndex_() >= 0 ? 1 : 0);
+  return this.navigationItems_.length;
 };
 
 /**

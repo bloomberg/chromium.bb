@@ -1166,11 +1166,6 @@ FileManager.prototype = /** @struct */ {
                            fakeEntriesVisible);
     directoryTree.dataModel = new NavigationListModel(
         assert(this.volumeManager_), assert(this.folderShortcutsModel_),
-        addNewServicesVisible ?
-            new NavigationModelMenuItem(
-                str('ADD_NEW_SERVICES_BUTTON_LABEL'), '#add-new-services-menu',
-                'add-new-services') :
-            null,
         fakeEntriesVisible &&
                 !DialogType.isFolderDialog(this.launchParams_.type) ?
             new NavigationModelRecentItem(str('RECENT_ROOT_LABEL'), {
@@ -1181,6 +1176,11 @@ FileManager.prototype = /** @struct */ {
               },
               sourceRestriction: this.getSourceRestriction_()
             }) :
+            null,
+        addNewServicesVisible ?
+            new NavigationModelMenuItem(
+                str('ADD_NEW_SERVICES_BUTTON_LABEL'), '#add-new-services-menu',
+                'add-new-services') :
             null);
     this.ui_.initDirectoryTree(directoryTree);
   };
