@@ -1883,6 +1883,7 @@ crbug.com/267206 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbar-t
 crbug.com/280342 [ Mac Linux Win ] http/tests/media/progress-events-generated-correctly.html [ Failure Pass ]
 
 crbug.com/520736 [ Win7 ] media/W3C/video/networkState/networkState_during_progress.html [ Failure Pass ]
+crbug.com/520736 [ Win7 ] virtual/video-surface-layer/media/W3C/video/networkState/networkState_during_progress.html [ Failure Pass ]
 
 # gpuBenchmarking.pinchBy is busted on desktops
 crbug.com/787615 [ Mac Win Linux Fuchsia ] synthetic_gestures/synthetic-pinch-zoom-gesture.html [ Failure Pass ]
