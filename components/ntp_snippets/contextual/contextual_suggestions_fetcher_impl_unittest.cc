@@ -402,7 +402,7 @@ TEST_F(ContextualSuggestionsFetcherTest, RequestHeaderSetCorrectly) {
   GetPivotsRequest request;
   ASSERT_TRUE(request.ParseFromString(decoded_header_value));
 
-  EXPECT_EQ(request.context().localization_context().spoken_language(), "en");
+  EXPECT_EQ(request.context().localization_context().language_code(), "en");
   EXPECT_EQ(request.query().context()[0].url(), "http://www.article.com/");
   EXPECT_TRUE(request.query().document_params().enabled());
   EXPECT_EQ(request.query().document_params().num(), 10);
