@@ -1271,6 +1271,8 @@ component("net") {
       "quic/core/quic_tag.h",
       "quic/core/quic_time.cc",
       "quic/core/quic_time.h",
+      "quic/core/quic_trace_visitor.cc",
+      "quic/core/quic_trace_visitor.h",
       "quic/core/quic_transmission_info.cc",
       "quic/core/quic_transmission_info.h",
       "quic/core/quic_types.cc",
@@ -2279,6 +2281,7 @@ proto_library("net_quic_proto") {
 
   sources = [
     "quic/core/proto/cached_network_parameters.proto",
+    "quic/core/proto/quic_trace.proto",
     "quic/core/proto/source_address_token.proto",
   ]
   cc_generator_options = "dllexport_decl=NET_EXPORT_PRIVATE:"
@@ -5190,6 +5193,7 @@ test("net_unittests") {
     "quic/core/quic_sustained_bandwidth_recorder_test.cc",
     "quic/core/quic_tag_test.cc",
     "quic/core/quic_time_test.cc",
+    "quic/core/quic_trace_visitor_test.cc",
     "quic/core/quic_unacked_packet_map_test.cc",
     "quic/core/quic_utils_test.cc",
     "quic/core/quic_version_manager_test.cc",
