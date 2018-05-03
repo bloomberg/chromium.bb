@@ -32,6 +32,10 @@ class CrashDumpObserver : public content::BrowserChildProcessObserver,
                           public content::NotificationObserver {
  public:
   struct TerminationInfo {
+    TerminationInfo();
+    TerminationInfo(const TerminationInfo& other);
+    TerminationInfo& operator=(const TerminationInfo& other);
+
     int process_host_id = content::ChildProcessHost::kInvalidUniqueID;
     base::ProcessHandle pid = base::kNullProcessHandle;
     content::ProcessType process_type = content::PROCESS_TYPE_UNKNOWN;
@@ -58,6 +62,12 @@ class CrashDumpObserver : public content::BrowserChildProcessObserver,
     // Applies to renderer process only. Generally means renderer is hosting
     // one or more visible tabs.
     bool renderer_has_visible_clients = false;
+
+    // Applies to renderer process only. Generally true indicates that there
+    // is no main frame being hosted in this renderer process. Note there are
+    // edge cases, eg if an invisible main frame and a visible sub frame from
+    // different tabs are sharing the same renderer, then this is false.
+    bool renderer_was_subframe = false;
   };
 
   // CrashDumpObserver client interface.

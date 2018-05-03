@@ -143,7 +143,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual int VisibleClientCount() const = 0;
 
   // Get computed frame depth from PriorityClients.
-  virtual unsigned int GetFrameDepthForTesting() const = 0;
+  virtual unsigned int GetFrameDepth() const = 0;
 
   virtual RendererAudioOutputStreamFactoryContext*
   GetRendererAudioOutputStreamFactoryContext() = 0;

@@ -530,9 +530,8 @@ void CheckFrameDepth(unsigned int expected_depth, FrameTreeNode* node) {
   RenderProcessHost::Priority priority =
       node->current_frame_host()->GetRenderWidgetHost()->GetPriority();
   EXPECT_EQ(expected_depth, priority.frame_depth);
-  EXPECT_EQ(
-      expected_depth,
-      node->current_frame_host()->GetProcess()->GetFrameDepthForTesting());
+  EXPECT_EQ(expected_depth,
+            node->current_frame_host()->GetProcess()->GetFrameDepth());
 }
 
 }  // namespace
@@ -11279,9 +11278,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, FrameDepthTest) {
         child0->current_frame_host()->GetRenderWidgetHost()->GetPriority();
     // Same site instance as root.
     EXPECT_EQ(0u, priority.frame_depth);
-    EXPECT_EQ(
-        0u,
-        child0->current_frame_host()->GetProcess()->GetFrameDepthForTesting());
+    EXPECT_EQ(0u, child0->current_frame_host()->GetProcess()->GetFrameDepth());
   }
 
   FrameTreeNode* child1 = root->child_at(1);
@@ -11302,9 +11299,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, FrameDepthTest) {
         grand_child->current_frame_host()->GetRenderWidgetHost()->GetPriority();
     EXPECT_EQ(2u, priority.frame_depth);
     // Same process as root
-    EXPECT_EQ(0u, grand_child->current_frame_host()
-                      ->GetProcess()
-                      ->GetFrameDepthForTesting());
+    EXPECT_EQ(0u,
+              grand_child->current_frame_host()->GetProcess()->GetFrameDepth());
   }
 }
 
@@ -11328,13 +11324,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, VisibilityFrameDepthTest) {
       popup_root->current_frame_host()->GetProcess();
   EXPECT_EQ(subframe_process, popup_process);
   EXPECT_EQ(2, popup_process->VisibleClientCount());
-  EXPECT_EQ(0u, popup_process->GetFrameDepthForTesting());
+  EXPECT_EQ(0u, popup_process->GetFrameDepth());
 
   // Hide popup. Process should have one visible client and depth should be 1,
   // since depth 0 popup is hidden.
   new_shell->web_contents()->WasHidden();
   EXPECT_EQ(1, popup_process->VisibleClientCount());
-  EXPECT_EQ(1u, popup_process->GetFrameDepthForTesting());
+  EXPECT_EQ(1u, popup_process->GetFrameDepth());
 
   // Navigate main page to same origin as popup in same BrowsingInstance,
   // s main page should run in the same process as the popup. The depth on the
@@ -11348,19 +11344,19 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, VisibilityFrameDepthTest) {
       root->current_frame_host()->GetProcess();
   EXPECT_EQ(new_root_process, popup_process);
   EXPECT_EQ(1, popup_process->VisibleClientCount());
-  EXPECT_EQ(0u, popup_process->GetFrameDepthForTesting());
+  EXPECT_EQ(0u, popup_process->GetFrameDepth());
 
   // Go back on main page. Should go back to same state as before navigation.
   TestNavigationObserver back_load_observer(shell()->web_contents());
   shell()->web_contents()->GetController().GoBack();
   back_load_observer.Wait();
   EXPECT_EQ(1, popup_process->VisibleClientCount());
-  EXPECT_EQ(1u, popup_process->GetFrameDepthForTesting());
+  EXPECT_EQ(1u, popup_process->GetFrameDepth());
 
   // Unhide popup. Should go back to same state as before hide.
   new_shell->web_contents()->WasShown();
   EXPECT_EQ(2, popup_process->VisibleClientCount());
-  EXPECT_EQ(0u, popup_process->GetFrameDepthForTesting());
+  EXPECT_EQ(0u, popup_process->GetFrameDepth());
 }
 
 // Ensure that after a main frame with an OOPIF is navigated cross-site, the

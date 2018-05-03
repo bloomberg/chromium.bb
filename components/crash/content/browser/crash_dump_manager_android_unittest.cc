@@ -92,17 +92,16 @@ TEST_F(CrashDumpManagerTest, SimpleOOM) {
   CrashDumpManagerObserver crash_dump_observer;
   manager->AddObserver(&crash_dump_observer);
 
-  int process_host_id = 1;
-  CrashDumpObserver::TerminationInfo termination_info{
-      process_host_id,
-      base::kNullProcessHandle,
-      content::PROCESS_TYPE_RENDERER,
-      base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES,
-      false /* normal_termination */,
-      true /* has_oom_protection_bindings */,
-      false /* was_killed_intentionally_by_browser */,
-      true /* was_oom_protected_status */
-  };
+  CrashDumpObserver::TerminationInfo termination_info;
+  termination_info.process_host_id = 1;
+  termination_info.pid = base::kNullProcessHandle;
+  termination_info.process_type = content::PROCESS_TYPE_RENDERER;
+  termination_info.app_state =
+      base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES;
+  termination_info.normal_termination = false;
+  termination_info.has_oom_protection_bindings = true;
+  termination_info.was_killed_intentionally_by_browser = false;
+  termination_info.was_oom_protected_status = true;
   base::PostTaskWithTraits(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&CrashDumpManagerTest::CreateAndProcessEmptyMinidump,
@@ -111,7 +110,7 @@ TEST_F(CrashDumpManagerTest, SimpleOOM) {
 
   const CrashDumpManager::CrashDumpDetails& details =
       crash_dump_observer.last_details();
-  EXPECT_EQ(process_host_id, details.process_host_id);
+  EXPECT_EQ(termination_info.process_host_id, details.process_host_id);
   EXPECT_EQ(content::PROCESS_TYPE_RENDERER, details.process_type);
   EXPECT_TRUE(details.was_oom_protected_status);
   EXPECT_EQ(base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES,
@@ -131,17 +130,16 @@ TEST_F(CrashDumpManagerTest, NoDumpCreated) {
   CrashDumpManagerObserver crash_dump_observer;
   manager->AddObserver(&crash_dump_observer);
 
-  int process_host_id = 1;
-  CrashDumpObserver::TerminationInfo termination_info{
-      process_host_id,
-      base::kNullProcessHandle,
-      content::PROCESS_TYPE_RENDERER,
-      base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES,
-      false /* normal_termination */,
-      true /* has_oom_protection_bindings */,
-      false /* was_killed_intentionally_by_browser */,
-      true /* was_oom_protected_status */
-  };
+  CrashDumpObserver::TerminationInfo termination_info;
+  termination_info.process_host_id = 1;
+  termination_info.pid = base::kNullProcessHandle;
+  termination_info.process_type = content::PROCESS_TYPE_RENDERER;
+  termination_info.app_state =
+      base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES;
+  termination_info.normal_termination = false;
+  termination_info.has_oom_protection_bindings = true;
+  termination_info.was_killed_intentionally_by_browser = false;
+  termination_info.was_oom_protected_status = true;
   base::PostTaskWithTraits(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&CrashDumpManager::ProcessMinidumpFileFromChild,
@@ -151,7 +149,7 @@ TEST_F(CrashDumpManagerTest, NoDumpCreated) {
 
   const CrashDumpManager::CrashDumpDetails& details =
       crash_dump_observer.last_details();
-  EXPECT_EQ(process_host_id, details.process_host_id);
+  EXPECT_EQ(termination_info.process_host_id, details.process_host_id);
   EXPECT_EQ(content::PROCESS_TYPE_RENDERER, details.process_type);
   EXPECT_TRUE(details.was_oom_protected_status);
   EXPECT_EQ(base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES,
