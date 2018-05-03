@@ -64,6 +64,10 @@ class PLATFORM_EXPORT MIMETypeRegistry {
   // Checks to see if a mime type is suitable for being encoded.
   static bool IsSupportedImageMIMETypeForEncoding(const String& mime_type);
 
+  // Checks to see if a mime type is one of the default modern formats supported
+  // when the 'legacy-image-formats' feature is disabled.
+  static bool IsModernImageMIMEType(const String& mime_type);
+
   // Checks to see if a mime type is suitable for being loaded as a JavaScript
   // resource.
   static bool IsSupportedJavaScriptMIMEType(const String& mime_type);

@@ -195,6 +195,11 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
           "picture-in-picture", mojom::FeaturePolicyFeature::kPictureInPicture);
     }
     if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled()) {
+      default_feature_name_map.Set(
+          "image-compression", mojom::FeaturePolicyFeature::kImageCompression);
+      default_feature_name_map.Set(
+          "legacy-image-formats",
+          mojom::FeaturePolicyFeature::kLegacyImageFormats);
       default_feature_name_map.Set("sync-script",
                                    mojom::FeaturePolicyFeature::kSyncScript);
       default_feature_name_map.Set("unsized-media",

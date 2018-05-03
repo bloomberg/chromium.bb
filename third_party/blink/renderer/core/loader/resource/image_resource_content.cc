@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
+#include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -507,6 +508,32 @@ ImageResourceContent::UpdateImageResult ImageResourceContent::UpdateImage(
   }
 
   return UpdateImageResult::kNoDecodeError;
+}
+
+// Return true if the image type is one of the hard-coded 'modern' image
+// formats.
+// TODO(crbug.com/838263): Support site-defined list of acceptable formats
+// through feature policy declarations.
+bool ImageResourceContent::IsAcceptableContentType() {
+  AtomicString mime_type = GetResponse().HttpContentType();
+  // If this was loaded from disk, there is no mime type. Return true for now.
+  if (mime_type.IsNull())
+    return true;
+  return MIMETypeRegistry::IsModernImageMIMEType(mime_type);
+}
+
+// Return true if the image content is well-compressed (and not full of
+// extraneous metadata). This is currently defined as no using more than 10 bits
+// per pixel of image data.
+// TODO(crbug.com/838263): Support site-defined bit-per-pixel ratio through
+// feature policy declarations.
+bool ImageResourceContent::IsAcceptableCompressionRatio() {
+  uint64_t pixels = IntrinsicSize(kDoNotRespectImageOrientation).Area();
+  if (!pixels)
+    return true;
+  long long resource_length = GetResponse().DecodedBodyLength();
+  // Allow no more than 10 bits per compressed pixel
+  return (double)resource_length / pixels <= 1.25;
 }
 
 void ImageResourceContent::DecodedSizeChangedTo(const blink::Image* image,
