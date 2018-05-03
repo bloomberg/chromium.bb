@@ -25,8 +25,8 @@ class FeedHostService : public KeyedService {
                   std::unique_ptr<FeedNetworkingHost> networking_host);
   ~FeedHostService() override;
 
-  FeedImageManager* GetFeedImageManager();
-  FeedNetworkingHost* GetFeedNetworkingHost();
+  FeedImageManager* GetImageManager();
+  FeedNetworkingHost* GetNetworkingHost();
 
  private:
   std::unique_ptr<FeedImageManager> image_manager_;

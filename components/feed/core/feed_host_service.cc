@@ -16,11 +16,11 @@ FeedHostService::FeedHostService(
 
 FeedHostService::~FeedHostService() = default;
 
-FeedImageManager* FeedHostService::GetFeedImageManager() {
+FeedImageManager* FeedHostService::GetImageManager() {
   return image_manager_.get();
 }
 
-FeedNetworkingHost* FeedHostService::GetFeedNetworkingHost() {
+FeedNetworkingHost* FeedHostService::GetNetworkingHost() {
   return networking_host_.get();
 }
 

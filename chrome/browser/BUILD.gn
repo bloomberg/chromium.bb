@@ -4197,6 +4197,8 @@ jumbo_split_static_library("browser") {
     sources += [
       "android/feed/feed_host_service_factory.cc",
       "android/feed/feed_host_service_factory.h",
+      "android/feed/feed_network_bridge.cc",
+      "android/feed/feed_network_bridge.h",
     ]
     deps += [ "//components/feed/core:feed_core" ]
   }
@@ -4447,6 +4449,11 @@ if (is_android) {
     if (enable_offline_pages_harness) {
       sources += [ "../android/java/src/org/chromium/chrome/browser/offlinepages/evaluation/OfflinePageEvaluationBridge.java" ]
     }
+
+    if (enable_feed_in_chrome) {
+      sources += [ "../android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedNetworkBridge.java" ]
+    }
+
     jni_package = "chrome"
   }
 
