@@ -44,6 +44,46 @@ class TaskQueueSelectorForTest : public TaskQueueSelector {
   using TaskQueueSelector::prioritizing_selector_for_test;
   using TaskQueueSelector::PrioritizingSelector;
   using TaskQueueSelector::SetImmediateStarvationCountForTest;
+
+  // Returns the number of highest priority tasks needed to starve high priority
+  // task.
+  static constexpr size_t NumberOfHighestPriorityToStarveHighPriority() {
+    return (kMaxHighPriorityStarvationScore +
+            kSmallScoreIncrementForHighPriorityStarvation - 1) /
+           kSmallScoreIncrementForHighPriorityStarvation;
+  }
+
+  // Returns the number of highest priority tasks needed to starve normal
+  // priority tasks.
+  static constexpr size_t NumberOfHighestPriorityToStarveNormalPriority() {
+    return (kMaxNormalPriorityStarvationScore +
+            kSmallScoreIncrementForNormalPriorityStarvation - 1) /
+           kSmallScoreIncrementForNormalPriorityStarvation;
+  }
+
+  // Returns the number of high priority tasks needed to starve normal priority
+  // tasks.
+  static constexpr size_t NumberOfHighPriorityToStarveNormalPriority() {
+    return (kMaxNormalPriorityStarvationScore +
+            kLargeScoreIncrementForNormalPriorityStarvation - 1) /
+           kLargeScoreIncrementForNormalPriorityStarvation;
+  }
+
+  // Returns the number of highest priority tasks needed to starve low priority
+  // ones.
+  static constexpr size_t NumberOfHighestPriorityToStarveLowPriority() {
+    return (kMaxLowPriorityStarvationScore +
+            kSmallScoreIncrementForLowPriorityStarvation - 1) /
+           kSmallScoreIncrementForLowPriorityStarvation;
+  }
+
+  // Returns the number of high/normal priority tasks needed to starve low
+  // priority ones.
+  static constexpr size_t NumberOfHighAndNormalPriorityToStarveLowPriority() {
+    return (kMaxLowPriorityStarvationScore +
+            kLargeScoreIncrementForLowPriorityStarvation - 1) /
+           kLargeScoreIncrementForLowPriorityStarvation;
+  }
 };
 
 class TaskQueueSelectorTest : public testing::Test {
@@ -528,6 +568,133 @@ TEST_F(TaskQueueSelectorTest, TestBestEffortGetsStarved) {
     EXPECT_EQ(task_queues_[1].get(), chosen_work_queue->task_queue());
     // Don't remove task from queue to simulate all queues still being full.
   }
+}
+
+TEST_F(TaskQueueSelectorTest,
+       TestHighPriorityStarvationScoreIncreasedOnlyWhenTasksArePresent) {
+  size_t queue_order[] = {0, 1};
+  PushTasks(queue_order, 2);
+  selector_.SetQueuePriority(task_queues_[0].get(),
+                             TaskQueue::kHighestPriority);
+  selector_.SetQueuePriority(task_queues_[1].get(),
+                             TaskQueue::kHighestPriority);
+
+  // Run a number of highest priority tasks needed to starve high priority
+  // tasks (when present).
+  for (size_t num_tasks = 0;
+       num_tasks <=
+       TaskQueueSelectorForTest::NumberOfHighestPriorityToStarveHighPriority();
+       num_tasks++) {
+    WorkQueue* chosen_work_queue = nullptr;
+    ASSERT_TRUE(selector_.SelectWorkQueueToService(&chosen_work_queue));
+    // Don't remove task from queue to simulate the queue is still full.
+  }
+
+  // Post a high priority task.
+  selector_.SetQueuePriority(task_queues_[1].get(), TaskQueue::kHighPriority);
+  WorkQueue* chosen_work_queue = nullptr;
+  ASSERT_TRUE(selector_.SelectWorkQueueToService(&chosen_work_queue));
+
+  // Check that the high priority task is not considered starved, and thus isn't
+  // processed.
+  EXPECT_NE(
+      static_cast<int>(
+          queue_to_index_map_.find(chosen_work_queue->task_queue())->second),
+      1);
+}
+
+TEST_F(TaskQueueSelectorTest,
+       TestNormalPriorityStarvationScoreIncreasedOnllWhenTasksArePresent) {
+  size_t queue_order[] = {0, 1};
+  PushTasks(queue_order, 2);
+  selector_.SetQueuePriority(task_queues_[0].get(),
+                             TaskQueue::kHighestPriority);
+  selector_.SetQueuePriority(task_queues_[1].get(),
+                             TaskQueue::kHighestPriority);
+
+  // Run a number of highest priority tasks needed to starve normal priority
+  // tasks (when present).
+  for (size_t num_tasks = 0;
+       num_tasks <= TaskQueueSelectorForTest::
+                        NumberOfHighestPriorityToStarveNormalPriority();
+       num_tasks++) {
+    WorkQueue* chosen_work_queue = nullptr;
+    ASSERT_TRUE(selector_.SelectWorkQueueToService(&chosen_work_queue));
+    // Don't remove task from queue to simulate the queue is still full.
+  }
+
+  selector_.SetQueuePriority(task_queues_[0].get(), TaskQueue::kHighPriority);
+  selector_.SetQueuePriority(task_queues_[1].get(), TaskQueue::kHighPriority);
+
+  // Run a number of high priority tasks needed to starve normal priority
+  // tasks (when present).
+  for (size_t num_tasks = 0;
+       num_tasks <=
+       TaskQueueSelectorForTest::NumberOfHighPriorityToStarveNormalPriority();
+       num_tasks++) {
+    WorkQueue* chosen_work_queue = nullptr;
+    ASSERT_TRUE(selector_.SelectWorkQueueToService(&chosen_work_queue));
+    // Don't remove task from queue to simulate the queue is still full.
+  }
+
+  // Post a normal priority task.
+  selector_.SetQueuePriority(task_queues_[1].get(), TaskQueue::kNormalPriority);
+  WorkQueue* chosen_work_queue = nullptr;
+  ASSERT_TRUE(selector_.SelectWorkQueueToService(&chosen_work_queue));
+
+  // Check that the normal priority task is not considered starved, and thus
+  // isn't processed.
+  EXPECT_NE(
+      static_cast<int>(
+          queue_to_index_map_.find(chosen_work_queue->task_queue())->second),
+      1);
+}
+
+TEST_F(TaskQueueSelectorTest,
+       TestLowPriorityTaskStarvationOnlyIncreasedWhenTasksArePresent) {
+  size_t queue_order[] = {0, 1};
+  PushTasks(queue_order, 2);
+  selector_.SetQueuePriority(task_queues_[0].get(),
+                             TaskQueue::kHighestPriority);
+  selector_.SetQueuePriority(task_queues_[1].get(),
+                             TaskQueue::kHighestPriority);
+
+  // Run a number of highest priority tasks needed to starve low priority
+  // tasks (when present).
+  for (size_t num_tasks = 0;
+       num_tasks <=
+       TaskQueueSelectorForTest::NumberOfHighestPriorityToStarveLowPriority();
+       num_tasks++) {
+    WorkQueue* chosen_work_queue = nullptr;
+    ASSERT_TRUE(selector_.SelectWorkQueueToService(&chosen_work_queue));
+    // Don't remove task from queue to simulate the queue is still full.
+  }
+
+  selector_.SetQueuePriority(task_queues_[0].get(), TaskQueue::kHighPriority);
+  selector_.SetQueuePriority(task_queues_[1].get(), TaskQueue::kNormalPriority);
+
+  // Run a number of high/normal priority tasks needed to starve low priority
+  // tasks (when present).
+  for (size_t num_tasks = 0;
+       num_tasks <= TaskQueueSelectorForTest::
+                        NumberOfHighAndNormalPriorityToStarveLowPriority();
+       num_tasks++) {
+    WorkQueue* chosen_work_queue = nullptr;
+    ASSERT_TRUE(selector_.SelectWorkQueueToService(&chosen_work_queue));
+    // Don't remove task from queue to simulate the queue is still full.
+  }
+
+  // Post a low  priority task.
+  selector_.SetQueuePriority(task_queues_[1].get(), TaskQueue::kLowPriority);
+  WorkQueue* chosen_work_queue = nullptr;
+  ASSERT_TRUE(selector_.SelectWorkQueueToService(&chosen_work_queue));
+
+  // Check that the low priority task is not considered starved, and thus
+  // isn't processed.
+  EXPECT_NE(
+      static_cast<int>(
+          queue_to_index_map_.find(chosen_work_queue->task_queue())->second),
+      1);
 }
 
 TEST_F(TaskQueueSelectorTest, AllEnabledWorkQueuesAreEmpty) {

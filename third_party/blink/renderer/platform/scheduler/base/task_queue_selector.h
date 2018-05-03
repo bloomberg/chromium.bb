@@ -147,18 +147,6 @@ class PLATFORM_EXPORT TaskQueueSelector {
     return &prioritizing_selector_;
   }
 
- private:
-  // Returns the priority which is next after |priority|.
-  static TaskQueue::QueuePriority NextPriority(
-      TaskQueue::QueuePriority priority);
-
-  bool SelectWorkQueueToServiceInternal(WorkQueue** out_work_queue);
-
-  // Called whenever the selector chooses a task queue for execution with the
-  // priority |priority|.
-  void DidSelectQueueWithPriority(TaskQueue::QueuePriority priority,
-                                  bool chose_delayed_over_immediate);
-
   // Maximum score to accumulate before high priority tasks are run even in
   // the presence of highest priority tasks.
   static const size_t kMaxHighPriorityStarvationScore = 3;
@@ -206,6 +194,20 @@ class PLATFORM_EXPORT TaskQueueSelector {
   static const size_t kMaxDelayedStarvationTasks = 3;
 
  private:
+  // Returns the priority which is next after |priority|.
+  static TaskQueue::QueuePriority NextPriority(
+      TaskQueue::QueuePriority priority);
+
+  bool SelectWorkQueueToServiceInternal(WorkQueue** out_work_queue);
+
+  // Called whenever the selector chooses a task queue for execution with the
+  // priority |priority|.
+  void DidSelectQueueWithPriority(TaskQueue::QueuePriority priority,
+                                  bool chose_delayed_over_immediate);
+
+  // Returns true if there are pending tasks with priority |priority|.
+  bool HasTasksWithPriority(TaskQueue::QueuePriority priority);
+
   base::ThreadChecker main_thread_checker_;
 
   PrioritizingSelector prioritizing_selector_;
