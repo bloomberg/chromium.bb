@@ -1718,7 +1718,7 @@
     },
 
     'cast_audio': {
-      'gn_args': 'is_cast_audio_only=true enable_webrtc=false'
+      'gn_args': 'is_cast_audio_only=true'
     },
 
     'cfi': {

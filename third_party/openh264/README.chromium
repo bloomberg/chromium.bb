@@ -2,7 +2,7 @@ Name: OpenH264
 Short Name: openh264
 URL: http://www.openh264.org/
 Version: unknown
-(Cut at 2e96d62426547ac4fb5cbcd122e5f6eb68d66ee6, which is between 1.7.0 and
+(Cut at 3b51f16a4a41df729f8d647f03e48c5f272911ff, which is between 1.7.0 and
 1.8.0)
 License: 2-Clause BSD
 License File: src/LICENSE
