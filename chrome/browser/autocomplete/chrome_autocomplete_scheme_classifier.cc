@@ -59,6 +59,12 @@ ChromeAutocompleteSchemeClassifier::GetInputTypeForScheme(
       return metrics::OmniboxInputType::QUERY;
 
     case ExternalProtocolHandler::UNKNOWN: {
+#if defined(OS_LINUX)
+      // Linux impl of GetApplicationNameForProtocol doesn't distinguish
+      // between URL schemes with handers and those without. This will
+      // make the default behaviour be search on Linux.
+      return metrics::OmniboxInputType::INVALID;
+#endif // defined(OS_LINUX)
       // If block state is unknown, check if there is an application registered
       // for the url scheme.
       GURL url(scheme + "://");
