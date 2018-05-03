@@ -129,6 +129,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   uint32_t render_frame_id_;
   uint32_t request_id_;
   const bool keepalive_;
+  const bool do_not_prompt_for_login_;
   std::unique_ptr<net::URLRequest> url_request_;
   mojo::Binding<mojom::URLLoader> binding_;
   mojo::Binding<mojom::AuthChallengeResponder>

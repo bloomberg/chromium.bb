@@ -56,6 +56,7 @@ bundle_data("tests_bundle_data") {
     "//services/test/data/content-sniffer-test4.html",
     "//services/test/data/content-sniffer-test4.html.mock-http-headers",
     "//services/test/data/empty.html",
+    "//services/test/data/has_favicon.html",
     "//services/test/data/hello.html",
     "//services/test/data/hello.html.mock-http-headers",
     "//services/test/data/nocache.html",
