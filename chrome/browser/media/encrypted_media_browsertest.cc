@@ -572,7 +572,16 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoClearAudio_WebM_Opus) {
   TestSimplePlayback("bear-320x240-opus-av_enc-v.webm", kWebMOpusAudioVp9Video);
 }
 
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_Multiple_VideoAudio_WebM) {
+// TODO(xhwang): Test is flaky on Mac. https://crbug.com/835585
+#if defined(MACOS)
+#define MAYBE_Playback_Multiple_VideoAudio_WebM \
+  DISABLED_Playback_Multiple_VideoAudio_WebM
+#else
+#define MAYBE_Playback_Multiple_VideoAudio_WebM \
+  Playback_Multiple_VideoAudio_WebM
+#endif
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
+                       MAYBE_Playback_Multiple_VideoAudio_WebM) {
   if (!IsPlayBackPossible(CurrentKeySystem())) {
     DVLOG(0) << "Skipping test - Playback_Multiple test requires playback.";
     return;
