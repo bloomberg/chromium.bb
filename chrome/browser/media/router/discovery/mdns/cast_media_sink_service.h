@@ -26,25 +26,23 @@ namespace media_router {
 // A service which can be used to start background discovery and resolution of
 // Cast devices.
 // This class is not thread safe. All methods must be invoked on the UI thread.
+// TODO(imcheng): Consider removing this class and moving the logic into a part
+// of CastMediaSinkServiceImpl that runs on the UI thread, and renaming
+// CastMediaSinkServiceImpl to CastMediaSinkService. Longer term, we
+// should look into eliminating dependencies on the UI thread.
 class CastMediaSinkService : public DnsSdRegistry::DnsSdObserver {
  public:
   CastMediaSinkService();
   ~CastMediaSinkService() override;
 
-  // Returns a callback to |impl_| when a DIAL sink is added (e.g., in order
-  // to perform dual discovery). The callback must be run on the same sequence
-  // as |impl_| and must not be run after |impl_| is destroyed.
-  // This method can only be called after |Start()| is called.
-  OnDialSinkAddedCallback GetDialSinkAddedCallback();
-
   // Starts Cast sink discovery. No-ops if already started.
   // |sink_discovery_cb|: Callback to invoke when the list of discovered sinks
   // has been updated.
-  // |observer|: Observer passed to |impl_|. Note that unlike the callback, the
-  // observer will be invoked on the sequence |impl_| runs on. Can be nullptr.
+  // |dial_media_sink_service|: Pointer to DIAL MediaSinkService for dual
+  // discovery.
   // Marked virtual for tests.
   virtual void Start(const OnSinksDiscoveredCallback& sinks_discovered_cb,
-                     CastMediaSinkServiceImpl::Observer* observer);
+                     MediaSinkServiceBase* dial_media_sink_service);
 
   // Initiates discovery immediately in response to a user gesture
   // (i.e., opening the Media Router dialog).
@@ -55,7 +53,9 @@ class CastMediaSinkService : public DnsSdRegistry::DnsSdObserver {
   // Marked virtual for tests.
   virtual std::unique_ptr<CastMediaSinkServiceImpl, base::OnTaskRunnerDeleter>
   CreateImpl(const OnSinksDiscoveredCallback& sinks_discovered_cb,
-             CastMediaSinkServiceImpl::Observer* observer);
+             MediaSinkServiceBase* dial_media_sink_service);
+
+  CastMediaSinkServiceImpl* impl() { return impl_.get(); }
 
   // Registers with DnsSdRegistry to listen for Cast devices. Note that this is
   // called on |Start()| on all platforms except for Windows. On Windows, this

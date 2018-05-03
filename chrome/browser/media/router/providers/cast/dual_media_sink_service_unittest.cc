@@ -46,7 +46,6 @@ class DualMediaSinkServiceTest : public testing::Test {
 
 TEST_F(DualMediaSinkServiceTest, OnUserGesture) {
   EXPECT_CALL(*cast_media_sink_service(), OnUserGesture());
-  EXPECT_CALL(*dial_media_sink_service(), OnUserGesture());
   dual_media_sink_service()->OnUserGesture();
 }
 

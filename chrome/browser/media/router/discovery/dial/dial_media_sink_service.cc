@@ -23,8 +23,7 @@ DialMediaSinkService::~DialMediaSinkService() {
 }
 
 void DialMediaSinkService::Start(
-    const OnSinksDiscoveredCallback& sink_discovery_cb,
-    const OnDialSinkAddedCallback& dial_sink_added_cb) {
+    const OnSinksDiscoveredCallback& sink_discovery_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!impl_);
 
@@ -34,24 +33,16 @@ void DialMediaSinkService::Start(
       base::BindRepeating(&DialMediaSinkService::RunSinksDiscoveredCallback,
                           weak_ptr_factory_.GetWeakPtr(), sink_discovery_cb));
 
-  impl_ = CreateImpl(sink_discovery_cb_impl, dial_sink_added_cb);
+  impl_ = CreateImpl(sink_discovery_cb_impl);
 
   impl_->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&DialMediaSinkServiceImpl::Start,
                                 base::Unretained(impl_.get())));
 }
 
-void DialMediaSinkService::OnUserGesture() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  impl_->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&DialMediaSinkServiceImpl::OnUserGesture,
-                                base::Unretained(impl_.get())));
-}
-
 std::unique_ptr<DialMediaSinkServiceImpl, base::OnTaskRunnerDeleter>
 DialMediaSinkService::CreateImpl(
-    const OnSinksDiscoveredCallback& sink_discovery_cb,
-    const OnDialSinkAddedCallback& dial_sink_added_cb) {
+    const OnSinksDiscoveredCallback& sink_discovery_cb) {
   // Clone the connector so it can be used on the IO thread.
   std::unique_ptr<service_manager::Connector> connector =
       content::ServiceManagerConnection::GetForProcess()
@@ -65,7 +56,7 @@ DialMediaSinkService::CreateImpl(
           content::BrowserThread::IO);
   return std::unique_ptr<DialMediaSinkServiceImpl, base::OnTaskRunnerDeleter>(
       new DialMediaSinkServiceImpl(std::move(connector), sink_discovery_cb,
-                                   dial_sink_added_cb, task_runner),
+                                   task_runner),
       base::OnTaskRunnerDeleter(task_runner));
 }
 

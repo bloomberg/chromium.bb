@@ -8,7 +8,9 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_simple_task_runner.h"
 #include "chrome/browser/media/router/test/test_helper.h"
+#include "chrome/common/media_router/discovery/media_sink_service_base.h"
 #include "chrome/common/media_router/providers/cast/cast_media_source.h"
+#include "chrome/common/media_router/test/test_helper.h"
 #include "components/cast_channel/cast_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,12 +30,14 @@ class CastAppDiscoveryServiceTest : public testing::Test {
         app_discovery_service_(
             std::make_unique<CastAppDiscoveryService>(&message_handler_,
                                                       &socket_service_,
+                                                      &media_sink_service_,
                                                       &clock_)),
         source_a_1_(*CastMediaSource::From("cast:AAAAAAAA?clientId=1")),
         source_a_2_(*CastMediaSource::From("cast:AAAAAAAA?clientId=2")),
         source_b_1_(*CastMediaSource::From("cast:BBBBBBBB?clientId=1")) {
     ON_CALL(socket_service_, GetSocket(_))
         .WillByDefault(testing::Return(&socket_));
+    task_runner_->RunPendingTasks();
   }
 
   ~CastAppDiscoveryServiceTest() override { task_runner_->RunPendingTasks(); }
@@ -43,11 +47,11 @@ class CastAppDiscoveryServiceTest : public testing::Test {
                     const std::vector<MediaSinkInternal>&));
 
   void AddOrUpdateSink(const MediaSinkInternal& sink) {
-    app_discovery_service_->OnSinkAddedOrUpdated(sink, &socket_);
+    media_sink_service_.AddOrUpdateSink(sink);
   }
 
   void RemoveSink(const MediaSinkInternal& sink) {
-    app_discovery_service_->OnSinkRemoved(sink);
+    media_sink_service_.RemoveSink(sink);
   }
 
   CastAppDiscoveryService::Subscription StartObservingMediaSinksInitially(
@@ -66,6 +70,7 @@ class CastAppDiscoveryServiceTest : public testing::Test {
   cast_channel::MockCastSocketService socket_service_;
   cast_channel::MockCastSocket socket_;
   cast_channel::MockCastMessageHandler message_handler_;
+  TestMediaSinkService media_sink_service_;
   std::unique_ptr<CastAppDiscoveryService> app_discovery_service_;
   CastMediaSource source_a_1_;
   CastMediaSource source_a_2_;

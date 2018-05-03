@@ -16,8 +16,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
-#include "chrome/browser/media/router/discovery/mdns/cast_media_sink_service_impl.h"
 #include "chrome/browser/media/router/providers/cast/cast_app_availability_tracker.h"
+#include "chrome/common/media_router/discovery/media_sink_service_base.h"
 #include "chrome/common/media_router/media_sink.h"
 #include "chrome/common/media_router/media_source.h"
 #include "chrome/common/media_router/providers/cast/cast_media_source.h"
@@ -30,6 +30,7 @@ class TickClock;
 namespace cast_channel {
 class CastMessageHandler;
 class CastSocket;
+class CastSocketService;
 }  // namespace cast_channel
 
 namespace media_router {
@@ -38,7 +39,7 @@ namespace media_router {
 // updates, and issues app availability requests based on these signals. This
 // class may be created on any sequence. All other methods must be called on the
 // CastSocketService sequence.
-class CastAppDiscoveryService : public CastMediaSinkServiceImpl::Observer {
+class CastAppDiscoveryService : public MediaSinkServiceBase::Observer {
  public:
   using SinkQueryFunc = void(const MediaSource::Id& source_id,
                              const std::vector<MediaSinkInternal>& sinks);
@@ -48,6 +49,7 @@ class CastAppDiscoveryService : public CastMediaSinkServiceImpl::Observer {
 
   CastAppDiscoveryService(cast_channel::CastMessageHandler* message_handler,
                           cast_channel::CastSocketService* socket_service,
+                          MediaSinkServiceBase* media_sink_service,
                           const base::TickClock* clock);
   ~CastAppDiscoveryService() override;
 
@@ -67,9 +69,11 @@ class CastAppDiscoveryService : public CastMediaSinkServiceImpl::Observer {
  private:
   friend class CastAppDiscoveryServiceTest;
 
-  // CastMediaSinkServiceImpl::Observer
-  void OnSinkAddedOrUpdated(const MediaSinkInternal& sink,
-                            cast_channel::CastSocket* socket) override;
+  // Called on construction. Registers an observer with |media_sink_service_|.
+  void Init();
+
+  // MediaSinkServiceBase::Observer
+  void OnSinkAddedOrUpdated(const MediaSinkInternal& sink) override;
   void OnSinkRemoved(const MediaSinkInternal& sink) override;
 
   // Issues an app availability request for |app_id| to the sink given by
@@ -104,9 +108,9 @@ class CastAppDiscoveryService : public CastMediaSinkServiceImpl::Observer {
 
   cast_channel::CastMessageHandler* const message_handler_;
   cast_channel::CastSocketService* const socket_service_;
+  MediaSinkServiceBase* const media_sink_service_;
 
   CastAppAvailabilityTracker availability_tracker_;
-  base::flat_map<MediaSink::Id, MediaSinkInternal> sinks_;
 
   const base::TickClock* const clock_;
 

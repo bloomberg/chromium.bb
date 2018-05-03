@@ -26,7 +26,6 @@ class TestDialMediaSinkServiceImpl : public DialMediaSinkServiceImpl {
   TestDialMediaSinkServiceImpl()
       : DialMediaSinkServiceImpl(/* connector */ nullptr,
                                  base::DoNothing(),
-                                 base::DoNothing(),
                                  /* task_runner */ nullptr) {}
 
   ~TestDialMediaSinkServiceImpl() override = default;

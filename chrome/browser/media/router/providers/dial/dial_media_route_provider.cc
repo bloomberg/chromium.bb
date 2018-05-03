@@ -199,7 +199,7 @@ void DialMediaRouteProvider::EnableMdnsDiscovery() {
 }
 
 void DialMediaRouteProvider::UpdateMediaSinks(const std::string& media_source) {
-  NOTIMPLEMENTED();
+  media_sink_service_->OnUserGesture();
 }
 
 void DialMediaRouteProvider::SearchSinks(

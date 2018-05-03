@@ -28,36 +28,28 @@ class CastSocketService;
 
 namespace media_router {
 
-// Discovers and manages Cast MediaSinks using CastSocketService.
+// Discovers and manages Cast MediaSinks using CastSocketService. This class
+// also observes DialMediaSinkServiceImpl for sinks to connect to (also known
+// as dual discovery).
 // This class may be created on any thread. All methods, unless otherwise noted,
 // must be invoked on the SequencedTaskRunner given by |task_runner_|.
-class CastMediaSinkServiceImpl
-    : public MediaSinkServiceBase,
-      public cast_channel::CastSocket::Observer,
-      public DiscoveryNetworkMonitor::Observer {
+class CastMediaSinkServiceImpl : public MediaSinkServiceBase,
+                                 public cast_channel::CastSocket::Observer,
+                                 public DiscoveryNetworkMonitor::Observer,
+                                 public MediaSinkServiceBase::Observer {
  public:
-  // Listens for sink updates in CastMediaSinkServiceImpl. All observer methods
-  // must run on the same sequence as CastMediaSinkServiceImpl.
-  class Observer {
-   public:
-    virtual ~Observer() {}
-
-    // Invoked when |sink| is added or updated. |socket| is a pointer to the
-    // CastSocket instance associated with |sink|, and is never nullptr.
-    // |socket| is only guaranteed to be valid for the duration of this call;
-    // the caller should not hold onto the pointer.
-    virtual void OnSinkAddedOrUpdated(const MediaSinkInternal& sink,
-                                      cast_channel::CastSocket* socket) = 0;
-
-    // Invoked when |sink| is removed.
-    virtual void OnSinkRemoved(const MediaSinkInternal& sink) = 0;
-  };
-
   using SinkSource = CastDeviceCountMetrics::SinkSource;
 
   // The max number of cast channel open failure for a DIAL-discovered sink
   // before we can say confidently that it is unlikely to be a Cast device.
   static constexpr int kMaxDialSinkFailureCount = 10;
+
+  // Returns the icon type to use according to |capabilities|. |capabilities| is
+  // a bit set of cast_channel::CastDeviceCapabilities in CastSinkExtraData.
+  static SinkIconType GetCastSinkIconType(uint8_t capabilities);
+
+  // Returns a Cast MediaSink ID from a DIAL MediaSink ID |dial_sink_id|.
+  static MediaSink::Id GetCastSinkIdFromDial(const MediaSink::Id& dial_sink_id);
 
   // |callback|: Callback passed to MediaSinkServiceBase.
   // |observer|: Observer to invoke on sink updates. Can be nullptr.
@@ -65,12 +57,13 @@ class CastMediaSinkServiceImpl
   // discovered devices.
   // |network_monitor|: DiscoveryNetworkMonitor to use to listen for network
   // changes.
+  // |dial_media_sink_service|: DialMediaSinkServiceImpl for dual discovery.
   // |allow_all_ips|: If |true|, |this| will try to open channel to
   //     sinks on all IPs, and not just private IPs.
   CastMediaSinkServiceImpl(const OnSinksDiscoveredCallback& callback,
-                           Observer* observer,
                            cast_channel::CastSocketService* cast_socket_service,
                            DiscoveryNetworkMonitor* network_monitor,
+                           MediaSinkServiceBase* dial_media_sink_service,
                            bool allow_all_ips);
   ~CastMediaSinkServiceImpl() override;
 
@@ -86,30 +79,18 @@ class CastMediaSinkServiceImpl
   // and network changes.
   virtual void Start();
 
-  // MediaSinkServiceBase implementation
-  // Called when the discovery loop timer expires.
-  void OnDiscoveryComplete() override;
-  void RecordDeviceCounts() override;
-
-  // Opens cast channels on the IO thread. To avoid spamming a device when it
-  // comes online, a randomized delay is introduced before an attempt to open
-  // channel is made.
+  // Attempts to open cast channels for |cast_sinks|. To avoid spamming a device
+  // when it comes online, a randomized delay is introduced before an attempt to
+  // open channel is made.
   void OpenChannelsWithRandomizedDelay(
       const std::vector<MediaSinkInternal>& cast_sinks,
       SinkSource sink_source);
 
-  // Tries to open cast channels for sinks found by current round of mDNS
-  // discovery, but without opened cast channels.
+  // Attempts to open cast channels for |cast_sinks| without delay. This method
+  // is called when a user gesture is detected. |kConnectionRetry| will be used
+  // as the SinkSource.
   // |cast_sinks|: list of sinks found by current round of mDNS discovery.
-  void AttemptConnection(const std::vector<MediaSinkInternal>& cast_sinks);
-
-  // Returns a callback to |this| when a DIAL sink is added (e.g., in order
-  // to perform dual discovery). This callback must be invoked on |impl_|'s
-  // sequence.
-  // It is NOT safe to invoke this callback after |this| is destroyed; the
-  // assumption is that |this| will outlive the invoker
-  // (DialMediaSinkServiceImpl), and that they run on the same sequence.
-  OnDialSinkAddedCallback GetDialSinkAddedCallback();
+  void OpenChannelsNow(const std::vector<MediaSinkInternal>& cast_sinks);
 
   // Called by CastMediaSinkService to set |allow_all_ips_|.
   void SetCastAllowAllIPs(bool allow_all_ips);
@@ -136,7 +117,8 @@ class CastMediaSinkServiceImpl
                            TestOnChannelErrorMayRetryForCastSink);
   FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest,
                            TestOnChannelErrorNoRetryForMissingSink);
-  FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest, TestOnDialSinkAdded);
+  FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest,
+                           TestOnSinkAddedOrUpdated);
   FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest,
                            TestOnDiscoveryComplete);
   FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest,
@@ -154,7 +136,7 @@ class CastMediaSinkServiceImpl
                            DualDiscoveryDoesntDuplicateCacheItems);
   FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest,
                            CacheSinksForDirectNetworkChange);
-  FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest, TestAttemptConnection);
+  FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest, OpenChannelsNow);
   FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest,
                            TestInitRetryParametersWithFeatureDisabled);
   FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest,
@@ -169,7 +151,7 @@ class CastMediaSinkServiceImpl
   FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest,
                            TestInitRetryParametersWithDefaultValue);
   FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest,
-                           TestOnDialSinkAddedSkipsIfNonCastDevice);
+                           TestOnSinkAddedOrUpdatedSkipsIfNonCastDevice);
   FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest,
                            TestOnChannelErrorRetry);
   FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest,
@@ -220,9 +202,17 @@ class CastMediaSinkServiceImpl
     static OpenParams GetFromFieldTrialParam();
   };
 
+  // MediaSinkServiceBase implementation.
+  void RecordDeviceCounts() override;
+  void OnUserGesture() override;
+
+  // MediaSinkServiceBase::Observer implementation.
+  void OnSinkAddedOrUpdated(const MediaSinkInternal& sink) override;
+  void OnSinkRemoved(const MediaSinkInternal& sink) override;
+
   // Attempts to resolve the given DIAL sink as a Cast sink. If successful,
   // the resulting Cast sink is added to the service.
-  void OnDialSinkAdded(const MediaSinkInternal& sink);
+  void TryConnectDialDiscoveredSink(const MediaSinkInternal& sink);
 
   // Marked virtual for testing.
   virtual void OpenChannels(const std::vector<MediaSinkInternal>& cast_sinks,
@@ -239,19 +229,17 @@ class CastMediaSinkServiceImpl
 
   // Returns cast socket open parameters. Parameters are read from Finch.
   // Connect / liveness timeout value are dynamically calculated
-  // based on the channel's last error status.
-  // |ip_endpoint|: ip endpoint of cast channel to be connected to.
+  // based on results of previous connection attempts.
+  // |sink|: Sink to open cast channel to.
   cast_channel::CastSocketOpenParams CreateCastSocketOpenParams(
-      const net::IPEndPoint& ip_endpoint);
+      const MediaSinkInternal& sink);
 
   // Opens cast channel. This method will not open a channel if there is already
   // a pending request for |ip_endpoint|, or if a channel for |ip_endpoint|
   // already exists.
-  // |ip_endpoint|: cast channel's target IP endpoint.
   // |cast_sink|: Cast sink created from mDNS service description or DIAL sink.
   // |backoff_entry|: backoff entry passed to |OnChannelOpened| callback.
-  void OpenChannel(const net::IPEndPoint& ip_endpoint,
-                   const MediaSinkInternal& cast_sink,
+  void OpenChannel(const MediaSinkInternal& cast_sink,
                    std::unique_ptr<net::BackoffEntry> backoff_entry,
                    SinkSource sink_source);
 
@@ -317,14 +305,6 @@ class CastMediaSinkServiceImpl
   // RecordDeviceCounts().
   std::set<net::IPEndPoint> known_ip_endpoints_;
 
-  using MediaSinkInternalMap = std::map<net::IPEndPoint, MediaSinkInternal>;
-
-  // Map of sinks with opened cast channels keyed by IP endpoint.
-  MediaSinkInternalMap current_sinks_map_;
-
-  // Observer to notify when a sink is added, updated, or removed.
-  Observer* const observer_;
-
   // Raw pointer of leaky singleton CastSocketService, which manages adding and
   // removing Cast channels.
   cast_channel::CastSocketService* const cast_socket_service_;
@@ -350,16 +330,20 @@ class CastMediaSinkServiceImpl
   // just private IPs.
   bool allow_all_ips_ = false;
 
-  // Map of consecutive failure count keyed by IP endpoint. Keeps track of
-  // failure counts for each IP endpoint. Used to dynamically adjust timeout
-  // values. If a Cast channel opens successfully, it is removed from the map.
-  std::map<net::IPEndPoint, int> failure_count_map_;
+  // Map of consecutive cast channel failure count keyed by sink ID. Used to
+  // dynamically adjust timeout values. If a Cast channel opens successfully,
+  // the failure count is reset by removing the entry from the map.
+  base::flat_map<MediaSink::Id, int> failure_count_map_;
 
   // Used by |IsProbablyNonCastDevice()| to keep track of how many times we
   // failed to open a cast channel for a sink that is discovered via DIAL
   // exclusively. The count is reset for a sink when it is discovered via mDNS,
   // or if we detected a network change.
-  base::small_map<std::map<net::IPAddress, int>> dial_sink_failure_count_;
+  base::flat_map<MediaSink::Id, int> dial_sink_failure_count_;
+
+  // Non-owned pointer to DIAL MediaSinkService. Observed by |this| for dual
+  // discovery.
+  MediaSinkServiceBase* const dial_media_sink_service_;
 
   // The SequencedTaskRunner on which methods are run. This shares the
   // same SequencedTaskRunner as the one used by |cast_socket_service_|.
