@@ -438,11 +438,6 @@ bool PasswordManager::IsPasswordFieldDetectedOnPage() {
   return !pending_login_managers_.empty();
 }
 
-void PasswordManager::AddSubmissionCallback(
-    const PasswordSubmittedCallback& callback) {
-  submission_callbacks_.push_back(callback);
-}
-
 void PasswordManager::AddObserverAndDeliverCredentials(
     LoginModelObserver* observer,
     const PasswordForm& observed_form) {
@@ -472,10 +467,6 @@ void PasswordManager::OnPasswordFormSubmitted(
     password_manager::PasswordManagerDriver* driver,
     const PasswordForm& password_form) {
   ProvisionallySavePassword(password_form, driver);
-  for (size_t i = 0; i < submission_callbacks_.size(); ++i) {
-    submission_callbacks_[i].Run(password_form);
-  }
-
   pending_login_managers_.clear();
 }
 

@@ -56,14 +56,6 @@ class PasswordManager : public LoginModel {
   explicit PasswordManager(PasswordManagerClient* client);
   ~PasswordManager() override;
 
-  typedef base::Callback<void(const autofill::PasswordForm&)>
-      PasswordSubmittedCallback;
-
-  // There is no corresponding remove function as currently all of the
-  // owners of these callbacks have sufficient lifetimes so that the callbacks
-  // should always be valid when called.
-  void AddSubmissionCallback(const PasswordSubmittedCallback& callback);
-
   // Called by a PasswordFormManager when it decides a form can be autofilled
   // on the page.
   void Autofill(
@@ -300,9 +292,6 @@ class PasswordManager : public LoginModel {
   // Observers to be notified of LoginModel events.  This is mutable to allow
   // notification in const member functions.
   mutable base::ObserverList<LoginModelObserver> observers_;
-
-  // Callbacks to be notified when a password form has been submitted.
-  std::vector<PasswordSubmittedCallback> submission_callbacks_;
 
   // Records all visible forms seen during a page load, in all frames of the
   // page. When the page stops loading, the password manager checks if one of
