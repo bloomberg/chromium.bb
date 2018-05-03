@@ -297,25 +297,41 @@ PlaybackParams::PlaybackParams(ImageProvider* image_provider,
 
 PlaybackParams::~PlaybackParams() {}
 
+PlaybackParams::PlaybackParams(const PlaybackParams& other) = default;
+PlaybackParams& PlaybackParams::operator=(const PlaybackParams& other) =
+    default;
+
 PaintOp::SerializeOptions::SerializeOptions() = default;
 
 PaintOp::SerializeOptions::SerializeOptions(
     ImageProvider* image_provider,
     TransferCacheSerializeHelper* transfer_cache,
     SkCanvas* canvas,
+    SkStrikeServer* strike_server,
+    SkColorSpace* color_space,
+    bool can_use_lcd_text,
     const SkMatrix& original_ctm)
-    : transfer_cache(transfer_cache),
+    : image_provider(image_provider),
+      transfer_cache(transfer_cache),
       canvas(canvas),
-      image_provider(image_provider),
+      strike_server(strike_server),
+      color_space(color_space),
+      can_use_lcd_text(can_use_lcd_text),
       original_ctm(original_ctm) {}
+
+PaintOp::DeserializeOptions::DeserializeOptions() = default;
+
+PaintOp::DeserializeOptions::DeserializeOptions(
+    TransferCacheDeserializeHelper* transfer_cache,
+    SkStrikeClient* strike_client)
+    : transfer_cache(transfer_cache), strike_client(strike_client) {}
 
 size_t AnnotateOp::Serialize(const PaintOp* base_op,
                              void* memory,
                              size_t size,
                              const SerializeOptions& options) {
   auto* op = static_cast<const AnnotateOp*>(base_op);
-  PaintOpWriter helper(memory, size, options.transfer_cache,
-                       options.image_provider);
+  PaintOpWriter helper(memory, size, options);
   helper.Write(op->annotation_type);
   helper.Write(op->rect);
   helper.Write(op->data);
@@ -327,8 +343,7 @@ size_t ClipPathOp::Serialize(const PaintOp* base_op,
                              size_t size,
                              const SerializeOptions& options) {
   auto* op = static_cast<const ClipPathOp*>(base_op);
-  PaintOpWriter helper(memory, size, options.transfer_cache,
-                       options.image_provider);
+  PaintOpWriter helper(memory, size, options);
   helper.Write(op->path);
   helper.Write(op->op);
   helper.Write(op->antialias);
@@ -375,8 +390,7 @@ size_t DrawDRRectOp::Serialize(const PaintOp* base_op,
                                size_t size,
                                const SerializeOptions& options) {
   auto* op = static_cast<const DrawDRRectOp*>(base_op);
-  PaintOpWriter helper(memory, size, options.transfer_cache,
-                       options.image_provider);
+  PaintOpWriter helper(memory, size, options);
   const auto* serialized_flags = options.flags_to_serialize;
   if (!serialized_flags)
     serialized_flags = &op->flags;
@@ -391,8 +405,7 @@ size_t DrawImageOp::Serialize(const PaintOp* base_op,
                               size_t size,
                               const SerializeOptions& options) {
   auto* op = static_cast<const DrawImageOp*>(base_op);
-  PaintOpWriter helper(memory, size, options.transfer_cache,
-                       options.image_provider);
+  PaintOpWriter helper(memory, size, options);
   const auto* serialized_flags = options.flags_to_serialize;
   if (!serialized_flags)
     serialized_flags = &op->flags;
@@ -410,8 +423,7 @@ size_t DrawImageRectOp::Serialize(const PaintOp* base_op,
                                   size_t size,
                                   const SerializeOptions& options) {
   auto* op = static_cast<const DrawImageRectOp*>(base_op);
-  PaintOpWriter helper(memory, size, options.transfer_cache,
-                       options.image_provider);
+  PaintOpWriter helper(memory, size, options);
   const auto* serialized_flags = options.flags_to_serialize;
   if (!serialized_flags)
     serialized_flags = &op->flags;
@@ -429,8 +441,7 @@ size_t DrawIRectOp::Serialize(const PaintOp* base_op,
                               size_t size,
                               const SerializeOptions& options) {
   auto* op = static_cast<const DrawIRectOp*>(base_op);
-  PaintOpWriter helper(memory, size, options.transfer_cache,
-                       options.image_provider);
+  PaintOpWriter helper(memory, size, options);
   const auto* serialized_flags = options.flags_to_serialize;
   if (!serialized_flags)
     serialized_flags = &op->flags;
@@ -444,8 +455,7 @@ size_t DrawLineOp::Serialize(const PaintOp* base_op,
                              size_t size,
                              const SerializeOptions& options) {
   auto* op = static_cast<const DrawLineOp*>(base_op);
-  PaintOpWriter helper(memory, size, options.transfer_cache,
-                       options.image_provider);
+  PaintOpWriter helper(memory, size, options);
   const auto* serialized_flags = options.flags_to_serialize;
   if (!serialized_flags)
     serialized_flags = &op->flags;
@@ -463,8 +473,7 @@ size_t DrawOvalOp::Serialize(const PaintOp* base_op,
                              size_t size,
                              const SerializeOptions& options) {
   auto* op = static_cast<const DrawOvalOp*>(base_op);
-  PaintOpWriter helper(memory, size, options.transfer_cache,
-                       options.image_provider);
+  PaintOpWriter helper(memory, size, options);
   const auto* serialized_flags = options.flags_to_serialize;
   if (!serialized_flags)
     serialized_flags = &op->flags;
@@ -478,8 +487,7 @@ size_t DrawPathOp::Serialize(const PaintOp* base_op,
                              size_t size,
                              const SerializeOptions& options) {
   auto* op = static_cast<const DrawPathOp*>(base_op);
-  PaintOpWriter helper(memory, size, options.transfer_cache,
-                       options.image_provider);
+  PaintOpWriter helper(memory, size, options);
   const auto* serialized_flags = options.flags_to_serialize;
   if (!serialized_flags)
     serialized_flags = &op->flags;
@@ -503,8 +511,7 @@ size_t DrawRectOp::Serialize(const PaintOp* base_op,
                              size_t size,
                              const SerializeOptions& options) {
   auto* op = static_cast<const DrawRectOp*>(base_op);
-  PaintOpWriter helper(memory, size, options.transfer_cache,
-                       options.image_provider);
+  PaintOpWriter helper(memory, size, options);
   const auto* serialized_flags = options.flags_to_serialize;
   if (!serialized_flags)
     serialized_flags = &op->flags;
@@ -518,8 +525,7 @@ size_t DrawRRectOp::Serialize(const PaintOp* base_op,
                               size_t size,
                               const SerializeOptions& options) {
   auto* op = static_cast<const DrawRRectOp*>(base_op);
-  PaintOpWriter helper(memory, size, options.transfer_cache,
-                       options.image_provider);
+  PaintOpWriter helper(memory, size, options);
   const auto* serialized_flags = options.flags_to_serialize;
   if (!serialized_flags)
     serialized_flags = &op->flags;
@@ -533,8 +539,7 @@ size_t DrawTextBlobOp::Serialize(const PaintOp* base_op,
                                  size_t size,
                                  const SerializeOptions& options) {
   auto* op = static_cast<const DrawTextBlobOp*>(base_op);
-  PaintOpWriter helper(memory, size, options.transfer_cache,
-                       options.image_provider);
+  PaintOpWriter helper(memory, size, options);
   const auto* serialized_flags = options.flags_to_serialize;
   if (!serialized_flags)
     serialized_flags = &op->flags;
@@ -579,8 +584,7 @@ size_t SaveLayerOp::Serialize(const PaintOp* base_op,
                               size_t size,
                               const SerializeOptions& options) {
   auto* op = static_cast<const SaveLayerOp*>(base_op);
-  PaintOpWriter helper(memory, size, options.transfer_cache,
-                       options.image_provider);
+  PaintOpWriter helper(memory, size, options);
   const auto* serialized_flags = options.flags_to_serialize;
   if (!serialized_flags)
     serialized_flags = &op->flags;
@@ -654,7 +658,7 @@ PaintOp* AnnotateOp::Deserialize(const volatile void* input,
   DCHECK_GE(output_size, sizeof(AnnotateOp));
   AnnotateOp* op = new (output) AnnotateOp;
 
-  PaintOpReader helper(input, input_size, options.transfer_cache);
+  PaintOpReader helper(input, input_size, options);
   helper.Read(&op->annotation_type);
   helper.Read(&op->rect);
   helper.Read(&op->data);
@@ -675,7 +679,7 @@ PaintOp* ClipPathOp::Deserialize(const volatile void* input,
   DCHECK_GE(output_size, sizeof(ClipPathOp));
   ClipPathOp* op = new (output) ClipPathOp;
 
-  PaintOpReader helper(input, input_size, options.transfer_cache);
+  PaintOpReader helper(input, input_size, options);
   helper.Read(&op->path);
   helper.Read(&op->op);
   helper.Read(&op->antialias);
@@ -746,7 +750,7 @@ PaintOp* DrawDRRectOp::Deserialize(const volatile void* input,
   DCHECK_GE(output_size, sizeof(DrawDRRectOp));
   DrawDRRectOp* op = new (output) DrawDRRectOp;
 
-  PaintOpReader helper(input, input_size, options.transfer_cache);
+  PaintOpReader helper(input, input_size, options);
   helper.Read(&op->flags);
   helper.Read(&op->outer);
   helper.Read(&op->inner);
@@ -766,7 +770,7 @@ PaintOp* DrawImageOp::Deserialize(const volatile void* input,
   DCHECK_GE(output_size, sizeof(DrawImageOp));
   DrawImageOp* op = new (output) DrawImageOp;
 
-  PaintOpReader helper(input, input_size, options.transfer_cache);
+  PaintOpReader helper(input, input_size, options);
   helper.Read(&op->flags);
   helper.Read(&op->image);
   helper.AlignMemory(alignof(SkScalar));
@@ -788,7 +792,7 @@ PaintOp* DrawImageRectOp::Deserialize(const volatile void* input,
   DCHECK_GE(output_size, sizeof(DrawImageRectOp));
   DrawImageRectOp* op = new (output) DrawImageRectOp;
 
-  PaintOpReader helper(input, input_size, options.transfer_cache);
+  PaintOpReader helper(input, input_size, options);
   helper.Read(&op->flags);
   helper.Read(&op->image);
   helper.Read(&op->src);
@@ -810,7 +814,7 @@ PaintOp* DrawIRectOp::Deserialize(const volatile void* input,
   DCHECK_GE(output_size, sizeof(DrawIRectOp));
   DrawIRectOp* op = new (output) DrawIRectOp;
 
-  PaintOpReader helper(input, input_size, options.transfer_cache);
+  PaintOpReader helper(input, input_size, options);
   helper.Read(&op->flags);
   helper.Read(&op->rect);
   if (!helper.valid() || !op->IsValid()) {
@@ -829,7 +833,7 @@ PaintOp* DrawLineOp::Deserialize(const volatile void* input,
   DCHECK_GE(output_size, sizeof(DrawLineOp));
   DrawLineOp* op = new (output) DrawLineOp;
 
-  PaintOpReader helper(input, input_size, options.transfer_cache);
+  PaintOpReader helper(input, input_size, options);
   helper.Read(&op->flags);
   helper.AlignMemory(alignof(SkScalar));
   helper.Read(&op->x0);
@@ -852,7 +856,7 @@ PaintOp* DrawOvalOp::Deserialize(const volatile void* input,
   DCHECK_GE(output_size, sizeof(DrawOvalOp));
   DrawOvalOp* op = new (output) DrawOvalOp;
 
-  PaintOpReader helper(input, input_size, options.transfer_cache);
+  PaintOpReader helper(input, input_size, options);
   helper.Read(&op->flags);
   helper.Read(&op->oval);
   if (!helper.valid() || !op->IsValid()) {
@@ -871,7 +875,7 @@ PaintOp* DrawPathOp::Deserialize(const volatile void* input,
   DCHECK_GE(output_size, sizeof(DrawPathOp));
   DrawPathOp* op = new (output) DrawPathOp;
 
-  PaintOpReader helper(input, input_size, options.transfer_cache);
+  PaintOpReader helper(input, input_size, options);
   helper.Read(&op->flags);
   helper.Read(&op->path);
   if (!helper.valid() || !op->IsValid()) {
@@ -900,7 +904,7 @@ PaintOp* DrawRectOp::Deserialize(const volatile void* input,
   DCHECK_GE(output_size, sizeof(DrawRectOp));
   DrawRectOp* op = new (output) DrawRectOp;
 
-  PaintOpReader helper(input, input_size, options.transfer_cache);
+  PaintOpReader helper(input, input_size, options);
   helper.Read(&op->flags);
   helper.Read(&op->rect);
   if (!helper.valid() || !op->IsValid()) {
@@ -919,7 +923,7 @@ PaintOp* DrawRRectOp::Deserialize(const volatile void* input,
   DCHECK_GE(output_size, sizeof(DrawRRectOp));
   DrawRRectOp* op = new (output) DrawRRectOp;
 
-  PaintOpReader helper(input, input_size, options.transfer_cache);
+  PaintOpReader helper(input, input_size, options);
   helper.Read(&op->flags);
   helper.Read(&op->rrect);
   if (!helper.valid() || !op->IsValid()) {
@@ -938,7 +942,7 @@ PaintOp* DrawTextBlobOp::Deserialize(const volatile void* input,
   DCHECK_GE(output_size, sizeof(DrawTextBlobOp));
   DrawTextBlobOp* op = new (output) DrawTextBlobOp;
 
-  PaintOpReader helper(input, input_size, options.transfer_cache);
+  PaintOpReader helper(input, input_size, options);
   helper.Read(&op->flags);
   helper.AlignMemory(alignof(SkScalar));
   helper.Read(&op->x);
@@ -996,7 +1000,7 @@ PaintOp* SaveLayerOp::Deserialize(const volatile void* input,
   DCHECK_GE(output_size, sizeof(SaveLayerOp));
   SaveLayerOp* op = new (output) SaveLayerOp;
 
-  PaintOpReader helper(input, input_size, options.transfer_cache);
+  PaintOpReader helper(input, input_size, options);
   helper.Read(&op->flags);
   helper.Read(&op->bounds);
   if (!helper.valid() || !op->IsValid()) {

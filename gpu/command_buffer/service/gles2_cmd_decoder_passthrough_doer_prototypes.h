@@ -1013,7 +1013,12 @@ error::Error DoBeginRasterCHROMIUM(GLuint texture_id,
                                    GLboolean can_use_lcd_text,
                                    GLint color_type,
                                    GLuint color_space_transfer_cache_id);
-error::Error DoRasterCHROMIUM(GLsizeiptr size, const void* list);
+error::Error DoRasterCHROMIUM(GLuint raster_shm_id,
+                              GLuint raster_shm_offset,
+                              GLsizeiptr raster_shm_size,
+                              GLuint font_shm_id,
+                              GLuint font_shm_offset,
+                              GLsizeiptr font_shm_size);
 error::Error DoEndRasterCHROMIUM();
 error::Error DoCreateTransferCacheEntryINTERNAL(GLuint entry_type,
                                                 GLuint entry_id,

@@ -4659,8 +4659,13 @@ error::Error GLES2DecoderPassthroughImpl::DoBeginRasterCHROMIUM(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::DoRasterCHROMIUM(GLsizeiptr size,
-                                                           const void* list) {
+error::Error GLES2DecoderPassthroughImpl::DoRasterCHROMIUM(
+    GLuint raster_shm_id,
+    GLuint raster_shm_offset,
+    GLsizeiptr raster_shm_size,
+    GLuint font_shm_id,
+    GLuint font_shm_offset,
+    GLsizeiptr font_shm_size) {
   // TODO(enne): Add CHROMIUM_raster_transport extension support to the
   // passthrough command buffer.
   NOTIMPLEMENTED();

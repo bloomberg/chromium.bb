@@ -12,6 +12,7 @@
 #include "cc/layers/recording_source.h"
 #include "cc/paint/display_item_list.h"
 #include "cc/paint/paint_image_builder.h"
+#include "cc/paint/paint_text_blob_builder.h"
 #include "cc/raster/playback_image_provider.h"
 #include "cc/raster/raster_source.h"
 #include "cc/test/pixel_test_utils.h"
@@ -1059,6 +1060,48 @@ TEST_P(OopPixelTest, DrawRectColorSpace) {
   flags.setColor(SK_ColorGREEN);
   display_item_list->push<DrawRectOp>(
       gfx::RectToSkRect(gfx::Rect(options.resource_size)), flags);
+  display_item_list->EndPaintOfUnpaired(options.full_raster_rect);
+  display_item_list->Finalize();
+
+  auto actual = Raster(display_item_list, options);
+  auto expected = RasterExpectedBitmap(display_item_list, options);
+  ExpectEquals(actual, expected);
+}
+
+scoped_refptr<PaintTextBlob> buildTextBlob() {
+  SkFontStyle style;
+  PaintTypeface typeface =
+      PaintTypeface::FromFamilyNameAndFontStyle("monospace", style);
+
+  PaintFont font;
+  font.SetTypeface(typeface);
+  font.SetTextEncoding(SkPaint::kGlyphID_TextEncoding);
+  font.SetHinting(SkPaint::kNormal_Hinting);
+  font.SetTextSize(10u);
+
+  PaintTextBlobBuilder builder;
+  SkRect bounds = SkRect::MakeWH(100, 100);
+  const int glyphCount = 10;
+  const auto& runBuffer = builder.AllocRunPosH(font, glyphCount, 0, &bounds);
+  for (int i = 0; i < glyphCount; i++)
+    runBuffer.glyphs[i] = static_cast<SkGlyphID>(i);
+  return builder.TakeTextBlob();
+}
+
+TEST_P(OopPixelTest, DrawTextBlob) {
+  RasterOptions options;
+  options.resource_size = gfx::Size(100, 100);
+  options.content_size = options.resource_size;
+  options.full_raster_rect = gfx::Rect(options.content_size);
+  options.playback_rect = options.full_raster_rect;
+  options.color_space = gfx::ColorSpace::CreateSRGB();
+
+  auto display_item_list = base::MakeRefCounted<DisplayItemList>();
+  display_item_list->StartPaint();
+  PaintFlags flags;
+  flags.setStyle(PaintFlags::kFill_Style);
+  flags.setColor(SK_ColorGREEN);
+  display_item_list->push<DrawTextBlobOp>(buildTextBlob(), 0u, 0u, flags);
   display_item_list->EndPaintOfUnpaired(options.full_raster_rect);
   display_item_list->Finalize();
 

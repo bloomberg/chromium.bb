@@ -15,20 +15,13 @@
 #include "cc/paint/transfer_cache_serialize_helper.h"
 #include "third_party/skia/include/core/SkSerialProcs.h"
 #include "third_party/skia/include/core/SkTextBlob.h"
+#include "third_party/skia/src/core/SkRemoteGlyphCache.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
 
 namespace cc {
 namespace {
 const size_t kSkiaAlignment = 4u;
-
-sk_sp<SkData> TypefaceCataloger(SkTypeface* typeface, void* ctx) {
-  static_cast<TransferCacheSerializeHelper*>(ctx)->AssertLocked(
-      TransferCacheEntryType::kPaintTypeface, typeface->uniqueID());
-
-  uint32_t id = typeface->uniqueID();
-  return SkData::MakeWithCopy(&id, sizeof(uint32_t));
-}
 
 size_t RoundDownToAlignment(size_t bytes, size_t alignment) {
   return bytes - (bytes & (alignment - 1));
@@ -78,14 +71,12 @@ size_t PaintOpWriter::GetRecordSize(const PaintRecord* record) {
 
 PaintOpWriter::PaintOpWriter(void* memory,
                              size_t size,
-                             TransferCacheSerializeHelper* transfer_cache,
-                             ImageProvider* image_provider,
+                             const PaintOp::SerializeOptions& options,
                              bool enable_security_constraints)
     : memory_(static_cast<char*>(memory) + HeaderBytes()),
       size_(size),
       remaining_bytes_(size - HeaderBytes()),
-      transfer_cache_(transfer_cache),
-      image_provider_(image_provider),
+      options_(options),
       enable_security_constraints_(enable_security_constraints) {
   // Leave space for header of type/skip.
   DCHECK_GE(size, HeaderBytes());
@@ -171,10 +162,11 @@ void PaintOpWriter::Write(const SkRRect& rect) {
 
 void PaintOpWriter::Write(const SkPath& path) {
   auto id = path.getGenerationID();
-  auto locked = transfer_cache_->LockEntry(TransferCacheEntryType::kPath, id);
+  auto locked =
+      options_.transfer_cache->LockEntry(TransferCacheEntryType::kPath, id);
   if (!locked) {
-    transfer_cache_->CreateEntry(ClientPathTransferCacheEntry(path));
-    transfer_cache_->AssertLocked(TransferCacheEntryType::kPath, id);
+    options_.transfer_cache->CreateEntry(ClientPathTransferCacheEntry(path));
+    options_.transfer_cache->AssertLocked(TransferCacheEntryType::kPath, id);
   }
   Write(id);
 }
@@ -228,7 +220,7 @@ void PaintOpWriter::Write(const DrawImage& image) {
 
   Write(
       static_cast<uint8_t>(PaintOp::SerializedImageType::kTransferCacheEntry));
-  auto decoded_image = image_provider_->GetDecodedDrawImage(image);
+  auto decoded_image = options_.image_provider->GetDecodedDrawImage(image);
   DCHECK(!decoded_image.decoded_image().image())
       << "Use transfer cache for image serialization";
 
@@ -270,9 +262,12 @@ void PaintOpWriter::Write(const SkColorSpace* color_space) {
   remaining_bytes_ -= written;
 }
 
-void PaintOpWriter::Write(const sk_sp<SkTextBlob>& blob) {
-  DCHECK(blob);
+void PaintOpWriter::Write(const scoped_refptr<PaintTextBlob>& paint_blob) {
+  DCHECK(paint_blob);
+  if (!valid_)
+    return;
 
+  const auto& blob = paint_blob->ToSkTextBlob();
   size_t size_offset = sizeof(size_t);
   EnsureBytes(size_offset);
   if (!valid_)
@@ -281,9 +276,14 @@ void PaintOpWriter::Write(const sk_sp<SkTextBlob>& blob) {
   char* size_memory = memory_;
   memory_ += size_offset;
   remaining_bytes_ -= size_offset;
+
+  auto encodeTypeface = [](SkTypeface* tf, void* ctx) -> sk_sp<SkData> {
+    return static_cast<SkStrikeServer*>(ctx)->serializeTypeface(tf);
+  };
   SkSerialProcs procs;
-  procs.fTypefaceProc = &TypefaceCataloger;
-  procs.fTypefaceCtx = transfer_cache_;
+  procs.fTypefaceProc = encodeTypeface;
+  procs.fTypefaceCtx = options_.strike_server;
+
   size_t bytes_written = blob->serialize(
       procs, memory_, RoundDownToAlignment(remaining_bytes_, kSkiaAlignment));
   if (bytes_written == 0u) {
@@ -293,24 +293,6 @@ void PaintOpWriter::Write(const sk_sp<SkTextBlob>& blob) {
   reinterpret_cast<size_t*>(size_memory)[0] = bytes_written;
   memory_ += bytes_written;
   remaining_bytes_ -= bytes_written;
-}
-
-void PaintOpWriter::Write(const scoped_refptr<PaintTextBlob>& blob) {
-  if (!valid_)
-    return;
-
-  for (auto& typeface : blob->typefaces()) {
-    auto locked = transfer_cache_->LockEntry(
-        TransferCacheEntryType::kPaintTypeface, typeface.sk_id());
-    if (locked)
-      continue;
-    transfer_cache_->CreateEntry(
-        ClientPaintTypefaceTransferCacheEntry(typeface));
-    transfer_cache_->AssertLocked(TransferCacheEntryType::kPaintTypeface,
-                                  typeface.sk_id());
-  }
-
-  Write(blob->ToSkTextBlob());
 }
 
 void PaintOpWriter::Write(const PaintShader* shader) {
@@ -695,8 +677,10 @@ void PaintOpWriter::Write(const PaintRecord* record,
     return;
   }
 
-  SimpleBufferSerializer serializer(memory_, remaining_bytes_, image_provider_,
-                                    transfer_cache_);
+  SimpleBufferSerializer serializer(
+      memory_, remaining_bytes_, options_.image_provider,
+      options_.transfer_cache, options_.strike_server, options_.color_space,
+      options_.can_use_lcd_text);
   if (playback_rect) {
     serializer.Serialize(record, *playback_rect, *post_scale);
   } else {

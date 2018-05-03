@@ -91,7 +91,7 @@ ContextResult RasterInProcessContext::Initialize(
     result = gles2_implementation_->Initialize(memory_limits);
     raster_implementation_ = std::make_unique<raster::RasterImplementationGLES>(
         gles2_implementation_.get(), gles2_implementation_.get(),
-        GetCapabilities());
+        gles2_implementation_->command_buffer(), GetCapabilities());
     helper_ = std::move(gles2_helper);
   } else {
     DCHECK(attribs.enable_raster_decoder);

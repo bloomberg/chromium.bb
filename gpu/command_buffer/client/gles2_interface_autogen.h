@@ -929,6 +929,7 @@ virtual void BeginRasterCHROMIUM(GLuint texture_id,
                                  GLint color_type,
                                  GLuint color_space_transfer_cache_id) = 0;
 virtual void* MapRasterCHROMIUM(GLsizeiptr size) = 0;
+virtual void* MapFontBufferCHROMIUM(GLsizeiptr size) = 0;
 virtual void UnmapRasterCHROMIUM(GLsizeiptr written_size) = 0;
 virtual void EndRasterCHROMIUM() = 0;
 virtual void TexStorage2DImageCHROMIUM(GLenum target,

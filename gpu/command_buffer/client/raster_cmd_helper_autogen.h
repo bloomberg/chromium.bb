@@ -174,12 +174,16 @@ void BeginRasterCHROMIUM(GLuint texture_id,
   }
 }
 
-void RasterCHROMIUM(GLsizeiptr size,
-                    uint32_t list_shm_id,
-                    uint32_t list_shm_offset) {
+void RasterCHROMIUM(GLuint raster_shm_id,
+                    GLuint raster_shm_offset,
+                    GLsizeiptr raster_shm_size,
+                    GLuint font_shm_id,
+                    GLuint font_shm_offset,
+                    GLsizeiptr font_shm_size) {
   raster::cmds::RasterCHROMIUM* c = GetCmdSpace<raster::cmds::RasterCHROMIUM>();
   if (c) {
-    c->Init(size, list_shm_id, list_shm_offset);
+    c->Init(raster_shm_id, raster_shm_offset, raster_shm_size, font_shm_id,
+            font_shm_offset, font_shm_size);
   }
 }
 

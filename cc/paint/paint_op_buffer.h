@@ -29,6 +29,10 @@
 #include "third_party/skia/include/core/SkScalar.h"
 #include "third_party/skia/include/core/SkTextBlob.h"
 
+class SkColorSpace;
+class SkStrikeClient;
+class SkStrikeServer;
+
 // PaintOpBuffer is a reimplementation of SkLiteDL.
 // See: third_party/skia/src/core/SkLiteDL.h.
 namespace cc {
@@ -105,8 +109,11 @@ struct CC_PAINT_EXPORT PlaybackParams {
       DidDrawOpCallback did_draw_op_callback = DidDrawOpCallback());
   ~PlaybackParams();
 
+  PlaybackParams(const PlaybackParams& other);
+  PlaybackParams& operator=(const PlaybackParams& other);
+
   ImageProvider* image_provider;
-  const SkMatrix original_ctm;
+  SkMatrix original_ctm;
   CustomDataRasterCallback custom_callback;
   DidDrawOpCallback did_draw_op_callback;
 };
@@ -136,22 +143,32 @@ class CC_PAINT_EXPORT PaintOp {
     SerializeOptions(ImageProvider* image_provider,
                      TransferCacheSerializeHelper* transfer_cache,
                      SkCanvas* canvas,
+                     SkStrikeServer* strike_server,
+                     SkColorSpace* color_space,
+                     bool can_use_lcd_text,
                      const SkMatrix& original_ctm);
 
     // Required.
+    ImageProvider* image_provider = nullptr;
     TransferCacheSerializeHelper* transfer_cache = nullptr;
     SkCanvas* canvas = nullptr;
+    SkStrikeServer* strike_server = nullptr;
+    SkColorSpace* color_space = nullptr;
+    bool can_use_lcd_text = false;
 
     // Optional.
-    ImageProvider* image_provider = nullptr;
     SkMatrix original_ctm = SkMatrix::I();
     // The flags to use when serializing this op. This can be used to override
     // the flags serialized with the op. Valid only for PaintOpWithFlags.
     const PaintFlags* flags_to_serialize = nullptr;
   };
 
-  struct DeserializeOptions {
+  struct CC_PAINT_EXPORT DeserializeOptions {
+    DeserializeOptions();
+    DeserializeOptions(TransferCacheDeserializeHelper* transfer_cache,
+                       SkStrikeClient* strike_client);
     TransferCacheDeserializeHelper* transfer_cache = nullptr;
+    SkStrikeClient* strike_client = nullptr;
   };
 
   // Indicates how PaintImages are serialized.

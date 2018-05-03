@@ -18,17 +18,16 @@ class PaintShader;
 
 // PaintOpReader takes garbage |memory| and clobbers it with successive
 // read functions.
-class TransferCacheDeserializeHelper;
 class CC_PAINT_EXPORT PaintOpReader {
  public:
   PaintOpReader(const volatile void* memory,
                 size_t size,
-                TransferCacheDeserializeHelper* transfer_cache,
+                const PaintOp::DeserializeOptions& options,
                 bool enable_security_constraints = false)
       : memory_(static_cast<const volatile char*>(memory) +
                 PaintOpWriter::HeaderBytes()),
         remaining_bytes_(size - PaintOpWriter::HeaderBytes()),
-        transfer_cache_(transfer_cache),
+        options_(options),
         enable_security_constraints_(enable_security_constraints) {
     if (size < PaintOpWriter::HeaderBytes())
       valid_ = false;
@@ -190,7 +189,7 @@ class CC_PAINT_EXPORT PaintOpReader {
   const volatile char* memory_ = nullptr;
   size_t remaining_bytes_ = 0u;
   bool valid_ = true;
-  TransferCacheDeserializeHelper* transfer_cache_;
+  const PaintOp::DeserializeOptions& options_;
 
   // Indicates that the data was serialized with the following constraints:
   // 1) PaintRecords and SkDrawLoopers are ignored.

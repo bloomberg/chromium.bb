@@ -817,39 +817,59 @@ struct RasterCHROMIUM {
 
   void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(GLsizeiptr _size,
-            uint32_t _list_shm_id,
-            uint32_t _list_shm_offset) {
+  void Init(GLuint _raster_shm_id,
+            GLuint _raster_shm_offset,
+            GLsizeiptr _raster_shm_size,
+            GLuint _font_shm_id,
+            GLuint _font_shm_offset,
+            GLsizeiptr _font_shm_size) {
     SetHeader();
-    size = _size;
-    list_shm_id = _list_shm_id;
-    list_shm_offset = _list_shm_offset;
+    raster_shm_id = _raster_shm_id;
+    raster_shm_offset = _raster_shm_offset;
+    raster_shm_size = _raster_shm_size;
+    font_shm_id = _font_shm_id;
+    font_shm_offset = _font_shm_offset;
+    font_shm_size = _font_shm_size;
   }
 
   void* Set(void* cmd,
-            GLsizeiptr _size,
-            uint32_t _list_shm_id,
-            uint32_t _list_shm_offset) {
-    static_cast<ValueType*>(cmd)->Init(_size, _list_shm_id, _list_shm_offset);
+            GLuint _raster_shm_id,
+            GLuint _raster_shm_offset,
+            GLsizeiptr _raster_shm_size,
+            GLuint _font_shm_id,
+            GLuint _font_shm_offset,
+            GLsizeiptr _font_shm_size) {
+    static_cast<ValueType*>(cmd)->Init(_raster_shm_id, _raster_shm_offset,
+                                       _raster_shm_size, _font_shm_id,
+                                       _font_shm_offset, _font_shm_size);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   gpu::CommandHeader header;
-  int32_t size;
-  uint32_t list_shm_id;
-  uint32_t list_shm_offset;
+  uint32_t raster_shm_id;
+  uint32_t raster_shm_offset;
+  int32_t raster_shm_size;
+  uint32_t font_shm_id;
+  uint32_t font_shm_offset;
+  int32_t font_shm_size;
 };
 
-static_assert(sizeof(RasterCHROMIUM) == 16,
-              "size of RasterCHROMIUM should be 16");
+static_assert(sizeof(RasterCHROMIUM) == 28,
+              "size of RasterCHROMIUM should be 28");
 static_assert(offsetof(RasterCHROMIUM, header) == 0,
               "offset of RasterCHROMIUM header should be 0");
-static_assert(offsetof(RasterCHROMIUM, size) == 4,
-              "offset of RasterCHROMIUM size should be 4");
-static_assert(offsetof(RasterCHROMIUM, list_shm_id) == 8,
-              "offset of RasterCHROMIUM list_shm_id should be 8");
-static_assert(offsetof(RasterCHROMIUM, list_shm_offset) == 12,
-              "offset of RasterCHROMIUM list_shm_offset should be 12");
+static_assert(offsetof(RasterCHROMIUM, raster_shm_id) == 4,
+              "offset of RasterCHROMIUM raster_shm_id should be 4");
+static_assert(offsetof(RasterCHROMIUM, raster_shm_offset) == 8,
+              "offset of RasterCHROMIUM raster_shm_offset should be 8");
+static_assert(offsetof(RasterCHROMIUM, raster_shm_size) == 12,
+              "offset of RasterCHROMIUM raster_shm_size should be 12");
+static_assert(offsetof(RasterCHROMIUM, font_shm_id) == 16,
+              "offset of RasterCHROMIUM font_shm_id should be 16");
+static_assert(offsetof(RasterCHROMIUM, font_shm_offset) == 20,
+              "offset of RasterCHROMIUM font_shm_offset should be 20");
+static_assert(offsetof(RasterCHROMIUM, font_shm_size) == 24,
+              "offset of RasterCHROMIUM font_shm_size should be 24");
 
 struct EndRasterCHROMIUM {
   typedef EndRasterCHROMIUM ValueType;

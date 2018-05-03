@@ -9,14 +9,17 @@
 
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "base/optional.h"
+#include "gpu/command_buffer/client/client_font_manager.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/raster_export.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkColorSpace.h"
 
 namespace gpu {
-
+class CommandBuffer;
 class ContextSupport;
 
 namespace raster {
@@ -24,10 +27,13 @@ namespace raster {
 struct Capabilities;
 
 // An implementation of RasterInterface on top of GLES2Interface.
-class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
+class RASTER_EXPORT RasterImplementationGLES
+    : public RasterInterface,
+      public ClientFontManager::Client {
  public:
   RasterImplementationGLES(gles2::GLES2Interface* gl,
                            ContextSupport* support,
+                           CommandBuffer* command_buffer,
                            const gpu::Capabilities& caps);
   ~RasterImplementationGLES() override;
 
@@ -131,6 +137,9 @@ class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
   void BeginGpuRaster() override;
   void EndGpuRaster() override;
 
+  // ClientFontManager::Client implementation.
+  void* MapFontBuffer(size_t size) override;
+
  private:
   struct Texture {
     Texture(GLuint id,
@@ -149,7 +158,6 @@ class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
   Texture* EnsureTextureBound(Texture* texture);
 
   gles2::GLES2Interface* gl_;
-  SkColor background_color_;
   ContextSupport* support_;
   gpu::Capabilities caps_;
   bool use_texture_storage_;
@@ -157,6 +165,18 @@ class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
 
   std::unordered_map<GLuint, Texture> texture_info_;
   Texture* bound_texture_ = nullptr;
+
+  ClientFontManager font_manager_;
+  struct RasterProperties {
+    RasterProperties(SkColor background_color,
+                     bool can_use_lcd_text,
+                     sk_sp<SkColorSpace> color_space);
+    ~RasterProperties();
+    SkColor background_color = SK_ColorWHITE;
+    bool can_use_lcd_text = false;
+    sk_sp<SkColorSpace> color_space;
+  };
+  base::Optional<RasterProperties> raster_properties_;
 
   DISALLOW_COPY_AND_ASSIGN(RasterImplementationGLES);
 };

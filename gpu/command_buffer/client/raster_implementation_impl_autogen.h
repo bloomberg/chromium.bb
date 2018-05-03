@@ -148,14 +148,6 @@ void RasterImplementation::UnpremultiplyAndDitherCopyCHROMIUM(GLuint source_id,
   CheckGLError();
 }
 
-void RasterImplementation::EndRasterCHROMIUM() {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glEndRasterCHROMIUM("
-                     << ")");
-  helper_->EndRasterCHROMIUM();
-  CheckGLError();
-}
-
 GLuint RasterImplementation::CreateTexture(bool use_buffer,
                                            gfx::BufferUsage buffer_usage,
                                            viz::ResourceFormat format) {

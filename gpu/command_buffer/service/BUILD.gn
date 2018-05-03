@@ -197,6 +197,8 @@ target(link_target_type, "gles2_sources") {
     "sampler_manager.h",
     "service_discardable_manager.cc",
     "service_discardable_manager.h",
+    "service_font_manager.cc",
+    "service_font_manager.h",
     "service_transfer_cache.cc",
     "service_transfer_cache.h",
     "service_utils.cc",

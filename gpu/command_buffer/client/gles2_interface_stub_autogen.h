@@ -903,6 +903,7 @@ void BeginRasterCHROMIUM(GLuint texture_id,
                          GLint color_type,
                          GLuint color_space_transfer_cache_id) override;
 void* MapRasterCHROMIUM(GLsizeiptr size) override;
+void* MapFontBufferCHROMIUM(GLsizeiptr size) override;
 void UnmapRasterCHROMIUM(GLsizeiptr written_size) override;
 void EndRasterCHROMIUM() override;
 void TexStorage2DImageCHROMIUM(GLenum target,

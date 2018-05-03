@@ -15,7 +15,8 @@ StructTraits<viz::mojom::PaintFilterDataView, sk_sp<cc::PaintFilter>>::data(
   std::vector<uint8_t> memory;
   memory.resize(cc::PaintOpWriter::HeaderBytes() +
                 cc::PaintFilter::GetFilterSize(filter.get()));
-  cc::PaintOpWriter writer(memory.data(), memory.size(), nullptr, nullptr,
+  cc::PaintOp::SerializeOptions options;
+  cc::PaintOpWriter writer(memory.data(), memory.size(), options,
                            true /* enable_security_constraints */);
   writer.Write(filter.get());
 
@@ -40,7 +41,8 @@ bool StructTraits<viz::mojom::PaintFilterDataView, sk_sp<cc::PaintFilter>>::
     return true;
   }
 
-  cc::PaintOpReader reader(buffer->data(), buffer->size(), nullptr,
+  cc::PaintOp::DeserializeOptions options;
+  cc::PaintOpReader reader(buffer->data(), buffer->size(), options,
                            true /* enable_security_constraints */);
   sk_sp<cc::PaintFilter> filter;
   reader.Read(&filter);

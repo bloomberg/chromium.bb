@@ -130,11 +130,13 @@ class PaintOpSerializer {
   PaintOpSerializer(size_t initial_size,
                     RasterImplementation* ri,
                     cc::DecodeStashingImageProvider* stashing_image_provider,
-                    cc::TransferCacheSerializeHelper* transfer_cache_helper)
+                    cc::TransferCacheSerializeHelper* transfer_cache_helper,
+                    ClientFontManager* font_manager)
       : ri_(ri),
         buffer_(static_cast<char*>(ri_->MapRasterCHROMIUM(initial_size))),
         stashing_image_provider_(stashing_image_provider),
         transfer_cache_helper_(transfer_cache_helper),
+        font_manager_(font_manager),
         free_bytes_(buffer_ ? initial_size : 0) {}
 
   ~PaintOpSerializer() {
@@ -168,6 +170,8 @@ class PaintOpSerializer {
     if (!valid())
       return;
 
+    // Serialize fonts before sending raster commands.
+    font_manager_->Serialize();
     ri_->UnmapRasterCHROMIUM(written_bytes_);
     // Now that we've issued the RasterCHROMIUM referencing the stashed
     // images, Reset the |stashing_image_provider_|, causing us to issue
@@ -186,6 +190,7 @@ class PaintOpSerializer {
   char* buffer_;
   cc::DecodeStashingImageProvider* const stashing_image_provider_;
   cc::TransferCacheSerializeHelper* const transfer_cache_helper_;
+  ClientFontManager* font_manager_;
 
   size_t written_bytes_ = 0;
   size_t free_bytes_ = 0;
@@ -221,6 +226,7 @@ RasterImplementation::RasterImplementation(
       use_count_(0),
       current_trace_stack_(0),
       aggressively_free_resources_(false),
+      font_manager_(this, helper->command_buffer()),
       lost_(false) {
   DCHECK(helper);
   DCHECK(transfer_buffer);
@@ -1007,6 +1013,31 @@ void* RasterImplementation::MapRasterCHROMIUM(GLsizeiptr size) {
   return raster_mapped_buffer_->address();
 }
 
+void* RasterImplementation::MapFontBuffer(size_t size) {
+  if (size < 0) {
+    SetGLError(GL_INVALID_VALUE, "glMapFontBufferCHROMIUM", "negative size");
+    return nullptr;
+  }
+  if (font_mapped_buffer_) {
+    SetGLError(GL_INVALID_OPERATION, "glMapFontBufferCHROMIUM",
+               "already mapped");
+    return nullptr;
+  }
+  if (!raster_mapped_buffer_) {
+    SetGLError(GL_INVALID_OPERATION, "glMapFontBufferCHROMIUM",
+               "mapped font buffer with no raster buffer");
+    return nullptr;
+  }
+
+  font_mapped_buffer_.emplace(size, helper_, mapped_memory_.get());
+  if (!font_mapped_buffer_->valid()) {
+    SetGLError(GL_INVALID_OPERATION, "glMapFontBufferCHROMIUM", "size too big");
+    font_mapped_buffer_ = base::nullopt;
+    return nullptr;
+  }
+  return font_mapped_buffer_->address();
+}
+
 void RasterImplementation::UnmapRasterCHROMIUM(GLsizeiptr written_size) {
   if (written_size < 0) {
     SetGLError(GL_INVALID_VALUE, "glUnmapRasterCHROMIUM",
@@ -1024,9 +1055,20 @@ void RasterImplementation::UnmapRasterCHROMIUM(GLsizeiptr written_size) {
     return;
   }
   raster_mapped_buffer_->Shrink(written_size);
-  helper_->RasterCHROMIUM(written_size, raster_mapped_buffer_->shm_id(),
-                          raster_mapped_buffer_->offset());
+
+  GLuint font_shm_id = 0u;
+  GLuint font_shm_offset = 0u;
+  GLsizeiptr font_shm_size = 0u;
+  if (font_mapped_buffer_) {
+    font_shm_id = font_mapped_buffer_->shm_id();
+    font_shm_offset = font_mapped_buffer_->offset();
+    font_shm_size = font_mapped_buffer_->size();
+  }
+  helper_->RasterCHROMIUM(raster_mapped_buffer_->shm_id(),
+                          raster_mapped_buffer_->offset(), written_size,
+                          font_shm_id, font_shm_offset, font_shm_size);
   raster_mapped_buffer_ = base::nullopt;
+  font_mapped_buffer_ = base::nullopt;
   CheckGLError();
 }
 
@@ -1110,6 +1152,8 @@ void RasterImplementation::BeginRasterCHROMIUM(
     GLboolean can_use_lcd_text,
     GLint color_type,
     const cc::RasterColorSpace& raster_color_space) {
+  DCHECK(!raster_properties_);
+
   TransferCacheSerializeHelperImpl transfer_cache_serialize_helper(this);
   if (!transfer_cache_serialize_helper.LockEntry(
           cc::TransferCacheEntryType::kColorSpace,
@@ -1125,7 +1169,9 @@ void RasterImplementation::BeginRasterCHROMIUM(
                                can_use_lcd_text, color_type,
                                raster_color_space.color_space_id);
   transfer_cache_serialize_helper.FlushEntries();
-  background_color_ = sk_color;
+
+  raster_properties_.emplace(sk_color, can_use_lcd_text,
+                             raster_color_space.color_space.ToSkColorSpace());
 }
 
 void RasterImplementation::RasterCHROMIUM(const cc::DisplayItemList* list,
@@ -1158,7 +1204,7 @@ void RasterImplementation::RasterCHROMIUM(const cc::DisplayItemList* list,
   preamble.post_translation = post_translate;
   preamble.post_scale = gfx::SizeF(post_scale, post_scale);
   preamble.requires_clear = requires_clear;
-  preamble.background_color = background_color_;
+  preamble.background_color = raster_properties_->background_color;
 
   // Wrap the provided provider in a stashing provider so that we can delay
   // unrefing images until we have serialized dependent commands.
@@ -1167,15 +1213,26 @@ void RasterImplementation::RasterCHROMIUM(const cc::DisplayItemList* list,
   // TODO(enne): Don't access private members of DisplayItemList.
   TransferCacheSerializeHelperImpl transfer_cache_serialize_helper(this);
   PaintOpSerializer op_serializer(free_size, this, &stashing_image_provider,
-                                  &transfer_cache_serialize_helper);
+                                  &transfer_cache_serialize_helper,
+                                  &font_manager_);
   cc::PaintOpBufferSerializer::SerializeCallback serialize_cb =
       base::BindRepeating(&PaintOpSerializer::Serialize,
                           base::Unretained(&op_serializer));
-  cc::PaintOpBufferSerializer serializer(serialize_cb, &stashing_image_provider,
-                                         &transfer_cache_serialize_helper);
+
+  cc::PaintOpBufferSerializer serializer(
+      serialize_cb, &stashing_image_provider, &transfer_cache_serialize_helper,
+      font_manager_.strike_server(), raster_properties_->color_space.get(),
+      raster_properties_->can_use_lcd_text);
   serializer.Serialize(&list->paint_op_buffer_, &offsets, preamble);
   // TODO(piman): raise error if !serializer.valid()?
   op_serializer.SendSerializedData();
+}
+
+void RasterImplementation::EndRasterCHROMIUM() {
+  DCHECK(raster_properties_);
+
+  raster_properties_.reset();
+  helper_->EndRasterCHROMIUM();
 }
 
 void RasterImplementation::BeginGpuRaster() {
@@ -1184,6 +1241,16 @@ void RasterImplementation::BeginGpuRaster() {
 void RasterImplementation::EndGpuRaster() {
   NOTIMPLEMENTED();
 }
+
+RasterImplementation::RasterProperties::RasterProperties(
+    SkColor background_color,
+    bool can_use_lcd_text,
+    sk_sp<SkColorSpace> color_space)
+    : background_color(background_color),
+      can_use_lcd_text(can_use_lcd_text),
+      color_space(std::move(color_space)) {}
+
+RasterImplementation::RasterProperties::~RasterProperties() = default;
 
 }  // namespace raster
 }  // namespace gpu

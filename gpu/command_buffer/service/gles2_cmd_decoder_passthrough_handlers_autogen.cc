@@ -4580,11 +4580,15 @@ error::Error GLES2DecoderPassthroughImpl::HandleRasterCHROMIUM(
     return error::kUnknownCommand;
   }
 
-  GLsizeiptr size = static_cast<GLsizeiptr>(c.size);
-  uint32_t data_size = size;
-  const void* list = GetSharedMemoryAs<const void*>(
-      c.list_shm_id, c.list_shm_offset, data_size);
-  error::Error error = DoRasterCHROMIUM(size, list);
+  GLuint raster_shm_id = static_cast<GLuint>(c.raster_shm_id);
+  GLuint raster_shm_offset = static_cast<GLuint>(c.raster_shm_offset);
+  GLsizeiptr raster_shm_size = static_cast<GLsizeiptr>(c.raster_shm_size);
+  GLuint font_shm_id = static_cast<GLuint>(c.font_shm_id);
+  GLuint font_shm_offset = static_cast<GLuint>(c.font_shm_offset);
+  GLsizeiptr font_shm_size = static_cast<GLsizeiptr>(c.font_shm_size);
+  error::Error error =
+      DoRasterCHROMIUM(raster_shm_id, raster_shm_offset, raster_shm_size,
+                       font_shm_id, font_shm_offset, font_shm_size);
   if (error != error::kNoError) {
     return error;
   }

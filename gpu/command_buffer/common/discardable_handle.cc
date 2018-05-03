@@ -118,6 +118,9 @@ ClientDiscardableHandle::Id ClientDiscardableHandle::GetId() const {
                              static_cast<uint64_t>(byte_offset()));
 }
 
+ServiceDiscardableHandle::ServiceDiscardableHandle()
+    : DiscardableHandleBase(nullptr, 0, 0) {}
+
 ServiceDiscardableHandle::ServiceDiscardableHandle(scoped_refptr<Buffer> buffer,
                                                    uint32_t byte_offset,
                                                    int32_t shm_id)

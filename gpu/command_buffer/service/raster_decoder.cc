@@ -51,6 +51,7 @@
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/query_manager.h"
 #include "gpu/command_buffer/service/raster_cmd_validation.h"
+#include "gpu/command_buffer/service/service_font_manager.h"
 #include "gpu/command_buffer/service/service_transfer_cache.h"
 #include "gpu/command_buffer/service/vertex_array_manager.h"
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
@@ -241,7 +242,8 @@ ScopedPixelUnpackState::~ScopedPixelUnpackState() {
 }  // namespace
 
 class RasterDecoderImpl final : public RasterDecoder,
-                                public gles2::ErrorStateClient {
+                                public gles2::ErrorStateClient,
+                                public ServiceFontManager::Client {
  public:
   RasterDecoderImpl(DecoderClient* client,
                     CommandBufferServiceBase* command_buffer_service,
@@ -361,6 +363,9 @@ class RasterDecoderImpl final : public RasterDecoder,
   void SetCopyTextureResourceManagerForTest(
       CopyTextureCHROMIUMResourceManager* copy_texture_resource_manager)
       override;
+
+  // ServiceFontManager::Client implementation.
+  scoped_refptr<Buffer> GetShmBuffer(uint32_t shm_id) override;
 
  private:
   std::unordered_map<GLuint, TextureMetadata> texture_metadata_;
@@ -546,7 +551,12 @@ class RasterDecoderImpl final : public RasterDecoder,
                              GLboolean can_use_lcd_text,
                              GLint color_type,
                              GLuint color_space_transfer_cache_id);
-  void DoRasterCHROMIUM(GLsizeiptr size, const void* list);
+  void DoRasterCHROMIUM(GLuint raster_shm_id,
+                        GLuint raster_shm_offset,
+                        GLsizeiptr raster_shm_size,
+                        GLuint font_shm_id,
+                        GLuint font_shm_offset,
+                        GLsizeiptr font_shm_size);
   void DoEndRasterCHROMIUM();
   void DoCreateTransferCacheEntryINTERNAL(GLuint entry_type,
                                           GLuint entry_id,
@@ -685,6 +695,7 @@ class RasterDecoderImpl final : public RasterDecoder,
   std::unique_ptr<CopyTextureCHROMIUMResourceManager> copy_texture_chromium_;
 
   // Raster helpers.
+  ServiceFontManager font_manager_;
   sk_sp<GrContext> gr_context_;
   sk_sp<SkSurface> sk_surface_;
   std::unique_ptr<SkCanvas> raster_canvas_;
@@ -768,6 +779,7 @@ RasterDecoderImpl::RasterDecoderImpl(
       texture_state_(group_->feature_info()->workarounds()),
       service_logging_(
           group_->gpu_preferences().enable_gpu_service_logging_gpu),
+      font_manager_(this),
       weak_ptr_factory_(this) {}
 
 RasterDecoderImpl::~RasterDecoderImpl() {}
@@ -2769,7 +2781,18 @@ void RasterDecoderImpl::DoBeginRasterCHROMIUM(
   texture_manager()->SetLevelCleared(texture_ref, texture->target(), 0, true);
 }
 
-void RasterDecoderImpl::DoRasterCHROMIUM(GLsizeiptr size, const void* list) {
+scoped_refptr<Buffer> RasterDecoderImpl::GetShmBuffer(uint32_t shm_id) {
+  return GetSharedMemoryBuffer(shm_id);
+}
+
+void RasterDecoderImpl::DoRasterCHROMIUM(GLuint raster_shm_id,
+                                         GLuint raster_shm_offset,
+                                         GLsizeiptr raster_shm_size,
+                                         GLuint font_shm_id,
+                                         GLuint font_shm_offset,
+                                         GLsizeiptr font_shm_size) {
+  TRACE_EVENT0("gpu", "RasterDecoderImpl::DoRasterCHROMIUM");
+
   if (!sk_surface_) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glRasterCHROMIUM",
                        "RasterCHROMIUM without BeginRasterCHROMIUM");
@@ -2777,9 +2800,35 @@ void RasterDecoderImpl::DoRasterCHROMIUM(GLsizeiptr size, const void* list) {
   }
   DCHECK(transfer_cache_);
 
+  std::vector<SkDiscardableHandleId> locked_handles;
+  if (font_shm_size > 0) {
+    // Deserialize fonts before raster.
+    volatile char* font_buffer_memory =
+        GetSharedMemoryAs<char*>(font_shm_id, font_shm_offset, font_shm_size);
+    if (!font_buffer_memory) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glRasterCHROMIUM",
+                         "Can not read font buffer.");
+      return;
+    }
+
+    if (!font_manager_.Deserialize(font_buffer_memory, font_shm_size,
+                                   &locked_handles)) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glRasterCHROMIUM",
+                         "Invalid font buffer.");
+      return;
+    }
+  }
+
+  char* paint_buffer_memory = GetSharedMemoryAs<char*>(
+      raster_shm_id, raster_shm_offset, raster_shm_size);
+  if (!paint_buffer_memory) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glRasterCHROMIUM",
+                       "Can not read paint buffer.");
+    return;
+  }
+
   alignas(
       cc::PaintOpBuffer::PaintOpAlign) char data[sizeof(cc::LargestPaintOp)];
-  const char* buffer = static_cast<const char*>(list);
 
   SkCanvas* canvas = raster_canvas_.get();
   SkMatrix original_ctm;
@@ -2787,12 +2836,15 @@ void RasterDecoderImpl::DoRasterCHROMIUM(GLsizeiptr size, const void* list) {
   cc::PaintOp::DeserializeOptions options;
   TransferCacheDeserializeHelperImpl impl(transfer_cache_.get());
   options.transfer_cache = &impl;
+  options.strike_client = font_manager_.strike_client();
 
   int op_idx = 0;
-  while (size > 4) {
+  size_t paint_buffer_size = raster_shm_size;
+  while (paint_buffer_size > 4) {
     size_t skip = 0;
     cc::PaintOp* deserialized_op = cc::PaintOp::Deserialize(
-        buffer, size, &data[0], sizeof(cc::LargestPaintOp), &skip, options);
+        paint_buffer_memory, paint_buffer_size, &data[0],
+        sizeof(cc::LargestPaintOp), &skip, options);
     if (!deserialized_op) {
       std::string msg =
           base::StringPrintf("RasterCHROMIUM: bad op: %i", op_idx);
@@ -2803,9 +2855,17 @@ void RasterDecoderImpl::DoRasterCHROMIUM(GLsizeiptr size, const void* list) {
     deserialized_op->Raster(canvas, playback_params);
     deserialized_op->DestroyThis();
 
-    size -= skip;
-    buffer += skip;
+    paint_buffer_size -= skip;
+    paint_buffer_memory += skip;
     op_idx++;
+  }
+
+  // Unlock all font handles.
+  // TODO(khushalsagar): We just unlocked a bunch of handles, do we need to give
+  // a call to skia to attempt to purge any unlocked handles?
+  if (!font_manager_.Unlock(locked_handles)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glRasterCHROMIUM",
+                       "Invalid font discardable handle.");
   }
 }
 

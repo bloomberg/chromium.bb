@@ -6941,6 +6941,31 @@ void* GLES2Implementation::MapRasterCHROMIUM(GLsizeiptr size) {
   return raster_mapped_buffer_->address();
 }
 
+void* GLES2Implementation::MapFontBufferCHROMIUM(GLsizeiptr size) {
+  if (size < 0) {
+    SetGLError(GL_INVALID_VALUE, "glMapFontBufferCHROMIUM", "negative size");
+    return nullptr;
+  }
+  if (font_mapped_buffer_) {
+    SetGLError(GL_INVALID_OPERATION, "glMapFontBufferCHROMIUM",
+               "already mapped");
+    return nullptr;
+  }
+  if (!raster_mapped_buffer_) {
+    SetGLError(GL_INVALID_OPERATION, "glMapFontBufferCHROMIUM",
+               "mapped font buffer with no raster buffer");
+    return nullptr;
+  }
+
+  font_mapped_buffer_.emplace(size, helper_, mapped_memory_.get());
+  if (!font_mapped_buffer_->valid()) {
+    SetGLError(GL_INVALID_OPERATION, "glMapFontBufferCHROMIUM", "size too big");
+    font_mapped_buffer_ = base::nullopt;
+    return nullptr;
+  }
+  return font_mapped_buffer_->address();
+}
+
 void GLES2Implementation::UnmapRasterCHROMIUM(GLsizeiptr written_size) {
   if (written_size < 0) {
     SetGLError(GL_INVALID_VALUE, "glUnmapRasterCHROMIUM",
@@ -6958,9 +6983,20 @@ void GLES2Implementation::UnmapRasterCHROMIUM(GLsizeiptr written_size) {
     return;
   }
   raster_mapped_buffer_->Shrink(written_size);
-  helper_->RasterCHROMIUM(written_size, raster_mapped_buffer_->shm_id(),
-                          raster_mapped_buffer_->offset());
+
+  GLuint font_shm_id = 0u;
+  GLuint font_shm_offset = 0u;
+  GLsizeiptr font_shm_size = 0u;
+  if (font_mapped_buffer_) {
+    font_shm_id = font_mapped_buffer_->shm_id();
+    font_shm_offset = font_mapped_buffer_->offset();
+    font_shm_size = font_mapped_buffer_->size();
+  }
+  helper_->RasterCHROMIUM(raster_mapped_buffer_->shm_id(),
+                          raster_mapped_buffer_->offset(), written_size,
+                          font_shm_id, font_shm_offset, font_shm_size);
   raster_mapped_buffer_ = base::nullopt;
+  font_mapped_buffer_ = base::nullopt;
   CheckGLError();
 }
 

@@ -368,15 +368,20 @@ _FUNCTION_INFO = {
     'unit_test': False,
   },
   'RasterCHROMIUM': {
-    'type': 'Data',
-    'internal': True,
     'decoder_func': 'DoRasterCHROMIUM',
-    'data_transfer_methods': ['shm'],
+    'internal': True,
+    'impl_func': True,
+    'cmd_args': 'GLuint raster_shm_id, GLuint raster_shm_offset,'
+                'GLsizeiptr raster_shm_size, GLuint font_shm_id,'
+                'GLuint font_shm_offset, GLsizeiptr font_shm_size',
+    'extension': 'CHROMIUM_raster_transport',
+    'extension_flag': 'chromium_raster_transport',
   },
   'EndRasterCHROMIUM': {
     'decoder_func': 'DoEndRasterCHROMIUM',
-    'impl_func': True,
+    'impl_func': False,
     'unit_test': False,
+    'client_test': False,
   },
   'CreateTransferCacheEntryINTERNAL': {
     'decoder_func': 'DoCreateTransferCacheEntryINTERNAL',

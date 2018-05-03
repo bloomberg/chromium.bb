@@ -111,17 +111,6 @@ TEST_F(RasterImplementationTest, LoseContextCHROMIUM) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
-TEST_F(RasterImplementationTest, EndRasterCHROMIUM) {
-  struct Cmds {
-    cmds::EndRasterCHROMIUM cmd;
-  };
-  Cmds expected;
-  expected.cmd.Init();
-
-  gl_->EndRasterCHROMIUM();
-  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-}
-
 TEST_F(RasterImplementationTest, TexParameteri) {
   struct Cmds {
     cmds::TexParameteri cmd;

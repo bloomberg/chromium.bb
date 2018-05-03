@@ -267,14 +267,18 @@ TEST_F(RasterFormatTest, BeginRasterCHROMIUM) {
 TEST_F(RasterFormatTest, RasterCHROMIUM) {
   cmds::RasterCHROMIUM& cmd = *GetBufferAs<cmds::RasterCHROMIUM>();
   void* next_cmd =
-      cmd.Set(&cmd, static_cast<GLsizeiptr>(11), static_cast<uint32_t>(12),
-              static_cast<uint32_t>(13));
+      cmd.Set(&cmd, static_cast<GLuint>(11), static_cast<GLuint>(12),
+              static_cast<GLsizeiptr>(13), static_cast<GLuint>(14),
+              static_cast<GLuint>(15), static_cast<GLsizeiptr>(16));
   EXPECT_EQ(static_cast<uint32_t>(cmds::RasterCHROMIUM::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLsizeiptr>(11), cmd.size);
-  EXPECT_EQ(static_cast<uint32_t>(12), cmd.list_shm_id);
-  EXPECT_EQ(static_cast<uint32_t>(13), cmd.list_shm_offset);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.raster_shm_id);
+  EXPECT_EQ(static_cast<GLuint>(12), cmd.raster_shm_offset);
+  EXPECT_EQ(static_cast<GLsizeiptr>(13), cmd.raster_shm_size);
+  EXPECT_EQ(static_cast<GLuint>(14), cmd.font_shm_id);
+  EXPECT_EQ(static_cast<GLuint>(15), cmd.font_shm_offset);
+  EXPECT_EQ(static_cast<GLsizeiptr>(16), cmd.font_shm_size);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 

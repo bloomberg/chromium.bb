@@ -27,6 +27,7 @@ include_rules = [
   "+third_party/khronos/GLES2/gl2ext.h",
   "+third_party/libyuv",
   "+third_party/skia/include",
+  "+third_party/skia/src/core/SkRemoteGlyphCache.h",
   "+ui/latency/latency_info.h",
   "+ui/gfx",
   "+ui/gl",
