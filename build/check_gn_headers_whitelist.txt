@@ -239,7 +239,6 @@ services/service_manager/public/c/main.h
 services/ui/ws/ids.h
 skia/ext/convolver_mips_dspr2.h
 skia/ext/skia_commit_hash.h
-skia/ext/texture_handle.h
 testing/gmock_mutant.h
 third_party/blink/renderer/bindings/modules/v8/serialization/WebCryptoSubTags.h
 third_party/blink/renderer/core/animation/CSSInterpolationEnvironment.h
