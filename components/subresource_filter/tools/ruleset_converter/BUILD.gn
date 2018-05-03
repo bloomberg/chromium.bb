@@ -9,6 +9,8 @@ source_set("support") {
     "//third_party/protobuf:protobuf_lite",
     "rule_stream.cc",
     "rule_stream.h",
+    "ruleset_converter.cc",
+    "ruleset_converter.h",
     "ruleset_format.cc",
     "ruleset_format.h",
   ]
@@ -25,6 +27,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "rule_stream_unittest.cc",
+    "ruleset_converter_unittest.cc",
     "ruleset_test_util.cc",
     "ruleset_test_util.h",
   ]
