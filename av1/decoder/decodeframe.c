@@ -890,7 +890,7 @@ static void decode_restoration_mode(AV1_COMMON *cm,
                                     struct aom_read_bit_buffer *rb) {
   assert(!cm->all_lossless);
   const int num_planes = av1_num_planes(cm);
-  if (cm->allow_intrabc && NO_FILTER_FOR_IBC) return;
+  if (cm->allow_intrabc) return;
   int all_none = 1, chroma_none = 1;
   for (int p = 0; p < num_planes; ++p) {
     RestorationInfo *rsi = &cm->rst_info[p];
@@ -1084,7 +1084,7 @@ static void loop_restoration_read_sb_coeffs(const AV1_COMMON *const cm,
 static void setup_loopfilter(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   const int num_planes = av1_num_planes(cm);
   struct loopfilter *lf = &cm->lf;
-  if ((cm->allow_intrabc && NO_FILTER_FOR_IBC) || cm->coded_lossless) {
+  if (cm->allow_intrabc || cm->coded_lossless) {
     // write default deltas to frame buffer
     av1_set_default_ref_deltas(cm->cur_frame->ref_deltas);
     av1_set_default_mode_deltas(cm->cur_frame->mode_deltas);
@@ -1134,7 +1134,7 @@ static void setup_loopfilter(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
 
 static void setup_cdef(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   const int num_planes = av1_num_planes(cm);
-  if (cm->allow_intrabc && NO_FILTER_FOR_IBC) return;
+  if (cm->allow_intrabc) return;
   cm->cdef_pri_damping = cm->cdef_sec_damping = aom_rb_read_literal(rb, 2) + 3;
   cm->cdef_bits = aom_rb_read_literal(rb, 2);
   cm->nb_cdef_strengths = 1 << cm->cdef_bits;
@@ -3070,8 +3070,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   if (cm->frame_type == KEY_FRAME) {
     setup_frame_size(cm, frame_size_override_flag, rb);
 
-    if (cm->allow_screen_content_tools &&
-        (av1_superres_unscaled(cm) || !NO_FILTER_FOR_IBC))
+    if (cm->allow_screen_content_tools && av1_superres_unscaled(cm))
       cm->allow_intrabc = aom_rb_read_bit(rb);
     cm->allow_ref_frame_mvs = 0;
     cm->prev_frame = NULL;
@@ -3081,8 +3080,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     if (cm->intra_only) {
       cm->cur_frame->film_grain_params_present = cm->film_grain_params_present;
       setup_frame_size(cm, frame_size_override_flag, rb);
-      if (cm->allow_screen_content_tools &&
-          (av1_superres_unscaled(cm) || !NO_FILTER_FOR_IBC))
+      if (cm->allow_screen_content_tools && av1_superres_unscaled(cm))
         cm->allow_intrabc = aom_rb_read_bit(rb);
 
     } else if (pbi->need_resync != 1) { /* Skip if need resync */
@@ -3273,7 +3271,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   unlock_buffer_pool(pool);
   pbi->hold_ref_buf = 1;
 
-  if (cm->allow_intrabc && NO_FILTER_FOR_IBC) {
+  if (cm->allow_intrabc) {
     // Set parameters corresponding to no filtering.
     struct loopfilter *lf = &cm->lf;
     lf->filter_level[0] = 0;
@@ -3312,8 +3310,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     if (cm->delta_q_present_flag) {
       xd->prev_qindex = cm->base_qindex;
       cm->delta_q_res = 1 << aom_rb_read_literal(rb, 2);
-      if (!cm->allow_intrabc || !NO_FILTER_FOR_IBC)
-        cm->delta_lf_present_flag = aom_rb_read_bit(rb);
+      if (!cm->allow_intrabc) cm->delta_lf_present_flag = aom_rb_read_bit(rb);
       if (cm->delta_lf_present_flag) {
         xd->prev_delta_lf_from_base = 0;
         cm->delta_lf_res = 1 << aom_rb_read_literal(rb, 2);
@@ -3535,7 +3532,7 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
     return;
   }
 
-  if (!(cm->allow_intrabc && NO_FILTER_FOR_IBC)) {
+  if (!cm->allow_intrabc) {
     if (cm->lf.filter_level[0] || cm->lf.filter_level[1]) {
       av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb, 0,
                             num_planes, 0);

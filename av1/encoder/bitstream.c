@@ -857,7 +857,7 @@ static void write_cfl_alphas(FRAME_CONTEXT *const ec_ctx, int idx,
 
 static void write_cdef(AV1_COMMON *cm, MACROBLOCKD *const xd, aom_writer *w,
                        int skip, int mi_col, int mi_row) {
-  if (cm->coded_lossless || (cm->allow_intrabc && NO_FILTER_FOR_IBC)) {
+  if (cm->coded_lossless || cm->allow_intrabc) {
     // Initialize to indicate no CDEF for safety.
     cm->cdef_bits = 0;
     cm->cdef_strengths[0] = 0;
@@ -1723,7 +1723,7 @@ static void encode_restoration_mode(AV1_COMMON *cm,
                                     struct aom_write_bit_buffer *wb) {
   assert(!cm->all_lossless);
   if (!cm->seq_params.enable_restoration) return;
-  if (cm->allow_intrabc && NO_FILTER_FOR_IBC) return;
+  if (cm->allow_intrabc) return;
   const int num_planes = av1_num_planes(cm);
   int all_none = 1, chroma_none = 1;
   for (int p = 0; p < num_planes; ++p) {
@@ -1919,7 +1919,7 @@ static void loop_restoration_write_sb_coeffs(const AV1_COMMON *const cm,
 
 static void encode_loopfilter(AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
   assert(!cm->coded_lossless);
-  if (cm->allow_intrabc && NO_FILTER_FOR_IBC) return;
+  if (cm->allow_intrabc) return;
   const int num_planes = av1_num_planes(cm);
   int i;
   struct loopfilter *lf = &cm->lf;
@@ -1981,7 +1981,7 @@ static void encode_loopfilter(AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
 static void encode_cdef(const AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
   assert(!cm->coded_lossless);
   if (!cm->seq_params.enable_cdef) return;
-  if (cm->allow_intrabc && NO_FILTER_FOR_IBC) return;
+  if (cm->allow_intrabc) return;
   const int num_planes = av1_num_planes(cm);
   int i;
   aom_wb_write_literal(wb, cm->cdef_pri_damping - 3, 2);
@@ -3109,20 +3109,16 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 
   if (cm->frame_type == KEY_FRAME) {
     write_frame_size(cm, frame_size_override_flag, wb);
-    assert(av1_superres_unscaled(cm) ||
-           !(cm->allow_intrabc && NO_FILTER_FOR_IBC));
-    if (cm->allow_screen_content_tools &&
-        (av1_superres_unscaled(cm) || !NO_FILTER_FOR_IBC))
+    assert(av1_superres_unscaled(cm) || !cm->allow_intrabc);
+    if (cm->allow_screen_content_tools && av1_superres_unscaled(cm))
       aom_wb_write_bit(wb, cm->allow_intrabc);
     // all eight fbs are refreshed, pick one that will live long enough
     cm->fb_of_context_type[REGULAR_FRAME] = 0;
   } else {
     if (cm->frame_type == INTRA_ONLY_FRAME) {
       write_frame_size(cm, frame_size_override_flag, wb);
-      assert(av1_superres_unscaled(cm) ||
-             !(cm->allow_intrabc && NO_FILTER_FOR_IBC));
-      if (cm->allow_screen_content_tools &&
-          (av1_superres_unscaled(cm) || !NO_FILTER_FOR_IBC))
+      assert(av1_superres_unscaled(cm) || !cm->allow_intrabc);
+      if (cm->allow_screen_content_tools && av1_superres_unscaled(cm))
         aom_wb_write_bit(wb, cm->allow_intrabc);
     } else if (cm->frame_type == INTER_FRAME || frame_is_sframe(cm)) {
       MV_REFERENCE_FRAME ref_frame;
@@ -3208,7 +3204,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
       if (cm->delta_q_present_flag) {
         aom_wb_write_literal(wb, OD_ILOG_NZ(cm->delta_q_res) - 1, 2);
         xd->prev_qindex = cm->base_qindex;
-        if (cm->allow_intrabc && NO_FILTER_FOR_IBC)
+        if (cm->allow_intrabc)
           assert(cm->delta_lf_present_flag == 0);
         else
           aom_wb_write_bit(wb, cm->delta_lf_present_flag);

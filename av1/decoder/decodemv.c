@@ -40,7 +40,7 @@ static void read_cdef(AV1_COMMON *cm, aom_reader *r, MACROBLOCKD *const xd,
                       int mi_col, int mi_row) {
   MB_MODE_INFO *const mbmi = xd->mi[0];
   if (cm->coded_lossless) return;
-  if (cm->allow_intrabc && NO_FILTER_FOR_IBC) {
+  if (cm->allow_intrabc) {
     assert(cm->cdef_bits == 0);
     return;
   }

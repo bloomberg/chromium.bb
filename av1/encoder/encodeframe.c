@@ -4118,7 +4118,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   // Reset the flag.
   cpi->intrabc_used = 0;
   // Need to disable intrabc when superres is selected
-  if (NO_FILTER_FOR_IBC && !av1_superres_unscaled(cm)) {
+  if (!av1_superres_unscaled(cm)) {
     cm->allow_intrabc = 0;
   }
 
@@ -4236,7 +4236,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   else
     cm->last_frame_seg_map = NULL;
   cm->current_frame_seg_map = cm->cur_frame->seg_map;
-  if ((cm->allow_intrabc && NO_FILTER_FOR_IBC) || cm->coded_lossless) {
+  if (cm->allow_intrabc || cm->coded_lossless) {
     av1_set_default_ref_deltas(cm->lf.ref_deltas);
     av1_set_default_mode_deltas(cm->lf.mode_deltas);
   } else if (cm->prev_frame) {

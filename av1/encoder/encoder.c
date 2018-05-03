@@ -4862,7 +4862,7 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
   // off.
 
   // Pick the loop filter level for the frame.
-  if (!(cm->allow_intrabc && NO_FILTER_FOR_IBC)) {
+  if (!cm->allow_intrabc) {
     loopfilter_frame(cpi, cm);
   } else {
     cm->lf.filter_level[0] = 0;
