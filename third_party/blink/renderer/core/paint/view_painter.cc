@@ -244,9 +244,9 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
     bool should_paint_in_viewport_space =
         (*it)->Attachment() == EFillAttachment::kFixed;
     if (should_paint_in_viewport_space) {
-      box_model_painter.PaintFillLayer(
-          paint_info, Color(), **it, LayoutRect(LayoutRect::InfiniteIntRect()),
-          kBackgroundBleedNone, geometry);
+      box_model_painter.PaintFillLayer(paint_info, Color(), **it,
+                                       LayoutRect(background_rect),
+                                       kBackgroundBleedNone, geometry);
     } else {
       context.Save();
       // TODO(trchen): We should be able to handle 3D-transformed root
