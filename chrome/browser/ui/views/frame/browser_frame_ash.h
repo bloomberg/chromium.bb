@@ -19,6 +19,11 @@ class BrowserFrameAsh : public views::NativeWidgetAura,
  public:
   BrowserFrameAsh(BrowserFrame* browser_frame, BrowserView* browser_view);
 
+  // The color used for the frame when showing a non-tabbed WebUI, such as
+  // the Settings window.
+  static constexpr SkColor kMdWebUiFrameColor =
+      SkColorSetARGB(0xff, 0x25, 0x4f, 0xae);
+
  protected:
   ~BrowserFrameAsh() override;
 

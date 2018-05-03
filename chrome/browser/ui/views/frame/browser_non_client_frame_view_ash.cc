@@ -38,6 +38,7 @@
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
+#include "chrome/browser/ui/views/frame/browser_frame_ash.h"
 #include "chrome/browser/ui/views/frame/browser_frame_header_ash.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
@@ -668,11 +669,8 @@ BrowserNonClientFrameViewAsh::CreateFrameHeader() {
                        weak_factory_.GetWeakPtr()),
         kTitlebarAnimationDelay);
   } else if (!browser->is_app()) {
-    // For non app (i.e. WebUI) windows (e.g. Settings) use MD frame color.
-    constexpr SkColor kMdWebUIFrameColor =
-        SkColorSetARGB(0xff, 0x25, 0x4f, 0xae);
-    default_frame_header->SetFrameColors(kMdWebUIFrameColor,
-                                         kMdWebUIFrameColor);
+    default_frame_header->SetFrameColors(BrowserFrameAsh::kMdWebUiFrameColor,
+                                         BrowserFrameAsh::kMdWebUiFrameColor);
   }
 
   if (back_button_)
