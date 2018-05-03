@@ -89,7 +89,7 @@ public class FakeContextualSuggestionsSource extends ContextualSuggestionsSource
         mPendingImageRequests.clear();
     }
 
-    private ContextualSuggestionsResult createDummyResults() {
+    private static ContextualSuggestionsResult createDummyResults() {
         SnippetArticle suggestion1 = new SnippetArticle(KnownCategories.CONTEXTUAL, "id1",
                 "Capybaras also love hats",
                 "Lorem ipsum dolor sit amet, consectetur adipiscing "
@@ -109,7 +109,8 @@ public class FakeContextualSuggestionsSource extends ContextualSuggestionsSource
                 new SnippetArticle(KnownCategories.CONTEXTUAL, "id3", "Capybaras don't like ties",
                         "Pellentesque nec lorem nec velit convallis suscipit "
                                 + "non eget nunc.",
-                        "Capybara News", "https://site.com/url3", 0, 0, 0, false, null, true);
+                        "Breaking Capybara News Updates Delivered Daily", "https://site.com/url3",
+                        0, 0, 0, false, null, true);
         SnippetArticle article4 =
                 new SnippetArticle(KnownCategories.CONTEXTUAL, "id4", "Fancy watches",
                         "Duis egestas est vitae eros consectetur vulputate. Integer "
