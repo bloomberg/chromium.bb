@@ -965,22 +965,16 @@ static INLINE int is_interintra_pred(const MB_MODE_INFO *mbmi) {
 
 static INLINE int get_vartx_max_txsize(const MACROBLOCKD *xd, BLOCK_SIZE bsize,
                                        int subsampled) {
-  TX_SIZE max_txsize = xd->lossless[xd->mi[0]->segment_id]
-                           ? TX_4X4
-                           : max_txsize_rect_lookup[bsize];
+  if (xd->lossless[xd->mi[0]->segment_id]) return TX_4X4;
+  const TX_SIZE max_txsize = max_txsize_rect_lookup[bsize];
 
   // The decoder is designed so that it can process 64x64 luma pixels at a
   // time. If this is a chroma plane with subsampling and bsize corresponds to
   // a subsampled BLOCK_128X128 then the lookup above will give TX_64X64. That
   // mustn't be used for the subsampled plane (because it would be bigger than
   // a 64x64 luma block) so we round down to TX_32X32.
-  if (subsampled && txsize_sqr_up_map[max_txsize] == TX_64X64) {
-    if (max_txsize == TX_16X64)
-      max_txsize = TX_16X32;
-    else if (max_txsize == TX_64X16)
-      max_txsize = TX_32X16;
-    else
-      max_txsize = TX_32X32;
+  if (subsampled) {
+    return av1_get_adjusted_tx_size(max_txsize);
   }
   return max_txsize;
 }
