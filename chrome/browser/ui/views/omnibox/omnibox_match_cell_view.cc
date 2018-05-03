@@ -110,7 +110,7 @@ OmniboxMatchCellView::OmniboxMatchCellView(OmniboxResultView* result_view,
                                            const gfx::FontList& font_list,
                                            int text_height)
     : is_old_style_answer_(false),
-      is_entity_(false),
+      is_rich_suggestion_(false),
       is_search_type_(false),
       text_height_(text_height) {
   AddChildView(icon_view_ = new OmniboxImageView());
@@ -129,10 +129,11 @@ OmniboxMatchCellView::~OmniboxMatchCellView() = default;
 gfx::Size OmniboxMatchCellView::CalculatePreferredSize() const {
   int height = text_height_ +
                GetVerticalInsets(text_height_, is_old_style_answer_).height();
-  if (is_old_style_answer_)
-    height += GetOldStyleAnswerHeight();
-  if (is_entity_)
+  if (is_rich_suggestion_) {
     height += text_height_;
+  } else if (is_old_style_answer_) {
+    height += GetOldStyleAnswerHeight();
+  }
   return gfx::Size(0, height);
 }
 bool OmniboxMatchCellView::CanProcessEventsWithinSubtree() const {
@@ -155,14 +156,16 @@ int OmniboxMatchCellView::GetOldStyleAnswerHeight() const {
 
 void OmniboxMatchCellView::OnMatchUpdate(const AutocompleteMatch& match) {
   is_old_style_answer_ = !!match.answer;
-  if (base::FeatureList::IsEnabled(omnibox::kOmniboxRichEntitySuggestions)) {
-    is_entity_ = !match.image_url.empty();
-  }
+  is_rich_suggestion_ =
+      (base::FeatureList::IsEnabled(omnibox::kOmniboxNewAnswerLayout) &&
+       !!match.answer) ||
+      (base::FeatureList::IsEnabled(omnibox::kOmniboxRichEntitySuggestions) &&
+       !match.image_url.empty());
   is_search_type_ = AutocompleteMatch::IsSearchType(match.type);
-  if (is_old_style_answer_ || is_entity_) {
+  if (is_old_style_answer_ || is_rich_suggestion_) {
     separator_view_->SetSize(gfx::Size());
   }
-  if (is_entity_) {
+  if (is_rich_suggestion_) {
     icon_view_->SetSize(gfx::Size());
   }
 }
@@ -173,8 +176,8 @@ const char* OmniboxMatchCellView::GetClassName() const {
 
 void OmniboxMatchCellView::Layout() {
   views::View::Layout();
-  if (is_entity_) {
-    LayoutEntity();
+  if (is_rich_suggestion_) {
+    LayoutRichSuggestion();
   } else if (is_old_style_answer_) {
     LayoutOldStyleAnswer();
   } else {
@@ -209,7 +212,7 @@ void OmniboxMatchCellView::LayoutOldStyleAnswer() {
           kVerticalPadding);
 }
 
-void OmniboxMatchCellView::LayoutEntity() {
+void OmniboxMatchCellView::LayoutRichSuggestion() {
   int x = GetIconAlignmentOffset() + HorizontalPadding() +
           LocationBarView::GetBorderThicknessDip();
   int y = GetVerticalInsets(text_height_, /*is_old_style_answer=*/false).top();
