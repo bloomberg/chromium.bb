@@ -46,10 +46,11 @@ const int kNumCalls = 3;
 
 const auto kIgnoreLogMessageCB = base::BindRepeating([](const std::string&) {});
 
-std::pair<std::string, url::Origin> GetSaltAndOrigin(int /* process_id */,
-                                                     int /* frame_id */) {
-  return std::make_pair(std::string("fake_media_device_salt"),
-                        url::Origin::Create(GURL("https://test.com")));
+MediaDeviceSaltAndOrigin GetSaltAndOrigin(int /* process_id */,
+                                          int /* frame_id */) {
+  return MediaDeviceSaltAndOrigin(
+      "fake_media_device_salt", "fake_group_id_salt",
+      url::Origin::Create(GURL("https://test.com")));
 }
 
 // This class mocks the audio manager and overrides some methods to ensure that
@@ -522,9 +523,7 @@ TEST_F(MediaDevicesManagerTest, SubscribeDeviceChanges) {
   audio_input_devices_to_subscribe[MEDIA_DEVICE_TYPE_AUDIO_INPUT] = true;
   uint32_t audio_input_subscription_id =
       media_devices_manager_->SubscribeDeviceChangeNotifications(
-          kRenderProcessId, kRenderFrameId,
-          std::string("fake_group_id_salt_base"),
-          audio_input_devices_to_subscribe,
+          kRenderProcessId, kRenderFrameId, audio_input_devices_to_subscribe,
           listener_audio_input.CreateInterfacePtrAndBind());
 
   MockMediaDevicesListener listener_video_input;
@@ -532,9 +531,7 @@ TEST_F(MediaDevicesManagerTest, SubscribeDeviceChanges) {
   video_input_devices_to_subscribe[MEDIA_DEVICE_TYPE_VIDEO_INPUT] = true;
   uint32_t video_input_subscription_id =
       media_devices_manager_->SubscribeDeviceChangeNotifications(
-          kRenderProcessId, kRenderFrameId,
-          std::string("fake_group_id_salt_base"),
-          video_input_devices_to_subscribe,
+          kRenderProcessId, kRenderFrameId, video_input_devices_to_subscribe,
           listener_video_input.CreateInterfacePtrAndBind());
 
   MockMediaDevicesListener listener_audio_output;
@@ -542,9 +539,7 @@ TEST_F(MediaDevicesManagerTest, SubscribeDeviceChanges) {
   audio_output_devices_to_subscribe[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = true;
   uint32_t audio_output_subscription_id =
       media_devices_manager_->SubscribeDeviceChangeNotifications(
-          kRenderProcessId, kRenderFrameId,
-          std::string("fake_group_id_salt_base"),
-          audio_output_devices_to_subscribe,
+          kRenderProcessId, kRenderFrameId, audio_output_devices_to_subscribe,
           listener_audio_output.CreateInterfacePtrAndBind());
 
   MockMediaDevicesListener listener_all;
@@ -553,8 +548,8 @@ TEST_F(MediaDevicesManagerTest, SubscribeDeviceChanges) {
   all_devices_to_subscribe[MEDIA_DEVICE_TYPE_VIDEO_INPUT] = true;
   all_devices_to_subscribe[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = true;
   media_devices_manager_->SubscribeDeviceChangeNotifications(
-      kRenderProcessId, kRenderFrameId, std::string("fake_group_id_salt_base"),
-      all_devices_to_subscribe, listener_all.CreateInterfacePtrAndBind());
+      kRenderProcessId, kRenderFrameId, all_devices_to_subscribe,
+      listener_all.CreateInterfacePtrAndBind());
 
   MediaDeviceInfoArray notification_audio_input;
   MediaDeviceInfoArray notification_video_input;

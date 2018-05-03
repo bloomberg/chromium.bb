@@ -375,9 +375,10 @@ class MediaDevicesDispatcherHostTest : public testing::TestWithParam<GURL> {
     }
   }
 
-  std::pair<std::string, url::Origin> GetSaltAndOrigin(int /* process_id */,
-                                                       int /* frame_id */) {
-    return std::make_pair(browser_context_->GetMediaDeviceIDSalt(), origin_);
+  MediaDeviceSaltAndOrigin GetSaltAndOrigin(int /* process_id */,
+                                            int /* frame_id */) {
+    return MediaDeviceSaltAndOrigin(browser_context_->GetMediaDeviceIDSalt(),
+                                    "fake_group_id_salt", origin_);
   }
 
   // The order of these members is important on teardown:

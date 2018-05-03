@@ -65,15 +65,14 @@ class CONTENT_EXPORT AudioOutputAuthorizationHandler {
   static void UMALogDeviceAuthorizationTime(base::TimeTicks auth_start_time);
 
  private:
-  void HashDeviceId(
-      AuthorizationCompletedCallback cb,
-      const std::string& raw_device_id,
-      const std::pair<std::string, url::Origin>& salt_and_origin) const;
+  void HashDeviceId(AuthorizationCompletedCallback cb,
+                    const std::string& raw_device_id,
+                    const MediaDeviceSaltAndOrigin& salt_and_origin) const;
 
   void AccessChecked(AuthorizationCompletedCallback cb,
                      const std::string& device_id,
                      std::string salt,
-                     const url::Origin& security_origin,
+                     url::Origin security_origin,
                      bool has_access) const;
 
   void TranslateDeviceID(AuthorizationCompletedCallback cb,
