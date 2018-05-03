@@ -53,19 +53,17 @@ class CONTENT_EXPORT PageState {
   PageState RemoveScrollOffset() const;
   PageState RemoveReferrer() const;
 
+  // Support DCHECK_EQ(a, b), etc.
+  bool operator==(const PageState& other) const { return this->Equals(other); }
+  bool operator!=(const PageState& other) const {
+    return !(this->Equals(other));
+  }
+
  private:
   PageState(const std::string& data);
 
   std::string data_;
 };
-
-// Support DCHECK_EQ(a, b), etc.
-inline bool operator==(const PageState& a, const PageState& b) {
-  return a.Equals(b);
-}
-inline bool operator!=(const PageState& a, const PageState& b) {
-  return !(a == b);
-}
 
 }  // namespace content
 
