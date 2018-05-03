@@ -493,7 +493,7 @@ WindowSelectorItem* WindowGrid::SelectedWindow() const {
 WindowSelectorItem* WindowGrid::GetWindowSelectorItemContaining(
     const aura::Window* window) const {
   for (const auto& window_item : window_list_) {
-    if (window_item->Contains(window))
+    if (window_item && window_item->Contains(window))
       return window_item.get();
   }
   return nullptr;
