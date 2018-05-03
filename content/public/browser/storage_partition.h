@@ -76,7 +76,12 @@ class CONTENT_EXPORT StoragePartition {
   virtual base::FilePath GetPath() = 0;
   virtual net::URLRequestContextGetter* GetURLRequestContext() = 0;
   virtual net::URLRequestContextGetter* GetMediaURLRequestContext() = 0;
+
+  // Returns a raw mojom::NetworkContext pointer. When network service crashes
+  // or restarts, the raw pointer will not be valid or safe to use. Therefore,
+  // caller should not hold onto this pointer beyond the same message loop task.
   virtual network::mojom::NetworkContext* GetNetworkContext() = 0;
+
   // Returns a pointer/info to a URLLoaderFactory/CookieManager owned by
   // the storage partition. Prefer to use this instead of creating a new
   // URLLoaderFactory when issuing requests from the Browser process, to
