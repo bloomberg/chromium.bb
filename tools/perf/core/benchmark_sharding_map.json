@@ -1782,7 +1782,7 @@
     }
   },
   "Win 10 High-DPI Perf": {
-    "build117-b1": {
+    "build194-b7": {
       "benchmarks": [
         "blink_perf.dom",
         "blink_perf.paint",
@@ -1800,7 +1800,7 @@
         "v8.runtime_stats.top_25"
       ]
     },
-    "build118-b1": {
+    "build195-b7": {
       "benchmarks": [
         "blink_perf.bindings",
         "blink_perf.canvas",
@@ -1825,7 +1825,7 @@
         "v8.browsing_mobile"
       ]
     },
-    "build119-b1": {
+    "build196-b7": {
       "benchmarks": [
         "battor.trivial_pages",
         "blink_perf.layout",
@@ -1850,7 +1850,7 @@
         "wasm"
       ]
     },
-    "build120-b1": {
+    "build197-b7": {
       "benchmarks": [
         "blink_perf.parser",
         "blink_perf.svg",
