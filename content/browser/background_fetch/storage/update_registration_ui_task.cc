@@ -26,61 +26,21 @@ UpdateRegistrationUITask::UpdateRegistrationUITask(
 UpdateRegistrationUITask::~UpdateRegistrationUITask() = default;
 
 void UpdateRegistrationUITask::Start() {
-  service_worker_context()->GetRegistrationUserData(
-      registration_id_.service_worker_registration_id(),
-      {RegistrationKey(registration_id_.unique_id())},
-      base::BindOnce(&UpdateRegistrationUITask::DidGetMetadata,
-                     weak_factory_.GetWeakPtr()));
-}
-
-void UpdateRegistrationUITask::DidGetMetadata(
-    const std::vector<std::string>& data,
-    ServiceWorkerStatusCode status) {
-  switch (ToDatabaseStatus(status)) {
-    case DatabaseStatus::kNotFound:
-    case DatabaseStatus::kFailed:
-      std::move(callback_).Run(
-          blink::mojom::BackgroundFetchError::STORAGE_ERROR);
-      Finished();  // Destroys |this|.
-      return;
-    case DatabaseStatus::kOk:
-      if (data.size() != 1u) {
-        std::move(callback_).Run(
-            blink::mojom::BackgroundFetchError::STORAGE_ERROR);
-        Finished();  // Destroys |this|.
-        return;
-      }
-      UpdateUI(data[0]);
-      return;
-  }
-}
-
-void UpdateRegistrationUITask::UpdateUI(
-    const std::string& serialized_metadata_proto) {
-  proto::BackgroundFetchMetadata metadata_proto;
-  if (!metadata_proto.ParseFromString(serialized_metadata_proto)) {
-    std::move(callback_).Run(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
-    Finished();  // Destroys |this|.
-    return;
-  }
-
-  metadata_proto.set_ui_title(updated_title_);
-
   service_worker_context()->StoreRegistrationUserData(
       registration_id_.service_worker_registration_id(),
       registration_id_.origin().GetURL(),
-      {{RegistrationKey(registration_id_.unique_id()),
-        metadata_proto.SerializeAsString()}},
-      base::BindOnce(&UpdateRegistrationUITask::DidUpdateUI,
+      {{TitleKey(registration_id_.unique_id()), updated_title_}},
+      base::BindOnce(&UpdateRegistrationUITask::DidUpdateTitle,
                      weak_factory_.GetWeakPtr()));
 }
 
-void UpdateRegistrationUITask::DidUpdateUI(ServiceWorkerStatusCode status) {
+void UpdateRegistrationUITask::DidUpdateTitle(ServiceWorkerStatusCode status) {
   switch (ToDatabaseStatus(status)) {
     case DatabaseStatus::kOk:
       break;
     case DatabaseStatus::kFailed:
     case DatabaseStatus::kNotFound:
+      // TODO(crbug.com/780025): Log failures to UMA.
       std::move(callback_).Run(
           blink::mojom::BackgroundFetchError::STORAGE_ERROR);
       Finished();  // Destroys |this|.

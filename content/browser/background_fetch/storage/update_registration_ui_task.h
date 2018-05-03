@@ -33,12 +33,7 @@ class UpdateRegistrationUITask : public DatabaseTask {
   void Start() override;
 
  private:
-  void DidGetMetadata(const std::vector<std::string>& data,
-                      ServiceWorkerStatusCode status);
-
-  void UpdateUI(const std::string& serialized_metadata_proto);
-
-  void DidUpdateUI(ServiceWorkerStatusCode status);
+  void DidUpdateTitle(ServiceWorkerStatusCode status);
 
   BackgroundFetchRegistrationId registration_id_;
   std::string updated_title_;

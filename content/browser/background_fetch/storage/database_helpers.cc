@@ -23,6 +23,10 @@ std::string RegistrationKey(const std::string& unique_id) {
   return kRegistrationKeyPrefix + unique_id;
 }
 
+std::string TitleKey(const std::string& unique_id) {
+  return kTitleKeyPrefix + unique_id;
+}
+
 std::string PendingRequestKeyPrefix(const std::string& unique_id) {
   return kPendingRequestKeyPrefix + unique_id + kSeparator;
 }

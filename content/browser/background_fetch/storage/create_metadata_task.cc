@@ -85,7 +85,7 @@ void CreateMetadataTask::InitializeMetadataProto() {
   metadata_proto_->set_origin(registration_id_.origin().Serialize());
   metadata_proto_->set_creation_microseconds_since_unix_epoch(
       (base::Time::Now() - base::Time::UnixEpoch()).InMicroseconds());
-  metadata_proto_->set_ui_title(options_.title);
+  metadata_proto_->set_num_fetches(requests_.size());
 }
 
 void CreateMetadataTask::StoreMetadata() {
@@ -108,6 +108,7 @@ void CreateMetadataTask::StoreMetadata() {
       registration_id_.unique_id());
   entries.emplace_back(RegistrationKey(registration_id_.unique_id()),
                        std::move(serialized_metadata_proto));
+  entries.emplace_back(TitleKey(registration_id_.unique_id()), options_.title);
 
   // Signed integers are used for request indexes to avoid unsigned gotchas.
   for (int i = 0; i < base::checked_cast<int>(requests_.size()); i++) {

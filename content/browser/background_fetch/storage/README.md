@@ -19,9 +19,15 @@ running background fetches.
 key: "bgfetch_active_registration_unique_id_<developer_id>"
 value: "<unique_id>"
 ```
+
 ```
 key: "bgfetch_registration_<unique_id>"
 value: "<serialized content::proto::BackgroundFetchMetadata>"
+```
+
+```
+key: "bgfetch_title_<unique_id>"
+value: "<ui_title>"
 ```
 
 ```
@@ -49,4 +55,6 @@ introduce ambiguity.
 * `<request_index>` is an `int` containing the index of a request within a
 multi-part fetch. These must be padded with zeros to ensure that the ordering
 is maintain when reading back from the database, e.g. `0000000000`.
+* `<ui_title>` is the notification title provided by the developer. It can also
+be updated by calling `BackgroundFetchUpdateEvent.updateUI`.
 
