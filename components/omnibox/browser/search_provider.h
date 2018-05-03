@@ -234,7 +234,7 @@ class SearchProvider : public BaseSearchProvider,
 
   // Returns true when the current query can be sent to at least one suggest
   // service.  This will be false for example when suggest is disabled.  In
-  // the process, calculates whether the query may contain potentionally
+  // the process, calculates whether the query may contain potentially
   // private data and stores the result in |is_query_private|; such queries
   // should not be sent to the default search engine.
   bool IsQuerySuitableForSuggest(bool* query_is_private) const;
@@ -243,7 +243,7 @@ class SearchProvider : public BaseSearchProvider,
   // information (and hence the suggest request shouldn't be sent).  In
   // particular, if the input type might be a URL, we take extra care so that
   // it isn't sent to the server.
-  bool IsQueryPotentionallyPrivate() const;
+  bool IsQueryPotentiallyPrivate() const;
 
   // Remove existing keyword results if the user is no longer in keyword mode,
   // and, if |minimal_changes| is false, revise the existing results to

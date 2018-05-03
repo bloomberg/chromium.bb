@@ -517,7 +517,7 @@ void SearchProvider::LogFetchComplete(bool success, bool is_keyword) {
 void SearchProvider::UpdateMatches() {
   // On-focus inputs display no suggestions, so we do not need to persist the
   // previous top suggestions, add new suggestions, or revise suggestions to
-  // enforce constraints about inlineability in this case.  Indeed, most of
+  // enforce constraints about inlinability in this case.  Indeed, most of
   // these steps would be bad, as they'd add a suggestion of some form, thus
   // opening the dropdown (which we do not want to happen).
   if (!input_.from_omnibox_focus()) {
@@ -752,10 +752,10 @@ void SearchProvider::CancelFetcher(std::unique_ptr<net::URLFetcher>* fetcher) {
 }
 
 bool SearchProvider::IsQuerySuitableForSuggest(bool* query_is_private) const {
-  *query_is_private = IsQueryPotentionallyPrivate();
+  *query_is_private = IsQueryPotentiallyPrivate();
 
   // Don't run Suggest in incognito mode, if the engine doesn't support it, or
-  // if the user has disabled it.  Also don't send potentionally private data
+  // if the user has disabled it.  Also don't send potentially private data
   // to the default search provider.  (It's always okay to send explicit
   // keyword input to a keyword suggest server, if any.)
   const TemplateURL* default_url = providers_.GetDefaultProviderURL();
@@ -766,7 +766,7 @@ bool SearchProvider::IsQuerySuitableForSuggest(bool* query_is_private) const {
           (keyword_url && !keyword_url->suggestions_url().empty()));
 }
 
-bool SearchProvider::IsQueryPotentionallyPrivate() const {
+bool SearchProvider::IsQueryPotentiallyPrivate() const {
   if (input_.text().empty())
     return false;
 
@@ -1511,15 +1511,15 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
     match.inline_autocompletion =
         match.fill_into_edit.substr(inline_autocomplete_offset);
   }
-  // An inlineable navsuggestion can only be the default match when there
+  // An inlinable navsuggestion can only be the default match when there
   // is no keyword provider active, lest it appear first and break the user
   // out of keyword mode.  We also must have received the navsuggestion before
   // the last keystroke, to prevent asynchronous inline autocompletions changes.
   // The navsuggestion can also only be default if either the inline
   // autocompletion is empty or we're not preventing inline autocompletion.
-  // Finally, if we have an inlineable navsuggestion with an inline completion
+  // Finally, if we have an inlinable navsuggestion with an inline completion
   // that we're not preventing, make sure we didn't trim any whitespace.
-  // We don't want to claim http://foo.com/bar is inlineable against the
+  // We don't want to claim http://foo.com/bar is inlinable against the
   // input "foo.com/b ".
   match.allowed_to_be_default_match =
       (prefix != nullptr) && (providers_.GetKeywordProviderURL() == nullptr) &&
