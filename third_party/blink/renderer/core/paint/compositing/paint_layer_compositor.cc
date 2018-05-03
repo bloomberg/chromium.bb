@@ -232,7 +232,8 @@ void PaintLayerCompositor::UpdateIfNeededRecursiveInternal(
     }
   }
 
-  TRACE_EVENT0("blink", "PaintLayerCompositor::updateIfNeededRecursive");
+  TRACE_EVENT0("blink,benchmark",
+               "PaintLayerCompositor::updateIfNeededRecursive");
 
   DCHECK(!layout_view_.NeedsLayout());
 
