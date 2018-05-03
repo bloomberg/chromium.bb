@@ -1,11 +1,10 @@
 {
   "comments": [
-    "Run web_view tests for 64-bit iOS 9.0 simulators on FYI ios-webview."
+    "Run web_view tests for 64-bit iOS 10.0 simulators on FYI ios-webview."
   ],
   "xcode build version": "9C40b",
   "gn_args": [
     "goma_dir=\"$(goma_dir)\"",
-    "ios_deployment_target=\"9.0\"",
     "is_component_build=false",
     "is_debug=true",
     "symbol_level=1",
@@ -13,54 +12,109 @@
     "target_os=\"ios\"",
     "use_goma=true"
   ],
-  "configuration": "Debug",
-  "sdk": "iphonesimulator11.0",
   "tests": [
     {
       "app": "ios_web_view_unittests",
       "device type": "iPhone 5s",
-      "os": "9.3"
+      "os": "10.0",
+      "xcode build version": "8A218a",
+      "comments": [
+        "Xcode 8.0 requires Mac-10.11.5+ and we still have 10.10 bots"
+      ],
+      "dimensions": [
+        { "os": "Mac-10.11.6", "pool": "Chrome" },
+        { "os": "Mac-10.12", "pool": "Chrome" },
+        { "os": "Mac-10.13", "pool": "Chrome" }
+      ]
     },
     {
       "app": "ios_web_view_inttests",
       "device type": "iPhone 5s",
-      "os": "9.3"
+      "os": "10.0",
+      "xcode build version": "8A218a",
+      "dimensions": [
+        { "os": "Mac-10.11.6", "pool": "Chrome" },
+        { "os": "Mac-10.12", "pool": "Chrome" },
+        { "os": "Mac-10.13", "pool": "Chrome" }
+      ]
     },
     {
       "app": "ios_components_unittests",
       "device type": "iPhone 5s",
-      "os": "9.3"
+      "os": "10.0",
+      "xcode build version": "8A218a",
+      "dimensions": [
+        { "os": "Mac-10.11.6", "pool": "Chrome" },
+        { "os": "Mac-10.12", "pool": "Chrome" },
+        { "os": "Mac-10.13", "pool": "Chrome" }
+      ]
     },
     {
       "app": "components_unittests",
       "device type": "iPhone 5s",
-      "os": "9.3"
+      "os": "10.0",
+      "xcode build version": "8A218a",
+      "dimensions": [
+        { "os": "Mac-10.11.6", "pool": "Chrome" },
+        { "os": "Mac-10.12", "pool": "Chrome" },
+        { "os": "Mac-10.13", "pool": "Chrome" }
+      ]
     },
     {
       "app": "net_unittests",
       "device type": "iPhone 5s",
-      "os": "9.3"
+      "os": "10.0",
+      "xcode build version": "8A218a",
+      "dimensions": [
+        { "os": "Mac-10.11.6", "pool": "Chrome" },
+        { "os": "Mac-10.12", "pool": "Chrome" },
+        { "os": "Mac-10.13", "pool": "Chrome" }
+      ]
     },
     {
       "app": "ios_net_unittests",
       "device type": "iPhone 5s",
-      "os": "9.3"
+      "os": "10.0",
+      "xcode build version": "8A218a",
+      "dimensions": [
+        { "os": "Mac-10.11.6", "pool": "Chrome" },
+        { "os": "Mac-10.12", "pool": "Chrome" },
+        { "os": "Mac-10.13", "pool": "Chrome" }
+      ]
     },
     {
       "app": "ios_web_unittests",
       "device type": "iPhone 5s",
-      "os": "9.3"
+      "os": "10.0",
+      "xcode build version": "8A218a",
+      "dimensions": [
+        { "os": "Mac-10.11.6", "pool": "Chrome" },
+        { "os": "Mac-10.12", "pool": "Chrome" },
+        { "os": "Mac-10.13", "pool": "Chrome" }
+      ]
     },
     {
       "app": "ios_web_inttests",
       "device type": "iPhone 5s",
-      "os": "9.3"
+      "os": "10.0",
+      "xcode build version": "8A218a",
+      "dimensions": [
+        { "os": "Mac-10.11.6", "pool": "Chrome" },
+        { "os": "Mac-10.12", "pool": "Chrome" },
+        { "os": "Mac-10.13", "pool": "Chrome" }
+      ]
     },
     {
       "app": "ios_web_shell_egtests",
+      "xctest": true,
       "device type": "iPhone 5s",
-      "os": "9.3",
-      "xctest": true
+      "os": "10.0",
+      "xcode build version": "8A218a",
+      "dimensions": [
+        { "os": "Mac-10.11.6", "pool": "Chrome" },
+        { "os": "Mac-10.12", "pool": "Chrome" },
+        { "os": "Mac-10.13", "pool": "Chrome" }
+      ]
     }
   ]
 }
