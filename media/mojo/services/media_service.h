@@ -11,9 +11,9 @@
 #include "media/base/media_log.h"
 #include "media/mojo/interfaces/interface_factory.mojom.h"
 #include "media/mojo/interfaces/media_service.mojom.h"
+#include "media/mojo/services/deferred_destroy_strong_binding_set.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
@@ -56,7 +56,8 @@ class MEDIA_MOJO_EXPORT MediaService : public service_manager::Service,
 
   // Note: Since |&media_log_| is passed to bindings, the bindings must be
   // destructed first.
-  mojo::StrongBindingSet<mojom::InterfaceFactory> interface_factory_bindings_;
+  DeferredDestroyStrongBindingSet<mojom::InterfaceFactory>
+      interface_factory_bindings_;
 
   service_manager::BinderRegistry registry_;
   mojo::BindingSet<mojom::MediaService> bindings_;
