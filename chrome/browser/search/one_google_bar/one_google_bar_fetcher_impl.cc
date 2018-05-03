@@ -24,9 +24,11 @@
 #include "net/base/url_util.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
 #include "services/data_decoder/public/cpp/safe_json_parser.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
+#include "url/gurl.h"
 
 namespace {
 
@@ -128,43 +130,44 @@ base::Optional<OneGoogleBarData> JsonToOGBData(const base::Value& value) {
 
 }  // namespace
 
-class OneGoogleBarFetcherImpl::AuthenticatedURLFetcher
-    : public net::URLFetcherDelegate {
+class OneGoogleBarFetcherImpl::AuthenticatedURLFetcher {
  public:
-  using FetchDoneCallback = base::OnceCallback<void(const net::URLFetcher*)>;
+  using LoadDoneCallback =
+      base::OnceCallback<void(const network::SimpleURLLoader* simple_loader,
+                              std::unique_ptr<std::string> response_body)>;
 
-  AuthenticatedURLFetcher(net::URLRequestContextGetter* request_context,
-                          GURL api_url,
-                          bool account_consistency_mirror_required,
-                          FetchDoneCallback callback);
-  ~AuthenticatedURLFetcher() override = default;
+  AuthenticatedURLFetcher(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      GURL api_url,
+      bool account_consistency_mirror_required,
+      LoadDoneCallback callback);
+  ~AuthenticatedURLFetcher() = default;
 
   void Start();
 
  private:
   std::string GetExtraRequestHeaders() const;
 
-  // URLFetcherDelegate implementation.
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLLoaderComplete(std::unique_ptr<std::string> response_body);
 
-  net::URLRequestContextGetter* const request_context_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   const GURL api_url_;
 #if defined(OS_CHROMEOS)
   const bool account_consistency_mirror_required_;
 #endif
 
-  FetchDoneCallback callback_;
+  LoadDoneCallback callback_;
 
-  // The underlying URLFetcher which does the actual fetch.
-  std::unique_ptr<net::URLFetcher> url_fetcher_;
+  // The underlying SimpleURLLoader which does the actual load.
+  std::unique_ptr<network::SimpleURLLoader> simple_loader_;
 };
 
 OneGoogleBarFetcherImpl::AuthenticatedURLFetcher::AuthenticatedURLFetcher(
-    net::URLRequestContextGetter* request_context,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     GURL api_url,
     bool account_consistency_mirror_required,
-    FetchDoneCallback callback)
-    : request_context_(request_context),
+    LoadDoneCallback callback)
+    : url_loader_factory_(url_loader_factory),
       api_url_(std::move(api_url)),
 #if defined(OS_CHROMEOS)
       account_consistency_mirror_required_(account_consistency_mirror_required),
@@ -230,31 +233,36 @@ void OneGoogleBarFetcherImpl::AuthenticatedURLFetcher::Start() {
             }
           }
         })");
-  url_fetcher_ = net::URLFetcher::Create(0, api_url_, net::URLFetcher::GET,
-                                         this, traffic_annotation);
-  url_fetcher_->SetRequestContext(request_context_);
 
-  url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_AUTH_DATA);
-  url_fetcher_->SetExtraRequestHeaders(GetExtraRequestHeaders());
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = api_url_;
+  resource_request->load_flags = net::LOAD_DO_NOT_SEND_AUTH_DATA;
+  resource_request->headers.AddHeadersFromString(GetExtraRequestHeaders());
+  resource_request->request_initiator =
+      url::Origin::Create(GURL(chrome::kChromeUINewTabURL));
 
-  url_fetcher_->SetInitiator(
-      url::Origin::Create(GURL(chrome::kChromeUINewTabURL)));
-
-  url_fetcher_->Start();
+  simple_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
+                                                    traffic_annotation);
+  simple_loader_->DownloadToString(
+      url_loader_factory_.get(),
+      base::BindOnce(&OneGoogleBarFetcherImpl::AuthenticatedURLFetcher::
+                         OnURLLoaderComplete,
+                     base::Unretained(this)),
+      1024 * 1024);
 }
 
-void OneGoogleBarFetcherImpl::AuthenticatedURLFetcher::OnURLFetchComplete(
-    const net::URLFetcher* source) {
-  std::move(callback_).Run(source);
+void OneGoogleBarFetcherImpl::AuthenticatedURLFetcher::OnURLLoaderComplete(
+    std::unique_ptr<std::string> response_body) {
+  std::move(callback_).Run(simple_loader_.get(), std::move(response_body));
 }
 
 OneGoogleBarFetcherImpl::OneGoogleBarFetcherImpl(
-    net::URLRequestContextGetter* request_context,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     GoogleURLTracker* google_url_tracker,
     const std::string& application_locale,
     const base::Optional<std::string>& api_url_override,
     bool account_consistency_mirror_required)
-    : request_context_(request_context),
+    : url_loader_factory_(url_loader_factory),
       google_url_tracker_(google_url_tracker),
       application_locale_(application_locale),
       api_url_override_(api_url_override),
@@ -270,8 +278,8 @@ void OneGoogleBarFetcherImpl::Fetch(OneGoogleCallback callback) {
   // something has changed in the meantime (e.g. signin state) that would make
   // the result obsolete.
   pending_request_ = std::make_unique<AuthenticatedURLFetcher>(
-      request_context_, GetApiUrl(), account_consistency_mirror_required_,
-      base::BindOnce(&OneGoogleBarFetcherImpl::FetchDone,
+      url_loader_factory_, GetApiUrl(), account_consistency_mirror_required_,
+      base::BindOnce(&OneGoogleBarFetcherImpl::LoadDone,
                      base::Unretained(this)));
   pending_request_->Start();
 }
@@ -301,33 +309,22 @@ GURL OneGoogleBarFetcherImpl::GetApiUrl() const {
   return api_url.ReplaceComponents(replacements);
 }
 
-void OneGoogleBarFetcherImpl::FetchDone(const net::URLFetcher* source) {
-  // The fetcher will be deleted when the request is handled.
+void OneGoogleBarFetcherImpl::LoadDone(
+    const network::SimpleURLLoader* simple_loader,
+    std::unique_ptr<std::string> response_body) {
+  // The loader will be deleted when the request is handled.
   std::unique_ptr<AuthenticatedURLFetcher> deleter(std::move(pending_request_));
 
-  const net::URLRequestStatus& request_status = source->GetStatus();
-  if (request_status.status() != net::URLRequestStatus::SUCCESS) {
+  if (!response_body) {
     // This represents network errors (i.e. the server did not provide a
     // response).
-    DLOG(WARNING) << "Request failed with error: " << request_status.error()
-                  << ": " << net::ErrorToString(request_status.error());
+    DLOG(WARNING) << "Request failed with error: " << simple_loader->NetError();
     Respond(Status::TRANSIENT_ERROR, base::nullopt);
     return;
   }
 
-  const int response_code = source->GetResponseCode();
-  if (response_code != net::HTTP_OK) {
-    DLOG(WARNING) << "Response code: " << response_code;
-    std::string response;
-    source->GetResponseAsString(&response);
-    DLOG(WARNING) << "Response: " << response;
-    Respond(Status::FATAL_ERROR, base::nullopt);
-    return;
-  }
-
   std::string response;
-  bool success = source->GetResponseAsString(&response);
-  DCHECK(success);
+  response.swap(*response_body);
 
   // The response may start with )]}'. Ignore this.
   if (base::StartsWith(response, kResponsePreamble,

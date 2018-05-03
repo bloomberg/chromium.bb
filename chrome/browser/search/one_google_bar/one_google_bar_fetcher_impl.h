@@ -20,10 +20,10 @@ namespace base {
 class Value;
 }
 
-namespace net {
-class URLFetcher;
-class URLRequestContextGetter;
-}  // namespace net
+namespace network {
+class SimpleURLLoader;
+class SharedURLLoaderFactory;
+}  // namespace network
 
 struct OneGoogleBarData;
 
@@ -34,29 +34,32 @@ class OneGoogleBarFetcherImpl : public OneGoogleBarFetcher {
  public:
   // |api_url_override| can be either absolute, or relative to the Google base
   // URL.
-  OneGoogleBarFetcherImpl(net::URLRequestContextGetter* request_context,
-                          GoogleURLTracker* google_url_tracker,
-                          const std::string& application_locale,
-                          const base::Optional<std::string>& api_url_override,
-                          bool account_consistency_mirror_required);
+  OneGoogleBarFetcherImpl(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      GoogleURLTracker* google_url_tracker,
+      const std::string& application_locale,
+      const base::Optional<std::string>& api_url_override,
+      bool account_consistency_mirror_required);
   ~OneGoogleBarFetcherImpl() override;
 
   void Fetch(OneGoogleCallback callback) override;
 
+  GURL GetFetchURLForTesting() const override;
+
  private:
   class AuthenticatedURLFetcher;
 
-  GURL GetFetchURLForTesting() const override;
   GURL GetApiUrl() const;
 
-  void FetchDone(const net::URLFetcher* source);
+  void LoadDone(const network::SimpleURLLoader* simple_loader,
+                std::unique_ptr<std::string> response_body);
 
   void JsonParsed(std::unique_ptr<base::Value> value);
   void JsonParseFailed(const std::string& message);
 
   void Respond(Status status, const base::Optional<OneGoogleBarData>& data);
 
-  net::URLRequestContextGetter* request_context_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   GoogleURLTracker* google_url_tracker_;
   const std::string application_locale_;
   const base::Optional<std::string> api_url_override_;

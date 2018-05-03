@@ -9,20 +9,21 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/mock_callback.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_data.h"
 #include "components/google/core/browser/google_url_tracker.h"
 #include "components/signin/core/browser/signin_header_helper.h"
+#include "content/public/common/weak_wrapper_shared_url_loader_factory.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_request_status.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/data_decoder/public/cpp/testing_json_parser.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -31,6 +32,11 @@ using testing::Eq;
 using testing::IsEmpty;
 using testing::SaveArg;
 using testing::StartsWith;
+
+// Needed for GoogleURLTrackerClientStub below.
+namespace net {
+class URLRequestContextGetter;
+}
 
 namespace {
 
@@ -57,6 +63,10 @@ class GoogleURLTrackerClientStub : public GoogleURLTrackerClient {
 
 }  // namespace
 
+ACTION_P(Quit, run_loop) {
+  run_loop->Quit();
+}
+
 class OneGoogleBarFetcherImplTest : public testing::Test {
  public:
   OneGoogleBarFetcherImplTest()
@@ -77,11 +87,12 @@ class OneGoogleBarFetcherImplTest : public testing::Test {
   OneGoogleBarFetcherImplTest(
       const base::Optional<std::string>& api_url_override,
       bool account_consistency_mirror_required)
-      : task_runner_(new base::TestSimpleTaskRunner()),
-        request_context_getter_(
-            new net::TestURLRequestContextGetter(task_runner_)),
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         google_url_tracker_(std::make_unique<GoogleURLTrackerClientStub>(),
                             GoogleURLTracker::ALWAYS_DOT_COM_MODE),
+        test_shared_loader_factory_(
+            base::MakeRefCounted<content::WeakWrapperSharedURLLoaderFactory>(
+                &test_url_loader_factory_)),
         api_url_override_(api_url_override),
         account_consistency_mirror_required_(
             account_consistency_mirror_required) {}
@@ -94,42 +105,34 @@ class OneGoogleBarFetcherImplTest : public testing::Test {
     testing::Test::SetUp();
 
     one_google_bar_fetcher_ = std::make_unique<OneGoogleBarFetcherImpl>(
-        request_context_getter_.get(), &google_url_tracker_, kApplicationLocale,
+        test_shared_loader_factory_, &google_url_tracker_, kApplicationLocale,
         api_url_override_, account_consistency_mirror_required_);
   }
 
-  net::TestURLFetcher* GetRunningURLFetcher() {
-    // All created URLFetchers have ID 0 by default.
-    net::TestURLFetcher* url_fetcher = url_fetcher_factory_.GetFetcherByID(0);
-    DCHECK(url_fetcher);
-    return url_fetcher;
+  void SetUpResponseWithData(const std::string& response) {
+    test_url_loader_factory_.SetInterceptor(base::BindLambdaForTesting(
+        [&](const network::ResourceRequest& request) {
+          last_request_url_ = request.url;
+          last_request_headers_ = request.headers;
+        }));
+    test_url_loader_factory_.AddResponse(
+        one_google_bar_fetcher_->GetFetchURLForTesting().spec(), response);
   }
 
-  void RespondWithData(const std::string& data) {
-    net::TestURLFetcher* url_fetcher = GetRunningURLFetcher();
-    url_fetcher->set_status(net::URLRequestStatus());
-    url_fetcher->set_response_code(net::HTTP_OK);
-    url_fetcher->SetResponseString(data);
-    url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
-    // SafeJsonParser is asynchronous.
-    base::RunLoop().RunUntilIdle();
-  }
-
-  void RespondWithNetworkError() {
-    net::TestURLFetcher* url_fetcher = GetRunningURLFetcher();
-    url_fetcher->set_status(net::URLRequestStatus::FromError(net::ERR_FAILED));
-    url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
-  }
-
-  void RespondWithHttpError() {
-    net::TestURLFetcher* url_fetcher = GetRunningURLFetcher();
-    url_fetcher->set_status(net::URLRequestStatus());
-    url_fetcher->set_response_code(net::HTTP_NOT_FOUND);
-    url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
+  void SetUpResponseWithNetworkError() {
+    test_url_loader_factory_.AddResponse(
+        one_google_bar_fetcher_->GetFetchURLForTesting(),
+        network::ResourceResponseHead(), std::string(),
+        network::URLLoaderCompletionStatus(net::HTTP_NOT_FOUND));
   }
 
   OneGoogleBarFetcherImpl* one_google_bar_fetcher() {
     return one_google_bar_fetcher_.get();
+  }
+
+  GURL last_request_url() { return last_request_url_; }
+  net::HttpRequestHeaders last_request_headers() {
+    return last_request_headers_;
   }
 
  private:
@@ -140,65 +143,69 @@ class OneGoogleBarFetcherImplTest : public testing::Test {
 
   data_decoder::TestingJsonParser::ScopedFactoryOverride factory_override_;
 
-  net::TestURLFetcherFactory url_fetcher_factory_;
-
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
   GoogleURLTracker google_url_tracker_;
-
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   base::Optional<std::string> api_url_override_;
   bool account_consistency_mirror_required_;
+
+  GURL last_request_url_;
+  net::HttpRequestHeaders last_request_headers_;
+
   std::unique_ptr<OneGoogleBarFetcherImpl> one_google_bar_fetcher_;
 };
 
 TEST_F(OneGoogleBarFetcherImplTest, RequestUrlContainsLanguage) {
+  SetUpResponseWithData(kMinimalValidResponse);
+
   // Trigger a request.
   base::MockCallback<OneGoogleBarFetcher::OneGoogleCallback> callback;
   one_google_bar_fetcher()->Fetch(callback.Get());
 
-  net::TestURLFetcher* fetcher = GetRunningURLFetcher();
-  GURL request_url = fetcher->GetOriginalURL();
+  base::RunLoop loop;
+  EXPECT_CALL(callback, Run(_, _)).WillOnce(Quit(&loop));
+  loop.Run();
 
   // Make sure the request URL contains the "hl=" query param.
   std::string expected_query =
       base::StringPrintf("hl=%s&async=fixed:0", kApplicationLocale);
-  EXPECT_EQ(expected_query, request_url.query());
+  EXPECT_EQ(expected_query, last_request_url().query());
 }
 
 TEST_F(OneGoogleBarFetcherImplTest, RequestReturns) {
+  SetUpResponseWithData(kMinimalValidResponse);
+
   base::MockCallback<OneGoogleBarFetcher::OneGoogleCallback> callback;
   one_google_bar_fetcher()->Fetch(callback.Get());
 
   base::Optional<OneGoogleBarData> data;
+  base::RunLoop loop;
   EXPECT_CALL(callback, Run(OneGoogleBarFetcher::Status::OK, _))
-      .WillOnce(SaveArg<1>(&data));
-  RespondWithData(kMinimalValidResponse);
+      .WillOnce(DoAll(SaveArg<1>(&data), Quit(&loop)));
+  loop.Run();
 
   EXPECT_TRUE(data.has_value());
 }
 
 TEST_F(OneGoogleBarFetcherImplTest, HandlesResponsePreamble) {
+  // The reponse may contain a ")]}'" prefix. The fetcher should ignore that
+  // during parsing.
+  SetUpResponseWithData(std::string(")]}'") + kMinimalValidResponse);
+
   base::MockCallback<OneGoogleBarFetcher::OneGoogleCallback> callback;
   one_google_bar_fetcher()->Fetch(callback.Get());
 
-  // The reponse may contain a ")]}'" prefix. The fetcher should ignore that
-  // during parsing.
   base::Optional<OneGoogleBarData> data;
+  base::RunLoop loop;
   EXPECT_CALL(callback, Run(OneGoogleBarFetcher::Status::OK, _))
-      .WillOnce(SaveArg<1>(&data));
-  RespondWithData(std::string(")]}'") + kMinimalValidResponse);
+      .WillOnce(DoAll(SaveArg<1>(&data), Quit(&loop)));
+  loop.Run();
 
   EXPECT_TRUE(data.has_value());
 }
 
 TEST_F(OneGoogleBarFetcherImplTest, ParsesFullResponse) {
-  base::MockCallback<OneGoogleBarFetcher::OneGoogleCallback> callback;
-  one_google_bar_fetcher()->Fetch(callback.Get());
-
-  base::Optional<OneGoogleBarData> data;
-  EXPECT_CALL(callback, Run(OneGoogleBarFetcher::Status::OK, _))
-      .WillOnce(SaveArg<1>(&data));
-  RespondWithData(R"json({"update": { "ogb": {
+  SetUpResponseWithData(R"json({"update": { "ogb": {
     "html": {
       "private_do_not_access_or_else_safe_html_wrapped_value": "bar_html_value"
     },
@@ -226,6 +233,15 @@ TEST_F(OneGoogleBarFetcherImplTest, ParsesFullResponse) {
     }
   }}})json");
 
+  base::MockCallback<OneGoogleBarFetcher::OneGoogleCallback> callback;
+  one_google_bar_fetcher()->Fetch(callback.Get());
+
+  base::Optional<OneGoogleBarData> data;
+  base::RunLoop loop;
+  EXPECT_CALL(callback, Run(OneGoogleBarFetcher::Status::OK, _))
+      .WillOnce(DoAll(SaveArg<1>(&data), Quit(&loop)));
+  loop.Run();
+
   ASSERT_TRUE(data.has_value());
   EXPECT_THAT(data->bar_html, Eq("bar_html_value"));
   EXPECT_THAT(data->in_head_script, Eq("in_head_script_value"));
@@ -235,29 +251,9 @@ TEST_F(OneGoogleBarFetcherImplTest, ParsesFullResponse) {
   EXPECT_THAT(data->end_of_body_script, Eq("end_of_body_script_value"));
 }
 
-class MockURLFetcherDelegateForTests
-    : public net::TestURLFetcher::DelegateForTests {
- public:
-  MOCK_METHOD1(OnRequestStart, void(int fetcher_id));
-  MOCK_METHOD1(OnChunkUpload, void(int fetcher_id));
-  MOCK_METHOD1(OnRequestEnd, void(int fetcher_id));
-};
-
-TEST_F(OneGoogleBarFetcherImplTest, SecondRequestOverridesFirst) {
-  // Trigger the first request.
-  base::MockCallback<OneGoogleBarFetcher::OneGoogleCallback> first_callback;
-  one_google_bar_fetcher()->Fetch(first_callback.Get());
-  net::TestURLFetcher* first_fetcher = GetRunningURLFetcher();
-  testing::StrictMock<MockURLFetcherDelegateForTests> first_mock_delegate;
-  first_fetcher->SetDelegateForTests(&first_mock_delegate);
-
-  // Trigger a second request. That should cancel the first one.
-  EXPECT_CALL(first_mock_delegate, OnRequestEnd(0));
-  base::MockCallback<OneGoogleBarFetcher::OneGoogleCallback> second_callback;
-  one_google_bar_fetcher()->Fetch(second_callback.Get());
-}
-
 TEST_F(OneGoogleBarFetcherImplTest, CoalescesMultipleRequests) {
+  SetUpResponseWithData(kMinimalValidResponse);
+
   // Trigger two requests.
   base::MockCallback<OneGoogleBarFetcher::OneGoogleCallback> first_callback;
   one_google_bar_fetcher()->Fetch(first_callback.Get());
@@ -268,12 +264,12 @@ TEST_F(OneGoogleBarFetcherImplTest, CoalescesMultipleRequests) {
   base::Optional<OneGoogleBarData> first_data;
   base::Optional<OneGoogleBarData> second_data;
 
+  base::RunLoop loop;
   EXPECT_CALL(first_callback, Run(OneGoogleBarFetcher::Status::OK, _))
       .WillOnce(SaveArg<1>(&first_data));
   EXPECT_CALL(second_callback, Run(OneGoogleBarFetcher::Status::OK, _))
-      .WillOnce(SaveArg<1>(&second_data));
-
-  RespondWithData(kMinimalValidResponse);
+      .WillOnce(DoAll(SaveArg<1>(&second_data), Quit(&loop)));
+  loop.Run();
 
   // Ensure that both requests received a response.
   EXPECT_TRUE(first_data.has_value());
@@ -281,62 +277,70 @@ TEST_F(OneGoogleBarFetcherImplTest, CoalescesMultipleRequests) {
 }
 
 TEST_F(OneGoogleBarFetcherImplTest, NetworkErrorIsTransient) {
+  SetUpResponseWithNetworkError();
+
   base::MockCallback<OneGoogleBarFetcher::OneGoogleCallback> callback;
   one_google_bar_fetcher()->Fetch(callback.Get());
 
+  base::RunLoop loop;
   EXPECT_CALL(callback, Run(OneGoogleBarFetcher::Status::TRANSIENT_ERROR,
-                            Eq(base::nullopt)));
-  RespondWithNetworkError();
-}
-
-TEST_F(OneGoogleBarFetcherImplTest, HttpErrorIsFatal) {
-  base::MockCallback<OneGoogleBarFetcher::OneGoogleCallback> callback;
-  one_google_bar_fetcher()->Fetch(callback.Get());
-
-  EXPECT_CALL(callback,
-              Run(OneGoogleBarFetcher::Status::FATAL_ERROR, Eq(base::nullopt)));
-  RespondWithHttpError();
+                            Eq(base::nullopt)))
+      .WillOnce(Quit(&loop));
+  loop.Run();
 }
 
 TEST_F(OneGoogleBarFetcherImplTest, InvalidJsonErrorIsFatal) {
+  SetUpResponseWithData(kMinimalValidResponse + std::string(")"));
+
   base::MockCallback<OneGoogleBarFetcher::OneGoogleCallback> callback;
   one_google_bar_fetcher()->Fetch(callback.Get());
 
+  base::RunLoop loop;
   EXPECT_CALL(callback,
-              Run(OneGoogleBarFetcher::Status::FATAL_ERROR, Eq(base::nullopt)));
-  RespondWithData(kMinimalValidResponse + std::string(")"));
+              Run(OneGoogleBarFetcher::Status::FATAL_ERROR, Eq(base::nullopt)))
+      .WillOnce(Quit(&loop));
+  loop.Run();
 }
 
 TEST_F(OneGoogleBarFetcherImplTest, IncompleteJsonErrorIsFatal) {
-  base::MockCallback<OneGoogleBarFetcher::OneGoogleCallback> callback;
-  one_google_bar_fetcher()->Fetch(callback.Get());
-
-  EXPECT_CALL(callback,
-              Run(OneGoogleBarFetcher::Status::FATAL_ERROR, Eq(base::nullopt)));
-  RespondWithData(R"json({"update": { "ogb": {
+  SetUpResponseWithData(R"json({"update": { "ogb": {
   "html": {},
   "page_hooks": {}
 }}})json");
+
+  base::MockCallback<OneGoogleBarFetcher::OneGoogleCallback> callback;
+  one_google_bar_fetcher()->Fetch(callback.Get());
+
+  base::RunLoop loop;
+  EXPECT_CALL(callback,
+              Run(OneGoogleBarFetcher::Status::FATAL_ERROR, Eq(base::nullopt)))
+      .WillOnce(Quit(&loop));
+  loop.Run();
 }
 
 TEST_F(OneGoogleBarFetcherImplTest, MirrorAccountConsistencyNotRequired) {
+  SetUpResponseWithData(kMinimalValidResponse);
+
   // Trigger a request.
   base::MockCallback<OneGoogleBarFetcher::OneGoogleCallback> callback;
   one_google_bar_fetcher()->Fetch(callback.Get());
-  net::TestURLFetcher* fetcher = GetRunningURLFetcher();
 
-  net::HttpRequestHeaders headers;
-  fetcher->GetExtraRequestHeaders(&headers);
+  base::RunLoop loop;
+  EXPECT_CALL(callback, Run(_, _)).WillOnce(Quit(&loop));
+  loop.Run();
+
 #if defined(OS_CHROMEOS)
   // On Chrome OS, X-Chrome-Connected header is present, but
   // enable_account_consistency is set to false.
   std::string header_value;
-  EXPECT_TRUE(headers.GetHeader(signin::kChromeConnectedHeader, &header_value));
+  EXPECT_TRUE(last_request_headers().GetHeader(signin::kChromeConnectedHeader,
+                                               &header_value));
   // mode = PROFILE_MODE_DEFAULT
   EXPECT_EQ("mode=0,enable_account_consistency=false", header_value);
 #else
   // On not Chrome OS, the X-Chrome-Connected header must not be present.
-  EXPECT_FALSE(headers.HasHeader(signin::kChromeConnectedHeader));
+  EXPECT_FALSE(
+      last_request_headers().HasHeader(signin::kChromeConnectedHeader));
 #endif
 }
 
@@ -349,25 +353,30 @@ class OneGoogleBarFetcherImplWithMirrorAccountConsistencyTest
 
 TEST_F(OneGoogleBarFetcherImplWithMirrorAccountConsistencyTest,
        MirrorAccountConsistencyRequired) {
+  SetUpResponseWithData(kMinimalValidResponse);
+
   // Trigger a request.
   base::MockCallback<OneGoogleBarFetcher::OneGoogleCallback> callback;
   one_google_bar_fetcher()->Fetch(callback.Get());
-  net::TestURLFetcher* fetcher = GetRunningURLFetcher();
+
+  base::RunLoop loop;
+  EXPECT_CALL(callback, Run(_, _)).WillOnce(Quit(&loop));
+  loop.Run();
 
   // Make sure mirror account consistency is requested.
-  net::HttpRequestHeaders headers;
-  fetcher->GetExtraRequestHeaders(&headers);
 #if defined(OS_CHROMEOS)
   // On Chrome OS, X-Chrome-Connected header is present, and
   // enable_account_consistency is set to true.
   std::string header_value;
-  EXPECT_TRUE(headers.GetHeader(signin::kChromeConnectedHeader, &header_value));
+  EXPECT_TRUE(last_request_headers().GetHeader(signin::kChromeConnectedHeader,
+                                               &header_value));
   // mode = PROFILE_MODE_INCOGNITO_DISABLED | PROFILE_MODE_ADD_ACCOUNT_DISABLED
   EXPECT_EQ("mode=3,enable_account_consistency=true", header_value);
 #else
   // This is not a valid case (mirror account consistency can only be required
   // on Chrome OS). This ensures in this case nothing happens.
-  EXPECT_FALSE(headers.HasHeader(signin::kChromeConnectedHeader));
+  EXPECT_FALSE(
+      last_request_headers().HasHeader(signin::kChromeConnectedHeader));
 #endif
 }
 
@@ -380,17 +389,22 @@ class OneGoogleBarFetcherImplWithRelativeApiUrlOverrideTest
 
 TEST_F(OneGoogleBarFetcherImplWithRelativeApiUrlOverrideTest,
        RequestUrlRespectsOverride) {
+  SetUpResponseWithData(kMinimalValidResponse);
+
   // Trigger a request.
   base::MockCallback<OneGoogleBarFetcher::OneGoogleCallback> callback;
   one_google_bar_fetcher()->Fetch(callback.Get());
 
+  base::RunLoop loop;
+  EXPECT_CALL(callback, Run(_, _)).WillOnce(Quit(&loop));
+  loop.Run();
+
   // Make sure the request URL corresponds to the override, but also contains
   // the "hl=" query param.
-  GURL request_url = GetRunningURLFetcher()->GetOriginalURL();
-  EXPECT_EQ("/testapi", request_url.path());
+  EXPECT_EQ("/testapi", last_request_url().path());
   std::string expected_query =
       base::StringPrintf("q=a&hl=%s&async=fixed:0", kApplicationLocale);
-  EXPECT_EQ(expected_query, request_url.query());
+  EXPECT_EQ(expected_query, last_request_url().query());
 }
 
 class OneGoogleBarFetcherImplWithAbsoluteApiUrlOverrideTest
@@ -402,14 +416,19 @@ class OneGoogleBarFetcherImplWithAbsoluteApiUrlOverrideTest
 
 TEST_F(OneGoogleBarFetcherImplWithAbsoluteApiUrlOverrideTest,
        RequestUrlRespectsOverride) {
+  SetUpResponseWithData(kMinimalValidResponse);
+
   // Trigger a request.
   base::MockCallback<OneGoogleBarFetcher::OneGoogleCallback> callback;
   one_google_bar_fetcher()->Fetch(callback.Get());
 
+  base::RunLoop loop;
+  EXPECT_CALL(callback, Run(_, _)).WillOnce(Quit(&loop));
+  loop.Run();
+
   // Make sure the request URL corresponds to the override, but also contains
   // the "hl=" query param.
-  GURL request_url = GetRunningURLFetcher()->GetOriginalURL();
   GURL expected_url = GURL(base::StringPrintf(
       "http://test.com/path?q=a&hl=%s&async=fixed:0", kApplicationLocale));
-  EXPECT_EQ(expected_url, request_url);
+  EXPECT_EQ(expected_url, last_request_url());
 }
