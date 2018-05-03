@@ -468,11 +468,6 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutTabPref) {
 
 #if defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ValidNotificationLaunchId) {
-  // This test execises NotificationPlatformBridgeWin, which is not enabled in
-  // older versions of Windows.
-  if (base::win::GetVersion() < base::win::VERSION_WIN8)
-    return;
-
   // Simulate a launch from the notification_helper process which appends the
   // kNotificationLaunchId switch to the command line.
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
@@ -491,11 +486,6 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ValidNotificationLaunchId) {
 }
 
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, InvalidNotificationLaunchId) {
-  // This test execises NotificationPlatformBridgeWin, which is not enabled in
-  // older versions of Windows.
-  if (base::win::GetVersion() < base::win::VERSION_WIN8)
-    return;
-
   // Simulate a launch with invalid launch id, which will fail.
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   command_line.AppendSwitchNative(switches::kNotificationLaunchId, L"");
