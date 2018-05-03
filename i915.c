@@ -333,32 +333,12 @@ static int i915_bo_create_for_modifier(struct bo *bo, uint32_t width, uint32_t h
 		return ret;
 
 	/*
-	 * HAL_PIXEL_FORMAT_YV12 requires the buffer height not be aligned, but we need to keep
-	 * total size as with aligned height to ensure enough padding space after each plane to
-	 * satisfy GPU alignment requirements.
-	 *
-	 * We do it by first calling drv_bo_from_format() with aligned height and
-	 * DRM_FORMAT_YVU420, which allows height alignment, saving the total size it calculates
-	 * and then calling it again with requested parameters.
-	 *
-	 * This relies on the fact that i965 driver uses separate surfaces for each plane and
-	 * contents of padding bytes is not affected, as it is only used to satisfy GPU cache
-	 * requests.
-	 *
-	 * This is enforced by Mesa in src/intel/isl/isl_gen8.c, inside
-	 * isl_gen8_choose_image_alignment_el(), which is used for GEN9 and GEN8.
+	 * HAL_PIXEL_FORMAT_YV12 requires that the buffer's height not be aligned.
 	 */
-	if (format == DRM_FORMAT_YVU420_ANDROID) {
-		uint32_t unaligned_height = bo->height;
-		size_t total_size;
+	if (format == DRM_FORMAT_YVU420_ANDROID)
+		height = bo->height;
 
-		drv_bo_from_format(bo, stride, height, DRM_FORMAT_YVU420);
-		total_size = bo->total_size;
-		drv_bo_from_format(bo, stride, unaligned_height, format);
-		bo->total_size = total_size;
-	} else {
-		drv_bo_from_format(bo, stride, height, format);
-	}
+	drv_bo_from_format(bo, stride, height, format);
 
 	memset(&gem_create, 0, sizeof(gem_create));
 	gem_create.size = bo->total_size;
