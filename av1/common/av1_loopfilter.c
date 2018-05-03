@@ -701,7 +701,7 @@ static void setup_fix_block_mask(AV1_COMMON *const cm, int mi_row, int mi_col,
 
   const BLOCK_SIZE txb_size = txsize_to_bsize[max_txsize];
   const int bw = block_size_wide[txb_size] >> tx_size_wide_log2[0];
-  const int bh = block_size_high[txb_size] >> tx_size_wide_log2[0];
+  const int bh = block_size_high[txb_size] >> tx_size_high_log2[0];
   const BLOCK_SIZE max_unit_bsize =
       ss_size_lookup[BLOCK_64X64][subsampling_x][subsampling_y];
   int mu_blocks_wide = block_size_wide[max_unit_bsize] >> tx_size_wide_log2[0];

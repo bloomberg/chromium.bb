@@ -1046,8 +1046,8 @@ static INLINE int max_block_high(const MACROBLOCKD *xd, BLOCK_SIZE bsize,
   if (xd->mb_to_bottom_edge < 0)
     max_blocks_high += xd->mb_to_bottom_edge >> (3 + pd->subsampling_y);
 
-  // Scale the width in the transform block unit.
-  return max_blocks_high >> tx_size_wide_log2[0];
+  // Scale the height in the transform block unit.
+  return max_blocks_high >> tx_size_high_log2[0];
 }
 
 static INLINE int max_intra_block_width(const MACROBLOCKD *xd,

@@ -1403,7 +1403,7 @@ static void write_inter_txb_coeff(AV1_COMMON *const cm, MACROBLOCK *const x,
   int blk_row, blk_col;
 
   const int num_4x4_w = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
-  const int num_4x4_h = block_size_high[plane_bsize] >> tx_size_wide_log2[0];
+  const int num_4x4_h = block_size_high[plane_bsize] >> tx_size_high_log2[0];
 
   const int unit_height =
       AOMMIN(mu_blocks_high + (row >> pd->subsampling_y), num_4x4_h);
@@ -1457,7 +1457,7 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
       const int num_4x4_w =
           block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
       const int num_4x4_h =
-          block_size_high[plane_bsize] >> tx_size_wide_log2[0];
+          block_size_high[plane_bsize] >> tx_size_high_log2[0];
       int row, col;
       TOKEN_STATS token_stats;
       init_token_stats(&token_stats);
@@ -1532,7 +1532,7 @@ static void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
       const int txbh = tx_size_high_unit[max_tx_size];
       const int txbw = tx_size_wide_unit[max_tx_size];
       const int width = block_size_wide[bsize] >> tx_size_wide_log2[0];
-      const int height = block_size_high[bsize] >> tx_size_wide_log2[0];
+      const int height = block_size_high[bsize] >> tx_size_high_log2[0];
       int idx, idy;
       for (idy = 0; idy < height; idy += txbh)
         for (idx = 0; idx < width; idx += txbw)
