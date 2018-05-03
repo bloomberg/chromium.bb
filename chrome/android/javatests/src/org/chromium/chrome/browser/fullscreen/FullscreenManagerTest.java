@@ -28,6 +28,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
@@ -61,6 +62,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @CommandLineFlags.Add({
         ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         "disable-features=" + ChromeFeatureList.FULLSCREEN_ACTIVITY,
+        "enable-blink-features=FullscreenUnprefixed,FullscreenOptions",
 })
 @RetryOnFailure
 public class FullscreenManagerTest {
@@ -99,6 +101,33 @@ public class FullscreenManagerTest {
             + "<body style='height:10000px;' onclick='toggleFullScreen();'>"
             + "</body>"
             + "</html>");
+    private static final String LONG_FULLSCREEN_API_HTML_WITH_OPTIONS_TEST_PAGE =
+            UrlUtils.encodeHtmlDataUri("<html>"
+                    + "<head>"
+                    + "  <meta name=\"viewport\" "
+                    + "    content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0\" />"
+                    + "  <script>"
+                    + "    var mode = 0;"
+                    + "    function toggleFullScreen() {"
+                    + "      if (mode == 0) {"
+                    + "        document.body.requestFullscreen({prefersNavigationBar: true});"
+                    + "        mode++;"
+                    + "      } else if (mode == 2) {"
+                    + "        document.body.requestFullscreen({prefersNavigationBar: false});"
+                    + "        mode++;"
+                    + "      } else if (mode == 1 || mode == 3) {"
+                    + "        document.exitFullscreen();"
+                    + "        mode++;"
+                    + "      }"
+                    + "    };"
+                    + "  </script>"
+                    + "  <style>"
+                    + "    body:-webkit-full-screen { background: red; width: 100%; }"
+                    + "  </style>"
+                    + "</head>"
+                    + "<body style='height:10000px;' onclick='toggleFullScreen();'>"
+                    + "</body>"
+                    + "</html>");
 
     @Before
     public void setUp() throws Exception {
@@ -400,6 +429,59 @@ public class FullscreenManagerTest {
 
         FullscreenManagerTestUtils.waitForBrowserControlsToBeMoveable(
                 mActivityTestRule, mActivityTestRule.getActivity().getActivityTab());
+    }
+
+    @Test
+    @LargeTest
+    @MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
+    @Feature({"Fullscreen"})
+    public void testPersistentFullscreenWithOptions() throws InterruptedException {
+        FullscreenManagerTestUtils.disableBrowserOverrides();
+        mActivityTestRule.startMainActivityWithURL(LONG_FULLSCREEN_API_HTML_WITH_OPTIONS_TEST_PAGE);
+
+        ChromeFullscreenManager fullscreenManager =
+                mActivityTestRule.getActivity().getFullscreenManager();
+        int browserControlsHeight = fullscreenManager.getTopControlsHeight();
+
+        Tab tab = mActivityTestRule.getActivity().getActivityTab();
+        View view = tab.getView();
+        final TabWebContentsDelegateAndroid delegate = tab.getTabWebContentsDelegateAndroid();
+
+        TouchCommon.singleClickView(view);
+        FullscreenTestUtils.waitForPersistentFullscreen(delegate, true);
+
+        FullscreenManagerTestUtils.waitForBrowserControlsPosition(
+                mActivityTestRule, -browserControlsHeight);
+
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertTrue("Navigation bar not hidden.",
+                    (view.getSystemUiVisibility() & View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION)
+                            == 0);
+        });
+
+        TestTouchUtils.sleepForDoubleTapTimeout(InstrumentationRegistry.getInstrumentation());
+        TouchCommon.singleClickView(view);
+        FullscreenTestUtils.waitForPersistentFullscreen(delegate, false);
+        FullscreenManagerTestUtils.waitForBrowserControlsPosition(mActivityTestRule, 0);
+
+        FullscreenManagerTestUtils.scrollBrowserControls(mActivityTestRule, false);
+        FullscreenManagerTestUtils.scrollBrowserControls(mActivityTestRule, true);
+
+        TestTouchUtils.sleepForDoubleTapTimeout(InstrumentationRegistry.getInstrumentation());
+        TouchCommon.singleClickView(view);
+        FullscreenTestUtils.waitForPersistentFullscreen(delegate, true);
+        FullscreenManagerTestUtils.waitForBrowserControlsPosition(
+                mActivityTestRule, -browserControlsHeight);
+
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertTrue("Navigation bar hidden.",
+                    (view.getSystemUiVisibility() & View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION)
+                            != 0);
+        });
+        TestTouchUtils.sleepForDoubleTapTimeout(InstrumentationRegistry.getInstrumentation());
+        TouchCommon.singleClickView(view);
+        FullscreenTestUtils.waitForPersistentFullscreen(delegate, false);
+        FullscreenManagerTestUtils.waitForBrowserControlsPosition(mActivityTestRule, 0);
     }
 
     private void waitForEditableNodeToLoseFocus(final Tab tab) {

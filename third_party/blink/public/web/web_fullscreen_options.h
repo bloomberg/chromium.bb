@@ -12,6 +12,10 @@ struct WebFullscreenOptions {
   // Prefer that the bottom navigation bar be shown when in fullscreen
   // mode on devices with overlay navigation bars.
   bool prefers_navigation_bar = false;
+
+  bool operator==(const WebFullscreenOptions& rhs) {
+    return prefers_navigation_bar == rhs.prefers_navigation_bar;
+  }
 };
 
 }  // namespace blink

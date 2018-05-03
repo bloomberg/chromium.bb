@@ -12,6 +12,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
+import android.support.v4.util.ObjectsCompat;
 import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnLayoutChangeListener;
@@ -124,10 +125,8 @@ public class FullscreenHtmlApiHandler {
                             == SYSTEM_UI_FLAG_FULLSCREEN) {
                         return;
                     }
-                    systemUiVisibility |= SYSTEM_UI_FLAG_FULLSCREEN;
-                    systemUiVisibility |= SYSTEM_UI_FLAG_LOW_PROFILE;
-                    systemUiVisibility |=
-                            getExtraFullscreenUIFlags(fullscreenHtmlApiHandler.mFullscreenOptions);
+                    systemUiVisibility = fullscreenHtmlApiHandler.applyEnterFullscreenUIFlags(
+                            systemUiVisibility);
                     contentView.setSystemUiVisibility(systemUiVisibility);
 
                     // Trigger a update to clear the SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN flag
@@ -189,7 +188,9 @@ public class FullscreenHtmlApiHandler {
      * @param options Options to choose mode of fullscreen.
      */
     public void enterPersistentFullscreenMode(FullscreenOptions options) {
-        if (mIsPersistentMode) return;
+        if (mIsPersistentMode && ObjectsCompat.equals(mFullscreenOptions, options)) {
+            return;
+        }
 
         mIsPersistentMode = true;
         mDelegate.onEnterFullscreen(options);
@@ -213,6 +214,7 @@ public class FullscreenHtmlApiHandler {
         }
         mWebContentsInFullscreen = null;
         mTabInFullscreen = null;
+        mFullscreenOptions = null;
     }
 
     /**
@@ -230,12 +232,11 @@ public class FullscreenHtmlApiHandler {
         mHandler.removeMessages(MSG_ID_CLEAR_LAYOUT_FULLSCREEN_FLAG);
 
         int systemUiVisibility = contentView.getSystemUiVisibility();
-        systemUiVisibility &= ~SYSTEM_UI_FLAG_LOW_PROFILE;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
             systemUiVisibility &= ~SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
-            systemUiVisibility &= ~SYSTEM_UI_FLAG_FULLSCREEN;
-            systemUiVisibility &= ~getExtraFullscreenUIFlags(null);
+            systemUiVisibility = applyExitFullscreenUIFlags(systemUiVisibility);
         } else {
+            systemUiVisibility &= ~SYSTEM_UI_FLAG_LOW_PROFILE;
             mWindow.addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
             mWindow.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         }
@@ -266,18 +267,23 @@ public class FullscreenHtmlApiHandler {
     public void enterFullscreen(final Tab tab, FullscreenOptions options) {
         WebContents webContents = tab.getWebContents();
         if (webContents == null) return;
+        mFullscreenOptions = options;
         final View contentView = tab.getContentView();
         int systemUiVisibility = contentView.getSystemUiVisibility();
-        systemUiVisibility |= SYSTEM_UI_FLAG_LOW_PROFILE;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            if ((systemUiVisibility & SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
+            if ((systemUiVisibility & SYSTEM_UI_FLAG_FULLSCREEN) == SYSTEM_UI_FLAG_FULLSCREEN) {
+                // Already in full screen mode; just changed options. Mask off old
+                // ones and apply new ones.
+                systemUiVisibility = applyExitFullscreenUIFlags(systemUiVisibility);
+                systemUiVisibility = applyEnterFullscreenUIFlags(systemUiVisibility);
+            } else if ((systemUiVisibility & SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
                     == SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN) {
-                systemUiVisibility |= SYSTEM_UI_FLAG_FULLSCREEN;
-                systemUiVisibility |= getExtraFullscreenUIFlags(options);
+                systemUiVisibility = applyEnterFullscreenUIFlags(systemUiVisibility);
             } else {
                 systemUiVisibility |= SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
             }
         } else {
+            systemUiVisibility |= SYSTEM_UI_FLAG_LOW_PROFILE;
             mWindow.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
             mWindow.clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
         }
@@ -369,16 +375,36 @@ public class FullscreenHtmlApiHandler {
     }
 
     /*
-     * Helper method to return extra fullscreen UI flags for Kitkat devices.
+     * Returns system ui flags to enable fullscreen mode based on the current options.
      * @return fullscreen flags to be applied to system UI visibility.
      */
-    private static int getExtraFullscreenUIFlags(FullscreenOptions options) {
-        int flags = 0;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            flags |= View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
-            flags |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
-            flags |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+    private int applyEnterFullscreenUIFlags(int systemUiVisibility) {
+        boolean showNavigationBar =
+                mFullscreenOptions != null ? mFullscreenOptions.showNavigationBar() : false;
+        int flags = SYSTEM_UI_FLAG_FULLSCREEN;
+        if (!showNavigationBar) {
+            flags |= SYSTEM_UI_FLAG_LOW_PROFILE;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                flags |= View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
+                flags |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+                flags |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+            }
         }
-        return flags;
+        return flags | systemUiVisibility;
+    }
+
+    /*
+     * Returns system ui flags with any flags that might have been set during
+     * applyEnterFullscreenUIFlags masked off.
+     * @return fullscreen flags to be applied to system UI visibility.
+     */
+    private static int applyExitFullscreenUIFlags(int systemUiVisibility) {
+        int maskOffFlags = SYSTEM_UI_FLAG_LOW_PROFILE | SYSTEM_UI_FLAG_FULLSCREEN;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            maskOffFlags |= View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
+            maskOffFlags |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+            maskOffFlags |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+        }
+        return systemUiVisibility & ~maskOffFlags;
     }
 }

@@ -29,6 +29,15 @@ public class FullscreenOptions implements Parcelable {
         return mShowNavigationBar;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof FullscreenOptions)) {
+            return false;
+        }
+        FullscreenOptions options = (FullscreenOptions) obj;
+        return mShowNavigationBar == options.mShowNavigationBar;
+    }
+
     /**
      * The Parcelable interface.
      * */

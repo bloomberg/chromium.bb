@@ -137,6 +137,9 @@ void FullscreenController::DidExitFullscreen() {
 
 void FullscreenController::EnterFullscreen(LocalFrame& frame,
                                            const FullscreenOptions& options) {
+  // TODO(dtapuska): If we are already in fullscreen. If the options are
+  // different than the currently requested one we may wish to request
+  // fullscreen mode again.
   // If already fullscreen or exiting fullscreen, synchronously call
   // |DidEnterFullscreen()|. When exiting, the coming |DidExitFullscreen()| call
   // will again notify all frames.
