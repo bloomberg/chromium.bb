@@ -271,7 +271,7 @@ void MessengerImpl::OnConnectionStatusChanged(
     cryptauth::Connection::Status old_status,
     cryptauth::Connection::Status new_status) {
   DCHECK_EQ(connection, connection_.get());
-  if (new_status == cryptauth::Connection::DISCONNECTED) {
+  if (new_status == cryptauth::Connection::Status::DISCONNECTED) {
     PA_LOG(INFO) << "Secure channel disconnected...";
     connection_->RemoveObserver(this);
     for (auto& observer : observers_)

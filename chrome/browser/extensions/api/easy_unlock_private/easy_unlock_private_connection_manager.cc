@@ -24,11 +24,11 @@ const char kEasyUnlockFeatureName[] = "easy_unlock";
 api::easy_unlock_private::ConnectionStatus ToApiConnectionStatus(
     Connection::Status status) {
   switch (status) {
-    case Connection::DISCONNECTED:
+    case Connection::Status::DISCONNECTED:
       return api::easy_unlock_private::CONNECTION_STATUS_DISCONNECTED;
-    case Connection::IN_PROGRESS:
+    case Connection::Status::IN_PROGRESS:
       return api::easy_unlock_private::CONNECTION_STATUS_IN_PROGRESS;
-    case Connection::CONNECTED:
+    case Connection::Status::CONNECTED:
       return api::easy_unlock_private::CONNECTION_STATUS_CONNECTED;
   }
   return api::easy_unlock_private::CONNECTION_STATUS_NONE;

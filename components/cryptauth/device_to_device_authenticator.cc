@@ -224,7 +224,7 @@ void DeviceToDeviceAuthenticator::OnConnectionStatusChanged(
     Connection::Status old_status,
     Connection::Status new_status) {
   // We do not expect the connection to drop during authentication.
-  if (new_status == Connection::DISCONNECTED) {
+  if (new_status == Connection::Status::DISCONNECTED) {
     Fail("Disconnected while authentication is in progress",
          Result::DISCONNECTED);
   }

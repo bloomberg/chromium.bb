@@ -322,8 +322,8 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
   // Creating a connection.
   base::RunLoop run_loop;
   EXPECT_FALSE(last_found_connection_);
-  connection->SetStatus(cryptauth::Connection::IN_PROGRESS);
-  connection->SetStatus(cryptauth::Connection::CONNECTED);
+  connection->SetStatus(cryptauth::Connection::Status::IN_PROGRESS);
+  connection->SetStatus(cryptauth::Connection::Status::CONNECTED);
   run_loop.RunUntilIdle();
   EXPECT_TRUE(last_found_connection_);
 }
@@ -341,7 +341,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
   // Trying to create a connection.
   connection_finder_.DeviceAdded(adapter_.get(), device_.get());
   ASSERT_FALSE(last_found_connection_);
-  connection->SetStatus(cryptauth::Connection::IN_PROGRESS);
+  connection->SetStatus(cryptauth::Connection::Status::IN_PROGRESS);
 
   // Preparing to restart the discovery session.
   device::BluetoothAdapter::DiscoverySessionCallback discovery_callback;
@@ -353,7 +353,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
   // Connection fails.
   {
     base::RunLoop run_loop;
-    connection->SetStatus(cryptauth::Connection::DISCONNECTED);
+    connection->SetStatus(cryptauth::Connection::Status::DISCONNECTED);
     run_loop.RunUntilIdle();
   }
 
@@ -375,8 +375,8 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
   {
     base::RunLoop run_loop;
     EXPECT_FALSE(last_found_connection_);
-    connection->SetStatus(cryptauth::Connection::IN_PROGRESS);
-    connection->SetStatus(cryptauth::Connection::CONNECTED);
+    connection->SetStatus(cryptauth::Connection::Status::IN_PROGRESS);
+    connection->SetStatus(cryptauth::Connection::Status::CONNECTED);
     run_loop.RunUntilIdle();
   }
   EXPECT_TRUE(last_found_connection_);
@@ -426,8 +426,8 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
   // Completing the connection.
   base::RunLoop run_loop;
   ASSERT_FALSE(last_found_connection_);
-  connection->SetStatus(cryptauth::Connection::IN_PROGRESS);
-  connection->SetStatus(cryptauth::Connection::CONNECTED);
+  connection->SetStatus(cryptauth::Connection::Status::IN_PROGRESS);
+  connection->SetStatus(cryptauth::Connection::Status::CONNECTED);
   run_loop.RunUntilIdle();
   EXPECT_TRUE(last_found_connection_);
 }
