@@ -323,8 +323,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   // This must be called when the worker is running.
   mojom::ServiceWorkerEventDispatcher* event_dispatcher() {
-    DCHECK(running_status() == EmbeddedWorkerStatus::STARTING ||
-           running_status() == EmbeddedWorkerStatus::RUNNING);
     // Temporarily CHECK for debugging https://crbug.com/817981.
     CHECK(event_dispatcher_.is_bound());
     CHECK(event_dispatcher_.get());

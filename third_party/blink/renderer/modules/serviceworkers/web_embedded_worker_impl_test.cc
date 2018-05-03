@@ -16,7 +16,6 @@
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/web/modules/serviceworker/web_service_worker_context_client.h"
-#include "third_party/blink/public/web/modules/serviceworker/web_service_worker_context_proxy.h"
 #include "third_party/blink/public/web/web_embedded_worker_start_data.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
@@ -37,12 +36,6 @@ class MockServiceWorkerContextClient : public WebServiceWorkerContextClient {
   MOCK_METHOD0(WorkerContextFailedToStart, void());
   MOCK_METHOD0(WorkerScriptLoaded, void());
 
-  void WorkerContextStarted(WebServiceWorkerContextProxy* proxy) override {
-    // In production code, ReadyToEvaluateScript() is called when
-    // ServiceWorkerContextClient receives the InitializeGlobalScope() IPC
-    // message.
-    proxy->ReadyToEvaluateScript();
-  }
   void DidEvaluateClassicScript(bool /* success */) override {
     script_evaluated_event_.Signal();
   }

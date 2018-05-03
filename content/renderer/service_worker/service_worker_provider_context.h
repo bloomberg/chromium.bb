@@ -46,6 +46,11 @@ struct ServiceWorkerProviderContextDeleter;
 // the same underlying entity hold strong references to a shared instance of
 // this class.
 //
+// A service worker provider may exist for either a service worker client or a
+// service worker itself. Therefore, this class has different roles depending on
+// its provider type. See the implementation of ProviderStateForClient and
+// ProviderStateForServiceWorker for details.
+//
 // Created and destructed on the main thread. Unless otherwise noted, all
 // methods are called on the main thread.
 class CONTENT_EXPORT ServiceWorkerProviderContext
@@ -184,6 +189,7 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   friend class WebServiceWorkerRegistrationImpl;
   friend struct ServiceWorkerProviderContextDeleter;
   struct ProviderStateForClient;
+  struct ProviderStateForServiceWorker;
 
   ~ServiceWorkerProviderContext() override;
   void DestructOnMainThread() const;
@@ -234,11 +240,14 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // Note: Currently this is always bound on main thread.
   mojom::ServiceWorkerContainerHostAssociatedPtr container_host_;
 
+  // Either |state_for_client_| or |state_for_service_worker_| is non-null.
   // State for service worker clients.
   std::unique_ptr<ProviderStateForClient> state_for_client_;
+  // State for service workers.
+  std::unique_ptr<ProviderStateForServiceWorker> state_for_service_worker_;
 
-  // NOTE: Add new members to |state_for_client_| if they are relevant only for
-  // service worker clients. Not here!
+  // NOTE: New members should usually be added to either
+  // |state_for_service_worker_| or |state_for_client_|. Not here!
 
   base::WeakPtrFactory<ServiceWorkerProviderContext> weak_factory_;
 

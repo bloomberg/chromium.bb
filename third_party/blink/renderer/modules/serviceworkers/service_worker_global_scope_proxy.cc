@@ -127,10 +127,6 @@ void ServiceWorkerGlobalScopeProxy::Trace(blink::Visitor* visitor) {
   visitor->Trace(parent_execution_context_task_runners_);
 }
 
-void ServiceWorkerGlobalScopeProxy::ReadyToEvaluateScript() {
-  WorkerGlobalScope()->ReadyToEvaluateScript();
-}
-
 void ServiceWorkerGlobalScopeProxy::SetRegistration(
     std::unique_ptr<WebServiceWorkerRegistration::Handle> handle) {
   DCHECK(WorkerGlobalScope()->IsContextThread());

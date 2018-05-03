@@ -60,9 +60,6 @@ class WebServiceWorkerContextProxy {
   virtual void SetRegistration(
       std::unique_ptr<WebServiceWorkerRegistration::Handle>) = 0;
 
-  // Script evaluation does not start until this function is called.
-  virtual void ReadyToEvaluateScript() = 0;
-
   virtual void DispatchActivateEvent(int event_id) = 0;
 
   enum class BackgroundFetchState { kPending, kSucceeded, kFailed };

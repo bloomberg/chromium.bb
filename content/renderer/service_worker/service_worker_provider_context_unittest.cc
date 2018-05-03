@@ -308,6 +308,53 @@ class ServiceWorkerProviderContextTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProviderContextTest);
 };
 
+TEST_F(ServiceWorkerProviderContextTest,
+       CreateForServiceWorkerExecutionContext) {
+  auto active_host = std::make_unique<MockServiceWorkerObjectHost>(
+      100 /* handle_id */, 200 /* version_id */);
+  auto waiting_host = std::make_unique<MockServiceWorkerObjectHost>(
+      101 /* handle_id */, 201 /* version_id */);
+  auto installing_host = std::make_unique<MockServiceWorkerObjectHost>(
+      102 /* handle_id */, 202 /* version_id */);
+  ASSERT_EQ(0, active_host->GetBindingCount());
+  ASSERT_EQ(0, waiting_host->GetBindingCount());
+  ASSERT_EQ(0, installing_host->GetBindingCount());
+  auto mock_registration_object_host =
+      std::make_unique<MockServiceWorkerRegistrationObjectHost>(
+          10 /* registration_id */);
+  ASSERT_EQ(0, mock_registration_object_host->GetBindingCount());
+
+  blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info =
+      mock_registration_object_host->CreateObjectInfo(
+          active_host.get(), waiting_host.get(), installing_host.get());
+  // ServiceWorkerRegistrationObjectHost Mojo connection has been added.
+  EXPECT_EQ(1, mock_registration_object_host->GetBindingCount());
+  // ServiceWorkerObjectHost Mojo connections have been added.
+  EXPECT_EQ(1, active_host->GetBindingCount());
+  EXPECT_EQ(1, waiting_host->GetBindingCount());
+  EXPECT_EQ(1, installing_host->GetBindingCount());
+
+  // Set up ServiceWorkerProviderContext for ServiceWorkerGlobalScope.
+  const int kProviderId = 10;
+  auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
+      kProviderId, nullptr, nullptr);
+
+  // The passed references should be adopted and owned by the provider context.
+  provider_context->SetRegistrationForServiceWorkerGlobalScope(
+      std::move(registration_info));
+
+  // Destruction of the provider context should release references to the
+  // associated registration and its versions.
+  provider_context = nullptr;
+  base::RunLoop().RunUntilIdle();
+  // ServiceWorkerRegistrationObjectHost Mojo connection got broken.
+  EXPECT_EQ(0, mock_registration_object_host->GetBindingCount());
+  // ServiceWorkerObjectHost Mojo connections got broken.
+  EXPECT_EQ(0, active_host->GetBindingCount());
+  EXPECT_EQ(0, waiting_host->GetBindingCount());
+  EXPECT_EQ(0, installing_host->GetBindingCount());
+}
+
 TEST_F(ServiceWorkerProviderContextTest, SetController) {
   const int kProviderId = 10;
 
@@ -625,6 +672,61 @@ TEST_F(ServiceWorkerProviderContextTest, CountFeature) {
   ASSERT_EQ(2UL, client->used_features().size());
   ASSERT_EQ(blink::mojom::WebFeature::kWindowEvent,
             *(++(client->used_features().begin())));
+}
+
+TEST_F(ServiceWorkerProviderContextTest,
+       SetAndTakeRegistrationForServiceWorkerGlobalScope) {
+  // Set up ServiceWorkerProviderContext for ServiceWorkerGlobalScope.
+  const int kProviderId = 10;
+  auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
+      kProviderId, nullptr, nullptr);
+
+  auto active_host = std::make_unique<MockServiceWorkerObjectHost>(
+      100 /* handle_id */, 200 /* version_id */);
+  auto waiting_host = std::make_unique<MockServiceWorkerObjectHost>(
+      101 /* handle_id */, 201 /* version_id */);
+  auto installing_host = std::make_unique<MockServiceWorkerObjectHost>(
+      102 /* handle_id */, 202 /* version_id */);
+  ASSERT_EQ(0, active_host->GetBindingCount());
+  ASSERT_EQ(0, waiting_host->GetBindingCount());
+  ASSERT_EQ(0, installing_host->GetBindingCount());
+  const int64_t registration_id = 10;
+  auto mock_registration_object_host =
+      std::make_unique<MockServiceWorkerRegistrationObjectHost>(
+          registration_id);
+  ASSERT_EQ(0, mock_registration_object_host->GetBindingCount());
+
+  blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info =
+      mock_registration_object_host->CreateObjectInfo(
+          active_host.get(), waiting_host.get(), installing_host.get());
+  // ServiceWorkerRegistrationObjectHost Mojo connection has been added.
+  EXPECT_EQ(1, mock_registration_object_host->GetBindingCount());
+  // ServiceWorkerObjectHost Mojo connections have been added.
+  EXPECT_EQ(1, active_host->GetBindingCount());
+  EXPECT_EQ(1, waiting_host->GetBindingCount());
+  EXPECT_EQ(1, installing_host->GetBindingCount());
+
+  provider_context->SetRegistrationForServiceWorkerGlobalScope(
+      std::move(registration_info));
+
+  // Should return a newly created registration object which adopts all
+  // references to the remote instances of ServiceWorkerRegistrationObjectHost
+  // and ServiceWorkerHandle in the browser process.
+  scoped_refptr<WebServiceWorkerRegistrationImpl> registration =
+      provider_context->TakeRegistrationForServiceWorkerGlobalScope();
+  EXPECT_TRUE(registration);
+  EXPECT_EQ(registration_id, registration->RegistrationId());
+  EXPECT_EQ(1, mock_registration_object_host->GetBindingCount());
+
+  // The registration dtor decrements the refcounts.
+  registration = nullptr;
+  base::RunLoop().RunUntilIdle();
+  // ServiceWorkerRegistrationObjectHost Mojo connection got broken.
+  EXPECT_EQ(0, mock_registration_object_host->GetBindingCount());
+  // ServiceWorkerObjectHost Mojo connections got broken.
+  EXPECT_EQ(0, active_host->GetBindingCount());
+  EXPECT_EQ(0, waiting_host->GetBindingCount());
+  EXPECT_EQ(0, installing_host->GetBindingCount());
 }
 
 TEST_F(ServiceWorkerProviderContextTest, GetOrAdoptRegistration) {

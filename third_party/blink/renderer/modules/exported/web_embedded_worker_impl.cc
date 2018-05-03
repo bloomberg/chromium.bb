@@ -408,9 +408,6 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
                                                worker_start_data_.script_url);
 
   // TODO(nhiroki): Support module workers (https://crbug.com/680046).
-  // Note that this doesn't really start the script evaluation until
-  // ReadyToEvaluateScript() is called on the WebServiceWorkerContextProxy
-  // on the worker thread.
   worker_thread_->EvaluateClassicScript(
       worker_start_data_.script_url, source_code, std::move(cached_meta_data),
       v8_inspector::V8StackTraceId());

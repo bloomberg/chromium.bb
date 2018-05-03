@@ -1805,6 +1805,8 @@ crbug.com/736308 virtual/outofblink-cors/external/wpt/fetch/api/cors/cors-redire
 crbug.com/736308 virtual/outofblink-cors/external/wpt/fetch/api/cors/cors-redirect.any.html [ Failure ]
 crbug.com/736308 virtual/outofblink-cors/external/wpt/fetch/api/cors/cors-redirect.any.worker.html [ Failure ]
 crbug.com/802835 virtual/outofblink-cors/external/wpt/fetch/corb/img-mime-types-coverage.tentative.sub.html [ Failure ]
+crbug.com/745327 virtual/outofblink-cors/external/wpt/service-workers/service-worker/ServiceWorkerGlobalScope/registration-attribute.https.html [ Failure Pass ]
+crbug.com/834183 virtual/outofblink-cors/external/wpt/service-workers/service-worker/ServiceWorkerGlobalScope/update.https.html [ Failure Pass ]
 crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-canvas-tainting-image-cache.https.html [ Failure ]
 crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-canvas-tainting-image.https.html [ Failure ]
 crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video-cache.https.html [ Failure ]
@@ -3811,6 +3813,10 @@ crbug.com/716320 virtual/sharedarraybuffer/external/wpt/html/infrastructure/safe
 crbug.com/688486 external/wpt/service-workers/service-worker/fetch-request-resources.https.html [ Failure Pass ]
 crbug.com/831509 external/wpt/service-workers/service-worker/skip-waiting-installed.https.html [ Failure Pass ]
 crbug.com/831509 virtual/navigation-mojo-response/external/wpt/service-workers/service-worker/skip-waiting-installed.https.html [ Failure Pass ]
+crbug.com/745327 external/wpt/service-workers/service-worker/ServiceWorkerGlobalScope/registration-attribute.https.html [ Failure Pass ]
+crbug.com/745327 virtual/navigation-mojo-response/external/wpt/service-workers/service-worker/ServiceWorkerGlobalScope/registration-attribute.https.html [ Failure Pass ]
+
+crbug.com/834183 external/wpt/service-workers/service-worker/ServiceWorkerGlobalScope/update.https.html [ Failure Pass ]
 
 # Sheriff failures 2017-02-21
 crbug.com/73609 http/tests/media/video-play-stall.html [ Pass Timeout ]
