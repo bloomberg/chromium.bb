@@ -367,6 +367,9 @@ static INLINE int16x8_t predict_w8(const int16_t *pred_buf_q3,
 static INLINE int16x8x2_t predict_w16(const int16_t *pred_buf_q3,
                                       int16x8_t alpha_sign, int abs_alpha_q12,
                                       int16x8_t dc) {
+  // vld2q_s16 interleaves, which is not useful for prediction. vst1q_s16_x2
+  // does not interleave, but is not currently available in the compilier used
+  // by the AOM build system.
   const int16x8x2_t ac_q3 = vld2q_s16(pred_buf_q3);
   const int16x8_t ac_sign_0 = veorq_s16(alpha_sign, ac_q3.val[0]);
   const int16x8_t ac_sign_1 = veorq_s16(alpha_sign, ac_q3.val[1]);
@@ -383,6 +386,9 @@ static INLINE int16x8x2_t predict_w16(const int16_t *pred_buf_q3,
 static INLINE int16x8x4_t predict_w32(const int16_t *pred_buf_q3,
                                       int16x8_t alpha_sign, int abs_alpha_q12,
                                       int16x8_t dc) {
+  // vld4q_s16 interleaves, which is not useful for prediction. vst1q_s16_x4
+  // does not interleave, but is not currently available in the compilier used
+  // by the AOM build system.
   const int16x8x4_t ac_q3 = vld4q_s16(pred_buf_q3);
   const int16x8_t ac_sign_0 = veorq_s16(alpha_sign, ac_q3.val[0]);
   const int16x8_t ac_sign_1 = veorq_s16(alpha_sign, ac_q3.val[1]);
@@ -404,23 +410,6 @@ static INLINE int16x8x4_t predict_w32(const int16_t *pred_buf_q3,
   return result;
 }
 
-// Vector signed->unsigned narrowing half store
-static void vsthun_s16(uint8_t *dst, int16x4_t scaled_luma) {
-  vsth_u8(dst, vqmovun_s16(vcombine_s16(scaled_luma, scaled_luma)));
-}
-
-// Vector signed->unsigned narrowing store
-static void vst1un_s16(uint8_t *dst, int16x8_t scaled_luma) {
-  vst1_u8(dst, vqmovun_s16(scaled_luma));
-}
-
-// Vector signed->unsigned narrowing store
-static void vst1unq_s16(uint8_t *dst, int16x8_t scaled_luma,
-                        int16x8_t scaled_luma_next) {
-  vst1q_u8(dst, vcombine_u8(vqmovun_s16(scaled_luma),
-                            vqmovun_s16(scaled_luma_next)));
-}
-
 static INLINE void cfl_predict_lbd_neon(const int16_t *pred_buf_q3,
                                         uint8_t *dst, int dst_stride,
                                         int alpha_q3, int width, int height) {
@@ -430,30 +419,32 @@ static INLINE void cfl_predict_lbd_neon(const int16_t *pred_buf_q3,
     const int16x4_t alpha_sign = vdup_n_s16(alpha_q3);
     const int16x4_t dc = vdup_n_s16(*dst);
     do {
-      const int16x4_t scaled_luma =
+      const int16x4_t pred =
           predict_w4(pred_buf_q3, alpha_sign, abs_alpha_q12, dc);
-      vsthun_s16(dst, scaled_luma);
+      vsth_u8(dst, vqmovun_s16(vcombine_s16(pred, pred)));
       dst += dst_stride;
     } while ((pred_buf_q3 += CFL_BUF_LINE) < end);
   } else {
     const int16x8_t alpha_sign = vdupq_n_s16(alpha_q3);
     const int16x8_t dc = vdupq_n_s16(*dst);
     do {
-      const int16x8_t scaled_luma =
-          predict_w8(pred_buf_q3, alpha_sign, abs_alpha_q12, dc);
       if (width == 8) {
-        vst1un_s16(dst, scaled_luma);
+        vst1_u8(dst, vqmovun_s16(predict_w8(pred_buf_q3, alpha_sign,
+                                            abs_alpha_q12, dc)));
+      } else if (width == 16) {
+        const int16x8x2_t pred =
+            predict_w16(pred_buf_q3, alpha_sign, abs_alpha_q12, dc);
+        const uint8x8x2_t predun = { { vqmovun_s16(pred.val[0]),
+                                       vqmovun_s16(pred.val[1]) } };
+        vst2_u8(dst, predun);
       } else {
-        const int16x8_t scaled_luma_1 =
-            predict_w8(pred_buf_q3 + 8, alpha_sign, abs_alpha_q12, dc);
-        vst1unq_s16(dst, scaled_luma, scaled_luma_1);
-        if (width == 32) {
-          const int16x8_t scaled_luma_2 =
-              predict_w8(pred_buf_q3 + 16, alpha_sign, abs_alpha_q12, dc);
-          const int16x8_t scaled_luma_3 =
-              predict_w8(pred_buf_q3 + 24, alpha_sign, abs_alpha_q12, dc);
-          vst1unq_s16(dst + 16, scaled_luma_2, scaled_luma_3);
-        }
+        const int16x8x4_t pred =
+            predict_w32(pred_buf_q3, alpha_sign, abs_alpha_q12, dc);
+        const uint8x8x4_t predun = {
+          { vqmovun_s16(pred.val[0]), vqmovun_s16(pred.val[1]),
+            vqmovun_s16(pred.val[2]), vqmovun_s16(pred.val[3]) }
+        };
+        vst4_u8(dst, predun);
       }
       dst += dst_stride;
     } while ((pred_buf_q3 += CFL_BUF_LINE) < end);
