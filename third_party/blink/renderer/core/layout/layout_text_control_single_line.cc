@@ -131,13 +131,11 @@ void LayoutTextControlSingleLine::UpdateLayout() {
   HTMLElement* placeholder_element = InputElement()->PlaceholderElement();
   if (LayoutBox* placeholder_box =
           placeholder_element ? placeholder_element->GetLayoutBox() : nullptr) {
-    LayoutSize inner_editor_size;
+    LayoutUnit inner_editor_logical_width;
 
     if (inner_editor_layout_object)
-      inner_editor_size = inner_editor_layout_object->Size();
-    placeholder_box->MutableStyleRef().SetWidth(Length(
-        inner_editor_size.Width() - placeholder_box->BorderAndPaddingWidth(),
-        kFixed));
+      inner_editor_logical_width = inner_editor_layout_object->LogicalWidth();
+    placeholder_box->SetOverrideLogicalWidth(inner_editor_logical_width);
     bool needed_layout = placeholder_box->NeedsLayout();
     placeholder_box->LayoutIfNeeded();
     LayoutPoint text_offset;
