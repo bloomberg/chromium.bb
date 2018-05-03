@@ -5,6 +5,7 @@ include_rules = [
   "+extensions/grit",
   "+extensions/shell/common/api",
   "+extensions/shell/grit",
+  "+ui/accessibility",
   "+ui/base",
   "+ui/gfx",
 ]
