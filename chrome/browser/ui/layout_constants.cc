@@ -7,6 +7,25 @@
 #include "base/logging.h"
 #include "ui/base/material_design/material_design_controller.h"
 
+#if defined(OS_MACOSX)
+int GetCocoaLayoutConstant(LayoutConstant constant) {
+  switch (constant) {
+    case BOOKMARK_BAR_HEIGHT:
+      return 28;
+    case BOOKMARK_BAR_NTP_HEIGHT:
+      return 39;
+    case BOOKMARK_BAR_HEIGHT_NO_OVERLAP:
+      return GetCocoaLayoutConstant(BOOKMARK_BAR_HEIGHT) - 2;
+    case BOOKMARK_BAR_NTP_PADDING:
+      return (GetCocoaLayoutConstant(BOOKMARK_BAR_NTP_HEIGHT) -
+              GetCocoaLayoutConstant(BOOKMARK_BAR_HEIGHT)) /
+             2;
+    default:
+      return GetLayoutConstant(constant);
+  }
+}
+#endif
+
 int GetLayoutConstant(LayoutConstant constant) {
   const int mode = ui::MaterialDesignController::GetMode();
   const bool hybrid = mode == ui::MaterialDesignController::MATERIAL_HYBRID;
@@ -16,19 +35,9 @@ int GetLayoutConstant(LayoutConstant constant) {
   switch (constant) {
     case BOOKMARK_BAR_HEIGHT:
       return touch_optimized_material ? 40 : 32;
-#if defined(OS_MACOSX)
-    case BOOKMARK_BAR_HEIGHT_NO_OVERLAP:
-      return GetLayoutConstant(BOOKMARK_BAR_HEIGHT) - 2;
-#endif
     case BOOKMARK_BAR_NTP_HEIGHT:
       return touch_optimized_material ? GetLayoutConstant(BOOKMARK_BAR_HEIGHT)
                                       : 39;
-#if defined(OS_MACOSX)
-    case BOOKMARK_BAR_NTP_PADDING:
-      return (GetLayoutConstant(BOOKMARK_BAR_NTP_HEIGHT) -
-              GetLayoutConstant(BOOKMARK_BAR_HEIGHT)) /
-             2;
-#endif
     case HOSTED_APP_MENU_BUTTON_SIZE:
       return 24;
     case LOCATION_BAR_BUBBLE_VERTICAL_PADDING:
@@ -85,6 +94,8 @@ int GetLayoutConstant(LayoutConstant constant) {
       constexpr int kSpacings[] = {4, 8, 12, 8};
       return kSpacings[mode];
     }
+    default:
+      break;
   }
   NOTREACHED();
   return 0;

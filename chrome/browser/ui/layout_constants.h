@@ -125,6 +125,13 @@ enum LayoutSize {
 };
 
 int GetLayoutConstant(LayoutConstant constant);
+#if defined(OS_MACOSX)
+// Use this function instead of GetLayoutConstant() for Cocoa browser.
+// This will handle Cocoa specific layout constants. For non Cocoa specific
+// constants, it will call GetLayoutConstant() anyway.
+int GetCocoaLayoutConstant(LayoutConstant constant);
+#endif
+
 gfx::Insets GetLayoutInsets(LayoutInset inset);
 gfx::Size GetLayoutSize(LayoutSize size, bool is_incognito);
 

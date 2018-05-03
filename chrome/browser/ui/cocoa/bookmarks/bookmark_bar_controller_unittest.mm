@@ -1262,7 +1262,7 @@ TEST_F(BookmarkBarControllerTest, BookmarkButtonSizing) {
   EXPECT_GT([buttons count], 0u);
 
   for (NSButton* button in buttons) {
-    EXPECT_FLOAT_EQ((GetLayoutConstant(BOOKMARK_BAR_HEIGHT_NO_OVERLAP) +
+    EXPECT_FLOAT_EQ((GetCocoaLayoutConstant(BOOKMARK_BAR_HEIGHT_NO_OVERLAP) +
                      bookmarks::kMaterialVisualHeightOffset) -
                         2 * bookmarks::kBookmarkVerticalPadding,
                     [button frame].size.height);
