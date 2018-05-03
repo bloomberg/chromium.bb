@@ -61,8 +61,7 @@ declare_args() {
   # Enable checks for indirect function calls via a function pointer.
   # TODO(pcc): remove this when we're ready to add these checks by default.
   # https://crbug.com/701919
-  use_cfi_icall = target_os == "linux" && !is_chromeos && target_cpu == "x64" &&
-                  is_official_build
+  use_cfi_icall = false
 
   # Print detailed diagnostics when Control Flow Integrity detects a violation.
   use_cfi_diag = false
