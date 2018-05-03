@@ -1359,12 +1359,21 @@ TEST_F(ExtensionMessageBubbleTest, TestBubbleOutlivesBrowser) {
   controller.reset();
 }
 
+// Fails on linux-chromeos-rel: crbug.com/839371
+#if defined(OS_CHROMEOS)
+#define MAYBE_TestUninstallExtensionAfterBrowserDestroyed \
+  DISABLED_TestUninstallExtensionAfterBrowserDestroyed
+#else
+#define MAYBE_TestUninstallExtensionAfterBrowserDestroyed \
+  TestUninstallExtensionAfterBrowserDestroyed
+#endif  // defined(OS_CHROMEOS)
+
 // Tests that when an extension -- associated with a bubble controller -- is
 // uninstalling after the browser is destroyed, the controller does not access
 // the associated browser object and therefore, no use-after-free occurs.
 // crbug.com/756316
 TEST_F(ExtensionMessageBubbleTest,
-       TestUninstallExtensionAfterBrowserDestroyed) {
+       MAYBE_TestUninstallExtensionAfterBrowserDestroyed) {
   FeatureSwitch::ScopedOverride force_dev_mode_highlighting(
       FeatureSwitch::force_dev_mode_highlighting(), true);
   Init();
