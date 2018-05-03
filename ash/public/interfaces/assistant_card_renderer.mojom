@@ -4,7 +4,7 @@
 
 module ash.mojom;
 
-import "components/signin/public/interfaces/account_id.mojom";
+import "components/account_id/interfaces/account_id.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 
 // Interface for a class which is responsible for rendering Assistant cards.

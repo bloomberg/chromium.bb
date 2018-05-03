@@ -149,11 +149,11 @@ source_set("internal") {
   deps = [
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
+    "//components/account_id",
     "//components/crash/core/common:crash_key",  # Remove once https://crbug.com/685996 is fixed.
     "//components/data_use_measurement/core",
     "//components/json_schema",
     "//components/prefs",
-    "//components/signin/core/account_id",
     "//components/version_info",
     "//extensions/buildflags",
     "//google_apis",
@@ -284,9 +284,9 @@ static_library("test_support") {
     # Explicitly link in the generated policy target into the test support
     # so it will be linked to dependent targets. Otherwise in component
     # build, it will be hidden inside the policy component.
+    "//components/account_id",
     "//components/policy:generated",
     "//components/policy/proto",
-    "//components/signin/core/account_id",
     "//crypto",
     "//net",
     "//testing/gmock",
@@ -371,9 +371,9 @@ source_set("unit_tests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
+    "//components/account_id",
     "//components/policy:generated",
     "//components/prefs:test_support",
-    "//components/signin/core/account_id",
     "//extensions/buildflags",
     "//google_apis",
     "//net:test_support",

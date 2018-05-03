@@ -11,8 +11,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "components/account_id/account_id.h"
 #include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
-#include "components/signin/core/account_id/account_id.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 

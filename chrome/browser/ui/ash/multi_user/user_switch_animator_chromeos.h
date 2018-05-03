@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 #include "base/timer/timer.h"
-#include "components/signin/core/account_id/account_id.h"
+#include "components/account_id/account_id.h"
 #include "ui/aura/window.h"
 
 class MultiUserWindowManagerChromeOS;

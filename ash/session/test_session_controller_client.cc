@@ -13,9 +13,9 @@
 #include "ash/shell.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "components/account_id/account_id.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/session_manager/session_manager_types.h"
-#include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_type.h"
 
 namespace ash {

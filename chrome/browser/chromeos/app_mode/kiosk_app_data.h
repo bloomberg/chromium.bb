@@ -13,7 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_data_base.h"
 #include "chrome/browser/extensions/webstore_data_fetcher_delegate.h"
-#include "components/signin/core/account_id/account_id.h"
+#include "components/account_id/account_id.h"
 #include "url/gurl.h"
 
 class Profile;

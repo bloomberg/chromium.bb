@@ -13,7 +13,7 @@
 #include "chrome/browser/chromeos/login/users/affiliation.h"
 #include "chrome/browser/chromeos/login/users/avatar/mock_user_image_manager.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
-#include "components/signin/core/account_id/account_id.h"
+#include "components/account_id/account_id.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_image/user_image.h"
 #include "testing/gmock/include/gmock/gmock.h"

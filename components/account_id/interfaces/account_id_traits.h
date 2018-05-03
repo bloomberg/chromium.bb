@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SIGNIN_PUBLIC_INTERFACES_ACCOUNT_ID_TRAITS_H_
-#define COMPONENTS_SIGNIN_PUBLIC_INTERFACES_ACCOUNT_ID_TRAITS_H_
+#ifndef COMPONENTS_ACCOUNT_ID_INTERFACES_ACCOUNT_ID_TRAITS_H_
+#define COMPONENTS_ACCOUNT_ID_INTERFACES_ACCOUNT_ID_TRAITS_H_
 
 #include <string>
 
-#include "components/signin/core/account_id/account_id.h"
-#include "components/signin/public/interfaces/account_id.mojom.h"
+#include "components/account_id/account_id.h"
+#include "components/account_id/interfaces/account_id.mojom.h"
 
 namespace mojo {
 
@@ -27,8 +27,7 @@ struct EnumTraits<signin::mojom::AccountType, AccountType> {
     return signin::mojom::AccountType::UNKNOWN;
   }
 
-  static bool FromMojom(signin::mojom::AccountType input,
-                        AccountType* out) {
+  static bool FromMojom(signin::mojom::AccountType input, AccountType* out) {
     switch (input) {
       case signin::mojom::AccountType::UNKNOWN:
         *out = AccountType::UNKNOWN;
@@ -44,7 +43,6 @@ struct EnumTraits<signin::mojom::AccountType, AccountType> {
     return false;
   }
 };
-
 
 template <>
 struct StructTraits<signin::mojom::AccountIdDataView, AccountId> {
@@ -66,16 +64,13 @@ struct StructTraits<signin::mojom::AccountIdDataView, AccountId> {
     NOTREACHED();
     return std::string();
   }
-  static std::string user_email(const AccountId& r) {
-    return r.GetUserEmail();
-  }
+  static std::string user_email(const AccountId& r) { return r.GetUserEmail(); }
 
   static bool Read(signin::mojom::AccountIdDataView data, AccountId* out) {
     AccountType account_type;
     std::string id;
     std::string user_email;
-    if (!data.ReadAccountType(&account_type) ||
-        !data.ReadId(&id) ||
+    if (!data.ReadAccountType(&account_type) || !data.ReadId(&id) ||
         !data.ReadUserEmail(&user_email)) {
       return false;
     }
@@ -108,4 +103,4 @@ struct StructTraits<signin::mojom::AccountIdDataView, AccountId> {
 
 }  // namespace mojo
 
-#endif  // COMPONENTS_SIGNIN_PUBLIC_INTERFACES_ACCOUNT_ID_TRAITS_H_
+#endif  // COMPONENTS_ACCOUNT_ID_INTERFACES_ACCOUNT_ID_TRAITS_H_

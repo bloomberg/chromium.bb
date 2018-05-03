@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
-#include "components/signin/core/account_id/account_id.h"
+#include "components/account_id/account_id.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/arc/notification/arc_notification_item.h"
 #include "ui/arc/notification/arc_notification_manager.h"

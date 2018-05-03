@@ -18,7 +18,7 @@
 #include "chromeos/attestation/attestation_constants.h"
 #include "chromeos/attestation/attestation_flow.h"
 #include "chromeos/dbus/cryptohome_client.h"
-#include "components/signin/core/account_id/account_id.h"
+#include "components/account_id/account_id.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/common/extension.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"

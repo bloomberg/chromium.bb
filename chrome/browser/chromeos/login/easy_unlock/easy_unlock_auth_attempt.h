@@ -9,7 +9,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "components/signin/core/account_id/account_id.h"
+#include "components/account_id/account_id.h"
 
 namespace chromeos {
 

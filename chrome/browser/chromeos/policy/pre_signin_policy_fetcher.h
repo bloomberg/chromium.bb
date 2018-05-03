@@ -17,9 +17,9 @@
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "components/account_id/account_id.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_validator.h"
-#include "components/signin/core/account_id/account_id.h"
 #include "third_party/cros_system_api/dbus/cryptohome/dbus-constants.h"
 
 namespace base {

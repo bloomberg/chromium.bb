@@ -13,9 +13,9 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/sessions/session_restore_observer.h"
+#include "components/account_id/account_id.h"
 #include "components/arc/common/boot_phase_monitor.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/signin/core/account_id/account_id.h"
 
 namespace content {
 class BrowserContext;

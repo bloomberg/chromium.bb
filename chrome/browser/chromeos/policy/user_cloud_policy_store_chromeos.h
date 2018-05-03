@@ -14,9 +14,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "components/account_id/account_id.h"
 #include "components/policy/core/common/cloud/cloud_policy_validator.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_store_base.h"
-#include "components/signin/core/account_id/account_id.h"
 
 namespace base {
 class SequencedTaskRunner;

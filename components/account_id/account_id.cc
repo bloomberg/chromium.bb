@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/signin/core/account_id/account_id.h"
+#include "components/account_id/account_id.h"
 
 #include <functional>
 #include <memory>

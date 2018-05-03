@@ -12,7 +12,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/unguessable_token.h"
-#include "components/signin/core/account_id/account_id.h"
+#include "components/account_id/account_id.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notification.h"

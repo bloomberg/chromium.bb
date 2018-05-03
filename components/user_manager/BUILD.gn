@@ -16,7 +16,7 @@ component("user_manager") {
 
   deps = [
     "//base",
-    "//components/signin/core/account_id",
+    "//components/account_id",
     "//google_apis",
     "//skia",
     "//ui/gfx",
@@ -58,7 +58,7 @@ if (is_chromeos) {
       ":user_manager",
       "//base",
       "//chromeos:chromeos",
-      "//components/signin/core/account_id",
+      "//components/account_id",
       "//skia",
       "//ui/base",
     ]
@@ -71,7 +71,7 @@ if (is_chromeos) {
     ]
     deps = [
       ":user_manager",
-      "//components/signin/core/account_id",
+      "//components/account_id",
       "//skia",
       "//testing/gtest",
       "//ui/gfx",

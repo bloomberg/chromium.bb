@@ -20,7 +20,7 @@
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/login_event_recorder.h"
-#include "components/signin/core/account_id/account_id.h"
+#include "components/account_id/account_id.h"
 #include "crypto/sha2.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 

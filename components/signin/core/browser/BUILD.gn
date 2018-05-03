@@ -27,7 +27,7 @@ static_library("account_info") {
     "account_info.h",
   ]
   deps = [
-    "//components/signin/core/account_id",
+    "//components/account_id",
   ]
 }
 
@@ -126,12 +126,12 @@ static_library("browser") {
     ":signin_buildflags",
     ":signin_metrics",
     "//base",
+    "//components/account_id",
     "//components/content_settings/core/browser",
     "//components/content_settings/core/common",
     "//components/invalidation/public",
     "//components/keyed_service/core",
     "//components/prefs",
-    "//components/signin/core/account_id",
     "//google_apis",
     "//net",
     "//ui/gfx",

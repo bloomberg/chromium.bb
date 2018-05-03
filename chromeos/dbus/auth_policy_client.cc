@@ -8,7 +8,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/weak_ptr.h"
-#include "components/signin/core/account_id/account_id.h"
+#include "components/account_id/account_id.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_proxy.h"

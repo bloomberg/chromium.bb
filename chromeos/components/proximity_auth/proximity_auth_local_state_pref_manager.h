@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 #include "chromeos/components/proximity_auth/proximity_auth_pref_manager.h"
-#include "components/signin/core/account_id/account_id.h"
+#include "components/account_id/account_id.h"
 
 class PrefRegistrySimple;
 class PrefService;

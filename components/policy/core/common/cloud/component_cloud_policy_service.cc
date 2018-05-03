@@ -18,6 +18,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/account_id/account_id.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_refresh_scheduler.h"
 #include "components/policy/core/common/cloud/component_cloud_policy_store.h"
@@ -27,7 +28,6 @@
 #include "components/policy/core/common/schema.h"
 #include "components/policy/core/common/schema_map.h"
 #include "components/policy/proto/device_management_backend.pb.h"
-#include "components/signin/core/account_id/account_id.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace em = enterprise_management;

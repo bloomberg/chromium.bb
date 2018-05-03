@@ -17,12 +17,12 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/policy/wildcard_login_checker.h"
+#include "components/account_id/account_id.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_service.h"
-#include "components/signin/core/account_id/account_id.h"
 
 class GoogleServiceAuthError;
 class PrefService;

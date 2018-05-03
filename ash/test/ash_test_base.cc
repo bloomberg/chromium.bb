@@ -32,7 +32,7 @@
 #include "ash/wm/top_level_window_factory.h"
 #include "ash/wm/window_positioner.h"
 #include "base/memory/ptr_util.h"
-#include "components/signin/core/account_id/account_id.h"
+#include "components/account_id/account_id.h"
 #include "components/user_manager/user_names.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"

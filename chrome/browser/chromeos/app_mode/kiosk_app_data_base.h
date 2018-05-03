@@ -10,8 +10,8 @@
 
 #include "base/files/file_path.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_icon_loader.h"
+#include "components/account_id/account_id.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/signin/core/account_id/account_id.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace base {

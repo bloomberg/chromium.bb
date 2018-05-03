@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "components/signin/core/account_id/account_id.h"
+#include "components/account_id/account_id.h"
 
 using testing::_;
 using testing::DefaultValue;

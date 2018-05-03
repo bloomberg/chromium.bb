@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_SESSION_MANAGER_SESSION_MANAGER_TYPES_H_
 #define COMPONENTS_SESSION_MANAGER_SESSION_MANAGER_TYPES_H_
 
-#include "components/signin/core/account_id/account_id.h"
+#include "components/account_id/account_id.h"
 
 namespace session_manager {
 

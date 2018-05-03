@@ -12,7 +12,7 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
-#include "components/signin/core/account_id/account_id.h"
+#include "components/account_id/account_id.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/user_manager/known_user.h"
 #include "content/public/browser/browser_context.h"

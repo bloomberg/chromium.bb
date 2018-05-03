@@ -12,9 +12,9 @@
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
+#include "components/account_id/account_id.h"
 #include "components/arc/arc_prefs.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/signin/core/account_id/account_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace arc {

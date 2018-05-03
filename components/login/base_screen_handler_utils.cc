@@ -4,7 +4,7 @@
 
 #include "components/login/base_screen_handler_utils.h"
 
-#include "components/signin/core/account_id/account_id.h"
+#include "components/account_id/account_id.h"
 
 namespace login {
 

@@ -10,7 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_data_base.h"
-#include "components/signin/core/account_id/account_id.h"
+#include "components/account_id/account_id.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace chromeos {

@@ -2,11 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//components/signin/public/interfaces/account_id.mojom"
-public_headers = [ "//components/signin/core/account_id/account_id.h" ]
-traits_headers = [ "//components/signin/public/interfaces/account_id_traits.h" ]
+mojom = "//components/account_id/interfaces/account_id.mojom"
+public_headers = [ "//components/account_id/account_id.h" ]
+traits_headers = [ "//components/account_id/interfaces/account_id_traits.h" ]
 public_deps = [
-  "//components/signin/core/account_id",
+  "//components/account_id",
 ]
 type_mappings = [
   "signin.mojom.AccountType=AccountType",

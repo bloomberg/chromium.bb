@@ -34,7 +34,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_auth_policy_client.h"
 #include "chromeos/settings/cros_settings_names.h"
-#include "components/signin/core/account_id/account_id.h"
+#include "components/account_id/account_id.h"
 #include "components/user_manager/user_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test_utils.h"

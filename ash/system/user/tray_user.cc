@@ -17,7 +17,7 @@
 #include "ash/system/user/user_view.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
-#include "components/signin/core/account_id/account_id.h"
+#include "components/account_id/account_id.h"
 #include "components/user_manager/user_info.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/insets.h"

@@ -13,8 +13,8 @@
 #include "base/time/clock.h"
 #include "chromeos/components/proximity_auth/remote_device_life_cycle.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
+#include "components/account_id/account_id.h"
 #include "components/cryptauth/remote_device.h"
-#include "components/signin/core/account_id/account_id.h"
 
 namespace proximity_auth {
 

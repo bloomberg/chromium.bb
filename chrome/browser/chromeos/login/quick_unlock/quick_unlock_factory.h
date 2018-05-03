@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_QUICK_UNLOCK_QUICK_UNLOCK_FACTORY_H_
 
 #include "base/memory/singleton.h"
+#include "components/account_id/account_id.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
-#include "components/signin/core/account_id/account_id.h"
 
 class Profile;
 

@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "components/signin/core/account_id/account_id.h"
+#include "components/account_id/account_id.h"
 
 // Information about a specific account.
 struct AccountInfo {

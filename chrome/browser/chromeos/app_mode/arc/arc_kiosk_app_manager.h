@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_data.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "components/signin/core/account_id/account_id.h"
+#include "components/account_id/account_id.h"
 
 class PrefRegistrySimple;
 

@@ -11,9 +11,9 @@
 #include "base/memory/weak_ptr.h"
 #include "chromeos/dbus/authpolicy/active_directory_info.pb.h"
 #include "chromeos/network/network_state_handler_observer.h"
+#include "components/account_id/account_id.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/signin/core/account_id/account_id.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 class Profile;
