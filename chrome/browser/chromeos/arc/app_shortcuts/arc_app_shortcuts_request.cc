@@ -50,13 +50,13 @@ void ArcAppShortcutsRequest::StartForPackage(const std::string& package_name) {
 
 void ArcAppShortcutsRequest::OnGetAppShortcutItems(
     std::vector<mojom::AppShortcutItemPtr> shortcut_items) {
+  items_ = std::make_unique<ArcAppShortcutItems>();
   // Using base::Unretained(this) here is safe since we own barrier_closure_.
   barrier_closure_ = base::BarrierClosure(
       shortcut_items.size(),
       base::BindOnce(&ArcAppShortcutsRequest::OnAllIconDecodeRequestsDone,
                      base::Unretained(this)));
 
-  items_ = std::make_unique<ArcAppShortcutItems>();
   const views::MenuConfig& menu_config = views::MenuConfig::instance();
   for (const auto& shortcut_item_ptr : shortcut_items) {
     ArcAppShortcutItem item;
