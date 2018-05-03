@@ -319,7 +319,13 @@ TEST_F(StaleHostResolverTest, FreshCache) {
   WaitForIdle();
 }
 
-TEST_F(StaleHostResolverTest, StaleCache) {
+// Flaky on Linux ASan, crbug.com/838524.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_StaleCache DISABLED_StaleCache
+#else
+#define MAYBE_StaleCache StaleCache
+#endif
+TEST_F(StaleHostResolverTest, MAYBE_StaleCache) {
   SetStaleDelay(kNoStaleDelaySec);
   CreateResolver();
   CreateCacheEntry(kAgeExpiredSec, net::OK);
