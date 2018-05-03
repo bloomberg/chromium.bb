@@ -1435,6 +1435,9 @@ void RenderWidgetHostImpl::ForwardKeyboardEventWithCommands(
     switch (delegate_->PreHandleKeyboardEvent(key_event)) {
       case KeyboardEventProcessingResult::HANDLED:
         return;
+      case KeyboardEventProcessingResult::HANDLED_WANTS_KEY_UP:
+        suppress_events_until_keydown_ = false;
+        return;
 #if defined(USE_AURA)
       case KeyboardEventProcessingResult::HANDLED_DONT_UPDATE_EVENT:
         if (update_event)

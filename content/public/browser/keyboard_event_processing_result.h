@@ -11,6 +11,9 @@ enum class KeyboardEventProcessingResult {
   // The event was handled.
   HANDLED,
 
+  // The event was handled, and we want to be notified of the keyup event too.
+  HANDLED_WANTS_KEY_UP,
+
 #if defined(USE_AURA)
   // The event was handled, but don't update the underlying event. A value
   // HANDLED results in calling ui::Event::SetHandled(), where as this does not.
