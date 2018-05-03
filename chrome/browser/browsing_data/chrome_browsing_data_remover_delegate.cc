@@ -88,6 +88,7 @@
 #include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/browser/storage_partition.h"
 #include "media/mojo/services/video_decode_perf_history.h"
+#include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/net_buildflags.h"
@@ -247,20 +248,6 @@ void ClearHostnameResolutionCacheOnIOThread(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   io_thread->ClearHostCache(host_filter);
-}
-
-void ClearHttpAuthCacheOnIOThread(
-    scoped_refptr<net::URLRequestContextGetter> context_getter,
-    base::Time delete_begin) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  net::HttpNetworkSession* http_session = context_getter->GetURLRequestContext()
-                                              ->http_transaction_factory()
-                                              ->GetSession();
-  DCHECK(http_session);
-  http_session->http_auth_cache()->ClearEntriesAddedWithin(base::Time::Now() -
-                                                           delete_begin);
-  http_session->CloseAllConnections();
 }
 
 #if BUILDFLAG(ENABLE_REPORTING)
@@ -848,14 +835,10 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
               CreatePendingTaskCompletionClosure()));
     }
 
-    scoped_refptr<net::URLRequestContextGetter> request_context =
-        BrowserContext::GetDefaultStoragePartition(profile_)
-            ->GetURLRequestContext();
-    BrowserThread::PostTaskAndReply(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&ClearHttpAuthCacheOnIOThread,
-                       std::move(request_context), delete_begin_),
-        CreatePendingTaskCompletionClosure());
+    BrowserContext::GetDefaultStoragePartition(profile_)
+        ->GetNetworkContext()
+        ->ClearHttpAuthCache(delete_begin_,
+                             CreatePendingTaskCompletionClosureForMojo());
   }
 
   if (remove_mask & content::BrowsingDataRemover::DATA_TYPE_COOKIES) {
@@ -1189,6 +1172,17 @@ ChromeBrowsingDataRemoverDelegate::CreatePendingTaskCompletionClosure() {
   num_pending_tasks_++;
   return base::BindOnce(&ChromeBrowsingDataRemoverDelegate::OnTaskComplete,
                         weak_ptr_factory_.GetWeakPtr());
+}
+
+base::OnceClosure
+ChromeBrowsingDataRemoverDelegate::CreatePendingTaskCompletionClosureForMojo() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // Note num_pending_tasks++ unnecessary here because it's done by the call to
+  // CreatePendingTaskCompletionClosure().
+  return mojo::WrapCallbackWithDropHandler(
+      CreatePendingTaskCompletionClosure(),
+      base::BindOnce(&ChromeBrowsingDataRemoverDelegate::OnTaskComplete,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 #if defined(OS_ANDROID)
