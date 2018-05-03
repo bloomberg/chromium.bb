@@ -19,9 +19,15 @@ class NGConstraintSpace;
 class NGFragment;
 class NGLayoutResult;
 
-// This struct is used for communicating to a child the position of the
-// previous inflow child.
+// This struct is used for communicating to a child the position of the previous
+// inflow child. This will be used to calculate the position of the next child.
 struct NGPreviousInflowPosition {
+  // Return the BFC offset of the next block-start border edge we'd get if we
+  // commit pending margins.
+  LayoutUnit NextBorderEdge() const {
+    return bfc_block_offset + margin_strut.Sum();
+  }
+
   LayoutUnit bfc_block_offset;
   LayoutUnit logical_block_offset;
   NGMarginStrut margin_strut;
@@ -175,8 +181,25 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
                    const NGPhysicalFragment*,
                    LayoutUnit child_offset);
 
-  // Updates the fragment's BFC offset if it's not already set.
-  bool MaybeUpdateFragmentBfcOffset(LayoutUnit bfc_block_offset);
+  // If still unresolved, resolve the fragment's BFC offset.
+  //
+  // This includes applying clearance, so the bfc_block_offset passed won't be
+  // the final BFC offset, if it wasn't large enough to get past all relevant
+  // floats. The updated BFC offset can be read out with ContainerBfcOffset().
+  //
+  // In addition to resolving our BFC offset, this will also position pending
+  // floats, and update our in-flow layout state. Returns false if resolving the
+  // BFC offset resulted in needing to abort layout. It will always return true
+  // otherwise. If the BFC offset was already resolved, this method does nothing
+  // (and returns true).
+  bool ResolveBfcOffset(NGPreviousInflowPosition*, LayoutUnit bfc_block_offset);
+
+  // A very common way to resolve the BFC offset is to simply commit the pending
+  // margin, so here's a convenience overload for that.
+  bool ResolveBfcOffset(NGPreviousInflowPosition* previous_inflow_position) {
+    return ResolveBfcOffset(previous_inflow_position,
+                            previous_inflow_position->NextBorderEdge());
+  }
 
   // Return true if the BFC offset has changed and this means that we need to
   // abort layout.
