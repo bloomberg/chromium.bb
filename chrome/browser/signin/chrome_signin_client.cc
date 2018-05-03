@@ -37,6 +37,7 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/metrics/metrics_service.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/cookie_settings_util.h"
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_buildflags.h"

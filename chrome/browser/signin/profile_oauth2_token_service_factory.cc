@@ -17,8 +17,11 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/signin/oauth2_token_service_delegate_android.h"
 #else
+#include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/signin/mutable_profile_oauth2_token_service_delegate.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
+#include "components/signin/core/browser/cookie_settings_util.h"
 #endif
 
 ProfileOAuth2TokenServiceFactory::ProfileOAuth2TokenServiceFactory()
@@ -64,11 +67,20 @@ KeyedService* ProfileOAuth2TokenServiceFactory::BuildServiceInstanceFor(
   auto delegate = std::make_unique<OAuth2TokenServiceDelegateAndroid>(
       AccountTrackerServiceFactory::GetInstance()->GetForProfile(profile));
 #else
+  signin::AccountConsistencyMethod account_consistency =
+      AccountConsistencyModeManager::GetMethodForProfile(profile);
+  // When signin cookies are cleared on exit and Dice is enabled, all tokens
+  // should also be cleared.
+  bool revoke_all_tokens_on_load =
+      (account_consistency == signin::AccountConsistencyMethod::kDice) &&
+      signin::SettingsDeleteSigninCookiesOnExit(
+          CookieSettingsFactory::GetForProfile(profile).get());
+
   auto delegate = std::make_unique<MutableProfileOAuth2TokenServiceDelegate>(
       ChromeSigninClientFactory::GetInstance()->GetForProfile(profile),
       SigninErrorControllerFactory::GetInstance()->GetForProfile(profile),
       AccountTrackerServiceFactory::GetInstance()->GetForProfile(profile),
-      AccountConsistencyModeManager::GetMethodForProfile(profile));
+      account_consistency, revoke_all_tokens_on_load);
 #endif
   ProfileOAuth2TokenService* service =
       new ProfileOAuth2TokenService(std::move(delegate));

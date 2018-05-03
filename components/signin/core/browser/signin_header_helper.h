@@ -178,9 +178,6 @@ class SigninHeaderHelper {
   virtual bool IsUrlEligibleForRequestHeader(const GURL& url) = 0;
 };
 
-// Returns true if signin cookies are allowed.
-bool SettingsAllowSigninCookies(
-    const content_settings::CookieSettings* cookie_settings);
 
 // Returns the CHROME_CONNECTED cookie, or an empty string if it should not be
 // added to the request to |url|.

@@ -41402,6 +41402,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="0" label="Loaded"/>
   <int value="1" label="Revoked by Dice migration"/>
   <int value="2" label="Revoked as secondary account"/>
+  <int value="3" label="Revoked on load due to cookie settings"/>
 </enum>
 
 <enum name="SigninReason">

@@ -38,7 +38,8 @@ class MutableProfileOAuth2TokenServiceDelegate
       SigninClient* client,
       SigninErrorController* signin_error_controller,
       AccountTrackerService* account_tracker_service,
-      signin::AccountConsistencyMethod account_consistency);
+      signin::AccountConsistencyMethod account_consistency,
+      bool revoke_all_tokens_on_load = false);
   ~MutableProfileOAuth2TokenServiceDelegate() override;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -144,6 +145,8 @@ class MutableProfileOAuth2TokenServiceDelegate
                            CanonAndNonCanonAccountId);
   FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceDelegateTest,
                            ShutdownService);
+  FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceDelegateTest,
+                           ClearTokensOnStartup);
 
   // WebDataServiceConsumer implementation:
   void OnWebDataServiceRequestDone(
@@ -213,6 +216,11 @@ class MutableProfileOAuth2TokenServiceDelegate
   SigninErrorController* signin_error_controller_;
   AccountTrackerService* account_tracker_service_;
   signin::AccountConsistencyMethod account_consistency_;
+
+  // Revokes all the tokens after loading them. Secondary accounts will be
+  // completely removed, and the primary account will be kept in authentication
+  // error state.
+  const bool revoke_all_tokens_on_load_;
 
   DISALLOW_COPY_AND_ASSIGN(MutableProfileOAuth2TokenServiceDelegate);
 };

@@ -9,11 +9,10 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string_split.h"
-#include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/signin/core/browser/chrome_connected_header_helper.h"
+#include "components/signin/core/browser/cookie_settings_util.h"
 #include "google_apis/gaia/gaia_auth_util.h"
-#include "google_apis/gaia/gaia_urls.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request.h"
 
@@ -65,15 +64,6 @@ DiceResponseParams::EnableSyncInfo::EnableSyncInfo() {}
 DiceResponseParams::EnableSyncInfo::~EnableSyncInfo() {}
 DiceResponseParams::EnableSyncInfo::EnableSyncInfo(const EnableSyncInfo&) =
     default;
-
-bool SettingsAllowSigninCookies(
-    const content_settings::CookieSettings* cookie_settings) {
-  GURL gaia_url = GaiaUrls::GetInstance()->gaia_url();
-  GURL google_url = GaiaUrls::GetInstance()->google_url();
-  return cookie_settings &&
-         cookie_settings->IsCookieAccessAllowed(gaia_url, gaia_url) &&
-         cookie_settings->IsCookieAccessAllowed(google_url, google_url);
-}
 
 std::string BuildMirrorRequestCookieIfPossible(
     const GURL& url,
