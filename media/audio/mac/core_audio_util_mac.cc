@@ -134,11 +134,6 @@ base::Optional<std::string> GetDeviceModel(AudioObjectID device_id) {
   return GetDeviceStringProperty(device_id, kAudioDevicePropertyModelUID);
 }
 
-base::Optional<uint32_t> GetDeviceTransportType(AudioObjectID device_id) {
-  return GetDeviceUint32Property(device_id, kAudioDevicePropertyTransportType,
-                                 kAudioObjectPropertyScopeGlobal);
-}
-
 bool ModelContainsVidPid(const std::string& model) {
   return model.size() > 10 && model[model.size() - 5] == ':' &&
          model[model.size() - 10] == ':';
@@ -271,6 +266,50 @@ base::Optional<uint32_t> GetDeviceSource(AudioObjectID device_id,
                                          bool is_input) {
   return GetDeviceUint32Property(device_id, kAudioDevicePropertyDataSource,
                                  InputOutputScope(is_input));
+}
+
+base::Optional<uint32_t> GetDeviceTransportType(AudioObjectID device_id) {
+  return GetDeviceUint32Property(device_id, kAudioDevicePropertyTransportType,
+                                 kAudioObjectPropertyScopeGlobal);
+}
+
+bool IsPrivateAggregateDevice(AudioObjectID device_id) {
+  // Don't try to access aggregate device properties unless |device_id| is
+  // really an aggregate device.
+  if (GetDeviceTransportType(device_id) != kAudioDeviceTransportTypeAggregate)
+    return false;
+
+  const AudioObjectPropertyAddress property_address = {
+      kAudioAggregateDevicePropertyComposition, kAudioObjectPropertyScopeGlobal,
+      kAudioObjectPropertyElementMaster};
+  CFDictionaryRef dictionary = nullptr;
+  UInt32 size = sizeof(dictionary);
+  OSStatus result = AudioObjectGetPropertyData(
+      device_id, &property_address, 0 /* inQualifierDataSize */,
+      nullptr /* inQualifierData */, &size, &dictionary);
+
+  if (result != noErr) {
+    OSSTATUS_LOG(WARNING, result) << "Failed to read property "
+                                  << kAudioAggregateDevicePropertyComposition
+                                  << " for device " << device_id;
+    return false;
+  }
+
+  DCHECK_EQ(CFGetTypeID(dictionary), CFDictionaryGetTypeID());
+  bool is_private = false;
+  CFTypeRef value = CFDictionaryGetValue(
+      dictionary, CFSTR(kAudioAggregateDeviceIsPrivateKey));
+
+  if (value && CFGetTypeID(value) == CFNumberGetTypeID()) {
+    int number = 0;
+    if (CFNumberGetValue(reinterpret_cast<CFNumberRef>(value), kCFNumberIntType,
+                         &number)) {
+      is_private = number != 0;
+    }
+  }
+  CFRelease(dictionary);
+
+  return is_private;
 }
 
 }  // namespace core_audio_mac

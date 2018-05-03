@@ -43,6 +43,15 @@ uint32_t GetNumStreams(AudioObjectID device_id, bool is_input);
 base::Optional<uint32_t> GetDeviceSource(AudioObjectID device_id,
                                          bool is_input);
 
+// Returns the transport type of the given |device_id|, or no value if
+// |device_id| has no source or if there is an error.
+base::Optional<uint32_t> GetDeviceTransportType(AudioObjectID device_id);
+
+// Returns whether or not the |device_id| corresponds to a private, aggregate
+// device. Such a device gets created by instantiating a VoiceProcessingIO
+// AudioUnit.
+bool IsPrivateAggregateDevice(AudioObjectID device_id);
+
 }  // namespace core_audio_mac
 }  // namespace media
 
