@@ -7,7 +7,9 @@ package org.chromium.chrome.browser.autofill.keyboard_accessory;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -25,6 +27,7 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.autofill.AutofillKeyboardSuggestions;
 import org.chromium.chrome.browser.modelutil.ListObservable;
 import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.chrome.browser.modelutil.PropertyObservable.PropertyObserver;
@@ -102,14 +105,14 @@ public class KeyboardAccessoryControllerTest {
     public void testModelNotifiesVisibilityChangeOnShowAndHide() {
         mModel.addObserver(mMockPropertyObserver);
 
-        // Calling show on the mediator should make model propagate that it's visible.
-        mMediator.show();
+        // Setting the visibility on the model should make it propagate that it's visible.
+        mModel.setVisible(true);
         verify(mMockPropertyObserver)
                 .onPropertyChanged(mModel, KeyboardAccessoryModel.PropertyKey.VISIBLE);
         assertThat(mModel.isVisible(), is(true));
 
-        // Calling hide on the mediator should make model propagate that it's invisible.
-        mMediator.hide();
+        // Resetting the visibility on the model to should make it propagate that it's visible.
+        mModel.setVisible(false);
         verify(mMockPropertyObserver, times(2))
                 .onPropertyChanged(mModel, KeyboardAccessoryModel.PropertyKey.VISIBLE);
         assertThat(mModel.isVisible(), is(false));
@@ -174,16 +177,81 @@ public class KeyboardAccessoryControllerTest {
     public void testModelDoesntNotifyUnchangedData() {
         mModel.addObserver(mMockPropertyObserver);
 
-        // Calling show on the coordinator should make model propagate that it's visible.
-        mCoordinator.show();
+        // Setting the visibility on the model should make it propagate that it's visible.
+        mModel.setVisible(true);
         verify(mMockPropertyObserver)
                 .onPropertyChanged(mModel, KeyboardAccessoryModel.PropertyKey.VISIBLE);
         assertThat(mModel.isVisible(), is(true));
 
-        // Marking it as visible again should not result in a second notification.
-        mCoordinator.show();
+        // Marking it as visible again should not result in a notification.
+        mModel.setVisible(true);
         verify(mMockPropertyObserver) // Unchanged number of invocations.
                 .onPropertyChanged(mModel, KeyboardAccessoryModel.PropertyKey.VISIBLE);
+        assertThat(mModel.isVisible(), is(true));
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"keyboard-accessory"})
+    public void testIsVisibleWithSuggestionsBeforeKeyboardComesUp() {
+        // Without suggestions, the accessory should remain invisible - even if the keyboard shows.
+        assertThat(mModel.getAutofillSuggestions(), is(nullValue()));
+        assertThat(mModel.isVisible(), is(false));
+        mMediator.keyboardVisibilityChanged(true);
+        assertThat(mModel.isVisible(), is(false));
+        mMediator.keyboardVisibilityChanged(false);
+
+        // Adding suggestions doesn't change the visibility by itself.
+        mMediator.setSuggestions(mock(AutofillKeyboardSuggestions.class));
+        assertThat(mModel.isVisible(), is(false));
+
+        // But as soon as the keyboard comes up, it should be showing.
+        mMediator.keyboardVisibilityChanged(true);
+        assertThat(mModel.isVisible(), is(true));
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"keyboard-accessory"})
+    public void testIsVisibleWithSuggestionsAfterKeyboardComesUp() {
+        // Without any suggestions, the accessory should remain invisible.
+        assertThat(mModel.getAutofillSuggestions(), is(nullValue()));
+        assertThat(mModel.isVisible(), is(false));
+
+        // If the keyboard comes up, but there are no suggestions set, keep the accessory hidden.
+        mMediator.keyboardVisibilityChanged(true);
+        assertThat(mModel.isVisible(), is(false));
+
+        // Adding suggestions while the keyboard is visible triggers the accessory.
+        mMediator.setSuggestions(mock(AutofillKeyboardSuggestions.class));
+        assertThat(mModel.isVisible(), is(true));
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"keyboard-accessory"})
+    public void testIsVisibleWithActions() {
+        // Without any actions, the accessory should remain invisible.
+        assertThat(mModel.getActionList().getItemCount(), is(0));
+        mMediator.keyboardVisibilityChanged(true);
+        assertThat(mModel.isVisible(), is(false));
+
+        // Adding actions while the keyboard is visible triggers the accessory.
+        mModel.getActionList().add(new FakeAction());
+        assertThat(mModel.isVisible(), is(true));
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"keyboard-accessory"})
+    public void testIsVisibleWithTabs() {
+        // Without any actions, the accessory should remain invisible.
+        assertThat(mModel.getActionList().getItemCount(), is(0));
+        mMediator.keyboardVisibilityChanged(true);
+        assertThat(mModel.isVisible(), is(false));
+
+        // Adding actions while the keyboard is visible triggers the accessory.
+        mCoordinator.addTab(new FakeTab());
         assertThat(mModel.isVisible(), is(true));
     }
 }
