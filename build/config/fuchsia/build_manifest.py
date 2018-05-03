@@ -90,10 +90,13 @@ def _IsBinary(path):
 
 
 def BuildManifest(root_dir, out_dir, app_name, app_filename,
-                  sandbox_policy_path, runtime_deps_file, output_path):
-  with open(output_path, 'w') as output:
+                  sandbox_policy_path, runtime_deps_file, depfile_path,
+                  output_path):
+  with open(output_path, 'w') as manifest, open(depfile_path, 'w') as depfile:
     # Process the runtime deps file for file paths, recursively walking
-    # directories as needed.
+    # directories as needed. File paths are stored in absolute form,
+    # so that MakePackagePath() may relativize to either the source root or
+    # output directory.
     # runtime_deps may contain duplicate paths, so use a set for
     # de-duplication.
     expanded_files = set()
@@ -124,14 +127,15 @@ def BuildManifest(root_dir, out_dir, app_name, app_filename,
       # The source path is relativized so that it can be used on multiple
       # environments with differing parent directory structures,
       # e.g. builder bots and swarming clients.
-      output.write('%s=%s\n' % (in_package_path,
-                                os.path.relpath(current_file, out_dir)))
+      manifest.write('%s=%s\n' % (in_package_path,
+                                  os.path.relpath(current_file, out_dir)))
 
       # Use libc.so's dynamic linker by aliasing libc.so to ld.so.1.
       # Fuchsia always looks for the linker implementation in ld.so.1.
       if os.path.basename(in_package_path) == 'libc.so':
-        output.write('%s=%s\n' % (os.path.dirname(in_package_path) + '/ld.so.1',
-                                  os.path.relpath(current_file, out_dir)))
+        manifest.write(
+            '%s=%s\n' % (os.path.dirname(in_package_path) + '/ld.so.1',
+                         os.path.relpath(current_file, out_dir)))
 
     if not app_found:
       raise Exception('Could not locate executable inside runtime_deps.')
@@ -139,12 +143,16 @@ def BuildManifest(root_dir, out_dir, app_name, app_filename,
     with open(os.path.join(os.path.dirname(output_path), 'package'), 'w') \
         as package_json:
       json.dump({'version': '0', 'name': app_name}, package_json)
-      output.write('meta/package=%s\n' %
+      manifest.write('meta/package=%s\n' %
                    os.path.relpath(package_json.name, out_dir))
 
-    output.write('meta/sandbox=%s\n' %
+    manifest.write('meta/sandbox=%s\n' %
                  os.path.relpath(os.path.join(root_dir, sandbox_policy_path),
                                  out_dir))
+    depfile.write(
+        "%s: %s" % (os.path.relpath(output_path, out_dir),
+                    " ".join([os.path.relpath(f, out_dir)
+                              for f in expanded_files])))
 
   return 0
 
