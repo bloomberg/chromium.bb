@@ -76,7 +76,7 @@ class BackingVisitor : public Visitor {
 // Base class for initializing worklists.
 class IncrementalMarkingScopeBase {
  public:
-  IncrementalMarkingScopeBase(ThreadState* thread_state)
+  explicit IncrementalMarkingScopeBase(ThreadState* thread_state)
       : thread_state_(thread_state), heap_(thread_state_->Heap()) {
     heap_.CommitCallbackStacks();
   }
@@ -155,16 +155,15 @@ class ExpectWriteBarrierFires : public IncrementalMarkingScope {
     MarkingItem item;
     // All objects watched should be on the marking stack.
     while (marking_worklist_->Pop(WorklistTaskId::MainThread, &item)) {
-      T* obj = reinterpret_cast<T*>(item.object);
       // Inspect backing stores to allow specifying objects that are only
       // reachable through a backing store.
       if (!ThreadHeap::IsNormalArenaIndex(
-              PageFromObject(obj)->Arena()->ArenaIndex())) {
+              PageFromObject(item.object)->Arena()->ArenaIndex())) {
         BackingVisitor<T> visitor(thread_state_, &objects_);
-        visitor.ProcessBackingStore(HeapObjectHeader::FromPayload(obj));
+        visitor.ProcessBackingStore(HeapObjectHeader::FromPayload(item.object));
         continue;
       }
-      auto pos = std::find(objects_.begin(), objects_.end(), obj);
+      auto pos = std::find(objects_.begin(), objects_.end(), item.object);
       if (objects_.end() != pos)
         objects_.erase(pos);
     }
@@ -190,27 +189,25 @@ class ExpectNoWriteBarrierFires : public IncrementalMarkingScope {
  public:
   ExpectNoWriteBarrierFires(ThreadState* thread_state,
                             std::initializer_list<T*> objects)
-      : IncrementalMarkingScope(thread_state), objects_(objects) {
+      : IncrementalMarkingScope(thread_state) {
     EXPECT_TRUE(marking_worklist_->IsGlobalEmpty());
     for (T* object : objects_) {
       HeapObjectHeader* header = HeapObjectHeader::FromPayload(object);
-      headers_.push_back(header);
-      was_marked_.push_back(header->IsMarked());
+      headers_.push_back({header, header->IsMarked()});
     }
   }
 
   ~ExpectNoWriteBarrierFires() {
     EXPECT_TRUE(marking_worklist_->IsGlobalEmpty());
-    for (size_t i = 0; i < headers_.size(); i++) {
-      EXPECT_EQ(was_marked_[i], headers_[i]->IsMarked());
-      headers_[i]->Unmark();
+    for (const auto& pair : headers_) {
+      EXPECT_EQ(pair.second, pair.first->IsMarked());
+      pair.first->Unmark();
     }
   }
 
  private:
   std::vector<T*> objects_;
-  std::vector<HeapObjectHeader*> headers_;
-  std::vector<bool> was_marked_;
+  std::vector<std::pair<HeapObjectHeader*, bool /* was marked */>> headers_;
 };
 
 class Object : public GarbageCollected<Object> {
@@ -220,11 +217,11 @@ class Object : public GarbageCollected<Object> {
 
   void set_next(Object* next) { next_ = next; }
 
-  virtual void Trace(blink::Visitor* visitor) { visitor->Trace(next_); }
-
   bool IsMarked() const {
     return HeapObjectHeader::FromPayload(this)->IsMarked();
   }
+
+  virtual void Trace(blink::Visitor* visitor) { visitor->Trace(next_); }
 
  private:
   Object() : next_(nullptr) {}
