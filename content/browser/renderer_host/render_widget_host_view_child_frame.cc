@@ -956,6 +956,19 @@ void RenderWidgetHostViewChildFrame::TakeFallbackContentFrom(
 
 InputEventAckState RenderWidgetHostViewChildFrame::FilterInputEvent(
     const blink::WebInputEvent& input_event) {
+  // A child renderer should not receive touchscreen pinch events. Ideally, we
+  // would DCHECK this, but since touchscreen pinch events may be targeted to
+  // a child in order to have the child's TouchActionFilter filter them, we
+  // may encounter https://crbug.com/771330 which would let the pinch events
+  // through.
+  if (blink::WebInputEvent::IsPinchGestureEventType(input_event.GetType())) {
+    const blink::WebGestureEvent& gesture_event =
+        static_cast<const blink::WebGestureEvent&>(input_event);
+    if (gesture_event.SourceDevice() == blink::kWebGestureDeviceTouchscreen) {
+      return INPUT_EVENT_ACK_STATE_CONSUMED;
+    }
+  }
+
   if (input_event.GetType() == blink::WebInputEvent::kGestureFlingStart) {
     const blink::WebGestureEvent& gesture_event =
         static_cast<const blink::WebGestureEvent&>(input_event);

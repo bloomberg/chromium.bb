@@ -3571,6 +3571,7 @@ class SitePerProcessGestureHitTestBrowserTest
         ui::ET_GESTURE_SCROLL_BEGIN);
     gesture_scroll_begin_details.set_device_type(
         ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
+    gesture_scroll_begin_details.set_touch_points(2);
     ui::GestureEvent gesture_scroll_begin(
         position.x(), position.y(), 0, ui::EventTimeForNow(),
         gesture_scroll_begin_details, touch_pressed.unique_event_id());
