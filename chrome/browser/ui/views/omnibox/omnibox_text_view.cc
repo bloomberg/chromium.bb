@@ -27,7 +27,7 @@ namespace {
 constexpr int kTextStyle = views::style::STYLE_PRIMARY;
 
 // Indicates to use CONTEXT_OMNIBOX_PRIMARY when picking a font size in legacy
-// codepaths.
+// code paths.
 constexpr int kInherit = INT_MIN;
 
 struct TextStyle {
@@ -224,13 +224,11 @@ void OmniboxTextView::SetText(const base::string16& text,
                               const ACMatchClassifications& classifications) {
   render_text_.reset();
   render_text_ = CreateClassifiedRenderText(text, classifications);
-  SizeToPreferredSize();
 }
 
 void OmniboxTextView::SetText(const base::string16& text) {
   render_text_.reset();
   render_text_ = CreateRenderText(text);
-  SizeToPreferredSize();
 }
 
 void OmniboxTextView::SetText(const SuggestionAnswer::ImageLine& line) {
@@ -242,7 +240,6 @@ void OmniboxTextView::SetText(const SuggestionAnswer::ImageLine& line) {
   render_text_.reset();
   render_text_ = CreateText(line, GetFontForType(line.text_fields()[0].type()));
   font_height_ = render_text_->font_list().GetHeight();
-  SizeToPreferredSize();
 }
 
 std::unique_ptr<gfx::RenderText> OmniboxTextView::CreateText(
