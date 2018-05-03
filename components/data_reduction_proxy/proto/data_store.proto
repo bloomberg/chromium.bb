@@ -16,6 +16,9 @@ message DataUsageBucket {
 
   // Timestamp of the last update that was included in this bucket.
   optional int64 last_updated_timestamp = 2;
+
+  // True if there was an error while parsing this from disk.
+  optional bool had_read_error = 3;
 }
 
 message PerConnectionDataUsage {

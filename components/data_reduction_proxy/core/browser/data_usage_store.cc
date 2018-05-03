@@ -106,7 +106,9 @@ void DataUsageStore::LoadCurrentDataUsageBucket(DataUsageBucket* current) {
   DCHECK_LT(current_bucket_index_, kNumDataUsageBuckets);
 
   DataStore::Status status = LoadBucketAtIndex(current_bucket_index_, current);
-  if (status == DataStore::Status::OK) {
+  bool bucket_read_ok = status == DataStore::Status::OK;
+  current->set_had_read_error(!bucket_read_ok);
+  if (bucket_read_ok) {
     current_bucket_last_updated_ =
         base::Time::FromInternalValue(current->last_updated_timestamp());
   }
@@ -119,7 +121,8 @@ void DataUsageStore::StoreCurrentDataUsageBucket(
          current_bucket_index_ < kNumDataUsageBuckets);
 
   // If current bucket does not have any information, we skip writing to DB.
-  if (!current.has_last_updated_timestamp())
+  if (!current.has_last_updated_timestamp() ||
+      (current.has_had_read_error() && current.had_read_error()))
     return;
 
   int prev_current_bucket_index = current_bucket_index_;
@@ -197,6 +200,9 @@ void DataUsageStore::DeleteBrowsingHistory(const base::Time& start,
     int index_to_delete = (first_index_to_delete + i) % kNumDataUsageBuckets;
     db_->Delete(DbKeyForBucketIndex(index_to_delete));
   }
+  UMA_HISTOGRAM_COUNTS_10000(
+      "DataReductionProxy.DeleteBrowsingHistory.NumBuckets",
+      num_buckets_to_delete);
 }
 
 int DataUsageStore::ComputeBucketIndex(const base::Time& time) const {

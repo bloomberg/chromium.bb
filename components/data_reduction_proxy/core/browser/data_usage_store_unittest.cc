@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/strings/stringprintf.h"
+#include "base/test/histogram_tester.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_store.h"
@@ -71,6 +72,7 @@ class DataUsageStoreTest : public testing::Test {
 
     DataUsageBucket current_bucket;
     current_bucket.set_last_updated_timestamp(current_time.ToInternalValue());
+    current_bucket.set_had_read_error(false);
     std::string bucket_value;
     ASSERT_TRUE(current_bucket.SerializeToString(&bucket_value));
 
@@ -81,6 +83,7 @@ class DataUsageStoreTest : public testing::Test {
       base::Time time = current_time - base::TimeDelta::FromMinutes(i * 5);
       DataUsageBucket bucket;
       bucket.set_last_updated_timestamp(time.ToInternalValue());
+      bucket.set_had_read_error(false);
       int index = kTestCurrentBucketIndex - i;
       if (index < 0)
         index += kNumExpectedBuckets;
@@ -121,6 +124,7 @@ TEST_F(DataUsageStoreTest, LoadAndStoreToSameBucket) {
 
   base::Time now = base::Time::Now();
   bucket.set_last_updated_timestamp(now.ToInternalValue());
+  bucket.set_had_read_error(false);
 
   data_usage_store()->StoreCurrentDataUsageBucket(bucket);
   ASSERT_EQ(2u, store()->map()->size());
@@ -128,6 +132,7 @@ TEST_F(DataUsageStoreTest, LoadAndStoreToSameBucket) {
   DataUsageBucket stored_bucket;
   data_usage_store()->LoadCurrentDataUsageBucket(&stored_bucket);
   ASSERT_EQ(now.ToInternalValue(), stored_bucket.last_updated_timestamp());
+  ASSERT_FALSE(stored_bucket.had_read_error());
 
   std::vector<DataUsageBucket> data_usage;
   data_usage_store()->LoadDataUsage(&data_usage);
@@ -138,6 +143,7 @@ TEST_F(DataUsageStoreTest, LoadAndStoreToSameBucket) {
       data_usage[kNumExpectedBuckets - 2].has_last_updated_timestamp());
   ASSERT_EQ(now.ToInternalValue(),
             data_usage[kNumExpectedBuckets - 1].last_updated_timestamp());
+  ASSERT_FALSE(data_usage[kNumExpectedBuckets - 1].had_read_error());
 }
 
 TEST_F(DataUsageStoreTest, StoreSameBucket) {
@@ -159,6 +165,7 @@ TEST_F(DataUsageStoreTest, StoreSameBucket) {
   data_usage_store()->LoadCurrentDataUsageBucket(&bucket);
 
   bucket.set_last_updated_timestamp(time1.ToInternalValue());
+  bucket.set_had_read_error(false);
 
   data_usage_store()->StoreCurrentDataUsageBucket(bucket);
   ASSERT_EQ(2u, store()->map()->size());
@@ -176,6 +183,7 @@ TEST_F(DataUsageStoreTest, StoreSameBucket) {
       data_usage[kNumExpectedBuckets - 2].has_last_updated_timestamp());
   ASSERT_EQ(time2.ToInternalValue(),
             data_usage[kNumExpectedBuckets - 1].last_updated_timestamp());
+  ASSERT_FALSE(data_usage[kNumExpectedBuckets - 1].had_read_error());
 }
 
 TEST_F(DataUsageStoreTest, StoreConsecutiveBuckets) {
@@ -197,6 +205,7 @@ TEST_F(DataUsageStoreTest, StoreConsecutiveBuckets) {
   data_usage_store()->LoadCurrentDataUsageBucket(&bucket);
 
   bucket.set_last_updated_timestamp(time1.ToInternalValue());
+  bucket.set_had_read_error(false);
 
   data_usage_store()->StoreCurrentDataUsageBucket(bucket);
   ASSERT_EQ(2u, store()->map()->size());
@@ -214,8 +223,10 @@ TEST_F(DataUsageStoreTest, StoreConsecutiveBuckets) {
       data_usage[kNumExpectedBuckets - 3].has_last_updated_timestamp());
   ASSERT_EQ(time1.ToInternalValue(),
             data_usage[kNumExpectedBuckets - 2].last_updated_timestamp());
+  ASSERT_FALSE(data_usage[kNumExpectedBuckets - 2].had_read_error());
   ASSERT_EQ(time2.ToInternalValue(),
             data_usage[kNumExpectedBuckets - 1].last_updated_timestamp());
+  ASSERT_FALSE(data_usage[kNumExpectedBuckets - 1].had_read_error());
 }
 
 TEST_F(DataUsageStoreTest, StoreMultipleBuckets) {
@@ -242,6 +253,7 @@ TEST_F(DataUsageStoreTest, StoreMultipleBuckets) {
   DataUsageBucket bucket_before_history;
   bucket_before_history.set_last_updated_timestamp(
       before_history_time.ToInternalValue());
+  bucket_before_history.set_had_read_error(false);
   data_usage_store()->StoreCurrentDataUsageBucket(bucket_before_history);
   // Only one bucket has been stored, so store should have 2 entries, one for
   // current index and one for the bucket itself.
@@ -258,6 +270,7 @@ TEST_F(DataUsageStoreTest, StoreMultipleBuckets) {
   // This will be the very first bucket once |last_bucket| is stored.
   DataUsageBucket first_bucket;
   first_bucket.set_last_updated_timestamp(first_bucket_time.ToInternalValue());
+  first_bucket.set_had_read_error(false);
   data_usage_store()->StoreCurrentDataUsageBucket(first_bucket);
   // A new bucket has been stored, so entires in map should increase by one.
   ASSERT_EQ(3u, store()->map()->size());
@@ -266,6 +279,7 @@ TEST_F(DataUsageStoreTest, StoreMultipleBuckets) {
   // calling |StoreCurrentDataUsageBucket| on 10 buckets.
   DataUsageBucket tenth_bucket;
   tenth_bucket.set_last_updated_timestamp(tenth_bucket_time.ToInternalValue());
+  tenth_bucket.set_had_read_error(false);
   data_usage_store()->StoreCurrentDataUsageBucket(tenth_bucket);
   // 9 more (empty) buckets should have been added to the store.
   ASSERT_EQ(12u, store()->map()->size());
@@ -274,6 +288,7 @@ TEST_F(DataUsageStoreTest, StoreMultipleBuckets) {
   DataUsageBucket second_last_bucket;
   second_last_bucket.set_last_updated_timestamp(
       second_last_bucket_time.ToInternalValue());
+  second_last_bucket.set_had_read_error(false);
   data_usage_store()->StoreCurrentDataUsageBucket(second_last_bucket);
   // Max number of buckets we store to DB plus one for the current index.
   ASSERT_EQ(kNumExpectedBuckets + 1, store()->map()->size());
@@ -282,6 +297,7 @@ TEST_F(DataUsageStoreTest, StoreMultipleBuckets) {
   // store should be unchanged.
   DataUsageBucket last_bucket;
   last_bucket.set_last_updated_timestamp(last_bucket_time.ToInternalValue());
+  last_bucket.set_had_read_error(false);
   data_usage_store()->StoreCurrentDataUsageBucket(last_bucket);
   ASSERT_EQ(kNumExpectedBuckets + 1, store()->map()->size());
 
@@ -297,6 +313,11 @@ TEST_F(DataUsageStoreTest, StoreMultipleBuckets) {
             data_usage[kNumExpectedBuckets - 2].last_updated_timestamp());
   ASSERT_EQ(last_bucket_time.ToInternalValue(),
             data_usage[kNumExpectedBuckets - 1].last_updated_timestamp());
+
+  ASSERT_FALSE(data_usage[0].had_read_error());
+  ASSERT_FALSE(data_usage[9].had_read_error());
+  ASSERT_FALSE(data_usage[kNumExpectedBuckets - 2].had_read_error());
+  ASSERT_FALSE(data_usage[kNumExpectedBuckets - 1].had_read_error());
 }
 
 TEST_F(DataUsageStoreTest, DeleteHistoricalDataUsage) {
@@ -304,6 +325,7 @@ TEST_F(DataUsageStoreTest, DeleteHistoricalDataUsage) {
   data_usage_store()->LoadCurrentDataUsageBucket(&bucket);
 
   bucket.set_last_updated_timestamp(base::Time::Now().ToInternalValue());
+  bucket.set_had_read_error(false);
 
   data_usage_store()->StoreCurrentDataUsageBucket(bucket);
   ASSERT_EQ(2u, store()->map()->size());
@@ -409,6 +431,7 @@ TEST_F(DataUsageStoreTest, DeleteBrowsingHistory) {
   PopulateStore();
   DataUsageBucket current_bucket;
   data_usage_store()->LoadCurrentDataUsageBucket(&current_bucket);
+  base::HistogramTester histogram_tester;
 
   ASSERT_EQ(kNumExpectedBuckets + 1, store()->map()->size());
 
@@ -417,6 +440,7 @@ TEST_F(DataUsageStoreTest, DeleteBrowsingHistory) {
   base::Time now;
   EXPECT_TRUE(base::Time::FromUTCExploded(exploded, &now));
   base::Time fifteen_mins_from_now = now + base::TimeDelta::FromMinutes(15);
+
   // Deleting browsing from the future should be a no-op.
   data_usage_store()->DeleteBrowsingHistory(fifteen_mins_from_now,
                                             fifteen_mins_from_now);
@@ -425,20 +449,27 @@ TEST_F(DataUsageStoreTest, DeleteBrowsingHistory) {
   ASSERT_TRUE(store()->map()->find(base::StringPrintf(
                   "data_usage_bucket:%d", kTestCurrentBucketIndex)) !=
               store()->map()->end());
+
   // Delete the current bucket.
   data_usage_store()->DeleteBrowsingHistory(now, now);
   ASSERT_EQ(kNumExpectedBuckets, store()->map()->size());
   ASSERT_TRUE(store()->map()->find(base::StringPrintf(
                   "data_usage_bucket:%d", kTestCurrentBucketIndex)) ==
               store()->map()->end());
+  histogram_tester.ExpectUniqueSample(
+      "DataReductionProxy.DeleteBrowsingHistory.NumBuckets", 1, 1);
 
+  // Delete the current bucket + the last 5 minutes, so two buckets.
   data_usage_store()->DeleteBrowsingHistory(
       now - base::TimeDelta::FromMinutes(5), now);
   ASSERT_EQ(kNumExpectedBuckets - 1, store()->map()->size());
   ASSERT_TRUE(store()->map()->find(base::StringPrintf(
                   "data_usage_bucket:%d", kTestCurrentBucketIndex - 1)) ==
               store()->map()->end());
+  histogram_tester.ExpectBucketCount(
+      "DataReductionProxy.DeleteBrowsingHistory.NumBuckets", 2, 1);
 
+  // Delete 30 days of browsing history.
   data_usage_store()->DeleteBrowsingHistory(now - base::TimeDelta::FromDays(30),
                                             now);
   ASSERT_EQ(kNumExpectedBuckets - kBucketsInHour * 30 * 24,
@@ -448,6 +479,9 @@ TEST_F(DataUsageStoreTest, DeleteBrowsingHistory) {
   ASSERT_TRUE(store()->map()->find(base::StringPrintf(
                   "data_usage_bucket:%d", kNumExpectedBuckets - 1)) !=
               store()->map()->end());
+  histogram_tester.ExpectBucketCount(
+      "DataReductionProxy.DeleteBrowsingHistory.NumBuckets",
+      kBucketsInHour * 30 * 24, 1);
 
   // Delete wraps around and removes the last element which is at position
   // (|kNumExpectedBuckets| - 1).
@@ -466,6 +500,31 @@ TEST_F(DataUsageStoreTest, DeleteBrowsingHistory) {
   data_usage_store()->DeleteBrowsingHistory(now - base::TimeDelta::FromDays(60),
                                             now);
   ASSERT_EQ(1u, store()->map()->size());
+  histogram_tester.ExpectBucketCount(
+      "DataReductionProxy.DeleteBrowsingHistory.NumBuckets",
+      kBucketsInHour * 30 * 24 - 1, 2);
+}
+
+TEST_F(DataUsageStoreTest, DontStoreReadError) {
+  DataUsageBucket bucket;
+  data_usage_store()->LoadCurrentDataUsageBucket(&bucket);
+
+  base::Time now = base::Time::Now();
+  bucket.set_last_updated_timestamp(now.ToInternalValue());
+  bucket.set_had_read_error(true);
+
+  data_usage_store()->StoreCurrentDataUsageBucket(bucket);
+  ASSERT_EQ(0u, store()->map()->size());
+}
+
+TEST_F(DataUsageStoreTest, DontStoreNoTimestamp) {
+  DataUsageBucket bucket;
+  data_usage_store()->LoadCurrentDataUsageBucket(&bucket);
+
+  bucket.set_had_read_error(false);
+
+  data_usage_store()->StoreCurrentDataUsageBucket(bucket);
+  ASSERT_EQ(0u, store()->map()->size());
 }
 
 }  // namespace data_reduction_proxy

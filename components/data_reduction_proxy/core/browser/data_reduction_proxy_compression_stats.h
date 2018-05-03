@@ -36,6 +36,24 @@ class DataReductionProxyService;
 class DataUsageBucket;
 class PerSiteDataUsage;
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+//
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: (
+//     org.chromium.chrome.browser.preferences.datareduction)
+enum class DataReductionProxySavingsClearedReason {
+  SYSTEM_CLOCK_MOVED_BACK,
+  PREFS_PARSE_ERROR,
+  USER_ACTION_EXTENSION,
+  USER_ACTION_SETTINGS_MENU,
+  USER_ACTION_DELETE_BROWSING_HISTORY,
+  // NOTE: always keep this entry at the end. Add new result types only
+  // immediately above this line. Make sure to update the corresponding
+  // histogram enum accordingly.
+  REASON_COUNT,
+};
+
 // Data reduction proxy delayed pref service reduces the number calls to pref
 // service by storing prefs in memory and writing to the given PrefService after
 // |delay| amount of time. If |delay| is zero, the delayed pref service writes
@@ -45,15 +63,6 @@ class DataReductionProxyCompressionStats {
  public:
   typedef std::unordered_map<std::string, std::unique_ptr<PerSiteDataUsage>>
       SiteUsageMap;
-
-  // These values are persisted to logs. Entries should not be renumbered and
-  // numeric values should never be reused.
-  enum class DataReductionProxySavingsClearedReason {
-    kSystemClockMovedBack = 0,
-    // TODO(robertogden): Use this. Temp added to appease the DCHECK gods.
-    kPrefsParseError = 1,
-    kCount
-  };
 
   // Collects and store data usage and compression statistics. Basic data usage
   // stats are stored in browser preferences. More detailed stats broken down
@@ -103,8 +112,8 @@ class DataReductionProxyCompressionStats {
   // Resets daily content length statistics.
   void ResetStatistics();
 
-  // Clears all data saving statistics.
-  void ClearDataSavingStatistics();
+  // Clears all data saving statistics for the given |reason|.
+  void ClearDataSavingStatistics(DataReductionProxySavingsClearedReason reason);
 
   // Returns the total size of all HTTP content received from the network.
   int64_t GetHttpReceivedContentLength();

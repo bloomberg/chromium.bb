@@ -22,8 +22,11 @@ DataReductionProxyClearDataSavingsFunction::Run() {
   data_reduction_proxy::DataReductionProxySettings* settings =
       DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
           browser_context());
-  settings->data_reduction_proxy_service()->compression_stats()->
-      ClearDataSavingStatistics();
+  settings->data_reduction_proxy_service()
+      ->compression_stats()
+      ->ClearDataSavingStatistics(
+          data_reduction_proxy::DataReductionProxySavingsClearedReason::
+              USER_ACTION_EXTENSION);
   return RespondNow(NoArguments());
 }
 

@@ -161,6 +161,7 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="out/Debug/gen/enums/content_setting_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/content_settings_type_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/data_use_ui_message_enum_java"/>
+    <classpathentry kind="src" path="out/Debug/gen/enums/data_reduction_proxy_savings_cleared_enum_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/device_sensors_consts_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/gesture_event_type_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/http_cache_type_java"/>

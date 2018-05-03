@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionDataUseItem;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoUtils;
+import org.chromium.chrome.browser.preferences.datareduction.DataReductionProxySavingsClearedReason;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionStatsPreference;
 
 import java.text.NumberFormat;
@@ -238,8 +239,9 @@ public class DataReductionProxySettings {
 
     /**
      * Clears all data saving statistics.
+     * @param reason from the DataReductionProxySavingsClearedReason enum
      */
-    public void clearDataSavingStatistics() {
+    public void clearDataSavingStatistics(@DataReductionProxySavingsClearedReason int reason) {
         // When the data saving statistics are cleared, reset the snackbar promo that tells the user
         // how much data they have saved using Data Saver so far.
         DataReductionPromoUtils.saveSnackbarPromoDisplayed(0);
@@ -247,7 +249,7 @@ public class DataReductionProxySettings {
                 .edit()
                 .putLong(DATA_REDUCTION_FIRST_ENABLED_TIME, System.currentTimeMillis())
                 .apply();
-        nativeClearDataSavingStatistics(mNativeDataReductionProxySettings);
+        nativeClearDataSavingStatistics(mNativeDataReductionProxySettings, reason);
     }
 
     /**
@@ -391,7 +393,7 @@ public class DataReductionProxySettings {
     private native long nativeGetDataReductionLastUpdateTime(
             long nativeDataReductionProxySettingsAndroid);
     private native void nativeClearDataSavingStatistics(
-            long nativeDataReductionProxySettingsAndroid);
+            long nativeDataReductionProxySettingsAndroid, int reason);
     private native ContentLengths nativeGetContentLengths(
             long nativeDataReductionProxySettingsAndroid);
     private native long nativeGetTotalHttpContentLengthSaved(

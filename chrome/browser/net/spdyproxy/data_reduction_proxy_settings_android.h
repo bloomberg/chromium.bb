@@ -59,7 +59,8 @@ class DataReductionProxySettingsAndroid {
       const base::android::JavaParamRef<jobject>& obj);
   void ClearDataSavingStatistics(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
+      const base::android::JavaParamRef<jobject>& obj,
+      jint reason);
   jlong GetTotalHttpContentLengthSaved(
         JNIEnv* env,
         const base::android::JavaParamRef<jobject>& obj);

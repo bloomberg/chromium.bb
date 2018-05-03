@@ -2,6 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
+
 browser_sources = [
   "data_reduction_proxy_bypass_protocol.cc",
   "data_reduction_proxy_bypass_protocol.h",
@@ -76,6 +80,12 @@ if (is_android) {
       "//google_apis",
       "//net:net",
       "//url:url",
+    ]
+  }
+
+  java_cpp_enum("data_reduction_proxy_savings_cleared_enum_java") {
+    sources = [
+      "data_reduction_proxy_compression_stats.h",
     ]
   }
 }

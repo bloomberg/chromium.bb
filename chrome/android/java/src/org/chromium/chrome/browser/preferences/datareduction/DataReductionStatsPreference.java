@@ -234,7 +234,9 @@ public class DataReductionStatsPreference extends Preference {
                                                 now)
                                         .apply();
                             }
-                            DataReductionProxySettings.getInstance().clearDataSavingStatistics();
+                            DataReductionProxySettings.getInstance().clearDataSavingStatistics(
+                                    DataReductionProxySavingsClearedReason
+                                            .USER_ACTION_SETTINGS_MENU);
                             updateReductionStatistics();
                             setDetailText();
                             notifyChanged();

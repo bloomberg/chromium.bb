@@ -433,7 +433,9 @@ class DataReductionProxyCompressionStatsTest : public testing::Test {
   }
 
   void ClearDataSavingStatistics() {
-    compression_stats_->ClearDataSavingStatistics();
+    compression_stats_->ClearDataSavingStatistics(
+        DataReductionProxySavingsClearedReason::
+            USER_ACTION_DELETE_BROWSING_HISTORY);
   }
 
   void DeleteBrowsingHistory(const base::Time& start, const base::Time& end) {
@@ -901,7 +903,7 @@ TEST_F(DataReductionProxyCompressionStatsTest, BackwardTwoDays) {
       kReceivedLength, kOriginalLength, true, VIA_DATA_REDUCTION_PROXY,
       FakeNow());
 
-  // Backward two days, expect kSystemClockMovedBack.
+  // Backward two days, expect SYSTEM_CLOCK_MOVED_BACK.
   SetFakeTimeDeltaInHours(-2 * 24);
   RecordContentLengthPrefs(
       kReceivedLength, kOriginalLength, true, VIA_DATA_REDUCTION_PROXY,
@@ -911,21 +913,17 @@ TEST_F(DataReductionProxyCompressionStatsTest, BackwardTwoDays) {
       1, kNumDaysInHistory);
   histogram_tester.ExpectUniqueSample(
       "DataReductionProxy.SavingsCleared.Reason",
-      DataReductionProxyCompressionStats::
-          DataReductionProxySavingsClearedReason::kSystemClockMovedBack,
-      1);
+      DataReductionProxySavingsClearedReason::SYSTEM_CLOCK_MOVED_BACK, 1);
   VerifyPrefInt64(prefs::kDataReductionProxySavingsClearedNegativeSystemClock,
                   FakeNow().ToInternalValue());
 
-  // Backward another two days, expect kSystemClockMovedBack.
+  // Backward another two days, expect SYSTEM_CLOCK_MOVED_BACK.
   SetFakeTimeDeltaInHours(-4 * 24);
   RecordContentLengthPrefs(kReceivedLength, kOriginalLength, true,
                            VIA_DATA_REDUCTION_PROXY, FakeNow());
   histogram_tester.ExpectUniqueSample(
       "DataReductionProxy.SavingsCleared.Reason",
-      DataReductionProxyCompressionStats::
-          DataReductionProxySavingsClearedReason::kSystemClockMovedBack,
-      2);
+      DataReductionProxySavingsClearedReason::SYSTEM_CLOCK_MOVED_BACK, 2);
 
   // Forward 2 days, expect no change.
   AddFakeTimeDeltaInHours(2 * 24);
@@ -933,9 +931,7 @@ TEST_F(DataReductionProxyCompressionStatsTest, BackwardTwoDays) {
                            VIA_DATA_REDUCTION_PROXY, FakeNow());
   histogram_tester.ExpectUniqueSample(
       "DataReductionProxy.SavingsCleared.Reason",
-      DataReductionProxyCompressionStats::
-          DataReductionProxySavingsClearedReason::kSystemClockMovedBack,
-      2);
+      DataReductionProxySavingsClearedReason::SYSTEM_CLOCK_MOVED_BACK, 2);
 }
 
 TEST_F(DataReductionProxyCompressionStatsTest, NormalizeHostname) {
