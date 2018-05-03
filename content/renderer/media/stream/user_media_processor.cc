@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <map>
 #include <utility>
 
 #include "base/location.h"
@@ -1158,6 +1159,8 @@ blink::WebMediaStreamSource UserMediaProcessor::FindOrInitializeSourceObject(
   source.Initialize(blink::WebString::FromUTF8(device.id), type,
                     blink::WebString::FromUTF8(device.name),
                     false /* remote */);
+  if (device.group_id)
+    source.SetGroupId(blink::WebString::FromUTF8(*device.group_id));
 
   DVLOG(1) << "Initialize source object :"
            << "id = " << source.Id().Utf8()

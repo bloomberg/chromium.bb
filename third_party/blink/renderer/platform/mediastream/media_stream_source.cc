@@ -56,6 +56,10 @@ MediaStreamSource::MediaStreamSource(const String& id,
       ready_state_(ready_state),
       requires_consumer_(requires_consumer) {}
 
+void MediaStreamSource::SetGroupId(const String& group_id) {
+  group_id_ = group_id;
+}
+
 void MediaStreamSource::SetReadyState(ReadyState ready_state) {
   if (ready_state_ != kReadyStateEnded && ready_state_ != ready_state) {
     ready_state_ = ready_state;
@@ -117,6 +121,7 @@ bool MediaStreamSource::RemoveAudioConsumer(
 
 void MediaStreamSource::GetSettings(WebMediaStreamTrack::Settings& settings) {
   settings.device_id = Id();
+  settings.group_id = GroupId();
 
   if (echo_cancellation_)
     settings.echo_cancellation = *echo_cancellation_;
