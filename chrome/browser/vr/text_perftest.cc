@@ -9,7 +9,6 @@
 #include "chrome/browser/vr/ganesh_surface_provider.h"
 #include "chrome/browser/vr/test/constants.h"
 #include "chrome/browser/vr/test/gl_test_environment.h"
-#include "skia/ext/texture_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
 #include "third_party/skia/include/core/SkSurface.h"
