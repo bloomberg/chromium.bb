@@ -30,13 +30,24 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface {
   // And this SkCanvas may become invalid, when the frame is swapped out.
   virtual SkCanvas* GetSkCanvasForCurrentFrame() = 0;
 
-  // Make a SkImage from the given |metadata|. The SkiaRenderer can use the
-  // image with SkCanvas returned by |GetSkCanvasForCurrentFrame|, but Skia will
-  // not read the content of the resource until the sync token in the |metadata|
-  // is satisfied. The SwapBuffers should take care of this by scheduling a GPU
-  // task with all resource sync tokens recorded by MakePromiseSkImage for the
-  // current frame.
+  // Make a promise SkImage from the given |metadata|. The SkiaRenderer can use
+  // the image with SkCanvas returned by |GetSkCanvasForCurrentFrame|, but Skia
+  // will not read the content of the resource until the sync token in the
+  // |metadata| is satisfied. The SwapBuffers should take care of this by
+  // scheduling a GPU task with all resource sync tokens recorded by
+  // MakePromiseSkImage for the current frame.
   virtual sk_sp<SkImage> MakePromiseSkImage(ResourceMetadata metadata) = 0;
+
+  // Make a promise SkImage from the given |metadata| and the |yuv_color_space|.
+  // For YUV format, three resource metadatas should be provided. metadatas[0]
+  // contains pixels from y panel, metadatas[1] contains pixels from u panel,
+  // metadatas[2] contains pixels from v panel.
+  // For NV12 format, two resource metadatas should be provided. metadatas[0]
+  // contains pixels from y panel, metadatas[1] contains pixels from u and v
+  // panels.
+  virtual sk_sp<SkImage> MakePromiseSkImageFromYUV(
+      std::vector<ResourceMetadata> metadatas,
+      SkYUVColorSpace yuv_color_space) = 0;
 
   // Swaps the current backbuffer to the screen and return a sync token which
   // can be waited on in a command buffer to ensure the frame is completed. This

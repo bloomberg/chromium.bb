@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_SKIA_RENDERER_H_
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_SKIA_RENDERER_H_
 
+#include <tuple>
+
 #include "base/macros.h"
 #include "cc/cc_export.h"
 #include "components/viz/service/display/direct_renderer.h"
@@ -26,6 +28,7 @@ class SkiaOutputSurface;
 class SolidColorDrawQuad;
 class TextureDrawQuad;
 class TileDrawQuad;
+class YUVVideoDrawQuad;
 
 class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
  public:
@@ -76,6 +79,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
  private:
   struct DrawRenderPassDrawQuadParams;
   class ScopedSkImageBuilder;
+  class ScopedYUVSkImageBuilder;
 
   void ClearCanvas(SkColor color);
   void ClearFramebuffer();
@@ -87,6 +91,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   void DrawSolidColorQuad(const SolidColorDrawQuad* quad);
   void DrawTextureQuad(const TextureDrawQuad* quad);
   void DrawTileQuad(const TileDrawQuad* quad);
+  void DrawYUVVideoQuad(const YUVVideoDrawQuad* quad);
   void DrawUnsupportedQuad(const DrawQuad* quad);
   bool CalculateRPDQParams(sk_sp<SkImage> src_image,
                            const RenderPassDrawQuad* quad,
@@ -163,6 +168,9 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   // |lock_set_for_external_use_| are unlocked on the compositor thread.
   // It is only used with DDL.
   base::flat_map<ResourceId, sk_sp<SkImage>> promise_images_;
+
+  using YUVIds = std::tuple<ResourceId, ResourceId, ResourceId, ResourceId>;
+  base::flat_map<YUVIds, sk_sp<SkImage>> yuv_promise_images_;
 
   DISALLOW_COPY_AND_ASSIGN(SkiaRenderer);
 };
