@@ -35,6 +35,7 @@
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "components/account_id/account_id.h"
 #include "components/arc/arc_data_remover.h"
 #include "components/arc/arc_instance_mode.h"
 #include "components/arc/arc_prefs.h"
@@ -42,7 +43,6 @@
 #include "components/arc/arc_util.h"
 #include "components/arc/metrics/arc_metrics_service.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/account_id/account_id.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/display/types/display_constants.h"
 

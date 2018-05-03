@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "chromeos/dbus/cryptohome/key.pb.h"
-#include "components/signin/core/account_id/account_id.h"
+#include "components/account_id/account_id.h"
 #include "components/user_manager/known_user.h"
 
 using chromeos::ChallengeResponseKey;

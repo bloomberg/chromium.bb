@@ -6,7 +6,7 @@
 
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "components/signin/core/account_id/account_id.h"
+#include "components/account_id/account_id.h"
 #include "ui/aura/window.h"
 
 TestMultiUserWindowManager::TestMultiUserWindowManager(

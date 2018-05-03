@@ -16,7 +16,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_creation_controller.h"
 #include "chromeos/login/auth/extended_authenticator.h"
-#include "components/signin/core/account_id/account_id.h"
+#include "components/account_id/account_id.h"
 
 class Profile;
 

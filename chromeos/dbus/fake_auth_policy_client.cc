@@ -23,8 +23,8 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/login/auth/authpolicy_login_helper.h"
+#include "components/account_id/account_id.h"
 #include "components/policy/proto/cloud_policy.pb.h"
-#include "components/signin/core/account_id/account_id.h"
 #include "dbus/message.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 

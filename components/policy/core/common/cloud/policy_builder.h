@@ -15,9 +15,9 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "components/account_id/account_id.h"
 #include "components/policy/proto/cloud_policy.pb.h"
 #include "components/policy/proto/device_management_backend.pb.h"
-#include "components/signin/core/account_id/account_id.h"
 #include "crypto/rsa_private_key.h"
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)

@@ -14,7 +14,7 @@
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "chromeos/components/proximity_auth/public/interfaces/auth_type.mojom.h"
-#include "components/signin/core/account_id/account_id.h"
+#include "components/account_id/account_id.h"
 
 namespace proximity_auth {
 

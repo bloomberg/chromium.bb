@@ -17,8 +17,8 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_hammerd_client.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
+#include "components/account_id/account_id.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/signin/core/account_id/account_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ash {

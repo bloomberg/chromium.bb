@@ -8,7 +8,7 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
-#include "components/signin/core/account_id/account_id.h"
+#include "components/account_id/account_id.h"
 #include "components/user_manager/user.h"
 
 namespace chromeos {

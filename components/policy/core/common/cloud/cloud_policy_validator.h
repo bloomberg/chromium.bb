@@ -20,9 +20,9 @@
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/account_id/account_id.h"
 #include "components/policy/policy_export.h"
 #include "components/policy/proto/cloud_policy.pb.h"
-#include "components/signin/core/account_id/account_id.h"
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 #include "components/policy/proto/chrome_extension_policy.pb.h"

@@ -21,7 +21,7 @@
 #include "chromeos/dbus/power_policy_controller.h"
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/user_context.h"
-#include "components/signin/core/account_id/account_id.h"
+#include "components/account_id/account_id.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_names.h"
 #include "content/public/test/test_web_ui.h"

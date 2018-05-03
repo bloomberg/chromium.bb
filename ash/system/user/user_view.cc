@@ -24,7 +24,7 @@
 #include "ash/system/user/login_status.h"
 #include "ash/system/user/rounded_image_view.h"
 #include "ash/system/user/user_card_view.h"
-#include "components/signin/core/account_id/account_id.h"
+#include "components/account_id/account_id.h"
 #include "components/user_manager/user_info.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"

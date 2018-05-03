@@ -10,8 +10,8 @@ component("core") {
   ]
   deps = [
     "//base",
+    "//components/account_id",
     "//components/session_manager:base",
-    "//components/signin/core/account_id",
     "//components/user_manager",
     "//skia",
   ]

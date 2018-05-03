@@ -5,7 +5,7 @@
 module ash.mojom;
 
 import "ash/public/interfaces/user_info.mojom";
-import "components/signin/public/interfaces/account_id.mojom";
+import "components/account_id/interfaces/account_id.mojom";
 import "mojo/public/mojom/base/time.mojom";
 
 // Matches session_manager::SessionState.

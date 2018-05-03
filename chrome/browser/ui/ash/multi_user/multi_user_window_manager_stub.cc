@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/strings/string_util.h"
-#include "components/signin/core/account_id/account_id.h"
+#include "components/account_id/account_id.h"
 
 MultiUserWindowManagerStub::MultiUserWindowManagerStub() {}
 

@@ -53,8 +53,8 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/login/scoped_test_public_session_login_state.h"
+#include "components/account_id/account_id.h"
 #include "components/browser_sync/browser_sync_switches.h"
-#include "components/signin/core/account_id/account_id.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #endif
 

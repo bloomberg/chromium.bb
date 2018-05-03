@@ -12,11 +12,11 @@
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
+#include "components/account_id/account_id.h"
 #include "components/policy/core/common/cloud/resource_cache.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/policy_export.h"
-#include "components/signin/core/account_id/account_id.h"
 
 namespace enterprise_management {
 class ExternalPolicyData;

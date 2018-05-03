@@ -11,8 +11,8 @@
 #include "chrome/browser/chromeos/login/test/https_forwarder.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "components/account_id/account_id.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
-#include "components/signin/core/account_id/account_id.h"
 #include "google_apis/gaia/fake_gaia.h"
 
 namespace crypto {

@@ -17,7 +17,7 @@ component("login") {
   defines = [ "LOGIN_IMPLEMENTATION" ]
 
   deps = [
-    "//components/signin/core/account_id",
+    "//components/account_id",
     "//ui/base",
   ]
 

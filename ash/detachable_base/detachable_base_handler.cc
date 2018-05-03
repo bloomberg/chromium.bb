@@ -11,10 +11,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "components/account_id/account_id.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/signin/core/account_id/account_id.h"
 
 namespace ash {
 

@@ -4,7 +4,7 @@
 
 #include "components/user_manager/user.h"
 
-#include "components/signin/core/account_id/account_id.h"
+#include "components/account_id/account_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace user_manager {

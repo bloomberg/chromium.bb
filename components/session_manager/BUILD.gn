@@ -9,6 +9,6 @@ source_set("base") {
   ]
 
   public_deps = [
-    "//components/signin/core/account_id",
+    "//components/account_id",
   ]
 }

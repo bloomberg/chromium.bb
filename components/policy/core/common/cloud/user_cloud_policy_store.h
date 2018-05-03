@@ -10,10 +10,10 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/account_id/account_id.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_store_base.h"
 #include "components/policy/policy_export.h"
 #include "components/policy/proto/policy_signing_key.pb.h"
-#include "components/signin/core/account_id/account_id.h"
 
 namespace base {
 class SequencedTaskRunner;

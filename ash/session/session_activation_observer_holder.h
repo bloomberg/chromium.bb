@@ -10,7 +10,7 @@
 
 #include "ash/public/interfaces/session_controller.mojom.h"
 #include "base/macros.h"
-#include "components/signin/core/account_id/account_id.h"
+#include "components/account_id/account_id.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 
 namespace ash {

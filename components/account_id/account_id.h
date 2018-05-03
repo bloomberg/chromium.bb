@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SIGNIN_CORE_ACCOUNT_ID_ACCOUNT_ID_H_
-#define COMPONENTS_SIGNIN_CORE_ACCOUNT_ID_ACCOUNT_ID_H_
+#ifndef COMPONENTS_ACCOUNT_ID_ACCOUNT_ID_H_
+#define COMPONENTS_ACCOUNT_ID_ACCOUNT_ID_H_
 
 #include <stddef.h>
 
@@ -126,4 +126,4 @@ struct hash<AccountId> {
 
 }  // namespace BASE_HASH_NAMESPACE
 
-#endif  // COMPONENTS_SIGNIN_CORE_ACCOUNT_ID_ACCOUNT_ID_H_
+#endif  // COMPONENTS_ACCOUNT_ID_ACCOUNT_ID_H_

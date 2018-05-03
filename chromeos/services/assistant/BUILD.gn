@@ -28,7 +28,7 @@ source_set("lib") {
     "//chromeos",
     "//chromeos/assistant:buildflags",
     "//chromeos/services/assistant/public/mojom",
-    "//components/signin/core/account_id",
+    "//components/account_id",
     "//services/identity/public/mojom",
   ]
 
