@@ -48,6 +48,7 @@ class Transform;
 }
 
 namespace ui {
+enum class DomCode;
 class Layer;
 namespace mojom {
 enum class EventTargetingPolicy;
@@ -340,11 +341,11 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   bool HasCapture();
 
   // Requests that |keys| be intercepted at the platform level and routed
-  // directly to the web content.  If |keys| has no value, all keys will be
+  // directly to the web content.  If |codes| has no value, all keys will be
   // intercepted.  Returns a ScopedKeyboardHook instance which stops capturing
   // system key events when destroyed.
   std::unique_ptr<ScopedKeyboardHook> CaptureSystemKeyEvents(
-      base::Optional<base::flat_set<int>> keys);
+      base::Optional<base::flat_set<ui::DomCode>> codes);
 
   // Suppresses painting window content by disgarding damaged rect and ignoring
   // new paint requests. This is a one way operation and there is no way to

@@ -8,12 +8,13 @@
 
 #include "base/callback.h"
 #include "base/optional.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 
 namespace ui {
 
 // static
 std::unique_ptr<KeyboardHook> KeyboardHook::Create(
-    base::Optional<base::flat_set<int>> native_key_codes,
+    base::Optional<base::flat_set<DomCode>> dom_codes,
     KeyboardHook::KeyEventCallback callback) {
   return nullptr;
 }

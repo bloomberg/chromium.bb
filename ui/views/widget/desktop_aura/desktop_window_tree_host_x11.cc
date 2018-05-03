@@ -37,6 +37,7 @@
 #include "ui/events/devices/x11/touch_factory_x11.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keyboard_hook.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/null_event_targeter.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/events/platform/x11/x11_event_source.h"
@@ -1304,13 +1305,13 @@ void DesktopWindowTreeHostX11::ReleaseCapture() {
 }
 
 bool DesktopWindowTreeHostX11::CaptureSystemKeyEventsImpl(
-    base::Optional<base::flat_set<int>> key_codes) {
+    base::Optional<base::flat_set<ui::DomCode>> dom_codes) {
   // Only one KeyboardHook should be active at a time, otherwise there will be
   // problems with event routing (i.e. which Hook takes precedence) and
   // destruction ordering.
   DCHECK(!keyboard_hook_);
   keyboard_hook_ = ui::KeyboardHook::Create(
-      std::move(key_codes),
+      std::move(dom_codes),
       base::BindRepeating(&DesktopWindowTreeHostX11::DispatchKeyEvent,
                           base::Unretained(this)));
   return keyboard_hook_ != nullptr;
@@ -1320,8 +1321,8 @@ void DesktopWindowTreeHostX11::ReleaseSystemKeyEventCapture() {
   keyboard_hook_.reset();
 }
 
-bool DesktopWindowTreeHostX11::IsKeyLocked(int native_key_code) {
-  return keyboard_hook_ && keyboard_hook_->IsKeyLocked(native_key_code);
+bool DesktopWindowTreeHostX11::IsKeyLocked(ui::DomCode dom_code) {
+  return keyboard_hook_ && keyboard_hook_->IsKeyLocked(dom_code);
 }
 
 void DesktopWindowTreeHostX11::SetCursorNative(gfx::NativeCursor cursor) {

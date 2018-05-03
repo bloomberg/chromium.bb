@@ -18,6 +18,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/common/content_features.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 
 using blink::mojom::KeyboardLockRequestResult;
@@ -86,28 +87,27 @@ void KeyboardLockServiceImpl::RequestKeyboardLock(
 
   // Per base::flat_set usage notes, the proper way to init a flat_set is
   // inserting into a vector and using that to init the flat_set.
-  std::vector<int> native_key_codes;
-  const int invalid_key_code = ui::KeycodeConverter::InvalidNativeKeycode();
+  std::vector<ui::DomCode> dom_codes;
   for (const std::string& code : key_codes) {
-    int native_key_code = ui::KeycodeConverter::CodeStringToNativeKeycode(code);
-    if (native_key_code != invalid_key_code)
-      native_key_codes.push_back(native_key_code);
+    ui::DomCode dom_code = ui::KeycodeConverter::CodeStringToDomCode(code);
+    if (dom_code != ui::DomCode::NONE)
+      dom_codes.push_back(dom_code);
   }
 
   // If we are provided with a vector containing only invalid keycodes, then
   // exit without enabling keyboard lock.  An empty vector is treated as
   // 'capture all keys' which is not what the caller intended.
-  if (!key_codes.empty() && native_key_codes.empty()) {
+  if (!key_codes.empty() && dom_codes.empty()) {
     std::move(callback).Run(KeyboardLockRequestResult::kNoValidKeyCodesError);
     return;
   }
 
-  base::Optional<base::flat_set<int>> key_code_set;
-  if (!native_key_codes.empty())
-    key_code_set = std::move(native_key_codes);
+  base::Optional<base::flat_set<ui::DomCode>> dom_code_set;
+  if (!dom_codes.empty())
+    dom_code_set = std::move(dom_codes);
 
   render_frame_host_->GetRenderWidgetHost()->RequestKeyboardLock(
-      std::move(key_code_set));
+      std::move(dom_code_set));
 
   std::move(callback).Run(KeyboardLockRequestResult::kSuccess);
 }

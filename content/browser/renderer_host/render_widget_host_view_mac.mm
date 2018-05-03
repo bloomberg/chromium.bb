@@ -45,6 +45,7 @@
 #include "ui/base/cocoa/text_services_context_menu.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
 #include "ui/gl/gl_switches.h"
@@ -981,9 +982,9 @@ void RenderWidgetHostViewMac::UnlockMouse() {
 }
 
 bool RenderWidgetHostViewMac::LockKeyboard(
-    base::Optional<base::flat_set<int>> keys) {
+    base::Optional<base::flat_set<ui::DomCode>> dom_codes) {
   is_keyboard_locked_ = true;
-  ns_view_bridge_->LockKeyboard(std::move(keys));
+  ns_view_bridge_->LockKeyboard(std::move(dom_codes));
   return true;
 }
 

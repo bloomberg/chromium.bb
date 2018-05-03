@@ -31,6 +31,7 @@ class RenderWidgetHostViewMacEditCommandHelper;
 }
 
 namespace ui {
+enum class DomCode;
 struct DidOverscrollParams;
 }
 
@@ -217,7 +218,7 @@ struct DidOverscrollParams;
 - (void)setCompositionRange:(gfx::Range)range;
 
 // KeyboardLock methods.
-- (void)lockKeyboard:(base::Optional<base::flat_set<int>>)keysToLock;
+- (void)lockKeyboard:(base::Optional<base::flat_set<ui::DomCode>>)keysToLock;
 - (void)unlockKeyboard;
 
 // Methods previously marked as private.

@@ -57,6 +57,7 @@ class Rect;
 }
 
 namespace ui {
+enum class DomCode;
 class InputMethod;
 class LocatedEvent;
 }
@@ -167,7 +168,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void SetMainFrameAXTreeID(ui::AXTreeIDRegistry::AXTreeID id) override;
   bool LockMouse() override;
   void UnlockMouse() override;
-  bool LockKeyboard(base::Optional<base::flat_set<int>> keys) override;
+  bool LockKeyboard(base::Optional<base::flat_set<ui::DomCode>> codes) override;
   void UnlockKeyboard() override;
   bool IsKeyboardLocked() override;
   void DidCreateNewRendererCompositorFrameSink(

@@ -93,6 +93,10 @@ class Range;
 class Vector2dF;
 }
 
+namespace ui {
+enum class DomCode;
+}
+
 namespace content {
 
 class BrowserAccessibilityManager;
@@ -682,9 +686,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                                       ScreenOrientationValues type);
 
   // Requests Keyboard lock.  Note: the lock may not take effect until later.
-  // If |keys_to_lock| has no value then all keys will be locked, otherwise only
-  // the keys specified will be intercepted and routed to the web page.
-  void RequestKeyboardLock(base::Optional<base::flat_set<int>> keys_to_lock);
+  // If |codes| has no value then all keys will be locked, otherwise only the
+  // keys specified will be intercepted and routed to the web page.
+  void RequestKeyboardLock(base::Optional<base::flat_set<ui::DomCode>> codes);
 
   // Cancels a previous keyboard lock request.
   void CancelKeyboardLock();
@@ -1010,7 +1014,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   bool allow_privileged_mouse_lock_;
 
   // Stores the keyboard keys to lock while waiting for a pending lock request.
-  base::Optional<base::flat_set<int>> keyboard_keys_to_lock_;
+  base::Optional<base::flat_set<ui::DomCode>> keyboard_keys_to_lock_;
   bool keyboard_lock_requested_ = false;
   bool keyboard_lock_allowed_ = false;
 

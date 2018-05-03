@@ -28,6 +28,7 @@ class InterfacePtr;
 }
 
 namespace ui {
+enum class DomCode;
 class TextInputClient;
 }
 
@@ -170,7 +171,8 @@ class CONTENT_EXPORT RenderWidgetHostView {
   virtual bool IsMouseLocked() = 0;
 
   // Start/Stop intercepting future system keyboard events.
-  virtual bool LockKeyboard(base::Optional<base::flat_set<int>> keys) = 0;
+  virtual bool LockKeyboard(
+      base::Optional<base::flat_set<ui::DomCode>> dom_codes) = 0;
   virtual void UnlockKeyboard() = 0;
   // Returns true if keyboard lock is active.
   virtual bool IsKeyboardLocked() = 0;

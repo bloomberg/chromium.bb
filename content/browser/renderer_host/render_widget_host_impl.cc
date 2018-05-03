@@ -104,9 +104,6 @@
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/dom/dom_code.h"
-#include "ui/events/keycodes/dom/keycode_converter.h"
-#include "ui/events/keycodes/keyboard_code_conversion.h"
-#include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
@@ -2339,21 +2336,19 @@ void RenderWidgetHostImpl::OnUnlockMouse() {
 }
 
 void RenderWidgetHostImpl::RequestKeyboardLock(
-    base::Optional<base::flat_set<int>> keys_to_lock) {
+    base::Optional<base::flat_set<ui::DomCode>> codes) {
   if (!delegate_) {
     CancelKeyboardLock();
     return;
   }
 
-  DCHECK(!keys_to_lock.has_value() || !keys_to_lock.value().empty());
-  keyboard_keys_to_lock_ = std::move(keys_to_lock);
+  DCHECK(!codes.has_value() || !codes.value().empty());
+  keyboard_keys_to_lock_ = std::move(codes);
   keyboard_lock_requested_ = true;
 
-  const int esc_native_key_code =
-      ui::KeycodeConverter::DomCodeToNativeKeycode(ui::DomCode::ESCAPE);
   const bool esc_requested =
       !keyboard_keys_to_lock_.has_value() ||
-      base::ContainsKey(keyboard_keys_to_lock_.value(), esc_native_key_code);
+      base::ContainsKey(keyboard_keys_to_lock_.value(), ui::DomCode::ESCAPE);
 
   if (!delegate_->RequestKeyboardLock(this, esc_requested))
     CancelKeyboardLock();
@@ -3121,8 +3116,8 @@ bool RenderWidgetHostImpl::LockKeyboard() {
   // KeyboardLock can be activated and deactivated several times per request,
   // for example when a fullscreen tab loses and gains focus multiple times,
   // so we need to retain a copy of the keys requested.
-  base::Optional<base::flat_set<int>> copy_of_keys = keyboard_keys_to_lock_;
-  return view_->LockKeyboard(std::move(copy_of_keys));
+  base::Optional<base::flat_set<ui::DomCode>> copy = keyboard_keys_to_lock_;
+  return view_->LockKeyboard(std::move(copy));
 }
 
 void RenderWidgetHostImpl::UnlockKeyboard() {

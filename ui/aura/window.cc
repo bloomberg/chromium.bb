@@ -46,6 +46,7 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_target_iterator.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/scoped_canvas.h"
@@ -643,7 +644,7 @@ bool Window::HasCapture() {
 }
 
 std::unique_ptr<ScopedKeyboardHook> Window::CaptureSystemKeyEvents(
-    base::Optional<base::flat_set<int>> keys) {
+    base::Optional<base::flat_set<ui::DomCode>> dom_codes) {
   Window* root_window = GetRootWindow();
   if (!root_window)
     return nullptr;
@@ -652,7 +653,7 @@ std::unique_ptr<ScopedKeyboardHook> Window::CaptureSystemKeyEvents(
   if (!host)
     return nullptr;
 
-  return host->CaptureSystemKeyEvents(std::move(keys));
+  return host->CaptureSystemKeyEvents(std::move(dom_codes));
 }
 
 void Window::SuppressPaint() {

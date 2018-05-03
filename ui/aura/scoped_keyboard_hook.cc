@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 
 namespace aura {
 
@@ -23,8 +24,8 @@ ScopedKeyboardHook::~ScopedKeyboardHook() {
     window_tree_host_->ReleaseSystemKeyEventCapture();
 }
 
-bool ScopedKeyboardHook::IsKeyLocked(int native_key_code) {
-  return window_tree_host_ && window_tree_host_->IsKeyLocked(native_key_code);
+bool ScopedKeyboardHook::IsKeyLocked(ui::DomCode dom_code) {
+  return window_tree_host_ && window_tree_host_->IsKeyLocked(dom_code);
 }
 
 }  // namespace aura

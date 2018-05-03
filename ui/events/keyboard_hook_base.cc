@@ -9,25 +9,29 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "ui/events/event.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 
 namespace ui {
 
 KeyboardHookBase::KeyboardHookBase(
-    base::Optional<base::flat_set<int>> native_key_codes,
+    base::Optional<base::flat_set<DomCode>> dom_codes,
     KeyEventCallback callback)
     : key_event_callback_(std::move(callback)),
-      key_codes_(std::move(native_key_codes)) {
+      dom_codes_(std::move(dom_codes)) {
   DCHECK(key_event_callback_);
 }
 
 KeyboardHookBase::~KeyboardHookBase() = default;
 
-bool KeyboardHookBase::IsKeyLocked(int native_key_code) {
-  return ShouldCaptureKeyEvent(native_key_code);
+bool KeyboardHookBase::IsKeyLocked(DomCode dom_code) {
+  return ShouldCaptureKeyEvent(dom_code);
 }
 
-bool KeyboardHookBase::ShouldCaptureKeyEvent(int key_code) const {
-  return !key_codes_ || base::ContainsKey(key_codes_.value(), key_code);
+bool KeyboardHookBase::ShouldCaptureKeyEvent(DomCode dom_code) const {
+  if (dom_code == DomCode::NONE)
+    return false;
+
+  return !dom_codes_ || base::ContainsKey(dom_codes_.value(), dom_code);
 }
 
 void KeyboardHookBase::ForwardCapturedKeyEvent(

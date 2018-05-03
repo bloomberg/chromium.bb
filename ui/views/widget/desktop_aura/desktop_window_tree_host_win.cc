@@ -20,6 +20,7 @@
 #include "ui/display/win/dpi.h"
 #include "ui/display/win/screen_win.h"
 #include "ui/events/keyboard_hook.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/native_widget_types.h"
@@ -563,13 +564,13 @@ void DesktopWindowTreeHostWin::ReleaseCapture() {
 }
 
 bool DesktopWindowTreeHostWin::CaptureSystemKeyEventsImpl(
-    base::Optional<base::flat_set<int>> key_codes) {
+    base::Optional<base::flat_set<ui::DomCode>> dom_codes) {
   // Only one KeyboardHook should be active at a time, otherwise there will be
   // problems with event routing (i.e. which Hook takes precedence) and
   // destruction ordering.
   DCHECK(!keyboard_hook_);
   keyboard_hook_ = ui::KeyboardHook::Create(
-      std::move(key_codes),
+      std::move(dom_codes),
       base::BindRepeating(&DesktopWindowTreeHostWin::HandleKeyEvent,
                           base::Unretained(this)));
   return keyboard_hook_ != nullptr;
@@ -579,8 +580,8 @@ void DesktopWindowTreeHostWin::ReleaseSystemKeyEventCapture() {
   keyboard_hook_.reset();
 }
 
-bool DesktopWindowTreeHostWin::IsKeyLocked(int native_key_code) {
-  return keyboard_hook_ && keyboard_hook_->IsKeyLocked(native_key_code);
+bool DesktopWindowTreeHostWin::IsKeyLocked(ui::DomCode dom_code) {
+  return keyboard_hook_ && keyboard_hook_->IsKeyLocked(dom_code);
 }
 
 void DesktopWindowTreeHostWin::SetCursorNative(gfx::NativeCursor cursor) {

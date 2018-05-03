@@ -3,12 +3,13 @@
 // found in the LICENSE file.
 
 #include "ui/events/keyboard_hook.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 
 namespace ui {
 
 // static
 std::unique_ptr<KeyboardHook> KeyboardHook::Create(
-    base::Optional<base::flat_set<int>> key_codes,
+    base::Optional<base::flat_set<DomCode>> dom_codes,
     KeyEventCallback callback) {
   return nullptr;
 }

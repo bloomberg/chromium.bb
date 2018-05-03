@@ -27,6 +27,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point3_f.h"
@@ -273,8 +274,8 @@ void WindowTreeHost::Hide() {
 }
 
 std::unique_ptr<ScopedKeyboardHook> WindowTreeHost::CaptureSystemKeyEvents(
-    base::Optional<base::flat_set<int>> keys) {
-  if (CaptureSystemKeyEventsImpl(std::move(keys)))
+    base::Optional<base::flat_set<ui::DomCode>> codes) {
+  if (CaptureSystemKeyEventsImpl(std::move(codes)))
     return std::make_unique<ScopedKeyboardHook>(weak_factory_.GetWeakPtr());
   return nullptr;
 }

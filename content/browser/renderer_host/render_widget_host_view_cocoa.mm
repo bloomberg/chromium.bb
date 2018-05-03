@@ -192,7 +192,7 @@ void ExtractUnderlines(NSAttributedString* string,
 // Private methods:
 @interface RenderWidgetHostViewCocoa () {
   bool keyboardLockActive_;
-  base::Optional<base::flat_set<int>> lockedKeys_;
+  base::Optional<base::flat_set<ui::DomCode>> lockedKeys_;
 }
 - (void)processedWheelEvent:(const blink::WebMouseWheelEvent&)event
                    consumed:(BOOL)consumed;
@@ -548,7 +548,7 @@ void ExtractUnderlines(NSAttributedString* string,
   }
 }
 
-- (void)lockKeyboard:(base::Optional<base::flat_set<int>>)keysToLock {
+- (void)lockKeyboard:(base::Optional<base::flat_set<ui::DomCode>>)keysToLock {
   // TODO(joedow): Integrate System-level keyboard hook into this method.
   lockedKeys_ = std::move(keysToLock);
   keyboardLockActive_ = true;
@@ -562,10 +562,9 @@ void ExtractUnderlines(NSAttributedString* string,
 - (bool)isKeyLocked:(int)keyCode {
   // Note: We do not want to treat the ESC key as locked as that key is used
   // to exit fullscreen and we don't want to prevent them from exiting.
-  const int escNativeKeyCode =
-      ui::KeycodeConverter::DomCodeToNativeKeycode(ui::DomCode::ESCAPE);
-  return keyboardLockActive_ && keyCode != escNativeKeyCode &&
-         (!lockedKeys_ || base::ContainsKey(lockedKeys_.value(), keyCode));
+  ui::DomCode domCode = ui::KeycodeConverter::NativeKeycodeToDomCode(keyCode);
+  return keyboardLockActive_ && domCode != ui::DomCode::ESCAPE &&
+         (!lockedKeys_ || base::ContainsKey(lockedKeys_.value(), domCode));
 }
 
 - (BOOL)performKeyEquivalent:(NSEvent*)theEvent {

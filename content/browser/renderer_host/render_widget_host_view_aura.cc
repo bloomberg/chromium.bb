@@ -90,6 +90,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/gestures/gesture_recognizer.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -1168,8 +1169,8 @@ void RenderWidgetHostViewAura::UnlockMouse() {
 }
 
 bool RenderWidgetHostViewAura::LockKeyboard(
-    base::Optional<base::flat_set<int>> keys) {
-  return event_handler_->LockKeyboard(std::move(keys));
+    base::Optional<base::flat_set<ui::DomCode>> codes) {
+  return event_handler_->LockKeyboard(std::move(codes));
 }
 
 void RenderWidgetHostViewAura::UnlockKeyboard() {

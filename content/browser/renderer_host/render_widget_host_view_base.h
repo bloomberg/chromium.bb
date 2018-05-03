@@ -65,6 +65,7 @@ class WebMouseWheelEvent;
 }
 
 namespace ui {
+enum class DomCode;
 class LatencyInfo;
 struct DidOverscrollParams;
 }
@@ -115,7 +116,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   void SetIsInVR(bool is_in_vr) override;
   base::string16 GetSelectedText() override;
   bool IsMouseLocked() override;
-  bool LockKeyboard(base::Optional<base::flat_set<int>> keys) override;
+  bool LockKeyboard(base::Optional<base::flat_set<ui::DomCode>> codes) override;
   void UnlockKeyboard() override;
   bool IsKeyboardLocked() override;
   gfx::Size GetVisibleViewportSize() const override;

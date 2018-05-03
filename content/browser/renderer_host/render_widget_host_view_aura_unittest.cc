@@ -489,16 +489,16 @@ class TestScopedKeyboardHook : public aura::ScopedKeyboardHook {
   ~TestScopedKeyboardHook() override;
 
   // aura::ScopedKeyboardHook override.
-  bool IsKeyLocked(int native_key_code) override;
+  bool IsKeyLocked(ui::DomCode dom_code) override;
 
   // Set up the keys being locked for testing.  One of these methods must be
   // called before using an instance.
   void LockAllKeys();
-  void LockSpecificKey(int new_key_to_lock);
+  void LockSpecificKey(ui::DomCode dom_code);
 
  private:
   bool keyboard_lock_active_ = false;
-  base::Optional<int> locked_key_;
+  base::Optional<ui::DomCode> locked_key_;
 
   DISALLOW_COPY_AND_ASSIGN(TestScopedKeyboardHook);
 };
@@ -507,9 +507,9 @@ TestScopedKeyboardHook::TestScopedKeyboardHook() = default;
 
 TestScopedKeyboardHook::~TestScopedKeyboardHook() = default;
 
-bool TestScopedKeyboardHook::IsKeyLocked(int native_key_code) {
+bool TestScopedKeyboardHook::IsKeyLocked(ui::DomCode dom_code) {
   DCHECK(keyboard_lock_active_) << "Did you forget to reserve keys to lock?";
-  return !locked_key_ || (locked_key_.value() == native_key_code);
+  return !locked_key_ || (locked_key_.value() == dom_code);
 }
 
 void TestScopedKeyboardHook::LockAllKeys() {
@@ -517,9 +517,9 @@ void TestScopedKeyboardHook::LockAllKeys() {
   locked_key_.reset();
 }
 
-void TestScopedKeyboardHook::LockSpecificKey(int key_to_lock) {
+void TestScopedKeyboardHook::LockSpecificKey(ui::DomCode dom_code) {
   keyboard_lock_active_ = true;
-  locked_key_ = key_to_lock;
+  locked_key_ = dom_code;
 }
 
 enum WheelScrollingMode {
@@ -1779,8 +1779,7 @@ TEST_F(RenderWidgetHostViewAuraTest,
   view_->Show();
 
   auto test_hook = std::make_unique<TestScopedKeyboardHook>();
-  test_hook->LockSpecificKey(
-      ui::KeycodeConverter::DomCodeToNativeKeycode(ui::DomCode::US_A));
+  test_hook->LockSpecificKey(ui::DomCode::US_A);
   view_->event_handler()->scoped_keyboard_hook_ = std::move(test_hook);
 
   // This locked key will skip the prehandler and be sent to the input handler.
@@ -1839,8 +1838,7 @@ TEST_F(RenderWidgetHostViewAuraTest,
   view_->Show();
 
   auto test_hook = std::make_unique<TestScopedKeyboardHook>();
-  test_hook->LockSpecificKey(
-      ui::KeycodeConverter::DomCodeToNativeKeycode(ui::DomCode::ESCAPE));
+  test_hook->LockSpecificKey(ui::DomCode::ESCAPE);
   view_->event_handler()->scoped_keyboard_hook_ = std::move(test_hook);
 
   // Although this key was locked, it will still pass through the prehandler as

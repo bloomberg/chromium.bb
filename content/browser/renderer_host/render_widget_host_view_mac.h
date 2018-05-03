@@ -36,6 +36,7 @@ class WebCursor;
 }
 
 namespace ui {
+enum class DomCode;
 class ScopedPasswordInputEnabler;
 }
 
@@ -160,7 +161,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   bool LockMouse() override;
   void UnlockMouse() override;
-  bool LockKeyboard(base::Optional<base::flat_set<int>> keys) override;
+  bool LockKeyboard(base::Optional<base::flat_set<ui::DomCode>> codes) override;
   void UnlockKeyboard() override;
   bool IsKeyboardLocked() override;
   void GestureEventAck(const blink::WebGestureEvent& event,
