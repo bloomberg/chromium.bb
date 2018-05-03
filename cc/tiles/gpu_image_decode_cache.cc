@@ -650,12 +650,6 @@ ImageDecodeCache::TaskResult GpuImageDecodeCache::GetTaskForImageAndRefInternal(
   if (SkipImage(draw_image))
     return TaskResult(false);
 
-  // For non-lazy images a decode isn't necessary.
-  // TODO(khushalsagar): We can still have only the upload task to upload ahead
-  // of raster.
-  if (!draw_image.paint_image().IsLazyGenerated())
-    return TaskResult(false);
-
   base::AutoLock lock(lock_);
   const PaintImage::FrameKey frame_key = draw_image.frame_key();
   ImageData* image_data = GetImageDataForDrawImage(draw_image);
