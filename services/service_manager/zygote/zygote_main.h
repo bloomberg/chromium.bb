@@ -2,21 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_ZYGOTE_ZYGOTE_MAIN_H_
-#define CONTENT_ZYGOTE_ZYGOTE_MAIN_H_
+#ifndef SERVICES_SERVICE_MANAGER_ZYGOTE_ZYGOTE_MAIN_H_
+#define SERVICES_SERVICE_MANAGER_ZYGOTE_ZYGOTE_MAIN_H_
 
 #include <memory>
 #include <vector>
 
+#include "base/component_export.h"
 #include "build/build_config.h"
 
-namespace content {
+namespace service_manager {
 
 class ZygoteForkDelegate;
 
+// |delegate| must outlive this call.
+COMPONENT_EXPORT(SERVICE_MANAGER_ZYGOTE)
 bool ZygoteMain(
     std::vector<std::unique_ptr<ZygoteForkDelegate>> fork_delegates);
 
-}  // namespace content
+}  // namespace service_manager
 
-#endif  // CONTENT_ZYGOTE_ZYGOTE_MAIN_H_
+#endif  // SERVICES_SERVICE_MANAGER_ZYGOTE_ZYGOTE_MAIN_H_

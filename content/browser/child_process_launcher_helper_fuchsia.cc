@@ -11,6 +11,7 @@
 #include "content/public/browser/child_process_launcher_utils.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
+#include "services/service_manager/embedder/result_codes.h"
 
 namespace content {
 namespace internal {
@@ -116,7 +117,7 @@ void ChildProcessLauncherHelper::AfterLaunchOnLauncherThread(
 void ChildProcessLauncherHelper::ForceNormalProcessTerminationSync(
     ChildProcessLauncherHelper::Process process) {
   DCHECK(CurrentlyOnProcessLauncherTaskRunner());
-  process.process.Terminate(RESULT_CODE_NORMAL_EXIT, true);
+  process.process.Terminate(service_manager::RESULT_CODE_NORMAL_EXIT, true);
 }
 
 }  // namespace internal

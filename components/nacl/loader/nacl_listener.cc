@@ -31,7 +31,6 @@
 #include "components/nacl/loader/nacl_ipc_adapter.h"
 #include "components/nacl/loader/nacl_validation_db.h"
 #include "components/nacl/loader/nacl_validation_query.h"
-#include "content/public/common/mojo_channel_switches.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sync_message_filter.h"
@@ -41,7 +40,7 @@
 #include "services/service_manager/public/cpp/service_context.h"
 
 #if defined(OS_LINUX)
-#include "content/public/common/common_sandbox_support_linux.h"
+#include "services/service_manager/zygote/common/common_sandbox_support_linux.h"
 #endif
 
 #if defined(OS_POSIX)
@@ -81,7 +80,7 @@ void LoadStatusCallback(int load_status) {
 #if defined(OS_LINUX)
 
 int CreateMemoryObject(size_t size, int executable) {
-  return content::MakeSharedMemorySegmentViaIPC(size, executable);
+  return service_manager::MakeSharedMemorySegmentViaIPC(size, executable);
 }
 
 #elif defined(OS_WIN)

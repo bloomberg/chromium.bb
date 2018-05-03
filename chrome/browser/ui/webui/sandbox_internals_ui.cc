@@ -21,8 +21,8 @@
 #endif
 
 #if defined(OS_LINUX)
-#include "content/public/browser/zygote_host_linux.h"
 #include "services/service_manager/sandbox/sandbox.h"
+#include "services/service_manager/zygote/zygote_host_linux.h"
 #endif
 
 namespace {
@@ -31,7 +31,7 @@ namespace {
 static void SetSandboxStatusData(content::WebUIDataSource* source) {
   // Get expected sandboxing status of renderers.
   const int status =
-      content::ZygoteHost::GetInstance()->GetRendererSandboxStatus();
+      service_manager::ZygoteHost::GetInstance()->GetRendererSandboxStatus();
 
   source->AddBoolean("suid", status & service_manager::SandboxLinux::kSUID);
   source->AddBoolean("userNs", status & service_manager::SandboxLinux::kUserNS);

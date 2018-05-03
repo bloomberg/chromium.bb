@@ -21,6 +21,7 @@
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "sandbox/mac/seatbelt_exec.h"
+#include "services/service_manager/embedder/result_codes.h"
 #include "services/service_manager/sandbox/mac/cdm.sb.h"
 #include "services/service_manager/sandbox/mac/common_v2.sb.h"
 #include "services/service_manager/sandbox/mac/gpu_v2.sb.h"
@@ -249,7 +250,7 @@ void ChildProcessLauncherHelper::ForceNormalProcessTerminationSync(
   DCHECK(CurrentlyOnProcessLauncherTaskRunner());
   // Client has gone away, so just kill the process.  Using exit code 0 means
   // that UMA won't treat this as a crash.
-  process.process.Terminate(RESULT_CODE_NORMAL_EXIT, false);
+  process.process.Terminate(service_manager::RESULT_CODE_NORMAL_EXIT, false);
   base::EnsureProcessTerminated(std::move(process.process));
 }
 
