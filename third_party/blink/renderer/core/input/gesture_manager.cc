@@ -49,7 +49,6 @@ GestureManager::GestureManager(LocalFrame& frame,
 void GestureManager::Clear() {
   suppress_mouse_events_from_gestures_ = false;
   long_tap_should_invoke_context_menu_ = false;
-  last_show_press_timestamp_.reset();
 }
 
 void GestureManager::Trace(blink::Visitor* visitor) {
@@ -430,8 +429,6 @@ WebInputEventResult GestureManager::SendContextMenuEventForGesture(
 }
 
 WebInputEventResult GestureManager::HandleGestureShowPress() {
-  last_show_press_timestamp_ = CurrentTimeTicks();
-
   LocalFrameView* view = frame_->View();
   if (!view)
     return WebInputEventResult::kNotHandled;
@@ -446,11 +443,6 @@ WebInputEventResult GestureManager::HandleGestureShowPress() {
       animator->CancelAnimation();
   }
   return WebInputEventResult::kNotHandled;
-}
-
-base::Optional<WTF::TimeTicks> GestureManager::GetLastShowPressTimestamp()
-    const {
-  return last_show_press_timestamp_;
 }
 
 void GestureManager::ShowUnhandledTapUIIfNeeded(

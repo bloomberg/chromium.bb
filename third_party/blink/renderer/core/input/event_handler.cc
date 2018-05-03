@@ -209,6 +209,7 @@ void EventHandler::Clear() {
   gesture_manager_->Clear();
   mouse_event_manager_->Clear();
   mouse_wheel_event_manager_->Clear();
+  last_show_press_timestamp_.reset();
   last_deferred_tap_element_ = nullptr;
   event_handler_will_reset_capturing_mouse_events_node_ = false;
   should_use_touch_event_adjusted_point_ = false;
@@ -1323,6 +1324,9 @@ WebInputEventResult EventHandler::HandleGestureEvent(
   // etc.
   DCHECK(!targeted_event.Event().IsScrollEvent());
 
+  if (targeted_event.Event().GetType() == WebInputEvent::kGestureShowPress)
+    last_show_press_timestamp_ = CurrentTimeTicks();
+
   // Update mouseout/leave/over/enter events before jumping directly to the
   // inner most frame.
   if (targeted_event.Event().GetType() == WebInputEvent::kGestureTap)
@@ -1641,12 +1645,11 @@ GestureEventWithHitTestResults EventHandler::TargetGestureEvent(
   if (read_only) {
     hit_type |= HitTestRequest::kReadOnly;
   } else if (gesture_event.GetType() == WebInputEvent::kGestureTap &&
-             gesture_manager_->GetLastShowPressTimestamp()) {
+             last_show_press_timestamp_) {
     // If the Tap is received very shortly after ShowPress, we want to
     // delay clearing of the active state so that it's visible to the user
     // for at least a couple of frames.
-    active_interval = CurrentTimeTicks() -
-                      gesture_manager_->GetLastShowPressTimestamp().value();
+    active_interval = CurrentTimeTicks() - last_show_press_timestamp_.value();
     should_keep_active_for_min_interval =
         active_interval < kMinimumActiveInterval;
     if (should_keep_active_for_min_interval)
@@ -1657,9 +1660,10 @@ GestureEventWithHitTestResults EventHandler::TargetGestureEvent(
       HitTestResultForGestureEvent(gesture_event, hit_type);
   // Now apply hover/active state to the final target.
   HitTestRequest request(hit_type | HitTestRequest::kAllowChildFrameContent);
-  if (!request.ReadOnly())
+  if (!request.ReadOnly()) {
     UpdateGestureHoverActiveState(
         request, event_with_hit_test_results.GetHitTestResult().InnerElement());
+  }
 
   if (should_keep_active_for_min_interval) {
     last_deferred_tap_element_ =

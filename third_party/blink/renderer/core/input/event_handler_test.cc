@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
 
@@ -51,6 +52,36 @@ class TapEventBuilder : public WebGestureEvent {
     data.tap.tap_count = tap_count;
     data.tap.width = 5;
     data.tap.height = 5;
+    frame_scale_ = 1;
+  }
+};
+
+class TapDownEventBuilder : public WebGestureEvent {
+ public:
+  TapDownEventBuilder(FloatPoint position)
+      : WebGestureEvent(WebInputEvent::kGestureTapDown,
+                        WebInputEvent::kNoModifiers,
+                        CurrentTimeTicks(),
+                        kWebGestureDeviceTouchscreen) {
+    SetPositionInWidget(position);
+    SetPositionInScreen(position);
+    data.tap_down.width = 5;
+    data.tap_down.height = 5;
+    frame_scale_ = 1;
+  }
+};
+
+class ShowPressEventBuilder : public WebGestureEvent {
+ public:
+  ShowPressEventBuilder(FloatPoint position)
+      : WebGestureEvent(WebInputEvent::kGestureShowPress,
+                        WebInputEvent::kNoModifiers,
+                        CurrentTimeTicks(),
+                        kWebGestureDeviceTouchscreen) {
+    SetPositionInWidget(position);
+    SetPositionInScreen(position);
+    data.show_press.width = 5;
+    data.show_press.height = 5;
     frame_scale_ = 1;
   }
 };
@@ -1152,6 +1183,70 @@ TEST_F(EventHandlerSimTest, CursorStyleBeforeStartDragging) {
                                      ->GetChromeClient()
                                      .LastSetCursorForTesting()
                                      .GetType());
+}
+
+// Ensure that tap on element in iframe should apply active state.
+TEST_F(EventHandlerSimTest, TapActiveInFrame) {
+  WebView().Resize(WebSize(800, 600));
+
+  SimRequest main_resource("https://example.com/test.html", "text/html");
+  SimRequest frame_resource("https://example.com/iframe.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  main_resource.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    body {
+      margin: 0;
+    }
+    iframe {
+      width: 200px;
+      height: 200px;
+    }
+    </style>
+    <iframe id='iframe' src='iframe.html'>
+    </iframe>
+  )HTML");
+
+  frame_resource.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    body {
+      margin: 0;
+    }
+    div {
+      width: 100px;
+      height: 100px;
+    }
+    </style>
+    <div></div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  auto* iframe_element =
+      ToHTMLIFrameElement(GetDocument().getElementById("iframe"));
+  Document* iframe_doc = iframe_element->contentDocument();
+
+  TapDownEventBuilder tap_down(FloatPoint(10, 10));
+  GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(tap_down);
+
+  ShowPressEventBuilder show_press(FloatPoint(10, 10));
+  GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(show_press);
+
+  // TapDown and ShowPress active the iframe.
+  EXPECT_TRUE(GetDocument().GetActiveElement());
+  EXPECT_TRUE(iframe_doc->GetActiveElement());
+
+  TapEventBuilder tap(FloatPoint(10, 10), 1);
+  GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(tap);
+
+  // Should still active.
+  EXPECT_TRUE(GetDocument().GetActiveElement());
+  EXPECT_TRUE(iframe_doc->GetActiveElement());
+
+  // The active will cancel after 15ms.
+  test::RunDelayedTasks(TimeDelta::FromSecondsD(0.2));
+  EXPECT_FALSE(GetDocument().GetActiveElement());
+  EXPECT_FALSE(iframe_doc->GetActiveElement());
 }
 
 }  // namespace blink
