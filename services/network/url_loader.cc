@@ -285,6 +285,7 @@ URLLoader::URLLoader(
       render_frame_id_(request.render_frame_id),
       request_id_(request_id),
       keepalive_(request.keepalive),
+      do_not_prompt_for_login_(request.do_not_prompt_for_login),
       binding_(this, std::move(url_loader_request)),
       auth_challenge_responder_binding_(this),
       url_loader_client_(std::move(url_loader_client)),
@@ -472,6 +473,11 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
 void URLLoader::OnAuthRequired(net::URLRequest* unused,
                                net::AuthChallengeInfo* auth_info) {
   if (!network_service_client_) {
+    OnAuthCredentials(base::nullopt);
+    return;
+  }
+
+  if (do_not_prompt_for_login_) {
     OnAuthCredentials(base::nullopt);
     return;
   }

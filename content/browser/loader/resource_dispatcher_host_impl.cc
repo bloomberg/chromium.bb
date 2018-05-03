@@ -1001,11 +1001,6 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
       report_raw_headers = false;
   }
 
-  if (request_data.resource_type == RESOURCE_TYPE_PREFETCH ||
-      request_data.resource_type == RESOURCE_TYPE_FAVICON) {
-    do_not_prompt_for_login = true;
-  }
-
   if (DoNotPromptForLogin(static_cast<ResourceType>(request_data.resource_type),
                           request_data.url, request_data.site_for_cookies)) {
     // Prevent third-party image content from prompting for login, as this

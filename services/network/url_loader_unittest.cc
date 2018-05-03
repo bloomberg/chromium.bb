@@ -1799,4 +1799,45 @@ TEST_F(URLLoaderTest, TwoChallenges) {
   ASSERT_FALSE(url_loader);
 }
 
+TEST_F(URLLoaderTest, NoAuthRequiredForFavicon) {
+  constexpr char kFaviconTestPage[] = "/has_favicon.html";
+
+  TestAuthNetworkServiceClient network_service_client;
+  network_service_client.set_credentials_response(
+      TestAuthNetworkServiceClient::CredentialsResponse::CORRECT_CREDENTIALS);
+
+  ResourceRequest request =
+      CreateResourceRequest("GET", test_server()->GetURL(kFaviconTestPage));
+  base::RunLoop delete_run_loop;
+  mojom::URLLoaderPtr loader;
+  std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
+      context(), &network_service_client,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      mojo::MakeRequest(&loader), 0, request, false,
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, kProcessId,
+      0 /* request_id */, resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */);
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_TRUE(url_loader);
+
+  client()->RunUntilResponseBodyArrived();
+  EXPECT_TRUE(client()->has_received_response());
+  EXPECT_FALSE(client()->has_received_completion());
+
+  // Spin the message loop until the delete callback is invoked, and then delete
+  // the URLLoader.
+  delete_run_loop.Run();
+
+  client()->RunUntilComplete();
+  EXPECT_TRUE(client()->has_received_completion());
+  scoped_refptr<net::HttpResponseHeaders> headers =
+      client()->response_head().headers;
+  ASSERT_TRUE(headers);
+  EXPECT_EQ(200, headers->response_code());
+  // No auth required for favicon.
+  EXPECT_EQ(0, network_service_client.on_auth_required_call_counter());
+  ASSERT_FALSE(url_loader);
+}
+
 }  // namespace network

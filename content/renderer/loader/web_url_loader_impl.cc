@@ -680,6 +680,11 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
                                                  network::kDefaultAcceptHeader);
   }
 
+  if (resource_request->resource_type == RESOURCE_TYPE_PREFETCH ||
+      resource_request->resource_type == RESOURCE_TYPE_FAVICON) {
+    resource_request->do_not_prompt_for_login = true;
+  }
+
   resource_request->load_flags = GetLoadFlagsForWebURLRequest(request);
 
   // |plugin_child_id| only needs to be non-zero if the request originates
