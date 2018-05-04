@@ -443,13 +443,13 @@ class StreamMixerTest : public testing::Test {
     mixer_ = std::make_unique<StreamMixer>(std::move(output), nullptr,
                                            base::ThreadTaskRunnerHandle::Get());
     mixer_->SetVolume(AudioContentType::kMedia, 1.0f);
-
     std::string test_pipeline_json = base::StringPrintf(
         kTestPipelineJsonTemplate, kDelayModuleSolib, kDefaultProcessorDelay,
         kDelayModuleSolib, kTtsProcessorDelay, kDelayModuleSolib,
         kMixProcessorDelay, kDelayModuleSolib, kLinearizeProcessorDelay);
     auto factory = std::make_unique<MockPostProcessorFactory>();
     pp_factory_ = factory.get();
+    mixer_->SetNumOutputChannelsForTest(2);
     mixer_->ResetPostProcessorsForTest(std::move(factory), test_pipeline_json);
     CHECK_EQ(pp_factory_->instances.size(),
              static_cast<size_t>(kNumPostProcessors));
