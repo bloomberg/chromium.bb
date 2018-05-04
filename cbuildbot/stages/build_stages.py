@@ -26,6 +26,7 @@ from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import cros_sdk_lib
 from chromite.lib import failures_lib
 from chromite.lib import git
 from chromite.lib import osutils
@@ -93,7 +94,7 @@ class CleanUpStage(generic_stages.BuilderStage):
       # itself because we haven't sync'd yet, and the version of the chromite
       # in there might be broken. Since we've already unmounted everything in
       # there, we can just remove it using rm -rf.
-      cros_build_lib.CleanupChrootMount(chroot, delete_image=True)
+      cros_sdk_lib.CleanupChrootMount(chroot, delete_image=True)
       osutils.RmDir(chroot, ignore_missing=True, sudo=True)
 
   def _DeleteArchivedTrybotImages(self):
@@ -346,7 +347,7 @@ class CleanUpStage(generic_stages.BuilderStage):
 
     # Clean mount points first to be safe about deleting.
     chroot_path = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR)
-    cros_build_lib.CleanupChrootMount(chroot=chroot_path)
+    cros_sdk_lib.CleanupChrootMount(chroot=chroot_path)
     osutils.UmountTree(self._build_root)
 
     if not delete_chroot:
@@ -361,7 +362,7 @@ class CleanUpStage(generic_stages.BuilderStage):
     # inside.
     if not delete_chroot and self._run.config.chroot_use_image:
       try:
-        cros_build_lib.MountChroot(chroot=chroot_path, create=False)
+        cros_sdk_lib.MountChroot(chroot=chroot_path, create=False)
       except cros_build_lib.RunCommandError as e:
         logging.error('Unable to mount chroot under %s.  Deleting chroot.  '
                       'Error: %s', self._build_root, e)
@@ -435,7 +436,7 @@ class InitSDKStage(generic_stages.BuilderStage):
     pre_ver = post_ver = None
     if os.path.isdir(self._build_root) and not replace:
       try:
-        pre_ver = cros_build_lib.GetChrootVersion(chroot=chroot_path)
+        pre_ver = cros_sdk_lib.GetChrootVersion(chroot=chroot_path)
         if pre_ver is not None:
           commands.RunChrootUpgradeHooks(
               self._build_root, chrome_root=self._run.options.chrome_root,
@@ -459,7 +460,7 @@ class InitSDKStage(generic_stages.BuilderStage):
           extra_env=self._portage_extra_env,
           use_image=self._run.config.chroot_use_image)
 
-    post_ver = cros_build_lib.GetChrootVersion(chroot=chroot_path)
+    post_ver = cros_sdk_lib.GetChrootVersion(chroot=chroot_path)
     if pre_ver is not None and pre_ver != post_ver:
       logging.PrintBuildbotStepText('%s->%s' % (pre_ver, post_ver))
     else:

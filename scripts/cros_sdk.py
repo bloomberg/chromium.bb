@@ -29,6 +29,7 @@ from chromite.lib import cgroups
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import cros_sdk_lib
 from chromite.lib import locking
 from chromite.lib import namespaces
 from chromite.lib import osutils
@@ -345,8 +346,8 @@ def DeleteChrootSnapshot(snapshot_name, chroot_vg, chroot_lv):
   Raises:
     SystemExit: The lvremove command failed.
   """
-  if snapshot_name in (cros_build_lib.CHROOT_LV_NAME,
-                       cros_build_lib.CHROOT_THINPOOL_NAME):
+  if snapshot_name in (cros_sdk_lib.CHROOT_LV_NAME,
+                       cros_sdk_lib.CHROOT_THINPOOL_NAME):
     logging.error('Cannot remove LV %s as a snapshot.  Use cros_sdk --delete '
                   'if you want to remove the whole chroot.', snapshot_name)
     return
@@ -387,8 +388,8 @@ def RestoreChrootSnapshot(snapshot_name, chroot_vg, chroot_lv):
     SystemExit: Any of the LVM commands failed.
   """
   valid_snapshots = ListChrootSnapshots(chroot_vg, chroot_lv)
-  if (snapshot_name in (cros_build_lib.CHROOT_LV_NAME,
-                        cros_build_lib.CHROOT_THINPOOL_NAME) or
+  if (snapshot_name in (cros_sdk_lib.CHROOT_LV_NAME,
+                        cros_sdk_lib.CHROOT_THINPOOL_NAME) or
       snapshot_name not in valid_snapshots):
     logging.error('Chroot cannot be restored to %s.  Valid snapshots: %s',
                   snapshot_name, ', '.join(valid_snapshots))
@@ -474,8 +475,8 @@ def ListChrootSnapshots(chroot_vg, chroot_lv):
   for line in result.output.splitlines():
     lv_name, pool_lv, lv_attr = line.lstrip().split('\t')
     if (lv_name == chroot_lv or
-        lv_name == cros_build_lib.CHROOT_THINPOOL_NAME or
-        pool_lv != cros_build_lib.CHROOT_THINPOOL_NAME or
+        lv_name == cros_sdk_lib.CHROOT_THINPOOL_NAME or
+        pool_lv != cros_sdk_lib.CHROOT_THINPOOL_NAME or
         not snapshot_attrs.match(lv_attr)):
       continue
     snapshots.append(lv_name)
@@ -945,7 +946,7 @@ def main(argv):
       with locking.FileLock(lock_path, 'chroot lock') as lock:
         logging.debug('Checking if existing chroot image can be mounted.')
         lock.write_lock()
-        cros_build_lib.MountChroot(options.chroot, create=False)
+        cros_sdk_lib.MountChroot(options.chroot, create=False)
         chroot_exists = os.path.exists(chroot_ver_file)
         if chroot_exists:
           logging.notice('Mounted existing image %s on chroot',
@@ -979,7 +980,7 @@ def main(argv):
           osutils.UmountTree(options.chroot)
         else:
           logging.notice('Deleting chroot.')
-          cros_build_lib.CleanupChrootMount(options.chroot, delete_image=True)
+          cros_sdk_lib.CleanupChrootMount(options.chroot, delete_image=True)
           osutils.RmDir(options.chroot, ignore_missing=True)
           chroot_deleted = True
 
@@ -1001,7 +1002,7 @@ snapshots will be unavailable).''' % ', '.join(missing_image_tools))
     with cgroups.SimpleContainChildren('cros_sdk'):
       with locking.FileLock(lock_path, 'chroot lock') as lock:
         lock.write_lock()
-        if not cros_build_lib.MountChroot(options.chroot, create=True):
+        if not cros_sdk_lib.MountChroot(options.chroot, create=True):
           cros_build_lib.Die('Unable to mount %s on chroot',
                              _ImageFileForChroot(options.chroot))
         logging.notice('Mounted %s on chroot',
@@ -1011,7 +1012,7 @@ snapshots will be unavailable).''' % ', '.join(missing_image_tools))
   if any_snapshot_operation:
     with cgroups.SimpleContainChildren('cros_sdk'):
       with locking.FileLock(lock_path, 'chroot lock') as lock:
-        chroot_vg, chroot_lv = cros_build_lib.FindChrootMountSource(
+        chroot_vg, chroot_lv = cros_sdk_lib.FindChrootMountSource(
             options.chroot)
         if not chroot_vg or not chroot_lv:
           cros_build_lib.Die('Unable to find VG/LV for chroot %s',
@@ -1032,7 +1033,7 @@ snapshots will be unavailable).''' % ', '.join(missing_image_tools))
           if not RestoreChrootSnapshot(options.snapshot_restore, chroot_vg,
                                        chroot_lv):
             cros_build_lib.Die('Unable to restore chroot to snapshot.')
-          if not cros_build_lib.MountChroot(options.chroot, create=False):
+          if not cros_sdk_lib.MountChroot(options.chroot, create=False):
             cros_build_lib.Die('Unable to mount restored snapshot onto chroot.')
 
         # Use a read lock for snapshot delete and create even though they modify

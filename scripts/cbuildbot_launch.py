@@ -28,6 +28,7 @@ from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import cros_sdk_lib
 from chromite.lib import metrics
 from chromite.lib import osutils
 from chromite.lib import ts_mon_config
@@ -252,7 +253,7 @@ def CleanBuildRoot(root, repo, metrics_fields, build_state):
         field(metrics_fields, reason='layout_change'))
     chroot_dir = os.path.join(root, constants.DEFAULT_CHROOT_DIR)
     if os.path.exists(chroot_dir) or os.path.exists(chroot_dir + '.img'):
-      cros_build_lib.CleanupChrootMount(chroot_dir, delete_image=True)
+      cros_sdk_lib.CleanupChrootMount(chroot_dir, delete_image=True)
     osutils.RmDir(root, ignore_missing=True, sudo=True)
   else:
     if previous_state.branch != repo.branch:
@@ -265,7 +266,7 @@ def CleanBuildRoot(root, repo, metrics_fields, build_state):
       logging.info('Remove Chroot.')
       chroot_dir = os.path.join(repo.directory, constants.DEFAULT_CHROOT_DIR)
       if os.path.exists(chroot_dir) or os.path.exists(chroot_dir + '.img'):
-        cros_build_lib.CleanupChrootMount(chroot_dir, delete_image=True)
+        cros_sdk_lib.CleanupChrootMount(chroot_dir, delete_image=True)
       osutils.RmDir(chroot_dir, ignore_missing=True, sudo=True)
 
       logging.info('Remove Chrome checkout.')
@@ -381,7 +382,7 @@ def CleanupChroot(buildroot):
   chroot_dir = os.path.join(buildroot, constants.DEFAULT_CHROOT_DIR)
   logging.info('Cleaning up chroot at %s', chroot_dir)
   if os.path.exists(chroot_dir) or os.path.exists(chroot_dir + '.img'):
-    cros_build_lib.CleanupChrootMount(chroot_dir, delete_image=False)
+    cros_sdk_lib.CleanupChrootMount(chroot_dir, delete_image=False)
 
 
 def ConfigureGlobalEnvironment():

@@ -15,6 +15,7 @@ from chromite.cbuildbot import repository
 from chromite.lib import build_summary
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_sdk_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.scripts import cbuildbot_launch
@@ -433,7 +434,7 @@ class CleanBuildRootTest(cros_test_lib.MockTempDirTestCase):
         branch='branchA')
     self.populateBuildroot(previous_build_state=old_build_state.to_json())
     self.mock_repo.branch = 'branchB'
-    m = self.PatchObject(cros_build_lib, 'CleanupChrootMount')
+    m = self.PatchObject(cros_sdk_lib, 'CleanupChrootMount')
 
     build_state = build_summary.BuildSummary(
         status=constants.BUILDER_STATUS_INFLIGHT,

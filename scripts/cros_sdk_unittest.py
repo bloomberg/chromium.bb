@@ -11,6 +11,7 @@ import os
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import cros_sdk_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import sudo
@@ -55,7 +56,7 @@ class CrosSdkSnapshotTest(cros_test_lib.TempDirTestCase):
     with sudo.SudoKeepAlive():
       # Create just enough of a chroot to fool cros_sdk into accepting it.
       self.chroot = os.path.join(self.tempdir, 'chroot')
-      cros_build_lib.MountChroot(self.chroot, create=True)
+      cros_sdk_lib.MountChroot(self.chroot, create=True)
       logging.debug('Chroot mounted on %s', self.chroot)
 
       chroot_etc = os.path.join(self.chroot, 'etc')
@@ -66,7 +67,7 @@ class CrosSdkSnapshotTest(cros_test_lib.TempDirTestCase):
 
   def tearDown(self):
     with sudo.SudoKeepAlive():
-      cros_build_lib.CleanupChrootMount(self.chroot, delete_image=True)
+      cros_sdk_lib.CleanupChrootMount(self.chroot, delete_image=True)
 
   def _crosSdk(self, args):
     cmd = ['cros_sdk', '--chroot', self.chroot]
@@ -151,7 +152,7 @@ class CrosSdkSnapshotTest(cros_test_lib.TempDirTestCase):
 
   def testCreateSnapshotMountsAsNeeded(self):
     with sudo.SudoKeepAlive():
-      cros_build_lib.CleanupChrootMount(self.chroot)
+      cros_sdk_lib.CleanupChrootMount(self.chroot)
 
     code, _ = self._crosSdk(['--snapshot-create', 'test'])
     self.assertEqual(code, 0)
@@ -213,7 +214,7 @@ class CrosSdkSnapshotTest(cros_test_lib.TempDirTestCase):
 
       code, _ = self._crosSdk(['--snapshot-restore', 'test'])
       self.assertEqual(code, 0)
-      self.assertTrue(cros_build_lib.MountChroot(self.chroot, create=False))
+      self.assertTrue(cros_sdk_lib.MountChroot(self.chroot, create=False))
       self.assertExists(test_file)
 
       code, output = self._crosSdk(['--snapshot-list'])
@@ -233,7 +234,7 @@ class CrosSdkSnapshotTest(cros_test_lib.TempDirTestCase):
       code, _ = self._crosSdk(['--snapshot-restore', 'test',
                                '--snapshot-create', 'test'])
       self.assertEqual(code, 0)
-      self.assertTrue(cros_build_lib.MountChroot(self.chroot, create=False))
+      self.assertTrue(cros_sdk_lib.MountChroot(self.chroot, create=False))
       self.assertExists(test_file)
 
       code, output = self._crosSdk(['--snapshot-list'])
@@ -272,7 +273,7 @@ class CrosSdkSnapshotTest(cros_test_lib.TempDirTestCase):
 
       osutils.SafeUnlink(test_file)
 
-      cros_build_lib.CleanupChrootMount(self.chroot)
+      cros_sdk_lib.CleanupChrootMount(self.chroot)
 
       code, _ = self._crosSdk(['--snapshot-restore', 'test'])
       self.assertEqual(code, 0)

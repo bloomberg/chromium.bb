@@ -13,8 +13,8 @@ from __future__ import print_function
 import os
 
 from chromite.lib import constants
-from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import cros_sdk_lib
 from chromite.lib import osutils
 from chromite.lib import sudo
 
@@ -79,7 +79,7 @@ class ChrootManager(object):
       return False
     else:
       logging.PrintBuildbotStepText('(Using fresh chroot)')
-      cros_build_lib.CleanupChrootMount(chroot, delete_image=True)
+      cros_sdk_lib.CleanupChrootMount(chroot, delete_image=True)
       osutils.RmDir(chroot, ignore_missing=True, sudo=True)
       return True
 

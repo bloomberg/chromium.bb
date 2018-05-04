@@ -26,6 +26,7 @@ from chromite.lib import cidb
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_sdk_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import fake_cidb
 from chromite.lib import osutils
@@ -48,7 +49,7 @@ class InitSDKTest(generic_stages_unittest.RunCommandAbstractStageTestCase):
   # pylint: disable=protected-access
 
   def setUp(self):
-    self.PatchObject(cros_build_lib, 'GetChrootVersion', return_value='12')
+    self.PatchObject(cros_sdk_lib, 'GetChrootVersion', return_value='12')
     self.cros_sdk = os.path.join(self.tempdir, 'buildroot',
                                  constants.CHROMITE_BIN_SUBDIR, 'cros_sdk')
 
