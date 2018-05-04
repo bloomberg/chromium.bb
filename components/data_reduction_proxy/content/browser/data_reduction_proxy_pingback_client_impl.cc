@@ -106,6 +106,12 @@ void AddDataToPageloadMetrics(const DataReductionProxyData& request_data,
             timing.load_event_start.value())
             .release());
   }
+  if (timing.first_input_delay) {
+    request->set_allocated_first_input_delay(
+        protobuf_parser::CreateDurationFromTimeDelta(
+            timing.first_input_delay.value())
+            .release());
+  }
   if (timing.parse_blocked_on_script_load_duration) {
     request->set_allocated_parse_blocked_on_script_load_duration(
         protobuf_parser::CreateDurationFromTimeDelta(
