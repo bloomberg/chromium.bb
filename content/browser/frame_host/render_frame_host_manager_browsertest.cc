@@ -46,15 +46,19 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/navigation_handle_observer.h"
 #include "content/public/test/test_frame_navigation_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
+#include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
+#include "net/test/url_request/url_request_failed_job.h"
+#include "services/network/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 
 using base::ASCIIToUTF16;
@@ -170,6 +174,21 @@ class RenderFrameHostManagerTest : public ContentBrowserTest {
   void StartEmbeddedServer() {
     SetupCrossSiteRedirector(embedded_test_server());
     ASSERT_TRUE(embedded_test_server()->Start());
+  }
+
+  std::unique_ptr<content::URLLoaderInterceptor> SetupRequestFailForURL(
+      const GURL& url) {
+    return std::make_unique<content::URLLoaderInterceptor>(base::BindRepeating(
+        [](const GURL& url,
+           content::URLLoaderInterceptor::RequestParams* params) {
+          if (params->url_request.url != url)
+            return false;
+          network::URLLoaderCompletionStatus status;
+          status.error_code = net::ERR_DNS_TIMED_OUT;
+          params->client->OnComplete(status);
+          return true;
+        },
+        url));
   }
 
   // Returns a URL on foo.com with the given path.
@@ -3979,6 +3998,181 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
     EXPECT_EQ(site_instance->GetSiteURL(),
               shell()->web_contents()->GetSiteInstance()->GetSiteURL());
   }
+}
+
+// Test to verify that navigations in the main frame, which result in an error
+// page, properly commit the error page in its own dedicated process.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
+                       ErrorPageNavigationInMainFrame) {
+  StartEmbeddedServer();
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
+  GURL error_url(embedded_test_server()->GetURL("/empty.html"));
+  std::unique_ptr<URLLoaderInterceptor> url_interceptor =
+      SetupRequestFailForURL(error_url);
+
+  // Start with a successful navigation to a document.
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  scoped_refptr<SiteInstance> success_site_instance =
+      shell()->web_contents()->GetMainFrame()->GetSiteInstance();
+
+  // Browser-initiated navigation to an error page should result in changing the
+  // SiteInstance and process.
+  {
+    NavigationHandleObserver observer(shell()->web_contents(), error_url);
+    EXPECT_FALSE(NavigateToURL(shell(), error_url));
+    EXPECT_TRUE(observer.is_error());
+    EXPECT_EQ(net::ERR_DNS_TIMED_OUT, observer.net_error_code());
+
+    scoped_refptr<SiteInstance> error_site_instance =
+        shell()->web_contents()->GetMainFrame()->GetSiteInstance();
+    EXPECT_NE(success_site_instance, error_site_instance);
+    EXPECT_TRUE(success_site_instance->IsRelatedSiteInstance(
+        error_site_instance.get()));
+    EXPECT_NE(success_site_instance->GetProcess()->GetID(),
+              error_site_instance->GetProcess()->GetID());
+    EXPECT_EQ(GURL(kUnreachableWebDataURL), error_site_instance->GetSiteURL());
+
+    // Verify that the error page process is locked to origin
+    auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+    EXPECT_EQ(
+        GURL(kUnreachableWebDataURL),
+        policy->GetOriginLock(error_site_instance->GetProcess()->GetID()));
+  }
+
+  // Navigate successfully again to a document, then perform a
+  // renderer-initiated navigation and verify it behaves the same way.
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  success_site_instance =
+      shell()->web_contents()->GetMainFrame()->GetSiteInstance();
+
+  {
+    NavigationHandleObserver observer(shell()->web_contents(), error_url);
+    TestFrameNavigationObserver frame_observer(shell()->web_contents());
+    EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
+                              "location.href = '" + error_url.spec() + "';"));
+    frame_observer.Wait();
+    EXPECT_TRUE(observer.is_error());
+    EXPECT_EQ(net::ERR_DNS_TIMED_OUT, observer.net_error_code());
+
+    scoped_refptr<SiteInstance> error_site_instance =
+        shell()->web_contents()->GetMainFrame()->GetSiteInstance();
+    EXPECT_NE(success_site_instance, error_site_instance);
+    EXPECT_TRUE(success_site_instance->IsRelatedSiteInstance(
+        error_site_instance.get()));
+    EXPECT_NE(success_site_instance->GetProcess()->GetID(),
+              error_site_instance->GetProcess()->GetID());
+    EXPECT_EQ(GURL(kUnreachableWebDataURL), error_site_instance->GetSiteURL());
+  }
+}
+
+// Test to verify that navigations in subframes, which result in an error
+// page, commit the error page in the same process and not in the dedicated
+// error page process.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
+                       ErrorPageNavigationInChildFrame) {
+  StartEmbeddedServer();
+  GURL url(embedded_test_server()->GetURL("/page_with_iframe.html"));
+  GURL error_url(embedded_test_server()->GetURL("/empty.html"));
+  std::unique_ptr<URLLoaderInterceptor> url_interceptor =
+      SetupRequestFailForURL(error_url);
+
+  // Start with a successful navigation to a document.
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+  FrameTreeNode* child = root->child_at(0);
+
+  scoped_refptr<SiteInstance> success_site_instance =
+      child->current_frame_host()->GetSiteInstance();
+
+  NavigationHandleObserver observer(web_contents, error_url);
+  TestFrameNavigationObserver frame_observer(child);
+  EXPECT_TRUE(
+      ExecuteScript(child, "location.href = '" + error_url.spec() + "';"));
+  frame_observer.Wait();
+
+  EXPECT_TRUE(observer.is_error());
+  EXPECT_EQ(net::ERR_DNS_TIMED_OUT, observer.net_error_code());
+
+  scoped_refptr<SiteInstance> error_site_instance =
+      child->current_frame_host()->GetSiteInstance();
+  EXPECT_EQ(success_site_instance, error_site_instance);
+  EXPECT_NE(GURL(kUnreachableWebDataURL), error_site_instance->GetSiteURL());
+}
+
+// Test to verify that navigations in new window, which result in an error
+// page, commit the error page in the dedicated error page process and not in
+// the one for the destination site.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
+                       ErrorPageNavigationInNewWindow) {
+  StartEmbeddedServer();
+  GURL error_url(embedded_test_server()->GetURL("/empty.html"));
+  std::unique_ptr<URLLoaderInterceptor> url_interceptor =
+      SetupRequestFailForURL(error_url);
+
+  // Start with a successful navigation to a document.
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  scoped_refptr<SiteInstance> main_site_instance =
+      root->current_frame_host()->GetSiteInstance();
+
+  Shell* new_shell = OpenPopup(shell(), error_url, "foo");
+  EXPECT_TRUE(new_shell);
+
+  scoped_refptr<SiteInstance> error_site_instance =
+      new_shell->web_contents()->GetMainFrame()->GetSiteInstance();
+  EXPECT_NE(main_site_instance, error_site_instance);
+  EXPECT_EQ(GURL(kUnreachableWebDataURL), error_site_instance->GetSiteURL());
+}
+
+// Test to verify that windows that are not part of the same
+// BrowsingInstance end up using the same error page process, even though
+// their SiteInstances are not related.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
+                       ErrorPageNavigationInUnrelatedWindows) {
+  StartEmbeddedServer();
+  GURL error_url(embedded_test_server()->GetURL("/empty.html"));
+  std::unique_ptr<URLLoaderInterceptor> url_interceptor =
+      SetupRequestFailForURL(error_url);
+
+  // Navigate the main window to an error page and verify.
+  {
+    NavigationHandleObserver observer(shell()->web_contents(), error_url);
+    EXPECT_FALSE(NavigateToURL(shell(), error_url));
+    scoped_refptr<SiteInstance> error_site_instance =
+        shell()->web_contents()->GetMainFrame()->GetSiteInstance();
+    EXPECT_TRUE(observer.is_error());
+    EXPECT_EQ(net::ERR_DNS_TIMED_OUT, observer.net_error_code());
+    EXPECT_EQ(GURL(kUnreachableWebDataURL), error_site_instance->GetSiteURL());
+  }
+
+  // Creat a new, unrelated, window, navigate it to an error page and
+  // verify.
+  Shell* new_shell = CreateBrowser();
+  {
+    NavigationHandleObserver observer(new_shell->web_contents(), error_url);
+    EXPECT_FALSE(NavigateToURL(new_shell, error_url));
+    scoped_refptr<SiteInstance> error_site_instance =
+        new_shell->web_contents()->GetMainFrame()->GetSiteInstance();
+    EXPECT_TRUE(observer.is_error());
+    EXPECT_EQ(net::ERR_DNS_TIMED_OUT, observer.net_error_code());
+    EXPECT_EQ(GURL(kUnreachableWebDataURL), error_site_instance->GetSiteURL());
+  }
+
+  // Verify the two SiteInstanes are not related, but they end up using the
+  // same underlying RenderProcessHost.
+  EXPECT_FALSE(
+      shell()->web_contents()->GetSiteInstance()->IsRelatedSiteInstance(
+          new_shell->web_contents()->GetSiteInstance()));
+  EXPECT_EQ(shell()->web_contents()->GetSiteInstance()->GetProcess(),
+            new_shell->web_contents()->GetSiteInstance()->GetProcess());
 }
 
 }  // namespace content

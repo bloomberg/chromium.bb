@@ -816,7 +816,6 @@ void NavigationHandleImpl::ReadyToCommitNavigation(
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
                                "ReadyToCommitNavigation");
 
-  DCHECK(!render_frame_host_ || render_frame_host_ == render_frame_host);
   render_frame_host_ = render_frame_host;
   state_ = READY_TO_COMMIT;
   ready_to_commit_time_ = base::TimeTicks::Now();

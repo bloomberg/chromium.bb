@@ -1640,6 +1640,12 @@ bool ChromeContentBrowserClient::ShouldSwapBrowsingInstancesForNavigation(
 #endif
 }
 
+bool ChromeContentBrowserClient::ShouldIsolateErrorPage(bool in_main_frame) {
+  // TODO(nasko): Consider supporting error page isolation in subframes if
+  // Site Isolation is enabled.
+  return in_main_frame;
+}
+
 bool ChromeContentBrowserClient::ShouldAssignSiteForURL(const GURL& url) {
   return !url.SchemeIs(chrome::kChromeNativeScheme);
 }
