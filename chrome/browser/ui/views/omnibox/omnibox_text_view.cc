@@ -211,6 +211,9 @@ std::unique_ptr<gfx::RenderText> OmniboxTextView::CreateClassifiedRenderText(
 void OmniboxTextView::OnPaint(gfx::Canvas* canvas) {
   View::OnPaint(canvas);
 
+  if (!render_text_) {
+    return;
+  }
   render_text_->SetDisplayRect(GetContentsBounds());
   render_text_->Draw(canvas);
 }
