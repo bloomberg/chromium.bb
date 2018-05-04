@@ -876,7 +876,8 @@ class Port(object):
         match = re.match(r'virtual/[^/]+/', test_file)
         if match:
             test_file = test_file[match.end(0):]
-        match = re.match(r'external/wpt/(.*)', test_file)
+        # WPTManifest.is_slow_test() takes a WPT URL with the leading slash.
+        match = re.match(r'external/wpt(.*)', test_file)
         if not match:
             return False
         return self._wpt_manifest().is_slow_test(match.group(1))
