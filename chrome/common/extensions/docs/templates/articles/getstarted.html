@@ -392,7 +392,7 @@
       <b>chrome.tabs.executeScript(</b>
           <b>tabs[0].id,</b>
           <b>{code: 'document.body.style.backgroundColor = "' + color + '";'});</b>
-    <b>});
+    <b>});</b>
   <b>};</b>
 </pre>
 <p>
@@ -453,6 +453,9 @@
     &lt;body&gt;
       &lt;div id="buttonDiv"&gt;
       &lt;/div&gt;
+      &lt;div&gt;
+        &lt;p&gt;Choose a different background color!&lt;/p&gt;
+      &lt;/div&gt;
     &lt;/body&gt;
     &lt;script src="options.js"&gt;&lt;/script&gt;
   &lt;/html&gt;
@@ -492,6 +495,7 @@
  download="options.js">here</a>.
 </p>
 <pre data-filename="options.js">
+  let page = document.getElementById('buttonDiv');
   const kButtonColors = ['#3aa757', '#e8453c', '#f9bb2d', '#4688f1'];
   function constructOptions(kButtonColors) {
     for (let item of kButtonColors) {
