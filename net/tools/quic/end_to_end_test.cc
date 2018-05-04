@@ -367,12 +367,19 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
     server_config_.SetInitialSessionFlowControlWindowToSend(window);
   }
 
-  const QuicSentPacketManager* GetSentPacketManagerFromFirstServerSession()
-      const {
+  const QuicSentPacketManager* GetSentPacketManagerFromFirstServerSession() {
+    return &GetServerConnection()->sent_packet_manager();
+  }
+
+  QuicConnection* GetServerConnection() {
+    return GetServerSession()->connection();
+  }
+
+  QuicSession* GetServerSession() {
     QuicDispatcher* dispatcher =
         QuicServerPeer::GetDispatcher(server_thread_->server());
-    QuicSession* session = dispatcher->session_map().begin()->second.get();
-    return &session->connection()->sent_packet_manager();
+    EXPECT_EQ(1u, dispatcher->session_map().size());
+    return dispatcher->session_map().begin()->second.get();
   }
 
   bool Initialize() {
@@ -537,11 +544,7 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
               client_->client()->num_stateless_rejects_received());
 
     server_thread_->Pause();
-    QuicDispatcher* dispatcher =
-        QuicServerPeer::GetDispatcher(server_thread_->server());
-    ASSERT_EQ(1u, dispatcher->session_map().size());
-    QuicSession* session = dispatcher->session_map().begin()->second.get();
-    QuicConnectionStats server_stats = session->connection()->GetStats();
+    QuicConnectionStats server_stats = GetServerConnection()->GetStats();
     if (!had_packet_loss) {
       EXPECT_EQ(0u, server_stats.packets_lost);
     }
@@ -632,10 +635,7 @@ TEST_P(EndToEndTestWithTls, HandshakeSuccessful) {
   QuicStreamSequencer* sequencer = QuicStreamPeer::sequencer(crypto_stream);
   EXPECT_FALSE(QuicStreamSequencerPeer::IsUnderlyingBufferAllocated(sequencer));
   server_thread_->Pause();
-  QuicDispatcher* dispatcher =
-      QuicServerPeer::GetDispatcher(server_thread_->server());
-  QuicSession* server_session = dispatcher->session_map().begin()->second.get();
-  crypto_stream = QuicSessionPeer::GetMutableCryptoStream(server_session);
+  crypto_stream = QuicSessionPeer::GetMutableCryptoStream(GetServerSession());
   sequencer = QuicStreamPeer::sequencer(crypto_stream);
   EXPECT_FALSE(QuicStreamSequencerPeer::IsUnderlyingBufferAllocated(sequencer));
 }
@@ -1326,11 +1326,8 @@ TEST_P(EndToEndTest, SetIndependentMaxIncomingDynamicStreamsLimits) {
   EXPECT_EQ(kServerMaxIncomingDynamicStreams,
             client_->client()->client_session()->max_open_outgoing_streams());
   server_thread_->Pause();
-  QuicDispatcher* dispatcher =
-      QuicServerPeer::GetDispatcher(server_thread_->server());
-  QuicSession* server_session = dispatcher->session_map().begin()->second.get();
   EXPECT_EQ(kClientMaxIncomingDynamicStreams,
-            server_session->max_open_outgoing_streams());
+            GetServerSession()->max_open_outgoing_streams());
   server_thread_->Resume();
 }
 
@@ -1406,10 +1403,6 @@ TEST_P(EndToEndTest, MaxInitialRTT) {
 
   // Pause the server so we can access the server's internals without races.
   server_thread_->Pause();
-  QuicDispatcher* dispatcher =
-      QuicServerPeer::GetDispatcher(server_thread_->server());
-  ASSERT_EQ(1u, dispatcher->session_map().size());
-  QuicSession* session = dispatcher->session_map().begin()->second.get();
   const QuicSentPacketManager& client_sent_packet_manager =
       client_->client()->client_session()->connection()->sent_packet_manager();
 
@@ -1418,7 +1411,7 @@ TEST_P(EndToEndTest, MaxInitialRTT) {
   EXPECT_FALSE(
       client_sent_packet_manager.GetRttStats()->smoothed_rtt().IsInfinite());
   const RttStats& server_rtt_stats =
-      *session->connection()->sent_packet_manager().GetRttStats();
+      *GetServerConnection()->sent_packet_manager().GetRttStats();
   EXPECT_EQ(static_cast<int64_t>(kMaxInitialRoundTripTimeUs),
             server_rtt_stats.initial_rtt().ToMicroseconds());
   EXPECT_GE(static_cast<int64_t>(kMaxInitialRoundTripTimeUs),
@@ -1436,14 +1429,10 @@ TEST_P(EndToEndTest, MinInitialRTT) {
 
   // Pause the server so we can access the server's internals without races.
   server_thread_->Pause();
-  QuicDispatcher* dispatcher =
-      QuicServerPeer::GetDispatcher(server_thread_->server());
-  ASSERT_EQ(1u, dispatcher->session_map().size());
-  QuicSession* session = dispatcher->session_map().begin()->second.get();
   const QuicSentPacketManager& client_sent_packet_manager =
       client_->client()->client_session()->connection()->sent_packet_manager();
   const QuicSentPacketManager& server_sent_packet_manager =
-      session->connection()->sent_packet_manager();
+      GetServerConnection()->sent_packet_manager();
 
   // Now that acks have been exchanged, the RTT estimate has decreased on the
   // server and is not infinite on the client.
@@ -1647,12 +1636,8 @@ TEST_P(EndToEndTest, NegotiatedInitialCongestionWindow) {
   server_thread_->WaitForCryptoHandshakeConfirmed();
   server_thread_->Pause();
 
-  QuicDispatcher* dispatcher =
-      QuicServerPeer::GetDispatcher(server_thread_->server());
-  QuicSession* session = dispatcher->session_map().begin()->second.get();
-  QuicConnection* server_connection = session->connection();
   QuicPacketCount cwnd =
-      server_connection->sent_packet_manager().initial_congestion_window();
+      GetServerConnection()->sent_packet_manager().initial_congestion_window();
   EXPECT_EQ(3u, cwnd);
 }
 
@@ -1699,9 +1684,7 @@ TEST_P(EndToEndTest, DifferentFlowControlWindows) {
 
   // Server should have the right values for client's receive window.
   server_thread_->Pause();
-  QuicDispatcher* dispatcher =
-      QuicServerPeer::GetDispatcher(server_thread_->server());
-  QuicSession* session = dispatcher->session_map().begin()->second.get();
+  QuicSession* session = GetServerSession();
   EXPECT_EQ(kClientStreamIFCW,
             session->config()->ReceivedInitialStreamFlowControlWindowBytes());
   EXPECT_EQ(kClientSessionIFCW,
@@ -1799,9 +1782,7 @@ TEST_P(EndToEndTest, HeadersAndCryptoStreamsNoConnectionFlowControl) {
   // Server should be in a similar state: connection flow control window should
   // not have any bytes marked as received.
   server_thread_->Pause();
-  QuicDispatcher* dispatcher =
-      QuicServerPeer::GetDispatcher(server_thread_->server());
-  QuicSession* session = dispatcher->session_map().begin()->second.get();
+  QuicSession* session = GetServerSession();
   QuicFlowController* server_connection_flow_controller =
       session->flow_controller();
   EXPECT_EQ(kSessionIFCW, QuicFlowControllerPeer::ReceiveWindowSize(
@@ -1819,10 +1800,7 @@ TEST_P(EndToEndTest, FlowControlsSynced) {
 
   server_thread_->Pause();
   QuicSpdySession* const client_session = client_->client()->client_session();
-  QuicDispatcher* dispatcher =
-      QuicServerPeer::GetDispatcher(server_thread_->server());
-  auto* server_session = static_cast<QuicSpdySession*>(
-      dispatcher->session_map().begin()->second.get());
+  auto* server_session = static_cast<QuicSpdySession*>(GetServerSession());
   ExpectFlowControlsSynced(client_session->flow_controller(),
                            server_session->flow_controller());
   ExpectFlowControlsSynced(
@@ -1896,9 +1874,7 @@ TEST_P(EndToEndTestWithTls, RequestWithNoBodyWillNeverSendStreamFrameWithFIN) {
 
   // Now verify that the server is not waiting for a final FIN or RST.
   server_thread_->Pause();
-  QuicDispatcher* dispatcher =
-      QuicServerPeer::GetDispatcher(server_thread_->server());
-  QuicSession* session = dispatcher->session_map().begin()->second.get();
+  QuicSession* session = GetServerSession();
   EXPECT_EQ(
       0u,
       QuicSessionPeer::GetLocallyClosedStreamsHighestOffset(session).size());
@@ -2832,11 +2808,7 @@ TEST_P(EndToEndTestServerPush, ServerPushOverLimitWithBlocking) {
   // Check server session to see if it has max number of outgoing streams opened
   // though more resources need to be pushed.
   server_thread_->Pause();
-  QuicDispatcher* dispatcher =
-      QuicServerPeer::GetDispatcher(server_thread_->server());
-  ASSERT_EQ(1u, dispatcher->session_map().size());
-  QuicSession* session = dispatcher->session_map().begin()->second.get();
-  EXPECT_EQ(kNumMaxStreams, session->GetNumOpenOutgoingStreams());
+  EXPECT_EQ(kNumMaxStreams, GetServerSession()->GetNumOpenOutgoingStreams());
   server_thread_->Resume();
 
   EXPECT_EQ(1u, client_->num_requests());
@@ -3012,13 +2984,7 @@ TEST_P(EndToEndTest, WindowUpdateInAck) {
   client_->Disconnect();
   if (version > QUIC_VERSION_38) {
     EXPECT_LT(0u, observer.num_window_update_frames());
-    if (GetQuicReloadableFlag(quic_remove_redundant_ping)) {
-      EXPECT_EQ(0u, observer.num_ping_frames());
-    } else {
-      // A redundant PING frame is bundled with each WINDOW_UPDATE frame.
-      EXPECT_EQ(observer.num_window_update_frames(),
-                observer.num_ping_frames());
-    }
+    EXPECT_EQ(0u, observer.num_ping_frames());
   } else {
     EXPECT_EQ(0u, observer.num_window_update_frames());
   }
@@ -3073,7 +3039,7 @@ TEST_P(EndToEndTest, LastPacketSentIsConnectivityProbing) {
   client_->WaitForDelayedAcks();
 }
 
-class EndToEndBufferedPacketsTest : public EndToEndTest {
+class EndToEndPacketReorderingTest : public EndToEndTest {
  public:
   void CreateClientWithWriter() override {
     QUIC_LOG(ERROR) << "create client with reorder_writer_ ";
@@ -3090,11 +3056,57 @@ class EndToEndBufferedPacketsTest : public EndToEndTest {
   PacketReorderingWriter* reorder_writer_;
 };
 
-INSTANTIATE_TEST_CASE_P(EndToEndBufferedPacketsTests,
-                        EndToEndBufferedPacketsTest,
+INSTANTIATE_TEST_CASE_P(EndToEndPacketReorderingTests,
+                        EndToEndPacketReorderingTest,
                         testing::ValuesIn(GetTestParams(false)));
 
-TEST_P(EndToEndBufferedPacketsTest, Buffer0RttRequest) {
+TEST_P(EndToEndPacketReorderingTest, ReorderedConnectivityProbing) {
+  ASSERT_TRUE(Initialize());
+
+  // Finish one request to make sure handshake established.
+  EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
+
+  // Wait for the connection to become idle, to make sure the packet gets
+  // delayed is the connectivity probing packet.
+  client_->WaitForDelayedAcks();
+
+  QuicSocketAddress old_addr =
+      client_->client()->network_helper()->GetLatestClientAddress();
+
+  // Migrate socket to the new IP address.
+  QuicIpAddress new_host = TestLoopback(2);
+  EXPECT_NE(old_addr.host(), new_host);
+  ASSERT_TRUE(client_->client()->MigrateSocket(new_host));
+
+  // Write a connectivity probing after the next /foo request.
+  reorder_writer_->SetDelay(1);
+  client_->SendConnectivityProbing();
+
+  ASSERT_TRUE(client_->MigrateSocketWithSpecifiedPort(old_addr.host(),
+                                                      old_addr.port()));
+
+  // The (delayed) connectivity probing will be sent after this request.
+  EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
+
+  // Send yet another request after the connectivity probing, when this request
+  // returns, the probing is guaranteed to have been received by the server, and
+  // the server's response to probing is guaranteed to have been received by the
+  // client.
+  EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
+
+  server_thread_->Pause();
+  QuicConnection* server_connection = GetServerConnection();
+  EXPECT_EQ(1u,
+            server_connection->GetStats().num_connectivity_probing_received);
+  server_thread_->Resume();
+
+  QuicConnection* client_connection =
+      client_->client()->client_session()->connection();
+  EXPECT_EQ(1u,
+            client_connection->GetStats().num_connectivity_probing_received);
+}
+
+TEST_P(EndToEndPacketReorderingTest, Buffer0RttRequest) {
   ASSERT_TRUE(Initialize());
   // Finish one request to make sure handshake established.
   client_->SendSynchronousRequest("/foo");

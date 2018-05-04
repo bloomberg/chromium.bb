@@ -161,6 +161,9 @@ enum QuicFrameType : int8_t {
   NEW_CONNECTION_ID_FRAME,
   MAX_STREAM_ID_FRAME,
   STREAM_ID_BLOCKED_FRAME,
+  PATH_RESPONSE_FRAME,
+  PATH_CHALLENGE_FRAME,
+  STOP_SENDING_FRAME,
 
   NUM_FRAME_TYPES
 };
@@ -368,6 +371,10 @@ struct AckedPacket {
       : packet_number(packet_number),
         bytes_acked(bytes_acked),
         receive_timestamp(receive_timestamp) {}
+
+  friend QUIC_EXPORT_PRIVATE std::ostream& operator<<(
+      std::ostream& os,
+      const AckedPacket& acked_packet);
 
   QuicPacketNumber packet_number;
   // Number of bytes sent in the packet that was acknowledged.

@@ -27,13 +27,7 @@ static const int kDefaultAdaptiveLossDelayShift = 4;
 
 }  // namespace
 
-GeneralLossAlgorithm::GeneralLossAlgorithm()
-    : loss_detection_timeout_(QuicTime::Zero()),
-      largest_sent_on_spurious_retransmit_(0),
-      loss_type_(kNack),
-      reordering_shift_(kDefaultLossDelayShift),
-      largest_previously_acked_(0),
-      largest_lost_(0) {}
+GeneralLossAlgorithm::GeneralLossAlgorithm() : GeneralLossAlgorithm(kNack) {}
 
 GeneralLossAlgorithm::GeneralLossAlgorithm(LossDetectionType loss_type)
     : loss_detection_timeout_(QuicTime::Zero()),
@@ -43,7 +37,12 @@ GeneralLossAlgorithm::GeneralLossAlgorithm(LossDetectionType loss_type)
                             ? kDefaultAdaptiveLossDelayShift
                             : kDefaultLossDelayShift),
       largest_previously_acked_(0),
-      largest_lost_(0) {}
+      largest_lost_(0),
+      early_retransmit_declares_in_flight_packet_lost_(GetQuicReloadableFlag(
+          quic_early_retransmit_detects_in_flight_packet_lost)),
+      detect_loss_incrementally_(
+          early_retransmit_declares_in_flight_packet_lost_ &&
+          GetQuicReloadableFlag(quic_incremental_loss_detection)) {}
 
 LossDetectionType GeneralLossAlgorithm::GetLossDetectionType() const {
   return loss_type_;
@@ -74,8 +73,7 @@ void GeneralLossAlgorithm::DetectLosses(
                max_rtt + (max_rtt >> reordering_shift_));
   QuicPacketNumber packet_number = unacked_packets.GetLeastUnacked();
   QuicUnackedPacketMap::const_iterator it = unacked_packets.begin();
-  if (GetQuicReloadableFlag(quic_incremental_loss_detection) &&
-      largest_lost_ >= packet_number) {
+  if (detect_loss_incrementally_ && largest_lost_ >= packet_number) {
     QUIC_FLAG_COUNT(quic_reloadable_flag_quic_incremental_loss_detection);
     if (largest_lost_ > unacked_packets.largest_sent_packet()) {
       QUIC_BUG << "largest_lost: " << largest_lost_
@@ -114,10 +112,17 @@ void GeneralLossAlgorithm::DetectLosses(
     // Only early retransmit(RFC5827) when the last packet gets acked and
     // there are retransmittable packets in flight.
     // This also implements a timer-protected variant of FACK.
-    if ((!it->retransmittable_frames.empty() &&
-         unacked_packets.largest_sent_retransmittable_packet() <=
-             largest_newly_acked) ||
-        (loss_type_ == kTime || loss_type_ == kAdaptiveTime)) {
+    const bool detect_loss_by_early_retransmit =
+        (early_retransmit_declares_in_flight_packet_lost_ ||
+         !it->retransmittable_frames.empty()) &&
+        unacked_packets.largest_sent_retransmittable_packet() <=
+            largest_newly_acked;
+    if (detect_loss_by_early_retransmit && it->retransmittable_frames.empty()) {
+      QUIC_FLAG_COUNT(
+          quic_reloadable_flag_quic_early_retransmit_detects_in_flight_packet_lost);  // NOLINT
+    }
+    if (detect_loss_by_early_retransmit || loss_type_ == kTime ||
+        loss_type_ == kAdaptiveTime) {
       QuicTime when_lost = it->sent_time + loss_delay;
       if (time < when_lost) {
         loss_detection_timeout_ = when_lost;
@@ -135,7 +140,7 @@ void GeneralLossAlgorithm::DetectLosses(
     }
   }
   largest_previously_acked_ = largest_newly_acked;
-  if (!packets_lost->empty()) {
+  if (detect_loss_incrementally_ && !packets_lost->empty()) {
     DCHECK_LT(largest_lost_, packets_lost->back().packet_number);
     largest_lost_ = packets_lost->back().packet_number;
   }

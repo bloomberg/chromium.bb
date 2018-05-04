@@ -8,6 +8,7 @@
 #include <ostream>
 
 #include "net/quic/core/quic_error_codes.h"
+#include "net/quic/core/quic_types.h"
 #include "net/quic/platform/api/quic_export.h"
 #include "net/quic/platform/api/quic_string.h"
 
@@ -16,12 +17,21 @@ namespace net {
 struct QUIC_EXPORT_PRIVATE QuicConnectionCloseFrame {
   QuicConnectionCloseFrame();
   QuicConnectionCloseFrame(QuicErrorCode error_code, QuicString error_details);
+  QuicConnectionCloseFrame(QuicIetfTransportErrorCodes ietf_error_code,
+                           QuicString error_details);
 
   friend QUIC_EXPORT_PRIVATE std::ostream& operator<<(
       std::ostream& os,
       const QuicConnectionCloseFrame& c);
 
-  QuicErrorCode error_code;
+  // Set error_code or ietf_error_code based on the transport version
+  // currently in use.
+  union {
+    // IETF QUIC has a different set of error codes. Include both
+    // code-sets.
+    QuicErrorCode error_code;
+    QuicIetfTransportErrorCodes ietf_error_code;
+  };
   QuicString error_details;
 };
 

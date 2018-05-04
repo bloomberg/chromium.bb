@@ -89,6 +89,9 @@ struct QUIC_EXPORT_PRIVATE QuicConnectionStats {
 
   uint64_t blocked_frames_received;
   uint64_t blocked_frames_sent;
+
+  // Number of connectivity probing packets received by this connection.
+  uint64_t num_connectivity_probing_received;
 };
 
 }  // namespace net

@@ -71,6 +71,14 @@ class QUIC_EXPORT_PRIVATE GeneralLossAlgorithm : public LossDetectionInterface {
   // The largest lost packet.
   QuicPacketNumber largest_lost_;
 
+  // Latched value of
+  // quic_reloadable_flag_quic_early_retransmit_detects_in_flight_packet_lost.
+  const bool early_retransmit_declares_in_flight_packet_lost_;
+  // Latched value of
+  // quic_reloadable_flag_quic_early_retransmit_detects_in_flight_packet_lost
+  // and quic_reloadable_flag_quic_incremental_loss_detection.
+  const bool detect_loss_incrementally_;
+
   DISALLOW_COPY_AND_ASSIGN(GeneralLossAlgorithm);
 };
 

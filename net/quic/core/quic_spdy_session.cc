@@ -120,11 +120,6 @@ class QuicSpdySession::SpdyFramerVisitor
   }
 
   void OnSetting(SpdySettingsId id, uint32_t value) override {
-    if (!GetQuicReloadableFlag(quic_respect_http2_settings_frame)) {
-      CloseConnection("SPDY SETTINGS frame received.",
-                      QUIC_INVALID_HEADERS_STREAM_DATA);
-      return;
-    }
     switch (id) {
       case SETTINGS_HEADER_TABLE_SIZE:
         session_->UpdateHeaderEncoderTableSize(value);
@@ -160,19 +155,7 @@ class QuicSpdySession::SpdyFramerVisitor
     }
   }
 
-  void OnSettingsAck() override {
-    if (!GetQuicReloadableFlag(quic_respect_http2_settings_frame)) {
-      CloseConnection("SPDY SETTINGS frame received.",
-                      QUIC_INVALID_HEADERS_STREAM_DATA);
-    }
-  }
-
-  void OnSettingsEnd() override {
-    if (!GetQuicReloadableFlag(quic_respect_http2_settings_frame)) {
-      CloseConnection("SPDY SETTINGS frame received.",
-                      QUIC_INVALID_HEADERS_STREAM_DATA);
-    }
-  }
+  void OnSettingsEnd() override {}
 
   void OnPing(SpdyPingId unique_id, bool is_ack) override {
     CloseConnection("SPDY PING frame received.",

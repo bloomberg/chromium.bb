@@ -391,9 +391,9 @@ void QuicSentPacketManager::RetransmitUnackedPackets(
   QuicPacketNumber packet_number = unacked_packets_.GetLeastUnacked();
   for (QuicUnackedPacketMap::const_iterator it = unacked_packets_.begin();
        it != unacked_packets_.end(); ++it, ++packet_number) {
-    if (unacked_packets_.HasRetransmittableFrames(*it) &&
-        (retransmission_type == ALL_UNACKED_RETRANSMISSION ||
-         it->encryption_level == ENCRYPTION_INITIAL)) {
+    if ((retransmission_type == ALL_UNACKED_RETRANSMISSION ||
+         it->encryption_level == ENCRYPTION_INITIAL) &&
+        unacked_packets_.HasRetransmittableFrames(*it)) {
       MarkForRetransmission(packet_number, retransmission_type);
     }
   }
@@ -416,8 +416,8 @@ void QuicSentPacketManager::NeuterUnencryptedPackets() {
   }
   for (QuicUnackedPacketMap::const_iterator it = unacked_packets_.begin();
        it != unacked_packets_.end(); ++it, ++packet_number) {
-    if (unacked_packets_.HasRetransmittableFrames(*it) &&
-        it->encryption_level == ENCRYPTION_NONE) {
+    if (it->encryption_level == ENCRYPTION_NONE &&
+        unacked_packets_.HasRetransmittableFrames(*it)) {
       // Once you're forward secure, no unencrypted packets will be sent, crypto
       // or otherwise. Unencrypted packets are neutered and abandoned, to ensure
       // they are not retransmitted or considered lost from a congestion control
@@ -713,8 +713,8 @@ void QuicSentPacketManager::RetransmitCryptoPackets() {
     // Only retransmit frames which are in flight, and therefore have been sent.
     if (!it->in_flight ||
         (session_decides_what_to_write() && it->state != OUTSTANDING) ||
-        !unacked_packets_.HasRetransmittableFrames(*it) ||
-        !it->has_crypto_handshake) {
+        !it->has_crypto_handshake ||
+        !unacked_packets_.HasRetransmittableFrames(*it)) {
       continue;
     }
     packet_retransmitted = true;
@@ -782,8 +782,8 @@ void QuicSentPacketManager::RetransmitRtoPackets() {
     if (session_decides_what_to_write()) {
       has_retransmissions = it->state != OUTSTANDING;
     }
-    if (!unacked_packets_.HasRetransmittableFrames(*it) && it->in_flight &&
-        !has_retransmissions) {
+    if (it->in_flight && !has_retransmissions &&
+        !unacked_packets_.HasRetransmittableFrames(*it)) {
       // Log only for non-retransmittable data.
       // Retransmittable data is marked as lost during loss detection, and will
       // be logged later.
@@ -1123,6 +1123,7 @@ void QuicSentPacketManager::OnAckFrameStart(QuicPacketNumber largest_acked,
 
 void QuicSentPacketManager::OnAckRange(QuicPacketNumber start,
                                        QuicPacketNumber end) {
+  received_ack_ranges_for_debugging_.AddRange(start, end);
   if (end > last_ack_frame_.largest_acked + 1) {
     // Largest acked increases.
     unacked_packets_.IncreaseLargestObserved(end - 1);
@@ -1166,7 +1167,12 @@ bool QuicSentPacketManager::OnAckFrameEnd(QuicTime ack_receive_time) {
     if (!QuicUtils::IsAckable(info->state)) {
       if (info->state == ACKED) {
         QUIC_BUG << "Trying to ack an already acked packet: "
-                 << acked_packet.packet_number;
+                 << acked_packet.packet_number
+                 << ", last_ack_frame_: " << last_ack_frame_
+                 << ", least_unacked: " << unacked_packets_.GetLeastUnacked()
+                 << ", packets_acked_: " << packets_acked_
+                 << ", received_ack_ranges_for_debugging_: "
+                 << received_ack_ranges_for_debugging_;
       } else {
         QUIC_PEER_BUG << "Received ack for unackable packet: "
                       << acked_packet.packet_number << " with state: "
@@ -1200,6 +1206,8 @@ bool QuicSentPacketManager::OnAckFrameEnd(QuicTime ack_receive_time) {
   // Remove packets below least unacked from all_packets_acked_ and
   // last_ack_frame_.
   last_ack_frame_.packets.RemoveUpTo(unacked_packets_.GetLeastUnacked());
+
+  received_ack_ranges_for_debugging_.Clear();
 
   return acked_new_packet;
 }

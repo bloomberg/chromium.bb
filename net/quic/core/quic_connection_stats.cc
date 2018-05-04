@@ -39,7 +39,8 @@ QuicConnectionStats::QuicConnectionStats()
       tcp_loss_events(0),
       connection_creation_time(QuicTime::Zero()),
       blocked_frames_received(0),
-      blocked_frames_sent(0) {}
+      blocked_frames_sent(0),
+      num_connectivity_probing_received(0) {}
 
 QuicConnectionStats::QuicConnectionStats(const QuicConnectionStats& other) =
     default;
@@ -81,7 +82,9 @@ std::ostream& operator<<(std::ostream& os, const QuicConnectionStats& s) {
   os << " connection_creation_time: "
      << s.connection_creation_time.ToDebuggingValue();
   os << " blocked_frames_received: " << s.blocked_frames_received;
-  os << " blocked_frames_sent: " << s.blocked_frames_sent << " }";
+  os << " blocked_frames_sent: " << s.blocked_frames_sent;
+  os << " num_connectivity_probing_received: "
+     << s.num_connectivity_probing_received << " }";
 
   return os;
 }

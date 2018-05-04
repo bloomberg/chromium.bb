@@ -498,7 +498,6 @@ TEST_P(QuicHeadersStreamTest, ProcessPriorityFrame) {
 }
 
 TEST_P(QuicHeadersStreamTest, ProcessPushPromiseDisabledSetting) {
-  SetQuicReloadableFlag(quic_respect_http2_settings_frame, true);
   session_.OnConfigNegotiated();
   SpdySettingsIR data;
   // Respect supported settings frames SETTINGS_ENABLE_PUSH.
@@ -666,22 +665,7 @@ TEST_P(QuicHeadersStreamTest, ProcessSpdyRstStreamFrame) {
   headers_stream_->OnStreamFrame(stream_frame_);
 }
 
-TEST_P(QuicHeadersStreamTest, ProcessSpdySettingsFrame) {
-  SetQuicReloadableFlag(quic_respect_http2_settings_frame, false);
-  SpdySettingsIR data;
-  data.AddSetting(SETTINGS_HEADER_TABLE_SIZE, 0);
-  SpdySerializedFrame frame(framer_->SerializeFrame(data));
-  EXPECT_CALL(*connection_, CloseConnection(QUIC_INVALID_HEADERS_STREAM_DATA,
-                                            "SPDY SETTINGS frame received.", _))
-      .WillOnce(InvokeWithoutArgs(
-          this, &QuicHeadersStreamTest::TearDownLocalConnectionState));
-  stream_frame_.data_buffer = frame.data();
-  stream_frame_.data_length = frame.size();
-  headers_stream_->OnStreamFrame(stream_frame_);
-}
-
 TEST_P(QuicHeadersStreamTest, RespectHttp2SettingsFrameSupportedFields) {
-  SetQuicReloadableFlag(quic_respect_http2_settings_frame, true);
   SetQuicReloadableFlag(quic_send_max_header_list_size, true);
   const uint32_t kTestHeaderTableSize = 1000;
   SpdySettingsIR data;
@@ -698,7 +682,6 @@ TEST_P(QuicHeadersStreamTest, RespectHttp2SettingsFrameSupportedFields) {
 }
 
 TEST_P(QuicHeadersStreamTest, RespectHttp2SettingsFrameUnsupportedFields) {
-  SetQuicReloadableFlag(quic_respect_http2_settings_frame, true);
   SetQuicReloadableFlag(quic_send_max_header_list_size, true);
   SpdySettingsIR data;
   // Does not support SETTINGS_MAX_CONCURRENT_STREAMS,

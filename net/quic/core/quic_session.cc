@@ -984,13 +984,6 @@ void QuicSession::PostProcessAfterData() {
 
 void QuicSession::OnAckNeedsRetransmittableFrame() {
   flow_controller_.SendWindowUpdate();
-  if (GetQuicReloadableFlag(quic_remove_redundant_ping)) {
-    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_remove_redundant_ping);
-    return;
-  }
-  if (!control_frame_manager_.WillingToWrite()) {
-    SendPing();
-  }
 }
 
 void QuicSession::SendPing() {

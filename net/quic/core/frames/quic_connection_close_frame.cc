@@ -13,6 +13,12 @@ QuicConnectionCloseFrame::QuicConnectionCloseFrame(QuicErrorCode error_code,
                                                    QuicString error_details)
     : error_code(error_code), error_details(error_details) {}
 
+QuicConnectionCloseFrame::QuicConnectionCloseFrame(
+    QuicIetfTransportErrorCodes ietf_error_code,
+    QuicString error_details)
+    : ietf_error_code(ietf_error_code),
+      error_details(std::move(error_details)) {}
+
 std::ostream& operator<<(
     std::ostream& os,
     const QuicConnectionCloseFrame& connection_close_frame) {

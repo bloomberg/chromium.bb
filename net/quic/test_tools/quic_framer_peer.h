@@ -50,18 +50,18 @@ class QuicFramerPeer {
       QuicFramer* framer,
       const QuicConnectionCloseFrame& frame,
       QuicDataWriter* writer);
-  static bool AppendIetfApplicationCloseFrame(
+  static bool AppendApplicationCloseFrame(
       QuicFramer* framer,
-      const QuicConnectionCloseFrame& frame,
+      const QuicApplicationCloseFrame& frame,
       QuicDataWriter* writer);
   static bool ProcessIetfConnectionCloseFrame(QuicFramer* framer,
                                               QuicDataReader* reader,
                                               const uint8_t frame_type,
                                               QuicConnectionCloseFrame* frame);
-  static bool ProcessIetfApplicationCloseFrame(QuicFramer* framer,
-                                               QuicDataReader* reader,
-                                               const uint8_t frame_type,
-                                               QuicConnectionCloseFrame* frame);
+  static bool ProcessApplicationCloseFrame(QuicFramer* framer,
+                                           QuicDataReader* reader,
+                                           const uint8_t frame_type,
+                                           QuicApplicationCloseFrame* frame);
   static bool ProcessIetfAckFrame(QuicFramer* framer,
                                   QuicDataReader* reader,
                                   uint8_t frame_type,
@@ -76,42 +76,41 @@ class QuicFramerPeer {
                                           QuicDataReader* reader,
                                           QuicRstStreamFrame* frame);
 
-  static bool ProcessIetfPathChallengeFrame(QuicFramer* framer,
-                                            QuicDataReader* reader,
-                                            QuicPathChallengeFrame* frame);
-  static bool ProcessIetfPathResponseFrame(QuicFramer* framer,
-                                           QuicDataReader* reader,
-                                           QuicPathResponseFrame* frame);
+  static bool ProcessPathChallengeFrame(QuicFramer* framer,
+                                        QuicDataReader* reader,
+                                        QuicPathChallengeFrame* frame);
+  static bool ProcessPathResponseFrame(QuicFramer* framer,
+                                       QuicDataReader* reader,
+                                       QuicPathResponseFrame* frame);
 
-  static bool AppendIetfPathChallengeFrame(QuicFramer* framer,
-                                           const QuicPathChallengeFrame& frame,
-                                           QuicDataWriter* writer);
-  static bool AppendIetfPathResponseFrame(QuicFramer* framer,
-                                          const QuicPathResponseFrame& frame,
-                                          QuicDataWriter* writer);
+  static bool AppendPathChallengeFrame(QuicFramer* framer,
+                                       const QuicPathChallengeFrame& frame,
+                                       QuicDataWriter* writer);
+  static bool AppendPathResponseFrame(QuicFramer* framer,
+                                      const QuicPathResponseFrame& frame,
+                                      QuicDataWriter* writer);
 
-  static bool ProcessIetfStopSendingFrame(
-      QuicFramer* framer,
-      QuicDataReader* reader,
-      QuicStopSendingFrame* stop_sending_frame);
-  static bool AppendIetfStopSendingFrame(
+  static bool ProcessStopSendingFrame(QuicFramer* framer,
+                                      QuicDataReader* reader,
+                                      QuicStopSendingFrame* stop_sending_frame);
+  static bool AppendStopSendingFrame(
       QuicFramer* framer,
       const QuicStopSendingFrame& stop_sending_frame,
       QuicDataWriter* writer);
 
   // Append/consume IETF-Format MAX_DATA and MAX_STREAM_DATA frames
-  static bool AppendIetfMaxDataFrame(QuicFramer* framer,
-                                     const QuicWindowUpdateFrame& frame,
-                                     QuicDataWriter* writer);
-  static bool AppendIetfMaxStreamDataFrame(QuicFramer* framer,
-                                           const QuicWindowUpdateFrame& frame,
-                                           QuicDataWriter* writer);
-  static bool ProcessIetfMaxDataFrame(QuicFramer* framer,
-                                      QuicDataReader* reader,
-                                      QuicWindowUpdateFrame* frame);
-  static bool ProcessIetfMaxStreamDataFrame(QuicFramer* framer,
-                                            QuicDataReader* reader,
-                                            QuicWindowUpdateFrame* frame);
+  static bool AppendMaxDataFrame(QuicFramer* framer,
+                                 const QuicWindowUpdateFrame& frame,
+                                 QuicDataWriter* writer);
+  static bool AppendMaxStreamDataFrame(QuicFramer* framer,
+                                       const QuicWindowUpdateFrame& frame,
+                                       QuicDataWriter* writer);
+  static bool ProcessMaxDataFrame(QuicFramer* framer,
+                                  QuicDataReader* reader,
+                                  QuicWindowUpdateFrame* frame);
+  static bool ProcessMaxStreamDataFrame(QuicFramer* framer,
+                                        QuicDataReader* reader,
+                                        QuicWindowUpdateFrame* frame);
   static bool AppendMaxStreamIdFrame(QuicFramer* framer,
                                      const QuicMaxStreamIdFrame& frame,
                                      QuicDataWriter* writer);
@@ -125,12 +124,12 @@ class QuicFramerPeer {
                                       QuicDataReader* reader,
                                       QuicBlockedFrame* frame);
 
-  static bool AppendIetfStreamBlockedFrame(QuicFramer* framer,
-                                           const QuicBlockedFrame& frame,
-                                           QuicDataWriter* writer);
-  static bool ProcessIetfStreamBlockedFrame(QuicFramer* framer,
-                                            QuicDataReader* reader,
-                                            QuicBlockedFrame* frame);
+  static bool AppendStreamBlockedFrame(QuicFramer* framer,
+                                       const QuicBlockedFrame& frame,
+                                       QuicDataWriter* writer);
+  static bool ProcessStreamBlockedFrame(QuicFramer* framer,
+                                        QuicDataReader* reader,
+                                        QuicBlockedFrame* frame);
 
   static bool AppendStreamIdBlockedFrame(QuicFramer* framer,
                                          const QuicStreamIdBlockedFrame& frame,
@@ -138,6 +137,13 @@ class QuicFramerPeer {
   static bool ProcessStreamIdBlockedFrame(QuicFramer* framer,
                                           QuicDataReader* reader,
                                           QuicStreamIdBlockedFrame* frame);
+
+  static bool AppendNewConnectionIdFrame(QuicFramer* framer,
+                                         const QuicNewConnectionIdFrame& frame,
+                                         QuicDataWriter* writer);
+  static bool ProcessNewConnectionIdFrame(QuicFramer* framer,
+                                          QuicDataReader* reader,
+                                          QuicNewConnectionIdFrame* frame);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicFramerPeer);

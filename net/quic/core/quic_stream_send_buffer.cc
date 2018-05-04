@@ -160,12 +160,10 @@ bool QuicStreamSendBuffer::OnStreamDataAcked(
     return true;
   }
   if (enable_fast_path_on_data_acked_) {
-    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_fast_path_on_stream_data_acked);
     bool is_disjoint = false;
     if (GetQuicReloadableFlag(quic_fast_is_disjoint)) {
       is_disjoint =
           bytes_acked_.Empty() || offset >= bytes_acked_.rbegin()->max();
-      QUIC_FLAG_COUNT(quic_reloadable_flag_quic_fast_is_disjoint);
     }
     if (is_disjoint || bytes_acked_.IsDisjoint(Interval<QuicStreamOffset>(
                            offset, offset + data_length))) {
