@@ -212,9 +212,8 @@ GpuDisplayProvider::CreateSoftwareOutputDeviceForPlatform(
 #if defined(OS_WIN)
   if (!output_device_backing_)
     output_device_backing_ = std::make_unique<OutputDeviceBacking>();
-  return std::make_unique<SoftwareOutputDeviceWin>(
-      output_device_backing_.get(), widget,
-      /*force_disable_hwnd_composited=*/true);
+  return std::make_unique<SoftwareOutputDeviceWin>(output_device_backing_.get(),
+                                                   widget);
 #elif defined(OS_MACOSX)
   // TODO(crbug.com/730660): What do we do to get something we can draw to? Can
   // we use an IO surface? Can we use CA layers and overlays like we do for gpu

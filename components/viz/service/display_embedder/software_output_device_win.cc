@@ -4,8 +4,11 @@
 
 #include "components/viz/service/display_embedder/software_output_device_win.h"
 
+#include <algorithm>
+
 #include "base/debug/alias.h"
 #include "base/memory/shared_memory.h"
+#include "base/win/windows_version.h"
 #include "components/viz/common/resources/resource_sizes.h"
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/skia_utils_win.h"
@@ -14,12 +17,25 @@
 #include "ui/gfx/skia_util.h"
 
 namespace viz {
+namespace {
 
 // If a window is larger than this in bytes, don't even try to create a
 // backing bitmap for it.
-static const size_t kMaxBitmapSizeBytes = 4 * (16384 * 8192);
+constexpr size_t kMaxBitmapSizeBytes = 4 * (16384 * 8192);
 
-OutputDeviceBacking::OutputDeviceBacking() : created_byte_size_(0) {}
+bool NeedsToUseLayerWindow(HWND hwnd) {
+  // Layered windows are a legacy way of supporting transparency for HWNDs. With
+  // Desktop Window Manager (DWM) HWNDs support transparency natively. DWM is
+  // always enabled on Windows 8 and later. However, for Windows 7 (and earlier)
+  // DWM might be disabled and layered windows are necessary for HWNDs with
+  // transparency.
+  return base::win::GetVersion() <= base::win::VERSION_WIN7 &&
+         GetProp(hwnd, ui::kWindowTranslucent);
+}
+
+}  // namespace
+
+OutputDeviceBacking::OutputDeviceBacking() = default;
 
 OutputDeviceBacking::~OutputDeviceBacking() {
   DCHECK(devices_.empty());
@@ -62,7 +78,7 @@ base::SharedMemory* OutputDeviceBacking::GetSharedMemory(
 
   created_byte_size_ = expected_byte_size;
 
-  backing_.reset(new base::SharedMemory);
+  backing_ = std::make_unique<base::SharedMemory>();
   base::debug::Alias(&expected_byte_size);
   CHECK(backing_->CreateAnonymous(created_byte_size_));
   return backing_.get();
@@ -83,20 +99,13 @@ size_t OutputDeviceBacking::GetMaxByteSize() {
   return max_size;
 }
 
-SoftwareOutputDeviceWin::SoftwareOutputDeviceWin(
-    OutputDeviceBacking* backing,
-    gfx::AcceleratedWidget widget,
-    bool force_disable_hwnd_composited)
-    : hwnd_(widget),
-      is_hwnd_composited_(false),
-      backing_(backing),
-      in_paint_(false) {
-  is_hwnd_composited_ = !force_disable_hwnd_composited &&
-                        !!::GetProp(hwnd_, ui::kWindowTranslucent);
+SoftwareOutputDeviceWin::SoftwareOutputDeviceWin(OutputDeviceBacking* backing,
+                                                 HWND hwnd)
+    : hwnd_(hwnd),
+      use_layered_window_(NeedsToUseLayerWindow(hwnd)),
+      backing_(use_layered_window_ ? nullptr : backing) {
   // Layered windows must be completely updated every time, so they can't
   // share contents with other windows.
-  if (is_hwnd_composited_)
-    backing_ = nullptr;
   if (backing_)
     backing_->RegisterOutputDevice(this);
 }
@@ -166,7 +175,7 @@ void SoftwareOutputDeviceWin::EndPaint() {
 
   HDC dib_dc = skia::GetNativeDrawingContext(contents_.get());
 
-  if (is_hwnd_composited_) {
+  if (use_layered_window_) {
     RECT wr;
     GetWindowRect(hwnd_, &wr);
     SIZE size = {wr.right - wr.left, wr.bottom - wr.top};
@@ -176,8 +185,8 @@ void SoftwareOutputDeviceWin::EndPaint() {
 
     DWORD style = GetWindowLong(hwnd_, GWL_EXSTYLE);
     DCHECK(!(style & WS_EX_COMPOSITED));
-    style |= WS_EX_LAYERED;
-    SetWindowLong(hwnd_, GWL_EXSTYLE, style);
+    if (!(style & WS_EX_LAYERED))
+      SetWindowLong(hwnd_, GWL_EXSTYLE, style | WS_EX_LAYERED);
 
     ::UpdateLayeredWindow(hwnd_, NULL, &position, &size, dib_dc, &zero,
                           RGB(0xFF, 0xFF, 0xFF), &blend, ULW_ALPHA);
