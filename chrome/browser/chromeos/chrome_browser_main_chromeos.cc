@@ -46,8 +46,6 @@
 #include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
 #include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/chromeos/boot_times_recorder.h"
-#include "chrome/browser/chromeos/dbus/chrome_console_service_provider_delegate.h"
-#include "chrome/browser/chromeos/dbus/chrome_display_power_service_provider_delegate.h"
 #include "chrome/browser/chromeos/dbus/chrome_proxy_resolution_service_provider_delegate.h"
 #include "chrome/browser/chromeos/dbus/chrome_virtual_file_request_service_provider_delegate.h"
 #include "chrome/browser/chromeos/dbus/component_updater_service_provider.h"
@@ -125,9 +123,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_policy_controller.h"
 #include "chromeos/dbus/services/chrome_features_service_provider.h"
-#include "chromeos/dbus/services/console_service_provider.h"
 #include "chromeos/dbus/services/cros_dbus_service.h"
-#include "chromeos/dbus/services/display_power_service_provider.h"
 #include "chromeos/dbus/services/liveness_service_provider.h"
 #include "chromeos/dbus/services/proxy_resolution_service_provider.h"
 #include "chromeos/dbus/services/virtual_file_request_service_provider.h"
@@ -332,14 +328,7 @@ class DBusServices {
     }
 
     CrosDBusService::ServiceProviderList service_providers;
-    CrosDBusService::ServiceProviderList display_service_providers;
 
-    if (GetAshConfig() != ash::Config::MASH) {
-      // TODO(lannm): This will eventually be served by mus-ws.
-      display_service_providers.push_back(
-          std::make_unique<DisplayPowerServiceProvider>(
-              std::make_unique<ChromeDisplayPowerServiceProviderDelegate>()));
-    }
     // TODO(derat): Remove this provider once all callers are using
     // |liveness_service_| instead: https://crbug.com/644322
     service_providers.push_back(
@@ -349,10 +338,6 @@ class DBusServices {
     service_providers.push_back(std::make_unique<ScreenLockServiceProvider>(
         kLibCrosServiceInterface, kLockScreen));
 
-    display_service_providers.push_back(
-        std::make_unique<ConsoleServiceProvider>(
-            &console_service_provider_delegate_));
-
     // TODO(derat): Remove this provider once all callers are using
     // |kiosk_info_service_| instead: https://crbug.com/703229
     service_providers.push_back(std::make_unique<KioskInfoService>(
@@ -360,10 +345,6 @@ class DBusServices {
     cros_dbus_service_ = CrosDBusService::Create(
         kLibCrosServiceName, dbus::ObjectPath(kLibCrosServicePath),
         std::move(service_providers));
-
-    display_service_ = CrosDBusService::Create(
-        kDisplayServiceName, dbus::ObjectPath(kDisplayServicePath),
-        std::move(display_service_providers));
 
     proxy_resolution_service_ = CrosDBusService::Create(
         kNetworkProxyServiceName, dbus::ObjectPath(kNetworkProxyServicePath),
@@ -458,7 +439,6 @@ class DBusServices {
     CertLoader::Shutdown();
     TPMTokenLoader::Shutdown();
     cros_dbus_service_.reset();
-    display_service_.reset();
     proxy_resolution_service_.reset();
     kiosk_info_service_.reset();
     liveness_service_.reset();
@@ -473,11 +453,6 @@ class DBusServices {
     bluez::BluezDBusManager::Shutdown();
   }
 
-  void ServiceManagerConnectionStarted(
-      content::ServiceManagerConnection* connection) {
-    console_service_provider_delegate_.Connect(connection->GetConnector());
-  }
-
  private:
   // Hosts providers for the "org.chromium.LibCrosService" D-Bus service owned
   // by Chrome. The name of this service was chosen for historical reasons that
@@ -486,7 +461,6 @@ class DBusServices {
   // split between different processes: http://crbug.com/692246
   std::unique_ptr<CrosDBusService> cros_dbus_service_;
 
-  std::unique_ptr<CrosDBusService> display_service_;
   std::unique_ptr<CrosDBusService> proxy_resolution_service_;
   std::unique_ptr<CrosDBusService> kiosk_info_service_;
   std::unique_ptr<CrosDBusService> liveness_service_;
@@ -495,8 +469,6 @@ class DBusServices {
   std::unique_ptr<CrosDBusService> component_updater_service_;
   std::unique_ptr<CrosDBusService> finch_features_service_;
   std::unique_ptr<CrosDBusService> vm_applications_service_;
-
-  ChromeConsoleServiceProviderDelegate console_service_provider_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(DBusServices);
 };
@@ -680,12 +652,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
   memory_kills_monitor_ = memory::MemoryKillsMonitor::Initialize();
 
   ChromeBrowserMainPartsLinux::PostMainMessageLoopStart();
-}
-
-void ChromeBrowserMainPartsChromeos::ServiceManagerConnectionStarted(
-    content::ServiceManagerConnection* connection) {
-  ChromeBrowserMainPartsLinux::ServiceManagerConnectionStarted(connection);
-  dbus_services_->ServiceManagerConnectionStarted(connection);
 }
 
 // Threads are initialized between MainMessageLoopStart and MainMessageLoopRun.
