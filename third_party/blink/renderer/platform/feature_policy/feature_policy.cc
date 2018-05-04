@@ -208,6 +208,8 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
           "vertical-scroll", mojom::FeaturePolicyFeature::kVerticalScroll);
     }
     if (RuntimeEnabledFeatures::FeaturePolicyExperimentalFeaturesEnabled()) {
+      default_feature_name_map.Set("animations",
+                                   mojom::FeaturePolicyFeature::kAnimations);
       default_feature_name_map.Set(
           "cookie", mojom::FeaturePolicyFeature::kDocumentCookie);
       default_feature_name_map.Set(

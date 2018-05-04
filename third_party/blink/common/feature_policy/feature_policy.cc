@@ -300,6 +300,8 @@ const FeaturePolicy::FeatureList& FeaturePolicy::GetDefaultFeatureList() {
                             FeaturePolicy::FeatureDefault::EnableForAll},
                            {mojom::FeaturePolicyFeature::kUnsizedMedia,
                             FeaturePolicy::FeatureDefault::EnableForAll},
+                           {mojom::FeaturePolicyFeature::kAnimations,
+                            FeaturePolicy::FeatureDefault::EnableForAll},
                            {mojom::FeaturePolicyFeature::kPictureInPicture,
                             FeaturePolicy::FeatureDefault::EnableForAll},
                            {mojom::FeaturePolicyFeature::kVerticalScroll,

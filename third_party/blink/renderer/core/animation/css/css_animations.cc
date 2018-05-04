@@ -708,7 +708,8 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
     return;
   }
 
-  CSSInterpolationTypesMap map(registry);
+  CSSInterpolationTypesMap map(registry,
+                               state.animating_element->GetDocument());
   CSSInterpolationEnvironment old_environment(map, state.old_style);
   CSSInterpolationEnvironment new_environment(map, state.style);
   InterpolationValue start = nullptr;

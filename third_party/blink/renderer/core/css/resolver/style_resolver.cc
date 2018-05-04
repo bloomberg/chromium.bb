@@ -1179,7 +1179,8 @@ void StyleResolver::ApplyAnimatedCustomProperty(
       ActiveInterpolationsForCustomProperty(state, property);
   const Interpolation& interpolation = *interpolations.front();
   if (interpolation.IsInvalidatableInterpolation()) {
-    CSSInterpolationTypesMap map(state.GetDocument().GetPropertyRegistry());
+    CSSInterpolationTypesMap map(state.GetDocument().GetPropertyRegistry(),
+                                 state.GetDocument());
     CSSInterpolationEnvironment environment(map, state, &variable_resolver);
     InvalidatableInterpolation::ApplyStack(interpolations, environment);
   } else {
@@ -1293,7 +1294,8 @@ void StyleResolver::ApplyAnimatedStandardProperties(
       continue;
     const Interpolation& interpolation = *entry.value.front();
     if (interpolation.IsInvalidatableInterpolation()) {
-      CSSInterpolationTypesMap map(state.GetDocument().GetPropertyRegistry());
+      CSSInterpolationTypesMap map(state.GetDocument().GetPropertyRegistry(),
+                                   state.GetDocument());
       CSSInterpolationEnvironment environment(map, state, nullptr);
       InvalidatableInterpolation::ApplyStack(entry.value, environment);
     } else {

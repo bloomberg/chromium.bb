@@ -85,6 +85,7 @@ enum FeaturePolicyFeature {
   kLegacyImageFormats,
   // When disallowed, requires images to have a reasonable byte-to-pixel ratio.
   kImageCompression,
+  kAnimations,
   // Controls access to Picture-in-Picture.
   kPictureInPicture,
   // Controls the ability to block and interfere with vertical scrolling.
