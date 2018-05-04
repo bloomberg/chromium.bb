@@ -17,6 +17,7 @@
 #include "base/scoped_observer.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_observer.h"
+#include "components/user_manager/user_manager.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -30,8 +31,10 @@ class AppListModelUpdater;
 class AppSyncUIStateWatcher;
 class Profile;
 
-class AppListClientImpl : public ash::mojom::AppListClient,
-                          public TemplateURLServiceObserver {
+class AppListClientImpl
+    : public ash::mojom::AppListClient,
+      public user_manager::UserManager::UserSessionStateObserver,
+      public TemplateURLServiceObserver {
  public:
   AppListClientImpl();
   ~AppListClientImpl() override;
@@ -63,8 +66,11 @@ class AppListClientImpl : public ash::mojom::AppListClient,
   void OnFolderDeleted(ash::mojom::AppListItemMetadataPtr item) override;
   void OnItemUpdated(ash::mojom::AppListItemMetadataPtr item) override;
 
+  // user_manager::UserManager::UserSessionStateObserver:
+  void ActiveUserChanged(const user_manager::User* active_user) override;
+
   // Associates this client with the current active user, called when this
-  // client is accessed.
+  // client is accessed or active user is changed.
   void UpdateProfile();
 
   void set_controller_delegate(AppListControllerDelegate* controller_delegate) {
