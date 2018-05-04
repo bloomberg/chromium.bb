@@ -75,6 +75,10 @@ TEST_F(WorkletAnimationTest, LocalTimeIsUsedWithAnimations) {
   worklet_animation_impl_->SetLocalTime(local_time);
 
   TickAnimationsTransferEvents(base::TimeTicks(), 0u);
+
+  TestLayer* layer =
+      client_.FindTestLayer(element_id_, ElementListType::ACTIVE);
+  EXPECT_FALSE(layer->is_property_mutated(TargetProperty::OPACITY));
   client_impl_.ExpectOpacityPropertyMutated(
       element_id_, ElementListType::ACTIVE, expected_opacity);
 }
