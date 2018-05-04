@@ -2988,12 +2988,12 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     if (cm->buffer_removal_delay_present) {
       for (int op_num = 0; op_num < cm->operating_points_decoder_model_cnt;
            op_num++) {
-        if (((cm->op_params[op_num].decoder_model_operating_point_idc >>
-              cm->temporal_layer_id) &
-                 0x1 &&
-             (cm->op_params[op_num].decoder_model_operating_point_idc >>
-              (cm->enhancement_layer_id + 8)) &
-                 0x1) ||
+        if ((((cm->op_params[op_num].decoder_model_operating_point_idc >>
+               cm->temporal_layer_id) &
+              0x1) &&
+             ((cm->op_params[op_num].decoder_model_operating_point_idc >>
+               (cm->enhancement_layer_id + 8)) &
+              0x1)) ||
             cm->op_params[op_num].decoder_model_operating_point_idc == 0) {
           cm->op_frame_timing[op_num].buffer_removal_delay =
               aom_rb_read_literal(rb,
