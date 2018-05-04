@@ -58,9 +58,6 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
   // Clear the existing print preview data.
   void ClearAllPreviewData();
 
-  // Returns the available draft page count.
-  virtual int GetAvailableDraftPageCount() const;
-
   // Setters
   void SetInitiatorTitle(const base::string16& initiator_title);
 

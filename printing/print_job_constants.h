@@ -30,7 +30,6 @@ PRINTING_EXPORT extern const char kSettingDpiVertical[];
 PRINTING_EXPORT extern const char kSettingDuplexMode[];
 PRINTING_EXPORT extern const char kSettingFitToPageEnabled[];
 PRINTING_EXPORT extern const char kSettingFitToPageScaling[];
-PRINTING_EXPORT extern const char kSettingGenerateDraftData[];
 PRINTING_EXPORT extern const char kSettingHeaderFooterEnabled[];
 PRINTING_EXPORT extern const float kSettingHeaderFooterInterstice;
 PRINTING_EXPORT extern const char kSettingHeaderFooterDate[];

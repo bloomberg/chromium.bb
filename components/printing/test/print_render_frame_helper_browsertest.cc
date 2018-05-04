@@ -115,7 +115,6 @@ void CreatePrintSettingsDictionary(base::DictionaryValue* dict) {
   dict->SetInteger(kSettingMarginsType, DEFAULT_MARGINS);
   dict->SetBoolean(kSettingPreviewModifiable, false);
   dict->SetBoolean(kSettingHeaderFooterEnabled, false);
-  dict->SetBoolean(kSettingGenerateDraftData, true);
   dict->SetBoolean(kSettingShouldPrintBackgrounds, false);
   dict->SetBoolean(kSettingShouldPrintSelectionOnly, false);
 }

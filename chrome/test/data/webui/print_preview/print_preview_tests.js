@@ -1611,40 +1611,6 @@ cr.define('print_preview_test', function() {
       });
     });
 
-    // Test the preview generator to make sure the generate draft parameter is
-    // set correctly. It should be false if the only change is the page range.
-    test('GenerateDraft', function() {
-      return Promise.all([
-          setupSettingsAndDestinationsWithCapabilities(),
-          nativeLayer.whenCalled('getPreview'),
-      ]).then(function(args) {
-        // The first request should generate draft because there was no
-        // previous print preview draft.
-        const ticket = JSON.parse(args[1].printTicket);
-        expectTrue(ticket.generateDraft);
-        expectEquals(0, ticket.requestID);
-        nativeLayer.resetResolver('getPreview');
-
-        // Change the page range - no new draft needed.
-        printPreview.printTicketStore_.pageRange.updateValue('2');
-        return nativeLayer.whenCalled('getPreview');
-      }).then(function(args) {
-        const ticket = JSON.parse(args.printTicket);
-        expectFalse(ticket.generateDraft);
-        expectEquals(1, ticket.requestID);
-        nativeLayer.resetResolver('getPreview');
-
-        // Change the margin type - need to regenerate again.
-        printPreview.printTicketStore_.marginsType.updateValue(
-            print_preview.ticket_items.MarginsTypeValue.NO_MARGINS);
-        return nativeLayer.whenCalled('getPreview');
-      }).then(function(args) {
-        const ticket = JSON.parse(args.printTicket);
-        expectTrue(ticket.generateDraft);
-        expectEquals(2, ticket.requestID);
-      });
-    });
-
     // Test that the policy to use the system default printer by default
     // instead of the most recently used destination works.
     test('SystemDefaultPrinterPolicy', function() {

@@ -66,9 +66,6 @@ const char kSettingDuplexMode[] = "duplex";
 // selected else false.
 const char kSettingFitToPageEnabled[] = "fitToPageEnabled";
 
-// True, when a new set of draft preview data is required.
-const char kSettingGenerateDraftData[] = "generateDraftData";
-
 // Option to print headers and Footers: true if selected, false if not.
 const char kSettingHeaderFooterEnabled[] = "headerFooterEnabled";
 
