@@ -12,6 +12,7 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
 #include "chrome/browser/chromeos/printing/printer_configurer.h"
 #include "chrome/browser/chromeos/printing/printer_event_tracker.h"
@@ -179,6 +180,9 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
   std::string webui_callback_id_;
   CupsPrintersManager* printers_manager_;
+
+  ScopedObserver<CupsPrintersManager, CupsPrintersManager::Observer>
+      printers_manager_observer_;
 
   base::WeakPtrFactory<CupsPrintersHandler> weak_factory_;
 
