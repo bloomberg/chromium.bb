@@ -135,10 +135,8 @@ IN_PROC_BROWSER_TEST_F(ResourceCoordinatorRenderProcessProbeBrowserTest,
   EXPECT_EQ(initial_size, probe.last_measurement_batch()->measurements.size());
   // A quirk of the process_metrics implementation is that the first CPU
   // measurement returns zero.
-  for (const auto& measurement : probe.last_measurement_batch()->measurements) {
+  for (const auto& measurement : probe.last_measurement_batch()->measurements)
     EXPECT_EQ(0.0, measurement->cpu_usage);
-    EXPECT_NE(0u, measurement->private_footprint_kb);
-  }
 
   // Open a second tab and complete a navigation.
   ui_test_utils::NavigateToURLWithDisposition(
@@ -166,10 +164,8 @@ IN_PROC_BROWSER_TEST_F(ResourceCoordinatorRenderProcessProbeBrowserTest,
   size_t info_map_size = info_map.size();
   probe.StartGatherCycleAndWait();
   // The second and subsequent CPU measurements should return some data.
-  for (const auto& measurement : probe.last_measurement_batch()->measurements) {
+  for (const auto& measurement : probe.last_measurement_batch()->measurements)
     EXPECT_LE(0.0, measurement->cpu_usage);
-    EXPECT_NE(0u, measurement->private_footprint_kb);
-  }
 
   EXPECT_EQ(info_map_size, info_map.size());
   for (const auto& entry : probe.render_process_info_map()) {
