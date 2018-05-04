@@ -2574,6 +2574,13 @@ TEST_F(TileManagerReadyToDrawTest, ReadyToDrawRespectsRequirementChange) {
   EXPECT_TRUE(host_impl()->tile_manager()->IsReadyToActivate());
 }
 
+PaintImage MakeCheckerablePaintImage(const gfx::Size& size) {
+  auto image = CreateDiscardablePaintImage(size);
+  return PaintImageBuilder::WithCopy(image)
+      .set_decoding_mode(PaintImage::DecodingMode::kAsync)
+      .TakePaintImage();
+}
+
 class CheckerImagingTileManagerTest : public TestLayerTreeHostBase {
  public:
   class MockImageGenerator : public FakePaintImageGenerator {
@@ -2633,7 +2640,6 @@ class CheckerImagingTileManagerTest : public TestLayerTreeHostBase {
 TEST_F(CheckerImagingTileManagerTest,
        NoImageDecodeDependencyForCheckeredTiles) {
   const gfx::Size layer_bounds(512, 512);
-  SetupDefaultTrees(layer_bounds);
 
   std::unique_ptr<FakeRecordingSource> recording_source =
       FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
@@ -2644,6 +2650,7 @@ TEST_F(CheckerImagingTileManagerTest,
   PaintImage image = PaintImageBuilder::WithDefault()
                          .set_id(PaintImage::GetNextId())
                          .set_paint_image_generator(generator)
+                         .set_decoding_mode(PaintImage::DecodingMode::kAsync)
                          .TakePaintImage();
   recording_source->add_draw_image(image, gfx::Point(0, 0));
 
@@ -2651,13 +2658,12 @@ TEST_F(CheckerImagingTileManagerTest,
   scoped_refptr<RasterSource> raster_source =
       recording_source->CreateRasterSource();
 
-  std::unique_ptr<PictureLayerImpl> layer_impl = PictureLayerImpl::Create(
-      host_impl()->pending_tree(), 1, Layer::LayerMaskType::NOT_MASK);
-  layer_impl->set_contributes_to_drawn_render_surface(true);
-  PictureLayerTilingSet* tiling_set = layer_impl->picture_layer_tiling_set();
+  Region invalidation((gfx::Rect(layer_bounds)));
+  SetupPendingTree(raster_source, layer_bounds, invalidation);
 
-  PictureLayerTiling* tiling =
-      tiling_set->AddTiling(gfx::AxisTransform2d(), raster_source);
+  PictureLayerTilingSet* tiling_set =
+      pending_layer()->picture_layer_tiling_set();
+  PictureLayerTiling* tiling = tiling_set->tiling_at(0);
   tiling->set_resolution(HIGH_RESOLUTION);
   tiling->CreateAllTilesForTesting();
   tiling->SetTilePriorityRectsForTesting(
@@ -2694,8 +2700,7 @@ TEST_F(EmptyCacheTileManagerTest, AtRasterOnScreenTileRasterTasks) {
   recording_source->set_fill_with_nonsolid_color(true);
 
   int dimension = 500;
-  PaintImage image =
-      CreateDiscardablePaintImage(gfx::Size(dimension, dimension));
+  PaintImage image = MakeCheckerablePaintImage(gfx::Size(dimension, dimension));
   recording_source->add_draw_image(image, gfx::Point(0, 0));
 
   recording_source->Rerecord();
@@ -2731,8 +2736,7 @@ TEST_F(EmptyCacheTileManagerTest, AtRasterPrepaintTileRasterTasksSkipped) {
   recording_source->set_fill_with_nonsolid_color(true);
 
   int dimension = 500;
-  PaintImage image =
-      CreateDiscardablePaintImage(gfx::Size(dimension, dimension));
+  PaintImage image = MakeCheckerablePaintImage(gfx::Size(dimension, dimension));
   recording_source->add_draw_image(image, gfx::Point(0, 0));
 
   recording_source->Rerecord();
@@ -2769,11 +2773,11 @@ TEST_F(CheckerImagingTileManagerTest, BuildsImageDecodeQueueAsExpected) {
 
   int dimension = 450;
   PaintImage image1 =
-      CreateDiscardablePaintImage(gfx::Size(dimension, dimension));
+      MakeCheckerablePaintImage(gfx::Size(dimension, dimension));
   PaintImage image2 =
-      CreateDiscardablePaintImage(gfx::Size(dimension, dimension));
+      MakeCheckerablePaintImage(gfx::Size(dimension, dimension));
   PaintImage image3 =
-      CreateDiscardablePaintImage(gfx::Size(dimension, dimension));
+      MakeCheckerablePaintImage(gfx::Size(dimension, dimension));
   recording_source->add_draw_image(image1, gfx::Point(0, 0));
   recording_source->add_draw_image(image2, gfx::Point(600, 0));
   recording_source->add_draw_image(image3, gfx::Point(0, 600));
@@ -2930,7 +2934,7 @@ TEST_F(CheckerImagingTileManagerTest,
   std::unique_ptr<FakeRecordingSource> recording_source =
       FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
   recording_source->set_fill_with_nonsolid_color(true);
-  PaintImage image = CreateDiscardablePaintImage(gfx::Size(512, 512));
+  PaintImage image = MakeCheckerablePaintImage(gfx::Size(512, 512));
   recording_source->add_draw_image(image, gfx::Point(0, 0));
   recording_source->Rerecord();
   scoped_refptr<RasterSource> raster_source =
@@ -2969,7 +2973,7 @@ TEST_F(CheckerImagingTileManagerTest,
   std::unique_ptr<FakeRecordingSource> recording_source =
       FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
   recording_source->set_fill_with_nonsolid_color(true);
-  PaintImage image = CreateDiscardablePaintImage(gfx::Size(512, 512));
+  PaintImage image = MakeCheckerablePaintImage(gfx::Size(512, 512));
   recording_source->add_draw_image(image, gfx::Point(0, 0));
   recording_source->Rerecord();
   scoped_refptr<RasterSource> raster_source =
@@ -3054,9 +3058,9 @@ TEST_F(CheckerImagingTileManagerMemoryTest, AddsAllNowTilesToImageDecodeQueue) {
 
   int dimension = 450;
   PaintImage image1 =
-      CreateDiscardablePaintImage(gfx::Size(dimension, dimension));
+      MakeCheckerablePaintImage(gfx::Size(dimension, dimension));
   PaintImage image2 =
-      CreateDiscardablePaintImage(gfx::Size(dimension, dimension));
+      MakeCheckerablePaintImage(gfx::Size(dimension, dimension));
   recording_source->add_draw_image(image1, gfx::Point(0, 515));
   recording_source->add_draw_image(image2, gfx::Point(515, 515));
 

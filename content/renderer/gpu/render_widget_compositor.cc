@@ -362,8 +362,11 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
   settings.main_frame_before_activation_enabled =
       cmd.HasSwitch(cc::switches::kEnableMainFrameBeforeActivation);
 
+  // Checkerimaging is not supported for synchronous single-threaded mode, which
+  // is what the renderer uses if its not threaded.
   settings.enable_checker_imaging =
-      cmd.HasSwitch(cc::switches::kEnableCheckerImaging);
+      !cmd.HasSwitch(cc::switches::kDisableCheckerImaging) && is_threaded;
+
 #if defined(OS_ANDROID)
   // We can use a more aggressive limit on Android since decodes tend to take
   // longer on these devices.

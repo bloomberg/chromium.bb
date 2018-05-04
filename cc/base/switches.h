@@ -20,7 +20,6 @@ CC_BASE_EXPORT extern const char kDisableThreadedAnimation[];
 CC_BASE_EXPORT extern const char kDisableCompositedAntialiasing[];
 CC_BASE_EXPORT extern const char kDisableMainFrameBeforeActivation[];
 CC_BASE_EXPORT extern const char kEnableMainFrameBeforeActivation[];
-CC_BASE_EXPORT extern const char kEnableCheckerImaging[];
 CC_BASE_EXPORT extern const char kDisableCheckerImaging[];
 CC_BASE_EXPORT extern const char kBrowserControlsHideThreshold[];
 CC_BASE_EXPORT extern const char kBrowserControlsShowThreshold[];

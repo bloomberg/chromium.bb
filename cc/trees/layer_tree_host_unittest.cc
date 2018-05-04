@@ -8291,11 +8291,9 @@ class LayerTreeHostTestQueueImageDecode : public LayerTreeHostTest {
   void ReadyToCommitOnThread(LayerTreeHostImpl* impl) override {
     if (one_commit_done_)
       return;
-    EXPECT_TRUE(
+    EXPECT_FALSE(
         impl->tile_manager()->checker_image_tracker().ShouldCheckerImage(
             image_, WhichTree::PENDING_TREE));
-    // Reset the tracker as if it has never seen this image.
-    impl->tile_manager()->checker_image_tracker().ClearTracker(true);
   }
 
   void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {

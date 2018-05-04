@@ -180,10 +180,6 @@ const GpuFeatureData GetGpuFeatureData(
        !base::FeatureList::IsEnabled(features::kVizDisplayCompositor),
        "Viz service display compositor is not enabled by default.", false,
        false},
-      {"checker_imaging", gpu::kGpuFeatureStatusEnabled,
-       !IsCheckerImagingEnabled(),
-       "Checker-imaging has been disabled via finch trial or the command line.",
-       false, true},
   };
   DCHECK(index < arraysize(kGpuFeatureData));
   *eof = (index == arraysize(kGpuFeatureData) - 1);
@@ -234,13 +230,6 @@ std::unique_ptr<base::DictionaryValue> GetFeatureStatusImpl(
         const base::CommandLine& command_line =
             *base::CommandLine::ForCurrentProcess();
         if (command_line.HasSwitch(switches::kNumRasterThreads))
-          status += "_force";
-        status += "_on";
-      }
-      if (gpu_feature_data.name == "checker_imaging") {
-        const base::CommandLine& command_line =
-            *base::CommandLine::ForCurrentProcess();
-        if (command_line.HasSwitch(cc::switches::kEnableCheckerImaging))
           status += "_force";
         status += "_on";
       }
@@ -436,21 +425,6 @@ bool IsMainFrameBeforeActivationEnabled() {
     return false;
 
   return true;
-}
-
-bool IsCheckerImagingEnabled() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          cc::switches::kDisableCheckerImaging))
-    return false;
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          cc::switches::kEnableCheckerImaging))
-    return true;
-
-  if (base::FeatureList::IsEnabled(features::kCheckerImaging))
-    return true;
-
-  return false;
 }
 
 std::unique_ptr<base::DictionaryValue> GetFeatureStatus() {
