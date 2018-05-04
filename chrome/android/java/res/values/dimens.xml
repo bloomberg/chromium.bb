@@ -259,9 +259,6 @@
     <dimen name="toolbar_shadow_height">8dp</dimen>
     <dimen name="toolbar_progress_bar_height">2dp</dimen>
     <dimen name="toolbar_button_width">48dp</dimen>
-    <dimen name="toolbar_handle_height">3dp</dimen>
-    <dimen name="toolbar_handle_width">20dp</dimen>
-    <dimen name="toolbar_handle_margin_top">12dp</dimen>
 
     <dimen name="toolbar_edge_padding">8dp</dimen>
     <dimen name="location_bar_google_g_width">24dp</dimen>
