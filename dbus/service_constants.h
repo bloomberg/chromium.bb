@@ -1113,6 +1113,15 @@ constexpr char kVirtualFileProviderInterface[] =
 constexpr char kOpenFileMethod[] = "OpenFile";
 }  // namespace virtual_file_provider
 
+namespace crosdns {
+constexpr char kCrosDnsServiceName[] = "org.chromium.CrosDns";
+constexpr char kCrosDnsServicePath[] = "/org/chromium/CrosDns";
+constexpr char kCrosDnsInterfaceName[] = "org.chromium.CrosDns";
+// Methods
+constexpr char kSetHostnameIpMappingMethod[] = "SetHostnameIpMapping";
+constexpr char kRemoveHostnameIpMappingMethod[] = "RemoveHostnameIpMapping";
+}
+
 namespace arc {
 
 namespace obb_mounter {
