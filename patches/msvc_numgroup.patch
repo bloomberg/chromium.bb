@@ -1,0 +1,13 @@
+diff --git a/source/i18n/number_grouping.cpp b/source/i18n/number_grouping.cpp
+index a2b1bbd6..e09671c3 100644
+--- a/source/i18n/number_grouping.cpp
++++ b/source/i18n/number_grouping.cpp
+@@ -48,6 +48,8 @@ Grouper Grouper::forStrategy(UGroupingStrategy grouping) {
+         return {3, 3, 1};
+     default:
+         U_ASSERT(FALSE);
++        // To silence C4715 (not all codepath return a value) in MSVC.
++        return {};
+     }
+ }
+ 

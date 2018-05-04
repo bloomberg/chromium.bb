@@ -830,8 +830,8 @@ Calendar::operator=(const Calendar &right)
         fNextStamp               = right.fNextStamp;
         uprv_strncpy(validLocale, right.validLocale, sizeof(validLocale));
         uprv_strncpy(actualLocale, right.actualLocale, sizeof(actualLocale));
-        validLocale[sizeof(validLocale) - 1] = 0;
-        actualLocale[sizeof(actualLocale) - 1] = 0;
+        validLocale[sizeof(validLocale)-1] = 0;
+        actualLocale[sizeof(validLocale)-1] = 0;
     }
 
     return *this;
@@ -3223,13 +3223,13 @@ int32_t Calendar::handleComputeJulianDay(UCalendarDateFields bestField)  {
         bestField == UCAL_DAY_OF_WEEK_IN_MONTH);
     int32_t year;
 
-    if (bestField == UCAL_WEEK_OF_YEAR) {
-        year = internalGet(UCAL_YEAR_WOY, handleGetExtendedYear());
-        internalSet(UCAL_EXTENDED_YEAR, year);
+    if (bestField == UCAL_WEEK_OF_YEAR && newerField(UCAL_YEAR_WOY, UCAL_YEAR) == UCAL_YEAR_WOY) {
+        year = internalGet(UCAL_YEAR_WOY);
     } else {
         year = handleGetExtendedYear();
-        internalSet(UCAL_EXTENDED_YEAR, year);
     }
+
+    internalSet(UCAL_EXTENDED_YEAR, year);
 
 #if defined (U_DEBUG_CAL)
     fprintf(stderr, "%s:%d: bestField= %s - y=%d\n", __FILE__, __LINE__, fldName(bestField), year);

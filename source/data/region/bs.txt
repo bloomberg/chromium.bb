@@ -31,6 +31,7 @@ bs{
         151{"Istočna Evropa"}
         154{"Sjeverna Evropa"}
         155{"Zapadna Evropa"}
+        202{"Subsaharska Afrika"}
         419{"Latinska Amerika"}
         AC{"Ostrvo Ascension"}
         AD{"Andora"}
@@ -306,5 +307,5 @@ bs{
         CZ{"Češka Republika"}
         TL{"TL"}
     }
-    Version{"2.1.37.5"}
+    Version{"2.1.39.11"}
 }

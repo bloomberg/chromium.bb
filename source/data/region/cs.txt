@@ -31,6 +31,7 @@ cs{
         151{"východní Evropa"}
         154{"severní Evropa"}
         155{"západní Evropa"}
+        202{"subsaharská Afrika"}
         419{"Latinská Amerika"}
         AC{"Ascension"}
         AD{"Andorra"}
@@ -305,5 +306,5 @@ cs{
         CI{"Côte d’Ivoire"}
         CZ{"Česká republika"}
     }
-    Version{"2.1.37.11"}
+    Version{"2.1.39.15"}
 }

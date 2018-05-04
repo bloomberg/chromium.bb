@@ -16,10 +16,10 @@ unit/reslocal.mk
 sprep/spreplocal.mk
 brkitr/dictionaries/khmerdict.txt
 brkitr/rules/word_ja.txt
-brkitr/rules/root.txt
-brkitr/rules/fi.txt
-brkitr/rules/zh.txt
-brkitr/rules/zh_Hant.txt
+brkitr/root.txt
+brkitr/fi.txt
+brkitr/zh.txt
+brkitr/zh_Hant.txt
 locales/an.txt
 locales/ku.txt
 locales/tg.txt

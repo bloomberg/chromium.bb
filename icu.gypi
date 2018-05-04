@@ -7,6 +7,7 @@
 # find  source/i18n -maxdepth 1  ! -type d  | egrep  '\.(c|cpp)$' | \
 # sort | sed "s/^\(.*\)$/      '\1',/"
     'icui18n_sources': [
+      # I18N_SRC_START
       'source/i18n/affixpatternparser.cpp',
       'source/i18n/alphaindex.cpp',
       'source/i18n/anytrans.cpp',
@@ -72,6 +73,12 @@
       'source/i18n/digitgrouping.cpp',
       'source/i18n/digitinterval.cpp',
       'source/i18n/digitlst.cpp',
+      'source/i18n/double-conversion-bignum.cpp',
+      'source/i18n/double-conversion-bignum-dtoa.cpp',
+      'source/i18n/double-conversion-cached-powers.cpp',
+      'source/i18n/double-conversion.cpp',
+      'source/i18n/double-conversion-diy-fp.cpp',
+      'source/i18n/double-conversion-fast-dtoa.cpp',
       'source/i18n/dtfmtsym.cpp',
       'source/i18n/dtitvfmt.cpp',
       'source/i18n/dtitvinf.cpp',
@@ -221,10 +228,12 @@
       'source/i18n/zonemeta.cpp',
       'source/i18n/zrule.cpp',
       'source/i18n/ztrans.cpp',
+      # I18N_SRC_END
     ],
     'icuuc_sources': [
 # find  source/common -maxdepth 1  ! -type d  | egrep  '\.(c|cpp)$' | \
 # sort | sed "s/^\(.*\)$/      '\1',/"
+      # COMMON_SRC_START
       'source/common/appendable.cpp',
       'source/common/bmpset.cpp',
       'source/common/brkeng.cpp',
@@ -411,6 +420,7 @@
       'source/common/uvectr32.cpp',
       'source/common/uvectr64.cpp',
       'source/common/wintz.cpp',
+      # COMMON_SRC_END
     ]
   }
 }

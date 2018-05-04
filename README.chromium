@@ -14,13 +14,12 @@ A. How to update ICU
    It does preserve Chrome-specific build files (*local.mk) and
    converter files. (see section C)
 
-2. Update the source file lists for i18n and common
-   in icu.gypi and BUILD.gn. See the comments in the files.
+   BUILD.gn and icu.gyp* files are automatically updated, too.
 
-3. Review and apply patches/changes in "D. Local Modifications" if
+2. Review and apply patches/changes in "D. Local Modifications" if
    necessary/applicable. Update patch files in patches/.
 
-4. Follow the instructions in section B on building ICU data files
+3. Follow the instructions in section B on building ICU data files
 
 
 B. How to build ICU data files
@@ -228,9 +227,9 @@ D. Local Modifications
      windowsZones.txt
      zoneinfo64.txt
 
-  As of April 5, 2018, the latest version is 2018d and the above files
+  As of May 4, 2018, the latest version is 2018e and the above files
   are available at
-  http://source.icu-project.org/repos/icu/data/trunk/tzdata/icunew/2018c/44/
+  http://source.icu-project.org/repos/icu/data/trunk/tzdata/icunew/2018e/44/
 
 4. Build-related changes
 
@@ -248,41 +247,12 @@ D. Local Modifications
       Put ICU_DATA_ENTRY_POINT(icudtXX_dat) in common when we use
       the icu data file or icudt.dll
 
-5. Cherry-pick fixes in ICU 60.2
-
-  Fix ScriptExtensions property for 5 characters
-  - patches/script_extension.patch
-    upstream bug: https://ssl.icu-project.org/trac/ticket/13462
-    (fixed in 60maint branch)
-
-  Calendar class initialization bug
-  - patches/calendar.patch - has a local addition to terminate strings.
-  - upstream fix: https://ssl.icu-project.org/trac/changeset/40670
-
-  UTF8 to UTF8 conversion bug
-  - patches/u8tou8.patch
-  - upstream bug: https://ssl.icu-project.org/trac/ticket/13510
-
-  German AM/PM marker fix in CLDR 32.0.1
-  - patches/de_ampm.patch
-  - upstream bug: https://unicode.org/cldr/trac/ticket/10735
-
-6. Fix -Wsign-compare warning in EnumSet::isValidEnum()
+5. Fix -Wsign-compare warning in EnumSet::isValidEnum()
 
   - patches/isvalidenum.patch
     upstream bug: https://ssl.icu-project.org/trac/ticket/13509
 
-7. Currency display name fix for Seribian locale
-
- - patches/curr_sr.patch
-   upstream bug: https://unicode.org/cldr/trac/ticket/10794
-
-8. Fix an integer overflow in Islamic calendar
-
-  - patches/islamcal.patch
-    upstream bug: https://ssl.icu-project.org/trac/ticket/13538
-
-9. Reduce size of SmallIntFormatter implementation
+6. Reduce size of SmallIntFormatter implementation
 
   - patches/simplify_smallintformatter.patch
     upstream bug: https://ssl.icu-project.org/trac/ticket/12390
@@ -290,30 +260,14 @@ D. Local Modifications
   Reduce the size of the binary by about 16 kiB on Android,
   without noticeable performance change.
 
-10. Apply a rule fix for a perf issue with a long sequence of letters/digits
+7. Apply a rule fix for a perf issue with a long sequence of letters/digits
 
   - patches/word_long.patch
     upstream bug: https://ssl.icu-project.org/trac/ticket/13692
     (62-to-be does not have this issue)
   - bug: crbug.com/829144
 
-11. Limit the recursion depth of UnicodeSet pattern
-
-  - patches/uset_depth.patch
-    upstream bug: https://ssl.icu-project.org/trac/ticket/13547
-
-12. Fix a bug in non-BMP character handling in dictionary-based CJK
-    break iterator.
-
-  - patches/cjkdict_nonbmp.patch
-    upstream bug: https://ssl.icu-project.org/trac/ticket/13549
-
-13. Fix the undefined behavior in decimal number parsing
-
-  - patches/number_ub.patch
-  - upstream bug: https://ssl.icu-project.org/trac/ticket/13550
-
-14. Update IANA language tag/subtag mapping and add missing canonicalization for
+8. Update IANA language tag/subtag mapping and add missing canonicalization for
     deprecated regions
 
   - patches/locid_map.patch
@@ -323,3 +277,16 @@ D. Local Modifications
     https://ssl.icu-project.org/trac/ticket/13721
     https://ssl.icu-project.org/trac/ticket/13720
     https://ssl.icu-project.org/trac/ticket/13719
+
+9. Double conversion library build failure
+
+  - patches/double_conversion.patch
+  - upstream bugs:
+    https://ssl.icu-project.org/trac/ticket/13750
+    https://github.com/google/double-conversion/issues/66
+
+10. MSVC C4715 warning (treated as error)
+
+  - patches/msvc_numgroup.patch  (fixed in 62-to-be)
+  - upstream bug:
+    https://ssl.icu-project.org/trac/ticket/13752

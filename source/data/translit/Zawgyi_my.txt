@@ -25,6 +25,17 @@ $ukinzi = \u1004\u103A\u1039;  # Codepoints representing kinzi in Unicode
 # ZAWGYI MYANMAR CONSONANT SIGN MEDIAL RA
 # This character has multiple representations in the Zawgyi font.
 $zmedialra = [\u103B\u107E-\u1084];
+## Begin Google Patch.  b/67590025
+# Types of space characters to remove before Myanmar combiners.
+# 0020: ASCII space
+# 00a0: no-break space
+# 200b: zero width space
+# 200c: zero width non-joiner
+# 200d: zero width joiner
+# 2060: word joiner
+# feff: zero width no-break space
+$spacetoremove = [\u0020\u00a0\u2002\u2008\u200b-\u200d\u2060\ufeff];
+## End Google patch
 ####
 #### STAGE 1: CODEPOINT MAPPING FROM ZAWGYI TO UNICODE
 ####
@@ -124,7 +135,21 @@ $zmedialra = [\u103B\u107E-\u1084];
 \u1097 → \u100B\u1039\u100B ;
 \u104E → \u104E\u1004\u103A\u1038 ;
 # yayit
-$zmedialra → \u103C ;
+## Begin Google Patch.  b/70345862
+($zmedialra)+ → \u103C ;
+## End Google patch
+## Begin Google Patch.  b/67590025
+####
+#### STAGE 1.1: Remove spaces immediately before combining characters.
+####
+::Null;
+# Don't remove spaces before E vowel or medial Ra
+($spacetoremove)+ ([\u102b-\u1030\u1032-\u103b\u103d\u103e]) → $2;
+## End Google patch
+## Begin Google Patch.  b/70345862
+# Remove a duplicate
+\u1037 \u1037+ → \u1037;
+## End Google patch
 ####
 #### STAGE 2: POST REORDERING RULES FOR UNICODE RENDERING
 #### Now every codepoint is Unicode.  This starts conversion
@@ -202,13 +227,28 @@ $zmedialra → \u103C ;
 ### Finish medial sorting, fix conflicting and extra diacritics
 ###
 ::Null;
-# Fix duplicate and overlapping modifiers.
+## Begin Google Patch.  b/70345862
+# Fix duplicate combiners
+\u102D \u102D+ → \u102D;
+\u102E \u102E+ → \u102E;
 \u102F \u102F+ → \u102F;
+\u1030 \u1030+ → \u1030;
+\u1032 \u1032+ → \u1032;
+\u1033 \u1033+ → \u1033;
+\u1035 \u1035+ → \u1035;
+\u1036 \u1036+ → \u1036;
+\u1037 \u1037+ → \u1037;
+\u1039 \u1039+ → \u1039;
+\u103a \u103a+ → \u103a;
+\u103b \u103b+ → \u103b;
+\u103c \u103c+ → \u103c;
+\u103d \u103d+ → \u103d;
+\u103e \u103e+ → \u103e; # http://unicode.org/cldr/trac/ticket/10386
+# Fix overlapping signs
 \u102F \u1030 → \u102F;
 \u102F \u103A → \u102F;
 \u102D \u102E → \u102E;
-\u1036 \u1036+ → \u1036;
-\u103e \u103e+ → \u103e; # http://unicode.org/cldr/trac/ticket/10386
+## End Google patch
 # Remove space directly before diacritics.
 [:WSpace:] ([\u102b-\u1032\u1036-\u103e]) → $1;
 # Fix 103B/103A order for asat.

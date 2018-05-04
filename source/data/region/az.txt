@@ -31,6 +31,7 @@ az{
         151{"Şərqi Avropa"}
         154{"Şimali Avropa"}
         155{"Qərbi Avropa"}
+        202{"Saharadan cənub"}
         419{"Latın Amerikası"}
         AC{"Askenson adası"}
         AD{"Andorra"}
@@ -306,5 +307,5 @@ az{
         CZ{"Çex Respublikası"}
         TL{"Doğu Timor"}
     }
-    Version{"2.1.37.1"}
+    Version{"2.1.39.11"}
 }

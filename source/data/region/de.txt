@@ -306,5 +306,5 @@ de{
         CZ{"Tschechische Republik"}
         TL{"Osttimor"}
     }
-    Version{"2.1.37.11"}
+    Version{"2.1.39.41"}
 }

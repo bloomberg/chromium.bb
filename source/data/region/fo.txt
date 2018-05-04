@@ -31,6 +31,7 @@ fo{
         151{"Eysturevropa"}
         154{"Norðurevropa"}
         155{"Vesturevropa"}
+        202{"Afrika sunnanfyri Sahara"}
         419{"Latínamerika"}
         AC{"Ascension"}
         AD{"Andorra"}
@@ -58,7 +59,7 @@ fo{
         BH{"Barein"}
         BI{"Burundi"}
         BJ{"Benin"}
-        BL{"St-Barthélemy"}
+        BL{"St. Barthélemy"}
         BM{"Bermuda"}
         BN{"Brunei"}
         BO{"Bolivia"}
@@ -97,7 +98,7 @@ fo{
         DM{"Dominika"}
         DO{"Dominikalýðveldið"}
         DZ{"Algeria"}
-        EA{"Ceuta og Melilla"}
+        EA{"Ceuta & Melilla"}
         EC{"Ekvador"}
         EE{"Estland"}
         EG{"Egyptaland"}
@@ -109,7 +110,7 @@ fo{
         EZ{"Evrasona"}
         FI{"Finnland"}
         FJ{"Fiji"}
-        FK{"Falklandsoyggjar"}
+        FK{"Falklandsoyggjar (Islas Malvinas)"}
         FM{"Mikronesiasamveldið"}
         FO{"Føroyar"}
         FR{"Frakland"}
@@ -218,7 +219,7 @@ fo{
         PH{"Filipsoyggjar"}
         PK{"Pakistan"}
         PL{"Pólland"}
-        PM{"Saint Pierre og Miquelon"}
+        PM{"Saint Pierre & Miquelon"}
         PN{"Pitcairnoyggjar"}
         PR{"Puerto Riko"}
         PS{"Palestina"}
@@ -298,5 +299,5 @@ fo{
         GB{"UK"}
         US{"USA"}
     }
-    Version{"2.1.37.5"}
+    Version{"2.1.39.11"}
 }

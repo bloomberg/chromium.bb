@@ -38,5 +38,5 @@ fr_CA{
         CI{"République de Côte d’Ivoire"}
         TL{"Timor oriental"}
     }
-    Version{"2.1.37.22"}
+    Version{"2.1.38.73"}
 }

@@ -31,6 +31,7 @@ hu{
         151{"Kelet-Európa"}
         154{"Észak-Európa"}
         155{"Nyugat-Európa"}
+        202{"Szubszaharai Afrika"}
         419{"Latin-Amerika"}
         AC{"Ascension-sziget"}
         AD{"Andorra"}
@@ -306,5 +307,5 @@ hu{
         CZ{"Cseh Köztársaság"}
         TL{"Timor-Leste"}
     }
-    Version{"2.1.37.5"}
+    Version{"2.1.39.20"}
 }
