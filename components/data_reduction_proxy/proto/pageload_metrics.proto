@@ -44,6 +44,19 @@ message PageloadMetrics {
     EFFECTIVE_CONNECTION_TYPE_4G = 5;
   };
 
+  // The possible conntion type values. See //net/base/network_change_notifier.h
+  // for a detailed description of the enum values.
+  enum ConnectionType {
+    CONNECTION_UNKNOWN = 0;
+    CONNECTION_ETHERNET = 1;
+    CONNECTION_WIFI = 2;
+    CONNECTION_2G = 3;
+    CONNECTION_3G = 4;
+    CONNECTION_4G = 5;
+    CONNECTION_NONE = 6;
+    CONNECTION_BLUETOOTH = 7;
+  };
+
   // The various opt out states seen by server previews.
   enum PreviewsOptOut {
     // Set for non-previews navigations and app background navigations.
@@ -101,9 +114,11 @@ message PageloadMetrics {
 
   // The sum of original-content-length values, over resources that were not
   // loaded from browser cache.
+  // Secure resources (i.e., HTTPS) that go into this sum are bucketed.
   optional int64 original_page_size_bytes = 10;
   // The sum of (compressed) content-length, over resources that were not loaded
   // from browser cache.
+  // Secure resources (i.e., HTTPS) that go into this sum are bucketed.
   optional int64 compressed_page_size_bytes = 11;
 
   // The effective connection type at the start of the navigation.
@@ -140,4 +155,17 @@ message PageloadMetrics {
 
   // The RendererCrashType for the page load.
   optional RendererCrashType renderer_crash_type = 21;
+
+  // The percent of total_page_size_bytes that were loaded from the cache. This
+  // value is in the range [0.0, 1.0].
+  optional float cached_fraction = 22;
+
+  // The connection type (Wifi, 2G, 3G, 4G, None, etc) reported by the
+  // NetworkChangeNotifier.
+  optional ConnectionType connection_type = 23;
+
+  // The sum of all bytes loaded on a page. This is compressed_page_size_bytes
+  // plus the sum of content-length for all resources loaded from the browser
+  // cache. Secure resources (i.e., HTTPS) that go into this sum are bucketed.
+  optional int64 total_page_size_bytes = 24;
 }

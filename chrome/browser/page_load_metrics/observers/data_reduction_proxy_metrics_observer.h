@@ -160,6 +160,12 @@ class DataReductionProxyMetricsObserver
   // The total network bytes used for HTTPS resources.
   int64_t secure_network_bytes_;
 
+  // The total cached bytes used for HTTP resources.
+  int64_t insecure_cached_bytes_;
+
+  // The total cached bytes used for HTTPS resources.
+  int64_t secure_cached_bytes_;
+
   // The process ID of the main frame renderer during OnCommit.
   base::ProcessId process_id_;
 

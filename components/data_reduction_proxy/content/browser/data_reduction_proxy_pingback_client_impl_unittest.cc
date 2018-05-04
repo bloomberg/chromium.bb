@@ -28,6 +28,7 @@
 #include "components/data_reduction_proxy/proto/pageload_metrics.pb.h"
 #include "content/public/common/child_process_host.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_change_notifier.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -47,6 +48,8 @@ static const char kSessionKey[] = "fake-session";
 static const char kFakeURL[] = "http://www.google.com/";
 static const int64_t kBytes = 10000;
 static const int64_t kBytesOriginal = 1000000;
+static const int64_t kTotalPageSizeBytes = 20000;
+static const float kCachedFraction = 0.5;
 static const int kCrashProcessId = 1;
 static const int64_t kRendererMemory = 1024;
 
@@ -138,7 +141,9 @@ class DataReductionProxyPingbackClientImplTest : public testing::Test {
         base::Optional<base::TimeDelta>(
             base::TimeDelta::FromMilliseconds(2000)) /* parse_stop */,
         kBytes /* network_bytes */, kBytesOriginal /* original_network_bytes */,
-        app_background_occurred, opt_out_occurred, kRendererMemory,
+        kTotalPageSizeBytes /* total_page_size_bytes */,
+        kCachedFraction /* cached_fraction */, app_background_occurred,
+        opt_out_occurred, kRendererMemory,
         crash ? kCrashProcessId : content::ChildProcessHost::kInvalidUniqueID);
 
     DataReductionProxyData request_data;
@@ -146,6 +151,8 @@ class DataReductionProxyPingbackClientImplTest : public testing::Test {
     request_data.set_request_url(GURL(kFakeURL));
     request_data.set_effective_connection_type(
         net::EFFECTIVE_CONNECTION_TYPE_OFFLINE);
+    request_data.set_connection_type(
+        net::NetworkChangeNotifier::CONNECTION_UNKNOWN);
     request_data.set_lofi_received(lofi_received);
     request_data.set_client_lofi_requested(client_lofi_requested);
     request_data.set_lite_page_received(lite_page_received);
@@ -156,7 +163,7 @@ class DataReductionProxyPingbackClientImplTest : public testing::Test {
     page_id_++;
   }
 
-  // Send a fake crash report frome breakpad.
+  // Send a fake crash report from breakpad.
   void ReportCrash(bool oom) {
 #if defined(OS_ANDROID)
     breakpad::CrashDumpManager::CrashDumpDetails details = {
@@ -240,6 +247,8 @@ TEST_F(DataReductionProxyPingbackClientImplTest, VerifyPingbackContent) {
   EXPECT_EQ(kFakeURL, pageload_metrics.first_request_url());
   EXPECT_EQ(kBytes, pageload_metrics.compressed_page_size_bytes());
   EXPECT_EQ(kBytesOriginal, pageload_metrics.original_page_size_bytes());
+  EXPECT_EQ(kTotalPageSizeBytes, pageload_metrics.total_page_size_bytes());
+  EXPECT_EQ(kCachedFraction, pageload_metrics.cached_fraction());
   EXPECT_EQ(data_page_id, pageload_metrics.page_id());
 
   EXPECT_EQ(PageloadMetrics_PreviewsType_NONE,
@@ -250,6 +259,8 @@ TEST_F(DataReductionProxyPingbackClientImplTest, VerifyPingbackContent) {
   EXPECT_EQ(
       PageloadMetrics_EffectiveConnectionType_EFFECTIVE_CONNECTION_TYPE_OFFLINE,
       pageload_metrics.effective_connection_type());
+  EXPECT_EQ(PageloadMetrics_ConnectionType_CONNECTION_UNKNOWN,
+            pageload_metrics.connection_type());
   EXPECT_EQ(kRendererMemory, pageload_metrics.renderer_memory_usage_kb());
   EXPECT_EQ(std::string(), pageload_metrics.holdback_group());
   EXPECT_EQ(PageloadMetrics_RendererCrashType_NO_CRASH,
@@ -369,11 +380,15 @@ TEST_F(DataReductionProxyPingbackClientImplTest,
     EXPECT_EQ(kFakeURL, pageload_metrics.first_request_url());
     EXPECT_EQ(kBytes, pageload_metrics.compressed_page_size_bytes());
     EXPECT_EQ(kBytesOriginal, pageload_metrics.original_page_size_bytes());
+    EXPECT_EQ(kTotalPageSizeBytes, pageload_metrics.total_page_size_bytes());
+    EXPECT_EQ(kCachedFraction, pageload_metrics.cached_fraction());
     EXPECT_EQ(page_ids.front(), pageload_metrics.page_id());
     page_ids.pop_front();
     EXPECT_EQ(
         PageloadMetrics_EffectiveConnectionType_EFFECTIVE_CONNECTION_TYPE_OFFLINE,
         pageload_metrics.effective_connection_type());
+    EXPECT_EQ(PageloadMetrics_ConnectionType_CONNECTION_UNKNOWN,
+              pageload_metrics.connection_type());
     EXPECT_EQ(kRendererMemory, pageload_metrics.renderer_memory_usage_kb());
   }
 
