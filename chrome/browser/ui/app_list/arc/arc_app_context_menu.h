@@ -45,9 +45,15 @@ class ArcAppContextMenu : public app_list::AppContextMenu {
   void OnGetAppShortcutItems(
       std::unique_ptr<ui::SimpleMenuModel> menu_model,
       GetMenuModelCallback callback,
-      std::unique_ptr<arc::ArcAppShortcutItems> shortcut_items);
+      std::unique_ptr<arc::ArcAppShortcutItems> app_shortcut_items);
+
+  // Executes launching app shortcut item.
+  void ExecuteLaunchAppShortcutCommand(int command_id);
 
   void ShowPackageInfo();
+
+  // Caches the app shortcut items from OnGetAppShortcutItems().
+  std::unique_ptr<arc::ArcAppShortcutItems> app_shortcut_items_;
 
   // Handles requesting app shortcuts from Android.
   std::unique_ptr<arc::ArcAppShortcutsRequest> arc_app_shortcuts_request_;
