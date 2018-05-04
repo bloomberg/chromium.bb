@@ -252,10 +252,26 @@ HTML can be embedded cross-origin via `<iframe>` (as noted above),
 but otherwise HTML documents can
 only be loaded by fetch() and XHR, both of which require CORS. HTML sniffing is
 already well-understood, so (unlike JSON) it is relatively easy to identify HTML
-resources with high confidence. Only one ambiguous polyglot case has been
+resources with high confidence.
+
+One ambiguous polyglot case has been
 identified that CORB needs to handle conservatively: HTML-style comments, which
-are part of the JavaScript syntax. CORB handles these by skipping over HTML
-comment blocks when sniffing to confirm a HTML content type.
+are [part of the JavaScript syntax](https://www.ecma-international.org/ecma-262/8.0/index.html#sec-html-like-comments).
+* CORB skips over HTML comment blocks when sniffing to
+  confirm a HTML content type.  This means that (unlike in
+  [normal HTML sniffing](https://mimesniff.spec.whatwg.org/#identifying-a-resource-with-an-unknown-mime-type))
+  presence of "`<!--`" string doesn't immediately confirm that the sniffed resource is a
+  HTML document - the HTML comment still has to be followed by a valid HTML tag.
+* Additionally if the HTML-style comment contains Javascript-style comments
+  (i.e. either "`/*`" or "`//`" substrings),
+  then CORB conservatively assumes that the resource is not a HTML document.
+  This helps avoid blocking html/javascript polyglots which have been observed
+  in use on real websites - see the example below:
+```js
+<!--/*--><html><body><script type="text/javascript"><!--//*/
+var x = "This is both valid html and valid javascript";
+//--></script></body></html>
+```
 
 ### Protecting XML
 

@@ -417,11 +417,23 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingTest, BlockDocuments) {
   //   jsonp.* - JSONP (i.e., script) mislabeled as a document.
   //   img.*   - Contents that won't match the document label.
   //   valid.* - Correctly labeled responses of non-document types.
-  const char* sniff_allowed_resources[] = {
-      "js.html",   "comment_js.html", "js.xml",       "js.json",
-      "js.txt",    "jsonp.html",      "jsonp.xml",    "jsonp.json",
-      "jsonp.txt", "img.html",        "img.xml",      "img.json",
-      "img.txt",   "valid.js",        "json-list.js", "nosniff.json-list.js"};
+  const char* sniff_allowed_resources[] = {"js.html",
+                                           "comment_js.html",
+                                           "js.xml",
+                                           "js.json",
+                                           "js.txt",
+                                           "jsonp.html",
+                                           "jsonp.xml",
+                                           "jsonp.json",
+                                           "jsonp.txt",
+                                           "img.html",
+                                           "img.xml",
+                                           "img.json",
+                                           "img.txt",
+                                           "valid.js",
+                                           "json-list.js",
+                                           "nosniff.json-list.js",
+                                           "js-html-polyglot.html"};
   for (const char* resource : sniff_allowed_resources) {
     SCOPED_TRACE(base::StringPrintf("... while testing page: %s", resource));
     base::HistogramTester histograms;
