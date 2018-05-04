@@ -502,6 +502,130 @@ typedef struct InterModeSearchState {
   int64_t modelled_rd[MB_MODE_COUNT][REF_FRAMES];
 } InterModeSearchState;
 
+#if CONFIG_COLLECT_INTER_MODE_RD_STATS
+#define INTER_MODE_RD_DATA_SIZE 300
+
+typedef struct InterModeRdData {
+  int this_mode;
+  int is_comp_pred;
+  int comp_mode;
+  MV_REFERENCE_FRAME ref[2];
+  int mv_mode[2];
+  int_mv mv[2];
+  int64_t sse;
+  int64_t dist;
+  int mode_cost;
+  int ref_cost;
+  int mv_cost;
+  int residue_cost;
+} InterModeRdData;
+
+typedef struct InterModeRdVector {
+  InterModeRdData data[INTER_MODE_RD_DATA_SIZE];
+  int idx;
+  int mi_row;
+  int mi_col;
+  BLOCK_SIZE bsize;
+} InterModeRdVector;
+
+static void inter_mode_rd_vector_init(InterModeRdVector *inter_mode_rd_vector,
+                                      int mi_row, int mi_col,
+                                      BLOCK_SIZE bsize) {
+  inter_mode_rd_vector->idx = 0;
+  inter_mode_rd_vector->mi_row = mi_row;
+  inter_mode_rd_vector->mi_col = mi_col;
+  inter_mode_rd_vector->bsize = bsize;
+}
+
+static int get_mv_mode(int single_mode, int ref_mv_idx) {
+  if (single_mode == GLOBALMV) return 0;
+  if (single_mode == NEWMV) return 1;
+  if (single_mode == NEARESTMV) return 2;
+  if (single_mode == NEARMV) return 3 + ref_mv_idx;
+  assert(0);
+  return -1;
+}
+
+static INLINE int get_single_mode(int this_mode, int ref_idx, int is_comp_pred);
+static INLINE int get_comp_mode(const MB_MODE_INFO *mbmi) {
+  if (mbmi->comp_group_idx == 0) {
+    if (mbmi->compound_idx == 0) {
+      return 0;  // joint compound
+    } else {
+      assert(mbmi->interinter_compound_type == COMPOUND_AVERAGE);
+      return 1;  // average compound
+    }
+  } else {
+    if (mbmi->interinter_compound_type == COMPOUND_WEDGE) {
+      return 2;  // wedge compound
+    }
+    if (mbmi->interinter_compound_type == COMPOUND_DIFFWTD) {
+      return 3;  // diffwtd compound
+    }
+  }
+  return -1;
+}
+
+static void inter_mode_rd_vector_push(InterModeRdVector *inter_mode_rd_vector,
+                                      int this_mode, const MB_MODE_INFO *mbmi,
+                                      int64_t sse, int64_t dist, int mode_cost,
+                                      int ref_cost, int mv_cost,
+                                      int residue_cost) {
+  if (inter_mode_rd_vector->idx >= INTER_MODE_RD_DATA_SIZE) return;
+  InterModeRdData *data =
+      &inter_mode_rd_vector->data[inter_mode_rd_vector->idx];
+  av1_zero(*data);
+  ++inter_mode_rd_vector->idx;
+
+  data->this_mode = this_mode;
+  data->is_comp_pred = has_second_ref(mbmi);
+  if (data->is_comp_pred) {
+    data->comp_mode = get_comp_mode(mbmi);
+  }
+  for (int ref_idx = 0; ref_idx < 1 + data->is_comp_pred; ++ref_idx) {
+    int single_mode = get_single_mode(this_mode, ref_idx, data->is_comp_pred);
+    data->ref[ref_idx] = mbmi->ref_frame[ref_idx];
+    data->mv_mode[ref_idx] = get_mv_mode(single_mode, mbmi->ref_mv_idx);
+    data->mv[ref_idx] = mbmi->mv[ref_idx];
+  }
+  data->sse = sse;
+  data->dist = dist;
+  data->mode_cost = mode_cost;
+  data->ref_cost = ref_cost;
+  data->mv_cost = mv_cost;
+  data->residue_cost = residue_cost;
+}
+
+static void inter_mode_rd_vector_dump(
+    const InterModeRdVector *inter_mode_rd_vector) {
+  const int data_num = inter_mode_rd_vector->idx;
+  if (data_num > 0) {
+    printf("-\n");
+    printf("data_num %d\n", data_num);
+    printf("mi_row %d\n", inter_mode_rd_vector->mi_row);
+    printf("mi_col %d\n", inter_mode_rd_vector->mi_col);
+    printf("bsize %d\n", inter_mode_rd_vector->bsize);
+    for (int i = 0; i < inter_mode_rd_vector->idx; ++i) {
+      const InterModeRdData *data = &inter_mode_rd_vector->data[i];
+      printf("=\n");
+      printf("this_mode %d\n", data->this_mode);
+      printf("is_comp_pred %d\n", data->is_comp_pred);
+      printf("comp_mode %d\n", data->comp_mode);
+      printf("ref %d %d\n", data->ref[0], data->ref[1]);
+      printf("mv_mode %d %d\n", data->mv_mode[0], data->mv_mode[1]);
+      printf("mv %d %d %d %d\n", data->mv[0].as_mv.row, data->mv[0].as_mv.col,
+             data->mv[1].as_mv.row, data->mv[1].as_mv.col);
+      printf("sse %" PRId64 "\n", data->sse);
+      printf("dist %" PRId64 "\n", data->dist);
+      printf("mode_cost %d\n", data->mode_cost);
+      printf("ref_cost %d\n", data->ref_cost);
+      printf("mv_cost %d\n", data->mv_cost);
+      printf("residue_cost %d\n", data->residue_cost);
+    }
+  }
+}
+#endif  // CONFIG_COLLECT_INTER_MODE_RD_STATS
+
 static INLINE int write_uniform_cost(int n, int v) {
   const int l = get_unsigned_bits(n);
   const int m = (1 << l) - n;
@@ -7035,6 +7159,10 @@ typedef struct {
   // Should point to first of 2 arrays in 2D array
   int64_t (*modelled_rd)[REF_FRAMES];
   InterpFilter single_filter[MB_MODE_COUNT][REF_FRAMES];
+#if CONFIG_COLLECT_INTER_MODE_RD_STATS
+  int ref_frame_cost;
+  int single_comp_cost;
+#endif
 } HandleInterModeArgs;
 
 static INLINE int clamp_and_check_mv(int_mv *out_mv, int_mv in_mv,
@@ -7871,7 +7999,12 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
                                  RD_STATS *rd_stats_y, RD_STATS *rd_stats_uv,
                                  int *disable_skip, int mi_row, int mi_col,
                                  HandleInterModeArgs *args,
-                                 const int64_t ref_best_rd) {
+                                 const int64_t ref_best_rd
+#if CONFIG_COLLECT_INTER_MODE_RD_STATS
+                                 ,
+                                 InterModeRdVector *inter_mode_rd_vector
+#endif
+) {
   const AV1_COMMON *cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *xd = &x->e_mbd;
@@ -7894,7 +8027,6 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   int64_t skip_sse_sb = INT64_MAX;
   int16_t mode_ctx;
 
-  int compmode_interinter_cost = 0;
   mbmi->interinter_compound_type = COMPOUND_AVERAGE;
   mbmi->comp_group_idx = 0;
   mbmi->compound_idx = 1;
@@ -7951,7 +8083,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   // If !search_jnt_comp, we need to force mbmi->compound_idx = 1.
   for (comp_idx = !search_jnt_comp; comp_idx < 2; ++comp_idx) {
     rs = 0;
-    compmode_interinter_cost = 0;
+    int compmode_interinter_cost = 0;
     early_terminate = 0;
     *rd_stats = backup_rd_stats;
     *rd_stats_y = backup_rd_stats_y;
@@ -7965,9 +8097,11 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 
       const int comp_group_idx_ctx = get_comp_group_idx_context(xd);
       const int comp_index_ctx = get_comp_index_context(cm, xd);
-      if (masked_compound_used)
-        rd_stats->rate += x->comp_group_idx_cost[comp_group_idx_ctx][0];
-      rd_stats->rate += x->comp_idx_cost[comp_index_ctx][0];
+      if (masked_compound_used) {
+        compmode_interinter_cost +=
+            x->comp_group_idx_cost[comp_group_idx_ctx][0];
+      }
+      compmode_interinter_cost += x->comp_idx_cost[comp_index_ctx][0];
     }
 
     int_mv cur_mv[2];
@@ -8014,6 +8148,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
       orig_dst.stride[i] = xd->plane[i].dst.stride;
     }
 
+    const int ref_mv_cost = cost_mv_ref(x, this_mode, mode_ctx);
 #if USE_DISCOUNT_NEWMV_TEST
     // We don't include the cost of the second reference here, because there
     // are only three options: Last/Golden, ARF/Last or Golden/ARF, or in other
@@ -8028,10 +8163,10 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
       rd_stats->rate += AOMMIN(cost_mv_ref(x, this_mode, mode_ctx),
                                cost_mv_ref(x, NEARESTMV, mode_ctx));
     } else {
-      rd_stats->rate += cost_mv_ref(x, this_mode, mode_ctx);
+      rd_stats->rate += ref_mv_cost;
     }
 #else
-    rd_stats->rate += cost_mv_ref(x, this_mode, mode_ctx);
+    rd_stats->rate += ref_mv_cost;
 #endif
 
     if (RDCOST(x->rdmult, rd_stats->rate, 0) > ref_best_rd &&
@@ -8267,6 +8402,14 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
                                  args, ref_best_rd, refs, rate_mv, &orig_dst);
       }
       if (ret_val != INT64_MAX) {
+#if CONFIG_COLLECT_INTER_MODE_RD_STATS
+        const int mv_cost = ref_mv_cost + rate_mv;
+        inter_mode_rd_vector_push(
+            inter_mode_rd_vector, this_mode, mbmi, rd_stats->sse,
+            rd_stats->dist, args->single_comp_cost + compmode_interinter_cost,
+            args->ref_frame_cost, mv_cost,
+            rd_stats_y->rate + rd_stats_uv->rate);
+#endif
         int64_t tmp_rd;
         const int skip_ctx = av1_get_skip_context(xd);
         if (RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist) <
@@ -8295,6 +8438,16 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
       ret_val = motion_mode_rd(cpi, x, bsize, rd_stats, rd_stats_y, rd_stats_uv,
                                disable_skip, mi_row, mi_col, args, ref_best_rd,
                                refs, rate_mv, &orig_dst);
+#if CONFIG_COLLECT_INTER_MODE_RD_STATS
+      if (ret_val != INT64_MAX) {
+        const int mv_cost = ref_mv_cost + rate_mv;
+        inter_mode_rd_vector_push(
+            inter_mode_rd_vector, this_mode, mbmi, rd_stats->sse,
+            rd_stats->dist, args->single_comp_cost + compmode_interinter_cost,
+            args->ref_frame_cost, mv_cost,
+            rd_stats_y->rate + rd_stats_uv->rate);
+      }
+#endif
       restore_dst_buf(xd, orig_dst, num_planes);
       if (ret_val != 0) return ret_val;
     }
@@ -9365,11 +9518,19 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
                                best_rd_so_far);
 
   HandleInterModeArgs args = {
-    { NULL },  { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE },
-    { NULL },  { MAX_SB_SIZE >> 1, MAX_SB_SIZE >> 1, MAX_SB_SIZE >> 1 },
-    NULL,      NULL,
-    NULL,      NULL,
+    { NULL },
+    { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE },
+    { NULL },
+    { MAX_SB_SIZE >> 1, MAX_SB_SIZE >> 1, MAX_SB_SIZE >> 1 },
+    NULL,
+    NULL,
+    NULL,
+    NULL,
     { { 0 } },
+#if CONFIG_COLLECT_INTER_MODE_RD_STATS
+    INT_MAX,
+    INT_MAX
+#endif
   };
   for (i = 0; i < REF_FRAMES; ++i) x->pred_sse[i] = INT_MAX;
 
@@ -9380,11 +9541,15 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       cpi, x, &args, bsize, mi_row, mi_col, search_state.ref_frame_skip_mask,
       search_state.mode_skip_mask, ref_costs_single, ref_costs_comp, yv12_mb);
 
+#if CONFIG_COLLECT_INTER_MODE_RD_STATS
+  InterModeRdVector inter_mode_rd_vector;
+  inter_mode_rd_vector_init(&inter_mode_rd_vector, mi_row, mi_col, bsize);
+#endif
+
   for (int midx = 0; midx < MAX_MODES; ++midx) {
     int mode_index = mode_map[midx];
     int64_t this_rd = INT64_MAX;
     int disable_skip = 0;
-    int compmode_cost = 0;
     int rate2 = 0, rate_y = 0, rate_uv = 0;
     int64_t distortion2 = 0, distortion_y = 0, distortion_uv = 0;
     int skippable = 0;
@@ -9433,6 +9598,14 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       continue;
 
     const int comp_pred = second_ref_frame > INTRA_FRAME;
+    const int ref_frame_cost = comp_pred
+                                   ? ref_costs_comp[ref_frame][second_ref_frame]
+                                   : ref_costs_single[ref_frame];
+    const int compmode_cost =
+        is_comp_ref_allowed(mbmi->sb_type) ? comp_inter_cost[comp_pred] : 0;
+    const int real_compmode_cost =
+        cm->reference_mode == REFERENCE_MODE_SELECT ? compmode_cost : 0;
+
     if (comp_pred) {
       if ((sf->mode_search_skip_flags & FLAG_SKIP_COMP_BESTINTRA) &&
           search_state.best_mode_index >= 0 &&
@@ -9668,10 +9841,17 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
         args.single_newmv_rate = search_state.single_newmv_rate[0];
         args.single_newmv_valid = search_state.single_newmv_valid[0];
         args.modelled_rd = search_state.modelled_rd;
-
+#if CONFIG_COLLECT_INTER_MODE_RD_STATS
+        args.single_comp_cost = real_compmode_cost;
+        args.ref_frame_cost = ref_frame_cost;
+        this_rd = handle_inter_mode(
+            cpi, x, bsize, &rd_stats, &rd_stats_y, &rd_stats_uv, &disable_skip,
+            mi_row, mi_col, &args, search_state.best_rd, &inter_mode_rd_vector);
+#else
         this_rd = handle_inter_mode(cpi, x, bsize, &rd_stats, &rd_stats_y,
                                     &rd_stats_uv, &disable_skip, mi_row, mi_col,
                                     &args, search_state.best_rd);
+#endif
 
         rate2 = rd_stats.rate;
         skippable = rd_stats.skip;
@@ -9796,11 +9976,20 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
                 search_state.single_newmv_rate[mbmi->ref_mv_idx];
             args.single_newmv_valid =
                 search_state.single_newmv_valid[mbmi->ref_mv_idx];
-
+#if CONFIG_COLLECT_INTER_MODE_RD_STATS
+            args.single_comp_cost = real_compmode_cost;
+            args.ref_frame_cost = ref_frame_cost;
+            tmp_alt_rd = handle_inter_mode(
+                cpi, x, bsize, &tmp_rd_stats, &tmp_rd_stats_y, &tmp_rd_stats_uv,
+                &dummy_disable_skip, mi_row, mi_col, &args,
+                search_state.best_rd, &inter_mode_rd_vector);
+#else
             tmp_alt_rd =
                 handle_inter_mode(cpi, x, bsize, &tmp_rd_stats, &tmp_rd_stats_y,
                                   &tmp_rd_stats_uv, &dummy_disable_skip, mi_row,
                                   mi_col, &args, search_state.best_rd);
+#endif
+
             // Prevent pointers from escaping local scope
             args.single_newmv = search_state.single_newmv[0];
             args.single_newmv_rate = search_state.single_newmv_rate[0];
@@ -9860,19 +10049,12 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 
       if (this_rd == INT64_MAX) continue;
 
-      if (is_comp_ref_allowed(mbmi->sb_type))
-        compmode_cost = comp_inter_cost[comp_pred];
-
-      if (cm->reference_mode == REFERENCE_MODE_SELECT) rate2 += compmode_cost;
+      rate2 += real_compmode_cost;
     }
 
     // Estimate the reference frame signaling cost and add it
     // to the rolling cost variable.
-    if (comp_pred) {
-      rate2 += ref_costs_comp[ref_frame][second_ref_frame];
-    } else {
-      rate2 += ref_costs_single[ref_frame];
-    }
+    rate2 += ref_frame_cost;
 
     if (ref_frame == INTRA_FRAME) {
       if (skippable) {
@@ -10029,6 +10211,10 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 
     if (x->skip && !comp_pred) break;
   }
+
+#if CONFIG_COLLECT_INTER_MODE_RD_STATS
+  inter_mode_rd_vector_dump(&inter_mode_rd_vector);
+#endif
 
   // In effect only when speed >= 2.
   sf_refine_fast_tx_type_search(
