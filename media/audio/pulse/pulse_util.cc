@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "media/audio/audio_device_description.h"
-#include "media/base/audio_parameters.h"
 #include "media/base/audio_timestamp_helper.h"
 
 #if defined(DLOPEN_PULSEAUDIO)
@@ -193,22 +192,6 @@ void ContextStateCallback(pa_context* context, void* mainloop) {
   pa_threaded_mainloop_signal(pa_mainloop, 0);
 }
 
-pa_sample_format_t BitsToPASampleFormat(int bits_per_sample) {
-  switch (bits_per_sample) {
-    case 8:
-      return PA_SAMPLE_U8;
-    case 16:
-      return PA_SAMPLE_S16LE;
-    case 24:
-      return PA_SAMPLE_S24LE;
-    case 32:
-      return PA_SAMPLE_S32LE;
-    default:
-      NOTREACHED() << "Invalid bits per sample: " << bits_per_sample;
-      return PA_SAMPLE_INVALID;
-  }
-}
-
 pa_channel_map ChannelLayoutToPAChannelMap(ChannelLayout channel_layout) {
   pa_channel_map channel_map;
   if (channel_layout == CHANNEL_LAYOUT_MONO) {
@@ -279,8 +262,12 @@ bool CreateInputStream(pa_threaded_mainloop* mainloop,
 
   // Set sample specifications.
   pa_sample_spec sample_specifications;
-  sample_specifications.format = BitsToPASampleFormat(
-      params.bits_per_sample());
+
+  // FIXME: This should be PA_SAMPLE_FLOAT32, but there is more work needed in
+  // PulseAudioInputStream to support this.
+  static_assert(kInputSampleFormat == kSampleFormatS16,
+                "Only 16-bit input supported.");
+  sample_specifications.format = PA_SAMPLE_S16LE;
   sample_specifications.rate = params.sample_rate();
   sample_specifications.channels = params.channels();
 
@@ -306,7 +293,7 @@ bool CreateInputStream(pa_threaded_mainloop* mainloop,
   // values should be chosen can be found at
   // freedesktop.org/software/pulseaudio/doxygen/structpa__buffer__attr.html.
   pa_buffer_attr buffer_attributes;
-  const unsigned int buffer_size = params.GetBytesPerBuffer();
+  const unsigned int buffer_size = params.GetBytesPerBuffer(kInputSampleFormat);
   buffer_attributes.maxlength = static_cast<uint32_t>(-1);
   buffer_attributes.tlength = buffer_size;
   buffer_attributes.minreq = buffer_size;
@@ -424,11 +411,12 @@ bool CreateOutputStream(pa_threaded_mainloop** mainloop,
   // Setting |minreq| to the exact buffer size leads to more callbacks than
   // necessary, so we've clipped it to half the buffer size.  Regardless of the
   // requested amount, we'll always fill |params.GetBytesPerBuffer()| though.
+  size_t buffer_size = params.GetBytesPerBuffer(kSampleFormatF32);
   pa_buffer_attr pa_buffer_attributes;
   pa_buffer_attributes.maxlength = static_cast<uint32_t>(-1);
-  pa_buffer_attributes.minreq = params.GetBytesPerBuffer() / 2;
+  pa_buffer_attributes.minreq = buffer_size / 2;
   pa_buffer_attributes.prebuf = static_cast<uint32_t>(-1);
-  pa_buffer_attributes.tlength = params.GetBytesPerBuffer() * 3;
+  pa_buffer_attributes.tlength = buffer_size * 3;
   pa_buffer_attributes.fragsize = static_cast<uint32_t>(-1);
 
   // Connect playback stream.  Like pa_buffer_attr, the pa_stream_flags have a

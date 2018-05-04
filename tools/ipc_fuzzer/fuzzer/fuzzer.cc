@@ -1113,7 +1113,6 @@ struct FuzzTraits<media::AudioParameters> {
     int channel_layout = p->channel_layout();
     int format = p->format();
     int sample_rate = p->sample_rate();
-    int bits_per_sample = p->bits_per_sample();
     int frames_per_buffer = p->frames_per_buffer();
     int channels = p->channels();
     int effects = p->effects();
@@ -1126,8 +1125,6 @@ struct FuzzTraits<media::AudioParameters> {
       return false;
     if (!FuzzParam(&sample_rate, fuzzer))
       return false;
-    if (!FuzzParam(&bits_per_sample, fuzzer))
-      return false;
     if (!FuzzParam(&frames_per_buffer, fuzzer))
       return false;
     if (!FuzzParam(&channels, fuzzer))
@@ -1137,7 +1134,7 @@ struct FuzzTraits<media::AudioParameters> {
     media::AudioParameters params(
         static_cast<media::AudioParameters::Format>(format),
         static_cast<media::ChannelLayout>(channel_layout), sample_rate,
-        bits_per_sample, frames_per_buffer);
+        frames_per_buffer);
     params.set_channels_for_discrete(channels);
     params.set_effects(effects);
     *p = params;

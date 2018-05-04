@@ -115,7 +115,7 @@ class AudioRendererAlgorithmTest : public testing::Test {
       format = media::AudioParameters::AUDIO_BITSTREAM_EAC3;
 
     AudioParameters params(format, channel_layout, samples_per_second,
-                           bytes_per_sample_ * 8, frames_per_buffer);
+                           frames_per_buffer);
     bool is_encrypted = false;
     algorithm_.Initialize(params, is_encrypted);
     algorithm_.SetChannelMask(std::move(channel_mask));
@@ -259,12 +259,11 @@ class AudioRendererAlgorithmTest : public testing::Test {
   void WsolaTest(double playback_rate) {
     const int kSampleRateHz = 48000;
     const ChannelLayout kChannelLayout = CHANNEL_LAYOUT_STEREO;
-    const int kBytesPerSample = 2;
     const int kNumFrames = kSampleRateHz / 100;  // 10 milliseconds.
 
     channels_ = ChannelLayoutToChannelCount(kChannelLayout);
     AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout,
-                           kSampleRateHz, kBytesPerSample * 8, kNumFrames);
+                           kSampleRateHz, kNumFrames);
     bool is_encrypted = false;
     algorithm_.Initialize(params, is_encrypted);
 

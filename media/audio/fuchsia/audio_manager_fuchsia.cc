@@ -103,7 +103,7 @@ AudioParameters AudioManagerFuchsia::GetPreferredOutputStreamParameters(
 
   return AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
                          GuessChannelLayout(device_params.num_channels),
-                         sample_rate, 24, device_params.buffer_size);
+                         sample_rate, device_params.buffer_size);
 }
 
 const char* AudioManagerFuchsia::GetName() {

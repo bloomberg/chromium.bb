@@ -132,7 +132,6 @@ class MEDIA_EXPORT AudioManager {
   // Factory to create audio recording streams.
   // |channels| can be 1 or 2.
   // |sample_rate| is in hertz and can be any value supported by the platform.
-  // |bits_per_sample| can be any value supported by the platform.
   // |samples_per_packet| is in hertz as well and can be 0 to |sample_rate|,
   // with 0 suggesting that the implementation use a default value for that
   // platform.

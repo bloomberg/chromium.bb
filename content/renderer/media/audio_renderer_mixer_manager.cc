@@ -82,11 +82,9 @@ media::AudioParameters GetMixerOutputParams(
 
   DCHECK_NE(output_buffer_size, 0);
 
-  // Force to 16-bit output for now since we know that works everywhere;
-  // ChromeOS does not support other bit depths.
   media::AudioParameters params(input_params.format(),
                                 input_params.channel_layout(),
-                                output_sample_rate, 16, output_buffer_size);
+                                output_sample_rate, output_buffer_size);
 
   // Use the actual channel count when the channel layout is "DISCRETE".
   if (input_params.channel_layout() == media::CHANNEL_LAYOUT_DISCRETE)

@@ -55,9 +55,8 @@ const int kAnotherRenderFrameId = 1;
 
 const AudioParameters& TestAudioParameters() {
   static const AudioParameters params(
-      AudioParameters::AUDIO_FAKE,
-      media::CHANNEL_LAYOUT_STEREO,
-      AudioParameters::kAudioCDSampleRate, 16,
+      AudioParameters::AUDIO_FAKE, media::CHANNEL_LAYOUT_STEREO,
+      AudioParameters::kAudioCDSampleRate,
       AudioParameters::kAudioCDSampleRate / 100);
   return params;
 }

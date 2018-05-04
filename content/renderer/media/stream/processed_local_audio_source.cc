@@ -186,7 +186,6 @@ bool ProcessedLocalAudioSource::EnsureSourceIsStarted() {
   // ProcessedLocalAudioSource to the processor's output format.
   media::AudioParameters params(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                                 channel_layout, device().input.sample_rate(),
-                                16,
                                 GetBufferSize(device().input.sample_rate()));
   params.set_effects(device().input.effects());
   DCHECK(params.IsValid());

@@ -60,10 +60,6 @@ class OnMoreDataConverter
   // AudioConverter::InputCallback implementation.
   double ProvideInput(AudioBus* audio_bus, uint32_t frames_delayed) override;
 
-  // Ratio of input bytes to output bytes used to correct playback delay with
-  // regard to buffering and resampling.
-  const double io_ratio_;
-
   // Source callback.
   AudioOutputStream::AudioSourceCallback* source_callback_;
 
@@ -96,9 +92,6 @@ namespace {
 
 // Record UMA statistics for hardware output configuration.
 static void RecordStats(const AudioParameters& output_params) {
-  UMA_HISTOGRAM_EXACT_LINEAR("Media.HardwareAudioBitsPerChannel",
-                             output_params.bits_per_sample(),
-                             static_cast<int>(limits::kMaxBitsPerSample));
   UMA_HISTOGRAM_ENUMERATION(
       "Media.HardwareAudioChannelLayout", output_params.channel_layout(),
       CHANNEL_LAYOUT_MAX + 1);
@@ -120,9 +113,6 @@ static void RecordStats(const AudioParameters& output_params) {
 // Record UMA statistics for hardware output configuration after fallback.
 static void RecordFallbackStats(const AudioParameters& output_params) {
   UMA_HISTOGRAM_BOOLEAN("Media.FallbackToHighLatencyAudioPath", true);
-  UMA_HISTOGRAM_EXACT_LINEAR("Media.FallbackHardwareAudioBitsPerChannel",
-                             output_params.bits_per_sample(),
-                             static_cast<int>(limits::kMaxBitsPerSample));
   UMA_HISTOGRAM_ENUMERATION(
       "Media.FallbackHardwareAudioChannelLayout",
       output_params.channel_layout(), CHANNEL_LAYOUT_MAX + 1);
@@ -211,7 +201,6 @@ AudioParameters GetFallbackOutputParams(
   return AudioParameters(AudioParameters::AUDIO_PCM_LINEAR,
                          original_output_params.channel_layout(),
                          original_output_params.sample_rate(),
-                         original_output_params.bits_per_sample(),
                          frames_per_buffer);
 }
 #endif
@@ -503,9 +492,7 @@ OnMoreDataConverter::OnMoreDataConverter(
     const AudioParameters& input_params,
     const AudioParameters& output_params,
     std::unique_ptr<AudioDebugRecorder> debug_recorder)
-    : io_ratio_(static_cast<double>(input_params.GetBytesPerSecond()) /
-                output_params.GetBytesPerSecond()),
-      source_callback_(nullptr),
+    : source_callback_(nullptr),
       input_samples_per_second_(input_params.sample_rate()),
       audio_converter_(input_params, output_params, false),
       error_occurred_(false),

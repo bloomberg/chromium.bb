@@ -45,7 +45,6 @@ static const std::string kTestStreamUrl = "stream_url";
 static const std::string kTestVideoTrackId = "video_track_id";
 static const std::string kTestAudioTrackId = "audio_track_id";
 static const int kTestAudioChannels = 2;
-static const int kTestAudioBitsPerSample = 16;
 static const int kTestAudioSampleRate = 48000;
 static const int kTestAudioBufferDurationMs = 10;
 // Opus works with 60ms buffers, so 6 MediaStreamAudioTrack Buffers are needed
@@ -340,7 +339,7 @@ TEST_P(MediaRecorderHandlerTest, OpusEncodeAudioFrames) {
 
   media::AudioParameters params(
       media::AudioParameters::AUDIO_PCM_LINEAR, media::CHANNEL_LAYOUT_STEREO,
-      kTestAudioSampleRate, kTestAudioBitsPerSample,
+      kTestAudioSampleRate,
       kTestAudioSampleRate * kTestAudioBufferDurationMs / 1000);
   SetAudioFormatForTesting(params);
 

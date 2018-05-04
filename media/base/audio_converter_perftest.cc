@@ -53,10 +53,10 @@ void RunConvertBenchmark(const AudioParameters& in_params,
 TEST(AudioConverterPerfTest, ConvertBenchmark) {
   // Create input and output parameters to convert between the two most common
   // sets of parameters (as indicated via UMA data).
-  AudioParameters input_params(
-      AudioParameters::AUDIO_PCM_LINEAR, CHANNEL_LAYOUT_MONO, 48000, 16, 2048);
-  AudioParameters output_params(
-      AudioParameters::AUDIO_PCM_LINEAR, CHANNEL_LAYOUT_STEREO, 44100, 16, 440);
+  AudioParameters input_params(AudioParameters::AUDIO_PCM_LINEAR,
+                               CHANNEL_LAYOUT_MONO, 48000, 2048);
+  AudioParameters output_params(AudioParameters::AUDIO_PCM_LINEAR,
+                                CHANNEL_LAYOUT_STEREO, 44100, 440);
 
   RunConvertBenchmark(input_params, output_params, false, "convert");
 }
@@ -67,10 +67,9 @@ TEST(AudioConverterPerfTest, ConvertBenchmarkFIFO) {
   AudioParameters input_params(AudioParameters::AUDIO_PCM_LINEAR,
                                CHANNEL_LAYOUT_STEREO,
                                44100,
-                               16,
                                2048);
-  AudioParameters output_params(
-      AudioParameters::AUDIO_PCM_LINEAR, CHANNEL_LAYOUT_STEREO, 44100, 16, 440);
+  AudioParameters output_params(AudioParameters::AUDIO_PCM_LINEAR,
+                                CHANNEL_LAYOUT_STEREO, 44100, 440);
 
   RunConvertBenchmark(input_params, output_params, true, "convert_fifo_only");
   RunConvertBenchmark(input_params, output_params, false,

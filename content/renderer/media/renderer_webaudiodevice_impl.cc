@@ -139,7 +139,7 @@ RendererWebAudioDeviceImpl::RendererWebAudioDeviceImpl(
   DCHECK_NE(0, output_buffer_size);
 
   sink_params_.Reset(media::AudioParameters::AUDIO_PCM_LOW_LATENCY, layout,
-                     hardware_params.sample_rate(), 16, output_buffer_size);
+                     hardware_params.sample_rate(), output_buffer_size);
   // Always set channels, this should be a no-op in all but the discrete case;
   // this call will fail if channels doesn't match the layout in other cases.
   sink_params_.set_channels_for_discrete(channels);

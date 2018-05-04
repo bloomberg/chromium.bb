@@ -302,7 +302,7 @@ void TrackAudioRenderer::MaybeStartSink() {
   const media::AudioParameters& hardware_params = device_info.output_params();
   media::AudioParameters sink_params(
       hardware_params.format(), source_params_.channel_layout(),
-      source_params_.sample_rate(), source_params_.bits_per_sample(),
+      source_params_.sample_rate(),
       media::AudioLatency::GetRtcBufferSize(
           source_params_.sample_rate(), hardware_params.frames_per_buffer()));
   DVLOG(1) << ("TrackAudioRenderer::MaybeStartSink() -- Starting sink.  "

@@ -62,8 +62,7 @@ class AudioStreamHandler::AudioStreamContainer
       const AudioParameters params(
           AudioParameters::AUDIO_PCM_LOW_LATENCY,
           GuessChannelLayout(wav_audio_->num_channels()),
-          wav_audio_->sample_rate(), wav_audio_->bits_per_sample(),
-          kDefaultFrameCount);
+          wav_audio_->sample_rate(), kDefaultFrameCount);
       stream_ =
           audio_manager_->MakeAudioOutputStreamProxy(params, std::string());
       if (!stream_ || !stream_->Open()) {
@@ -182,10 +181,9 @@ AudioStreamHandler::AudioStreamHandler(const base::StringPiece& wav_data) {
     return;
   }
 
-  const AudioParameters params(
-      AudioParameters::AUDIO_PCM_LOW_LATENCY,
-      GuessChannelLayout(wav_audio->num_channels()), wav_audio->sample_rate(),
-      wav_audio->bits_per_sample(), kDefaultFrameCount);
+  const AudioParameters params(AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                               GuessChannelLayout(wav_audio->num_channels()),
+                               wav_audio->sample_rate(), kDefaultFrameCount);
   if (!params.IsValid()) {
     LOG(ERROR) << "Audio params are invalid.";
     return;

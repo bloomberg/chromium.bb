@@ -68,7 +68,6 @@ class AudioInputDevice::AudioThreadCallback
  private:
   const base::TimeTicks start_time_;
   bool no_callbacks_received_;
-  const double bytes_per_ms_;
   size_t current_segment_id_;
   uint32_t last_buffer_id_;
   std::vector<std::unique_ptr<const media::AudioBus>> audio_buses_;
@@ -319,8 +318,6 @@ AudioInputDevice::AudioThreadCallback::AudioThreadCallback(
           total_segments),
       start_time_(base::TimeTicks::Now()),
       no_callbacks_received_(true),
-      bytes_per_ms_(static_cast<double>(audio_parameters.GetBytesPerSecond()) /
-                    base::Time::kMillisecondsPerSecond),
       current_segment_id_(0u),
       last_buffer_id_(UINT32_MAX),
       capture_callback_(capture_callback),

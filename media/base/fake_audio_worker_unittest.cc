@@ -22,7 +22,6 @@ class FakeAudioWorkerTest : public testing::Test {
       : params_(AudioParameters::AUDIO_FAKE,
                 CHANNEL_LAYOUT_STEREO,
                 44100,
-                8,
                 128),
         fake_worker_(message_loop_.task_runner(), params_),
         seen_callbacks_(0) {

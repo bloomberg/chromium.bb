@@ -87,7 +87,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
         const AudioParameters params(
             media::AudioParameters::AUDIO_PCM_LOW_LATENCY, layout, sample_rate,
-            16 /* bits_per_sample */, 60 * sample_rate);
+            60 * sample_rate);
         muxer.OnEncodedAudio(params, std::make_unique<std::string>(str),
                              base::TimeTicks());
         base::RunLoop run_loop;

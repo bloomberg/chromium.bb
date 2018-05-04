@@ -76,7 +76,7 @@ ACTION_P(ReportStateChange, device) {
 // Verify that we get an OnCaptureError() callback if CreateStream fails.
 TEST(AudioInputDeviceTest, FailToCreateStream) {
   AudioParameters params(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                         CHANNEL_LAYOUT_STEREO, 48000, 16, 480);
+                         CHANNEL_LAYOUT_STEREO, 48000, 480);
 
   MockCaptureCallback callback;
   MockAudioInputIPC* input_ipc = new MockAudioInputIPC();
@@ -97,7 +97,7 @@ ACTION_P3(ReportOnStreamCreated, device, handle, socket) {
 
 TEST(AudioInputDeviceTest, CreateStream) {
   AudioParameters params(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                         CHANNEL_LAYOUT_STEREO, 48000, 16, 480);
+                         CHANNEL_LAYOUT_STEREO, 48000, 480);
   SharedMemory shared_memory;
   CancelableSyncSocket browser_socket;
   CancelableSyncSocket renderer_socket;

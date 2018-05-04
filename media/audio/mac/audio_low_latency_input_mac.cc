@@ -197,18 +197,19 @@ AUAudioInputStream::AUAudioInputStream(
     DCHECK(input_params.channels() == 1 || input_params.channels() == 2);
   }
 
+  const SampleFormat kSampleFormat = kSampleFormatS16;
+
   // Set up the desired (output) format specified by the client.
   format_.mSampleRate = input_params.sample_rate();
   format_.mFormatID = kAudioFormatLinearPCM;
   format_.mFormatFlags =
       kLinearPCMFormatFlagIsPacked | kLinearPCMFormatFlagIsSignedInteger;
   DCHECK(FormatIsInterleaved(format_.mFormatFlags));
-  format_.mBitsPerChannel = input_params.bits_per_sample();
+  format_.mBitsPerChannel = SampleFormatToBitsPerChannel(kSampleFormat);
   format_.mChannelsPerFrame = input_params.channels();
   format_.mFramesPerPacket = 1;  // uncompressed audio
-  format_.mBytesPerPacket =
-      (format_.mBitsPerChannel * input_params.channels()) / 8;
-  format_.mBytesPerFrame = format_.mBytesPerPacket;
+  format_.mBytesPerPacket = format_.mBytesPerFrame =
+      input_params.GetBytesPerFrame(kSampleFormat);
   format_.mReserved = 0;
 
   DVLOG(1) << "ctor";

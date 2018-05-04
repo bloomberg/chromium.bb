@@ -171,8 +171,7 @@ class AudioOutputStreamWrapper {
  public:
   explicit AudioOutputStreamWrapper(AudioManager* audio_manager)
       : audio_man_(audio_manager),
-        format_(AudioParameters::AUDIO_PCM_LOW_LATENCY),
-        bits_per_sample_(kBitsPerSample) {
+        format_(AudioParameters::AUDIO_PCM_LOW_LATENCY) {
     AudioParameters preferred_params;
     EXPECT_TRUE(SUCCEEDED(CoreAudioUtil::GetPreferredAudioParameters(
         AudioDeviceDescription::kDefaultDeviceId, true, &preferred_params)));
@@ -205,7 +204,6 @@ class AudioOutputStreamWrapper {
 
   AudioParameters::Format format() const { return format_; }
   int channels() const { return ChannelLayoutToChannelCount(channel_layout_); }
-  int bits_per_sample() const { return bits_per_sample_; }
   int sample_rate() const { return sample_rate_; }
   int samples_per_packet() const { return samples_per_packet_; }
 
@@ -213,7 +211,7 @@ class AudioOutputStreamWrapper {
   AudioOutputStream* CreateOutputStream() {
     AudioOutputStream* aos = audio_man_->MakeAudioOutputStream(
         AudioParameters(format_, channel_layout_, sample_rate_,
-                        bits_per_sample_, samples_per_packet_),
+                        samples_per_packet_),
         std::string(), AudioManager::LogCallback());
     EXPECT_TRUE(aos);
     return aos;
@@ -222,7 +220,6 @@ class AudioOutputStreamWrapper {
   AudioManager* audio_man_;
   AudioParameters::Format format_;
   ChannelLayout channel_layout_;
-  int bits_per_sample_;
   int sample_rate_;
   int samples_per_packet_;
 };
@@ -422,7 +419,6 @@ TEST_F(WASAPIAudioOutputStreamTest, DISABLED_ReadFromStereoFile) {
 
   DVLOG(0) << "File name      : " << file_name.c_str();
   DVLOG(0) << "Sample rate    : " << aosw.sample_rate();
-  DVLOG(0) << "Bits per sample: " << aosw.bits_per_sample();
   DVLOG(0) << "#channels      : " << aosw.channels();
   DVLOG(0) << "File size      : " << file_source.file_size();
   DVLOG(0) << "#file segments : " << kNumFileSegments;

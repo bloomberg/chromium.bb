@@ -25,7 +25,6 @@ void LogUma(int value) {}
 
 namespace media {
 
-static const int kBitsPerChannel = 16;
 static const int kSampleRate = 48000;
 static const int kBufferSize = 8192;
 static const int kRenderFrameId = 42;
@@ -39,9 +38,9 @@ class AudioRendererMixerInputTest : public testing::Test,
                                     AudioRendererMixerPool {
  public:
   AudioRendererMixerInputTest() {
-    audio_parameters_ = AudioParameters(
-        AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout, kSampleRate,
-        kBitsPerChannel, kBufferSize);
+    audio_parameters_ =
+        AudioParameters(AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout,
+                        kSampleRate, kBufferSize);
 
     CreateMixerInput(kDefaultDeviceId);
     fake_callback_.reset(new FakeAudioRenderCallback(0, kSampleRate));

@@ -216,7 +216,7 @@ class MediaInternalsAudioLogTest
  private:
   static media::AudioParameters MakeAudioParams() {
     media::AudioParameters params(media::AudioParameters::AUDIO_PCM_LINEAR,
-                                  media::CHANNEL_LAYOUT_MONO, 48000, 16, 128);
+                                  media::CHANNEL_LAYOUT_MONO, 48000, 128);
     params.set_effects(media::AudioParameters::ECHO_CANCELLER |
                        media::AudioParameters::DUCKING);
     return params;

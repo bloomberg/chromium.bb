@@ -68,13 +68,13 @@ class MediaStreamConstraintsUtilAudioTest
           "default_device",
           media::AudioParameters(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                                  media::CHANNEL_LAYOUT_STEREO,
-                                 media::AudioParameters::kAudioCDSampleRate, 16,
+                                 media::AudioParameters::kAudioCDSampleRate,
                                  1000));
 
       media::AudioParameters hw_echo_canceller_parameters(
           media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
           media::CHANNEL_LAYOUT_STEREO,
-          media::AudioParameters::kAudioCDSampleRate, 24, 1000);
+          media::AudioParameters::kAudioCDSampleRate, 1000);
       hw_echo_canceller_parameters.set_effects(
           media::AudioParameters::ECHO_CANCELLER);
       capabilities_.emplace_back("hw_echo_canceller_device",
@@ -83,7 +83,7 @@ class MediaStreamConstraintsUtilAudioTest
       media::AudioParameters geometry_parameters(
           media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
           media::CHANNEL_LAYOUT_STEREO,
-          media::AudioParameters::kAudioCDSampleRate, 16, 1000);
+          media::AudioParameters::kAudioCDSampleRate, 1000);
       geometry_parameters.set_mic_positions(kMicPositions);
       capabilities_.emplace_back("geometry device", geometry_parameters);
 
@@ -323,8 +323,6 @@ class MediaStreamConstraintsUtilAudioTest
     EXPECT_EQ(expected_device.DeviceID(), result.device_id());
     EXPECT_EQ(expected_device.Parameters().sample_rate(),
               result.device_parameters().sample_rate());
-    EXPECT_EQ(expected_device.Parameters().bits_per_sample(),
-              result.device_parameters().bits_per_sample());
     EXPECT_EQ(expected_device.Parameters().channels(),
               result.device_parameters().channels());
     EXPECT_EQ(expected_device.Parameters().effects(),

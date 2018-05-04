@@ -36,7 +36,6 @@ using base::TimeTicks;
 
 namespace {
 
-const int kDefaultBitsPerSample = 16;
 const int kDefaultSampleRate = 48000;
 // The |frames_per_buffer| field of AudioParameters is not used by ATR.
 const int kIgnoreFramesPerBuffer = 1;
@@ -62,7 +61,6 @@ struct ATRTestParams {
   const media::AudioParameters::Format input_format;
   const media::ChannelLayout channel_layout;
   const int sample_rate;
-  const int bits_per_sample;
   const AudioTrackRecorder::CodecId codec;
 };
 
@@ -71,32 +69,26 @@ const ATRTestParams kATRTestParams[] = {
     {media::AudioParameters::AUDIO_PCM_LOW_LATENCY, /* input format */
      media::CHANNEL_LAYOUT_STEREO,                  /* channel layout */
      kDefaultSampleRate,                            /* sample rate */
-     kDefaultBitsPerSample,                         /* bits per sample */
      AudioTrackRecorder::CodecId::OPUS},            /* codec for encoding */
     // Change to mono:
     {media::AudioParameters::AUDIO_PCM_LOW_LATENCY, media::CHANNEL_LAYOUT_MONO,
-     kDefaultSampleRate, kDefaultBitsPerSample,
-     AudioTrackRecorder::CodecId::OPUS},
+     kDefaultSampleRate, AudioTrackRecorder::CodecId::OPUS},
     // Different sampling rate as well:
     {media::AudioParameters::AUDIO_PCM_LOW_LATENCY, media::CHANNEL_LAYOUT_MONO,
-     24000, kDefaultBitsPerSample, AudioTrackRecorder::CodecId::OPUS},
+     24000, AudioTrackRecorder::CodecId::OPUS},
     {media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-     media::CHANNEL_LAYOUT_STEREO, 8000, kDefaultBitsPerSample,
-     AudioTrackRecorder::CodecId::OPUS},
+     media::CHANNEL_LAYOUT_STEREO, 8000, AudioTrackRecorder::CodecId::OPUS},
     // Using a non-default Opus sampling rate (48, 24, 16, 12, or 8 kHz).
     {media::AudioParameters::AUDIO_PCM_LOW_LATENCY, media::CHANNEL_LAYOUT_MONO,
-     22050, kDefaultBitsPerSample, AudioTrackRecorder::CodecId::OPUS},
+     22050, AudioTrackRecorder::CodecId::OPUS},
     {media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-     media::CHANNEL_LAYOUT_STEREO, 44100, kDefaultBitsPerSample,
-     AudioTrackRecorder::CodecId::OPUS},
+     media::CHANNEL_LAYOUT_STEREO, 44100, AudioTrackRecorder::CodecId::OPUS},
     {media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-     media::CHANNEL_LAYOUT_STEREO, 96000, kDefaultBitsPerSample,
-     AudioTrackRecorder::CodecId::OPUS},
+     media::CHANNEL_LAYOUT_STEREO, 96000, AudioTrackRecorder::CodecId::OPUS},
     {media::AudioParameters::AUDIO_PCM_LOW_LATENCY, media::CHANNEL_LAYOUT_MONO,
-     kDefaultSampleRate, kDefaultBitsPerSample,
-     AudioTrackRecorder::CodecId::PCM},
+     kDefaultSampleRate, AudioTrackRecorder::CodecId::PCM},
     {media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-     media::CHANNEL_LAYOUT_STEREO, kDefaultSampleRate, kDefaultBitsPerSample,
+     media::CHANNEL_LAYOUT_STEREO, kDefaultSampleRate,
      AudioTrackRecorder::CodecId::PCM},
 };
 
@@ -109,12 +101,10 @@ class AudioTrackRecorderTest : public TestWithParam<ATRTestParams> {
         first_params_(GetParam().input_format,
                       GetParam().channel_layout,
                       GetParam().sample_rate,
-                      GetParam().bits_per_sample,
                       kIgnoreFramesPerBuffer),
         second_params_(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                        media::CHANNEL_LAYOUT_STEREO,
                        kDefaultSampleRate,
-                       kDefaultBitsPerSample,
                        kIgnoreFramesPerBuffer),
         first_source_(first_params_.channels(),     /* # channels */
                       440,                          /* frequency */

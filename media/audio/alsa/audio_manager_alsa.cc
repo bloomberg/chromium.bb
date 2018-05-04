@@ -77,9 +77,9 @@ AudioParameters AudioManagerAlsa::GetInputStreamParameters(
     const std::string& device_id) {
   static const int kDefaultInputBufferSize = 1024;
 
-  return AudioParameters(
-      AudioParameters::AUDIO_PCM_LOW_LATENCY, CHANNEL_LAYOUT_STEREO,
-      kDefaultSampleRate, 16, kDefaultInputBufferSize);
+  return AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                         CHANNEL_LAYOUT_STEREO, kDefaultSampleRate,
+                         kDefaultInputBufferSize);
 }
 
 const char* AudioManagerAlsa::GetName() {
@@ -280,7 +280,6 @@ AudioParameters AudioManagerAlsa::GetPreferredOutputStreamParameters(
   ChannelLayout channel_layout = CHANNEL_LAYOUT_STEREO;
   int sample_rate = kDefaultSampleRate;
   int buffer_size = kDefaultOutputBufferSize;
-  int bits_per_sample = 16;
   if (input_params.IsValid()) {
     // Some clients, such as WebRTC, have a more limited use case and work
     // acceptably with a smaller buffer size.  The check below allows clients
@@ -288,7 +287,6 @@ AudioParameters AudioManagerAlsa::GetPreferredOutputStreamParameters(
     // TODO(dalecurtis): This should include bits per channel and channel layout
     // eventually.
     sample_rate = input_params.sample_rate();
-    bits_per_sample = input_params.bits_per_sample();
     channel_layout = input_params.channel_layout();
     buffer_size = std::min(input_params.frames_per_buffer(), buffer_size);
   }
@@ -298,7 +296,7 @@ AudioParameters AudioManagerAlsa::GetPreferredOutputStreamParameters(
     buffer_size = user_buffer_size;
 
   return AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout,
-                         sample_rate, bits_per_sample, buffer_size);
+                         sample_rate, buffer_size);
 }
 
 AudioOutputStream* AudioManagerAlsa::MakeOutputStream(

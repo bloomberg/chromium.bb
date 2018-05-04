@@ -58,8 +58,6 @@ class MEDIA_EXPORT AudioManagerCras : public AudioManagerBase {
       const std::string& device_id,
       const LogCallback& log_callback) override;
 
-  static snd_pcm_format_t BitsToFormat(int bits_per_sample);
-
   // Checks if |device_id| corresponds to the default device.
   // Set |is_input| to true for capture devices, false for output.
   bool IsDefault(const std::string& device_id, bool is_input);

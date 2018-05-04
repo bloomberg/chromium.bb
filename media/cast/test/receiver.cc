@@ -164,7 +164,7 @@ AudioParameters ToAudioParameters(const FrameReceiverConfig& config) {
   const int samples_in_10ms = config.rtp_timebase / 100;
   return AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
                          GuessChannelLayout(config.channels),
-                         config.rtp_timebase, 32, samples_in_10ms);
+                         config.rtp_timebase, samples_in_10ms);
 }
 
 // An InProcessReceiver that renders video frames to a LinuxOutputWindow and

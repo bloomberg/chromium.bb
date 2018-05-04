@@ -262,8 +262,7 @@ bool PepperPlatformAudioOutputDev::Initialize(int sample_rate,
   CHECK(ipc_);
 
   params_.Reset(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                media::CHANNEL_LAYOUT_STEREO, sample_rate,
-                ppapi::kBitsPerAudioOutputSample, frames_per_buffer);
+                media::CHANNEL_LAYOUT_STEREO, sample_rate, frames_per_buffer);
 
   io_task_runner_->PostTask(
       FROM_HERE,

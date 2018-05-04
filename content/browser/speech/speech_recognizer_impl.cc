@@ -117,9 +117,6 @@ const int SpeechRecognizerImpl::kEndpointerEstimationTimeMs = 300;
 media::AudioSystem* SpeechRecognizerImpl::audio_system_for_tests_ = nullptr;
 media::AudioManager* SpeechRecognizerImpl::audio_manager_for_tests_ = nullptr;
 
-static_assert(SpeechRecognizerImpl::kNumBitsPerAudioSample % 8 == 0,
-              "kNumBitsPerAudioSample must be a multiple of 8");
-
 // SpeechRecognizerImpl::OnDataConverter implementation
 
 SpeechRecognizerImpl::OnDataConverter::OnDataConverter(
@@ -156,12 +153,15 @@ scoped_refptr<AudioChunk> SpeechRecognizerImpl::OnDataConverter::Convert(
   // See http://crbug.com/506051 for details.
   audio_converter_.Convert(output_bus_.get());
   // Create an audio chunk based on the converted result.
-  scoped_refptr<AudioChunk> chunk(
-      new AudioChunk(output_parameters_.GetBytesPerBuffer(),
-                     output_parameters_.bits_per_sample() / 8));
-  output_bus_->ToInterleaved(output_bus_->frames(),
-                             output_parameters_.bits_per_sample() / 8,
-                             chunk->writable_data());
+  scoped_refptr<AudioChunk> chunk(new AudioChunk(
+      output_parameters_.GetBytesPerBuffer(media::kSampleFormatS16),
+      kNumBitsPerAudioSample / 8));
+
+  static_assert(SpeechRecognizerImpl::kNumBitsPerAudioSample == 16,
+                "kNumBitsPerAudioSample must match interleaving type.");
+  output_bus_->ToInterleaved<media::SignedInt16SampleTypeTraits>(
+      output_bus_->frames(),
+      reinterpret_cast<int16_t*>(chunk->writable_data()));
   return chunk;
 }
 
@@ -598,9 +598,9 @@ SpeechRecognizerImpl::StartRecording(const FSMEventArgs&) {
   // Audio converter shall provide audio based on these parameters as output.
   // Hard coded, WebSpeech specific parameters are utilized here.
   int frames_per_buffer = (kAudioSampleRate * chunk_duration_ms) / 1000;
-  AudioParameters output_parameters = AudioParameters(
-      AudioParameters::AUDIO_PCM_LOW_LATENCY, kChannelLayout, kAudioSampleRate,
-      kNumBitsPerAudioSample, frames_per_buffer);
+  AudioParameters output_parameters =
+      AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY, kChannelLayout,
+                      kAudioSampleRate, frames_per_buffer);
   DVLOG(1) << "SRI::output_parameters: "
            << output_parameters.AsHumanReadableString();
 

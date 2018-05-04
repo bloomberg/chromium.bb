@@ -108,13 +108,13 @@ class MockAudioManager : public AudioManagerPlatform {
 
   media::AudioParameters GetDefaultOutputStreamParameters() override {
     return media::AudioParameters(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                                  media::CHANNEL_LAYOUT_STEREO, 48000, 16, 128);
+                                  media::CHANNEL_LAYOUT_STEREO, 48000, 128);
   }
 
   media::AudioParameters GetOutputStreamParameters(
       const std::string& device_id) override {
     return media::AudioParameters(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                                  media::CHANNEL_LAYOUT_STEREO, 48000, 16, 128);
+                                  media::CHANNEL_LAYOUT_STEREO, 48000, 128);
   }
 
   void SetNumAudioOutputDevices(size_t num_devices) {

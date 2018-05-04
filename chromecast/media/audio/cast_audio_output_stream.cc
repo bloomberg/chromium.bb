@@ -92,7 +92,7 @@ class CastAudioOutputStream::Backend : public CmaBackend::Decoder::Delegate {
     AudioConfig audio_config;
     audio_config.codec = kCodecPCM;
     audio_config.sample_format = kSampleFormatS16;
-    audio_config.bytes_per_channel = audio_params_.bits_per_sample() / 8;
+    audio_config.bytes_per_channel = 2;
     audio_config.channel_number = audio_params_.channels();
     audio_config.samples_per_second = audio_params_.sample_rate();
     if (!decoder_->SetConfig(audio_config)) {
@@ -106,8 +106,8 @@ class CastAudioOutputStream::Backend : public CmaBackend::Decoder::Delegate {
     }
 
     audio_bus_ = ::media::AudioBus::Create(audio_params_);
-    decoder_buffer_ = new DecoderBufferAdapter(
-        new ::media::DecoderBuffer(audio_params_.GetBytesPerBuffer()));
+    decoder_buffer_ = new DecoderBufferAdapter(new ::media::DecoderBuffer(
+        audio_params_.GetBytesPerBuffer(::media::kSampleFormatS16)));
     timestamp_helper_.SetBaseTimestamp(base::TimeDelta());
     std::move(completion_cb).Run(true);
   }
@@ -169,9 +169,10 @@ class CastAudioOutputStream::Backend : public CmaBackend::Decoder::Delegate {
 
     DCHECK_EQ(frame_count, audio_bus_->frames());
     DCHECK_EQ(static_cast<int>(decoder_buffer_->data_size()),
-              frame_count * audio_params_.GetBytesPerFrame());
-    audio_bus_->ToInterleaved(frame_count, audio_params_.bits_per_sample() / 8,
-                              decoder_buffer_->writable_data());
+              audio_params_.GetBytesPerBuffer(::media::kSampleFormatS16));
+    audio_bus_->ToInterleaved<::media::SignedInt16SampleTypeTraits>(
+        frame_count,
+        reinterpret_cast<int16_t*>(decoder_buffer_->writable_data()));
     decoder_buffer_->set_timestamp(timestamp_helper_.GetTimestamp());
     timestamp_helper_.AddFrames(frame_count);
 

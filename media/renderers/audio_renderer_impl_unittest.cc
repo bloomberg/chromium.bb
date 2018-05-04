@@ -113,7 +113,6 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
       : hardware_params_(AudioParameters::AUDIO_PCM_LOW_LATENCY,
                          kChannelLayout,
                          kOutputSamplesPerSecond,
-                         SampleFormatToBytesPerChannel(kSampleFormat) * 8,
                          512),
         sink_(new FakeAudioRendererSink(hardware_params_)),
         demuxer_stream_(DemuxerStream::AUDIO),
@@ -130,7 +129,6 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
     AudioParameters out_params(AudioParameters::AUDIO_PCM_LOW_LATENCY,
                                kChannelLayout,
                                kOutputSamplesPerSecond,
-                               SampleFormatToBytesPerChannel(kSampleFormat) * 8,
                                512);
     renderer_.reset(new AudioRendererImpl(
         message_loop_.task_runner(), sink_.get(),
@@ -218,7 +216,7 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
     SetMediaClient(&media_client_);
 
     hardware_params_.Reset(AudioParameters::AUDIO_BITSTREAM_EAC3,
-                           kChannelLayout, kOutputSamplesPerSecond, 1024, 512);
+                           kChannelLayout, kOutputSamplesPerSecond, 512);
     sink_ = new FakeAudioRendererSink(hardware_params_);
     AudioDecoderConfig audio_config(kCodecAC3, kSampleFormatEac3,
                                     kChannelLayout, kInputSamplesPerSecond,
@@ -722,10 +720,9 @@ TEST_F(AudioRendererImplTest, CapacityAppropriateForHardware) {
   EXPECT_GT(buffer_capacity().value, hardware_params_.frames_per_buffer());
 
   // Verify in the no-config-changes-expected case.
-  ConfigureBasicRenderer(AudioParameters(
-      AudioParameters::AUDIO_PCM_LOW_LATENCY, kChannelLayout,
-      kOutputSamplesPerSecond, SampleFormatToBytesPerChannel(kSampleFormat) * 8,
-      1024 * 15));
+  ConfigureBasicRenderer(AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                                         kChannelLayout,
+                                         kOutputSamplesPerSecond, 1024 * 15));
 
   Initialize();
   EXPECT_GT(buffer_capacity().value, hardware_params_.frames_per_buffer());
@@ -736,12 +733,10 @@ TEST_F(AudioRendererImplTest, CapacityAppropriateForHardware) {
 TEST_F(AudioRendererImplTest, ChannelMask) {
   AudioParameters hw_params(AudioParameters::AUDIO_PCM_LOW_LATENCY,
                             CHANNEL_LAYOUT_7_1, kOutputSamplesPerSecond,
-                            SampleFormatToBytesPerChannel(kSampleFormat) * 8,
                             1024);
   ConfigureConfigChangeRenderer(
       AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                      CHANNEL_LAYOUT_STEREO, kOutputSamplesPerSecond,
-                      SampleFormatToBytesPerChannel(kSampleFormat) * 8, 1024),
+                      CHANNEL_LAYOUT_STEREO, kOutputSamplesPerSecond, 1024),
       hw_params);
   Initialize();
   std::vector<bool> mask = channel_mask();

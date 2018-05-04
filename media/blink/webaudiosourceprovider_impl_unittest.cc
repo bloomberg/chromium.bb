@@ -66,7 +66,6 @@ class WebAudioSourceProviderImplTest
       : params_(AudioParameters::AUDIO_PCM_LINEAR,
                 CHANNEL_LAYOUT_STEREO,
                 kSampleRate,
-                16,
                 64),
         fake_callback_(0.1, kSampleRate),
         mock_sink_(CreateWaspMockSink(GetParam())),

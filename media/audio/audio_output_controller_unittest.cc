@@ -46,7 +46,6 @@ using ::testing::Mock;
 namespace media {
 
 static const int kSampleRate = AudioParameters::kAudioCDSampleRate;
-static const int kBitsPerSample = 16;
 static const ChannelLayout kChannelLayout = CHANNEL_LAYOUT_STEREO;
 static const int kSamplesPerPacket = kSampleRate / 1000;
 static const double kTestVolume = 0.25;
@@ -54,7 +53,7 @@ static const float kBufferNonZeroData = 1.0f;
 
 AudioParameters AOCTestParams() {
   return AudioParameters(AudioParameters::AUDIO_FAKE, kChannelLayout,
-                         kSampleRate, kBitsPerSample, kSamplesPerPacket);
+                         kSampleRate, kSamplesPerPacket);
 }
 
 class MockAudioOutputControllerEventHandler

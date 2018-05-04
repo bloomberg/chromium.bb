@@ -114,7 +114,6 @@ class AudioMirroringManagerTest : public testing::Test {
       : params_(AudioParameters::AUDIO_FAKE,
                 media::CHANNEL_LAYOUT_STEREO,
                 AudioParameters::kAudioCDSampleRate,
-                16,
                 AudioParameters::kAudioCDSampleRate / 10) {}
 
   MockDiverter* CreateStream(int render_process_id,

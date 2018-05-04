@@ -29,8 +29,10 @@ namespace media {
 
 namespace {
 
-const AudioParameters kParams(
-    AudioParameters::AUDIO_PCM_LOW_LATENCY, CHANNEL_LAYOUT_STEREO, 8000, 8, 10);
+const AudioParameters kParams(AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                              CHANNEL_LAYOUT_STEREO,
+                              8000,
+                              10);
 
 class MockInputCallback : public AudioInputStream::AudioInputCallback {
  public:

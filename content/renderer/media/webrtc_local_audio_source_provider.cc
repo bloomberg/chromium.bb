@@ -44,7 +44,7 @@ WebRtcLocalAudioSourceProvider::WebRtcLocalAudioSourceProvider(
                           .output_params()
                           .sample_rate();
     sink_params_.Reset(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                       media::CHANNEL_LAYOUT_STEREO, sample_rate, 16,
+                       media::CHANNEL_LAYOUT_STEREO, sample_rate,
                        kWebAudioRenderBufferSize);
   }
   // Connect the source provider to the track as a sink.

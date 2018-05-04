@@ -107,10 +107,9 @@ class AudioInputSyncWriterTest : public testing::Test {
   AudioInputSyncWriterTest() {
     const int sampling_frequency_hz = 16000;
     const int frames = sampling_frequency_hz / 100;  // 10 ms
-    const int bits_per_sample = 16;
-    const AudioParameters audio_params(
-        AudioParameters::AUDIO_FAKE, CHANNEL_LAYOUT_MONO, sampling_frequency_hz,
-        bits_per_sample, frames);
+    const AudioParameters audio_params(AudioParameters::AUDIO_FAKE,
+                                       CHANNEL_LAYOUT_MONO,
+                                       sampling_frequency_hz, frames);
     const uint32_t data_size =
         ComputeAudioInputBufferSize(audio_params, kSegments);
 

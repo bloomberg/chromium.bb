@@ -83,11 +83,13 @@ WASAPIAudioInputStream::WASAPIAudioInputStream(
   bool avrt_init = avrt::Initialize();
   DCHECK(avrt_init) << "Failed to load the Avrt.dll";
 
+  const SampleFormat kSampleFormat = kSampleFormatS16;
+
   // Set up the desired output format specified by the client.
   output_format_.wFormatTag = WAVE_FORMAT_PCM;
   output_format_.nChannels = params.channels();
   output_format_.nSamplesPerSec = params.sample_rate();
-  output_format_.wBitsPerSample = params.bits_per_sample();
+  output_format_.wBitsPerSample = SampleFormatToBitsPerChannel(kSampleFormat);
   output_format_.nBlockAlign =
       (output_format_.wBitsPerSample / 8) * output_format_.nChannels;
   output_format_.nAvgBytesPerSec =
@@ -103,8 +105,8 @@ WASAPIAudioInputStream::WASAPIAudioInputStream(
 
   // Store size of audio packets which we expect to get from the audio
   // endpoint device in each capture event.
-  packet_size_frames_ = params.GetBytesPerBuffer() / input_format_.nBlockAlign;
-  packet_size_bytes_ = params.GetBytesPerBuffer();
+  packet_size_bytes_ = params.GetBytesPerBuffer(kSampleFormat);
+  packet_size_frames_ = packet_size_bytes_ / input_format_.nBlockAlign;
   DVLOG(1) << "Number of bytes per audio frame  : " << frame_size_;
   DVLOG(1) << "Number of audio frames per packet: " << packet_size_frames_;
 
@@ -741,12 +743,10 @@ bool WASAPIAudioInputStream::DesiredFormatIsSupported(HRESULT* hr) {
 
       const AudioParameters input(AudioParameters::AUDIO_PCM_LOW_LATENCY,
                                   input_layout, input_format_.nSamplesPerSec,
-                                  input_format_.wBitsPerSample,
                                   static_cast<int>(new_frames_per_buffer));
 
       const AudioParameters output(AudioParameters::AUDIO_PCM_LOW_LATENCY,
                                    output_layout, output_format_.nSamplesPerSec,
-                                   output_format_.wBitsPerSample,
                                    packet_size_frames_);
 
       converter_.reset(new AudioConverter(input, output, false));

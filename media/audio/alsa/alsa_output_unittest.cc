@@ -126,7 +126,7 @@ class AlsaPcmOutputStreamTest : public testing::Test {
   AlsaPcmOutputStream* CreateStream(ChannelLayout layout,
                                     int32_t samples_per_packet) {
     AudioParameters params(kTestFormat, layout, kTestSampleRate,
-                           kTestBitsPerSample, samples_per_packet);
+                           samples_per_packet);
     return new AlsaPcmOutputStream(kTestDeviceName,
                                    params,
                                    &mock_alsa_wrapper_,
@@ -188,7 +188,7 @@ const ChannelLayout AlsaPcmOutputStreamTest::kTestChannelLayout =
     CHANNEL_LAYOUT_STEREO;
 const int AlsaPcmOutputStreamTest::kTestSampleRate =
     AudioParameters::kAudioCDSampleRate;
-const int AlsaPcmOutputStreamTest::kTestBitsPerSample = 8;
+const int AlsaPcmOutputStreamTest::kTestBitsPerSample = 16;
 const int AlsaPcmOutputStreamTest::kTestBytesPerFrame =
     AlsaPcmOutputStreamTest::kTestBitsPerSample / 8 *
     ChannelLayoutToChannelCount(AlsaPcmOutputStreamTest::kTestChannelLayout);
@@ -233,17 +233,6 @@ TEST_F(AlsaPcmOutputStreamTest, ConstructedState) {
   // Should support multi-channel.
   test_stream = CreateStream(CHANNEL_LAYOUT_SURROUND);
   EXPECT_EQ(AlsaPcmOutputStream::kCreated, test_stream->state());
-  test_stream->Close();
-
-  // Bad bits per sample.
-  AudioParameters bad_bps_params(kTestFormat, kTestChannelLayout,
-                                 kTestSampleRate, kTestBitsPerSample - 1,
-                                 kTestFramesPerPacket);
-  test_stream = new AlsaPcmOutputStream(kTestDeviceName,
-                                        bad_bps_params,
-                                        &mock_alsa_wrapper_,
-                                        mock_manager_.get());
-  EXPECT_EQ(AlsaPcmOutputStream::kInError, test_stream->state());
   test_stream->Close();
 }
 
@@ -322,13 +311,10 @@ TEST_F(AlsaPcmOutputStreamTest, OpenClose) {
                       SND_PCM_NONBLOCK))
       .WillOnce(DoAll(SetArgPointee<0>(kFakeHandle), Return(0)));
   EXPECT_CALL(mock_alsa_wrapper_,
-              PcmSetParams(kFakeHandle,
-                           SND_PCM_FORMAT_U8,
+              PcmSetParams(kFakeHandle, SND_PCM_FORMAT_S16_LE,
                            SND_PCM_ACCESS_RW_INTERLEAVED,
                            ChannelLayoutToChannelCount(kTestChannelLayout),
-                           kTestSampleRate,
-                           1,
-                           expected_micros))
+                           kTestSampleRate, 1, expected_micros))
       .WillOnce(Return(0));
   EXPECT_CALL(mock_alsa_wrapper_, PcmGetParams(kFakeHandle, _, _))
       .WillOnce(DoAll(SetArgPointee<1>(kTestFramesPerPacket),

@@ -23,12 +23,10 @@ namespace media {
 // Validate that the SineWaveAudioSource writes the expected values.
 TEST(SimpleSources, SineWaveAudioSource) {
   static const uint32_t samples = 1024;
-  static const uint32_t bytes_per_sample = 2;
   static const int freq = 200;
 
-  AudioParameters params(
-        AudioParameters::AUDIO_PCM_LINEAR, CHANNEL_LAYOUT_MONO,
-        AudioParameters::kTelephoneSampleRate, bytes_per_sample * 8, samples);
+  AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR, CHANNEL_LAYOUT_MONO,
+                         AudioParameters::kTelephoneSampleRate, samples);
 
   SineWaveAudioSource source(1, freq, params.sample_rate());
   std::unique_ptr<AudioBus> audio_bus = AudioBus::Create(params);
@@ -125,7 +123,7 @@ TEST(SimpleSources, FileSourceTestDataWithoutLooping) {
 
   // Create AudioParameters which match those in the WAV data.
   AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR,
-                         CHANNEL_LAYOUT_STEREO, 48000, 16, kNumFrames);
+                         CHANNEL_LAYOUT_STEREO, 48000, kNumFrames);
   std::unique_ptr<AudioBus> audio_bus = AudioBus::Create(2, kNumFrames);
   audio_bus->Zero();
 
@@ -163,7 +161,7 @@ TEST(SimpleSources, FileSourceTestDataWithLooping) {
 
   // Create AudioParameters which match those in the WAV data.
   AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR,
-                         CHANNEL_LAYOUT_STEREO, 48000, 16, kNumFrames);
+                         CHANNEL_LAYOUT_STEREO, 48000, kNumFrames);
   std::unique_ptr<AudioBus> audio_bus = AudioBus::Create(2, kNumFrames);
   audio_bus->Zero();
 
@@ -182,7 +180,7 @@ TEST(SimpleSources, FileSourceTestDataWithLooping) {
 
 TEST(SimpleSources, BadFilePathFails) {
   AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR,
-                         CHANNEL_LAYOUT_STEREO, 48000, 16, 10);
+                         CHANNEL_LAYOUT_STEREO, 48000, 10);
   std::unique_ptr<AudioBus> audio_bus = AudioBus::Create(2, 10);
   audio_bus->Zero();
 
@@ -222,7 +220,7 @@ TEST(SimpleSources, FileSourceCorruptTestDataFails) {
 
   // Create AudioParameters which match those in the WAV data.
   AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR,
-                         CHANNEL_LAYOUT_STEREO, 48000, 16, kNumFrames);
+                         CHANNEL_LAYOUT_STEREO, 48000, kNumFrames);
   std::unique_ptr<AudioBus> audio_bus = AudioBus::Create(2, kNumFrames);
   audio_bus->Zero();
 

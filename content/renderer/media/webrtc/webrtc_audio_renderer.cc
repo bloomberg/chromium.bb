@@ -39,7 +39,6 @@ const media::AudioParameters::Format kFormat =
     media::AudioParameters::AUDIO_PCM_LOW_LATENCY;
 const media::ChannelLayout kChannelLayout = media::CHANNEL_LAYOUT_STEREO;
 const int kChannels = 2;
-const int kBitsPerSample = 16;
 
 // Used for UMA histograms.
 const int kRenderTimeHistogramMinMicroseconds = 100;
@@ -174,7 +173,7 @@ WebRtcAudioRenderer::WebRtcAudioRenderer(
       source_(nullptr),
       play_ref_count_(0),
       start_ref_count_(0),
-      sink_params_(kFormat, kChannelLayout, 0, kBitsPerSample, 0),
+      sink_params_(kFormat, kChannelLayout, 0, 0),
       output_device_id_(device_id) {
   WebRtcLogMessage(base::StringPrintf(
       "WAR::WAR. source_render_frame_id=%d, session_id=%d, effects=%i",

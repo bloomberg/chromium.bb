@@ -35,7 +35,7 @@ media::AudioParameters MockGetOutputDeviceParameters(
     const std::string& device_id) {
   return media::AudioParameters(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                                 media::CHANNEL_LAYOUT_STEREO,
-                                kHardwareSampleRate, 16, kHardwareBufferSize);
+                                kHardwareSampleRate, kHardwareBufferSize);
 }
 
 class RendererWebAudioDeviceImplUnderTest : public RendererWebAudioDeviceImpl {

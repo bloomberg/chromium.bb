@@ -28,7 +28,7 @@ class MockCDQualityAudioSource : public MediaStreamAudioSource {
     SetFormat(media::AudioParameters(
         media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
         media::CHANNEL_LAYOUT_STEREO,
-        media::AudioParameters::kAudioCDSampleRate, 16,
+        media::AudioParameters::kAudioCDSampleRate,
         media::AudioParameters::kAudioCDSampleRate / 100));
     SetDevice(MediaStreamDevice(
         MEDIA_DEVICE_AUDIO_CAPTURE, "mock_audio_device_id", "Mock audio device",

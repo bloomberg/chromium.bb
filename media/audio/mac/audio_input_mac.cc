@@ -38,21 +38,24 @@ PCMQueueInAudioInputStream::PCMQueueInAudioInputStream(
       audio_bus_(media::AudioBus::Create(params)) {
   // We must have a manager.
   DCHECK(manager_);
+
+  const SampleFormat kSampleFormat = kSampleFormatS16;
+
   // A frame is one sample across all channels. In interleaved audio the per
   // frame fields identify the set of n |channels|. In uncompressed audio, a
   // packet is always one frame.
   format_.mSampleRate = params.sample_rate();
   format_.mFormatID = kAudioFormatLinearPCM;
-  format_.mFormatFlags = kLinearPCMFormatFlagIsPacked |
-                         kLinearPCMFormatFlagIsSignedInteger;
-  format_.mBitsPerChannel = params.bits_per_sample();
+  format_.mFormatFlags =
+      kLinearPCMFormatFlagIsPacked | kLinearPCMFormatFlagIsSignedInteger;
+  format_.mBitsPerChannel = SampleFormatToBitsPerChannel(kSampleFormat);
   format_.mChannelsPerFrame = params.channels();
   format_.mFramesPerPacket = 1;
-  format_.mBytesPerPacket = (params.bits_per_sample() * params.channels()) / 8;
-  format_.mBytesPerFrame = format_.mBytesPerPacket;
+  format_.mBytesPerPacket = format_.mBytesPerFrame =
+      params.GetBytesPerFrame(kSampleFormat);
   format_.mReserved = 0;
 
-  buffer_size_bytes_ = params.GetBytesPerBuffer();
+  buffer_size_bytes_ = params.GetBytesPerBuffer(kSampleFormat);
 }
 
 PCMQueueInAudioInputStream::~PCMQueueInAudioInputStream() {
@@ -272,8 +275,9 @@ void PCMQueueInAudioInputStream::HandleInputBuffer(
             : base::TimeTicks::Now();
 
     uint8_t* audio_data = reinterpret_cast<uint8_t*>(audio_buffer->mAudioData);
-    audio_bus_->FromInterleaved(audio_data, audio_bus_->frames(),
-                                format_.mBitsPerChannel / 8);
+    DCHECK_EQ(format_.mBitsPerChannel, 16u);
+    audio_bus_->FromInterleaved<SignedInt16SampleTypeTraits>(
+        reinterpret_cast<int16_t*>(audio_data), audio_bus_->frames());
     callback_->OnData(audio_bus_.get(), capture_time, 0.0);
 
     last_fill_ = base::TimeTicks::Now();

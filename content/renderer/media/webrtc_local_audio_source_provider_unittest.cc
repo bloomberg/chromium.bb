@@ -20,10 +20,10 @@ class WebRtcLocalAudioSourceProviderTest : public testing::Test {
  protected:
   void SetUp() override {
     source_params_.Reset(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                         media::CHANNEL_LAYOUT_MONO, 48000, 16, 480);
+                         media::CHANNEL_LAYOUT_MONO, 48000, 480);
     sink_params_.Reset(
         media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-        media::CHANNEL_LAYOUT_STEREO, 44100, 16,
+        media::CHANNEL_LAYOUT_STEREO, 44100,
         WebRtcLocalAudioSourceProvider::kWebAudioRenderBufferSize);
     sink_bus_ = media::AudioBus::Create(sink_params_);
     blink::WebMediaStreamSource audio_source;

@@ -394,8 +394,7 @@ class CastAudioSink : public base::SupportsWeakPtr<CastAudioSink>,
              << output_sample_rate_ << " Hz}";
     const media::AudioParameters output_params(
         media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-        media::GuessChannelLayout(output_channels_),
-        output_sample_rate_, 32,
+        media::GuessChannelLayout(output_channels_), output_sample_rate_,
         output_sample_rate_ * input_params_.frames_per_buffer() /
             input_params_.sample_rate());
     converter_.reset(

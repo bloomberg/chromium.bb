@@ -93,6 +93,8 @@ class PulseAudioOutputStream : public AudioOutputStream {
   // Container for retrieving data from AudioSourceCallback::OnMoreData().
   std::unique_ptr<AudioBus> audio_bus_;
 
+  const size_t buffer_size_;
+
   base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(PulseAudioOutputStream);

@@ -62,25 +62,6 @@ static std::string DeviceNameToControlName(const std::string& device_name) {
   return control_name;
 }
 
-snd_pcm_format_t BitsToFormat(int bits_per_sample) {
-  switch (bits_per_sample) {
-    case 8:
-      return SND_PCM_FORMAT_U8;
-
-    case 16:
-      return SND_PCM_FORMAT_S16;
-
-    case 24:
-      return SND_PCM_FORMAT_S24;
-
-    case 32:
-      return SND_PCM_FORMAT_S32;
-
-    default:
-      return SND_PCM_FORMAT_UNKNOWN;
-  }
-}
-
 int CloseDevice(media::AlsaWrapper* wrapper, snd_pcm_t* handle) {
   std::string device_name = wrapper->PcmName(handle);
   int error = wrapper->PcmClose(handle);

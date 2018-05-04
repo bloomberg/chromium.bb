@@ -614,7 +614,7 @@ AudioParameters AudioManagerMac::GetInputStreamParameters(
   if (device == kAudioObjectUnknown) {
     DLOG(ERROR) << "Invalid device " << device_id;
     return AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                           CHANNEL_LAYOUT_STEREO, kFallbackSampleRate, 16,
+                           CHANNEL_LAYOUT_STEREO, kFallbackSampleRate,
                            ChooseBufferSize(true, kFallbackSampleRate));
   }
 
@@ -638,7 +638,7 @@ AudioParameters AudioManagerMac::GetInputStreamParameters(
 
   // TODO(grunell): query the native channel layout for the specific device.
   AudioParameters params(AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout,
-                         sample_rate, 16, buffer_size);
+                         sample_rate, buffer_size);
 
   if (DeviceSupportsAmbientNoiseReduction(device)) {
     params.set_effects(AudioParameters::NOISE_SUPPRESSION);
@@ -827,9 +827,11 @@ AudioParameters AudioManagerMac::GetPreferredOutputStreamParameters(
   const AudioDeviceID device = GetAudioDeviceIdByUId(false, output_device_id);
   if (device == kAudioObjectUnknown) {
     DLOG(ERROR) << "Invalid output device " << output_device_id;
-    return input_params.IsValid() ? input_params : AudioParameters(
-        AudioParameters::AUDIO_PCM_LOW_LATENCY, CHANNEL_LAYOUT_STEREO,
-        kFallbackSampleRate, 16, ChooseBufferSize(false, kFallbackSampleRate));
+    return input_params.IsValid()
+               ? input_params
+               : AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                                 CHANNEL_LAYOUT_STEREO, kFallbackSampleRate,
+                                 ChooseBufferSize(false, kFallbackSampleRate));
   }
 
   const bool has_valid_input_params = input_params.IsValid();
@@ -868,7 +870,7 @@ AudioParameters AudioManagerMac::GetPreferredOutputStreamParameters(
   }
 
   AudioParameters params(AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout,
-                         hardware_sample_rate, 16, buffer_size);
+                         hardware_sample_rate, buffer_size);
   params.set_channels_for_discrete(output_channels);
   return params;
 }

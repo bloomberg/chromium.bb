@@ -248,6 +248,8 @@ component("shared_memory_support") {
     "base/channel_layout.h",
     "base/limits.h",
     "base/media_shmem_export.h",
+    "base/sample_format.cc",
+    "base/sample_format.h",
     "base/vector_math.cc",
     "base/vector_math.h",
     "base/vector_math_testing.h",

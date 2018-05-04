@@ -279,15 +279,14 @@ class StreamWrapper {
   typedef typename StreamTraits::StreamType StreamType;
 
   explicit StreamWrapper(AudioManager* audio_manager)
-      :
-        audio_manager_(audio_manager),
+      : audio_manager_(audio_manager),
         format_(AudioParameters::AUDIO_PCM_LOW_LATENCY),
 #if defined(OS_ANDROID)
-        channel_layout_(CHANNEL_LAYOUT_MONO),
+        channel_layout_(CHANNEL_LAYOUT_MONO)
 #else
-        channel_layout_(CHANNEL_LAYOUT_STEREO),
+        channel_layout_(CHANNEL_LAYOUT_STEREO)
 #endif
-        bits_per_sample_(16) {
+  {
     // Use the preferred sample rate.
     const AudioParameters& params =
         StreamTraits::GetDefaultAudioStreamParameters(audio_manager_);
@@ -309,15 +308,14 @@ class StreamWrapper {
   int channels() const {
     return ChannelLayoutToChannelCount(channel_layout_);
   }
-  int bits_per_sample() const { return bits_per_sample_; }
   int sample_rate() const { return sample_rate_; }
   int samples_per_packet() const { return samples_per_packet_; }
 
  private:
   StreamType* CreateStream() {
-    StreamType* stream = StreamTraits::CreateStream(audio_manager_,
-        AudioParameters(format_, channel_layout_, sample_rate_,
-            bits_per_sample_, samples_per_packet_));
+    StreamType* stream = StreamTraits::CreateStream(
+        audio_manager_, AudioParameters(format_, channel_layout_, sample_rate_,
+                                        samples_per_packet_));
     EXPECT_TRUE(stream);
     return stream;
   }
@@ -325,7 +323,6 @@ class StreamWrapper {
   AudioManager* audio_manager_;
   AudioParameters::Format format_;
   ChannelLayout channel_layout_;
-  int bits_per_sample_;
   int sample_rate_;
   int samples_per_packet_;
 };
@@ -364,8 +361,7 @@ TEST_F(AudioLowLatencyInputOutputTest, DISABLED_FullDuplexDelayMeasurement) {
   // buffer sizes for input and output.
   if (aisw.sample_rate() != aosw.sample_rate() ||
       aisw.samples_per_packet() != aosw.samples_per_packet() ||
-      aisw.channels()!= aosw.channels() ||
-      aisw.bits_per_sample() != aosw.bits_per_sample()) {
+      aisw.channels() != aosw.channels()) {
     LOG(ERROR) << "This test requires symmetric input and output parameters. "
         "Ensure that sample rate and number of channels are identical in "
         "both directions";

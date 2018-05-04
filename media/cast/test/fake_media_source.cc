@@ -79,7 +79,6 @@ FakeMediaSource::FakeMediaSource(
       output_audio_params_(AudioParameters::AUDIO_PCM_LINEAR,
                            media::GuessChannelLayout(audio_config.channels),
                            audio_config.rtp_timebase,
-                           32,
                            audio_config.rtp_timebase / kAudioPacketsPerSecond),
       video_config_(video_config),
       keep_frames_(keep_frames),
@@ -180,7 +179,6 @@ void FakeMediaSource::SetSourceFile(const base::FilePath& video_file,
       source_audio_params_.Reset(
           AudioParameters::AUDIO_PCM_LINEAR, layout,
           av_audio_context_->sample_rate,
-          8 * av_get_bytes_per_sample(av_audio_context_->sample_fmt),
           av_audio_context_->sample_rate / kAudioPacketsPerSecond);
       source_audio_params_.set_channels_for_discrete(
           av_audio_context_->channels);

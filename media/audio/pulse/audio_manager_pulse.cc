@@ -108,7 +108,7 @@ AudioParameters AudioManagerPulse::GetInputStreamParameters(
   // TODO(xians): add support for querying native channel layout for pulse.
   UpdateNativeAudioHardwareInfo();
   return AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                         CHANNEL_LAYOUT_STEREO, native_input_sample_rate_, 16,
+                         CHANNEL_LAYOUT_STEREO, native_input_sample_rate_,
                          buffer_size);
 }
 
@@ -156,7 +156,6 @@ AudioParameters AudioManagerPulse::GetPreferredOutputStreamParameters(
   VLOG_IF(0, !output_device_id.empty()) << "Not implemented!";
 
   int buffer_size = kMinimumOutputBufferSize;
-  int bits_per_sample = 16;
 
   // Query native parameters where applicable; Pulse does not require these to
   // be respected though, so prefer the input parameters for channel count.
@@ -165,8 +164,6 @@ AudioParameters AudioManagerPulse::GetPreferredOutputStreamParameters(
   ChannelLayout channel_layout = GuessChannelLayout(native_channel_count_);
 
   if (input_params.IsValid()) {
-    bits_per_sample = input_params.bits_per_sample();
-
     // Use the system's output channel count for the DISCRETE layout. This is to
     // avoid a crash due to the lack of support on the multi-channel beyond 8 in
     // the PulseAudio layer.
@@ -183,7 +180,7 @@ AudioParameters AudioManagerPulse::GetPreferredOutputStreamParameters(
     buffer_size = user_buffer_size;
 
   return AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout,
-                         sample_rate, bits_per_sample, buffer_size);
+                         sample_rate, buffer_size);
 }
 
 AudioOutputStream* AudioManagerPulse::MakeOutputStream(

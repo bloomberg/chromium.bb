@@ -32,16 +32,19 @@ OpenSLESInputStream::OpenSLESInputStream(AudioManagerAndroid* audio_manager,
       started_(false),
       audio_bus_(media::AudioBus::Create(params)) {
   DVLOG(2) << __PRETTY_FUNCTION__;
+
+  const SampleFormat kSampleFormat = kSampleFormatS16;
+
   format_.formatType = SL_DATAFORMAT_PCM;
   format_.numChannels = static_cast<SLuint32>(params.channels());
   // Provides sampling rate in milliHertz to OpenSLES.
   format_.samplesPerSec = static_cast<SLuint32>(params.sample_rate() * 1000);
-  format_.bitsPerSample = params.bits_per_sample();
-  format_.containerSize = params.bits_per_sample();
+  format_.bitsPerSample = format_.containerSize =
+      SampleFormatToBitsPerChannel(kSampleFormat);
   format_.endianness = SL_BYTEORDER_LITTLEENDIAN;
   format_.channelMask = ChannelCountToSLESChannelMask(params.channels());
 
-  buffer_size_bytes_ = params.GetBytesPerBuffer();
+  buffer_size_bytes_ = params.GetBytesPerBuffer(kSampleFormat);
   hardware_delay_ = base::TimeDelta::FromSecondsD(
       params.frames_per_buffer() / static_cast<double>(params.sample_rate()));
 
@@ -302,9 +305,9 @@ void OpenSLESInputStream::ReadBufferQueue() {
   TRACE_EVENT0("audio", "OpenSLESOutputStream::ReadBufferQueue");
 
   // Convert from interleaved format to deinterleaved audio bus format.
-  audio_bus_->FromInterleaved(audio_data_[active_buffer_index_],
-                              audio_bus_->frames(),
-                              format_.bitsPerSample / 8);
+  audio_bus_->FromInterleaved<SignedInt16SampleTypeTraits>(
+      reinterpret_cast<int16_t*>(audio_data_[active_buffer_index_]),
+      audio_bus_->frames());
 
   // TODO(henrika): Investigate if it is possible to get an accurate
   // delay estimation.

@@ -14,7 +14,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "media/base/audio_parameters.h"
-#include "media/base/audio_sample_types.h"
 #include "media/base/limits.h"
 #include "media/base/vector_math.h"
 

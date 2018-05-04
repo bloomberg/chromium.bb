@@ -23,7 +23,6 @@ static const int kConvertInputs = 8;
 static const int kConvertCycles = 3;
 
 // Parameters used for testing.
-static const int kBitsPerChannel = 32;
 static const ChannelLayout kChannelLayout = CHANNEL_LAYOUT_STEREO;
 static const int kHighLatencyBufferSize = 2048;
 static const int kLowLatencyBufferSize = 256;
@@ -39,12 +38,12 @@ class AudioConverterTest
  public:
   AudioConverterTest() : epsilon_(std::get<3>(GetParam())) {
     // Create input and output parameters based on test parameters.
-    input_parameters_ = AudioParameters(
-        AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout,
-        std::get<0>(GetParam()), kBitsPerChannel, kHighLatencyBufferSize);
+    input_parameters_ =
+        AudioParameters(AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout,
+                        std::get<0>(GetParam()), kHighLatencyBufferSize);
     output_parameters_ = AudioParameters(
         AudioParameters::AUDIO_PCM_LOW_LATENCY, std::get<2>(GetParam()),
-        std::get<1>(GetParam()), 16, kLowLatencyBufferSize);
+        std::get<1>(GetParam()), kLowLatencyBufferSize);
 
     converter_.reset(new AudioConverter(
         input_parameters_, output_parameters_, false));
@@ -201,11 +200,11 @@ TEST(AudioConverterTest, AudioDelayAndDiscreteChannelCount) {
   // multiple calls to fill the buffer.
   AudioParameters input_parameters(AudioParameters::AUDIO_PCM_LINEAR,
                                    CHANNEL_LAYOUT_DISCRETE, kSampleRate,
-                                   kBitsPerChannel, kLowLatencyBufferSize);
+                                   kLowLatencyBufferSize);
   input_parameters.set_channels_for_discrete(10);
   AudioParameters output_parameters(AudioParameters::AUDIO_PCM_LINEAR,
                                     CHANNEL_LAYOUT_DISCRETE, kSampleRate * 2,
-                                    kBitsPerChannel, kHighLatencyBufferSize);
+                                    kHighLatencyBufferSize);
   output_parameters.set_channels_for_discrete(5);
 
   AudioConverter converter(input_parameters, output_parameters, false);

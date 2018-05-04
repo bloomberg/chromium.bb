@@ -171,7 +171,7 @@ AudioParameters AudioManagerWin::GetInputStreamParameters(
     // code path somehow for a configuration - e.g. tab capture).
     parameters =
         AudioParameters(AudioParameters::AUDIO_PCM_LINEAR,
-                        CHANNEL_LAYOUT_STEREO, 48000, 16, kFallbackBufferSize);
+                        CHANNEL_LAYOUT_STEREO, 48000, kFallbackBufferSize);
   }
 
   int user_buffer_size = GetUserBufferSize();
@@ -274,7 +274,6 @@ AudioParameters AudioManagerWin::GetPreferredOutputStreamParameters(
   ChannelLayout channel_layout = CHANNEL_LAYOUT_STEREO;
   int sample_rate = 48000;
   int buffer_size = kFallbackBufferSize;
-  int bits_per_sample = 16;
   int effects = AudioParameters::NO_EFFECTS;
 
   // TODO(henrika): Remove kEnableExclusiveAudio and related code. It doesn't
@@ -306,7 +305,6 @@ AudioParameters AudioManagerWin::GetPreferredOutputStreamParameters(
       return AudioParameters();
     }
 
-    bits_per_sample = params.bits_per_sample();
     buffer_size = params.frames_per_buffer();
     channel_layout = params.channel_layout();
     sample_rate = params.sample_rate();
@@ -349,7 +347,7 @@ AudioParameters AudioManagerWin::GetPreferredOutputStreamParameters(
     buffer_size = user_buffer_size;
 
   AudioParameters params(AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout,
-                         sample_rate, bits_per_sample, buffer_size);
+                         sample_rate, buffer_size);
   params.set_effects(effects);
   return params;
 }

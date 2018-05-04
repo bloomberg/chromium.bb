@@ -67,7 +67,7 @@ void CastAudioManager::GetAudioInputDeviceNames(
   // Need to send a valid AudioParameters object even when it will be unused.
   return ::media::AudioParameters(
       ::media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-      ::media::CHANNEL_LAYOUT_STEREO, kDefaultSampleRate, 16,
+      ::media::CHANNEL_LAYOUT_STEREO, kDefaultSampleRate,
       kDefaultInputBufferSize);
 }
 
@@ -137,7 +137,6 @@ void CastAudioManager::ReleaseOutputStream(::media::AudioOutputStream* stream) {
   ::media::ChannelLayout channel_layout = ::media::CHANNEL_LAYOUT_STEREO;
   int sample_rate = kDefaultSampleRate;
   int buffer_size = kDefaultOutputBufferSize;
-  int bits_per_sample = 16;
   if (input_params.IsValid()) {
     // Do not change:
     // - the channel layout
@@ -151,7 +150,7 @@ void CastAudioManager::ReleaseOutputStream(::media::AudioOutputStream* stream) {
 
   ::media::AudioParameters output_params(
       ::media::AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout,
-      sample_rate, bits_per_sample, buffer_size);
+      sample_rate, buffer_size);
   return output_params;
 }
 
