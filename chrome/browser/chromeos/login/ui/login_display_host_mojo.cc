@@ -52,6 +52,8 @@ void LoginDisplayHostMojo::OnDialogDestroyed(const GaiaDialogDelegate* dialog) {
 
 void LoginDisplayHostMojo::SetUsers(const user_manager::UserList& users) {
   users_ = users;
+  if (GetOobeUI())
+    GetOobeUI()->SetLoginUserCount(users_.size());
 }
 
 LoginDisplay* LoginDisplayHostMojo::CreateLoginDisplay(

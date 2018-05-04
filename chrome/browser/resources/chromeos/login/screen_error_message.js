@@ -83,8 +83,13 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
     // Error screen initial error state.
     error_state_: ERROR_STATE.UNKNOWN,
 
-    // Whether the screen can be cancelled.
-    cancelable_: false,
+    /**
+     * Whether the screen can be closed.
+     * @type {boolean}
+     */
+    get closable() {
+      return Oobe.getInstance().hasUserPods;
+    },
 
     /** @override */
     decorate: function() {
@@ -251,8 +256,7 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
       cr.ui.Oobe.clearErrors();
       cr.ui.DropDown.show('offline-networks-list', false);
       $('login-header-bar').signinUIState = SIGNIN_UI_STATE.ERROR;
-      this.cancelable_ = $('pod-row').pods.length;
-      $('error-message-back-button').disabled = !this.cancelable_;
+      $('error-message-back-button').disabled = !this.closable;
     },
 
     /**
@@ -388,7 +392,7 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
      * Cancels error screen and drops to user pods.
      */
     cancel: function() {
-      if (this.cancelable_)
+      if (this.closable)
         Oobe.showUserPods();
     },
   };

@@ -253,6 +253,15 @@ cr.define('cr.ui.login', function() {
     displayType_: DISPLAY_TYPE.UNKNOWN,
 
     /**
+     * Number of users in the login screen UI. This is used by the views login
+     * screen, and is always 0 for WebUI login screen.
+     * TODO(crbug.com/808271): WebUI and views implementation should return the
+     * same user list.
+     * @type {number}
+     */
+    userCount_: 0,
+
+    /**
      * Error message (bubble) was shown. This is checked in tests.
      */
     errorMessageWasShownForTesting_: false,
@@ -326,6 +335,16 @@ cr.define('cr.ui.login', function() {
     },
 
     /**
+     * Returns true if the login screen has user pods.
+     * @return {boolean}
+     */
+    get hasUserPods() {
+      var userCount =
+          this.showingViewsLogin ? this.userCount_ : $('pod-row').pods.length;
+      return !!userCount;
+    },
+
+    /**
      * Sets the current size of the client area (display size).
      * @param {number} width client area width
      * @param {number} height client area height
@@ -380,6 +399,14 @@ cr.define('cr.ui.login', function() {
     showVersion: function(show) {
       $('version-labels').hidden = !show;
       this.allowToggleVersion_ = !show;
+    },
+
+    /**
+     * Sets the number of users on the views login screen.
+     * @param {number} userCount The number of users.
+     */
+    setLoginUserCount: function(userCount) {
+      this.userCount_ = userCount;
     },
 
     /**
