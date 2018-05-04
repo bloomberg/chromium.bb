@@ -188,6 +188,22 @@ void WaitForCondition(base::RepeatingCallback<bool()> condition) {
 
 }  // namespace
 
+// TODO(crbug.com/826869): These tests don't have to have Network Service
+// enabled and should be merged into 'storage_partition_impl_browsertest.cc'.
+class NetworkServiceStoragePartititionBrowsertest : public ContentBrowserTest {
+ public:
+  NetworkServiceStoragePartititionBrowsertest() = default;
+
+  GURL GetTestURL() const {
+    // Use '/echoheader' instead of '/echo' to avoid a disk_cache bug.
+    // See https://crbug.com/792255.
+    return embedded_test_server()->GetURL("/echoheader");
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NetworkServiceStoragePartititionBrowsertest);
+};
+
 // This test source has been excluded from Android as Android doesn't have
 // out-of-process Network Service.
 class NetworkServiceRestartBrowserTest : public ContentBrowserTest {
@@ -577,10 +593,32 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, BrowserIOFactory) {
 }
 
 // Make sure the factory getter returned from
+// |StoragePartition::GetURLLoaderFactoryForBrowserProcessIOThread()| works.
+IN_PROC_BROWSER_TEST_F(NetworkServiceStoragePartititionBrowsertest,
+                       GetURLLoaderFactoryForBrowserProcessIOThread) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  auto shared_url_loader_factory_info =
+      BrowserContext::GetDefaultStoragePartition(
+          shell()->web_contents()->GetBrowserContext())
+          ->GetURLLoaderFactoryForBrowserProcessIOThread();
+
+  scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory =
+      GetSharedFactoryOnIOThread(std::move(shared_url_loader_factory_info));
+
+  EXPECT_EQ(net::OK, LoadBasicRequestOnIOThread(shared_url_loader_factory.get(),
+                                                GetTestURL()));
+  ReleaseOnIOThread(std::move(shared_url_loader_factory));
+}
+
+// Make sure the factory getter returned from
 // |StoragePartition::GetURLLoaderFactoryForBrowserProcessIOThread()| doesn't
 // crash if it's called after the StoragePartition is deleted.
-IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
+IN_PROC_BROWSER_TEST_F(NetworkServiceStoragePartititionBrowsertest,
                        BrowserIOFactoryGetterAfterStoragePartitionGone) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
   base::ScopedAllowBlockingForTesting allow_blocking;
   std::unique_ptr<ShellBrowserContext> browser_context =
       std::make_unique<ShellBrowserContext>(true, nullptr);
@@ -603,8 +641,10 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
 // Make sure the factory returned from
 // |StoragePartition::GetURLLoaderFactoryForBrowserProcessIOThread()| doesn't
 // crash if it's called after the StoragePartition is deleted.
-IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
+IN_PROC_BROWSER_TEST_F(NetworkServiceStoragePartititionBrowsertest,
                        BrowserIOFactoryAfterStoragePartitionGone) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
   base::ScopedAllowBlockingForTesting allow_blocking;
   std::unique_ptr<ShellBrowserContext> browser_context =
       std::make_unique<ShellBrowserContext>(true, nullptr);

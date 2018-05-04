@@ -48,24 +48,20 @@ url::Origin SecurityOrigin() {
 
 // TestBrowserContext has a URLRequestContextGetter which uses a NullTaskRunner.
 // This causes it to be destroyed on the wrong thread. This BrowserContext
-// instead uses the IO thread task runner for the URLRequestContextGetter.
-class TestBrowserContextWithRealURLRequestContextGetter
+// instead returns nullptr since it's not required by the test.
+class TestBrowserContextWithoutURLRequestContextGetter
     : public TestBrowserContext {
  public:
-  TestBrowserContextWithRealURLRequestContextGetter() {
-    request_context_ =
-        base::MakeRefCounted<net::TrivialURLRequestContextGetter>(
-            &context_,
-            BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+  TestBrowserContextWithoutURLRequestContextGetter() {
     salt_ = TestBrowserContext::GetMediaDeviceIDSalt();
   }
 
-  ~TestBrowserContextWithRealURLRequestContextGetter() override {}
+  ~TestBrowserContextWithoutURLRequestContextGetter() override {}
 
   net::URLRequestContextGetter* CreateRequestContext(
       ProtocolHandlerMap* protocol_handlers,
       URLRequestInterceptorScopedVector request_interceptors) override {
-    return request_context_.get();
+    return nullptr;
   }
 
   std::string GetMediaDeviceIDSalt() override { return salt_; }
@@ -73,8 +69,6 @@ class TestBrowserContextWithRealURLRequestContextGetter
   void set_media_device_id_salt(std::string salt) { salt_ = std::move(salt); }
 
  private:
-  net::TestURLRequestContext context_;
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
   std::string salt_;
 };
 
@@ -96,7 +90,7 @@ class AudioOutputAuthorizationHandlerTest : public RenderViewHostTestHarness {
 
   BrowserContext* CreateBrowserContext() override {
     // Caller takes ownership.
-    return new TestBrowserContextWithRealURLRequestContextGetter();
+    return new TestBrowserContextWithoutURLRequestContextGetter();
   }
 
   void SetUp() override {
@@ -411,7 +405,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
   // Reset the salt and expect authorization of the device ID hashed with
   // the old salt to fail.
   auto* context =
-      static_cast<TestBrowserContextWithRealURLRequestContextGetter*>(
+      static_cast<TestBrowserContextWithoutURLRequestContextGetter*>(
           browser_context());
   context->set_media_device_id_salt("new salt");
   EXPECT_CALL(listener, Run(media::OUTPUT_DEVICE_STATUS_ERROR_NOT_FOUND, _, _,

@@ -8,6 +8,7 @@
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "content/browser/storage_partition_impl.h"
+#include "content/common/service_worker/service_worker_utils.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -136,8 +137,16 @@ void URLLoaderFactoryGetter::HandleFactoryRequests() {
   DCHECK(pending_blob_factory_request_.is_pending());
   HandleNetworkFactoryRequestOnUIThread(
       std::move(pending_network_factory_request_));
-  partition_->GetBlobURLLoaderFactory()->HandleRequest(
-      std::move(pending_blob_factory_request_));
+
+  // |partition->blob_url_loader_factory_| is not available without the feature.
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService) ||
+      ServiceWorkerUtils::IsServicificationEnabled()) {
+    DCHECK(partition_->GetBlobURLLoaderFactory());
+    partition_->GetBlobURLLoaderFactory()->HandleRequest(
+        std::move(pending_blob_factory_request_));
+  } else {
+    pending_blob_factory_request_ = nullptr;
+  }
 }
 
 void URLLoaderFactoryGetter::OnStoragePartitionDestroyed() {
