@@ -42,3 +42,7 @@ void TestFullscreenController::DecrementDisabledCounter() {
 CGFloat TestFullscreenController::GetProgress() const {
   return model_->progress();
 }
+
+void TestFullscreenController::ResetModel() {
+  model_->ResetForNavigation();
+}

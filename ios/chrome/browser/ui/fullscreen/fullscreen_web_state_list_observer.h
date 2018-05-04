@@ -33,6 +33,10 @@ class FullscreenWebStateListObserver : public WebStateListObserver {
 
  private:
   // WebStateListObserver:
+  void WebStateInsertedAt(WebStateList* web_state_list,
+                          web::WebState* web_state,
+                          int index,
+                          bool activating) override;
   void WebStateReplacedAt(WebStateList* web_state_list,
                           web::WebState* old_web_state,
                           web::WebState* new_web_state,
@@ -53,6 +57,8 @@ class FullscreenWebStateListObserver : public WebStateListObserver {
   // Whether |web_state| has been activated during the lifetime of this object.
   bool HasWebStateBeenActivated(web::WebState* web_state);
 
+  // The controller passed on construction.
+  FullscreenController* controller_;
   // The model passed on construction.
   FullscreenModel* model_;
   // The WebStateList passed on construction.

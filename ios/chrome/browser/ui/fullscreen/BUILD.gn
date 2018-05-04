@@ -70,6 +70,10 @@ source_set("internal") {
     "fullscreen_model.h",
     "fullscreen_model.mm",
     "fullscreen_model_observer.h",
+    "fullscreen_scroll_end_animator.h",
+    "fullscreen_scroll_end_animator.mm",
+    "fullscreen_scroll_to_top_animator.h",
+    "fullscreen_scroll_to_top_animator.mm",
     "fullscreen_system_notification_observer.h",
     "fullscreen_system_notification_observer.mm",
     "fullscreen_ui_updater.mm",
@@ -79,6 +83,8 @@ source_set("internal") {
     "fullscreen_web_state_observer.mm",
     "fullscreen_web_view_proxy_observer.h",
     "fullscreen_web_view_proxy_observer.mm",
+    "toolbar_reveal_animator.h",
+    "toolbar_reveal_animator.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -92,8 +98,11 @@ source_set("internal") {
     "//ios/chrome/browser/ui:ui_util",
     "//ios/chrome/browser/ui/broadcaster",
     "//ios/chrome/browser/ui/browser_list",
+    "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/web_state_list",
+    "//ios/chrome/common:timing",
     "//ios/web",
+    "//ui/gfx/geometry",
   ]
 }
 
@@ -101,12 +110,6 @@ source_set("ui") {
   sources = [
     "fullscreen_animator.h",
     "fullscreen_animator.mm",
-    "fullscreen_foreground_animator.h",
-    "fullscreen_foreground_animator.mm",
-    "fullscreen_scroll_end_animator.h",
-    "fullscreen_scroll_end_animator.mm",
-    "fullscreen_scroll_to_top_animator.h",
-    "fullscreen_scroll_to_top_animator.mm",
     "fullscreen_ui_element.h",
   ]
 

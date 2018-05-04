@@ -57,6 +57,10 @@ class FullscreenController : public KeyedService {
   // 1.0 denotes that the toolbar should be completely visible.
   virtual CGFloat GetProgress() const = 0;
 
+  // Resets the model such that progress is reset to 1.0, animating in the
+  // headers and footers.
+  virtual void ResetModel() = 0;
+
  private:
 
   DISALLOW_COPY_AND_ASSIGN(FullscreenController);

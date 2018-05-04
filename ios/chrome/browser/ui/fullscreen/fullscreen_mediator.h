@@ -15,9 +15,10 @@
 @class FullscreenAnimator;
 class FullscreenController;
 class FullscreenControllerObserver;
-@class FullscreenForegroundAnimator;
+@class FullscreenResetAnimator;
 @class FullscreenScrollEndAnimator;
 @class FullscreenScrollToTopAnimator;
+@class ToolbarRevealAnimator;
 
 // A helper object that listens to FullscreenModel changes and forwards this
 // information to FullscreenControllerObservers.
@@ -39,6 +40,9 @@ class FullscreenMediator : public FullscreenModelObserver {
 
   // Instructs the mediator that the app will be foregrounded.
   void WillEnterForeground();
+
+  // Resets the model while animating changes.
+  void AnimateModelReset();
 
   // Instructs the mediator to stop observing its model.
   void Disconnect();
@@ -84,8 +88,8 @@ class FullscreenMediator : public FullscreenModelObserver {
   __strong FullscreenScrollEndAnimator* scroll_end_animator_ = nil;
   // The scroll to top animator passed to observers.
   __strong FullscreenScrollToTopAnimator* scroll_to_top_animator_ = nil;
-  // The toolbar reveal animator for foreground events.
-  __strong FullscreenForegroundAnimator* foreground_animator_ = nil;
+  // The toolbar reveal animator.
+  __strong ToolbarRevealAnimator* toolbar_reveal_animator_ = nil;
   // The FullscreenControllerObservers that need to get notified of model
   // changes.
   base::ObserverList<FullscreenControllerObserver> observers_;

@@ -149,11 +149,9 @@
 #import "ios/chrome/browser/ui/external_search/external_search_coordinator.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_controller_ios.h"
 #import "ios/chrome/browser/ui/first_run/welcome_to_chrome_view_controller.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_foreground_animator.h"
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_scroll_end_animator.h"
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_scroll_to_top_animator.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_element.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_updater.h"
 #import "ios/chrome/browser/ui/history_popup/requirements/tab_history_presentation.h"
@@ -166,7 +164,6 @@
 #import "ios/chrome/browser/ui/main_content/main_content_ui_broadcasting_util.h"
 #import "ios/chrome/browser/ui/main_content/main_content_ui_state.h"
 #import "ios/chrome/browser/ui/main_content/web_scroll_view_main_content_ui_forwarder.h"
-#import "ios/chrome/browser/ui/new_foreground_tab_fullscreen_disabler.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_handset_coordinator.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
@@ -587,10 +584,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // The updater that adjusts the toolbar's layout for fullscreen events.
   std::unique_ptr<FullscreenUIUpdater> _fullscreenUIUpdater;
-
-  // The fullscreen disabler for the new foreground tab animation.
-  std::unique_ptr<NewForegroundTabFullscreenDisabler>
-      _foregroundTabAnimationFullscreenDisabler;
 
   // Coordinator for the External Search UI.
   ExternalSearchCoordinator* _externalSearchCoordinator;
@@ -1392,8 +1385,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   FullscreenController* fullscreenController =
       FullscreenControllerFactory::GetInstance()->GetForBrowserState(
           _browserState);
-  _foregroundTabAnimationFullscreenDisabler->Disconnect();
-  _foregroundTabAnimationFullscreenDisabler = nullptr;
   fullscreenController->RemoveObserver(_fullscreenUIUpdater.get());
   _fullscreenUIUpdater = nullptr;
   fullscreenController->SetWebStateList(nullptr);
@@ -1996,10 +1987,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       FullscreenControllerFactory::GetInstance()->GetForBrowserState(
           _browserState);
   _fullscreenUIUpdater = std::make_unique<FullscreenUIUpdater>(self);
-  // Crate the disabler for any new foreground tab animations in the tab model.
-  _foregroundTabAnimationFullscreenDisabler =
-      std::make_unique<NewForegroundTabFullscreenDisabler>(_model.webStateList,
-                                                           controller);
   // Set the FullscreenController's WebStateList.
   controller->SetWebStateList(_model.webStateList);
 
@@ -3984,8 +3971,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
     [self updateForFullscreenProgress:1.0];
 }
 
-- (void)finishFullscreenScrollWithAnimator:
-    (FullscreenScrollEndAnimator*)animator {
+- (void)finishFullscreenScrollWithAnimator:(FullscreenAnimator*)animator {
   // If the headers are being hidden, it's possible that this will reveal a
   // portion of the webview beyond the top of the page's rendered content.  In
   // order to prevent that, update the top padding and content before the
@@ -4014,15 +4000,14 @@ bubblePresenterForFeature:(const base::Feature&)feature
   // Animating layout changes of the rendered content in the WKWebView is not
   // supported, so update the content padding in the completion block of the
   // animator to trigger a rerender in the page's new viewport.
-  __weak FullscreenScrollEndAnimator* weakAnimator = animator;
+  __weak FullscreenAnimator* weakAnimator = animator;
   [animator addCompletion:^(UIViewAnimatingPosition finalPosition) {
     [weakSelf updateContentViewPaddingForFullscreenProgress:
                   [weakAnimator progressForAnimatingPosition:finalPosition]];
   }];
 }
 
-- (void)scrollFullscreenToTopWithAnimator:
-    (FullscreenScrollToTopAnimator*)animator {
+- (void)scrollFullscreenToTopWithAnimator:(FullscreenAnimator*)animator {
   CGFloat finalProgress = animator.finalProgress;
   [animator addAnimations:^{
     [self updateHeadersForFullscreenProgress:finalProgress];
@@ -4031,8 +4016,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   }];
 }
 
-- (void)showToolbarForForgroundWithAnimator:
-    (FullscreenForegroundAnimator*)animator {
+- (void)showToolbarWithAnimator:(FullscreenAnimator*)animator {
   CGFloat finalProgress = animator.finalProgress;
   [animator addAnimations:^{
     [self updateForFullscreenProgress:finalProgress];
