@@ -13,8 +13,8 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "chrome/browser/resource_coordinator/discard_reason.h"
-#include "chrome/browser/resource_coordinator/lifecycle_state.h"
 #include "content/public/browser/visibility.h"
+#include "services/resource_coordinator/public/mojom/lifecycle.mojom.h"
 
 namespace resource_coordinator {
 
@@ -72,7 +72,7 @@ class LifecycleUnit {
   virtual SortKey GetSortKey() const = 0;
 
   // Returns the current state of this LifecycleUnit.
-  virtual LifecycleState GetState() const = 0;
+  virtual mojom::LifecycleState GetState() const = 0;
 
   // Returns the current visibility of this LifecycleUnit.
   virtual content::Visibility GetVisibility() const = 0;
@@ -81,7 +81,7 @@ class LifecycleUnit {
   virtual base::TimeTicks GetLastVisibilityChangeTime() const = 0;
 
   // Request that the LifecycleUnit be frozen, return true if the request is
-  // successfuly sent.
+  // successfully sent.
   virtual bool Freeze() = 0;
 
   // Returns the estimated number of kilobytes that would be freed if this
