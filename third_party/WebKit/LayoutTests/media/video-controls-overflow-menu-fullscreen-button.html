@@ -14,6 +14,7 @@ async_test(function(t) {
   var video = document.querySelector("video");
   video.src = "content/test.ogv";
   video.setAttribute("width", "60");
+  video.setAttribute("height", "100");
 
   window.addEventListener("load", t.step_func(function() {
     var overflowList = getOverflowList(video);

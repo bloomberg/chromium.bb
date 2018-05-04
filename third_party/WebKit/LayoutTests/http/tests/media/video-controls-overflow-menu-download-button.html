@@ -16,6 +16,7 @@ async_test(function(t) {
   var video = document.querySelector("video");
   video.src = "resources/test.ogv";
   video.setAttribute("width", "60");
+  video.setAttribute("height", "100");
 
   var controlID = "-internal-media-controls-download-button";
   var downloadButton = mediaControlsElement(internals.shadowRoot(video).firstChild, controlID);

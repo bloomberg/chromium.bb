@@ -14,6 +14,7 @@ async_test(function(t) {
   var video = document.querySelector("video");
   video.src = "content/test.ogv";
   video.setAttribute("width", "60");
+  video.setAttribute("height", "100");
   // Add two captions.
   video.addTextTrack("captions");
   video.addTextTrack("captions");
