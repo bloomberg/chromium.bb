@@ -19,6 +19,7 @@
 #include "pdf/pdfium/pdfium_api_string_buffer_adapter.h"
 #include "pdf/pdfium/pdfium_engine.h"
 #include "printing/units.h"
+#include "third_party/pdfium/public/cpp/fpdf_scopers.h"
 #include "third_party/pdfium/public/fpdf_annot.h"
 
 using printing::ConvertUnitDouble;
@@ -602,10 +603,9 @@ const PDFEngine::PageFeatures* PDFiumPage::GetPageFeatures() {
   page_features_.index = index_;
   int annotation_count = FPDFPage_GetAnnotCount(page);
   for (int i = 0; i < annotation_count; ++i) {
-    FPDF_ANNOTATION annotation = FPDFPage_GetAnnot(page, i);
-    FPDF_ANNOTATION_SUBTYPE subtype = FPDFAnnot_GetSubtype(annotation);
+    ScopedFPDFAnnotation annotation(FPDFPage_GetAnnot(page, i));
+    FPDF_ANNOTATION_SUBTYPE subtype = FPDFAnnot_GetSubtype(annotation.get());
     page_features_.annotation_types.insert(subtype);
-    FPDFPage_CloseAnnot(annotation);
   }
 
   return &page_features_;
