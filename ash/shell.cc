@@ -17,7 +17,6 @@
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/accessibility_delegate.h"
 #include "ash/accessibility/accessibility_focus_ring_controller.h"
-#include "ash/accessibility/key_accessibility_enabler.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/ash_constants.h"
 #include "ash/assistant/ash_assistant_controller.h"
@@ -861,7 +860,6 @@ Shell::~Shell() {
   partial_magnification_controller_.reset();
   highlighter_controller_.reset();
   voice_interaction_controller_.reset();
-  key_accessibility_enabler_.reset();
 
   // This also deletes all RootWindows. Note that we invoke Shutdown() on
   // WindowTreeHostManager before resetting |window_tree_host_manager_|, since
@@ -1262,8 +1260,6 @@ void Shell::Init(ui::ContextFactory* context_factory,
   sms_observer_.reset(new SmsObserver());
 
   split_view_controller_.reset(new SplitViewController());
-
-  key_accessibility_enabler_ = std::make_unique<KeyAccessibilityEnabler>();
 
   // The compositor thread and main message loop have to be running in
   // order to create mirror window. Run it after the main message loop
