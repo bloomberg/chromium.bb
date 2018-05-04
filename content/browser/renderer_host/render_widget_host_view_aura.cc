@@ -668,7 +668,7 @@ void RenderWidgetHostViewAura::WasUnOccluded() {
   }
 
   // If the primary surface was evicted, we should create a new primary.
-  if (features::IsSurfaceSynchronizationEnabled() && delegated_frame_host_ &&
+  if (delegated_frame_host_ &&
       delegated_frame_host_->IsPrimarySurfaceEvicted()) {
     SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
                                 base::nullopt);
@@ -1925,8 +1925,7 @@ void RenderWidgetHostViewAura::CreateDelegatedFrameHostClient() {
   const bool enable_viz =
       base::FeatureList::IsEnabled(features::kVizDisplayCompositor);
   delegated_frame_host_ = std::make_unique<DelegatedFrameHost>(
-      frame_sink_id_, delegated_frame_host_client_.get(),
-      features::IsSurfaceSynchronizationEnabled(), enable_viz,
+      frame_sink_id_, delegated_frame_host_client_.get(), enable_viz,
       false /* should_register_frame_sink_id */);
 
   // Let the page-level input event router know about our surface ID
