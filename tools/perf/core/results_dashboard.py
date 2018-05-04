@@ -203,7 +203,8 @@ def MakeHistogramSetWithDiagnostics(histograms_file,
 
   url = _MakeStdioUrl(test_name, buildername, buildnumber)
   if url:
-    add_diagnostics_args.extend(['--log_urls', url])
+    add_diagnostics_args.extend(['--log_urls_k', 'Buildbot stdio'])
+    add_diagnostics_args.extend(['--log_urls_v', url])
 
   for k, v in revisions_dict.iteritems():
     add_diagnostics_args.extend((k, v))
