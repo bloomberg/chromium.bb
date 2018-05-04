@@ -45,7 +45,8 @@ void EnsureInterpolatedValueCached(const ActiveInterpolations& interpolations,
   auto style = ComputedStyle::Create();
   StyleResolverState state(document, element, style.get(), style.get());
   state.SetStyle(style);
-  CSSInterpolationTypesMap map(state.GetDocument().GetPropertyRegistry());
+  CSSInterpolationTypesMap map(state.GetDocument().GetPropertyRegistry(),
+                               state.GetDocument());
   CSSInterpolationEnvironment environment(map, state, nullptr);
   InvalidatableInterpolation::ApplyStack(interpolations, environment);
 }

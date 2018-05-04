@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/animation/css_interpolation_type.h"
 #include "third_party/blink/renderer/core/animation/interpolation_types_map.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
@@ -17,8 +18,8 @@ class PropertyRegistry;
 
 class CORE_EXPORT CSSInterpolationTypesMap : public InterpolationTypesMap {
  public:
-  CSSInterpolationTypesMap(const PropertyRegistry* registry)
-      : registry_(registry) {}
+  CSSInterpolationTypesMap(const PropertyRegistry* registry,
+                           const Document& document);
 
   const InterpolationTypes& Get(const PropertyHandle&) const final;
   size_t Version() const final;
@@ -30,6 +31,7 @@ class CORE_EXPORT CSSInterpolationTypesMap : public InterpolationTypesMap {
 
  private:
   Member<const PropertyRegistry> registry_;
+  bool allow_all_animations_;
 };
 
 }  // namespace blink
