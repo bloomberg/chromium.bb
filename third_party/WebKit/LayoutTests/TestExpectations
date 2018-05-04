@@ -4679,7 +4679,3 @@ crbug.com/836783 fast/peerconnection/RTCRtpSender-setParameters.html [ Pass Time
 crbug.com/838254 virtual/video-surface-layer/media/webkit-media-controls-webkit-appearance.html [ Failure ]
 
 crbug.com/839332 [ Mac ] virtual/video-surface-layer/media/video-no-audio.html [ Pass Failure ]
-
-# Sheriff 2018-05-04
-crbug.com/839734 [ Linux ] paint/invalidation/table/table-hover-on-link.html [ Pass Failure ]
-crbug.com/839734 [ Linux ] virtual/disable-spv175/paint/invalidation/table/table-hover-on-link.html [ Pass Failure ]
