@@ -555,10 +555,6 @@
       status: "experimental",
     },
     {
-      name: "GeometryInterfaces",
-      status: "stable",
-    },
-    {
       name: "HeapCompaction",
       status: "stable",
     },

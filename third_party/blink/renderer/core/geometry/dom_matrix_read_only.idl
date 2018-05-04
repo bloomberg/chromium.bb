@@ -8,8 +8,7 @@
     Constructor(optional (DOMString or sequence<unrestricted double>) init),
     RaisesException=Constructor,
     ConstructorCallWith=ExecutionContext,
-    Exposed=(Window,Worker),
-    RuntimeEnabled=GeometryInterfaces
+    Exposed=(Window,Worker)
 ] interface DOMMatrixReadOnly {
     [RaisesException, NewObject] static DOMMatrixReadOnly fromMatrix(optional DOMMatrixInit other);
     [RaisesException, NewObject] static DOMMatrixReadOnly fromFloat32Array(Float32Array array32);
