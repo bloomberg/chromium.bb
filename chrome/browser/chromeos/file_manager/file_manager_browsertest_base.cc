@@ -768,7 +768,7 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     ASSERT_TRUE(value.GetString("extensionId", &extension_id));
     ASSERT_TRUE(value.GetString("notificationId", &notification_id));
 
-    const auto delegate_id = extension_id + "-" + notification_id;
+    const std::string delegate_id = extension_id + "-" + notification_id;
     base::Optional<message_center::Notification> notification =
         display_service_->GetNotification(delegate_id);
     EXPECT_TRUE(notification);
