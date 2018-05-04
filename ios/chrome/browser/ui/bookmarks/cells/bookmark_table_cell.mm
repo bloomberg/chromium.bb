@@ -55,9 +55,9 @@ const CGFloat kBookmarkTableCellImagePadding = 16.0;
 
 #pragma mark - Initializer
 
-- (instancetype)initWithReuseIdentifier:(NSString*)bookmarkCellIdentifier {
-  self = [super initWithStyle:UITableViewCellStyleDefault
-              reuseIdentifier:bookmarkCellIdentifier];
+- (instancetype)initWithStyle:(UITableViewCellStyle)style
+              reuseIdentifier:(NSString*)bookmarkCellIdentifier {
+  self = [super initWithStyle:style reuseIdentifier:bookmarkCellIdentifier];
   if (self) {
     _titleText = [[UITextField alloc] initWithFrame:CGRectZero];
     _titleText.textColor = [[MDCPalette greyPalette] tint900];
