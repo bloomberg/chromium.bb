@@ -41,8 +41,9 @@ struct NotAdvertisedEncoder {
   }
   static std::unique_ptr<webrtc::AudioEncoder> MakeAudioEncoder(
       const Config& config,
-      int payload_type) {
-    return T::MakeAudioEncoder(config, payload_type);
+      int payload_type,
+      rtc::Optional<webrtc::AudioCodecPairId> codec_pair_id) {
+    return T::MakeAudioEncoder(config, payload_type, codec_pair_id);
   }
 };
 
@@ -59,8 +60,9 @@ struct NotAdvertisedDecoder {
     // Don't advertise support for anything.
   }
   static std::unique_ptr<webrtc::AudioDecoder> MakeAudioDecoder(
-      const Config& config) {
-    return T::MakeAudioDecoder(config);
+      const Config& config,
+      rtc::Optional<webrtc::AudioCodecPairId> codec_pair_id) {
+    return T::MakeAudioDecoder(config, codec_pair_id);
   }
 };
 
