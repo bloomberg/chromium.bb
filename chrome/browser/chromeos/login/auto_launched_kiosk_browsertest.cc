@@ -542,9 +542,7 @@ class AutoLaunchedNonKioskEnabledAppTest : public AutoLaunchedKioskTest {
   DISALLOW_COPY_AND_ASSIGN(AutoLaunchedNonKioskEnabledAppTest);
 };
 
-// Disabled due to flaky failures: https://crbug.com/838992
-IN_PROC_BROWSER_TEST_F(AutoLaunchedNonKioskEnabledAppTest,
-                       DISABLED_NotLaunched) {
+IN_PROC_BROWSER_TEST_F(AutoLaunchedNonKioskEnabledAppTest, NotLaunched) {
   // Verify that Chrome hasn't already exited, e.g. in order to apply user
   // session flags.
   ASSERT_FALSE(termination_observer_->terminated());

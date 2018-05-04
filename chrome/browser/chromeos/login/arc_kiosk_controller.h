@@ -62,11 +62,12 @@ class ArcKioskController : public LoginPerformer::Delegate,
 
   // ArcKioskSplashScreenView::Delegate implementation:
   void OnCancelArcKioskLaunch() override;
+  void OnDeletingSplashScreenView() override;
 
   // LoginDisplayHost owns itself.
   LoginDisplayHost* const host_;
   // Owned by OobeUI.
-  ArcKioskSplashScreenView* const arc_kiosk_splash_screen_view_;
+  ArcKioskSplashScreenView* arc_kiosk_splash_screen_view_;
   // Not owning here.
   Profile* profile_ = nullptr;
 
