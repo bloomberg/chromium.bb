@@ -365,13 +365,22 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   FrontendType frontend_type_;
   Profile* profile_;
   content::WebContents* main_web_contents_;
+
+  // DevToolsWindow is informed of the creation of the |toolbox_web_contents_|
+  // in WebContentsCreated right before ownership is passed to to DevToolsWindow
+  // in AddNewContents(). The former call has information not available in the
+  // latter, so it's easiest to record a raw pointer first in
+  // |toolbox_web_contents_|, and then update ownership immediately afterwards.
+  // TODO(erikchen): If we updated AddNewContents() to also pass back the
+  // target url, then we wouldn't need to listen to WebContentsCreated at all.
   content::WebContents* toolbox_web_contents_;
+  std::unique_ptr<content::WebContents> owned_toolbox_web_contents_;
+
   DevToolsUIBindings* bindings_;
   Browser* browser_;
 
   // When DevToolsWindow is docked, it owns main_web_contents_. When it isn't
   // docked, the tab strip model owns the main_web_contents_.
-  // TODO(erikchen): This needs more careful thinking about.
   bool is_docked_;
   std::unique_ptr<content::WebContents> owned_main_web_contents_;
 
