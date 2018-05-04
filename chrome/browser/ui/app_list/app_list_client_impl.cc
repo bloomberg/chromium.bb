@@ -49,9 +49,13 @@ AppListClientImpl::AppListClientImpl()
 
   AppListServiceImpl::GetInstance()->SetAppListControllerAndClient(
       app_list_controller_.get(), this);
+
+  user_manager::UserManager::Get()->AddSessionStateObserver(this);
 }
 
-AppListClientImpl::~AppListClientImpl() = default;
+AppListClientImpl::~AppListClientImpl() {
+  user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
+}
 
 void AppListClientImpl::StartSearch(const base::string16& raw_query) {
   if (search_controller_) {
@@ -188,6 +192,13 @@ void AppListClientImpl::OnItemUpdated(ash::mojom::AppListItemMetadataPtr item) {
   model_updater_->OnItemUpdated(std::move(item));
 }
 
+void AppListClientImpl::ActiveUserChanged(
+    const user_manager::User* active_user) {
+  if (!active_user->is_profile_created())
+    return;
+  UpdateProfile();
+}
+
 void AppListClientImpl::UpdateProfile() {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   app_list::AppListSyncableService* syncable_service =
@@ -223,12 +234,12 @@ void AppListClientImpl::SetProfile(Profile* new_profile) {
   DCHECK(!profile_->IsGuestSession() || profile_->IsOffTheRecord())
       << "Guest mode must use incognito profile";
 
-  TemplateURLService* template_url_service =
-      TemplateURLServiceFactory::GetForProfile(profile_);
-  template_url_service_observer_.Add(template_url_service);
+  template_url_service_observer_.Add(
+      TemplateURLServiceFactory::GetForProfile(profile_));
 
   app_list::AppListSyncableService* syncable_service =
       app_list::AppListSyncableServiceFactory::GetForProfile(profile_);
+
   model_updater_ = syncable_service->GetModelUpdater();
   model_updater_->SetActive(true);
 
