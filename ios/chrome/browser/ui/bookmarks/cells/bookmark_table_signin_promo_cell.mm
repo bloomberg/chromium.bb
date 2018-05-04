@@ -33,8 +33,9 @@ const NSInteger kSigninPromoMargin = 8;
   return YES;
 }
 
-- (instancetype)initWithFrame:(CGRect)frame {
-  self = [super initWithFrame:frame];
+- (instancetype)initWithStyle:(UITableViewCellStyle)style
+              reuseIdentifier:(NSString*)reuseIdentifier {
+  self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
   if (self) {
     UIView* contentView = self.contentView;
     _signinPromoView = [[SigninPromoView alloc] initWithFrame:self.bounds];

@@ -33,11 +33,9 @@ class BookmarkNode;
 
 @interface BookmarkTableCell : UITableViewCell
 
-- (instancetype)initWithReuseIdentifier:(NSString*)bookmarkCellIdentifier
-    NS_DESIGNATED_INITIALIZER;
-
 - (instancetype)initWithStyle:(UITableViewCellStyle)style
-              reuseIdentifier:(NSString*)reuseIdentifier NS_UNAVAILABLE;
+              reuseIdentifier:(NSString*)reuseIdentifier
+    NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
 
