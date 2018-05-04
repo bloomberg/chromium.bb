@@ -28,7 +28,7 @@
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/one_google_bar/one_google_bar_fetcher.h"
+#include "chrome/browser/search/one_google_bar/one_google_bar_loader.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_service.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_service_factory.h"
 #include "chrome/browser/search/search.h"
@@ -1445,9 +1445,8 @@ class LocalNTPInterceptionWebRequestAPITest
 
     https_test_server_.StartAcceptingConnections();
 
-    one_google_bar_url_ = one_google_bar_service()
-                              ->fetcher_for_testing()
-                              ->GetFetchURLForTesting();
+    one_google_bar_url_ =
+        one_google_bar_service()->loader_for_testing()->GetLoadURLForTesting();
 
     // Can't declare |runloop_| as a data member on the stack since it needs to
     // be be constructed from a single-threaded context.

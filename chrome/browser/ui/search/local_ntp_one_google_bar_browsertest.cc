@@ -10,7 +10,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_data.h"
-#include "chrome/browser/search/one_google_bar/one_google_bar_fetcher.h"
+#include "chrome/browser/search/one_google_bar/one_google_bar_loader.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_service.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_service_factory.h"
 #include "chrome/browser/search/search.h"
@@ -28,15 +28,15 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-// A simple fake implementation of OneGoogleBarFetcher that immediately returns
+// A simple fake implementation of OneGoogleBarLoader that immediately returns
 // a pre-configured OneGoogleBarData, which is null by default.
-class FakeOneGoogleBarFetcher : public OneGoogleBarFetcher {
+class FakeOneGoogleBarLoader : public OneGoogleBarLoader {
  public:
-  void Fetch(OneGoogleCallback callback) override {
+  void Load(OneGoogleCallback callback) override {
     std::move(callback).Run(Status::OK, one_google_bar_data_);
   }
 
-  GURL GetFetchURLForTesting() const override { return GURL(); }
+  GURL GetLoadURLForTesting() const override { return GURL(); }
 
   void set_one_google_bar_data(
       const base::Optional<OneGoogleBarData>& one_google_bar_data) {
@@ -51,10 +51,10 @@ class LocalNTPOneGoogleBarSmokeTest : public InProcessBrowserTest {
  public:
   LocalNTPOneGoogleBarSmokeTest() {}
 
-  FakeOneGoogleBarFetcher* one_google_bar_fetcher() {
-    return static_cast<FakeOneGoogleBarFetcher*>(
+  FakeOneGoogleBarLoader* one_google_bar_loader() {
+    return static_cast<FakeOneGoogleBarLoader*>(
         OneGoogleBarServiceFactory::GetForProfile(browser()->profile())
-            ->fetcher_for_testing());
+            ->loader_for_testing());
   }
 
  private:
@@ -79,7 +79,7 @@ class LocalNTPOneGoogleBarSmokeTest : public InProcessBrowserTest {
         GaiaCookieManagerServiceFactory::GetForProfile(
             Profile::FromBrowserContext(context));
     return std::make_unique<OneGoogleBarService>(
-        cookie_service, std::make_unique<FakeOneGoogleBarFetcher>());
+        cookie_service, std::make_unique<FakeOneGoogleBarLoader>());
   }
 
   void OnWillCreateBrowserContextServices(content::BrowserContext* context) {
@@ -122,7 +122,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPOneGoogleBarSmokeTest,
   data.in_head_script = "window.inHeadRan = true;";
   data.after_bar_script = "window.afterBarRan = true;";
   data.end_of_body_script = "console.log('ogb-done');";
-  one_google_bar_fetcher()->set_one_google_bar_data(data);
+  one_google_bar_loader()->set_one_google_bar_data(data);
 
   // Open a new blank tab.
   content::WebContents* active_tab =

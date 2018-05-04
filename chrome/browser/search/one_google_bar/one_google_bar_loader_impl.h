@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SEARCH_ONE_GOOGLE_BAR_ONE_GOOGLE_BAR_FETCHER_IMPL_H_
-#define CHROME_BROWSER_SEARCH_ONE_GOOGLE_BAR_ONE_GOOGLE_BAR_FETCHER_IMPL_H_
+#ifndef CHROME_BROWSER_SEARCH_ONE_GOOGLE_BAR_ONE_GOOGLE_BAR_LOADER_IMPL_H_
+#define CHROME_BROWSER_SEARCH_ONE_GOOGLE_BAR_ONE_GOOGLE_BAR_LOADER_IMPL_H_
 
 #include <memory>
 #include <string>
@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "chrome/browser/search/one_google_bar/one_google_bar_fetcher.h"
+#include "chrome/browser/search/one_google_bar/one_google_bar_loader.h"
 
 class GoogleURLTracker;
 
@@ -29,25 +29,25 @@ struct OneGoogleBarData;
 
 // TODO(treib): This class uses cookies for authentication. After "Dice" account
 // consistency launches, we should switch to using OAuth2 instead.
-// See crbug.com/751534.
-class OneGoogleBarFetcherImpl : public OneGoogleBarFetcher {
+// See https://crbug.com/751534.
+class OneGoogleBarLoaderImpl : public OneGoogleBarLoader {
  public:
   // |api_url_override| can be either absolute, or relative to the Google base
   // URL.
-  OneGoogleBarFetcherImpl(
+  OneGoogleBarLoaderImpl(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       GoogleURLTracker* google_url_tracker,
       const std::string& application_locale,
       const base::Optional<std::string>& api_url_override,
       bool account_consistency_mirror_required);
-  ~OneGoogleBarFetcherImpl() override;
+  ~OneGoogleBarLoaderImpl() override;
 
-  void Fetch(OneGoogleCallback callback) override;
+  void Load(OneGoogleCallback callback) override;
 
-  GURL GetFetchURLForTesting() const override;
+  GURL GetLoadURLForTesting() const override;
 
  private:
-  class AuthenticatedURLFetcher;
+  class AuthenticatedURLLoader;
 
   GURL GetApiUrl() const;
 
@@ -66,11 +66,11 @@ class OneGoogleBarFetcherImpl : public OneGoogleBarFetcher {
   const bool account_consistency_mirror_required_;
 
   std::vector<OneGoogleCallback> callbacks_;
-  std::unique_ptr<AuthenticatedURLFetcher> pending_request_;
+  std::unique_ptr<AuthenticatedURLLoader> pending_request_;
 
-  base::WeakPtrFactory<OneGoogleBarFetcherImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<OneGoogleBarLoaderImpl> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(OneGoogleBarFetcherImpl);
+  DISALLOW_COPY_AND_ASSIGN(OneGoogleBarLoaderImpl);
 };
 
-#endif  // CHROME_BROWSER_SEARCH_ONE_GOOGLE_BAR_ONE_GOOGLE_BAR_FETCHER_IMPL_H_
+#endif  // CHROME_BROWSER_SEARCH_ONE_GOOGLE_BAR_ONE_GOOGLE_BAR_LOADER_IMPL_H_

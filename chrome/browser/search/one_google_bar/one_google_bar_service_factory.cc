@@ -13,7 +13,7 @@
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/one_google_bar/one_google_bar_fetcher_impl.h"
+#include "chrome/browser/search/one_google_bar/one_google_bar_loader_impl.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_service.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
@@ -71,7 +71,7 @@ KeyedService* OneGoogleBarServiceFactory::BuildServiceInstanceFor(
           ->GetURLLoaderFactoryForBrowserProcess();
   return new OneGoogleBarService(
       cookie_service,
-      std::make_unique<OneGoogleBarFetcherImpl>(
+      std::make_unique<OneGoogleBarLoaderImpl>(
           url_loader_factory, google_url_tracker,
           g_browser_process->GetApplicationLocale(), override_api_url,
           AccountConsistencyModeManager::IsMirrorEnabledForProfile(profile) &&
