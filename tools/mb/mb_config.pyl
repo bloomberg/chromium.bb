@@ -1045,7 +1045,7 @@
     ],
 
     'cast_audio_release_bot': [
-      'cast', 'cast_audio', 'release_bot',
+      'cast', 'cast_audio', 'release_bot', 'minimal_symbols',
     ],
 
     'cast_audio_release_trybot': [
