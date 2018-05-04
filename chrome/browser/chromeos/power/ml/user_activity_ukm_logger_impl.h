@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/power/ml/user_activity_ukm_logger.h"
-#include "chrome/browser/resource_coordinator/tab_metrics_event.pb.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
 namespace chromeos {

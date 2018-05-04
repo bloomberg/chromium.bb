@@ -6,22 +6,17 @@
 
 #include <algorithm>
 #include <string>
-#include <vector>
 
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
-#include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/tab_features.h"
-#include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/custom_handlers/protocol_handler.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_importance_signals.h"
@@ -33,61 +28,6 @@
 using metrics::TabMetricsEvent;
 
 namespace {
-
-// Order must match the metrics.TabMetricsEvent.Scheme enum.
-const char* kWhitelistedSchemes[] = {
-    "",  // Placeholder for PROTOCOL_HANDLER_SCHEME_OTHER.
-    "bitcoin", "geo",  "im",   "irc",         "ircs", "magnet", "mailto",
-    "mms",     "news", "nntp", "openpgp4fpr", "sip",  "sms",    "smsto",
-    "ssh",     "tel",  "urn",  "webcal",      "wtai", "xmpp",
-};
-
-// Adds a DefaultProtocolHandler metric with the handler's scheme to |entry|
-// if the protocol handler is a default protocol handler.
-void PopulateSchemeForHandler(ProtocolHandlerRegistry* registry,
-                              const ProtocolHandler& handler,
-                              ukm::builders::TabManager_TabMetrics* entry) {
-  if (registry->IsDefault(handler)) {
-    // Append a DefaultProtocolHandler metric whose value is the scheme.
-    // Note that multiple DefaultProtocolHandler metrics may be added, one for
-    // each scheme the entry's origin handles by default.
-    entry->SetDefaultProtocolHandler(
-        TabMetricsLogger::GetSchemeValueFromString(handler.protocol()));
-  }
-}
-
-// Populates the protocol handler fields based on the WebContents' origin.
-// We match the origin instead of the full page URL because:
-// - a handler relevant for one page is probably relevant for the whole site
-// - a handler maps to a template string, so matching on a full URL is hard
-// - even if this page was opened from a protocol handler, a redirect may have
-//   changed the URL anyway.
-void PopulateProtocolHandlers(content::WebContents* web_contents,
-                              ukm::builders::TabManager_TabMetrics* entry) {
-  ProtocolHandlerRegistry* registry =
-      ProtocolHandlerRegistryFactory::GetForBrowserContext(
-          web_contents->GetBrowserContext());
-  // May be null in tests.
-  if (!registry)
-    return;
-
-  const GURL origin = web_contents->GetLastCommittedURL().GetOrigin();
-  if (origin.is_empty())
-    return;
-
-  // Fetch all schemes that have been registered (accepted or denied).
-  std::vector<std::string> registered_schemes;
-  registry->GetRegisteredProtocols(&registered_schemes);
-
-  // Protocol handlers are stored by scheme, not URL. For each scheme, find the
-  // URLs of the handlers registered for it.
-  for (const std::string& scheme : registered_schemes) {
-    for (const ProtocolHandler& handler : registry->GetHandlersFor(scheme)) {
-      if (handler.url().GetOrigin() == origin)
-        PopulateSchemeForHandler(registry, handler, entry);
-    }
-  }
-}
 
 // Populates navigation-related metrics.
 void PopulatePageTransitionFeatures(resource_coordinator::TabFeatures* tab,
@@ -155,18 +95,6 @@ TabMetricsEvent::ContentType TabMetricsLogger::GetContentTypeFromMimeType(
 }
 
 // static
-TabMetricsEvent::ProtocolHandlerScheme
-TabMetricsLogger::GetSchemeValueFromString(const std::string& scheme) {
-  const char* const* const scheme_ptr = std::find(
-      std::begin(kWhitelistedSchemes), std::end(kWhitelistedSchemes), scheme);
-  if (scheme_ptr == std::end(kWhitelistedSchemes))
-    return TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_OTHER;
-
-  size_t index = scheme_ptr - std::begin(kWhitelistedSchemes);
-  return static_cast<TabMetricsEvent::ProtocolHandlerScheme>(index);
-}
-
-// static
 int TabMetricsLogger::GetSiteEngagementScore(
     const content::WebContents* web_contents) {
   if (!SiteEngagementService::IsEnabled())
@@ -195,18 +123,11 @@ resource_coordinator::TabFeatures TabMetricsLogger::GetTabFeatures(
 
   resource_coordinator::TabFeatures tab;
 
-  TabMetricsEvent::ContentType content_type =
-      GetContentTypeFromMimeType(web_contents->GetContentsMimeType());
-  tab.content_type = content_type;
   tab.has_before_unload_handler =
       web_contents->GetMainFrame()->GetSuddenTerminationDisablerState(
           blink::kBeforeUnloadHandler);
   tab.has_form_entry =
       web_contents->GetPageImportanceSignals().had_form_interaction;
-  tab.is_extension_protected =
-      !resource_coordinator::TabLifecycleUnitExternal::FromWebContents(
-           web_contents)
-           ->IsAutoDiscardable();
 
   int index = tab_strip_model->GetIndexOfWebContents(web_contents);
   DCHECK_NE(index, TabStripModel::kNoTab);
@@ -259,16 +180,12 @@ void TabMetricsLogger::LogBackgroundTab(ukm::SourceId ukm_source_id,
   ukm::builders::TabManager_TabMetrics entry(ukm_source_id);
   resource_coordinator::TabFeatures tab = GetTabFeatures(browser, tab_metrics);
 
-  PopulateProtocolHandlers(web_contents, &entry);
-
   // Keep these Set functions in alphabetical order so they're easy to check
   // against the list of metrics in the UKM event.
   // TODO(michaelpg): Add PluginType field if mime type matches "application/*"
   // using PluginUMAReporter.
-  entry.SetContentType(tab.content_type);
   entry.SetHasBeforeUnloadHandler(tab.has_before_unload_handler);
   entry.SetHasFormEntry(tab.has_form_entry);
-  entry.SetIsExtensionProtected(tab.is_extension_protected);
   entry.SetIsPinned(tab.is_pinned);
   entry.SetKeyEventCount(tab.key_event_count);
   entry.SetMouseEventCount(tab.mouse_event_count);

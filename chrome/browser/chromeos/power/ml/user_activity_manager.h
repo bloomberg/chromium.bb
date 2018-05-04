@@ -45,6 +45,7 @@ struct TabProperty {
   // Tab URL's engagement score. -1 if engagement service is disabled.
   int engagement_score;
   // Tab content type.
+  // TODO(michaelpg): Move definition into user_activity_event.proto.
   metrics::TabMetricsEvent::ContentType content_type;
   // Whether user has form entry, i.e. text input.
   bool has_form_entry;

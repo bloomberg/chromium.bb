@@ -5,7 +5,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "chrome/browser/resource_coordinator/tab_metrics_event.pb.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -19,7 +18,6 @@
 #include "services/metrics/public/mojom/ukm_interface.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using metrics::TabMetricsEvent;
 using ukm::builders::TabManager_TabMetrics;
 using ukm::builders::TabManager_Background_ForegroundedOrClosed;
 
@@ -33,12 +31,8 @@ const char* kFOCEntryName =
 
 // The default metric values for a tab.
 const UkmMetricMap kBasicMetricValues({
-    {TabManager_TabMetrics::kContentTypeName,
-     TabMetricsEvent::CONTENT_TYPE_TEXT_HTML},
-    {TabManager_TabMetrics::kDefaultProtocolHandlerName, base::nullopt},
     {TabManager_TabMetrics::kHasBeforeUnloadHandlerName, 0},
     {TabManager_TabMetrics::kHasFormEntryName, 0},
-    {TabManager_TabMetrics::kIsExtensionProtectedName, 0},
     {TabManager_TabMetrics::kIsPinnedName, 0},
     {TabManager_TabMetrics::kKeyEventCountName, 0},
     {TabManager_TabMetrics::kNavigationEntryCountName, 1},
