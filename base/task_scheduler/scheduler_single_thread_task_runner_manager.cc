@@ -91,7 +91,7 @@ class SchedulerWorkerDelegate : public SchedulerWorker::Delegate {
     worker_->WakeUp();
   }
 
-  void OnMainEntry(SchedulerWorker* worker) override {
+  void OnMainEntry(const SchedulerWorker* /* worker */) override {
     thread_ref_checker_.Set();
     PlatformThread::SetName(thread_name_);
   }
@@ -178,7 +178,7 @@ class SchedulerWorkerCOMDelegate : public SchedulerWorkerDelegate {
   ~SchedulerWorkerCOMDelegate() override { DCHECK(!scoped_com_initializer_); }
 
   // SchedulerWorker::Delegate:
-  void OnMainEntry(SchedulerWorker* worker) override {
+  void OnMainEntry(const SchedulerWorker* worker) override {
     SchedulerWorkerDelegate::OnMainEntry(worker);
 
     scoped_com_initializer_ = std::make_unique<win::ScopedCOMInitializer>();

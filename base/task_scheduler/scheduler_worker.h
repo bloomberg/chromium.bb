@@ -52,7 +52,7 @@ class BASE_EXPORT SchedulerWorker
     ~Delegate() override = default;
 
     // Called by |worker|'s thread when it enters its main function.
-    virtual void OnMainEntry(SchedulerWorker* worker) = 0;
+    virtual void OnMainEntry(const SchedulerWorker* worker) = 0;
 
     // Called by |worker|'s thread to get a Sequence from which to run a Task.
     virtual scoped_refptr<Sequence> GetWork(SchedulerWorker* worker) = 0;
