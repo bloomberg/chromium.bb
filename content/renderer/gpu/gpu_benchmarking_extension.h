@@ -82,6 +82,15 @@ class GpuBenchmarking : public gin::Wrappable<GpuBenchmarking> {
   bool HasGpuProcess();
   void GetGpuDriverBugWorkarounds(gin::Arguments* args);
 
+  // Starts/stops the sampling profiler. StartProfiling takes one optional
+  // argument, which is a file name for saving the data (relative to `pwd`
+  // or %USERDIR%); if omitted, it defaults to "profile.pb".
+  //
+  // DO NOT USE THIS IN CHROMIUM TESTS -- we don't want to fill up the bots'
+  // hard drives with profile data.
+  void StartProfiling(gin::Arguments* args);
+  void StopProfiling();
+
   RenderFrameImpl* render_frame_;
   mojom::InputInjectorPtr input_injector_;
   DISALLOW_COPY_AND_ASSIGN(GpuBenchmarking);
