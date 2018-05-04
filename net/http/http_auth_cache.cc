@@ -253,13 +253,6 @@ bool HttpAuthCache::Remove(const GURL& origin,
   return false;
 }
 
-void HttpAuthCache::ClearEntriesAddedWithin(base::TimeDelta duration) {
-  base::TimeTicks begin_time = tick_clock_->NowTicks() - duration;
-  base::EraseIf(entries_, [begin_time](const Entry& entry) {
-    return entry.creation_time_ticks_ >= begin_time;
-  });
-}
-
 void HttpAuthCache::ClearEntriesAddedSince(base::Time begin_time) {
   if (begin_time.is_null()) {
     ClearAllEntries();

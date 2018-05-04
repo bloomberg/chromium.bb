@@ -165,9 +165,6 @@ class NET_EXPORT HttpAuthCache {
               HttpAuth::Scheme scheme,
               const AuthCredentials& credentials);
 
-  // Clears cache entries created within |duration| of base::TimeTicks::Now().
-  void ClearEntriesAddedWithin(base::TimeDelta duration);
-
   // Clears cache entries added since |begin_time| or all entries if
   // |begin_time| is null.
   void ClearEntriesAddedSince(base::Time begin_time);
