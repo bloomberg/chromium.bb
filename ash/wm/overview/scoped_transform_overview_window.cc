@@ -8,10 +8,12 @@
 
 #include "ash/public/cpp/ash_features.h"
 #include "ash/shell.h"
+#include "ash/wm/overview/cleanup_animation_observer.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/overview_window_animation_observer.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/overview/window_grid.h"
+#include "ash/wm/overview/window_selector.h"
 #include "ash/wm/overview/window_selector_item.h"
 #include "ash/wm/window_mirror_view.h"
 #include "ash/wm/window_state.h"
@@ -25,12 +27,15 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_observer.h"
 #include "ui/compositor/paint_recorder.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/transform_util.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/shadow_controller.h"
+#include "ui/wm/core/shadow_types.h"
+#include "ui/wm/core/window_animations.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
@@ -191,9 +196,10 @@ void ScopedTransformOverviewWindow::RestoreWindow(bool reset_transform) {
   wm::GetWindowState(window_)->set_ignored_by_shelf(ignored_by_shelf_);
   if (minimized_widget_) {
     mask_.reset();
-    // TODO(oshima): Use unminimize animation instead of hiding animation.
-    minimized_widget_->CloseNow();
-    minimized_widget_.reset();
+    // Fade out the minimized widget. This animation continues past the
+    // lifetime of |this|.
+    FadeOutWidgetOnExit(std::move(minimized_widget_),
+                        OVERVIEW_ANIMATION_EXIT_OVERVIEW_MODE_FADE_OUT);
     return;
   }
 
@@ -609,6 +615,12 @@ void ScopedTransformOverviewWindow::CreateMirrorWindowForMinimizedState() {
   }
   minimized_widget_->SetBounds(bounds);
   minimized_widget_->Show();
+
+  minimized_widget_->SetOpacity(0.f);
+  ScopedOverviewAnimationSettings animation_settings(
+      OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_TABLET_FADE_IN,
+      minimized_widget_->GetNativeWindow());
+  minimized_widget_->SetOpacity(1.f);
 }
 
 void ScopedTransformOverviewWindow::CreateAndApplyMaskAndShadow() {

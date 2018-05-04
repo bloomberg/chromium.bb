@@ -283,9 +283,6 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // Updates the accessibility name to match the window title.
   void UpdateAccessibilityName();
 
-  // Fades out a window caption when exiting overview mode.
-  void FadeOut(std::unique_ptr<views::Widget> widget);
-
   // Select this window if |event_location| is less than the drag threshold for
   // clicks. This should only be called if the original event was on the title
   // bar (|tap_down_event_on_title_| has a value).

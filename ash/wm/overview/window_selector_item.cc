@@ -12,7 +12,6 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/wm/overview/cleanup_animation_observer.h"
 #include "ash/wm/overview/overview_animation_type.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/overview_window_animation_observer.h"
@@ -759,7 +758,10 @@ void WindowSelectorItem::Shutdown() {
     background_view_->OnItemRestored();
     background_view_ = nullptr;
   }
-  FadeOut(std::move(item_widget_));
+  // Fade out the item widget. This animation continues past the lifetime
+  // of |this|.
+  FadeOutWidgetOnExit(std::move(item_widget_),
+                      OVERVIEW_ANIMATION_EXIT_OVERVIEW_MODE_FADE_OUT);
 }
 
 void WindowSelectorItem::PrepareForOverview() {
@@ -804,6 +806,9 @@ void WindowSelectorItem::SetBounds(const gfx::Rect& target_bounds,
 
   gfx::Rect inset_bounds(target_bounds);
   inset_bounds.Inset(kWindowMargin, kWindowMargin);
+  if (wm::GetWindowState(GetWindow())->IsMinimized())
+    new_animation_type = OVERVIEW_ANIMATION_NONE;
+
   SetItemBounds(inset_bounds, new_animation_type);
 
   // SetItemBounds is called before UpdateHeaderLayout so the header can
@@ -1294,9 +1299,13 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
 void WindowSelectorItem::UpdateHeaderLayout(
     HeaderFadeInMode mode,
     OverviewAnimationType animation_type) {
-  // On exit while in tablet mode, do not move the header.
-  if (mode == HeaderFadeInMode::kExit && UseTabletModeAnimations(GetWindow()))
+  // Do not move the header on exit if the window is originally minimized
+  // or in tablet mode.
+  if (mode == HeaderFadeInMode::kExit &&
+      (UseTabletModeAnimations(GetWindow()) ||
+       wm::GetWindowState(GetWindow())->IsMinimized())) {
     return;
+  }
 
   gfx::Rect transformed_window_bounds =
       transform_window_.window_selector_bounds().value_or(
@@ -1380,28 +1389,6 @@ void WindowSelectorItem::AnimateOpacity(float opacity,
 void WindowSelectorItem::UpdateAccessibilityName() {
   caption_container_view_->listener_button()->SetAccessibleName(
       GetWindow()->GetTitle());
-}
-
-void WindowSelectorItem::FadeOut(std::unique_ptr<views::Widget> widget) {
-  widget->SetOpacity(1.f);
-
-  // Fade out the widget. This animation continues past the lifetime of |this|.
-  aura::Window* widget_window = widget->GetNativeWindow();
-  ScopedOverviewAnimationSettings animation_settings(
-      OverviewAnimationType::OVERVIEW_ANIMATION_EXIT_OVERVIEW_MODE_FADE_OUT,
-      widget_window);
-  // CleanupAnimationObserver will delete itself (and the widget) when the
-  // opacity animation is complete.
-  // Ownership over the observer is passed to the window_selector_->delegate()
-  // which has longer lifetime so that animations can continue even after the
-  // overview mode is shut down.
-  views::Widget* widget_ptr = widget.get();
-  std::unique_ptr<CleanupAnimationObserver> observer(
-      new CleanupAnimationObserver(std::move(widget)));
-  animation_settings.AddObserver(observer.get());
-  window_selector_->delegate()->AddDelayedAnimationObserver(
-      std::move(observer));
-  widget_ptr->SetOpacity(0.f);
 }
 
 gfx::SlideAnimation* WindowSelectorItem::GetBackgroundViewAnimation() {

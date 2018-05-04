@@ -6,6 +6,7 @@
 #define ASH_WM_OVERVIEW_OVERVIEW_UTILS_H_
 
 #include "ash/ash_export.h"
+#include "ash/wm/overview/overview_animation_type.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/compositor/layer_type.h"
 
@@ -37,6 +38,13 @@ bool IsNewOverviewAnimationsEnabled();
 bool IsNewOverviewUi();
 
 bool IsOverviewSwipeToCloseEnabled();
+
+// Fades |widget| to opacity zero with animation settings depending on
+// |animation_type|. Used by several classes which need to be destroyed on
+// exiting overview, but have some widgets which need to continue animating.
+// |widget| is destroyed after finishing animation.
+void FadeOutWidgetOnExit(std::unique_ptr<views::Widget> widget,
+                         OverviewAnimationType animation_type);
 
 // Creates and returns a background translucent widget parented in
 // |root_window|'s default container and having |background_color|.
