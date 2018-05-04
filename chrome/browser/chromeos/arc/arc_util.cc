@@ -563,11 +563,10 @@ void UpdateArcFileSystemCompatibilityPrefIfNeeded(
 
 ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
     const Profile* profile) {
-  if (!chromeos::switches::IsVoiceInteractionFlagsEnabled())
+  if (!chromeos::switches::IsAssistantEnabled() &&
+      !chromeos::switches::IsVoiceInteractionFlagsEnabled()) {
     return ash::mojom::AssistantAllowedState::DISALLOWED_BY_FLAG;
-
-  if (!chromeos::switches::IsVoiceInteractionLocalesSupported())
-    return ash::mojom::AssistantAllowedState::DISALLOWED_BY_LOCALE;
+  }
 
   if (!chromeos::ProfileHelper::IsPrimaryProfile(profile))
     return ash::mojom::AssistantAllowedState::DISALLOWED_BY_NONPRIMARY_USER;
@@ -578,14 +577,19 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
   if (profile->IsLegacySupervised())
     return ash::mojom::AssistantAllowedState::DISALLOWED_BY_SUPERVISED_USER;
 
-  const PrefService* prefs = profile->GetPrefs();
-  if (prefs->IsManagedPreference(prefs::kArcEnabled) &&
-      !prefs->GetBoolean(prefs::kArcEnabled)) {
-    return ash::mojom::AssistantAllowedState::DISALLOWED_BY_ARC_POLICY;
-  }
+  if (chromeos::switches::IsVoiceInteractionFlagsEnabled()) {
+    if (!chromeos::switches::IsVoiceInteractionLocalesSupported())
+      return ash::mojom::AssistantAllowedState::DISALLOWED_BY_LOCALE;
 
-  if (!IsArcAllowedForProfile(profile))
-    return ash::mojom::AssistantAllowedState::DISALLOWED_BY_ARC_DISALLOWED;
+    const PrefService* prefs = profile->GetPrefs();
+    if (prefs->IsManagedPreference(prefs::kArcEnabled) &&
+        !prefs->GetBoolean(prefs::kArcEnabled)) {
+      return ash::mojom::AssistantAllowedState::DISALLOWED_BY_ARC_POLICY;
+    }
+
+    if (!IsArcAllowedForProfile(profile))
+      return ash::mojom::AssistantAllowedState::DISALLOWED_BY_ARC_DISALLOWED;
+  }
 
   return ash::mojom::AssistantAllowedState::ALLOWED;
 }
