@@ -50,13 +50,11 @@ bool OverlayStrategyFullscreen::Attempt(
 
   if (!candidate.display_rect.origin().IsOrigin() ||
       gfx::ToRoundedSize(candidate.display_rect.size()) !=
-          render_pass->output_rect.size() ||
-      render_pass->output_rect.size() != candidate.resource_size_in_pixels) {
+          render_pass->output_rect.size()) {
     return false;
   }
   candidate.is_opaque = true;
   candidate.plane_z_order = 0;
-  candidate.overlay_handled = true;
   cc::OverlayCandidateList new_candidate_list;
   new_candidate_list.push_back(candidate);
   capability_checker_->CheckOverlaySupport(&new_candidate_list);
