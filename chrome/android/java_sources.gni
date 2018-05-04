@@ -1982,6 +1982,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/contextualsearch/ContextualSearchSelectionControllerTest.java",
   "junit/src/org/chromium/chrome/browser/contextualsearch/SelectionClientManagerTest.java",
   "junit/src/org/chromium/chrome/browser/contextual_suggestions/FetchHelperTest.java",
+  "junit/src/org/chromium/chrome/browser/contextual_suggestions/GoogleSearchRestrictionTest.java",
   "junit/src/org/chromium/chrome/browser/contextual_suggestions/PageViewTimerTest.java",
   "junit/src/org/chromium/chrome/browser/cookies/CanonicalCookieTest.java",
   "junit/src/org/chromium/chrome/browser/crash/LogcatExtractionRunnableUnitTest.java",

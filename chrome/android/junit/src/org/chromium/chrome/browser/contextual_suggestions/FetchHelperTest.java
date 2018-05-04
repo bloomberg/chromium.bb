@@ -46,6 +46,22 @@ public final class FetchHelperTest {
     private static final String STARTING_URL = "http://starting.url";
     private static final String DIFFERENT_URL = "http://different.url";
 
+    private class TestFetchHelper extends FetchHelper {
+        public TestFetchHelper(Delegate delegate, TabModelSelector tabModelSelector) {
+            super(delegate, tabModelSelector);
+        }
+
+        @Override
+        boolean requireCurrentPageFromSRP() {
+            return false;
+        }
+
+        @Override
+        boolean requireNavChainFromSRP() {
+            return false;
+        }
+    }
+
     @Mock
     private TabModelSelector mTabModelSelector;
     @Mock
@@ -366,8 +382,9 @@ public final class FetchHelperTest {
     }
 
     private FetchHelper createFetchHelper() {
-        FetchHelper helper = new FetchHelper(mDelegate, mTabModelSelector);
+        FetchHelper helper = new TestFetchHelper(mDelegate, mTabModelSelector);
         helper.initialize();
+
         if (mTabModelSelector.getCurrentTab() != null && !mTab.isIncognito()) {
             verify(mTab, times(1)).addObserver(mTabObserverCaptor.capture());
         }
