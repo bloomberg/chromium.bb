@@ -312,13 +312,13 @@ TEST_P(LayerTreeHostMasksForBackgroundFiltersPixelTest,
   float average_error_allowed_in_bad_pixels = 100.0f;
   int large_error_allowed = 256;
   int small_error_allowed = 0;
-  pixel_comparator_.reset(new FuzzyPixelComparator(
+  pixel_comparator_ = std::make_unique<FuzzyPixelComparator>(
       true,  // discard_alpha
       percentage_pixels_large_error,
       percentage_pixels_small_error,
       average_error_allowed_in_bad_pixels,
       large_error_allowed,
-      small_error_allowed));
+      small_error_allowed);
 
   RunPixelResourceTest(background,
                        base::FilePath(
@@ -363,13 +363,13 @@ TEST_P(LayerTreeHostMasksForBackgroundFiltersPixelTest,
   float average_error_allowed_in_bad_pixels = 256.0f;
   int large_error_allowed = 256;
   int small_error_allowed = 0;
-  pixel_comparator_.reset(new FuzzyPixelComparator(
+  pixel_comparator_ = std::make_unique<FuzzyPixelComparator>(
       true,  // discard_alpha
       percentage_pixels_large_error,
       percentage_pixels_small_error,
       average_error_allowed_in_bad_pixels,
       large_error_allowed,
-      small_error_allowed));
+      small_error_allowed);
 
   RunPixelResourceTest(background,
                        base::FilePath(
@@ -430,11 +430,11 @@ class LayerTreeHostMaskAsBlendingPixelTest
       small_error_allowed = 1;
     }
 
-    pixel_comparator_.reset(new FuzzyPixelComparator(
+    pixel_comparator_ = std::make_unique<FuzzyPixelComparator>(
         false,  // discard_alpha
         percentage_pixels_error, percentage_pixels_small_error,
         average_error_allowed_in_bad_pixels, large_error_allowed,
-        small_error_allowed));
+        small_error_allowed);
   }
 
   static scoped_refptr<Layer> CreateCheckerboardLayer(const gfx::Size& bounds) {
@@ -712,6 +712,59 @@ TEST_P(LayerTreeHostMaskAsBlendingPixelTest, RotatedClippedCircleUnderflow) {
   RunPixelResourceTest(root,
                        base::FilePath(FILE_PATH_LITERAL(
                            "mask_as_blending_rotated_circle_underflow.png")));
+}
+
+TEST_P(LayerTreeHostMasksForBackgroundFiltersPixelTest,
+       MaskOfLayerWithBackgroundFilterAndBlend) {
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(128, 128), SK_ColorWHITE);
+
+  gfx::Size picture_bounds(128, 128);
+  CheckerContentLayerClient picture_client_vertical(picture_bounds,
+                                                    SK_ColorGREEN, true);
+  scoped_refptr<PictureLayer> picture_vertical =
+      PictureLayer::Create(&picture_client_vertical);
+  picture_vertical->SetBounds(picture_bounds);
+  picture_vertical->SetIsDrawable(true);
+
+  CheckerContentLayerClient picture_client_horizontal(picture_bounds,
+                                                      SK_ColorMAGENTA, false);
+  scoped_refptr<PictureLayer> picture_horizontal =
+      PictureLayer::Create(&picture_client_horizontal);
+  picture_horizontal->SetBounds(picture_bounds);
+  picture_horizontal->SetIsDrawable(true);
+  picture_horizontal->SetContentsOpaque(false);
+  picture_horizontal->SetBlendMode(SkBlendMode::kMultiply);
+
+  FilterOperations filters;
+  filters.Append(FilterOperation::CreateGrayscaleFilter(1.0));
+  picture_horizontal->SetBackgroundFilters(filters);
+
+  background->AddChild(picture_vertical);
+  background->AddChild(picture_horizontal);
+
+  gfx::Size mask_bounds(128, 128);
+  CircleContentLayerClient mask_client(mask_bounds);
+  scoped_refptr<PictureLayer> mask = PictureLayer::Create(&mask_client);
+  mask->SetBounds(mask_bounds);
+  mask->SetIsDrawable(true);
+  mask->SetLayerMaskType(mask_type_);
+  picture_horizontal->SetMaskLayer(mask.get());
+
+  float percentage_pixels_large_error = 0.062f;  // 0.062%, ~10px / (128*128)
+  float percentage_pixels_small_error = 0.0f;
+  float average_error_allowed_in_bad_pixels = 200.0f;
+  int large_error_allowed = 256;
+  int small_error_allowed = 0;
+  pixel_comparator_ = std::make_unique<FuzzyPixelComparator>(
+      true,  // discard_alpha
+      percentage_pixels_large_error, percentage_pixels_small_error,
+      average_error_allowed_in_bad_pixels, large_error_allowed,
+      small_error_allowed);
+
+  RunPixelResourceTest(background,
+                       base::FilePath(FILE_PATH_LITERAL(
+                           "mask_of_background_filter_and_blend.png")));
 }
 
 }  // namespace
