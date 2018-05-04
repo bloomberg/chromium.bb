@@ -1736,9 +1736,9 @@ class ChromeDriverPageLoadTimeoutTest(ChromeDriverBaseTestWithWebServer):
     self._initial_url = self.GetHttpUrlForFile('/chromedriver/empty.html')
     self._driver.Load(self._initial_url)
     # When send_response_event is set, navigating to the hang URL takes only
-    # about 0.1 second on Linux and Windows, but takes about 0.4 to 0.6 second
-    # on Mac. So we use a timeout of 1 second on Mac, 0.5 second on others.
-    timeout = 1000 if util.GetPlatformName() == 'mac' else 500
+    # about 0.1 second on Linux and Windows, but takes half a second or longer
+    # on Mac. So we use longer timeout on Mac, 0.5 second on others.
+    timeout = 3000 if util.GetPlatformName() == 'mac' else 500
     self._driver.SetTimeout('page load', timeout)
     log('setUp complete')
 
