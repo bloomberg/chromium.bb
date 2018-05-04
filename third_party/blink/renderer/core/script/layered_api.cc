@@ -26,6 +26,9 @@ struct LayeredAPIResource {
 const LayeredAPIResource kLayeredAPIResources[] = {
     {"blank/index.js", IDR_LAYERED_API_BLANK_INDEX_JS},
 
+    {"async-local-storage/index.js",
+     IDR_LAYERED_API_ASYNC_LOCAL_STORAGE_INDEX_JS},
+
     {"virtual-list/index.js", IDR_LAYERED_API_VIRTUAL_LIST_INDEX_JS},
     {"virtual-list/layouts/layout-1d-base.js",
      IDR_LAYERED_API_VIRTUAL_LIST_LAYOUTS_LAYOUT_1D_BASE_JS},
