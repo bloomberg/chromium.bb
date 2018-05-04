@@ -9,6 +9,7 @@
 #include "chrome/browser/sync/test/integration/session_hierarchy_match_checker.h"
 #include "chrome/browser/sync/test/integration/sessions_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/base/sync_prefs.h"
@@ -17,6 +18,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::Eq;
+using testing::Ge;
+using testing::Le;
 using sessions_helper::CheckInitialState;
 using sessions_helper::OpenTab;
 using syncer::SyncPrefs;
@@ -96,14 +99,45 @@ IN_PROC_BROWSER_TEST_F(SingleClientPollingSyncTest,
       Eq(1234));
 }
 
-// TODO(tschumann): Add a test that tests a poll on start-up in a simpler set
-// up: Bring up a single client, let it sync a local mode and do a fake restart.
-// After that, GetLastCycleSnapshot() should be an empty snapshot, so the we can
-// use the UpdatedProgressMarker checker to verify a poll has taken place. This
-// might require changing
-// UpdatedProgressMarkerChecker::IsExitConditionSatisfied() to require non-empty
-// progress markers.
-// This test could also verify that the last poll time gets not simply set
-// to the start-up time but kept if not yet expired.
+// This test simulates the poll interval expiring between restarts.
+// It first starts up a client, executes a sync cycle and stops it. After a
+// simulated pause, the client gets started up again and we expect a sync cycle
+// to happen (which would be caused by polling).
+// Note, that there's a more realistic (and more complex) test for this in
+// two_client_polling_sync_test.cc too.
+IN_PROC_BROWSER_TEST_F(SingleClientPollingSyncTest,
+                       ShouldPollWhenIntervalExpiredAcrossRestarts) {
+  base::Time start = base::Time::Now();
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  // Trigger a sync-cycle.
+  ASSERT_TRUE(CheckInitialState(0));
+  ASSERT_TRUE(OpenTab(0, GURL(chrome::kChromeUIHistoryURL)));
+  ASSERT_TRUE(SessionHierarchyMatchChecker(
+                  fake_server::SessionsHierarchy(
+                      {{GURL(chrome::kChromeUIHistoryURL).spec()}}),
+                  GetSyncService(0), GetFakeServer())
+                  .Wait());
+
+  // Verify that the last poll time got initialized to a reasonable value.
+  SyncPrefs remote_prefs(GetProfile(0)->GetPrefs());
+  EXPECT_THAT(remote_prefs.GetLastPollTime(), Ge(start));
+  EXPECT_THAT(remote_prefs.GetLastPollTime(), Le(base::Time::Now()));
+
+  // Make sure no extra sync cycles get triggered by test infrastructure and
+  // stop sync.
+  StopConfigurationRefresher();
+  GetClient(0)->StopSyncService(syncer::SyncService::KEEP_DATA);
+
+  // Simulate elapsed time so that the poll interval expired.
+  remote_prefs.SetShortPollInterval(base::TimeDelta::FromMinutes(10));
+  remote_prefs.SetLongPollInterval(base::TimeDelta::FromMinutes(10));
+  remote_prefs.SetLastPollTime(base::Time::Now() -
+                               base::TimeDelta::FromMinutes(11));
+  ASSERT_TRUE(GetClient(0)->StartSyncService()) << "SetupSync() failed.";
+  // After the start, the last sync cycle snapshot should be empty.
+  // Once a sync request happened (e.g. by a poll), that snapshot is populated.
+  // We use the following checker to simply wait for an non-empty snapshot.
+  EXPECT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
+}
 
 }  // namespace
