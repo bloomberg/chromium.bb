@@ -17,10 +17,13 @@ if (is_android || is_chromeos) {
 
     import("//build/config/gclient_args.gni")
     if (defined(checkout_android_native_support)) {
+      n = "$0x0A"  # Newline
       assert(checkout_android_native_support,
              "Missing native Android toolchain support. |target_os| in your " +
-                 ".gclient configuration must include \"android\" and/or " +
-                 "\"chromeos\".")
+                 ".gclient configuration file (in the parent directory of " +
+                 "src) must include \"android\" and/or \"chromeos\". For " +
+                 "example:${n}${n}solutions = [${n}...${n}]${n}" +
+                 "target_os=[\"chromeos\"]${n}")
     }
   }
 
