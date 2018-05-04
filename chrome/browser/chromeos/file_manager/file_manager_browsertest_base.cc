@@ -138,7 +138,14 @@ struct AddEntriesMessage {
   // Target volume to add |entries| to.
   TargetVolume volume;
 
-  // Registers the member information to the given converter.
+  // Converts |value| to an AddEntriesMessage: true on success.
+  static bool ConvertJSONValue(const base::DictionaryValue& value,
+                               AddEntriesMessage* message) {
+    base::JSONValueConverter<AddEntriesMessage> converter;
+    return converter.Convert(value, message);
+  }
+
+  // Registers AddEntriesMessage member info to the |converter|.
   static void RegisterJSONConverter(
       base::JSONValueConverter<AddEntriesMessage>* converter) {
     converter->RegisterCustomField("volume", &AddEntriesMessage::volume,
@@ -707,10 +714,9 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
   }
 
   if (name == "addEntries") {
-    // Add entries to the specified volume.
-    base::JSONValueConverter<AddEntriesMessage> add_entries_message_converter;
+    // Add the message.entries to the message.volume.
     AddEntriesMessage message;
-    ASSERT_TRUE(add_entries_message_converter.Convert(value, &message));
+    ASSERT_TRUE(AddEntriesMessage::ConvertJSONValue(value, &message));
 
     for (size_t i = 0; i < message.entries.size(); ++i) {
       switch (message.volume) {
@@ -724,9 +730,6 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
         case USB_VOLUME:
           if (usb_volume_)
             usb_volume_->CreateEntry(*message.entries[i]);
-          break;
-        default:
-          NOTREACHED();
           break;
       }
     }
