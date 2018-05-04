@@ -47,23 +47,16 @@ PictureInPictureWindowControllerImpl::~PictureInPictureWindowControllerImpl() {
   if (initiator_->IsBeingDestroyed())
     return;
 
-  content::MediaWebContentsObserver* observer =
-      static_cast<content::WebContentsImpl* const>(initiator_)
-          ->media_web_contents_observer();
-  DCHECK(observer);
-
-  base::Optional<content::WebContentsObserver::MediaPlayerId> player_id =
-      observer->GetPictureInPictureVideoMediaPlayerId();
-
   // |this| is torn down when there is a new Picture-in-Picture initiator, such
   // as when a video in another tab requests to enter Picture-in-Picture. In
   // cases like this, pause the current video so there is only one video
   // playing at a time.
-  if (player_id.has_value() && observer->IsPlayerActive(*player_id)) {
-    player_id->first->Send(new MediaPlayerDelegateMsg_Pause(
-        player_id->first->GetRoutingID(), player_id->second));
-    player_id->first->Send(new MediaPlayerDelegateMsg_EndPictureInPictureMode(
-        player_id->first->GetRoutingID(), player_id->second));
+  if (IsPlayerActive()) {
+    media_player_id_->first->Send(new MediaPlayerDelegateMsg_Pause(
+        media_player_id_->first->GetRoutingID(), media_player_id_->second));
+    media_player_id_->first->Send(
+        new MediaPlayerDelegateMsg_EndPictureInPictureMode(
+            media_player_id_->first->GetRoutingID(), media_player_id_->second));
   }
 }
 
@@ -72,9 +65,13 @@ PictureInPictureWindowControllerImpl::PictureInPictureWindowControllerImpl(
     : initiator_(initiator) {
   DCHECK(initiator_);
 
+  media_web_contents_observer_ = static_cast<WebContentsImpl* const>(initiator_)
+                                     ->media_web_contents_observer();
+  media_player_id_ =
+      media_web_contents_observer_->GetPictureInPictureVideoMediaPlayerId();
+
   window_ =
-      content::GetContentClient()->browser()->CreateWindowForPictureInPicture(
-          this);
+      GetContentClient()->browser()->CreateWindowForPictureInPicture(this);
   DCHECK(window_) << "Picture in Picture requires a valid window.";
 }
 
@@ -91,16 +88,11 @@ void PictureInPictureWindowControllerImpl::Close() {
 
   surface_id_ = viz::SurfaceId();
 
-  content::MediaWebContentsObserver* observer =
-      static_cast<content::WebContentsImpl* const>(initiator_)
-          ->media_web_contents_observer();
-  base::Optional<content::WebContentsObserver::MediaPlayerId> player_id =
-      observer->GetPictureInPictureVideoMediaPlayerId();
-  DCHECK(player_id.has_value());
-
-  if (observer->IsPlayerActive(*player_id))
-    player_id->first->Send(new MediaPlayerDelegateMsg_EndPictureInPictureMode(
-        player_id->first->GetRoutingID(), player_id->second));
+  if (IsPlayerActive()) {
+    media_player_id_->first->Send(
+        new MediaPlayerDelegateMsg_EndPictureInPictureMode(
+            media_player_id_->first->GetRoutingID(), media_player_id_->second));
+  }
 }
 
 void PictureInPictureWindowControllerImpl::EmbedSurface(
@@ -126,6 +118,14 @@ void PictureInPictureWindowControllerImpl::UpdateLayerBounds() {
     embedder_->UpdateLayerBounds();
 }
 
+bool PictureInPictureWindowControllerImpl::IsPlayerActive() {
+  if (!media_player_id_.has_value())
+    media_web_contents_observer_->GetPictureInPictureVideoMediaPlayerId();
+
+  return media_player_id_.has_value() &&
+         media_web_contents_observer_->IsPlayerActive(*media_player_id_);
+}
+
 WebContents* PictureInPictureWindowControllerImpl::GetInitiatorWebContents() {
   return initiator_;
 }
@@ -133,21 +133,14 @@ WebContents* PictureInPictureWindowControllerImpl::GetInitiatorWebContents() {
 bool PictureInPictureWindowControllerImpl::TogglePlayPause() {
   DCHECK(window_ && window_->IsActive());
 
-  content::MediaWebContentsObserver* observer =
-      static_cast<content::WebContentsImpl* const>(initiator_)
-          ->media_web_contents_observer();
-  base::Optional<content::WebContentsObserver::MediaPlayerId> player_id =
-      observer->GetPictureInPictureVideoMediaPlayerId();
-  DCHECK(player_id.has_value());
-
-  if (observer->IsPlayerActive(*player_id)) {
-    player_id->first->Send(new MediaPlayerDelegateMsg_Pause(
-        player_id->first->GetRoutingID(), player_id->second));
+  if (IsPlayerActive()) {
+    media_player_id_->first->Send(new MediaPlayerDelegateMsg_Pause(
+        media_player_id_->first->GetRoutingID(), media_player_id_->second));
     return false;
   }
 
-  player_id->first->Send(new MediaPlayerDelegateMsg_Play(
-      player_id->first->GetRoutingID(), player_id->second));
+  media_player_id_->first->Send(new MediaPlayerDelegateMsg_Play(
+      media_player_id_->first->GetRoutingID(), media_player_id_->second));
   return true;
 }
 

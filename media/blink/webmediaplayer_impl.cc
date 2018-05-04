@@ -781,11 +781,13 @@ void WebMediaPlayerImpl::EnterPictureInPicture() {
   if (!pip_surface_id_.is_valid())
     return;
 
-  pip_surface_info_cb_.Run(pip_surface_id_, pipeline_metadata_.natural_size);
-
   // Updates the MediaWebContentsObserver with |delegate_id_| to track which
   // media player is in Picture-in-Picture mode.
+  // This must be called before |pip_surface_info_cb_| to ensure the
+  // Picture-in-Picture media player id is set before the controller is set up.
   delegate_->DidPictureInPictureSourceChange(delegate_id_);
+
+  pip_surface_info_cb_.Run(pip_surface_id_, pipeline_metadata_.natural_size);
 
   if (client_)
     client_->PictureInPictureStarted();
