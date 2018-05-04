@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "base/logging.h"
 #include "base/macros.h"
 #include "components/sync/base/cryptographer.h"
 #include "components/sync/protocol/password_specifics.pb.h"

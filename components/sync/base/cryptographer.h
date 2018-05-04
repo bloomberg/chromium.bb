@@ -10,7 +10,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "components/sync/base/nigori.h"
 #include "components/sync/protocol/encryption.pb.h"
 
@@ -185,7 +184,7 @@ class Cryptographer {
   bool ImportNigoriKey(const std::string& serialized_nigori_key);
 
  private:
-  using NigoriMap = std::map<std::string, linked_ptr<const Nigori>>;
+  using NigoriMap = std::map<std::string, std::unique_ptr<const Nigori>>;
 
   // Helper method to instantiate Nigori instances for each set of key
   // parameters in |bag|.
