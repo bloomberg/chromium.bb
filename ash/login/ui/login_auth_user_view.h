@@ -139,6 +139,9 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView,
   // bool has_tap = HasAuthMethod(AUTH_TAP).
   bool HasAuthMethod(AuthMethods auth_method) const;
 
+  // Update UI for the online sign-in message.
+  void DecorateOnlineSignInMessage();
+
   AuthMethods auth_methods_ = AUTH_NONE;
   LoginUserView* user_view_ = nullptr;
   LoginPasswordView* password_view_ = nullptr;

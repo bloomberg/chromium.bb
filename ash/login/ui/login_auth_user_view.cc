@@ -16,6 +16,7 @@
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/login/ui/pin_keyboard_animation.h"
 #include "ash/public/cpp/login_constants.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/strings/utf_string_conversions.h"
@@ -26,6 +27,8 @@
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/interpolated_transform.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
@@ -158,25 +161,25 @@ LoginAuthUserView::LoginAuthUserView(const mojom::LoginUserInfoPtr& user,
       callbacks.on_easy_unlock_icon_hovered,
       callbacks.on_easy_unlock_icon_tapped);
 
-  // TODO(crbug.com/836336): Update the spec. Currently the text must be set in
-  // |UpdateForUser| because it's dependent on the user name.
-  online_sign_in_message_ = new views::LabelButton(this, base::string16()),
-  online_sign_in_message_->SetPaintToLayer();
-  online_sign_in_message_->SetTextSubpixelRenderingEnabled(false);
-  online_sign_in_message_->SetTextColor(views::Button::STATE_NORMAL,
-                                        kOnlineSignInMessageColor);
+  online_sign_in_message_ = new views::LabelButton(
+      this, base::UTF8ToUTF16(user->basic_user_info->display_name));
+  DecorateOnlineSignInMessage();
 
   SetPaintToLayer(ui::LayerType::LAYER_NOT_DRAWN);
 
   // Build layout.
+  auto* wrapped_password_view =
+      login_layout_util::WrapViewForPreferredSize(password_view_);
+  auto* wrapped_message_view =
+      login_layout_util::WrapViewForPreferredSize(online_sign_in_message_);
   auto* wrapped_user_view =
       login_layout_util::WrapViewForPreferredSize(user_view_);
   auto* wrapped_pin_view =
       login_layout_util::WrapViewForPreferredSize(pin_view_);
 
   // Add views in tabbing order; they are rendered in a different order below.
-  AddChildView(password_view_);
-  AddChildView(online_sign_in_message_);
+  AddChildView(wrapped_password_view);
+  AddChildView(wrapped_message_view);
   AddChildView(wrapped_pin_view);
   AddChildView(wrapped_user_view);
 
@@ -200,8 +203,8 @@ LoginAuthUserView::LoginAuthUserView(const mojom::LoginUserInfoPtr& user,
   add_padding(kDistanceFromTopOfBigUserViewToUserIconDp);
   add_view(wrapped_user_view);
   add_padding(kDistanceBetweenUserViewAndPasswordDp);
-  add_view(password_view_);
-  add_view(online_sign_in_message_);
+  add_view(wrapped_password_view);
+  add_view(wrapped_message_view);
   add_padding(kDistanceBetweenPasswordFieldAndPinKeyboard);
   add_view(wrapped_pin_view);
   add_padding(kDistanceFromPinKeyboardToBigUserViewBottom);
@@ -226,6 +229,7 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods) {
 
   password_view_->SetEnabled(has_password);
   password_view_->SetFocusEnabledForChildViews(has_password);
+  password_view_->SetVisible(!force_online_sign_in);
   password_view_->layer()->SetOpacity(has_password ? 1 : 0);
 
   if (!had_password && has_password)
@@ -440,6 +444,23 @@ void LoginAuthUserView::OnOnlineSignInMessageTap() {
 
 bool LoginAuthUserView::HasAuthMethod(AuthMethods auth_method) const {
   return (auth_methods_ & auth_method) != 0;
+}
+
+void LoginAuthUserView::DecorateOnlineSignInMessage() {
+  online_sign_in_message_->SetPaintToLayer();
+  online_sign_in_message_->layer()->SetFillsBoundsOpaquely(false);
+  online_sign_in_message_->SetImage(
+      views::Button::STATE_NORMAL,
+      CreateVectorIcon(kLockScreenAlertIcon, kOnlineSignInMessageColor));
+  online_sign_in_message_->SetTextSubpixelRenderingEnabled(false);
+  online_sign_in_message_->SetTextColor(views::Button::STATE_NORMAL,
+                                        kOnlineSignInMessageColor);
+  online_sign_in_message_->SetTextColor(views::Button::STATE_HOVERED,
+                                        kOnlineSignInMessageColor);
+  online_sign_in_message_->SetTextColor(views::Button::STATE_PRESSED,
+                                        kOnlineSignInMessageColor);
+  online_sign_in_message_->SetBorder(
+      views::CreateEmptyBorder(gfx::Insets(9, 0)));
 }
 
 }  // namespace ash
