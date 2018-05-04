@@ -18,50 +18,23 @@ from blinkpy.common.path_finder import PathFinder
 _log = logging.getLogger(__file__)
 
 
-# TODO(robertma): Use the official wpt.manifest module.
-
 class WPTManifest(object):
-    """A simple abstraction of WPT MANIFEST.json.
-
-    The high-level structure of the manifest is as follows:
-        {
-            "items": {
-                "manual": {
-                    "file/path": [manifest items],
-                    ...
-                },
-                "reftest": {...},
-                "testharness": {...}
-            },
-            // other info...
-        }
-
-    The format of a manifest item depends on:
-        https://github.com/w3c/web-platform-tests/blob/master/tools/manifest/item.py
-    which can be roughly summarized as follows:
-        * testharness test: [url, extras]
-        * reftest: [url, references, extras]
-    where `extras` is a dict with the following optional items:
-        * testharness test: {"timeout": "long", "testdriver": True}
-        * reftest: {"timeout": "long", "viewport_size": ..., "dpi": ...}
-    and `references` is a list that looks like:
-        [[reference_url1, "=="], [reference_url2, "!="], ...]
-    """
 
     def __init__(self, json_content):
+        # TODO(tkent): Create a Manifest object by Manifest.from_json().
+        # See ../third_party/wpt/wpt/tools/manifest/manifest.py.
         self.raw_dict = json.loads(json_content)
         self.test_types = ('manual', 'reftest', 'testharness')
 
-    def _items_for_file_path(self, path_in_wpt):
-        """Finds manifest items for the given WPT path.
+    def _items_for_path(self, path_in_wpt):
+        """Returns manifest items for the given WPT path, or None if not found.
 
-        Args:
-            path_in_wpt: A file path relative to the root of WPT. Note that this
-                is different from a WPT URL; a file path does not have a leading
-                slash or a query string.
+        The format of a manifest item depends on:
+          https://github.com/w3c/web-platform-tests/blob/master/tools/manifest/item.py
 
-        Returns:
-            A list of manifest items, or None if not found.
+        For most testharness tests, the returned items is expected
+        to look like this: [["/some/test/path.html", {}]]. For reference tests,
+        it will be a list with three items ([url, references, extras]).
         """
         items = self.raw_dict['items']
         for test_type in self.test_types:
@@ -69,44 +42,20 @@ class WPTManifest(object):
                 return items[test_type][path_in_wpt]
         return None
 
-    def _item_for_url(self, url):
-        """Finds the manifest item for the given WPT URL.
-
-        Args:
-            url: A WPT URL (with the leading slash).
-
-        Returns:
-            A manifest item, or None if not found.
-        """
-        return self.all_url_items().get(url)
-
-    @staticmethod
-    def _get_url_from_item(item):
-        return item[0]
-
-    @staticmethod
-    def _get_extras_from_item(item):
-        return item[-1]
-
-    @memoized
-    def all_url_items(self):
-        """Returns a dict mapping every URL in the manifest to its item."""
-        url_items = {}
-        if 'items' not in self.raw_dict:
-            return url_items
-        for test_type in self.test_types:
-            for records in self.raw_dict['items'][test_type].itervalues():
-                for item in records:
-                    url_items[self._get_url_from_item(item)] = item
-        return url_items
-
     @memoized
     def all_urls(self):
-        """Returns a set of the URLs for all items in the manifest."""
-        return frozenset(self.all_url_items().keys())
+        """Returns a set of the urls for all items in the manifest."""
+        urls = set()
+        if 'items' in self.raw_dict:
+            items = self.raw_dict['items']
+            for category in self.test_types:
+                if category in items:
+                    for records in items[category].values():
+                        urls.update([item[0] for item in records])
+        return urls
 
     def is_test_file(self, path_in_wpt):
-        return self._items_for_file_path(path_in_wpt) is not None
+        return self._items_for_path(path_in_wpt) is not None
 
     def is_test_url(self, url):
         """Checks if url is a valid test in the manifest.
@@ -118,28 +67,20 @@ class WPTManifest(object):
         return url in self.all_urls()
 
     def file_path_to_url_paths(self, path_in_wpt):
-        manifest_items = self._items_for_file_path(path_in_wpt)
+        manifest_items = self._items_for_path(path_in_wpt)
         assert manifest_items is not None
-        # Remove the leading slashes when returning.
-        return [self._get_url_from_item(item)[1:] for item in manifest_items]
+        return [item[0][1:] for item in manifest_items]
 
-    def is_slow_test(self, url):
-        """Checks if a WPT is slow (long timeout) according to the manifest.
+    @staticmethod
+    def _get_extras_from_item(item):
+        return item[-1]
 
-        Args:
-            url: A WPT URL (with the leading slash).
-
-        Returns:
-            True if the test is found and is slow, False otherwise.
-        """
-        if not self.is_test_url(url):
+    def is_slow_test(self, test_name):
+        items = self._items_for_path(test_name)
+        if not items:
             return False
-
-        item = self._item_for_url(url)
-        if not item:
-            return False
-        extras = self._get_extras_from_item(item)
-        return extras.get('timeout') == 'long'
+        extras = WPTManifest._get_extras_from_item(items[0])
+        return 'timeout' in extras and extras['timeout'] == 'long'
 
     def extract_reference_list(self, path_in_wpt):
         """Extracts reference information of the specified reference test.
