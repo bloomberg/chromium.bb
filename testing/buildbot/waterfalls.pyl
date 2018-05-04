@@ -918,6 +918,9 @@
         'test_suites': {
           'gtest_tests': 'chromium_mac_fyi_gtests',
         },
+        'args': [
+          '--enable-features=ViewsBrowserWindows',
+        ],
       },
       'Chromium Mac 10.11': {
         'test_suites': {
