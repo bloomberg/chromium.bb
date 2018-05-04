@@ -788,8 +788,10 @@ test("chromeos_unittests") {
   ]
 }
 
-generate_vm_runner_script("cros_vm_launcher") {
-  generated_script = "$root_build_dir/bin/launch_cros_vm"
+if (cros_board != "") {
+  generate_vm_runner_script("cros_vm_launcher") {
+    generated_script = "$root_build_dir/bin/launch_cros_vm"
+  }
 }
 
 fuzzer_test("variable_expander_fuzzer") {
