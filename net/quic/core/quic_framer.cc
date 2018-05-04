@@ -2504,6 +2504,12 @@ size_t QuicFramer::ComputeFrameLength(
       QUIC_FALLTHROUGH_INTENDED;
     case STREAM_ID_BLOCKED_FRAME:
       QUIC_FALLTHROUGH_INTENDED;
+    case PATH_RESPONSE_FRAME:
+      QUIC_FALLTHROUGH_INTENDED;
+    case PATH_CHALLENGE_FRAME:
+      QUIC_FALLTHROUGH_INTENDED;
+    case STOP_SENDING_FRAME:
+      QUIC_FALLTHROUGH_INTENDED;
     case NUM_FRAME_TYPES:
       DCHECK(false);
       return 0;
@@ -3274,75 +3280,85 @@ QuicStringPiece QuicFramer::TruncateErrorString(QuicStringPiece error) {
 bool QuicFramer::AppendIetfConnectionCloseFrame(
     const QuicConnectionCloseFrame& frame,
     QuicDataWriter* writer) {
-  return AppendIetfCloseFrame(IETF_CONNECTION_CLOSE,
-                              static_cast<uint16_t>(frame.error_code),
-                              frame.error_details, writer);
-}
-
-bool QuicFramer::AppendIetfApplicationCloseFrame(
-    const QuicConnectionCloseFrame& frame,
-    QuicDataWriter* writer) {
-  return AppendIetfCloseFrame(IETF_APPLICATION_CLOSE,
-                              static_cast<const uint16_t>(frame.error_code),
-                              frame.error_details, writer);
-}
-
-// Generate either an IETF-Connection- or IETF-Application-close frame.
-// General format is
-//    type-byte
-//    error code (fixed 16 bits)
-//    phrase length (varint)
-//    phrase  (string)
-bool QuicFramer::AppendIetfCloseFrame(const QuicIetfFrameType type,
-                                      const uint16_t code,
-                                      const QuicString& phrase,
-                                      QuicDataWriter* writer) {
-  if (!writer->WriteUInt8(type)) {
-    set_detailed_error("Can not write close frame type byte");
+  if (!writer->WriteUInt8(IETF_CONNECTION_CLOSE)) {
+    set_detailed_error("Can not write connection close frame type byte");
     return false;
   }
-  if (!writer->WriteUInt16(code)) {
-    set_detailed_error("Can not write close frame code");
+  if (!writer->WriteUInt16(static_cast<const uint16_t>(frame.error_code))) {
+    set_detailed_error("Can not write connection close frame error code");
     return false;
   }
-  if (!writer->WriteVarInt62(phrase.size())) {
-    set_detailed_error("Can not write phrase-length");
+  if (!writer->WriteVarInt62(frame.error_details.size())) {
+    set_detailed_error("Can not write connection close phrase-length");
     return false;
   }
-  if (!phrase.empty()) {
+  if (!frame.error_details.empty()) {
     // append the phrase
-    if (!writer->WriteBytes(static_cast<const void*>(phrase.c_str()),
-                            phrase.size())) {
-      set_detailed_error("Can not write phrase");
+    QuicStringPiece error_string = TruncateErrorString(frame.error_details);
+    if (!writer->WriteBytes(error_string.data(), error_string.size())) {
+      set_detailed_error("Can not write application close phrase");
       return false;
     }
   }
   return true;
 }
 
-// Parse either an IETF-Connection- or IETF-Application-close frame.
-// General format is
-//    type-byte
-//    error code (fixed 16 bits)
-//    phrase length (varint)
-//    phrase  (string)
+bool QuicFramer::AppendApplicationCloseFrame(
+    const QuicApplicationCloseFrame& frame,
+    QuicDataWriter* writer) {
+  if (!writer->WriteUInt8(IETF_APPLICATION_CLOSE)) {
+    set_detailed_error("Can not write close frame type byte");
+    return false;
+  }
+  if (!writer->WriteUInt16(static_cast<const uint16_t>(frame.error_code))) {
+    set_detailed_error("Can not write application close frame error code");
+    return false;
+  }
+  if (!writer->WriteVarInt62(frame.error_details.size())) {
+    set_detailed_error("Can not write application close phrase-length");
+    return false;
+  }
+  if (!frame.error_details.empty()) {
+    // append the phrase
+    QuicStringPiece error_string = TruncateErrorString(frame.error_details);
+    if (!writer->WriteBytes(error_string.data(), error_string.size())) {
+      set_detailed_error("Can not write application close phrase");
+      return false;
+    }
+  }
+  return true;
+}
+
 bool QuicFramer::ProcessIetfConnectionCloseFrame(
     QuicDataReader* reader,
     const uint8_t frame_type,
     QuicConnectionCloseFrame* frame) {
-  return ProcessIetfCloseFrame(reader, frame_type, frame);
+  uint16_t code;
+  if (!reader->ReadUInt16(&code)) {
+    set_detailed_error("Unable to read close frame code.");
+    return false;
+  }
+  frame->error_code = static_cast<QuicErrorCode>(code);
+
+  uint64_t phrase_length;
+  if (!reader->ReadVarInt62(&phrase_length)) {
+    set_detailed_error("Unable to read phrase length");
+    return false;
+  }
+  QuicStringPiece phrase;
+  if (!reader->ReadStringPiece(&phrase, static_cast<size_t>(phrase_length))) {
+    set_detailed_error("Can not read extended close information phrase");
+    return false;
+  }
+  frame->error_details = string(phrase);
+
+  return true;
 }
 
-bool QuicFramer::ProcessIetfApplicationCloseFrame(
+bool QuicFramer::ProcessApplicationCloseFrame(
     QuicDataReader* reader,
     const uint8_t frame_type,
-    QuicConnectionCloseFrame* frame) {
-  return ProcessIetfCloseFrame(reader, frame_type, frame);
-}
-
-bool QuicFramer::ProcessIetfCloseFrame(QuicDataReader* reader,
-                                       const uint8_t frame_type,
-                                       QuicConnectionCloseFrame* frame) {
+    QuicApplicationCloseFrame* frame) {
   uint16_t code;
   if (!reader->ReadUInt16(&code)) {
     set_detailed_error("Unable to read close frame code.");
@@ -3366,8 +3382,8 @@ bool QuicFramer::ProcessIetfCloseFrame(QuicDataReader* reader,
 }
 
 // IETF Quic Path Challenge/Response frames.
-bool QuicFramer::ProcessIetfPathChallengeFrame(QuicDataReader* reader,
-                                               QuicPathChallengeFrame* frame) {
+bool QuicFramer::ProcessPathChallengeFrame(QuicDataReader* reader,
+                                           QuicPathChallengeFrame* frame) {
   if (!reader->ReadBytes(frame->data_buffer.data(), kQuicPathFrameBufferSize)) {
     set_detailed_error("Can not read path Challenge data");
     return false;
@@ -3375,8 +3391,8 @@ bool QuicFramer::ProcessIetfPathChallengeFrame(QuicDataReader* reader,
   return true;
 }
 
-bool QuicFramer::ProcessIetfPathResponseFrame(QuicDataReader* reader,
-                                              QuicPathResponseFrame* frame) {
+bool QuicFramer::ProcessPathResponseFrame(QuicDataReader* reader,
+                                          QuicPathResponseFrame* frame) {
   if (!reader->ReadBytes(frame->data_buffer.data(), kQuicPathFrameBufferSize)) {
     set_detailed_error("Can not read path Response data");
     return false;
@@ -3384,9 +3400,8 @@ bool QuicFramer::ProcessIetfPathResponseFrame(QuicDataReader* reader,
   return true;
 }
 
-bool QuicFramer::AppendIetfPathChallengeFrame(
-    const QuicPathChallengeFrame& frame,
-    QuicDataWriter* writer) {
+bool QuicFramer::AppendPathChallengeFrame(const QuicPathChallengeFrame& frame,
+                                          QuicDataWriter* writer) {
   if (!writer->WriteUInt8(IETF_PATH_CHALLENGE)) {
     set_detailed_error("Can not write Path Challenge frame type byte");
     return false;
@@ -3399,8 +3414,8 @@ bool QuicFramer::AppendIetfPathChallengeFrame(
   return true;
 }
 
-bool QuicFramer::AppendIetfPathResponseFrame(const QuicPathResponseFrame& frame,
-                                             QuicDataWriter* writer) {
+bool QuicFramer::AppendPathResponseFrame(const QuicPathResponseFrame& frame,
+                                         QuicDataWriter* writer) {
   if (!writer->WriteUInt8(IETF_PATH_RESPONSE)) {
     set_detailed_error("Can not write Path Response frame type byte");
     return false;
@@ -3429,7 +3444,7 @@ bool QuicFramer::AppendIetfResetStreamFrame(const QuicRstStreamFrame& frame,
     set_detailed_error("Writing reset-stream stream id failed.");
     return false;
   }
-  if (!writer->WriteUInt16(static_cast<uint16_t>(frame.error_code))) {
+  if (!writer->WriteUInt16(frame.ietf_error_code)) {
     set_detailed_error("Writing reset-stream error code failed.");
     return false;
   }
@@ -3450,12 +3465,10 @@ bool QuicFramer::ProcessIetfResetStreamFrame(QuicDataReader* reader,
     return false;
   }
 
-  uint16_t temp_uint16;
-  if (!reader->ReadUInt16(&temp_uint16)) {
+  if (!reader->ReadUInt16(&frame->ietf_error_code)) {
     set_detailed_error("Reading reset-stream error code failed.");
     return false;
   }
-  frame->error_code = static_cast<QuicRstStreamErrorCode>(temp_uint16);
 
   if (!reader->ReadVarInt62(&frame->byte_offset)) {
     set_detailed_error("Reading reset-stream final-offset failed.");
@@ -3464,7 +3477,7 @@ bool QuicFramer::ProcessIetfResetStreamFrame(QuicDataReader* reader,
   return true;
 }
 
-bool QuicFramer::ProcessIetfStopSendingFrame(
+bool QuicFramer::ProcessStopSendingFrame(
     QuicDataReader* reader,
     QuicStopSendingFrame* stop_sending_frame) {
   if (!reader->ReadVarIntStreamId(&stop_sending_frame->stream_id)) {
@@ -3479,7 +3492,7 @@ bool QuicFramer::ProcessIetfStopSendingFrame(
   return true;
 }
 
-bool QuicFramer::AppendIetfStopSendingFrame(
+bool QuicFramer::AppendStopSendingFrame(
     const QuicStopSendingFrame& stop_sending_frame,
     QuicDataWriter* writer) {
   if (!writer->WriteUInt8(IETF_STOP_SENDING)) {
@@ -3500,24 +3513,24 @@ bool QuicFramer::AppendIetfStopSendingFrame(
 // Append/process IETF-Format MAX_DATA Frame
 // MAX_DATA format is a single number, the maximum number of bytes
 // that can be accepted on the connection.
-bool QuicFramer::AppendIetfMaxDataFrame(const QuicWindowUpdateFrame& frame,
-                                        QuicDataWriter* writer) {
+bool QuicFramer::AppendMaxDataFrame(const QuicWindowUpdateFrame& frame,
+                                    QuicDataWriter* writer) {
   if (!writer->WriteUInt8(IETF_MAX_DATA)) {
-    set_detailed_error("Can not write IETF_MAX_DATA frame type byte");
+    set_detailed_error("Can not write MAX_DATA frame type byte");
     return false;
   }
   if (!writer->WriteVarInt62(frame.byte_offset)) {
-    set_detailed_error("Can not write IETF_MAX_DATA byte-offset");
+    set_detailed_error("Can not write MAX_DATA byte-offset");
     return false;
   }
   return true;
 }
 
-bool QuicFramer::ProcessIetfMaxDataFrame(QuicDataReader* reader,
-                                         QuicWindowUpdateFrame* frame) {
+bool QuicFramer::ProcessMaxDataFrame(QuicDataReader* reader,
+                                     QuicWindowUpdateFrame* frame) {
   frame->stream_id = 0;
   if (!reader->ReadVarInt62(&frame->byte_offset)) {
-    set_detailed_error("Can not read IETF_MAX_DATA byte-offset");
+    set_detailed_error("Can not read MAX_DATA byte-offset");
     return false;
   }
   return true;
@@ -3525,32 +3538,31 @@ bool QuicFramer::ProcessIetfMaxDataFrame(QuicDataReader* reader,
 
 // Append/process IETF-Format MAX_STREAM_DATA Frame
 // MAX_STREAM_DATA is two numbers, stream ID and then max number of bytes.
-bool QuicFramer::AppendIetfMaxStreamDataFrame(
-    const QuicWindowUpdateFrame& frame,
-    QuicDataWriter* writer) {
+bool QuicFramer::AppendMaxStreamDataFrame(const QuicWindowUpdateFrame& frame,
+                                          QuicDataWriter* writer) {
   if (!writer->WriteUInt8(IETF_MAX_STREAM_DATA)) {
-    set_detailed_error("Can not write IETF_MAX_STREAM_DATA frame type byte");
+    set_detailed_error("Can not write MAX_STREAM_DATA frame type byte");
     return false;
   }
   if (!writer->WriteVarInt62(frame.stream_id)) {
-    set_detailed_error("Can not write IETF_MAX_STREAM_DATA stream id");
+    set_detailed_error("Can not write MAX_STREAM_DATA stream id");
     return false;
   }
   if (!writer->WriteVarInt62(frame.byte_offset)) {
-    set_detailed_error("Can not write IETF_MAX_STREAM_DATA byte-offset");
+    set_detailed_error("Can not write MAX_STREAM_DATA byte-offset");
     return false;
   }
   return true;
 }
 
-bool QuicFramer::ProcessIetfMaxStreamDataFrame(QuicDataReader* reader,
-                                               QuicWindowUpdateFrame* frame) {
+bool QuicFramer::ProcessMaxStreamDataFrame(QuicDataReader* reader,
+                                           QuicWindowUpdateFrame* frame) {
   if (!reader->ReadVarIntStreamId(&frame->stream_id)) {
-    set_detailed_error("Can not read IETF_MAX_STREAM_DATA stream id");
+    set_detailed_error("Can not read MAX_STREAM_DATA stream id");
     return false;
   }
   if (!reader->ReadVarInt62(&frame->byte_offset)) {
-    set_detailed_error("Can not read IETF_MAX_STREAM_DATA byte-count");
+    set_detailed_error("Can not read MAX_STREAM_DATA byte-count");
     return false;
   }
   return true;
@@ -3581,11 +3593,11 @@ bool QuicFramer::ProcessMaxStreamIdFrame(QuicDataReader* reader,
 bool QuicFramer::AppendIetfBlockedFrame(const QuicBlockedFrame& frame,
                                         QuicDataWriter* writer) {
   if (!writer->WriteUInt8(IETF_BLOCKED)) {
-    set_detailed_error("Can not write IETF_BLOCKED frame type byte");
+    set_detailed_error("Can not write BLOCKED frame type byte");
     return false;
   }
   if (!writer->WriteVarInt62(frame.offset)) {
-    set_detailed_error("Can not write IETF_BLOCKED offset");
+    set_detailed_error("Can not write BLOCKED offset");
     return false;
   }
   return true;
@@ -3593,38 +3605,40 @@ bool QuicFramer::AppendIetfBlockedFrame(const QuicBlockedFrame& frame,
 
 bool QuicFramer::ProcessIetfBlockedFrame(QuicDataReader* reader,
                                          QuicBlockedFrame* frame) {
+  // Indicates that it is a BLOCKED frame (as opposed to STREAM_BLOCKED).
+  frame->stream_id = 0;
   if (!reader->ReadVarInt62(&frame->offset)) {
-    set_detailed_error("Can not read IETF_BLOCKED offset");
+    set_detailed_error("Can not read BLOCKED offset");
     return false;
   }
   return true;
 }
 
-bool QuicFramer::AppendIetfStreamBlockedFrame(const QuicBlockedFrame& frame,
-                                              QuicDataWriter* writer) {
+bool QuicFramer::AppendStreamBlockedFrame(const QuicBlockedFrame& frame,
+                                          QuicDataWriter* writer) {
   if (!writer->WriteUInt8(IETF_STREAM_BLOCKED)) {
-    set_detailed_error("Can not write IETF_STREAM_BLOCKED frame type byte");
+    set_detailed_error("Can not write STREAM_BLOCKED frame type byte");
     return false;
   }
   if (!writer->WriteVarInt62(frame.stream_id)) {
-    set_detailed_error("Can not write IETF_STREAM_BLOCKED stream id");
+    set_detailed_error("Can not write STREAM_BLOCKED stream id");
     return false;
   }
   if (!writer->WriteVarInt62(frame.offset)) {
-    set_detailed_error("Can not write IETF_STREAM_BLOCKED offset");
+    set_detailed_error("Can not write STREAM_BLOCKED offset");
     return false;
   }
   return true;
 }
 
-bool QuicFramer::ProcessIetfStreamBlockedFrame(QuicDataReader* reader,
-                                               QuicBlockedFrame* frame) {
+bool QuicFramer::ProcessStreamBlockedFrame(QuicDataReader* reader,
+                                           QuicBlockedFrame* frame) {
   if (!reader->ReadVarIntStreamId(&frame->stream_id)) {
-    set_detailed_error("Can not read IETF_STREAM_BLOCKED stream id");
+    set_detailed_error("Can not read STREAM_BLOCKED stream id");
     return false;
   }
   if (!reader->ReadVarInt62(&frame->offset)) {
-    set_detailed_error("Can not read IETF_STREAM_BLOCKED offset");
+    set_detailed_error("Can not read STREAM_BLOCKED offset");
     return false;
   }
   return true;
@@ -3648,6 +3662,52 @@ bool QuicFramer::ProcessStreamIdBlockedFrame(QuicDataReader* reader,
                                              QuicStreamIdBlockedFrame* frame) {
   if (!reader->ReadVarIntStreamId(&frame->stream_id)) {
     set_detailed_error("Can not read STREAM_ID_BLOCKED stream id");
+    return false;
+  }
+  return true;
+}
+
+bool QuicFramer::AppendNewConnectionIdFrame(
+    const QuicNewConnectionIdFrame& frame,
+    QuicDataWriter* writer) {
+  if (!writer->WriteUInt8(IETF_NEW_CONNECTION_ID)) {
+    set_detailed_error("Can not write New Connection ID frame type byte");
+    return false;
+  }
+  if (!writer->WriteVarInt62(frame.sequence_number)) {
+    set_detailed_error("Can not write New Connection ID sequence number");
+    return false;
+  }
+  if (!writer->WriteUInt64(frame.connection_id)) {
+    set_detailed_error("Can not write New Connection ID frame connection ID");
+    return false;
+  }
+
+  if (!writer->WriteBytes(
+          static_cast<const void*>(&frame.stateless_reset_token),
+          sizeof(frame.stateless_reset_token))) {
+    set_detailed_error("Can not write New Connection ID Reset Token");
+    return false;
+  }
+  return true;
+}
+
+bool QuicFramer::ProcessNewConnectionIdFrame(QuicDataReader* reader,
+                                             QuicNewConnectionIdFrame* frame) {
+  if (!reader->ReadVarInt62(&frame->sequence_number)) {
+    set_detailed_error(
+        "Unable to read New Connection ID Frame sequence number.");
+    return false;
+  }
+
+  if (!reader->ReadUInt64(&frame->connection_id)) {
+    set_detailed_error("Unable to read New Connection ID Frame connection id.");
+    return false;
+  }
+
+  if (!reader->ReadBytes(&frame->stateless_reset_token,
+                         sizeof(frame->stateless_reset_token))) {
+    set_detailed_error("Can not read New Connection ID Frame reset token.");
     return false;
   }
   return true;

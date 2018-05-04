@@ -57,6 +57,15 @@ QuicFrame::QuicFrame(QuicMaxStreamIdFrame frame)
 QuicFrame::QuicFrame(QuicStreamIdBlockedFrame frame)
     : type(STREAM_ID_BLOCKED_FRAME), stream_id_blocked_frame(frame) {}
 
+QuicFrame::QuicFrame(QuicPathResponseFrame* frame)
+    : type(PATH_RESPONSE_FRAME), path_response_frame(frame) {}
+
+QuicFrame::QuicFrame(QuicPathChallengeFrame* frame)
+    : type(PATH_CHALLENGE_FRAME), path_challenge_frame(frame) {}
+
+QuicFrame::QuicFrame(QuicStopSendingFrame* frame)
+    : type(STOP_SENDING_FRAME), stop_sending_frame(frame) {}
+
 void DeleteFrames(QuicFrames* frames) {
   for (QuicFrame& frame : *frames) {
     DeleteFrame(&frame);
@@ -97,11 +106,20 @@ void DeleteFrame(QuicFrame* frame) {
     case WINDOW_UPDATE_FRAME:
       delete frame->window_update_frame;
       break;
+    case PATH_CHALLENGE_FRAME:
+      delete frame->path_challenge_frame;
+      break;
+    case STOP_SENDING_FRAME:
+      delete frame->stop_sending_frame;
+      break;
     case APPLICATION_CLOSE_FRAME:
       delete frame->application_close_frame;
       break;
     case NEW_CONNECTION_ID_FRAME:
       delete frame->new_connection_id_frame;
+      break;
+    case PATH_RESPONSE_FRAME:
+      delete frame->path_response_frame;
       break;
 
     case NUM_FRAME_TYPES:
@@ -270,6 +288,15 @@ std::ostream& operator<<(std::ostream& os, const QuicFrame& frame) {
       break;
     case STREAM_ID_BLOCKED_FRAME:
       os << "type { STREAM_ID_BLOCKED } " << frame.stream_id_blocked_frame;
+      break;
+    case PATH_RESPONSE_FRAME:
+      os << "type { PATH_RESPONSE } " << *(frame.path_response_frame);
+      break;
+    case PATH_CHALLENGE_FRAME:
+      os << "type { PATH_CHALLENGE } " << *(frame.path_challenge_frame);
+      break;
+    case STOP_SENDING_FRAME:
+      os << "type { STOP_SENDING } " << *(frame.stop_sending_frame);
       break;
     default: {
       QUIC_LOG(ERROR) << "Unknown frame type: " << frame.type;

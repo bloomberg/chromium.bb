@@ -18,13 +18,25 @@ struct QUIC_EXPORT_PRIVATE QuicRstStreamFrame : public QuicControlFrame {
                      QuicStreamId stream_id,
                      QuicRstStreamErrorCode error_code,
                      QuicStreamOffset bytes_written);
+  QuicRstStreamFrame(QuicControlFrameId control_frame_id,
+                     QuicStreamId stream_id,
+                     uint16_t ietf_error_code,
+                     QuicStreamOffset bytes_written);
 
   friend QUIC_EXPORT_PRIVATE std::ostream& operator<<(
       std::ostream& os,
       const QuicRstStreamFrame& r);
 
   QuicStreamId stream_id;
-  QuicRstStreamErrorCode error_code;
+
+  // Caller must know whether IETF- or Google- QUIC is in use and
+  // set the appropriate error code.
+  union {
+    QuicRstStreamErrorCode error_code;
+    // In IETF QUIC the code is up to the app on top of quic, so is
+    // more general than QuicRstStreamErrorCode allows.
+    uint16_t ietf_error_code;
+  };
 
   // Used to update flow control windows. On termination of a stream, both
   // endpoints must inform the peer of the number of bytes they have sent on

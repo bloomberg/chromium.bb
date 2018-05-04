@@ -24,6 +24,13 @@ std::ostream& operator<<(std::ostream& os, const Perspective& s) {
   return os;
 }
 
+std::ostream& operator<<(std::ostream& os, const AckedPacket& acked_packet) {
+  os << "{ packet_number: " << acked_packet.packet_number
+     << ", bytes_acked: " << acked_packet.bytes_acked << ", receive_timestamp: "
+     << acked_packet.receive_timestamp.ToDebuggingValue() << "} ";
+  return os;
+}
+
 WriteResult::WriteResult() : status(WRITE_STATUS_ERROR), bytes_written(0) {}
 
 WriteResult::WriteResult(WriteStatus status, int bytes_written_or_error_code)

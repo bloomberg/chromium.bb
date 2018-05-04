@@ -85,11 +85,10 @@ void QuicTraceVisitor::OnPacketSent(const SerializedPacket& serialized_packet,
       case NEW_CONNECTION_ID_FRAME:
       case MAX_STREAM_ID_FRAME:
       case STREAM_ID_BLOCKED_FRAME:
-        /*
         case PATH_RESPONSE_FRAME:
         case PATH_CHALLENGE_FRAME:
         case STOP_SENDING_FRAME:
-        */
+
         break;
 
       // Ignore gQUIC-specific frames.
@@ -204,11 +203,9 @@ void QuicTraceVisitor::PopulateFrameInfo(const QuicFrame& frame,
     case NEW_CONNECTION_ID_FRAME:
     case MAX_STREAM_ID_FRAME:
     case STREAM_ID_BLOCKED_FRAME:
-      /*
       case PATH_RESPONSE_FRAME:
       case PATH_CHALLENGE_FRAME:
       case STOP_SENDING_FRAME:
-      */
       break;
 
     case NUM_FRAME_TYPES:

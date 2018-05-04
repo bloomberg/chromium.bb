@@ -6,6 +6,7 @@
 #define NET_QUIC_PLATFORM_IMPL_QUIC_LOGGING_IMPL_H_
 
 #include "base/logging.h"
+#include "net/base/net_export.h"
 
 #define QUIC_LOG_IMPL(severity) QUIC_CHROMIUM_LOG_##severity
 #define QUIC_VLOG_IMPL(verbose_level) VLOG(verbose_level)
@@ -61,5 +62,19 @@
 #define QUIC_NOTREACHED_IMPL() NOTREACHED()
 
 #define QUIC_PLOG_IMPL(severity) DVLOG(1)
+
+namespace net {
+template <typename T>
+NET_EXPORT_PRIVATE inline std::ostream& operator<<(std::ostream& out,
+                                                   const std::vector<T>& v) {
+  out << "[";
+  const char* sep = "";
+  for (size_t i = 0; i < v.size(); ++i) {
+    out << sep << v[i];
+    sep = ", ";
+  }
+  return out << "]";
+}
+}  // namespace net
 
 #endif  // NET_QUIC_PLATFORM_IMPL_QUIC_LOGGING_IMPL_H_

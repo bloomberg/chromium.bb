@@ -556,23 +556,20 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   bool ProcessIetfConnectionCloseFrame(QuicDataReader* reader,
                                        const uint8_t frame_type,
                                        QuicConnectionCloseFrame* frame);
-  bool ProcessIetfApplicationCloseFrame(QuicDataReader* reader,
-                                        const uint8_t frame_type,
-                                        QuicConnectionCloseFrame* frame);
-  bool ProcessIetfCloseFrame(QuicDataReader* reader,
-                             const uint8_t frame_type,
-                             QuicConnectionCloseFrame* frame);
+  bool ProcessApplicationCloseFrame(QuicDataReader* reader,
+                                    const uint8_t frame_type,
+                                    QuicApplicationCloseFrame* frame);
   bool ProcessIetfAckFrame(QuicDataReader* reader,
                            uint8_t frame_type,
                            QuicAckFrame* ack_frame);
-  bool ProcessIetfPathChallengeFrame(QuicDataReader* reader,
-                                     QuicPathChallengeFrame* frame);
-  bool ProcessIetfPathResponseFrame(QuicDataReader* reader,
-                                    QuicPathResponseFrame* frame);
+  bool ProcessPathChallengeFrame(QuicDataReader* reader,
+                                 QuicPathChallengeFrame* frame);
+  bool ProcessPathResponseFrame(QuicDataReader* reader,
+                                QuicPathResponseFrame* frame);
   bool ProcessIetfResetStreamFrame(QuicDataReader* reader,
                                    QuicRstStreamFrame* frame);
-  bool ProcessIetfStopSendingFrame(QuicDataReader* reader,
-                                   QuicStopSendingFrame* stop_sending_frame);
+  bool ProcessStopSendingFrame(QuicDataReader* reader,
+                               QuicStopSendingFrame* stop_sending_frame);
 
   // IETF frame appending methods.  All methods append the type byte as well.
   bool AppendIetfStreamFrame(const QuicStreamFrame& frame,
@@ -580,32 +577,27 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
                              QuicDataWriter* writer);
   bool AppendIetfConnectionCloseFrame(const QuicConnectionCloseFrame& frame,
                                       QuicDataWriter* writer);
-  bool AppendIetfApplicationCloseFrame(const QuicConnectionCloseFrame& frame,
-                                       QuicDataWriter* writer);
-  bool AppendIetfCloseFrame(const QuicIetfFrameType type,
-                            const uint16_t code,
-                            const QuicString& phrase,
-                            QuicDataWriter* writer);
-  bool AppendIetfAckFrame(const QuicAckFrame& frame, QuicDataWriter* writer);
-  bool AppendIetfPathChallengeFrame(const QuicPathChallengeFrame& frame,
-                                    QuicDataWriter* writer);
-  bool AppendIetfPathResponseFrame(const QuicPathResponseFrame& frame,
+  bool AppendApplicationCloseFrame(const QuicApplicationCloseFrame& frame,
                                    QuicDataWriter* writer);
+  bool AppendIetfAckFrame(const QuicAckFrame& frame, QuicDataWriter* writer);
+  bool AppendPathChallengeFrame(const QuicPathChallengeFrame& frame,
+                                QuicDataWriter* writer);
+  bool AppendPathResponseFrame(const QuicPathResponseFrame& frame,
+                               QuicDataWriter* writer);
   bool AppendIetfResetStreamFrame(const QuicRstStreamFrame& frame,
                                   QuicDataWriter* writer);
-  bool AppendIetfStopSendingFrame(
-      const QuicStopSendingFrame& stop_sending_frame,
-      QuicDataWriter* writer);
+  bool AppendStopSendingFrame(const QuicStopSendingFrame& stop_sending_frame,
+                              QuicDataWriter* writer);
 
   // Append/consume IETF-Format MAX_DATA and MAX_STREAM_DATA frames
-  bool AppendIetfMaxDataFrame(const QuicWindowUpdateFrame& frame,
-                              QuicDataWriter* writer);
-  bool AppendIetfMaxStreamDataFrame(const QuicWindowUpdateFrame& frame,
-                                    QuicDataWriter* writer);
-  bool ProcessIetfMaxDataFrame(QuicDataReader* reader,
-                               QuicWindowUpdateFrame* frame);
-  bool ProcessIetfMaxStreamDataFrame(QuicDataReader* reader,
-                                     QuicWindowUpdateFrame* frame);
+  bool AppendMaxDataFrame(const QuicWindowUpdateFrame& frame,
+                          QuicDataWriter* writer);
+  bool AppendMaxStreamDataFrame(const QuicWindowUpdateFrame& frame,
+                                QuicDataWriter* writer);
+  bool ProcessMaxDataFrame(QuicDataReader* reader,
+                           QuicWindowUpdateFrame* frame);
+  bool ProcessMaxStreamDataFrame(QuicDataReader* reader,
+                                 QuicWindowUpdateFrame* frame);
 
   bool AppendMaxStreamIdFrame(const QuicMaxStreamIdFrame& frame,
                               QuicDataWriter* writer);
@@ -616,15 +608,19 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
                               QuicDataWriter* writer);
   bool ProcessIetfBlockedFrame(QuicDataReader* reader, QuicBlockedFrame* frame);
 
-  bool AppendIetfStreamBlockedFrame(const QuicBlockedFrame& frame,
-                                    QuicDataWriter* writer);
-  bool ProcessIetfStreamBlockedFrame(QuicDataReader* reader,
-                                     QuicBlockedFrame* frame);
+  bool AppendStreamBlockedFrame(const QuicBlockedFrame& frame,
+                                QuicDataWriter* writer);
+  bool ProcessStreamBlockedFrame(QuicDataReader* reader,
+                                 QuicBlockedFrame* frame);
 
   bool AppendStreamIdBlockedFrame(const QuicStreamIdBlockedFrame& frame,
                                   QuicDataWriter* writer);
   bool ProcessStreamIdBlockedFrame(QuicDataReader* reader,
                                    QuicStreamIdBlockedFrame* frame);
+  bool AppendNewConnectionIdFrame(const QuicNewConnectionIdFrame& frame,
+                                  QuicDataWriter* writer);
+  bool ProcessNewConnectionIdFrame(QuicDataReader* reader,
+                                   QuicNewConnectionIdFrame* frame);
 
   bool RaiseError(QuicErrorCode error);
 

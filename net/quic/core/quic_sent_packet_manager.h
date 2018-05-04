@@ -507,6 +507,12 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   // when quic_reloadable_flag_quic_use_incremental_ack_processing3 is true.
   PacketNumberQueue::const_reverse_iterator acked_packets_iter_;
 
+  // Used for debugging purpose.
+  // TODO(b/78128994): Replace
+  // quic_reloadable_flag_quic_use_incremental_ack_processing3 with a new flag
+  // and remove this when the issue is fixed.
+  PacketNumberQueue received_ack_ranges_for_debugging_;
+
   // Latched value of
   // quic_reloadable_flag_quic_path_degrading_alarm
   const bool use_path_degrading_alarm_;

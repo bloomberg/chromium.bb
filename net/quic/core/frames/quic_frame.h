@@ -49,6 +49,9 @@ struct QUIC_EXPORT_PRIVATE QuicFrame {
   explicit QuicFrame(QuicNewConnectionIdFrame* frame);
   explicit QuicFrame(QuicMaxStreamIdFrame frame);
   explicit QuicFrame(QuicStreamIdBlockedFrame frame);
+  explicit QuicFrame(QuicPathResponseFrame* frame);
+  explicit QuicFrame(QuicPathChallengeFrame* frame);
+  explicit QuicFrame(QuicStopSendingFrame* frame);
 
   QUIC_EXPORT_PRIVATE friend std::ostream& operator<<(std::ostream& os,
                                                       const QuicFrame& frame);
@@ -73,6 +76,9 @@ struct QUIC_EXPORT_PRIVATE QuicFrame {
     QuicBlockedFrame* blocked_frame;
     QuicApplicationCloseFrame* application_close_frame;
     QuicNewConnectionIdFrame* new_connection_id_frame;
+    QuicPathResponseFrame* path_response_frame;
+    QuicPathChallengeFrame* path_challenge_frame;
+    QuicStopSendingFrame* stop_sending_frame;
   };
 };
 // QuicFrameType consumes 8 bytes with padding.

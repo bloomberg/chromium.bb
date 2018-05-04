@@ -1647,6 +1647,65 @@ TEST_P(QuicConnectionTest, ReceiveConnectivityProbingAtServer) {
   }
 }
 
+TEST_P(QuicConnectionTest, ReceiveReorderedConnectivityProbingAtServer) {
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  set_perspective(Perspective::IS_SERVER);
+  QuicPacketCreatorPeer::SetSendVersionInPacket(creator_, false);
+  EXPECT_EQ(Perspective::IS_SERVER, connection_.perspective());
+
+  if (GetQuicReloadableFlag(quic_enable_server_proxy2)) {
+    // Clear direct_peer_address.
+    QuicConnectionPeer::SetDirectPeerAddress(&connection_, QuicSocketAddress());
+    // Clear effective_peer_address, it is the same as direct_peer_address for
+    // this test.
+    QuicConnectionPeer::SetEffectivePeerAddress(&connection_,
+                                                QuicSocketAddress());
+    EXPECT_FALSE(connection_.effective_peer_address().IsInitialized());
+  } else {
+    // Clear peer_address.
+    QuicConnectionPeer::SetPeerAddress(&connection_, QuicSocketAddress());
+    EXPECT_FALSE(connection_.peer_address().IsInitialized());
+  }
+
+  QuicPacketCreatorPeer::SetPacketNumber(&peer_creator_, 5);
+  QuicStreamFrame stream_frame(1u, false, 0u, QuicStringPiece());
+  EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(AnyNumber());
+  ProcessFramePacketWithAddresses(QuicFrame(&stream_frame), kSelfAddress,
+                                  kPeerAddress);
+  EXPECT_EQ(kPeerAddress, connection_.peer_address());
+  if (GetQuicReloadableFlag(quic_enable_server_proxy2)) {
+    EXPECT_EQ(kPeerAddress, connection_.effective_peer_address());
+  }
+
+  // Decrease packet number to simulate out-of-order packets.
+  QuicPacketCreatorPeer::SetPacketNumber(&peer_creator_, 4);
+
+  EXPECT_CALL(visitor_, OnConnectionMigration(PORT_CHANGE)).Times(0);
+  EXPECT_CALL(visitor_, OnConnectivityProbeReceived(_, _)).Times(1);
+
+  // Process a padded PING packet from a new peer address on server side
+  // is effectively receiving a connectivity probing, even if a newer packet has
+  // been received before this one.
+  const QuicSocketAddress kNewPeerAddress =
+      QuicSocketAddress(QuicIpAddress::Loopback6(), /*port=*/23456);
+
+  OwningSerializedPacketPointer probing_packet(
+      QuicPacketCreatorPeer::SerializeConnectivityProbingPacket(
+          &peer_creator_));
+  std::unique_ptr<QuicReceivedPacket> received(ConstructReceivedPacket(
+      QuicEncryptedPacket(probing_packet->encrypted_buffer,
+                          probing_packet->encrypted_length),
+      clock_.Now()));
+
+  ProcessReceivedPacket(kSelfAddress, kNewPeerAddress, *received);
+
+  EXPECT_TRUE(connection_.IsCurrentPacketConnectivityProbing());
+  EXPECT_EQ(kPeerAddress, connection_.peer_address());
+  if (GetQuicReloadableFlag(quic_enable_server_proxy2)) {
+    EXPECT_EQ(kPeerAddress, connection_.effective_peer_address());
+  }
+}
+
 TEST_P(QuicConnectionTest, MigrateAfterProbingAtServer) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   set_perspective(Perspective::IS_SERVER);

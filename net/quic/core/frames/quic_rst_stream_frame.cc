@@ -18,6 +18,15 @@ QuicRstStreamFrame::QuicRstStreamFrame(QuicControlFrameId control_frame_id,
       error_code(error_code),
       byte_offset(bytes_written) {}
 
+QuicRstStreamFrame::QuicRstStreamFrame(QuicControlFrameId control_frame_id,
+                                       QuicStreamId stream_id,
+                                       uint16_t ietf_error_code,
+                                       QuicStreamOffset bytes_written)
+    : QuicControlFrame(control_frame_id),
+      stream_id(stream_id),
+      ietf_error_code(ietf_error_code),
+      byte_offset(bytes_written) {}
+
 std::ostream& operator<<(std::ostream& os,
                          const QuicRstStreamFrame& rst_frame) {
   os << "{ control_frame_id: " << rst_frame.control_frame_id
