@@ -67,7 +67,8 @@ class URLLoaderFactoryGetter
       network::mojom::URLLoaderFactoryRequest network_factory_request);
 
   // Called on the IO thread to get the URLLoaderFactory to the blob service.
-  // The pointer shouldn't be cached.
+  // Must be used only if the network service or servicified service worker is
+  // enabled. The pointer shouldn't be cached.
   CONTENT_EXPORT network::mojom::URLLoaderFactory* GetBlobFactory();
 
   // Overrides the network URLLoaderFactory for subsequent requests. Passing a

@@ -657,10 +657,10 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
         base::BindOnce(&BlobStorageContextGetterForStorage, blob_context);
     partition->blob_url_loader_factory_ =
         BlobURLLoaderFactory::Create(std::move(blob_getter));
-
-    partition->url_loader_factory_getter_ = new URLLoaderFactoryGetter();
-    partition->url_loader_factory_getter_->Initialize(partition.get());
   }
+
+  partition->url_loader_factory_getter_ = new URLLoaderFactoryGetter();
+  partition->url_loader_factory_getter_->Initialize(partition.get());
 
   partition->service_worker_context_->Init(
       path, quota_manager_proxy.get(), context->GetSpecialStoragePolicy(),

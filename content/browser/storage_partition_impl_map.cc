@@ -436,15 +436,17 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
       browser_context_->CreateMediaRequestContextForStoragePartition(
           partition->GetPath(), in_memory));
 
-  if (ServiceWorkerUtils::IsServicificationEnabled() &&
-      !base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     // This needs to happen after SetURLRequestContext() since we need this
     // code path only for non-NetworkService case where NetworkContext needs to
     // be initialized using |url_request_context_|, which is initialized by
     // SetURLRequestContext().
     DCHECK(partition->url_loader_factory_getter());
-    DCHECK(partition->url_request_context_);
-    partition->url_loader_factory_getter()->HandleFactoryRequests();
+    // TODO(crbug.com/826869): |url_request_context_| is not configured
+    // correctly in some unittests. We should fix those tests and turn this 'if'
+    // into a DCHECK.
+    if (partition->url_request_context_)
+      partition->url_loader_factory_getter()->HandleFactoryRequests();
   }
 
   PostCreateInitialization(partition, in_memory);
