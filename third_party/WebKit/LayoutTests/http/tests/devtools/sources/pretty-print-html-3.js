@@ -18,7 +18,8 @@
     function testInlineJavascript(next) {
       var mappingQueries = ['console', 'test', '</html'];
       testFormatter(
-          '<html><script>for(var i=0;i<10;++i)console.log(\'test \'+i);<\/script></html>', mappingQueries, next);
+          '<html><script type="text/javascript">for(var i=0;i<10;++i)console.log(\'test \'+i);<\/script></html>',
+          mappingQueries, next);
     },
 
     function testInlineCSS(next) {
