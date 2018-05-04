@@ -27,6 +27,7 @@
 
 #include <stdlib.h>
 #include <stdint.h>
+#include <inttypes.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/socket.h>
@@ -377,6 +378,67 @@ xcb_cursor_library_load_cursor(struct weston_wm *wm, const char *file)
 	return cursor;
 }
 
+static unsigned
+dump_cardinal_array_elem(FILE *fp, unsigned format,
+			 void *arr, unsigned len, unsigned ind)
+{
+	const char *comma;
+
+	/* If more than 16 elements, print 0-14, ..., last */
+	if (ind > 14 && ind < len - 1) {
+		fprintf(fp, ", ...");
+		return len - 1;
+	}
+
+	comma = ind ? ", " : "";
+
+	switch (format) {
+	case 32:
+		fprintf(fp, "%s%" PRIu32, comma, ((uint32_t *)arr)[ind]);
+		break;
+	case 16:
+		fprintf(fp, "%s%" PRIu16, comma, ((uint16_t *)arr)[ind]);
+		break;
+	case 8:
+		fprintf(fp, "%s%" PRIu8, comma, ((uint8_t *)arr)[ind]);
+		break;
+	default:
+		fprintf(fp, "%s???", comma);
+	}
+
+	return ind + 1;
+}
+
+static void
+dump_cardinal_array(xcb_get_property_reply_t *reply)
+{
+	unsigned i = 0;
+	FILE *fp;
+	void *arr;
+	char *str = NULL;
+	size_t size = 0;
+
+	assert(reply->type == XCB_ATOM_CARDINAL);
+
+	fp = open_memstream(&str, &size);
+	if (!fp)
+		return;
+
+	arr = xcb_get_property_value(reply);
+
+	fprintf(fp, "[");
+	while (i < reply->value_len)
+		i = dump_cardinal_array_elem(fp, reply->format,
+					     arr, reply->value_len, i);
+	fprintf(fp, "]");
+
+	if (fclose(fp) != 0)
+		return;
+
+	wm_log_continue("%s\n", str);
+	free(str);
+}
+
 void
 dump_property(struct weston_wm *wm,
 	      xcb_atom_t property, xcb_get_property_reply_t *reply)
@@ -403,7 +465,7 @@ dump_property(struct weston_wm *wm,
 		incr_value = xcb_get_property_value(reply);
 		wm_log_continue("%d\n", *incr_value);
 	} else if (reply->type == wm->atom.utf8_string ||
-	      reply->type == wm->atom.string) {
+	           reply->type == wm->atom.string) {
 		text_value = xcb_get_property_value(reply);
 		if (reply->value_len > 40)
 			len = 40;
@@ -424,6 +486,8 @@ dump_property(struct weston_wm *wm,
 			width +=  wm_log_continue("%s", name);
 		}
 		wm_log_continue("\n");
+	} else if (reply->type == XCB_ATOM_CARDINAL) {
+		dump_cardinal_array(reply);
 	} else {
 		wm_log_continue("huh?\n");
 	}
