@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_BROWSER_CHILD_PROCESS_TERMINATION_INFO_H_
 
 #include "base/process/kill.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/public/common/result_codes.h"
 
@@ -19,6 +20,10 @@ struct ChildProcessTerminationInfo {
   // contain the exit code for the process (e.g. status from waitpid if on
   // posix, from GetExitCodeProcess on Windows).
   int exit_code = RESULT_CODE_NORMAL_EXIT;
+
+  // Time delta between 1) the process start and 2) the time when
+  // ChildProcessTerminationInfo is computed.
+  base::TimeDelta uptime = base::TimeDelta::Max();
 
 #if defined(OS_ANDROID)
   // True if child service has strong or moderate binding at time of death.
