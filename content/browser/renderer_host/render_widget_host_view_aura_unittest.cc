@@ -95,6 +95,7 @@
 #include "ui/aura/window_observer.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/base/ime/input_method_factory.h"
 #include "ui/base/ime/input_method_keyboard_controller.h"
 #include "ui/base/ime/mock_input_method.h"
 #include "ui/base/ui_base_features.h"
@@ -7002,21 +7003,23 @@ class RenderWidgetHostViewAuraKeyboardTest
   RenderWidgetHostViewAuraKeyboardTest() = default;
   ~RenderWidgetHostViewAuraKeyboardTest() override{};
   void SetUp() override {
+    input_method_ = new RenderWidgetHostViewAuraKeyboardMockInputMethod();
+    // transfers ownership.
+    ui::SetUpInputMethodForTesting(input_method_);
     SetUpEnvironment();
-    aura_test_helper_->host()->SetSharedInputMethod(&input_method_);
   }
 
   size_t keyboard_controller_observer_count() const {
-    return input_method_.keyboard_controller_observer_count();
+    return input_method_->keyboard_controller_observer_count();
   }
 
  private:
-  RenderWidgetHostViewAuraKeyboardMockInputMethod input_method_;
+  // Not owned.
+  RenderWidgetHostViewAuraKeyboardMockInputMethod* input_method_ = nullptr;
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAuraKeyboardTest);
 };
 
-TEST_F(RenderWidgetHostViewAuraKeyboardTest,
-       DISABLED_KeyboardObserverDestroyed) {
+TEST_F(RenderWidgetHostViewAuraKeyboardTest, KeyboardObserverDestroyed) {
   parent_view_->FocusedNodeTouched(true);
   EXPECT_NE(parent_view_->keyboard_observer_.get(), nullptr);
   EXPECT_EQ(keyboard_controller_observer_count(), 1u);
