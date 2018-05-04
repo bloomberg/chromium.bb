@@ -121,10 +121,8 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
   suggestion_view_->OnMatchUpdate(this, match_);
   keyword_view_->OnMatchUpdate(this, match_);
 
-  keyword_view_->icon()->SetVisible(match_.associated_keyword.get());
-
   // Set up 'switch to tab' button.
-  if (match.has_tab_match && !keyword_view_->icon()->visible()) {
+  if (match.has_tab_match && !match_.associated_keyword.get()) {
     suggestion_tab_switch_button_ =
         std::make_unique<OmniboxTabSwitchButton>(model_, this, GetTextHeight());
     suggestion_tab_switch_button_->set_owned_by_client();
@@ -182,8 +180,9 @@ void OmniboxResultView::Invalidate() {
   }
 
   AutocompleteMatch* keyword_match = match_.associated_keyword.get();
-  keyword_view_->content()->SetVisible(keyword_match);
-  keyword_view_->description()->SetVisible(keyword_match);
+  // Setting the keyword_view_ invisible is a minor optimization (it avoids
+  // some OnPaint calls); it is not required.
+  keyword_view_->SetVisible(keyword_match);
   if (keyword_match) {
     keyword_view_->content()->SetText(keyword_match->contents,
                                       keyword_match->contents_class);
