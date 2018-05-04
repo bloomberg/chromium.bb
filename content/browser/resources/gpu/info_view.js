@@ -235,7 +235,6 @@ cr.define('gpu', function() {
         'surface_synchronization': 'Surface Synchronization',
         'vpx_decode': 'VPx Video Decode',
         'webgl2': 'WebGL2',
-        'checker_imaging': 'CheckerImaging',
         'viz_display_compositor': 'Viz Service Display Compositor',
       };
 

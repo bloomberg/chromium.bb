@@ -24,10 +24,8 @@ const char kDisableMainFrameBeforeActivation[] =
 const char kEnableMainFrameBeforeActivation[] =
     "enable-main-frame-before-activation";
 
-// Enables defering image decodes to the image decode service.
-const char kEnableCheckerImaging[] = "enable-checker-imaging";
-
-// Disabled defering image decodes to the image decode service.
+// Disabled defering all image decodes to the image decode service, ignoring
+// DecodingMode preferences specified on PaintImage.
 const char kDisableCheckerImaging[] = "disable-checker-imaging";
 
 // Percentage of the browser controls need to be hidden before they will auto

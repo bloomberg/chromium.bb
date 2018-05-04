@@ -37,9 +37,6 @@ CONTENT_EXPORT int NumberOfRendererRasterThreads();
 // Returns true if main thread can be pipelined with activation.
 CONTENT_EXPORT bool IsMainFrameBeforeActivationEnabled();
 
-// Returns true if images can be decode asynchronously from rasterization.
-CONTENT_EXPORT bool IsCheckerImagingEnabled();
-
 // Returns true if image animations should run in the compositor.
 CONTENT_EXPORT bool IsCompositorImageAnimationEnabled();
 

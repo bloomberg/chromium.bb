@@ -209,8 +209,6 @@ void CheckerImageTracker::ClearTracker(bool can_clear_decode_policy_tracking) {
   // they should be accompanied with an invalidation during paint.
   image_id_to_decode_.clear();
 
-  decoding_mode_map_.clear();
-
   if (can_clear_decode_policy_tracking) {
     image_async_decode_state_.clear();
   } else {
@@ -273,23 +271,12 @@ bool CheckerImageTracker::ShouldCheckerImage(const DrawImage& draw_image,
                                              WhichTree tree) {
   const PaintImage& image = draw_image.paint_image();
   PaintImage::Id image_id = image.stable_id();
-  TRACE_EVENT1("cc", "CheckerImageTracker::ShouldCheckerImage", "image_id",
-               image_id);
+  TRACE_EVENT1("cc.debug", "CheckerImageTracker::ShouldCheckerImage",
+               "image_id", image_id);
 
-  auto decoding_mode_it = decoding_mode_map_.find(image_id);
-  PaintImage::DecodingMode decoding_mode_hint =
-      decoding_mode_it == decoding_mode_map_.end()
-          ? PaintImage::DecodingMode::kUnspecified
-          : decoding_mode_it->second;
-
-  // If we don't have default checker imaging enabled, and the developer did not
-  // specify "async" then we don't checker the images. To put it different, we
-  // currently only not respect |enable_checker_imaging_| if the value was
-  // specified as "async" by the developer.
-  if (decoding_mode_hint != PaintImage::DecodingMode::kAsync &&
-      !enable_checker_imaging_) {
+  // Checkering of all images is disabled.
+  if (!enable_checker_imaging_)
     return false;
-  }
 
   // If the image was invalidated on the current sync tree and the tile is
   // for the active tree, continue checkering it on the active tree to ensure
@@ -305,6 +292,16 @@ bool CheckerImageTracker::ShouldCheckerImage(const DrawImage& draw_image,
       images_pending_invalidation_.end()) {
     return true;
   }
+
+  auto decoding_mode_it = decoding_mode_map_.find(image_id);
+  PaintImage::DecodingMode decoding_mode_hint =
+      decoding_mode_it == decoding_mode_map_.end()
+          ? PaintImage::DecodingMode::kUnspecified
+          : decoding_mode_it->second;
+
+  // We only checker images if the developer specifies async decoding mode.
+  if (decoding_mode_hint != PaintImage::DecodingMode::kAsync)
+    return false;
 
   auto insert_result = image_async_decode_state_.insert(
       std::pair<PaintImage::Id, DecodeState>(image_id, DecodeState()));

@@ -60,6 +60,9 @@ class LayerTreeHostCheckerImagingTest : public LayerTreeTest {
     content_layer_client_.set_fill_with_nonsolid_color(true);
     PaintImage checkerable_image =
         CreateDiscardablePaintImage(gfx::Size(450, 450));
+    checkerable_image = PaintImageBuilder::WithCopy(checkerable_image)
+                            .set_decoding_mode(PaintImage::DecodingMode::kAsync)
+                            .TakePaintImage();
     content_layer_client_.add_draw_image(checkerable_image, gfx::Point(0, 0),
                                          PaintFlags());
 

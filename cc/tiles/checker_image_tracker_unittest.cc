@@ -112,12 +112,16 @@ class CheckerImageTrackerTest : public testing::Test,
     }
 
     auto generator = CreatePaintImageGenerator(gfx::Size(dimension, dimension));
+    auto id = PaintImage::GetNextId();
+    checker_image_tracker_->UpdateImageDecodingHints(
+        {{id, PaintImage::DecodingMode::kAsync}});
     return DrawImage(PaintImageBuilder::WithDefault()
-                         .set_id(PaintImage::GetNextId())
+                         .set_id(id)
                          .set_paint_image_generator(std::move(generator))
                          .set_animation_type(animation)
                          .set_completion_state(completion)
                          .set_is_multipart(is_multipart)
+                         .set_decoding_mode(PaintImage::DecodingMode::kAsync)
                          .TakePaintImage(),
                      SkIRect::MakeWH(dimension, dimension),
                      kNone_SkFilterQuality, SkMatrix::I(),
@@ -377,8 +381,6 @@ TEST_F(CheckerImageTrackerTest, ClearsTracker) {
   // Now clear the decode tracking as well. The image will be re-checkered.
   can_clear_decode_policy_tracking = true;
   checker_image_tracker_->ClearTracker(can_clear_decode_policy_tracking);
-  image_decode_queue =
-      BuildImageDecodeQueue({checkerable_image}, WhichTree::PENDING_TREE);
   image_decode_queue =
       BuildImageDecodeQueue({checkerable_image}, WhichTree::PENDING_TREE);
   EXPECT_EQ(image_decode_queue.size(), 1U);

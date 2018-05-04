@@ -13733,7 +13733,10 @@ TEST_F(LayerTreeHostImplTest, CheckerImagingTileInvalidation) {
   std::unique_ptr<FakeRecordingSource> recording_source =
       FakeRecordingSource::CreateFilledRecordingSource(layer_size);
   PaintImage checkerable_image =
-      CreateDiscardablePaintImage(gfx::Size(500, 500));
+      PaintImageBuilder::WithCopy(
+          CreateDiscardablePaintImage(gfx::Size(500, 500)))
+          .set_decoding_mode(PaintImage::DecodingMode::kAsync)
+          .TakePaintImage();
   recording_source->add_draw_image(checkerable_image, gfx::Point(0, 0));
 
   SkColor non_solid_color = SkColorSetARGB(128, 45, 56, 67);
@@ -13762,6 +13765,11 @@ TEST_F(LayerTreeHostImplTest, CheckerImagingTileInvalidation) {
   root->SetBounds(layer_size);
   root->SetDrawsContent(true);
   pending_tree->BuildPropertyTreesForTesting();
+
+  // Update the decoding state map for the tracker so it knows the correct
+  // decoding preferences for the image.
+  host_impl_->tile_manager()->checker_image_tracker().UpdateImageDecodingHints(
+      raster_source->TakeDecodingModeMap());
 
   // CompleteCommit which should perform a PrepareTiles, adding tilings for the
   // root layer, each one having a raster task.
