@@ -334,10 +334,15 @@ public class WebApkUma {
         }
         long minimumFreeBytes = getLowSpaceLimitBytes(partitionTotalBytes);
 
-        long webApkExtraSpaceBytes = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
-                                             ChromeFeatureList.ADJUST_WEBAPK_INSTALLATION_SPACE,
-                                             ADJUST_WEBAPK_INSTALLATION_SPACE_PARAM, 0)
-                * 1024L * 1024L;
+        long webApkExtraSpaceBytes = 0;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            // Extra installation space is only allowed >= Android L
+            webApkExtraSpaceBytes = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                                            ChromeFeatureList.ADJUST_WEBAPK_INSTALLATION_SPACE,
+                                            ADJUST_WEBAPK_INSTALLATION_SPACE_PARAM, 0)
+                    * 1024L * 1024L;
+        }
 
         return partitionAvailableBytes - minimumFreeBytes + webApkExtraSpaceBytes;
     }
