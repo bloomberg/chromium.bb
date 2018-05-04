@@ -25,6 +25,18 @@ struct LayeredAPIResource {
 
 const LayeredAPIResource kLayeredAPIResources[] = {
     {"blank/index.js", IDR_LAYERED_API_BLANK_INDEX_JS},
+
+    {"virtual-list/index.js", IDR_LAYERED_API_VIRTUAL_LIST_INDEX_JS},
+    {"virtual-list/layouts/layout-1d-base.js",
+     IDR_LAYERED_API_VIRTUAL_LIST_LAYOUTS_LAYOUT_1D_BASE_JS},
+    {"virtual-list/layouts/layout-1d-grid.js",
+     IDR_LAYERED_API_VIRTUAL_LIST_LAYOUTS_LAYOUT_1D_GRID_JS},
+    {"virtual-list/layouts/layout-1d.js",
+     IDR_LAYERED_API_VIRTUAL_LIST_LAYOUTS_LAYOUT_1D_JS},
+    {"virtual-list/virtual-list.js",
+     IDR_LAYERED_API_VIRTUAL_LIST_VIRTUAL_LIST_JS},
+    {"virtual-list/virtual-repeater.js",
+     IDR_LAYERED_API_VIRTUAL_LIST_VIRTUAL_REPEATER_JS},
 };
 
 int GetResourceIDFromPath(const String& path) {
