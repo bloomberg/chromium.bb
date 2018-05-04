@@ -24,6 +24,9 @@ class ArcKioskSplashScreenView {
     // Invoked when the launch bailout shortcut key is pressed.
     virtual void OnCancelArcKioskLaunch() = 0;
 
+    // Invoked when the splash screen view gets being deleted.
+    virtual void OnDeletingSplashScreenView() = 0;
+
    protected:
     virtual ~Delegate() = default;
 

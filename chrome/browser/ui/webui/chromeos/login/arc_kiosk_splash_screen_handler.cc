@@ -28,7 +28,10 @@ ArcKioskSplashScreenHandler::ArcKioskSplashScreenHandler()
   set_call_js_prefix(kJsScreenPath);
 }
 
-ArcKioskSplashScreenHandler::~ArcKioskSplashScreenHandler() = default;
+ArcKioskSplashScreenHandler::~ArcKioskSplashScreenHandler() {
+  if (delegate_)
+    delegate_->OnDeletingSplashScreenView();
+}
 
 void ArcKioskSplashScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {

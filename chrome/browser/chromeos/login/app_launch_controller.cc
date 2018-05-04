@@ -157,7 +157,8 @@ AppLaunchController::AppLaunchController(const std::string& app_id,
 }
 
 AppLaunchController::~AppLaunchController() {
-  app_launch_splash_screen_view_->SetDelegate(nullptr);
+  if (app_launch_splash_screen_view_)
+    app_launch_splash_screen_view_->SetDelegate(nullptr);
 }
 
 void AppLaunchController::StartAppLaunch(bool is_auto_launch) {
@@ -303,6 +304,10 @@ void AppLaunchController::OnNetworkStateChanged(bool online) {
     MaybeShowNetworkConfigureUI();
 }
 
+void AppLaunchController::OnDeletingSplashScreenView() {
+  app_launch_splash_screen_view_ = nullptr;
+}
+
 void AppLaunchController::OnProfileLoaded(Profile* profile) {
   SYSLOG(INFO) << "Profile loaded... Starting app launch.";
   profile_ = profile;
@@ -344,8 +349,7 @@ void AppLaunchController::CleanUp() {
   startup_app_launcher_.reset();
   splash_wait_timer_.Stop();
 
-  if (host_)
-    host_->Finalize(base::OnceClosure());
+  host_->Finalize(base::OnceClosure());
 }
 
 void AppLaunchController::OnNetworkWaitTimedout() {
@@ -392,6 +396,9 @@ bool AppLaunchController::NeedOwnerAuthToConfigureNetwork() {
 }
 
 void AppLaunchController::MaybeShowNetworkConfigureUI() {
+  if (!app_launch_splash_screen_view_)
+    return;
+
   if (CanConfigureNetwork()) {
     if (NeedOwnerAuthToConfigureNetwork()) {
       if (network_config_requested_)
@@ -408,6 +415,9 @@ void AppLaunchController::MaybeShowNetworkConfigureUI() {
 }
 
 void AppLaunchController::ShowNetworkConfigureUIWhenReady() {
+  if (!app_launch_splash_screen_view_)
+    return;
+
   if (!profile_) {
     show_network_config_ui_after_profile_load_ = true;
     app_launch_splash_screen_view_->UpdateAppLaunchState(
@@ -422,6 +432,9 @@ void AppLaunchController::ShowNetworkConfigureUIWhenReady() {
 }
 
 void AppLaunchController::InitializeNetwork() {
+  if (!app_launch_splash_screen_view_)
+    return;
+
   // Show the network configuration dialog if network is not initialized
   // after a brief wait time.
   waiting_for_network_ = true;
@@ -434,7 +447,8 @@ void AppLaunchController::InitializeNetwork() {
 }
 
 bool AppLaunchController::IsNetworkReady() {
-  return app_launch_splash_screen_view_->IsNetworkReady();
+  return app_launch_splash_screen_view_ &&
+         app_launch_splash_screen_view_->IsNetworkReady();
 }
 
 bool AppLaunchController::ShouldSkipAppInstallation() {
@@ -442,6 +456,9 @@ bool AppLaunchController::ShouldSkipAppInstallation() {
 }
 
 void AppLaunchController::OnInstallingApp() {
+  if (!app_launch_splash_screen_view_)
+    return;
+
   app_launch_splash_screen_view_->UpdateAppLaunchState(
       AppLaunchSplashScreenView::APP_LAUNCH_STATE_INSTALLING_APPLICATION);
 
@@ -495,8 +512,10 @@ void AppLaunchController::OnReadyToLaunch() {
 
 void AppLaunchController::OnLaunchSucceeded() {
   SYSLOG(INFO) << "Kiosk launch succeeded, wait for app window.";
-  app_launch_splash_screen_view_->UpdateAppLaunchState(
-      AppLaunchSplashScreenView::APP_LAUNCH_STATE_WAITING_APP_WINDOW);
+  if (app_launch_splash_screen_view_) {
+    app_launch_splash_screen_view_->UpdateAppLaunchState(
+        AppLaunchSplashScreenView::APP_LAUNCH_STATE_WAITING_APP_WINDOW);
+  }
 
   DCHECK(!app_window_watcher_);
   app_window_watcher_.reset(new AppWindowWatcher(this, app_id_));
@@ -517,8 +536,8 @@ void AppLaunchController::OnLaunchFailed(KioskAppLaunchError::Error error) {
 
   // Saves the error and ends the session to go back to login screen.
   KioskAppLaunchError::Save(error);
-  chrome::AttemptUserExit();
   CleanUp();
+  chrome::AttemptUserExit();
 }
 
 bool AppLaunchController::IsShowingNetworkConfigScreen() {

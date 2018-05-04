@@ -97,6 +97,7 @@ class AppLaunchController : public AppLaunchSplashScreenView::Delegate,
   void OnCancelAppLaunch() override;
   void OnNetworkConfigRequested(bool requested) override;
   void OnNetworkStateChanged(bool online) override;
+  void OnDeletingSplashScreenView() override;
 
   // StartupAppLauncher::Delegate overrides:
   void InitializeNetwork() override;

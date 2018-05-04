@@ -52,6 +52,8 @@ AppLaunchSplashScreenHandler::AppLaunchSplashScreenHandler(
 
 AppLaunchSplashScreenHandler::~AppLaunchSplashScreenHandler() {
   network_state_informer_->RemoveObserver(this);
+  if (delegate_)
+    delegate_->OnDeletingSplashScreenView();
 }
 
 void AppLaunchSplashScreenHandler::DeclareLocalizedValues(

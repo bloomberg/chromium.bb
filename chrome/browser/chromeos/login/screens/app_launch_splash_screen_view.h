@@ -36,6 +36,9 @@ class AppLaunchSplashScreenView {
     // is connected to the Internet.
     virtual void OnNetworkStateChanged(bool online) = 0;
 
+    // Invoked when the splash screen view is being deleted.
+    virtual void OnDeletingSplashScreenView() = 0;
+
    protected:
     virtual ~Delegate() {}
   };
