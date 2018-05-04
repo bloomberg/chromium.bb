@@ -314,6 +314,14 @@ class _CoverageReportHtmlGenerator(object):
       html_file.write(html_header + html_table + html_footer)
 
 
+def _ConfigureLogging(args):
+  """Configures logging settings for later use."""
+  log_level = logging.DEBUG if args.verbose else logging.INFO
+  log_format = '[%(asctime)s %(levelname)s] %(message)s'
+  log_file = args.log_file if args.log_file else None
+  logging.basicConfig(filename=log_file, level=log_level, format=log_format)
+
+
 def _GetSharedLibraries(binary_paths):
   """Returns set of shared libraries used by specified binaries."""
   libraries = set()
@@ -322,8 +330,8 @@ def _GetSharedLibraries(binary_paths):
 
   if sys.platform.startswith('linux'):
     cmd.extend(['ldd'])
-    shared_library_re = re.compile(
-        r'.*\.so\s=>\s(.*' + BUILD_DIR + '.*\.so)\s.*')
+    shared_library_re = re.compile(r'.*\.so\s=>\s(.*' + BUILD_DIR +
+                                   r'.*\.so)\s.*')
   elif sys.platform.startswith('darwin'):
     cmd.extend(['otool', '-L'])
     shared_library_re = re.compile(r'\s+(@rpath/.*\.dylib)\s.*')
@@ -1202,6 +1210,26 @@ def _GetRelativePathToDirectoryOfFile(target_path, base_path):
   return os.path.relpath(target_path, base_dir)
 
 
+def _GetBinaryPathsFromTargets(targets, build_dir):
+  """Return binary paths from target names."""
+  # FIXME: Derive output binary from target build definitions rather than
+  # assuming that it is always the same name.
+  binary_paths = []
+  for target in targets:
+    binary_path = os.path.join(build_dir, target)
+    if _GetHostPlatform() == 'win':
+      binary_path += '.exe'
+
+    if os.path.exists(binary_path):
+      binary_paths.append(binary_path)
+    else:
+      logging.warning(
+          'Target binary %s not found in build directory, skipping.',
+          os.path.basename(binary_path))
+
+  return binary_paths
+
+
 def _ParseCommandArguments():
   """Adds and parses relevant arguments for tool comands.
 
@@ -1230,10 +1258,21 @@ def _ParseCommandArguments():
       '-c',
       '--command',
       action='append',
-      required=True,
+      required=False,
       help='Commands used to run test targets, one test target needs one and '
       'only one command, when specifying commands, one should assume the '
-      'current working directory is the root of the checkout.')
+      'current working directory is the root of the checkout. This option is '
+      'incompatible with -p/--profdata-file option.')
+
+  arg_parser.add_argument(
+      '-p',
+      '--profdata-file',
+      type=str,
+      required=False,
+      help='Path to profdata file to use for generating code coverage reports. '
+      'This can be useful if you generated the profdata file seperately in '
+      'your own test harness. This option is ignored if run command(s) are '
+      'already provided above using -c/--command option.')
 
   arg_parser.add_argument(
       '-f',
@@ -1278,36 +1317,34 @@ def _ParseCommandArguments():
 
 def Main():
   """Execute tool commands."""
-  assert os.path.abspath(os.getcwd()) == SRC_ROOT_PATH, ('This script must be '
-                                                         'called from the root '
-                                                         'of checkout.')
+  # Change directory to source root to aid in relative paths calculations.
+  os.chdir(SRC_ROOT_PATH)
 
-  # This helps to setup coverage binaries even when script is called with
-  # empty params. This is used by coverage bot for initial setup.
+  # Setup coverage binaries even when script is called with empty params. This
+  # is used by coverage bot for initial setup.
   DownloadCoverageToolsIfNeeded()
 
   args = _ParseCommandArguments()
+  _ConfigureLogging(args)
+
   global BUILD_DIR
   BUILD_DIR = args.build_dir
   global OUTPUT_DIR
   OUTPUT_DIR = args.output_dir
 
-  assert len(args.targets) == len(args.command), ('Number of targets must be '
-                                                  'equal to the number of test '
-                                                  'commands.')
+  assert args.command or args.profdata_file, (
+      'Need to either provide commands to run using -c/--command option OR '
+      'provide prof-data file as input using -p/--profdata-file option.')
 
-  # logging should be configured before it is used.
-  log_level = logging.DEBUG if args.verbose else logging.INFO
-  log_format = '[%(asctime)s %(levelname)s] %(message)s'
-  log_file = args.log_file if args.log_file else None
-  logging.basicConfig(filename=log_file, level=log_level, format=log_format)
+  assert not args.command or (len(args.targets) == len(args.command)), (
+      'Number of targets must be equal to the number of test commands.')
 
   assert os.path.exists(BUILD_DIR), (
       'Build directory: {} doesn\'t exist. '
       'Please run "gn gen" to generate.').format(BUILD_DIR)
+
   _ValidateCurrentPlatformIsSupported()
   _ValidateBuildingWithClangCoverage()
-  _VerifyTargetExecutablesAreInBuildDirectory(args.command)
 
   absolute_filter_paths = []
   if args.filters:
@@ -1316,9 +1353,18 @@ def Main():
   if not os.path.exists(OUTPUT_DIR):
     os.makedirs(OUTPUT_DIR)
 
-  profdata_file_path = _CreateCoverageProfileDataForTargets(
-      args.targets, args.command, args.jobs)
-  binary_paths = [_GetBinaryPath(command) for command in args.command]
+  # Get profdate file and list of binary paths.
+  if args.command:
+    # A list of commands are provided. Run them to generate profdata file, and
+    # create a list of binary paths from parsing commands.
+    _VerifyTargetExecutablesAreInBuildDirectory(args.command)
+    profdata_file_path = _CreateCoverageProfileDataForTargets(
+        args.targets, args.command, args.jobs)
+    binary_paths = [_GetBinaryPath(command) for command in args.command]
+  else:
+    # An input prof-data file is already provided. Just calculate binary paths.
+    profdata_file_path = args.profdata_file
+    binary_paths = _GetBinaryPathsFromTargets(args.targets, args.build_dir)
 
   logging.info('Generating code coverage report in html (this can take a while '
                'depending on size of target!)')
