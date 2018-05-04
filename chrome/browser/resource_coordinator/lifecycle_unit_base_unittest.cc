@@ -21,7 +21,7 @@ class MockLifecycleUnitObserver : public LifecycleUnitObserver {
   MockLifecycleUnitObserver() = default;
 
   MOCK_METHOD2(OnLifecycleUnitStateChanged,
-               void(LifecycleUnit*, LifecycleState));
+               void(LifecycleUnit*, mojom::LifecycleState));
   MOCK_METHOD2(OnLifecycleUnitVisibilityChanged,
                void(LifecycleUnit*, content::Visibility));
   MOCK_METHOD1(OnLifecycleUnitDestroyed, void(LifecycleUnit*));
@@ -88,11 +88,11 @@ TEST(LifecycleUnitBaseTest, SetStateNotifiesObservers) {
   // Observer is notified when the state changes.
   EXPECT_CALL(observer, OnLifecycleUnitStateChanged(&lifecycle_unit,
                                                     lifecycle_unit.GetState()));
-  lifecycle_unit.SetState(LifecycleState::DISCARDED);
+  lifecycle_unit.SetState(mojom::LifecycleState::kDiscarded);
   testing::Mock::VerifyAndClear(&observer);
 
   // Observer isn't notified when the state stays the same.
-  lifecycle_unit.SetState(LifecycleState::DISCARDED);
+  lifecycle_unit.SetState(mojom::LifecycleState::kDiscarded);
 
   lifecycle_unit.RemoveObserver(&observer);
 }

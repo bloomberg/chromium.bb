@@ -10,7 +10,6 @@
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/resource_coordinator/lifecycle_state.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_observer.h"
 #include "chrome/browser/resource_coordinator/time.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -23,22 +22,6 @@
 #include "url/gurl.h"
 
 namespace resource_coordinator {
-
-namespace {
-
-// Translates a mojom::LifecycleState to resource_coordinator::LifecycleState.
-LifecycleState GetLifecycleStateFromMojoState(mojom::LifecycleState state) {
-  switch (state) {
-    case mojom::LifecycleState::kDiscarded:
-      return LifecycleState::DISCARDED;
-    case mojom::LifecycleState::kFrozen:
-      return LifecycleState::FROZEN;
-    case mojom::LifecycleState::kRunning:
-      return LifecycleState::ACTIVE;
-  }
-}
-
-}  // namespace
 
 TabLifecycleUnitSource::TabLifecycleUnit::TabLifecycleUnit(
     base::ObserverList<TabLifecycleObserver>* observers,
@@ -73,8 +56,8 @@ void TabLifecycleUnitSource::TabLifecycleUnit::SetFocused(bool focused) {
     return;
   last_focused_time_ = focused ? base::TimeTicks::Max() : NowTicks();
 
-  if (focused && GetState() == LifecycleState::DISCARDED) {
-    SetState(LifecycleState::ACTIVE);
+  if (focused && GetState() == mojom::LifecycleState::kDiscarded) {
+    SetState(mojom::LifecycleState::kRunning);
     // See comment in Discard() for an explanation of why "needs reload" is
     // false when a tab is discarded.
     // TODO(fdoray): Remove NavigationControllerImpl::needs_reload_ once session
@@ -96,7 +79,7 @@ void TabLifecycleUnitSource::TabLifecycleUnit::SetRecentlyAudible(
 void TabLifecycleUnitSource::TabLifecycleUnit::UpdateLifecycleState(
     mojom::LifecycleState state) {
   DCHECK_NE(mojom::LifecycleState::kDiscarded, state);
-  SetState(GetLifecycleStateFromMojoState(state));
+  SetState(state);
 }
 
 TabLifecycleUnitExternal*
@@ -130,11 +113,9 @@ content::Visibility TabLifecycleUnitSource::TabLifecycleUnit::GetVisibility()
 }
 
 bool TabLifecycleUnitSource::TabLifecycleUnit::Freeze() {
-  // Can't freeze tabs that are already discarded or frozen.
-  if (GetState() == LifecycleState::DISCARDED ||
-      GetState() == LifecycleState::FROZEN) {
+  // Can't request to freeze a discarded tab.
+  if (IsDiscarded())
     return false;
-  }
 
   GetWebContents()->FreezePage();
   return true;
@@ -227,7 +208,7 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::CanDiscard(
 
 bool TabLifecycleUnitSource::TabLifecycleUnit::Discard(
     DiscardReason discard_reason) {
-  if (!tab_strip_model_ || GetState() == LifecycleState::DISCARDED)
+  if (!tab_strip_model_ || IsDiscarded())
     return false;
 
   UMA_HISTOGRAM_BOOLEAN(
@@ -297,7 +278,7 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::Discard(
   // RenderFrameProxyHosts.
   old_contents_deleter.reset();
 
-  SetState(LifecycleState::DISCARDED);
+  SetState(mojom::LifecycleState::kDiscarded);
   ++discard_count_;
   OnDiscardedStateChange();
 
@@ -353,11 +334,11 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::FreezeTab() {
 }
 
 bool TabLifecycleUnitSource::TabLifecycleUnit::IsDiscarded() const {
-  return GetState() == LifecycleState::DISCARDED;
+  return GetState() == mojom::LifecycleState::kDiscarded;
 }
 
 bool TabLifecycleUnitSource::TabLifecycleUnit::IsFrozen() const {
-  return GetState() == LifecycleState::FROZEN;
+  return GetState() == mojom::LifecycleState::kFrozen;
 }
 
 int TabLifecycleUnitSource::TabLifecycleUnit::GetDiscardCount() const {
@@ -376,7 +357,7 @@ TabLifecycleUnitSource::TabLifecycleUnit::GetRenderProcessHost() const {
 
 void TabLifecycleUnitSource::TabLifecycleUnit::DidStartLoading() {
   if (IsDiscarded()) {
-    SetState(LifecycleState::ACTIVE);
+    SetState(mojom::LifecycleState::kRunning);
     OnDiscardedStateChange();
   }
 }

@@ -90,7 +90,6 @@ class TabLifecycleUnitSource::TabLifecycleUnit
   int GetDiscardCount() const override;
 
  protected:
-  FRIEND_TEST_ALL_PREFIXES(TabLifecycleUnitTest, CannotFreezeAFrozenTab);
   // TabLifecycleUnitSource needs to update the state when a external lifecycle
   // state change is observed.
   friend class TabLifecycleUnitSource;

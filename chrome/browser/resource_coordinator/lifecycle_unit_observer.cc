@@ -10,7 +10,7 @@ LifecycleUnitObserver::~LifecycleUnitObserver() = default;
 
 void LifecycleUnitObserver::OnLifecycleUnitStateChanged(
     LifecycleUnit* lifecycle_unit,
-    LifecycleState last_state) {}
+    mojom::LifecycleState previous_state) {}
 
 void LifecycleUnitObserver::OnLifecycleUnitVisibilityChanged(
     LifecycleUnit* lifecycle_unit,
