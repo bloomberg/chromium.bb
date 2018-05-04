@@ -8,7 +8,7 @@ import re
 import subprocess
 
 # Matches the coarse syntax of a backtrace entry.
-_BACKTRACE_PREFIX_RE = re.compile(r'bt#(?P<frame_id>\d+): ')
+_BACKTRACE_PREFIX_RE = re.compile(r'(\[[0-9.]+\] )?bt#(?P<frame_id>\d+): ')
 
 # Matches the specific fields of a backtrace entry.
 # Back-trace line matcher/parser assumes that 'pc' is always present, and

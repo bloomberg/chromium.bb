@@ -98,9 +98,9 @@ def main():
     if args.enable_test_server:
       test_server = SetupTestServer(target, test_concurrency)
 
-    returncode = RunPackage(args.output_directory, target, args.package,
-                            args.package_name, child_args,
-                            args.package_manifest)
+    returncode = RunPackage(
+        args.output_directory, target, args.package, args.package_name,
+        child_args, args.include_system_logs, args.package_manifest)
 
     if forwarder:
       forwarder.terminate()
