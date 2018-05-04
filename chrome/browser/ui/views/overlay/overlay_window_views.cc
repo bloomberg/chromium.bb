@@ -34,7 +34,7 @@ const int kResizeAreaCornerSize = 16;
 // TODO(apacible): Update sizes per UX feedback and when scaling is determined.
 // http://crbug.com/836389
 const gfx::Size kCloseIconSize = gfx::Size(50, 50);
-const gfx::Size kPlayPauseIconSize = gfx::Size(120, 120);
+const gfx::Size kPlayPauseIconSize = gfx::Size(90, 90);
 }  // namespace
 
 // OverlayWindow implementation of NonClientFrameView.
