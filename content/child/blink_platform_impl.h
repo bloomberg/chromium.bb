@@ -71,7 +71,6 @@ class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
       const blink::WebSecurityOrigin& origin) override;
   bool DatabaseSetFileSize(const blink::WebString& vfs_file_name,
                            long long size) override;
-  size_t NumberOfProcessors() override;
 
   size_t MaxDecodedImageBytes() override;
   bool IsLowEndDevice() override;

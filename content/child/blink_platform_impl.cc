@@ -742,10 +742,6 @@ bool BlinkPlatformImpl::DatabaseSetFileSize(
   return false;
 }
 
-size_t BlinkPlatformImpl::NumberOfProcessors() {
-  return static_cast<size_t>(base::SysInfo::NumberOfProcessors());
-}
-
 size_t BlinkPlatformImpl::MaxDecodedImageBytes() {
   const int kMB = 1024 * 1024;
   const int kMaxNumberOfBytesPerPixel = 4;
