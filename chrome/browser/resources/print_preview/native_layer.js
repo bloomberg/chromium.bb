@@ -197,13 +197,11 @@ cr.define('print_preview', function() {
      *   'page-layout-ready',
      *   'page-preview-ready'
      * @param {string} printTicket JSON print ticket for the request.
-     * @param {number} pageCount Page count for the preview request, or -1 if
-     *     unknown (first request).
      * @return {!Promise<number>} Promise that resolves with the unique ID of
      *     the preview UI when the preview has been generated.
      */
-    getPreview(printTicket, pageCount) {
-      return cr.sendWithPromise('getPreview', printTicket, pageCount);
+    getPreview(printTicket) {
+      return cr.sendWithPromise('getPreview', printTicket);
     }
 
     /**

@@ -621,11 +621,6 @@ void PrintPreviewUI::ClearAllPreviewData() {
   PrintPreviewDataService::GetInstance()->RemoveEntry(id_);
 }
 
-int PrintPreviewUI::GetAvailableDraftPageCount() const {
-  return PrintPreviewDataService::GetInstance()->GetAvailableDraftPageCount(
-      id_);
-}
-
 void PrintPreviewUI::SetInitiatorTitle(
     const base::string16& job_title) {
   initiator_title_ = job_title;

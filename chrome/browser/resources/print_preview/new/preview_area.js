@@ -608,7 +608,6 @@ Polymer({
       isFirstRequest: this.inFlightRequestId_ == 0,
       requestID: this.inFlightRequestId_,
       previewModifiable: this.documentInfo.isModifiable,
-      generateDraftData: this.documentInfo.isModifiable,
       fitToPageEnabled: this.getSettingValue('fitToPage'),
       scaleFactor: parseInt(this.getSettingValue('scaling'), 10),
       shouldPrintBackgrounds: this.getSettingValue('cssBackground'),
@@ -641,11 +640,6 @@ Polymer({
         print_preview.ticket_items.MarginsTypeValue.CUSTOM) {
       ticket.marginsCustom = this.getSettingValue('customMargins');
     }
-    let pageCount = -1;
-    if (this.inFlightRequestId_ > 0) {
-      pageCount = this.documentInfo.isModifiable ?
-          this.documentInfo.pageCount : 0;
-    }
-    return this.nativeLayer_.getPreview(JSON.stringify(ticket), pageCount);
+    return this.nativeLayer_.getPreview(JSON.stringify(ticket));
   },
 });

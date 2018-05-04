@@ -561,7 +561,7 @@ void PrintPreviewHandler::HandleGetPrinterCapabilities(
 }
 
 void PrintPreviewHandler::HandleGetPreview(const base::ListValue* args) {
-  DCHECK_EQ(3U, args->GetSize());
+  DCHECK_EQ(2U, args->GetSize());
   std::string callback_id;
   std::string json_str;
 
@@ -615,29 +615,6 @@ void PrintPreviewHandler::HandleGetPreview(const base::ListValue* args) {
     const GURL& initiator_url = initiator->GetLastCommittedURL();
     settings->SetString(printing::kSettingHeaderFooterURL,
                         initiator_url.ReplaceComponents(url_sanitizer).spec());
-  }
-
-  bool generate_draft_data = false;
-  success = settings->GetBoolean(printing::kSettingGenerateDraftData,
-                                 &generate_draft_data);
-  DCHECK(success);
-
-  if (!generate_draft_data) {
-    int page_count = -1;
-    success = args->GetInteger(2, &page_count);
-    DCHECK(success);
-
-    if (page_count != -1) {
-      bool preview_modifiable = false;
-      success = settings->GetBoolean(printing::kSettingPreviewModifiable,
-                                     &preview_modifiable);
-      DCHECK(success);
-
-      if (preview_modifiable &&
-          print_preview_ui()->GetAvailableDraftPageCount() != page_count) {
-        settings->SetBoolean(printing::kSettingGenerateDraftData, true);
-      }
-    }
   }
 
   VLOG(1) << "Print preview request start";
