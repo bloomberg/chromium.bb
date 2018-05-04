@@ -381,6 +381,7 @@
         '--remote=127.0.0.1',
         '--remote-ssh-port=9222',
         '--xvfb',
+        '--skip=measurements.clock_domain_test.ClockDomainTest.testTelemetryUsesChromeClockDomain',
       ],
       'swarming': {
         'hard_timeout': 960,
