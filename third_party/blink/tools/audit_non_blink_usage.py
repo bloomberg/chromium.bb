@@ -167,15 +167,9 @@ _CONFIG = [
         ],
     },
     {
-        'paths': ['third_party/blink/renderer/core/inspector/inspector_memory_agent.cc'],
+        'paths': ['third_party/blink/renderer/core/inspector/InspectorMemoryAgent.cpp'],
         'allowed': [
             'base::SamplingHeapProfiler',
-        ],
-    },
-    {
-        'paths': ['third_party/blink/renderer/core/inspector/inspector_performance_agent.cc'],
-        'allowed': [
-            'base::subtle::TimeTicksNowIgnoringOverride',
         ],
     },
     {

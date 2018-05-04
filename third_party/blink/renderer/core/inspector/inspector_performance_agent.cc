@@ -4,9 +4,6 @@
 
 #include "third_party/blink/renderer/core/inspector/inspector_performance_agent.h"
 
-#include <utility>
-
-#include "base/time/time_override.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/inspected_frames.h"
@@ -56,10 +53,8 @@ protocol::Response InspectorPerformanceAgent::enable() {
   state_->setBoolean(kPerformanceAgentEnabled, true);
   instrumenting_agents_->addInspectorPerformanceAgent(this);
   Platform::Current()->CurrentThread()->AddTaskTimeObserver(this);
-  layout_start_ticks_ = TimeTicks();
-  recalc_style_start_ticks_ = TimeTicks();
-  task_start_ticks_ = TimeTicks();
-  script_start_ticks_ = TimeTicks();
+  task_start_time_ = TimeTicks();
+  script_start_time_ = TimeTicks();
   return Response::OK();
 }
 
@@ -95,8 +90,8 @@ Response InspectorPerformanceAgent::getMetrics(
   std::unique_ptr<protocol::Array<protocol::Performance::Metric>> result =
       protocol::Array<protocol::Performance::Metric>::create();
 
-  AppendMetric(result.get(), "Timestamp",
-               TimeTicksInSeconds(CurrentTimeTicks()));
+  TimeTicks now = CurrentTimeTicks();
+  AppendMetric(result.get(), "Timestamp", TimeTicksInSeconds(now));
 
   // Renderer instance counters.
   for (size_t i = 0; i < ARRAY_SIZE(kInstanceCounterNames); ++i) {
@@ -106,7 +101,6 @@ Response InspectorPerformanceAgent::getMetrics(
   }
 
   // Page performance metrics.
-  TimeTicks now = base::subtle::TimeTicksNowIgnoringOverride();
   AppendMetric(result.get(), "LayoutCount", static_cast<double>(layout_count_));
   AppendMetric(result.get(), "RecalcStyleCount",
                static_cast<double>(recalc_style_count_));
@@ -114,12 +108,12 @@ Response InspectorPerformanceAgent::getMetrics(
   AppendMetric(result.get(), "RecalcStyleDuration",
                recalc_style_duration_.InSecondsF());
   TimeDelta script_duration = script_duration_;
-  if (!script_start_ticks_.is_null())
-    script_duration += now - script_start_ticks_;
+  if (!script_start_time_.is_null())
+    script_duration += now - script_start_time_;
   AppendMetric(result.get(), "ScriptDuration", script_duration.InSecondsF());
   TimeDelta task_duration = task_duration_;
-  if (!task_start_ticks_.is_null())
-    task_duration += now - task_start_ticks_;
+  if (!task_start_time_.is_null())
+    task_duration += now - task_start_time_;
   AppendMetric(result.get(), "TaskDuration", task_duration.InSecondsF());
 
   v8::HeapStatistics heap_statistics;
@@ -155,67 +149,60 @@ void InspectorPerformanceAgent::ConsoleTimeStamp(const String& title) {
   GetFrontend()->metrics(std::move(metrics), title);
 }
 
-void InspectorPerformanceAgent::ScriptStarts() {
-  if (!script_call_depth_++)
-    script_start_ticks_ = base::subtle::TimeTicksNowIgnoringOverride();
-}
-
-void InspectorPerformanceAgent::ScriptEnds() {
-  if (--script_call_depth_)
-    return;
-  script_duration_ +=
-      base::subtle::TimeTicksNowIgnoringOverride() - script_start_ticks_;
-  script_start_ticks_ = TimeTicks();
-}
-
 void InspectorPerformanceAgent::Will(const probe::CallFunction& probe) {
-  ScriptStarts();
+  if (!script_call_depth_++)
+    script_start_time_ = probe.CaptureStartTime();
 }
 
 void InspectorPerformanceAgent::Did(const probe::CallFunction& probe) {
-  ScriptEnds();
+  if (--script_call_depth_)
+    return;
+  script_duration_ += probe.Duration();
+  script_start_time_ = TimeTicks();
 }
 
 void InspectorPerformanceAgent::Will(const probe::ExecuteScript& probe) {
-  ScriptStarts();
+  if (!script_call_depth_++)
+    script_start_time_ = probe.CaptureStartTime();
 }
 
 void InspectorPerformanceAgent::Did(const probe::ExecuteScript& probe) {
-  ScriptEnds();
+  if (--script_call_depth_)
+    return;
+  script_duration_ += probe.Duration();
+  script_start_time_ = TimeTicks();
 }
 
 void InspectorPerformanceAgent::Will(const probe::RecalculateStyle& probe) {
-  recalc_style_start_ticks_ = base::subtle::TimeTicksNowIgnoringOverride();
+  probe.CaptureStartTime();
 }
 
 void InspectorPerformanceAgent::Did(const probe::RecalculateStyle& probe) {
-  recalc_style_duration_ +=
-      base::subtle::TimeTicksNowIgnoringOverride() - recalc_style_start_ticks_;
+  recalc_style_duration_ += probe.Duration();
   recalc_style_count_++;
 }
 
 void InspectorPerformanceAgent::Will(const probe::UpdateLayout& probe) {
   if (!layout_depth_++)
-    layout_start_ticks_ = base::subtle::TimeTicksNowIgnoringOverride();
+    probe.CaptureStartTime();
 }
 
 void InspectorPerformanceAgent::Did(const probe::UpdateLayout& probe) {
   if (--layout_depth_)
     return;
-  layout_duration_ +=
-      base::subtle::TimeTicksNowIgnoringOverride() - layout_start_ticks_;
+  layout_duration_ += probe.Duration();
   layout_count_++;
 }
 
 void InspectorPerformanceAgent::WillProcessTask(double start_time) {
-  task_start_ticks_ = TimeTicksFromSeconds(start_time);
+  task_start_time_ = TimeTicksFromSeconds(start_time);
 }
 
 void InspectorPerformanceAgent::DidProcessTask(double start_time,
                                                double end_time) {
-  if (task_start_ticks_ == TimeTicksFromSeconds(start_time))
+  if (task_start_time_ == TimeTicksFromSeconds(start_time))
     task_duration_ += TimeDelta::FromSeconds(end_time - start_time);
-  task_start_ticks_ = TimeTicks();
+  task_start_time_ = TimeTicks();
 }
 
 void InspectorPerformanceAgent::Trace(blink::Visitor* visitor) {
