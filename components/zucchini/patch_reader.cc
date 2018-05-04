@@ -38,8 +38,8 @@ bool ParseElementMatch(BufferSource* source, ElementMatch* element_match) {
   // Caveat: Element offsets and lengths can still be invalid (e.g., exceeding
   // archive bounds), but this will be checked later.
   element_match->old_element.offset = element_header.old_offset;
-  element_match->new_element.offset = element_header.new_offset;
   element_match->old_element.size = element_header.old_length;
+  element_match->new_element.offset = element_header.new_offset;
   element_match->new_element.size = element_header.new_length;
   element_match->old_element.exe_type = exe_type;
   element_match->new_element.exe_type = exe_type;
