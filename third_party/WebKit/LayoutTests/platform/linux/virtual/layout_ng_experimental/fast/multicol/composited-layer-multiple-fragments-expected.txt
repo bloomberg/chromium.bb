@@ -26,15 +26,15 @@ layer at (8,212) size 20x180 backgroundClip at (0,0) size 28x272 clip at (0,0) s
     LayoutNGBlockFlow {DIV} at (0,20) size 20x20 [bgcolor=#008000]
     LayoutNGBlockFlow {DIV} at (0,140) size 20x20 [bgcolor=#008000]
     LayoutNGBlockFlow {DIV} at (0,160) size 20x20 [bgcolor=#008000]
-layer at (8,144) size 20x40 backgroundClip at (0,0) size 28x164 clip at (0,0) size 28x164
+layer at (8,144) size 20x40
   LayoutNGBlockFlow {DIV} at (0,40) size 20x40
     LayoutNGBlockFlow {DIV} at (0,0) size 20x20 [bgcolor=#008000]
     LayoutNGBlockFlow {DIV} at (0,20) size 20x20 [bgcolor=#008000]
-layer at (28,144) size 20x40 backgroundClip at (0,0) size 28x164 clip at (0,0) size 28x164
+layer at (28,144) size 20x40
   LayoutNGBlockFlow {DIV} at (0,100) size 20x40
     LayoutNGBlockFlow {DIV} at (0,0) size 20x20 [bgcolor=#008000]
     LayoutNGBlockFlow {DIV} at (0,20) size 20x20 [bgcolor=#008000]
-layer at (8,252) size 20x100 backgroundClip at (0,0) size 28x272 clip at (0,0) size 28x272
+layer at (8,252) size 20x100
   LayoutNGBlockFlow {DIV} at (0,40) size 20x100
     LayoutNGBlockFlow {DIV} at (0,0) size 20x20 [bgcolor=#008000]
     LayoutNGBlockFlow {DIV} at (0,20) size 20x20 [bgcolor=#008000]

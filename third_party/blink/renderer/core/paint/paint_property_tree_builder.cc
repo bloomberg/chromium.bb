@@ -1963,10 +1963,14 @@ void ObjectPaintPropertyTreeBuilder::InitSingleFragmentFromParent(
     context_.fragments[0].logical_top_in_flow_thread = LayoutUnit();
   }
 
-  if (object_.IsColumnSpanAll()) {
-    // Column-span:all skips pagination container in the tree hierarchy, so
-    // it should also skip any fragment clip created by the skipped pagination
-    // container.
+  // Column-span:all skips pagination container in the tree hierarchy, so it
+  // should also skip any fragment clip created by the skipped pagination
+  // container. We also need to skip fragment clip if the object is a paint
+  // invalidation container which doesn't allow fragmentation.
+  if (object_.IsColumnSpanAll() ||
+      (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+       object_.IsPaintInvalidationContainer() &&
+       ToLayoutBoxModelObject(object_).Layer()->EnclosingPaginationLayer())) {
     if (const auto* pagination_layer_in_tree_hierarchy =
             object_.Parent()->EnclosingLayer()->EnclosingPaginationLayer()) {
       const auto* properties =
@@ -1984,8 +1988,6 @@ void ObjectPaintPropertyTreeBuilder::InitSingleFragmentFromParent(
 void ObjectPaintPropertyTreeBuilder::UpdateCompositedLayerPaginationOffset() {
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
-
-  // TODO(crbug.com/797779): Implement fragments across frame boundaries.
 
   const auto* enclosing_pagination_layer =
       context_.painting_layer->EnclosingPaginationLayer();

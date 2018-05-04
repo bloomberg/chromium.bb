@@ -5506,7 +5506,8 @@ TEST_P(PaintPropertyTreeBuilderTest, ClipPathInheritanceWithoutMutation) {
   // context when the clipping element didn't need paint property update.
   SetBodyInnerHTML(R"HTML(
     <div style="clip-path:circle();">
-      <div id="child" style="position:relative; width:100px; height:100px; background:green;"></div>
+      <div id="child" style="position:relative; width:100px; height:100px;
+          background:green;"></div>
     </div>
   )HTML");
 
@@ -5520,6 +5521,45 @@ TEST_P(PaintPropertyTreeBuilderTest, ClipPathInheritanceWithoutMutation) {
   const auto* new_clip_state =
       child->FirstFragment().LocalBorderBoxProperties().Clip();
   EXPECT_EQ(old_clip_state, new_clip_state);
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, CompositedLayerSkipsFragmentClip) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return;
+
+  SetBodyInnerHTML(R"HTML(
+    <div id="columns" style="columns: 2">
+      <div id="composited-with-clip"
+           style="height: 100px; will-change: transform; overflow: hidden">
+        <div id="child-clipped" style="height: 120px; position: relative"></div>
+      </div>
+      <div id="composited-without-clip"
+           style="height: 100px; will-change: transform">
+        <div id="child-unclipped" style="height: 100%; position: relative">
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  const auto* composited_with_clip_properties =
+      PaintPropertiesForElement("composited-with-clip");
+  EXPECT_EQ(FrameContentClip(),
+            composited_with_clip_properties->OverflowClip()->Parent());
+  EXPECT_EQ(composited_with_clip_properties->OverflowClip(),
+            GetLayoutObjectByElementId("child-clipped")
+                ->FirstFragment()
+                .LocalBorderBoxProperties()
+                .Clip());
+
+  EXPECT_EQ(FrameContentClip(),
+            GetLayoutObjectByElementId("composited-without-clip")
+                ->FirstFragment()
+                .LocalBorderBoxProperties()
+                .Clip());
+  EXPECT_EQ(FrameContentClip(), GetLayoutObjectByElementId("child-unclipped")
+                                    ->FirstFragment()
+                                    .LocalBorderBoxProperties()
+                                    .Clip());
 }
 
 }  // namespace blink
