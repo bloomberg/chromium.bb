@@ -426,6 +426,9 @@ class CC_EXPORT GpuImageDecodeCache
 
   void CheckContextLockAcquiredIfNecessary();
 
+  sk_sp<SkColorSpace> ColorSpaceForImageDecode(const DrawImage& image,
+                                               DecodedDataMode mode) const;
+
   // |persistent_cache_| represents the long-lived cache, keeping a certain
   // budget of ImageDatas alive even when their ref count reaches zero.
   using PersistentCache = base::HashingMRUCache<PaintImage::FrameKey,
