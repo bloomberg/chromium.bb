@@ -60,7 +60,15 @@ var CrExtensionsA11yTest = class extends PolymerTest {
                 node.element, 'iron-iconset-svg');
           });
         });
-      }
+      },
+      'button-name': function(nodeResult) {
+        const parentNode = nodeResult.element.parentNode;
+
+        // Ignore the <button> residing within cr-toggle, which has tabindex -1
+        // anyway.
+        return parentNode && parentNode.host &&
+            parentNode.host.tagName == 'CR-TOGGLE';
+      },
     };
   }
 

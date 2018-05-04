@@ -37,6 +37,16 @@ SettingsAccessibilityTest.violationFilter = {
   'aria-valid-attr': function(nodeResult) {
     return nodeResult.element.hasAttribute('aria-active-attribute');
   },
+  'button-name': function(nodeResult) {
+    if (nodeResult.element.classList.contains('icon-expand-more'))
+      return true;
+
+    // Ignore the <button> residing within cr-toggle, which has tabindex -1
+    // anyway.
+    const parentNode = nodeResult.element.parentNode;
+    return parentNode && parentNode.host &&
+        parentNode.host.tagName == 'CR-TOGGLE';
+  },
 };
 
 SettingsAccessibilityTest.prototype = {

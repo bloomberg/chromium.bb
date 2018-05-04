@@ -19,11 +19,5 @@ AccessibilityTest.define('SettingsAccessibilityTest', {
   /** @override */
   tests: {'Accessible with No Changes': function() {}},
   /** @override */
-  violationFilter:
-      Object.assign({}, SettingsAccessibilityTest.violationFilter, {
-        'button-name': function(nodeResult) {
-          const node = nodeResult.element;
-          return node.classList.contains('icon-expand-more');
-        },
-      }),
+  violationFilter: SettingsAccessibilityTest.violationFilter,
 });

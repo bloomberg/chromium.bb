@@ -78,13 +78,6 @@ Polymer({
     if (this.controlDisabled())
       return;
 
-    // Ignore this |tap| event, if the interaction sequence
-    // (pointerdown+pointerup) began within the cr-toggle itself.
-    if (/** @type {!CrToggleElement} */ (this.$.control)
-            .shouldIgnoreHostTap(e)) {
-      return;
-    }
-
     this.checked = !this.checked;
     this.notifyChangedByUserInteraction();
     this.fire('change');

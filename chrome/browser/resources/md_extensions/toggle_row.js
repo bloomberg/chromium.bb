@@ -30,18 +30,6 @@ cr.define('extensions', function() {
      * @param {!Event}
      * @private
      */
-    onLabelTap_: function(e) {
-      // If the interaction sequence (pointerdown+pointerup) began within the
-      // cr-toggle itself, then prevent this event from changing the state of
-      // the toggle.
-      if (this.$.crToggle.shouldIgnoreHostTap(e))
-        e.preventDefault();
-    },
-
-    /**
-     * @param {!Event}
-     * @private
-     */
     onNativeClick_: function(e) {
       // Even though the native checkbox is hidden and can't be actually
       // cilcked/tapped by the user, because it resides within the <label> the
