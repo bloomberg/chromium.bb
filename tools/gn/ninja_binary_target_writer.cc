@@ -348,7 +348,7 @@ void NinjaBinaryTargetWriter::Run() {
       DCHECK_NE(static_cast<size_t>(-1), computed_obj.IndexOf(obj));
 #endif
   } else {
-    WriteLinkerStuff(obj_files, other_files);
+    WriteLinkerStuff(obj_files, other_files, input_dep);
   }
 }
 
@@ -752,7 +752,8 @@ void NinjaBinaryTargetWriter::WriteCompilerBuildLine(
 
 void NinjaBinaryTargetWriter::WriteLinkerStuff(
     const std::vector<OutputFile>& object_files,
-    const std::vector<SourceFile>& other_files) {
+    const std::vector<SourceFile>& other_files,
+    const OutputFile& input_dep) {
   std::vector<OutputFile> output_files;
   SubstitutionWriter::ApplyListToLinkerAsOutputFile(
       target_, tool_, tool_->outputs(), &output_files);
@@ -815,6 +816,11 @@ void NinjaBinaryTargetWriter::WriteLinkerStuff(
           OutputFile(settings_->build_settings(), libs[i].source_file()));
     }
   }
+
+  // The input dependency is only needed if there are no object files, as the
+  // dependency is normally provided transitively by the source files.
+  if (!input_dep.value().empty() && object_files.empty())
+    implicit_deps.push_back(input_dep);
 
   // Append implicit dependencies collected above.
   if (!implicit_deps.empty()) {

@@ -4696,10 +4696,10 @@
 #### **Inputs for binary targets**
 
 ```
-  Any input dependencies will be resolved before compiling any sources.
-  Normally, all actions that a target depends on will be run before any files
-  in a target are compiled. So if you depend on generated headers, you do not
-  typically need to list them in the inputs section.
+  Any input dependencies will be resolved before compiling any sources or
+  linking the target. Normally, all actions that a target depends on will be run
+  before any files in a target are compiled. So if you depend on generated
+  headers, you do not typically need to list them in the inputs section.
 
   Inputs for binary targets will be treated as implicit dependencies, meaning
   that changes in any of the inputs will force all sources in the target to be
