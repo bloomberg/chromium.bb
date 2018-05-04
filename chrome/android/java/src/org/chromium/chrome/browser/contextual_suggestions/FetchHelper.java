@@ -214,11 +214,12 @@ class FetchHelper {
 
             @Override
             public void tabRemoved(Tab tab) {
-                stopObservingTab(tab);
-                if (tab == mCurrentTab) {
-                    clearState();
-                    mCurrentTab = null;
-                }
+                tabGone(tab);
+            }
+
+            @Override
+            public void willCloseTab(Tab tab, boolean animate) {
+                tabGone(tab);
             }
         };
 
@@ -336,6 +337,18 @@ class FetchHelper {
         if (tab != null && isObservingTab(tab)) {
             mObservedTabs.remove(tab.getId());
             tab.removeObserver(mTabObserver);
+        }
+    }
+
+    /**
+     * Performs necessary cleanup when a tab leaves the tab model we're associated with, whether by
+     * being moved to another model or closed.
+     */
+    private void tabGone(Tab tab) {
+        stopObservingTab(tab);
+        if (tab == mCurrentTab) {
+            clearState();
+            mCurrentTab = null;
         }
     }
 
