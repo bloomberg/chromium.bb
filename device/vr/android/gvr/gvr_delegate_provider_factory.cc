@@ -4,6 +4,8 @@
 
 #include "device/vr/android/gvr/gvr_delegate_provider_factory.h"
 
+#include "base/logging.h"
+
 namespace device {
 
 namespace {
@@ -18,11 +20,12 @@ GvrDelegateProvider* GvrDelegateProviderFactory::Create() {
 }
 
 // static
-void GvrDelegateProviderFactory::Install(GvrDelegateProviderFactory* f) {
-  if (g_gvr_delegate_provider_factory == f)
-    return;
-  delete g_gvr_delegate_provider_factory;
-  g_gvr_delegate_provider_factory = f;
+void GvrDelegateProviderFactory::Install(
+    std::unique_ptr<GvrDelegateProviderFactory> factory) {
+  DCHECK_NE(g_gvr_delegate_provider_factory, factory.get());
+  if (g_gvr_delegate_provider_factory)
+    delete g_gvr_delegate_provider_factory;
+  g_gvr_delegate_provider_factory = factory.release();
 }
 
 }  // namespace device

@@ -16,11 +16,12 @@ class VRDeviceProvider;
 class DEVICE_VR_EXPORT ARCoreDeviceProviderFactory {
  public:
   static std::unique_ptr<device::VRDeviceProvider> Create();
-  static void Install(ARCoreDeviceProviderFactory* factory);
+  static void Install(std::unique_ptr<ARCoreDeviceProviderFactory> factory);
+
+  virtual ~ARCoreDeviceProviderFactory() = default;
 
  protected:
   ARCoreDeviceProviderFactory() = default;
-  virtual ~ARCoreDeviceProviderFactory() = default;
 
   virtual std::unique_ptr<device::VRDeviceProvider> CreateDeviceProvider() = 0;
 
