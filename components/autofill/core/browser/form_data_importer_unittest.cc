@@ -254,8 +254,6 @@ class FormDataImporterTest : public FormDataImporterTestBase,
     // Reset the deduping pref to its default value.
     personal_data_manager_->pref_service_->SetInteger(
         prefs::kAutofillLastVersionDeduped, 0);
-    personal_data_manager_->pref_service_->SetBoolean(
-        prefs::kAutofillProfileUseDatesFixed, false);
   }
 
   void TearDown() override {

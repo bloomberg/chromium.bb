@@ -1688,29 +1688,6 @@ std::vector<Suggestion> PersonalDataManager::GetSuggestionsForCards(
   return suggestions;
 }
 
-void PersonalDataManager::ApplyProfileUseDatesFix() {
-  // Don't run if the fix has already been applied.
-  if (pref_service_->GetBoolean(prefs::kAutofillProfileUseDatesFixed))
-    return;
-
-  std::vector<AutofillProfile> profiles;
-  bool has_changed_data = false;
-  for (AutofillProfile* profile : GetProfiles()) {
-    if (profile->use_date() == base::Time()) {
-      profile->set_use_date(AutofillClock::Now() -
-                            base::TimeDelta::FromDays(14));
-      has_changed_data = true;
-    }
-    profiles.push_back(*profile);
-  }
-
-  // Set the pref so that this fix is never run again.
-  pref_service_->SetBoolean(prefs::kAutofillProfileUseDatesFixed, true);
-
-  if (has_changed_data)
-    SetProfiles(&profiles);
-}
-
 void PersonalDataManager::RemoveOrphanAutofillTableRows() {
   // Don't run if the fix has already been applied.
   if (pref_service_->GetBoolean(prefs::kAutofillOrphanRowsRemoved))
@@ -2234,7 +2211,6 @@ bool PersonalDataManager::ShouldSuggestServerCards() const {
 }
 
 void PersonalDataManager::ApplyAddressFixesAndCleanups() {
-  ApplyProfileUseDatesFix();        // One-time fix, otherwise NOP.
   RemoveOrphanAutofillTableRows();  // One-time fix, otherwise NOP.
   ApplyDedupingRoutine();           // Once per major version, otherwise NOP.
   DeleteDisusedAddresses();         // Once per major version, otherwise NOP.
