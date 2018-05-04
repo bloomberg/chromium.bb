@@ -133,6 +133,12 @@ bool FetchWarmupProbeURLEnabled();
 // Returns the warmup URL.
 GURL GetWarmupURL();
 
+// Returns true if the |http_response_code| is in the whitelist of HTTP response
+// codes that are considered as successful for fetching the warmup probe URL.
+// If this method returns false, then the probe should be considered as
+// unsuccessful.
+bool IsWhitelistedHttpResponseCodeForProbes(int http_response_code);
+
 // Returns the experiment parameter name to enable the warmup fetch callback.
 const char* GetWarmupCallbackParamName();
 

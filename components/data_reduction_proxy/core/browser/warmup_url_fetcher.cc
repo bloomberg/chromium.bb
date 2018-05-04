@@ -187,7 +187,8 @@ void WarmupURLFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
 
   bool success_response =
       source->GetStatus().status() == net::URLRequestStatus::SUCCESS &&
-      source->GetResponseCode() == net::HTTP_NO_CONTENT &&
+      params::IsWhitelistedHttpResponseCodeForProbes(
+          source->GetResponseCode()) &&
       source->GetResponseHeaders() &&
       HasDataReductionProxyViaHeader(*(source->GetResponseHeaders()),
                                      nullptr /* has_intermediary */);
