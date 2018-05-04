@@ -22,7 +22,6 @@ class EventSource;
 namespace ash {
 
 class KeyboardDrivenEventRewriter;
-class SpokenFeedbackEventRewriter;
 
 // Owns ui::EventRewriters and ensures that they are added to each root window
 // EventSource, current and future, in the order that they are added to this.
@@ -43,10 +42,6 @@ class ASH_EXPORT EventRewriterController
   // mojom::EventRewriterController:
   void SetKeyboardDrivenEventRewriterEnabled(bool enabled) override;
   void SetArrowToTabRewritingEnabled(bool enabled) override;
-  void SetSpokenFeedbackEventRewriterDelegate(
-      mojom::SpokenFeedbackEventRewriterDelegatePtr delegate) override;
-  void OnUnhandledSpokenFeedbackEvent(
-      std::unique_ptr<ui::Event> event) override;
 
   // aura::EnvObserver:
   void OnWindowInitialized(aura::Window* window) override {}
@@ -56,11 +51,8 @@ class ASH_EXPORT EventRewriterController
   // The |EventRewriter|s managed by this controller.
   std::vector<std::unique_ptr<ui::EventRewriter>> rewriters_;
 
-  // A weak pointer to the KeyboardDrivenEventRewriter owned in |rewriters_|.
+  // A weak pointer the KeyboardDrivenEventRewriter owned in |rewriters_|.
   KeyboardDrivenEventRewriter* keyboard_driven_event_rewriter_;
-
-  // A weak pointer to the SpokenFeedbackEventRewriter owned in |rewriters_|.
-  SpokenFeedbackEventRewriter* spoken_feedback_event_rewriter_;
 
   // Bindings for the EventRewriterController mojo interface.
   mojo::BindingSet<mojom::EventRewriterController> bindings_;
