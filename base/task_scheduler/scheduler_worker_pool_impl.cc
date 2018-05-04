@@ -73,6 +73,7 @@ class SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl
 
   // SchedulerWorker::Delegate:
   void OnCanScheduleSequence(scoped_refptr<Sequence> sequence) override;
+  SchedulerWorker::ThreadLabel GetThreadLabel() const override;
   void OnMainEntry(const SchedulerWorker* worker) override;
   scoped_refptr<Sequence> GetWork(SchedulerWorker* worker) override;
   void DidRunTask() override;
@@ -382,6 +383,11 @@ SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::
 void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::
     OnCanScheduleSequence(scoped_refptr<Sequence> sequence) {
   outer_->OnCanScheduleSequence(std::move(sequence));
+}
+
+SchedulerWorker::ThreadLabel
+SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::GetThreadLabel() const {
+  return SchedulerWorker::ThreadLabel::POOLED;
 }
 
 void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::OnMainEntry(
