@@ -354,11 +354,8 @@ void RenderViewContextMenuMac::InitToolkitMenu() {
       base::FeatureList::IsEnabled(features::kEnableEmojiContextMenu)) {
     // The "Emoji" item is available near the top of the context menu, after
     // any "Look Up" of selected text.
-    menu_model_.InsertItemWithStringIdAt(index, IDC_CONTENT_CONTEXT_EMOJI,
+    menu_model_.InsertItemWithStringIdAt(index++, IDC_CONTENT_CONTEXT_EMOJI,
                                          IDS_CONTENT_CONTEXT_EMOJI);
-    menu_model_.SetIcon(index++,
-                        ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-                            IDR_EMOJI_FAVICON));
     menu_model_.InsertSeparatorAt(index++, ui::NORMAL_SEPARATOR);
   }
 

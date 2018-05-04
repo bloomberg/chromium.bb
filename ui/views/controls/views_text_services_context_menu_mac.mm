@@ -44,11 +44,8 @@ class ViewsTextServicesContextMenuMac
       menu->InsertSeparatorAt(index++, ui::NORMAL_SEPARATOR);
     }
     if (base::FeatureList::IsEnabled(features::kEnableEmojiContextMenu)) {
-      menu->InsertItemWithStringIdAt(index, IDS_CONTENT_CONTEXT_EMOJI,
+      menu->InsertItemWithStringIdAt(index++, IDS_CONTENT_CONTEXT_EMOJI,
                                      IDS_CONTENT_CONTEXT_EMOJI);
-      menu->SetIcon(index++,
-                    ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-                        IDR_EMOJI_FAVICON));
       menu->InsertSeparatorAt(index++, ui::NORMAL_SEPARATOR);
     }
     text_services_menu_.AppendToContextMenu(menu);
