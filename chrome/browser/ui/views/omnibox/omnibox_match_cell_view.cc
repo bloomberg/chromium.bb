@@ -161,9 +161,14 @@ void OmniboxMatchCellView::OnMatchUpdate(const AutocompleteMatch& match) {
        !match.image_url.empty());
   is_search_type_ = AutocompleteMatch::IsSearchType(match.type);
   if (is_old_style_answer_ || is_rich_suggestion_) {
+    // Multi-line layout doesn't use the separator.
     separator_view_->SetSize(gfx::Size());
+  } else {
+    // Single-line layout doesn't use the image.
+    image_view_->SetSize(gfx::Size());
   }
   if (is_rich_suggestion_) {
+    // All rich suggestions don't use the old (small) icon.
     icon_view_->SetSize(gfx::Size());
   }
 }
