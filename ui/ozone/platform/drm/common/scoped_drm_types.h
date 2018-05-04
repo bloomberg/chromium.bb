@@ -7,6 +7,8 @@
 
 #include <memory>
 
+#include "base/memory/free_deleter.h"
+
 typedef struct _drmModeConnector drmModeConnector;
 typedef struct _drmModeCrtc drmModeCrtc;
 typedef struct _drmModeEncoder drmModeEncoder;
@@ -18,6 +20,8 @@ typedef struct _drmModeProperty drmModePropertyRes;
 typedef struct _drmModeAtomicReq drmModeAtomicReq;
 typedef struct _drmModePropertyBlob drmModePropertyBlobRes;
 typedef struct _drmModeRes drmModeRes;
+typedef struct drm_color_lut drm_color_lut;
+typedef struct drm_color_ctm drm_color_ctm;
 
 namespace ui {
 
@@ -73,6 +77,16 @@ typedef std::unique_ptr<drmModePropertyBlobRes, DrmPropertyBlobDeleter>
     ScopedDrmPropertyBlobPtr;
 typedef std::unique_ptr<drmModeFB, DrmFramebufferDeleter>
     ScopedDrmFramebufferPtr;
+
+struct ScopedDrmPropertyBlob {
+  ScopedDrmPropertyBlob(int fd, uint32_t blob_id);
+  ~ScopedDrmPropertyBlob();
+  int fd;
+  uint32_t blob_id;
+};
+
+typedef std::unique_ptr<drm_color_lut, base::FreeDeleter> ScopedDrmColorLutPtr;
+typedef std::unique_ptr<drm_color_ctm, base::FreeDeleter> ScopedDrmColorCtmPtr;
 
 }  // namespace ui
 
