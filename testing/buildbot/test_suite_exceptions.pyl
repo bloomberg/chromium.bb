@@ -253,6 +253,8 @@
       'UBSanVptr Linux',
       # chromium.memory
       'Linux TSan Tests',  # https://crbug.com/368525
+      # chromium.win
+      'Win10 Tests x64 (dbg)',
     ],
     'modifications': {
       # chromium.chromiumos
@@ -2524,6 +2526,8 @@
       'Mac10.13 Tests (dbg)',
       'Win7 Tests (dbg)(1)',
       'Win10 Tests x64',
+      # chromium.win
+      'Win10 Tests x64 (dbg)',
     ],
   },
   'services_unittests': {
@@ -2923,6 +2927,8 @@
       'Mac10.13 Tests (dbg)',
       # client.v8.chromium
       'Linux - Future (dbg)',
+      # chromium.win
+      'Win10 Tests x64 (dbg)',
     ],
   },
   'telemetry_unittests': {
@@ -2933,6 +2939,10 @@
         },
       },
     },
+    'remove_from': [
+      # chromium.win
+      'Win10 Tests x64 (dbg)',
+    ],
   },
   'traffic_annotation_auditor_unittests': {
     'modifications': {
@@ -3002,6 +3012,8 @@
       # On chromium.linux, unclear why these aren't run on Cast.
       'Cast Audio Linux',
       'Cast Linux',
+      # chromium.win
+      'Win10 Tests x64 (dbg)',
     ],
     'modifications': {
       # chromium.android
@@ -3132,6 +3144,7 @@
       'Win10 Tests x64',
       'Win7 Tests (1)',
       'Win7 Tests (dbg)(1)',
+      'Win10 Tests x64 (dbg)',
     ],
   },
   'viz_unittests': {
@@ -3281,6 +3294,7 @@
       # chromium.win
       'Win 7 Tests x64 (1)',
       'Win10 Tests x64',
+      'Win10 Tests x64 (dbg)',
     ],
     'modifications': {
       # chromium.fyi
