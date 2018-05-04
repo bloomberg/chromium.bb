@@ -6,6 +6,9 @@ import("//build/config/compiler/compiler.gni")
 if (is_android) {
   import("//build/config/android/config.gni")  # For public_android_sdk
 }
+if (is_chromeos) {
+  import("//build/config/chromeos/rules.gni")
+}
 
 group("telemetry_chrome_test") {
   testonly = true
@@ -51,6 +54,10 @@ group("telemetry_chrome_test") {
       "//third_party/breakpad:dump_syms",
       "//third_party/crashpad/crashpad/tools:crashpad_database_util",
     ]
+  }
+
+  if (is_chromeos && cros_board != "") {
+    data_deps += [ "//chromeos:cros_vm_launcher" ]
   }
 
   if (is_win && (symbol_level == 1 || symbol_level == 2)) {
