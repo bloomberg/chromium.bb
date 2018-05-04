@@ -88,6 +88,7 @@ class ASH_EXPORT DockedMagnifierController
   // ui::EventHandler:
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnScrollEvent(ui::ScrollEvent* event) override;
+  void OnTouchEvent(ui::TouchEvent* event) override;
 
   // ui::InputMethodObserver:
   void OnFocus() override {}
