@@ -60,7 +60,6 @@ class BrowserUiInterface;
 class FPSMeter;
 class GlBrowserInterface;
 class MailboxToSurfaceBridge;
-class ScopedGpuTrace;
 class SlidingTimeDeltaAverage;
 class Ui;
 class VrController;
@@ -481,7 +480,6 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
 
   // A fence used to avoid overstuffed GVR buffers in WebVR mode.
   std::unique_ptr<gl::GLFenceEGL> webvr_prev_frame_completion_fence_;
-  std::unique_ptr<ScopedGpuTrace> gpu_trace_;
 
   // The default size for the render buffers.
   gfx::Size render_size_default_;
