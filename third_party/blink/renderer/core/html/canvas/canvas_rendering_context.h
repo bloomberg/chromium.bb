@@ -63,11 +63,8 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
  public:
   ~CanvasRenderingContext() override = default;
 
-  // A Canvas can either be "2D" or "webgl" but never both. If you request a 2D
-  // canvas and the existing context is already 2D, just return that. If the
-  // existing context is WebGL, then destroy it before creating a new 2D
-  // context. Vice versa when requesting a WebGL canvas. Requesting a context
-  // with any other type string will destroy any existing context.
+  // A Canvas can either be "2D" or "webgl" but never both. Requesting a context
+  // with a type different from an existing will destroy the latter.
   enum ContextType {
     // Do not change assigned numbers of existing items: add new features to the
     // end of the list.
