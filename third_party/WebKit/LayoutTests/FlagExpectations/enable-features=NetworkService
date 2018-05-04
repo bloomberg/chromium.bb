@@ -45,5 +45,3 @@ crbug.com/792546 external/wpt/fetch/corb/img-mime-types-coverage.tentative.sub.h
 crbug.com/792546 external/wpt/fetch/corb/img-png-mislabeled-as-html-nosniff.tentative.sub.html [ Failure ]
 crbug.com/792546 external/wpt/fetch/corb/preload-image-png-mislabeled-as-html-nosniff.tentative.sub.html [ Failure ]
 crbug.com/792546 external/wpt/fetch/corb/script-html-correctly-labeled.tentative.sub.html [ Failure ]
-
-crbug.com/812464 inspector-protocol/network/interception-file-url.js [ Pass Crash ]
