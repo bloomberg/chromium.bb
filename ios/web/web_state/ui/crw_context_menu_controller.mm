@@ -271,7 +271,9 @@ struct ContextMenuInfo {
 }
 
 - (void)longPressGestureRecognizerBegan {
-  if ([_contextMenuInfoForLastTouch.dom_element count]) {
+  BOOL canShowContextMenu = web::CanShowContextMenuForElementDictionary(
+      _contextMenuInfoForLastTouch.dom_element);
+  if (canShowContextMenu) {
     // User long pressed on a link or an image. Cancelling all touches will
     // intentionally suppress system context menu UI.
     [self cancelAllTouches];
@@ -284,7 +286,7 @@ struct ContextMenuInfo {
     _contextMenuInfoForLastTouch.location =
         [_contextMenuRecognizer locationInView:_webView];
 
-    if ([_contextMenuInfoForLastTouch.dom_element count]) {
+    if (canShowContextMenu) {
       [self showContextMenu];
     } else {
       // Shows the context menu once the DOM element information is set.
@@ -368,6 +370,7 @@ struct ContextMenuInfo {
   // this CRWContextMenuController instance.
   if (fetchRequest) {
     [_pendingElementFetchRequests removeObjectForKey:requestID];
+
     // Only log performance metric if the response is from the main frame in
     // order to keep metric comparible.
     if (message.frameInfo.mainFrame) {

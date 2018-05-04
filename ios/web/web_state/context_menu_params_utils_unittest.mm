@@ -31,7 +31,7 @@ const char kDataUrl[] = "data://foo.bar/";
 
 namespace web {
 
-// Test fixture for error translation testing.
+// Test fixture for ContextMenuParams utilities.
 typedef PlatformTest ContextMenuParamsUtilsTest;
 
 // Tests the empty contructor.
@@ -103,6 +103,57 @@ TEST_F(ContextMenuParamsUtilsTest, DictionaryConstructorTestDataTitle) {
   });
   EXPECT_EQ(params.src_url, GURL(kDataUrl));
   EXPECT_NSEQ(params.menu_title, nil);
+}
+
+// Tests that a context menu will not be shown for an empty element dictionary.
+TEST_F(ContextMenuParamsUtilsTest, CanShowContextMenuTestEmptyDictionary) {
+  EXPECT_FALSE(web::CanShowContextMenuForElementDictionary(@{}));
+}
+
+// Tests that a context menu will not be shown for an element dictionary with
+// only a request id.
+TEST_F(ContextMenuParamsUtilsTest, CanShowContextMenuTestRequestIdOnly) {
+  EXPECT_FALSE(web::CanShowContextMenuForElementDictionary(
+      @{kContextMenuElementRequestId : @"kContextMenuElementRequestId"}));
+}
+
+// Tests that a context menu will be shown for a link.
+TEST_F(ContextMenuParamsUtilsTest, CanShowContextMenuTestHyperlink) {
+  EXPECT_TRUE(web::CanShowContextMenuForElementDictionary(@{
+    kContextMenuElementHyperlink : @"http://example.com",
+    kContextMenuElementInnerText : @"Click me."
+  }));
+}
+
+// Tests that a context menu will not be shown for an invalid link.
+TEST_F(ContextMenuParamsUtilsTest, CanShowContextMenuTestInvalidHyperlink) {
+  EXPECT_FALSE(web::CanShowContextMenuForElementDictionary(
+      @{kContextMenuElementHyperlink : @"invalid_url"}));
+}
+
+// Tests that a context menu will be shown for an image.
+TEST_F(ContextMenuParamsUtilsTest, CanShowContextMenuTestImageWithTitle) {
+  EXPECT_TRUE(web::CanShowContextMenuForElementDictionary(@{
+    kContextMenuElementSource : @"http://example.com/image.jpeg",
+    kContextMenuElementTitle : @"Image"
+  }));
+}
+
+// Tests that a context menu will not be shown for an image with an invalid
+// source url.
+TEST_F(ContextMenuParamsUtilsTest,
+       CanShowContextMenuTestImageWithInvalidSource) {
+  EXPECT_FALSE(web::CanShowContextMenuForElementDictionary(@{
+    kContextMenuElementSource : @"invalid_url",
+  }));
+}
+
+// Tests that a context menu will be shown for a linked image.
+TEST_F(ContextMenuParamsUtilsTest, CanShowContextMenuTestLinkedImage) {
+  EXPECT_TRUE(web::CanShowContextMenuForElementDictionary(@{
+    kContextMenuElementHyperlink : @"http://example.com",
+    kContextMenuElementSource : @"http://example.com/image.jpeg"
+  }));
 }
 
 }  // namespace web

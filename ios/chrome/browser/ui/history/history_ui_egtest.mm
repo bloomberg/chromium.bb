@@ -46,6 +46,7 @@
 #endif
 
 using chrome_test_util::ButtonWithAccessibilityLabelId;
+using chrome_test_util::ContextMenuCopyButton;
 using chrome_test_util::NavigationBarDoneButton;
 using chrome_test_util::OpenLinkInNewTabButton;
 
@@ -137,10 +138,6 @@ id<GREYMatcher> OpenClearBrowsingDataButton() {
 id<GREYMatcher> OpenInNewIncognitoTabButton() {
   return ButtonWithAccessibilityLabelId(
       IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWINCOGNITOTAB);
-}
-// Matcher for the Copy URL option in the context menu.
-id<GREYMatcher> CopyUrlButton() {
-  return ButtonWithAccessibilityLabelId(IDS_IOS_CONTENT_CONTEXT_COPY);
 }
 // Matcher for the clear browsing data button on the clear browsing data panel.
 id<GREYMatcher> ClearBrowsingDataButton() {
@@ -415,7 +412,7 @@ id<GREYMatcher> ConfirmClearBrowsingDataButton() {
       performAction:grey_longPress()];
 
   // Tap "Copy URL" and wait for the URL to be copied to the pasteboard.
-  [[EarlGrey selectElementWithMatcher:CopyUrlButton()]
+  [[EarlGrey selectElementWithMatcher:ContextMenuCopyButton()]
       performAction:grey_tap()];
   bool success =
       testing::WaitUntilConditionOrTimeout(testing::kWaitForUIElementTimeout, ^{

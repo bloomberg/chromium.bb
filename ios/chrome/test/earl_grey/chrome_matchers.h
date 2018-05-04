@@ -208,6 +208,15 @@ id<GREYMatcher> BookmarksMenuButton();
 // Returns matcher for the recent tabs button on the Tools menu.
 id<GREYMatcher> RecentTabsMenuButton();
 
+// Returns matcher for the system selection callout.
+id<GREYMatcher> SystemSelectionCallout();
+
+// Returns matcher for the copy button on the system selection callout.
+id<GREYMatcher> SystemSelectionCalloutCopyButton();
+
+// Returns matcher for the Copy item on the context menu.
+id<GREYMatcher> ContextMenuCopyButton();
+
 }  // namespace chrome_test_util
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_MATCHERS_H_

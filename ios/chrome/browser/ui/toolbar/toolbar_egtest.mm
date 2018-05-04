@@ -33,6 +33,8 @@
 
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::OmniboxText;
+using chrome_test_util::SystemSelectionCallout;
+using chrome_test_util::SystemSelectionCalloutCopyButton;
 
 // Toolbar integration tests for Chrome.
 @interface ToolbarTestCase : ChromeTestCase
@@ -311,9 +313,8 @@ using chrome_test_util::OmniboxText;
                                      grey_kindOfClass([UILabel class]), nil)]
         performAction:grey_tap()];
 
-    [[[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Copy")]
-        inRoot:grey_kindOfClass(NSClassFromString(@"UICalloutBarButton"))]
-        performAction:grey_tap()];
+    [[[EarlGrey selectElementWithMatcher:SystemSelectionCalloutCopyButton()]
+        inRoot:SystemSelectionCallout()] performAction:grey_tap()];
 
     if (IsIPadIdiom()) {
       [[EarlGrey
