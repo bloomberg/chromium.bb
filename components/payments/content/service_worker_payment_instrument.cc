@@ -13,6 +13,7 @@
 #include "content/public/browser/payment_app_provider.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/image/image_skia.h"
+#include "url/origin.h"
 
 namespace payments {
 
@@ -323,9 +324,10 @@ base::string16 ServiceWorkerPaymentInstrument::GetSublabel() const {
   if (needs_installation_) {
     DCHECK(GURL(installable_web_app_info_->sw_scope).is_valid());
     return base::UTF8ToUTF16(
-        GURL(installable_web_app_info_->sw_scope).GetOrigin().spec());
+        url::Origin::Create(GURL(installable_web_app_info_->sw_scope)).host());
   }
-  return base::UTF8ToUTF16(stored_payment_app_info_->scope.GetOrigin().spec());
+  return base::UTF8ToUTF16(
+      url::Origin::Create(stored_payment_app_info_->scope).host());
 }
 
 bool ServiceWorkerPaymentInstrument::IsValidForModifier(

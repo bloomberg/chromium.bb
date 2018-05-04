@@ -175,8 +175,7 @@ TEST_F(ServiceWorkerPaymentInstrumentTest, InstrumentInfo) {
   EXPECT_TRUE(GetInstrument()->IsExactlyMatchingMerchantRequest());
 
   EXPECT_EQ(base::UTF16ToUTF8(GetInstrument()->GetLabel()), "bobpay");
-  EXPECT_EQ(base::UTF16ToUTF8(GetInstrument()->GetSublabel()),
-            "https://bobpay.com/");
+  EXPECT_EQ(base::UTF16ToUTF8(GetInstrument()->GetSublabel()), "bobpay.com");
   EXPECT_NE(GetInstrument()->icon_image_skia(), nullptr);
 }
 

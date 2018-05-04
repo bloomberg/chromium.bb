@@ -377,7 +377,7 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
             return;
         }
         callback.onPaymentAppCreated(new ServiceWorkerPaymentApp(webContents, name,
-                scopeUri.getScheme() + "://" + scopeUri.getHost(), swUri, scopeUri, useCache,
+                scopeUri.getHost(), swUri, scopeUri, useCache,
                 icon == null ? null : new BitmapDrawable(context.getResources(), icon),
                 methodName));
     }
