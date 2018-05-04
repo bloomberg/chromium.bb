@@ -26,8 +26,7 @@ class DeviceFactoryMediaToMojoAdapter : public mojom::DeviceFactory {
   DeviceFactoryMediaToMojoAdapter(
       std::unique_ptr<service_manager::ServiceContextRef> service_ref,
       std::unique_ptr<media::VideoCaptureSystem> capture_system,
-      const media::VideoCaptureJpegDecoderFactoryCB&
-          jpeg_decoder_factory_callback);
+      media::MojoJpegDecodeAcceleratorFactoryCB jpeg_decoder_factory_callback);
   ~DeviceFactoryMediaToMojoAdapter() override;
 
   // mojom::DeviceFactory implementation.
@@ -64,7 +63,8 @@ class DeviceFactoryMediaToMojoAdapter : public mojom::DeviceFactory {
 
   const std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
   const std::unique_ptr<media::VideoCaptureSystem> capture_system_;
-  const media::VideoCaptureJpegDecoderFactoryCB jpeg_decoder_factory_callback_;
+  const media::MojoJpegDecodeAcceleratorFactoryCB
+      jpeg_decoder_factory_callback_;
   std::map<std::string, ActiveDeviceEntry> active_devices_by_id_;
   bool has_called_get_device_infos_;
 

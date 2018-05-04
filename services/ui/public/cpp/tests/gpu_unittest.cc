@@ -35,6 +35,9 @@ class TestGpuImpl : public mojom::Gpu {
   }
 
   // ui::mojom::Gpu overrides:
+  void CreateGpuMemoryBufferFactory(
+      ui::mojom::GpuMemoryBufferFactoryRequest request) override {}
+
   void EstablishGpuChannel(EstablishGpuChannelCallback callback) override {
     if (close_binding_on_request_) {
       // Don't run |callback| and trigger a connection error on the other end.
@@ -59,16 +62,6 @@ class TestGpuImpl : public mojom::Gpu {
 
   void CreateVideoEncodeAcceleratorProvider(
       media::mojom::VideoEncodeAcceleratorProviderRequest request) override {}
-
-  void CreateGpuMemoryBuffer(
-      gfx::GpuMemoryBufferId id,
-      const gfx::Size& size,
-      gfx::BufferFormat format,
-      gfx::BufferUsage usage,
-      ui::mojom::Gpu::CreateGpuMemoryBufferCallback callback) override {}
-
-  void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
-                              const gpu::SyncToken& sync_token) override {}
 
  private:
   bool request_will_succeed_ = true;
