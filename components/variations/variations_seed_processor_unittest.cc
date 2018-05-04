@@ -936,6 +936,7 @@ TEST_F(VariationsSeedProcessorTest, ExpiredStudy_NoDefaultGroup) {
   auto* exp1 = AddExperiment("A", 1, &study);
   exp1->mutable_feature_association()->add_enable_feature(kFeature.name);
 
+  EXPECT_FALSE(study.has_default_experiment_name());
   EXPECT_TRUE(CreateTrialFromStudy(study));
   EXPECT_EQ("VariationsDefaultExperiment",
             base::FieldTrialList::FindFullName("Study1"));

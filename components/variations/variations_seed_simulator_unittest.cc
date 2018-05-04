@@ -19,6 +19,12 @@
 namespace variations {
 
 namespace {
+
+// Converts |time| to Study proto format.
+int64_t TimeToProtoTime(const base::Time& time) {
+  return (time - base::Time::UnixEpoch()).InSeconds();
+}
+
 // Creates and activates a single-group field trial with name |trial_name| and
 // group |group_name| and variations |params| (if not null).
 void CreateTrial(const std::string& trial_name,
@@ -156,6 +162,9 @@ TEST_F(VariationsSeedSimulatorTest, PermanentGroupChange) {
 
   // Changing "C" group type should not affect the type of change. (Since the
   // type is evaluated for the "old" group.)
+  //
+  // Note: The current (i.e. old) group is checked for the type since that group
+  // is the one that should be annotated with the type when killing it.
   experiment->set_type(Study_Experiment_Type_NORMAL);
   EXPECT_EQ("1 0 0", SimulateStudyDifferences(&study));
   experiment->set_type(Study_Experiment_Type_IGNORE_CHANGE);
@@ -377,6 +386,30 @@ TEST_F(VariationsSeedSimulatorTest, ParamsAdded) {
   EXPECT_EQ("0 1 0", SimulateStudyDifferences(&study));
   experiment->set_type(Study_Experiment_Type_KILL_CRITICAL);
   EXPECT_EQ("0 0 1", SimulateStudyDifferences(&study));
+}
+
+// Tests that simulating an expired trial without a default group doesn't crash.
+// This is very much an edge case which should generally not be encountered due
+// to server-side, but we should ensure that it still doesn't cause a client
+// side crash.
+TEST_F(VariationsSeedSimulatorTest, NoDefaultGroup) {
+  static struct base::Feature kFeature {
+    "FeatureName", base::FEATURE_ENABLED_BY_DEFAULT
+  };
+  CreateTrial("Study1", "VariationsDefaultExperiment", nullptr);
+
+  Study study;
+  study.set_consistency(Study::PERMANENT);
+  study.set_name("Study1");
+  const base::Time year_ago =
+      base::Time::Now() - base::TimeDelta::FromDays(365);
+  study.set_expiry_date(TimeToProtoTime(year_ago));
+  auto* exp1 = AddExperiment("A", 1, &study);
+  study.clear_default_experiment_name();
+  exp1->mutable_feature_association()->add_enable_feature(kFeature.name);
+
+  EXPECT_FALSE(study.has_default_experiment_name());
+  EXPECT_EQ("0 0 0", SimulateStudyDifferencesExpired(&study));
 }
 
 }  // namespace variations
