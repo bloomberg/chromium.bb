@@ -25,6 +25,7 @@
 #include "chrome/browser/android/vr/gvr_util.h"
 #include "chrome/browser/android/vr/mailbox_to_surface_bridge.h"
 #include "chrome/browser/android/vr/metrics_util_android.h"
+#include "chrome/browser/android/vr/scoped_gpu_trace.h"
 #include "chrome/browser/android/vr/vr_controller.h"
 #include "chrome/browser/android/vr/vr_shell.h"
 #include "chrome/browser/vr/assets_loader.h"
@@ -53,6 +54,7 @@
 #include "ui/gl/android/surface_texture.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_fence_android_native_fence_sync.h"
 #include "ui/gl/gl_fence_egl.h"
 #include "ui/gl/gl_image_ahardwarebuffer.h"
 #include "ui/gl/gl_surface.h"
@@ -1873,6 +1875,7 @@ void VrShellGl::DrawFrameSubmitNow(int16_t frame_index,
 
   gvr::Mat4f mat;
   TransformToGvrMat(head_pose, &mat);
+  bool is_webvr_frame = frame_index >= 0;
   {
     TRACE_EVENT0("gpu", "VrShellGl::SubmitToGvr");
     base::TimeTicks submit_start = base::TimeTicks::Now();
@@ -1880,6 +1883,15 @@ void VrShellGl::DrawFrameSubmitNow(int16_t frame_index,
     base::TimeTicks submit_done = base::TimeTicks::Now();
     webvr_submit_time_.AddSample(submit_done - submit_start);
     CHECK(!acquired_frame_);
+
+    if (gl::GLFence::IsGpuFenceSupported() && !is_webvr_frame) {
+      // This instance is created for the tracing side effect. Create a new
+      // instance here to replace previous instace will record trace for
+      // previous instance and start a new trace for the new instance.
+      DCHECK(!gpu_trace_ || gpu_trace_->fence()->HasCompleted());
+      gpu_trace_ = std::make_unique<ScopedGpuTrace>(
+          "gpu", "VrShellGl::PostSubmitDrawOnGpu");
+    }
   }
 
   // No need to swap buffers for surfaceless rendering.
@@ -1893,7 +1905,6 @@ void VrShellGl::DrawFrameSubmitNow(int16_t frame_index,
   // false for a WebVR frame. Ignore the ShouldDrawWebVr status to ensure we
   // send render notifications while paused for exclusive UI mode. Skip the
   // steps if we lost the processing state, that means presentation has ended.
-  bool is_webvr_frame = frame_index >= 0;
   if (is_webvr_frame && webxr_->HaveProcessingFrame()) {
     // Report rendering completion to the Renderer so that it's permitted to
     // submit a fresh frame. We could do this earlier, as soon as the frame
