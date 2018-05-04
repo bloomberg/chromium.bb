@@ -249,26 +249,8 @@ void WindowGrid::Shutdown() {
   if (shield_widget_) {
     // Fade out the shield widget. This animation continues past the lifetime
     // of |this|.
-    aura::Window* widget_window = shield_widget_->GetNativeWindow();
-    ui::ScopedLayerAnimationSettings animation_settings(
-        widget_window->layer()->GetAnimator());
-    animation_settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
-        kOverviewSelectorTransitionMilliseconds));
-    animation_settings.SetTweenType(gfx::Tween::EASE_OUT);
-    animation_settings.SetPreemptionStrategy(
-        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-    // CleanupAnimationObserver will delete itself (and the shield widget) when
-    // the opacity animation is complete.
-    // Ownership over the observer is passed to the window_selector_->delegate()
-    // which has longer lifetime so that animations can continue even after the
-    // overview mode is shut down.
-    views::Widget* shield_widget = shield_widget_.get();
-    std::unique_ptr<CleanupAnimationObserver> observer(
-        new CleanupAnimationObserver(std::move(shield_widget_)));
-    animation_settings.AddObserver(observer.get());
-    window_selector_->delegate()->AddDelayedAnimationObserver(
-        std::move(observer));
-    shield_widget->SetOpacity(0.f);
+    FadeOutWidgetOnExit(std::move(shield_widget_),
+                        OVERVIEW_ANIMATION_RESTORE_WINDOW);
   }
 }
 

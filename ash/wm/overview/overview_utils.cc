@@ -8,6 +8,9 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
+#include "ash/wm/overview/cleanup_animation_observer.h"
+#include "ash/wm/overview/scoped_overview_animation_settings.h"
+#include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/optional.h"
@@ -109,6 +112,35 @@ bool IsNewOverviewUi() {
 bool IsOverviewSwipeToCloseEnabled() {
   return base::FeatureList::IsEnabled(features::kNewOverviewUi) &&
          base::FeatureList::IsEnabled(features::kOverviewSwipeToClose);
+}
+
+void FadeOutWidgetOnExit(std::unique_ptr<views::Widget> widget,
+                         OverviewAnimationType animation_type) {
+  // The window selector controller may be nullptr on shutdown.
+  WindowSelectorController* controller =
+      Shell::Get()->window_selector_controller();
+  if (!controller) {
+    widget->SetOpacity(0.f);
+    return;
+  }
+
+  widget->SetOpacity(1.f);
+  // Fade out the widget. This animation continues past the lifetime of overview
+  // mode items.
+  ScopedOverviewAnimationSettings animation_settings(animation_type,
+                                                     widget->GetNativeWindow());
+  // CleanupAnimationObserver will delete itself (and the widget) when the
+  // opacity animation is complete.
+  // Ownership over the observer is passed to the window selector controller
+  // which has longer lifetime so that animations can continue even after the
+  // overview mode is shut down.
+  views::Widget* widget_ptr = widget.get();
+  std::unique_ptr<CleanupAnimationObserver> observer(
+      new CleanupAnimationObserver(std::move(widget)));
+  animation_settings.AddObserver(observer.get());
+
+  controller->AddDelayedAnimationObserver(std::move(observer));
+  widget_ptr->SetOpacity(0.f);
 }
 
 std::unique_ptr<views::Widget> CreateBackgroundWidget(aura::Window* root_window,
