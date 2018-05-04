@@ -106,12 +106,6 @@ int GetFourCCFormatForOpaqueFramebuffer(gfx::BufferFormat format);
 
 gfx::Size GetMaximumCursorSize(int fd);
 
-ScopedDrmPropertyPtr FindDrmProperty(int fd,
-                                     drmModeObjectProperties* properties,
-                                     const char* name);
-
-bool HasColorCorrectionMatrix(int fd, drmModeCrtc* crtc);
-
 DisplayMode_Params GetDisplayModeParams(const display::DisplayMode& mode);
 
 std::unique_ptr<display::DisplayMode> CreateDisplayModeFromParams(
