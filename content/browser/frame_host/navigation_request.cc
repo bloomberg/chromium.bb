@@ -1044,28 +1044,45 @@ void NavigationRequest::OnRequestFailedInternal(
     return;
   }
 
-  // Decide whether to leave the error page in the original process.
-  // * If this was a renderer-initiated navigation, and the request is blocked
-  //   because the initiating document wasn't allowed to make the request,
-  //   commit the error in the existing process. This is a strategy to to avoid
-  //   creating a process for the destination, which may belong to an origin
-  //   with a higher privilege level.
-  // * Error pages resulting from errors like network outage, no network, or DNS
-  //   error can reasonably expect that a reload at a later point in time would
-  //   work. These should be allowed to transfer away from the current process:
-  //   they do belong to whichever process that will host the destination URL,
-  //   as a reload will end up committing in that process anyway.
-  // * Error pages that arise during browser-initiated navigations to blocked
-  //   URLs should be allowed to transfer away from the current process, which
-  //   didn't request the navigation and may have a higher privilege level than
-  //   the blocked destination.
   RenderFrameHostImpl* render_frame_host = nullptr;
-  if (net_error == net::ERR_BLOCKED_BY_CLIENT && !browser_initiated()) {
-    render_frame_host = frame_tree_node_->current_frame_host();
-  } else {
+  if (frame_tree_node_->IsMainFrame()) {
+    // Main frame error pages must be isolated from the source or destination
+    // process.
+    //
+    // Note: Since this navigation resulted in an error, clear the expected
+    // process for the original navigation since for main frames the error page
+    // will go into a new process.
+    // TODO(nasko): Investigate whether GetFrameHostForNavigation can properly
+    // account for clearing the expected process if it clears the speculative
+    // RenderFrameHost. See https://crbug.com/793127.
+    navigation_handle_->SetExpectedProcess(nullptr);
     render_frame_host =
         frame_tree_node_->render_manager()->GetFrameHostForNavigation(*this);
+  } else {
+    // Decide whether to leave the error page in the original process.
+    // * If this was a renderer-initiated navigation, and the request is blocked
+    //   because the initiating document wasn't allowed to make the request,
+    //   commit the error in the existing process. This is a strategy to to
+    //   avoid creating a process for the destination, which may belong to an
+    //   origin with a higher privilege level.
+    // * Error pages resulting from errors like network outage, no network, or
+    //   DNS error can reasonably expect that a reload at a later point in time
+    //   would work. These should be allowed to transfer away from the current
+    //   process: they do belong to whichever process that will host the
+    //   destination URL, as a reload will end up committing in that process
+    //   anyway.
+    // * Error pages that arise during browser-initiated navigations to blocked
+    //   URLs should be allowed to transfer away from the current process, which
+    //   didn't request the navigation and may have a higher privilege level
+    //   than the blocked destination.
+    if (net_error == net::ERR_BLOCKED_BY_CLIENT && !browser_initiated()) {
+      render_frame_host = frame_tree_node_->current_frame_host();
+    } else {
+      render_frame_host =
+          frame_tree_node_->render_manager()->GetFrameHostForNavigation(*this);
+    }
   }
+
   DCHECK(render_frame_host);
 
   // Don't ask the renderer to commit an URL if the browser will kill it when

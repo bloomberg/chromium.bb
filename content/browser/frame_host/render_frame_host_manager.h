@@ -569,6 +569,7 @@ class CONTENT_EXPORT RenderFrameHostManager
       SiteInstance* dest_instance,
       SiteInstance* candidate_instance,
       ui::PageTransition transition,
+      bool is_failure,
       bool dest_is_restore,
       bool dest_is_view_source_mode,
       bool was_server_redirect);
@@ -593,6 +594,7 @@ class CONTENT_EXPORT RenderFrameHostManager
       SiteInstance* current_instance,
       SiteInstance* dest_instance,
       ui::PageTransition transition,
+      bool is_failure,
       bool dest_is_restore,
       bool dest_is_view_source_mode,
       bool force_browsing_instance_swap,

@@ -468,6 +468,12 @@ bool SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
   if (SiteIsolationPolicy::UseDedicatedProcessesForAllSites())
     return true;
 
+  // Error pages in main frames do require isolation, however since this is
+  // missing the context whether this is for a main frame or not, that part
+  // is enforced in RenderFrameHostManager.
+  if (url.SchemeIs(kChromeErrorScheme))
+    return true;
+
   // Always require a dedicated process for isolated origins.
   GURL site_url = GetSiteForURL(browser_context, url);
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();

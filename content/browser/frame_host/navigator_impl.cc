@@ -467,13 +467,12 @@ void NavigatorImpl::DidNavigate(
   }
 
   // Update the site of the SiteInstance if it doesn't have one yet, unless
-  // assigning a site is not necessary for this URL or the commit was for an
-  // error page.  In that case, the SiteInstance can still be considered unused
-  // until a navigation to a real page.
+  // assigning a site is not necessary for this URL. In that case, the
+  // SiteInstance can still be considered unused until a navigation to a real
+  // page.
   SiteInstanceImpl* site_instance = render_frame_host->GetSiteInstance();
   if (!site_instance->HasSite() &&
-      SiteInstanceImpl::ShouldAssignSiteForURL(params.url) &&
-      !params.url_is_unreachable) {
+      SiteInstanceImpl::ShouldAssignSiteForURL(params.url)) {
     site_instance->SetSite(params.url);
   }
 

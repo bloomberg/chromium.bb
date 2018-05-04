@@ -3585,6 +3585,12 @@ bool RenderProcessHost::ShouldUseProcessPerSite(BrowserContext* browser_context,
   if (command_line.HasSwitch(switches::kProcessPerSite))
     return true;
 
+  // Error pages should use process-per-site model, as it is useful to
+  // consolidate them to minimize resource usage and there is no security
+  // drawback to combining them all in the same process.
+  if (url.SchemeIs(kChromeErrorScheme))
+    return true;
+
   // We want to consolidate particular sites like WebUI even when we are using
   // the process-per-tab or process-per-site-instance models.
   // Note: DevTools pages have WebUI type but should not reuse the same host.

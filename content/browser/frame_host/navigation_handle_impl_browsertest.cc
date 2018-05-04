@@ -1654,8 +1654,8 @@ class PlzNavigateNavigationHandleImplBrowserTest : public ContentBrowserTest {
 };
 
 // Test to verify that error pages caused by NavigationThrottle blocking a
-// request from being made are properly committed in the original process
-// that requested the navigation.
+// request in the main frame from being made are properly committed in a
+// separate error page process.
 IN_PROC_BROWSER_TEST_F(PlzNavigateNavigationHandleImplBrowserTest,
                        ErrorPageBlockedNavigation) {
   SetupCrossSiteRedirector(embedded_test_server());
@@ -1680,8 +1680,8 @@ IN_PROC_BROWSER_TEST_F(PlzNavigateNavigationHandleImplBrowserTest,
       NavigationThrottle::PROCEED);
 
   {
-    // A blocked, renderer-initiated navigation should commit an error page
-    // in the process that originated the navigation.
+    // A blocked, renderer-initiated navigation in the main frame should commit
+    // an error page in a new process.
     NavigationHandleObserver observer(shell()->web_contents(), blocked_url);
     TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
     EXPECT_TRUE(
@@ -1690,27 +1690,20 @@ IN_PROC_BROWSER_TEST_F(PlzNavigateNavigationHandleImplBrowserTest,
     navigation_observer.Wait();
     EXPECT_TRUE(observer.has_committed());
     EXPECT_TRUE(observer.is_error());
-    EXPECT_EQ(site_instance,
+    EXPECT_NE(site_instance,
               shell()->web_contents()->GetMainFrame()->GetSiteInstance());
+    EXPECT_EQ(kUnreachableWebDataURL, shell()
+                                          ->web_contents()
+                                          ->GetMainFrame()
+                                          ->GetSiteInstance()
+                                          ->GetSiteURL());
   }
 
   {
-    // Reloading the blocked document from the renderer process should not
-    // transfer processes.
-    NavigationHandleObserver observer(shell()->web_contents(), blocked_url);
-    TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
-
-    EXPECT_TRUE(ExecuteScript(shell(), "location.reload()"));
-    navigation_observer.Wait();
-    EXPECT_TRUE(observer.has_committed());
-    EXPECT_TRUE(observer.is_error());
-    EXPECT_EQ(site_instance,
-              shell()->web_contents()->GetMainFrame()->GetSiteInstance());
-  }
-
-  {
-    // Reloading the blocked document from the browser process ends up
-    // transferring processes in --site-per-process.
+    // Reloading the blocked document from the browser process still ends up
+    // in the error page process.
+    int process_id =
+        shell()->web_contents()->GetMainFrame()->GetProcess()->GetID();
     NavigationHandleObserver observer(shell()->web_contents(), blocked_url);
     TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
 
@@ -1718,13 +1711,13 @@ IN_PROC_BROWSER_TEST_F(PlzNavigateNavigationHandleImplBrowserTest,
     navigation_observer.Wait();
     EXPECT_TRUE(observer.has_committed());
     EXPECT_TRUE(observer.is_error());
-    if (AreAllSitesIsolatedForTesting()) {
-      EXPECT_NE(site_instance,
-                shell()->web_contents()->GetMainFrame()->GetSiteInstance());
-    } else {
-      EXPECT_EQ(site_instance,
-                shell()->web_contents()->GetMainFrame()->GetSiteInstance());
-    }
+    EXPECT_EQ(kUnreachableWebDataURL, shell()
+                                          ->web_contents()
+                                          ->GetMainFrame()
+                                          ->GetSiteInstance()
+                                          ->GetSiteURL());
+    EXPECT_EQ(process_id,
+              shell()->web_contents()->GetMainFrame()->GetProcess()->GetID());
   }
 
   installer.reset();
@@ -1761,6 +1754,46 @@ IN_PROC_BROWSER_TEST_F(PlzNavigateNavigationHandleImplBrowserTest,
     EXPECT_TRUE(observer.is_error());
     EXPECT_NE(site_instance,
               shell()->web_contents()->GetMainFrame()->GetSiteInstance());
+    EXPECT_EQ(kUnreachableWebDataURL, shell()
+                                          ->web_contents()
+                                          ->GetMainFrame()
+                                          ->GetSiteInstance()
+                                          ->GetSiteURL());
+  }
+
+  installer.reset();
+
+  {
+    // A blocked subframe navigation should commit an error page in the same
+    // process.
+    EXPECT_TRUE(NavigateToURL(shell(), start_url));
+    const std::string javascript =
+        "var i = document.createElement('iframe');"
+        "i.src = '" +
+        blocked_url.spec() +
+        "';"
+        "document.body.appendChild(i);";
+
+    installer = std::make_unique<TestNavigationThrottleInstaller>(
+        shell()->web_contents(), NavigationThrottle::BLOCK_REQUEST,
+        NavigationThrottle::PROCEED, NavigationThrottle::PROCEED,
+        NavigationThrottle::PROCEED);
+
+    content::RenderFrameHost* rfh = shell()->web_contents()->GetMainFrame();
+    TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
+    ASSERT_TRUE(content::ExecuteScript(rfh, javascript));
+    navigation_observer.Wait();
+
+    FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                              ->GetFrameTree()
+                              ->root();
+    ASSERT_EQ(1u, root->child_count());
+    FrameTreeNode* child = root->child_at(0u);
+
+    EXPECT_EQ(root->current_frame_host()->GetSiteInstance(),
+              child->current_frame_host()->GetSiteInstance());
+    EXPECT_NE(kUnreachableWebDataURL,
+              child->current_frame_host()->GetSiteInstance()->GetSiteURL());
   }
 }
 
@@ -1795,6 +1828,11 @@ IN_PROC_BROWSER_TEST_F(PlzNavigateNavigationHandleImplBrowserTest,
     EXPECT_TRUE(observer.is_error());
     EXPECT_NE(site_instance,
               shell()->web_contents()->GetMainFrame()->GetSiteInstance());
+    EXPECT_EQ(kUnreachableWebDataURL, shell()
+                                          ->web_contents()
+                                          ->GetMainFrame()
+                                          ->GetSiteInstance()
+                                          ->GetSiteURL());
   }
 }
 

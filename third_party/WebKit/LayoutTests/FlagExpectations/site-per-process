@@ -9,9 +9,6 @@ crbug.com/794631 virtual/unified-autoplay/external/wpt/feature-policy/autoplay-a
 crbug.com/793127 http/tests/security/upgrade-insecure-requests/iframe-upgrade.https.html [ Crash ]
 crbug.com/793127 external/wpt/content-security-policy/securitypolicyviolation/upgrade-insecure-requests-reporting.https.html [ Crash ]
 
-# https://crbug.com/769502: PlzNavigate-related, not-yet-investigated timeout.
-crbug.com/769502 fast/loader/recursive-before-unload-crash.html [ Timeout ]
-
 # https://crbug.com/769508: PlzNavigate-related, not-yet-investigated failures.
 crbug.com/769508 fast/css/acid2.html [ Failure ]
 
