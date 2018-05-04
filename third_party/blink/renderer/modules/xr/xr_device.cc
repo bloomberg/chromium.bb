@@ -128,7 +128,17 @@ ScriptPromise XRDevice::requestSession(
     if (!Frame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr)) {
       return ScriptPromise::RejectWithDOMException(
           script_state,
-          DOMException::Create(kInvalidStateError, kRequestNotInUserGesture));
+          DOMException::Create(kSecurityError, kRequestNotInUserGesture));
+    }
+  }
+
+  // All AR sessions require a user gesture.
+  // TODO(https://crbug.com/828321): Use session options instead.
+  if (RuntimeEnabledFeatures::WebXRHitTestEnabled()) {
+    if (!Frame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr)) {
+      return ScriptPromise::RejectWithDOMException(
+          script_state,
+          DOMException::Create(kSecurityError, kRequestNotInUserGesture));
     }
   }
 

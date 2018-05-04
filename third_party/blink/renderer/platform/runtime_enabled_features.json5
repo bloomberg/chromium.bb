@@ -1366,6 +1366,10 @@
       status: "experimental",
     },
     {
+      name: "WebXRHitTest",
+      status: "experimental",
+    },
+    {
       name: "WorkerNosniffBlock",
       status: "test",
     },
