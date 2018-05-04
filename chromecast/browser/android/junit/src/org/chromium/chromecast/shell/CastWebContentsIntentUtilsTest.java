@@ -5,9 +5,7 @@
 package org.chromium.chromecast.shell;
 
 import android.app.Activity;
-import android.app.Application;
 import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 
@@ -21,38 +19,22 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.ContextUtils;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /**
  * Tests for CastWebContentsComponent.
  */
-@RunWith(LocalRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, application = CastWebContentsComponentTest.FakeApplication.class)
+@RunWith(BaseRobolectricTestRunner.class)
+@Config(manifest = Config.NONE)
 public class CastWebContentsIntentUtilsTest {
-    public static class FakeApplication extends Application {
-        @Override
-        protected void attachBaseContext(Context base) {
-            super.attachBaseContext(base);
-            ContextUtils.initApplicationContextForTests(this);
-        }
-    }
-
     private static final String INSTANCE_ID = "1";
-
     private static final String EXPECTED_URI = "cast://webcontents/1";
-
     private static final String APP_ID = "app";
-
     private static final int VISIBILITY_PRIORITY = 2;
 
-    @Mock
-    private WebContents mWebContents;
-
-    @Mock
-    private BroadcastReceiver mReceiver;
-
+    private @Mock WebContents mWebContents;
+    private @Mock BroadcastReceiver mReceiver;
     private Activity mActivity;
 
     @Before
