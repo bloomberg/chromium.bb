@@ -56,9 +56,6 @@ class CC_PAINT_EXPORT ServiceImageTransferCacheEntry
   size_t CachedSize() const final;
   bool Deserialize(GrContext* context, base::span<const uint8_t> data) final;
 
-  void set_image_for_testing(sk_sp<SkImage> image) {
-    image_ = std::move(image);
-  }
   const sk_sp<SkImage>& image() { return image_; }
 
  private:

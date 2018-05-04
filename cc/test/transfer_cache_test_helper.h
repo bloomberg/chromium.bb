@@ -11,6 +11,7 @@
 #include "base/containers/span.h"
 #include "cc/paint/transfer_cache_deserialize_helper.h"
 #include "cc/paint/transfer_cache_serialize_helper.h"
+#include "third_party/skia/include/gpu/GrContext.h"
 
 class GrContext;
 
@@ -53,6 +54,7 @@ class TransferCacheTestHelper : public TransferCacheDeserializeHelper,
   EntryKey last_added_entry_ = {TransferCacheEntryType::kRawMemory, ~0};
 
   GrContext* context_ = nullptr;
+  sk_sp<GrContext> owned_context_;
   size_t cached_items_limit_ = std::numeric_limits<size_t>::max();
 };
 

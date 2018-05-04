@@ -53,28 +53,37 @@ void TestOptionsProvider::PushFonts() {
 
 ImageProvider::ScopedDecodedDrawImage TestOptionsProvider::GetDecodedDrawImage(
     const DrawImage& draw_image) {
+  uint32_t image_id = draw_image.paint_image().GetSkImage()->uniqueID();
+  // Lock and reuse the entry if possible.
+  const EntryKey entry_key(TransferCacheEntryType::kImage, image_id);
+  if (LockEntryDirect(entry_key)) {
+    return ScopedDecodedDrawImage(
+        DecodedDrawImage(image_id, SkSize::MakeEmpty(), SkSize::Make(1u, 1u),
+                         draw_image.filter_quality(), true));
+  }
+
   decoded_images_.push_back(draw_image);
-  auto& entry = entry_map_[++transfer_cache_entry_id_];
   SkBitmap bitmap;
   const auto& paint_image = draw_image.paint_image();
   bitmap.allocPixelsFlags(
       SkImageInfo::MakeN32Premul(paint_image.width(), paint_image.height()),
       SkBitmap::kZeroPixels_AllocFlag);
-  sk_sp<SkImage> image = SkImage::MakeFromBitmap(bitmap);
-  entry.set_image_for_testing(image);
-  return ScopedDecodedDrawImage(DecodedDrawImage(
-      transfer_cache_entry_id_, SkSize::MakeEmpty(), SkSize::Make(1u, 1u),
-      draw_image.filter_quality(), true));
-}
 
-ServiceTransferCacheEntry* TestOptionsProvider::GetEntryInternal(
-    TransferCacheEntryType entry_type,
-    uint32_t entry_id) {
-  if (entry_type != TransferCacheEntryType::kImage)
-    return TransferCacheTestHelper::GetEntryInternal(entry_type, entry_id);
-  auto it = entry_map_.find(entry_id);
-  CHECK(it != entry_map_.end());
-  return &it->second;
+  // Create a transfer cache entry for this image.
+  auto color_space = SkColorSpace::MakeSRGB();
+  ClientImageTransferCacheEntry cache_entry(&bitmap.pixmap(),
+                                            color_space.get());
+  std::vector<uint8_t> data;
+  data.resize(cache_entry.SerializedSize());
+  if (!cache_entry.Serialize(base::span<uint8_t>(data.data(), data.size()))) {
+    return ScopedDecodedDrawImage();
+  }
+
+  CreateEntryDirect(entry_key, base::span<uint8_t>(data.data(), data.size()));
+
+  return ScopedDecodedDrawImage(
+      DecodedDrawImage(image_id, SkSize::MakeEmpty(), SkSize::Make(1u, 1u),
+                       draw_image.filter_quality(), true));
 }
 
 }  // namespace cc
