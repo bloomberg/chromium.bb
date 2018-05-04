@@ -1339,6 +1339,16 @@ def IterateMountPoints(proc_file='/proc/mounts'):
       yield mtab
 
 
+def IsMounted(path):
+  """Determine if |path| is already mounted or not."""
+  path = os.path.realpath(path).rstrip('/')
+  mounts = [mtab.destination for mtab in IterateMountPoints()]
+  if path in mounts:
+    return True
+
+  return False
+
+
 def ResolveSymlink(file_name, root='/'):
   """Resolve a symlink |file_name| relative to |root|.
 

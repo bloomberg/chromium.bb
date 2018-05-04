@@ -7,27 +7,13 @@
 
 from __future__ import print_function
 
-import argparse
-import glob
 import os
-import sys
 
+from chromite.lib import commandline
+from chromite.lib import constants
 from chromite.lib import cros_build_lib
+from chromite.lib import osutils
 
-in_chroot = cros_build_lib.IsInsideChroot()
-
-def IsMounted(path):
-  """Given a path, check to see if it is already mounted."""
-
-  cmd = ['mount']
-  result = cros_build_lib.RunCommand(cmd, capture_output=True)
-  lines = result.output.strip().split('\n')
-
-  for l in lines:
-    if l.find(path) != -1:
-      return True
-
-  return False
 
 def RunMountCommands(sysroot_path, unmount):
   """Mount/Unmount the proc & dev paths.
@@ -39,42 +25,42 @@ def RunMountCommands(sysroot_path, unmount):
   for point in ['proc', 'dev']:
     mount_path = os.path.join(sysroot_path, point)
     if unmount:
-      if IsMounted(mount_path):
-        command = ['umount', mount_path]
-        cros_build_lib.SudoRunCommand(command)
+      if osutils.IsMounted(mount_path):
+        osutils.UnmountDir(mount_path)
     else:
-      if not IsMounted(mount_path):
+      if not osutils.IsMounted(mount_path):
+        # Not using osutils.Mount here, as not sure how to call
+        # it to get the correct flags, etc.
         if point == 'proc':
           command = ['mount', '-t', 'proc', 'none', mount_path]
         else:
           command = ['mount', '-o', 'bind', '/dev', mount_path]
         cros_build_lib.SudoRunCommand(command)
 
-def main(argv):
-  """Parse arguments, calls RunMountCommands & copies files."""
 
-  if in_chroot:
-    print('This script must be run from outside the chroot.')
-    print('Please exit the chroot and then try re-running this script.')
-    return 1
+def GetParser():
+  parser = commandline.ArgumentParser(description=__doc__)
 
-  parser = argparse.ArgumentParser()
-
-  parser.add_argument('--chromeos_root', default=None,
-                      required=True,
-                      help='Path to Chrome OS checkout (not including '
-                      '"chroot").')
-  parser.add_argument('--board', default=None,
+  parser.add_argument('--board',
                       required=True,
                       help='Board on which to run test.')
-  parser.add_argument('--cleanup', default=False,
+  parser.add_argument('--cleanup',
                       action='store_true',
                       help='Use this option after the testing is finished.'
                       ' It will undo the mount commands.')
 
+  return parser
+
+
+def main(argv):
+  """Parse arguments, calls RunMountCommands & copies files."""
+
+  cros_build_lib.AssertOutsideChroot()
+
+  parser = GetParser()
   options = parser.parse_args(argv)
 
-  chromeos_root = os.path.expanduser(options.chromeos_root)
+  chromeos_root = constants.SOURCE_ROOT
   chroot_path = os.path.join(chromeos_root, 'chroot')
   sysroot_path = os.path.join(chroot_path, 'build', options.board)
 
@@ -82,21 +68,29 @@ def main(argv):
 
   # Do not copy the files if we are cleaning up.
   if not options.cleanup:
-    dst = os.path.join(sysroot_path, 'usr', 'lib64', '.')
-    src_pattern = os.path.join(chroot_path, 'usr', 'lib64', 'libLLVM*.so')
-    files = glob.glob(src_pattern)
-    for src in files:
-      cros_build_lib.SudoRunCommand(['cp', src, dst])
-
     src = os.path.join(chroot_path, 'usr', 'bin', 'asan_symbolize.py')
-    dst = os.path.join(sysroot_path, 'usr', 'bin', '.')
+    dst = os.path.join(sysroot_path, 'usr', 'bin')
     cros_build_lib.SudoRunCommand(['cp', src, dst])
 
-    src = os.path.join(chroot_path, 'usr', 'bin', 'llvm-symbolizer')
-    dst = os.path.join(sysroot_path, 'usr', 'bin', '.')
-    cros_build_lib.SudoRunCommand(['cp', src, dst])
+    # Create a directory for installing llvm-symbolizer and all of
+    # its dependencies in the sysroot.
+    install_dir = os.path.join(sysroot_path, 'usr', 'libexec',
+                               'llvm-symbolizer')
+    cmd = ['mkdir', '-p', install_dir]
+    cros_build_lib.SudoRunCommand(cmd)
 
-  return 0
+    # Now install llvm-symbolizer, with all its dependencies, in the
+    # sysroot.
+    llvm_symbolizer = os.path.join('usr', 'bin', 'llvm-symbolizer')
 
-if __name__ == "__main__":
-  sys.exit(main(sys.argv[1:]))
+    lddtree_script = os.path.join(chromeos_root, 'chromite', 'bin', 'lddtree')
+    cmd = [lddtree_script, '-v', '--generate-wrappers', '--root', chroot_path,
+           '--copy-to-tree', install_dir, os.path.join('/', llvm_symbolizer)]
+    cros_build_lib.SudoRunCommand(cmd)
+
+    # Create a symlink to llvm-symbolizer in the sysroot.
+    src = os.path.join(install_dir, llvm_symbolizer)
+    dest = os.path.join(sysroot_path, llvm_symbolizer)
+    if not os.path.exists(dest):
+      cmd = ['ln', '-s', src, dest]
+      cros_build_lib.SudoRunCommand(cmd)
