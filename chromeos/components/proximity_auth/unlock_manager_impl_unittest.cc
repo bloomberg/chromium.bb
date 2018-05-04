@@ -22,9 +22,9 @@
 #include "chromeos/components/proximity_auth/remote_status_update.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "components/cryptauth/cryptauth_test_util.h"
 #include "components/cryptauth/fake_connection.h"
 #include "components/cryptauth/fake_secure_context.h"
+#include "components/cryptauth/remote_device_test_util.h"
 #include "components/cryptauth/secure_context.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
@@ -165,7 +165,7 @@ CreateAndRegisterMockBluetoothAdapter() {
 class ProximityAuthUnlockManagerImplTest : public testing::Test {
  public:
   ProximityAuthUnlockManagerImplTest()
-      : remote_device_(cryptauth::CreateClassicRemoteDeviceForTest()),
+      : remote_device_(cryptauth::CreateRemoteDeviceForTest()),
         life_cycle_(remote_device_),
         connection_(remote_device_),
         bluetooth_adapter_(CreateAndRegisterMockBluetoothAdapter()),

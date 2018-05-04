@@ -9,8 +9,8 @@
 
 #include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_connection_manager.h"
 #include "chrome/browser/extensions/extension_api_unittest.h"
-#include "components/cryptauth/cryptauth_test_util.h"
 #include "components/cryptauth/fake_connection.h"
+#include "components/cryptauth/remote_device_test_util.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/common/extension.h"
@@ -21,7 +21,7 @@ namespace extensions {
 namespace {
 
 using cryptauth::FakeConnection;
-using cryptauth::CreateLERemoteDeviceForTest;
+using cryptauth::CreateRemoteDeviceForTest;
 
 using extensions::BrowserContextKeyedAPIFactory;
 using extensions::DictionaryBuilder;
@@ -66,7 +66,7 @@ TEST_F(EasyUnlockPrivateApiTest, BrowserContextTearDown) {
   // dependencies if it has a Connection to shutdown.
   auto extension = CreateTestExtension();
   auto connection =
-      std::make_unique<FakeConnection>(CreateLERemoteDeviceForTest());
+      std::make_unique<FakeConnection>(CreateRemoteDeviceForTest());
   manager->AddConnection(extension.get(), std::move(connection), true);
 
   // The Profile is cleaned up at the end of this scope, and BrowserContext

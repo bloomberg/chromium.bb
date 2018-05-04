@@ -20,8 +20,8 @@
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "components/cryptauth/connection_finder.h"
 #include "components/cryptauth/connection_observer.h"
-#include "components/cryptauth/cryptauth_test_util.h"
 #include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_test_util.h"
 #include "components/cryptauth/wire_message.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
@@ -60,6 +60,8 @@ const char kRXCharacteristicUUID[] = "f4b904a2-a030-43b3-98a8-221c536c03cb";
 const char kServiceID[] = "service id";
 const char kTXCharacteristicID[] = "TX characteristic id";
 const char kRXCharacteristicID[] = "RX characteristic id";
+
+const char kTestRemoteDeviceBluetoothAddress[] = "AA:BB:CC:DD:EE:FF";
 
 const device::BluetoothRemoteGattCharacteristic::Properties
     kCharacteristicProperties =
@@ -334,7 +336,7 @@ class CryptAuthBluetoothLowEnergyWeaveClientConnectionTest
     : public testing::Test {
  public:
   CryptAuthBluetoothLowEnergyWeaveClientConnectionTest()
-      : remote_device_(CreateLERemoteDeviceForTest()),
+      : remote_device_(CreateRemoteDeviceForTest()),
         service_uuid_(device::BluetoothUUID(kServiceUUID)),
         tx_characteristic_uuid_(device::BluetoothUUID(kTXCharacteristicUUID)),
         rx_characteristic_uuid_(device::BluetoothUUID(kRXCharacteristicUUID)) {}
