@@ -2253,6 +2253,11 @@ void RenderWidgetHostViewAura::DetachFromInputMethod() {
     wm::RestoreWindowBoundsOnClientFocusLost(window_->GetToplevelWindow());
 #endif  // defined(OS_CHROMEOS)
   }
+
+#if defined(OS_WIN)
+  // Reset the keyboard observer because it attaches to the input method.
+  keyboard_observer_.reset();
+#endif  // defined(OS_WIN)
 }
 
 void RenderWidgetHostViewAura::ForwardKeyboardEventWithLatencyInfo(
