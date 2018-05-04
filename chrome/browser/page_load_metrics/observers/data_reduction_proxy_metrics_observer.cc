@@ -109,6 +109,8 @@ DataReductionProxyMetricsObserver::DataReductionProxyMetricsObserver()
       network_bytes_proxied_(0),
       insecure_network_bytes_(0),
       secure_network_bytes_(0),
+      insecure_cached_bytes_(0),
+      secure_cached_bytes_(0),
       process_id_(base::kNullProcessId),
       renderer_memory_usage_kb_(0),
       render_process_host_id_(content::ChildProcessHost::kInvalidUniqueID),
@@ -352,14 +354,35 @@ void DataReductionProxyMetricsObserver::SendPingback(
       ExponentiallyBucketBytes(secure_original_network_bytes_);
   const int64_t network_bytes =
       insecure_network_bytes_ + ExponentiallyBucketBytes(secure_network_bytes_);
+  const int64_t total_page_size_bytes =
+      insecure_network_bytes_ + insecure_cached_bytes_ +
+      ExponentiallyBucketBytes(secure_network_bytes_ + secure_cached_bytes_);
+
+  // Recording cached bytes can be done with raw data, but the end result must
+  // be bucketed in 50 linear buckets between 0% - 100%.
+  const int64_t cached_bytes = insecure_cached_bytes_ + secure_cached_bytes_;
+  const int64_t total_bytes =
+      cached_bytes + insecure_network_bytes_ + secure_network_bytes_;
+  int cached_percentage;
+  if (total_bytes <= 0) {
+    cached_percentage = 0;
+  } else {
+    cached_percentage =
+        static_cast<int>(std::lround(static_cast<float>(cached_bytes) /
+                                     static_cast<float>(total_bytes) * 100.0));
+  }
+  DCHECK_GE(cached_percentage, 0);
+  DCHECK_LE(cached_percentage, 100);
+  cached_percentage = cached_percentage - (cached_percentage % 2);
+  const float cached_fraction = static_cast<float>(cached_percentage) / 100.0;
 
   DataReductionProxyPageLoadTiming data_reduction_proxy_timing(
       timing.navigation_start, response_start, load_event_start,
       first_image_paint, first_contentful_paint,
       experimental_first_meaningful_paint,
       parse_blocked_on_script_load_duration, parse_stop, network_bytes,
-      original_network_bytes, app_background_occurred, opted_out_,
-      renderer_memory_usage_kb_, host_id);
+      original_network_bytes, total_page_size_bytes, cached_fraction,
+      app_background_occurred, opted_out_, renderer_memory_usage_kb_, host_id);
   GetPingbackClient()->SendPingback(*data_, data_reduction_proxy_timing);
 }
 
@@ -476,11 +499,19 @@ void DataReductionProxyMetricsObserver::OnLoadedResource(
       extra_request_complete_info.data_reduction_proxy_data->lofi_received()) {
     data_->set_lofi_received(true);
   }
-  if (extra_request_complete_info.was_cached)
-    return;
 
   const bool is_secure =
       extra_request_complete_info.url.SchemeIsCryptographic();
+
+  if (extra_request_complete_info.was_cached) {
+    if (is_secure) {
+      secure_cached_bytes_ += extra_request_complete_info.raw_body_bytes;
+    } else {
+      insecure_cached_bytes_ += extra_request_complete_info.raw_body_bytes;
+    }
+    return;
+  }
+
   if (is_secure) {
     secure_original_network_bytes_ +=
         extra_request_complete_info.original_network_content_length;

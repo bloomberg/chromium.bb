@@ -121,8 +121,13 @@ void AddDataToPageloadMetrics(const DataReductionProxyData& request_data,
   request->set_effective_connection_type(
       protobuf_parser::ProtoEffectiveConnectionTypeFromEffectiveConnectionType(
           request_data.effective_connection_type()));
+  request->set_connection_type(
+      protobuf_parser::ProtoConnectionTypeFromConnectionType(
+          request_data.connection_type()));
   request->set_compressed_page_size_bytes(timing.network_bytes);
   request->set_original_page_size_bytes(timing.original_network_bytes);
+  request->set_total_page_size_bytes(timing.total_page_size_bytes);
+  request->set_cached_fraction(timing.cached_fraction);
   request->set_renderer_memory_usage_kb(timing.renderer_memory_usage_kb);
 
   request->set_renderer_crash_type(crash_type);

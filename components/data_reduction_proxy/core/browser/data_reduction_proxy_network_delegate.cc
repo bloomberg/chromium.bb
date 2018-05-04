@@ -26,6 +26,7 @@
 #include "components/data_reduction_proxy/core/common/lofi_decider.h"
 #include "net/base/load_flags.h"
 #include "net/base/mime_util.h"
+#include "net/base/network_change_notifier.h"
 #include "net/base/proxy_server.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
@@ -391,6 +392,8 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
                                                 ->network_quality_estimator()
                                                 ->GetEffectiveConnectionType());
       }
+      data->set_connection_type(
+          net::NetworkChangeNotifier::GetConnectionType());
       // Generate a page ID for main frame requests that don't already have one.
       // TODO(ryansturm): remove LOAD_MAIN_FRAME_DEPRECATED from d_r_p.
       // crbug.com/709621

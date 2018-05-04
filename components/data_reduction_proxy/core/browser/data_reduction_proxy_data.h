@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/supports_user_data.h"
+#include "net/base/network_change_notifier.h"
 #include "net/nqe/effective_connection_type.h"
 #include "url/gurl.h"
 
@@ -95,6 +96,16 @@ class DataReductionProxyData : public base::SupportsUserData::Data {
     effective_connection_type_ = effective_connection_type;
   }
 
+  // The connection type (Wifi, 2G, 3G, 4G, None, etc) as reported by the
+  // NetworkChangeNotifier. Only set for main frame requests.
+  net::NetworkChangeNotifier::ConnectionType connection_type() const {
+    return connection_type_;
+  }
+  void set_connection_type(
+      const net::NetworkChangeNotifier::ConnectionType connection_type) {
+    connection_type_ = connection_type;
+  }
+
   // An identifier that is guaranteed to be unique to each page load during a
   // data saver session. Only present on main frame requests.
   const base::Optional<uint64_t>& page_id() const { return page_id_; }
@@ -152,6 +163,10 @@ class DataReductionProxyData : public base::SupportsUserData::Data {
   // The EffectiveConnectionType when the request or navigation starts. This is
   // set for main frame requests only.
   net::EffectiveConnectionType effective_connection_type_;
+
+  // The connection type (Wifi, 2G, 3G, 4G, None, etc) as reported by the
+  // NetworkChangeNotifier. Only set for main frame requests.
+  net::NetworkChangeNotifier::ConnectionType connection_type_;
 
   // An identifier that is guaranteed to be unique to each page load during a
   // data saver session. Only present on main frame requests.
