@@ -19,7 +19,6 @@
 #include "cc/trees/transform_node.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/web_layer_scroll_client.h"
 #include "third_party/blink/renderer/platform/graphics/paint/effect_paint_property_node.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_artifact.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scroll_paint_property_node.h"
@@ -29,6 +28,7 @@
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/test_paint_artifact.h"
 #include "third_party/blink/renderer/platform/testing/web_layer_tree_view_impl_for_testing.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
@@ -62,12 +62,11 @@ class WebLayerTreeViewWithLayerTreeFrameSink
   }
 };
 
-class FakeScrollClient : public WebLayerScrollClient {
+class FakeScrollClient {
  public:
   FakeScrollClient() : did_scroll_count(0) {}
 
-  void DidScroll(const gfx::ScrollOffset& offset,
-                 const CompositorElementId&) final {
+  void DidScroll(const gfx::ScrollOffset& offset, const CompositorElementId&) {
     did_scroll_count++;
     last_scroll_offset = offset;
   };
@@ -87,7 +86,8 @@ class PaintArtifactCompositorTest : public testing::Test,
   void SetUp() override {
     // Delay constructing the compositor until after the feature is set.
     paint_artifact_compositor_ =
-        PaintArtifactCompositor::Create(scroll_client_);
+        PaintArtifactCompositor::Create(WTF::BindRepeating(
+            &FakeScrollClient::DidScroll, WTF::Unretained(&scroll_client_)));
     paint_artifact_compositor_->EnableExtraDataForTesting();
 
     cc::LayerTreeSettings settings =

@@ -29,7 +29,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "third_party/blink/public/platform/web_layer_scroll_client.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
@@ -66,12 +65,11 @@ using ScrollbarId = uint64_t;
 // compositor, as well as creating and managing scrollbar layers.
 
 class CORE_EXPORT ScrollingCoordinator final
-    : public GarbageCollectedFinalized<ScrollingCoordinator>,
-      public WebLayerScrollClient {
+    : public GarbageCollectedFinalized<ScrollingCoordinator> {
  public:
   static ScrollingCoordinator* Create(Page*);
 
-  ~ScrollingCoordinator() override;
+  ~ScrollingCoordinator();
   void Trace(blink::Visitor*);
 
   // The LocalFrameView argument is optional, nullptr causes the the scrolling
@@ -151,7 +149,7 @@ class CORE_EXPORT ScrollingCoordinator final
   }
 
   // Callback for compositor-side layer scrolls.
-  void DidScroll(const gfx::ScrollOffset&, const CompositorElementId&) final;
+  void DidScroll(const gfx::ScrollOffset&, const CompositorElementId&);
 
   // For testing purposes only. This ScrollingCoordinator is reused between
   // layout test, and must be reset for the results to be valid.

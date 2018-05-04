@@ -25,7 +25,6 @@
 #include "cc/trees/layer_tree_host.h"
 #include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
-#include "third_party/blink/public/platform/web_layer_scroll_client.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
 #include "ui/gfx/geometry/rect.h"
@@ -44,9 +43,7 @@ WebLayerImpl::WebLayerImpl(scoped_refptr<Layer> layer)
     : layer_(layer), contents_opaque_is_fixed_(false) {
 }
 
-WebLayerImpl::~WebLayerImpl() {
-  layer_->SetLayerClient(nullptr);
-}
+WebLayerImpl::~WebLayerImpl() = default;
 
 int WebLayerImpl::Id() const {
   return layer_->id();
@@ -323,15 +320,10 @@ WebLayerImpl::StickyPositionConstraint() const {
   return layer_->sticky_position_constraint();
 }
 
-void WebLayerImpl::SetScrollClient(blink::WebLayerScrollClient* scroll_client) {
-  if (scroll_client) {
-    layer_->set_did_scroll_callback(
-        base::Bind(&blink::WebLayerScrollClient::DidScroll,
-                   base::Unretained(scroll_client)));
-  } else {
-    layer_->set_did_scroll_callback(
-        base::Callback<void(const gfx::ScrollOffset&, const cc::ElementId&)>());
-  }
+void WebLayerImpl::SetScrollCallback(
+    base::RepeatingCallback<void(const gfx::ScrollOffset&,
+                                 const cc::ElementId&)> callback) {
+  layer_->set_did_scroll_callback(std::move(callback));
 }
 
 void WebLayerImpl::SetScrollOffsetFromImplSideForTesting(

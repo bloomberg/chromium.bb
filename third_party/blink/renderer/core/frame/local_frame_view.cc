@@ -3521,7 +3521,11 @@ void LocalFrameView::PushPaintArtifactToCompositor(
 
   if (!paint_artifact_compositor_) {
     paint_artifact_compositor_ =
-        PaintArtifactCompositor::Create(*page->GetScrollingCoordinator());
+        PaintArtifactCompositor::Create(WTF::BindRepeating(
+            &ScrollingCoordinator::DidScroll,
+            // The layer being scrolled is destroyed before the
+            // ScrollingCoordinator.
+            WrapWeakPersistent(page->GetScrollingCoordinator())));
     page->GetChromeClient().AttachRootLayer(
         paint_artifact_compositor_->GetWebLayer(), &GetFrame());
   }

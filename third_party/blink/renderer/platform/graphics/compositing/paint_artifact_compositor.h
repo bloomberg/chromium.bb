@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/property_tree_manager.h"
@@ -17,11 +18,13 @@
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace cc {
+struct ElementId;
 class Layer;
 }
 
 namespace gfx {
 class Vector2dF;
+class ScrollOffset;
 }
 
 namespace blink {
@@ -31,7 +34,6 @@ class JSONObject;
 class PaintArtifact;
 class SynthesizedClip;
 class WebLayer;
-class WebLayerScrollClient;
 struct PaintChunk;
 
 // Responsible for managing compositing in terms of a PaintArtifact.
@@ -50,8 +52,10 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   ~PaintArtifactCompositor();
 
   static std::unique_ptr<PaintArtifactCompositor> Create(
-      WebLayerScrollClient& client) {
-    return base::WrapUnique(new PaintArtifactCompositor(client));
+      base::RepeatingCallback<void(const gfx::ScrollOffset&,
+                                   const cc::ElementId&)> scroll_callback) {
+    return base::WrapUnique(
+        new PaintArtifactCompositor(std::move(scroll_callback)));
   }
 
   // Updates the layer tree to match the provided paint artifact.
@@ -124,7 +128,9 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
     bool requires_own_layer;
   };
 
-  PaintArtifactCompositor(WebLayerScrollClient&);
+  PaintArtifactCompositor(
+      base::RepeatingCallback<void(const gfx::ScrollOffset&,
+                                   const cc::ElementId&)> scroll_callback);
 
   void RemoveChildLayers();
 
@@ -199,7 +205,8 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
       CompositorElementId& mask_effect_id) final;
 
   // Provides a callback for notifying blink of composited scrolling.
-  WebLayerScrollClient& scroll_client_;
+  base::RepeatingCallback<void(const gfx::ScrollOffset&, const cc::ElementId&)>
+      scroll_callback_;
 
   bool tracks_raster_invalidations_;
 

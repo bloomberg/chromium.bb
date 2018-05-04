@@ -14,7 +14,6 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_compositor_support.h"
 #include "third_party/blink/public/platform/web_layer.h"
-#include "third_party/blink/public/platform/web_layer_scroll_client.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/content_layer_client_impl.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/clip_paint_property_node.h"
@@ -40,8 +39,11 @@ namespace blink {
 // http://crbug.com/692842#c4.
 static int g_s_property_tree_sequence_number = 1;
 
-PaintArtifactCompositor::PaintArtifactCompositor(WebLayerScrollClient& client)
-    : scroll_client_(client), tracks_raster_invalidations_(false) {
+PaintArtifactCompositor::PaintArtifactCompositor(
+    base::RepeatingCallback<void(const gfx::ScrollOffset&,
+                                 const cc::ElementId&)> scroll_callback)
+    : scroll_callback_(std::move(scroll_callback)),
+      tracks_raster_invalidations_(false) {
   if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
       !RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
     return;
@@ -198,9 +200,7 @@ PaintArtifactCompositor::ScrollHitTestLayerForPendingLayer(
   // Set the layer's bounds equal to the container because the scroll layer
   // does not scroll.
   scroll_layer->SetBounds(static_cast<gfx::Size>(bounds));
-  scroll_layer->set_did_scroll_callback(
-      base::BindRepeating(&blink::WebLayerScrollClient::DidScroll,
-                          base::Unretained(&scroll_client_)));
+  scroll_layer->set_did_scroll_callback(scroll_callback_);
   return scroll_layer;
 }
 

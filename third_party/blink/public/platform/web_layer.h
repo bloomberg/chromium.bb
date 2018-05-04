@@ -26,6 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_LAYER_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_LAYER_H_
 
+#include "base/callback.h"
 #include "cc/input/overscroll_behavior.h"
 #include "cc/layers/layer.h"
 #include "third_party/blink/public/platform/web_common.h"
@@ -56,8 +57,6 @@ class Transform;
 }
 
 namespace blink {
-
-class WebLayerScrollClient;
 
 class WebLayer {
  public:
@@ -219,15 +218,14 @@ class WebLayer {
   virtual const cc::LayerStickyPositionConstraint& StickyPositionConstraint()
       const = 0;
 
-  // The scroll client is notified when the scroll position of the WebLayer
-  // changes. Only a single scroll client can be set for a WebLayer at a time.
-  // The WebLayer does not take ownership of the scroll client, and it is the
-  // responsibility of the client to reset the layer's scroll client before
-  // deleting the scroll client.
-  virtual void SetScrollClient(WebLayerScrollClient*) = 0;
+  // The scroll callback is notified when the scroll position of the WebLayer
+  // changes. Only a single scroll callback can be set for a WebLayer at a time.
+  virtual void SetScrollCallback(
+      base::RepeatingCallback<void(const gfx::ScrollOffset&,
+                                   const cc::ElementId&)> callback) = 0;
 
   // Sets a synthetic impl-side scroll offset which will end up reporting this
-  // call back to blink via the |WebLayerScrollClient| callback.
+  // call back to blink via the scroll callback set by SetScrollCallback().
   virtual void SetScrollOffsetFromImplSideForTesting(
       const gfx::ScrollOffset&) = 0;
 
