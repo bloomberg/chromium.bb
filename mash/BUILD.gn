@@ -29,7 +29,6 @@ group("all") {
       "//ash/components/autoclick:autoclick_app",
       "//ash/components/quick_launch:quick_launch_app",
       "//ash/components/touch_hud:touch_hud_app",
-      "//ash/standalone:ash_standalone",
       "//mash:mash_unittests",
     ]
   }
@@ -59,7 +58,6 @@ catalog("catalog") {
     standalone_services += [
       "//ash:manifest",
       "//ash/components/quick_launch:manifest",
-      "//ash/standalone:manifest",
     ]
   }
 
