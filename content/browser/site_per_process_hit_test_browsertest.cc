@@ -2122,22 +2122,16 @@ void CursorUpdateReceivedFromCrossSiteIframeHelper(
 
 }  // namespace
 
+// Flaky: https://crbug.com/833380
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
-                       CursorUpdateReceivedFromCrossSiteIframe) {
+                       DISABLED_CursorUpdateReceivedFromCrossSiteIframe) {
   CursorUpdateReceivedFromCrossSiteIframeHelper(shell(),
                                                 embedded_test_server());
 }
 
-#if defined(THREAD_SANITIZER)
 // Flaky: https://crbug.com/833380
-#define MAYBE_CursorUpdateReceivedFromCrossSiteIframe \
-  DISABLED_CursorUpdateReceivedFromCrossSiteIframe
-#else
-#define MAYBE_CursorUpdateReceivedFromCrossSiteIframe \
-  CursorUpdateReceivedFromCrossSiteIframe
-#endif
 IN_PROC_BROWSER_TEST_P(SitePerProcessHighDPIHitTestBrowserTest,
-                       MAYBE_CursorUpdateReceivedFromCrossSiteIframe) {
+                       DISABLED_CursorUpdateReceivedFromCrossSiteIframe) {
   CursorUpdateReceivedFromCrossSiteIframeHelper(shell(),
                                                 embedded_test_server());
 }
