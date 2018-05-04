@@ -173,7 +173,9 @@ TestBrowserContext::CreateRequestContextForStoragePartition(
     ProtocolHandlerMap* protocol_handlers,
     URLRequestInterceptorScopedVector request_interceptors) {
   request_interceptors_ = std::move(request_interceptors);
-  return nullptr;
+  // Simply returns the same RequestContext since no tests is relying on the
+  // expected behavior.
+  return GetRequestContext();
 }
 
 net::URLRequestContextGetter* TestBrowserContext::CreateMediaRequestContext() {
