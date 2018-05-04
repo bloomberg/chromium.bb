@@ -306,8 +306,8 @@ public class Shell extends LinearLayout {
         mContentViewCore = (ContentViewCoreImpl) ContentViewCore.create(
                 context, "", webContents, mViewAndroidDelegate, cv, mWindow);
         mWebContents = webContents;
-        SelectionPopupController controller = SelectionPopupController.fromWebContents(webContents);
-        controller.setActionModeCallback(defaultActionCallback());
+        SelectionPopupController.fromWebContents(webContents)
+                .setActionModeCallback(defaultActionCallback());
         mNavigationController = mWebContents.getNavigationController();
         if (getParent() != null) mWebContents.onShow();
         if (mWebContents.getVisibleUrl() != null) {
