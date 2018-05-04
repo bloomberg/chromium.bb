@@ -59,6 +59,7 @@
 -DockedMagnifierTest.TestEnableAndDisable
 -DockedMagnifierTest.TestOutsidePrefsUpdates
 -DockedMagnifierTest.TextInputFieldEvents
+-DockedMagnifierTest.TouchEvents
 -DockedMagnifierTest.TransformSimple
 -MagnifiersAcceleratorsTester.TestToggleMagnifiers
 

@@ -318,6 +318,16 @@ void DockedMagnifierController::OnScrollEvent(ui::ScrollEvent* event) {
   }
 }
 
+void DockedMagnifierController::OnTouchEvent(ui::TouchEvent* event) {
+  DCHECK(GetEnabled());
+
+  aura::Window* target = static_cast<aura::Window*>(event->target());
+  aura::Window* event_root = target->GetRootWindow();
+  gfx::Point event_screen_point = event->root_location();
+  ::wm::ConvertPointToScreen(event_root, &event_screen_point);
+  CenterOnPoint(event_screen_point);
+}
+
 void DockedMagnifierController::OnCaretBoundsChanged(
     const ui::TextInputClient* client) {
   DCHECK(GetEnabled());
