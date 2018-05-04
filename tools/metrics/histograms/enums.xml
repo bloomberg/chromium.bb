@@ -13147,6 +13147,8 @@ Called by update_net_error_codes.py.-->
   <int value="438" label="DeviceSamlLoginAuthenticationType"/>
   <int value="439" label="WebUsbAskForUrls"/>
   <int value="440" label="WebUsbBlockedForUrls"/>
+  <int value="441" label="ChromeCleanupEnabled"/>
+  <int value="442" label="ChromeCleanupReportingEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

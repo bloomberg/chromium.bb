@@ -3646,6 +3646,26 @@
   "DeviceSamlLoginAuthenticationType": {
   },
 
+  "ChromeCleanupEnabled": {
+    "os": ["win"],
+    "test_policy": { "ChromeCleanupEnabled": true },
+    "pref_mappings": [
+      { "pref": "software_reporter.enabled",
+        "local_state": true
+      }
+    ]
+  },
+
+  "ChromeCleanupReportingEnabled": {
+    "os": ["win"],
+    "test_policy": { "ChromeCleanupReportingEnabled": false },
+    "pref_mappings": [
+      { "pref": "software_reporter.reporting",
+        "local_state": true
+      }
+    ]
+  },
+
   "SafeBrowsingWhitelistDomains": {
   },
 

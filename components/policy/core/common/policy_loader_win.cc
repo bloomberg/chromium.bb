@@ -66,19 +66,23 @@ const char kBlockedExtensionPrefix[] = "[BLOCKED]";
 
 // List of policies that are considered only if the user is part of a AD domain.
 // Please document any new additions in policy_templates.json!
-const char* kInsecurePolicies[] = {key::kMetricsReportingEnabled,
-                                   key::kDefaultSearchProviderEnabled,
-                                   key::kHomepageIsNewTabPage,
-                                   key::kHomepageLocation,
-                                   key::kNewTabPageLocation,
-                                   key::kRestoreOnStartup,
-                                   key::kRestoreOnStartupURLs,
-                                   key::kSafeBrowsingForTrustedSourcesEnabled,
-                                   key::kCloudPolicyOverridesMachinePolicy,
-                                   key::kSafeBrowsingEnabled,
-                                   key::kSafeBrowsingWhitelistDomains,
-                                   key::kPasswordProtectionLoginURLs,
-                                   key::kPasswordProtectionChangePasswordURL};
+const char* kInsecurePolicies[] = {
+    key::kChromeCleanupEnabled,
+    key::kChromeCleanupReportingEnabled,
+    key::kCloudPolicyOverridesMachinePolicy,
+    key::kDefaultSearchProviderEnabled,
+    key::kHomepageIsNewTabPage,
+    key::kHomepageLocation,
+    key::kMetricsReportingEnabled,
+    key::kNewTabPageLocation,
+    key::kPasswordProtectionChangePasswordURL,
+    key::kPasswordProtectionLoginURLs,
+    key::kRestoreOnStartup,
+    key::kRestoreOnStartupURLs,
+    key::kSafeBrowsingForTrustedSourcesEnabled,
+    key::kSafeBrowsingEnabled,
+    key::kSafeBrowsingWhitelistDomains,
+};
 
 // The list of possible errors that can occur while collecting information about
 // the current enterprise environment.

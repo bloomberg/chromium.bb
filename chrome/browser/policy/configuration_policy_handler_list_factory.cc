@@ -34,6 +34,7 @@
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/certificate_transparency/pref_names.h"
+#include "components/component_updater/pref_names.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/network_time/network_time_pref_names.h"
@@ -693,6 +694,12 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
 #if defined(OS_WIN)
   { key::kWelcomePageOnOSUpgradeEnabled,
     prefs::kWelcomePageOnOSUpgradeEnabled,
+    base::Value::Type::BOOLEAN },
+  { key::kChromeCleanupEnabled,
+    prefs::kSwReporterEnabled,
+    base::Value::Type::BOOLEAN },
+  { key::kChromeCleanupReportingEnabled,
+    prefs::kSwReporterReportingEnabled,
     base::Value::Type::BOOLEAN },
 #endif  // OS_WIN
 
