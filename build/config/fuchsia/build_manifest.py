@@ -19,8 +19,64 @@ Arguments:
 import json
 import os
 import re
+import subprocess
 import sys
 import tempfile
+
+
+def ReadDynamicLibDeps(path):
+  """Returns a list of NEEDED libraries read from a binary's ELF header."""
+
+  LIBRARY_RE = re.compile(r'.*\(NEEDED\)\s+Shared library: \[(?P<lib>.*)\]')
+  elfinfo = subprocess.check_output(['readelf', '-d', path],
+                                    stderr=open(os.devnull, 'w'))
+  libs = []
+  for line in elfinfo.split('\n'):
+    match = LIBRARY_RE.match(line.rstrip())
+    if match:
+      lib = match.group('lib')
+
+      # Skip libzircon.so, as it is supplied by the OS loader.
+      if lib != 'libzircon.so':
+        libs.append(match.group('lib'))
+
+  return libs
+
+
+def ComputeTransitiveLibDeps(executable_path, available_libs):
+  """Returns a set representing the library dependencies of |executable_path|,
+  the dependencies of its dependencies, and so on.
+
+  A list of candidate library filesystem paths is passed using |available_libs|
+  to help with resolving full paths from the short ELF header filenames."""
+
+  # Stack of binaries (libraries, executables) awaiting traversal.
+  to_visit = [executable_path]
+
+  # The computed set of visited transitive dependencies.
+  deps = set()
+
+  while len(to_visit) > 0:
+    cur_path = to_visit.pop()
+    deps.add(cur_path)
+
+    # Resolve the full paths for all of |cur_path|'s NEEDED libraries.
+    dep_paths = {available_libs[dep]
+                 for dep in ReadDynamicLibDeps(cur_path)}
+
+    # Add newly discovered dependencies to the pending traversal stack.
+    to_visit += dep_paths.difference(deps)
+
+  return deps
+
+
+def EnumerateDirectoryFiles(path):
+  """Returns a flattened list of all files contained under |path|."""
+
+  output = set()
+  for dirname, _, files in os.walk(path):
+    output = output.union({os.path.join(dirname, f) for f in files})
+  return output
 
 
 def MakePackagePath(file_path, roots):
@@ -91,7 +147,7 @@ def _IsBinary(path):
 
 def BuildManifest(root_dir, out_dir, app_name, app_filename,
                   sandbox_policy_path, runtime_deps_file, depfile_path,
-                  output_path):
+                  dynlib_paths, output_path):
   with open(output_path, 'w') as manifest, open(depfile_path, 'w') as depfile:
     # Process the runtime deps file for file paths, recursively walking
     # directories as needed. File paths are stored in absolute form,
@@ -111,6 +167,19 @@ def BuildManifest(root_dir, out_dir, app_name, app_filename,
                 os.path.join(root, current_file)))
       else:
         expanded_files.add(os.path.abspath(next_path))
+
+    # Get set of dist libraries available for dynamic linking.
+    dist_libs = set()
+    for next_dir in dynlib_paths.split(','):
+      dist_libs = dist_libs.union(EnumerateDirectoryFiles(next_dir))
+
+    # Compute the set of dynamic libraries used by the application or its
+    # transitive dependencies (dist libs and components), and merge the result
+    # with |expanded_files| so that they are included in the manifest.
+    expanded_files = expanded_files.union(
+        ComputeTransitiveLibDeps(
+            app_filename,
+            {os.path.basename(f): f for f in expanded_files.union(dist_libs)}))
 
     # Format and write out the manifest contents.
     app_found = False

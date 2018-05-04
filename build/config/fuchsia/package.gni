@@ -64,12 +64,6 @@ template("package") {
     # assets, shared libraries, etc.) included by the package have changed.
     depfile = _depfile
 
-    # Include the SDK's core dynamic libraries in the package.
-    data = [
-      dist_libroot,
-      "${sysroot}/dist",
-    ]
-
     args = [
       rebase_path("//"),
       rebase_path(root_out_dir),
@@ -78,6 +72,7 @@ template("package") {
       rebase_path(pkg.sandbox_policy),
       rebase_path(_runtime_deps_file),
       rebase_path(_depfile),
+      rebase_path(dist_libroot) + "," + rebase_path("${sysroot}/dist"),
       rebase_path(_manifest_file),
     ]
 
