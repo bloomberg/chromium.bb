@@ -168,4 +168,7 @@ message PageloadMetrics {
   // plus the sum of content-length for all resources loaded from the browser
   // cache. Secure resources (i.e., HTTPS) that go into this sum are bucketed.
   optional int64 total_page_size_bytes = 24;
+
+  // The queuing delay for the first user input on the page.
+  optional Duration first_input_delay = 25;
 }

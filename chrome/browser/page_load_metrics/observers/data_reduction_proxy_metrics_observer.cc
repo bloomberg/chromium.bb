@@ -308,6 +308,7 @@ void DataReductionProxyMetricsObserver::SendPingback(
   base::Optional<base::TimeDelta> first_image_paint;
   base::Optional<base::TimeDelta> first_contentful_paint;
   base::Optional<base::TimeDelta> experimental_first_meaningful_paint;
+  base::Optional<base::TimeDelta> first_input_delay;
   base::Optional<base::TimeDelta> parse_blocked_on_script_load_duration;
   base::Optional<base::TimeDelta> parse_stop;
   if (WasStartedInForegroundOptionalEventInForeground(timing.response_start,
@@ -330,6 +331,10 @@ void DataReductionProxyMetricsObserver::SendPingback(
           timing.paint_timing->first_meaningful_paint, info)) {
     experimental_first_meaningful_paint =
         timing.paint_timing->first_meaningful_paint;
+  }
+  if (WasStartedInForegroundOptionalEventInForeground(
+          timing.interactive_timing->first_input_delay, info)) {
+    first_input_delay = timing.interactive_timing->first_input_delay;
   }
   if (WasStartedInForegroundOptionalEventInForeground(
           timing.parse_timing->parse_blocked_on_script_load_duration, info)) {
@@ -379,7 +384,7 @@ void DataReductionProxyMetricsObserver::SendPingback(
   DataReductionProxyPageLoadTiming data_reduction_proxy_timing(
       timing.navigation_start, response_start, load_event_start,
       first_image_paint, first_contentful_paint,
-      experimental_first_meaningful_paint,
+      experimental_first_meaningful_paint, first_input_delay,
       parse_blocked_on_script_load_duration, parse_stop, network_bytes,
       original_network_bytes, total_page_size_bytes, cached_fraction,
       app_background_occurred, opted_out_, renderer_memory_usage_kb_, host_id);

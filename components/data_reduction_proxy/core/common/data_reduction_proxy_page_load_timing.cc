@@ -13,6 +13,7 @@ DataReductionProxyPageLoadTiming::DataReductionProxyPageLoadTiming(
     const base::Optional<base::TimeDelta>& first_image_paint,
     const base::Optional<base::TimeDelta>& first_contentful_paint,
     const base::Optional<base::TimeDelta>& experimental_first_meaningful_paint,
+    const base::Optional<base::TimeDelta>& first_input_delay,
     const base::Optional<base::TimeDelta>&
         parse_blocked_on_script_load_duration,
     const base::Optional<base::TimeDelta>& parse_stop,
@@ -30,6 +31,7 @@ DataReductionProxyPageLoadTiming::DataReductionProxyPageLoadTiming(
       first_image_paint(first_image_paint),
       first_contentful_paint(first_contentful_paint),
       experimental_first_meaningful_paint(experimental_first_meaningful_paint),
+      first_input_delay(first_input_delay),
       parse_blocked_on_script_load_duration(
           parse_blocked_on_script_load_duration),
       parse_stop(parse_stop),
