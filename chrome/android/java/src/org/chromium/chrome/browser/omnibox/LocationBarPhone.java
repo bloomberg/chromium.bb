@@ -201,11 +201,6 @@ public class LocationBarPhone extends LocationBarLayout {
     }
 
     private void updateGoogleG() {
-        if (!mNativeInitialized) {
-            mGoogleGContainer.setVisibility(View.GONE);
-            return;
-        }
-
         // The toolbar data provider can be null during startup, before the ToolbarManager has been
         // initialized.
         ToolbarDataProvider toolbarDataProvider = getToolbarDataProvider();
@@ -363,7 +358,6 @@ public class LocationBarPhone extends LocationBarLayout {
     @Override
     public void onNativeLibraryReady() {
         super.onNativeLibraryReady();
-        if (mBottomSheet != null) updateGoogleG();
 
         // TODO(twellington): Move this to constructor when isModernUiEnabled() is available before
         // native is loaded.
