@@ -20,7 +20,8 @@ class MockLifecycleUnitObserver : public LifecycleUnitObserver {
  public:
   MockLifecycleUnitObserver() = default;
 
-  MOCK_METHOD1(OnLifecycleUnitStateChanged, void(LifecycleUnit*));
+  MOCK_METHOD2(OnLifecycleUnitStateChanged,
+               void(LifecycleUnit*, mojom::LifecycleState));
   MOCK_METHOD2(OnLifecycleUnitVisibilityChanged,
                void(LifecycleUnit*, content::Visibility));
   MOCK_METHOD1(OnLifecycleUnitDestroyed, void(LifecycleUnit*));
@@ -46,7 +47,6 @@ class DummyLifecycleUnit : public LifecycleUnitBase {
     return base::ProcessHandle();
   }
   SortKey GetSortKey() const override { return SortKey(); }
-  State GetState() const override { return State::LOADED; }
   content::Visibility GetVisibility() const override {
     return content::Visibility::VISIBLE;
   }
@@ -86,12 +86,13 @@ TEST(LifecycleUnitBaseTest, SetStateNotifiesObservers) {
   lifecycle_unit.AddObserver(&observer);
 
   // Observer is notified when the state changes.
-  EXPECT_CALL(observer, OnLifecycleUnitStateChanged(&lifecycle_unit));
-  lifecycle_unit.SetState(LifecycleUnit::State::DISCARDED);
+  EXPECT_CALL(observer, OnLifecycleUnitStateChanged(&lifecycle_unit,
+                                                    lifecycle_unit.GetState()));
+  lifecycle_unit.SetState(mojom::LifecycleState::kDiscarded);
   testing::Mock::VerifyAndClear(&observer);
 
   // Observer isn't notified when the state stays the same.
-  lifecycle_unit.SetState(LifecycleUnit::State::DISCARDED);
+  lifecycle_unit.SetState(mojom::LifecycleState::kDiscarded);
 
   lifecycle_unit.RemoveObserver(&observer);
 }

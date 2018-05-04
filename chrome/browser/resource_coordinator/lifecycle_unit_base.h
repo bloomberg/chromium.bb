@@ -20,14 +20,14 @@ class LifecycleUnitBase : public LifecycleUnit {
 
   // LifecycleUnit:
   int32_t GetID() const override;
-  State GetState() const override;
+  mojom::LifecycleState GetState() const override;
   base::TimeTicks GetLastVisibilityChangeTime() const override;
   void AddObserver(LifecycleUnitObserver* observer) override;
   void RemoveObserver(LifecycleUnitObserver* observer) override;
 
  protected:
   // Sets the state of this LifecycleUnit to |state| and notifies observers.
-  void SetState(State state);
+  void SetState(mojom::LifecycleState state);
 
   // Notifies observers that the visibility of the LifecycleUnit has changed.
   void OnLifecycleUnitVisibilityChanged(content::Visibility visibility);
@@ -44,7 +44,7 @@ class LifecycleUnitBase : public LifecycleUnit {
   const int32_t id_ = ++next_id_;
 
   // Current state of this LifecycleUnit.
-  State state_ = State::LOADED;
+  mojom::LifecycleState state_ = mojom::LifecycleState::kRunning;
 
   base::TimeTicks last_visibility_change_time_;
 

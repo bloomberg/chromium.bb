@@ -56,8 +56,8 @@ void TabLifecycleUnitSource::TabLifecycleUnit::SetFocused(bool focused) {
     return;
   last_focused_time_ = focused ? base::TimeTicks::Max() : NowTicks();
 
-  if (focused && GetState() == State::DISCARDED) {
-    SetState(State::LOADED);
+  if (focused && GetState() == mojom::LifecycleState::kDiscarded) {
+    SetState(mojom::LifecycleState::kRunning);
     // See comment in Discard() for an explanation of why "needs reload" is
     // false when a tab is discarded.
     // TODO(fdoray): Remove NavigationControllerImpl::needs_reload_ once session
@@ -74,6 +74,12 @@ void TabLifecycleUnitSource::TabLifecycleUnit::SetRecentlyAudible(
     recently_audible_time_ = base::TimeTicks::Max();
   else if (recently_audible_time_ == base::TimeTicks::Max())
     recently_audible_time_ = NowTicks();
+}
+
+void TabLifecycleUnitSource::TabLifecycleUnit::UpdateLifecycleState(
+    mojom::LifecycleState state) {
+  DCHECK_NE(mojom::LifecycleState::kDiscarded, state);
+  SetState(state);
 }
 
 TabLifecycleUnitExternal*
@@ -107,9 +113,8 @@ content::Visibility TabLifecycleUnitSource::TabLifecycleUnit::GetVisibility()
 }
 
 bool TabLifecycleUnitSource::TabLifecycleUnit::Freeze() {
-  // Can't freeze tabs that are already discarded or frozen.
-  // TODO(fmeawad): Don't freeze already frozen tabs.
-  if (GetState() != State::LOADED)
+  // Can't request to freeze a discarded tab.
+  if (IsDiscarded())
     return false;
 
   GetWebContents()->FreezePage();
@@ -273,7 +278,7 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::Discard(
   // RenderFrameProxyHosts.
   old_contents_deleter.reset();
 
-  SetState(State::DISCARDED);
+  SetState(mojom::LifecycleState::kDiscarded);
   ++discard_count_;
   OnDiscardedStateChange();
 
@@ -329,7 +334,11 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::FreezeTab() {
 }
 
 bool TabLifecycleUnitSource::TabLifecycleUnit::IsDiscarded() const {
-  return GetState() == State::DISCARDED;
+  return GetState() == mojom::LifecycleState::kDiscarded;
+}
+
+bool TabLifecycleUnitSource::TabLifecycleUnit::IsFrozen() const {
+  return GetState() == mojom::LifecycleState::kFrozen;
 }
 
 int TabLifecycleUnitSource::TabLifecycleUnit::GetDiscardCount() const {
@@ -347,8 +356,8 @@ TabLifecycleUnitSource::TabLifecycleUnit::GetRenderProcessHost() const {
 }
 
 void TabLifecycleUnitSource::TabLifecycleUnit::DidStartLoading() {
-  if (GetState() == State::DISCARDED) {
-    SetState(State::LOADED);
+  if (IsDiscarded()) {
+    SetState(mojom::LifecycleState::kRunning);
     OnDiscardedStateChange();
   }
 }
