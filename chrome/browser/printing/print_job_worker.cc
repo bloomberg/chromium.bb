@@ -377,9 +377,7 @@ void PrintJobWorker::OnNewPage() {
     // Find first page to print.
     int page_count = document_->page_count();
     if (!page_count) {
-      // We still don't know how many pages the document contains. We can't
-      // start to print the document yet since the header/footer may refer to
-      // the document's page count.
+      // We still don't know how many pages the document contains.
       return;
     }
     // We have enough information to initialize page_number_.

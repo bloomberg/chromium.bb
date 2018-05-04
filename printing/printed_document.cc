@@ -114,14 +114,9 @@ PrintedDocument::PrintedDocument(const PrintSettings& settings,
                                  const base::string16& name,
                                  int cookie)
     : immutable_(settings, name, cookie) {
-  // Records the expected page count if a range is setup.
-  if (!settings.ranges().empty()) {
-    // If there is a range, set the number of page
-    for (unsigned i = 0; i < settings.ranges().size(); ++i) {
-      const PageRange& range = settings.ranges()[i];
-      mutable_.expected_page_count_ += range.to - range.from + 1;
-    }
-  }
+  // If there is a range, set the number of page
+  for (const PageRange& range : settings.ranges())
+    mutable_.expected_page_count_ += range.to - range.from + 1;
 
   if (HasDebugDumpPath())
     DebugDumpSettings(name, settings);
