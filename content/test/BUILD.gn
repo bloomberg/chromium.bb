@@ -226,6 +226,8 @@ jumbo_static_library("test_support") {
     "net/url_request_abort_on_end_job.h",
     "ppapi_unittest.cc",
     "ppapi_unittest.h",
+    "storage_partition_test_utils.cc",
+    "storage_partition_test_utils.h",
     "test_background_sync_context.cc",
     "test_background_sync_context.h",
     "test_background_sync_manager.cc",
