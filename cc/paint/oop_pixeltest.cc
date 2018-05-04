@@ -58,19 +58,23 @@ class OopPixelTestBase : public testing::Test {
         base::MakeRefCounted<TestInProcessContextProvider>(
             /*enable_oop_rasterization=*/true,
             /*enable_gles2_interface=*/!UseRasterDecoder());
-    int max_texture_size =
+    const int raster_max_texture_size =
         raster_context_provider_->ContextCapabilities().max_texture_size;
     oop_image_cache_.reset(new GpuImageDecodeCache(
         raster_context_provider_.get(), true, kRGBA_8888_SkColorType,
-        kWorkingSetSize, max_texture_size));
+        kWorkingSetSize, raster_max_texture_size));
 
     gles2_context_provider_ =
         base::MakeRefCounted<TestInProcessContextProvider>(
             /*enable_oop_rasterization=*/false,
             /*enable_gles2_interface=*/true);
+    const int gles2_max_texture_size =
+        raster_context_provider_->ContextCapabilities().max_texture_size;
     gpu_image_cache_.reset(new GpuImageDecodeCache(
         gles2_context_provider_.get(), false, kRGBA_8888_SkColorType,
-        kWorkingSetSize, max_texture_size));
+        kWorkingSetSize, gles2_max_texture_size));
+
+    ASSERT_EQ(raster_max_texture_size, gles2_max_texture_size);
   }
 
   class RasterOptions {
