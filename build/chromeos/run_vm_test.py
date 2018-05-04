@@ -97,6 +97,19 @@ def vm_test(args):
   for f in read_runtime_files(args.runtime_deps_path, args.path_to_outdir):
     cros_run_vm_test_cmd.extend(['--files', f])
 
+  if args.test_launcher_summary_output:
+    result_dir, result_file = os.path.split(args.test_launcher_summary_output)
+    # If args.test_launcher_summary_output is a file in cwd, result_dir will be
+    # an empty string, so replace it with '.' when this is the case so
+    # cros_run_vm_test can correctly handle it.
+    if not result_dir:
+      result_dir = '.'
+    vm_result_file = '/tmp/%s' % result_file
+    cros_run_vm_test_cmd += [
+      '--results-src', vm_result_file,
+      '--results-dest-dir', result_dir,
+    ]
+
   cros_run_vm_test_cmd += [
       '--cmd',
       '--',
@@ -105,42 +118,16 @@ def vm_test(args):
       '--test-launcher-total-shards=%d' % args.test_launcher_total_shards,
   ]
 
-  stdout_results_delimiter = '@@@@@results-file-delimiter@@@@@'
   if args.test_launcher_summary_output:
-    result_file = 'gtest_results.json'
-    cros_run_vm_test_cmd.extend([
-        '--test-launcher-summary-output=%s' % result_file,
-        ';', 'export test_code=$?',
-        ';', 'echo %s' % stdout_results_delimiter,
-        ';', 'cat %s' % result_file,
-        ';', 'echo %s' % stdout_results_delimiter,
-        ';', 'exit $test_code',
-    ])
+    cros_run_vm_test_cmd += [
+      '--test-launcher-summary-output=%s' % vm_result_file,
+    ]
 
   logging.info('Running the following command:')
   logging.info(' '.join(cros_run_vm_test_cmd))
 
-  vm_proc = subprocess.Popen(
-      cros_run_vm_test_cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-
-  # Stream cros_run_vm_test's stdout to our stdout while capturing it so we can
-  # strip out the results json file.
-  # TODO(crbug.com/835061): Remove all this stdout parsing and just pull the
-  # file directly.
-  vm_output = ''
-  while True:
-    line = vm_proc.stdout.readline()
-    if not line:
-      break
-    print line,  # End with a comma so print doesn't auto append a newline.
-    vm_output += line
-
-  if args.test_launcher_summary_output:
-    json_contents = vm_output.split(stdout_results_delimiter)[-2]
-    with open(args.test_launcher_summary_output, 'w') as f:
-      f.write(json_contents)
-
-  return vm_proc.returncode
+  return subprocess.call(
+      cros_run_vm_test_cmd, stdout=sys.stdout, stderr=sys.stderr)
 
 
 def main():
@@ -189,6 +176,8 @@ def main():
       type=int, default=os.environ.get('GTEST_TOTAL_SHARDS', 1),
       help='Total number of external shards.')
   args = parser.parse_args()
+
+  logging.basicConfig(level=logging.DEBUG if args.verbose else logging.WARN)
 
   if not os.path.exists('/dev/kvm'):
     logging.error('/dev/kvm is missing. Is KVM installed on this machine?')
