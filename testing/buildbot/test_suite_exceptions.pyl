@@ -3137,6 +3137,12 @@
       'Linux Tests (dbg)(1)(32)',
     ],
   },
+  'viz_content_browsertests': {
+    'remove_from': [
+      # Currently flaky timeouts on Windows 10. crbug.com/839824
+      'Win10 Tests x64 (dbg)',
+    ],
+  },
   'viz_browser_tests': {
     'remove_from': [
       # Currently too flaky on Windows.
