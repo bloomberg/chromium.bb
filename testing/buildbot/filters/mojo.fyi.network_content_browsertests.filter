@@ -40,7 +40,6 @@
 -NavigationHandleImplBrowserTest.RedirectToRendererDebugUrl
 
 -AsyncResourceHandlerBrowserTest/AsyncResourceHandlerBrowserTest.UploadProgress*
--IsolatedDevToolsProtocolTest.ControlNavigationsChildFrames
 -NavigationHandleImplBrowserTest.ErrorCodeOnRedirect
 -WebContentsImplBrowserTest.DownloadImage_Deny_FileImage
 
