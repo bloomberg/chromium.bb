@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/login/ui/login_display_mojo.h"
 #include "chrome/browser/chromeos/login/user_board_view_mojo.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/user_manager/user_names.h"
@@ -169,13 +170,19 @@ void LoginDisplayHostMojo::UpdateGaiaDialogVisibility(
   DCHECK(dialog_);
 
   if (visible) {
-    // Make sure gaia displays |account| if requested.
-    if (account)
+    if (account) {
+      // Make sure gaia displays |account| if requested.
       GetOobeUI()->GetGaiaScreenView()->ShowGaiaAsync(account);
+      LoginDisplayHost::default_host()->LoadWallpaper(account.value());
+    } else {
+      LoginDisplayHost::default_host()->LoadSigninWallpaper();
+    }
 
     dialog_->Show(true /*closable_by_esc*/);
     return;
   }
+  // Show the wallpaper of the focused user pod when the dialog is hidden.
+  LoginDisplayHost::default_host()->LoadWallpaper(focused_pod_account_id_);
 
   if (users_.empty() && GetOobeUI()) {
     // The dialog can not be closed if there is no user on the login screen.
@@ -235,6 +242,8 @@ void LoginDisplayHostMojo::HandleOnFocusPod(const AccountId& account_id) {
   // TODO(jdufault): Share common code between this and
   // ViewsScreenLocker::HandleOnFocusPod See https://crbug.com/831787.
   user_selection_screen_->CheckUserStatus(account_id);
+  WallpaperControllerClient::Get()->ShowUserWallpaper(account_id);
+  focused_pod_account_id_ = account_id;
 }
 
 void LoginDisplayHostMojo::HandleOnNoPodFocused() {

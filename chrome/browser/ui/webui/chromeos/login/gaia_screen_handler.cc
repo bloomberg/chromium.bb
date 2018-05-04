@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/public/cpp/ash_switches.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/containers/flat_set.h"
@@ -977,13 +978,18 @@ void GaiaScreenHandler::ShowGaiaScreenIfReady() {
     gaia_silent_load_ = false;
   }
 
-  // Note that LoadAuthExtension clears |populated_email_|.
-  if (populated_email_.empty()) {
-    LoginDisplayHost::default_host()->LoadSigninWallpaper();
-  } else {
-    LoginDisplayHost::default_host()->LoadWallpaper(
-        user_manager::known_user::GetAccountId(
-            populated_email_, std::string() /* id */, AccountType::UNKNOWN));
+  // Views-based login may reach here while pre-loading the Gaia screen, so
+  // update the wallpaper in |LoginDisplayHostMojo::UpdateGaiaDialogVisibility|
+  // instead, which controls the actual visibility of the Gaia screen.
+  if (!ash::switches::IsUsingViewsLogin()) {
+    // Note that LoadAuthExtension clears |populated_email_|.
+    if (populated_email_.empty()) {
+      LoginDisplayHost::default_host()->LoadSigninWallpaper();
+    } else {
+      LoginDisplayHost::default_host()->LoadWallpaper(
+          user_manager::known_user::GetAccountId(
+              populated_email_, std::string() /* id */, AccountType::UNKNOWN));
+    }
   }
 
   input_method::InputMethodManager* imm =
