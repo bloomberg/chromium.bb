@@ -41,8 +41,6 @@ static_library("vr_android") {
     "mailbox_to_surface_bridge.h",
     "metrics_util_android.cc",
     "metrics_util_android.h",
-    "scoped_gpu_trace.cc",
-    "scoped_gpu_trace.h",
     "vr_controller.cc",
     "vr_controller.h",
     "vr_core_info.cc",

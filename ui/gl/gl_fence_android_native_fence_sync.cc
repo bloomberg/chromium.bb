@@ -90,7 +90,7 @@ base::TimeTicks GLFenceAndroidNativeFenceSync::GetStatusChangeTime() {
   base::TimeTicks t = base::TimeTicks() +
                       base::TimeDelta::FromNanoseconds(pt_info->timestamp_ns);
 
-  if (sync_pt_info(info, pt_info)) {
+  if (!sync_pt_info(info, pt_info)) {
     // It is possible that multiple sync_pt_info could be extracted from
     // sync_fence_info_data. We currently only handle one.
     DLOG(WARNING) << "Ambiguous status change time. More than one result "
