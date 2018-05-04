@@ -3829,7 +3829,11 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
         curr_tg_data_size += (int)length_field_size;
         total_size += (uint32_t)length_field_size;
         tile_data_start += length_field_size;
-        saved_wb->bit_buffer += length_field_size;
+        if (num_tg_hdrs == 1) {
+          // if this tg is combined with the frame header then update saved
+          // frame header base offset accroding to length field size
+          saved_wb->bit_buffer += length_field_size;
+        }
 
         if (!first_tg && cm->error_resilient_mode) {
           // Make room for a duplicate Frame Header OBU.
@@ -3837,6 +3841,11 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
 
           // Insert a copy of the Frame Header OBU.
           memcpy(data, fh_info->frame_header, fh_info->total_length);
+
+          // Force context update tile to be the first tile in error
+          // resiliant mode as the duplicate frame headers will have
+          // context_update_tile_id set to 0
+          cm->largest_tile_id = 0;
 
           // Rewrite the OBU header to change the OBU type to Redundant Frame
           // Header.
@@ -3855,43 +3864,50 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
     }
   }
 
-  if (have_tiles && num_tg_hdrs == 1) {
-    int tile_size_bytes = 4, unused;
-    const uint32_t tile_data_offset = (uint32_t)(tile_data_start - dst);
-    const uint32_t tile_data_size = total_size - tile_data_offset;
-
-    total_size = remux_tiles(cm, tile_data_start, tile_data_size, max_tile_size,
-                             max_tile_col_size, &tile_size_bytes, &unused);
-    total_size += tile_data_offset;
-    assert(tile_size_bytes >= 1 && tile_size_bytes <= 4);
-
-    // fill in id of tile to use for the cdf update which encoder currently
-    // sets to the largest tile (but is up to the encoder)
+  if (have_tiles) {
+    // Fill in context_update_tile_id indicating the tile to use for the
+    // cdf update. The encoder currently sets it to the largest tile
+    // (but is up to the encoder)
     aom_wb_overwrite_literal(saved_wb, cm->largest_tile_id,
                              cm->log2_tile_cols + cm->log2_tile_rows);
-    aom_wb_overwrite_literal(saved_wb, tile_size_bytes - 1, 2);
+    // If more than one tile group. tile_size_bytes takes the default value 4
+    // and does not need to be set. For a single tile group it is set in the
+    // section below.
+    if (num_tg_hdrs == 1) {
+      int tile_size_bytes = 4, unused;
+      const uint32_t tile_data_offset = (uint32_t)(tile_data_start - dst);
+      const uint32_t tile_data_size = total_size - tile_data_offset;
 
-    // Update the OBU length if remux_tiles() reduced the size.
-    uint64_t payload_size;
-    size_t length_field_size;
-    int res =
-        aom_uleb_decode(dst + obu_header_size, total_size - obu_header_size,
-                        &payload_size, &length_field_size);
-    assert(res == 0);
-    (void)res;
+      total_size =
+          remux_tiles(cm, tile_data_start, tile_data_size, max_tile_size,
+                      max_tile_col_size, &tile_size_bytes, &unused);
+      total_size += tile_data_offset;
+      assert(tile_size_bytes >= 1 && tile_size_bytes <= 4);
 
-    const uint64_t new_payload_size =
-        total_size - obu_header_size - length_field_size;
-    if (new_payload_size != payload_size) {
-      size_t new_length_field_size;
-      res = aom_uleb_encode(new_payload_size, length_field_size,
-                            dst + obu_header_size, &new_length_field_size);
+      aom_wb_overwrite_literal(saved_wb, tile_size_bytes - 1, 2);
+
+      // Update the OBU length if remux_tiles() reduced the size.
+      uint64_t payload_size;
+      size_t length_field_size;
+      int res =
+          aom_uleb_decode(dst + obu_header_size, total_size - obu_header_size,
+                          &payload_size, &length_field_size);
       assert(res == 0);
-      if (new_length_field_size < length_field_size) {
-        const size_t src_offset = obu_header_size + length_field_size;
-        const size_t dst_offset = obu_header_size + new_length_field_size;
-        memmove(dst + dst_offset, dst + src_offset, (size_t)payload_size);
-        total_size -= (int)(length_field_size - new_length_field_size);
+      (void)res;
+
+      const uint64_t new_payload_size =
+          total_size - obu_header_size - length_field_size;
+      if (new_payload_size != payload_size) {
+        size_t new_length_field_size;
+        res = aom_uleb_encode(new_payload_size, length_field_size,
+                              dst + obu_header_size, &new_length_field_size);
+        assert(res == 0);
+        if (new_length_field_size < length_field_size) {
+          const size_t src_offset = obu_header_size + length_field_size;
+          const size_t dst_offset = obu_header_size + new_length_field_size;
+          memmove(dst + dst_offset, dst + src_offset, (size_t)payload_size);
+          total_size -= (int)(length_field_size - new_length_field_size);
+        }
       }
     }
   }
