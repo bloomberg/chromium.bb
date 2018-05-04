@@ -171,14 +171,37 @@ class flat_map : public ::base::internal::flat_tree<
   // --------------------------------------------------------------------------
   // Lifetime and assignments.
   //
-  // Note: we explicitly bring operator= in because otherwise
-  //   flat_map<...> x;
-  //   x = {...};
-  // Would first create a flat_map and then move assign it. This most likely
-  // would be optimized away but still affects our debug builds.
+  // Note: we could do away with these constructors, destructor and assignment
+  // operator overloads by inheriting |tree|'s, but this breaks the GCC build
+  // due to https://gcc.gnu.org/bugzilla/show_bug.cgi?id=84782 (see
+  // https://crbug.com/837221).
 
-  using tree::tree;
-  using tree::operator=;
+  flat_map() = default;
+  explicit flat_map(const Compare& comp);
+
+  template <class InputIterator>
+  flat_map(InputIterator first,
+           InputIterator last,
+           FlatContainerDupes dupe_handling = KEEP_FIRST_OF_DUPES,
+           const Compare& comp = Compare());
+
+  flat_map(const flat_map&) = default;
+  flat_map(flat_map&&) noexcept = default;
+
+  flat_map(std::vector<value_type> items,
+           FlatContainerDupes dupe_handling = KEEP_FIRST_OF_DUPES,
+           const Compare& comp = Compare());
+
+  flat_map(std::initializer_list<value_type> ilist,
+           FlatContainerDupes dupe_handling = KEEP_FIRST_OF_DUPES,
+           const Compare& comp = Compare());
+
+  ~flat_map() = default;
+
+  flat_map& operator=(const flat_map&) = default;
+  flat_map& operator=(flat_map&&) = default;
+  // Takes the first if there are duplicates in the initializer list.
+  flat_map& operator=(std::initializer_list<value_type> ilist);
 
   // --------------------------------------------------------------------------
   // Map-specific insert operations.
@@ -214,6 +237,49 @@ class flat_map : public ::base::internal::flat_tree<
 
   friend void swap(flat_map& lhs, flat_map& rhs) noexcept { lhs.swap(rhs); }
 };
+
+// ----------------------------------------------------------------------------
+// Lifetime.
+
+template <class Key, class Mapped, class Compare>
+flat_map<Key, Mapped, Compare>::flat_map(const Compare& comp) : tree(comp) {}
+
+template <class Key, class Mapped, class Compare>
+template <class InputIterator>
+flat_map<Key, Mapped, Compare>::flat_map(InputIterator first,
+                                         InputIterator last,
+                                         FlatContainerDupes dupe_handling,
+                                         const Compare& comp)
+    : tree(first, last, dupe_handling, comp) {}
+
+template <class Key, class Mapped, class Compare>
+flat_map<Key, Mapped, Compare>::flat_map(std::vector<value_type> items,
+                                         FlatContainerDupes dupe_handling,
+                                         const Compare& comp)
+    : tree(std::move(items), dupe_handling, comp) {}
+
+template <class Key, class Mapped, class Compare>
+flat_map<Key, Mapped, Compare>::flat_map(
+    std::initializer_list<value_type> ilist,
+    FlatContainerDupes dupe_handling,
+    const Compare& comp)
+    : flat_map(std::begin(ilist), std::end(ilist), dupe_handling, comp) {}
+
+// ----------------------------------------------------------------------------
+// Assignments.
+
+template <class Key, class Mapped, class Compare>
+auto flat_map<Key, Mapped, Compare>::operator=(
+    std::initializer_list<value_type> ilist) -> flat_map& {
+  // When https://gcc.gnu.org/bugzilla/show_bug.cgi?id=84782 gets fixed, we
+  // need to remember to inherit tree::operator= to prevent
+  //   flat_map<...> x;
+  //   x = {...};
+  // from first creating a flat_map and then move assigning it. This most
+  // likely would be optimized away but still affects our debug builds.
+  tree::operator=(ilist);
+  return *this;
+}
 
 // ----------------------------------------------------------------------------
 // Insert operations.
