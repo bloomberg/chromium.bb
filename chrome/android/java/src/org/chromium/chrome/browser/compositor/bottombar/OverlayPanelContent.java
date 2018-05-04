@@ -419,7 +419,7 @@ public class OverlayPanelContent {
      */
     public float getContentVerticalScroll() {
         return mWebContents != null
-                ? RenderCoordinates.fromWebContents(mWebContents).getScrollXPixInt()
+                ? RenderCoordinates.fromWebContents(mWebContents).getScrollYPixInt()
                 : -1.f;
     }
 
