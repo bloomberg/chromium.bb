@@ -145,7 +145,9 @@ void VerifySubmitFormUkm(const ukm::TestAutoSetUkmRecorder& ukm_recorder,
         {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
         {UkmFormSubmittedType::kIsForCreditCardName, is_for_credit_card},
         {UkmFormSubmittedType::kFormTypesName,
-         AutofillMetrics::FormTypesToBitVector(form_types)}}});
+         AutofillMetrics::FormTypesToBitVector(form_types)},
+        {UkmFormSubmittedType::kFormSignatureName,
+         Collapse(CalculateFormSignature(form))}}});
 }
 
 void AppendFieldFillStatusUkm(const FormData& form,
@@ -4155,15 +4157,17 @@ TEST_F(AutofillMetricsTest, CreditCardSubmittedFormEvents) {
           {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
           {UkmFormSubmittedType::kIsForCreditCardName, true},
           {UkmFormSubmittedType::kFormTypesName,
-           AutofillMetrics::FormTypesToBitVector(
-               {FormType::CREDIT_CARD_FORM})}},
+           AutofillMetrics::FormTypesToBitVector({FormType::CREDIT_CARD_FORM})},
+          {UkmFormSubmittedType::kFormSignatureName,
+           Collapse(CalculateFormSignature(form))}},
          {{UkmFormSubmittedType::kAutofillFormSubmittedStateName,
            AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA},
           {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
           {UkmFormSubmittedType::kIsForCreditCardName, true},
           {UkmFormSubmittedType::kFormTypesName,
-           AutofillMetrics::FormTypesToBitVector(
-               {FormType::CREDIT_CARD_FORM})}}});
+           AutofillMetrics::FormTypesToBitVector({FormType::CREDIT_CARD_FORM})},
+          {UkmFormSubmittedType::kFormSignatureName,
+           Collapse(CalculateFormSignature(form))}}});
 
     histogram_tester.ExpectBucketCount(
         "Autofill.FormEvents.CreditCard",
@@ -5332,7 +5336,9 @@ TEST_F(AutofillMetricsTest, AutofillFormSubmittedState) {
          {UkmFormSubmittedType::kIsForCreditCardName, false},
          {UkmFormSubmittedType::kFormTypesName,
           AutofillMetrics::FormTypesToBitVector(
-              {FormType::ADDRESS_FORM, FormType::UNKNOWN_FORM_TYPE})}});
+              {FormType::ADDRESS_FORM, FormType::UNKNOWN_FORM_TYPE})},
+         {UkmFormSubmittedType::kFormSignatureName,
+          Collapse(CalculateFormSignature(form))}});
     VerifyFormInteractionUkm(test_ukm_recorder_, form,
                              UkmFormSubmittedType::kEntryName,
                              expected_form_submission_ukm_metrics);
@@ -5366,7 +5372,9 @@ TEST_F(AutofillMetricsTest, AutofillFormSubmittedState) {
          {UkmFormSubmittedType::kIsForCreditCardName, false},
          {UkmFormSubmittedType::kFormTypesName,
           AutofillMetrics::FormTypesToBitVector(
-              {FormType::ADDRESS_FORM, FormType::UNKNOWN_FORM_TYPE})}});
+              {FormType::ADDRESS_FORM, FormType::UNKNOWN_FORM_TYPE})},
+         {UkmFormSubmittedType::kFormSignatureName,
+          Collapse(CalculateFormSignature(form))}});
     VerifyFormInteractionUkm(test_ukm_recorder_, form,
                              UkmFormSubmittedType::kEntryName,
                              expected_form_submission_ukm_metrics);
@@ -5404,7 +5412,9 @@ TEST_F(AutofillMetricsTest, AutofillFormSubmittedState) {
          {UkmFormSubmittedType::kIsForCreditCardName, false},
          {UkmFormSubmittedType::kFormTypesName,
           AutofillMetrics::FormTypesToBitVector(
-              {FormType::ADDRESS_FORM, FormType::UNKNOWN_FORM_TYPE})}});
+              {FormType::ADDRESS_FORM, FormType::UNKNOWN_FORM_TYPE})},
+         {UkmFormSubmittedType::kFormSignatureName,
+          Collapse(CalculateFormSignature(form))}});
 
     VerifyFormInteractionUkm(test_ukm_recorder_, form,
                              UkmFormSubmittedType::kEntryName,
@@ -5445,7 +5455,9 @@ TEST_F(AutofillMetricsTest, AutofillFormSubmittedState) {
          {UkmFormSubmittedType::kIsForCreditCardName, false},
          {UkmFormSubmittedType::kFormTypesName,
           AutofillMetrics::FormTypesToBitVector(
-              {FormType::ADDRESS_FORM, FormType::UNKNOWN_FORM_TYPE})}});
+              {FormType::ADDRESS_FORM, FormType::UNKNOWN_FORM_TYPE})},
+         {UkmFormSubmittedType::kFormSignatureName,
+          Collapse(CalculateFormSignature(form))}});
     VerifyFormInteractionUkm(test_ukm_recorder_, form,
                              UkmFormSubmittedType::kEntryName,
                              expected_form_submission_ukm_metrics);
@@ -5479,7 +5491,9 @@ TEST_F(AutofillMetricsTest, AutofillFormSubmittedState) {
          {UkmFormSubmittedType::kIsForCreditCardName, false},
          {UkmFormSubmittedType::kFormTypesName,
           AutofillMetrics::FormTypesToBitVector(
-              {FormType::ADDRESS_FORM, FormType::UNKNOWN_FORM_TYPE})}});
+              {FormType::ADDRESS_FORM, FormType::UNKNOWN_FORM_TYPE})},
+         {UkmFormSubmittedType::kFormSignatureName,
+          Collapse(CalculateFormSignature(form))}});
     VerifyFormInteractionUkm(test_ukm_recorder_, form,
                              UkmFormSubmittedType::kEntryName,
                              expected_form_submission_ukm_metrics);
@@ -5514,7 +5528,9 @@ TEST_F(AutofillMetricsTest, AutofillFormSubmittedState) {
          {UkmFormSubmittedType::kIsForCreditCardName, false},
          {UkmFormSubmittedType::kFormTypesName,
           AutofillMetrics::FormTypesToBitVector(
-              {FormType::ADDRESS_FORM, FormType::UNKNOWN_FORM_TYPE})}});
+              {FormType::ADDRESS_FORM, FormType::UNKNOWN_FORM_TYPE})},
+         {UkmFormSubmittedType::kFormSignatureName,
+          Collapse(CalculateFormSignature(form))}});
     VerifyFormInteractionUkm(test_ukm_recorder_, form,
                              UkmFormSubmittedType::kEntryName,
                              expected_form_submission_ukm_metrics);
@@ -5552,7 +5568,9 @@ TEST_F(AutofillMetricsTest, AutofillFormSubmittedState) {
          {UkmFormSubmittedType::kIsForCreditCardName, false},
          {UkmFormSubmittedType::kFormTypesName,
           AutofillMetrics::FormTypesToBitVector(
-              {FormType::ADDRESS_FORM, FormType::UNKNOWN_FORM_TYPE})}});
+              {FormType::ADDRESS_FORM, FormType::UNKNOWN_FORM_TYPE})},
+         {UkmFormSubmittedType::kFormSignatureName,
+          Collapse(CalculateFormSignature(form))}});
     VerifyFormInteractionUkm(test_ukm_recorder_, form,
                              UkmFormSubmittedType::kEntryName,
                              expected_form_submission_ukm_metrics);
@@ -5625,7 +5643,9 @@ TEST_F(
          {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
          {UkmFormSubmittedType::kIsForCreditCardName, false},
          {UkmFormSubmittedType::kFormTypesName,
-          AutofillMetrics::FormTypesToBitVector({FormType::ADDRESS_FORM})}});
+          AutofillMetrics::FormTypesToBitVector({FormType::ADDRESS_FORM})},
+         {UkmFormSubmittedType::kFormSignatureName,
+          Collapse(CalculateFormSignature(form))}});
     VerifyFormInteractionUkm(test_ukm_recorder_, form,
                              UkmFormSubmittedType::kEntryName,
                              expected_form_submission_ukm_metrics);

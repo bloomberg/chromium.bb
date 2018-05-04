@@ -845,7 +845,7 @@ void FormStructure::LogQualityMetrics(
           main_frame_origin().GetURL());
     AutofillMetrics::LogAutofillFormSubmittedState(
         state, is_for_credit_card, GetFormTypes(), form_parsed_timestamp_,
-        form_interactions_ukm_logger);
+        form_signature(), form_interactions_ukm_logger);
   }
 }
 
