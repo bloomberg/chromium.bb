@@ -148,6 +148,9 @@ Polymer({
   /** @private {boolean} */
   openPdfInPreview_: false,
 
+  /** @private {boolean} */
+  isInKioskAutoPrintMode_: false,
+
   /** @override */
   attached: function() {
     this.nativeLayer_ = print_preview.NativeLayer.getInstance();
@@ -271,6 +274,7 @@ Polymer({
         settings.serializedDefaultDestinationSelectionRulesStr,
         this.recentDestinations_);
     this.isInAppKioskMode_ = settings.isInAppKioskMode;
+    this.isInKioskAutoPrintMode_ = settings.isInKioskAutoPrintMode;
   },
 
   /**
@@ -323,12 +327,16 @@ Polymer({
     this.set(
         'destination_.capabilities',
         this.destinationStore_.selectedDestination.capabilities);
-    if (this.state != print_preview_new.State.READY &&
-        this.state != print_preview_new.State.FATAL_ERROR) {
-      this.$.state.transitTo(print_preview_new.State.READY);
-    }
+
     if (!this.$.model.initialized())
       this.$.model.applyStickySettings();
+
+    if (this.state == print_preview_new.State.NOT_READY ||
+        this.state == print_preview_new.State.INVALID_PRINTER) {
+      this.$.state.transitTo(print_preview_new.State.READY);
+      if (this.isInKioskAutoPrintMode_)
+        this.onPrintRequested_();
+    }
   },
 
   /**
