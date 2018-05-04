@@ -25,6 +25,11 @@ struct TabDiscardsInfo {
   bool is_media;
   // If the tab is currently discarded, this is true.
   bool is_discarded;
+  // If the tab is currently frozen, this is true.
+  // TODO(fmeawad): is_discarded and is_frozen are mutually exclusive, instead
+  // of representing each individually, we should add a "lifecycle_state" field
+  // instead.
+  bool is_frozen;
   // The number of times this tab has been discarded in the current browser
   // session.
   int32 discard_count;

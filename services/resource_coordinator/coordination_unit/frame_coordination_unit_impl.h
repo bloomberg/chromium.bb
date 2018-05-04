@@ -33,6 +33,7 @@ class FrameCoordinationUnitImpl
   void RemoveChildFrame(const CoordinationUnitID& cu_id) override;
   void SetAudibility(bool audible) override;
   void SetNetworkAlmostIdle(bool idle) override;
+  void SetLifecycleState(mojom::LifecycleState state) override;
   void OnAlertFired() override;
   void OnNonPersistentNotificationCreated() override;
 

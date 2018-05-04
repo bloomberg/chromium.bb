@@ -36,4 +36,5 @@ enum PropertyType {
   kUKMSourceId,
   // Used by Page CUs to store current loading state.
   kIsLoading,
+  kLifecycleState,
 };

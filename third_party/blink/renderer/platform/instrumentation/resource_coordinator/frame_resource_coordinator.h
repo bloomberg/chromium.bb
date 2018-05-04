@@ -23,6 +23,7 @@ class PLATFORM_EXPORT FrameResourceCoordinator final
   ~FrameResourceCoordinator();
 
   void SetNetworkAlmostIdle(bool);
+  void SetLifecycleState(resource_coordinator::mojom::LifecycleState);
   void OnNonPersistentNotificationCreated();
 
  private:

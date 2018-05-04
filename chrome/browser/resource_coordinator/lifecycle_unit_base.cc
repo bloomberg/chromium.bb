@@ -18,7 +18,7 @@ int32_t LifecycleUnitBase::GetID() const {
   return id_;
 }
 
-LifecycleUnit::State LifecycleUnitBase::GetState() const {
+mojom::LifecycleState LifecycleUnitBase::GetState() const {
   return state_;
 }
 
@@ -34,12 +34,13 @@ void LifecycleUnitBase::RemoveObserver(LifecycleUnitObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void LifecycleUnitBase::SetState(State state) {
+void LifecycleUnitBase::SetState(mojom::LifecycleState state) {
   if (state == state_)
     return;
+  mojom::LifecycleState previous_state = state_;
   state_ = state;
   for (auto& observer : observers_)
-    observer.OnLifecycleUnitStateChanged(this);
+    observer.OnLifecycleUnitStateChanged(this, previous_state);
 }
 
 void LifecycleUnitBase::OnLifecycleUnitVisibilityChanged(
