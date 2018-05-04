@@ -76,8 +76,7 @@ ProxyResolvingClientSocketFactory::CreateSocket(
   // might have since entered proxy credentials. Clear the http auth of
   // |network_session_| and copy over the data from |request_context|'s auth
   // cache.
-  network_session_->http_auth_cache()->ClearEntriesAddedWithin(
-      base::Time::Now() - base::Time());
+  network_session_->http_auth_cache()->ClearAllEntries();
   net::HttpAuthCache* other_auth_cache =
       request_context_->http_transaction_factory()
           ->GetSession()

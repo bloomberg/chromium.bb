@@ -379,55 +379,6 @@ TEST(HttpAuthCacheTest, Remove) {
   EXPECT_FALSE(NULL == entry);
 }
 
-TEST(HttpAuthCacheTest, ClearEntriesAddedWithin) {
-  GURL origin("http://foobar.com");
-
-  base::SimpleTestTickClock test_clock;
-  test_clock.SetNowTicks(base::TimeTicks::Now());
-
-  HttpAuthCache cache;
-  cache.set_tick_clock_for_testing(&test_clock);
-
-  cache.Add(origin, kRealm1, HttpAuth::AUTH_SCHEME_BASIC, "basic realm=Realm1",
-            AuthCredentials(kAlice, k123), "/");
-  cache.Add(origin, kRealm2, HttpAuth::AUTH_SCHEME_BASIC, "basic realm=Realm2",
-            AuthCredentials(kRoot, kWileCoyote), "/");
-
-  test_clock.Advance(base::TimeDelta::FromSeconds(10));
-  cache.Add(origin, kRealm3, HttpAuth::AUTH_SCHEME_BASIC, "basic realm=Realm3",
-            AuthCredentials(kAlice2, k1234), "/");
-  cache.Add(origin, kRealm4, HttpAuth::AUTH_SCHEME_BASIC, "basic realm=Realm4",
-            AuthCredentials(kUsername, kPassword), "/");
-  // Add path to existing entry.
-  cache.Add(origin, kRealm2, HttpAuth::AUTH_SCHEME_BASIC, "basic realm=Realm2",
-            AuthCredentials(kAdmin, kPassword), "/baz/");
-
-  test_clock.Advance(base::TimeDelta::FromSeconds(55));
-  cache.ClearEntriesAddedWithin(base::TimeDelta::FromMinutes(1));
-
-  // Realms 1 and 2 are 65 seconds old and should be not cleared.
-  EXPECT_NE(nullptr,
-            cache.Lookup(origin, kRealm1, HttpAuth::AUTH_SCHEME_BASIC));
-  EXPECT_NE(nullptr,
-            cache.Lookup(origin, kRealm2, HttpAuth::AUTH_SCHEME_BASIC));
-  // Creation time is set for a whole entry rather than for a particular path.
-  // Path added within the requested duration isn't be removed.
-  EXPECT_NE(nullptr, cache.LookupByPath(origin, "/baz/"));
-
-  // Realms 3 and 4 are 55 seconds old and should be cleared.
-  EXPECT_EQ(nullptr,
-            cache.Lookup(origin, kRealm3, HttpAuth::AUTH_SCHEME_BASIC));
-  EXPECT_EQ(nullptr,
-            cache.Lookup(origin, kRealm4, HttpAuth::AUTH_SCHEME_BASIC));
-
-  cache.ClearEntriesAddedWithin(base::TimeDelta::FromSeconds(70));
-  EXPECT_EQ(nullptr,
-            cache.Lookup(origin, kRealm1, HttpAuth::AUTH_SCHEME_BASIC));
-  EXPECT_EQ(nullptr,
-            cache.Lookup(origin, kRealm2, HttpAuth::AUTH_SCHEME_BASIC));
-  EXPECT_EQ(nullptr, cache.LookupByPath(origin, "/baz/"));
-}
-
 TEST(HttpAuthCacheTest, ClearEntriesAddedSince) {
   GURL origin("http://foobar.com");
 
