@@ -17,22 +17,16 @@ Polymer({
     disabled: Boolean,
   },
 
-  /** @private {boolean} */
-  isInitialized_: false,
-
   observers: [
     'onInputChanged_(currentValue_, inputValid_)',
-    'onInitialized_(settings.copies.value, settings.collate.value)'
+    'onSettingsChanged_(settings.copies.value, settings.collate.value)'
   ],
 
   /**
    * Updates the input string when the setting has been initialized.
    * @private
    */
-  onInitialized_: function() {
-    if (this.isInitialized_)
-      return;
-    this.isInitialized_ = true;
+  onSettingsChanged_: function() {
     const copies = this.getSetting('copies');
     this.currentValue_ = /** @type {string} */ (copies.value.toString());
     const collate = this.getSetting('collate');

@@ -24,6 +24,8 @@ cr.define('settings_sections_tests', function() {
     SetMargins: 'set margins',
     SetScaling: 'set scaling',
     SetOther: 'set other',
+    PresetCopies: 'preset copies',
+    PresetDuplex: 'preset duplex',
   };
 
   const suiteName = 'SettingsSectionsTests';
@@ -825,6 +827,43 @@ cr.define('settings_sections_tests', function() {
         testOptionCheckbox(
             optionsElement.$$('#rasterize'), false, page.settings.rasterize);
       }
+    });
+
+    test(assert(TestNames.PresetCopies), function() {
+      const copiesElement = page.$$('print-preview-copies-settings');
+      assertFalse(copiesElement.hidden);
+
+      // Default value is 1
+      const copiesInput =
+          copiesElement.$$('print-preview-number-settings-section')
+              .$$('.user-value');
+      expectEquals('1', copiesInput.value);
+      expectEquals(1, page.settings.copies.value);
+
+      // Send a preset value of 2
+      const copies = 2;
+      cr.webUIListenerCallback('print-preset-options', true, copies);
+      assertEquals(copies, page.settings.copies.value);
+      assertEquals(copies.toString(), copiesInput.value);
+    });
+
+    test(assert(TestNames.PresetDuplex), function() {
+      toggleMoreSettings();
+      const optionsElement = page.$$('print-preview-other-options-settings');
+      assertFalse(optionsElement.hidden);
+
+      // Default value is on, so turn it off
+      page.setSetting('duplex', print_preview_new.DuplexMode.SIMPLEX);
+      const checkbox = optionsElement.$$('#duplex');
+      assertFalse(checkbox.checked);
+      assertEquals(print_preview_new.DuplexMode.SIMPLEX,
+                   page.settings.duplex.value);
+
+      // Send a preset value of LONG_EDGE
+      const duplex = print_preview_new.DuplexMode.LONG_EDGE;
+      cr.webUIListenerCallback('print-preset-options', false, 1, duplex);
+      assertEquals(duplex, page.settings.duplex.value);
+      assertTrue(checkbox.checked);
     });
   });
 

@@ -156,6 +156,9 @@ Polymer({
     this.listenerTracker_ = new WebUIListenerTracker();
     this.listenerTracker_.add(
         'use-cloud-print', this.onCloudPrintEnable_.bind(this));
+    this.listenerTracker_.add('print-failed', this.onPrintFailed_.bind(this));
+    this.listenerTracker_.add(
+        'print-preset-options', this.onPrintPresetOptions_.bind(this));
     this.destinationStore_ = new print_preview.DestinationStore(
         this.userInfo_, this.listenerTracker_);
     this.invitationStore_ = new print_preview.InvitationStore(this.userInfo_);
@@ -494,6 +497,24 @@ Polymer({
     } else {
       console.error(`Google Cloud Print Error: HTTP status ${event.status}`);
     }
+  },
+
+  /**
+   * Updates printing options according to source document presets.
+   * @param {boolean} disableScaling Whether the document disables scaling.
+   * @param {number} copies The default number of copies from the document.
+   * @param {number} duplex The default duplex setting from the document.
+   * @private
+   */
+  onPrintPresetOptions_: function(disableScaling, copies, duplex) {
+    if (disableScaling)
+      this.documentInfo_.updateIsScalingDisabled(true);
+
+    if (copies > 0 && this.getSetting('copies').available)
+      this.setSetting('copies', copies);
+
+    if (duplex >= 0 && this.getSetting('duplex').available)
+      this.setSetting('duplex', duplex);
   },
 
   /**
