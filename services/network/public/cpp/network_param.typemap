@@ -12,7 +12,7 @@ public_headers = [
   "//net/ssl/ssl_cert_request_info.h",
   "//net/ssl/ssl_info.h",
 ]
-traits_headers = [ "//services/network/public/cpp/network_param_ipc_traits.h" ]
+traits_headers = [ "//services/network/public/cpp/network_ipc_param_traits.h" ]
 public_deps = [
   "//net",
 ]
