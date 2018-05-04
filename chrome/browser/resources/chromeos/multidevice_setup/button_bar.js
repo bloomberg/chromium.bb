@@ -30,12 +30,12 @@ Polymer({
   },
 
   /** @private */
-  onForwardButtonTapped_: function() {
+  onForwardButtonClicked_: function() {
     this.fire('forward-navigation-requested');
   },
 
   /** @private */
-  onBackwardButtonTapped_: function() {
+  onBackwardButtonClicked_: function() {
     this.fire('backward-navigation-requested');
   },
 });

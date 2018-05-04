@@ -156,6 +156,12 @@
   <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_MESSAGE" desc="Message for welcome page." translateable="false">
     PlAcEhOlDeR tExT!! This String includes a link with the text &lt;a id="terms-and-conditions-link" href="chrome://foo-bar"&gt;Terms and Conditions&lt;/a&gt; that opens a browser window to that info. Blah blah blah.
   </message>
+  <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_SINGLE_DEVICE_HEADER" desc="Label over potential host name if exactly one potential host is found." translateable="false">
+    Device detected (PlAcEhOlDeR tExT!!)
+  </message>
+  <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_MULTIPLE_DEVICE_HEADER" desc="Label over potential host dropdown menu if more than one potential host is found." translateable="false">
+    Select a device (PlAcEhOlDeR tExT!!)
+  </message>
 
   <!-- File Manager -->
   <message name="IDS_FILE_SYSTEM_PROVIDER_UNRESPONSIVE_WARNING" desc="A warning shown in a notification that an operation is taking longer than expected.">

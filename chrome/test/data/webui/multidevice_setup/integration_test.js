@@ -2,10 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @fileoverview Suite of tests for button navigation functionality in
- * MultiDevice setup WebUI.
- */
+/** @fileoverview Suite of integration tests for MultiDevice setup WebUI. */
 cr.define('multidevice_setup', () => {
   function registerIntegrationTests() {
     suite('MultiDeviceSetup', () => {
@@ -40,34 +37,37 @@ cr.define('multidevice_setup', () => {
             multiDeviceSetupElement.$$('button-bar /deep/ #backward');
       });
 
-      test('SetupFailedPage forward button goes to start page', done => {
-        multiDeviceSetupElement.addEventListener(
-            'visible-page_-changed', function() {
-              if (multiDeviceSetupElement.$$('iron-pages > .iron-selected')
-                      .is == START) {
-                done();
-              }
-            });
+      test('SetupFailedPage forward button goes to start page', () => {
         multiDeviceSetupElement.visiblePageName_ = FAILURE;
-        MockInteractions.tap(forwardButton);
+        forwardButton.click();
+        Polymer.dom.flush();
+        assertEquals(
+            multiDeviceSetupElement.$$('iron-pages > .iron-selected').is,
+            START);
       });
 
       test('SetupFailedPage backward button closes UI', done => {
         multiDeviceSetupElement.addEventListener('ui-closed', () => done());
         multiDeviceSetupElement.visiblePageName_ = FAILURE;
-        MockInteractions.tap(backwardButton);
+        backwardButton.click();
       });
 
       test('SetupSucceededPage forward button closes UI', done => {
         multiDeviceSetupElement.visiblePageName_ = SUCCESS;
         multiDeviceSetupElement.addEventListener('ui-closed', () => done());
-        MockInteractions.tap(forwardButton);
+        forwardButton.click();
       });
 
       test('StartSetupPage backward button closes UI', done => {
         multiDeviceSetupElement.visiblePageName_ = START;
         multiDeviceSetupElement.addEventListener('ui-closed', () => done());
-        MockInteractions.tap(backwardButton);
+        backwardButton.click();
+      });
+
+      test('StartSetupPage backward button closes UI', done => {
+        multiDeviceSetupElement.visiblePageName_ = START;
+        multiDeviceSetupElement.addEventListener('ui-closed', () => done());
+        backwardButton.click();
       });
     });
   }
