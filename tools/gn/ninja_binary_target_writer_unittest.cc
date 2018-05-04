@@ -1007,6 +1007,36 @@ TEST_F(NinjaBinaryTargetWriterTest, InputFiles) {
     EXPECT_EQ(expected, out.str());
   }
 
+  // This target has one input but no source files.
+  {
+    Target target(setup.settings(), Label(SourceDir("//foo/"), "bar"));
+    target.set_output_type(Target::SHARED_LIBRARY);
+    target.visibility().SetPublic();
+    target.config_values().inputs().push_back(SourceFile("//foo/input.data"));
+    target.SetToolchain(setup.toolchain());
+    ASSERT_TRUE(target.OnResolved(&err));
+
+    std::ostringstream out;
+    NinjaBinaryTargetWriter writer(&target, out);
+    writer.Run();
+
+    const char expected[] =
+        "defines =\n"
+        "include_dirs =\n"
+        "root_out_dir = .\n"
+        "target_out_dir = obj/foo\n"
+        "target_output_name = libbar\n"
+        "\n"
+        "\n"
+        "build ./libbar.so: solink | ../../foo/input.data\n"
+        "  ldflags =\n"
+        "  libs =\n"
+        "  output_extension = .so\n"
+        "  output_dir = \n";
+
+    EXPECT_EQ(expected, out.str());
+  }
+
   // This target has multiple inputs.
   {
     Target target(setup.settings(), Label(SourceDir("//foo/"), "bar"));
