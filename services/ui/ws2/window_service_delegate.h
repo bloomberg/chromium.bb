@@ -21,6 +21,7 @@ class Window;
 namespace ui {
 namespace ws2 {
 
+// A delegate used by the WindowService for context-specific operations.
 class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceDelegate {
  public:
   // A client requested a new top-level window. Implementations should create a
