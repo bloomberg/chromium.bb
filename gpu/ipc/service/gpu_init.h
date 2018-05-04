@@ -74,8 +74,6 @@ class GPU_IPC_SERVICE_EXPORT GpuInit {
   base::Optional<GPUInfo> gpu_info_for_hardware_gpu_;
   base::Optional<GpuFeatureInfo> gpu_feature_info_for_hardware_gpu_;
 
-  bool ShouldEnableSwiftShader(base::CommandLine* command_line,
-                               bool blacklist_needs_more_info);
   void AdjustInfoToSwiftShader();
   void AdjustInfoToNoGpu();
 

@@ -11,6 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "gpu/config/gpu_blacklist.h"
 #include "gpu/config/gpu_crash_keys.h"
 #include "gpu/config/gpu_driver_bug_list.h"
@@ -20,6 +21,7 @@
 #include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_switches.h"
 #include "ui/gl/extension_set.h"
+#include "ui/gl/gl_features.h"
 #include "ui/gl/gl_switches.h"
 
 #if defined(OS_ANDROID)
@@ -480,5 +482,28 @@ bool InitializeGLThreadSafe(base::CommandLine* command_line,
   return true;
 }
 #endif  // OS_ANDROID
+
+bool ShouldEnableSwiftShader(base::CommandLine* command_line,
+                             const GpuFeatureInfo& gpu_feature_info,
+                             bool disable_software_rasterizer,
+                             bool blacklist_needs_more_info) {
+#if BUILDFLAG(ENABLE_SWIFTSHADER)
+  if (disable_software_rasterizer)
+    return false;
+  // Don't overwrite user preference.
+  if (command_line->HasSwitch(switches::kUseGL))
+    return false;
+  if (!blacklist_needs_more_info &&
+      gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_WEBGL] !=
+          kGpuFeatureStatusEnabled) {
+    command_line->AppendSwitchASCII(
+        switches::kUseGL, gl::kGLImplementationSwiftShaderForWebGLName);
+    return true;
+  }
+  return false;
+#else
+  return false;
+#endif
+}
 
 }  // namespace gpu
