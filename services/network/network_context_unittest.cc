@@ -28,6 +28,8 @@
 #include "base/test/simple_test_clock.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/default_clock.h"
+#include "base/time/default_tick_clock.h"
 #include "build/build_config.h"
 #include "components/network_session_configurator/browser/network_session_configurator.h"
 #include "components/network_session_configurator/common/network_switches.h"
@@ -72,6 +74,13 @@
 #include "url/gurl.h"
 #include "url/scheme_host_port.h"
 #include "url/url_constants.h"
+
+#if BUILDFLAG(ENABLE_REPORTING)
+#include "net/reporting/reporting_cache.h"
+#include "net/reporting/reporting_report.h"
+#include "net/reporting/reporting_service.h"
+#include "net/reporting/reporting_test_util.h"
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
 namespace network {
 
@@ -1006,6 +1015,259 @@ TEST_F(NetworkContextTest, ClearEmptyHttpAuthCache) {
 
   EXPECT_EQ(0u, cache->GetEntriesSizeForTesting());
 }
+
+#if BUILDFLAG(ENABLE_REPORTING)
+TEST_F(NetworkContextTest, ClearReportingCacheReports) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  auto reporting_context = std::make_unique<net::TestReportingContext>(
+      base::DefaultClock::GetInstance(), base::DefaultTickClock::GetInstance(),
+      net::ReportingPolicy());
+  net::ReportingCache* reporting_cache = reporting_context->cache();
+  std::unique_ptr<net::ReportingService> reporting_service =
+      net::ReportingService::CreateForTesting(std::move(reporting_context));
+  network_context->url_request_context()->set_reporting_service(
+      reporting_service.get());
+
+  GURL domain("http://google.com");
+  reporting_service->QueueReport(domain, "group", "type", nullptr, 0);
+
+  std::vector<const net::ReportingReport*> reports;
+  reporting_cache->GetReports(&reports);
+  ASSERT_EQ(1u, reports.size());
+
+  base::RunLoop run_loop;
+  network_context->ClearReportingCacheReports(nullptr /* filter */,
+                                              run_loop.QuitClosure());
+  run_loop.Run();
+
+  reporting_cache->GetReports(&reports);
+  EXPECT_EQ(0u, reports.size());
+}
+
+TEST_F(NetworkContextTest, ClearReportingCacheReportsWithFilter) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  auto reporting_context = std::make_unique<net::TestReportingContext>(
+      base::DefaultClock::GetInstance(), base::DefaultTickClock::GetInstance(),
+      net::ReportingPolicy());
+  net::ReportingCache* reporting_cache = reporting_context->cache();
+  std::unique_ptr<net::ReportingService> reporting_service =
+      net::ReportingService::CreateForTesting(std::move(reporting_context));
+  network_context->url_request_context()->set_reporting_service(
+      reporting_service.get());
+
+  GURL domain1("http://google.com");
+  reporting_service->QueueReport(domain1, "group", "type", nullptr, 0);
+  GURL domain2("http://chromium.org");
+  reporting_service->QueueReport(domain2, "group", "type", nullptr, 0);
+
+  std::vector<const net::ReportingReport*> reports;
+  reporting_cache->GetReports(&reports);
+  ASSERT_EQ(2u, reports.size());
+
+  mojom::ClearDataFilterPtr filter = mojom::ClearDataFilter::New();
+  filter->type = mojom::ClearDataFilter_Type::KEEP_MATCHES;
+  filter->domains.push_back("chromium.org");
+
+  base::RunLoop run_loop;
+  network_context->ClearReportingCacheReports(std::move(filter),
+                                              run_loop.QuitClosure());
+  run_loop.Run();
+
+  reporting_cache->GetReports(&reports);
+  EXPECT_EQ(1u, reports.size());
+  EXPECT_EQ(domain2, reports.front()->url);
+}
+
+TEST_F(NetworkContextTest,
+       ClearReportingCacheReportsWithNonRegisterableFilter) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  auto reporting_context = std::make_unique<net::TestReportingContext>(
+      base::DefaultClock::GetInstance(), base::DefaultTickClock::GetInstance(),
+      net::ReportingPolicy());
+  net::ReportingCache* reporting_cache = reporting_context->cache();
+  std::unique_ptr<net::ReportingService> reporting_service =
+      net::ReportingService::CreateForTesting(std::move(reporting_context));
+  network_context->url_request_context()->set_reporting_service(
+      reporting_service.get());
+
+  GURL domain1("http://192.168.0.1");
+  reporting_service->QueueReport(domain1, "group", "type", nullptr, 0);
+  GURL domain2("http://192.168.0.2");
+  reporting_service->QueueReport(domain2, "group", "type", nullptr, 0);
+
+  std::vector<const net::ReportingReport*> reports;
+  reporting_cache->GetReports(&reports);
+  ASSERT_EQ(2u, reports.size());
+
+  mojom::ClearDataFilterPtr filter = mojom::ClearDataFilter::New();
+  filter->type = mojom::ClearDataFilter_Type::KEEP_MATCHES;
+  filter->domains.push_back("192.168.0.2");
+
+  base::RunLoop run_loop;
+  network_context->ClearReportingCacheReports(std::move(filter),
+                                              run_loop.QuitClosure());
+  run_loop.Run();
+
+  reporting_cache->GetReports(&reports);
+  EXPECT_EQ(1u, reports.size());
+  EXPECT_EQ(domain2, reports.front()->url);
+}
+
+TEST_F(NetworkContextTest, ClearEmptyReportingCacheReports) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  auto reporting_context = std::make_unique<net::TestReportingContext>(
+      base::DefaultClock::GetInstance(), base::DefaultTickClock::GetInstance(),
+      net::ReportingPolicy());
+  net::ReportingCache* reporting_cache = reporting_context->cache();
+  std::unique_ptr<net::ReportingService> reporting_service =
+      net::ReportingService::CreateForTesting(std::move(reporting_context));
+  network_context->url_request_context()->set_reporting_service(
+      reporting_service.get());
+
+  std::vector<const net::ReportingReport*> reports;
+  reporting_cache->GetReports(&reports);
+  ASSERT_TRUE(reports.empty());
+
+  base::RunLoop run_loop;
+  network_context->ClearReportingCacheReports(nullptr /* filter */,
+                                              run_loop.QuitClosure());
+  run_loop.Run();
+
+  reporting_cache->GetReports(&reports);
+  EXPECT_TRUE(reports.empty());
+}
+
+TEST_F(NetworkContextTest, ClearReportingCacheReportsWithNoService) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  ASSERT_EQ(nullptr,
+            network_context->url_request_context()->reporting_service());
+
+  base::RunLoop run_loop;
+  network_context->ClearReportingCacheReports(nullptr /* filter */,
+                                              run_loop.QuitClosure());
+  run_loop.Run();
+}
+
+TEST_F(NetworkContextTest, ClearReportingCacheClients) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  auto reporting_context = std::make_unique<net::TestReportingContext>(
+      base::DefaultClock::GetInstance(), base::DefaultTickClock::GetInstance(),
+      net::ReportingPolicy());
+  net::ReportingCache* reporting_cache = reporting_context->cache();
+  std::unique_ptr<net::ReportingService> reporting_service =
+      net::ReportingService::CreateForTesting(std::move(reporting_context));
+  network_context->url_request_context()->set_reporting_service(
+      reporting_service.get());
+
+  GURL domain("https://google.com");
+  reporting_cache->SetClient(url::Origin::Create(domain), domain,
+                             net::ReportingClient::Subdomains::EXCLUDE, "group",
+                             base::TimeTicks::Max(), 0, 1);
+
+  std::vector<const net::ReportingClient*> clients;
+  reporting_cache->GetClients(&clients);
+  ASSERT_EQ(1u, clients.size());
+
+  base::RunLoop run_loop;
+  network_context->ClearReportingCacheClients(nullptr /* filter */,
+                                              run_loop.QuitClosure());
+  run_loop.Run();
+
+  reporting_cache->GetClients(&clients);
+  EXPECT_EQ(0u, clients.size());
+}
+
+TEST_F(NetworkContextTest, ClearReportingCacheClientsWithFilter) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  auto reporting_context = std::make_unique<net::TestReportingContext>(
+      base::DefaultClock::GetInstance(), base::DefaultTickClock::GetInstance(),
+      net::ReportingPolicy());
+  net::ReportingCache* reporting_cache = reporting_context->cache();
+  std::unique_ptr<net::ReportingService> reporting_service =
+      net::ReportingService::CreateForTesting(std::move(reporting_context));
+  network_context->url_request_context()->set_reporting_service(
+      reporting_service.get());
+
+  GURL domain1("https://google.com");
+  reporting_cache->SetClient(url::Origin::Create(domain1), domain1,
+                             net::ReportingClient::Subdomains::EXCLUDE, "group",
+                             base::TimeTicks::Max(), 0, 1);
+  GURL domain2("https://chromium.org");
+  reporting_cache->SetClient(url::Origin::Create(domain2), domain2,
+                             net::ReportingClient::Subdomains::EXCLUDE, "group",
+                             base::TimeTicks::Max(), 0, 1);
+
+  std::vector<const net::ReportingClient*> clients;
+  reporting_cache->GetClients(&clients);
+  ASSERT_EQ(2u, clients.size());
+
+  mojom::ClearDataFilterPtr filter = mojom::ClearDataFilter::New();
+  filter->type = mojom::ClearDataFilter_Type::KEEP_MATCHES;
+  filter->domains.push_back("chromium.org");
+
+  base::RunLoop run_loop;
+  network_context->ClearReportingCacheClients(std::move(filter),
+                                              run_loop.QuitClosure());
+  run_loop.Run();
+
+  reporting_cache->GetClients(&clients);
+  EXPECT_EQ(1u, clients.size());
+  EXPECT_EQ(domain2, clients.front()->endpoint);
+}
+
+TEST_F(NetworkContextTest, ClearEmptyReportingCacheClients) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  auto reporting_context = std::make_unique<net::TestReportingContext>(
+      base::DefaultClock::GetInstance(), base::DefaultTickClock::GetInstance(),
+      net::ReportingPolicy());
+  net::ReportingCache* reporting_cache = reporting_context->cache();
+  std::unique_ptr<net::ReportingService> reporting_service =
+      net::ReportingService::CreateForTesting(std::move(reporting_context));
+  network_context->url_request_context()->set_reporting_service(
+      reporting_service.get());
+
+  std::vector<const net::ReportingClient*> clients;
+  reporting_cache->GetClients(&clients);
+  ASSERT_TRUE(clients.empty());
+
+  base::RunLoop run_loop;
+  network_context->ClearReportingCacheClients(nullptr /* filter */,
+                                              run_loop.QuitClosure());
+  run_loop.Run();
+
+  reporting_cache->GetClients(&clients);
+  EXPECT_TRUE(clients.empty());
+}
+
+TEST_F(NetworkContextTest, ClearReportingCacheClientsWithNoService) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  ASSERT_EQ(nullptr,
+            network_context->url_request_context()->reporting_service());
+
+  base::RunLoop run_loop;
+  network_context->ClearReportingCacheClients(nullptr /* filter */,
+                                              run_loop.QuitClosure());
+  run_loop.Run();
+}
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
 void SetCookieCallback(base::RunLoop* run_loop, bool* result_out, bool result) {
   *result_out = result;

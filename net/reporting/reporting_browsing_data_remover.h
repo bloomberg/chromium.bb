@@ -24,8 +24,8 @@ class NET_EXPORT ReportingBrowsingDataRemover {
 
   // Removes browsing data from the Reporting system. |data_type_mask| specifies
   // which types of data to remove: reports queued by browser features and/or
-  // clients (endpoints configured by origins). |origin_filter|, if not null,
-  // specifies which origins' data to remove.
+  // clients (endpoints configured by origins). |origin_filter| specifies which
+  // origins' data to remove.
   //
   // Note: Currently this does not clear the endpoint backoff data in
   // ReportingEndpointManager because that's not persisted to disk. If it's ever
@@ -34,6 +34,11 @@ class NET_EXPORT ReportingBrowsingDataRemover {
       ReportingCache* cache,
       int data_type_mask,
       const base::RepeatingCallback<bool(const GURL&)>& origin_filter);
+
+  // Like RemoveBrowsingData except removes data for all origins without a
+  // filter. Allows slight optimization over passing an always-true filter to
+  // RemoveBrowsingData.
+  static void RemoveAllBrowsingData(ReportingCache* cache, int data_type_mask);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ReportingBrowsingDataRemover);

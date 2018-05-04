@@ -29,14 +29,15 @@ class ReportingBrowsingDataRemoverTest : public ReportingTestBase {
     if (remove_clients)
       data_type_mask |= ReportingBrowsingDataRemover::DATA_TYPE_CLIENTS;
 
-    base::RepeatingCallback<bool(const GURL&)> origin_filter;
     if (!host.empty()) {
-      origin_filter =
+      base::RepeatingCallback<bool(const GURL&)> origin_filter =
           base::BindRepeating(&ReportingBrowsingDataRemoverTest::HostIs, host);
+      ReportingBrowsingDataRemover::RemoveBrowsingData(cache(), data_type_mask,
+                                                       origin_filter);
+    } else {
+      ReportingBrowsingDataRemover::RemoveAllBrowsingData(cache(),
+                                                          data_type_mask);
     }
-
-    ReportingBrowsingDataRemover::RemoveBrowsingData(cache(), data_type_mask,
-                                                     origin_filter);
   }
 
   void AddReport(const GURL& url) {

@@ -39,7 +39,6 @@
 #include "net/http/http_server_properties_manager.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/proxy_resolution/proxy_config.h"
-#include "net/reporting/reporting_policy.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/default_channel_id_store.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -65,6 +64,13 @@
 #if !defined(OS_IOS)
 #include "services/network/websocket_factory.h"
 #endif  // !defined(OS_IOS)
+
+#if BUILDFLAG(ENABLE_REPORTING)
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "net/reporting/reporting_browsing_data_remover.h"
+#include "net/reporting/reporting_policy.h"
+#include "net/reporting/reporting_service.h"
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
 namespace network {
 
@@ -112,6 +118,49 @@ bool MatchesClearChannelIdFilter(mojom::ClearDataFilter_Type filter_type,
   return (filter_type == mojom::ClearDataFilter_Type::DELETE_MATCHES) ==
          found_domain;
 }
+
+// Generic functions but currently only used for reporting.
+#if BUILDFLAG(ENABLE_REPORTING)
+// Predicate function to determine if the given |url| matches the |filter_type|,
+// |filter_domains| and |filter_origins| from a |mojom::ClearDataFilter|.
+bool MatchesUrlFilter(mojom::ClearDataFilter_Type filter_type,
+                      std::set<std::string> filter_domains,
+                      std::set<url::Origin> filter_origins,
+                      const GURL& url) {
+  std::string url_registerable_domain =
+      net::registry_controlled_domains::GetDomainAndRegistry(
+          url, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+  bool found_domain =
+      (filter_domains.find(url_registerable_domain != ""
+                               ? url_registerable_domain
+                               : url.host()) != filter_domains.end());
+
+  bool found_origin =
+      (filter_origins.find(url::Origin::Create(url)) != filter_origins.end());
+
+  return (filter_type == mojom::ClearDataFilter_Type::DELETE_MATCHES) ==
+         (found_domain || found_origin);
+}
+
+// Builds a generic GURL-matching predicate function based on |filter|. If
+// |filter| is null, creates an always-true predicate.
+base::RepeatingCallback<bool(const GURL&)> BuildUrlFilter(
+    mojom::ClearDataFilterPtr filter) {
+  if (!filter) {
+    return base::BindRepeating([](const GURL&) { return true; });
+  }
+
+  std::set<std::string> filter_domains;
+  filter_domains.insert(filter->domains.begin(), filter->domains.end());
+
+  std::set<url::Origin> filter_origins;
+  filter_origins.insert(filter->origins.begin(), filter->origins.end());
+
+  return base::BindRepeating(&MatchesUrlFilter, filter->type,
+                             std::move(filter_domains),
+                             std::move(filter_origins));
+}
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
 void OnClearedChannelIds(net::SSLConfigService* ssl_config_service,
                          base::OnceClosure callback) {
@@ -594,6 +643,58 @@ void NetworkContext::ClearHttpAuthCache(base::Time start_time,
 
   std::move(callback).Run();
 }
+
+#if BUILDFLAG(ENABLE_REPORTING)
+void NetworkContext::ClearReportingCacheReports(
+    mojom::ClearDataFilterPtr filter,
+    ClearReportingCacheReportsCallback callback) {
+  net::ReportingService* reporting_service =
+      url_request_context_->reporting_service();
+  if (reporting_service) {
+    if (filter) {
+      reporting_service->RemoveBrowsingData(
+          net::ReportingBrowsingDataRemover::DATA_TYPE_REPORTS,
+          BuildUrlFilter(std::move(filter)));
+    } else {
+      reporting_service->RemoveAllBrowsingData(
+          net::ReportingBrowsingDataRemover::DATA_TYPE_REPORTS);
+    }
+  }
+
+  std::move(callback).Run();
+}
+
+void NetworkContext::ClearReportingCacheClients(
+    mojom::ClearDataFilterPtr filter,
+    ClearReportingCacheClientsCallback callback) {
+  net::ReportingService* reporting_service =
+      url_request_context_->reporting_service();
+  if (reporting_service) {
+    if (filter) {
+      reporting_service->RemoveBrowsingData(
+          net::ReportingBrowsingDataRemover::DATA_TYPE_CLIENTS,
+          BuildUrlFilter(std::move(filter)));
+    } else {
+      reporting_service->RemoveAllBrowsingData(
+          net::ReportingBrowsingDataRemover::DATA_TYPE_CLIENTS);
+    }
+  }
+
+  std::move(callback).Run();
+}
+#else   // BUILDFLAG(ENABLE_REPORTING)
+void NetworkContext::ClearReportingCacheReports(
+    mojom::ClearDataFilterPtr filter,
+    ClearReportingCacheReportsCallback callback) {
+  NOTREACHED();
+}
+
+void NetworkContext::ClearReportingCacheClients(
+    mojom::ClearDataFilterPtr filter,
+    ClearReportingCacheClientsCallback callback) {
+  NOTREACHED();
+}
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
 void NetworkContext::SetNetworkConditions(
     const std::string& profile_id,

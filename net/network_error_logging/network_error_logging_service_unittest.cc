@@ -88,6 +88,8 @@ class TestReportingService : public ReportingService {
     NOTREACHED();
   }
 
+  void RemoveAllBrowsingData(int data_type_mask) override { NOTREACHED(); }
+
   int GetUploadDepth(const URLRequest& request) override {
     NOTREACHED();
     return 0;

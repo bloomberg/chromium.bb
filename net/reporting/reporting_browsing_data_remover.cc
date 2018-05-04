@@ -18,20 +18,7 @@ void ReportingBrowsingDataRemover::RemoveBrowsingData(
     ReportingCache* cache,
     int data_type_mask,
     const base::RepeatingCallback<bool(const GURL&)>& origin_filter) {
-  bool remove_reports = (data_type_mask & DATA_TYPE_REPORTS) != 0;
-  bool remove_clients = (data_type_mask & DATA_TYPE_CLIENTS) != 0;
-
-  if (origin_filter.is_null()) {
-    if (remove_reports) {
-      cache->RemoveAllReports(
-          ReportingReport::Outcome::ERASED_BROWSING_DATA_REMOVED);
-    }
-    if (remove_clients)
-      cache->RemoveAllClients();
-    return;
-  }
-
-  if (remove_reports) {
+  if ((data_type_mask & DATA_TYPE_REPORTS) != 0) {
     std::vector<const ReportingReport*> all_reports;
     cache->GetReports(&all_reports);
 
@@ -46,7 +33,7 @@ void ReportingBrowsingDataRemover::RemoveBrowsingData(
         ReportingReport::Outcome::ERASED_BROWSING_DATA_REMOVED);
   }
 
-  if (remove_clients) {
+  if ((data_type_mask & DATA_TYPE_CLIENTS) != 0) {
     std::vector<const ReportingClient*> all_clients;
     cache->GetClients(&all_clients);
 
@@ -58,6 +45,18 @@ void ReportingBrowsingDataRemover::RemoveBrowsingData(
     }
 
     cache->RemoveClients(clients_to_remove);
+  }
+}
+
+// static
+void ReportingBrowsingDataRemover::RemoveAllBrowsingData(ReportingCache* cache,
+                                                         int data_type_mask) {
+  if ((data_type_mask & DATA_TYPE_REPORTS) != 0) {
+    cache->RemoveAllReports(
+        ReportingReport::Outcome::ERASED_BROWSING_DATA_REMOVED);
+  }
+  if ((data_type_mask & DATA_TYPE_CLIENTS) != 0) {
+    cache->RemoveAllClients();
   }
 }
 

@@ -65,6 +65,11 @@ class ReportingServiceImpl : public ReportingService {
         context_->cache(), data_type_mask, origin_filter);
   }
 
+  void RemoveAllBrowsingData(int data_type_mask) override {
+    ReportingBrowsingDataRemover::RemoveAllBrowsingData(context_->cache(),
+                                                        data_type_mask);
+  }
+
   int GetUploadDepth(const URLRequest& request) override {
     return context_->uploader()->GetUploadDepth(request);
   }

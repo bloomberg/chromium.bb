@@ -1003,6 +1003,11 @@ class MockReportingService : public net::ReportingService {
     last_origin_filter_ = origin_filter;
   }
 
+  void RemoveAllBrowsingData(int data_type_mask) override {
+    RemoveBrowsingData(data_type_mask,
+                       base::RepeatingCallback<bool(const GURL&)>());
+  }
+
   int GetUploadDepth(const net::URLRequest& request) override {
     NOTREACHED();
     return 0;
