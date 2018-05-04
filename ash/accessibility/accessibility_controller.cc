@@ -25,7 +25,6 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/power/backlights_forced_off_setter.h"
 #include "ash/system/power/scoped_backlights_forced_off.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/strings/string16.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -174,21 +173,19 @@ void ShowAccessibilityNotification(A11yNotificationType type) {
 
   base::string16 text;
   base::string16 title;
-  if (type == A11yNotificationType::kBrailleDisplayConnected) {
+  if (type == A11yNotificationType::kSpokenFeedbackBrailleEnabled) {
+    text =
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SPOKEN_FEEDBACK_ENABLED);
+    title = l10n_util::GetStringUTF16(
+        IDS_ASH_STATUS_TRAY_SPOKEN_FEEDBACK_BRAILLE_ENABLED_TITLE);
+  } else if (type == A11yNotificationType::kBrailleDisplayConnected) {
     text = l10n_util::GetStringUTF16(
         IDS_ASH_STATUS_TRAY_BRAILLE_DISPLAY_CONNECTED);
   } else {
-    bool is_tablet = Shell::Get()
-                         ->tablet_mode_controller()
-                         ->IsTabletModeWindowManagerEnabled();
-
     title = l10n_util::GetStringUTF16(
-        type == A11yNotificationType::kSpokenFeedbackBrailleEnabled
-            ? IDS_ASH_STATUS_TRAY_SPOKEN_FEEDBACK_BRAILLE_ENABLED_TITLE
-            : IDS_ASH_STATUS_TRAY_SPOKEN_FEEDBACK_ENABLED_TITLE);
-    text = l10n_util::GetStringUTF16(
-        is_tablet ? IDS_ASH_STATUS_TRAY_SPOKEN_FEEDBACK_ENABLED_TABLET
-                  : IDS_ASH_STATUS_TRAY_SPOKEN_FEEDBACK_ENABLED);
+        IDS_ASH_STATUS_TRAY_SPOKEN_FEEDBACK_ENABLED_TITLE);
+    text =
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SPOKEN_FEEDBACK_ENABLED);
   }
   message_center::RichNotificationData options;
   options.should_make_spoken_feedback_for_popup_updates = false;
