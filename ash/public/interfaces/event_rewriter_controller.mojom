@@ -4,14 +4,6 @@
 
 module ash.mojom;
 
-import "ui/events/mojo/event.mojom";
-
-// Allows a client to implement spoken feedback features; used for ChromeVox.
-interface SpokenFeedbackEventRewriterDelegate {
-  // Used to send key events to the ChromeVox extension.
-  DispatchKeyEventToChromeVox(ui.mojom.Event event);
-};
-
 // Allows clients to toggle some event rewriting behavior.
 interface EventRewriterController {
   // Enables the KeyboardDrivenEventRewriter, which is disabled by default.
@@ -21,12 +13,4 @@ interface EventRewriterController {
   // If true, Shift + Arrow keys are rewritten to Tab/Shift-Tab keys.
   // This only applies when the KeyboardDrivenEventRewriter is active.
   SetArrowToTabRewritingEnabled(bool enabled);
-
-  // Set the delegate used by the spoken feedback event rewriter.
-  SetSpokenFeedbackEventRewriterDelegate(
-      SpokenFeedbackEventRewriterDelegate delegate);
-
-  // Continue dispatch of key events that were unhandled by ChromeVox.
-  // TODO: Remove this; ChromeVox should not be able to repost unhandled events.
-  OnUnhandledSpokenFeedbackEvent(ui.mojom.Event event);
 };
