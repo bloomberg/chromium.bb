@@ -41,20 +41,14 @@ class VIZ_SERVICE_EXPORT OutputDeviceBacking {
 
   std::vector<SoftwareOutputDeviceWin*> devices_;
   std::unique_ptr<base::SharedMemory> backing_;
-  size_t created_byte_size_;
+  size_t created_byte_size_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(OutputDeviceBacking);
 };
 
 class VIZ_SERVICE_EXPORT SoftwareOutputDeviceWin : public SoftwareOutputDevice {
  public:
-  // TODO(crbug.com/826633): Investigating if the layered window drawing
-  // path is necessary then remove |force_disable_hwnd_composited|. This is only
-  // used with --enable-features=VizDisplayCompositor where
-  // UpdateLayeredWindow() call is blocked by GPU sandbox.
-  SoftwareOutputDeviceWin(OutputDeviceBacking* backing,
-                          gfx::AcceleratedWidget widget,
-                          bool force_disable_hwnd_composited = false);
+  SoftwareOutputDeviceWin(OutputDeviceBacking* backing, HWND hwnd);
   ~SoftwareOutputDeviceWin() override;
 
   void Resize(const gfx::Size& viewport_pixel_size,
@@ -66,11 +60,12 @@ class VIZ_SERVICE_EXPORT SoftwareOutputDeviceWin : public SoftwareOutputDevice {
   void ReleaseContents();
 
  private:
-  HWND hwnd_;
+  const HWND hwnd_;
+  const bool use_layered_window_;
+  OutputDeviceBacking* const backing_;
+
   std::unique_ptr<SkCanvas> contents_;
-  bool is_hwnd_composited_;
-  OutputDeviceBacking* backing_;
-  bool in_paint_;
+  bool in_paint_ = false;
   THREAD_CHECKER(thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(SoftwareOutputDeviceWin);
