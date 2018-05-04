@@ -428,15 +428,11 @@ class PortTest(unittest.TestCase):
                         ['/dom/ranges/Range-attributes.html', {}]
                     ],
                     'dom/ranges/Range-attributes-slow.html': [
-                        ['/dom/ranges/Range-attributes-slow.html', {'timeout': 'long'}]
+                        ['/dom/ranges/Range-attributes.html', {'timeout': 'long'}]
                     ],
                     'console/console-is-a-namespace.any.js': [
                         ['/console/console-is-a-namespace.any.html', {}],
-                        ['/console/console-is-a-namespace.any.worker.html', {'timeout': 'long'}],
-                    ],
-                    'html/parse.html': [
-                        ['/html/parse.html?run_type=uri', {}],
-                        ['/html/parse.html?run_type=write', {'timeout': 'long'}],
+                        ['/console/console-is-a-namespace.any.worker.html', {}],
                     ],
                 },
                 'manual': {},
@@ -463,34 +459,37 @@ class PortTest(unittest.TestCase):
         port = self.make_port(with_tests=True)
         PortTest._add_manifest_to_mock_file_system(port.host.filesystem)
         self.assertNotIn('external/wpt/common/blank.html', port.tests([]))
-        self.assertNotIn('external/wpt/console/console-is-a-namespace.any.js', port.tests([]))
 
     def test_find_one_if_in_manifest(self):
         port = self.make_port(with_tests=True)
         PortTest._add_manifest_to_mock_file_system(port.host.filesystem)
         self.assertIn('external/wpt/dom/ranges/Range-attributes.html', port.tests([]))
-        self.assertIn('external/wpt/console/console-is-a-namespace.any.html', port.tests([]))
+        self.assertNotIn('external/wpt/console/console-is-a-namespace.any.js', port.tests([]))
 
-    def test_wpt_tests_paths(self):
-        port = self.make_port(with_tests=True)
-        PortTest._add_manifest_to_mock_file_system(port.host.filesystem)
-        all_wpt = [
-            'external/wpt/console/console-is-a-namespace.any.html',
-            'external/wpt/console/console-is-a-namespace.any.worker.html',
-            'external/wpt/dom/ranges/Range-attributes-slow.html',
-            'external/wpt/dom/ranges/Range-attributes.html',
-            'external/wpt/html/dom/elements/global-attributes/dir_auto-EN-L.html',
-            'external/wpt/html/parse.html?run_type=uri',
-            'external/wpt/html/parse.html?run_type=write',
-        ]
         # test.any.js shows up on the filesystem as one file but it effectively becomes two test files:
         # test.any.html and test.any.worker.html. We should support running test.any.js by name and
         # indirectly by specifying a parent directory.
-        self.assertEqual(sorted(port.tests(['external'])), all_wpt)
-        self.assertEqual(sorted(port.tests(['external/'])), all_wpt)
+        self.assertEqual(port.tests(['external']),
+                         ['external/wpt/html/dom/elements/global-attributes/dir_auto-EN-L.html',
+                          'external/wpt/dom/ranges/Range-attributes.html',
+                          'external/wpt/console/console-is-a-namespace.any.worker.html',
+                          'external/wpt/console/console-is-a-namespace.any.html'])
+        self.assertEqual(port.tests(['external/']),
+                         ['external/wpt/html/dom/elements/global-attributes/dir_auto-EN-L.html',
+                          'external/wpt/dom/ranges/Range-attributes.html',
+                          'external/wpt/console/console-is-a-namespace.any.worker.html',
+                          'external/wpt/console/console-is-a-namespace.any.html'])
         self.assertEqual(port.tests(['external/csswg-test']), [])
-        self.assertEqual(sorted(port.tests(['external/wpt'])), all_wpt)
-        self.assertEqual(sorted(port.tests(['external/wpt/'])), all_wpt)
+        self.assertEqual(port.tests(['external/wpt']),
+                         ['external/wpt/html/dom/elements/global-attributes/dir_auto-EN-L.html',
+                          'external/wpt/dom/ranges/Range-attributes.html',
+                          'external/wpt/console/console-is-a-namespace.any.worker.html',
+                          'external/wpt/console/console-is-a-namespace.any.html'])
+        self.assertEqual(port.tests(['external/wpt/']),
+                         ['external/wpt/html/dom/elements/global-attributes/dir_auto-EN-L.html',
+                          'external/wpt/dom/ranges/Range-attributes.html',
+                          'external/wpt/console/console-is-a-namespace.any.worker.html',
+                          'external/wpt/console/console-is-a-namespace.any.html'])
         self.assertEqual(port.tests(['external/wpt/console']),
                          ['external/wpt/console/console-is-a-namespace.any.worker.html',
                           'external/wpt/console/console-is-a-namespace.any.html'])
@@ -503,11 +502,9 @@ class PortTest(unittest.TestCase):
         self.assertEqual(port.tests(['external/wpt/console/console-is-a-namespace.any.html']),
                          ['external/wpt/console/console-is-a-namespace.any.html'])
         self.assertEqual(port.tests(['external/wpt/dom']),
-                         ['external/wpt/dom/ranges/Range-attributes-slow.html',
-                          'external/wpt/dom/ranges/Range-attributes.html'])
+                         ['external/wpt/dom/ranges/Range-attributes.html'])
         self.assertEqual(port.tests(['external/wpt/dom/']),
-                         ['external/wpt/dom/ranges/Range-attributes-slow.html',
-                          'external/wpt/dom/ranges/Range-attributes.html'])
+                         ['external/wpt/dom/ranges/Range-attributes.html'])
         self.assertEqual(port.tests(['external/wpt/dom/ranges/Range-attributes.html']),
                          ['external/wpt/dom/ranges/Range-attributes.html'])
 
@@ -516,28 +513,23 @@ class PortTest(unittest.TestCase):
         PortTest._add_manifest_to_mock_file_system(port.host.filesystem)
         all_wpt = [
             'virtual/virtual_wpt/external/wpt/console/console-is-a-namespace.any.html',
-            'virtual/virtual_wpt/external/wpt/console/console-is-a-namespace.any.worker.html',
-            'virtual/virtual_wpt/external/wpt/dom/ranges/Range-attributes-slow.html',
-            'virtual/virtual_wpt/external/wpt/dom/ranges/Range-attributes.html',
             'virtual/virtual_wpt/external/wpt/html/dom/elements/global-attributes/dir_auto-EN-L.html',
-            'virtual/virtual_wpt/external/wpt/html/parse.html?run_type=uri',
-            'virtual/virtual_wpt/external/wpt/html/parse.html?run_type=write',
+            'virtual/virtual_wpt/external/wpt/console/console-is-a-namespace.any.worker.html',
+            'virtual/virtual_wpt/external/wpt/dom/ranges/Range-attributes.html',
         ]
         dom_wpt = [
-            'virtual/virtual_wpt_dom/external/wpt/dom/ranges/Range-attributes-slow.html',
             'virtual/virtual_wpt_dom/external/wpt/dom/ranges/Range-attributes.html',
         ]
 
-        self.assertEqual(sorted(port.tests(['virtual/virtual_wpt/external/'])), all_wpt)
-        self.assertEqual(sorted(port.tests(['virtual/virtual_wpt/external/wpt/'])), all_wpt)
+        self.assertEqual(port.tests(['virtual/virtual_wpt/external/']), all_wpt)
+        self.assertEqual(port.tests(['virtual/virtual_wpt/external/wpt/']), all_wpt)
         self.assertEqual(port.tests(['virtual/virtual_wpt/external/wpt/console']),
-                         ['virtual/virtual_wpt/external/wpt/console/console-is-a-namespace.any.worker.html',
-                          'virtual/virtual_wpt/external/wpt/console/console-is-a-namespace.any.html'])
+                         ['virtual/virtual_wpt/external/wpt/console/console-is-a-namespace.any.html',
+                          'virtual/virtual_wpt/external/wpt/console/console-is-a-namespace.any.worker.html'])
 
         self.assertEqual(port.tests(['virtual/virtual_wpt_dom/external/wpt/dom/']), dom_wpt)
         self.assertEqual(port.tests(['virtual/virtual_wpt_dom/external/wpt/dom/ranges/']), dom_wpt)
-        self.assertEqual(port.tests(['virtual/virtual_wpt_dom/external/wpt/dom/ranges/Range-attributes.html']),
-                         ['virtual/virtual_wpt_dom/external/wpt/dom/ranges/Range-attributes.html'])
+        self.assertEqual(port.tests(['virtual/virtual_wpt_dom/external/wpt/dom/ranges/Range-attributes.html']), dom_wpt)
 
     def test_is_test_file(self):
         port = self.make_port(with_tests=True)
@@ -617,36 +609,15 @@ class PortTest(unittest.TestCase):
 
     def test_is_slow_wpt_test(self):
         port = self.make_port(with_tests=True)
-        PortTest._add_manifest_to_mock_file_system(port.host.filesystem)
+        filesystem = port.host.filesystem
+        PortTest._add_manifest_to_mock_file_system(filesystem)
 
         self.assertFalse(port.is_slow_wpt_test('external/wpt/dom/ranges/Range-attributes.html'))
+        self.assertFalse(port.is_slow_wpt_test('dom/ranges/Range-attributes.html'))
         self.assertTrue(port.is_slow_wpt_test('external/wpt/dom/ranges/Range-attributes-slow.html'))
         self.assertTrue(port.is_slow_wpt_test('external/wpt/html/dom/elements/global-attributes/dir_auto-EN-L.html'))
-
-    def test_is_slow_wpt_test_with_variations(self):
-        port = self.make_port(with_tests=True)
-        PortTest._add_manifest_to_mock_file_system(port.host.filesystem)
-
-        self.assertFalse(port.is_slow_wpt_test('external/wpt/console/console-is-a-namespace.any.html'))
-        self.assertTrue(port.is_slow_wpt_test('external/wpt/console/console-is-a-namespace.any.worker.html'))
-        self.assertFalse(port.is_slow_wpt_test('external/wpt/html/parse.html?run_type=uri'))
-        self.assertTrue(port.is_slow_wpt_test('external/wpt/html/parse.html?run_type=write'))
-
-    def test_is_slow_wpt_test_takes_virtual_tests(self):
-        port = self.make_port(with_tests=True)
-        PortTest._add_manifest_to_mock_file_system(port.host.filesystem)
-
         self.assertFalse(port.is_slow_wpt_test('virtual/virtual_wpt/external/wpt/dom/ranges/Range-attributes.html'))
         self.assertTrue(port.is_slow_wpt_test('virtual/virtual_wpt/external/wpt/dom/ranges/Range-attributes-slow.html'))
-
-    def test_is_slow_wpt_test_returns_false_for_illegal_paths(self):
-        port = self.make_port(with_tests=True)
-        PortTest._add_manifest_to_mock_file_system(port.host.filesystem)
-
-        self.assertFalse(port.is_slow_wpt_test('dom/ranges/Range-attributes.html'))
-        self.assertFalse(port.is_slow_wpt_test('dom/ranges/Range-attributes-slow.html'))
-        self.assertFalse(port.is_slow_wpt_test('/dom/ranges/Range-attributes.html'))
-        self.assertFalse(port.is_slow_wpt_test('/dom/ranges/Range-attributes-slow.html'))
 
     def test_parse_reftest_list(self):
         port = self.make_port(with_tests=True)
