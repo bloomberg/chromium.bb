@@ -723,7 +723,7 @@
               "device_os": "O",
               "device_type": "walleye",
               "os": "Android",
-              "pool": "chrome.test.perf-fyi"
+              "pool": "chrome.tests.perf-fyi"
             }
           ],
           "expiration": 36000,
@@ -771,7 +771,7 @@
               "device_os": "O",
               "device_type": "walleye",
               "os": "Android",
-              "pool": "chrome.test.perf-webview-fyi"
+              "pool": "chrome.tests.perf-webview-fyi"
             }
           ],
           "expiration": 36000,

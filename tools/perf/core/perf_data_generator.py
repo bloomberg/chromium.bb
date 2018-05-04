@@ -1034,7 +1034,7 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
       ],
       'platform': 'android-webview',
       'dimension': {
-        'pool': 'chrome.test.perf-webview-fyi',
+        'pool': 'chrome.tests.perf-webview-fyi',
         'os': 'Android',
         'device_type': 'walleye',
         'device_os': 'O'
@@ -1051,7 +1051,7 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
       ],
       'platform': 'android',
       'dimension': {
-        'pool': 'chrome.test.perf-fyi',
+        'pool': 'chrome.tests.perf-fyi',
         'os': 'Android',
         'device_type': 'walleye',
         'device_os': 'O'
