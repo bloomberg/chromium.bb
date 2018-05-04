@@ -720,7 +720,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_is": "O",
+              "device_os": "O",
               "device_type": "walleye",
               "os": "Android",
               "pool": "chrome.test.perf-fyi"
@@ -768,7 +768,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_is": "O",
+              "device_os": "O",
               "device_type": "walleye",
               "os": "Android",
               "pool": "chrome.test.perf-webview-fyi"
