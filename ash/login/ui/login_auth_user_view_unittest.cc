@@ -127,7 +127,7 @@ TEST_F(LoginAuthUserViewUnittest, OnlineSignInMessage) {
   // visible. The password field and PIN keyboard are invisible.
   view_->SetAuthMethods(LoginAuthUserView::AUTH_ONLINE_SIGN_IN);
   EXPECT_TRUE(online_sign_in_message->visible());
-  EXPECT_EQ(0.0f, password_view->layer()->opacity());
+  EXPECT_FALSE(password_view->visible());
   EXPECT_FALSE(pin_view->visible());
 
   // Clicking the message triggers |ShowGaiaSignin|.

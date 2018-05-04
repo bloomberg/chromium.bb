@@ -67,6 +67,7 @@ class LockDebugView : public views::View, public views::ButtonListener {
   views::View* per_user_action_column_ = nullptr;
   std::vector<views::View*> per_user_action_column_toggle_pin_;
   std::vector<views::View*> per_user_action_column_cycle_easy_unlock_state_;
+  std::vector<views::View*> per_user_action_column_force_online_sign_in_;
   std::vector<views::View*> per_user_action_column_use_detachable_base_;
 
   // Debug row which contains buttons that affect the entire UI.

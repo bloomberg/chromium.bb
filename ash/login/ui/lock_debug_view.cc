@@ -199,6 +199,13 @@ class LockDebugView::DebugDataDispatcherTransformer
         debug_user->account_id, debug_user->enable_click_to_unlock);
   }
 
+  // Force online sign-in for the user at |user_index|.
+  void ForceOnlineSignInForUserIndex(size_t user_index) {
+    DCHECK(user_index >= 0 && user_index < debug_users_.size());
+    debug_dispatcher_.SetForceOnlineSignInForUser(
+        debug_users_[user_index].account_id);
+  }
+
   void ToggleLockScreenNoteButton() {
     if (lock_screen_note_state_ == mojom::TrayActionState::kAvailable) {
       lock_screen_note_state_ = mojom::TrayActionState::kNotAvailable;
@@ -616,12 +623,20 @@ void LockDebugView::ButtonPressed(views::Button* sender,
     if (per_user_action_column_cycle_easy_unlock_state_[i] == sender)
       debug_data_dispatcher_->CycleEasyUnlockForUserIndex(i);
   }
+
+  // Force online sign-in.
+  for (size_t i = 0u; i < per_user_action_column_force_online_sign_in_.size();
+       ++i) {
+    if (per_user_action_column_force_online_sign_in_[i] == sender)
+      debug_data_dispatcher_->ForceOnlineSignInForUserIndex(i);
+  }
 }
 
 void LockDebugView::RebuildDebugUserColumn() {
   per_user_action_column_->RemoveAllChildViews(true /*delete_children*/);
   per_user_action_column_toggle_pin_.clear();
   per_user_action_column_cycle_easy_unlock_state_.clear();
+  per_user_action_column_force_online_sign_in_.clear();
   per_user_action_column_use_detachable_base_.clear();
 
   for (size_t i = 0u; i < num_users_; ++i) {
@@ -639,6 +654,12 @@ void LockDebugView::RebuildDebugUserColumn() {
     per_user_action_column_cycle_easy_unlock_state_.push_back(
         toggle_click_auth);
     row->AddChildView(toggle_click_auth);
+
+    views::View* force_online_sign_in =
+        AddButton("Force online sign-in", false /*add_to_debug_row*/);
+    per_user_action_column_force_online_sign_in_.push_back(
+        force_online_sign_in);
+    row->AddChildView(force_online_sign_in);
 
     if (debug_detachable_base_model_->debugging_pairing_state() &&
         debug_detachable_base_model_->GetPairingStatus() ==
