@@ -4608,7 +4608,7 @@ crbug.com/825262 [ Win7 ] external/wpt/css/css-transitions/properties-value-impl
 
 # Sheriff 2018-03-26
 crbug.com/825733 [ Win ] media/color-profile-video-seek-filter.html [ Pass Timeout Failure ]
-crbug.com/825733 [ Win ] virtual/video-surface-layer/media/color-profile-video-seek-filter.html [ Pass Timeout Failure ]
+crbug.com/825733 [ Win Linux ] virtual/video-surface-layer/media/color-profile-video-seek-filter.html [ Pass Timeout Failure ]
 crbug.com/754986 media/video-transformed.html [ Pass Failure ]
 crbug.com/754986 virtual/video-surface-layer/media/video-transformed.html [ Pass Failure ]
 
