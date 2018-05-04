@@ -181,18 +181,6 @@ IIRFilterNode* IIRFilterNode::Create(BaseAudioContext& context,
 IIRFilterNode* IIRFilterNode::Create(BaseAudioContext* context,
                                      const IIRFilterOptions& options,
                                      ExceptionState& exception_state) {
-  if (!options.hasFeedforward()) {
-    exception_state.ThrowDOMException(
-        kNotFoundError, "IIRFilterOptions: feedforward is required.");
-    return nullptr;
-  }
-
-  if (!options.hasFeedback()) {
-    exception_state.ThrowDOMException(
-        kNotFoundError, "IIRFilterOptions: feedback is required.");
-    return nullptr;
-  }
-
   IIRFilterNode* node = Create(*context, options.feedforward(),
                                options.feedback(), exception_state);
 
