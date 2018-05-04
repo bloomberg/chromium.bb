@@ -4,7 +4,10 @@
 
 package org.chromium.content.browser;
 
+import android.os.SystemClock;
+import android.view.InputDevice;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -25,6 +28,7 @@ import org.chromium.ui.base.EventForwarder;
 public class ContentUiEventHandler {
     private final WebContentsImpl mWebContents;
     private ContentViewCore.InternalAccessDelegate mEventDelegate;
+    private long mNativeContentUiEventHandler;
 
     private static final class UserDataFactoryLazyHolder {
         private static final UserDataFactory<ContentUiEventHandler> INSTANCE =
@@ -38,7 +42,7 @@ public class ContentUiEventHandler {
 
     public ContentUiEventHandler(WebContents webContents) {
         mWebContents = (WebContentsImpl) webContents;
-        nativeInit(webContents);
+        mNativeContentUiEventHandler = nativeInit(webContents);
     }
 
     public void setEventDelegate(ContentViewCore.InternalAccessDelegate delegate) {
@@ -47,6 +51,62 @@ public class ContentUiEventHandler {
 
     private EventForwarder getEventForwarder() {
         return mWebContents.getEventForwarder();
+    }
+
+    // Returns the scaling being applied to the event's source. Typically only used for VR when
+    // drawing Android UI to a texture.
+    private float getEventSourceScaling() {
+        return mWebContents.getTopLevelNativeWindow().getDisplay().getAndroidUIScaling();
+    }
+
+    @CalledByNative
+    private boolean onGenericMotionEvent(MotionEvent event) {
+        if (GamepadList.onGenericMotionEvent(event)) return true;
+        if (JoystickHandler.fromWebContents(mWebContents).onGenericMotionEvent(event)) return true;
+        if ((event.getSource() & InputDevice.SOURCE_CLASS_POINTER) != 0) {
+            switch (event.getActionMasked()) {
+                case MotionEvent.ACTION_SCROLL:
+                    onMouseWheelEvent(event);
+                    return true;
+                case MotionEvent.ACTION_BUTTON_PRESS:
+                case MotionEvent.ACTION_BUTTON_RELEASE:
+                    // TODO(mustaq): Should we include MotionEvent.TOOL_TYPE_STYLUS here?
+                    // https://crbug.com/592082
+                    if (event.getToolType(0) == MotionEvent.TOOL_TYPE_MOUSE) {
+                        return onMouseEvent(event);
+                    }
+            }
+        }
+        return mEventDelegate.super_onGenericMotionEvent(event);
+    }
+
+    private void onMouseWheelEvent(MotionEvent event) {
+        assert mNativeContentUiEventHandler != 0;
+        float scale = getEventSourceScaling();
+        nativeSendMouseWheelEvent(mNativeContentUiEventHandler, event.getEventTime(),
+                event.getX() / scale, event.getY() / scale,
+                event.getAxisValue(MotionEvent.AXIS_HSCROLL),
+                event.getAxisValue(MotionEvent.AXIS_VSCROLL));
+    }
+
+    private boolean onMouseEvent(MotionEvent event) {
+        assert mNativeContentUiEventHandler != 0;
+        EventForwarder eventForwarder = mWebContents.getEventForwarder();
+        boolean didOffsetEvent = false;
+        MotionEvent newEvent = eventForwarder.createOffsetMotionEventIfNeeded(event);
+        if (newEvent != event) {
+            didOffsetEvent = true;
+            event = newEvent;
+        }
+        float scale = getEventSourceScaling();
+        nativeSendMouseEvent(mNativeContentUiEventHandler, event.getEventTime(),
+                event.getActionMasked(), event.getX() / scale, event.getY() / scale,
+                event.getPointerId(0), event.getPressure(0), event.getOrientation(0),
+                event.getAxisValue(MotionEvent.AXIS_TILT, 0),
+                EventForwarder.getMouseEventActionButton(event), event.getButtonState(),
+                event.getMetaState(), event.getToolType(0));
+        if (didOffsetEvent) event.recycle();
+        return true;
     }
 
     @CalledByNative
@@ -95,5 +155,42 @@ public class ContentUiEventHandler {
         return true;
     }
 
-    private native void nativeInit(WebContents webContents);
+    /**
+     * @see View#scrollBy(int, int)
+     * Currently the ContentView scrolling happens in the native side. In
+     * the Java view system, it is always pinned at (0, 0). scrollBy() and scrollTo()
+     * are overridden, so that View's mScrollX and mScrollY will be unchanged at
+     * (0, 0). This is critical for drawing ContentView correctly.
+     */
+    @CalledByNative
+    private void scrollBy(float dxPix, float dyPix) {
+        if (dxPix == 0 && dyPix == 0) return;
+        long time = SystemClock.uptimeMillis();
+        // It's a very real (and valid) possibility that a fling may still
+        // be active when programatically scrolling. Cancelling the fling in
+        // such cases ensures a consistent gesture event stream.
+        if (GestureListenerManagerImpl.fromWebContents(mWebContents).hasPotentiallyActiveFling()) {
+            nativeCancelFling(mNativeContentUiEventHandler, time);
+        }
+        nativeSendScrollEvent(mNativeContentUiEventHandler, time, dxPix, dyPix);
+    }
+
+    @CalledByNative
+    private void scrollTo(float xPix, float yPix) {
+        final float xCurrentPix = mWebContents.getRenderCoordinates().getScrollXPix();
+        final float yCurrentPix = mWebContents.getRenderCoordinates().getScrollYPix();
+        final float dxPix = xPix - xCurrentPix;
+        final float dyPix = yPix - yCurrentPix;
+        scrollBy(dxPix, dyPix);
+    }
+
+    private native long nativeInit(WebContents webContents);
+    private native void nativeSendMouseWheelEvent(long nativeContentUiEventHandler, long timeMs,
+            float x, float y, float ticksX, float ticksY);
+    private native void nativeSendMouseEvent(long nativeContentUiEventHandler, long timeMs,
+            int action, float x, float y, int pointerId, float pressure, float orientation,
+            float tilt, int changedButton, int buttonState, int metaState, int toolType);
+    private native void nativeSendScrollEvent(
+            long nativeContentUiEventHandler, long timeMs, float deltaX, float deltaY);
+    private native void nativeCancelFling(long nativeContentUiEventHandler, long timeMs);
 }

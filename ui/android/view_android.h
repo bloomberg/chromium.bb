@@ -196,8 +196,11 @@ class UI_ANDROID_EXPORT ViewAndroid {
   bool OnMouseEvent(const MotionEventAndroid& event);
   bool OnMouseWheelEvent(const MotionEventAndroid& event);
   bool OnGestureEvent(const GestureEventAndroid& event);
+  bool OnGenericMotionEvent(const MotionEventAndroid& event);
   bool OnKeyUp(const KeyEventAndroid& event);
   bool DispatchKeyEvent(const KeyEventAndroid& event);
+  bool ScrollBy(float delta_x, float delta_y);
+  bool ScrollTo(float x, float y);
 
   void RemoveChild(ViewAndroid* child);
   void RemoveAllChildren();

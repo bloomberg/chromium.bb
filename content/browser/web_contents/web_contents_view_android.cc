@@ -517,6 +517,13 @@ bool WebContentsViewAndroid::OnMouseEvent(const ui::MotionEventAndroid& event) {
   return manager && manager->OnHoverEvent(event);
 }
 
+bool WebContentsViewAndroid::OnGenericMotionEvent(
+    const ui::MotionEventAndroid& event) {
+  if (content_ui_event_handler_)
+    return content_ui_event_handler_->OnGenericMotionEvent(event);
+  return false;
+}
+
 bool WebContentsViewAndroid::OnKeyUp(const ui::KeyEventAndroid& event) {
   if (content_ui_event_handler_)
     return content_ui_event_handler_->OnKeyUp(event);
@@ -527,6 +534,18 @@ bool WebContentsViewAndroid::DispatchKeyEvent(
     const ui::KeyEventAndroid& event) {
   if (content_ui_event_handler_)
     return content_ui_event_handler_->DispatchKeyEvent(event);
+  return false;
+}
+
+bool WebContentsViewAndroid::ScrollBy(float delta_x, float delta_y) {
+  if (content_ui_event_handler_)
+    content_ui_event_handler_->ScrollBy(delta_x, delta_y);
+  return false;
+}
+
+bool WebContentsViewAndroid::ScrollTo(float x, float y) {
+  if (content_ui_event_handler_)
+    content_ui_event_handler_->ScrollTo(x, y);
   return false;
 }
 

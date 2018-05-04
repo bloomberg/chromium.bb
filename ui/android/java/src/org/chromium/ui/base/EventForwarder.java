@@ -9,6 +9,7 @@ import android.content.ClipData;
 import android.content.ClipDescription;
 import android.os.Build;
 import android.view.DragEvent;
+import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -52,6 +53,10 @@ public class EventForwarder {
     // drawing Android UI to a texture.
     private float getEventSourceScaling() {
         return nativeGetJavaWindowAndroid(mNativeEventForwarder).getDisplay().getAndroidUIScaling();
+    }
+
+    private boolean hasTouchEventOffset() {
+        return mCurrentTouchOffsetX != 0.0f || mCurrentTouchOffsetY != 0.0f;
     }
 
     /**
@@ -108,8 +113,8 @@ public class EventForwarder {
 
             // A zero offset is quite common, in which case the unnecessary copy should be avoided.
             boolean didOffsetEvent = false;
-            if (mCurrentTouchOffsetX != 0 || mCurrentTouchOffsetY != 0) {
-                event = createOffsetMotionEvent(event);
+            if (hasTouchEventOffset()) {
+                event = createOffsetMotionEventIfNeeded(event);
                 didOffsetEvent = true;
             }
 
@@ -165,7 +170,14 @@ public class EventForwarder {
         mCurrentTouchOffsetY = dy;
     }
 
-    private MotionEvent createOffsetMotionEvent(MotionEvent src) {
+    /**
+     * Creates a new motion event differed from the given event by current touch offset
+     * if the offset is not zero.
+     * @param src Source motion event.
+     * @return A new motion event if we have non-zero touch offset. Otherwise return the same event.
+     */
+    public MotionEvent createOffsetMotionEventIfNeeded(MotionEvent src) {
+        if (!hasTouchEventOffset()) return src;
         MotionEvent dst = MotionEvent.obtain(src);
         dst.offsetLocation(mCurrentTouchOffsetX, mCurrentTouchOffsetY);
         return dst;
@@ -187,49 +199,18 @@ public class EventForwarder {
      */
     public boolean onHoverEvent(MotionEvent event) {
         TraceEvent.begin("onHoverEvent");
-        try {
-            return sendNativeMouseEvent(event);
-        } finally {
-            TraceEvent.end("onHoverEvent");
-        }
-    }
-
-    /**
-     * @see View#onMouseEvent(MotionEvent)
-     */
-    public boolean onMouseEvent(MotionEvent event) {
-        TraceEvent.begin("sendMouseEvent");
-        try {
-            return sendNativeMouseEvent(event);
-        } finally {
-            TraceEvent.end("sendMouseEvent");
-        }
-    }
-
-    /**
-     * Sends mouse event to native. Hover event is also converted to mouse event,
-     * only differentiated by an internal flag.
-     */
-    private boolean sendNativeMouseEvent(MotionEvent event) {
-        assert mNativeEventForwarder != 0;
-
         boolean didOffsetEvent = false;
-        if (mCurrentTouchOffsetX != 0.0f || mCurrentTouchOffsetY != 0.0f) {
-            event = createOffsetMotionEvent(event);
-            didOffsetEvent = true;
-        }
         try {
-            int eventAction = event.getActionMasked();
-
-            if (eventAction == MotionEvent.ACTION_BUTTON_PRESS
-                    || eventAction == MotionEvent.ACTION_BUTTON_RELEASE) {
-                mLastMouseButtonState = event.getButtonState();
+            if (hasTouchEventOffset()) {
+                event = createOffsetMotionEventIfNeeded(event);
+                didOffsetEvent = true;
             }
             // Work around Samsung Galaxy Tab 2 not sending ACTION_BUTTON_RELEASE on left-click:
             // http://crbug.com/714230.  On ACTION_HOVER, no button can be pressed, so send a
             // synthetic ACTION_BUTTON_RELEASE if it was missing.  Note that all
             // ACTION_BUTTON_RELEASE are always fired before any hover events on a correctly
             // behaving device, so mLastMouseButtonState is only nonzero on a buggy one.
+            int eventAction = event.getActionMasked();
             if (eventAction == MotionEvent.ACTION_HOVER_ENTER) {
                 if (mLastMouseButtonState == MotionEvent.BUTTON_PRIMARY) {
                     float scale = getEventSourceScaling();
@@ -242,52 +223,88 @@ public class EventForwarder {
                 }
                 mLastMouseButtonState = 0;
             }
-
-            // Ignore ACTION_HOVER_ENTER & ACTION_HOVER_EXIT because every mouse-down on Android
-            // follows a hover-exit and is followed by a hover-enter.  crbug.com/715114 filed on
-            // distinguishing actual hover enter/exit from these bogus ones.
-            if (eventAction == MotionEvent.ACTION_HOVER_ENTER
-                    || eventAction == MotionEvent.ACTION_HOVER_EXIT) {
-                return false;
-            }
-
-            // For mousedown and mouseup events, we use ACTION_BUTTON_PRESS
-            // and ACTION_BUTTON_RELEASE respectively because they provide
-            // info about the changed-button.
-            if (eventAction == MotionEvent.ACTION_DOWN || eventAction == MotionEvent.ACTION_UP) {
-                // While we use the action buttons for the changed state it is important to still
-                // consume the down/up events to get the complete stream for a drag gesture, which
-                // is provided using ACTION_MOVE touch events.
-                return true;
-            }
-
-            float scale = getEventSourceScaling();
-
-            nativeOnMouseEvent(mNativeEventForwarder, event.getEventTime(), eventAction,
-                    event.getX() / scale, event.getY() / scale, event.getPointerId(0),
-                    event.getPressure(0), event.getOrientation(0),
-                    event.getAxisValue(MotionEvent.AXIS_TILT, 0), getMouseEventActionButton(event),
-                    event.getButtonState(), event.getMetaState(), event.getToolType(0));
-            return true;
+            return sendNativeMouseEvent(event);
         } finally {
             if (didOffsetEvent) event.recycle();
+            TraceEvent.end("onHoverEvent");
+        }
+    }
+
+    /**
+     * @see View#onMouseEvent(MotionEvent)
+     */
+    public boolean onMouseEvent(MotionEvent event) {
+        TraceEvent.begin("sendMouseEvent");
+        boolean didOffsetEvent = false;
+        try {
+            if (hasTouchEventOffset()) {
+                event = createOffsetMotionEventIfNeeded(event);
+                didOffsetEvent = true;
+            }
+            updateMouseEventState(event);
+            return sendNativeMouseEvent(event);
+        } finally {
+            if (didOffsetEvent) event.recycle();
+            TraceEvent.end("sendMouseEvent");
+        }
+    }
+
+    /**
+     * Sends mouse event to native. Hover event is also converted to mouse event,
+     * only differentiated by an internal flag.
+     */
+    private boolean sendNativeMouseEvent(MotionEvent event) {
+        assert mNativeEventForwarder != 0;
+
+        int eventAction = event.getActionMasked();
+
+        // Ignore ACTION_HOVER_ENTER & ACTION_HOVER_EXIT because every mouse-down on Android
+        // follows a hover-exit and is followed by a hover-enter.  https://crbug.com/715114
+        // filed on distinguishing actual hover enter/exit from these bogus ones.
+        if (eventAction == MotionEvent.ACTION_HOVER_ENTER
+                || eventAction == MotionEvent.ACTION_HOVER_EXIT) {
+            return false;
+        }
+
+        // For mousedown and mouseup events, we use ACTION_BUTTON_PRESS
+        // and ACTION_BUTTON_RELEASE respectively because they provide
+        // info about the changed-button.
+        if (eventAction == MotionEvent.ACTION_DOWN || eventAction == MotionEvent.ACTION_UP) {
+            // While we use the action buttons for the changed state it is important to still
+            // consume the down/up events to get the complete stream for a drag gesture, which
+            // is provided using ACTION_MOVE touch events.
+            return true;
+        }
+
+        float scale = getEventSourceScaling();
+
+        nativeOnMouseEvent(mNativeEventForwarder, event.getEventTime(), eventAction,
+                event.getX() / scale, event.getY() / scale, event.getPointerId(0),
+                event.getPressure(0), event.getOrientation(0),
+                event.getAxisValue(MotionEvent.AXIS_TILT, 0), getMouseEventActionButton(event),
+                event.getButtonState(), event.getMetaState(), event.getToolType(0));
+        return true;
+    }
+
+    /**
+     * Manages internal state to work around a device-specific issue. Needs to be called per
+     * every mouse event to update the state.
+     */
+    private void updateMouseEventState(MotionEvent event) {
+        int eventAction = event.getActionMasked();
+
+        if (eventAction == MotionEvent.ACTION_BUTTON_PRESS
+                || eventAction == MotionEvent.ACTION_BUTTON_RELEASE) {
+            mLastMouseButtonState = event.getButtonState();
         }
     }
 
     @TargetApi(Build.VERSION_CODES.M)
-    private int getMouseEventActionButton(MotionEvent event) {
+    public static int getMouseEventActionButton(MotionEvent event) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) return event.getActionButton();
 
         // On <M, the only mice events sent are hover events, which cannot have a button.
         return 0;
-    }
-
-    public boolean onMouseWheelEvent(long timeMs, float x, float y, float ticksX, float ticksY) {
-        assert mNativeEventForwarder != 0;
-        float scale = getEventSourceScaling();
-        nativeOnMouseWheelEvent(
-                mNativeEventForwarder, timeMs, x / scale, y / scale, ticksX, ticksY);
-        return true;
     }
 
     /**
@@ -355,29 +372,49 @@ public class EventForwarder {
         return nativeOnGestureEvent(mNativeEventForwarder, type, timeMs, delta);
     }
 
+    /**
+     * @see View#onGenericMotionEvent()
+     */
+    public boolean onGenericMotionEvent(MotionEvent event) {
+        if (mNativeEventForwarder == 0) return false;
+        if ((event.getSource() & InputDevice.SOURCE_CLASS_POINTER) != 0
+                && event.getToolType(0) == MotionEvent.TOOL_TYPE_MOUSE) {
+            updateMouseEventState(event);
+        }
+
+        return nativeOnGenericMotionEvent(mNativeEventForwarder, event, event.getEventTime());
+    }
+
+    /**
+     * @see View#onKeyUp()
+     */
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (mNativeEventForwarder == 0) return false;
         return nativeOnKeyUp(mNativeEventForwarder, event, keyCode);
     }
 
+    /**
+     * @see View#dispatchKeyEvent()
+     */
     public boolean dispatchKeyEvent(KeyEvent event) {
         if (mNativeEventForwarder == 0) return false;
         return nativeDispatchKeyEvent(mNativeEventForwarder, event);
     }
 
     /**
-     * Scroll viewport by (deltaX, deltaY).
-     * Note: Scrolling for viewport happens in the native side. In
-     * the Java view system, it is always pinned at (0, 0). scrollBy() and scrollTo()
-     * are overridden so that View's mScrollX and mScrollY will stay unchanged at
-     * (0, 0). This is critical for drawing view correctly.
-     * @param timeMs the current time.
-     * @param velocityX fling speed in x-axis.
-     * @param velocityY fling speed in y-axis.
+     * @see View#scrollBy()
      */
-    public void scroll(long timeMs, float deltaX, float deltaY) {
+    public void scrollBy(float dxPix, float dyPix) {
         if (mNativeEventForwarder == 0) return;
-        nativeScroll(mNativeEventForwarder, timeMs, deltaX, deltaY);
+        nativeScrollBy(mNativeEventForwarder, dxPix, dyPix);
+    }
+
+    /**
+     * @see View#scrollTo()
+     */
+    public void scrollTo(float xPix, float yPix) {
+        if (mNativeEventForwarder == 0) return;
+        nativeScrollTo(mNativeEventForwarder, xPix, yPix);
     }
 
     @VisibleForTesting
@@ -419,16 +456,16 @@ public class EventForwarder {
     private native void nativeOnMouseEvent(long nativeEventForwarder, long timeMs, int action,
             float x, float y, int pointerId, float pressure, float orientation, float tilt,
             int changedButton, int buttonState, int metaState, int toolType);
-    private native void nativeOnMouseWheelEvent(
-            long nativeEventForwarder, long timeMs, float x, float y, float ticksX, float ticksY);
     private native void nativeOnDragEvent(long nativeEventForwarder, int action, int x, int y,
             int screenX, int screenY, String[] mimeTypes, String content);
     private native boolean nativeOnGestureEvent(
             long nativeEventForwarder, int type, long timeMs, float delta);
+    private native boolean nativeOnGenericMotionEvent(
+            long nativeEventForwarder, MotionEvent event, long timeMs);
     private native boolean nativeOnKeyUp(long nativeEventForwarder, KeyEvent event, int keyCode);
     private native boolean nativeDispatchKeyEvent(long nativeEventForwarder, KeyEvent event);
-    private native void nativeScroll(
-            long nativeEventForwarder, long timeMs, float deltaX, float deltaY);
+    private native void nativeScrollBy(long nativeEventForwarder, float deltaX, float deltaY);
+    private native void nativeScrollTo(long nativeEventForwarder, float x, float y);
     private native void nativeDoubleTap(long nativeEventForwarder, long timeMs, int x, int y);
     private native void nativeStartFling(long nativeEventForwarder, long timeMs, float velocityX,
             float velocityY, boolean syntheticScroll);

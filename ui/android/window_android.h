@@ -31,7 +31,7 @@ class BeginFrameSource;
 
 namespace ui {
 
-extern const float kDefaultMouseWheelTickMultiplier;
+extern UI_ANDROID_EXPORT const float kDefaultMouseWheelTickMultiplier;
 
 class WindowAndroidCompositor;
 class WindowAndroidObserver;

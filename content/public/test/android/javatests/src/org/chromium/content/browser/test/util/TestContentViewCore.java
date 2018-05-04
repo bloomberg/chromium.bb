@@ -6,7 +6,6 @@ package org.chromium.content.browser.test.util;
 
 import android.content.Context;
 import android.content.res.Configuration;
-import android.view.MotionEvent;
 
 import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.ContentViewCore.InternalAccessDelegate;
@@ -43,15 +42,7 @@ public class TestContentViewCore implements ContentViewCore {
     public void onConfigurationChanged(Configuration newConfig) {}
 
     @Override
-    public boolean onGenericMotionEvent(MotionEvent event) {
-        return false;
-    }
-
-    @Override
     public void onWindowFocusChanged(boolean hasWindowFocus) {}
-
-    @Override
-    public void scrollTo(float xPix, float yPix) {}
 
     @Override
     public void onPause() {}
@@ -64,7 +55,4 @@ public class TestContentViewCore implements ContentViewCore {
 
     @Override
     public void setHideKeyboardOnBlur(boolean hideKeyboardOnBlur) {}
-
-    @Override
-    public void scrollBy(float dxPix, float dyPix) {}
 }

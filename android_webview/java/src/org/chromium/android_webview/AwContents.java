@@ -2515,7 +2515,7 @@ public class AwContents implements SmartClipProvider {
      */
     public boolean onGenericMotionEvent(MotionEvent event) {
         return isDestroyedOrNoOperation(NO_WARN) ? false
-                                                 : mContentViewCore.onGenericMotionEvent(event);
+                                                 : mAwViewMethods.onGenericMotionEvent(event);
     }
 
     /**
@@ -3424,8 +3424,9 @@ public class AwContents implements SmartClipProvider {
 
         @Override
         public boolean onGenericMotionEvent(MotionEvent event) {
-            return isDestroyedOrNoOperation(NO_WARN) ? false
-                                                     : mContentViewCore.onGenericMotionEvent(event);
+            return isDestroyedOrNoOperation(NO_WARN)
+                    ? false
+                    : mWebContents.getEventForwarder().onGenericMotionEvent(event);
         }
 
         @Override

@@ -409,8 +409,8 @@ public class OverlayPanelContent {
      * Reset the ContentViewCore's scroll position to (0, 0).
      */
     public void resetContentViewScroll() {
-        if (mContentViewCore != null) {
-            mContentViewCore.scrollTo(0, 0);
+        if (mWebContents != null) {
+            mWebContents.getEventForwarder().scrollTo(0, 0);
         }
     }
 
