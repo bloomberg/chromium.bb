@@ -7,6 +7,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 #include "content/public/test/browser_test.h"
 #include "headless/public/devtools/domains/dom_snapshot.h"
 #include "headless/public/devtools/domains/page.h"
@@ -20,6 +21,10 @@
 #define HEADLESS_RENDER_BROWSERTEST(clazz)                  \
   class HeadlessRenderBrowserTest##clazz : public clazz {}; \
   HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessRenderBrowserTest##clazz)
+
+#define DISABLED_HEADLESS_RENDER_BROWSERTEST(clazz)         \
+  class HeadlessRenderBrowserTest##clazz : public clazz {}; \
+  DISABLED_HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessRenderBrowserTest##clazz)
 
 // TODO(dats): For some reason we are missing all HTTP redirects.
 // crbug.com/789298
@@ -1157,7 +1162,14 @@ class CookieSetFromJs_NoCookies : public CookieSetFromJs {
                             "http://www.example.com/epicfail"));
   }
 };
-HEADLESS_RENDER_BROWSERTEST(CookieSetFromJs_NoCookies);
+
+// Flaky on Linux. https://crbug.com/839747
+#if defined(OS_LINUX)
+#define MAYBE_HEADLESS_RENDER_BROWSERTEST DISABLED_HEADLESS_RENDER_BROWSERTEST
+#else
+#define MAYBE_HEADLESS_RENDER_BROWSERTEST HEADLESS_RENDER_BROWSERTEST
+#endif
+MAYBE_HEADLESS_RENDER_BROWSERTEST(CookieSetFromJs_NoCookies);
 
 class CookieUpdatedFromJs : public HeadlessRenderTest {
  private:
