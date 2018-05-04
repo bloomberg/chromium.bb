@@ -108,6 +108,9 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   // TODO(crbug.com/808277): consider remove user case.
   user_manager::UserList users_;
 
+  // The account id of the user pod that's being focused.
+  AccountId focused_pod_account_id_;
+
   base::WeakPtrFactory<LoginDisplayHostMojo> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginDisplayHostMojo);
