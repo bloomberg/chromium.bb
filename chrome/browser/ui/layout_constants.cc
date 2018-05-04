@@ -83,7 +83,7 @@ int GetLayoutConstant(LayoutConstant constant) {
     case TAB_STACK_DISTANCE:
       return touch_optimized_material ? 4 : 6;
     case TAB_STACK_TAB_WIDTH:
-      return touch_optimized_material ? 68 : 120;
+      return touch_optimized_material ? 160 : 120;
     case TAB_STANDARD_WIDTH:
       return touch_optimized_material ? 245 : 193;
     case TOOLBAR_ELEMENT_PADDING: {
