@@ -598,36 +598,6 @@ void aom_lpf_horizontal_14_sse2(unsigned char *s, int p,
   store_buffer_horz_8(q5p5, p, 5, s);
 }
 
-static INLINE __m128i filter_add2_sub2(const __m128i *const total,
-                                       const __m128i *const a1,
-                                       const __m128i *const a2,
-                                       const __m128i *const s1,
-                                       const __m128i *const s2) {
-  __m128i x = _mm_add_epi16(*a1, *total);
-  x = _mm_add_epi16(_mm_sub_epi16(x, _mm_add_epi16(*s1, *s2)), *a2);
-  return x;
-}
-
-static INLINE __m128i filter8_mask(const __m128i *const flat,
-                                   const __m128i *const other_filt,
-                                   const __m128i *const f8_lo,
-                                   const __m128i *const f8_hi) {
-  const __m128i f8 =
-      _mm_packus_epi16(_mm_srli_epi16(*f8_lo, 3), _mm_srli_epi16(*f8_hi, 3));
-  const __m128i result = _mm_and_si128(*flat, f8);
-  return _mm_or_si128(_mm_andnot_si128(*flat, *other_filt), result);
-}
-
-static INLINE __m128i filter16_mask(const __m128i *const flat,
-                                    const __m128i *const other_filt,
-                                    const __m128i *const f_lo,
-                                    const __m128i *const f_hi) {
-  const __m128i f =
-      _mm_packus_epi16(_mm_srli_epi16(*f_lo, 4), _mm_srli_epi16(*f_hi, 4));
-  const __m128i result = _mm_and_si128(*flat, f);
-  return _mm_or_si128(_mm_andnot_si128(*flat, *other_filt), result);
-}
-
 static AOM_FORCE_INLINE void lpf_internal_6_sse2(
     __m128i *p2, __m128i *q2, __m128i *p1, __m128i *q1, __m128i *p0,
     __m128i *q0, __m128i *q1q0, __m128i *p1p0, const unsigned char *_blimit,
