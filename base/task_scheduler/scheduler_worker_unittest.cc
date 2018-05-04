@@ -53,7 +53,7 @@ class SchedulerWorkerDefaultDelegate : public SchedulerWorker::Delegate {
   void OnCanScheduleSequence(scoped_refptr<Sequence> sequence) override {
     ADD_FAILURE() << "Unexpected call to OnCanScheduleSequence().";
   }
-  void OnMainEntry(SchedulerWorker* worker) override {}
+  void OnMainEntry(const SchedulerWorker* worker) override {}
   scoped_refptr<Sequence> GetWork(SchedulerWorker* worker) override {
     return nullptr;
   }
@@ -145,7 +145,7 @@ class TaskSchedulerWorkerTest : public testing::TestWithParam<size_t> {
     }
 
     // SchedulerWorker::Delegate:
-    void OnMainEntry(SchedulerWorker* worker) override {
+    void OnMainEntry(const SchedulerWorker* worker) override {
       outer_->worker_set_.Wait();
       EXPECT_EQ(outer_->worker_.get(), worker);
       EXPECT_FALSE(IsCallToDidRunTaskExpected());
@@ -505,7 +505,7 @@ class MockedControllableCleanupDelegate : public ControllableCleanupDelegate {
   ~MockedControllableCleanupDelegate() override = default;
 
   // SchedulerWorker::Delegate:
-  MOCK_METHOD1(OnMainEntry, void(SchedulerWorker* worker));
+  MOCK_METHOD1(OnMainEntry, void(const SchedulerWorker* worker));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockedControllableCleanupDelegate);
@@ -710,7 +710,9 @@ class ExpectThreadPriorityDelegate : public SchedulerWorkerDefaultDelegate {
   }
 
   // SchedulerWorker::Delegate:
-  void OnMainEntry(SchedulerWorker* worker) override { VerifyThreadPriority(); }
+  void OnMainEntry(const SchedulerWorker* worker) override {
+    VerifyThreadPriority();
+  }
   scoped_refptr<Sequence> GetWork(SchedulerWorker* worker) override {
     VerifyThreadPriority();
     priority_verified_in_get_work_event_.Signal();

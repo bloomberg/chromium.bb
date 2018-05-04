@@ -73,7 +73,7 @@ class SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl
 
   // SchedulerWorker::Delegate:
   void OnCanScheduleSequence(scoped_refptr<Sequence> sequence) override;
-  void OnMainEntry(SchedulerWorker* worker) override;
+  void OnMainEntry(const SchedulerWorker* worker) override;
   scoped_refptr<Sequence> GetWork(SchedulerWorker* worker) override;
   void DidRunTask() override;
   void ReEnqueueSequence(scoped_refptr<Sequence> sequence) override;
@@ -112,7 +112,7 @@ class SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl
  private:
   // Returns true if |worker| is allowed to cleanup and remove itself from the
   // pool. Called from GetWork() when no work is available.
-  bool CanCleanupLockRequired(SchedulerWorker* worker);
+  bool CanCleanupLockRequired(const SchedulerWorker* worker) const;
 
   // Calls cleanup on |worker| and removes it from the pool. Called from
   // GetWork() when no work is available and CanCleanupLockRequired() returns
@@ -385,7 +385,7 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::
 }
 
 void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::OnMainEntry(
-    SchedulerWorker* worker) {
+    const SchedulerWorker* worker) {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
 
   {
@@ -516,7 +516,7 @@ TimeDelta SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::
 }
 
 bool SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::
-    CanCleanupLockRequired(SchedulerWorker* worker) {
+    CanCleanupLockRequired(const SchedulerWorker* worker) const {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
 
   return worker != outer_->PeekAtIdleWorkersStackLockRequired() &&
