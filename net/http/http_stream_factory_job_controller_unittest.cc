@@ -1865,6 +1865,10 @@ TEST_F(HttpStreamFactoryJobControllerTest, DelayedTCPAlternativeProxy) {
 // Verifies that if the alternative proxy server job fails immediately, the
 // main job is not blocked.
 TEST_F(HttpStreamFactoryJobControllerTest, FailAlternativeProxy) {
+  session_deps_.socket_factory->UseMockProxyClientSockets();
+  ProxyClientSocketDataProvider proxy_data(SYNCHRONOUS, OK);
+  session_deps_.socket_factory->AddProxyClientSocketDataProvider(&proxy_data);
+
   quic_data_ = std::make_unique<MockQuicData>();
   quic_data_->AddConnect(SYNCHRONOUS, ERR_FAILED);
   tcp_data_ = std::make_unique<SequencedSocketData>(nullptr, 0, nullptr, 0);
@@ -1914,6 +1918,10 @@ TEST_F(HttpStreamFactoryJobControllerTest, FailAlternativeProxy) {
 // disconnection, then the proxy delegate is not notified.
 TEST_F(HttpStreamFactoryJobControllerTest,
        InternetDisconnectedAlternativeProxy) {
+  session_deps_.socket_factory->UseMockProxyClientSockets();
+  ProxyClientSocketDataProvider proxy_data(SYNCHRONOUS, OK);
+  session_deps_.socket_factory->AddProxyClientSocketDataProvider(&proxy_data);
+
   quic_data_ = std::make_unique<MockQuicData>();
   quic_data_->AddConnect(SYNCHRONOUS, ERR_INTERNET_DISCONNECTED);
   tcp_data_ = std::make_unique<SequencedSocketData>(nullptr, 0, nullptr, 0);
@@ -1959,6 +1967,10 @@ TEST_F(HttpStreamFactoryJobControllerTest,
 TEST_F(HttpStreamFactoryJobControllerTest,
        AlternativeProxyServerJobFailsAfterMainJobSucceeds) {
   base::HistogramTester histogram_tester;
+
+  session_deps_.socket_factory->UseMockProxyClientSockets();
+  ProxyClientSocketDataProvider proxy_data(SYNCHRONOUS, OK);
+  session_deps_.socket_factory->AddProxyClientSocketDataProvider(&proxy_data);
 
   // Use COLD_START to make the alt job pending.
   crypto_client_stream_factory_.set_handshake_mode(
