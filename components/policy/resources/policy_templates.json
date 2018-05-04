@@ -8126,7 +8126,7 @@
       'name': 'HideWebStoreIcon',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:26-'],
+      'supported_on': ['chrome.*:26-', 'chrome_os:68-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
