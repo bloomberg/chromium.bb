@@ -66,14 +66,12 @@ class LoadingPredictorConfigTest : public testing::Test {
 LoadingPredictorConfigTest::LoadingPredictorConfigTest()
     : profile_(new TestingProfile()) {}
 
-TEST_F(LoadingPredictorConfigTest, IsEnabledByDefault) {
+TEST_F(LoadingPredictorConfigTest, IsDisabledByDefault) {
   LoadingPredictorConfig config;
-  EXPECT_TRUE(MaybeEnableSpeculativePreconnect(&config));
+  EXPECT_FALSE(MaybeEnableSpeculativePreconnect(&config));
 
-  EXPECT_TRUE(config.IsLearningEnabled());
-  EXPECT_TRUE(config.should_disable_other_preconnects);
-  EXPECT_FALSE(IsNetPredictorEnabled());
-  EXPECT_TRUE(config.IsPreconnectEnabledForSomeOrigin(profile_.get()));
+  EXPECT_FALSE(config.IsLearningEnabled());
+  EXPECT_FALSE(config.IsPreconnectEnabledForSomeOrigin(profile_.get()));
 }
 
 TEST_F(LoadingPredictorConfigTest, EnablePreconnectLearning) {
