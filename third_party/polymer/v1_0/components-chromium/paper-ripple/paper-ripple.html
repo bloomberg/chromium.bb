@@ -42,12 +42,26 @@ Example:
       this.$.ripple.upAction();
     }
 
-Styling ripple effect:
+There are a few ways to style the ripple effect:
 
-  Use CSS color property to style the ripple:
+  1) Set only the color of the ripple, allowing opacity to default to 0.25:
 
     paper-ripple {
       color: #4285f4;
+    }
+
+  2) Set both the color and the opacity in one of two ways:
+
+    paper-ripple {
+      --paper-ripple-opacity: 0.5;
+      color: black;
+    }
+
+    or:
+
+    paper-ripple {
+      --paper-ripple-opacity: 1;
+      color: rgba(0, 0, 0, 0.5);
     }
 
   Note that CSS color property is inherited so it is not required to set it on
@@ -93,7 +107,7 @@ Apply `circle` class to make the rippling effect within a circle.
       .ripple {
         background-color: currentcolor;
         left: 0;
-        opacity: .25;
+        opacity: var(--paper-ripple-opacity, 0.25);
         pointer-events: none;
         position: absolute;
         will-change: height, transform, width;
