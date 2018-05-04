@@ -1271,18 +1271,6 @@
         "test": "content_browsertests"
       },
       {
-        "args": [
-          "--enable-features=VizDisplayCompositor",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/viz.content_browsertests.filter"
-        ],
-        "name": "viz_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 2
-        },
-        "test": "content_browsertests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
