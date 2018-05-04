@@ -17,6 +17,11 @@
 #endif
 
 // Necessary to declare this class as a friend.
+namespace arc {
+class ArcTermsOfServiceDefaultNegotiatorTest;
+}
+
+// Necessary to declare this class as a friend.
 namespace browser_sync {
 class ProfileSyncServiceStartupCrosTest;
 }
@@ -33,6 +38,7 @@ class MultiProfileFileManagerBrowserTest;
 }
 
 // Necessary to declare these classes as friends.
+class ArcSupportHostTest;
 class MultiProfileDownloadNotificationTest;
 class ProfileSyncServiceHarness;
 
@@ -125,6 +131,8 @@ class IdentityManager : public SigninManagerBase::Observer,
   friend file_manager::MultiProfileFileManagerBrowserTest;
 
   // These clients needs to call SetPrimaryAccountSynchronously().
+  friend ArcSupportHostTest;
+  friend arc::ArcTermsOfServiceDefaultNegotiatorTest;
   friend chromeos::ChromeSessionManager;
   friend chromeos::UserSessionManager;
   friend browser_sync::ProfileSyncServiceStartupCrosTest;

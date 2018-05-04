@@ -16,7 +16,7 @@
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
 #include "chrome/browser/consent_auditor/consent_auditor_test_utils.h"
-#include "chrome/browser/signin/fake_signin_manager_builder.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -25,10 +25,10 @@
 #include "components/arc/arc_prefs.h"
 #include "components/consent_auditor/fake_consent_auditor.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace arc {
@@ -43,7 +43,9 @@ class ArcTermsOfServiceDefaultNegotiatorTest
     BrowserWithTestWindowTest::SetUp();
     user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
         std::make_unique<chromeos::FakeChromeUserManager>());
-    signin_manager()->SignIn("testing_account_id");
+    IdentityManagerFactory::GetForProfile(profile())
+        ->SetPrimaryAccountSynchronously("gaia_id", "testing@account.com",
+                                         /*refresh_token=*/std::string());
 
     support_host_ = std::make_unique<ArcSupportHost>(profile());
     fake_arc_support_ = std::make_unique<FakeArcSupport>(support_host_.get());
@@ -69,15 +71,15 @@ class ArcTermsOfServiceDefaultNegotiatorTest
         ConsentAuditorFactory::GetForProfile(profile()));
   }
 
-  FakeSigninManagerBase* signin_manager() {
-    return static_cast<FakeSigninManagerBase*>(
-        SigninManagerFactory::GetForProfile(profile()));
+  std::string GetAuthenticatedAccountId() {
+    return IdentityManagerFactory::GetForProfile(profile())
+        ->GetPrimaryAccountInfo()
+        .account_id;
   }
 
   // BrowserWithTestWindowTest:
   TestingProfile::TestingFactories GetTestingFactories() override {
-    return {{SigninManagerFactory::GetInstance(), BuildFakeSigninManagerBase},
-            {ConsentAuditorFactory::GetInstance(), BuildFakeConsentAuditor}};
+    return {{ConsentAuditorFactory::GetInstance(), BuildFakeConsentAuditor}};
   }
 
  private:
@@ -199,8 +201,7 @@ TEST_F(ArcTermsOfServiceDefaultNegotiatorTest, Accept) {
       consent_auditor::ConsentStatus::GIVEN,
       consent_auditor::ConsentStatus::GIVEN,
       consent_auditor::ConsentStatus::GIVEN};
-  EXPECT_EQ(consent_auditor()->account_id(),
-            signin_manager()->GetAuthenticatedAccountId());
+  EXPECT_EQ(consent_auditor()->account_id(), GetAuthenticatedAccountId());
   EXPECT_EQ(consent_auditor()->recorded_id_vectors(), consent_ids);
   EXPECT_EQ(consent_auditor()->recorded_features(), features);
   EXPECT_EQ(consent_auditor()->recorded_statuses(), statuses);
@@ -254,8 +255,7 @@ TEST_F(ArcTermsOfServiceDefaultNegotiatorTest, AcceptWithUnchecked) {
       consent_auditor::Feature::PLAY_STORE};
   const std::vector<consent_auditor::ConsentStatus> statuses = {
       consent_auditor::ConsentStatus::GIVEN};
-  EXPECT_EQ(consent_auditor()->account_id(),
-            signin_manager()->GetAuthenticatedAccountId());
+  EXPECT_EQ(consent_auditor()->account_id(), GetAuthenticatedAccountId());
   EXPECT_EQ(consent_auditor()->recorded_id_vectors(), consent_ids);
   EXPECT_EQ(consent_auditor()->recorded_features(), features);
   EXPECT_EQ(consent_auditor()->recorded_statuses(), statuses);
@@ -302,8 +302,7 @@ TEST_F(ArcTermsOfServiceDefaultNegotiatorTest, AcceptWithManagedToS) {
       consent_auditor::Feature::GOOGLE_LOCATION_SERVICE};
   const std::vector<consent_auditor::ConsentStatus> statuses = {
       consent_auditor::ConsentStatus::GIVEN};
-  EXPECT_EQ(consent_auditor()->account_id(),
-            signin_manager()->GetAuthenticatedAccountId());
+  EXPECT_EQ(consent_auditor()->account_id(), GetAuthenticatedAccountId());
   EXPECT_EQ(consent_auditor()->recorded_id_vectors(), consent_ids);
   EXPECT_EQ(consent_auditor()->recorded_features(), features);
   EXPECT_EQ(consent_auditor()->recorded_statuses(), statuses);
