@@ -2,11 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function logHelloWorld() {
-  console.log("Hello, World!");
+function logMessage() {
+  console.log('logged message');
 }
 
-logHelloWorld();
+function warnMessage() {
+  console.warn('warned message');
+}
+
+logMessage();
+warnMessage();
 
 var bar = undefined;
 bar.foo = 'baz';

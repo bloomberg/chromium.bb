@@ -140,6 +140,9 @@ void ErrorConsole::ReportError(std::unique_ptr<ExtensionError> error) {
   if (!enabled_ || !crx_file::id_util::IdIsValid(error->extension_id()))
     return;
 
+  DCHECK_GE(error->level(), extension_misc::kMinimumSeverityToReportError)
+      << "Errors less than severity warning should not be reported.";
+
   int mask = GetMaskForExtension(error->extension_id());
   if (!(mask & (1 << error->type())))
     return;

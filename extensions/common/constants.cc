@@ -121,4 +121,6 @@ const char kPolicyBlockedScripting[] =
 
 const int kContentVerificationDefaultBlockSize = 4096;
 
+const logging::LogSeverity kMinimumSeverityToReportError = logging::LOG_WARNING;
+
 }  // namespace extension_misc
