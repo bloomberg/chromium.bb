@@ -7,9 +7,11 @@ package org.chromium.chrome.browser.contextual_suggestions;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import android.os.SystemClock;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
@@ -59,11 +61,13 @@ import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 import org.chromium.chrome.test.util.browser.compositor.layouts.DisableChromeAnimations;
 import org.chromium.components.feature_engagement.FeatureConstants;
+import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TestWebContentsObserver;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.test.util.UiRestriction;
 
+import java.util.Locale;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -167,7 +171,7 @@ public class ContextualSuggestionsTest {
         assertEquals("RecyclerView should be empty.", 0, recyclerView.getChildCount());
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            mMediator.showContentInSheetForTesting();
+            mMediator.showContentInSheetForTesting(true);
             mBottomSheet.endAnimations();
         });
 
@@ -423,7 +427,7 @@ public class ContextualSuggestionsTest {
                 mModel2.getClusterList().getItemCount());
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            mMediator2.showContentInSheetForTesting();
+            mMediator2.showContentInSheetForTesting(true);
             mBottomSheet2.endAnimations();
 
             ContextualSuggestionsBottomSheetContent content1 =
@@ -531,13 +535,78 @@ public class ContextualSuggestionsTest {
         mRenderTestRule.render(mBottomSheet, "full_height_scrolled");
     }
 
+    @Test
+    @MediumTest
+    @Feature({"ContextualSuggestions"})
+    public void testPeekDelay() throws Exception {
+        // Close the suggestions from setUp().
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mMediator.clearState();
+            mBottomSheet.endAnimations();
+        });
+
+        // Request suggestions with fetch time baseline set for testing.
+        long startTime = SystemClock.uptimeMillis();
+        FetchHelper.setFetchTimeBaselineMillisForTesting(startTime);
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> mMediator.requestSuggestions("http://www.testurl.com"));
+        assertTrue("Bottom sheet should be hidden before delay.",
+                mBottomSheet.getSheetState() == BottomSheet.SHEET_STATE_HIDDEN);
+
+        // Simulate user scroll by calling showContentInSheet until the sheet is peeked.
+        CriteriaHelper.pollUiThread(() -> {
+            mMediator.showContentInSheetForTesting(false);
+            mBottomSheet.endAnimations();
+            return mBottomSheet.getSheetState() == BottomSheet.SHEET_STATE_PEEK;
+        });
+
+        // Verify that suggestions is shown after the expected delay.
+        long duration = SystemClock.uptimeMillis() - startTime;
+        long expected = FakeContextualSuggestionsSource.TEST_PEEK_DELAY_SECONDS * 1000;
+        assertTrue(String.format(Locale.US,
+                        "The peek delay should be greater than %d ms, but was %d ms.",
+                        expected, duration),
+                duration >= expected);
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"ContextualSuggestions"})
+    public void testPeekCount() throws Exception {
+        forceShowSuggestions();
+
+        // Opening the sheet and setting it back to peek state shouldn't affect the peek count.
+        setSheetOffsetForState(BottomSheet.SHEET_STATE_FULL);
+        setSheetOffsetForState(BottomSheet.SHEET_STATE_PEEK);
+
+        // Hide and peek the bottom sheet for (TEST_PEEK_COUNT - 1) number of times, since
+        // #forceShowSuggestions() has already peeked the bottom sheet once.
+        for (int i = 1; i < FakeContextualSuggestionsSource.TEST_PEEK_COUNT; ++i) {
+            setSheetOffsetForState(BottomSheet.SHEET_STATE_HIDDEN);
+
+            // Verify that the suggestions are not cleared.
+            assertEquals("Model has incorrect number of items.",
+                    (int) FakeContextualSuggestionsSource.TOTAL_ITEM_COUNT,
+                    mModel.getClusterList().getItemCount());
+            assertNotNull("Bottom sheet contents should not be null.",
+                    mBottomSheet.getCurrentSheetContent());
+
+            setSheetOffsetForState(BottomSheet.SHEET_STATE_PEEK);
+        }
+
+        // Hide the sheet and verify that the suggestions are cleared.
+        setSheetOffsetForState(BottomSheet.SHEET_STATE_HIDDEN);
+        assertEquals("Model should be empty.", 0, mModel.getClusterList().getItemCount());
+        assertNull("Bottom sheet contents should be null.", mBottomSheet.getCurrentSheetContent());
+    }
+
     private void forceShowSuggestions() throws InterruptedException, TimeoutException {
         assertEquals("Model has incorrect number of items.",
                 (int) FakeContextualSuggestionsSource.TOTAL_ITEM_COUNT,
                 mModel.getClusterList().getItemCount());
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            mMediator.showContentInSheetForTesting();
+            mMediator.showContentInSheetForTesting(true);
             mBottomSheet.endAnimations();
 
             assertEquals("Sheet should be peeked.", BottomSheet.SHEET_STATE_PEEK,
@@ -565,6 +634,14 @@ public class ContextualSuggestionsTest {
     private void openSheet() {
         ThreadUtils.runOnUiThreadBlocking(
                 () -> mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_FULL, false));
+    }
+
+    private void setSheetOffsetForState(@BottomSheet.SheetState int state) {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mBottomSheet.setSheetOffsetFromBottomForTesting(
+                    mBottomSheet.getSheetHeightForState(state));
+            mBottomSheet.endAnimations();
+        });
     }
 
     private SnippetArticleViewHolder getFirstSuggestionViewHolder() {

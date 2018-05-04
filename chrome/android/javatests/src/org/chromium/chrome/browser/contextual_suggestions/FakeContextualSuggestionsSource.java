@@ -28,6 +28,8 @@ public class FakeContextualSuggestionsSource extends ContextualSuggestionsSource
     final static String TEST_TOOLBAR_TITLE = "More about capybaras";
     // There should be 6 items in the cluster list - 5 articles and one cluster title.
     final static Integer TOTAL_ITEM_COUNT = 6;
+    final static int TEST_PEEK_COUNT = 3;
+    final static int TEST_PEEK_DELAY_SECONDS = 2;
 
     private final Map<String, Bitmap> mSuggestionBitmaps = new HashMap<>();
     private final List<Pair<SnippetArticle, Callback<Bitmap>>> mPendingImageRequests =
@@ -133,6 +135,7 @@ public class FakeContextualSuggestionsSource extends ContextualSuggestionsSource
         cluster2.getSuggestions().add(article5);
 
         ContextualSuggestionsResult result = new ContextualSuggestionsResult(TEST_TOOLBAR_TITLE);
+        result.setPeekConditions(new PeekConditions(0f, TEST_PEEK_DELAY_SECONDS, TEST_PEEK_COUNT));
         result.getClusters().add(cluster1);
         result.getClusters().add(cluster2);
 

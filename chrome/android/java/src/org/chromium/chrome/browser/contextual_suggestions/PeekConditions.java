@@ -29,4 +29,21 @@ public class PeekConditions {
         mMinimumSecondsOnPage = minimumSecondsOnPage;
         mMaximumNumberOfPeeks = maximumNumberOfPeeks;
     }
+
+    /**
+     * @return The percentage of the page that the user scrolls required for an auto peek to occur.
+     */
+    public float getPageScrollPercentage() {
+        return mPageScrollPercentage;
+    }
+
+    /** @return The minimum time (seconds) the user spends on the page required for auto peek. */
+    public float getMinimumSecondsOnPage() {
+        return mMinimumSecondsOnPage;
+    }
+
+    /** @return The maximum number of auto peeks that we can show for this page. */
+    public float getMaximumNumberOfPeeks() {
+        return mMaximumNumberOfPeeks;
+    }
 }

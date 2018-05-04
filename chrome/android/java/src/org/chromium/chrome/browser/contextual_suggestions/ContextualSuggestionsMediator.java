@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.contextual_suggestions;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.View;
@@ -46,6 +48,7 @@ class ContextualSuggestionsMediator
     private final ChromeFullscreenManager mFullscreenManager;
     private final View mIphParentView;
     private final EnabledStateMonitor mEnabledStateMonitor;
+    private final Handler mHandler = new Handler();
 
     private @Nullable ContextualSuggestionsSource mSuggestionsSource;
     private @Nullable FetchHelper mFetchHelper;
@@ -55,6 +58,10 @@ class ContextualSuggestionsMediator
 
     private boolean mDidSuggestionsShowForTab;
     private boolean mHasRecordedPeekEventForTab;
+
+    private boolean mHasPeekDelayPassed;
+    private boolean mUpdateRemainingCountOnNextPeek;
+    private float mRemainingPeekCount;
 
     /** Whether the content sheet is observed to be opened for the first time. */
     private boolean mHasSheetBeenOpened;
@@ -146,6 +153,7 @@ class ContextualSuggestionsMediator
                                          .createContextualSuggestionsSource(mProfile);
             mFetchHelper = ContextualSuggestionsDependencyFactory.getInstance().createFetchHelper(
                     this, mTabModelSelector);
+            mFetchHelper.initialize();
         } else {
             clearSuggestions();
 
@@ -177,11 +185,31 @@ class ContextualSuggestionsMediator
         mCurrentRequestUrl = url;
         mSuggestionsSource.fetchSuggestions(url, (suggestionsResult) -> {
             if (mSuggestionsSource == null) return;
+            assert mFetchHelper != null;
 
             // Avoiding double fetches causing suggestions for incorrect context.
             if (!TextUtils.equals(url, mCurrentRequestUrl)) return;
 
             List<ContextualSuggestionsCluster> clusters = suggestionsResult.getClusters();
+
+            PeekConditions peekConditions = suggestionsResult.getPeekConditions();
+            mRemainingPeekCount = peekConditions.getMaximumNumberOfPeeks();
+            long remainingDelay =
+                    mFetchHelper.getFetchTimeBaselineMillis(mTabModelSelector.getCurrentTab())
+                    + Math.round(peekConditions.getMinimumSecondsOnPage() * 1000)
+                    - SystemClock.uptimeMillis();
+            Runnable runnable = () -> mHasPeekDelayPassed = true;
+
+            if (remainingDelay <= 0) {
+                // Don't postDelayed if the minimum delay has passed so that the suggestions may
+                // be shown through the following #showContentInSheet() call.
+                runnable.run();
+            } else {
+                // Once delay expires, the bottom sheet can be peeked the next time the browser
+                // controls are fully hidden and reshown. Note that this triggering is handled by
+                // FullscreenListener#onControlsOffsetChanged() in this class.
+                mHandler.postDelayed(runnable, remainingDelay);
+            }
 
             if (clusters.size() > 0 && clusters.get(0).getSuggestions().size() > 0) {
                 preloadContentInSheet(
@@ -236,6 +264,10 @@ class ContextualSuggestionsMediator
         mDidSuggestionsShowForTab = false;
         mHasRecordedPeekEventForTab = false;
         mHasSheetBeenOpened = false;
+        mHandler.removeCallbacksAndMessages(null);
+        mHasPeekDelayPassed = false;
+        mUpdateRemainingCountOnNextPeek = false;
+        mRemainingPeekCount = 0f;
         mModel.setClusterList(new ClusterList(Collections.emptyList()));
         mModel.setCloseButtonOnClickListener(null);
         mModel.setMenuButtonVisibility(false);
@@ -278,11 +310,19 @@ class ContextualSuggestionsMediator
     }
 
     private void showContentInSheet() {
+        if (!mHasPeekDelayPassed || !hasRemainingPeek()) return;
+
         mDidSuggestionsShowForTab = true;
+        mUpdateRemainingCountOnNextPeek = true;
 
         mSheetObserver = new EmptyBottomSheetObserver() {
             @Override
             public void onSheetFullyPeeked() {
+                if (mUpdateRemainingCountOnNextPeek) {
+                    mUpdateRemainingCountOnNextPeek = false;
+                    --mRemainingPeekCount;
+                }
+
                 if (mHasRecordedPeekEventForTab) return;
                 assert !mHasSheetBeenOpened;
 
@@ -297,6 +337,17 @@ class ContextualSuggestionsMediator
             @Override
             public void onSheetOffsetChanged(float heightFraction) {
                 if (mHelpBubble != null) mHelpBubble.dismiss();
+
+                // When sheet is fully hidden, clear suggestions if the sheet is not allowed to peek
+                // anymore or reset mUpdateCountOnNextPeek so mRemainingPeekCount is updated the
+                // next time the sheet fully peeks.
+                if (Float.compare(0f, heightFraction) == 0) {
+                    if (hasRemainingPeek()) {
+                        mUpdateRemainingCountOnNextPeek = true;
+                    } else {
+                        clearSuggestions();
+                    }
+                }
             }
 
             @Override
@@ -324,6 +375,10 @@ class ContextualSuggestionsMediator
 
         mCoordinator.addBottomSheetObserver(mSheetObserver);
         mCoordinator.showContentInSheet();
+    }
+
+    private boolean hasRemainingPeek() {
+        return Float.compare(mRemainingPeekCount, 1f) >= 0;
     }
 
     private void maybeShowHelpBubble() {
@@ -371,7 +426,8 @@ class ContextualSuggestionsMediator
     }
 
     @VisibleForTesting
-    void showContentInSheetForTesting() {
+    void showContentInSheetForTesting(boolean disablePeekDelay) {
+        if (disablePeekDelay) mHasPeekDelayPassed = true;
         showContentInSheet();
     }
 
