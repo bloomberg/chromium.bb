@@ -13,5 +13,8 @@ include_rules = [
 specific_include_rules = {
   "run_all_unittests.cc": [
     "+mojo/edk/embedder",
-  ]
+  ],
+  "ax_assistant_util.h": [
+    "+ui/accessibility/mojom",
+  ],
 }
