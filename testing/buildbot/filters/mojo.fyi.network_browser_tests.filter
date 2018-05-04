@@ -151,7 +151,6 @@
 -ExtensionWebRequestApiTest.WebRequestTypes
 -ExtensionWebRequestApiTest.WebRequestTestOSDD
 -ExtensionWebRequestApiTest.WebRequestURLFetcherInterception
--LocalNTPInterceptionWebRequestAPITest.OneGoogleBarRequestsHidden
 
 # https://crbug.com/721400
 # WebSocket with the network service
