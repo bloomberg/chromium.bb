@@ -386,4 +386,16 @@ id<GREYMatcher> RecentTabsMenuButton() {
   return grey_accessibilityID(kToolsMenuOtherDevicesId);
 }
 
+id<GREYMatcher> SystemSelectionCallout() {
+  return grey_kindOfClass(NSClassFromString(@"UICalloutBarButton"));
+}
+
+id<GREYMatcher> SystemSelectionCalloutCopyButton() {
+  return grey_accessibilityLabel(@"Copy");
+}
+
+id<GREYMatcher> ContextMenuCopyButton() {
+  return ButtonWithAccessibilityLabelId(IDS_IOS_CONTENT_CONTEXT_COPY);
+}
+
 }  // namespace chrome_test_util

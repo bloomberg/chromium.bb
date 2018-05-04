@@ -10,6 +10,12 @@
 #import "ios/web/public/web_state/context_menu_params.h"
 
 namespace web {
+
+// Returns true if the |element| dictionary contains enough information to
+// present a context menu. (A valid url for either kContextMenuElementHyperlink
+// or kContextMenuElementSource must exist in the dicitionary.)
+BOOL CanShowContextMenuForElementDictionary(NSDictionary* element);
+
 // creates a ContextMenuParams from a NSDictionary representing an HTML element.
 // The fields "href", "src", "title", "referrerPolicy" and "innerText" will
 // be used (if present) to generate the ContextMenuParams.
@@ -17,6 +23,7 @@ namespace web {
 // This constructor does not set fields relative to the touch event (view and
 // location).
 ContextMenuParams ContextMenuParamsFromElementDictionary(NSDictionary* element);
+
 }  // namespace web
 
 #endif  // IOS_WEB_WEB_STATE_CONTEXT_MENU_PARAMS_UTILS_H_

@@ -32,8 +32,11 @@
 #endif
 
 using chrome_test_util::ButtonWithAccessibilityLabelId;
+using chrome_test_util::ContextMenuCopyButton;
 using chrome_test_util::OmniboxText;
 using chrome_test_util::OpenLinkInNewTabButton;
+using chrome_test_util::SystemSelectionCallout;
+using chrome_test_util::SystemSelectionCalloutCopyButton;
 
 namespace {
 const char kServerFilesDir[] = "ios/testing/data/http_server_files/";
@@ -44,11 +47,14 @@ const char kUrlInitialPage[] = "/scenarioContextMenuOpenInNewTab";
 const char kUrlDestinationPage[] = "/destination";
 const char kChromiumImageID[] = "chromium_image";
 const char kDestinationLinkID[] = "link";
+const char kDestinationPageMessageID[] = "message";
 
 // HTML content of the destination page that sets the page title.
 const char kDestinationHtml[] =
-    "<html><body><script>document.title='new doc'</script>You made it!"
+    "<html><body><script>document.title='new doc'</script>"
+    "<span id=\"message\">You made it!</span>"
     "</body></html>";
+const char kDestinationPageText[] = "You made it!";
 
 // Matcher for the open image button in the context menu.
 id<GREYMatcher> OpenImageButton() {
@@ -445,6 +451,30 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
                                    ^(NSString* error) {
                                      GREYFail(error);
                                    });
+}
+
+// Tests that the system selected text callout is displayed instead of the
+// context menu when user long presses on plain text.
+- (void)testContextMenuSelectedTextCalloutPostMessage {
+  base::test::ScopedFeatureList scopedFeatureList;
+  scopedFeatureList.InitAndEnableFeature(
+      web::features::kContextMenuElementPostMessage);
+
+  // Load the destination page directly because it has a plain text message on
+  // it.
+  const GURL destinationURL = self.testServer->GetURL(kUrlDestinationPage);
+  [ChromeEarlGrey loadURL:destinationURL];
+  [ChromeEarlGrey waitForWebViewContainingText:kDestinationPageText];
+
+  LongPressElement(kDestinationPageMessageID);
+
+  // Verify that context menu is not shown.
+  [[EarlGrey selectElementWithMatcher:ContextMenuCopyButton()]
+      assertWithMatcher:grey_nil()];
+
+  // Verify that system text selection callout is displayed.
+  [[[EarlGrey selectElementWithMatcher:SystemSelectionCalloutCopyButton()]
+      inRoot:SystemSelectionCallout()] assertWithMatcher:grey_notNil()];
 }
 
 @end

@@ -15,6 +15,18 @@
 
 namespace web {
 
+BOOL CanShowContextMenuForElementDictionary(NSDictionary* element) {
+  NSString* href = element[kContextMenuElementHyperlink];
+  if (GURL(base::SysNSStringToUTF8(href)).is_valid()) {
+    return YES;
+  }
+  NSString* src = element[kContextMenuElementSource];
+  if (GURL(base::SysNSStringToUTF8(src)).is_valid()) {
+    return YES;
+  }
+  return NO;
+}
+
 ContextMenuParams ContextMenuParamsFromElementDictionary(
     NSDictionary* element) {
   ContextMenuParams params;
