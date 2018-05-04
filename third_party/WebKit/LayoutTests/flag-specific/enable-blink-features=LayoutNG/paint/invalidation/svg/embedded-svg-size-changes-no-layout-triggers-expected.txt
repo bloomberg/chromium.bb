@@ -20,7 +20,7 @@
         {
           "object": "LayoutNGBlockFlow HTML",
           "rect": [0, 0, 402, 202],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         },
         {
           "object": "LayoutSVGRect rect",

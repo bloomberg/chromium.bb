@@ -20,17 +20,17 @@
         {
           "object": "LayoutSVGContainer g id='content'",
           "rect": [16, 40, 784, 173],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         },
         {
           "object": "LayoutSVGContainer g id='content'",
           "rect": [16, 40, 784, 173],
-          "reason": "disappeared"
+          "reason": "chunk disappeared"
         },
         {
           "object": "LayoutSVGText text",
           "rect": [16, 40, 318, 173],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         }
       ]
     }

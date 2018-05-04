@@ -36,17 +36,17 @@
         {
           "object": "LayoutTextControl INPUT id='text'",
           "rect": [0, 997, 205, 22],
-          "reason": "appeared"
+          "reason": "subtree"
         },
         {
           "object": "LayoutTextControl INPUT id='text'",
           "rect": [0, 997, 205, 22],
-          "reason": "subtree"
+          "reason": "chunk appeared"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [3, 1003, 1, 13],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         }
       ],
       "transform": 1

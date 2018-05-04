@@ -51,7 +51,7 @@
         {
           "object": "Caret",
           "rect": [65, 4, 1, 16],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         }
       ]
     }

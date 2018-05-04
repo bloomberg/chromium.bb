@@ -20,12 +20,12 @@
         {
           "object": "LayoutBlockFlow (relative positioned) DIV",
           "rect": [108, 8, 100, 100],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV",
           "rect": [108, 8, 100, 100],
-          "reason": "disappeared"
+          "reason": "chunk disappeared"
         },
         {
           "object": "LayoutBlockFlow DIV",
@@ -35,7 +35,7 @@
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [8, 8, 100, 100],
-          "reason": "disappeared"
+          "reason": "chunk disappeared"
         },
         {
           "object": "InlineTextBox '\u00A0'",

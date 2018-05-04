@@ -20,12 +20,12 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [0, 50, 106, 106],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         },
         {
           "object": "LayoutBlockFlow HTML",
           "rect": [0, 50, 106, 106],
-          "reason": "disappeared"
+          "reason": "chunk disappeared"
         }
       ]
     }

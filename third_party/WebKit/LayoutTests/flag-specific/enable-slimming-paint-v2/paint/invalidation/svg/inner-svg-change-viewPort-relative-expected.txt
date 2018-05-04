@@ -14,7 +14,7 @@
         {
           "object": "InlineTextBox 'right-aligned text'",
           "rect": [93, 85, 107, 19],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         },
         {
           "object": "LayoutSVGViewportContainer svg id='inner'",
@@ -24,7 +24,7 @@
         {
           "object": "InlineTextBox 'right-aligned text'",
           "rect": [0, 85, 100, 19],
-          "reason": "disappeared"
+          "reason": "chunk disappeared"
         },
         {
           "object": "LayoutSVGContainer use",

@@ -50,6 +50,10 @@ const char* PaintInvalidationReasonToString(PaintInvalidationReason reason) {
       return "DocumentMarker change";
     case PaintInvalidationReason::kImage:
       return "image";
+    case PaintInvalidationReason::kChunkAppeared:
+      return "chunk appeared";
+    case PaintInvalidationReason::kChunkDisappeared:
+      return "chunk disappeared";
     case PaintInvalidationReason::kChunkUncacheable:
       return "chunk uncacheable";
     case PaintInvalidationReason::kChunkReordered:

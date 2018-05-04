@@ -20,12 +20,12 @@
         {
           "object": "NGPaintFragment",
           "rect": [8, 147, 768, 59],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         },
         {
           "object": "NGPaintFragment",
           "rect": [8, 147, 768, 39],
-          "reason": "disappeared"
+          "reason": "chunk disappeared"
         },
         {
           "object": "LayoutIFrame IFRAME id='iframe'",
@@ -35,7 +35,7 @@
         {
           "object": "LayoutNGBlockFlow HTML",
           "rect": [18, 18, 22, 19],
-          "reason": "disappeared"
+          "reason": "chunk disappeared"
         }
       ]
     }

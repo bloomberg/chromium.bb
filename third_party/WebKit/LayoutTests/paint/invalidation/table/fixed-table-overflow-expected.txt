@@ -20,7 +20,7 @@
         {
           "object": "LayoutBlockFlow (positioned) TD id='moveMe' class='fixed'",
           "rect": [0, 100, 200, 100],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         },
         {
           "object": "LayoutTableCell TD id='moveMe'",

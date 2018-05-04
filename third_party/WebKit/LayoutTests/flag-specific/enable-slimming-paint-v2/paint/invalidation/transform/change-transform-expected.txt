@@ -9,22 +9,22 @@
         {
           "object": "LayoutBlockFlow HTML",
           "rect": [10, 10, 774, 191],
-          "reason": "disappeared"
+          "reason": "chunk disappeared"
         },
         {
           "object": "LayoutBlockFlow HTML",
           "rect": [10, 126, 774, 75],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='overlay'",
           "rect": [35, 35, 50, 50],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         },
         {
           "object": "LayoutBlockFlow DIV id='square'",
           "rect": [35, 35, 50, 50],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         }
       ]
     }

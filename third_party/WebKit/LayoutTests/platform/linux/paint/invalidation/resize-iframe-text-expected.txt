@@ -25,12 +25,12 @@
         {
           "object": "LayoutBlockFlow HTML",
           "rect": [8, 300, 60, 22],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         },
         {
           "object": "LayoutView #document",
           "rect": [485, 0, 15, 200],
-          "reason": "disappeared"
+          "reason": "chunk disappeared"
         }
       ]
     }

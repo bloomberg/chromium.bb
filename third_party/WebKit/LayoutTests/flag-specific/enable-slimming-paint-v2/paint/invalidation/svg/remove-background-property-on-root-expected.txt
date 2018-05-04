@@ -14,7 +14,7 @@
         {
           "object": "LayoutSVGRoot svg",
           "rect": [8, 8, 100, 100],
-          "reason": "disappeared"
+          "reason": "chunk disappeared"
         }
       ]
     }

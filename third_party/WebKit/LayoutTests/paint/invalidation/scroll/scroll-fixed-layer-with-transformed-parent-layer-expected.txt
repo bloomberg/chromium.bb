@@ -20,12 +20,12 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV class='absolute green'",
           "rect": [93, 234, 142, 143],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV class='absolute red'",
           "rect": [93, 234, 142, 143],
-          "reason": "disappeared"
+          "reason": "chunk disappeared"
         }
       ],
       "transform": 1

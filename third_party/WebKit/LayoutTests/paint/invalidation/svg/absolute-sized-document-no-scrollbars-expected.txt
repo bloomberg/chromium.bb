@@ -25,12 +25,12 @@
         {
           "object": "LayoutSVGRoot svg",
           "rect": [0, 0, 577, 433],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         },
         {
           "object": "LayoutSVGRoot svg",
           "rect": [0, 0, 481, 361],
-          "reason": "disappeared"
+          "reason": "chunk disappeared"
         }
       ]
     }

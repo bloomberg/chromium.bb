@@ -405,7 +405,7 @@
         {
           "object": "LayoutView #document",
           "rect": [485, 0, 15, 600],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         }
       ]
     }

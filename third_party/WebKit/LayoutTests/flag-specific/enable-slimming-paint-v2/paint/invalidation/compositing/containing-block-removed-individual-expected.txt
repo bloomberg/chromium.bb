@@ -10,7 +10,7 @@ CONSOLE MESSAGE: line 30: debug
         {
           "object": "LayoutBlockFlow (positioned) DIV class='fixed'",
           "rect": [50, 50, 75, 75],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         }
       ]
     },
@@ -24,7 +24,7 @@ CONSOLE MESSAGE: line 30: debug
         {
           "object": "LayoutBlockFlow (positioned) DIV class='fixed'",
           "rect": [50, 50, 75, 75],
-          "reason": "disappeared"
+          "reason": "chunk disappeared"
         }
       ]
     }

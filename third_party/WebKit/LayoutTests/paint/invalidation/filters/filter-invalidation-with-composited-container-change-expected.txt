@@ -20,7 +20,7 @@
         {
           "object": "LayoutBlockFlow DIV id='box' class='green drop-shadowed box'",
           "rect": [8, 8, 330, 330],
-          "reason": "disappeared"
+          "reason": "chunk disappeared"
         }
       ]
     },

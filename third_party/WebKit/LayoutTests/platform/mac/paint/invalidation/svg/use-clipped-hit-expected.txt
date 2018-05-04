@@ -20,12 +20,12 @@
         {
           "object": "InlineTextBox 'Unknown'",
           "rect": [90, 116, 64, 18],
-          "reason": "disappeared"
+          "reason": "chunk disappeared"
         },
         {
           "object": "InlineTextBox 'Passed'",
           "rect": [90, 116, 44, 18],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         }
       ]
     }

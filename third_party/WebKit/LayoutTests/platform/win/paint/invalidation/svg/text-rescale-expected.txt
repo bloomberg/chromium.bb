@@ -20,12 +20,12 @@
         {
           "object": "InlineTextBox 'PASS '",
           "rect": [0, 114, 192, 46],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         },
         {
           "object": "LayoutSVGRoot (positioned) svg",
           "rect": [0, 14, 192, 46],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         },
         {
           "object": "LayoutSVGViewportContainer svg",
@@ -35,7 +35,7 @@
         {
           "object": "LayoutSVGViewportContainer svg",
           "rect": [310, 14, 91, 46],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         },
         {
           "object": "LayoutSVGForeignObject foreignObject",
@@ -50,7 +50,7 @@
         {
           "object": "LayoutSVGContainer g id='text3g'",
           "rect": [0, 3, 8, 2],
-          "reason": "disappeared"
+          "reason": "chunk disappeared"
         },
         {
           "object": "LayoutSVGViewportContainer svg",

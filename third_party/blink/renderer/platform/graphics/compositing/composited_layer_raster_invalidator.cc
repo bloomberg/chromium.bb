@@ -134,7 +134,7 @@ void CompositedLayerRasterInvalidator::GenerateRasterInvalidations(
     if (matched_old_index == kNotFound) {
       // The new chunk doesn't match any old chunk.
       FullyInvalidateNewChunk(new_chunk_info,
-                              PaintInvalidationReason::kAppeared);
+                              PaintInvalidationReason::kChunkAppeared);
       continue;
     }
 
@@ -186,7 +186,7 @@ void CompositedLayerRasterInvalidator::GenerateRasterInvalidations(
       continue;
     FullyInvalidateOldChunk(paint_chunks_info_[i],
                             paint_chunks_info_[i].is_cacheable
-                                ? PaintInvalidationReason::kDisappeared
+                                ? PaintInvalidationReason::kChunkDisappeared
                                 : PaintInvalidationReason::kChunkUncacheable);
   }
 }

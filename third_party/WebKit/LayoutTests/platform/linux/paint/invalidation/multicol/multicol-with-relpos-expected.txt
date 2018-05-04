@@ -18,33 +18,16 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutSVGText text id='bounce'",
-          "rect": [80, 0, 551, 118],
+          "object": "LayoutBlockFlow (relative positioned) DIV id='target'",
+          "rect": [508, 28, 150, 20],
           "reason": "chunk appeared"
-        },
-        {
-          "object": "LayoutSVGRoot svg",
-          "rect": [30, 0, 404, 60],
-          "reason": "chunk disappeared"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutSVGText text id='bounce'",
-      "reason": "full"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "full"
-    },
-    {
-      "object": "LayoutSVGInlineText #text",
-      "reason": "style change"
-    },
-    {
-      "object": "InlineTextBox 'Repaint me!'",
+      "object": "LayoutBlockFlow (relative positioned) DIV id='target'",
       "reason": "style change"
     }
   ]

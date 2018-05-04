@@ -20,7 +20,7 @@
         {
           "object": "LayoutSVGViewportContainer svg id='inner1'",
           "rect": [0, 0, 200, 200],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         },
         {
           "object": "InlineTextBox 'PASS '",

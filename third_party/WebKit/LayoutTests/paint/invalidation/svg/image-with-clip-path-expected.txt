@@ -20,7 +20,7 @@
         {
           "object": "LayoutSVGImage image",
           "rect": [20, 20, 60, 60],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         },
         {
           "object": "LayoutSVGImage image",

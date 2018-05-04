@@ -9,7 +9,7 @@
         {
           "object": "LayoutSVGPath path id='path'",
           "rect": [29, 29, 142, 92],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         },
         {
           "object": "LayoutSVGPath path id='path'",

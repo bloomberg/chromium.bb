@@ -25,7 +25,7 @@
         {
           "object": "LayoutBlockFlow HTML",
           "rect": [58, 234, 489, 537],
-          "reason": "disappeared"
+          "reason": "chunk disappeared"
         },
         {
           "object": "LayoutImage IMG",

@@ -9,12 +9,12 @@
         {
           "object": "LayoutTable (relative positioned) TABLE",
           "rect": [8, 206, 110, 198],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         },
         {
           "object": "LayoutTable (relative positioned) TABLE",
           "rect": [11, 206, 74, 181],
-          "reason": "disappeared"
+          "reason": "chunk disappeared"
         }
       ]
     }
