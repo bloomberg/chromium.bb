@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_FOREGROUND_ANIMATOR_H_
-#define IOS_CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_FOREGROUND_ANIMATOR_H_
+#ifndef IOS_CHROME_BROWSER_UI_FULLSCREEN_TOOLBAR_REVEAL_ANIMATOR_H_
+#define IOS_CHROME_BROWSER_UI_FULLSCREEN_TOOLBAR_REVEAL_ANIMATOR_H_
 
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
 
-// When the application is foregrounded, the toolbar is expected to animate into
-// view.  This animator is used by FullscreenController to coordinate this
-// animation.
-@interface FullscreenForegroundAnimator : FullscreenAnimator
+// A FullscreenAnimator used to show the toolbar.
+@interface ToolbarRevealAnimator : FullscreenAnimator
 
 - (instancetype)initWithStartProgress:(CGFloat)startProgress
     NS_DESIGNATED_INITIALIZER;
@@ -19,4 +17,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_FOREGROUND_ANIMATOR_H_
+#endif  // IOS_CHROME_BROWSER_UI_FULLSCREEN_TOOLBAR_REVEAL_ANIMATOR_H_

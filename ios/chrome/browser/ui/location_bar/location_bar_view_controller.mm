@@ -7,9 +7,7 @@
 #import "ios/chrome/browser/ui/commands/activity_service_commands.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_foreground_animator.h"
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_scroll_end_animator.h"
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_scroll_to_top_animator.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
 #include "ios/chrome/browser/ui/location_bar/location_bar_edit_view.h"
 #include "ios/chrome/browser/ui/location_bar/location_bar_steady_view.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
@@ -155,18 +153,15 @@ typedef NS_ENUM(int, TrailingButtonState) {
     [self updateForFullscreenProgress:1.0];
 }
 
-- (void)finishFullscreenScrollWithAnimator:
-    (FullscreenScrollEndAnimator*)animator {
+- (void)finishFullscreenScrollWithAnimator:(FullscreenAnimator*)animator {
   [self addFullscreenAnimationsToAnimator:animator];
 }
 
-- (void)scrollFullscreenToTopWithAnimator:
-    (FullscreenScrollToTopAnimator*)animator {
+- (void)scrollFullscreenToTopWithAnimator:(FullscreenAnimator*)animator {
   [self addFullscreenAnimationsToAnimator:animator];
 }
 
-- (void)showToolbarForForgroundWithAnimator:
-    (FullscreenForegroundAnimator*)animator {
+- (void)showToolbarWithAnimator:(FullscreenAnimator*)animator {
   [self addFullscreenAnimationsToAnimator:animator];
 }
 

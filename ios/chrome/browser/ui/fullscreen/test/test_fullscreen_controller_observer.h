@@ -12,7 +12,7 @@ class TestFullscreenControllerObserver : public FullscreenControllerObserver {
  public:
   CGFloat progress() const { return progress_; }
   bool enabled() const { return enabled_; }
-  FullscreenScrollEndAnimator* animator() const { return animator_; }
+  FullscreenAnimator* animator() const { return animator_; }
 
  private:
   // FullscreenControllerObserver:
@@ -20,13 +20,16 @@ class TestFullscreenControllerObserver : public FullscreenControllerObserver {
                                  CGFloat progress) override;
   void FullscreenEnabledStateChanged(FullscreenController* controller,
                                      bool enabled) override;
-  void FullscreenScrollEventEnded(
-      FullscreenController* controller,
-      FullscreenScrollEndAnimator* animator) override;
+  void FullscreenScrollEventEnded(FullscreenController* controller,
+                                  FullscreenAnimator* animator) override;
+  void FullscreenWillEnterForeground(FullscreenController* controller,
+                                     FullscreenAnimator* animator) override;
+  void FullscreenModelWasReset(FullscreenController* controller,
+                               FullscreenAnimator* aniamtor) override;
 
   CGFloat progress_ = 0.0;
   bool enabled_ = true;
-  __weak FullscreenScrollEndAnimator* animator_ = nil;
+  __weak FullscreenAnimator* animator_ = nil;
 };
 
 #endif  // IOS_CHROME_BROWSER_UI_FULLSCREEN_TEST_TEST_FULLSCREEN_CONTROLLER_OBSERVER_H_

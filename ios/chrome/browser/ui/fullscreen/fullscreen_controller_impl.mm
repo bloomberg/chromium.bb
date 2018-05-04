@@ -87,6 +87,10 @@ CGFloat FullscreenControllerImpl::GetProgress() const {
   return model_->progress();
 }
 
+void FullscreenControllerImpl::ResetModel() {
+  mediator_->AnimateModelReset();
+}
+
 void FullscreenControllerImpl::Shutdown() {
   mediator_->Disconnect();
   [notification_observer_ disconnect];

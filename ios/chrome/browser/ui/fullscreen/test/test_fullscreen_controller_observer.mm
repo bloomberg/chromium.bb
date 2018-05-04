@@ -15,17 +15,27 @@ void TestFullscreenControllerObserver::FullscreenProgressUpdated(
     CGFloat progress) {
   progress_ = progress;
 }
+
 void TestFullscreenControllerObserver::FullscreenEnabledStateChanged(
     FullscreenController* controller,
     bool enabled) {
   enabled_ = enabled;
 }
+
 void TestFullscreenControllerObserver::FullscreenScrollEventEnded(
     FullscreenController* controller,
-    FullscreenScrollEndAnimator* animator) {
+    FullscreenAnimator* animator) {
   animator_ = animator;
-  // An animator must have at least one animation block when started, so insert
-  // a no-op block.
-  [animator_ addAnimations:^{
-  }];
+}
+
+void TestFullscreenControllerObserver::FullscreenWillEnterForeground(
+    FullscreenController* controller,
+    FullscreenAnimator* animator) {
+  animator_ = animator;
+}
+
+void TestFullscreenControllerObserver::FullscreenModelWasReset(
+    FullscreenController* controller,
+    FullscreenAnimator* animator) {
+  animator_ = animator;
 }

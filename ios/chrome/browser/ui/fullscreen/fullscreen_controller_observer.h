@@ -10,9 +10,7 @@
 #include "base/macros.h"
 
 class FullscreenController;
-@class FullscreenForegroundAnimator;
-@class FullscreenScrollEndAnimator;
-@class FullscreenScrollToTopAnimator;
+@class FullscreenAnimator;
 
 // Interface for listening to fullscreen state.
 class FullscreenControllerObserver {
@@ -33,23 +31,26 @@ class FullscreenControllerObserver {
 
   // Invoked when a scroll event being observed by |controller| has ended.
   // Observers can add animations to |animator|.
-  virtual void FullscreenScrollEventEnded(
-      FullscreenController* controller,
-      FullscreenScrollEndAnimator* animator) {}
+  virtual void FullscreenScrollEventEnded(FullscreenController* controller,
+                                          FullscreenAnimator* animator) {}
 
   // Invoked to scroll the main content view to the top.  FullscreenUIElements
   // are expected add animations that scroll the content to the top and fully
   // show the toolbar.
-  virtual void FullscreenWillScrollToTop(
-      FullscreenController* controller,
-      FullscreenScrollToTopAnimator* animator) {}
+  virtual void FullscreenWillScrollToTop(FullscreenController* controller,
+                                         FullscreenAnimator* animator) {}
 
   // Invoked when the application is about to enter the foreground.
   // FullscreenUIElements are expected to add animations to |animator| to show
   // the toolbar.
-  virtual void FullscreenWillEnterForeground(
-      FullscreenController* controller,
-      FullscreenForegroundAnimator* animator) {}
+  virtual void FullscreenWillEnterForeground(FullscreenController* controller,
+                                             FullscreenAnimator* animator) {}
+
+  // Invoked when FullscreenController::ResetModel() is called.
+  // FullscreenUIElements are expected to add animations to |animator| to show
+  // the toolbar.
+  virtual void FullscreenModelWasReset(FullscreenController* controller,
+                                       FullscreenAnimator* animator) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FullscreenControllerObserver);

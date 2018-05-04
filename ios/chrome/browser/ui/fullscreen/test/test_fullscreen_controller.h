@@ -25,6 +25,7 @@ class TestFullscreenController : public FullscreenController {
   void IncrementDisabledCounter() override;
   void DecrementDisabledCounter() override;
   CGFloat GetProgress() const override;
+  void ResetModel() override;
 
  private:
   // The model.

@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_content_adjustment_util.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_model.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/web/public/web_state/web_state.h"
@@ -19,9 +20,11 @@ FullscreenWebStateListObserver::FullscreenWebStateListObserver(
     FullscreenModel* model,
     WebStateList* web_state_list,
     FullscreenMediator* mediator)
-    : model_(model),
+    : controller_(controller),
+      model_(model),
       web_state_list_(web_state_list),
       web_state_observer_(controller, model, mediator) {
+  DCHECK(controller_);
   DCHECK(model_);
   DCHECK(web_state_list_);
   web_state_list_->AddObserver(this);
@@ -37,6 +40,16 @@ void FullscreenWebStateListObserver::Disconnect() {
   web_state_list_->RemoveObserver(this);
   web_state_list_ = nullptr;
   web_state_observer_.SetWebState(nullptr);
+}
+
+void FullscreenWebStateListObserver::WebStateInsertedAt(
+    WebStateList* web_state_list,
+    web::WebState* web_state,
+    int index,
+    bool activating) {
+  DCHECK_EQ(web_state_list_, web_state_list);
+  if (activating && controller_->IsEnabled())
+    controller_->ResetModel();
 }
 
 void FullscreenWebStateListObserver::WebStateReplacedAt(

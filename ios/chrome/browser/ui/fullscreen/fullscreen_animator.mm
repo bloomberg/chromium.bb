@@ -79,6 +79,8 @@
   // stopping, as |fractionComplete| is reset to 0.0 for stopped animators.
   if (self.state == UIViewAnimatingStateActive)
     _progressUponStopping = self.currentProgress;
+  if (_progressUponStopping == _startProgress)
+    return;
   [super stopAnimation:withoutFinishing];
 }
 

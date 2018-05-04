@@ -8,6 +8,7 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_scroll_end_animator.h"
 #import "ios/chrome/browser/ui/fullscreen/test/fullscreen_model_test_util.h"
 #import "ios/chrome/browser/ui/fullscreen/test/test_fullscreen_controller_observer.h"
+#import "ios/chrome/browser/ui/fullscreen/test/test_fullscreen_mediator.h"
 #include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -17,14 +18,13 @@
 // Test fixture for FullscreenMediator.
 class FullscreenMediatorTest : public PlatformTest {
  public:
-  FullscreenMediatorTest()
-      : PlatformTest(), observer_manager_(controller(), &model_) {
+  FullscreenMediatorTest() : PlatformTest(), mediator_(controller(), &model_) {
     SetUpFullscreenModelForTesting(&model_, 100);
-    observer_manager_.AddObserver(&observer_);
+    mediator_.AddObserver(&observer_);
   }
   ~FullscreenMediatorTest() override {
-    observer_manager_.RemoveObserver(&observer_);
-    observer_manager_.Disconnect();
+    mediator_.RemoveObserver(&observer_);
+    mediator_.Disconnect();
   }
 
   FullscreenController* controller() {
@@ -38,7 +38,7 @@ class FullscreenMediatorTest : public PlatformTest {
 
  private:
   FullscreenModel model_;
-  FullscreenMediator observer_manager_;
+  TestFullscreenMediator mediator_;
   TestFullscreenControllerObserver observer_;
 };
 
@@ -47,7 +47,7 @@ class FullscreenMediatorTest : public PlatformTest {
 TEST_F(FullscreenMediatorTest, ObserveProgressAndScrollEnd) {
   SimulateFullscreenUserScrollForProgress(&model(), 0.5);
   EXPECT_EQ(observer().progress(), 0.5);
-  FullscreenScrollEndAnimator* animator = observer().animator();
+  FullscreenAnimator* animator = observer().animator();
   EXPECT_TRUE(animator);
   EXPECT_EQ(animator.startProgress, 0.5);
   EXPECT_EQ(animator.finalProgress, 1.0);

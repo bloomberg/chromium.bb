@@ -275,8 +275,6 @@ source_set("ui_internal") {
     "fade_truncated_label.mm",
     "key_commands_provider.h",
     "key_commands_provider.mm",
-    "new_foreground_tab_fullscreen_disabler.h",
-    "new_foreground_tab_fullscreen_disabler.mm",
     "open_in_controller.h",
     "open_in_controller.mm",
     "open_in_controller_testing.h",
