@@ -23,6 +23,7 @@
 #include "jni/ServiceWorkerPaymentAppBridge_jni.h"
 #include "third_party/blink/public/platform/modules/payments/payment_app.mojom.h"
 #include "ui/gfx/android/java_bitmap.h"
+#include "url/origin.h"
 
 namespace {
 
@@ -92,7 +93,8 @@ void OnGotAllPaymentApps(
         app_info.second->user_hint.empty()
             ? nullptr
             : ConvertUTF8ToJavaString(env, app_info.second->user_hint),
-        ConvertUTF8ToJavaString(env, app_info.second->scope.GetOrigin().spec()),
+        ConvertUTF8ToJavaString(
+            env, url::Origin::Create(app_info.second->scope).host()),
         app_info.second->icon == nullptr
             ? nullptr
             : gfx::ConvertToJavaBitmap(app_info.second->icon.get()),
