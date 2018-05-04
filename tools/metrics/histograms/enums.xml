@@ -7386,9 +7386,11 @@ Called by update_net_error_codes.py.-->
   <int value="7" label="Fetch completed"/>
   <int value="8" label="UI peek from reverse-scroll"/>
   <int value="9" label="UI opened"/>
-  <int value="10" label="UI closed"/>
+  <int value="10" label="UI closed (generic, obsolete)"/>
   <int value="11" label="Suggestion downloaded"/>
   <int value="12" label="Suggestion clicked"/>
+  <int value="13" label="UI dismissed without open"/>
+  <int value="14" label="UI dismissed after open"/>
 </enum>
 
 <enum name="CookieCommitProblem">

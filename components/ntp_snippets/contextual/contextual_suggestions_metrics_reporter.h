@@ -52,15 +52,21 @@ enum ContextualSuggestionsEvent {
   UI_PEEK_REVERSE_SCROLL = 8,
   // The UI sheet was opened.
   UI_OPENED = 9,
-  // The UI was closed (via the close box).
-  UI_CLOSED = 10,
+  // The UI was closed. General event for closed/dismissed, now obsolete.
+  UI_CLOSED_OBSOLETE = 10,
   // A suggestion was downloaded.
   SUGGESTION_DOWNLOADED = 11,
   // A suggestion was taken, either with a click, or opened in a separate tab.
   SUGGESTION_CLICKED = 12,
+  // The UI was dismissed without ever being opened. This means the sheet was
+  // closed while peeked before ever being expanded.
+  UI_DISMISSED_WITHOUT_OPEN = 13,
+  // The UI was dismissed after having been opened. This means the sheet was
+  // closed from any position after it was expanded at least once.
+  UI_DISMISSED_AFTER_OPEN = 14,
   // Special name that marks the maximum value in an Enum used for UMA.
   // https://cs.chromium.org/chromium/src/tools/metrics/histograms/README.md.
-  kMaxValue = SUGGESTION_CLICKED,
+  kMaxValue = UI_DISMISSED_AFTER_OPEN,
 };
 
 class ContextualSuggestionsMetricsReporter;

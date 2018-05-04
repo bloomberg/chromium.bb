@@ -262,8 +262,11 @@ class ContextualSuggestionsMediator
         mModel.setCloseButtonOnClickListener(view -> {
             TrackerFactory.getTrackerForProfile(mProfile).notifyEvent(
                     EventConstants.CONTEXTUAL_SUGGESTIONS_DISMISSED);
-            reportEvent(ContextualSuggestionsEvent.UI_CLOSED);
-
+            @ContextualSuggestionsEvent
+            int openedEvent =
+                    mHasSheetBeenOpened ? ContextualSuggestionsEvent.UI_DISMISSED_AFTER_OPEN
+                                        : ContextualSuggestionsEvent.UI_DISMISSED_WITHOUT_OPEN;
+            reportEvent(openedEvent);
             clearSuggestions();
         });
         mModel.setMenuButtonVisibility(false);

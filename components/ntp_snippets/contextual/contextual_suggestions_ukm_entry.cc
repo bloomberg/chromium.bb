@@ -70,10 +70,8 @@ void ContextualSuggestionsUkmEntry::RecordEventMetrics(
       was_sheet_opened_ = true;
       StartTimerIfNeeded();
       break;
-    case UI_CLOSED:
-      if (!was_sheet_opened_)
-        closed_from_peek_ = true;
-      StopTimerIfNeeded();
+    case UI_CLOSED_OBSOLETE:
+      NOTREACHED();
       break;
     case SUGGESTION_DOWNLOADED:
       any_suggestion_downloaded_ = true;
@@ -81,6 +79,13 @@ void ContextualSuggestionsUkmEntry::RecordEventMetrics(
       break;
     case SUGGESTION_CLICKED:
       any_suggestion_taken_ = true;
+      StopTimerIfNeeded();
+      break;
+    case UI_DISMISSED_WITHOUT_OPEN:
+      closed_from_peek_ = true;
+      StopTimerIfNeeded();
+      break;
+    case UI_DISMISSED_AFTER_OPEN:
       StopTimerIfNeeded();
       break;
   }
