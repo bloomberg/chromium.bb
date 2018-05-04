@@ -1200,25 +1200,6 @@
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 10
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
-          "--enable-features=VizDisplayCompositor",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/viz.browser_tests.filter"
-        ],
-        "name": "viz_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 10
-        },
-        "test": "browser_tests"
-      },
-      {
-        "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "cacheinvalidation_unittests"
@@ -1591,12 +1572,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "service_manager_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "services_unittests"
       },
       {
@@ -1645,12 +1620,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "ui_touch_selection_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "unit_tests"
       },
       {
         "swarming": {
@@ -1730,52 +1699,10 @@
         }
       },
       {
-        "isolate_name": "telemetry_perf_unittests",
-        "name": "telemetry_perf_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "hard_timeout": 960,
-          "shards": 12
-        }
-      },
-      {
-        "args": [
-          "--jobs=1"
-        ],
-        "isolate_name": "telemetry_unittests",
-        "name": "telemetry_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 4
-        }
-      },
-      {
         "isolate_name": "views_perftests",
         "name": "views_perftests",
         "swarming": {
           "can_use_on_swarming_builders": true
-        }
-      },
-      {
-        "args": [
-          "--zero-tests-executed-ok",
-          "--debug",
-          "--target",
-          "Debug_x64"
-        ],
-        "isolate_name": "webkit_layout_tests_exparchive",
-        "merge": {
-          "args": [
-            "--verbose"
-          ],
-          "script": "//third_party/blink/tools/merge_web_test_results.py"
-        },
-        "name": "webkit_layout_tests",
-        "only_retry_failed_tests": true,
-        "results_handler": "layout tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 12
         }
       },
       {
