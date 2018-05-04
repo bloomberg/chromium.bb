@@ -372,6 +372,22 @@
     'url_unittests': {},
   },
 
+  'chromeos_isolated_scripts': {
+    'telemetry_perf_unittests': {
+      'args': [
+        '--browser=cros-chrome',
+        # By default, CrOS VMs' ssh servers listen on local port 9222.
+        '--remote=127.0.0.1',
+        '--remote-ssh-port=9222',
+        '--xvfb',
+      ],
+      'swarming': {
+        'hard_timeout': 960,
+        'shards': 12,
+      },
+    },
+  },
+
   'chromeos_remote_device_isolated_tests': {
     'telemetry_perf_unittests': {
       'args': [

@@ -1066,7 +1066,13 @@ class MetaBuildWrapper(object):
           '--cfi-diag=%d' % cfi_diag,
       ]
     elif test_type == 'script':
-      cmdline = [
+      cmdline = []
+      # If we're testing a CrOS simplechrome build, assume we need to launch a
+      # VM first. So prepend the command to run with the VM launcher.
+      # TODO(bpastene): Differentiate between CrOS VM and hardware tests.
+      if is_simplechrome:
+        cmdline = [os.path.join('bin', 'launch_cros_vm')]
+      cmdline += [
           '../../testing/test_env.py',
           '../../' + self.ToSrcRelPath(isolate_map[target]['script'])
       ]
