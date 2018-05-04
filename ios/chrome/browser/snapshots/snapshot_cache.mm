@@ -49,6 +49,8 @@
 @interface SnapshotCache ()
 // List of observers to be notified of changes to the snapshot cache.
 @property(nonatomic, strong) SnapshotCacheObservers* observers;
+// Marked set of identifiers for which images should not be immediately deleted.
+@property(nonatomic, strong) NSMutableSet* markedIDs;
 
 // Remove all UIImages from |lruCache_|.
 - (void)handleEnterBackground;
@@ -259,8 +261,9 @@ void ConvertAndSaveGreyImage(NSString* session_id,
   SEQUENCE_CHECKER(sequenceChecker_);
 }
 
-@synthesize pinnedIDs = pinnedIDs_;
-@synthesize observers = observers_;
+@synthesize pinnedIDs = _pinnedIDs;
+@synthesize observers = _observers;
+@synthesize markedIDs = _markedIDs;
 
 - (instancetype)init {
   base::FilePath cacheDirectory;
@@ -282,7 +285,8 @@ void ConvertAndSaveGreyImage(NSString* session_id,
     taskRunner_ = base::CreateSequencedTaskRunnerWithTraits(
         {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
 
-    observers_ = [SnapshotCacheObservers observers];
+    _observers = [SnapshotCacheObservers observers];
+    _markedIDs = [[NSMutableSet alloc] init];
 
     [[NSNotificationCenter defaultCenter]
         addObserver:self
@@ -382,6 +386,10 @@ void ConvertAndSaveGreyImage(NSString* session_id,
 
 - (void)removeImageWithSessionID:(NSString*)sessionID {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequenceChecker_);
+  // Do not immediately delete if the ID is marked.
+  if ([self.markedIDs containsObject:sessionID])
+    return;
+
   [lruCache_ removeObjectForKey:sessionID];
 
   if (!taskRunner_)
@@ -399,6 +407,22 @@ void ConvertAndSaveGreyImage(NSString* session_id,
                            false /* recursive */);
         }
       }));
+}
+
+- (void)markImageWithSessionID:(NSString*)sessionID {
+  [self.markedIDs addObject:sessionID];
+}
+
+- (void)removeMarkedImages {
+  while (self.markedIDs.count > 0) {
+    NSString* sessionID = [self.markedIDs anyObject];
+    [self.markedIDs removeObject:sessionID];
+    [self removeImageWithSessionID:sessionID];
+  }
+}
+
+- (void)unmarkAllImages {
+  [self.markedIDs removeAllObjects];
 }
 
 - (base::FilePath)imagePathForSessionID:(NSString*)sessionID {
@@ -465,13 +489,13 @@ void ConvertAndSaveGreyImage(NSString* session_id,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequenceChecker_);
   NSMutableDictionary<NSString*, UIImage*>* dictionary =
       [NSMutableDictionary dictionaryWithCapacity:2];
-  for (NSString* sessionID in pinnedIDs_) {
+  for (NSString* sessionID in self.pinnedIDs) {
     UIImage* image = [lruCache_ objectForKey:sessionID];
     if (image)
       [dictionary setObject:image forKey:sessionID];
   }
   [lruCache_ removeAllObjects];
-  for (NSString* sessionID in pinnedIDs_)
+  for (NSString* sessionID in self.pinnedIDs)
     [lruCache_ setObject:[dictionary objectForKey:sessionID] forKey:sessionID];
 }
 
@@ -482,7 +506,7 @@ void ConvertAndSaveGreyImage(NSString* session_id,
 
 - (void)handleBecomeActive {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequenceChecker_);
-  for (NSString* sessionID in pinnedIDs_)
+  for (NSString* sessionID in self.pinnedIDs)
     [self retrieveImageForSessionID:sessionID
                            callback:^(UIImage*){
                            }];

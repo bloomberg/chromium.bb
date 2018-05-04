@@ -11,6 +11,8 @@
 #include "components/favicon/ios/web_favicon_driver.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#import "ios/chrome/browser/snapshots/snapshot_cache.h"
+#import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_consumer.h"
@@ -201,6 +203,7 @@ int GetIndexOfTabWithId(WebStateList* webStateList, NSString* identifier) {
 }
 
 - (void)insertNewItemAtIndex:(NSUInteger)index {
+  DCHECK(self.tabModel.browserState);
   web::WebState::CreateParams params(self.tabModel.browserState);
   std::unique_ptr<web::WebState> webState = web::WebState::Create(params);
   self.webStateList->InsertWebState(
@@ -239,6 +242,16 @@ int GetIndexOfTabWithId(WebStateList* webStateList, NSString* identifier) {
 - (void)saveAndCloseAllItems {
   if (self.webStateList->empty())
     return;
+  // Tell the cache to mark these images for deletion, rather than immediately
+  // deleting them.
+  DCHECK(self.tabModel.browserState);
+  SnapshotCache* cache =
+      SnapshotCacheFactory::GetForBrowserState(self.tabModel.browserState);
+  for (int i = 0; i < self.webStateList->count(); i++) {
+    web::WebState* webState = self.webStateList->GetWebStateAt(i);
+    TabIdTabHelper* tabHelper = TabIdTabHelper::FromWebState(webState);
+    [cache markImageWithSessionID:tabHelper->tab_id()];
+  }
   self.closedSessionWindow = SerializeWebStateList(self.webStateList);
   self.webStateList->CloseAllWebStates(WebStateList::CLOSE_USER_ACTION);
 }
@@ -246,16 +259,26 @@ int GetIndexOfTabWithId(WebStateList* webStateList, NSString* identifier) {
 - (void)undoCloseAllItems {
   if (!self.closedSessionWindow)
     return;
+  DCHECK(self.tabModel.browserState);
   web::WebState::CreateParams createParams(self.tabModel.browserState);
   DeserializeWebStateList(
       self.webStateList, self.closedSessionWindow,
       base::BindRepeating(&web::WebState::CreateWithStorageSession,
                           createParams));
   self.closedSessionWindow = nil;
+  // Unmark all images for deletion since they are now active tabs again.
+  ios::ChromeBrowserState* browserState = self.tabModel.browserState;
+  [SnapshotCacheFactory::GetForBrowserState(browserState) unmarkAllImages];
 }
 
 - (void)discardSavedClosedItems {
+  if (!self.closedSessionWindow)
+    return;
   self.closedSessionWindow = nil;
+  // Delete all marked images from the cache.
+  DCHECK(self.tabModel.browserState);
+  ios::ChromeBrowserState* browserState = self.tabModel.browserState;
+  [SnapshotCacheFactory::GetForBrowserState(browserState) removeMarkedImages];
 }
 
 #pragma mark - GridImageDataSource

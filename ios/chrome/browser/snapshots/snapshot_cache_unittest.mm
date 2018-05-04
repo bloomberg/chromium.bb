@@ -80,6 +80,16 @@ class SnapshotCacheTest : public PlatformTest {
     return UIGraphicsGetImageFromCurrentImageContext();
   }
 
+  // Generates an image of |size|, filled with a random color.
+  UIImage* GenerateRandomImage(CGSize size) {
+    UIGraphicsBeginImageContextWithOptions(size, /*opaque=*/NO,
+                                           UIScreen.mainScreen.scale);
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    UIImage* image = GenerateRandomImage(context);
+    UIGraphicsEndImageContext();
+    return image;
+  }
+
   // Flushes all the runloops internally used by the snapshot cache.
   void FlushRunLoops() {
     base::TaskScheduler::GetInstance()->FlushForTesting();
@@ -567,6 +577,41 @@ TEST_F(SnapshotCacheTest, DeleteRetinaImages) {
   FlushRunLoops();  // ensure the file is removed.
 
   EXPECT_FALSE(base::PathExists(retinaFile));
+}
+
+// Tests that a marked image does not immediately delete when calling
+// |-removeImageWithSessionID:|. Calling |-removeMarkedImages| immediately
+// deletes the marked image.
+TEST_F(SnapshotCacheTest, MarkedImageNotImmediatelyDeleted) {
+  SnapshotCache* cache = GetSnapshotCache();
+  UIImage* image =
+      GenerateRandomImage(CGSizeMake(kSnapshotPixelSize, kSnapshotPixelSize));
+  [cache setImage:image withSessionID:@"sessionID"];
+  base::FilePath image_path = [cache imagePathForSessionID:@"sessionID"];
+  [cache markImageWithSessionID:@"sessionID"];
+  [cache removeImageWithSessionID:@"sessionID"];
+  // Give enough time for deletion.
+  FlushRunLoops();
+  EXPECT_TRUE(base::PathExists(image_path));
+  [cache removeMarkedImages];
+  FlushRunLoops();
+  EXPECT_FALSE(base::PathExists(image_path));
+}
+
+// Tests that unmarked images are not deleted when calling
+// |-removeMarkedImages|.
+TEST_F(SnapshotCacheTest, UnmarkedImageNotDeleted) {
+  SnapshotCache* cache = GetSnapshotCache();
+  UIImage* image =
+      GenerateRandomImage(CGSizeMake(kSnapshotPixelSize, kSnapshotPixelSize));
+  [cache setImage:image withSessionID:@"sessionID"];
+  base::FilePath image_path = [cache imagePathForSessionID:@"sessionID"];
+  [cache markImageWithSessionID:@"sessionID"];
+  [cache unmarkAllImages];
+  [cache removeMarkedImages];
+  // Give enough time for deletion.
+  FlushRunLoops();
+  EXPECT_TRUE(base::PathExists(image_path));
 }
 
 }  // namespace
