@@ -231,7 +231,7 @@ TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLWithViaHeader) {
   net::MockClientSocketFactory mock_socket_factory;
   net::MockRead success_reads[3];
   success_reads[0] = net::MockRead(
-      "HTTP/1.1 204 OK\r\nVia: 1.1 Chrome-Compression-Proxy\r\n\r\n");
+      "HTTP/1.1 404 NOT FOUND\r\nVia: 1.1 Chrome-Compression-Proxy\r\n\r\n");
   success_reads[1] = net::MockRead(net::ASYNC, config.c_str(), config.length());
   success_reads[2] = net::MockRead(net::SYNCHRONOUS, net::OK);
 
@@ -266,7 +266,7 @@ TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLWithViaHeader) {
   histogram_tester.ExpectUniqueSample("DataReductionProxy.WarmupURL.NetError",
                                       net::OK, 1);
   histogram_tester.ExpectUniqueSample(
-      "DataReductionProxy.WarmupURL.HttpResponseCode", net::HTTP_NO_CONTENT, 1);
+      "DataReductionProxy.WarmupURL.HttpResponseCode", net::HTTP_NOT_FOUND, 1);
   histogram_tester.ExpectUniqueSample(
       "DataReductionProxy.WarmupURL.HasViaHeader", 1, 1);
   histogram_tester.ExpectUniqueSample(
@@ -468,7 +468,7 @@ TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLWithDelay) {
   net::MockClientSocketFactory mock_socket_factory;
   net::MockRead success_reads[3];
   success_reads[0] = net::MockRead(
-      "HTTP/1.1 204 OK\r\nVia: 1.1 Chrome-Compression-Proxy\r\n\r\n");
+      "HTTP/1.1 404\r\nVia: 1.1 Chrome-Compression-Proxy\r\n\r\n");
   success_reads[1] = net::MockRead(net::ASYNC, config.c_str(), config.length());
   success_reads[2] = net::MockRead(net::SYNCHRONOUS, net::OK);
 
@@ -505,7 +505,7 @@ TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLWithDelay) {
   histogram_tester.ExpectUniqueSample("DataReductionProxy.WarmupURL.NetError",
                                       net::OK, 1);
   histogram_tester.ExpectUniqueSample(
-      "DataReductionProxy.WarmupURL.HttpResponseCode", net::HTTP_NO_CONTENT, 1);
+      "DataReductionProxy.WarmupURL.HttpResponseCode", net::HTTP_NOT_FOUND, 1);
   histogram_tester.ExpectUniqueSample(
       "DataReductionProxy.WarmupURL.HasViaHeader", 1, 1);
   histogram_tester.ExpectUniqueSample(
