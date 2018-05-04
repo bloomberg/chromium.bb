@@ -112,7 +112,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItem : public base::SupportsUserData {
   // parallel downloading is enabled. Slices should have different offsets
   // so that they don't overlap. |finished| will be marked as true when the
   // download stream is successfully completed.
-  struct COMPONENTS_DOWNLOAD_EXPORT ReceivedSlice {
+  struct ReceivedSlice {
     ReceivedSlice(int64_t offset, int64_t received_bytes)
         : offset(offset), received_bytes(received_bytes), finished(false) {}
 

@@ -79,4 +79,44 @@ TEST_F(InProgressConversionsTest, HttpRequestHeaders) {
             HttpRequestHeaderFromProto(HttpRequestHeaderToProto(header)));
 }
 
+TEST_F(InProgressConversionsTest, InProgressInfo) {
+  // InProgressInfo with no fields.
+  InProgressInfo info;
+  EXPECT_EQ(false, info.fetch_error_body);
+  EXPECT_TRUE(info.request_headers.empty());
+  EXPECT_EQ(info, InProgressInfoFromProto(InProgressInfoToProto(info)));
+
+  // InProgressInfo with valid fields.
+  info.current_path = base::FilePath(FILE_PATH_LITERAL("/tmp.crdownload"));
+  info.target_path = base::FilePath(FILE_PATH_LITERAL("/tmp"));
+  info.url_chain.emplace_back("http://foo");
+  info.url_chain.emplace_back("http://foo2");
+  info.end_time = base::Time::NowFromSystemTime().LocalMidnight();
+  info.etag = "A";
+  info.last_modified = "Wed, 1 Oct 2018 07:00:00 GMT";
+  info.received_bytes = 1000;
+  info.total_bytes = 10000;
+  info.state = DownloadItem::IN_PROGRESS;
+  info.danger_type = DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS;
+  info.interrupt_reason = DOWNLOAD_INTERRUPT_REASON_NONE;
+  info.transient = false;
+  info.paused = false;
+  info.hash = "abcdefg";
+  info.metered = true;
+  info.received_slices.emplace_back(0, 500, false);
+  info.received_slices.emplace_back(5000, 500, false);
+  info.request_origin = "request origin";
+  info.bytes_wasted = 1234;
+  info.fetch_error_body = true;
+  info.request_headers.emplace_back(
+      std::make_pair<std::string, std::string>("123", "456"));
+  info.request_headers.emplace_back(
+      std::make_pair<std::string, std::string>("ABC", "def"));
+  EXPECT_EQ(info, InProgressInfoFromProto(InProgressInfoToProto(info)));
+}
+
+TEST_F(InProgressConversionsTest, UkmInfo) {
+  UkmInfo info(DownloadSource::FROM_RENDERER, 100);
+  EXPECT_EQ(info, UkmInfoFromProto(UkmInfoToProto(info)));
+}
 }  // namespace download

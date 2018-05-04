@@ -16,6 +16,10 @@ source_set("in_progress") {
     "in_progress_cache_impl.h",
     "in_progress_conversions.cc",
     "in_progress_conversions.h",
+    "in_progress_info.cc",
+    "in_progress_info.h",
+    "ukm_info.cc",
+    "ukm_info.h",
   ]
 
   deps = [
