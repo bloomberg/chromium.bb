@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SEARCH_ONE_GOOGLE_BAR_ONE_GOOGLE_BAR_FETCHER_H_
-#define CHROME_BROWSER_SEARCH_ONE_GOOGLE_BAR_ONE_GOOGLE_BAR_FETCHER_H_
+#ifndef CHROME_BROWSER_SEARCH_ONE_GOOGLE_BAR_ONE_GOOGLE_BAR_LOADER_H_
+#define CHROME_BROWSER_SEARCH_ONE_GOOGLE_BAR_ONE_GOOGLE_BAR_LOADER_H_
 
 #include "base/callback_forward.h"
 #include "base/optional.h"
@@ -11,8 +11,8 @@
 class GURL;
 struct OneGoogleBarData;
 
-// Interface for fetching OneGoogleBarData over the network.
-class OneGoogleBarFetcher {
+// Interface for loading OneGoogleBarData over the network.
+class OneGoogleBarLoader {
  public:
   enum class Status {
     // Received a valid response.
@@ -28,14 +28,14 @@ class OneGoogleBarFetcher {
   using OneGoogleCallback =
       base::OnceCallback<void(Status, const base::Optional<OneGoogleBarData>&)>;
 
-  virtual ~OneGoogleBarFetcher() = default;
+  virtual ~OneGoogleBarLoader() = default;
 
-  // Initiates a fetch from the network. On completion (successful or not), the
+  // Initiates a load from the network. On completion (successful or not), the
   // callback will be called with the result, which will be nullopt on failure.
-  virtual void Fetch(OneGoogleCallback callback) = 0;
+  virtual void Load(OneGoogleCallback callback) = 0;
 
-  // Retrieves the URL from which OneGoogleBarData will be fetched.
-  virtual GURL GetFetchURLForTesting() const = 0;
+  // Retrieves the URL from which OneGoogleBarData will be loaded.
+  virtual GURL GetLoadURLForTesting() const = 0;
 };
 
-#endif  // CHROME_BROWSER_SEARCH_ONE_GOOGLE_BAR_ONE_GOOGLE_BAR_FETCHER_H_
+#endif  // CHROME_BROWSER_SEARCH_ONE_GOOGLE_BAR_ONE_GOOGLE_BAR_LOADER_H_

@@ -12,7 +12,7 @@
 #include "base/optional.h"
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_data.h"
-#include "chrome/browser/search/one_google_bar/one_google_bar_fetcher.h"
+#include "chrome/browser/search/one_google_bar/one_google_bar_loader.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/test_signin_client.h"
@@ -27,13 +27,13 @@ using testing::Eq;
 using testing::InSequence;
 using testing::StrictMock;
 
-class FakeOneGoogleBarFetcher : public OneGoogleBarFetcher {
+class FakeOneGoogleBarLoader : public OneGoogleBarLoader {
  public:
-  void Fetch(OneGoogleCallback callback) override {
+  void Load(OneGoogleCallback callback) override {
     callbacks_.push_back(std::move(callback));
   }
 
-  GURL GetFetchURLForTesting() const override { return GURL(); }
+  GURL GetLoadURLForTesting() const override { return GURL(); }
 
   size_t GetCallbackCount() const { return callbacks_.size(); }
 
@@ -68,13 +68,13 @@ class OneGoogleBarServiceTest : public testing::Test {
 
     cookie_service_.Init(&fetcher_factory_);
 
-    auto fetcher = std::make_unique<FakeOneGoogleBarFetcher>();
-    fetcher_ = fetcher.get();
+    auto loader = std::make_unique<FakeOneGoogleBarLoader>();
+    loader_ = loader.get();
     service_ = std::make_unique<OneGoogleBarService>(&cookie_service_,
-                                                     std::move(fetcher));
+                                                     std::move(loader));
   }
 
-  FakeOneGoogleBarFetcher* fetcher() { return fetcher_; }
+  FakeOneGoogleBarLoader* loader() { return loader_; }
   OneGoogleBarService* service() { return service_.get(); }
 
   void SignIn() {
@@ -100,7 +100,7 @@ class OneGoogleBarServiceTest : public testing::Test {
   FakeGaiaCookieManagerService cookie_service_;
 
   // Owned by the service.
-  FakeOneGoogleBarFetcher* fetcher_;
+  FakeOneGoogleBarLoader* loader_;
 
   std::unique_ptr<OneGoogleBarService> service_;
 };
@@ -108,19 +108,19 @@ class OneGoogleBarServiceTest : public testing::Test {
 TEST_F(OneGoogleBarServiceTest, RefreshesOnRequest) {
   ASSERT_THAT(service()->one_google_bar_data(), Eq(base::nullopt));
 
-  // Request a refresh. That should arrive at the fetcher.
+  // Request a refresh. That should arrive at the loader.
   service()->Refresh();
-  EXPECT_THAT(fetcher()->GetCallbackCount(), Eq(1u));
+  EXPECT_THAT(loader()->GetCallbackCount(), Eq(1u));
 
   // Fulfill it.
   OneGoogleBarData data;
   data.bar_html = "<div></div>";
-  fetcher()->RespondToAllCallbacks(OneGoogleBarFetcher::Status::OK, data);
+  loader()->RespondToAllCallbacks(OneGoogleBarLoader::Status::OK, data);
   EXPECT_THAT(service()->one_google_bar_data(), Eq(data));
 
   // Request another refresh.
   service()->Refresh();
-  EXPECT_THAT(fetcher()->GetCallbackCount(), Eq(1u));
+  EXPECT_THAT(loader()->GetCallbackCount(), Eq(1u));
 
   // For now, the old data should still be there.
   EXPECT_THAT(service()->one_google_bar_data(), Eq(data));
@@ -128,7 +128,7 @@ TEST_F(OneGoogleBarServiceTest, RefreshesOnRequest) {
   // Fulfill the second request.
   OneGoogleBarData other_data;
   other_data.bar_html = "<div>Different!</div>";
-  fetcher()->RespondToAllCallbacks(OneGoogleBarFetcher::Status::OK, other_data);
+  loader()->RespondToAllCallbacks(OneGoogleBarLoader::Status::OK, other_data);
   EXPECT_THAT(service()->one_google_bar_data(), Eq(other_data));
 }
 
@@ -143,8 +143,8 @@ TEST_F(OneGoogleBarServiceTest, NotifiesObserverOnChanges) {
   // Empty result from a fetch should result in a notification.
   service()->Refresh();
   EXPECT_CALL(observer, OnOneGoogleBarDataUpdated());
-  fetcher()->RespondToAllCallbacks(OneGoogleBarFetcher::Status::OK,
-                                   base::nullopt);
+  loader()->RespondToAllCallbacks(OneGoogleBarLoader::Status::OK,
+                                  base::nullopt);
   EXPECT_THAT(service()->one_google_bar_data(), Eq(base::nullopt));
 
   // Non-empty response should result in a notification.
@@ -152,15 +152,15 @@ TEST_F(OneGoogleBarServiceTest, NotifiesObserverOnChanges) {
   OneGoogleBarData data;
   data.bar_html = "<div></div>";
   EXPECT_CALL(observer, OnOneGoogleBarDataUpdated());
-  fetcher()->RespondToAllCallbacks(OneGoogleBarFetcher::Status::OK, data);
+  loader()->RespondToAllCallbacks(OneGoogleBarLoader::Status::OK, data);
   EXPECT_THAT(service()->one_google_bar_data(), Eq(data));
 
   // Identical response should still result in a notification.
   service()->Refresh();
   OneGoogleBarData identical_data = data;
   EXPECT_CALL(observer, OnOneGoogleBarDataUpdated());
-  fetcher()->RespondToAllCallbacks(OneGoogleBarFetcher::Status::OK,
-                                   identical_data);
+  loader()->RespondToAllCallbacks(OneGoogleBarLoader::Status::OK,
+                                  identical_data);
   EXPECT_THAT(service()->one_google_bar_data(), Eq(data));
 
   // Different response should result in a notification.
@@ -168,7 +168,7 @@ TEST_F(OneGoogleBarServiceTest, NotifiesObserverOnChanges) {
   OneGoogleBarData other_data;
   data.bar_html = "<div>Different</div>";
   EXPECT_CALL(observer, OnOneGoogleBarDataUpdated());
-  fetcher()->RespondToAllCallbacks(OneGoogleBarFetcher::Status::OK, other_data);
+  loader()->RespondToAllCallbacks(OneGoogleBarLoader::Status::OK, other_data);
   EXPECT_THAT(service()->one_google_bar_data(), Eq(other_data));
 
   service()->RemoveObserver(&observer);
@@ -179,7 +179,7 @@ TEST_F(OneGoogleBarServiceTest, KeepsCacheOnTransientError) {
   service()->Refresh();
   OneGoogleBarData data;
   data.bar_html = "<div></div>";
-  fetcher()->RespondToAllCallbacks(OneGoogleBarFetcher::Status::OK, data);
+  loader()->RespondToAllCallbacks(OneGoogleBarLoader::Status::OK, data);
   ASSERT_THAT(service()->one_google_bar_data(), Eq(data));
 
   StrictMock<MockOneGoogleBarServiceObserver> observer;
@@ -188,8 +188,8 @@ TEST_F(OneGoogleBarServiceTest, KeepsCacheOnTransientError) {
   // Request a refresh and respond with a transient error.
   service()->Refresh();
   EXPECT_CALL(observer, OnOneGoogleBarDataUpdated());
-  fetcher()->RespondToAllCallbacks(OneGoogleBarFetcher::Status::TRANSIENT_ERROR,
-                                   base::nullopt);
+  loader()->RespondToAllCallbacks(OneGoogleBarLoader::Status::TRANSIENT_ERROR,
+                                  base::nullopt);
   // Cached data should still be there.
   EXPECT_THAT(service()->one_google_bar_data(), Eq(data));
 
@@ -201,7 +201,7 @@ TEST_F(OneGoogleBarServiceTest, ClearsCacheOnFatalError) {
   service()->Refresh();
   OneGoogleBarData data;
   data.bar_html = "<div></div>";
-  fetcher()->RespondToAllCallbacks(OneGoogleBarFetcher::Status::OK, data);
+  loader()->RespondToAllCallbacks(OneGoogleBarLoader::Status::OK, data);
   ASSERT_THAT(service()->one_google_bar_data(), Eq(data));
 
   StrictMock<MockOneGoogleBarServiceObserver> observer;
@@ -210,8 +210,8 @@ TEST_F(OneGoogleBarServiceTest, ClearsCacheOnFatalError) {
   // Request a refresh and respond with a fatal error.
   service()->Refresh();
   EXPECT_CALL(observer, OnOneGoogleBarDataUpdated());
-  fetcher()->RespondToAllCallbacks(OneGoogleBarFetcher::Status::FATAL_ERROR,
-                                   base::nullopt);
+  loader()->RespondToAllCallbacks(OneGoogleBarLoader::Status::FATAL_ERROR,
+                                  base::nullopt);
   // Cached data should be gone now.
   EXPECT_THAT(service()->one_google_bar_data(), Eq(base::nullopt));
 
@@ -223,7 +223,7 @@ TEST_F(OneGoogleBarServiceTest, ResetsOnSignIn) {
   service()->Refresh();
   OneGoogleBarData data;
   data.bar_html = "<div></div>";
-  fetcher()->RespondToAllCallbacks(OneGoogleBarFetcher::Status::OK, data);
+  loader()->RespondToAllCallbacks(OneGoogleBarLoader::Status::OK, data);
   ASSERT_THAT(service()->one_google_bar_data(), Eq(data));
 
   StrictMock<MockOneGoogleBarServiceObserver> observer;
@@ -244,7 +244,7 @@ TEST_F(OneGoogleBarServiceTest, ResetsOnSignOut) {
   service()->Refresh();
   OneGoogleBarData data;
   data.bar_html = "<div></div>";
-  fetcher()->RespondToAllCallbacks(OneGoogleBarFetcher::Status::OK, data);
+  loader()->RespondToAllCallbacks(OneGoogleBarLoader::Status::OK, data);
   ASSERT_THAT(service()->one_google_bar_data(), Eq(data));
 
   StrictMock<MockOneGoogleBarServiceObserver> observer;

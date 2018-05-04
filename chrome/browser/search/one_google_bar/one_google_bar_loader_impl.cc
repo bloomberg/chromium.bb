@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/search/one_google_bar/one_google_bar_fetcher_impl.h"
+#include "chrome/browser/search/one_google_bar/one_google_bar_loader_impl.h"
 
 #include <string>
 #include <utility>
@@ -130,18 +130,18 @@ base::Optional<OneGoogleBarData> JsonToOGBData(const base::Value& value) {
 
 }  // namespace
 
-class OneGoogleBarFetcherImpl::AuthenticatedURLFetcher {
+class OneGoogleBarLoaderImpl::AuthenticatedURLLoader {
  public:
   using LoadDoneCallback =
       base::OnceCallback<void(const network::SimpleURLLoader* simple_loader,
                               std::unique_ptr<std::string> response_body)>;
 
-  AuthenticatedURLFetcher(
+  AuthenticatedURLLoader(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       GURL api_url,
       bool account_consistency_mirror_required,
       LoadDoneCallback callback);
-  ~AuthenticatedURLFetcher() = default;
+  ~AuthenticatedURLLoader() = default;
 
   void Start();
 
@@ -162,7 +162,7 @@ class OneGoogleBarFetcherImpl::AuthenticatedURLFetcher {
   std::unique_ptr<network::SimpleURLLoader> simple_loader_;
 };
 
-OneGoogleBarFetcherImpl::AuthenticatedURLFetcher::AuthenticatedURLFetcher(
+OneGoogleBarLoaderImpl::AuthenticatedURLLoader::AuthenticatedURLLoader(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     GURL api_url,
     bool account_consistency_mirror_required,
@@ -172,10 +172,11 @@ OneGoogleBarFetcherImpl::AuthenticatedURLFetcher::AuthenticatedURLFetcher(
 #if defined(OS_CHROMEOS)
       account_consistency_mirror_required_(account_consistency_mirror_required),
 #endif
-      callback_(std::move(callback)) {}
+      callback_(std::move(callback)) {
+}
 
 net::HttpRequestHeaders
-OneGoogleBarFetcherImpl::AuthenticatedURLFetcher::GetRequestHeaders() const {
+OneGoogleBarLoaderImpl::AuthenticatedURLLoader::GetRequestHeaders() const {
   net::HttpRequestHeaders headers;
   // Note: It's OK to pass SignedIn::kNo if it's unknown, as it does not affect
   // transmission of experiments coming from the variations server.
@@ -207,7 +208,7 @@ OneGoogleBarFetcherImpl::AuthenticatedURLFetcher::GetRequestHeaders() const {
   return headers;
 }
 
-void OneGoogleBarFetcherImpl::AuthenticatedURLFetcher::Start() {
+void OneGoogleBarLoaderImpl::AuthenticatedURLLoader::Start() {
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("one_google_bar_service", R"(
         semantics {
@@ -244,18 +245,18 @@ void OneGoogleBarFetcherImpl::AuthenticatedURLFetcher::Start() {
                                                     traffic_annotation);
   simple_loader_->DownloadToString(
       url_loader_factory_.get(),
-      base::BindOnce(&OneGoogleBarFetcherImpl::AuthenticatedURLFetcher::
-                         OnURLLoaderComplete,
-                     base::Unretained(this)),
+      base::BindOnce(
+          &OneGoogleBarLoaderImpl::AuthenticatedURLLoader::OnURLLoaderComplete,
+          base::Unretained(this)),
       1024 * 1024);
 }
 
-void OneGoogleBarFetcherImpl::AuthenticatedURLFetcher::OnURLLoaderComplete(
+void OneGoogleBarLoaderImpl::AuthenticatedURLLoader::OnURLLoaderComplete(
     std::unique_ptr<std::string> response_body) {
   std::move(callback_).Run(simple_loader_.get(), std::move(response_body));
 }
 
-OneGoogleBarFetcherImpl::OneGoogleBarFetcherImpl(
+OneGoogleBarLoaderImpl::OneGoogleBarLoaderImpl(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     GoogleURLTracker* google_url_tracker,
     const std::string& application_locale,
@@ -268,26 +269,26 @@ OneGoogleBarFetcherImpl::OneGoogleBarFetcherImpl(
       account_consistency_mirror_required_(account_consistency_mirror_required),
       weak_ptr_factory_(this) {}
 
-OneGoogleBarFetcherImpl::~OneGoogleBarFetcherImpl() = default;
+OneGoogleBarLoaderImpl::~OneGoogleBarLoaderImpl() = default;
 
-void OneGoogleBarFetcherImpl::Fetch(OneGoogleCallback callback) {
+void OneGoogleBarLoaderImpl::Load(OneGoogleCallback callback) {
   callbacks_.push_back(std::move(callback));
 
   // Note: If there is an ongoing request, abandon it. It's possible that
   // something has changed in the meantime (e.g. signin state) that would make
   // the result obsolete.
-  pending_request_ = std::make_unique<AuthenticatedURLFetcher>(
+  pending_request_ = std::make_unique<AuthenticatedURLLoader>(
       url_loader_factory_, GetApiUrl(), account_consistency_mirror_required_,
-      base::BindOnce(&OneGoogleBarFetcherImpl::LoadDone,
+      base::BindOnce(&OneGoogleBarLoaderImpl::LoadDone,
                      base::Unretained(this)));
   pending_request_->Start();
 }
 
-GURL OneGoogleBarFetcherImpl::GetFetchURLForTesting() const {
+GURL OneGoogleBarLoaderImpl::GetLoadURLForTesting() const {
   return GetApiUrl();
 }
 
-GURL OneGoogleBarFetcherImpl::GetApiUrl() const {
+GURL OneGoogleBarLoaderImpl::GetApiUrl() const {
   GURL google_base_url = google_util::CommandLineGoogleBaseURL();
   if (!google_base_url.is_valid()) {
     google_base_url = google_url_tracker_->google_url();
@@ -308,11 +309,11 @@ GURL OneGoogleBarFetcherImpl::GetApiUrl() const {
   return api_url.ReplaceComponents(replacements);
 }
 
-void OneGoogleBarFetcherImpl::LoadDone(
+void OneGoogleBarLoaderImpl::LoadDone(
     const network::SimpleURLLoader* simple_loader,
     std::unique_ptr<std::string> response_body) {
   // The loader will be deleted when the request is handled.
-  std::unique_ptr<AuthenticatedURLFetcher> deleter(std::move(pending_request_));
+  std::unique_ptr<AuthenticatedURLLoader> deleter(std::move(pending_request_));
 
   if (!response_body) {
     // This represents network errors (i.e. the server did not provide a
@@ -334,23 +335,23 @@ void OneGoogleBarFetcherImpl::LoadDone(
   data_decoder::SafeJsonParser::Parse(
       content::ServiceManagerConnection::GetForProcess()->GetConnector(),
       response,
-      base::BindRepeating(&OneGoogleBarFetcherImpl::JsonParsed,
+      base::BindRepeating(&OneGoogleBarLoaderImpl::JsonParsed,
                           weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&OneGoogleBarFetcherImpl::JsonParseFailed,
+      base::BindRepeating(&OneGoogleBarLoaderImpl::JsonParseFailed,
                           weak_ptr_factory_.GetWeakPtr()));
 }
 
-void OneGoogleBarFetcherImpl::JsonParsed(std::unique_ptr<base::Value> value) {
+void OneGoogleBarLoaderImpl::JsonParsed(std::unique_ptr<base::Value> value) {
   base::Optional<OneGoogleBarData> result = JsonToOGBData(*value);
   Respond(result.has_value() ? Status::OK : Status::FATAL_ERROR, result);
 }
 
-void OneGoogleBarFetcherImpl::JsonParseFailed(const std::string& message) {
+void OneGoogleBarLoaderImpl::JsonParseFailed(const std::string& message) {
   DLOG(WARNING) << "Parsing JSON failed: " << message;
   Respond(Status::FATAL_ERROR, base::nullopt);
 }
 
-void OneGoogleBarFetcherImpl::Respond(
+void OneGoogleBarLoaderImpl::Respond(
     Status status,
     const base::Optional<OneGoogleBarData>& data) {
   for (auto& callback : callbacks_) {
