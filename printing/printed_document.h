@@ -91,7 +91,7 @@ class PRINTING_EXPORT PrintedDocument
   // Note: locks for a short amount of time.
   void set_page_count(int max_page);
 
-  // Number of pages in the document. Used for headers/footers.
+  // Number of pages in the document.
   // Note: locks for a short amount of time.
   int page_count() const;
 
@@ -136,10 +136,10 @@ class PRINTING_EXPORT PrintedDocument
  private:
   friend class base::RefCountedThreadSafe<PrintedDocument>;
 
-  virtual ~PrintedDocument();
+  ~PrintedDocument();
 
   // Array of data for each print previewed page.
-  typedef std::map<int, scoped_refptr<PrintedPage> > PrintedPages;
+  using PrintedPages = std::map<int, scoped_refptr<PrintedPage>>;
 
   // Contains all the mutable stuff. All this stuff MUST be accessed with the
   // lock held.
