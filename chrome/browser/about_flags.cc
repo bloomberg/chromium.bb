@@ -3919,6 +3919,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNtpUIMdDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kNtpUIMd)},
 
+#if defined(OS_ANDROID)
+    {"enable-display-cutout-api", flag_descriptions::kDisplayCutoutAPIName,
+     flag_descriptions::kDisplayCutoutAPIDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kDisplayCutoutAPI)},
+#endif  // OS_ANDROID
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

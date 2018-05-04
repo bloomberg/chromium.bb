@@ -445,6 +445,11 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
     WebRuntimeFeatures::EnableExperimentalProductivityFeatures(true);
   }
 
+#if defined(OS_ANDROID)
+  if (base::FeatureList::IsEnabled(features::kDisplayCutoutAPI))
+    WebRuntimeFeatures::EnableDisplayCutoutViewportFit(true);
+#endif
+
   // End individual features.
   // Do not add individual features below this line.
 

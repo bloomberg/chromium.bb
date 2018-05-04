@@ -520,4 +520,8 @@ void WebRuntimeFeatures::EnableExperimentalProductivityFeatures(bool enable) {
   RuntimeEnabledFeatures::SetExperimentalProductivityFeaturesEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableDisplayCutoutViewportFit(bool enable) {
+  RuntimeEnabledFeatures::SetDisplayCutoutViewportFitEnabled(enable);
+}
+
 }  // namespace blink

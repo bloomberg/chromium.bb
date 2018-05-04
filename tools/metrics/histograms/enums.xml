@@ -27917,6 +27917,7 @@ from previous Chrome versions.
   <int value="1511161758" label="BackgroundLoader:enabled"/>
   <int value="1514036945"
       label="OmniboxUIExperimentElideSuggestionUrlAfterHost:disabled"/>
+  <int value="1514066770" label="DisplayCutoutAPI:enabled"/>
   <int value="1514119870" label="enable-file-manager-touch-mode"/>
   <int value="1515196403" label="fast-user-switching"/>
   <int value="1517863401" label="history-entry-requires-user-gesture"/>
@@ -28058,6 +28059,7 @@ from previous Chrome versions.
   <int value="1865799183" label="javascript-harmony"/>
   <int value="1865963858" label="tls13-variant"/>
   <int value="1866079109" label="team-drives"/>
+  <int value="1866656400" label="DisplayCutoutAPI:disabled"/>
   <int value="1867085340" label="brotli-encoding:enabled"/>
   <int value="1872185826" label="LocationHardReload:enabled"/>
   <int value="1874195462" label="ChromeHomeMenuItemsExpandSheet:disabled"/>

@@ -589,6 +589,11 @@ const base::Feature kWorkStealingInScriptRunner{
 const base::Feature kAndroidAutofillAccessibility{
     "AndroidAutofillAccessibility", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables developers to use the CSS safe-area-* and viewport-fit APIs which
+// allow them to support devices with a display cutout.
+const base::Feature kDisplayCutoutAPI{"DisplayCutoutAPI",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables hiding incorrectly-sized frames while in fullscreen.
 const base::Feature kHideIncorrectlySizedFullscreenFrames{
     "HideIncorrectlySizedFullscreenFrames", base::FEATURE_ENABLED_BY_DEFAULT};
