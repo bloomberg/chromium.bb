@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_CHILD_PROCESS_LAUNCHER_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -14,6 +15,7 @@
 #include "base/process/kill.h"
 #include "base/process/process.h"
 #include "base/sequence_checker.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/browser/child_process_launcher_helper.h"
 #include "content/common/content_export.h"
@@ -79,7 +81,7 @@ class CONTENT_EXPORT ChildProcessLauncher {
     // constructed on.
     virtual void OnProcessLaunched() = 0;
 
-    virtual void OnProcessLaunchFailed(int error_code) {};
+    virtual void OnProcessLaunchFailed(int error_code) {}
 
    protected:
     virtual ~Client() {}
@@ -171,6 +173,7 @@ class CONTENT_EXPORT ChildProcessLauncher {
 
   ChildProcessTerminationInfo termination_info_;
   bool starting_;
+  base::TimeTicks start_time_;
 
   // Controls whether the child process should be terminated on browser
   // shutdown. Default behavior is to terminate the child.
