@@ -34,7 +34,6 @@
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/inline_box_position.h"
 #include "third_party/blink/renderer/core/editing/ng_flat_tree_shorthands.h"
-#include "third_party/blink/renderer/core/editing/rendered_position.h"
 #include "third_party/blink/renderer/core/editing/visible_position.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
@@ -173,9 +172,8 @@ PositionWithAffinityTemplate<Strategy> StartPositionForLine(
   if (c.IsNull())
     return PositionWithAffinityTemplate<Strategy>();
 
-  const RootInlineBox* root_box =
-      RenderedPosition(c.GetPosition(), c.Affinity()).RootBox();
-  if (!root_box) {
+  const InlineBox* inline_box = ComputeInlineBoxPosition(c).inline_box;
+  if (!inline_box) {
     // There are VisiblePositions at offset 0 in blocks without
     // RootInlineBoxes, like empty editable blocks and bordered blocks.
     PositionTemplate<Strategy> p = c.GetPosition();
@@ -187,7 +185,8 @@ PositionWithAffinityTemplate<Strategy> StartPositionForLine(
     return PositionWithAffinityTemplate<Strategy>();
   }
 
-  const auto& node_and_box = Ordering::StartNodeAndBoxOf(*root_box);
+  const RootInlineBox& root_box = inline_box->Root();
+  const auto& node_and_box = Ordering::StartNodeAndBoxOf(root_box);
   Node* const start_node = std::get<Node*>(node_and_box);
   InlineBox* const start_box = std::get<InlineBox*>(node_and_box);
   if (!start_node)
@@ -430,9 +429,8 @@ static PositionWithAffinityTemplate<Strategy> EndPositionForLine(
   if (c.IsNull())
     return PositionWithAffinityTemplate<Strategy>();
 
-  const RootInlineBox* root_box =
-      RenderedPosition(c.GetPosition(), c.Affinity()).RootBox();
-  if (!root_box) {
+  const InlineBox* inline_box = ComputeInlineBoxPosition(c).inline_box;
+  if (!inline_box) {
     // There are VisiblePositions at offset 0 in blocks without
     // RootInlineBoxes, like empty editable blocks and bordered blocks.
     const PositionTemplate<Strategy> p = c.GetPosition();
@@ -443,7 +441,8 @@ static PositionWithAffinityTemplate<Strategy> EndPositionForLine(
     return PositionWithAffinityTemplate<Strategy>();
   }
 
-  const auto& node_and_box = Ordering::EndNodeAndBoxOf(*root_box);
+  const RootInlineBox& root_box = inline_box->Root();
+  const auto& node_and_box = Ordering::EndNodeAndBoxOf(root_box);
   Node* const end_node = std::get<Node*>(node_and_box);
   InlineBox* const end_box = std::get<InlineBox*>(node_and_box);
   if (!end_node)
@@ -725,10 +724,16 @@ VisiblePosition PreviousLinePosition(const VisiblePosition& visible_position,
     Position position = PreviousRootInlineBoxCandidatePosition(
         node, visible_position, editable_type);
     if (position.IsNotNull()) {
-      RenderedPosition rendered_position((CreateVisiblePosition(position)));
-      root = rendered_position.RootBox();
-      if (!root)
-        return CreateVisiblePosition(position);
+      const VisiblePosition candidate = CreateVisiblePosition(position);
+      const InlineBox* inline_box =
+          candidate.IsNotNull() ? ComputeInlineBoxPosition(candidate).inline_box
+                                : nullptr;
+      if (!inline_box) {
+        // TODO(editing-dev): Investigate if this is correct for null
+        // |candidate|.
+        return candidate;
+      }
+      root = &inline_box->Root();
     }
   }
 
@@ -789,10 +794,16 @@ VisiblePosition NextLinePosition(const VisiblePosition& visible_position,
     Position position = NextRootInlineBoxCandidatePosition(
         node, visible_position, editable_type);
     if (position.IsNotNull()) {
-      RenderedPosition rendered_position((CreateVisiblePosition(position)));
-      root = rendered_position.RootBox();
-      if (!root)
-        return CreateVisiblePosition(position);
+      const VisiblePosition candidate = CreateVisiblePosition(position);
+      const InlineBox* inline_box =
+          candidate.IsNotNull() ? ComputeInlineBoxPosition(candidate).inline_box
+                                : nullptr;
+      if (!inline_box) {
+        // TODO(editing-dev): Investigate if this is correct for null
+        // |candidate|.
+        return candidate;
+      }
+      root = &inline_box->Root();
     }
   }
 
