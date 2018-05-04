@@ -41,12 +41,6 @@ typedef size_t KeyframeEffectId;
 // given target.
 class CC_ANIMATION_EXPORT KeyframeEffect {
  public:
-  class AnimationTimeProvider {
-   public:
-    virtual base::TimeTicks GetTimeForKeyframeModel(
-        const KeyframeModel&) const = 0;
-  };
-
   explicit KeyframeEffect(KeyframeEffectId id);
   ~KeyframeEffect();
 
@@ -87,8 +81,7 @@ class CC_ANIMATION_EXPORT KeyframeEffect {
   void AttachElement(ElementId element_id);
   void DetachElement();
 
-  void Tick(base::TimeTicks monotonic_time,
-            const AnimationTimeProvider* tick_provider);
+  void Tick(base::TimeTicks monotonic_time);
   static void TickKeyframeModel(base::TimeTicks monotonic_time,
                                 KeyframeModel* keyframe_model,
                                 AnimationTarget* target);
@@ -97,6 +90,8 @@ class CC_ANIMATION_EXPORT KeyframeEffect {
 
   void UpdateState(bool start_ready_keyframe_models, AnimationEvents* events);
   void UpdateTickingState(UpdateTickingType type);
+
+  void Pause(base::TimeDelta pause_offset);
 
   void AddKeyframeModel(std::unique_ptr<KeyframeModel> keyframe_model);
   void PauseKeyframeModel(int keyframe_model_id, double time_offset);

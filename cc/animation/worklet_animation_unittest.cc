@@ -36,9 +36,15 @@ class WorkletAnimationTest : public AnimationTimelinesTest {
     worklet_animation_->AttachElement(element_id_);
     host_->AddAnimationTimeline(timeline_);
     timeline_->AttachAnimation(worklet_animation_);
+
+    host_->PushPropertiesTo(host_impl_);
+    timeline_impl_ = host_impl_->GetTimelineById(timeline_id_);
+    worklet_animation_impl_ = static_cast<WorkletAnimation*>(
+        timeline_impl_->GetAnimationById(worklet_animation_id_));
   }
 
   scoped_refptr<WorkletAnimation> worklet_animation_;
+  scoped_refptr<WorkletAnimation> worklet_animation_impl_;
   int worklet_animation_id_ = 11;
 };
 
@@ -61,26 +67,14 @@ TEST_F(WorkletAnimationTest, LocalTimeIsUsedWithAnimations) {
   AddOpacityTransitionToAnimation(worklet_animation_.get(), duration,
                                   start_opacity, end_opacity, true);
 
+  // Push the opacity animation to the impl thread.
   host_->PushPropertiesTo(host_impl_);
   host_impl_->ActivateAnimations();
 
-  // TODO(majidvp): At the moment the animation does not use the local time when
-  // it is starting. This is because KeyframeModel::ConvertToActiveTime always
-  // returns the time_offset when starting. We need to change this.
-  base::TimeTicks time;
-  time += base::TimeDelta::FromSecondsD(0.1);
-  TickAnimationsTransferEvents(time, 1u);
-
   base::TimeDelta local_time = base::TimeDelta::FromSecondsD(duration / 2);
-  worklet_animation_->SetLocalTime(local_time);
+  worklet_animation_impl_->SetLocalTime(local_time);
 
-  host_->PushPropertiesTo(host_impl_);
-
-  TickAnimationsTransferEvents(time, 0u);
-
-  client_.ExpectOpacityPropertyMutated(element_id_, ElementListType::ACTIVE,
-                                       expected_opacity);
-
+  TickAnimationsTransferEvents(base::TimeTicks(), 0u);
   client_impl_.ExpectOpacityPropertyMutated(
       element_id_, ElementListType::ACTIVE, expected_opacity);
 }
@@ -109,7 +103,7 @@ TEST_F(WorkletAnimationTest, LayerTreeMutatorsIsMutatedWithCorrectInputState) {
 
   base::TimeTicks time;
   time += base::TimeDelta::FromSecondsD(0.1);
-  TickAnimationsTransferEvents(time, 1u);
+  TickAnimationsTransferEvents(time, 0u);
 
   Mock::VerifyAndClearExpectations(mock_mutator);
 }
@@ -136,7 +130,7 @@ TEST_F(WorkletAnimationTest, LayerTreeMutatorsIsMutatedOnlyWhenInputChanges) {
 
   base::TimeTicks time;
   time += base::TimeDelta::FromSecondsD(0.1);
-  TickAnimationsTransferEvents(time, 1u);
+  TickAnimationsTransferEvents(time, 0u);
 
   // The time has not changed which means worklet animation input is the same.
   // Ticking animations again should not result in mutator being asked to
