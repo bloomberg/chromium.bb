@@ -34,7 +34,6 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/vector_icons.h"
-#include "extensions/common/image_util.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -42,13 +41,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/events/event.h"
-#include "ui/gfx/canvas.h"
-#include "ui/gfx/color_palette.h"
-#include "ui/gfx/color_utils.h"
-#include "ui/gfx/image/canvas_image_source.h"
-#include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/text_utils.h"
 
 namespace {
 
@@ -84,37 +77,6 @@ int GetIconAlignmentOffset() {
 int HorizontalPadding() {
   return GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING) +
          GetLayoutConstant(LOCATION_BAR_ICON_INTERIOR_PADDING);
-}
-
-class PlaceholderImageSource : public gfx::CanvasImageSource {
- public:
-  PlaceholderImageSource(const gfx::Size& canvas_size, SkColor color);
-  ~PlaceholderImageSource() override;
-
-  // CanvasImageSource override:
-  void Draw(gfx::Canvas* canvas) override;
-
- private:
-  SkColor color_;
-  gfx::Size size_;
-
-  DISALLOW_COPY_AND_ASSIGN(PlaceholderImageSource);
-};
-
-PlaceholderImageSource::PlaceholderImageSource(const gfx::Size& canvas_size,
-                                               SkColor color)
-    : gfx::CanvasImageSource(canvas_size, false),
-      color_(color),
-      size_(canvas_size) {}
-
-PlaceholderImageSource::~PlaceholderImageSource() = default;
-
-void PlaceholderImageSource::Draw(gfx::Canvas* canvas) {
-  cc::PaintFlags flags;
-  flags.setAntiAlias(true);
-  flags.setStyle(cc::PaintFlags::kStrokeAndFill_Style);
-  flags.setColor(color_);
-  canvas->sk_canvas()->drawOval(gfx::RectToSkRect(gfx::Rect(size_)), flags);
 }
 
 }  // namespace
@@ -156,18 +118,8 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
   match_ = match.GetMatchWithContentsAndDescriptionPossiblySwapped();
   animation_->Reset();
   is_hovered_ = false;
-  suggestion_view_->OnMatchUpdate(match_);
-  keyword_view_->OnMatchUpdate(match_);
-
-  // Set up default (placeholder) image.
-  SkColor color = GetColor(OmniboxPart::RESULTS_BACKGROUND);
-  extensions::image_util::ParseHexColorString(match_.image_dominant_color,
-                                              &color);
-  color = SkColorSetA(color, 0x40);  // 25% transparency (arbitrary).
-  int image_edge_length = suggestion_view_->description()->GetLineHeight();
-  suggestion_view_->image()->SetImage(
-      gfx::CanvasImageSource::MakeImageSkia<PlaceholderImageSource>(
-          gfx::Size(image_edge_length, image_edge_length), color));
+  suggestion_view_->OnMatchUpdate(this, match_);
+  keyword_view_->OnMatchUpdate(this, match_);
 
   keyword_view_->icon()->SetVisible(match_.associated_keyword.get());
 

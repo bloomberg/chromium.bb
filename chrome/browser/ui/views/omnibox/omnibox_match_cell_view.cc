@@ -7,14 +7,17 @@
 #include "base/macros.h"
 #include "base/metrics/field_trial_params.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_text_view.h"
 #include "chrome/browser/ui/views/omnibox/rounded_omnibox_results_frame.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
+#include "extensions/common/image_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
+#include "ui/gfx/image/canvas_image_source.h"
 #include "ui/views/controls/image_view.h"
 
 namespace {
@@ -93,6 +96,40 @@ int HorizontalPadding() {
          GetLayoutConstant(LOCATION_BAR_ICON_INTERIOR_PADDING);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// PlaceholderImageSource:
+
+class PlaceholderImageSource : public gfx::CanvasImageSource {
+ public:
+  PlaceholderImageSource(const gfx::Size& canvas_size, SkColor color);
+  ~PlaceholderImageSource() override;
+
+  // CanvasImageSource override:
+  void Draw(gfx::Canvas* canvas) override;
+
+ private:
+  SkColor color_;
+  gfx::Size size_;
+
+  DISALLOW_COPY_AND_ASSIGN(PlaceholderImageSource);
+};
+
+PlaceholderImageSource::PlaceholderImageSource(const gfx::Size& canvas_size,
+                                               SkColor color)
+    : gfx::CanvasImageSource(canvas_size, false),
+      color_(color),
+      size_(canvas_size) {}
+
+PlaceholderImageSource::~PlaceholderImageSource() = default;
+
+void PlaceholderImageSource::Draw(gfx::Canvas* canvas) {
+  cc::PaintFlags flags;
+  flags.setAntiAlias(true);
+  flags.setStyle(cc::PaintFlags::kStrokeAndFill_Style);
+  flags.setColor(color_);
+  canvas->sk_canvas()->drawOval(gfx::RectToSkRect(gfx::Rect(size_)), flags);
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -136,6 +173,7 @@ gfx::Size OmniboxMatchCellView::CalculatePreferredSize() const {
   }
   return gfx::Size(0, height);
 }
+
 bool OmniboxMatchCellView::CanProcessEventsWithinSubtree() const {
   return false;
 }
@@ -152,7 +190,8 @@ int OmniboxMatchCellView::GetOldStyleAnswerHeight() const {
          kVerticalPadding;
 }
 
-void OmniboxMatchCellView::OnMatchUpdate(const AutocompleteMatch& match) {
+void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
+                                         const AutocompleteMatch& match) {
   is_old_style_answer_ = !!match.answer;
   is_rich_suggestion_ =
       (base::FeatureList::IsEnabled(omnibox::kOmniboxNewAnswerLayout) &&
@@ -163,6 +202,16 @@ void OmniboxMatchCellView::OnMatchUpdate(const AutocompleteMatch& match) {
   if (is_old_style_answer_ || is_rich_suggestion_) {
     // Multi-line layout doesn't use the separator.
     separator_view_->SetSize(gfx::Size());
+
+    // Set up default (placeholder) image.
+    SkColor color = result_view->GetColor(OmniboxPart::RESULTS_BACKGROUND);
+    extensions::image_util::ParseHexColorString(match.image_dominant_color,
+                                                &color);
+    color = SkColorSetA(color, 0x40);  // 25% transparency (arbitrary).
+    int image_edge_length = description_view_->GetLineHeight();
+    image_view_->SetImage(
+        gfx::CanvasImageSource::MakeImageSkia<PlaceholderImageSource>(
+            gfx::Size(image_edge_length, image_edge_length), color));
   } else {
     // Single-line layout doesn't use the image.
     image_view_->SetSize(gfx::Size());
