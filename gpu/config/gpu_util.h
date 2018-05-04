@@ -68,6 +68,13 @@ GPU_EXPORT bool InitializeGLThreadSafe(base::CommandLine* command_line,
                                        GpuFeatureInfo* out_gpu_feature_info);
 #endif  // OS_ANDROID
 
+// Returns whether SwiftShader should be enabled. If true, the proper command
+// line switch to enable SwiftShader will be appended to 'command_line'.
+GPU_EXPORT bool ShouldEnableSwiftShader(base::CommandLine* command_line,
+                                        const GpuFeatureInfo& gpu_feature_info,
+                                        bool disable_software_rasterizer,
+                                        bool blacklist_needs_more_info);
+
 }  // namespace gpu
 
 #endif  // GPU_CONFIG_GPU_UTIL_H_

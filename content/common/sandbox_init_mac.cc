@@ -51,16 +51,22 @@ base::OnceClosure MaybeWrapWithGPUSandboxHook(
               gpu::SwitchValueToGpuPreferences(value, &gpu_preferences);
           CHECK(success);
         }
+        bool needs_more_info = false;
         gpu::GpuFeatureInfo gpu_feature_info = gpu::ComputeGpuFeatureInfo(
             gpu_info, gpu_preferences.ignore_gpu_blacklist,
             gpu_preferences.disable_gpu_driver_bug_workarounds,
             gpu_preferences.log_gpu_control_list_decisions, command_line,
-            nullptr);
+            &needs_more_info);
         gpu::CacheGpuFeatureInfo(gpu_feature_info);
         if (gpu::SwitchableGPUsSupported(gpu_info, *command_line)) {
           gpu::InitializeSwitchableGPUs(
               gpu_feature_info.enabled_gpu_driver_bug_workarounds);
         }
+        // Calling ShouldEnableSwiftShader will append the proper command line
+        // switch in order to enable SwiftShader if required.
+        gpu::ShouldEnableSwiftShader(
+            command_line, gpu_feature_info,
+            gpu_preferences.disable_software_rasterizer, needs_more_info);
         // Preload either the desktop GL or the osmesa so, depending on the
         // --use-gl flag.
         gl::init::InitializeGLOneOff();
