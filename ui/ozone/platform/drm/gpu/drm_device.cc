@@ -132,6 +132,8 @@ bool CanQueryForResources(int fd) {
   return !drmIoctl(fd, DRM_IOCTL_MODE_GETRESOURCES, &resources);
 }
 
+using ScopedDrmColorLutPtr = std::unique_ptr<drm_color_lut, base::FreeDeleter>;
+using ScopedDrmColorCtmPtr = std::unique_ptr<drm_color_ctm, base::FreeDeleter>;
 
 ScopedDrmColorLutPtr CreateLutBlob(
     const std::vector<display::GammaRampRGBEntry>& source) {
@@ -692,25 +694,13 @@ bool DrmDevice::SetColorCorrection(
     const std::vector<display::GammaRampRGBEntry>& degamma_lut,
     const std::vector<display::GammaRampRGBEntry>& gamma_lut,
     const std::vector<float>& correction_matrix) {
-  const bool should_set_gamma_properties =
-      !degamma_lut.empty() || !gamma_lut.empty();
-
-  ScopedDrmCrtcPtr crtc(drmModeGetCrtc(file_.GetPlatformFile(), crtc_id));
-  // TODO(dcastagna): Precompute and cache the return value of
-  // HasColorCorrectionMatrix when we initialize DrmDevice.
-  // We currently assume that if a per-CRTC CTM is not available, per-plane
-  // CTMs will be. We can make this more explicit once we address this TODO.
-  if (!HasColorCorrectionMatrix(file_.GetPlatformFile(), crtc.get()) &&
-      !should_set_gamma_properties) {
-    return plane_manager_->SetColorCorrectionOnAllCrtcPlanes(
-        crtc_id, CreateCTMBlob(correction_matrix));
-  }
-
   ScopedDrmObjectPropertyPtr crtc_props(drmModeObjectGetProperties(
       file_.GetPlatformFile(), crtc_id, DRM_MODE_OBJECT_CRTC));
 
   // Extract only the needed properties.
   int max_num_properties_expected = 1;
+  const bool should_set_gamma_properties =
+      !degamma_lut.empty() || !gamma_lut.empty();
   if (should_set_gamma_properties)
     max_num_properties_expected += 4;
 
