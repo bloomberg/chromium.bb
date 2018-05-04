@@ -34,6 +34,7 @@ CONTENT_EXPORT extern const base::Feature kCompositorTouchAction;
 CONTENT_EXPORT extern const base::Feature kCrossSiteDocumentBlockingAlways;
 CONTENT_EXPORT extern const base::Feature kCrossSiteDocumentBlockingIfIsolating;
 CONTENT_EXPORT extern const base::Feature kDataSaverHoldback;
+CONTENT_EXPORT extern const base::Feature kExperimentalProductivityFeatures;
 CONTENT_EXPORT extern const base::Feature kExpensiveBackgroundTimerThrottling;
 CONTENT_EXPORT extern const base::Feature kExtendedMouseButtons;
 CONTENT_EXPORT extern const base::Feature kFontCacheScaling;

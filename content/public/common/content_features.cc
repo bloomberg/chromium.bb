@@ -499,6 +499,10 @@ const base::Feature kWebAuthCtap2{"WebAuthenticationCtap2",
 const base::Feature kWebGLImageChromium{"WebGLImageChromium",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enable experimental policy-controlled features and LAPIs
+const base::Feature kExperimentalProductivityFeatures{
+    "ExperimentalProductivityFeatures", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // The JavaScript API for payments on the web.
 const base::Feature kWebPayments{"WebPayments",
                                  base::FEATURE_ENABLED_BY_DEFAULT};

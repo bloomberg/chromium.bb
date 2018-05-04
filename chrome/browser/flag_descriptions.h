@@ -455,6 +455,9 @@ extern const char kExperimentalFullscreenExitUIDescription[];
 extern const char kExperimentalKeyboardLockUiName[];
 extern const char kExperimentalKeyboardLockUiDescription[];
 
+extern const char kExperimentalProductivityFeaturesName[];
+extern const char kExperimentalProductivityFeaturesDescription[];
+
 extern const char kExperimentalSecurityFeaturesName[];
 extern const char kExperimentalSecurityFeaturesDescription[];
 

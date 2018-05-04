@@ -707,6 +707,12 @@ const char kExperimentalKeyboardLockUiDescription[] =
     "An experimental full screen with keyboard lock mode requiring users to "
     "hold Esc to exit.";
 
+const char kExperimentalProductivityFeaturesName[] =
+    "Experimental Productivity Features";
+const char kExperimentalProductivityFeaturesDescription[] =
+    "Enable support for experimental developer productivity features, such as "
+    "Layered APIs and policies for avoiding slow rendering.";
+
 const char kExperimentalSecurityFeaturesName[] =
     "Potentially annoying security features";
 const char kExperimentalSecurityFeaturesDescription[] =

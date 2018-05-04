@@ -3897,6 +3897,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-sync-uss-sessions", flag_descriptions::kEnableSyncUSSSessionsName,
      flag_descriptions::kEnableSyncUSSSessionsDescription, kOsAll,
      FEATURE_VALUE_TYPE(switches::kSyncUSSSessions)},
+    {"enable-experimental-productivity-features",
+     flag_descriptions::kExperimentalProductivityFeaturesName,
+     flag_descriptions::kExperimentalProductivityFeaturesDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kExperimentalProductivityFeatures)},
 
 #if defined(OS_CHROMEOS)
     {"enable-overview-swipe-to-close",

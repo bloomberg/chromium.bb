@@ -440,6 +440,11 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::EnableOffMainThreadWebSocket(
       base::FeatureList::IsEnabled(features::kOffMainThreadWebSocket));
 
+  if (base::FeatureList::IsEnabled(
+          features::kExperimentalProductivityFeatures)) {
+    WebRuntimeFeatures::EnableExperimentalProductivityFeatures(true);
+  }
+
   // End individual features.
   // Do not add individual features below this line.
 

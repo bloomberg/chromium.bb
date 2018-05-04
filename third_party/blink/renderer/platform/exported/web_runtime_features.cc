@@ -516,4 +516,8 @@ void WebRuntimeFeatures::EnableOffMainThreadWebSocket(bool enable) {
   RuntimeEnabledFeatures::SetOffMainThreadWebSocketEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableExperimentalProductivityFeatures(bool enable) {
+  RuntimeEnabledFeatures::SetExperimentalProductivityFeaturesEnabled(enable);
+}
+
 }  // namespace blink
