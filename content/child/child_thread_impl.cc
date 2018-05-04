@@ -74,8 +74,18 @@
 #include "content/public/common/content_descriptors.h"
 #endif
 
+#if defined(CLANG_COVERAGE)
+extern "C" int __llvm_profile_write_file(void);
+#endif
+
 namespace content {
 namespace {
+
+void WriteClangCoverageProfile() {
+#if defined(CLANG_COVERAGE)
+  __llvm_profile_write_file();
+#endif
+}
 
 // How long to wait for a connection to the browser process before giving up.
 const int kConnectionTimeoutS = 15;
@@ -100,6 +110,7 @@ class WaitAndExitDelegate : public base::PlatformThread::Delegate {
 
   void ThreadMain() override {
     base::PlatformThread::Sleep(duration_);
+    WriteClangCoverageProfile();
     _exit(0);
   }
 
@@ -160,6 +171,7 @@ class SuicideOnChannelErrorFilter : public IPC::MessageFilter {
     __lsan_do_leak_check();
 #endif
 #else
+    WriteClangCoverageProfile();
     _exit(0);
 #endif
   }
@@ -620,8 +632,10 @@ ChildThreadImpl::~ChildThreadImpl() {
 }
 
 void ChildThreadImpl::Shutdown() {
-  // Delete objects that hold references to blink so derived classes can
-  // safely shutdown blink in their Shutdown implementation.
+  // The renderer process (and others) can to fast shutdown by calling _exit(0),
+  // in which case the clang-coverage profile does not get written to the file.
+  // So force write the profile here before shutting down.
+  WriteClangCoverageProfile();
 }
 
 bool ChildThreadImpl::ShouldBeDestroyed() {

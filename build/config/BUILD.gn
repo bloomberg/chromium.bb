@@ -6,6 +6,7 @@ import("//build/config/allocator.gni")
 import("//build/config/c++/c++.gni")
 import("//build/config/chrome_build.gni")
 import("//build/config/chromecast_build.gni")
+import("//build/config/coverage/coverage.gni")
 import("//build/config/crypto.gni")
 import("//build/config/dcheck_always_on.gni")
 import("//build/config/features.gni")
@@ -117,6 +118,9 @@ config("feature_flags") {
   }
   if (is_ubsan || is_ubsan_null || is_ubsan_vptr || is_ubsan_security) {
     defines += [ "UNDEFINED_SANITIZER" ]
+  }
+  if (use_clang_coverage) {
+    defines += [ "CLANG_COVERAGE" ]
   }
   if (safe_browsing_mode == 1) {
     defines += [ "FULL_SAFE_BROWSING" ]
