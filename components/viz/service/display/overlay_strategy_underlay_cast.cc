@@ -97,6 +97,10 @@ bool OverlayStrategyUnderlayCast::Attempt(
   return found_underlay;
 }
 
+OverlayProcessor::StrategyType OverlayStrategyUnderlayCast::GetUMAEnum() const {
+  return OverlayProcessor::StrategyType::kUnderlayCast;
+}
+
 // static
 void OverlayStrategyUnderlayCast::SetOverlayCompositedCallback(
     const OverlayCompositedCallback& cb) {

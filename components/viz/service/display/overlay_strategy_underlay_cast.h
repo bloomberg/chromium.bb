@@ -36,6 +36,8 @@ class VIZ_SERVICE_EXPORT OverlayStrategyUnderlayCast
       base::RepeatingCallback<void(const gfx::RectF&, gfx::OverlayTransform)>;
   static void SetOverlayCompositedCallback(const OverlayCompositedCallback& cb);
 
+  OverlayProcessor::StrategyType GetUMAEnum() const override;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(OverlayStrategyUnderlayCast);
 };

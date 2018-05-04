@@ -67,4 +67,8 @@ bool OverlayStrategyFullscreen::Attempt(
   return true;
 }
 
+OverlayProcessor::StrategyType OverlayStrategyFullscreen::GetUMAEnum() const {
+  return OverlayProcessor::StrategyType::kFullscreen;
+}
+
 }  // namespace viz

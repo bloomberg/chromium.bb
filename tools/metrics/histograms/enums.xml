@@ -34214,6 +34214,15 @@ Called by update_net_trust_anchors.py.-->
   <int value="4" label="Internal error"/>
 </enum>
 
+<enum name="OverlayStrategies">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="No overlay"/>
+  <int value="2" label="Fullscreen"/>
+  <int value="3" label="SingleOnTop"/>
+  <int value="4" label="Underlay"/>
+  <int value="5" label="Underlay Cast"/>
+</enum>
+
 <enum name="OverlaySupportFlag">
   <int value="0" label="None"/>
   <int value="1" label="Direct overlay support"/>

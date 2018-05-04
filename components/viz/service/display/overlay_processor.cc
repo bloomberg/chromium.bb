@@ -4,6 +4,7 @@
 
 #include "components/viz/service/display/overlay_processor.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/resources/display_resource_provider.h"
@@ -41,6 +42,10 @@ class SendPromotionHintsBeforeReturning {
 }  // namespace
 
 namespace viz {
+
+OverlayProcessor::StrategyType OverlayProcessor::Strategy::GetUMAEnum() const {
+  return StrategyType::kUnknown;
+}
 
 OverlayProcessor::OverlayProcessor(OutputSurface* surface)
     : surface_(surface) {}
@@ -158,16 +163,23 @@ void OverlayProcessor::ProcessForOverlays(
   }
 
   // Only if that fails, attempt hardware overlay strategies.
+  Strategy* successful_strategy = nullptr;
   for (const auto& strategy : strategies_) {
     if (!strategy->Attempt(output_color_matrix, resource_provider,
                            render_passes->back().get(), candidates,
                            content_bounds)) {
       continue;
     }
-
+    successful_strategy = strategy.get();
     UpdateDamageRect(candidates, previous_frame_underlay_rect, damage_rect);
     break;
   }
+
+  UMA_HISTOGRAM_ENUMERATION("Viz.DisplayCompositor.OverlayStrategy",
+                            successful_strategy
+                                ? successful_strategy->GetUMAEnum()
+                                : StrategyType::kNoStrategyUsed);
+
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("viz.debug.overlay_planes"),
                  "Scheduled overlay planes", candidates->size());
 }
