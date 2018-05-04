@@ -40,8 +40,7 @@ def AddCommonArgs(arg_parser):
   common_args.add_argument('--ssh-config', '-F',
                            help='The path to the SSH configuration used for '
                                 'connecting to the target device.')
-  common_args.add_argument('--no-system-logs', default=False,
-                           action='store_true',
+  common_args.add_argument('--include-system-logs', default=True, type=bool,
                            help='Do not show system log data.')
   common_args.add_argument('--verbose', '-v', default=False,
                            action='store_true',
@@ -70,8 +69,7 @@ def GetDeploymentTargetForArgs(args):
   command line arguments."""
 
   if not args.device:
-    return QemuTarget(args.output_directory, args.target_cpu,
-                      not args.no_system_logs)
+    return QemuTarget(args.output_directory, args.target_cpu)
   else:
     return DeviceTarget(args.output_directory, args.target_cpu,
                         args.host, args.port, args.ssh_config)

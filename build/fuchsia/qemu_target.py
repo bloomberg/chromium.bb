@@ -33,17 +33,15 @@ def _GetAvailableTcpPort():
 
 
 class QemuTarget(target.Target):
-  def __init__(self, output_dir, target_cpu, system_logs,
+  def __init__(self, output_dir, target_cpu,
                ram_size_mb=2048):
     """output_dir: The directory which will contain the files that are
                    generated to support the QEMU deployment.
     target_cpu: The emulated target CPU architecture.
-                Can be 'x64' or 'arm64'.
-    system_logs: If true, emit system log data."""
+                Can be 'x64' or 'arm64'."""
     super(QemuTarget, self).__init__(output_dir, target_cpu)
     self._qemu_process = None
     self._ram_size_mb = ram_size_mb
-    self._system_logs = system_logs
 
   def __enter__(self):
     return self
@@ -62,10 +60,6 @@ class QemuTarget(target.Target):
     # TERM=dumb tells the guest OS to not emit ANSI commands that trigger
     # noisy ANSI spew from the user's terminal emulator.
     kernel_args.append('TERM=dumb')
-
-    # Enable logging to the serial port.
-    # TODO(sergeyu): Use loglistener instead of serial port to get zircon logs.
-    kernel_args.append('kernel.serial=legacy')
 
     qemu_command = [qemu_path,
         '-m', str(self._ram_size_mb),
@@ -139,12 +133,9 @@ class QemuTarget(target.Target):
     logging.debug('Launching QEMU.')
     logging.debug(' '.join(qemu_command))
 
-    stdio_flags = {'stdin': open(os.devnull)}
-    if not self._system_logs:
-      # Output the Fuchsia debug log.
-      stdio_flags['stdout'] = open(os.devnull)
-      stdio_flags['stderr'] = open(os.devnull)
-
+    stdio_flags = {'stdin': open(os.devnull),
+                   'stdout': open(os.devnull),
+                   'stderr': open(os.devnull)}
     self._qemu_process = subprocess.Popen(qemu_command, **stdio_flags)
     self._WaitUntilReady();
 
