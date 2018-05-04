@@ -581,8 +581,14 @@ class ForegroundedOrClosedTest : public TabActivityWatcherTest {
   DISALLOW_COPY_AND_ASSIGN(ForegroundedOrClosedTest);
 };
 
+// TODO(michaelpg): test is flaky on ChromeOS. https://crbug.com/839886
+#if defined(OS_CHROMEOS)
+#define MAYBE_SingleTab DISABLED_SingleTab
+#else
+#define MAYBE_SingleTab SingleTab
+#endif
 // Tests TabManager.Backgrounded.ForegroundedOrClosed UKM logging.
-TEST_F(ForegroundedOrClosedTest, SingleTab) {
+TEST_F(ForegroundedOrClosedTest, MAYBE_SingleTab) {
   Browser::CreateParams params(profile(), true);
   std::unique_ptr<Browser> browser =
       CreateBrowserWithTestWindowForParams(&params);
