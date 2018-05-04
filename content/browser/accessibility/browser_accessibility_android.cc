@@ -16,9 +16,9 @@
 #include "content/common/accessibility_messages.h"
 #include "content/public/common/content_client.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/accessibility/ax_assistant_structure.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/platform/ax_android_constants.h"
-#include "ui/accessibility/platform/ax_snapshot_node_android_platform.h"
 #include "ui/accessibility/platform/ax_unique_id.h"
 
 namespace {
@@ -265,7 +265,7 @@ bool BrowserAccessibilityAndroid::IsHierarchical() const {
 }
 
 bool BrowserAccessibilityAndroid::IsLink() const {
-  return ui::AXSnapshotNodeAndroid::AXRoleIsLink(GetRole());
+  return ui::AXRoleIsLink(GetRole());
 }
 
 bool BrowserAccessibilityAndroid::IsMultiLine() const {
@@ -370,8 +370,8 @@ bool BrowserAccessibilityAndroid::CanOpenPopup() const {
 }
 
 const char* BrowserAccessibilityAndroid::GetClassName() const {
-  return ui::AXSnapshotNodeAndroid::AXRoleToAndroidClassName(
-      GetRole(), PlatformGetParent() != nullptr);
+  return ui::AXRoleToAndroidClassName(GetRole(),
+                                      PlatformGetParent() != nullptr);
 }
 
 base::string16 BrowserAccessibilityAndroid::GetText() const {
@@ -421,7 +421,7 @@ base::string16 BrowserAccessibilityAndroid::GetText() const {
   if (text.empty() && (IsLink() || GetRole() == ax::mojom::Role::kImage) &&
       !HasExplicitlyEmptyName()) {
     base::string16 url = GetString16Attribute(ax::mojom::StringAttribute::kUrl);
-    text = ui::AXSnapshotNodeAndroid::AXUrlBaseText(url);
+    text = ui::AXUrlBaseText(url);
   }
 
   return text;

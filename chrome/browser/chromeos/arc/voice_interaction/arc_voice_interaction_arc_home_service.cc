@@ -31,7 +31,8 @@
 #include "components/arc/connection_holder.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
-#include "ui/accessibility/platform/ax_snapshot_node_android_platform.h"
+#include "ui/accessibility/ax_assistant_structure.h"
+#include "ui/accessibility/mojom/ax_assistant_structure.mojom.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/gfx/geometry/dip_util.h"
@@ -49,30 +50,33 @@ constexpr base::TimeDelta kWizardCompletedTimeout =
     base::TimeDelta::FromMinutes(1);
 
 mojom::VoiceInteractionStructurePtr CreateVoiceInteractionStructure(
-    const ui::AXSnapshotNodeAndroid& view_structure) {
+    const ui::AssistantTree& tree,
+    const ui::AssistantNode& node) {
   auto structure = mojom::VoiceInteractionStructure::New();
-  structure->text = view_structure.text;
-  structure->text_size = view_structure.text_size;
+  structure->text = node.text;
+  structure->text_size = node.text_size;
 
-  structure->bold = view_structure.bold;
-  structure->italic = view_structure.italic;
-  structure->underline = view_structure.underline;
-  structure->line_through = view_structure.line_through;
-  structure->color = view_structure.color;
-  structure->bgcolor = view_structure.bgcolor;
+  structure->bold = node.bold;
+  structure->italic = node.italic;
+  structure->underline = node.underline;
+  structure->line_through = node.line_through;
+  structure->color = node.color;
+  structure->bgcolor = node.bgcolor;
 
-  structure->role = view_structure.role;
+  structure->role = node.role;
 
-  structure->class_name = view_structure.class_name;
-  structure->rect = view_structure.rect;
+  structure->class_name = node.class_name;
+  structure->rect = node.rect;
 
-  if (view_structure.has_selection) {
-    structure->selection = gfx::Range(view_structure.start_selection,
-                                      view_structure.end_selection);
+  if (node.selection.has_value()) {
+    structure->selection =
+        gfx::Range(node.selection->start(), node.selection->end());
   }
 
-  for (auto& child : view_structure.children)
-    structure->children.push_back(CreateVoiceInteractionStructure(*child));
+  for (int child : node.children_indices) {
+    structure->children.push_back(
+        CreateVoiceInteractionStructure(tree, *tree.nodes[child]));
+  }
 
   return structure;
 }
@@ -97,8 +101,10 @@ void RequestVoiceInteractionStructureCallback(
   title_node->rect = gfx::Rect(bounds.size());
   title_node->class_name = "android.view.dummy.WebTitle";
   title_node->text = title;
+
+  auto assistant_tree = ui::CreateAssistantTree(update, false);
   title_node->children.push_back(CreateVoiceInteractionStructure(
-      *ui::AXSnapshotNodeAndroid::Create(update, false)));
+      *assistant_tree, *assistant_tree->nodes.front()));
   root->children.push_back(std::move(title_node));
   std::move(callback).Run(std::move(root));
 }
@@ -334,8 +340,9 @@ void ArcVoiceInteractionArcHomeService::OnVoiceInteractionOobeSetupComplete() {
 // static
 mojom::VoiceInteractionStructurePtr
 ArcVoiceInteractionArcHomeService::CreateVoiceInteractionStructureForTesting(
-    const ui::AXSnapshotNodeAndroid& view_structure) {
-  return CreateVoiceInteractionStructure(view_structure);
+    const ui::AssistantTree& tree,
+    const ui::AssistantNode& node) {
+  return CreateVoiceInteractionStructure(tree, node);
 }
 
 }  // namespace arc

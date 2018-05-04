@@ -1,12 +1,13 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/accessibility/platform/ax_snapshot_node_android_platform.h"
+#include "ui/accessibility/ax_assistant_structure.h"
 
 #include <string>
 
 #include "base/logging.h"
+#include "base/optional.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -15,6 +16,7 @@
 #include "ui/accessibility/ax_serializable_tree.h"
 #include "ui/accessibility/platform/ax_android_constants.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/range/range.h"
 #include "ui/gfx/transform.h"
 
 namespace ui {
@@ -211,11 +213,11 @@ base::string16 GetText(const AXNode* node, bool show_password) {
     }
   }
 
-  if (text.empty() && (AXSnapshotNodeAndroid::AXRoleIsLink(node->data().role) ||
+  if (text.empty() && (AXRoleIsLink(node->data().role) ||
                        node->data().role == ax::mojom::Role::kImage)) {
     base::string16 url =
         node->data().GetString16Attribute(ax::mojom::StringAttribute::kUrl);
-    text = AXSnapshotNodeAndroid::AXUrlBaseText(url);
+    text = AXUrlBaseText(url);
   }
   return text;
 }
@@ -264,36 +266,135 @@ base::Optional<std::string> AXRoleToString(ax::mojom::Role role) {
   }
 }
 
-}  // namespace
+AssistantNode* AddChild(AssistantTree* tree) {
+  auto node = std::make_unique<AssistantNode>();
+  tree->nodes.push_back(std::move(node));
+  return tree->nodes.back().get();
+}
 
-AXSnapshotNodeAndroid::AXSnapshotNodeAndroid() = default;
-AX_EXPORT AXSnapshotNodeAndroid::~AXSnapshotNodeAndroid() = default;
+struct WalkAXTreeConfig {
+  bool should_select_leaf;
+  const bool show_password;
+};
 
-// static
-AX_EXPORT std::unique_ptr<AXSnapshotNodeAndroid> AXSnapshotNodeAndroid::Create(
-    const AXTreeUpdate& update,
-    bool show_password) {
-  auto tree = std::make_unique<AXSerializableTree>();
-  if (!tree->Unserialize(update)) {
-    LOG(FATAL) << tree->error();
+void WalkAXTreeDepthFirst(const AXNode* node,
+                          const gfx::Rect& rect,
+                          const AXTreeUpdate& update,
+                          const AXTree* tree,
+                          WalkAXTreeConfig* config,
+                          AssistantTree* assistant_tree,
+                          AssistantNode* result) {
+  result->text = GetText(node, config->show_password);
+  result->class_name =
+      AXRoleToAndroidClassName(node->data().role, node->parent() != nullptr);
+  result->role = AXRoleToString(node->data().role);
+
+  result->text_size = -1.0;
+  result->bgcolor = 0;
+  result->color = 0;
+  result->bold = 0;
+  result->italic = 0;
+  result->line_through = 0;
+  result->underline = 0;
+
+  if (node->data().HasFloatAttribute(ax::mojom::FloatAttribute::kFontSize)) {
+    gfx::RectF text_size_rect(
+        0, 0, 1,
+        node->data().GetFloatAttribute(ax::mojom::FloatAttribute::kFontSize));
+    gfx::Rect scaled_text_size_rect =
+        gfx::ToEnclosingRect(tree->RelativeToTreeBounds(node, text_size_rect));
+    result->text_size = scaled_text_size_rect.height();
+
+    const int32_t text_style =
+        node->data().GetIntAttribute(ax::mojom::IntAttribute::kTextStyle);
+    result->color =
+        node->data().GetIntAttribute(ax::mojom::IntAttribute::kColor);
+    result->bgcolor =
+        node->data().GetIntAttribute(ax::mojom::IntAttribute::kBackgroundColor);
+    result->bold =
+        (text_style &
+         static_cast<int32_t>(ax::mojom::TextStyle::kTextStyleBold)) != 0;
+    result->italic =
+        (text_style &
+         static_cast<int32_t>(ax::mojom::TextStyle::kTextStyleItalic)) != 0;
+    result->line_through =
+        (text_style & static_cast<int32_t>(
+                          ax::mojom::TextStyle::kTextStyleLineThrough)) != 0;
+    result->underline =
+        (text_style &
+         static_cast<int32_t>(ax::mojom::TextStyle::kTextStyleUnderline)) != 0;
   }
 
+  const gfx::Rect& absolute_rect =
+      gfx::ToEnclosingRect(tree->GetTreeBounds(node));
+  gfx::Rect parent_relative_rect = absolute_rect;
+  bool is_root = node->parent() == nullptr;
+  if (!is_root) {
+    parent_relative_rect.Offset(-rect.OffsetFromOrigin());
+  }
+  result->rect = gfx::Rect(parent_relative_rect.x(), parent_relative_rect.y(),
+                           absolute_rect.width(), absolute_rect.height());
+
+  if (IsLeaf(node) && update.has_tree_data) {
+    int start_selection = 0;
+    int end_selection = 0;
+    if (update.tree_data.sel_anchor_object_id == node->id()) {
+      start_selection = update.tree_data.sel_anchor_offset;
+      config->should_select_leaf = true;
+    }
+
+    if (config->should_select_leaf) {
+      end_selection =
+          static_cast<int32_t>(GetText(node, config->show_password).length());
+    }
+
+    if (update.tree_data.sel_focus_object_id == node->id()) {
+      end_selection = update.tree_data.sel_focus_offset;
+      config->should_select_leaf = false;
+    }
+    if (end_selection > 0)
+      result->selection =
+          base::make_optional<gfx::Range>(start_selection, end_selection);
+  }
+
+  for (auto* child : node->children()) {
+    auto* n = AddChild(assistant_tree);
+    result->children_indices.push_back(assistant_tree->nodes.size() - 1);
+    WalkAXTreeDepthFirst(child, absolute_rect, update, tree, config,
+                         assistant_tree, n);
+  }
+}
+
+}  // namespace
+
+AssistantNode::AssistantNode() = default;
+AssistantNode::AssistantNode(const AssistantNode& other) = default;
+AssistantNode::~AssistantNode() = default;
+
+AssistantTree::AssistantTree() = default;
+AssistantTree::~AssistantTree() = default;
+
+std::unique_ptr<AssistantTree> CreateAssistantTree(const AXTreeUpdate& update,
+                                                   bool show_password) {
+  auto tree = std::make_unique<AXSerializableTree>();
+  auto assistant_tree = std::make_unique<AssistantTree>();
+  auto* root = AddChild(assistant_tree.get());
+  if (!tree->Unserialize(update))
+    LOG(FATAL) << tree->error();
   WalkAXTreeConfig config{
       false,         // should_select_leaf
       show_password  // show_password
   };
-  return WalkAXTreeDepthFirst(tree->root(), gfx::Rect(), update, tree.get(),
-                              config);
+  WalkAXTreeDepthFirst(tree->root(), gfx::Rect(), update, tree.get(), &config,
+                       assistant_tree.get(), root);
+  return assistant_tree;
 }
 
-// static
-AX_EXPORT bool AXSnapshotNodeAndroid::AXRoleIsLink(ax::mojom::Role role) {
+bool AXRoleIsLink(ax::mojom::Role role) {
   return role == ax::mojom::Role::kLink;
 }
 
-// static
-AX_EXPORT base::string16 AXSnapshotNodeAndroid::AXUrlBaseText(
-    base::string16 url) {
+base::string16 AXUrlBaseText(base::string16 url) {
   // Given a url like http://foo.com/bar/baz.png, just return the
   // base text, e.g., "baz".
   int trailing_slashes = 0;
@@ -312,10 +413,7 @@ AX_EXPORT base::string16 AXSnapshotNodeAndroid::AXUrlBaseText(
   return url;
 }
 
-// static
-AX_EXPORT const char* AXSnapshotNodeAndroid::AXRoleToAndroidClassName(
-    ax::mojom::Role role,
-    bool has_parent) {
+const char* AXRoleToAndroidClassName(ax::mojom::Role role, bool has_parent) {
   switch (role) {
     case ax::mojom::Role::kSearchBox:
     case ax::mojom::Role::kSpinButton:
@@ -368,100 +466,6 @@ AX_EXPORT const char* AXSnapshotNodeAndroid::AXRoleToAndroidClassName(
     default:
       return kAXViewClassname;
   }
-}
-
-// static
-std::unique_ptr<AXSnapshotNodeAndroid>
-AXSnapshotNodeAndroid::WalkAXTreeDepthFirst(
-    const AXNode* node,
-    gfx::Rect rect,
-    const AXTreeUpdate& update,
-    const AXTree* tree,
-    AXSnapshotNodeAndroid::WalkAXTreeConfig& config) {
-  auto result =
-      std::unique_ptr<AXSnapshotNodeAndroid>(new AXSnapshotNodeAndroid());
-  result->text = GetText(node, config.show_password);
-  result->class_name = AXSnapshotNodeAndroid::AXRoleToAndroidClassName(
-      node->data().role, node->parent() != nullptr);
-  result->role = AXRoleToString(node->data().role);
-
-  result->text_size = -1.0;
-  result->bgcolor = 0;
-  result->color = 0;
-  result->bold = 0;
-  result->italic = 0;
-  result->line_through = 0;
-  result->underline = 0;
-
-  if (node->data().HasFloatAttribute(ax::mojom::FloatAttribute::kFontSize)) {
-    gfx::RectF text_size_rect(
-        0, 0, 1,
-        node->data().GetFloatAttribute(ax::mojom::FloatAttribute::kFontSize));
-    gfx::Rect scaled_text_size_rect =
-        gfx::ToEnclosingRect(tree->RelativeToTreeBounds(node, text_size_rect));
-    result->text_size = scaled_text_size_rect.height();
-
-    const int32_t text_style =
-        node->data().GetIntAttribute(ax::mojom::IntAttribute::kTextStyle);
-    result->color =
-        node->data().GetIntAttribute(ax::mojom::IntAttribute::kColor);
-    result->bgcolor =
-        node->data().GetIntAttribute(ax::mojom::IntAttribute::kBackgroundColor);
-    result->bold =
-        (text_style &
-         static_cast<int32_t>(ax::mojom::TextStyle::kTextStyleBold)) != 0;
-    result->italic =
-        (text_style &
-         static_cast<int32_t>(ax::mojom::TextStyle::kTextStyleItalic)) != 0;
-    result->line_through =
-        (text_style & static_cast<int32_t>(
-                          ax::mojom::TextStyle::kTextStyleLineThrough)) != 0;
-    result->underline =
-        (text_style &
-         static_cast<int32_t>(ax::mojom::TextStyle::kTextStyleUnderline)) != 0;
-  }
-
-  const gfx::Rect& absolute_rect =
-      gfx::ToEnclosingRect(tree->GetTreeBounds(node));
-  gfx::Rect parent_relative_rect = absolute_rect;
-  bool is_root = node->parent() == nullptr;
-  if (!is_root) {
-    parent_relative_rect.Offset(-rect.OffsetFromOrigin());
-  }
-  result->rect = gfx::Rect(parent_relative_rect.x(), parent_relative_rect.y(),
-                           absolute_rect.width(), absolute_rect.height());
-  result->has_selection = false;
-
-  if (IsLeaf(node) && update.has_tree_data) {
-    int start_selection = 0;
-    int end_selection = 0;
-    if (update.tree_data.sel_anchor_object_id == node->id()) {
-      start_selection = update.tree_data.sel_anchor_offset;
-      config.should_select_leaf = true;
-    }
-
-    if (config.should_select_leaf) {
-      end_selection =
-          static_cast<int32_t>(GetText(node, config.show_password).length());
-    }
-
-    if (update.tree_data.sel_focus_object_id == node->id()) {
-      end_selection = update.tree_data.sel_focus_offset;
-      config.should_select_leaf = false;
-    }
-    if (end_selection > 0) {
-      result->has_selection = true;
-      result->start_selection = start_selection;
-      result->end_selection = end_selection;
-    }
-  }
-
-  for (auto* child : node->children()) {
-    result->children.push_back(
-        WalkAXTreeDepthFirst(child, absolute_rect, update, tree, config));
-  }
-
-  return result;
 }
 
 }  // namespace ui
