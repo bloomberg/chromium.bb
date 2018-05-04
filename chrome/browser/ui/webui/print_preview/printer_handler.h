@@ -120,7 +120,6 @@ class PrinterHandler {
   // |page_size|: The document page size.
   // |print_data|: The document bytes to print.
   // |callback| should be called in the response to the request.
-  // TODO(tbarzic): Page size should be extracted from print data.
   virtual void StartPrint(
       const std::string& destination_id,
       const std::string& capability,
