@@ -14,5 +14,5 @@
     [RaisesException] setter CSSTransformComponent (unsigned long index, CSSTransformComponent val);
 
     readonly attribute boolean is2D;
-    [RaisesException, RuntimeEnabled=GeometryInterfaces] DOMMatrix toMatrix();
+    [RaisesException] DOMMatrix toMatrix();
 };

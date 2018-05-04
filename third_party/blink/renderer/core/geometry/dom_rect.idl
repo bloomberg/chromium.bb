@@ -9,8 +9,7 @@
                 optional unrestricted double y = 0,
                 optional unrestricted double width = 0,
                 optional unrestricted double height = 0),
-    Exposed=(Window,Worker),
-    RuntimeEnabled=GeometryInterfaces
+    Exposed=(Window,Worker)
 ] interface DOMRect : DOMRectReadOnly {
     [NewObject] static DOMRect fromRect(optional DOMRectInit other);
 
