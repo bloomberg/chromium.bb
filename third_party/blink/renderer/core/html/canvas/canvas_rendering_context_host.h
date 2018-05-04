@@ -63,9 +63,7 @@ class CORE_EXPORT CanvasRenderingContextHost : public GarbageCollectedMixin {
 
   bool IsPaintable() const;
 
-  virtual void RegisterContextToDispatch(CanvasRenderingContext*) {
-    NOTIMPLEMENTED();
-  }
+  virtual void RegisterContextToDispatch(CanvasRenderingContext*) {}
 
  protected:
   virtual ~CanvasRenderingContextHost() {}
