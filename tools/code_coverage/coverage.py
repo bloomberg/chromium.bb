@@ -130,6 +130,9 @@ COMPONENT_MAPPING_URL = 'https://storage.googleapis.com/chromium-owners/componen
 # directly, call _GetBuildArgs instead.
 _BUILD_ARGS = None
 
+# Retry failed merges.
+MERGE_RETRIES = 3
+
 
 class _CoverageSummary(object):
   """Encapsulates coverage summary representation."""
@@ -778,15 +781,16 @@ def _CreateCoverageProfileDataForTargets(targets, commands, jobs_count=None):
     A relative path to the generated profdata file.
   """
   _BuildTargets(targets, jobs_count)
-  profraw_file_paths = _GetProfileRawDataPathsByExecutingCommands(
+  target_profdata_file_paths = _GetTargetProfDataPathsByExecutingCommands(
       targets, commands)
-  profdata_file_path = _CreateCoverageProfileDataFromProfRawData(
-      profraw_file_paths)
+  coverage_profdata_file_path = (
+      _CreateCoverageProfileDataFromTargetProfDataFiles(
+          target_profdata_file_paths))
 
-  for profraw_file_path in profraw_file_paths:
-    os.remove(profraw_file_path)
+  for target_profdata_file_path in target_profdata_file_paths:
+    os.remove(target_profdata_file_path)
 
-  return profdata_file_path
+  return coverage_profdata_file_path
 
 
 def _BuildTargets(targets, jobs_count):
@@ -822,7 +826,7 @@ def _BuildTargets(targets, jobs_count):
   logging.debug('Finished building %s', str(targets))
 
 
-def _GetProfileRawDataPathsByExecutingCommands(targets, commands):
+def _GetTargetProfDataPathsByExecutingCommands(targets, commands):
   """Runs commands and returns the relative paths to the profraw data files.
 
   Args:
@@ -839,47 +843,65 @@ def _GetProfileRawDataPathsByExecutingCommands(targets, commands):
     if file_or_dir.endswith(PROFRAW_FILE_EXTENSION):
       os.remove(os.path.join(OUTPUT_DIR, file_or_dir))
 
-  profraw_file_paths = []
+  profdata_file_paths = []
 
   # Run all test targets to generate profraw data files.
   for target, command in zip(targets, commands):
     output_file_name = os.extsep.join([target + '_output', 'txt'])
     output_file_path = os.path.join(OUTPUT_DIR, output_file_name)
-    logging.info('Running command: "%s", the output is redirected to "%s"',
-                 command, output_file_path)
 
-    if _IsIOSCommand(command):
-      # On iOS platform, due to lack of write permissions, profraw files are
-      # generated outside of the OUTPUT_DIR, and the exact paths are contained
-      # in the output of the command execution.
-      output = _ExecuteIOSCommand(target, command)
-      profraw_file_paths.append(_GetProfrawDataFileByParsingOutput(output))
-    else:
-      # On other platforms, profraw files are generated inside the OUTPUT_DIR.
-      output = _ExecuteCommand(target, command)
+    profdata_file_path = None
+    for _ in xrange(MERGE_RETRIES):
+      logging.info('Running command: "%s", the output is redirected to "%s"',
+                   command, output_file_path)
 
-    with open(output_file_path, 'w') as output_file:
-      output_file.write(output)
+      if _IsIOSCommand(command):
+        # On iOS platform, due to lack of write permissions, profraw files are
+        # generated outside of the OUTPUT_DIR, and the exact paths are contained
+        # in the output of the command execution.
+        output = _ExecuteIOSCommand(target, command)
+      else:
+        # On other platforms, profraw files are generated inside the OUTPUT_DIR.
+        output = _ExecuteCommand(target, command)
+
+      with open(output_file_path, 'w') as output_file:
+        output_file.write(output)
+
+      profraw_file_paths = []
+      if _IsIOS():
+        profraw_file_paths = _GetProfrawDataFileByParsingOutput(output)
+      else:
+        for file_or_dir in os.listdir(OUTPUT_DIR):
+          if file_or_dir.endswith(PROFRAW_FILE_EXTENSION):
+            profraw_file_paths.append(os.path.join(OUTPUT_DIR, file_or_dir))
+
+      assert profraw_file_paths, (
+          'Running target %s failed to generate any profraw data file, '
+          'please make sure the binary exists and is properly '
+          'instrumented.' % target)
+
+      try:
+        profdata_file_path = _CreateTargetProfDataFileFromProfRawFiles(
+            target, profraw_file_paths)
+        break
+      except Exception:
+        print('Retrying...')
+      finally:
+        # Remove profraw files now so that they are not used in next iteration.
+        for profraw_file_path in profraw_file_paths:
+          os.remove(profraw_file_path)
+
+    assert profdata_file_path, (
+        'Failed to merge target %s profraw files after %d retries. '
+        'Please file a bug with command you used, commit position and args.gn '
+        'config here: '
+        'https://bugs.chromium.org/p/chromium/issues/entry?'
+        'components=Tools%%3ECodeCoverage'% (target, MERGE_RETRIES))
+    profdata_file_paths.append(profdata_file_path)
 
   logging.debug('Finished executing the test commands')
 
-  if _IsIOS():
-    return profraw_file_paths
-
-  for file_or_dir in os.listdir(OUTPUT_DIR):
-    if file_or_dir.endswith(PROFRAW_FILE_EXTENSION):
-      profraw_file_paths.append(os.path.join(OUTPUT_DIR, file_or_dir))
-
-  # Assert one target/command generates at least one profraw data file.
-  for target in targets:
-    assert any(
-        os.path.basename(profraw_file).startswith(target)
-        for profraw_file in profraw_file_paths), (
-            'Running target: %s failed to generate any profraw data file, '
-            'please make sure the binary exists and is properly instrumented.' %
-            target)
-
-  return profraw_file_paths
+  return profdata_file_paths
 
 
 def _ExecuteCommand(target, command):
@@ -980,22 +1002,59 @@ def _GetProfrawDataFileByParsingOutput(output):
                  'Please refer to base/test/test_support_ios.mm for example.')
 
 
-def _CreateCoverageProfileDataFromProfRawData(profraw_file_paths):
-  """Returns a relative path to the profdata file by merging profraw data files.
+def _CreateCoverageProfileDataFromTargetProfDataFiles(profdata_file_paths):
+  """Returns a relative path to coverage profdata file by merging target
+  profdata files.
 
   Args:
-    profraw_file_paths: A list of relative paths to the profraw data files that
-                        are to be merged.
+    profdata_file_paths: A list of relative paths to the profdata data files
+                         that are to be merged.
 
   Returns:
-    A relative path to the generated profdata file.
+    A relative path to the merged coverage profdata file.
 
   Raises:
-    CalledProcessError: An error occurred merging profraw data files.
+    CalledProcessError: An error occurred merging profdata files.
   """
   logging.info('Creating the coverage profile data file')
-  logging.debug('Merging profraw files to create profdata file')
+  logging.debug(
+      'Merging target profdata files to create coverage profdata file')
   profdata_file_path = os.path.join(OUTPUT_DIR, PROFDATA_FILE_NAME)
+  try:
+    subprocess_cmd = [
+        LLVM_PROFDATA_PATH, 'merge', '-o', profdata_file_path, '-sparse=true'
+    ]
+    subprocess_cmd.extend(profdata_file_paths)
+    subprocess.check_call(subprocess_cmd)
+  except subprocess.CalledProcessError as error:
+    print('Failed to merge target profdata files to create coverage profdata. '
+          'Try again.')
+    raise error
+
+  logging.debug('Finished merging target profdata files')
+  logging.info('Code coverage profile data is created as: %s',
+               profdata_file_path)
+  return profdata_file_path
+
+
+def _CreateTargetProfDataFileFromProfRawFiles(target, profraw_file_paths):
+  """Returns a relative path to target profdata file by merging target
+  profraw files.
+
+  Args:
+    profraw_file_paths: A list of relative paths to the profdata data files
+                         that are to be merged.
+
+  Returns:
+    A relative path to the merged coverage profdata file.
+
+  Raises:
+    CalledProcessError: An error occurred merging profdata files.
+  """
+  logging.info('Creating target profile data file')
+  logging.debug('Merging target profraw files to create target profdata file')
+  profdata_file_path = os.path.join(OUTPUT_DIR, '%s.profdata' % target)
+
   try:
     subprocess_cmd = [
         LLVM_PROFDATA_PATH, 'merge', '-o', profdata_file_path, '-sparse=true'
@@ -1003,11 +1062,11 @@ def _CreateCoverageProfileDataFromProfRawData(profraw_file_paths):
     subprocess_cmd.extend(profraw_file_paths)
     subprocess.check_call(subprocess_cmd)
   except subprocess.CalledProcessError as error:
-    print('Failed to merge profraw files to create profdata file')
+    print('Failed to merge target profraw files to create target profdata.')
     raise error
 
-  logging.debug('Finished merging profraw files')
-  logging.info('Code coverage profile data is created as: %s',
+  logging.debug('Finished merging target profraw files')
+  logging.info('Target %s profile data is created as: %s', target,
                profdata_file_path)
   return profdata_file_path
 
@@ -1309,7 +1368,11 @@ def _ParseCommandArguments():
       '-l', '--log_file', type=str, help='Redirects logs to a file.')
 
   arg_parser.add_argument(
-      'targets', nargs='+', help='The names of the test targets to run.')
+      'targets',
+      nargs='+',
+      help='The names of the test targets to run. If multiple run commands are '
+      'specified using the -c/--command option, then the order of targets and '
+      'commands must match, otherwise coverage generation will fail.')
 
   args = arg_parser.parse_args()
   return args
