@@ -523,8 +523,10 @@ bool ScrollingCoordinator::ScrollableAreaScrollLayerDidChange(
     // VisualViewport scrolling may involve pinch zoom and gets routed through
     // WebViewImpl explicitly rather than via ScrollingCoordinator::DidScroll
     // since it needs to be set in tandem with the page scale delta.
-    if (scrollable_area != &page_->GetVisualViewport())
-      web_layer->SetScrollClient(this);
+    if (scrollable_area != &page_->GetVisualViewport()) {
+      web_layer->SetScrollCallback(WTF::BindRepeating(
+          &ScrollingCoordinator::DidScroll, WrapWeakPersistent(this)));
+    }
   }
   if (WebScrollbarLayer* scrollbar_layer =
           GetWebScrollbarLayer(scrollable_area, kHorizontalScrollbar)) {
