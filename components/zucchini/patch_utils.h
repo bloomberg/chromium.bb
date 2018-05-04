@@ -34,20 +34,20 @@ struct PatchHeader {
 };
 
 // Sanity check.
-static_assert(sizeof(PatchHeader) == 20, "PatchHeader is 20 bytes");
+static_assert(sizeof(PatchHeader) == 20, "PatchHeader must be 20 bytes");
 
 // Header for a patch element, found at the beginning of every patch element.
 struct PatchElementHeader {
   uint32_t old_offset;
-  uint32_t new_offset;
   uint32_t old_length;
+  uint32_t new_offset;
   uint32_t new_length;
-  uint32_t exe_type;
+  uint32_t exe_type;  // ExecutableType.
 };
 
 // Sanity check.
 static_assert(sizeof(PatchElementHeader) == 20,
-              "PatchElementHeader is 28 bytes");
+              "PatchElementHeader must be 20 bytes");
 
 #pragma pack(pop)
 

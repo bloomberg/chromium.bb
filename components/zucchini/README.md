@@ -209,8 +209,8 @@ PatchElement self contained.
 Name | Format | Description
 --- | --- | ---
 old_offset | uint32 | Starting offset of the element in old file.
-new_offset | uint32 | Starting offset of the element in new file.
 old_length | uint32 | Length of the element in old file.
+new_offset | uint32 | Starting offset of the element in new file.
 new_length | uint32 | Length of the element in new file.
 exe_type | uint32 | Executable type for this unit, see `enum ExecutableType`.
 
