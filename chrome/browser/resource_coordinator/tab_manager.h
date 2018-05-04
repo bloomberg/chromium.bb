@@ -427,7 +427,9 @@ class TabManager : public LifecycleUnitObserver,
       LifecycleUnit* lifecycle_unit,
       content::Visibility visibility) override;
   void OnLifecycleUnitDestroyed(LifecycleUnit* lifecycle_unit) override;
-  void OnLifecycleUnitStateChanged(LifecycleUnit* lifecycle_unit) override;
+  void OnLifecycleUnitStateChanged(
+      LifecycleUnit* lifecycle_unit,
+      mojom::LifecycleState previous_state) override;
 
   // LifecycleUnitSourceObserver:
   void OnLifecycleUnitCreated(LifecycleUnit* lifecycle_unit) override;
