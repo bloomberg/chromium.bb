@@ -29,6 +29,7 @@
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/window_util.h"
 
 CrostiniAppWindowShelfController::CrostiniAppWindowShelfController(
     ChromeLauncherController* owner)
@@ -104,12 +105,18 @@ void CrostiniAppWindowShelfController::ActiveUserChanged(
 void CrostiniAppWindowShelfController::OnWindowInitialized(
     aura::Window* window) {
   // An Crostini window has type WINDOW_TYPE_NORMAL, a WindowDelegate and
-  // is a top level views widget.
+  // is a top level views widget. Tooltips, menus, and other kinds of transient
+  // windows that can't activate are filtered out.
   if (window->type() != aura::client::WINDOW_TYPE_NORMAL || !window->delegate())
     return;
   views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
   if (!widget || !widget->is_top_level())
     return;
+  if (wm::GetTransientParent(window) != nullptr)
+    return;
+  if (!widget->CanActivate())
+    return;
+
   observed_windows_.push_back(window);
 
   window->AddObserver(this);
