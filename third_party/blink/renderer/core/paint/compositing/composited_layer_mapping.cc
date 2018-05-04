@@ -388,7 +388,7 @@ void CompositedLayerMapping::UpdateStickyConstraints(
 }
 
 void CompositedLayerMapping::UpdateLayerBlendMode(const ComputedStyle& style) {
-  SetBlendMode(style.BlendMode());
+  SetBlendMode(style.GetBlendMode());
 }
 
 void CompositedLayerMapping::UpdateIsRootForIsolatedGroup() {
@@ -3041,10 +3041,10 @@ GraphicsLayer* CompositedLayerMapping::ChildForSuperlayers() const {
   return graphics_layer_.get();
 }
 
-void CompositedLayerMapping::SetBlendMode(WebBlendMode blend_mode) {
+void CompositedLayerMapping::SetBlendMode(BlendMode blend_mode) {
   if (ancestor_clipping_layer_) {
     ancestor_clipping_layer_->SetBlendMode(blend_mode);
-    graphics_layer_->SetBlendMode(WebBlendMode::kNormal);
+    graphics_layer_->SetBlendMode(BlendMode::kNormal);
   } else {
     graphics_layer_->SetBlendMode(blend_mode);
   }

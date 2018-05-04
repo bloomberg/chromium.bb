@@ -1741,7 +1741,7 @@ class ComputedStyle : public ComputedStyleBase,
   bool IsFloating() const { return Floating() != EFloat::kNone; }
 
   // Mix-blend-mode utility functions.
-  bool HasBlendMode() const { return BlendMode() != WebBlendMode::kNormal; }
+  bool HasBlendMode() const { return GetBlendMode() != BlendMode::kNormal; }
 
   // Motion utility functions.
   bool HasOffset() const {

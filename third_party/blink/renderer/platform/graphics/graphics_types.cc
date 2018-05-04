@@ -26,6 +26,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 
+#include "base/stl_util.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -44,28 +45,28 @@ static const char* const kCompositeOperatorNames[] = {"clear",
                                                       "xor",
                                                       "lighter"};
 
-static const char* const kBlendOperatorNames[] = {
+static const char* const kBlendModeNames[] = {
     "normal",     "multiply",   "screen",      "overlay",
     "darken",     "lighten",    "color-dodge", "color-burn",
     "hard-light", "soft-light", "difference",  "exclusion",
     "hue",        "saturation", "color",       "luminosity"};
-const int kNumCompositeOperatorNames = arraysize(kCompositeOperatorNames);
-const int kNumBlendOperatorNames = arraysize(kBlendOperatorNames);
+const int kNumCompositeOperatorNames = base::size(kCompositeOperatorNames);
+const int kNumBlendModeNames = base::size(kBlendModeNames);
 
-bool ParseCompositeAndBlendOperator(const String& s,
-                                    CompositeOperator& op,
-                                    WebBlendMode& blend_op) {
+bool ParseCompositeAndBlendMode(const String& s,
+                                CompositeOperator& op,
+                                BlendMode& blend_op) {
   for (int i = 0; i < kNumCompositeOperatorNames; i++) {
     if (s == kCompositeOperatorNames[i]) {
       op = static_cast<CompositeOperator>(i);
-      blend_op = WebBlendMode::kNormal;
+      blend_op = BlendMode::kNormal;
       return true;
     }
   }
 
-  for (int i = 0; i < kNumBlendOperatorNames; i++) {
-    if (s == kBlendOperatorNames[i]) {
-      blend_op = static_cast<WebBlendMode>(i);
+  for (int i = 0; i < kNumBlendModeNames; i++) {
+    if (s == kBlendModeNames[i]) {
+      blend_op = static_cast<BlendMode>(i);
       op = kCompositeSourceOver;
       return true;
     }
@@ -74,12 +75,12 @@ bool ParseCompositeAndBlendOperator(const String& s,
   return false;
 }
 
-String CompositeOperatorName(CompositeOperator op, WebBlendMode blend_op) {
+String CompositeOperatorName(CompositeOperator op, BlendMode blend_op) {
   DCHECK_GE(op, 0);
   DCHECK_LT(op, kNumCompositeOperatorNames);
   DCHECK_GE(static_cast<unsigned>(blend_op), 0u);
-  if (blend_op != WebBlendMode::kNormal)
-    return kBlendOperatorNames[static_cast<unsigned>(blend_op)];
+  if (blend_op != BlendMode::kNormal)
+    return kBlendModeNames[static_cast<unsigned>(blend_op)];
   return kCompositeOperatorNames[op];
 }
 

@@ -13,7 +13,7 @@ const CSSValue* MixBlendMode::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     Node*,
     bool allow_visited_style) const {
-  return CSSIdentifierValue::Create(style.BlendMode());
+  return CSSIdentifierValue::Create(style.GetBlendMode());
 }
 
 }  // namespace CSSLonghand

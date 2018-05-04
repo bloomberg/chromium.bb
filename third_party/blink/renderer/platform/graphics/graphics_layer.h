@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer_client.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer_debug_info.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/graphics/image_orientation.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_client.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
@@ -180,7 +181,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   float Opacity() const { return opacity_; }
   void SetOpacity(float);
 
-  void SetBlendMode(WebBlendMode);
+  void SetBlendMode(BlendMode);
   void SetIsRootForIsolatedGroup(bool);
 
   void SetHitTestableWithoutDrawsContent(bool);
@@ -380,7 +381,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   Color background_color_;
   float opacity_;
 
-  WebBlendMode blend_mode_;
+  BlendMode blend_mode_;
 
   bool has_transform_origin_ : 1;
   bool contents_opaque_ : 1;

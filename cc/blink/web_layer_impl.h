@@ -54,8 +54,8 @@ class CC_BLINK_EXPORT WebLayerImpl : public blink::WebLayer {
   float Opacity() const override;
   void SetContentsOpaqueIsFixed(bool fixed) override;
 
-  void SetBlendMode(blink::WebBlendMode blend_mode) override;
-  blink::WebBlendMode BlendMode() const override;
+  void SetBlendMode(SkBlendMode blend_mode) override;
+  SkBlendMode BlendMode() const override;
   void SetIsRootForIsolatedGroup(bool root) override;
   bool IsRootForIsolatedGroup() override;
   void SetHitTestableWithoutDrawsContent(bool should_hit_test) override;

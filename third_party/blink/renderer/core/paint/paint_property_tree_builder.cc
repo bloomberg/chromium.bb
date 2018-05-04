@@ -751,7 +751,7 @@ static bool NeedsEffect(const LayoutObject& object) {
 
   SkBlendMode blend_mode = object.IsBlendingAllowed()
                                ? WebCoreCompositeToSkiaComposite(
-                                     kCompositeSourceOver, style.BlendMode())
+                                     kCompositeSourceOver, style.GetBlendMode())
                                : SkBlendMode::kSrcOver;
   if (blend_mode != SkBlendMode::kSrcOver)
     return true;
@@ -836,8 +836,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
       state.output_clip = output_clip;
       state.opacity = style.Opacity();
       if (object_.IsBlendingAllowed()) {
-        state.blend_mode = WebCoreCompositeToSkiaComposite(kCompositeSourceOver,
-                                                           style.BlendMode());
+        state.blend_mode = WebCoreCompositeToSkiaComposite(
+            kCompositeSourceOver, style.GetBlendMode());
       }
       if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
           RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {

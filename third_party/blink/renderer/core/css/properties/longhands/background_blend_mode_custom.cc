@@ -27,7 +27,7 @@ const CSSValue* BackgroundBlendMode::CSSValueFromComputedStyleInternal(
   CSSValueList* list = CSSValueList::CreateCommaSeparated();
   for (const FillLayer* curr_layer = &style.BackgroundLayers(); curr_layer;
        curr_layer = curr_layer->Next())
-    list->Append(*CSSIdentifierValue::Create(curr_layer->BlendMode()));
+    list->Append(*CSSIdentifierValue::Create(curr_layer->GetBlendMode()));
   return list;
 }
 

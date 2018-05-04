@@ -62,9 +62,10 @@ bool PLATFORM_EXPORT IsValidImageSize(const IntSize&);
 
 SkBlendMode PLATFORM_EXPORT
     WebCoreCompositeToSkiaComposite(CompositeOperator,
-                                    WebBlendMode = WebBlendMode::kNormal);
-CompositeOperator PLATFORM_EXPORT CompositeOperatorFromSkia(SkBlendMode);
-WebBlendMode PLATFORM_EXPORT BlendModeFromSkia(SkBlendMode);
+                                    BlendMode = BlendMode::kNormal);
+SkBlendMode PLATFORM_EXPORT WebCoreBlendModeToSkBlendMode(BlendMode);
+CompositeOperator PLATFORM_EXPORT CompositeOperatorFromSkBlendMode(SkBlendMode);
+BlendMode PLATFORM_EXPORT BlendModeFromSkBlendMode(SkBlendMode);
 
 // Multiply a color's alpha channel by an additional alpha factor where
 // alpha is in the range [0, 1].

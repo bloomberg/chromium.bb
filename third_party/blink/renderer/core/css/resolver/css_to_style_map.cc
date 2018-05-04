@@ -116,7 +116,7 @@ void CSSToStyleMap::MapFillBlendMode(StyleResolverState&,
     return;
 
   const CSSIdentifierValue& identifier_value = ToCSSIdentifierValue(value);
-  layer->SetBlendMode(identifier_value.ConvertTo<WebBlendMode>());
+  layer->SetBlendMode(identifier_value.ConvertTo<BlendMode>());
 }
 
 void CSSToStyleMap::MapFillOrigin(StyleResolverState&,

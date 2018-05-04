@@ -2045,7 +2045,7 @@
       property_methods: ["CSSValueFromComputedStyleInternal"],
       field_group: "*",
       field_template: "keyword",
-      include_paths: ["third_party/blink/public/platform/web_blend_mode.h"],
+      include_paths: ["third_party/blink/renderer/platform/graphics/graphics_types.h"],
       keywords: [
         "normal", "multiply", "screen", "overlay", "darken", "lighten",
         "color-dodge", "color-burn", "hard-light", "soft-light", "difference",
@@ -2054,7 +2054,7 @@
       typedom_types: ["Keyword"],
       default_value: "normal",
       name_for_methods: "BlendMode",
-      type_name: "WebBlendMode",
+      type_name: "BlendMode",
     },
     {
       name: "object-fit",

@@ -19,7 +19,6 @@ ash/shell.h
 ash/system/devicetype_utils.h
 ash/wm/system_modal_container_event_filter_delegate.h
 cc/base/ring_buffer.h
-cc/blink/web_blend_mode.h
 cc/cc_export.h
 cc/input/browser_controls_state.h
 cc/input/event_listener_properties.h

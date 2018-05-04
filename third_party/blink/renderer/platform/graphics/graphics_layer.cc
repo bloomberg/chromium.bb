@@ -29,7 +29,7 @@
 #include <cmath>
 #include <memory>
 #include <utility>
-#include "SkMatrix44.h"
+
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/layers/layer.h"
@@ -61,6 +61,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 #include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
 #include "third_party/blink/renderer/platform/graphics/paint/raster_invalidation_tracking.h"
+#include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_snap_data.h"
@@ -72,6 +73,7 @@
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
+#include "third_party/skia/include/core/SkMatrix44.h"
 
 namespace blink {
 
@@ -84,7 +86,7 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client)
     : client_(client),
       background_color_(Color::kTransparent),
       opacity_(1),
-      blend_mode_(WebBlendMode::kNormal),
+      blend_mode_(BlendMode::kNormal),
       has_transform_origin_(false),
       contents_opaque_(false),
       should_flatten_transform_(true),
@@ -770,7 +772,7 @@ std::unique_ptr<JSONObject> GraphicsLayer::LayerAsJSONInternal(
   if (opacity_ != 1)
     json->SetDouble("opacity", opacity_);
 
-  if (blend_mode_ != WebBlendMode::kNormal) {
+  if (blend_mode_ != BlendMode::kNormal) {
     json->SetString("blendMode",
                     CompositeOperatorName(kCompositeSourceOver, blend_mode_));
   }
@@ -1141,11 +1143,11 @@ void GraphicsLayer::SetOpacity(float opacity) {
   PlatformLayer()->SetOpacity(opacity);
 }
 
-void GraphicsLayer::SetBlendMode(WebBlendMode blend_mode) {
+void GraphicsLayer::SetBlendMode(BlendMode blend_mode) {
   if (blend_mode_ == blend_mode)
     return;
   blend_mode_ = blend_mode;
-  PlatformLayer()->SetBlendMode(blend_mode);
+  PlatformLayer()->SetBlendMode(WebCoreBlendModeToSkBlendMode(blend_mode));
 }
 
 void GraphicsLayer::SetIsRootForIsolatedGroup(bool isolated) {

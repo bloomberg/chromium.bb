@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer_client.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
@@ -263,7 +264,7 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   void UpdateFilters();
   void UpdateBackdropFilters();
 
-  void SetBlendMode(WebBlendMode);
+  void SetBlendMode(BlendMode);
 
   bool NeedsGraphicsLayerUpdate() {
     return pending_update_scope_ > kGraphicsLayerUpdateNone;
