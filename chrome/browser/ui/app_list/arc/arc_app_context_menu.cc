@@ -88,18 +88,17 @@ bool ArcAppContextMenu::IsCommandIdEnabled(int command_id) const {
 }
 
 void ArcAppContextMenu::ExecuteCommand(int command_id, int event_flags) {
-  switch (command_id) {
-    case LAUNCH_NEW:
-      delegate()->ExecuteLaunchCommand(event_flags);
-      break;
-    case UNINSTALL:
-      arc::ShowArcAppUninstallDialog(profile(), controller(), app_id());
-      break;
-    case SHOW_APP_INFO:
-      ShowPackageInfo();
-      break;
-    default:
-      app_list::AppContextMenu::ExecuteCommand(command_id, event_flags);
+  if (command_id == LAUNCH_NEW) {
+    delegate()->ExecuteLaunchCommand(event_flags);
+  } else if (command_id == UNINSTALL) {
+    arc::ShowArcAppUninstallDialog(profile(), controller(), app_id());
+  } else if (command_id == SHOW_APP_INFO) {
+    ShowPackageInfo();
+  } else if (command_id >= LAUNCH_APP_SHORTCUT_FIRST &&
+             command_id <= LAUNCH_APP_SHORTCUT_LAST) {
+    ExecuteLaunchAppShortcutCommand(command_id);
+  } else {
+    app_list::AppContextMenu::ExecuteCommand(command_id, event_flags);
   }
 }
 
@@ -132,15 +131,28 @@ void ArcAppContextMenu::BuildAppShortcutsMenu(
 void ArcAppContextMenu::OnGetAppShortcutItems(
     std::unique_ptr<ui::SimpleMenuModel> menu_model,
     GetMenuModelCallback callback,
-    std::unique_ptr<arc::ArcAppShortcutItems> shortcut_items) {
-  if (shortcut_items) {
+    std::unique_ptr<arc::ArcAppShortcutItems> app_shortcut_items) {
+  app_shortcut_items_ = std::move(app_shortcut_items);
+  if (app_shortcut_items_) {
     int command_id = LAUNCH_APP_SHORTCUT_FIRST;
-    DCHECK_LT(command_id + shortcut_items->size(), LAUNCH_APP_SHORTCUT_LAST);
-    for (const auto& item : *shortcut_items)
+    DCHECK_LT(command_id + app_shortcut_items_->size(),
+              LAUNCH_APP_SHORTCUT_LAST);
+    for (const auto& item : *app_shortcut_items_)
       menu_model->AddItemWithIcon(command_id++, item.short_label, item.icon);
   }
   std::move(callback).Run(std::move(menu_model));
   arc_app_shortcuts_request_.reset();
+}
+
+void ArcAppContextMenu::ExecuteLaunchAppShortcutCommand(int command_id) {
+  DCHECK(command_id >= LAUNCH_APP_SHORTCUT_FIRST &&
+         command_id <= LAUNCH_APP_SHORTCUT_LAST);
+  size_t index = command_id - LAUNCH_APP_SHORTCUT_FIRST;
+  DCHECK(app_shortcut_items_);
+  DCHECK_LT(index, app_shortcut_items_->size());
+  arc::LaunchAppShortcutItem(profile(), app_id(),
+                             app_shortcut_items_->at(index).shortcut_id,
+                             controller()->GetAppListDisplayId());
 }
 
 void ArcAppContextMenu::ShowPackageInfo() {

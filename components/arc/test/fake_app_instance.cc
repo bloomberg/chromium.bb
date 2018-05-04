@@ -74,6 +74,12 @@ void FakeAppInstance::LaunchApp(const std::string& package_name,
   launch_requests_.push_back(std::make_unique<Request>(package_name, activity));
 }
 
+void FakeAppInstance::LaunchAppShortcutItem(const std::string& package_name,
+                                            const std::string& shortcut_id,
+                                            int64_t display_id) {
+  ++launch_app_shortcut_item_count_;
+}
+
 void FakeAppInstance::RequestAppIcon(const std::string& package_name,
                                      const std::string& activity,
                                      mojom::ScaleFactor scale_factor) {

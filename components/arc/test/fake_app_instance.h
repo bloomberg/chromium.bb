@@ -88,6 +88,9 @@ class FakeAppInstance : public mojom::AppInstance {
   void LaunchApp(const std::string& package_name,
                  const std::string& activity,
                  int64_t display_id) override;
+  void LaunchAppShortcutItem(const std::string& package_name,
+                             const std::string& shortcut_id,
+                             int64_t display_id) override;
   void RequestAppIcon(const std::string& package_name,
                       const std::string& activity,
                       mojom::ScaleFactor scale_factor) override;
@@ -170,6 +173,10 @@ class FakeAppInstance : public mojom::AppInstance {
 
   int start_pai_request_count() const { return start_pai_request_count_; }
 
+  int launch_app_shortcut_item_count() const {
+    return launch_app_shortcut_item_count_;
+  }
+
   const std::vector<std::unique_ptr<Request>>& launch_requests() const {
     return launch_requests_;
   }
@@ -195,6 +202,8 @@ class FakeAppInstance : public mojom::AppInstance {
   int refresh_app_list_count_ = 0;
   // Number of requests to start PAI flows.
   int start_pai_request_count_ = 0;
+  // Keeps information about launch app shortcut requests.
+  int launch_app_shortcut_item_count_ = 0;
   // Keeps information about launch requests.
   std::vector<std::unique_ptr<Request>> launch_requests_;
   // Keeps information about launch intents.

@@ -480,6 +480,11 @@ TEST_P(AppContextMenuTest, ArcMenu) {
       EXPECT_EQ(base::StringPrintf("ShortLabel %d", i),
                 base::UTF16ToUTF8(menu->GetLabelAt(i + index)));
     }
+
+    // Test launching app shortcut item.
+    EXPECT_EQ(0, arc_test.app_instance()->launch_app_shortcut_item_count());
+    menu->ActivatedAt(menu->GetItemCount() - 1);
+    EXPECT_EQ(1, arc_test.app_instance()->launch_app_shortcut_item_count());
   }
 
   // This makes all apps non-ready.

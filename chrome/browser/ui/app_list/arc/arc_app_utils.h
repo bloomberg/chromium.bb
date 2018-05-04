@@ -109,6 +109,12 @@ bool LaunchAppWithIntent(content::BrowserContext* context,
                          int event_flags,
                          int64_t display_id);
 
+// Launches App Shortcut that was published by Android's ShortcutManager.
+bool LaunchAppShortcutItem(content::BrowserContext* context,
+                           const std::string& app_id,
+                           const std::string& shortcut_id,
+                           int64_t display_id);
+
 // Launches a specific activity within Settings app on ARC.
 bool LaunchSettingsAppActivity(content::BrowserContext* context,
                                const std::string& activity,

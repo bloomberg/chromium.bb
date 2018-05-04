@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 30
+// Next MinVersion: 31
 
 module arc.mojom;
 
@@ -281,7 +281,7 @@ interface AppHost {
 };
 
 // TODO(lhchavez): Migrate all request/response messages to Mojo.
-// Next method ID: 24
+// Next method ID: 25
 interface AppInstance {
   // DEPRECATED: Please use Init@21 instead.
   InitDeprecated@0(AppHost host_ptr);
@@ -310,6 +310,11 @@ interface AppInstance {
   // |activity|, which cannot be empty.
   [MinVersion=23] LaunchApp@18(string package_name, string activity,
                                int64 display_id);
+
+  // Sends a request to ARC for the Android launcher to launch the specified app
+  // shortcut.
+  [MinVersion=30] LaunchAppShortcutItem@24(
+      string package_name, string shortcut_id, int64 display_id);
 
   [MinVersion=9] LaunchIntentDeprecated@12(string intent_uri,
                                            Rect? dimension_on_screen);

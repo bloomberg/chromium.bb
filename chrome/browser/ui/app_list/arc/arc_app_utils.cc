@@ -150,6 +150,15 @@ bool Launch(content::BrowserContext* context,
   return true;
 }
 
+// Returns primary display id if |display_id| is invalid.
+int64_t GetValidDisplayId(int64_t display_id) {
+  if (display_id != display::kInvalidDisplayId)
+    return display_id;
+  if (auto* screen = display::Screen::GetScreen())
+    return screen->GetPrimaryDisplay().id();
+  return display::kInvalidDisplayId;
+}
+
 }  // namespace
 
 const char kPlayStoreAppId[] = "cnbgggchhmkkdmeppjobngjoejnihlei";
@@ -184,7 +193,8 @@ bool LaunchPlayStoreWithUrl(const std::string& url) {
   arc::mojom::IntentHelperInstance* instance =
       GET_INTENT_HELPER_INSTANCE(HandleUrl);
   if (!instance) {
-    VLOG(1) << "Cannot find a mojo instance, ARC is unreachable";
+    VLOG(1) << "Cannot find a mojo instance, ARC is unreachable or mojom"
+            << " version mismatch";
     return false;
   }
   instance->HandleUrl(url, kPlayStorePackage);
@@ -211,11 +221,6 @@ bool LaunchAppWithIntent(content::BrowserContext* context,
                          int event_flags,
                          int64_t display_id) {
   DCHECK(!launch_intent.has_value() || !launch_intent->empty());
-
-  if (display_id == display::kInvalidDisplayId) {
-    if (auto* screen = display::Screen::GetScreen())
-      display_id = screen->GetPrimaryDisplay().id();
-  }
 
   Profile* const profile = Profile::FromBrowserContext(context);
 
@@ -273,7 +278,7 @@ bool LaunchAppWithIntent(content::BrowserContext* context,
     DCHECK(chrome_controller || !ash::Shell::HasInstance());
     if (chrome_controller) {
       chrome_controller->GetArcDeferredLauncher()->RegisterDeferredLaunch(
-          app_id, event_flags, display_id);
+          app_id, event_flags, GetValidDisplayId(display_id));
 
       // On some boards, ARC is booted with a restricted set of resources by
       // default to avoid slowing down Chrome's user session restoration.
@@ -286,7 +291,37 @@ bool LaunchAppWithIntent(content::BrowserContext* context,
   }
   arc::ArcBootPhaseMonitorBridge::RecordFirstAppLaunchDelayUMA(context);
 
-  return Launch(context, app_id, launch_intent, event_flags, display_id);
+  return Launch(context, app_id, launch_intent, event_flags,
+                GetValidDisplayId(display_id));
+}
+
+bool LaunchAppShortcutItem(content::BrowserContext* context,
+                           const std::string& app_id,
+                           const std::string& shortcut_id,
+                           int64_t display_id) {
+  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+      ArcAppListPrefs::Get(context)->GetApp(app_id);
+  if (!app_info) {
+    LOG(ERROR) << "App " << app_id << " is not available.";
+    return false;
+  }
+
+  mojom::AppInstance* app_instance =
+      ArcServiceManager::Get()
+          ? ARC_GET_INSTANCE_FOR_METHOD(
+                ArcServiceManager::Get()->arc_bridge_service()->app(),
+                LaunchAppShortcutItem)
+          : nullptr;
+
+  if (!app_instance) {
+    LOG(ERROR) << "Cannot find a mojo instance, ARC is unreachable or mojom"
+               << " version mismatch.";
+    return false;
+  }
+
+  app_instance->LaunchAppShortcutItem(app_info->package_name, shortcut_id,
+                                      GetValidDisplayId(display_id));
+  return true;
 }
 
 bool LaunchSettingsAppActivity(content::BrowserContext* context,
