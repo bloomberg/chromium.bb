@@ -42,6 +42,7 @@
 #include "chromeos/printing/printer_translator.h"
 #include "chromeos/printing/printing_constants.h"
 #include "chromeos/printing/uri_components.h"
+#include "components/device_event_log/device_event_log.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
@@ -66,6 +67,12 @@ void RecordPpdSource(const PpdSourceForHistogram& source) {
 }
 
 void OnRemovedPrinter(const Printer::PrinterProtocol& protocol, bool success) {
+  if (success) {
+    PRINTER_LOG(DEBUG) << "Printer removal succeeded.";
+  } else {
+    PRINTER_LOG(DEBUG) << "Printer removal failed.";
+  }
+
   UMA_HISTOGRAM_ENUMERATION("Printing.CUPS.PrinterRemoved", protocol,
                             Printer::PrinterProtocol::kProtocolMax);
 }
@@ -95,7 +102,7 @@ void QueryAutoconf(const std::string& printer_uri,
   auto optional = ParseUri(printer_uri);
   // Behavior for querying a non-IPP uri is undefined and disallowed.
   if (!IsIppUri(printer_uri) || !optional.has_value()) {
-    LOG(WARNING) << "Printer uri is invalid: " << printer_uri;
+    PRINTER_LOG(ERROR) << "Printer uri is invalid: " << printer_uri;
     callback.Run(false, "", "", "", false);
     return;
   }
@@ -290,8 +297,8 @@ void CupsPrintersHandler::HandleUpdateCupsPrinter(const base::ListValue* args) {
   printer.set_display_name(printer_name);
 
   if (!profile_->GetPrefs()->GetBoolean(prefs::kUserNativePrintersAllowed)) {
-    LOG(WARNING) << "HandleAddCupsPrinter() called when "
-                    "kUserNativePrintersAllowed is set to false";
+    PRINTER_LOG(DEBUG) << "HandleAddCupsPrinter() called when "
+                          "kUserNativePrintersAllowed is set to false";
     // Used to log UMA metrics.
     OnAddedPrinterCommon(printer,
                          PrinterSetupResult::kNativePrintersNotAllowed);
@@ -300,6 +307,7 @@ void CupsPrintersHandler::HandleUpdateCupsPrinter(const base::ListValue* args) {
     return;
   }
 
+  PRINTER_LOG(USER) << "Comitting printer update";
   printers_manager_->UpdateConfiguredPrinter(printer);
 
   // TODO(xdai): Replace "on-add-cups-printer" callback with Promise resolve
@@ -309,6 +317,7 @@ void CupsPrintersHandler::HandleUpdateCupsPrinter(const base::ListValue* args) {
 }
 
 void CupsPrintersHandler::HandleRemoveCupsPrinter(const base::ListValue* args) {
+  PRINTER_LOG(USER) << "Removing printer";
   std::string printer_id;
   std::string printer_name;
   CHECK(args->GetString(0, &printer_id));
@@ -368,6 +377,7 @@ void CupsPrintersHandler::HandleGetPrinterInfo(const base::ListValue* args) {
 
   DCHECK(printer_protocol == kIppScheme || printer_protocol == kIppsScheme)
       << "Printer info requests only supported for IPP and IPPS printers";
+  PRINTER_LOG(DEBUG) << "Querying printer info";
   std::string printer_uri =
       base::StringPrintf("%s://%s/%s", printer_protocol.c_str(),
                          printer_address.c_str(), printer_queue.c_str());
@@ -396,10 +406,13 @@ void CupsPrintersHandler::OnAutoconfQueriedDiscovered(
       printer->set_manufacturer(make);
       printer->set_model(model);
       printer->set_make_and_model(make_and_model);
+      PRINTER_LOG(DEBUG) << "Printer queried for make and model "
+                         << make_and_model;
     }
 
     // Autoconfig available, use it.
     if (ipp_everywhere) {
+      PRINTER_LOG(DEBUG) << "Performing autoconf setup";
       printer->mutable_ppd_reference()->autoconf = true;
       printer_configurer_->SetUpPrinter(
           *printer, base::Bind(&CupsPrintersHandler::OnAddedDiscoveredPrinter,
@@ -411,6 +424,7 @@ void CupsPrintersHandler::OnAutoconfQueriedDiscovered(
   // We don't have enough from discovery to configure the printer.  Fill in as
   // much information as we can about the printer, and ask the user to supply
   // the rest.
+  PRINTER_LOG(EVENT) << "Could not query printer.  Fallback to asking the user";
   FireManuallyAddDiscoveredPrinter(*printer);
 }
 
@@ -423,12 +437,16 @@ void CupsPrintersHandler::OnAutoconfQueried(const std::string& callback_id,
   RecordIppQuerySuccess(success);
 
   if (!success) {
+    PRINTER_LOG(DEBUG) << "Could not query printer";
     base::DictionaryValue reject;
     reject.SetString("message", "Querying printer failed");
     RejectJavascriptCallback(base::Value(callback_id), reject);
     return;
   }
 
+  PRINTER_LOG(DEBUG) << "Resolved printer information: make_and_model("
+                     << make_and_model << ") autoconf(" << ipp_everywhere
+                     << ")";
   base::DictionaryValue info;
   info.SetString("manufacturer", make);
   info.SetString("model", model);
@@ -445,14 +463,14 @@ void CupsPrintersHandler::HandleAddCupsPrinter(const base::ListValue* args) {
 
   std::unique_ptr<Printer> printer = DictToPrinter(*printer_dict);
   if (!printer) {
-    LOG(ERROR) << "Failed to parse printer URI";
+    PRINTER_LOG(ERROR) << "Failed to parse printer URI";
     OnAddPrinterError(PrinterSetupResult::kFatalError);
     return;
   }
 
   if (!profile_->GetPrefs()->GetBoolean(prefs::kUserNativePrintersAllowed)) {
-    LOG(WARNING) << "HandleAddCupsPrinter() called when "
-                    "kUserNativePrintersAllowed is set to false";
+    PRINTER_LOG(DEBUG) << "HandleAddCupsPrinter() called when "
+                          "kUserNativePrintersAllowed is set to false";
     // Used to log UMA metrics.
     OnAddedPrinterCommon(*printer,
                          PrinterSetupResult::kNativePrintersNotAllowed);
@@ -522,8 +540,8 @@ void CupsPrintersHandler::HandleAddCupsPrinter(const base::ListValue* args) {
       printer->set_make_and_model(ppd_model);
     }
   } else {
-    // TODO(crbug.com/738514): Support PPD guessing for non-autoconf printers.
-    // i.e. !autoconf && !manufacturer.empty() && !model.empty()
+    // TODO(https://crbug.com/738514): Support PPD guessing for non-autoconf
+    // printers. i.e. !autoconf && !manufacturer.empty() && !model.empty()
     NOTREACHED()
         << "A configuration option must have been selected to add a printer";
   }
@@ -541,30 +559,32 @@ void CupsPrintersHandler::OnAddedPrinterCommon(const Printer& printer,
     case PrinterSetupResult::kSuccess:
       UMA_HISTOGRAM_ENUMERATION("Printing.CUPS.PrinterAdded",
                                 printer.GetProtocol(), Printer::kProtocolMax);
+      PRINTER_LOG(USER) << "Performing printer setup";
       printers_manager_->PrinterInstalled(printer);
       printers_manager_->UpdateConfiguredPrinter(printer);
       return;
     case PrinterSetupResult::kPpdNotFound:
-      LOG(WARNING) << "Could not locate requested PPD";
+      PRINTER_LOG(ERROR) << "Could not locate requested PPD";
       break;
     case PrinterSetupResult::kPpdTooLarge:
-      LOG(WARNING) << "PPD is too large";
+      PRINTER_LOG(ERROR) << "PPD is too large";
       break;
     case PrinterSetupResult::kPpdUnretrievable:
-      LOG(WARNING) << "Could not retrieve PPD from server";
+      PRINTER_LOG(ERROR) << "Could not retrieve PPD from server";
       break;
     case PrinterSetupResult::kInvalidPpd:
-      LOG(WARNING) << "Provided PPD is invalid.";
+      PRINTER_LOG(ERROR) << "Provided PPD is invalid.";
       break;
     case PrinterSetupResult::kPrinterUnreachable:
-      LOG(WARNING) << "Could not contact printer for configuration";
+      PRINTER_LOG(ERROR) << "Could not contact printer for configuration";
       break;
     case PrinterSetupResult::kDbusError:
     case PrinterSetupResult::kFatalError:
-      LOG(ERROR) << "Unrecoverable error.  Reboot required.";
+      PRINTER_LOG(ERROR) << "Unrecoverable error.  Reboot required.";
       break;
     case PrinterSetupResult::kNativePrintersNotAllowed:
-      LOG(ERROR) << "Unable to add or edit printer due to enterprise policy.";
+      PRINTER_LOG(ERROR)
+          << "Unable to add or edit printer due to enterprise policy.";
       break;
     case PrinterSetupResult::kMaxValue:
       NOTREACHED() << "This is not an expected value";
@@ -583,7 +603,8 @@ void CupsPrintersHandler::OnAddedDiscoveredPrinter(
     FireWebUIListener("on-add-cups-printer", base::Value(result_code),
                       base::Value(printer.display_name()));
   } else {
-    // TODO(crubg.com/836434): Log in printer log.
+    PRINTER_LOG(EVENT) << "Automatic setup failed for discovered printer.  "
+                          "Fall back to manual.";
     // Could not set up printer.  Asking user for manufacturer data.
     FireManuallyAddDiscoveredPrinter(printer);
   }
@@ -592,12 +613,14 @@ void CupsPrintersHandler::OnAddedDiscoveredPrinter(
 void CupsPrintersHandler::OnAddedSpecifiedPrinter(
     const Printer& printer,
     PrinterSetupResult result_code) {
+  PRINTER_LOG(EVENT) << "Add manual printer: " << result_code;
   OnAddedPrinterCommon(printer, result_code);
   FireWebUIListener("on-add-cups-printer", base::Value(result_code),
                     base::Value(printer.display_name()));
 }
 
 void CupsPrintersHandler::OnAddPrinterError(PrinterSetupResult result_code) {
+  PRINTER_LOG(EVENT) << "Add printer error: " << result_code;
   FireWebUIListener("on-add-cups-printer", base::Value(result_code),
                     base::Value(""));
 }
@@ -719,6 +742,7 @@ void CupsPrintersHandler::VerifyPpdContents(const base::FilePath& path,
 }
 
 void CupsPrintersHandler::HandleStartDiscovery(const base::ListValue* args) {
+  PRINTER_LOG(DEBUG) << "Start printer discovery";
   discovery_active_ = true;
   OnPrintersChanged(
       CupsPrintersManager::kAutomatic,
@@ -732,6 +756,7 @@ void CupsPrintersHandler::HandleStartDiscovery(const base::ListValue* args) {
 }
 
 void CupsPrintersHandler::HandleStopDiscovery(const base::ListValue* args) {
+  PRINTER_LOG(DEBUG) << "Stop printer discovery";
   discovered_printers_.clear();
   automatic_printers_.clear();
 
@@ -742,6 +767,7 @@ void CupsPrintersHandler::HandleStopDiscovery(const base::ListValue* args) {
 }
 
 void CupsPrintersHandler::HandleSetUpCancel(const base::ListValue* args) {
+  PRINTER_LOG(DEBUG) << "Printer setup cancelled";
   const base::DictionaryValue* printer_dict;
   CHECK(args->GetDictionary(0, &printer_dict));
 
@@ -788,8 +814,10 @@ void CupsPrintersHandler::HandleAddDiscoveredPrinter(
   std::string printer_id;
   CHECK(args->GetString(0, &printer_id));
 
+  PRINTER_LOG(USER) << "Adding discovered printer";
   std::unique_ptr<Printer> printer = printers_manager_->GetPrinter(printer_id);
   if (printer == nullptr) {
+    PRINTER_LOG(ERROR) << "Discovered printer disappeared";
     // Printer disappeared, so we don't have information about it anymore and
     // can't really do much. Fail the add.
     FireWebUIListener("on-add-cups-printer", base::Value(false),
@@ -799,6 +827,7 @@ void CupsPrintersHandler::HandleAddDiscoveredPrinter(
 
   auto optional = printer->GetUriComponents();
   if (!optional.has_value()) {
+    PRINTER_LOG(DEBUG) << "Could not parse uri";
     // The printer uri was not parsed successfully. Fail the add.
     FireWebUIListener("on-add-cups-printer", base::Value(false),
                       base::Value(printer_id));
@@ -808,6 +837,7 @@ void CupsPrintersHandler::HandleAddDiscoveredPrinter(
   if (printer->ppd_reference().autoconf ||
       !printer->ppd_reference().effective_make_and_model.empty() ||
       !printer->ppd_reference().user_supplied_ppd_url.empty()) {
+    PRINTER_LOG(EVENT) << "Start setup of discovered printer";
     // If we have something that looks like a ppd reference for this printer,
     // try to configure it.
     printer_configurer_->SetUpPrinter(
@@ -820,11 +850,13 @@ void CupsPrintersHandler::HandleAddDiscoveredPrinter(
   // see if we want to try IPP.
   const std::string printer_uri = printer->effective_uri();
   if (IsIppUri(printer_uri)) {
+    PRINTER_LOG(EVENT) << "Query printer for IPP attributes";
     QueryAutoconf(
         printer_uri,
         base::Bind(&CupsPrintersHandler::OnAutoconfQueriedDiscovered,
                    weak_factory_.GetWeakPtr(), base::Passed(&printer)));
   } else {
+    PRINTER_LOG(EVENT) << "Request make and model from user";
     // If it's not an IPP printer, the user must choose a PPD.
     FireManuallyAddDiscoveredPrinter(*printer);
   }
