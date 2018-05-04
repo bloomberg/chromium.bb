@@ -332,6 +332,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     return;
   GridCell* cell = base::mac::ObjCCastStrict<GridCell>(
       [self.collectionView cellForItemAtIndexPath:CreateIndexPath(index)]);
+  // TODO(crbug.com/839892) : Cell is sometimes nil, but should not be.
   [self configureCell:cell withItem:item];
 }
 
@@ -394,7 +395,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 // this view controller's theme. This view controller becomes the delegate for
 // the cell.
 - (void)configureCell:(GridCell*)cell withItem:(GridItem*)item {
-  DCHECK(cell);
+  // TODO(crbug.com/839892) : Cell is sometimes nil. Add DCHECK(cell) here.
   DCHECK(item);
   cell.delegate = self;
   cell.theme = self.theme;
