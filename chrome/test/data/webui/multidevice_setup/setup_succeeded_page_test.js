@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview Suite of tests for button navigation functionality in
- * MultiDevice setup WebUI.
+ * @fileoverview Suite of tests for page-specific behaviors of
+ * SetupSucceededPage.
  */
 cr.define('multidevice_setup', () => {
   function registerSetupSucceededPageTests() {
@@ -27,7 +27,7 @@ cr.define('multidevice_setup', () => {
         setupSucceededPageElement.addEventListener(
             'settings-opened', () => done());
         let settingsLink = setupSucceededPageElement.$$('#settings-link');
-        MockInteractions.tap(settingsLink);
+        settingsLink.click();
       });
     });
   }

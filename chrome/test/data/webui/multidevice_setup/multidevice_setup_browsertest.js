@@ -28,6 +28,7 @@ MultiDeviceSetupBrowserTest.prototype = {
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
     'integration_test.js',
     'setup_succeeded_page_test.js',
+    'start_setup_page_test.js',
   ]),
 };
 
@@ -38,6 +39,11 @@ TEST_F('MultiDeviceSetupBrowserTest', 'Integration', function() {
 
 TEST_F('MultiDeviceSetupBrowserTest', 'SetupSucceededPage', function() {
   multidevice_setup.registerSetupSucceededPageTests();
+  mocha.run();
+});
+
+TEST_F('MultiDeviceSetupBrowserTest', 'StartSetupPage', function() {
+  multidevice_setup.registerStartSetupPageTests();
   mocha.run();
 });
 

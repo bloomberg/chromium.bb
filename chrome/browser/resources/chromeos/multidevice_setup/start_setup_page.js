@@ -29,9 +29,92 @@ Polymer({
       type: String,
       value: 'startSetupPageMessage',
     },
+
+    /**
+     * Array of objects representing all available MultiDevice hosts. Each
+     * object contains the name of the device type (e.g. "Pixel XL") and its
+     * Device ID.
+     *
+     * @type {!Array<{name: string, id: string}>}
+     */
+    devices: {
+      type: Array,
+      value: () => [],
+      notify: true,
+      observer: 'devicesChanged_',
+    },
+
+    /**
+     * Device ID for the currently selected host device.
+     *
+     * Undefined if the no list of potential hosts has been received from mojo
+     * service.
+     *
+     * @type {string|undefined}
+     */
+    selectedDeviceId: {
+      type: String,
+      notify: true,
+    },
   },
 
   behaviors: [
     UiPageContainerBehavior,
+    I18nBehavior,
   ],
+
+  /**
+   * @param {!Array<{name: string, id: string}>} devices Device list.
+   * @return {string} Label for devices selection content.
+   * @private
+   */
+  getDeviceSelectionHeader_(devices) {
+    switch (devices.length) {
+      case 0:
+        return '';
+      case 1:
+        return this.i18n('startSetupPageSingleDeviceHeader');
+      default:
+        return this.i18n('startSetupPageMultipleDeviceHeader');
+    }
+  },
+
+  /**
+   * @param {!Array<{name: string, id: string}>} devices Device list.
+   * @return {boolean} True if there are more than one potential host devices.
+   * @private
+   */
+  doesDeviceListHaveMultipleElements_: function(devices) {
+    return devices.length > 1;
+  },
+
+  /**
+   * @param {!Array<{name: string, id: string}>} devices Device list.
+   * @return {boolean} True if there is exactly one potential host device.
+   * @private
+   */
+  doesDeviceListHaveOneElement_: function(devices) {
+    return devices.length == 1;
+  },
+
+  /**
+   * @param {!Array<{name: string, id: string}>} devices Device list.
+   * @return {string} Name of the first device in device list if there are any.
+   *     Returns an empty string otherwise.
+   * @private
+   */
+  getFirstDeviceNameInList_: function(devices) {
+    return devices[0] ? this.devices[0].name : '';
+  },
+
+  /** @private */
+  devicesChanged_: function() {
+    if (!this.selectedDeviceId && this.devices.length > 0)
+      this.selectedDeviceId = this.devices[0].id;
+  },
+
+  /** @private */
+  onDeviceDropdownSelectionChanged_: function() {
+    this.selectedDeviceId = this.$.deviceDropdown.value;
+  },
 });
