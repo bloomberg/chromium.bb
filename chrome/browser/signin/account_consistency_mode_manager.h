@@ -58,6 +58,10 @@ class AccountConsistencyModeManager : public KeyedService {
   // behaviour enabled.
   static bool IsMirrorEnabledForProfile(Profile* profile);
 
+  // By default, Deskotp Identity Consistency (aka Dice) is not enabled in
+  // builds lacking an API key. For testing, set to have Dice enabled in tests.
+  static void SetIgnoreMissingApiKeysForTesting();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(AccountConsistencyModeManagerTest,
                            MigrateAtCreation);
@@ -75,6 +79,10 @@ class AccountConsistencyModeManager : public KeyedService {
   signin::AccountConsistencyMethod GetAccountConsistencyMethod();
 
   Profile* profile_;
+
+  // By default, DICE is not enabled in builds lacking an API key. Set to true
+  // for tests.
+  static bool ignore_missing_key_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountConsistencyModeManager);
 };

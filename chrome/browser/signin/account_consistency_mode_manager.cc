@@ -15,6 +15,7 @@
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "google_apis/google_api_keys.h"
 
 namespace {
 
@@ -82,6 +83,8 @@ signin::AccountConsistencyMethod GetMethodForNonRegularProfile() {
 }
 
 }  // namespace
+
+bool AccountConsistencyModeManager::ignore_missing_key_for_testing_ = false;
 
 // static
 AccountConsistencyModeManager* AccountConsistencyModeManager::GetForProfile(
@@ -179,6 +182,11 @@ bool AccountConsistencyModeManager::IsMirrorEnabledForProfile(
          signin::AccountConsistencyMethod::kMirror;
 }
 
+// static
+void AccountConsistencyModeManager::SetIgnoreMissingApiKeysForTesting() {
+  ignore_missing_key_for_testing_ = true;
+}
+
 signin::AccountConsistencyMethod
 AccountConsistencyModeManager::GetAccountConsistencyMethod() {
   if (profile_->GetProfileType() != Profile::ProfileType::REGULAR_PROFILE) {
@@ -200,13 +208,26 @@ AccountConsistencyModeManager::GetAccountConsistencyMethod() {
   signin::AccountConsistencyMethod method =
       signin::GetAccountConsistencyMethod();
 
+  if (method == signin::AccountConsistencyMethod::kMirror ||
+      signin::DiceMethodGreaterOrEqual(
+          signin::AccountConsistencyMethod::kDiceFixAuthErrors, method)) {
+    return method;
+  }
+
+  DCHECK(signin::DiceMethodGreaterOrEqual(
+      method, signin::AccountConsistencyMethod::kDicePrepareMigration));
+
   // Legacy supervised users cannot get Dice.
   // TODO(droger): remove this once legacy supervised users are no longer
   // supported.
-  if (profile_->IsLegacySupervised() &&
-      (method != signin::AccountConsistencyMethod::kMirror) &&
-      signin::DiceMethodGreaterOrEqual(
-          method, signin::AccountConsistencyMethod::kDiceFixAuthErrors)) {
+  if (profile_->IsLegacySupervised())
+    return signin::AccountConsistencyMethod::kDiceFixAuthErrors;
+
+  bool can_enable_dice_for_build =
+      ignore_missing_key_for_testing_ || google_apis::HasKeysConfigured();
+  if (!can_enable_dice_for_build) {
+    LOG(WARNING) << "Desktop Identity Consistency cannot be enabled as no "
+                    "API keys have been configured.";
     return signin::AccountConsistencyMethod::kDiceFixAuthErrors;
   }
 
