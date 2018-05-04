@@ -22,15 +22,15 @@
 
 namespace blink {
 
-// CanvasResourceProvider_Texture
+// CanvasResourceProviderTexture
 //==============================================================================
 //
 // * Renders to a texture managed by skia. Mailboxes are straight GL textures.
 // * Layers are not overlay candidates
 
-class CanvasResourceProvider_Texture : public CanvasResourceProvider {
+class CanvasResourceProviderTexture : public CanvasResourceProvider {
  public:
-  CanvasResourceProvider_Texture(
+  CanvasResourceProviderTexture(
       const IntSize& size,
       unsigned msaa_sample_count,
       const CanvasColorParams color_params,
@@ -41,7 +41,7 @@ class CanvasResourceProvider_Texture : public CanvasResourceProvider {
                                std::move(context_provider_wrapper)),
         msaa_sample_count_(msaa_sample_count) {}
 
-  ~CanvasResourceProvider_Texture() override = default;
+  ~CanvasResourceProviderTexture() override = default;
 
   bool IsValid() const final { return GetSkSurface() && !IsGpuContextLost(); }
   bool IsAccelerated() const final { return true; }
@@ -118,28 +118,28 @@ class CanvasResourceProvider_Texture : public CanvasResourceProvider {
   unsigned msaa_sample_count_;
 };
 
-// CanvasResourceProvider_Texture_GpuMemoryBuffer
+// CanvasResourceProviderTextureGpuMemoryBuffer
 //==============================================================================
 //
 // * Renders to a texture managed by skia. Mailboxes are
 //     gpu-accelerated platform native surfaces.
 // * Layers are overlay candidates
 
-class CanvasResourceProvider_Texture_GpuMemoryBuffer final
-    : public CanvasResourceProvider_Texture {
+class CanvasResourceProviderTextureGpuMemoryBuffer final
+    : public CanvasResourceProviderTexture {
  public:
-  CanvasResourceProvider_Texture_GpuMemoryBuffer(
+  CanvasResourceProviderTextureGpuMemoryBuffer(
       const IntSize& size,
       unsigned msaa_sample_count,
       const CanvasColorParams color_params,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>
           context_provider_wrapper)
-      : CanvasResourceProvider_Texture(size,
-                                       msaa_sample_count,
-                                       color_params,
-                                       std::move(context_provider_wrapper)) {}
+      : CanvasResourceProviderTexture(size,
+                                      msaa_sample_count,
+                                      color_params,
+                                      std::move(context_provider_wrapper)) {}
 
-  ~CanvasResourceProvider_Texture_GpuMemoryBuffer() override = default;
+  ~CanvasResourceProviderTextureGpuMemoryBuffer() override = default;
 
  protected:
   scoped_refptr<CanvasResource> CreateResource() final {
@@ -157,7 +157,7 @@ class CanvasResourceProvider_Texture_GpuMemoryBuffer final
     scoped_refptr<CanvasResource> output_resource = NewOrRecycledResource();
     if (!output_resource) {
       // GpuMemoryBuffer creation failed, fallback to Texture resource
-      return CanvasResourceProvider_Texture::ProduceFrame();
+      return CanvasResourceProviderTexture::ProduceFrame();
     }
 
     sk_sp<SkImage> image = GetSkSurface()->makeImageSnapshot();
@@ -181,21 +181,21 @@ class CanvasResourceProvider_Texture_GpuMemoryBuffer final
   }
 };
 
-// CanvasResourceProvider_Bitmap
+// CanvasResourceProviderBitmap
 //==============================================================================
 //
 // * Renders to a skia RAM-backed bitmap
 // * Mailboxing is not supported : cannot be directly composited
 
-class CanvasResourceProvider_Bitmap final : public CanvasResourceProvider {
+class CanvasResourceProviderBitmap final : public CanvasResourceProvider {
  public:
-  CanvasResourceProvider_Bitmap(const IntSize& size,
-                                const CanvasColorParams color_params)
+  CanvasResourceProviderBitmap(const IntSize& size,
+                               const CanvasColorParams color_params)
       : CanvasResourceProvider(size,
                                color_params,
                                nullptr /*context_provider_wrapper*/) {}
 
-  ~CanvasResourceProvider_Bitmap() override = default;
+  ~CanvasResourceProviderBitmap() override = default;
 
   bool IsValid() const final { return GetSkSurface(); }
   bool IsAccelerated() const final { return false; }
@@ -275,35 +275,37 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
     switch (resource_type_fallback_list[i]) {
       case kTextureGpuMemoryBufferResourceType:
         DCHECK(SharedGpuContext::IsGpuCompositingEnabled());
-        if (RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled()) {
-          if (!gpu::IsImageFromGpuMemoryBufferFormatSupported(
-                  colorParams.GetBufferFormat(),
-                  context_provider_wrapper->ContextProvider()
-                      ->GetCapabilities()))
-            continue;
-          if (!gpu::IsImageSizeValidForGpuMemoryBufferFormat(
-                  gfx::Size(size), colorParams.GetBufferFormat()))
-            continue;
-          DCHECK(gpu::IsImageFormatCompatibleWithGpuMemoryBufferFormat(
-              colorParams.GLInternalFormat(), colorParams.GetBufferFormat()));
+        if (!RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled())
+          break;
 
-          provider =
-              std::make_unique<CanvasResourceProvider_Texture_GpuMemoryBuffer>(
-                  size, msaa_sample_count, colorParams,
-                  context_provider_wrapper);
+        if (!gpu::IsImageFromGpuMemoryBufferFormatSupported(
+                colorParams.GetBufferFormat(),
+                context_provider_wrapper->ContextProvider()
+                    ->GetCapabilities())) {
+          continue;
         }
+        if (!gpu::IsImageSizeValidForGpuMemoryBufferFormat(
+                gfx::Size(size), colorParams.GetBufferFormat())) {
+          continue;
+        }
+        DCHECK(gpu::IsImageFormatCompatibleWithGpuMemoryBufferFormat(
+            colorParams.GLInternalFormat(), colorParams.GetBufferFormat()));
+
+        provider =
+            std::make_unique<CanvasResourceProviderTextureGpuMemoryBuffer>(
+                size, msaa_sample_count, colorParams, context_provider_wrapper);
         break;
       case kTextureResourceType:
-        // TODO(xlai): Check gpu acclereration mode before using this Resource
-        // Type of CanvasResourceProvider and then Add
+        // TODO(xlai): Check gpu acceleration mode before using this Resource
+        // Type of CanvasResourceProvider and then add
         // "DCHECK(SharedGpuContext::IsGpuCompositingEnabled());" here.
-        // See crbug.com/802053.
-        provider = std::make_unique<CanvasResourceProvider_Texture>(
+        // See https://crbug.com/802053.
+        provider = std::make_unique<CanvasResourceProviderTexture>(
             size, msaa_sample_count, colorParams, context_provider_wrapper);
         break;
       case kBitmapResourceType:
         provider =
-            std::make_unique<CanvasResourceProvider_Bitmap>(size, colorParams);
+            std::make_unique<CanvasResourceProviderBitmap>(size, colorParams);
         break;
     }
     if (provider && provider->IsValid())
