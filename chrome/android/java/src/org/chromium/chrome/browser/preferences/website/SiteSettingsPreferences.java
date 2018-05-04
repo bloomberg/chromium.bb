@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceFragment;
+import android.widget.ListView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -112,6 +113,12 @@ public class SiteSettingsPreferences extends PreferenceFragment
             return ContentSettingsType.CONTENT_SETTINGS_TYPE_USB_GUARD;
         }
         return -1;
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        ((ListView) getView().findViewById(android.R.id.list)).setDivider(null);
     }
 
     private void configurePreferences() {

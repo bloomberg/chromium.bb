@@ -13,10 +13,6 @@
         android:title="@string/clear_browsing_data_tab_period_title"
         chrome:singleLine="true" />
 
-    <Preference
-        android:layout="@layout/divider_preference_with_bottom_padding"
-        android:selectable="false"/>
-
     <org.chromium.chrome.browser.preferences.ClearBrowsingDataCheckBoxPreference
         android:key="clear_history_checkbox"
         android:persistent="false"

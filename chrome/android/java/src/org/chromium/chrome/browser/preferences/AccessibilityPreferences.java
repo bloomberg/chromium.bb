@@ -79,6 +79,7 @@ public class AccessibilityPreferences extends PreferenceFragment
         super.onActivityCreated(savedInstanceState);
 
         ((ListView) getView().findViewById(android.R.id.list)).setItemsCanFocus(true);
+        ((ListView) getView().findViewById(android.R.id.list)).setDivider(null);
     }
 
     @Override
