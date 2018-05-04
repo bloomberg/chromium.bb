@@ -1497,14 +1497,6 @@
           'isolated_scripts': 'chromium_linux_dbg_isolated_scripts',
         },
       },
-      'Ozone Linux': {
-        'additional_compile_targets': [
-          'chrome',
-        ],
-        'test_suites': {
-          'gtest_tests': 'ozone_linux_gtests',
-        },
-      },
       'linux-gcc-rel': {
         'additional_compile_targets': [
           'empty_main',

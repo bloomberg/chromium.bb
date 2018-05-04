@@ -340,7 +340,6 @@
       'Fuchsia ARM64': 'release_bot_fuchsia_arm64',
       'Fuchsia x64 Cast Audio': 'release_bot_fuchsia_cast_audio',
       'Fuchsia x64': 'release_bot_fuchsia',
-      'Ozone Linux': 'ozone_linux_release_bot',
       'linux-gcc-rel': 'release_bot_x86_minimal_symbols_no_clang_cxx11',
       'linux-ozone-rel': 'ozone_linux_release_bot',
     },
@@ -634,7 +633,6 @@
       # on the continuous builder.
       'linux_chromium_msan_rel_ng': 'msan_release_bot',
 
-      'linux_chromium_ozone_compile_only_ng': 'ozone_linux_release_trybot_compile_only',
       'linux_chromium_rel_ng': 'gpu_tests_release_trybot_no_symbols',
       'linux_chromium_tsan_rel_ng': 'tsan_disable_nacl_release_trybot',
       'linux_layout_tests_layout_ng': 'release_trybot',
@@ -1454,10 +1452,6 @@
 
     'ozone_linux_release_trybot': [
       'ozone_linux', 'release_trybot',
-    ],
-
-    'ozone_linux_release_trybot_compile_only': [
-      'ozone_linux', 'release_trybot', 'compile_only',
     ],
 
     'presubmit': [
