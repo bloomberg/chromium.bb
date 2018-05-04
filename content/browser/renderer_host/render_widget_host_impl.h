@@ -564,11 +564,13 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // Fills in the |visual_properties| struct.
   // Returns |false| if the update is redundant, |true| otherwise.
-  bool GetVisualProperties(VisualProperties* visual_properties);
+  bool GetVisualProperties(VisualProperties* visual_properties,
+                           bool* needs_ack);
 
   // Sets the |visual_properties| that were sent to the renderer bundled with
   // the request to create a new RenderWidget.
-  void SetInitialVisualProperties(const VisualProperties& visual_properties);
+  void SetInitialVisualProperties(const VisualProperties& visual_properties,
+                                  bool needs_ack);
 
   // Pushes updated visual properties to the renderer as well as whether the
   // focused node should be scrolled into view.
@@ -817,8 +819,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // Called after resize or repaint has completed in the renderer.
   void DidCompleteResizeOrRepaint(
-      const ViewHostMsg_ResizeOrRepaint_ACK_Params& params,
-      const base::TimeTicks& paint_start);
+      const ViewHostMsg_ResizeOrRepaint_ACK_Params& params);
 
   // Give key press listeners a chance to handle this key press. This allow
   // widgets that don't have focus to still handle key presses.
@@ -925,9 +926,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Tracks the current importance of widget.
   ChildProcessImportance importance_ = ChildProcessImportance::NORMAL;
 #endif
-
-  // Set if we are waiting for a repaint ack for the view.
-  bool repaint_ack_pending_;
 
   // True when waiting for RESIZE_ACK.
   bool resize_ack_pending_;
@@ -1147,8 +1145,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // interface. On closing this interface, the display compositor should drop
   // ownership of the bitmaps with these ids to avoid leaking them.
   std::set<viz::SharedBitmapId> owned_bitmaps_;
-
-  bool next_resize_needs_resize_ack_ = false;
 
   bool force_enable_zoom_ = false;
 

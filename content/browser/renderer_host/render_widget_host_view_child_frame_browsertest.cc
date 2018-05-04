@@ -138,7 +138,6 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameTest,
       root->current_frame_host()->GetRenderWidgetHost()->GetRoutingID();
   ViewHostMsg_ResizeOrRepaint_ACK_Params params;
   params.view_size = gfx::Size(75, 75);
-  params.flags = 0;
   params.child_allocated_local_surface_id =
       viz::LocalSurfaceId(10, 10, base::UnguessableToken::Create());
   root->current_frame_host()->GetRenderWidgetHost()->OnMessageReceived(

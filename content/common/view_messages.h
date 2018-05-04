@@ -175,7 +175,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::VisualProperties)
   IPC_STRUCT_TRAITS_MEMBER(visible_viewport_size)
   IPC_STRUCT_TRAITS_MEMBER(is_fullscreen_granted)
   IPC_STRUCT_TRAITS_MEMBER(display_mode)
-  IPC_STRUCT_TRAITS_MEMBER(needs_resize_ack)
   IPC_STRUCT_TRAITS_MEMBER(content_source_id)
   IPC_STRUCT_TRAITS_MEMBER(capture_sequence_number)
 IPC_STRUCT_TRAITS_END()
@@ -289,20 +288,6 @@ IPC_STRUCT_BEGIN(ViewHostMsg_ResizeOrRepaint_ACK_Params)
   // view size.
   IPC_STRUCT_MEMBER(gfx::Size, view_size)
 
-  // The following describes the various bits that may be set in flags:
-  //
-  //   ViewHostMsg_ResizeOrRepaint_ACK_Flags::IS_RESIZE_ACK
-  //     Indicates that this is a response to a ViewMsg_Resize message.
-  //
-  //   ViewHostMsg_ResizeOrRepaint_ACK_Flags::IS_REPAINT_ACK
-  //     Indicates that this is a response to a ViewMsg_Repaint message.
-  //
-  // If flags is zero, then this message corresponds to an unsolicited paint
-  // request by the render view.  Any of the above bits may be set in flags,
-  // which would indicate that this paint message is an ACK for multiple
-  // request messages.
-  IPC_STRUCT_MEMBER(int, flags)
-
   // The child-allocated local surface id for the parent to use.
   IPC_STRUCT_MEMBER(base::Optional<viz::LocalSurfaceId>,
                     child_allocated_local_surface_id)
@@ -414,11 +399,6 @@ IPC_MESSAGE_ROUTED2(ViewMsg_EnumerateDirectoryResponse,
 //
 // Expects a ClosePage_ACK message when finished.
 IPC_MESSAGE_ROUTED0(ViewMsg_ClosePage)
-
-// Notifies the renderer that a paint is to be generated for the rectangle
-// passed in.
-IPC_MESSAGE_ROUTED1(ViewMsg_Repaint,
-                    gfx::Size /* The view size to be repainted */)
 
 // Notification that a move or resize renderer's containing window has
 // started.

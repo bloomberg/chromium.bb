@@ -2582,7 +2582,6 @@ bool TestChildOrGuestAutoresize(bool is_guest,
   int routing_id = guest_rwh_impl->GetRoutingID();
   ViewHostMsg_ResizeOrRepaint_ACK_Params params;
   params.view_size = gfx::Size(75, 75);
-  params.flags = 0;
   params.child_allocated_local_surface_id = viz::LocalSurfaceId(
       current_id.parent_sequence_number(),
       current_id.child_sequence_number() + 1, current_id.embed_token());

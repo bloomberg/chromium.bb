@@ -340,7 +340,6 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       clock_(base::DefaultTickClock::GetInstance()),
       is_loading_(false),
       is_hidden_(hidden),
-      repaint_ack_pending_(false),
       resize_ack_pending_(false),
       auto_resize_enabled_(false),
       waiting_for_screen_rects_ack_(false),
@@ -515,11 +514,6 @@ const viz::FrameSinkId& RenderWidgetHostImpl::GetFrameSinkId() const {
 
 void RenderWidgetHostImpl::ResetSizeAndRepaintPendingFlags() {
   resize_ack_pending_ = false;
-  if (repaint_ack_pending_) {
-    TRACE_EVENT_ASYNC_END0(
-        "renderer_host", "RenderWidgetHostImpl::repaint_ack_pending_", this);
-  }
-  repaint_ack_pending_ = false;
   if (old_visual_properties_)
     old_visual_properties_->new_size = gfx::Size();
 }
@@ -748,7 +742,8 @@ void RenderWidgetHostImpl::SetImportance(ChildProcessImportance importance) {
 #endif
 
 bool RenderWidgetHostImpl::GetVisualProperties(
-    VisualProperties* visual_properties) {
+    VisualProperties* visual_properties,
+    bool* needs_ack) {
   *visual_properties = VisualProperties();
 
   GetScreenInfo(&visual_properties->screen_info);
@@ -840,23 +835,23 @@ bool RenderWidgetHostImpl::GetVisualProperties(
        old_visual_properties_->content_source_id !=
            visual_properties->content_source_id);
 
-  // We don't expect to receive an ACK when the requested size or the physical
-  // backing size is empty, or when the main viewport size didn't change.
-  visual_properties->needs_resize_ack =
-      !auto_resize_enabled_ && g_check_for_pending_resize_ack &&
-      !visual_properties->new_size.IsEmpty() &&
-      !visual_properties->compositor_viewport_pixel_size.IsEmpty() &&
-      (size_changed || next_resize_needs_resize_ack_) &&
-      (visual_properties->local_surface_id.has_value() &&
-       visual_properties->local_surface_id->is_valid());
+  // We should throttle sending updated VisualProperties to the renderer to
+  // the rate of commit. This ensures we don't overwhelm the renderer with
+  // visual updates faster than it can keep up.  |needs_ack| corresponds to
+  // cases where a commit is expected.
+  *needs_ack = g_check_for_pending_resize_ack &&
+               !visual_properties->auto_resize_enabled &&
+               !visual_properties->new_size.IsEmpty() &&
+               !visual_properties->compositor_viewport_pixel_size.IsEmpty() &&
+               visual_properties->local_surface_id && size_changed;
 
   return dirty;
 }
 
 void RenderWidgetHostImpl::SetInitialVisualProperties(
-    const VisualProperties& visual_properties) {
-  resize_ack_pending_ = visual_properties.needs_resize_ack;
-
+    const VisualProperties& visual_properties,
+    bool needs_ack) {
+  resize_ack_pending_ = needs_ack;
   old_visual_properties_ =
       std::make_unique<VisualProperties>(visual_properties);
 }
@@ -875,7 +870,8 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties(
   }
 
   std::unique_ptr<VisualProperties> visual_properties(new VisualProperties);
-  if (!GetVisualProperties(visual_properties.get()))
+  bool needs_ack = false;
+  if (!GetVisualProperties(visual_properties.get(), &needs_ack))
     return false;
   visual_properties->scroll_focused_node_into_view =
       scroll_focused_node_into_view;
@@ -887,8 +883,7 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties(
   bool sent_visual_properties = false;
   if (Send(new ViewMsg_SynchronizeVisualProperties(routing_id_,
                                                    *visual_properties))) {
-    resize_ack_pending_ = visual_properties->needs_resize_ack;
-    next_resize_needs_resize_ack_ = false;
+    resize_ack_pending_ = needs_ack;
     old_visual_properties_.swap(visual_properties);
     sent_visual_properties = true;
   }
@@ -1002,7 +997,7 @@ void RenderWidgetHostImpl::PauseForPendingResizeOrRepaints() {
     return;
 
   // Do not pause if there is not a paint or resize already coming.
-  if (!repaint_ack_pending_ && !resize_ack_pending_)
+  if (!resize_ack_pending_)
     return;
 
   // OnResizeOrRepaintACK posts a task to the default TaskRunner in auto-resize,
@@ -1112,7 +1107,6 @@ void RenderWidgetHostImpl::DidNavigate(uint32_t next_source_id) {
     // Resize messages before navigation are not acked, so reset
     // |resize_ack_pending_| and make sure the next resize will be acked if the
     // last resize before navigation was supposed to be acked.
-    next_resize_needs_resize_ack_ = resize_ack_pending_;
     resize_ack_pending_ = false;
     if (view_)
       view_->DidNavigate();
@@ -2148,35 +2142,15 @@ void RenderWidgetHostImpl::DidDeleteSharedBitmap(
 void RenderWidgetHostImpl::OnResizeOrRepaintACK(
     const ViewHostMsg_ResizeOrRepaint_ACK_Params& params) {
   TRACE_EVENT0("renderer_host", "RenderWidgetHostImpl::OnResizeOrRepaintACK");
-  TimeTicks paint_start = clock_->NowTicks();
 
   // Update our knowledge of the RenderWidget's size.
   current_size_ = params.view_size;
 
-  bool is_resize_ack =
-      ViewHostMsg_ResizeOrRepaint_ACK_Flags::is_resize_ack(params.flags);
-
-  // resize_ack_pending_ needs to be cleared before we call DidPaintRect, since
-  // that will end up reaching GetBackingStore.
-  if (is_resize_ack) {
-    DCHECK(!g_check_for_pending_resize_ack || resize_ack_pending_);
-    resize_ack_pending_ = false;
-  }
-
-  bool is_repaint_ack =
-      ViewHostMsg_ResizeOrRepaint_ACK_Flags::is_repaint_ack(params.flags);
-  if (is_repaint_ack) {
-    DCHECK(repaint_ack_pending_);
-    TRACE_EVENT_ASYNC_END0(
-        "renderer_host", "RenderWidgetHostImpl::repaint_ack_pending_", this);
-    repaint_ack_pending_ = false;
-    TimeDelta delta = clock_->NowTicks() - repaint_start_time_;
-    UMA_HISTOGRAM_TIMES("MPArch.RWH_RepaintDelta", delta);
-  }
+  resize_ack_pending_ = false;
 
   DCHECK(!params.view_size.IsEmpty());
 
-  DidCompleteResizeOrRepaint(params, paint_start);
+  DidCompleteResizeOrRepaint(params);
 
   if (auto_resize_enabled_ && view_) {
     viz::ScopedSurfaceIdAllocator scoped_allocator =
@@ -2188,17 +2162,10 @@ void RenderWidgetHostImpl::OnResizeOrRepaintACK(
           this, params.view_size, *params.child_allocated_local_surface_id);
     }
   }
-
-  // Log the time delta for processing a paint message. On platforms that don't
-  // support asynchronous painting, this is equivalent to
-  // MPArch.RWH_TotalPaintTime.
-  TimeDelta delta = clock_->NowTicks() - paint_start;
-  UMA_HISTOGRAM_TIMES("MPArch.RWH_OnMsgResizeOrRepaintACK", delta);
 }
 
 void RenderWidgetHostImpl::DidCompleteResizeOrRepaint(
-    const ViewHostMsg_ResizeOrRepaint_ACK_Params& params,
-    const TimeTicks& paint_start) {
+    const ViewHostMsg_ResizeOrRepaint_ACK_Params& params) {
   TRACE_EVENT0("renderer_host",
                "RenderWidgetHostImpl::DidCompleteResizeOrRepaint");
 
@@ -2212,11 +2179,9 @@ void RenderWidgetHostImpl::DidCompleteResizeOrRepaint(
   if (is_hidden_)
     return;
 
-  // If we got a resize ack, then perhaps we have another resize to send?
-  bool is_resize_ack =
-      ViewHostMsg_ResizeOrRepaint_ACK_Flags::is_resize_ack(params.flags);
-  if (is_resize_ack)
-    SynchronizeVisualProperties();
+  // If we got an ack, then perhaps we have another change of visual properties
+  // to send?
+  SynchronizeVisualProperties();
 }
 
 void RenderWidgetHostImpl::OnSetCursor(const WebCursor& cursor) {

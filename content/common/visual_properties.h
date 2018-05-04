@@ -70,11 +70,6 @@ struct CONTENT_EXPORT VisualProperties {
   // The display mode.
   blink::WebDisplayMode display_mode = blink::kWebDisplayModeUndefined;
 
-  // If set, requests the renderer to reply with a
-  // ViewHostMsg_ResizeOrRepaint_ACK with the
-  // ViewHostMsg_ResizeOrRepaint_ACK_Flags::IS_RESIZE_ACK bit set in flags.
-  bool needs_resize_ack = false;
-
   // This variable is increased after each cross-document navigation. If the
   // renderer receives a VisualProperties with stale content_source_id, it still
   // performs the resize but doesn't use the given LocalSurfaceId.
