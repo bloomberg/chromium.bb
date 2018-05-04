@@ -76,15 +76,15 @@ void OpenConnectionDialogCallback() {
   // new dialog to be made for each call.  rundll32 uses the same global
   // dialog and it seems to share with the shortcut in control panel.
   base::FilePath rundll32;
-  PathService::Get(base::DIR_SYSTEM, &rundll32);
+  base::PathService::Get(base::DIR_SYSTEM, &rundll32);
   rundll32 = rundll32.AppendASCII("rundll32.exe");
 
   base::FilePath shell32dll;
-  PathService::Get(base::DIR_SYSTEM, &shell32dll);
+  base::PathService::Get(base::DIR_SYSTEM, &shell32dll);
   shell32dll = shell32dll.AppendASCII("shell32.dll");
 
   base::FilePath inetcpl;
-  PathService::Get(base::DIR_SYSTEM, &inetcpl);
+  base::PathService::Get(base::DIR_SYSTEM, &inetcpl);
   inetcpl = inetcpl.AppendASCII("inetcpl.cpl,,4");
 
   std::wstring args(shell32dll.value());

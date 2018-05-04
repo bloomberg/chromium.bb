@@ -113,7 +113,8 @@ base::FilePath GetRawWhitelistPath(const base::DictionaryValue& manifest,
 
 base::FilePath GetSanitizedWhitelistPath(const std::string& crx_id) {
   base::FilePath base_dir;
-  PathService::Get(chrome::DIR_SUPERVISED_USER_INSTALLED_WHITELISTS, &base_dir);
+  base::PathService::Get(chrome::DIR_SUPERVISED_USER_INSTALLED_WHITELISTS,
+                         &base_dir);
   return base_dir.empty()
              ? base::FilePath()
              : base_dir.AppendASCII(crx_id + kSanitizedWhitelistExtension);
@@ -187,7 +188,7 @@ void CheckForSanitizedWhitelistOnTaskRunner(
 void RemoveUnregisteredWhitelistsOnTaskRunner(
     const std::set<std::string>& registered_whitelists) {
   base::FilePath base_dir;
-  PathService::Get(DIR_SUPERVISED_USER_WHITELISTS, &base_dir);
+  base::PathService::Get(DIR_SUPERVISED_USER_WHITELISTS, &base_dir);
   if (!base_dir.empty()) {
     base::FileEnumerator file_enumerator(base_dir, false,
                                          base::FileEnumerator::DIRECTORIES);
@@ -210,7 +211,8 @@ void RemoveUnregisteredWhitelistsOnTaskRunner(
     }
   }
 
-  PathService::Get(chrome::DIR_SUPERVISED_USER_INSTALLED_WHITELISTS, &base_dir);
+  base::PathService::Get(chrome::DIR_SUPERVISED_USER_INSTALLED_WHITELISTS,
+                         &base_dir);
   if (!base_dir.empty()) {
     base::FilePath pattern(FILE_PATH_LITERAL("*"));
     pattern = pattern.AppendASCII(kSanitizedWhitelistExtension);

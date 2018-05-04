@@ -13,7 +13,7 @@ namespace test {
 
 void GetTestDataPath(base::FilePath* result) {
   base::FilePath path;
-  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &path));
+  ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &path));
   path = path.Append(FILE_PATH_LITERAL("chrome"))
              .Append(FILE_PATH_LITERAL("browser"))
              .Append(FILE_PATH_LITERAL("vr"))

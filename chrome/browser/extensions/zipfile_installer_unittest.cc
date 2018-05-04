@@ -137,7 +137,7 @@ class ZipFileInstallerTest : public testing::Test {
 
   void RunInstaller(const std::string& zip_name, bool expect_error) {
     base::FilePath original_path;
-    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &original_path));
+    ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &original_path));
     original_path = original_path.AppendASCII("extensions")
                         .AppendASCII("zipfile_installer")
                         .AppendASCII(zip_name);

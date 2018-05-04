@@ -47,7 +47,7 @@ base::FilePath SetUpUserDataDirectoryForTesting(bool is_enabled) {
                               is_enabled);
 
   base::FilePath user_data_dir;
-  if (!PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
+  if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
     return base::FilePath();
 
 #if defined(OS_CHROMEOS)

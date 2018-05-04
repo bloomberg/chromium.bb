@@ -110,7 +110,7 @@ class WebUIWebViewBrowserTest : public WebUIBrowserTest {
         base::FilePath(FILE_PATH_LITERAL("webview_basic.js")));
 
     base::FilePath test_data_dir;
-    PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
+    base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
     embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
     ASSERT_TRUE(embedded_test_server()->Start());
   }

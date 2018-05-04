@@ -236,7 +236,7 @@ class ExtensionInstallDialogViewInteractiveBrowserTest
   void ShowUi(const std::string& name) override {
     extensions::ChromeTestExtensionLoader loader(browser()->profile());
     base::FilePath test_data_dir;
-    PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
+    base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
     scoped_refptr<const extensions::Extension> extension = loader.LoadExtension(
         test_data_dir.AppendASCII("extensions/uitest/long_name"));
 

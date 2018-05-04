@@ -474,7 +474,7 @@ IN_PROC_BROWSER_TEST_F(ChromeResourceDispatcherHostDelegateBrowserTest,
       prefs::kGoogleServicesUserAccountId, "account_id");
 
   base::FilePath root_http;
-  PathService::Get(chrome::DIR_TEST_DATA, &root_http);
+  base::PathService::Get(chrome::DIR_TEST_DATA, &root_http);
   root_http = root_http.AppendASCII("mirror_request_header");
 
   struct TestCase {

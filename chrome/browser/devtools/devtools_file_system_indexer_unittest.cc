@@ -44,7 +44,7 @@ class DevToolsFileSystemIndexerTest : public testing::Test {
 
 TEST_F(DevToolsFileSystemIndexerTest, BasicUsage) {
   base::FilePath base_test_path;
-  PathService::Get(chrome::DIR_TEST_DATA, &base_test_path);
+  base::PathService::Get(chrome::DIR_TEST_DATA, &base_test_path);
   base::FilePath index_path =
       base_test_path.Append(FILE_PATH_LITERAL("devtools"))
           .Append(FILE_PATH_LITERAL("indexer"));

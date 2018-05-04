@@ -95,7 +95,7 @@ std::unique_ptr<base::DictionaryValue> LoadManifestFile(
 scoped_refptr<Extension> LoadExtension(const std::string& filename,
                                        std::string* error) {
   base::FilePath path;
-  PathService::Get(chrome::DIR_TEST_DATA, &path);
+  base::PathService::Get(chrome::DIR_TEST_DATA, &path);
   path = path.
       AppendASCII("extensions").
       AppendASCII("manifest_tests").
@@ -198,7 +198,7 @@ class UserScriptListenerTest : public testing::Test {
 
   void LoadTestExtension() {
     base::FilePath test_dir;
-    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
+    ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
     base::FilePath extension_path = test_dir
         .AppendASCII("extensions")
         .AppendASCII("good")

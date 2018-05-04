@@ -199,7 +199,7 @@ TEST_F(SupervisedUserWhitelistServiceTest, MergeExisting) {
   base::RunLoop run_loop;
   site_lists_changed_callback_ = run_loop.QuitClosure();
   base::FilePath test_data_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
   base::FilePath whitelist_path =
       test_data_dir.AppendASCII("whitelists/content_pack/site_list.json");
   installer_->NotifyWhitelistReady("aaaa", base::ASCIIToUTF16("Title"),

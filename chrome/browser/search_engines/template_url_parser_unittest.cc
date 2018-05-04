@@ -75,7 +75,7 @@ TemplateURLParserTest::~TemplateURLParserTest() {
 }
 
 void TemplateURLParserTest::SetUp() {
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &osdd_dir_));
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &osdd_dir_));
   osdd_dir_ = osdd_dir_.AppendASCII("osdd");
   ASSERT_TRUE(base::PathExists(osdd_dir_));
 }

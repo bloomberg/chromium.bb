@@ -56,7 +56,7 @@ void ResetShortcutsOnBlockingThread() {
   base::AssertBlockingAllowed();
   // Get full path of chrome.
   base::FilePath chrome_exe;
-  if (!PathService::Get(base::FILE_EXE, &chrome_exe))
+  if (!base::PathService::Get(base::FILE_EXE, &chrome_exe))
     return;
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   for (int location = ShellUtil::SHORTCUT_LOCATION_FIRST;
@@ -355,7 +355,7 @@ std::vector<ShortcutCommand> GetChromeLaunchShortcuts(
   base::AssertBlockingAllowed();
   // Get full path of chrome.
   base::FilePath chrome_exe;
-  if (!PathService::Get(base::FILE_EXE, &chrome_exe))
+  if (!base::PathService::Get(base::FILE_EXE, &chrome_exe))
     return std::vector<ShortcutCommand>();
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   std::vector<ShortcutCommand> shortcuts;

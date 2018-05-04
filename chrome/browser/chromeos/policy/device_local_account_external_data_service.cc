@@ -27,8 +27,8 @@ DeviceLocalAccountExternalDataService::DeviceLocalAccountExternalDataService(
       backend_task_runner_(backend_task_runner),
       io_task_runner_(io_task_runner) {
   base::FilePath cache_dir;
-  CHECK(PathService::Get(chromeos::DIR_DEVICE_LOCAL_ACCOUNT_EXTERNAL_DATA,
-                         &cache_dir));
+  CHECK(base::PathService::Get(chromeos::DIR_DEVICE_LOCAL_ACCOUNT_EXTERNAL_DATA,
+                               &cache_dir));
   resource_cache_.reset(new ResourceCache(cache_dir, backend_task_runner));
   parent_->AddObserver(this);
 }

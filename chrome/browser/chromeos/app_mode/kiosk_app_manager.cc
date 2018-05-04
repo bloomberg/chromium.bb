@@ -144,7 +144,7 @@ void CheckOwnerFilePresence(bool *present) {
 
 base::FilePath GetCrxCacheDir() {
   base::FilePath user_data_dir;
-  CHECK(PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
+  CHECK(base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
   return user_data_dir.AppendASCII(kCrxCacheDir);
 }
 
@@ -940,7 +940,7 @@ void KioskAppManager::UpdateExternalCachePrefs() {
 
 void KioskAppManager::GetKioskAppIconCacheDir(base::FilePath* cache_dir) {
   base::FilePath user_data_dir;
-  CHECK(PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
+  CHECK(base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
   *cache_dir = user_data_dir.AppendASCII(kIconCacheDir);
 }
 

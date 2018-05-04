@@ -18,7 +18,7 @@ FileManagerJsTestBase::FileManagerJsTestBase(const base::FilePath& base_path)
 
 void FileManagerJsTestBase::RunTest(const base::FilePath& file) {
   base::FilePath root_path;
-  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &root_path));
+  ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &root_path));
 
   const GURL url = net::FilePathToFileURL(
       root_path.Append(base_path_)

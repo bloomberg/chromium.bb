@@ -114,7 +114,7 @@ bool SaveData(int key,
               const std::string& file_name,
               const std::vector<char>& data) {
   base::FilePath data_dir;
-  CHECK(PathService::Get(key, &data_dir));
+  CHECK(base::PathService::Get(key, &data_dir));
   if (!base::DirectoryExists(data_dir) &&
       !base::CreateDirectory(data_dir)) {
     return false;
@@ -515,8 +515,8 @@ ExtensionFunction::ResponseAction WallpaperPrivateGetThumbnailFunction::Run() {
   base::FilePath thumbnail_path;
   if (params->source == wallpaper_private::WALLPAPER_SOURCE_ONLINE) {
     std::string file_name = GURL(params->url_or_file).ExtractFileName();
-    CHECK(PathService::Get(chrome::DIR_CHROMEOS_WALLPAPER_THUMBNAILS,
-                           &thumbnail_path));
+    CHECK(base::PathService::Get(chrome::DIR_CHROMEOS_WALLPAPER_THUMBNAILS,
+                                 &thumbnail_path));
     thumbnail_path = thumbnail_path.Append(file_name);
   } else {
     if (!IsOEMDefaultWallpaper())

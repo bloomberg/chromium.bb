@@ -789,7 +789,7 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
 
   void SetUpInProcessBrowserTestFixture() override {
     base::FilePath test_data_dir;
-    PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
+    base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
     embedded_test_server()->RegisterRequestHandler(
         base::Bind(&HandleNeverCompletingRequests));
     embedded_test_server()->RegisterRequestHandler(
@@ -2067,7 +2067,7 @@ class SafeBrowsingDatabaseManagerCookieTest : public InProcessBrowserTest {
     EXPECT_FALSE(base::PathExists(cookie_path));
 
     base::FilePath test_dir;
-    if (!PathService::Get(chrome::DIR_TEST_DATA, &test_dir)) {
+    if (!base::PathService::Get(chrome::DIR_TEST_DATA, &test_dir)) {
       EXPECT_TRUE(false);
       return false;
     }

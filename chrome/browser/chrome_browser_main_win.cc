@@ -664,7 +664,7 @@ bool ChromeBrowserMainPartsWin::CheckMachineLevelInstall() {
   InstallUtil::GetChromeVersion(dist, true, &version);
   if (version.IsValid()) {
     base::FilePath exe_path;
-    PathService::Get(base::DIR_EXE, &exe_path);
+    base::PathService::Get(base::DIR_EXE, &exe_path);
     std::wstring exe = exe_path.value();
     base::FilePath user_exe_path(installer::GetChromeInstallPath(false));
     if (base::FilePath::CompareEqualIgnoreCase(exe, user_exe_path.value())) {

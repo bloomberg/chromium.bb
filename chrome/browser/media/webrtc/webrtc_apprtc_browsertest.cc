@@ -199,7 +199,7 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
 
   base::FilePath GetSourceDir() {
     base::FilePath source_dir;
-    PathService::Get(base::DIR_SOURCE_ROOT, &source_dir);
+    base::PathService::Get(base::DIR_SOURCE_ROOT, &source_dir);
     return source_dir;
   }
 

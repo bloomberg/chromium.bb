@@ -154,7 +154,7 @@ bool UpdateTaskCategory(
     JumpListUpdater* jumplist_updater,
     IncognitoModePrefs::Availability incognito_availability) {
   base::FilePath chrome_path;
-  if (!PathService::Get(base::FILE_EXE, &chrome_path))
+  if (!base::PathService::Get(base::FILE_EXE, &chrome_path))
     return false;
 
   int icon_index = install_static::GetIconResourceIndex();

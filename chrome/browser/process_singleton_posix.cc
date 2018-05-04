@@ -861,7 +861,7 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
   to_send.push_back(kTokenDelimiter);
 
   base::FilePath current_dir;
-  if (!PathService::Get(base::DIR_CURRENT, &current_dir))
+  if (!base::PathService::Get(base::DIR_CURRENT, &current_dir))
     return PROCESS_NONE;
   to_send.append(current_dir.value());
 

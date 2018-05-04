@@ -59,7 +59,7 @@ class DiskSpaceTest : public DiagnosticsTest {
 
   bool ExecuteImpl(DiagnosticsModel::Observer* observer) override {
     base::FilePath data_dir;
-    if (!PathService::Get(chrome::DIR_USER_DATA, &data_dir))
+    if (!base::PathService::Get(chrome::DIR_USER_DATA, &data_dir))
       return false;
     int64_t disk_space = base::SysInfo::AmountOfFreeDiskSpace(data_dir);
     if (disk_space < 0) {
@@ -232,7 +232,7 @@ class PathTest : public DiagnosticsTest {
       return false;
     }
     base::FilePath dir_or_file;
-    if (!PathService::Get(path_info_.path_id, &dir_or_file)) {
+    if (!base::PathService::Get(path_info_.path_id, &dir_or_file)) {
       RecordStopFailure(DIAG_RECON_PATH_PROVIDER, "Path provider failure");
       return false;
     }
@@ -329,7 +329,7 @@ std::unique_ptr<DiagnosticsTest> MakeBookMarksTest() {
 
 std::unique_ptr<DiagnosticsTest> MakeLocalStateTest() {
   base::FilePath path;
-  PathService::Get(chrome::DIR_USER_DATA, &path);
+  base::PathService::Get(chrome::DIR_USER_DATA, &path);
   path = path.Append(chrome::kLocalStateFilename);
   return std::make_unique<JSONTest>(path, DIAGNOSTICS_JSON_LOCAL_STATE_TEST,
                                     50 * kOneKilobyte, JSONTest::CRITICAL);

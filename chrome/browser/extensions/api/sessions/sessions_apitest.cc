@@ -205,7 +205,7 @@ std::unique_ptr<KeyedService> ExtensionSessionsTest::BuildProfileSyncService(
 void ExtensionSessionsTest::CreateTestProfileSyncService() {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   base::FilePath path;
-  PathService::Get(chrome::DIR_USER_DATA, &path);
+  base::PathService::Get(chrome::DIR_USER_DATA, &path);
   path = path.AppendASCII("test_profile");
   if (!base::PathExists(path))
     CHECK(base::CreateDirectory(path));

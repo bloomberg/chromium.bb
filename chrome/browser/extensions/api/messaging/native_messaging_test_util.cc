@@ -74,7 +74,8 @@ void ScopedTestNativeMessagingHost::RegisterTestHost(bool user_level) {
   ScopedTestNativeMessagingHost test_host;
 
   base::FilePath test_user_data_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_user_data_dir));
+  ASSERT_TRUE(
+      base::PathService::Get(chrome::DIR_TEST_DATA, &test_user_data_dir));
   test_user_data_dir = test_user_data_dir.AppendASCII("native_messaging")
                            .AppendASCII("native_hosts");
 

@@ -63,8 +63,8 @@ class PreSigninPolicyFetcherTestBase : public testing::Test {
     // are shared between session_manager and chrome through files) and set it
     // into PathService, so PreSigninPolicyFetcher will use it.
     ASSERT_TRUE(tmp_dir_.CreateUniqueTempDir());
-    PathService::Override(chromeos::DIR_USER_POLICY_KEYS,
-                          user_policy_keys_dir());
+    base::PathService::Override(chromeos::DIR_USER_POLICY_KEYS,
+                                user_policy_keys_dir());
 
     auto cloud_policy_client = std::make_unique<MockCloudPolicyClient>();
     cloud_policy_client_ = cloud_policy_client.get();

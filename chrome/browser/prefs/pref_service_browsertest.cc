@@ -47,7 +47,7 @@ class PreferenceServiceTest : public InProcessBrowserTest {
  public:
   bool SetUpUserDataDirectory() override {
     base::FilePath user_data_directory;
-    PathService::Get(chrome::DIR_USER_DATA, &user_data_directory);
+    base::PathService::Get(chrome::DIR_USER_DATA, &user_data_directory);
 
     original_pref_file_ = ui_test_utils::GetTestFilePath(
         base::FilePath()

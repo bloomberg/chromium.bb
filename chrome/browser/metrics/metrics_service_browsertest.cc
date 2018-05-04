@@ -122,7 +122,7 @@ class MetricsServiceBrowserTest : public InProcessBrowserTest {
         ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION;
 
     base::FilePath test_directory;
-    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_directory));
+    ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_directory));
 
     base::FilePath page1_path = test_directory.AppendASCII("title2.html");
     ui_test_utils::NavigateToURLWithDisposition(

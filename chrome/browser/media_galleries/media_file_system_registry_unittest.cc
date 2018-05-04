@@ -1057,11 +1057,11 @@ TEST_F(MediaFileSystemRegistryTest, TestNameConstruction) {
   // on the test platform. In ChromeOS, these directories do not exist.
   base::FilePath path;
   if (num_auto_galleries() > 0) {
-    ASSERT_TRUE(PathService::Get(chrome::DIR_USER_MUSIC, &path));
+    ASSERT_TRUE(base::PathService::Get(chrome::DIR_USER_MUSIC, &path));
     profile_state->AddNameForAllCompare(GetExpectedFolderName(path));
-    ASSERT_TRUE(PathService::Get(chrome::DIR_USER_PICTURES, &path));
+    ASSERT_TRUE(base::PathService::Get(chrome::DIR_USER_PICTURES, &path));
     profile_state->AddNameForAllCompare(GetExpectedFolderName(path));
-    ASSERT_TRUE(PathService::Get(chrome::DIR_USER_VIDEOS, &path));
+    ASSERT_TRUE(base::PathService::Get(chrome::DIR_USER_VIDEOS, &path));
     profile_state->AddNameForAllCompare(GetExpectedFolderName(path));
 
     profile_state->CheckGalleries("names-dir", one_expectation, auto_galleries);

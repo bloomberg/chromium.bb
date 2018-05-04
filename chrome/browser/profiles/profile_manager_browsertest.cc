@@ -411,7 +411,7 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerCrOSBrowserTest, GetLastUsedProfile) {
   EXPECT_TRUE(last_used_profile != NULL);
 
   base::FilePath profile_path;
-  PathService::Get(chrome::DIR_USER_DATA, &profile_path);
+  base::PathService::Get(chrome::DIR_USER_DATA, &profile_path);
 
   profile_path = profile_path.AppendASCII(
       std::string(chrome::kProfileDirPrefix) + "test-user-hash");

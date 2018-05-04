@@ -164,13 +164,13 @@ class PDFExtensionTest : public ExtensionApiTest {
     {
       base::ScopedAllowBlockingForTesting allow_blocking;
       base::FilePath test_data_dir;
-      PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
+      base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
       test_data_dir = test_data_dir.Append(FILE_PATH_LITERAL("pdf"));
       base::FilePath test_util_path = test_data_dir.AppendASCII("test_util.js");
       ASSERT_TRUE(base::ReadFileToString(test_util_path, &test_util_js));
 
       base::FilePath source_root_dir;
-      PathService::Get(base::DIR_SOURCE_ROOT, &source_root_dir);
+      base::PathService::Get(base::DIR_SOURCE_ROOT, &source_root_dir);
       base::FilePath mock_interactions_path = source_root_dir.Append(
           FILE_PATH_LITERAL("third_party/polymer/v1_0/components-chromium/"
                             "iron-test-helpers/mock-interactions.js"));
@@ -230,7 +230,7 @@ class PDFExtensionTest : public ExtensionApiTest {
   void LoadAllPdfsTest(const std::string& dir_name, int k) {
     base::ScopedAllowBlockingForTesting allow_blocking;
     base::FilePath test_data_dir;
-    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
+    ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
     base::FileEnumerator file_enumerator(test_data_dir.AppendASCII(dir_name),
                                          false, base::FileEnumerator::FILES,
                                          FILE_PATH_LITERAL("*.pdf"));
@@ -588,7 +588,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, EnsurePDFFromLocalFileLoads) {
   {
     base::ScopedAllowBlockingForTesting allow_blocking;
     base::FilePath test_data_dir;
-    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
+    ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
     test_data_dir = test_data_dir.Append(FILE_PATH_LITERAL("pdf"));
     base::FilePath test_data_file = test_data_dir.AppendASCII("test.pdf");
     ASSERT_TRUE(PathExists(test_data_file));

@@ -481,7 +481,7 @@ void AntiVirusMetricsProvider::MaybeAddUnregisteredAntiVirusProducts(
   // Rapport always installs into 32-bit Program Files in directory
   // %DIR_PROGRAM_FILESX86%\Trusteer\Rapport
   base::FilePath binary_path;
-  if (!PathService::Get(base::DIR_PROGRAM_FILESX86, &binary_path))
+  if (!base::PathService::Get(base::DIR_PROGRAM_FILESX86, &binary_path))
     return;
 
   binary_path = binary_path.AppendASCII("Trusteer")

@@ -280,7 +280,7 @@ class DownloadProtectionServiceTest : public testing::Test {
     has_result_ = false;
 
     base::FilePath source_path;
-    ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &source_path));
+    ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &source_path));
     testdata_path_ = source_path.AppendASCII("chrome")
                          .AppendASCII("test")
                          .AppendASCII("data")
@@ -1428,7 +1428,7 @@ TEST_F(DownloadProtectionServiceTest,
                   net::URLRequestStatus::SUCCESS);
 
   base::FilePath signed_dmg;
-  EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &signed_dmg));
+  EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &signed_dmg));
   signed_dmg = signed_dmg.AppendASCII("safe_browsing")
                    .AppendASCII("mach_o")
                    .AppendASCII("signed-archive.dmg");
@@ -1451,7 +1451,8 @@ TEST_F(DownloadProtectionServiceTest,
   EXPECT_EQ(2215u, GetClientDownloadRequest()->udif_code_signature().length());
 
   base::FilePath signed_dmg_signature;
-  EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &signed_dmg_signature));
+  EXPECT_TRUE(
+      base::PathService::Get(chrome::DIR_TEST_DATA, &signed_dmg_signature));
   signed_dmg_signature = signed_dmg_signature.AppendASCII("safe_browsing")
                              .AppendASCII("mach_o")
                              .AppendASCII("signed-archive-signature.data");
@@ -1474,7 +1475,7 @@ TEST_F(DownloadProtectionServiceTest,
                   net::URLRequestStatus::SUCCESS);
 
   base::FilePath unsigned_dmg;
-  EXPECT_TRUE(PathService::Get(chrome::DIR_GEN_TEST_DATA, &unsigned_dmg));
+  EXPECT_TRUE(base::PathService::Get(chrome::DIR_GEN_TEST_DATA, &unsigned_dmg));
   unsigned_dmg = unsigned_dmg.AppendASCII("chrome")
                      .AppendASCII("safe_browsing_dmg")
                      .AppendASCII("mach_o_in_dmg.dmg");
@@ -1510,7 +1511,7 @@ TEST_F(DownloadProtectionServiceTest,
                   net::URLRequestStatus::SUCCESS);
 
   base::FilePath test_data;
-  EXPECT_TRUE(PathService::Get(chrome::DIR_GEN_TEST_DATA, &test_data));
+  EXPECT_TRUE(base::PathService::Get(chrome::DIR_GEN_TEST_DATA, &test_data));
   test_data = test_data.AppendASCII("chrome")
                   .AppendASCII("safe_browsing_dmg")
                   .AppendASCII("mach_o_in_dmg.txt");
@@ -1543,7 +1544,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadReportDmgWithoutKoly) {
                   net::URLRequestStatus::SUCCESS);
 
   base::FilePath test_data;
-  EXPECT_TRUE(PathService::Get(chrome::DIR_GEN_TEST_DATA, &test_data));
+  EXPECT_TRUE(base::PathService::Get(chrome::DIR_GEN_TEST_DATA, &test_data));
   test_data = test_data.AppendASCII("chrome")
                   .AppendASCII("safe_browsing_dmg")
                   .AppendASCII("mach_o_in_dmg_no_koly_signature.txt");
@@ -1576,7 +1577,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadReportLargeDmg) {
                   net::URLRequestStatus::SUCCESS);
 
   base::FilePath unsigned_dmg;
-  EXPECT_TRUE(PathService::Get(chrome::DIR_GEN_TEST_DATA, &unsigned_dmg));
+  EXPECT_TRUE(base::PathService::Get(chrome::DIR_GEN_TEST_DATA, &unsigned_dmg));
   unsigned_dmg = unsigned_dmg.AppendASCII("chrome")
                      .AppendASCII("safe_browsing_dmg")
                      .AppendASCII("mach_o_in_dmg.dmg");

@@ -43,7 +43,7 @@ class PatchTest : public InProcessBrowserTest {
 
   static base::FilePath TestFile(const char* name) {
     base::FilePath path;
-    PathService::Get(base::DIR_SOURCE_ROOT, &path);
+    base::PathService::Get(base::DIR_SOURCE_ROOT, &path);
     return path.AppendASCII("components")
         .AppendASCII("test")
         .AppendASCII("data")

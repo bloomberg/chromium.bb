@@ -181,7 +181,7 @@ PathValidationResult ValidatePathAndResolveConflicts(
   if (!base::PathIsWritable(target_path->DirName())) {
     DVLOG(1) << "Unable to write to path \"" << target_path->value() << "\"";
     base::FilePath target_dir;
-    PathService::Get(chrome::DIR_USER_DOCUMENTS, &target_dir);
+    base::PathService::Get(chrome::DIR_USER_DOCUMENTS, &target_dir);
     *target_path = target_dir.Append(target_path->BaseName());
     return PathValidationResult::PATH_NOT_WRITABLE;
   }

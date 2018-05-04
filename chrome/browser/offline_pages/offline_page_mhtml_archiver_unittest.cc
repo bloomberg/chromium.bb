@@ -179,7 +179,8 @@ OfflinePageMHTMLArchiverTest::~OfflinePageMHTMLArchiverTest() {
 
 void OfflinePageMHTMLArchiverTest::SetUp() {
   base::FilePath test_data_dir_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_path));
+  ASSERT_TRUE(
+      base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_path));
   archive_dir_path_ = test_data_dir_path.AppendASCII("offline_pages");
 }
 

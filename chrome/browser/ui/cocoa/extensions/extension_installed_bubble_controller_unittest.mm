@@ -155,7 +155,7 @@ class ExtensionInstalledBubbleControllerTest : public CocoaProfileTest {
   // Load test icon from extension test directory.
   SkBitmap LoadTestIcon() {
     base::FilePath path;
-    PathService::Get(chrome::DIR_TEST_DATA, &path);
+    base::PathService::Get(chrome::DIR_TEST_DATA, &path);
     path = path.AppendASCII("extensions").AppendASCII("icon1.png");
 
     std::string file_contents;

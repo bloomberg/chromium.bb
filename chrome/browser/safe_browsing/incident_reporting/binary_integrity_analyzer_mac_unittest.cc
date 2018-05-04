@@ -54,7 +54,7 @@ class BinaryIntegrityAnalyzerMacTest : public ::testing::Test {
 };
 
 void BinaryIntegrityAnalyzerMacTest::SetUp() {
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_));
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_));
   test_data_dir_ = test_data_dir_.Append("safe_browsing/mach_o/");
 
   // Set up the temp directory to copy the bundle to.

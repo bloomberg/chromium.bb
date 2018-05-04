@@ -261,7 +261,7 @@ const base::FilePath::CharType kRLZDisabledFlagName[] =
 
 base::FilePath GetRlzDisabledFlagPath() {
   base::FilePath homedir;
-  PathService::Get(base::DIR_HOME, &homedir);
+  base::PathService::Get(base::DIR_HOME, &homedir);
   return homedir.Append(kRLZDisabledFlagName);
 }
 #endif
@@ -393,9 +393,9 @@ void UserSessionManager::OverrideHomedir() {
           user_manager->GetPrimaryUser()->username_hash());
       // This path has been either created by cryptohome (on real Chrome OS
       // device) or by ProfileManager (on chromeos=1 desktop builds).
-      PathService::OverrideAndCreateIfNeeded(base::DIR_HOME, homedir,
-                                             true /* path is absolute */,
-                                             false /* don't create */);
+      base::PathService::OverrideAndCreateIfNeeded(base::DIR_HOME, homedir,
+                                                   true /* path is absolute */,
+                                                   false /* don't create */);
     }
   }
 }

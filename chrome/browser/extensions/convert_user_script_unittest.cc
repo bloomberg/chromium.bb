@@ -38,7 +38,7 @@ TEST_F(ExtensionFromUserScript, Basic) {
   ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
 
   base::FilePath test_file;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_file));
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_file));
   test_file = test_file.AppendASCII("extensions")
                        .AppendASCII("user_script_basic.user.js");
 
@@ -91,7 +91,7 @@ TEST_F(ExtensionFromUserScript, NoMetadata) {
   ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
 
   base::FilePath test_file;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_file));
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_file));
   test_file = test_file.AppendASCII("extensions")
                        .AppendASCII("user_script_no_metadata.user.js");
 
@@ -140,7 +140,7 @@ TEST_F(ExtensionFromUserScript, NotUTF8) {
   ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
 
   base::FilePath test_file;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_file));
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_file));
   test_file = test_file.AppendASCII("extensions")
                        .AppendASCII("user_script_not_utf8.user.js");
 
@@ -158,7 +158,7 @@ TEST_F(ExtensionFromUserScript, RunAtDocumentStart) {
   ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
 
   base::FilePath test_file;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_file));
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_file));
   test_file = test_file.AppendASCII("extensions")
                        .AppendASCII("user_script_run_at_start.user.js");
 
@@ -193,7 +193,7 @@ TEST_F(ExtensionFromUserScript, RunAtDocumentEnd) {
   ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
 
   base::FilePath test_file;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_file));
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_file));
   test_file = test_file.AppendASCII("extensions")
                        .AppendASCII("user_script_run_at_end.user.js");
 
@@ -228,7 +228,7 @@ TEST_F(ExtensionFromUserScript, RunAtDocumentIdle) {
   ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
 
   base::FilePath test_file;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_file));
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_file));
   test_file = test_file.AppendASCII("extensions")
                        .AppendASCII("user_script_run_at_idle.user.js");
   ASSERT_TRUE(base::PathExists(test_file)) << test_file.value();

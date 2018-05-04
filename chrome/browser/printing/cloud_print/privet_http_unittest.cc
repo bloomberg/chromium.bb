@@ -1152,7 +1152,7 @@ class PrivetHttpWithServerTest : public ::testing::Test,
         std::make_unique<EmbeddedTestServer>(EmbeddedTestServer::TYPE_HTTP);
 
     base::FilePath test_data_dir;
-    ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
+    ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
     server_->ServeFilesFromDirectory(
         test_data_dir.Append(FILE_PATH_LITERAL("chrome/test/data")));
     ASSERT_TRUE(server_->Start());

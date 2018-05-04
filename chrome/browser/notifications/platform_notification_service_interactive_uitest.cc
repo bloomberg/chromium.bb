@@ -623,7 +623,7 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
 
   // This case should fail because a file URL is used.
   base::FilePath dir_source_root;
-  EXPECT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &dir_source_root));
+  EXPECT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &dir_source_root));
   base::FilePath full_file_path =
       dir_source_root.Append(server_root_).AppendASCII(kTestFileName);
   GURL file_url(net::FilePathToFileURL(full_file_path));

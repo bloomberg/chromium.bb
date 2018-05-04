@@ -1413,7 +1413,7 @@ class KioskUpdateTest : public KioskTest {
 
   void SetupFakeDiskMountManagerMountPath(const std::string& mount_path) {
     base::FilePath test_data_dir;
-    PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
+    base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
     test_data_dir = test_data_dir.AppendASCII(mount_path);
     fake_disk_mount_manager_->set_usb_mount_path(test_data_dir.value());
   }
@@ -2269,7 +2269,7 @@ IN_PROC_BROWSER_TEST_F(KioskEnterpriseTest, PrivateStore) {
 
   // |private_server| serves crx from test data dir.
   base::FilePath test_data_dir;
-  PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
+  base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
   private_server.ServeFilesFromDirectory(test_data_dir);
   ASSERT_TRUE(private_server.InitializeAndListen());
 

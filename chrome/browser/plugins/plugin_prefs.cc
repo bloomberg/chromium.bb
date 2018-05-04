@@ -121,7 +121,7 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
   base::FilePath last_internal_dir =
       prefs_->GetFilePath(prefs::kPluginsLastInternalDirectory);
   base::FilePath cur_internal_dir;
-  if (PathService::Get(chrome::DIR_INTERNAL_PLUGINS, &cur_internal_dir) &&
+  if (base::PathService::Get(chrome::DIR_INTERNAL_PLUGINS, &cur_internal_dir) &&
       cur_internal_dir != last_internal_dir) {
     update_internal_dir = true;
     prefs_->SetFilePath(
@@ -256,7 +256,7 @@ void PluginPrefs::OnUpdatePreferences(
   plugins_list->Clear();
 
   base::FilePath internal_dir;
-  if (PathService::Get(chrome::DIR_INTERNAL_PLUGINS, &internal_dir))
+  if (base::PathService::Get(chrome::DIR_INTERNAL_PLUGINS, &internal_dir))
     prefs_->SetFilePath(prefs::kPluginsLastInternalDirectory, internal_dir);
 
   base::AutoLock auto_lock(lock_);

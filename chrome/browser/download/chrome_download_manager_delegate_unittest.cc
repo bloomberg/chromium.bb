@@ -377,7 +377,7 @@ bool ChromeDownloadManagerDelegateTest::CheckForFileExistence(
 base::FilePath ChromeDownloadManagerDelegateTest::GetDefaultDownloadPath()
     const {
   base::FilePath path;
-  CHECK(PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &path));
+  CHECK(base::PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &path));
   return path;
 }
 

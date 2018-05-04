@@ -585,7 +585,7 @@ void OfflinePageRequestJobTest::SetUp() {
   // model's maintenance tasks must not be executed in the meantime otherwise
   // these files will be wiped by consistency checks.
   base::FilePath test_data_dir_path;
-  PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_path);
+  base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_path);
   base::FilePath test_data_private_archives_dir =
       test_data_dir_path.AppendASCII(kPrivateOfflineFileDir);
   ASSERT_TRUE(base::CopyDirectory(test_data_private_archives_dir,

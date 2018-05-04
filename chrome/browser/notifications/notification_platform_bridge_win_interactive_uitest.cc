@@ -66,7 +66,7 @@ Profile* CreateTestingProfile(const base::FilePath& path) {
 
 Profile* CreateTestingProfile(const std::string& profile_name) {
   base::FilePath path;
-  PathService::Get(chrome::DIR_USER_DATA, &path);
+  base::PathService::Get(chrome::DIR_USER_DATA, &path);
   path = path.AppendASCII(profile_name);
   return CreateTestingProfile(path);
 }

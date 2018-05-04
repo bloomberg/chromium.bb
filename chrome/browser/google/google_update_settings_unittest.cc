@@ -86,7 +86,7 @@ TEST_F(GoogleUpdateTest, ConsentFileIsWorldReadable) {
   EXPECT_TRUE(GoogleUpdateSettings::SetCollectStatsConsent(true));
 
   base::FilePath consent_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_USER_DATA, &consent_dir));
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_USER_DATA, &consent_dir));
   ASSERT_TRUE(base::DirectoryExists(consent_dir));
 
   base::FilePath consent_file = consent_dir.Append("Consent To Send Stats");

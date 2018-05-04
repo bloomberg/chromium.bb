@@ -40,7 +40,7 @@ class ExtensionWebUITest : public ExtensionApiTest {
       base::ScopedAllowBlockingForTesting allow_blocking;
       // Tests are located in chrome/test/data/extensions/webui/$(name).
       base::FilePath path;
-      PathService::Get(chrome::DIR_TEST_DATA, &path);
+      base::PathService::Get(chrome::DIR_TEST_DATA, &path);
       path =
           path.AppendASCII("extensions").AppendASCII("webui").AppendASCII(name);
 

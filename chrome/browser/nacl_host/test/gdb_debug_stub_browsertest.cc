@@ -41,7 +41,7 @@ void NaClGdbDebugStubTest::StartTestScript(base::Process* test_process,
   // We call python script to reuse GDB RSP protocol implementation.
   base::CommandLine cmd(base::FilePath(FILE_PATH_LITERAL("python")));
   base::FilePath script;
-  PathService::Get(chrome::DIR_TEST_DATA, &script);
+  base::PathService::Get(chrome::DIR_TEST_DATA, &script);
   script = script.AppendASCII("nacl/debug_stub_browser_tests.py");
   cmd.AppendArgPath(script);
   cmd.AppendArg(base::IntToString(debug_stub_port));

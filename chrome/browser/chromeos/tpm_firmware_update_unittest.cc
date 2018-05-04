@@ -67,9 +67,9 @@ class ShouldOfferUpdateViaPowerwashTest : public testing::Test {
 
   void SetUpdateAvailability(Availability availability) {
     base::FilePath update_location_path;
-    ASSERT_TRUE(
-        PathService::Get(chrome::FILE_CHROME_OS_TPM_FIRMWARE_UPDATE_LOCATION,
-                         &update_location_path));
+    ASSERT_TRUE(base::PathService::Get(
+        chrome::FILE_CHROME_OS_TPM_FIRMWARE_UPDATE_LOCATION,
+        &update_location_path));
     switch (availability) {
       case Availability::kPending:
         base::DeleteFile(update_location_path, false);

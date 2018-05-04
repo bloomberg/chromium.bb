@@ -119,7 +119,7 @@ ComponentLoader::ComponentExtensionInfo::ComponentExtensionInfo(
     const base::FilePath& directory)
     : manifest(std::move(manifest_param)), root_directory(directory) {
   if (!root_directory.IsAbsolute()) {
-    CHECK(PathService::Get(chrome::DIR_RESOURCES, &root_directory));
+    CHECK(base::PathService::Get(chrome::DIR_RESOURCES, &root_directory));
     root_directory = root_directory.Append(directory);
   }
   extension_id = GenerateId(manifest.get(), root_directory);
@@ -325,7 +325,7 @@ void ComponentLoader::AddZipArchiverExtension() {
   base::FilePath resources_path;
   if ((chromeos::switches::IsZipArchiverPackerEnabled() ||
        chromeos::switches::IsZipArchiverUnpackerEnabled()) &&
-      PathService::Get(chrome::DIR_RESOURCES, &resources_path)) {
+      base::PathService::Get(chrome::DIR_RESOURCES, &resources_path)) {
     AddWithNameAndDescriptionFromDir(
         resources_path.Append(extension_misc::kZipArchiverExtensionPath),
         extension_misc::kZipArchiverExtensionId,

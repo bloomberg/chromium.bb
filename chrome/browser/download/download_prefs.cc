@@ -74,7 +74,7 @@ bool DownloadPathIsDangerous(const base::FilePath& download_path) {
   return false;
 #else
   base::FilePath desktop_dir;
-  if (!PathService::Get(base::DIR_USER_DESKTOP, &desktop_dir)) {
+  if (!base::PathService::Get(base::DIR_USER_DESKTOP, &desktop_dir)) {
     NOTREACHED();
     return false;
   }
@@ -90,13 +90,13 @@ class DefaultDownloadDirectory {
   friend struct base::LazyInstanceTraitsBase<DefaultDownloadDirectory>;
 
   DefaultDownloadDirectory() {
-    if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &path_)) {
+    if (!base::PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &path_)) {
       NOTREACHED();
     }
     if (DownloadPathIsDangerous(path_)) {
       // This is only useful on platforms that support
       // DIR_DEFAULT_DOWNLOADS_SAFE.
-      if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS_SAFE, &path_)) {
+      if (!base::PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS_SAFE, &path_)) {
         NOTREACHED();
       }
     }

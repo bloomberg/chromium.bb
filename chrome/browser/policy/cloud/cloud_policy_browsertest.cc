@@ -259,8 +259,8 @@ class CloudPolicyTest : public InProcessBrowserTest,
 #if defined(OS_CHROMEOS)
     // Get the path to the user policy key file.
     base::FilePath user_policy_key_dir;
-    ASSERT_TRUE(
-        PathService::Get(chromeos::DIR_USER_POLICY_KEYS, &user_policy_key_dir));
+    ASSERT_TRUE(base::PathService::Get(chromeos::DIR_USER_POLICY_KEYS,
+                                       &user_policy_key_dir));
     std::string sanitized_username =
         chromeos::CryptohomeClient::GetStubSanitizedUsername(
             cryptohome::Identification(

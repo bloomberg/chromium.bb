@@ -67,7 +67,7 @@ bool ForwardingServer::SetPythonPath() const {
 bool ForwardingServer::GetTestServerPath(
     base::FilePath* testserver_path) const {
   base::FilePath source_root_dir;
-  if (!PathService::Get(base::DIR_SOURCE_ROOT, &source_root_dir))
+  if (!base::PathService::Get(base::DIR_SOURCE_ROOT, &source_root_dir))
     return false;
 
   *testserver_path = source_root_dir.Append("chrome")

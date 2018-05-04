@@ -175,7 +175,7 @@ void ExtensionBrowserTest::SetUp() {
 }
 
 void ExtensionBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
-  PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
+  base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
   test_data_dir_ = test_data_dir_.AppendASCII("extensions");
 
   // We don't want any warning bubbles for, e.g., unpacked extensions.
@@ -216,7 +216,7 @@ void ExtensionBrowserTest::SetUpOnMainThread() {
   // chrome/test/data/extensions, and subclasses have a nasty habit of altering
   // the data dir in SetUpCommandLine().
   base::FilePath test_root_path;
-  PathService::Get(chrome::DIR_TEST_DATA, &test_root_path);
+  base::PathService::Get(chrome::DIR_TEST_DATA, &test_root_path);
   test_root_path = test_root_path.AppendASCII("extensions");
   test_protocol_handler_ =
       base::Bind(&ExtensionProtocolTestHandler, test_root_path);

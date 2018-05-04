@@ -242,7 +242,7 @@ AccessibilityManager::AccessibilityManager()
       bundle.GetRawDataResource(IDR_SOUND_DICTATION_CANCEL_WAV));
 
   base::FilePath resources_path;
-  if (!PathService::Get(chrome::DIR_RESOURCES, &resources_path))
+  if (!base::PathService::Get(chrome::DIR_RESOURCES, &resources_path))
     NOTREACHED();
   chromevox_loader_ = base::WrapUnique(new AccessibilityExtensionLoader(
       extension_misc::kChromeVoxExtensionId,

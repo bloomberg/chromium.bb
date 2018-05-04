@@ -149,7 +149,7 @@ void WVTestLicenseServerConfig::GetLicenseServerPath(base::FilePath *path) {
 void WVTestLicenseServerConfig::GetLicenseServerRootPath(
     base::FilePath* path) {
   base::FilePath source_root;
-  PathService::Get(base::DIR_SOURCE_ROOT, &source_root);
+  base::PathService::Get(base::DIR_SOURCE_ROOT, &source_root);
   *path = source_root.Append(FILE_PATH_LITERAL("third_party"))
                      .Append(FILE_PATH_LITERAL("widevine"))
                      .Append(FILE_PATH_LITERAL("test"))

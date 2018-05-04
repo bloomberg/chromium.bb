@@ -63,7 +63,7 @@ OwnerSettingsServiceChromeOSFactory::GetOwnerKeyUtil() {
   if (owner_key_util_.get())
     return owner_key_util_;
   base::FilePath public_key_path;
-  if (!PathService::Get(chromeos::FILE_OWNER_KEY, &public_key_path))
+  if (!base::PathService::Get(chromeos::FILE_OWNER_KEY, &public_key_path))
     return NULL;
   owner_key_util_ = new ownership::OwnerKeyUtilImpl(public_key_path);
   return owner_key_util_;

@@ -329,7 +329,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, NaClInBackgroundPage) {
   {
     base::FilePath extdir;
     base::ScopedAllowBlockingForTesting allow_blocking;
-    ASSERT_TRUE(PathService::Get(chrome::DIR_GEN_TEST_DATA, &extdir));
+    ASSERT_TRUE(base::PathService::Get(chrome::DIR_GEN_TEST_DATA, &extdir));
     extdir = extdir.AppendASCII("ppapi/tests/extensions/load_unload/newlib");
     LazyBackgroundObserver page_complete;
     ASSERT_TRUE(LoadExtension(extdir));
@@ -366,7 +366,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, NaClInView) {
   {
     base::FilePath extdir;
     base::ScopedAllowBlockingForTesting allow_blocking;
-    ASSERT_TRUE(PathService::Get(chrome::DIR_GEN_TEST_DATA, &extdir));
+    ASSERT_TRUE(base::PathService::Get(chrome::DIR_GEN_TEST_DATA, &extdir));
     extdir = extdir.AppendASCII("ppapi/tests/extensions/popup/newlib");
     ResultCatcher catcher;
     const Extension* extension = LoadExtension(extdir);

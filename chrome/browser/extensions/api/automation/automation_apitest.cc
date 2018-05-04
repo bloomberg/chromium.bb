@@ -61,7 +61,7 @@ class AutomationApiTest : public ExtensionApiTest {
 
   void StartEmbeddedTestServer() {
     base::FilePath test_data;
-    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data));
+    ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data));
     embedded_test_server()->ServeFilesFromDirectory(
         test_data.AppendASCII("extensions/api_test")
         .AppendASCII(kSitesDir));

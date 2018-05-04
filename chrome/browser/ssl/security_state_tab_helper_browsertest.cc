@@ -1512,7 +1512,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
 
   // Prepare a file for the upload form.
   base::FilePath file_path;
-  EXPECT_TRUE(PathService::Get(base::DIR_TEMP, &file_path));
+  EXPECT_TRUE(base::PathService::Get(base::DIR_TEMP, &file_path));
   file_path = file_path.AppendASCII("bar");
 
   // Fill out the form to refer to the test file.
@@ -2448,7 +2448,7 @@ class BrowserTestNonsecureURLRequest : public InProcessBrowserTest {
 
   void SetUpOnMainThread() override {
     base::FilePath serve_file;
-    PathService::Get(chrome::DIR_TEST_DATA, &serve_file);
+    base::PathService::Get(chrome::DIR_TEST_DATA, &serve_file);
     serve_file = serve_file.Append(FILE_PATH_LITERAL("title1.html"));
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
@@ -2660,7 +2660,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
 
   // Prepare a file for the upload form.
   base::FilePath file_path;
-  EXPECT_TRUE(PathService::Get(base::DIR_TEMP, &file_path));
+  EXPECT_TRUE(base::PathService::Get(base::DIR_TEMP, &file_path));
   file_path = file_path.AppendASCII("bar");
 
   // Fill out the form to refer to the test file.

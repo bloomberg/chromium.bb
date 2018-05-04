@@ -48,7 +48,7 @@ class InstallAttributesTest : public testing::Test {
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    ASSERT_TRUE(PathService::OverrideAndCreateIfNeeded(
+    ASSERT_TRUE(base::PathService::OverrideAndCreateIfNeeded(
         FILE_INSTALL_ATTRIBUTES, GetTempPath(), true, false));
     DBusThreadManager::Initialize();
     install_attributes_ = std::make_unique<InstallAttributes>(

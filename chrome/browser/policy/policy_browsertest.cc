@@ -328,7 +328,8 @@ const char kTestWebRtcUdpPortRange[] = "10000-10100";
 #endif
 
 void GetTestDataDirectory(base::FilePath* test_data_directory) {
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, test_data_directory));
+  ASSERT_TRUE(
+      base::PathService::Get(chrome::DIR_TEST_DATA, test_data_directory));
 }
 
 // Filters requests to the hosts in |urls| and redirects them to the test data

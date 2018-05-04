@@ -263,7 +263,7 @@ class PrintExtensionBrowserTest : public ExtensionBrowserTest {
     {
       base::ScopedAllowBlockingForTesting allow_blocking;
       base::FilePath test_data_dir;
-      PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
+      base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
       extension = LoadExtension(
           test_data_dir.AppendASCII("printing").AppendASCII("test_extension"));
       ASSERT_TRUE(extension);

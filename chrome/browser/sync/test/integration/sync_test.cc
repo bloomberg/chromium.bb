@@ -340,7 +340,7 @@ bool SyncTest::CreateProfile(int index) {
     // about it. This is needed in tests such as supervised user cases which
     // assume browser->profile() as the custodian profile.
     base::FilePath user_data_dir;
-    PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+    base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
     if (!tmp_profile_paths_[index]->CreateUniqueTempDirUnderPath(
             user_data_dir)) {
       ADD_FAILURE();
@@ -557,7 +557,7 @@ bool SyncTest::SetupClients() {
   // Create the verifier profile.
   if (use_verifier_) {
     base::FilePath user_data_dir;
-    PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+    base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
     profile_delegates_[num_clients_] =
         std::make_unique<SyncProfileDelegate>(base::Callback<void(Profile*)>());
     verifier_ = MakeTestProfile(

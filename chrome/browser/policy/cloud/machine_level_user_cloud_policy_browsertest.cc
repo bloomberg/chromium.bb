@@ -306,7 +306,7 @@ class MachineLevelUserCloudPolicyManagerTest : public InProcessBrowserTest {
     CombinedSchemaRegistry schema_registry;
     CloudPolicyStoreObserverStub observer;
 
-    PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+    base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
 
     std::unique_ptr<MachineLevelUserCloudPolicyStore> policy_store =
         MachineLevelUserCloudPolicyStore::Create(

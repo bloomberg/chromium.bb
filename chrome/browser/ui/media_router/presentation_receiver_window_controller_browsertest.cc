@@ -51,7 +51,7 @@ base::RepeatingCallback<void(const std::string&)> GetNoopTitleChangeCallback() {
 
 base::FilePath GetResourceFile(base::FilePath::StringPieceType relative_path) {
   base::FilePath base_dir;
-  if (!PathService::Get(chrome::DIR_TEST_DATA, &base_dir))
+  if (!base::PathService::Get(chrome::DIR_TEST_DATA, &base_dir))
     return base::FilePath();
   base::FilePath full_path =
       base_dir.Append(kResourcePath).Append(relative_path);

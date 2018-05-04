@@ -25,7 +25,7 @@ scoped_refptr<UploadList> CreateCrashUploadList() {
   return new CrashUploadListCrashpad();
 #else
   base::FilePath crash_dir_path;
-  PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dir_path);
+  base::PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dir_path);
   base::FilePath upload_log_path =
       crash_dir_path.AppendASCII(CrashUploadList::kReporterLogFilename);
 #if defined(OS_ANDROID)

@@ -382,7 +382,7 @@ void InitializeLocalState(base::SequencedTaskRunner* local_state_task_runner) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kParentProfile)) {
     base::FilePath local_state_path;
-    PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
+    base::PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
     bool local_state_file_exists = base::PathExists(local_state_path);
     if (!local_state_file_exists) {
       base::FilePath parent_profile =
@@ -554,7 +554,7 @@ void RegisterComponentsForUpdate(PrefService* profile_prefs) {
   RegisterOptimizationHintsComponent(cus, profile_prefs);
 
   base::FilePath path;
-  if (PathService::Get(chrome::DIR_USER_DATA, &path)) {
+  if (base::PathService::Get(chrome::DIR_USER_DATA, &path)) {
     // The CRLSet component previously resided in a different location: delete
     // the old file.
     component_updater::DeleteLegacyCRLSet(path);
@@ -1157,7 +1157,7 @@ int ChromeBrowserMainParts::LoadLocalState(
     base::SequencedTaskRunner* local_state_task_runner,
     bool* failed_to_load_resource_bundle) {
   *failed_to_load_resource_bundle = false;
-  if (!PathService::Get(chrome::DIR_USER_DATA, &user_data_dir_))
+  if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir_))
     return chrome::RESULT_CODE_MISSING_DATA;
 
   InitializeLocalState(local_state_task_runner);
@@ -1346,8 +1346,8 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
     // makes it less likely that the directory will be created by third-party
     // software with incorrect owner or permission. See crbug.com/725513 .
     base::FilePath user_native_messaging_dir;
-    CHECK(PathService::Get(chrome::DIR_USER_NATIVE_MESSAGING,
-                           &user_native_messaging_dir));
+    CHECK(base::PathService::Get(chrome::DIR_USER_NATIVE_MESSAGING,
+                                 &user_native_messaging_dir));
     if (!base::PathExists(user_native_messaging_dir))
       base::CreateDirectory(user_native_messaging_dir);
 #endif  // defined(OS_MACOSX) || defined(OS_LINUX)

@@ -163,7 +163,8 @@ const std::string& ExternalLoader::GetOemAppsFolderName() {
 
 void ExternalLoader::Load() {
   base::FilePath ordinals_file;
-  CHECK(PathService::Get(chromeos::FILE_DEFAULT_APP_ORDER, &ordinals_file));
+  CHECK(
+      base::PathService::Get(chromeos::FILE_DEFAULT_APP_ORDER, &ordinals_file));
 
   std::unique_ptr<base::ListValue> ordinals_value =
       ReadExternalOrdinalFile(ordinals_file);

@@ -450,13 +450,13 @@ void WallpaperControllerClient::BindAndSetClient() {
 
   // Get the paths of wallpaper directories.
   base::FilePath user_data_path;
-  CHECK(PathService::Get(chrome::DIR_USER_DATA, &user_data_path));
+  CHECK(base::PathService::Get(chrome::DIR_USER_DATA, &user_data_path));
   base::FilePath chromeos_wallpapers_path;
-  CHECK(PathService::Get(chrome::DIR_CHROMEOS_WALLPAPERS,
-                         &chromeos_wallpapers_path));
+  CHECK(base::PathService::Get(chrome::DIR_CHROMEOS_WALLPAPERS,
+                               &chromeos_wallpapers_path));
   base::FilePath chromeos_custom_wallpapers_path;
-  CHECK(PathService::Get(chrome::DIR_CHROMEOS_CUSTOM_WALLPAPERS,
-                         &chromeos_custom_wallpapers_path));
+  CHECK(base::PathService::Get(chrome::DIR_CHROMEOS_CUSTOM_WALLPAPERS,
+                               &chromeos_custom_wallpapers_path));
 
   wallpaper_controller_->Init(
       std::move(client), user_data_path, chromeos_wallpapers_path,

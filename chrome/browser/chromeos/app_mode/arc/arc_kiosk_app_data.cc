@@ -61,7 +61,7 @@ void ArcKioskAppData::SetCache(const std::string& name,
   icon_ = icon;
 
   base::FilePath user_data_dir;
-  if (!PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
+  if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
     LOG(ERROR) << "Failed to get user directory.";
     return;
   }

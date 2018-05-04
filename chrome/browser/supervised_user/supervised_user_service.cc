@@ -144,7 +144,7 @@ void ExtensionUpdateRequestSent(const std::string& id, bool success) {
 
 base::FilePath GetBlacklistPath() {
   base::FilePath blacklist_dir;
-  PathService::Get(chrome::DIR_USER_DATA, &blacklist_dir);
+  base::PathService::Get(chrome::DIR_USER_DATA, &blacklist_dir);
   return blacklist_dir.AppendASCII(kBlacklistFilename);
 }
 

@@ -37,7 +37,7 @@ class DiagnosticsControllerTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     base::FilePath test_data;
-    PathService::Get(chrome::DIR_TEST_DATA, &test_data);
+    base::PathService::Get(chrome::DIR_TEST_DATA, &test_data);
     test_data = test_data.Append(FILE_PATH_LITERAL("diagnostics"));
     test_data = test_data.Append(FILE_PATH_LITERAL("user"));
     base::CopyDirectory(test_data, temp_dir_.GetPath(), true);
@@ -47,8 +47,8 @@ class DiagnosticsControllerTest : public testing::Test {
     // Redirect the home dir to the profile directory. We have to do this
     // because NSS uses the HOME directory to find where to store it's database,
     // so that's where the diagnostics and recovery code looks for it.
-    PathService::Get(base::DIR_HOME, &old_home_dir_);
-    PathService::Override(base::DIR_HOME, profile_dir_);
+    base::PathService::Get(base::DIR_HOME, &old_home_dir_);
+    base::PathService::Override(base::DIR_HOME, profile_dir_);
 #endif
 
     cmdline_ = base::CommandLine(base::CommandLine::NO_PROGRAM);
@@ -63,7 +63,7 @@ class DiagnosticsControllerTest : public testing::Test {
   void TearDown() override {
     DiagnosticsController::GetInstance()->ClearResults();
 #if defined(OS_CHROMEOS)
-    PathService::Override(base::DIR_HOME, old_home_dir_);
+    base::PathService::Override(base::DIR_HOME, old_home_dir_);
     old_home_dir_.clear();
 #endif
   }

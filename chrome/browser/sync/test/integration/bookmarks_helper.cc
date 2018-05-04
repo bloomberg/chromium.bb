@@ -929,7 +929,7 @@ gfx::Image Create1xFaviconFromPNGFile(const std::string& path) {
     return gfx::Image();
 
   base::FilePath full_path;
-  if (!PathService::Get(chrome::DIR_TEST_DATA, &full_path))
+  if (!base::PathService::Get(chrome::DIR_TEST_DATA, &full_path))
     return gfx::Image();
 
   full_path = full_path.AppendASCII("sync").AppendASCII(path);

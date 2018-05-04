@@ -57,7 +57,7 @@ class TemplateURLServiceLoader {
 std::unique_ptr<net::test_server::HttpResponse> SendResponse(
     const net::test_server::HttpRequest& request) {
   base::FilePath test_data_dir;
-  PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
+  base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
   base::FilePath index_file = test_data_dir.AppendASCII("template_url_scraper")
                                            .AppendASCII("submit_handler")
                                            .AppendASCII("index.html");

@@ -63,8 +63,8 @@ WallpaperPolicyHandler::WallpaperPolicyHandler(Delegate* delegate)
   // Initialize the desired file path for device policy wallpaper. The path will
   // be used by WallpaperController to access the wallpaper file.
   base::FilePath chromeos_wallpapers_path;
-  CHECK(PathService::Get(chrome::DIR_CHROMEOS_WALLPAPERS,
-                         &chromeos_wallpapers_path));
+  CHECK(base::PathService::Get(chrome::DIR_CHROMEOS_WALLPAPERS,
+                               &chromeos_wallpapers_path));
   device_wallpaper_file_path_ =
       chromeos_wallpapers_path.Append(kDeviceWallpaperDir)
           .Append(kDeviceWallpaperFile);

@@ -262,7 +262,7 @@ class ProfileShortcutManagerTest : public testing::Test {
 
   base::FilePath GetExePath() {
     base::FilePath exe_path;
-    EXPECT_TRUE(PathService::Get(base::FILE_EXE, &exe_path));
+    EXPECT_TRUE(base::PathService::Get(base::FILE_EXE, &exe_path));
     return exe_path;
   }
 

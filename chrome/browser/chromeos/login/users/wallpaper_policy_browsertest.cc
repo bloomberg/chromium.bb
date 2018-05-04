@@ -149,7 +149,7 @@ class WallpaperPolicyTest : public LoginManagerTest,
     std::unique_ptr<policy::UserPolicyBuilder> user_policy_builder(
         new policy::UserPolicyBuilder());
     base::FilePath user_keys_dir;
-    EXPECT_TRUE(PathService::Get(DIR_USER_POLICY_KEYS, &user_keys_dir));
+    EXPECT_TRUE(base::PathService::Get(DIR_USER_POLICY_KEYS, &user_keys_dir));
     const std::string sanitized_user_id =
         CryptohomeClient::GetStubSanitizedUsername(
             cryptohome::Identification(account_id));
@@ -186,7 +186,7 @@ class WallpaperPolicyTest : public LoginManagerTest,
         attributes.release());
 
     LoginManagerTest::SetUpInProcessBrowserTestFixture();
-    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_));
+    ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_));
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {

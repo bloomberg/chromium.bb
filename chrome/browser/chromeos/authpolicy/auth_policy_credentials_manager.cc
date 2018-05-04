@@ -58,7 +58,7 @@ constexpr char kKrb5ConfFile[] = "krb5.conf";
 // temporary file and then replaces existing one.
 void WriteFile(const std::string& file_name, const std::string& blob) {
   base::FilePath dir;
-  PathService::Get(base::DIR_HOME, &dir);
+  base::PathService::Get(base::DIR_HOME, &dir);
   dir = dir.Append(kKrb5Directory);
   base::File::Error error;
   if (!base::CreateDirectoryAndGetError(dir, &error)) {
@@ -104,7 +104,7 @@ AuthPolicyCredentialsManager::AuthPolicyCredentialsManager(Profile* profile)
   // Setting environment variables for GSSAPI library.
   std::unique_ptr<base::Environment> env(base::Environment::Create());
   base::FilePath path;
-  PathService::Get(base::DIR_HOME, &path);
+  base::PathService::Get(base::DIR_HOME, &path);
   path = path.Append(kKrb5Directory);
   env->SetVar(kKrb5CCEnvName,
               kKrb5CCFilePrefix + path.Append(kKrb5CCFile).value());

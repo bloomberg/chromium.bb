@@ -18,7 +18,7 @@ class PrefsTabHelperBrowserTest : public InProcessBrowserTest {
  protected:
   virtual base::FilePath GetPreferencesFilePath() {
     base::FilePath test_data_directory;
-    PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory);
+    base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory);
     return test_data_directory
         .AppendASCII("profiles")
         .AppendASCII("web_prefs")
@@ -28,7 +28,7 @@ class PrefsTabHelperBrowserTest : public InProcessBrowserTest {
 
   bool SetUpUserDataDirectory() override {
     base::FilePath user_data_directory;
-    PathService::Get(chrome::DIR_USER_DATA, &user_data_directory);
+    base::PathService::Get(chrome::DIR_USER_DATA, &user_data_directory);
     base::FilePath default_profile =
         user_data_directory.AppendASCII(TestingProfile::kTestUserProfileDir);
     if (!base::CreateDirectory(default_profile)) {

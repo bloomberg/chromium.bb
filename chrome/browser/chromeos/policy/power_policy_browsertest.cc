@@ -207,7 +207,8 @@ void PowerPolicyBrowserTestBase::SetUpOnMainThread() {
 
 void PowerPolicyBrowserTestBase::InstallUserKey() {
   base::FilePath user_keys_dir;
-  ASSERT_TRUE(PathService::Get(chromeos::DIR_USER_POLICY_KEYS, &user_keys_dir));
+  ASSERT_TRUE(
+      base::PathService::Get(chromeos::DIR_USER_POLICY_KEYS, &user_keys_dir));
   std::string sanitized_username =
       chromeos::CryptohomeClient::GetStubSanitizedUsername(
           cryptohome::Identification(user_manager::StubAccountId()));

@@ -111,7 +111,7 @@ TEST_F(ExtensionIconManagerTest, LoadRemoveLoad) {
   gfx::Image default_icon = GetDefaultIcon();
 
   base::FilePath test_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
   base::FilePath manifest_path = test_dir.AppendASCII(
       "extensions/image_loading_tracker/app.json");
 
@@ -154,7 +154,7 @@ TEST_F(ExtensionIconManagerTest, LoadComponentExtensionResource) {
   gfx::Image default_icon = GetDefaultIcon();
 
   base::FilePath test_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
   base::FilePath manifest_path = test_dir.AppendASCII(
       "extensions/file_manager/app.json");
 
@@ -198,7 +198,7 @@ TEST_F(ExtensionIconManagerTest, ScaleFactors) {
   const gfx::Image default_icon = GetDefaultIcon();
 
   base::FilePath test_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
   base::FilePath manifest_path =
       test_dir.AppendASCII("extensions/context_menus/icons/manifest.json");
 

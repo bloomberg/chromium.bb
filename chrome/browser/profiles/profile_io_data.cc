@@ -250,7 +250,8 @@ bool IsSupportedDevToolsURL(const GURL& url, base::FilePath* path) {
     return false;
 
   base::FilePath inspector_debug_dir;
-  if (!PathService::Get(chrome::DIR_INSPECTOR_DEBUG, &inspector_debug_dir))
+  if (!base::PathService::Get(chrome::DIR_INSPECTOR_DEBUG,
+                              &inspector_debug_dir))
     return false;
 
   DCHECK(!inspector_debug_dir.empty());

@@ -30,7 +30,7 @@ namespace {
 
 base::FilePath GetTestDemoAppPath() {
   base::FilePath test_data_dir;
-  EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
+  EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
   return test_data_dir.Append(FILE_PATH_LITERAL("chromeos/demo_app"));
 }
 

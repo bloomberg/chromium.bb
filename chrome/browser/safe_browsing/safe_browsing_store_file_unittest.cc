@@ -758,7 +758,7 @@ TEST_F(SafeBrowsingStoreFileTest, Version7) {
   // - Sub chunk kSubChunk1 containing kHash3.
   const char kBasename[] = "FileStoreVersion7";
   base::FilePath golden_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &golden_path));
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &golden_path));
   golden_path = golden_path.AppendASCII("SafeBrowsing");
   golden_path = golden_path.AppendASCII(kBasename);
   ASSERT_TRUE(base::CopyFile(golden_path, filename_));
@@ -792,7 +792,7 @@ TEST_F(SafeBrowsingStoreFileTest, Version8) {
   // - Sub chunk kSubChunk1 containing kHash3.
   const char kBasename[] = "FileStoreVersion8";
   base::FilePath golden_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &golden_path));
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &golden_path));
   golden_path = golden_path.AppendASCII("SafeBrowsing");
   golden_path = golden_path.AppendASCII(kBasename);
   ASSERT_TRUE(base::CopyFile(golden_path, filename_));

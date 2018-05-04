@@ -67,7 +67,7 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
     feature_list_.InitWithFeatures(
         {browsing_data::features::kRemoveNavigationHistory}, {});
     base::FilePath path;
-    PathService::Get(content::DIR_TEST_DATA, &path);
+    base::PathService::Get(content::DIR_TEST_DATA, &path);
     host_resolver()->AddRule(kExampleHost, "127.0.0.1");
     embedded_test_server()->ServeFilesFromDirectory(path);
     ASSERT_TRUE(embedded_test_server()->Start());

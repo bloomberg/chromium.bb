@@ -581,7 +581,7 @@ void WebstoreInstaller::DownloadCrx(
   MaybeAppendAuthUserParameter(approval_->authuser, &download_url_);
 
   base::FilePath user_data_dir;
-  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   base::FilePath download_path = user_data_dir.Append(kWebstoreDownloadFolder);
 
   base::FilePath download_directory(g_download_directory_for_tests ?

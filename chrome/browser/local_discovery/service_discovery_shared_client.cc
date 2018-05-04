@@ -38,7 +38,7 @@ namespace {
 #if defined(OS_WIN)
 void ReportFirewallStats() {
   base::FilePath exe_path;
-  if (!PathService::Get(base::FILE_EXE, &exe_path))
+  if (!base::PathService::Get(base::FILE_EXE, &exe_path))
     return;
   base::ElapsedTimer timer;
   std::unique_ptr<installer::FirewallManager> manager =

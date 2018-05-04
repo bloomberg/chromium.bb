@@ -195,7 +195,7 @@ IN_PROC_BROWSER_TEST_F(FlashPermissionBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(FlashPermissionBrowserTest, AllowFileURL) {
   base::FilePath test_path;
-  PathService::Get(chrome::DIR_TEST_DATA, &test_path);
+  base::PathService::Get(chrome::DIR_TEST_DATA, &test_path);
   ui_test_utils::NavigateToURL(
       browser(), GURL("file://" + test_path.AsUTF8Unsafe() + test_url()));
   CommonSucceedsIfAllowed();
@@ -210,7 +210,7 @@ IN_PROC_BROWSER_TEST_F(FlashPermissionBrowserTest, AllowFileURL) {
 
 IN_PROC_BROWSER_TEST_F(FlashPermissionBrowserTest, BlockFileURL) {
   base::FilePath test_path;
-  PathService::Get(chrome::DIR_TEST_DATA, &test_path);
+  base::PathService::Get(chrome::DIR_TEST_DATA, &test_path);
   ui_test_utils::NavigateToURL(
       browser(), GURL("file://" + test_path.AsUTF8Unsafe() + test_url()));
   CommonFailsIfBlocked();

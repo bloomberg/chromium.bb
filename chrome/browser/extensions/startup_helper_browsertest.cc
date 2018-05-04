@@ -22,7 +22,7 @@ class StartupHelperBrowserTest : public InProcessBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kNoStartupWindow);
 
-    PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
+    base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
     test_data_dir_ = test_data_dir_.AppendASCII("extensions");
     InProcessBrowserTest::SetUpCommandLine(command_line);
   }

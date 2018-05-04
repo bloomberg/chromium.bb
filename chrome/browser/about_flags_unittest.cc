@@ -242,7 +242,7 @@ class AboutFlagsHistogramTest : public ::testing::Test {
 TEST_F(AboutFlagsHistogramTest, CheckHistograms) {
   base::FilePath histograms_xml_file_path;
   ASSERT_TRUE(
-      PathService::Get(base::DIR_SOURCE_ROOT, &histograms_xml_file_path));
+      base::PathService::Get(base::DIR_SOURCE_ROOT, &histograms_xml_file_path));
   histograms_xml_file_path = histograms_xml_file_path.AppendASCII("tools")
                                  .AppendASCII("metrics")
                                  .AppendASCII("histograms")

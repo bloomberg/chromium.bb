@@ -229,7 +229,7 @@ class KioskAppManagerTest : public InProcessBrowserTest {
   // InProcessBrowserTest overrides:
   void SetUp() override {
     base::FilePath test_data_dir;
-    PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
+    base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
     embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
 
     // Don't spin up the IO thread yet since no threads are allowed while
@@ -299,7 +299,7 @@ class KioskAppManagerTest : public InProcessBrowserTest {
                       const std::string& icon_file_name,
                       const std::string& required_platform_version) {
     base::FilePath test_dir;
-    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
+    ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
     base::FilePath data_dir = test_dir.AppendASCII("chromeos/app_mode/");
 
     // Copy the icon file to temp dir for using because ClearAppData test
@@ -385,7 +385,8 @@ class KioskAppManagerTest : public InProcessBrowserTest {
     EXPECT_EQ(expected_required_platform_version, required_platform_version);
 
     base::FilePath expected_icon_path;
-    ASSERT_TRUE(PathService::Get(chrome::DIR_USER_DATA, &expected_icon_path));
+    ASSERT_TRUE(
+        base::PathService::Get(chrome::DIR_USER_DATA, &expected_icon_path));
     expected_icon_path =
         expected_icon_path.AppendASCII(KioskAppManager::kIconCacheDir)
             .AppendASCII(app_id)
@@ -413,7 +414,7 @@ class KioskAppManagerTest : public InProcessBrowserTest {
     EXPECT_EQ(expected_version, crx_version);
     // Verify the original crx file is identical to the cached file.
     base::FilePath test_data_dir;
-    PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
+    base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
     std::string src_file_path_str =
         std::string("chromeos/app_mode/webstore/downloads/") + crx_file_name;
     base::FilePath src_file_path = test_data_dir.Append(src_file_path_str);
@@ -580,7 +581,7 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, UpdateAppDataFromCrx) {
 
   // Copy test crx file to temp dir because the cache moves the file.
   base::FilePath test_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
   base::FilePath data_dir =
       test_dir.AppendASCII("chromeos/app_mode/webstore/downloads/");
   base::FilePath crx_file = data_dir.AppendASCII(
@@ -718,7 +719,7 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, UpdateApp) {
   EXPECT_TRUE(base::PathExists(new_crx_path));
   // Get original version 2 source download crx file path.
   base::FilePath test_data_dir;
-  PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
+  base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
   base::FilePath v2_file_path = test_data_dir.Append(FILE_PATH_LITERAL(
       "chromeos/app_mode/webstore/downloads/"
       "bmbpicmpniaclbbpdkfglgipkkebnbjf_v2_read_and_verify_data.crx"));

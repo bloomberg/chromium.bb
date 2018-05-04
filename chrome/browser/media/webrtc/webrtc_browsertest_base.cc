@@ -764,7 +764,7 @@ base::Optional<std::string> WebRtcTestBase::LoadDesktopCaptureExtension() {
   if (!desktop_capture_extension_.get()) {
     extensions::ChromeTestExtensionLoader loader(browser()->profile());
     base::FilePath extension_path;
-    EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extension_path));
+    EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &extension_path));
     extension_path = extension_path.AppendASCII("extensions/desktop_capture");
     desktop_capture_extension_ = loader.LoadExtension(extension_path);
     LOG(INFO) << "Loaded desktop capture extension, id = "

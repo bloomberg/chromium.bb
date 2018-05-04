@@ -158,7 +158,7 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
                                 false);
 #endif
   base::FilePath home;
-  PathService::Get(base::DIR_HOME, &home);
+  base::PathService::Get(base::DIR_HOME, &home);
   registry->RegisterStringPref(prefs::kSelectFileLastDirectory,
                                home.MaybeAsASCII());
 #if !defined(OS_ANDROID)

@@ -165,7 +165,8 @@ bool IsAccessAllowedInternal(const base::FilePath& path,
 #elif defined(OS_ANDROID)
   // Access to files in external storage is allowed.
   base::FilePath external_storage_path;
-  PathService::Get(base::DIR_ANDROID_EXTERNAL_STORAGE, &external_storage_path);
+  base::PathService::Get(base::DIR_ANDROID_EXTERNAL_STORAGE,
+                         &external_storage_path);
   if (external_storage_path.IsParent(path))
     return true;
 

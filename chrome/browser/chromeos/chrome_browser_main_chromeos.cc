@@ -720,7 +720,8 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
       load_oem_statistics);
 
   base::FilePath downloads_directory;
-  CHECK(PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &downloads_directory));
+  CHECK(base::PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS,
+                               &downloads_directory));
 
   DeviceOAuth2TokenServiceFactory::Initialize();
 

@@ -118,7 +118,7 @@ const base::FilePath::CharType kDowngradeDeleteSuffix[] =
 
 void MoveUserDataForFirstRunAfterDowngrade() {
   base::FilePath user_data_dir;
-  if (!PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
+  if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
     return;
   InstallLevel install_level = GetInstallLevel();
   base::Version current_version(chrome::kChromeVersion);
@@ -162,7 +162,7 @@ base::Version GetLastVersion(const base::FilePath& user_data_dir) {
 
 void DeleteMovedUserDataSoon() {
   base::FilePath user_data_dir;
-  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   content::BrowserThread::PostAfterStartupTask(
       FROM_HERE,
       base::CreateTaskRunnerWithTraits(

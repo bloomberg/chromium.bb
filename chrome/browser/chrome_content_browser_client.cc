@@ -650,7 +650,7 @@ bool IsAutoplayAllowedByPolicy(content::WebContents* contents,
 breakpad::CrashHandlerHostLinux* CreateCrashHandlerHost(
     const std::string& process_type) {
   base::FilePath dumps_path;
-  PathService::Get(chrome::DIR_CRASH_DUMPS, &dumps_path);
+  base::PathService::Get(chrome::DIR_CRASH_DUMPS, &dumps_path);
   {
     ANNOTATE_SCOPED_MEMORY_LEAK;
     bool upload = (getenv(env_vars::kHeadless) == NULL);
@@ -1841,7 +1841,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 #if defined(OS_CHROMEOS)
   // On Chrome OS need to pass primary user homedir (in multi-profiles session).
   base::FilePath homedir;
-  PathService::Get(base::DIR_HOME, &homedir);
+  base::PathService::Get(base::DIR_HOME, &homedir);
   command_line->AppendSwitchASCII(chromeos::switches::kHomedir,
                                   homedir.value().c_str());
 #endif
@@ -2969,7 +2969,7 @@ std::string ChromeContentBrowserClient::GetDefaultDownloadName() {
 
 base::FilePath ChromeContentBrowserClient::GetShaderDiskCacheDirectory() {
   base::FilePath user_data_dir;
-  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   DCHECK(!user_data_dir.empty());
   return user_data_dir.Append(FILE_PATH_LITERAL("ShaderCache"));
 }
@@ -3122,7 +3122,7 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
       child_process_id, mappings);
 
   base::FilePath app_data_path;
-  PathService::Get(base::DIR_ANDROID_APP_DATA, &app_data_path);
+  base::PathService::Get(base::DIR_ANDROID_APP_DATA, &app_data_path);
   DCHECK(!app_data_path.empty());
 #else
   int crash_signal_fd = GetCrashSignalFD(command_line);

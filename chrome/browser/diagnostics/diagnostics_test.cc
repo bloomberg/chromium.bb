@@ -77,7 +77,7 @@ void DiagnosticsTest::RecordOutcome(int outcome_code,
 // static
 base::FilePath DiagnosticsTest::GetUserDefaultProfileDir() {
   base::FilePath path;
-  if (!PathService::Get(chrome::DIR_USER_DATA, &path))
+  if (!base::PathService::Get(chrome::DIR_USER_DATA, &path))
     return base::FilePath();
   return path.AppendASCII(chrome::kInitialProfile);
 }

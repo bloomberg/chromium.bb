@@ -324,13 +324,13 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase,
  private:
   base::FilePath GetSourceDir() {
     base::FilePath source_dir;
-    PathService::Get(base::DIR_SOURCE_ROOT, &source_dir);
+    base::PathService::Get(base::DIR_SOURCE_ROOT, &source_dir);
     return source_dir;
   }
 
   base::FilePath GetBrowserDir() {
     base::FilePath browser_dir;
-    EXPECT_TRUE(PathService::Get(base::DIR_MODULE, &browser_dir));
+    EXPECT_TRUE(base::PathService::Get(base::DIR_MODULE, &browser_dir));
     return browser_dir;
   }
 

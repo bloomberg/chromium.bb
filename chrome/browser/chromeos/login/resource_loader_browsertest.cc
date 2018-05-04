@@ -46,7 +46,7 @@ class ResourceLoaderBrowserTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     // Load the data pack containing resource_loader.js.
     base::FilePath resources_pack_path;
-    ASSERT_TRUE(PathService::Get(base::DIR_MODULE, &resources_pack_path));
+    ASSERT_TRUE(base::PathService::Get(base::DIR_MODULE, &resources_pack_path));
     resources_pack_path =
         resources_pack_path.AppendASCII("gen/ui/login/login_resources.pak");
     ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(

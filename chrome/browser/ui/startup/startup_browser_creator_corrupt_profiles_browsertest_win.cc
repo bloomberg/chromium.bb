@@ -117,7 +117,7 @@ class StartupBrowserCreatorCorruptProfileTest : public InProcessBrowserTest {
 
   bool DeleteProfileData(const std::string& basepath) {
     base::FilePath user_data_dir;
-    if (!PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
+    if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
       return false;
 
     base::FilePath dir_to_delete = user_data_dir.AppendASCII(basepath);
@@ -127,7 +127,7 @@ class StartupBrowserCreatorCorruptProfileTest : public InProcessBrowserTest {
 
   bool RemoveCreateDirectoryPermissionForUserDataDirectory() {
     base::FilePath user_data_dir;
-    return PathService::Get(chrome::DIR_USER_DATA, &user_data_dir) &&
+    return base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir) &&
            base::DenyFilePermission(user_data_dir, FILE_ADD_SUBDIRECTORY);
   }
 

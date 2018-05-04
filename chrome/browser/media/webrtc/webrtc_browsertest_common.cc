@@ -50,7 +50,7 @@ bool IsErrorResult(const std::string& result) {
 
 base::FilePath GetReferenceFilesDir() {
   base::FilePath test_data_dir;
-  PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
+  base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
 
   return test_data_dir.Append(kReferenceFilesDirName);
 }

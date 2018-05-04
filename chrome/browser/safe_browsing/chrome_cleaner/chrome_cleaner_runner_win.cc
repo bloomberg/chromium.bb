@@ -100,7 +100,7 @@ ChromeCleanerRunner::ChromeCleanerRunner(
   cleaner_command_line_.AppendSwitchASCII(chrome_cleaner::kChromeChannelSwitch,
                                           base::IntToString(ChannelAsInt()));
   base::FilePath chrome_exe_path;
-  PathService::Get(base::FILE_EXE, &chrome_exe_path);
+  base::PathService::Get(base::FILE_EXE, &chrome_exe_path);
   cleaner_command_line_.AppendSwitchPath(chrome_cleaner::kChromeExePathSwitch,
                                          chrome_exe_path);
   if (!InstallUtil::IsPerUserInstall())

@@ -37,7 +37,7 @@ std::unique_ptr<KeyedService> BuildTestOfflinePageModel(
   base::FilePath private_archives_dir =
       context->GetPath().Append(chrome::kOfflinePageArchivesDirname);
   base::FilePath public_archives_dir("/sdcard/Download");
-  // If PathService::Get returns false, the temporary_archives_dir will be
+  // If base::PathService::Get returns false, the temporary_archives_dir will be
   // empty, and no temporary pages will be saved during this chrome lifecycle.
   base::FilePath temporary_archives_dir;
   if (PathService::Get(base::DIR_CACHE, &temporary_archives_dir)) {

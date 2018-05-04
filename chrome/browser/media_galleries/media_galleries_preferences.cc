@@ -401,7 +401,8 @@ base::string16 MediaGalleryPrefInfo::GetGalleryDisplayName() const {
 #if defined(OS_CHROMEOS)
     // See chrome/browser/chromeos/fileapi/file_system_backend.cc
     base::FilePath download_path;
-    if (PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS_SAFE, &download_path)) {
+    if (base::PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS_SAFE,
+                               &download_path)) {
       base::FilePath relative;
       if (download_path.AppendRelativePath(path, &relative))
         return relative.LossyDisplayName();
@@ -508,7 +509,7 @@ void MediaGalleriesPreferences::AddDefaultGalleries() {
 
   for (size_t i = 0; i < arraysize(kDirectories); ++i) {
     base::FilePath path;
-    if (!PathService::Get(kDirectories[i].directory_key, &path))
+    if (!base::PathService::Get(kDirectories[i].directory_key, &path))
       continue;
 
     base::FilePath relative_path;
@@ -906,11 +907,12 @@ void MediaGalleriesPreferences::UpdateDefaultGalleriesPaths() {
   base::FilePath music_path;
   base::FilePath pictures_path;
   base::FilePath videos_path;
-  bool got_music_path = PathService::Get(chrome::DIR_USER_MUSIC, &music_path);
+  bool got_music_path =
+      base::PathService::Get(chrome::DIR_USER_MUSIC, &music_path);
   bool got_pictures_path =
-      PathService::Get(chrome::DIR_USER_PICTURES, &pictures_path);
+      base::PathService::Get(chrome::DIR_USER_PICTURES, &pictures_path);
   bool got_videos_path =
-      PathService::Get(chrome::DIR_USER_VIDEOS, &videos_path);
+      base::PathService::Get(chrome::DIR_USER_VIDEOS, &videos_path);
 
   PrefService* prefs = profile_->GetPrefs();
   std::unique_ptr<ListPrefUpdate> update(

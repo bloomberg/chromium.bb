@@ -185,7 +185,7 @@ class HostZoomMapBrowserTestWithPrefs : public HostZoomMapBrowserTest {
     }
 
     base::FilePath user_data_directory, path_to_prefs;
-    PathService::Get(chrome::DIR_USER_DATA, &user_data_directory);
+    base::PathService::Get(chrome::DIR_USER_DATA, &user_data_directory);
     path_to_prefs = user_data_directory
         .AppendASCII(TestingProfile::kTestUserProfileDir)
         .Append(chrome::kPreferencesFilename);

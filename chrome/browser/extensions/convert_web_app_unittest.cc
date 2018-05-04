@@ -46,7 +46,7 @@ WebApplicationInfo::IconInfo GetIconInfo(const GURL& url, int size) {
   WebApplicationInfo::IconInfo result;
 
   base::FilePath icon_file;
-  if (!PathService::Get(chrome::DIR_TEST_DATA, &icon_file)) {
+  if (!base::PathService::Get(chrome::DIR_TEST_DATA, &icon_file)) {
     ADD_FAILURE() << "Could not get test data directory.";
     return result;
   }

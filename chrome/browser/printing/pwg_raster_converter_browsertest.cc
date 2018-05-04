@@ -45,7 +45,7 @@ void ResultCallbackImpl(bool* called,
 void GetPdfData(const char* file_name,
                 base::FilePath* test_data_dir,
                 scoped_refptr<base::RefCountedString>* pdf_data) {
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, test_data_dir));
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, test_data_dir));
   *test_data_dir = test_data_dir->AppendASCII("printing");
   base::FilePath pdf_file = test_data_dir->AppendASCII(file_name);
   std::string pdf_data_str;

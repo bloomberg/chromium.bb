@@ -49,7 +49,7 @@ GetSupportedFileExtensions() {
 base::FilePath GetDefaultFilepathForPasswordFile(
     const base::FilePath::StringType& default_extension) {
   base::FilePath default_path;
-  PathService::Get(chrome::DIR_USER_DOCUMENTS, &default_path);
+  base::PathService::Get(chrome::DIR_USER_DOCUMENTS, &default_path);
 #if defined(OS_WIN)
   base::string16 file_name =
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_DEFAULT_EXPORT_FILENAME);

@@ -217,7 +217,7 @@ void MemoryInternalsDOMHandler::HandleSaveDump(const base::ListValue* args) {
   // TODO(bug 757115) Does it make sense to show the Android file picker here
   // instead? Need to test what that looks like.
   base::FilePath user_data_dir;
-  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   base::FilePath output_path = user_data_dir.Append(default_file);
   ProfilingProcessHost::GetInstance()->SaveTraceWithHeapDumpToFile(
       std::move(output_path),

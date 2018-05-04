@@ -89,7 +89,7 @@ ExtensionServiceTestBase::ExtensionServiceTestBase()
       testing_local_state_(TestingBrowserProcess::GetGlobal()),
       registry_(nullptr) {
   base::FilePath test_data_dir;
-  if (!PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir)) {
+  if (!base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir)) {
     ADD_FAILURE();
     return;
   }

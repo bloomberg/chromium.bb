@@ -120,7 +120,7 @@ class DeclarativeNetRequestBrowserTest
     ExtensionBrowserTest::SetUpOnMainThread();
 
     base::FilePath test_root_path;
-    PathService::Get(chrome::DIR_TEST_DATA, &test_root_path);
+    base::PathService::Get(chrome::DIR_TEST_DATA, &test_root_path);
     test_root_path = test_root_path.AppendASCII("extensions")
                          .AppendASCII("declarative_net_request");
     embedded_test_server()->ServeFilesFromDirectory(test_root_path);

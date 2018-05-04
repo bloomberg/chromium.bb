@@ -486,7 +486,7 @@ class DevToolsExtensionTest : public DevToolsSanityTest,
                               public content::NotificationObserver {
  public:
   DevToolsExtensionTest() : DevToolsSanityTest() {
-    PathService::Get(chrome::DIR_TEST_DATA, &test_extensions_dir_);
+    base::PathService::Get(chrome::DIR_TEST_DATA, &test_extensions_dir_);
     test_extensions_dir_ = test_extensions_dir_.AppendASCII("devtools");
     test_extensions_dir_ = test_extensions_dir_.AppendASCII("extensions");
   }
@@ -1933,7 +1933,7 @@ class RemoteDebuggingTest : public ExtensionApiTest {
     command_line->AppendSwitchASCII(switches::kRemoteDebuggingPort, "9222");
 
     // Override the extension root path.
-    PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
+    base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
     test_data_dir_ = test_data_dir_.AppendASCII("devtools");
   }
 };
