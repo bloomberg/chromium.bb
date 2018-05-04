@@ -86,12 +86,6 @@ class TabMetricsLogger {
   static metrics::TabMetricsEvent::ContentType GetContentTypeFromMimeType(
       const std::string& mime_type);
 
-  // Returns the ProtocolHandlerScheme enumerator matching the string.
-  // The enumerator value is used in the UKM entry, since UKM entries can't
-  // store strings.
-  static metrics::TabMetricsEvent::ProtocolHandlerScheme
-  GetSchemeValueFromString(const std::string& scheme);
-
   // Returns the site engagement score for the WebContents, rounded down to 10s
   // to limit granularity. Returns -1 if site engagement service is disabled.
   static int GetSiteEngagementScore(const content::WebContents* web_contents);

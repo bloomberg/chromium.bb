@@ -3524,16 +3524,17 @@ be describing additional metrics about the same event.
   </summary>
   <metric name="ContentType">
     <summary>
-      Enumeration for the MIME type of the page. Values are enumerated in
-      metrics::TabMetricsEvent::ContentType.
+      Obsolete. Enumeration for the MIME type of the page. Values are enumerated
+      in metrics::TabMetricsEvent::ContentType.
     </summary>
   </metric>
   <metric name="DefaultProtocolHandler">
     <summary>
-      Schemes that a page from this page's origin is the default protocol
-      handler for, meaning the user has chosen to accept (or the handler was
-      preinstalled by Chrome). The metric is repeated, occurring for each such
-      protocol handler, and uses values from metrics::TabMetricsEvent::Scheme.
+      Obsolete. Schemes that a page from this page's origin is the default
+      protocol handler for, meaning the user has chosen to accept (or the
+      handler was preinstalled by Chrome). The metric is repeated, occurring for
+      each such protocol handler, and uses values from
+      metrics::TabMetricsEvent::Scheme.
     </summary>
   </metric>
   <metric name="HasBeforeUnloadHandler">
@@ -3549,8 +3550,8 @@ be describing additional metrics about the same event.
   </metric>
   <metric name="IsExtensionProtected">
     <summary>
-      True if an extension has marked this tab as non-discardable via the
-      chrome.tabs.update() extension API.
+      Obsolete. True if an extension has marked this tab as non-discardable via
+      the chrome.tabs.update() extension API.
     </summary>
   </metric>
   <metric name="IsPinned">

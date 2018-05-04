@@ -7,8 +7,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/resource_coordinator/tab_features.h"
-#include "chrome/browser/resource_coordinator/tab_manager.h"
-#include "chrome/browser/resource_coordinator/tab_metrics_event.pb.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_activity_simulator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -19,7 +17,6 @@
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using metrics::TabMetricsEvent;
 using content::WebContentsTester;
 
 // Sanity checks for functions in TabMetricsLogger.
@@ -53,11 +50,8 @@ TEST_F(TabMetricsLoggerTest, TabFeatures) {
 
     resource_coordinator::TabFeatures bg_features =
         TabMetricsLogger::GetTabFeatures(browser.get(), bg_metrics);
-    EXPECT_EQ(TabMetricsEvent::CONTENT_TYPE_TEXT_HTML,
-              bg_features.content_type);
     EXPECT_EQ(bg_features.has_before_unload_handler, false);
     EXPECT_EQ(bg_features.has_form_entry, false);
-    EXPECT_EQ(bg_features.is_extension_protected, false);
     EXPECT_EQ(bg_features.is_pinned, false);
     EXPECT_EQ(bg_features.key_event_count, 0);
     EXPECT_EQ(bg_features.mouse_event_count, 0);
@@ -80,9 +74,6 @@ TEST_F(TabMetricsLoggerTest, TabFeatures) {
   tab_activity_simulator.Navigate(bg_contents, GURL("https://www.chromium.org"),
                                   page_transition);
   tab_strip_model->SetTabPinned(1, true);
-  // Simulate an extension protecting a tab.
-  g_browser_process->GetTabManager()->SetTabAutoDiscardableState(bg_contents,
-                                                                 false);
   SiteEngagementService::Get(profile())->ResetBaseScoreForURL(
       GURL("https://www.chromium.org"), 91);
 
@@ -96,11 +87,8 @@ TEST_F(TabMetricsLoggerTest, TabFeatures) {
 
     resource_coordinator::TabFeatures bg_features =
         TabMetricsLogger::GetTabFeatures(browser.get(), bg_metrics);
-    EXPECT_EQ(TabMetricsEvent::CONTENT_TYPE_TEXT_HTML,
-              bg_features.content_type);
     EXPECT_EQ(bg_features.has_before_unload_handler, false);
     EXPECT_EQ(bg_features.has_form_entry, false);
-    EXPECT_EQ(bg_features.is_extension_protected, true);
     EXPECT_EQ(bg_features.is_pinned, true);
     EXPECT_EQ(bg_features.key_event_count, 3);
     EXPECT_EQ(bg_features.mouse_event_count, 42);
@@ -119,75 +107,4 @@ TEST_F(TabMetricsLoggerTest, TabFeatures) {
   }
 
   tab_strip_model->CloseAllTabs();
-}
-
-// Tests that protocol schemes are mapped to the correct enumerators.
-TEST_F(TabMetricsLoggerTest, Schemes) {
-  EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_BITCOIN,
-            TabMetricsLogger::GetSchemeValueFromString("bitcoin"));
-  EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_GEO,
-            TabMetricsLogger::GetSchemeValueFromString("geo"));
-  EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_IM,
-            TabMetricsLogger::GetSchemeValueFromString("im"));
-  EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_IRC,
-            TabMetricsLogger::GetSchemeValueFromString("irc"));
-  EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_IRCS,
-            TabMetricsLogger::GetSchemeValueFromString("ircs"));
-  EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_MAGNET,
-            TabMetricsLogger::GetSchemeValueFromString("magnet"));
-  EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_MAILTO,
-            TabMetricsLogger::GetSchemeValueFromString("mailto"));
-  EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_MMS,
-            TabMetricsLogger::GetSchemeValueFromString("mms"));
-  EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_NEWS,
-            TabMetricsLogger::GetSchemeValueFromString("news"));
-  EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_NNTP,
-            TabMetricsLogger::GetSchemeValueFromString("nntp"));
-  EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_OPENPGP4FPR,
-            TabMetricsLogger::GetSchemeValueFromString("openpgp4fpr"));
-  EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_SIP,
-            TabMetricsLogger::GetSchemeValueFromString("sip"));
-  EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_SMS,
-            TabMetricsLogger::GetSchemeValueFromString("sms"));
-  EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_SMSTO,
-            TabMetricsLogger::GetSchemeValueFromString("smsto"));
-  EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_SSH,
-            TabMetricsLogger::GetSchemeValueFromString("ssh"));
-  EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_TEL,
-            TabMetricsLogger::GetSchemeValueFromString("tel"));
-  EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_URN,
-            TabMetricsLogger::GetSchemeValueFromString("urn"));
-  EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_WEBCAL,
-            TabMetricsLogger::GetSchemeValueFromString("webcal"));
-  EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_WTAI,
-            TabMetricsLogger::GetSchemeValueFromString("wtai"));
-  EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_XMPP,
-            TabMetricsLogger::GetSchemeValueFromString("xmpp"));
-
-  static_assert(
-      TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_LAST ==
-              TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_XMPP &&
-          TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_LAST == 20,
-      "This test and the scheme list in TabMetricsLoggerImpl must be updated "
-      "when new protocol handlers are added.");
-}
-
-// Tests non-whitelisted protocol schemes.
-TEST_F(TabMetricsLoggerTest, NonWhitelistedSchemes) {
-  // Native (non-web-based) handler.
-  EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_OTHER,
-            TabMetricsLogger::GetSchemeValueFromString("foo"));
-
-  // Custom ("web+") protocol handlers.
-  EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_OTHER,
-            TabMetricsLogger::GetSchemeValueFromString("web+foo"));
-  // "mailto" after the web+ prefix doesn't trigger any special handling.
-  EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_OTHER,
-            TabMetricsLogger::GetSchemeValueFromString("web+mailto"));
-
-  // Nonsense protocol handlers.
-  EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_OTHER,
-            TabMetricsLogger::GetSchemeValueFromString(""));
-  EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_OTHER,
-            TabMetricsLogger::GetSchemeValueFromString("mailto-xyz"));
 }

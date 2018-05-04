@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/optional.h"
-#include "chrome/browser/resource_coordinator/tab_metrics_event.pb.h"
 #include "ui/base/page_transition_types.h"
 
 namespace resource_coordinator {
@@ -25,11 +24,8 @@ struct TabFeatures {
   // Keep properties in alphabetical order to match the order in
   // TabMetricsLogger::LogBackgroundTab() and make it easier to check which
   // properties are sent via UKM.
-  metrics::TabMetricsEvent::ContentType content_type =
-      metrics::TabMetricsEvent::CONTENT_TYPE_UNKNOWN;
   bool has_before_unload_handler = false;
   bool has_form_entry = false;
-  bool is_extension_protected = false;
   bool is_pinned = false;
   int32_t key_event_count = 0;
   int32_t mouse_event_count = 0;
