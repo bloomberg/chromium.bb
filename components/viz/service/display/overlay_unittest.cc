@@ -72,7 +72,9 @@ class FullscreenOverlayValidator : public OverlayCandidateValidator {
   }
   bool AllowCALayerOverlays() override { return false; }
   bool AllowDCLayerOverlays() override { return false; }
-  void CheckOverlaySupport(cc::OverlayCandidateList* surfaces) override {}
+  void CheckOverlaySupport(cc::OverlayCandidateList* surfaces) override {
+    surfaces->back().overlay_handled = true;
+  }
 };
 
 class SingleOverlayValidator : public OverlayCandidateValidator {
@@ -658,7 +660,7 @@ TEST_F(FullscreenOverlayTest, AlphaFail) {
   EXPECT_EQ(0U, candidate_list.size());
 }
 
-TEST_F(FullscreenOverlayTest, ResourceSizeInPixelsFail) {
+TEST_F(FullscreenOverlayTest, SuccessfulResourceSizeInPixels) {
   std::unique_ptr<RenderPass> pass = CreateRenderPass();
   TextureDrawQuad* original_quad = CreateFullscreenCandidateQuad(
       resource_provider_.get(), child_resource_provider_.get(),
@@ -677,10 +679,10 @@ TEST_F(FullscreenOverlayTest, ResourceSizeInPixelsFail) {
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
       render_pass_filters, render_pass_background_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
-  ASSERT_EQ(0U, candidate_list.size());
+  ASSERT_EQ(1U, candidate_list.size());
 
-  // Check that the quad is not gone.
-  EXPECT_EQ(1U, main_pass->quad_list.size());
+  // Check that the quad is gone.
+  EXPECT_EQ(0U, main_pass->quad_list.size());
 }
 
 TEST_F(FullscreenOverlayTest, OnTopFail) {
