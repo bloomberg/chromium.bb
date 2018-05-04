@@ -22,19 +22,19 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.modelutil.LazyViewBinderAdapter;
 import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 /**
- * View tests for the keyboard accessory component.
- *
+ * View tests for the keyboard accessory sheet component.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-public class KeyboardAccessoryViewTest {
-    private KeyboardAccessoryModel mModel;
-    private KeyboardAccessoryViewBinder.AccessoryViewHolder mViewHolder;
+public class AccessorySheetViewTest {
+    private AccessorySheetModel mModel;
+    private LazyViewBinderAdapter.StubHolder mStubHolder;
 
     @Rule
     public ChromeActivityTestRule<ChromeTabbedActivity> mActivityTestRule =
@@ -43,27 +43,27 @@ public class KeyboardAccessoryViewTest {
     @Before
     public void setUp() throws InterruptedException {
         mActivityTestRule.startMainActivityOnBlankPage();
-        mViewHolder = new KeyboardAccessoryViewBinder.AccessoryViewHolder(
-                mActivityTestRule.getActivity().findViewById(R.id.keyboard_accessory_stub));
-        mModel = new KeyboardAccessoryModel();
+        mStubHolder = new LazyViewBinderAdapter.StubHolder(
+                mActivityTestRule.getActivity().findViewById(R.id.keyboard_accessory_sheet_stub));
+        mModel = new AccessorySheetModel();
         mModel.addObserver(new PropertyModelChangeProcessor<>(
-                mModel, mViewHolder, new KeyboardAccessoryViewBinder()));
+                mModel, mStubHolder, new LazyViewBinderAdapter<>(new AccessorySheetViewBinder())));
     }
 
     @Test
     @MediumTest
     public void testAccessoryVisibilityChangedByModel() {
         // Initially, there shouldn't be a view yet.
-        assertNull(mViewHolder.getView());
+        assertNull(mStubHolder.getView());
 
         // After setting the visibility to true, the view should exist and be visible.
         ThreadUtils.runOnUiThreadBlocking(() -> mModel.setVisible(true));
-        assertNotNull(mViewHolder.getView());
-        assertTrue(mViewHolder.getView().getVisibility() == View.VISIBLE);
+        assertNotNull(mStubHolder.getView());
+        assertTrue(mStubHolder.getView().getVisibility() == View.VISIBLE);
 
         // After hiding the view, the view should still exist but be invisible.
         ThreadUtils.runOnUiThreadBlocking(() -> mModel.setVisible(false));
-        assertNotNull(mViewHolder.getView());
-        assertTrue(mViewHolder.getView().getVisibility() != View.VISIBLE);
+        assertNotNull(mStubHolder.getView());
+        assertTrue(mStubHolder.getView().getVisibility() != View.VISIBLE);
     }
 }

@@ -127,6 +127,7 @@
     <dimen name="keyboard_accessory_half_padding">4dp</dimen>
     <dimen name="keyboard_accessory_height">48dp</dimen>
     <dimen name="keyboard_accessory_padding">8dp</dimen>
+    <dimen name="keyboard_accessory_sheet_height">200dp</dimen>
     <dimen name="keyboard_accessory_text_size">14sp</dimen>
 
     <!-- Password generation popup dimensions -->
