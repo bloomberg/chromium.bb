@@ -185,9 +185,10 @@ CupsPrintersHandler::CupsPrintersHandler(content::WebUI* webui)
       printers_manager_(
           CupsPrintersManagerFactory::GetInstance()->GetForBrowserContext(
               profile_)),
+      printers_manager_observer_(this),
       weak_factory_(this) {}
 
-CupsPrintersHandler::~CupsPrintersHandler() {}
+CupsPrintersHandler::~CupsPrintersHandler() = default;
 
 void CupsPrintersHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
@@ -247,11 +248,13 @@ void CupsPrintersHandler::RegisterMessages() {
 }
 
 void CupsPrintersHandler::OnJavascriptAllowed() {
-  printers_manager_->AddObserver(this);
+  if (!printers_manager_observer_.IsObservingSources()) {
+    printers_manager_observer_.Add(printers_manager_);
+  }
 }
 
 void CupsPrintersHandler::OnJavascriptDisallowed() {
-  printers_manager_->RemoveObserver(this);
+  printers_manager_observer_.RemoveAll();
 }
 
 void CupsPrintersHandler::HandleGetCupsPrintersList(
