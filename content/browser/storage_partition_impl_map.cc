@@ -442,11 +442,8 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
     // be initialized using |url_request_context_|, which is initialized by
     // SetURLRequestContext().
     DCHECK(partition->url_loader_factory_getter());
-    // TODO(crbug.com/826869): |url_request_context_| is not configured
-    // correctly in some unittests. We should fix those tests and turn this 'if'
-    // into a DCHECK.
-    if (partition->url_request_context_)
-      partition->url_loader_factory_getter()->HandleFactoryRequests();
+    DCHECK(partition->url_request_context_);
+    partition->url_loader_factory_getter()->HandleFactoryRequests();
   }
 
   PostCreateInitialization(partition, in_memory);
