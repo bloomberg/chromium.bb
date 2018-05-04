@@ -68,4 +68,8 @@ bool OverlayStrategyUnderlay::Attempt(
   return false;
 }
 
+OverlayProcessor::StrategyType OverlayStrategyUnderlay::GetUMAEnum() const {
+  return OverlayProcessor::StrategyType::kUnderlay;
+}
+
 }  // namespace viz

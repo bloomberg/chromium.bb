@@ -26,6 +26,8 @@ class VIZ_SERVICE_EXPORT OverlayStrategySingleOnTop
                cc::OverlayCandidateList* candidate_list,
                std::vector<gfx::Rect>* content_bounds) override;
 
+  OverlayProcessor::StrategyType GetUMAEnum() const override;
+
  private:
   bool TryOverlay(QuadList* quad_list,
                   cc::OverlayCandidateList* candidate_list,

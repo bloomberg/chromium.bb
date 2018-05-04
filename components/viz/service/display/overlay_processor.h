@@ -24,6 +24,18 @@ class OutputSurface;
 
 class VIZ_SERVICE_EXPORT OverlayProcessor {
  public:
+  // Enum used for UMA histogram. These enum values must not be changed or
+  // reused.
+  enum class StrategyType {
+    kUnknown = 0,
+    kNoStrategyUsed = 1,
+    kFullscreen = 2,
+    kSingleOnTop = 3,
+    kUnderlay = 4,
+    kUnderlayCast = 5,
+    kMaxValue = kUnderlayCast,
+  };
+
   class VIZ_SERVICE_EXPORT Strategy {
    public:
     virtual ~Strategy() {}
@@ -36,6 +48,8 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
                          RenderPass* render_pass,
                          cc::OverlayCandidateList* candidates,
                          std::vector<gfx::Rect>* content_bounds) = 0;
+
+    virtual StrategyType GetUMAEnum() const;
   };
   using StrategyList = std::vector<std::unique_ptr<Strategy>>;
 
