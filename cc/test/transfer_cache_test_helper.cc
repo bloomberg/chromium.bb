@@ -6,11 +6,18 @@
 
 #include "base/containers/span.h"
 #include "base/logging.h"
+#include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 
 namespace cc {
 
 TransferCacheTestHelper::TransferCacheTestHelper(GrContext* context)
-    : context_(context) {}
+    : context_(context) {
+  if (!context_) {
+    sk_sp<const GrGLInterface> gl_interface(GrGLCreateNullInterface());
+    owned_context_ = GrContext::MakeGL(std::move(gl_interface));
+    context_ = owned_context_.get();
+  }
+}
 TransferCacheTestHelper::~TransferCacheTestHelper() = default;
 
 bool TransferCacheTestHelper::LockEntryDirect(const EntryKey& key) {
@@ -22,9 +29,12 @@ void TransferCacheTestHelper::CreateEntryDirect(const EntryKey& key,
   // Deserialize into a service transfer cache entry.
   std::unique_ptr<ServiceTransferCacheEntry> service_entry =
       ServiceTransferCacheEntry::Create(key.first);
-  DCHECK(service_entry);
+  if (!service_entry)
+    return;
+
   bool success = service_entry->Deserialize(context_, data);
-  DCHECK(success);
+  if (!success)
+    return;
 
   last_added_entry_ = key;
 

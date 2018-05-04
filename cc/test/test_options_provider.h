@@ -52,10 +52,6 @@ class TestOptionsProvider : public ImageProvider,
 
   ScopedDecodedDrawImage GetDecodedDrawImage(
       const DrawImage& draw_image) override;
-  ServiceTransferCacheEntry* GetEntryInternal(TransferCacheEntryType entry_type,
-                                              uint32_t entry_id) override;
-  uint32_t transfer_cache_entry_id_ = 0u;
-  base::flat_map<uint32_t, ServiceImageTransferCacheEntry> entry_map_;
 
   testing::StrictMock<MockCanvas> canvas_;
   PaintOp::SerializeOptions serialize_options_;
