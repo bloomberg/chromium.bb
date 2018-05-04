@@ -459,6 +459,13 @@ TEST_F('PrintPreviewDestinationSelectTest', 'MultipleRecentDestinations',
       destination_select_test.TestNames.MultipleRecentDestinations);
 });
 
+TEST_F('PrintPreviewDestinationSelectTest',
+    'MultipleRecentDestinationsOneRequest',
+    function() {
+  this.runMochaTest(
+      destination_select_test.TestNames.MultipleRecentDestinationsOneRequest);
+});
+
 TEST_F('PrintPreviewDestinationSelectTest', 'DefaultDestinationSelectionRules',
     function() {
   this.runMochaTest(
