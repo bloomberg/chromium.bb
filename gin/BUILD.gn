@@ -54,8 +54,6 @@ component("gin") {
     "shell_runner.h",
     "try_catch.cc",
     "try_catch.h",
-    "v8_background_task_runner.cc",
-    "v8_background_task_runner.h",
     "v8_foreground_task_runner.cc",
     "v8_foreground_task_runner.h",
     "v8_foreground_task_runner_base.cc",
