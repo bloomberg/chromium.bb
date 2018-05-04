@@ -3789,7 +3789,8 @@ TEST_F(ChromeLauncherControllerTest, MultipleAppIconLoaders) {
   EXPECT_EQ(1, app_icon_loader2->clear_count());
 }
 
-TEST_P(ChromeLauncherControllerWithArcTest, ArcAppPinPolicy) {
+// Test is flaking. https://crbug.com/839916
+TEST_P(ChromeLauncherControllerWithArcTest, DISABLED_ArcAppPinPolicy) {
   InitLauncherControllerWithBrowser();
   arc::mojom::AppInfo appinfo =
       CreateAppInfo("Some App", "SomeActivity", "com.example.app");
