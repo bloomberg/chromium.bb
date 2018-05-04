@@ -706,4 +706,100 @@ TYPED_TEST(CommonStringPieceTest, CheckConstructors) {
   ASSERT_EQ(empty, BasicStringPiece<TypeParam>(empty.begin(), empty.end()));
 }
 
+TEST(StringPieceTest, ConstexprCtor) {
+  {
+    constexpr StringPiece piece;
+    std::ignore = piece;
+  }
+
+  {
+    constexpr StringPiece piece("abc");
+    std::ignore = piece;
+  }
+
+  {
+    constexpr StringPiece piece("abc", 2);
+    std::ignore = piece;
+  }
+}
+
+TEST(StringPieceTest, ConstexprData) {
+  {
+    constexpr StringPiece piece;
+    static_assert(piece.data() == nullptr, "");
+  }
+
+  {
+    constexpr StringPiece piece("abc");
+    static_assert(piece.data()[0] == 'a', "");
+    static_assert(piece.data()[1] == 'b', "");
+    static_assert(piece.data()[2] == 'c', "");
+  }
+
+  {
+    constexpr StringPiece piece("def", 2);
+    static_assert(piece.data()[0] == 'd', "");
+    static_assert(piece.data()[1] == 'e', "");
+  }
+}
+
+TEST(StringPieceTest, ConstexprSize) {
+  {
+    constexpr StringPiece piece;
+    static_assert(piece.size() == 0, "");
+  }
+
+  {
+    constexpr StringPiece piece("abc");
+    static_assert(piece.size() == 3, "");
+  }
+
+  {
+    constexpr StringPiece piece("def", 2);
+    static_assert(piece.size() == 2, "");
+  }
+}
+
+TEST(StringPieceTest, Compare) {
+  constexpr StringPiece piece = "def";
+
+  static_assert(piece.compare("ab") == 1, "");
+  static_assert(piece.compare("abc") == 1, "");
+  static_assert(piece.compare("abcd") == 1, "");
+  static_assert(piece.compare("de") == 1, "");
+  static_assert(piece.compare("def") == 0, "");
+  static_assert(piece.compare("defg") == -1, "");
+  static_assert(piece.compare("gh") == -1, "");
+  static_assert(piece.compare("ghi") == -1, "");
+  static_assert(piece.compare("ghij") == -1, "");
+}
+
+TEST(StringPieceTest, StartsWith) {
+  constexpr StringPiece piece("abc");
+
+  static_assert(piece.starts_with(""), "");
+  static_assert(piece.starts_with("a"), "");
+  static_assert(piece.starts_with("ab"), "");
+  static_assert(piece.starts_with("abc"), "");
+
+  static_assert(!piece.starts_with("b"), "");
+  static_assert(!piece.starts_with("bc"), "");
+
+  static_assert(!piece.starts_with("abcd"), "");
+}
+
+TEST(StringPieceTest, EndsWith) {
+  constexpr StringPiece piece("abc");
+
+  static_assert(piece.ends_with(""), "");
+  static_assert(piece.ends_with("c"), "");
+  static_assert(piece.ends_with("bc"), "");
+  static_assert(piece.ends_with("abc"), "");
+
+  static_assert(!piece.ends_with("a"), "");
+  static_assert(!piece.ends_with("ab"), "");
+
+  static_assert(!piece.ends_with("abcd"), "");
+}
+
 }  // namespace base

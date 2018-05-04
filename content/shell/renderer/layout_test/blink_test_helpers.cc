@@ -8,6 +8,8 @@
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
+#include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "content/public/common/content_switches.h"
@@ -33,20 +35,19 @@ namespace {
 // Note that this isn't applied to external/wpt because tests in external/wpt
 // are accessed via http.
 WebURL RewriteAbsolutePathInCsswgTest(const std::string& utf8_url) {
-  const char kFileScheme[] = "file:///";
-  const int kFileSchemeLen = base::size(kFileScheme) - 1;
-  if (utf8_url.compare(0, kFileSchemeLen, kFileScheme, kFileSchemeLen) != 0)
+  static constexpr base::StringPiece kFileScheme = "file:///";
+  if (!base::StartsWith(utf8_url, kFileScheme, base::CompareCase::SENSITIVE))
     return WebURL();
   if (utf8_url.find("/LayoutTests/") != std::string::npos)
     return WebURL();
 #if defined(OS_WIN)
   // +3 for a drive letter, :, and /.
-  const int kFileSchemeAndDriveLen = kFileSchemeLen + 3;
+  static constexpr size_t kFileSchemeAndDriveLen = kFileScheme.size() + 3;
   if (utf8_url.size() <= kFileSchemeAndDriveLen)
     return WebURL();
   std::string path = utf8_url.substr(kFileSchemeAndDriveLen);
 #else
-  std::string path = utf8_url.substr(kFileSchemeLen);
+  std::string path = utf8_url.substr(kFileScheme.size());
 #endif
   base::FilePath new_path = content::GetWebKitRootDirFilePath()
                                 .Append(FILE_PATH_LITERAL("LayoutTests/"))
@@ -179,30 +180,28 @@ WebURL RewriteLayoutTestsURL(const std::string& utf8_url, bool is_wpt_mode) {
     return WebURL(GURL(utf8_url));
   }
 
-  const char kGenPrefix[] = "file:///gen/";
-  const int kGenPrefixLen = base::size(kGenPrefix) - 1;
+  static constexpr base::StringPiece kGenPrefix = "file:///gen/";
 
   // Map "file:///gen/" to "file://<build directory>/gen/".
-  if (!utf8_url.compare(0, kGenPrefixLen, kGenPrefix, kGenPrefixLen)) {
+  if (base::StartsWith(utf8_url, kGenPrefix, base::CompareCase::SENSITIVE)) {
     base::FilePath gen_directory_path =
         GetBuildDirectory().Append(FILE_PATH_LITERAL("gen/"));
     std::string new_url = std::string("file://") +
                           gen_directory_path.AsUTF8Unsafe() +
-                          utf8_url.substr(kGenPrefixLen);
+                          utf8_url.substr(kGenPrefix.size());
     return WebURL(GURL(new_url));
   }
 
-  const char kPrefix[] = "file:///tmp/LayoutTests/";
-  const int kPrefixLen = base::size(kPrefix) - 1;
+  static constexpr base::StringPiece kPrefix = "file:///tmp/LayoutTests/";
 
-  if (utf8_url.compare(0, kPrefixLen, kPrefix, kPrefixLen))
+  if (!base::StartsWith(utf8_url, kPrefix, base::CompareCase::SENSITIVE))
     return WebURL(GURL(utf8_url));
 
   base::FilePath replace_path =
       GetWebKitRootDirFilePath().Append(FILE_PATH_LITERAL("LayoutTests/"));
   std::string utf8_path = replace_path.AsUTF8Unsafe();
   std::string new_url =
-      std::string("file://") + utf8_path + utf8_url.substr(kPrefixLen);
+      std::string("file://") + utf8_path + utf8_url.substr(kPrefix.size());
   return WebURL(GURL(new_url));
 }
 

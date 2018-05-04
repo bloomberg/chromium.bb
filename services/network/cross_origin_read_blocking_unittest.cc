@@ -140,7 +140,6 @@ TEST(CrossOriginReadBlockingTest, SniffForJSON) {
   StringPiece json_data2("{ \"key   \\\"  \"          \t\t\r\n:");
   StringPiece non_json_data0("\t\t\r\n   { name : \"chrome\", ");
   StringPiece non_json_data1("\t\t\r\n   foo({ \"name\" : \"chrome\", ");
-  StringPiece empty_data("");
 
   EXPECT_EQ(SniffingResult::kYes,
             CrossOriginReadBlocking::SniffForJSON(json_data));

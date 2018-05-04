@@ -44,7 +44,8 @@ bool operator==(const StringPiece& x, const StringPiece& y) {
   if (x.size() != y.size())
     return false;
 
-  return StringPiece::wordmemcmp(x.data(), y.data(), x.size()) == 0;
+  return CharTraits<StringPiece::value_type>::compare(x.data(), y.data(),
+                                                      x.size()) == 0;
 }
 
 std::ostream& operator<<(std::ostream& o, const StringPiece& piece) {

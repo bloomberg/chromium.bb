@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/strings/char_traits.h"
 #include "base/strings/stringprintf.h"
 #include "components/viz/service/display/static_geometry_binding.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -18,29 +19,18 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 
-constexpr bool ConstexprEqual(const char* a, const char* b, size_t length) {
-  for (size_t i = 0; i < length; i++) {
-    if (a[i] != b[i])
-      return false;
-  }
-  return true;
-}
-
 constexpr base::StringPiece StripLambda(base::StringPiece shader) {
-  // Must contain at least "[]() {}" and trailing null (included in size).
-  // TODO(jbroman): Simplify this once we're in a post-C++17 world, where
-  // starts_with and ends_with can easily be made constexpr.
-  DCHECK(shader.size() >= 7);  // NOLINT
-  DCHECK(ConstexprEqual(shader.data(), "[]() {", 6));
+  // Must contain at least "[]() {}".
+  DCHECK(shader.starts_with("[]() {"));
+  DCHECK(shader.ends_with("}"));
   shader.remove_prefix(6);
-  DCHECK(shader[shader.size() - 1] == '}');  // NOLINT
   shader.remove_suffix(1);
   return shader;
 }
 
 // Shaders are passed in with lambda syntax, which tricks clang-format into
 // handling them correctly. StripLambda removes this.
-#define SHADER0(Src) StripLambda(base::StringPiece(#Src, sizeof(#Src) - 1))
+#define SHADER0(Src) StripLambda(#Src)
 
 #define HDR(x)        \
   do {                \
