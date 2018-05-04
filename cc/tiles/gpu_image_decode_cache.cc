@@ -1345,16 +1345,8 @@ void GpuImageDecodeCache::DecodeImageIfNecessary(const DrawImage& draw_image,
                     image_info.minRowBytes());
 
     // Set |pixmap| to the desired colorspace to decode into.
-    if (!SupportsColorSpaceConversion()) {
-      pixmap.setColorSpace(nullptr);
-    } else if (image_data->mode == DecodedDataMode::kCpu) {
-      pixmap.setColorSpace(draw_image.target_color_space().ToSkColorSpace());
-    } else {
-      // For kGpu or kTransferCache images color conversion is handled during
-      // upload, so keep the original colorspace here.
-      pixmap.setColorSpace(sk_ref_sp(draw_image.paint_image().color_space()));
-    }
-
+    pixmap.setColorSpace(
+        ColorSpaceForImageDecode(draw_image, image_data->mode));
     if (!DrawAndScaleImage(draw_image, &pixmap)) {
       DLOG(ERROR) << "DrawAndScaleImage failed.";
       backing_memory->Unlock();
@@ -1514,14 +1506,24 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image) {
   }
 
   size_t data_size = image_info.computeMinByteSize();
+
+  // We need to cache the result of color conversion on the cpu if the image
+  // will be color converted during the decode.
+  auto decode_color_space = ColorSpaceForImageDecode(draw_image, mode);
+  const bool cache_color_conversion_on_cpu =
+      decode_color_space &&
+      !SkColorSpace::Equals(decode_color_space.get(),
+                            draw_image.paint_image().color_space());
+
   // |is_bitmap_backed| specifies whether the image has pixel data which can
   // directly be used for the upload. This will be the case for non-lazy images
   // used at the original scale. In these cases, we don't internally cache any
   // cpu component for the image.
-  // However, if the image will be scaled, we consider it a lazy image and cache
-  // the scaled result in discardable memory.
-  const bool is_bitmap_backed =
-      !draw_image.paint_image().IsLazyGenerated() && mip_level == 0;
+  // However, if the image will be scaled or color converts on the cpu, we
+  // consider it a lazy image and cache the scaled result in discardable memory.
+  const bool is_bitmap_backed = !draw_image.paint_image().IsLazyGenerated() &&
+                                mip_level == 0 &&
+                                !cache_color_conversion_on_cpu;
   return base::WrapRefCounted(new ImageData(
       mode, data_size, draw_image.target_color_space(),
       CalculateDesiredFilterQuality(draw_image), mip_level, is_bitmap_backed));
@@ -1816,6 +1818,20 @@ bool GpuImageDecodeCache::SupportsColorSpaceConversion() const {
     default:
       return false;
   }
+}
+
+sk_sp<SkColorSpace> GpuImageDecodeCache::ColorSpaceForImageDecode(
+    const DrawImage& image,
+    DecodedDataMode mode) const {
+  if (!SupportsColorSpaceConversion())
+    return nullptr;
+
+  if (mode == DecodedDataMode::kCpu)
+    return image.target_color_space().ToSkColorSpace();
+
+  // For kGpu or kTransferCache images color conversion is handled during
+  // upload, so keep the original colorspace here.
+  return sk_ref_sp(image.paint_image().color_space());
 }
 
 void GpuImageDecodeCache::CheckContextLockAcquiredIfNecessary() {

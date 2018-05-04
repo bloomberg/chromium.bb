@@ -2301,6 +2301,36 @@ TEST_P(GpuImageDecodeCacheTest, NonLazyImageUploadNoScaleTask) {
   cache->UnrefImage(draw_image);
 }
 
+TEST_P(GpuImageDecodeCacheTest, NonLazyImageLargeImageColorConverted) {
+  auto cache = CreateCache();
+  const bool should_cache_sw_image =
+      cache->SupportsColorSpaceConversion() && !use_transfer_cache_;
+
+  bool is_decomposable = true;
+  SkFilterQuality quality = kHigh_SkFilterQuality;
+
+  PaintImage image = CreateBitmapImage(gfx::Size(10, 24000));
+  DrawImage draw_image(
+      image, SkIRect::MakeWH(image.width(), image.height()), quality,
+      CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable),
+      PaintImage::kDefaultFrameIndex, gfx::ColorSpace::CreateDisplayP3D65());
+  viz::ContextProvider::ScopedContextLock context_lock(context_provider());
+  DecodedDrawImage decoded_draw_image =
+      EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
+  EXPECT_TRUE(decoded_draw_image.image());
+  EXPECT_TRUE(decoded_draw_image.is_budgeted());
+  cache->DrawWithImageFinished(draw_image, decoded_draw_image);
+  // For non-lazy images color converted during scaling, cpu component should be
+  // cached.
+  auto sw_image = cache->GetSWImageDecodeForTesting(draw_image);
+  ASSERT_EQ(!!sw_image, should_cache_sw_image);
+  if (should_cache_sw_image) {
+    EXPECT_TRUE(SkColorSpace::Equals(
+        sw_image->colorSpace(),
+        gfx::ColorSpace::CreateDisplayP3D65().ToSkColorSpace().get()));
+  }
+}
+
 TEST_P(GpuImageDecodeCacheTest, NonLazyImageUploadDownscaled) {
   auto cache = CreateCache();
   bool is_decomposable = true;
