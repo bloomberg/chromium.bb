@@ -1037,7 +1037,7 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
         'pool': 'chrome.test.perf-webview-fyi',
         'os': 'Android',
         'device_type': 'walleye',
-        'device_is': 'O'
+        'device_os': 'O'
       },
       'device_ids': [
       ],
@@ -1054,7 +1054,7 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
         'pool': 'chrome.test.perf-fyi',
         'os': 'Android',
         'device_type': 'walleye',
-        'device_is': 'O'
+        'device_os': 'O'
       },
       'device_ids': [
       ],
