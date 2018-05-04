@@ -743,10 +743,7 @@ void Page::WillCloseLayerTreeView(WebLayerTreeView& layer_tree_view,
 void Page::WillBeDestroyed() {
   Frame* main_frame = main_frame_;
 
-  // TODO(sashab): Remove this check, the call to detach() here should always
-  // work.
-  if (main_frame->IsAttached())
-    main_frame->Detach(FrameDetachType::kRemove);
+  main_frame->Detach(FrameDetachType::kRemove);
 
   DCHECK(AllPages().Contains(this));
   AllPages().erase(this);
