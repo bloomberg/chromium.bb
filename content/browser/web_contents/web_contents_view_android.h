@@ -114,8 +114,11 @@ class WebContentsViewAndroid : public WebContentsView,
   bool OnTouchEvent(const ui::MotionEventAndroid& event) override;
   bool OnMouseEvent(const ui::MotionEventAndroid& event) override;
   bool OnDragEvent(const ui::DragEventAndroid& event) override;
+  bool OnGenericMotionEvent(const ui::MotionEventAndroid& event) override;
   bool OnKeyUp(const ui::KeyEventAndroid& event) override;
   bool DispatchKeyEvent(const ui::KeyEventAndroid& event) override;
+  bool ScrollBy(float delta_x, float delta_y) override;
+  bool ScrollTo(float x, float y) override;
   void OnSizeChanged() override;
   void OnPhysicalBackingSizeChanged() override;
 

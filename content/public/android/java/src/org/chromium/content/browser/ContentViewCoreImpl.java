@@ -8,9 +8,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Build;
-import android.os.SystemClock;
-import android.view.InputDevice;
-import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.ViewGroup;
 
@@ -31,7 +28,6 @@ import org.chromium.content_public.browser.ContentViewCore.InternalAccessDelegat
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContents.UserDataFactory;
 import org.chromium.device.gamepad.GamepadList;
-import org.chromium.ui.base.EventForwarder;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.display.DisplayAndroid;
@@ -206,10 +202,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         for (WindowAndroidChangedObserver observer : mWindowAndroidChangedObservers) {
             observer.onWindowAndroidChanged(windowAndroid);
         }
-    }
-
-    private EventForwarder getEventForwarder() {
-        return mWebContents.getEventForwarder();
     }
 
     private void addDisplayAndroidObserverIfNeeded() {
@@ -415,53 +407,8 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         mHideKeyboardOnBlur = hideKeyboardOnBlur;
     }
 
-    @Override
-    public boolean onGenericMotionEvent(MotionEvent event) {
-        if (GamepadList.onGenericMotionEvent(event)) return true;
-        if (getJoystick().onGenericMotionEvent(event)) return true;
-        if ((event.getSource() & InputDevice.SOURCE_CLASS_POINTER) != 0) {
-            switch (event.getActionMasked()) {
-                case MotionEvent.ACTION_SCROLL:
-                    getEventForwarder().onMouseWheelEvent(event.getEventTime(), event.getX(),
-                            event.getY(), event.getAxisValue(MotionEvent.AXIS_HSCROLL),
-                            event.getAxisValue(MotionEvent.AXIS_VSCROLL));
-                    return true;
-                case MotionEvent.ACTION_BUTTON_PRESS:
-                case MotionEvent.ACTION_BUTTON_RELEASE:
-                    // TODO(mustaq): Should we include MotionEvent.TOOL_TYPE_STYLUS here?
-                    // crbug.com/592082
-                    if (event.getToolType(0) == MotionEvent.TOOL_TYPE_MOUSE) {
-                        return getEventForwarder().onMouseEvent(event);
-                    }
-            }
-        }
-        return mContainerViewInternals.super_onGenericMotionEvent(event);
-    }
-
     private JoystickHandler getJoystick() {
         return JoystickHandler.fromWebContents(mWebContents);
-    }
-
-    @Override
-    public void scrollBy(float dxPix, float dyPix) {
-        if (dxPix == 0 && dyPix == 0) return;
-        long time = SystemClock.uptimeMillis();
-        // It's a very real (and valid) possibility that a fling may still
-        // be active when programatically scrolling. Cancelling the fling in
-        // such cases ensures a consistent gesture event stream.
-        if (getGestureListenerManager().hasPotentiallyActiveFling()) {
-            getEventForwarder().cancelFling(time);
-        }
-        getEventForwarder().scroll(time, dxPix, dyPix);
-    }
-
-    @Override
-    public void scrollTo(float xPix, float yPix) {
-        final float xCurrentPix = mRenderCoordinates.getScrollXPix();
-        final float yCurrentPix = mRenderCoordinates.getScrollYPix();
-        final float dxPix = xPix - xCurrentPix;
-        final float dyPix = yPix - yCurrentPix;
-        scrollBy(dxPix, dyPix);
     }
 
     // End FrameLayout overrides.

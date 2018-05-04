@@ -206,9 +206,7 @@ public class ContentView
 
     @Override
     public boolean onGenericMotionEvent(MotionEvent event) {
-        ContentViewCore cvc = getContentViewCore();
-        assert cvc != null;
-        return cvc.onGenericMotionEvent(event);
+        return getEventForwarder().onGenericMotionEvent(event);
     }
 
     private ContentViewCore getContentViewCore() {
@@ -242,14 +240,12 @@ public class ContentView
      */
     @Override
     public void scrollBy(int x, int y) {
-        ContentViewCore cvc = getContentViewCore();
-        if (cvc != null) cvc.scrollBy(x, y);
+        getEventForwarder().scrollBy(x, y);
     }
 
     @Override
     public void scrollTo(int x, int y) {
-        ContentViewCore cvc = getContentViewCore();
-        if (cvc != null) cvc.scrollTo(x, y);
+        getEventForwarder().scrollTo(x, y);
     }
 
     @Override

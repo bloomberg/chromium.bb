@@ -652,8 +652,8 @@ public class VrShellImpl
 
     @Override
     public boolean onGenericMotionEvent(MotionEvent event) {
-        if (mTab != null && mTab.getContentViewCore() != null
-                && mTab.getContentViewCore().onGenericMotionEvent(event)) {
+        if (mTab != null && mTab.getWebContents() != null
+                && mTab.getWebContents().getEventForwarder().onGenericMotionEvent(event)) {
             return true;
         }
         return super.onGenericMotionEvent(event);

@@ -5,9 +5,7 @@
 #include "ui/android/event_forwarder.h"
 
 #include "base/android/jni_array.h"
-#include "base/metrics/histogram_macros.h"
 #include "jni/EventForwarder_jni.h"
-#include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/events/android/drag_event_android.h"
@@ -15,7 +13,6 @@
 #include "ui/events/android/gesture_event_type.h"
 #include "ui/events/android/key_event_android.h"
 #include "ui/events/android/motion_event_android.h"
-#include "ui/events/base_event_utils.h"
 
 namespace ui {
 
@@ -123,40 +120,6 @@ void EventForwarder::OnMouseEvent(JNIEnv* env,
   view_->OnMouseEvent(event);
 }
 
-void EventForwarder::OnMouseWheelEvent(JNIEnv* env,
-                                       const JavaParamRef<jobject>& obj,
-                                       jlong time_ms,
-                                       jfloat x,
-                                       jfloat y,
-                                       jfloat ticks_x,
-                                       jfloat ticks_y) {
-  if (!ticks_x && !ticks_y)
-    return;
-
-  // Compute Event.Latency.OS.MOUSE_WHEEL histogram.
-  base::TimeTicks current_time = ui::EventTimeForNow();
-  base::TimeTicks event_time =
-      base::TimeTicks() + base::TimeDelta::FromMilliseconds(time_ms);
-  base::TimeDelta delta = current_time - event_time;
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.OS.MOUSE_WHEEL",
-                              delta.InMicroseconds(), 1, 1000000, 50);
-  ui::MotionEventAndroid::Pointer pointer(
-      0, x, y, 0.0f /* touch_major */, 0.0f /* touch_minor */, 0.0f, 0.0f, 0);
-
-  auto* window = view_->GetWindowAndroid();
-  float pixels_per_tick =
-      window ? window->mouse_wheel_scroll_factor()
-             : kDefaultMouseWheelTickMultiplier * view_->GetDipScale();
-  ui::MotionEventAndroid event(
-      env, nullptr, 1.f / view_->GetDipScale(), ticks_x, ticks_y,
-      pixels_per_tick, time_ms, 0 /* action */, 1 /* pointer_count */,
-      0 /* history_size */, 0 /* action_index */, 0, 0, 0,
-      0 /* raw_offset_x_pixels */, 0 /* raw_offset_y_pixels */,
-      false /* for_touch_handle */, &pointer, nullptr);
-
-  view_->OnMouseWheelEvent(event);
-}
-
 void EventForwarder::OnDragEvent(JNIEnv* env,
                                  const JavaParamRef<jobject>& jobj,
                                  jint action,
@@ -193,6 +156,21 @@ jboolean EventForwarder::OnGestureEvent(JNIEnv* env,
       scale, 0, 0, 0, 0, false, false));
 }
 
+jboolean EventForwarder::OnGenericMotionEvent(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& motion_event,
+    jlong time_ms) {
+  auto size = view_->GetSize();
+  float x = size.width() / 2;
+  float y = size.height() / 2;
+  ui::MotionEventAndroid::Pointer pointer0(0, x, y, 0, 0, 0, 0, 0);
+  ui::MotionEventAndroid event(
+      env, motion_event.obj(), 1.f / view_->GetDipScale(), 0.f, 0.f, 0.f,
+      time_ms, 0, 1, 0, 0, 0, 0, 0, 0, 0, false, &pointer0, nullptr);
+  return view_->OnGenericMotionEvent(event);
+}
+
 jboolean EventForwarder::OnKeyUp(JNIEnv* env,
                                  const JavaParamRef<jobject>& obj,
                                  const JavaParamRef<jobject>& key_event,
@@ -207,23 +185,18 @@ jboolean EventForwarder::DispatchKeyEvent(
   return view_->DispatchKeyEvent(KeyEventAndroid(env, key_event, 0));
 }
 
-void EventForwarder::Scroll(JNIEnv* env,
-                            const JavaParamRef<jobject>& jobj,
-                            jlong time_ms,
-                            jfloat delta_x,
-                            jfloat delta_y) {
-  float dip_scale = view_->GetDipScale();
-  float delta_xdip = delta_x / dip_scale;
-  float delta_ydip = delta_y / dip_scale;
-  view_->OnGestureEvent(GestureEventAndroid(
-      GESTURE_EVENT_TYPE_SCROLL_START, gfx::PointF(), gfx::PointF(), time_ms, 0,
-      -delta_xdip, -delta_ydip, 0, 0, true, false));
-  view_->OnGestureEvent(GestureEventAndroid(
-      GESTURE_EVENT_TYPE_SCROLL_BY, gfx::PointF(), gfx::PointF(), time_ms, 0,
-      -delta_xdip, -delta_ydip, 0, 0, true, false));
-  view_->OnGestureEvent(GestureEventAndroid(
-      GESTURE_EVENT_TYPE_SCROLL_END, gfx::PointF(), gfx::PointF(), time_ms, 0,
-      -delta_xdip, -delta_ydip, 0, 0, true, false));
+void EventForwarder::ScrollBy(JNIEnv* env,
+                              const JavaParamRef<jobject>& jobj,
+                              jfloat delta_x,
+                              jfloat delta_y) {
+  view_->ScrollBy(delta_x, delta_y);
+}
+
+void EventForwarder::ScrollTo(JNIEnv* env,
+                              const JavaParamRef<jobject>& jobj,
+                              jfloat x,
+                              jfloat y) {
+  view_->ScrollTo(x, y);
 }
 
 void EventForwarder::DoubleTap(JNIEnv* env,

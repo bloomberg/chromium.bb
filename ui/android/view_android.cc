@@ -533,6 +533,17 @@ bool ViewAndroid::SendGestureEventToHandler(EventHandlerAndroid* handler,
   return handler->OnGestureEvent(event);
 }
 
+bool ViewAndroid::OnGenericMotionEvent(const MotionEventAndroid& event) {
+  if (event_handler_ && event_handler_->OnGenericMotionEvent(event))
+    return true;
+
+  for (auto* child : children_) {
+    if (child->OnGenericMotionEvent(event))
+      return true;
+  }
+  return false;
+}
+
 bool ViewAndroid::OnKeyUp(const KeyEventAndroid& event) {
   if (event_handler_ && event_handler_->OnKeyUp(event))
     return true;
@@ -550,6 +561,28 @@ bool ViewAndroid::DispatchKeyEvent(const KeyEventAndroid& event) {
 
   for (auto* child : children_) {
     if (child->DispatchKeyEvent(event))
+      return true;
+  }
+  return false;
+}
+
+bool ViewAndroid::ScrollBy(float delta_x, float delta_y) {
+  if (event_handler_ && event_handler_->ScrollBy(delta_x, delta_y))
+    return true;
+
+  for (auto* child : children_) {
+    if (child->ScrollBy(delta_x, delta_y))
+      return true;
+  }
+  return false;
+}
+
+bool ViewAndroid::ScrollTo(float x, float y) {
+  if (event_handler_ && event_handler_->ScrollTo(x, y))
+    return true;
+
+  for (auto* child : children_) {
+    if (child->ScrollTo(x, y))
       return true;
   }
   return false;

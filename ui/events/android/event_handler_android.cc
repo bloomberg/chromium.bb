@@ -39,11 +39,11 @@ bool EventHandlerAndroid::DispatchKeyEvent(const KeyEventAndroid& event) {
   return false;
 }
 
-bool EventHandlerAndroid::ScrollBy(const GestureEventAndroid& event) {
+bool EventHandlerAndroid::ScrollBy(float delta_x, float delta_y) {
   return false;
 }
 
-bool EventHandlerAndroid::ScrollTo(const GestureEventAndroid& event) {
+bool EventHandlerAndroid::ScrollTo(float x, float y) {
   return false;
 }
 

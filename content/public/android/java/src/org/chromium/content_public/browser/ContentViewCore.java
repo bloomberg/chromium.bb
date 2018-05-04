@@ -128,19 +128,9 @@ public interface ContentViewCore {
     void onConfigurationChanged(Configuration newConfig);
 
     /**
-     * @see View#onGenericMotionEvent(MotionEvent)
-     */
-    boolean onGenericMotionEvent(MotionEvent event);
-
-    /**
      * @see View#onWindowFocusChanged(boolean)
      */
     void onWindowFocusChanged(boolean hasWindowFocus);
-
-    /**
-     * @see View#scrollTo(int, int)
-     */
-    void scrollTo(float xPix, float yPix);
 
     /**
      * When the activity pauses, the content should lose focus.
@@ -167,13 +157,4 @@ public interface ContentViewCore {
      * @param hideKeyboardOnBlur {@code true} if we should hide soft keyboard when losing focus.
      */
     void setHideKeyboardOnBlur(boolean hideKeyboardOnBlur);
-
-    /**
-     * @see View#scrollBy(int, int)
-     * Currently the ContentView scrolling happens in the native side. In
-     * the Java view system, it is always pinned at (0, 0). scrollBy() and scrollTo()
-     * are overridden, so that View's mScrollX and mScrollY will be unchanged at
-     * (0, 0). This is critical for drawing ContentView correctly.
-     */
-    void scrollBy(float dxPix, float dyPix);
 }
