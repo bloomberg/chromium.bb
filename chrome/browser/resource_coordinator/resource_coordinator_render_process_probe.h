@@ -9,12 +9,11 @@
 #include <memory>
 #include <utility>
 
+#include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/no_destructor.h"
 #include "base/process/process.h"
 #include "base/process/process_metrics.h"
 #include "base/timer/timer.h"
-#include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 #include "services/resource_coordinator/public/cpp/system_resource_coordinator.h"
 
 namespace resource_coordinator {
@@ -42,7 +41,6 @@ class ResourceCoordinatorRenderProcessProbe {
   void StartSingleGather();
 
  protected:
-  // Internal state protected for testing.
   struct RenderProcessInfo {
     RenderProcessInfo();
     ~RenderProcessInfo();
@@ -53,7 +51,9 @@ class ResourceCoordinatorRenderProcessProbe {
   };
   using RenderProcessInfoMap = std::map<int, RenderProcessInfo>;
 
-  friend class base::NoDestructor<ResourceCoordinatorRenderProcessProbe>;
+  // Internal state protected for testing.
+  friend struct base::LazyInstanceTraitsBase<
+      ResourceCoordinatorRenderProcessProbe>;
 
   ResourceCoordinatorRenderProcessProbe();
   virtual ~ResourceCoordinatorRenderProcessProbe();
@@ -61,13 +61,10 @@ class ResourceCoordinatorRenderProcessProbe {
   // (1) Identify all of the render processes that are active to measure.
   // Child render processes can only be discovered in the browser's UI thread.
   void RegisterAliveRenderProcessesOnUIThread();
-  // (2) Collect the render process CPU metrics and initiate a memory dump.
-  void CollectRenderProcessMetricsAndStartMemoryDumpOnIOThread();
-  // (3) Process the results of the memory dump and dispatch the results.
-  void ProcessGlobalMemoryDumpAndDispatchOnIOThread(
-      bool success,
-      std::unique_ptr<memory_instrumentation::GlobalMemoryDump> dump);
-  // (4) Initiate the next render process metrics collection cycle if the
+  // (2) Collect and dispatch the render process metrics to the system
+  // coordination unit.
+  void CollectAndDispatchRenderProcessMetricsOnIOThread();
+  // (3) Initiate the next render process metrics collection cycle if the
   // cycle has been started and |restart_cycle| is true, which consists of a
   // delayed call to perform (1) via a timer.
   // Virtual for testing.
