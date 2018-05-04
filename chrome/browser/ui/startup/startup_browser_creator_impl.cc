@@ -373,6 +373,20 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
   DCHECK(profile);
   profile_ = profile;
 
+#if defined(OS_WIN)
+  // If the command line has the kNotificationLaunchId switch, then this
+  // Launch() call is from notification_helper.exe to process toast activation.
+  // Delegate to the notification system; do not open a browser window here.
+  if (command_line_.HasSwitch(switches::kNotificationLaunchId)) {
+    DCHECK(!command_line_.HasSwitch(switches::kAppId));
+    if (NotificationPlatformBridgeWin::HandleActivation(command_line_)) {
+      RecordLaunchModeHistogram(LM_WIN_PLATFORM_NOTIFICATION);
+      return true;
+    }
+    return false;
+  }
+#endif  // defined(OS_WIN)
+
   if (command_line_.HasSwitch(switches::kAppId)) {
     std::string app_id = command_line_.GetSwitchValueASCII(switches::kAppId);
     const Extension* extension = GetPlatformApp(profile, app_id);
@@ -389,19 +403,6 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
       return true;
     }
   }
-
-#if defined(OS_WIN)
-  // If the command line has the kNotificationLaunchId switch, then this
-  // Launch() call is from notification_helper.exe to process toast activation.
-  // Delegate to the notification system; do not open a browser window here.
-  if (command_line_.HasSwitch(switches::kNotificationLaunchId)) {
-    if (NotificationPlatformBridgeWin::HandleActivation(command_line_)) {
-      RecordLaunchModeHistogram(LM_WIN_PLATFORM_NOTIFICATION);
-      return true;
-    }
-    return false;
-  }
-#endif  // defined(OS_WIN)
 
   // Open the required browser windows and tabs. First, see if
   // we're being run as an application window. If so, the user
