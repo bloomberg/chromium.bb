@@ -112,7 +112,7 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
     test_files_.push_back("session_storage.html");
     test_files_.push_back("subdomain_cookies.html");
 
-    CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &test_file_dir_));
+    CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &test_file_dir_));
     test_file_dir_ =
         test_file_dir_.AppendASCII("chrome/test/data").AppendASCII(test_path_);
 

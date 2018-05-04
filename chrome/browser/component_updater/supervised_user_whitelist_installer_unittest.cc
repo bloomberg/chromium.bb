@@ -219,14 +219,14 @@ class SupervisedUserWhitelistInstallerTest : public testing::Test {
         profile_attributes_storage(),
         &local_state_);
 
-    ASSERT_TRUE(PathService::Get(DIR_SUPERVISED_USER_WHITELISTS,
-                                 &whitelist_base_directory_));
+    ASSERT_TRUE(base::PathService::Get(DIR_SUPERVISED_USER_WHITELISTS,
+                                       &whitelist_base_directory_));
     whitelist_directory_ = whitelist_base_directory_.AppendASCII(kCrxId);
     whitelist_version_directory_ = whitelist_directory_.AppendASCII(kVersion);
 
     ASSERT_TRUE(
-        PathService::Get(chrome::DIR_SUPERVISED_USER_INSTALLED_WHITELISTS,
-                         &installed_whitelist_directory_));
+        base::PathService::Get(chrome::DIR_SUPERVISED_USER_INSTALLED_WHITELISTS,
+                               &installed_whitelist_directory_));
     std::string crx_id(kCrxId);
     whitelist_path_ =
         installed_whitelist_directory_.AppendASCII(crx_id + ".json");

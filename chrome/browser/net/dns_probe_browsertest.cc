@@ -110,7 +110,7 @@ class DelayingDnsProbeService : public DnsProbeService {
 
 FilePath GetMockLinkDoctorFilePath() {
   FilePath root_http;
-  PathService::Get(chrome::DIR_TEST_DATA, &root_http);
+  base::PathService::Get(chrome::DIR_TEST_DATA, &root_http);
   return root_http.AppendASCII("mock-link-doctor.json");
 }
 

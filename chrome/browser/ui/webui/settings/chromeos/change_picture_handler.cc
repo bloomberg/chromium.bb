@@ -149,7 +149,7 @@ void ChangePictureHandler::HandleChooseFile(const base::ListValue* args) {
       std::make_unique<ChromeSelectFilePolicy>(web_ui()->GetWebContents()));
 
   base::FilePath downloads_path;
-  if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &downloads_path)) {
+  if (!base::PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &downloads_path)) {
     NOTREACHED();
     return;
   }

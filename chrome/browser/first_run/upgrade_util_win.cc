@@ -46,7 +46,7 @@
 namespace {
 
 bool GetNewerChromeFile(base::FilePath* path) {
-  if (!PathService::Get(base::DIR_EXE, path))
+  if (!base::PathService::Get(base::DIR_EXE, path))
     return false;
   *path = path->Append(installer::kChromeNewExe);
   return true;
@@ -81,7 +81,7 @@ namespace upgrade_util {
 
 bool RelaunchChromeBrowser(const base::CommandLine& command_line) {
   base::FilePath chrome_exe;
-  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
+  if (!base::PathService::Get(base::FILE_EXE, &chrome_exe)) {
     NOTREACHED();
     return false;
   }

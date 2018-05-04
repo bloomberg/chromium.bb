@@ -65,7 +65,7 @@ void SubresourceFilterBrowserTest::SetUpOnMainThread() {
       ->SetIsAfterStartupForTesting();
 
   base::FilePath test_data_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
   embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
   host_resolver()->AddSimulatedFailure("host-with-dns-lookup-failure");
 
@@ -73,7 +73,7 @@ void SubresourceFilterBrowserTest::SetUpOnMainThread() {
   content::SetupCrossSiteRedirector(embedded_test_server());
 
   // Add content/test/data for cross_site_iframe_factory.html
-  ASSERT_TRUE(PathService::Get(content::DIR_TEST_DATA, &test_data_dir));
+  ASSERT_TRUE(base::PathService::Get(content::DIR_TEST_DATA, &test_data_dir));
   embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
 
   ASSERT_TRUE(embedded_test_server()->Start());

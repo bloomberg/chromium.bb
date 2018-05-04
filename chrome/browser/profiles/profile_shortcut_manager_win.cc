@@ -492,7 +492,7 @@ void CreateOrUpdateDesktopShortcutsAndIconForProfile(
   }
 
   base::FilePath chrome_exe;
-  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
+  if (!base::PathService::Get(base::FILE_EXE, &chrome_exe)) {
     NOTREACHED();
     return;
   }
@@ -586,7 +586,7 @@ void DeleteDesktopShortcuts(const base::FilePath& profile_path,
   base::AssertBlockingAllowed();
 
   base::FilePath chrome_exe;
-  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
+  if (!base::PathService::Get(base::FILE_EXE, &chrome_exe)) {
     NOTREACHED();
     return;
   }
@@ -633,7 +633,7 @@ bool HasAnyProfileShortcuts(const base::FilePath& profile_path) {
   base::AssertBlockingAllowed();
 
   base::FilePath chrome_exe;
-  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
+  if (!base::PathService::Get(base::FILE_EXE, &chrome_exe)) {
     NOTREACHED();
     return false;
   }
@@ -856,7 +856,7 @@ void ProfileShortcutManagerWin::GetShortcutProperties(
     base::string16* name,
     base::FilePath* icon_path) {
   base::FilePath chrome_exe;
-  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
+  if (!base::PathService::Get(base::FILE_EXE, &chrome_exe)) {
     NOTREACHED();
     return;
   }

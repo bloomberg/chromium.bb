@@ -17,7 +17,7 @@ CocoaTest::CocoaTest() {
 void CocoaTest::BootstrapCocoa() {
   // Look in the framework bundle for resources.
   base::FilePath path;
-  PathService::Get(base::DIR_EXE, &path);
+  base::PathService::Get(base::DIR_EXE, &path);
   path = path.Append(chrome::kFrameworkName);
   base::mac::SetOverrideFrameworkBundlePath(path);
 }

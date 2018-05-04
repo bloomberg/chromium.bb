@@ -138,7 +138,7 @@ class RealServiceProcessControlBrowserTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ServiceProcessControlBrowserTest::SetUpCommandLine(command_line);
     base::FilePath exe;
-    PathService::Get(base::DIR_EXE, &exe);
+    base::PathService::Get(base::DIR_EXE, &exe);
 #if defined(OS_MACOSX)
     exe = exe.DirName().DirName().DirName();
 #endif

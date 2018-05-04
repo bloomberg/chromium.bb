@@ -74,22 +74,22 @@ bool NaClBrowserDelegateImpl::DialogsAreSuppressed() {
 
 bool NaClBrowserDelegateImpl::GetCacheDirectory(base::FilePath* cache_dir) {
   base::FilePath user_data_dir;
-  if (!PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
+  if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
     return false;
   chrome::GetUserCacheDirectory(user_data_dir, cache_dir);
   return true;
 }
 
 bool NaClBrowserDelegateImpl::GetPluginDirectory(base::FilePath* plugin_dir) {
-  return PathService::Get(chrome::DIR_INTERNAL_PLUGINS, plugin_dir);
+  return base::PathService::Get(chrome::DIR_INTERNAL_PLUGINS, plugin_dir);
 }
 
 bool NaClBrowserDelegateImpl::GetPnaclDirectory(base::FilePath* pnacl_dir) {
-  return PathService::Get(chrome::DIR_PNACL_COMPONENT, pnacl_dir);
+  return base::PathService::Get(chrome::DIR_PNACL_COMPONENT, pnacl_dir);
 }
 
 bool NaClBrowserDelegateImpl::GetUserDirectory(base::FilePath* user_dir) {
-  return PathService::Get(chrome::DIR_USER_DATA, user_dir);
+  return base::PathService::Get(chrome::DIR_USER_DATA, user_dir);
 }
 
 std::string NaClBrowserDelegateImpl::GetVersionString() const {

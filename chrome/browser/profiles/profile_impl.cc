@@ -1313,7 +1313,7 @@ GURL ProfileImpl::GetHomePage() {
     base::ThreadRestrictions::ScopedAllowIO allow_io;
 
     base::FilePath browser_directory;
-    PathService::Get(base::DIR_CURRENT, &browser_directory);
+    base::PathService::Get(base::DIR_CURRENT, &browser_directory);
     GURL home_page(url_formatter::FixupRelativeFile(
         browser_directory,
         command_line.GetSwitchValuePath(switches::kHomePage)));

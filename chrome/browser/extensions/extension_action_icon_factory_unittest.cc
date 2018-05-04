@@ -67,7 +67,7 @@ gfx::ImageSkiaRep CreateBlankRep(int size_dip, float scale) {
 
 gfx::Image LoadIcon(const std::string& filename) {
   base::FilePath path;
-  PathService::Get(chrome::DIR_TEST_DATA, &path);
+  base::PathService::Get(chrome::DIR_TEST_DATA, &path);
   path = path.AppendASCII("extensions/api_test").AppendASCII(filename);
 
   std::string file_contents;
@@ -98,7 +98,7 @@ class ExtensionActionIconFactoryTest
   scoped_refptr<Extension> CreateExtension(const char* name) {
     // Create and load an extension.
     base::FilePath test_file;
-    if (!PathService::Get(chrome::DIR_TEST_DATA, &test_file)) {
+    if (!base::PathService::Get(chrome::DIR_TEST_DATA, &test_file)) {
       EXPECT_FALSE(true);
       return NULL;
     }

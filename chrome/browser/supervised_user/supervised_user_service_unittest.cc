@@ -625,7 +625,7 @@ TEST_F(SupervisedUserServiceExtensionTest, InstallContentPacks) {
 
   // Load a whitelist.
   base::FilePath test_data_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
   SupervisedUserWhitelistService* whitelist_service =
       supervised_user_service->GetWhitelistService();
   base::FilePath whitelist_path =

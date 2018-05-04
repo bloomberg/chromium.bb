@@ -76,7 +76,7 @@ LocalPolicyTestServer::LocalPolicyTestServer(const std::string& test_name)
   // Read configuration from a file in chrome/test/data/policy.
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::FilePath source_root;
-  CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &source_root));
+  CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &source_root));
   config_file_ = source_root
       .AppendASCII("chrome")
       .AppendASCII("test")
@@ -189,7 +189,7 @@ bool LocalPolicyTestServer::SetPythonPath() const {
 
   // We need protobuf python bindings.
   base::FilePath third_party_dir;
-  if (!PathService::Get(base::DIR_SOURCE_ROOT, &third_party_dir)) {
+  if (!base::PathService::Get(base::DIR_SOURCE_ROOT, &third_party_dir)) {
     LOG(ERROR) << "Failed to get DIR_SOURCE_ROOT";
     return false;
   }
@@ -225,7 +225,7 @@ bool LocalPolicyTestServer::GetTestServerPath(
     base::FilePath* testserver_path) const {
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::FilePath source_root;
-  if (!PathService::Get(base::DIR_SOURCE_ROOT, &source_root)) {
+  if (!base::PathService::Get(base::DIR_SOURCE_ROOT, &source_root)) {
     LOG(ERROR) << "Failed to get DIR_SOURCE_ROOT";
     return false;
   }

@@ -308,7 +308,7 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
   void UpdateExtension(const Extension* extension,
                        const std::string& update_crx) {
     base::FilePath data_dir;
-    if (!PathService::Get(chrome::DIR_TEST_DATA, &data_dir)) {
+    if (!base::PathService::Get(chrome::DIR_TEST_DATA, &data_dir)) {
       ADD_FAILURE();
       return;
     }

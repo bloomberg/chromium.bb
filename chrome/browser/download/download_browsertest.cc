@@ -468,7 +468,8 @@ class DownloadTest : public InProcessBrowserTest {
   // Returning false indicates a failure of the setup, and should be asserted
   // in the caller.
   bool InitialSetup() {
-    bool have_test_dir = PathService::Get(chrome::DIR_TEST_DATA, &test_dir_);
+    bool have_test_dir =
+        base::PathService::Get(chrome::DIR_TEST_DATA, &test_dir_);
     EXPECT_TRUE(have_test_dir);
     if (!have_test_dir)
       return false;
@@ -498,7 +499,7 @@ class DownloadTest : public InProcessBrowserTest {
 
   base::FilePath GetTestDataDirectory() {
     base::FilePath test_file_directory;
-    PathService::Get(chrome::DIR_TEST_DATA, &test_file_directory);
+    base::PathService::Get(chrome::DIR_TEST_DATA, &test_file_directory);
     return test_file_directory;
   }
 
@@ -959,8 +960,8 @@ class DownloadTest : public InProcessBrowserTest {
           // If it's not where we asked it to be, it should be in the
           // My Documents folder.
           base::FilePath my_docs_folder;
-          EXPECT_TRUE(PathService::Get(chrome::DIR_USER_DOCUMENTS,
-                                       &my_docs_folder));
+          EXPECT_TRUE(base::PathService::Get(chrome::DIR_USER_DOCUMENTS,
+                                             &my_docs_folder));
           EXPECT_EQ(0u,
                     my_downloaded_file.value().find(my_docs_folder.value()));
         }

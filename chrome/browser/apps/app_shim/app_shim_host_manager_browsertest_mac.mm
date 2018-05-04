@@ -64,7 +64,7 @@ TestShimClient::TestShimClient() : io_thread_("TestShimClientIO") {
   io_thread_.StartWithOptions(io_thread_options);
 
   base::FilePath user_data_dir;
-  CHECK(PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
+  CHECK(base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
   base::FilePath symlink_path =
       user_data_dir.Append(app_mode::kAppShimSocketSymlinkName);
 
@@ -256,10 +256,10 @@ class AppShimHostManagerBrowserTestSocketFiles
 bool AppShimHostManagerBrowserTestSocketFiles::SetUpUserDataDirectory() {
   // Create an existing symlink. It should be replaced by AppShimHostManager.
   base::FilePath user_data_dir;
-  EXPECT_TRUE(PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
+  EXPECT_TRUE(base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
   symlink_path_ = user_data_dir.Append(app_mode::kAppShimSocketSymlinkName);
   base::FilePath temp_dir;
-  PathService::Get(base::DIR_TEMP, &temp_dir);
+  base::PathService::Get(base::DIR_TEMP, &temp_dir);
   EXPECT_TRUE(base::CreateSymbolicLink(temp_dir.Append("chrome-XXXXXX"),
                                        symlink_path_));
 

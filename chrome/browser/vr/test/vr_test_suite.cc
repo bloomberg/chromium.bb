@@ -33,9 +33,9 @@ void VrTestSuite::Initialize() {
   base::FilePath pak_path;
 #if defined(OS_ANDROID)
   ui::RegisterPathProvider();
-  PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &pak_path);
+  base::PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &pak_path);
 #else
-  PathService::Get(base::DIR_MODULE, &pak_path);
+  base::PathService::Get(base::DIR_MODULE, &pak_path);
 #endif
   ui::ResourceBundle::InitSharedInstanceWithPakPath(
       pak_path.AppendASCII("vr_test.pak"));

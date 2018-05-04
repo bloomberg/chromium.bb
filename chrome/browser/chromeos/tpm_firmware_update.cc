@@ -102,8 +102,9 @@ class AvailabilityChecker {
  private:
   static base::FilePath GetUpdateLocationFilePath() {
     base::FilePath update_location_file;
-    CHECK(PathService::Get(chrome::FILE_CHROME_OS_TPM_FIRMWARE_UPDATE_LOCATION,
-                           &update_location_file));
+    CHECK(base::PathService::Get(
+        chrome::FILE_CHROME_OS_TPM_FIRMWARE_UPDATE_LOCATION,
+        &update_location_file));
     return update_location_file;
   }
 

@@ -22,7 +22,7 @@ namespace {
 
 base::FilePath FindManifestInDir(int dir_key, const std::string& host_name) {
   base::FilePath base_path;
-  if (PathService::Get(dir_key, &base_path)) {
+  if (base::PathService::Get(dir_key, &base_path)) {
     base::FilePath path = base_path.Append(host_name + ".json");
     if (base::PathExists(path))
       return path;

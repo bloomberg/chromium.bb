@@ -837,7 +837,7 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
   // Returns the contents of the given filename under chrome/test/data.
   static std::string GetContents(const std::string& path) {
     base::FilePath root_http;
-    PathService::Get(chrome::DIR_TEST_DATA, &root_http);
+    base::PathService::Get(chrome::DIR_TEST_DATA, &root_http);
     base::ScopedAllowBlockingForTesting allow_io;
     base::FilePath file_path = root_http.AppendASCII(path);
     std::string contents;

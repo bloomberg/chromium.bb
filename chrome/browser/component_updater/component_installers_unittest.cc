@@ -69,7 +69,7 @@ TEST(ComponentInstallerTest, PepperFlashCheck) {
 
   // The test directory is chrome/test/data/components/flapper.
   base::FilePath manifest;
-  PathService::Get(chrome::DIR_TEST_DATA, &manifest);
+  base::PathService::Get(chrome::DIR_TEST_DATA, &manifest);
   manifest = manifest.Append(kDataPath);
   manifest = manifest.AppendASCII("manifest.json");
 

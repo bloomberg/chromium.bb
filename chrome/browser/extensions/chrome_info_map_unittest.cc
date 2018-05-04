@@ -18,7 +18,7 @@ namespace {
 scoped_refptr<Extension> LoadManifest(const std::string& dir,
                                       const std::string& test_file) {
   base::FilePath path;
-  PathService::Get(chrome::DIR_TEST_DATA, &path);
+  base::PathService::Get(chrome::DIR_TEST_DATA, &path);
   path = path.AppendASCII("extensions").AppendASCII(dir).AppendASCII(test_file);
 
   JSONFileValueDeserializer deserializer(path);

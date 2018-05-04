@@ -69,13 +69,13 @@ const RequestHandlerType kTestModes[] = {RequestHandlerType::kURLLoader,
 
 base::FilePath GetTestPath(const std::string& name) {
   base::FilePath path;
-  EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &path));
+  EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &path));
   return path.AppendASCII("extensions").AppendASCII(name);
 }
 
 base::FilePath GetContentVerifierTestPath() {
   base::FilePath path;
-  EXPECT_TRUE(PathService::Get(extensions::DIR_TEST_DATA, &path));
+  EXPECT_TRUE(base::PathService::Get(extensions::DIR_TEST_DATA, &path));
   return path.AppendASCII("content_hash_fetcher")
       .AppendASCII("different_sized_files");
 }
@@ -111,7 +111,7 @@ scoped_refptr<Extension> CreateWebStoreExtension() {
           .Build();
 
   base::FilePath path;
-  EXPECT_TRUE(PathService::Get(chrome::DIR_RESOURCES, &path));
+  EXPECT_TRUE(base::PathService::Get(chrome::DIR_RESOURCES, &path));
   path = path.AppendASCII("web_store");
 
   std::string error;
@@ -668,7 +668,7 @@ TEST_P(ExtensionProtocolsTest, VerifyScriptListedAsIcon) {
   base::FilePath unzipped_path = temp_dir.GetPath();
 
   base::FilePath path;
-  EXPECT_TRUE(PathService::Get(extensions::DIR_TEST_DATA, &path));
+  EXPECT_TRUE(base::PathService::Get(extensions::DIR_TEST_DATA, &path));
 
   scoped_refptr<Extension> extension =
       content_verifier_test_utils::UnzipToDirAndLoadExtension(

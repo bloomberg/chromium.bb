@@ -66,7 +66,7 @@ class ThemeServiceTest : public extensions::ExtensionServiceTestBase {
   std::string LoadUnpackedThemeAt(const base::FilePath& temp_dir) {
     base::FilePath dst_manifest_path = temp_dir.AppendASCII("manifest.json");
     base::FilePath test_data_dir;
-    EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
+    EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
     base::FilePath src_manifest_path =
         test_data_dir.AppendASCII("extensions/theme_minimal/manifest.json");
     EXPECT_TRUE(base::CopyFile(src_manifest_path, dst_manifest_path));

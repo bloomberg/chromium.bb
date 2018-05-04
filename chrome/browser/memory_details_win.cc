@@ -30,7 +30,7 @@ using content::BrowserThread;
 
 MemoryDetails::MemoryDetails() {
   base::FilePath browser_process_path;
-  PathService::Get(base::FILE_EXE, &browser_process_path);
+  base::PathService::Get(base::FILE_EXE, &browser_process_path);
 
   ProcessData process;
   process.name = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);

@@ -69,7 +69,7 @@ int ChromeBrowserMainPartsAndroid::PreCreateThreads() {
 
   if (breakpad_enabled) {
     base::FilePath crash_dump_dir;
-    PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dump_dir);
+    base::PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dump_dir);
     breakpad::CrashDumpObserver::GetInstance()->RegisterClient(
         std::make_unique<breakpad::ChildProcessCrashObserver>(
             crash_dump_dir, kAndroidMinidumpDescriptor));

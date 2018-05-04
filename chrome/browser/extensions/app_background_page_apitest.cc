@@ -141,7 +141,7 @@ class AppBackgroundPageNaClTest : public AppBackgroundPageApiTest {
   void LaunchTestingApp() {
     base::ScopedAllowBlockingForTesting allow_blocking;
     base::FilePath app_dir;
-    PathService::Get(chrome::DIR_GEN_TEST_DATA, &app_dir);
+    base::PathService::Get(chrome::DIR_GEN_TEST_DATA, &app_dir);
     app_dir = app_dir.AppendASCII(
         "ppapi/tests/extensions/background_keepalive/newlib");
     extension_ = LoadExtension(app_dir);

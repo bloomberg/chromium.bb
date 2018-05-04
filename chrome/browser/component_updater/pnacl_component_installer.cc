@@ -92,7 +92,8 @@ base::FilePath GetPlatformDir(const base::FilePath& base_path) {
 
 // Tell the rest of the world where to find the platform-specific PNaCl files.
 void OverrideDirPnaclComponent(const base::FilePath& base_path) {
-  PathService::Override(chrome::DIR_PNACL_COMPONENT, GetPlatformDir(base_path));
+  base::PathService::Override(chrome::DIR_PNACL_COMPONENT,
+                              GetPlatformDir(base_path));
 }
 
 base::DictionaryValue* ReadJSONManifest(const base::FilePath& manifest_path) {

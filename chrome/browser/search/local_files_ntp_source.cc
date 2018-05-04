@@ -123,7 +123,7 @@ void SendLocalFileResourceWithOrigin(
     const std::string& origin,
     const content::URLDataSource::GotDataCallback& callback) {
   base::FilePath fullpath;
-  PathService::Get(base::DIR_SOURCE_ROOT, &fullpath);
+  base::PathService::Get(base::DIR_SOURCE_ROOT, &fullpath);
   fullpath = fullpath.AppendASCII(kBasePath).AppendASCII(path);
   content::URLDataSource::GotDataCallback wrapper =
       base::Bind(&CheckLocalIncludes, callback);

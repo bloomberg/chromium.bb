@@ -43,8 +43,8 @@ ExtensionService* GetExtensionService(Profile* profile) {
 void CreateAndInitializeLocalCache() {
 #if defined(OS_CHROMEOS)
   base::FilePath extension_cache_dir;
-  CHECK(PathService::Get(chromeos::DIR_DEVICE_EXTENSION_LOCAL_CACHE,
-                         &extension_cache_dir));
+  CHECK(base::PathService::Get(chromeos::DIR_DEVICE_EXTENSION_LOCAL_CACHE,
+                               &extension_cache_dir));
   base::FilePath cache_init_file = extension_cache_dir.Append(
       extensions::LocalExtensionCache::kCacheReadyFlagFileName);
   EXPECT_EQ(base::WriteFile(cache_init_file, "", 0), 0);

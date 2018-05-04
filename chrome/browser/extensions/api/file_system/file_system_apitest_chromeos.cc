@@ -299,7 +299,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTestForDrive,
                        FileSystemApiOpenMultipleSuggested) {
   base::FilePath test_file = drive::util::GetDriveMountPointPath(
       browser()->profile()).AppendASCII("root/open_existing.txt");
-  ASSERT_TRUE(PathService::OverrideAndCreateIfNeeded(
+  ASSERT_TRUE(base::PathService::OverrideAndCreateIfNeeded(
       chrome::DIR_USER_DOCUMENTS, test_file.DirName(), true, false));
   FileSystemChooseEntryFunction::SkipPickerAndSelectSuggestedPathForTest();
   ASSERT_TRUE(RunPlatformAppTest(

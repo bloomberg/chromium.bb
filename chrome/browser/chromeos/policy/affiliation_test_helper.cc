@@ -52,7 +52,8 @@ void SetUserKeys(policy::UserPolicyBuilder* user_policy) {
   const AccountId account_id =
       AccountId::FromUserEmail(user_policy->policy_data().username());
   base::FilePath user_keys_dir;
-  ASSERT_TRUE(PathService::Get(chromeos::DIR_USER_POLICY_KEYS, &user_keys_dir));
+  ASSERT_TRUE(
+      base::PathService::Get(chromeos::DIR_USER_POLICY_KEYS, &user_keys_dir));
   const std::string sanitized_username =
       chromeos::CryptohomeClient::GetStubSanitizedUsername(
           cryptohome::Identification(account_id));

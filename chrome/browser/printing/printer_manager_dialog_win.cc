@@ -18,7 +18,7 @@ namespace {
 // A helper callback that opens the printer management dialog.
 void OpenPrintersDialogCallback() {
   base::FilePath sys_dir;
-  PathService::Get(base::DIR_SYSTEM, &sys_dir);
+  base::PathService::Get(base::DIR_SYSTEM, &sys_dir);
   base::FilePath rundll32 = sys_dir.Append(L"rundll32.exe");
   base::FilePath shell32dll = sys_dir.Append(L"shell32.dll");
 

@@ -80,7 +80,7 @@ void ConstructAvatarPolicy(const std::string& file_name,
                            std::string* policy_data,
                            std::string* policy) {
   base::FilePath test_data_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
   ASSERT_TRUE(base::ReadFileToString(
       test_data_dir.Append("chromeos").Append(file_name),
       policy_data));

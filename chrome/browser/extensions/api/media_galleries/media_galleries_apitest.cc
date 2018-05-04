@@ -254,7 +254,7 @@ class MediaGalleriesPlatformAppPpapiTest
   void SetUpOnMainThread() override {
     MediaGalleriesPlatformAppBrowserTest::SetUpOnMainThread();
 
-    ASSERT_TRUE(PathService::Get(chrome::DIR_GEN_TEST_DATA, &app_dir_));
+    ASSERT_TRUE(base::PathService::Get(chrome::DIR_GEN_TEST_DATA, &app_dir_));
     app_dir_ = app_dir_.AppendASCII("ppapi")
                        .AppendASCII("tests")
                        .AppendASCII("extensions")

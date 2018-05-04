@@ -111,7 +111,7 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
   void SetUpInProcessBrowserTestFixture() override {
     LoginManagerTest::SetUpInProcessBrowserTestFixture();
     base::FilePath user_data_dir;
-    ASSERT_TRUE(PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
+    ASSERT_TRUE(base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
     chromeos::RegisterStubPathOverrides(user_data_dir);
     DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
         std::make_unique<FakeCryptohomeClient>());

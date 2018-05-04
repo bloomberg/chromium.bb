@@ -509,7 +509,7 @@ class ExternallyConnectableMessagingTest : public MessagingApiTest {
 
   void SetUpOnMainThread() override {
     base::FilePath test_data;
-    EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data));
+    EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data));
     embedded_test_server()->ServeFilesFromDirectory(test_data.AppendASCII(
         "extensions/api_test/messaging/externally_connectable/sites"));
     MessagingApiTest::SetUpOnMainThread();

@@ -211,7 +211,7 @@ class NotificationHelperLaunchesChrome : public testing::Test {
     // test executable, as the test build target has a data_deps dependency on
     // it.
     base::FilePath dir_exe;
-    ASSERT_TRUE(PathService::Get(base::DIR_EXE, &dir_exe));
+    ASSERT_TRUE(base::PathService::Get(base::DIR_EXE, &dir_exe));
     base::FilePath notification_helper_path =
         dir_exe.Append(installer::kNotificationHelperExe);
 

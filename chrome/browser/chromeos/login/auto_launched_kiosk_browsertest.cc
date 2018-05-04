@@ -321,7 +321,7 @@ class AutoLaunchedKioskTest : public ExtensionApiTest {
     InitDevicePolicy();
 
     base::FilePath user_data_path;
-    if (!PathService::Get(chrome::DIR_USER_DATA, &user_data_path)) {
+    if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_path)) {
       ADD_FAILURE() << "Unable to get used data dir";
       return false;
     }

@@ -275,12 +275,12 @@ ShortcutCommand ShortcutHandler::CreateWithArguments(
     const base::string16& args) {
   EXPECT_TRUE(shortcut_path_.empty());
   base::FilePath path_to_create;
-  EXPECT_TRUE(PathService::Get(base::DIR_USER_DESKTOP, &path_to_create));
+  EXPECT_TRUE(base::PathService::Get(base::DIR_USER_DESKTOP, &path_to_create));
   path_to_create = path_to_create.Append(name);
   EXPECT_FALSE(base::PathExists(path_to_create)) << path_to_create.value();
 
   base::FilePath path_exe;
-  EXPECT_TRUE(PathService::Get(base::FILE_EXE, &path_exe));
+  EXPECT_TRUE(base::PathService::Get(base::FILE_EXE, &path_exe));
   base::win::ShortcutProperties shortcut_properties;
   shortcut_properties.set_target(path_exe);
   shortcut_properties.set_arguments(args);

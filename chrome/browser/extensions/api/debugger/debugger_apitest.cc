@@ -164,7 +164,7 @@ IN_PROC_BROWSER_TEST_F(DebuggerApiTest,
                        DebuggerNotAllowedOnOtherExtensionPages) {
   // Load another arbitrary extension with an associated resource (popup.html).
   base::FilePath path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &path));
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &path));
   path = path.AppendASCII("extensions").AppendASCII("simple_with_popup");
   const Extension* another_extension = LoadExtension(path);
   ASSERT_TRUE(another_extension);

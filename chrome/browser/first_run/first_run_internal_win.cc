@@ -43,7 +43,7 @@ namespace {
 bool LaunchSetupForEula(const base::FilePath::StringType& value,
                         int* ret_code) {
   base::FilePath exe_dir;
-  if (!PathService::Get(base::DIR_MODULE, &exe_dir))
+  if (!base::PathService::Get(base::DIR_MODULE, &exe_dir))
     return false;
   exe_dir = exe_dir.Append(installer::kInstallerDir);
   base::FilePath exe_path = exe_dir.Append(installer::kSetupExe);
@@ -157,7 +157,7 @@ bool ShowPostInstallEULAIfNeeded(installer::MasterPreferences* install_prefs) {
 base::FilePath MasterPrefsPath() {
   // The standard location of the master prefs is next to the chrome binary.
   base::FilePath master_prefs;
-  if (!PathService::Get(base::DIR_EXE, &master_prefs))
+  if (!base::PathService::Get(base::DIR_EXE, &master_prefs))
     return base::FilePath();
   return master_prefs.AppendASCII(installer::kDefaultMasterPrefs);
 }

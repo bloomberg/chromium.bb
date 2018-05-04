@@ -32,7 +32,7 @@ class DownloadUtilMacTest : public CocoaTest {
 TEST_F(DownloadUtilMacTest, AddFileToPasteboardTest) {
   // Get a download test file for addition to the pasteboard.
   base::FilePath testPath;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &testPath));
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &testPath));
   base::FilePath testFile(FILE_PATH_LITERAL("download-test1.lib"));
   testPath = testPath.Append(testFile);
 

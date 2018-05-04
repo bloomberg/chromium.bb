@@ -27,7 +27,7 @@ std::unique_ptr<Storage> ValidationRulesStorageFactory::CreateStorage() {
 
 ValidationRulesStorageFactory::ValidationRulesStorageFactory() {
   base::FilePath user_data_dir;
-  bool success = PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  bool success = base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   DCHECK(success);
 
   json_pref_store_ = new JsonPrefStore(

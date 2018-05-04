@@ -23,7 +23,7 @@ scoped_refptr<extensions::Extension> LoadInstallPromptExtension(
   scoped_refptr<Extension> extension;
 
   base::FilePath path;
-  PathService::Get(chrome::DIR_TEST_DATA, &path);
+  base::PathService::Get(chrome::DIR_TEST_DATA, &path);
   path = path.AppendASCII("extensions")
              .AppendASCII(extension_dir_name)
              .AppendASCII(manifest_file);
@@ -53,7 +53,7 @@ scoped_refptr<Extension> LoadInstallPromptExtension() {
 gfx::Image LoadInstallPromptIcon() {
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::FilePath path;
-  PathService::Get(chrome::DIR_TEST_DATA, &path);
+  base::PathService::Get(chrome::DIR_TEST_DATA, &path);
   path = path.AppendASCII("extensions")
              .AppendASCII("install_prompt")
              .AppendASCII("icon.png");

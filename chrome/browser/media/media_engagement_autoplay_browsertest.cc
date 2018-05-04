@@ -161,7 +161,7 @@ class MediaEngagementAutoplayBrowserTest
 
     // Get the path to the "generator" binary in the module path.
     base::FilePath module_dir;
-    EXPECT_TRUE(PathService::Get(base::DIR_MODULE, &module_dir));
+    EXPECT_TRUE(base::PathService::Get(base::DIR_MODULE, &module_dir));
 
     // Launch the generator and wait for it to finish.
     base::CommandLine cmd(GetPythonPath());
@@ -180,7 +180,7 @@ class MediaEngagementAutoplayBrowserTest
   void ApplyEmptyPreloadedList() {
     // Get the path relative to the source root.
     base::FilePath source_root;
-    EXPECT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &source_root));
+    EXPECT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &source_root));
 
     base::ScopedAllowBlockingForTesting allow_blocking;
     EXPECT_TRUE(MediaEngagementPreloadedList::GetInstance()->LoadFromFile(

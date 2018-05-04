@@ -32,7 +32,7 @@ ExtensionSettingsUIBrowserTest::ExtensionSettingsUIBrowserTest()
     : policy_provider_(TestManagementPolicyProvider::PROHIBIT_MODIFY_STATUS |
                        TestManagementPolicyProvider::MUST_REMAIN_ENABLED |
                        TestManagementPolicyProvider::MUST_REMAIN_INSTALLED) {
-  CHECK(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_));
+  CHECK(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_));
   test_data_dir_ = test_data_dir_.AppendASCII("extensions");
 }
 

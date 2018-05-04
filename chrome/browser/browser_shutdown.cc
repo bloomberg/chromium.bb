@@ -84,7 +84,7 @@ constexpr char kShutdownMsFile[] = "chrome_shutdown_ms.txt";
 
 base::FilePath GetShutdownMsPath() {
   base::FilePath shutdown_ms_file;
-  PathService::Get(chrome::DIR_USER_DATA, &shutdown_ms_file);
+  base::PathService::Get(chrome::DIR_USER_DATA, &shutdown_ms_file);
   return shutdown_ms_file.AppendASCII(kShutdownMsFile);
 }
 

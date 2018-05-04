@@ -153,7 +153,7 @@ class ComponentCloudPolicyTest : public ExtensionBrowserTest {
   scoped_refptr<const extensions::Extension> LoadExtension(
       const base::FilePath::CharType* path) {
     base::FilePath full_path;
-    if (!PathService::Get(chrome::DIR_TEST_DATA, &full_path)) {
+    if (!base::PathService::Get(chrome::DIR_TEST_DATA, &full_path)) {
       ADD_FAILURE();
       return NULL;
     }

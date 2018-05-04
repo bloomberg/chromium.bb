@@ -163,7 +163,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiGetDisplayPath) {
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiGetDisplayPathPrettify) {
   {
     base::ScopedAllowBlockingForTesting allow_blocking;
-    ASSERT_TRUE(PathService::OverrideAndCreateIfNeeded(
+    ASSERT_TRUE(base::PathService::OverrideAndCreateIfNeeded(
         base::DIR_HOME, test_root_folder_, false, false));
   }
 
@@ -230,7 +230,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   ASSERT_FALSE(test_file.empty());
   {
     base::ScopedAllowBlockingForTesting allow_blocking;
-    ASSERT_TRUE(PathService::OverrideAndCreateIfNeeded(
+    ASSERT_TRUE(base::PathService::OverrideAndCreateIfNeeded(
         chrome::DIR_USER_DOCUMENTS, test_file.DirName(), false, false));
   }
   FileSystemChooseEntryFunction::
@@ -254,7 +254,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   ASSERT_FALSE(test_file.empty());
   {
     base::ScopedAllowBlockingForTesting allow_blocking;
-    ASSERT_TRUE(PathService::OverrideAndCreateIfNeeded(
+    ASSERT_TRUE(base::PathService::OverrideAndCreateIfNeeded(
         chrome::DIR_USER_DOCUMENTS, test_file.DirName(), false, false));
   }
   FileSystemChooseEntryFunction::
@@ -269,7 +269,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiOpenMultipleSuggested) {
   ASSERT_FALSE(test_file.empty());
   {
     base::ScopedAllowBlockingForTesting allow_blocking;
-    ASSERT_TRUE(PathService::OverrideAndCreateIfNeeded(
+    ASSERT_TRUE(base::PathService::OverrideAndCreateIfNeeded(
         chrome::DIR_USER_DOCUMENTS, test_file.DirName(), false, false));
   }
   FileSystemChooseEntryFunction::SkipPickerAndSelectSuggestedPathForTest();
@@ -351,7 +351,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   base::FilePath test_directory = test_file.DirName();
   {
     base::ScopedAllowBlockingForTesting allow_blocking;
-    ASSERT_TRUE(PathService::OverrideAndCreateIfNeeded(
+    ASSERT_TRUE(base::PathService::OverrideAndCreateIfNeeded(
         kGraylistedPath, test_directory, false, false));
   }
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
@@ -369,7 +369,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   base::FilePath test_directory = test_file.DirName();
   {
     base::ScopedAllowBlockingForTesting allow_blocking;
-    ASSERT_TRUE(PathService::OverrideAndCreateIfNeeded(
+    ASSERT_TRUE(base::PathService::OverrideAndCreateIfNeeded(
         kGraylistedPath, test_directory, false, false));
   }
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
@@ -388,7 +388,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   base::FilePath parent_directory = test_directory.DirName();
   {
     base::ScopedAllowBlockingForTesting allow_blocking;
-    ASSERT_TRUE(PathService::OverrideAndCreateIfNeeded(
+    ASSERT_TRUE(base::PathService::OverrideAndCreateIfNeeded(
         kGraylistedPath, test_directory, false, false));
   }
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
@@ -410,7 +410,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   base::FilePath parent_directory = test_directory.DirName();
   {
     base::ScopedAllowBlockingForTesting allow_blocking;
-    ASSERT_TRUE(PathService::OverrideAndCreateIfNeeded(
+    ASSERT_TRUE(base::PathService::OverrideAndCreateIfNeeded(
         kGraylistedPath, parent_directory, false, false));
   }
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(

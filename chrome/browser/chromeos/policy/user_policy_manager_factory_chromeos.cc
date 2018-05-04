@@ -358,7 +358,8 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
   const base::FilePath external_data_dir =
       profile_dir.Append(kPolicy).Append(kPolicyExternalDataDir);
   base::FilePath policy_key_dir;
-  CHECK(PathService::Get(chromeos::DIR_USER_POLICY_KEYS, &policy_key_dir));
+  CHECK(
+      base::PathService::Get(chromeos::DIR_USER_POLICY_KEYS, &policy_key_dir));
 
   std::unique_ptr<UserCloudPolicyStoreChromeOS> store =
       std::make_unique<UserCloudPolicyStoreChromeOS>(

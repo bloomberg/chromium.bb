@@ -155,7 +155,7 @@ class UserImageManagerTest : public LoginManagerTest,
 
     std::string profile_image_data;
     base::FilePath test_data_dir;
-    EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
+    EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
     EXPECT_TRUE(
         ReadFileToString(test_data_dir.Append("chromeos").Append("avatar1.jpg"),
                          &profile_image_data));
@@ -174,8 +174,8 @@ class UserImageManagerTest : public LoginManagerTest,
   void SetUpInProcessBrowserTestFixture() override {
     LoginManagerTest::SetUpInProcessBrowserTestFixture();
 
-    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_));
-    ASSERT_TRUE(PathService::Get(chrome::DIR_USER_DATA, &user_data_dir_));
+    ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_));
+    ASSERT_TRUE(base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir_));
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -641,7 +641,7 @@ class UserImageManagerPolicyTest : public UserImageManagerTest,
 
     base::FilePath user_keys_dir;
     ASSERT_TRUE(
-        PathService::Get(chromeos::DIR_USER_POLICY_KEYS, &user_keys_dir));
+        base::PathService::Get(chromeos::DIR_USER_POLICY_KEYS, &user_keys_dir));
     const std::string sanitized_username =
         chromeos::CryptohomeClient::GetStubSanitizedUsername(cryptohome_id_);
     const base::FilePath user_key_file =

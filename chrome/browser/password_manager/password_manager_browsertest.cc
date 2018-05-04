@@ -105,7 +105,7 @@ class MockLoginModelObserver : public password_manager::LoginModelObserver {
 GURL GetFileURL(const char* filename) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::FilePath path;
-  PathService::Get(chrome::DIR_TEST_DATA, &path);
+  base::PathService::Get(chrome::DIR_TEST_DATA, &path);
   path = path.AppendASCII("password").AppendASCII(filename);
   CHECK(base::PathExists(path));
   return net::FilePathToFileURL(path);

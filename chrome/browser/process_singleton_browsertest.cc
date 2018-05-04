@@ -185,7 +185,7 @@ class ProcessSingletonTest : public InProcessBrowserTest {
     static const int kNbTries = 10;
     int num_tries = 0;
     base::FilePath program;
-    ASSERT_TRUE(PathService::Get(base::FILE_EXE, &program));
+    ASSERT_TRUE(base::PathService::Get(base::FILE_EXE, &program));
     base::FilePath::StringType exe_name = program.BaseName().value();
     while (base::GetProcessCount(exe_name, &process_tree_filter) > 0 &&
            num_tries++ < kNbTries) {

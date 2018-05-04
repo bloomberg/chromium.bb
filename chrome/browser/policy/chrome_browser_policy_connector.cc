@@ -62,7 +62,7 @@ namespace {
 std::unique_ptr<MachineLevelUserCloudPolicyManager>
 CreateMachineLevelUserCloudPolicyManager() {
   base::FilePath user_data_dir;
-  if (!PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
+  if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
     return nullptr;
 
   DVLOG(1) << "Creating machine level cloud policy manager";
@@ -213,7 +213,7 @@ ChromeBrowserPolicyConnector::CreatePlatformProvider() {
                                                std::move(loader));
 #elif defined(OS_POSIX) && !defined(OS_ANDROID)
   base::FilePath config_dir_path;
-  if (PathService::Get(chrome::DIR_POLICY_FILES, &config_dir_path)) {
+  if (base::PathService::Get(chrome::DIR_POLICY_FILES, &config_dir_path)) {
     std::unique_ptr<AsyncPolicyLoader> loader(new ConfigDirPolicyLoader(
         base::CreateSequencedTaskRunnerWithTraits(
             {base::MayBlock(), base::TaskPriority::BACKGROUND}),

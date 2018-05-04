@@ -565,7 +565,7 @@ IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_ShowWindow) {
 IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_RebuildShim) {
   // Get the 32 bit shim.
   base::FilePath test_data_dir;
-  PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
+  base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
   base::FilePath shim_path_32 =
       test_data_dir.Append("app_shim").Append("app_shim_32_bit.app");
   EXPECT_TRUE(base::PathExists(shim_path_32));

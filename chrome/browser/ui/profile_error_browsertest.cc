@@ -33,7 +33,7 @@ class ProfileErrorBrowserTest : public InProcessBrowserTest,
 
   bool SetUpUserDataDirectory() override {
     base::FilePath profile_dir;
-    if (!PathService::Get(chrome::DIR_USER_DATA, &profile_dir)) {
+    if (!base::PathService::Get(chrome::DIR_USER_DATA, &profile_dir)) {
       ADD_FAILURE();
       return false;
     }

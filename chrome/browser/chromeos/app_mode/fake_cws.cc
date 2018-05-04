@@ -109,7 +109,7 @@ void FakeCWS::SetUpdateCrx(const std::string& app_id,
   GURL crx_download_url = web_store_url_.Resolve(kCrxDownloadPath + crx_file);
 
   base::FilePath test_data_dir;
-  PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
+  base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
   base::FilePath crx_file_path =
       test_data_dir.AppendASCII("chromeos/app_mode/webstore/downloads")
           .AppendASCII(crx_file);

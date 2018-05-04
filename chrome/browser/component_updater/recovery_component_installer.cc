@@ -426,7 +426,7 @@ bool RecoveryComponentInstaller::DoInstall(
 
   // Passed the basic tests. Copy the installation to a permanent directory.
   base::FilePath path;
-  if (!PathService::Get(DIR_RECOVERY_BASE, &path))
+  if (!base::PathService::Get(DIR_RECOVERY_BASE, &path))
     return false;
   if (!base::PathExists(path) && !base::CreateDirectory(path))
     return false;

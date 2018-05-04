@@ -51,7 +51,7 @@ bool ShouldShowFirstRunDialog() {
 #endif
 
   base::FilePath local_state_path;
-  PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
+  base::PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
   if (base::PathExists(local_state_path))
     return false;
 

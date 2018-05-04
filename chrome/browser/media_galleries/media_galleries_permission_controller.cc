@@ -207,7 +207,7 @@ void MediaGalleriesPermissionController::DidClickAuxiliaryButton() {
       extensions::file_system_api::GetLastChooseEntryDirectory(
           extensions::ExtensionPrefs::Get(GetProfile()), extension_->id());
   if (default_path.empty())
-    PathService::Get(base::DIR_USER_DESKTOP, &default_path);
+    base::PathService::Get(base::DIR_USER_DESKTOP, &default_path);
   select_folder_dialog_ = ui::SelectFileDialog::Create(
       this, std::make_unique<ChromeSelectFilePolicy>(nullptr));
   select_folder_dialog_->SelectFile(

@@ -168,7 +168,7 @@ class BrowserThemePackTest : public ::testing::Test {
 
   base::FilePath GetStarGazingPath() {
     base::FilePath test_path;
-    if (!PathService::Get(chrome::DIR_TEST_DATA, &test_path)) {
+    if (!base::PathService::Get(chrome::DIR_TEST_DATA, &test_path)) {
       NOTREACHED();
       return test_path;
     }
@@ -184,7 +184,7 @@ class BrowserThemePackTest : public ::testing::Test {
 
   base::FilePath GetHiDpiThemePath() {
     base::FilePath test_path;
-    if (!PathService::Get(chrome::DIR_TEST_DATA, &test_path)) {
+    if (!base::PathService::Get(chrome::DIR_TEST_DATA, &test_path)) {
       NOTREACHED();
       return test_path;
     }

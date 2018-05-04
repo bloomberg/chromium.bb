@@ -609,7 +609,7 @@ TEST(ChromeNetworkDelegateStaticTest, IsAccessAllowed) {
 
 #if defined(OS_CHROMEOS)
   base::FilePath temp_dir;
-  ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &temp_dir));
+  ASSERT_TRUE(base::PathService::Get(base::DIR_TEMP, &temp_dir));
   // Chrome OS allows the following directories.
   EXPECT_TRUE(IsAccessAllowed("/home/chronos/user/Downloads", ""));
   EXPECT_TRUE(IsAccessAllowed("/home/chronos/user/log", ""));
@@ -642,7 +642,8 @@ TEST(ChromeNetworkDelegateStaticTest, IsAccessAllowed) {
 
   // Files in external storage are allowed.
   base::FilePath external_storage_path;
-  PathService::Get(base::DIR_ANDROID_EXTERNAL_STORAGE, &external_storage_path);
+  base::PathService::Get(base::DIR_ANDROID_EXTERNAL_STORAGE,
+                         &external_storage_path);
   EXPECT_TRUE(IsAccessAllowed(
       external_storage_path.AppendASCII("foo.txt").AsUTF8Unsafe(), ""));
   // The external storage root itself is not allowed.

@@ -169,7 +169,7 @@ static int ReturnZeroThreadProcessInformation(unsigned char* buffer,
                                               int buffer_size) {
   // Calculate the number of bytes required for the structure, and ImageName.
   base::FilePath current_exe;
-  CHECK(PathService::Get(base::FILE_EXE, &current_exe));
+  CHECK(base::PathService::Get(base::FILE_EXE, &current_exe));
   base::string16 image_name = current_exe.BaseName().value();
 
   const int kImageNameBytes = image_name.length() * sizeof(base::char16);

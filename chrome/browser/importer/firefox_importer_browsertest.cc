@@ -286,11 +286,11 @@ class FirefoxProfileImporterBrowserTest : public InProcessBrowserTest {
                                   importer::ImporterProgressObserver* observer,
                                   ProfileWriter* writer) {
     base::FilePath data_path;
-    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_path));
+    ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &data_path));
     data_path = data_path.AppendASCII(profile_dir);
     ASSERT_TRUE(base::CopyDirectory(data_path, profile_path_, true));
 
-    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_path));
+    ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &data_path));
     data_path = data_path.AppendASCII("firefox3_nss");
     ASSERT_TRUE(base::CopyDirectory(data_path, profile_path_, false));
 
@@ -305,7 +305,7 @@ class FirefoxProfileImporterBrowserTest : public InProcessBrowserTest {
     base::CreateDirectory(custom_search_engine_path);
 
     // Copy over search engines.
-    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_path));
+    ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &data_path));
     data_path = data_path.AppendASCII("firefox_searchplugins");
     base::FilePath default_search_engine_source_path =
         data_path.AppendASCII("default");

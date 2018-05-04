@@ -11,7 +11,7 @@ namespace safe_browsing {
 
 PathSanitizer::PathSanitizer() {
   // Get the home directory path.
-  if (!PathService::Get(base::DIR_HOME, &home_path_))
+  if (!base::PathService::Get(base::DIR_HOME, &home_path_))
     NOTREACHED();
 }
 

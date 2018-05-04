@@ -546,7 +546,7 @@ class GoogleUpdateWinTest : public ::testing::TestWithParam<bool> {
     // Override FILE_EXE so that it looks like the test is running from the
     // standard install location for this mode (system-level or user-level).
     base::FilePath file_exe;
-    ASSERT_TRUE(PathService::Get(base::FILE_EXE, &file_exe));
+    ASSERT_TRUE(base::PathService::Get(base::FILE_EXE, &file_exe));
     base::FilePath install_dir(
         installer::GetChromeInstallPath(system_level_install_));
     file_exe_override_.reset(new base::ScopedPathOverride(
@@ -556,13 +556,13 @@ class GoogleUpdateWinTest : public ::testing::TestWithParam<bool> {
     // Override these paths so that they can be found after the registry
     // override manager is in place.
     base::FilePath temp;
-    PathService::Get(base::DIR_PROGRAM_FILES, &temp);
+    base::PathService::Get(base::DIR_PROGRAM_FILES, &temp);
     program_files_override_.reset(
         new base::ScopedPathOverride(base::DIR_PROGRAM_FILES, temp));
-    PathService::Get(base::DIR_PROGRAM_FILESX86, &temp);
+    base::PathService::Get(base::DIR_PROGRAM_FILESX86, &temp);
     program_files_x86_override_.reset(
         new base::ScopedPathOverride(base::DIR_PROGRAM_FILESX86, temp));
-    PathService::Get(base::DIR_LOCAL_APP_DATA, &temp);
+    base::PathService::Get(base::DIR_LOCAL_APP_DATA, &temp);
     local_app_data_override_.reset(
         new base::ScopedPathOverride(base::DIR_LOCAL_APP_DATA, temp));
 
@@ -672,8 +672,8 @@ TEST_P(GoogleUpdateWinTest, InvalidInstallDirectory) {
   // non-standard location.
   base::FilePath file_exe;
   base::FilePath dir_temp;
-  ASSERT_TRUE(PathService::Get(base::FILE_EXE, &file_exe));
-  ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &dir_temp));
+  ASSERT_TRUE(base::PathService::Get(base::FILE_EXE, &file_exe));
+  ASSERT_TRUE(base::PathService::Get(base::DIR_TEMP, &dir_temp));
   file_exe_override_.reset();
   file_exe_override_.reset(new base::ScopedPathOverride(
       base::FILE_EXE, dir_temp.Append(file_exe.BaseName()),

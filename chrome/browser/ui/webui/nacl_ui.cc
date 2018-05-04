@@ -259,7 +259,8 @@ void NaClDomHandler::AddPnaclInfo(base::ListValue* list) {
 
   // Obtain the version of the PNaCl translator.
   base::FilePath pnacl_path;
-  bool got_path = PathService::Get(chrome::DIR_PNACL_COMPONENT, &pnacl_path);
+  bool got_path =
+      base::PathService::Get(chrome::DIR_PNACL_COMPONENT, &pnacl_path);
   if (!got_path || pnacl_path.empty() || !pnacl_path_exists_) {
     AddPair(list,
             ASCIIToUTF16("PNaCl translator"),
@@ -344,7 +345,8 @@ void CheckVersion(const base::FilePath& pnacl_path, std::string* version) {
 
 bool CheckPathAndVersion(std::string* version) {
   base::FilePath pnacl_path;
-  bool got_path = PathService::Get(chrome::DIR_PNACL_COMPONENT, &pnacl_path);
+  bool got_path =
+      base::PathService::Get(chrome::DIR_PNACL_COMPONENT, &pnacl_path);
   if (got_path && !pnacl_path.empty() && base::PathExists(pnacl_path)) {
     CheckVersion(pnacl_path, version);
     return true;

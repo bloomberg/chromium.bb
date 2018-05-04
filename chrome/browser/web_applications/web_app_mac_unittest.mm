@@ -236,9 +236,9 @@ TEST_F(WebAppShortcutCreatorTest, UpdateBookmarkAppShortcut) {
 }
 
 TEST_F(WebAppShortcutCreatorTest, DeleteShortcuts) {
-  // When using PathService::Override, it calls base::MakeAbsoluteFilePath.
-  // On Mac this prepends "/private" to the path, but points to the same
-  // directory in the file system.
+  // When using base::PathService::Override, it calls
+  // base::MakeAbsoluteFilePath. On Mac this prepends "/private" to the path,
+  // but points to the same directory in the file system.
   app_data_dir_ = base::MakeAbsoluteFilePath(app_data_dir_);
 
   base::ScopedTempDir other_folder_temp_dir;
@@ -277,7 +277,8 @@ TEST_F(WebAppShortcutCreatorTest, DeleteShortcuts) {
   [plist writeToFile:plist_path
           atomically:YES];
 
-  EXPECT_TRUE(PathService::Override(chrome::DIR_USER_DATA, app_data_dir_));
+  EXPECT_TRUE(
+      base::PathService::Override(chrome::DIR_USER_DATA, app_data_dir_));
   shortcut_creator.DeleteShortcuts();
   EXPECT_FALSE(base::PathExists(internal_shim_path_));
   EXPECT_TRUE(base::PathExists(shim_path_));

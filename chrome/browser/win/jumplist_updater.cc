@@ -163,7 +163,7 @@ bool JumpListUpdater::AddTasks(const ShellLinkItemList& link_items) {
 
   // Retrieve the absolute path to "chrome.exe".
   base::FilePath application_path;
-  if (!PathService::Get(base::FILE_EXE, &application_path))
+  if (!base::PathService::Get(base::FILE_EXE, &application_path))
     return false;
 
   // Create an EnumerableObjectCollection object to be added items of the
@@ -202,7 +202,7 @@ bool JumpListUpdater::AddCustomCategory(const base::string16& category_name,
 
   // Retrieve the absolute path to "chrome.exe".
   base::FilePath application_path;
-  if (!PathService::Get(base::FILE_EXE, &application_path))
+  if (!base::PathService::Get(base::FILE_EXE, &application_path))
     return false;
 
   // Exit this function when the given vector does not contain any items

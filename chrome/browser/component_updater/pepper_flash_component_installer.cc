@@ -202,7 +202,8 @@ void RegisterPepperFlashWithChrome(const base::FilePath& path,
   content::WebPluginInfo web_plugin = plugin_info.ToWebPluginInfo();
 
   base::FilePath system_flash_path;
-  PathService::Get(chrome::FILE_PEPPER_FLASH_SYSTEM_PLUGIN, &system_flash_path);
+  base::PathService::Get(chrome::FILE_PEPPER_FLASH_SYSTEM_PLUGIN,
+                         &system_flash_path);
 
   std::vector<content::WebPluginInfo> plugins;
   PluginService::GetInstance()->GetInternalPlugins(&plugins);
@@ -237,7 +238,7 @@ void RegisterPepperFlashWithChrome(const base::FilePath& path,
 }
 
 void UpdatePathService(const base::FilePath& path) {
-  PathService::Override(chrome::DIR_PEPPER_FLASH_PLUGIN, path);
+  base::PathService::Override(chrome::DIR_PEPPER_FLASH_PLUGIN, path);
 }
 #endif  // !defined(OS_LINUX) && defined(GOOGLE_CHROME_BUILD)
 

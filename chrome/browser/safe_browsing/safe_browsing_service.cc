@@ -104,7 +104,7 @@ base::FilePath SafeBrowsingService::GetCookieFilePathForTesting() {
 // static
 base::FilePath SafeBrowsingService::GetBaseFilename() {
   base::FilePath path;
-  bool result = PathService::Get(chrome::DIR_USER_DATA, &path);
+  bool result = base::PathService::Get(chrome::DIR_USER_DATA, &path);
   DCHECK(result);
   return path.Append(safe_browsing::kSafeBrowsingBaseFilename);
 }
@@ -139,7 +139,7 @@ void SafeBrowsingService::Initialize() {
   FileTypePolicies::GetInstance();
 
   base::FilePath user_data_dir;
-  bool result = PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  bool result = base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   DCHECK(result);
 
   url_request_context_getter_ = new SafeBrowsingURLRequestContextGetter(

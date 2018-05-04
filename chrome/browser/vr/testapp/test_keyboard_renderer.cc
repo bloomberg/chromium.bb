@@ -29,7 +29,7 @@ void TestKeyboardRenderer::Initialize(SkiaSurfaceProvider* provider,
   // is provided by the physical keyboard.
   // Read and decode keyboard image.
   base::FilePath dir;
-  PathService::Get(base::DIR_CURRENT, &dir);
+  base::PathService::Get(base::DIR_CURRENT, &dir);
   dir = dir.Append(base::FilePath().AppendASCII(kKeyboardImagePath));
   DCHECK(base::PathExists(dir));
   std::string file_contents;

@@ -46,7 +46,7 @@ class PrintingLayoutTest : public PrintingTest<InProcessBrowserTest>,
  public:
   PrintingLayoutTest() {
     base::FilePath browser_directory;
-    PathService::Get(chrome::DIR_APP, &browser_directory);
+    base::PathService::Get(chrome::DIR_APP, &browser_directory);
     emf_path_ = browser_directory.AppendASCII("metafile_dumps");
   }
 

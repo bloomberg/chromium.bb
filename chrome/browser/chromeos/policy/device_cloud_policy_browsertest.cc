@@ -313,7 +313,7 @@ class SigninExtensionsDeviceCloudPolicyBrowserTestBase
 
   static base::FilePath GetTestExtensionSourcePath() {
     base::FilePath test_data_dir;
-    EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
+    EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
     return test_data_dir.AppendASCII(kTestExtensionSourceDir);
   }
 
@@ -406,8 +406,9 @@ class SigninExtensionsDeviceCloudPolicyBrowserTest
         SetUpInProcessBrowserTestFixture();
     signin_policy_provided_disabler_ =
         chromeos::GetScopedSigninScreenPolicyProviderDisablerForTesting();
-    EXPECT_TRUE(PathService::Get(chromeos::DIR_SIGNIN_PROFILE_COMPONENT_POLICY,
-                                 &component_policy_cache_dir_));
+    EXPECT_TRUE(
+        base::PathService::Get(chromeos::DIR_SIGNIN_PROFILE_COMPONENT_POLICY,
+                               &component_policy_cache_dir_));
     PrepareFakeComponentPolicyResponse();
   }
 
@@ -493,12 +494,14 @@ class PreinstalledSigninExtensionsDeviceCloudPolicyBrowserTest
  private:
   static void PrefillSigninProfile() {
     base::FilePath profile_source_path;
-    EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &profile_source_path));
+    EXPECT_TRUE(
+        base::PathService::Get(chrome::DIR_TEST_DATA, &profile_source_path));
     profile_source_path = profile_source_path.AppendASCII(kFakeProfileSourceDir)
                               .AppendASCII(chrome::kInitialProfile);
 
     base::FilePath profile_target_path;
-    EXPECT_TRUE(PathService::Get(chrome::DIR_USER_DATA, &profile_target_path));
+    EXPECT_TRUE(
+        base::PathService::Get(chrome::DIR_USER_DATA, &profile_target_path));
 
     EXPECT_TRUE(
         base::CopyDirectory(profile_source_path, profile_target_path, true));
@@ -514,12 +517,12 @@ class PreinstalledSigninExtensionsDeviceCloudPolicyBrowserTest
 
   void PrefillComponentPolicyCache() {
     base::FilePath user_data_dir;
-    EXPECT_TRUE(PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
+    EXPECT_TRUE(base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
     chromeos::RegisterStubPathOverrides(user_data_dir);
 
     base::FilePath cache_dir;
-    EXPECT_TRUE(PathService::Get(chromeos::DIR_SIGNIN_PROFILE_COMPONENT_POLICY,
-                                 &cache_dir));
+    EXPECT_TRUE(base::PathService::Get(
+        chromeos::DIR_SIGNIN_PROFILE_COMPONENT_POLICY, &cache_dir));
 
     ResourceCache cache(cache_dir, new base::NullTaskRunner);
     EXPECT_TRUE(cache.Store(kPolicyProtoCacheKey, kTestExtensionId,

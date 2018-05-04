@@ -39,7 +39,7 @@ void SetUrlRequestMocksEnabled(bool enabled) {
     net::URLRequestSlowDownloadJob::AddUrlHandler();
 
     base::FilePath root_http;
-    PathService::Get(chrome::DIR_TEST_DATA, &root_http);
+    base::PathService::Get(chrome::DIR_TEST_DATA, &root_http);
     net::URLRequestMockHTTPJob::AddUrlHandlers(root_http);
   } else {
     // Revert to the default handlers.
@@ -59,7 +59,7 @@ bool WriteFileToURLLoader(net::EmbeddedTestServer* test_server,
     return false;
 
   base::FilePath file_path;
-  PathService::Get(chrome::DIR_TEST_DATA, &file_path);
+  base::PathService::Get(chrome::DIR_TEST_DATA, &file_path);
   file_path = file_path.AppendASCII(path);
 
   std::string contents;

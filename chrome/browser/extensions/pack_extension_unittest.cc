@@ -20,7 +20,7 @@ namespace extensions {
 class PackExtensionTest : public testing::Test {
  public:
   PackExtensionTest() {
-    PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
+    base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
     test_data_dir_ = test_data_dir_.AppendASCII("extensions");
   }
 

@@ -27,7 +27,7 @@ class AndroidURLsMigrationTest : public HistoryUnitTestBase {
     profile_.reset(new TestingProfile);
 
     base::FilePath data_path;
-    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_path));
+    ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &data_path));
     data_path = data_path.AppendASCII("History");
 
     history_db_name_ = profile_->GetPath().Append(kHistoryFilename);

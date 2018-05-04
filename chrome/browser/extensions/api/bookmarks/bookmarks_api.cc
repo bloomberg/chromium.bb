@@ -90,7 +90,7 @@ base::FilePath GetDefaultFilepathForBookmarkExport() {
   base::i18n::ReplaceIllegalCharactersInPath(&filename, '_');
 
   base::FilePath default_path;
-  PathService::Get(chrome::DIR_USER_DOCUMENTS, &default_path);
+  base::PathService::Get(chrome::DIR_USER_DOCUMENTS, &default_path);
   return default_path.Append(filename);
 }
 

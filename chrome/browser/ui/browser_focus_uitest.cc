@@ -185,7 +185,7 @@ class TestInterstitialPage : public content::InterstitialPageDelegate {
   explicit TestInterstitialPage(WebContents* tab) {
     base::ScopedAllowBlockingForTesting allow_blocking;
     base::FilePath file_path;
-    bool success = PathService::Get(chrome::DIR_TEST_DATA, &file_path);
+    bool success = base::PathService::Get(chrome::DIR_TEST_DATA, &file_path);
     EXPECT_TRUE(success);
     file_path = file_path.AppendASCII("focus/typical_page.html");
     success = base::ReadFileToString(file_path, &html_contents_);

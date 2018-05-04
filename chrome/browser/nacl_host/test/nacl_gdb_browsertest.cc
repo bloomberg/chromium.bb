@@ -34,7 +34,7 @@ class NaClGdbTest : public PPAPINaClNewlibTest {
     PPAPINaClNewlibTest::SetUpCommandLine(command_line);
 
     base::FilePath mock_nacl_gdb;
-    EXPECT_TRUE(PathService::Get(base::DIR_EXE, &mock_nacl_gdb));
+    EXPECT_TRUE(base::PathService::Get(base::DIR_EXE, &mock_nacl_gdb));
     mock_nacl_gdb = mock_nacl_gdb.Append(kMockNaClGdb);
     command_line->AppendSwitchPath(switches::kNaClGdb, mock_nacl_gdb);
     EXPECT_TRUE(base::CreateTemporaryFile(&script_));

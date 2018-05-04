@@ -488,7 +488,7 @@ class ExtensionPrefsDelayedInstallInfo : public ExtensionPrefsTest {
   }
 
   void Initialize() override {
-    PathService::Get(chrome::DIR_TEST_DATA, &basedir_);
+    base::PathService::Get(chrome::DIR_TEST_DATA, &basedir_);
     now_ = Time::Now();
     id1_ = prefs_.AddExtensionAndReturnId("1");
     id2_ = prefs_.AddExtensionAndReturnId("2");

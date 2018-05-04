@@ -310,7 +310,7 @@ net::URLRequestJob* MaybeCreateURLRequestResourceBundleJob(
   // Try to load extension resources from chrome resource file if
   // directory_path is a descendant of resources_path. resources_path
   // corresponds to src/chrome/browser/resources in source tree.
-  if (PathService::Get(chrome::DIR_RESOURCES, &resources_path) &&
+  if (base::PathService::Get(chrome::DIR_RESOURCES, &resources_path) &&
       // Since component extension resources are included in
       // component_extension_resources.pak file in resources_path, calculate
       // extension relative path against resources_path.
@@ -343,7 +343,7 @@ base::FilePath GetBundleResourcePath(
   // |chrome_resources_path| corresponds to src/chrome/browser/resources in
   // source tree.
   base::FilePath chrome_resources_path;
-  if (!PathService::Get(chrome::DIR_RESOURCES, &chrome_resources_path))
+  if (!base::PathService::Get(chrome::DIR_RESOURCES, &chrome_resources_path))
     return base::FilePath();
 
   // Since component extension resources are included in

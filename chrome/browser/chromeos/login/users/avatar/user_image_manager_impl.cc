@@ -491,7 +491,7 @@ void UserImageManagerImpl::Job::SaveImageAndUpdateLocalState(
   }
 
   base::FilePath user_data_dir;
-  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   // TODO(crbug.com/670557): Use GetAccountIdKey() instead of user_id().
   image_path_ = user_data_dir.AppendASCII(
       user_id() + ChooseExtensionFromImageFormat(image_format));

@@ -28,9 +28,9 @@ std::string QuirksManagerDelegateImpl::GetApiKey() const {
 base::FilePath QuirksManagerDelegateImpl::GetDisplayProfileDirectory() const {
   base::FilePath directory;
   if (base::SysInfo::IsRunningOnChromeOS()) {
-    PathService::Get(chromeos::DIR_DEVICE_DISPLAY_PROFILES, &directory);
+    base::PathService::Get(chromeos::DIR_DEVICE_DISPLAY_PROFILES, &directory);
   } else {
-    PathService::Get(chrome::DIR_USER_DATA, &directory);
+    base::PathService::Get(chrome::DIR_USER_DATA, &directory);
     directory = directory.Append(kUserDataDisplayProfilesDirectory);
   }
   return directory;

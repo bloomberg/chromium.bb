@@ -34,7 +34,7 @@ IN_PROC_BROWSER_TEST_F(DeveloperPrivateApiTest, Basics) {
 // Tests opening the developer tools for an app window.
 IN_PROC_BROWSER_TEST_F(DeveloperPrivateApiTest, InspectAppWindowView) {
   base::FilePath dir;
-  PathService::Get(chrome::DIR_TEST_DATA, &dir);
+  base::PathService::Get(chrome::DIR_TEST_DATA, &dir);
   dir = dir.AppendASCII("extensions")
             .AppendASCII("platform_apps")
             .AppendASCII("minimal");
@@ -85,7 +85,7 @@ IN_PROC_BROWSER_TEST_F(DeveloperPrivateApiTest, InspectAppWindowView) {
 
 IN_PROC_BROWSER_TEST_F(DeveloperPrivateApiTest, InspectEmbeddedOptionsPage) {
   base::FilePath dir;
-  PathService::Get(chrome::DIR_TEST_DATA, &dir);
+  base::PathService::Get(chrome::DIR_TEST_DATA, &dir);
   // Load an extension that only has an embedded options_ui page.
   const Extension* extension = LoadExtension(dir.AppendASCII("extensions")
                                                  .AppendASCII("delayed_install")

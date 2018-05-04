@@ -232,7 +232,7 @@ std::unique_ptr<DiagnosticsTest> MakeSqliteHistoryDbTest() {
 #if defined(OS_CHROMEOS)
 std::unique_ptr<DiagnosticsTest> MakeSqliteNssCertDbTest() {
   base::FilePath home_dir;
-  PathService::Get(base::DIR_HOME, &home_dir);
+  base::PathService::Get(base::DIR_HOME, &home_dir);
   return std::make_unique<SqliteIntegrityTest>(
       SqliteIntegrityTest::REMOVE_IF_CORRUPT,
       DIAGNOSTICS_SQLITE_INTEGRITY_NSS_CERT_TEST,
@@ -241,7 +241,7 @@ std::unique_ptr<DiagnosticsTest> MakeSqliteNssCertDbTest() {
 
 std::unique_ptr<DiagnosticsTest> MakeSqliteNssKeyDbTest() {
   base::FilePath home_dir;
-  PathService::Get(base::DIR_HOME, &home_dir);
+  base::PathService::Get(base::DIR_HOME, &home_dir);
   return std::make_unique<SqliteIntegrityTest>(
       SqliteIntegrityTest::REMOVE_IF_CORRUPT,
       DIAGNOSTICS_SQLITE_INTEGRITY_NSS_KEY_TEST,

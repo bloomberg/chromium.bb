@@ -80,7 +80,7 @@ base::string16 GetRegistryPathForTestProfile() {
   }
 
   base::FilePath profile_dir;
-  EXPECT_TRUE(PathService::Get(chrome::DIR_USER_DATA, &profile_dir));
+  EXPECT_TRUE(base::PathService::Get(chrome::DIR_USER_DATA, &profile_dir));
 
   // Use a location under the real PreferenceMACs path so that the backup
   // cleanup logic in ChromeTestLauncherDelegate::PreSharding() for interrupted
@@ -234,7 +234,7 @@ class PrefHashBrowserTestBase
 #endif
 
     base::FilePath profile_dir;
-    EXPECT_TRUE(PathService::Get(chrome::DIR_USER_DATA, &profile_dir));
+    EXPECT_TRUE(base::PathService::Get(chrome::DIR_USER_DATA, &profile_dir));
     profile_dir = profile_dir.AppendASCII(TestingProfile::kTestUserProfileDir);
 
     // Sanity check that old protected pref file is never present in modern
@@ -339,7 +339,7 @@ class PrefHashBrowserTestBase
 
     base::FilePath num_tracked_prefs_file;
     ASSERT_TRUE(
-        PathService::Get(chrome::DIR_USER_DATA, &num_tracked_prefs_file));
+        base::PathService::Get(chrome::DIR_USER_DATA, &num_tracked_prefs_file));
     num_tracked_prefs_file =
         num_tracked_prefs_file.AppendASCII(kNumTrackedPrefFilename);
 

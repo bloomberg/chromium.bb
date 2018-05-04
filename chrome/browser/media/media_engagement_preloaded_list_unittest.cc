@@ -38,9 +38,9 @@ const base::FilePath kFileReadFailedPath =
 base::FilePath GetModulePath() {
   base::FilePath module_dir;
 #if defined(OS_ANDROID)
-  EXPECT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &module_dir));
+  EXPECT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &module_dir));
 #else
-  EXPECT_TRUE(PathService::Get(base::DIR_MODULE, &module_dir));
+  EXPECT_TRUE(base::PathService::Get(base::DIR_MODULE, &module_dir));
 #endif
   return module_dir;
 }

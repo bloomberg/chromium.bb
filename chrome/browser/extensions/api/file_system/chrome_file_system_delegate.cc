@@ -230,7 +230,7 @@ ChromeFileSystemDelegate::~ChromeFileSystemDelegate() {}
 
 base::FilePath ChromeFileSystemDelegate::GetDefaultDirectory() {
   base::FilePath documents_dir;
-  PathService::Get(chrome::DIR_USER_DOCUMENTS, &documents_dir);
+  base::PathService::Get(chrome::DIR_USER_DOCUMENTS, &documents_dir);
   return documents_dir;
 }
 

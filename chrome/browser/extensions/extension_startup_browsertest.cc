@@ -89,7 +89,7 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
 
   bool SetUpUserDataDirectory() override {
     base::FilePath profile_dir;
-    PathService::Get(chrome::DIR_USER_DATA, &profile_dir);
+    base::PathService::Get(chrome::DIR_USER_DATA, &profile_dir);
     profile_dir = profile_dir.AppendASCII(TestingProfile::kTestUserProfileDir);
     base::CreateDirectory(profile_dir);
 
@@ -99,7 +99,7 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
 
     if (load_extensions_.empty()) {
       base::FilePath src_dir;
-      PathService::Get(chrome::DIR_TEST_DATA, &src_dir);
+      base::PathService::Get(chrome::DIR_TEST_DATA, &src_dir);
       src_dir = src_dir.AppendASCII("extensions").AppendASCII("good");
 
       base::CopyFile(src_dir.Append(chrome::kPreferencesFilename),
@@ -168,7 +168,7 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
 
     // Load a page affected by the content script and test to see the effect.
     base::FilePath test_file;
-    PathService::Get(chrome::DIR_TEST_DATA, &test_file);
+    base::PathService::Get(chrome::DIR_TEST_DATA, &test_file);
     test_file =
         test_file.AppendASCII("extensions").AppendASCII("test_file.html");
 
@@ -256,7 +256,7 @@ class ExtensionsLoadTest : public ExtensionStartupTestBase {
  public:
   ExtensionsLoadTest() {
     base::FilePath one_extension_path;
-    PathService::Get(chrome::DIR_TEST_DATA, &one_extension_path);
+    base::PathService::Get(chrome::DIR_TEST_DATA, &one_extension_path);
     one_extension_path = one_extension_path.AppendASCII("extensions")
                              .AppendASCII("good")
                              .AppendASCII("Extensions")
@@ -290,7 +290,7 @@ class ExtensionsLoadMultipleTest : public ExtensionStartupTestBase {
  public:
   ExtensionsLoadMultipleTest() {
     base::FilePath one_extension_path;
-    PathService::Get(chrome::DIR_TEST_DATA, &one_extension_path);
+    base::PathService::Get(chrome::DIR_TEST_DATA, &one_extension_path);
     one_extension_path = one_extension_path.AppendASCII("extensions")
                              .AppendASCII("good")
                              .AppendASCII("Extensions")
@@ -299,19 +299,19 @@ class ExtensionsLoadMultipleTest : public ExtensionStartupTestBase {
     load_extensions_.push_back(one_extension_path.value());
 
     base::FilePath second_extension_path;
-    PathService::Get(chrome::DIR_TEST_DATA, &second_extension_path);
+    base::PathService::Get(chrome::DIR_TEST_DATA, &second_extension_path);
     second_extension_path =
         second_extension_path.AppendASCII("extensions").AppendASCII("app");
     load_extensions_.push_back(second_extension_path.value());
 
     base::FilePath third_extension_path;
-    PathService::Get(chrome::DIR_TEST_DATA, &third_extension_path);
+    base::PathService::Get(chrome::DIR_TEST_DATA, &third_extension_path);
     third_extension_path =
         third_extension_path.AppendASCII("extensions").AppendASCII("app1");
     load_extensions_.push_back(third_extension_path.value());
 
     base::FilePath fourth_extension_path;
-    PathService::Get(chrome::DIR_TEST_DATA, &fourth_extension_path);
+    base::PathService::Get(chrome::DIR_TEST_DATA, &fourth_extension_path);
     fourth_extension_path =
         fourth_extension_path.AppendASCII("extensions").AppendASCII("app2");
     load_extensions_.push_back(fourth_extension_path.value());

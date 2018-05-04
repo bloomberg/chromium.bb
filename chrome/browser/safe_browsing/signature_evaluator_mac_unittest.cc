@@ -49,14 +49,14 @@ class MacSignatureEvaluatorTest : public testing::Test {
  protected:
   void SetUp() override {
     base::FilePath source_path;
-    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &source_path));
+    ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &source_path));
     testdata_path_ =
         source_path.AppendASCII("safe_browsing").AppendASCII("mach_o");
 
     base::FilePath dir_exe;
-    ASSERT_TRUE(PathService::Get(base::DIR_EXE, &dir_exe));
+    ASSERT_TRUE(base::PathService::Get(base::DIR_EXE, &dir_exe));
     base::FilePath file_exe;
-    ASSERT_TRUE(PathService::Get(base::FILE_EXE, &file_exe));
+    ASSERT_TRUE(base::PathService::Get(base::FILE_EXE, &file_exe));
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   }

@@ -495,7 +495,7 @@ void ExtensionApiTest::SetUpCommandLine(base::CommandLine* command_line) {
   test_data_dir_ = test_data_dir_.AppendASCII("api_test");
 
   extensions::RegisterPathProvider();
-  PathService::Get(extensions::DIR_TEST_DATA, &shared_test_data_dir_);
+  base::PathService::Get(extensions::DIR_TEST_DATA, &shared_test_data_dir_);
   shared_test_data_dir_ = shared_test_data_dir_.AppendASCII("api_test");
 
   // Backgrounded renderer processes run at a lower priority, causing the

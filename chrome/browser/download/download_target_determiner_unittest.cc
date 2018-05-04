@@ -289,7 +289,7 @@ class DownloadTargetDeterminerTest : public ChromeRenderViewHostTestHarness {
 
   base::FilePath test_download_dir() const {
     base::FilePath path;
-    CHECK(PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &path));
+    CHECK(base::PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &path));
     return path;
   }
 

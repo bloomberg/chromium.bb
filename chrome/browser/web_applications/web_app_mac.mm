@@ -209,7 +209,7 @@ NSMutableDictionary* ReadPlist(NSString* plist_path) {
 bool HasSameUserDataDir(const base::FilePath& bundle_path) {
   NSDictionary* plist = ReadPlist(GetPlistPath(bundle_path));
   base::FilePath user_data_dir;
-  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   DCHECK(!user_data_dir.empty());
   return base::StartsWith(
       base::SysNSStringToUTF8(

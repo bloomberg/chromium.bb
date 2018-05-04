@@ -103,13 +103,13 @@ RemoteDebuggingServer::RemoteDebuggingServer() {
     // The client requested an ephemeral port. Must write the selected
     // port to a well-known location in the profile directory to
     // bootstrap the connection process.
-    bool result = PathService::Get(chrome::DIR_USER_DATA, &output_dir);
+    bool result = base::PathService::Get(chrome::DIR_USER_DATA, &output_dir);
     DCHECK(result);
   }
 
   base::FilePath debug_frontend_dir;
 #if BUILDFLAG(DEBUG_DEVTOOLS)
-  PathService::Get(chrome::DIR_INSPECTOR_DEBUG, &debug_frontend_dir);
+  base::PathService::Get(chrome::DIR_INSPECTOR_DEBUG, &debug_frontend_dir);
 #endif
 
   content::DevToolsAgentHost::StartRemoteDebuggingServer(

@@ -1240,11 +1240,12 @@ TEST_F(MediaGalleriesPreferencesTest, SetsDefaultGalleryTypeField) {
   base::FilePath music_path;
   base::FilePath pictures_path;
   base::FilePath videos_path;
-  bool got_music_path = PathService::Get(chrome::DIR_USER_MUSIC, &music_path);
+  bool got_music_path =
+      base::PathService::Get(chrome::DIR_USER_MUSIC, &music_path);
   bool got_pictures_path =
-      PathService::Get(chrome::DIR_USER_PICTURES, &pictures_path);
+      base::PathService::Get(chrome::DIR_USER_PICTURES, &pictures_path);
   bool got_videos_path =
-      PathService::Get(chrome::DIR_USER_VIDEOS, &videos_path);
+      base::PathService::Get(chrome::DIR_USER_VIDEOS, &videos_path);
 
   int num_default_galleries = 0;
 
@@ -1296,11 +1297,11 @@ TEST_F(MediaGalleriesPreferencesTest, UpdatesDefaultGalleryType) {
   base::FilePath old_pictures_path;
   base::FilePath old_videos_path;
   bool got_old_music_path =
-      PathService::Get(chrome::DIR_USER_MUSIC, &old_music_path);
+      base::PathService::Get(chrome::DIR_USER_MUSIC, &old_music_path);
   bool got_old_pictures_path =
-      PathService::Get(chrome::DIR_USER_PICTURES, &old_pictures_path);
+      base::PathService::Get(chrome::DIR_USER_PICTURES, &old_pictures_path);
   bool got_old_videos_path =
-      PathService::Get(chrome::DIR_USER_VIDEOS, &old_videos_path);
+      base::PathService::Get(chrome::DIR_USER_VIDEOS, &old_videos_path);
 
   bool found_music = false;
   bool found_pictures = false;
@@ -1347,11 +1348,11 @@ TEST_F(MediaGalleriesPreferencesTest, UpdatesDefaultGalleryType) {
   base::FilePath new_pictures_path;
   base::FilePath new_videos_path;
   bool got_new_music_path =
-      PathService::Get(chrome::DIR_USER_MUSIC, &new_music_path);
+      base::PathService::Get(chrome::DIR_USER_MUSIC, &new_music_path);
   bool got_new_pictures_path =
-      PathService::Get(chrome::DIR_USER_PICTURES, &new_pictures_path);
+      base::PathService::Get(chrome::DIR_USER_PICTURES, &new_pictures_path);
   bool got_new_videos_path =
-      PathService::Get(chrome::DIR_USER_VIDEOS, &new_videos_path);
+      base::PathService::Get(chrome::DIR_USER_VIDEOS, &new_videos_path);
 
   EXPECT_NE(new_music_path, old_music_path);
   EXPECT_NE(new_pictures_path, old_pictures_path);
@@ -1421,11 +1422,12 @@ TEST_F(MediaGalleriesPreferencesTest, UpdateAddsDefaultGalleryTypeIfMissing) {
   base::FilePath music_path;
   base::FilePath pictures_path;
   base::FilePath videos_path;
-  bool got_music_path = PathService::Get(chrome::DIR_USER_MUSIC, &music_path);
+  bool got_music_path =
+      base::PathService::Get(chrome::DIR_USER_MUSIC, &music_path);
   bool got_pictures_path =
-      PathService::Get(chrome::DIR_USER_PICTURES, &pictures_path);
+      base::PathService::Get(chrome::DIR_USER_PICTURES, &pictures_path);
   bool got_videos_path =
-      PathService::Get(chrome::DIR_USER_VIDEOS, &videos_path);
+      base::PathService::Get(chrome::DIR_USER_VIDEOS, &videos_path);
 
   bool found_music = false;
   bool found_pictures = false;

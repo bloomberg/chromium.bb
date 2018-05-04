@@ -1107,7 +1107,7 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
   // open a <webview> when it's loaded.
   ASSERT_TRUE(embedded_test_server()->Start());
   base::FilePath dir;
-  PathService::Get(chrome::DIR_TEST_DATA, &dir);
+  base::PathService::Get(chrome::DIR_TEST_DATA, &dir);
   dir = dir.AppendASCII("extensions")
             .AppendASCII("platform_apps")
             .AppendASCII("web_view")

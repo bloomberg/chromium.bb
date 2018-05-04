@@ -887,6 +887,6 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, SendHPKPReportServerHangs) {
 IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, LastSelectedDirectory) {
   ProfileImpl* profile_impl = static_cast<ProfileImpl*>(browser()->profile());
   base::FilePath home;
-  PathService::Get(base::DIR_HOME, &home);
+  base::PathService::Get(base::DIR_HOME, &home);
   ASSERT_EQ(profile_impl->last_selected_directory(), home);
 }

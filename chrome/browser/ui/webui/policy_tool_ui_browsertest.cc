@@ -94,7 +94,7 @@ class PolicyToolUITest : public InProcessBrowserTest {
 
 base::FilePath PolicyToolUITest::GetSessionsDir() {
   base::FilePath profile_dir;
-  EXPECT_TRUE(PathService::Get(chrome::DIR_USER_DATA, &profile_dir));
+  EXPECT_TRUE(base::PathService::Get(chrome::DIR_USER_DATA, &profile_dir));
   return profile_dir.AppendASCII(TestingProfile::kTestUserProfileDir)
       .Append(kPolicyToolSessionsDir);
 }

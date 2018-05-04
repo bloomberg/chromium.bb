@@ -25,7 +25,7 @@ class FileManagerUITest : public InProcessBrowserTest {
 
   void RunTest() {
     base::FilePath root_path;
-    ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &root_path));
+    ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &root_path));
 
     // Load test.html.
     const GURL url = net::FilePathToFileURL(root_path.Append(

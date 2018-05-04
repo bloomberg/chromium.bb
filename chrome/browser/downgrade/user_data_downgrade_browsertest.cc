@@ -34,7 +34,7 @@ class UserDataDowngradeBrowserTestBase : public InProcessBrowserTest {
 
   // InProcessBrowserTest:
   bool SetUpUserDataDirectory() override {
-    if (!PathService::Get(chrome::DIR_USER_DATA, &user_data_dir_))
+    if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir_))
       return false;
     if (!CreateTemporaryFileInDir(user_data_dir_, &other_file_))
       return false;

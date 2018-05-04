@@ -64,7 +64,7 @@ std::string GenerateId(const std::string& sha2hashstr) {
 void CleanUpOldInstalls(const std::string& name) {
   // Clean up components installed at old path.
   base::FilePath path;
-  if (!PathService::Get(DIR_COMPONENT_USER, &path))
+  if (!base::PathService::Get(DIR_COMPONENT_USER, &path))
     return;
   path = path.Append(name);
   if (base::PathExists(path))
@@ -75,7 +75,7 @@ void CleanUpOldInstalls(const std::string& name) {
 std::vector<ComponentConfig> GetInstalled() {
   std::vector<ComponentConfig> configs;
   base::FilePath root;
-  if (!PathService::Get(DIR_COMPONENT_USER, &root))
+  if (!base::PathService::Get(DIR_COMPONENT_USER, &root))
     return configs;
 
   root = root.Append(kComponentsRootPath);

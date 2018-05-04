@@ -147,7 +147,7 @@ void DeviceLocalAccountExternalPolicyLoaderTest::SetUp() {
       new net::TestURLRequestContextGetter(base::ThreadTaskRunnerHandle::Get());
   TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(
       request_context_getter_.get());
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_dir_));
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_dir_));
 
   loader_ = new DeviceLocalAccountExternalPolicyLoader(&store_, cache_dir_);
   provider_.reset(new extensions::ExternalProviderImpl(

@@ -238,12 +238,12 @@ void ExternalPrefLoader::LoadOnFileThread() {
   auto prefs = std::make_unique<base::DictionaryValue>();
 
   // TODO(skerner): Some values of base_path_id_ will cause
-  // PathService::Get() to return false, because the path does
+  // base::PathService::Get() to return false, because the path does
   // not exist.  Find and fix the build/install scripts so that
   // this can become a CHECK().  Known examples include chrome
   // OS developer builds and linux install packages.
   // Tracked as crbug.com/70402 .
-  if (PathService::Get(base_path_id_, &base_path_)) {
+  if (base::PathService::Get(base_path_id_, &base_path_)) {
     ReadExternalExtensionPrefFile(prefs.get());
 
     if (!prefs->empty())

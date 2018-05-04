@@ -87,7 +87,7 @@ DriveFirstRunTest::DriveFirstRunTest() :
     success_(false) {}
 
 void DriveFirstRunTest::SetUpOnMainThread() {
-  PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
+  base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
   test_data_dir_ = test_data_dir_.AppendASCII(kTestDirectory);
 
   host_resolver()->AddRule("example.com", "127.0.0.1");

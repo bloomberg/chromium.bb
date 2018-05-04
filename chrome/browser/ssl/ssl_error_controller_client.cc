@@ -105,7 +105,7 @@ void LaunchDateAndTimeSettingsImpl() {
 
 #elif defined(OS_WIN)
   base::FilePath path;
-  PathService::Get(base::DIR_SYSTEM, &path);
+  base::PathService::Get(base::DIR_SYSTEM, &path);
   static const base::char16 kControlPanelExe[] = L"control.exe";
   path = path.Append(base::string16(kControlPanelExe));
   base::CommandLine command(path);

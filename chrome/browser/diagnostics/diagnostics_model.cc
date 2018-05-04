@@ -234,7 +234,7 @@ DiagnosticsModel* MakeDiagnosticsModel(const base::CommandLine& cmdline) {
   base::FilePath user_data_dir =
       cmdline.GetSwitchValuePath(switches::kUserDataDir);
   if (!user_data_dir.empty())
-    PathService::Override(chrome::DIR_USER_DATA, user_data_dir);
+    base::PathService::Override(chrome::DIR_USER_DATA, user_data_dir);
 #if defined(OS_WIN)
   return new DiagnosticsModelWin();
 #elif defined(OS_MACOSX)

@@ -461,7 +461,7 @@ const char* GetDefaultAvatarIconFileNameAtIndex(size_t index) {
 base::FilePath GetPathOfHighResAvatarAtIndex(size_t index) {
   const char* file_name = GetDefaultAvatarIconFileNameAtIndex(index);
   base::FilePath user_data_dir;
-  CHECK(PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
+  CHECK(base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
   return user_data_dir.AppendASCII(
       kHighResAvatarFolderName).AppendASCII(file_name);
 }

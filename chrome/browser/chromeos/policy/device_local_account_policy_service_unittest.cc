@@ -546,7 +546,7 @@ base::FilePath DeviceLocalAccountPolicyExtensionCacheTest::
 // the caches for all existing accounts are running.
 TEST_F(DeviceLocalAccountPolicyExtensionCacheTest, Startup) {
   base::FilePath test_data_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
   const base::FilePath source_crx_file =
       test_data_dir.Append(kExtensionCRXPath);
   const std::string target_crx_file_name =

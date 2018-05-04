@@ -88,7 +88,7 @@ class ChromePluginTest : public InProcessBrowserTest {
 
   static GURL GetURL(const char* filename) {
     base::FilePath path;
-    PathService::Get(content::DIR_TEST_DATA, &path);
+    base::PathService::Get(content::DIR_TEST_DATA, &path);
     path = path.AppendASCII("plugin").AppendASCII(filename);
     CHECK(base::PathExists(path));
     return net::FilePathToFileURL(path);

@@ -65,7 +65,7 @@ BinaryIntegrityAnalyzerWinTest::BinaryIntegrityAnalyzerWinTest() {
 
   // We retrieve DIR_TEST_DATA here because it is based on DIR_EXE and we are
   // about to override the path to the latter.
-  if (!PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_))
+  if (!base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_))
     NOTREACHED();
 
   exe_dir_override_.reset(
