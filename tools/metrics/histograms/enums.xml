@@ -26291,6 +26291,7 @@ from previous Chrome versions.
   <int value="-2119827860" label="ash-disable-maximize-mode-window-backdrop"/>
   <int value="-2119530966" label="enable-webrtc-dtls12"/>
   <int value="-2119493239" label="enable-app-info-dialog-mac"/>
+  <int value="-2117621241" label="ExperimentalProductivityFeatures:enabled"/>
   <int value="-2117201726" label="disable-gpu-rasterization"/>
   <int value="-2114831248" label="disable-new-ntp"/>
   <int value="-2113705745"
@@ -26521,6 +26522,7 @@ from previous Chrome versions.
   <int value="-1653838003" label="PauseBackgroundTabs:enabled"/>
   <int value="-1649778035" label="disable-clear-browsing-data-counters"/>
   <int value="-1648216169" label="NewOmniboxAnswerTypes:disabled"/>
+  <int value="-1638815914" label="enable-experimental-productivity-features"/>
   <int value="-1634878515" label="ChromeHomeModernLayout:enabled"/>
   <int value="-1634154256" label="ZeroSuggestRedirectToChrome:enabled"/>
   <int value="-1633586675" label="TabModalJsDialog:enabled"/>
@@ -26942,6 +26944,7 @@ from previous Chrome versions.
   <int value="-738957187" label="OmniboxUIExperimentSwapTitleAndUrl:disabled"/>
   <int value="-723224470" label="enable-password-force-saving:enabled"/>
   <int value="-722474177" label="browser-side-navigation:disabled"/>
+  <int value="-719147284" label="ExperimentalProductivityFeatures:disabled"/>
   <int value="-718884399" label="NewTabPageUIMd:enabled"/>
   <int value="-718626298" label="SysInternals:enabled"/>
   <int value="-716953514" label="disable-password-separated-signin-flow"/>
