@@ -13,6 +13,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/font_list.h"
+#include "ui/strings/grit/app_locale_settings.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/style/typography.h"
@@ -380,3 +381,67 @@ TEST_F(LayoutProviderTest, ExplicitTypographyLineHeight) {
   styled_label.SizeToFit(kStyledLabelWidth);
   EXPECT_EQ(kBodyLineHeight, styled_label.height());
 }
+
+// Only run explicit font-size checks on ChromeOS. Elsewhere, font sizes can be
+// affected by bot configuration, but ChromeOS controls this in the
+// ResourceBundle. Also on other platforms font metrics change a lot across OS
+// versions, but on ChromeOS, there is only one OS version, so we can rely on
+// consistent behavior. Also ChromeOS is the only place where
+// IDS_UI_FONT_FAMILY_CROS works, which this test uses to control results.
+#if defined(OS_CHROMEOS)
+
+// Ensure the omnibox font is always 14pt, even in Hebrew. On ChromeOS, Hebrew
+// has a larger default font size applied from the resource bundle, but the
+// Omnibox font configuration ignores it.
+TEST_F(LayoutProviderTest, OmniboxFontAlways14) {
+  constexpr int kOmniboxHeight = 24;
+  constexpr int kDecorationHeight = 14;
+  constexpr int kOmniboxDesiredSize = 14;
+  constexpr int kDecorationRequestedSize = 11;
+
+  auto& bundle = ui::ResourceBundle::GetSharedInstance();
+
+  auto set_system_font = [&bundle](const char* font) {
+    bundle.OverrideLocaleStringResource(IDS_UI_FONT_FAMILY_CROS,
+                                        base::ASCIIToUTF16(font));
+    bundle.ReloadFonts();
+    return gfx::FontList().GetFontSize();
+  };
+
+  int base_font_size = set_system_font("Roboto, 12px");
+  EXPECT_EQ(12, base_font_size);
+  EXPECT_EQ(base_font_size, bundle.GetFontListWithDelta(0).GetFontSize());
+  EXPECT_EQ(14 - base_font_size, GetFontSizeDeltaBoundedByAvailableHeight(
+                                     kOmniboxHeight, kOmniboxDesiredSize));
+  EXPECT_EQ(11 - base_font_size,
+            GetFontSizeDeltaBoundedByAvailableHeight(kDecorationHeight,
+                                                     kDecorationRequestedSize));
+
+  // Ensure there is a threshold where the font actually shrinks.
+  int latin_height_threshold = kOmniboxHeight;
+  for (; latin_height_threshold > 0; --latin_height_threshold) {
+    if (kOmniboxDesiredSize - base_font_size !=
+        GetFontSizeDeltaBoundedByAvailableHeight(latin_height_threshold,
+                                                 kOmniboxDesiredSize))
+      break;
+  }
+  // The threshold should always be the same, but the value depends on font
+  // metrics. Check for some sane value. This should only change if Roboto
+  // itself changes.
+  EXPECT_EQ(16, latin_height_threshold);
+
+  // Switch to Hebrew settings.
+  base_font_size = set_system_font("Roboto, Noto Sans Hebrew, 13px");
+  EXPECT_EQ(13, gfx::FontList().GetFontSize());
+  EXPECT_EQ(base_font_size, bundle.GetFontListWithDelta(0).GetFontSize());
+
+  // The base font size has increased, but the delta returned should still
+  // result in a 14pt font.
+  EXPECT_EQ(14 - base_font_size, GetFontSizeDeltaBoundedByAvailableHeight(
+                                     kOmniboxHeight, kOmniboxDesiredSize));
+  EXPECT_EQ(11 - base_font_size,
+            GetFontSizeDeltaBoundedByAvailableHeight(kDecorationHeight,
+                                                     kDecorationRequestedSize));
+}
+
+#endif  // OS_CHROMEOS
