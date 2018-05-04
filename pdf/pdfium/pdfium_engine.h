@@ -11,7 +11,6 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -21,6 +20,7 @@
 #include "pdf/pdf_engine.h"
 #include "pdf/pdfium/pdfium_form_filler.h"
 #include "pdf/pdfium/pdfium_page.h"
+#include "pdf/pdfium/pdfium_print.h"
 #include "pdf/pdfium/pdfium_range.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/dev/buffer_dev.h"
@@ -316,12 +316,6 @@ class PDFiumEngine : public PDFEngine,
 
   bool ExtendSelection(int page_index, int char_index);
 
-  FPDF_DOCUMENT CreateSinglePageRasterPdf(
-      double source_page_width,
-      double source_page_height,
-      const PP_PrintSettings_Dev& print_settings,
-      PDFiumPage* page_to_print);
-
   pp::Buffer_Dev PrintPagesAsRasterPDF(
       const PP_PrintPageNumberRange_Dev* page_ranges,
       uint32_t page_range_count,
@@ -330,20 +324,6 @@ class PDFiumEngine : public PDFEngine,
   pp::Buffer_Dev PrintPagesAsPDF(const PP_PrintPageNumberRange_Dev* page_ranges,
                                  uint32_t page_range_count,
                                  const PP_PrintSettings_Dev& print_settings);
-
-  bool FlattenPrintData(FPDF_DOCUMENT doc);
-  pp::Buffer_Dev GetPrintData(FPDF_DOCUMENT doc);
-  pp::Buffer_Dev GetFlattenedPrintData(FPDF_DOCUMENT doc);
-
-  // Perform N-up PDF generation from |doc| based on the parameters in
-  // |print_settings|. On success, the returned buffer contains the N-up version
-  // of |doc|. On failure, the returned buffer is empty.
-  pp::Buffer_Dev NupPdfToPdf(FPDF_DOCUMENT doc,
-                             const PP_PrintSettings_Dev& print_settings);
-
-  void FitContentsToPrintableAreaIfRequired(
-      FPDF_DOCUMENT doc,
-      const PP_PrintSettings_Dev& print_settings);
 
   // Checks if |page| has selected text in a form element. If so, sets that as
   // the plugin's text selection.
@@ -446,10 +426,6 @@ class PDFiumEngine : public PDFEngine,
   // Helper function to change the current page, running page open/close
   // triggers as necessary.
   void SetCurrentPage(int index);
-
-  // Transform |page| contents to fit in the selected printer paper size.
-  void TransformPDFPageForPrinting(FPDF_PAGE page,
-                                   const PP_PrintSettings_Dev& print_settings);
 
   void DrawPageShadow(const pp::Rect& page_rect,
                       const pp::Rect& shadow_rect,
@@ -695,6 +671,7 @@ class PDFiumEngine : public PDFEngine,
   bool edit_mode_;
 
   PDFiumFormFiller form_filler_;
+  PDFiumPrint print_;
 
   DISALLOW_COPY_AND_ASSIGN(PDFiumEngine);
 };
