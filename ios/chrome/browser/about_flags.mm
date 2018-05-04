@@ -312,20 +312,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
 void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
 
-  // Web page replay flags.
-  BOOL webPageReplayEnabled = [defaults boolForKey:@"WebPageReplayEnabled"];
-  NSString* webPageReplayProxy =
-      [defaults stringForKey:@"WebPageReplayProxyAddress"];
-  if (webPageReplayEnabled && [webPageReplayProxy length]) {
-    command_line->AppendSwitch(switches::kIOSIgnoreCertificateErrors);
-    // 80 and 443 are the default ports from web page replay.
-    command_line->AppendSwitchASCII(switches::kIOSTestingFixedHttpPort, "80");
-    command_line->AppendSwitchASCII(switches::kIOSTestingFixedHttpsPort, "443");
-    command_line->AppendSwitchASCII(
-        switches::kIOSHostResolverRules,
-        "MAP * " + base::SysNSStringToUTF8(webPageReplayProxy));
-  }
-
   // Set the UA flag if UseMobileSafariUA is enabled.
   if ([defaults boolForKey:@"UseMobileSafariUA"]) {
     // Safari uses "Vesion/", followed by the OS version excluding bugfix, where

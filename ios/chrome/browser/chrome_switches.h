@@ -20,11 +20,6 @@ extern const char kEnableThirdPartyKeyboardWorkaround[];
 
 extern const char kUserAgent[];
 
-extern const char kIOSHostResolverRules[];
-extern const char kIOSIgnoreCertificateErrors[];
-extern const char kIOSTestingFixedHttpPort[];
-extern const char kIOSTestingFixedHttpsPort[];
-
 }  // namespace switches
 
 #endif  // IOS_CHROME_BROWSER_CHROME_SWITCHES_H_
