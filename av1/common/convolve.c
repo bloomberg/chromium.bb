@@ -22,10 +22,6 @@
 #include "aom_dsp/aom_dsp_common.h"
 #include "aom_ports/mem.h"
 
-#define MAX_BLOCK_WIDTH (MAX_SB_SIZE)
-#define MAX_BLOCK_HEIGHT (MAX_SB_SIZE)
-#define MAX_STEP (32)
-
 void av1_convolve_horiz_rs_c(const uint8_t *src, int src_stride, uint8_t *dst,
                              int dst_stride, int w, int h,
                              const int16_t *x_filters, int x0_qn,

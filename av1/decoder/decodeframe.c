@@ -59,7 +59,6 @@
 #include "av1/decoder/decodetxb.h"
 #include "av1/decoder/detokenize.h"
 
-#define MAX_AV1_HEADER_SIZE 80
 #define ACCT_STR __func__
 
 // This is needed by ext_tile related unit tests.

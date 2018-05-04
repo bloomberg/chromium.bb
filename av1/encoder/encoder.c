@@ -2704,10 +2704,12 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
   return cpi;
 }
 
+#if CONFIG_INTERNAL_STATS
 #define SNPRINT(H, T) snprintf((H) + strlen(H), sizeof(H) - strlen(H), (T))
 
 #define SNPRINT2(H, T, V) \
   snprintf((H) + strlen(H), sizeof(H) - strlen(H), (T), (V))
+#endif  // CONFIG_INTERNAL_STATS
 
 void av1_remove_compressor(AV1_COMP *cpi) {
   AV1_COMMON *cm;
@@ -2792,8 +2794,7 @@ void av1_remove_compressor(AV1_COMP *cpi) {
 
       fclose(f);
     }
-
-#endif
+#endif  // CONFIG_INTERNAL_STATS
   }
 
   for (t = 0; t < cpi->num_workers; ++t) {

@@ -20,10 +20,6 @@
 #include "aom_mem/aom_mem.h"
 #include "aom_ports/bitops.h"
 
-#define DST(x, y) dst[(x) + (y)*stride]
-#define AVG3(a, b, c) (((a) + 2 * (b) + (c) + 2) >> 2)
-#define AVG2(a, b) (((a) + (b) + 1) >> 1)
-
 static INLINE void v_predictor(uint8_t *dst, ptrdiff_t stride, int bw, int bh,
                                const uint8_t *above, const uint8_t *left) {
   int r;

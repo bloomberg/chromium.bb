@@ -25,7 +25,6 @@
 #include "aom_ports/mem_ops.h"
 
 #define MAG_SIZE (4)
-#define MAX_INDEX_SIZE (256)
 #define MAX_NUM_ENHANCEMENT_LAYERS 128
 
 struct av1_extracfg {
@@ -207,11 +206,6 @@ static aom_codec_err_t update_error_state(
 #define RANGE_CHECK_HI(p, memb, hi)                                     \
   do {                                                                  \
     if (!((p)->memb <= (hi))) ERROR(#memb " out of range [.." #hi "]"); \
-  } while (0)
-
-#define RANGE_CHECK_LO(p, memb, lo)                                     \
-  do {                                                                  \
-    if (!((p)->memb >= (lo))) ERROR(#memb " out of range [" #lo "..]"); \
   } while (0)
 
 #define RANGE_CHECK_BOOL(p, memb)                                     \
@@ -1176,9 +1170,6 @@ static aom_codec_err_t encoder_destroy(aom_codec_alg_priv_t *ctx) {
   aom_free(ctx);
   return AOM_CODEC_OK;
 }
-
-// Turn on to test if supplemental superframe data breaks decoding
-#define TEST_SUPPLEMENTAL_SUPERFRAME_DATA 0
 
 #if !CONFIG_BUFFER_MODEL
 // av1 uses 10,000,000 ticks/second as time stamp

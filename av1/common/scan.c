@@ -839,14 +839,6 @@ DECLARE_ALIGNED(16, static const int16_t, default_scan_32x32[1024]) = {
   927,  958,  989,  1020, 1021, 990, 959,  991,  1022, 1023
 };
 
-// Approximate versions, which reuse the 32x32 scan and assume rest of the
-// coeffs to be zero.
-#define default_scan_32x64 default_scan_32x32
-#define default_scan_64x32 default_scan_32x32
-#define default_scan_64x64 default_scan_32x32
-#define default_scan_16x64 default_scan_16x32
-#define default_scan_64x16 default_scan_32x16
-
 // Neighborhood 2-tuples for various scans and blocksizes,
 // in {top, left} order for each position in corresponding scan order.
 DECLARE_ALIGNED(16, static const int16_t,
@@ -2383,12 +2375,6 @@ DECLARE_ALIGNED(16, static const int16_t,
   926, 957,  957, 988,  988, 1019, 989, 1020, 958, 989, 927, 958,  959, 990,
   990, 1021, 991, 1022, 0,   0
 };
-
-#define default_scan_32x64_neighbors default_scan_32x32_neighbors
-#define default_scan_64x32_neighbors default_scan_32x32_neighbors
-#define default_scan_64x64_neighbors default_scan_32x32_neighbors
-#define default_scan_16x64_neighbors default_scan_16x32_neighbors
-#define default_scan_64x16_neighbors default_scan_32x16_neighbors
 
 DECLARE_ALIGNED(16, static const int16_t, av1_default_iscan_4x4[16]) = {
   0, 1, 5, 6, 2, 4, 7, 12, 3, 8, 11, 13, 9, 10, 14, 15

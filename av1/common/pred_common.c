@@ -142,9 +142,6 @@ int av1_get_intra_inter_context(const MACROBLOCKD *xd) {
   (((ref_frame) >= BWDREF_FRAME) && ((ref_frame) <= ALTREF_FRAME))
 #define IS_BACKWARD_REF_FRAME(ref_frame) CHECK_BACKWARD_REFS(ref_frame)
 
-#define CHECK_GOLDEN_OR_LAST3(ref_frame) \
-  (((ref_frame) == GOLDEN_FRAME) || ((ref_frame) == LAST3_FRAME))
-
 int av1_get_reference_mode_context(const MACROBLOCKD *xd) {
   int ctx;
   const MB_MODE_INFO *const above_mbmi = xd->above_mbmi;
