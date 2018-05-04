@@ -599,7 +599,7 @@ void DesktopWindowTreeHostX11::StackAtTop() {
 
 void DesktopWindowTreeHostX11::CenterWindow(const gfx::Size& size) {
   gfx::Size size_in_pixels = ToPixelRect(gfx::Rect(size)).size();
-  gfx::Rect parent_bounds_in_pixels = GetWorkAreaBoundsInPixels();
+  gfx::Rect parent_bounds_in_pixels = ToPixelRect(GetWorkAreaBoundsInScreen());
 
   // If |window_|'s transient parent bounds are big enough to contain |size|,
   // use them instead.
@@ -688,7 +688,9 @@ bool DesktopWindowTreeHostX11::UpdateWorkspace() {
 }
 
 gfx::Rect DesktopWindowTreeHostX11::GetWorkAreaBoundsInScreen() const {
-  return ToDIPRect(GetWorkAreaBoundsInPixels());
+  return display::Screen::GetScreen()
+      ->GetDisplayNearestWindow(const_cast<aura::Window*>(window()))
+      .work_area();
 }
 
 void DesktopWindowTreeHostX11::SetShape(
@@ -2290,27 +2292,6 @@ void DesktopWindowTreeHostX11::DelayedChangeFrameType(Widget::FrameType type) {
   // swappable glass frame like on Windows, we still replace the frame because
   // the button assets don't update otherwise.
   native_widget_delegate_->AsWidget()->non_client_view()->UpdateFrame();
-}
-
-gfx::Rect DesktopWindowTreeHostX11::GetWorkAreaBoundsInPixels() const {
-  std::vector<int> value;
-  if (ui::GetIntArrayProperty(x_root_window_, "_NET_WORKAREA", &value) &&
-      value.size() >= 4) {
-    return gfx::Rect(value[0], value[1], value[2], value[3]);
-  }
-
-  // Fetch the geometry of the root window.
-  Window root;
-  int x, y;
-  unsigned int width, height;
-  unsigned int border_width, depth;
-  if (!XGetGeometry(xdisplay_, x_root_window_, &root, &x, &y, &width, &height,
-                    &border_width, &depth)) {
-    NOTIMPLEMENTED();
-    return gfx::Rect(0, 0, 10, 10);
-  }
-
-  return gfx::Rect(x, y, width, height);
 }
 
 gfx::Rect DesktopWindowTreeHostX11::ToDIPRect(

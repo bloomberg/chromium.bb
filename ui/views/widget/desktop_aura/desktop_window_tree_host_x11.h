@@ -275,7 +275,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   void DelayedResize(const gfx::Size& size_in_pixels);
   void DelayedChangeFrameType(Widget::FrameType new_type);
 
-  gfx::Rect GetWorkAreaBoundsInPixels() const;
   gfx::Rect ToDIPRect(const gfx::Rect& rect_in_pixels) const;
   gfx::Rect ToPixelRect(const gfx::Rect& rect_in_dip) const;
 
