@@ -41,9 +41,8 @@
 #include "content/public/common/content_switches.h"
 #include "jni/WebContentsImpl_jni.h"
 #include "net/android/network_library.h"
-#include "ui/accessibility/ax_assistant_structure.h"
 #include "ui/accessibility/ax_node_data.h"
-#include "ui/accessibility/mojom/ax_assistant_structure.mojom.h"
+#include "ui/accessibility/platform/ax_snapshot_node_android_platform.h"
 #include "ui/android/overscroll_refresh_handler.h"
 #include "ui/android/window_android.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -91,8 +90,7 @@ void SmartClipCallback(const ScopedJavaGlobalRef<jobject>& callback,
 
 ScopedJavaLocalRef<jobject> JNI_WebContentsImpl_CreateJavaAXSnapshot(
     JNIEnv* env,
-    const ui::AssistantTree* tree,
-    const ui::AssistantNode* node,
+    const ui::AXSnapshotNodeAndroid* node,
     bool is_root) {
   ScopedJavaLocalRef<jstring> j_text =
       ConvertUTF16ToJavaString(env, node->text);
@@ -105,16 +103,15 @@ ScopedJavaLocalRef<jobject> JNI_WebContentsImpl_CreateJavaAXSnapshot(
           node->text_size, node->bold, node->italic, node->underline,
           node->line_through, j_class);
 
-  if (node->selection.has_value()) {
+  if (node->has_selection) {
     Java_WebContentsImpl_setAccessibilitySnapshotSelection(
-        env, j_node, node->selection->start(), node->selection->end());
+        env, j_node, node->start_selection, node->end_selection);
   }
 
-  for (int child : node->children_indices) {
+  for (auto& child : node->children) {
     Java_WebContentsImpl_addAccessibilityNodeAsChild(
         env, j_node,
-        JNI_WebContentsImpl_CreateJavaAXSnapshot(
-            env, tree, tree->nodes[child].get(), false));
+        JNI_WebContentsImpl_CreateJavaAXSnapshot(env, child.get(), false));
   }
   return j_node;
 }
@@ -130,10 +127,10 @@ void AXTreeSnapshotCallback(const ScopedJavaGlobalRef<jobject>& callback,
   std::unique_ptr<BrowserAccessibilityManagerAndroid> manager(
       static_cast<BrowserAccessibilityManagerAndroid*>(
           BrowserAccessibilityManager::Create(result, nullptr)));
-  std::unique_ptr<ui::AssistantTree> assistant_tree =
-      ui::CreateAssistantTree(result, manager->ShouldExposePasswordText());
-  ScopedJavaLocalRef<jobject> j_root = JNI_WebContentsImpl_CreateJavaAXSnapshot(
-      env, assistant_tree.get(), assistant_tree->nodes.front().get(), true);
+  auto snapshot = ui::AXSnapshotNodeAndroid::Create(
+      result, manager->ShouldExposePasswordText());
+  ScopedJavaLocalRef<jobject> j_root =
+      JNI_WebContentsImpl_CreateJavaAXSnapshot(env, snapshot.get(), true);
   Java_WebContentsImpl_onAccessibilitySnapshot(env, j_root, callback);
 }
 
