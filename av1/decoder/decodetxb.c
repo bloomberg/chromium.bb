@@ -290,7 +290,8 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
       tran_low_t dq_coeff;
       // Bitmasking to clamp dq_coeff to valid range:
       //   The valid range for 8/10/12 bit video is at most 17/19/21 bit
-      dq_coeff = level * get_dqv(dequant, scan[c], iqmatrix) & 0xffffff;
+      dq_coeff =
+          (int64_t)level * get_dqv(dequant, scan[c], iqmatrix) & 0xffffff;
       dq_coeff = dq_coeff >> shift;
       if (sign) {
         dq_coeff = -dq_coeff;
