@@ -32,7 +32,7 @@ NSString* GetErrorMessage() {
 @interface ErrorPageTestCase : ChromeTestCase
 // YES if test server is replying with valid HTML content (URL query). NO if
 // test server closes the socket.
-@property(atomic) BOOL serverRespondsWithContent;
+@property(atomic) bool serverRespondsWithContent;
 @end
 
 @implementation ErrorPageTestCase
@@ -41,28 +41,14 @@ NSString* GetErrorMessage() {
 - (void)setUp {
   [super setUp];
 
-  // Tests handler which replies with URL query for /echo-query path if
-  // serverRespondsWithContent set to YES. Otherwise the handler closes the
-  // socket.
-  using net::test_server::HttpRequest;
-  using net::test_server::HttpResponse;
-  auto handler = ^std::unique_ptr<HttpResponse>(const HttpRequest& request) {
-    if (!self.serverRespondsWithContent) {
-      return std::make_unique<net::test_server::RawHttpResponse>(
-          /*headers=*/"", /*contents=*/"");
-    }
-    auto response = std::make_unique<net::test_server::BasicHttpResponse>();
-    response->set_content_type("text/html");
-    response->set_content(request.GetURL().query());
-    return std::move(response);
-  };
-  self.testServer->RegisterRequestHandler(
-      base::BindRepeating(&net::test_server::HandlePrefixedRequest,
-                          "/echo-query", base::BindBlockArc(handler)));
+  RegisterDefaultHandlers(self.testServer);
+  self.testServer->RegisterRequestHandler(base::BindRepeating(
+      &net::test_server::HandlePrefixedRequest, "/echo-query",
+      base::BindRepeating(&testing::HandleEchoQueryOrCloseSocket,
+                          base::ConstRef(_serverRespondsWithContent))));
   self.testServer->RegisterRequestHandler(
       base::BindRepeating(&net::test_server::HandlePrefixedRequest, "/iframe",
                           base::BindRepeating(&testing::HandleIFrame)));
-  RegisterDefaultHandlers(self.testServer);
 
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
 }
