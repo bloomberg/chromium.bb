@@ -60,6 +60,9 @@ class CC_ANIMATION_EXPORT KeyframeModel {
       int group_id,
       int target_property_id);
 
+  std::unique_ptr<KeyframeModel> CreateImplInstance(
+      RunState initial_run_state) const;
+
   virtual ~KeyframeModel();
 
   int id() const { return id_; }
@@ -139,9 +142,6 @@ class CC_ANIMATION_EXPORT KeyframeModel {
 
   base::TimeTicks ConvertLocalTimeToMonotonicTime(
       base::TimeDelta local_time) const;
-
-  std::unique_ptr<KeyframeModel> CloneAndInitialize(
-      RunState initial_run_state) const;
 
   void set_is_controlling_instance_for_test(bool is_controlling_instance) {
     is_controlling_instance_ = is_controlling_instance;

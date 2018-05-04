@@ -699,7 +699,7 @@ void KeyframeEffect::PushNewKeyframeModelsToImplThread(
     KeyframeModel::RunState initial_run_state =
         KeyframeModel::WAITING_FOR_TARGET_AVAILABILITY;
     std::unique_ptr<KeyframeModel> to_add(
-        keyframe_model->CloneAndInitialize(initial_run_state));
+        keyframe_model->CreateImplInstance(initial_run_state));
     DCHECK(!to_add->needs_synchronized_start_time());
     to_add->set_affects_active_elements(false);
     keyframe_effect_impl->AddKeyframeModel(std::move(to_add));

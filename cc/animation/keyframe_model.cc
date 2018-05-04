@@ -54,6 +54,28 @@ std::unique_ptr<KeyframeModel> KeyframeModel::Create(
                                             group_id, target_property_id));
 }
 
+std::unique_ptr<KeyframeModel> KeyframeModel::CreateImplInstance(
+    RunState initial_run_state) const {
+  // Should never clone a model that is the controlling instance as it ends up
+  // creating multiple controlling instances.
+  DCHECK(!is_controlling_instance_);
+  std::unique_ptr<KeyframeModel> to_return(
+      new KeyframeModel(curve_->Clone(), id_, group_, target_property_id_));
+  to_return->run_state_ = initial_run_state;
+  to_return->iterations_ = iterations_;
+  to_return->iteration_start_ = iteration_start_;
+  to_return->start_time_ = start_time_;
+  to_return->pause_time_ = pause_time_;
+  to_return->total_paused_time_ = total_paused_time_;
+  to_return->time_offset_ = time_offset_;
+  to_return->direction_ = direction_;
+  to_return->playback_rate_ = playback_rate_;
+  to_return->fill_mode_ = fill_mode_;
+  DCHECK(!to_return->is_controlling_instance_);
+  to_return->is_controlling_instance_ = true;
+  return to_return;
+}
+
 KeyframeModel::KeyframeModel(std::unique_ptr<AnimationCurve> curve,
                              int keyframe_model_id,
                              int group_id,
@@ -238,28 +260,6 @@ base::TimeDelta KeyframeModel::TrimTimeToCurrentIteration(
     iteration_time = curve_->Duration() - iteration_time;
 
   return iteration_time;
-}
-
-std::unique_ptr<KeyframeModel> KeyframeModel::CloneAndInitialize(
-    RunState initial_run_state) const {
-  // Should never clone a model that is the controlling instance as it ends up
-  // creating multiple controlling instances.
-  DCHECK(!is_controlling_instance_);
-  std::unique_ptr<KeyframeModel> to_return(
-      new KeyframeModel(curve_->Clone(), id_, group_, target_property_id_));
-  to_return->run_state_ = initial_run_state;
-  to_return->iterations_ = iterations_;
-  to_return->iteration_start_ = iteration_start_;
-  to_return->start_time_ = start_time_;
-  to_return->pause_time_ = pause_time_;
-  to_return->total_paused_time_ = total_paused_time_;
-  to_return->time_offset_ = time_offset_;
-  to_return->direction_ = direction_;
-  to_return->playback_rate_ = playback_rate_;
-  to_return->fill_mode_ = fill_mode_;
-  DCHECK(!to_return->is_controlling_instance_);
-  to_return->is_controlling_instance_ = true;
-  return to_return;
 }
 
 void KeyframeModel::PushPropertiesTo(KeyframeModel* other) const {
