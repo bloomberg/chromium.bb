@@ -262,6 +262,15 @@ class RasterBufferProviderTest
     resources_.push_back(std::move(resource));
   }
 
+  void AppendTaskWithResource(unsigned id,
+                              const ResourcePool::InUsePoolResource* resource) {
+    std::unique_ptr<RasterBuffer> raster_buffer =
+        raster_buffer_provider_->AcquireBufferForRaster(*resource, 0, 0);
+    TileTask::Vector empty;
+    tasks_.push_back(
+        new TestRasterTaskImpl(this, id, std::move(raster_buffer), &empty));
+  }
+
   const std::vector<RasterTaskResult>& completed_tasks() const {
     return completed_tasks_;
   }
@@ -448,6 +457,47 @@ TEST_P(RasterBufferProviderTest, ReadyToDrawCallbackNoDuplicate) {
   if (GetParam() == RASTER_BUFFER_PROVIDER_TYPE_GPU ||
       GetParam() == RASTER_BUFFER_PROVIDER_TYPE_ONE_COPY)
     EXPECT_TRUE(callback_id);
+}
+
+TEST_P(RasterBufferProviderTest, WaitOnSyncTokenAfterReschedulingTask) {
+  if (GetParam() != RASTER_BUFFER_PROVIDER_TYPE_GPU &&
+      GetParam() != RASTER_BUFFER_PROVIDER_TYPE_ONE_COPY)
+    return;
+
+  base::Lock lock;
+
+  // Schedule a task that is prevented from completing with a lock.
+  lock.Acquire();
+  AppendBlockingTask(0u, &lock);
+  ScheduleTasks();
+
+  EXPECT_EQ(resources_.size(), 1u);
+  const ResourcePool::InUsePoolResource* resource = &resources_[0];
+
+  // Schedule another task to replace the still-pending task using the same
+  // resource.
+  RasterTaskVector tasks;
+  tasks.swap(tasks_);
+  AppendTaskWithResource(1u, resource);
+  ScheduleTasks();
+
+  // The first task is canceled, but the second task uses the same resource, and
+  // waits on the compositor sync token that was left by the first task.
+  RunMessageLoopUntilAllTasksHaveCompleted();
+
+  {
+    viz::ContextProvider::ScopedContextLock context_lock(
+        worker_context_provider_.get());
+    viz::TestWebGraphicsContext3D* context3d =
+        worker_context_provider_->TestContext3d();
+    EXPECT_TRUE(context3d->last_waited_sync_token().HasData());
+  }
+
+  lock.Release();
+
+  ASSERT_EQ(completed_tasks().size(), 2u);
+  EXPECT_TRUE(completed_tasks()[0].canceled);
+  EXPECT_FALSE(completed_tasks()[1].canceled);
 }
 
 INSTANTIATE_TEST_CASE_P(

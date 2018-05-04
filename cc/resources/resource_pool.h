@@ -69,8 +69,10 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
     bool wait_on_fence_required = false;
 
     // Set by the ResourcePool when a resource is returned from the display
-    // compositor. The client of ResourcePool needs to wait on this token, if it
-    // exists, before using a resource handed out by the ResourcePool.
+    // compositor, or when the resource texture and mailbox are created for the
+    // first time, if the resource is shared with another context. The client of
+    // ResourcePool needs to wait on this token if it exists, before using a
+    // resource handed out by the ResourcePool.
     gpu::SyncToken returned_sync_token;
   };
 

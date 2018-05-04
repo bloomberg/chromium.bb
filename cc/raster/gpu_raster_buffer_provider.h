@@ -73,7 +73,6 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
     RasterBufferImpl(GpuRasterBufferProvider* client,
                      const ResourcePool::InUsePoolResource& in_use_resource,
                      GpuRasterBacking* backing,
-                     const gpu::SyncToken& before_raster_sync_token,
                      bool resource_has_previous_content);
     ~RasterBufferImpl() override;
 
