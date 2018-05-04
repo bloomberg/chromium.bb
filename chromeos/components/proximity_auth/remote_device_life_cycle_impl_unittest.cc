@@ -16,8 +16,8 @@
 #include "chromeos/components/proximity_auth/messenger.h"
 #include "components/cryptauth/authenticator.h"
 #include "components/cryptauth/connection_finder.h"
-#include "components/cryptauth/cryptauth_test_util.h"
 #include "components/cryptauth/fake_connection.h"
+#include "components/cryptauth/remote_device_test_util.h"
 #include "components/cryptauth/secure_context.h"
 #include "components/cryptauth/wire_message.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -170,7 +170,7 @@ class ProximityAuthRemoteDeviceLifeCycleImplTest
       public RemoteDeviceLifeCycle::Observer {
  protected:
   ProximityAuthRemoteDeviceLifeCycleImplTest()
-      : life_cycle_(cryptauth::CreateClassicRemoteDeviceForTest()),
+      : life_cycle_(cryptauth::CreateRemoteDeviceForTest()),
         task_runner_(new base::TestSimpleTaskRunner()),
         thread_task_runner_handle_(task_runner_) {}
 
@@ -244,7 +244,7 @@ class ProximityAuthRemoteDeviceLifeCycleImplTest
 
 TEST_F(ProximityAuthRemoteDeviceLifeCycleImplTest, GetRemoteDevice) {
   cryptauth::RemoteDevice expected_remote_device =
-      cryptauth::CreateClassicRemoteDeviceForTest();
+      cryptauth::CreateRemoteDeviceForTest();
   cryptauth::RemoteDevice remote_device = life_cycle_.GetRemoteDevice();
   EXPECT_EQ(expected_remote_device.user_id, remote_device.user_id);
   EXPECT_EQ(expected_remote_device.name, remote_device.name);

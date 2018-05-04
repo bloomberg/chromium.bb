@@ -11,6 +11,13 @@
 
 namespace cryptauth {
 
+// Attributes of the default test remote device.
+extern const char kTestRemoteDeviceName[];
+extern const char kTestRemoteDevicePublicKey[];
+
+// Returns a BLE RemoteDevice used for tests.
+RemoteDevice CreateRemoteDeviceForTest();
+
 std::vector<RemoteDevice> GenerateTestRemoteDevices(size_t num_to_create);
 
 }  // namespace cryptauth

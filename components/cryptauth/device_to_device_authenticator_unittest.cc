@@ -16,9 +16,9 @@
 #include "base/timer/mock_timer.h"
 #include "components/cryptauth/authenticator.h"
 #include "components/cryptauth/connection.h"
-#include "components/cryptauth/cryptauth_test_util.h"
 #include "components/cryptauth/device_to_device_responder_operations.h"
 #include "components/cryptauth/fake_secure_message_delegate.h"
+#include "components/cryptauth/remote_device_test_util.h"
 #include "components/cryptauth/secure_context.h"
 #include "components/cryptauth/session_keys.h"
 #include "components/cryptauth/wire_message.h"
@@ -148,7 +148,7 @@ class DeviceToDeviceAuthenticatorForTest : public DeviceToDeviceAuthenticator {
 class CryptAuthDeviceToDeviceAuthenticatorTest : public testing::Test {
  public:
   CryptAuthDeviceToDeviceAuthenticatorTest()
-      : remote_device_(CreateClassicRemoteDeviceForTest()),
+      : remote_device_(CreateRemoteDeviceForTest()),
         connection_(remote_device_),
         secure_message_delegate_(new FakeSecureMessageDelegate),
         authenticator_(&connection_,

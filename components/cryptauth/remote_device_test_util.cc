@@ -8,6 +8,23 @@
 
 namespace cryptauth {
 
+// Attributes of the default test remote device.
+const char kTestRemoteDeviceUserId[] = "example@gmail.com";
+const char kTestRemoteDeviceName[] = "remote device";
+const char kTestRemoteDevicePublicKey[] = "public key";
+const char kTestRemoteDevicePSK[] = "remote device psk";
+const bool kTestRemoteDeviceUnlockKey = true;
+const bool kTestRemoteDeviceSupportsMobileHotspot = true;
+const int64_t kTestRemoteDeviceLastUpdateTimeMillis = 0L;
+
+RemoteDevice CreateRemoteDeviceForTest() {
+  return RemoteDevice(kTestRemoteDeviceUserId, kTestRemoteDeviceName,
+                      kTestRemoteDevicePublicKey, kTestRemoteDevicePSK,
+                      kTestRemoteDeviceUnlockKey,
+                      kTestRemoteDeviceSupportsMobileHotspot,
+                      kTestRemoteDeviceLastUpdateTimeMillis);
+}
+
 std::vector<RemoteDevice> GenerateTestRemoteDevices(size_t num_to_create) {
   std::vector<RemoteDevice> generated_devices;
 

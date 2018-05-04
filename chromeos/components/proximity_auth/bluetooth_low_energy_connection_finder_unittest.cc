@@ -18,9 +18,9 @@
 #include "base/time/time.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "components/cryptauth/connection.h"
-#include "components/cryptauth/cryptauth_test_util.h"
 #include "components/cryptauth/fake_connection.h"
 #include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_test_util.h"
 #include "components/cryptauth/wire_message.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_uuid.h"
@@ -75,7 +75,7 @@ class MockBluetoothLowEnergyConnectionFinder
  public:
   MockBluetoothLowEnergyConnectionFinder()
       : BluetoothLowEnergyConnectionFinder(
-            cryptauth::CreateLERemoteDeviceForTest(),
+            cryptauth::CreateRemoteDeviceForTest(),
             kBLEGattServiceUUID,
             std::make_unique<FakeEidGenerator>(this)) {}
 
@@ -93,8 +93,7 @@ class MockBluetoothLowEnergyConnectionFinder
   // finder.
   cryptauth::FakeConnection* ExpectCreateConnection() {
     std::unique_ptr<cryptauth::FakeConnection> connection(
-        new cryptauth::FakeConnection(
-            cryptauth::CreateLERemoteDeviceForTest()));
+        new cryptauth::FakeConnection(cryptauth::CreateRemoteDeviceForTest()));
     cryptauth::FakeConnection* connection_alias = connection.get();
     EXPECT_CALL(*this, CreateConnectionProxy())
         .WillOnce(Return(connection.release()));
@@ -151,7 +150,7 @@ class ProximityAuthBluetoothLowEnergyConnectionFinderTest
             adapter_.get(),
             0,
             cryptauth::kTestRemoteDeviceName,
-            cryptauth::kTestRemoteDeviceBluetoothAddress,
+            std::string(),
             false,
             false)),
         last_discovery_session_alias_(nullptr) {
@@ -298,8 +297,8 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
 
   // Prepare second device with valid EID.
   NiceMock<device::MockBluetoothDevice> other_device(
-      adapter_.get(), 0, cryptauth::kTestRemoteDeviceName,
-      cryptauth::kTestRemoteDeviceBluetoothAddress, false, false);
+      adapter_.get(), 0, cryptauth::kTestRemoteDeviceName, std::string(), false,
+      false);
   PrepareDevice(&other_device, kEidForPreviousTimeQuantum);
 
   // Add the devices. Only one connection is expected.

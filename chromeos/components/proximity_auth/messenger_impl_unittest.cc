@@ -11,10 +11,10 @@
 #include "chromeos/components/proximity_auth/messenger_observer.h"
 #include "chromeos/components/proximity_auth/remote_status_update.h"
 #include "components/cryptauth/connection.h"
-#include "components/cryptauth/cryptauth_test_util.h"
 #include "components/cryptauth/fake_connection.h"
 #include "components/cryptauth/fake_secure_context.h"
 #include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_test_util.h"
 #include "components/cryptauth/wire_message.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -64,7 +64,7 @@ class TestMessenger : public MessengerImpl {
  public:
   TestMessenger()
       : MessengerImpl(std::make_unique<cryptauth::FakeConnection>(
-                          cryptauth::CreateClassicRemoteDeviceForTest()),
+                          cryptauth::CreateRemoteDeviceForTest()),
                       std::make_unique<cryptauth::FakeSecureContext>()) {}
   explicit TestMessenger(std::unique_ptr<cryptauth::Connection> connection)
       : MessengerImpl(std::move(connection),
