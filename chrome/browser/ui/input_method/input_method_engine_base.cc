@@ -306,8 +306,8 @@ void InputMethodEngineBase::FocusIn(
   ++next_context_id_;
 
   observer_->OnFocus(ui::IMEEngineHandlerInterface::InputContext(
-      context_id_, input_context.type, input_context.mode,
-      input_context.flags));
+      context_id_, input_context.type, input_context.mode, input_context.flags,
+      input_context.focus_reason));
 }
 
 void InputMethodEngineBase::FocusOut() {

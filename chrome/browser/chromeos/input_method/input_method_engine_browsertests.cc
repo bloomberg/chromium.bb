@@ -184,7 +184,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
                                               false);
   ui::IMEEngineHandlerInterface::InputContext context(
       ui::TEXT_INPUT_TYPE_TEXT, ui::TEXT_INPUT_MODE_DEFAULT,
-      ui::TEXT_INPUT_FLAG_NONE);
+      ui::TEXT_INPUT_FLAG_NONE, ui::TextInputClient::FOCUS_REASON_OTHER);
   engine_handler->FocusIn(context);
   ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
   ASSERT_TRUE(focus_listener.was_satisfied());
@@ -265,7 +265,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
   engine_handler->Enable("APIArgumentIME");
   ui::IMEEngineHandlerInterface::InputContext context(
       ui::TEXT_INPUT_TYPE_TEXT, ui::TEXT_INPUT_MODE_DEFAULT,
-      ui::TEXT_INPUT_FLAG_NONE);
+      ui::TEXT_INPUT_FLAG_NONE, ui::TextInputClient::FOCUS_REASON_OTHER);
   engine_handler->FocusIn(context);
 
   {
@@ -942,7 +942,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
                                                   false);
       ui::IMEEngineHandlerInterface::InputContext context(
           ui::TEXT_INPUT_TYPE_TEXT, ui::TEXT_INPUT_MODE_DEFAULT,
-          ui::TEXT_INPUT_FLAG_NONE);
+          ui::TEXT_INPUT_FLAG_NONE, ui::TextInputClient::FOCUS_REASON_OTHER);
       engine_handler->FocusIn(context);
       ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
       ASSERT_TRUE(focus_listener.was_satisfied());
@@ -952,7 +952,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
           "onFocus:search:true:true:true", false);
       ui::IMEEngineHandlerInterface::InputContext context(
           ui::TEXT_INPUT_TYPE_SEARCH, ui::TEXT_INPUT_MODE_DEFAULT,
-          ui::TEXT_INPUT_FLAG_NONE);
+          ui::TEXT_INPUT_FLAG_NONE, ui::TextInputClient::FOCUS_REASON_OTHER);
       engine_handler->FocusIn(context);
       ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
       ASSERT_TRUE(focus_listener.was_satisfied());
@@ -962,7 +962,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
                                                   false);
       ui::IMEEngineHandlerInterface::InputContext context(
           ui::TEXT_INPUT_TYPE_TELEPHONE, ui::TEXT_INPUT_MODE_DEFAULT,
-          ui::TEXT_INPUT_FLAG_NONE);
+          ui::TEXT_INPUT_FLAG_NONE, ui::TextInputClient::FOCUS_REASON_OTHER);
       engine_handler->FocusIn(context);
       ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
       ASSERT_TRUE(focus_listener.was_satisfied());
@@ -972,7 +972,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
                                                   false);
       ui::IMEEngineHandlerInterface::InputContext context(
           ui::TEXT_INPUT_TYPE_URL, ui::TEXT_INPUT_MODE_DEFAULT,
-          ui::TEXT_INPUT_FLAG_NONE);
+          ui::TEXT_INPUT_FLAG_NONE, ui::TextInputClient::FOCUS_REASON_OTHER);
       engine_handler->FocusIn(context);
       ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
       ASSERT_TRUE(focus_listener.was_satisfied());
@@ -982,7 +982,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
           "onFocus:email:true:true:true", false);
       ui::IMEEngineHandlerInterface::InputContext context(
           ui::TEXT_INPUT_TYPE_EMAIL, ui::TEXT_INPUT_MODE_DEFAULT,
-          ui::TEXT_INPUT_FLAG_NONE);
+          ui::TEXT_INPUT_FLAG_NONE, ui::TextInputClient::FOCUS_REASON_OTHER);
       engine_handler->FocusIn(context);
       ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
       ASSERT_TRUE(focus_listener.was_satisfied());
@@ -992,7 +992,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
           "onFocus:number:true:true:true", false);
       ui::IMEEngineHandlerInterface::InputContext context(
           ui::TEXT_INPUT_TYPE_NUMBER, ui::TEXT_INPUT_MODE_DEFAULT,
-          ui::TEXT_INPUT_FLAG_NONE);
+          ui::TEXT_INPUT_FLAG_NONE, ui::TextInputClient::FOCUS_REASON_OTHER);
       engine_handler->FocusIn(context);
       ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
       ASSERT_TRUE(focus_listener.was_satisfied());
@@ -1094,7 +1094,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest, RestrictedKeyboard) {
         "onFocus:text:false:false:false", false);
     ui::IMEEngineHandlerInterface::InputContext context(
         ui::TEXT_INPUT_TYPE_TEXT, ui::TEXT_INPUT_MODE_DEFAULT,
-        ui::TEXT_INPUT_FLAG_NONE);
+        ui::TEXT_INPUT_FLAG_NONE, ui::TextInputClient::FOCUS_REASON_OTHER);
     engine_handler->FocusIn(context);
     ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
     ASSERT_TRUE(focus_listener.was_satisfied());
@@ -1106,7 +1106,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest, RestrictedKeyboard) {
         "onFocus:password:false:false:false", false);
     ui::IMEEngineHandlerInterface::InputContext context(
         ui::TEXT_INPUT_TYPE_PASSWORD, ui::TEXT_INPUT_MODE_DEFAULT,
-        ui::TEXT_INPUT_FLAG_NONE);
+        ui::TEXT_INPUT_FLAG_NONE, ui::TextInputClient::FOCUS_REASON_OTHER);
     engine_handler->FocusIn(context);
     ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
     ASSERT_TRUE(focus_listener.was_satisfied());
@@ -1118,7 +1118,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest, RestrictedKeyboard) {
                                                 false);
     ui::IMEEngineHandlerInterface::InputContext context(
         ui::TEXT_INPUT_TYPE_URL, ui::TEXT_INPUT_MODE_DEFAULT,
-        ui::TEXT_INPUT_FLAG_NONE);
+        ui::TEXT_INPUT_FLAG_NONE, ui::TextInputClient::FOCUS_REASON_OTHER);
     engine_handler->FocusIn(context);
     ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
     ASSERT_TRUE(focus_listener.was_satisfied());
@@ -1130,7 +1130,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest, RestrictedKeyboard) {
         "onFocus:search:false:false:false", false);
     ui::IMEEngineHandlerInterface::InputContext context(
         ui::TEXT_INPUT_TYPE_SEARCH, ui::TEXT_INPUT_MODE_DEFAULT,
-        ui::TEXT_INPUT_FLAG_NONE);
+        ui::TEXT_INPUT_FLAG_NONE, ui::TextInputClient::FOCUS_REASON_OTHER);
     engine_handler->FocusIn(context);
     ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
     ASSERT_TRUE(focus_listener.was_satisfied());
@@ -1142,7 +1142,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest, RestrictedKeyboard) {
         "onFocus:email:false:false:false", false);
     ui::IMEEngineHandlerInterface::InputContext context(
         ui::TEXT_INPUT_TYPE_EMAIL, ui::TEXT_INPUT_MODE_DEFAULT,
-        ui::TEXT_INPUT_FLAG_NONE);
+        ui::TEXT_INPUT_FLAG_NONE, ui::TextInputClient::FOCUS_REASON_OTHER);
     engine_handler->FocusIn(context);
     ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
     ASSERT_TRUE(focus_listener.was_satisfied());
@@ -1154,7 +1154,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest, RestrictedKeyboard) {
         "onFocus:number:false:false:false", false);
     ui::IMEEngineHandlerInterface::InputContext context(
         ui::TEXT_INPUT_TYPE_NUMBER, ui::TEXT_INPUT_MODE_DEFAULT,
-        ui::TEXT_INPUT_FLAG_NONE);
+        ui::TEXT_INPUT_FLAG_NONE, ui::TextInputClient::FOCUS_REASON_OTHER);
     engine_handler->FocusIn(context);
     ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
     ASSERT_TRUE(focus_listener.was_satisfied());
@@ -1166,7 +1166,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest, RestrictedKeyboard) {
                                                 false);
     ui::IMEEngineHandlerInterface::InputContext context(
         ui::TEXT_INPUT_TYPE_TELEPHONE, ui::TEXT_INPUT_MODE_DEFAULT,
-        ui::TEXT_INPUT_FLAG_NONE);
+        ui::TEXT_INPUT_FLAG_NONE, ui::TextInputClient::FOCUS_REASON_OTHER);
     engine_handler->FocusIn(context);
     ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
     ASSERT_TRUE(focus_listener.was_satisfied());

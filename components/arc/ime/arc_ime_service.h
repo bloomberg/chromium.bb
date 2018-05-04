@@ -125,6 +125,7 @@ class ArcImeService : public KeyedService,
   bool GetCompositionCharacterBounds(uint32_t index,
                                      gfx::Rect* rect) const override;
   bool HasCompositionText() const override;
+  FocusReason GetFocusReason() const override;
   bool GetCompositionTextRange(gfx::Range* range) const override;
   bool SetSelectionRange(const gfx::Range& range) override;
   bool DeleteRange(const gfx::Range& range) override;

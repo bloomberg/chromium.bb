@@ -1330,6 +1330,23 @@ bool RenderWidgetHostViewAura::HasCompositionText() const {
   return has_composition_text_;
 }
 
+ui::TextInputClient::FocusReason RenderWidgetHostViewAura::GetFocusReason()
+    const {
+  if (!HasFocus())
+    return ui::TextInputClient::FOCUS_REASON_NONE;
+
+  switch (last_pointer_type_before_focus_) {
+    case ui::EventPointerType::POINTER_TYPE_MOUSE:
+      return ui::TextInputClient::FOCUS_REASON_MOUSE;
+    case ui::EventPointerType::POINTER_TYPE_PEN:
+      return ui::TextInputClient::FOCUS_REASON_PEN;
+    case ui::EventPointerType::POINTER_TYPE_TOUCH:
+      return ui::TextInputClient::FOCUS_REASON_TOUCH;
+    default:
+      return ui::TextInputClient::FOCUS_REASON_OTHER;
+  }
+}
+
 bool RenderWidgetHostViewAura::GetTextRange(gfx::Range* range) const {
   if (!text_input_manager_ || !GetFocusedWidget())
     return false;
@@ -1599,6 +1616,7 @@ void RenderWidgetHostViewAura::GetHitTestMask(gfx::Path* mask) const {
 // RenderWidgetHostViewAura, ui::EventHandler implementation:
 
 void RenderWidgetHostViewAura::OnKeyEvent(ui::KeyEvent* event) {
+  last_pointer_type_ = ui::EventPointerType::POINTER_TYPE_UNKNOWN;
   event_handler_->OnKeyEvent(event);
 }
 
@@ -1612,6 +1630,7 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
     last_mouse_move_location_ = event->location();
   }
 #endif
+  last_pointer_type_ = ui::EventPointerType::POINTER_TYPE_MOUSE;
   event_handler_->OnMouseEvent(event);
 }
 
@@ -1664,6 +1683,12 @@ viz::SurfaceId RenderWidgetHostViewAura::GetCurrentSurfaceId() const {
 void RenderWidgetHostViewAura::FocusedNodeChanged(
     bool editable,
     const gfx::Rect& node_bounds_in_screen) {
+  // The last gesture most likely caused the focus change. The focus reason will
+  // be incorrect if the focus was triggered without a user gesture.
+  // TODO(https://crbug.com/824604): Get the focus reason from the renderer
+  // process instead to get the true focus reason.
+  last_pointer_type_before_focus_ = last_pointer_type_;
+
   auto* input_method = GetInputMethod();
   if (input_method)
     input_method->CancelComposition(this);
@@ -1694,10 +1719,12 @@ void RenderWidgetHostViewAura::OnScrollEvent(ui::ScrollEvent* event) {
 }
 
 void RenderWidgetHostViewAura::OnTouchEvent(ui::TouchEvent* event) {
+  last_pointer_type_ = event->pointer_details().pointer_type;
   event_handler_->OnTouchEvent(event);
 }
 
 void RenderWidgetHostViewAura::OnGestureEvent(ui::GestureEvent* event) {
+  last_pointer_type_ = event->details().primary_pointer_type();
   event_handler_->OnGestureEvent(event);
 }
 

@@ -14072,6 +14072,7 @@ Called by update_net_error_codes.py.-->
       label="SAFE_BROWSING_PRIVATE_ON_SECURITY_INTERSTITIAL_PROCEEDED"/>
   <int value="421"
       label="ACCESSIBILITY_PRIVATE_ON_SELECT_TO_SPEAK_STATE_CHANGE_REQUESTED"/>
+  <int value="422" label="INPUT_METHOD_PRIVATE_ON_FOCUS"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">

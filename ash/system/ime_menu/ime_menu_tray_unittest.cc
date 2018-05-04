@@ -105,7 +105,8 @@ class ImeMenuTrayTest : public AshTestBase {
   // Focuses in the given type of input context.
   void FocusInInputContext(ui::TextInputType input_type) {
     ui::IMEEngineHandlerInterface::InputContext input_context(
-        input_type, ui::TEXT_INPUT_MODE_DEFAULT, ui::TEXT_INPUT_FLAG_NONE);
+        input_type, ui::TEXT_INPUT_MODE_DEFAULT, ui::TEXT_INPUT_FLAG_NONE,
+        ui::TextInputClient::FOCUS_REASON_OTHER);
     ui::IMEBridge::Get()->SetCurrentInputContext(input_context);
   }
 
