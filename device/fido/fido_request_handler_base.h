@@ -56,6 +56,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
 
  protected:
   virtual std::unique_ptr<FidoTask> CreateTaskForNewDevice(FidoDevice*) = 0;
+  void Start();
 
   TaskMap& ongoing_tasks() { return ongoing_tasks_; }
 

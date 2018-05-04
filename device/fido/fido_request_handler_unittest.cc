@@ -90,7 +90,9 @@ class FakeFidoRequestHandler : public FidoRequestHandler<std::vector<uint8_t>> {
       : FidoRequestHandler(nullptr /* connector */,
                            protocols,
                            std::move(callback)),
-        weak_factory_(this) {}
+        weak_factory_(this) {
+    Start();
+  }
   ~FakeFidoRequestHandler() override = default;
 
   std::unique_ptr<FidoTask> CreateTaskForNewDevice(

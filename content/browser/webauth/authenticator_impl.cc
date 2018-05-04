@@ -353,6 +353,11 @@ AuthenticatorImpl::AuthenticatorImpl(RenderFrameHost* render_frame_host,
       weak_factory_(this) {
   DCHECK(render_frame_host_);
   DCHECK(timer_);
+
+  protocols_.insert(device::FidoTransportProtocol::kUsbHumanInterfaceDevice);
+  if (base::FeatureList::IsEnabled(features::kWebAuthBle)) {
+    protocols_.insert(device::FidoTransportProtocol::kBluetoothLowEnergy);
+  }
 }
 
 AuthenticatorImpl::~AuthenticatorImpl() {}
