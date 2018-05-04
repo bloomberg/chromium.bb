@@ -116,6 +116,7 @@ class HighlighterController;
 class ImeController;
 class ImmersiveContextAsh;
 class ImmersiveHandlerFactoryAsh;
+class KeyAccessibilityEnabler;
 class KeyboardBrightnessControlDelegate;
 class KeyboardUI;
 class LaserPointerController;
@@ -410,6 +411,9 @@ class ASH_EXPORT Shell : public SessionObserver,
     return high_contrast_controller_.get();
   }
   ImeController* ime_controller() { return ime_controller_.get(); }
+  KeyAccessibilityEnabler* key_accessibility_enabler() {
+    return key_accessibility_enabler_.get();
+  }
   KeyboardBrightnessControlDelegate* keyboard_brightness_control_delegate() {
     return keyboard_brightness_control_delegate_.get();
   }
@@ -863,6 +867,10 @@ class ASH_EXPORT Shell : public SessionObserver,
   // Cursor may be hidden on certain key events in Chrome OS, whereas we never
   // hide the cursor on Windows.
   std::unique_ptr<::wm::CursorManager> cursor_manager_;
+
+  // Enables spoken feedback accessibility based on a press and hold of both
+  // volume keys.
+  std::unique_ptr<KeyAccessibilityEnabler> key_accessibility_enabler_;
 
   // For testing only: simulate that a modal window is open
   bool simulate_modal_window_open_for_test_ = false;
