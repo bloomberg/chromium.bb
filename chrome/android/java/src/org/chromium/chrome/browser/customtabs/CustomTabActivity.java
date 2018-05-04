@@ -660,6 +660,11 @@ public class CustomTabActivity extends ChromeActivity {
         tab.addObserver(mTabObserver);
         tab.addObserver(mTabNavigationEventObserver);
 
+        // Let ServiceWorkerPaymentAppBridge observe the opened tab for payment request.
+        if (mIntentDataProvider.isForPaymentRequest()) {
+            ServiceWorkerPaymentAppBridge.addTabObserverForPaymentRequestTab(tab);
+        }
+
         prepareTabBackground(tab);
     }
 

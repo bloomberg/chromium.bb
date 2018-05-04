@@ -17,6 +17,9 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNIAdditionalImport;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.tab.EmptyTabObserver;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.components.payments.OriginSecurityChecker;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentItem;
@@ -236,6 +239,35 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
         nativeAbortPaymentApp(webContents, registrationId, callback);
     }
 
+    /**
+     * Add observer for the opened payment app window tab so as to validate whether the web
+     * contents is secure.
+     *
+     * @param tab The opened payment app window tab.
+     */
+    public static void addTabObserverForPaymentRequestTab(Tab tab) {
+        tab.addObserver(new EmptyTabObserver() {
+            @Override
+            public void onPageLoadFinished(Tab tab) {
+                // Notify closing payment app window so as to abort payment if unsecure.
+                WebContents webContents = tab.getWebContents();
+                if (!OriginSecurityChecker.isOriginSecure(webContents.getLastCommittedUrl())
+                        || (!OriginSecurityChecker.isSchemeCryptographic(
+                                    webContents.getLastCommittedUrl())
+                                   && !OriginSecurityChecker.isOriginLocalhostOrFile(
+                                              webContents.getLastCommittedUrl()))
+                        || !SslValidityChecker.isSslCertificateValid(webContents)) {
+                    onClosingPaymentAppWindow(webContents);
+                }
+            }
+        });
+    }
+
+    /**
+     * Notify closing the opened payment app window.
+     *
+     * @param webContents The web contents in the opened window.
+     */
     public static void onClosingPaymentAppWindow(WebContents webContents) {
         nativeOnClosingPaymentAppWindow(webContents);
     }
