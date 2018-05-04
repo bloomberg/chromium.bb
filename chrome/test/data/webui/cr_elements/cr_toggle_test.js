@@ -20,7 +20,7 @@ suite('cr-toggle', function() {
     assertTrue(toggle.hasAttribute('checked'));
     assertEquals('true', toggle.getAttribute('aria-pressed'));
     // Asserting that the toggle button has actually moved.
-    assertTrue(getComputedStyle(toggle.$.button).transform.includes('matrix'));
+    assertTrue(getComputedStyle(toggle.$.knob).transform.includes('matrix'));
   }
 
   function assertNotChecked() {
@@ -28,7 +28,7 @@ suite('cr-toggle', function() {
     assertEquals(null, toggle.getAttribute('checked'));
     assertEquals('false', toggle.getAttribute('aria-pressed'));
     // Asserting that the toggle button has not moved.
-    assertEquals('none', getComputedStyle(toggle.$.button).transform);
+    assertEquals('none', getComputedStyle(toggle.$.knob).transform);
   }
 
   function assertDisabled() {

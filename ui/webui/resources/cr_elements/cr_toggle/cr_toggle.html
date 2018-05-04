@@ -16,7 +16,13 @@
         pointer-events: none;
       }
 
-      #container {
+      button {
+        background: none;
+        border: none;
+        cursor: inherit;
+        display: block;
+        outline: inherit;
+        padding: 0;
         position: relative;
         width: 34px;
         z-index: 0;
@@ -45,11 +51,12 @@
         opacity: 0.12;
       }
 
-      #button {
+      #knob {
         background-color: var(
             --cr-toggle-unchecked-button-color, var(--paper-grey-50));
         border-radius: 50%;
         box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
+        display: block;
         height: 16px;
         position: relative;
         transition: transform linear 80ms, background-color linear 80ms;
@@ -57,17 +64,17 @@
         z-index: 1;
       }
 
-      :host([checked]) #button {
+      :host([checked]) #knob {
         background-color: var(
             --cr-toggle-checked-button-color, var(--google-blue-500));
         transform: translate3d(18px, 0, 0);
       }
 
-      :host-context([dir=rtl]):host([checked]) #button {
+      :host-context([dir=rtl]):host([checked]) #knob {
         transform: translate3d(-18px, 0, 0);
       }
 
-      :host([disabled]) #button {
+      :host([disabled]) #knob {
         background-color: #bdbdbd;
         opacity: 1;
       }
@@ -92,10 +99,16 @@
         color: var(--cr-toggle-checked-ink-color, var(--primary-color));
       }
     </style>
-    <div id="container">
-     <div id="bar"></div>
-     <div id="button"></div>
-    </div>
+    <!-- A <button> is used (instead of a plain <div>) to avoid a corner case
+         when pointerdown is initiated in cr-toggle, but pointerup happens
+         outside the bounds of cr-toggle, which would end up firing a 'click'
+         event on the parent and unexpectedly modify the toggle's state (see
+         context at crbug.com/689158 and crbug.com/768555). The 'click'
+         event is not fired when the <button> wrapper is used. -->
+    <button tabindex="-1">
+      <span id="bar"></span>
+      <span id="knob"></span>
+    </button>
   </template>
   <script src="cr_toggle.js"></script>
 </dom-module>

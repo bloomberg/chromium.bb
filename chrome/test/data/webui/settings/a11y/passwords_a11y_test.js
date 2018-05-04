@@ -101,12 +101,7 @@ AccessibilityTest.define('SettingsA11yManagePasswords', {
       assertEquals(10, this.passwordsSection.savedPasswords.length);
     },
   },
+
   /** @override */
-  violationFilter:
-      Object.assign({}, SettingsAccessibilityTest.violationFilter, {
-        'button-name': function(nodeResult) {
-          const node = nodeResult.element;
-          return node.classList.contains('icon-expand-more');
-        },
-      }),
+  violationFilter: SettingsAccessibilityTest.violationFilter,
 });
