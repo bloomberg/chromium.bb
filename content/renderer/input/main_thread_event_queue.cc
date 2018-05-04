@@ -49,13 +49,15 @@ class QueuedWebInputEvent : public ScopedWebInputEventWithLatencyInfo,
   QueuedWebInputEvent(ui::WebScopedInputEvent event,
                       const ui::LatencyInfo& latency,
                       bool originally_cancelable,
-                      HandledEventCallback callback)
+                      HandledEventCallback callback,
+                      bool known_by_scheduler)
       : ScopedWebInputEventWithLatencyInfo(std::move(event), latency),
         non_blocking_coalesced_count_(0),
         creation_timestamp_(base::TimeTicks::Now()),
         last_coalesced_timestamp_(creation_timestamp_),
         originally_cancelable_(originally_cancelable),
-        callback_(std::move(callback)) {}
+        callback_(std::move(callback)),
+        known_by_scheduler_count_(known_by_scheduler ? 1 : 0) {}
 
   ~QueuedWebInputEvent() override {}
 
@@ -83,6 +85,7 @@ class QueuedWebInputEvent : public ScopedWebInputEventWithLatencyInfo,
     } else {
       non_blocking_coalesced_count_++;
     }
+    known_by_scheduler_count_ += other_event->known_by_scheduler_count_;
     ScopedWebInputEventWithLatencyInfo::CoalesceWith(*other_event);
     last_coalesced_timestamp_ = base::TimeTicks::Now();
 
@@ -123,11 +126,10 @@ class QueuedWebInputEvent : public ScopedWebInputEventWithLatencyInfo,
       }
     }
 
-    size_t num_events_handled = 1 + blocking_coalesced_callbacks_.size();
     if (queue->main_thread_scheduler_) {
       // TODO(dtapuska): Change the scheduler API to take into account number of
       // events processed.
-      for (size_t i = 0; i < num_events_handled; ++i) {
+      for (size_t i = 0; i < known_by_scheduler_count_; ++i) {
         queue->main_thread_scheduler_->DidHandleInputEventOnMainThread(
             event(), ack_result == INPUT_EVENT_ACK_STATE_CONSUMED
                          ? blink::WebInputEventResult::kHandledApplication
@@ -195,6 +197,8 @@ class QueuedWebInputEvent : public ScopedWebInputEventWithLatencyInfo,
   bool originally_cancelable_;
 
   HandledEventCallback callback_;
+
+  size_t known_by_scheduler_count_;
 };
 
 MainThreadEventQueue::SharedState::SharedState()
@@ -298,9 +302,9 @@ void MainThreadEventQueue::HandleEvent(
     event_callback = std::move(callback);
   }
 
-  std::unique_ptr<QueuedWebInputEvent> queued_event(
-      new QueuedWebInputEvent(std::move(event), latency, originally_cancelable,
-                              std::move(event_callback)));
+  std::unique_ptr<QueuedWebInputEvent> queued_event(new QueuedWebInputEvent(
+      std::move(event), latency, originally_cancelable,
+      std::move(event_callback), IsForwardedAndSchedulerKnown(ack_result)));
 
   QueueEvent(std::move(queued_event));
 

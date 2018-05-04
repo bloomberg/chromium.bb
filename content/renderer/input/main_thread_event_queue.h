@@ -109,6 +109,11 @@ class CONTENT_EXPORT MainThreadEventQueue
       const std::unique_ptr<MainThreadEventQueueTask>& item,
       base::TimeTicks frame_time);
 
+  static bool IsForwardedAndSchedulerKnown(InputEventAckState ack_state) {
+    return ack_state == INPUT_EVENT_ACK_STATE_NOT_CONSUMED ||
+           ack_state == INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING_DUE_TO_FLING;
+  }
+
  protected:
   friend class base::RefCountedThreadSafe<MainThreadEventQueue>;
   virtual ~MainThreadEventQueue();

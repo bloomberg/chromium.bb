@@ -257,7 +257,7 @@ TEST_F(MainThreadEventQueueTest, NonBlockingWheel) {
 
   EXPECT_CALL(renderer_scheduler_,
               DidHandleInputEventOnMainThread(testing::_, testing::_))
-      .Times(2);
+      .Times(0);
 
   for (WebMouseWheelEvent& event : kEvents)
     HandleEvent(event, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
@@ -343,7 +343,7 @@ TEST_F(MainThreadEventQueueTest, NonBlockingWheel) {
 TEST_F(MainThreadEventQueueTest, NonBlockingTouch) {
   EXPECT_CALL(renderer_scheduler_,
               DidHandleInputEventOnMainThread(testing::_, testing::_))
-      .Times(3);
+      .Times(0);
 
   SyntheticWebTouchEvent kEvents[4];
   kEvents[0].PressPoint(10, 10);
@@ -448,7 +448,7 @@ TEST_F(MainThreadEventQueueTest, BlockingTouch) {
 
   EXPECT_CALL(renderer_scheduler_,
               DidHandleInputEventOnMainThread(testing::_, testing::_))
-      .Times(5);
+      .Times(3);
   {
     // Ensure that coalescing takes place.
     HandleEvent(kEvents[0], INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
@@ -502,7 +502,7 @@ TEST_F(MainThreadEventQueueTest, InterleavedEvents) {
 
   EXPECT_CALL(renderer_scheduler_,
               DidHandleInputEventOnMainThread(testing::_, testing::_))
-      .Times(2);
+      .Times(0);
 
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
   EXPECT_EQ(0u, event_queue().size());
@@ -573,7 +573,7 @@ TEST_F(MainThreadEventQueueTest, RafAlignedMouseInput) {
 
   EXPECT_CALL(renderer_scheduler_,
               DidHandleInputEventOnMainThread(testing::_, testing::_))
-      .Times(11);
+      .Times(0);
 
   // Simulate enqueing a discrete event, followed by continuous events and
   // then a discrete event. The last discrete event should flush the
@@ -645,7 +645,7 @@ TEST_F(MainThreadEventQueueTest, RafAlignedTouchInput) {
 
   EXPECT_CALL(renderer_scheduler_,
               DidHandleInputEventOnMainThread(testing::_, testing::_))
-      .Times(10);
+      .Times(3);
 
   // Simulate enqueing a discrete event, followed by continuous events and
   // then a discrete event. The last discrete event should flush the
@@ -782,7 +782,7 @@ TEST_F(MainThreadEventQueueTest, RafAlignedTouchInputCoalescedMoves) {
 TEST_F(MainThreadEventQueueTest, RafAlignedTouchInputThrottlingMoves) {
   EXPECT_CALL(renderer_scheduler_,
               DidHandleInputEventOnMainThread(testing::_, testing::_))
-      .Times(2);
+      .Times(3);
 
   SyntheticWebTouchEvent kEvents[2];
   kEvents[0].PressPoint(10, 10);
@@ -837,7 +837,7 @@ TEST_F(MainThreadEventQueueTest, LowLatency) {
 
   EXPECT_CALL(renderer_scheduler_,
               DidHandleInputEventOnMainThread(testing::_, testing::_))
-      .Times(8);
+      .Times(0);
 
   for (SyntheticWebTouchEvent& event : kEvents)
     HandleEvent(event, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
@@ -1327,7 +1327,7 @@ TEST_F(MainThreadEventQueueTest, UnbufferedDispatchMouseEvent) {
 
   EXPECT_CALL(renderer_scheduler_,
               DidHandleInputEventOnMainThread(testing::_, testing::_))
-      .Times(3);
+      .Times(0);
 
   HandleEvent(mouse_down, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
   queue_->RequestUnbufferedInputEvents();
