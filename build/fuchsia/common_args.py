@@ -40,20 +40,16 @@ def AddCommonArgs(arg_parser):
   common_args.add_argument('--ssh-config', '-F',
                            help='The path to the SSH configuration used for '
                                 'connecting to the target device.')
+  common_args.add_argument('--no-system-logs', default=False,
+                           action='store_true',
+                           help='Do not show system log data.')
   common_args.add_argument('--verbose', '-v', default=False,
                            action='store_true',
-                           help='Show more logging information.')
-  common_args.add_argument('--really-verbose', '-vv', default=False,
-                           action='store_true',
-                           help='Show even more logging information, ' +
-                                'including SCP logs.')
+                           help='Enable debug-level logging.')
 
 
 def ConfigureLogging(args):
   """Configures the logging level based on command line |args|."""
-
-  if args.really_verbose:
-    args.verbose = True
 
   logging.basicConfig(level=(logging.DEBUG if args.verbose else logging.INFO),
                       format='%(asctime)s:%(levelname)s:%(name)s:%(message)s')
@@ -66,7 +62,7 @@ def ConfigureLogging(args):
   # Verbose SCP output can be useful at times but oftentimes is just too noisy.
   # Only enable it if -vv is passed.
   logging.getLogger('ssh').setLevel(
-      logging.DEBUG if args.really_verbose else logging.WARN)
+      logging.DEBUG if args.verbose else logging.WARN)
 
 
 def GetDeploymentTargetForArgs(args):
@@ -74,7 +70,8 @@ def GetDeploymentTargetForArgs(args):
   command line arguments."""
 
   if not args.device:
-    return QemuTarget(args.output_directory, args.target_cpu)
+    return QemuTarget(args.output_directory, args.target_cpu,
+                      not args.no_system_logs)
   else:
     return DeviceTarget(args.output_directory, args.target_cpu,
                         args.host, args.port, args.ssh_config)
