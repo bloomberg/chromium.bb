@@ -6,6 +6,7 @@
 
 #include <utility>
 #include "base/logging.h"
+#include "base/pickle.h"
 
 namespace download {
 
@@ -37,7 +38,6 @@ metadata_pb::DownloadEntry InProgressConversions::DownloadEntryToProto(
     auto* proto_header = proto.add_request_headers();
     *proto_header = HttpRequestHeaderToProto(header);
   }
-
   return proto;
 }
 
@@ -137,6 +137,104 @@ InProgressConversions::HttpRequestHeaderFromProto(
     return std::pair<std::string, std::string>();
 
   return std::make_pair(proto.key(), proto.value());
+}
+
+// static
+metadata_pb::InProgressInfo InProgressConversions::InProgressInfoToProto(
+    const InProgressInfo& in_progress_info) {
+  metadata_pb::InProgressInfo proto;
+  for (size_t i = 0; i < in_progress_info.url_chain.size(); ++i)
+    proto.add_url_chain(in_progress_info.url_chain[i].spec());
+  proto.set_fetch_error_body(in_progress_info.fetch_error_body);
+  for (const auto& header : in_progress_info.request_headers) {
+    auto* proto_header = proto.add_request_headers();
+    *proto_header = HttpRequestHeaderToProto(header);
+  }
+  proto.set_etag(in_progress_info.etag);
+  proto.set_last_modified(in_progress_info.last_modified);
+  proto.set_total_bytes(in_progress_info.total_bytes);
+  base::Pickle current_path;
+  in_progress_info.current_path.WriteToPickle(&current_path);
+  proto.set_current_path(current_path.data(), current_path.size());
+  base::Pickle target_path;
+  in_progress_info.target_path.WriteToPickle(&target_path);
+  proto.set_target_path(target_path.data(), target_path.size());
+  proto.set_received_bytes(in_progress_info.received_bytes);
+  proto.set_end_time(
+      in_progress_info.end_time.ToDeltaSinceWindowsEpoch().InMilliseconds());
+  for (size_t i = 0; i < in_progress_info.received_slices.size(); ++i) {
+    metadata_pb::ReceivedSlice* slice = proto.add_received_slices();
+    slice->set_received_bytes(
+        in_progress_info.received_slices[i].received_bytes);
+    slice->set_offset(in_progress_info.received_slices[i].offset);
+    slice->set_finished(in_progress_info.received_slices[i].finished);
+  }
+  proto.set_hash(in_progress_info.hash);
+  proto.set_transient(in_progress_info.transient);
+  proto.set_state(in_progress_info.state);
+  proto.set_danger_type(in_progress_info.danger_type);
+  proto.set_interrupt_reason(in_progress_info.interrupt_reason);
+  proto.set_paused(in_progress_info.paused);
+  proto.set_metered(in_progress_info.metered);
+  proto.set_request_origin(in_progress_info.request_origin);
+  proto.set_bytes_wasted(in_progress_info.bytes_wasted);
+  return proto;
+}
+
+// static
+InProgressInfo InProgressConversions::InProgressInfoFromProto(
+    const metadata_pb::InProgressInfo& proto) {
+  InProgressInfo info;
+  for (const auto& url : proto.url_chain())
+    info.url_chain.emplace_back(url);
+  info.fetch_error_body = proto.fetch_error_body();
+  for (const auto& header : proto.request_headers())
+    info.request_headers.emplace_back(HttpRequestHeaderFromProto(header));
+  info.etag = proto.etag();
+  info.last_modified = proto.last_modified();
+  info.total_bytes = proto.total_bytes();
+  base::PickleIterator current_path(
+      base::Pickle(proto.current_path().data(), proto.current_path().size()));
+  info.current_path.ReadFromPickle(&current_path);
+  base::PickleIterator target_path(
+      base::Pickle(proto.target_path().data(), proto.target_path().size()));
+  info.target_path.ReadFromPickle(&target_path);
+  info.received_bytes = proto.received_bytes();
+  info.end_time = base::Time::FromDeltaSinceWindowsEpoch(
+      base::TimeDelta::FromMilliseconds(proto.end_time()));
+
+  for (int i = 0; i < proto.received_slices_size(); ++i) {
+    info.received_slices.emplace_back(proto.received_slices(i).offset(),
+                                      proto.received_slices(i).received_bytes(),
+                                      proto.received_slices(i).finished());
+  }
+  info.hash = proto.hash();
+  info.transient = proto.transient();
+  info.state = static_cast<DownloadItem::DownloadState>(proto.state());
+  info.danger_type = static_cast<DownloadDangerType>(proto.danger_type());
+  info.interrupt_reason =
+      static_cast<DownloadInterruptReason>(proto.interrupt_reason());
+  info.paused = proto.paused();
+  info.metered = proto.metered();
+  info.request_origin = proto.request_origin();
+  info.bytes_wasted = proto.bytes_wasted();
+  return info;
+}
+
+UkmInfo InProgressConversions::UkmInfoFromProto(
+    const metadata_pb::UkmInfo& proto) {
+  UkmInfo info;
+  info.download_source = DownloadSourceFromProto(proto.download_source());
+  info.ukm_download_id = proto.ukm_download_id();
+  return info;
+}
+
+metadata_pb::UkmInfo InProgressConversions::UkmInfoToProto(
+    const UkmInfo& info) {
+  metadata_pb::UkmInfo proto;
+  proto.set_download_source(DownloadSourceToProto(info.download_source));
+  proto.set_ukm_download_id(info.ukm_download_id);
+  return proto;
 }
 
 }  // namespace download

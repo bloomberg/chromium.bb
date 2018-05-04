@@ -7,8 +7,10 @@
 
 #include "base/macros.h"
 #include "components/download/downloader/in_progress/download_entry.h"
+#include "components/download/downloader/in_progress/in_progress_info.h"
 #include "components/download/downloader/in_progress/proto/download_entry.pb.h"
 #include "components/download/downloader/in_progress/proto/download_source.pb.h"
+#include "components/download/downloader/in_progress/ukm_info.h"
 
 namespace download {
 
@@ -37,6 +39,16 @@ class InProgressConversions {
 
   static std::pair<std::string, std::string> HttpRequestHeaderFromProto(
       const metadata_pb::HttpRequestHeader& proto);
+
+  static metadata_pb::InProgressInfo InProgressInfoToProto(
+      const InProgressInfo& in_progress_info);
+
+  static InProgressInfo InProgressInfoFromProto(
+      const metadata_pb::InProgressInfo& proto);
+
+  static metadata_pb::UkmInfo UkmInfoToProto(const UkmInfo& ukm_info);
+
+  static UkmInfo UkmInfoFromProto(const metadata_pb::UkmInfo& proto);
 };
 
 }  // namespace download
