@@ -335,6 +335,10 @@ Still reading?
     <!-- 2 resource sets used by clank widgets for each channel -->
     <ignore regexp="The resource `R.string.bookmark_widget_title.*` appears to be unused"/>
     <ignore regexp="The resource `R.string.search_widget_title.*` appears to be unused"/>
+    <!-- Download location strings checked in before M68 deadline -->
+    <ignore regexp="The resource `R.string.download_location_not_enough_space_sd_card_full` appears to be unused"/>
+    <ignore regexp="The resource `R.string.download_location_notification_retry*` appears to be unused"/>
+    <ignore regexp="The resource `R.string.download_manager_ui_space_using*` appears to be unused"/>
     <!-- Endnote: Please specify number of suppressions when adding more -->
   </issue>
   <issue id="UseCompoundDrawables">
