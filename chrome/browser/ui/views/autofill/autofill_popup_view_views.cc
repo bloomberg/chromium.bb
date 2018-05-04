@@ -210,9 +210,6 @@ void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
       GetNativeTheme()->GetSystemColor(
           controller_->GetBackgroundColorIDForRow(index)));
 
-  const int frontend_id = controller_->GetSuggestionAt(index).frontend_id;
-  const bool icon_in_front_of_text =
-      (frontend_id == POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE);
   const bool is_rtl = controller_->IsRTL();
   const int text_align =
       is_rtl ? gfx::Canvas::TEXT_ALIGN_RIGHT : gfx::Canvas::TEXT_ALIGN_LEFT;
@@ -220,7 +217,7 @@ void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
   value_rect.Inset(AutofillPopupLayoutModel::kEndPadding, 0);
 
   // If the icon is on the right of the rect, no matter in RTL or LTR mode.
-  bool icon_on_the_right = icon_in_front_of_text == is_rtl;
+  bool icon_on_the_right = !is_rtl;
   int x_align_left = icon_on_the_right ? value_rect.right() : value_rect.x();
 
   // Draw the Autofill icon, if one exists
@@ -235,32 +232,18 @@ void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
     canvas->DrawImageInt(image, icon_x_align_left, icon_y);
 
     // An icon was drawn; adjust the |x_align_left| value for the next element.
-    if (icon_in_front_of_text) {
-      x_align_left =
-          icon_x_align_left +
-          (is_rtl ? -AutofillPopupLayoutModel::kPaddingAfterLeadingIcon
-                  : image.width() +
-                        AutofillPopupLayoutModel::kPaddingAfterLeadingIcon);
-    } else {
       x_align_left =
           icon_x_align_left +
           (is_rtl ? image.width() + AutofillPopupLayoutModel::kIconPadding
                   : -AutofillPopupLayoutModel::kIconPadding);
-    }
   }
 
   // Draw the value text
   const int value_width = gfx::GetStringWidth(
       controller_->GetElidedValueAt(index),
       controller_->layout_model().GetValueFontListForRow(index));
-  int value_x_align_left = x_align_left;
-
-  if (icon_in_front_of_text) {
-    value_x_align_left += is_rtl ? -value_width : 0;
-  } else {
-    value_x_align_left =
-        is_rtl ? value_rect.right() - value_width : value_rect.x();
-  }
+  int value_x_align_left =
+      is_rtl ? value_rect.right() - value_width : value_rect.x();
 
   canvas->DrawStringRectWithFlags(
       controller_->GetElidedValueAt(index),
@@ -276,14 +259,7 @@ void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
     const int label_width = gfx::GetStringWidth(
         controller_->GetElidedLabelAt(index),
         controller_->layout_model().GetLabelFontListForRow(index));
-    int label_x_align_left = x_align_left;
-
-    if (icon_in_front_of_text) {
-      label_x_align_left =
-          is_rtl ? value_rect.x() : value_rect.right() - label_width;
-    } else {
-      label_x_align_left += is_rtl ? 0 : -label_width;
-    }
+    int label_x_align_left = x_align_left + (is_rtl ? 0 : -label_width);
 
     // TODO(crbug.com/678033):Add a GetLabelFontColorForRow function similar to
     // GetValueFontColorForRow so that the cocoa impl could use it too

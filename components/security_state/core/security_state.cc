@@ -293,9 +293,6 @@ void SecurityInfoForRequest(
 
 }  // namespace
 
-const base::Feature kHttpFormWarningFeature{"HttpFormWarning",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
-
 SecurityInfo::SecurityInfo()
     : security_level(NONE),
       malicious_content_status(MALICIOUS_CONTENT_STATUS_NONE),
@@ -324,10 +321,6 @@ void GetSecurityInfo(
   SecurityInfoForRequest(*visible_security_state,
                          used_policy_installed_certificate,
                          is_origin_secure_callback, result);
-}
-
-bool IsHttpWarningInFormEnabled() {
-  return base::FeatureList::IsEnabled(kHttpFormWarningFeature);
 }
 
 VisibleSecurityState::VisibleSecurityState()

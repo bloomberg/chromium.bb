@@ -6769,14 +6769,6 @@ TEST_F(AutofillMetricsParseQueryResponseTest, PartialNoServerData) {
       ElementsAre(Bucket(true, 2)));
 }
 
-// Test that the Form-Not-Secure warning user action is recorded.
-TEST_F(AutofillMetricsTest, ShowHttpNotSecureExplanationUserAction) {
-  EXPECT_CALL(autofill_client_,
-              ExecuteCommand(POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE));
-  external_delegate_->DidAcceptSuggestion(
-      ASCIIToUTF16("Test"), POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE, 0);
-}
-
 // Tests that credit card form submissions are logged specially when the form is
 // on a non-secure page.
 TEST_F(AutofillMetricsTest, NonsecureCreditCardForm) {

@@ -35,10 +35,6 @@ class AutofillPopupLayoutModel {
   // in dip.
   static const int kNamePadding = 15;
 
-  // The minimum amount of padding between the Autofill http warning message
-  // name and subtext, in dip.
-  static const int kHttpWarningNamePadding = 8;
-
   // The amount of padding around icons in dip.
   static const int kIconPadding = 5;
 

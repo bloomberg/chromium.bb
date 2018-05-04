@@ -163,10 +163,6 @@ using base::SysUTF16ToNSString;
                         bounds:(NSRect)bounds
                       selected:(BOOL)isSelected
                    textYOffset:(CGFloat)textYOffset {
-  const int frontenId = controller_->GetSuggestionAt(index).frontend_id;
-  const bool iconInFrontOfText =
-      frontenId == autofill::POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE;
-
   // If this row is selected, highlight it with this mac system color.
   // Otherwise the controller may have a specific background color for this
   // entry.
@@ -189,9 +185,6 @@ using base::SysUTF16ToNSString;
 
   // Draw left side if isRTL == NO, right side if isRTL == YES.
   CGFloat x = isRTL ? rightX : leftX;
-  if (iconInFrontOfText) {
-    x = [self drawIconAtIndex:index atX:x rightAlign:isRTL bounds:bounds];
-  }
   [self drawName:name
               atX:x
             index:index
@@ -201,9 +194,7 @@ using base::SysUTF16ToNSString;
 
   // Draw right side if isRTL == NO, left side if isRTL == YES.
   x = isRTL ? leftX : rightX;
-  if (!iconInFrontOfText) {
-    x = [self drawIconAtIndex:index atX:x rightAlign:!isRTL bounds:bounds];
-  }
+  x = [self drawIconAtIndex:index atX:x rightAlign:!isRTL bounds:bounds];
   [self drawSubtext:subtext
                 atX:x
               index:index

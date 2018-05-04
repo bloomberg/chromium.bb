@@ -33,9 +33,7 @@ namespace {
 // Returns true if the suggestion entry is an Autofill warning message.
 // Warning messages should display on top of suggestion list.
 bool IsAutofillWarningEntry(int frontend_id) {
-  return frontend_id ==
-             POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE ||
-         frontend_id == POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE;
+  return frontend_id == POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE;
 }
 
 }  // namespace
@@ -226,8 +224,7 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
   } else if (identifier == POPUP_ITEM_ID_SCAN_CREDIT_CARD) {
     manager_->client()->ScanCreditCard(base::Bind(
         &AutofillExternalDelegate::OnCreditCardScanned, GetWeakPtr()));
-  } else if (identifier == POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO ||
-             identifier == POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE) {
+  } else if (identifier == POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO) {
     manager_->client()->ExecuteCommand(identifier);
   } else {
     if (identifier > 0)  // Denotes an Autofill suggestion.

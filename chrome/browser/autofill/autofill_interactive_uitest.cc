@@ -1858,6 +1858,11 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveIsolationTest, SimpleCrossSiteFill) {
 #define MAYBE_CrossSitePaymentForms CrossSitePaymentForms
 #endif
 IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, MAYBE_CrossSitePaymentForms) {
+  CreditCard card;
+  test::SetCreditCardInfo(&card, "Milton Waddams", "4111111111111111", "09",
+                          "2999", "");
+  AddTestCreditCard(browser(), card);
+
   // Main frame is on a.com, iframe is on b.com.
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/cross_origin_iframe.html");

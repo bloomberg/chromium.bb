@@ -110,11 +110,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   bool DidClearAutofillSelection(
       const blink::WebFormControlElement& control_element);
 
-  // Returns whether a "Login not secure" warning should be shown on the input
-  // field. This is true if the feature is enabled and if the form is
-  // non-secure.
-  bool ShouldShowNotSecureWarning(const blink::WebInputElement& element);
-
   // Returns whether the element is a username or password textfield.
   bool IsUsernameOrPasswordField(const blink::WebInputElement& element);
 

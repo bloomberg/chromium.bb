@@ -100,15 +100,9 @@ void AutofillPopupViewAndroid::OnSuggestionsChanged() {
 
     bool is_deletable =
         controller_->GetRemovalConfirmationText(i, nullptr, nullptr);
-    // In the Form-Not-Secure experiment, the payment disabled message
-    // is a short message that should be displayed the same as the other
-    // autofill suggestions. If this experiment is not enabled, then the
-    // payment disabled message should be allowed to span multiple
-    // lines.
     bool is_label_multiline =
-        (!security_state::IsHttpWarningInFormEnabled() &&
-         suggestion.frontend_id ==
-             POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE) ||
+        suggestion.frontend_id ==
+            POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE ||
         suggestion.frontend_id == POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO;
     Java_AutofillPopupBridge_addToAutofillSuggestionArray(
         env, data_array, i, value, label, android_icon_id,

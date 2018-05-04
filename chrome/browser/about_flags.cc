@@ -2044,9 +2044,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExperimentalSecurityFeaturesDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnablePotentiallyAnnoyingSecurityFeatures)},
 #endif  // OS_CHROMEOS
-    {"enable-http-form-warning", flag_descriptions::kEnableHttpFormWarningName,
-     flag_descriptions::kEnableHttpFormWarningDescription, kOsAll,
-     FEATURE_VALUE_TYPE(security_state::kHttpFormWarningFeature)},
     {"committed-interstitials", flag_descriptions::kCommittedInterstitialsName,
      flag_descriptions::kCommittedInterstitialsDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kCommittedInterstitials)},

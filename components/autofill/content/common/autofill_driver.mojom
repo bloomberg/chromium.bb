@@ -123,14 +123,6 @@ interface PasswordManagerDriver {
                           mojo_base.mojom.String16 typed_username,
                           int32 options, gfx.mojom.RectF bounds);
 
-  // Instructs the browser to show a popup with a warning that the form
-  // is not secure. The popup will use |text_direction| for displaying
-  // text. This popup is shown when a password form on a non-secure page is
-  // autofilled on page load.
-  ShowNotSecureWarning(mojo_base.mojom.TextDirection text_direction,
-                       gfx.mojom.RectF bounds);
-
-
   // Instructs the browser to show a suggestion, which will redirect the user to
   // the list of all saved passwords. The popup will use |text_direction| for
   // displaying text.

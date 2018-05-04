@@ -56,7 +56,6 @@ AutofillPopupRowView::AutofillPopupRowView(AutofillPopupController* controller,
   int frontend_id = controller_->GetSuggestionAt(line_number_).frontend_id;
   is_separator_ = frontend_id == autofill::POPUP_ITEM_ID_SEPARATOR;
   is_warning_ =
-      frontend_id == autofill::POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE ||
       frontend_id ==
           autofill::POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE;
 
