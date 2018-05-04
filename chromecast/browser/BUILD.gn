@@ -47,7 +47,6 @@ cast_source_set("browser") {
     "cast_resource_dispatcher_host_delegate.h",
     "cast_web_contents_manager.cc",
     "cast_web_contents_manager.h",
-    "cast_web_view.cc",
     "cast_web_view_default.cc",
     "cast_web_view_default.h",
     "cast_web_view_factory.cc",
@@ -279,6 +278,7 @@ cast_source_set("browser") {
 cast_source_set("public") {
   sources = [
     "cast_content_window.h",
+    "cast_web_view.cc",
     "cast_web_view.h",
   ]
 
