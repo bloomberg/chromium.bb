@@ -334,10 +334,10 @@ void OneGoogleBarFetcherImpl::LoadDone(
   data_decoder::SafeJsonParser::Parse(
       content::ServiceManagerConnection::GetForProcess()->GetConnector(),
       response,
-      base::Bind(&OneGoogleBarFetcherImpl::JsonParsed,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&OneGoogleBarFetcherImpl::JsonParseFailed,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindRepeating(&OneGoogleBarFetcherImpl::JsonParsed,
+                          weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(&OneGoogleBarFetcherImpl::JsonParseFailed,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void OneGoogleBarFetcherImpl::JsonParsed(std::unique_ptr<base::Value> value) {
