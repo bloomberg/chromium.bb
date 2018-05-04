@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <cctype>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
@@ -79,6 +81,48 @@ class ThirdPartyURLLoaderInterceptor {
 
   DISALLOW_COPY_AND_ASSIGN(ThirdPartyURLLoaderInterceptor);
 };
+
+// Returns true only if |header_value| satisfies ABNF: 1*DIGIT [ "." 1*DIGIT ]
+bool IsSimilarToDoubleABNF(const std::string& header_value) {
+  if (header_value.empty())
+    return false;
+  char first_char = header_value.at(0);
+  if (!isdigit(first_char))
+    return false;
+
+  bool period_found = false;
+  bool digit_found_after_period = false;
+  for (char ch : header_value) {
+    if (isdigit(ch)) {
+      if (period_found) {
+        digit_found_after_period = true;
+      }
+      continue;
+    }
+    if (ch == '.') {
+      if (period_found)
+        return false;
+      period_found = true;
+      continue;
+    }
+    return false;
+  }
+  if (period_found)
+    return digit_found_after_period;
+  return true;
+}
+
+// Returns true only if |header_value| satisfies ABNF: 1*DIGIT
+bool IsSimilarToIntABNF(const std::string& header_value) {
+  if (header_value.empty())
+    return false;
+
+  for (char ch : header_value) {
+    if (!isdigit(ch))
+      return false;
+  }
+  return true;
+}
 
 }  // namespace
 
@@ -261,15 +305,20 @@ class ClientHintsBrowserTest : public InProcessBrowserTest {
         EXPECT_TRUE(base::StringToDouble(
             request.headers.find("device-memory")->second, &value));
         EXPECT_LT(0.0, value);
+        EXPECT_TRUE(IsSimilarToDoubleABNF(
+            request.headers.find("device-memory")->second));
         main_frame_device_memory_observed_ = value;
 
         EXPECT_TRUE(
             base::StringToDouble(request.headers.find("dpr")->second, &value));
         EXPECT_LT(0.0, value);
+        EXPECT_TRUE(IsSimilarToDoubleABNF(request.headers.find("dpr")->second));
         main_frame_dpr_observed_ = value;
 
         EXPECT_TRUE(base::StringToDouble(
             request.headers.find("viewport-width")->second, &value));
+        EXPECT_TRUE(
+            IsSimilarToIntABNF(request.headers.find("viewport-width")->second));
 #if !defined(OS_ANDROID)
         EXPECT_LT(0.0, value);
 #else
@@ -288,6 +337,8 @@ class ClientHintsBrowserTest : public InProcessBrowserTest {
         EXPECT_TRUE(base::StringToDouble(
             request.headers.find("device-memory")->second, &value));
         EXPECT_LT(0.0, value);
+        EXPECT_TRUE(IsSimilarToDoubleABNF(
+            request.headers.find("device-memory")->second));
         if (main_frame_device_memory_observed_ > 0) {
           EXPECT_EQ(main_frame_device_memory_observed_, value);
         }
@@ -295,12 +346,15 @@ class ClientHintsBrowserTest : public InProcessBrowserTest {
         EXPECT_TRUE(
             base::StringToDouble(request.headers.find("dpr")->second, &value));
         EXPECT_LT(0.0, value);
+        EXPECT_TRUE(IsSimilarToDoubleABNF(request.headers.find("dpr")->second));
         if (main_frame_dpr_observed_ > 0) {
           EXPECT_EQ(main_frame_dpr_observed_, value);
         }
 
         EXPECT_TRUE(base::StringToDouble(
             request.headers.find("viewport-width")->second, &value));
+        EXPECT_TRUE(
+            IsSimilarToIntABNF(request.headers.find("viewport-width")->second));
 #if !defined(OS_ANDROID)
         EXPECT_LT(0.0, value);
 #else
@@ -347,6 +401,7 @@ class ClientHintsBrowserTest : public InProcessBrowserTest {
     EXPECT_TRUE(
         base::StringToInt(request.headers.find("rtt")->second, &rtt_value));
     EXPECT_LE(0, rtt_value);
+    EXPECT_TRUE(IsSimilarToIntABNF(request.headers.find("rtt")->second));
     // Verify that RTT value is a multiple of 50 milliseconds.
     EXPECT_EQ(0, rtt_value % 50);
     EXPECT_GE(3000, rtt_value);
@@ -355,6 +410,8 @@ class ClientHintsBrowserTest : public InProcessBrowserTest {
     EXPECT_TRUE(base::StringToDouble(request.headers.find("downlink")->second,
                                      &mbps_value));
     EXPECT_LE(0, mbps_value);
+    EXPECT_TRUE(
+        IsSimilarToDoubleABNF(request.headers.find("downlink")->second));
     // Verify that the mbps value is a multiple of 0.050 mbps.
     // Allow for small amount of noise due to double to integer conversions.
     EXPECT_NEAR(0, (static_cast<int>(mbps_value * 1000)) % 50, 1);

@@ -107,6 +107,27 @@ double GetDeviceScaleFactor() {
   return device_scale_factor;
 }
 
+// Returns a string corresponding to |value|. The returned string satisfies
+// ABNF: 1*DIGIT [ "." 1*DIGIT ]
+std::string DoubleToSpecCompliantString(double value) {
+  DCHECK_LE(0.0, value);
+  std::string result = base::NumberToString(value);
+  DCHECK(!result.empty());
+  if (value >= 1.0)
+    return result;
+
+  DCHECK_LE(0.0, value);
+  DCHECK_GT(1.0, value);
+
+  // Check if there is at least one character before period.
+  if (result.at(0) != '.')
+    return result;
+
+  // '.' is the first character in |result|. Prefix one digit before the
+  // period to make it spec compliant.
+  return "0" + result;
+}
+
 }  // namespace
 
 namespace client_hints {
@@ -221,7 +242,7 @@ GetAdditionalNavigationRequestClientHintsHeaders(
     additional_headers->SetHeader(
         blink::kClientHintsHeaderMapping[static_cast<int>(
             blink::mojom::WebClientHintsType::kDeviceMemory)],
-        base::NumberToString(device_memory));
+        DoubleToSpecCompliantString(device_memory));
   }
 
   if (web_client_hints.IsEnabled(blink::mojom::WebClientHintsType::kDpr)) {
@@ -231,7 +252,7 @@ GetAdditionalNavigationRequestClientHintsHeaders(
     additional_headers->SetHeader(
         blink::kClientHintsHeaderMapping[static_cast<int>(
             blink::mojom::WebClientHintsType::kDpr)],
-        base::NumberToString(device_scale_factor * zoom_factor));
+        DoubleToSpecCompliantString(device_scale_factor * zoom_factor));
   }
 
   if (web_client_hints.IsEnabled(
@@ -273,7 +294,7 @@ GetAdditionalNavigationRequestClientHintsHeaders(
     additional_headers->SetHeader(
         blink::kClientHintsHeaderMapping[static_cast<int>(
             blink::mojom::WebClientHintsType::kDownlink)],
-        base::NumberToString(internal::RoundKbpsToMbps(
+        DoubleToSpecCompliantString(internal::RoundKbpsToMbps(
             url.host(), estimator->GetDownstreamThroughputKbps())));
   }
 
