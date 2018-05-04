@@ -61,27 +61,31 @@ int RegisterCustomEventType() {
   return ++g_custom_event_types;
 }
 
+bool IsValidTimebase(base::TimeTicks now, base::TimeTicks timestamp) {
+  int64_t delta = (now - timestamp).InMilliseconds();
+  return delta >= 0 && delta <= 60 * 1000;
+}
+
 void ValidateEventTimeClock(base::TimeTicks* timestamp) {
-#if defined(USE_X11) || DCHECK_IS_ON()
+#if defined(USE_X11)
+
+  // Restrict this correction to X11 which is known to provide bogus timestamps
+  // that require correction (crbug.com/611950).
+  base::TimeTicks now = EventTimeForNow();
+  if (!IsValidTimebase(now, *timestamp))
+    *timestamp = now;
+
+#elif DCHECK_IS_ON()
+
   if (base::debug::BeingDebugged())
     return;
 
   base::TimeTicks now = EventTimeForNow();
-  int64_t delta = (now - *timestamp).InMilliseconds();
-  bool has_valid_timebase = delta >= 0 && delta <= 60 * 1000;
-
-#if defined(USE_X11)
-  // Restrict this correction to X11 which is known to provide bogus timestamps
-  // that require correction (crbug.com/611950).
-  if (!has_valid_timebase)
-    *timestamp = now;
-#else
-  DCHECK(has_valid_timebase)
+  DCHECK(IsValidTimebase(now, *timestamp))
       << "Event timestamp (" << *timestamp << ") is not consistent with "
       << "current time (" << now << ").";
-#endif
 
-#endif  // defined(USE_X11) || DCHECK_IS_ON()
+#endif
 }
 
 bool ShouldDefaultToNaturalScroll() {
