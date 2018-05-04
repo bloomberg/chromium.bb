@@ -41,4 +41,7 @@
 # -ContextMenuBrowserTest.*
 # -ChromeSitePerProcessTest.*
 # -InterstitialUITest.*
--ConstrainedWebDialogBrowserTest.*
+#-ConstrainedWebDialogBrowserTest.BasicTest
+#-ConstrainedWebDialogBrowserTest.ReleaseWebContents
+-ConstrainedWebDialogBrowserTest.ContentResizeInAutoResizingDialog
+-ConstrainedWebDialogBrowserTest.ContentResizeInNonAutoResizingDialog
