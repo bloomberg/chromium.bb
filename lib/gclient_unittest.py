@@ -10,13 +10,12 @@ from __future__ import print_function
 import os
 
 from chromite.lib import cros_build_lib
-from chromite.lib import cros_build_lib_unittest
+from chromite.lib import cros_test_lib
 from chromite.lib import gclient
 from chromite.lib import osutils
 
 
-class TestGclientWriteConfigFile(
-    cros_build_lib_unittest.RunCommandTempDirTestCase):
+class TestGclientWriteConfigFile(cros_test_lib.RunCommandTempDirTestCase):
   """Unit tests for gclient.WriteConfigFile."""
 
   _TEST_CWD = '/work/chrome'
@@ -241,7 +240,7 @@ target_os = ['chromeos']
 """)
 
 
-class GclientWrappersTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
+class GclientWrappersTest(cros_test_lib.RunCommandTempDirTestCase):
   """Tests for small gclient wrappers"""
 
   def setUp(self):

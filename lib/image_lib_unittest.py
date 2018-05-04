@@ -11,7 +11,6 @@ import gc
 import glob
 import os
 
-from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import image_lib
 from chromite.lib import osutils
@@ -60,7 +59,7 @@ class LoopbackPartitionsTest(cros_test_lib.MockTestCase):
   """Test the loopback partitions class"""
 
   def setUp(self):
-    self.rc_mock = cros_build_lib_unittest.RunCommandMock()
+    self.rc_mock = cros_test_lib.RunCommandMock()
     self.StartPatcher(self.rc_mock)
     self.rc_mock.SetDefaultCmdResult()
 

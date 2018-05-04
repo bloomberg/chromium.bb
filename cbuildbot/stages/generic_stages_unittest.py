@@ -24,7 +24,6 @@ from chromite.lib import buildbucket_lib
 from chromite.lib import constants
 from chromite.lib import cidb
 from chromite.lib import cros_build_lib
-from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import fake_cidb
 from chromite.lib import failures_lib
@@ -315,7 +314,7 @@ class BuilderStageTest(AbstractStageTestCase):
     board = self._current_board
 
     envvar = 'EXAMPLE'
-    rc_mock = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
+    rc_mock = self.StartPatcher(cros_test_lib.RunCommandMock())
     rc_mock.AddCmdResult(['portageq-%s' % board, 'envvar', envvar],
                          output='RESULT\n')
 
@@ -735,7 +734,7 @@ class BoardSpecificBuilderStageTest(AbstractStageTestCase):
 
 
 class RunCommandAbstractStageTestCase(
-    AbstractStageTestCase, cros_build_lib_unittest.RunCommandTestCase):
+    AbstractStageTestCase, cros_test_lib.RunCommandTestCase):
   """Base test class for testing a stage and mocking RunCommand."""
 
   # pylint: disable=abstract-method

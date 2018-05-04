@@ -11,7 +11,6 @@ import mock
 import os
 
 from chromite.lib import cros_build_lib
-from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import git
 from chromite.lib import osutils
@@ -253,7 +252,7 @@ class MarkAsStableCMDTest(cros_test_lib.MockTempDirTestCase):
       self.assertEqual(list(new_package_atoms), [])
 
 
-class MainTests(cros_build_lib_unittest.RunCommandTestCase,
+class MainTests(cros_test_lib.RunCommandTestCase,
                 cros_test_lib.MockTempDirTestCase):
   """Tests for cros_mark_as_stable.main()."""
 
@@ -298,7 +297,7 @@ class MainTests(cros_build_lib_unittest.RunCommandTestCase,
         mock.ANY, self._overlay_tracking_branch, self._git_project_overlays)
 
 
-class CleanStalePackagesTest(cros_build_lib_unittest.RunCommandTestCase):
+class CleanStalePackagesTest(cros_test_lib.RunCommandTestCase):
   """Tests for cros_mark_as_stable.CleanStalePackages."""
 
   def setUp(self):

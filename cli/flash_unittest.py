@@ -14,7 +14,6 @@ from chromite.cli import flash
 from chromite.lib import auto_updater
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
-from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
 from chromite.lib import dev_server_wrapper
@@ -196,7 +195,7 @@ class USBImagerTest(cros_test_lib.MockTempDirTestCase):
     self.assertTrue(self.imager_mock.patched['ChooseRemovableDevice'].called)
 
 
-class UsbImagerOperationTest(cros_build_lib_unittest.RunCommandTestCase):
+class UsbImagerOperationTest(cros_test_lib.RunCommandTestCase):
   """Tests for flash.UsbImagerOperation."""
   # pylint: disable=protected-access
 

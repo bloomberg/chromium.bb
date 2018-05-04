@@ -12,7 +12,6 @@ import mock
 import os
 
 from chromite.lib import cros_build_lib
-from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import git
 from chromite.lib import osutils
@@ -105,7 +104,7 @@ class NormalizeRefTest(cros_test_lib.TestCase):
     self._TestNormalize(functor, tests)
 
 
-class GitWrappersTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
+class GitWrappersTest(cros_test_lib.RunCommandTempDirTestCase):
   """Tests for small git wrappers"""
 
   CHANGE_ID = 'I0da12ef6d2c670305f0281641bc53db22faf5c1a'
@@ -336,13 +335,13 @@ class GitPushTest(cros_test_lib.MockTestCase):
 
   def testPushSuccess(self):
     """Test handling of successful git push."""
-    with cros_build_lib_unittest.RunCommandMock() as rc_mock:
+    with cros_test_lib.RunCommandMock() as rc_mock:
       rc_mock.AddCmdResult(partial_mock.In('push'), returncode=0)
       self._RunGitPush()
 
   def testNonFFPush(self):
     """Non fast-forward push error propagates to the caller."""
-    with cros_build_lib_unittest.RunCommandMock() as rc_mock:
+    with cros_test_lib.RunCommandMock() as rc_mock:
       rc_mock.AddCmdResult(partial_mock.In('push'), returncode=128,
                            error=self.NON_FF_PUSH_ERROR)
       self.assertRaises(cros_build_lib.RunCommandError, self._RunGitPush)
@@ -350,7 +349,7 @@ class GitPushTest(cros_test_lib.MockTestCase):
   def testPersistentTransientError(self):
     """GitPush fails if transient error occurs multiple times."""
     for error in self.TRANSIENT_ERRORS:
-      with cros_build_lib_unittest.RunCommandMock() as rc_mock:
+      with cros_test_lib.RunCommandMock() as rc_mock:
         rc_mock.AddCmdResult(partial_mock.In('push'), returncode=128,
                              error=error)
         self.assertRaises(cros_build_lib.RunCommandError, self._RunGitPush)

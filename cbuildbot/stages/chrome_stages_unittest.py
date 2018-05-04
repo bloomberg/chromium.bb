@@ -18,7 +18,6 @@ from chromite.cbuildbot.stages import chrome_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.lib import cidb
 from chromite.lib import cros_build_lib
-from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import parallel_unittest
@@ -60,7 +59,7 @@ class SimpleChromeArtifactsStage(cbuildbot_unittest.SimpleBuilderTestCase,
 
   def testIt(self):
     """A simple run-through test."""
-    rc_mock = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
+    rc_mock = self.StartPatcher(cros_test_lib.RunCommandMock())
     rc_mock.SetDefaultCmdResult()
     self.PatchObject(chrome_stages.SimpleChromeArtifactsStage,
                      '_ArchiveChromeEbuildEnv',
@@ -94,7 +93,7 @@ class SimpleChromeArtifactsStage(cbuildbot_unittest.SimpleBuilderTestCase,
 
 
 class SyncChromeStageTest(generic_stages_unittest.AbstractStageTestCase,
-                          cros_build_lib_unittest.RunCommandTestCase):
+                          cros_test_lib.RunCommandTestCase):
   """Tests for SyncChromeStage."""
 
   # pylint: disable=protected-access

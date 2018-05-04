@@ -39,6 +39,7 @@ from chromite.lib import gob_util
 from chromite.lib import operation
 from chromite.lib import osutils
 from chromite.lib import parallel
+from chromite.lib import partial_mock
 from chromite.lib import remote_access
 from chromite.lib import retry_util
 from chromite.lib import terminal
@@ -1894,6 +1895,75 @@ class TestProgram(unittest.TestProgram):
       if self._leaked_tempdir is not None:
         logging.info('Working directory %s left behind. Please cleanup later.',
                      self._leaked_tempdir)
+
+
+class PopenMock(partial_mock.PartialCmdMock):
+  """Provides a context where all _Popen instances are low-level mocked."""
+
+  TARGET = 'chromite.lib.cros_build_lib._Popen'
+  ATTRS = ('__init__',)
+  DEFAULT_ATTR = '__init__'
+
+  def __init__(self):
+    partial_mock.PartialCmdMock.__init__(self, create_tempdir=True)
+
+  def _target__init__(self, inst, cmd, *args, **kwargs):
+    result = self._results['__init__'].LookupResult(
+        (cmd,), hook_args=(inst, cmd,) + args, hook_kwargs=kwargs)
+
+    script = os.path.join(self.tempdir, 'mock_cmd.sh')
+    stdout = os.path.join(self.tempdir, 'output')
+    stderr = os.path.join(self.tempdir, 'error')
+    osutils.WriteFile(stdout, result.output)
+    osutils.WriteFile(stderr, result.error)
+    osutils.WriteFile(
+        script,
+        ['#!/bin/bash\n', 'cat %s\n' % stdout, 'cat %s >&2\n' % stderr,
+         'exit %s' % result.returncode])
+    os.chmod(script, 0o700)
+    kwargs['cwd'] = self.tempdir
+    self.backup['__init__'](inst, [script, '--'] + cmd, *args, **kwargs)
+
+
+class RunCommandMock(partial_mock.PartialCmdMock):
+  """Provides a context where all RunCommand invocations low-level mocked."""
+
+  TARGET = 'chromite.lib.cros_build_lib'
+  ATTRS = ('RunCommand',)
+  DEFAULT_ATTR = 'RunCommand'
+
+  def RunCommand(self, cmd, *args, **kwargs):
+    result = self._results['RunCommand'].LookupResult(
+        (cmd,), kwargs=kwargs, hook_args=(cmd,) + args, hook_kwargs=kwargs)
+
+    popen_mock = PopenMock()
+    popen_mock.AddCmdResult(partial_mock.Ignore(), result.returncode,
+                            result.output, result.error)
+    with popen_mock:
+      return self.backup['RunCommand'](cmd, *args, **kwargs)
+
+
+class RunCommandTestCase(MockTestCase):
+  """MockTestCase that mocks out RunCommand by default."""
+
+  def setUp(self):
+    self.rc = self.StartPatcher(RunCommandMock())
+    self.rc.SetDefaultCmdResult()
+    self.assertCommandCalled = self.rc.assertCommandCalled
+    self.assertCommandContains = self.rc.assertCommandContains
+
+    # These ENV variables affect RunCommand behavior, hide them.
+    self._old_envs = {e: os.environ.pop(e) for e in constants.ENV_PASSTHRU
+                      if e in os.environ}
+
+  def tearDown(self):
+    # Restore hidden ENVs.
+    if hasattr(self, '_old_envs'):
+      os.environ.update(self._old_envs)
+
+
+class RunCommandTempDirTestCase(RunCommandTestCase, TempDirTestCase):
+  """Convenience class mixing TempDirTestCase and RunCommandTestCase"""
 
 
 class main(TestProgram):

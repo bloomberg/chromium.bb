@@ -134,76 +134,6 @@ class CmdToStrTest(cros_test_lib.TestCase):
     self._testData(cros_build_lib.CmdToStr, tests)
 
 
-class RunCommandMock(partial_mock.PartialCmdMock):
-  """Provides a context where all RunCommand invocations low-level mocked."""
-
-  TARGET = 'chromite.lib.cros_build_lib'
-  ATTRS = ('RunCommand',)
-  DEFAULT_ATTR = 'RunCommand'
-
-  def RunCommand(self, cmd, *args, **kwargs):
-    result = self._results['RunCommand'].LookupResult(
-        (cmd,), kwargs=kwargs, hook_args=(cmd,) + args, hook_kwargs=kwargs)
-
-    popen_mock = PopenMock()
-    popen_mock.AddCmdResult(partial_mock.Ignore(), result.returncode,
-                            result.output, result.error)
-    with popen_mock:
-      return self.backup['RunCommand'](cmd, *args, **kwargs)
-
-
-class RunCommandTestCase(cros_test_lib.MockTestCase):
-  """MockTestCase that mocks out RunCommand by default."""
-
-  def setUp(self):
-    self.rc = self.StartPatcher(RunCommandMock())
-    self.rc.SetDefaultCmdResult()
-    self.assertCommandCalled = self.rc.assertCommandCalled
-    self.assertCommandContains = self.rc.assertCommandContains
-
-    # These ENV variables affect RunCommand behavior, hide them.
-    self._old_envs = {e: os.environ.pop(e) for e in constants.ENV_PASSTHRU
-                      if e in os.environ}
-
-  def tearDown(self):
-    # Restore hidden ENVs.
-    if hasattr(self, '_old_envs'):
-      os.environ.update(self._old_envs)
-
-
-class RunCommandTempDirTestCase(RunCommandTestCase,
-                                cros_test_lib.TempDirTestCase):
-  """Convenience class mixing TempDirTestCase and RunCommandTestCase"""
-
-
-class PopenMock(partial_mock.PartialCmdMock):
-  """Provides a context where all _Popen instances are low-level mocked."""
-
-  TARGET = 'chromite.lib.cros_build_lib._Popen'
-  ATTRS = ('__init__',)
-  DEFAULT_ATTR = '__init__'
-
-  def __init__(self):
-    partial_mock.PartialCmdMock.__init__(self, create_tempdir=True)
-
-  def _target__init__(self, inst, cmd, *args, **kwargs):
-    result = self._results['__init__'].LookupResult(
-        (cmd,), hook_args=(inst, cmd,) + args, hook_kwargs=kwargs)
-
-    script = os.path.join(self.tempdir, 'mock_cmd.sh')
-    stdout = os.path.join(self.tempdir, 'output')
-    stderr = os.path.join(self.tempdir, 'error')
-    osutils.WriteFile(stdout, result.output)
-    osutils.WriteFile(stderr, result.error)
-    osutils.WriteFile(
-        script,
-        ['#!/bin/bash\n', 'cat %s\n' % stdout, 'cat %s >&2\n' % stderr,
-         'exit %s' % result.returncode])
-    os.chmod(script, 0o700)
-    kwargs['cwd'] = self.tempdir
-    self.backup['__init__'](inst, [script, '--'] + cmd, *args, **kwargs)
-
-
 class TestRunCommandNoMock(cros_test_lib.TestCase):
   """Class that tests RunCommand by not mocking subprocess.Popen"""
 
@@ -1530,7 +1460,7 @@ class FrozenAttributesTest(cros_test_lib.TestCase):
     self._TestBasics(Setattr)
 
 
-class TestGetIPv4Address(RunCommandTestCase):
+class TestGetIPv4Address(cros_test_lib.RunCommandTestCase):
   """Tests the GetIPv4Address function."""
 
   IP_GLOBAL_OUTPUT = """
@@ -1687,7 +1617,7 @@ class CollectionTest(cros_test_lib.TestCase):
     self.assertEqual("Collection_O(a=0, b='string', c={})", str(o))
 
 
-class GetImageDiskPartitionInfoTests(RunCommandTestCase):
+class GetImageDiskPartitionInfoTests(cros_test_lib.RunCommandTestCase):
   """Tests the GetImageDiskPartitionInfo function."""
 
   SAMPLE_PARTED = """/foo/chromiumos_qemu_image.bin:3360MB:file:512:512:gpt:;
@@ -1914,7 +1844,7 @@ class TestFindVolumeGroupForDevice(cros_test_lib.MockTempDirTestCase):
   """Tests the FindVolumeGroupForDevice function."""
 
   def testExistingDevice(self):
-    with RunCommandMock() as rc_mock:
+    with cros_test_lib.RunCommandMock() as rc_mock:
       rc_mock.SetDefaultCmdResult(output='''
   wrong_vg1\t/dev/sda1
   test_vg\t/dev/loop1
@@ -1924,7 +1854,7 @@ class TestFindVolumeGroupForDevice(cros_test_lib.MockTempDirTestCase):
       self.assertEqual(vg, 'test_vg')
 
   def testNoMatchingVolumeGroup(self):
-    with RunCommandMock() as rc_mock:
+    with cros_test_lib.RunCommandMock() as rc_mock:
       rc_mock.SetDefaultCmdResult(output='''
   wrong_vg1\t/dev/sda1
   wrong_vg2\t/dev/loop0
@@ -1933,7 +1863,7 @@ class TestFindVolumeGroupForDevice(cros_test_lib.MockTempDirTestCase):
       self.assertEqual(vg, 'cros_chroot_000')
 
   def testPhysicalVolumeWithoutVolumeGroup(self):
-    with RunCommandMock() as rc_mock:
+    with cros_test_lib.RunCommandMock() as rc_mock:
       rc_mock.SetDefaultCmdResult(output='''
   wrong_vg1\t/dev/sda1
   \t/dev/loop0
@@ -1942,7 +1872,7 @@ class TestFindVolumeGroupForDevice(cros_test_lib.MockTempDirTestCase):
       self.assertEqual(vg, 'cros_chroot_000')
 
   def testMatchingVolumeGroup(self):
-    with RunCommandMock() as rc_mock:
+    with cros_test_lib.RunCommandMock() as rc_mock:
       rc_mock.SetDefaultCmdResult(output='''
   wrong_vg1\t/dev/sda1
   cros_chroot_000\t/dev/loop1
@@ -1952,7 +1882,7 @@ class TestFindVolumeGroupForDevice(cros_test_lib.MockTempDirTestCase):
       self.assertEqual(vg, 'cros_chroot_001')
 
   def testTooManyVolumeGroups(self):
-    with RunCommandMock() as rc_mock:
+    with cros_test_lib.RunCommandMock() as rc_mock:
       rc_mock.SetDefaultCmdResult(output='''
   wrong_vg1\t/dev/sda1
 %s
@@ -1962,7 +1892,7 @@ class TestFindVolumeGroupForDevice(cros_test_lib.MockTempDirTestCase):
       self.assertIsNone(vg)
 
   def testInvalidChars(self):
-    with RunCommandMock() as rc_mock:
+    with cros_test_lib.RunCommandMock() as rc_mock:
       rc_mock.SetDefaultCmdResult(output='''
   wrong_vg1\t/dev/sda1
   cros_chroot_000\t/dev/loop1
@@ -1973,7 +1903,7 @@ class TestFindVolumeGroupForDevice(cros_test_lib.MockTempDirTestCase):
       self.assertEqual(vg, 'cros_full+path++to+++my+++chroot_000')
 
   def testInvalidLines(self):
-    with RunCommandMock() as rc_mock:
+    with cros_test_lib.RunCommandMock() as rc_mock:
       rc_mock.SetDefaultCmdResult(output='''
   \t/dev/sda1
 
@@ -2033,7 +1963,7 @@ class TestMountChroot(cros_test_lib.MockTempDirTestCase):
     m = self._mockFindVolumeGroupForDevice()
     m2 = self._mockAttachDeviceToFile()
 
-    with RunCommandMock() as rc_mock:
+    with cros_test_lib.RunCommandMock() as rc_mock:
       rc_mock.AddCmdResult(self._VGS_LOOKUP, returncode=self._LVM_FAILURE_CODE)
       rc_mock.AddCmdResult(self._VGCREATE, output='')
       rc_mock.AddCmdResult(self._LVS_LOOKUP, returncode=self._LVM_FAILURE_CODE)
@@ -2057,7 +1987,7 @@ class TestMountChroot(cros_test_lib.MockTempDirTestCase):
     m = self._mockFindVolumeGroupForDevice()
     m2 = self._mockDeviceFromFile('/dev/loop1')
 
-    with RunCommandMock() as rc_mock:
+    with cros_test_lib.RunCommandMock() as rc_mock:
       rc_mock.AddCmdResult(self._VGS_LOOKUP, returncode=self._LVM_SUCCESS_CODE)
       rc_mock.AddCmdResult(self._VGCHANGE)
       rc_mock.AddCmdResult(self._LVS_LOOKUP, returncode=self._LVM_SUCCESS_CODE)
@@ -2079,7 +2009,7 @@ class TestMountChroot(cros_test_lib.MockTempDirTestCase):
     m2 = self._mockDeviceFromFile('')
     m3 = self._mockAttachDeviceToFile('loop1')
 
-    with RunCommandMock() as rc_mock:
+    with cros_test_lib.RunCommandMock() as rc_mock:
       rc_mock.AddCmdResult(self._VGS_LOOKUP, returncode=self._LVM_SUCCESS_CODE)
       rc_mock.AddCmdResult(self._VGCHANGE)
       rc_mock.AddCmdResult(self._LVS_LOOKUP, returncode=self._LVM_SUCCESS_CODE)
@@ -2104,7 +2034,7 @@ class TestMountChroot(cros_test_lib.MockTempDirTestCase):
     m2 = self._mockAttachDeviceToFile()
     m3 = self._mockDeviceFromFile('')
 
-    with RunCommandMock() as rc_mock:
+    with cros_test_lib.RunCommandMock() as rc_mock:
       rc_mock.AddCmdResult(self._VGS_LOOKUP, returncode=self._LVM_FAILURE_CODE)
       rc_mock.AddCmdResult(self._VGCREATE)
       rc_mock.AddCmdResult(self._LVS_LOOKUP, returncode=self._LVM_FAILURE_CODE)
@@ -2129,7 +2059,7 @@ class TestMountChroot(cros_test_lib.MockTempDirTestCase):
     m = self._mockFindVolumeGroupForDevice()
     m2 = self._mockDeviceFromFile('/dev/loop0')
 
-    with RunCommandMock() as rc_mock:
+    with cros_test_lib.RunCommandMock() as rc_mock:
       rc_mock.AddCmdResult(self._VGS_LOOKUP, returncode=self._LVM_FAILURE_CODE)
       rc_mock.AddCmdResult(self._VGCREATE)
       rc_mock.AddCmdResult(self._LVS_LOOKUP, returncode=self._LVM_FAILURE_CODE)
@@ -2153,7 +2083,7 @@ class TestMountChroot(cros_test_lib.MockTempDirTestCase):
     m = self._mockFindVolumeGroupForDevice()
     m2 = self._mockDeviceFromFile('/dev/loop0')
 
-    with RunCommandMock() as rc_mock:
+    with cros_test_lib.RunCommandMock() as rc_mock:
       rc_mock.AddCmdResult(self._VGS_LOOKUP, returncode=self._LVM_SUCCESS_CODE)
       rc_mock.AddCmdResult(self._VGCHANGE)
       rc_mock.AddCmdResult(self._LVS_LOOKUP, returncode=self._LVM_FAILURE_CODE)
@@ -2289,7 +2219,7 @@ class TestCleanupChrootMount(cros_test_lib.MockTempDirTestCase):
       f.write('/dev/mapper/cros_vg_name-chroot %s ext4 rw 0 0\n' %
               self.chroot_path)
 
-    with RunCommandMock() as rc_mock:
+    with cros_test_lib.RunCommandMock() as rc_mock:
       rc_mock.AddCmdResult(self._VGS_DEV_LOOKUP, output='  /dev/loop0')
       rc_mock.AddCmdResult(self._VGCHANGE_N)
       rc_mock.AddCmdResult(self._LOSETUP_DETACH)
@@ -2307,7 +2237,7 @@ class TestCleanupChrootMount(cros_test_lib.MockTempDirTestCase):
       f.write('/dev/mapper/cros_vg_name-chroot %s ext4 rw 0 0\n' %
               self.chroot_path)
 
-    with RunCommandMock() as rc_mock:
+    with cros_test_lib.RunCommandMock() as rc_mock:
       rc_mock.AddCmdResult(self._VGS_DEV_LOOKUP, output='  /dev/loop0')
       rc_mock.AddCmdResult(self._VGCHANGE_N)
       rc_mock.AddCmdResult(self._LOSETUP_DETACH)
@@ -2326,7 +2256,7 @@ class TestCleanupChrootMount(cros_test_lib.MockTempDirTestCase):
       f.write('/dev/mapper/cros_vg_name-chroot %s ext4 rw 0 0\n' %
               self.chroot_path)
 
-    with RunCommandMock() as rc_mock:
+    with cros_test_lib.RunCommandMock() as rc_mock:
       rc_mock.AddCmdResult(self._VGS_DEV_LOOKUP, output='  /dev/loop0')
       rc_mock.AddCmdResult(self._VGCHANGE_N)
       rc_mock.AddCmdResult(self._LOSETUP_DETACH)
@@ -2346,7 +2276,7 @@ class TestCleanupChrootMount(cros_test_lib.MockTempDirTestCase):
     with open(proc_mounts, 'w') as f:
       f.write('sysfs /sys sysfs rw 0 0\n')
 
-    with RunCommandMock() as rc_mock:
+    with cros_test_lib.RunCommandMock() as rc_mock:
       rc_mock.AddCmdResult(self._LOSETUP_FIND, output='/dev/loop1')
       rc_mock.AddCmdResult(self._VGS_VG_LOOKUP,
                            returncode=self._LVM_SUCCESS_CODE)
@@ -2368,7 +2298,7 @@ class TestCleanupChrootMount(cros_test_lib.MockTempDirTestCase):
     with open(proc_mounts, 'w') as f:
       f.write('sysfs /sys sysfs rw 0 0\n')
 
-    with RunCommandMock() as rc_mock:
+    with cros_test_lib.RunCommandMock() as rc_mock:
       rc_mock.AddCmdResult(self._LOSETUP_FIND, output='/dev/loop1')
       rc_mock.AddCmdResult(self._VGS_VG_LOOKUP,
                            returncode=self._LVM_FAILURE_CODE)
@@ -2389,7 +2319,7 @@ class TestCleanupChrootMount(cros_test_lib.MockTempDirTestCase):
     with open(proc_mounts, 'w') as f:
       f.write('sysfs /sys sysfs rw 0 0\n')
 
-    with RunCommandMock() as rc_mock:
+    with cros_test_lib.RunCommandMock() as rc_mock:
       rc_mock.AddCmdResult(self._LOSETUP_FIND, returncode=1)
       rc_mock.AddCmdResult(self._VGS_VG_LOOKUP,
                            returncode=self._LVM_FAILURE_CODE)
@@ -2410,7 +2340,7 @@ class TestCleanupChrootMount(cros_test_lib.MockTempDirTestCase):
     with open(proc_mounts, 'w') as f:
       f.write('sysfs /sys sysfs rw 0 0\n')
 
-    with RunCommandMock() as rc_mock:
+    with cros_test_lib.RunCommandMock() as rc_mock:
       rc_mock.AddCmdResult(self._LOSETUP_FIND, returncode=1)
       rc_mock.AddCmdResult(self._VGS_VG_LOOKUP,
                            returncode=self._LVM_FAILURE_CODE)

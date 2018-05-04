@@ -8,10 +8,10 @@
 from __future__ import print_function
 
 from chromite.cbuildbot import swarming_lib
-from chromite.lib import cros_build_lib_unittest
+from chromite.lib import cros_test_lib
 
 
-class SwarmingLibTest(cros_build_lib_unittest.RunCommandTestCase):
+class SwarmingLibTest(cros_test_lib.RunCommandTestCase):
   """Unit test of swarming_lib module."""
 
   def testEnv(self):

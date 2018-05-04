@@ -16,7 +16,6 @@ from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import repository
 from chromite.lib import builder_status_lib
 from chromite.lib import constants
-from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import git
 from chromite.lib import osutils
@@ -364,7 +363,7 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
     self.PatchObject(repository.RepoRepository, 'Sync')
     self.PatchObject(repository.RepoRepository, 'ExportManifest',
                      return_value='<manifest />')
-    rc = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
+    rc = self.StartPatcher(cros_test_lib.RunCommandMock())
     rc.SetDefaultCmdResult()
 
     self.manager.GetNextBuildSpec(retries=0)

@@ -10,7 +10,6 @@ from __future__ import print_function
 import mock
 import os
 
-from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import toolchain
@@ -48,7 +47,7 @@ class ToolchainTest(cros_test_lib.MockTempDirTestCase):
 
   def testArchForToolchain(self):
     """Tests that we correctly parse crossdev's output."""
-    rc_mock = cros_build_lib_unittest.RunCommandMock()
+    rc_mock = cros_test_lib.RunCommandMock()
 
     noarch = """target=foo
 category=bla

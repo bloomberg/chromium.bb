@@ -14,7 +14,6 @@ import mock
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.cbuildbot import repository
-from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import git
 from chromite.lib import osutils
@@ -25,7 +24,7 @@ from chromite.lib import cros_build_lib
 site_config = config_lib.GetConfig()
 
 
-class RepositoryTests(cros_build_lib_unittest.RunCommandTestCase):
+class RepositoryTests(cros_test_lib.RunCommandTestCase):
   """Test cases related to repository checkout methods."""
 
   def testExternalRepoCheckout(self):

@@ -10,7 +10,6 @@ from __future__ import print_function
 import os
 
 from chromite.lib import cros_build_lib
-from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import partial_mock
@@ -111,7 +110,7 @@ class RemoteShMock(partial_mock.PartialCmdMock):
         (cmd,), hook_args=(inst, cmd,) + args, hook_kwargs=kwargs)
 
     # Run the real RemoteSh with RunCommand mocked out.
-    rc_mock = cros_build_lib_unittest.RunCommandMock()
+    rc_mock = cros_test_lib.RunCommandMock()
     rc_mock.AddCmdResult(
         partial_mock.Ignore(), result.returncode, result.output, result.error)
 

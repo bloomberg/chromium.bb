@@ -16,7 +16,6 @@ from chromite.lib import constants
 from chromite.cli import command_unittest
 from chromite.cli.cros import cros_chrome_sdk
 from chromite.lib import cache
-from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import gs
 from chromite.lib import gs_unittest
@@ -197,7 +196,7 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase,
     return {}
 
   def setUp(self):
-    self.rc_mock = cros_build_lib_unittest.RunCommandMock()
+    self.rc_mock = cros_test_lib.RunCommandMock()
     self.rc_mock.SetDefaultCmdResult()
     self.StartPatcher(self.rc_mock)
 
@@ -367,7 +366,7 @@ class GomaTest(cros_test_lib.MockTempDirTestCase,
   """Test Goma setup functionality."""
 
   def setUp(self):
-    self.rc_mock = cros_build_lib_unittest.RunCommandMock()
+    self.rc_mock = cros_test_lib.RunCommandMock()
     self.rc_mock.SetDefaultCmdResult()
     self.StartPatcher(self.rc_mock)
 

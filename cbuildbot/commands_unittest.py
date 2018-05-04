@@ -25,7 +25,6 @@ from chromite.lib import failures_lib
 from chromite.cbuildbot import swarming_lib
 from chromite.cbuildbot import topology
 from chromite.lib import cros_build_lib
-from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import gob_util
 from chromite.lib import osutils
@@ -38,7 +37,7 @@ from chromite.scripts import pushimage
 site_config = config_lib.GetConfig()
 
 
-class RunBuildScriptTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
+class RunBuildScriptTest(cros_test_lib.RunCommandTempDirTestCase):
   """Test RunBuildScript in a variety of cases."""
 
   def _assertRunBuildScript(self, in_chroot=False, error=None, raises=None,
@@ -119,7 +118,7 @@ class RunBuildScriptTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
     self._assertRunBuildScript(in_chroot=True, sudo=True)
 
 
-class ChromeSDKTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
+class ChromeSDKTest(cros_test_lib.RunCommandTempDirTestCase):
   """Basic tests for ChromeSDK commands with RunCommand mocked out."""
   BOARD = 'daisy_foo'
   EXTRA_ARGS = ('--monkey', 'banana')
@@ -201,7 +200,7 @@ class ChromeSDKTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
     self.assertCommandContains([expected_target])
 
 
-class HWLabCommandsTest(cros_build_lib_unittest.RunCommandTestCase,
+class HWLabCommandsTest(cros_test_lib.RunCommandTestCase,
                         cros_test_lib.OutputTestCase,
                         cros_test_lib.MockTempDirTestCase):
   """Test commands related to HWLab tests that are runing via swarming proxy."""
@@ -621,7 +620,7 @@ The suite job has another 2:39:39.789250 till timeout.
         self.assertIn(self.JSON_OUTPUT, '\n'.join(output.GetStdoutLines()))
 
 
-class CBuildBotTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
+class CBuildBotTest(cros_test_lib.RunCommandTempDirTestCase):
   """Test general cbuildbot command methods."""
 
   def setUp(self):
@@ -1086,7 +1085,7 @@ class GenerateDebugTarballTests(cros_test_lib.TempDirTestCase):
         ])
 
 
-class BuildTarballTests(cros_build_lib_unittest.RunCommandTempDirTestCase):
+class BuildTarballTests(cros_test_lib.RunCommandTempDirTestCase):
   """Tests related to building tarball artifacts."""
 
   def setUp(self):
@@ -1479,7 +1478,7 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     self.assertEquals(tarball_rel_path, None)
 
 
-class ImageTestCommandsTest(cros_build_lib_unittest.RunCommandTestCase):
+class ImageTestCommandsTest(cros_test_lib.RunCommandTestCase):
   """Test commands related to ImageTest tests."""
 
   def setUp(self):

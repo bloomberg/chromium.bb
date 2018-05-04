@@ -18,7 +18,6 @@ import time
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
-from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import gerrit
 from chromite.lib import git
@@ -1243,7 +1242,7 @@ class PrepareRemotePatchesTest(cros_test_lib.TestCase):
                       ':'.join(chunks + [':']))
 
 
-class PrepareLocalPatchesTests(cros_build_lib_unittest.RunCommandTestCase):
+class PrepareLocalPatchesTests(cros_test_lib.RunCommandTestCase):
   """Test preparing local patches."""
 
   def setUp(self):

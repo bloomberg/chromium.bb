@@ -13,7 +13,6 @@ import mock
 import os
 
 from chromite.lib import cros_build_lib
-from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import partial_mock
@@ -284,7 +283,7 @@ class TestEmptyDir(cros_test_lib.TempDirTestCase):
     self.assertNotExists(os.path.join(self.tempdir, 'removedir'))
 
 
-class TestProcess(cros_build_lib_unittest.RunCommandTestCase):
+class TestProcess(cros_test_lib.RunCommandTestCase):
   """Tests for osutils.IsChildProcess."""
 
   def testIsChildProcess(self):
@@ -620,7 +619,7 @@ mechant"
     self.assertEquals(env_dict, {'ENVM': 'gentil\nmechant'})
 
 
-class DeviceInfoTests(cros_build_lib_unittest.RunCommandTestCase):
+class DeviceInfoTests(cros_test_lib.RunCommandTestCase):
   """Tests methods retrieving information about devices."""
 
   FULL_OUTPUT = """

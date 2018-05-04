@@ -10,7 +10,6 @@ from __future__ import print_function
 import os
 
 from chromite.lib import constants
-from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import partial_mock
@@ -18,7 +17,7 @@ from chromite.scripts import chrome_chromeos_lkgm
 
 
 # pylint: disable=protected-access
-class ChromeLKGMCommitterTester(cros_build_lib_unittest.RunCommandTestCase,
+class ChromeLKGMCommitterTester(cros_test_lib.RunCommandTestCase,
                                 cros_test_lib.MockTempDirTestCase):
   """Test cros_chromeos_lkgm.Committer."""
 

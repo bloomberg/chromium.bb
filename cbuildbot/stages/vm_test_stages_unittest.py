@@ -17,7 +17,6 @@ from chromite.cbuildbot.stages import vm_test_stages
 from chromite.lib import cgroups
 from chromite.lib import config_lib
 from chromite.lib import constants
-from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_logging
 from chromite.lib import cros_test_lib
 from chromite.lib import failures_lib
@@ -193,7 +192,7 @@ class VMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
 
 
 class MoblabVMTestStageTestCase(
-    cros_build_lib_unittest.RunCommandTestCase,
+    cros_test_lib.RunCommandTestCase,
     generic_stages_unittest.AbstractStageTestCase,
     cbuildbot_unittest.SimpleBuilderTestCase,
 ):
@@ -319,7 +318,7 @@ class MoblabVMTestStageTestCase(
     self.assertEqual(mock_moblab_vm.Destroy.call_count, 1)
 
 
-class RunTestSuiteTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
+class RunTestSuiteTest(cros_test_lib.RunCommandTempDirTestCase):
   """Test RunTestSuite functionality."""
 
   TEST_BOARD = 'betty'

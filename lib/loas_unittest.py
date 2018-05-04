@@ -10,7 +10,6 @@ from __future__ import print_function
 import datetime
 
 from chromite.lib import alerts
-from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import loas
 from chromite.lib import partial_mock
@@ -20,7 +19,7 @@ class TestLoas(cros_test_lib.MockTestCase):
   """General tests for the LOAS module"""
 
   def setUp(self):
-    self.rc_mock = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
+    self.rc_mock = self.StartPatcher(cros_test_lib.RunCommandMock())
     self.email_mock = self.PatchObject(alerts, 'SendEmail')
 
     self.user = 'foo'

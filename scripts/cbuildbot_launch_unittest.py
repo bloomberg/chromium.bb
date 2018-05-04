@@ -15,7 +15,6 @@ from chromite.cbuildbot import repository
 from chromite.lib import build_summary
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
-from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.scripts import cbuildbot_launch
@@ -90,7 +89,7 @@ class CbuildbotLaunchTest(cros_test_lib.MockTestCase):
     self.assertNotIn('LC_MONETARY', os.environ)
 
 
-class RunDepotToolsEnsureBootstrap(cros_build_lib_unittest.RunCommandTestCase,
+class RunDepotToolsEnsureBootstrap(cros_test_lib.RunCommandTestCase,
                                    cros_test_lib.TempDirTestCase):
   """Test the helper function DepotToolsEnsureBootstrap."""
 
@@ -109,7 +108,7 @@ class RunDepotToolsEnsureBootstrap(cros_build_lib_unittest.RunCommandTestCase,
     self.assertEqual(self.rc.call_count, 0)
 
 
-class RunTests(cros_build_lib_unittest.RunCommandTestCase):
+class RunTests(cros_test_lib.RunCommandTestCase):
   """Tests for cbuildbot_launch script."""
 
   ARGS_BASE = ['--buildroot', '/buildroot']

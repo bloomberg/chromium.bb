@@ -13,7 +13,6 @@ import mock
 import os
 import time
 
-from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import partial_mock
@@ -371,7 +370,7 @@ class DiskTest(cros_test_lib.MockTestCase):
     self.StartPatcher(mock.patch('chromite.lib.osutils.ResolveSymlink'))
     osutils.ResolveSymlink.return_value = '/dev/sda1'
 
-    with cros_build_lib_unittest.RunCommandMock() as rc_mock:
+    with cros_test_lib.RunCommandMock() as rc_mock:
       rc_mock.AddCmdResult(
           partial_mock.In(systeminfo.SYSTEMFILE_DEV_DISKBY['ids']),
           output='\n'.join(mock_ids))

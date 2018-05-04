@@ -10,7 +10,6 @@ from __future__ import print_function
 import mock
 import types
 
-from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.scripts import autotest_quickmerge
 
@@ -111,7 +110,7 @@ class PackageNameParsingTest(cros_test_lib.TestCase):
     self.assertEqual(set(package_matches), expected_set)
 
 
-class RsyncCommandTest(cros_build_lib_unittest.RunCommandTestCase):
+class RsyncCommandTest(cros_test_lib.RunCommandTestCase):
   """Test autotest_quickmerge.RsyncQuickmerge."""
 
   def testRsyncQuickmergeCommand(self):

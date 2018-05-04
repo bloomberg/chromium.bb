@@ -36,7 +36,7 @@ from chromite.lib import cl_messages
 from chromite.lib import constants
 from chromite.lib import cq_config
 from chromite.lib import cros_build_lib
-from chromite.lib import cros_build_lib_unittest
+from chromite.lib import cros_test_lib
 from chromite.lib import fake_cidb
 from chromite.lib import failures_lib
 from chromite.lib import gerrit
@@ -57,7 +57,7 @@ from chromite.lib import tree_status
 
 class BootstrapStageTest(
     generic_stages_unittest.AbstractStageTestCase,
-    cros_build_lib_unittest.RunCommandTestCase):
+    cros_test_lib.RunCommandTestCase):
   """Tests the Bootstrap stage."""
 
   BOT_ID = 'sync-test-cbuildbot'
@@ -300,7 +300,7 @@ class BaseCQTestCase(generic_stages_unittest.StageTestCase):
     self.StartPatcher(git_unittest.ManifestCheckoutMock())
     version_file = os.path.join(self.build_root, constants.VERSION_FILE)
     manifest_version_unittest.VersionInfoTest.WriteFakeVersionFile(version_file)
-    rc_mock = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
+    rc_mock = self.StartPatcher(cros_test_lib.RunCommandMock())
     rc_mock.SetDefaultCmdResult()
 
     # Block the CQ from contacting GoB.

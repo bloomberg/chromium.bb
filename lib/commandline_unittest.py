@@ -16,7 +16,6 @@ import sys
 from chromite.cli import command
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
-from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import gs
 from chromite.lib import path_util
@@ -542,7 +541,7 @@ class ScriptWrapperMainTest(cros_test_lib.MockTestCase):
   def testRestartInChrootPreserveArgs(self):
     """Verify args to ScriptWrapperMain are passed through to chroot.."""
     # Setup Mocks/Fakes
-    rc = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
+    rc = self.StartPatcher(cros_test_lib.RunCommandMock())
     rc.SetDefaultCmdResult()
 
     def findTarget(target):
@@ -564,7 +563,7 @@ class ScriptWrapperMainTest(cros_test_lib.MockTestCase):
   def testRestartInChrootWithChrootArgs(self):
     """Verify args and chroot args from exception are used."""
     # Setup Mocks/Fakes
-    rc = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
+    rc = self.StartPatcher(cros_test_lib.RunCommandMock())
     rc.SetDefaultCmdResult()
 
     def findTarget(_):

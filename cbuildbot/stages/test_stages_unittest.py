@@ -18,8 +18,8 @@ from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import test_stages
 from chromite.lib.const import waterfall
 from chromite.lib import constants
-from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_logging as logging
+from chromite.lib import cros_test_lib
 from chromite.lib import failures_lib
 from chromite.lib import fake_cidb
 from chromite.lib import osutils
@@ -349,7 +349,7 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
 
 
 class ImageTestStageTest(generic_stages_unittest.AbstractStageTestCase,
-                         cros_build_lib_unittest.RunCommandTestCase,
+                         cros_test_lib.RunCommandTestCase,
                          cbuildbot_unittest.SimpleBuilderTestCase):
   """Test image test stage."""
 

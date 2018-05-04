@@ -16,7 +16,6 @@ import string
 
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
-from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import gs
 from chromite.lib import osutils
@@ -77,7 +76,7 @@ PreconditionException: 412 Precondition Failed"""
     result = self._results['DoCommand'].LookupResult(
         (gsutil_cmd,), hook_args=(inst, gsutil_cmd), hook_kwargs=kwargs)
 
-    rc_mock = cros_build_lib_unittest.RunCommandMock()
+    rc_mock = cros_test_lib.RunCommandMock()
     rc_mock.AddCmdResult(
         partial_mock.ListRegex('gsutil'), result.returncode, result.output,
         result.error)
@@ -1515,7 +1514,7 @@ class CatTest(cros_test_lib.TempDirTestCase):
         next(result)
 
 
-class DryRunTest(cros_build_lib_unittest.RunCommandTestCase):
+class DryRunTest(cros_test_lib.RunCommandTestCase):
   """Verify dry_run works for all of GSContext."""
 
   def setUp(self):

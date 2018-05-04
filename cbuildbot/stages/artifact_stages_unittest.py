@@ -22,7 +22,7 @@ from chromite.cbuildbot.stages import artifact_stages
 from chromite.cbuildbot.stages import build_stages_unittest
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.lib import cros_build_lib
-from chromite.lib import cros_build_lib_unittest
+from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import parallel_unittest
@@ -94,7 +94,7 @@ class ArchiveStageTest(generic_stages_unittest.AbstractStageTestCase,
   def testBuildAndArchiveDeltaSysroot(self):
     """Test tarball is added to upload queue."""
     stage = self.ConstructStageForArchiveStep()
-    with cros_build_lib_unittest.RunCommandMock() as rc:
+    with cros_test_lib.RunCommandMock() as rc:
       rc.SetDefaultCmdResult()
       stage.BuildAndArchiveDeltaSysroot()
     stage._upload_queue.put.assert_called_with([constants.DELTA_SYSROOT_TAR])
@@ -102,7 +102,7 @@ class ArchiveStageTest(generic_stages_unittest.AbstractStageTestCase,
   def testBuildAndArchiveDeltaSysrootFailure(self):
     """Test tarball not added to upload queue on command exception."""
     stage = self.ConstructStageForArchiveStep()
-    with cros_build_lib_unittest.RunCommandMock() as rc:
+    with cros_test_lib.RunCommandMock() as rc:
       rc.AddCmdResult(partial_mock.In('generate_delta_sysroot'), returncode=1,
                       error='generate_delta_sysroot: error')
       self.assertRaises2(cros_build_lib.RunCommandError,
@@ -218,7 +218,7 @@ class CPEExportStageTest(generic_stages_unittest.AbstractStageTestCase,
     self.StartPatcher(generic_stages_unittest.ArchivingStageMixinMock())
     self.StartPatcher(parallel_unittest.ParallelMock())
 
-    self.rc_mock = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
+    self.rc_mock = self.StartPatcher(cros_test_lib.RunCommandMock())
     self.rc_mock.SetDefaultCmdResult(output='')
 
     self.stage = None
@@ -261,7 +261,7 @@ class DebugSymbolsStageTest(generic_stages_unittest.AbstractStageTestCase,
     self.upload_mock = self.PatchObject(commands, 'UploadSymbols')
     self.tar_mock = self.PatchObject(commands, 'GenerateDebugTarball')
 
-    self.rc_mock = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
+    self.rc_mock = self.StartPatcher(cros_test_lib.RunCommandMock())
     self.rc_mock.SetDefaultCmdResult(output='')
 
     self.stage = None
@@ -520,7 +520,7 @@ class GenerateSysrootStageTest(generic_stages_unittest.AbstractStageTestCase,
 
   def setUp(self):
     self._Prepare()
-    self.rc_mock = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
+    self.rc_mock = self.StartPatcher(cros_test_lib.RunCommandMock())
     self.rc_mock.SetDefaultCmdResult()
 
   def ConstructStage(self):

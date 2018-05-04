@@ -14,13 +14,13 @@ from chromite.cbuildbot import cbuildbot_unittest
 from chromite.lib import constants
 from chromite.cbuildbot import prebuilts
 from chromite.cbuildbot.stages import generic_stages_unittest
-from chromite.lib import cros_build_lib_unittest
+from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 
 DEFAULT_CHROME_BRANCH = '27'
 
 # pylint: disable=W0212
-class PrebuiltTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
+class PrebuiltTest(cros_test_lib.RunCommandTempDirTestCase):
   """Test general cbuildbot command methods."""
 
   def setUp(self):

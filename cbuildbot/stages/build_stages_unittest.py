@@ -26,7 +26,6 @@ from chromite.lib import cidb
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
-from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import fake_cidb
 from chromite.lib import osutils
@@ -199,7 +198,7 @@ class AllConfigsTestCase(generic_stages_unittest.AbstractStageTestCase,
   def RunStageWithConfig(self, mock_configurator=None):
     """Run the given config"""
     try:
-      with cros_build_lib_unittest.RunCommandMock() as rc:
+      with cros_test_lib.RunCommandMock() as rc:
         rc.SetDefaultCmdResult()
         if mock_configurator:
           mock_configurator(rc)

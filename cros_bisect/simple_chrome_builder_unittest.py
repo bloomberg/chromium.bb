@@ -13,7 +13,6 @@ import os
 from chromite.cros_bisect import simple_chrome_builder
 from chromite.cbuildbot import commands
 from chromite.lib import commandline
-from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import gclient
 from chromite.lib import git
@@ -120,8 +119,7 @@ class TestSimpleChromeBuilder(cros_test_lib.MockTempDirTestCase):
     self.assertDictEqual(self.log_output_args, builder.log_output_args)
 
   def testSetUp(self):
-    command_mock = self.StartPatcher(
-        cros_build_lib_unittest.RunCommandMock())
+    command_mock = self.StartPatcher(cros_test_lib.RunCommandMock())
     command_mock.AddCmdResult(['fetch', '--nohooks', 'chromium'])
     write_config_mock = self.PatchObject(gclient, 'WriteConfigFile')
     git_mock = self.PatchObject(git, 'RunGit')
