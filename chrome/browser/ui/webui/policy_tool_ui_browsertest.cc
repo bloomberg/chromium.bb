@@ -70,6 +70,11 @@ class PolicyToolUITest : public InProcessBrowserTest {
 
   std::unique_ptr<base::ListValue> ExtractSessionsList();
 
+  // Creates a session directly by putting a file with valid content inside the
+  // session default directory. This helps us to avoid editing a session using
+  // the UI when we need a default session with values.
+  void CreateSingleSessionWithFixedValues(
+      const base::FilePath::StringType& session_name);
   void CreateMultipleSessionFiles(int count);
 
   void SetPolicyValue(const std::string& policy_name,
@@ -285,6 +290,41 @@ void PolicyToolUITest::CreateMultipleSessionFiles(int count) {
         initial_time - base::TimeDelta::FromSeconds(count - i);
     base::TouchFile(GetSessionPath(session_name), current_time, current_time);
   }
+}
+
+void PolicyToolUITest::CreateSingleSessionWithFixedValues(
+    const base::FilePath::StringType& session_name) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+
+  EXPECT_TRUE(base::CreateDirectory(GetSessionsDir()));
+
+  base::ListValue list;
+  list.GetList().push_back(base::Value("https://[*.]ext.google.com").Clone());
+  list.GetList().push_back(base::Value("{}").Clone());
+  base::DictionaryValue dict, inner_dict;
+  inner_dict.SetKey("pattern", base::Value("chrome://policy"));
+  inner_dict.SetKey("filter", base::Value("{}"));
+
+  // Add values to the dict.
+  dict.SetKey("extensionPolicies", base::DictionaryValue().Clone());
+  dict.SetPath({"chromePolicies", "AutoSelectCertificateForUrls", "value"},
+               list.Clone());
+  dict.SetPath({"chromePolicies", "DeviceLoginScreenPowerManagement", "value"},
+               inner_dict.Clone());
+  dict.SetPath({"chromePolicies", "AllowDinosaurEasterEgg", "value"},
+               base::Value(true));
+  dict.SetPath({"chromePolicies", "MaxInvalidationFetchDelay", "value"},
+               base::Value(1000));
+
+  // Get JSON string from dict.
+  std::string stringified_contents;
+  base::JSONWriter::Write(dict, &stringified_contents);
+
+  // Write in file.
+  base::WriteFile(GetSessionPath(session_name), stringified_contents.c_str(),
+                  stringified_contents.size());
+  base::TouchFile(GetSessionPath(session_name), base::Time::Now(),
+                  base::Time::Now());
 }
 
 int PolicyToolUITest::GetElementDisabledState(
@@ -676,46 +716,26 @@ IN_PROC_BROWSER_TEST_F(PolicyToolUITest, MAYBE_RenameSessionInvalidName) {
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyToolUIExportTest, ExportSessionPolicyToLinux) {
-  CreateMultipleSessionFiles(3);
+  // Create policy session with fixed values.
+  CreateSingleSessionWithFixedValues(
+      base::FilePath::FromUTF8Unsafe("test_session").value());
+
   // Set SelectFileDialog to use our factory.
   ui::SelectFileDialog::SetFactory(new TestSelectFileDialogFactoryPolicyTool(
       export_policies_test_file_path_));
-
-  // Test if the current session policy is successfully exported.
   ui_test_utils::NavigateToURL(browser(), GURL("chrome://policy-tool"));
   content::RunAllTasksUntilIdle();
 
-  std::string edit_and_export_js =
-      "$('show-unset').click();"
-      "var policyEntry = document.querySelectorAll("
-      "    'section.policy-table-section > * > tbody')[0];"
-      "policyEntry.getElementsByClassName('edit-button')[0].click();"
-      "policyEntry.getElementsByClassName('value-edit-field')[0].value ="
-      "                                                           'test';"
-      "policyEntry.getElementsByClassName('save-button')[0].click();"
-      "$('export-policies-linux').click()";
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(content::ExecuteScript(contents, edit_and_export_js));
-  // Wait until the posted tasks (Edit session, export to Linux) finish.
+  std::string export_js = "$('export-policies-linux').click()";
+  EXPECT_TRUE(content::ExecuteScript(contents, export_js));
+
+  // Wait until export to linux is done.
   content::RunAllTasksUntilIdle();
-
-  // Because we created 3 session policies (with paths {0, 1, 2}), the last one
-  // is the current active session policy.
-  EXPECT_TRUE(base::ContentsEqual(export_policies_test_file_path_,
-                                  GetSessionPath(FILE_PATH_LITERAL("2"))));
-
-  // Test if after an export action, we can continue exporting.
-  std::string change_session_js =
-      "$('session-name-field').value = '1';"
-      "$('load-session-button').click();";
   EXPECT_TRUE(
-      content::ExecuteScript(contents, change_session_js + edit_and_export_js));
-  // Wait until the posted tasks (Edit session, export to Linux) finish.
-  content::RunAllTasksUntilIdle();
-
-  EXPECT_TRUE(base::ContentsEqual(export_policies_test_file_path_,
-                                  GetSessionPath(FILE_PATH_LITERAL("1"))));
+      base::ContentsEqual(export_policies_test_file_path_,
+                          GetSessionPath(FILE_PATH_LITERAL("test_session"))));
   TestSelectFileDialogPolicyTool::SetFactory(nullptr);
 }
 
