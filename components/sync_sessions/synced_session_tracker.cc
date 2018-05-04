@@ -769,14 +769,10 @@ void SerializePartialTrackerToSpecifics(
       // Tab entities.
       const SessionID tab_id =
           tracker.LookupTabIdFromTabNodeId(session_tag, tab_node_id);
-      if (tab_id.is_valid()) {
-        // Associated tab node.
-        const sessions::SessionTab* tab =
-            tracker.LookupSessionTab(session_tag, tab_id);
-        // TODO(crbug.com/837517): Replace with DCHECK once the crasher
-        // investigation is finalized.
-        CHECK(tab);
-
+      const sessions::SessionTab* tab =
+          tracker.LookupSessionTab(session_tag, tab_id);
+      if (tab) {
+        // Associated/mapped tab node.
         sync_pb::SessionSpecifics tab_pb;
         tab_pb.set_session_tag(session_tag);
         tab_pb.set_tab_node_id(tab_node_id);
@@ -785,12 +781,12 @@ void SerializePartialTrackerToSpecifics(
         continue;
       }
 
-      // Create dummy tab entities for free nodes (i.e. ones that are known by
-      // the tracker but not associated to a tab ID).
+      // Create entities for unmapped tabs nodes (possibly not even associated
+      // to a tab ID).
       sync_pb::SessionSpecifics tab_pb;
       tab_pb.set_tab_node_id(tab_node_id);
       tab_pb.set_session_tag(session_tag);
-      tab_pb.mutable_tab();
+      tab_pb.mutable_tab()->set_tab_id(tab_id.id());  // Might be invalid.
       output_cb.Run(session->session_name, &tab_pb);
     }
   }
