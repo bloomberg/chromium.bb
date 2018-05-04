@@ -81,8 +81,8 @@ class AccessToken(collections.namedtuple('AccessToken', [
     """True if this AccessToken should be refreshed."""
     if self.expires_at is not None:
       now = now or datetime.datetime.utcnow()
-      # Allow 5 min of clock skew between client and backend.
-      now += datetime.timedelta(seconds=300)
+      # Allow 3 min of clock skew between client and backend.
+      now += datetime.timedelta(seconds=180)
       return now >= self.expires_at
     # Token without expiration time never expires.
     return False
