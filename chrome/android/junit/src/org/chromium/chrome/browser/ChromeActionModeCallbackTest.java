@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content.R;
 import org.chromium.content_public.browser.ActionModeCallbackHelper;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /**
@@ -45,7 +46,18 @@ public class ChromeActionModeCallbackTest {
     @Mock
     private Menu mMenu;
 
-    private ChromeActionModeCallback mActionModeCallback;
+    private class TestChromeActionModeCallback extends ChromeActionModeCallback {
+        public TestChromeActionModeCallback(Tab tab, ActionModeCallbackHelper helper) {
+            super(tab, null);
+        }
+
+        @Override
+        public ActionModeCallbackHelper getActionModeCallbackHelper(WebContents webContents) {
+            return mActionModeCallbackHelper;
+        }
+    }
+
+    private TestChromeActionModeCallback mActionModeCallback;
 
     @Before
     public void setUp() throws Exception {
@@ -55,7 +67,7 @@ public class ChromeActionModeCallbackTest {
         RecordUserAction.setDisabledForTests(true);
 
         mActionModeCallback =
-                Mockito.spy(new ChromeActionModeCallback(mTab, mActionModeCallbackHelper));
+                Mockito.spy(new TestChromeActionModeCallback(mTab, mActionModeCallbackHelper));
     }
 
     @After

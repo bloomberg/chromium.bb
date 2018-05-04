@@ -875,8 +875,7 @@ public class AwContents implements SmartClipProvider {
                 viewDelegate, internalDispatcher, windowAndroid);
         mContentViewCore.setHideKeyboardOnBlur(false);
         SelectionPopupController controller = SelectionPopupController.fromWebContents(webContents);
-        controller.setActionModeCallback(
-                new AwActionModeCallback(mContext, this, controller.getActionModeCallbackHelper()));
+        controller.setActionModeCallback(new AwActionModeCallback(mContext, this, webContents));
         if (mAutofillProvider != null) {
             controller.setNonSelectionActionModeCallback(
                     new AutofillActionModeCallback(mContext, mAutofillProvider));

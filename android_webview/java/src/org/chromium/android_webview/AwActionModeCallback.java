@@ -17,6 +17,8 @@ import android.view.MenuItem;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.content.R;
 import org.chromium.content_public.browser.ActionModeCallbackHelper;
+import org.chromium.content_public.browser.SelectionPopupController;
+import org.chromium.content_public.browser.WebContents;
 
 /**
  * A class that handles selection action mode for Android WebView.
@@ -27,11 +29,11 @@ public class AwActionModeCallback implements ActionMode.Callback {
     private final ActionModeCallbackHelper mHelper;
     private int mAllowedMenuItems;
 
-    public AwActionModeCallback(Context context, AwContents awContents,
-            ActionModeCallbackHelper helper) {
+    public AwActionModeCallback(Context context, AwContents awContents, WebContents webContents) {
         mContext = context;
         mAwContents = awContents;
-        mHelper = helper;
+        mHelper =
+                SelectionPopupController.fromWebContents(webContents).getActionModeCallbackHelper();
         mHelper.setAllowedMenuItems(0);  // No item is allowed by default for WebView.
     }
 
