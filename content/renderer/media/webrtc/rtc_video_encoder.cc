@@ -154,6 +154,8 @@ class RTCVideoEncoder::Impl
 
   webrtc::VideoCodecType video_codec_type() const { return video_codec_type_; }
 
+  static const char* ImplementationName() { return "ExternalEncoder"; }
+
   // media::VideoEncodeAccelerator::Client implementation.
   void RequireBitstreamBuffers(unsigned int input_count,
                                const gfx::Size& input_coded_size,
@@ -767,6 +769,7 @@ void RTCVideoEncoder::Impl::ReturnEncodedImage(
   webrtc::CodecSpecificInfo info;
   memset(&info, 0, sizeof(info));
   info.codecType = video_codec_type_;
+  info.codec_name = ImplementationName();
   if (video_codec_type_ == webrtc::kVideoCodecVP8) {
     info.codecSpecific.VP8.pictureId = picture_id;
     info.codecSpecific.VP8.tl0PicIdx = -1;
@@ -936,6 +939,10 @@ int32_t RTCVideoEncoder::SetRates(uint32_t new_bit_rate, uint32_t frame_rate) {
 
 bool RTCVideoEncoder::SupportsNativeHandle() const {
   return true;
+}
+
+const char* RTCVideoEncoder::ImplementationName() const {
+  return RTCVideoEncoder::Impl::ImplementationName();
 }
 
 }  // namespace content

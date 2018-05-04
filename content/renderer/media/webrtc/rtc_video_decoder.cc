@@ -536,6 +536,10 @@ void RTCVideoDecoder::NotifyError(media::VideoDecodeAccelerator::Error error) {
   ++vda_error_counter_;
 }
 
+const char* RTCVideoDecoder::ImplementationName() const {
+  return "ExternalDecoder";
+}
+
 void RTCVideoDecoder::RequestBufferDecode() {
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
   if (!vda_)

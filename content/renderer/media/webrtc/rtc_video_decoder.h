@@ -92,6 +92,7 @@ class CONTENT_EXPORT RTCVideoDecoder
   void NotifyFlushDone() override;
   void NotifyResetDone() override;
   void NotifyError(media::VideoDecodeAccelerator::Error error) override;
+  const char* ImplementationName() const override;
 
  private:
   // Metadata of a bitstream buffer.
