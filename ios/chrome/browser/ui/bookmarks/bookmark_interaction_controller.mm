@@ -175,7 +175,13 @@ using bookmarks::BookmarkNode;
                                               dispatcher:self.dispatcher];
   self.bookmarkBrowser.homeDelegate = self;
 
-  [self.bookmarkBrowser setRootNode:self.bookmarkModel->root_node()];
+  // Set the root node if the model has been loaded. If the model has not been
+  // loaded yet, the root node will be set in BookmarkHomeViewController after
+  // the model is finished loading.
+  if (self.bookmarkModel->loaded()) {
+    [self.bookmarkBrowser setRootNode:self.bookmarkModel->root_node()];
+  }
+
   int64_t unusedFolderId;
   double unusedScrollPosition;
   // If cache is present then reconstruct the last visited bookmark from
