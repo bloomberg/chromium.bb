@@ -185,6 +185,7 @@ class WebNotificationTray;
 class WindowCycleController;
 class WindowPositioner;
 class WindowSelectorController;
+class WindowServiceDelegateImpl;
 class WindowTreeHostManager;
 
 enum class Config;
@@ -536,6 +537,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   WindowSelectorController* window_selector_controller() {
     return window_selector_controller_.get();
   }
+  WindowServiceDelegateImpl* window_service_delegate() {
+    return window_service_delegate_.get();
+  }
   WindowTreeHostManager* window_tree_host_manager() {
     return window_tree_host_manager_.get();
   }
@@ -755,6 +759,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<WallpaperController> wallpaper_controller_;
   std::unique_ptr<WindowCycleController> window_cycle_controller_;
   std::unique_ptr<WindowSelectorController> window_selector_controller_;
+  std::unique_ptr<WindowServiceDelegateImpl> window_service_delegate_;
   std::unique_ptr<::wm::ShadowController> shadow_controller_;
   std::unique_ptr<::wm::VisibilityController> visibility_controller_;
   std::unique_ptr<::wm::WindowModalityController> window_modality_controller_;

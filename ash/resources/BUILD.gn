@@ -85,9 +85,11 @@ ash_test_resources("200_percent") {
 ash_test_resources("with_content_100_percent") {
   percent = "100"
   sources = [
+    "$root_gen_dir/ash/shell/ash_shell_resources.pak",
     "$root_gen_dir/content/content_resources.pak",
   ]
   deps = [
+    "//ash/shell:resources",
     "//content:resources",
   ]
 }
