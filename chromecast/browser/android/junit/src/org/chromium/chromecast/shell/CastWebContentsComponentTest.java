@@ -12,7 +12,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import android.app.Activity;
-import android.app.Application;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -35,33 +34,23 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowActivity;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chromecast.shell.CastWebContentsComponent.StartParams;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /**
  * Tests for CastWebContentsComponent.
  */
-@RunWith(LocalRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, application = CastWebContentsComponentTest.FakeApplication.class)
+@RunWith(BaseRobolectricTestRunner.class)
+@Config(manifest = Config.NONE)
 public class CastWebContentsComponentTest {
-    public static class FakeApplication extends Application {
-        @Override
-        protected void attachBaseContext(Context base) {
-            super.attachBaseContext(base);
-            ContextUtils.initApplicationContextForTests(this);
-        }
-    }
-
     private static final String INSTANCE_ID = "1";
 
     private static final String APP_ID = "app";
 
     private static final int VISIBILITY_PRIORITY = 2;
 
-    @Mock
-    private WebContents mWebContents;
-
+    private @Mock WebContents mWebContents;
     private Activity mActivity;
     private ShadowActivity mShadowActivity;
     private StartParams mStartParams;
@@ -239,5 +228,20 @@ public class CastWebContentsComponentTest {
         component.stop(mActivity);
         Assert.assertFalse(component.isStarted());
         verify(delegate, times(1)).stop(any(Context.class));
+    }
+
+    @Test
+    public void testStartActivityDelegateTwiceNoops() {
+        // Sending focus events to a started Activity is unnecessary because the Activity is always
+        // in focus, and issues with onNewIntent() and duplicate detection can cause unintended
+        // side effects.
+        CastWebContentsComponent component =
+                new CastWebContentsComponent(INSTANCE_ID, null, null, null, false, false);
+        component.setDelegate(component.new ActivityDelegate(false));
+        component.start(mStartParams);
+        Assert.assertEquals(mShadowActivity.getNextStartedActivity().getComponent().getClassName(),
+                CastWebContentsActivity.class.getName());
+        component.start(mStartParams);
+        Assert.assertNull(mShadowActivity.getNextStartedActivity());
     }
 }
