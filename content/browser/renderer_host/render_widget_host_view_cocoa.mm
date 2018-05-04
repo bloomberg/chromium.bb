@@ -484,6 +484,11 @@ void ExtractUnderlines(NSAttributedString* string,
     }
   }
 
+  // Because |updateCursor:| changes the current cursor, we have to reset it to
+  // the default cursor on mouse exit.
+  if (type == NSMouseExited)
+    [[NSCursor arrowCursor] set];
+
   if ([self shouldIgnoreMouseEvent:theEvent]) {
     // If this is the first such event, send a mouse exit to the host view.
     if (!mouseEventWasIgnored_) {
@@ -1848,6 +1853,23 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
   return requestor;
 }
 
+- (BOOL)shouldChangeCurrentCursor {
+  // |updateCursor:| might be called outside the view bounds. Check the mouse
+  // location before setting the cursor. Also, do not set cursor if it's not a
+  // key window.
+  NSPoint location = ui::ConvertPointFromScreenToWindow(
+      [self window], [NSEvent mouseLocation]);
+  location = [self convertPoint:location fromView:nil];
+  if (![self mouse:location inRect:[self bounds]] ||
+      ![[self window] isKeyWindow])
+    return NO;
+
+  if (cursorHidden_ || showingContextMenu_)
+    return NO;
+
+  return YES;
+}
+
 - (void)updateCursor:(NSCursor*)cursor {
   if (currentCursor_ == cursor)
     return;
@@ -1857,8 +1879,8 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
 
   // NSWindow's invalidateCursorRectsForView: resets cursor rects but does not
   // update the cursor instantly. The cursor is updated when the mouse moves.
-  // Update the cursor by setting the current cursor if not hidden.
-  if (!cursorHidden_ && !showingContextMenu_)
+  // Update the cursor instantly by setting the current cursor.
+  if ([self shouldChangeCurrentCursor])
     [currentCursor_ set];
 }
 
