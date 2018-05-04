@@ -190,6 +190,7 @@ public class TabBrowserControlsOffsetHelper implements VrModeObserver {
             topControlsOffset = -manager.getTopControlsHeight();
             bottomControlsOffset = manager.getBottomControlsHeight();
             topContentOffset = 0;
+            manager.setPositionsForTab(topControlsOffset, bottomControlsOffset, topContentOffset);
         } else if (toNonFullscreen) {
             manager.setPositionsForTabToNonFullscreen();
         } else {
