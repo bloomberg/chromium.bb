@@ -581,11 +581,8 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
       } else {
         aom_write_bit(w, sign);
       }
-      if (level > COEFF_BASE_RANGE + NUM_BASE_LEVELS) {
-        const int pos = scan[c];
-        write_golomb(w,
-                     abs(tcoeff[pos]) - COEFF_BASE_RANGE - 1 - NUM_BASE_LEVELS);
-      }
+      if (level > COEFF_BASE_RANGE + NUM_BASE_LEVELS)
+        write_golomb(w, level - COEFF_BASE_RANGE - 1 - NUM_BASE_LEVELS);
     }
   }
 }
