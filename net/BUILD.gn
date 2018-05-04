@@ -2779,6 +2779,13 @@ static_library("test_support") {
       "url_request/test_url_request_interceptor.h",
     ]
   }
+
+  if (enable_reporting) {
+    sources += [
+      "reporting/reporting_test_util.cc",
+      "reporting/reporting_test_util.h",
+    ]
+  }
 }
 
 if (use_v8_in_net) {
@@ -5393,8 +5400,6 @@ test("net_unittests") {
       "reporting/reporting_header_parser_unittest.cc",
       "reporting/reporting_network_change_observer_unittest.cc",
       "reporting/reporting_service_unittest.cc",
-      "reporting/reporting_test_util.cc",
-      "reporting/reporting_test_util.h",
       "reporting/reporting_uploader_unittest.cc",
     ]
   }
@@ -6408,8 +6413,6 @@ proto_library("reporting_policy_proto") {
 fuzzer_test("net_reporting_header_parser_fuzzer") {
   sources = [
     "reporting/reporting_header_parser_fuzzer.cc",
-    "reporting/reporting_test_util.cc",
-    "reporting/reporting_test_util.h",
   ]
 
   deps = [

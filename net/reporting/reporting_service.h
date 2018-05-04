@@ -67,6 +67,10 @@ class NET_EXPORT ReportingService {
       int data_type_mask,
       const base::RepeatingCallback<bool(const GURL&)>& origin_filter) = 0;
 
+  // Like RemoveBrowsingData except removes data for all origins without a
+  // filter.
+  virtual void RemoveAllBrowsingData(int data_type_mask) = 0;
+
   // Checks how many uploads deep |request| is: 0 if it's not an upload, n+1 if
   // it's an upload reporting on requests of at most depth n.
   virtual int GetUploadDepth(const URLRequest& request) = 0;

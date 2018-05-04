@@ -275,6 +275,20 @@ interface NetworkContext {
   // |start_time|. Supports unbounded delete using null Time value.
   ClearHttpAuthCache(mojo_base.mojom.Time start_time) => ();
 
+  // Clears all report entries from the reporting cache. Should not be called if
+  // the ENABLE_REPORTING build flag is false.
+  //
+  // If a non-null |filter| is specified, will clear only entries matching the
+  // filter.
+  ClearReportingCacheReports(ClearDataFilter? filter) => ();
+
+  // Clears all client entries from the reporting cache. Should not be called if
+  // the ENABLE_REPORTING build flag is false.
+  //
+  // If a non-null |filter| is specified, will clear only entries matching the
+  // filter.
+  ClearReportingCacheClients(ClearDataFilter? filter) => ();
+
   // Configures network conditions for the specified throttling profile.
   // The throttling will be applied only to requests that have
   // X-DevTools-Emulate-Network-Conditions-Client-Id: <profile_id>

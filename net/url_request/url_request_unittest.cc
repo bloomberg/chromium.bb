@@ -7448,6 +7448,8 @@ class TestReportingService : public ReportingService {
     NOTIMPLEMENTED();
   }
 
+  void RemoveAllBrowsingData(int data_type_mask) override { NOTIMPLEMENTED(); }
+
   int GetUploadDepth(const URLRequest& request) override {
     NOTIMPLEMENTED();
     return 0;
