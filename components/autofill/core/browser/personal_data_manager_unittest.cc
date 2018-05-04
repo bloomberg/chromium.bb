@@ -322,8 +322,6 @@ class PersonalDataManagerTest : public PersonalDataManagerTestBase,
     // Reset the deduping pref to its default value.
     personal_data_->pref_service_->SetInteger(
         prefs::kAutofillLastVersionDeduped, 0);
-    personal_data_->pref_service_->SetBoolean(
-        prefs::kAutofillProfileUseDatesFixed, false);
   }
 
   void TearDown() override {
@@ -2997,8 +2995,6 @@ class SaveImportedProfileTest
     // Reset the deduping pref to its default value.
     personal_data_->pref_service_->SetInteger(
         prefs::kAutofillLastVersionDeduped, 0);
-    personal_data_->pref_service_->SetBoolean(
-        prefs::kAutofillProfileUseDatesFixed, false);
   }
 
   void TearDown() override {
@@ -4079,106 +4075,6 @@ TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_MultipleVerifiedProfiles) {
   EXPECT_EQ(profile3.use_count(), profiles[1]->use_count());
   EXPECT_EQ(profile2.use_date(), profiles[0]->use_date());
   EXPECT_EQ(profile3.use_date(), profiles[1]->use_date());
-}
-
-// Tests that ApplyProfileUseDatesFix sets the use date of profiles from an
-// incorrect value of 0 to [two weeks from now]. Also tests that SetProfiles
-// does not modify any other profiles.
-TEST_F(PersonalDataManagerTest, ApplyProfileUseDatesFix) {
-  // Set the kAutofillProfileUseDatesFixed pref to true so that the fix is not
-  // applied just yet.
-  personal_data_->pref_service_->SetBoolean(
-      prefs::kAutofillProfileUseDatesFixed, true);
-
-  // Create a profile. The use date will be set to now automatically.
-  AutofillProfile profile1(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&profile1, "Homer", "Jay", "Simpson",
-                       "homer.simpson@abc.com", "SNP", "742 Evergreen Terrace",
-                       "", "Springfield", "IL", "91601", "US", "12345678910");
-  profile1.set_use_date(kArbitraryTime);
-
-  // Create another profile and set its use date to the default value.
-  AutofillProfile profile2(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&profile2, "Marge", "", "Simpson",
-                       "homer.simpson@abc.com", "SNP", "742 Evergreen Terrace",
-                       "", "Springfield", "IL", "91601", "US", "12345678910");
-  profile2.set_use_date(base::Time());
-
-  personal_data_->AddProfile(profile1);
-  personal_data_->AddProfile(profile2);
-
-  WaitForOnPersonalDataChanged();
-  EXPECT_EQ(2U, personal_data_->GetProfiles().size());
-
-  // Get a sorted list of profiles. |profile1| will be first and |profile2| will
-  // be second.
-  std::vector<AutofillProfile*> saved_profiles =
-      personal_data_->GetProfilesToSuggest();
-
-  ASSERT_EQ(2U, saved_profiles.size());
-
-  // The use dates should not have been modified.
-  EXPECT_EQ(profile1.use_date(), saved_profiles[0]->use_date());
-  EXPECT_EQ(profile2.use_date(), saved_profiles[1]->use_date());
-
-  // Set the pref to false to indicate the fix has never been run.
-  personal_data_->pref_service_->SetBoolean(
-      prefs::kAutofillProfileUseDatesFixed, false);
-
-  // Create the test clock and set the time to a specific value.
-  TestAutofillClock test_clock;
-  test_clock.SetNow(kSomeLaterTime);
-
-  personal_data_->ApplyProfileUseDatesFix();
-  WaitForOnPersonalDataChanged();
-
-  // Get a sorted list of profiles.
-  saved_profiles = personal_data_->GetProfilesToSuggest();
-
-  ASSERT_EQ(2U, saved_profiles.size());
-
-  // |profile1|'s use date should not have been modified.
-  EXPECT_LE(profile1.use_date(), saved_profiles[0]->use_date());
-  // |profile2|'s use date should have been set to two weeks before now.
-  EXPECT_EQ(kSomeLaterTime - base::TimeDelta::FromDays(14),
-            saved_profiles[1]->use_date());
-}
-
-// Tests that ApplyProfileUseDatesFix does apply the fix if it's already been
-// applied.
-TEST_F(PersonalDataManagerTest, ApplyProfileUseDatesFix_NotAppliedTwice) {
-  // Set the kAutofillProfileUseDatesFixed pref which means the fix has already
-  // been applied.
-  personal_data_->pref_service_->SetBoolean(
-      prefs::kAutofillProfileUseDatesFixed, true);
-
-  // Create two profiles.
-  AutofillProfile profile1(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&profile1, "Homer", "Jay", "Simpson",
-                       "homer.simpson@abc.com", "SNP", "742 Evergreen Terrace",
-                       "", "Springfield", "IL", "91601", "US", "12345678910");
-  profile1.set_use_date(kArbitraryTime);
-  AutofillProfile profile2(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&profile2, "Marge", "", "Simpson",
-                       "homer.simpson@abc.com", "SNP", "742 Evergreen Terrace",
-                       "", "Springfield", "IL", "91601", "US", "12345678910");
-  profile2.set_use_date(base::Time());
-
-  personal_data_->AddProfile(profile1);
-  personal_data_->AddProfile(profile2);
-
-  WaitForOnPersonalDataChanged();
-  EXPECT_EQ(2U, personal_data_->GetProfiles().size());
-
-  // Get a sorted list of profiles. |profile1| will be first and |profile2| will
-  // be second.
-  std::vector<AutofillProfile*> saved_profiles =
-      personal_data_->GetProfilesToSuggest();
-
-  ASSERT_EQ(2U, saved_profiles.size());
-  // The use dates should not have been modified.
-  EXPECT_EQ(profile1.use_date(), saved_profiles[0]->use_date());
-  EXPECT_EQ(base::Time(), saved_profiles[1]->use_date());
 }
 
 // Tests that ApplyDedupingRoutine works as expected in a realistic scenario.

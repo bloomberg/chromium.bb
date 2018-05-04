@@ -46,10 +46,6 @@ const char kAutofillLastVersionDisusedCreditCardsDeleted[] =
 // Boolean that is true if the orphan rows in the autofill table were removed.
 const char kAutofillOrphanRowsRemoved[] = "autofill.orphan_rows_removed";
 
-// Boolean that is true if Autofill address profiles were fixed regarding their
-// bad use dates.
-const char kAutofillProfileUseDatesFixed[] = "autofill.profile_use_dates_fixed";
-
 // Boolean that's true when Wallet card and address import is enabled by the
 // user.
 const char kAutofillWalletImportEnabled[] = "autofill.wallet_import_enabled";
