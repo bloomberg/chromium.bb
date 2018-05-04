@@ -93,7 +93,7 @@ class NGInlineNodeTest : public NGLayoutTest {
     if (!layout_block_flow_)
       SetupHtml("t", "<div id=t style='font:10px'>test</div>");
     NGInlineNodeForTest node(layout_block_flow_);
-    node.InvalidatePrepareLayout();
+    node.InvalidatePrepareLayoutForTest();
     return node;
   }
 
@@ -304,7 +304,6 @@ TEST_F(NGInlineNodeTest, SegmentSplit1To2) {
   NGInlineNodeForTest node = CreateInlineNode();
   node.Append(u"Hello \u05E2\u05D1\u05E8\u05D9\u05EA");
   node.SegmentText();
-  ASSERT_EQ(2u, node.Items().size());
   Vector<NGInlineItem>& items = node.Items();
   ASSERT_EQ(2u, items.size());
   TEST_ITEM_OFFSET_DIR(items[0], 0u, 6u, TextDirection::kLtr);

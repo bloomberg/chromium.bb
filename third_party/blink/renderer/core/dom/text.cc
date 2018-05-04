@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/layout_text_combine.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_inline_text.h"
 #include "third_party/blink/renderer/core/svg/svg_foreign_object_element.h"
 #include "third_party/blink/renderer/core/svg_names.h"
@@ -329,6 +330,9 @@ LayoutText* Text::CreateTextLayoutObject(const ComputedStyle& style) {
 
   if (style.HasTextCombine())
     return new LayoutTextCombine(this, DataImpl());
+
+  if (RuntimeEnabledFeatures::LayoutNGEnabled() && !style.ForceLegacyLayout())
+    return new LayoutNGText(this, DataImpl());
 
   return new LayoutText(this, DataImpl());
 }

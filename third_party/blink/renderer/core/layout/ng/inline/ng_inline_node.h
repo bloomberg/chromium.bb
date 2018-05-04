@@ -55,7 +55,7 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   MinMaxSize ComputeMinMaxSize(const MinMaxSizeInput&);
 
   // Instruct to re-compute |PrepareLayout| on the next layout.
-  void InvalidatePrepareLayout();
+  void InvalidatePrepareLayoutForTest();
 
   const String& Text() const { return Data().text_content_; }
   StringView Text(unsigned start_offset, unsigned end_offset) const {
@@ -89,11 +89,15 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   // calling the Layout method.
   void PrepareLayoutIfNeeded();
 
-  void CollectInlines(NGInlineNodeData*);
+  void CollectInlines(NGInlineNodeData*,
+                      NGInlineNodeData* previous_data = nullptr);
   void SegmentText(NGInlineNodeData*);
-  void ShapeText(NGInlineNodeData*);
-  void ShapeText(const String&, Vector<NGInlineItem>*);
+  void ShapeText(NGInlineNodeData*, NGInlineNodeData* previous_data = nullptr);
+  void ShapeText(const String& text,
+                 Vector<NGInlineItem>*,
+                 const String* previous_text);
   void ShapeTextForFirstLineIfNeeded(NGInlineNodeData*);
+  void AssociateItemsWithInlines(NGInlineNodeData*);
 
   NGInlineNodeData* MutableData();
   const NGInlineNodeData& Data() const;

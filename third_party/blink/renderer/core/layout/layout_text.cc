@@ -70,7 +70,7 @@
 namespace blink {
 
 struct SameSizeAsLayoutText : public LayoutObject {
-  uint32_t bitfields : 11;
+  uint32_t bitfields : 12;
   float widths[4];
   String text;
   void* pointers[2];
@@ -161,6 +161,7 @@ LayoutText::LayoutText(Node* node, scoped_refptr<StringImpl> str)
     : LayoutObject(node),
       has_tab_(false),
       lines_dirty_(false),
+      valid_ng_items_(false),
       contains_reversed_text_(false),
       known_to_have_no_overflow_and_no_fallback_fonts_(false),
       contains_only_whitespace_or_nbsp_(
@@ -220,6 +221,10 @@ void LayoutText::StyleDidChange(StyleDifference diff,
   TextAutosizer* text_autosizer = GetDocument().GetTextAutosizer();
   if (!old_style && text_autosizer)
     text_autosizer->Record(this);
+
+  // TODO(layout-dev): This is only really needed for style changes that affect
+  // how text is rendered. Font, text-decoration, etc.
+  valid_ng_items_ = false;
 }
 
 void LayoutText::RemoveAndDestroyTextBoxes() {
@@ -246,6 +251,7 @@ void LayoutText::WillBeDestroyed() {
 
   RemoveAndDestroyTextBoxes();
   LayoutObject::WillBeDestroyed();
+  valid_ng_items_ = false;
 }
 
 void LayoutText::ExtractTextBox(InlineTextBox* box) {
@@ -1648,6 +1654,12 @@ void LayoutText::SetTextWithOffset(scoped_refptr<StringImpl> text,
 
   lines_dirty_ = dirtied_lines;
   SetText(std::move(text), force || dirtied_lines);
+
+  // TODO(layout-dev): Invalidation is currently all or nothing in LayoutNG,
+  // this is probably fine for NGInlineItem reuse as recreating the individual
+  // items is relatively cheap. If partial relayout performance improvement are
+  // needed partial re-shapes are likely to be sufficient. Revisit as needed.
+  valid_ng_items_ = false;
 }
 
 void LayoutText::TransformText() {
@@ -1791,6 +1803,8 @@ void LayoutText::SetText(scoped_refptr<StringImpl> text, bool force) {
   TextAutosizer* text_autosizer = GetDocument().GetTextAutosizer();
   if (text_autosizer)
     text_autosizer->Record(this);
+
+  valid_ng_items_ = false;
 }
 
 void LayoutText::DirtyOrDeleteLineBoxesIfNeeded(bool full_layout) {
@@ -1799,12 +1813,14 @@ void LayoutText::DirtyOrDeleteLineBoxesIfNeeded(bool full_layout) {
   else if (!lines_dirty_)
     DirtyLineBoxes();
   lines_dirty_ = false;
+  valid_ng_items_ = false;
 }
 
 void LayoutText::DirtyLineBoxes() {
   for (InlineTextBox* box : TextBoxes())
     box->DirtyLineBoxes();
   lines_dirty_ = false;
+  valid_ng_items_ = false;
 }
 
 InlineTextBox* LayoutText::CreateTextBox(int start, unsigned short length) {

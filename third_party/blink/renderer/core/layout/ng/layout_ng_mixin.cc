@@ -28,6 +28,11 @@ bool LayoutNGMixin<Base>::IsOfType(LayoutObject::LayoutObjectType type) const {
 }
 
 template <typename Base>
+NGInlineNodeData* LayoutNGMixin<Base>::TakeNGInlineNodeData() {
+  return ng_inline_node_data_.release();
+}
+
+template <typename Base>
 NGInlineNodeData* LayoutNGMixin<Base>::GetNGInlineNodeData() const {
   DCHECK(ng_inline_node_data_);
   return ng_inline_node_data_.get();

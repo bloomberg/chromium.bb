@@ -48,17 +48,18 @@ String NGInlineItemsBuilderTemplate<NGOffsetMappingBuilder>::ToString() {
   return text_.ToString();
 }
 
+namespace {
 // Determine "Ambiguous" East Asian Width is Wide or Narrow.
 // Unicode East Asian Width
 // http://unicode.org/reports/tr11/
-static bool IsAmbiguosEastAsianWidthWide(const ComputedStyle* style) {
+bool IsAmbiguosEastAsianWidthWide(const ComputedStyle* style) {
   UScriptCode script = style->GetFontDescription().GetScript();
   return script == USCRIPT_KATAKANA_OR_HIRAGANA ||
          script == USCRIPT_SIMPLIFIED_HAN || script == USCRIPT_TRADITIONAL_HAN;
 }
 
 // Determine if a character has "Wide" East Asian Width.
-static bool IsEastAsianWidthWide(UChar32 c, const ComputedStyle* style) {
+bool IsEastAsianWidthWide(UChar32 c, const ComputedStyle* style) {
   UEastAsianWidth eaw = static_cast<UEastAsianWidth>(
       u_getIntPropertyValue(c, UCHAR_EAST_ASIAN_WIDTH));
   return eaw == U_EA_WIDE || eaw == U_EA_FULLWIDTH || eaw == U_EA_HALFWIDTH ||
@@ -69,11 +70,11 @@ static bool IsEastAsianWidthWide(UChar32 c, const ComputedStyle* style) {
 // Determine whether a newline should be removed or not.
 // CSS Text, Segment Break Transformation Rules
 // https://drafts.csswg.org/css-text-3/#line-break-transform
-static bool ShouldRemoveNewlineSlow(const StringBuilder& before,
-                                    unsigned space_index,
-                                    const ComputedStyle* before_style,
-                                    const StringView& after,
-                                    const ComputedStyle* after_style) {
+bool ShouldRemoveNewlineSlow(const StringBuilder& before,
+                             unsigned space_index,
+                             const ComputedStyle* before_style,
+                             const StringView& after,
+                             const ComputedStyle* after_style) {
   // Remove if either before/after the newline is zeroWidthSpaceCharacter.
   UChar32 last = 0;
   DCHECK(space_index == before.length() ||
@@ -113,27 +114,29 @@ static bool ShouldRemoveNewlineSlow(const StringBuilder& before,
   return false;
 }
 
-static bool ShouldRemoveNewline(const StringBuilder& before,
-                                unsigned space_index,
-                                const ComputedStyle* before_style,
-                                const StringView& after,
-                                const ComputedStyle* after_style) {
+bool ShouldRemoveNewline(const StringBuilder& before,
+                         unsigned space_index,
+                         const ComputedStyle* before_style,
+                         const StringView& after,
+                         const ComputedStyle* after_style) {
   // All characters before/after removable newline are 16 bits.
   return (!before.Is8Bit() || !after.Is8Bit()) &&
          ShouldRemoveNewlineSlow(before, space_index, before_style, after,
                                  after_style);
 }
 
-static void AppendItem(Vector<NGInlineItem>* items,
-                       NGInlineItem::NGInlineItemType type,
-                       unsigned start,
-                       unsigned end,
-                       const ComputedStyle* style = nullptr,
-                       LayoutObject* layout_object = nullptr) {
-  items->push_back(NGInlineItem(type, start, end, style, layout_object));
+void AppendItem(Vector<NGInlineItem>* items,
+                NGInlineItem::NGInlineItemType type,
+                unsigned start,
+                unsigned end,
+                const ComputedStyle* style = nullptr,
+                LayoutObject* layout_object = nullptr,
+                bool end_may_collapse = false) {
+  items->push_back(
+      NGInlineItem(type, start, end, style, layout_object, end_may_collapse));
 }
 
-static inline bool ShouldIgnore(UChar c) {
+inline bool ShouldIgnore(UChar c) {
   // Ignore carriage return and form feed.
   // https://drafts.csswg.org/css-text-3/#white-space-processing
   // https://github.com/w3c/csswg-drafts/issues/855
@@ -144,14 +147,14 @@ static inline bool ShouldIgnore(UChar c) {
   return c == kCarriageReturnCharacter || c == kFormFeedCharacter;
 }
 
-static inline bool IsCollapsibleSpace(UChar c) {
+inline bool IsCollapsibleSpace(UChar c) {
   return c == kSpaceCharacter || c == kNewlineCharacter ||
          c == kTabulationCharacter || c == kCarriageReturnCharacter;
 }
 
 // Characters needing a separate control item than other text items.
 // It makes the line breaker easier to handle.
-static inline bool IsControlItemCharacter(UChar c) {
+inline bool IsControlItemCharacter(UChar c) {
   return c == kNewlineCharacter || c == kTabulationCharacter ||
          // Include ignorable character here to avoids shaping/rendering
          // these glyphs, and to help the line breaker to ignore them.
@@ -161,9 +164,9 @@ static inline bool IsControlItemCharacter(UChar c) {
 // Find the end of the collapsible spaces.
 // Returns whether this space run contains a newline or not, because it changes
 // the collapsing behavior.
-static inline bool MoveToEndOfCollapsibleSpaces(const StringView& string,
-                                                unsigned* offset,
-                                                UChar* c) {
+inline bool MoveToEndOfCollapsibleSpaces(const StringView& string,
+                                         unsigned* offset,
+                                         UChar* c) {
   DCHECK_EQ(*c, string[*offset]);
   DCHECK(IsCollapsibleSpace(*c));
   bool space_run_has_newline = *c == kNewlineCharacter;
@@ -179,13 +182,73 @@ static inline bool MoveToEndOfCollapsibleSpaces(const StringView& string,
 // Find the last item to compute collapsing with. Opaque items such as
 // open/close or bidi controls are ignored.
 // Returns nullptr if there were no previous items.
-static NGInlineItem* LastItemToCollapseWith(Vector<NGInlineItem>* items) {
+NGInlineItem* LastItemToCollapseWith(Vector<NGInlineItem>* items) {
   for (auto it = items->rbegin(); it != items->rend(); it++) {
     NGInlineItem& item = *it;
     if (item.EndCollapseType() != NGInlineItem::kOpaqueToCollapsing)
       return &item;
   }
   return nullptr;
+}
+
+inline bool MayCollapseWithLast(const NGInlineItem* item) {
+  return item && item->EndMayCollapse();
+}
+
+}  // anonymous namespace
+
+template <typename OffsetMappingBuilder>
+bool NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::Append(
+    const String& original_string,
+    LayoutObject* layout_object,
+    const Vector<NGInlineItem*>& items) {
+  // Don't reuse existing items if they might be affected by whitespace
+  // collapsing.
+  // TODO(layout-dev): This could likely be optimized further.
+  // TODO(layout-dev): Handle cases where the old items are not consecutive.
+  if (MayCollapseWithLast(LastItemToCollapseWith(items_)) ||
+      IsCollapsibleSpace(original_string[items[0]->StartOffset()]))
+    return false;
+
+  for (const NGInlineItem* item : items) {
+    unsigned start = text_.length();
+    text_.Append(original_string, item->StartOffset(), item->Length());
+
+    // If the item's position within the container remains unchanged the item
+    // itself may be reused.
+    if (item->StartOffset() == start) {
+      items_->push_back(*item);
+      is_empty_inline_ &= item->IsEmptyItem();
+      continue;
+    }
+
+    // If the position has shifted the item and the shape result needs to be
+    // adjusted to reflect the new start and end offsets.
+    unsigned end = start + item->Length();
+    DCHECK(item->TextShapeResult());
+    NGInlineItem adjusted_item(
+        *item, start, end, item->TextShapeResult()->CopyAdjustedOffset(start));
+
+    DCHECK(adjusted_item.TextShapeResult());
+    DCHECK_EQ(start, adjusted_item.StartOffset());
+    DCHECK_EQ(start, adjusted_item.TextShapeResult()->StartIndexForResult());
+    DCHECK_EQ(end, adjusted_item.EndOffset());
+    DCHECK_EQ(end, adjusted_item.TextShapeResult()->EndIndexForResult());
+    DCHECK_EQ(item->IsEmptyItem(), adjusted_item.IsEmptyItem());
+
+    items_->push_back(adjusted_item);
+    is_empty_inline_ &= adjusted_item.IsEmptyItem();
+  }
+  return true;
+}
+
+template <>
+bool NGInlineItemsBuilderTemplate<NGOffsetMappingBuilder>::Append(
+    const String&,
+    LayoutObject*,
+    const Vector<NGInlineItem*>&) {
+  NOTREACHED();
+  return false;
 }
 
 template <typename OffsetMappingBuilder>
@@ -389,7 +452,7 @@ void NGInlineItemsBuilderTemplate<
 
   if (text_.length() > start_offset) {
     AppendItem(items_, NGInlineItem::kText, start_offset, text_.length(), style,
-               layout_object);
+               layout_object, end_collapse != NGInlineItem::kNotCollapsible);
     NGInlineItem& item = items_->back();
     item.SetEndCollapseType(end_collapse);
     is_empty_inline_ &= item.IsEmptyItem();

@@ -959,6 +959,25 @@ scoped_refptr<ShapeResult> ShapeResult::SubRange(unsigned start_offset,
   return sub_range;
 }
 
+scoped_refptr<ShapeResult> ShapeResult::CopyAdjustedOffset(
+    unsigned start_index) const {
+  scoped_refptr<ShapeResult> result = base::AdoptRef(new ShapeResult(*this));
+
+  if (start_index > result->StartIndexForResult()) {
+    unsigned delta = start_index - result->StartIndexForResult();
+    for (auto& run : result->runs_)
+      run->start_index_ += delta;
+  } else {
+    unsigned delta = result->StartIndexForResult() - start_index;
+    for (auto& run : result->runs_) {
+      DCHECK(run->start_index_ >= delta);
+      run->start_index_ -= delta;
+    }
+  }
+
+  return result;
+}
+
 #if DCHECK_IS_ON()
 void ShapeResult::CheckConsistency() const {
   if (runs_.IsEmpty()) {

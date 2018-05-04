@@ -66,8 +66,15 @@ class CORE_EXPORT NGInlineItem {
                unsigned start,
                unsigned end,
                const ComputedStyle* style = nullptr,
-               LayoutObject* layout_object = nullptr);
+               LayoutObject* layout_object = nullptr,
+               bool end_may_collapse = false);
   ~NGInlineItem();
+
+  // Copy constructor adjusting start/end and shape results.
+  NGInlineItem(const NGInlineItem&,
+               unsigned adjusted_start,
+               unsigned adjusted_end,
+               scoped_refptr<const ShapeResult>);
 
   NGInlineItemType Type() const { return static_cast<NGInlineItemType>(type_); }
   const char* NGInlineItemTypeToString(int val) const;
@@ -118,6 +125,11 @@ class CORE_EXPORT NGInlineItem {
   }
   void SetEndCollapseType(NGCollapseType type) { end_collapse_type_ = type; }
 
+  // Whether the item may be affected by whitespace collapsing. Unlike the
+  // EndCollapseType() method this returns true even if a trailing space has
+  // been removed.
+  bool EndMayCollapse() const { return end_may_collapse_; }
+
   static void Split(Vector<NGInlineItem>&, unsigned index, unsigned offset);
   static unsigned SetBidiLevel(Vector<NGInlineItem>&,
                                unsigned index,
@@ -146,6 +158,7 @@ class CORE_EXPORT NGInlineItem {
   unsigned should_create_box_fragment_ : 1;
   unsigned style_variant_ : 2;
   unsigned end_collapse_type_ : 2;  // NGCollapseType
+  unsigned end_may_collapse_ : 1;
   friend class NGInlineNode;
 };
 
