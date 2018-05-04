@@ -77,7 +77,8 @@ void ContextualSuggestionsMetricsReporter::RecordUmaMetrics(
         return;
       sheet_opened_ = true;
       break;
-    case UI_CLOSED:
+    case UI_DISMISSED_WITHOUT_OPEN:
+    case UI_DISMISSED_AFTER_OPEN:
       if (sheet_closed_)
         return;
       sheet_closed_ = true;
@@ -92,9 +93,12 @@ void ContextualSuggestionsMetricsReporter::RecordUmaMetrics(
         return;
       any_suggestion_taken_ = true;
       break;
+    case UI_CLOSED_OBSOLETE:
+      NOTREACHED() << "Obsolete event, do not use!";
+      return;
     default:
       NOTREACHED() << "Unexpected event, not correctly handled!";
-      break;
+      return;
   }
   UMA_HISTOGRAM_ENUMERATION("ContextualSuggestions.Events", event);
 }

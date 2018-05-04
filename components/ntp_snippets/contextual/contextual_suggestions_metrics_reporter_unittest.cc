@@ -30,9 +30,11 @@ const int kFetchEmpty = 6;
 const int kFetchCompleted = 7;
 const int kUiPeekReverseScroll = 8;
 const int kUiOpened = 9;
-const int kUiClosed = 10;
+const int kUiClosedObsolete = 10;
 const int kSuggestionDownloaded = 11;
 const int kSuggestionClicked = 12;
+const int kUiDismissedWithoutOpen = 13;
+const int kUiDismissedAfterOpen = 14;
 }  // namespace
 
 class ContextualSuggestionsMetricsReporterTest : public ::testing::Test {
@@ -103,11 +105,16 @@ TEST_F(ContextualSuggestionsMetricsReporterTest, BaseTest) {
   histogram_tester.ExpectBucketCount(kEventsHistogramName, kUiPeekReverseScroll,
                                      1);
   histogram_tester.ExpectBucketCount(kEventsHistogramName, kUiOpened, 1);
-  histogram_tester.ExpectBucketCount(kEventsHistogramName, kUiClosed, 0);
+  histogram_tester.ExpectBucketCount(kEventsHistogramName, kUiClosedObsolete,
+                                     0);
   histogram_tester.ExpectBucketCount(kEventsHistogramName,
                                      kSuggestionDownloaded, 1);
   histogram_tester.ExpectBucketCount(kEventsHistogramName, kSuggestionClicked,
                                      1);
+  histogram_tester.ExpectBucketCount(kEventsHistogramName,
+                                     kUiDismissedWithoutOpen, 0);
+  histogram_tester.ExpectBucketCount(kEventsHistogramName,
+                                     kUiDismissedAfterOpen, 0);
 }
 
 void ContextualSuggestionsMetricsReporterTest::ExpectMultipleEventsCountOnce(
@@ -138,8 +145,12 @@ TEST_F(ContextualSuggestionsMetricsReporterTest, UiOpenedTest) {
   ExpectMultipleEventsCountOnce(UI_OPENED);
 }
 
-TEST_F(ContextualSuggestionsMetricsReporterTest, UiClosedTest) {
-  ExpectMultipleEventsCountOnce(UI_CLOSED);
+TEST_F(ContextualSuggestionsMetricsReporterTest, UiDismissedWithoutOpenTest) {
+  ExpectMultipleEventsCountOnce(UI_DISMISSED_WITHOUT_OPEN);
+}
+
+TEST_F(ContextualSuggestionsMetricsReporterTest, UiDismissedAfterOpenTest) {
+  ExpectMultipleEventsCountOnce(UI_DISMISSED_AFTER_OPEN);
 }
 
 TEST_F(ContextualSuggestionsMetricsReporterTest, SuggestionDownloadedTest) {
