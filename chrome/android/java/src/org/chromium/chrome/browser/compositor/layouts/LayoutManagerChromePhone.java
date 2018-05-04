@@ -18,7 +18,6 @@ import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 
 /**
@@ -127,7 +126,7 @@ public class LayoutManagerChromePhone extends LayoutManagerChrome {
             // smoothly.
             getActiveLayout().onTabCreating(sourceId);
         } else if (animationsEnabled()) {
-            if (!FeatureUtilities.isChromeHomeEnabled() || !overviewVisible()) {
+            if (!overviewVisible()) {
                 if (getActiveLayout() != null && getActiveLayout().isHiding()) {
                     setNextLayout(mSimpleAnimationLayout);
                     // The method Layout#doneHiding() will automatically show the next layout.
@@ -164,10 +163,6 @@ public class LayoutManagerChromePhone extends LayoutManagerChrome {
 
         @Override
         public boolean isSwipeEnabled(ScrollDirection direction) {
-            if (direction == ScrollDirection.DOWN && FeatureUtilities.isChromeHomeEnabled()) {
-                return false;
-            }
-
             return super.isSwipeEnabled(direction);
         }
     }
