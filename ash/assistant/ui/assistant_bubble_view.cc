@@ -16,7 +16,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/render_text.h"
 #include "ui/views/background.h"
-#include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -232,8 +231,6 @@ class UiElementContainer : public views::View {
     views::View* text_container = new views::View();
     text_container->SetBackground(std::make_unique<RoundRectBackground>(
         kTextBackgroundColor, kTextCornerRadiusDip));
-    text_container->SetBorder(
-        views::CreateEmptyBorder(0, kPaddingDip, 0, kPaddingDip));
     text_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kHorizontal,
         gfx::Insets(kTextPaddingVerticalDip, kTextPaddingHorizontalDip)));
@@ -271,8 +268,8 @@ class UiElementContainer : public views::View {
   void InitLayout() {
     views::BoxLayout* layout =
         SetLayoutManager(std::make_unique<views::BoxLayout>(
-            views::BoxLayout::Orientation::kVertical, gfx::Insets(),
-            kSpacingDip));
+            views::BoxLayout::Orientation::kVertical,
+            gfx::Insets(0, kPaddingDip), kSpacingDip));
 
     layout->set_cross_axis_alignment(
         views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_START);
