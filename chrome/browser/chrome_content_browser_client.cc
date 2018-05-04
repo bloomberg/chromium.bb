@@ -278,6 +278,7 @@
 #include "chrome/browser/chrome_browser_main_mac.h"
 #elif defined(OS_CHROMEOS)
 #include "ash/public/interfaces/constants.mojom.h"
+#include "chrome/browser/ash_service_registry.h"
 #include "chrome/browser/chromeos/apps/intent_helper/apps_navigation_throttle.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_backend_delegate.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_backend_delegate.h"
@@ -296,7 +297,6 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
-#include "chrome/browser/mash_service_registry.h"
 #include "chrome/browser/ui/ash/chrome_browser_main_extra_parts_ash.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -2075,10 +2075,10 @@ void ChromeContentBrowserClient::AdjustUtilityServiceProcessCommandLine(
     command_line->AppendSwitch(switches::kMessageLoopTypeUi);
     copy_switches = true;
   }
-  if (mash_service_registry::IsMashServiceName(identity.name())) {
+  if (ash_service_registry::IsAshRelatedServiceName(identity.name())) {
     command_line->AppendSwitchASCII(
         switches::kMashServiceName,
-        mash_service_registry::GetMashServiceLabel(identity.name()));
+        ash_service_registry::GetAshRelatedServiceLabel(identity.name()));
   }
 #endif
   // TODO(sky): move to a whitelist, but currently the set of flags is rather
@@ -3427,14 +3427,14 @@ void ChromeContentBrowserClient::RegisterOutOfProcessServices(
 
 #if defined(OS_CHROMEOS)
   if (base::FeatureList::IsEnabled(features::kMash))
-    mash_service_registry::RegisterOutOfProcessServices(services);
+    ash_service_registry::RegisterOutOfProcessServices(services);
 #endif
 }
 
 bool ChromeContentBrowserClient::ShouldTerminateOnServiceQuit(
     const service_manager::Identity& id) {
 #if defined(OS_CHROMEOS)
-  return mash_service_registry::ShouldTerminateOnServiceQuit(id.name());
+  return ash_service_registry::ShouldTerminateOnServiceQuit(id.name());
 #endif
   return false;
 }

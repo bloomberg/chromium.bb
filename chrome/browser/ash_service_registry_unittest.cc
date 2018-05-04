@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/mash_service_registry.h"
+#include "chrome/browser/ash_service_registry.h"
 
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/stl_util.h"
@@ -10,9 +10,9 @@
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-TEST(MashServiceRegistryTest, AshAndUiInSameProcess) {
+TEST(AshServiceRegistryTest, AshAndUiInSameProcess) {
   content::ContentBrowserClient::OutOfProcessServiceMap services;
-  mash_service_registry::RegisterOutOfProcessServices(&services);
+  ash_service_registry::RegisterOutOfProcessServices(&services);
 
   // The ash service and ui service should be in the same process group.
   ASSERT_TRUE(base::ContainsKey(services, ash::mojom::kServiceName));

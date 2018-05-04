@@ -2820,6 +2820,8 @@ jumbo_split_static_library("browser") {
 
   if (is_chromeos) {
     sources += [
+      "ash_service_registry.cc",
+      "ash_service_registry.h",
       "component_updater/cros_component_installer.cc",
       "component_updater/cros_component_installer.h",
       "download/notification/download_item_notification.cc",
@@ -2828,8 +2830,6 @@ jumbo_split_static_library("browser") {
       "download/notification/download_notification_manager.h",
       "feedback/feedback_util_chromeos.cc",
       "feedback/feedback_util_chromeos.h",
-      "mash_service_registry.cc",
-      "mash_service_registry.h",
       "media/chromeos_login_media_access_handler.cc",
       "media/chromeos_login_media_access_handler.h",
       "media/public_session_media_access_handler.cc",
