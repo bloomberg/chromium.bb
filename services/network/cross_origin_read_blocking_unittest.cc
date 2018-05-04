@@ -50,34 +50,58 @@ TEST(CrossOriginReadBlockingTest, IsValidCorsHeaderSet) {
 }
 
 TEST(CrossOriginReadBlockingTest, SniffForHTML) {
-  StringPiece html_data("  \t\r\n    <HtMladfokadfkado");
-  StringPiece comment_html_data(" <!-- this is comment --> <html><body>");
-  StringPiece two_comments_html_data(
-      "<!-- this is comment -->\n<!-- this is comment --><html><body>");
-  StringPiece commented_out_html_tag_data("<!-- <html> <?xml> \n<html>--><b");
-  StringPiece mixed_comments_html_data(
-      "<!-- this is comment <!-- --> <script></script>");
-  StringPiece non_html_data("        var name=window.location;\nadfadf");
-  StringPiece comment_js_data(
-      " <!-- this is comment\n document.write(1);\n// -->window.open()");
-  StringPiece empty_data("");
+  using CORB = CrossOriginReadBlocking;
 
+  // Something that technically matches the start of a valid HTML tag.
   EXPECT_EQ(SniffingResult::kYes,
-            CrossOriginReadBlocking::SniffForHTML(html_data));
+            CORB::SniffForHTML("  \t\r\n    <HtMladfokadfkado"));
+
+  // HTML comment followed by whitespace and valid HTML tags.
   EXPECT_EQ(SniffingResult::kYes,
-            CrossOriginReadBlocking::SniffForHTML(comment_html_data));
+            CORB::SniffForHTML(" <!-- this is comment --> <html><body>"));
+
+  // HTML comment, whitespace, more HTML comments, HTML tags.
+  EXPECT_EQ(
+      SniffingResult::kYes,
+      CORB::SniffForHTML(
+          "<!-- this is comment -->\n<!-- this is comment --><html><body>"));
+
+  // HTML comment followed by valid HTML tag.
+  EXPECT_EQ(
+      SniffingResult::kYes,
+      CORB::SniffForHTML("<!-- this is comment <!-- --><script></script>"));
+
+  // Whitespace followed by valid Javascript.
+  EXPECT_EQ(SniffingResult::kNo,
+            CORB::SniffForHTML("        var name=window.location;\nadfadf"));
+
+  // HTML comment followed by valid Javascript.
+  EXPECT_EQ(
+      SniffingResult::kNo,
+      CORB::SniffForHTML(
+          " <!-- this is comment\n document.write(1);\n// -->window.open()"));
+
+  // HTML/Javascript polyglot should return kNo.
+  EXPECT_EQ(SniffingResult::kNo,
+            CORB::SniffForHTML(
+                "<!--/*--><html><body><script type='text/javascript'><!--//*/\n"
+                "var blah = 123;\n"
+                "//--></script></body></html>"));
+
+  // Tests to cover more of the state machine inside MaybeSkipHtmlComment.
+  EXPECT_EQ(SniffingResult::kNo, CORB::SniffForHTML("<!-- -/* --><html>"));
+  EXPECT_EQ(SniffingResult::kNo, CORB::SniffForHTML("<!-- --/* --><html>"));
+  EXPECT_EQ(SniffingResult::kYes, CORB::SniffForHTML("<!----><html>"));
   EXPECT_EQ(SniffingResult::kYes,
-            CrossOriginReadBlocking::SniffForHTML(two_comments_html_data));
-  EXPECT_EQ(SniffingResult::kYes,
+            CORB::SniffForHTML("<!-- ---/--> <html><body>"));
+
+  // Commented out html tag followed by non-html (" x").
+  StringPiece commented_out_html_tag_data("<!-- <html> <?xml> \n<html>--> x");
+  EXPECT_EQ(SniffingResult::kNo,
             CrossOriginReadBlocking::SniffForHTML(commented_out_html_tag_data));
-  EXPECT_EQ(SniffingResult::kYes,
-            CrossOriginReadBlocking::SniffForHTML(mixed_comments_html_data));
-  EXPECT_EQ(SniffingResult::kNo,
-            CrossOriginReadBlocking::SniffForHTML(non_html_data));
-  EXPECT_EQ(SniffingResult::kNo,
-            CrossOriginReadBlocking::SniffForHTML(comment_js_data));
 
   // Prefixes of |commented_out_html_tag_data| should be indeterminate.
+  // This covers testing "<!-" as well as "<!-- not terminated yet...".
   StringPiece almost_html = commented_out_html_tag_data;
   while (!almost_html.empty()) {
     almost_html.remove_suffix(1);
@@ -85,6 +109,13 @@ TEST(CrossOriginReadBlockingTest, SniffForHTML) {
               CrossOriginReadBlocking::SniffForHTML(almost_html))
         << almost_html;
   }
+
+  // Explicit tests for an unfinished comment (some also covered by the prefix
+  // tests above).
+  EXPECT_EQ(SniffingResult::kMaybe, CORB::SniffForHTML(""));
+  EXPECT_EQ(SniffingResult::kMaybe, CORB::SniffForHTML("<!"));
+  EXPECT_EQ(SniffingResult::kMaybe, CORB::SniffForHTML("<!-- unterminated..."));
+  EXPECT_EQ(SniffingResult::kNo, CORB::SniffForHTML("<!-- /* js "));
 }
 
 TEST(CrossOriginReadBlockingTest, SniffForXML) {
