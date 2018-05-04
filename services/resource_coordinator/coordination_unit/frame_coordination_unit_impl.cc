@@ -68,16 +68,6 @@ void FrameCoordinationUnitImpl::SetNetworkAlmostIdle(bool idle) {
   SetProperty(mojom::PropertyType::kNetworkAlmostIdle, idle);
 }
 
-void FrameCoordinationUnitImpl::SetLifecycleState(mojom::LifecycleState state) {
-  SetProperty(mojom::PropertyType::kLifecycleState,
-              static_cast<int64_t>(state));
-  // The page will have the same lifecycle state as the main frame.
-  if (IsMainFrame() && GetPageCoordinationUnit()) {
-    GetPageCoordinationUnit()->SetProperty(mojom::PropertyType::kLifecycleState,
-                                           static_cast<int64_t>(state));
-  }
-}
-
 void FrameCoordinationUnitImpl::OnAlertFired() {
   SendEvent(mojom::Event::kAlertFired);
 }

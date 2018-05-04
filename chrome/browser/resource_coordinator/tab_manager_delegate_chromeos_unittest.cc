@@ -48,6 +48,7 @@ class DummyLifecycleUnit : public LifecycleUnitBase {
     return nullptr;
   }
   SortKey GetSortKey() const override { return SortKey(last_focused_time_); }
+  State GetState() const override { return State::LOADED; }
   content::Visibility GetVisibility() const override {
     return content::Visibility::VISIBLE;
   }

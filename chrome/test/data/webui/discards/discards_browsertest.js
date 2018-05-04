@@ -22,7 +22,6 @@ TEST_F('DiscardsTest', 'CompareTabDiscardsInfo', function() {
     tabUrl: 'http://urlone.com',
     visibility: 0,
     isMedia: false,
-    isFrozen: false,
     isDiscarded: false,
     isAutoDiscardable: false,
     discardCount: 0,
@@ -34,7 +33,6 @@ TEST_F('DiscardsTest', 'CompareTabDiscardsInfo', function() {
     tabUrl: 'http://urltwo.com',
     visibility: 1,
     isMedia: true,
-    isFrozen: true,
     isDiscarded: true,
     isAutoDiscardable: true,
     discardCount: 1,
@@ -42,7 +40,7 @@ TEST_F('DiscardsTest', 'CompareTabDiscardsInfo', function() {
     lastActiveSeconds: 1
   };
 
-  ['title', 'tabUrl', 'visibility', 'isMedia', 'isFrozen', 'isDiscarded',
+  ['title', 'tabUrl', 'visibility', 'isMedia', 'isDiscarded',
       'isAutoDiscardable', 'discardCount', 'utilityRank', 'lastActiveSeconds']
       .forEach((sortKey) => {
     assertTrue(

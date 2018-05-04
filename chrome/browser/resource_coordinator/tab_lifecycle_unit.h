@@ -86,16 +86,7 @@ class TabLifecycleUnitSource::TabLifecycleUnit
   bool FreezeTab() override;
   bool DiscardTab() override;
   bool IsDiscarded() const override;
-  bool IsFrozen() const override;
   int GetDiscardCount() const override;
-
- protected:
-  // TabLifecycleUnitSource needs to update the state when a external lifecycle
-  // state change is observed.
-  friend class TabLifecycleUnitSource;
-  // Updates the tab's lifecycle state when changed outside the tab lifecycle
-  // unit.
-  void UpdateLifecycleState(mojom::LifecycleState state);
 
  private:
   // Invoked when the state goes from DISCARDED to non-DISCARDED and vice-versa.

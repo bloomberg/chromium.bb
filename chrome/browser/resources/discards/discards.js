@@ -64,8 +64,7 @@ cr.define('discards', function() {
     }
 
     // Compares boolean fields.
-    if (['isMedia', 'isFrozen', 'isDiscarded', 'isAutoDiscardable'].includes(
-            sortKey)) {
+    if (['isMedia', 'isDiscarded', 'isAutoDiscardable'].includes(sortKey)) {
       if (val1 == val2)
         return 0;
       return val1 ? 1 : -1;
@@ -255,6 +254,8 @@ cr.define('discards', function() {
     let lifecycleListener = function(e) {
       // Get the info backing this row.
       let info = infos[getRowIndex(e.target)];
+      // TODO(fmeawad): Disable the action, and let the update function
+      // re-enable it. Blocked on acquiring freeze status.
       // Perform the action.
       uiHandler.freezeById(info.id);
     };
@@ -281,8 +282,6 @@ cr.define('discards', function() {
         visibilityToString(info.visibility);
     row.querySelector('.is-media-cell').textContent =
         boolToString(info.isMedia);
-    row.querySelector('.is-frozen-cell').textContent =
-        boolToString(info.isFrozen);
     row.querySelector('.is-discarded-cell').textContent =
         boolToString(info.isDiscarded);
     row.querySelector('.discard-count-cell').textContent =
@@ -303,12 +302,6 @@ cr.define('discards', function() {
       discardLink.removeAttribute('disabled');
       discardUrgentLink.removeAttribute('disabled');
     }
-
-    let freezeLink = row.querySelector('.freeze-link');
-    if (info.isFrozen)
-      freezeLink.setAttribute('disabled', '');
-    else
-      freezeLink.removeAttribute('disabled', '');
   }
 
   /**

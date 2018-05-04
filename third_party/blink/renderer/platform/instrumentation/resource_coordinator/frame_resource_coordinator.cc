@@ -27,13 +27,6 @@ void FrameResourceCoordinator::SetNetworkAlmostIdle(bool idle) {
   service_->SetNetworkAlmostIdle(idle);
 }
 
-void FrameResourceCoordinator::SetLifecycleState(
-    resource_coordinator::mojom::LifecycleState state) {
-  if (!service_)
-    return;
-  service_->SetLifecycleState(state);
-}
-
 void FrameResourceCoordinator::OnNonPersistentNotificationCreated() {
   if (!service_)
     return;

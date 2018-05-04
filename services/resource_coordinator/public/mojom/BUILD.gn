@@ -12,7 +12,6 @@ mojom_component("mojom") {
     "coordination_unit.mojom",
     "coordination_unit_introspector.mojom",
     "coordination_unit_provider.mojom",
-    "lifecycle.mojom",
     "memory_instrumentation/constants.mojom",
     "memory_instrumentation/memory_instrumentation.mojom",
     "page_signal.mojom",

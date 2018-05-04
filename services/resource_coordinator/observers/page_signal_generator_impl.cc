@@ -46,24 +46,17 @@ void PageSignalGeneratorImpl::AddReceiver(
   receivers_.AddPtr(std::move(receiver));
 }
 
-// Frame CUs should be observed for:
-// 1- kNetworkAlmostIdle property changes used for PageAlmostIdle detection
-// Page CUs should be observed for:
-// 1- kLoading property changes used for PageAlmostIdle detection
-// 2- kLifecycleState property changes used to update the Tab lifecycle state
-// 3- kNavigationCommitted events for PageAlmostIdle detection
-// Process CUs should be observed for:
-// 1- kExpectedTaskQueueingDuration property for reporting EQT
-// 2- kMainThreadTaskLoadIsLow property changes for PageAlmostIdle detection
 bool PageSignalGeneratorImpl::ShouldObserve(
     const CoordinationUnitBase* coordination_unit) {
   auto cu_type = coordination_unit->id().type;
-  if (cu_type == CoordinationUnitType::kProcess ||
-      cu_type == CoordinationUnitType::kPage)
+  // Always tracked process CUs. This is used for CPU utilization messages.
+  if (cu_type == CoordinationUnitType::kProcess)
     return true;
   if (!resource_coordinator::IsPageAlmostIdleSignalEnabled())
     return false;
-  return cu_type == CoordinationUnitType::kFrame;
+  // Frame and page CUs are only used for PAI.
+  return cu_type == CoordinationUnitType::kFrame ||
+         cu_type == CoordinationUnitType::kPage;
 }
 
 void PageSignalGeneratorImpl::OnCoordinationUnitCreated(
@@ -111,12 +104,12 @@ void PageSignalGeneratorImpl::OnPagePropertyChanged(
     const PageCoordinationUnitImpl* page_cu,
     const mojom::PropertyType property_type,
     int64_t value) {
-  if (resource_coordinator::IsPageAlmostIdleSignalEnabled() &&
-      property_type == mojom::PropertyType::kIsLoading) {
-    UpdateLoadIdleStatePage(page_cu);
-  } else if (property_type == mojom::PropertyType::kLifecycleState) {
-    UpdateLifecycleState(page_cu, static_cast<mojom::LifecycleState>(value));
-  }
+  DCHECK(resource_coordinator::IsPageAlmostIdleSignalEnabled());
+
+  // Only the loading state of a page is of interest.
+  if (property_type != mojom::PropertyType::kIsLoading)
+    return;
+  UpdateLoadIdleStatePage(page_cu);
 }
 
 void PageSignalGeneratorImpl::OnProcessPropertyChanged(
@@ -146,9 +139,7 @@ void PageSignalGeneratorImpl::OnProcessPropertyChanged(
 void PageSignalGeneratorImpl::OnPageEventReceived(
     const PageCoordinationUnitImpl* page_cu,
     const mojom::Event event) {
-  // We only care about the events if network idle signal is enabled.
-  if (!resource_coordinator::IsPageAlmostIdleSignalEnabled())
-    return;
+  DCHECK(resource_coordinator::IsPageAlmostIdleSignalEnabled());
 
   // Only the navigation committed event is of interest.
   if (event != mojom::Event::kNavigationCommitted)
@@ -275,12 +266,6 @@ void PageSignalGeneratorImpl::UpdateLoadIdleStateProcess(
   DCHECK(resource_coordinator::IsPageAlmostIdleSignalEnabled());
   for (auto* frame_cu : process_cu->GetFrameCoordinationUnits())
     UpdateLoadIdleStateFrame(frame_cu);
-}
-
-void PageSignalGeneratorImpl::UpdateLifecycleState(
-    const PageCoordinationUnitImpl* page_cu,
-    const mojom::LifecycleState state) {
-  DISPATCH_PAGE_SIGNAL(receivers_, SetLifecycleState, page_cu->id(), state);
 }
 
 void PageSignalGeneratorImpl::TransitionToLoadedAndIdle(

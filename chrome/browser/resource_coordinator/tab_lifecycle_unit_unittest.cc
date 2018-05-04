@@ -52,8 +52,7 @@ class MockLifecycleUnitObserver : public LifecycleUnitObserver {
  public:
   MockLifecycleUnitObserver() = default;
 
-  MOCK_METHOD2(OnLifecycleUnitStateChanged,
-               void(LifecycleUnit*, mojom::LifecycleState));
+  MOCK_METHOD1(OnLifecycleUnitStateChanged, void(LifecycleUnit*));
   MOCK_METHOD1(OnLifecycleUnitDestroyed, void(LifecycleUnit*));
   MOCK_METHOD2(OnLifecycleUnitVisibilityChanged,
                void(LifecycleUnit*, content::Visibility));
