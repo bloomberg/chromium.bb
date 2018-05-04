@@ -6,5 +6,4 @@ typemaps = [
   "//ui/accessibility/mojom/ax_node_data.typemap",
   "//ui/accessibility/mojom/ax_tree_data.typemap",
   "//ui/accessibility/mojom/ax_tree_update.typemap",
-  "//ui/accessibility/mojom/ax_assistant_structure.typemap",
 ]

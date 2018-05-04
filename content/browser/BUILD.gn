@@ -2161,8 +2161,6 @@ jumbo_source_set("browser") {
       "//media",
       "//media/capture/content/android",
       "//media/capture/video/android",
-      "//ui/accessibility:ax_assistant",
-      "//ui/accessibility/mojom",
       "//ui/android",
       "//ui/compositor",
     ]

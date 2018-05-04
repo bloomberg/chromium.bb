@@ -33,7 +33,6 @@ source_set("chromeos") {
     "//chromeos:vm_applications_apps_proto",
     "//components/policy/proto",
     "//content/app/resources",
-    "//ui/accessibility/mojom",
     "//ui/chromeos/resources",
     "//ui/chromeos/strings",
     "//ui/resources",
