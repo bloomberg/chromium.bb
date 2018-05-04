@@ -97,6 +97,11 @@ bool ParseProvisionalUsbPrinterId(const std::string& printer_id,
   return true;
 }
 
+extensions::PrinterProviderAPI* GetPrinterProviderAPI(Profile* profile) {
+  return extensions::PrinterProviderAPIFactory::GetInstance()
+      ->GetForBrowserContext(profile);
+}
+
 }  // namespace
 
 ExtensionPrinterHandler::ExtensionPrinterHandler(Profile* profile)
@@ -138,22 +143,18 @@ void ExtensionPrinterHandler::StartGetPrinters(
                    weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
-  extensions::PrinterProviderAPIFactory::GetInstance()
-      ->GetForBrowserContext(profile_)
-      ->DispatchGetPrintersRequested(
-          base::Bind(&ExtensionPrinterHandler::WrapGetPrintersCallback,
-                     weak_ptr_factory_.GetWeakPtr(), callback));
+  GetPrinterProviderAPI(profile_)->DispatchGetPrintersRequested(
+      base::BindRepeating(&ExtensionPrinterHandler::WrapGetPrintersCallback,
+                          weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void ExtensionPrinterHandler::StartGetCapability(
     const std::string& destination_id,
     GetCapabilityCallback callback) {
-  extensions::PrinterProviderAPIFactory::GetInstance()
-      ->GetForBrowserContext(profile_)
-      ->DispatchGetCapabilityRequested(
-          destination_id,
-          base::BindOnce(&ExtensionPrinterHandler::WrapGetCapabilityCallback,
-                         weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  GetPrinterProviderAPI(profile_)->DispatchGetCapabilityRequested(
+      destination_id,
+      base::BindOnce(&ExtensionPrinterHandler::WrapGetCapabilityCallback,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void ExtensionPrinterHandler::StartPrint(
@@ -175,12 +176,9 @@ void ExtensionPrinterHandler::StartPrint(
   cloud_devices::printer::ContentTypesCapability content_types;
   content_types.LoadFrom(printer_description);
 
-  const bool kUsePdf = content_types.Contains(kContentTypePdf) ||
+  const bool use_pdf = content_types.Contains(kContentTypePdf) ||
                        content_types.Contains(kContentTypeAll);
-
-  if (kUsePdf) {
-    // TODO(tbarzic): Consider writing larger PDF to disk and provide the data
-    // the same way as it's done with PWG raster.
+  if (use_pdf) {
     print_job->content_type = kContentTypePdf;
     print_job->document_bytes = print_data;
     DispatchPrintJob(std::move(callback), std::move(print_job));
@@ -222,12 +220,10 @@ void ExtensionPrinterHandler::StartGrantPrinterAccess(
       DevicePermissionsManager::Get(profile_);
   permissions_manager->AllowUsbDevice(extension_id, device);
 
-  extensions::PrinterProviderAPIFactory::GetInstance()
-      ->GetForBrowserContext(profile_)
-      ->DispatchGetUsbPrinterInfoRequested(
-          extension_id, device,
-          base::BindOnce(&ExtensionPrinterHandler::WrapGetPrinterInfoCallback,
-                         weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  GetPrinterProviderAPI(profile_)->DispatchGetUsbPrinterInfoRequested(
+      extension_id, device,
+      base::BindOnce(&ExtensionPrinterHandler::WrapGetPrinterInfoCallback,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void ExtensionPrinterHandler::SetPwgRasterConverterForTesting(
