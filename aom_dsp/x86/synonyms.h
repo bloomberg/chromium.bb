@@ -62,7 +62,7 @@ static INLINE void xx_storeu_128(void *const a, const __m128i v) {
 // compilers. The following function is equivalent to _mm_set_epi64x()
 // acting on 32-bit integers.
 static INLINE __m128i xx_set_64_from_32i(int32_t e1, int32_t e0) {
-#if defined(_MSC_VER) && defined(_M_IX86) && _MSC_VER < 1900
+#if defined(_MSC_VER) && _MSC_VER < 1900
   return _mm_set_epi32(0, e1, 0, e0);
 #else
   return _mm_set_epi64x((uint32_t)e1, (uint32_t)e0);
@@ -73,7 +73,7 @@ static INLINE __m128i xx_set_64_from_32i(int32_t e1, int32_t e0) {
 // compilers. The following function is equivalent to _mm_set1_epi64x()
 // acting on a 32-bit integer.
 static INLINE __m128i xx_set1_64_from_32i(int32_t a) {
-#if defined(_MSC_VER) && defined(_M_IX86) && _MSC_VER < 1900
+#if defined(_MSC_VER) && _MSC_VER < 1900
   return _mm_set_epi32(0, a, 0, a);
 #else
   return _mm_set1_epi64x((uint32_t)a);
