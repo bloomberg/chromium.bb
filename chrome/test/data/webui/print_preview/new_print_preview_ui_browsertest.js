@@ -141,6 +141,14 @@ TEST_F('PrintPreviewSettingsSectionsTest', 'SetOther', function() {
   this.runMochaTest(settings_sections_tests.TestNames.SetOther);
 });
 
+TEST_F('PrintPreviewSettingsSectionsTest', 'PresetCopies', function() {
+  this.runMochaTest(settings_sections_tests.TestNames.PresetCopies);
+});
+
+TEST_F('PrintPreviewSettingsSectionsTest', 'PresetDuplex', function() {
+  this.runMochaTest(settings_sections_tests.TestNames.PresetDuplex);
+});
+
 PrintPreviewSettingsSelectTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
