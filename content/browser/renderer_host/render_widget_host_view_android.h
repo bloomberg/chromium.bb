@@ -479,7 +479,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   bool controls_initialized_ = false;
   float prev_top_shown_pix_;
+  float prev_top_controls_translate_;
   float prev_bottom_shown_pix_;
+  float prev_bottom_controls_translate_;
   float page_scale_;
   float min_page_scale_;
   float max_page_scale_;

@@ -26,7 +26,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
-import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
 import org.chromium.chrome.browser.widget.ControlContainer;
 import org.chromium.content.browser.ContentVideoView;
 import org.chromium.content_public.common.BrowserControlsState;
@@ -355,9 +354,7 @@ public class ChromeFullscreenManager
         return mTopControlContainerHeight;
     }
 
-    /**
-     * @return The height of the bottom controls in pixels.
-     */
+    @Override
     public int getBottomControlsHeight() {
         return mBottomControlContainerHeight;
     }
@@ -620,18 +617,6 @@ public class ChromeFullscreenManager
     @Override
     public void setPositionsForTab(float topControlsOffset, float bottomControlsOffset,
             float topContentOffset) {
-        if (VrShellDelegate.isInVr()) {
-            VrShellDelegate.rawTopContentOffsetChanged(topContentOffset);
-            // The dip scale of java UI and WebContents are different while in VR, leading to a
-            // mismatch in size in pixels when converting from dips. Since we hide the controls in
-            // VR anyways, just set the offsets to what they're supposed to be with the controls
-            // hidden.
-            // TODO(mthiesse): Should we instead just set the top controls height to be 0 while in
-            // VR?
-            topControlsOffset = -getTopControlsHeight();
-            bottomControlsOffset = getBottomControlsHeight();
-            topContentOffset = 0;
-        }
         float rendererTopControlOffset =
                 Math.round(Math.max(topControlsOffset, -getTopControlsHeight()));
         float rendererBottomControlOffset =

@@ -51,6 +51,11 @@ public abstract class FullscreenManager {
     public abstract int getTopControlsHeight();
 
     /**
+     * @return The height of the bottom controls in pixels.
+     */
+    public abstract int getBottomControlsHeight();
+
+    /**
      * @return The ratio that the browser controls are off screen; this will be a number [0,1]
      *         where 1 is completely hidden and 0 is completely shown.
      */
