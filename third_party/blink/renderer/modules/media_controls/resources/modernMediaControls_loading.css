@@ -151,14 +151,14 @@
 
 #cutoff-2 {
   top: 50%;
-  bottom: 21px;
+  bottom: 16px;
   margin-top: 19px;
 }
 
 #cutoff-3,
 #cutoff-4 {
   top: 0;
-  bottom: 21px;
+  bottom: 16px;
 }
 
 #cutoff-3 {
@@ -179,6 +179,6 @@
   left: 0;
   right: 0;
   border: solid white;
-  border-width: 0 16px 17px;
+  border-width: 0 16px 12px;
   height: 4px;
 }
