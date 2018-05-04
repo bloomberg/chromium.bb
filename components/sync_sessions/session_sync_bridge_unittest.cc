@@ -155,7 +155,7 @@ sync_pb::SessionSpecifics CreateTabSpecifics(const std::string& session_tag,
   sync_pb::SessionSpecifics specifics;
   specifics.set_session_tag(session_tag);
   specifics.set_tab_node_id(tab_node_id);
-  specifics.mutable_tab()->add_navigation()->set_virtual_url("http://baz.com/");
+  specifics.mutable_tab()->add_navigation()->set_virtual_url(url);
   specifics.mutable_tab()->set_window_id(window_id);
   specifics.mutable_tab()->set_tab_id(tab_id);
   return specifics;
@@ -733,6 +733,71 @@ TEST_F(SessionSyncBridgeTest, ShouldMergeForeignSession) {
               ElementsAre(MatchesSyncedSession(
                   kForeignSessionTag,
                   {{kForeignWindowId, std::vector<int>{kForeignTabId}}})));
+}
+
+// Regression test for crbug.com/837517: Ensure that the bridge doesn't crash
+// and closed foreign tabs (|kForeignTabId2| in the test) are not exposed after
+// restarting the browser.
+TEST_F(SessionSyncBridgeTest, ShouldNotExposeClosedTabsAfterRestart) {
+  const std::string kForeignSessionTag = "foreignsessiontag";
+  const int kForeignWindowId = 2000001;
+  const int kForeignTabId1 = 2000002;
+  const int kForeignTabId2 = 2000003;
+  const int kForeignTabNodeId1 = 2004;
+  const int kForeignTabNodeId2 = 2005;
+
+  // The header only lists a single tab |kForeignTabId1|, which becomes a mapped
+  // tab.
+  const sync_pb::SessionSpecifics foreign_header =
+      CreateHeaderSpecificsWithOneTab(kForeignSessionTag, kForeignWindowId,
+                                      kForeignTabId1);
+  const sync_pb::SessionSpecifics foreign_tab1 =
+      CreateTabSpecifics(kForeignSessionTag, kForeignWindowId, kForeignTabId1,
+                         kForeignTabNodeId1, "http://foo.com/");
+  // |kForeignTabId2| is not present in the header, leading to an unmapped tab.
+  const sync_pb::SessionSpecifics foreign_tab2 =
+      CreateTabSpecifics(kForeignSessionTag, kForeignWindowId, kForeignTabId2,
+                         kForeignTabNodeId2, "http://bar.com/");
+
+  InitializeBridge();
+  StartSyncing({foreign_header, foreign_tab1, foreign_tab2});
+
+  const std::string local_header_storage_key =
+      SessionStore::GetHeaderStorageKey(kLocalSessionTag);
+  const std::string foreign_header_storage_key =
+      SessionStore::GetHeaderStorageKey(kForeignSessionTag);
+  const std::string foreign_tab_storage_key1 =
+      SessionStore::GetTabStorageKey(kForeignSessionTag, kForeignTabNodeId1);
+  const std::string foreign_tab_storage_key2 =
+      SessionStore::GetTabStorageKey(kForeignSessionTag, kForeignTabNodeId2);
+
+  ASSERT_THAT(
+      GetAllData(),
+      UnorderedElementsAre(
+          Pair(local_header_storage_key, _),
+          Pair(foreign_header_storage_key,
+               EntityDataHasSpecifics(MatchesHeader(
+                   kForeignSessionTag, {kForeignWindowId}, {kForeignTabId1}))),
+          Pair(foreign_tab_storage_key1,
+               EntityDataHasSpecifics(MatchesTab(
+                   kForeignSessionTag, kForeignWindowId, kForeignTabId1,
+                   kForeignTabNodeId1, {"http://foo.com/"}))),
+          Pair(foreign_tab_storage_key2,
+               EntityDataHasSpecifics(MatchesTab(
+                   kForeignSessionTag, kForeignWindowId, kForeignTabId2,
+                   kForeignTabNodeId2, {"http://bar.com/"})))));
+
+  // Mimic a browser restart, which should restore the very same state (and not
+  // crash!).
+  ShutdownBridge();
+  InitializeBridge();
+  StartSyncing();
+
+  EXPECT_THAT(GetAllData(),
+              UnorderedElementsAre(Pair(local_header_storage_key, _),
+                                   Pair(foreign_header_storage_key, _),
+                                   Pair(foreign_tab_storage_key1, _),
+                                   Pair(foreign_tab_storage_key2, _)));
 }
 
 TEST_F(SessionSyncBridgeTest, ShouldHandleRemoteDeletion) {

@@ -1039,4 +1039,30 @@ TEST_F(SyncedSessionTrackerTest, SerializeTrackerToSpecifics) {
       callback.Get());
 }
 
+TEST_F(SyncedSessionTrackerTest, SerializeTrackerToSpecificsWithEmptyHeader) {
+  sync_pb::SessionSpecifics tab;
+  tab.set_session_tag(kTag);
+  tab.set_tab_node_id(kTabNode1);
+  tab.mutable_tab()->set_window_id(kWindow1.id());
+  tab.mutable_tab()->set_tab_id(kTab1.id());
+  UpdateTrackerWithSpecifics(tab, base::Time::Now(), GetTracker());
+
+  sync_pb::SessionSpecifics header;
+  header.set_session_tag(kTag);
+  header.mutable_header()->set_client_name(kSessionName);
+  UpdateTrackerWithSpecifics(header, base::Time::Now(), GetTracker());
+
+  base::MockCallback<base::RepeatingCallback<void(
+      const std::string& session_name, sync_pb::SessionSpecifics* specifics)>>
+      callback;
+  EXPECT_CALL(callback,
+              Run(kSessionName, Pointee(MatchesHeader(kTag, /*window_ids=*/{},
+                                                      /*tab_ids=*/{}))));
+  EXPECT_CALL(
+      callback,
+      Run(kSessionName, Pointee(MatchesTab(kTag, /*window_id=*/0, kTab1.id(),
+                                           kTabNode1, /*urls=*/_))));
+  SerializeTrackerToSpecifics(*GetTracker(), callback.Get());
+}
+
 }  // namespace sync_sessions
