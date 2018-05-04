@@ -70,7 +70,7 @@ class MockLifecycleUnitObserver : public LifecycleUnitObserver {
   MockLifecycleUnitObserver() = default;
 
   MOCK_METHOD2(OnLifecycleUnitStateChanged,
-               void(LifecycleUnit* lifecycle_unit, mojom::LifecycleState));
+               void(LifecycleUnit* lifecycle_unit, LifecycleState));
   MOCK_METHOD2(OnLifecycleUnitVisibilityChanged,
                void(LifecycleUnit* lifecycle_unit,
                     content::Visibility visibility));
@@ -359,12 +359,11 @@ TEST_F(TabLifecycleUnitSourceTest, DetachWebContents) {
   other_tab_strip_model.AppendWebContents(std::move(owned_contents), false);
   EXPECT_FOR_ALL_DISCARD_REASONS(first_lifecycle_unit, CanDiscard, true);
 
-  EXPECT_EQ(mojom::LifecycleState::kRunning, first_lifecycle_unit->GetState());
+  EXPECT_EQ(LifecycleState::ACTIVE, first_lifecycle_unit->GetState());
   EXPECT_CALL(tab_observer_, OnDiscardedStateChange(testing::_, true));
   first_lifecycle_unit->Discard(DiscardReason::kProactive);
   testing::Mock::VerifyAndClear(&tab_observer_);
-  EXPECT_EQ(mojom::LifecycleState::kDiscarded,
-            first_lifecycle_unit->GetState());
+  EXPECT_EQ(LifecycleState::DISCARDED, first_lifecycle_unit->GetState());
 
   // Expect a notification when the tab is closed.
   CloseTabsAndExpectNotifications(&other_tab_strip_model,
@@ -410,15 +409,13 @@ TEST_F(TabLifecycleUnitSourceTest, Discard) {
   initial_web_contents->SetLastActiveTime(kDummyLastActiveTime);
 
   // Discard the tab.
-  EXPECT_EQ(mojom::LifecycleState::kRunning,
-            background_lifecycle_unit->GetState());
+  EXPECT_EQ(LifecycleState::ACTIVE, background_lifecycle_unit->GetState());
   EXPECT_CALL(tab_observer_, OnDiscardedStateChange(testing::_, true));
   background_lifecycle_unit->Discard(DiscardReason::kProactive);
   testing::Mock::VerifyAndClear(&tab_observer_);
 
   // Expect the tab to be discarded and the last active time to be preserved.
-  EXPECT_EQ(mojom::LifecycleState::kDiscarded,
-            background_lifecycle_unit->GetState());
+  EXPECT_EQ(LifecycleState::DISCARDED, background_lifecycle_unit->GetState());
   EXPECT_NE(initial_web_contents, tab_strip_model_->GetWebContentsAt(0));
   EXPECT_FALSE(
       tab_strip_model_->GetWebContentsAt(0)->GetController().GetPendingEntry());
@@ -437,13 +434,11 @@ TEST_F(TabLifecycleUnitSourceTest, DiscardAndActivate) {
       tab_strip_model_->GetWebContentsAt(0);
 
   // Discard the tab.
-  EXPECT_EQ(mojom::LifecycleState::kRunning,
-            background_lifecycle_unit->GetState());
+  EXPECT_EQ(LifecycleState::ACTIVE, background_lifecycle_unit->GetState());
   EXPECT_CALL(tab_observer_, OnDiscardedStateChange(testing::_, true));
   background_lifecycle_unit->Discard(DiscardReason::kProactive);
   testing::Mock::VerifyAndClear(&tab_observer_);
-  EXPECT_EQ(mojom::LifecycleState::kDiscarded,
-            background_lifecycle_unit->GetState());
+  EXPECT_EQ(LifecycleState::DISCARDED, background_lifecycle_unit->GetState());
   EXPECT_NE(initial_web_contents, tab_strip_model_->GetWebContentsAt(0));
   EXPECT_FALSE(
       tab_strip_model_->GetWebContentsAt(0)->GetController().GetPendingEntry());
@@ -452,8 +447,7 @@ TEST_F(TabLifecycleUnitSourceTest, DiscardAndActivate) {
   EXPECT_CALL(tab_observer_, OnDiscardedStateChange(testing::_, false));
   tab_strip_model_->ActivateTabAt(0, true);
   testing::Mock::VerifyAndClear(&tab_observer_);
-  EXPECT_EQ(mojom::LifecycleState::kRunning,
-            background_lifecycle_unit->GetState());
+  EXPECT_EQ(LifecycleState::ACTIVE, background_lifecycle_unit->GetState());
   EXPECT_TRUE(
       tab_strip_model_->GetWebContentsAt(0)->GetController().GetPendingEntry());
 }
@@ -467,13 +461,11 @@ TEST_F(TabLifecycleUnitSourceTest, DiscardAndExplicitlyReload) {
       tab_strip_model_->GetWebContentsAt(0);
 
   // Discard the tab.
-  EXPECT_EQ(mojom::LifecycleState::kRunning,
-            background_lifecycle_unit->GetState());
+  EXPECT_EQ(LifecycleState::ACTIVE, background_lifecycle_unit->GetState());
   EXPECT_CALL(tab_observer_, OnDiscardedStateChange(testing::_, true));
   background_lifecycle_unit->Discard(DiscardReason::kProactive);
   testing::Mock::VerifyAndClear(&tab_observer_);
-  EXPECT_EQ(mojom::LifecycleState::kDiscarded,
-            background_lifecycle_unit->GetState());
+  EXPECT_EQ(LifecycleState::DISCARDED, background_lifecycle_unit->GetState());
   EXPECT_NE(initial_web_contents, tab_strip_model_->GetWebContentsAt(0));
   EXPECT_FALSE(
       tab_strip_model_->GetWebContentsAt(0)->GetController().GetPendingEntry());
@@ -483,8 +475,7 @@ TEST_F(TabLifecycleUnitSourceTest, DiscardAndExplicitlyReload) {
   tab_strip_model_->GetWebContentsAt(0)->GetController().Reload(
       content::ReloadType::NORMAL, false);
   testing::Mock::VerifyAndClear(&tab_observer_);
-  EXPECT_EQ(mojom::LifecycleState::kRunning,
-            background_lifecycle_unit->GetState());
+  EXPECT_EQ(LifecycleState::ACTIVE, background_lifecycle_unit->GetState());
   EXPECT_TRUE(
       tab_strip_model_->GetWebContentsAt(0)->GetController().GetPendingEntry());
 }
@@ -501,13 +492,11 @@ TEST_F(TabLifecycleUnitSourceTest, CanOnlyDiscardOnce) {
   EXPECT_FOR_ALL_DISCARD_REASONS(background_lifecycle_unit, CanDiscard, true);
 
   // Discard the tab.
-  EXPECT_EQ(mojom::LifecycleState::kRunning,
-            background_lifecycle_unit->GetState());
+  EXPECT_EQ(LifecycleState::ACTIVE, background_lifecycle_unit->GetState());
   EXPECT_CALL(tab_observer_, OnDiscardedStateChange(testing::_, true));
   background_lifecycle_unit->Discard(DiscardReason::kProactive);
   testing::Mock::VerifyAndClear(&tab_observer_);
-  EXPECT_EQ(mojom::LifecycleState::kDiscarded,
-            background_lifecycle_unit->GetState());
+  EXPECT_EQ(LifecycleState::DISCARDED, background_lifecycle_unit->GetState());
   EXPECT_NE(initial_web_contents, tab_strip_model_->GetWebContentsAt(0));
   EXPECT_FALSE(
       tab_strip_model_->GetWebContentsAt(0)->GetController().GetPendingEntry());
@@ -517,8 +506,7 @@ TEST_F(TabLifecycleUnitSourceTest, CanOnlyDiscardOnce) {
   tab_strip_model_->GetWebContentsAt(0)->GetController().Reload(
       content::ReloadType::NORMAL, false);
   testing::Mock::VerifyAndClear(&tab_observer_);
-  EXPECT_EQ(mojom::LifecycleState::kRunning,
-            background_lifecycle_unit->GetState());
+  EXPECT_EQ(LifecycleState::ACTIVE, background_lifecycle_unit->GetState());
   EXPECT_TRUE(
       tab_strip_model_->GetWebContentsAt(0)->GetController().GetPendingEntry());
 
@@ -547,13 +535,11 @@ TEST_F(TabLifecycleUnitSourceTest, CannotFreezeADiscardedTab) {
   EXPECT_FOR_ALL_DISCARD_REASONS(background_lifecycle_unit, CanDiscard, true);
 
   // Discard the tab.
-  EXPECT_EQ(mojom::LifecycleState::kRunning,
-            background_lifecycle_unit->GetState());
+  EXPECT_EQ(LifecycleState::ACTIVE, background_lifecycle_unit->GetState());
   EXPECT_CALL(tab_observer_, OnDiscardedStateChange(testing::_, true));
   background_lifecycle_unit->Discard(DiscardReason::kProactive);
   testing::Mock::VerifyAndClear(&tab_observer_);
-  EXPECT_EQ(mojom::LifecycleState::kDiscarded,
-            background_lifecycle_unit->GetState());
+  EXPECT_EQ(LifecycleState::DISCARDED, background_lifecycle_unit->GetState());
   EXPECT_NE(initial_web_contents, tab_strip_model_->GetWebContentsAt(0));
   EXPECT_FALSE(
       tab_strip_model_->GetWebContentsAt(0)->GetController().GetPendingEntry());
@@ -565,8 +551,7 @@ TEST_F(TabLifecycleUnitSourceTest, CannotFreezeADiscardedTab) {
   tab_strip_model_->GetWebContentsAt(0)->GetController().Reload(
       content::ReloadType::NORMAL, false);
   testing::Mock::VerifyAndClear(&tab_observer_);
-  EXPECT_EQ(mojom::LifecycleState::kRunning,
-            background_lifecycle_unit->GetState());
+  EXPECT_EQ(LifecycleState::ACTIVE, background_lifecycle_unit->GetState());
   EXPECT_TRUE(
       tab_strip_model_->GetWebContentsAt(0)->GetController().GetPendingEntry());
 
