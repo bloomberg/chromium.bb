@@ -58,11 +58,10 @@ class SyncReaderBitstreamTest : public TestWithParam<OverflowTestCase> {
 
 TEST_P(SyncReaderBitstreamTest, BitstreamBufferOverflow_DoesNotWriteOOB) {
   const int kSampleRate = 44100;
-  const int kBitsPerSample = 32;
   const int kFramesPerBuffer = 1;
   AudioParameters params(AudioParameters::AUDIO_BITSTREAM_AC3,
                          media::CHANNEL_LAYOUT_STEREO, kSampleRate,
-                         kBitsPerSample, kFramesPerBuffer);
+                         kFramesPerBuffer);
 
   auto socket = std::make_unique<base::CancelableSyncSocket>();
   SyncReader reader(base::BindRepeating(&NoLog), params, socket.get());

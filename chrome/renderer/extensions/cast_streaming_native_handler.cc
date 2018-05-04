@@ -920,8 +920,8 @@ void CastStreamingNativeHandler::StartCastRtpReceiver(
       media::AudioParameters::AUDIO_PCM_LINEAR,
       media::GuessChannelLayout(audio_config.channels),
       audio_config.rtp_timebase,  // sampling rate
-      16, static_cast<int>(audio_config.rtp_timebase /
-                           audio_config.target_frame_rate));
+      static_cast<int>(audio_config.rtp_timebase /
+                       audio_config.target_frame_rate));
 
   if (!params.IsValid()) {
     args.GetIsolate()->ThrowException(v8::Exception::TypeError(

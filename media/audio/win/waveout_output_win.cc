@@ -72,6 +72,8 @@ inline WAVEHDR* PCMWaveOutAudioOutputStream::GetBuffer(int n) const {
   return reinterpret_cast<WAVEHDR*>(&buffers_[n * BufferSize()]);
 }
 
+constexpr SampleFormat kSampleFormat = kSampleFormatS16;
+
 PCMWaveOutAudioOutputStream::PCMWaveOutAudioOutputStream(
     AudioManagerWin* manager,
     const AudioParameters& params,
@@ -81,7 +83,7 @@ PCMWaveOutAudioOutputStream::PCMWaveOutAudioOutputStream(
       manager_(manager),
       callback_(NULL),
       num_buffers_(num_buffers),
-      buffer_size_(params.GetBytesPerBuffer()),
+      buffer_size_(params.GetBytesPerBuffer(kSampleFormat)),
       volume_(1),
       channels_(params.channels()),
       pending_bytes_(0),
@@ -92,7 +94,7 @@ PCMWaveOutAudioOutputStream::PCMWaveOutAudioOutputStream(
   format_.Format.wFormatTag = WAVE_FORMAT_EXTENSIBLE;
   format_.Format.nChannels = params.channels();
   format_.Format.nSamplesPerSec = params.sample_rate();
-  format_.Format.wBitsPerSample = params.bits_per_sample();
+  format_.Format.wBitsPerSample = SampleFormatToBitsPerChannel(kSampleFormat);
   format_.Format.cbSize = sizeof(format_) - sizeof(WAVEFORMATEX);
   // The next are computed from above.
   format_.Format.nBlockAlign = (format_.Format.nChannels *
@@ -105,7 +107,7 @@ PCMWaveOutAudioOutputStream::PCMWaveOutAudioOutputStream(
     format_.dwChannelMask = kChannelsToMask[params.channels()];
   }
   format_.SubFormat = KSDATAFORMAT_SUBTYPE_PCM;
-  format_.Samples.wValidBitsPerSample = params.bits_per_sample();
+  format_.Samples.wValidBitsPerSample = format_.Format.wBitsPerSample;
 }
 
 PCMWaveOutAudioOutputStream::~PCMWaveOutAudioOutputStream() {

@@ -193,8 +193,7 @@ void FileSource::LoadWavFile(const base::FilePath& path_to_wav_file) {
   AudioParameters file_audio_slice(
       AudioParameters::AUDIO_PCM_LOW_LATENCY,
       GuessChannelLayout(wav_audio_handler_->num_channels()),
-      wav_audio_handler_->sample_rate(), wav_audio_handler_->bits_per_sample(),
-      params_.frames_per_buffer());
+      wav_audio_handler_->sample_rate(), params_.frames_per_buffer());
 
   file_audio_converter_.reset(
       new AudioConverter(file_audio_slice, params_, false));
@@ -244,14 +243,13 @@ double FileSource::ProvideInput(AudioBus* audio_bus_into_converter,
 void FileSource::OnError() {}
 
 BeepingSource::BeepingSource(const AudioParameters& params)
-    : buffer_size_(params.GetBytesPerBuffer()),
+    : buffer_size_(params.GetBytesPerBuffer(kSampleFormatU8)),
       buffer_(new uint8_t[buffer_size_]),
       params_(params),
       last_callback_time_(base::TimeTicks::Now()),
       beep_duration_in_buffers_(kBeepDurationMilliseconds *
                                 params.sample_rate() /
-                                params.frames_per_buffer() /
-                                1000),
+                                params.frames_per_buffer() / 1000),
       beep_generated_in_buffers_(0),
       beep_period_in_frames_(params.sample_rate() / kBeepFrequency) {}
 
@@ -283,10 +281,9 @@ int BeepingSource::OnMoreData(base::TimeDelta /* delay */,
   // generate a beep sound.
   if (should_beep || beep_generated_in_buffers_) {
     // Compute the number of frames to output high value. Then compute the
-    // number of bytes based on channels and bits per channel.
+    // number of bytes based on channels.
     int high_frames = beep_period_in_frames_ / 2;
-    int high_bytes = high_frames * params_.bits_per_sample() *
-        params_.channels() / 8;
+    int high_bytes = high_frames * params_.channels();
 
     // Separate high and low with the same number of bytes to generate a
     // square wave.
@@ -304,8 +301,8 @@ int BeepingSource::OnMoreData(base::TimeDelta /* delay */,
   }
 
   last_callback_time_ = base::TimeTicks::Now();
-  dest->FromInterleaved(buffer_.get(), dest->frames(),
-                        params_.bits_per_sample() / 8);
+  dest->FromInterleaved<UnsignedInt8SampleTypeTraits>(buffer_.get(),
+                                                      dest->frames());
   return dest->frames();
 }
 

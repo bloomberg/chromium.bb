@@ -26,7 +26,6 @@ void ParamTraits<AudioParameters>::Write(base::Pickle* m,
   WriteParam(m, p.format());
   WriteParam(m, p.channel_layout());
   WriteParam(m, p.sample_rate());
-  WriteParam(m, p.bits_per_sample());
   WriteParam(m, p.frames_per_buffer());
   WriteParam(m, p.channels());
   WriteParam(m, p.effects());
@@ -39,13 +38,12 @@ bool ParamTraits<AudioParameters>::Read(const base::Pickle* m,
                                         AudioParameters* r) {
   AudioParameters::Format format;
   ChannelLayout channel_layout;
-  int sample_rate, bits_per_sample, frames_per_buffer, channels, effects;
+  int sample_rate, frames_per_buffer, channels, effects;
   std::vector<media::Point> mic_positions;
   AudioLatency::LatencyType latency_tag;
 
   if (!ReadParam(m, iter, &format) || !ReadParam(m, iter, &channel_layout) ||
       !ReadParam(m, iter, &sample_rate) ||
-      !ReadParam(m, iter, &bits_per_sample) ||
       !ReadParam(m, iter, &frames_per_buffer) ||
       !ReadParam(m, iter, &channels) || !ReadParam(m, iter, &effects) ||
       !ReadParam(m, iter, &mic_positions) ||
@@ -53,7 +51,7 @@ bool ParamTraits<AudioParameters>::Read(const base::Pickle* m,
     return false;
   }
 
-  AudioParameters params(format, channel_layout, sample_rate, bits_per_sample,
+  AudioParameters params(format, channel_layout, sample_rate,
                          frames_per_buffer);
   params.set_channels_for_discrete(channels);
   params.set_effects(effects);

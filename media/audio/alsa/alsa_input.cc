@@ -19,6 +19,9 @@
 
 namespace media {
 
+static const SampleFormat kSampleFormat = kSampleFormatS16;
+static const snd_pcm_format_t kAlsaSampleFormat = SND_PCM_FORMAT_S16;
+
 static const int kNumPacketsInRingBuffer = 3;
 
 static const char kDefaultDevice1[] = "default";
@@ -33,8 +36,7 @@ AlsaPcmInputStream::AlsaPcmInputStream(AudioManagerBase* audio_manager,
     : audio_manager_(audio_manager),
       device_name_(device_name),
       params_(params),
-      bytes_per_buffer_(params.frames_per_buffer() *
-                        (params.channels() * params.bits_per_sample()) / 8),
+      bytes_per_buffer_(params.GetBytesPerBuffer(kSampleFormat)),
       wrapper_(wrapper),
       buffer_duration_(base::TimeDelta::FromMicroseconds(
           params.frames_per_buffer() * base::Time::kMicrosecondsPerSecond /
@@ -54,14 +56,6 @@ bool AlsaPcmInputStream::Open() {
   if (device_handle_)
     return false;  // Already open.
 
-  snd_pcm_format_t pcm_format = alsa_util::BitsToFormat(
-      params_.bits_per_sample());
-  if (pcm_format == SND_PCM_FORMAT_UNKNOWN) {
-    LOG(WARNING) << "Unsupported bits per sample: "
-                 << params_.bits_per_sample();
-    return false;
-  }
-
   uint32_t latency_us =
       buffer_duration_.InMicroseconds() * kNumPacketsInRingBuffer;
 
@@ -72,8 +66,8 @@ bool AlsaPcmInputStream::Open() {
     const char* device_names[] = { kDefaultDevice1, kDefaultDevice2 };
     for (size_t i = 0; i < arraysize(device_names); ++i) {
       device_handle_ = alsa_util::OpenCaptureDevice(
-          wrapper_, device_names[i], params_.channels(),
-          params_.sample_rate(), pcm_format, latency_us);
+          wrapper_, device_names[i], params_.channels(), params_.sample_rate(),
+          kAlsaSampleFormat, latency_us);
 
       if (device_handle_) {
         device_name_ = device_names[i];
@@ -81,11 +75,9 @@ bool AlsaPcmInputStream::Open() {
       }
     }
   } else {
-    device_handle_ = alsa_util::OpenCaptureDevice(wrapper_,
-                                                  device_name_.c_str(),
-                                                  params_.channels(),
-                                                  params_.sample_rate(),
-                                                  pcm_format, latency_us);
+    device_handle_ = alsa_util::OpenCaptureDevice(
+        wrapper_, device_name_.c_str(), params_.channels(),
+        params_.sample_rate(), kAlsaSampleFormat, latency_us);
   }
 
   if (device_handle_) {
@@ -214,8 +206,9 @@ void AlsaPcmInputStream::ReadAudio() {
     int frames_read = wrapper_->PcmReadi(device_handle_, audio_buffer_.get(),
                                          params_.frames_per_buffer());
     if (frames_read == params_.frames_per_buffer()) {
-      audio_bus_->FromInterleaved(audio_buffer_.get(), audio_bus_->frames(),
-                                  params_.bits_per_sample() / 8);
+      audio_bus_->FromInterleaved<SignedInt16SampleTypeTraits>(
+          reinterpret_cast<int16_t*>(audio_buffer_.get()),
+          audio_bus_->frames());
 
       // TODO(dalecurtis): This should probably use snd_pcm_htimestamp() so that
       // we can have |capture_time| directly instead of computing it as

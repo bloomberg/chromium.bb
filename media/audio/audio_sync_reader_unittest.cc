@@ -53,11 +53,9 @@ class AudioSyncReaderBitstreamTest : public TestWithParam<OverflowTestCase> {
 
 TEST_P(AudioSyncReaderBitstreamTest, BitstreamBufferOverflow_DoesNotWriteOOB) {
   const int kSampleRate = 44100;
-  const int kBitsPerSample = 32;
   const int kFramesPerBuffer = 1;
   AudioParameters params(AudioParameters::AUDIO_BITSTREAM_AC3,
-                         CHANNEL_LAYOUT_STEREO, kSampleRate, kBitsPerSample,
-                         kFramesPerBuffer);
+                         CHANNEL_LAYOUT_STEREO, kSampleRate, kFramesPerBuffer);
 
   auto socket = std::make_unique<base::CancelableSyncSocket>();
   std::unique_ptr<AudioBus> output_bus = AudioBus::Create(params);

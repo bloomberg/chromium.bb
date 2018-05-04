@@ -54,14 +54,13 @@ const int kNoSessionId = 0;
 const int kRenderProcessId = 42;
 const int kRenderFrameId = 24;
 const int kSampleFrequency = 44100;
-const int kBitsPerSample = 16;
 const int kSamplesPerBuffer = kSampleFrequency / 100;
 const char kSalt[] = "salt";
 
 media::AudioParameters GetTestAudioParameters() {
   return media::AudioParameters(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                                 media::CHANNEL_LAYOUT_MONO, kSampleFrequency,
-                                kBitsPerSample, kSamplesPerBuffer);
+                                kSamplesPerBuffer);
 }
 
 class MockAudioOutputDelegate : public media::AudioOutputDelegate {

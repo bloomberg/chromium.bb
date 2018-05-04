@@ -122,8 +122,9 @@ class OpenSLESOutputStream : public MuteableAudioOutputStream {
 
   int samples_per_second_;
 
-  // On Android 5.0+ we can output directly to float instead of in integer.
-  bool have_float_output_;
+  // On Android 5.0+ we can output directly to float instead of in integer, so
+  // there we'll use kSampleFormatF32. If not, this will be kSampleFormatS16.
+  SampleFormat sample_format_;
 
   int bytes_per_frame_;
   size_t buffer_size_bytes_;

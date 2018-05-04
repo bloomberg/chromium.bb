@@ -213,12 +213,10 @@ TEST_P(WebmMuxerTest, OnEncodedAudioTwoFrames) {
     return;
 
   const int sample_rate = 48000;
-  const int bits_per_sample = 16;
   const int frames_per_buffer = 480;
   media::AudioParameters audio_params(
       media::AudioParameters::Format::AUDIO_PCM_LOW_LATENCY,
-      media::CHANNEL_LAYOUT_MONO, sample_rate, bits_per_sample,
-      frames_per_buffer);
+      media::CHANNEL_LAYOUT_MONO, sample_rate, frames_per_buffer);
 
   const std::string encoded_data("abcdefghijklmnopqrstuvwxyz");
 
@@ -288,12 +286,10 @@ TEST_P(WebmMuxerTest, VideoIsStoredWhileWaitingForAudio) {
   }
 
   const int sample_rate = 48000;
-  const int bits_per_sample = 16;
   const int frames_per_buffer = 480;
   media::AudioParameters audio_params(
       media::AudioParameters::Format::AUDIO_PCM_LOW_LATENCY,
-      media::CHANNEL_LAYOUT_MONO, sample_rate, bits_per_sample,
-      frames_per_buffer);
+      media::CHANNEL_LAYOUT_MONO, sample_rate, frames_per_buffer);
   const std::string encoded_audio("thisisanencodedaudiopacket");
 
   // Force one libwebm error and verify OnEncodedAudio() fails.

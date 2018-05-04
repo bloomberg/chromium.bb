@@ -47,10 +47,6 @@ PulseAudioOutputStream::PulseAudioOutputStream(const AudioParameters& params,
     : params_(AudioParameters(params.format(),
                               params.channel_layout(),
                               params.sample_rate(),
-                              // Ignore the given bits per sample. We
-                              // want 32 because we're outputting
-                              // floats.
-                              32,
                               params.frames_per_buffer())),
       device_id_(device_id),
       manager_(manager),
@@ -58,7 +54,8 @@ PulseAudioOutputStream::PulseAudioOutputStream(const AudioParameters& params,
       pa_mainloop_(NULL),
       pa_stream_(NULL),
       volume_(1.0f),
-      source_callback_(NULL) {
+      source_callback_(NULL),
+      buffer_size_(params_.GetBytesPerBuffer(kSampleFormatF32)) {
   CHECK(params_.IsValid());
   audio_bus_ = AudioBus::Create(params_);
 }
@@ -131,7 +128,7 @@ void PulseAudioOutputStream::FulfillWriteRequest(size_t requested_bytes) {
   int bytes_remaining = requested_bytes;
   while (bytes_remaining > 0) {
     void* pa_buffer = nullptr;
-    size_t pa_buffer_size = params_.GetBytesPerBuffer();
+    size_t pa_buffer_size = buffer_size_;
     CHECK_GE(pa_stream_begin_write(pa_stream_, &pa_buffer, &pa_buffer_size), 0);
 
     if (!source_callback_) {
@@ -155,7 +152,7 @@ void PulseAudioOutputStream::FulfillWriteRequest(size_t requested_bytes) {
 
     audio_bus_->Scale(volume_);
 
-    size_t frame_size = params_.GetBytesPerBuffer() / unwritten_frames_in_bus;
+    size_t frame_size = buffer_size_ / unwritten_frames_in_bus;
     size_t frames_to_copy = pa_buffer_size / frame_size;
     size_t frame_offset_in_bus = 0;
     do {

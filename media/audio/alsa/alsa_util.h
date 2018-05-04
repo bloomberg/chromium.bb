@@ -14,8 +14,6 @@ class AlsaWrapper;
 
 namespace alsa_util {
 
-snd_pcm_format_t BitsToFormat(int bits_per_sample);
-
 snd_pcm_t* OpenCaptureDevice(media::AlsaWrapper* wrapper,
                              const char* device_name,
                              int channels,

@@ -199,7 +199,6 @@ class CastAudioOutputStreamTest : public ::testing::Test {
         format_(::media::AudioParameters::AUDIO_PCM_LINEAR),
         channel_layout_(::media::CHANNEL_LAYOUT_MONO),
         sample_rate_(::media::AudioParameters::kAudioCDSampleRate),
-        bits_per_sample_(16),
         frames_per_buffer_(256) {}
   ~CastAudioOutputStreamTest() override {}
 
@@ -222,7 +221,7 @@ class CastAudioOutputStreamTest : public ::testing::Test {
 
   ::media::AudioParameters GetAudioParams() {
     return ::media::AudioParameters(format_, channel_layout_, sample_rate_,
-                                    bits_per_sample_, frames_per_buffer_);
+                                    frames_per_buffer_);
   }
 
   FakeCmaBackend* GetBackend() { return media_pipeline_backend_; }
@@ -259,7 +258,6 @@ class CastAudioOutputStreamTest : public ::testing::Test {
   ::media::AudioParameters::Format format_;
   ::media::ChannelLayout channel_layout_;
   int sample_rate_;
-  int bits_per_sample_;
   int frames_per_buffer_;
 };
 
@@ -317,20 +315,6 @@ TEST_F(CastAudioOutputStreamTest, SampleRate) {
   stream->Close();
 }
 
-TEST_F(CastAudioOutputStreamTest, BitsPerSample) {
-  bits_per_sample_ = 16;
-  ::media::AudioOutputStream* stream = CreateStream();
-  ASSERT_TRUE(stream);
-  EXPECT_TRUE(stream->Open());
-
-  FakeAudioDecoder* audio_decoder = GetAudio();
-  ASSERT_TRUE(audio_decoder);
-  const AudioConfig& audio_config = audio_decoder->config();
-  EXPECT_EQ(bits_per_sample_ / 8, audio_config.bytes_per_channel);
-
-  stream->Close();
-}
-
 TEST_F(CastAudioOutputStreamTest, DeviceState) {
   ::media::AudioOutputStream* stream = CreateStream();
   ASSERT_TRUE(stream);
@@ -383,7 +367,7 @@ TEST_F(CastAudioOutputStreamTest, PushFrame) {
   // Verify decoder buffer.
   ::media::AudioParameters audio_params = GetAudioParams();
   const size_t expected_frame_size =
-      static_cast<size_t>(audio_params.GetBytesPerBuffer());
+      audio_params.GetBytesPerBuffer(::media::kSampleFormatS16);
   const DecoderBufferBase* buffer = audio_decoder->last_buffer();
   EXPECT_TRUE(buffer->data());
   EXPECT_EQ(expected_frame_size, buffer->data_size());

@@ -101,7 +101,6 @@ PlatformAudioInputHost::PlatformAudioInputHost() : weak_factory_(this) {
       media::AudioParameters(media::AudioParameters::AUDIO_PCM_LINEAR,
                              media::CHANNEL_LAYOUT_STEREO,
                              16000 /* 16000 frames per second */,
-                             32 /* 32 bits per frame */,
                              1600 /* 1600 (16000 / 10) frames per buffer */),
       "default" /* device_id */, false /* agc_is_enabled */);
 }

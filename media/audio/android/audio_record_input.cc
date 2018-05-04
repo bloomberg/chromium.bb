@@ -13,6 +13,8 @@ using base::android::JavaParamRef;
 
 namespace media {
 
+constexpr SampleFormat kSampleFormat = kSampleFormatS16;
+
 AudioRecordInputStream::AudioRecordInputStream(
     AudioManagerAndroid* audio_manager,
     const AudioParameters& params)
@@ -20,18 +22,14 @@ AudioRecordInputStream::AudioRecordInputStream(
       callback_(NULL),
       direct_buffer_address_(NULL),
       audio_bus_(media::AudioBus::Create(params)),
-      bytes_per_sample_(params.bits_per_sample() / 8) {
+      bytes_per_sample_(SampleFormatToBytesPerChannel(kSampleFormat)) {
   DVLOG(2) << __PRETTY_FUNCTION__;
   DCHECK(params.IsValid());
-  j_audio_record_.Reset(
-      Java_AudioRecordInput_createAudioRecordInput(
-          base::android::AttachCurrentThread(),
-          reinterpret_cast<intptr_t>(this),
-          params.sample_rate(),
-          params.channels(),
-          params.bits_per_sample(),
-          params.GetBytesPerBuffer(),
-          params.effects() & AudioParameters::ECHO_CANCELLER));
+  j_audio_record_.Reset(Java_AudioRecordInput_createAudioRecordInput(
+      base::android::AttachCurrentThread(), reinterpret_cast<intptr_t>(this),
+      params.sample_rate(), params.channels(), bytes_per_sample_ * 8,
+      params.GetBytesPerBuffer(kSampleFormat),
+      params.effects() & AudioParameters::ECHO_CANCELLER));
 }
 
 AudioRecordInputStream::~AudioRecordInputStream() {

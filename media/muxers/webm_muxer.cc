@@ -293,7 +293,9 @@ void WebmMuxer::AddAudioTrack(const media::AudioParameters& params) {
   DCHECK(audio_track);
   DCHECK_EQ(params.sample_rate(), audio_track->sample_rate());
   DCHECK_EQ(params.channels(), static_cast<int>(audio_track->channels()));
-  audio_track->set_bit_depth(static_cast<uint64_t>(params.bits_per_sample()));
+
+  // Audio data is always pcm_f32le.
+  audio_track->set_bit_depth(32u);
 
   if (audio_codec_ == kCodecOpus) {
     audio_track->set_codec_id(mkvmuxer::Tracks::kOpusCodecId);
@@ -308,8 +310,6 @@ void WebmMuxer::AddAudioTrack(const media::AudioParameters& params) {
     // http://www.webmproject.org/docs/container/#muxer-guidelines
     DCHECK_EQ(1000000ull, segment_.GetSegmentInfo()->timecode_scale());
   } else if (audio_codec_ == kCodecPCM) {
-    DCHECK_EQ(static_cast<uint64_t>(params.bits_per_sample()),
-              audio_track->bit_depth());
     audio_track->set_codec_id(kPcmCodecId);
   }
 }

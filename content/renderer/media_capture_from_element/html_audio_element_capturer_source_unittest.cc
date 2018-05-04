@@ -102,7 +102,7 @@ class HTMLAudioElementCapturerSourceTest : public testing::Test {
     const media::AudioParameters params(
         media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
         media::GuessChannelLayout(kNumChannelsForTest),
-        kAudioTrackSampleRate /* sample_rate */, 16 /* bits_per_sample */,
+        kAudioTrackSampleRate /* sample_rate */,
         kAudioTrackSamplesPerBuffer /* frames_per_buffer */);
     audio_source_->Initialize(params, &fake_callback_);
 

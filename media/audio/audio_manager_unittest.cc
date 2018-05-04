@@ -218,7 +218,7 @@ class AudioManagerTest : public ::testing::Test {
  public:
   void HandleDefaultDeviceIDsTest() {
     AudioParameters params(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                           CHANNEL_LAYOUT_STEREO, 48000, 16, 2048);
+                           CHANNEL_LAYOUT_STEREO, 48000, 2048);
 
     // Create a stream with the default device id "".
     AudioOutputStream* stream =

@@ -366,11 +366,7 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStreamProxy(
       // output device based on the input parameters.  This may happen if the OS
       // provided us junk values for the hardware configuration.
       LOG(ERROR) << "Invalid audio output parameters received; using fake "
-                 << "audio path. Channels: " << output_params.channels() << ", "
-                 << "Sample Rate: " << output_params.sample_rate() << ", "
-                 << "Bits Per Sample: " << output_params.bits_per_sample()
-                 << ", Frames Per Buffer: "
-                 << output_params.frames_per_buffer();
+                 << "audio path: " << output_params.AsHumanReadableString();
 
       // Tell the AudioManager to create a fake output device.
       output_params = params;

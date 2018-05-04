@@ -156,7 +156,7 @@ AudioParameters AudioManagerAndroid::GetInputStreamParameters(
     buffer_size = user_buffer_size;
 
   AudioParameters params(AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout,
-                         GetNativeOutputSampleRate(), 16, buffer_size);
+                         GetNativeOutputSampleRate(), buffer_size);
   params.set_effects(effects);
   return params;
 }
@@ -326,11 +326,9 @@ AudioParameters AudioManagerAndroid::GetPreferredOutputStreamParameters(
   ChannelLayout channel_layout = CHANNEL_LAYOUT_STEREO;
   int sample_rate = GetNativeOutputSampleRate();
   int buffer_size = GetOptimalOutputFrameSize(sample_rate, 2);
-  int bits_per_sample = 16;
   if (input_params.IsValid()) {
     // Use the client's input parameters if they are valid.
     sample_rate = input_params.sample_rate();
-    bits_per_sample = input_params.bits_per_sample();
 
     // Pre-Lollipop devices don't support > stereo OpenSLES output and the
     // AudioManager APIs for GetOptimalOutputFrameSize() don't support channel
@@ -359,7 +357,7 @@ AudioParameters AudioManagerAndroid::GetPreferredOutputStreamParameters(
     buffer_size = user_buffer_size;
 
   return AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout,
-                         sample_rate, bits_per_sample, buffer_size);
+                         sample_rate, buffer_size);
 }
 
 bool AudioManagerAndroid::HasNoAudioInputStreams() {

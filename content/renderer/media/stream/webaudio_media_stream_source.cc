@@ -45,7 +45,7 @@ void WebAudioMediaStreamSource::SetFormat(size_t number_of_channels,
   // I did not want to change behavior. http://crbug.com/577874
   fifo_.Reset(sample_rate / 100);
   media::AudioParameters params(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                                channel_layout, sample_rate, 16,
+                                channel_layout, sample_rate,
                                 fifo_.frames_per_buffer());
   // Take care of the discrete channel layout case.
   params.set_channels_for_discrete(number_of_channels);

@@ -107,7 +107,7 @@ class WebRtcAudioRendererTest : public testing::Test,
             : media::OUTPUT_DEVICE_STATUS_OK,
         media::AudioParameters(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                                media::CHANNEL_LAYOUT_STEREO,
-                               kHardwareSampleRate, 16, kHardwareBufferSize));
+                               kHardwareSampleRate, kHardwareBufferSize));
 
     if (device_id != kInvalidOutputDeviceId) {
       EXPECT_CALL(*mock_sink_.get(), Start());

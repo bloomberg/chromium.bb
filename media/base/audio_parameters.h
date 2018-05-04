@@ -18,6 +18,7 @@
 #include "media/base/audio_point.h"
 #include "media/base/channel_layout.h"
 #include "media/base/media_shmem_export.h"
+#include "media/base/sample_format.h"
 
 namespace media {
 
@@ -149,7 +150,6 @@ class MEDIA_SHMEM_EXPORT AudioParameters {
   AudioParameters(Format format,
                   ChannelLayout channel_layout,
                   int sample_rate,
-                  int bits_per_sample,
                   int frames_per_buffer);
 
   ~AudioParameters();
@@ -158,7 +158,6 @@ class MEDIA_SHMEM_EXPORT AudioParameters {
   void Reset(Format format,
              ChannelLayout channel_layout,
              int sample_rate,
-             int bits_per_sample,
              int frames_per_buffer);
 
   // Checks that all values are in the expected range. All limits are specified
@@ -169,14 +168,12 @@ class MEDIA_SHMEM_EXPORT AudioParameters {
   // output only.
   std::string AsHumanReadableString() const;
 
-  // Returns size of audio buffer in bytes.
-  int GetBytesPerBuffer() const;
+  // Returns size of audio buffer in bytes when using |fmt| for samples.
+  int GetBytesPerBuffer(SampleFormat fmt) const;
 
-  // Returns the number of bytes representing one second of audio.
-  int GetBytesPerSecond() const;
-
-  // Returns the number of bytes representing a frame of audio.
-  int GetBytesPerFrame() const;
+  // Returns the number of bytes representing a frame of audio when using |fmt|
+  // for samples.
+  int GetBytesPerFrame(SampleFormat fmt) const;
 
   // Returns the number of microseconds per frame of audio. Intentionally
   // reported as a double to surface of partial microseconds per frame, which
@@ -212,11 +209,6 @@ class MEDIA_SHMEM_EXPORT AudioParameters {
   void set_sample_rate(int sample_rate) { sample_rate_ = sample_rate; }
   int sample_rate() const { return sample_rate_; }
 
-  void set_bits_per_sample(int bits_per_sample) {
-    bits_per_sample_ = bits_per_sample;
-  }
-  int bits_per_sample() const { return bits_per_sample_; }
-
   void set_frames_per_buffer(int frames_per_buffer) {
     frames_per_buffer_ = frames_per_buffer;
   }
@@ -247,7 +239,6 @@ class MEDIA_SHMEM_EXPORT AudioParameters {
   int channels_;                  // Number of channels. Value set based on
                                   // |channel_layout|.
   int sample_rate_;               // Sampling frequency/rate.
-  int bits_per_sample_;           // Number of bits per sample.
   int frames_per_buffer_;         // Number of frames in a buffer.
   int effects_;                   // Bitmask using PlatformEffectsMask.
 
@@ -277,8 +268,6 @@ inline bool operator<(const AudioParameters& a, const AudioParameters& b) {
     return a.channels() < b.channels();
   if (a.sample_rate() != b.sample_rate())
     return a.sample_rate() < b.sample_rate();
-  if (a.bits_per_sample() != b.bits_per_sample())
-    return a.bits_per_sample() < b.bits_per_sample();
   return a.frames_per_buffer() < b.frames_per_buffer();
 }
 

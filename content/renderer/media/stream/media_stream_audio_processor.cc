@@ -740,7 +740,6 @@ void MediaStreamAudioProcessor::InitializeCaptureFifo(
       media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
       output_channel_layout,
       output_sample_rate,
-      16,
       output_frames);
 
   capture_fifo_.reset(

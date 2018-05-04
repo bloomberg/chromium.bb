@@ -28,7 +28,6 @@ namespace media {
 namespace {
 
 const int kSampleRate = AudioParameters::kAudioCDSampleRate;
-const int kBitsPerSample = 16;
 const ChannelLayout kChannelLayout = CHANNEL_LAYOUT_STEREO;
 const int kSamplesPerPacket = kSampleRate / 10;
 
@@ -120,7 +119,6 @@ class AudioInputControllerTest : public testing::TestWithParam<bool> {
         params_(AudioParameters::AUDIO_FAKE,
                 kChannelLayout,
                 kSampleRate,
-                kBitsPerSample,
                 kSamplesPerPacket) {}
 
   ~AudioInputControllerTest() override {

@@ -405,11 +405,6 @@ HRESULT GetPreferredAudioParametersInternal(IAudioClient* client,
   // Preferred sample rate.
   int sample_rate = mix_format.Format.nSamplesPerSec;
 
-  // TODO(henrika): possibly use format.Format.wBitsPerSample here instead.
-  // We use a hard-coded value of 16 bits per sample today even if most audio
-  // engines does the actual mixing in 32 bits per sample.
-  int bits_per_sample = 16;
-
   // We are using the native device period to derive the smallest possible
   // buffer size in shared mode. Note that the actual endpoint buffer will be
   // larger than this size but it will be possible to fill it up in two calls.
@@ -420,8 +415,7 @@ HRESULT GetPreferredAudioParametersInternal(IAudioClient* client,
       0.5);
 
   AudioParameters audio_params(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                               channel_layout, sample_rate, bits_per_sample,
-                               frames_per_buffer);
+                               channel_layout, sample_rate, frames_per_buffer);
   *params = audio_params;
   DVLOG(1) << params->AsHumanReadableString();
 
@@ -793,8 +787,7 @@ HRESULT CoreAudioUtil::GetPreferredAudioParameters(const std::string& device_id,
   // need to do the same thing?
   if (params->channels() != 1) {
     params->Reset(params->format(), CHANNEL_LAYOUT_STEREO,
-                  params->sample_rate(), params->bits_per_sample(),
-                  params->frames_per_buffer());
+                  params->sample_rate(), params->frames_per_buffer());
   }
 
   return hr;

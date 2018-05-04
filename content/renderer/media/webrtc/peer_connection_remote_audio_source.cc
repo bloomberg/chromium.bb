@@ -142,7 +142,7 @@ void PeerConnectionRemoteAudioSource::OnData(const void* audio_data,
     MediaStreamAudioSource::SetFormat(
         media::AudioParameters(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                                media::GuessChannelLayout(number_of_channels),
-                               sample_rate, bits_per_sample, number_of_frames));
+                               sample_rate, number_of_frames));
   }
 
   MediaStreamAudioSource::DeliverDataToTracks(*audio_bus_, playout_time);

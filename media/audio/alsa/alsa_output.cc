@@ -132,6 +132,9 @@ std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
+static const SampleFormat kSampleFormat = kSampleFormatS16;
+static const snd_pcm_format_t kAlsaSampleFormat = SND_PCM_FORMAT_S16;
+
 const char AlsaPcmOutputStream::kDefaultDevice[] = "default";
 const char AlsaPcmOutputStream::kAutoSelectDevice[] = "";
 const char AlsaPcmOutputStream::kPlugPrefix[] = "plug:";
@@ -145,13 +148,13 @@ AlsaPcmOutputStream::AlsaPcmOutputStream(const std::string& device_name,
                                          AlsaWrapper* wrapper,
                                          AudioManagerBase* manager)
     : requested_device_name_(device_name),
-      pcm_format_(alsa_util::BitsToFormat(params.bits_per_sample())),
+      pcm_format_(kAlsaSampleFormat),
       channels_(params.channels()),
       channel_layout_(params.channel_layout()),
       sample_rate_(params.sample_rate()),
-      bytes_per_sample_(params.bits_per_sample() / 8),
-      bytes_per_frame_(params.GetBytesPerFrame()),
-      packet_size_(params.GetBytesPerBuffer()),
+      bytes_per_sample_(SampleFormatToBytesPerChannel(kSampleFormat)),
+      bytes_per_frame_(params.GetBytesPerFrame(kSampleFormat)),
+      packet_size_(params.GetBytesPerBuffer(kSampleFormat)),
       latency_(std::max(
           base::TimeDelta::FromMicroseconds(kMinLatencyMicros),
           AudioTimestampHelper::FramesToTime(params.frames_per_buffer() * 2,
@@ -176,11 +179,6 @@ AlsaPcmOutputStream::AlsaPcmOutputStream(const std::string& device_name,
   // Sanity check input values.
   if (!params.IsValid()) {
     LOG(WARNING) << "Unsupported audio parameters.";
-    TransitionTo(kInError);
-  }
-
-  if (pcm_format_ == SND_PCM_FORMAT_UNKNOWN) {
-    LOG(WARNING) << "Unsupported bits per sample: " << params.bits_per_sample();
     TransitionTo(kInError);
   }
 }
@@ -418,8 +416,8 @@ void AlsaPcmOutputStream::BufferPacket(bool* source_exhausted) {
     // Note: If this ever changes to output raw float the data must be clipped
     // and sanitized since it may come from an untrusted source such as NaCl.
     output_bus->Scale(volume_);
-    output_bus->ToInterleaved(
-        frames_filled, bytes_per_sample_, packet->writable_data());
+    output_bus->ToInterleaved<SignedInt16SampleTypeTraits>(
+        frames_filled, reinterpret_cast<int16_t*>(packet->writable_data()));
 
     if (packet_size > 0) {
       packet->set_data_size(packet_size);

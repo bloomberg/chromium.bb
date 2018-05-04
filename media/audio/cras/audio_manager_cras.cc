@@ -179,7 +179,7 @@ AudioParameters AudioManagerCras::GetInputStreamParameters(
   // TODO(hshi): Fine-tune audio parameters based on |device_id|. The optimal
   // parameters for the loopback stream may differ from the default.
   AudioParameters params(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                         CHANNEL_LAYOUT_STEREO, kDefaultSampleRate, 16,
+                         CHANNEL_LAYOUT_STEREO, kDefaultSampleRate,
                          buffer_size);
   chromeos::AudioDeviceList devices;
   GetAudioDevices(&devices);
@@ -316,10 +316,8 @@ AudioParameters AudioManagerCras::GetPreferredOutputStreamParameters(
   ChannelLayout channel_layout = CHANNEL_LAYOUT_STEREO;
   int sample_rate = kDefaultSampleRate;
   int buffer_size = GetDefaultOutputBufferSizePerBoard();
-  int bits_per_sample = 16;
   if (input_params.IsValid()) {
     sample_rate = input_params.sample_rate();
-    bits_per_sample = input_params.bits_per_sample();
     channel_layout = input_params.channel_layout();
     buffer_size =
         std::min(static_cast<int>(limits::kMaxAudioBufferSize),
@@ -332,7 +330,7 @@ AudioParameters AudioManagerCras::GetPreferredOutputStreamParameters(
     buffer_size = user_buffer_size;
 
   return AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout,
-                         sample_rate, bits_per_sample, buffer_size);
+                         sample_rate, buffer_size);
 }
 
 AudioOutputStream* AudioManagerCras::MakeOutputStream(
@@ -344,21 +342,6 @@ AudioOutputStream* AudioManagerCras::MakeOutputStream(
 AudioInputStream* AudioManagerCras::MakeInputStream(
     const AudioParameters& params, const std::string& device_id) {
   return new CrasInputStream(params, this, device_id);
-}
-
-snd_pcm_format_t AudioManagerCras::BitsToFormat(int bits_per_sample) {
-  switch (bits_per_sample) {
-    case 8:
-      return SND_PCM_FORMAT_U8;
-    case 16:
-      return SND_PCM_FORMAT_S16;
-    case 24:
-      return SND_PCM_FORMAT_S24;
-    case 32:
-      return SND_PCM_FORMAT_S32;
-    default:
-      return SND_PCM_FORMAT_UNKNOWN;
-  }
 }
 
 bool AudioManagerCras::IsDefault(const std::string& device_id, bool is_input) {

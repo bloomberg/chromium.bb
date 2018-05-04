@@ -22,7 +22,6 @@ class SilentSinkSuspenderTest : public testing::Test {
       : params_(AudioParameters::AUDIO_FAKE,
                 CHANNEL_LAYOUT_MONO,
                 44100,
-                8,
                 128),
         mock_sink_(new testing::StrictMock<MockAudioRendererSink>()),
         fake_callback_(0.1, params_.sample_rate()),

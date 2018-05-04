@@ -36,7 +36,7 @@ using testing::StrictMock;
 ::media::AudioParameters GetAudioParams() {
   return ::media::AudioParameters(
       ::media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-      ::media::CHANNEL_LAYOUT_STEREO, 48000, 16, 1024);
+      ::media::CHANNEL_LAYOUT_STEREO, 48000, 1024);
 }
 
 // Mock implementations

@@ -62,13 +62,6 @@ bool CrasInputStream::Open() {
     return false;
   }
 
-  snd_pcm_format_t pcm_format =
-      AudioManagerCras::BitsToFormat(params_.bits_per_sample());
-  if (pcm_format == SND_PCM_FORMAT_UNKNOWN) {
-    DLOG(WARNING) << "Unsupported bits/sample: " << params_.bits_per_sample();
-    return false;
-  }
-
   // Create the client and connect to the CRAS server.
   if (cras_client_create(&client_) < 0) {
     DLOG(WARNING) << "Couldn't create CRAS client.\n";
@@ -161,9 +154,7 @@ void CrasInputStream::Start(AudioInputCallback* callback) {
   // Prepare |audio_format| and |stream_params| for the stream we
   // will create.
   cras_audio_format* audio_format = cras_audio_format_create(
-      AudioManagerCras::BitsToFormat(params_.bits_per_sample()),
-      params_.sample_rate(),
-      params_.channels());
+      SND_PCM_FORMAT_S16, params_.sample_rate(), params_.channels());
   if (!audio_format) {
     DLOG(WARNING) << "Error setting up audio parameters.";
     callback_->OnError();
@@ -300,8 +291,8 @@ void CrasInputStream::ReadAudio(size_t frames,
   DCHECK_EQ(base::TimeTicks::GetClock(),
             base::TimeTicks::Clock::LINUX_CLOCK_MONOTONIC);
 
-  audio_bus_->FromInterleaved(buffer, audio_bus_->frames(),
-                              params_.bits_per_sample() / 8);
+  audio_bus_->FromInterleaved<SignedInt16SampleTypeTraits>(
+      reinterpret_cast<int16_t*>(buffer), audio_bus_->frames());
   callback_->OnData(audio_bus_.get(), capture_time, normalized_volume);
 }
 

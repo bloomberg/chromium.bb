@@ -37,12 +37,6 @@ class AudioRendererSinkCache;
 //
 // There should only be one instance of AudioRendererMixerManager per render
 // thread.
-//
-// TODO(dalecurtis): Right now we require AudioParameters to be an exact match
-// when we should be able to ignore bits per channel since we're only dealing
-// with floats.  However, bits per channel is currently used to interleave the
-// audio data by AudioOutputDevice::AudioThreadCallback::Process for consumption
-// via the shared memory.  See http://crbug.com/114700.
 class CONTENT_EXPORT AudioRendererMixerManager
     : public media::AudioRendererMixerPool {
  public:
@@ -102,7 +96,7 @@ class CONTENT_EXPORT AudioRendererMixerManager
   };
 
   // Custom compare operator for the AudioRendererMixerMap.  Allows reuse of
-  // mixers where only irrelevant keys mismatch; e.g., effects, bits per sample.
+  // mixers where only irrelevant keys mismatch.
   struct MixerKeyCompare {
     bool operator()(const MixerKey& a, const MixerKey& b) const {
       if (a.source_render_frame_id != b.source_render_frame_id)
@@ -117,9 +111,9 @@ class CONTENT_EXPORT AudioRendererMixerManager
       // adding support for it.
       DCHECK_NE(media::AudioLatency::LATENCY_EXACT_MS, a.latency);
 
-      // Ignore effects(), bits_per_sample(), format(), and frames_per_buffer(),
-      // these parameters do not affect mixer reuse.  All AudioRendererMixer
-      // units disable FIFO, so frames_per_buffer() can be safely ignored.
+      // Ignore effects(), format(), and frames_per_buffer(), these parameters
+      // do not affect mixer reuse.  All AudioRendererMixer units disable FIFO,
+      // so frames_per_buffer() can be safely ignored.
       if (a.params.channel_layout() != b.params.channel_layout())
         return a.params.channel_layout() < b.params.channel_layout();
 

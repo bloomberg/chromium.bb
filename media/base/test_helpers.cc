@@ -203,7 +203,7 @@ AudioDecoderConfig TestAudioConfig::Normal() {
 // static
 AudioParameters TestAudioParameters::Normal() {
   return AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                         CHANNEL_LAYOUT_STEREO, 48000, 16, 2048);
+                         CHANNEL_LAYOUT_STEREO, 48000, 2048);
 }
 
 template <class T>

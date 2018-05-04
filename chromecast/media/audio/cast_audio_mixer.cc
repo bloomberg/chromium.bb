@@ -13,7 +13,6 @@
 #include "media/base/channel_layout.h"
 
 namespace {
-const int kBitsPerSample = 16;
 const int kFramesPerBuffer = 1024;
 const int kSampleRate = 48000;
 }  // namespace
@@ -184,8 +183,7 @@ CastAudioMixer::CastAudioMixer(CastAudioManager* audio_manager)
     : audio_manager_(audio_manager), error_(false), output_stream_(nullptr) {
   output_params_ = ::media::AudioParameters(
       ::media::AudioParameters::Format::AUDIO_PCM_LOW_LATENCY,
-      ::media::CHANNEL_LAYOUT_STEREO, kSampleRate, kBitsPerSample,
-      kFramesPerBuffer);
+      ::media::CHANNEL_LAYOUT_STEREO, kSampleRate, kFramesPerBuffer);
   mixer_.reset(
       new ::media::AudioConverter(output_params_, output_params_, false));
   DETACH_FROM_THREAD(audio_thread_checker_);

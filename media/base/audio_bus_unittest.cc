@@ -139,7 +139,7 @@ TEST_F(AudioBusTest, Create) {
 TEST_F(AudioBusTest, CreateUsingAudioParameters) {
   std::unique_ptr<AudioBus> bus = AudioBus::Create(
       AudioParameters(AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout,
-                      kSampleRate, 32, kFrameCount));
+                      kSampleRate, kFrameCount));
   VerifyChannelAndFrameCount(bus.get());
   VerifyReadWriteAndAlignment(bus.get());
 }
@@ -176,9 +176,8 @@ TEST_F(AudioBusTest, WrapVector) {
 
 // Verify an AudioBus created via wrapping a memory block works as advertised.
 TEST_F(AudioBusTest, WrapMemory) {
-  AudioParameters params(
-      AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout, kSampleRate, 32,
-      kFrameCount);
+  AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout,
+                         kSampleRate, kFrameCount);
   int data_size = AudioBus::CalculateMemorySize(params);
   std::unique_ptr<float, base::AlignedFreeDeleter> data(static_cast<float*>(
       base::AlignedAlloc(data_size, AudioBus::kChannelAlignment)));
@@ -205,9 +204,8 @@ TEST_F(AudioBusTest, WrapMemory) {
 TEST_F(AudioBusTest, CopyTo) {
   // Create one bus with AudioParameters and the other through direct values to
   // test for parity between the Create() functions.
-  AudioParameters params(
-      AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout, kSampleRate, 32,
-      kFrameCount);
+  AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout,
+                         kSampleRate, kFrameCount);
   std::unique_ptr<AudioBus> bus1 = AudioBus::Create(kChannels, kFrameCount);
   std::unique_ptr<AudioBus> bus2 = AudioBus::Create(params);
 

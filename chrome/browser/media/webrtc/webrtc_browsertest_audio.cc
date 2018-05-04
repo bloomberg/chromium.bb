@@ -82,8 +82,7 @@ float ComputeAudioEnergyForWavFile(const base::FilePath& wav_filename,
   file_parameters->Reset(
       media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
       media::GuessChannelLayout(wav_audio_handler->num_channels()),
-      wav_audio_handler->sample_rate(), wav_audio_handler->bits_per_sample(),
-      wav_audio_handler->total_frames());
+      wav_audio_handler->sample_rate(), wav_audio_handler->total_frames());
   file_parameters->set_channels_for_discrete(wav_audio_handler->num_channels());
 
   return power_monitor.ReadCurrentPowerAndClip().first;

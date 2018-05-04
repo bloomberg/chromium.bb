@@ -21,7 +21,6 @@ ExternalMediaStreamAudioSource::ExternalMediaStreamAudioSource(
   MediaStreamAudioSource::SetFormat(media::AudioParameters(
       media::AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout,
       sample_rate,
-      16,  // Legacy parameter (data is always in 32-bit float format).
       frames_per_buffer));
 }
 

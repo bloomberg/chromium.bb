@@ -24,7 +24,6 @@
 namespace content {
 
 namespace {
-const int kBitsPerChannel = 16;
 const int kSampleRate = 48000;
 const int kBufferSize = 8192;
 const int kHardwareSampleRate = 44100;
@@ -97,7 +96,6 @@ class AudioRendererMixerManagerTest : public testing::Test {
             AudioParameters(AudioParameters::AUDIO_PCM_LINEAR,
                             kChannelLayout,
                             kHardwareSampleRate,
-                            kBitsPerChannel,
                             kHardwareBufferSize))),
         mock_sink_no_device_(new media::MockAudioRendererSink(
             kNonexistentDeviceId,
@@ -174,8 +172,7 @@ TEST_F(AudioRendererMixerManagerTest, GetReturnMixer) {
   EXPECT_EQ(0, mixer_count());
 
   media::AudioParameters params1(media::AudioParameters::AUDIO_PCM_LINEAR,
-                                 kChannelLayout, kSampleRate, kBitsPerChannel,
-                                 kBufferSize);
+                                 kChannelLayout, kSampleRate, kBufferSize);
 
   media::AudioRendererMixer* mixer1 =
       GetMixer(kRenderFrameId, params1, AudioLatency::LATENCY_PLAYBACK,
@@ -193,9 +190,9 @@ TEST_F(AudioRendererMixerManagerTest, GetReturnMixer) {
   ReturnMixer(mixer1);
   EXPECT_EQ(1, mixer_count());
 
-  media::AudioParameters params2(
-      AudioParameters::AUDIO_PCM_LINEAR, kAnotherChannelLayout, kSampleRate * 2,
-      kBitsPerChannel, kBufferSize * 2);
+  media::AudioParameters params2(AudioParameters::AUDIO_PCM_LINEAR,
+                                 kAnotherChannelLayout, kSampleRate * 2,
+                                 kBufferSize * 2);
   media::AudioRendererMixer* mixer2 =
       GetMixer(kRenderFrameId, params2, AudioLatency::LATENCY_PLAYBACK,
                kDefaultDeviceId, nullptr);
@@ -225,7 +222,6 @@ TEST_F(AudioRendererMixerManagerTest, MixerReuse) {
   media::AudioParameters params1(AudioParameters::AUDIO_PCM_LINEAR,
                                  kChannelLayout,
                                  kSampleRate,
-                                 kBitsPerChannel,
                                  kBufferSize);
   media::AudioRendererMixer* mixer1 =
       GetMixer(kRenderFrameId, params1, AudioLatency::LATENCY_PLAYBACK,
@@ -238,7 +234,6 @@ TEST_F(AudioRendererMixerManagerTest, MixerReuse) {
   media::AudioParameters params2(AudioParameters::AUDIO_PCM_LOW_LATENCY,
                                  kChannelLayout,
                                  kSampleRate * 2,
-                                 kBitsPerChannel * 2,
                                  kBufferSize * 2);
   media::AudioRendererMixer* mixer2 =
       GetMixer(kRenderFrameId, params2, AudioLatency::LATENCY_PLAYBACK,
@@ -252,7 +247,6 @@ TEST_F(AudioRendererMixerManagerTest, MixerReuse) {
   media::AudioParameters params3(AudioParameters::AUDIO_PCM_LOW_LATENCY,
                                  kAnotherChannelLayout,
                                  kSampleRate,
-                                 kBitsPerChannel,
                                  kBufferSize);
   ASSERT_NE(params3.channel_layout(), params1.channel_layout());
   media::AudioRendererMixer* mixer3 =
@@ -281,9 +275,8 @@ TEST_F(AudioRendererMixerManagerTest, CreateInput) {
   // We expect 2 mixers to be created; each of them should release the sink.
   EXPECT_CALL(*this, ReleaseSinkPtr(mock_sink_.get())).Times(2);
 
-  media::AudioParameters params(
-      AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout, kSampleRate,
-      kBitsPerChannel, kBufferSize);
+  media::AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR,
+                                kChannelLayout, kSampleRate, kBufferSize);
 
   // Create two mixer inputs and ensure this doesn't instantiate any mixers yet.
   EXPECT_EQ(0, mixer_count());
@@ -334,8 +327,7 @@ TEST_F(AudioRendererMixerManagerTest, CreateInputWithSessionId) {
   EXPECT_CALL(*this, ReleaseSinkPtr(mock_sink_matched_device_.get())).Times(1);
 
   media::AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR,
-                                kChannelLayout, kSampleRate, kBitsPerChannel,
-                                kBufferSize);
+                                kChannelLayout, kSampleRate, kBufferSize);
   media::FakeAudioRenderCallback callback(0, kSampleRate);
   EXPECT_EQ(0, mixer_count());
 
@@ -409,8 +401,7 @@ TEST_F(AudioRendererMixerManagerTest, MixerDevices) {
   EXPECT_CALL(*this, ReleaseSinkPtr(mock_sink_.get())).Times(2);
 
   media::AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR,
-                                kChannelLayout, kSampleRate, kBitsPerChannel,
-                                kBufferSize);
+                                kChannelLayout, kSampleRate, kBufferSize);
   media::AudioRendererMixer* mixer1 =
       GetMixer(kRenderFrameId, params, AudioLatency::LATENCY_PLAYBACK,
                kDefaultDeviceId, nullptr);
@@ -441,8 +432,7 @@ TEST_F(AudioRendererMixerManagerTest, OneMixerDifferentDefaultDeviceIDs) {
   EXPECT_CALL(*this, ReleaseSinkPtr(mock_sink_.get())).Times(1);
 
   media::AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR,
-                                kChannelLayout, kSampleRate, kBitsPerChannel,
-                                kBufferSize);
+                                kChannelLayout, kSampleRate, kBufferSize);
   media::AudioRendererMixer* mixer1 =
       GetMixer(kRenderFrameId, params, AudioLatency::LATENCY_PLAYBACK,
                kDefaultDeviceId, nullptr);
@@ -471,8 +461,7 @@ TEST_F(AudioRendererMixerManagerTest, NonexistentDevice) {
   EXPECT_CALL(*this, ReleaseSinkPtr(mock_sink_no_device_.get())).Times(1);
 
   media::AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR,
-                                kChannelLayout, kSampleRate, kBitsPerChannel,
-                                kBufferSize);
+                                kChannelLayout, kSampleRate, kBufferSize);
   media::OutputDeviceStatus device_status = media::OUTPUT_DEVICE_STATUS_OK;
 
   media::AudioRendererMixer* mixer =
@@ -494,8 +483,7 @@ TEST_F(AudioRendererMixerManagerTest, LatencyMixing) {
   EXPECT_EQ(0, mixer_count());
 
   media::AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR,
-                                kChannelLayout, kSampleRate, kBitsPerChannel,
-                                kBufferSize);
+                                kChannelLayout, kSampleRate, kBufferSize);
   media::AudioRendererMixer* mixer1 =
       GetMixer(kRenderFrameId, params, AudioLatency::LATENCY_PLAYBACK,
                kDefaultDeviceId, nullptr);
@@ -564,7 +552,7 @@ TEST_F(AudioRendererMixerManagerTest, MixerParamsLatencyPlayback) {
   EXPECT_CALL(*this, ReleaseSinkPtr(mock_sink_.get())).Times(1);
 
   media::AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR,
-                                kChannelLayout, 32000, kBitsPerChannel, 512);
+                                kChannelLayout, 32000, 512);
   params.set_latency_tag(AudioLatency::LATENCY_PLAYBACK);
 
   media::AudioRendererMixer* mixer = GetMixer(
@@ -600,14 +588,14 @@ TEST_F(AudioRendererMixerManagerTest,
   mock_sink_ = new media::MockAudioRendererSink(
       std::string(), media::OUTPUT_DEVICE_STATUS_OK,
       AudioParameters(AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout, 44100,
-                      kBitsPerChannel, 2048));
+                      2048));
 
   EXPECT_CALL(*mock_sink_.get(), Start()).Times(1);
   EXPECT_CALL(*mock_sink_.get(), Stop()).Times(1);
   EXPECT_CALL(*this, ReleaseSinkPtr(mock_sink_.get())).Times(1);
 
   media::AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR,
-                                kChannelLayout, 32000, kBitsPerChannel, 512);
+                                kChannelLayout, 32000, 512);
   params.set_latency_tag(AudioLatency::LATENCY_PLAYBACK);
 
   media::AudioRendererMixer* mixer = GetMixer(
@@ -634,14 +622,14 @@ TEST_F(AudioRendererMixerManagerTest, MixerParamsLatencyPlaybackFakeAudio) {
   mock_sink_ = new media::MockAudioRendererSink(
       std::string(), media::OUTPUT_DEVICE_STATUS_OK,
       AudioParameters(AudioParameters::AUDIO_FAKE, kChannelLayout, 44100,
-                      kBitsPerChannel, 2048));
+                      2048));
 
   EXPECT_CALL(*mock_sink_.get(), Start()).Times(1);
   EXPECT_CALL(*mock_sink_.get(), Stop()).Times(1);
   EXPECT_CALL(*this, ReleaseSinkPtr(mock_sink_.get())).Times(1);
 
   media::AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR,
-                                kChannelLayout, 32000, kBitsPerChannel, 512);
+                                kChannelLayout, 32000, 512);
 
   media::AudioRendererMixer* mixer =
       GetMixer(kRenderFrameId, params, AudioLatency::LATENCY_PLAYBACK,
@@ -677,7 +665,7 @@ TEST_F(AudioRendererMixerManagerTest, MixerParamsLatencyRtc) {
   EXPECT_CALL(*this, ReleaseSinkPtr(mock_sink_.get())).Times(1);
 
   media::AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR,
-                                kChannelLayout, 32000, kBitsPerChannel, 512);
+                                kChannelLayout, 32000, 512);
   params.set_latency_tag(AudioLatency::LATENCY_RTC);
 
   media::AudioRendererMixer* mixer = GetMixer(
@@ -712,15 +700,14 @@ TEST_F(AudioRendererMixerManagerTest, MixerParamsLatencyRtc) {
 TEST_F(AudioRendererMixerManagerTest, MixerParamsLatencyRtcFakeAudio) {
   mock_sink_ = new media::MockAudioRendererSink(
       std::string(), media::OUTPUT_DEVICE_STATUS_OK,
-      AudioParameters(AudioParameters::AUDIO_FAKE, kChannelLayout, 44100,
-                      kBitsPerChannel, 128));
+      AudioParameters(AudioParameters::AUDIO_FAKE, kChannelLayout, 44100, 128));
 
   EXPECT_CALL(*mock_sink_.get(), Start()).Times(1);
   EXPECT_CALL(*mock_sink_.get(), Stop()).Times(1);
   EXPECT_CALL(*this, ReleaseSinkPtr(mock_sink_.get())).Times(1);
 
   media::AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR,
-                                kChannelLayout, 32000, kBitsPerChannel, 512);
+                                kChannelLayout, 32000, 512);
 
   media::AudioRendererMixer* mixer =
       GetMixer(kRenderFrameId, params, AudioLatency::LATENCY_RTC,
@@ -752,7 +739,7 @@ TEST_F(AudioRendererMixerManagerTest, MixerParamsLatencyInteractive) {
   EXPECT_CALL(*this, ReleaseSinkPtr(mock_sink_.get())).Times(1);
 
   media::AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR,
-                                kChannelLayout, 32000, kBitsPerChannel, 512);
+                                kChannelLayout, 32000, 512);
   params.set_latency_tag(AudioLatency::LATENCY_INTERACTIVE);
 
   media::AudioRendererMixer* mixer = GetMixer(
@@ -778,14 +765,14 @@ TEST_F(AudioRendererMixerManagerTest, MixerParamsBitstreamFormat) {
   mock_sink_ = new media::MockAudioRendererSink(
       std::string(), media::OUTPUT_DEVICE_STATUS_OK,
       AudioParameters(AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout, 44100,
-                      kBitsPerChannel, 2048));
+                      2048));
 
   EXPECT_CALL(*mock_sink_.get(), Start()).Times(1);
   EXPECT_CALL(*mock_sink_.get(), Stop()).Times(1);
   EXPECT_CALL(*this, ReleaseSinkPtr(mock_sink_.get())).Times(1);
 
   media::AudioParameters params(AudioParameters::AUDIO_BITSTREAM_EAC3,
-                                kAnotherChannelLayout, 32000, 8, 512);
+                                kAnotherChannelLayout, 32000, 512);
   params.set_latency_tag(AudioLatency::LATENCY_PLAYBACK);
 
   media::AudioRendererMixer* mixer = GetMixer(
@@ -798,8 +785,6 @@ TEST_F(AudioRendererMixerManagerTest, MixerParamsBitstreamFormat) {
             mixer->GetOutputParamsForTesting().channel_layout());
   EXPECT_EQ(params.sample_rate(),
             mixer->GetOutputParamsForTesting().sample_rate());
-  EXPECT_EQ(params.bits_per_sample(),
-            mixer->GetOutputParamsForTesting().bits_per_sample());
   EXPECT_EQ(params.frames_per_buffer(),
             mixer->GetOutputParamsForTesting().frames_per_buffer());
 

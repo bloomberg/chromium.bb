@@ -39,19 +39,18 @@ OpenSLESOutputStream::OpenSLESOutputStream(AudioManagerAndroid* manager,
       muted_(false),
       volume_(1.0),
       samples_per_second_(params.sample_rate()),
-      have_float_output_(
-          base::android::BuildInfo::GetInstance()->sdk_int() >=
-              base::android::SDK_VERSION_LOLLIPOP &&
-          // See http://crbug.com/737188; still shipping Lollipop in 2017, so no
-          // idea if later phones will be glitch free; thus blacklist all.
-          !base::EqualsCaseInsensitiveASCII(
-              base::android::BuildInfo::GetInstance()->manufacturer(),
-              "vivo")),
-      bytes_per_frame_(have_float_output_ ? params.channels() * sizeof(float)
-                                          : params.GetBytesPerFrame()),
-      buffer_size_bytes_(have_float_output_
-                             ? bytes_per_frame_ * params.frames_per_buffer()
-                             : params.GetBytesPerBuffer()),
+      sample_format_(
+          (base::android::BuildInfo::GetInstance()->sdk_int() >=
+               base::android::SDK_VERSION_LOLLIPOP &&
+           // See http://crbug.com/737188; still shipping Lollipop in 2017, so
+           // no idea if later phones will be glitch free; thus blacklist all.
+           !base::EqualsCaseInsensitiveASCII(
+               base::android::BuildInfo::GetInstance()->manufacturer(),
+               "vivo"))
+              ? kSampleFormatF32
+              : kSampleFormatS16),
+      bytes_per_frame_(params.GetBytesPerFrame(sample_format_)),
+      buffer_size_bytes_(params.GetBytesPerBuffer(sample_format_)),
       performance_mode_(SL_ANDROID_PERFORMANCE_NONE),
       delay_calculator_(samples_per_second_) {
   DVLOG(2) << "OpenSLESOutputStream::OpenSLESOutputStream("
@@ -66,14 +65,14 @@ OpenSLESOutputStream::OpenSLESOutputStream(AudioManagerAndroid* manager,
 
   audio_bus_ = AudioBus::Create(params);
 
-  if (have_float_output_) {
+  if (sample_format_ == kSampleFormatF32) {
     float_format_.formatType = SL_ANDROID_DATAFORMAT_PCM_EX;
     float_format_.numChannels = static_cast<SLuint32>(params.channels());
     // Despite the name, this field is actually the sampling rate in millihertz.
     float_format_.sampleRate =
         static_cast<SLuint32>(samples_per_second_ * 1000);
-    float_format_.bitsPerSample = 32;
-    float_format_.containerSize = 32;
+    float_format_.bitsPerSample = float_format_.containerSize =
+        SampleFormatToBitsPerChannel(sample_format_);
     float_format_.endianness = SL_BYTEORDER_LITTLEENDIAN;
     float_format_.channelMask =
         ChannelCountToSLESChannelMask(params.channels());
@@ -85,8 +84,8 @@ OpenSLESOutputStream::OpenSLESOutputStream(AudioManagerAndroid* manager,
   format_.numChannels = static_cast<SLuint32>(params.channels());
   // Despite the name, this field is actually the sampling rate in millihertz :|
   format_.samplesPerSec = static_cast<SLuint32>(samples_per_second_ * 1000);
-  format_.bitsPerSample = params.bits_per_sample();
-  format_.containerSize = params.bits_per_sample();
+  format_.bitsPerSample = format_.containerSize =
+      SampleFormatToBitsPerChannel(sample_format_);
   format_.endianness = SL_BYTEORDER_LITTLEENDIAN;
   format_.channelMask = ChannelCountToSLESChannelMask(params.channels());
 }
@@ -281,7 +280,7 @@ bool OpenSLESOutputStream::CreatePlayer() {
       SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE,
       static_cast<SLuint32>(kMaxNumOfBuffersInQueue)};
   SLDataSource audio_source;
-  if (have_float_output_)
+  if (sample_format_ == kSampleFormatF32)
     audio_source = {&simple_buffer_queue, &float_format_};
   else
     audio_source = {&simple_buffer_queue, &format_};
@@ -424,10 +423,12 @@ void OpenSLESOutputStream::FillBufferQueueNoLock() {
   // raw float, the data must be clipped and sanitized since it may come
   // from an untrusted source such as NaCl.
   audio_bus_->Scale(muted_ ? 0.0f : volume_);
-  if (!have_float_output_) {
-    audio_bus_->ToInterleaved(frames_filled, format_.bitsPerSample / 8,
-                              audio_data_[active_buffer_index_]);
+  if (sample_format_ == kSampleFormatS16) {
+    audio_bus_->ToInterleaved<SignedInt16SampleTypeTraits>(
+        frames_filled,
+        reinterpret_cast<int16_t*>(audio_data_[active_buffer_index_]));
   } else {
+    DCHECK_EQ(sample_format_, kSampleFormatF32);
     audio_bus_->ToInterleaved<Float32SampleTypeTraits>(
         frames_filled,
         reinterpret_cast<float*>(audio_data_[active_buffer_index_]));

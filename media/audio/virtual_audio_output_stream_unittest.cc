@@ -21,8 +21,10 @@ using ::testing::_;
 namespace media {
 
 namespace {
-const AudioParameters kParams(
-    AudioParameters::AUDIO_PCM_LOW_LATENCY, CHANNEL_LAYOUT_MONO, 8000, 8, 128);
+const AudioParameters kParams(AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                              CHANNEL_LAYOUT_MONO,
+                              8000,
+                              128);
 }
 
 class MockVirtualAudioInputStream : public VirtualAudioInputStream {

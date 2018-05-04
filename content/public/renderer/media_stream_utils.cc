@@ -71,7 +71,7 @@ bool AddAudioTrackToMediaStream(
 
   const media::AudioParameters params(
       media::AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout,
-      sample_rate, sizeof(int16_t) * 8, frames_per_buffer);
+      sample_rate, frames_per_buffer);
   if (!params.IsValid()) {
     DLOG(ERROR) << "Invalid audio parameters.";
     return false;

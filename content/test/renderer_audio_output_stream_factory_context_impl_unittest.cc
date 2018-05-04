@@ -50,7 +50,6 @@ const float kWaveFrequency = 440.f;
 const int kChannels = 1;
 const int kBuffers = 1000;
 const int kSampleFrequency = 44100;
-const int kBitsPerSample = 16;
 const int kSamplesPerBuffer = kSampleFrequency / 100;
 
 std::unique_ptr<media::AudioOutputStream::AudioSourceCallback>
@@ -62,7 +61,7 @@ GetTestAudioSource() {
 media::AudioParameters GetTestAudioParameters() {
   return media::AudioParameters(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                                 media::CHANNEL_LAYOUT_MONO, kSampleFrequency,
-                                kBitsPerSample, kSamplesPerBuffer);
+                                kSamplesPerBuffer);
 }
 
 void SyncWith(scoped_refptr<base::SingleThreadTaskRunner> task_runner) {

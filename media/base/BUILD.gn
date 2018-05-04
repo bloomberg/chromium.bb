@@ -217,8 +217,6 @@ source_set("base") {
     "renderer_factory_selector.cc",
     "renderer_factory_selector.h",
     "routing_token_callback.h",
-    "sample_format.cc",
-    "sample_format.h",
     "sample_rates.cc",
     "sample_rates.h",
     "seekable_buffer.cc",

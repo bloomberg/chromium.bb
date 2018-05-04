@@ -133,7 +133,7 @@ class MacAudioInputTest : public testing::Test {
     int samples_per_packet = fs / 100;
     AudioInputStream* ais = audio_manager_->MakeAudioInputStream(
         AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                        CHANNEL_LAYOUT_STEREO, fs, 16, samples_per_packet),
+                        CHANNEL_LAYOUT_STEREO, fs, samples_per_packet),
         AudioDeviceDescription::kDefaultDeviceId,
         base::Bind(&MacAudioInputTest::OnLogMessage, base::Unretained(this)));
     EXPECT_TRUE(ais);
@@ -147,7 +147,7 @@ class MacAudioInputTest : public testing::Test {
     int samples_per_packet = fs / 100;
     AudioInputStream* ais = audio_manager_->MakeAudioInputStream(
         AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout,
-                        fs, 16, samples_per_packet),
+                        fs, samples_per_packet),
         AudioDeviceDescription::kDefaultDeviceId,
         base::Bind(&MacAudioInputTest::OnLogMessage, base::Unretained(this)));
     EXPECT_TRUE(ais);

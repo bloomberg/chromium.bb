@@ -57,7 +57,6 @@ class AudioDebugFileWriterTest
         params_(AudioParameters::Format::AUDIO_PCM_LINEAR,
                 std::get<0>(GetParam()),
                 std::get<1>(GetParam()),
-                kBytesPerSample * 8,
                 std::get<2>(GetParam())),
         writes_(std::get<3>(GetParam())),
         source_samples_(params_.frames_per_buffer() * params_.channels() *

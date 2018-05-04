@@ -39,7 +39,6 @@ namespace media {
 namespace {
 
 const int kNumChannels = 2;
-const int kBitsPerSample = 32;
 const int kDefaultFramesPerBuffer = 1024;
 const int kSilenceBufferFrames = 2048;
 const int kMaxOutputMs = 20;
@@ -317,8 +316,7 @@ void AudioDecoderAndroid::CreateRateShifter(int samples_per_second) {
   rate_shifter_->Initialize(
       ::media::AudioParameters(::media::AudioParameters::AUDIO_PCM_LINEAR,
                                ::media::CHANNEL_LAYOUT_STEREO,
-                               samples_per_second, kBitsPerSample,
-                               kDefaultFramesPerBuffer),
+                               samples_per_second, kDefaultFramesPerBuffer),
       is_encrypted);
 }
 

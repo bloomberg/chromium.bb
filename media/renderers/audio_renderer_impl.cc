@@ -443,14 +443,12 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
 
     audio_parameters_.Reset(
         format, stream->audio_decoder_config().channel_layout(),
-        stream->audio_decoder_config().samples_per_second(),
-        stream->audio_decoder_config().bits_per_channel(), buffer_size);
+        stream->audio_decoder_config().samples_per_second(), buffer_size);
     buffer_converter_.reset();
   } else if (use_stream_params) {
     audio_parameters_.Reset(AudioParameters::AUDIO_PCM_LOW_LATENCY,
                             stream->audio_decoder_config().channel_layout(),
                             stream->audio_decoder_config().samples_per_second(),
-                            stream->audio_decoder_config().bits_per_channel(),
                             preferred_buffer_size);
     audio_parameters_.set_channels_for_discrete(
         stream->audio_decoder_config().channels());
@@ -514,7 +512,7 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
             : stream->audio_decoder_config().channel_layout();
 
     audio_parameters_.Reset(hw_params.format(), renderer_channel_layout,
-                            sample_rate, hw_params.bits_per_sample(),
+                            sample_rate,
                             media::AudioLatency::GetHighLatencyBufferSize(
                                 sample_rate, preferred_buffer_size));
   }

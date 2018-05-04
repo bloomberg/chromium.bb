@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "base/memory/aligned_memory.h"
+#include "media/base/audio_sample_types.h"
 #include "media/base/media_shmem_export.h"
 
 namespace media {

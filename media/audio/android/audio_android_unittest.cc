@@ -54,8 +54,8 @@ const char kSpeechFile_16b_s_44k[] = "speech_16b_stereo_44kHz.raw";
 const char kSpeechFile_16b_m_44k[] = "speech_16b_mono_44kHz.raw";
 
 const float kCallbackTestTimeMs = 2000.0;
-const int kBitsPerSample = 16;
-const int kBytesPerSample = kBitsPerSample / 8;
+const int kBytesPerSample = 2;
+const SampleFormat kSampleFormat = kSampleFormatS16;
 
 // Converts AudioParameters::Format enumerator to readable string.
 std::string FormatToString(AudioParameters::Format format) {
@@ -142,15 +142,16 @@ int RealOnMoreData(base::TimeDelta /* delay */,
 
 std::ostream& operator<<(std::ostream& os, const AudioParameters& params) {
   using std::endl;
-  os << endl << "format: " << FormatToString(params.format()) << endl
+  os << endl
+     << "format: " << FormatToString(params.format()) << endl
      << "channel layout: " << LayoutToString(params.channel_layout()) << endl
      << "sample rate: " << params.sample_rate() << endl
-     << "bits per sample: " << params.bits_per_sample() << endl
      << "frames per buffer: " << params.frames_per_buffer() << endl
      << "channels: " << params.channels() << endl
-     << "bytes per buffer: " << params.GetBytesPerBuffer() << endl
-     << "bytes per second: " << params.GetBytesPerSecond() << endl
-     << "bytes per frame: " << params.GetBytesPerFrame() << endl
+     << "bytes per buffer: " << params.GetBytesPerBuffer(kSampleFormat) << endl
+     << "bytes per second: "
+     << params.sample_rate() * params.GetBytesPerFrame(kSampleFormat) << endl
+     << "bytes per frame: " << params.GetBytesPerFrame(kSampleFormat) << endl
      << "chunk size in ms: " << ExpectedTimeBetweenCallbacks(params) << endl
      << "echo_canceller: "
      << (params.effects() & AudioParameters::ECHO_CANCELLER);
@@ -242,7 +243,8 @@ class FileAudioSink : public AudioInputStream::AudioInputCallback {
                          const std::string& file_name)
       : event_(event), params_(params) {
     // Allocate space for ~10 seconds of data.
-    const int kMaxBufferSize = 10 * params.GetBytesPerSecond();
+    const int kMaxBufferSize =
+        10 * params.sample_rate() * params.GetBytesPerFrame(kSampleFormat);
     buffer_.reset(new media::SeekableBuffer(0, kMaxBufferSize));
 
     // Open up the binary file which will be written to in the destructor.
@@ -314,8 +316,9 @@ class FullDuplexAudioSinkSource
         started_(false) {
     // Start with a reasonably small FIFO size. It will be increased
     // dynamically during the test if required.
-    fifo_.reset(new media::SeekableBuffer(0, 2 * params.GetBytesPerBuffer()));
-    buffer_.reset(new uint8_t[params_.GetBytesPerBuffer()]);
+    size_t buffer_size = params.GetBytesPerBuffer(kSampleFormat);
+    fifo_.reset(new media::SeekableBuffer(0, 2 * buffer_size));
+    buffer_.reset(new uint8_t[buffer_size]);
   }
 
   ~FullDuplexAudioSinkSource() override {}
@@ -327,7 +330,6 @@ class FullDuplexAudioSinkSource
     const base::TimeTicks now_time = base::TimeTicks::Now();
     const int diff = (now_time - previous_time_).InMilliseconds();
 
-    EXPECT_EQ(params_.bits_per_sample(), 16);
     const int num_samples = src->frames() * src->channels();
     std::unique_ptr<int16_t> interleaved(new int16_t[num_samples]);
     const int bytes_per_sample = sizeof(*interleaved);
@@ -368,8 +370,8 @@ class FullDuplexAudioSinkSource
                  int /* prior_frames_skipped */,
                  AudioBus* dest) override {
     const int size_in_bytes =
-        (params_.bits_per_sample() / 8) * dest->frames() * dest->channels();
-    EXPECT_EQ(size_in_bytes, params_.GetBytesPerBuffer());
+        kBytesPerSample * dest->frames() * dest->channels();
+    EXPECT_EQ(size_in_bytes, params_.GetBytesPerBuffer(kSampleFormat));
 
     base::AutoLock lock(lock_);
 
@@ -387,8 +389,8 @@ class FullDuplexAudioSinkSource
       dest->Zero();
     } else {
       fifo_->Read(buffer_.get(), size_in_bytes);
-      dest->FromInterleaved(
-          buffer_.get(), dest->frames(), params_.bits_per_sample() / 8);
+      dest->FromInterleaved<SignedInt16SampleTypeTraits>(
+          reinterpret_cast<int16_t*>(buffer_.get()), dest->frames());
     }
 
     return dest->frames();
@@ -398,7 +400,7 @@ class FullDuplexAudioSinkSource
   // Converts from bytes to milliseconds given number of bytes and existing
   // audio parameters.
   double BytesToMilliseconds(int bytes) const {
-    const int frames = bytes / params_.GetBytesPerFrame();
+    const int frames = bytes / params_.GetBytesPerFrame(kSampleFormat);
     return (base::TimeDelta::FromMicroseconds(
                 frames * base::Time::kMicrosecondsPerSecond /
                 static_cast<double>(params_.sample_rate()))).InMillisecondsF();
@@ -835,7 +837,6 @@ TEST_F(AudioAndroidOutputTest, StartOutputStreamCallbacksNonDefaultParameters) {
   AudioParameters params(audio_output_parameters().format(),
                          CHANNEL_LAYOUT_MONO,
                          audio_output_parameters().sample_rate(),
-                         audio_output_parameters().bits_per_sample(),
                          audio_output_parameters().sample_rate() / 100);
   StartOutputStreamCallbacks(params);
 }

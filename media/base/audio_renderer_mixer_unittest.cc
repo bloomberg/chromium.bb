@@ -36,7 +36,6 @@ const int kOddMixerInputs = 7;
 const int kMixerCycles = 3;
 
 // Parameters used for testing.
-const int kBitsPerChannel = 32;
 const ChannelLayout kChannelLayout = CHANNEL_LAYOUT_STEREO;
 const int kHighLatencyBufferSize = 8192;
 const int kLowLatencyBufferSize = 256;
@@ -64,14 +63,14 @@ class AudioRendererMixerTest
     const int* const sample_rates = std::get<0>(GetParam());
     size_t sample_rates_count = std::get<1>(GetParam());
     for (size_t i = 0; i < sample_rates_count; ++i)
-      input_parameters_.push_back(AudioParameters(
-          AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout, sample_rates[i],
-          kBitsPerChannel, kHighLatencyBufferSize));
+      input_parameters_.push_back(
+          AudioParameters(AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout,
+                          sample_rates[i], kHighLatencyBufferSize));
 
     // Create output parameters based on test parameters.
     output_parameters_ =
         AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY, kChannelLayout,
-                        std::get<2>(GetParam()), 16, kLowLatencyBufferSize);
+                        std::get<2>(GetParam()), kLowLatencyBufferSize);
 
     sink_ = new MockAudioRendererSink();
     EXPECT_CALL(*sink_.get(), Start());

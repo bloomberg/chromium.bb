@@ -143,7 +143,6 @@ void AudioBufferConverter::ResetConverter(
       input_params_.format(),
       buffer->channel_layout(),
       buffer->sample_rate(),
-      input_params_.bits_per_sample(),
       // If resampling is needed and the FIFO disabled, the AudioConverter will
       // always request SincResampler::kDefaultRequestSize frames.  Otherwise it
       // will use the output frame size.

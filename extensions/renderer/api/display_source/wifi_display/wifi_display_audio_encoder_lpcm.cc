@@ -31,8 +31,6 @@ class WiFiDisplayAudioEncoderLPCM final
       private media::AudioConverter::InputCallback {
  public:
   enum {
-    kOutputBitsPerSample = 16,
-    kOutputBytesPerSample = kOutputBitsPerSample / 8,
     kOutputChannels = 2
   };
 
@@ -155,8 +153,8 @@ void WiFiDisplayAudioEncoderLPCM::OnData(
       data.resize(sample_count * sizeof(uint16_t));
       uint16_t* encoded_samples =
           reinterpret_cast<uint16_t*>(base::string_as_array(&data));
-      fifo_bus_->ToInterleaved(fifo_bus_->frames(), kOutputBytesPerSample,
-                               encoded_samples);
+      fifo_bus_->ToInterleaved<media::SignedInt16SampleTypeTraits>(
+          fifo_bus_->frames(), encoded_samples);
       for (int i = 0; i < sample_count; ++i)
         encoded_samples[i] = base::HostToNet16(encoded_samples[i]);
       fifo_end_frame_ = 0;
@@ -180,7 +178,7 @@ void WiFiDisplayAudioEncoderLPCM::OnSetFormat(
   if (output_sample_rate_ != input_params_.sample_rate()) {
     const media::AudioParameters output_params(
         media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-        media::CHANNEL_LAYOUT_STEREO, output_sample_rate_, kOutputBitsPerSample,
+        media::CHANNEL_LAYOUT_STEREO, output_sample_rate_,
         WiFiDisplayMediaPacketizer::LPCM::kChannelSamplesPerUnit);
     DVLOG(2) << "Setting up audio resampling: "
              << input_params_.sample_rate() << " Hz --> "

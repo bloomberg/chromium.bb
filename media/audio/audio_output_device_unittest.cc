@@ -121,7 +121,7 @@ class AudioOutputDeviceTest : public testing::Test {
 AudioOutputDeviceTest::AudioOutputDeviceTest()
     : device_status_(OUTPUT_DEVICE_STATUS_ERROR_INTERNAL) {
   default_audio_parameters_.Reset(AudioParameters::AUDIO_PCM_LINEAR,
-                                  CHANNEL_LAYOUT_STEREO, 48000, 16, 1024);
+                                  CHANNEL_LAYOUT_STEREO, 48000, 1024);
   SetDevice(kDefaultDeviceId);
 }
 
@@ -465,8 +465,7 @@ TEST_F(AudioOutputDeviceTest, CreateBitStreamStream) {
 
   const int kAudioParameterFrames = 4321;
   AudioParameters params(AudioParameters::AUDIO_BITSTREAM_EAC3,
-                         CHANNEL_LAYOUT_STEREO, 48000, 16,
-                         kAudioParameterFrames);
+                         CHANNEL_LAYOUT_STEREO, 48000, kAudioParameterFrames);
 
   TestEnvironment env(params);
   auto* ipc = new MockAudioOutputIPC();  // owned by |audio_device|.

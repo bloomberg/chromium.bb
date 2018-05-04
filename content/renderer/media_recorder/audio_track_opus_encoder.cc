@@ -108,8 +108,7 @@ void AudioTrackOpusEncoder::OnSetFormat(
   converted_params_ = media::AudioParameters(
       media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
       media::GuessChannelLayout(std::min(input_params_.channels(), 2)),
-      kOpusPreferredSamplingRate, input_params_.bits_per_sample(),
-      kOpusPreferredFramesPerBuffer);
+      kOpusPreferredSamplingRate, kOpusPreferredFramesPerBuffer);
   DVLOG(1) << "|input_params_|:" << input_params_.AsHumanReadableString()
            << " -->|converted_params_|:"
            << converted_params_.AsHumanReadableString();

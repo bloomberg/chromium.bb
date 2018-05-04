@@ -39,7 +39,6 @@ const int kSessionId = 234;
 const bool kAGC = false;
 const uint32_t kSharedMemoryCount = 345;
 const int kSampleFrequency = 44100;
-const int kBitsPerSample = 16;
 const int kSamplesPerBuffer = kSampleFrequency / 100;
 const bool kInitiallyMuted = false;
 const int kRenderProcessID = -1;
@@ -48,7 +47,7 @@ const int kRenderFrameID = MSG_ROUTING_NONE;
 media::AudioParameters GetTestAudioParameters() {
   return media::AudioParameters(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                                 media::CHANNEL_LAYOUT_MONO, kSampleFrequency,
-                                kBitsPerSample, kSamplesPerBuffer);
+                                kSamplesPerBuffer);
 }
 
 class FakeAudioInputDelegate : public media::AudioInputDelegate {

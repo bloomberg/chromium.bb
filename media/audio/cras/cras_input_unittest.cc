@@ -90,7 +90,6 @@ class CrasInputStreamTest : public testing::Test {
     AudioParameters params(kTestFormat,
                            layout,
                            kTestSampleRate,
-                           kTestBitsPerSample,
                            samples_per_packet);
     return new CrasInputStream(params, mock_manager_.get(), device_id);
   }
@@ -121,7 +120,6 @@ class CrasInputStreamTest : public testing::Test {
     test_stream->Close();
   }
 
-  static const unsigned int kTestBitsPerSample;
   static const unsigned int kTestCaptureDurationMs;
   static const ChannelLayout kTestChannelLayout;
   static const AudioParameters::Format kTestFormat;
@@ -135,7 +133,6 @@ class CrasInputStreamTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(CrasInputStreamTest);
 };
 
-const unsigned int CrasInputStreamTest::kTestBitsPerSample = 16;
 const unsigned int CrasInputStreamTest::kTestCaptureDurationMs = 250;
 const ChannelLayout CrasInputStreamTest::kTestChannelLayout =
     CHANNEL_LAYOUT_STEREO;
@@ -156,24 +153,10 @@ TEST_F(CrasInputStreamTest, OpenStereo) {
   test_stream->Close();
 }
 
-TEST_F(CrasInputStreamTest, BadBitsPerSample) {
-  AudioParameters bad_bps_params(kTestFormat,
-                                 kTestChannelLayout,
-                                 kTestSampleRate,
-                                 kTestBitsPerSample - 1,
-                                 kTestFramesPerPacket);
-  CrasInputStream* test_stream =
-      new CrasInputStream(bad_bps_params, mock_manager_.get(),
-                          AudioDeviceDescription::kDefaultDeviceId);
-  EXPECT_FALSE(test_stream->Open());
-  test_stream->Close();
-}
-
 TEST_F(CrasInputStreamTest, BadSampleRate) {
   AudioParameters bad_rate_params(kTestFormat,
                                   kTestChannelLayout,
                                   0,
-                                  kTestBitsPerSample,
                                   kTestFramesPerPacket);
   CrasInputStream* test_stream =
       new CrasInputStream(bad_rate_params, mock_manager_.get(),
@@ -208,7 +191,6 @@ TEST_F(CrasInputStreamTest, CaptureFrames) {
     AudioParameters params_mono(kTestFormat,
                                 CHANNEL_LAYOUT_MONO,
                                 rates[i],
-                                kTestBitsPerSample,
                                 kTestFramesPerPacket);
     CaptureSomeFrames(params_mono, kTestCaptureDurationMs);
   }
@@ -218,7 +200,6 @@ TEST_F(CrasInputStreamTest, CaptureFrames) {
     AudioParameters params_stereo(kTestFormat,
                                   CHANNEL_LAYOUT_STEREO,
                                   rates[i],
-                                  kTestBitsPerSample,
                                   kTestFramesPerPacket);
     CaptureSomeFrames(params_stereo, kTestCaptureDurationMs);
   }

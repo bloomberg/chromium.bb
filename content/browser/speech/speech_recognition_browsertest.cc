@@ -176,9 +176,9 @@ class SpeechRecognitionBrowserTest
 
     std::unique_ptr<media::AudioBus> audio_bus =
         media::AudioBus::Create(audio_params);
-    audio_bus->FromInterleaved(&audio_buffer.get()[0],
-                               audio_bus->frames(),
-                               audio_params.bits_per_sample() / 8);
+    audio_bus->FromInterleaved<media::SignedInt16SampleTypeTraits>(
+        reinterpret_cast<int16_t*>(&audio_buffer.get()[0]),
+        audio_bus->frames());
     controller->sync_writer()->Write(audio_bus.get(), 0.0, false,
                                      base::TimeTicks::Now());
   }
@@ -188,9 +188,9 @@ class SpeechRecognitionBrowserTest
         test_audio_input_controller_factory_.controller();
     ASSERT_TRUE(controller);
     const media::AudioParameters& audio_params = controller->audio_parameters();
-    const size_t buffer_size = audio_params.GetBytesPerBuffer();
-    const int ms_per_buffer = audio_params.frames_per_buffer() * 1000 /
-                              audio_params.sample_rate();
+    const size_t buffer_size =
+        audio_params.GetBytesPerBuffer(media::kSampleFormatS16);
+    const int ms_per_buffer = audio_params.GetBufferDuration().InMilliseconds();
     // We can only simulate durations that are integer multiples of the
     // buffer size. In this regard see
     // SpeechRecognitionEngine::GetDesiredAudioChunkDurationMs().
