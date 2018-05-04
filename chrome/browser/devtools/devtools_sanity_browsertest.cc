@@ -73,6 +73,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "content/public/test/url_loader_interceptor.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/extension_system.h"
@@ -83,11 +84,8 @@
 #include "extensions/test/test_extension_dir.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
-#include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_filter.h"
-#include "net/url_request/url_request_http_job.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "ui/compositor/compositor_switches.h"
@@ -198,78 +196,6 @@ void SwitchToExtensionPanel(DevToolsWindow* window,
                            .as_string();
   SwitchToPanel(window, (prefix + panel_name).c_str());
 }
-
-class PushTimesMockURLRequestJob : public net::URLRequestMockHTTPJob {
- public:
-  PushTimesMockURLRequestJob(net::URLRequest* request,
-                             net::NetworkDelegate* network_delegate,
-                             base::FilePath file_path)
-      : net::URLRequestMockHTTPJob(request, network_delegate, file_path) {}
-
-  void Start() override {
-    load_timing_info_.socket_reused = true;
-    load_timing_info_.request_start_time = base::Time::Now();
-    load_timing_info_.request_start = base::TimeTicks::Now();
-    load_timing_info_.send_start = base::TimeTicks::Now();
-    load_timing_info_.send_end = base::TimeTicks::Now();
-    load_timing_info_.receive_headers_end = base::TimeTicks::Now();
-
-    net::URLRequestMockHTTPJob::Start();
-  }
-
-  void GetLoadTimingInfo(net::LoadTimingInfo* load_timing_info) const override {
-    load_timing_info_.push_start = load_timing_info_.request_start -
-                                   base::TimeDelta::FromMilliseconds(100);
-    if (load_timing_info_.push_end.is_null() &&
-        request()->url().query() != kPushUseNullEndTime) {
-      load_timing_info_.push_end = base::TimeTicks::Now();
-    }
-    *load_timing_info = load_timing_info_;
-  }
-
- private:
-  mutable net::LoadTimingInfo load_timing_info_;
-  DISALLOW_COPY_AND_ASSIGN(PushTimesMockURLRequestJob);
-};
-
-class TestInterceptor : public net::URLRequestInterceptor {
- public:
-  // Creates TestInterceptor and registers it with the URLRequestFilter,
-  // which takes ownership of it.
-  static void Register(const GURL& url, const base::FilePath& file_path) {
-    EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
-        url.scheme(), url.host(),
-        base::WrapUnique(new TestInterceptor(url, file_path)));
-  }
-
-  // Unregisters previously created TestInterceptor, which should delete it.
-  static void Unregister(const GURL& url) {
-    EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    net::URLRequestFilter::GetInstance()->RemoveHostnameHandler(url.scheme(),
-                                                                url.host());
-  }
-
-  // net::URLRequestJobFactory::ProtocolHandler implementation:
-  net::URLRequestJob* MaybeInterceptRequest(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override {
-    EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    if (request->url().path() != url_.path())
-      return nullptr;
-    return new PushTimesMockURLRequestJob(request, network_delegate,
-                                          file_path_);
-  }
-
- private:
-  TestInterceptor(const GURL& url, const base::FilePath& file_path)
-      : url_(url), file_path_(file_path) {}
-
-  const GURL url_;
-  const base::FilePath file_path_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestInterceptor);
-};
 
 }  // namespace
 
@@ -1605,21 +1531,52 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestNetworkRawHeadersText) {
   RunTest("testNetworkRawHeadersText", kChunkedTestPage);
 }
 
+namespace {
+
+bool InterceptURLLoad(content::URLLoaderInterceptor::RequestParams* params) {
+  const GURL& url = params->url_request.url;
+  if (!base::EndsWith(url.path(), kPushTestResource,
+                      base::CompareCase::SENSITIVE)) {
+    return false;
+  }
+
+  network::ResourceResponseHead response;
+
+  response.headers = new net::HttpResponseHeaders("200 OK\r\n\r\n");
+
+  auto start_time =
+      base::TimeTicks::Now() - base::TimeDelta::FromMilliseconds(10);
+  response.request_start = start_time;
+  response.response_start = base::TimeTicks::Now();
+  response.request_time =
+      base::Time::Now() - base::TimeDelta::FromMilliseconds(10);
+  response.response_time = base::Time::Now();
+
+  auto& load_timing = response.load_timing;
+  load_timing.request_start = start_time;
+  load_timing.request_start_time = response.request_time;
+  load_timing.send_start = start_time;
+  load_timing.send_end = base::TimeTicks::Now();
+  load_timing.receive_headers_end = base::TimeTicks::Now();
+  load_timing.push_start = start_time - base::TimeDelta::FromMilliseconds(100);
+  if (url.query() != kPushUseNullEndTime)
+    load_timing.push_end = base::TimeTicks::Now();
+
+  params->client->OnReceiveResponse(response, /*downloaded_file=*/nullptr);
+  params->client->OnComplete(network::URLLoaderCompletionStatus());
+  return true;
+}
+
+}  // namespace
+
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestNetworkPushTime) {
+  content::URLLoaderInterceptor interceptor(
+      base::BindRepeating(InterceptURLLoad));
+
   OpenDevToolsWindow(kPushTestPage, false);
   GURL push_url = spawned_test_server()->GetURL(kPushTestResource);
-  base::FilePath file_path =
-      spawned_test_server()->document_root().AppendASCII(kPushTestResource);
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&TestInterceptor::Register, push_url, file_path));
 
   DispatchOnTestSuite(window_, "testPushTimes", push_url.spec().c_str());
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&TestInterceptor::Unregister, push_url));
 
   CloseDevToolsWindow();
 }
