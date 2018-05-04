@@ -251,7 +251,7 @@ def get_waterfall_config():
       {
        'gpu': '8086:1616',
        'os': 'Windows-10',
-       'pool': 'chrome.test.perf',
+       'pool': 'chrome.tests.perf',
        'device_ids': [
            'build194-b7', 'build195-b7',
            'build196-b7', 'build197-b7',
