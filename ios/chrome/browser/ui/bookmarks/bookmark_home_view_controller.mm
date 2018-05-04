@@ -584,6 +584,9 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   if (![self isViewLoaded])
     return;
 
+  DCHECK(!_rootNode);
+  [self setRootNode:self.bookmarks->root_node()];
+
   int64_t unusedFolderId;
   double unusedScrollPosition;
   // Bookmark Model is loaded after presenting Bookmarks,  we need to check
