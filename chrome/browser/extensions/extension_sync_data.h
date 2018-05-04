@@ -35,12 +35,6 @@ class Extension;
 // AppSpecifics itself includes an ExtensionSpecifics).
 class ExtensionSyncData {
  public:
-  enum OptionalBoolean {
-    BOOLEAN_UNSET,
-    BOOLEAN_TRUE,
-    BOOLEAN_FALSE
-  };
-
   struct LinkedAppIconInfo {
     LinkedAppIconInfo();
     ~LinkedAppIconInfo();
@@ -55,7 +49,7 @@ class ExtensionSyncData {
                     int disable_reasons,
                     bool incognito_enabled,
                     bool remote_install,
-                    OptionalBoolean all_urls_enabled,
+                    base::Optional<bool> all_urls_enabled,
                     bool installed_by_custodian);
   // App constructor.
   ExtensionSyncData(const Extension& extension,
@@ -63,7 +57,7 @@ class ExtensionSyncData {
                     int disable_reasons,
                     bool incognito_enabled,
                     bool remote_install,
-                    OptionalBoolean all_urls_enabled,
+                    base::Optional<bool> all_urls_enabled,
                     bool installed_by_custodian,
                     const syncer::StringOrdinal& app_launch_ordinal,
                     const syncer::StringOrdinal& page_ordinal,
@@ -96,7 +90,7 @@ class ExtensionSyncData {
   int disable_reasons() const { return disable_reasons_; }
   bool incognito_enabled() const { return incognito_enabled_; }
   bool remote_install() const { return remote_install_; }
-  OptionalBoolean all_urls_enabled() const { return all_urls_enabled_; }
+  base::Optional<bool> all_urls_enabled() const { return all_urls_enabled_; }
   bool installed_by_custodian() const { return installed_by_custodian_; }
 
   // Version-dependent properties (i.e., should be used only when the
@@ -162,7 +156,7 @@ class ExtensionSyncData {
   int disable_reasons_;
   bool incognito_enabled_;
   bool remote_install_;
-  OptionalBoolean all_urls_enabled_;
+  base::Optional<bool> all_urls_enabled_;
   bool installed_by_custodian_;
   base::Version version_;
   GURL update_url_;

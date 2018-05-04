@@ -101,8 +101,7 @@ ExtensionSyncData GetDisableSyncData(const Extension& extension,
   bool incognito_enabled = false;
   bool remote_install = false;
   bool installed_by_custodian = false;
-  ExtensionSyncData::OptionalBoolean has_all_urls =
-      ExtensionSyncData::BOOLEAN_UNSET;
+  base::Optional<bool> has_all_urls;
   return ExtensionSyncData(extension, enabled, disable_reasons,
                            incognito_enabled, remote_install, has_all_urls,
                            installed_by_custodian);
@@ -113,8 +112,7 @@ ExtensionSyncData GetEnableSyncData(const Extension& extension) {
   bool incognito_enabled = false;
   bool remote_install = false;
   bool installed_by_custodian = false;
-  ExtensionSyncData::OptionalBoolean has_all_urls =
-      ExtensionSyncData::BOOLEAN_UNSET;
+  base::Optional<bool> has_all_urls;
   return ExtensionSyncData(
       extension, enabled, extensions::disable_reason::DISABLE_NONE,
       incognito_enabled, remote_install, has_all_urls, installed_by_custodian);
@@ -373,7 +371,7 @@ TEST_F(ExtensionServiceSyncTest, DisableExtensionFromSync) {
   // Then sync data arrives telling us to disable |good0|.
   ExtensionSyncData disable_good_crx(
       *extension, false, extensions::disable_reason::DISABLE_USER_ACTION, false,
-      false, ExtensionSyncData::BOOLEAN_UNSET, false);
+      false, base::nullopt, false);
   SyncChangeList list(
       1, disable_good_crx.GetSyncChange(SyncChange::ACTION_UPDATE));
   extension_sync_service()->ProcessSyncChanges(FROM_HERE, list);
@@ -567,10 +565,10 @@ TEST_F(ExtensionServiceSyncTest, IgnoreSyncChangesWhenLocalStateIsMoreRecent) {
   // Now sync data comes in that says to disable good0 and enable good2.
   ExtensionSyncData disable_good0(
       *extension0, false, extensions::disable_reason::DISABLE_USER_ACTION,
-      false, false, ExtensionSyncData::BOOLEAN_UNSET, false);
-  ExtensionSyncData enable_good2(
-      *extension2, true, extensions::disable_reason::DISABLE_NONE, false, false,
-      ExtensionSyncData::BOOLEAN_UNSET, false);
+      false, false, base::nullopt, false);
+  ExtensionSyncData enable_good2(*extension2, true,
+                                 extensions::disable_reason::DISABLE_NONE,
+                                 false, false, base::nullopt, false);
   syncer::SyncDataList sync_data;
   sync_data.push_back(disable_good0.GetSyncData());
   sync_data.push_back(enable_good2.GetSyncData());
@@ -620,9 +618,9 @@ TEST_F(ExtensionServiceSyncTest, DontSelfNotify) {
     ASSERT_TRUE(extension);
 
     // Disable the extension.
-    ExtensionSyncData data(
-        *extension, false, extensions::disable_reason::DISABLE_USER_ACTION,
-        false, false, ExtensionSyncData::BOOLEAN_UNSET, false);
+    ExtensionSyncData data(*extension, false,
+                           extensions::disable_reason::DISABLE_USER_ACTION,
+                           false, false, base::nullopt, false);
     SyncChangeList list(1, data.GetSyncChange(SyncChange::ACTION_UPDATE));
 
     extension_sync_service()->ProcessSyncChanges(FROM_HERE, list);
@@ -637,7 +635,7 @@ TEST_F(ExtensionServiceSyncTest, DontSelfNotify) {
     // Set incognito enabled to true.
     ExtensionSyncData data(*extension, false,
                            extensions::disable_reason::DISABLE_NONE, true,
-                           false, ExtensionSyncData::BOOLEAN_UNSET, false);
+                           false, base::nullopt, false);
     SyncChangeList list(1, data.GetSyncChange(SyncChange::ACTION_UPDATE));
 
     extension_sync_service()->ProcessSyncChanges(FROM_HERE, list);
@@ -654,7 +652,7 @@ TEST_F(ExtensionServiceSyncTest, DontSelfNotify) {
         *extension, false,
         extensions::disable_reason::DISABLE_USER_ACTION |
             extensions::disable_reason::DISABLE_PERMISSIONS_INCREASE,
-        false, false, ExtensionSyncData::BOOLEAN_UNSET, false);
+        false, false, base::nullopt, false);
     SyncChangeList list(1, data.GetSyncChange(SyncChange::ACTION_UPDATE));
 
     extension_sync_service()->ProcessSyncChanges(FROM_HERE, list);
@@ -671,7 +669,7 @@ TEST_F(ExtensionServiceSyncTest, DontSelfNotify) {
         *extension, false,
         extensions::disable_reason::DISABLE_USER_ACTION |
             extensions::disable_reason::DISABLE_PERMISSIONS_INCREASE,
-        false, false, ExtensionSyncData::BOOLEAN_UNSET, false);
+        false, false, base::nullopt, false);
     SyncChangeList list(1, data.GetSyncChange(SyncChange::ACTION_DELETE));
 
     extension_sync_service()->ProcessSyncChanges(FROM_HERE, list);
@@ -702,7 +700,7 @@ TEST_F(ExtensionServiceSyncTest, GetSyncData) {
   EXPECT_EQ(service()->IsExtensionEnabled(good_crx), data->enabled());
   EXPECT_EQ(extensions::util::IsIncognitoEnabled(good_crx, profile()),
             data->incognito_enabled());
-  EXPECT_EQ(ExtensionSyncData::BOOLEAN_UNSET, data->all_urls_enabled());
+  EXPECT_EQ(base::nullopt, data->all_urls_enabled());
   EXPECT_EQ(data->version(), extension->version());
   EXPECT_EQ(extensions::ManifestURL::GetUpdateURL(extension),
             data->update_url());
@@ -810,7 +808,7 @@ TEST_F(ExtensionServiceSyncTest, GetSyncDataTerminated) {
   EXPECT_EQ(service()->IsExtensionEnabled(good_crx), data->enabled());
   EXPECT_EQ(extensions::util::IsIncognitoEnabled(good_crx, profile()),
             data->incognito_enabled());
-  EXPECT_EQ(ExtensionSyncData::BOOLEAN_UNSET, data->all_urls_enabled());
+  EXPECT_EQ(base::nullopt, data->all_urls_enabled());
   EXPECT_EQ(data->version(), extension->version());
   EXPECT_EQ(extensions::ManifestURL::GetUpdateURL(extension),
             data->update_url());
@@ -853,7 +851,7 @@ TEST_F(ExtensionServiceSyncTest, GetSyncExtensionDataUserSettings) {
     ASSERT_TRUE(data.get());
     EXPECT_TRUE(data->enabled());
     EXPECT_FALSE(data->incognito_enabled());
-    EXPECT_EQ(ExtensionSyncData::BOOLEAN_UNSET, data->all_urls_enabled());
+    EXPECT_EQ(base::nullopt, data->all_urls_enabled());
   }
 
   service()->DisableExtension(good_crx,
@@ -867,7 +865,7 @@ TEST_F(ExtensionServiceSyncTest, GetSyncExtensionDataUserSettings) {
     ASSERT_TRUE(data.get());
     EXPECT_FALSE(data->enabled());
     EXPECT_FALSE(data->incognito_enabled());
-    EXPECT_EQ(ExtensionSyncData::BOOLEAN_UNSET, data->all_urls_enabled());
+    EXPECT_EQ(base::nullopt, data->all_urls_enabled());
   }
 
   extensions::util::SetIsIncognitoEnabled(good_crx, profile(), true);
@@ -884,7 +882,7 @@ TEST_F(ExtensionServiceSyncTest, GetSyncExtensionDataUserSettings) {
     ASSERT_TRUE(data.get());
     EXPECT_FALSE(data->enabled());
     EXPECT_TRUE(data->incognito_enabled());
-    EXPECT_EQ(ExtensionSyncData::BOOLEAN_FALSE, data->all_urls_enabled());
+    EXPECT_EQ(base::Optional<bool>(false), data->all_urls_enabled());
   }
 
   service()->EnableExtension(good_crx);
@@ -898,7 +896,7 @@ TEST_F(ExtensionServiceSyncTest, GetSyncExtensionDataUserSettings) {
     ASSERT_TRUE(data.get());
     EXPECT_TRUE(data->enabled());
     EXPECT_TRUE(data->incognito_enabled());
-    EXPECT_EQ(ExtensionSyncData::BOOLEAN_TRUE, data->all_urls_enabled());
+    EXPECT_EQ(base::Optional<bool>(true), data->all_urls_enabled());
   }
 }
 

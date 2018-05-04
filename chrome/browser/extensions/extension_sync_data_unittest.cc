@@ -117,8 +117,7 @@ TEST_F(ExtensionSyncDataTest, ExtensionSyncDataForExtension) {
   EXPECT_FALSE(extension_sync_data.enabled());
   EXPECT_EQ(true, extension_sync_data.incognito_enabled());
   EXPECT_FALSE(extension_sync_data.remote_install());
-  EXPECT_EQ(ExtensionSyncData::BOOLEAN_TRUE,
-            extension_sync_data.all_urls_enabled());
+  EXPECT_EQ(base::Optional<bool>(true), extension_sync_data.all_urls_enabled());
   EXPECT_EQ(base::Version(kVersion), extension_sync_data.version());
   EXPECT_EQ(std::string(kName), extension_sync_data.name());
 
@@ -133,7 +132,7 @@ TEST_F(ExtensionSyncDataTest, ExtensionSyncDataForExtension) {
   ProtobufToSyncDataEqual(entity);
 
   extension_sync_data.PopulateFromExtensionSpecifics(*extension_specifics);
-  EXPECT_EQ(ExtensionSyncData::BOOLEAN_FALSE,
+  EXPECT_EQ(base::Optional<bool>(false),
             extension_sync_data.all_urls_enabled());
   EXPECT_FALSE(extension_sync_data.incognito_enabled());
 
@@ -144,8 +143,7 @@ TEST_F(ExtensionSyncDataTest, ExtensionSyncDataForExtension) {
 
   extension_sync_data.PopulateFromExtensionSpecifics(*extension_specifics);
   EXPECT_FALSE(extension_specifics->has_all_urls_enabled());
-  EXPECT_EQ(ExtensionSyncData::BOOLEAN_UNSET,
-            extension_sync_data.all_urls_enabled());
+  EXPECT_FALSE(extension_sync_data.all_urls_enabled().has_value());
 
   SyncDataToProtobufEqual(extension_sync_data);
 }
