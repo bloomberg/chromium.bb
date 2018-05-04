@@ -431,6 +431,10 @@ void CoreOobeHandler::UpdateShutdownAndRebootVisibility(
   CallJSOrDefer("showShutdown", !reboot_on_shutdown);
 }
 
+void CoreOobeHandler::SetLoginUserCount(int user_count) {
+  CallJSOrDefer("setLoginUserCount", user_count);
+}
+
 void CoreOobeHandler::UpdateA11yState() {
   if (ash_util::IsRunningInMash()) {
     NOTIMPLEMENTED();

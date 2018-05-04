@@ -694,4 +694,8 @@ void OobeUI::OnDisplayConfigurationChanged() {
     oobe_display_chooser_->TryToPlaceUiOnTouchDisplay();
 }
 
+void OobeUI::SetLoginUserCount(int user_count) {
+  core_handler_->SetLoginUserCount(user_count);
+}
+
 }  // namespace chromeos

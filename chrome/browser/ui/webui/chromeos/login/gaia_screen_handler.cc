@@ -362,11 +362,6 @@ void GaiaScreenHandler::LoadGaiaWithPartitionAndVersionAndConsent(
 
   UpdateAuthParams(&params, IsRestrictiveProxy());
 
-  int user_count = LoginDisplayHost::default_host()
-                       ? LoginDisplayHost::default_host()->GetUsers().size()
-                       : 0;
-  params.SetInteger("userCount", user_count);
-
   GaiaScreenMode screen_mode = GetGaiaScreenMode(context.email,
                                                  context.use_offline);
   params.SetInteger("screenMode", screen_mode);

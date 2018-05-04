@@ -467,6 +467,14 @@ cr.define('cr.ui', function() {
     return cr.sendWithPromise('getPrimaryDisplayNameForTesting');
   };
 
+  /**
+   * Sets the number of users on the views login screen.
+   * @param {number} userCount The number of users.
+   */
+  Oobe.setLoginUserCount = function(userCount) {
+    Oobe.getInstance().setLoginUserCount(userCount);
+  };
+
   // Export
   return {Oobe: Oobe};
 });
