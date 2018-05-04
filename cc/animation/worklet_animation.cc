@@ -42,7 +42,13 @@ void WorkletAnimation::SetLocalTime(base::TimeDelta local_time) {
 }
 
 void WorkletAnimation::Tick(base::TimeTicks monotonic_time) {
-  keyframe_effect()->Tick(monotonic_time, this);
+  // As the output of a WorkletAnimation is driven by a script-provided local
+  // time, we don't want the underlying effect to participate in the normal
+  // animations lifecycle. To avoid this we pause the underlying keyframe effect
+  // at the local time obtained from the user script - essentially turning each
+  // call to |WorkletAnimation::Tick| into a seek in the effect.
+  keyframe_effect()->Pause(local_time_);
+  keyframe_effect()->Tick(monotonic_time);
 }
 
 // TODO(crbug.com/780151): The current time returned should be an offset against
@@ -64,19 +70,6 @@ bool WorkletAnimation::NeedsUpdate(base::TimeTicks monotonic_time,
   bool needs_update = last_current_time_ != current_time;
   last_current_time_ = current_time;
   return needs_update;
-}
-
-base::TimeTicks WorkletAnimation::GetTimeForKeyframeModel(
-    const KeyframeModel& keyframe_model) const {
-  // The local time set by the script has to be converted to monotonic time;
-  // largely this means it is offset from the start time and includes any time
-  // the animation spent paused.
-  return keyframe_model.ConvertLocalTimeToMonotonicTime(local_time_);
-}
-
-void WorkletAnimation::PushPropertiesTo(Animation* animation_impl) {
-  SingleKeyframeEffectAnimation::PushPropertiesTo(animation_impl);
-  static_cast<WorkletAnimation*>(animation_impl)->SetLocalTime(local_time_);
 }
 
 bool WorkletAnimation::IsWorkletAnimation() const {

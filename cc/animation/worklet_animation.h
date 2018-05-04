@@ -19,8 +19,7 @@ class ScrollTimeline;
 // timing to be controlled by an animator instance that is running in a
 // AnimationWorkletGlobalScope.
 class CC_ANIMATION_EXPORT WorkletAnimation final
-    : public SingleKeyframeEffectAnimation,
-      KeyframeEffect::AnimationTimeProvider {
+    : public SingleKeyframeEffectAnimation {
  public:
   WorkletAnimation(int id,
                    const std::string& name,
@@ -50,12 +49,6 @@ class CC_ANIMATION_EXPORT WorkletAnimation final
   // its current time is going to be different from last time given these input.
   bool NeedsUpdate(base::TimeTicks monotonic_time,
                    const ScrollTree& scroll_tree);
-
-  // KeyframeEffect::AnimationTimeProvider:
-  base::TimeTicks GetTimeForKeyframeModel(
-      const KeyframeModel& keyframe_model) const override;
-
-  void PushPropertiesTo(Animation* animation_impl) override;
 
  private:
   ~WorkletAnimation() override;

@@ -243,7 +243,7 @@ void Animation::PushPropertiesTo(Animation* animation_impl) {
 void Animation::Tick(base::TimeTicks monotonic_time) {
   DCHECK(!monotonic_time.is_null());
   for (auto& keyframe_effect : keyframe_effects_)
-    keyframe_effect->Tick(monotonic_time, nullptr);
+    keyframe_effect->Tick(monotonic_time);
 }
 
 void Animation::UpdateState(bool start_ready_animations,

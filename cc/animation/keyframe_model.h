@@ -140,9 +140,6 @@ class CC_ANIMATION_EXPORT KeyframeModel {
   base::TimeDelta TrimTimeToCurrentIteration(
       base::TimeTicks monotonic_time) const;
 
-  base::TimeTicks ConvertLocalTimeToMonotonicTime(
-      base::TimeDelta local_time) const;
-
   void set_is_controlling_instance_for_test(bool is_controlling_instance) {
     is_controlling_instance_ = is_controlling_instance;
   }

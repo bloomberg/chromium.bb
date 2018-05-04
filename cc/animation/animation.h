@@ -90,7 +90,7 @@ class CC_ANIMATION_EXPORT Animation : public base::RefCounted<Animation> {
   void AbortKeyframeModels(TargetProperty::Type target_property,
                            bool needs_completion);
 
-  virtual void PushPropertiesTo(Animation* animation_impl);
+  void PushPropertiesTo(Animation* animation_impl);
 
   void UpdateState(bool start_ready_keyframe_models, AnimationEvents* events);
   virtual void Tick(base::TimeTicks monotonic_time);

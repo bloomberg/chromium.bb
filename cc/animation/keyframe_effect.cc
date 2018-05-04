@@ -104,8 +104,7 @@ void KeyframeEffect::DetachElement() {
   element_id_ = ElementId();
 }
 
-void KeyframeEffect::Tick(base::TimeTicks monotonic_time,
-                          const AnimationTimeProvider* tick_provider) {
+void KeyframeEffect::Tick(base::TimeTicks monotonic_time) {
   DCHECK(has_bound_element_animations());
   if (!element_animations_->has_element_in_any_list())
     return;
@@ -113,12 +112,8 @@ void KeyframeEffect::Tick(base::TimeTicks monotonic_time,
   if (needs_to_start_keyframe_models_)
     StartKeyframeModels(monotonic_time);
 
-  base::TimeTicks tick_time = monotonic_time;
   for (auto& keyframe_model : keyframe_models_) {
-    if (tick_provider)
-      tick_time = tick_provider->GetTimeForKeyframeModel(*keyframe_model);
-
-    TickKeyframeModel(tick_time, keyframe_model.get(),
+    TickKeyframeModel(monotonic_time, keyframe_model.get(),
                       element_animations_.get());
   }
 
@@ -222,6 +217,19 @@ void KeyframeEffect::UpdateTickingState(UpdateTickingType type) {
     } else if (!is_ticking_ && (was_ticking || force)) {
       RemoveFromTicking();
     }
+  }
+}
+
+void KeyframeEffect::Pause(base::TimeDelta pause_offset) {
+  for (auto& keyframe_model : keyframe_models_) {
+    base::TimeTicks pause_time = keyframe_model->time_offset() +
+                                 keyframe_model->start_time() + pause_offset;
+    keyframe_model->SetRunState(KeyframeModel::PAUSED, pause_time);
+  }
+
+  if (has_bound_element_animations()) {
+    animation_->SetNeedsCommit();
+    SetNeedsPushProperties();
   }
 }
 
