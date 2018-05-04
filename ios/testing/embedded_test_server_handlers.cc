@@ -33,4 +33,17 @@ std::unique_ptr<net::test_server::HttpResponse> HandleIFrame(
   return std::move(http_response);
 }
 
+std::unique_ptr<net::test_server::HttpResponse> HandleEchoQueryOrCloseSocket(
+    const bool& responds_with_content,
+    const net::test_server::HttpRequest& request) {
+  if (!responds_with_content) {
+    return std::make_unique<net::test_server::RawHttpResponse>(
+        /*headers=*/"", /*contents=*/"");
+  }
+  auto response = std::make_unique<net::test_server::BasicHttpResponse>();
+  response->set_content_type("text/html");
+  response->set_content(request.GetURL().query());
+  return std::move(response);
+}
+
 }  // namespace testing
