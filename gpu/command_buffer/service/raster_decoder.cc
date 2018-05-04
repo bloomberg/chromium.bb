@@ -1036,6 +1036,7 @@ Capabilities RasterDecoderImpl::GetCapabilities() {
   caps.texture_storage_image =
       feature_info_->feature_flags().chromium_texture_storage_image;
   caps.texture_storage = feature_info_->feature_flags().ext_texture_storage;
+  DoGetIntegerv(GL_MAX_TEXTURE_SIZE, &caps.max_texture_size, 1);
 
   // TODO(backer): If this feature is not turned on, CPU raster gives us random
   // junk, which is a bug (https://crbug.com/828578).
