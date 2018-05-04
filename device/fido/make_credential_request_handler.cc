@@ -24,7 +24,9 @@ MakeCredentialRequestHandler::MakeCredentialRequestHandler(
       request_parameter_(std::move(request_parameter)),
       authenticator_selection_criteria_(
           std::move(authenticator_selection_criteria)),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  Start();
+}
 
 MakeCredentialRequestHandler::~MakeCredentialRequestHandler() = default;
 

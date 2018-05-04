@@ -20,7 +20,9 @@ GetAssertionRequestHandler::GetAssertionRequestHandler(
     SignResponseCallback completion_callback)
     : FidoRequestHandler(connector, protocols, std::move(completion_callback)),
       request_(std::move(request)),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  Start();
+}
 
 GetAssertionRequestHandler::~GetAssertionRequestHandler() = default;
 

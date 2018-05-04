@@ -24,7 +24,6 @@ FidoRequestHandlerBase::FidoRequestHandlerBase(
       continue;
     }
     discovery->set_observer(this);
-    discovery->Start();
     discoveries_.push_back(std::move(discovery));
   }
 }
@@ -43,6 +42,12 @@ void FidoRequestHandlerBase::CancelOngoingTasks(
     } else {
       ++task_it;
     }
+  }
+}
+
+void FidoRequestHandlerBase::Start() {
+  for (const auto& discovery : discoveries_) {
+    discovery->Start();
   }
 }
 
