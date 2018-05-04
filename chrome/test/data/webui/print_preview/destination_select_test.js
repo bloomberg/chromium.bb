@@ -6,7 +6,9 @@ cr.define('destination_select_test', function() {
   /** @enum {string} */
   const TestNames = {
     SingleRecentDestination: 'single recent destination',
-    MultipleRecentDestinations: 'multiple recent destination',
+    MultipleRecentDestinations: 'multiple recent destinations',
+    MultipleRecentDestinationsOneRequest:
+        'multiple recent destinations one request',
     DefaultDestinationSelectionRules: 'default destination selection rules',
     SystemDefaultPrinterPolicy: 'system default printer policy',
   };
@@ -81,11 +83,8 @@ cr.define('destination_select_test', function() {
      * destinations are marked as recent in the store.
      */
     test(assert(TestNames.MultipleRecentDestinations), function() {
-      const recentDestinations = [];
-      destinations.slice(0, 3).forEach(destination => {
-        recentDestinations.push(
-            print_preview.makeRecentDestination(destination));
-      });
+      const recentDestinations = destinations.slice(0, 3).map(
+          destination => print_preview.makeRecentDestination(destination));
 
       initialSettings.serializedAppStateStr = JSON.stringify({
         version: 2,
@@ -110,10 +109,49 @@ cr.define('destination_select_test', function() {
           const match = reportedPrinters.find((reportedPrinter) => {
               return reportedPrinter.id == destination.id;});
           assertFalse(typeof match === "undefined");
-          if (index < 3)
-            assertTrue(match.isRecent);
-          else
-            assertFalse(match.isRecent);
+          assertEquals(index < 3, match.isRecent);
+        });
+      });
+    });
+
+    /**
+     * Tests that if the user has multiple valid recent destinations, this
+     * does not result in multiple calls to getPrinterCapabilities and the
+     * correct destination is selected for the preview request.
+     * For crbug.com/666595.
+     */
+    test(assert(TestNames.MultipleRecentDestinationsOneRequest), function() {
+      const recentDestinations = destinations.slice(0, 3).map(
+          destination => print_preview.makeRecentDestination(destination));
+
+      initialSettings.serializedAppStateStr = JSON.stringify({
+        version: 2,
+        recentDestinations: recentDestinations,
+      });
+
+      return setInitialSettings().then(function(argsArray) {
+        // Should have loaded ID1 as the selected printer, since it was most
+        // recent.
+        assertEquals('ID1', argsArray[1].destinationId);
+        assertEquals(print_preview.PrinterType.LOCAL, argsArray[1].type);
+        assertEquals('ID1', page.destination_.id);
+
+        return nativeLayer.whenCalled('getPreview');
+      }).then(function(previewArgs) {
+        const ticket = JSON.parse(previewArgs.printTicket);
+        assertEquals(0, ticket.requestID);
+        assertEquals('ID1', ticket.deviceName);
+
+        // None of the other printers should have been loaded. Should only have
+        // ID1 and Save as PDF. They will be loaded when the dialog is opened
+        // and startLoadDestinations() is called.
+        const reportedPrinters = page.destinationStore_.destinations();
+        assertEquals(2, reportedPrinters.length);
+        destinations.forEach((destination, index) => {
+          if (destination.id == 'ID1')
+            return;
+
+          assertFalse(reportedPrinters.some(p => p.id == destination.id));
         });
       });
     });
