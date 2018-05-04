@@ -130,7 +130,6 @@ import org.chromium.chrome.browser.vr_shell.VrIntentUtils;
 import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
 import org.chromium.chrome.browser.widget.OverviewListLayout;
 import org.chromium.chrome.browser.widget.ViewHighlighter;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.emptybackground.EmptyBackgroundViewWrapper;
 import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 import org.chromium.components.feature_engagement.EventConstants;
@@ -868,24 +867,12 @@ public class ChromeTabbedActivity
         // Don't show the IPH if we're in the process of destroying the activity.
         if (isActivityDestroyed()) return;
 
-        // Don't show the IPH, if bottom sheet is already open.
-        if (FeatureUtilities.isChromeHomeEnabled()
-                && (getBottomSheet() == null
-                           || getBottomSheet().getSheetState() != BottomSheet.SHEET_STATE_PEEK)) {
-            return;
-        }
-
         if (!tracker.shouldTriggerHelpUI(FeatureConstants.DOWNLOAD_HOME_FEATURE)) return;
-
-        int accessibilityStringId = R.string.iph_download_home_accessibility_text;
-        if (FeatureUtilities.isChromeHomeEnabled()) {
-            accessibilityStringId = R.string.iph_download_home_accessibility_text_chrome_home;
-        }
 
         View anchorView = getToolbarAnchorViewForDownloadHomeTextBubble();
         ViewRectProvider rectProvider = new ViewRectProvider(anchorView);
         TextBubble textBubble = new TextBubble(this, anchorView, R.string.iph_download_home_text,
-                accessibilityStringId, rectProvider);
+                R.string.iph_download_home_accessibility_text, rectProvider);
         textBubble.setDismissOnTouchInteraction(true);
         textBubble.addOnDismissListener(() -> mHandler.postDelayed(() -> {
             tracker.dismissed(FeatureConstants.DOWNLOAD_HOME_FEATURE);
@@ -901,11 +888,7 @@ public class ChromeTabbedActivity
     }
 
     private View getToolbarAnchorViewForDownloadHomeTextBubble() {
-        if (FeatureUtilities.isChromeHomeEnabled()) {
-            return mControlContainer.findViewById(R.id.toolbar_handle);
-        } else {
-            return getToolbarManager().getMenuButton();
-        }
+        return getToolbarManager().getMenuButton();
     }
 
     private void turnOnHighlightForDownloadHomeTextBubble() {
@@ -1407,9 +1390,6 @@ public class ChromeTabbedActivity
 
     @Override
     protected int getControlContainerLayoutId() {
-        if (FeatureUtilities.isChromeHomeEnabled()) {
-            return R.layout.bottom_control_container;
-        }
         return R.layout.control_container;
     }
 
