@@ -24,7 +24,6 @@
 
 namespace {
 
-const int kIgnoreLayers = 8;  // Used to ignore layer info in obudec.
 const size_t kInitialBufferSize = 100 * 1024;
 
 struct InputContext {
@@ -35,7 +34,7 @@ struct InputContext {
     memset(avx_ctx, 0, sizeof(*avx_ctx));
     memset(obu_ctx, 0, sizeof(*obu_ctx));
     obu_ctx->avx_ctx = avx_ctx;
-    obu_ctx->last_layer_id = kIgnoreLayers;
+    obu_ctx->last_layer_id = IGNORE_ENHANCEMENT_LAYERS;
 #if CONFIG_WEBM_IO
     memset(webm_ctx, 0, sizeof(*webm_ctx));
 #endif
