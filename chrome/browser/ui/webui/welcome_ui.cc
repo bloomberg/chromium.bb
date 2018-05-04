@@ -47,12 +47,6 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(url.host());
 
-  // Check URL for variations.
-  std::string value;
-  bool is_everywhere_variant =
-      (net::GetValueForKeyInQuery(url, "variant", &value) &&
-       value == "everywhere");
-
   bool is_dice = signin::IsDiceEnabledForProfile(profile->GetPrefs());
 
   // There are multiple possible configurations that affects the layout, but
@@ -61,9 +55,9 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
   html_source->AddResourcePath("logo.png", IDR_PRODUCT_LOGO_128);
   html_source->AddResourcePath("logo2x.png", IDR_PRODUCT_LOGO_256);
 
-  // Use special layout if it's branded, DICE is enabled, and it's the first
-  // run. otherwise use the default layout.
-  if (kIsBranded && is_dice && !is_everywhere_variant) {
+  // Use special layout if the application is branded and DICE is enabled.
+  // Otherwise use the default layout.
+  if (kIsBranded && is_dice) {
     html_source->AddLocalizedString("headerText", IDS_WELCOME_HEADER);
     html_source->AddLocalizedString("secondHeaderText",
                                     IDS_DICE_WELCOME_SECOND_HEADER);
@@ -71,14 +65,21 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
                                     IDS_DICE_WELCOME_DESCRIPTION);
     html_source->AddLocalizedString("declineText",
                                     IDS_DICE_WELCOME_DECLINE_BUTTON);
-    html_source->AddResourcePath("welcome_browser_proxy.html", IDR_DICE_WELCOME_BROWSER_PROXY_HTML);
-    html_source->AddResourcePath("welcome_browser_proxy.js", IDR_DICE_WELCOME_BROWSER_PROXY_JS);
+    html_source->AddResourcePath("welcome_browser_proxy.html",
+                                 IDR_DICE_WELCOME_BROWSER_PROXY_HTML);
+    html_source->AddResourcePath("welcome_browser_proxy.js",
+                                 IDR_DICE_WELCOME_BROWSER_PROXY_JS);
     html_source->AddResourcePath("welcome_app.html", IDR_DICE_WELCOME_APP_HTML);
     html_source->AddResourcePath("welcome_app.js", IDR_DICE_WELCOME_APP_JS);
     html_source->AddResourcePath("welcome.css", IDR_DICE_WELCOME_CSS);
     html_source->SetDefaultResource(IDR_DICE_WELCOME_HTML);
   } else {
-    // Use default layout for non-DICE, non-first run, or unbranded build.
+    // Use default layout for non-DICE or unbranded build.
+    std::string value;
+    bool is_everywhere_variant =
+        (net::GetValueForKeyInQuery(url, "variant", &value) &&
+         value == "everywhere");
+
     if (kIsBranded) {
       base::string16 subheader =
           is_everywhere_variant
