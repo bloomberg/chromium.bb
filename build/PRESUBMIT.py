@@ -21,6 +21,6 @@ def PostUploadHook(cl, change, output_api):
   return output_api.EnsureCQIncludeTrybotsAreAdded(
     cl,
     [
-      'master.tryserver.chromium.linux:linux_chromium_dbg_ng',
+      'luci.chromium.try:linux_chromium_dbg_ng',
     ],
     'Automatically added tests to run on CQ.')
