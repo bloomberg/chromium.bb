@@ -207,6 +207,7 @@ class MockVideoDecoder : public VideoDecoder {
   MOCK_METHOD1(Reset, void(const base::Closure&));
   MOCK_CONST_METHOD0(GetMaxDecodeRequests, int());
   MOCK_CONST_METHOD0(CanReadWithoutStalling, bool());
+  MOCK_CONST_METHOD0(NeedsBitstreamConversion, bool());
 
  private:
   std::string decoder_name_;
