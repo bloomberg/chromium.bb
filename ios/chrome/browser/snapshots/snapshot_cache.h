@@ -38,7 +38,24 @@
                              callback:(void (^)(UIImage*))callback;
 
 - (void)setImage:(UIImage*)img withSessionID:(NSString*)sessionID;
+
+// Removes the image from both the LRU and disk cache, unless it is marked for
+// deferred deletion. Images marked for deferred deletion can only be removed by
+// calling |-removeMarkedImages|.
 - (void)removeImageWithSessionID:(NSString*)sessionID;
+
+// Marks an image for deferred deletion. The image will not be immediately
+// deleted when |-removeImageWithSessionID:| is called. Images marked for
+// deferred deletion can only be removed by calling |-removeMarkedImages|.
+- (void)markImageWithSessionID:(NSString*)sessionID;
+
+// Removes all marked images from both the LRU and disk cache.
+- (void)removeMarkedImages;
+
+// Unmarks all images, so they remain in the cache. They are no longer marked
+// for deferred deletion.
+- (void)unmarkAllImages;
+
 // Purge the cache of snapshots that are older than |date|. The snapshots for
 // the sessions given in |liveSessionIds| will be kept. This will be done
 // asynchronously on a background thread.
