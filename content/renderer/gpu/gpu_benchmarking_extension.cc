@@ -13,6 +13,7 @@
 
 #include "base/base64.h"
 #include "base/command_line.h"
+#include "base/debug/profiler.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
@@ -550,7 +551,9 @@ gin::ObjectTemplateBuilder GpuBenchmarking::GetObjectTemplateBuilder(
       .SetMethod("hasGpuChannel", &GpuBenchmarking::HasGpuChannel)
       .SetMethod("hasGpuProcess", &GpuBenchmarking::HasGpuProcess)
       .SetMethod("getGpuDriverBugWorkarounds",
-                 &GpuBenchmarking::GetGpuDriverBugWorkarounds);
+                 &GpuBenchmarking::GetGpuDriverBugWorkarounds)
+      .SetMethod("startProfiling", &GpuBenchmarking::StartProfiling)
+      .SetMethod("stopProfiling", &GpuBenchmarking::StopProfiling);
 }
 
 void GpuBenchmarking::SetNeedsDisplayOnAllLayers() {
@@ -1073,6 +1076,23 @@ void GpuBenchmarking::GetGpuDriverBugWorkarounds(gin::Arguments* args) {
   v8::Local<v8::Value> result;
   if (gin::TryConvertToV8(args->isolate(), gpu_driver_bug_workarounds, &result))
     args->Return(result);
+}
+
+void GpuBenchmarking::StartProfiling(gin::Arguments* args) {
+  if (base::debug::BeingProfiled())
+    return;
+  std::string file_name;
+  if (!GetOptionalArg(args, &file_name))
+    return;
+  if (!file_name.length())
+    file_name = "profile.pb";
+  base::debug::StartProfiling(file_name);
+  base::debug::RestartProfilingAfterFork();
+}
+
+void GpuBenchmarking::StopProfiling() {
+  if (base::debug::BeingProfiled())
+    base::debug::StopProfiling();
 }
 
 }  // namespace content
