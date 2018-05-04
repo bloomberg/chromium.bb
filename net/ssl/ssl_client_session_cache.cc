@@ -120,7 +120,8 @@ void SSLClientSessionCache::DumpMemoryStats(
     for (const auto& session : pair.second.sessions) {
       if (!session)
         continue;
-      undeduped_cert_count += sk_CRYPTO_BUFFER_num(session->certs);
+      undeduped_cert_count += sk_CRYPTO_BUFFER_num(
+          SSL_SESSION_get0_peer_certificates(session.get()));
     }
   }
   // Use a flat_set here to avoid malloc upon insertion.
@@ -130,7 +131,8 @@ void SSLClientSessionCache::DumpMemoryStats(
     for (const auto& session : pair.second.sessions) {
       if (!session)
         continue;
-      for (const CRYPTO_BUFFER* cert : session->certs) {
+      for (const CRYPTO_BUFFER* cert :
+           SSL_SESSION_get0_peer_certificates(session.get())) {
         undeduped_cert_size += CRYPTO_BUFFER_len(cert);
         auto result = crypto_buffer_set.insert(cert);
         if (!result.second)
