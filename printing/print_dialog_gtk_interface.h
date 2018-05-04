@@ -23,8 +23,8 @@ class PrintDialogGtkInterface {
   virtual void UseDefaultSettings() = 0;
 
   // Updates the dialog to use |settings|. Only used when printing without the
-  // system print dialog. E.g. for Print Preview. Returns false on error.
-  virtual bool UpdateSettings(PrintSettings* settings) = 0;
+  // system print dialog. E.g. for Print Preview.
+  virtual void UpdateSettings(PrintSettings* settings) = 0;
 
   // Shows the dialog and handles the response with |callback|. Only used when
   // printing with the native print dialog.
