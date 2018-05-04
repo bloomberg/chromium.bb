@@ -71,6 +71,13 @@ enum ChromeTextStyle {
   STYLE_EMPHASIZED_SECONDARY,
 };
 
+// Takes a desired font size and returns the size delta to request from
+// ui::ResourceBundle that will result either in that font size, or the biggest
+// font size that is smaller than the desired font size but will fit inside
+// |available_height|.
+int GetFontSizeDeltaBoundedByAvailableHeight(int available_height,
+                                             int desired_font_size);
+
 // Sets the |size_delta| and |font_weight| for text that should not be affected
 // by the Harmony spec.
 void ApplyCommonFontStyles(int context,

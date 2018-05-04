@@ -12,15 +12,9 @@
 #include "ui/base/ui_features.h"
 #include "ui/gfx/platform_font.h"
 
-namespace {
-
 // Mac doesn't use LocationBarView (yet).
 #if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
 
-// Takes a desired font size and returns the size delta to request from
-// ui::ResourceBundle that will result either in that font size, or the biggest
-// font size that is smaller than the desired font size but will fit inside
-// |available_height|.
 int GetFontSizeDeltaBoundedByAvailableHeight(int available_height,
                                              int desired_font_size) {
   int size_delta = desired_font_size - gfx::PlatformFont::kDefaultBaseFontSize;
@@ -31,9 +25,10 @@ int GetFontSizeDeltaBoundedByAvailableHeight(int available_height,
   // if, for example, the user has changed their system font sizes or the
   // current locale has been overridden to use a different default font size.
   // Adjust for the difference in default font sizes.
+  int user_or_locale_delta = 0;
   if (base_font.GetFontSize() != desired_font_size) {
-    size_delta += desired_font_size - base_font.GetFontSize();
-    base_font = bundle.GetFontListWithDelta(size_delta);
+    user_or_locale_delta = desired_font_size - base_font.GetFontSize();
+    base_font = bundle.GetFontListWithDelta(size_delta + user_or_locale_delta);
   }
   DCHECK_EQ(desired_font_size, base_font.GetFontSize());
 
@@ -41,12 +36,14 @@ int GetFontSizeDeltaBoundedByAvailableHeight(int available_height,
   // TODO(tapted): Move DeriveWithHeightUpperBound() to ui::ResourceBundle to
   // take advantage of the font cache.
   base_font = base_font.DeriveWithHeightUpperBound(available_height);
-  return base_font.GetFontSize() - gfx::PlatformFont::kDefaultBaseFontSize;
+
+  // To ensure a subsequent request from the ResourceBundle ignores the delta
+  // due to user or locale settings, include it here.
+  return base_font.GetFontSize() - gfx::PlatformFont::kDefaultBaseFontSize +
+         user_or_locale_delta;
 }
 
 #endif  // OS_MACOSX || MAC_VIEWS_BROWSER
-
-}  // namespace
 
 void ApplyCommonFontStyles(int context,
                            int style,
