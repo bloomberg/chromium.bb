@@ -95,6 +95,8 @@
 #include "ui/aura/window_observer.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/base/ime/input_method_keyboard_controller.h"
+#include "ui/base/ime/mock_input_method.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_types.h"
@@ -7347,5 +7349,83 @@ TEST_F(InputMethodStateAuraTest, ImeFocusedNodeChanged) {
   // The composition must have been canceled.
   EXPECT_FALSE(has_composition_text());
 }
+
+#if defined(OS_WIN)
+class MockInputMethodKeyboardController
+    : public ui::InputMethodKeyboardController {
+ public:
+  MockInputMethodKeyboardController() = default;
+  bool DisplayVirtualKeyboard() final { return true; }
+
+  void DismissVirtualKeyboard() final {}
+
+  void AddObserver(ui::InputMethodKeyboardControllerObserver* observer) final {
+    observer_count_++;
+  }
+
+  void RemoveObserver(
+      ui::InputMethodKeyboardControllerObserver* observer) final {
+    observer_count_--;
+  }
+
+  bool IsKeyboardVisible() const final { return false; }
+
+  size_t observer_count() const { return observer_count_; }
+
+ private:
+  size_t observer_count_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(MockInputMethodKeyboardController);
+};
+
+class RenderWidgetHostViewAuraKeyboardMockInputMethod
+    : public ui::MockInputMethod {
+ public:
+  RenderWidgetHostViewAuraKeyboardMockInputMethod()
+      : MockInputMethod(nullptr) {}
+  ui::InputMethodKeyboardController* GetInputMethodKeyboardController()
+      override {
+    return &keyboard_controller_;
+  }
+  size_t keyboard_controller_observer_count() const {
+    return keyboard_controller_.observer_count();
+  }
+
+ private:
+  MockInputMethodKeyboardController keyboard_controller_;
+  DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAuraKeyboardMockInputMethod);
+};
+
+class RenderWidgetHostViewAuraKeyboardTest
+    : public RenderWidgetHostViewAuraTest {
+ public:
+  RenderWidgetHostViewAuraKeyboardTest() = default;
+  ~RenderWidgetHostViewAuraKeyboardTest() override{};
+  void SetUp() override {
+    SetUpEnvironment();
+    aura_test_helper_->host()->SetSharedInputMethod(&input_method_);
+  }
+
+  size_t keyboard_controller_observer_count() const {
+    return input_method_.keyboard_controller_observer_count();
+  }
+
+ private:
+  RenderWidgetHostViewAuraKeyboardMockInputMethod input_method_;
+  DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAuraKeyboardTest);
+};
+
+TEST_F(RenderWidgetHostViewAuraKeyboardTest,
+       DISABLED_KeyboardObserverDestroyed) {
+  parent_view_->FocusedNodeTouched(true);
+  EXPECT_NE(parent_view_->keyboard_observer_.get(), nullptr);
+  EXPECT_EQ(keyboard_controller_observer_count(), 1u);
+  // Detach the RenderWidgetHostViewAura from the IME.
+  parent_view_->DetachFromInputMethod();
+  EXPECT_EQ(parent_view_->keyboard_observer_.get(), nullptr);
+  EXPECT_EQ(keyboard_controller_observer_count(), 0u);
+}
+
+#endif  // defined(OS_WIN)
 
 }  // namespace content
