@@ -418,8 +418,7 @@ DevToolsWindow::~DevToolsWindow() {
   UpdateBrowserWindow();
   UpdateBrowserToolbar();
 
-  if (toolbox_web_contents_)
-    delete toolbox_web_contents_;
+  owned_toolbox_web_contents_.reset();
 
   DevToolsWindows* instances = g_devtools_window_instances.Pointer();
   DevToolsWindows::iterator it(
@@ -1144,9 +1143,7 @@ void DevToolsWindow::AddNewContents(WebContents* source,
                                     bool user_gesture,
                                     bool* was_blocked) {
   if (new_contents.get() == toolbox_web_contents_) {
-    // TODO(erikchen): Fix ownership semantics for WebContents.
-    // https://crbug.com/832879.
-    new_contents.release();
+    owned_toolbox_web_contents_ = std::move(new_contents);
 
     toolbox_web_contents_->SetDelegate(
         new DevToolsToolboxDelegate(toolbox_web_contents_,
@@ -1178,8 +1175,10 @@ void DevToolsWindow::WebContentsCreated(WebContents* source_contents,
   if (target_url.SchemeIs(content::kChromeDevToolsScheme) &&
       target_url.path().rfind("toolbox.html") != std::string::npos) {
     CHECK(can_dock_);
-    if (toolbox_web_contents_)
-      delete toolbox_web_contents_;
+
+    // Ownership will be passed in DevToolsWindow::AddNewContents.
+    if (owned_toolbox_web_contents_)
+      owned_toolbox_web_contents_.reset();
     toolbox_web_contents_ = new_contents;
 
     // Tag the DevTools toolbox WebContents with its TaskManager specific
