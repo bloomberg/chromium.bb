@@ -75,7 +75,7 @@ Polymer({
     /**
      * Set to true when the user is dragging the volume bar. Volume updates from
      * the browser will be ignored when set to true.
-     * @private {boolean}
+     * @private
      */
     isVolumeChanging_: {
       type: Boolean,
@@ -84,7 +84,7 @@ Polymer({
 
     /**
      * The timestamp for when the controller last submitted a seek request.
-     * @private {number}
+     * @private
      */
     lastSeekByUser_: {
       type: Number,
@@ -93,7 +93,7 @@ Polymer({
 
     /**
      * The timestamp for when |routeStatus| was last updated.
-     * @private {number}
+     * @private
      */
     lastStatusUpdate_: {
       type: Number,
@@ -103,7 +103,7 @@ Polymer({
     /**
      * The timestamp for when the controller last submitted a volume change
      * request.
-     * @private {boolean}
+     * @private
      */
     lastVolumeChangeByUser_: {
       type: Number,
@@ -112,7 +112,7 @@ Polymer({
 
     /**
      * Keep in sync with media remoting individual user setting.
-     * @private {boolean}
+     * @private
      */
     mediaRemotingEnabled_: {
       type: Boolean,
@@ -401,7 +401,7 @@ Polymer({
           this.FullscreenVideoOption_.REMOTE_SCREEN :
           this.FullscreenVideoOption_.BOTH_SCREENS;
     }
-    this.shouldShowRouteStatusTitle_ = newRouteStatus.title &&
+    this.shouldShowRouteStatusTitle_ = !!newRouteStatus.title &&
         newRouteStatus.title != '' &&
         newRouteStatus.title != this.routeDescription_;
   },

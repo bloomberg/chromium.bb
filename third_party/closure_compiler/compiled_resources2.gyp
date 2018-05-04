@@ -22,7 +22,6 @@
         '<(DEPTH)/chrome/browser/resources/chromeos/select_to_speak/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/chromeos/switch_access/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/chromeos/sys_internals/compiled_resources2.gyp:*',
-        '<(DEPTH)/chrome/browser/resources/media_router/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/ntp4/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/pdf/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/print_preview/compiled_resources2.gyp:*',
