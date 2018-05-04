@@ -47,11 +47,13 @@ blink::WebString ToWebString(media::VideoFacingMode facing_mode) {
 struct Candidate {
  public:
   Candidate(const std::string& device_id,
+            const std::string& group_id,
             const media::VideoCaptureFormat& format,
             media::VideoFacingMode facing_mode,
             media::PowerLineFrequency power_line_frequency,
             const base::Optional<bool>& noise_reduction)
       : device_id_(device_id),
+        group_id_(group_id),
         format_(format),
         facing_mode_(facing_mode),
         power_line_frequency_(power_line_frequency),
@@ -66,6 +68,9 @@ struct Candidate {
   blink::WebString GetDeviceId() const {
     return blink::WebString::FromASCII(device_id_.data());
   }
+  blink::WebString GetGroupId() const {
+    return blink::WebString::FromASCII(group_id_.data());
+  }
   blink::WebString GetVideoKind() const {
     return GetVideoKindForFormat(format_);
   }
@@ -73,6 +78,7 @@ struct Candidate {
   // Accessors.
   const media::VideoCaptureFormat& format() const { return format_; }
   const std::string& device_id() const { return device_id_; }
+  const std::string& group_id() const { return group_id_; }
   media::VideoFacingMode facing_mode() const { return facing_mode_; }
   media::PowerLineFrequency power_line_frequency() const {
     return power_line_frequency_;
@@ -83,6 +89,7 @@ struct Candidate {
 
  private:
   std::string device_id_;
+  std::string group_id_;
   media::VideoCaptureFormat format_;
   media::VideoFacingMode facing_mode_;
   media::PowerLineFrequency power_line_frequency_;
@@ -429,11 +436,15 @@ double NoiseReductionConstraintSourceDistance(
 // characteristics that have a fixed value.
 double DeviceSourceDistance(
     const std::string& device_id,
+    const std::string& group_id,
     media::VideoFacingMode facing_mode,
     const blink::WebMediaTrackConstraintSet& constraint_set,
     const char** failed_constraint_name) {
   return StringConstraintSourceDistance(blink::WebString::FromASCII(device_id),
                                         constraint_set.device_id,
+                                        failed_constraint_name) +
+         StringConstraintSourceDistance(blink::WebString::FromASCII(group_id),
+                                        constraint_set.group_id,
                                         failed_constraint_name) +
          StringConstraintSourceDistance(ToWebString(facing_mode),
                                         constraint_set.facing_mode,
@@ -483,8 +494,9 @@ double CandidateSourceDistance(
     const ConstrainedFormat& constrained_format,
     const blink::WebMediaTrackConstraintSet& constraint_set,
     const char** failed_constraint_name) {
-  return DeviceSourceDistance(candidate.device_id(), candidate.facing_mode(),
-                              constraint_set, failed_constraint_name) +
+  return DeviceSourceDistance(candidate.device_id(), candidate.group_id(),
+                              candidate.facing_mode(), constraint_set,
+                              failed_constraint_name) +
          FormatSourceDistance(candidate.format(), constrained_format,
                               constraint_set, failed_constraint_name) +
          PowerLineFrequencyConstraintSourceDistance(
@@ -640,6 +652,8 @@ double CandidateFitnessDistance(
       constraint_set.aspect_ratio);
   fitness += StringConstraintFitnessDistance(candidate.GetDeviceId(),
                                              constraint_set.device_id);
+  fitness += StringConstraintFitnessDistance(candidate.GetGroupId(),
+                                             constraint_set.group_id);
   fitness += StringConstraintFitnessDistance(candidate.GetFacingMode(),
                                              constraint_set.facing_mode);
   fitness += StringConstraintFitnessDistance(candidate.GetVideoKind(),
@@ -799,9 +813,9 @@ VideoCaptureSettings SelectSettingsVideoDeviceCapture(
   const char* failed_constraint_name = result.failed_constraint_name();
 
   for (auto& device : capabilities.device_capabilities) {
-    double basic_device_distance =
-        DeviceSourceDistance(device->device_id, device->facing_mode,
-                             constraints.Basic(), &failed_constraint_name);
+    double basic_device_distance = DeviceSourceDistance(
+        device->device_id, device->group_id, device->facing_mode,
+        constraints.Basic(), &failed_constraint_name);
     if (!std::isfinite(basic_device_distance))
       continue;
 
@@ -843,8 +857,9 @@ VideoCaptureSettings SelectSettingsVideoDeviceCapture(
           // Custom distances must be added to the candidate distance vector
           // after all the spec-mandated values.
           DistanceVector advanced_custom_distance_vector;
-          Candidate candidate(device->device_id, format, device->facing_mode,
-                              power_line_frequency, noise_reduction);
+          Candidate candidate(device->device_id, device->group_id, format,
+                              device->facing_mode, power_line_frequency,
+                              noise_reduction);
           DistanceVector candidate_distance_vector;
           // First criteria for valid candidates is satisfaction of advanced
           // constraint sets.

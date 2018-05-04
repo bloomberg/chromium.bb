@@ -247,6 +247,8 @@ VideoCaptureSettings ApplyConstraintsProcessor::SelectVideoSettings(
       blink::mojom::VideoInputDeviceCapabilities::New();
   device_capabilities->device_id =
       current_request_.Track().Source().Id().Ascii();
+  device_capabilities->group_id =
+      current_request_.Track().Source().GroupId().Ascii();
   device_capabilities->facing_mode =
       GetCurrentVideoSource() ? GetCurrentVideoSource()->device().video_facing
                               : media::MEDIA_VIDEO_FACING_NONE;

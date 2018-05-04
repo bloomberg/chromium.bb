@@ -74,7 +74,7 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
       GetVideoInputCapabilitiesCallback client_callback,
       const MediaDeviceSaltAndOrigin& salt_and_origin,
       const std::string& default_device_id,
-      const media::VideoCaptureDeviceDescriptors& device_descriptors);
+      const MediaDeviceEnumeration& enumeration);
 
   void GetDefaultAudioInputDeviceID(
       GetAudioInputCapabilitiesCallback client_callback,
