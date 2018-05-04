@@ -55,9 +55,11 @@ public class RecyclerViewAdapter<E extends ListObservable, VH extends ViewHolder
      * Construct a new {@link RecyclerViewAdapter}.
      * @param model The {@link ListObservable} model used to retrieve items to display in the
      *              {@link RecyclerView}.
+     * @param viewBinder The {@link ViewBinder} binding this adapter to the view holder.
      */
-    public RecyclerViewAdapter(E model) {
+    public RecyclerViewAdapter(E model, RecyclerViewAdapter.ViewBinder<E, VH> viewBinder) {
         mModel = model;
+        mViewBinder = viewBinder;
     }
 
     /**

@@ -7,6 +7,9 @@ package org.chromium.chrome.browser.autofill.keyboard_accessory;
 import static org.chromium.ui.base.LocalizationUtils.isLayoutRtl;
 
 import android.content.Context;
+import android.graphics.Rect;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,6 +29,19 @@ import javax.annotation.Nullable;
  */
 class KeyboardAccessoryView extends LinearLayout {
     private HorizontalScrollView mSuggestionsView;
+    private RecyclerView mActionsView;
+
+    private static class HorizontalDividerItemDecoration extends RecyclerView.ItemDecoration {
+        private final int mHorizontalMargin;
+        HorizontalDividerItemDecoration(int horizontalMargin) {
+            this.mHorizontalMargin = horizontalMargin;
+        }
+        @Override
+        public void getItemOffsets(
+                Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+            outRect.right = mHorizontalMargin;
+        }
+    }
 
     /**
      * Constructor for inflating from XML.
@@ -38,6 +54,9 @@ class KeyboardAccessoryView extends LinearLayout {
     protected void onFinishInflate() {
         super.onFinishInflate();
         sendAccessibilityEvent(AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED);
+
+        mActionsView = findViewById(R.id.actions_view);
+        initializeHorizontalRecyclerView(mActionsView);
 
         mSuggestionsView = findViewById(R.id.suggestions_view);
 
@@ -61,6 +80,10 @@ class KeyboardAccessoryView extends LinearLayout {
         }
     }
 
+    void setActionsAdapter(RecyclerView.Adapter adapter) {
+        mActionsView.setAdapter(adapter);
+    }
+
     // TODO(crbug/722897): Check to handle RTL.
     // TODO(fhorschig): This should use a RecyclerView. The model should contain single suggestions.
     /**
@@ -80,5 +103,22 @@ class KeyboardAccessoryView extends LinearLayout {
 
     private void hide() {
         setVisibility(View.GONE);
+    }
+
+    private void initializeHorizontalRecyclerView(RecyclerView recyclerView) {
+        // Set horizontal layout.
+        recyclerView.setLayoutManager(
+                new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+
+        // Create margins between every element.
+        recyclerView.addItemDecoration(new HorizontalDividerItemDecoration(
+                getResources().getDimensionPixelSize(R.dimen.keyboard_accessory_padding)));
+
+        // Remove all animations - the accessory shouldn't be visibly built anyway.
+        recyclerView.setItemAnimator(null);
+
+        int pad = getResources().getDimensionPixelSize(R.dimen.keyboard_accessory_padding);
+        int halfPad = getResources().getDimensionPixelSize(R.dimen.keyboard_accessory_half_padding);
+        recyclerView.setPadding(pad, halfPad, pad, halfPad);
     }
 }

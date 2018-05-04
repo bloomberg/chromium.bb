@@ -4,10 +4,17 @@
 
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
+import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
+import android.view.ViewGroup;
 import android.view.ViewStub;
 
+import org.chromium.chrome.R;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Action;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryModel.PropertyKey;
 import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
+import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
+import org.chromium.ui.widget.ButtonCompat;
 
 import javax.annotation.Nullable;
 
@@ -22,9 +29,15 @@ class KeyboardAccessoryViewBinder
         @Nullable
         private KeyboardAccessoryView mView; // Remains null until |mViewStub| is inflated.
         private final ViewStub mViewStub;
+        private final RecyclerViewAdapter<KeyboardAccessoryModel.SimpleListObservable<Action>,
+                ActionViewBinder.ViewHolder> mActionsAdapter;
 
-        AccessoryViewHolder(ViewStub viewStub) {
+        AccessoryViewHolder(ViewStub viewStub,
+                RecyclerViewAdapter<KeyboardAccessoryModel.SimpleListObservable<Action>,
+                        ActionViewBinder.ViewHolder> actionsAdapter) {
             mViewStub = viewStub;
+            mActionsAdapter = actionsAdapter;
+            mActionsAdapter.setViewBinder(new ActionViewBinder());
         }
 
         @Nullable
@@ -34,6 +47,36 @@ class KeyboardAccessoryViewBinder
 
         public void initializeView() {
             mView = (KeyboardAccessoryView) mViewStub.inflate();
+            mView.setActionsAdapter(mActionsAdapter);
+        }
+    }
+
+    static class ActionViewBinder implements RecyclerViewAdapter.ViewBinder<
+            KeyboardAccessoryModel.SimpleListObservable<Action>, ActionViewBinder.ViewHolder> {
+        static class ViewHolder extends RecyclerView.ViewHolder {
+            public ViewHolder(ButtonCompat actionView) {
+                super(actionView);
+            }
+
+            ButtonCompat getActionView() {
+                return (ButtonCompat) super.itemView;
+            }
+        }
+
+        @Override
+        public ActionViewBinder.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            return new ViewHolder(
+                    (ButtonCompat) LayoutInflater.from(parent.getContext())
+                            .inflate(R.layout.keyboard_accessory_action, parent, false));
+        }
+
+        @Override
+        public void onBindViewHolder(KeyboardAccessoryModel.SimpleListObservable<Action> actions,
+                ViewHolder holder, int position) {
+            final Action action = actions.get(position);
+            holder.getActionView().setText(action.getCaption());
+            holder.getActionView().setOnClickListener(
+                    view -> action.getDelegate().onActionTriggered(action));
         }
     }
 
