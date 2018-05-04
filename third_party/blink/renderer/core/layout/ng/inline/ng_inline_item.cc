@@ -44,7 +44,8 @@ NGInlineItem::NGInlineItem(NGInlineItemType type,
                            unsigned start,
                            unsigned end,
                            const ComputedStyle* style,
-                           LayoutObject* layout_object)
+                           LayoutObject* layout_object,
+                           bool end_may_collapse)
     : start_offset_(start),
       end_offset_(end),
       script_(USCRIPT_INVALID_CODE),
@@ -56,9 +57,31 @@ NGInlineItem::NGInlineItem(NGInlineItemType type,
       is_empty_item_(false),
       should_create_box_fragment_(false),
       style_variant_(static_cast<unsigned>(NGStyleVariant::kStandard)),
-      end_collapse_type_(kNotCollapsible) {
+      end_collapse_type_(kNotCollapsible),
+      end_may_collapse_(end_may_collapse) {
   DCHECK_GE(end, start);
   ComputeBoxProperties();
+}
+
+NGInlineItem::NGInlineItem(const NGInlineItem& other,
+                           unsigned start,
+                           unsigned end,
+                           scoped_refptr<const ShapeResult> shape_result)
+    : start_offset_(start),
+      end_offset_(end),
+      script_(other.script_),
+      shape_result_(shape_result),
+      style_(other.style_),
+      layout_object_(other.layout_object_),
+      type_(other.type_),
+      bidi_level_(other.bidi_level_),
+      shape_options_(other.shape_options_),
+      is_empty_item_(other.is_empty_item_),
+      should_create_box_fragment_(other.should_create_box_fragment_),
+      style_variant_(other.style_variant_),
+      end_collapse_type_(other.end_collapse_type_),
+      end_may_collapse_(other.end_may_collapse_) {
+  DCHECK_GE(end, start);
 }
 
 NGInlineItem::~NGInlineItem() = default;
@@ -154,18 +177,24 @@ void NGInlineItem::Split(Vector<NGInlineItem>& items,
   DCHECK_LT(offset, items[index].end_offset_);
   items.insert(index + 1, items[index]);
   items[index].end_offset_ = offset;
+  items[index].shape_result_ = nullptr;
   items[index + 1].start_offset_ = offset;
+  items[index + 1].shape_result_ = nullptr;
 }
 
 void NGInlineItem::SetOffset(unsigned start, unsigned end) {
   DCHECK_GE(end, start);
   start_offset_ = start;
   end_offset_ = end;
+  // Any modification to the offset will invalidate the shape result.
+  shape_result_ = nullptr;
 }
 
 void NGInlineItem::SetEndOffset(unsigned end_offset) {
   DCHECK_GE(end_offset, start_offset_);
   end_offset_ = end_offset;
+  // Any modification to the offset will invalidate the shape result.
+  shape_result_ = nullptr;
 }
 
 bool NGInlineItem::HasStartEdge() const {

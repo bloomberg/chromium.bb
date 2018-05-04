@@ -450,6 +450,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   // still working on LayoutNG.
   void AddOverflowFromFloats();
 
+  virtual NGInlineNodeData* TakeNGInlineNodeData() { return nullptr; }
   virtual NGInlineNodeData* GetNGInlineNodeData() const { return nullptr; }
   virtual void ResetNGInlineNodeData() {}
   virtual bool HasNGInlineNodeData() const { return false; }

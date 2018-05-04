@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/line/line_box_list.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item.h"
 #include "third_party/blink/renderer/core/layout/text_run_constructor.h"
 #include "third_party/blink/renderer/platform/length_functions.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -59,10 +60,9 @@ enum class OnlyWhitespaceOrNbsp : unsigned { kUnknown = 0, kNo = 1, kYes = 2 };
 //
 //
 // ***** LINE BOXES OWNERSHIP *****
-// InlineTextBox in text_boxes_ are not owned by LayoutText
-// but are pointers into the enclosing inline / block (see LayoutInline's
-// and LayoutBlockFlow's m_lineBoxes).
-//
+// InlineTextBox in text_boxes_ are not owned by LayoutText but are pointers
+// into the enclosing inline / block (see LayoutInline's and LayoutBlockFlow's
+// line_boxes_).
 //
 // This class implements the preferred logical widths computation
 // for its underlying text. The widths are stored into m_minWidth
@@ -355,7 +355,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   LayoutRect LocalVisualRectIgnoringVisibility() const final;
 
   // We put the bitfield first to minimize padding on 64-bit.
-
+ protected:
   // Whether or not we can be broken into multiple lines.
   unsigned has_breakable_char_ : 1;
   // Whether or not we have a hard break (e.g., <pre> with '\n').
@@ -371,10 +371,18 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   // dirtying everything when character data is modified (e.g., appended/
   // inserted or removed).
   unsigned lines_dirty_ : 1;
+
+  // Used by LayoutNGText. Whether the NGInlineItems associated with this
+  // object are valid. Set after layout and cleared whenever the LayoutText is
+  // modified.
+  // Functionally the inverse equivalent of lines_dirty_ for LayoutNG.
+  unsigned valid_ng_items_ : 1;
+
   unsigned contains_reversed_text_ : 1;
   mutable unsigned known_to_have_no_overflow_and_no_fallback_fonts_ : 1;
   unsigned contains_only_whitespace_or_nbsp_ : 2;
 
+ private:
   float min_width_;
   float max_width_;
   float first_line_min_width_;

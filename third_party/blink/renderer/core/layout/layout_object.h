@@ -530,6 +530,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool IsLayoutNGListMarkerImage() const {
     return IsOfType(kLayoutObjectNGListMarkerImage);
   }
+  bool IsLayoutNGText() const { return IsOfType(kLayoutObjectNGText); }
   bool IsLayoutTableCol() const {
     return IsOfType(kLayoutObjectLayoutTableCol);
   }
@@ -1989,6 +1990,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     kLayoutObjectNGListItem,
     kLayoutObjectNGListMarker,
     kLayoutObjectNGListMarkerImage,
+    kLayoutObjectNGText,
     kLayoutObjectProgress,
     kLayoutObjectQuote,
     kLayoutObjectLayoutButton,

@@ -144,9 +144,12 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   scoped_refptr<ShapeResult> ApplySpacingToCopy(ShapeResultSpacing<TextRun>&,
                                          const TextRun&) const;
 
+  // TODO(eae): Replace CopyRange callers with SubRange and make CopyRange
+  // private.
   void CopyRange(unsigned start, unsigned end, ShapeResult*) const;
   scoped_refptr<ShapeResult> SubRange(unsigned start_offset,
                                       unsigned end_offset) const;
+  scoped_refptr<ShapeResult> CopyAdjustedOffset(unsigned start_offset) const;
 
   // Computes the list of fonts along with the number of glyphs for each font.
   struct RunFontData {
