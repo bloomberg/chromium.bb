@@ -20,7 +20,7 @@
         {
           "object": "LayoutInline (relative positioned) SPAN id='child'",
           "rect": [138, 359, 152, 182],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         },
         {
           "object": "InlineTextBox 'A B C'",

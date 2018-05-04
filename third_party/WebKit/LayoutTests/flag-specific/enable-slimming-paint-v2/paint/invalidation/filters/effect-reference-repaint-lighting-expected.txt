@@ -9,12 +9,12 @@
         {
           "object": "LayoutBlockFlow DIV class='before box'",
           "rect": [78, 70, 100, 100],
-          "reason": "disappeared"
+          "reason": "chunk disappeared"
         },
         {
           "object": "LayoutBlockFlow DIV class='box'",
           "rect": [78, 70, 100, 100],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         }
       ]
     }

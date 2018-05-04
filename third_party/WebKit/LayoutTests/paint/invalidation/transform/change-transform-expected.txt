@@ -25,17 +25,17 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV id='overlay'",
           "rect": [35, 35, 50, 50],
-          "reason": "appeared"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='overlay'",
           "rect": [35, 35, 50, 50],
-          "reason": "disappeared"
+          "reason": "chunk appeared"
         },
         {
           "object": "LayoutBlockFlow DIV id='square'",
           "rect": [35, 35, 50, 50],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         }
       ]
     }

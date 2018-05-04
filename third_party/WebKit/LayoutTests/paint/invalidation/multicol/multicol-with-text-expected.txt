@@ -20,7 +20,7 @@
         {
           "object": "LayoutMultiColumnFlowThread (anonymous)",
           "rect": [483, 8, 85, 80],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         }
       ]
     }

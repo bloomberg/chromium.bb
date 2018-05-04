@@ -20,22 +20,22 @@
         {
           "object": "LayoutTextControl TEXTAREA id='editor'",
           "rect": [7, 7, 183, 40],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         },
         {
           "object": "LayoutTextControl TEXTAREA id='editor'",
           "rect": [7, 7, 183, 40],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         },
         {
           "object": "LayoutBlockFlow HTML",
           "rect": [8, 8, 181, 38],
-          "reason": "disappeared"
+          "reason": "chunk disappeared"
         },
         {
           "object": "LayoutTextControl TEXTAREA id='editor'",
           "rect": [9, 10, 179, 18],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         }
       ]
     }

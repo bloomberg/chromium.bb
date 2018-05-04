@@ -20,12 +20,12 @@
         {
           "object": "LayoutBlockFlow (relative positioned) DIV id='container' class='relative blue'",
           "rect": [8, 208, 200, 200],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         },
         {
           "object": "LayoutBlockFlow HTML",
           "rect": [8, 208, 200, 200],
-          "reason": "disappeared"
+          "reason": "chunk disappeared"
         }
       ]
     }

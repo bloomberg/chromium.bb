@@ -20,7 +20,7 @@
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [12, 45, 51, 14],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         }
       ]
     }

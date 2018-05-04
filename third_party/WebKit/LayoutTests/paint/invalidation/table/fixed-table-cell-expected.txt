@@ -25,7 +25,7 @@
         {
           "object": "LayoutBlockFlow (positioned) TD id='moveMe' class='fixed'",
           "rect": [50, 200, 100, 100],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         }
       ],
       "transform": 1

@@ -20,12 +20,12 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV id='box' class='green reflected box'",
           "rect": [300, 8, 450, 200],
-          "reason": "disappeared"
+          "reason": "chunk disappeared"
         },
         {
           "object": "LayoutBlockFlow HTML",
           "rect": [300, 8, 200, 200],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         }
       ]
     }

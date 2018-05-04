@@ -20,7 +20,7 @@
         {
           "object": "LayoutInline SPAN id='target'",
           "rect": [112, 194, 181, 18],
-          "reason": "disappeared"
+          "reason": "chunk disappeared"
         },
         {
           "object": "LayoutBlockFlow DIV",

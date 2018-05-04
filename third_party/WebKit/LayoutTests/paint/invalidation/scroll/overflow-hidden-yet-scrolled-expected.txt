@@ -31,7 +31,7 @@
         {
           "object": "LayoutBlockFlow DIV id='scroller'",
           "rect": [1, 201, 100, 100],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         }
       ]
     }

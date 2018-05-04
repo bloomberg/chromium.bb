@@ -32,6 +32,8 @@ enum class PaintInvalidationReason : unsigned {
   kCaret,
   kDocumentMarker,
   kImage,
+  kChunkAppeared,
+  kChunkDisappeared,
   kChunkUncacheable,
   kChunkReordered,
   kPaintProperty,

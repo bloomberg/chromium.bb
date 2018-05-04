@@ -282,13 +282,13 @@ TEST_F(CompositedLayerRasterInvalidatorTest, AppearAndDisappear) {
   ASSERT_EQ(6u, invalidations.size());
   EXPECT_DISPLAY_ITEM_INVALIDATIONS(invalidations, 0, new_artifact, 0);
   EXPECT_CHUNK_INVALIDATION(invalidations, 2, new_artifact.PaintChunks()[1],
-                            PaintInvalidationReason::kAppeared);
+                            PaintInvalidationReason::kChunkAppeared);
   EXPECT_CHUNK_INVALIDATION(invalidations, 3, new_artifact.PaintChunks()[2],
-                            PaintInvalidationReason::kAppeared);
+                            PaintInvalidationReason::kChunkAppeared);
   EXPECT_CHUNK_INVALIDATION(invalidations, 4, artifact.PaintChunks()[1],
-                            PaintInvalidationReason::kDisappeared);
+                            PaintInvalidationReason::kChunkDisappeared);
   EXPECT_CHUNK_INVALIDATION(invalidations, 5, artifact.PaintChunks()[2],
-                            PaintInvalidationReason::kDisappeared);
+                            PaintInvalidationReason::kChunkDisappeared);
 }
 
 TEST_F(CompositedLayerRasterInvalidatorTest, AppearAtEnd) {
@@ -312,9 +312,9 @@ TEST_F(CompositedLayerRasterInvalidatorTest, AppearAtEnd) {
   ASSERT_EQ(4u, invalidations.size());
   EXPECT_DISPLAY_ITEM_INVALIDATIONS(invalidations, 0, new_artifact, 0);
   EXPECT_CHUNK_INVALIDATION(invalidations, 2, new_artifact.PaintChunks()[1],
-                            PaintInvalidationReason::kAppeared);
+                            PaintInvalidationReason::kChunkAppeared);
   EXPECT_CHUNK_INVALIDATION(invalidations, 3, new_artifact.PaintChunks()[2],
-                            PaintInvalidationReason::kAppeared);
+                            PaintInvalidationReason::kChunkAppeared);
 }
 
 TEST_F(CompositedLayerRasterInvalidatorTest, UncacheableChunks) {

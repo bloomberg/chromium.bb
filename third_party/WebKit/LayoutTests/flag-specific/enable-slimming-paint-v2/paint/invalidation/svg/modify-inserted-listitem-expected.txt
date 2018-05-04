@@ -9,7 +9,7 @@
         {
           "object": "LayoutSVGRect rect id='move'",
           "rect": [28, 38, 10, 10],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         },
         {
           "object": "LayoutSVGRect rect id='move'",

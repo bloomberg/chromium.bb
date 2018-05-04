@@ -20,12 +20,12 @@
         {
           "object": "LayoutSVGText text id='bounce'",
           "rect": [80, 0, 550, 117],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         },
         {
           "object": "LayoutSVGRoot svg",
           "rect": [30, 0, 403, 59],
-          "reason": "disappeared"
+          "reason": "chunk disappeared"
         }
       ]
     }

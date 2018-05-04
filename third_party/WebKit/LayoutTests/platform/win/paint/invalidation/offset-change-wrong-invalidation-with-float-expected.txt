@@ -20,7 +20,7 @@
         {
           "object": "LayoutBlockFlow (positioned) UL id='submenu'",
           "rect": [48, 94, 40, 20],
-          "reason": "disappeared"
+          "reason": "chunk disappeared"
         }
       ]
     },

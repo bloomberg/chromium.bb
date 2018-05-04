@@ -20,7 +20,7 @@
         {
           "object": "LayoutSVGRoot svg",
           "rect": [50, 52, 571, 84],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         }
       ]
     }

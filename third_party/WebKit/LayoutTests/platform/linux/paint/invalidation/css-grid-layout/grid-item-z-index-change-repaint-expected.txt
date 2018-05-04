@@ -20,17 +20,17 @@
         {
           "object": "LayoutBlockFlow HTML",
           "rect": [8, 16, 454, 320],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         },
         {
           "object": "LayoutBlockFlow HTML",
           "rect": [8, 16, 454, 320],
-          "reason": "disappeared"
+          "reason": "chunk disappeared"
         },
         {
           "object": "LayoutBlockFlow DIV id='item2' class='sizedToGridArea green'",
           "rect": [8, 236, 200, 100],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         }
       ]
     }

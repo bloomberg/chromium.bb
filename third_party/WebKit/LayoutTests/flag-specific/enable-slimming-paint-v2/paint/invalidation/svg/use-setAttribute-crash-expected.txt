@@ -9,12 +9,12 @@
         {
           "object": "LayoutSVGEllipse svg:circle id='circle'",
           "rect": [27, 27, 62, 62],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         },
         {
           "object": "LayoutSVGEllipse svg:circle id='circle'",
           "rect": [51, 51, 14, 14],
-          "reason": "disappeared"
+          "reason": "chunk disappeared"
         }
       ]
     }

@@ -29,7 +29,7 @@
         {
           "object": "LayoutBlockFlow DIV id='parent'",
           "rect": [0, 0, 102, 102],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         }
       ],
       "transform": 1

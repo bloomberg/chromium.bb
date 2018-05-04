@@ -20,7 +20,7 @@
         {
           "object": "LayoutBlockFlow (relative positioned) P",
           "rect": [8, 146, 784, 18],
-          "reason": "disappeared"
+          "reason": "chunk disappeared"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) P",

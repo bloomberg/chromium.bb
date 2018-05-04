@@ -25,7 +25,7 @@
         {
           "object": "LayoutBlockFlow DIV id='test' class='stretchy'",
           "rect": [28, 54, 250, 50],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         }
       ]
     }

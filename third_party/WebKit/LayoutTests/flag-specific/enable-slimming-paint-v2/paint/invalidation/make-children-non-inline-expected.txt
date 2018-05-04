@@ -9,12 +9,12 @@
         {
           "object": "LayoutBlockFlow HTML",
           "rect": [8, 8, 765, 335],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         },
         {
           "object": "LayoutBlockFlow HTML",
           "rect": [8, 8, 765, 235],
-          "reason": "disappeared"
+          "reason": "chunk disappeared"
         }
       ]
     }

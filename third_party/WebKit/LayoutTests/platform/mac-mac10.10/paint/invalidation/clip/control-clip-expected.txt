@@ -20,7 +20,7 @@
         {
           "object": "InlineTextBox 'SUCCESS'",
           "rect": [81, 114, 54, 14],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         },
         {
           "object": "InlineTextBox 'SUCCESS'",
@@ -30,7 +30,7 @@
         {
           "object": "InlineTextBox 'FAILURE'",
           "rect": [85, 114, 46, 14],
-          "reason": "disappeared"
+          "reason": "chunk disappeared"
         },
         {
           "object": "InlineTextBox 'FAILURE'",

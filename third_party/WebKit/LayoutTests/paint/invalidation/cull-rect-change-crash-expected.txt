@@ -20,7 +20,7 @@
         {
           "object": "LayoutSVGForeignObject foreignObject",
           "rect": [0, 8, 1, 1],
-          "reason": "disappeared"
+          "reason": "chunk disappeared"
         }
       ]
     }

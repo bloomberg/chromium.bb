@@ -36,7 +36,7 @@
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [0, 0, 200, 200],
-          "reason": "disappeared"
+          "reason": "chunk disappeared"
         }
       ]
     },
