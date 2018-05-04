@@ -8,7 +8,9 @@
 
 #include <algorithm>
 #include <cmath>
+#include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -221,13 +223,13 @@ void PrintDialogGtk2::UseDefaultSettings() {
   InitPrintSettings(&settings);
 }
 
-bool PrintDialogGtk2::UpdateSettings(printing::PrintSettings* settings) {
+void PrintDialogGtk2::UpdateSettings(printing::PrintSettings* settings) {
   if (!gtk_settings_) {
     gtk_settings_ =
         gtk_print_settings_copy(g_last_used_settings.Get().settings());
   }
 
-  std::unique_ptr<GtkPrinterList> printer_list(new GtkPrinterList);
+  auto printer_list = std::make_unique<GtkPrinterList>();
   printer_ = printer_list->GetPrinterWithName(
       base::UTF16ToUTF8(settings->device_name()));
   if (printer_) {
@@ -269,6 +271,7 @@ bool PrintDialogGtk2::UpdateSettings(printing::PrintSettings* settings) {
     gtk_print_settings_set(gtk_settings_, kCUPSDuplex, cups_duplex_mode);
   }
 #endif
+
   if (!page_setup_)
     page_setup_ = gtk_page_setup_new();
 
@@ -317,7 +320,6 @@ bool PrintDialogGtk2::UpdateSettings(printing::PrintSettings* settings) {
                                            : GTK_PAGE_ORIENTATION_PORTRAIT);
 
   InitPrintSettings(settings);
-  return true;
 }
 
 void PrintDialogGtk2::ShowDialog(
