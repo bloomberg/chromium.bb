@@ -141,6 +141,11 @@ class NET_EXPORT NetworkChangeNotifier {
     virtual void OnDNSChanged() = 0;
     // Will be called when DNS settings of the system have been loaded.
     // Use GetDnsConfig to obtain the current settings.
+    // NOTE(pauljensen): This will not be called if the initial DNS config
+    // has already been read before this observer is registered.
+    // Determining if a DNS config has already been read can be done by
+    // calling GetDnsConfig() after registering an observer, and seeing if
+    // the DnsConfig's IsValid() returns true.
     virtual void OnInitialDNSConfigRead();
 
    protected:
