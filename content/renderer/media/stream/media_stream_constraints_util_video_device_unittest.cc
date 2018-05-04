@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/optional.h"
+#include "base/stl_util.h"
 #include "content/renderer/media/stream/media_stream_video_source.h"
 #include "content/renderer/media/stream/mock_constraint_factory.h"
 #include "media/base/limits.h"
@@ -23,6 +24,12 @@ const char kDeviceID2[] = "fake_device_2";
 const char kDeviceID3[] = "fake_device_3";
 const char kDeviceID4[] = "fake_device_4";
 const char kDeviceID5[] = "fake_device_5";
+
+const char kGroupID1[] = "fake_group_1";
+const char kGroupID2[] = "fake_group_2";
+const char kGroupID3[] = "fake_group_3";
+const char kGroupID4[] = "fake_group_4";
+const char kGroupID5[] = "fake_group_5";
 
 void CheckTrackAdapterSettingsEqualsResolution(
     const VideoCaptureSettings& settings) {
@@ -73,6 +80,7 @@ class MediaStreamConstraintsUtilVideoDeviceTest : public testing::Test {
     blink::mojom::VideoInputDeviceCapabilitiesPtr device =
         blink::mojom::VideoInputDeviceCapabilities::New();
     device->device_id = kDeviceID1;
+    device->group_id = kGroupID1;
     device->facing_mode = media::MEDIA_VIDEO_FACING_NONE;
     device->formats = {
         media::VideoCaptureFormat(gfx::Size(200, 200), 40.0f,
@@ -88,6 +96,7 @@ class MediaStreamConstraintsUtilVideoDeviceTest : public testing::Test {
     // A low-resolution device.
     device = blink::mojom::VideoInputDeviceCapabilities::New();
     device->device_id = kDeviceID2;
+    device->group_id = kGroupID2;
     device->facing_mode = media::MEDIA_VIDEO_FACING_ENVIRONMENT;
     device->formats = {
         media::VideoCaptureFormat(gfx::Size(40, 30), 20.0f,
@@ -108,6 +117,7 @@ class MediaStreamConstraintsUtilVideoDeviceTest : public testing::Test {
     // A high-resolution device.
     device = blink::mojom::VideoInputDeviceCapabilities::New();
     device->device_id = kDeviceID3;
+    device->group_id = kGroupID3;
     device->facing_mode = media::MEDIA_VIDEO_FACING_USER;
     device->formats = {
         media::VideoCaptureFormat(gfx::Size(600, 400), 10.0f,
@@ -139,6 +149,7 @@ class MediaStreamConstraintsUtilVideoDeviceTest : public testing::Test {
     // A depth capture device.
     device = blink::mojom::VideoInputDeviceCapabilities::New();
     device->device_id = kDeviceID4;
+    device->group_id = kGroupID4;
     device->facing_mode = media::MEDIA_VIDEO_FACING_ENVIRONMENT;
     device->formats = {media::VideoCaptureFormat(gfx::Size(640, 480), 30.0f,
                                                  media::PIXEL_FORMAT_Y16)};
@@ -148,6 +159,7 @@ class MediaStreamConstraintsUtilVideoDeviceTest : public testing::Test {
     // be supported if no constraints are placed on the frame rate.
     device = blink::mojom::VideoInputDeviceCapabilities::New();
     device->device_id = kDeviceID5;
+    device->group_id = kGroupID5;
     device->facing_mode = media::MEDIA_VIDEO_FACING_NONE;
     device->formats = {
         media::VideoCaptureFormat(
@@ -224,6 +236,16 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, OverconstrainedOnDeviceID) {
   auto result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(constraint_factory_.basic().device_id.GetName(),
+            result.failed_constraint_name());
+}
+
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, OverconstrainedOnGroupID) {
+  constraint_factory_.Reset();
+  constraint_factory_.basic().group_id.SetExact(
+      blink::WebString::FromASCII("NONEXISTING"));
+  auto result = SelectSettings();
+  EXPECT_FALSE(result.HasValue());
+  EXPECT_EQ(constraint_factory_.basic().group_id.GetName(),
             result.failed_constraint_name());
 }
 
@@ -428,6 +450,37 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryDeviceID) {
 
   constraint_factory_.basic().device_id.SetExact(
       blink::WebString::FromASCII(high_res_device_->device_id));
+  result = SelectSettings();
+  EXPECT_EQ(high_res_device_->device_id, result.device_id());
+  EXPECT_EQ(*high_res_closest_format_, result.Format());
+  EXPECT_EQ(media::PowerLineFrequency::FREQUENCY_DEFAULT,
+            result.PowerLineFrequency());
+  CheckTrackAdapterSettingsEqualsFormat(result);
+}
+
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryGroupID) {
+  constraint_factory_.Reset();
+  constraint_factory_.basic().group_id.SetExact(
+      blink::WebString::FromASCII(default_device_->group_id));
+  auto result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  EXPECT_EQ(default_device_->device_id, result.device_id());
+  EXPECT_EQ(*default_closest_format_, result.Format());
+  EXPECT_EQ(media::PowerLineFrequency::FREQUENCY_DEFAULT,
+            result.PowerLineFrequency());
+  CheckTrackAdapterSettingsEqualsFormat(result);
+
+  constraint_factory_.basic().group_id.SetExact(
+      blink::WebString::FromASCII(low_res_device_->group_id));
+  result = SelectSettings();
+  EXPECT_EQ(low_res_device_->device_id, result.device_id());
+  EXPECT_EQ(*low_res_closest_format_, result.Format());
+  EXPECT_EQ(media::PowerLineFrequency::FREQUENCY_DEFAULT,
+            result.PowerLineFrequency());
+  CheckTrackAdapterSettingsEqualsFormat(result);
+
+  constraint_factory_.basic().group_id.SetExact(
+      blink::WebString::FromASCII(high_res_device_->group_id));
   result = SelectSettings();
   EXPECT_EQ(high_res_device_->device_id, result.device_id());
   EXPECT_EQ(*high_res_closest_format_, result.Format());
@@ -2127,17 +2180,39 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, AdvancedDeviceID) {
   blink::WebString id_vector1[] = {blink::WebString::FromASCII(kDeviceID1),
                                    blink::WebString::FromASCII(kDeviceID2)};
   advanced1.device_id.SetExact(
-      blink::WebVector<blink::WebString>(id_vector1, arraysize(id_vector1)));
+      blink::WebVector<blink::WebString>(id_vector1, base::size(id_vector1)));
   blink::WebString id_vector2[] = {blink::WebString::FromASCII(kDeviceID2),
                                    blink::WebString::FromASCII(kDeviceID3)};
   blink::WebMediaTrackConstraintSet& advanced2 =
       constraint_factory_.AddAdvanced();
   advanced2.device_id.SetExact(
-      blink::WebVector<blink::WebString>(id_vector2, arraysize(id_vector2)));
+      blink::WebVector<blink::WebString>(id_vector2, base::size(id_vector2)));
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // kDeviceID2 must be selected because it is the only one that satisfies both
   // advanced sets.
+  EXPECT_EQ(std::string(kDeviceID2), result.device_id());
+  CheckTrackAdapterSettingsEqualsFormat(result);
+}
+
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, AdvancedGroupID) {
+  constraint_factory_.Reset();
+  blink::WebMediaTrackConstraintSet& advanced1 =
+      constraint_factory_.AddAdvanced();
+  blink::WebString id_vector1[] = {blink::WebString::FromASCII(kGroupID1),
+                                   blink::WebString::FromASCII(kGroupID2)};
+  advanced1.group_id.SetExact(
+      blink::WebVector<blink::WebString>(id_vector1, base::size(id_vector1)));
+  blink::WebString id_vector2[] = {blink::WebString::FromASCII(kGroupID2),
+                                   blink::WebString::FromASCII(kGroupID3)};
+  blink::WebMediaTrackConstraintSet& advanced2 =
+      constraint_factory_.AddAdvanced();
+  advanced2.group_id.SetExact(
+      blink::WebVector<blink::WebString>(id_vector2, base::size(id_vector2)));
+  auto result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  // The device with group_id kGroupID2 must be selected because it is the only
+  // one that satisfies both advanced sets.
   EXPECT_EQ(std::string(kDeviceID2), result.device_id());
   CheckTrackAdapterSettingsEqualsFormat(result);
 }
@@ -2150,13 +2225,36 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   blink::WebString id_vector1[] = {blink::WebString::FromASCII(kDeviceID1),
                                    blink::WebString::FromASCII(kDeviceID2)};
   advanced1.device_id.SetExact(
-      blink::WebVector<blink::WebString>(id_vector1, arraysize(id_vector1)));
+      blink::WebVector<blink::WebString>(id_vector1, base::size(id_vector1)));
   blink::WebString id_vector2[] = {blink::WebString::FromASCII(kDeviceID3),
                                    blink::WebString::FromASCII(kDeviceID4)};
   blink::WebMediaTrackConstraintSet& advanced2 =
       constraint_factory_.AddAdvanced();
   advanced2.device_id.SetExact(
-      blink::WebVector<blink::WebString>(id_vector2, arraysize(id_vector2)));
+      blink::WebVector<blink::WebString>(id_vector2, base::size(id_vector2)));
+  auto result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  // The second advanced set must be ignored because it contradicts the first
+  // set.
+  EXPECT_EQ(std::string(kDeviceID1), result.device_id());
+  CheckTrackAdapterSettingsEqualsFormat(result);
+}
+
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
+       AdvancedContradictoryGroupID) {
+  constraint_factory_.Reset();
+  blink::WebMediaTrackConstraintSet& advanced1 =
+      constraint_factory_.AddAdvanced();
+  blink::WebString id_vector1[] = {blink::WebString::FromASCII(kGroupID1),
+                                   blink::WebString::FromASCII(kGroupID2)};
+  advanced1.group_id.SetExact(
+      blink::WebVector<blink::WebString>(id_vector1, base::size(id_vector1)));
+  blink::WebString id_vector2[] = {blink::WebString::FromASCII(kGroupID3),
+                                   blink::WebString::FromASCII(kGroupID4)};
+  blink::WebMediaTrackConstraintSet& advanced2 =
+      constraint_factory_.AddAdvanced();
+  advanced2.group_id.SetExact(
+      blink::WebVector<blink::WebString>(id_vector2, base::size(id_vector2)));
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // The second advanced set must be ignored because it contradicts the first

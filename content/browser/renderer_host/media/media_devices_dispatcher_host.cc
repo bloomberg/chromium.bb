@@ -196,7 +196,12 @@ void MediaDevicesDispatcherHost::GotDefaultVideoInputDeviceID(
     MediaDeviceSaltAndOrigin salt_and_origin,
     const std::string& default_device_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  media_stream_manager_->video_capture_manager()->EnumerateDevices(
+  MediaDevicesManager::BoolDeviceTypes requested_types;
+  // Also request audio devices to make sure the heuristic to determine
+  // the video group ID works.
+  requested_types[MEDIA_DEVICE_TYPE_VIDEO_INPUT] = true;
+  media_stream_manager_->media_devices_manager()->EnumerateDevices(
+      requested_types,
       base::Bind(&MediaDevicesDispatcherHost::FinalizeGetVideoInputCapabilities,
                  weak_factory_.GetWeakPtr(), base::Passed(&client_callback),
                  std::move(salt_and_origin), std::move(default_device_id)));
@@ -206,22 +211,26 @@ void MediaDevicesDispatcherHost::FinalizeGetVideoInputCapabilities(
     GetVideoInputCapabilitiesCallback client_callback,
     const MediaDeviceSaltAndOrigin& salt_and_origin,
     const std::string& default_device_id,
-    const media::VideoCaptureDeviceDescriptors& device_descriptors) {
+    const MediaDeviceEnumeration& enumeration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   std::vector<blink::mojom::VideoInputDeviceCapabilitiesPtr>
       video_input_capabilities;
-  for (const auto& descriptor : device_descriptors) {
+  for (const auto& device_info : enumeration[MEDIA_DEVICE_TYPE_VIDEO_INPUT]) {
     std::string hmac_device_id =
         GetHMACForMediaDeviceID(salt_and_origin.device_id_salt,
-                                salt_and_origin.origin, descriptor.device_id);
+                                salt_and_origin.origin, device_info.device_id);
+    std::string hmac_group_id =
+        GetHMACForMediaDeviceID(salt_and_origin.group_id_salt,
+                                salt_and_origin.origin, device_info.group_id);
     blink::mojom::VideoInputDeviceCapabilitiesPtr capabilities =
         blink::mojom::VideoInputDeviceCapabilities::New();
     capabilities->device_id = std::move(hmac_device_id);
+    capabilities->group_id = std::move(hmac_group_id);
     capabilities->formats =
         media_stream_manager_->media_devices_manager()->GetVideoInputFormats(
-            descriptor.device_id, true /* try_in_use_first */);
-    capabilities->facing_mode = descriptor.facing;
-    if (descriptor.device_id == default_device_id) {
+            device_info.device_id, true /* try_in_use_first */);
+    capabilities->facing_mode = device_info.video_facing;
+    if (device_info.device_id == default_device_id) {
       video_input_capabilities.insert(video_input_capabilities.begin(),
                                       std::move(capabilities));
     } else {
