@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
+#include "media/base/media_log.h"
 #include "media/base/video_decoder.h"
 #include "media/gpu/command_buffer_helper.h"
 #include "media/gpu/ipc/service/picture_buffer_manager.h"
@@ -33,12 +34,11 @@ struct GpuPreferences;
 
 namespace media {
 
-class MediaLog;
-
 // Implements the VideoDecoder interface backed by a VideoDecodeAccelerator.
 // This class expects to run in the GPU process via MojoVideoDecoder.
 class VdaVideoDecoder : public VideoDecoder,
-                        public VideoDecodeAccelerator::Client {
+                        public VideoDecodeAccelerator::Client,
+                        public MediaLog {
  public:
   using GetStubCB = base::RepeatingCallback<gpu::CommandBufferStub*()>;
   using CreatePictureBufferManagerCB =
@@ -50,6 +50,7 @@ class VdaVideoDecoder : public VideoDecoder,
       base::OnceCallback<std::unique_ptr<VideoDecodeAccelerator>(
           scoped_refptr<CommandBufferHelper>,
           VideoDecodeAccelerator::Client*,
+          MediaLog*,
           const VideoDecodeAccelerator::Config&)>;
   using GetVdaCapabilitiesCB =
       base::OnceCallback<VideoDecodeAccelerator::Capabilities(
@@ -109,6 +110,9 @@ class VdaVideoDecoder : public VideoDecoder,
   bool CanReadWithoutStalling() const override;
   int GetMaxDecodeRequests() const override;
 
+  // media::MediaLog implementation.
+  void AddEvent(std::unique_ptr<MediaLogEvent> event) override;
+
  private:
   void Destroy() override;
 
@@ -150,6 +154,7 @@ class VdaVideoDecoder : public VideoDecoder,
                                   gfx::Size texture_size,
                                   GLenum texture_target);
   void ReusePictureBuffer(int32_t picture_buffer_id);
+  void AddEventOnParentThread(std::unique_ptr<MediaLogEvent> event);
 
   // Error handling.
   void EnterErrorState();

@@ -123,7 +123,8 @@ GpuVideoDecodeAcceleratorFactory::CreateVDA(
     VideoDecodeAccelerator::Client* client,
     const VideoDecodeAccelerator::Config& config,
     const gpu::GpuDriverBugWorkarounds& workarounds,
-    const gpu::GpuPreferences& gpu_preferences) {
+    const gpu::GpuPreferences& gpu_preferences,
+    MediaLog* media_log) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (gpu_preferences.disable_accelerated_video_decode)
@@ -135,7 +136,8 @@ GpuVideoDecodeAcceleratorFactory::CreateVDA(
   // in GetDecoderCapabilities() above.
   using CreateVDAFp = std::unique_ptr<VideoDecodeAccelerator> (
       GpuVideoDecodeAcceleratorFactory::*)(const gpu::GpuDriverBugWorkarounds&,
-                                           const gpu::GpuPreferences&) const;
+                                           const gpu::GpuPreferences&,
+                                           MediaLog* media_log) const;
   const CreateVDAFp create_vda_fps[] = {
 #if defined(OS_WIN)
     &GpuVideoDecodeAcceleratorFactory::CreateDXVAVDA,
@@ -158,7 +160,7 @@ GpuVideoDecodeAcceleratorFactory::CreateVDA(
   std::unique_ptr<VideoDecodeAccelerator> vda;
 
   for (const auto& create_vda_function : create_vda_fps) {
-    vda = (this->*create_vda_function)(workarounds, gpu_preferences);
+    vda = (this->*create_vda_function)(workarounds, gpu_preferences, media_log);
     if (vda && vda->Initialize(config, client))
       return vda;
   }
@@ -170,7 +172,8 @@ GpuVideoDecodeAcceleratorFactory::CreateVDA(
 std::unique_ptr<VideoDecodeAccelerator>
 GpuVideoDecodeAcceleratorFactory::CreateDXVAVDA(
     const gpu::GpuDriverBugWorkarounds& workarounds,
-    const gpu::GpuPreferences& gpu_preferences) const {
+    const gpu::GpuPreferences& gpu_preferences,
+    MediaLog* media_log) const {
   std::unique_ptr<VideoDecodeAccelerator> decoder;
   DVLOG(0) << "Initializing DXVA HW decoder for windows.";
   decoder.reset(new DXVAVideoDecodeAccelerator(
@@ -184,7 +187,8 @@ GpuVideoDecodeAcceleratorFactory::CreateDXVAVDA(
 std::unique_ptr<VideoDecodeAccelerator>
 GpuVideoDecodeAcceleratorFactory::CreateV4L2VDA(
     const gpu::GpuDriverBugWorkarounds& workarounds,
-    const gpu::GpuPreferences& gpu_preferences) const {
+    const gpu::GpuPreferences& gpu_preferences,
+    MediaLog* media_log) const {
   std::unique_ptr<VideoDecodeAccelerator> decoder;
   scoped_refptr<V4L2Device> device = V4L2Device::Create();
   if (device.get()) {
@@ -198,7 +202,8 @@ GpuVideoDecodeAcceleratorFactory::CreateV4L2VDA(
 std::unique_ptr<VideoDecodeAccelerator>
 GpuVideoDecodeAcceleratorFactory::CreateV4L2SVDA(
     const gpu::GpuDriverBugWorkarounds& workarounds,
-    const gpu::GpuPreferences& gpu_preferences) const {
+    const gpu::GpuPreferences& gpu_preferences,
+    MediaLog* media_log) const {
   std::unique_ptr<VideoDecodeAccelerator> decoder;
   scoped_refptr<V4L2Device> device = V4L2Device::Create();
   if (device.get()) {
@@ -214,7 +219,8 @@ GpuVideoDecodeAcceleratorFactory::CreateV4L2SVDA(
 std::unique_ptr<VideoDecodeAccelerator>
 GpuVideoDecodeAcceleratorFactory::CreateVaapiVDA(
     const gpu::GpuDriverBugWorkarounds& workarounds,
-    const gpu::GpuPreferences& gpu_preferences) const {
+    const gpu::GpuPreferences& gpu_preferences,
+    MediaLog* media_log) const {
   std::unique_ptr<VideoDecodeAccelerator> decoder;
   decoder.reset(new VaapiVideoDecodeAccelerator(make_context_current_cb_,
                                                 bind_image_cb_));
@@ -226,9 +232,10 @@ GpuVideoDecodeAcceleratorFactory::CreateVaapiVDA(
 std::unique_ptr<VideoDecodeAccelerator>
 GpuVideoDecodeAcceleratorFactory::CreateVTVDA(
     const gpu::GpuDriverBugWorkarounds& workarounds,
-    const gpu::GpuPreferences& gpu_preferences) const {
+    const gpu::GpuPreferences& gpu_preferences,
+    MediaLog* media_log) const {
   std::unique_ptr<VideoDecodeAccelerator> decoder;
-  decoder.reset(new VTVideoDecodeAccelerator(bind_image_cb_));
+  decoder.reset(new VTVideoDecodeAccelerator(bind_image_cb_, media_log));
   return decoder;
 }
 #endif
@@ -237,7 +244,8 @@ GpuVideoDecodeAcceleratorFactory::CreateVTVDA(
 std::unique_ptr<VideoDecodeAccelerator>
 GpuVideoDecodeAcceleratorFactory::CreateAndroidVDA(
     const gpu::GpuDriverBugWorkarounds& workarounds,
-    const gpu::GpuPreferences& gpu_preferences) const {
+    const gpu::GpuPreferences& gpu_preferences,
+    MediaLog* media_log) const {
   std::unique_ptr<VideoDecodeAccelerator> decoder;
   decoder.reset(new AndroidVideoDecodeAccelerator(
       AVDACodecAllocator::GetInstance(base::ThreadTaskRunnerHandle::Get()),

@@ -20,6 +20,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/memory_dump_provider.h"
+#include "media/base/media_log.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/video/h264_parser.h"
@@ -38,7 +39,8 @@ MEDIA_GPU_EXPORT bool InitializeVideoToolbox();
 class VTVideoDecodeAccelerator : public VideoDecodeAccelerator,
                                  public base::trace_event::MemoryDumpProvider {
  public:
-  explicit VTVideoDecodeAccelerator(const BindGLImageCallback& bind_image_cb);
+  VTVideoDecodeAccelerator(const BindGLImageCallback& bind_image_cb,
+                           MediaLog* media_log);
 
   ~VTVideoDecodeAccelerator() override;
 
@@ -173,6 +175,12 @@ class VTVideoDecodeAccelerator : public VideoDecodeAccelerator,
   void NotifyError(Error vda_error_type,
                    VTVDASessionFailureType session_failure_type);
 
+  // Since |media_log_| is invalidated in Destroy() on the GPU thread, the easy
+  // thing to do is post to the GPU thread to use it. This helper handles the
+  // thread hop if necessary.
+  void WriteToMediaLog(MediaLog::MediaLogLevel level,
+                       const std::string& message);
+
   // |type| is the type of task that the flush will complete, one of TASK_FLUSH,
   // TASK_RESET, or TASK_DESTROY.
   void QueueFlush(TaskType type);
@@ -193,6 +201,7 @@ class VTVideoDecodeAccelerator : public VideoDecodeAccelerator,
   // GPU thread state.
   //
   BindGLImageCallback bind_image_cb_;
+  MediaLog* media_log_;
 
   VideoDecodeAccelerator::Client* client_ = nullptr;
   State state_ = STATE_DECODING;

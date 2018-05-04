@@ -10,6 +10,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <iterator>
 #include <memory>
 
 #include "base/atomic_sequence_num.h"
@@ -67,11 +68,11 @@ const VideoCodecProfile kSupportedProfiles[] = {
 // Size to use for NALU length headers in AVC format (can be 1, 2, or 4).
 const int kNALUHeaderLength = 4;
 
-// We request 5 picture buffers from the client, each of which has a texture ID
-// that we can bind decoded frames to. We need enough to satisfy preroll, and
-// enough to avoid unnecessary stalling, but no more than that. The resource
-// requirements are low, as we don't need the textures to be backed by storage.
-const int kNumPictureBuffers = limits::kMaxVideoFrames + 1;
+// We request 8 picture buffers from the client, each of which has a texture ID
+// that we can bind decoded frames to. We need enough to satisfy preroll and
+// to avoid unnecessary stalling. The resource requirements are low, as we don't
+// need the textures to be backed by storage.
+const int kNumPictureBuffers = limits::kMaxVideoFrames * 2;
 
 // Maximum number of frames to queue for reordering. (Also controls the maximum
 // number of in-flight frames, since NotifyEndOfBitstreamBuffer() is called when
@@ -196,7 +197,7 @@ bool InitializeVideoToolboxInternal() {
   const uint8_t pps_normal[] = {0x68, 0xe9, 0x7b, 0xcb};
   if (!CreateVideoToolboxSession(sps_normal, arraysize(sps_normal), pps_normal,
                                  arraysize(pps_normal), true)) {
-    DLOG(WARNING) << "Failed to create hardware VideoToolbox session";
+    DLOG(WARNING) << "Hardware decoding with VideoToolbox is not supported";
     return false;
   }
 
@@ -208,7 +209,7 @@ bool InitializeVideoToolboxInternal() {
   const uint8_t pps_small[] = {0x68, 0xe9, 0x79, 0x72, 0xc0};
   if (!CreateVideoToolboxSession(sps_small, arraysize(sps_small), pps_small,
                                  arraysize(pps_small), false)) {
-    DLOG(WARNING) << "Failed to create software VideoToolbox session";
+    DLOG(WARNING) << "Software decoding with VideoToolbox is not supported";
     return false;
   }
 
@@ -420,11 +421,15 @@ bool VTVideoDecodeAccelerator::FrameOrder::operator()(
 }
 
 VTVideoDecodeAccelerator::VTVideoDecodeAccelerator(
-    const BindGLImageCallback& bind_image_cb)
+    const BindGLImageCallback& bind_image_cb,
+    MediaLog* media_log)
     : bind_image_cb_(bind_image_cb),
+      media_log_(media_log),
       gpu_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       decoder_thread_("VTDecoderThread"),
       weak_this_factory_(this) {
+  DCHECK(!bind_image_cb_.is_null());
+
   callback_.decompressionOutputCallback = OutputThunk;
   callback_.decompressionOutputRefCon = this;
   weak_this_ = weak_this_factory_.GetWeakPtr();
@@ -463,39 +468,36 @@ bool VTVideoDecodeAccelerator::Initialize(const Config& config,
   DVLOG(1) << __func__;
   DCHECK(gpu_task_runner_->BelongsToCurrentThread());
 
-  if (bind_image_cb_.is_null()) {
-    NOTREACHED() << "GL callbacks are required for this VDA";
+  // All of these checks should be handled by the caller inspecting
+  // SupportedProfiles(). PPAPI does not do that, however.
+  if (config.output_mode != Config::OutputMode::ALLOCATE) {
+    DVLOG(2) << "Output mode must be ALLOCATE";
     return false;
   }
 
   if (config.is_encrypted()) {
-    NOTREACHED() << "Encrypted streams are not supported for this VDA";
+    DVLOG(2) << "Encrypted streams are not supported";
     return false;
   }
 
-  if (config.output_mode != Config::OutputMode::ALLOCATE) {
-    NOTREACHED() << "Only ALLOCATE OutputMode is supported by this VDA";
+  if (std::find(std::begin(kSupportedProfiles), std::end(kSupportedProfiles),
+                config.profile) == std::end(kSupportedProfiles)) {
+    DVLOG(2) << "Unsupported profile";
+    return false;
+  }
+
+  if (!InitializeVideoToolbox()) {
+    DVLOG(2) << "VideoToolbox is unavailable";
     return false;
   }
 
   client_ = client;
 
-  if (!InitializeVideoToolbox())
-    return false;
-
-  bool profile_supported = false;
-  for (const auto& supported_profile : kSupportedProfiles) {
-    if (config.profile == supported_profile) {
-      profile_supported = true;
-      break;
-    }
-  }
-  if (!profile_supported)
-    return false;
-
   // Spawn a thread to handle parsing and calling VideoToolbox.
-  if (!decoder_thread_.Start())
+  if (!decoder_thread_.Start()) {
+    DLOG(ERROR) << "Failed to start decoder thread";
     return false;
+  }
 
   // Count the session as successfully initialized.
   UMA_HISTOGRAM_ENUMERATION("Media.VTVDA.SessionFailureReason",
@@ -643,12 +645,12 @@ void VTVideoDecodeAccelerator::DecodeTask(scoped_refptr<DecoderBuffer> buffer,
     if (result == H264Parser::kEOStream)
       break;
     if (result == H264Parser::kUnsupportedStream) {
-      DLOG(ERROR) << "Unsupported H.264 stream";
+      WriteToMediaLog(MediaLog::MEDIALOG_ERROR, "Unsupported H.264 stream");
       NotifyError(PLATFORM_FAILURE, SFT_UNSUPPORTED_STREAM);
       return;
     }
     if (result != H264Parser::kOk) {
-      DLOG(ERROR) << "Failed to parse H.264 stream";
+      WriteToMediaLog(MediaLog::MEDIALOG_ERROR, "Failed to parse H.264 stream");
       NotifyError(UNREADABLE_INPUT, SFT_INVALID_STREAM);
       return;
     }
@@ -656,12 +658,12 @@ void VTVideoDecodeAccelerator::DecodeTask(scoped_refptr<DecoderBuffer> buffer,
       case H264NALU::kSPS:
         result = parser_.ParseSPS(&last_sps_id_);
         if (result == H264Parser::kUnsupportedStream) {
-          DLOG(ERROR) << "Unsupported SPS";
+          WriteToMediaLog(MediaLog::MEDIALOG_ERROR, "Unsupported SPS");
           NotifyError(PLATFORM_FAILURE, SFT_UNSUPPORTED_STREAM);
           return;
         }
         if (result != H264Parser::kOk) {
-          DLOG(ERROR) << "Could not parse SPS";
+          WriteToMediaLog(MediaLog::MEDIALOG_ERROR, "Could not parse SPS");
           NotifyError(UNREADABLE_INPUT, SFT_INVALID_STREAM);
           return;
         }
@@ -676,12 +678,12 @@ void VTVideoDecodeAccelerator::DecodeTask(scoped_refptr<DecoderBuffer> buffer,
       case H264NALU::kPPS:
         result = parser_.ParsePPS(&last_pps_id_);
         if (result == H264Parser::kUnsupportedStream) {
-          DLOG(ERROR) << "Unsupported PPS";
+          WriteToMediaLog(MediaLog::MEDIALOG_ERROR, "Unsupported PPS");
           NotifyError(PLATFORM_FAILURE, SFT_UNSUPPORTED_STREAM);
           return;
         }
         if (result != H264Parser::kOk) {
-          DLOG(ERROR) << "Could not parse PPS";
+          WriteToMediaLog(MediaLog::MEDIALOG_ERROR, "Could not parse PPS");
           NotifyError(UNREADABLE_INPUT, SFT_INVALID_STREAM);
           return;
         }
@@ -700,12 +702,14 @@ void VTVideoDecodeAccelerator::DecodeTask(scoped_refptr<DecoderBuffer> buffer,
           H264SliceHeader slice_hdr;
           result = parser_.ParseSliceHeader(nalu, &slice_hdr);
           if (result == H264Parser::kUnsupportedStream) {
-            DLOG(ERROR) << "Unsupported slice header";
+            WriteToMediaLog(MediaLog::MEDIALOG_ERROR,
+                            "Unsupported slice header");
             NotifyError(PLATFORM_FAILURE, SFT_UNSUPPORTED_STREAM);
             return;
           }
           if (result != H264Parser::kOk) {
-            DLOG(ERROR) << "Could not parse slice header";
+            WriteToMediaLog(MediaLog::MEDIALOG_ERROR,
+                            "Could not parse slice header");
             NotifyError(UNREADABLE_INPUT, SFT_INVALID_STREAM);
             return;
           }
@@ -714,7 +718,8 @@ void VTVideoDecodeAccelerator::DecodeTask(scoped_refptr<DecoderBuffer> buffer,
           DCHECK_EQ(slice_hdr.pic_parameter_set_id, last_pps_id_);
           const H264PPS* pps = parser_.GetPPS(slice_hdr.pic_parameter_set_id);
           if (!pps) {
-            DLOG(ERROR) << "Mising PPS referenced by slice";
+            WriteToMediaLog(MediaLog::MEDIALOG_ERROR,
+                            "Missing PPS referenced by slice");
             NotifyError(UNREADABLE_INPUT, SFT_INVALID_STREAM);
             return;
           }
@@ -722,7 +727,8 @@ void VTVideoDecodeAccelerator::DecodeTask(scoped_refptr<DecoderBuffer> buffer,
           DCHECK_EQ(pps->seq_parameter_set_id, last_sps_id_);
           const H264SPS* sps = parser_.GetSPS(pps->seq_parameter_set_id);
           if (!sps) {
-            DLOG(ERROR) << "Mising SPS referenced by PPS";
+            WriteToMediaLog(MediaLog::MEDIALOG_ERROR,
+                            "Missing SPS referenced by PPS");
             NotifyError(UNREADABLE_INPUT, SFT_INVALID_STREAM);
             return;
           }
@@ -739,7 +745,7 @@ void VTVideoDecodeAccelerator::DecodeTask(scoped_refptr<DecoderBuffer> buffer,
           base::Optional<int32_t> pic_order_cnt =
               poc_.ComputePicOrderCnt(sps, slice_hdr);
           if (!pic_order_cnt.has_value()) {
-            DLOG(ERROR) << "Unable to compute POC";
+            WriteToMediaLog(MediaLog::MEDIALOG_ERROR, "Unable to compute POC");
             NotifyError(UNREADABLE_INPUT, SFT_INVALID_STREAM);
             return;
           }
@@ -767,8 +773,9 @@ void VTVideoDecodeAccelerator::DecodeTask(scoped_refptr<DecoderBuffer> buffer,
   // error messages for those.
   if (frame->has_slice && waiting_for_idr_) {
     if (!missing_idr_logged_) {
-      LOG(ERROR) << "Illegal attempt to decode without IDR. "
-                 << "Discarding decode requests until next IDR.";
+      WriteToMediaLog(MediaLog::MEDIALOG_ERROR,
+                      ("Illegal attempt to decode without IDR. "
+                       "Discarding decode requests until the next IDR."));
       missing_idr_logged_ = true;
     }
     frame->has_slice = false;
@@ -789,12 +796,14 @@ void VTVideoDecodeAccelerator::DecodeTask(scoped_refptr<DecoderBuffer> buffer,
       (configured_sps_ != active_sps_ || configured_spsext_ != active_spsext_ ||
        configured_pps_ != active_pps_)) {
     if (active_sps_.empty()) {
-      DLOG(ERROR) << "Invalid configuration; no SPS";
+      WriteToMediaLog(MediaLog::MEDIALOG_ERROR,
+                      "Invalid configuration (no SPS)");
       NotifyError(INVALID_ARGUMENT, SFT_INVALID_STREAM);
       return;
     }
     if (active_pps_.empty()) {
-      DLOG(ERROR) << "Invalid configuration; no PPS";
+      WriteToMediaLog(MediaLog::MEDIALOG_ERROR,
+                      "Invalid configuration (no PPS)");
       NotifyError(INVALID_ARGUMENT, SFT_INVALID_STREAM);
       return;
     }
@@ -806,7 +815,8 @@ void VTVideoDecodeAccelerator::DecodeTask(scoped_refptr<DecoderBuffer> buffer,
 
   // If the session is not configured by this point, fail.
   if (!session_) {
-    DLOG(ERROR) << "Cannot decode without configuration";
+    WriteToMediaLog(MediaLog::MEDIALOG_ERROR,
+                    "Cannot decode without configuration");
     NotifyError(INVALID_ARGUMENT, SFT_INVALID_STREAM);
     return;
   }
@@ -1280,6 +1290,21 @@ void VTVideoDecodeAccelerator::NotifyError(
   }
 }
 
+void VTVideoDecodeAccelerator::WriteToMediaLog(MediaLog::MediaLogLevel level,
+                                               const std::string& message) {
+  if (!gpu_task_runner_->BelongsToCurrentThread()) {
+    gpu_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&VTVideoDecodeAccelerator::WriteToMediaLog,
+                                  weak_this_, level, message));
+    return;
+  }
+
+  DVLOG(1) << __func__ << "(" << level << ") " << message;
+
+  if (media_log_)
+    media_log_->AddLogEvent(level, message);
+}
+
 void VTVideoDecodeAccelerator::QueueFlush(TaskType type) {
   DCHECK(gpu_task_runner_->BelongsToCurrentThread());
   pending_flush_tasks_.push(type);
@@ -1321,6 +1346,9 @@ void VTVideoDecodeAccelerator::Destroy() {
   assigned_bitstream_ids_.clear();
   state_ = STATE_DESTROYING;
   QueueFlush(TASK_DESTROY);
+
+  // Prevent calling into a deleted MediaLog.
+  media_log_ = nullptr;
 }
 
 bool VTVideoDecodeAccelerator::TryToSetupDecodeOnSeparateThread(
@@ -1333,6 +1361,9 @@ bool VTVideoDecodeAccelerator::TryToSetupDecodeOnSeparateThread(
 VideoDecodeAccelerator::SupportedProfiles
 VTVideoDecodeAccelerator::GetSupportedProfiles() {
   SupportedProfiles profiles;
+  if (!InitializeVideoToolbox())
+    return profiles;
+
   for (const auto& supported_profile : kSupportedProfiles) {
     SupportedProfile profile;
     profile.profile = supported_profile;

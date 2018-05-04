@@ -215,6 +215,7 @@ class VdaVideoDecoderTest : public testing::Test {
   std::unique_ptr<VideoDecodeAccelerator> CreateAndInitializeVda(
       scoped_refptr<CommandBufferHelper> command_buffer_helper,
       VideoDecodeAccelerator::Client* client,
+      MediaLog* media_log,
       const VideoDecodeAccelerator::Config& config) {
     DCHECK(owned_vda_);
     if (!owned_vda_->Initialize(config, client))

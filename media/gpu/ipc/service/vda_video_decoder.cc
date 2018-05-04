@@ -64,6 +64,7 @@ std::unique_ptr<VideoDecodeAccelerator> CreateAndInitializeVda(
     const gpu::GpuDriverBugWorkarounds& gpu_workarounds,
     scoped_refptr<CommandBufferHelper> command_buffer_helper,
     VideoDecodeAccelerator::Client* client,
+    MediaLog* media_log,
     const VideoDecodeAccelerator::Config& config) {
   std::unique_ptr<GpuVideoDecodeAcceleratorFactory> factory =
       GpuVideoDecodeAcceleratorFactory::Create(
@@ -75,7 +76,8 @@ std::unique_ptr<VideoDecodeAccelerator> CreateAndInitializeVda(
   // Note: GpuVideoDecodeAcceleratorFactory may create and initialize more than
   // one VDA. It is therefore important that VDAs do not call client methods
   // from Initialize().
-  return factory->CreateVDA(client, config, gpu_workarounds, gpu_preferences);
+  return factory->CreateVDA(client, config, gpu_workarounds, gpu_preferences,
+                            media_log);
 }
 
 bool IsProfileSupported(
@@ -304,7 +306,7 @@ void VdaVideoDecoder::InitializeOnGpuThread() {
 
   // Create and initialize the VDA.
   vda_ = std::move(create_and_initialize_vda_cb_)
-             .Run(command_buffer_helper, this, vda_config);
+             .Run(command_buffer_helper, this, this, vda_config);
   if (!vda_) {
     parent_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&VdaVideoDecoder::InitializeDone,
@@ -678,6 +680,29 @@ void VdaVideoDecoder::ReusePictureBuffer(int32_t picture_buffer_id) {
     return;
 
   vda_->ReusePictureBuffer(picture_buffer_id);
+}
+
+void VdaVideoDecoder::AddEvent(std::unique_ptr<MediaLogEvent> event) {
+  DVLOG(1) << __func__;
+
+  if (parent_task_runner_->BelongsToCurrentThread()) {
+    AddEventOnParentThread(std::move(event));
+    return;
+  }
+
+  // Hop to the parent thread to be sure we don't call into |media_log_| after
+  // Destroy() returns.
+  parent_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&VdaVideoDecoder::AddEventOnParentThread,
+                                parent_weak_this_, std::move(event)));
+}
+
+void VdaVideoDecoder::AddEventOnParentThread(
+    std::unique_ptr<MediaLogEvent> event) {
+  DVLOG(1) << __func__;
+  DCHECK(parent_task_runner_->BelongsToCurrentThread());
+
+  media_log_->AddEvent(std::move(event));
 }
 
 void VdaVideoDecoder::EnterErrorState() {
