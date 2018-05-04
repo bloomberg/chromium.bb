@@ -162,7 +162,7 @@ PrintJobWorker::~PrintJobWorker() {
 }
 
 void PrintJobWorker::SetPrintJob(PrintJob* print_job) {
-  DCHECK(page_number_ == PageNumber::npos());
+  DCHECK_EQ(page_number_, PageNumber::npos());
   print_job_ = print_job;
 
   // Release the Printer Query reference. It is no longer needed.
@@ -318,12 +318,19 @@ void PrintJobWorker::UseDefaultSettings() {
 
 void PrintJobWorker::StartPrinting(PrintedDocument* new_document) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  DCHECK_EQ(page_number_, PageNumber::npos());
-  DCHECK_EQ(document_.get(), new_document);
-  DCHECK(document_.get());
 
-  if (!document_.get() || page_number_ != PageNumber::npos() ||
-      document_.get() != new_document) {
+  if (page_number_ != PageNumber::npos()) {
+    NOTREACHED();
+    return;
+  }
+
+  if (!document_) {
+    NOTREACHED();
+    return;
+  }
+
+  if (document_.get() != new_document) {
+    NOTREACHED();
     return;
   }
 
@@ -349,10 +356,11 @@ void PrintJobWorker::StartPrinting(PrintedDocument* new_document) {
 
 void PrintJobWorker::OnDocumentChanged(PrintedDocument* new_document) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  DCHECK_EQ(page_number_, PageNumber::npos());
 
-  if (page_number_ != PageNumber::npos())
+  if (page_number_ != PageNumber::npos()) {
+    NOTREACHED();
     return;
+  }
 
   document_ = new_document;
 }
@@ -365,14 +373,13 @@ void PrintJobWorker::PostWaitForPage() {
       base::TimeDelta::FromMilliseconds(500));
 }
 
-#if defined(OS_WIN)
 void PrintJobWorker::OnNewPage() {
-  if (!document_.get())  // Spurious message.
-    return;
-
-  // message_loop() could return NULL when the print job is cancelled.
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
+  if (!document_)
+    return;
+
+#if defined(OS_WIN)
   if (page_number_ == PageNumber::npos()) {
     // Find first page to print.
     int page_count = document_->page_count();
@@ -380,45 +387,33 @@ void PrintJobWorker::OnNewPage() {
       // We still don't know how many pages the document contains.
       return;
     }
-    // We have enough information to initialize page_number_.
+    // We have enough information to initialize |page_number_|.
     page_number_.Init(document_->settings(), page_count);
   }
 
-  DCHECK_NE(page_number_, PageNumber::npos());
   while (true) {
     scoped_refptr<PrintedPage> page = document_->GetPage(page_number_.ToInt());
-    if (!page.get()) {
+    if (!page) {
       PostWaitForPage();
-      break;
+      return;
     }
     // The page is there, print it.
     SpoolPage(page.get());
     ++page_number_;
-    if (page_number_ == PageNumber::npos()) {
-      OnDocumentDone();
-      // Don't touch this anymore since the instance could be destroyed.
+    if (page_number_ == PageNumber::npos())
       break;
-    }
   }
-}
 #else
-void PrintJobWorker::OnNewPage() {
-  if (!document_.get())  // Spurious message.
-    return;
-
-  // message_loop() could return NULL when the print job is cancelled.
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
-
-  const MetafilePlayer* metafile = document_->GetMetafile();
-  if (!metafile) {
+  if (!document_->GetMetafile()) {
     PostWaitForPage();
     return;
   }
   SpoolJob();
-  // Don't touch this anymore since the instance could be destroyed.
-  OnDocumentDone();
-}
 #endif  // defined(OS_WIN)
+
+  OnDocumentDone();
+  // Don't touch |this| anymore since the instance could be destroyed.
+}
 
 void PrintJobWorker::Cancel() {
   // This is the only function that can be called from any thread.
@@ -433,9 +428,7 @@ bool PrintJobWorker::IsRunning() const {
 
 bool PrintJobWorker::PostTask(const base::Location& from_here,
                               base::OnceClosure task) {
-  if (task_runner_.get())
-    return task_runner_->PostTask(from_here, std::move(task));
-  return false;
+  return task_runner_ && task_runner_->PostTask(from_here, std::move(task));
 }
 
 void PrintJobWorker::StopSoon() {
@@ -455,7 +448,7 @@ bool PrintJobWorker::Start() {
 void PrintJobWorker::OnDocumentDone() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK_EQ(page_number_, PageNumber::npos());
-  DCHECK(document_.get());
+  DCHECK(document_);
   // PrintJob must own this, because only PrintJob can send notifications.
   DCHECK(print_job_);
 
@@ -472,7 +465,7 @@ void PrintJobWorker::OnDocumentDone() {
                      base::RetainedRef(document_)));
 
   // Makes sure the variables are reinitialized.
-  document_ = NULL;
+  document_ = nullptr;
 }
 
 #if defined(OS_WIN)
@@ -525,7 +518,7 @@ void PrintJobWorker::OnFailure() {
   Cancel();
 
   // Makes sure the variables are reinitialized.
-  document_ = NULL;
+  document_ = nullptr;
   page_number_ = PageNumber::npos();
 }
 
