@@ -12,11 +12,13 @@ import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.tabmodel.TabModelImpl;
 import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
+import org.chromium.chrome.browser.vr_shell.VrShellDelegate.VrModeObserver;
 
 /**
  * Handles browser controls offset for a Tab.
  */
-public class TabBrowserControlsOffsetHelper {
+public class TabBrowserControlsOffsetHelper implements VrModeObserver {
     /**
      * Maximum duration for the control container slide-in animation. Note that this value matches
      * the one in browser_controls_offset_manager.cc.
@@ -51,10 +53,16 @@ public class TabBrowserControlsOffsetHelper {
     private ValueAnimator mControlsAnimator;
 
     /**
+     * Whether the browser is currently in VR mode.
+     */
+    private boolean mIsInVr;
+
+    /**
      * @param tab The {@link Tab} that this class is associated with.
      */
     TabBrowserControlsOffsetHelper(Tab tab) {
         mTab = tab;
+        VrShellDelegate.registerVrModeObserver(this);
     }
 
     /**
@@ -171,7 +179,18 @@ public class TabBrowserControlsOffsetHelper {
         final FullscreenManager manager = mTab.getFullscreenManager();
         if (manager == null) return;
 
-        if (toNonFullscreen) {
+        if (mIsInVr) {
+            VrShellDelegate.rawTopContentOffsetChanged(topContentOffset);
+            // The dip scale of java UI and WebContents are different while in VR, leading to a
+            // mismatch in size in pixels when converting from dips. Since we hide the controls in
+            // VR anyways, just set the offsets to what they're supposed to be with the controls
+            // hidden.
+            // TODO(mthiesse): Should we instead just set the top controls height to be 0 while in
+            // VR?
+            topControlsOffset = -manager.getTopControlsHeight();
+            bottomControlsOffset = manager.getBottomControlsHeight();
+            topContentOffset = 0;
+        } else if (toNonFullscreen) {
             manager.setPositionsForTabToNonFullscreen();
         } else {
             manager.setPositionsForTab(topControlsOffset, bottomControlsOffset, topContentOffset);
@@ -227,5 +246,25 @@ public class TabBrowserControlsOffsetHelper {
                     false, (float) animator.getAnimatedValue(), 0, topControlHeight);
         });
         mControlsAnimator.start();
+    }
+
+    @Override
+    public void onEnterVr() {
+        mIsInVr = true;
+        resetPositions();
+    }
+
+    @Override
+    public void onExitVr() {
+        mIsInVr = false;
+        resetPositions();
+    }
+
+    /**
+     * Cleans up internal state, unregistering any observers.
+     */
+    public void destroy() {
+        clearPreviousPositions();
+        VrShellDelegate.unregisterVrModeObserver(this);
     }
 }
