@@ -13,6 +13,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/unguessable_token.h"
+#include "build/build_config.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/demuxer_stream.h"
@@ -88,6 +89,7 @@ MojoVideoDecoder::MojoVideoDecoder(
       request_overlay_info_cb_(request_overlay_info_cb),
       weak_factory_(this) {
   DVLOG(1) << __func__;
+  weak_this_ = weak_factory_.GetWeakPtr();
 }
 
 MojoVideoDecoder::~MojoVideoDecoder() {
@@ -110,16 +112,16 @@ void MojoVideoDecoder::Initialize(
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  if (!weak_this_)
-    weak_this_ = weak_factory_.GetWeakPtr();
-
-  if (!remote_decoder_bound_)
-    BindRemoteDecoder();
-
-  if (has_connection_error_) {
+// Fail immediately if we know that the remote side cannot support |config|.
+//
+// TODO(sandersd): Implement a generic mechanism for caching supported
+// profiles. https://crbug.com/839951
+#if defined(OS_MACOSX)
+  if (config.codec() != kCodecH264 || config.is_encrypted()) {
     task_runner_->PostTask(FROM_HERE, base::Bind(init_cb, false));
     return;
   }
+#endif  // defined(OS_MACOSX)
 
   // Fail immediately if the stream is encrypted but |cdm_context| is invalid.
   int cdm_id = (config.is_encrypted() && cdm_context)
@@ -129,6 +131,14 @@ void MojoVideoDecoder::Initialize(
   if (config.is_encrypted() && CdmContext::kInvalidCdmId == cdm_id) {
     DVLOG(1) << __func__ << ": Invalid CdmContext.";
     task_runner_->PostTask(FROM_HERE, base::Bind(init_cb, false));
+    return;
+  }
+
+  if (!remote_decoder_bound_)
+    BindRemoteDecoder();
+
+  if (has_connection_error_) {
+    task_runner_->PostTask(FROM_HERE, base::BindRepeating(init_cb, false));
     return;
   }
 
@@ -306,8 +316,8 @@ void MojoVideoDecoder::RequestOverlayInfo(bool restart_for_transitions) {
   overlay_info_requested_ = true;
   request_overlay_info_cb_.Run(
       restart_for_transitions,
-      BindToCurrentLoop(base::Bind(&MojoVideoDecoder::OnOverlayInfoChanged,
-                                   weak_factory_.GetWeakPtr())));
+      BindToCurrentLoop(base::BindRepeating(
+          &MojoVideoDecoder::OnOverlayInfoChanged, weak_this_)));
 }
 
 void MojoVideoDecoder::OnOverlayInfoChanged(const OverlayInfo& overlay_info) {

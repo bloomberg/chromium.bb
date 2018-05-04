@@ -209,7 +209,7 @@ class MojoVideoDecoderIntegrationTest : public ::testing::Test {
     StrictMock<base::MockCallback<VideoDecoder::InitCB>> init_cb;
     EXPECT_CALL(init_cb, Run(_)).WillOnce(SaveArg<0>(&result));
 
-    client_->Initialize(TestVideoConfig::Normal(), false, nullptr,
+    client_->Initialize(TestVideoConfig::NormalH264(), false, nullptr,
                         init_cb.Get(), output_cb_.Get(),
                         VideoDecoder::WaitingForDecryptionKeyCB());
     RunUntilIdle();
