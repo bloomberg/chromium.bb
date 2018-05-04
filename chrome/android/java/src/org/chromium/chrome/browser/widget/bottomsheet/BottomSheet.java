@@ -125,7 +125,7 @@ public class BottomSheet extends FrameLayout
     private static final float THRESHOLD_TO_NEXT_STATE_2 = 0.3f;
 
     /** The height ratio for the sheet in the SHEET_STATE_HALF state. */
-    private static final float HALF_HEIGHT_RATIO = 0.55f;
+    private static final float HALF_HEIGHT_RATIO = 0.65f;
 
     /** The fraction of the width of the screen that, when swiped, will cause the sheet to move. */
     private static final float SWIPE_ALLOWED_FRACTION = 0.2f;
