@@ -44,17 +44,6 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
 
-#if BUILDFLAG(ENABLE_VULKAN)
-#include "components/viz/common/gpu/vulkan_in_process_context_provider.h"
-#include "gpu/vulkan/vulkan_device_queue.h"
-#include "gpu/vulkan/vulkan_implementation.h"
-#include "gpu/vulkan/vulkan_surface.h"
-#include "gpu/vulkan/vulkan_swap_chain.h"
-#include "third_party/skia/include/gpu/GrContext.h"
-#include "third_party/skia/include/gpu/vk/GrVkBackendContext.h"
-#include "third_party/skia/include/gpu/vk/GrVkTypes.h"
-#endif
-
 namespace viz {
 // Parameters needed to draw a RenderPassDrawQuad.
 struct SkiaRenderer::DrawRenderPassDrawQuadParams {
@@ -194,9 +183,6 @@ SkiaRenderer::SkiaRenderer(const RendererSettings* settings,
     : DirectRenderer(settings, output_surface, resource_provider),
       skia_output_surface_(skia_output_surface),
       lock_set_for_external_use_(resource_provider) {
-#if BUILDFLAG(ENABLE_VULKAN)
-  use_swap_with_bounds_ = false;
-#else
   const auto& context_caps =
       output_surface_->context_provider()->ContextCapabilities();
   use_swap_with_bounds_ = context_caps.swap_buffers_with_bounds;
@@ -204,19 +190,11 @@ SkiaRenderer::SkiaRenderer(const RendererSettings* settings,
     sync_queries_ = base::Optional<SyncQueryCollection>(
         output_surface_->context_provider()->ContextGL());
   }
-#endif
 }
 
-SkiaRenderer::~SkiaRenderer() {
-#if BUILDFLAG(ENABLE_VULKAN)
-  return;
-#endif
-}
+SkiaRenderer::~SkiaRenderer() = default;
 
 bool SkiaRenderer::CanPartialSwap() {
-#if BUILDFLAG(ENABLE_VULKAN)
-  return false;
-#endif
   if (use_swap_with_bounds_)
     return false;
   auto* context_provider = output_surface_->context_provider();
@@ -225,9 +203,6 @@ bool SkiaRenderer::CanPartialSwap() {
 
 void SkiaRenderer::BeginDrawingFrame() {
   TRACE_EVENT0("viz", "SkiaRenderer::BeginDrawingFrame");
-#if BUILDFLAG(ENABLE_VULKAN)
-  return;
-#else
   // Copied from GLRenderer.
   scoped_refptr<ResourceFence> read_lock_fence;
   if (sync_queries_) {
@@ -250,7 +225,6 @@ void SkiaRenderer::BeginDrawingFrame() {
       }
     }
   }
-#endif
 }
 
 void SkiaRenderer::FinishDrawingFrame() {
@@ -333,30 +307,6 @@ void SkiaRenderer::BindFramebufferToOutputSurface() {
   SkSurfaceProps surface_props =
       SkSurfaceProps(0, SkSurfaceProps::kLegacyFontHost_InitType);
 
-#if BUILDFLAG(ENABLE_VULKAN)
-  gpu::VulkanSurface* vulkan_surface = output_surface_->GetVulkanSurface();
-  gpu::VulkanSwapChain* swap_chain = vulkan_surface->GetSwapChain();
-  VkImage image = swap_chain->GetCurrentImage(swap_chain->current_image());
-
-  GrVkImageInfo info_;
-  info_.fImage = image;
-  info_.fAlloc = {VK_NULL_HANDLE, 0, 0, 0};
-  info_.fImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-  info_.fImageTiling = VK_IMAGE_TILING_OPTIMAL;
-  info_.fFormat = VK_FORMAT_B8G8R8A8_UNORM;
-  info_.fLevelCount = 1;
-
-  GrBackendRenderTarget render_target(
-      current_frame()->device_viewport_size.width(),
-      current_frame()->device_viewport_size.height(), 0, 0, info_);
-
-  GrContext* gr_context =
-      output_surface_->vulkan_context_provider()->GetGrContext();
-  root_surface_ = SkSurface::MakeFromBackendRenderTarget(
-      gr_context, render_target, kTopLeft_GrSurfaceOrigin,
-      kBGRA_8888_SkColorType, nullptr, &surface_props);
-  root_canvas_ = root_surface_->getCanvas();
-#else
   // TODO(weiliangc): Set up correct can_use_lcd_text for SkSurfaceProps flags.
   // How to setup is in ResourceProvider. (http://crbug.com/644851)
 
@@ -381,7 +331,6 @@ void SkiaRenderer::BindFramebufferToOutputSurface() {
         kRGB_888x_SkColorType, nullptr, &surface_props);
     root_canvas_ = root_surface_->getCanvas();
   }
-#endif
 
   if (settings_->show_overdraw_feedback) {
     const auto& size = current_frame()->device_viewport_size;
@@ -1030,10 +979,6 @@ sk_sp<SkImage> SkiaRenderer::ApplyBackgroundFilters(
       SkImageInfo::Make(rect.width(), rect.height(), src_image->colorType(),
                         src_image->alphaType(), nullptr);
 
-#if BUILDFLAG(ENABLE_VULKAN)
-  // TODO(xing.xu):  Handle Vulkan related logic here.
-  return nullptr;
-#else
   GrContext* gr_context = output_surface_->context_provider()->GrContext();
   // TODO(weiliangc): Set up correct can_use_lcd_text for SkSurfaceProps flags.
   // How to setup is in ResourceProvider. (http://crbug.com/644851)
@@ -1055,7 +1000,6 @@ sk_sp<SkImage> SkiaRenderer::ApplyBackgroundFilters(
   surface->getCanvas()->drawImage(src_image, rect.x(), rect.y(), &paint);
 
   return surface->makeImageSnapshot();
-#endif
 }
 
 sk_sp<SkShader> SkiaRenderer::GetBackgroundFilterShader(
@@ -1154,19 +1098,12 @@ void SkiaRenderer::AllocateRenderPassResourceIfNeeded(
   gpu::Capabilities caps;
   caps.texture_format_bgra8888 = true;
   GrContext* gr_context = nullptr;
-#if BUILDFLAG(ENABLE_VULKAN)
-  if (!skia_output_surface_) {
-    gr_context = output_surface_->vulkan_context_provider()->GetGrContext();
-    caps.texture_format_bgra8888 = true;
-  }
-#else
   if (!skia_output_surface_) {
     ContextProvider* context_provider = output_surface_->context_provider();
     caps.texture_format_bgra8888 =
         context_provider->ContextCapabilities().texture_format_bgra8888;
     gr_context = context_provider->GrContext();
   }
-#endif
   render_pass_backings_.insert(std::pair<RenderPassId, RenderPassBacking>(
       render_pass_id,
       RenderPassBacking(gr_context, caps, requirements.size,
