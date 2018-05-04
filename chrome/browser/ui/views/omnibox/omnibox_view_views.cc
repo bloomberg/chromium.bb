@@ -1257,8 +1257,8 @@ void OmniboxViewViews::OnAfterCutOrCopy(ui::ClipboardType clipboard_type) {
   cb->ReadText(clipboard_type, &selected_text);
   GURL url;
   bool write_url;
-  model()->AdjustTextForCopy(GetSelectedRange().GetMin(), IsSelectAll(),
-                             &selected_text, &url, &write_url);
+  model()->AdjustTextForCopy(GetSelectedRange().GetMin(), &selected_text, &url,
+                             &write_url);
   if (IsSelectAll())
     UMA_HISTOGRAM_COUNTS(OmniboxEditModel::kCutOrCopyAllTextHistogram, 1);
 
@@ -1269,15 +1269,14 @@ void OmniboxViewViews::OnAfterCutOrCopy(ui::ClipboardType clipboard_type) {
 void OmniboxViewViews::OnWriteDragData(ui::OSExchangeData* data) {
   GURL url;
   bool write_url;
-  bool is_all_selected = IsSelectAll();
   base::string16 selected_text = GetSelectedText();
-  model()->AdjustTextForCopy(GetSelectedRange().GetMin(), is_all_selected,
-                             &selected_text, &url, &write_url);
+  model()->AdjustTextForCopy(GetSelectedRange().GetMin(), &selected_text, &url,
+                             &write_url);
   data->SetString(selected_text);
   if (write_url) {
     gfx::Image favicon;
     base::string16 title = selected_text;
-    if (is_all_selected)
+    if (IsSelectAll())
       model()->GetDataForURLExport(&url, &title, &favicon);
     button_drag_utils::SetURLAndDragImage(url, title, favicon.AsImageSkia(),
                                           nullptr, *GetWidget(), data);
@@ -1289,8 +1288,8 @@ void OmniboxViewViews::OnGetDragOperationsForTextfield(int* drag_operations) {
   base::string16 selected_text = GetSelectedText();
   GURL url;
   bool write_url;
-  model()->AdjustTextForCopy(GetSelectedRange().GetMin(), IsSelectAll(),
-                             &selected_text, &url, &write_url);
+  model()->AdjustTextForCopy(GetSelectedRange().GetMin(), &selected_text, &url,
+                             &write_url);
   if (write_url)
     *drag_operations |= ui::DragDropTypes::DRAG_LINK;
 }
