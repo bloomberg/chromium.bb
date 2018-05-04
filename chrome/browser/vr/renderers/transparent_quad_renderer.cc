@@ -22,7 +22,7 @@ static constexpr char const* kFragmentShader = SHADER(
   uniform mediump float u_Opacity;
   uniform mediump float u_OverlayOpacity;
   void main() {
-    if (step(1.0, length(v_CornerPosition)) > 0.0)
+    if (length(v_CornerPosition) > 1.0)
         discard;
     gl_FragColor = vec4(0, 0, 0, 0);
   }

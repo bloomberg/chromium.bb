@@ -2029,14 +2029,16 @@ void UiSceneCreator::CreateOverflowMenu() {
   VR_BIND_COLOR(model_, overflow_menu.get(), &ColorScheme::omnibox_background,
                 &Rect::SetColor);
 
-  auto overflow_layout =
-      Create<LinearLayout>(kOverflowMenuLayout, kPhaseNone, LinearLayout::kUp);
+  auto overflow_outer_layout =
+      Create<LinearLayout>(kNone, kPhaseNone, LinearLayout::kUp);
 
-  // The forward and refresh buttons are not in the menu layout, but appear as
-  // such. Instead, a placeholder element is inserted into the layout to make
-  // space for them, and the buttons themselves are anchored to the bottom
-  // corners of the overall layout. In the future, when we have more buttons,
-  // they may instead be placed in a linear layout (locked to one side).
+  // The item that reserves space in the menu layout for the buttons.
+  auto button_spacer =
+      CreateSpacer(kOverflowMenuMinimumWidth, kOverflowButtonRegionHeight);
+
+  // The forward and refresh buttons are anchored to the bottom corners of the
+  // reserved space. In the future, when we have more buttons, they may instead
+  // be placed in a linear layout (locked to one side).
   std::vector<
       std::tuple<UiElementName, LayoutAlignment, const gfx::VectorIcon&>>
       menu_buttons = {
@@ -2089,15 +2091,10 @@ void UiSceneCreator::CreateOverflowMenu() {
         break;
     }
 
-    overflow_menu->AddChild(std::move(button));
+    button_spacer->AddChild(std::move(button));
   }
 
-  // The item that reserves space in the menu layout for the buttons.
-  auto button_spacer = Create<Rect>(kNone, kPhaseNone);
-  button_spacer->SetType(kTypeSpacer);
-  button_spacer->SetSize(kOverflowMenuMinimumWidth,
-                         kOverflowButtonRegionHeight);
-  overflow_layout->AddChild(std::move(button_spacer));
+  overflow_outer_layout->AddChild(std::move(button_spacer));
 
   std::vector<std::tuple<UiElementName, int>> menu_items = {
       {kOverflowMenuNewTabItem, IDS_VR_MENU_NEW_TAB},
@@ -2113,6 +2110,9 @@ void UiSceneCreator::CreateOverflowMenu() {
        IDS_VR_MENU_CLOSE_INCOGNITO_TABS},
       {kOverflowMenuSendFeedbackItem, IDS_VR_MENU_SEND_FEEDBACK},
   };
+
+  auto overflow_menu_layout =
+      Create<LinearLayout>(kOverflowMenuLayout, kPhaseNone, LinearLayout::kUp);
 
   for (auto& item : menu_items) {
     auto layout = std::make_unique<LinearLayout>(LinearLayout::kRight);
@@ -2252,15 +2252,17 @@ void UiSceneCreator::CreateOverflowMenu() {
         break;
     }
 
-    overflow_layout->AddChild(std::move(background));
+    overflow_menu_layout->AddChild(std::move(background));
   }
+
+  overflow_outer_layout->AddChild(std::move(overflow_menu_layout));
 
   auto top_cap = Create<Rect>(kNone, kPhaseNone);
   top_cap->SetType(kTypeSpacer);
   top_cap->SetSize(kOverflowMenuMinimumWidth, kOverflowMenuYPadding);
-  overflow_layout->AddChild(std::move(top_cap));
+  overflow_outer_layout->AddChild(std::move(top_cap));
 
-  overflow_menu->AddChild(std::move(overflow_layout));
+  overflow_menu->AddChild(std::move(overflow_outer_layout));
   overflow_backplane->AddChild(std::move(overflow_menu));
   scene_->AddUiElement(kUrlBarOverflowButton, std::move(overflow_backplane));
 }
