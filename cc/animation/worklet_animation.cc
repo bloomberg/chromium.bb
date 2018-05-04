@@ -11,11 +11,13 @@ namespace cc {
 WorkletAnimation::WorkletAnimation(
     int id,
     const std::string& name,
-    std::unique_ptr<ScrollTimeline> scroll_timeline)
+    std::unique_ptr<ScrollTimeline> scroll_timeline,
+    bool is_controlling_instance)
     : SingleKeyframeEffectAnimation(id),
       name_(name),
       scroll_timeline_(std::move(scroll_timeline)),
-      last_current_time_(base::nullopt) {}
+      last_current_time_(base::nullopt),
+      is_impl_instance_(is_controlling_instance) {}
 
 WorkletAnimation::~WorkletAnimation() = default;
 
@@ -24,7 +26,7 @@ scoped_refptr<WorkletAnimation> WorkletAnimation::Create(
     const std::string& name,
     std::unique_ptr<ScrollTimeline> scroll_timeline) {
   return WrapRefCounted(
-      new WorkletAnimation(id, name, std::move(scroll_timeline)));
+      new WorkletAnimation(id, name, std::move(scroll_timeline), false));
 }
 
 scoped_refptr<Animation> WorkletAnimation::CreateImplInstance() const {
@@ -33,7 +35,7 @@ scoped_refptr<Animation> WorkletAnimation::CreateImplInstance() const {
     impl_timeline = scroll_timeline_->CreateImplInstance();
 
   return WrapRefCounted(
-      new WorkletAnimation(id(), name(), std::move(impl_timeline)));
+      new WorkletAnimation(id(), name(), std::move(impl_timeline), true));
 }
 
 void WorkletAnimation::SetLocalTime(base::TimeDelta local_time) {
@@ -42,6 +44,10 @@ void WorkletAnimation::SetLocalTime(base::TimeDelta local_time) {
 }
 
 void WorkletAnimation::Tick(base::TimeTicks monotonic_time) {
+  // Do not tick worklet animations on main thread. This should be removed if we
+  // skip ticking all animations on main thread in http://crbug.com/762717.
+  if (!is_impl_instance_)
+    return;
   // As the output of a WorkletAnimation is driven by a script-provided local
   // time, we don't want the underlying effect to participate in the normal
   // animations lifecycle. To avoid this we pause the underlying keyframe effect

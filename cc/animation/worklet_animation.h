@@ -23,7 +23,8 @@ class CC_ANIMATION_EXPORT WorkletAnimation final
  public:
   WorkletAnimation(int id,
                    const std::string& name,
-                   std::unique_ptr<ScrollTimeline> scroll_timeline);
+                   std::unique_ptr<ScrollTimeline> scroll_timeline,
+                   bool is_controlling_instance);
   static scoped_refptr<WorkletAnimation> Create(
       int id,
       const std::string& name,
@@ -66,6 +67,8 @@ class CC_ANIMATION_EXPORT WorkletAnimation final
   base::TimeDelta local_time_;
 
   base::Optional<double> last_current_time_;
+
+  bool is_impl_instance_;
 };
 
 }  // namespace cc
