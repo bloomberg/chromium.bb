@@ -92,7 +92,6 @@
 
 # crbug.com/776589 Intercepting requests with net::URLRequestFilter.
 -ContinueWhereILeftOffTest.CookiesClearedOnExit
--DevToolsSanityTest.TestNetworkPushTime
 -DownloadExtensionTest.DownloadExtensionTest_Download_FileSystemURL
 -MimeHandlerViewTests/MimeHandlerViewTest.SingleRequest/0
 -PolicyTest.ExtensionInstallSources
