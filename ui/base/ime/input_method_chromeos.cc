@@ -192,7 +192,8 @@ void InputMethodChromeOS::OnTextInputTypeChanged(
     // The focus in to or out from password field should also notify engine.
     engine->FocusOut();
     ui::IMEEngineHandlerInterface::InputContext context(
-        GetTextInputType(), GetTextInputMode(), GetTextInputFlags());
+        GetTextInputType(), GetTextInputMode(), GetTextInputFlags(),
+        GetClientFocusReason());
     engine->FocusIn(context);
   }
 
@@ -308,7 +309,8 @@ void InputMethodChromeOS::OnDidChangeFocusedClient(
 
   if (GetEngine()) {
     ui::IMEEngineHandlerInterface::InputContext context(
-        GetTextInputType(), GetTextInputMode(), GetTextInputFlags());
+        GetTextInputType(), GetTextInputMode(), GetTextInputFlags(),
+        GetClientFocusReason());
     GetEngine()->FocusIn(context);
   }
 }
@@ -352,7 +354,8 @@ void InputMethodChromeOS::UpdateContextFocusState() {
     candidate_window->FocusStateChanged(IsNonPasswordInputFieldFocused());
 
   ui::IMEEngineHandlerInterface::InputContext context(
-      GetTextInputType(), GetTextInputMode(), GetTextInputFlags());
+      GetTextInputType(), GetTextInputMode(), GetTextInputFlags(),
+      GetClientFocusReason());
   ui::IMEBridge::Get()->SetCurrentInputContext(context);
 
   if (!IsTextInputTypeNone())
@@ -747,6 +750,11 @@ bool InputMethodChromeOS::IsNonPasswordInputFieldFocused() {
 
 bool InputMethodChromeOS::IsInputFieldFocused() {
   return GetTextInputType() != TEXT_INPUT_TYPE_NONE;
+}
+
+TextInputClient::FocusReason InputMethodChromeOS::GetClientFocusReason() const {
+  TextInputClient* client = GetTextInputClient();
+  return client ? client->GetFocusReason() : TextInputClient::FOCUS_REASON_NONE;
 }
 
 }  // namespace ui

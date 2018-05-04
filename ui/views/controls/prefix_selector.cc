@@ -89,6 +89,12 @@ bool PrefixSelector::HasCompositionText() const {
   return false;
 }
 
+ui::TextInputClient::FocusReason PrefixSelector::GetFocusReason() const {
+  // TODO(https://crbug.com/824604): Implement this correctly.
+  NOTIMPLEMENTED_LOG_ONCE();
+  return ui::TextInputClient::FOCUS_REASON_OTHER;
+}
+
 bool PrefixSelector::GetTextRange(gfx::Range* range) const {
   *range = gfx::Range();
   return false;

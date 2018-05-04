@@ -343,6 +343,7 @@ class VIEWS_EXPORT Textfield : public View,
   bool GetCompositionCharacterBounds(uint32_t index,
                                      gfx::Rect* rect) const override;
   bool HasCompositionText() const override;
+  FocusReason GetFocusReason() const override;
   bool GetTextRange(gfx::Range* range) const override;
   bool GetCompositionTextRange(gfx::Range* range) const override;
   bool GetSelectionRange(gfx::Range* range) const override;
@@ -481,6 +482,10 @@ class VIEWS_EXPORT Textfield : public View,
   // Textfield::GetCaretBlinkMs().
   void OnCursorBlinkTimerFired();
 
+  // Like RequestFocus, but explicitly states that the focus is triggered by
+  // a pointer event.
+  void RequestFocusWithPointer(ui::EventPointerType pointer_type);
+
   // The text model.
   std::unique_ptr<TextfieldModel> model_;
 
@@ -601,6 +606,10 @@ class VIEWS_EXPORT Textfield : public View,
   // Used to track active password input sessions.
   std::unique_ptr<ui::ScopedPasswordInputEnabler> password_input_enabler_;
 #endif  // defined(OS_MACOSX)
+
+  // How this textfield was focused.
+  ui::TextInputClient::FocusReason focus_reason_ =
+      ui::TextInputClient::FOCUS_REASON_NONE;
 
   // Used to bind callback functions to this object.
   base::WeakPtrFactory<Textfield> weak_ptr_factory_;

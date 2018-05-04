@@ -3552,4 +3552,95 @@ TEST_F(TextfieldTest, AccessibilitySelectionEvents) {
             textfield_->GetAccessibilitySelectionFiredCount());
 }
 
+TEST_F(TextfieldTest, FocusReasonMouse) {
+  InitTextfield();
+  widget_->GetFocusManager()->ClearFocus();
+  EXPECT_EQ(ui::TextInputClient::FOCUS_REASON_NONE,
+            textfield_->GetFocusReason());
+
+  const auto& bounds = textfield_->bounds();
+  MouseClick(bounds, 10);
+
+  EXPECT_EQ(ui::TextInputClient::FOCUS_REASON_MOUSE,
+            textfield_->GetFocusReason());
+}
+
+TEST_F(TextfieldTest, FocusReasonTouchTap) {
+  InitTextfield();
+  widget_->GetFocusManager()->ClearFocus();
+  EXPECT_EQ(ui::TextInputClient::FOCUS_REASON_NONE,
+            textfield_->GetFocusReason());
+
+  ui::GestureEventDetails tap_details(ui::ET_GESTURE_TAP_DOWN);
+  tap_details.set_primary_pointer_type(
+      ui::EventPointerType::POINTER_TYPE_TOUCH);
+  GestureEventForTest tap(GetCursorPositionX(0), 0, tap_details);
+  textfield_->OnGestureEvent(&tap);
+
+  EXPECT_EQ(ui::TextInputClient::FOCUS_REASON_TOUCH,
+            textfield_->GetFocusReason());
+}
+
+TEST_F(TextfieldTest, FocusReasonPenTap) {
+  InitTextfield();
+  widget_->GetFocusManager()->ClearFocus();
+  EXPECT_EQ(ui::TextInputClient::FOCUS_REASON_NONE,
+            textfield_->GetFocusReason());
+
+  ui::GestureEventDetails tap_details(ui::ET_GESTURE_TAP_DOWN);
+  tap_details.set_primary_pointer_type(ui::EventPointerType::POINTER_TYPE_PEN);
+  GestureEventForTest tap(GetCursorPositionX(0), 0, tap_details);
+  textfield_->OnGestureEvent(&tap);
+
+  EXPECT_EQ(ui::TextInputClient::FOCUS_REASON_PEN,
+            textfield_->GetFocusReason());
+}
+
+TEST_F(TextfieldTest, FocusReasonMultipleEvents) {
+  InitTextfield();
+  widget_->GetFocusManager()->ClearFocus();
+  EXPECT_EQ(ui::TextInputClient::FOCUS_REASON_NONE,
+            textfield_->GetFocusReason());
+
+  // Pen tap, followed by a touch tap
+  {
+    ui::GestureEventDetails tap_details(ui::ET_GESTURE_TAP_DOWN);
+    tap_details.set_primary_pointer_type(
+        ui::EventPointerType::POINTER_TYPE_PEN);
+    GestureEventForTest tap(GetCursorPositionX(0), 0, tap_details);
+    textfield_->OnGestureEvent(&tap);
+  }
+
+  {
+    ui::GestureEventDetails tap_details(ui::ET_GESTURE_TAP_DOWN);
+    tap_details.set_primary_pointer_type(
+        ui::EventPointerType::POINTER_TYPE_TOUCH);
+    GestureEventForTest tap(GetCursorPositionX(0), 0, tap_details);
+    textfield_->OnGestureEvent(&tap);
+  }
+
+  EXPECT_EQ(ui::TextInputClient::FOCUS_REASON_PEN,
+            textfield_->GetFocusReason());
+}
+
+TEST_F(TextfieldTest, FocusReasonFocusBlurFocus) {
+  InitTextfield();
+  widget_->GetFocusManager()->ClearFocus();
+  EXPECT_EQ(ui::TextInputClient::FOCUS_REASON_NONE,
+            textfield_->GetFocusReason());
+
+  // Pen tap, blur, then programmatic focus.
+  ui::GestureEventDetails tap_details(ui::ET_GESTURE_TAP_DOWN);
+  tap_details.set_primary_pointer_type(ui::EventPointerType::POINTER_TYPE_PEN);
+  GestureEventForTest tap(GetCursorPositionX(0), 0, tap_details);
+  textfield_->OnGestureEvent(&tap);
+
+  widget_->GetFocusManager()->ClearFocus();
+
+  textfield_->RequestFocus();
+
+  EXPECT_EQ(ui::TextInputClient::FOCUS_REASON_OTHER,
+            textfield_->GetFocusReason());
+}
+
 }  // namespace views

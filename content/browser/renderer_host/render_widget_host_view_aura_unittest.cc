@@ -6868,6 +6868,88 @@ TEST_F(InputMethodStateAuraTest, ImeFocusedNodeChanged) {
   EXPECT_FALSE(has_composition_text());
 }
 
+TEST_F(RenderWidgetHostViewAuraTest, FocusReasonNotFocused) {
+  EXPECT_EQ(ui::TextInputClient::FOCUS_REASON_NONE,
+            parent_view_->GetFocusReason());
+}
+
+TEST_F(RenderWidgetHostViewAuraTest, FocusReasonMouse) {
+  parent_view_->Focus();
+  ActivateViewForTextInputManager(parent_view_, ui::TEXT_INPUT_TYPE_TEXT);
+
+  ui::MouseEvent mouse_event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                             ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
+                             0);
+  parent_view_->OnMouseEvent(&mouse_event);
+  parent_view_->FocusedNodeChanged(true, gfx::Rect());
+
+  EXPECT_EQ(ui::TextInputClient::FOCUS_REASON_MOUSE,
+            parent_view_->GetFocusReason());
+}
+
+TEST_F(RenderWidgetHostViewAuraTest, FocusReasonTouch) {
+  parent_view_->Focus();
+  ActivateViewForTextInputManager(parent_view_, ui::TEXT_INPUT_TYPE_TEXT);
+
+  ui::GestureEventDetails tap_details(ui::ET_GESTURE_TAP_DOWN);
+  tap_details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
+  tap_details.set_primary_pointer_type(
+      ui::EventPointerType::POINTER_TYPE_TOUCH);
+  ui::GestureEvent touch_event(0, 0, 0, base::TimeTicks(), tap_details);
+
+  parent_view_->OnGestureEvent(&touch_event);
+  parent_view_->FocusedNodeChanged(true, gfx::Rect());
+
+  EXPECT_EQ(ui::TextInputClient::FOCUS_REASON_TOUCH,
+            parent_view_->GetFocusReason());
+}
+
+TEST_F(RenderWidgetHostViewAuraTest, FocusReasonPen) {
+  parent_view_->Focus();
+  ActivateViewForTextInputManager(parent_view_, ui::TEXT_INPUT_TYPE_TEXT);
+
+  ui::GestureEventDetails tap_details(ui::ET_GESTURE_TAP_DOWN);
+  tap_details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
+  tap_details.set_primary_pointer_type(ui::EventPointerType::POINTER_TYPE_PEN);
+  ui::GestureEvent pen_event(0, 0, 0, base::TimeTicks(), tap_details);
+
+  parent_view_->OnGestureEvent(&pen_event);
+  parent_view_->FocusedNodeChanged(true, gfx::Rect());
+
+  EXPECT_EQ(ui::TextInputClient::FOCUS_REASON_PEN,
+            parent_view_->GetFocusReason());
+}
+
+TEST_F(RenderWidgetHostViewAuraTest, FocusReasonMultipleEventsOnSameNode) {
+  parent_view_->Focus();
+  ActivateViewForTextInputManager(parent_view_, ui::TEXT_INPUT_TYPE_TEXT);
+
+  // Touch then pen.
+  {
+    ui::GestureEventDetails tap_details(ui::ET_GESTURE_TAP_DOWN);
+    tap_details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
+    tap_details.set_primary_pointer_type(
+        ui::EventPointerType::POINTER_TYPE_TOUCH);
+    ui::GestureEvent touch_event(0, 0, 0, base::TimeTicks(), tap_details);
+
+    parent_view_->OnGestureEvent(&touch_event);
+    parent_view_->FocusedNodeChanged(true, gfx::Rect());
+  }
+
+  {
+    ui::GestureEventDetails tap_details(ui::ET_GESTURE_TAP_DOWN);
+    tap_details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
+    tap_details.set_primary_pointer_type(
+        ui::EventPointerType::POINTER_TYPE_PEN);
+    ui::GestureEvent pen_event(0, 0, 0, base::TimeTicks(), tap_details);
+
+    parent_view_->OnGestureEvent(&pen_event);
+  }
+
+  EXPECT_EQ(ui::TextInputClient::FOCUS_REASON_TOUCH,
+            parent_view_->GetFocusReason());
+}
+
 #if defined(OS_WIN)
 class MockInputMethodKeyboardController
     : public ui::InputMethodKeyboardController {

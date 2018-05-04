@@ -29,6 +29,21 @@ enum class TextEditCommand;
 // An interface implemented by a View that needs text input support.
 class UI_BASE_IME_EXPORT TextInputClient {
  public:
+  // The reason the control was focused, used by the virtual keyboard to detect
+  // pen input.
+  enum FocusReason {
+    // Not focused.
+    FOCUS_REASON_NONE,
+    // User initiated with mouse.
+    FOCUS_REASON_MOUSE,
+    // User initiated with touch.
+    FOCUS_REASON_TOUCH,
+    // User initiated with pen.
+    FOCUS_REASON_PEN,
+    // All other reasons (e.g. system initiated, mouse)
+    FOCUS_REASON_OTHER,
+  };
+
   virtual ~TextInputClient();
 
   // Input method result -------------------------------------------------------
@@ -96,6 +111,9 @@ class UI_BASE_IME_EXPORT TextInputClient {
 
   // Returns true if there is composition text.
   virtual bool HasCompositionText() const = 0;
+
+  // Returns how the text input client was focused.
+  virtual FocusReason GetFocusReason() const = 0;
 
   // Document content operations ----------------------------------------------
 

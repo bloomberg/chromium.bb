@@ -80,6 +80,10 @@ bool DummyTextInputClient::HasCompositionText() const {
   return false;
 }
 
+ui::TextInputClient::FocusReason DummyTextInputClient::GetFocusReason() const {
+  return ui::TextInputClient::FOCUS_REASON_OTHER;
+}
+
 bool DummyTextInputClient::GetTextRange(gfx::Range* range) const {
   return false;
 }

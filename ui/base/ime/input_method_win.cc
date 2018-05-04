@@ -514,7 +514,8 @@ void InputMethodWin::UpdateIMEState() {
   const TextInputType old_text_input_type =
       ui::IMEBridge::Get()->GetCurrentInputContext().type;
   ui::IMEEngineHandlerInterface::InputContext context(
-      GetTextInputType(), GetTextInputMode(), GetTextInputFlags());
+      GetTextInputType(), GetTextInputMode(), GetTextInputFlags(),
+      ui::TextInputClient::FOCUS_REASON_OTHER);
   ui::IMEBridge::Get()->SetCurrentInputContext(context);
 
   ui::IMEEngineHandlerInterface* engine = GetEngine();

@@ -199,6 +199,10 @@ bool IsFullscreenHandwritingVirtualKeyboardEnabled() {
       features::kEnableFullscreenHandwritingVirtualKeyboard);
 }
 
+bool IsStylusVirtualKeyboardEnabled() {
+  return base::FeatureList::IsEnabled(features::kEnableStylusVirtualKeyboard);
+}
+
 bool IsGestureTypingEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableGestureTyping);

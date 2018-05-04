@@ -669,16 +669,22 @@ gfx::NativeCursor Textfield::GetCursor(const ui::MouseEvent& event) {
 bool Textfield::OnMousePressed(const ui::MouseEvent& event) {
   const bool had_focus = HasFocus();
   bool handled = controller_ && controller_->HandleMouseEvent(this, event);
+
+  // If the controller triggered the focus, then record the focus reason as
+  // other.
+  if (!had_focus && HasFocus())
+    focus_reason_ = ui::TextInputClient::FOCUS_REASON_OTHER;
+
   if (!handled &&
       (event.IsOnlyLeftMouseButton() || event.IsOnlyRightMouseButton())) {
     if (!had_focus)
-      RequestFocus();
+      RequestFocusWithPointer(ui::EventPointerType::POINTER_TYPE_MOUSE);
     ShowImeIfNeeded();
   }
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   if (!handled && !had_focus && event.IsOnlyMiddleMouseButton())
-    RequestFocus();
+    RequestFocusWithPointer(ui::EventPointerType::POINTER_TYPE_MOUSE);
 #endif
 
   return selection_controller_.OnMousePressed(
@@ -752,7 +758,7 @@ bool Textfield::OnKeyReleased(const ui::KeyEvent& event) {
 void Textfield::OnGestureEvent(ui::GestureEvent* event) {
   switch (event->type()) {
     case ui::ET_GESTURE_TAP_DOWN:
-      RequestFocus();
+      RequestFocusWithPointer(event->details().primary_pointer_type());
       ShowImeIfNeeded();
       event->SetHandled();
       break;
@@ -853,6 +859,28 @@ bool Textfield::AcceleratorPressed(const ui::Accelerator& accelerator) {
 
 bool Textfield::CanHandleAccelerators() const {
   return GetRenderText()->focused() && View::CanHandleAccelerators();
+}
+
+void Textfield::RequestFocusWithPointer(ui::EventPointerType pointer_type) {
+  if (HasFocus())
+    return;
+
+  switch (pointer_type) {
+    case ui::EventPointerType::POINTER_TYPE_MOUSE:
+      focus_reason_ = ui::TextInputClient::FOCUS_REASON_MOUSE;
+      break;
+    case ui::EventPointerType::POINTER_TYPE_PEN:
+      focus_reason_ = ui::TextInputClient::FOCUS_REASON_PEN;
+      break;
+    case ui::EventPointerType::POINTER_TYPE_TOUCH:
+      focus_reason_ = ui::TextInputClient::FOCUS_REASON_TOUCH;
+      break;
+    default:
+      focus_reason_ = ui::TextInputClient::FOCUS_REASON_OTHER;
+      break;
+  }
+
+  View::RequestFocus();
 }
 
 void Textfield::AboutToRequestFocusFromTabTraversal(bool reverse) {
@@ -1072,6 +1100,10 @@ void Textfield::OnPaint(gfx::Canvas* canvas) {
 }
 
 void Textfield::OnFocus() {
+  // Set focus reason if focused was gained without mouse or touch input.
+  if (focus_reason_ == ui::TextInputClient::FOCUS_REASON_NONE)
+    focus_reason_ = ui::TextInputClient::FOCUS_REASON_OTHER;
+
 #if defined(OS_MACOSX)
   if (text_input_type_ == ui::TEXT_INPUT_TYPE_PASSWORD)
     password_input_enabler_.reset(new ui::ScopedPasswordInputEnabler());
@@ -1094,6 +1126,8 @@ void Textfield::OnFocus() {
 }
 
 void Textfield::OnBlur() {
+  focus_reason_ = ui::TextInputClient::FOCUS_REASON_NONE;
+
   gfx::RenderText* render_text = GetRenderText();
   render_text->set_focused(false);
 
@@ -1531,6 +1565,10 @@ bool Textfield::GetCompositionCharacterBounds(uint32_t index,
 
 bool Textfield::HasCompositionText() const {
   return model_->HasCompositionText();
+}
+
+ui::TextInputClient::FocusReason Textfield::GetFocusReason() const {
+  return focus_reason_;
 }
 
 bool Textfield::GetTextRange(gfx::Range* range) const {
