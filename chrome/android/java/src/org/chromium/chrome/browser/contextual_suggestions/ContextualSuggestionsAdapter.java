@@ -74,7 +74,7 @@ class ContextualSuggestionsAdapter
     ContextualSuggestionsAdapter(Context context, Profile profile, UiConfig uiConfig,
             SuggestionsUiDelegate uiDelegate, ContextualSuggestionsModel model,
             ContextMenuManager contextMenuManager) {
-        super(model.mClusterListObservable);
+        super(model.mClusterListObservable, null);
 
         setViewBinder(new ContextualSuggestionsViewBinder());
 

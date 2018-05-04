@@ -8,6 +8,8 @@ import android.view.ViewStub;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.autofill.AutofillKeyboardSuggestions;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryViewBinder.AccessoryViewHolder;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryViewBinder.ActionViewBinder;
 import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
 import org.chromium.chrome.browser.modelutil.RecyclerViewModelChangeProcessor;
@@ -20,12 +22,8 @@ import org.chromium.ui.base.WindowAndroid;
  * or showing the accessory) to the {@link KeyboardAccessoryMediator}.
  */
 public class KeyboardAccessoryCoordinator {
-    private final KeyboardAccessoryModel mModel = new KeyboardAccessoryModel();
     private final KeyboardAccessoryMediator mMediator;
-    private KeyboardAccessoryViewBinder.AccessoryViewHolder mViewHolder;
-    private PropertyModelChangeProcessor<KeyboardAccessoryModel,
-            KeyboardAccessoryViewBinder.AccessoryViewHolder, KeyboardAccessoryModel.PropertyKey>
-            mModelChangeProcessor;
+    private AccessoryViewHolder mViewHolder;
 
     /**
      * Initializes the component as soon as the native library is loaded by e.g. starting to listen
@@ -34,15 +32,24 @@ public class KeyboardAccessoryCoordinator {
      * @param viewStub the stub that will become the accessory.
      */
     public KeyboardAccessoryCoordinator(WindowAndroid windowAndroid, ViewStub viewStub) {
-        mMediator = new KeyboardAccessoryMediator(mModel, windowAndroid);
-        mViewHolder = new KeyboardAccessoryViewBinder.AccessoryViewHolder(viewStub);
-        mModelChangeProcessor = new PropertyModelChangeProcessor<>(
-                mModel, mViewHolder, new KeyboardAccessoryViewBinder());
-        mModel.addObserver(mModelChangeProcessor);
-        mModel.addTabListObserver(new RecyclerViewModelChangeProcessor<>(
-                new RecyclerViewAdapter<>(mModel.getTabList())));
-        mModel.addActionListObserver(new RecyclerViewModelChangeProcessor<>(
-                new RecyclerViewAdapter<>(mModel.getActionList())));
+        KeyboardAccessoryModel model = new KeyboardAccessoryModel();
+        mMediator = new KeyboardAccessoryMediator(model, windowAndroid);
+
+        RecyclerViewAdapter<
+                KeyboardAccessoryModel.SimpleListObservable<KeyboardAccessoryData.Action>,
+                ActionViewBinder.ViewHolder> actionsAdapter =
+                new RecyclerViewAdapter<>(model.getActionList(), new ActionViewBinder());
+
+        mViewHolder = new AccessoryViewHolder(viewStub, actionsAdapter);
+        PropertyModelChangeProcessor<KeyboardAccessoryModel, AccessoryViewHolder,
+                KeyboardAccessoryModel.PropertyKey> modelChangeProcessor =
+                new PropertyModelChangeProcessor<>(
+                        model, mViewHolder, new KeyboardAccessoryViewBinder());
+
+        model.addObserver(modelChangeProcessor);
+        model.addTabListObserver(new RecyclerViewModelChangeProcessor<>(
+                new RecyclerViewAdapter<>(model.getTabList(), null)));
+        model.addActionListObserver(new RecyclerViewModelChangeProcessor<>(actionsAdapter));
     }
 
     /**

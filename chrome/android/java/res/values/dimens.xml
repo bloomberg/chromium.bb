@@ -123,12 +123,12 @@
     <dimen name="overlay_panel_bar_height">56dp</dimen>
 
     <!-- Autofill keyboard accessory dimensions -->
-    <dimen name="keyboard_accessory_chip_height">32dp</dimen>
-    <dimen name="keyboard_accessory_half_padding">4dp</dimen>
-    <dimen name="keyboard_accessory_height">48dp</dimen>
-    <dimen name="keyboard_accessory_padding">8dp</dimen>
+    <dimen name="keyboard_accessory_action_height">28dp</dimen>
+    <dimen name="keyboard_accessory_half_padding">2dp</dimen>
+    <dimen name="keyboard_accessory_height">36dp</dimen>
+    <dimen name="keyboard_accessory_padding">4dp</dimen>
     <dimen name="keyboard_accessory_sheet_height">200dp</dimen>
-    <dimen name="keyboard_accessory_text_size">14sp</dimen>
+    <dimen name="keyboard_accessory_text_size">6sp</dimen>
 
     <!-- Password generation popup dimensions -->
     <dimen name="password_generation_divider_height">1dp</dimen>

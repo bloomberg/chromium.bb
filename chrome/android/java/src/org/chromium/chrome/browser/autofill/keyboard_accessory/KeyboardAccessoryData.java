@@ -46,7 +46,18 @@ public class KeyboardAccessoryData {
      * The most prominent example hereof is the "Generate Password" action.
      */
     public interface Action {
-        // E.g. getCaption() or onActionSelected();
+        /**
+         * The delegate is called when the Action is triggered by a user.
+         */
+        interface Delegate {
+            /**
+             * When this function is called, a user interacted with the passed action.
+             * @param action The action that the user interacted with.
+             */
+            void onActionTriggered(Action action);
+        }
+        String getCaption();
+        Delegate getDelegate();
     }
 
     private KeyboardAccessoryData() {}

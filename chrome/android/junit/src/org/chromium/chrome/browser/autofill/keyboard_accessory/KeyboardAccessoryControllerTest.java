@@ -74,7 +74,16 @@ public class KeyboardAccessoryControllerTest {
     }
 
     private static class FakeTab implements KeyboardAccessoryData.Tab {}
-    private static class FakeAction implements KeyboardAccessoryData.Action {}
+    private static class FakeAction implements KeyboardAccessoryData.Action {
+        @Override
+        public String getCaption() {
+            return null;
+        }
+        @Override
+        public Delegate getDelegate() {
+            return null;
+        }
+    }
 
     private KeyboardAccessoryCoordinator mCoordinator;
     private KeyboardAccessoryModel mModel;
