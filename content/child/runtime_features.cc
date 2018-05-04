@@ -213,6 +213,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (base::FeatureList::IsEnabled(features::kWebXrGamepadSupport))
     WebRuntimeFeatures::EnableWebXRGamepadSupport(true);
 
+  if (base::FeatureList::IsEnabled(features::kWebXrHitTest))
+    WebRuntimeFeatures::EnableWebXRHitTest(true);
+
   if (command_line.HasSwitch(switches::kDisablePresentationAPI))
     WebRuntimeFeatures::EnablePresentationAPI(false);
 
