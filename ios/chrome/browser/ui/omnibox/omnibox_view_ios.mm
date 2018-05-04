@@ -613,21 +613,14 @@ void OmniboxViewIOS::OnClear() {
 bool OmniboxViewIOS::OnCopy() {
   UIPasteboard* board = [UIPasteboard generalPasteboard];
   NSString* selectedText = nil;
-  BOOL is_select_all = NO;
   NSInteger start_location = 0;
   if ([field_ isPreEditing]) {
     selectedText = [field_ preEditText];
-    is_select_all = YES;
     start_location = 0;
   } else {
     UITextRange* selected_range = [field_ selectedTextRange];
     selectedText = [field_ textInRange:selected_range];
     UITextPosition* start = [field_ beginningOfDocument];
-    UITextPosition* end = [field_ endOfDocument];
-    is_select_all = ([field_ comparePosition:[selected_range start]
-                                  toPosition:start] == NSOrderedSame) &&
-                    ([field_ comparePosition:[selected_range end]
-                                  toPosition:end] == NSOrderedSame);
     // The following call to |-offsetFromPosition:toPosition:| gives the offset
     // in terms of the number of "visible characters."  The documentation does
     // not specify whether this means glyphs or UTF16 chars.  This does not
@@ -640,8 +633,7 @@ bool OmniboxViewIOS::OnCopy() {
 
   GURL url;
   bool write_url = false;
-  model()->AdjustTextForCopy(start_location, is_select_all, &text, &url,
-                             &write_url);
+  model()->AdjustTextForCopy(start_location, &text, &url, &write_url);
 
   // Create the pasteboard item manually because the pasteboard expects a single
   // item with multiple representations.  This is expressed as a single

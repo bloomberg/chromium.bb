@@ -288,7 +288,6 @@ AutocompleteMatch::Type OmniboxEditModel::CurrentTextType() const {
 }
 
 void OmniboxEditModel::AdjustTextForCopy(int sel_min,
-                                         bool is_all_selected,
                                          base::string16* text,
                                          GURL* url_from_text,
                                          bool* write_url) {
@@ -298,25 +297,9 @@ void OmniboxEditModel::AdjustTextForCopy(int sel_min,
   if (sel_min != 0)
     return;
 
-  // Check whether the user is trying to copy the current page's URL by
-  // selecting the whole thing without editing it.
-  //
-  // This is complicated by ZeroSuggest.  When ZeroSuggest is active, the user
-  // may be selecting different items and thus changing the address bar text,
-  // even though !user_input_in_progress_; and the permanent URL may change
-  // without updating the visible text, just like when user input is in
-  // progress.  In these cases, we don't want to copy the underlying URL, we
-  // want to copy what the user actually sees.  However, if we simply never do
-  // this block when !PopupIsOpen(), then just clicking into the address bar and
-  // trying to copy will always bypass this block on pages that trigger
-  // ZeroSuggest, which is too conservative.  Instead, in the ZeroSuggest case,
-  // we check that (a) the user hasn't selected one of the other suggestions,
-  // and (b) the selected text is still the same as the permanent text.  ((b)
-  // probably implies (a), but it doesn't hurt to be sure.)  If these hold, then
-  // it's safe to copy the underlying URL.
-  if (!user_input_in_progress_ && is_all_selected &&
-      (!PopupIsOpen() || ((popup_model()->selected_line() == 0) &&
-                          (*text == url_for_editing_)))) {
+  // Check whether the user is trying to copy the current page's URL by checking
+  // if |text| is the whole permanent URL.
+  if (!user_input_in_progress_ && *text == GetCurrentPermanentUrlText()) {
     // It's safe to copy the underlying URL.  These lines ensure that if the
     // scheme was stripped it's added back, and the URL is unescaped (we escape
     // parts of it for display).

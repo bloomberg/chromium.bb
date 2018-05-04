@@ -901,8 +901,7 @@ base::scoped_nsobject<NSPasteboardItem> OmniboxViewMac::CreatePasteboardItem() {
   // Copy the URL.
   GURL url;
   bool write_url = false;
-  model()->AdjustTextForCopy(selection.location, IsSelectAll(), &text, &url,
-                             &write_url);
+  model()->AdjustTextForCopy(selection.location, &text, &url, &write_url);
 
   if (IsSelectAll())
     UMA_HISTOGRAM_COUNTS(OmniboxEditModel::kCutOrCopyAllTextHistogram, 1);
