@@ -40,10 +40,10 @@
 
 namespace blink {
 
-static const struct CompositOpToXfermodeMode {
+static const struct CompositOpToSkBlendMode {
   CompositeOperator composit_op;
   SkBlendMode xfermode_mode;
-} kGMapCompositOpsToXfermodeModes[] = {
+} kGMapCompositOpsToSkBlendMode[] = {
     {kCompositeClear, SkBlendMode::kClear},
     {kCompositeCopy, SkBlendMode::kSrc},
     {kCompositeSourceOver, SkBlendMode::kSrcOver},
@@ -57,45 +57,45 @@ static const struct CompositOpToXfermodeMode {
     {kCompositeXOR, SkBlendMode::kXor},
     {kCompositePlusLighter, SkBlendMode::kPlus}};
 
-// Keep this array in sync with the WebBlendMode enum in
-// public/platform/WebBlendMode.h.
-static const SkBlendMode kGMapBlendOpsToXfermodeModes[] = {
-    SkBlendMode::kSrcOver,     // WebBlendModeNormal
-    SkBlendMode::kMultiply,    // WebBlendModeMultiply
-    SkBlendMode::kScreen,      // WebBlendModeScreen
-    SkBlendMode::kOverlay,     // WebBlendModeOverlay
-    SkBlendMode::kDarken,      // WebBlendModeDarken
-    SkBlendMode::kLighten,     // WebBlendModeLighten
-    SkBlendMode::kColorDodge,  // WebBlendModeColorDodge
-    SkBlendMode::kColorBurn,   // WebBlendModeColorBurn
-    SkBlendMode::kHardLight,   // WebBlendModeHardLight
-    SkBlendMode::kSoftLight,   // WebBlendModeSoftLight
-    SkBlendMode::kDifference,  // WebBlendModeDifference
-    SkBlendMode::kExclusion,   // WebBlendModeExclusion
-    SkBlendMode::kHue,         // WebBlendModeHue
-    SkBlendMode::kSaturation,  // WebBlendModeSaturation
-    SkBlendMode::kColor,       // WebBlendModeColor
-    SkBlendMode::kLuminosity   // WebBlendModeLuminosity
+// Keep this array in sync with the BlendMode enum in
+// platform/graphics/graphics_types.h.
+static const SkBlendMode kGMapBlendOpsToSkBlendMode[] = {
+    SkBlendMode::kSrcOver,     // BlendMode::kNormal
+    SkBlendMode::kMultiply,    // BlendMode::kMultiply
+    SkBlendMode::kScreen,      // BlendMode::kScreen
+    SkBlendMode::kOverlay,     // BlendMode::kOverlay
+    SkBlendMode::kDarken,      // BlendMode::kDarken
+    SkBlendMode::kLighten,     // BlendMode::kLighten
+    SkBlendMode::kColorDodge,  // BlendMode::kColorDodge
+    SkBlendMode::kColorBurn,   // BlendMode::kColorBurn
+    SkBlendMode::kHardLight,   // BlendMode::kHardLight
+    SkBlendMode::kSoftLight,   // BlendMode::kSoftLight
+    SkBlendMode::kDifference,  // BlendMode::kDifference
+    SkBlendMode::kExclusion,   // BlendMode::kExclusion
+    SkBlendMode::kHue,         // BlendMode::kHue
+    SkBlendMode::kSaturation,  // BlendMode::kSaturation
+    SkBlendMode::kColor,       // BlendMode::kColor
+    SkBlendMode::kLuminosity   // BlendMode::kLuminosity
 };
 
 SkBlendMode WebCoreCompositeToSkiaComposite(CompositeOperator op,
-                                            WebBlendMode blend_mode) {
-  DCHECK(op == kCompositeSourceOver || blend_mode == WebBlendMode::kNormal);
-  if (blend_mode != WebBlendMode::kNormal) {
+                                            BlendMode blend_mode) {
+  DCHECK(op == kCompositeSourceOver || blend_mode == BlendMode::kNormal);
+  if (blend_mode != BlendMode::kNormal) {
     if (static_cast<uint8_t>(blend_mode) >=
-        SK_ARRAY_COUNT(kGMapBlendOpsToXfermodeModes)) {
+        SK_ARRAY_COUNT(kGMapBlendOpsToSkBlendMode)) {
       SkDEBUGF(
           ("GraphicsContext::setPlatformCompositeOperation unknown "
-           "WebBlendMode %d\n",
+           "BlendMode %d\n",
            blend_mode));
       return SkBlendMode::kSrcOver;
     }
-    return kGMapBlendOpsToXfermodeModes[static_cast<uint8_t>(blend_mode)];
+    return kGMapBlendOpsToSkBlendMode[static_cast<uint8_t>(blend_mode)];
   }
 
-  const CompositOpToXfermodeMode* table = kGMapCompositOpsToXfermodeModes;
+  const CompositOpToSkBlendMode* table = kGMapCompositOpsToSkBlendMode;
   if (static_cast<uint8_t>(op) >=
-      SK_ARRAY_COUNT(kGMapCompositOpsToXfermodeModes)) {
+      SK_ARRAY_COUNT(kGMapCompositOpsToSkBlendMode)) {
     SkDEBUGF(
         ("GraphicsContext::setPlatformCompositeOperation unknown "
          "CompositeOperator %d\n",
@@ -106,8 +106,20 @@ SkBlendMode WebCoreCompositeToSkiaComposite(CompositeOperator op,
   return table[static_cast<uint8_t>(op)].xfermode_mode;
 }
 
-CompositeOperator CompositeOperatorFromSkia(SkBlendMode xfer_mode) {
-  switch (xfer_mode) {
+SkBlendMode WebCoreBlendModeToSkBlendMode(BlendMode blend_mode) {
+  if (static_cast<uint8_t>(blend_mode) >=
+      SK_ARRAY_COUNT(kGMapBlendOpsToSkBlendMode)) {
+    SkDEBUGF(
+        ("GraphicsContext::setPlatformCompositeOperation unknown "
+         "BlendMode %d\n",
+         blend_mode));
+    return SkBlendMode::kSrcOver;
+  }
+  return kGMapBlendOpsToSkBlendMode[static_cast<uint8_t>(blend_mode)];
+}
+
+CompositeOperator CompositeOperatorFromSkBlendMode(SkBlendMode blend_mode) {
+  switch (blend_mode) {
     case SkBlendMode::kClear:
       return kCompositeClear;
     case SkBlendMode::kSrc:
@@ -138,44 +150,44 @@ CompositeOperator CompositeOperatorFromSkia(SkBlendMode xfer_mode) {
   return kCompositeSourceOver;
 }
 
-WebBlendMode BlendModeFromSkia(SkBlendMode xfer_mode) {
-  switch (xfer_mode) {
+BlendMode BlendModeFromSkBlendMode(SkBlendMode blend_mode) {
+  switch (blend_mode) {
     case SkBlendMode::kSrcOver:
-      return WebBlendMode::kNormal;
+      return BlendMode::kNormal;
     case SkBlendMode::kMultiply:
-      return WebBlendMode::kMultiply;
+      return BlendMode::kMultiply;
     case SkBlendMode::kScreen:
-      return WebBlendMode::kScreen;
+      return BlendMode::kScreen;
     case SkBlendMode::kOverlay:
-      return WebBlendMode::kOverlay;
+      return BlendMode::kOverlay;
     case SkBlendMode::kDarken:
-      return WebBlendMode::kDarken;
+      return BlendMode::kDarken;
     case SkBlendMode::kLighten:
-      return WebBlendMode::kLighten;
+      return BlendMode::kLighten;
     case SkBlendMode::kColorDodge:
-      return WebBlendMode::kColorDodge;
+      return BlendMode::kColorDodge;
     case SkBlendMode::kColorBurn:
-      return WebBlendMode::kColorBurn;
+      return BlendMode::kColorBurn;
     case SkBlendMode::kHardLight:
-      return WebBlendMode::kHardLight;
+      return BlendMode::kHardLight;
     case SkBlendMode::kSoftLight:
-      return WebBlendMode::kSoftLight;
+      return BlendMode::kSoftLight;
     case SkBlendMode::kDifference:
-      return WebBlendMode::kDifference;
+      return BlendMode::kDifference;
     case SkBlendMode::kExclusion:
-      return WebBlendMode::kExclusion;
+      return BlendMode::kExclusion;
     case SkBlendMode::kHue:
-      return WebBlendMode::kHue;
+      return BlendMode::kHue;
     case SkBlendMode::kSaturation:
-      return WebBlendMode::kSaturation;
+      return BlendMode::kSaturation;
     case SkBlendMode::kColor:
-      return WebBlendMode::kColor;
+      return BlendMode::kColor;
     case SkBlendMode::kLuminosity:
-      return WebBlendMode::kLuminosity;
+      return BlendMode::kLuminosity;
     default:
       break;
   }
-  return WebBlendMode::kNormal;
+  return BlendMode::kNormal;
 }
 
 SkMatrix AffineTransformToSkMatrix(const AffineTransform& source) {

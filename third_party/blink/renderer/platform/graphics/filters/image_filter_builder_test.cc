@@ -52,7 +52,7 @@ class ImageFilterBuilderTest : public Test {
 
     // Add a blend effect (with inputs : blur, source)
     FilterEffect* blend_effect =
-        FEBlend::Create(reference_filter, WebBlendMode::kNormal);
+        FEBlend::Create(reference_filter, BlendMode::kNormal);
     blend_effect->SetOperatingInterpolationSpace(kInterpolationSpaceSRGB);
     FilterEffectVector& blend_inputs = blend_effect->InputEffects();
     blend_inputs.ReserveCapacity(2);

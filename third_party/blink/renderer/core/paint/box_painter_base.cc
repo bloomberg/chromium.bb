@@ -254,7 +254,7 @@ bool BoxPainterBase::CalculateFillLayerOcclusionCulling(
     // geometry here and pass it down.
 
     // TODO(trchen): Need to check compositing mode as well.
-    if (current_layer->BlendMode() != WebBlendMode::kNormal)
+    if (current_layer->GetBlendMode() != BlendMode::kNormal)
       is_non_associative = true;
 
     // TODO(trchen): A fill layer cannot paint if the calculated tile size is
@@ -557,8 +557,8 @@ void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
       context.SetColorFilter(kColorFilterLuminanceToAlpha);
 
     // If op != SkBlendMode::kSrcOver, a mask is being painted.
-    SkBlendMode bg_op = WebCoreCompositeToSkiaComposite(bg_layer.Composite(),
-                                                        bg_layer.BlendMode());
+    SkBlendMode bg_op = WebCoreCompositeToSkiaComposite(
+        bg_layer.Composite(), bg_layer.GetBlendMode());
     composite_op = (op == SkBlendMode::kSrcOver) ? bg_op : op;
   }
 

@@ -18,7 +18,6 @@
 #include "base/trace_event/trace_event_impl.h"
 #include "cc/base/region.h"
 #include "cc/base/switches.h"
-#include "cc/blink/web_blend_mode.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_position_constraint.h"
 #include "cc/layers/touch_action_region.h"
@@ -112,12 +111,12 @@ float WebLayerImpl::Opacity() const {
   return layer_->opacity();
 }
 
-void WebLayerImpl::SetBlendMode(blink::WebBlendMode blend_mode) {
-  layer_->SetBlendMode(BlendModeToSkia(blend_mode));
+void WebLayerImpl::SetBlendMode(SkBlendMode blend_mode) {
+  layer_->SetBlendMode(blend_mode);
 }
 
-blink::WebBlendMode WebLayerImpl::BlendMode() const {
-  return BlendModeFromSkia(layer_->blend_mode());
+SkBlendMode WebLayerImpl::BlendMode() const {
+  return layer_->blend_mode();
 }
 
 void WebLayerImpl::SetIsRootForIsolatedGroup(bool isolate) {

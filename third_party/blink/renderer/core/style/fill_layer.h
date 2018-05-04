@@ -78,9 +78,7 @@ class CORE_EXPORT FillLayer {
   CompositeOperator Composite() const {
     return static_cast<CompositeOperator>(composite_);
   }
-  WebBlendMode BlendMode() const {
-    return static_cast<WebBlendMode>(blend_mode_);
-  }
+  BlendMode GetBlendMode() const { return static_cast<BlendMode>(blend_mode_); }
   const LengthSize& SizeLength() const { return size_length_; }
   EFillSizeType SizeType() const {
     return static_cast<EFillSizeType>(size_type_);
@@ -168,7 +166,7 @@ class CORE_EXPORT FillLayer {
     composite_ = c;
     composite_set_ = true;
   }
-  void SetBlendMode(WebBlendMode b) {
+  void SetBlendMode(BlendMode b) {
     blend_mode_ = static_cast<unsigned>(b);
     blend_mode_set_ = true;
   }
@@ -274,8 +272,8 @@ class CORE_EXPORT FillLayer {
   static CompositeOperator InitialFillComposite(EFillLayerType) {
     return kCompositeSourceOver;
   }
-  static WebBlendMode InitialFillBlendMode(EFillLayerType) {
-    return WebBlendMode::kNormal;
+  static BlendMode InitialFillBlendMode(EFillLayerType) {
+    return BlendMode::kNormal;
   }
   static EFillSizeType InitialFillSizeType(EFillLayerType) {
     return EFillSizeType::kSizeLength;
@@ -322,7 +320,7 @@ class CORE_EXPORT FillLayer {
   unsigned repeat_y_ : 3;             // EFillRepeat
   unsigned composite_ : 4;            // CompositeOperator
   unsigned size_type_ : 2;            // EFillSizeType
-  unsigned blend_mode_ : 5;           // WebBlendMode
+  unsigned blend_mode_ : 5;           // BlendMode
   unsigned mask_source_type_ : 1;     // EMaskSourceType
   unsigned background_x_origin_ : 2;  // BackgroundEdgeOrigin
   unsigned background_y_origin_ : 2;  // BackgroundEdgeOrigin

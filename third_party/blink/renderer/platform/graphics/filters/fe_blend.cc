@@ -31,18 +31,14 @@
 
 namespace blink {
 
-FEBlend::FEBlend(Filter* filter, WebBlendMode mode)
+FEBlend::FEBlend(Filter* filter, BlendMode mode)
     : FilterEffect(filter), mode_(mode) {}
 
-FEBlend* FEBlend::Create(Filter* filter, WebBlendMode mode) {
+FEBlend* FEBlend::Create(Filter* filter, BlendMode mode) {
   return new FEBlend(filter, mode);
 }
 
-WebBlendMode FEBlend::BlendMode() const {
-  return mode_;
-}
-
-bool FEBlend::SetBlendMode(WebBlendMode mode) {
+bool FEBlend::SetBlendMode(BlendMode mode) {
   if (mode_ == mode)
     return false;
   mode_ = mode;
@@ -66,7 +62,7 @@ TextStream& FEBlend::ExternalRepresentation(TextStream& ts, int indent) const {
   ts << "[feBlend";
   FilterEffect::ExternalRepresentation(ts);
   ts << " mode=\""
-     << (mode_ == WebBlendMode::kNormal
+     << (mode_ == BlendMode::kNormal
              ? "normal"
              : CompositeOperatorName(kCompositeSourceOver, mode_))
      << "\"]\n";

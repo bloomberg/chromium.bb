@@ -146,10 +146,10 @@ void SVGPaintContext::ApplyCompositingIfNecessary() {
 
   const ComputedStyle& style = object_.StyleRef();
   float opacity = style.Opacity();
-  WebBlendMode blend_mode = style.HasBlendMode() && object_.IsBlendingAllowed()
-                                ? style.BlendMode()
-                                : WebBlendMode::kNormal;
-  if (opacity < 1 || blend_mode != WebBlendMode::kNormal) {
+  BlendMode blend_mode = style.HasBlendMode() && object_.IsBlendingAllowed()
+                             ? style.GetBlendMode()
+                             : BlendMode::kNormal;
+  if (opacity < 1 || blend_mode != BlendMode::kNormal) {
     const FloatRect compositing_bounds =
         object_.VisualRectInLocalSVGCoordinates();
     compositing_recorder_ = std::make_unique<CompositingRecorder>(

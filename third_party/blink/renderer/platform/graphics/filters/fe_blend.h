@@ -23,26 +23,26 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_FILTERS_FE_BLEND_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_FILTERS_FE_BLEND_H_
 
-#include "third_party/blink/public/platform/web_blend_mode.h"
 #include "third_party/blink/renderer/platform/graphics/filters/filter_effect.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 
 namespace blink {
 
 class PLATFORM_EXPORT FEBlend final : public FilterEffect {
  public:
-  static FEBlend* Create(Filter*, WebBlendMode);
+  static FEBlend* Create(Filter*, BlendMode);
 
-  WebBlendMode BlendMode() const;
-  bool SetBlendMode(WebBlendMode);
+  BlendMode GetBlendMode() const { return mode_; }
+  bool SetBlendMode(BlendMode);
 
   TextStream& ExternalRepresentation(TextStream&, int indention) const override;
 
  private:
-  FEBlend(Filter*, WebBlendMode);
+  FEBlend(Filter*, BlendMode);
 
   sk_sp<PaintFilter> CreateImageFilter() override;
 
-  WebBlendMode mode_;
+  BlendMode mode_;
 };
 
 }  // namespace blink

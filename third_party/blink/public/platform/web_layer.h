@@ -28,12 +28,12 @@
 
 #include "cc/input/overscroll_behavior.h"
 #include "cc/layers/layer.h"
-#include "third_party/blink/public/platform/web_blend_mode.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_touch_info.h"
 #include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/skia/include/core/SkBlendMode.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace cc {
@@ -98,8 +98,8 @@ class WebLayer {
   // will be addressed once WebLayer is removed.
   virtual void SetContentsOpaqueIsFixed(bool) = 0;
 
-  virtual void SetBlendMode(WebBlendMode) = 0;
-  virtual WebBlendMode BlendMode() const = 0;
+  virtual void SetBlendMode(SkBlendMode) = 0;
+  virtual SkBlendMode BlendMode() const = 0;
 
   virtual void SetIsRootForIsolatedGroup(bool) = 0;
   virtual bool IsRootForIsolatedGroup() = 0;

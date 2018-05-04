@@ -669,8 +669,9 @@ static void Write(TextStream& ts,
 
   if (layer.GetLayoutObject().Style()->HasBlendMode()) {
     ts << " blendMode: "
-       << CompositeOperatorName(kCompositeSourceOver,
-                                layer.GetLayoutObject().Style()->BlendMode());
+       << CompositeOperatorName(
+              kCompositeSourceOver,
+              layer.GetLayoutObject().Style()->GetBlendMode());
   }
 
   if (behavior & kLayoutAsTextShowCompositedLayers) {

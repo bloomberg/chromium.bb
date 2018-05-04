@@ -26,10 +26,10 @@
 
 namespace blink {
 
-static WebBlendMode ToWebBlendMode(SVGFEBlendElement::Mode mode) {
+static BlendMode ToBlendMode(SVGFEBlendElement::Mode mode) {
 #define MAP_BLEND_MODE(MODENAME)           \
   case SVGFEBlendElement::kMode##MODENAME: \
-    return WebBlendMode::k##MODENAME
+    return BlendMode::k##MODENAME
 
   switch (mode) {
     MAP_BLEND_MODE(Normal);
@@ -50,7 +50,7 @@ static WebBlendMode ToWebBlendMode(SVGFEBlendElement::Mode mode) {
     MAP_BLEND_MODE(Luminosity);
     default:
       NOTREACHED();
-      return WebBlendMode::kNormal;
+      return BlendMode::kNormal;
   }
 #undef MAP_BLEND_MODE
 }
@@ -123,8 +123,7 @@ bool SVGFEBlendElement::SetFilterEffectAttribute(
     const QualifiedName& attr_name) {
   FEBlend* blend = static_cast<FEBlend*>(effect);
   if (attr_name == SVGNames::modeAttr)
-    return blend->SetBlendMode(
-        ToWebBlendMode(mode_->CurrentValue()->EnumValue()));
+    return blend->SetBlendMode(ToBlendMode(mode_->CurrentValue()->EnumValue()));
 
   return SVGFilterPrimitiveStandardAttributes::SetFilterEffectAttribute(
       effect, attr_name);
@@ -155,8 +154,8 @@ FilterEffect* SVGFEBlendElement::Build(SVGFilterBuilder* filter_builder,
   DCHECK(input1);
   DCHECK(input2);
 
-  FilterEffect* effect = FEBlend::Create(
-      filter, ToWebBlendMode(mode_->CurrentValue()->EnumValue()));
+  FilterEffect* effect =
+      FEBlend::Create(filter, ToBlendMode(mode_->CurrentValue()->EnumValue()));
   FilterEffectVector& input_effects = effect->InputEffects();
   input_effects.ReserveCapacity(2);
   input_effects.push_back(input1);

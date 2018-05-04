@@ -392,20 +392,20 @@ void BaseRenderingContext2D::setGlobalAlpha(double alpha) {
 
 String BaseRenderingContext2D::globalCompositeOperation() const {
   return CompositeOperatorName(
-      CompositeOperatorFromSkia(GetState().GlobalComposite()),
-      BlendModeFromSkia(GetState().GlobalComposite()));
+      CompositeOperatorFromSkBlendMode(GetState().GlobalComposite()),
+      BlendModeFromSkBlendMode(GetState().GlobalComposite()));
 }
 
 void BaseRenderingContext2D::setGlobalCompositeOperation(
     const String& operation) {
   CompositeOperator op = kCompositeSourceOver;
-  WebBlendMode blend_mode = WebBlendMode::kNormal;
-  if (!ParseCompositeAndBlendOperator(operation, op, blend_mode))
+  BlendMode blend_mode = BlendMode::kNormal;
+  if (!ParseCompositeAndBlendMode(operation, op, blend_mode))
     return;
-  SkBlendMode xfermode = WebCoreCompositeToSkiaComposite(op, blend_mode);
-  if (GetState().GlobalComposite() == xfermode)
+  SkBlendMode sk_blend_mode = WebCoreCompositeToSkiaComposite(op, blend_mode);
+  if (GetState().GlobalComposite() == sk_blend_mode)
     return;
-  ModifiableState().SetGlobalComposite(xfermode);
+  ModifiableState().SetGlobalComposite(sk_blend_mode);
 }
 
 String BaseRenderingContext2D::filter() const {

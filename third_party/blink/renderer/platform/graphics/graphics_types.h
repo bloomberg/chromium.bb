@@ -26,7 +26,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GRAPHICS_TYPES_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GRAPHICS_TYPES_H_
 
-#include "third_party/blink/public/platform/web_blend_mode.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/skia/include/core/SkFilterQuality.h"
@@ -85,6 +84,25 @@ enum CompositeOperator {
   kCompositeDestinationAtop,
   kCompositeXOR,
   kCompositePlusLighter
+};
+
+enum class BlendMode {
+  kNormal,
+  kMultiply,
+  kScreen,
+  kOverlay,
+  kDarken,
+  kLighten,
+  kColorDodge,
+  kColorBurn,
+  kHardLight,
+  kSoftLight,
+  kDifference,
+  kExclusion,
+  kHue,
+  kSaturation,
+  kColor,
+  kLuminosity,
 };
 
 enum OpacityMode {
@@ -191,10 +209,10 @@ enum WindRule {
   RULE_EVENODD = SkPath::kEvenOdd_FillType
 };
 
-PLATFORM_EXPORT String CompositeOperatorName(CompositeOperator, WebBlendMode);
-PLATFORM_EXPORT bool ParseCompositeAndBlendOperator(const String&,
-                                                    CompositeOperator&,
-                                                    WebBlendMode&);
+PLATFORM_EXPORT String CompositeOperatorName(CompositeOperator, BlendMode);
+PLATFORM_EXPORT bool ParseCompositeAndBlendMode(const String&,
+                                                CompositeOperator&,
+                                                BlendMode&);
 
 PLATFORM_EXPORT String LineCapName(LineCap);
 PLATFORM_EXPORT bool ParseLineCap(const String&, LineCap&);

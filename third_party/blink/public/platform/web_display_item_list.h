@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_DISPLAY_ITEM_LIST_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_DISPLAY_ITEM_LIST_H_
 
-#include "third_party/blink/public/platform/web_blend_mode.h"
 #include "third_party/blink/public/platform/web_vector.h"
 
 #include "cc/paint/paint_record.h"

@@ -463,7 +463,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
         context, paint_layer_.GetLayoutObject(),
         WebCoreCompositeToSkiaComposite(
             kCompositeSourceOver,
-            paint_layer_.GetLayoutObject().Style()->BlendMode()),
+            paint_layer_.GetLayoutObject().Style()->GetBlendMode()),
         paint_layer_.GetLayoutObject().Opacity(), &compositing_bounds);
   }
 

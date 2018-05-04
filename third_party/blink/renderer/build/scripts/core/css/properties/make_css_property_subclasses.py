@@ -126,7 +126,7 @@ class CSSPropertiesWriter(CSSPropertyBaseWriter):
                 property_['custom_apply_args'] = {
                     'layer_type': 'Background' if 'Background' in property_name else 'Mask',
                     'fill_type': fill_type,
-                    'fill_type_getter': 'Get' + fill_type if fill_type == "Image" else fill_type
+                    'fill_type_getter': 'Get' + fill_type if fill_type == "Image" or fill_type == "BlendMode" else fill_type
                 }
         property_['should_implement_apply_functions'] = (
             property_['is_property'] and
