@@ -18,8 +18,6 @@
 #include "chrome/test/chromedriver/chrome/adb.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 
-// TODO(craigdh): Remove once Chromedriver no longer supports pre-m33 Chrome.
-const char kChromeCmdLineFileBeforeM33[] = "/data/local/chrome-command-line";
 const char kChromeCmdLineFile[] = "/data/local/tmp/chrome-command-line";
 
 Device::Device(
@@ -60,6 +58,7 @@ Status Device::SetUp(const std::string& package,
   std::string command_line_file;
   std::string known_device_socket;
   std::string known_exec_name;
+  bool use_debug_flag = false;
   if (package.compare("org.chromium.content_shell_apk") == 0) {
     // Chromium content shell.
     known_activity = ".ContentShellActivity";
@@ -71,22 +70,35 @@ Status Device::SetUp(const std::string& package,
     // Chrome.
     known_activity = "com.google.android.apps.chrome.Main";
     known_device_socket = "chrome_devtools_remote";
-    command_line_file = kChromeCmdLineFileBeforeM33;
+    command_line_file = kChromeCmdLineFile;
     known_exec_name = "chrome";
-    status = adb_->SetDebugApp(serial_, package);
-    if (status.IsError())
-      return status;
+    use_debug_flag = true;
   } else if (!exec_name.empty() && IsValidExecName(exec_name)) {
+    // Allow directly specifying executable file name -- uncommon scenario.
     known_exec_name = exec_name;
     known_device_socket = device_socket;
     command_line_file = base::StringPrintf("/data/local/tmp/%s_devtools_remote",
                                            exec_name.c_str());
-    status = adb_->SetDebugApp(serial_, package);
-    if (status.IsError())
-      return status;
+    use_debug_flag = true;
   }
 
   if (!use_running_app) {
+    if (use_debug_flag) {
+      // Some apps (such as Google Chrome) read command line from different
+      // locations depending on if the app debug flag is set. When the debug
+      // flag is not set, they use a location not writable by ChromeDriver
+      // (except on rooted devices). Setting the debug flag allows the apps to
+      // read command line from a location writable by ChromeDriver.
+      //
+      // This is needed only when use_running_app is false, for two reasons:
+      // * It's too late to set the command line if the app is already running.
+      // * Setting the debug flag has the side effect of shutting down the app,
+      //   preventing use_running_app from working.
+      status = adb_->SetDebugApp(serial_, package);
+      if (status.IsError())
+        return status;
+    }
+
     status = adb_->ClearAppData(serial_, package);
     if (status.IsError())
       return status;
@@ -101,23 +113,13 @@ Status Device::SetUp(const std::string& package,
     }
 
     if (!command_line_file.empty()) {
-      // If Chrome is set as the debug app it looks in /data/local/tmp/.
-      // There's no way to know if this is set, so write to both locations.
-      // This can be removed once support for pre-M33 is no longer needed.
-      if (command_line_file == kChromeCmdLineFileBeforeM33) {
-        status = adb_->SetCommandLineFile(serial_, kChromeCmdLineFileBeforeM33,
-                                          known_exec_name, args);
-        Status status2 = adb_->SetCommandLineFile(serial_, kChromeCmdLineFile,
-                                                  known_exec_name, args);
-        if (status.IsError() && status2.IsError())
-          return Status(kUnknownError,
-              "Failed to set Chrome's command line file on device " + serial_);
-      } else {
-        status = adb_->SetCommandLineFile(serial_, command_line_file,
-                                          known_exec_name, args);
-        if (status.IsError())
-          return status;
-      }
+      status = adb_->SetCommandLineFile(serial_, command_line_file,
+                                        known_exec_name, args);
+      if (status.IsError())
+        return Status(
+            kUnknownError,
+            "Failed to set Chrome's command line file on device " + serial_,
+            status);
     }
 
     status = adb_->Launch(serial_, package,
