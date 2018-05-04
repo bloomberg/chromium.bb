@@ -277,12 +277,6 @@ MediaElementAudioSourceNode* MediaElementAudioSourceNode::Create(
     BaseAudioContext* context,
     const MediaElementAudioSourceOptions& options,
     ExceptionState& exception_state) {
-  if (!options.hasMediaElement()) {
-    exception_state.ThrowDOMException(kNotFoundError,
-                                      "mediaElement member is required.");
-    return nullptr;
-  }
-
   return Create(*context, *options.mediaElement(), exception_state);
 }
 
