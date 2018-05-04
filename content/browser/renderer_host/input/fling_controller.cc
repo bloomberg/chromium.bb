@@ -347,7 +347,6 @@ void FlingController::CancelCurrentFling() {
            WebInputEvent::kGestureScrollUpdate)) {
     WebGestureEvent scroll_begin_event = last_fling_boost_event;
     scroll_begin_event.SetType(WebInputEvent::kGestureScrollBegin);
-    scroll_begin_event.SetTimeStamp(base::TimeTicks::Now());
     bool is_update =
         last_fling_boost_event.GetType() == WebInputEvent::kGestureScrollUpdate;
     float delta_x_hint =
