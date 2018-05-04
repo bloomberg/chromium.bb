@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/components/quick_launch/public/mojom/constants.mojom.h"
 #include "ash/content/shell_content_state.h"
 #include "ash/login_status.h"
 #include "ash/shell.h"
@@ -27,13 +28,16 @@
 #include "base/threading/thread_restrictions.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_policy_controller.h"
 #include "components/exo/file_helper.h"
 #include "content/public/browser/context_factory.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/service_manager_connection.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_net_log.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "net/base/net_module.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
@@ -76,6 +80,9 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 
   bluez::BluezDBusManager::Initialize(nullptr, true /* use stub */);
 
+  chromeos::PowerPolicyController::Initialize(
+      chromeos::DBusThreadManager::Get()->GetPowerManagerClient());
+
   ShellContentState::SetInstance(
       new ShellContentStateImpl(browser_context_.get()));
   ui::MaterialDesignController::Initialize();
@@ -102,6 +109,9 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 
   ash::Shell::GetPrimaryRootWindow()->GetHost()->Show();
 
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->StartService(quick_launch::mojom::kServiceName);
   ash::Shell::Get()->InitWaylandServer(nullptr);
 }
 
@@ -111,6 +121,8 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
   ShellContentState::DestroyInstance();
 
   chromeos::CrasAudioHandler::Shutdown();
+
+  chromeos::PowerPolicyController::Shutdown();
 
   views_delegate_.reset();
 

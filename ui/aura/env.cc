@@ -178,6 +178,12 @@ Env::Env(Mode mode, bool create_mouse_location_manager)
       context_factory_private_(nullptr) {
   DCHECK(lazy_tls_ptr.Pointer()->Get() == NULL);
   lazy_tls_ptr.Pointer()->Set(this);
+#if defined(OS_CHROMEOS)
+  // TODO(sky): this isn't quite right. Really the MouseLocationManager should
+  // be created only when this process is hosting the WindowService. Clean this
+  // up.
+  create_mouse_location_manager = true;
+#endif
   if (create_mouse_location_manager)
     mouse_location_manager_ = std::make_unique<MouseLocationManager>();
 }

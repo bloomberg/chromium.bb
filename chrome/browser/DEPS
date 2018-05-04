@@ -209,6 +209,10 @@ include_rules = [
 ]
 
 specific_include_rules = {
+  "browser_process_platform_part_chromeos\.cc": [
+    # AshService is necessary while Ash runs in process.
+    "+ash/ash_service.h",
+  ],
   # TODO(mash): see bugs 768439 and 768395.
   "exo_parts\.cc": [
     "+ash/shell.h",

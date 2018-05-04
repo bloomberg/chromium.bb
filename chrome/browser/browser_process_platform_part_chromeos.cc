@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/ash_service.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/logging.h"
 #include "base/time/default_tick_clock.h"
@@ -193,11 +194,9 @@ void BrowserProcessPlatformPart::RegisterInProcessServices(
   }
 
   if (!ash_util::IsRunningInMash()) {
-    service_manager::EmbeddedServiceInfo info;
-    info.factory = base::Bind(&ash_util::CreateEmbeddedAshService,
-                              base::ThreadTaskRunnerHandle::Get());
-    info.task_runner = base::ThreadTaskRunnerHandle::Get();
-    services->insert(std::make_pair(ash::mojom::kServiceName, info));
+    services->insert(
+        std::make_pair(ash::mojom::kServiceName,
+                       ash::AshService::CreateEmbeddedServiceInfo()));
   }
 }
 

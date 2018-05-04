@@ -8,13 +8,7 @@
 #include <memory>
 
 #include "ash/public/cpp/config.h"
-#include "base/memory/ref_counted.h"
-#include "base/single_thread_task_runner.h"
 #include "ui/views/widget/widget.h"
-
-namespace service_manager {
-class Service;
-}
 
 namespace ui {
 class Accelerator;
@@ -22,11 +16,6 @@ class KeyEvent;
 }  // namespace ui
 
 namespace ash_util {
-
-// Creates an in-process Service instance of which can host common ash
-// interfaces.
-std::unique_ptr<service_manager::Service> CreateEmbeddedAshService(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
 // Returns true if Ash should be run at startup.
 bool ShouldOpenAshOnStartup();

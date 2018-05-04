@@ -1,4 +1,7 @@
 include_rules = [
+  "+ash/components/quick_launch",
+  "+components/discardable_memory/public/interfaces",
+  "+components/services/font",
   "+content/public",
   "+content/shell",
   "+storage/browser/quota",

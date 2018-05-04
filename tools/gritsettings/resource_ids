@@ -296,7 +296,9 @@
   "ash/resources/ash_resources.grd": {
     "structures": [24280],
   },
-
+  "ash/shell/ash_shell_resources.grd": {
+    "includes": [24290],
+  },
   "chromecast/browser/cast_browser_resources.grd": {
     "includes": [24300],
   },

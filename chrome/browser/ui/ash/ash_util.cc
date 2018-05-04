@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/ash/ash_util.h"
 
 #include "ash/accelerators/accelerator_controller.h"
-#include "ash/mojo_interface_factory.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/interfaces/event_properties.mojom.h"
@@ -13,9 +12,6 @@
 #include "base/macros.h"
 #include "chrome/browser/chromeos/ash_config.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/mojom/interface_provider_spec.mojom.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -23,40 +19,6 @@
 #include "ui/display/screen.h"
 
 namespace ash_util {
-
-namespace {
-
-class EmbeddedAshService : public service_manager::Service {
- public:
-  explicit EmbeddedAshService(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
-      : task_runner_(task_runner) {}
-  ~EmbeddedAshService() override {}
-
-  // service_manager::Service:
-  void OnStart() override {
-    ash::mojo_interface_factory::RegisterInterfaces(&interfaces_, task_runner_);
-  }
-
-  void OnBindInterface(const service_manager::BindSourceInfo& remote_info,
-                       const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle handle) override {
-    interfaces_.BindInterface(interface_name, std::move(handle));
-  }
-
- private:
-  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  service_manager::BinderRegistry interfaces_;
-
-  DISALLOW_COPY_AND_ASSIGN(EmbeddedAshService);
-};
-
-}  // namespace
-
-std::unique_ptr<service_manager::Service> CreateEmbeddedAshService(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
-  return std::make_unique<EmbeddedAshService>(task_runner);
-}
 
 bool ShouldOpenAshOnStartup() {
   return !IsRunningInMash();
