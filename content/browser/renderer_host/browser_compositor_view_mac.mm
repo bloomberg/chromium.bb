@@ -180,7 +180,7 @@ BrowserCompositorMac::BrowserCompositorMac(
 
   root_layer_.reset(new ui::Layer(ui::LAYER_SOLID_COLOR));
   delegated_frame_host_.reset(new DelegatedFrameHost(
-      frame_sink_id, this, features::IsSurfaceSynchronizationEnabled(),
+      frame_sink_id, this,
       base::FeatureList::IsEnabled(features::kVizDisplayCompositor),
       true /* should_register_frame_sink_id */));
 
@@ -464,17 +464,6 @@ SkColor BrowserCompositorMac::DelegatedFrameHostGetGutterColor() const {
   return client_->BrowserCompositorMacGetGutterColor();
 }
 
-bool BrowserCompositorMac::DelegatedFrameCanCreateResizeLock() const {
-  // Mac uses the RenderWidgetResizeHelper instead of a resize lock.
-  return false;
-}
-
-std::unique_ptr<CompositorResizeLock>
-BrowserCompositorMac::DelegatedFrameHostCreateResizeLock() {
-  NOTREACHED();
-  return nullptr;
-}
-
 void BrowserCompositorMac::OnFirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
   if (!recyclable_compositor_)
@@ -510,11 +499,6 @@ void BrowserCompositorMac::OnFirstSurfaceActivation(
 
 void BrowserCompositorMac::OnBeginFrame(base::TimeTicks frame_time) {
   client_->BrowserCompositorMacOnBeginFrame(frame_time);
-}
-
-bool BrowserCompositorMac::IsAutoResizeEnabled() const {
-  NOTREACHED();
-  return false;
 }
 
 void BrowserCompositorMac::OnFrameTokenChanged(uint32_t frame_token) {

@@ -40,42 +40,11 @@ SkColor DelegatedFrameHostClientAura::DelegatedFrameHostGetGutterColor() const {
   return render_widget_host_view_->background_color_;
 }
 
-bool DelegatedFrameHostClientAura::DelegatedFrameCanCreateResizeLock() const {
-#if !defined(OS_CHROMEOS)
-  // On Windows and Linux, holding pointer moves will not help throttling
-  // resizes.
-  // TODO(piman): on Windows we need to block (nested run loop?) the
-  // WM_SIZE event. On Linux we need to throttle at the WM level using
-  // _NET_WM_SYNC_REQUEST.
-  return false;
-#else
-  if (!render_widget_host_view_->host_->renderer_initialized() ||
-      render_widget_host_view_->host_->auto_resize_enabled()) {
-    return false;
-  }
-  return true;
-#endif
-}
-
-std::unique_ptr<CompositorResizeLock>
-DelegatedFrameHostClientAura::DelegatedFrameHostCreateResizeLock() {
-  // Pointer moves are released when the CompositorResizeLock ends.
-  auto* host = render_widget_host_view_->window_->GetHost();
-  host->dispatcher()->HoldPointerMoves();
-
-  gfx::Size desired_size = render_widget_host_view_->window_->bounds().size();
-  return std::make_unique<CompositorResizeLock>(this, desired_size);
-}
-
 void DelegatedFrameHostClientAura::OnFirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {}
 
 void DelegatedFrameHostClientAura::OnBeginFrame(base::TimeTicks frame_time) {
   render_widget_host_view_->OnBeginFrame(frame_time);
-}
-
-bool DelegatedFrameHostClientAura::IsAutoResizeEnabled() const {
-  return render_widget_host_view_->host_->auto_resize_enabled();
 }
 
 void DelegatedFrameHostClientAura::OnFrameTokenChanged(uint32_t frame_token) {

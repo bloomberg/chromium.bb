@@ -27,10 +27,6 @@
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
-namespace base {
-class TickClock;
-}
-
 namespace viz {
 class CompositorFrameSinkSupport;
 }
@@ -38,7 +34,6 @@ class CompositorFrameSinkSupport;
 namespace content {
 
 class DelegatedFrameHost;
-class CompositorResizeLock;
 
 // The DelegatedFrameHostClient is the interface from the DelegatedFrameHost,
 // which manages delegated frames, and the ui::Compositor being used to
@@ -53,14 +48,9 @@ class CONTENT_EXPORT DelegatedFrameHostClient {
   // Returns the color that the resize gutters should be drawn with.
   virtual SkColor DelegatedFrameHostGetGutterColor() const = 0;
 
-  virtual bool DelegatedFrameCanCreateResizeLock() const = 0;
-  virtual std::unique_ptr<CompositorResizeLock>
-  DelegatedFrameHostCreateResizeLock() = 0;
-
   virtual void OnFirstSurfaceActivation(
       const viz::SurfaceInfo& surface_info) = 0;
   virtual void OnBeginFrame(base::TimeTicks frame_time) = 0;
-  virtual bool IsAutoResizeEnabled() const = 0;
   virtual void OnFrameTokenChanged(uint32_t frame_token) = 0;
   virtual void DidReceiveFirstFrameAfterNavigation() = 0;
 };
@@ -82,7 +72,6 @@ class CONTENT_EXPORT DelegatedFrameHost
   // responsible for doing the appropriate [un]registration.
   DelegatedFrameHost(const viz::FrameSinkId& frame_sink_id,
                      DelegatedFrameHostClient* client,
-                     bool enable_surface_synchronization,
                      bool enable_viz,
                      bool should_register_frame_sink_id);
   ~DelegatedFrameHost() override;
@@ -187,9 +176,6 @@ class CONTENT_EXPORT DelegatedFrameHost
   void OnCompositingDidCommitForTesting(ui::Compositor* compositor) {
     OnCompositingDidCommit(compositor);
   }
-  bool ReleasedFrontLockActiveForTesting() const {
-    return !!released_front_lock_.get();
-  }
 
   gfx::Size CurrentFrameSizeInDipForTesting() const {
     return current_frame_size_in_dip_;
@@ -215,20 +201,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   void LockResources();
   void UnlockResources();
 
-  bool ShouldSkipFrame(const gfx::Size& size_in_dip);
-
-  // Lazily grab a resize lock if the aura window size doesn't match the current
-  // frame size, to give time to the renderer.
-  void MaybeCreateResizeLock();
-
-  // Checks if the resize lock can be released because we received an new frame.
-  void CheckResizeLock();
-
   SkColor GetGutterColor() const;
-
-  // Update the layers for the resize gutters to the right and bottom of the
-  // surface layer.
-  void UpdateGutters();
 
   void CreateCompositorFrameSinkSupport();
   void ResetCompositorFrameSinkSupport();
@@ -238,7 +211,6 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   const viz::FrameSinkId frame_sink_id_;
   DelegatedFrameHostClient* const client_;
-  const bool enable_surface_synchronization_;
   const bool enable_viz_;
   const bool should_register_frame_sink_id_;
   ui::Compositor* compositor_ = nullptr;
@@ -262,35 +234,11 @@ class CONTENT_EXPORT DelegatedFrameHost
   // TODO(ccameron): The meaning of "current" should be made more clear here.
   gfx::Size current_frame_size_in_dip_;
 
-  // Overridable tick clock used for testing functions using current time.
-  const base::TickClock* tick_clock_;
-
-  // True after a delegated frame has been skipped, until a frame is not
-  // skipped.
-  bool skipped_frames_ = false;
-  std::vector<ui::LatencyInfo> skipped_latency_info_list_;
-
-  std::unique_ptr<ui::Layer> right_gutter_;
-  std::unique_ptr<ui::Layer> bottom_gutter_;
-
   // This is the last root background color from a swapped frame.
   SkColor background_color_;
 
   // State for rendering into a Surface.
   std::unique_ptr<viz::CompositorFrameSinkSupport> support_;
-
-  // This lock is the one waiting for a frame of the right size to come back
-  // from the renderer/GPU process. It is set from the moment the aura window
-  // got resized, to the moment we committed the renderer frame of the same
-  // size. It keeps track of the size we expect from the renderer, and locks the
-  // compositor, as well as the UI for a short time to give a chance to the
-  // renderer of producing a frame of the right size.
-  std::unique_ptr<CompositorResizeLock> resize_lock_;
-  bool create_resize_lock_after_commit_ = false;
-  bool allow_one_renderer_frame_during_resize_lock_ = false;
-
-  // This lock is for waiting for a front surface to become available to draw.
-  std::unique_ptr<ui::CompositorLock> released_front_lock_;
 
   bool needs_begin_frame_ = false;
 
