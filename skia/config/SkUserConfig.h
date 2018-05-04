@@ -203,6 +203,13 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_SUPPORT_LEGACY_TILED_BITMAPS
 #endif
 
+// cc_unittests LayerTreeHostFiltersPixelTest.BackgroundFilterBlurOutsets fail
+// with the Skia blur imagefilter bug-fix. They need to be updated at the
+// same time this flag is removed.
+#ifndef SK_IGNORE_BLUR_IMAGE_FILTER_FIX
+#define SK_IGNORE_BLUR_IMAGE_FILTER_FIX
+#endif
+
 // remove after rebaselining svg layout tests
 #ifndef SK_SUPPORT_LEGACY_SVG_ARC_TO
 #define SK_SUPPORT_LEGACY_SVG_ARC_TO
