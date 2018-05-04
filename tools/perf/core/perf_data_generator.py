@@ -60,6 +60,23 @@ def add_builder(waterfall, name, additional_compile_targets=None):
 
   return waterfall
 
+
+_VALID_SWARMING_DIMENSIONS = {
+    'gpu', 'device_ids', 'os', 'pool', 'perf_tests', 'perf_tests_with_args'}
+_VALID_PERF_POOLS = {
+    'Chrome-perf', 'chrome.tests.perf', 'chrome.tests.perf-webview'}
+
+
+def _ValidateSwarmingDimension(tester_name, swarming_dimensions):
+  for dimension in swarming_dimensions:
+    for k, v in dimension.iteritems():
+      if k not in _VALID_SWARMING_DIMENSIONS:
+        raise ValueError('Invalid swarming dimension in %s: %s' % (
+            tester_name, k))
+      if k == 'pool' and v not in _VALID_PERF_POOLS:
+        raise ValueError('Invalid perf pool %s in %s' % (v, tester_name))
+
+
 def add_tester(waterfall, name, perf_id, platform, target_bits=64,
                num_host_shards=1, num_device_shards=1, swarming=None,
                replace_system_webview=False):
@@ -81,6 +98,7 @@ def add_tester(waterfall, name, perf_id, platform, target_bits=64,
   }
 
   if swarming:
+    _ValidateSwarmingDimension(name, swarming)
     waterfall['testers'][name]['swarming_dimensions'] = swarming
     waterfall['testers'][name]['swarming'] = True
 
