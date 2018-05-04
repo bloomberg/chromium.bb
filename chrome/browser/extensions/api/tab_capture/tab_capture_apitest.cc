@@ -259,15 +259,10 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_GetUserMediaTest) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-// http://crbug.com/177163
-#if defined(OS_WIN) && !defined(NDEBUG)
-#define MAYBE_ActiveTabPermission DISABLED_ActiveTabPermission
-#else
-#define MAYBE_ActiveTabPermission ActiveTabPermission
-#endif
+// http://crbug.com/177163, http://crbug.com/427730
 // Make sure tabCapture.capture only works if the tab has been granted
 // permission via an extension icon click or the extension is whitelisted.
-IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_ActiveTabPermission) {
+IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, DISABLED_ActiveTabPermission) {
   ExtensionTestMessageListener before_open_tab("ready1", true);
   ExtensionTestMessageListener before_grant_permission("ready2", true);
   ExtensionTestMessageListener before_open_new_tab("ready3", true);
