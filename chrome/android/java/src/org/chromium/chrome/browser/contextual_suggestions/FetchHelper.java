@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.contextual_suggestions;
 
 import android.os.SystemClock;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.webkit.URLUtil;
 
@@ -113,13 +114,16 @@ class FetchHelper {
     // TODO(fgorski): flip this to finch controlled setting.
     private final static long MINIMUM_FETCH_DELAY_MILLIS = 2 * 1000; // 2 seconds.
     private static boolean sDisableDelayForTesting;
+    private static long sFetchTimeBaselineMillisForTesting;
 
     private final Delegate mDelegate;
-    private TabModelSelector mTabModelSelector;
+    private final TabModelSelector mTabModelSelector;
+    private final Map<Integer, TabFetchReadinessState> mObservedTabs = new HashMap<>();
+
     private TabModelSelectorTabModelObserver mTabModelObserver;
     private TabObserver mTabObserver;
-    private final Map<Integer, TabFetchReadinessState> mObservedTabs = new HashMap<>();
-    private boolean mFetchRequestedForCurrentTab = false;
+    private boolean mFetchRequestedForCurrentTab;
+    private boolean mIsInitialized;
 
     @Nullable
     private Tab mCurrentTab;
@@ -131,15 +135,16 @@ class FetchHelper {
      */
     FetchHelper(Delegate delegate, TabModelSelector tabModelSelector) {
         mDelegate = delegate;
-        init(tabModelSelector);
+        mTabModelSelector = tabModelSelector;
     }
 
     /**
-     * Initializes the FetchHelper. Intended to encapsulate creating connections to native code,
-     * so that this can be easily stubbed out during tests.
+     * Initializes the FetchHelper to listen for notifications.
      */
-    protected void init(TabModelSelector tabModelSelector) {
-        mTabModelSelector = tabModelSelector;
+    protected void initialize() {
+        assert !mIsInitialized;
+        mIsInitialized = true;
+
         mTabObserver = new EmptyTabObserver() {
             @Override
             public void onUpdateUrl(Tab tab, String url) {
@@ -345,8 +350,23 @@ class FetchHelper {
         return mObservedTabs.get(tab.getId());
     }
 
+    /**
+     * @param tab The specified {@link Tab}.
+     * @return The baseline fetch time for the specified tab.
+     */
+    long getFetchTimeBaselineMillis(@NonNull Tab tab) {
+        return sDisableDelayForTesting
+                ? sFetchTimeBaselineMillisForTesting
+                : mObservedTabs.get(tab.getId()).getFetchTimeBaselineMillis();
+    }
+
     @VisibleForTesting
     static void setDisableDelayForTesting(boolean disable) {
         sDisableDelayForTesting = disable;
+    }
+
+    @VisibleForTesting
+    static void setFetchTimeBaselineMillisForTesting(long uptimeMillis) {
+        sFetchTimeBaselineMillisForTesting = uptimeMillis;
     }
 }

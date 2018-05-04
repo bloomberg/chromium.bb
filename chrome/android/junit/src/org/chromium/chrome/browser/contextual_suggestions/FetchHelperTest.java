@@ -351,6 +351,7 @@ public final class FetchHelperTest {
 
     private FetchHelper createFetchHelper() {
         FetchHelper helper = new FetchHelper(mDelegate, mTabModelSelector);
+        helper.initialize();
         if (mTabModelSelector.getCurrentTab() != null && !mTab.isIncognito()) {
             verify(mTab, times(1)).addObserver(mTabObserverCaptor.capture());
         }
@@ -359,7 +360,7 @@ public final class FetchHelperTest {
     }
 
     private void delayFetchExecutionTest(Consumer<TabObserver> consumer) {
-        FetchHelper helper = new FetchHelper(mDelegate, mTabModelSelector);
+        FetchHelper helper = createFetchHelper();
         verify(mTab, times(1)).addObserver(mTabObserverCaptor.capture());
         consumer.accept(getTabObserver());
         verify(mDelegate, times(0)).requestSuggestions(eq(STARTING_URL));
@@ -370,7 +371,7 @@ public final class FetchHelperTest {
     }
 
     private void delayFetchExecutionTest_updateUrl_toSame(Consumer<TabObserver> consumer) {
-        FetchHelper helper = new FetchHelper(mDelegate, mTabModelSelector);
+        FetchHelper helper = createFetchHelper();
         verify(mTab, times(1)).addObserver(mTabObserverCaptor.capture());
         consumer.accept(getTabObserver());
 
@@ -382,7 +383,7 @@ public final class FetchHelperTest {
     }
 
     private void delayFetchExecutionTest_updateUrl_toDifferent(Consumer<TabObserver> consumer) {
-        FetchHelper helper = new FetchHelper(mDelegate, mTabModelSelector);
+        FetchHelper helper = createFetchHelper();
         verify(mTab, times(1)).addObserver(mTabObserverCaptor.capture());
         consumer.accept(getTabObserver());
 
@@ -397,7 +398,7 @@ public final class FetchHelperTest {
     private void addAndRemoveNonSelectedTab() {
         // Starting with null tab so we can add one.
         doReturn(null).when(mTabModelSelector).getCurrentTab();
-        FetchHelper helper = new FetchHelper(mDelegate, mTabModelSelector);
+        FetchHelper helper = createFetchHelper();
         verify(mTabModel, times(1)).addObserver(mTabModelObserverCaptor.capture());
 
         addTab(mTab);
