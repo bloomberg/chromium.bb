@@ -19,7 +19,7 @@
 namespace base {
 
 // [views.constants]
-constexpr size_t dynamic_extent = -1;
+constexpr size_t dynamic_extent = static_cast<size_t>(-1);
 
 template <typename T, size_t Extent = dynamic_extent>
 class span;
@@ -266,10 +266,10 @@ class span {
 
   template <size_t Offset, size_t Count = dynamic_extent>
   constexpr span<T,
-                 Count != dynamic_extent
+                 (Count != dynamic_extent
                      ? Count
                      : (Extent != dynamic_extent ? Extent - Offset
-                                                 : dynamic_extent)>
+                                                 : dynamic_extent))>
   subspan() const noexcept {
     static_assert(Extent == dynamic_extent || Offset <= Extent,
                   "Offset must not exceed Extent");
@@ -389,7 +389,7 @@ constexpr bool operator>=(span<T, X> lhs, span<U, Y> rhs) noexcept {
 
 // [span.objectrep], views of object representation
 template <typename T, size_t X>
-span<const uint8_t, X == dynamic_extent ? dynamic_extent : sizeof(T) * X>
+span<const uint8_t, (X == dynamic_extent ? dynamic_extent : sizeof(T) * X)>
 as_bytes(span<T, X> s) noexcept {
   return {reinterpret_cast<const uint8_t*>(s.data()), s.size_bytes()};
 }
@@ -397,7 +397,7 @@ as_bytes(span<T, X> s) noexcept {
 template <typename T,
           size_t X,
           typename = std::enable_if_t<!std::is_const<T>::value>>
-span<uint8_t, X == dynamic_extent ? dynamic_extent : sizeof(T) * X>
+span<uint8_t, (X == dynamic_extent ? dynamic_extent : sizeof(T) * X)>
 as_writable_bytes(span<T, X> s) noexcept {
   return {reinterpret_cast<uint8_t*>(s.data()), s.size_bytes()};
 }
