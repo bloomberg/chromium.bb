@@ -25,6 +25,9 @@ class MockSchedulerWorkerDelegate : public SchedulerWorker::Delegate {
   void OnCanScheduleSequence(scoped_refptr<Sequence> sequence) override {
     ADD_FAILURE() << "Unexpected call to OnCanScheduleSequence().";
   }
+  SchedulerWorker::ThreadLabel GetThreadLabel() const override {
+    return SchedulerWorker::ThreadLabel::DEDICATED;
+  }
   void OnMainEntry(const SchedulerWorker* worker) override {}
   scoped_refptr<Sequence> GetWork(SchedulerWorker* worker) override {
     return nullptr;
