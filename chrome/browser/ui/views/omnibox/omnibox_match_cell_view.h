@@ -32,7 +32,8 @@ class OmniboxMatchCellView : public views::View {
   OmniboxTextView* description() { return description_view_; }
   OmniboxTextView* separator() { return separator_view_; }
 
-  void OnMatchUpdate(const AutocompleteMatch& match);
+  void OnMatchUpdate(const OmniboxResultView* result_view,
+                     const AutocompleteMatch& match);
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
