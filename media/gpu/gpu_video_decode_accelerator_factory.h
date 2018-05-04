@@ -32,6 +32,8 @@ class ContextGroup;
 
 namespace media {
 
+class MediaLog;
+
 class MEDIA_GPU_EXPORT GpuVideoDecodeAcceleratorFactory {
  public:
   ~GpuVideoDecodeAcceleratorFactory();
@@ -80,7 +82,8 @@ class MEDIA_GPU_EXPORT GpuVideoDecodeAcceleratorFactory {
       VideoDecodeAccelerator::Client* client,
       const VideoDecodeAccelerator::Config& config,
       const gpu::GpuDriverBugWorkarounds& workarounds,
-      const gpu::GpuPreferences& gpu_preferences);
+      const gpu::GpuPreferences& gpu_preferences,
+      MediaLog* media_log = nullptr);
 
  private:
   GpuVideoDecodeAcceleratorFactory(
@@ -93,33 +96,40 @@ class MEDIA_GPU_EXPORT GpuVideoDecodeAcceleratorFactory {
 #if defined(OS_WIN)
   std::unique_ptr<VideoDecodeAccelerator> CreateD3D11VDA(
       const gpu::GpuDriverBugWorkarounds& workarounds,
-      const gpu::GpuPreferences& gpu_preferences) const;
+      const gpu::GpuPreferences& gpu_preferences,
+      MediaLog* media_log) const;
   std::unique_ptr<VideoDecodeAccelerator> CreateDXVAVDA(
       const gpu::GpuDriverBugWorkarounds& workarounds,
-      const gpu::GpuPreferences& gpu_preferences) const;
+      const gpu::GpuPreferences& gpu_preferences,
+      MediaLog* media_log) const;
 #endif
 #if BUILDFLAG(USE_V4L2_CODEC)
   std::unique_ptr<VideoDecodeAccelerator> CreateV4L2VDA(
       const gpu::GpuDriverBugWorkarounds& workarounds,
-      const gpu::GpuPreferences& gpu_preferences) const;
+      const gpu::GpuPreferences& gpu_preferences,
+      MediaLog* media_log) const;
   std::unique_ptr<VideoDecodeAccelerator> CreateV4L2SVDA(
       const gpu::GpuDriverBugWorkarounds& workarounds,
-      const gpu::GpuPreferences& gpu_preferences) const;
+      const gpu::GpuPreferences& gpu_preferences,
+      MediaLog* media_log) const;
 #endif
 #if BUILDFLAG(USE_VAAPI)
   std::unique_ptr<VideoDecodeAccelerator> CreateVaapiVDA(
       const gpu::GpuDriverBugWorkarounds& workarounds,
-      const gpu::GpuPreferences& gpu_preferences) const;
+      const gpu::GpuPreferences& gpu_preferences,
+      MediaLog* media_log) const;
 #endif
 #if defined(OS_MACOSX)
   std::unique_ptr<VideoDecodeAccelerator> CreateVTVDA(
       const gpu::GpuDriverBugWorkarounds& workarounds,
-      const gpu::GpuPreferences& gpu_preferences) const;
+      const gpu::GpuPreferences& gpu_preferences,
+      MediaLog* media_log) const;
 #endif
 #if defined(OS_ANDROID)
   std::unique_ptr<VideoDecodeAccelerator> CreateAndroidVDA(
       const gpu::GpuDriverBugWorkarounds& workarounds,
-      const gpu::GpuPreferences& gpu_preferences) const;
+      const gpu::GpuPreferences& gpu_preferences,
+      MediaLog* media_log) const;
 #endif
 
   const GetGLContextCallback get_gl_context_cb_;
