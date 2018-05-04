@@ -8096,7 +8096,8 @@
           "--browser=cros-chrome",
           "--remote=127.0.0.1",
           "--remote-ssh-port=9222",
-          "--xvfb"
+          "--xvfb",
+          "--skip=measurements.clock_domain_test.ClockDomainTest.testTelemetryUsesChromeClockDomain"
         ],
         "isolate_name": "telemetry_perf_unittests",
         "name": "telemetry_perf_unittests",
