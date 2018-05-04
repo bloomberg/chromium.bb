@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/mash_service_registry.h"
+#include "chrome/browser/ash_service_registry.h"
 
 #include "ash/components/quick_launch/public/mojom/constants.mojom.h"
 #include "ash/public/interfaces/constants.mojom.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/services/font/public/interfaces/constants.mojom.h"
@@ -13,7 +14,7 @@
 
 using content::ContentBrowserClient;
 
-namespace mash_service_registry {
+namespace ash_service_registry {
 namespace {
 
 struct Service {
@@ -48,15 +49,15 @@ void RegisterOutOfProcessServices(
   }
 }
 
-bool IsMashServiceName(const std::string& name) {
-  for (size_t i = 0; i < arraysize(kServices); ++i) {
+bool IsAshRelatedServiceName(const std::string& name) {
+  for (size_t i = 0; i < base::size(kServices); ++i) {
     if (name == kServices[i].name)
       return true;
   }
   return false;
 }
 
-std::string GetMashServiceLabel(const std::string& service_name) {
+std::string GetAshRelatedServiceLabel(const std::string& service_name) {
   for (const Service& service : kServices) {
     if (service_name == service.name) {
       // Use the process group name when available because that makes it more
@@ -74,4 +75,4 @@ bool ShouldTerminateOnServiceQuit(const std::string& name) {
   return name == ui::mojom::kServiceName || name == ash::mojom::kServiceName;
 }
 
-}  // namespace mash_service_registry
+}  // namespace ash_service_registry

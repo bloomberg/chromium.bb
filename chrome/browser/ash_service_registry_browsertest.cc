@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/mash_service_registry.h"
+#include "chrome/browser/ash_service_registry.h"
 
 #include "base/bind.h"
 #include "base/run_loop.h"
@@ -15,14 +15,14 @@ namespace {
 
 void VerifyProcessGroupOnIOThread() {
   EXPECT_TRUE(content::HasValidProcessForProcessGroup(
-      mash_service_registry::kAshAndUiProcessGroup));
+      ash_service_registry::kAshAndUiProcessGroup));
 }
 
 }  // namespace
 
-using MashServiceRegistryTest = InProcessBrowserTest;
+using AshServiceRegistryTest = InProcessBrowserTest;
 
-IN_PROC_BROWSER_TEST_F(MashServiceRegistryTest, AshAndUiInSameProcess) {
+IN_PROC_BROWSER_TEST_F(AshServiceRegistryTest, AshAndUiInSameProcess) {
   // Test only applies to mash (out-of-process ash).
   if (chromeos::GetAshConfig() != ash::Config::MASH)
     return;
