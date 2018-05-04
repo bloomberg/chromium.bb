@@ -446,6 +446,7 @@ dump_property(struct weston_wm *wm,
 	int32_t *incr_value;
 	const char *text_value, *name;
 	xcb_atom_t *atom_value;
+	xcb_window_t *window_value;
 	int width, len;
 	uint32_t i;
 
@@ -488,6 +489,9 @@ dump_property(struct weston_wm *wm,
 		wm_log_continue("\n");
 	} else if (reply->type == XCB_ATOM_CARDINAL) {
 		dump_cardinal_array(reply);
+	} else if (reply->type == XCB_ATOM_WINDOW && reply->format == 32) {
+		window_value = xcb_get_property_value(reply);
+		wm_log_continue("win %u\n", *window_value);
 	} else {
 		wm_log_continue("huh?\n");
 	}
