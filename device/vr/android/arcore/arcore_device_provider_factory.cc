@@ -4,6 +4,7 @@
 
 #include "device/vr/android/arcore/arcore_device_provider_factory.h"
 
+#include "base/logging.h"
 #include "device/vr/vr_device_provider.h"
 
 namespace device {
@@ -21,11 +22,12 @@ ARCoreDeviceProviderFactory::Create() {
 }
 
 // static
-void ARCoreDeviceProviderFactory::Install(ARCoreDeviceProviderFactory* f) {
-  if (g_arcore_device_provider_factory == f)
-    return;
-  delete g_arcore_device_provider_factory;
-  g_arcore_device_provider_factory = f;
+void ARCoreDeviceProviderFactory::Install(
+    std::unique_ptr<ARCoreDeviceProviderFactory> factory) {
+  DCHECK_NE(g_arcore_device_provider_factory, factory.get());
+  if (g_arcore_device_provider_factory)
+    delete g_arcore_device_provider_factory;
+  g_arcore_device_provider_factory = factory.release();
 }
 
 }  // namespace device

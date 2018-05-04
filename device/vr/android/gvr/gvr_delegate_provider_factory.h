@@ -5,6 +5,8 @@
 #ifndef DEVICE_VR_ANDROID_GVR_DELEGATE_PROVIDER_FACTORY_H_
 #define DEVICE_VR_ANDROID_GVR_DELEGATE_PROVIDER_FACTORY_H_
 
+#include <memory>
+
 #include "base/macros.h"
 
 #include "device/vr/vr_export.h"
@@ -16,11 +18,12 @@ class GvrDelegateProvider;
 class DEVICE_VR_EXPORT GvrDelegateProviderFactory {
  public:
   static GvrDelegateProvider* Create();
-  static void Install(GvrDelegateProviderFactory* factory);
+  static void Install(std::unique_ptr<GvrDelegateProviderFactory> factory);
+
+  virtual ~GvrDelegateProviderFactory() = default;
 
  protected:
   GvrDelegateProviderFactory() = default;
-  virtual ~GvrDelegateProviderFactory() = default;
 
   virtual GvrDelegateProvider* CreateGvrDelegateProvider() = 0;
 

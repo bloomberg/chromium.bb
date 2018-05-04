@@ -351,12 +351,12 @@ static void JNI_VrShellDelegate_OnLibraryAvailable(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz) {
   device::GvrDelegateProviderFactory::Install(
-      new VrShellDelegateProviderFactory);
+      std::make_unique<VrShellDelegateProviderFactory>());
 
   // TODO(https://crbug.com/837965): Move this to an ARCore-specific location
   // with similar timing (occurs before VRDeviceManager is initialized).
   device::ARCoreDeviceProviderFactory::Install(
-      new ARCoreDeviceProviderFactoryImpl);
+      std::make_unique<ARCoreDeviceProviderFactoryImpl>());
 }
 
 static void JNI_VrShellDelegate_RegisterVrAssetsComponent(
