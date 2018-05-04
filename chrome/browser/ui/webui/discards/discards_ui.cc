@@ -87,6 +87,7 @@ class DiscardsDetailsProviderImpl : public mojom::DiscardsDetailsProvider {
       info->visibility =
           GetLifecycleUnitVisibility(lifecycle_unit->GetVisibility());
       info->is_media = tab_lifecycle_unit_external->IsMediaTab();
+      info->is_frozen = tab_lifecycle_unit_external->IsFrozen();
       info->is_discarded = tab_lifecycle_unit_external->IsDiscarded();
       info->discard_count = tab_lifecycle_unit_external->GetDiscardCount();
       info->utility_rank = rank++;

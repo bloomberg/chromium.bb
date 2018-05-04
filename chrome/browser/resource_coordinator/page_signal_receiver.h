@@ -28,6 +28,8 @@ class PageSignalObserver {
   virtual void OnExpectedTaskQueueingDurationSet(
       content::WebContents* web_contents,
       base::TimeDelta duration) {}
+  virtual void OnLifecycleStateChanged(content::WebContents* web_contents,
+                                       mojom::LifecycleState state) {}
 };
 
 // Implementation of resource_coordinator::mojom::PageSignalReceiver.
@@ -50,6 +52,8 @@ class PageSignalReceiver : public mojom::PageSignalReceiver {
   void NotifyPageAlmostIdle(const CoordinationUnitID& cu_id) override;
   void SetExpectedTaskQueueingDuration(const CoordinationUnitID& cu_id,
                                        base::TimeDelta duration) override;
+  void SetLifecycleState(const CoordinationUnitID& cu_id,
+                         mojom::LifecycleState) override;
 
   void AddObserver(PageSignalObserver* observer);
   void RemoveObserver(PageSignalObserver* observer);

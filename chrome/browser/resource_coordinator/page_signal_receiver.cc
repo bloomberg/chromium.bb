@@ -56,6 +56,15 @@ void PageSignalReceiver::SetExpectedTaskQueueingDuration(
                                                duration);
 }
 
+void PageSignalReceiver::SetLifecycleState(const CoordinationUnitID& cu_id,
+                                           mojom::LifecycleState state) {
+  auto web_contents_iter = cu_id_web_contents_map_.find(cu_id);
+  if (web_contents_iter == cu_id_web_contents_map_.end())
+    return;
+  for (auto& observer : observers_)
+    observer.OnLifecycleStateChanged(web_contents_iter->second, state);
+}
+
 void PageSignalReceiver::AddObserver(PageSignalObserver* observer) {
   // When PageSignalReceiver starts to have observer, construct the mojo
   // channel.

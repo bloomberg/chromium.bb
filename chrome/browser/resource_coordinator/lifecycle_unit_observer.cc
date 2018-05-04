@@ -9,7 +9,8 @@ namespace resource_coordinator {
 LifecycleUnitObserver::~LifecycleUnitObserver() = default;
 
 void LifecycleUnitObserver::OnLifecycleUnitStateChanged(
-    LifecycleUnit* lifecycle_unit) {}
+    LifecycleUnit* lifecycle_unit,
+    mojom::LifecycleState previous_state) {}
 
 void LifecycleUnitObserver::OnLifecycleUnitVisibilityChanged(
     LifecycleUnit* lifecycle_unit,
