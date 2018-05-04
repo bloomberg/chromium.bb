@@ -4,6 +4,7 @@
 
 #include "aom_dsp/noise_model.h"
 #include "aom_dsp/noise_util.h"
+#include "config/aom_dsp_rtcd.h"
 #include "test/acm_random.h"
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
@@ -58,6 +59,45 @@ void noise_synth(libaom_test::ACMRandom *random, int lag, int n,
   for (y = 0; y < h; ++y) {
     memcpy(data + y * w, &padded[0] + y * padded_w, sizeof(*data) * w);
   }
+}
+
+std::vector<float> get_noise_psd(double *noise, int width, int height,
+                                 int block_size) {
+  float *block =
+      (float *)aom_memalign(32, block_size * block_size * sizeof(block));
+  std::vector<float> psd(block_size * block_size);
+  int num_blocks = 0;
+  struct aom_noise_tx_t *tx = aom_noise_tx_malloc(block_size);
+  for (int y = 0; y <= height - block_size; y += block_size / 2) {
+    for (int x = 0; x <= width - block_size; x += block_size / 2) {
+      for (int yy = 0; yy < block_size; ++yy) {
+        for (int xx = 0; xx < block_size; ++xx) {
+          block[yy * block_size + xx] = (float)noise[(y + yy) * width + x + xx];
+        }
+      }
+      aom_noise_tx_forward(tx, &block[0]);
+      aom_noise_tx_add_energy(tx, &psd[0]);
+      num_blocks++;
+    }
+  }
+  for (int yy = 0; yy < block_size; ++yy) {
+    for (int xx = 0; xx <= block_size / 2; ++xx) {
+      psd[yy * block_size + xx] /= num_blocks;
+    }
+  }
+  // Fill in the data that is missing due to symmetries
+  for (int xx = 1; xx < block_size / 2; ++xx) {
+    psd[(block_size - xx)] = psd[xx];
+  }
+  for (int yy = 1; yy < block_size; ++yy) {
+    for (int xx = 1; xx < block_size / 2; ++xx) {
+      psd[(block_size - yy) * block_size + (block_size - xx)] =
+          psd[yy * block_size + xx];
+    }
+  }
+  aom_noise_tx_free(tx);
+  aom_free(block);
+  return psd;
 }
 
 }  // namespace
@@ -1098,3 +1138,193 @@ TEST(NoiseModelGetGrainParameters, GetGrainParametersReal) {
 
   aom_noise_model_free(&model);
 }
+
+template <typename T>
+class WienerDenoiseTest : public ::testing::Test, public T {
+ public:
+  static void SetUpTestCase() { aom_dsp_rtcd(); }
+
+ protected:
+  void SetUp() {
+    static const float kNoiseLevel = 5.f;
+    static const float kStd = 4.0;
+    static const double kMaxValue = (1 << T::kBitDepth) - 1;
+
+    chroma_sub_[0] = 1;
+    chroma_sub_[1] = 1;
+    stride_[0] = kWidth;
+    stride_[1] = kWidth / 2;
+    stride_[2] = kWidth / 2;
+    for (int k = 0; k < 3; ++k) {
+      data_[k].resize(kWidth * kHeight);
+      denoised_[k].resize(kWidth * kHeight);
+      noise_psd_[k].resize(kBlockSize * kBlockSize);
+    }
+
+    const double kCoeffsY[] = { 0.0406, -0.116, -0.078, -0.152, 0.0033, -0.093,
+                                0.048,  0.404,  0.2353, -0.035, -0.093, 0.441 };
+    const int kCoords[12][2] = {
+      { -2, -2 }, { -1, -2 }, { 0, -2 }, { 1, -2 }, { 2, -2 }, { -2, -1 },
+      { -1, -1 }, { 0, -1 },  { 1, -1 }, { 2, -1 }, { -2, 0 }, { -1, 0 }
+    };
+    const int kLag = 2;
+    const int kLength = 12;
+    libaom_test::ACMRandom random;
+    std::vector<double> noise(kWidth * kHeight);
+    noise_synth(&random, kLag, kLength, kCoords, kCoeffsY, &noise[0], kWidth,
+                kHeight);
+    noise_psd_[0] = get_noise_psd(&noise[0], kWidth, kHeight, kBlockSize);
+    for (int i = 0; i < kBlockSize * kBlockSize; ++i) {
+      noise_psd_[0][i] = (float)(noise_psd_[0][i] * kStd * kStd * kScaleNoise *
+                                 kScaleNoise / (kMaxValue * kMaxValue));
+    }
+
+    float psd_value =
+        aom_noise_psd_get_default_value(kBlockSizeChroma, kNoiseLevel);
+    for (int i = 0; i < kBlockSizeChroma * kBlockSizeChroma; ++i) {
+      noise_psd_[1][i] = psd_value;
+      noise_psd_[2][i] = psd_value;
+    }
+    for (int y = 0; y < kHeight; ++y) {
+      for (int x = 0; x < kWidth; ++x) {
+        data_[0][y * stride_[0] + x] = (typename T::data_type_t)fclamp(
+            (x + noise[y * stride_[0] + x] * kStd) * kScaleNoise, 0, kMaxValue);
+      }
+    }
+
+    for (int c = 1; c < 3; ++c) {
+      for (int y = 0; y < (kHeight >> 1); ++y) {
+        for (int x = 0; x < (kWidth >> 1); ++x) {
+          data_[c][y * stride_[c] + x] = (typename T::data_type_t)fclamp(
+              (x + randn(&random, kStd)) * kScaleNoise, 0, kMaxValue);
+        }
+      }
+    }
+    for (int k = 0; k < 3; ++k) {
+      noise_psd_ptrs_[k] = &noise_psd_[k][0];
+    }
+  }
+  static const int kBlockSize = 32;
+  static const int kBlockSizeChroma = 16;
+  static const int kWidth = 256;
+  static const int kHeight = 256;
+  static const int kScaleNoise = 1 << (T::kBitDepth - 8);
+
+  std::vector<typename T::data_type_t> data_[3];
+  std::vector<typename T::data_type_t> denoised_[3];
+  std::vector<float> noise_psd_[3];
+  int chroma_sub_[2];
+  float *noise_psd_ptrs_[3];
+  int stride_[3];
+};
+
+TYPED_TEST_CASE_P(WienerDenoiseTest);
+
+TYPED_TEST_P(WienerDenoiseTest, InvalidBlockSize) {
+  const uint8_t *const data_ptrs[3] = {
+    reinterpret_cast<uint8_t *>(&this->data_[0][0]),
+    reinterpret_cast<uint8_t *>(&this->data_[1][0]),
+    reinterpret_cast<uint8_t *>(&this->data_[2][0]),
+  };
+  uint8_t *denoised_ptrs[3] = {
+    reinterpret_cast<uint8_t *>(&this->denoised_[0][0]),
+    reinterpret_cast<uint8_t *>(&this->denoised_[1][0]),
+    reinterpret_cast<uint8_t *>(&this->denoised_[2][0]),
+  };
+  EXPECT_EQ(0, aom_wiener_denoise_2d(data_ptrs, denoised_ptrs, this->kWidth,
+                                     this->kHeight, this->stride_,
+                                     this->chroma_sub_, this->noise_psd_ptrs_,
+                                     18, this->kBitDepth, this->kUseHighBD));
+  EXPECT_EQ(0, aom_wiener_denoise_2d(data_ptrs, denoised_ptrs, this->kWidth,
+                                     this->kHeight, this->stride_,
+                                     this->chroma_sub_, this->noise_psd_ptrs_,
+                                     48, this->kBitDepth, this->kUseHighBD));
+  EXPECT_EQ(0, aom_wiener_denoise_2d(data_ptrs, denoised_ptrs, this->kWidth,
+                                     this->kHeight, this->stride_,
+                                     this->chroma_sub_, this->noise_psd_ptrs_,
+                                     64, this->kBitDepth, this->kUseHighBD));
+}
+
+TYPED_TEST_P(WienerDenoiseTest, InvalidChromaSubsampling) {
+  const uint8_t *const data_ptrs[3] = {
+    reinterpret_cast<uint8_t *>(&this->data_[0][0]),
+    reinterpret_cast<uint8_t *>(&this->data_[1][0]),
+    reinterpret_cast<uint8_t *>(&this->data_[2][0]),
+  };
+  uint8_t *denoised_ptrs[3] = {
+    reinterpret_cast<uint8_t *>(&this->denoised_[0][0]),
+    reinterpret_cast<uint8_t *>(&this->denoised_[1][0]),
+    reinterpret_cast<uint8_t *>(&this->denoised_[2][0]),
+  };
+  int chroma_sub[2] = { 1, 0 };
+  EXPECT_EQ(0, aom_wiener_denoise_2d(data_ptrs, denoised_ptrs, this->kWidth,
+                                     this->kHeight, this->stride_, chroma_sub,
+                                     this->noise_psd_ptrs_, 32, this->kBitDepth,
+                                     this->kUseHighBD));
+
+  chroma_sub[0] = 0;
+  chroma_sub[1] = 1;
+  EXPECT_EQ(0, aom_wiener_denoise_2d(data_ptrs, denoised_ptrs, this->kWidth,
+                                     this->kHeight, this->stride_, chroma_sub,
+                                     this->noise_psd_ptrs_, 32, this->kBitDepth,
+                                     this->kUseHighBD));
+}
+
+TYPED_TEST_P(WienerDenoiseTest, GradientTest) {
+  const int kWidth = this->kWidth;
+  const int kHeight = this->kHeight;
+  const int kBlockSize = this->kBlockSize;
+  const uint8_t *const data_ptrs[3] = {
+    reinterpret_cast<uint8_t *>(&this->data_[0][0]),
+    reinterpret_cast<uint8_t *>(&this->data_[1][0]),
+    reinterpret_cast<uint8_t *>(&this->data_[2][0]),
+  };
+  uint8_t *denoised_ptrs[3] = {
+    reinterpret_cast<uint8_t *>(&this->denoised_[0][0]),
+    reinterpret_cast<uint8_t *>(&this->denoised_[1][0]),
+    reinterpret_cast<uint8_t *>(&this->denoised_[2][0]),
+  };
+  const int ret = aom_wiener_denoise_2d(
+      data_ptrs, denoised_ptrs, kWidth, kHeight, this->stride_,
+      this->chroma_sub_, this->noise_psd_ptrs_, this->kBlockSize,
+      this->kBitDepth, this->kUseHighBD);
+  EXPECT_EQ(1, ret);
+
+  // Check the noise on the denoised image (from the analytical gradient)
+  // and make sure that it is less than what we added.
+  for (int c = 0; c < 3; ++c) {
+    std::vector<double> measured_noise(kWidth * kHeight);
+
+    double var = 0;
+    for (int x = 0; x<kWidth>> (c > 0); ++x) {
+      for (int y = 0; y<kHeight>> (c > 0); ++y) {
+        const double diff = this->denoised_[c][y * this->stride_[c] + x] -
+                            x * this->kScaleNoise;
+        var += diff * diff;
+        measured_noise[y * kWidth + x] = diff;
+      }
+    }
+    var /= (kWidth * kHeight);
+    const double std = sqrt(std::max(0.0, var));
+    EXPECT_LE(std, 1.25f * this->kScaleNoise);
+    if (c == 0) {
+      std::vector<float> measured_psd =
+          get_noise_psd(&measured_noise[0], kWidth, kHeight, kBlockSize);
+      std::vector<double> measured_psd_d(kBlockSize * kBlockSize);
+      std::vector<double> noise_psd_d(kBlockSize * kBlockSize);
+      std::copy(measured_psd.begin(), measured_psd.end(),
+                measured_psd_d.begin());
+      std::copy(this->noise_psd_[0].begin(), this->noise_psd_[0].end(),
+                noise_psd_d.begin());
+      EXPECT_LT(aom_normalized_cross_correlation(
+                    &measured_psd_d[0], &noise_psd_d[0], noise_psd_d.size()),
+                0.35);
+    }
+  }
+}
+
+REGISTER_TYPED_TEST_CASE_P(WienerDenoiseTest, InvalidBlockSize,
+                           InvalidChromaSubsampling, GradientTest);
+
+INSTANTIATE_TYPED_TEST_CASE_P(WienerDenoiseTestInstatiation, WienerDenoiseTest,
+                              AllBitDepthParams);

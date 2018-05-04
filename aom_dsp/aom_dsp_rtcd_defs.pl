@@ -472,6 +472,34 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes"){
     add_proto qw/void aom_highbd_fdct8x8/, "const int16_t *input, tran_low_t *output, int stride";
     specialize qw/aom_highbd_fdct8x8 sse2/;
 
+    # FFT/IFFT (float) only used for denoising (and noise power spectral density estimation)
+    add_proto qw/void aom_fft2x2_float/, "const float *input, float *temp, float *output";
+
+    add_proto qw/void aom_fft4x4_float/, "const float *input, float *temp, float *output";
+    specialize qw/aom_fft4x4_float                  sse2/;
+
+    add_proto qw/void aom_fft8x8_float/, "const float *input, float *temp, float *output";
+    specialize qw/aom_fft8x8_float avx2             sse2/;
+
+    add_proto qw/void aom_fft16x16_float/, "const float *input, float *temp, float *output";
+    specialize qw/aom_fft16x16_float avx2           sse2/;
+
+    add_proto qw/void aom_fft32x32_float/, "const float *input, float *temp, float *output";
+    specialize qw/aom_fft32x32_float avx2           sse2/;
+
+    add_proto qw/void aom_ifft2x2_float/, "const float *input, float *temp, float *output";
+
+    add_proto qw/void aom_ifft4x4_float/, "const float *input, float *temp, float *output";
+    specialize qw/aom_ifft4x4_float                 sse2/;
+
+    add_proto qw/void aom_ifft8x8_float/, "const float *input, float *temp, float *output";
+    specialize qw/aom_ifft8x8_float avx2            sse2/;
+
+    add_proto qw/void aom_ifft16x16_float/, "const float *input, float *temp, float *output";
+    specialize qw/aom_ifft16x16_float avx2          sse2/;
+
+    add_proto qw/void aom_ifft32x32_float/, "const float *input, float *temp, float *output";
+    specialize qw/aom_ifft32x32_float avx2          sse2/;
 }  # CONFIG_AV1_ENCODER
 
 #
