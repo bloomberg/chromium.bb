@@ -665,7 +665,8 @@ class AutofillMetrics {
     void OnFormsParsed(const GURL& url);
     void LogInteractedWithForm(bool is_for_credit_card,
                                size_t local_record_type_count,
-                               size_t server_record_type_count);
+                               size_t server_record_type_count,
+                               FormSignature form_signature);
     void LogSuggestionsShown(const AutofillField& field,
                              const base::TimeTicks& form_parsed_timestamp);
     void LogSelectedMaskedServerCard(
@@ -687,7 +688,8 @@ class AutofillMetrics {
     void LogFormSubmitted(bool is_for_credit_card,
                           const std::set<FormType>& form_types,
                           AutofillFormSubmittedState state,
-                          const base::TimeTicks& form_parsed_timestamp);
+                          const base::TimeTicks& form_parsed_timestamp,
+                          FormSignature form_signature);
 
     // We initialize |url_| with the form's URL when we log the first form
     // interaction. Later, we may update |url_| with the |source_url()| for the
@@ -926,6 +928,7 @@ class AutofillMetrics {
       bool is_for_credit_card,
       const std::set<FormType>& form_types,
       const base::TimeTicks& form_parsed_timestamp,
+      FormSignature form_signature,
       FormInteractionsUkmLogger* form_interactions_ukm_logger);
 
   // This should be called when determining the heuristic types for a form's
@@ -1004,7 +1007,7 @@ class AutofillMetrics {
       is_context_secure_ = is_context_secure;
     }
 
-    void OnDidInteractWithAutofillableForm();
+    void OnDidInteractWithAutofillableForm(FormSignature form_signature);
 
     void OnDidPollSuggestions(const FormFieldData& field);
 

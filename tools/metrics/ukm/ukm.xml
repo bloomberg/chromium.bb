@@ -165,6 +165,11 @@ be describing additional metrics about the same event.
       none of the field were autofilled. See |AutofillFormSubmittedState|.
     </summary>
   </metric>
+  <metric name="FormSignature">
+    <summary>
+      FormSignature is approximately 10 bit hash of form structure.
+    </summary>
+  </metric>
   <metric name="FormTypes">
     <summary>
       Type of form. Stored as bitvector. A set ith bit implies enum FormType's
@@ -190,6 +195,11 @@ be describing additional metrics about the same event.
     Recorded when we parse a form to log form metadata and autofill settings
     that apply to all subsequent events for this form.
   </summary>
+  <metric name="FormSignature">
+    <summary>
+      FormSignature is approximately 10 bit hash of form structure.
+    </summary>
+  </metric>
   <metric name="FormTypes">
     <summary>
       Type of form. Stored as bitvector. A set ith bit implies enum FormType's
