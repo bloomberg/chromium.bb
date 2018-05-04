@@ -86,10 +86,10 @@ void AppListClientImpl::GetSearchResultContextMenuModel(
     std::move(callback).Run(std::vector<ash::mojom::MenuItemPtr>());
     return;
   }
-  model_updater_->GetContextMenuModel(
+  model_updater_->GetSearchResultContextMenuModel(
       result_id,
       base::BindOnce(
-          [](GetSearchResultContextMenuModelCallback callback,
+          [](GetContextMenuModelCallback callback,
              std::unique_ptr<ui::MenuModel> menu_model) {
             std::move(callback).Run(
                 ash::menu_utils::GetMojoMenuItemsFromModel(menu_model.get()));
