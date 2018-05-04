@@ -7,6 +7,8 @@
 #include <string>
 #include <utility>
 
+#include "base/compiler_specific.h"
+#include "base/debug/alias.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_util.h"
@@ -17,9 +19,29 @@
 #include "base/task_scheduler/sequence_sort_key.h"
 #include "base/task_scheduler/task.h"
 #include "base/task_scheduler/task_tracker.h"
+#include "base/threading/thread.h"
 
 namespace base {
 namespace internal {
+
+namespace {
+
+// A ServiceThread is merely a base::Thread with an aliased Run() method to
+// enforce ServiceThread::Run() to be on the stack and make it easier to
+// identify the service thread in stack traces.
+class ServiceThread : public Thread {
+ public:
+  using Thread::Thread;
+
+ private:
+  NOINLINE void Run(RunLoop* run_loop) override {
+    const int line_number = __LINE__;
+    Thread::Run(run_loop);
+    base::debug::Alias(&line_number);
+  }
+};
+
+}  // namespace
 
 TaskSchedulerImpl::TaskSchedulerImpl(StringPiece histogram_label)
     : TaskSchedulerImpl(histogram_label,
@@ -28,7 +50,8 @@ TaskSchedulerImpl::TaskSchedulerImpl(StringPiece histogram_label)
 TaskSchedulerImpl::TaskSchedulerImpl(
     StringPiece histogram_label,
     std::unique_ptr<TaskTrackerImpl> task_tracker)
-    : service_thread_("TaskSchedulerServiceThread"),
+    : service_thread_(
+          std::make_unique<ServiceThread>("TaskSchedulerServiceThread")),
       task_tracker_(std::move(task_tracker)),
       single_thread_task_runner_manager_(task_tracker_->GetTrackedRef(),
                                          &delayed_task_manager_) {
@@ -77,22 +100,22 @@ void TaskSchedulerImpl::Start(const TaskScheduler::InitParams& init_params) {
       MessageLoop::TYPE_DEFAULT;
 #endif
   service_thread_options.timer_slack = TIMER_SLACK_MAXIMUM;
-  CHECK(service_thread_.StartWithOptions(service_thread_options));
+  CHECK(service_thread_->StartWithOptions(service_thread_options));
 
 #if defined(OS_POSIX) && !defined(OS_NACL_SFI)
   // Needs to happen after starting the service thread to get its
   // message_loop().
   task_tracker_->set_watch_file_descriptor_message_loop(
-      static_cast<MessageLoopForIO*>(service_thread_.message_loop()));
+      static_cast<MessageLoopForIO*>(service_thread_->message_loop()));
 
 #if DCHECK_IS_ON()
-  task_tracker_->set_service_thread_handle(service_thread_.GetThreadHandle());
+  task_tracker_->set_service_thread_handle(service_thread_->GetThreadHandle());
 #endif  // DCHECK_IS_ON()
 #endif  // defined(OS_POSIX) && !defined(OS_NACL_SFI)
 
   // Needs to happen after starting the service thread to get its task_runner().
   scoped_refptr<TaskRunner> service_thread_task_runner =
-      service_thread_.task_runner();
+      service_thread_->task_runner();
   delayed_task_manager_.Start(service_thread_task_runner);
 
   single_thread_task_runner_manager_.Start();
@@ -202,7 +225,7 @@ void TaskSchedulerImpl::JoinForTesting() {
   // tasks scheduled by the DelayedTaskManager might be posted between joining
   // those workers and stopping the service thread which will cause a CHECK. See
   // https://crbug.com/771701.
-  service_thread_.Stop();
+  service_thread_->Stop();
   single_thread_task_runner_manager_.JoinForTesting();
   for (const auto& worker_pool : worker_pools_)
     worker_pool->JoinForTesting();
