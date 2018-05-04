@@ -49,30 +49,6 @@ void EventRouterForwarder::DispatchEventToRenderers(
               profile, use_profile_to_restrict_events, event_url);
 }
 
-void EventRouterForwarder::BroadcastEventToExtension(
-    const std::string& extension_id,
-    events::HistogramValue histogram_value,
-    const std::string& event_name,
-    std::unique_ptr<base::ListValue> event_args,
-    const GURL& event_url) {
-  HandleEvent(extension_id, histogram_value, event_name, std::move(event_args),
-              0, true, event_url);
-}
-
-void EventRouterForwarder::DispatchEventToExtension(
-    const std::string& extension_id,
-    events::HistogramValue histogram_value,
-    const std::string& event_name,
-    std::unique_ptr<base::ListValue> event_args,
-    void* profile,
-    bool use_profile_to_restrict_events,
-    const GURL& event_url) {
-  if (!profile)
-    return;
-  HandleEvent(extension_id, histogram_value, event_name, std::move(event_args),
-              profile, use_profile_to_restrict_events, event_url);
-}
-
 void EventRouterForwarder::HandleEvent(
     const std::string& extension_id,
     events::HistogramValue histogram_value,

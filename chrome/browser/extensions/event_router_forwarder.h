@@ -41,33 +41,10 @@ class EventRouterForwarder
                                  const GURL& event_url);
 
   // Calls
-  //   DispatchEventToExtension(extension_id, event_name, event_args,
-  //       profile, event_url)
-  // on all (original) profiles' EventRouters.
-  // May be called on any thread.
-  void BroadcastEventToExtension(const std::string& extension_id,
-                                 events::HistogramValue histogram_value,
-                                 const std::string& event_name,
-                                 std::unique_ptr<base::ListValue> event_args,
-                                 const GURL& event_url);
-
-  // Calls
   //   DispatchEventToRenderers(event_name, event_args,
   //       use_profile_to_restrict_events ? profile : NULL, event_url)
   // on |profile|'s EventRouter. May be called on any thread.
   void DispatchEventToRenderers(events::HistogramValue histogram_value,
-                                const std::string& event_name,
-                                std::unique_ptr<base::ListValue> event_args,
-                                void* profile,
-                                bool use_profile_to_restrict_events,
-                                const GURL& event_url);
-
-  // Calls
-  //   DispatchEventToExtension(extension_id, event_name, event_args,
-  //       use_profile_to_restrict_events ? profile : NULL, event_url)
-  // on |profile|'s EventRouter. May be called on any thread.
-  void DispatchEventToExtension(const std::string& extension_id,
-                                events::HistogramValue histogram_value,
                                 const std::string& event_name,
                                 std::unique_ptr<base::ListValue> event_args,
                                 void* profile,
