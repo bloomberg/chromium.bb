@@ -9288,36 +9288,54 @@
   "mac-views-rel": {
     "gtest_tests": [
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "accessibility_unittests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "app_shell_unittests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "base_unittests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "blink_heap_unittests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "blink_platform_unittests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 10
@@ -9326,7 +9344,8 @@
       },
       {
         "args": [
-          "--enable-surface-synchronization"
+          "--enable-surface-synchronization",
+          "--enable-features=ViewsBrowserWindows"
         ],
         "name": "surface_sync_browser_tests",
         "swarming": {
@@ -9337,7 +9356,7 @@
       },
       {
         "args": [
-          "--enable-features=VizDisplayCompositor",
+          "--enable-features=VizDisplayCompositor,ViewsBrowserWindows",
           "--test-launcher-filter-file=../../testing/buildbot/filters/viz.browser_tests.filter"
         ],
         "name": "viz_browser_tests",
@@ -9348,42 +9367,63 @@
         "test": "browser_tests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "cacheinvalidation_unittests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "capture_unittests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "cast_unittests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "cc_unittests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "chromedriver_unittests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "components_unittests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -9391,7 +9431,8 @@
       },
       {
         "args": [
-          "--enable-surface-synchronization"
+          "--enable-surface-synchronization",
+          "--enable-features=ViewsBrowserWindows"
         ],
         "name": "surface_sync_content_browsertests",
         "swarming": {
@@ -9402,7 +9443,7 @@
       },
       {
         "args": [
-          "--enable-features=VizDisplayCompositor",
+          "--enable-features=VizDisplayCompositor,ViewsBrowserWindows",
           "--test-launcher-filter-file=../../testing/buildbot/filters/viz.content_browsertests.filter"
         ],
         "name": "viz_content_browsertests",
@@ -9413,6 +9454,9 @@
         "test": "content_browsertests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -9420,7 +9464,7 @@
       },
       {
         "args": [
-          "--enable-features=VizDisplayCompositor",
+          "--enable-features=VizDisplayCompositor,ViewsBrowserWindows",
           "--test-launcher-filter-file=../../testing/buildbot/filters/viz.content_unittests.filter"
         ],
         "name": "viz_content_unittests",
@@ -9430,60 +9474,90 @@
         "test": "content_unittests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "crashpad_tests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "cronet_tests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "cronet_unittests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "crypto_unittests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "extensions_unittests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "gcm_unit_tests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "gfx_unittests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "google_apis_unittests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "gpu_unittests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 2
@@ -9491,144 +9565,216 @@
         "test": "interactive_ui_tests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "ipc_tests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "jingle_unittests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "media_blink_unittests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "media_service_unittests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "media_unittests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "midi_unittests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "mojo_unittests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "native_theme_unittests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "net_unittests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "pdf_unittests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "ppapi_unittests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "printing_unittests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "remoting_unittests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "sandbox_mac_unittests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "skia_unittests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "sql_unittests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "storage_unittests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "sync_integration_tests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "ui_base_unittests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "unit_tests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "url_unittests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "views_unittests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "webkit_unit_tests"
       },
       {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
