@@ -1230,13 +1230,16 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_DOWNLOAD_LOCATION_NAME_TOO_LONG" desc="Subtitle for download location dialog in the case that the file needs to be renamed because the name is too long.">
         File name too long
       </message>
-      <message name="IDS_DOWNLOAD_LOCATION_NOT_ENOUGH_SPACE" desc="Text on download location dialog in the case that there is not enough space in the chosen location.">
+      <message name="IDS_DOWNLOAD_LOCATION_NOT_ENOUGH_SPACE" desc="Text on download location dialog and error notification in the case that there is not enough space in the chosen location.">
         Not enough space
+      </message>
+      <message name="IDS_DOWNLOAD_LOCATION_NOT_ENOUGH_SPACE_SD_CARD_FULL" desc="Text on download location error notification in the case that there is not enough space on SD card.">
+        Not enough space on SD card
       </message>
       <message name="IDS_DOWNLOAD_LOCATION_DOWNLOAD_TO_DEFAULT_FOLDER" desc="Subtitle for download location dialog in the case that the download location the user had originally selected is full or not found. We automatically revert back to the default download location and ask the user to confirm that this is ok.">
         Download to default folder?
       </message>
-      <message name="IDS_DOWNLOAD_LOCATION_NO_SD_CARD" desc="Title for download location dialog in the case that the SD card is not found.">
+      <message name="IDS_DOWNLOAD_LOCATION_NO_SD_CARD" desc="Title for download location dialog and error notification in the case that the SD card is not found.">
        SD card not found
       </message>
       <message name="IDS_DOWNLOAD_LOCATION_NO_SD_CARD_SNACKBAR" desc="Text for the snackbar that shows up in downloads home to let the user know that since the SD card is not found, some of the files may be missing.">
@@ -1244,6 +1247,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
       <message name="IDS_DOWNLOAD_LOCATION_NO_AVAILABLE_LOCATIONS" desc="Text that indicates to the user that there are no download locations available.">
         No available download locations
+      </message>
+      <message name="IDS_DOWNLOAD_LOCATION_NOTIFICATION_RETRY" desc="Text on download location error notification button, to let the user retry the download.">
+        Retry
       </message>
 
       <!-- About Chrome preferences -->
@@ -2188,6 +2194,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
       <message name="IDS_DOWNLOAD_MANAGER_UI_SPACE_USED_GB" desc="String indicating that some amount of storage space on the device has been used by downloads, in gigabytes.">
         <ph name="gigabytes">%1$3.2f<ex>0.3</ex></ph> GB downloaded
+      </message>
+      <message name="IDS_DOWNLOAD_MANAGER_UI_SPACE_USING" desc="String indicating the amount of storage space used by downloads out of total available storage.">
+        Using <ph name="SPACE_USED">%1$s<ex>0.3MB</ex></ph> of <ph name="SPACE_AVAILABLE">%2$s<ex>3 GB</ex></ph>
       </message>
       <message name="IDS_DOWNLOAD_MANAGER_UI_ALL_DOWNLOADS" desc="Indicates that clicking on this button shows all of your downloads.">
         All
