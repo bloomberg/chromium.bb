@@ -191,7 +191,7 @@ Polymer({
    * @private
    */
   shouldShowWebUiControls_: function(route) {
-    return route && route.supportsWebUiController;
+    return !!route && !!route.supportsWebUiController;
   },
 
   /**
