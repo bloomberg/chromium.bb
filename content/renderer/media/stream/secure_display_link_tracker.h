@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_MEDIA_STREAM_SECURE_DISPLAY_LINK_TRACKER_H_
 #define CONTENT_RENDERER_MEDIA_STREAM_SECURE_DISPLAY_LINK_TRACKER_H_
 
+#include <algorithm>
 #include <vector>
 
 // Tracks all connected links (video sinks / tracks), and reports if they are
