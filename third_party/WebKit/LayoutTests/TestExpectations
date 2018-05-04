@@ -2794,12 +2794,8 @@ crbug.com/800898 external/wpt/FileAPI/url/url-with-xhr.any.worker.html [ Pass Fa
 crbug.com/800898 external/wpt/FileAPI/url/url-in-tags-revoke.window.html [ Pass Failure ]
 
 # Websockets
-crbug.com/803558 external/wpt/websockets/constructor/014.html?wss [ Timeout ]
-crbug.com/803558 external/wpt/websockets/keeping-connection-open/001.html?wss [ Timeout ]
 crbug.com/803558 external/wpt/websockets/opening-handshake/003-sets-origin.worker.html [ Timeout ]
 crbug.com/803358 virtual/off-main-thread-websocket/external/wpt/websockets/Create-Secure-extensions-empty.htm [ Timeout ]
-crbug.com/803558 virtual/off-main-thread-websocket/external/wpt/websockets/constructor/014.html?wss [ Timeout ]
-crbug.com/803558 virtual/off-main-thread-websocket/external/wpt/websockets/keeping-connection-open/001.html?wss [ Timeout ]
 crbug.com/803558 virtual/off-main-thread-websocket/external/wpt/websockets/opening-handshake/003-sets-origin.worker.html [ Timeout ]
 # Cannot be rebaselined because the output contains a timestamp and a random number.
 crbug.com/803200 external/wpt/websockets/cookies/006.html?wss [ Failure ]
@@ -2855,7 +2851,6 @@ crbug.com/626703 external/wpt/css/css-contain/quote-scoping-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-contain/quote-scoping-002.html [ Failure ]
 crbug.com/626703 external/wpt/websockets/Create-Secure-extensions-empty.any.worker.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-contain/counter-scoping-003.html [ Failure ]
-crbug.com/626703 [ Mac10.12 ] external/wpt/html/syntax/parsing/html5lib_template.html?run_type=uri [ Timeout ]
 crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/string-compilation-integrity-classic.sub.html [ Skip ]
 crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/string-compilation-integrity-module.sub.html [ Skip ]
 crbug.com/626703 [ Mac10.12 ] virtual/unified-autoplay/external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-some.https.sub.html [ Timeout ]
@@ -3729,7 +3724,6 @@ crbug.com/709227 external/wpt/workers/nested_worker.worker.html [ Timeout ]
 # Crashes
 crbug.com/709227 external/wpt/offscreen-canvas/fill-and-stroke-styles/2d.pattern.basic.nocontext.worker.html [ Crash ]
 
-crbug.com/803943 [ Win Linux Mac ] external/wpt/html/syntax/parsing/html5lib_tests16.html?run_type=uri [ Pass Timeout ]
 
 # ====== Tests from enabling .any.js/.worker.js tests end here ========
 
@@ -4659,7 +4653,6 @@ crbug.com/800745 [ Linux ] virtual/gpu/fast/canvas/canvas-composite-video.html [
 crbug.com/832274 [ Linux ] fast/forms/search/search-appearance-basic.html [ Pass Failure ]
 
 # Sheriff 2018-04-12
-crbug.com/818324 [ Linux ] external/wpt/html/syntax/parsing/html5lib_template.html?run_type=uri [ Pass Timeout ]
 crbug.com/831993 [ Linux ] virtual/gpu-rasterization/images/cross-fade-overflow-position.html [ Pass Timeout ]
 
 # Sheriff 2018-04-13
