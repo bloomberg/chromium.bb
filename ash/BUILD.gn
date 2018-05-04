@@ -118,6 +118,8 @@ component("ash") {
     "cast_config_controller.h",
     "dbus/ash_dbus_services.cc",
     "dbus/ash_dbus_services.h",
+    "dbus/display_service_provider.cc",
+    "dbus/display_service_provider.h",
     "dbus/url_handler_service_provider.cc",
     "dbus/url_handler_service_provider.h",
     "debug.cc",

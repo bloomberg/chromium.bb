@@ -4,6 +4,7 @@
 
 #include "ash/dbus/ash_dbus_services.h"
 
+#include "ash/dbus/display_service_provider.h"
 #include "ash/dbus/url_handler_service_provider.h"
 #include "ash/public/cpp/config.h"
 #include "ash/shell.h"
@@ -30,6 +31,12 @@ AshDBusServices::AshDBusServices() {
       dbus::ObjectPath(chromeos::kUrlHandlerServicePath),
       chromeos::CrosDBusService::CreateServiceProviderList(
           std::make_unique<UrlHandlerServiceProvider>()));
+
+  display_service_ = chromeos::CrosDBusService::Create(
+      chromeos::kDisplayServiceName,
+      dbus::ObjectPath(chromeos::kDisplayServicePath),
+      chromeos::CrosDBusService::CreateServiceProviderList(
+          std::make_unique<DisplayServiceProvider>()));
 }
 
 void AshDBusServices::EmitAshInitialized() {
@@ -39,6 +46,7 @@ void AshDBusServices::EmitAshInitialized() {
 }
 
 AshDBusServices::~AshDBusServices() {
+  display_service_.reset();
   url_handler_service_.reset();
   if (initialized_dbus_thread_) {
     chromeos::DBusThreadManager::Shutdown();

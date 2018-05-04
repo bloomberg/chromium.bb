@@ -78,8 +78,6 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   int PreEarlyInitialization() override;
   void PreMainMessageLoopStart() override;
   void PostMainMessageLoopStart() override;
-  void ServiceManagerConnectionStarted(
-      content::ServiceManagerConnection* connection) override;
   void PreMainMessageLoopRun() override;
 
   // Stages called from PreMainMessageLoopRun.
