@@ -560,6 +560,8 @@ TEST_F(ProfileSyncServiceTest, EnableSyncAndSignOut) {
 
   signin_manager()->SignOut(signin_metrics::SIGNOUT_TEST,
                             signin_metrics::SignoutDelete::IGNORE_METRIC);
+  // Wait for PSS to be notified that the primary account has gone away.
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(service()->IsSyncActive());
 }
 #endif  // !defined(OS_CHROMEOS)
@@ -727,8 +729,8 @@ TEST_F(ProfileSyncServiceTest, CredentialErrorReturned) {
   std::string primary_account_id =
       signin_manager()->GetAuthenticatedAccountId();
   auth_service()->LoadCredentials(primary_account_id);
-  // Wait for PSS to be notified of the loaded credentials and send an access
-  // token request.
+  // Wait for ProfileSyncService to be notified of the loaded credentials and
+  // send an access token request.
   base::RunLoop().RunUntilIdle();
   auth_service()->IssueAllTokensForAccount(primary_account_id, "access token",
                                            base::Time::Max());
@@ -738,7 +740,7 @@ TEST_F(ProfileSyncServiceTest, CredentialErrorReturned) {
   // Emulate Chrome receiving a new, invalid LST. This happens when the user
   // signs out of the content area.
   auth_service()->UpdateCredentials(primary_account_id, "not a valid token");
-  // Again, wait for PSS to be notified.
+  // Again, wait for ProfileSyncService to be notified.
   base::RunLoop().RunUntilIdle();
   auth_service()->IssueErrorForAllPendingRequests(
       GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
@@ -772,8 +774,8 @@ TEST_F(ProfileSyncServiceTest, CredentialErrorClearsOnNewToken) {
   std::string primary_account_id =
       signin_manager()->GetAuthenticatedAccountId();
   auth_service()->LoadCredentials(primary_account_id);
-  // Wait for PSS to be notified of the loaded credentials and send an access
-  // token request.
+  // Wait for ProfileSyncService to be notified of the loaded credentials and
+  // send an access token request.
   base::RunLoop().RunUntilIdle();
   auth_service()->IssueAllTokensForAccount(primary_account_id, "access token",
                                            base::Time::Max());
@@ -783,8 +785,8 @@ TEST_F(ProfileSyncServiceTest, CredentialErrorClearsOnNewToken) {
   // Emulate Chrome receiving a new, invalid LST. This happens when the user
   // signs out of the content area.
   auth_service()->UpdateCredentials(primary_account_id, "not a valid token");
-  // Wait for PSS to be notified of the changed credentials and send a new
-  // access token request.
+  // Wait for ProfileSyncService to be notified of the changed credentials and
+  // send a new access token request.
   base::RunLoop().RunUntilIdle();
   auth_service()->IssueErrorForAllPendingRequests(
       GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
@@ -795,7 +797,7 @@ TEST_F(ProfileSyncServiceTest, CredentialErrorClearsOnNewToken) {
 
   // Now emulate Chrome receiving a new, valid LST.
   auth_service()->UpdateCredentials(primary_account_id, "totally valid token");
-  // Again, wait for PSS to be notified.
+  // Again, wait for ProfileSyncService to be notified.
   base::RunLoop().RunUntilIdle();
   auth_service()->IssueTokenForAllPendingRequests(
       "this one works", base::Time::Now() + base::TimeDelta::FromDays(10));

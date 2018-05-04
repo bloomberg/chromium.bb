@@ -176,9 +176,7 @@ bool ProfileSyncServiceHarness::SetupSync(syncer::ModelTypeSet synced_datatypes,
         IdentityManagerFactory::GetForProfile(profile_);
     identity_manager->SetPrimaryAccountSynchronouslyForTests(
         gaia_id_, username_, GenerateFakeOAuth2RefreshTokenString());
-    std::string account_id =
-        identity_manager->GetPrimaryAccountInfo().account_id;
-    service()->GoogleSigninSucceeded(account_id, username_);
+    service()->OnPrimaryAccountSet(identity_manager->GetPrimaryAccountInfo());
   } else {
     LOG(ERROR) << "Unsupported profile signin type.";
   }
@@ -284,8 +282,7 @@ bool ProfileSyncServiceHarness::StartSyncService() {
 
 void ProfileSyncServiceHarness::SignoutSyncService() {
   DCHECK(!username_.empty());
-  service()->GoogleSignedOut(
-      service()->GetAuthenticatedAccountInfo().account_id, username_);
+  service()->OnPrimaryAccountCleared(service()->GetAuthenticatedAccountInfo());
 }
 
 bool ProfileSyncServiceHarness::HasUnsyncedItems() {
