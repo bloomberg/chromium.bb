@@ -39,7 +39,7 @@ std::unique_ptr<ExtensionError> CreateNewRuntimeError(
       new RuntimeError(extension_id, from_incognito, source,
                        base::UTF8ToUTF16(message), stack_trace,
                        GURL::EmptyGURL(),  // no context url
-                       logging::LOG_INFO,
+                       logging::LOG_ERROR,
                        0,    // Render frame id
                        0));  // Render process id
 }

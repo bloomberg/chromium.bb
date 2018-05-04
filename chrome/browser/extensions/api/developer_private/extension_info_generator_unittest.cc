@@ -255,7 +255,7 @@ TEST_F(ExtensionInfoGeneratorUnitTest, BasicInfoTest) {
       base::UTF8ToUTF16("message"),
       StackTrace(1, StackFrame(1, 1, base::UTF8ToUTF16("source"),
                                base::UTF8ToUTF16("function"))),
-      kContextUrl, logging::LOG_VERBOSE, 1, 1));
+      kContextUrl, logging::LOG_WARNING, 1, 1));
 
   // It's not feasible to validate every field here, because that would be
   // a duplication of the logic in the method itself. Instead, test a handful
@@ -303,7 +303,7 @@ TEST_F(ExtensionInfoGeneratorUnitTest, BasicInfoTest) {
   ASSERT_EQ(1u, info->manifest_errors.size());
   const api::developer_private::RuntimeError& runtime_error_verbose =
       info->runtime_errors[1];
-  EXPECT_EQ(api::developer_private::ERROR_LEVEL_LOG,
+  EXPECT_EQ(api::developer_private::ERROR_LEVEL_WARN,
             runtime_error_verbose.severity);
   const api::developer_private::ManifestError& manifest_error =
       info->manifest_errors[0];
