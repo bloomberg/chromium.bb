@@ -1762,25 +1762,6 @@ camera.views.Camera.prototype.takePictureImmediately_ = function(motionPicture) 
 };
 
 /**
- * Resolutions to be probed for photo taking. Format: [[width, height], ...].
- * TODO(mtomasz): Remove this list and always use the highest available
- * resolution.
- *
- * @type {Array.<Array.<number>>}
- * @const
- */
-camera.views.Camera.PHOTO_RESOLUTIONS =
-    [[2560, 1920], [2048, 1536], [1920, 1080], [1280, 720], [800, 600],
-     [640, 480]];
-
-/**
- * Resolutions to be probed for video recording.
- * @type {Array.<Array.<number>>}
- * @const
- */
-camera.views.Camera.RECORDING_RESOLUTIONS = [[1280, 720], [640, 480]];
-
-/**
  * Synchronizes video size with the window's current size.
  * @private
  */
@@ -2237,41 +2218,47 @@ camera.views.Camera.prototype.start_ = function() {
         return 1;
     }.bind(this));
 
-
     // Prepended 'null' deviceId means the system default camera. Add it only
     // when the app is launched (no deviceId_ set).
     if (this.videoDeviceId_ == null) {
         sortedDeviceIds.unshift(null);
     }
-
-    var resolutions = this.is_recording_mode_ ?
-        camera.views.Camera.RECORDING_RESOLUTIONS :
-        camera.views.Camera.PHOTO_RESOLUTIONS;
-    // TODO(mtomasz): Remove this when support for advanced (multiple)
-    // constraints is added to Chrome. For now try to obtain stream with
-    // each candidate separately.
     sortedDeviceIds.forEach(function(deviceId) {
-      resolutions.forEach(function(resolution) {
+      var videoConstraints;
+      if (this.is_recording_mode_) {
+        // Video constraints for video recording are ordered by priority.
+        videoConstraints = [
+            {
+              aspectRatio: { ideal: 1.7777777778 },
+              width: { min: 1280 },
+              frameRate: { min: 24 }
+            },
+            {
+              width: { min: 640 },
+              frameRate: { min: 24 }
+            }];
+      } else {
+        // Video constraints for photo taking are ordered by priority.
+        videoConstraints = [
+            {
+              aspectRatio: { ideal: 1.3333333333 },
+              width: { min: 1280 },
+              frameRate: { min: 24 }
+            },
+            {
+              width: { min: 640 },
+              frameRate: { min: 24 }
+            }];
+      }
+      constraintsCandidates = videoConstraints.map(function(videoConstraint) {
+        // Each passed-in video-constraint will be modified here.
         if (deviceId) {
-          constraintsCandidates.push({
-            audio: this.is_recording_mode_,
-            video: {
-              deviceId: { exact: deviceId },
-              width: { min: resolution[0] },
-              height: { min: resolution[1] }
-            }
-          });
+          videoConstraint.deviceId = { exact: deviceId };
         } else {
           // As a default camera use the one which is facing the user.
-          constraintsCandidates.push({
-            audio: this.is_recording_mode_,
-            video: {
-              width: { min: resolution[0] },
-              height: { min: resolution[1] },
-              facingMode: { exact: 'user' }
-            }
-          });
+          videoConstraint.facingMode = { exact: 'user' };
         }
+        return { audio: this.is_recording_mode_, video: videoConstraint };
       }.bind(this));
     }.bind(this));
 
