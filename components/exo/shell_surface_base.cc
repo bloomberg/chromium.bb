@@ -7,11 +7,13 @@
 #include <algorithm>
 
 #include "ash/frame/custom_frame_view_ash.h"
+#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
+#include "ash/shell.h"
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
@@ -1203,10 +1205,13 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
   window->SetProperty(aura::client::kAccessibilityFocusFallsbackToWidgetKey,
                       false);
   window->AddChild(host_window());
-  // The window of widget_ is a container window. It doesn't handle pointer
-  // events.
+  // Use DESCENDANTS_ONLY event targeting policy for mus/mash.
+  // TODO(https://crbug.com/839521): Revisit after event dispatching code is
+  //     changed for mus/mash.
   window->SetEventTargetingPolicy(
-      ui::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
+      ash::Shell::GetAshConfig() == ash::Config::CLASSIC
+          ? ui::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS
+          : ui::mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
   window->SetEventTargeter(base::WrapUnique(
       new CustomWindowTargeter(widget_, client_controlled_move_resize_)));
   SetApplicationId(window, application_id_);
