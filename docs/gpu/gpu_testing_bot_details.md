@@ -291,23 +291,6 @@ Builder].
     1.  Get this reviewed and landed. This step associates the VM with the bot's
         name on the waterfall.
 
-1. Create a CL in the [`tools/build`][tools/build] workspace which does the
-   following. Here's an [example CL](https://chromium-review.googlesource.com/1041145).
-    1.  Adds the new VMs to [`chromium_gpu_fyi.py`][chromium_gpu_fyi.py] in
-        `scripts/slave/recipe_modules/chromium_tests/`. Make sure to set the
-        `serialize_tests` property to `True`. This is specified for waterfall
-        bots, but not trybots, and helps avoid overloading the physical
-        hardware. Double-check the `BUILD_CONFIG` and `parent_buildername`
-        properties for each. They must match the Release/Debug flavor of the
-        builder, like `GPU FYI Win Builder` vs. `GPU FYI Win Builder (dbg)`.
-    1.  Get this reviewed and landed. This step tells the Chromium recipe about
-        the newly-deployed waterfall bot. In the next CL we will generate the
-        JSON files which run tests on the bot.
-    1.  It used to be necessary to retrain recipe expectations
-        (`scripts/slave/recipes.py --use-bootstrap test train`). This doesn't
-        appear to be necessary any more, but it's something to watch out for if
-        your CL fails presubmit for some reason.
-
 1.  Create a CL in the Chromium workspace which does the following. Here's an
     [example CL](https://chromium-review.googlesource.com/1041164).
     1.  Adds the new machines to
@@ -355,9 +338,36 @@ Builder].
             organization.
     1.  If you were adding a new builder, you would need to also add the new
         machine to [`src/tools/mb/mb_config.pyl`][mb_config.pyl].
-1. After the Chromium-side CL lands it will take some time for all of the
-   configuration changes to be picked up by the system. The bot might be in a
-   purple state until that's happened, but it will recover.
+
+1. After the Chromium-side CL lands it will take some time for all of
+   the configuration changes to be picked up by the system. The bot
+   will be in a red or purple state, claiming that it can't find its
+   configuration.
+
+1. *After* the Chromium-side CL lands and the bot is on the console, but purple,
+   create a CL in the [`tools/build`][tools/build] workspace which does the
+   following. Here's an [example
+   CL](https://chromium-review.googlesource.com/1041145).
+    1.  Adds the new VMs to [`chromium_gpu_fyi.py`][chromium_gpu_fyi.py] in
+        `scripts/slave/recipe_modules/chromium_tests/`. Make sure to set the
+        `serialize_tests` property to `True`. This is specified for waterfall
+        bots, but not trybots, and helps avoid overloading the physical
+        hardware. Double-check the `BUILD_CONFIG` and `parent_buildername`
+        properties for each. They must match the Release/Debug flavor of the
+        builder, like `GPU FYI Win Builder` vs. `GPU FYI Win Builder (dbg)`.
+    1.  Get this reviewed and landed. This step tells the Chromium recipe about
+        the newly-deployed waterfall bot, so it knows which JSON file to load
+        out of src/testing/buildbot and which entry to look at.
+    1.  It used to be necessary to retrain recipe expectations
+        (`scripts/slave/recipes.py --use-bootstrap test train`). This doesn't
+        appear to be necessary any more, but it's something to watch out for if
+        your CL fails presubmit for some reason.
+
+1. Note that it is crucial that the bot be deployed (and be red/purple) before
+   hooking it up in the tools/build workspace. In the new LUCI world, if the
+   parent builder can't find its child testers to trigger, that's a hard error
+   on the parent. You can and should prepare the tools/build CL in advance, but
+   make sure it doesn't land until the bot's on the console.
 
 [bots.cfg]:            https://chrome-internal.googlesource.com/infradata/config/+/master/configs/chromium-swarm/bots.cfg
 [infradata/config]:    https://chrome-internal.googlesource.com/infradata/config/
