@@ -57,6 +57,10 @@ bool IsIPhoneX() {
           CGRectGetHeight([[UIScreen mainScreen] nativeBounds]) == 2436);
 }
 
+bool IsRefreshInfobarEnabled() {
+  return base::FeatureList::IsEnabled(kInfobarsUIReboot);
+}
+
 bool IsRefreshLocationBarEnabled() {
   return base::FeatureList::IsEnabled(kUIRefreshLocationBar);
 }

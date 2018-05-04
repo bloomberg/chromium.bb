@@ -126,6 +126,11 @@ extern const char kPhysicalWebDescription[];
 extern const char kCollectionsUIRebootName[];
 extern const char kCollectionsUIRebootDescription[];
 
+// Title and description for the flag to enable the new UI Reboot on existing
+// Infobars.
+extern const char kInfobarsUIRebootName[];
+extern const char kInfobarsUIRebootDescription[];
+
 // Title and description for the flag to enable WKBackForwardList based
 // navigation manager.
 extern const char kSlimNavigationManagerName[];

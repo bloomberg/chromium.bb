@@ -16,5 +16,8 @@ const base::Feature kUIRefreshPhase1{"UIRefreshPhase1",
 const base::Feature kCollectionsUIReboot{"CollectionsUIReboot",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kInfobarsUIReboot{"InfobarsUIReboot",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kBrowserContainerFullscreen{
     "BrowserContainerFullscreen", base::FEATURE_DISABLED_BY_DEFAULT};

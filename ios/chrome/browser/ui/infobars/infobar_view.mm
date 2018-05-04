@@ -19,9 +19,11 @@
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/label_link_controller.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
+#include "ios/chrome/grit/ios_theme_resources.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #import "ui/gfx/ios/NSString+CrStringDrawing.h"
 #import "ui/gfx/ios/uikit_util.h"
 #include "url/gurl.h"
@@ -82,14 +84,73 @@ const LayoutMetrics kLayoutMetricsLegacy = {
     16.0   // horizontal_space_between_icon_and_text
 };
 
+const LayoutMetrics kLayoutMetricsPhase1 = {
+    20.0,  // left_margin_on_first_line_when_icon_absent
+    30.0,  // minimum_space_between_right_and_left_aligned_widgets
+    10.0,  // right_margin
+    10.0,  // space_between_widgets
+    8.0,   // close_button_inner_padding
+    36.0,  // button_height
+    16.0,  // button_margin
+    8.0,   // extra_button_margin_on_single_line
+    8.0,   // button_spacing
+    8.0,   // button_width_units
+    16.0,  // buttons_margin_top
+    16.0,  // close_button_margin_left
+    5.0,   // label_line_spacing
+    22.0,  // label_margin_bottom
+    0.0,   // extra_margin_between_label_and_button
+    21.0,  // label_margin_top
+    68.0,  // minimum_infobar_height
+    16.0   // horizontal_space_between_icon_and_text
+};
+
 // Returns the layout metrics data structure. Returned value is never nil.
-const LayoutMetrics* GetCurrentLayoutMetrics() {
-  return &kLayoutMetricsLegacy;
+const LayoutMetrics* InfoBarLayoutMetrics() {
+  return IsRefreshInfobarEnabled() ? &kLayoutMetricsPhase1
+                                   : &kLayoutMetricsLegacy;
 }
 
+// Color in RGB to be used as background of secondary actions button.
 const int kButton2TitleColor = 0x4285f4;
+// Color in RGB to be used as background of Image Icon.
+const int kImageBackgroundColor = 0xdce7f6;
+// Corner radius for background of Image Icon.
+const CGFloat kImageBackgroundCornerRadius = 12.0;
+// Corner radius for action buttons.
+const CGFloat kButtonCornerRadius = 11.0;
 
 enum InfoBarButtonPosition { ON_FIRST_LINE, CENTER, LEFT, RIGHT };
+
+// Returns the font for the Infobar's main body text.
+UIFont* InfoBarLabelFont() {
+  return IsRefreshInfobarEnabled()
+             ? [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline]
+             : [MDCTypography subheadFont];
+}
+
+// Returns the font for the Infobar's toggle switch's (if one exists) body text.
+// This text label is usually of a slightly smaller font size relative to
+// InfoBarLabelFont().
+UIFont* InfoBarSwitchLabelFont() {
+  return IsRefreshInfobarEnabled()
+             ? [UIFont preferredFontForTextStyle:UIFontTextStyleBody]
+             : [MDCTypography body1Font];
+}
+
+// Returns the font for the label on Infobar's action buttons.
+UIFont* InfoBarButtonLabelFont() {
+  DCHECK(IsRefreshInfobarEnabled());
+  return [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
+}
+
+UIImage* InfoBarCloseImage() {
+  if (!IsRefreshInfobarEnabled()) {
+    return [UIImage imageNamed:@"infobar_close"];
+  }
+  ui::ResourceBundle& resourceBundle = ui::ResourceBundle::GetSharedInstance();
+  return resourceBundle.GetNativeImageNamed(IDR_IOS_INFOBAR_CLOSE).ToUIImage();
+}
 
 }  // namespace
 
@@ -122,12 +183,12 @@ enum InfoBarButtonPosition { ON_FIRST_LINE, CENTER, LEFT, RIGHT };
 }
 
 - (id)initWithLabel:(NSString*)labelText isOn:(BOOL)isOn {
-  metrics_ = GetCurrentLayoutMetrics();
+  metrics_ = InfoBarLayoutMetrics();
 
   // Creates switch and label.
   UILabel* tempLabel = [[UILabel alloc] initWithFrame:CGRectZero];
   [tempLabel setTextAlignment:NSTextAlignmentNatural];
-  [tempLabel setFont:[MDCTypography body1Font]];
+  [tempLabel setFont:InfoBarSwitchLabelFont()];
   [tempLabel setText:labelText];
   [tempLabel setBackgroundColor:[UIColor clearColor]];
   [tempLabel setLineBreakMode:NSLineBreakByWordWrapping];
@@ -297,11 +358,13 @@ enum InfoBarButtonPosition { ON_FIRST_LINE, CENTER, LEFT, RIGHT };
   self = [super initWithFrame:frame];
   if (self) {
     delegate_ = delegate;
-    metrics_ = GetCurrentLayoutMetrics();
-    // Make the drop shadow.
-    UIImage* shadowImage = [UIImage imageNamed:@"infobar_shadow"];
-    shadow_ = [[UIImageView alloc] initWithImage:shadowImage];
-    [self addSubview:shadow_];
+    metrics_ = InfoBarLayoutMetrics();
+    if (!IsRefreshInfobarEnabled()) {
+      // Make the drop shadow.
+      UIImage* shadowImage = [UIImage imageNamed:@"infobar_shadow"];
+      shadow_ = [[UIImageView alloc] initWithImage:shadowImage];
+      [self addSubview:shadow_];
+    }
     [self setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
                               UIViewAutoresizingFlexibleHeight];
     [self setAccessibilityViewIsModal:YES];
@@ -723,8 +786,7 @@ enum InfoBarButtonPosition { ON_FIRST_LINE, CENTER, LEFT, RIGHT };
                        target:(id)target
                        action:(SEL)action {
   DCHECK(!closeButton_);
-  // TODO(crbug/228611): Add IDR_ constant and use GetNativeImageNamed().
-  UIImage* image = [UIImage imageNamed:@"infobar_close"];
+  UIImage* image = InfoBarCloseImage();
   closeButton_ = [UIButton buttonWithType:UIButtonTypeCustom];
   [closeButton_ setExclusiveTouch:YES];
   [closeButton_ setImage:image forState:UIControlStateNormal];
@@ -733,6 +795,11 @@ enum InfoBarButtonPosition { ON_FIRST_LINE, CENTER, LEFT, RIGHT };
          forControlEvents:UIControlEventTouchUpInside];
   [closeButton_ setTag:tag];
   [closeButton_ setAccessibilityLabel:l10n_util::GetNSString(IDS_CLOSE)];
+  if (IsUIRefreshPhase1Enabled()) {
+    // TODO(crbug.com/804652): Remove setting of button alpha channel when
+    // InfoBarCloseImage() returns an image using the proper shade of gray.
+    closeButton_.alpha = 0.33;
+  }
   [self addSubview:closeButton_];
 }
 
@@ -751,6 +818,10 @@ enum InfoBarButtonPosition { ON_FIRST_LINE, CENTER, LEFT, RIGHT };
     [imageView_ removeFromSuperview];
   }
   imageView_ = [[UIImageView alloc] initWithImage:image];
+  if (IsRefreshInfobarEnabled()) {
+    imageView_.backgroundColor = UIColorFromRGB(kImageBackgroundColor);
+    imageView_.layer.cornerRadius = kImageBackgroundCornerRadius;
+  }
   [self addSubview:imageView_];
 }
 
@@ -812,9 +883,6 @@ enum InfoBarButtonPosition { ON_FIRST_LINE, CENTER, LEFT, RIGHT };
   }
 
   label_ = [[UILabel alloc] initWithFrame:CGRectZero];
-
-  UIFont* font = [MDCTypography subheadFont];
-
   [label_ setBackgroundColor:[UIColor clearColor]];
 
   NSMutableParagraphStyle* paragraphStyle =
@@ -823,7 +891,7 @@ enum InfoBarButtonPosition { ON_FIRST_LINE, CENTER, LEFT, RIGHT };
   paragraphStyle.lineSpacing = metrics_->label_line_spacing;
   NSDictionary* attributes = @{
     NSParagraphStyleAttributeName : paragraphStyle,
-    NSFontAttributeName : font,
+    NSFontAttributeName : InfoBarLabelFont(),
   };
   [label_ setNumberOfLines:0];
 
@@ -906,6 +974,11 @@ enum InfoBarButtonPosition { ON_FIRST_LINE, CENTER, LEFT, RIGHT };
                     target:(id)target
                     action:(SEL)action {
   MDCFlatButton* button = [[MDCFlatButton alloc] init];
+  if (IsRefreshInfobarEnabled()) {
+    button.uppercaseTitle = NO;
+    button.layer.cornerRadius = kButtonCornerRadius;
+    button.titleLabel.font = InfoBarButtonLabelFont();
+  }
   button.inkColor = [[palette tint300] colorWithAlphaComponent:0.5f];
   [button setBackgroundColor:[palette tint500] forState:UIControlStateNormal];
   [button setBackgroundColor:[UIColor colorWithWhite:0.8f alpha:1.0f]

@@ -26,6 +26,11 @@ extern const base::Feature kUIRefreshPhase1;
 // experimental_flags::IsCollectionsUIRebootEnabled()
 extern const base::Feature kCollectionsUIReboot;
 
+// Feature to choose whether to use the new UI Reboot Infobar UX, or the legacy
+// one. This flag should not be used directly. Instead, use
+// IsRefreshInfobarEnabled().
+extern const base::Feature kInfobarsUIReboot;
+
 // Used to make BrowserContainerViewController fullscreen.
 extern const base::Feature kBrowserContainerFullscreen;
 #endif  // IOS_CHROME_BROWSER_UI_UI_FEATURE_FLAGS_H_

@@ -36,6 +36,7 @@
       <structure type="chrome_scaled_image" name="IDR_IOS_CONTROLLED_SETTING_MANDATORY" file="controlled_setting_mandatory.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_ERROR" file="error.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_INFOBAR_AUTOLOGIN" file="infobar_autologin.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_INFOBAR_CLOSE" file="infobar_close.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_INFOBAR_RESTORE_SESSION" file="infobar_restore_session.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_INFOBAR_SAVE_PASSWORD" file="infobar_save_password.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_INFOBAR_TRANSLATE" file="infobar_translate.png" />

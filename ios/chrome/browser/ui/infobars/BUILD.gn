@@ -18,6 +18,8 @@ source_set("infobars") {
     "//base",
     "//base:i18n",
     "//components/strings",
+    "//ios/chrome/app/theme:theme",
+    "//ios/chrome/app/theme:theme_grit",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/fancy_ui",
