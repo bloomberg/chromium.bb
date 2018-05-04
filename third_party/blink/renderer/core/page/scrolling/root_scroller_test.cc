@@ -1373,6 +1373,58 @@ TEST_P(RootScrollerSimTest, RootScrollerDoesntAffectVisualViewport) {
   EXPECT_EQ(120, frame->DomWindow()->visualViewport()->pageTop());
 }
 
+// Tests that we don't crash or violate lifecycle assumptions when we resize
+// from within layout.
+TEST_P(RootScrollerSimTest, ResizeFromResizeAfterLayout) {
+  WebView().GetSettings()->SetShrinksViewportContentToFit(true);
+  WebView().SetDefaultPageScaleLimits(0.25f, 5);
+
+  WebView().Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Start();
+  request.Write(R"HTML(
+          <!DOCTYPE html>
+          <style>
+            body, html {
+              width: 100%;
+              height: 100%;
+              margin: 0px;
+            }
+
+            #spacer {
+              width: 1000px;
+              height: 1000px;
+            }
+
+            #container {
+              width: 100%;
+              height: 100%;
+              border: 0;
+            }
+          </style>
+          <iframe id="container"
+                  srcdoc="<!DOCTYPE html>
+                          <style>html {height: 300%;}</style>">
+          </iframe>
+      )HTML");
+  Element* container = GetDocument().getElementById("container");
+  GetDocument().setRootScroller(container);
+  Compositor().BeginFrame();
+  RunPendingTasks();
+  ASSERT_EQ(container,
+            GetDocument().GetRootScrollerController().EffectiveRootScroller());
+  ASSERT_EQ(IntSize(800, 600), GetDocument().View()->Size());
+
+  request.Write(R"HTML(
+          <div style="width:2000px;height:1000px"></div>
+      )HTML");
+  request.Finish();
+  Compositor().BeginFrame();
+
+  ASSERT_EQ(IntSize(2000, 1500), GetDocument().View()->Size());
+}
+
 class ImplicitRootScrollerSimTest : public SimTest {
  public:
   ImplicitRootScrollerSimTest()

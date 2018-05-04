@@ -308,14 +308,7 @@ void RootScrollerController::UpdateIFrameGeometryAndLayoutSize(
   if (!child_view)
     return;
 
-  // We can get here as a result of the "post layout resize" on the main frame.
-  // That happens from inside LocalFrameView::PerformLayout. Calling
-  // UpdateGeometry on the iframe causes it to layout which calls
-  // Document::UpdateStyleAndLayout. That tries to recurse up the hierarchy,
-  // reentering Layout on this Document. Thus, we avoid calling this here if
-  // we're in layout; it'll get called when this Document finishes laying out.
-  if (!document_->GetFrame()->View()->IsInPerformLayout())
-    child_view->UpdateGeometry();
+  child_view->UpdateGeometry();
 
   if (&EffectiveRootScroller() == frame_owner)
     child_view->SetLayoutSize(document_->GetFrame()->View()->GetLayoutSize());
