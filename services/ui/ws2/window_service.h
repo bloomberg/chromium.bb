@@ -73,6 +73,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
 
   WindowServiceDelegate* delegate_;
 
+  // GpuSupport may be null in tests.
   std::unique_ptr<GpuSupport> gpu_support_;
 
   service_manager::BinderRegistry registry_;
