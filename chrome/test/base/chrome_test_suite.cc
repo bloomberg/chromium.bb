@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "chrome/app/chrome_main_delegate.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
@@ -85,6 +86,12 @@ void ChromeTestSuite::Initialize() {
   ContentSettingsPattern::SetNonWildcardDomainNonPortSchemes(
       ChromeMainDelegate::kNonWildcardDomainNonPortSchemes,
       ChromeMainDelegate::kNonWildcardDomainNonPortSchemesSize);
+
+  // Desktop Identity Consistency (a.k.a. DICE) requires API keys to be
+  // configured as they are needed for regular web sign-in flows to Google.
+  // Ignore this requiement for unit and browser tests to make sure that the
+  // DICE feature gets the right test coverage.
+  AccountConsistencyModeManager::SetIgnoreMissingApiKeysForTesting();
 
 #if defined(OS_MACOSX)
   // Look in the framework bundle for resources.
