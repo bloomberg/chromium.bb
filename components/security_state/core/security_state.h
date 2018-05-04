@@ -27,10 +27,6 @@
 // the form of a VisibleSecurityState struct.
 namespace security_state {
 
-// A feature for showing a warning in autofill dropdowns for password
-// and credit cards fields when the top-level page is not HTTPS.
-extern const base::Feature kHttpFormWarningFeature;
-
 // Describes the overall security state of the page.
 //
 // These values are persisted to logs. Entries should not be renumbered and

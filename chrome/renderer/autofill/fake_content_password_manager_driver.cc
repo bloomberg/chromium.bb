@@ -67,12 +67,6 @@ void FakeContentPasswordManagerDriver::ShowPasswordSuggestions(
   show_pw_suggestions_options_ = options;
 }
 
-void FakeContentPasswordManagerDriver::ShowNotSecureWarning(
-    base::i18n::TextDirection text_direction,
-    const gfx::RectF& bounds) {
-  called_show_not_secure_warning_ = true;
-}
-
 void FakeContentPasswordManagerDriver::ShowManualFallbackSuggestion(
     base::i18n::TextDirection text_direction,
     const gfx::RectF& bounds) {

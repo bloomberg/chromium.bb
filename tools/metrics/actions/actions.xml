@@ -2131,6 +2131,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Autofill_ShowedHttpNotSecureExplanation">
+  <obsolete>Deprecated 5/2018 because the feature never launched.</obsolete>
   <owner>estark@chromium.org</owner>
   <description>
     This user action is logged when the user selects a &quot;Login not
@@ -15242,6 +15243,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="PasswordManager_ShowedHttpNotSecureExplanation">
+  <obsolete>Deprecated 5/2018 because the feature never launched.</obsolete>
   <owner>estark@chromium.org</owner>
   <description>
     The user selected the &quot;Login not secure&quot; or &quot;Form not

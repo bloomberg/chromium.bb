@@ -52,10 +52,6 @@ class TestAutofillPopupViewDelegate : public AutofillPopupViewDelegate {
     suggestions.push_back(Suggestion("", "x", "", 0));
     suggestions.push_back(Suggestion("", "", "americanExpressCC", 0));
     suggestions.push_back(Suggestion("", "x", "genericCC", 0));
-    // Http warning message.
-    suggestions.push_back(
-        Suggestion("x", "x", "httpWarning",
-                   POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE));
     return suggestions;
   }
 #if !defined(OS_ANDROID)
@@ -110,10 +106,6 @@ TEST_F(AutofillPopupLayoutModelTest, RowWidthWithoutText) {
                     .GetImageNamed(IDR_AUTOFILL_CC_GENERIC)
                     .Width(),
             layout_model()->RowWidthWithoutText(3, /* has_substext= */ true));
-  EXPECT_EQ(base_size + AutofillPopupLayoutModel::kHttpWarningNamePadding +
-                AutofillPopupLayoutModel::kPaddingAfterLeadingIcon +
-                layout_model()->GetIconImage(4).width(),
-            layout_model()->RowWidthWithoutText(4, /* has_substext= */ true));
 }
 #endif
 

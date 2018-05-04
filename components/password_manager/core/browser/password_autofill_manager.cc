@@ -224,18 +224,6 @@ void PasswordAutofillManager::OnAddPasswordFormMapping(
   login_to_password_info_[key] = fill_data;
 }
 
-autofill::Suggestion PasswordAutofillManager::CreateFormNotSecureWarning() {
-  autofill::Suggestion http_warning_suggestion(
-      l10n_util::GetStringUTF8(IDS_AUTOFILL_LOGIN_HTTP_WARNING_MESSAGE),
-      l10n_util::GetStringUTF8(IDS_AUTOFILL_HTTP_WARNING_LEARN_MORE),
-      "httpWarning", autofill::POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE);
-  if (!did_show_form_not_secure_warning_) {
-    did_show_form_not_secure_warning_ = true;
-    metrics_util::LogShowedFormNotSecureWarningOnCurrentNavigation();
-  }
-  return http_warning_suggestion;
-}
-
 void PasswordAutofillManager::OnShowPasswordSuggestions(
     int key,
     base::i18n::TextDirection text_direction,
@@ -269,34 +257,6 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
   }
 
   GURL origin = (fill_data_it->second).origin;
-  bool is_context_secure = autofill_client_->IsContextSecure() &&
-                           (!origin.is_valid() || !origin.SchemeIs("http"));
-  if (!is_context_secure && security_state::IsHttpWarningInFormEnabled()) {
-    std::string icon_str;
-
-    // Show http info icon for http sites.
-    if (origin.is_valid() && origin.SchemeIs("http")) {
-      icon_str = "httpWarning";
-    } else {
-      // Show https_invalid icon for broken https sites.
-      icon_str = "httpsInvalid";
-    }
-
-    autofill::Suggestion http_warning_suggestion(
-        l10n_util::GetStringUTF8(IDS_AUTOFILL_LOGIN_HTTP_WARNING_MESSAGE),
-        l10n_util::GetStringUTF8(IDS_AUTOFILL_HTTP_WARNING_LEARN_MORE),
-        icon_str, autofill::POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE);
-#if !defined(OS_ANDROID)
-      suggestions.insert(suggestions.begin(), autofill::Suggestion());
-      suggestions.front().frontend_id = autofill::POPUP_ITEM_ID_SEPARATOR;
-#endif
-      suggestions.insert(suggestions.begin(), http_warning_suggestion);
-
-      if (!did_show_form_not_secure_warning_) {
-        did_show_form_not_secure_warning_ = true;
-        metrics_util::LogShowedFormNotSecureWarningOnCurrentNavigation();
-      }
-  }
 
   if (ShouldShowManualFallbackForPreLollipop(
           autofill_client_->GetSyncService())) {
@@ -326,28 +286,6 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
   autofill_client_->ShowAutofillPopup(bounds,
                                       text_direction,
                                       suggestions,
-                                      weak_ptr_factory_.GetWeakPtr());
-}
-
-void PasswordAutofillManager::OnShowNotSecureWarning(
-    base::i18n::TextDirection text_direction,
-    const gfx::RectF& bounds) {
-  DCHECK(security_state::IsHttpWarningInFormEnabled());
-  // TODO(estark): Other code paths in this file don't do null checks before
-  // using |autofill_client_|. It seems that these other code paths somehow
-  // short-circuit before dereferencing |autofill_client_| in cases where it's
-  // null; it would be good to understand why/how and make a firm decision about
-  // whether |autofill_client_| is allowed to be null. Ideally we would be able
-  // to get rid of such cases so that we can enable Form-Not-Secure warnings
-  // here in all cases. https://crbug.com/699217
-  if (!autofill_client_)
-    return;
-
-  std::vector<autofill::Suggestion> suggestions;
-  autofill::Suggestion http_warning_suggestion = CreateFormNotSecureWarning();
-  suggestions.insert(suggestions.begin(), http_warning_suggestion);
-
-  autofill_client_->ShowAutofillPopup(bounds, text_direction, suggestions,
                                       weak_ptr_factory_.GetWeakPtr());
 }
 
@@ -414,8 +352,7 @@ void PasswordAutofillManager::OnPopupHidden() {
 void PasswordAutofillManager::DidSelectSuggestion(const base::string16& value,
                                                   int identifier) {
   ClearPreviewedForm();
-  if (identifier == autofill::POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE ||
-      identifier == autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY ||
+  if (identifier == autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY ||
       identifier == autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY)
     return;
   bool success =
@@ -429,9 +366,7 @@ void PasswordAutofillManager::DidAcceptSuggestion(const base::string16& value,
   autofill_client_->ExecuteCommand(identifier);
   if (identifier == autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY) {
     password_manager_driver_->UserSelectedManualGenerationOption();
-  } else if (identifier !=
-                 autofill::POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE &&
-             identifier != autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY) {
+  } else if (identifier != autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY) {
     bool success =
         FillSuggestion(form_data_key_, GetUsernameFromSuggestion(value));
     DCHECK(success);

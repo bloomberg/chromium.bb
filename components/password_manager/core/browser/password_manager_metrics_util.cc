@@ -162,19 +162,6 @@ void LogPasswordReuse(int password_length,
       PASSWORD_REUSE_PASSWORD_FIELD_DETECTED_COUNT);
 }
 
-void LogShowedHttpNotSecureExplanation() {
-  base::RecordAction(base::UserMetricsAction(
-      "PasswordManager_ShowedHttpNotSecureExplanation"));
-}
-
-void LogShowedFormNotSecureWarningOnCurrentNavigation() {
-  // Always record 'true': this is a counter of the number of times the warning
-  // is shown, to gather metrics such as the number of times the warning is
-  // shown per million page loads.
-  UMA_HISTOGRAM_BOOLEAN(
-      "PasswordManager.ShowedFormNotSecureWarningOnCurrentNavigation", true);
-}
-
 void LogContextOfShowAllSavedPasswordsShown(
     ShowAllSavedPasswordsContext context) {
   UMA_HISTOGRAM_ENUMERATION("PasswordManager.ShowAllSavedPasswordsShownContext",

@@ -88,8 +88,6 @@ class AutofillAgent : public content::RenderFrameObserver,
   void SetFocusRequiresScroll(bool require) override;
   void SetQueryPasswordSuggestion(bool required) override;
 
-  void ShowNotSecureWarning(const blink::WebInputElement& element);
-
   void FormControlElementClicked(const blink::WebFormControlElement& element,
                                  bool was_focused);
 

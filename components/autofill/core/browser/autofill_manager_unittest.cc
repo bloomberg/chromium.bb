@@ -516,11 +516,6 @@ class AutofillManagerTest : public testing::Test {
         autofill_manager_->full_card_request_.get());
   }
 
-  void SetHttpWarningEnabled() {
-    scoped_feature_list_.InitAndEnableFeature(
-        security_state::kHttpFormWarningFeature);
-  }
-
   void DisableCreditCardAutofill() {
     scoped_feature_list_.InitAndEnableFeature(
         kAutofillCreditCardAblationExperiment);
@@ -942,24 +937,6 @@ TEST_F(AutofillManagerTest, GetProfileSuggestions_EmptyValue) {
                    Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 2));
 }
 
-// Test that the HttpWarning does not appear on non-payment forms.
-TEST_F(AutofillManagerTest, GetProfileSuggestions_EmptyValueNotSecure) {
-  SetHttpWarningEnabled();
-  // Set up our form data.
-  FormData form;
-  test::CreateTestAddressFormData(&form);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
-
-  const FormFieldData& field = form.fields[0];
-  GetAutofillSuggestions(form, field);
-
-  // Test that we sent the right values to the external delegate.
-  CheckSuggestions(kDefaultPageID,
-                   Suggestion("Charles", "123 Apple St.", "", 1),
-                   Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 2));
-}
-
 // Test that we return only matching address profile suggestions when the
 // selected form field has been partially filled out.
 TEST_F(AutofillManagerTest, GetProfileSuggestions_MatchCharacter) {
@@ -1285,98 +1262,6 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_NonCCNumber) {
                               autofill_manager_->GetPackedCreditCardID(4)),
                    Suggestion("Buddy Holly", kMcSuggestion, kMasterCard,
                               autofill_manager_->GetPackedCreditCardID(5)));
-}
-
-// Test that we return a warning explaining that credit card profile suggestions
-// are unavailable when the page and the form target URL are not secure.
-TEST_F(AutofillManagerTest, GetCreditCardSuggestions_NonSecureContext) {
-  // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, /* is_https */ false, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
-
-  const FormFieldData& field = form.fields[0];
-  GetAutofillSuggestions(form, field);
-
-  // Test that we sent the right values to the external delegate.
-  CheckSuggestions(kDefaultPageID,
-                   Suggestion(l10n_util::GetStringUTF8(
-                                  IDS_AUTOFILL_WARNING_INSECURE_CONNECTION),
-                              "", "", -1));
-
-  // Clear the test credit cards and try again -- we shouldn't return a warning.
-  personal_data_.ClearCreditCards();
-  GetAutofillSuggestions(form, field);
-  // Autocomplete suggestions are queried, but not Autofill.
-  EXPECT_FALSE(external_delegate_->on_suggestions_returned_seen());
-}
-
-// Test that we return an extra "Payment not secure" warning when the page and
-// the form target URL are not secure.
-TEST_F(AutofillManagerTest,
-       GetCreditCardSuggestions_NonSecureContextWithHttpBadSwitchOn) {
-  SetHttpWarningEnabled();
-
-  // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, /* is_https */ false, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
-
-  const FormFieldData& field = form.fields[0];
-  GetAutofillSuggestions(form, field);
-
-  // Test that we sent the right values to the external delegate.
-  CheckSuggestions(
-      kDefaultPageID,
-      Suggestion(l10n_util::GetStringUTF8(
-                     IDS_AUTOFILL_CREDIT_CARD_HTTP_WARNING_MESSAGE),
-                 l10n_util::GetStringUTF8(IDS_AUTOFILL_HTTP_WARNING_LEARN_MORE),
-                 "httpWarning", POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE),
-#if !defined(OS_ANDROID)
-      Suggestion("", "", "", POPUP_ITEM_ID_SEPARATOR),
-#endif
-      Suggestion(
-          l10n_util::GetStringUTF8(IDS_AUTOFILL_WARNING_PAYMENT_DISABLED), "",
-          "", POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE));
-
-  // Clear the test credit cards and try again -- we should still show the
-  // warning.
-  personal_data_.ClearCreditCards();
-  GetAutofillSuggestions(form, field);
-  // Test that we sent the right values to the external delegate.
-  CheckSuggestions(
-      kDefaultPageID,
-      Suggestion(l10n_util::GetStringUTF8(
-                     IDS_AUTOFILL_CREDIT_CARD_HTTP_WARNING_MESSAGE),
-                 l10n_util::GetStringUTF8(IDS_AUTOFILL_HTTP_WARNING_LEARN_MORE),
-                 "httpWarning", POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE));
-}
-
-// Test that we don't show the extra "Payment not secure" warning when the page
-// and the form target URL are secure, even when the switch is on.
-TEST_F(AutofillManagerTest,
-       GetCreditCardSuggestions_SecureContextWithHttpBadSwitchOn) {
-  SetHttpWarningEnabled();
-
-  // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, /* is_https */ true, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
-
-  FormFieldData field = form.fields[1];
-  GetAutofillSuggestions(form, field);
-
-  // Test that we sent the right values to the external delegate.
-  CheckSuggestions(
-      kDefaultPageID,
-      Suggestion(std::string("Visa") + kUTF8MidlineEllipsis + "3456", "04/99",
-                 kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
-      Suggestion(std::string("Mastercard") + kUTF8MidlineEllipsis + "8765",
-                 "10/98", kMasterCard,
-                 autofill_manager_->GetPackedCreditCardID(5)));
 }
 
 // Test that we will eventually return the credit card signin promo when there

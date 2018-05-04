@@ -306,13 +306,6 @@ void ContentPasswordManagerDriver::ShowPasswordSuggestions(
       TransformToRootCoordinates(bounds));
 }
 
-void ContentPasswordManagerDriver::ShowNotSecureWarning(
-    base::i18n::TextDirection text_direction,
-    const gfx::RectF& bounds) {
-  password_autofill_manager_.OnShowNotSecureWarning(
-      text_direction, TransformToRootCoordinates(bounds));
-}
-
 void ContentPasswordManagerDriver::ShowManualFallbackSuggestion(
     base::i18n::TextDirection text_direction,
     const gfx::RectF& bounds) {

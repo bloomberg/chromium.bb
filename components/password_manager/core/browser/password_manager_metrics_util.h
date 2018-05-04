@@ -320,14 +320,6 @@ void LogPasswordReuse(int password_length,
                       int number_matches,
                       bool password_field_detected);
 
-// Log when the user selects the "Login not secure" warning in the password
-// autofill dropdown to show more information about the warning.
-void LogShowedHttpNotSecureExplanation();
-
-// Log that the Form-Not-Secure warning was shown. Should be called at most once
-// per main-frame navigation.
-void LogShowedFormNotSecureWarningOnCurrentNavigation();
-
 // Log the context in which the "Show all saved passwords" fallback was shown.
 void LogContextOfShowAllSavedPasswordsShown(
     ShowAllSavedPasswordsContext context);

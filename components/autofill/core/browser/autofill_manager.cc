@@ -180,23 +180,6 @@ bool IsCreditCardExpirationType(ServerFieldType type) {
          type == CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR;
 }
 
-// Create http bad warning message at the top of autofill popup list showing
-// "Payment not secure" when users are on http sites or broken https sites.
-Suggestion CreateHttpWarningMessageSuggestionItem(const GURL& source_url) {
-  Suggestion cc_field_http_warning_suggestion(
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_CREDIT_CARD_HTTP_WARNING_MESSAGE));
-  cc_field_http_warning_suggestion.frontend_id =
-      POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE;
-  cc_field_http_warning_suggestion.label =
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_HTTP_WARNING_LEARN_MORE);
-  cc_field_http_warning_suggestion.icon =
-      (source_url.is_valid() && source_url.SchemeIs("http"))
-          ? base::ASCIIToUTF16("httpWarning")
-          : base::ASCIIToUTF16("httpsInvalid");
-
-  return cc_field_http_warning_suggestion;
-}
-
 }  // namespace
 
 AutofillManager::FillingContext::FillingContext() = default;
@@ -566,8 +549,6 @@ void AutofillManager::OnQueryFormFieldAutofillImpl(
       !IsFormNonSecure(form) ||
       !base::FeatureList::IsEnabled(
           features::kAutofillRequireSecureCreditCardContext);
-  const bool is_http_warning_enabled =
-      security_state::IsHttpWarningInFormEnabled();
 
   // TODO(rogerm): Early exit here on !driver()->RendererIsAvailable()?
   // We skip populating autofill data, but might generate warnings and or
@@ -614,9 +595,7 @@ void AutofillManager::OnQueryFormFieldAutofillImpl(
         // Autofill is disabled for a website. The string is different if the
         // credit card autofill HTTP warning experiment is enabled.
         Suggestion warning_suggestion(l10n_util::GetStringUTF16(
-            is_http_warning_enabled
-                ? IDS_AUTOFILL_WARNING_PAYMENT_DISABLED
-                : IDS_AUTOFILL_WARNING_INSECURE_CONNECTION));
+            IDS_AUTOFILL_WARNING_INSECURE_CONNECTION));
         warning_suggestion.frontend_id =
             POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE;
         suggestions.assign(1, warning_suggestion);
@@ -653,21 +632,6 @@ void AutofillManager::OnQueryFormFieldAutofillImpl(
         }
       }
     }
-  }
-
-  // Show a "Payment not secure" message.
-  if (!is_context_secure && is_filling_credit_card && is_http_warning_enabled) {
-#if !defined(OS_ANDROID)
-    if (!suggestions.empty()) {
-      suggestions.insert(suggestions.begin(), Suggestion());
-      suggestions.front().frontend_id = POPUP_ITEM_ID_SEPARATOR;
-    }
-#endif
-
-    suggestions.insert(
-        suggestions.begin(),
-        CreateHttpWarningMessageSuggestionItem(
-            form_structure ? form_structure->source_url() : GURL::EmptyGURL()));
   }
 
   // If there are no Autofill suggestions, consider showing Autocomplete

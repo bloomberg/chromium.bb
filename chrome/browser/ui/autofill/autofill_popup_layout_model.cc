@@ -122,18 +122,14 @@ int AutofillPopupLayoutModel::GetDesiredPopupWidth() const {
 int AutofillPopupLayoutModel::RowWidthWithoutText(int row,
                                                   bool has_subtext) const {
   std::vector<autofill::Suggestion> suggestions = delegate_->GetSuggestions();
-  const bool is_warning_message =
-      (suggestions[row].frontend_id ==
-       POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE);
   int row_size = 2 * (kEndPadding + kPopupBorderThickness);
   if (has_subtext)
-    row_size += is_warning_message ? kHttpWarningNamePadding : kNamePadding;
+    row_size += kNamePadding;
 
   // Add the Autofill icon size, if required.
   const base::string16& icon = suggestions[row].icon;
   if (!icon.empty()) {
-    row_size += GetIconImage(row).width() +
-                (is_warning_message ? kPaddingAfterLeadingIcon : kIconPadding);
+    row_size += GetIconImage(row).width() + kIconPadding;
   }
   return row_size;
 }
@@ -170,7 +166,6 @@ const gfx::FontList& AutofillPopupLayoutModel::GetValueFontListForRow(
     case POPUP_ITEM_ID_CREATE_HINT:
     case POPUP_ITEM_ID_SCAN_CREDIT_CARD:
     case POPUP_ITEM_ID_SEPARATOR:
-    case POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE:
     case POPUP_ITEM_ID_TITLE:
     case POPUP_ITEM_ID_PASSWORD_ENTRY:
     case POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY:
@@ -187,11 +182,6 @@ const gfx::FontList& AutofillPopupLayoutModel::GetValueFontListForRow(
 
 const gfx::FontList& AutofillPopupLayoutModel::GetLabelFontListForRow(
     size_t index) const {
-  std::vector<autofill::Suggestion> suggestions = delegate_->GetSuggestions();
-  if (suggestions[index].frontend_id ==
-      POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE)
-    return normal_font_list_;
-
   return smaller_font_list_;
 }
 
@@ -199,8 +189,6 @@ ui::NativeTheme::ColorId AutofillPopupLayoutModel::GetValueFontColorIDForRow(
     size_t index) const {
   std::vector<autofill::Suggestion> suggestions = delegate_->GetSuggestions();
   switch (suggestions[index].frontend_id) {
-    case POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE:
-      return ui::NativeTheme::kColorId_AlertSeverityHigh;
     case POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE:
       return ui::NativeTheme::kColorId_ResultsTableNormalDimmedText;
     default:
@@ -299,8 +287,7 @@ unsigned int AutofillPopupLayoutModel::GetDropdownItemHeight() const {
 }
 
 bool AutofillPopupLayoutModel::IsIconAtStart(int frontend_id) const {
-  return frontend_id == POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE ||
-      (is_credit_card_popup_ && IsIconInCreditCardPopupAtStart());
+  return (is_credit_card_popup_ && IsIconInCreditCardPopupAtStart());
 }
 
 unsigned int AutofillPopupLayoutModel::GetMargin() const {

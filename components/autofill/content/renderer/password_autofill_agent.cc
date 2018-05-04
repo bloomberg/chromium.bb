@@ -945,16 +945,6 @@ bool PasswordAutofillAgent::FindPasswordInfoForElement(
   return true;
 }
 
-bool PasswordAutofillAgent::ShouldShowNotSecureWarning(
-    const blink::WebInputElement& element) {
-  // Do not show a warning if the feature is disabled or the context is secure.
-  return security_state::IsHttpWarningInFormEnabled() &&
-         !content::IsOriginSecure(
-             url::Origin(
-                 render_frame()->GetWebFrame()->Top()->GetSecurityOrigin())
-                 .GetURL());
-}
-
 bool PasswordAutofillAgent::IsUsernameOrPasswordField(
     const blink::WebInputElement& element) {
   // Note: A site may use a Password field to collect a CVV or a Credit Card
@@ -1013,13 +1003,6 @@ bool PasswordAutofillAgent::ShowSuggestions(
           ShowManualFallbackSuggestion(element)) {
         return true;
       }
-
-      if (ShouldShowNotSecureWarning(element)) {
-        AutofillAgent* agent = autofill_agent_.get();
-        if (agent)
-          agent->ShowNotSecureWarning(element);
-        return true;
-      }
     }
     return false;
   }
@@ -1062,16 +1045,6 @@ bool PasswordAutofillAgent::ShowSuggestions(
   return ShowSuggestionPopup(*password_info, element,
                              show_all && !element.IsPasswordFieldForAutofill(),
                              element.IsPasswordFieldForAutofill());
-}
-
-void PasswordAutofillAgent::ShowNotSecureWarning(
-    const blink::WebInputElement& element) {
-  FormData form;
-  FormFieldData field;
-  form_util::FindFormAndFieldForFormControlElement(element, &form, &field);
-  GetPasswordManagerDriver()->ShowNotSecureWarning(
-      field.text_direction,
-      render_frame()->GetRenderView()->ElementBoundsInWindow(element));
 }
 
 bool PasswordAutofillAgent::FrameCanAccessPasswordManager() {

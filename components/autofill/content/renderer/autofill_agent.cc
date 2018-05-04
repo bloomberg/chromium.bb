@@ -560,14 +560,6 @@ void AutofillAgent::ShowInitialPasswordAccountSuggestions(
     ShowSuggestions(element, options);
 }
 
-void AutofillAgent::ShowNotSecureWarning(
-    const blink::WebInputElement& element) {
-  if (is_generation_popup_possibly_visible_)
-    return;
-  password_autofill_agent_->ShowNotSecureWarning(element);
-  is_popup_possibly_visible_ = true;
-}
-
 bool AutofillAgent::CollectFormlessElements(FormData* output) {
   if (render_frame() == nullptr || render_frame()->GetWebFrame() == nullptr)
     return false;

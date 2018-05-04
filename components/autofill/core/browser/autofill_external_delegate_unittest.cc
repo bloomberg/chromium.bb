@@ -495,13 +495,11 @@ TEST_F(AutofillExternalDelegateUnitTest,
   // This should call ShowAutofillPopup.
   std::vector<Suggestion> suggestions;
   suggestions.push_back(Suggestion());
-  suggestions[0].frontend_id = POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE;
-  suggestions.push_back(Suggestion());
-  suggestions[1].frontend_id =
+  suggestions[0].frontend_id =
       POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE;
   suggestions.push_back(Suggestion());
-  suggestions[2].value = ASCIIToUTF16("Rick");
-  suggestions[2].frontend_id = POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY;
+  suggestions[1].value = ASCIIToUTF16("Rick");
+  suggestions[1].frontend_id = POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY;
   external_delegate_->OnSuggestionsReturned(kQueryId, suggestions);
 }
 
@@ -673,17 +671,6 @@ TEST_F(AutofillExternalDelegateUnitTest, SigninPromoMenuItem) {
   EXPECT_CALL(autofill_client_, HideAutofillPopup());
   external_delegate_->DidAcceptSuggestion(
       base::string16(), POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO, 0);
-}
-
-// Test that autofill client will open the security indicator help center url
-// after the user accepted the http warning message suggestion item.
-TEST_F(AutofillExternalDelegateUnitTest, HttpWarningMessageItem) {
-  EXPECT_CALL(
-      autofill_client_,
-      ExecuteCommand(autofill::POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE));
-  EXPECT_CALL(autofill_client_, HideAutofillPopup());
-  external_delegate_->DidAcceptSuggestion(
-      base::string16(), POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE, 0);
 }
 
 MATCHER_P(CreditCardMatches, card, "") {

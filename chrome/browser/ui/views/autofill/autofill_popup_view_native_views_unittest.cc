@@ -39,7 +39,6 @@ const struct TypeClicks kClickTestCase[] = {
     {autofill::POPUP_ITEM_ID_SCAN_CREDIT_CARD, 1},
     {autofill::POPUP_ITEM_ID_TITLE, 1},
     {autofill::POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO, 1},
-    {autofill::POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE, 1},
     {autofill::POPUP_ITEM_ID_USERNAME_ENTRY, 1},
     {autofill::POPUP_ITEM_ID_CREATE_HINT, 1},
     {autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY, 1},
