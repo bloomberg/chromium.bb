@@ -3253,6 +3253,15 @@ const char kAutofillCreditCardUploadDescription[] =
 
 #endif  // defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
 
+#if defined(OS_ANDROID)
+
+const char kDisplayCutoutAPIName[] =
+    "Enable support for the Display Cutout API";
+const char kDisplayCutoutAPIDescription[] =
+    "Enables developers to support devices that have a display cutout.";
+
+#endif  // defined(OS_ANDROID)
+
 // ============================================================================
 // Don't just add flags to the end, put them in the right section in
 // alphabetical order just like the header file.
