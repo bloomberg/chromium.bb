@@ -459,7 +459,10 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&WebRequestProxyingURLLoaderFactory::StartProxying, proxy,
-                     frame->GetProcess()->GetID(), frame->GetRoutingID(),
+                     // Match the behavior of the WebRequestInfo constructor
+                     // which takes a net::URLRequest*.
+                     is_navigation ? -1 : frame->GetProcess()->GetID(),
+                     is_navigation ? MSG_ROUTING_NONE : frame->GetRoutingID(),
                      std::move(navigation_ui_data), std::move(proxied_request),
                      std::move(target_factory_info),
                      base::BindOnce(&WebRequestAPI::RemoveProxyThreadSafe,
