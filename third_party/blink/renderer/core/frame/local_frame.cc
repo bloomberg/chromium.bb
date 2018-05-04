@@ -330,8 +330,14 @@ void LocalFrame::Reload(FrameLoadType load_type,
 }
 
 void LocalFrame::Detach(FrameDetachType type) {
-  // Note that detach() can be re-entered, so it's not possible to
-  // DCHECK(isAttached()) here.
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  // BEGIN RE-ENTRANCY SAFE BLOCK
+  // Starting here, the code must be safe against re-entrancy. Dispatching
+  // events, et cetera can run Javascript, which can reenter Detach().
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  // Detach() can be re-entered, this can't simply DCHECK(IsAttached()).
+  DCHECK_NE(lifecycle_.GetState(), FrameLifecycle::kDetached);
   lifecycle_.AdvanceTo(FrameLifecycle::kDetaching);
 
   if (IsLocalRoot()) {
@@ -380,6 +386,14 @@ void LocalFrame::Detach(FrameDetachType type) {
   ScriptForbiddenScope forbid_script;
   if (!Client())
     return;
+
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  // END RE-ENTRANCY SAFE BLOCK
+  // Past this point, no script should be executed. If this method was
+  // re-entered, then check for a non-null Client() above should have already
+  // returned.
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  DCHECK_NE(lifecycle_.GetState(), FrameLifecycle::kDetached);
 
   // TODO(crbug.com/729196): Trace why LocalFrameView::DetachFromLayout crashes.
   CHECK(!view_->IsAttached());

@@ -22,22 +22,27 @@ namespace blink {
 namespace {
 
 TEST(PresentationAvailabilityTest, NoPageVisibilityChangeAfterDetach) {
-  V8TestingScope scope;
-  WTF::Vector<KURL> urls;
-  urls.push_back(URLTestHelpers::ToKURL("https://example.com"));
-  urls.push_back(URLTestHelpers::ToKURL("https://another.com"));
+  Page* page = nullptr;
+  {
+    V8TestingScope scope;
+    WTF::Vector<KURL> urls;
+    urls.push_back(URLTestHelpers::ToKURL("https://example.com"));
+    urls.push_back(URLTestHelpers::ToKURL("https://another.com"));
 
-  Persistent<PresentationAvailabilityProperty> resolver =
-      new PresentationAvailabilityProperty(
-          scope.GetExecutionContext(), nullptr,
-          PresentationAvailabilityProperty::kReady);
-  Persistent<PresentationAvailability> availability =
-      PresentationAvailability::Take(resolver, urls, false);
+    Persistent<PresentationAvailabilityProperty> resolver =
+        new PresentationAvailabilityProperty(
+            scope.GetExecutionContext(), nullptr,
+            PresentationAvailabilityProperty::kReady);
+    Persistent<PresentationAvailability> availability =
+        PresentationAvailability::Take(resolver, urls, false);
 
-  // These two calls should not crash.
-  scope.GetFrame().Detach(FrameDetachType::kRemove);
-  scope.GetPage().SetVisibilityState(mojom::PageVisibilityState::kHidden,
-                                     false);
+    page = &scope.GetPage();
+  }
+  // This should not crash.
+  // TODO(dcheng): Why are we calling functions on Page after it's been closed?
+  // This case doesn't seem like it should be reachable as we should be shutting
+  // down communication from the embedder on context detach.
+  page->SetVisibilityState(mojom::PageVisibilityState::kHidden, false);
 }
 
 }  // anonymous namespace
