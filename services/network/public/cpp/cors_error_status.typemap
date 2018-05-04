@@ -4,7 +4,7 @@
 
 mojom = "//services/network/public/mojom/url_loader.mojom"
 public_headers = [ "//services/network/public/cpp/cors/cors_error_status.h" ]
-traits_headers = [ "//services/network/public/cpp/network_param_ipc_traits.h" ]
+traits_headers = [ "//services/network/public/cpp/network_ipc_param_traits.h" ]
 deps = [
   "//net",
 ]
