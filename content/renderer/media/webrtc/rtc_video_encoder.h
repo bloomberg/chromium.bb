@@ -59,6 +59,7 @@ class CONTENT_EXPORT RTCVideoEncoder : public webrtc::VideoEncoder {
   int32_t SetChannelParameters(uint32_t packet_loss, int64_t rtt) override;
   int32_t SetRates(uint32_t new_bit_rate, uint32_t frame_rate) override;
   bool SupportsNativeHandle() const override;
+  const char* ImplementationName() const override;
 
  private:
   class Impl;
