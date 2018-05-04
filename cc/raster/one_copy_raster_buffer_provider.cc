@@ -77,7 +77,6 @@ OneCopyRasterBufferProvider::RasterBufferImpl::RasterBufferImpl(
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     const ResourcePool::InUsePoolResource& in_use_resource,
     OneCopyGpuBacking* backing,
-    const gpu::SyncToken& before_raster_sync_token,
     uint64_t previous_content_id)
     : client_(client),
       backing_(backing),
@@ -85,7 +84,7 @@ OneCopyRasterBufferProvider::RasterBufferImpl::RasterBufferImpl(
       resource_format_(in_use_resource.format()),
       color_space_(in_use_resource.color_space()),
       previous_content_id_(previous_content_id),
-      before_raster_sync_token_(before_raster_sync_token),
+      before_raster_sync_token_(backing->returned_sync_token),
       mailbox_(backing->mailbox),
       mailbox_texture_target_(backing->texture_target),
       mailbox_texture_is_overlay_candidate_(backing->overlay_candidate),
@@ -154,16 +153,13 @@ OneCopyRasterBufferProvider::OneCopyRasterBufferProvider(
   DCHECK(worker_context_provider);
 }
 
-OneCopyRasterBufferProvider::~OneCopyRasterBufferProvider() {
-}
+OneCopyRasterBufferProvider::~OneCopyRasterBufferProvider() {}
 
 std::unique_ptr<RasterBuffer>
 OneCopyRasterBufferProvider::AcquireBufferForRaster(
     const ResourcePool::InUsePoolResource& resource,
     uint64_t resource_content_id,
     uint64_t previous_content_id) {
-  gpu::SyncToken before_raster_sync_token;
-  bool new_resource = false;
   if (!resource.gpu_backing()) {
     auto backing = std::make_unique<OneCopyGpuBacking>();
     backing->compositor_context_provider = compositor_context_provider_;
@@ -180,22 +176,19 @@ OneCopyRasterBufferProvider::AcquireBufferForRaster(
     backing->mailbox = gpu::Mailbox::Generate();
     gl->ProduceTextureDirectCHROMIUM(backing->texture_id,
                                      backing->mailbox.name);
-    before_raster_sync_token =
+    // Save a sync token in the backing so that we always wait on it even if
+    // this task is cancelled between being scheduled and running.
+    backing->returned_sync_token =
         LayerTreeResourceProvider::GenerateSyncTokenHelper(gl);
 
     resource.set_gpu_backing(std::move(backing));
-    new_resource = true;
   }
   OneCopyGpuBacking* backing =
       static_cast<OneCopyGpuBacking*>(resource.gpu_backing());
-  if (!new_resource)
-    before_raster_sync_token = backing->returned_sync_token;
-
   // TODO(danakj): If resource_content_id != 0, we only need to copy/upload
   // the dirty rect.
   return std::make_unique<RasterBufferImpl>(
-      this, gpu_memory_buffer_manager_, resource, backing,
-      before_raster_sync_token, previous_content_id);
+      this, gpu_memory_buffer_manager_, resource, backing, previous_content_id);
 }
 
 void OneCopyRasterBufferProvider::Flush() {

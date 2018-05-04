@@ -292,7 +292,6 @@ GpuRasterBufferProvider::RasterBufferImpl::RasterBufferImpl(
     GpuRasterBufferProvider* client,
     const ResourcePool::InUsePoolResource& in_use_resource,
     GpuRasterBacking* backing,
-    const gpu::SyncToken& before_raster_sync_token,
     bool resource_has_previous_content)
     : client_(client),
       backing_(backing),
@@ -300,7 +299,7 @@ GpuRasterBufferProvider::RasterBufferImpl::RasterBufferImpl(
       resource_format_(in_use_resource.format()),
       color_space_(in_use_resource.color_space()),
       resource_has_previous_content_(resource_has_previous_content),
-      before_raster_sync_token_(before_raster_sync_token),
+      before_raster_sync_token_(backing->returned_sync_token),
       mailbox_(backing->mailbox),
       texture_target_(backing->texture_target),
       texture_is_overlay_candidate_(backing->overlay_candidate),
@@ -368,8 +367,6 @@ std::unique_ptr<RasterBuffer> GpuRasterBufferProvider::AcquireBufferForRaster(
     const ResourcePool::InUsePoolResource& resource,
     uint64_t resource_content_id,
     uint64_t previous_content_id) {
-  gpu::SyncToken before_raster_sync_token;
-  bool new_resource = false;
   if (!resource.gpu_backing()) {
     auto backing = std::make_unique<GpuRasterBacking>();
     backing->compositor_context_provider = compositor_context_provider_;
@@ -386,21 +383,18 @@ std::unique_ptr<RasterBuffer> GpuRasterBufferProvider::AcquireBufferForRaster(
     backing->mailbox = gpu::Mailbox::Generate();
     gl->ProduceTextureDirectCHROMIUM(backing->texture_id,
                                      backing->mailbox.name);
-    before_raster_sync_token =
+    // Save a sync token in the backing so that we always wait on it even if
+    // this task is cancelled between being scheduled and running.
+    backing->returned_sync_token =
         LayerTreeResourceProvider::GenerateSyncTokenHelper(gl);
 
     resource.set_gpu_backing(std::move(backing));
-    new_resource = true;
   }
   GpuRasterBacking* backing =
       static_cast<GpuRasterBacking*>(resource.gpu_backing());
-  if (!new_resource)
-    before_raster_sync_token = backing->returned_sync_token;
-
   bool resource_has_previous_content =
       resource_content_id && resource_content_id == previous_content_id;
   return std::make_unique<RasterBufferImpl>(this, resource, backing,
-                                            before_raster_sync_token,
                                             resource_has_previous_content);
 }
 
