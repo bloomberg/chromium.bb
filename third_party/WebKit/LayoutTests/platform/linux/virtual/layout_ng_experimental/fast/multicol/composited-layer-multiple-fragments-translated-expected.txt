@@ -19,7 +19,7 @@ layer at (8,72) size 20x180 backgroundClip at (0,0) size 28x132 clip at (0,0) si
       LayoutBR {BR} at (0,0) size 0x0
       LayoutBR {BR} at (0,0) size 0x0
     LayoutNGBlockFlow {DIV} at (0,160) size 20x20 [bgcolor=#FF0000]
-layer at (28,112) size 20x60 backgroundClip at (0,0) size 28x132 clip at (0,0) size 28x132
+layer at (28,112) size 20x60
   LayoutNGBlockFlow {DIV} at (0,100) size 20x60
     LayoutNGBlockFlow {DIV} at (0,0) size 20x20 [bgcolor=#008000]
     LayoutNGBlockFlow (anonymous) at (0,20) size 20x20
