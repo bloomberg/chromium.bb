@@ -10,7 +10,7 @@
 #include "ios/chrome/browser/ui/download/download_manager_animation_constants.h"
 #import "ios/chrome/browser/ui/download/download_manager_state_view.h"
 #import "ios/chrome/browser/ui/download/radial_progress_view.h"
-#import "ios/chrome/browser/ui/util/named_guide.h"
+#import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/images/branded_image_provider.h"
@@ -23,8 +23,6 @@
 #endif
 
 namespace {
-// Layout Guide name for action button UILayoutGuide.
-GuideName* const kActionButtonGuide = @"kDownloadManagerActionButtonGuide";
 
 // Additional left margin for close button.
 const CGFloat kCloseButtonLeftMargin = 17;
@@ -102,6 +100,9 @@ NSString* GetSizeString(long long size_in_bytes) {
 // self.closeButton or to self.actionButton (when visible).
 @property(nonatomic) NSLayoutConstraint* statusLabelTrailingConstraint;
 
+// UILayoutGuide for action button. Used in delegate callbacks.
+@property(nonatomic) UILayoutGuide* actionButtonGuide;
+
 @end
 
 @implementation DownloadManagerViewController
@@ -122,6 +123,7 @@ NSString* GetSizeString(long long size_in_bytes) {
 @synthesize installDriveControlsRowTrailingConstraint =
     _installDriveControlsRowTrailingConstraint;
 @synthesize statusLabelTrailingConstraint = _statusLabelTrailingConstraint;
+@synthesize actionButtonGuide = _actionButtonGuide;
 
 #pragma mark - UIViewController overrides
 
@@ -141,10 +143,8 @@ NSString* GetSizeString(long long size_in_bytes) {
   [self.installDriveControlsRow addSubview:self.installDriveLabel];
   [self.installDriveControlsRow addSubview:self.horizontalLine];
 
-  NamedGuide* actionButtonGuide =
-      [[NamedGuide alloc] initWithName:kActionButtonGuide];
-  [self.view addLayoutGuide:actionButtonGuide];
-  actionButtonGuide.constrainedView = self.actionButton;
+  self.actionButtonGuide = [[UILayoutGuide alloc] init];
+  [self.view addLayoutGuide:self.actionButtonGuide];
 }
 
 - (void)updateViewConstraints {
@@ -285,6 +285,9 @@ NSString* GetSizeString(long long size_in_bytes) {
     [horizontalLine.trailingAnchor
         constraintEqualToAnchor:installDriveRow.trailingAnchor],
   ]];
+
+  // constraint actionButtonGuide to action button.
+  AddSameConstraints(self.actionButtonGuide, actionButton);
 
   [self updateConstraintsForTraitCollection:self.traitCollection];
 
@@ -537,10 +540,8 @@ NSString* GetSizeString(long long size_in_bytes) {
       SEL selector = @selector
           (downloadManagerViewController:presentOpenInMenuWithLayoutGuide:);
       if ([_delegate respondsToSelector:selector]) {
-        UILayoutGuide* guide =
-            [NamedGuide guideWithName:kActionButtonGuide view:self.view];
         [_delegate downloadManagerViewController:self
-                presentOpenInMenuWithLayoutGuide:guide];
+                presentOpenInMenuWithLayoutGuide:self.actionButtonGuide];
       }
       break;
     }
