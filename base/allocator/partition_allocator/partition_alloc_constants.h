@@ -5,6 +5,8 @@
 #ifndef BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_ALLOC_CONSTANTS_H_
 #define BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_ALLOC_CONSTANTS_H_
 
+#include <limits.h>
+
 #include "base/allocator/partition_allocator/page_allocator_constants.h"
 #include "base/bits.h"
 #include "base/logging.h"
