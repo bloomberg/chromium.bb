@@ -455,21 +455,16 @@ void WidgetInputHandlerManager::DidHandleInputEventAndOverscroll(
     const ui::LatencyInfo& latency_info,
     std::unique_ptr<ui::DidOverscrollParams> overscroll_params) {
   InputEventAckState ack_state = InputEventDispositionToAck(event_disposition);
-  switch (ack_state) {
-    case INPUT_EVENT_ACK_STATE_CONSUMED:
-      main_thread_scheduler_->DidHandleInputEventOnCompositorThread(
-          *input_event, blink::scheduler::WebMainThreadScheduler::
-                            InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
-      break;
-    case INPUT_EVENT_ACK_STATE_NOT_CONSUMED:
-    case INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING_DUE_TO_FLING:
-      main_thread_scheduler_->DidHandleInputEventOnCompositorThread(
-          *input_event, blink::scheduler::WebMainThreadScheduler::
-                            InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
-      break;
-    default:
-      break;
+  if (ack_state == INPUT_EVENT_ACK_STATE_CONSUMED) {
+    main_thread_scheduler_->DidHandleInputEventOnCompositorThread(
+        *input_event, blink::scheduler::WebMainThreadScheduler::
+                          InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
+  } else if (MainThreadEventQueue::IsForwardedAndSchedulerKnown(ack_state)) {
+    main_thread_scheduler_->DidHandleInputEventOnCompositorThread(
+        *input_event, blink::scheduler::WebMainThreadScheduler::
+                          InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
   }
+
   if (ack_state == INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING ||
       ack_state == INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING_DUE_TO_FLING ||
       ack_state == INPUT_EVENT_ACK_STATE_NOT_CONSUMED) {
