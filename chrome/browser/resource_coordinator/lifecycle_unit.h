@@ -14,7 +14,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/resource_coordinator/discard_reason.h"
 #include "content/public/browser/visibility.h"
-#include "services/resource_coordinator/public/mojom/lifecycle.mojom.h"
 
 namespace resource_coordinator {
 
@@ -27,6 +26,13 @@ class TabLifecycleUnitExternal;
 // use any system resource.
 class LifecycleUnit {
  public:
+  enum class State {
+    // The LifecycleUnit is using system resources.
+    LOADED,
+    // The LifecycleUnit is not using system resources.
+    DISCARDED,
+  };
+
   // Used to sort LifecycleUnit by importance. The most important LifecycleUnit
   // has the greatest SortKey.
   struct SortKey {
@@ -72,7 +78,7 @@ class LifecycleUnit {
   virtual SortKey GetSortKey() const = 0;
 
   // Returns the current state of this LifecycleUnit.
-  virtual mojom::LifecycleState GetState() const = 0;
+  virtual State GetState() const = 0;
 
   // Returns the current visibility of this LifecycleUnit.
   virtual content::Visibility GetVisibility() const = 0;
@@ -80,8 +86,8 @@ class LifecycleUnit {
   // Returns the last time that the visibility of the LifecycleUnit changed.
   virtual base::TimeTicks GetLastVisibilityChangeTime() const = 0;
 
-  // Request that the LifecycleUnit be frozen, return true if the request is
-  // successfully sent.
+  // Freezes this LifecycleUnit, i.e. prevents it from using the CPU. Returns
+  // true on success.
   virtual bool Freeze() = 0;
 
   // Returns the estimated number of kilobytes that would be freed if this

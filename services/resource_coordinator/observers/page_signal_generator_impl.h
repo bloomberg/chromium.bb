@@ -126,11 +126,6 @@ class PageSignalGeneratorImpl : public CoordinationUnitGraphObserver,
   void UpdateLoadIdleStateProcess(
       const ProcessCoordinationUnitImpl* process_cu);
 
-  // This method is called when a property affecting the lifecycle state is
-  // observed.
-  void UpdateLifecycleState(const PageCoordinationUnitImpl* page_cu,
-                            mojom::LifecycleState state);
-
   // Helper function for transitioning to the final state.
   void TransitionToLoadedAndIdle(const PageCoordinationUnitImpl* page_cu);
 

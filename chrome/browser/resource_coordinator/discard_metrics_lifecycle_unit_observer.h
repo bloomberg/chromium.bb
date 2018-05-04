@@ -19,9 +19,7 @@ class DiscardMetricsLifecycleUnitObserver : public LifecycleUnitObserver {
   ~DiscardMetricsLifecycleUnitObserver() override;
 
   // LifecycleUnitObserver:
-  void OnLifecycleUnitStateChanged(
-      LifecycleUnit* lifecycle_unit,
-      mojom::LifecycleState previous_state) override;
+  void OnLifecycleUnitStateChanged(LifecycleUnit* lifecycle_unit) override;
   void OnLifecycleUnitDestroyed(LifecycleUnit* lifecycle_unit) override;
 
  private:

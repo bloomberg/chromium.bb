@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_source_base.h"
-#include "chrome/browser/resource_coordinator/page_signal_receiver.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_tab_strip_tracker.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
@@ -29,7 +28,6 @@ class TabLifecycleUnitExternal;
 // Creates and destroys LifecycleUnits as tabs are created and destroyed.
 class TabLifecycleUnitSource : public BrowserListObserver,
                                public LifecycleUnitSourceBase,
-                               public PageSignalObserver,
                                public TabStripModelObserver {
  public:
   TabLifecycleUnitSource();
@@ -95,10 +93,6 @@ class TabLifecycleUnitSource : public BrowserListObserver,
   // BrowserListObserver:
   void OnBrowserSetLastActive(Browser* browser) override;
   void OnBrowserNoLongerActive(Browser* browser) override;
-
-  // PageSignalObserver:
-  void OnLifecycleStateChanged(content::WebContents* web_contents,
-                               mojom::LifecycleState state) override;
 
   // Tracks the BrowserList and all TabStripModels.
   BrowserTabStripTracker browser_tab_strip_tracker_;

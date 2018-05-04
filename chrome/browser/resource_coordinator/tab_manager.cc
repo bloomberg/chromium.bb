@@ -119,7 +119,7 @@ std::unique_ptr<base::trace_event::ConvertableToTraceFormat> DataAsTraceValue(
 int GetNumLoadedLifecycleUnits(LifecycleUnitSet lifecycle_unit_set) {
   int num_loaded_lifecycle_units = 0;
   for (auto* lifecycle_unit : lifecycle_unit_set)
-    if (lifecycle_unit->GetState() != mojom::LifecycleState::kDiscarded)
+    if (lifecycle_unit->GetState() == LifecycleUnit::State::LOADED)
       num_loaded_lifecycle_units++;
   return num_loaded_lifecycle_units;
 }
@@ -1026,13 +1026,11 @@ void TabManager::UpdateProactiveDiscardTimerIfNecessary() {
           next_to_discard, this));
 }
 
-void TabManager::OnLifecycleUnitStateChanged(
-    LifecycleUnit* lifecycle_unit,
-    mojom::LifecycleState previous_state) {
-  if (lifecycle_unit->GetState() == mojom::LifecycleState::kDiscarded)
-    num_loaded_lifecycle_units_--;
-  else if (previous_state == mojom::LifecycleState::kDiscarded)
+void TabManager::OnLifecycleUnitStateChanged(LifecycleUnit* lifecycle_unit) {
+  if (lifecycle_unit->GetState() == LifecycleUnit::State::LOADED)
     num_loaded_lifecycle_units_++;
+  else
+    num_loaded_lifecycle_units_--;
 
   DCHECK_EQ(num_loaded_lifecycle_units_,
             GetNumLoadedLifecycleUnits(lifecycle_units_));
@@ -1047,7 +1045,7 @@ void TabManager::OnLifecycleUnitVisibilityChanged(
 }
 
 void TabManager::OnLifecycleUnitDestroyed(LifecycleUnit* lifecycle_unit) {
-  if (lifecycle_unit->GetState() != mojom::LifecycleState::kDiscarded)
+  if (lifecycle_unit->GetState() == LifecycleUnit::State::LOADED)
     num_loaded_lifecycle_units_--;
   lifecycle_units_.erase(lifecycle_unit);
 
@@ -1059,7 +1057,8 @@ void TabManager::OnLifecycleUnitDestroyed(LifecycleUnit* lifecycle_unit) {
 
 void TabManager::OnLifecycleUnitCreated(LifecycleUnit* lifecycle_unit) {
   lifecycle_units_.insert(lifecycle_unit);
-  if (lifecycle_unit->GetState() != mojom::LifecycleState::kDiscarded)
+
+  if (lifecycle_unit->GetState() == LifecycleUnit::State::LOADED)
     num_loaded_lifecycle_units_++;
 
   // Add an observer to be notified of destruction.
