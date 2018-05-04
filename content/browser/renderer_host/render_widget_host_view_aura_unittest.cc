@@ -3390,7 +3390,6 @@ TEST_F(RenderWidgetHostViewAuraTest, DISABLED_Resize) {
       root_window->GetHost()->compositor());
   ViewHostMsg_ResizeOrRepaint_ACK_Params update_params;
   update_params.view_size = size1;
-  update_params.flags = ViewHostMsg_ResizeOrRepaint_ACK_Flags::IS_RESIZE_ACK;
   widget_host_->OnMessageReceived(ViewHostMsg_ResizeOrRepaint_ACK(
       widget_host_->GetRoutingID(), update_params));
   sink_->ClearMessages();

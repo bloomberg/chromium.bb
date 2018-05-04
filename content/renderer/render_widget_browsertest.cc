@@ -34,8 +34,8 @@ class RenderWidgetTest : public RenderViewTest {
     widget()->GetCompositionRange(range);
   }
 
-  bool next_paint_is_resize_ack() {
-    return widget()->next_paint_is_resize_ack();
+  bool needs_visual_properties_ack() {
+    return widget()->needs_visual_properties_ack();
   }
 
   blink::WebInputMethodController* GetInputMethodController() {
@@ -64,15 +64,12 @@ TEST_F(RenderWidgetTest, OnSynchronizeVisualProperties) {
   visual_properties.top_controls_height = 0.f;
   visual_properties.browser_controls_shrink_blink_size = false;
   visual_properties.is_fullscreen_granted = false;
-  visual_properties.needs_resize_ack = false;
   visual_properties.content_source_id = 0u;
   OnSynchronizeVisualProperties(visual_properties);
-  EXPECT_EQ(visual_properties.needs_resize_ack, next_paint_is_resize_ack());
 
   // Setting empty physical backing size should not send the ack.
   visual_properties.new_size = gfx::Size(10, 10);
   OnSynchronizeVisualProperties(visual_properties);
-  EXPECT_EQ(visual_properties.needs_resize_ack, next_paint_is_resize_ack());
 
   // Setting the bounds to a "real" rect should send the ack.
   render_thread_->sink().ClearMessages();
@@ -82,35 +79,28 @@ TEST_F(RenderWidgetTest, OnSynchronizeVisualProperties) {
   visual_properties.new_size = size;
   visual_properties.compositor_viewport_pixel_size = size;
   visual_properties.content_source_id = 1u;
-  visual_properties.needs_resize_ack = true;
   OnSynchronizeVisualProperties(visual_properties);
-  EXPECT_EQ(visual_properties.needs_resize_ack, next_paint_is_resize_ack());
 
   // Clear the flag.
   widget()->DidCommitCompositorFrame();
   widget()->DidCommitAndDrawCompositorFrame();
 
   // Setting the same size again should not send the ack.
-  visual_properties.needs_resize_ack = false;
   OnSynchronizeVisualProperties(visual_properties);
-  EXPECT_EQ(visual_properties.needs_resize_ack, next_paint_is_resize_ack());
 
   // Resetting the rect to empty should not send the ack.
   visual_properties.new_size = gfx::Size();
   visual_properties.compositor_viewport_pixel_size = gfx::Size();
   visual_properties.local_surface_id = base::nullopt;
   OnSynchronizeVisualProperties(visual_properties);
-  EXPECT_EQ(visual_properties.needs_resize_ack, next_paint_is_resize_ack());
 
   // Changing the screen info should not send the ack.
   visual_properties.screen_info.orientation_angle = 90;
   OnSynchronizeVisualProperties(visual_properties);
-  EXPECT_EQ(visual_properties.needs_resize_ack, next_paint_is_resize_ack());
 
   visual_properties.screen_info.orientation_type =
       SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY;
   OnSynchronizeVisualProperties(visual_properties);
-  EXPECT_EQ(visual_properties.needs_resize_ack, next_paint_is_resize_ack());
 }
 
 class RenderWidgetInitialSizeTest : public RenderWidgetTest {
@@ -125,7 +115,6 @@ class RenderWidgetInitialSizeTest : public RenderWidgetTest {
         new VisualProperties());
     initial_visual_properties->new_size = initial_size_;
     initial_visual_properties->compositor_viewport_pixel_size = initial_size_;
-    initial_visual_properties->needs_resize_ack = true;
     initial_visual_properties->local_surface_id = local_surface_id_;
     return initial_visual_properties;
   }
@@ -138,7 +127,7 @@ class RenderWidgetInitialSizeTest : public RenderWidgetTest {
 TEST_F(RenderWidgetInitialSizeTest, InitialSize) {
   EXPECT_EQ(initial_size_, widget()->size());
   EXPECT_EQ(initial_size_, gfx::Size(widget()->GetWebWidget()->Size()));
-  EXPECT_TRUE(next_paint_is_resize_ack());
+  EXPECT_TRUE(needs_visual_properties_ack());
 }
 
 TEST_F(RenderWidgetTest, HitTestAPI) {

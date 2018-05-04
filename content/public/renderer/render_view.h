@@ -95,10 +95,6 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
   // false, but set to true by some tests.
   virtual bool GetContentStateImmediately() const = 0;
 
-  // Notifies the renderer that a paint is to be generated for the size
-  // passed in.
-  virtual void Repaint(const gfx::Size& size) = 0;
-
   // Inject edit commands to be used for the next keyboard event.
   // TODO(alexmos): Currently, these are used only by BlinkTestRunner.  They
   // should be removed from RenderView and instead be plumbed through the

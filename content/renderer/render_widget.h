@@ -575,7 +575,6 @@ class CONTENT_EXPORT RenderWidget
   virtual void OnShowContextMenu(ui::MenuSourceType source_type,
                                  const gfx::Point& location);
 
-  void OnRepaint(gfx::Size size_to_paint);
   void OnSetTextDirection(blink::WebTextDirection direction);
   void OnGetFPS();
   void OnUpdateScreenRects(const gfx::Rect& view_screen_rect,
@@ -624,10 +623,9 @@ class CONTENT_EXPORT RenderWidget
 
   void DidToggleFullscreen();
 
-  bool next_paint_is_resize_ack() const;
-  void set_next_paint_is_resize_ack();
-  void set_next_paint_is_repaint_ack();
-  void reset_next_paint_is_resize_ack();
+  bool needs_visual_properties_ack() const {
+    return needs_visual_properties_ack_;
+  }
 
   // Returns a rect that the compositor needs to raster. For a main frame this
   // is always the entire viewprot, but for out-of-process iframes this can be
@@ -727,15 +725,11 @@ class CONTENT_EXPORT RenderWidget
   gfx::Size visible_viewport_size_;
 
   // Flags for the next ViewHostMsg_ResizeOrRepaint_ACK message.
-  int next_paint_flags_;
+  bool needs_visual_properties_ack_ = false;
 
   // Whether the WebWidget is in auto resize mode, which is used for example
   // by extension popups.
   bool auto_resize_mode_;
-
-  // True if we need to send a ViewHsotMsg_ResizeOrRepaint_ACK message to notify
-  // the browser about an already-completed auto-resize.
-  bool need_resize_ack_for_auto_resize_;
 
   // The minimum size to use for auto-resize.
   gfx::Size min_size_for_auto_resize_;

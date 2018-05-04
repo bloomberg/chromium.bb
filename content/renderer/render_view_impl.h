@@ -342,7 +342,6 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
   blink::WebFrameWidget* GetWebFrameWidget() override;
   bool ShouldDisplayScrollbars(int width, int height) const override;
   bool GetContentStateImmediately() const override;
-  void Repaint(const gfx::Size& size) override;
   void SetEditCommandForNextKeyEvent(const std::string& name,
                                      const std::string& value) override;
   void ClearEditCommands() override;

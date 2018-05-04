@@ -342,8 +342,9 @@ bool RenderViewHostImpl::CreateRenderView(
   params->renderer_wide_named_frame_lookup =
       GetSiteInstance()->GetSiteURL().SchemeIs(kGuestScheme);
 
-  GetWidget()->GetVisualProperties(&params->visual_properties);
-  GetWidget()->SetInitialVisualProperties(params->visual_properties);
+  bool needs_ack = false;
+  GetWidget()->GetVisualProperties(&params->visual_properties, &needs_ack);
+  GetWidget()->SetInitialVisualProperties(params->visual_properties, needs_ack);
 
   GetProcess()->GetRendererInterface()->CreateView(std::move(params));
 

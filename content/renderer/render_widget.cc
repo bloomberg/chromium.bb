@@ -376,9 +376,7 @@ RenderWidget::RenderWidget(
       compositor_deps_(compositor_deps),
       webwidget_internal_(nullptr),
       owner_delegate_(nullptr),
-      next_paint_flags_(0),
       auto_resize_mode_(false),
-      need_resize_ack_for_auto_resize_(false),
       did_show_(false),
       is_hidden_(hidden),
       compositor_never_visible_(never_visible),
@@ -658,7 +656,6 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
                         OnDisableDeviceEmulation)
     IPC_MESSAGE_HANDLER(ViewMsg_WasHidden, OnWasHidden)
     IPC_MESSAGE_HANDLER(ViewMsg_WasShown, OnWasShown)
-    IPC_MESSAGE_HANDLER(ViewMsg_Repaint, OnRepaint)
     IPC_MESSAGE_HANDLER(ViewMsg_SetTextDirection, OnSetTextDirection)
     IPC_MESSAGE_HANDLER(ViewMsg_Move_ACK, OnRequestMoveAck)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateScreenRects, OnUpdateScreenRects)
@@ -723,7 +720,6 @@ void RenderWidget::SetWindowRectSynchronously(
   visual_properties.visible_viewport_size = new_window_rect.size();
   visual_properties.is_fullscreen_granted = is_fullscreen_granted_;
   visual_properties.display_mode = display_mode_;
-  visual_properties.needs_resize_ack = false;
   SynchronizeVisualProperties(visual_properties);
 
   view_screen_rect_ = new_window_rect;
@@ -1230,7 +1226,7 @@ bool RenderWidget::WillHandleMouseEvent(const blink::WebMouseEvent& event) {
 // RenderWidgetScreenMetricsDelegate
 
 void RenderWidget::Redraw() {
-  set_next_paint_is_resize_ack();
+  needs_visual_properties_ack_ = true;
   if (compositor_)
     compositor_->SetNeedsRedrawRect(gfx::Rect(size_));
 }
@@ -1270,13 +1266,6 @@ void RenderWidget::SynchronizeVisualProperties(const VisualProperties& params) {
   if (render_thread)
     render_thread->SetRenderingColorSpace(params.screen_info.color_space);
 
-  if (resizing_mode_selector_->NeverUsesSynchronousResize()) {
-    // A resize ack shouldn't be requested if we have not ACK'd the previous
-    // one.
-    DCHECK(!compositor_ || !params.needs_resize_ack ||
-           !next_paint_is_resize_ack());
-  }
-
   // Ignore this during shutdown.
   if (!GetWebWidget())
     return;
@@ -1291,14 +1280,6 @@ void RenderWidget::SynchronizeVisualProperties(const VisualProperties& params) {
                              params.screen_info);
   UpdateCaptureSequenceNumber(params.capture_sequence_number);
   if (compositor_) {
-    // If surface synchronization is enabled, then this will use the provided
-    // |local_surface_id_| to submit the next generated CompositorFrame.
-    // If the ID is not valid, then the compositor will defer commits until
-    // it receives a valid surface ID. This is a no-op if surface
-    // synchronization is disabled.
-    DCHECK(!compositor_->IsSurfaceSynchronizationEnabled() ||
-           !params.needs_resize_ack || !params.local_surface_id ||
-           params.local_surface_id->is_valid());
     compositor_->SetBrowserControlsHeight(
         params.top_controls_height, params.bottom_controls_height,
         params.browser_controls_shrink_blink_size);
@@ -1334,32 +1315,19 @@ void RenderWidget::SynchronizeVisualProperties(const VisualProperties& params) {
   // When resizing, we want to wait to paint before ACK'ing the resize.  This
   // ensures that we only resize as fast as we can paint.  We only need to
   // send an ACK if we are resized to a non-empty rect.
-  if (params.new_size.IsEmpty() ||
-      params.compositor_viewport_pixel_size.IsEmpty()) {
-    // In this case there is no paint/composite and therefore no
-    // ViewHostMsg_ResizeOrRepaint_ACK to send the resize ack with. We'd need to
-    // send the ack through a fake ViewHostMsg_ResizeOrRepaint_ACK or a
-    // different message.
-    DCHECK(!params.needs_resize_ack);
+  if (!params.new_size.IsEmpty() &&
+      !params.compositor_viewport_pixel_size.IsEmpty()) {
+    needs_visual_properties_ack_ = true;
   }
-
-  // Send the Resize_ACK flag once we paint again if requested.
-  if (params.needs_resize_ack)
-    set_next_paint_is_resize_ack();
 
   if (fullscreen_change)
     DidToggleFullscreen();
 
-  // If a resize ack is requested and it isn't set-up, then no more resizes will
-  // come in and in general things will go wrong.
-  DCHECK(!params.needs_resize_ack || next_paint_is_resize_ack());
-
   // If this resize was initiated before navigation and surface synchronization
   // is on, it is not expected to be acked.
   if (compositor_ && compositor_->IsSurfaceSynchronizationEnabled() &&
-      params.needs_resize_ack && !local_surface_id_.is_valid()) {
-    DCHECK_NE(params.content_source_id, current_content_source_id_);
-    reset_next_paint_is_resize_ack();
+      !local_surface_id_.is_valid()) {
+    needs_visual_properties_ack_ = false;
   }
 }
 
@@ -1397,8 +1365,8 @@ blink::WebLayerTreeView* RenderWidget::InitializeLayerTreeView() {
   // resize was initiated before navigation, in which case we don't have to ack
   // it.
   if (compositor_->IsSurfaceSynchronizationEnabled() && !auto_resize_mode_ &&
-      next_paint_is_resize_ack() && !local_surface_id_.is_valid()) {
-    reset_next_paint_is_resize_ack();
+      !local_surface_id_.is_valid()) {
+    needs_visual_properties_ack_ = false;
   }
 
   UpdateSurfaceAndScreenInfo(local_surface_id_, compositor_viewport_pixel_size_,
@@ -1861,22 +1829,6 @@ void RenderWidget::UpdateCaptureSequenceNumber(
     observer.UpdateCaptureSequenceNumber(capture_sequence_number);
 }
 
-void RenderWidget::OnRepaint(gfx::Size size_to_paint) {
-  // During shutdown we can just ignore this message.
-  if (!GetWebWidget())
-    return;
-
-  // Even if the browser provides an empty damage rect, it's still expecting to
-  // receive a repaint ack so just damage the entire widget bounds.
-  if (size_to_paint.IsEmpty()) {
-    size_to_paint = size_;
-  }
-
-  set_next_paint_is_repaint_ack();
-  if (compositor_)
-    compositor_->SetNeedsRedrawRect(gfx::Rect(size_to_paint));
-}
-
 void RenderWidget::OnSetTextDirection(WebTextDirection direction) {
   if (auto* frame = GetFocusedWebLocalFrameInWidget())
     frame->SetTextDirection(direction);
@@ -2148,24 +2100,6 @@ void RenderWidget::DidToggleFullscreen() {
   }
 }
 
-bool RenderWidget::next_paint_is_resize_ack() const {
-  return ViewHostMsg_ResizeOrRepaint_ACK_Flags::is_resize_ack(
-      next_paint_flags_);
-}
-
-void RenderWidget::set_next_paint_is_resize_ack() {
-  next_paint_flags_ |= ViewHostMsg_ResizeOrRepaint_ACK_Flags::IS_RESIZE_ACK;
-}
-
-void RenderWidget::set_next_paint_is_repaint_ack() {
-  next_paint_flags_ |= ViewHostMsg_ResizeOrRepaint_ACK_Flags::IS_REPAINT_ACK;
-}
-
-void RenderWidget::reset_next_paint_is_resize_ack() {
-  DCHECK(next_paint_is_resize_ack());
-  next_paint_flags_ ^= ViewHostMsg_ResizeOrRepaint_ACK_Flags::IS_RESIZE_ACK;
-}
-
 void RenderWidget::OnImeEventGuardStart(ImeEventGuard* guard) {
   if (!ime_event_guard_)
     ime_event_guard_ = guard;
@@ -2278,7 +2212,7 @@ void RenderWidget::DidAutoResize(const gfx::Size& new_size) {
                                screen_info_);
 
     if (!resizing_mode_selector_->is_synchronous_mode())
-      need_resize_ack_for_auto_resize_ = true;
+      needs_visual_properties_ack_ = true;
   }
 }
 
@@ -2564,10 +2498,8 @@ void RenderWidget::DidNavigate() {
   // If surface synchronization is on, navigation implicitly acks any resize
   // that has happened so far so we can get the next VisualProperties containing
   // the LocalSurfaceId that should be used after navigation.
-  if (compositor_->IsSurfaceSynchronizationEnabled() && !auto_resize_mode_ &&
-      next_paint_is_resize_ack()) {
-    reset_next_paint_is_resize_ack();
-  }
+  if (compositor_->IsSurfaceSynchronizationEnabled() && !auto_resize_mode_)
+    needs_visual_properties_ack_ = false;
 }
 
 blink::WebWidget* RenderWidget::GetWebWidget() const {
@@ -2597,12 +2529,11 @@ void RenderWidget::SetWidgetBinding(mojom::WidgetRequest request) {
 }
 
 void RenderWidget::DidResizeOrRepaintAck() {
-  if (!next_paint_flags_ && !need_resize_ack_for_auto_resize_)
+  if (!needs_visual_properties_ack_ || size_.IsEmpty())
     return;
 
   ViewHostMsg_ResizeOrRepaint_ACK_Params params;
   params.view_size = size_;
-  params.flags = next_paint_flags_;
   if (child_local_surface_id_allocator_.GetCurrentLocalSurfaceId().is_valid()) {
     params.child_allocated_local_surface_id =
         child_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
@@ -2610,8 +2541,7 @@ void RenderWidget::DidResizeOrRepaintAck() {
   }
 
   Send(new ViewHostMsg_ResizeOrRepaint_ACK(routing_id_, params));
-  next_paint_flags_ = 0;
-  need_resize_ack_for_auto_resize_ = false;
+  needs_visual_properties_ack_ = false;
 }
 
 void RenderWidget::UpdateURLForCompositorUkm() {

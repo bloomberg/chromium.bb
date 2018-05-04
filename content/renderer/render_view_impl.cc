@@ -1688,10 +1688,6 @@ blink::WebWidgetClient* RenderViewImpl::WidgetClient() {
 
 // blink::WebFrameClient -----------------------------------------------------
 
-void RenderViewImpl::Repaint(const gfx::Size& size) {
-  OnRepaint(size);
-}
-
 void RenderViewImpl::SetEditCommandForNextKeyEvent(const std::string& name,
                                                    const std::string& value) {
   GetWidget()->SetEditCommandForNextKeyEvent(name, value);
@@ -1972,7 +1968,6 @@ void RenderViewImpl::OnSynchronizeVisualProperties(
                                       params.max_size_for_auto_resize);
     }
   } else if (auto_resize_mode_changed) {
-    need_resize_ack_for_auto_resize_ = false;
     webview()->DisableAutoResizeMode();
     if (params.new_size.IsEmpty())
       return;
@@ -2386,7 +2381,6 @@ void RenderViewImpl::DisableAutoResizeForTesting(const gfx::Size& new_size) {
   visual_properties.visible_viewport_size = visible_viewport_size_;
   visual_properties.is_fullscreen_granted = is_fullscreen_granted();
   visual_properties.display_mode = display_mode_;
-  visual_properties.needs_resize_ack = false;
   OnSynchronizeVisualProperties(visual_properties);
 }
 

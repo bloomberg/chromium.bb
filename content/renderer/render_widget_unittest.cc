@@ -389,7 +389,6 @@ TEST_F(RenderWidgetUnittest, AckResizeOnHide) {
       viz::LocalSurfaceId(1, 1, base::UnguessableToken::Create());
   visual_properties.visible_viewport_size = size;
   visual_properties.content_source_id = widget()->GetContentSourceId();
-  visual_properties.needs_resize_ack = true;
   widget()->OnMessageReceived(ViewMsg_SynchronizeVisualProperties(
       widget()->routing_id(), visual_properties));
 

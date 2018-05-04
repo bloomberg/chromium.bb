@@ -24,10 +24,6 @@ RenderWidgetScreenMetricsEmulator::RenderWidgetScreenMetricsEmulator(
       original_window_screen_rect_(window_screen_rect) {}
 
 RenderWidgetScreenMetricsEmulator::~RenderWidgetScreenMetricsEmulator() {
-  // needs_resize_ack was handled during OnSynchronizeVisualProperties() and may
-  // cause a DCHECK to fail in RenderWidget if not cleared
-  // (https://crbug.com/635560).
-  original_visual_properties_.needs_resize_ack = false;
   delegate_->SynchronizeVisualProperties(original_visual_properties_);
   delegate_->SetScreenMetricsEmulationParameters(false, emulation_params_);
   delegate_->SetScreenRects(original_view_screen_rect_,
@@ -136,7 +132,6 @@ void RenderWidgetScreenMetricsEmulator::Apply() {
   modified_visual_properties.new_size = applied_widget_rect_.size();
   modified_visual_properties.visible_viewport_size =
       applied_widget_rect_.size();
-  modified_visual_properties.needs_resize_ack = false;
   delegate_->SynchronizeVisualProperties(modified_visual_properties);
 }
 
@@ -145,8 +140,7 @@ void RenderWidgetScreenMetricsEmulator::OnSynchronizeVisualProperties(
   original_visual_properties_ = params;
   Apply();
 
-  if (params.needs_resize_ack)
-    delegate_->Redraw();
+  delegate_->Redraw();
 }
 
 void RenderWidgetScreenMetricsEmulator::OnUpdateWindowScreenRect(
