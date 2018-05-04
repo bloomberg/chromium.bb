@@ -52,7 +52,7 @@ using extensions::SyncBundle;
 namespace {
 
 // Returns the pref value for "all urls enabled" for the given extension id.
-ExtensionSyncData::OptionalBoolean GetAllowedOnAllUrlsOptionalBoolean(
+base::Optional<bool> GetAllowedOnAllUrlsValue(
     const Extension& extension,
     content::BrowserContext* context) {
   extensions::ScriptingPermissionsModifier permissions_modifier(context,
@@ -61,14 +61,14 @@ ExtensionSyncData::OptionalBoolean GetAllowedOnAllUrlsOptionalBoolean(
   // If the extension is not allowed on all urls (which is not the default),
   // then we have to sync the preference.
   if (!allowed_on_all_urls)
-    return ExtensionSyncData::BOOLEAN_FALSE;
+    return false;
 
   // If the user has explicitly set a value, then we sync it.
   if (permissions_modifier.HasSetAllowedOnAllUrls())
-    return ExtensionSyncData::BOOLEAN_TRUE;
+    return true;
 
   // Otherwise, unset.
-  return ExtensionSyncData::BOOLEAN_UNSET;
+  return base::nullopt;
 }
 
 // Returns true if the sync type of |extension| matches |type|.
@@ -271,8 +271,8 @@ ExtensionSyncData ExtensionSyncService::CreateSyncData(
   bool incognito_enabled = extensions::util::IsIncognitoEnabled(id, profile_);
   bool remote_install = extension_prefs->HasDisableReason(
       id, extensions::disable_reason::DISABLE_REMOTE_INSTALL);
-  ExtensionSyncData::OptionalBoolean allowed_on_all_url =
-      GetAllowedOnAllUrlsOptionalBoolean(extension, profile_);
+  base::Optional<bool> allowed_on_all_url =
+      GetAllowedOnAllUrlsValue(extension, profile_);
   bool installed_by_custodian =
       extensions::util::WasInstalledByCustodian(id, profile_);
   AppSorting* app_sorting = ExtensionSystem::Get(profile_)->app_sorting();
@@ -482,10 +482,8 @@ void ExtensionSyncService::ApplySyncData(
   extension = nullptr;  // No longer safe to use.
 
   // Update the all urls flag.
-  if (extension_sync_data.all_urls_enabled() !=
-          ExtensionSyncData::BOOLEAN_UNSET) {
-    bool allowed = extension_sync_data.all_urls_enabled() ==
-                   ExtensionSyncData::BOOLEAN_TRUE;
+  if (extension_sync_data.all_urls_enabled().has_value()) {
+    bool allowed = *extension_sync_data.all_urls_enabled();
     extensions::ScriptingPermissionsModifier::SetAllowedOnAllUrlsForSync(
         allowed, profile_, id);
   }
