@@ -13,6 +13,7 @@
 namespace content {
 class OverlaySurfaceEmbedder;
 class WebContents;
+class MediaWebContentsObserver;
 
 // TODO(thakis,mlamouri): PictureInPictureWindowControllerImpl isn't
 // CONTENT_EXPORT'd because it creates complicated build issues with
@@ -39,6 +40,7 @@ class PictureInPictureWindowControllerImpl
                                    const gfx::Size& natural_size) override;
   CONTENT_EXPORT OverlayWindow* GetWindowForTesting() override;
   CONTENT_EXPORT void UpdateLayerBounds() override;
+  CONTENT_EXPORT bool IsPlayerActive() override;
   CONTENT_EXPORT WebContents* GetInitiatorWebContents() override;
   CONTENT_EXPORT bool TogglePlayPause() override;
 
@@ -52,7 +54,12 @@ class PictureInPictureWindowControllerImpl
 
   std::unique_ptr<OverlayWindow> window_;
   std::unique_ptr<OverlaySurfaceEmbedder> embedder_;
-  content::WebContents* const initiator_;
+  WebContents* const initiator_;
+
+  // Used to determine the state of the media player and route messages to
+  // the corresponding media player with id |media_player_id_|.
+  MediaWebContentsObserver* media_web_contents_observer_;
+  base::Optional<WebContentsObserver::MediaPlayerId> media_player_id_;
 
   viz::SurfaceId surface_id_;
 
