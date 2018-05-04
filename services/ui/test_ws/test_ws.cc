@@ -16,6 +16,7 @@
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_runner.h"
 #include "services/ui/public/interfaces/window_tree_host_factory.mojom.h"
+#include "services/ui/ws2/gpu_support.h"
 #include "services/ui/ws2/window_service.h"
 #include "services/ui/ws2/window_service_client.h"
 #include "services/ui/ws2/window_service_client_binding.h"
@@ -138,7 +139,7 @@ class TestWindowService : public service_manager::Service,
     gfx::RegisterPathProvider();
     ui::RegisterPathProvider();
 
-    window_service_ = std::make_unique<ws2::WindowService>(this);
+    window_service_ = std::make_unique<ws2::WindowService>(this, nullptr);
 
     ui::ContextFactory* context_factory = nullptr;
     ui::ContextFactoryPrivate* context_factory_private = nullptr;

@@ -19,6 +19,7 @@ component("lib") {
     # TODO: client_root should be internal and moved to a different target.
     "client_root.cc",
     "client_root.h",
+    "gpu_support.h",
     "ids.h",
 
     # TODO: window_data should be internal and moved to a different target.
@@ -38,7 +39,9 @@ component("lib") {
   ]
 
   public_deps = [
+    "//components/discardable_memory/public/interfaces",
     "//components/viz/host",
+    "//services/service_manager/public/cpp",
     "//services/ui/common:mus_common",
     "//services/ui/public/interfaces",
     "//ui/aura",
