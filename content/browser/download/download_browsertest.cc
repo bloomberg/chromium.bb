@@ -2187,7 +2187,13 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, MAYBE_RemoveResumedDownload) {
   test_response_handler()->WaitUntilCompletion(2u);
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelResumedDownload) {
+// TODO(qinmin): Flaky crashes on ASAN Linux. https://crbug.com/836689
+#if defined(OS_LINUX) && defined(ADDRESS_SANITIZER)
+#define MAYBE_CancelResumedDownload DISABLED_CancelResumedDownload
+#else
+#define MAYBE_CancelResumedDownload CancelResumedDownload
+#endif
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, MAYBE_CancelResumedDownload) {
   SetupErrorInjectionDownloads();
   TestDownloadHttpResponse::Parameters parameters =
       TestDownloadHttpResponse::Parameters::WithSingleInterruption(
