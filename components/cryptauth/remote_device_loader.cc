@@ -101,8 +101,6 @@ void RemoteDeviceLoader::OnPSKDerived(
 
   DCHECK(iterator != remaining_devices_.end());
   remaining_devices_.erase(iterator);
-  PA_LOG(INFO) << "Derived PSK for " << device.friendly_device_name()
-               << ", " << remaining_devices_.size() << " keys remaining.";
 
   cryptauth::RemoteDevice remote_device(
       user_id_, device.friendly_device_name(), device.public_key(), psk,
@@ -118,8 +116,11 @@ void RemoteDeviceLoader::OnPSKDerived(
   }
   remote_devices_.push_back(remote_device);
 
-  if (remaining_devices_.empty())
+  if (remaining_devices_.empty()) {
+    PA_LOG(INFO) << "Derived keys for " << remote_devices_.size()
+                 << " devices.";
     callback_.Run(remote_devices_);
+  }
 }
 
 }  // namespace cryptauth
