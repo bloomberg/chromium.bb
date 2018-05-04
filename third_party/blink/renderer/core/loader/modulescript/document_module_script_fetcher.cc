@@ -7,9 +7,11 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
+#include "third_party/blink/renderer/core/script/layered_api.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_utils.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -76,7 +78,40 @@ DocumentModuleScriptFetcher::DocumentModuleScriptFetcher(
 void DocumentModuleScriptFetcher::Fetch(FetchParameters& fetch_params,
                                         ModuleScriptFetcher::Client* client) {
   SetClient(client);
+
+  if (FetchIfLayeredAPI(fetch_params))
+    return;
+
   ScriptResource::Fetch(fetch_params, fetcher_, this);
+}
+
+bool DocumentModuleScriptFetcher::FetchIfLayeredAPI(
+    FetchParameters& fetch_params) {
+  if (!RuntimeEnabledFeatures::LayeredAPIEnabled())
+    return false;
+
+  KURL layered_api_url = blink::layered_api::GetInternalURL(fetch_params.Url());
+
+  if (layered_api_url.IsNull())
+    return false;
+
+  const String source_text = blink::layered_api::GetSourceText(layered_api_url);
+
+  if (source_text.IsNull()) {
+    HeapVector<Member<ConsoleMessage>> error_messages;
+    error_messages.push_back(ConsoleMessage::CreateForRequest(
+        kJSMessageSource, kErrorMessageLevel, "Unexpected data error",
+        fetch_params.Url().GetString(), nullptr, 0));
+    Finalize(base::nullopt, error_messages);
+    return true;
+  }
+
+  ModuleScriptCreationParams params(
+      layered_api_url, source_text,
+      fetch_params.GetResourceRequest().GetFetchCredentialsMode(),
+      kSharableCrossOrigin);
+  Finalize(params, HeapVector<Member<ConsoleMessage>>());
+  return true;
 }
 
 void DocumentModuleScriptFetcher::NotifyFinished(Resource* resource) {
