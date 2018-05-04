@@ -3256,6 +3256,7 @@ error::Error GLES2DecoderPassthroughImpl::DoSwapBuffers(GLbitfield flags) {
     return error::kNoError;
   }
 
+  client_->OnSwapBuffers(flags);
   return CheckSwapBuffersResult(surface_->SwapBuffers(base::DoNothing()),
                                 "SwapBuffers");
 }
@@ -3839,6 +3840,7 @@ error::Error GLES2DecoderPassthroughImpl::DoSwapBuffersWithBoundsCHROMIUM(
                           rects[i * 4 + 3]);
   }
 
+  client_->OnSwapBuffers(flags);
   return CheckSwapBuffersResult(
       surface_->SwapBuffersWithBounds(bounds, base::DoNothing()),
       "SwapBuffersWithBounds");
@@ -3858,6 +3860,7 @@ error::Error GLES2DecoderPassthroughImpl::DoPostSubBufferCHROMIUM(
 
   dc_layer_shared_state_.reset();
 
+  client_->OnSwapBuffers(flags);
   return CheckSwapBuffersResult(
       surface_->PostSubBuffer(x, y, width, height, base::DoNothing()),
       "PostSubBuffer");
@@ -4274,6 +4277,7 @@ error::Error GLES2DecoderPassthroughImpl::DoCommitOverlayPlanesCHROMIUM(
 
   dc_layer_shared_state_.reset();
 
+  client_->OnSwapBuffers(flags);
   return CheckSwapBuffersResult(
       surface_->CommitOverlayPlanes(base::DoNothing()), "CommitOverlayPlanes");
 }
