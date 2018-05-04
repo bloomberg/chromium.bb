@@ -44,6 +44,9 @@ class CORE_EXPORT DocumentModuleScriptFetcher : public ModuleScriptFetcher,
   void Finalize(const base::Optional<ModuleScriptCreationParams>&,
                 const HeapVector<Member<ConsoleMessage>>& error_messages);
 
+  // Returns true if loaded as Layered API.
+  bool FetchIfLayeredAPI(FetchParameters&);
+
   Member<ResourceFetcher> fetcher_;
 };
 

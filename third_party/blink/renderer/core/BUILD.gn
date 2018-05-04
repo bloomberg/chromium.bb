@@ -2040,6 +2040,7 @@ jumbo_source_set("unit_tests") {
     "scheduler/throttling_test.cc",
     "scheduler/virtual_time_test.cc",
     "script/dynamic_module_resolver_test.cc",
+    "script/layered_api_test.cc",
     "script/mock_script_element_base.h",
     "script/modulator_test.cc",
     "script/module_map_test.cc",
