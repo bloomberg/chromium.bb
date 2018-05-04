@@ -437,6 +437,10 @@ bool VariationsService::StoreSeed(const std::string& seed_data,
 
   RecordSuccessfulFetch();
 
+  // Now, do simulation to determine if there are any kill-switches that were
+  // activated by this seed. To do this, first get the Chrome version to do a
+  // simulation with, which must be done on a background thread, and then do the
+  // actual simulation on the UI thread.
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       client_->GetVersionForSimulationCallback(),

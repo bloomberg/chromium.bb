@@ -209,6 +209,9 @@ VariationsSeedSimulator::PermanentStudyGroupChanged(
 
   const std::string simulated_group =
       SimulateGroupAssignment(entropy_provider, processed_study);
+
+  // Note: The current (i.e. old) group is checked for the type since that group
+  // is the one that should be annotated with the type when killing it.
   const Study_Experiment* experiment = FindExperiment(study, selected_group);
   if (simulated_group != selected_group) {
     if (experiment)
@@ -216,10 +219,12 @@ VariationsSeedSimulator::PermanentStudyGroupChanged(
     return CHANGED;
   }
 
-  // Current group exists in the study - check whether its params changed.
-  DCHECK(experiment);
-  if (!VariationParamsAreEqual(study, *experiment))
+  // If the group is unchanged, check whether its params may have changed.
+  if (experiment && !VariationParamsAreEqual(study, *experiment))
     return ConvertExperimentTypeToChangeType(experiment->type());
+
+  // Since the group name has not changed and params are either equal or the
+  // experiment was not found (and thus there are none), return NO_CHANGE.
   return NO_CHANGE;
 }
 
