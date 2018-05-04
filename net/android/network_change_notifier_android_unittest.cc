@@ -420,12 +420,16 @@ TEST_F(NetworkChangeNotifierDelegateAndroidTest,
   EXPECT_EQ(2, delegate_observer_.bandwidth_notifications_count());
 }
 
-TEST_F(NetworkChangeNotifierAndroidTest, DISABLED_InitialSignal) {
+TEST_F(NetworkChangeNotifierAndroidTest, InitialSignal) {
   DNSChangeObserver dns_change_observer;
   NetworkChangeNotifier::AddDNSObserver(&dns_change_observer);
-  base::RunLoop().Run();
-  EXPECT_EQ(1, dns_change_observer.initial_notifications_count());
-  EXPECT_EQ(0, dns_change_observer.change_notifications_count());
+  net::DnsConfig dns_config;
+  NetworkChangeNotifier::GetDnsConfig(&dns_config);
+  if (!dns_config.IsValid()) {
+    base::RunLoop().Run();
+    EXPECT_EQ(1, dns_change_observer.initial_notifications_count());
+    EXPECT_EQ(0, dns_change_observer.change_notifications_count());
+  }
   NetworkChangeNotifier::RemoveDNSObserver(&dns_change_observer);
 }
 
