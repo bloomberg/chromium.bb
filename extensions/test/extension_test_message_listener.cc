@@ -76,6 +76,7 @@ void ExtensionTestMessageListener::Reset() {
   satisfied_ = false;
   failed_ = false;
   message_.clear();
+  extension_id_for_message_.clear();
   replied_ = false;
 }
 
@@ -89,13 +90,19 @@ void ExtensionTestMessageListener::Observe(
   // extension.
   extensions::TestSendMessageFunction* function =
       content::Source<extensions::TestSendMessageFunction>(source).ptr();
+
+  std::string sender_extension_id;
+  if (function->extension())
+    sender_extension_id = function->extension_id();
+
   if (satisfied_ ||
-      (!extension_id_.empty() && function->extension_id() != extension_id_)) {
+      (!extension_id_.empty() && sender_extension_id != extension_id_)) {
     return;
   }
 
   // We should have an empty message if we're not already satisfied.
   CHECK(message_.empty());
+  CHECK(extension_id_for_message_.empty());
 
   std::pair<std::string, bool*>* message_details =
       content::Details<std::pair<std::string, bool*>>(details).ptr();
@@ -106,6 +113,7 @@ void ExtensionTestMessageListener::Observe(
     // empty string.
     *message_details->second = true;
     message_ = message;
+    extension_id_for_message_ = sender_extension_id;
     satisfied_ = true;
     failed_ = (message_ == failure_message_);
 
