@@ -108,17 +108,7 @@ class TestCryptoStream : public QuicCryptoStream, public QuicCryptoHandshaker {
 class TestStream : public QuicStream {
  public:
   TestStream(QuicStreamId id, QuicSession* session)
-      : QuicStream(id, session, /*is_static=*/false) {
-    if (!session->register_streams_early()) {
-      session->RegisterStreamPriority(id, false, QuicStream::kDefaultPriority);
-    }
-  }
-
-  ~TestStream() override {
-    if (!session()->register_streams_early()) {
-      session()->UnregisterStreamPriority(id(), false);
-    }
-  }
+      : QuicStream(id, session, /*is_static=*/false) {}
 
   using QuicStream::CloseWriteSide;
 

@@ -52,12 +52,13 @@ const char* FlagsModeToString(FlagsMode mode) {
 
 // Test various combinations of QUIC version and flag state.
 struct TestParams {
-  QuicTransportVersion version;
+  ParsedQuicVersion version =
+      ParsedQuicVersion{PROTOCOL_UNSUPPORTED, QUIC_VERSION_UNSUPPORTED};
   FlagsMode flags;
 };
 
 QuicString TestParamToString(const testing::TestParamInfo<TestParams>& params) {
-  return QuicStrCat("v", params.param.version, "_",
+  return QuicStrCat("v", ParsedQuicVersionToString(params.param.version), "_",
                     FlagsModeToString(params.param.flags));
 }
 
@@ -65,7 +66,7 @@ std::vector<TestParams> GetTestParams() {
   std::vector<TestParams> params;
   for (FlagsMode flags :
        {ENABLED, STATELESS_DISABLED, CHEAP_DISABLED, BOTH_DISABLED}) {
-    for (QuicTransportVersion version : AllSupportedTransportVersions()) {
+    for (ParsedQuicVersion version : AllSupportedVersions()) {
       TestParams param;
       param.version = version;
       param.flags = flags;
@@ -88,7 +89,7 @@ class StatelessRejectorTest : public QuicTestWithParam<TestParams> {
             QuicCompressedCertsCache::kQuicCompressedCertsCacheSize),
         rejector_(QuicMakeUnique<StatelessRejector>(
             GetParam().version,
-            AllSupportedTransportVersions(),
+            AllSupportedVersions(),
             &config_,
             &compressed_certs_cache_,
             &clock_,
@@ -112,8 +113,7 @@ class StatelessRejectorTest : public QuicTestWithParam<TestParams> {
         "#" + QuicTextUtils::HexEncode(config_peer_.GetPrimaryConfig()->id);
 
     // Encode the QUIC version.
-    ver_hex_ = QuicVersionLabelToString(
-        QuicVersionToQuicVersionLabel(GetParam().version));
+    ver_hex_ = ParsedQuicVersionToString(GetParam().version);
 
     // Generate a public value.
     char public_value[32];
@@ -180,7 +180,7 @@ TEST_P(StatelessRejectorTest, InvalidChlo) {
       {{"PDMD", "X509"},
        {"COPT", "SREJ"}});
   // clang-format on
-  rejector_->OnChlo(GetParam().version, kConnectionId,
+  rejector_->OnChlo(GetParam().version.transport_version, kConnectionId,
                     kServerDesignateConnectionId, client_hello);
 
   if (GetParam().flags != ENABLED) {
@@ -209,7 +209,7 @@ TEST_P(StatelessRejectorTest, ValidChloWithoutSrejSupport) {
       kClientHelloMinimumSize);
   // clang-format on
 
-  rejector_->OnChlo(GetParam().version, kConnectionId,
+  rejector_->OnChlo(GetParam().version.transport_version, kConnectionId,
                     kServerDesignateConnectionId, client_hello);
   EXPECT_EQ(StatelessRejector::UNSUPPORTED, rejector_->state());
 }
@@ -229,7 +229,7 @@ TEST_P(StatelessRejectorTest, RejectChlo) {
       kClientHelloMinimumSize);
   // clang-format on
 
-  rejector_->OnChlo(GetParam().version, kConnectionId,
+  rejector_->OnChlo(GetParam().version.transport_version, kConnectionId,
                     kServerDesignateConnectionId, client_hello);
   if (GetParam().flags != ENABLED) {
     EXPECT_EQ(StatelessRejector::UNSUPPORTED, rejector_->state());
@@ -271,7 +271,7 @@ TEST_P(StatelessRejectorTest, AcceptChlo) {
       kClientHelloMinimumSize);
   // clang-format on
 
-  rejector_->OnChlo(GetParam().version, kConnectionId,
+  rejector_->OnChlo(GetParam().version.transport_version, kConnectionId,
                     kServerDesignateConnectionId, client_hello);
   if (GetParam().flags != ENABLED) {
     EXPECT_EQ(StatelessRejector::UNSUPPORTED, rejector_->state());

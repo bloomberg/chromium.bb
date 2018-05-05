@@ -73,19 +73,18 @@ void CryptoHandshakeMessage::MarkDirty() {
 
 void CryptoHandshakeMessage::SetVersionVector(
     QuicTag tag,
-    QuicTransportVersionVector versions) {
+    ParsedQuicVersionVector versions) {
   QuicVersionLabelVector version_labels;
-  for (QuicTransportVersion version : versions) {
+  for (ParsedQuicVersion version : versions) {
     version_labels.push_back(
-        QuicEndian::HostToNet32(QuicVersionToQuicVersionLabel(version)));
+        QuicEndian::HostToNet32(CreateQuicVersionLabel(version)));
   }
   SetVector(tag, version_labels);
 }
 
 void CryptoHandshakeMessage::SetVersion(QuicTag tag,
-                                        QuicTransportVersion version) {
-  SetValue(tag,
-           QuicEndian::HostToNet32(QuicVersionToQuicVersionLabel(version)));
+                                        ParsedQuicVersion version) {
+  SetValue(tag, QuicEndian::HostToNet32(CreateQuicVersionLabel(version)));
 }
 
 void CryptoHandshakeMessage::SetStringPiece(QuicTag tag,

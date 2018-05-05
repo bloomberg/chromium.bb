@@ -449,6 +449,8 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   size_t pending_timer_transmission_count_;
   // Maximum number of tail loss probes to send before firing an RTO.
   size_t max_tail_loss_probes_;
+  // Maximum number of packets to send upon RTO.
+  QuicPacketCount max_rto_packets_;
   // If true, send the TLP at 0.5 RTT.
   bool enable_half_rtt_tail_loss_probe_;
   bool using_pacing_;
@@ -516,10 +518,6 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   // Latched value of
   // quic_reloadable_flag_quic_path_degrading_alarm
   const bool use_path_degrading_alarm_;
-
-  // Latched value of
-  // quic_reloadable_flag_quic_better_crypto_retransmission
-  const bool use_better_crypto_retransmission_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicSentPacketManager);
 };

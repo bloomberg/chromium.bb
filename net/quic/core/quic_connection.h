@@ -1309,13 +1309,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // True if the peer is unreachable on the current path.
   bool is_path_degrading_;
 
-  // Latched value of
-  // quic_reloadable_flag_quic_server_early_version_negotiation.
-  const bool negotiate_version_early_;
-
-  // Latched value of
-  // quic_reloadable_flag_quic_always_discard_packets_after_close.
-  const bool always_discard_packets_after_close_;
   // Latched valure of
   // quic_reloadable_flag_quic_handle_write_results_for_connectivity_probe.
   const bool handle_write_results_for_connectivity_probe_;

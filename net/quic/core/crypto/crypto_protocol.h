@@ -87,8 +87,8 @@ const QuicTag kBBS2 = TAG('B', 'B', 'S', '2');   // More aggressive packet
 const QuicTag kBBS3 = TAG('B', 'B', 'S', '3');   // Slowstart packet
                                                  // conservation in BBR STARTUP
 const QuicTag kBBRR = TAG('B', 'B', 'R', 'R');   // Rate-based recovery in BBR
-const QuicTag kBBR1 = TAG('B', 'B', 'R', '1');   // Ack aggregation v1
-const QuicTag kBBR2 = TAG('B', 'B', 'R', '2');   // Ack aggregation v2
+const QuicTag kBBR1 = TAG('B', 'B', 'R', '1');   // DEPRECATED
+const QuicTag kBBR2 = TAG('B', 'B', 'R', '2');   // DEPRECATED
 const QuicTag kBBR3 = TAG('B', 'B', 'R', '3');   // Fully drain the queue once
                                                  // per cycle
 const QuicTag kBBR4 = TAG('B', 'B', 'R', '4');   // 20 RTT ack aggregation
@@ -111,6 +111,7 @@ const QuicTag kIW50 = TAG('I', 'W', '5', '0');   // Force ICWND to 50
 const QuicTag k1CON = TAG('1', 'C', 'O', 'N');   // Emulate a single connection
 const QuicTag kNTLP = TAG('N', 'T', 'L', 'P');   // No tail loss probe
 const QuicTag k1TLP = TAG('1', 'T', 'L', 'P');   // 1 tail loss probe
+const QuicTag k1RTO = TAG('1', 'R', 'T', 'O');   // Send 1 packet upon RTO
 const QuicTag kNCON = TAG('N', 'C', 'O', 'N');   // N Connection Congestion Ctrl
 const QuicTag kNRTO = TAG('N', 'R', 'T', 'O');   // CWND reduction on loss
 const QuicTag kTIME = TAG('T', 'I', 'M', 'E');   // Time based loss detection
@@ -136,6 +137,8 @@ const QuicTag kAKD4 = TAG('A', 'K', 'D', '4');   // Ack decimation with 1/8 RTT
                                                  // tolerating out of order.
 const QuicTag kAKDU = TAG('A', 'K', 'D', 'U');   // Unlimited number of packets
                                                  // received before acking
+const QuicTag kACKQ = TAG('A', 'C', 'K', 'Q');   // Send an immediate ack after
+                                                 // 1 RTT of not sending acks.
 const QuicTag kSSLR = TAG('S', 'S', 'L', 'R');   // Slow Start Large Reduction.
 const QuicTag kNPRR = TAG('N', 'P', 'R', 'R');   // Pace at unity instead of PRR
 const QuicTag k5RTO = TAG('5', 'R', 'T', 'O');   // Close connection on 5 RTOs
@@ -150,6 +153,7 @@ const QuicTag kLFAK = TAG('L', 'F', 'A', 'K');   // Don't invoke FACK on the
 const QuicTag kSMHL = TAG('S', 'M', 'H', 'L');   // Support MAX_HEADER_LIST_SIZE
                                                  // settings frame.
 const QuicTag kNSTP = TAG('N', 'S', 'T', 'P');   // No stop waiting frames.
+const QuicTag kNRTT = TAG('N', 'R', 'T', 'T');   // Ignore initial RTT
 
 // Optional support of truncated Connection IDs.  If sent by a peer, the value
 // is the minimum number of bytes allowed for the connection ID sent to the

@@ -308,8 +308,6 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // Set transmission type of next sending packets.
   void SetTransmissionType(TransmissionType type);
 
-  bool register_streams_early() const { return register_streams_early_; }
-
   bool session_decides_what_to_write() const;
 
  protected:
@@ -477,9 +475,6 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
 
   // May be null.
   Visitor* visitor_;
-
-  // Latched value of quic_reloadable_flag_quic_register_streams_early2.
-  const bool register_streams_early_;
 
   // A list of streams which need to write more data.  Stream register
   // themselves in their constructor, and unregisterm themselves in their

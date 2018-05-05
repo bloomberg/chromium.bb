@@ -180,10 +180,6 @@ class QuartcStreamTest : public QuicTest, public QuicConnectionHelperInterface {
         QuicMakeUnique<MockQuartcStreamDelegate>(kStreamId, &read_buffer_);
     stream_ = new QuartcStream(kStreamId, session_.get());
     stream_->SetDelegate(mock_stream_delegate_.get());
-    if (!session_->register_streams_early()) {
-      session_->RegisterReliableStream(stream_->stream_id(),
-                                       QuicStream::kDefaultPriority);
-    }
     session_->ActivateReliableStream(std::unique_ptr<QuartcStream>(stream_));
   }
 

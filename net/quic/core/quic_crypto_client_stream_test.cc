@@ -409,7 +409,7 @@ class QuicCryptoClientStreamStatelessTest : public QuicTest {
 
   void AdvanceHandshakeWithFakeServer() {
     client_session_->GetMutableCryptoStream()->CryptoConnect();
-    EXPECT_CALL(*server_session_->helper(), CanAcceptClientHello(_, _, _))
+    EXPECT_CALL(*server_session_->helper(), CanAcceptClientHello(_, _, _, _, _))
         .Times(testing::AnyNumber());
     EXPECT_CALL(*server_session_->helper(), GenerateConnectionIdForReject(_))
         .Times(testing::AnyNumber());

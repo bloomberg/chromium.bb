@@ -426,7 +426,7 @@ void QuicCryptoClientConfig::ClearCachedStates(const ServerIdFilter& filter) {
 
 void QuicCryptoClientConfig::FillInchoateClientHello(
     const QuicServerId& server_id,
-    const QuicTransportVersion preferred_version,
+    const ParsedQuicVersion preferred_version,
     const CachedState* cached,
     QuicRandom* rand,
     bool demand_x509_proof,
@@ -503,7 +503,7 @@ void QuicCryptoClientConfig::FillInchoateClientHello(
 QuicErrorCode QuicCryptoClientConfig::FillClientHello(
     const QuicServerId& server_id,
     QuicConnectionId connection_id,
-    const QuicTransportVersion preferred_version,
+    const ParsedQuicVersion preferred_version,
     const CachedState* cached,
     QuicWallTime now,
     QuicRandom* rand,
@@ -671,7 +671,7 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
     std::unique_ptr<char[]> output(new char[encrypted_len]);
     size_t output_size = 0;
     if (!crypters.encrypter->EncryptPacket(
-            preferred_version, 0 /* packet number */,
+            preferred_version.transport_version, 0 /* packet number */,
             QuicStringPiece() /* associated data */,
             cetv_plaintext.AsStringPiece(), output.get(), &output_size,
             encrypted_len)) {
@@ -842,8 +842,8 @@ QuicErrorCode QuicCryptoClientConfig::ProcessRejection(
 QuicErrorCode QuicCryptoClientConfig::ProcessServerHello(
     const CryptoHandshakeMessage& server_hello,
     QuicConnectionId connection_id,
-    QuicTransportVersion version,
-    const QuicTransportVersionVector& negotiated_versions,
+    ParsedQuicVersion version,
+    const ParsedQuicVersionVector& negotiated_versions,
     CachedState* cached,
     QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> out_params,
     QuicString* error_details) {

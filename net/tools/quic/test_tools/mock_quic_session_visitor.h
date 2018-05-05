@@ -37,8 +37,10 @@ class MockQuicCryptoServerStreamHelper : public QuicCryptoServerStream::Helper {
   ~MockQuicCryptoServerStreamHelper() override;
   MOCK_CONST_METHOD1(GenerateConnectionIdForReject,
                      QuicConnectionId(QuicConnectionId connection_id));
-  MOCK_CONST_METHOD3(CanAcceptClientHello,
+  MOCK_CONST_METHOD5(CanAcceptClientHello,
                      bool(const CryptoHandshakeMessage& message,
+                          const QuicSocketAddress& client_address,
+                          const QuicSocketAddress& peer_address,
                           const QuicSocketAddress& self_address,
                           std::string* error_details));
 

@@ -203,9 +203,13 @@ class ChloAlpnExtractor : public ChloExtractor::Delegate {
 class ChloValidator : public ChloAlpnExtractor {
  public:
   ChloValidator(QuicCryptoServerStream::Helper* helper,
-                QuicSocketAddress self_address,
+                const QuicSocketAddress& client_address,
+                const QuicSocketAddress& peer_address,
+                const QuicSocketAddress& self_address,
                 StatelessRejector* rejector)
       : helper_(helper),
+        client_address_(client_address),
+        peer_address_(peer_address),
         self_address_(self_address),
         rejector_(rejector),
         can_accept_(false),
@@ -217,7 +221,8 @@ class ChloValidator : public ChloAlpnExtractor {
               const CryptoHandshakeMessage& chlo) override {
     // Extract the ALPN
     ChloAlpnExtractor::OnChlo(version, connection_id, chlo);
-    if (helper_->CanAcceptClientHello(chlo, self_address_, &error_details_)) {
+    if (helper_->CanAcceptClientHello(chlo, client_address_, peer_address_,
+                                      self_address_, &error_details_)) {
       can_accept_ = true;
       rejector_->OnChlo(version, connection_id,
                         helper_->GenerateConnectionIdForReject(connection_id),
@@ -231,6 +236,10 @@ class ChloValidator : public ChloAlpnExtractor {
 
  private:
   QuicCryptoServerStream::Helper* helper_;  // Unowned.
+  // client_address_ and peer_address_ could be different values for proxy
+  // connections.
+  QuicSocketAddress client_address_;
+  QuicSocketAddress peer_address_;
   QuicSocketAddress self_address_;
   StatelessRejector* rejector_;  // Unowned.
   bool can_accept_;
@@ -971,11 +980,12 @@ void QuicDispatcher::MaybeRejectStatelessly(QuicConnectionId connection_id,
   }
 
   std::unique_ptr<StatelessRejector> rejector(new StatelessRejector(
-      version.transport_version, GetSupportedTransportVersions(),
-      crypto_config_, &compressed_certs_cache_, helper()->GetClock(),
-      helper()->GetRandomGenerator(), current_packet_->length(),
-      current_client_address_, current_self_address_));
-  ChloValidator validator(session_helper_.get(), current_self_address_,
+      version, GetSupportedVersions(), crypto_config_, &compressed_certs_cache_,
+      helper()->GetClock(), helper()->GetRandomGenerator(),
+      current_packet_->length(), current_client_address_,
+      current_self_address_));
+  ChloValidator validator(session_helper_.get(), current_client_address_,
+                          current_peer_address_, current_self_address_,
                           rejector.get());
   if (!ChloExtractor::Extract(*current_packet_, GetSupportedVersions(),
                               config_.create_session_tag_indicators(),
@@ -1024,6 +1034,18 @@ void QuicDispatcher::OnStatelessRejectorProcessDone(
     const QuicSocketAddress& current_self_address,
     std::unique_ptr<QuicReceivedPacket> current_packet,
     ParsedQuicVersion first_version) {
+  const bool enable_l1_munge = GetQuicRestartFlag(quic_enable_l1_munge);
+  if (enable_l1_munge) {
+    // Reset current_* to correspond to the packet which initiated the stateless
+    // reject logic.
+    current_client_address_ = current_client_address;
+    current_peer_address_ = current_peer_address;
+    current_self_address_ = current_self_address;
+    current_packet_ = current_packet.get();
+    current_connection_id_ = rejector->connection_id();
+    framer_.set_version(first_version);
+  }
+
   // Stop buffering packets on this connection
   const auto num_erased =
       temporarily_buffered_connections_.erase(rejector->connection_id());
@@ -1040,14 +1062,16 @@ void QuicDispatcher::OnStatelessRejectorProcessDone(
     return;
   }
 
-  // Reset current_* to correspond to the packet which initiated the stateless
-  // reject logic.
-  current_client_address_ = current_client_address;
-  current_peer_address_ = current_peer_address;
-  current_self_address_ = current_self_address;
-  current_packet_ = current_packet.get();
-  current_connection_id_ = rejector->connection_id();
-  framer_.set_version(first_version);
+  if (!enable_l1_munge) {
+    // Reset current_* to correspond to the packet which initiated the stateless
+    // reject logic.
+    current_client_address_ = current_client_address;
+    current_peer_address_ = current_peer_address;
+    current_self_address_ = current_self_address;
+    current_packet_ = current_packet.get();
+    current_connection_id_ = rejector->connection_id();
+    framer_.set_version(first_version);
+  }
 
   ProcessStatelessRejectorState(std::move(rejector),
                                 first_version.transport_version);

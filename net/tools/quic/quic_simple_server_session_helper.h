@@ -22,6 +22,8 @@ class QuicSimpleServerSessionHelper : public QuicCryptoServerStream::Helper {
       QuicConnectionId /*connection_id*/) const override;
 
   bool CanAcceptClientHello(const CryptoHandshakeMessage& message,
+                            const QuicSocketAddress& client_address,
+                            const QuicSocketAddress& peer_address,
                             const QuicSocketAddress& self_address,
                             std::string* error_details) const override;
 

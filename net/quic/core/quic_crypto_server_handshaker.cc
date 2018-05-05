@@ -398,7 +398,8 @@ void QuicCryptoServerHandshaker::ProcessClientHello(
   const CryptoHandshakeMessage& message = result->client_hello;
   QuicString error_details;
   if (!helper_->CanAcceptClientHello(
-          message, session()->connection()->self_address(), &error_details)) {
+          message, GetClientAddress(), session()->connection()->peer_address(),
+          session()->connection()->self_address(), &error_details)) {
     done_cb->Run(QUIC_HANDSHAKE_FAILED, error_details, nullptr, nullptr,
                  nullptr);
     return;
@@ -428,11 +429,11 @@ void QuicCryptoServerHandshaker::ProcessClientHello(
       GenerateConnectionIdForReject(use_stateless_rejects_in_crypto_config);
   crypto_config_->ProcessClientHello(
       result, /*reject_only=*/false, connection->connection_id(),
-      connection->self_address(), GetClientAddress(), transport_version(),
-      ParsedVersionsToTransportVersions(connection->supported_versions()),
-      use_stateless_rejects_in_crypto_config, server_designated_connection_id,
-      connection->clock(), connection->random_generator(),
-      compressed_certs_cache_, crypto_negotiated_params_, signed_config_,
+      connection->self_address(), GetClientAddress(), connection->version(),
+      connection->supported_versions(), use_stateless_rejects_in_crypto_config,
+      server_designated_connection_id, connection->clock(),
+      connection->random_generator(), compressed_certs_cache_,
+      crypto_negotiated_params_, signed_config_,
       QuicCryptoStream::CryptoMessageFramingOverhead(transport_version()),
       chlo_packet_size_, std::move(done_cb));
 }

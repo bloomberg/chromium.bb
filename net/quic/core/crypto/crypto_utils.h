@@ -166,7 +166,19 @@ class QUIC_EXPORT_PRIVATE CryptoUtils {
   // code and sets |error_details|.
   static QuicErrorCode ValidateServerHello(
       const CryptoHandshakeMessage& server_hello,
-      const QuicTransportVersionVector& negotiated_versions,
+      const ParsedQuicVersionVector& negotiated_versions,
+      QuicString* error_details);
+
+  // Validates that the |server_versions| received do not indicate that the
+  // ServerHello is part of a downgrade attack. |negotiated_versions| must
+  // contain the list of versions received in the server's version negotiation
+  // packet (or be empty if no such packet was received).
+  //
+  // Returns QUIC_NO_ERROR if this is the case or returns the appropriate error
+  // code and sets |error_details|.
+  static QuicErrorCode ValidateServerHelloVersions(
+      const QuicVersionLabelVector& server_versions,
+      const ParsedQuicVersionVector& negotiated_versions,
       QuicString* error_details);
 
   // Validates that |client_hello| is actually a CHLO and that this is not part
@@ -177,8 +189,21 @@ class QUIC_EXPORT_PRIVATE CryptoUtils {
   // code and sets |error_details|.
   static QuicErrorCode ValidateClientHello(
       const CryptoHandshakeMessage& client_hello,
-      QuicTransportVersion version,
-      const QuicTransportVersionVector& supported_versions,
+      ParsedQuicVersion version,
+      const ParsedQuicVersionVector& supported_versions,
+      QuicString* error_details);
+
+  // Validates that the |client_version| received does not indicate that a
+  // downgrade attack has occurred. |connection_version| is the version of the
+  // QuicConnection, and |supported_versions| is all versions that that
+  // QuicConnection supports.
+  //
+  // Returns QUIC_NO_ERROR if this is the case or returns the appropriate error
+  // code and sets |error_details|.
+  static QuicErrorCode ValidateClientHelloVersion(
+      QuicVersionLabel client_version,
+      ParsedQuicVersion connection_version,
+      const ParsedQuicVersionVector& supported_versions,
       QuicString* error_details);
 
   // Returns the name of the HandshakeFailureReason as a char*

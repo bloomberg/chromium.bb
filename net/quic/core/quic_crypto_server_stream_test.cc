@@ -103,7 +103,7 @@ class QuicCryptoServerStreamTest : public QuicTestWithParam<bool> {
         &server_connection_, &server_session);
     CHECK(server_session);
     server_session_.reset(server_session);
-    EXPECT_CALL(*server_session_->helper(), CanAcceptClientHello(_, _, _))
+    EXPECT_CALL(*server_session_->helper(), CanAcceptClientHello(_, _, _, _, _))
         .Times(testing::AnyNumber());
     EXPECT_CALL(*server_session_->helper(), GenerateConnectionIdForReject(_))
         .Times(testing::AnyNumber());
@@ -390,7 +390,7 @@ TEST_P(QuicCryptoServerStreamTest, FailByPolicy) {
   Initialize();
   InitializeFakeClient(/* supports_stateless_rejects= */ false);
 
-  EXPECT_CALL(*server_session_->helper(), CanAcceptClientHello(_, _, _))
+  EXPECT_CALL(*server_session_->helper(), CanAcceptClientHello(_, _, _, _, _))
       .WillOnce(testing::Return(false));
   EXPECT_CALL(*server_connection_,
               CloseConnection(QUIC_HANDSHAKE_FAILED, _, _));
@@ -534,7 +534,7 @@ TEST_P(QuicCryptoServerStreamTestWithFailingProofSource, Test) {
   Initialize();
   InitializeFakeClient(/* supports_stateless_rejects= */ false);
 
-  EXPECT_CALL(*server_session_->helper(), CanAcceptClientHello(_, _, _))
+  EXPECT_CALL(*server_session_->helper(), CanAcceptClientHello(_, _, _, _, _))
       .WillOnce(testing::Return(true));
   EXPECT_CALL(*server_connection_,
               CloseConnection(QUIC_HANDSHAKE_FAILED, "Failed to get proof", _));
@@ -570,7 +570,7 @@ INSTANTIATE_TEST_CASE_P(YetMoreTests,
 TEST_P(QuicCryptoServerStreamTestWithFakeProofSource, MultipleChlo) {
   Initialize();
   GetFakeProofSource()->Activate();
-  EXPECT_CALL(*server_session_->helper(), CanAcceptClientHello(_, _, _))
+  EXPECT_CALL(*server_session_->helper(), CanAcceptClientHello(_, _, _, _, _))
       .WillOnce(testing::Return(true));
 
   // Create a minimal CHLO

@@ -5,7 +5,10 @@
 #include "net/quic/core/quic_version_manager.h"
 
 #include "net/quic/core/quic_versions.h"
+#include "net/quic/platform/api/quic_flag_utils.h"
 #include "net/quic/platform/api/quic_flags.h"
+
+#include <algorithm>
 
 namespace net {
 
@@ -56,8 +59,17 @@ void QuicVersionManager::RefilterSupportedVersions() {
       FilterSupportedVersions(allowed_supported_versions_);
   filtered_transport_versions_.clear();
   for (ParsedQuicVersion version : filtered_supported_versions_) {
-    filtered_transport_versions_.push_back(version.transport_version);
+    auto transport_version = version.transport_version;
+    if (!GetQuicReloadableFlag(
+            quic_version_manager_dedupe_transport_versions) ||
+        std::find(filtered_transport_versions_.begin(),
+                  filtered_transport_versions_.end(),
+                  transport_version) == filtered_transport_versions_.end()) {
+      filtered_transport_versions_.push_back(transport_version);
+    }
   }
+  QUIC_FLAG_COUNT(
+      quic_reloadable_flag_quic_version_manager_dedupe_transport_versions);
 }
 
 }  // namespace net

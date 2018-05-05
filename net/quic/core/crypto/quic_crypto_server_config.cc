@@ -534,8 +534,8 @@ class QuicCryptoServerConfig::ProcessClientHelloCallback
       bool reject_only,
       QuicConnectionId connection_id,
       const QuicSocketAddress& client_address,
-      QuicTransportVersion version,
-      const QuicTransportVersionVector& supported_versions,
+      ParsedQuicVersion version,
+      const ParsedQuicVersionVector& supported_versions,
       bool use_stateless_rejects,
       QuicConnectionId server_designated_connection_id,
       const QuicClock* clock,
@@ -594,8 +594,8 @@ class QuicCryptoServerConfig::ProcessClientHelloCallback
   const bool reject_only_;
   const QuicConnectionId connection_id_;
   const QuicSocketAddress client_address_;
-  const QuicTransportVersion version_;
-  const QuicTransportVersionVector supported_versions_;
+  const ParsedQuicVersion version_;
+  const ParsedQuicVersionVector supported_versions_;
   const bool use_stateless_rejects_;
   const QuicConnectionId server_designated_connection_id_;
   const QuicClock* const clock_;
@@ -619,8 +619,8 @@ void QuicCryptoServerConfig::ProcessClientHello(
     QuicConnectionId connection_id,
     const QuicSocketAddress& server_address,
     const QuicSocketAddress& client_address,
-    QuicTransportVersion version,
-    const QuicTransportVersionVector& supported_versions,
+    ParsedQuicVersion version,
+    const ParsedQuicVersionVector& supported_versions,
     bool use_stateless_rejects,
     QuicConnectionId server_designated_connection_id,
     const QuicClock* clock,
@@ -708,9 +708,9 @@ void QuicCryptoServerConfig::ProcessClientHello(
             compressed_certs_cache, params, signed_config,
             total_framing_overhead, chlo_packet_size, requested_config,
             primary_config, std::move(done_cb)));
-    proof_source_->GetProof(server_address, string(info.sni),
-                            primary_config->serialized, version, chlo_hash,
-                            std::move(cb));
+    proof_source_->GetProof(
+        server_address, string(info.sni), primary_config->serialized,
+        version.transport_version, chlo_hash, std::move(cb));
     helper.DetachCallback();
     return;
   }
@@ -732,8 +732,8 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterGetProof(
     bool reject_only,
     QuicConnectionId connection_id,
     const QuicSocketAddress& client_address,
-    QuicTransportVersion version,
-    const QuicTransportVersionVector& supported_versions,
+    ParsedQuicVersion version,
+    const ParsedQuicVersionVector& supported_versions,
     bool use_stateless_rejects,
     QuicConnectionId server_designated_connection_id,
     const QuicClock* clock,
@@ -769,8 +769,9 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterGetProof(
 
   std::unique_ptr<CryptoHandshakeMessage> out(new CryptoHandshakeMessage);
   if (!info.reject_reasons.empty() || !requested_config.get()) {
-    BuildRejection(version, clock->WallNow(), *primary_config, client_hello,
-                   info, validate_chlo_result.cached_network_params,
+    BuildRejection(version.transport_version, clock->WallNow(), *primary_config,
+                   client_hello, info,
+                   validate_chlo_result.cached_network_params,
                    use_stateless_rejects, server_designated_connection_id, rand,
                    compressed_certs_cache, params, *signed_config,
                    total_framing_overhead, chlo_packet_size, out.get());

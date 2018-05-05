@@ -36,17 +36,9 @@ QuicSpdyStream::QuicSpdyStream(QuicStreamId id, QuicSpdySession* spdy_session)
   // Don't receive any callbacks from the sequencer until headers
   // are complete.
   sequencer()->SetBlockedUntilFlush();
-  if (!session()->register_streams_early()) {
-    spdy_session_->RegisterStreamPriority(id, /*is_static=*/false, priority());
-  }
 }
 
-QuicSpdyStream::~QuicSpdyStream() {
-  if (spdy_session_ != nullptr && !session()->register_streams_early()) {
-    spdy_session_->UnregisterStreamPriority(id(),
-                                            /*is_static=*/false);
-  }
-}
+QuicSpdyStream::~QuicSpdyStream() {}
 
 size_t QuicSpdyStream::WriteHeaders(
     SpdyHeaderBlock header_block,
