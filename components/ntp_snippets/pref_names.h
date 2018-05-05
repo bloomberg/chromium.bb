@@ -69,7 +69,6 @@ extern const char kLastSuccessfulBackgroundFetchTime[];
 extern const char kDismissedAssetDownloadSuggestions[];
 extern const char kDismissedForeignSessionsSuggestions[];
 extern const char kDismissedOfflinePageDownloadSuggestions[];
-extern const char kDismissedRecentOfflineTabSuggestions[];
 
 extern const char kDismissedCategories[];
 

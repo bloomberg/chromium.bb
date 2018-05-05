@@ -32,7 +32,6 @@ const base::Feature* const kAllFeatures[] = {
     &kKeepPrefetchedContentSuggestions,
     &kNotificationsFeature,
     &kPublisherFaviconsFromNewServerFeature,
-    &kRecentOfflineTabSuggestionsFeature,
     &kRemoteSuggestionsBackendFeature,
     nullptr};
 
@@ -44,9 +43,6 @@ const base::Feature kArticleSuggestionsFeature{
 
 const base::Feature kBookmarkSuggestionsFeature{
     "NTPBookmarkSuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kRecentOfflineTabSuggestionsFeature{
-    "NTPOfflinePageSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kIncreasedVisibility{"NTPSnippetsIncreasedVisibility",
                                          base::FEATURE_ENABLED_BY_DEFAULT};

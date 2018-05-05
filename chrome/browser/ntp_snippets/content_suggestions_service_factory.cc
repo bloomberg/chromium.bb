@@ -81,14 +81,12 @@
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/offline_pages/prefetch/prefetch_service_factory.h"
 #include "chrome/browser/offline_pages/request_coordinator_factory.h"
-#include "components/ntp_snippets/offline_pages/recent_tab_suggestions_provider.h"
 #include "components/ntp_snippets/remote/prefetched_pages_tracker_impl.h"
 #include "components/offline_pages/core/background/request_coordinator.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
 #include "components/offline_pages/core/prefetch/suggested_articles_observer.h"
-#include "components/offline_pages/core/recent_tabs/recent_tabs_ui_adapter_delegate.h"
 #endif
 
 using bookmarks::BookmarkModel;
@@ -107,7 +105,6 @@ using ntp_snippets::GetFetchEndpoint;
 using ntp_snippets::IsBookmarkProviderEnabled;
 using ntp_snippets::IsDownloadsProviderEnabled;
 using ntp_snippets::IsForeignSessionsProviderEnabled;
-using ntp_snippets::IsRecentTabProviderEnabled;
 using ntp_snippets::PersistentScheduler;
 using ntp_snippets::PrefetchedPagesTracker;
 using ntp_snippets::RemoteSuggestionsDatabase;
@@ -131,7 +128,6 @@ using ntp_snippets::SubscriptionManagerImpl;
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
 using ntp_snippets::PrefetchedPagesTrackerImpl;
-using ntp_snippets::RecentTabSuggestionsProvider;
 using offline_pages::OfflinePageModel;
 using offline_pages::OfflinePageModelFactory;
 using offline_pages::RequestCoordinator;
@@ -153,23 +149,6 @@ using offline_pages::RequestCoordinatorFactory;
 namespace {
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
-
-void RegisterRecentTabProviderIfEnabled(ContentSuggestionsService* service,
-                                        Profile* profile,
-                                        OfflinePageModel* offline_page_model) {
-  if (!IsRecentTabProviderEnabled()) {
-    return;
-  }
-
-  RequestCoordinator* request_coordinator =
-      RequestCoordinatorFactory::GetForBrowserContext(profile);
-  offline_pages::DownloadUIAdapter* ui_adapter = offline_pages::
-      RecentTabsUIAdapterDelegate::GetOrCreateRecentTabsUIAdapter(
-          offline_page_model, request_coordinator);
-  auto provider = std::make_unique<RecentTabSuggestionsProvider>(
-      service, ui_adapter, profile->GetPrefs());
-  service->RegisterProvider(std::move(provider));
-}
 
 void RegisterWithPrefetching(ContentSuggestionsService* service,
                              Profile* profile) {
@@ -497,7 +476,6 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
 #endif  // OS_ANDROID
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
-  RegisterRecentTabProviderIfEnabled(service, profile, offline_page_model);
   RegisterWithPrefetching(service, profile);
 #endif
 

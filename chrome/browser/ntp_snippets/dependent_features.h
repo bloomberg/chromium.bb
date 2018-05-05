@@ -17,8 +17,6 @@ bool IsDownloadsProviderEnabled();
 
 bool IsBookmarkProviderEnabled();
 
-bool IsRecentTabProviderEnabled();
-
 bool IsPhysicalWebPageProviderEnabled();
 
 bool IsForeignSessionsProviderEnabled();

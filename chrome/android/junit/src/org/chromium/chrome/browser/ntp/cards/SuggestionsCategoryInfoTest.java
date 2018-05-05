@@ -42,24 +42,6 @@ public class SuggestionsCategoryInfoTest {
     }
 
     @Test
-    public void testRecentTabContextMenu() {
-        SuggestionsCategoryInfo categoryInfo =
-                new CategoryInfoBuilder(KnownCategories.RECENT_TABS).build();
-        assertThat(
-                categoryInfo.isContextMenuItemSupported(ContextMenuManager.ID_OPEN_IN_NEW_WINDOW),
-                is(false));
-        assertThat(categoryInfo.isContextMenuItemSupported(ContextMenuManager.ID_OPEN_IN_NEW_TAB),
-                is(false));
-        assertThat(categoryInfo.isContextMenuItemSupported(
-                           ContextMenuManager.ID_OPEN_IN_INCOGNITO_TAB),
-                is(false));
-        assertThat(categoryInfo.isContextMenuItemSupported(ContextMenuManager.ID_SAVE_FOR_OFFLINE),
-                is(false));
-        assertThat(
-                categoryInfo.isContextMenuItemSupported(ContextMenuManager.ID_REMOVE), nullValue());
-    }
-
-    @Test
     public void testArticleContextMenu() {
         SuggestionsCategoryInfo categoryInfo =
                 new CategoryInfoBuilder(KnownCategories.ARTICLES).build();

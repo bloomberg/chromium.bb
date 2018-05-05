@@ -6918,7 +6918,7 @@ Called by update_net_error_codes.py.-->
 
 <enum name="ContentSuggestionsCategory">
   <int value="0" label="Experimental"/>
-  <int value="1" label="Recent Tabs"/>
+  <int value="1" label="Recent Tabs (obsolete)"/>
   <int value="2" label="Downloads"/>
   <int value="3" label="Bookmarks"/>
   <int value="4" label="Physical Web Pages (obsolete)"/>

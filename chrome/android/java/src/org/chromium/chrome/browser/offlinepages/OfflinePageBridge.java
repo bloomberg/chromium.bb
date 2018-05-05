@@ -612,19 +612,9 @@ public class OfflinePageBridge {
         return nativeIsShowingDownloadButtonInErrorPage(mNativeOfflinePageBridge, webContents);
     }
 
-    /** Tells the native side that a new tab has been added for this profile. */
-    void registerRecentTab(int tabId) {
-        nativeRegisterRecentTab(mNativeOfflinePageBridge, tabId);
-    }
-
     /** Tells the native side that the tab of |webContents| will be closed. */
     void willCloseTab(WebContents webContents) {
         nativeWillCloseTab(mNativeOfflinePageBridge, webContents);
-    }
-
-    /** Tells the native side that a new tab has been removed for this profile. */
-    void unregisterRecentTab(int tabId) {
-        nativeUnregisterRecentTab(mNativeOfflinePageBridge, tabId);
     }
 
     /**
@@ -829,9 +819,7 @@ public class OfflinePageBridge {
     @VisibleForTesting
     native void nativeGetAllPages(long nativeOfflinePageBridge, List<OfflinePageItem> offlinePages,
             final Callback<List<OfflinePageItem>> callback);
-    private native void nativeRegisterRecentTab(long nativeOfflinePageBridge, int tabId);
     private native void nativeWillCloseTab(long nativeOfflinePageBridge, WebContents webContents);
-    private native void nativeUnregisterRecentTab(long nativeOfflinePageBridge, int tabId);
 
     @VisibleForTesting
     native void nativeGetRequestsInQueue(

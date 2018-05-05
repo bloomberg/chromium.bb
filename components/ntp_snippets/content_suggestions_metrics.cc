@@ -81,7 +81,7 @@ const char kPerCategoryHistogramFormat[] = "%s.%s";
 // sync with ContentSuggestionsCategory in histograms.xml.
 enum class HistogramCategories {
   EXPERIMENTAL,
-  RECENT_TABS,
+  RECENT_TABS_DEPRECATED,
   DOWNLOADS,
   BOOKMARKS,
   PHYSICAL_WEB_PAGES_DEPRECATED,
@@ -104,8 +104,6 @@ HistogramCategories GetHistogramCategory(Category category) {
   // listed here.
   auto known_category = static_cast<KnownCategories>(category.id());
   switch (known_category) {
-    case KnownCategories::RECENT_TABS:
-      return HistogramCategories::RECENT_TABS;
     case KnownCategories::DOWNLOADS:
       return HistogramCategories::DOWNLOADS;
     case KnownCategories::BOOKMARKS:
@@ -118,6 +116,7 @@ HistogramCategories GetHistogramCategory(Category category) {
       return HistogramCategories::READING_LIST;
     case KnownCategories::CONTEXTUAL:
       return HistogramCategories::CONTEXTUAL;
+    case KnownCategories::RECENT_TABS_DEPRECATED:
     case KnownCategories::PHYSICAL_WEB_PAGES_DEPRECATED:
     case KnownCategories::LOCAL_CATEGORIES_COUNT:
     case KnownCategories::REMOTE_CATEGORIES_OFFSET:
@@ -133,8 +132,6 @@ HistogramCategories GetHistogramCategory(Category category) {
 std::string GetCategorySuffix(Category category) {
   HistogramCategories histogram_category = GetHistogramCategory(category);
   switch (histogram_category) {
-    case HistogramCategories::RECENT_TABS:
-      return "RecentTabs";
     case HistogramCategories::DOWNLOADS:
       return "Downloads";
     case HistogramCategories::BOOKMARKS:
@@ -149,6 +146,7 @@ std::string GetCategorySuffix(Category category) {
       return "ReadingList";
     case HistogramCategories::CONTEXTUAL:
       return "Contextual";
+    case HistogramCategories::RECENT_TABS_DEPRECATED:
     case HistogramCategories::PHYSICAL_WEB_PAGES_DEPRECATED:
     case HistogramCategories::COUNT:
       NOTREACHED();

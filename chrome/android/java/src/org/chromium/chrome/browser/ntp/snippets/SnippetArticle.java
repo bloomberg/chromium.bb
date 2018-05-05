@@ -242,30 +242,7 @@ public class SnippetArticle implements OfflinableSuggestion {
 
     @Override
     public boolean requiresExactOfflinePage() {
-        return isDownload() || isRecentTab();
-    }
-
-    public boolean isRecentTab() {
-        return mCategory == KnownCategories.RECENT_TABS;
-    }
-
-    /**
-     * @return the corresponding recent tab id. May only be called if this snippet is a recent tab
-     * article.
-     */
-    public int getRecentTabId() {
-        assert isRecentTab();
-        return mRecentTabId;
-    }
-
-    /**
-     * Sets tab id and offline page id for recent tab articles. May only be called if this snippet
-     * is a recent tab article.
-     */
-    public void setRecentTabData(int tabId, long offlinePageId) {
-        assert isRecentTab();
-        mRecentTabId = tabId;
-        setOfflinePageOfflineId(offlinePageId);
+        return isDownload();
     }
 
     @Override
