@@ -400,7 +400,7 @@ void AppBannerManager::ResetBindings() {
 
 void AppBannerManager::ResetCurrentPageData() {
   active_media_players_.clear();
-  manifest_ = blink::Manifest();
+  manifest_ = content::Manifest();
   manifest_url_ = GURL();
   validated_url_ = GURL();
   referrer_.erase();
