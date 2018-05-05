@@ -17,7 +17,6 @@
 #include "base/observer_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_order_controller.h"
-#include "chrome/browser/ui/tabs/web_contents_closer.h"
 #include "ui/base/models/list_selection_model.h"
 #include "ui/base/page_transition_types.h"
 
@@ -56,7 +55,7 @@ class WebContents;
 // its bookkeeping when such events happen.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class TabStripModel : public WebContentsCloseDelegate {
+class TabStripModel {
  public:
   // Used to specify what should happen when the tab is closed.
   enum CloseTypes {
@@ -122,7 +121,7 @@ class TabStripModel : public WebContentsCloseDelegate {
   // Construct a TabStripModel with a delegate to help it do certain things
   // (see the TabStripModelDelegate documentation). |delegate| cannot be NULL.
   explicit TabStripModel(TabStripModelDelegate* delegate, Profile* profile);
-  ~TabStripModel() override;
+  ~TabStripModel();
 
   // Retrieves the TabStripModelDelegate associated with this TabStripModel.
   TabStripModelDelegate* delegate() const { return delegate_; }
@@ -438,13 +437,11 @@ class TabStripModel : public WebContentsCloseDelegate {
     kUserGesture,
   };
 
-  // WebContentsCloseDelegate:
-  bool ContainsWebContents(content::WebContents* contents) override;
+  bool ContainsWebContents(content::WebContents* contents);
   void OnWillDeleteWebContents(content::WebContents* contents,
-                               uint32_t close_types) override;
-  bool RunUnloadListenerBeforeClosing(content::WebContents* contents) override;
-  bool ShouldRunUnloadListenerBeforeClosing(
-      content::WebContents* contents) override;
+                               uint32_t close_types);
+  bool RunUnloadListenerBeforeClosing(content::WebContents* contents);
+  bool ShouldRunUnloadListenerBeforeClosing(content::WebContents* contents);
 
   int ConstrainInsertionIndex(int index, bool pinned_tab);
 
@@ -482,6 +479,17 @@ class TabStripModel : public WebContentsCloseDelegate {
   // are waiting for the result of an onunload handler.
   bool InternalCloseTabs(base::span<content::WebContents* const> items,
                          uint32_t close_types);
+
+  // |close_types| is a bitmask of the types in CloseTypes.
+  // Returns true if all the tabs have been deleted. A return value of false
+  // means some portion (potentially none) of the WebContents were deleted.
+  // WebContents not deleted by this function are processing unload handlers
+  // which may eventually be deleted based on the results of the unload handler.
+  // Additionally processing the unload handlers may result in needing to show
+  // UI for the WebContents. See UnloadController for details on how unload
+  // handlers are processed.
+  bool CloseWebContentses(base::span<content::WebContents* const> items,
+                          uint32_t close_types);
 
   // Gets the WebContents at an index. Does no bounds checking.
   content::WebContents* GetWebContentsAtImpl(int index) const;

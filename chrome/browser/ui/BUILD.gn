@@ -1486,8 +1486,6 @@ split_static_library("ui") {
       "tabs/tab_strip_model_stats_recorder.h",
       "tabs/tab_utils.cc",
       "tabs/tab_utils.h",
-      "tabs/web_contents_closer.cc",
-      "tabs/web_contents_closer.h",
       "tabs/window_activity_watcher.cc",
       "tabs/window_activity_watcher.h",
       "tabs/window_features.cc",
