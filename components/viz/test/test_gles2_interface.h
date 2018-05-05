@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_VIZ_TEST_TEST_GLES2_INTERFACE_H_
 #define COMPONENTS_VIZ_TEST_TEST_GLES2_INTERFACE_H_
 
+#include <stddef.h>
+
 #include "gpu/command_buffer/client/gles2_interface_stub.h"
 
 namespace viz {
@@ -159,7 +161,10 @@ class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
   void LoseContextCHROMIUM(GLenum current, GLenum other) override;
   GLenum GetGraphicsResetStatusKHR() override;
 
+  size_t NumTextures() const;
+
   void set_test_context(TestWebGraphicsContext3D* context);
+  void set_times_bind_texture_succeeds(int times);
 
  protected:
   virtual void InitializeTestContext(TestWebGraphicsContext3D* context) {}

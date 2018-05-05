@@ -65,6 +65,7 @@
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "components/viz/test/fake_output_surface.h"
+#include "components/viz/test/test_gles2_interface.h"
 #include "components/viz/test/test_layer_tree_frame_sink.h"
 #include "components/viz/test/test_web_graphics_context_3d.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -8143,8 +8144,30 @@ class LayerTreeHostTestSubmitFrameMetadata : public LayerTreeHostTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSubmitFrameMetadata);
 
+class VideoGLES2Interface : public viz::TestGLES2Interface {
+ public:
+  VideoGLES2Interface() = default;
+
+  void InitializeTestContext(viz::TestWebGraphicsContext3D* context) override {
+    context->set_have_extension_egl_image(true);
+  }
+};
+
 class LayerTreeHostTestSubmitFrameResources : public LayerTreeHostTest {
  protected:
+  std::unique_ptr<viz::TestLayerTreeFrameSink> CreateLayerTreeFrameSink(
+      const viz::RendererSettings& renderer_settings,
+      double refresh_rate,
+      scoped_refptr<viz::ContextProvider> compositor_context_provider,
+      scoped_refptr<viz::RasterContextProvider> worker_context_provider)
+      override {
+    auto provider = viz::TestContextProvider::Create(
+        std::make_unique<VideoGLES2Interface>());
+    return LayerTreeTest::CreateLayerTreeFrameSink(
+        renderer_settings, refresh_rate, std::move(provider),
+        std::move(worker_context_provider));
+  }
+
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,

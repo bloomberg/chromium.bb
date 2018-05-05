@@ -380,10 +380,18 @@ GLenum TestGLES2Interface::GetGraphicsResetStatusKHR() {
   return GL_NO_ERROR;
 }
 
+size_t TestGLES2Interface::NumTextures() const {
+  return test_context_->NumTextures();
+}
+
 void TestGLES2Interface::set_test_context(TestWebGraphicsContext3D* context) {
   DCHECK(!test_context_);
   test_context_ = context;
   InitializeTestContext(test_context_);
+}
+
+void TestGLES2Interface::set_times_bind_texture_succeeds(int times) {
+  test_context_->set_times_bind_texture_succeeds(times);
 }
 
 }  // namespace viz
