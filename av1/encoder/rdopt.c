@@ -8068,7 +8068,6 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   best_compound_data.seg_mask = tmp_mask_buf;
   RD_STATS best_rd_stats, best_rd_stats_y, best_rd_stats_uv;
   int64_t best_rd = INT64_MAX;
-  int best_compound_idx = 1;
   int64_t best_ret_val = INT64_MAX;
   uint8_t best_blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE];
   MB_MODE_INFO best_mbmi = *mbmi;
@@ -8426,7 +8425,6 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
           best_rd_stats = *rd_stats;
           best_rd_stats_y = *rd_stats_y;
           best_rd_stats_uv = *rd_stats_uv;
-          best_compound_idx = mbmi->compound_idx;
           best_ret_val = ret_val;
           best_rd = tmp_rd;
           best_mbmi = *mbmi;
@@ -8459,7 +8457,6 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     *rd_stats = best_rd_stats;
     *rd_stats_y = best_rd_stats_y;
     *rd_stats_uv = best_rd_stats_uv;
-    mbmi->compound_idx = best_compound_idx;
     ret_val = best_ret_val;
     *mbmi = best_mbmi;
     memcpy(x->blk_skip, best_blk_skip,
