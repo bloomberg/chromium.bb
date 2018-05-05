@@ -95,7 +95,6 @@ class CHROMEOS_EXPORT UserContext {
   void SetIsUsingPin(bool is_using_pin);
   void SetIsForcingDircrypto(bool is_forcing_dircrypto);
   void SetAuthFlow(AuthFlow auth_flow);
-  void SetUserType(user_manager::UserType user_type);
   void SetPublicSessionLocale(const std::string& locale);
   void SetPublicSessionInputMethod(const std::string& input_method);
   void SetDeviceId(const std::string& device_id);

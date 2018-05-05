@@ -56,7 +56,7 @@ class ForceMaximizeOnFirstRunTest : public LoginPolicyTestBase {
 IN_PROC_BROWSER_TEST_F(ForceMaximizeOnFirstRunTest, PRE_TwoRuns) {
   SetUpResolution();
   SkipToLoginScreen();
-  LogIn(kAccountId, kAccountPassword);
+  LogIn(kAccountId, kAccountPassword, kEmptyServices);
 
   // Check that the first browser window is maximized.
   const BrowserList* const browser_list = BrowserList::GetInstance();
@@ -81,7 +81,7 @@ IN_PROC_BROWSER_TEST_F(ForceMaximizeOnFirstRunTest, TwoRuns) {
   content::WindowedNotificationObserver(
       chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
       content::NotificationService::AllSources()).Wait();
-  LogIn(kAccountId, kAccountPassword);
+  LogIn(kAccountId, kAccountPassword, kEmptyServices);
 
   const Browser* const browser = OpenNewBrowserWindow();
   ASSERT_TRUE(browser);
@@ -103,7 +103,7 @@ class ForceMaximizePolicyFalseTest : public ForceMaximizeOnFirstRunTest {
 IN_PROC_BROWSER_TEST_F(ForceMaximizePolicyFalseTest, GeneralFirstRun) {
   SetUpResolution();
   SkipToLoginScreen();
-  LogIn(kAccountId, kAccountPassword);
+  LogIn(kAccountId, kAccountPassword, kEmptyServices);
 
   const BrowserList* const browser_list = BrowserList::GetInstance();
   EXPECT_EQ(1U, browser_list->size());

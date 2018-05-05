@@ -32,6 +32,8 @@ constexpr char kTestSessionLSIDCookie[] = "fake-session-LSID-cookie";
 
 const char LoginPolicyTestBase::kAccountPassword[] = "letmein";
 const char LoginPolicyTestBase::kAccountId[] = "user@example.com";
+// Empty services list for userInfo.
+const char LoginPolicyTestBase::kEmptyServices[] = "[]";
 
 LoginPolicyTestBase::LoginPolicyTestBase() {
   set_open_about_blank_on_browser_launch(false);
@@ -109,8 +111,9 @@ void LoginPolicyTestBase::SkipToLoginScreen() {
 }
 
 void LoginPolicyTestBase::LogIn(const std::string& user_id,
-                                const std::string& password) {
-  GetLoginDisplay()->ShowSigninScreenForCreds(user_id, password);
+                                const std::string& password,
+                                const std::string& services) {
+  GetLoginDisplay()->ShowSigninScreenForTest(user_id, password, services);
 
   content::WindowedNotificationObserver(
       chrome::NOTIFICATION_SESSION_STARTED,

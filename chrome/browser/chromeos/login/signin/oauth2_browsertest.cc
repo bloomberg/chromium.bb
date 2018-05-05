@@ -69,6 +69,7 @@ const char kTestGaiaId[] = "12345";
 const char kTestEmail[] = "username@gmail.com";
 const char kTestRawEmail[] = "User.Name@gmail.com";
 const char kTestAccountPassword[] = "fake-password";
+const char kTestAccountServices[] = "[]";
 const char kTestAuthCode[] = "fake-auth-code";
 const char kTestGaiaUberToken[] = "fake-uber-token";
 const char kTestAuthLoginAccessToken[] = "fake-access-token";
@@ -381,8 +382,8 @@ class OAuth2Test : public OobeBaseTest {
 
     // Use capitalized and dotted user name on purpose to make sure
     // our email normalization kicks in.
-    GetLoginDisplay()->ShowSigninScreenForCreds(kTestRawEmail,
-                                                kTestAccountPassword);
+    GetLoginDisplay()->ShowSigninScreenForTest(
+        kTestRawEmail, kTestAccountPassword, kTestAccountServices);
     session_start_waiter.Wait();
 
     if (wait_for_merge) {
@@ -620,7 +621,8 @@ IN_PROC_BROWSER_TEST_F(OAuth2Test, TerminateOnBadMergeSessionAfterOnlineAuth) {
   fake_gaia_->SetMergeSessionParams(params);
 
   // Simulate an online sign-in.
-  GetLoginDisplay()->ShowSigninScreenForCreds(kTestEmail, kTestAccountPassword);
+  GetLoginDisplay()->ShowSigninScreenForTest(kTestEmail, kTestAccountPassword,
+                                             kTestAccountServices);
 
   // User session should be terminated.
   termination_waiter.Wait();

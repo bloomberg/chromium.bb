@@ -31,8 +31,12 @@ void OAuth2TokenInitializer::OnOAuth2TokensAvailable(
   user_context_.SetAuthCode(std::string());
   user_context_.SetRefreshToken(result.refresh_token);
   user_context_.SetAccessToken(result.access_token);
-  if (result.is_child_account) {
-    user_context_.SetUserType(user_manager::USER_TYPE_CHILD);
+  if (result.is_child_account &&
+      user_context_.GetUserType() != user_manager::USER_TYPE_CHILD) {
+    LOG(FATAL) << "Incorrect child user type " << user_context_.GetUserType();
+  } else if (user_context_.GetUserType() == user_manager::USER_TYPE_CHILD &&
+             !result.is_child_account) {
+    LOG(FATAL) << "Incorrect non-child token for the child user.";
   }
   callback_.Run(true, user_context_);
 }

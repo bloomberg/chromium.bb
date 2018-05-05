@@ -240,6 +240,7 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, Basic) {
       chrome::NOTIFICATION_SESSION_STARTED,
       content::NotificationService::AllSources());
 
+  SetSignFormField("services", "[]");
   SetSignFormField("password", OobeBaseTest::kFakeUserPassword);
   ClickNext();
 
@@ -274,6 +275,7 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, DISABLED_BackButton) {
       content::NotificationService::AllSources());
 
   // Finish sign-up.
+  SetSignFormField("services", "[]");
   SetSignFormField("password", OobeBaseTest::kFakeUserPassword);
   ClickNext();
 

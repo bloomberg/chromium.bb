@@ -105,7 +105,8 @@ IN_PROC_BROWSER_TEST_F(ChromeSessionManagerTest, OobeNewUser) {
 
   LoginDisplayWebUI* login_display = static_cast<LoginDisplayWebUI*>(
       ExistingUserController::current_controller()->login_display());
-  login_display->ShowSigninScreenForCreds(kTestUsers[0].email, "fake_password");
+  login_display->ShowSigninScreenForTest(kTestUsers[0].email, "fake_password",
+                                         "[]");
 
   session_start_waiter.Wait();
 

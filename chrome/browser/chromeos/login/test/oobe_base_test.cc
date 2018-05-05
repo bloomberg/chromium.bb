@@ -49,6 +49,7 @@ constexpr char kTestAllScopeAccessToken[] = "fake-all-scope-token";
 const char OobeBaseTest::kFakeUserEmail[] = "fake-email@gmail.com";
 const char OobeBaseTest::kFakeUserPassword[] = "fake-password";
 const char OobeBaseTest::kFakeUserGaiaId[] = "fake-gaiaId";
+const char OobeBaseTest::kEmptyUserServices[] = "[]";
 const char OobeBaseTest::kFakeSIDCookie[] = "fake-SID-cookie";
 const char OobeBaseTest::kFakeLSIDCookie[] = "fake-LSID-cookie";
 

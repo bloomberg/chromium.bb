@@ -71,7 +71,7 @@ class LoginUtilsTest : public OobeBaseTest {
         static_cast<LoginDisplayWebUI*>(controller->login_display());
     ASSERT_TRUE(login_display);
 
-    login_display->ShowSigninScreenForCreds(username, "password");
+    login_display->ShowSigninScreenForTest(username, "password", "[]");
 
     // Wait for the session to start after submitting the credentials. This
     // will wait until all the background requests are done.

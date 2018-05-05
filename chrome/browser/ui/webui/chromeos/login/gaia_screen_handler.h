@@ -159,8 +159,10 @@ class GaiaScreenHandler : public BaseScreenHandler,
                 const authpolicy::ActiveDirectoryAccountInfo& account_info);
 
   // Show sign-in screen for the given credentials.
+  // Should match the same method in SigninScreenHandler.
   void ShowSigninScreenForTest(const std::string& username,
-                               const std::string& password);
+                               const std::string& password,
+                               const std::string& services);
   // Attempts login for test.
   void SubmitLoginFormForTest();
 
@@ -252,6 +254,8 @@ class GaiaScreenHandler : public BaseScreenHandler,
   // Test credentials.
   std::string test_user_;
   std::string test_pass_;
+  // Test result of userInfo.
+  std::string test_services_;
   bool test_expects_complete_login_ = false;
 
   // True if proxy doesn't allow access to google.com/generate_204.

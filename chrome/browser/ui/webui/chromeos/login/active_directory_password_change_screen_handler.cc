@@ -111,8 +111,6 @@ void ActiveDirectoryPasswordChangeScreenHandler::OnAuthFinished(
       user_context.SetKey(key);
       user_context.SetAuthFlow(UserContext::AUTH_FLOW_ACTIVE_DIRECTORY);
       user_context.SetIsUsingOAuth(false);
-      user_context.SetUserType(
-          user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY);
       LoginDisplayHost::default_host()->CompleteLogin(user_context);
       break;
     }

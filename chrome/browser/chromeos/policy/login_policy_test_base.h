@@ -41,10 +41,14 @@ class LoginPolicyTestBase : public chromeos::OobeBaseTest {
   }
 
   void SkipToLoginScreen();
-  void LogIn(const std::string& user_id, const std::string& password);
+  // Should match ShowSigninScreenForTest method in SigninScreenHandler.
+  void LogIn(const std::string& user_id,
+             const std::string& password,
+             const std::string& services);
 
   static const char kAccountPassword[];
   static const char kAccountId[];
+  static const char kEmptyServices[];
 
  private:
   void SetUpGaiaServerWithAccessTokens();

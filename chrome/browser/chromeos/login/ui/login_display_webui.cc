@@ -267,10 +267,11 @@ void LoginDisplayWebUI::SetWebUIHandler(
   SignInScreenController::Get()->SetWebUIHandler(webui_handler_);
 }
 
-void LoginDisplayWebUI::ShowSigninScreenForCreds(const std::string& username,
-                                                 const std::string& password) {
+void LoginDisplayWebUI::ShowSigninScreenForTest(const std::string& username,
+                                                const std::string& password,
+                                                const std::string& services) {
   if (webui_handler_)
-    webui_handler_->ShowSigninScreenForCreds(username, password);
+    webui_handler_->ShowSigninScreenForTest(username, password, services);
 }
 
 bool LoginDisplayWebUI::IsShowGuest() const {

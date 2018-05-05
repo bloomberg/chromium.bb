@@ -40,6 +40,9 @@ const char kIdTokenChildAccount[] =
     "eyAic2VydmljZXMiOiBbInVjYSJdIH0="
     ".dummy-signature";
 
+// Services list for the child user. (This must be a correct JSON array.)
+const char kChildServices[] = "[\"uca\"]";
+
 // Helper class that counts the number of notifications of the specified
 // type that have been received.
 class CountNotificationObserver : public content::NotificationObserver {
@@ -98,7 +101,7 @@ IN_PROC_BROWSER_TEST_F(UserCloudPolicyManagerTest, StartSession) {
             user_manager::known_user::GetProfileRequiresPolicy(account_id));
 
   SkipToLoginScreen();
-  LogIn(kAccountId, kAccountPassword);
+  LogIn(kAccountId, kAccountPassword, kEmptyServices);
 
   // User should be marked as having a valid OAuth token.
   const user_manager::UserManager* const user_manager =
@@ -134,7 +137,8 @@ IN_PROC_BROWSER_TEST_F(UserCloudPolicyManagerTest, ErrorLoadingPolicy) {
   CountNotificationObserver observer(
       chrome::NOTIFICATION_SESSION_STARTED,
       content::NotificationService::AllSources());
-  GetLoginDisplay()->ShowSigninScreenForCreds(kAccountId, kAccountPassword);
+  GetLoginDisplay()->ShowSigninScreenForTest(kAccountId, kAccountPassword,
+                                             kEmptyServices);
   base::RunLoop().Run();
   // Should not receive a SESSION_STARTED notification.
   ASSERT_EQ(0, observer.notification_count());
@@ -163,7 +167,7 @@ IN_PROC_BROWSER_TEST_F(UserCloudPolicyManagerTest,
   // Delete the policy file - this will cause a 500 error on policy requests.
   user_policy_helper()->DeletePolicyFile();
   SkipToLoginScreen();
-  LogIn(kAccountId, kAccountPassword);
+  LogIn(kAccountId, kAccountPassword, kEmptyServices);
 
   // User should be marked as having a valid OAuth token.
   const user_manager::UserManager* const user_manager =
@@ -202,7 +206,7 @@ IN_PROC_BROWSER_TEST_F(UserCloudPolicyManagerTest, MigrateForExistingUser) {
   // Delete the policy file - this will cause a 500 error on policy requests.
   user_policy_helper()->DeletePolicyFile();
   SkipToLoginScreen();
-  LogIn(kAccountId, kAccountPassword);
+  LogIn(kAccountId, kAccountPassword, kEmptyServices);
 
   // User should be marked as having a valid OAuth token.
   EXPECT_EQ(user_manager::User::OAUTH2_TOKEN_STATUS_VALID,
@@ -254,7 +258,7 @@ IN_PROC_BROWSER_TEST_F(UserCloudPolicyManagerNonEnterpriseTest,
             user_manager::known_user::GetProfileRequiresPolicy(account_id));
 
   SkipToLoginScreen();
-  LogIn(GetAccount(), kAccountPassword);
+  LogIn(GetAccount(), kAccountPassword, kEmptyServices);
 
   // User should be marked as having a valid OAuth token.
   const user_manager::UserManager* const user_manager =
@@ -302,7 +306,7 @@ IN_PROC_BROWSER_TEST_F(UserCloudPolicyManagerChildTest, PolicyForChildUser) {
             user_manager::known_user::GetProfileRequiresPolicy(account_id));
 
   SkipToLoginScreen();
-  LogIn(GetAccount(), kAccountPassword);
+  LogIn(GetAccount(), kAccountPassword, kChildServices);
 
   // User should be marked as having a valid OAuth token.
   const user_manager::UserManager* const user_manager =

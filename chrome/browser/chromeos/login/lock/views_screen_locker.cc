@@ -179,8 +179,12 @@ void ViewsScreenLocker::HandleAuthenticateUser(
   user_context.SetKey(Key(key_type, std::string(), hashed_password));
   user_context.SetIsUsingPin(authenticated_by_pin);
   user_context.SetSyncPasswordData(sync_password_data);
-  if (account_id.GetAccountType() == AccountType::ACTIVE_DIRECTORY)
-    user_context.SetUserType(user_manager::USER_TYPE_ACTIVE_DIRECTORY);
+  if (account_id.GetAccountType() == AccountType::ACTIVE_DIRECTORY &&
+      (user_context.GetUserType() !=
+       user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY)) {
+    LOG(FATAL) << "Incorrect Active Directory user type "
+               << user_context.GetUserType();
+  }
   ScreenLocker::default_screen_locker()->Authenticate(user_context,
                                                       std::move(callback));
   UpdatePinKeyboardState(account_id);

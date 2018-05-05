@@ -15,8 +15,6 @@
 #include "chromeos/chromeos_export.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 
-class AccountId;
-
 namespace chromeos {
 
 class AuthStatusConsumer;
@@ -69,16 +67,6 @@ class CHROMEOS_EXPORT ExtendedAuthenticator
   // label) in |context|. No further actions are taken after authentication.
   virtual void AuthenticateToCheck(const UserContext& context,
                                    const base::Closure& success_callback) = 0;
-
-  // This call will create and mount the home dir for |account_id| with the
-  // given |keys| if the home dir is missing. If the home dir exists already, a
-  // mount attempt will be performed using the first key in |keys| for
-  // authentication.  Note that all |keys| should have been transformed from
-  // plain text already.
-  // This method does not alter them.
-  virtual void CreateMount(const AccountId& account_id,
-                           const std::vector<cryptohome::KeyDefinition>& keys,
-                           const ResultCallback& success_callback) = 0;
 
   // Attempts to add a new |key| for the user identified/authorized by
   // |context|. If a key with the same label already exists, the behavior
