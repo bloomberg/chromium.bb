@@ -11,14 +11,11 @@
 #include "chrome/browser/devtools/protocol/forward.h"
 #include "chrome/browser/devtools/protocol/target.h"
 #include "chrome/browser/media/router/presentation/independent_otr_profile_manager.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list_observer.h"
 #include "net/base/host_port_pair.h"
 
 using RemoteLocations = std::set<net::HostPortPair>;
 
-class TargetHandler : public protocol::Target::Backend,
-                      public BrowserListObserver {
+class TargetHandler : public protocol::Target::Backend {
  public:
   explicit TargetHandler(protocol::UberDispatcher* dispatcher);
   ~TargetHandler() override;
@@ -37,22 +34,16 @@ class TargetHandler : public protocol::Target::Backend,
       protocol::Maybe<std::string> browser_context_id,
       protocol::Maybe<bool> enable_begin_frame_control,
       std::string* out_target_id) override;
-  void DisposeBrowserContext(
-      const std::string& context_id,
-      std::unique_ptr<DisposeBrowserContextCallback> callback) override;
+  protocol::Response DisposeBrowserContext(const std::string& context_id,
+                                           bool* out_success) override;
 
  private:
   void OnOriginalProfileDestroyed(Profile* profile);
-
-  void OnBrowserRemoved(Browser* browser) override;
 
   base::flat_map<
       std::string,
       std::unique_ptr<IndependentOTRProfileManager::OTRProfileRegistration>>
       registrations_;
-  base::flat_map<std::string, std::unique_ptr<DisposeBrowserContextCallback>>
-      pending_context_disposals_;
-
   RemoteLocations remote_locations_;
 
   base::WeakPtrFactory<TargetHandler> weak_factory_;

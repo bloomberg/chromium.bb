@@ -36,15 +36,6 @@ BrowserList::BrowserVector GetBrowsersToClose(Profile* profile) {
   return browsers_to_close;
 }
 
-BrowserList::BrowserVector GetIncognitoBrowsersToClose(Profile* profile) {
-  BrowserList::BrowserVector browsers_to_close;
-  for (auto* browser : *BrowserList::GetInstance()) {
-    if (browser->profile() == profile)
-      browsers_to_close.push_back(browser);
-  }
-  return browsers_to_close;
-}
-
 }  // namespace
 
 // static
@@ -158,18 +149,6 @@ void BrowserList::CloseAllBrowsersWithProfile(
     const CloseCallback& on_close_aborted,
     bool skip_beforeunload) {
   TryToCloseBrowserList(GetBrowsersToClose(profile), on_close_success,
-                        on_close_aborted, profile->GetPath(),
-                        skip_beforeunload);
-}
-
-// static
-void BrowserList::CloseAllBrowsersWithIncognitoProfile(
-    Profile* profile,
-    const CloseCallback& on_close_success,
-    const CloseCallback& on_close_aborted,
-    bool skip_beforeunload) {
-  DCHECK(profile->IsOffTheRecord());
-  TryToCloseBrowserList(GetIncognitoBrowsersToClose(profile), on_close_success,
                         on_close_aborted, profile->GetPath(),
                         skip_beforeunload);
 }
