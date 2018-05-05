@@ -370,14 +370,6 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  stopTap_: function(event) {
-    event.stopPropagation();
-  },
-
-  /**
-   * @param {!Event} event
-   * @private
-   */
   onEnableTap_: function(event) {
     if (this.isToggleEnabled_())
       this.bluetoothToggleState = !this.bluetoothToggleState;
