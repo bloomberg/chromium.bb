@@ -33,6 +33,12 @@ enum class InteractionState {
   kInactive,
 };
 
+// Enumeration of interaction mic states.
+enum class MicState {
+  kClosed,
+  kOpen,
+};
+
 // TODO(dmblack): It is awkward to use this struct for both text and voice
 // queries. Break this out into a class and subclass TextQuery and VoiceQuery
 // respectively.
@@ -66,20 +72,26 @@ class AssistantInteractionModel {
   void AddObserver(AssistantInteractionModelObserver* observer);
   void RemoveObserver(AssistantInteractionModelObserver* observer);
 
+  // Resets the interaction to its initial state.
+  void ClearInteraction();
+
   // Sets the interaction state.
   void SetInteractionState(InteractionState interaction_state);
 
   // Returns the interaction state.
   InteractionState interaction_state() const { return interaction_state_; }
 
-  // Resets the interaction to its initial state.
-  void ClearInteraction();
-
   // Updates the input modality for the interaction.
   void SetInputModality(InputModality input_modality);
 
   // Returns the input modality for the interaction.
   InputModality input_modality() const { return input_modality_; }
+
+  // Updates the mic state for the interaction.
+  void SetMicState(MicState mic_state);
+
+  // Returns the mic state for the interaction.
+  MicState mic_state() const { return mic_state_; }
 
   // Adds the specified |ui_element| that should be rendered for the
   // interaction.
@@ -107,6 +119,7 @@ class AssistantInteractionModel {
  private:
   void NotifyInteractionStateChanged();
   void NotifyInputModalityChanged();
+  void NotifyMicStateChanged();
   void NotifyUiElementAdded(const AssistantUiElement* ui_element);
   void NotifyUiElementsCleared();
   void NotifyQueryChanged();
@@ -116,6 +129,7 @@ class AssistantInteractionModel {
 
   InteractionState interaction_state_ = InteractionState::kInactive;
   InputModality input_modality_;
+  MicState mic_state_ = MicState::kClosed;
   Query query_;
   std::vector<std::string> suggestions_list_;
   std::vector<std::unique_ptr<AssistantUiElement>> ui_element_list_;

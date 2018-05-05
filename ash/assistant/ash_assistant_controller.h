@@ -38,7 +38,7 @@ class AshAssistantController
   void BindRequest(mojom::AshAssistantControllerRequest request);
 
   // Returns a reference to the underlying interaction model.
-  const AssistantInteractionModel* GetInteractionModel() const {
+  const AssistantInteractionModel* interaction_model() const {
     return &assistant_interaction_model_;
   }
 

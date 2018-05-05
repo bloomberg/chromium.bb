@@ -29,9 +29,11 @@ constexpr int kSpacingDip = 8;
 constexpr SkColor kTextColorHint = SkColorSetA(SK_ColorBLACK, 0x42);
 constexpr SkColor kTextColorPrimary = SkColorSetA(SK_ColorBLACK, 0xDE);
 
-// TODO(dmblack): Remove after removing placeholders.
-// Placeholder.
-constexpr SkColor kPlaceholderColor = SkColorSetA(SK_ColorBLACK, 0x1F);
+// TODO(dmblack): Remove after implementing stateful icon.
+// Background colors to represent icon states.
+constexpr SkColor kKeyboardColor = SkColorSetRGB(0x4C, 0x8B, 0xF5);    // Blue
+constexpr SkColor kMicOpenColor = SkColorSetRGB(0xDD, 0x51, 0x44);     // Red
+constexpr SkColor kMicClosedColor = SkColorSetA(SK_ColorBLACK, 0x1F);  // Grey
 
 // TODO(b/77638210): Replace with localized resource strings.
 constexpr char kHint[] = "Type a message";
@@ -66,11 +68,17 @@ class RoundRectBackground : public views::Background {
 // DialogPlate -----------------------------------------------------------------
 
 DialogPlate::DialogPlate(AshAssistantController* assistant_controller)
-    : assistant_controller_(assistant_controller) {
+    : assistant_controller_(assistant_controller), icon_(new views::View()) {
   InitLayout();
+
+  // The Assistant controller indirectly owns the view hierarchy to which
+  // DialogPlate belongs, so is guaranteed to outlive it.
+  assistant_controller_->AddInteractionModelObserver(this);
 }
 
-DialogPlate::~DialogPlate() = default;
+DialogPlate::~DialogPlate() {
+  assistant_controller_->RemoveInteractionModelObserver(this);
+}
 
 void DialogPlate::InitLayout() {
   SetBackground(views::CreateSolidBackground(kBackgroundColor));
@@ -99,12 +107,27 @@ void DialogPlate::InitLayout() {
   layout->SetFlexForView(textfield, 1);
 
   // TODO(dmblack): Replace w/ stateful icon.
-  // Icon placeholder.
-  views::View* icon_placeholder = new views::View();
-  icon_placeholder->SetBackground(std::make_unique<RoundRectBackground>(
-      kPlaceholderColor, kIconSizeDip / 2));
-  icon_placeholder->SetPreferredSize(gfx::Size(kIconSizeDip, kIconSizeDip));
-  AddChildView(icon_placeholder);
+  // Icon.
+  icon_->SetPreferredSize(gfx::Size(kIconSizeDip, kIconSizeDip));
+  AddChildView(icon_);
+
+  // TODO(dmblack): Remove once the icon has been replaced. Only needed to
+  // force the background for the initial state.
+  UpdateIcon();
+}
+
+void DialogPlate::OnInputModalityChanged(InputModality input_modality) {
+  // TODO(dmblack): When the stylus is selected we will hide the dialog plate
+  // and so should suspend any ongoing animations once the stateful icon is
+  // implemented.
+  if (input_modality == InputModality::kStylus)
+    return;
+
+  UpdateIcon();
+}
+
+void DialogPlate::OnMicStateChanged(MicState mic_state) {
+  UpdateIcon();
 }
 
 void DialogPlate::ContentsChanged(views::Textfield* textfield,
@@ -133,6 +156,34 @@ bool DialogPlate::HandleKeyEvent(views::Textfield* textfield,
   textfield->SetText(base::string16());
 
   return true;
+}
+
+// TODO(dmblack): Revise this method to update the state of the stateful icon
+// once it has been implemented. For the time being, we represent state by
+// modifying the background color of the placeholder icon.
+void DialogPlate::UpdateIcon() {
+  const AssistantInteractionModel* interaction_model =
+      assistant_controller_->interaction_model();
+
+  if (interaction_model->input_modality() == InputModality::kKeyboard) {
+    icon_->SetBackground(std::make_unique<RoundRectBackground>(
+        kKeyboardColor, kIconSizeDip / 2));
+    SchedulePaint();
+    return;
+  }
+
+  switch (interaction_model->mic_state()) {
+    case MicState::kClosed:
+      icon_->SetBackground(std::make_unique<RoundRectBackground>(
+          kMicClosedColor, kIconSizeDip / 2));
+      break;
+    case MicState::kOpen:
+      icon_->SetBackground(std::make_unique<RoundRectBackground>(
+          kMicOpenColor, kIconSizeDip / 2));
+      break;
+  }
+
+  SchedulePaint();
 }
 
 }  // namespace ash
