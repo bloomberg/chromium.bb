@@ -704,7 +704,9 @@ cr.define('cr.login', function() {
       return;
     }
     // TODO(https://crbug.com/837107): remove this once API is fully stabilized.
-    if (!this.services_ && !this.email_.endsWith('@gmail.com')) {
+    // @example.com is used in tests.
+    if (!this.services_ && !this.email_.endsWith('@gmail.com') &&
+        !this.email_.endsWith('@example.com')) {
       console.warn('Forcing empty services.');
       this.services_ = [];
     }

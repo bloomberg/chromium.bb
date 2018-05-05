@@ -56,7 +56,7 @@ void RestoreOnStartupTestChromeOS::GetMandatoryPoliciesValue(
 }
 
 void RestoreOnStartupTestChromeOS::LogInAndVerifyStartUpURLs() {
-  LogIn(kAccountId, kAccountPassword);
+  LogIn(kAccountId, kAccountPassword, kEmptyServices);
 
   const BrowserList* const browser_list = BrowserList::GetInstance();
   ASSERT_EQ(1U, browser_list->size());

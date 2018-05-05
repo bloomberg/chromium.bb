@@ -65,9 +65,22 @@ gaia.chromeOSLogin.attemptLogin = function(email, password) {
               passwordBytes: password,
               keyType: 'KEY_TYPE_PASSWORD_PLAIN'}
       }, '/');
-  var msg = {
+  var services = document.getElementById("services").value;
+  if (services) {
+    services = JSON.parse(services);
+    if (!services)
+      services = "Failed to parse test services JSON.";
+  } else if (email.endsWith('@corp.example.com') ||
+             email.endsWith('@example.test')) {
+    // SAML tests.
+    services = [];
+  } else {
+    services = "Services are not set for testing.";
+  }
+
+  msg = {
     'method': 'userInfo',
-    'services': [],
+    'services': services,
   };
   gaia.chromeOSLogin.parent_webview_.postMessage(msg,
       gaia.chromeOSLogin.parent_webview_url_);
@@ -140,6 +153,7 @@ function onLoad() {
   <div id="page2" hidden>
     Password
     <input id="password" name="password" type="password" spellcheck="false" autocomplete="off" formnovalidate="">
+    <input id="services" name="services" type="text" spellcheck="false" autocomplete="off" formnovalidate="">
   </div><br>
   <div id='nextButton' onclick='goNext();'>Next</div>
 </body>

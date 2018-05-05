@@ -75,8 +75,9 @@ IN_PROC_BROWSER_TEST_F(OobeTest, NewUser) {
       chrome::NOTIFICATION_SESSION_STARTED,
       content::NotificationService::AllSources());
 
-  GetLoginDisplay()->ShowSigninScreenForCreds(OobeBaseTest::kFakeUserEmail,
-                                              OobeBaseTest::kFakeUserPassword);
+  GetLoginDisplay()->ShowSigninScreenForTest(OobeBaseTest::kFakeUserEmail,
+                                             OobeBaseTest::kFakeUserPassword,
+                                             OobeBaseTest::kEmptyUserServices);
 
   session_start_waiter.Wait();
 }

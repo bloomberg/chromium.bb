@@ -76,7 +76,7 @@ IN_PROC_BROWSER_TEST_F(UserCloudExternalDataManagerTest, FetchExternalData) {
   CloudExternalDataManagerBase::SetMaxExternalDataSizeForTesting(1000);
 
   SkipToLoginScreen();
-  LogIn(kAccountId, kAccountPassword);
+  LogIn(kAccountId, kAccountPassword, kEmptyServices);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
   ASSERT_TRUE(profile);

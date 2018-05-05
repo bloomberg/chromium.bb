@@ -182,7 +182,10 @@ void LoginPerformer::LoginAsSupervisedUser(const UserContext& user_context) {
       gaia::ExtractDomainName(user_context.GetAccountId().GetUserEmail()));
 
   user_context_ = user_context;
-  user_context_.SetUserType(user_manager::USER_TYPE_SUPERVISED);
+  if (user_context_.GetUserType() != user_manager::USER_TYPE_SUPERVISED) {
+    LOG(FATAL) << "Incorrect supervised user type "
+               << user_context_.GetUserType();
+  }
 
   if (RunTrustedCheck(base::Bind(&LoginPerformer::TrustedLoginAsSupervisedUser,
                                  weak_factory_.GetWeakPtr(),

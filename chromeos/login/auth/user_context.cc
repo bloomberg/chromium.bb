@@ -3,19 +3,35 @@
 // found in the LICENSE file.
 
 #include "chromeos/login/auth/user_context.h"
+#include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_names.h"
 
 namespace chromeos {
+
+namespace {
+
+user_manager::UserType CalculateUserType(const AccountId& account_id) {
+  // UserManager is not initialized in unit tests.
+  if (!user_manager::UserManager::IsInitialized())
+    return user_manager::USER_TYPE_REGULAR;
+
+  if (user_manager::UserManager::Get()->IsSupervisedAccountId(account_id))
+    return user_manager::USER_TYPE_SUPERVISED;
+
+  if (account_id.GetAccountType() == AccountType::ACTIVE_DIRECTORY)
+    return user_manager::USER_TYPE_ACTIVE_DIRECTORY;
+
+  return user_manager::USER_TYPE_REGULAR;
+}
+
+}  // anonymous namespace
 
 UserContext::UserContext() : account_id_(EmptyAccountId()) {}
 
 UserContext::UserContext(const UserContext& other) = default;
 
 UserContext::UserContext(const AccountId& account_id)
-    : account_id_(account_id) {
-  account_id_.SetUserEmail(
-      user_manager::CanonicalizeUserID(account_id.GetUserEmail()));
-}
+    : UserContext(CalculateUserType(account_id), account_id) {}
 
 UserContext::UserContext(user_manager::UserType user_type,
                          const AccountId& account_id)
@@ -181,10 +197,6 @@ void UserContext::SetIsForcingDircrypto(bool is_forcing_dircrypto) {
 
 void UserContext::SetAuthFlow(AuthFlow auth_flow) {
   auth_flow_ = auth_flow;
-}
-
-void UserContext::SetUserType(user_manager::UserType user_type) {
-  user_type_ = user_type;
 }
 
 void UserContext::SetPublicSessionLocale(const std::string& locale) {

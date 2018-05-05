@@ -115,8 +115,11 @@ class LoginDisplayWebUIHandler {
   virtual void ShowPasswordChangedDialog(bool show_password_error,
                                          const std::string& email) = 0;
   // Show sign-in screen for the given credentials.
-  virtual void ShowSigninScreenForCreds(const std::string& username,
-                                        const std::string& password) = 0;
+  // |services| - list of services returned by userInfo call as JSON array.
+  // Should be empty array for regular user: "[]".
+  virtual void ShowSigninScreenForTest(const std::string& username,
+                                       const std::string& password,
+                                       const std::string& services) = 0;
   virtual void ShowWhitelistCheckFailedError() = 0;
   virtual void ShowUnrecoverableCrypthomeErrorDialog() = 0;
   virtual void LoadUsers(const user_manager::UserList& users,
@@ -342,8 +345,9 @@ class SigninScreenHandler
   void ShowPasswordChangedDialog(bool show_password_error,
                                  const std::string& email) override;
   void ShowErrorScreen(LoginDisplay::SigninError error_id) override;
-  void ShowSigninScreenForCreds(const std::string& username,
-                                const std::string& password) override;
+  void ShowSigninScreenForTest(const std::string& username,
+                               const std::string& password,
+                               const std::string& services) override;
   void ShowWhitelistCheckFailedError() override;
   void ShowUnrecoverableCrypthomeErrorDialog() override;
   void LoadUsers(const user_manager::UserList& users,

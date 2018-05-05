@@ -1073,10 +1073,10 @@ void SigninScreenHandler::ShowPasswordChangedDialog(bool show_password_error,
   core_oobe_view_->ShowPasswordChangedScreen(show_password_error, email);
 }
 
-void SigninScreenHandler::ShowSigninScreenForCreds(
-    const std::string& username,
-    const std::string& password) {
-  gaia_screen_handler_->ShowSigninScreenForTest(username, password);
+void SigninScreenHandler::ShowSigninScreenForTest(const std::string& username,
+                                                  const std::string& password,
+                                                  const std::string& services) {
+  gaia_screen_handler_->ShowSigninScreenForTest(username, password, services);
 }
 
 void SigninScreenHandler::ShowWhitelistCheckFailedError() {
@@ -1212,7 +1212,19 @@ void SigninScreenHandler::HandleAuthenticateUser(const AccountId& account_id,
   DCHECK_EQ(account_id.GetUserEmail(),
             gaia::SanitizeEmail(account_id.GetUserEmail()));
 
-  UserContext user_context(account_id);
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->FindUser(account_id);
+  DCHECK(user);
+  user_manager::UserType user_type = user_manager::UserType::USER_TYPE_REGULAR;
+  if (!user) {
+    LOG(ERROR) << "HandleAuthenticateUser: User not found! account type="
+               << AccountId::AccountTypeToString(account_id.GetAccountType());
+    if (account_id.GetAccountType() == AccountType::ACTIVE_DIRECTORY)
+      user_type = user_manager::USER_TYPE_ACTIVE_DIRECTORY;
+  } else {
+    user_type = user->GetType();
+  }
+  UserContext user_context(user_type, account_id);
   user_context.SetKey(Key(password));
   // Only save the password for enterprise users. See https://crbug.com/386606.
   const bool is_enterprise_managed = g_browser_process->platform_part()
@@ -1222,17 +1234,13 @@ void SigninScreenHandler::HandleAuthenticateUser(const AccountId& account_id,
     user_context.SetPasswordKey(Key(password));
   }
   user_context.SetIsUsingPin(authenticated_by_pin);
-  const user_manager::User* user =
-      user_manager::UserManager::Get()->FindUser(account_id);
-  DCHECK(user);
-  if (!user) {
-    LOG(ERROR) << "HandleAuthenticateUser: User not found! account type="
-               << AccountId::AccountTypeToString(account_id.GetAccountType());
-  } else {
-    user_context.SetUserType(user->GetType());
+  if (account_id.GetAccountType() == AccountType::ACTIVE_DIRECTORY &&
+      (user_context.GetUserType() !=
+       user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY)) {
+    LOG(FATAL) << "Incorrect Active Directory user type "
+               << user_context.GetUserType();
   }
-  if (account_id.GetAccountType() == AccountType::ACTIVE_DIRECTORY)
-    user_context.SetUserType(user_manager::USER_TYPE_ACTIVE_DIRECTORY);
+
   delegate_->Login(user_context, SigninSpecifics());
 
   UpdatePinKeyboardState(account_id);

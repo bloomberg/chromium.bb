@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
 #include "base/task_scheduler/post_task.h"
@@ -662,8 +663,6 @@ void GaiaScreenHandler::DoAdAuth(
       user_context.SetKey(key);
       user_context.SetAuthFlow(UserContext::AUTH_FLOW_ACTIVE_DIRECTORY);
       user_context.SetIsUsingOAuth(false);
-      user_context.SetUserType(
-          user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY);
       LoginDisplayHost::default_host()->CompleteLogin(user_context);
       break;
     }
@@ -898,12 +897,14 @@ void GaiaScreenHandler::OnCookiesCleared(
 }
 
 void GaiaScreenHandler::ShowSigninScreenForTest(const std::string& username,
-                                                const std::string& password) {
+                                                const std::string& password,
+                                                const std::string& services) {
   VLOG(2) << "ShowSigninScreenForTest for user " << username
           << ", frame_state=" << frame_state();
 
   test_user_ = username;
   test_pass_ = password;
+  test_services_ = services;
   test_expects_complete_login_ = true;
 
   // Submit login form for test if gaia is ready. If gaia is loading, login
@@ -926,6 +927,16 @@ void GaiaScreenHandler::SubmitLoginFormForTest() {
       "document.getElementById('identifier').value = '" + test_user_ + "';"
       "document.getElementById('nextButton').click();";
   frame->ExecuteJavaScriptForTests(base::ASCIIToUTF16(code));
+
+  if (!test_services_.empty()) {
+    // Prefix each doublequote with backslash, so that it will remain correct
+    // JSON after assigning to the element property.
+    std::string escaped_services;
+    base::ReplaceChars(test_services_, "\"", "\\\"", &escaped_services);
+    code = "document.getElementById('services').value = \"" + escaped_services +
+           "\";";
+    frame->ExecuteJavaScriptForTests(base::ASCIIToUTF16(code));
+  }
 
   if (!test_pass_.empty()) {
     code = "document.getElementById('password').value = '" + test_pass_ + "';";

@@ -82,33 +82,6 @@ void ExtendedAuthenticatorImpl::AuthenticateToCheck(
                  success_callback));
 }
 
-void ExtendedAuthenticatorImpl::CreateMount(
-    const AccountId& account_id,
-    const std::vector<cryptohome::KeyDefinition>& keys,
-    const ResultCallback& success_callback) {
-  RecordStartMarker("MountEx");
-
-  cryptohome::Identification id(account_id);
-  cryptohome::MountRequest mount;
-  for (size_t i = 0; i < keys.size(); i++) {
-    cryptohome::KeyDefinitionToKey(keys[i], mount.mutable_create()->add_keys());
-  }
-  UserContext context(account_id);
-  Key key(keys.front().secret);
-  key.SetLabel(keys.front().label);
-  context.SetKey(key);
-  cryptohome::AuthorizationRequest auth;
-  cryptohome::Key* auth_key = auth.mutable_key();
-  if (!key.GetLabel().empty()) {
-    auth_key->mutable_data()->set_label(key.GetLabel());
-  }
-  auth_key->set_secret(key.GetSecret());
-  DBusThreadManager::Get()->GetCryptohomeClient()->MountEx(
-      id, auth, mount,
-      base::BindOnce(&ExtendedAuthenticatorImpl::OnMountComplete, this,
-                     "MountEx", context, success_callback));
-}
-
 void ExtendedAuthenticatorImpl::AddKey(const UserContext& context,
                                        const cryptohome::KeyDefinition& key,
                                        bool clobber_if_exists,

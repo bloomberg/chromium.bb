@@ -914,7 +914,8 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryTest,
   user_context.SetKey(Key(kPassword));
   user_context.SetUserIDHash(ad_account_id_.GetUserEmail());
   user_context.SetAuthFlow(UserContext::AUTH_FLOW_ACTIVE_DIRECTORY);
-  user_context.SetUserType(user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY);
+  ASSERT_EQ(user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY,
+            user_context.GetUserType());
   content::WindowedNotificationObserver profile_prepared_observer(
       chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
       content::NotificationService::AllSources());
@@ -933,7 +934,8 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryTest,
   user_context.SetKey(Key(kPassword));
   user_context.SetUserIDHash(ad_account_id_.GetUserEmail());
   user_context.SetAuthFlow(UserContext::AUTH_FLOW_ACTIVE_DIRECTORY);
-  user_context.SetUserType(user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY);
+  ASSERT_EQ(user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY,
+            user_context.GetUserType());
   content::WindowedNotificationObserver profile_prepared_observer(
       chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
       content::NotificationService::AllSources());
@@ -957,7 +959,8 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryTest,
   UserContext user_context(ad_account_id_);
   user_context.SetKey(Key(kPassword));
   user_context.SetUserIDHash(ad_account_id_.GetUserEmail());
-  user_context.SetUserType(user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY);
+  ASSERT_EQ(user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY,
+            user_context.GetUserType());
 
   content::WindowedNotificationObserver profile_prepared_observer(
       chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
@@ -986,7 +989,8 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryUserWhitelistTest,
   user_context.SetKey(Key(kPassword));
   user_context.SetUserIDHash(ad_account_id_.GetUserEmail());
   user_context.SetAuthFlow(UserContext::AUTH_FLOW_ACTIVE_DIRECTORY);
-  user_context.SetUserType(user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY);
+  ASSERT_EQ(user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY,
+            user_context.GetUserType());
   content::WindowedNotificationObserver profile_prepared_observer(
       chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
       content::NotificationService::AllSources());
@@ -1005,7 +1009,8 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryUserWhitelistTest,
   user_context.SetKey(Key(kPassword));
   user_context.SetUserIDHash(account_id.GetUserEmail());
   user_context.SetAuthFlow(UserContext::AUTH_FLOW_ACTIVE_DIRECTORY);
-  user_context.SetUserType(user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY);
+  ASSERT_EQ(user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY,
+            user_context.GetUserType());
   existing_user_controller()->CompleteLogin(user_context);
 }
 

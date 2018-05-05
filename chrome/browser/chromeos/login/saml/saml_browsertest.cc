@@ -121,10 +121,14 @@ constexpr char kTestAuthSIDCookie2[] = "fake-auth-SID-cookie-2";
 constexpr char kTestAuthLSIDCookie1[] = "fake-auth-LSID-cookie-1";
 constexpr char kTestAuthLSIDCookie2[] = "fake-auth-LSID-cookie-2";
 
-constexpr char kFirstSAMLUserEmail[] = "bob@example.com";
-constexpr char kSecondSAMLUserEmail[] = "alice@example.com";
-constexpr char kHTTPSAMLUserEmail[] = "carol@example.com";
-constexpr char kNonSAMLUserEmail[] = "dan@example.com";
+// Note: SAML account cannot be @gmail or @example.com account.  The former by
+// design, the latter because @example.com is used in another tests as regular
+// user. So we use @corp.example.com and @example.test, so that we can handle
+// it specially in embedded_setup_chromeos.html .
+constexpr char kFirstSAMLUserEmail[] = "bob@corp.example.com";
+constexpr char kSecondSAMLUserEmail[] = "alice@corp.example.com";
+constexpr char kHTTPSAMLUserEmail[] = "carol@corp.example.com";
+constexpr char kNonSAMLUserEmail[] = "dan@corp.example.com";
 constexpr char kDifferentDomainSAMLUserEmail[] = "eve@example.test";
 
 constexpr char kFirstSAMLUserGaiaId[] = "bob-gaia";
@@ -133,8 +137,8 @@ constexpr char kHTTPSAMLUserGaiaId[] = "carol-gaia";
 constexpr char kNonSAMLUserGaiaId[] = "dan-gaia";
 constexpr char kDifferentDomainSAMLUserGaiaId[] = "eve-gaia";
 
-constexpr char kIdPHost[] = "login.example.com";
-constexpr char kAdditionalIdPHost[] = "login2.example.com";
+constexpr char kIdPHost[] = "login.corp.example.com";
+constexpr char kAdditionalIdPHost[] = "login2.corp.example.com";
 
 constexpr char kSAMLIdPCookieName[] = "saml";
 constexpr char kSAMLIdPCookieValue1[] = "value-1";
@@ -332,7 +336,7 @@ class SamlTest : public OobeBaseTest {
         kHTTPSAMLUserEmail,
         embedded_test_server()->base_url().Resolve("/SAML"));
     fake_gaia_->RegisterSamlUser(kDifferentDomainSAMLUserEmail, saml_idp_url);
-    fake_gaia_->RegisterSamlDomainRedirectUrl("example.com", saml_idp_url);
+    fake_gaia_->RegisterSamlDomainRedirectUrl("corp.example.com", saml_idp_url);
 
     OobeBaseTest::SetUpCommandLine(command_line);
   }
@@ -372,7 +376,7 @@ class SamlTest : public OobeBaseTest {
     SetupAuthFlowChangeListener();
 
     content::DOMMessageQueue message_queue;  // Start observe before SAML.
-    GetLoginDisplay()->ShowSigninScreenForCreds(gaia_email, "");
+    GetLoginDisplay()->ShowSigninScreenForTest(gaia_email, "", "[]");
 
     std::string message;
     ASSERT_TRUE(message_queue.WaitForMessage(&message));
@@ -638,9 +642,9 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedNone) {
   session_start_waiter.Wait();
 }
 
-// Types |bob@example.com| into the GAIA login form but then authenticates as
-// |alice@example.com| via SAML. Verifies that the logged-in user is correctly
-// identified as Alice.
+// Types |bob@corp.example.com| into the GAIA login form but then authenticates
+// as |alice@corp.example.com| via SAML. Verifies that the logged-in user is
+// correctly identified as Alice.
 //
 // Disabled since it's occasionally timed out: https://crbug.com/830322.
 #if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER)
@@ -651,12 +655,12 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedNone) {
 #endif
 IN_PROC_BROWSER_TEST_F(SamlTest, MAYBE_UseAutenticatedUserEmailAddress) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
-  // Type |bob@example.com| into the GAIA login form.
+  // Type |bob@corp.example.com| into the GAIA login form.
   StartSamlAndWaitForIdpPageLoad(kSecondSAMLUserEmail);
 
-  // Authenticate as alice@example.com via SAML (the |Email| provided here is
-  // irrelevant - the authenticated user's e-mail address that FakeGAIA
-  // reports was set via |SetFakeMergeSessionParams|.
+  // Authenticate as alice@corp.example.com via SAML (the |Email| provided here
+  // is irrelevant - the authenticated user's e-mail address that FakeGAIA
+  // reports was set via |SetFakeMergeSessionParams|).
   SetSignFormField("Email", "fake_user");
   SetSignFormField("Password", "fake_password");
 
@@ -787,7 +791,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, HTTPRedirectDisallowed) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
 
   WaitForSigninScreen();
-  GetLoginDisplay()->ShowSigninScreenForCreds(kHTTPSAMLUserEmail, "");
+  GetLoginDisplay()->ShowSigninScreenForTest(kHTTPSAMLUserEmail, "", "[]");
 
   const GURL url = embedded_test_server()->base_url().Resolve("/SAML");
   EXPECT_EQ(l10n_util::GetStringFUTF8(IDS_LOGIN_FATAL_ERROR_TEXT_INSECURE_URL,
@@ -811,7 +815,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, MAYBE_MetaRefreshToHTTPDisallowed) {
   fake_saml_idp()->SetRefreshURL(url);
 
   WaitForSigninScreen();
-  GetLoginDisplay()->ShowSigninScreenForCreds(kFirstSAMLUserEmail, "");
+  GetLoginDisplay()->ShowSigninScreenForTest(kFirstSAMLUserEmail, "", "[]");
 
   EXPECT_EQ(l10n_util::GetStringFUTF8(IDS_LOGIN_FATAL_ERROR_TEXT_INSECURE_URL,
                                       base::UTF8ToUTF16(url.spec())),
@@ -1305,7 +1309,8 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, PRE_NoSAML) {
   SetupFakeGaiaForLogin(kNonSAMLUserEmail, "", kTestRefreshToken);
 
   // Log in without SAML.
-  GetLoginDisplay()->ShowSigninScreenForCreds(kNonSAMLUserEmail, "password");
+  GetLoginDisplay()->ShowSigninScreenForTest(kNonSAMLUserEmail, "password",
+                                             "[]");
 
   content::WindowedNotificationObserver(
       chrome::NOTIFICATION_SESSION_STARTED,
@@ -1498,7 +1503,7 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, TestLoginMediaPermission) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
 
   const GURL url1("https://google.com");
-  const GURL url2("https://example.com");
+  const GURL url2("https://corp.example.com");
   const GURL url3("https://not-allowed.com");
   SetLoginVideoCaptureAllowedUrls({url1, url2});
   WaitForSigninScreen();
