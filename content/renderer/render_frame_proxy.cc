@@ -869,9 +869,10 @@ blink::WebLayer* RenderFrameProxy::GetLayer() {
   return web_layer_.get();
 }
 
-void RenderFrameProxy::SetLayer(std::unique_ptr<blink::WebLayer> web_layer) {
+void RenderFrameProxy::SetLayer(std::unique_ptr<blink::WebLayer> web_layer,
+                                bool prevent_contents_opaque_changes) {
   if (web_frame())
-    web_frame()->SetWebLayer(web_layer.get());
+    web_frame()->SetWebLayer(web_layer.get(), prevent_contents_opaque_changes);
   web_layer_ = std::move(web_layer);
 }
 

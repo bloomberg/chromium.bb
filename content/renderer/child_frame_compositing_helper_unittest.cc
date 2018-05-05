@@ -22,7 +22,8 @@ class MockChildFrameCompositor : public ChildFrameCompositor {
 
   blink::WebLayer* GetLayer() override { return web_layer_.get(); }
 
-  void SetLayer(std::unique_ptr<blink::WebLayer> web_layer) override {
+  void SetLayer(std::unique_ptr<blink::WebLayer> web_layer,
+                bool prevent_contents_opaque_changes) override {
     web_layer_ = std::move(web_layer);
   }
 

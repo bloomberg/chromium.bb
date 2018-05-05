@@ -183,11 +183,12 @@ WebRemoteFrame* WebRemoteFrameImpl::CreateRemoteChild(
   return child;
 }
 
-void WebRemoteFrameImpl::SetWebLayer(WebLayer* layer) {
+void WebRemoteFrameImpl::SetWebLayer(WebLayer* layer,
+                                     bool prevent_contents_opaque_changes) {
   if (!GetFrame())
     return;
 
-  GetFrame()->SetWebLayer(layer);
+  GetFrame()->SetWebLayer(layer, prevent_contents_opaque_changes);
 }
 
 void WebRemoteFrameImpl::SetCoreFrame(RemoteFrame* frame) {

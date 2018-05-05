@@ -385,8 +385,7 @@ void WebMediaPlayerImpl::OnWebLayerUpdated() {}
 
 void WebMediaPlayerImpl::RegisterContentsLayer(blink::WebLayer* web_layer) {
   DCHECK(bridge_);
-  bridge_->GetWebLayer()->CcLayer()->SetContentsOpaque(opaque_);
-  bridge_->GetWebLayer()->SetContentsOpaqueIsFixed(true);
+  bridge_->GetWebLayer()->SetOpaque(opaque_);
   client_->SetWebLayer(web_layer);
 }
 
@@ -1606,8 +1605,7 @@ void WebMediaPlayerImpl::OnMetadata(PipelineMetadata metadata) {
       video_weblayer_.reset(new cc_blink::WebLayerImpl(cc::VideoLayer::Create(
           compositor_.get(),
           pipeline_metadata_.video_decoder_config.video_rotation())));
-      video_weblayer_->layer()->SetContentsOpaque(opaque_);
-      video_weblayer_->SetContentsOpaqueIsFixed(true);
+      video_weblayer_->SetOpaque(opaque_);
       client_->SetWebLayer(video_weblayer_.get());
     } else {
       vfc_task_runner_->PostTask(
@@ -1867,13 +1865,11 @@ void WebMediaPlayerImpl::OnVideoOpacityChange(bool opaque) {
   DCHECK_NE(ready_state_, WebMediaPlayer::kReadyStateHaveNothing);
 
   opaque_ = opaque;
-  // Modify content opaqueness of cc::Layer directly so that
-  // SetContentsOpaqueIsFixed is ignored.
   if (!surface_layer_for_video_enabled_) {
     if (video_weblayer_)
-      video_weblayer_->layer()->SetContentsOpaque(opaque_);
+      video_weblayer_->SetOpaque(opaque_);
   } else if (bridge_->GetWebLayer()) {
-    bridge_->GetWebLayer()->CcLayer()->SetContentsOpaque(opaque_);
+    bridge_->GetWebLayer()->SetOpaque(opaque_);
   }
 }
 

@@ -19,7 +19,8 @@ class ChildFrameCompositor {
   virtual blink::WebLayer* GetLayer() = 0;
 
   // Passes ownership of a blink::WebLayer to the ChildFrameCompositor.
-  virtual void SetLayer(std::unique_ptr<blink::WebLayer> web_layer) = 0;
+  virtual void SetLayer(std::unique_ptr<blink::WebLayer> web_layer,
+                        bool prevent_contents_opaque_changes) = 0;
 
   // Returns a sad page bitmap used when the child frame has crashed.
   virtual SkBitmap* GetSadPageBitmap() = 0;

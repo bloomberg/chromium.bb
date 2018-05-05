@@ -325,8 +325,10 @@ float WebPluginContainerImpl::PageZoomFactor() {
   return frame->PageZoomFactor();
 }
 
-void WebPluginContainerImpl::SetWebLayer(WebLayer* layer) {
-  if (web_layer_ == layer)
+void WebPluginContainerImpl::SetWebLayer(WebLayer* layer,
+                                         bool prevent_contents_opaque_changes) {
+  if (web_layer_ == layer &&
+      prevent_contents_opaque_changes == prevent_contents_opaque_changes_)
     return;
 
   if (web_layer_)
@@ -335,6 +337,7 @@ void WebPluginContainerImpl::SetWebLayer(WebLayer* layer) {
     GraphicsLayer::RegisterContentsLayer(layer);
 
   web_layer_ = layer;
+  prevent_contents_opaque_changes_ = prevent_contents_opaque_changes;
 
   if (element_)
     element_->SetNeedsCompositingUpdate();
@@ -693,6 +696,11 @@ WebLayer* WebPluginContainerImpl::PlatformLayer() const {
   return web_layer_;
 }
 
+bool WebPluginContainerImpl::PreventContentsOpaqueChangesToPlatformLayer()
+    const {
+  return prevent_contents_opaque_changes_;
+}
+
 v8::Local<v8::Object> WebPluginContainerImpl::ScriptableObject(
     v8::Isolate* isolate) {
   // With Oilpan, on plugin element detach dispose() will be called to safely
@@ -737,6 +745,7 @@ WebPluginContainerImpl::WebPluginContainerImpl(HTMLPlugInElement& element,
       web_plugin_(web_plugin),
       web_layer_(nullptr),
       touch_event_request_type_(kTouchEventRequestTypeNone),
+      prevent_contents_opaque_changes_(false),
       wants_wheel_events_(false),
       self_visible_(false),
       parent_visible_(false),

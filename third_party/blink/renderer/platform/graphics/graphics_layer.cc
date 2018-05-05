@@ -89,6 +89,7 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client)
       blend_mode_(BlendMode::kNormal),
       has_transform_origin_(false),
       contents_opaque_(false),
+      prevent_contents_opaque_changes_(false),
       should_flatten_transform_(true),
       backface_visibility_(true),
       draws_content_(false),
@@ -493,7 +494,8 @@ void GraphicsLayer::UnregisterContentsLayer(WebLayer* layer) {
   layer->SetLayerClient(nullptr);
 }
 
-void GraphicsLayer::SetContentsTo(WebLayer* layer) {
+void GraphicsLayer::SetContentsTo(WebLayer* layer,
+                                  bool prevent_contents_opaque_changes) {
   bool children_changed = false;
   if (layer) {
     DCHECK(g_registered_layer_set);
@@ -503,6 +505,7 @@ void GraphicsLayer::SetContentsTo(WebLayer* layer) {
       children_changed = true;
     }
     UpdateContentsRect();
+    prevent_contents_opaque_changes_ = prevent_contents_opaque_changes;
   } else {
     if (contents_layer_) {
       children_changed = true;
@@ -1101,7 +1104,7 @@ void GraphicsLayer::SetContentsOpaque(bool opaque) {
   contents_opaque_ = opaque;
   layer_->Layer()->SetOpaque(contents_opaque_);
   ClearContentsLayerIfUnregistered();
-  if (contents_layer_)
+  if (contents_layer_ && !prevent_contents_opaque_changes_)
     contents_layer_->SetOpaque(opaque);
 }
 
@@ -1260,7 +1263,7 @@ void GraphicsLayer::SetContentsToImage(
     image_layer_.reset();
   }
 
-  SetContentsTo(image_layer_ ? image_layer_->Layer() : nullptr);
+  SetContentsTo(image_layer_ ? image_layer_->Layer() : nullptr, true);
 }
 
 WebLayer* GraphicsLayer::PlatformLayer() const {

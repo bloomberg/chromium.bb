@@ -108,7 +108,7 @@ void RemoteFrame::Detach(FrameDetachType type) {
   // of all these objects. Break the cycle by notifying of detachment.
   ToRemoteDOMWindow(dom_window_)->FrameDetached();
   if (web_layer_)
-    SetWebLayer(nullptr);
+    SetWebLayer(nullptr, false);
   Frame::Detach(type);
 }
 
@@ -172,10 +172,12 @@ RemoteFrameClient* RemoteFrame::Client() const {
   return static_cast<RemoteFrameClient*>(Frame::Client());
 }
 
-void RemoteFrame::SetWebLayer(WebLayer* web_layer) {
+void RemoteFrame::SetWebLayer(WebLayer* web_layer,
+                              bool prevent_contents_opaque_changes) {
   if (web_layer_)
     GraphicsLayer::UnregisterContentsLayer(web_layer_);
   web_layer_ = web_layer;
+  prevent_contents_opaque_changes_ = prevent_contents_opaque_changes;
   if (web_layer_)
     GraphicsLayer::RegisterContentsLayer(web_layer_);
 

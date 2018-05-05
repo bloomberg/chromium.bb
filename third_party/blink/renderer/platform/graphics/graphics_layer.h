@@ -171,7 +171,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   Color BackgroundColor() const { return background_color_; }
   void SetBackgroundColor(const Color&);
 
-  // opaque means that we know the layer contents have no alpha
+  // Opaque means that we know the layer contents have no alpha.
   bool ContentsOpaque() const { return contents_opaque_; }
   void SetContentsOpaque(bool);
 
@@ -216,7 +216,14 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
       Image*,
       Image::ImageDecodingMode decode_mode,
       RespectImageOrientationEnum = kDoNotRespectImageOrientation);
-  void SetContentsToPlatformLayer(WebLayer* layer) { SetContentsTo(layer); }
+  // If |prevent_contents_opaque_changes| is set to true, then calls to
+  // SetContentsOpaque() will not be passed on to the |layer|. Use when
+  // the client wants to have control of the opaqueness of the contents
+  // |layer| independently of what outcome painting produces.
+  void SetContentsToPlatformLayer(WebLayer* layer,
+                                  bool prevent_contents_opaque_changes) {
+    SetContentsTo(layer, prevent_contents_opaque_changes);
+  }
   bool HasContentsLayer() const { return contents_layer_; }
 
   // For hosting this GraphicsLayer in a native layer hierarchy.
@@ -343,7 +350,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   void UpdateLayerIsDrawable();
   void UpdateContentsRect();
 
-  void SetContentsTo(WebLayer*);
+  void SetContentsTo(WebLayer*, bool prevent_contents_opaque_changes);
   void SetupContentsLayer(WebLayer*);
   void ClearContentsLayerIfUnregistered();
   WebLayer* ContentsLayerIfRegistered();
@@ -385,6 +392,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
   bool has_transform_origin_ : 1;
   bool contents_opaque_ : 1;
+  bool prevent_contents_opaque_changes_ : 1;
   bool should_flatten_transform_ : 1;
   bool backface_visibility_ : 1;
   bool draws_content_ : 1;
@@ -414,10 +422,10 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   std::unique_ptr<WebContentLayer> layer_;
   std::unique_ptr<WebImageLayer> image_layer_;
   WebLayer* contents_layer_;
-  // We don't have ownership of m_contentsLayer, but we do want to know if a
-  // given layer is the same as our current layer in setContentsTo(). Since
-  // |m_contentsLayer| may be deleted at this point, we stash an ID away when we
-  // know |m_contentsLayer| is alive and use that for comparisons from that
+  // We don't have ownership of contents_layer_, but we do want to know if a
+  // given layer is the same as our current layer in SetContentsTo(). Since
+  // |contents_layer_| may be deleted at this point, we stash an ID away when we
+  // know |contents_layer_| is alive and use that for comparisons from that
   // point on.
   int contents_layer_id_;
 

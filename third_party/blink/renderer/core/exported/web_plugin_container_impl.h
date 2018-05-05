@@ -102,6 +102,7 @@ class CORE_EXPORT WebPluginContainerImpl final
   void Hide() override;
 
   WebLayer* PlatformLayer() const;
+  bool PreventContentsOpaqueChangesToPlatformLayer() const;
   v8::Local<v8::Object> ScriptableObject(v8::Isolate*);
   bool SupportsKeyboardFocus() const;
   bool SupportsInputMethod() const;
@@ -147,7 +148,7 @@ class CORE_EXPORT WebPluginContainerImpl final
   float PageScaleFactor() override;
   float PageZoomFactor() override;
 
-  void SetWebLayer(WebLayer*) override;
+  void SetWebLayer(WebLayer*, bool prevent_contents_opaque_changes) override;
 
   void RequestFullscreen() override;
   bool IsFullscreenElement() const override;
@@ -234,6 +235,7 @@ class CORE_EXPORT WebPluginContainerImpl final
   WebLayer* web_layer_;
   IntRect frame_rect_;
   TouchEventRequestType touch_event_request_type_;
+  bool prevent_contents_opaque_changes_;
   bool wants_wheel_events_;
   bool self_visible_;
   bool parent_visible_;

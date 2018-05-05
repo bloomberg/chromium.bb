@@ -367,7 +367,7 @@ ScrollingCoordinator::CreateSolidColorScrollbarLayer(
 static void DetachScrollbarLayer(GraphicsLayer* scrollbar_graphics_layer) {
   DCHECK(scrollbar_graphics_layer);
 
-  scrollbar_graphics_layer->SetContentsToPlatformLayer(nullptr);
+  scrollbar_graphics_layer->SetContentsToPlatformLayer(nullptr, false);
   scrollbar_graphics_layer->SetDrawsContent(true);
 }
 
@@ -383,7 +383,7 @@ static void SetupScrollbarLayer(GraphicsLayer* scrollbar_graphics_layer,
   }
   scrollbar_layer->SetScrollLayer(scroll_layer);
   scrollbar_graphics_layer->SetContentsToPlatformLayer(
-      scrollbar_layer->Layer());
+      scrollbar_layer->Layer(), /*prevent_contents_opaque_changes=*/false);
   scrollbar_graphics_layer->SetDrawsContent(false);
 }
 

@@ -52,7 +52,6 @@ class CC_BLINK_EXPORT WebLayerImpl : public blink::WebLayer {
   void SetMaskLayer(blink::WebLayer* mask) override;
   void SetOpacity(float opacity) override;
   float Opacity() const override;
-  void SetContentsOpaqueIsFixed(bool fixed) override;
 
   void SetBlendMode(SkBlendMode blend_mode) override;
   SkBlendMode BlendMode() const override;
@@ -128,8 +127,6 @@ class CC_BLINK_EXPORT WebLayerImpl : public blink::WebLayer {
 
  protected:
   scoped_refptr<cc::Layer> layer_;
-
-  bool contents_opaque_is_fixed_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebLayerImpl);

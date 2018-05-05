@@ -962,7 +962,7 @@ void WebMediaPlayerMS::OnOpacityChanged(bool is_opaque) {
 
   // Opacity can be changed during the session without resetting
   // |video_weblayer_|.
-  video_weblayer_->layer()->SetContentsOpaque(is_opaque);
+  video_weblayer_->SetOpaque(is_opaque);
 }
 
 void WebMediaPlayerMS::OnRotationChanged(media::VideoRotation video_rotation,
@@ -974,8 +974,7 @@ void WebMediaPlayerMS::OnRotationChanged(media::VideoRotation video_rotation,
   std::unique_ptr<cc_blink::WebLayerImpl> rotated_weblayer =
       base::WrapUnique(new cc_blink::WebLayerImpl(
           cc::VideoLayer::Create(compositor_.get(), video_rotation)));
-  rotated_weblayer->layer()->SetContentsOpaque(is_opaque);
-  rotated_weblayer->SetContentsOpaqueIsFixed(true);
+  rotated_weblayer->SetOpaque(is_opaque);
   get_client()->SetWebLayer(rotated_weblayer.get());
   video_weblayer_ = std::move(rotated_weblayer);
 }

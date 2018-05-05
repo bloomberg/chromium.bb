@@ -159,12 +159,10 @@ static bool ContentLayerSupportsDirectBackgroundComposition(
   return ContentsRect(layout_object).Contains(BackgroundRect(layout_object));
 }
 
-static WebLayer* PlatformLayerForPlugin(LayoutObject& layout_object) {
+static WebPluginContainerImpl* GetPluginContainer(LayoutObject& layout_object) {
   if (!layout_object.IsEmbeddedObject())
     return nullptr;
-  WebPluginContainerImpl* plugin =
-      ToLayoutEmbeddedObject(layout_object).Plugin();
-  return plugin ? plugin->PlatformLayer() : nullptr;
+  return ToLayoutEmbeddedObject(layout_object).Plugin();
 }
 
 static inline bool IsAcceleratedContents(LayoutObject& layout_object) {
@@ -831,30 +829,39 @@ bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration(
     }
   }
 
-  if (WebLayer* layer = PlatformLayerForPlugin(layout_object)) {
-    graphics_layer_->SetContentsToPlatformLayer(layer);
+  if (WebPluginContainerImpl* plugin = GetPluginContainer(layout_object)) {
+    graphics_layer_->SetContentsToPlatformLayer(
+        plugin->PlatformLayer(),
+        plugin->PreventContentsOpaqueChangesToPlatformLayer());
   } else if (layout_object.GetNode() &&
              layout_object.GetNode()->IsFrameOwnerElement() &&
              ToHTMLFrameOwnerElement(layout_object.GetNode())->ContentFrame()) {
     Frame* frame =
         ToHTMLFrameOwnerElement(layout_object.GetNode())->ContentFrame();
     if (frame->IsRemoteFrame()) {
-      WebLayer* layer = ToRemoteFrame(frame)->GetWebLayer();
-      graphics_layer_->SetContentsToPlatformLayer(layer);
+      RemoteFrame* remote = ToRemoteFrame(frame);
+      WebLayer* layer = remote->GetWebLayer();
+      graphics_layer_->SetContentsToPlatformLayer(
+          layer, remote->WebLayerHasFixedContentsOpaque());
     }
   } else if (layout_object.IsVideo()) {
     HTMLMediaElement* media_element =
         ToHTMLMediaElement(layout_object.GetNode());
-    graphics_layer_->SetContentsToPlatformLayer(media_element->PlatformLayer());
+    graphics_layer_->SetContentsToPlatformLayer(
+        media_element->PlatformLayer(),
+        /*prevent_contents_opaque_changes=*/true);
   } else if (IsSurfaceLayerCanvas(layout_object)) {
     HTMLCanvasElement* canvas = ToHTMLCanvasElement(layout_object.GetNode());
     graphics_layer_->SetContentsToPlatformLayer(
-        canvas->SurfaceLayerBridge()->GetWebLayer());
+        canvas->SurfaceLayerBridge()->GetWebLayer(),
+        /*prevent_contents_opaque_changes=*/false);
     layer_config_changed = true;
   } else if (IsTextureLayerCanvas(layout_object)) {
     HTMLCanvasElement* canvas = ToHTMLCanvasElement(layout_object.GetNode());
-    if (CanvasRenderingContext* context = canvas->RenderingContext())
-      graphics_layer_->SetContentsToPlatformLayer(context->PlatformLayer());
+    if (CanvasRenderingContext* context = canvas->RenderingContext()) {
+      graphics_layer_->SetContentsToPlatformLayer(
+          context->PlatformLayer(), /*prevent_contents_opaque_changes=*/false);
+    }
     layer_config_changed = true;
   }
   if (layout_object.IsLayoutEmbeddedContent()) {
