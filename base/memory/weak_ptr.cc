@@ -70,9 +70,13 @@ WeakPtrBase::WeakPtrBase() : ptr_(0) {}
 WeakPtrBase::~WeakPtrBase() = default;
 
 WeakPtrBase::WeakPtrBase(const WeakReference& ref, uintptr_t ptr)
-    : ref_(ref), ptr_(ptr) {}
+    : ref_(ref), ptr_(ptr) {
+  DCHECK(ptr_);
+}
 
-WeakPtrFactoryBase::WeakPtrFactoryBase(uintptr_t ptr) : ptr_(ptr) {}
+WeakPtrFactoryBase::WeakPtrFactoryBase(uintptr_t ptr) : ptr_(ptr) {
+  DCHECK(ptr_);
+}
 
 WeakPtrFactoryBase::~WeakPtrFactoryBase() {
   ptr_ = 0;
