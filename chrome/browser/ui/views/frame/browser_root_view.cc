@@ -90,7 +90,11 @@ int GetDropEffect(const ui::DropTargetEvent& event, const GURL& url) {
 }  // namespace
 
 BrowserRootView::DropInfo::DropInfo() = default;
-BrowserRootView::DropInfo::~DropInfo() = default;
+
+BrowserRootView::DropInfo::~DropInfo() {
+  if (target)
+    target->HandleDragExited();
+}
 
 // static
 const char BrowserRootView::kViewClassName[] =
@@ -179,11 +183,6 @@ int BrowserRootView::OnDragUpdated(const ui::DropTargetEvent& event) {
 }
 
 void BrowserRootView::OnDragExited() {
-  if (drop_info_ && drop_info_->target) {
-    drop_info_->target->HandleDragExited();
-    drop_info_->target = nullptr;
-  }
-
   drop_info_.reset();
 }
 
@@ -192,6 +191,10 @@ int BrowserRootView::OnPerformDrop(const ui::DropTargetEvent& event) {
 
   if (!drop_info_)
     return ui::DragDropTypes::DRAG_NONE;
+
+  // Ensure we call HandleDragExited() on |drop_info_|'s |target| when this
+  // function returns.
+  std::unique_ptr<DropInfo> drop_info = std::move(drop_info_);
 
   // Extract the URL and create a new ui::OSExchangeData containing the URL. We
   // do this as the TabStrip doesn't know about the autocomplete edit and needs
@@ -204,15 +207,15 @@ int BrowserRootView::OnPerformDrop(const ui::DropTargetEvent& event) {
 
   // Do nothing if the file was unsupported, the URL is invalid, or this is a
   // javascript: URL (prevent self-xss). The URL may have been changed after
-  // |drop_info_| was created.
-  if (!drop_info_->file_supported || !url.is_valid() ||
+  // |drop_info| was created.
+  if (!drop_info->file_supported || !url.is_valid() ||
       url.SchemeIs(url::kJavaScriptScheme))
     return ui::DragDropTypes::DRAG_NONE;
 
   NavigateParams params(browser_view_->browser(), url,
                         ui::PAGE_TRANSITION_LINK);
-  params.tabstrip_index = drop_info_->index->value;
-  if (drop_info_->index->drop_before) {
+  params.tabstrip_index = drop_info->index->value;
+  if (drop_info->index->drop_before) {
     base::RecordAction(UserMetricsAction("Tab_DropURLBetweenTabs"));
     params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   } else {
@@ -220,7 +223,7 @@ int BrowserRootView::OnPerformDrop(const ui::DropTargetEvent& event) {
     params.disposition = WindowOpenDisposition::CURRENT_TAB;
     Browser* browser = browser_view_->browser();
     TabStripModel* model = browser->tab_strip_model();
-    params.source_contents = model->GetWebContentsAt(drop_info_->index->value);
+    params.source_contents = model->GetWebContentsAt(drop_info->index->value);
   }
 
   params.window_action = NavigateParams::SHOW_WINDOW;
