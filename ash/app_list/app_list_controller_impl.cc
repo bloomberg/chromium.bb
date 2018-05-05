@@ -181,12 +181,17 @@ void AppListControllerImpl::PublishSearchResults(
 void AppListControllerImpl::SetItemMetadata(const std::string& id,
                                             AppListItemMetadataPtr data) {
   app_list::AppListItem* item = model_.FindItem(id);
-  if (item) {
-    // data may not contain valid position. Preserve it in this case.
-    if (!data->position.IsValid())
-      data->position = item->position();
-    item->SetMetadata(std::move(data));
-  }
+  if (!item)
+    return;
+
+  // data may not contain valid position or icon. Preserve it in this case.
+  if (!data->position.IsValid())
+    data->position = item->position();
+  // Folder icon is generated on ash side and chrome side passes a null
+  // icon here. Skip it.
+  if (data->icon.isNull())
+    data->icon = item->icon();
+  item->SetMetadata(std::move(data));
 }
 
 void AppListControllerImpl::SetItemIcon(const std::string& id,
