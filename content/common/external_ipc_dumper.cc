@@ -27,6 +27,7 @@ const char kSetDumpDirectoryEntryName[] = "SetDumpDirectory";
 
 namespace content {
 
+NO_SANITIZE("cfi-icall")
 IPC::ChannelProxy::OutgoingMessageFilter* LoadExternalIPCDumper(
     const base::FilePath& dump_directory) {
   base::FilePath module_path;
