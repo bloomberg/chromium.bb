@@ -327,13 +327,11 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onDeviceEnabledTap_: function(event) {
+  onDeviceEnabledChange_: function(event) {
     const deviceIsEnabled = this.deviceIsEnabled_(this.deviceState);
     const type = this.deviceState ? this.deviceState.Type : '';
     this.fire(
         'device-enabled-toggled', {enabled: !deviceIsEnabled, type: type});
-    // Make sure this does not propagate to onDetailsTap_.
-    event.stopPropagation();
   },
 
   /**

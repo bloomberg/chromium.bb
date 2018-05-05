@@ -1,11 +1,11 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_network_list.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="../settings_shared_css.html">
 
 <dom-module id="settings-internet-subpage">
@@ -89,12 +89,12 @@
               on-click="onAddButtonTap_" tabindex$="[[tabindex]]">
           </button>
         </paper-icon-button-light>
-        <paper-toggle-button id="deviceEnabledButton"
+        <cr-toggle id="deviceEnabledButton"
             aria-label$="[[getToggleA11yString_(deviceState)]]"
             checked="[[deviceIsEnabled_(deviceState)]]"
             disabled="[[!enableToggleIsEnabled_(deviceState)]]"
-            on-click="onDeviceEnabledTap_">
-        </paper-toggle-button>
+            on-change="onDeviceEnabledChange_">
+        </cr-toggle>
       </div>
     </template>
 
@@ -215,13 +215,13 @@
               $i18n{internetToggleTetherSubtext}
             </div>
           </div>
-          <paper-toggle-button id="tetherEnabledButton"
+          <cr-toggle id="tetherEnabledButton"
               aria-label="$i18n{internetToggleTetherLabel}"
               aria-describedby="tetherSecondary"
               checked="[[deviceIsEnabled_(tetherDeviceState)]]"
               disabled="[[!tetherToggleIsEnabled_(deviceState,
                   tetherDeviceState)]]">
-          </paper-toggle-button>
+          </cr-toggle>
         </div>
       </template>
     </template>
