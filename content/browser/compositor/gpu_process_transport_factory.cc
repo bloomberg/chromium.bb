@@ -255,7 +255,7 @@ GpuProcessTransportFactory::CreateSoftwareOutputDevice(
 #elif defined(USE_X11)
   return std::make_unique<viz::SoftwareOutputDeviceX11>(widget);
 #elif defined(OS_MACOSX)
-  return std::make_unique<viz::SoftwareOutputDeviceMac>(widget);
+  return std::make_unique<viz::SoftwareOutputDeviceMac>();
 #else
   NOTREACHED();
   return std::unique_ptr<viz::SoftwareOutputDevice>();

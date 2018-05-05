@@ -13,6 +13,12 @@ namespace viz {
 SoftwareOutputDevice::SoftwareOutputDevice() = default;
 SoftwareOutputDevice::~SoftwareOutputDevice() = default;
 
+void SoftwareOutputDevice::BindToClient(SoftwareOutputDeviceClient* client) {
+  DCHECK(client);
+  DCHECK(!client_);
+  client_ = client;
+}
+
 void SoftwareOutputDevice::Resize(const gfx::Size& viewport_pixel_size,
                                   float scale_factor) {
   if (viewport_pixel_size_ == viewport_pixel_size)

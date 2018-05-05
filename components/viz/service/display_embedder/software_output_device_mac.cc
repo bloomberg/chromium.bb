@@ -7,7 +7,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "ui/accelerated_widget_mac/ca_layer_frame_sink.h"
+#include "ui/gfx/ca_layer_params.h"
 #include "ui/gfx/mac/io_surface.h"
 #include "ui/gfx/skia_util.h"
 
@@ -16,8 +16,7 @@ namespace viz {
 SoftwareOutputDeviceMac::Buffer::Buffer() = default;
 SoftwareOutputDeviceMac::Buffer::~Buffer() = default;
 
-SoftwareOutputDeviceMac::SoftwareOutputDeviceMac(gfx::AcceleratedWidget widget)
-    : widget_(widget) {}
+SoftwareOutputDeviceMac::SoftwareOutputDeviceMac() {}
 
 SoftwareOutputDeviceMac::~SoftwareOutputDeviceMac() {}
 
@@ -178,17 +177,14 @@ void SoftwareOutputDeviceMac::EndPaint() {
   }
   current_paint_canvas_.reset();
 
-  if (widget_ != gfx::kNullAcceleratedWidget) {
+  if (client_) {
     gfx::CALayerParams ca_layer_params;
     ca_layer_params.is_empty = false;
     ca_layer_params.scale_factor = scale_factor_;
     ca_layer_params.pixel_size = pixel_size_;
     ca_layer_params.io_surface_mach_port.reset(
         IOSurfaceCreateMachPort(current_paint_buffer_->io_surface));
-    ui::CALayerFrameSink* ca_layer_frame_sink =
-        ui::CALayerFrameSink::FromAcceleratedWidget(widget_);
-    if (ca_layer_frame_sink)
-      ca_layer_frame_sink->UpdateCALayerTree(ca_layer_params);
+    client_->SoftwareDeviceUpdatedCALayerParams(ca_layer_params);
   }
 
   current_paint_buffer_ = nullptr;

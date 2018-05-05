@@ -19,6 +19,7 @@
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/service/display/display_scheduler.h"
 #include "components/viz/service/display/output_surface_client.h"
+#include "components/viz/service/display/software_output_device_client.h"
 #include "components/viz/service/display/surface_aggregator.h"
 #include "components/viz/service/surfaces/latest_local_surface_id_lookup_delegate.h"
 #include "components/viz/service/surfaces/surface_manager.h"
@@ -57,7 +58,8 @@ class VIZ_SERVICE_EXPORT DisplayObserver {
 class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
                                    public OutputSurfaceClient,
                                    public ContextLostObserver,
-                                   public LatestLocalSurfaceIdLookupDelegate {
+                                   public LatestLocalSurfaceIdLookupDelegate,
+                                   public SoftwareOutputDeviceClient {
  public:
   // The |begin_frame_source| and |scheduler| may be null (together). In that
   // case, DrawAndSwap must be called externally when needed.
@@ -120,6 +122,10 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   // LatestLocalSurfaceIdLookupDelegate implementation.
   LocalSurfaceId GetSurfaceAtAggregation(
       const FrameSinkId& frame_sink_id) const override;
+
+  // SoftwareOutputDeviceClient implementation
+  void SoftwareDeviceUpdatedCALayerParams(
+      const gfx::CALayerParams& ca_layer_params) override;
 
   bool has_scheduler() const { return !!scheduler_; }
   DirectRenderer* renderer_for_testing() const { return renderer_.get(); }

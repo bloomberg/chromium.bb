@@ -14,7 +14,6 @@
 #include "components/viz/service/viz_service_export.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkRegion.h"
-#include "ui/gfx/native_widget_types.h"
 
 class SkCanvas;
 
@@ -22,7 +21,7 @@ namespace viz {
 
 class VIZ_SERVICE_EXPORT SoftwareOutputDeviceMac : public SoftwareOutputDevice {
  public:
-  explicit SoftwareOutputDeviceMac(gfx::AcceleratedWidget widget);
+  SoftwareOutputDeviceMac();
   ~SoftwareOutputDeviceMac() override;
 
   // SoftwareOutputDevice implementation.
@@ -56,7 +55,6 @@ class VIZ_SERVICE_EXPORT SoftwareOutputDeviceMac : public SoftwareOutputDevice {
   void UpdateAndCopyBufferDamage(Buffer* previous_paint_buffer,
                                  const SkRegion& new_damage_rect);
 
-  gfx::AcceleratedWidget widget_ = gfx::kNullAcceleratedWidget;
   gfx::Size pixel_size_;
   float scale_factor_ = 1;
 
