@@ -633,10 +633,12 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
       // Skip quad if it is a RenderPassDrawQuad because RenderPassDrawQuad is a
       // special type of DrawQuad where the visible_rect of shared quad state is
       // not entirely covered by draw quads in it; or the DrawQuad size is
-      // smaller than the kMinimumDrawOcclusionSize.
+      // smaller than the kMinimumDrawOcclusionSize; or the DrawQuad is inside
+      // a 3d objects.
       if (quad->material == ContentDrawQuadBase::Material::RENDER_PASS ||
           (quad->visible_rect.width() <= minimum_draw_occlusion_width &&
-           quad->visible_rect.height() <= minimum_draw_occlusion_height)) {
+           quad->visible_rect.height() <= minimum_draw_occlusion_height) ||
+          quad->shared_quad_state->sorting_context_id != 0) {
         ++quad;
         continue;
       }

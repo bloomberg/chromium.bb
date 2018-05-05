@@ -2074,6 +2074,62 @@ TEST_F(DisplayTest, CompositorFrameWithOpaquenessChange) {
   TearDownDisplay();
 }
 
+// Test if draw occlusion skips 3d objects. https://crbug.com/833748
+TEST_F(DisplayTest, CompositorFrameZTranslate) {
+  RendererSettings settings;
+  settings.kMinimumDrawOcclusionSize.set_width(0);
+  SetUpDisplay(settings, TestWebGraphicsContext3D::Create());
+
+  StubDisplayClient client;
+  display_->Initialize(&client, manager_.surface_manager());
+
+  CompositorFrame frame = MakeDefaultCompositorFrame();
+  gfx::Rect rect1(0, 0, 100, 100);
+  gfx::Rect rect2(0, 0, 200, 100);
+
+  gfx::Transform translate_back;
+  translate_back.Translate3d(0, 0, 100);
+  bool is_clipped = false;
+  bool are_contents_opaque = true;
+  float opacity = 1.f;
+  SharedQuadState* shared_quad_state =
+      frame.render_pass_list.front()->CreateAndAppendSharedQuadState();
+  auto* quad = frame.render_pass_list.front()
+                   ->quad_list.AllocateAndConstruct<SolidColorDrawQuad>();
+  SharedQuadState* shared_quad_state2 =
+      frame.render_pass_list.front()->CreateAndAppendSharedQuadState();
+  auto* quad2 = frame.render_pass_list.front()
+                    ->quad_list.AllocateAndConstruct<SolidColorDrawQuad>();
+
+  // 2 rects inside of 3d object is completely overlapping.
+  //                         +-----+
+  //                         |     |
+  //                         +-----+
+  {
+    shared_quad_state->SetAll(translate_back, rect1, rect1, rect1, is_clipped,
+                              are_contents_opaque, opacity,
+                              SkBlendMode::kSrcOver, 1);
+    shared_quad_state2->SetAll(gfx::Transform(), rect1, rect1, rect1,
+                               is_clipped, are_contents_opaque, opacity,
+                               SkBlendMode::kSrcOver, 1);
+
+    quad->SetNew(shared_quad_state, rect1, rect1, SK_ColorBLACK, false);
+    quad2->SetNew(shared_quad_state2, rect2, rect1, SK_ColorBLACK, false);
+    EXPECT_EQ(2u, frame.render_pass_list.front()->quad_list.size());
+    display_->RemoveOverdrawQuads(&frame);
+    // Since both |quad| and |quad2| are inside of a 3d object, DrawOcclusion
+    // will not be applied to them.
+    EXPECT_EQ(2u, frame.render_pass_list.front()->quad_list.size());
+    EXPECT_EQ(rect1.ToString(), frame.render_pass_list.front()
+                                    ->quad_list.ElementAt(0)
+                                    ->rect.ToString());
+    EXPECT_EQ(rect2.ToString(), frame.render_pass_list.front()
+                                    ->quad_list.ElementAt(1)
+                                    ->rect.ToString());
+  }
+  TearDownDisplay();
+}
+
 TEST_F(DisplayTest, CompositorFrameWithTranslateTransformer) {
   RendererSettings settings;
   settings.kMinimumDrawOcclusionSize.set_width(0);
