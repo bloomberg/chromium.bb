@@ -14,9 +14,13 @@ namespace ash_service_registry {
 // Process group used for the ash service and the ui service. Visible for test.
 constexpr char kAshAndUiProcessGroup[] = "ash_and_ui";
 
-// Starts one of Mash's embedded services.
+// Registers the set of Ash related services that run out of process.
 void RegisterOutOfProcessServices(
     content::ContentBrowserClient::OutOfProcessServiceMap* services);
+
+// Registers the set of Ash related services that run in process.
+void RegisterInProcessServices(
+    content::ContentBrowserClient::StaticServiceMap* services);
 
 // Returns true if |name| identifies an Ash related service.
 bool IsAshRelatedServiceName(const std::string& name);
