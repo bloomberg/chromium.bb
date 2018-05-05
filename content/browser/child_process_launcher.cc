@@ -160,13 +160,6 @@ void ChildProcessLauncher::ResetRegisteredFilesForTesting() {
   ChildProcessLauncherHelper::ResetRegisteredFilesForTesting();
 }
 
-#if defined(OS_ANDROID)
-// static
-size_t ChildProcessLauncher::GetNumberOfRendererSlots() {
-  return ChildProcessLauncherHelper::GetNumberOfRendererSlots();
-}
-#endif  // OS_ANDROID
-
 ChildProcessLauncher::Client* ChildProcessLauncher::ReplaceClientForTest(
     Client* client) {
   Client* ret = client_;

@@ -134,7 +134,7 @@ public final class MultiprocessTestClientLauncher {
 
         if (sConnectionAllocator == null) {
             sConnectionAllocator = ChildConnectionAllocator.create(
-                    ContextUtils.getApplicationContext(), sLauncherHandler,
+                    ContextUtils.getApplicationContext(), sLauncherHandler, null,
                     "org.chromium.native_test", "org.chromium.base.MultiprocessTestClientService",
                     "org.chromium.native_test.NUM_TEST_CLIENT_SERVICES", false /* bindToCaller */,
                     false /* bindAsExternalService */, false /* useStrongBinding */);

@@ -168,10 +168,4 @@ class BindingManagerImpl implements BindingManager, ComponentCallbacks2 {
         assert LauncherThread.runningOnLauncherThread();
         removeConnection(connection);
     }
-
-    @Override
-    public void releaseAllModerateBindings() {
-        assert LauncherThread.runningOnLauncherThread();
-        removeAllConnections();
-    }
 }

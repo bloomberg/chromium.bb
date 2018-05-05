@@ -40,7 +40,7 @@ public class SpareChildConnectionTest {
 
     // A connection allocator not used to create connections.
     private final ChildConnectionAllocator mWrongConnectionAllocator =
-            ChildConnectionAllocator.createForTest("org.chromium.test", "TestServiceName",
+            ChildConnectionAllocator.createForTest(null, "org.chromium.test", "TestServiceName",
                     3 /* serviceCount */, false /* bindToCaller */,
                     false /* bindAsExternalService */, false /* useStrongBinding */);
 
@@ -87,7 +87,7 @@ public class SpareChildConnectionTest {
         LauncherThread.setCurrentThreadAsLauncherThread();
 
         mConnectionAllocator =
-                ChildConnectionAllocator.createForTest("org.chromium.test.spare_connection",
+                ChildConnectionAllocator.createForTest(null, "org.chromium.test.spare_connection",
                         "TestServiceName", 5 /* serviceCount */, false /* bindToCaller */,
                         false /* bindAsExternalService */, false /* useStrongBinding */);
         mConnectionAllocator.setConnectionFactoryForTesting(mTestConnectionFactory);

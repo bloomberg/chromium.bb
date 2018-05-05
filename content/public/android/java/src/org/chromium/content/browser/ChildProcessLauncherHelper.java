@@ -214,11 +214,10 @@ public class ChildProcessLauncherHelper {
                 ? new GpuProcessCallback()
                 : null;
 
-        ChildProcessLauncherHelper processLauncher = new ChildProcessLauncherHelper(
+        ChildProcessLauncherHelper helper = new ChildProcessLauncherHelper(
                 nativePointer, commandLine, filesToBeMapped, sandboxed, binderCallback);
-        processLauncher.mLauncher.start(
-                true /* doSetupConnection */, true /* queueIfNoFreeConnection */);
-        return processLauncher;
+        helper.start();
+        return helper;
     }
 
     /**
@@ -327,7 +326,7 @@ public class ChildProcessLauncherHelper {
         if (!sandboxed) {
             if (sPrivilegedChildConnectionAllocator == null) {
                 sPrivilegedChildConnectionAllocator =
-                        ChildConnectionAllocator.create(context, LauncherThread.getHandler(),
+                        ChildConnectionAllocator.create(context, LauncherThread.getHandler(), null,
                                 packageName, PRIVILEGED_SERVICES_NAME, NUM_PRIVILEGED_SERVICES_KEY,
                                 bindToCaller, bindAsExternalService, true /* useStrongBinding */);
             }
@@ -339,20 +338,28 @@ public class ChildProcessLauncherHelper {
                     "Create a new ChildConnectionAllocator with package name = %s,"
                             + " sandboxed = true",
                     packageName);
+            Runnable freeSlotRunnable = () -> {
+                ChildProcessConnection lowestRank =
+                        sSandboxedChildConnectionRanking.getLowestRankedConnection();
+                if (lowestRank != null) {
+                    lowestRank.kill();
+                }
+            };
+
             ChildConnectionAllocator connectionAllocator = null;
             if (sSandboxedServicesCountForTesting != -1) {
                 // Testing case where allocator settings are overriden.
                 String serviceName = !TextUtils.isEmpty(sSandboxedServicesNameForTesting)
                         ? sSandboxedServicesNameForTesting
                         : SandboxedProcessService.class.getName();
-                connectionAllocator = ChildConnectionAllocator.createForTest(packageName,
-                        serviceName, sSandboxedServicesCountForTesting, bindToCaller,
+                connectionAllocator = ChildConnectionAllocator.createForTest(freeSlotRunnable,
+                        packageName, serviceName, sSandboxedServicesCountForTesting, bindToCaller,
                         bindAsExternalService, false /* useStrongBinding */);
             } else {
-                connectionAllocator =
-                        ChildConnectionAllocator.create(context, LauncherThread.getHandler(),
-                                packageName, SANDBOXED_SERVICES_NAME, NUM_SANDBOXED_SERVICES_KEY,
-                                bindToCaller, bindAsExternalService, false /* useStrongBinding */);
+                connectionAllocator = ChildConnectionAllocator.create(context,
+                        LauncherThread.getHandler(), freeSlotRunnable, packageName,
+                        SANDBOXED_SERVICES_NAME, NUM_SANDBOXED_SERVICES_KEY, bindToCaller,
+                        bindAsExternalService, false /* useStrongBinding */);
             }
             if (sSandboxedServiceFactoryForTesting != null) {
                 connectionAllocator.setConnectionFactoryForTesting(
@@ -361,25 +368,6 @@ public class ChildProcessLauncherHelper {
             sSandboxedChildConnectionAllocator = connectionAllocator;
             sSandboxedChildConnectionRanking = new ChildProcessRanking(
                     sSandboxedChildConnectionAllocator.getNumberOfServices());
-
-            final ChildConnectionAllocator finalConnectionAllocator = connectionAllocator;
-            connectionAllocator.addListener(new ChildConnectionAllocator.Listener() {
-                @Override
-                public void onConnectionAllocated(
-                        ChildConnectionAllocator allocator, ChildProcessConnection connection) {
-                    assert connection != null;
-                    assert allocator == finalConnectionAllocator;
-                    if (!allocator.isFreeConnectionAvailable()) {
-                        // Proactively releases all the moderate bindings once all the sandboxed
-                        // services are allocated, which will be very likely to have some of them
-                        // killed by OOM killer.
-                        BindingManager manager = getBindingManager();
-                        if (manager != null) {
-                            manager.releaseAllModerateBindings();
-                        }
-                    }
-                }
-            });
         }
         return sSandboxedChildConnectionAllocator;
     }
@@ -405,6 +393,10 @@ public class ChildProcessLauncherHelper {
         } else {
             mRanking = null;
         }
+    }
+
+    private void start() {
+        mLauncher.start(true /* doSetupConnection */, true /* queueIfNoFreeConnection */);
     }
 
     /**
@@ -545,25 +537,6 @@ public class ChildProcessLauncherHelper {
         if (launcher != null) {
             // Can happen for single process.
             launcher.mLauncher.stop();
-        }
-    }
-
-    @CalledByNative
-    private static int getNumberOfRendererSlots() {
-        assert ThreadUtils.runningOnUiThread();
-        if (sSandboxedServicesCountForTesting != -1) {
-            return sSandboxedServicesCountForTesting;
-        }
-
-        final Context context = ContextUtils.getApplicationContext();
-        final String packageName = ChildProcessCreationParams.getPackageNameForService();
-        try {
-            return ChildConnectionAllocator.getNumberOfServices(
-                    context, packageName, NUM_SANDBOXED_SERVICES_KEY);
-        } catch (RuntimeException e) {
-            // Unittest packages do not declare services. Some tests require a realistic number
-            // to test child process policies, so pick a high-ish number here.
-            return 65535;
         }
     }
 
