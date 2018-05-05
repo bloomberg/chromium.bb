@@ -655,38 +655,45 @@ TEST_F(GLRendererWithDefaultHarnessTest, ExternalStencil) {
   EXPECT_TRUE(renderer_->stencil_enabled());
 }
 
-class ForbidSynchronousCallContext : public TestWebGraphicsContext3D {
+class ForbidSynchronousCallGLES2Interface : public TestGLES2Interface {
  public:
-  ForbidSynchronousCallContext() {}
+  ForbidSynchronousCallGLES2Interface() = default;
 
-  void getAttachedShaders(GLuint program,
+  void GetAttachedShaders(GLuint program,
                           GLsizei max_count,
                           GLsizei* count,
                           GLuint* shaders) override {
     ADD_FAILURE();
   }
-  GLint getAttribLocation(GLuint program, const GLchar* name) override {
+
+  GLint GetAttribLocation(GLuint program, const GLchar* name) override {
     ADD_FAILURE();
     return 0;
   }
-  void getBooleanv(GLenum pname, GLboolean* value) override { ADD_FAILURE(); }
-  void getBufferParameteriv(GLenum target,
+
+  void GetBooleanv(GLenum pname, GLboolean* value) override { ADD_FAILURE(); }
+
+  void GetBufferParameteriv(GLenum target,
                             GLenum pname,
                             GLint* value) override {
     ADD_FAILURE();
   }
-  GLenum getError() override {
+
+  GLenum GetError() override {
     ADD_FAILURE();
     return GL_NO_ERROR;
   }
-  void getFloatv(GLenum pname, GLfloat* value) override { ADD_FAILURE(); }
-  void getFramebufferAttachmentParameteriv(GLenum target,
+
+  void GetFloatv(GLenum pname, GLfloat* value) override { ADD_FAILURE(); }
+
+  void GetFramebufferAttachmentParameteriv(GLenum target,
                                            GLenum attachment,
                                            GLenum pname,
                                            GLint* value) override {
     ADD_FAILURE();
   }
-  void getIntegerv(GLenum pname, GLint* value) override {
+
+  void GetIntegerv(GLenum pname, GLint* value) override {
     if (pname == GL_MAX_TEXTURE_SIZE) {
       // MAX_TEXTURE_SIZE is cached client side, so it's OK to query.
       *value = 1024;
@@ -697,64 +704,66 @@ class ForbidSynchronousCallContext : public TestWebGraphicsContext3D {
 
   // We allow querying the shader compilation and program link status in debug
   // mode, but not release.
-  void getProgramiv(GLuint program, GLenum pname, GLint* value) override {
-#ifndef NDEBUG
-    *value = 1;
-#else
+  void GetProgramiv(GLuint program, GLenum pname, GLint* value) override {
     ADD_FAILURE();
-#endif
   }
 
-  void getShaderiv(GLuint shader, GLenum pname, GLint* value) override {
-#ifndef NDEBUG
-    *value = 1;
-#else
+  void GetShaderiv(GLuint shader, GLenum pname, GLint* value) override {
     ADD_FAILURE();
-#endif
   }
 
-  void getRenderbufferParameteriv(GLenum target,
+  void GetRenderbufferParameteriv(GLenum target,
                                   GLenum pname,
                                   GLint* value) override {
     ADD_FAILURE();
   }
 
-  void getShaderPrecisionFormat(GLenum shadertype,
+  void GetShaderPrecisionFormat(GLenum shadertype,
                                 GLenum precisiontype,
                                 GLint* range,
                                 GLint* precision) override {
     ADD_FAILURE();
   }
-  void getTexParameterfv(GLenum target, GLenum pname, GLfloat* value) override {
+
+  void GetTexParameterfv(GLenum target, GLenum pname, GLfloat* value) override {
     ADD_FAILURE();
   }
-  void getTexParameteriv(GLenum target, GLenum pname, GLint* value) override {
+
+  void GetTexParameteriv(GLenum target, GLenum pname, GLint* value) override {
     ADD_FAILURE();
   }
-  void getUniformfv(GLuint program, GLint location, GLfloat* value) override {
+
+  void GetUniformfv(GLuint program, GLint location, GLfloat* value) override {
     ADD_FAILURE();
   }
-  void getUniformiv(GLuint program, GLint location, GLint* value) override {
+
+  void GetUniformiv(GLuint program, GLint location, GLint* value) override {
     ADD_FAILURE();
   }
-  GLint getUniformLocation(GLuint program, const GLchar* name) override {
+
+  GLint GetUniformLocation(GLuint program, const GLchar* name) override {
     ADD_FAILURE();
     return 0;
   }
-  void getVertexAttribfv(GLuint index, GLenum pname, GLfloat* value) override {
+
+  void GetVertexAttribfv(GLuint index, GLenum pname, GLfloat* value) override {
     ADD_FAILURE();
   }
-  void getVertexAttribiv(GLuint index, GLenum pname, GLint* value) override {
+
+  void GetVertexAttribiv(GLuint index, GLenum pname, GLint* value) override {
     ADD_FAILURE();
   }
-  GLsizeiptr getVertexAttribOffset(GLuint index, GLenum pname) override {
+
+  void GetVertexAttribPointerv(GLuint index,
+                               GLenum pname,
+                               void** pointer) override {
     ADD_FAILURE();
-    return 0;
   }
 };
+
 TEST_F(GLRendererTest, InitializationDoesNotMakeSynchronousCalls) {
-  auto context = std::make_unique<ForbidSynchronousCallContext>();
-  auto provider = TestContextProvider::Create(std::move(context));
+  auto gl_owned = std::make_unique<ForbidSynchronousCallGLES2Interface>();
+  auto provider = TestContextProvider::Create(std::move(gl_owned));
   provider->BindToCurrentThread();
 
   cc::FakeOutputSurfaceClient output_surface_client;
@@ -811,22 +820,26 @@ TEST_F(GLRendererTest, InitializationWithQuicklyLostContextDoesNotAssert) {
                           resource_provider.get());
 }
 
-class ClearCountingContext : public TestWebGraphicsContext3D {
+class ClearCountingGLES2Interface : public TestGLES2Interface {
  public:
-  ClearCountingContext() { test_capabilities_.discard_framebuffer = true; }
+  ClearCountingGLES2Interface() = default;
 
-  MOCK_METHOD3(discardFramebufferEXT,
+  void InitializeTestContext(TestWebGraphicsContext3D* context) override {
+    context->set_have_discard_framebuffer(true);
+  }
+
+  MOCK_METHOD3(DiscardFramebufferEXT,
                void(GLenum target,
                     GLsizei numAttachments,
                     const GLenum* attachments));
-  MOCK_METHOD1(clear, void(GLbitfield mask));
+  MOCK_METHOD1(Clear, void(GLbitfield mask));
 };
 
 TEST_F(GLRendererTest, OpaqueBackground) {
-  std::unique_ptr<ClearCountingContext> context_owned(new ClearCountingContext);
-  ClearCountingContext* context = context_owned.get();
+  auto gl_owned = std::make_unique<ClearCountingGLES2Interface>();
+  ClearCountingGLES2Interface* gl = gl_owned.get();
 
-  auto provider = TestContextProvider::Create(std::move(context_owned));
+  auto provider = TestContextProvider::Create(std::move(gl_owned));
   provider->BindToCurrentThread();
 
   cc::FakeOutputSurfaceClient output_surface_client;
@@ -854,23 +867,23 @@ TEST_F(GLRendererTest, OpaqueBackground) {
 
   // On DEBUG builds, render passes with opaque background clear to blue to
   // easily see regions that were not drawn on the screen.
-  EXPECT_CALL(*context, discardFramebufferEXT(GL_FRAMEBUFFER, _, _))
+  EXPECT_CALL(*gl, DiscardFramebufferEXT(GL_FRAMEBUFFER, _, _))
       .With(Args<2, 1>(ElementsAre(GL_COLOR_EXT)))
       .Times(1);
 #ifdef NDEBUG
-  EXPECT_CALL(*context, clear(_)).Times(0);
+  EXPECT_CALL(*gl, Clear(_)).Times(0);
 #else
-  EXPECT_CALL(*context, clear(_)).Times(1);
+  EXPECT_CALL(*gl, Clear(_)).Times(1);
 #endif
   DrawFrame(&renderer, viewport_size);
-  Mock::VerifyAndClearExpectations(context);
+  Mock::VerifyAndClearExpectations(gl);
 }
 
 TEST_F(GLRendererTest, TransparentBackground) {
-  std::unique_ptr<ClearCountingContext> context_owned(new ClearCountingContext);
-  ClearCountingContext* context = context_owned.get();
+  auto gl_owned = std::make_unique<ClearCountingGLES2Interface>();
+  ClearCountingGLES2Interface* gl = gl_owned.get();
 
-  auto provider = TestContextProvider::Create(std::move(context_owned));
+  auto provider = TestContextProvider::Create(std::move(gl_owned));
   provider->BindToCurrentThread();
 
   cc::FakeOutputSurfaceClient output_surface_client;
@@ -896,18 +909,18 @@ TEST_F(GLRendererTest, TransparentBackground) {
       gfx::Transform(), cc::FilterOperations());
   root_pass->has_transparent_background = true;
 
-  EXPECT_CALL(*context, discardFramebufferEXT(GL_FRAMEBUFFER, 1, _)).Times(1);
-  EXPECT_CALL(*context, clear(_)).Times(1);
+  EXPECT_CALL(*gl, DiscardFramebufferEXT(GL_FRAMEBUFFER, 1, _)).Times(1);
+  EXPECT_CALL(*gl, Clear(_)).Times(1);
   DrawFrame(&renderer, viewport_size);
 
-  Mock::VerifyAndClearExpectations(context);
+  Mock::VerifyAndClearExpectations(gl);
 }
 
 TEST_F(GLRendererTest, OffscreenOutputSurface) {
-  std::unique_ptr<ClearCountingContext> context_owned(new ClearCountingContext);
-  ClearCountingContext* context = context_owned.get();
+  auto gl_owned = std::make_unique<ClearCountingGLES2Interface>();
+  ClearCountingGLES2Interface* gl = gl_owned.get();
 
-  auto provider = TestContextProvider::Create(std::move(context_owned));
+  auto provider = TestContextProvider::Create(std::move(gl_owned));
   provider->BindToCurrentThread();
 
   cc::FakeOutputSurfaceClient output_surface_client;
@@ -931,26 +944,29 @@ TEST_F(GLRendererTest, OffscreenOutputSurface) {
   cc::AddRenderPass(&render_passes_in_draw_order_, 1, gfx::Rect(viewport_size),
                     gfx::Transform(), cc::FilterOperations());
 
-  EXPECT_CALL(*context, discardFramebufferEXT(GL_FRAMEBUFFER, _, _))
+  EXPECT_CALL(*gl, DiscardFramebufferEXT(GL_FRAMEBUFFER, _, _))
       .With(Args<2, 1>(ElementsAre(GL_COLOR_ATTACHMENT0)))
       .Times(1);
-  EXPECT_CALL(*context, clear(_)).Times(AnyNumber());
+  EXPECT_CALL(*gl, Clear(_)).Times(AnyNumber());
   DrawFrame(&renderer, viewport_size);
-  Mock::VerifyAndClearExpectations(context);
+  Mock::VerifyAndClearExpectations(gl);
 }
 
-class TextureStateTrackingContext : public TestWebGraphicsContext3D {
+class TextureStateTrackingGLES2Interface : public TestGLES2Interface {
  public:
-  TextureStateTrackingContext() : active_texture_(GL_INVALID_ENUM) {
-    test_capabilities_.egl_image_external = true;
+  TextureStateTrackingGLES2Interface() : active_texture_(GL_INVALID_ENUM) {}
+
+  void InitializeTestContext(TestWebGraphicsContext3D* context) override {
+    context->set_have_extension_egl_image(true);
   }
 
-  MOCK_METHOD1(waitSyncToken, void(const GLbyte* sync_token));
-  MOCK_METHOD3(texParameteri, void(GLenum target, GLenum pname, GLint param));
-  MOCK_METHOD4(drawElements,
-               void(GLenum mode, GLsizei count, GLenum type, GLintptr offset));
+  MOCK_METHOD1(WaitSyncTokenCHROMIUM, void(const GLbyte* sync_token));
+  MOCK_METHOD3(TexParameteri, void(GLenum target, GLenum pname, GLint param));
+  MOCK_METHOD4(
+      DrawElements,
+      void(GLenum mode, GLsizei count, GLenum type, const void* indices));
 
-  void activeTexture(GLenum texture) override {
+  void ActiveTexture(GLenum texture) override {
     EXPECT_NE(texture, active_texture_);
     active_texture_ = texture;
   }
@@ -962,11 +978,10 @@ class TextureStateTrackingContext : public TestWebGraphicsContext3D {
 };
 
 TEST_F(GLRendererTest, ActiveTextureState) {
-  std::unique_ptr<TextureStateTrackingContext> context_owned(
-      new TextureStateTrackingContext);
-  TextureStateTrackingContext* context = context_owned.get();
+  auto gl_owned = std::make_unique<TextureStateTrackingGLES2Interface>();
+  TextureStateTrackingGLES2Interface* gl = gl_owned.get();
 
-  auto provider = TestContextProvider::Create(std::move(context_owned));
+  auto provider = TestContextProvider::Create(std::move(gl_owned));
   provider->BindToCurrentThread();
 
   cc::FakeOutputSurfaceClient output_surface_client;
@@ -987,13 +1002,12 @@ TEST_F(GLRendererTest, ActiveTextureState) {
   renderer.SetVisible(true);
 
   // During initialization we are allowed to set any texture parameters.
-  EXPECT_CALL(*context, texParameteri(_, _, _)).Times(AnyNumber());
+  EXPECT_CALL(*gl, TexParameteri(_, _, _)).Times(AnyNumber());
 
-  std::unique_ptr<TextureStateTrackingContext> child_context_owned(
-      new TextureStateTrackingContext);
+  auto child_gl_owned = std::make_unique<TextureStateTrackingGLES2Interface>();
 
   auto child_context_provider =
-      TestContextProvider::Create(std::move(child_context_owned));
+      TestContextProvider::Create(std::move(child_gl_owned));
   child_context_provider->BindToCurrentThread();
   auto child_resource_provider =
       cc::FakeResourceProvider::CreateLayerTreeResourceProvider(
@@ -1012,7 +1026,7 @@ TEST_F(GLRendererTest, ActiveTextureState) {
 
   // Set up expected texture filter state transitions that match the quads
   // created in AppendOneOfEveryQuadType().
-  Mock::VerifyAndClearExpectations(context);
+  Mock::VerifyAndClearExpectations(gl);
   {
     InSequence sequence;
     // The verified flush flag will be set by
@@ -1024,43 +1038,45 @@ TEST_F(GLRendererTest, ActiveTextureState) {
     // (with mailbox), resource2, resource3, resource4, resource9, resource10,
     // resource11, resource12. resource8 has its own mailbox mailbox_sync_token.
     // The rest resources share a common default sync token.
-    EXPECT_CALL(*context, waitSyncToken(_)).Times(2);
-    EXPECT_CALL(*context, waitSyncToken(MatchesSyncToken(mailbox_sync_token)))
+    EXPECT_CALL(*gl, WaitSyncTokenCHROMIUM(_)).Times(2);
+    EXPECT_CALL(*gl,
+                WaitSyncTokenCHROMIUM(MatchesSyncToken(mailbox_sync_token)))
         .Times(1);
-    EXPECT_CALL(*context, waitSyncToken(_)).Times(7);
+    EXPECT_CALL(*gl, WaitSyncTokenCHROMIUM(_)).Times(7);
 
     // yuv_quad is drawn with the default linear filter.
-    EXPECT_CALL(*context, drawElements(_, _, _, _));
+    EXPECT_CALL(*gl, DrawElements(_, _, _, _));
 
     // tile_quad is drawn with GL_NEAREST because it is not transformed or
     // scaled.
-    EXPECT_CALL(*context, texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-                                        GL_NEAREST));
-    EXPECT_CALL(*context, texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
-                                        GL_NEAREST));
+    EXPECT_CALL(
+        *gl, TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+    EXPECT_CALL(
+        *gl, TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
     // The remaining quads also use GL_LINEAR because nearest neighbor
     // filtering is currently only used with tile quads.
-    EXPECT_CALL(*context, drawElements(_, _, _, _)).Times(8);
+    EXPECT_CALL(*gl, DrawElements(_, _, _, _)).Times(8);
   }
 
   gfx::Size viewport_size(100, 100);
   DrawFrame(&renderer, viewport_size);
-  Mock::VerifyAndClearExpectations(context);
+  Mock::VerifyAndClearExpectations(gl);
 }
 
-class NoClearRootRenderPassMockContext : public TestWebGraphicsContext3D {
+class NoClearRootRenderPassMockGLES2Interface : public TestGLES2Interface {
  public:
-  MOCK_METHOD1(clear, void(GLbitfield mask));
-  MOCK_METHOD4(drawElements,
-               void(GLenum mode, GLsizei count, GLenum type, GLintptr offset));
+  MOCK_METHOD1(Clear, void(GLbitfield mask));
+  MOCK_METHOD4(
+      DrawElements,
+      void(GLenum mode, GLsizei count, GLenum type, const void* indices));
 };
 
 TEST_F(GLRendererTest, ShouldClearRootRenderPass) {
-  std::unique_ptr<NoClearRootRenderPassMockContext> mock_context_owned(
-      new NoClearRootRenderPassMockContext);
-  NoClearRootRenderPassMockContext* mock_context = mock_context_owned.get();
+  auto mock_gl_owned =
+      std::make_unique<NoClearRootRenderPassMockGLES2Interface>();
+  NoClearRootRenderPassMockGLES2Interface* mock_gl = mock_gl_owned.get();
 
-  auto provider = TestContextProvider::Create(std::move(mock_context_owned));
+  auto provider = TestContextProvider::Create(std::move(mock_gl_owned));
   provider->BindToCurrentThread();
 
   cc::FakeOutputSurfaceClient output_surface_client;
@@ -1105,17 +1121,15 @@ TEST_F(GLRendererTest, ShouldClearRootRenderPass) {
 #endif
 
   // First render pass is not the root one, clearing should happen.
-  EXPECT_CALL(*mock_context, clear(clear_bits)).Times(AtLeast(1));
+  EXPECT_CALL(*mock_gl, Clear(clear_bits)).Times(AtLeast(1));
 
   Expectation first_render_pass =
-      EXPECT_CALL(*mock_context, drawElements(_, _, _, _)).Times(1);
+      EXPECT_CALL(*mock_gl, DrawElements(_, _, _, _)).Times(1);
 
   // The second render pass is the root one, clearing should be prevented.
-  EXPECT_CALL(*mock_context, clear(clear_bits))
-      .Times(0)
-      .After(first_render_pass);
+  EXPECT_CALL(*mock_gl, Clear(clear_bits)).Times(0).After(first_render_pass);
 
-  EXPECT_CALL(*mock_context, drawElements(_, _, _, _))
+  EXPECT_CALL(*mock_gl, DrawElements(_, _, _, _))
       .Times(AnyNumber())
       .After(first_render_pass);
 
@@ -1124,7 +1138,7 @@ TEST_F(GLRendererTest, ShouldClearRootRenderPass) {
 
   // In multiple render passes all but the root pass should clear the
   // framebuffer.
-  Mock::VerifyAndClearExpectations(&mock_context);
+  Mock::VerifyAndClearExpectations(&mock_gl);
 }
 
 class ScissorTestOnClearCheckingGLES2Interface : public TestGLES2Interface {
@@ -2213,9 +2227,9 @@ class SingleOverlayOnTopProcessor : public OverlayProcessor {
   SingleOverlayValidator validator_;
 };
 
-class WaitSyncTokenCountingContext : public TestWebGraphicsContext3D {
+class WaitSyncTokenCountingGLES2Interface : public TestGLES2Interface {
  public:
-  MOCK_METHOD1(waitSyncToken, void(const GLbyte* sync_token));
+  MOCK_METHOD1(WaitSyncTokenCHROMIUM, void(const GLbyte* sync_token));
 };
 
 class MockOverlayScheduler {
@@ -2229,11 +2243,10 @@ class MockOverlayScheduler {
 };
 
 TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
-  std::unique_ptr<WaitSyncTokenCountingContext> context_owned(
-      new WaitSyncTokenCountingContext);
-  WaitSyncTokenCountingContext* context = context_owned.get();
+  auto gl_owned = std::make_unique<WaitSyncTokenCountingGLES2Interface>();
+  WaitSyncTokenCountingGLES2Interface* gl = gl_owned.get();
 
-  auto provider = TestContextProvider::Create(std::move(context_owned));
+  auto provider = TestContextProvider::Create(std::move(gl_owned));
   provider->BindToCurrentThread();
 
   MockOverlayScheduler overlay_scheduler;
@@ -2328,7 +2341,8 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
 
   // Verify that overlay_quad actually gets turned into an overlay, and even
   // though it's not drawn, that its sync point is waited on.
-  EXPECT_CALL(*context, waitSyncToken(MatchesSyncToken(sync_token))).Times(1);
+  EXPECT_CALL(*gl, WaitSyncTokenCHROMIUM(MatchesSyncToken(sync_token)))
+      .Times(1);
 
   EXPECT_CALL(
       overlay_scheduler,

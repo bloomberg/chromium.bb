@@ -34,6 +34,7 @@
 #include "cc/trees/single_thread_proxy.h"
 #include "components/viz/common/resources/single_release_callback.h"
 #include "components/viz/test/test_context_provider.h"
+#include "components/viz/test/test_gles2_interface.h"
 #include "components/viz/test/test_layer_tree_frame_sink.h"
 #include "components/viz/test/test_shared_bitmap_manager.h"
 #include "components/viz/test/test_web_graphics_context_3d.h"
@@ -51,12 +52,27 @@ base::TimeTicks TicksFromMicroseconds(int64_t micros) {
   return base::TimeTicks() + base::TimeDelta::FromMicroseconds(micros);
 }
 
+class IOSurfaceGLES2Interface : public viz::TestGLES2Interface {
+ public:
+  explicit IOSurfaceGLES2Interface(bool context_should_support_io_surface)
+      : context_should_support_io_surface_(context_should_support_io_surface) {}
+
+  void InitializeTestContext(viz::TestWebGraphicsContext3D* context) override {
+    if (context_should_support_io_surface_) {
+      context->set_have_extension_io_surface(true);
+      context->set_have_extension_egl_image(true);
+    }
+  }
+
+ private:
+  bool context_should_support_io_surface_;
+};
+
 // These tests deal with losing the 3d graphics context.
 class LayerTreeHostContextTest : public LayerTreeTest {
  public:
   LayerTreeHostContextTest()
       : LayerTreeTest(),
-        context3d_(nullptr),
         times_to_fail_create_(0),
         times_to_lose_during_commit_(0),
         times_to_lose_during_draw_(0),
@@ -72,15 +88,15 @@ class LayerTreeHostContextTest : public LayerTreeTest {
 
   void LoseContext() {
     // CreateDisplayLayerTreeFrameSink happens on a different thread, so lock
-    // context3d_ to make sure we don't set it to null after recreating it
+    // gl_ to make sure we don't set it to null after recreating it
     // there.
-    base::AutoLock lock(context3d_lock_);
+    base::AutoLock lock(gl_lock_);
     // For sanity-checking tests, they should only call this when the
     // context is not lost.
-    CHECK(context3d_);
-    context3d_->loseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
-                                    GL_INNOCENT_CONTEXT_RESET_ARB);
-    context3d_ = nullptr;
+    CHECK(gl_);
+    gl_->LoseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
+                             GL_INNOCENT_CONTEXT_RESET_ARB);
+    gl_ = nullptr;
   }
 
   std::unique_ptr<viz::TestLayerTreeFrameSink> CreateLayerTreeFrameSink(
@@ -89,26 +105,22 @@ class LayerTreeHostContextTest : public LayerTreeTest {
       scoped_refptr<viz::ContextProvider> compositor_context_provider,
       scoped_refptr<viz::RasterContextProvider> worker_context_provider)
       override {
-    base::AutoLock lock(context3d_lock_);
+    base::AutoLock lock(gl_lock_);
 
-    std::unique_ptr<viz::TestWebGraphicsContext3D> compositor_context3d =
-        viz::TestWebGraphicsContext3D::Create();
-    if (context_should_support_io_surface_) {
-      compositor_context3d->set_have_extension_io_surface(true);
-      compositor_context3d->set_have_extension_egl_image(true);
-    }
-    context3d_ = compositor_context3d.get();
+    auto gl_owned = std::make_unique<IOSurfaceGLES2Interface>(
+        context_should_support_io_surface_);
+    gl_ = gl_owned.get();
 
+    auto provider = viz::TestContextProvider::Create(std::move(gl_owned));
     if (times_to_fail_create_) {
       --times_to_fail_create_;
       ExpectCreateToFail();
-      context3d_->loseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
-                                      GL_INNOCENT_CONTEXT_RESET_ARB);
+      gl_->LoseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
+                               GL_INNOCENT_CONTEXT_RESET_ARB);
     }
 
     return LayerTreeTest::CreateLayerTreeFrameSink(
-        renderer_settings, refresh_rate,
-        viz::TestContextProvider::Create(std::move(compositor_context3d)),
+        renderer_settings, refresh_rate, std::move(provider),
         std::move(worker_context_provider));
   }
 
@@ -158,10 +170,10 @@ class LayerTreeHostContextTest : public LayerTreeTest {
   void ExpectCreateToFail() { ++times_to_expect_create_failed_; }
 
  protected:
-  // Protects use of context3d_ so LoseContext and
+  // Protects use of gl_ so LoseContext and
   // CreateDisplayLayerTreeFrameSink can both use it on different threads.
-  base::Lock context3d_lock_;
-  viz::TestWebGraphicsContext3D* context3d_;
+  base::Lock gl_lock_;
+  viz::TestGLES2Interface* gl_ = nullptr;
 
   int times_to_fail_create_;
   int times_to_lose_during_commit_;
@@ -1008,7 +1020,7 @@ class LayerTreeHostContextTestDontUseLostResources
     if (host_impl->active_tree()->source_frame_number() == 2) {
       // Lose the context after draw on the second commit. This will cause
       // a third commit to recover.
-      context3d_->set_times_bind_texture_succeeds(0);
+      gl_->set_times_bind_texture_succeeds(0);
     }
     return draw_result;
   }
@@ -1480,7 +1492,7 @@ class UIResourceLostEviction : public UIResourceLostTestSimple {
   void DidSetVisibleOnImplTree(LayerTreeHostImpl* impl, bool visible) override {
     if (!visible) {
       // All resources should have been evicted.
-      ASSERT_EQ(0u, context3d_->NumTextures());
+      ASSERT_EQ(0u, gl_->NumTextures());
       EXPECT_EQ(0u, impl->ResourceIdForUIResource(ui_resource_->id()));
       EXPECT_EQ(0u, impl->ResourceIdForUIResource(ui_resource2_->id()));
       EXPECT_EQ(0u, impl->ResourceIdForUIResource(ui_resource3_->id()));
@@ -1500,7 +1512,7 @@ class UIResourceLostEviction : public UIResourceLostTestSimple {
       case 1:
         // The first two resources should have been created on LTHI after the
         // commit.
-        ASSERT_EQ(2u, context3d_->NumTextures());
+        ASSERT_EQ(2u, gl_->NumTextures());
         EXPECT_NE(0u, impl->ResourceIdForUIResource(ui_resource_->id()));
         EXPECT_NE(0u, impl->ResourceIdForUIResource(ui_resource2_->id()));
         EXPECT_EQ(1, ui_resource_->resource_create_count);
@@ -1508,7 +1520,7 @@ class UIResourceLostEviction : public UIResourceLostTestSimple {
         EXPECT_TRUE(impl->CanDraw());
         // Evict all UI resources. This will trigger a commit.
         impl->EvictAllUIResources();
-        ASSERT_EQ(0u, context3d_->NumTextures());
+        ASSERT_EQ(0u, gl_->NumTextures());
         EXPECT_EQ(0u, impl->ResourceIdForUIResource(ui_resource_->id()));
         EXPECT_EQ(0u, impl->ResourceIdForUIResource(ui_resource2_->id()));
         EXPECT_EQ(1, ui_resource_->resource_create_count);
@@ -1517,7 +1529,7 @@ class UIResourceLostEviction : public UIResourceLostTestSimple {
         break;
       case 2:
         // The first two resources should have been recreated.
-        ASSERT_EQ(2u, context3d_->NumTextures());
+        ASSERT_EQ(2u, gl_->NumTextures());
         EXPECT_NE(0u, impl->ResourceIdForUIResource(ui_resource_->id()));
         EXPECT_EQ(2, ui_resource_->resource_create_count);
         EXPECT_EQ(1, ui_resource_->lost_resource_count);
@@ -1529,7 +1541,7 @@ class UIResourceLostEviction : public UIResourceLostTestSimple {
       case 3:
         // The first resource should have been recreated after visibility was
         // restored.
-        ASSERT_EQ(2u, context3d_->NumTextures());
+        ASSERT_EQ(2u, gl_->NumTextures());
         EXPECT_NE(0u, impl->ResourceIdForUIResource(ui_resource_->id()));
         EXPECT_EQ(3, ui_resource_->resource_create_count);
         EXPECT_EQ(2, ui_resource_->lost_resource_count);
