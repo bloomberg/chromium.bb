@@ -38,10 +38,6 @@ namespace ukm {
 class UkmRecorder;
 }
 
-namespace viz {
-class LocalSurfaceId;
-}
-
 namespace content {
 
 class BrowserAccessibilityManager;
@@ -80,10 +76,8 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
                                       bool width_changed) {}
 
   // The contents auto-resized and the container should match it.
-  virtual void ResizeDueToAutoResize(
-      RenderWidgetHostImpl* render_widget_host,
-      const gfx::Size& new_size,
-      const viz::LocalSurfaceId& local_surface_id) {}
+  virtual void ResizeDueToAutoResize(RenderWidgetHostImpl* render_widget_host,
+                                     const gfx::Size& new_size) {}
 
   // Callback to give the browser a chance to handle the specified keyboard
   // event before sending it to the renderer. See enum for details on return

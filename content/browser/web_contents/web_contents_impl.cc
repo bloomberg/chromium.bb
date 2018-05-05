@@ -2941,8 +2941,7 @@ void WebContentsImpl::UpdatePreferredSize(const gfx::Size& pref_size) {
 
 void WebContentsImpl::ResizeDueToAutoResize(
     RenderWidgetHostImpl* render_widget_host,
-    const gfx::Size& new_size,
-    const viz::LocalSurfaceId& local_surface_id) {
+    const gfx::Size& new_size) {
   if (render_widget_host != GetRenderViewHost()->GetWidget())
     return;
 
