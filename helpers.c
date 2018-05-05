@@ -55,13 +55,6 @@ static const struct planar_layout packed_4bpp_layout = {
 	.bytes_per_pixel = { 4 }
 };
 
-static const struct planar_layout packed_8bpp_layout = {
-	.num_planes = 1,
-	.horizontal_subsampling = { 1 },
-	.vertical_subsampling = { 1 },
-	.bytes_per_pixel = { 8 }
-};
-
 static const struct planar_layout biplanar_yuv_420_layout = {
 	.num_planes = 2,
 	.horizontal_subsampling = { 1, 2 },
@@ -144,9 +137,6 @@ static const struct planar_layout *layout_from_format(uint32_t format)
 	case DRM_FORMAT_XRGB8888:
 		return &packed_4bpp_layout;
 
-	case DRM_FORMAT_XBGR16161616:
-		return &packed_8bpp_layout;
-
 	default:
 		drv_log("UNKNOWN FORMAT %d\n", format);
 		return NULL;
@@ -193,7 +183,8 @@ uint32_t drv_stride_from_format(uint32_t format, uint32_t width, size_t plane)
 	const struct planar_layout *layout = layout_from_format(format);
 	assert(plane < layout->num_planes);
 
-	uint32_t plane_width = DIV_ROUND_UP(width, layout->horizontal_subsampling[plane]);
+	uint32_t plane_width =
+		DIV_ROUND_UP(width, layout->horizontal_subsampling[plane]);
 	uint32_t stride = plane_width * layout->bytes_per_pixel[plane];
 
 	/*

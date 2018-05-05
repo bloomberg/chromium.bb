@@ -14,10 +14,6 @@
 #include <system/graphics.h>
 #include <system/window.h>
 
-#if ANDROID_VERSION < 0x0900
-#define HAL_PIXEL_FORMAT_RGBA_FP16 0x16
-#endif
-
 constexpr uint32_t cros_gralloc_magic = 0xABCDDCBA;
 constexpr uint32_t handle_data_size =
     ((sizeof(struct cros_gralloc_handle) - offsetof(cros_gralloc_handle, fds[0])) / sizeof(int));

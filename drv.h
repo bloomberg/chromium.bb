@@ -50,7 +50,6 @@ extern "C" {
  */
 
 #define DRM_FORMAT_NONE				fourcc_code('0', '0', '0', '0')
-#define DRM_FORMAT_XBGR16161616			fourcc_code('9', '9', '9', '6')
 #define DRM_FORMAT_YVU420_ANDROID		fourcc_code('9', '9', '9', '7')
 #define DRM_FORMAT_FLEX_IMPLEMENTATION_DEFINED	fourcc_code('9', '9', '9', '8')
 #define DRM_FORMAT_FLEX_YCbCr_420_888		fourcc_code('9', '9', '9', '9')
