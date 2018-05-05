@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-behaviors/paper-ripple-behavior.html">
+<link rel="import" href="../shared_vars_css.html">
 
 <dom-module id="cr-toggle">
   <template>
@@ -13,6 +14,7 @@
 
       :host([disabled]) {
         cursor: initial;
+        opacity: 0.38;
         pointer-events: none;
       }
 
@@ -29,11 +31,11 @@
       }
 
       #bar {
-        background-color: var(--cr-toggle-unchecked-bar-color, black);
+        background-color:
+          var(--cr-toggle-unchecked-bar-color, var(--google-grey-400));
         border-radius: 8px;
         height: 12px;
         left: 3px;
-        opacity: 0.4;
         position: absolute;
         top: 2px;
         transition: background-color linear 80ms;
@@ -43,17 +45,12 @@
 
       :host([checked]) #bar {
         background-color: var(
-            --cr-toggle-checked-bar-color, var(--google-blue-500));
-      }
-
-      :host([disabled]) #bar {
-        background-color: black;
-        opacity: 0.12;
+            --cr-toggle-checked-bar-color, var(--google-blue-600));
+        opacity: 0.5;
       }
 
       #knob {
-        background-color: var(
-            --cr-toggle-unchecked-button-color, var(--paper-grey-50));
+        background-color: var(--cr-toggle-unchecked-button-color, white);
         border-radius: 50%;
         box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
         display: block;
@@ -66,17 +63,12 @@
 
       :host([checked]) #knob {
         background-color: var(
-            --cr-toggle-checked-button-color, var(--google-blue-500));
+            --cr-toggle-checked-button-color, var(--google-blue-600));
         transform: translate3d(18px, 0, 0);
       }
 
       :host-context([dir=rtl]):host([checked]) #knob {
         transform: translate3d(-18px, 0, 0);
-      }
-
-      :host([disabled]) #knob {
-        background-color: #bdbdbd;
-        opacity: 1;
       }
 
       paper-ripple {
