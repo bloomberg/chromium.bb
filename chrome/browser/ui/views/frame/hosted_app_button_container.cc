@@ -222,10 +222,8 @@ void HostedAppButtonContainer::SetPaintAsActive(bool active) {
 
 void HostedAppButtonContainer::StartTitlebarAnimation(
     base::TimeDelta origin_text_slide_duration) {
-  if (g_animation_disabled_for_testing ||
-      browser_view_->immersive_mode_controller()->IsEnabled()) {
+  if (g_animation_disabled_for_testing)
     return;
-  }
 
   app_menu_button_->StartHighlightAnimation(origin_text_slide_duration);
 
