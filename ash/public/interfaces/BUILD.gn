@@ -92,12 +92,10 @@ mojom("test_interfaces") {
   sources = [
     "shelf_test_api.mojom",
     "shell_test_api.mojom",
-    "status_area_widget_test_api.mojom",
     "system_tray_test_api.mojom",
     "time_to_first_present_recorder_test_api.mojom",
   ]
   deps = [
     "//mojo/public/mojom/base",
-    "//ui/gfx/geometry/mojo",
   ]
 }
