@@ -79,61 +79,64 @@
         <print-preview-destination-settings id="destinationSettings"
             destination="[[destination_]]"
             destination-store="[[destinationStore_]]"
-            invitation-store="[[invitationStore_]]"
+            invitation-store="[[invitationStore_]]" class="settings-section"
             disabled="[[controlsDisabled_]]" state="[[state]]"
             recent-destinations="[[recentDestinations_]]"
             user-info="{{userInfo_}}" available>
         </print-preview-destination-settings>
         <print-preview-pages-settings settings="{{settings}}"
-            document-info="[[documentInfo_]]" disabled="[[controlsDisabled_]]"
+            document-info="[[documentInfo_]]"
+            class="settings-section" disabled="[[controlsDisabled_]]"
             available="[[settings.pages.available]]">
         </print-preview-pages-settings>
         <print-preview-copies-settings settings="{{settings}}"
-            disabled="[[controlsDisabled_]]"
+            class="settings-section" disabled="[[controlsDisabled_]]"
             available="[[settings.copies.available]]">
         </print-preview-copies-settings>
         <print-preview-layout-settings settings="{{settings}}"
-            disabled="[[controlsDisabled_]]"
+            class="settings-section" disabled="[[controlsDisabled_]]"
             available="[[settings.layout.available]]">
         </print-preview-layout-settings>
         <print-preview-color-settings settings="{{settings}}"
-            disabled="[[controlsDisabled_]]"
+            class="settings-section" disabled="[[controlsDisabled_]]"
             available="[[settings.color.available]]">
         </print-preview-color-settings>
         <print-preview-more-settings settings-expanded="{{settingsExpanded_}}"
-            disabled="[[controlsDisabled_]]"
+            class="settings-section" disabled="[[controlsDisabled_]]"
             available="[[shouldShowMoreSettings_]]">
         </print-preview-more-settings>
         <print-preview-media-size-settings settings="{{settings}}"
             capability="[[destination_.capabilities.printer.media_size]]"
-            disabled="[[controlsDisabled_]]"
+            class="settings-section" disabled="[[controlsDisabled_]]"
             available="[[settings.mediaSize.available]]" collapsible>
         </print-preview-media-size-settings>
         <print-preview-margins-settings settings="{{settings}}"
-            disabled="[[controlsDisabled_]]"
+            class="settings-section" disabled="[[controlsDisabled_]]"
             available="[[settings.margins.available]]" collapsible>
         </print-preview-margins-settings>
         <print-preview-dpi-settings settings="{{settings}}"
             capability="[[destination_.capabilities.printer.dpi]]"
-            disabled="[[controlsDisabled_]]"
+            class="settings-section" disabled="[[controlsDisabled_]]"
             available="[[settings.dpi.available]]" collapsible>
         </print-preview-dpi-settings>
         <print-preview-scaling-settings settings="{{settings}}"
-            document-info="[[documentInfo_]]" disabled="[[controlsDisabled_]]"
+            document-info="[[documentInfo_]]" class="settings-section"
+            disabled="[[controlsDisabled_]]"
             available="[[settings.scaling.available]]" collapsible>
         </print-preview-scaling-settings>
         <print-preview-other-options-settings settings="{{settings}}"
-            disabled="[[controlsDisabled_]]"
+            class="settings-section" disabled="[[controlsDisabled_]]"
             available="[[settings.otherOptions.available]]" collapsible>
         </print-preview-other-options-settings>
         <print-preview-advanced-options-settings settings="{{settings}}"
+            class="settings-section"
             destination="[[destination_]]" disabled="[[controlsDisabled_]]"
             available="[[settings.vendorItems.available]]" collapsible>
         </print-preview-advanced-options-settings>
 <if expr="not chromeos">
         <print-preview-link-container destination="[[destination_]]"
             app-kiosk-mode="[[isInAppKioskMode_]]"
-            disabled="[[controlsDisabled_]]" available
+            disabled="[[controlsDisabled_]]"
 <if expr="is_macosx">
             on-open-pdf-in-preview="onOpenPdfInPreview_"
 </if>

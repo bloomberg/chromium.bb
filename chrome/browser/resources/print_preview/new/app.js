@@ -542,15 +542,16 @@ Polymer({
 
   /** Changes the visibility of settings sections. */
   updateSettingsVisibility_: function() {
-    Array.from(this.$.settingsSections.children).forEach(section => {
-      if (!section.available ||
-          (section.collapsible && this.shouldShowMoreSettings_ &&
-           !this.settingsExpanded_)) {
-        section.hide();
-        return;
-      }
-      section.show();
-    });
+    Array.from(this.shadowRoot.querySelectorAll('.settings-section'))
+        .forEach(section => {
+          if (!section.available ||
+              (section.collapsible && this.shouldShowMoreSettings_ &&
+               !this.settingsExpanded_)) {
+            section.hide();
+            return;
+          }
+          section.show();
+        });
   },
 
   /** @private */
