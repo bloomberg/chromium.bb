@@ -114,8 +114,9 @@ enum class GetSettingStatus {
 // numeric values should never be reused.
 enum class ActivationStatus {
   SUCCESS = 0,
-  GET_PROFILE_ID_INVALID_LAUNCH_ID = 1,
-  ACTIVATION_INVALID_LAUNCH_ID = 2,
+  DEPRECATED_GET_PROFILE_ID_INVALID_LAUNCH_ID = 1,
+  DEPRECATED_ACTIVATION_INVALID_LAUNCH_ID = 2,
+  INVALID_LAUNCH_ID = 3,
   COUNT  // Must be the final value.
 };
 
