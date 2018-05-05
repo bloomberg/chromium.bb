@@ -11,7 +11,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 
 void UpdateShareTargetInPrefs(const GURL& manifest_url,
-                              const blink::Manifest& manifest,
+                              const content::Manifest& manifest,
                               PrefService* pref_service) {
   DictionaryPrefUpdate update(pref_service, prefs::kWebShareVisitedTargets);
   base::DictionaryValue* share_target_dict = update.Get();

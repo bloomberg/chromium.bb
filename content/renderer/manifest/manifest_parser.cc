@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "content/public/common/manifest.h"
 #include "content/public/common/manifest_share_target_util.h"
 #include "content/public/common/manifest_util.h"
 #include "content/renderer/manifest/manifest_uma_util.h"
@@ -80,7 +81,7 @@ void ManifestParser::Parse() {
   ManifestUmaUtil::ParseSucceeded(manifest_);
 }
 
-const blink::Manifest& ManifestParser::manifest() const {
+const Manifest& ManifestParser::manifest() const {
   return manifest_;
 }
 
@@ -134,7 +135,7 @@ int64_t ManifestParser::ParseColor(
     const std::string& key) {
   base::NullableString16 parsed_color = ParseString(dictionary, key, Trim);
   if (parsed_color.is_null())
-    return blink::Manifest::kInvalidOrMissingColor;
+    return Manifest::kInvalidOrMissingColor;
 
   SkColor color;
   if (!blink::WebCSSParser::ParseColor(
@@ -142,7 +143,7 @@ int64_t ManifestParser::ParseColor(
     AddErrorInfo("property '" + key + "' ignored, '" +
                  base::UTF16ToUTF8(parsed_color.string()) + "' is not a " +
                  "valid color.");
-    return blink::Manifest::kInvalidOrMissingColor;
+      return Manifest::kInvalidOrMissingColor;
   }
 
   // We do this here because Java does not have an unsigned int32_t type so
@@ -282,13 +283,13 @@ std::vector<gfx::Size> ManifestParser::ParseIconSizes(
   return sizes;
 }
 
-std::vector<blink::Manifest::Icon::IconPurpose>
-ManifestParser::ParseIconPurpose(const base::DictionaryValue& icon) {
+std::vector<Manifest::Icon::IconPurpose> ManifestParser::ParseIconPurpose(
+    const base::DictionaryValue& icon) {
   base::NullableString16 purpose_str = ParseString(icon, "purpose", NoTrim);
-  std::vector<blink::Manifest::Icon::IconPurpose> purposes;
+  std::vector<Manifest::Icon::IconPurpose> purposes;
 
   if (purpose_str.is_null()) {
-    purposes.push_back(blink::Manifest::Icon::IconPurpose::ANY);
+    purposes.push_back(Manifest::Icon::IconPurpose::ANY);
     return purposes;
   }
 
@@ -297,9 +298,9 @@ ManifestParser::ParseIconPurpose(const base::DictionaryValue& icon) {
       base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   for (const base::string16& keyword : keywords) {
     if (base::LowerCaseEqualsASCII(keyword, "any")) {
-      purposes.push_back(blink::Manifest::Icon::IconPurpose::ANY);
+      purposes.push_back(Manifest::Icon::IconPurpose::ANY);
     } else if (base::LowerCaseEqualsASCII(keyword, "badge")) {
-      purposes.push_back(blink::Manifest::Icon::IconPurpose::BADGE);
+      purposes.push_back(Manifest::Icon::IconPurpose::BADGE);
     } else {
       AddErrorInfo(
           "found icon with invalid purpose. "
@@ -308,15 +309,15 @@ ManifestParser::ParseIconPurpose(const base::DictionaryValue& icon) {
   }
 
   if (purposes.empty()) {
-    purposes.push_back(blink::Manifest::Icon::IconPurpose::ANY);
+    purposes.push_back(Manifest::Icon::IconPurpose::ANY);
   }
 
   return purposes;
 }
 
-std::vector<blink::Manifest::Icon> ManifestParser::ParseIcons(
+std::vector<Manifest::Icon> ManifestParser::ParseIcons(
     const base::DictionaryValue& dictionary) {
-  std::vector<blink::Manifest::Icon> icons;
+  std::vector<Manifest::Icon> icons;
   if (!dictionary.HasKey("icons"))
     return icons;
 
@@ -331,7 +332,7 @@ std::vector<blink::Manifest::Icon> ManifestParser::ParseIcons(
     if (!icons_list->GetDictionary(i, &icon_dictionary))
       continue;
 
-    blink::Manifest::Icon icon;
+    Manifest::Icon icon;
     icon.src = ParseIconSrc(*icon_dictionary);
     // An icon MUST have a valid src. If it does not, it MUST be ignored.
     if (!icon.src.is_valid())
@@ -360,19 +361,19 @@ GURL ManifestParser::ParseShareTargetURLTemplate(
   return url_template;
 }
 
-base::Optional<blink::Manifest::ShareTarget> ManifestParser::ParseShareTarget(
+base::Optional<Manifest::ShareTarget> ManifestParser::ParseShareTarget(
     const base::DictionaryValue& dictionary) {
   if (!dictionary.HasKey("share_target"))
     return base::nullopt;
 
-  blink::Manifest::ShareTarget share_target;
+  Manifest::ShareTarget share_target;
   const base::DictionaryValue* share_target_dict = nullptr;
   dictionary.GetDictionary("share_target", &share_target_dict);
   share_target.url_template = ParseShareTargetURLTemplate(*share_target_dict);
 
   if (share_target.url_template.is_empty())
     return base::nullopt;
-  return base::Optional<blink::Manifest::ShareTarget>(share_target);
+  return base::Optional<Manifest::ShareTarget>(share_target);
 }
 
 base::NullableString16 ManifestParser::ParseRelatedApplicationPlatform(
@@ -391,10 +392,10 @@ base::NullableString16 ManifestParser::ParseRelatedApplicationId(
   return ParseString(application, "id", Trim);
 }
 
-std::vector<blink::Manifest::RelatedApplication>
+std::vector<Manifest::RelatedApplication>
 ManifestParser::ParseRelatedApplications(
     const base::DictionaryValue& dictionary) {
-  std::vector<blink::Manifest::RelatedApplication> applications;
+  std::vector<Manifest::RelatedApplication> applications;
   if (!dictionary.HasKey("related_applications"))
     return applications;
 
@@ -410,7 +411,7 @@ ManifestParser::ParseRelatedApplications(
     if (!applications_list->GetDictionary(i, &application_dictionary))
       continue;
 
-    blink::Manifest::RelatedApplication application;
+    Manifest::RelatedApplication application;
     application.platform =
         ParseRelatedApplicationPlatform(*application_dictionary);
     // "If platform is undefined, move onto the next item if any are left."
