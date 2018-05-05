@@ -185,6 +185,7 @@ TEST(AudioVideoMetadataExtractorTest, AndroidRotatedMP4Video) {
 
   EXPECT_EQ(0u, extractor->attached_images_bytes().size());
 }
+#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
 TEST(AudioVideoMetadataExtractorTest, AudioMP3) {
   std::unique_ptr<AudioVideoMetadataExtractor> extractor =
@@ -259,6 +260,5 @@ TEST(AudioVideoMetadataExtractorTest, AudioFLACInMp4) {
 
   EXPECT_EQ(0u, extractor->attached_images_bytes().size());
 }
-#endif
 
 }  // namespace media

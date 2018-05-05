@@ -299,15 +299,15 @@ TEST_F(FFmpegGlueContainerTest, WAV) {
   ExpectContainer(container_names::CONTAINER_WAV);
 }
 
+TEST_F(FFmpegGlueContainerTest, MP3) {
+  InitializeAndOpen("sfx.mp3");
+  ExpectContainer(container_names::CONTAINER_MP3);
+}
+
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 TEST_F(FFmpegGlueContainerTest, MOV) {
   InitializeAndOpen("sfx.m4a");
   ExpectContainer(container_names::CONTAINER_MOV);
-}
-
-TEST_F(FFmpegGlueContainerTest, MP3) {
-  InitializeAndOpen("sfx.mp3");
-  ExpectContainer(container_names::CONTAINER_MP3);
 }
 
 TEST_F(FFmpegGlueContainerTest, AAC) {

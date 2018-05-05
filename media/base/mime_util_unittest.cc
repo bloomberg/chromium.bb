@@ -326,10 +326,8 @@ TEST(MimeUtilTest, ParseAudioCodecString) {
   // Valid FLAC string with MP4. Neither decoding nor demuxing is proprietary.
   EXPECT_TRUE(ParseAudioCodecString("audio/mp4", "flac", &out_is_ambiguous,
                                     &out_codec));
-  if (kUsePropCodecs) {
-    EXPECT_FALSE(out_is_ambiguous);
-    EXPECT_EQ(kCodecFLAC, out_codec);
-  }
+  EXPECT_FALSE(out_is_ambiguous);
+  EXPECT_EQ(kCodecFLAC, out_codec);
 
   // Ambiguous AAC string.
   // TODO(chcunningha): This can probably be allowed. I think we treat all

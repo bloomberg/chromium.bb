@@ -1230,7 +1230,6 @@ TEST_F(FFmpegDemuxerTest, SeekWithCuesBeforeFirstCluster) {
   base::RunLoop().Run();
 }
 
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
 // Ensure ID3v1 tag reading is disabled.  id3_test.mp3 has an ID3v1 tag with the
 // field "title" set to "sample for id3 test".
 TEST_F(FFmpegDemuxerTest, NoID3TagData) {
@@ -1238,9 +1237,7 @@ TEST_F(FFmpegDemuxerTest, NoID3TagData) {
   InitializeDemuxer();
   EXPECT_FALSE(av_dict_get(format_context()->metadata, "title", NULL, 0));
 }
-#endif
 
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
 // Ensure MP3 files with large image/video based ID3 tags demux okay.  FFmpeg
 // will hand us a video stream to the data which will likely be in a format we
 // don't accept as video; e.g. PNG.
@@ -1260,7 +1257,6 @@ TEST_F(FFmpegDemuxerTest, Mp3WithVideoStreamID3TagData) {
   EXPECT_FALSE(GetStream(DemuxerStream::VIDEO));
   EXPECT_TRUE(GetStream(DemuxerStream::AUDIO));
 }
-#endif
 
 // Ensure a video with an unsupported audio track still results in the video
 // stream being demuxed. Because we disable the speex parser for ogg, the audio
@@ -1303,6 +1299,7 @@ TEST_F(FFmpegDemuxerTest, MP4_ZeroStszEntry) {
   InitializeDemuxer();
   ReadUntilEndOfStream(GetStream(DemuxerStream::AUDIO));
 }
+#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
 class Mp3SeekFFmpegDemuxerTest
     : public FFmpegDemuxerTest,
@@ -1344,6 +1341,7 @@ INSTANTIATE_TEST_CASE_P(, Mp3SeekFFmpegDemuxerTest,
                                           "bear-audio-10s-VBR-has-TOC.mp3",
                                           "bear-audio-10s-VBR-no-TOC.mp3"));
 
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
 static void ValidateAnnexB(DemuxerStream* stream,
                            DemuxerStream::Status status,
                            scoped_refptr<DecoderBuffer> buffer) {
@@ -1710,7 +1708,6 @@ TEST_F(FFmpegDemuxerTest, Read_Flac) {
                    44100, kSampleFormatS32);
 }
 
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
 TEST_F(FFmpegDemuxerTest, Read_Flac_Mp4) {
   CreateDemuxer("bear-flac.mp4");
   InitializeDemuxer();
@@ -1732,7 +1729,6 @@ TEST_F(FFmpegDemuxerTest, Read_Flac_192kHz_Mp4) {
   VerifyFlacStream(GetStream(DemuxerStream::AUDIO), 32, CHANNEL_LAYOUT_STEREO,
                    192000, kSampleFormatS32);
 }
-#endif  // USE_PROPRIETARY_CODECS
 
 // Verify that FFmpeg demuxer falls back to choosing disabled streams for
 // seeking if there's no suitable enabled stream found.
