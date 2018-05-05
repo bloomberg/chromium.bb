@@ -2174,10 +2174,8 @@ void RenderWidgetHostImpl::DidUpdateVisualProperties(
         view_->ResizeDueToAutoResize(viewport_size_in_dip,
                                      *child_allocated_local_surface_id);
 
-    if (delegate_) {
-      delegate_->ResizeDueToAutoResize(this, viewport_size_in_dip,
-                                       *child_allocated_local_surface_id);
-    }
+    if (delegate_)
+      delegate_->ResizeDueToAutoResize(this, viewport_size_in_dip);
   }
 }
 
