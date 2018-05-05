@@ -6,11 +6,11 @@
 
 #include <utility>
 
-#include "ash/ash_service.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/logging.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
+#include "chrome/browser/ash_service_registry.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/chromeos/chrome_service_name.h"
@@ -18,7 +18,6 @@
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_impl.h"
 #include "chrome/browser/chromeos/net/delay_network_call.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/prefs/pref_connector_service.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/automatic_reboot_manager.h"
@@ -28,7 +27,6 @@
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/component_updater/cros_component_installer.h"
-#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/account_manager/account_manager_factory.h"
@@ -182,22 +180,7 @@ BrowserProcessPlatformPart::CreateBrowserPolicyConnector() {
 
 void BrowserProcessPlatformPart::RegisterInProcessServices(
     content::ContentBrowserClient::StaticServiceMap* services) {
-  {
-    service_manager::EmbeddedServiceInfo info;
-    info.factory = base::Bind([] {
-      return std::unique_ptr<service_manager::Service>(
-          std::make_unique<AshPrefConnector>());
-    });
-    info.task_runner = base::ThreadTaskRunnerHandle::Get();
-    services->insert(
-        std::make_pair(ash::mojom::kPrefConnectorServiceName, info));
-  }
-
-  if (!ash_util::IsRunningInMash()) {
-    services->insert(
-        std::make_pair(ash::mojom::kServiceName,
-                       ash::AshService::CreateEmbeddedServiceInfo()));
-  }
+  ash_service_registry::RegisterInProcessServices(services);
 }
 
 chromeos::system::SystemClock* BrowserProcessPlatformPart::GetSystemClock() {

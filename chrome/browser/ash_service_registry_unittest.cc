@@ -6,11 +6,15 @@
 
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/stl_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "content/public/browser/content_browser_client.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/ui_base_features.h"
 
 TEST(AshServiceRegistryTest, AshAndUiInSameProcess) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kMash);
   content::ContentBrowserClient::OutOfProcessServiceMap services;
   ash_service_registry::RegisterOutOfProcessServices(&services);
 

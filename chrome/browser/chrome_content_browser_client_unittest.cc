@@ -411,8 +411,6 @@ TEST(ChromeContentBrowserClientTest, GetMetricSuffixForURL) {
 
 #if defined(OS_CHROMEOS)
 
-// This behavior only matters on Chrome OS, which is why this isn't wrapped in
-// ENABLE_MASH_PACKAGED_SERVICES (which is used for Linux Ozone).
 TEST(ChromeContentBrowserClientTest, ShouldTerminateOnServiceQuit) {
   const struct {
     std::string service_name;
