@@ -76,6 +76,48 @@ class TraceEventDataSource::ThreadLocalEventSink {
 
     char phase = trace_event.phase();
     new_trace_event->set_phase(phase);
+
+    for (int i = 0;
+         i < base::trace_event::kTraceMaxNumArgs && trace_event.arg_name(i);
+         ++i) {
+      // TODO(oysteine): Support ConvertableToTraceFormat serialized into a JSON
+      // string.
+      auto type = trace_event.arg_type(i);
+      if (type == TRACE_VALUE_TYPE_CONVERTABLE) {
+        continue;
+      }
+
+      auto* new_arg = new_trace_event->add_args();
+      new_arg->set_name(trace_event.arg_name(i));
+
+      auto& value = trace_event.arg_value(i);
+      switch (type) {
+        case TRACE_VALUE_TYPE_BOOL:
+          new_arg->set_bool_value(value.as_bool);
+          break;
+        case TRACE_VALUE_TYPE_UINT:
+          new_arg->set_uint_value(value.as_uint);
+          break;
+        case TRACE_VALUE_TYPE_INT:
+          new_arg->set_int_value(value.as_int);
+          break;
+        case TRACE_VALUE_TYPE_DOUBLE:
+          new_arg->set_double_value(value.as_double);
+          break;
+        case TRACE_VALUE_TYPE_POINTER:
+          new_arg->set_pointer_value(static_cast<uint64_t>(
+              reinterpret_cast<uintptr_t>(value.as_pointer)));
+          break;
+        case TRACE_VALUE_TYPE_STRING:
+        case TRACE_VALUE_TYPE_COPY_STRING:
+          new_arg->set_string_value(value.as_string ? value.as_string : "NULL");
+          break;
+        default:
+          NOTREACHED() << "Don't know how to print this value";
+          break;
+      }
+    }
+
     if (phase == TRACE_EVENT_PHASE_COMPLETE) {
       int64_t duration = trace_event.duration().InMicroseconds();
       if (duration != -1) {
@@ -120,6 +162,20 @@ class TraceEventDataSource::ThreadLocalEventSink {
  private:
   std::unique_ptr<perfetto::TraceWriter> trace_writer_;
 };
+
+namespace {
+
+base::ThreadLocalStorage::Slot* ThreadLocalEventSinkSlot() {
+  static base::NoDestructor<base::ThreadLocalStorage::Slot>
+      thread_local_event_sink_tls([](void* event_sink) {
+        delete static_cast<TraceEventDataSource::ThreadLocalEventSink*>(
+            event_sink);
+      });
+
+  return thread_local_event_sink_tls.get();
+}
+
+}  // namespace
 
 // static
 TraceEventDataSource* TraceEventDataSource::GetInstance() {
@@ -186,21 +242,26 @@ TraceEventDataSource::CreateThreadLocalEventSink() {
 
 // static
 void TraceEventDataSource::OnAddTraceEvent(const TraceEvent& trace_event) {
-  static base::NoDestructor<base::ThreadLocalStorage::Slot>
-      thread_local_event_sink_tls([](void* event_sink) {
-        delete static_cast<ThreadLocalEventSink*>(event_sink);
-      });
-
-  auto* thread_local_event_sink = static_cast<ThreadLocalEventSink*>(
-      thread_local_event_sink_tls.get()->Get());
+  auto* thread_local_event_sink =
+      static_cast<ThreadLocalEventSink*>(ThreadLocalEventSinkSlot()->Get());
 
   if (!thread_local_event_sink) {
     thread_local_event_sink = GetInstance()->CreateThreadLocalEventSink();
-    thread_local_event_sink_tls.get()->Set(thread_local_event_sink);
+    ThreadLocalEventSinkSlot()->Set(thread_local_event_sink);
   }
 
   if (thread_local_event_sink) {
     thread_local_event_sink->AddTraceEvent(trace_event);
+  }
+}
+
+// static
+void TraceEventDataSource::ResetCurrentThreadForTesting() {
+  ThreadLocalEventSink* thread_local_event_sink =
+      static_cast<ThreadLocalEventSink*>(ThreadLocalEventSinkSlot()->Get());
+  if (thread_local_event_sink) {
+    delete thread_local_event_sink;
+    ThreadLocalEventSinkSlot()->Set(nullptr);
   }
 }
 

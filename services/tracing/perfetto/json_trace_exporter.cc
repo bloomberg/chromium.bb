@@ -16,6 +16,8 @@
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_event.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_packet.pb.h"
 
+using TraceEvent = base::trace_event::TraceEvent;
+
 namespace {
 
 void OutputJSONFromTraceEventProto(
@@ -111,9 +113,58 @@ void OutputJSONFromTraceEventProto(
     base::StringAppendF(out, ",\"s\":\"%c\"", scope);
   }
 
-  *out += ",\"args\":\"__stripped__\"";
+  *out += ",\"args\":{";
+  for (int i = 0; i < event.args_size(); ++i) {
+    auto& arg = event.args(i);
 
-  *out += "}";
+    if (i > 0) {
+      *out += ",";
+    }
+
+    *out += "\"";
+    *out += arg.name();
+    *out += "\":";
+
+    TraceEvent::TraceValue value;
+    if (arg.has_bool_value()) {
+      value.as_bool = arg.bool_value();
+      TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_BOOL, value, out);
+      continue;
+    }
+
+    if (arg.has_uint_value()) {
+      value.as_uint = arg.uint_value();
+      TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_UINT, value, out);
+      continue;
+    }
+
+    if (arg.has_int_value()) {
+      value.as_int = arg.int_value();
+      TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_INT, value, out);
+      continue;
+    }
+
+    if (arg.has_double_value()) {
+      value.as_double = arg.double_value();
+      TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_DOUBLE, value, out);
+      continue;
+    }
+
+    if (arg.has_pointer_value()) {
+      value.as_pointer = reinterpret_cast<void*>(arg.pointer_value());
+      TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_POINTER, value, out);
+      continue;
+    }
+
+    if (arg.has_string_value()) {
+      std::string str = arg.string_value();
+      value.as_string = &str[0];
+      TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_STRING, value, out);
+      continue;
+    }
+  }
+
+  *out += "}}";
 }
 
 }  // namespace

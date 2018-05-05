@@ -1,9 +1,12 @@
 per-file *task_scheduler*=file://base/task_scheduler/OWNERS
 
-# Metrics-related test utilties:
+# Metrics-related test utilites:
 per-file *histogram_tester*=file://base/metrics/OWNERS
 per-file *scoped_feature_list*=file://base/metrics/OWNERS
 per-file *user_action_tester*=file://base/metrics/OWNERS
+
+# Tracing test utilities:
+per-file trace_*=file://base/trace_event/OWNERS
 
 # For Android-specific changes:
 per-file *android*=file://base/test/android/OWNERS
