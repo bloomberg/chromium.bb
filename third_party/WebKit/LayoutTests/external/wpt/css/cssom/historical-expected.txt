@@ -1,0 +1,14 @@
+This is a testharness.js-based test.
+PASS Historical Document member: selectedStyleSheetSet
+PASS Historical Document member: lastStyleSheetSet
+PASS Historical Document member: preferredStyleSheetSet
+PASS Historical Document member: styleSheetSets
+PASS Historical Document member: enableStyleSheetsForSet
+FAIL Historical Document member: selectedStylesheetSet assert_false: expected false got true
+FAIL Historical Document member: preferredStylesheetSet assert_false: expected false got true
+PASS Historical Element member: cascadedStyle
+PASS Historical Element member: defaultStyle
+PASS Historical Element member: rawComputedStyle
+PASS Historical Element member: usedStyle
+Harness: the test ran to completion.
+
