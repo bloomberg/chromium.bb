@@ -6,11 +6,11 @@
   TestRunner.addResult(`Tests that console fills the empty element below the prompt editor.\n`);
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.showPanel('console');
-  await ConsoleTestRunner.waitUntilConsoleEditorLoaded();
   await ConsoleTestRunner.waitForPendingViewportUpdates();
 
   const consoleView = Console.ConsoleView.instance();
   const prompt = consoleView._prompt;
+  const editor = await ConsoleTestRunner.waitUntilConsoleEditorLoaded();
 
   TestRunner.runTestSuite([
     async function testUnsafeExpressions(next) {
@@ -36,6 +36,44 @@
       Console.ConsolePrompt._MaxLengthForEvaluation = 0;
       await checkExpression(`1 + 2`);
       Console.ConsolePrompt._MaxLengthForEvaluation = originalMaxLength;
+
+      next();
+    },
+
+    async function testClickingPreviewFocusesEditor(next) {
+      const expression = `1 + 2`;
+      TestRunner.addResult(`Prompt text set to \`${expression}\``);
+      prompt.setText(expression);
+      await prompt._previewRequestForTest;
+
+      editor.setSelection(TextUtils.TextRange.createFromLocation(0, 0));
+      TestRunner.addResult('Selection before: ' + editor.selection().toString());
+
+      TestRunner.addResult(`Clicking preview element`);
+      prompt._eagerPreviewElement.click();
+
+      TestRunner.addResult('Selection after: ' + editor.selection().toString());
+      TestRunner.addResult(`Editor has focus: ${editor.element.hasFocus()}`);
+
+      next();
+    },
+
+    async function testClickWithSelectionDoesNotFocusEditor(next) {
+      const expression = `1 + 2`;
+      TestRunner.addResult(`Prompt text set to \`${expression}\``);
+      prompt.setText(expression);
+      await prompt._previewRequestForTest;
+      document.activeElement.blur();
+
+      var firstTextNode = prompt.belowEditorElement().traverseNextTextNode();
+      window.getSelection().setBaseAndExtent(firstTextNode, 0, firstTextNode, 1);
+      TestRunner.addResult('Selection before: ' + window.getSelection().toString());
+
+      TestRunner.addResult(`Clicking preview element`);
+      prompt._eagerPreviewElement.click();
+
+      TestRunner.addResult('Selection after: ' + window.getSelection().toString());
+      TestRunner.addResult(`Editor has focus: ${editor.element.hasFocus()}`);
 
       next();
     },
