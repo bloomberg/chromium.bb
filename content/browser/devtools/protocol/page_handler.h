@@ -25,7 +25,7 @@
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/render_widget_host_observer.h"
 #include "content/public/common/javascript_dialog_type.h"
-#include "third_party/blink/public/platform/modules/manifest/manifest_manager.mojom.h"
+#include "third_party/blink/public/mojom/manifest/manifest_manager.mojom.h"
 #include "url/gurl.h"
 
 #if !defined(OS_ANDROID)

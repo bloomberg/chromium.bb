@@ -15,10 +15,10 @@
 #include "ui/gfx/color_utils.h"
 
 namespace {
-// Converts a color from the format documented in content::Manifest to a
+// Converts a color from the format documented in blink::Manifest to a
 // rgba() CSS string.
 std::string ColorToString(int64_t color) {
-  if (color == content::Manifest::kInvalidOrMissingColor)
+  if (color == blink::Manifest::kInvalidOrMissingColor)
     return std::string();
   return color_utils::SkColorToRgbaString(reinterpret_cast<uint32_t&>(color));
 }

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_INSTALLABLE_INSTALLABLE_DATA_H_
 
 #include "chrome/browser/installable/installable_logging.h"
-#include "content/public/common/manifest.h"
+#include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "url/gurl.h"
 
@@ -17,7 +17,7 @@
 struct InstallableData {
   InstallableData(InstallableStatusCode error_code,
                   GURL manifest_url,
-                  const content::Manifest* manifest,
+                  const blink::Manifest* manifest,
                   GURL primary_icon_url,
                   const SkBitmap* primary_icon,
                   GURL badge_icon_url,
@@ -33,7 +33,7 @@ struct InstallableData {
   const GURL manifest_url;
 
   // Empty if the site has an unparseable manifest.
-  const content::Manifest* manifest;
+  const blink::Manifest* manifest;
 
   // Empty if no primary_icon was requested.
   const GURL primary_icon_url;

@@ -30,8 +30,8 @@
 #include <utility>
 
 #include "base/single_thread_task_runner.h"
+#include "third_party/blink/public/common/manifest/web_display_mode.h"
 #include "third_party/blink/public/platform/shape_properties.h"
-#include "third_party/blink/public/platform/web_display_mode.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document_lifecycle.h"
