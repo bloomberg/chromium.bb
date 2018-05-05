@@ -2049,6 +2049,8 @@ static_library("test_support_common") {
     "system/power/power_button_test_base.h",
     "system/power/power_event_observer_test_api.cc",
     "system/power/power_event_observer_test_api.h",
+    "system/status_area_widget_test_api.cc",
+    "system/status_area_widget_test_api.h",
     "system/status_area_widget_test_helper.cc",
     "system/status_area_widget_test_helper.h",
     "system/tray/system_tray_test_api.cc",
