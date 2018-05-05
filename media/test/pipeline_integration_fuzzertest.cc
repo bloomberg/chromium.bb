@@ -31,13 +31,13 @@ enum FuzzerVariant {
   WEBM_VP8,
   WEBM_VP9,
   WEBM_OPUS_VP9,
+  MP4_FLAC,
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
   ADTS,
   MP3,
   MP4_AACLC,
   MP4_AACSBR,
   MP4_AVC1,
-  MP4_FLAC,
   MP4_AACLC_AVC,
 #if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
   MP2T_AACLC,
@@ -61,6 +61,8 @@ std::string MseFuzzerVariantEnumToMimeTypeString(FuzzerVariant variant) {
       return "video/webm; codecs=\"vp9\"";
     case WEBM_OPUS_VP9:
       return "video/webm; codecs=\"opus,vp9\"";
+    case MP4_FLAC:
+      return "audio/mp4; codecs=\"flac\"";
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
     case ADTS:
       return "audio/aac";
@@ -72,8 +74,6 @@ std::string MseFuzzerVariantEnumToMimeTypeString(FuzzerVariant variant) {
       return "audio/mp4; codecs=\"mp4a.40.5\"";
     case MP4_AVC1:
       return "video/mp4; codecs=\"avc1.42E01E\"";
-    case MP4_FLAC:
-      return "audio/mp4; codecs=\"flac\"";
     case MP4_AACLC_AVC:
       return "video/mp4; codecs=\"mp4a.40.2,avc1.42E01E\"";
 #if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
@@ -225,9 +225,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   base::CommandLine::Init(0, nullptr);
 
   media::InitializeMediaLibrary();
-
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(media::kMseFlacInIsobmff);
 
   FuzzerVariant variant = PIPELINE_FUZZER_VARIANT;
 

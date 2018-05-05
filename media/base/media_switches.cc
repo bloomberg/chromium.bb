@@ -269,10 +269,6 @@ const base::Feature kMojoVideoDecoder {
 const base::Feature kMseBufferByPts{"MseBufferByPts",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Support FLAC codec within ISOBMFF streams used with Media Source Extensions.
-const base::Feature kMseFlacInIsobmff{"MseFlacInIsobmff",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enable new cpu load estimator. Intended for evaluation in local
 // testing and origin-trial.
 // TODO(nisse): Delete once we have switched over to always using the

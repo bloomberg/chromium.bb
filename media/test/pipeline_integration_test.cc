@@ -1588,10 +1588,6 @@ TEST_P(MSEPipelineIntegrationTest, BasicPlayback_AV1_MP4) {
 #endif
 
 TEST_P(MSEPipelineIntegrationTest, FlacInMp4_Hashed) {
-  // The feature is disabled by default. Enable it.
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(kMseFlacInIsobmff);
-
   MockMediaSource source("sfx-flac_frag.mp4", kMP4AudioFlac, kAppendWholeFile);
   EXPECT_EQ(PIPELINE_OK,
             StartPipelineWithMediaSource(&source, kHashed, nullptr));

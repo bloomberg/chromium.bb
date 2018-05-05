@@ -235,12 +235,6 @@ bool ChunkDemuxerStream::UpdateAudioConfig(const AudioDecoderConfig& config,
   if (!SBSTREAM_IS_SET) {
     DCHECK_EQ(state_, UNINITIALIZED);
 
-    // FLAC in MSE here is only supported if in ISOBMFF, which has feature flag.
-    // Though the MP4StreamParser shouldn't produce FLAC decoder configs if the
-    // feature is disabled, double-check feature support here in debug builds.
-    DCHECK(config.codec() != kCodecFLAC ||
-           base::FeatureList::IsEnabled(kMseFlacInIsobmff));
-
     // Enable partial append window support for most audio codecs (notably: not
     // opus).
     partial_append_window_trimming_enabled_ =

@@ -217,15 +217,9 @@ static StreamParser* BuildMP3Parser(const std::vector<std::string>& codecs,
   return new MPEG1AudioStreamParser();
 }
 
-bool CheckIfMseFlacInIsobmffEnabled(const std::string& codec_id,
-                                    MediaLog* media_log) {
-  return base::FeatureList::IsEnabled(kMseFlacInIsobmff);
-}
-
 static const CodecInfo kMPEG4VP09CodecInfo = {
     "vp09.*", CodecInfo::VIDEO, nullptr, CodecInfo::HISTOGRAM_VP9};
-static const CodecInfo kMPEG4FLACCodecInfo = {"flac", CodecInfo::AUDIO,
-                                              &CheckIfMseFlacInIsobmffEnabled,
+static const CodecInfo kMPEG4FLACCodecInfo = {"flac", CodecInfo::AUDIO, nullptr,
                                               CodecInfo::HISTOGRAM_FLAC};
 
 static const CodecInfo* const kVideoMP4Codecs[] = {&kMPEG4FLACCodecInfo,

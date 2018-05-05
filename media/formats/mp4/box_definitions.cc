@@ -1040,10 +1040,6 @@ bool AudioSampleEntry::Parse(BoxReader* reader) {
   // Read the FLACSpecificBox, even if CENC is signalled.
   if (format == FOURCC_FLAC ||
       (format == FOURCC_ENCA && sinf.format.format == FOURCC_FLAC)) {
-    RCHECK_MEDIA_LOGGED(base::FeatureList::IsEnabled(kMseFlacInIsobmff),
-                        reader->media_log(),
-                        "MSE support for FLAC in MP4 is not enabled.");
-
     RCHECK_MEDIA_LOGGED(reader->ReadChild(&dfla), reader->media_log(),
                         "Failure parsing FLACSpecificBox (dfLa)");
 

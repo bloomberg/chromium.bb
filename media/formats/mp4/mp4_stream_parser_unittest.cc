@@ -472,10 +472,6 @@ TEST_F(MP4StreamParserTest, DemuxingEAC3) {
 }
 
 TEST_F(MP4StreamParserTest, Flac) {
-  // The feature is disabled by default. Enable it.
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(kMseFlacInIsobmff);
-
   parser_.reset(new MP4StreamParser(std::set<int>(), false, true));
 
   auto params = GetDefaultInitParametersExpectations();
@@ -487,10 +483,6 @@ TEST_F(MP4StreamParserTest, Flac) {
 }
 
 TEST_F(MP4StreamParserTest, Flac192kHz) {
-  // The feature is disabled by default. Enable it.
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(kMseFlacInIsobmff);
-
   parser_.reset(new MP4StreamParser(std::set<int>(), false, true));
 
   auto params = GetDefaultInitParametersExpectations();
