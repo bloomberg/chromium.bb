@@ -36,7 +36,8 @@ class BackgroundPrintingManager : public content::NotificationObserver {
   // Takes ownership of |preview_dialog| and deletes it when |preview_dialog|
   // finishes printing. This removes |preview_dialog| from its ConstrainedDialog
   // and hides it from the user.
-  void OwnPrintPreviewDialog(content::WebContents* preview_dialog);
+  void OwnPrintPreviewDialog(
+      std::unique_ptr<content::WebContents> preview_dialog);
 
   // Returns true if |printing_contents_map_| contains |preview_dialog|.
   bool HasPrintPreviewDialog(content::WebContents* preview_dialog);
@@ -60,9 +61,21 @@ class BackgroundPrintingManager : public content::NotificationObserver {
   void DeletePreviewContents(content::WebContents* preview_contents);
 
   // A map from print preview WebContentses (managed by
-  // BackgroundPrintingManager) to the Observers that observe them.
-  std::map<content::WebContents*, std::unique_ptr<Observer>>
-      printing_contents_map_;
+  // BackgroundPrintingManager) to the Observers that observe them and the owned
+  // version of the WebContents.
+  struct PrintingContents {
+    PrintingContents();
+    ~PrintingContents();
+    PrintingContents(PrintingContents&&);
+    PrintingContents& operator=(PrintingContents&&);
+
+    std::unique_ptr<content::WebContents> contents;
+    std::unique_ptr<Observer> observer;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(PrintingContents);
+  };
+  std::map<content::WebContents*, PrintingContents> printing_contents_map_;
 
   content::NotificationRegistrar registrar_;
 
