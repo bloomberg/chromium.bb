@@ -683,6 +683,8 @@ BrowserNonClientFrameViewAsh::CreateFrameHeader() {
     AddChildView(frame_header_origin_text_);
 
     // Schedule the title bar animation.
+    constexpr base::TimeDelta kTitlebarAnimationDelay =
+        base::TimeDelta::FromMilliseconds(750);
     base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&BrowserNonClientFrameViewAsh::StartHostedAppAnimation,

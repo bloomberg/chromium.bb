@@ -53,8 +53,9 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
   void StartTitlebarAnimation(base::TimeDelta origin_text_slide_duration);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ImmersiveModeControllerAshHostedAppBrowserTest,
+                           FrameLayout);
   friend class HostedAppNonClientFrameViewAshTest;
-  friend class ImmersiveModeControllerAshHostedAppBrowserTest;
 
   static void DisableAnimationForTesting();
 

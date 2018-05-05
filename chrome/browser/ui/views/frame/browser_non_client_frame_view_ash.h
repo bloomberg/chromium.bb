@@ -43,10 +43,6 @@ class BrowserNonClientFrameViewAsh
       public ash::mojom::SplitViewObserver,
       public aura::WindowObserver {
  public:
-  // How long to delay the hosted app origin text animation from starting.
-  static constexpr base::TimeDelta kTitlebarAnimationDelay =
-      base::TimeDelta::FromMilliseconds(750);
-
   BrowserNonClientFrameViewAsh(BrowserFrame* frame, BrowserView* browser_view);
   ~BrowserNonClientFrameViewAsh() override;
 
@@ -136,11 +132,10 @@ class BrowserNonClientFrameViewAsh
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
                            RestoreMinimizedBrowserUpdatesCaption);
   FRIEND_TEST_ALL_PREFIXES(ImmersiveModeControllerAshHostedAppBrowserTest,
-                           FrameLayoutToggleTabletMode);
+                           FrameLayout);
 
-  friend class BrowserFrameHeaderAsh;
   friend class HostedAppNonClientFrameViewAshTest;
-  friend class ImmersiveModeControllerAshHostedAppBrowserTest;
+  friend class BrowserFrameHeaderAsh;
 
   // Distance between the right edge of the NonClientFrameView and the tab
   // strip.
