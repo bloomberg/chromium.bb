@@ -241,7 +241,7 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
   switch (expected_identifiers_.back()) {
     case IBD::APP_BANNER_INFOBAR_DELEGATE:
       banners::AppBannerInfoBarDelegateDesktop::Create(
-          GetWebContents(), nullptr, nullptr, content::Manifest());
+          GetWebContents(), nullptr, nullptr, blink::Manifest());
       break;
 
     case IBD::HUNG_PLUGIN_INFOBAR_DELEGATE:

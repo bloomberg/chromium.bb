@@ -19,7 +19,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/base/url_util.h"
-#include "third_party/blink/public/platform/web_display_mode.h"
+#include "third_party/blink/public/common/manifest/web_display_mode.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/shortcut_helper.h"
@@ -81,7 +81,7 @@ bool IsContentSecure(content::WebContents* web_contents) {
 
 // Returns true if |manifest| specifies a PNG icon with IconPurpose::ANY and of
 // height and width >= kMinimumPrimaryIconSizeInPx (or size "any").
-bool DoesManifestContainRequiredIcon(const content::Manifest& manifest) {
+bool DoesManifestContainRequiredIcon(const blink::Manifest& manifest) {
   for (const auto& icon : manifest.icons) {
     // The type field is optional. If it isn't present, fall back on checking
     // the src extension, and allow the icon if the extension ends with png.
@@ -92,7 +92,7 @@ bool DoesManifestContainRequiredIcon(const content::Manifest& manifest) {
       continue;
 
     if (!base::ContainsValue(icon.purpose,
-                             content::Manifest::Icon::IconPurpose::ANY)) {
+                             blink::Manifest::Icon::IconPurpose::ANY)) {
       continue;
     }
 
@@ -443,7 +443,7 @@ void InstallableManager::FetchManifest() {
 }
 
 void InstallableManager::OnDidGetManifest(const GURL& manifest_url,
-                                          const content::Manifest& manifest) {
+                                          const blink::Manifest& manifest) {
   if (!GetWebContents())
     return;
 
@@ -471,7 +471,7 @@ void InstallableManager::CheckManifestValid() {
 }
 
 bool InstallableManager::IsManifestValidForWebApp(
-    const content::Manifest& manifest) {
+    const blink::Manifest& manifest) {
   if (manifest.IsEmpty()) {
     valid_manifest_->error = MANIFEST_EMPTY;
     return false;
@@ -644,7 +644,7 @@ const GURL& InstallableManager::manifest_url() const {
   return manifest_->url;
 }
 
-const content::Manifest& InstallableManager::manifest() const {
+const blink::Manifest& InstallableManager::manifest() const {
   return manifest_->manifest;
 }
 

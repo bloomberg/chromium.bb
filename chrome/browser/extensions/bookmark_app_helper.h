@@ -18,7 +18,7 @@
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/public/common/manifest.h"
+#include "third_party/blink/public/common/manifest/manifest.h"
 
 class ExtensionService;
 class FaviconDownloader;
@@ -71,7 +71,7 @@ class BookmarkAppHelper : public content::NotificationObserver {
   ~BookmarkAppHelper() override;
 
   // Update the given WebApplicationInfo with information from the manifest.
-  static void UpdateWebAppInfoFromManifest(const content::Manifest& manifest,
+  static void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
                                            WebApplicationInfo* web_app_info,
                                            ForInstallableSite installable_site);
 

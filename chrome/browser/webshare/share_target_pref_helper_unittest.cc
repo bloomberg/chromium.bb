@@ -40,12 +40,12 @@ constexpr char kUrlTemplateKey[] = "url_template";
 TEST_F(ShareTargetPrefHelperUnittest, AddMultipleShareTargets) {
   // Add a share target to prefs that wasn't previously stored.
   GURL manifest_url("https://www.sharetarget.com/manifest.json");
-  content::Manifest::ShareTarget share_target;
+  blink::Manifest::ShareTarget share_target;
   std::string url_template = "https://www.sharetarget.com/share?title={title}";
   share_target.url_template = GURL(url_template);
-  content::Manifest manifest;
+  blink::Manifest manifest;
   manifest.share_target =
-      base::Optional<content::Manifest::ShareTarget>(share_target);
+      base::Optional<blink::Manifest::ShareTarget>(share_target);
 
   UpdateShareTargetInPrefs(manifest_url, manifest, pref_service());
 
@@ -89,11 +89,11 @@ TEST_F(ShareTargetPrefHelperUnittest, AddShareTargetTwice) {
 
   // Add a share target to prefs that wasn't previously stored.
   GURL manifest_url(kManifestUrl);
-  content::Manifest::ShareTarget share_target;
+  blink::Manifest::ShareTarget share_target;
   share_target.url_template = GURL(kUrlTemplate);
-  content::Manifest manifest;
+  blink::Manifest manifest;
   manifest.share_target =
-      base::Optional<content::Manifest::ShareTarget>(share_target);
+      base::Optional<blink::Manifest::ShareTarget>(share_target);
 
   UpdateShareTargetInPrefs(manifest_url, manifest, pref_service());
 
@@ -127,12 +127,12 @@ TEST_F(ShareTargetPrefHelperUnittest, AddShareTargetTwice) {
 TEST_F(ShareTargetPrefHelperUnittest, UpdateShareTarget) {
   // Add a share target to prefs that wasn't previously stored.
   GURL manifest_url("https://www.sharetarget.com/manifest.json");
-  content::Manifest::ShareTarget share_target;
+  blink::Manifest::ShareTarget share_target;
   std::string url_template = "https://www.sharetarget.com/share/?title={title}";
   share_target.url_template = GURL(url_template);
-  content::Manifest manifest;
+  blink::Manifest manifest;
   manifest.share_target =
-      base::Optional<content::Manifest::ShareTarget>(share_target);
+      base::Optional<blink::Manifest::ShareTarget>(share_target);
 
   UpdateShareTargetInPrefs(manifest_url, manifest, pref_service());
 
@@ -171,7 +171,7 @@ TEST_F(ShareTargetPrefHelperUnittest, DontAddNonShareTarget) {
   const base::Optional<std::string> kUrlTemplate;
 
   // Don't add a site that has a null template.
-  UpdateShareTargetInPrefs(GURL(kManifestUrl), content::Manifest(),
+  UpdateShareTargetInPrefs(GURL(kManifestUrl), blink::Manifest(),
                            pref_service());
 
   const base::DictionaryValue* share_target_dict =
@@ -185,12 +185,12 @@ TEST_F(ShareTargetPrefHelperUnittest, DontAddNonShareTarget) {
 TEST_F(ShareTargetPrefHelperUnittest, RemoveShareTarget) {
   // Add a share target to prefs that wasn't previously stored.
   GURL manifest_url("https://www.sharetarget.com/manifest.json");
-  content::Manifest::ShareTarget share_target;
+  blink::Manifest::ShareTarget share_target;
   std::string url_template = "https://www.sharetarget.com/share/?title={title}";
   share_target.url_template = GURL(url_template);
-  content::Manifest manifest;
+  blink::Manifest manifest;
   manifest.share_target =
-      base::Optional<content::Manifest::ShareTarget>(share_target);
+      base::Optional<blink::Manifest::ShareTarget>(share_target);
 
   UpdateShareTargetInPrefs(manifest_url, manifest, pref_service());
 
@@ -209,7 +209,7 @@ TEST_F(ShareTargetPrefHelperUnittest, RemoveShareTarget) {
   // Share target already added now has null template. Remove from prefs.
   manifest_url = GURL("https://www.sharetarget.com/manifest.json");
 
-  UpdateShareTargetInPrefs(manifest_url, content::Manifest(), pref_service());
+  UpdateShareTargetInPrefs(manifest_url, blink::Manifest(), pref_service());
 
   share_target_dict =
       pref_service()->GetDictionary(prefs::kWebShareVisitedTargets);

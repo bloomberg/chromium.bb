@@ -118,10 +118,10 @@ GURL GetScope(const ShortcutInfo& info) {
                                  : ShortcutHelper::GetScopeFromURL(info.url);
 }
 
-// Converts a color from the format specified in content::Manifest to a CSS
+// Converts a color from the format specified in blink::Manifest to a CSS
 // string.
 std::string ColorToString(int64_t color) {
-  if (color == content::Manifest::kInvalidOrMissingColor)
+  if (color == blink::Manifest::kInvalidOrMissingColor)
     return "";
   SkColor sk_color = reinterpret_cast<uint32_t&>(color);
   return color_utils::SkColorToRgbaString(sk_color);
