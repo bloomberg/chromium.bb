@@ -356,8 +356,8 @@ class SuggestionsContainer : public views::View {
 AssistantBubbleView::AssistantBubbleView(
     AshAssistantController* assistant_controller)
     : assistant_controller_(assistant_controller),
-      interaction_container_(new InteractionContainer(
-          assistant_controller->GetInteractionModel())),
+      interaction_container_(
+          new InteractionContainer(assistant_controller->interaction_model())),
       ui_element_container_(new UiElementContainer()),
       suggestions_container_(new SuggestionsContainer(this)),
       render_request_weak_factory_(this) {
@@ -431,7 +431,7 @@ void AssistantBubbleView::ProcessPendingUiElements() {
 void AssistantBubbleView::OnInputModalityChanged(InputModality input_modality) {
   // If the query for the interaction is empty, we may need to update the prompt
   // to reflect the current input modality.
-  if (assistant_controller_->GetInteractionModel()->query().empty()) {
+  if (assistant_controller_->interaction_model()->query().empty()) {
     interaction_container_->ClearQuery();
   }
 }

@@ -49,6 +49,14 @@ void AssistantInteractionModel::SetInputModality(InputModality input_modality) {
   NotifyInputModalityChanged();
 }
 
+void AssistantInteractionModel::SetMicState(MicState mic_state) {
+  if (mic_state == mic_state_)
+    return;
+
+  mic_state_ = mic_state;
+  NotifyMicStateChanged();
+}
+
 void AssistantInteractionModel::AddUiElement(
     std::unique_ptr<AssistantUiElement> ui_element) {
   AssistantUiElement* ptr = ui_element.get();
@@ -89,9 +97,13 @@ void AssistantInteractionModel::NotifyInteractionStateChanged() {
 }
 
 void AssistantInteractionModel::NotifyInputModalityChanged() {
-  for (AssistantInteractionModelObserver& observer : observers_) {
+  for (AssistantInteractionModelObserver& observer : observers_)
     observer.OnInputModalityChanged(input_modality_);
-  }
+}
+
+void AssistantInteractionModel::NotifyMicStateChanged() {
+  for (AssistantInteractionModelObserver& observer : observers_)
+    observer.OnMicStateChanged(mic_state_);
 }
 
 void AssistantInteractionModel::NotifyUiElementAdded(

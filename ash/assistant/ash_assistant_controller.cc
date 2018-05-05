@@ -124,8 +124,13 @@ void AshAssistantController::ToggleInteraction() {
 
 void AshAssistantController::OnInteractionStateChanged(
     InteractionState interaction_state) {
-  if (interaction_state == InteractionState::kInactive)
+  if (interaction_state == InteractionState::kInactive) {
     assistant_interaction_model_.ClearInteraction();
+
+    // TODO(dmblack): Input modality should default back to the user's
+    // preferred input modality.
+    assistant_interaction_model_.SetInputModality(InputModality::kVoice);
+  }
 }
 
 void AshAssistantController::OnInteractionStarted() {
@@ -147,8 +152,18 @@ void AshAssistantController::OnInteractionDismissed() {
 
 void AshAssistantController::OnDialogPlateContentsChanged(
     const std::string& text) {
-  // TODO(dmblack): Close the mic if necessary.
   assistant_bubble_timer_.Stop();
+
+  if (text.empty()) {
+    // Note: This does not open the mic. It only updates the input modality to
+    // voice so that we will show the mic icon in the UI.
+    assistant_interaction_model_.SetInputModality(InputModality::kVoice);
+  } else {
+    // TODO(dmblack): Instruct the underlying service to stop any in flight
+    // voice interaction.
+    assistant_interaction_model_.SetInputModality(InputModality::kKeyboard);
+    assistant_interaction_model_.SetMicState(MicState::kClosed);
+  }
 }
 
 void AshAssistantController::OnDialogPlateContentsCommitted(
@@ -158,6 +173,10 @@ void AshAssistantController::OnDialogPlateContentsCommitted(
 
   assistant_interaction_model_.ClearInteraction();
   assistant_interaction_model_.SetQuery(query);
+
+  // Note: This does not open the mic. It only updates the input modality to
+  // voice so that we will show the mic icon in the UI.
+  assistant_interaction_model_.SetInputModality(InputModality::kVoice);
 
   DCHECK(assistant_);
   assistant_->SendTextQuery(text);
@@ -191,6 +210,8 @@ void AshAssistantController::OnTextResponse(const std::string& response) {
 
 void AshAssistantController::OnSpeechRecognitionStarted() {
   assistant_interaction_model_.ClearInteraction();
+  assistant_interaction_model_.SetInputModality(InputModality::kVoice);
+  assistant_interaction_model_.SetMicState(MicState::kOpen);
 }
 
 void AshAssistantController::OnSpeechRecognitionIntermediateResult(
@@ -201,8 +222,7 @@ void AshAssistantController::OnSpeechRecognitionIntermediateResult(
 }
 
 void AshAssistantController::OnSpeechRecognitionEndOfUtterance() {
-  // TODO(dmblack): Handle.
-  NOTIMPLEMENTED();
+  assistant_interaction_model_.SetMicState(MicState::kClosed);
 }
 
 void AshAssistantController::OnSpeechRecognitionFinalResult(
