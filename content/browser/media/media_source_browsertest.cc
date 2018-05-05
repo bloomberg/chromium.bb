@@ -24,13 +24,11 @@ const char kWebMOpusAudioOnly[] = "audio/webm; codecs=\"opus\"";
 #endif
 const char kWebMVideoOnly[] = "video/webm; codecs=\"vp8\"";
 const char kWebMAudioVideo[] = "video/webm; codecs=\"vorbis, vp8\"";
-
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
 const char kMp4FlacAudioOnly[] = "audio/mp4; codecs=\"flac\"";
 
-#if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
+#if BUILDFLAG(USE_PROPRIETARY_CODECS) && \
+    BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
 const char kMp2tAudioVideo[] = "video/mp2t; codecs=\"mp4a.40.2, avc1.42E01E\"";
-#endif
 #endif
 
 namespace content {
@@ -51,7 +49,6 @@ class MediaSourceTest : public content::MediaBrowserTest {
     command_line->AppendSwitchASCII(
         switches::kAutoplayPolicy,
         switches::autoplay::kNoUserGestureRequiredPolicy);
-    scoped_feature_list_.InitAndDisableFeature(media::kMseFlacInIsobmff);
   }
 
  protected:
@@ -121,12 +118,11 @@ IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_Video_WEBM_Audio_MP4) {
                    true);
 }
 
-IN_PROC_BROWSER_TEST_F(MediaSourceTest,
-                       Playback_AudioOnly_FLAC_MP4_Unsupported) {
-  // The feature is disabled by test setup, so verify playback failure.
-  TestSimplePlayback("bear-flac_frag.mp4", kMp4FlacAudioOnly, media::kFailed);
+#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
+
+IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_AudioOnly_FLAC_MP4) {
+  TestSimplePlayback("bear-flac_frag.mp4", kMp4FlacAudioOnly, media::kEnded);
 }
-#endif
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 #if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
@@ -134,26 +130,6 @@ IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_AudioVideo_Mp2t) {
   TestSimplePlayback("bear-1280x720.ts", kMp2tAudioVideo, media::kEnded);
 }
 #endif
-#endif
-
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
-class MediaSourceFlacInIsobmffTest : public content::MediaSourceTest {
- public:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchASCII(
-        switches::kAutoplayPolicy,
-        switches::autoplay::kNoUserGestureRequiredPolicy);
-
-    // Enable MSE FLAC-in-MP4 feature.
-    scoped_feature_list_.InitAndEnableFeature(media::kMseFlacInIsobmff);
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(MediaSourceFlacInIsobmffTest,
-                       Playback_AudioOnly_FLAC_MP4_Supported) {
-  // The feature is enabled by test setup, so verify playback success.
-  TestSimplePlayback("bear-flac_frag.mp4", kMp4FlacAudioOnly, media::kEnded);
-}
 #endif
 
 }  // namespace content

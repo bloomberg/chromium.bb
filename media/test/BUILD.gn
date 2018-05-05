@@ -161,6 +161,7 @@ pipeline_integration_fuzzer_variants = [
   "WEBM_VP8",
   "WEBM_VP9",
   "WEBM_OPUS_VP9",
+  "MP4_FLAC",
 
   # See below for additional variants depending on build configuration.
 ]
@@ -176,7 +177,6 @@ if (proprietary_codecs) {
     # SourceBufferState::Init differentiate kinds of AVC, we use "AVC1" here to
     # retain corpus associated with this fuzzer target name.
     "MP4_AVC1",
-    "MP4_FLAC",
     "MP4_AACLC_AVC",
   ]
   if (enable_mse_mpeg2ts_stream_parser) {
