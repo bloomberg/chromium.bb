@@ -110,14 +110,6 @@ Polymer({
     });
   },
 
-  /**
-   * Function to navigate to the options page for an extension.
-   * @param {TtsHandlerExtension} engine
-   * @private */
-  onManageTtsEngineSettingsClick_: function(engine) {
-    window.open(engine.optionsPage, '_blank');
-  },
-
   /** @private */
   onPreviewTtsClick_: function() {
     let utter = new window.SpeechSynthesisUtterance();
