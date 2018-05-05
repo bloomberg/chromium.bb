@@ -97,10 +97,10 @@
 
   <!-- Shortcuts descriptions -->
   <message name="IDS_KSV_DESCRIPTION_TOGGLE_DOCKED_MAGNIFIER" desc="Description of the command in keyboard shortcut viewer.">
-    Toggle the Docked Magnifier on or off.
+    Toggle the Docked Magnifier on or off
   </message>
   <message name="IDS_KSV_DESCRIPTION_TOGGLE_FULLSCREEN_MAGNIFIER" desc="Description of the command in keyboard shortcut viewer.">
-    Toggle the Fullscreen Magnifier on or off.
+    Toggle the Fullscreen Magnifier on or off
   </message>
   <message name="IDS_KSV_DESCRIPTION_LOCK_SCREEN" desc="Description of the command in keyboard shortcut viewer.">
     Lock screen

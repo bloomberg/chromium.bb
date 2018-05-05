@@ -157,30 +157,45 @@ void KeyboardShortcutItemView::MaybeCalculateAndDoLayout(int width) const {
   if (width <= 0)
     return;
 
-  // The width of |description_label_view_| and |shortcut_label_view_| as a
-  // ratio of its parent view's width. The unused width is to have some spacing
-  // in between the two views.
-  // These values are chosen to put all the bubble views in one line.
-  constexpr float kDescriptionViewPreferredWidthRatio = 0.29f;
+  // The max width of |shortcut_label_view_| as a ratio of its parent view's
+  // width. This value is chosen to put all the bubble views in one line.
   constexpr float kShortcutViewPreferredWidthRatio = 0.69f;
-  const int description_view_preferred_width =
-      width * kDescriptionViewPreferredWidthRatio;
+  // The minimum spacing between |description_label_view_| and
+  // |shortcut_label_view_|.
+  constexpr int kMinimumSpacing = 64;
+
   const int shortcut_view_preferred_width =
       width * kShortcutViewPreferredWidthRatio;
+  const int shortcut_view_height =
+      shortcut_label_view_->GetHeightForWidth(shortcut_view_preferred_width);
+
+  // Sets the bounds and layout in order to get the left most label in the
+  // |shortcut_label_view_|, which is used to calculate the preferred width for
+  // |description_label_view_|.
+  shortcut_label_view_->SetBounds(0, 0, shortcut_view_preferred_width,
+                                  shortcut_view_height);
+  DCHECK(shortcut_label_view_->has_children());
+  // Labels in |shortcut_label_view_| are right aligned, so we need to find the
+  // minimum left coordinates of all the lables.
+  int min_left = shortcut_view_preferred_width;
+  for (int i = 0; i < shortcut_label_view_->child_count(); ++i) {
+    min_left =
+        std::min(min_left, shortcut_label_view_->child_at(i)->bounds().x());
+  }
+
+  // The width of |description_label_view_| will be dynamically adjusted to fill
+  // the spacing.
+  const int description_view_preferred_width =
+      width - (shortcut_view_preferred_width - min_left) - kMinimumSpacing;
   const int description_view_height =
       description_label_view_->GetHeightForWidth(
           description_view_preferred_width);
-  const int shortcut_view_height =
-      shortcut_label_view_->GetHeightForWidth(shortcut_view_preferred_width);
 
   // Sets the bounds and layout in order to get the center points of the views
   // making up the top lines in both the description and shortcut views.
   // We want the center of the top lines in both views to align with each other.
   description_label_view_->SetBounds(0, 0, description_view_preferred_width,
                                      description_view_height);
-  shortcut_label_view_->SetBounds(0, 0, shortcut_view_preferred_width,
-                                  shortcut_view_height);
-
   DCHECK(shortcut_label_view_->has_children() &&
          description_label_view_->has_children());
   const int description_view_top_line_center_offset_y =
