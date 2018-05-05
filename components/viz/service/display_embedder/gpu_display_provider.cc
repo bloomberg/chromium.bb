@@ -205,25 +205,13 @@ GpuDisplayProvider::CreateSoftwareOutputDeviceForPlatform(
   if (headless_)
     return std::make_unique<SoftwareOutputDevice>();
 
-#if defined(GPU_SURFACE_HANDLE_IS_ACCELERATED_WINDOW)
-  gfx::AcceleratedWidget widget = surface_handle;
-#endif
-
 #if defined(OS_WIN)
   if (!output_device_backing_)
     output_device_backing_ = std::make_unique<OutputDeviceBacking>();
   return std::make_unique<SoftwareOutputDeviceWin>(output_device_backing_.get(),
-                                                   widget);
+                                                   surface_handle);
 #elif defined(OS_MACOSX)
-  // TODO(crbug.com/730660): What do we do to get something we can draw to? Can
-  // we use an IO surface? Can we use CA layers and overlays like we do for gpu
-  // compositing? See https://crrev.com/c/792295 to no longer have
-  // GpuSurfaceTracker. Part of the SoftwareOutputDeviceMac::EndPaint probably
-  // needs to move to the browser process, and we need to set up transport of an
-  // IO surface to here?
-  NOTIMPLEMENTED();
-  (void)widget;
-  return nullptr;
+  return std::make_unique<SoftwareOutputDeviceMac>();
 #elif defined(OS_ANDROID)
   // Android does not do software compositing, so we can't get here.
   NOTREACHED();
@@ -232,11 +220,11 @@ GpuDisplayProvider::CreateSoftwareOutputDeviceForPlatform(
   ui::SurfaceFactoryOzone* factory =
       ui::OzonePlatform::GetInstance()->GetSurfaceFactoryOzone();
   std::unique_ptr<ui::SurfaceOzoneCanvas> surface_ozone =
-      factory->CreateCanvasForWidget(widget);
+      factory->CreateCanvasForWidget(surface_handle);
   CHECK(surface_ozone);
   return std::make_unique<SoftwareOutputDeviceOzone>(std::move(surface_ozone));
 #elif defined(USE_X11)
-  return std::make_unique<SoftwareOutputDeviceX11>(widget);
+  return std::make_unique<SoftwareOutputDeviceX11>(surface_handle);
 #endif
 }
 

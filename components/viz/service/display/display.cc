@@ -98,6 +98,9 @@ void Display::Initialize(DisplayClient* client,
     surface_manager_->AddObserver(scheduler_.get());
 
   output_surface_->BindToClient(this);
+  if (output_surface_->software_device())
+    output_surface_->software_device()->BindToClient(this);
+
   InitializeRenderer();
 
   // This depends on assumptions that Display::Initialize will happen on the
@@ -573,6 +576,12 @@ LocalSurfaceId Display::GetSurfaceAtAggregation(
   if (it == aggregator_->previous_contained_frame_sinks().end())
     return LocalSurfaceId();
   return it->second;
+}
+
+void Display::SoftwareDeviceUpdatedCALayerParams(
+    const gfx::CALayerParams& ca_layer_params) {
+  if (client_)
+    client_->DisplayDidReceiveCALayerParams(ca_layer_params);
 }
 
 void Display::ForceImmediateDrawAndSwapIfPossible() {

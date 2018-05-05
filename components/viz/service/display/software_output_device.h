@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "components/viz/service/display/software_output_device_client.h"
 #include "components/viz/service/viz_service_export.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/geometry/rect.h"
@@ -18,9 +19,11 @@ class SkCanvas;
 
 namespace gfx {
 class VSyncProvider;
-}
+}  // namespace gfx
 
 namespace viz {
+
+class SoftwareOutputDeviceClient;
 
 // This is a "tear-off" class providing software drawing support to
 // OutputSurface, such as to a platform-provided window framebuffer.
@@ -28,6 +31,9 @@ class VIZ_SERVICE_EXPORT SoftwareOutputDevice {
  public:
   SoftwareOutputDevice();
   virtual ~SoftwareOutputDevice();
+
+  // This may be called only once, and requires a non-nullptr argument.
+  void BindToClient(SoftwareOutputDeviceClient* client);
 
   // Discards any pre-existing backing buffers and allocates memory for a
   // software device of |size|. This must be called before the
@@ -56,6 +62,7 @@ class VIZ_SERVICE_EXPORT SoftwareOutputDevice {
   virtual gfx::VSyncProvider* GetVSyncProvider();
 
  protected:
+  SoftwareOutputDeviceClient* client_ = nullptr;
   gfx::Size viewport_pixel_size_;
   gfx::Rect damage_rect_;
   sk_sp<SkSurface> surface_;
