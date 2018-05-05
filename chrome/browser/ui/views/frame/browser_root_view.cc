@@ -165,7 +165,7 @@ int BrowserRootView::OnDragUpdated(const ui::DropTargetEvent& event) {
       drop_info_->target->HandleDragExited();
     drop_info_->target = drop_target;
 
-    if (!drop_info_->file_supported || !drop_info_->url.is_valid() ||
+    if (!drop_info_->file_supported ||
         drop_info_->url.SchemeIs(url::kJavaScriptScheme)) {
       drop_info_->index.reset();
     } else {
