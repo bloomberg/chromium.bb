@@ -108,14 +108,6 @@ class BrowserList {
                                           const CloseCallback& on_close_aborted,
                                           bool skip_beforeunload);
 
-  // Similarly to CloseAllBrowsersWithProfile, but DCHECK's that profile is
-  // Off-the-Record and doesn't close browsers with the original profile.
-  static void CloseAllBrowsersWithIncognitoProfile(
-      Profile* profile,
-      const CloseCallback& on_close_success,
-      const CloseCallback& on_close_aborted,
-      bool skip_beforeunload);
-
   // Returns true if at least one incognito session is active across all
   // desktops.
   static bool IsIncognitoSessionActive();
