@@ -32,6 +32,8 @@ source_set("lib") {
   sources = [
     "debug_recording.cc",
     "debug_recording.h",
+    "delay_buffer.cc",
+    "delay_buffer.h",
     "group_coordinator.cc",
     "group_coordinator.h",
     "group_member.h",
@@ -74,6 +76,7 @@ source_set("tests") {
 
   sources = [
     "debug_recording_unittest.cc",
+    "delay_buffer_unittest.cc",
     "group_coordinator_unittest.cc",
     "input_stream_unittest.cc",
     "local_muter_unittest.cc",
