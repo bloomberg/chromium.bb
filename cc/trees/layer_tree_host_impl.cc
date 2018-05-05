@@ -1892,6 +1892,12 @@ RenderFrameMetadata LayerTreeHostImpl::MakeRenderFrameMetadata() {
       gfx::ScrollOffsetToVector2dF(active_tree_->TotalScrollOffset());
   metadata.root_background_color = active_tree_->background_color();
   metadata.is_scroll_offset_at_top = active_tree_->TotalScrollOffset().y() == 0;
+  metadata.device_scale_factor = active_tree_->painted_device_scale_factor() *
+                                 active_tree_->device_scale_factor();
+  metadata.viewport_size_in_pixels = device_viewport_size();
+  if (active_tree()->local_surface_id().is_valid())
+    metadata.local_surface_id = active_tree()->local_surface_id();
+
   active_tree_->GetViewportSelection(&metadata.selection);
   metadata.is_mobile_optimized = IsMobileOptimized(active_tree_.get());
 

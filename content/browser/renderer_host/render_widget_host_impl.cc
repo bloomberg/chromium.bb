@@ -2141,47 +2141,44 @@ void RenderWidgetHostImpl::DidDeleteSharedBitmap(
 
 void RenderWidgetHostImpl::OnResizeOrRepaintACK(
     const ViewHostMsg_ResizeOrRepaint_ACK_Params& params) {
-  TRACE_EVENT0("renderer_host", "RenderWidgetHostImpl::OnResizeOrRepaintACK");
-
-  // Update our knowledge of the RenderWidget's size.
-  current_size_ = params.view_size;
-
-  resize_ack_pending_ = false;
-
-  DCHECK(!params.view_size.IsEmpty());
-
-  DidCompleteResizeOrRepaint(params);
-
-  if (auto_resize_enabled_ && view_) {
-    viz::ScopedSurfaceIdAllocator scoped_allocator =
-        view_->ResizeDueToAutoResize(params.view_size,
-                                     *params.child_allocated_local_surface_id);
-
-    if (delegate_) {
-      delegate_->ResizeDueToAutoResize(
-          this, params.view_size, *params.child_allocated_local_surface_id);
-    }
-  }
+  DidUpdateVisualProperties(params.view_size,
+                            params.child_allocated_local_surface_id);
 }
 
-void RenderWidgetHostImpl::DidCompleteResizeOrRepaint(
-    const ViewHostMsg_ResizeOrRepaint_ACK_Params& params) {
+void RenderWidgetHostImpl::DidUpdateVisualProperties(
+    const gfx::Size& viewport_size_in_dip,
+    const base::Optional<viz::LocalSurfaceId>&
+        child_allocated_local_surface_id) {
   TRACE_EVENT0("renderer_host",
-               "RenderWidgetHostImpl::DidCompleteResizeOrRepaint");
+               "RenderWidgetHostImpl::DidUpdateVisualProperties");
+
+  // Update our knowledge of the RenderWidget's size.
+  DCHECK(!viewport_size_in_dip.IsEmpty());
+  // TODO(fsamuel): The fact that we translate the viewport_size from pixels
+  // to DIP is concerning. This could result in invariants violations.
+  current_size_ = viewport_size_in_dip;
+
+  resize_ack_pending_ = false;
 
   NotificationService::current()->Notify(
       NOTIFICATION_RENDER_WIDGET_HOST_DID_COMPLETE_RESIZE_OR_REPAINT,
       Source<RenderWidgetHost>(this), NotificationService::NoDetails());
 
-  // We don't need to update the view if the view is hidden. We must do this
-  // early return after the ACK is sent, however, or the renderer will not send
-  // us more data.
-  if (is_hidden_)
-    return;
-
   // If we got an ack, then perhaps we have another change of visual properties
   // to send?
-  SynchronizeVisualProperties();
+  if (!is_hidden_)
+    SynchronizeVisualProperties();
+
+  if (auto_resize_enabled_ && view_) {
+    viz::ScopedSurfaceIdAllocator scoped_allocator =
+        view_->ResizeDueToAutoResize(viewport_size_in_dip,
+                                     *child_allocated_local_surface_id);
+
+    if (delegate_) {
+      delegate_->ResizeDueToAutoResize(this, viewport_size_in_dip,
+                                       *child_allocated_local_surface_id);
+    }
+  }
 }
 
 void RenderWidgetHostImpl::OnSetCursor(const WebCursor& cursor) {
@@ -2743,13 +2740,7 @@ void RenderWidgetHostImpl::RequestCompositionUpdates(bool immediate_request,
 
 void RenderWidgetHostImpl::RequestCompositorFrameSink(
     viz::mojom::CompositorFrameSinkRequest compositor_frame_sink_request,
-    viz::mojom::CompositorFrameSinkClientPtr compositor_frame_sink_client,
-    mojom::RenderFrameMetadataObserverClientRequest
-        render_frame_metadata_observer_client_request,
-    mojom::RenderFrameMetadataObserverPtr render_frame_metadata_observer) {
-  render_frame_metadata_provider_.Bind(
-      std::move(render_frame_metadata_observer_client_request),
-      std::move(render_frame_metadata_observer));
+    viz::mojom::CompositorFrameSinkClientPtr compositor_frame_sink_client) {
   if (enable_viz_) {
       // Connects the viz process end of CompositorFrameSink message pipes. The
       // renderer compositor may request a new CompositorFrameSink on context
@@ -2783,6 +2774,15 @@ void RenderWidgetHostImpl::RequestCompositorFrameSink(
     view_->DidCreateNewRendererCompositorFrameSink(
         compositor_frame_sink_client.get());
   renderer_compositor_frame_sink_ = std::move(compositor_frame_sink_client);
+}
+
+void RenderWidgetHostImpl::RegisterRenderFrameMetadataObserver(
+    mojom::RenderFrameMetadataObserverClientRequest
+        render_frame_metadata_observer_client_request,
+    mojom::RenderFrameMetadataObserverPtr render_frame_metadata_observer) {
+  render_frame_metadata_provider_.Bind(
+      std::move(render_frame_metadata_observer_client_request),
+      std::move(render_frame_metadata_observer));
 }
 
 bool RenderWidgetHostImpl::HasGestureStopped() {
@@ -3100,6 +3100,15 @@ void RenderWidgetHostImpl::OnRenderFrameMetadataChanged() {
   input_router_->NotifySiteIsMobileOptimized(is_mobile_optimized);
   if (touch_emulator_)
     touch_emulator_->SetDoubleTapSupportForPageEnabled(!is_mobile_optimized);
+}
+
+void RenderWidgetHostImpl::OnLocalSurfaceIdChanged(
+    const cc::RenderFrameMetadata& metadata) {
+  if (!enable_surface_synchronization_)
+    return;
+  gfx::Size viewport_size_in_dip = gfx::ScaleToCeiledSize(
+      metadata.viewport_size_in_pixels, 1.f / metadata.device_scale_factor);
+  DidUpdateVisualProperties(viewport_size_in_dip, metadata.local_surface_id);
 }
 
 }  // namespace content

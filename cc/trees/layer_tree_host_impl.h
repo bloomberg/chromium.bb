@@ -531,7 +531,9 @@ class CC_EXPORT LayerTreeHostImpl
   ManagedMemoryPolicy ActualManagedMemoryPolicy() const;
 
   void SetViewportSize(const gfx::Size& device_viewport_size);
-  gfx::Size device_viewport_size() const { return device_viewport_size_; }
+  const gfx::Size& device_viewport_size() const {
+    return device_viewport_size_;
+  }
 
   void SetViewportVisibleRect(const gfx::Rect& visible_rect);
   gfx::Rect viewport_visible_rect() const { return viewport_visible_rect_; }

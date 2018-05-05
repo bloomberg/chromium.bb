@@ -8,7 +8,9 @@
 #include "base/optional.h"
 #include "cc/cc_export.h"
 #include "components/viz/common/quads/selection.h"
+#include "components/viz/common/surfaces/local_surface_id.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/selection_bound.h"
 
@@ -55,6 +57,15 @@ class CC_EXPORT RenderFrameMetadata {
   // - page prevents zooming in or out (i.e. min and max page scale factors
   // are the same).
   bool is_mobile_optimized = false;
+
+  // The device scale factor used to generate a CompositorFrame.
+  float device_scale_factor = 1.f;
+
+  // The size of the viewport used to generate a CompositorFrame.
+  gfx::Size viewport_size_in_pixels;
+
+  // The last viz::LocalSurfaceId used to submit a CompositorFrame.
+  base::Optional<viz::LocalSurfaceId> local_surface_id;
 };
 
 }  // namespace cc

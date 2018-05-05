@@ -484,7 +484,9 @@ class CONTENT_EXPORT RenderWidget
     TTFAP_5MIN_AFTER_BACKGROUNDED,
   };
 
-  void DidResizeOrRepaintAck();
+  bool IsSurfaceSynchronizationEnabled() const;
+
+  void DidUpdateVisualProperties();
 
   base::WeakPtr<RenderWidget> AsWeakPtr();
 

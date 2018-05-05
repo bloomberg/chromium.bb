@@ -66,6 +66,12 @@ void RenderFrameMetadataProviderImpl::SetLastRenderFrameMetadataForTest(
 void RenderFrameMetadataProviderImpl::OnRenderFrameMetadataChanged(
     uint32_t frame_token,
     const cc::RenderFrameMetadata& metadata) {
+  if (metadata.local_surface_id != last_local_surface_id_) {
+    last_local_surface_id_ = metadata.local_surface_id;
+    for (Observer& observer : observers_)
+      observer.OnLocalSurfaceIdChanged(metadata);
+  }
+
   // Both RenderFrameMetadataProviderImpl and FrameTokenMessageQueue are owned
   // by the same RenderWidgetHostImpl. During shutdown the queue is cleared
   // without running the callbacks.

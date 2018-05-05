@@ -18,8 +18,11 @@ bool StructTraits<content::mojom::RenderFrameMetadataDataView,
   out->root_background_color = data.root_background_color();
   out->is_scroll_offset_at_top = data.is_scroll_offset_at_top();
   out->is_mobile_optimized = data.is_mobile_optimized();
+  out->device_scale_factor = data.device_scale_factor();
   return data.ReadRootScrollOffset(&out->root_scroll_offset) &&
-         data.ReadSelection(&out->selection);
+         data.ReadSelection(&out->selection) &&
+         data.ReadViewportSizeInPixels(&out->viewport_size_in_pixels) &&
+         data.ReadLocalSurfaceId(&out->local_surface_id);
 }
 
 }  // namespace mojo

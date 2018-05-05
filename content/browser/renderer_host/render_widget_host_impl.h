@@ -609,7 +609,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   void RequestCompositorFrameSink(
       viz::mojom::CompositorFrameSinkRequest compositor_frame_sink_request,
-      viz::mojom::CompositorFrameSinkClientPtr compositor_frame_sink_client,
+      viz::mojom::CompositorFrameSinkClientPtr compositor_frame_sink_client);
+
+  void RegisterRenderFrameMetadataObserver(
       mojom::RenderFrameMetadataObserverClientRequest
           render_frame_metadata_observer_client_request,
       mojom::RenderFrameMetadataObserverPtr render_frame_metadata_observer);
@@ -817,9 +819,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnFrameSwapMessagesReceived(uint32_t frame_token,
                                    std::vector<IPC::Message> messages);
 
-  // Called after resize or repaint has completed in the renderer.
-  void DidCompleteResizeOrRepaint(
-      const ViewHostMsg_ResizeOrRepaint_ACK_Params& params);
+  // Called when visual properties have changed in the renderer.
+  void DidUpdateVisualProperties(const gfx::Size& viewport_size_in_dip,
+                                 const base::Optional<viz::LocalSurfaceId>&
+                                     child_allocated_local_surface_id);
 
   // Give key press listeners a chance to handle this key press. This allow
   // widgets that don't have focus to still handle key presses.
@@ -885,6 +888,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // RenderFrameMetadataProvider::Observer implementation.
   void OnRenderFrameMetadataChanged() override;
   void OnRenderFrameSubmission() override {}
+  void OnLocalSurfaceIdChanged(
+      const cc::RenderFrameMetadata& metadata) override;
 
   // true if a renderer has once been valid. We use this flag to display a sad
   // tab only when we lose our renderer and not if a paint occurs during

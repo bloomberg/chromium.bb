@@ -111,6 +111,9 @@ void RenderWidgetHostViewBase::OnRenderFrameMetadataChanged() {
 
 void RenderWidgetHostViewBase::OnRenderFrameSubmission() {}
 
+void RenderWidgetHostViewBase::OnLocalSurfaceIdChanged(
+    const cc::RenderFrameMetadata& metadata) {}
+
 void RenderWidgetHostViewBase::SetBackgroundColorToDefault() {
   SetBackgroundColor(SK_ColorWHITE);
 }

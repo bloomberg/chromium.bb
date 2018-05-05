@@ -2051,6 +2051,9 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
         ->RequestLayerTreeFrameSink(
             gpu_->CreateContextProvider(std::move(channel)),
             GetGpuMemoryBufferManager(), callback);
+    frame_sink_provider_->RegisterRenderFrameMetadataObserver(
+        routing_id, std::move(render_frame_metadata_observer_client_request),
+        std::move(render_frame_metadata_observer_ptr));
     return;
   }
 #endif
@@ -2065,8 +2068,9 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
     DCHECK(!layout_test_mode());
     frame_sink_provider_->CreateForWidget(
         routing_id, std::move(compositor_frame_sink_request),
-        std::move(compositor_frame_sink_client),
-        std::move(render_frame_metadata_observer_client_request),
+        std::move(compositor_frame_sink_client));
+    frame_sink_provider_->RegisterRenderFrameMetadataObserver(
+        routing_id, std::move(render_frame_metadata_observer_client_request),
         std::move(render_frame_metadata_observer_ptr));
     callback.Run(std::make_unique<viz::ClientLayerTreeFrameSink>(
         nullptr, nullptr, &params));
@@ -2155,8 +2159,9 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
 #endif
   frame_sink_provider_->CreateForWidget(
       routing_id, std::move(compositor_frame_sink_request),
-      std::move(compositor_frame_sink_client),
-      std::move(render_frame_metadata_observer_client_request),
+      std::move(compositor_frame_sink_client));
+  frame_sink_provider_->RegisterRenderFrameMetadataObserver(
+      routing_id, std::move(render_frame_metadata_observer_client_request),
       std::move(render_frame_metadata_observer_ptr));
   params.gpu_memory_buffer_manager = GetGpuMemoryBufferManager();
   callback.Run(std::make_unique<viz::ClientLayerTreeFrameSink>(
