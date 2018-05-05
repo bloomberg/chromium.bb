@@ -137,7 +137,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   ~WebContentsImpl() override;
 
-  static WebContentsImpl* CreateWithOpener(
+  static std::unique_ptr<WebContentsImpl> CreateWithOpener(
       const WebContents::CreateParams& params,
       RenderFrameHostImpl* opener_rfh);
 

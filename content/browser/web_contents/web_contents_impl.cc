@@ -266,8 +266,7 @@ class CloseDialogCallbackWrapper
 
 std::unique_ptr<WebContents> WebContents::Create(
     const WebContents::CreateParams& params) {
-  return base::WrapUnique(
-      WebContentsImpl::CreateWithOpener(params, FindOpenerRFH(params)));
+  return WebContentsImpl::CreateWithOpener(params, FindOpenerRFH(params));
 }
 
 std::unique_ptr<WebContents> WebContents::CreateWithSessionStorage(
@@ -643,14 +642,15 @@ WebContentsImpl::~WebContentsImpl() {
   SetDelegate(nullptr);
 }
 
-WebContentsImpl* WebContentsImpl::CreateWithOpener(
+std::unique_ptr<WebContentsImpl> WebContentsImpl::CreateWithOpener(
     const WebContents::CreateParams& params,
     RenderFrameHostImpl* opener_rfh) {
   TRACE_EVENT0("browser", "WebContentsImpl::CreateWithOpener");
   FrameTreeNode* opener = nullptr;
   if (opener_rfh)
     opener = opener_rfh->frame_tree_node();
-  WebContentsImpl* new_contents = new WebContentsImpl(params.browser_context);
+  std::unique_ptr<WebContentsImpl> new_contents(
+      new WebContentsImpl(params.browser_context));
   new_contents->SetOpenerForNewContents(opener, params.opener_suppressed);
 
   // If the opener is sandboxed, a new popup must inherit the opener's sandbox
@@ -684,7 +684,7 @@ WebContentsImpl* WebContentsImpl::CreateWithOpener(
   if (params.guest_delegate) {
     // This makes |new_contents| act as a guest.
     // For more info, see comment above class BrowserPluginGuest.
-    BrowserPluginGuest::Create(new_contents, params.guest_delegate);
+    BrowserPluginGuest::Create(new_contents.get(), params.guest_delegate);
     // We are instantiating a WebContents for browser plugin. Set its subframe
     // bit to true.
     new_contents->is_subframe_ = true;
@@ -1701,7 +1701,7 @@ std::unique_ptr<WebContents> WebContentsImpl::Clone() {
   if (opener)
     opener_rfh = opener->current_frame_host();
   std::unique_ptr<WebContentsImpl> tc =
-      base::WrapUnique(CreateWithOpener(create_params, opener_rfh));
+      CreateWithOpener(create_params, opener_rfh);
   tc->GetController().CopyStateFrom(controller_, true);
   for (auto& observer : observers_)
     observer.DidCloneToNewWebContents(this, tc.get());
