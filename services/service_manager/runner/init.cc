@@ -67,6 +67,7 @@ void WaitForDebuggerIfNecessary() {
   }
 }
 
+NO_SANITIZE("cfi-icall")
 void CallLibraryEarlyInitialization(base::NativeLibrary app_library) {
   // Do whatever warming that the service wants.
 
