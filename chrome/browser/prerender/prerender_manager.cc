@@ -1095,11 +1095,6 @@ bool PrerenderManager::DoesRateLimitAllowPrerender(Origin origin) const {
 }
 
 void PrerenderManager::DeleteOldWebContents() {
-  for (WebContents* web_contents : old_web_contents_list_) {
-    // TODO(dominich): should we use Instant Unload Handler here?
-    // Or should |old_web_contents_list_| contain unique_ptrs?
-    delete web_contents;
-  }
   old_web_contents_list_.clear();
 }
 
@@ -1149,7 +1144,7 @@ void PrerenderManager::CleanUpOldNavigations(
 void PrerenderManager::ScheduleDeleteOldWebContents(
     std::unique_ptr<WebContents> tab,
     OnCloseWebContentsDeleter* deleter) {
-  old_web_contents_list_.push_back(tab.release());
+  old_web_contents_list_.push_back(std::move(tab));
   PostCleanupTask();
 
   if (!deleter)
