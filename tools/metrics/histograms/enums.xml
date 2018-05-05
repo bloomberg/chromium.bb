@@ -48031,8 +48031,9 @@ Full version information for the fingerprint enum values:
 
 <enum name="WindowsNotificationActivationStatus">
   <int value="0" label="SUCCESS"/>
-  <int value="1" label="GET_PROFILE_ID_INVALID_LAUNCH_ID"/>
-  <int value="2" label="ACTIVATION_INVALID_LAUNCH_ID"/>
+  <int value="1" label="GET_PROFILE_ID_INVALID_LAUNCH_ID (deprecated)"/>
+  <int value="2" label="ACTIVATION_INVALID_LAUNCH_ID (deprecated)"/>
+  <int value="3" label="INVALID_LAUNCH_ID"/>
 </enum>
 
 <enum name="WindowsNotificationCloseStatus">

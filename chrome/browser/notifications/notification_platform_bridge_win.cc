@@ -825,7 +825,7 @@ bool NotificationPlatformBridgeWin::HandleActivation(
   NotificationLaunchId launch_id(base::UTF16ToUTF8(
       command_line.GetSwitchValueNative(switches::kNotificationLaunchId)));
   if (!launch_id.is_valid()) {
-    LogActivationStatus(ActivationStatus::ACTIVATION_INVALID_LAUNCH_ID);
+    LogActivationStatus(ActivationStatus::INVALID_LAUNCH_ID);
     return false;
   }
 
@@ -852,11 +852,10 @@ bool NotificationPlatformBridgeWin::HandleActivation(
 std::string NotificationPlatformBridgeWin::GetProfileIdFromLaunchId(
     const base::string16& launch_id_str) {
   NotificationLaunchId launch_id(base::UTF16ToUTF8(launch_id_str));
-  if (!launch_id.is_valid()) {
-    LogActivationStatus(ActivationStatus::GET_PROFILE_ID_INVALID_LAUNCH_ID);
-    return std::string();
-  }
-  return launch_id.profile_id();
+
+  // The launch_id_invalid failure is logged via HandleActivation(). We don't
+  // re-log it here, which would skew the UMA failure metrics.
+  return launch_id.is_valid() ? launch_id.profile_id() : std::string();
 }
 
 // static
