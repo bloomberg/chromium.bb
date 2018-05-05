@@ -122,3 +122,86 @@ TEST_F('SelectToSpeakMouseSelectionTest', 'SpeaksAcrossNodesInAParagraph',
       }
   );
 });
+
+TEST_F('SelectToSpeakMouseSelectionTest',
+    'SpeaksNodeWhenInSelectionModeAndClicked', function() {
+  this.runWithLoadedTree('data:text/html;charset=utf-8,' +
+      '<p>This is some text</p>',
+      function(desktop) {
+        assertFalse(this.mockTts.currentlySpeaking());
+        this.mockTts.setOnSpeechCallbacks([this.newCallback(
+            function(utterance) {
+              // Speech starts asynchronously.
+              assertTrue(this.mockTts.currentlySpeaking());
+              assertEquals(this.mockTts.pendingUtterances().length, 1);
+              this.assertEqualsCollapseWhitespace(
+              this.mockTts.pendingUtterances()[0], 'This is some text');
+            }
+        )]);
+
+        let textNode = this.findTextNode(desktop, 'This is some text');
+        let event = {screenX: textNode.location.left + 1,
+                     screenY: textNode.location.top + 1};
+        // A state change request should shift us into 'selecting' state from
+        // 'inactive'.
+        selectToSpeak.fireMockStateChangeRequest();
+        selectToSpeak.fireMockMouseDownEvent(event);
+        selectToSpeak.fireMockMouseUpEvent(event);
+      }
+  );
+});
+
+TEST_F('SelectToSpeakMouseSelectionTest',
+    'CancelsSelectionModeWithStateChange', function() {
+  this.runWithLoadedTree('data:text/html;charset=utf-8,' +
+      '<p>This is some text</p>',
+      function(desktop) {
+        let textNode = this.findTextNode(desktop, 'This is some text');
+        let event = {screenX: textNode.location.left + 1,
+                     screenY: textNode.location.top + 1};
+        // A state change request should shift us into 'selecting' state from
+        // 'inactive'.
+        selectToSpeak.fireMockStateChangeRequest();
+        selectToSpeak.fireMockMouseDownEvent(event);
+        assertEquals(chrome.accessibilityPrivate.SelectToSpeakState.SELECTING,
+            selectToSpeak.state_);
+
+        // Another state change puts us back in 'inactive'.
+        selectToSpeak.fireMockStateChangeRequest();
+        assertEquals(chrome.accessibilityPrivate.SelectToSpeakState.INACTIVE,
+            selectToSpeak.state_);
+      }
+  );
+});
+
+TEST_F('SelectToSpeakMouseSelectionTest', 'CancelsSpeechWithStateChange',
+    function() {
+  this.runWithLoadedTree('data:text/html;charset=utf-8,' +
+      '<p>This is some text</p>',
+      function(desktop) {
+        assertFalse(this.mockTts.currentlySpeaking());
+        assertEquals(this.mockTts.pendingUtterances().length, 0);
+        this.mockTts.setOnSpeechCallbacks([this.newCallback(
+            function(utterance) {
+              // Speech starts asynchronously.
+              assertTrue(this.mockTts.currentlySpeaking());
+              assertEquals(this.mockTts.pendingUtterances().length, 1);
+              this.assertEqualsCollapseWhitespace(
+              this.mockTts.pendingUtterances()[0], 'This is some text');
+
+              // Cancel speech and make sure state resets to INACTIVE.
+              selectToSpeak.fireMockStateChangeRequest();
+              assertFalse(this.mockTts.currentlySpeaking());
+              assertEquals(this.mockTts.pendingUtterances().length, 0);
+              assertEquals(
+                  chrome.accessibilityPrivate.SelectToSpeakState.INACTIVE,
+                  selectToSpeak.state_);
+            }
+        )]);
+        let textNode = this.findTextNode(desktop, 'This is some text');
+        let event = {screenX: textNode.location.left + 1,
+                     screenY: textNode.location.top + 1};
+        this.selectRangeForSpeech(event, event);
+      }
+  );
+});
