@@ -17,11 +17,6 @@ const int kTimeLength = 21;
 const char kPageSaved[] =
     "http://www.wikipedia.org is saved at last_n with id 12345";
 const char kPageDeleted[] = "Page with ID 12345 has been deleted";
-const char kPageExpired[] = "Page with ID 12345 has been expired";
-const char kRecordStoreClearError[] = "Offline store clear failed";
-const char kRecordStoreCleared[] = "Offline store cleared";
-const char kRecordStoreReloadError[] =
-    "There was an error reloading the offline store";
 
 }  // namespace
 
@@ -30,21 +25,13 @@ TEST(OfflinePageModelEventLoggerTest, RecordsWhenLoggingIsOn) {
   std::vector<std::string> log;
 
   logger.SetIsLogging(true);
-  logger.RecordStoreCleared();
   logger.RecordPageSaved(kNamespace, kUrl, kOfflineId);
   logger.RecordPageDeleted(kOfflineId);
-  logger.RecordPageExpired(kOfflineId);
-  logger.RecordStoreClearError();
-  logger.RecordStoreReloadError();
   logger.GetLogs(&log);
 
-  EXPECT_EQ(6u, log.size());
-  EXPECT_EQ(std::string(kRecordStoreCleared), log[5].substr(kTimeLength));
-  EXPECT_EQ(std::string(kPageSaved), log[4].substr(kTimeLength));
-  EXPECT_EQ(std::string(kPageDeleted), log[3].substr(kTimeLength));
-  EXPECT_EQ(std::string(kPageExpired), log[2].substr(kTimeLength));
-  EXPECT_EQ(std::string(kRecordStoreClearError), log[1].substr(kTimeLength));
-  EXPECT_EQ(std::string(kRecordStoreReloadError), log[0].substr(kTimeLength));
+  EXPECT_EQ(2u, log.size());
+  EXPECT_EQ(std::string(kPageSaved), log[1].substr(kTimeLength));
+  EXPECT_EQ(std::string(kPageDeleted), log[0].substr(kTimeLength));
 }
 
 TEST(OfflinePageModelEventLoggerTest, DoesNotRecordWhenLoggingIsOff) {
@@ -52,12 +39,8 @@ TEST(OfflinePageModelEventLoggerTest, DoesNotRecordWhenLoggingIsOff) {
   std::vector<std::string> log;
 
   logger.SetIsLogging(false);
-  logger.RecordStoreCleared();
   logger.RecordPageSaved(kNamespace, kUrl, kOfflineId);
   logger.RecordPageDeleted(kOfflineId);
-  logger.RecordPageExpired(kOfflineId);
-  logger.RecordStoreClearError();
-  logger.RecordStoreReloadError();
   logger.GetLogs(&log);
 
   EXPECT_EQ(0u, log.size());
@@ -69,7 +52,7 @@ TEST(OfflinePageModelEventLoggerTest, DoesNotExceedMaxSize) {
 
   logger.SetIsLogging(true);
   for (size_t i = 0; i < kMaxLogCount + 1; ++i) {
-    logger.RecordStoreCleared();
+    logger.RecordPageSaved(kNamespace, kUrl, kOfflineId);
   }
   logger.GetLogs(&log);
 

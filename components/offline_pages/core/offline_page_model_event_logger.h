@@ -19,18 +19,6 @@ class OfflinePageModelEventLogger : public OfflineEventLogger {
 
   // Records that a page with |offline_id| has been deleted.
   void RecordPageDeleted(int64_t offline_id);
-
-  // Records that a page with |offline_id| has been expired.
-  void RecordPageExpired(int64_t offline_id);
-
-  // Records that the offline store has been cleared.
-  void RecordStoreCleared();
-
-  // Records that there was an error when clearing the offline store.
-  void RecordStoreClearError();
-
-  // Records that there was an error when reloading the offline store.
-  void RecordStoreReloadError();
 };
 
 }  // namespace offline_pages
