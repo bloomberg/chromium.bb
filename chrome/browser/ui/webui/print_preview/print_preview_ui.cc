@@ -781,7 +781,7 @@ void PrintPreviewUI::OnHidePreviewDialog() {
       delegate->ReleaseWebContents();
   DCHECK_EQ(preview_dialog, preview_contents.get());
   background_printing_manager->OwnPrintPreviewDialog(
-      preview_contents.release());
+      std::move(preview_contents));
   OnClosePrintPreviewDialog();
 }
 

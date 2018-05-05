@@ -31,7 +31,6 @@ class BackgroundPrintingManager::Observer
 
  private:
   void RenderProcessGone(base::TerminationStatus status) override;
-  void WebContentsDestroyed() override;
 
   BackgroundPrintingManager* manager_;
 };
@@ -44,9 +43,6 @@ BackgroundPrintingManager::Observer::Observer(
 
 void BackgroundPrintingManager::Observer::RenderProcessGone(
     base::TerminationStatus status) {
-  manager_->DeletePreviewContents(web_contents());
-}
-void BackgroundPrintingManager::Observer::WebContentsDestroyed() {
   manager_->DeletePreviewContents(web_contents());
 }
 
@@ -64,27 +60,31 @@ BackgroundPrintingManager::~BackgroundPrintingManager() {
 }
 
 void BackgroundPrintingManager::OwnPrintPreviewDialog(
-    WebContents* preview_dialog) {
+    std::unique_ptr<WebContents> preview_dialog) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(PrintPreviewDialogController::IsPrintPreviewURL(
       preview_dialog->GetURL()));
-  CHECK(!HasPrintPreviewDialog(preview_dialog));
+  CHECK(!HasPrintPreviewDialog(preview_dialog.get()));
 
-  printing_contents_map_[preview_dialog] =
-      std::make_unique<Observer>(this, preview_dialog);
+  WebContents* raw_preview_dialog = preview_dialog.get();
+  PrintingContents printing_contents;
+  printing_contents.observer =
+      std::make_unique<Observer>(this, raw_preview_dialog);
+  printing_contents.contents = std::move(preview_dialog);
+  printing_contents_map_[raw_preview_dialog] = std::move(printing_contents);
 
   // Watch for print jobs finishing. Everything else is watched for by the
   // Observer. TODO(avi, cait): finish the job of removing this last
   // notification.
   registrar_.Add(this, chrome::NOTIFICATION_PRINT_JOB_RELEASED,
-                 content::Source<WebContents>(preview_dialog));
+                 content::Source<WebContents>(raw_preview_dialog));
 
   // Activate the initiator.
   PrintPreviewDialogController* dialog_controller =
       PrintPreviewDialogController::GetInstance();
   if (!dialog_controller)
     return;
-  WebContents* initiator = dialog_controller->GetInitiator(preview_dialog);
+  WebContents* initiator = dialog_controller->GetInitiator(raw_preview_dialog);
   if (!initiator)
     return;
   initiator->GetDelegate()->ActivateContents(initiator);
@@ -131,12 +131,15 @@ void BackgroundPrintingManager::DeletePreviewContents(
   // Stop all observation ...
   registrar_.Remove(this, chrome::NOTIFICATION_PRINT_JOB_RELEASED,
                     content::Source<WebContents>(preview_contents));
+  std::unique_ptr<WebContents> contents_to_delete =
+      std::move(i->second.contents);
   printing_contents_map_.erase(i);
 
   // ... and mortally wound the contents. Deletion immediately is not a good
   // idea in case this was triggered by |preview_contents| far up the
   // callstack. (Trace where the NOTIFICATION_PRINT_JOB_RELEASED comes from.)
-  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, preview_contents);
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
+      FROM_HERE, std::move(contents_to_delete));
 }
 
 std::set<content::WebContents*> BackgroundPrintingManager::CurrentContentSet() {
@@ -151,5 +154,13 @@ bool BackgroundPrintingManager::HasPrintPreviewDialog(
     WebContents* preview_dialog) {
   return base::ContainsKey(printing_contents_map_, preview_dialog);
 }
+
+BackgroundPrintingManager::PrintingContents::PrintingContents() = default;
+BackgroundPrintingManager::PrintingContents::~PrintingContents() = default;
+BackgroundPrintingManager::PrintingContents::PrintingContents(
+    PrintingContents&&) = default;
+BackgroundPrintingManager::PrintingContents&
+BackgroundPrintingManager::PrintingContents::operator=(PrintingContents&&) =
+    default;
 
 }  // namespace printing
