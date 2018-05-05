@@ -107,9 +107,9 @@ public class ChildProcessLauncherTest {
                     public ChildConnectionAllocator call() {
                         Context context = InstrumentationRegistry.getTargetContext();
                         return ChildConnectionAllocator.create(context, LauncherThread.getHandler(),
-                                SERVICE_PACKAGE_NAME, SERVICE_NAME, SERVICE_COUNT_META_DATA_KEY,
-                                false /* bindToCaller */, false /* bindAsExternalService */,
-                                false /* useStrongBinding */);
+                                null, SERVICE_PACKAGE_NAME, SERVICE_NAME,
+                                SERVICE_COUNT_META_DATA_KEY, false /* bindToCaller */,
+                                false /* bindAsExternalService */, false /* useStrongBinding */);
                     }
                 });
     }
@@ -356,7 +356,7 @@ public class ChildProcessLauncherTest {
                         new Callable<ChildConnectionAllocator>() {
                             @Override
                             public ChildConnectionAllocator call() {
-                                return ChildConnectionAllocator.createForTest(
+                                return ChildConnectionAllocator.createForTest(null,
                                         "org.chromium.wrong_package", "WrongService",
                                         2 /* serviceCount */, false /* bindToCaller */,
                                         false /* bindAsExternalService */,

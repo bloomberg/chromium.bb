@@ -132,9 +132,9 @@ public class ChildConnectionAllocatorTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        mAllocator = ChildConnectionAllocator.createForTest(TEST_PACKAGE_NAME, "AllocatorTest",
-                MAX_CONNECTION_NUMBER, true /* bindToCaller */, false /* bindAsExternalService */,
-                false /* useStrongBinding */);
+        mAllocator = ChildConnectionAllocator.createForTest(null, TEST_PACKAGE_NAME,
+                "AllocatorTest", MAX_CONNECTION_NUMBER, true /* bindToCaller */,
+                false /* bindAsExternalService */, false /* useStrongBinding */);
         mAllocator.setConnectionFactoryForTesting(mTestConnectionFactory);
     }
 
@@ -144,9 +144,6 @@ public class ChildConnectionAllocatorTest {
         assertFalse(mAllocator.anyConnectionAllocated());
         assertEquals(MAX_CONNECTION_NUMBER, mAllocator.getNumberOfServices());
 
-        ChildConnectionAllocator.Listener listener = mock(ChildConnectionAllocator.Listener.class);
-        mAllocator.addListener(listener);
-
         ChildProcessConnection connection =
                 mAllocator.allocate(null /* context */, null /* serviceBundle */, mServiceCallback);
         assertNotNull(connection);
@@ -154,7 +151,6 @@ public class ChildConnectionAllocatorTest {
         verify(connection, times(1))
                 .start(eq(false) /* useStrongBinding */,
                         any(ChildProcessConnection.ServiceCallback.class));
-        verify(listener, times(1)).onConnectionAllocated(mAllocator, connection);
         assertTrue(mAllocator.anyConnectionAllocated());
     }
 
@@ -177,6 +173,44 @@ public class ChildConnectionAllocatorTest {
                 null /* context */, null /* serviceBundle */, mServiceCallback));
     }
 
+    @Test
+    @Feature({"ProcessManagement"})
+    public void testQueueAllocation() {
+        Runnable freeConnectionCallback = mock(Runnable.class);
+        mAllocator = ChildConnectionAllocator.createForTest(freeConnectionCallback,
+                TEST_PACKAGE_NAME, "AllocatorTest", 1, true /* bindToCaller */,
+                false /* bindAsExternalService */, false /* useStrongBinding */);
+        mAllocator.setConnectionFactoryForTesting(mTestConnectionFactory);
+        // Occupy all slots.
+        ChildProcessConnection connection =
+                mAllocator.allocate(null /* context */, null /* serviceBundle */, mServiceCallback);
+        assertNotNull(connection);
+        assertFalse(mAllocator.isFreeConnectionAvailable());
+
+        final ChildProcessConnection newConnection[] = new ChildProcessConnection[2];
+        Runnable allocate1 = () -> {
+            newConnection[0] = mAllocator.allocate(
+                    null /* context */, null /* serviceBundle */, mServiceCallback);
+        };
+        Runnable allocate2 = () -> {
+            newConnection[1] = mAllocator.allocate(
+                    null /* context */, null /* serviceBundle */, mServiceCallback);
+        };
+        mAllocator.queueAllocation(allocate1);
+        mAllocator.queueAllocation(allocate2);
+        verify(freeConnectionCallback, times(1)).run();
+        assertNull(newConnection[0]);
+
+        mTestConnectionFactory.simulateServiceProcessDying();
+        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+        assertNotNull(newConnection[0]);
+        assertNull(newConnection[1]);
+
+        mTestConnectionFactory.simulateServiceProcessDying();
+        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+        assertNotNull(newConnection[1]);
+    }
+
     /**
      * Tests that the connection is created with the useStrongBinding parameter specified in the
      * allocator.
@@ -185,7 +219,7 @@ public class ChildConnectionAllocatorTest {
     @Feature({"ProcessManagement"})
     public void testStrongBindingParam() {
         for (boolean useStrongBinding : new boolean[] {true, false}) {
-            ChildConnectionAllocator allocator = ChildConnectionAllocator.createForTest(
+            ChildConnectionAllocator allocator = ChildConnectionAllocator.createForTest(null,
                     TEST_PACKAGE_NAME, "AllocatorTest", MAX_CONNECTION_NUMBER,
                     true /* bindToCaller */, false /* bindAsExternalService */, useStrongBinding);
             allocator.setConnectionFactoryForTesting(mTestConnectionFactory);
@@ -242,12 +276,9 @@ public class ChildConnectionAllocatorTest {
     }
 
     /**
-     * Tests that the allocator clears the connection when it fails to bind/process dies and that
-     * the listener gets invoked.
+     * Tests that the allocator clears the connection when it fails to bind/process dies.
      */
     private void testFreeConnection(int callbackType) {
-        ChildConnectionAllocator.Listener listener = mock(ChildConnectionAllocator.Listener.class);
-        mAllocator.addListener(listener);
         ChildProcessConnection connection =
                 mAllocator.allocate(null /* context */, null /* serviceBundle */, mServiceCallback);
 
@@ -274,7 +305,6 @@ public class ChildConnectionAllocatorTest {
         }
         ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
         assertFalse(mAllocator.anyConnectionAllocated());
-        verify(listener, times(1)).onConnectionFreed(mAllocator, connection);
         verify(mServiceCallback, never()).onChildStarted();
         verify(mServiceCallback, times(onChildStartFailedExpectedCount))
                 .onChildStartFailed(connection);

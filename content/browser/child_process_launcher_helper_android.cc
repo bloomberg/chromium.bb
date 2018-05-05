@@ -241,13 +241,6 @@ void ChildProcessLauncherHelper::OnChildProcessStarted(
   PostLaunchOnLauncherThread(std::move(process), launch_result);
 }
 
-// static
-size_t ChildProcessLauncherHelper::GetNumberOfRendererSlots() {
-  return static_cast<size_t>(
-      Java_ChildProcessLauncherHelper_getNumberOfRendererSlots(
-          AttachCurrentThread()));
-}
-
 }  // namespace internal
 
 }  // namespace content

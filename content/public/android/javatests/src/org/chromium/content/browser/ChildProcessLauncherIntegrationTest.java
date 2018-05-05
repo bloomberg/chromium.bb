@@ -137,4 +137,36 @@ public class ChildProcessLauncherIntegrationTest {
             }
         });
     }
+
+    @Test
+    @MediumTest
+    public void testIntentionalKillToFreeServiceSlot() throws Throwable {
+        final TestChildProcessConnectionFactory factory = new TestChildProcessConnectionFactory();
+        final List<TestChildProcessConnection> connections = factory.getConnections();
+        ChildProcessLauncherHelper.setSandboxServicesSettingsForTesting(
+                factory, 1, null /* use default service name */);
+        // Doing a cross-domain navigation would need to kill the first process in order to create
+        // the second process.
+
+        ContentShellActivity activity = mActivityTestRule.launchContentShellWithUrlSync(
+                "content/test/data/android/vsync.html");
+        NavigationController navigationController =
+                mActivityTestRule.getWebContents().getNavigationController();
+        TestCallbackHelperContainer testCallbackHelperContainer =
+                new TestCallbackHelperContainer(activity.getActiveWebContents());
+
+        mActivityTestRule.loadUrl(navigationController, testCallbackHelperContainer,
+                new LoadUrlParams(UrlUtils.getIsolatedTestFileUrl(
+                        "content/test/data/android/geolocation.html")));
+        mActivityTestRule.loadUrl(
+                navigationController, testCallbackHelperContainer, new LoadUrlParams("data:,foo"));
+
+        ChildProcessLauncherTestUtils.runOnLauncherThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                Assert.assertEquals(2, connections.size());
+                Assert.assertTrue(connections.get(0).isKilledByUs());
+            }
+        });
+    }
 }

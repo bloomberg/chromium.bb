@@ -29,7 +29,4 @@ interface BindingManager {
 
     /** Called when the embedding application is brought to foreground. */
     void onBroughtToForeground();
-
-    /** Releases all moderate bindings. */
-    void releaseAllModerateBindings();
 }

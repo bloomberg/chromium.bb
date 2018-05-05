@@ -188,33 +188,6 @@ public class BindingManagerImplTest {
         }
     }
 
-    /**
-     * Verifies that BindingManager.releaseAllModerateBindings() drops all the moderate bindings.
-     */
-    @Test
-    @Feature({"ProcessManagement"})
-    public void testModerateBindingDropOnReleaseAllModerateBindings() {
-        final BindingManagerImpl manager = mManager;
-
-        ChildProcessConnection[] connections = new ChildProcessConnection[4];
-        for (int i = 0; i < connections.length; i++) {
-            connections[i] = createTestChildProcessConnection(i + 1 /* pid */, manager);
-        }
-
-        // Verify that each connection has a moderate binding after binding and releasing a strong
-        // binding.
-        for (ChildProcessConnection connection : connections) {
-            Assert.assertTrue(connection.isModerateBindingBound());
-        }
-
-        // Call BindingManager.releaseAllModerateBindings() and verify that all the moderate
-        // bindings drop.
-        manager.releaseAllModerateBindings();
-        for (ChildProcessConnection connection : connections) {
-            Assert.assertFalse(connection.isModerateBindingBound());
-        }
-    }
-
     /*
      * Test that Chrome is sent to the background, that the initially added moderate bindings are
      * removed and are not re-added when Chrome is brought back to the foreground.

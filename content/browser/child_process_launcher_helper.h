@@ -179,7 +179,6 @@ class ChildProcessLauncherHelper :
   void OnChildProcessStarted(JNIEnv* env,
                              const base::android::JavaParamRef<jobject>& obj,
                              jint handle);
-  static size_t GetNumberOfRendererSlots();
 #endif  // OS_ANDROID
 
  private:
