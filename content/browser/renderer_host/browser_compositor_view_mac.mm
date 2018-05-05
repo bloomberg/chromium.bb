@@ -75,12 +75,28 @@ class RecyclableCompositorMac : public ui::CompositorObserver {
   ui::AcceleratedWidgetMac* accelerated_widget_mac() {
     return accelerated_widget_mac_.get();
   }
+  const gfx::Size pixel_size() const { return size_pixels_; }
+  float scale_factor() const { return scale_factor_; }
 
   // Suspend will prevent the compositor from producing new frames. This should
   // be called to avoid creating spurious frames while changing state.
   // Compositors are created as suspended.
   void Suspend();
   void Unsuspend();
+
+  // Update the compositor's surface information, set |root_layer| to be the
+  // compositor root layer, and resize |root_layer|.
+  void UpdateSurfaceAndUnsuspend(const gfx::Size& size_pixels,
+                                 float scale_factor,
+                                 ui::Layer* root_layer);
+  // Invalidate the compositor's surface information.
+  void InvalidateSurface();
+
+  // The viz::ParentLocalSurfaceIdAllocator for the ui::Compositor dispenses
+  // viz::LocalSurfaceIds that are renderered into by the ui::Compositor.
+  viz::ParentLocalSurfaceIdAllocator local_surface_id_allocator_;
+  gfx::Size size_pixels_;
+  float scale_factor_ = 1.f;
 
  private:
   RecyclableCompositorMac();
@@ -127,6 +143,32 @@ void RecyclableCompositorMac::Suspend() {
 
 void RecyclableCompositorMac::Unsuspend() {
   compositor_suspended_lock_ = nullptr;
+}
+
+void RecyclableCompositorMac::UpdateSurfaceAndUnsuspend(
+    const gfx::Size& size_pixels,
+    float scale_factor,
+    ui::Layer* root_layer) {
+  if (size_pixels != size_pixels_ || scale_factor != scale_factor_) {
+    size_pixels_ = size_pixels;
+    scale_factor_ = scale_factor;
+    compositor()->SetScaleAndSize(scale_factor_, size_pixels_,
+                                  local_surface_id_allocator_.GenerateId());
+  }
+  compositor()->SetRootLayer(root_layer);
+  root_layer->SetBounds(
+      gfx::Rect(gfx::ConvertSizeToDIP(scale_factor, size_pixels)));
+  Unsuspend();
+}
+
+void RecyclableCompositorMac::InvalidateSurface() {
+  size_pixels_ = gfx::Size();
+  scale_factor_ = 1.f;
+  local_surface_id_allocator_.Invalidate();
+  compositor()->SetScaleAndSize(
+      scale_factor_, size_pixels_,
+      local_surface_id_allocator_.GetCurrentLocalSurfaceId());
+  compositor()->SetRootLayer(nullptr);
 }
 
 void RecyclableCompositorMac::OnCompositingDidCommit(
@@ -353,7 +395,6 @@ void BrowserCompositorMac::TransitionToState(State new_state) {
   // Transition HasNoCompositor -> HasDetachedCompositor.
   if (state_ == HasNoCompositor && new_state != HasNoCompositor) {
     recyclable_compositor_ = RecyclableCompositorMac::Create();
-    recyclable_compositor_->compositor()->SetRootLayer(root_layer_.get());
     recyclable_compositor_->compositor()->SetBackgroundColor(background_color_);
     recyclable_compositor_->compositor()->SetDisplayColorSpace(
         dfh_display_.color_space());
@@ -372,17 +413,9 @@ void BrowserCompositorMac::TransitionToState(State new_state) {
     // now (if one is not ready, the compositor will unsuspend on first surface
     // activation).
     if (delegated_frame_host_->HasSavedFrame()) {
-      if (compositor_scale_factor_ != dfh_display_.device_scale_factor() ||
-          compositor_size_pixels_ != dfh_size_pixels_) {
-        compositor_scale_factor_ = dfh_display_.device_scale_factor();
-        compositor_size_pixels_ = dfh_size_pixels_;
-        root_layer_->SetBounds(gfx::Rect(gfx::ConvertSizeToDIP(
-            compositor_scale_factor_, compositor_size_pixels_)));
-        recyclable_compositor_->compositor()->SetScaleAndSize(
-            compositor_scale_factor_, compositor_size_pixels_,
-            compositor_local_surface_id_allocator_.GenerateId());
-      }
-      recyclable_compositor_->Unsuspend();
+      recyclable_compositor_->UpdateSurfaceAndUnsuspend(
+          dfh_size_pixels_, dfh_display_.device_scale_factor(),
+          root_layer_.get());
     }
 
     state_ = HasAttachedCompositor;
@@ -403,13 +436,7 @@ void BrowserCompositorMac::TransitionToState(State new_state) {
   // Transition HasDetachedCompositor -> HasNoCompositor.
   if (state_ == HasDetachedCompositor && new_state == HasNoCompositor) {
     recyclable_compositor_->accelerated_widget_mac()->ResetNSView();
-    compositor_scale_factor_ = 1.f;
-    compositor_size_pixels_ = gfx::Size();
-    compositor_local_surface_id_allocator_.Invalidate();
-    recyclable_compositor_->compositor()->SetScaleAndSize(
-        compositor_scale_factor_, compositor_size_pixels_,
-        compositor_local_surface_id_allocator_.GetCurrentLocalSurfaceId());
-    recyclable_compositor_->compositor()->SetRootLayer(nullptr);
+    recyclable_compositor_->InvalidateSurface();
     RecyclableCompositorMac::Recycle(std::move(recyclable_compositor_));
     state_ = HasNoCompositor;
   }
@@ -469,27 +496,17 @@ void BrowserCompositorMac::OnFirstSurfaceActivation(
   if (!recyclable_compositor_)
     return;
 
-  recyclable_compositor_->Unsuspend();
-
-  // Resize the compositor to match the current frame size, if needed.
-  if (compositor_size_pixels_ == surface_info.size_in_pixels() &&
-      compositor_scale_factor_ == surface_info.device_scale_factor()) {
-    return;
-  }
-  compositor_size_pixels_ = surface_info.size_in_pixels();
-  compositor_scale_factor_ = surface_info.device_scale_factor();
-  root_layer_->SetBounds(gfx::Rect(gfx::ConvertSizeToDIP(
-      compositor_scale_factor_, compositor_size_pixels_)));
-  recyclable_compositor_->compositor()->SetScaleAndSize(
-      compositor_scale_factor_, compositor_size_pixels_,
-      compositor_local_surface_id_allocator_.GenerateId());
+  recyclable_compositor_->UpdateSurfaceAndUnsuspend(
+      surface_info.size_in_pixels(), surface_info.device_scale_factor(),
+      root_layer_.get());
 
   // Disable screen updates until the frame of the new size appears (because the
   // content is drawn in the GPU process, it may change before we want it to).
   if (repaint_state_ == RepaintState::Paused) {
     bool compositor_is_nsview_size =
-        compositor_size_pixels_ == dfh_size_pixels_ &&
-        compositor_scale_factor_ == dfh_display_.device_scale_factor();
+        recyclable_compositor_->pixel_size() == dfh_size_pixels_ &&
+        recyclable_compositor_->scale_factor() ==
+            dfh_display_.device_scale_factor();
     if (compositor_is_nsview_size || repaint_auto_resize_enabled_) {
       NSDisableScreenUpdates();
       repaint_state_ = RepaintState::ScreenUpdatesDisabled;
