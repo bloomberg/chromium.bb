@@ -1930,6 +1930,9 @@ void RenderFrameSubmissionObserver::OnRenderFrameSubmission() {
     Quit();
 }
 
+void RenderFrameSubmissionObserver::OnLocalSurfaceIdChanged(
+    const cc::RenderFrameMetadata& metadata) {}
+
 MainThreadFrameObserver::MainThreadFrameObserver(
     RenderWidgetHost* render_widget_host)
     : render_widget_host_(render_widget_host),

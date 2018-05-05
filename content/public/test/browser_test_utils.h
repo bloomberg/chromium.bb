@@ -738,6 +738,8 @@ class RenderFrameSubmissionObserver
   // RenderFrameMetadataProvider::Observer
   void OnRenderFrameMetadataChanged() override;
   void OnRenderFrameSubmission() override;
+  void OnLocalSurfaceIdChanged(
+      const cc::RenderFrameMetadata& metadata) override;
 
   // If true then the next OnRenderFrameSubmission will cancel the blocking
   // |run_loop_| otherwise the blocking will continue until the next

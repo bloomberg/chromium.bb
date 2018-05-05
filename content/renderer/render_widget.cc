@@ -818,7 +818,7 @@ void RenderWidget::OnWasHidden() {
   // Ack the resize if we have to, so that the next time we're visible we get a
   // fresh VisualProperties right away; otherwise we'll start painting based on
   // a stale VisualProperties.
-  DidResizeOrRepaintAck();
+  DidUpdateVisualProperties();
 }
 
 void RenderWidget::OnWasShown(bool needs_repainting,
@@ -971,7 +971,7 @@ void RenderWidget::DidCommitAndDrawCompositorFrame() {
 }
 
 void RenderWidget::DidCommitCompositorFrame() {
-  DidResizeOrRepaintAck();
+  DidUpdateVisualProperties();
 }
 
 void RenderWidget::DidCompletePageScaleAnimation() {}
@@ -2528,19 +2528,24 @@ void RenderWidget::SetWidgetBinding(mojom::WidgetRequest request) {
   widget_binding_.Bind(std::move(request));
 }
 
-void RenderWidget::DidResizeOrRepaintAck() {
+bool RenderWidget::IsSurfaceSynchronizationEnabled() const {
+  return compositor_ && compositor_->IsSurfaceSynchronizationEnabled();
+}
+
+void RenderWidget::DidUpdateVisualProperties() {
   if (!needs_visual_properties_ack_ || size_.IsEmpty())
     return;
 
-  ViewHostMsg_ResizeOrRepaint_ACK_Params params;
-  params.view_size = size_;
-  if (child_local_surface_id_allocator_.GetCurrentLocalSurfaceId().is_valid()) {
-    params.child_allocated_local_surface_id =
+  if (!IsSurfaceSynchronizationEnabled()) {
+    ViewHostMsg_ResizeOrRepaint_ACK_Params params;
+    params.view_size = size_;
+    const viz::LocalSurfaceId& local_surface_id =
         child_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
-    DCHECK(params.child_allocated_local_surface_id.value().is_valid());
+    if (local_surface_id.is_valid())
+      params.child_allocated_local_surface_id = local_surface_id;
+    Send(new ViewHostMsg_ResizeOrRepaint_ACK(routing_id_, params));
   }
 
-  Send(new ViewHostMsg_ResizeOrRepaint_ACK(routing_id_, params));
   needs_visual_properties_ack_ = false;
 }
 

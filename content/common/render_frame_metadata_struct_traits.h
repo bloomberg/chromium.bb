@@ -8,6 +8,7 @@
 #include "base/optional.h"
 #include "cc/trees/render_frame_metadata.h"
 #include "content/common/render_frame_metadata.mojom-shared.h"
+#include "services/viz/public/cpp/compositing/local_surface_id_struct_traits.h"
 
 namespace mojo {
 
@@ -35,6 +36,20 @@ struct StructTraits<content::mojom::RenderFrameMetadataDataView,
 
   static bool is_mobile_optimized(const cc::RenderFrameMetadata& metadata) {
     return metadata.is_mobile_optimized;
+  }
+
+  static float device_scale_factor(const cc::RenderFrameMetadata& metadata) {
+    return metadata.device_scale_factor;
+  }
+
+  static const gfx::Size& viewport_size_in_pixels(
+      const cc::RenderFrameMetadata& metadata) {
+    return metadata.viewport_size_in_pixels;
+  }
+
+  static const base::Optional<viz::LocalSurfaceId>& local_surface_id(
+      const cc::RenderFrameMetadata& metadata) {
+    return metadata.local_surface_id;
   }
 
   static bool Read(content::mojom::RenderFrameMetadataDataView data,

@@ -719,7 +719,9 @@ class RenderWidgetHostTest : public testing::Test {
             std::move(render_frame_metadata_observer_client_info));
 
     host_->RequestCompositorFrameSink(
-        std::move(sink_request), std::move(renderer_compositor_frame_sink_ptr_),
+        std::move(sink_request),
+        std::move(renderer_compositor_frame_sink_ptr_));
+    host_->RegisterRenderFrameMetadataObserver(
         std::move(render_frame_metadata_observer_client_request),
         std::move(renderer_render_frame_metadata_observer_ptr));
   }

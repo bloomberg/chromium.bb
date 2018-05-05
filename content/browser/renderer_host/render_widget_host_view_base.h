@@ -150,6 +150,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // RenderFrameMetadataProvider::Observer
   void OnRenderFrameMetadataChanged() override;
   void OnRenderFrameSubmission() override;
+  void OnLocalSurfaceIdChanged(
+      const cc::RenderFrameMetadata& metadata) override;
 
   void SetPopupType(blink::WebPopupType popup_type);
 

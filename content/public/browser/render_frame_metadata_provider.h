@@ -31,6 +31,14 @@ class CONTENT_EXPORT RenderFrameMetadataProvider {
 
     virtual void OnRenderFrameMetadataChanged() = 0;
     virtual void OnRenderFrameSubmission() = 0;
+
+    // Called to indicate that the viz::LocalSurfaceId within the
+    // RenderFrameMetadata has changed. For production builds, this means that
+    // the child_sequence_number of the viz::LocalSurfaceId has changed. For
+    // unit tests, this means that any part of the viz::LocalSurfaceId has
+    // changed.
+    virtual void OnLocalSurfaceIdChanged(
+        const cc::RenderFrameMetadata& metadata) = 0;
   };
 
   RenderFrameMetadataProvider() = default;

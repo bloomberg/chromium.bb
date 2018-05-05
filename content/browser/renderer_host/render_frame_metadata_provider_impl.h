@@ -67,6 +67,8 @@ class CONTENT_EXPORT RenderFrameMetadataProviderImpl
 
   cc::RenderFrameMetadata last_render_frame_metadata_;
 
+  base::Optional<viz::LocalSurfaceId> last_local_surface_id_;
+
   // Not owned.
   FrameTokenMessageQueue* const frame_token_message_queue_;
 

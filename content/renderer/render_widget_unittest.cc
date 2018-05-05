@@ -417,14 +417,7 @@ TEST_F(RenderWidgetUnittest, SurfaceSynchronizationAutoResizeThrottling) {
 
   // Issue an auto-resize.
   widget()->DidAutoResize(auto_size);
-  widget()->sink()->ClearMessages();
   widget()->DidCommitCompositorFrame();
-  const IPC::Message* message = widget()->sink()->GetUniqueMessageMatching(
-      ViewHostMsg_ResizeOrRepaint_ACK::ID);
-  ASSERT_TRUE(message);
-  ViewHostMsg_ResizeOrRepaint_ACK::Param params;
-  ViewHostMsg_ResizeOrRepaint_ACK::Read(message, &params);
-  EXPECT_EQ(auto_size, std::get<0>(params).view_size);
 
   // Issue another auto-resize but keep it in-flight.
   constexpr gfx::Size auto_size2(200, 200);

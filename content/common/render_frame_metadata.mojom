@@ -4,6 +4,7 @@
 
 module content.mojom;
 
+import "services/viz/public/interfaces/compositing/local_surface_id.mojom";
 import "services/viz/public/interfaces/compositing/selection.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
@@ -32,6 +33,15 @@ struct RenderFrameMetadata {
   // - page prevents zooming in or out (i.e. min and max page scale factors
   // are the same).
   bool is_mobile_optimized;
+
+  // The device scale factor used to generate CompositorFrame.
+  float device_scale_factor;
+
+  // The size of the viewport used to generate a CompositorFrame.
+  gfx.mojom.Size viewport_size_in_pixels;
+
+  // The last viz::LocalSurfaceId used to submit a CompositorFrame.
+  viz.mojom.LocalSurfaceId? local_surface_id;
 };
 
 // This interface is provided by the renderer. It can optionally enable

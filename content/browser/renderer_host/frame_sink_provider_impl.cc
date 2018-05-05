@@ -27,7 +27,21 @@ void FrameSinkProviderImpl::Unbind() {
 void FrameSinkProviderImpl::CreateForWidget(
     int32_t widget_id,
     viz::mojom::CompositorFrameSinkRequest compositor_frame_sink_request,
-    viz::mojom::CompositorFrameSinkClientPtr compositor_frame_sink_client,
+    viz::mojom::CompositorFrameSinkClientPtr compositor_frame_sink_client) {
+  RenderWidgetHostImpl* render_widget_host_impl =
+      RenderWidgetHostImpl::FromID(process_id_, widget_id);
+  if (!render_widget_host_impl) {
+    DLOG(ERROR) << "No RenderWidgetHost exists with id " << widget_id
+                << " in process " << process_id_;
+    return;
+  }
+  render_widget_host_impl->RequestCompositorFrameSink(
+      std::move(compositor_frame_sink_request),
+      std::move(compositor_frame_sink_client));
+}
+
+void FrameSinkProviderImpl::RegisterRenderFrameMetadataObserver(
+    int32_t widget_id,
     mojom::RenderFrameMetadataObserverClientRequest
         render_frame_metadata_observer_client_request,
     mojom::RenderFrameMetadataObserverPtr render_frame_metadata_observer) {
@@ -38,9 +52,7 @@ void FrameSinkProviderImpl::CreateForWidget(
                 << " in process " << process_id_;
     return;
   }
-  render_widget_host_impl->RequestCompositorFrameSink(
-      std::move(compositor_frame_sink_request),
-      std::move(compositor_frame_sink_client),
+  render_widget_host_impl->RegisterRenderFrameMetadataObserver(
       std::move(render_frame_metadata_observer_client_request),
       std::move(render_frame_metadata_observer));
 }
