@@ -23,7 +23,7 @@ WebContentsTester* WebContentsTester::For(WebContents* contents) {
 }
 
 // static
-WebContents* WebContentsTester::CreateTestWebContents(
+std::unique_ptr<WebContents> WebContentsTester::CreateTestWebContents(
     BrowserContext* browser_context,
     scoped_refptr<SiteInstance> instance) {
   return TestWebContents::Create(browser_context, std::move(instance));

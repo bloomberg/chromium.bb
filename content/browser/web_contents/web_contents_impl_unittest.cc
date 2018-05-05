@@ -2582,7 +2582,7 @@ TEST_F(WebContentsImplTest, CopyStateFromAndPruneSourceInterstitial) {
   // Create another NavigationController.
   GURL url3("http://foo2");
   std::unique_ptr<TestWebContents> other_contents(
-      static_cast<TestWebContents*>(CreateTestWebContents()));
+      static_cast<TestWebContents*>(CreateTestWebContents().release()));
   NavigationControllerImpl& other_controller = other_contents->GetController();
   other_contents->NavigateAndCommit(url3);
   other_contents->ExpectSetHistoryOffsetAndLength(1, 2);
@@ -2607,7 +2607,7 @@ TEST_F(WebContentsImplTest, CopyStateFromAndPruneTargetInterstitial) {
 
   // Create another NavigationController.
   std::unique_ptr<TestWebContents> other_contents(
-      static_cast<TestWebContents*>(CreateTestWebContents()));
+      static_cast<TestWebContents*>(CreateTestWebContents().release()));
   NavigationControllerImpl& other_controller = other_contents->GetController();
 
   // Navigate it to url2.
@@ -2657,7 +2657,7 @@ TEST_F(WebContentsImplTest, FilterURLs) {
 
   // Create and navigate another WebContents.
   std::unique_ptr<TestWebContents> other_contents(
-      static_cast<TestWebContents*>(CreateTestWebContents()));
+      static_cast<TestWebContents*>(CreateTestWebContents().release()));
   TestWebContentsObserver other_observer(other_contents.get());
   other_contents->NavigateAndCommit(url_normalized);
 
@@ -2670,7 +2670,7 @@ TEST_F(WebContentsImplTest, FilterURLs) {
 // crash.
 TEST_F(WebContentsImplTest, PendingContentsDestroyed) {
   std::unique_ptr<WebContentsImpl> other_contents(
-      static_cast<WebContentsImpl*>(CreateTestWebContents()));
+      static_cast<WebContentsImpl*>(CreateTestWebContents().release()));
   content::TestWebContents* raw_other_contents =
       static_cast<TestWebContents*>(other_contents.get());
   contents()->AddPendingContents(std::move(other_contents));
@@ -2687,7 +2687,7 @@ TEST_F(WebContentsImplTest, PendingContentsDestroyed) {
 
 TEST_F(WebContentsImplTest, PendingContentsShown) {
   std::unique_ptr<WebContents> other_contents(
-      static_cast<WebContents*>(CreateTestWebContents()));
+      static_cast<WebContents*>(CreateTestWebContents().release()));
   content::WebContents* raw_other_contents = other_contents.get();
   content::TestWebContents* test_web_contents =
       static_cast<content::TestWebContents*>(other_contents.get());

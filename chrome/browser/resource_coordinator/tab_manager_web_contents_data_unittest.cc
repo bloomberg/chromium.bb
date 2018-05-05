@@ -45,8 +45,8 @@ class TabManagerWebContentsDataTest : public ChromeRenderViewHostTestHarness {
 
   TabManager::WebContentsData* CreateWebContentsAndTabData(
       std::unique_ptr<WebContents>* web_contents) {
-    web_contents->reset(
-        WebContentsTester::CreateTestWebContents(browser_context(), nullptr));
+    *web_contents =
+        WebContentsTester::CreateTestWebContents(browser_context(), nullptr);
     TabManager::WebContentsData::CreateForWebContents(web_contents->get());
     return TabManager::WebContentsData::FromWebContents(web_contents->get());
   }

@@ -19,16 +19,24 @@ namespace {
 // A subclass of TestWebContents that offers a fake content window.
 class GestureNavTestWebContents : public TestWebContents {
  public:
+  explicit GestureNavTestWebContents(
+      BrowserContext* browser_context,
+      std::unique_ptr<aura::Window> fake_native_view,
+      std::unique_ptr<aura::Window> fake_contents_window)
+      : TestWebContents(browser_context),
+        fake_native_view_(std::move(fake_native_view)),
+        fake_contents_window_(std::move(fake_contents_window)) {}
   ~GestureNavTestWebContents() override {}
 
-  static GestureNavTestWebContents* Create(
+  static std::unique_ptr<GestureNavTestWebContents> Create(
       BrowserContext* browser_context,
       scoped_refptr<SiteInstance> instance,
       std::unique_ptr<aura::Window> fake_native_view,
       std::unique_ptr<aura::Window> fake_contents_window) {
-    auto* web_contents = new GestureNavTestWebContents(
-        browser_context, std::move(fake_native_view),
-        std::move(fake_contents_window));
+    std::unique_ptr<GestureNavTestWebContents> web_contents =
+        std::make_unique<GestureNavTestWebContents>(
+            browser_context, std::move(fake_native_view),
+            std::move(fake_contents_window));
     web_contents->Init(
         WebContents::CreateParams(browser_context, std::move(instance)));
     return web_contents;
@@ -40,15 +48,6 @@ class GestureNavTestWebContents : public TestWebContents {
   gfx::NativeView GetContentNativeView() override {
     return fake_contents_window_.get();
   }
-
- protected:
-  explicit GestureNavTestWebContents(
-      BrowserContext* browser_context,
-      std::unique_ptr<aura::Window> fake_native_view,
-      std::unique_ptr<aura::Window> fake_contents_window)
-      : TestWebContents(browser_context),
-        fake_native_view_(std::move(fake_native_view)),
-        fake_contents_window_(std::move(fake_contents_window)) {}
 
  private:
   std::unique_ptr<aura::Window> fake_native_view_;

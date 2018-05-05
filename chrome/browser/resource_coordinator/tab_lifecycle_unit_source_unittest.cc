@@ -237,7 +237,7 @@ class TabLifecycleUnitSourceTest : public ChromeRenderViewHostTestHarness {
  private:
   std::unique_ptr<content::WebContents> CreateAndNavigateWebContents() {
     std::unique_ptr<content::WebContents> web_contents =
-        base::WrapUnique(CreateTestWebContents());
+        CreateTestWebContents();
     // Commit an URL to allow discarding.
     content::WebContentsTester::For(web_contents.get())
         ->NavigateAndCommit(GURL("https://www.example.com"));
@@ -320,7 +320,7 @@ TEST_F(TabLifecycleUnitSourceTest, ReplaceWebContents) {
   TabLifecycleUnitExternal* tab_lifecycle_unit_external =
       source_->GetTabLifecycleUnitExternal(original_web_contents);
   std::unique_ptr<content::WebContents> new_web_contents =
-      base::WrapUnique(CreateTestWebContents());
+      CreateTestWebContents();
   content::WebContents* raw_new_web_contents = new_web_contents.get();
   std::unique_ptr<content::WebContents> original_web_contents_deleter =
       tab_strip_model_->ReplaceWebContentsAt(1, std::move(new_web_contents));

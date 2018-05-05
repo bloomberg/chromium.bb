@@ -16,8 +16,8 @@ namespace {
 
 std::unique_ptr<content::WebContents> CreateWebContents(
     content::BrowserContext* browser_context) {
-  return base::WrapUnique(content::WebContentsTester::CreateTestWebContents(
-      browser_context, nullptr));
+  return content::WebContentsTester::CreateTestWebContents(browser_context,
+                                                           nullptr);
 }
 
 }  // namespace

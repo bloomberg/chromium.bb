@@ -130,8 +130,8 @@ class WebViewUnitTest : public views::test::WidgetTest {
 
   std::unique_ptr<content::WebContents> CreateWebContentsForWebView(
       content::BrowserContext* browser_context) {
-    return base::WrapUnique(content::WebContentsTester::CreateTestWebContents(
-        browser_context, nullptr));
+    return content::WebContentsTester::CreateTestWebContents(browser_context,
+                                                             nullptr);
   }
 
   void SetUp() override {

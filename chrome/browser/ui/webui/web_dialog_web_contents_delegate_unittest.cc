@@ -89,8 +89,8 @@ TEST_F(WebDialogWebContentsDelegateTest, OpenURLFromTabTest) {
 }
 
 TEST_F(WebDialogWebContentsDelegateTest, AddNewContentsForegroundTabTest) {
-  std::unique_ptr<WebContents> contents = base::WrapUnique(
-      WebContentsTester::CreateTestWebContents(profile(), NULL));
+  std::unique_ptr<WebContents> contents =
+      WebContentsTester::CreateTestWebContents(profile(), NULL);
   test_web_contents_delegate_->AddNewContents(
       NULL, std::move(contents), WindowOpenDisposition::NEW_FOREGROUND_TAB,
       gfx::Rect(), false, NULL);

@@ -70,7 +70,7 @@ class WebstoreInlineInstallerTest : public ChromeRenderViewHostTestHarness {
 
 void WebstoreInlineInstallerTest::SetUp() {
   ChromeRenderViewHostTestHarness::SetUp();
-  web_contents_.reset(CreateTestWebContents());
+  web_contents_ = CreateTestWebContents();
 }
 
 void WebstoreInlineInstallerTest::TearDown() {

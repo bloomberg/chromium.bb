@@ -157,8 +157,7 @@ class TabManagerTest : public ChromeRenderViewHostTestHarness {
   }
 
   std::unique_ptr<WebContents> CreateWebContents() {
-    std::unique_ptr<WebContents> web_contents =
-        base::WrapUnique(CreateTestWebContents());
+    std::unique_ptr<WebContents> web_contents = CreateTestWebContents();
     // Commit an URL to allow discarding.
     content::WebContentsTester::For(web_contents.get())
         ->NavigateAndCommit(GURL("https://www.example.com"));
@@ -170,7 +169,7 @@ class TabManagerTest : public ChromeRenderViewHostTestHarness {
     tab_manager_ = g_browser_process->GetTabManager();
   }
 
-  void TearDown() override {
+  void ResetState() {
     // NavigationHandles and NavigationThrottles must be deleted before the
     // associated WebContents.
     nav_handle1_.reset();
@@ -186,6 +185,10 @@ class TabManagerTest : public ChromeRenderViewHostTestHarness {
     contents1_.reset();
     contents2_.reset();
     contents3_.reset();
+  }
+
+  void TearDown() override {
+    ResetState();
 
     task_runner_->RunUntilIdle();
     scoped_context_.reset();
@@ -195,12 +198,12 @@ class TabManagerTest : public ChromeRenderViewHostTestHarness {
   void PrepareTabs(const char* url1 = kTestUrl,
                    const char* url2 = kTestUrl,
                    const char* url3 = kTestUrl) {
-    nav_handle1_ = CreateTabAndNavigation(url1);
-    nav_handle2_ = CreateTabAndNavigation(url2);
-    nav_handle3_ = CreateTabAndNavigation(url3);
-    contents1_ = base::WrapUnique(nav_handle1_->GetWebContents());
-    contents2_ = base::WrapUnique(nav_handle2_->GetWebContents());
-    contents3_ = base::WrapUnique(nav_handle3_->GetWebContents());
+    contents1_ = CreateTestWebContents();
+    nav_handle1_ = CreateTabAndNavigation(url1, contents1_.get());
+    contents2_ = CreateTestWebContents();
+    nav_handle2_ = CreateTabAndNavigation(url2, contents2_.get());
+    contents3_ = CreateTestWebContents();
+    nav_handle3_ = CreateTabAndNavigation(url3, contents3_.get());
 
     contents1_->WasHidden();
     contents2_->WasHidden();
@@ -258,8 +261,9 @@ class TabManagerTest : public ChromeRenderViewHostTestHarness {
   }
 
  protected:
-  std::unique_ptr<NavigationHandle> CreateTabAndNavigation(const char* url) {
-    content::WebContents* web_contents = CreateTestWebContents();
+  std::unique_ptr<NavigationHandle> CreateTabAndNavigation(
+      const char* url,
+      content::WebContents* web_contents) {
     TabUIHelper::CreateForWebContents(web_contents);
     return content::NavigationHandle::CreateNavigationHandleForTesting(
         GURL(url), web_contents->GetMainFrame());
@@ -705,6 +709,7 @@ TEST_F(TabManagerTest, BackgroundTabLoadingSlots) {
   EXPECT_FALSE(tab_manager1.IsNavigationDelayedForTest(nav_handle1_.get()));
   EXPECT_TRUE(tab_manager1.IsNavigationDelayedForTest(nav_handle2_.get()));
   EXPECT_TRUE(tab_manager1.IsNavigationDelayedForTest(nav_handle3_.get()));
+  ResetState();
 
   TabManager tab_manager2;
   tab_manager2.SetLoadingSlotsForTest(2);
@@ -712,6 +717,7 @@ TEST_F(TabManagerTest, BackgroundTabLoadingSlots) {
   EXPECT_FALSE(tab_manager2.IsNavigationDelayedForTest(nav_handle1_.get()));
   EXPECT_FALSE(tab_manager2.IsNavigationDelayedForTest(nav_handle2_.get()));
   EXPECT_TRUE(tab_manager2.IsNavigationDelayedForTest(nav_handle3_.get()));
+  ResetState();
 
   TabManager tab_manager3;
   tab_manager3.SetLoadingSlotsForTest(3);

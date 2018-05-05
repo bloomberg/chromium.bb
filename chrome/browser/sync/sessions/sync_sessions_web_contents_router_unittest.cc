@@ -33,8 +33,8 @@ class SyncSessionsWebContentsRouterTest : public testing::Test {
     router_ =
         SyncSessionsWebContentsRouterFactory::GetInstance()->GetForProfile(
             &profile_);
-    test_contents_.reset(
-        content::WebContentsTester::CreateTestWebContents(&profile_, nullptr));
+    test_contents_ =
+        content::WebContentsTester::CreateTestWebContents(&profile_, nullptr);
   }
 
   SyncSessionsWebContentsRouter* router() { return router_; }

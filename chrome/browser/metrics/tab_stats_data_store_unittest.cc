@@ -69,7 +69,7 @@ TEST_F(TabStatsDataStoreTest, TabStatsGetsReloadedFromLocalState) {
 TEST_F(TabStatsDataStoreTest, TrackTabUsageDuringInterval) {
   std::vector<std::unique_ptr<content::WebContents>> web_contents_vec;
   for (size_t i = 0; i < 3; ++i) {
-    web_contents_vec.emplace_back(base::WrapUnique(CreateTestWebContents()));
+    web_contents_vec.emplace_back(CreateTestWebContents());
     // Make sure that these WebContents are initially not visible.
     web_contents_vec.back()->WasHidden();
   }
@@ -142,12 +142,12 @@ TEST_F(TabStatsDataStoreTest, TrackTabUsageDuringInterval) {
   // Make sure that the tab stats get properly copied when a tab is replaced.
   TabStatsDataStore::TabStateDuringInterval tab_stats_copy =
       interval_map->find(web_contents_id_vec[1])->second;
-  content::WebContents* new_contents = CreateTestWebContents();
+  std::unique_ptr<content::WebContents> new_contents = CreateTestWebContents();
   content::WebContents* old_contents = web_contents_vec[1].get();
-  data_store_->OnTabReplaced(old_contents, new_contents);
-  EXPECT_EQ(data_store_->GetTabIDForTesting(new_contents).value(),
+  data_store_->OnTabReplaced(old_contents, new_contents.get());
+  EXPECT_EQ(data_store_->GetTabIDForTesting(new_contents.get()).value(),
             web_contents_id_vec[1]);
-  web_contents_vec[1].reset(new_contents);
+  web_contents_vec[1] = std::move(new_contents);
   // |old_contents| is invalid starting from here.
   EXPECT_FALSE(data_store_->GetTabIDForTesting(old_contents));
   auto iter = interval_map->find(web_contents_id_vec[1]);

@@ -471,8 +471,8 @@ class ResourceLoaderTest : public testing::Test,
     browser_context_.reset(new TestBrowserContext());
     scoped_refptr<SiteInstance> site_instance =
         SiteInstance::Create(browser_context_.get());
-    web_contents_.reset(
-        TestWebContents::Create(browser_context_.get(), site_instance.get()));
+    web_contents_ =
+        TestWebContents::Create(browser_context_.get(), site_instance.get());
     SetUpResourceLoaderForUrl(test_redirect_url());
   }
 

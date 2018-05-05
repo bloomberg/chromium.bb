@@ -174,15 +174,15 @@ ScreenOrientationControllerTest::~ScreenOrientationControllerTest() = default;
 
 std::unique_ptr<content::WebContents>
 ScreenOrientationControllerTest::CreateWebContents() {
-  return base::WrapUnique(content::WebContentsTester::CreateTestWebContents(
-      ShellContentState::GetInstance()->GetActiveBrowserContext(), nullptr));
+  return content::WebContentsTester::CreateTestWebContents(
+      ShellContentState::GetInstance()->GetActiveBrowserContext(), nullptr);
 }
 
 std::unique_ptr<content::WebContents>
 ScreenOrientationControllerTest::CreateSecondaryWebContents() {
   secondary_browser_context_.reset(new content::TestBrowserContext());
-  return base::WrapUnique(content::WebContentsTester::CreateTestWebContents(
-      secondary_browser_context_.get(), nullptr));
+  return content::WebContentsTester::CreateTestWebContents(
+      secondary_browser_context_.get(), nullptr);
 }
 
 void ScreenOrientationControllerTest::SetUp() {

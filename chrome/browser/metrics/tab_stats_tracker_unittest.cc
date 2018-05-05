@@ -40,9 +40,10 @@ class TestTabStatsTracker : public TabStatsTracker {
                  ChromeRenderViewHostTestHarness* test_harness) {
     EXPECT_TRUE(test_harness);
     for (size_t i = 0; i < tab_count; ++i) {
-      content::WebContents* tab = test_harness->CreateTestWebContents();
-      tab_stats_data_store()->OnTabAdded(tab);
-      tabs_.emplace_back(base::WrapUnique(tab));
+      std::unique_ptr<content::WebContents> tab =
+          test_harness->CreateTestWebContents();
+      tab_stats_data_store()->OnTabAdded(tab.get());
+      tabs_.emplace_back(std::move(tab));
     }
     return tab_stats_data_store()->tab_stats().total_tab_count;
   }
@@ -291,7 +292,7 @@ TEST_F(TabStatsTrackerTest, TabUsageGetsReported) {
 
   std::vector<std::unique_ptr<content::WebContents>> web_contentses;
   for (size_t i = 0; i < 4; ++i) {
-    web_contentses.emplace_back(base::WrapUnique(CreateTestWebContents()));
+    web_contentses.emplace_back(CreateTestWebContents());
     // Make sure that these WebContents are initially not visible.
     web_contentses[i]->WasHidden();
     tab_stats_tracker_->OnInitialOrInsertedTab(web_contentses[i].get());

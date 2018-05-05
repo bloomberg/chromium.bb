@@ -49,7 +49,7 @@ class WebContentsDisplayObserverViewTest
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
-    web_contents_.reset(CreateTestWebContents());
+    web_contents_ = CreateTestWebContents();
     display_observer_ = std::make_unique<TestWebContentsDisplayObserverView>(
         web_contents_.get(),
         base::BindRepeating(&MockCallback::OnDisplayChanged,

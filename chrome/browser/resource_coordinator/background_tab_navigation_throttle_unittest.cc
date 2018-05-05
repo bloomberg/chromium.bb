@@ -95,7 +95,7 @@ TEST_P(BackgroundTabNavigationThrottleTest, Instantiate) {
 
   std::unique_ptr<content::WebContents> opener;
   if (!no_opener_) {
-    opener.reset(CreateTestWebContents());
+    opener = CreateTestWebContents();
     content::WebContentsTester::For(web_contents())->SetOpener(opener.get());
   }
 

@@ -197,7 +197,7 @@ class ExtensionProtocolsTest
   void SetUp() override {
     testing::Test::SetUp();
     testing_profile_ = TestingProfile::Builder().Build();
-    contents_.reset(CreateTestWebContents());
+    contents_ = CreateTestWebContents();
     extension_info_map_ = new InfoMap();
     old_factory_ = resource_context_.GetRequestContext()->job_factory();
 
@@ -330,7 +330,7 @@ class ExtensionProtocolsTest
     return GetResult(std::move(request), test_delegate_.request_status());
   }
 
-  content::WebContents* CreateTestWebContents() {
+  std::unique_ptr<content::WebContents> CreateTestWebContents() {
     auto site_instance = content::SiteInstance::Create(browser_context());
     return content::WebContentsTester::CreateTestWebContents(
         browser_context(), std::move(site_instance));

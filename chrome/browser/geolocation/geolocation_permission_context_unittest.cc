@@ -218,17 +218,18 @@ void GeolocationPermissionContextTests::CheckPermissionMessageSentInternal(
 }
 
 void GeolocationPermissionContextTests::AddNewTab(const GURL& url) {
-  content::WebContents* new_tab = CreateTestWebContents();
-  content::NavigationSimulator::NavigateAndCommitFromBrowser(new_tab, url);
+  std::unique_ptr<content::WebContents> new_tab = CreateTestWebContents();
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(new_tab.get(),
+                                                             url);
 
   // Set up required helpers, and make this be as "tabby" as the code requires.
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  extensions::SetViewType(new_tab, extensions::VIEW_TYPE_TAB_CONTENTS);
+  extensions::SetViewType(new_tab.get(), extensions::VIEW_TYPE_TAB_CONTENTS);
 #endif
 
-  SetupRequestManager(new_tab);
+  SetupRequestManager(new_tab.get());
 
-  extra_tabs_.push_back(base::WrapUnique(new_tab));
+  extra_tabs_.push_back(std::move(new_tab));
 }
 
 void GeolocationPermissionContextTests::CheckTabContentsState(

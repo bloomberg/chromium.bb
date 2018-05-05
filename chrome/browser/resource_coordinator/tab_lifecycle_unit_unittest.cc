@@ -74,7 +74,7 @@ class TabLifecycleUnitTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::SetUp();
 
     std::unique_ptr<content::WebContents> test_web_contents =
-        base::WrapUnique(CreateTestWebContents());
+        CreateTestWebContents();
     web_contents_ = test_web_contents.get();
     // Commit an URL to allow discarding.
     content::WebContentsTester::For(web_contents_)
@@ -86,7 +86,7 @@ class TabLifecycleUnitTest : public ChromeRenderViewHostTestHarness {
     web_contents_->WasHidden();
 
     std::unique_ptr<content::WebContents> second_web_contents =
-        base::WrapUnique(CreateTestWebContents());
+        CreateTestWebContents();
     content::WebContents* raw_second_web_contents = second_web_contents.get();
     tab_strip_model_->AppendWebContents(std::move(second_web_contents), false);
     raw_second_web_contents->WasHidden();

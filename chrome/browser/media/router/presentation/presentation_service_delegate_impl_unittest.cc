@@ -248,18 +248,18 @@ class PresentationServiceDelegateImplIncognitoTest
           content::WebContentsTester::CreateTestWebContents(incognito_profile,
                                                             nullptr);
     }
-    return incognito_web_contents_;
+    return incognito_web_contents_.get();
   }
 
   void TearDown() override {
     // We must delete the incognito WC first, as that triggers observers which
     // require RenderViewHost, etc., that in turn are deleted by
     // RenderViewHostTestHarness::TearDown().
-    delete incognito_web_contents_;
+    incognito_web_contents_.reset();
     PresentationServiceDelegateImplTest::TearDown();
   }
 
-  content::WebContents* incognito_web_contents_;
+  std::unique_ptr<content::WebContents> incognito_web_contents_;
 };
 
 TEST_F(PresentationServiceDelegateImplTest, AddScreenAvailabilityListener) {

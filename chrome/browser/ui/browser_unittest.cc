@@ -28,8 +28,8 @@ class BrowserUnitTest : public BrowserWithTestWindowTest {
 
   // Caller owns the memory.
   std::unique_ptr<WebContents> CreateTestWebContents() {
-    return base::WrapUnique(WebContentsTester::CreateTestWebContents(
-        profile(), SiteInstance::Create(profile())));
+    return WebContentsTester::CreateTestWebContents(
+        profile(), SiteInstance::Create(profile()));
   }
 
  private:

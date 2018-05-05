@@ -61,9 +61,11 @@ TestWebContents::TestWebContents(BrowserContext* browser_context)
   }
 }
 
-TestWebContents* TestWebContents::Create(BrowserContext* browser_context,
-                                         scoped_refptr<SiteInstance> instance) {
-  TestWebContents* test_web_contents = new TestWebContents(browser_context);
+std::unique_ptr<TestWebContents> TestWebContents::Create(
+    BrowserContext* browser_context,
+    scoped_refptr<SiteInstance> instance) {
+  std::unique_ptr<TestWebContents> test_web_contents(
+      new TestWebContents(browser_context));
   test_web_contents->Init(CreateParams(browser_context, std::move(instance)));
   return test_web_contents;
 }
@@ -262,8 +264,8 @@ bool TestWebContents::CreateRenderViewForRenderManager(
 }
 
 std::unique_ptr<WebContents> TestWebContents::Clone() {
-  std::unique_ptr<WebContentsImpl> contents = base::WrapUnique(
-      Create(GetBrowserContext(), SiteInstance::Create(GetBrowserContext())));
+  std::unique_ptr<WebContentsImpl> contents =
+      Create(GetBrowserContext(), SiteInstance::Create(GetBrowserContext()));
   contents->GetController().CopyStateFrom(controller_, true);
   return contents;
 }
