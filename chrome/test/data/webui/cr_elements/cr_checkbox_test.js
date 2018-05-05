@@ -8,14 +8,14 @@ suite('cr-checkbox', function() {
   setup(function() {
     PolymerTest.clearBody();
     document.body.innerHTML = `
-      <cr-checkbox id="checkbox">
-        <div id="label">label
-          <a id="link">link</a>
+      <cr-checkbox>
+        <div>label
+          <a>link</a>
         </div>
       </cr-checkbox>
     `;
 
-    checkbox = document.getElementById('checkbox');
+    checkbox = document.querySelector('cr-checkbox');
     assertNotChecked();
   });
 
@@ -143,7 +143,7 @@ suite('cr-checkbox', function() {
     });
 
     assertNotChecked();
-    link = document.getElementById('link');
+    link = document.querySelector('a');
     link.click();
     assertNotChecked();
 
@@ -152,5 +152,30 @@ suite('cr-checkbox', function() {
 
     // Wait 1 cycle to make sure change-event was not fired.
     setTimeout(done);
+  });
+
+  test('InitializingWithTabindex', function() {
+    PolymerTest.clearBody();
+    document.body.innerHTML = `
+      <cr-checkbox id="checkbox" tabindex="-1"></cr-checkbox>
+    `;
+
+    checkbox = document.querySelector('cr-checkbox');
+
+    // Should not override tabindex if it is initialized.
+    assertEquals(-1, checkbox.tabIndex);
+  });
+
+
+  test('InitializingWithDisabled', function() {
+    PolymerTest.clearBody();
+    document.body.innerHTML = `
+      <cr-checkbox id="checkbox" disabled></cr-checkbox>
+    `;
+
+    checkbox = document.querySelector('cr-checkbox');
+
+    // Initializing with disabled should make tabindex="-1".
+    assertEquals(-1, checkbox.tabIndex);
   });
 });
