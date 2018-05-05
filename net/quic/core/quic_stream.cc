@@ -81,9 +81,7 @@ QuicStream::QuicStream(QuicStreamId id, QuicSession* session, bool is_static)
       buffered_data_threshold_(GetQuicFlag(FLAGS_quic_buffered_data_threshold)),
       is_static_(is_static) {
   SetFromConfig();
-  if (session_->register_streams_early()) {
-    session_->RegisterStreamPriority(id, is_static_, priority_);
-  }
+  session_->RegisterStreamPriority(id, is_static_, priority_);
 }
 
 QuicStream::~QuicStream() {
@@ -94,7 +92,7 @@ QuicStream::~QuicStream() {
         << send_buffer_.stream_bytes_outstanding()
         << ", fin_outstanding: " << fin_outstanding_;
   }
-  if (session_ != nullptr && session_->register_streams_early()) {
+  if (session_ != nullptr) {
     session_->UnregisterStreamPriority(id(), is_static_);
   }
 }

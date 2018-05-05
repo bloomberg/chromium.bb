@@ -60,9 +60,6 @@ QUIC_FLAG(double, FLAGS_quic_bbr_rtt_variation_weight, 0.0f)
 // Congestion window gain for QUIC BBR during PROBE_BW phase.
 QUIC_FLAG(double, FLAGS_quic_bbr_cwnd_gain, 2.0f)
 
-// Add the equivalent number of bytes as 3 TCP TSO segments to QUIC's BBR CWND.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_add_tso_cwnd, false)
-
 // Simplify QUIC\'s adaptive time loss detection to measure the necessary
 // reordering window for every spurious retransmit.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_adaptive_time_loss, false)
@@ -141,10 +138,6 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_fast_path_on_stream_data_acked,
           true)
 
-// If true, QUIC streams are registered in the QuicStream constructor instead
-// of in the QuicSpdyStream constructor.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_register_streams_early2, true)
-
 // If this flag and
 // FLAGS_quic_reloadable_flag_quic_fix_write_out_of_order_queued_packet_crash
 // are both ture, QUIC will clear queued packets before sending connectivity
@@ -153,19 +146,6 @@ QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_clear_queued_packets_before_sending_connectivity_probing,
     false)
-
-// When true, this flag has QuicConnection call
-// QuicConnectionVisitorInterface::OnSuccessfulVersionNegotiation earlier when
-// processing the packet header.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_server_early_version_negotiation,
-          true)
-
-// If true, QUIC will always discard outgoing packets after connection close.
-// Currently out-of-order outgoing packets are not discarded
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_always_discard_packets_after_close,
-          true)
 
 // If true, when a stream is reset by peer with error, it should not be added to
 // zombie streams.
@@ -188,11 +168,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_path_degrading_alarm2, true)
 // Remove special logic for headers stream from QuicWriteBlockedList and
 // replace it with a static streams map.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_register_static_streams, true)
-
-// Base the QUIC crypto retransmission timer on the last sent crypto packet.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_better_crypto_retransmission,
-          true)
 
 // If true, enable server proxy support in QUIC.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_server_proxy2, false)
@@ -250,3 +225,24 @@ QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_early_retransmit_detects_in_flight_packet_lost,
     false)
+
+// Enables the 1RTO connection option which only sends one packet on QUIC
+// retransmission timeout, instead of 2.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_one_rto, false)
+
+// Modify QuicVersionManager so that the QuicTransportVersionVector returned by
+// GetSupportedTransportVersions contains a unique list of entries.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_version_manager_dedupe_transport_versions,
+          false)
+
+// When true, the NRTT QUIC connection option causes receivers to ignore
+// incoming initial RTT values.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_no_irtt, false)
+
+// Fixed QUIC's PROBE_BW logic to exit low gain mode based on bytes_in_flight,
+// not prior_in_flight.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_fix_probe_bw, false)
+
+// If true, changes when the dispatcher changes internal state.
+QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_enable_l1_munge, false)

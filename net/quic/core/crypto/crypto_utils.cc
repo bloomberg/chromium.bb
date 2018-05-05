@@ -281,7 +281,7 @@ uint64_t CryptoUtils::ComputeLeafCertHash(QuicStringPiece cert) {
 
 QuicErrorCode CryptoUtils::ValidateServerHello(
     const CryptoHandshakeMessage& server_hello,
-    const QuicTransportVersionVector& negotiated_versions,
+    const ParsedQuicVersionVector& negotiated_versions,
     QuicString* error_details) {
   DCHECK(error_details != nullptr);
 
@@ -296,12 +296,20 @@ QuicErrorCode CryptoUtils::ValidateServerHello(
     *error_details = "server hello missing version list";
     return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
   }
+
+  return ValidateServerHelloVersions(supported_version_labels,
+                                     negotiated_versions, error_details);
+}
+
+QuicErrorCode CryptoUtils::ValidateServerHelloVersions(
+    const QuicVersionLabelVector& server_versions,
+    const ParsedQuicVersionVector& negotiated_versions,
+    QuicString* error_details) {
   if (!negotiated_versions.empty()) {
-    bool mismatch =
-        supported_version_labels.size() != negotiated_versions.size();
-    for (size_t i = 0; i < supported_version_labels.size() && !mismatch; ++i) {
-      mismatch = QuicVersionLabelToQuicVersion(supported_version_labels[i]) !=
-                 negotiated_versions[i];
+    bool mismatch = server_versions.size() != negotiated_versions.size();
+    for (size_t i = 0; i < server_versions.size() && !mismatch; ++i) {
+      mismatch =
+          server_versions[i] != CreateQuicVersionLabel(negotiated_versions[i]);
     }
     // The server sent a list of supported versions, and the connection
     // reports that there was a version negotiation during the handshake.
@@ -316,8 +324,8 @@ QuicErrorCode CryptoUtils::ValidateServerHello(
 
 QuicErrorCode CryptoUtils::ValidateClientHello(
     const CryptoHandshakeMessage& client_hello,
-    QuicTransportVersion version,
-    const QuicTransportVersionVector& supported_versions,
+    ParsedQuicVersion version,
+    const ParsedQuicVersionVector& supported_versions,
     QuicString* error_details) {
   if (client_hello.tag() != kCHLO) {
     *error_details = "Bad tag";
@@ -334,14 +342,21 @@ QuicErrorCode CryptoUtils::ValidateClientHello(
     *error_details = "client hello missing version list";
     return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
   }
-  QuicTransportVersion client_version =
-      QuicVersionLabelToQuicVersion(client_version_label);
-  if (client_version != version) {
-    // Just because client_version is a valid version enum doesn't mean that
-    // this server actually supports that version, so we check to see if
-    // it's actually in the supported versions list.
+  return ValidateClientHelloVersion(client_version_label, version,
+                                    supported_versions, error_details);
+}
+
+QuicErrorCode CryptoUtils::ValidateClientHelloVersion(
+    QuicVersionLabel client_version,
+    ParsedQuicVersion connection_version,
+    const ParsedQuicVersionVector& supported_versions,
+    QuicString* error_details) {
+  if (client_version != CreateQuicVersionLabel(connection_version)) {
+    // Check to see if |client_version| is actually on the supported versions
+    // list. If not, the server doesn't support that version and it's not a
+    // downgrade attack.
     for (size_t i = 0; i < supported_versions.size(); ++i) {
-      if (client_version == supported_versions[i]) {
+      if (client_version == CreateQuicVersionLabel(supported_versions[i])) {
         *error_details = "Downgrade attack detected";
         return QUIC_VERSION_NEGOTIATION_MISMATCH;
       }

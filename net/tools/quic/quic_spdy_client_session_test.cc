@@ -140,6 +140,13 @@ TEST_P(QuicSpdyClientSessionTest, CryptoConnect) {
 }
 
 TEST_P(QuicSpdyClientSessionTest, NoEncryptionAfterInitialEncryption) {
+  if (GetParam().handshake_protocol == PROTOCOL_TLS1_3) {
+    // This test relies on resumption and is QUIC crypto specific, so it is
+    // disabled for TLS.
+    // TODO(nharper): Add support for resumption to the TLS handshake, and fix
+    // this test to not rely on QUIC crypto.
+    return;
+  }
   // Complete a handshake in order to prime the crypto config for 0-RTT.
   CompleteCryptoHandshake();
 
@@ -178,6 +185,12 @@ TEST_P(QuicSpdyClientSessionTest, NoEncryptionAfterInitialEncryption) {
 }
 
 TEST_P(QuicSpdyClientSessionTest, MaxNumStreamsWithNoFinOrRst) {
+  if (GetParam().handshake_protocol == PROTOCOL_TLS1_3) {
+    // This test relies on the MIDS transport parameter, which is not yet
+    // supported in TLS 1.3.
+    // TODO(nharper): Add support for Transport Parameters in the TLS handshake.
+    return;
+  }
   EXPECT_CALL(*connection_, SendControlFrame(_)).Times(AnyNumber());
   EXPECT_CALL(*connection_, OnStreamReset(_, _)).Times(AnyNumber());
 
@@ -198,6 +211,12 @@ TEST_P(QuicSpdyClientSessionTest, MaxNumStreamsWithNoFinOrRst) {
 }
 
 TEST_P(QuicSpdyClientSessionTest, MaxNumStreamsWithRst) {
+  if (GetParam().handshake_protocol == PROTOCOL_TLS1_3) {
+    // This test relies on the MIDS transport parameter, which is not yet
+    // supported in TLS 1.3.
+    // TODO(nharper): Add support for Transport Parameters in the TLS handshake.
+    return;
+  }
   EXPECT_CALL(*connection_, SendControlFrame(_)).Times(AnyNumber());
   EXPECT_CALL(*connection_, OnStreamReset(_, _)).Times(AnyNumber());
 
@@ -219,6 +238,12 @@ TEST_P(QuicSpdyClientSessionTest, MaxNumStreamsWithRst) {
 }
 
 TEST_P(QuicSpdyClientSessionTest, ResetAndTrailers) {
+  if (GetParam().handshake_protocol == PROTOCOL_TLS1_3) {
+    // This test relies on the MIDS transport parameter, which is not yet
+    // supported in TLS 1.3.
+    // TODO(nharper): Add support for Transport Parameters in the TLS handshake.
+    return;
+  }
   // Tests the situation in which the client sends a RST at the same time that
   // the server sends trailing headers (trailers). Receipt of the trailers by
   // the client should result in all outstanding stream state being tidied up

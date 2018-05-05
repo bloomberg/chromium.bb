@@ -123,11 +123,6 @@ class QuicStreamTest : public QuicTestWithParam<bool> {
         .Times(AnyNumber());
     write_blocked_list_ =
         QuicSessionPeer::GetWriteBlockedStreams(session_.get());
-    if (!session_->register_streams_early()) {
-      write_blocked_list_->RegisterStream(kTestStreamId,
-                                          /*is_static_stream=*/false,
-                                          kV3HighestPriority);
-    }
   }
 
   bool fin_sent() { return QuicStreamPeer::FinSent(stream_); }

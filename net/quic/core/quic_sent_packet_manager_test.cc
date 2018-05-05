@@ -1445,10 +1445,11 @@ TEST_P(QuicSentPacketManagerTest, RetransmissionTimeout) {
     EXPECT_EQ(102 * kDefaultLength,
               QuicSentPacketManagerPeer::GetBytesInFlight(&manager_));
   } else {
-    EXPECT_TRUE(manager_.HasPendingRetransmissions());
+    ASSERT_TRUE(manager_.HasPendingRetransmissions());
     EXPECT_EQ(100 * kDefaultLength,
               QuicSentPacketManagerPeer::GetBytesInFlight(&manager_));
     RetransmitNextPacket(101);
+    ASSERT_TRUE(manager_.HasPendingRetransmissions());
     RetransmitNextPacket(102);
     EXPECT_FALSE(manager_.HasPendingRetransmissions());
   }
@@ -1487,6 +1488,53 @@ TEST_P(QuicSentPacketManagerTest, RetransmissionTimeout) {
     EXPECT_TRUE(manager_.OnAckFrameEnd(clock_.Now()));
   } else {
     EXPECT_TRUE(manager_.OnIncomingAck(ack_frame, clock_.Now()));
+  }
+}
+
+TEST_P(QuicSentPacketManagerTest, RetransmissionTimeoutOnePacket) {
+  SetQuicReloadableFlag(quic_one_rto, true);
+  // Set the 1RTO connection option.
+  QuicConfig client_config;
+  QuicTagVector options;
+  options.push_back(k1RTO);
+  QuicSentPacketManagerPeer::SetPerspective(&manager_, Perspective::IS_CLIENT);
+  client_config.SetConnectionOptionsToSend(options);
+  EXPECT_CALL(*network_change_visitor_, OnCongestionChange());
+  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+  EXPECT_CALL(*send_algorithm_, PacingRate(_))
+      .WillRepeatedly(Return(QuicBandwidth::Zero()));
+  EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
+      .WillRepeatedly(Return(10 * kDefaultTCPMSS));
+  manager_.SetFromConfig(client_config);
+  EXPECT_CALL(*send_algorithm_, CanSend(_)).WillRepeatedly(Return(true));
+
+  StrictMock<MockDebugDelegate> debug_delegate;
+  manager_.SetDebugDelegate(&debug_delegate);
+
+  // Send 100 packets.
+  const size_t kNumSentPackets = 100;
+  for (size_t i = 1; i <= kNumSentPackets; ++i) {
+    SendDataPacket(i);
+  }
+
+  EXPECT_FALSE(manager_.MaybeRetransmitTailLossProbe());
+  if (manager_.session_decides_what_to_write()) {
+    EXPECT_CALL(notifier_, RetransmitFrames(_, _))
+        .Times(1)
+        .WillOnce(WithArgs<1>(Invoke([this](TransmissionType type) {
+          RetransmitDataPacket(101, type);
+        })));
+  }
+  manager_.OnRetransmissionTimeout();
+  if (manager_.session_decides_what_to_write()) {
+    EXPECT_EQ(101 * kDefaultLength,
+              QuicSentPacketManagerPeer::GetBytesInFlight(&manager_));
+  } else {
+    ASSERT_TRUE(manager_.HasPendingRetransmissions());
+    EXPECT_EQ(100 * kDefaultLength,
+              QuicSentPacketManagerPeer::GetBytesInFlight(&manager_));
+    RetransmitNextPacket(101);
+    EXPECT_FALSE(manager_.HasPendingRetransmissions());
   }
 }
 
@@ -1748,11 +1796,7 @@ TEST_P(QuicSentPacketManagerTest, GetTransmissionTimeCryptoHandshake) {
   }
 
   // The retransmission time should now be twice as far in the future.
-  if (GetQuicReloadableFlag(quic_better_crypto_retransmission)) {
-    expected_time = crypto_packet_send_time + srtt * 2 * 1.5;
-  } else {
-    expected_time = clock_.Now() + srtt * 2 * 1.5;
-  }
+  expected_time = crypto_packet_send_time + srtt * 2 * 1.5;
   EXPECT_EQ(expected_time, manager_.GetRetransmissionTime());
 }
 
@@ -1800,11 +1844,7 @@ TEST_P(QuicSentPacketManagerTest,
   }
 
   // The retransmission time should now be twice as far in the future.
-  if (GetQuicReloadableFlag(quic_better_crypto_retransmission)) {
-    expected_time = crypto_packet_send_time + srtt * 2 * 2;
-  } else {
-    expected_time = clock_.Now() + srtt * 2 * 2;
-  }
+  expected_time = crypto_packet_send_time + srtt * 2 * 2;
   EXPECT_EQ(expected_time, manager_.GetRetransmissionTime());
 }
 

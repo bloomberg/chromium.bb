@@ -228,7 +228,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   // certificate related fields.
   void FillInchoateClientHello(
       const QuicServerId& server_id,
-      const QuicTransportVersion preferred_version,
+      const ParsedQuicVersion preferred_version,
       const CachedState* cached,
       QuicRandom* rand,
       bool demand_x509_proof,
@@ -252,7 +252,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   QuicErrorCode FillClientHello(
       const QuicServerId& server_id,
       QuicConnectionId connection_id,
-      const QuicTransportVersion preferred_version,
+      const ParsedQuicVersion preferred_version,
       const CachedState* cached,
       QuicWallTime now,
       QuicRandom* rand,
@@ -288,8 +288,8 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   QuicErrorCode ProcessServerHello(
       const CryptoHandshakeMessage& server_hello,
       QuicConnectionId connection_id,
-      QuicTransportVersion version,
-      const QuicTransportVersionVector& negotiated_versions,
+      ParsedQuicVersion version,
+      const ParsedQuicVersionVector& negotiated_versions,
       CachedState* cached,
       QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> out_params,
       QuicString* error_details);

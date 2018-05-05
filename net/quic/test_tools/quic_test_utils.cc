@@ -505,7 +505,7 @@ TestQuicSpdyServerSession::TestQuicSpdyServerSession(
   ON_CALL(helper_, GenerateConnectionIdForReject(_))
       .WillByDefault(
           testing::Return(connection->random_generator()->RandUint64()));
-  ON_CALL(helper_, CanAcceptClientHello(_, _, _))
+  ON_CALL(helper_, CanAcceptClientHello(_, _, _, _, _))
       .WillByDefault(testing::Return(true));
 }
 

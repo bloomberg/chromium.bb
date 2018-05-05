@@ -107,6 +107,8 @@ QuicConnectionId QuartcCryptoServerStreamHelper::GenerateConnectionIdForReject(
 
 bool QuartcCryptoServerStreamHelper::CanAcceptClientHello(
     const CryptoHandshakeMessage& message,
+    const QuicSocketAddress& client_address,
+    const QuicSocketAddress& peer_address,
     const QuicSocketAddress& self_address,
     string* error_details) const {
   return true;
@@ -236,9 +238,6 @@ void QuartcSession::CloseStream(QuicStreamId stream_id) {
     // When CloseStream has been called recursively (via
     // QuicStream::OnClose), the stream is already closed so return.
     return;
-  }
-  if (!register_streams_early()) {
-    write_blocked_streams()->UnregisterStream(stream_id, /*is_static=*/false);
   }
   QuicSession::CloseStream(stream_id);
 }
@@ -423,12 +422,7 @@ std::unique_ptr<QuartcStream> QuartcSession::CreateDataStream(
     // Register the stream to the QuicWriteBlockedList. |priority| is clamped
     // between 0 and 7, with 0 being the highest priority and 7 the lowest
     // priority.
-    if (!register_streams_early()) {
-      write_blocked_streams()->RegisterStream(
-          stream->id(), /* is_static_stream= */ false, priority);
-    } else {
-      write_blocked_streams()->UpdateStreamPriority(stream->id(), priority);
-    }
+    write_blocked_streams()->UpdateStreamPriority(stream->id(), priority);
 
     if (IsIncomingStream(id)) {
       DCHECK(session_delegate_);

@@ -182,13 +182,12 @@ TEST_F(QuicCryptoClientConfigTest, InchoateChlo) {
   CryptoHandshakeMessage msg;
   QuicServerId server_id("www.google.com", 443, PRIVACY_MODE_DISABLED);
   MockRandom rand;
-  config.FillInchoateClientHello(server_id, QuicTransportVersionMax(), &state,
-                                 &rand,
+  config.FillInchoateClientHello(server_id, QuicVersionMax(), &state, &rand,
                                  /* demand_x509_proof= */ true, params, &msg);
 
   QuicVersionLabel cver;
   EXPECT_EQ(QUIC_NO_ERROR, msg.GetVersionLabel(kVER, &cver));
-  EXPECT_EQ(QuicVersionToQuicVersionLabel(QuicTransportVersionMax()), cver);
+  EXPECT_EQ(CreateQuicVersionLabel(QuicVersionMax()), cver);
   QuicStringPiece proof_nonce;
   EXPECT_TRUE(msg.GetStringPiece(kNONP, &proof_nonce));
   EXPECT_EQ(QuicString(32, 'r'), proof_nonce);
@@ -218,8 +217,7 @@ TEST_F(QuicCryptoClientConfigTest, InchoateChloSecure) {
   CryptoHandshakeMessage msg;
   QuicServerId server_id("www.google.com", 443, PRIVACY_MODE_DISABLED);
   MockRandom rand;
-  config.FillInchoateClientHello(server_id, QuicTransportVersionMax(), &state,
-                                 &rand,
+  config.FillInchoateClientHello(server_id, QuicVersionMax(), &state, &rand,
                                  /* demand_x509_proof= */ true, params, &msg);
 
   QuicTag pdmd;
@@ -250,8 +248,7 @@ TEST_F(QuicCryptoClientConfigTest, InchoateChloSecureWithSCIDNoEXPY) {
   CryptoHandshakeMessage msg;
   QuicServerId server_id("www.google.com", 443, PRIVACY_MODE_DISABLED);
   MockRandom rand;
-  config.FillInchoateClientHello(server_id, QuicTransportVersionMax(), &state,
-                                 &rand,
+  config.FillInchoateClientHello(server_id, QuicVersionMax(), &state, &rand,
                                  /* demand_x509_proof= */ true, params, &msg);
 
   QuicStringPiece scid;
@@ -279,8 +276,7 @@ TEST_F(QuicCryptoClientConfigTest, InchoateChloSecureWithSCID) {
   CryptoHandshakeMessage msg;
   QuicServerId server_id("www.google.com", 443, PRIVACY_MODE_DISABLED);
   MockRandom rand;
-  config.FillInchoateClientHello(server_id, QuicTransportVersionMax(), &state,
-                                 &rand,
+  config.FillInchoateClientHello(server_id, QuicVersionMax(), &state, &rand,
                                  /* demand_x509_proof= */ true, params, &msg);
 
   QuicStringPiece scid;
@@ -299,26 +295,25 @@ TEST_F(QuicCryptoClientConfigTest, FillClientHello) {
   MockRandom rand;
   CryptoHandshakeMessage chlo;
   QuicServerId server_id("www.google.com", 443, PRIVACY_MODE_DISABLED);
-  config.FillClientHello(server_id, kConnectionId, QuicTransportVersionMax(),
-                         &state, QuicWallTime::Zero(), &rand,
+  config.FillClientHello(server_id, kConnectionId, QuicVersionMax(), &state,
+                         QuicWallTime::Zero(), &rand,
                          nullptr,  // channel_id_key
                          params, &chlo, &error_details);
 
   // Verify that the version label has been set correctly in the CHLO.
   QuicVersionLabel cver;
   EXPECT_EQ(QUIC_NO_ERROR, chlo.GetVersionLabel(kVER, &cver));
-  EXPECT_EQ(QuicVersionToQuicVersionLabel(QuicTransportVersionMax()), cver);
+  EXPECT_EQ(CreateQuicVersionLabel(QuicVersionMax()), cver);
 }
 
 TEST_F(QuicCryptoClientConfigTest, ProcessServerDowngradeAttack) {
-  QuicTransportVersionVector supported_versions =
-      AllSupportedTransportVersions();
+  ParsedQuicVersionVector supported_versions = AllSupportedVersions();
   if (supported_versions.size() == 1) {
     // No downgrade attack is possible if the client only supports one version.
     return;
   }
 
-  QuicTransportVersionVector supported_version_vector;
+  ParsedQuicVersionVector supported_version_vector;
   for (size_t i = supported_versions.size(); i > 0; --i) {
     supported_version_vector.push_back(supported_versions[i - 1]);
   }
@@ -589,8 +584,8 @@ TEST_F(QuicCryptoClientConfigTest, ServerNonceinSHLO) {
   CryptoHandshakeMessage msg;
   msg.set_tag(kSHLO);
   // Choose the latest version.
-  QuicTransportVersionVector supported_versions;
-  QuicTransportVersion version = AllSupportedTransportVersions().front();
+  ParsedQuicVersionVector supported_versions;
+  ParsedQuicVersion version = AllSupportedVersions().front();
   supported_versions.push_back(version);
   msg.SetVersionVector(kVER, supported_versions);
 

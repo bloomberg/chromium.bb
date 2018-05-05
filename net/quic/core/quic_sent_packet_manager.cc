@@ -75,6 +75,7 @@ QuicSentPacketManager::QuicSentPacketManager(
       consecutive_crypto_retransmission_count_(0),
       pending_timer_transmission_count_(0),
       max_tail_loss_probes_(kDefaultMaxTailLossProbes),
+      max_rto_packets_(kMaxRetransmissionsOnTimeout),
       enable_half_rtt_tail_loss_probe_(false),
       using_pacing_(false),
       use_new_rto_(false),
@@ -94,10 +95,7 @@ QuicSentPacketManager::QuicSentPacketManager(
       rtt_updated_(false),
       acked_packets_iter_(last_ack_frame_.packets.rbegin()),
       use_path_degrading_alarm_(
-          GetQuicReloadableFlag(quic_path_degrading_alarm2)),
-      use_better_crypto_retransmission_(
-          GetQuicReloadableFlag(quic_better_crypto_retransmission)) {
-  QUIC_FLAG_COUNT(quic_reloadable_flag_quic_better_crypto_retransmission);
+          GetQuicReloadableFlag(quic_path_degrading_alarm2)) {
   SetSendAlgorithm(congestion_control_type);
 }
 
@@ -106,8 +104,13 @@ QuicSentPacketManager::~QuicSentPacketManager() {}
 void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
   if (config.HasReceivedInitialRoundTripTimeUs() &&
       config.ReceivedInitialRoundTripTimeUs() > 0) {
-    SetInitialRtt(QuicTime::Delta::FromMicroseconds(
-        config.ReceivedInitialRoundTripTimeUs()));
+    if (GetQuicReloadableFlag(quic_no_irtt) &&
+        config.HasClientSentConnectionOption(kNRTT, perspective_)) {
+      QUIC_FLAG_COUNT(quic_reloadable_flag_quic_no_irtt);
+    } else {
+      SetInitialRtt(QuicTime::Delta::FromMicroseconds(
+          config.ReceivedInitialRoundTripTimeUs()));
+    }
   } else if (config.HasInitialRoundTripTimeUsToSend() &&
              config.GetInitialRoundTripTimeUsToSend() > 0) {
     SetInitialRtt(QuicTime::Delta::FromMicroseconds(
@@ -194,6 +197,11 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
       config.HasClientSentConnectionOption(k1TLP, perspective_)) {
     QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_one_tlp, 1, 2);
     max_tail_loss_probes_ = 1;
+  }
+  if (GetQuicReloadableFlag(quic_one_rto) &&
+      config.HasClientSentConnectionOption(k1RTO, perspective_)) {
+    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_one_rto);
+    max_rto_packets_ = 1;
   }
   if (config.HasClientSentConnectionOption(kTLPR, perspective_)) {
     enable_half_rtt_tail_loss_probe_ = true;
@@ -768,7 +776,7 @@ void QuicSentPacketManager::RetransmitRtoPackets() {
        it != unacked_packets_.end(); ++it, ++packet_number) {
     if ((!session_decides_what_to_write() || it->state == OUTSTANDING) &&
         unacked_packets_.HasRetransmittableFrames(*it) &&
-        pending_timer_transmission_count_ < kMaxRetransmissionsOnTimeout) {
+        pending_timer_transmission_count_ < max_rto_packets_) {
       if (session_decides_what_to_write()) {
         retransmissions.push_back(packet_number);
       } else {
@@ -913,11 +921,8 @@ const QuicTime QuicSentPacketManager::GetRetransmissionTime() const {
   }
   switch (GetRetransmissionMode()) {
     case HANDSHAKE_MODE:
-      if (use_better_crypto_retransmission_) {
-        return unacked_packets_.GetLastCryptoPacketSentTime() +
-               GetCryptoRetransmissionDelay();
-      }
-      return clock_->ApproximateNow() + GetCryptoRetransmissionDelay();
+      return unacked_packets_.GetLastCryptoPacketSentTime() +
+             GetCryptoRetransmissionDelay();
     case LOSS_MODE:
       return loss_algorithm_->GetLossTimeout();
     case TLP_MODE: {

@@ -18,6 +18,8 @@ QuicConnectionId QuicSimpleServerSessionHelper::GenerateConnectionIdForReject(
 
 bool QuicSimpleServerSessionHelper::CanAcceptClientHello(
     const CryptoHandshakeMessage& message,
+    const QuicSocketAddress& client_address,
+    const QuicSocketAddress& peer_address,
     const QuicSocketAddress& self_address,
     std::string* error_details) const {
   return true;

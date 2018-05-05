@@ -92,9 +92,6 @@ class BbrSenderTest : public QuicTest {
                             /*connection_id=*/43),
         receiver_multiplexer_("Receiver multiplexer",
                               {&receiver_, &competing_receiver_}) {
-    // These will be changed by the appropriate tests as necessary.
-    SetQuicReloadableFlag(quic_bbr_add_tso_cwnd, false);
-
     rtt_stats_ = bbr_sender_.connection()->sent_packet_manager().GetRttStats();
     sender_ = SetupBbrSender(&bbr_sender_);
 
@@ -258,8 +255,6 @@ TEST_F(BbrSenderTest, SetInitialCongestionWindow) {
 
 // Test a simple long data transfer in the default setup.
 TEST_F(BbrSenderTest, SimpleTransfer) {
-  // Adding TSO CWND causes packet loss before exiting startup.
-  SetQuicReloadableFlag(quic_bbr_add_tso_cwnd, false);
   // Disable Ack Decimation on the receiver, because it can increase srtt.
   QuicConnectionPeer::SetAckMode(receiver_.connection(),
                                  QuicConnection::AckMode::TCP_ACKING);
@@ -309,7 +304,6 @@ TEST_F(BbrSenderTest, SimpleTransferSmallBuffer) {
 
 // Test a simple long data transfer with 2 rtts of aggregation.
 TEST_F(BbrSenderTest, SimpleTransfer2RTTAggregationBytes) {
-  SetQuicReloadableFlag(quic_bbr_add_tso_cwnd, false);
   CreateDefaultSetup();
   // 2 RTTs of aggregation, with a max of 10kb.
   EnableAggregation(10 * 1024, 2 * kTestRtt);
@@ -368,76 +362,7 @@ TEST_F(BbrSenderTest, SimpleTransferAckDecimation) {
 }
 
 // Test a simple long data transfer with 2 rtts of aggregation.
-TEST_F(BbrSenderTest, SimpleTransfer2RTTAggregationBytes4) {
-  SetQuicReloadableFlag(quic_bbr_add_tso_cwnd, false);
-  // Disable Ack Decimation on the receiver, because it can increase srtt.
-  QuicConnectionPeer::SetAckMode(receiver_.connection(),
-                                 QuicConnection::AckMode::TCP_ACKING);
-  CreateDefaultSetup();
-  // Enable ack aggregation that forces the queue to be drained.
-  SetConnectionOption(kBBR1);
-
-  // 2 RTTs of aggregation, with a max of 10kb.
-  EnableAggregation(10 * 1024, 2 * kTestRtt);
-
-  // Transfer 12MB.
-  DoSimpleTransfer(12 * 1024 * 1024, QuicTime::Delta::FromSeconds(35));
-  EXPECT_EQ(BbrSender::PROBE_BW, sender_->ExportDebugState().mode);
-  // It's possible to read a bandwidth as much as 50% too high with aggregation.
-  EXPECT_LE(kTestLinkBandwidth * 0.99f,
-            sender_->ExportDebugState().max_bandwidth);
-  // TODO(ianswett): Tighten this bound once we understand why BBR is
-  // overestimating bandwidth with aggregation. b/36022633
-  EXPECT_GE(kTestLinkBandwidth * 1.5f,
-            sender_->ExportDebugState().max_bandwidth);
-  // TODO(ianswett): Expect 0 packets are lost once BBR no longer measures
-  // bandwidth higher than the link rate.
-  // The margin here is high, because the aggregation greatly increases
-  // smoothed rtt.
-  EXPECT_GE(kTestRtt * 3.5, rtt_stats_->smoothed_rtt());
-  ExpectApproxEq(kTestRtt, rtt_stats_->min_rtt(), 0.12f);
-}
-
-// Test a simple long data transfer with 2 rtts of aggregation.
-TEST_F(BbrSenderTest, SimpleTransferAckDecimation4) {
-  // Decrease the CWND gain so extra CWND is required with stretch acks.
-  FLAGS_quic_bbr_cwnd_gain = 1.0;
-  sender_ = new BbrSender(
-      rtt_stats_,
-      QuicSentPacketManagerPeer::GetUnackedPacketMap(
-          QuicConnectionPeer::GetSentPacketManager(bbr_sender_.connection())),
-      kInitialCongestionWindowPackets, kDefaultMaxCongestionWindowPackets,
-      &random_);
-  QuicConnectionPeer::SetSendAlgorithm(bbr_sender_.connection(), sender_);
-  // Enable Ack Decimation on the receiver.
-  QuicConnectionPeer::SetAckMode(receiver_.connection(),
-                                 QuicConnection::AckMode::ACK_DECIMATION);
-  CreateDefaultSetup();
-  // Enable ack aggregation that forces the queue to be drained.
-  SetConnectionOption(kBBR1);
-
-  // Transfer 12MB.
-  DoSimpleTransfer(12 * 1024 * 1024, QuicTime::Delta::FromSeconds(35));
-  EXPECT_EQ(BbrSender::PROBE_BW, sender_->ExportDebugState().mode);
-  // It's possible to read a bandwidth as much as 50% too high with aggregation.
-  EXPECT_LE(kTestLinkBandwidth * 0.99f,
-            sender_->ExportDebugState().max_bandwidth);
-  // TODO(ianswett): Tighten this bound once we understand why BBR is
-  // overestimating bandwidth with aggregation. b/36022633
-  EXPECT_GE(kTestLinkBandwidth * 1.5f,
-            sender_->ExportDebugState().max_bandwidth);
-  // TODO(ianswett): Expect 0 packets are lost once BBR no longer measures
-  // bandwidth higher than the link rate.
-  EXPECT_FALSE(sender_->ExportDebugState().last_sample_is_app_limited);
-  // The margin here is high, because the aggregation greatly increases
-  // smoothed rtt.
-  EXPECT_GE(kTestRtt * 2, rtt_stats_->smoothed_rtt());
-  ExpectApproxEq(kTestRtt, rtt_stats_->min_rtt(), 0.1f);
-}
-
-// Test a simple long data transfer with 2 rtts of aggregation.
 TEST_F(BbrSenderTest, SimpleTransfer2RTTAggregationBytes20RTTWindow) {
-  SetQuicReloadableFlag(quic_bbr_add_tso_cwnd, false);
   // Disable Ack Decimation on the receiver, because it can increase srtt.
   QuicConnectionPeer::SetAckMode(receiver_.connection(),
                                  QuicConnection::AckMode::TCP_ACKING);
@@ -466,7 +391,6 @@ TEST_F(BbrSenderTest, SimpleTransfer2RTTAggregationBytes20RTTWindow) {
 
 // Test a simple long data transfer with 2 rtts of aggregation.
 TEST_F(BbrSenderTest, SimpleTransfer2RTTAggregationBytes40RTTWindow) {
-  SetQuicReloadableFlag(quic_bbr_add_tso_cwnd, false);
   // Disable Ack Decimation on the receiver, because it can increase srtt.
   QuicConnectionPeer::SetAckMode(receiver_.connection(),
                                  QuicConnection::AckMode::TCP_ACKING);
@@ -936,8 +860,6 @@ TEST_F(BbrSenderTest, SimpleTransfer1RTTStartup) {
 
 // Test exiting STARTUP earlier due to the 2RTT connection option.
 TEST_F(BbrSenderTest, SimpleTransfer2RTTStartup) {
-  // Adding TSO CWND causes packet loss before exiting startup.
-  SetQuicReloadableFlag(quic_bbr_add_tso_cwnd, false);
   CreateDefaultSetup();
 
   SetConnectionOption(k2RTT);
@@ -1022,8 +944,6 @@ TEST_F(BbrSenderTest, SimpleTransferLRTTStartupSmallBuffer) {
 
 // Test slower pacing after loss in STARTUP due to the BBRS connection option.
 TEST_F(BbrSenderTest, SimpleTransferSlowerStartup) {
-  // Adding TSO CWND causes packet loss before exiting startup.
-  SetQuicReloadableFlag(quic_bbr_add_tso_cwnd, false);
   CreateSmallBufferSetup();
 
   SetConnectionOption(kBBRS);
@@ -1058,8 +978,6 @@ TEST_F(BbrSenderTest, SimpleTransferSlowerStartup) {
 
 // Ensures no change in congestion window in STARTUP after loss.
 TEST_F(BbrSenderTest, SimpleTransferNoConservationInStartup) {
-  // Adding TSO CWND causes packet loss before exiting startup.
-  SetQuicReloadableFlag(quic_bbr_add_tso_cwnd, false);
   CreateSmallBufferSetup();
 
   SetConnectionOption(kBBS1);

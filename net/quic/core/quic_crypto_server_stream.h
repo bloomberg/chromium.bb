@@ -147,6 +147,8 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerStream
     // acceptable according to the visitor's policy. Otherwise, returns false
     // and populates |error_details|.
     virtual bool CanAcceptClientHello(const CryptoHandshakeMessage& message,
+                                      const QuicSocketAddress& client_address,
+                                      const QuicSocketAddress& peer_address,
                                       const QuicSocketAddress& self_address,
                                       QuicString* error_details) const = 0;
   };

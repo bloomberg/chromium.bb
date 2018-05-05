@@ -93,8 +93,6 @@ BbrSender::BbrSender(const RttStats* rtt_stats,
       max_ack_height_(kBandwidthWindowSize, 0, 0),
       aggregation_epoch_start_time_(QuicTime::Zero()),
       aggregation_epoch_bytes_(0),
-      bytes_acked_since_queue_drained_(0),
-      max_aggregation_bytes_multiplier_(0),
       min_rtt_(QuicTime::Delta::Zero()),
       min_rtt_timestamp_(QuicTime::Zero()),
       congestion_window_(initial_tcp_congestion_window * kDefaultTCPMSS),
@@ -225,12 +223,6 @@ void BbrSender::SetFromConfig(const QuicConfig& config,
       config.HasClientRequestedIndependentOption(kBBRR, perspective)) {
     rate_based_recovery_ = true;
   }
-  if (config.HasClientRequestedIndependentOption(kBBR1, perspective)) {
-    max_aggregation_bytes_multiplier_ = 1.5;
-  }
-  if (config.HasClientRequestedIndependentOption(kBBR2, perspective)) {
-    max_aggregation_bytes_multiplier_ = 2;
-  }
   if (config.HasClientRequestedIndependentOption(kBBRS, perspective)) {
     slower_startup_ = true;
   }
@@ -308,14 +300,6 @@ void BbrSender::OnCongestionEvent(bool /*rtt_updated*/,
         sampler_->total_bytes_acked() - total_bytes_acked_before;
 
     UpdateAckAggregationBytes(event_time, bytes_acked);
-    if (max_aggregation_bytes_multiplier_ > 0) {
-      if (unacked_packets_->bytes_in_flight() <=
-          1.25 * GetTargetCongestionWindow(pacing_gain_)) {
-        bytes_acked_since_queue_drained_ = 0;
-      } else {
-        bytes_acked_since_queue_drained_ += bytes_acked;
-      }
-    }
   }
 
   // Handle logic specific to PROBE_BW mode.
@@ -488,6 +472,11 @@ bool BbrSender::ShouldExtendMinRttExpiry() const {
 void BbrSender::UpdateGainCyclePhase(QuicTime now,
                                      QuicByteCount prior_in_flight,
                                      bool has_losses) {
+  QuicByteCount bytes_in_flight = prior_in_flight;
+  if (GetQuicReloadableFlag(quic_bbr_fix_probe_bw)) {
+    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_bbr_fix_probe_bw);
+    bytes_in_flight = unacked_packets_->bytes_in_flight();
+  }
   // In most cases, the cycle is advanced after an RTT passes.
   bool should_advance_gain_cycling = now - last_cycle_start_ > GetMinRtt();
 
@@ -505,7 +494,7 @@ void BbrSender::UpdateGainCyclePhase(QuicTime now,
   // queue which could have been incurred by probing prior to it.  If the number
   // of bytes in flight falls down to the estimated BDP value earlier, conclude
   // that the queue has been successfully drained and exit this cycle early.
-  if (pacing_gain_ < 1.0 && prior_in_flight <= GetTargetCongestionWindow(1)) {
+  if (pacing_gain_ < 1.0 && bytes_in_flight <= GetTargetCongestionWindow(1)) {
     should_advance_gain_cycling = true;
   }
 
@@ -516,7 +505,7 @@ void BbrSender::UpdateGainCyclePhase(QuicTime now,
     // Low gain mode will be exited immediately when the target BDP is achieved.
     if (fully_drain_queue_ && pacing_gain_ < 1 &&
         kPacingGain[cycle_current_offset_] == 1 &&
-        prior_in_flight > GetTargetCongestionWindow(1)) {
+        bytes_in_flight > GetTargetCongestionWindow(1)) {
       return;
     }
     pacing_gain_ = kPacingGain[cycle_current_offset_];
@@ -705,34 +694,8 @@ void BbrSender::CalculateCongestionWindow(QuicByteCount bytes_acked) {
   if (rtt_variance_weight_ > 0.f && !BandwidthEstimate().IsZero()) {
     target_window += rtt_variance_weight_ * rtt_stats_->mean_deviation() *
                      BandwidthEstimate();
-  } else if (max_aggregation_bytes_multiplier_ > 0 && is_at_full_bandwidth_) {
-    // Subtracting only half the bytes_acked_since_queue_drained ensures sending
-    // doesn't completely stop for a long period of time if the queue hasn't
-    // been drained recently.
-    if (max_aggregation_bytes_multiplier_ * max_ack_height_.GetBest() >
-        bytes_acked_since_queue_drained_ / 2) {
-      target_window +=
-          max_aggregation_bytes_multiplier_ * max_ack_height_.GetBest() -
-          bytes_acked_since_queue_drained_ / 2;
-    }
   } else if (is_at_full_bandwidth_) {
     target_window += max_ack_height_.GetBest();
-  }
-
-  if (GetQuicReloadableFlag(quic_bbr_add_tso_cwnd)) {
-    // QUIC doesn't have TSO, but it does have similarly quantized pacing, so
-    // allow extra CWND to make QUIC's BBR CWND identical to TCP's.
-    QuicByteCount tso_segs_goal = 0;
-    if (pacing_rate_ < QuicBandwidth::FromKBitsPerSecond(1200)) {
-      tso_segs_goal = kDefaultTCPMSS;
-    } else if (pacing_rate_ < QuicBandwidth::FromKBitsPerSecond(24000)) {
-      tso_segs_goal = 2 * kDefaultTCPMSS;
-    } else {
-      tso_segs_goal =
-          std::min(pacing_rate_ * QuicTime::Delta::FromMilliseconds(1),
-                   /* 64k */ static_cast<QuicByteCount>(1 << 16));
-    }
-    target_window += 3 * tso_segs_goal;
   }
 
   // Instead of immediately setting the target CWND as the new one, BBR grows

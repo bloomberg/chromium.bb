@@ -1573,14 +1573,9 @@ TEST_P(QuicConnectionTest, DiscardQueuedPacketsAfterConnectionClose) {
   EXPECT_FALSE(connection_.connected());
   EXPECT_EQ(1u, connection_.NumQueuedPackets());
 
-  if (GetQuicReloadableFlag(quic_always_discard_packets_after_close)) {
-    EXPECT_EQ(0u, connection_.GetStats().packets_discarded);
-    connection_.OnCanWrite();
-    EXPECT_EQ(1u, connection_.GetStats().packets_discarded);
-  } else {
-    EXPECT_QUIC_BUG(connection_.OnCanWrite(),
-                    "Attempt to write packet:1 after:2");
-  }
+  EXPECT_EQ(0u, connection_.GetStats().packets_discarded);
+  connection_.OnCanWrite();
+  EXPECT_EQ(1u, connection_.GetStats().packets_discarded);
 }
 
 TEST_P(QuicConnectionTest, ReceiveConnectivityProbingAtServer) {
@@ -5414,20 +5409,12 @@ TEST_P(QuicConnectionTest, SendConnectivityProbingWhenDisconnected) {
   EXPECT_FALSE(connection_.connected());
   EXPECT_FALSE(connection_.CanWriteStreamData());
 
-  int num_packets_sent =
-      GetQuicReloadableFlag(quic_always_discard_packets_after_close) ? 0 : 1;
-  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, 1, _, _))
-      .Times(num_packets_sent);
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, 1, _, _)).Times(0);
 
-  if (GetQuicReloadableFlag(quic_always_discard_packets_after_close)) {
-    EXPECT_QUIC_BUG(connection_.SendConnectivityProbingPacket(
-                        writer_.get(), connection_.peer_address()),
-                    "Not sending connectivity probing packet as connection is "
-                    "disconnected.");
-  } else {
-    connection_.SendConnectivityProbingPacket(writer_.get(),
-                                              connection_.peer_address());
-  }
+  EXPECT_QUIC_BUG(connection_.SendConnectivityProbingPacket(
+                      writer_.get(), connection_.peer_address()),
+                  "Not sending connectivity probing packet as connection is "
+                  "disconnected.");
 }
 
 TEST_P(QuicConnectionTest, WriteBlockedAfterClientSendsConnectivityProbe) {

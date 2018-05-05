@@ -62,11 +62,11 @@ class QUIC_EXPORT_PRIVATE CryptoHandshakeMessage {
 
   // Sets an element with the given tag to the on-the-wire representation of
   // |version|.
-  void SetVersion(QuicTag tag, QuicTransportVersion version);
+  void SetVersion(QuicTag tag, ParsedQuicVersion version);
 
   // Sets an element with the given tag to the on-the-wire representation of
   // the elements in |versions|.
-  void SetVersionVector(QuicTag tag, QuicTransportVersionVector versions);
+  void SetVersionVector(QuicTag tag, ParsedQuicVersionVector versions);
 
   // Returns the message tag.
   QuicTag tag() const { return tag_; }

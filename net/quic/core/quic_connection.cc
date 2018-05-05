@@ -316,10 +316,6 @@ QuicConnection::QuicConnection(
       received_stateless_reset_token_(0),
       last_control_frame_id_(kInvalidControlFrameId),
       is_path_degrading_(false),
-      negotiate_version_early_(
-          GetQuicReloadableFlag(quic_server_early_version_negotiation)),
-      always_discard_packets_after_close_(
-          GetQuicReloadableFlag(quic_always_discard_packets_after_close)),
       handle_write_results_for_connectivity_probe_(GetQuicReloadableFlag(
           quic_handle_write_results_for_connectivity_probe)),
       use_path_degrading_alarm_(
@@ -693,10 +689,8 @@ bool QuicConnection::OnUnauthenticatedHeader(const QuicPacketHeader& header) {
     return false;
   }
 
-  if (negotiate_version_early_ &&
-      version_negotiation_state_ != NEGOTIATED_VERSION &&
+  if (version_negotiation_state_ != NEGOTIATED_VERSION &&
       perspective_ == Perspective::IS_SERVER) {
-    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_server_early_version_negotiation);
     if (!header.version_flag) {
       // Packets should have the version flag till version negotiation is
       // done.
@@ -1805,25 +1799,6 @@ bool QuicConnection::ProcessValidatedPacket(const QuicPacketHeader& header) {
       if (debug_visitor_ != nullptr) {
         debug_visitor_->OnSuccessfulVersionNegotiation(version());
       }
-    } else if (!negotiate_version_early_) {
-      if (!header.version_flag) {
-        // Packets should have the version flag till version negotiation is
-        // done.
-        QuicString error_details =
-            QuicStrCat(ENDPOINT, "Packet ", header.packet_number,
-                       " without version flag before version negotiated.");
-        QUIC_DLOG(WARNING) << error_details;
-        CloseConnection(QUIC_INVALID_VERSION, error_details,
-                        ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
-        return false;
-      } else {
-        DCHECK_EQ(header.version, version());
-        version_negotiation_state_ = NEGOTIATED_VERSION;
-        visitor_->OnSuccessfulVersionNegotiation(version());
-        if (debug_visitor_ != nullptr) {
-          debug_visitor_->OnSuccessfulVersionNegotiation(version());
-        }
-      }
     }
   }
 
@@ -1990,9 +1965,7 @@ bool QuicConnection::CanWrite(HasRetransmittableData retransmittable) {
 }
 
 bool QuicConnection::WritePacket(SerializedPacket* packet) {
-  if (always_discard_packets_after_close_ && ShouldDiscardPacket(*packet)) {
-    QUIC_FLAG_COUNT_N(
-        quic_reloadable_flag_quic_always_discard_packets_after_close, 1, 2);
+  if (ShouldDiscardPacket(*packet)) {
     ++stats_.packets_discarded;
     return true;
   }
@@ -2004,10 +1977,6 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
     CloseConnection(QUIC_INTERNAL_ERROR, "Packet written out of order.",
                     ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
     RecordInternalErrorLocation(QUIC_CONNECTION_WRITE_PACKET);
-    return true;
-  }
-  if (!always_discard_packets_after_close_ && ShouldDiscardPacket(*packet)) {
-    ++stats_.packets_discarded;
     return true;
   }
   // Termination packets are encrypted and saved, so don't exit early.
@@ -2863,9 +2832,7 @@ bool QuicConnection::SendConnectivityProbingPacket(
     QuicPacketWriter* probing_writer,
     const QuicSocketAddress& peer_address) {
   DCHECK(peer_address.IsInitialized());
-  if (always_discard_packets_after_close_ && !connected_) {
-    QUIC_FLAG_COUNT_N(
-        quic_reloadable_flag_quic_always_discard_packets_after_close, 2, 2);
+  if (!connected_) {
     QUIC_BUG << "Not sending connectivity probing packet as connection is "
              << "disconnected.";
     return false;

@@ -610,12 +610,7 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
   bool support_server_push_;
 };
 
-class EndToEndTestWithTls : public EndToEndTest {
- protected:
-  EndToEndTestWithTls() : EndToEndTest() {
-    SetQuicReloadableFlag(quic_server_early_version_negotiation, true);
-  }
-};
+class EndToEndTestWithTls : public EndToEndTest {};
 
 // Run all end to end tests with all supported versions.
 INSTANTIATE_TEST_CASE_P(EndToEndTests,
@@ -1369,6 +1364,36 @@ TEST_P(EndToEndTest, ClientSuggestsRTT) {
   // Client suggests initial RTT, verify it is used.
   const QuicTime::Delta kInitialRTT = QuicTime::Delta::FromMicroseconds(20000);
   client_config_.SetInitialRoundTripTimeUsToSend(kInitialRTT.ToMicroseconds());
+
+  ASSERT_TRUE(Initialize());
+  EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
+  server_thread_->WaitForCryptoHandshakeConfirmed();
+
+  // Pause the server so we can access the server's internals without races.
+  server_thread_->Pause();
+  QuicDispatcher* dispatcher =
+      QuicServerPeer::GetDispatcher(server_thread_->server());
+  ASSERT_EQ(1u, dispatcher->session_map().size());
+  const QuicSentPacketManager& client_sent_packet_manager =
+      client_->client()->client_session()->connection()->sent_packet_manager();
+  const QuicSentPacketManager* server_sent_packet_manager =
+      GetSentPacketManagerFromFirstServerSession();
+
+  EXPECT_EQ(kInitialRTT,
+            client_sent_packet_manager.GetRttStats()->initial_rtt());
+  EXPECT_EQ(kInitialRTT,
+            server_sent_packet_manager->GetRttStats()->initial_rtt());
+  server_thread_->Resume();
+}
+
+TEST_P(EndToEndTest, ClientSuggestsIgnoredRTT) {
+  SetQuicReloadableFlag(quic_no_irtt, true);
+  // Client suggests initial RTT, but also specifies NRTT, so it's not used.
+  const QuicTime::Delta kInitialRTT = QuicTime::Delta::FromMicroseconds(20000);
+  client_config_.SetInitialRoundTripTimeUsToSend(kInitialRTT.ToMicroseconds());
+  QuicTagVector options;
+  options.push_back(kNRTT);
+  client_config_.SetConnectionOptionsToSend(options);
 
   ASSERT_TRUE(Initialize());
   EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());

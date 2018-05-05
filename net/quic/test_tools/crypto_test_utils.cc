@@ -311,8 +311,7 @@ class FullChloGenerator {
     result_ = result;
     crypto_config_->ProcessClientHello(
         result_, /*reject_only=*/false, /*connection_id=*/1, server_addr_,
-        client_addr_, AllSupportedTransportVersions().front(),
-        AllSupportedTransportVersions(),
+        client_addr_, AllSupportedVersions().front(), AllSupportedVersions(),
         /*use_stateless_rejects=*/true, /*server_designated_connection_id=*/0,
         clock_, QuicRandom::GetInstance(), compressed_certs_cache_, params_,
         signed_config_, /*total_framing_overhead=*/50, kDefaultMaxPacketSize,
@@ -406,7 +405,8 @@ int HandshakeWithFakeServer(QuicConfig* server_quic_config,
   server_session.OnSuccessfulVersionNegotiation(
       client_conn->supported_versions().front());
   EXPECT_CALL(*server_session.helper(),
-              CanAcceptClientHello(testing::_, testing::_, testing::_))
+              CanAcceptClientHello(testing::_, testing::_, testing::_,
+                                   testing::_, testing::_))
       .Times(testing::AnyNumber());
   EXPECT_CALL(*server_session.helper(),
               GenerateConnectionIdForReject(testing::_))

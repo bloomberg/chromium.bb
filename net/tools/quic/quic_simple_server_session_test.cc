@@ -384,8 +384,7 @@ TEST_P(QuicSimpleServerSessionTest, CreateOutgoingDynamicStreamUptoLimit) {
   EXPECT_EQ(1u, session_->GetNumOpenIncomingStreams());
   EXPECT_EQ(0u, session_->GetNumOpenOutgoingStreams());
 
-  if (GetQuicReloadableFlag(quic_register_streams_early2) &&
-      GetQuicReloadableFlag(quic_register_static_streams)) {
+  if (GetQuicReloadableFlag(quic_register_static_streams)) {
     session_->UnregisterStreamPriority(kHeadersStreamId, /*is_static=*/true);
   }
   // Assume encryption already established.
@@ -395,8 +394,7 @@ TEST_P(QuicSimpleServerSessionTest, CreateOutgoingDynamicStreamUptoLimit) {
                                      session_.get(), &stream_helper_);
   crypto_stream->set_encryption_established(true);
   QuicSimpleServerSessionPeer::SetCryptoStream(session_.get(), crypto_stream);
-  if (GetQuicReloadableFlag(quic_register_streams_early2) &&
-      GetQuicReloadableFlag(quic_register_static_streams)) {
+  if (GetQuicReloadableFlag(quic_register_static_streams)) {
     session_->RegisterStreamPriority(kHeadersStreamId, /*is_static=*/true,
                                      QuicStream::kDefaultPriority);
   }
@@ -482,8 +480,7 @@ class QuicSimpleServerSessionServerPushTest
 
     visitor_ = QuicConnectionPeer::GetVisitor(connection_);
 
-    if (GetQuicReloadableFlag(quic_register_streams_early2) &&
-        GetQuicReloadableFlag(quic_register_static_streams)) {
+    if (GetQuicReloadableFlag(quic_register_static_streams)) {
       session_->UnregisterStreamPriority(kHeadersStreamId, /*is_static=*/true);
     }
     QuicSimpleServerSessionPeer::SetCryptoStream(session_.get(), nullptr);
@@ -494,8 +491,7 @@ class QuicSimpleServerSessionServerPushTest
 
     crypto_stream->set_encryption_established(true);
     QuicSimpleServerSessionPeer::SetCryptoStream(session_.get(), crypto_stream);
-    if (GetQuicReloadableFlag(quic_register_streams_early2) &&
-        GetQuicReloadableFlag(quic_register_static_streams)) {
+    if (GetQuicReloadableFlag(quic_register_static_streams)) {
       session_->RegisterStreamPriority(kHeadersStreamId, /*is_static=*/true,
                                        QuicStream::kDefaultPriority);
     }

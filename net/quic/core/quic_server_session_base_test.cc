@@ -405,8 +405,7 @@ TEST_P(QuicServerSessionBaseTest, BandwidthEstimates) {
   const QuicString serving_region = "not a real region";
   session_->set_serving_region(serving_region);
 
-  if (GetQuicReloadableFlag(quic_register_streams_early2) &&
-      GetQuicReloadableFlag(quic_register_static_streams)) {
+  if (GetQuicReloadableFlag(quic_register_static_streams)) {
     session_->UnregisterStreamPriority(kHeadersStreamId, /*is_static=*/true);
   }
   QuicServerSessionBasePeer::SetCryptoStream(session_.get(), nullptr);
@@ -414,8 +413,7 @@ TEST_P(QuicServerSessionBaseTest, BandwidthEstimates) {
       new MockQuicCryptoServerStream(&crypto_config_, &compressed_certs_cache_,
                                      session_.get(), &stream_helper_);
   QuicServerSessionBasePeer::SetCryptoStream(session_.get(), crypto_stream);
-  if (GetQuicReloadableFlag(quic_register_streams_early2) &&
-      GetQuicReloadableFlag(quic_register_static_streams)) {
+  if (GetQuicReloadableFlag(quic_register_static_streams)) {
     session_->RegisterStreamPriority(kHeadersStreamId, /*is_static=*/true,
                                      QuicStream::kDefaultPriority);
   }
@@ -497,6 +495,12 @@ TEST_P(QuicServerSessionBaseTest, BandwidthEstimates) {
 }
 
 TEST_P(QuicServerSessionBaseTest, BandwidthResumptionExperiment) {
+  if (GetParam().handshake_protocol == PROTOCOL_TLS1_3) {
+    // This test relies on resumption, which is not currently supported by the
+    // TLS handshake.
+    // TODO(nharper): Add support for resumption to the TLS handshake.
+    return;
+  }
   // Test that if a client provides a CachedNetworkParameters with the same
   // serving region as the current server, and which was made within an hour of
   // now, that this data is passed down to the send algorithm.
@@ -592,6 +596,12 @@ INSTANTIATE_TEST_CASE_P(StreamMemberLifetimeTests,
 // ProofSource::GetProof.  Delay the completion of the operation until after the
 // stream has been destroyed, and verify that there are no memory bugs.
 TEST_P(StreamMemberLifetimeTest, Basic) {
+  if (GetParam().handshake_protocol == PROTOCOL_TLS1_3) {
+    // This test depends on the QUIC crypto protocol, so it is disabled for the
+    // TLS handshake.
+    // TODO(nharper): Fix this test so it doesn't rely on QUIC crypto.
+    return;
+  }
   SetQuicReloadableFlag(enable_quic_stateless_reject_support, true);
   SetQuicReloadableFlag(quic_use_cheap_stateless_rejects, true);
 
@@ -609,7 +619,7 @@ TEST_P(StreamMemberLifetimeTest, Basic) {
       PACKET_8BYTE_CONNECTION_ID, PACKET_4BYTE_PACKET_NUMBER,
       &packet_version_list));
 
-  EXPECT_CALL(stream_helper_, CanAcceptClientHello(_, _, _))
+  EXPECT_CALL(stream_helper_, CanAcceptClientHello(_, _, _, _, _))
       .WillOnce(testing::Return(true));
   EXPECT_CALL(stream_helper_, GenerateConnectionIdForReject(_))
       .WillOnce(testing::Return(12345));
