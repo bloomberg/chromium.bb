@@ -358,7 +358,7 @@ bool PipelineIntegrationTestBase::Seek(base::TimeDelta seek_time) {
 
   pipeline_->Seek(seek_time, base::Bind(&PipelineIntegrationTestBase::OnSeeked,
                                         base::Unretained(this), seek_time));
-  RunUntilQuit(&run_loop);
+  RunUntilQuitOrError(&run_loop);
   return (pipeline_status_ == PIPELINE_OK);
 }
 
@@ -367,7 +367,7 @@ bool PipelineIntegrationTestBase::Suspend() {
   pipeline_->Suspend(base::Bind(&PipelineIntegrationTestBase::OnStatusCallback,
                                 base::Unretained(this),
                                 run_loop.QuitWhenIdleClosure()));
-  RunUntilQuit(&run_loop);
+  RunUntilQuitOrError(&run_loop);
   return (pipeline_status_ == PIPELINE_OK);
 }
 
@@ -382,7 +382,7 @@ bool PipelineIntegrationTestBase::Resume(base::TimeDelta seek_time) {
                     seek_time,
                     base::Bind(&PipelineIntegrationTestBase::OnSeeked,
                                base::Unretained(this), seek_time));
-  RunUntilQuit(&run_loop);
+  RunUntilQuitOrError(&run_loop);
   return (pipeline_status_ == PIPELINE_OK);
 }
 
@@ -655,7 +655,10 @@ PipelineStatus PipelineIntegrationTestBase::StartPipelineWithMediaSource(
   return pipeline_status_;
 }
 
-void PipelineIntegrationTestBase::RunUntilQuit(base::RunLoop* run_loop) {
+void PipelineIntegrationTestBase::RunUntilQuitOrError(base::RunLoop* run_loop) {
+  // We always install an error handler to avoid test hangs.
+  on_error_closure_ = run_loop->QuitWhenIdleClosure();
+
   run_loop->Run();
   on_ended_closure_ = base::OnceClosure();
   on_error_closure_ = base::OnceClosure();
@@ -668,8 +671,7 @@ void PipelineIntegrationTestBase::RunUntilQuitOrEndedOrError(
   DCHECK(on_error_closure_.is_null());
 
   on_ended_closure_ = run_loop->QuitWhenIdleClosure();
-  on_error_closure_ = run_loop->QuitWhenIdleClosure();
-  RunUntilQuit(run_loop);
+  RunUntilQuitOrError(run_loop);
 }
 
 base::TimeTicks DummyTickClock::NowTicks() const {
