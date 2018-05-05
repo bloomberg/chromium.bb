@@ -1,10 +1,9 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/bookmarks/cells/bookmark_parent_folder_item.h"
+#import "ios/chrome/browser/ui/bookmarks/cells/legacy_bookmark_parent_folder_item.h"
 
-#include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -16,7 +15,12 @@
 #error "This file requires ARC support."
 #endif
 
-@implementation BookmarkParentFolderItem
+@interface LegacyBookmarkParentFolderCell ()
+@property(nonatomic, readwrite, strong) UILabel* parentFolderNameLabel;
+@property(nonatomic, strong) UILabel* decorationLabel;
+@end
+
+@implementation LegacyBookmarkParentFolderItem
 
 @synthesize title = _title;
 
@@ -24,36 +28,27 @@
   self = [super initWithType:type];
   if (self) {
     self.accessibilityIdentifier = @"Change Folder";
-    self.cellClass = [BookmarkParentFolderCell class];
+    self.cellClass = [LegacyBookmarkParentFolderCell class];
   }
   return self;
 }
 
-#pragma mark TableViewItem
+#pragma mark CollectionViewItem
 
-- (void)configureCell:(UITableViewCell*)tableCell
-           withStyler:(ChromeTableViewStyler*)styler {
-  [super configureCell:tableCell withStyler:styler];
-  BookmarkParentFolderCell* cell =
-      base::mac::ObjCCastStrict<BookmarkParentFolderCell>(tableCell);
+- (void)configureCell:(LegacyBookmarkParentFolderCell*)cell {
+  [super configureCell:cell];
   cell.parentFolderNameLabel.text = self.title;
 }
 
 @end
 
-@interface BookmarkParentFolderCell ()
-@property(nonatomic, readwrite, strong) UILabel* parentFolderNameLabel;
-@property(nonatomic, strong) UILabel* decorationLabel;
-@end
-
-@implementation BookmarkParentFolderCell
+@implementation LegacyBookmarkParentFolderCell
 
 @synthesize parentFolderNameLabel = _parentFolderNameLabel;
 @synthesize decorationLabel = _decorationLabel;
 
-- (instancetype)initWithStyle:(UITableViewCellStyle)style
-              reuseIdentifier:(NSString*)reuseIdentifier {
-  self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
+- (instancetype)initWithFrame:(CGRect)frame {
+  self = [super initWithFrame:frame];
   if (!self)
     return nil;
 
@@ -64,15 +59,12 @@
   const CGFloat kVerticalPadding = 8;
   const CGFloat kParentFolderLabelTopPadding = 7;
 
-  UIView* containerView = [[UIView alloc] initWithFrame:CGRectZero];
-  containerView.translatesAutoresizingMaskIntoConstraints = NO;
-
   _decorationLabel = [[UILabel alloc] init];
   _decorationLabel.translatesAutoresizingMaskIntoConstraints = NO;
   _decorationLabel.text = l10n_util::GetNSString(IDS_IOS_BOOKMARK_GROUP_BUTTON);
   _decorationLabel.font = [[MDCTypography fontLoader] regularFontOfSize:12];
   _decorationLabel.textColor = bookmark_utils_ios::lightTextColor();
-  [containerView addSubview:_decorationLabel];
+  [self.contentView addSubview:_decorationLabel];
 
   _parentFolderNameLabel = [[UILabel alloc] init];
   _parentFolderNameLabel.translatesAutoresizingMaskIntoConstraints = NO;
@@ -81,29 +73,25 @@
   _parentFolderNameLabel.textColor =
       [UIColor colorWithWhite:33.0 / 255.0 alpha:1.0];
   _parentFolderNameLabel.textAlignment = NSTextAlignmentNatural;
-  [containerView addSubview:_parentFolderNameLabel];
+  [self.contentView addSubview:_parentFolderNameLabel];
 
   UIImageView* navigationChevronImage = [[UIImageView alloc] init];
   UIImage* image = TintImage([ChromeIcon chevronIcon], [UIColor grayColor]);
   navigationChevronImage.image = image;
   navigationChevronImage.translatesAutoresizingMaskIntoConstraints = NO;
-  [containerView addSubview:navigationChevronImage];
-
-  [self.contentView addSubview:containerView];
+  [self.contentView addSubview:navigationChevronImage];
 
   // Set up the constraints.
   [NSLayoutConstraint activateConstraints:@[
-    [_decorationLabel.topAnchor
-        constraintEqualToAnchor:containerView.topAnchor],
-    [_decorationLabel.leadingAnchor
-        constraintEqualToAnchor:containerView.leadingAnchor],
+    [_decorationLabel.topAnchor constraintEqualToAnchor:self.topAnchor
+                                               constant:kVerticalPadding],
+    [_decorationLabel.leadingAnchor constraintEqualToAnchor:self.leadingAnchor
+                                                   constant:kHorizontalPadding],
     [_parentFolderNameLabel.topAnchor
         constraintEqualToAnchor:_decorationLabel.bottomAnchor
                        constant:kParentFolderLabelTopPadding],
     [_parentFolderNameLabel.leadingAnchor
         constraintEqualToAnchor:_decorationLabel.leadingAnchor],
-    [_parentFolderNameLabel.bottomAnchor
-        constraintEqualToAnchor:containerView.bottomAnchor],
     [navigationChevronImage.centerYAnchor
         constraintEqualToAnchor:_parentFolderNameLabel.centerYAnchor],
     [navigationChevronImage.leadingAnchor
@@ -111,20 +99,11 @@
     [navigationChevronImage.widthAnchor
         constraintEqualToConstant:navigationChevronImage.image.size.width],
     [navigationChevronImage.trailingAnchor
-        constraintEqualToAnchor:containerView.trailingAnchor],
-    [containerView.leadingAnchor
-        constraintEqualToAnchor:self.contentView.leadingAnchor
-                       constant:kHorizontalPadding],
-    [containerView.trailingAnchor
-        constraintEqualToAnchor:self.contentView.trailingAnchor
+        constraintEqualToAnchor:self.trailingAnchor
                        constant:-kHorizontalPadding],
-    [containerView.topAnchor constraintEqualToAnchor:self.contentView.topAnchor
-                                            constant:kVerticalPadding],
-    [containerView.bottomAnchor
-        constraintEqualToAnchor:self.contentView.bottomAnchor
-                       constant:-kVerticalPadding],
   ]];
 
+  self.shouldHideSeparator = YES;
   return self;
 }
 

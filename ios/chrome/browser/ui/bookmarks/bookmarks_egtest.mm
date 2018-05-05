@@ -1658,8 +1658,7 @@ id<GREYMatcher> CloseToolsMenuButton() {
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder Editor")]
       assertWithMatcher:grey_notNil()];
 
-  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                          IDS_IOS_BOOKMARK_GROUP_DELETE)]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Delete Folder")]
       performAction:grey_tap()];
 
   // Wait for Undo toast to go away from screen.
@@ -2073,8 +2072,7 @@ id<GREYMatcher> CloseToolsMenuButton() {
       performAction:grey_tap()];
 
   // Delete it.
-  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                          IDS_IOS_BOOKMARK_GROUP_DELETE)]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Delete Folder")]
       performAction:grey_tap()];
 
   // Wait until it's gone.

@@ -23,8 +23,8 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_mediator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
-#import "ios/chrome/browser/ui/bookmarks/cells/bookmark_parent_folder_item.h"
-#import "ios/chrome/browser/ui/bookmarks/cells/bookmark_text_field_item.h"
+#import "ios/chrome/browser/ui/bookmarks/cells/legacy_bookmark_parent_folder_item.h"
+#import "ios/chrome/browser/ui/bookmarks/cells/legacy_bookmark_text_field_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/image_util/image_util.h"
@@ -74,7 +74,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 @interface BookmarkEditViewController ()<BookmarkFolderViewControllerDelegate,
                                          BookmarkModelBridgeObserver,
-                                         BookmarkTextFieldItemDelegate,
+                                         LegacyBookmarkTextFieldItemDelegate,
                                          TextFieldValidation> {
   // Flag to ignore bookmark model changes notifications.
   BOOL _ignoresBookmarkModelChanges;
@@ -108,9 +108,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @property(nonatomic, strong) UIBarButtonItem* doneItem;
 
 // CollectionViewItem-s from the collection.
-@property(nonatomic, strong) BookmarkTextFieldItem* nameItem;
-@property(nonatomic, strong) BookmarkParentFolderItem* folderItem;
-@property(nonatomic, strong) BookmarkTextFieldItem* URLItem;
+@property(nonatomic, strong) LegacyBookmarkTextFieldItem* nameItem;
+@property(nonatomic, strong) LegacyBookmarkParentFolderItem* folderItem;
+@property(nonatomic, strong) LegacyBookmarkTextFieldItem* URLItem;
 
 // Reports the changes to the delegate, that has the responsibility to save the
 // bookmark.
@@ -327,7 +327,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   [model addSectionWithIdentifier:SectionIdentifierInfo];
 
-  self.nameItem = [[BookmarkTextFieldItem alloc] initWithType:ItemTypeName];
+  self.nameItem =
+      [[LegacyBookmarkTextFieldItem alloc] initWithType:ItemTypeName];
   self.nameItem.accessibilityIdentifier = @"Title Field";
   self.nameItem.placeholder =
       l10n_util::GetNSString(IDS_IOS_BOOKMARK_NAME_FIELD_HEADER);
@@ -336,11 +337,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addItem:self.nameItem toSectionWithIdentifier:SectionIdentifierInfo];
 
   self.folderItem =
-      [[BookmarkParentFolderItem alloc] initWithType:ItemTypeFolder];
+      [[LegacyBookmarkParentFolderItem alloc] initWithType:ItemTypeFolder];
   self.folderItem.title = bookmark_utils_ios::TitleForBookmarkNode(self.folder);
   [model addItem:self.folderItem toSectionWithIdentifier:SectionIdentifierInfo];
 
-  self.URLItem = [[BookmarkTextFieldItem alloc] initWithType:ItemTypeURL];
+  self.URLItem = [[LegacyBookmarkTextFieldItem alloc] initWithType:ItemTypeURL];
   self.URLItem.accessibilityIdentifier = @"URL Field";
   self.URLItem.placeholder =
       l10n_util::GetNSString(IDS_IOS_BOOKMARK_URL_FIELD_HEADER);
@@ -410,9 +411,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [self dismiss];
 }
 
-#pragma mark - BookmarkTextFieldItemDelegate
+#pragma mark - LegacyBookmarkTextFieldItemDelegate
 
-- (void)textDidChangeForItem:(BookmarkTextFieldItem*)item {
+- (void)textDidChangeForItem:(LegacyBookmarkTextFieldItem*)item {
   [self updateSaveButtonState];
 }
 
@@ -440,8 +441,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [super collectionView:collectionView cellForItemAtIndexPath:indexPath];
   if ([self.collectionViewModel itemTypeForIndexPath:indexPath] ==
       ItemTypeURL) {
-    BookmarkTextFieldCell* URLCell =
-        base::mac::ObjCCastStrict<BookmarkTextFieldCell>(cell);
+    LegacyBookmarkTextFieldCell* URLCell =
+        base::mac::ObjCCastStrict<LegacyBookmarkTextFieldCell>(cell);
     URLCell.textField.textValidator = self;
   }
   return cell;
