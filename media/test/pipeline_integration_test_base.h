@@ -253,11 +253,13 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
 
  private:
   // Runs |run_loop| until it is explicitly Quit() by some part of the calling
-  // test fixture. The |scoped_task_environment_| is RunUntilIdle() after the
-  // RunLoop finishes running, before returning to the caller.
-  void RunUntilQuit(base::RunLoop* run_loop);
-  // Configures |on_ended_closure_| and |on_error_closure_| to quit |run_loop|
-  // and then calls RunUntilQuit() on it.
+  // test fixture or when an error occurs (by setting |on_error_closure_|). The
+  // |scoped_task_environment_| is RunUntilIdle() after the RunLoop finishes
+  // running, before returning to the caller.
+  void RunUntilQuitOrError(base::RunLoop* run_loop);
+
+  // Configures |on_ended_closure_| to quit |run_loop| and then calls
+  // RunUntilQuitOrError() on it.
   void RunUntilQuitOrEndedOrError(base::RunLoop* run_loop);
 
   base::OnceClosure on_ended_closure_;
