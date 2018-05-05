@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_ASH_LAUNCHER_APP_WINDOW_LAUNCHER_ITEM_CONTROLLER_H_
 
 #include <list>
+#include <memory>
 #include <string>
 
 #include "ash/public/cpp/shelf_item_delegate.h"
@@ -20,6 +21,8 @@ class Window;
 namespace ui {
 class BaseWindow;
 }
+
+class LauncherContextMenu;
 
 // This is a ShelfItemDelegate for abstract app windows (extension or ARC).
 // There is one instance per app, per launcher id. For apps with multiple
@@ -100,6 +103,8 @@ class AppWindowLauncherItemController : public ash::ShelfItemDelegate,
 
   // Scoped list of observed windows (for removal on destruction)
   ScopedObserver<aura::Window, aura::WindowObserver> observed_windows_;
+
+  std::unique_ptr<LauncherContextMenu> context_menu_;
 
   DISALLOW_COPY_AND_ASSIGN(AppWindowLauncherItemController);
 };

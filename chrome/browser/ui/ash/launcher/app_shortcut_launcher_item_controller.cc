@@ -131,8 +131,8 @@ void AppShortcutLauncherItemController::GetContextMenu(
     GetMenuModelCallback callback) {
   ChromeLauncherController* controller = ChromeLauncherController::instance();
   const ash::ShelfItem* item = controller->GetItem(shelf_id());
-  std::move(callback).Run(
-      LauncherContextMenu::Create(controller, item, display_id));
+  context_menu_ = LauncherContextMenu::Create(controller, item, display_id);
+  context_menu_->GetMenuModel(std::move(callback));
 }
 
 void AppShortcutLauncherItemController::ExecuteCommand(bool from_context_menu,

@@ -22,6 +22,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -340,8 +341,20 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
     return LauncherContextMenu::Create(controller_, &item, display_id);
   }
 
-  bool IsItemPresentInMenu(LauncherContextMenu* menu, int command_id) {
-    return menu->GetIndexOfCommandId(command_id) != -1;
+  bool IsItemPresentInMenu(LauncherContextMenu* launcher_context_menu,
+                           int command_id) {
+    base::RunLoop run_loop;
+    std::unique_ptr<ui::MenuModel> menu;
+    launcher_context_menu->GetMenuModel(base::BindLambdaForTesting(
+        [&](std::unique_ptr<ui::MenuModel> created_menu) {
+          menu = std::move(created_menu);
+          run_loop.Quit();
+        }));
+    run_loop.Run();
+    ui::MenuModel* menu_ptr = menu.get();
+    int index = 0;
+    return ui::MenuModel::GetModelAndIndexForCommandId(command_id, &menu_ptr,
+                                                       &index);
   }
 
   ChromeLauncherController* controller_ = nullptr;

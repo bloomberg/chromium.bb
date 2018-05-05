@@ -65,14 +65,13 @@ std::unique_ptr<LauncherContextMenu> LauncherContextMenu::Create(
 LauncherContextMenu::LauncherContextMenu(ChromeLauncherController* controller,
                                          const ash::ShelfItem* item,
                                          int64_t display_id)
-    : ui::SimpleMenuModel(this),
-      controller_(controller),
+    : controller_(controller),
       item_(item ? *item : ash::ShelfItem()),
       display_id_(display_id) {
   DCHECK_NE(display_id, display::kInvalidDisplayId);
 }
 
-LauncherContextMenu::~LauncherContextMenu() {}
+LauncherContextMenu::~LauncherContextMenu() = default;
 
 bool LauncherContextMenu::IsCommandIdChecked(int command_id) const {
   DCHECK(command_id < MENU_ITEM_COUNT);
@@ -125,7 +124,7 @@ void LauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
   }
 }
 
-void LauncherContextMenu::AddPinMenu() {
+void LauncherContextMenu::AddPinMenu(ui::SimpleMenuModel* menu_model) {
   // Expect a valid ShelfID to add pin/unpin menu item.
   DCHECK(!item_.id.IsNull());
   int menu_pin_string_id;
@@ -144,7 +143,7 @@ void LauncherContextMenu::AddPinMenu() {
       NOTREACHED();
       return;
   }
-  AddContextMenuOption(MENU_PIN, menu_pin_string_id);
+  AddContextMenuOption(menu_model, MENU_PIN, menu_pin_string_id);
 }
 
 bool LauncherContextMenu::ExecuteCommonCommand(int command_id,
@@ -160,11 +159,13 @@ bool LauncherContextMenu::ExecuteCommonCommand(int command_id,
   }
 }
 
-void LauncherContextMenu::AddContextMenuOption(MenuItem type, int string_id) {
+void LauncherContextMenu::AddContextMenuOption(ui::SimpleMenuModel* menu_model,
+                                               MenuItem type,
+                                               int string_id) {
   const gfx::VectorIcon& icon = GetMenuItemVectorIcon(type, string_id);
   if (features::IsTouchableAppContextMenuEnabled() && !icon.is_empty()) {
     const views::MenuConfig& menu_config = views::MenuConfig::instance();
-    AddItemWithStringIdAndIcon(
+    menu_model->AddItemWithStringIdAndIcon(
         type, string_id,
         gfx::CreateVectorIcon(icon, menu_config.touchable_icon_size,
                               menu_config.touchable_icon_color));
@@ -173,10 +174,10 @@ void LauncherContextMenu::AddContextMenuOption(MenuItem type, int string_id) {
   // If the MenuType is a Check item.
   if (type == LAUNCH_TYPE_REGULAR_TAB || type == LAUNCH_TYPE_PINNED_TAB ||
       type == LAUNCH_TYPE_WINDOW || type == LAUNCH_TYPE_FULLSCREEN) {
-    AddCheckItemWithStringId(type, string_id);
+    menu_model->AddCheckItemWithStringId(type, string_id);
     return;
   }
-  AddItemWithStringId(type, string_id);
+  menu_model->AddItemWithStringId(type, string_id);
 }
 
 const gfx::VectorIcon& LauncherContextMenu::GetMenuItemVectorIcon(
