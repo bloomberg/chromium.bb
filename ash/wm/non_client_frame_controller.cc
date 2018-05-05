@@ -10,10 +10,10 @@
 #include <string>
 #include <vector>
 
-#include "ash/ash_constants.h"
 #include "ash/ash_layout_constants.h"
 #include "ash/frame/custom_frame_view_ash.h"
 #include "ash/frame/detached_title_area_renderer.h"
+#include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_delegate.h"
 #include "ash/window_manager.h"
 #include "ash/wm/move_event_handler.h"

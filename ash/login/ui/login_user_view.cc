@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "ash/ash_constants.h"
 #include "ash/login/ui/animated_rounded_image_view.h"
 #include "ash/login/ui/hover_notifier.h"
 #include "ash/login/ui/image_parser.h"
@@ -15,6 +14,7 @@
 #include "ash/login/ui/login_button.h"
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/login/ui/user_switch_flip_animation.h"
+#include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/login_constants.h"
 #include "ash/public/interfaces/user_info.mojom.h"
 #include "ash/resources/vector_icons/vector_icons.h"

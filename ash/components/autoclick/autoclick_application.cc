@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
@@ -29,13 +30,6 @@
 #include "ui/views/widget/widget_delegate.h"
 
 namespace autoclick {
-namespace {
-
-// The default wait time between last mouse movement and sending
-// the autoclick.
-const int kDefaultAutoclickDelayMs = 1000;
-
-}  // namespace
 
 // AutoclickUI handles events to the autoclick app.
 class AutoclickUI : public views::WidgetDelegateView,
@@ -110,7 +104,8 @@ void AutoclickApplication::OnStart() {
   }
   autoclick_controller_common_ =
       std::make_unique<ash::AutoclickControllerCommon>(
-          base::TimeDelta::FromMilliseconds(kDefaultAutoclickDelayMs), this);
+          base::TimeDelta::FromMilliseconds(ash::kDefaultAutoclickDelayMs),
+          this);
 }
 
 void AutoclickApplication::OnBindInterface(

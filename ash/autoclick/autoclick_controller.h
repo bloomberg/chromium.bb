@@ -30,10 +30,6 @@ class ASH_EXPORT AutoclickController {
 
   static AutoclickController* CreateInstance();
 
-  // The default wait time between last mouse movement and sending
-  // the autoclick.
-  static const int kDefaultAutoclickDelayMs;
-
   // Gets the default wait time as a base::TimeDelta object.
   static base::TimeDelta GetDefaultAutoclickDelay();
 

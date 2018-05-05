@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_ASH_CONSTANTS_H_
-#define ASH_ASH_CONSTANTS_H_
-
-#include "ash/ash_export.h"
+#ifndef ASH_PUBLIC_CPP_ASH_CONSTANTS_H_
+#define ASH_PUBLIC_CPP_ASH_CONSTANTS_H_
 
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -15,25 +13,28 @@ namespace ash {
 
 // In the window corners, the resize areas don't actually expand bigger, but the
 // 16 px at the end of each edge triggers diagonal resizing.
-ASH_EXPORT extern const int kResizeAreaCornerSize;
+constexpr int kResizeAreaCornerSize = 16;
 
 // Ash windows do not have a traditional visible window frame. Window content
 // extends to the edge of the window. We consider a small region outside the
 // window bounds and an even smaller region overlapping the window to be the
 // "non-client" area and use it for resizing.
-ASH_EXPORT extern const int kResizeOutsideBoundsSize;
-ASH_EXPORT extern const int kResizeOutsideBoundsScaleForTouch;
-ASH_EXPORT extern const int kResizeInsideBoundsSize;
+constexpr int kResizeOutsideBoundsSize = 6;
+constexpr int kResizeOutsideBoundsScaleForTouch = 5;
+constexpr int kResizeInsideBoundsSize = 1;
 
 // Background color used for the Chrome OS boot splash screen.
-extern const SkColor kChromeOsBootColor;
+constexpr SkColor kChromeOsBootColor = SkColorSetRGB(0xfe, 0xfe, 0xfe);
 
 // The border color of keyboard focus for launcher items and system tray.
 constexpr SkColor kFocusBorderColor = SK_ColorTRANSPARENT;
 constexpr int kFocusBorderThickness = 0;
 
-ASH_EXPORT extern const int kDefaultLargeCursorSize;
+constexpr int kDefaultLargeCursorSize = 64;
+
+// The default wait time between last mouse movement and sending autoclick.
+constexpr int kDefaultAutoclickDelayMs = 1000;
 
 }  // namespace ash
 
-#endif  // ASH_ASH_CONSTANTS_H_
+#endif  // ASH_PUBLIC_CPP_ASH_CONSTANTS_H_

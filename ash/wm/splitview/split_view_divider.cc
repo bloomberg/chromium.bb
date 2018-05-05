@@ -6,8 +6,8 @@
 
 #include <memory>
 
-#include "ash/ash_constants.h"
 #include "ash/display/screen_orientation_controller.h"
+#include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/rounded_rect_view.h"

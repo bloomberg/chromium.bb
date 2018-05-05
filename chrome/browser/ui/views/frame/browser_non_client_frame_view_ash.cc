@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "ash/ash_constants.h"
 #include "ash/ash_layout_constants.h"
 #include "ash/frame/caption_buttons/frame_back_button.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
@@ -15,6 +14,7 @@
 #include "ash/frame/frame_header_origin_text.h"
 #include "ash/frame/frame_header_util.h"
 #include "ash/public/cpp/app_types.h"
+#include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/window_properties.h"

@@ -8,8 +8,8 @@
 #include <memory>
 #include <utility>
 
-#include "ash/ash_constants.h"
 #include "ash/ash_view_ids.h"
+#include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"

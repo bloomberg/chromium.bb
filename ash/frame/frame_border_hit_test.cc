@@ -4,8 +4,8 @@
 
 #include "ash/frame/frame_border_hit_test.h"
 
-#include "ash/ash_constants.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
+#include "ash/public/cpp/ash_constants.h"
 #include "ash/shell_port.h"
 #include "ui/base/hit_test.h"
 #include "ui/views/widget/widget.h"

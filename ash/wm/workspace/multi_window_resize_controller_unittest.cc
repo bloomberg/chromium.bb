@@ -4,8 +4,8 @@
 
 #include "ash/wm/workspace/multi_window_resize_controller.h"
 
-#include "ash/ash_constants.h"
 #include "ash/frame/custom_frame_view_ash.h"
+#include "ash/public/cpp/ash_constants.h"
 #include "ash/shell.h"
 #include "ash/shell_test_api.h"
 #include "ash/test/ash_test_base.h"

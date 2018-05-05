@@ -30,6 +30,7 @@ component("cpp") {
     "app_list/tokenized_string_match.cc",
     "app_list/tokenized_string_match.h",
     "app_types.h",
+    "ash_constants.h",
     "ash_features.cc",
     "ash_features.h",
     "ash_pref_names.cc",
