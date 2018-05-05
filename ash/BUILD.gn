@@ -92,8 +92,6 @@ component("ash") {
     "app_list/app_list_presenter_impl.h",
     "app_list/app_list_view_delegate_mash.cc",
     "app_list/app_list_view_delegate_mash.h",
-    "ash_constants.cc",
-    "ash_constants.h",
     "ash_export.h",
     "ash_layout_constants.cc",
     "ash_layout_constants.h",

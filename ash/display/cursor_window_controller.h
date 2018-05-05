@@ -7,8 +7,8 @@
 
 #include <memory>
 
-#include "ash/ash_constants.h"
 #include "ash/ash_export.h"
+#include "ash/public/cpp/ash_constants.h"
 #include "base/macros.h"
 #include "ui/aura/window.h"
 #include "ui/base/cursor/cursor.h"

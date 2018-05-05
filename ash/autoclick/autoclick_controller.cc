@@ -6,6 +6,7 @@
 
 #include "ash/autoclick/common/autoclick_controller_common.h"
 #include "ash/autoclick/common/autoclick_controller_common_delegate.h"
+#include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/wm/root_window_finder.h"
@@ -25,8 +26,6 @@ namespace ash {
 base::TimeDelta AutoclickController::GetDefaultAutoclickDelay() {
   return base::TimeDelta::FromMilliseconds(int64_t{kDefaultAutoclickDelayMs});
 }
-
-const int AutoclickController::kDefaultAutoclickDelayMs = 1000;
 
 class AutoclickControllerImpl : public AutoclickController,
                                 public ui::EventHandler,

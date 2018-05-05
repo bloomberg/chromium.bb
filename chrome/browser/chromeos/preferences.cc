@@ -6,8 +6,7 @@
 
 #include <vector>
 
-#include "ash/ash_constants.h"
-#include "ash/autoclick/autoclick_controller.h"
+#include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
@@ -217,9 +216,7 @@ void Preferences::RegisterProfilePrefs(
       ash::prefs::kAccessibilityAutoclickEnabled, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
   registry->RegisterIntegerPref(
-      ash::prefs::kAccessibilityAutoclickDelayMs,
-      static_cast<int>(ash::AutoclickController::GetDefaultAutoclickDelay()
-                           .InMilliseconds()),
+      ash::prefs::kAccessibilityAutoclickDelayMs, ash::kDefaultAutoclickDelayMs,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
   registry->RegisterBooleanPref(
       ash::prefs::kAccessibilityVirtualKeyboardEnabled, false,

@@ -8,8 +8,8 @@
 
 #include "ash/accessibility/accessibility_observer.h"
 #include "ash/accessibility/test_accessibility_controller_client.h"
-#include "ash/ash_constants.h"
 #include "ash/magnifier/docked_magnifier_controller.h"
+#include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/config.h"
