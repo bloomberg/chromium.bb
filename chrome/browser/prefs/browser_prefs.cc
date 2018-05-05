@@ -182,7 +182,6 @@
 #include "components/ntp_snippets/breaking_news/breaking_news_gcm_app_handler.h"
 #include "components/ntp_snippets/breaking_news/subscription_manager_impl.h"
 #include "components/ntp_snippets/category_rankers/click_based_category_ranker.h"
-#include "components/ntp_snippets/offline_pages/recent_tab_suggestions_provider.h"
 #include "components/ntp_tiles/popular_sites_impl.h"
 #else
 #include "chrome/browser/gcm/gcm_product_util.h"
@@ -305,6 +304,9 @@ const char kStabilityCrashedActivityCounts[] =
 // Deprecated 4/2018.
 const char kDismissedPhysicalWebPageSuggestions[] =
     "ntp_suggestions.physical_web.dismissed_ids";
+// Deprecated 5/2018.
+const char kDismissedRecentOfflineTabSuggestions[] =
+    "ntp_suggestions.offline_pages.recent_tabs.dismissed_ids";
 #else
 // Deprecated 1/2018.
 const char kShowFirstRunBubbleOption[] = "show-first-run-bubble-option";
@@ -330,6 +332,7 @@ void RegisterProfilePrefsForMigration(
 
 #if defined(OS_ANDROID)
   registry->RegisterListPref(kDismissedPhysicalWebPageSuggestions);
+  registry->RegisterListPref(kDismissedRecentOfflineTabSuggestions);
 #endif
 }
 
@@ -589,7 +592,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   DownloadSuggestionsProvider::RegisterProfilePrefs(registry);
   ntp_snippets::BreakingNewsGCMAppHandler::RegisterProfilePrefs(registry);
   ntp_snippets::ClickBasedCategoryRanker::RegisterProfilePrefs(registry);
-  ntp_snippets::RecentTabSuggestionsProvider::RegisterProfilePrefs(registry);
   ntp_snippets::SubscriptionManagerImpl::RegisterProfilePrefs(registry);
   OomInterventionDecider::RegisterProfilePrefs(registry);
 #endif  // defined(OS_ANDROID)
@@ -721,5 +723,8 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 #if defined(OS_ANDROID)
   // Added 4/2018
   profile_prefs->ClearPref(kDismissedPhysicalWebPageSuggestions);
+
+  // Added 5/2018
+  profile_prefs->ClearPref(kDismissedRecentOfflineTabSuggestions);
 #endif  // defined(OS_ANDROID)
 }

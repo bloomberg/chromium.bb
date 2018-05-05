@@ -54,7 +54,6 @@ using ntp_snippets::CategoryInfo;
 using ntp_snippets::CategoryStatus;
 using ntp_snippets::ContentSuggestion;
 using ntp_snippets::IsBookmarkProviderEnabled;
-using ntp_snippets::IsRecentTabProviderEnabled;
 using ntp_snippets::KnownCategories;
 using ntp_snippets::RemoteSuggestion;
 using ntp_snippets::RemoteSuggestionsProvider;
@@ -92,17 +91,6 @@ std::unique_ptr<base::DictionaryValue> PrepareSuggestion(
                                             extra.offline_page_id)));
     value->SetBoolean("isDownloadAsset", extra.is_download_asset);
     entry->Set("downloadSuggestionExtra", std::move(value));
-  }
-
-  if (suggestion.recent_tab_suggestion_extra()) {
-    const auto& extra = *suggestion.recent_tab_suggestion_extra();
-    auto value = std::make_unique<base::DictionaryValue>();
-    value->SetInteger("tabID", extra.tab_id);
-    value->SetString(
-        "offlinePageID",
-        base::StringPrintf("0x%016llx", static_cast<long long unsigned int>(
-                                            extra.offline_page_id)));
-    entry->Set("recentTabSuggestionExtra", std::move(value));
   }
 
   if (suggestion.notification_extra()) {
@@ -425,8 +413,6 @@ void SnippetsInternalsMessageHandler::SendAllContent() {
       "flag-article-suggestions",
       base::FeatureList::IsEnabled(ntp_snippets::kArticleSuggestionsFeature));
 
-  SendBoolean("flag-recent-offline-tab-suggestions",
-              IsRecentTabProviderEnabled());
   SendBoolean("flag-offlining-recent-pages-feature",
               base::FeatureList::IsEnabled(
                   offline_pages::kOffliningRecentPagesFeature));

@@ -609,9 +609,6 @@ TEST_F(ClickBasedCategoryRankerTest,
   // Make sure we have the default order.
   EXPECT_TRUE(CompareCategories(
       Category::FromKnownCategory(KnownCategories::DOWNLOADS),
-      Category::FromKnownCategory(KnownCategories::RECENT_TABS)));
-  EXPECT_TRUE(CompareCategories(
-      Category::FromKnownCategory(KnownCategories::RECENT_TABS),
       Category::FromKnownCategory(KnownCategories::FOREIGN_TABS)));
   EXPECT_TRUE(CompareCategories(
       Category::FromKnownCategory(KnownCategories::FOREIGN_TABS),
@@ -642,22 +639,22 @@ TEST_F(ClickBasedCategoryRankerTest,
        ShouldResumePromotionAfter2WeeksSinceDismissal) {
   const Category downloads =
       Category::FromKnownCategory(KnownCategories::DOWNLOADS);
-  const Category recent_tabs =
-      Category::FromKnownCategory(KnownCategories::RECENT_TABS);
-  ASSERT_TRUE(CompareCategories(downloads, recent_tabs));
+  const Category foreign_tabs =
+      Category::FromKnownCategory(KnownCategories::FOREIGN_TABS);
+  ASSERT_TRUE(CompareCategories(downloads, foreign_tabs));
 
-  SetPromotedCategoryVariationParam(recent_tabs.id());
+  SetPromotedCategoryVariationParam(foreign_tabs.id());
   ResetRanker(base::DefaultClock::GetInstance());
-  ASSERT_TRUE(CompareCategories(recent_tabs, downloads));
+  ASSERT_TRUE(CompareCategories(foreign_tabs, downloads));
 
-  ranker()->OnCategoryDismissed(recent_tabs);
-  ASSERT_FALSE(CompareCategories(recent_tabs, downloads));
+  ranker()->OnCategoryDismissed(foreign_tabs);
+  ASSERT_FALSE(CompareCategories(foreign_tabs, downloads));
 
   // Simulate a little over 2 weeks of time passing.
   base::SimpleTestClock test_clock;
   test_clock.SetNow(base::Time::Now() + base::TimeDelta::FromDays(15));
   ResetRanker(&test_clock);
-  EXPECT_TRUE(CompareCategories(recent_tabs, downloads));
+  EXPECT_TRUE(CompareCategories(foreign_tabs, downloads));
 }
 
 TEST_F(ClickBasedCategoryRankerTest,

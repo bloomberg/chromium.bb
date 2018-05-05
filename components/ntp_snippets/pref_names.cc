@@ -57,8 +57,6 @@ const char kDismissedForeignSessionsSuggestions[] =
     "ntp_suggestions.foreign_sessions.dismissed_ids";
 const char kDismissedOfflinePageDownloadSuggestions[] =
     "ntp_suggestions.downloads.offline_pages.dismissed_ids";
-const char kDismissedRecentOfflineTabSuggestions[] =
-    "ntp_suggestions.offline_pages.recent_tabs.dismissed_ids";
 
 const char kDismissedCategories[] = "ntp_suggestions.dismissed_categories";
 

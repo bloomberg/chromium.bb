@@ -3793,7 +3793,6 @@ jumbo_split_static_library("browser") {
       "//components/offline_pages/core/background:background_offliner",
       "//components/offline_pages/core/downloads:offline_pages_ui_adapter",
       "//components/offline_pages/core/prefetch",
-      "//components/offline_pages/core/recent_tabs",
       "//components/offline_pages/core/renovations",
       "//components/offline_pages/core/request_header:request_header",
     ]

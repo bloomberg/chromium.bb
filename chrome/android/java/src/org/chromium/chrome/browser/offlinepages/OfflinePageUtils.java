@@ -689,11 +689,6 @@ public class OfflinePageUtils {
         @Override
         public void didAddTab(Tab tab, TabModel.TabLaunchType type) {
             tab.addObserver(sTabRestoreTracker);
-
-            Profile profile = mTabModelSelector.getModel(tab.isIncognito()).getProfile();
-            OfflinePageBridge bridge = OfflinePageBridge.getForProfile(profile);
-            if (bridge == null) return;
-            bridge.registerRecentTab(tab.getId());
         }
 
         @Override
@@ -712,10 +707,7 @@ public class OfflinePageUtils {
             OfflinePageBridge bridge = OfflinePageBridge.getForProfile(profile);
             if (bridge == null) return;
 
-            // First, unregister the tab with the UI.
-            bridge.unregisterRecentTab(tabId);
-
-            // Then, delete any "Last N" offline pages as well.  This is an optimization because
+            // Delete any "Last N" offline pages as well. This is an optimization because
             // the UI will no longer show the page, and the page would also be cleaned up by GC
             // given enough time.
             ClientId clientId =

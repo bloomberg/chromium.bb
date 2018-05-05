@@ -57,12 +57,6 @@ void ContentSuggestion::set_download_suggestion_extra(
   download_suggestion_extra_ = std::move(download_suggestion_extra);
 }
 
-void ContentSuggestion::set_recent_tab_suggestion_extra(
-    std::unique_ptr<RecentTabSuggestionExtra> recent_tab_suggestion_extra) {
-  DCHECK(id_.category().IsKnownCategory(KnownCategories::RECENT_TABS));
-  recent_tab_suggestion_extra_ = std::move(recent_tab_suggestion_extra);
-}
-
 void ContentSuggestion::set_reading_list_suggestion_extra(
     std::unique_ptr<ReadingListSuggestionExtra> reading_list_suggestion_extra) {
   DCHECK(id_.category().IsKnownCategory(KnownCategories::READING_LIST));

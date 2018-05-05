@@ -281,7 +281,6 @@ TEST(RemoteSuggestionTest, ToContentSuggestion) {
   EXPECT_THAT(sugg.publisher_name(), Eq(base::UTF8ToUTF16("Foo News")));
   EXPECT_THAT(sugg.score(), Eq(9001));
   EXPECT_THAT(sugg.download_suggestion_extra(), IsNull());
-  EXPECT_THAT(sugg.recent_tab_suggestion_extra(), IsNull());
   EXPECT_THAT(sugg.notification_extra(), IsNull());
   EXPECT_THAT(sugg.fetch_date(), Eq(fetch_date));
 }
@@ -306,7 +305,6 @@ TEST(RemoteSuggestionTest, ToContentSuggestionWithNotificationInfo) {
   EXPECT_THAT(sugg.publisher_name(), Eq(base::UTF8ToUTF16("Foo News")));
   EXPECT_THAT(sugg.score(), Eq(9001));
   EXPECT_THAT(sugg.download_suggestion_extra(), IsNull());
-  EXPECT_THAT(sugg.recent_tab_suggestion_extra(), IsNull());
   ASSERT_THAT(sugg.notification_extra(), NotNull());
   EXPECT_THAT(sugg.notification_extra()->deadline.ToJavaTime(),
               Eq(1467291697000));

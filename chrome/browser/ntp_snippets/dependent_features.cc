@@ -46,14 +46,6 @@ bool IsBookmarkProviderEnabled() {
              ntp_snippets::kBookmarkSuggestionsFeature);
 }
 
-bool IsRecentTabProviderEnabled() {
-  return !AreNtpShortcutsEnabled() &&
-         base::FeatureList::IsEnabled(
-             ntp_snippets::kRecentOfflineTabSuggestionsFeature) &&
-         base::FeatureList::IsEnabled(
-             offline_pages::kOffliningRecentPagesFeature);
-}
-
 bool IsForeignSessionsProviderEnabled() {
   return !AreNtpShortcutsEnabled() &&
          base::FeatureList::IsEnabled(

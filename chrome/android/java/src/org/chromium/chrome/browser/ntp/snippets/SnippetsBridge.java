@@ -219,12 +219,6 @@ public class SnippetsBridge implements SuggestionsSource {
     }
 
     @CalledByNative
-    private static void setRecentTabDataForSuggestion(
-            SnippetArticle suggestion, int tabId, long offlinePageId) {
-        suggestion.setRecentTabData(tabId, offlinePageId);
-    }
-
-    @CalledByNative
     private static SuggestionsCategoryInfo createSuggestionsCategoryInfo(int category, String title,
             @ContentSuggestionsCardLayout int cardLayout,
             @ContentSuggestionsAdditionalAction int additionalAction, boolean showIfEmpty,

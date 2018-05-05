@@ -92,14 +92,6 @@ ScopedJavaLocalRef<jobject> JNI_SnippetsBridge_ToJavaSuggestionList(
             suggestion.download_suggestion_extra()->offline_page_id);
       }
     }
-    if (suggestion.id().category().IsKnownCategory(
-            KnownCategories::RECENT_TABS) &&
-        suggestion.recent_tab_suggestion_extra() != nullptr) {
-      Java_SnippetsBridge_setRecentTabDataForSuggestion(
-          env, java_suggestion,
-          suggestion.recent_tab_suggestion_extra()->tab_id,
-          suggestion.recent_tab_suggestion_extra()->offline_page_id);
-    }
   }
 
   return result;

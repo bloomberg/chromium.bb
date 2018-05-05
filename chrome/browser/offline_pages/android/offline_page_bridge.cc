@@ -42,7 +42,6 @@
 #include "components/offline_pages/core/offline_page_item.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/offline_page_types.h"
-#include "components/offline_pages/core/recent_tabs/recent_tabs_ui_adapter_delegate.h"
 #include "components/offline_pages/core/request_header/offline_page_header.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
@@ -821,19 +820,6 @@ void OfflinePageBridge::RemoveRequestsFromQueue(
       request_ids, base::Bind(&OnRemoveRequestsDone, j_callback_ref));
 }
 
-void OfflinePageBridge::RegisterRecentTab(JNIEnv* env,
-                                          const JavaParamRef<jobject>& obj,
-                                          int tab_id) {
-  RequestCoordinator* request_coordinator =
-      RequestCoordinatorFactory::GetForBrowserContext(browser_context_);
-
-  RecentTabsUIAdapterDelegate* ui_adapter_delegate =
-      RecentTabsUIAdapterDelegate::FromDownloadUIAdapter(
-          RecentTabsUIAdapterDelegate::GetOrCreateRecentTabsUIAdapter(
-              offline_page_model_, request_coordinator));
-  ui_adapter_delegate->RegisterTab(tab_id);
-}
-
 void OfflinePageBridge::WillCloseTab(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
@@ -848,19 +834,6 @@ void OfflinePageBridge::WillCloseTab(
   RecentTabHelper* tab_helper = RecentTabHelper::FromWebContents(web_contents);
   if (tab_helper)
     tab_helper->WillCloseTab();
-}
-
-void OfflinePageBridge::UnregisterRecentTab(JNIEnv* env,
-                                            const JavaParamRef<jobject>& obj,
-                                            int tab_id) {
-  RequestCoordinator* request_coordinator =
-      RequestCoordinatorFactory::GetForBrowserContext(browser_context_);
-
-  RecentTabsUIAdapterDelegate* ui_adapter_delegate =
-      RecentTabsUIAdapterDelegate::FromDownloadUIAdapter(
-          RecentTabsUIAdapterDelegate::GetOrCreateRecentTabsUIAdapter(
-              offline_page_model_, request_coordinator));
-  ui_adapter_delegate->UnregisterTab(tab_id);
 }
 
 void OfflinePageBridge::ScheduleDownload(
