@@ -5,7 +5,7 @@
 
 """Client tool to trigger tasks or retrieve results from a Swarming server."""
 
-__version__ = '0.11'
+__version__ = '0.12'
 
 import collections
 import datetime
@@ -291,15 +291,17 @@ class State(object):
   CANCELED = 0x60
   COMPLETED = 0x70
   KILLED = 0x80
+  NO_RESOURCE = 0x100
 
   STATES = (
       'RUNNING', 'PENDING', 'EXPIRED', 'TIMED_OUT', 'BOT_DIED', 'CANCELED',
-      'COMPLETED', 'KILLED')
+      'COMPLETED', 'KILLED', 'NO_RESOURCE')
   STATES_RUNNING = ('RUNNING', 'PENDING')
   STATES_NOT_RUNNING = (
-      'EXPIRED', 'TIMED_OUT', 'BOT_DIED', 'CANCELED', 'COMPLETED', 'KILLED')
+      'EXPIRED', 'TIMED_OUT', 'BOT_DIED', 'CANCELED', 'COMPLETED', 'KILLED',
+      'NO_RESOURCE')
   STATES_DONE = ('TIMED_OUT', 'COMPLETED', 'KILLED')
-  STATES_ABANDONED = ('EXPIRED', 'BOT_DIED', 'CANCELED')
+  STATES_ABANDONED = ('EXPIRED', 'BOT_DIED', 'CANCELED', 'NO_RESOURCE')
 
   _NAMES = {
     RUNNING: 'Running',
@@ -310,6 +312,7 @@ class State(object):
     CANCELED: 'User canceled',
     COMPLETED: 'Completed',
     KILLED: 'User killed',
+    NO_RESOURCE: 'No resource',
   }
 
   _ENUMS = {
@@ -321,6 +324,7 @@ class State(object):
     'CANCELED': CANCELED,
     'COMPLETED': COMPLETED,
     'KILLED': KILLED,
+    'NO_RESOURCE': NO_RESOURCE,
   }
 
   @classmethod
