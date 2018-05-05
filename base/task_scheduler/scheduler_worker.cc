@@ -8,8 +8,6 @@
 
 #include <utility>
 
-#include "base/compiler_specific.h"
-#include "base/debug/alias.h"
 #include "base/logging.h"
 #include "base/task_scheduler/task_tracker.h"
 #include "base/trace_event/trace_event.h"
@@ -162,112 +160,6 @@ void SchedulerWorker::UpdateThreadPriority(
 }
 
 void SchedulerWorker::ThreadMain() {
-  if (priority_hint_ == ThreadPriority::BACKGROUND) {
-    switch (delegate_->GetThreadLabel()) {
-      case ThreadLabel::POOLED:
-        RunBackgroundPooledWorker();
-        return;
-      case ThreadLabel::SHARED:
-        RunBackgroundSharedWorker();
-        return;
-      case ThreadLabel::DEDICATED:
-        RunBackgroundDedicatedWorker();
-        return;
-#if defined(OS_WIN)
-      case ThreadLabel::SHARED_COM:
-        RunBackgroundSharedCOMWorker();
-        return;
-      case ThreadLabel::DEDICATED_COM:
-        RunBackgroundDedicatedCOMWorker();
-        return;
-#endif  // defined(OS_WIN)
-    }
-  }
-
-  switch (delegate_->GetThreadLabel()) {
-    case ThreadLabel::POOLED:
-      RunPooledWorker();
-      return;
-    case ThreadLabel::SHARED:
-      RunSharedWorker();
-      return;
-    case ThreadLabel::DEDICATED:
-      RunDedicatedWorker();
-      return;
-#if defined(OS_WIN)
-    case ThreadLabel::SHARED_COM:
-      RunSharedCOMWorker();
-      return;
-    case ThreadLabel::DEDICATED_COM:
-      RunDedicatedCOMWorker();
-      return;
-#endif  // defined(OS_WIN)
-  }
-}
-
-NOINLINE void SchedulerWorker::RunPooledWorker() {
-  const int line_number = __LINE__;
-  RunWorker();
-  base::debug::Alias(&line_number);
-}
-
-NOINLINE void SchedulerWorker::RunBackgroundPooledWorker() {
-  const int line_number = __LINE__;
-  RunWorker();
-  base::debug::Alias(&line_number);
-}
-
-NOINLINE void SchedulerWorker::RunSharedWorker() {
-  const int line_number = __LINE__;
-  RunWorker();
-  base::debug::Alias(&line_number);
-}
-
-NOINLINE void SchedulerWorker::RunBackgroundSharedWorker() {
-  const int line_number = __LINE__;
-  RunWorker();
-  base::debug::Alias(&line_number);
-}
-
-NOINLINE void SchedulerWorker::RunDedicatedWorker() {
-  const int line_number = __LINE__;
-  RunWorker();
-  base::debug::Alias(&line_number);
-}
-
-NOINLINE void SchedulerWorker::RunBackgroundDedicatedWorker() {
-  const int line_number = __LINE__;
-  RunWorker();
-  base::debug::Alias(&line_number);
-}
-
-#if defined(OS_WIN)
-NOINLINE void SchedulerWorker::RunSharedCOMWorker() {
-  const int line_number = __LINE__;
-  RunWorker();
-  base::debug::Alias(&line_number);
-}
-
-NOINLINE void SchedulerWorker::RunBackgroundSharedCOMWorker() {
-  const int line_number = __LINE__;
-  RunWorker();
-  base::debug::Alias(&line_number);
-}
-
-NOINLINE void SchedulerWorker::RunDedicatedCOMWorker() {
-  const int line_number = __LINE__;
-  RunWorker();
-  base::debug::Alias(&line_number);
-}
-
-NOINLINE void SchedulerWorker::RunBackgroundDedicatedCOMWorker() {
-  const int line_number = __LINE__;
-  RunWorker();
-  base::debug::Alias(&line_number);
-}
-#endif  // defined(OS_WIN)
-
-void SchedulerWorker::RunWorker() {
   DCHECK_EQ(self_, this);
   TRACE_EVENT_BEGIN0("task_scheduler", "SchedulerWorkerThread active");
 

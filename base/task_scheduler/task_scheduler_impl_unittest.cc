@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/debug/stack_trace.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
@@ -640,84 +639,6 @@ TEST_F(TaskSchedulerImplTest, FlushAsyncNoTasks) {
       BindOnce([](bool* called_back) { *called_back = true; },
                Unretained(&called_back)));
   EXPECT_TRUE(called_back);
-}
-
-namespace {
-
-// Verifies that |query| is found on the current stack. Ignores failures if this
-// configuration doesn't have symbols.
-void VerifyHasStringOnStack(const std::string& query) {
-  const std::string stack = debug::StackTrace().ToString();
-  SCOPED_TRACE(stack);
-  const bool found_on_stack = stack.find(query) != std::string::npos;
-  const bool stack_has_symbols =
-      stack.find("SchedulerWorker") != std::string::npos;
-  EXPECT_TRUE(found_on_stack || !stack_has_symbols) << query;
-}
-
-}  // namespace
-
-// Integration test that verifies that workers have a frame on their stacks
-// which easily identifies the type of worker (useful to diagnose issues from
-// logs without memory dumps).
-TEST_F(TaskSchedulerImplTest, IdentifiableStacks) {
-  StartTaskScheduler();
-
-  scheduler_.CreateSequencedTaskRunnerWithTraits({})->PostTask(
-      FROM_HERE, BindOnce(&VerifyHasStringOnStack, "RunPooledWorker"));
-  scheduler_.CreateSequencedTaskRunnerWithTraits({TaskPriority::BACKGROUND})
-      ->PostTask(FROM_HERE, BindOnce(&VerifyHasStringOnStack,
-                                     "RunBackgroundPooledWorker"));
-
-  scheduler_
-      .CreateSingleThreadTaskRunnerWithTraits(
-          {}, SingleThreadTaskRunnerThreadMode::SHARED)
-      ->PostTask(FROM_HERE,
-                 BindOnce(&VerifyHasStringOnStack, "RunSharedWorker"));
-  scheduler_
-      .CreateSingleThreadTaskRunnerWithTraits(
-          {TaskPriority::BACKGROUND}, SingleThreadTaskRunnerThreadMode::SHARED)
-      ->PostTask(FROM_HERE, BindOnce(&VerifyHasStringOnStack,
-                                     "RunBackgroundSharedWorker"));
-
-  scheduler_
-      .CreateSingleThreadTaskRunnerWithTraits(
-          {}, SingleThreadTaskRunnerThreadMode::DEDICATED)
-      ->PostTask(FROM_HERE,
-                 BindOnce(&VerifyHasStringOnStack, "RunDedicatedWorker"));
-  scheduler_
-      .CreateSingleThreadTaskRunnerWithTraits(
-          {TaskPriority::BACKGROUND},
-          SingleThreadTaskRunnerThreadMode::DEDICATED)
-      ->PostTask(FROM_HERE, BindOnce(&VerifyHasStringOnStack,
-                                     "RunBackgroundDedicatedWorker"));
-
-#if defined(OS_WIN)
-  scheduler_
-      .CreateCOMSTATaskRunnerWithTraits(
-          {}, SingleThreadTaskRunnerThreadMode::SHARED)
-      ->PostTask(FROM_HERE,
-                 BindOnce(&VerifyHasStringOnStack, "RunSharedCOMWorker"));
-  scheduler_
-      .CreateCOMSTATaskRunnerWithTraits(
-          {TaskPriority::BACKGROUND}, SingleThreadTaskRunnerThreadMode::SHARED)
-      ->PostTask(FROM_HERE, BindOnce(&VerifyHasStringOnStack,
-                                     "RunBackgroundSharedCOMWorker"));
-
-  scheduler_
-      .CreateCOMSTATaskRunnerWithTraits(
-          {}, SingleThreadTaskRunnerThreadMode::DEDICATED)
-      ->PostTask(FROM_HERE,
-                 BindOnce(&VerifyHasStringOnStack, "RunDedicatedCOMWorker"));
-  scheduler_
-      .CreateCOMSTATaskRunnerWithTraits(
-          {TaskPriority::BACKGROUND},
-          SingleThreadTaskRunnerThreadMode::DEDICATED)
-      ->PostTask(FROM_HERE, BindOnce(&VerifyHasStringOnStack,
-                                     "RunBackgroundDedicatedCOMWorker"));
-#endif  // defined(OS_WIN)
-
-  scheduler_.FlushForTesting();
 }
 
 }  // namespace internal
