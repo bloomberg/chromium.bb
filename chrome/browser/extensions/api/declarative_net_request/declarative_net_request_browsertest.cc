@@ -6,9 +6,12 @@
 
 #include <algorithm>
 #include <memory>
+#include <set>
+#include <vector>
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/json/json_string_value_serializer.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/path_service.h"
@@ -230,7 +233,71 @@ class DeclarativeNetRequestBrowserTest
     ASSERT_EQ(extension_id, listener->extension_id_for_message());
   }
 
+  void AddWhitelistedPages(const ExtensionId& extension_id,
+                           const std::vector<std::string>& patterns) {
+    UpdateWhitelistedPages(extension_id, patterns, "addWhitelistedPages");
+  }
+
+  void RemoveWhitelistedPages(const ExtensionId& extension_id,
+                              const std::vector<std::string>& patterns) {
+    UpdateWhitelistedPages(extension_id, patterns, "removeWhitelistedPages");
+  }
+
+  // Verifies that the result of getWhitelistedPages call is the same as
+  // |expected_patterns|.
+  void VerifyGetWhitelistedPages(
+      const ExtensionId& extension_id,
+      const std::set<std::string>& expected_patterns) {
+    static constexpr char kScript[] = R"(
+      chrome.declarativeNetRequest.getWhitelistedPages(function(patterns) {
+        window.domAutomationController.send(chrome.runtime.lastError
+                                                ? 'error'
+                                                : JSON.stringify(patterns));
+      });
+    )";
+
+    const std::string result =
+        ExecuteScriptInBackgroundPage(extension_id, kScript);
+    ASSERT_NE("error", result);
+
+    // Parse |result| as a list and deserialize it to a set of strings.
+    std::unique_ptr<base::Value> value =
+        JSONStringValueDeserializer(result).Deserialize(
+            nullptr /*error_code*/, nullptr /*error_message*/);
+    ASSERT_TRUE(value);
+    ASSERT_TRUE(value->is_list());
+    std::set<std::string> patterns;
+    for (const auto& pattern_value : value->GetList()) {
+      ASSERT_TRUE(pattern_value.is_string());
+      patterns.insert(pattern_value.GetString());
+    }
+
+    EXPECT_EQ(expected_patterns, patterns);
+  }
+
  private:
+  void UpdateWhitelistedPages(const ExtensionId& extension_id,
+                              const std::vector<std::string>& patterns,
+                              const std::string& function_name) {
+    static constexpr char kScript[] = R"(
+      chrome.declarativeNetRequest.%s(%s, function() {
+        window.domAutomationController.send(chrome.runtime.lastError
+                                                ? 'error'
+                                                : 'success');
+      });
+    )";
+
+    // Serialize |patterns| to JSON.
+    std::unique_ptr<base::ListValue> list = ToListValue(patterns);
+    std::string json_string;
+    ASSERT_TRUE(JSONStringValueSerializer(&json_string).Serialize(*list));
+
+    EXPECT_EQ("success", ExecuteScriptInBackgroundPage(
+                             extension_id,
+                             base::StringPrintf(kScript, function_name.c_str(),
+                                                json_string.c_str())));
+  }
+
   base::ScopedTempDir temp_dir_;
   bool has_background_script_ = false;
 
@@ -1116,7 +1183,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
       rules_2, "extension_2", {URLPattern::kAllUrlsPattern}));
   const std::string extension_id_2 = last_loaded_extension_id();
 
-  auto get_manifest_url = [](const std::string& extension_id) {
+  auto get_manifest_url = [](const ExtensionId& extension_id) {
     return GURL(base::StringPrintf("%s://%s/manifest.json",
                                    extensions::kExtensionScheme,
                                    extension_id.c_str()));
@@ -1147,28 +1214,13 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   ASSERT_TRUE(dnr_extension);
   EXPECT_EQ("Test extension", dnr_extension->name());
 
-  // Whitelist "https://www.google.com/".
-  const char* script1 = R"(
-    chrome.declarativeNetRequest.addWhitelistedPages(
-        ['https://www.google.com/'], function() {
-          window.domAutomationController.send('success');
-        });
-  )";
-  EXPECT_EQ("success",
-            ExecuteScriptInBackgroundPage(last_loaded_extension_id(), script1));
+  constexpr char kGoogleDotCom[] = "https://www.google.com/";
+
+  // Whitelist |kGoogleDotCom|.
+  AddWhitelistedPages(dnr_extension->id(), {kGoogleDotCom});
 
   // Ensure that the page was whitelisted.
-  const char* script2 = R"(
-    chrome.declarativeNetRequest.getWhitelistedPages(function(patterns) {
-      if (patterns.length === 1 && patterns[0] === 'https://www.google.com/')
-        window.domAutomationController.send('success');
-      else
-        window.domAutomationController.send('error');
-    });
-  )";
-
-  EXPECT_EQ("success",
-            ExecuteScriptInBackgroundPage(last_loaded_extension_id(), script2));
+  VerifyGetWhitelistedPages(dnr_extension->id(), {kGoogleDotCom});
 }
 
 // Tests that the pages whitelisted using the page whitelisting API are
@@ -1202,38 +1254,14 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
     WaitForBackgroundScriptToLoad(&listener, dnr_extension->id());
   }
 
-  const char* script1 = R"(
-    chrome.declarativeNetRequest.getWhitelistedPages(function(patterns) {
-        if (patterns.length === 1 && patterns[0] === "https://www.google.com/")
-          window.domAutomationController.send("success");
-        else
-          window.domAutomationController.send("error");
-    });
-  )";
-  ASSERT_EQ("success",
-            ExecuteScriptInBackgroundPage(dnr_extension->id(), script1));
+  constexpr char kGoogleDotCom[] = "https://www.google.com/";
 
-  // Remove "https://www.google.com/" from the whitelist.
-  const char* script2 = R"(
-    chrome.declarativeNetRequest.removeWhitelistedPages(
-      ["https://www.google.com/"], function() {
-        window.domAutomationController.send("success");
-    });
-  )";
-  ASSERT_EQ("success",
-            ExecuteScriptInBackgroundPage(dnr_extension->id(), script2));
+  VerifyGetWhitelistedPages(dnr_extension->id(), {kGoogleDotCom});
 
-  // Ensure that the page was removed from the whitelist.
-  const char* script3 = R"(
-    chrome.declarativeNetRequest.getWhitelistedPages(function(patterns) {
-        if (patterns.length === 0)
-          window.domAutomationController.send("success");
-        else
-          window.domAutomationController.send("error");
-    });
-  )";
-  EXPECT_EQ("success",
-            ExecuteScriptInBackgroundPage(dnr_extension->id(), script3));
+  // Remove |kGoogleDotCom| from the whitelist.
+  RemoveWhitelistedPages(dnr_extension->id(), {kGoogleDotCom});
+
+  VerifyGetWhitelistedPages(dnr_extension->id(), {});
 }
 
 // Test fixture to verify that host permissions for the request url and the
