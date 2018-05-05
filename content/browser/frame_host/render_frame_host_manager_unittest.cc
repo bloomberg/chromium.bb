@@ -763,19 +763,19 @@ TEST_F(RenderFrameHostManagerTest, ActiveFrameCountWhileSwappingInAndOut) {
 class RenderViewHostDestroyer : public WebContentsObserver {
  public:
   RenderViewHostDestroyer(RenderViewHost* render_view_host,
-                          WebContents* web_contents)
+                          std::unique_ptr<WebContents> web_contents)
       : WebContentsObserver(WebContents::FromRenderViewHost(render_view_host)),
         render_view_host_(render_view_host),
-        web_contents_(web_contents) {}
+        web_contents_(std::move(web_contents)) {}
 
   void RenderViewDeleted(RenderViewHost* render_view_host) override {
     if (render_view_host == render_view_host_)
-      delete web_contents_;
+      web_contents_.reset();
   }
 
  private:
   RenderViewHost* render_view_host_;
-  WebContents* web_contents_;
+  std::unique_ptr<WebContents> web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostDestroyer);
 };
@@ -797,11 +797,11 @@ TEST_F(RenderFrameHostManagerTest,
   // Create one more tab and navigate to kUrl1.  web_contents is not
   // wrapped as scoped_ptr since it intentionally deleted by destroyer
   // below as part of this test.
-  TestWebContents* web_contents =
+  std::unique_ptr<TestWebContents> web_contents =
       TestWebContents::Create(browser_context(), ntp_rfh->GetSiteInstance());
   web_contents->NavigateAndCommit(kUrl1);
   RenderViewHostDestroyer destroyer(ntp_rfh->GetRenderViewHost(),
-                                    web_contents);
+                                    std::move(web_contents));
 
   // This causes the first tab to navigate to kUrl2, which destroys
   // the ntp_rfh in ShutdownRenderViewHostsInSiteInstance(). When

@@ -102,7 +102,7 @@ class AudioFocusManagerTest : public testing::Test {
     session->AbandonSystemAudioFocusIfNeeded();
   }
 
-  WebContents* CreateWebContents() {
+  std::unique_ptr<WebContents> CreateWebContents() {
     return TestWebContents::Create(browser_context_.get(),
         SiteInstance::SiteInstance::Create(browser_context_.get()));
   }

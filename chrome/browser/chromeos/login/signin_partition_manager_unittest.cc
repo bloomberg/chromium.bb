@@ -80,10 +80,8 @@ class SigninPartitionManagerTest : public ChromeRenderViewHostTestHarness {
 
     signin_browser_context_ = std::make_unique<TestingProfile>();
 
-    signin_ui_web_contents_ = base::WrapUnique<content::WebContents>(
-        content::WebContentsTester::CreateTestWebContents(
-            GetSigninProfile(),
-            content::SiteInstance::Create(GetSigninProfile())));
+    signin_ui_web_contents_ = content::WebContentsTester::CreateTestWebContents(
+        GetSigninProfile(), content::SiteInstance::Create(GetSigninProfile()));
 
     GURL url(kEmbedderUrl);
     content::WebContentsTester::For(signin_ui_web_contents())

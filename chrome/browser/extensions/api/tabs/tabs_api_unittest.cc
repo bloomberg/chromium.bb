@@ -96,8 +96,8 @@ TEST_F(TabsApiUnitTest, QueryWithoutTabsPermission) {
   // Add 3 web contentses to the browser.
   content::WebContents* web_contentses[arraysize(tab_urls)];
   for (size_t i = 0; i < arraysize(tab_urls); ++i) {
-    std::unique_ptr<content::WebContents> web_contents = base::WrapUnique(
-        content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
+    std::unique_ptr<content::WebContents> web_contents =
+        content::WebContentsTester::CreateTestWebContents(profile(), nullptr);
     content::WebContents* raw_web_contents = web_contents.get();
     web_contentses[i] = raw_web_contents;
     browser()->tab_strip_model()->AppendWebContents(std::move(web_contents),
@@ -157,8 +157,8 @@ TEST_F(TabsApiUnitTest, QueryWithHostPermission) {
   // Add 3 web contentses to the browser.
   content::WebContents* web_contentses[arraysize(tab_urls)];
   for (size_t i = 0; i < arraysize(tab_urls); ++i) {
-    std::unique_ptr<content::WebContents> web_contents = base::WrapUnique(
-        content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
+    std::unique_ptr<content::WebContents> web_contents =
+        content::WebContentsTester::CreateTestWebContents(profile(), nullptr);
     content::WebContents* raw_web_contents = web_contents.get();
     web_contentses[i] = raw_web_contents;
     browser()->tab_strip_model()->AppendWebContents(std::move(web_contents),
@@ -248,8 +248,8 @@ TEST_F(TabsApiUnitTest, PDFExtensionNavigation) {
           .Build();
   ASSERT_TRUE(extension);
 
-  std::unique_ptr<content::WebContents> web_contents = base::WrapUnique(
-      content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
+  std::unique_ptr<content::WebContents> web_contents =
+      content::WebContentsTester::CreateTestWebContents(profile(), nullptr);
   content::WebContents* raw_web_contents = web_contents.get();
   ASSERT_TRUE(raw_web_contents);
   content::WebContentsTester* web_contents_tester =

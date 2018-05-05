@@ -77,7 +77,7 @@ class SessionRestoreObserverTest : public ChromeRenderViewHostTestHarness {
   // testing::Test:
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
-    SetContents(CreateRestoredWebContents().release());
+    SetContents(CreateRestoredWebContents());
     restored_tabs_.emplace_back(web_contents(), false, false, false);
   }
 

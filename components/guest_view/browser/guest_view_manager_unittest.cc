@@ -27,8 +27,7 @@ class GuestViewManagerTest : public content::RenderViewHostTestHarness {
   ~GuestViewManagerTest() override {}
 
   std::unique_ptr<WebContents> CreateWebContents() {
-    return std::unique_ptr<WebContents>(
-        WebContentsTester::CreateTestWebContents(browser_context(), nullptr));
+    return WebContentsTester::CreateTestWebContents(browser_context(), nullptr);
   }
 
  private:

@@ -41,8 +41,7 @@ using ChromeKeyboardUITest = ChromeRenderViewHostTestHarness;
 
 // A test for crbug.com/734534
 TEST_F(ChromeKeyboardUITest, DoesNotCrashWhenParentDoesNotExist) {
-  std::unique_ptr<content::WebContents> contents =
-      base::WrapUnique(CreateTestWebContents());
+  std::unique_ptr<content::WebContents> contents = CreateTestWebContents();
   TestChromeKeyboardUI keyboard_ui(std::move(contents));
 
   EXPECT_FALSE(keyboard_ui.HasContentsWindow());

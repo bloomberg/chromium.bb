@@ -174,8 +174,8 @@ class ChromeOmniboxNavigationObserverTest : public testing::Test {
 };
 
 void ChromeOmniboxNavigationObserverTest::SetUp() {
-  web_contents_.reset(content::WebContentsTester::CreateTestWebContents(
-      profile(), content::SiteInstance::Create(profile())));
+  web_contents_ = content::WebContentsTester::CreateTestWebContents(
+      profile(), content::SiteInstance::Create(profile()));
 
   InfoBarService::CreateForWebContents(web_contents_.get());
 

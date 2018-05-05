@@ -63,7 +63,7 @@ class WebContentsTester {
   static WebContentsTester* For(WebContents* contents);
 
   // Creates a WebContents enabled for testing.
-  static WebContents* CreateTestWebContents(
+  static std::unique_ptr<WebContents> CreateTestWebContents(
       BrowserContext* browser_context,
       scoped_refptr<SiteInstance> instance);
 

@@ -44,8 +44,9 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
  public:
   ~TestWebContents() override;
 
-  static TestWebContents* Create(BrowserContext* browser_context,
-                                 scoped_refptr<SiteInstance> instance);
+  static std::unique_ptr<TestWebContents> Create(
+      BrowserContext* browser_context,
+      scoped_refptr<SiteInstance> instance);
   static TestWebContents* Create(const CreateParams& params);
 
   // WebContentsImpl overrides (returning the same values, but in Test* types)

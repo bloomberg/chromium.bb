@@ -96,9 +96,9 @@ class TabLoadTrackerTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
-    contents1_.reset(CreateTestWebContents());
-    contents2_.reset(CreateTestWebContents());
-    contents3_.reset(CreateTestWebContents());
+    contents1_ = CreateTestWebContents();
+    contents2_ = CreateTestWebContents();
+    contents3_ = CreateTestWebContents();
 
     tracker_.AddObserver(&observer_);
   }

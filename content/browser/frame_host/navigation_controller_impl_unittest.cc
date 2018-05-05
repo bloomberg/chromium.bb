@@ -4054,7 +4054,7 @@ TEST_F(NavigationControllerTest, CopyStateFrom) {
   contents()->CommitPendingNavigation();
 
   std::unique_ptr<TestWebContents> other_contents(
-      static_cast<TestWebContents*>(CreateTestWebContents()));
+      static_cast<TestWebContents*>(CreateTestWebContents().release()));
   NavigationControllerImpl& other_controller = other_contents->GetController();
   other_controller.CopyStateFrom(controller, true);
 
@@ -4103,7 +4103,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune) {
   EXPECT_EQ(instance1, instance2);
 
   std::unique_ptr<TestWebContents> other_contents(
-      static_cast<TestWebContents*>(CreateTestWebContents()));
+      static_cast<TestWebContents*>(CreateTestWebContents().release()));
   NavigationControllerImpl& other_controller = other_contents->GetController();
   other_contents->NavigateAndCommit(url3);
   other_contents->ExpectSetHistoryOffsetAndLength(2, 3);
@@ -4141,7 +4141,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune2) {
   contents()->CommitPendingNavigation();
 
   std::unique_ptr<TestWebContents> other_contents(
-      static_cast<TestWebContents*>(CreateTestWebContents()));
+      static_cast<TestWebContents*>(CreateTestWebContents().release()));
   NavigationControllerImpl& other_controller = other_contents->GetController();
   other_contents->NavigateAndCommit(url3);
   other_contents->ExpectSetHistoryOffsetAndLength(1, 2);
@@ -4169,7 +4169,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune3) {
   NavigateAndCommit(url2);
 
   std::unique_ptr<TestWebContents> other_contents(
-      static_cast<TestWebContents*>(CreateTestWebContents()));
+      static_cast<TestWebContents*>(CreateTestWebContents().release()));
   NavigationControllerImpl& other_controller = other_contents->GetController();
   other_contents->NavigateAndCommit(url3);
   other_contents->NavigateAndCommit(url4);
@@ -4199,7 +4199,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPruneNotLast) {
   NavigateAndCommit(url2);
 
   std::unique_ptr<TestWebContents> other_contents(
-      static_cast<TestWebContents*>(CreateTestWebContents()));
+      static_cast<TestWebContents*>(CreateTestWebContents().release()));
   NavigationControllerImpl& other_controller = other_contents->GetController();
   other_contents->NavigateAndCommit(url3);
   other_contents->NavigateAndCommit(url4);
@@ -4233,7 +4233,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPruneTargetPending) {
   contents()->CommitPendingNavigation();
 
   std::unique_ptr<TestWebContents> other_contents(
-      static_cast<TestWebContents*>(CreateTestWebContents()));
+      static_cast<TestWebContents*>(CreateTestWebContents().release()));
   NavigationControllerImpl& other_controller = other_contents->GetController();
   other_contents->NavigateAndCommit(url3);
   other_controller.LoadURL(
@@ -4267,7 +4267,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPruneTargetPending2) {
   NavigateAndCommit(url1);
 
   std::unique_ptr<TestWebContents> other_contents(
-      static_cast<TestWebContents*>(CreateTestWebContents()));
+      static_cast<TestWebContents*>(CreateTestWebContents().release()));
   NavigationControllerImpl& other_controller = other_contents->GetController();
   other_contents->NavigateAndCommit(url2a);
   // Simulate a client redirect, which has the same page ID as entry 2a.
@@ -4308,7 +4308,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPruneSourcePending) {
   controller.GoBack();
 
   std::unique_ptr<TestWebContents> other_contents(
-      static_cast<TestWebContents*>(CreateTestWebContents()));
+      static_cast<TestWebContents*>(CreateTestWebContents().release()));
   NavigationControllerImpl& other_controller = other_contents->GetController();
   other_contents->NavigateAndCommit(url3);
   other_contents->ExpectSetHistoryOffsetAndLength(2, 3);
@@ -4395,7 +4395,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPruneMaxEntries) {
   NavigateAndCommit(url3);
 
   std::unique_ptr<TestWebContents> other_contents(
-      static_cast<TestWebContents*>(CreateTestWebContents()));
+      static_cast<TestWebContents*>(CreateTestWebContents().release()));
   NavigationControllerImpl& other_controller = other_contents->GetController();
   other_contents->NavigateAndCommit(url4);
   other_contents->ExpectSetHistoryOffsetAndLength(2, 3);
@@ -4436,7 +4436,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPruneReplaceEntry) {
   EXPECT_EQ(instance1, instance2);
 
   std::unique_ptr<TestWebContents> other_contents(
-      static_cast<TestWebContents*>(CreateTestWebContents()));
+      static_cast<TestWebContents*>(CreateTestWebContents().release()));
   NavigationControllerImpl& other_controller = other_contents->GetController();
   other_contents->NavigateAndCommit(url3);
   other_contents->ExpectSetHistoryOffsetAndLength(1, 2);
@@ -4479,7 +4479,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPruneMaxEntriesReplaceEntry) {
   NavigateAndCommit(url3);
 
   std::unique_ptr<TestWebContents> other_contents(
-      static_cast<TestWebContents*>(CreateTestWebContents()));
+      static_cast<TestWebContents*>(CreateTestWebContents().release()));
   NavigationControllerImpl& other_controller = other_contents->GetController();
   other_contents->NavigateAndCommit(url4);
   other_contents->ExpectSetHistoryOffsetAndLength(2, 3);
@@ -4521,7 +4521,7 @@ TEST_F(NavigationControllerTest, CopyRestoredStateAndNavigate) {
 
   // Create a WebContents with restored entries.
   std::unique_ptr<TestWebContents> source_contents(
-      static_cast<TestWebContents*>(CreateTestWebContents()));
+      static_cast<TestWebContents*>(CreateTestWebContents().release()));
   NavigationControllerImpl& source_controller =
       source_contents->GetController();
   source_controller.Restore(entries.size() - 1,

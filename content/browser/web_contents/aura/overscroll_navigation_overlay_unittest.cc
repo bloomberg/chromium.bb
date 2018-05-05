@@ -71,16 +71,25 @@ class ImmediateLoadObserver : WebContentsObserver {
 // A subclass of TestWebContents that offers a fake content window.
 class OverscrollTestWebContents : public TestWebContents {
  public:
+  explicit OverscrollTestWebContents(
+      BrowserContext* browser_context,
+      std::unique_ptr<aura::Window> fake_native_view,
+      std::unique_ptr<aura::Window> fake_contents_window)
+      : TestWebContents(browser_context),
+        fake_native_view_(std::move(fake_native_view)),
+        fake_contents_window_(std::move(fake_contents_window)),
+        is_being_destroyed_(false) {}
   ~OverscrollTestWebContents() override {}
 
-  static OverscrollTestWebContents* Create(
+  static std::unique_ptr<OverscrollTestWebContents> Create(
       BrowserContext* browser_context,
       scoped_refptr<SiteInstance> instance,
       std::unique_ptr<aura::Window> fake_native_view,
       std::unique_ptr<aura::Window> fake_contents_window) {
-    OverscrollTestWebContents* web_contents = new OverscrollTestWebContents(
-        browser_context, std::move(fake_native_view),
-        std::move(fake_contents_window));
+    std::unique_ptr<OverscrollTestWebContents> web_contents =
+        std::make_unique<OverscrollTestWebContents>(
+            browser_context, std::move(fake_native_view),
+            std::move(fake_contents_window));
     web_contents->Init(
         WebContents::CreateParams(browser_context, std::move(instance)));
     return web_contents;
@@ -99,16 +108,6 @@ class OverscrollTestWebContents : public TestWebContents {
   }
 
   bool IsBeingDestroyed() const override { return is_being_destroyed_; }
-
- protected:
-  explicit OverscrollTestWebContents(
-      BrowserContext* browser_context,
-      std::unique_ptr<aura::Window> fake_native_view,
-      std::unique_ptr<aura::Window> fake_contents_window)
-      : TestWebContents(browser_context),
-        fake_native_view_(std::move(fake_native_view)),
-        fake_contents_window_(std::move(fake_contents_window)),
-        is_being_destroyed_(false) {}
 
  private:
   std::unique_ptr<aura::Window> fake_native_view_;

@@ -217,15 +217,17 @@ MockRenderProcessHost* RenderViewHostTestHarness::process() {
 }
 
 void RenderViewHostTestHarness::DeleteContents() {
-  SetContents(nullptr);
+  contents_.reset();
 }
 
-void RenderViewHostTestHarness::SetContents(WebContents* contents) {
-  contents_.reset(contents);
+void RenderViewHostTestHarness::SetContents(
+    std::unique_ptr<WebContents> contents) {
+  contents_ = std::move(contents);
 }
 
-WebContents* RenderViewHostTestHarness::CreateTestWebContents() {
-  // Make sure we ran SetUp() already.
+std::unique_ptr<WebContents>
+RenderViewHostTestHarness::CreateTestWebContents() {
+// Make sure we ran SetUp() already.
 #if defined(OS_WIN)
   DCHECK(ole_initializer_ != NULL);
 #endif
@@ -283,7 +285,7 @@ void RenderViewHostTestHarness::TearDown() {
   if (IsBrowserSideNavigationEnabled())
     BrowserSideNavigationTearDown();
 
-  SetContents(nullptr);
+  DeleteContents();
 #if defined(USE_AURA)
   aura_test_helper_->TearDown();
   ui::TerminateContextFactoryForTests();

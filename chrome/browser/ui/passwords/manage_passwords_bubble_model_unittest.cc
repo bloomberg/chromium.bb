@@ -127,8 +127,8 @@ class ManagePasswordsBubbleModelTest : public ::testing::Test {
   ~ManagePasswordsBubbleModelTest() override = default;
 
   void SetUp() override {
-    test_web_contents_.reset(
-        content::WebContentsTester::CreateTestWebContents(&profile_, nullptr));
+    test_web_contents_ =
+        content::WebContentsTester::CreateTestWebContents(&profile_, nullptr);
     mock_delegate_.reset(new testing::NiceMock<PasswordsModelDelegateMock>);
     ON_CALL(*mock_delegate_, GetPasswordFormMetricsRecorder())
         .WillByDefault(Return(nullptr));

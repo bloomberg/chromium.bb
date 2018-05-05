@@ -228,11 +228,11 @@ class RenderViewHostTestHarness : public testing::Test {
 
   // Sets the current WebContents for tests that want to alter it. Takes
   // ownership of the WebContents passed.
-  void SetContents(WebContents* contents);
+  void SetContents(std::unique_ptr<WebContents> contents);
 
   // Creates a new test-enabled WebContents. Ownership passes to the
   // caller.
-  WebContents* CreateTestWebContents();
+  std::unique_ptr<WebContents> CreateTestWebContents();
 
   // Cover for |contents()->NavigateAndCommit(url)|. See
   // WebContentsTester::NavigateAndCommit for details.

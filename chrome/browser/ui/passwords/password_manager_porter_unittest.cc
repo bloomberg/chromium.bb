@@ -191,8 +191,8 @@ class PasswordManagerPorterTest : public testing::Test {
   void SetUp() override {
     password_manager_porter_.reset(new TestPasswordManagerPorter());
     profile_.reset(new TestingProfile());
-    web_contents_.reset(content::WebContentsTester::CreateTestWebContents(
-        profile_.get(), nullptr));
+    web_contents_ = content::WebContentsTester::CreateTestWebContents(
+        profile_.get(), nullptr);
     // SelectFileDialog::SetFactory is responsible for freeing the memory
     // associated with a new factory.
     selected_file_ = base::FilePath(kNullFileName);

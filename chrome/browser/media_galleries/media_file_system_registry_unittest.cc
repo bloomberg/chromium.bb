@@ -470,14 +470,14 @@ ProfileState::ProfileState(
   no_permissions_extension_ =
       AddMediaGalleriesApp("no", read_permissions, profile_.get());
 
-  single_web_contents_.reset(
-      content::WebContentsTester::CreateTestWebContents(profile_.get(), NULL));
+  single_web_contents_ =
+      content::WebContentsTester::CreateTestWebContents(profile_.get(), NULL);
   single_rph_ = rph_factory->ReleaseRPH(profile_.get());
 
-  shared_web_contents1_.reset(
-      content::WebContentsTester::CreateTestWebContents(profile_.get(), NULL));
-  shared_web_contents2_.reset(
-      content::WebContentsTester::CreateTestWebContents(profile_.get(), NULL));
+  shared_web_contents1_ =
+      content::WebContentsTester::CreateTestWebContents(profile_.get(), NULL);
+  shared_web_contents2_ =
+      content::WebContentsTester::CreateTestWebContents(profile_.get(), NULL);
   shared_rph_ = rph_factory->ReleaseRPH(profile_.get());
 }
 

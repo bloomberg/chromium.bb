@@ -30,8 +30,8 @@ TestWebContentsFactory::~TestWebContentsFactory() {
 
 WebContents* TestWebContentsFactory::CreateWebContents(
     BrowserContext* context) {
-  web_contents_.push_back(base::WrapUnique(
-      WebContentsTester::CreateTestWebContents(context, nullptr)));
+  web_contents_.push_back(
+      WebContentsTester::CreateTestWebContents(context, nullptr));
   DCHECK(web_contents_.back());
   return web_contents_.back().get();
 }

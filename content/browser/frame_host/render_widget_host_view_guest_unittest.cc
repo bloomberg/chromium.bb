@@ -147,8 +147,7 @@ class RenderWidgetHostViewGuestSurfaceTest
     browser_context_.reset(new TestBrowserContext);
     MockRenderProcessHost* process_host =
         new MockRenderProcessHost(browser_context_.get());
-    web_contents_.reset(
-        TestWebContents::Create(browser_context_.get(), nullptr));
+    web_contents_ = TestWebContents::Create(browser_context_.get(), nullptr);
     // We don't own the BPG, the WebContents does.
     browser_plugin_guest_ = new TestBrowserPluginGuest(
         web_contents_.get(), &browser_plugin_guest_delegate_);
