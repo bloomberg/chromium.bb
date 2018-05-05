@@ -619,6 +619,9 @@ void OfflinePageModelTaskified::OnAddPageForSavePageDone(
             .pages_allowed_per_url != kUnlimitedPages) {
       RemovePagesMatchingUrlAndNamespace(page_attempted);
     }
+    offline_event_logger_.RecordPageSaved(page_attempted.client_id.name_space,
+                                          page_attempted.url.spec(),
+                                          page_attempted.offline_id);
   }
   ScheduleMaintenanceTasks();
 }
@@ -647,6 +650,7 @@ void OfflinePageModelTaskified::OnDeleteDone(
         "OfflinePages.DeletePageCount",
         model_utils::ToNamespaceEnum(info.client_id.name_space),
         OfflinePagesNamespaceEnumeration::RESULT_COUNT);
+    offline_event_logger_.RecordPageDeleted(info.offline_id);
     for (Observer& observer : observers_)
       observer.OfflinePageDeleted(info);
     if (info.system_download_id != 0)
