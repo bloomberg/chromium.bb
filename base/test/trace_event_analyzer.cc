@@ -110,6 +110,19 @@ bool TraceEvent::SetFromJSON(const base::Value* event_value) {
     return false;
   }
 
+  dictionary->GetDouble("tdur", &thread_duration);
+  dictionary->GetDouble("tts", &thread_timestamp);
+  dictionary->GetString("scope", &scope);
+  dictionary->GetString("bind_id", &bind_id);
+  dictionary->GetBoolean("flow_out", &flow_out);
+  dictionary->GetBoolean("flow_in", &flow_in);
+
+  const base::DictionaryValue* id2;
+  if (dictionary->GetDictionary("id2", &id2)) {
+    id2->GetString("global", &global_id2);
+    id2->GetString("local", &local_id2);
+  }
+
   // For each argument, copy the type and create a trace_analyzer::TraceValue.
   for (base::DictionaryValue::Iterator it(*args); !it.IsAtEnd();
        it.Advance()) {

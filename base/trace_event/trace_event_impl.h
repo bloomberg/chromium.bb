@@ -142,6 +142,10 @@ class BASE_EXPORT TraceEvent {
 
   const char* name() const { return name_; }
 
+  unsigned char arg_type(size_t index) const { return arg_types_[index]; }
+  const char* arg_name(size_t index) const { return arg_names_[index]; }
+  const TraceValue& arg_value(size_t index) const { return arg_values_[index]; }
+
 #if defined(OS_ANDROID)
   void SendToATrace();
 #endif

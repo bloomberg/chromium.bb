@@ -37,11 +37,14 @@ class MockProducerClient : public ProducerClient {
 
   std::unique_ptr<perfetto::protos::TracePacket> GetPreviousPacket() {
     uint32_t message_size = trace_packet_.Finalize();
+    // GetNewBuffer() in ScatteredStreamWriterNullDelegate doesn't
+    // actually return a new buffer, but rather lets us access the buffer
+    // buffer already used by protozero to write the TracePacket into.
     protozero::ContiguousMemoryRange buffer = delegate_.GetNewBuffer();
     EXPECT_GE(buffer.size(), message_size);
 
     auto proto = std::make_unique<perfetto::protos::TracePacket>();
-    proto->ParseFromArray(buffer.begin, buffer.size());
+    EXPECT_TRUE(proto->ParseFromArray(buffer.begin, message_size));
 
     return proto;
   }
@@ -101,13 +104,19 @@ class TraceEventDataSourceTest : public testing::Test {
 
     wait_for_tracelog_flush.Run();
 
+    // As MockTraceWriter keeps a pointer to our MockProducerClient,
+    // we need to make sure to clean it up from TLS. This means
+    // these tests can't use a multithreaded task environment that
+    // might add trace events from other threads, as those might
+    // use old TraceWriters writing into invalid memory.
+    TraceEventDataSource::GetInstance()->ResetCurrentThreadForTesting();
     producer_client_.reset();
     message_loop_.reset();
   }
 
   void CreateTraceEventDataSource() {
     auto data_source_config = mojom::DataSourceConfig::New();
-    TraceEventDataSource::GetInstance()->StartTracing(producer_client_.get(),
+    TraceEventDataSource::GetInstance()->StartTracing(producer_client(),
                                                       *data_source_config);
   }
 
@@ -164,6 +173,107 @@ TEST_F(TraceEventDataSourceTest, InstantTraceEvent) {
   EXPECT_EQ("foo", trace_event.category_group_name());
   EXPECT_EQ(TRACE_EVENT_SCOPE_THREAD, trace_event.flags());
   EXPECT_EQ(TRACE_EVENT_PHASE_INSTANT, trace_event.phase());
+}
+
+TEST_F(TraceEventDataSourceTest, EventWithStringArgs) {
+  CreateTraceEventDataSource();
+
+  TRACE_EVENT_INSTANT2("foo", "bar", TRACE_EVENT_SCOPE_THREAD, "arg1_name",
+                       "arg1_val", "arg2_name", "arg2_val");
+
+  auto trace_events = producer_client()->GetChromeTraceEvents();
+  EXPECT_EQ(trace_events.size(), 1);
+
+  auto trace_args = trace_events[0].args();
+  EXPECT_EQ(trace_args.size(), 2);
+
+  EXPECT_EQ("arg1_name", trace_args[0].name());
+  EXPECT_EQ("arg1_val", trace_args[0].string_value());
+  EXPECT_EQ("arg2_name", trace_args[1].name());
+  EXPECT_EQ("arg2_val", trace_args[1].string_value());
+}
+
+TEST_F(TraceEventDataSourceTest, EventWithUIntArgs) {
+  CreateTraceEventDataSource();
+
+  TRACE_EVENT_INSTANT2("foo", "bar", TRACE_EVENT_SCOPE_THREAD, "foo", 42u,
+                       "bar", 4242u);
+
+  auto trace_events = producer_client()->GetChromeTraceEvents();
+  EXPECT_EQ(trace_events.size(), 1);
+
+  auto trace_args = trace_events[0].args();
+  EXPECT_EQ(trace_args.size(), 2);
+
+  EXPECT_EQ(42u, trace_args[0].uint_value());
+  EXPECT_EQ(4242u, trace_args[1].uint_value());
+}
+
+TEST_F(TraceEventDataSourceTest, EventWithIntArgs) {
+  CreateTraceEventDataSource();
+
+  TRACE_EVENT_INSTANT2("foo", "bar", TRACE_EVENT_SCOPE_THREAD, "foo", 42, "bar",
+                       4242);
+
+  auto trace_events = producer_client()->GetChromeTraceEvents();
+  EXPECT_EQ(trace_events.size(), 1);
+
+  auto trace_args = trace_events[0].args();
+  EXPECT_EQ(trace_args.size(), 2);
+
+  EXPECT_EQ(42, trace_args[0].int_value());
+  EXPECT_EQ(4242, trace_args[1].int_value());
+}
+
+TEST_F(TraceEventDataSourceTest, EventWithBoolArgs) {
+  CreateTraceEventDataSource();
+
+  TRACE_EVENT_INSTANT2("foo", "bar", TRACE_EVENT_SCOPE_THREAD, "foo", true,
+                       "bar", false);
+
+  auto trace_events = producer_client()->GetChromeTraceEvents();
+  EXPECT_EQ(trace_events.size(), 1);
+
+  auto trace_args = trace_events[0].args();
+  EXPECT_EQ(trace_args.size(), 2);
+
+  EXPECT_TRUE(trace_args[0].has_bool_value());
+  EXPECT_EQ(true, trace_args[0].bool_value());
+  EXPECT_TRUE(trace_args[1].has_bool_value());
+  EXPECT_EQ(false, trace_args[1].bool_value());
+}
+
+TEST_F(TraceEventDataSourceTest, EventWithDoubleArgs) {
+  CreateTraceEventDataSource();
+
+  TRACE_EVENT_INSTANT2("foo", "bar", TRACE_EVENT_SCOPE_THREAD, "foo", 42.42,
+                       "bar", 4242.42);
+
+  auto trace_events = producer_client()->GetChromeTraceEvents();
+  EXPECT_EQ(trace_events.size(), 1);
+
+  auto trace_args = trace_events[0].args();
+  EXPECT_EQ(trace_args.size(), 2);
+
+  EXPECT_EQ(42.42, trace_args[0].double_value());
+  EXPECT_EQ(4242.42, trace_args[1].double_value());
+}
+
+TEST_F(TraceEventDataSourceTest, EventWithPointerArgs) {
+  CreateTraceEventDataSource();
+
+  TRACE_EVENT_INSTANT2("foo", "bar", TRACE_EVENT_SCOPE_THREAD, "foo",
+                       reinterpret_cast<void*>(0xBEEF), "bar",
+                       reinterpret_cast<void*>(0xF00D));
+
+  auto trace_events = producer_client()->GetChromeTraceEvents();
+  EXPECT_EQ(trace_events.size(), 1);
+
+  auto trace_args = trace_events[0].args();
+  EXPECT_EQ(trace_args.size(), 2);
+
+  EXPECT_EQ(static_cast<uintptr_t>(0xBEEF), trace_args[0].pointer_value());
+  EXPECT_EQ(static_cast<uintptr_t>(0xF00D), trace_args[1].pointer_value());
 }
 
 }  // namespace

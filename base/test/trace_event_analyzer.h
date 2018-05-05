@@ -182,6 +182,14 @@ struct TraceEvent {
   std::string category;
   std::string name;
   std::string id;
+  double thread_duration = 0.0;
+  double thread_timestamp = 0.0;
+  std::string scope;
+  std::string bind_id;
+  bool flow_out = false;
+  bool flow_in = false;
+  std::string global_id2;
+  std::string local_id2;
 
   // All numbers and bool values from TraceEvent args are cast to double.
   // bool becomes 1.0 (true) or 0.0 (false).
@@ -507,7 +515,6 @@ class Query {
   // This is a recursive method that walks the query tree.
   bool Evaluate(const TraceEvent& event) const;
 
- private:
   enum TraceEventMember {
     EVENT_INVALID,
     EVENT_PID,
@@ -646,6 +653,7 @@ class Query {
   const Query& left() const;
   const Query& right() const;
 
+ private:
   QueryType type_;
   Operator operator_;
   scoped_refptr<QueryNode> left_;

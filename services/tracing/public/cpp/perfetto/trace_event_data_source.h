@@ -27,6 +27,9 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource {
 
   static TraceEventDataSource* GetInstance();
 
+  // Deletes the TraceWriter for the current thread, if any.
+  static void ResetCurrentThreadForTesting();
+
   // The ProducerClient is responsible for calling RequestStop
   // which will clear the stored pointer to it, before it
   // gets destroyed. ProducerClient::CreateTraceWriter can be
