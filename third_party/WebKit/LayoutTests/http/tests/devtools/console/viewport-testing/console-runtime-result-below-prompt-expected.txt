@@ -44,3 +44,17 @@ Running: testNoOpForLongText
 Setting max length for evaluation to 0
 Expression: "1 + 2" yielded preview: ""
 
+Running: testClickingPreviewFocusesEditor
+Prompt text set to `1 + 2`
+Selection before: {"startLine":0,"startColumn":0,"endLine":0,"endColumn":0}
+Clicking preview element
+Selection after: {"startLine":0,"startColumn":5,"endLine":0,"endColumn":5}
+Editor has focus: true
+
+Running: testClickWithSelectionDoesNotFocusEditor
+Prompt text set to `1 + 2`
+Selection before: 3
+Clicking preview element
+Selection after: 3
+Editor has focus: false
+

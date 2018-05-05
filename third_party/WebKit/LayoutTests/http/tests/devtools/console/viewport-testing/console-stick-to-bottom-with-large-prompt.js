@@ -21,7 +21,7 @@
 
   const consoleView = Console.ConsoleView.instance();
   const viewport = consoleView._viewport;
-  const heightBelowPromptEditor = consoleView._prompt.heightBelowEditor();
+  const heightBelowPromptEditor = consoleView._prompt.belowEditorElement().offsetHeight;
   const messagesCount = 150;
 
   TestRunner.runTestSuite([
