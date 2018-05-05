@@ -752,6 +752,7 @@ def _git_checkout(sln, sln_dir, revisions, shallow, refs, git_cache_dir,
         raise
 
 def _git_disable_gc(cwd):
+  git('config', 'gc.auto', '0', cwd=cwd)
   git('config', 'gc.autodetach', '0', cwd=cwd)
   git('config', 'gc.autopacklimit', '0', cwd=cwd)
 
