@@ -192,14 +192,6 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  stopTap_: function(e) {
-    e.stopPropagation();
-  },
-
-  /**
-   * @param {!Event} e
-   * @private
-   */
   onSubpageArrowTap_: function(e) {
     this.openSubpage_();
     e.stopPropagation();
