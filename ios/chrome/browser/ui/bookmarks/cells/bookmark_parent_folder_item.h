@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,11 +7,10 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
-#import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
 
 // Item to display the name of the parent folder of a bookmark node.
-@interface BookmarkParentFolderItem : CollectionViewItem
+@interface BookmarkParentFolderItem : TableViewItem
 
 // The title of the bookmark folder it represents.
 @property(nonatomic, copy) NSString* title;
@@ -19,7 +18,7 @@
 @end
 
 // Cell class associated to BookmarkParentFolderItem.
-@interface BookmarkParentFolderCell : MDCCollectionViewCell
+@interface BookmarkParentFolderCell : UITableViewCell
 
 // Label that displays the item's title.
 @property(nonatomic, readonly, strong) UILabel* parentFolderNameLabel;

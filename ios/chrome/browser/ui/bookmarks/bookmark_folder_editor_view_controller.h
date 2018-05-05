@@ -6,7 +6,7 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
+#import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 
 @class BookmarkFolderEditorViewController;
 
@@ -40,7 +40,7 @@ class ChromeBrowserState;
 // the title and selecting the parent folder of the bookmark.
 // This controller monitors the state of the bookmark model, so changes to the
 // bookmark model can affect this controller's state.
-@interface BookmarkFolderEditorViewController : CollectionViewController
+@interface BookmarkFolderEditorViewController : ChromeTableViewController
 
 @property(nonatomic, weak) id<BookmarkFolderEditorViewControllerDelegate>
     delegate;
@@ -62,8 +62,8 @@ folderEditorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
                        folder:(const bookmarks::BookmarkNode*)folder
                  browserState:(ios::ChromeBrowserState*)browserState;
 
-- (instancetype)initWithLayout:(UICollectionViewLayout*)layout
-                         style:(CollectionViewControllerStyle)style
+- (instancetype)initWithTableViewStyle:(UICollectionViewLayout*)layout
+                           appBarStyle:(ChromeTableViewControllerStyle)style
     NS_UNAVAILABLE;
 
 @end

@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_parent_folder_item.h"
 
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
+#import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -22,9 +23,10 @@ TEST_F(BookmarkParentFolderItemTest, LabelGetsTitle) {
       [[BookmarkParentFolderItem alloc] initWithType:0];
   BookmarkParentFolderCell* cell =
       [[BookmarkParentFolderCell alloc] initWithFrame:CGRectZero];
+  ChromeTableViewStyler* styler = [[ChromeTableViewStyler alloc] init];
 
   item.title = @"Foo";
-  [item configureCell:cell];
+  [item configureCell:cell withStyler:styler];
   EXPECT_NSEQ(@"Foo", cell.parentFolderNameLabel.text);
 }
 

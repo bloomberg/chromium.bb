@@ -12,6 +12,10 @@ source_set("cells") {
     "bookmark_table_signin_promo_cell.mm",
     "bookmark_text_field_item.h",
     "bookmark_text_field_item.mm",
+    "legacy_bookmark_parent_folder_item.h",
+    "legacy_bookmark_parent_folder_item.mm",
+    "legacy_bookmark_text_field_item.h",
+    "legacy_bookmark_text_field_item.mm",
   ]
 
   deps = [
@@ -23,6 +27,8 @@ source_set("cells") {
     "//ios/chrome/browser/ui/collection_view/cells",
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/icons",
+    "//ios/chrome/browser/ui/table_view:styler",
+    "//ios/chrome/browser/ui/table_view/cells",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/ui",
     "//ios/third_party/material_components_ios",
@@ -43,6 +49,7 @@ source_set("unit_tests") {
   deps = [
     ":cells",
     "//ios/chrome/browser/ui/collection_view/cells",
+    "//ios/chrome/browser/ui/table_view:styler",
     "//ios/third_party/material_components_ios",
     "//testing/gtest",
     "//third_party/ocmock",

@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,8 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
-#import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
 
 @class BookmarkTextFieldItem;
 @protocol TextFieldStyling;
@@ -22,7 +21,7 @@
 
 @end
 
-@interface BookmarkTextFieldItem : CollectionViewItem
+@interface BookmarkTextFieldItem : TableViewItem
 
 // The text field content.
 @property(nonatomic, copy) NSString* text;
@@ -35,7 +34,7 @@
 
 @end
 
-@interface BookmarkTextFieldCell : MDCCollectionViewCell
+@interface BookmarkTextFieldCell : UITableViewCell
 
 // Text field to display the title or the URL of the bookmark node.
 @property(nonatomic, readonly, strong) UITextField<TextFieldStyling>* textField;

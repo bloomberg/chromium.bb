@@ -14,7 +14,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_elevated_toolbar.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_folder_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
@@ -25,6 +24,8 @@
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/material_components/utils.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
+#import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MDCFlatButton.h"
@@ -73,9 +74,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @property(nonatomic, weak) UIBarButtonItem* doneItem;
 @property(nonatomic, strong) BookmarkTextFieldItem* titleItem;
 @property(nonatomic, strong) BookmarkParentFolderItem* parentFolderItem;
-// Bottom toolbar with DELETE button that only appears when the edited folder
-// allows deletion.
-@property(nonatomic, weak) BookmarksElevatedToolbar* toolbar;
 
 // |bookmarkModel| must not be NULL and must be loaded.
 - (instancetype)initWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
@@ -87,11 +85,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // Configures collection view model.
 - (void)setupCollectionViewModel;
 
-// Adds toolbar with DELETE button.
+// Bottom toolbar with DELETE button that only appears when the edited folder
+// allows deletion.
 - (void)addToolbar;
-
-// Removes toolbar.
-- (void)removeToolbar;
 
 @end
 
@@ -107,7 +103,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @synthesize doneItem = _doneItem;
 @synthesize titleItem = _titleItem;
 @synthesize parentFolderItem = _parentFolderItem;
-@synthesize toolbar = _toolbar;
 
 #pragma mark - Class methods
 
@@ -143,9 +138,9 @@ folderEditorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
 - (instancetype)initWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel {
   DCHECK(bookmarkModel);
   DCHECK(bookmarkModel->loaded());
-  UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
   self =
-      [super initWithLayout:layout style:CollectionViewControllerStyleAppBar];
+      [super initWithTableViewStyle:UITableViewStylePlain
+                        appBarStyle:ChromeTableViewControllerStyleWithAppBar];
   if (self) {
     _bookmarkModel = bookmarkModel;
 
@@ -165,7 +160,12 @@ folderEditorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
 
 - (void)viewDidLoad {
   [super viewDidLoad];
-  self.collectionView.backgroundColor = [UIColor whiteColor];
+  self.tableView.backgroundColor = self.styler.tableViewBackgroundColor;
+  self.tableView.estimatedRowHeight = 150.0;
+  self.tableView.rowHeight = UITableViewAutomaticDimension;
+  self.tableView.sectionHeaderHeight = 0;
+  self.tableView.sectionFooterHeight = 0;
+  [self.tableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
 
   // Add Done button.
   UIBarButtonItem* doneItem = [[UIBarButtonItem alloc]
@@ -201,7 +201,6 @@ folderEditorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
     backItem.accessibilityIdentifier = @"Back";
     self.navigationItem.leftBarButtonItem = backItem;
   }
-
   [self updateEditingState];
   [self setupCollectionViewModel];
 }
@@ -366,36 +365,14 @@ folderEditorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
   return YES;
 }
 
-#pragma mark - UICollectionViewDelegate
+#pragma mark - UITableViewDelegate
 
-- (void)collectionView:(UICollectionView*)collectionView
-    didSelectItemAtIndexPath:(NSIndexPath*)indexPath {
-  [super collectionView:collectionView didSelectItemAtIndexPath:indexPath];
-  if ([self.collectionViewModel itemTypeForIndexPath:indexPath] ==
+- (void)tableView:(UITableView*)tableView
+    didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
+  DCHECK_EQ(tableView, self.tableView);
+  if ([self.tableViewModel itemTypeForIndexPath:indexPath] ==
       ItemTypeParentFolder) {
     [self changeParentFolder];
-  }
-}
-
-#pragma mark - UICollectionViewFlowLayout
-
-- (CGSize)collectionView:(UICollectionView*)collectionView
-                    layout:(UICollectionViewLayout*)collectionViewLayout
-    sizeForItemAtIndexPath:(NSIndexPath*)indexPath {
-  switch ([self.collectionViewModel itemTypeForIndexPath:indexPath]) {
-    case ItemTypeFolderTitle: {
-      const CGFloat kTitleCellHeight = 96;
-      return CGSizeMake(CGRectGetWidth(collectionView.bounds),
-                        kTitleCellHeight);
-    }
-    case ItemTypeParentFolder: {
-      const CGFloat kParentFolderCellHeight = 50;
-      return CGSizeMake(CGRectGetWidth(collectionView.bounds),
-                        kParentFolderCellHeight);
-    }
-    default:
-      NOTREACHED();
-      return CGSizeZero;
   }
 }
 
@@ -424,23 +401,24 @@ folderEditorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
 
 - (void)updateParentFolderState {
   NSIndexPath* folderSelectionIndexPath =
-      [self.collectionViewModel indexPathForItemType:ItemTypeParentFolder
-                                   sectionIdentifier:SectionIdentifierInfo];
+      [self.tableViewModel indexPathForItemType:ItemTypeParentFolder
+                              sectionIdentifier:SectionIdentifierInfo];
   self.parentFolderItem.title =
       bookmark_utils_ios::TitleForBookmarkNode(self.parentFolder);
-  [self.collectionView reloadItemsAtIndexPaths:@[ folderSelectionIndexPath ]];
+  [self.tableView reloadRowsAtIndexPaths:@[ folderSelectionIndexPath ]
+                        withRowAnimation:UITableViewRowAnimationNone];
 
-  if (self.editingExistingFolder && !self.toolbar)
+  if (self.editingExistingFolder && self.navigationController.isToolbarHidden)
     [self addToolbar];
 
-  if (!self.editingExistingFolder && self.toolbar)
-    [self removeToolbar];
+  if (!self.editingExistingFolder && !self.navigationController.isToolbarHidden)
+    self.navigationController.toolbarHidden = YES;
 }
 
 - (void)setupCollectionViewModel {
   [self loadModel];
 
-  [self.collectionViewModel addSectionWithIdentifier:SectionIdentifierInfo];
+  [self.tableViewModel addSectionWithIdentifier:SectionIdentifierInfo];
 
   BookmarkTextFieldItem* titleItem =
       [[BookmarkTextFieldItem alloc] initWithType:ItemTypeFolderTitle];
@@ -451,8 +429,8 @@ folderEditorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
   titleItem.placeholder =
       l10n_util::GetNSString(IDS_IOS_BOOKMARK_NEW_EDITOR_NAME_LABEL);
   titleItem.accessibilityIdentifier = @"Title";
-  [self.collectionViewModel addItem:titleItem
-            toSectionWithIdentifier:SectionIdentifierInfo];
+  [self.tableViewModel addItem:titleItem
+       toSectionWithIdentifier:SectionIdentifierInfo];
   titleItem.delegate = self;
   self.titleItem = titleItem;
 
@@ -460,35 +438,27 @@ folderEditorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
       [[BookmarkParentFolderItem alloc] initWithType:ItemTypeParentFolder];
   parentFolderItem.title =
       bookmark_utils_ios::TitleForBookmarkNode(self.parentFolder);
-  [self.collectionViewModel addItem:parentFolderItem
-            toSectionWithIdentifier:SectionIdentifierInfo];
+  [self.tableViewModel addItem:parentFolderItem
+       toSectionWithIdentifier:SectionIdentifierInfo];
   self.parentFolderItem = parentFolderItem;
 }
 
 - (void)addToolbar {
-  // Add bottom toolbar with Delete button.
-  BookmarksElevatedToolbar* buttonBar = [[BookmarksElevatedToolbar alloc] init];
-  MDCButton* deleteButton = [[MDCFlatButton alloc] init];
-  [deleteButton setTitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_GROUP_DELETE)
-                forState:UIControlStateNormal];
-  [deleteButton addTarget:self
-                   action:@selector(deleteFolder)
-         forControlEvents:UIControlEventTouchUpInside];
+  self.navigationController.toolbarHidden = NO;
+  NSString* titleString = l10n_util::GetNSString(IDS_IOS_BOOKMARK_GROUP_DELETE);
+  UIBarButtonItem* deleteButton =
+      [[UIBarButtonItem alloc] initWithTitle:titleString
+                                       style:UIBarButtonItemStylePlain
+                                      target:self
+                                      action:@selector(deleteFolder)];
   deleteButton.accessibilityIdentifier = @"Delete Folder";
+  deleteButton.tintColor = [UIColor blackColor];
 
-  [buttonBar setButton:deleteButton];
-  [self.view addSubview:buttonBar];
-
-  // Constraint |buttonBar| to be in bottom.
-  buttonBar.translatesAutoresizingMaskIntoConstraints = NO;
-  ApplyVisualConstraints(@[ @"H:|[buttonBar]|", @"V:[buttonBar]|" ],
-                         NSDictionaryOfVariableBindings(buttonBar));
-  self.toolbar = buttonBar;
-}
-
-- (void)removeToolbar {
-  [self.toolbar removeFromSuperview];
-  self.toolbar = nil;
+  UIBarButtonItem* spaceButton = [[UIBarButtonItem alloc]
+      initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
+                           target:nil
+                           action:nil];
+  [self setToolbarItems:@[ deleteButton, spaceButton ] animated:NO];
 }
 
 - (void)updateSaveButtonState {
