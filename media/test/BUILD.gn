@@ -162,6 +162,7 @@ pipeline_integration_fuzzer_variants = [
   "WEBM_VP9",
   "WEBM_OPUS_VP9",
   "MP4_FLAC",
+  "MP3",
 
   # See below for additional variants depending on build configuration.
 ]
@@ -169,7 +170,6 @@ pipeline_integration_fuzzer_variants = [
 if (proprietary_codecs) {
   pipeline_integration_fuzzer_variants += [
     "ADTS",
-    "MP3",
     "MP4_AACLC",
     "MP4_AACSBR",
 

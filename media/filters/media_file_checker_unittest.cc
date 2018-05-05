@@ -38,10 +38,8 @@ TEST(MediaFileCheckerTest, Audio) {
   RunMediaFileChecker("sfx.ogg", true);
 }
 
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
 TEST(MediaFileCheckerTest, MP3) {
   RunMediaFileChecker("sfx.mp3", true);
 }
-#endif
 
 }  // namespace media

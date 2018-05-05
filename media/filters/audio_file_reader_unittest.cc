@@ -201,7 +201,6 @@ TEST_F(AudioFileReaderTest, WaveF32LE) {
           12719);
 }
 
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
 TEST_F(AudioFileReaderTest, MP3) {
   RunTest("sfx.mp3",
           "1.30,2.72,4.56,5.08,3.74,2.03,",
@@ -225,6 +224,7 @@ TEST_F(AudioFileReaderTest, CorruptMP3) {
           44928);
 }
 
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
 TEST_F(AudioFileReaderTest, AAC) {
   RunTest("sfx.m4a", "1.81,1.66,2.32,3.27,4.46,3.36,", 1, 44100,
           base::TimeDelta::FromMicroseconds(371660), 16391, 13312);

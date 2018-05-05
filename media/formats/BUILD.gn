@@ -162,6 +162,8 @@ static_library("test_support") {
   visibility = [ "//media:test_support" ]
 
   sources = [
+    "common/stream_parser_test_base.cc",
+    "common/stream_parser_test_base.h",
     "webm/cluster_builder.cc",
     "webm/cluster_builder.h",
     "webm/opus_packet_builder.cc",
@@ -178,22 +180,14 @@ static_library("test_support") {
   deps = [
     "//base/test:test_support",
     "//media/base:test_support",
+    "//testing/gtest",
   ]
 
-  if (proprietary_codecs) {
+  if (proprietary_codecs && enable_mse_mpeg2ts_stream_parser) {
     sources += [
-      "common/stream_parser_test_base.cc",
-      "common/stream_parser_test_base.h",
+      "mp2t/es_parser_test_base.cc",
+      "mp2t/es_parser_test_base.h",
     ]
-
-    deps += [ "//testing/gtest" ]
-
-    if (enable_mse_mpeg2ts_stream_parser) {
-      sources += [
-        "mp2t/es_parser_test_base.cc",
-        "mp2t/es_parser_test_base.h",
-      ]
-    }
   }
 }
 
@@ -202,6 +196,7 @@ source_set("unit_tests") {
   sources = [
     "ac3/ac3_util_unittest.cc",
     "common/offset_byte_queue_unittest.cc",
+    "mpeg/mpeg1_audio_stream_parser_unittest.cc",
     "webm/webm_cluster_parser_unittest.cc",
     "webm/webm_content_encodings_client_unittest.cc",
     "webm/webm_crypto_helpers_unittest.cc",
@@ -234,7 +229,6 @@ source_set("unit_tests") {
       "mp4/sample_to_group_iterator_unittest.cc",
       "mp4/track_run_iterator_unittest.cc",
       "mpeg/adts_stream_parser_unittest.cc",
-      "mpeg/mpeg1_audio_stream_parser_unittest.cc",
     ]
 
     deps += [ "//crypto" ]

@@ -32,9 +32,9 @@ enum FuzzerVariant {
   WEBM_VP9,
   WEBM_OPUS_VP9,
   MP4_FLAC,
+  MP3,
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
   ADTS,
-  MP3,
   MP4_AACLC,
   MP4_AACSBR,
   MP4_AVC1,
@@ -63,11 +63,11 @@ std::string MseFuzzerVariantEnumToMimeTypeString(FuzzerVariant variant) {
       return "video/webm; codecs=\"opus,vp9\"";
     case MP4_FLAC:
       return "audio/mp4; codecs=\"flac\"";
+    case MP3:
+      return "audio/mpeg";
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
     case ADTS:
       return "audio/aac";
-    case MP3:
-      return "audio/mpeg";
     case MP4_AACLC:
       return "audio/mp4; codecs=\"mp4a.40.2\"";
     case MP4_AACSBR:

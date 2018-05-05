@@ -2008,6 +2008,7 @@ MAYBE_EME_TEST_P(MSEPipelineIntegrationTest,
   EXPECT_EQ(CHUNK_DEMUXER_ERROR_APPEND_FAILED, WaitUntilEndedOrError());
   source.Shutdown();
 }
+#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
 // Verify files which change configuration midstream fail gracefully.
 TEST_F(PipelineIntegrationTest, MidStreamConfigChangesFail) {
@@ -2015,7 +2016,6 @@ TEST_F(PipelineIntegrationTest, MidStreamConfigChangesFail) {
   Play();
   ASSERT_EQ(WaitUntilEndedOrError(), PIPELINE_ERROR_DECODE);
 }
-#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
 TEST_F(PipelineIntegrationTest, BasicPlayback_16x9AspectRatio) {
   ASSERT_EQ(PIPELINE_OK, Start("bear-320x240-16x9-aspect.webm"));
