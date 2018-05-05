@@ -89,13 +89,6 @@ class WebLayer {
 
   virtual void SetOpacity(float) = 0;
   virtual float Opacity() const = 0;
-  // If set to true, content opaqueness cannot be changed using
-  // WebLayer::SetOpaque. However, it can still be modified using
-  // SetContentsOpaque on the cc::Layer. This is a roundabout way of allowing
-  // creators of WebLayers to specify opaqueness without
-  // CompositedLayerMapping/PaintArtifactCompositor clobbering it later. This
-  // will be addressed once WebLayer is removed.
-  virtual void SetContentsOpaqueIsFixed(bool) = 0;
 
   virtual void SetBlendMode(SkBlendMode) = 0;
   virtual SkBlendMode BlendMode() const = 0;

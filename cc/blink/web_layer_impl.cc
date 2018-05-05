@@ -36,12 +36,9 @@ using blink::WebLayer;
 
 namespace cc_blink {
 
-WebLayerImpl::WebLayerImpl()
-    : layer_(Layer::Create()), contents_opaque_is_fixed_(false) {}
+WebLayerImpl::WebLayerImpl() : layer_(Layer::Create()) {}
 
-WebLayerImpl::WebLayerImpl(scoped_refptr<Layer> layer)
-    : layer_(layer), contents_opaque_is_fixed_(false) {
-}
+WebLayerImpl::WebLayerImpl(scoped_refptr<Layer> layer) : layer_(layer) {}
 
 WebLayerImpl::~WebLayerImpl() = default;
 
@@ -129,8 +126,6 @@ void WebLayerImpl::SetHitTestableWithoutDrawsContent(bool should_hit_test) {
 }
 
 void WebLayerImpl::SetOpaque(bool opaque) {
-  if (contents_opaque_is_fixed_)
-    return;
   layer_->SetContentsOpaque(opaque);
 }
 
@@ -367,10 +362,6 @@ void WebLayerImpl::SetClipParent(blink::WebLayer* parent) {
 
 Layer* WebLayerImpl::layer() const {
   return layer_.get();
-}
-
-void WebLayerImpl::SetContentsOpaqueIsFixed(bool fixed) {
-  contents_opaque_is_fixed_ = fixed;
 }
 
 void WebLayerImpl::SetHasWillChangeTransformHint(bool has_will_change) {

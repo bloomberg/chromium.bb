@@ -2209,7 +2209,7 @@ void PepperPluginInstanceImpl::UpdateLayer(bool force_creation) {
 
   if (texture_layer_ || compositor_layer_) {
     if (!layer_bound_to_fullscreen_)
-      container_->SetWebLayer(nullptr);
+      container_->SetWebLayer(nullptr, false);
     else if (fullscreen_container_)
       fullscreen_container_->SetLayer(nullptr);
     web_layer_.reset();
@@ -2241,8 +2241,7 @@ void PepperPluginInstanceImpl::UpdateLayer(bool force_creation) {
     // wants to do, and that lets it not recreate a context if
     // wmode=transparent was specified.
     opaque = opaque || fullscreen_container_;
-    layer->layer()->SetContentsOpaque(opaque);
-    layer->SetContentsOpaqueIsFixed(true);
+    layer->SetOpaque(opaque);
     web_layer_ = std::move(layer);
   } else if (want_compositor_layer) {
     compositor_layer_ = bound_compositor_->layer();
@@ -2253,7 +2252,7 @@ void PepperPluginInstanceImpl::UpdateLayer(bool force_creation) {
     if (fullscreen_container_) {
       fullscreen_container_->SetLayer(web_layer_.get());
     } else {
-      container_->SetWebLayer(web_layer_.get());
+      container_->SetWebLayer(web_layer_.get(), true);
     }
     if (is_flash_plugin_) {
       web_layer_->CcLayer()->SetMayContainVideo(true);

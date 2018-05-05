@@ -218,7 +218,8 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
 
   // ChildFrameCompositor:
   blink::WebLayer* GetLayer() override;
-  void SetLayer(std::unique_ptr<blink::WebLayer> web_layer) override;
+  void SetLayer(std::unique_ptr<blink::WebLayer> web_layer,
+                bool prevent_contents_opaque_changes) override;
   SkBitmap* GetSadPageBitmap() override;
 
   // This indicates whether this BrowserPlugin has been attached to a

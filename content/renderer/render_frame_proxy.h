@@ -266,7 +266,8 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
 
   // ChildFrameCompositor:
   blink::WebLayer* GetLayer() override;
-  void SetLayer(std::unique_ptr<blink::WebLayer> web_layer) override;
+  void SetLayer(std::unique_ptr<blink::WebLayer> web_layer,
+                bool prevent_contents_opaque_changes) override;
   SkBitmap* GetSadPageBitmap() override;
 
   const viz::LocalSurfaceId& GetLocalSurfaceId() const;

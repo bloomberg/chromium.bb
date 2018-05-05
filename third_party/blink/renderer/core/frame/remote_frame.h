@@ -41,8 +41,11 @@ class CORE_EXPORT RemoteFrame final : public Frame {
   void DidResume() override;
   void SetIsInert(bool) override;
 
-  void SetWebLayer(WebLayer*);
+  void SetWebLayer(WebLayer*, bool prevent_contents_opaque_changes);
   WebLayer* GetWebLayer() const { return web_layer_; }
+  bool WebLayerHasFixedContentsOpaque() const {
+    return prevent_contents_opaque_changes_;
+  }
 
   void AdvanceFocus(WebFocusType, LocalFrame* source);
 
@@ -66,6 +69,7 @@ class CORE_EXPORT RemoteFrame final : public Frame {
   Member<RemoteFrameView> view_;
   Member<RemoteSecurityContext> security_context_;
   WebLayer* web_layer_ = nullptr;
+  bool prevent_contents_opaque_changes_ = false;
 };
 
 inline RemoteFrameView* RemoteFrame::View() const {

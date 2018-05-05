@@ -138,7 +138,7 @@ class WebPluginContainer {
 
   // Sets the layer representing the plugin for compositing. The
   // WebPluginContainer does *not* take ownership.
-  virtual void SetWebLayer(WebLayer*) = 0;
+  virtual void SetWebLayer(WebLayer*, bool prevent_contents_opaque_changes) = 0;
 
   virtual void RequestFullscreen() = 0;
   virtual bool IsFullscreenElement() const = 0;

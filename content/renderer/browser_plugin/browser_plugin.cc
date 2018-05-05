@@ -857,9 +857,11 @@ blink::WebLayer* BrowserPlugin::GetLayer() {
   return web_layer_.get();
 }
 
-void BrowserPlugin::SetLayer(std::unique_ptr<blink::WebLayer> web_layer) {
-  if (container_)
-    container_->SetWebLayer(web_layer.get());
+void BrowserPlugin::SetLayer(std::unique_ptr<blink::WebLayer> web_layer,
+                             bool prevent_contents_opaque_changes) {
+  if (container_) {
+    container_->SetWebLayer(web_layer.get(), prevent_contents_opaque_changes);
+  }
   web_layer_ = std::move(web_layer);
 }
 

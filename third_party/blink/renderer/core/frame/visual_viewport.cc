@@ -471,7 +471,8 @@ void VisualViewport::SetupScrollbar(WebScrollbar::Orientation orientation) {
     // by default so scrollbars don't show up in layout tests.
     web_scrollbar_layer->Layer()->SetOpacity(0);
     scrollbar_graphics_layer->SetContentsToPlatformLayer(
-        web_scrollbar_layer->Layer());
+        web_scrollbar_layer->Layer(),
+        /*prevent_contents_opaque_changes=*/false);
     scrollbar_graphics_layer->SetDrawsContent(false);
     web_scrollbar_layer->SetScrollLayer(
         inner_viewport_scroll_layer_->PlatformLayer());

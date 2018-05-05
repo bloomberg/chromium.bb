@@ -65,6 +65,20 @@ using ::testing::_;
       grand_child->layer_tree_host()->LayerNeedsPushPropertiesForTesting(   \
           grand_child.get()));
 
+#define EXECUTE_AND_VERIFY_SUBTREE_NOT_CHANGED(code_to_test)                 \
+  code_to_test;                                                              \
+  root->layer_tree_host()->BuildPropertyTreesForTesting();                   \
+  EXPECT_FALSE(root->subtree_property_changed());                            \
+  EXPECT_FALSE(root->layer_tree_host()->LayerNeedsPushPropertiesForTesting(  \
+      root.get()));                                                          \
+  EXPECT_FALSE(child->subtree_property_changed());                           \
+  EXPECT_FALSE(child->layer_tree_host()->LayerNeedsPushPropertiesForTesting( \
+      child.get()));                                                         \
+  EXPECT_FALSE(grand_child->subtree_property_changed());                     \
+  EXPECT_FALSE(                                                              \
+      grand_child->layer_tree_host()->LayerNeedsPushPropertiesForTesting(    \
+          grand_child.get()));
+
 #define EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(code_to_test)               \
   code_to_test;                                                              \
   EXPECT_FALSE(root->subtree_property_changed());                            \
