@@ -86,6 +86,8 @@ source_set("tests") {
     "sync_reader_unittest.cc",
     "test/audio_system_to_service_adapter_test.cc",
     "test/debug_recording_session_unittest.cc",
+    "test/fake_consumer.cc",
+    "test/fake_consumer.h",
     "test/fake_group_member.cc",
     "test/fake_group_member.h",
     "test/in_process_service_test.cc",
