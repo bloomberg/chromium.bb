@@ -86,6 +86,51 @@ cr.define('print_preview_test_utils', function() {
   }
 
   /**
+   * @param {number} numSettings
+   * @param {string} printerId
+   * @param {string=} opt_printerName Defaults to an empty string.
+   * @return {!print_preview.PrinterCapabilitiesResponse}
+   */
+  function getCddTemplateWithAdvancedSettings(
+      numSettings, printerId, opt_printerName) {
+    const template =
+        print_preview_test_utils.getCddTemplate(printerId, opt_printerName);
+    if (numSettings < 1)
+      return template;
+
+    template.capabilities.printer.vendor_capability = [{
+      display_name: 'Print Area',
+      id: 'Print Area',
+      type: 'SELECT',
+      select_cap: {
+        option: [
+          {display_name: 'A4', value: 4, is_default: true},
+          {display_name: 'A6', value: 6},
+          {display_name: 'A7', value: 7},
+        ],
+      },
+    }];
+
+    if (numSettings < 2)
+      return template;
+
+    // Add new capability.
+    template.capabilities.printer.vendor_capability.push({
+        display_name: 'Paper Type',
+        id: 'Paper Type',
+        type: 'SELECT',
+        select_cap: {
+            option: [
+                {display_name: 'Standard', value: 0, is_default: true},
+                {display_name: 'Recycled', value: 1},
+                {display_name: 'Special', value: 2}
+            ]
+        }
+    });
+    return template;
+  }
+
+  /**
    * Creates a destination with a certificate status tag.
    * @param {string} id Printer id
    * @param {string} name Printer display name
@@ -189,6 +234,7 @@ cr.define('print_preview_test_utils', function() {
   return {
     getDefaultInitialSettings: getDefaultInitialSettings,
     getCddTemplate: getCddTemplate,
+    getCddTemplateWithAdvancedSettings: getCddTemplateWithAdvancedSettings,
     getDefaultMediaSize: getDefaultMediaSize,
     getDefaultOrientation: getDefaultOrientation,
     createDestinationWithCertificateStatus:

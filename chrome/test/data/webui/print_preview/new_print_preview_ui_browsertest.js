@@ -519,3 +519,33 @@ TEST_F('PrintPreviewDestinationDialogTest', 'PrinterList',
        function() {
   this.runMochaTest(destination_dialog_test.TestNames.PrinterList);
 });
+
+PrintPreviewAdvancedDialogTest = class extends NewPrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/new/advanced_settings_dialog.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'print_preview_test_utils.js',
+      'advanced_dialog_test.js',
+    ]);
+  }
+
+  /** @override */
+  get suiteName() {
+    return advanced_dialog_test.suiteName;
+  }
+};
+
+TEST_F('PrintPreviewAdvancedDialogTest', 'AdvancedSettings1Option',
+       function() {
+  this.runMochaTest(advanced_dialog_test.TestNames.AdvancedSettings1Option);
+});
+
+TEST_F('PrintPreviewAdvancedDialogTest', 'AdvancedSettings2Options',
+       function() {
+  this.runMochaTest(advanced_dialog_test.TestNames.AdvancedSettings2Options);
+});

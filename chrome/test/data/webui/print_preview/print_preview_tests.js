@@ -202,27 +202,6 @@ cr.define('print_preview_test', function() {
   }
 
   /**
-   * @param {string} printerId
-   * @return {!Object}
-   */
-  function getCddTemplateWithAdvancedSettings(printerId) {
-    const template = print_preview_test_utils.getCddTemplate(printerId);
-    template.capabilities.printer.vendor_capability = [{
-      display_name: 'Print Area',
-      id: 'Print Area',
-      type: 'SELECT',
-      select_cap: {
-        option: [
-          {display_name: 'A4', value: 4, is_default: true},
-          {display_name: 'A6', value: 6},
-          {display_name: 'A7', value: 7},
-        ],
-      },
-    }];
-    return template;
-  }
-
-  /**
    * Even though animation duration and delay is set to zero, it is necessary to
    * wait until the animation has finished.
    * @return {!Promise} A promise firing when the animation is done.
@@ -1253,7 +1232,9 @@ cr.define('print_preview_test', function() {
     // Test advanced settings with 1 capability (should not display settings
     // search box).
     test('AdvancedSettings1Option', function() {
-      const device = getCddTemplateWithAdvancedSettings('FooDevice');
+      const device =
+          print_preview_test_utils.getCddTemplateWithAdvancedSettings(
+              1, 'FooDevice');
       return setupSettingsAndDestinationsWithCapabilities(device)
           .then(function() {
         startAdvancedSettingsTest(device);
@@ -1264,24 +1245,12 @@ cr.define('print_preview_test', function() {
       });
     });
 
-
     // Test advanced settings with 2 capabilities (should have settings search
     // box).
     test('AdvancedSettings2Options', function() {
-      const device = getCddTemplateWithAdvancedSettings('FooDevice');
-       // Add new capability.
-      device.capabilities.printer.vendor_capability.push({
-          display_name: 'Paper Type',
-          id: 'Paper Type',
-          type: 'SELECT',
-          select_cap: {
-              option: [
-                  {display_name: 'Standard', value: 0, is_default: true},
-                  {display_name: 'Recycled', value: 1},
-                  {display_name: 'Special', value: 2}
-              ]
-          }
-      });
+      const device =
+          print_preview_test_utils.getCddTemplateWithAdvancedSettings(
+              2, 'FooDevice');
       return setupSettingsAndDestinationsWithCapabilities(device)
           .then(function() {
         startAdvancedSettingsTest(device);
