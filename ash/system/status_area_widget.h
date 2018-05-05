@@ -121,8 +121,6 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget,
   }
 
  private:
-  friend class StatusAreaWidgetTestApi;
-
   StatusAreaWidgetDelegate* status_area_widget_delegate_;
 
   std::unique_ptr<OverviewButtonTray> overview_button_tray_;
