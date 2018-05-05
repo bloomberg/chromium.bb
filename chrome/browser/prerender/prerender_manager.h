@@ -576,7 +576,7 @@ class PrerenderManager : public content::NotificationObserver,
   // Track time of last prerender to limit prerender spam.
   base::TimeTicks last_prerender_start_time_;
 
-  std::vector<content::WebContents*> old_web_contents_list_;
+  std::vector<std::unique_ptr<content::WebContents>> old_web_contents_list_;
 
   std::vector<std::unique_ptr<OnCloseWebContentsDeleter>>
       on_close_web_contents_deleters_;
