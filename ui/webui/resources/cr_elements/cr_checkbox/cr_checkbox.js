@@ -55,8 +55,15 @@ Polymer({
     this.setAttribute('aria-checked', this.checked ? 'true' : 'false');
   },
 
-  /** @private */
-  disabledChanged_: function() {
+  /**
+   * @param {boolean} current
+   * @param {boolean} previous
+   * @private
+   */
+  disabledChanged_: function(current, previous) {
+    if (previous === undefined && !this.disabled)
+      return;
+
     this.setAttribute('tabindex', this.disabled ? -1 : 0);
     this.setAttribute('aria-disabled', this.disabled ? 'true' : 'false');
   },
