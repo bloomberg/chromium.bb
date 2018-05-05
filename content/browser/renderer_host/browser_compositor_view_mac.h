@@ -197,12 +197,6 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
   gfx::Size dfh_size_dip_;
   display::Display dfh_display_;
 
-  // The viz::ParentLocalSurfaceIdAllocator for the ui::Compositor dispenses
-  // viz::LocalSurfaceIds that are renderered into by the ui::Compositor.
-  viz::ParentLocalSurfaceIdAllocator compositor_local_surface_id_allocator_;
-  gfx::Size compositor_size_pixels_;
-  float compositor_scale_factor_ = 1.f;
-
   // Used to disable screen updates while resizing (because frames are drawn in
   // the GPU process, they can end up appearing on-screen before our window
   // resizes).
