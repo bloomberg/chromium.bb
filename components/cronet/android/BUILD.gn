@@ -1555,7 +1555,6 @@ group("cronet_package") {
     deps = [
       ":api_static_checks",
       ":copy_cronet_java8_jars",
-      ":cronet_maven_modules",
       ":cronet_package_copy",
       ":cronet_package_copy_native_lib",
       ":cronet_package_copy_native_lib_unstripped",
