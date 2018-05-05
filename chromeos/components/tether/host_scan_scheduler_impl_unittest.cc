@@ -191,9 +191,15 @@ TEST_F(HostScanSchedulerImplTest, ScheduleScan) {
   VerifyScanDuration(5u /* expected_num_sections */);
 }
 
-TEST_F(HostScanSchedulerImplTest, ScansWhenDeviceUnlocked) {
+TEST_F(HostScanSchedulerImplTest, TestDeviceLockAndUnlock) {
   // Lock the screen. This should not trigger a scan.
   SetScreenLockedState(true /* is_locked */);
+  EXPECT_EQ(0u, fake_host_scanner_->num_scans_started());
+  EXPECT_FALSE(mock_delay_scan_after_unlock_timer_->IsRunning());
+
+  // Try to start a scan. Because the screen is locked, this should not actually
+  // cause a scan to be started.
+  host_scan_scheduler_->ScheduleScan();
   EXPECT_EQ(0u, fake_host_scanner_->num_scans_started());
   EXPECT_FALSE(mock_delay_scan_after_unlock_timer_->IsRunning());
 

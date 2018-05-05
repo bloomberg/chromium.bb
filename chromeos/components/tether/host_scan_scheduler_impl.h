@@ -63,7 +63,7 @@ class HostScanSchedulerImpl : public HostScanScheduler,
  private:
   friend class HostScanSchedulerImplTest;
 
-  void EnsureScan();
+  void AttemptScan();
   bool IsTetherNetworkConnectingOrConnected();
   void LogHostScanBatchMetric();
 
