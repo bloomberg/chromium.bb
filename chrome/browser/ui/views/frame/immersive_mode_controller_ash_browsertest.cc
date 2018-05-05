@@ -6,10 +6,13 @@
 
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
+#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/macros.h"
+#include "base/test/test_mock_time_task_runner.h"
+#include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/ssl/cert_verifier_browser_test.h"
@@ -50,17 +53,22 @@ class ImmersiveModeControllerAshHostedAppBrowserTest
     ASSERT_TRUE(https_server_.Start());
 
     WebApplicationInfo web_app_info;
-    web_app_info.app_url = https_server_.GetURL("/simple.html");
+    web_app_info.app_url = GetAppUrl();
     web_app_info.theme_color = SK_ColorBLUE;
 
-    const extensions::Extension* app = InstallBookmarkApp(web_app_info);
+    app_ = InstallBookmarkApp(web_app_info);
+  }
 
+  GURL GetAppUrl() { return https_server_.GetURL("/simple.html"); }
+
+  void LaunchAppBrowser(bool await_url_load = true) {
     ui_test_utils::UrlLoadObserver url_observer(
-        web_app_info.app_url, content::NotificationService::AllSources());
-    browser_ = LaunchAppBrowser(app);
-    // Wait for the URL to load so that the location bar end-state stabilizes.
-    url_observer.Wait();
-
+        GetAppUrl(), content::NotificationService::AllSources());
+    browser_ = ExtensionBrowserTest::LaunchAppBrowser(app_);
+    if (await_url_load) {
+      // Wait for the URL to load so that the location bar end-state stabilizes.
+      url_observer.Wait();
+    }
     controller_ = browser_view()->immersive_mode_controller();
 
     // Disable animations in immersive fullscreen before we show the window,
@@ -110,6 +118,26 @@ class ImmersiveModeControllerAshHostedAppBrowserTest
     }
   }
 
+  void VerifyButtonsInImmersiveMode(BrowserNonClientFrameViewAsh* frame_view,
+                                    bool in_immersive_mode) {
+    // Button layers in the browser frame are disabled in immersive mode so that
+    // buttons render correctly, see https://crbug.com/787640 for details.
+    HostedAppButtonContainer* container =
+        frame_view->hosted_app_button_container_;
+    views::test::InkDropHostViewTestApi ink_drop_api(
+        container->app_menu_button_);
+    if (in_immersive_mode) {
+      EXPECT_FALSE(container->GetContentSettingContainerForTesting()->layer());
+      EXPECT_EQ(views::InkDropHostView::InkDropMode::OFF,
+                ink_drop_api.ink_drop_mode());
+      EXPECT_FALSE(container->app_menu_button_->layer());
+    } else {
+      EXPECT_TRUE(container->GetContentSettingContainerForTesting()->layer());
+      EXPECT_EQ(views::InkDropHostView::InkDropMode::ON,
+                ink_drop_api.ink_drop_mode());
+    }
+  }
+
   Browser* browser() { return browser_; }
   BrowserView* browser_view() {
     return BrowserView::GetBrowserViewForBrowser(browser_);
@@ -118,8 +146,9 @@ class ImmersiveModeControllerAshHostedAppBrowserTest
 
  private:
   // Not owned.
-  Browser* browser_;
-  ImmersiveModeController* controller_;
+  const extensions::Extension* app_ = nullptr;
+  Browser* browser_ = nullptr;
+  ImmersiveModeController* controller_ = nullptr;
 
   std::unique_ptr<ImmersiveRevealedLock> revealed_lock_;
 
@@ -136,6 +165,7 @@ class ImmersiveModeControllerAshHostedAppBrowserTest
 // Test the layout and visibility of the TopContainerView and web contents when
 // a hosted app is put into immersive fullscreen.
 IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest, Layout) {
+  LaunchAppBrowser();
   TabStrip* tabstrip = browser_view()->tabstrip();
   ToolbarView* toolbar = browser_view()->toolbar();
   views::WebView* contents_web_view = browser_view()->contents_web_view();
@@ -195,6 +225,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest, Layout) {
 // autohidden in tablet mode).
 IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
                        ImmersiveModeStatusTabletMode) {
+  LaunchAppBrowser();
   ASSERT_FALSE(controller()->IsEnabled());
 
   aura::Window* window =
@@ -246,10 +277,11 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
 // Verify that the frame layout is as expected when using immersive mode in
 // tablet mode.
 IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
-                       FrameLayout) {
+                       FrameLayoutToggleTabletMode) {
+  LaunchAppBrowser();
   ASSERT_FALSE(controller()->IsEnabled());
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
-  // We know we're using Ash, so static cast.
+  DCHECK_NE(ash::Config::MASH, chromeos::GetAshConfig());
   BrowserNonClientFrameViewAsh* frame_view =
       static_cast<BrowserNonClientFrameViewAsh*>(
           browser_view->GetWidget()->non_client_view()->frame_view());
@@ -269,15 +301,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
 
   EXPECT_FALSE(frame_test_api.size_button()->visible());
 
-  // Button layers in the browser frame are disabled in immersive mode so that
-  // buttons render correctly.
-  HostedAppButtonContainer* container =
-      frame_view->hosted_app_button_container_;
-  EXPECT_FALSE(container->GetContentSettingContainerForTesting()->layer());
-  views::test::InkDropHostViewTestApi ink_drop_api(container->app_menu_button_);
-  EXPECT_EQ(ink_drop_api.ink_drop_mode(),
-            views::InkDropHostView::InkDropMode::OFF);
-  EXPECT_FALSE(container->app_menu_button_->layer());
+  VerifyButtonsInImmersiveMode(frame_view, true);
 
   // Verify the size button is visible in clamshell mode, and that it does not
   // cover the other two buttons.
@@ -291,8 +315,42 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
   EXPECT_FALSE(frame_test_api.size_button()->GetBoundsInScreen().Intersects(
       frame_test_api.minimize_button()->GetBoundsInScreen()));
 
-  // Button layers are re-enabled when immersive mode is exited.
-  EXPECT_TRUE(container->GetContentSettingContainerForTesting()->layer());
-  EXPECT_EQ(ink_drop_api.ink_drop_mode(),
-            views::InkDropHostView::InkDropMode::ON);
+  VerifyButtonsInImmersiveMode(frame_view, false);
+}
+
+// Verify that the frame layout for new windows is as expected when using
+// immersive mode in tablet mode.
+IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
+                       FrameLayoutStartInTabletMode) {
+  // Start in tablet mode
+  ash::TabletModeController* tablet_mode_controller =
+      ash::Shell::Get()->tablet_mode_controller();
+  tablet_mode_controller->EnableTabletModeWindowManager(true);
+  tablet_mode_controller->FlushForTesting();
+
+  BrowserNonClientFrameViewAsh* frame_view = nullptr;
+  {
+    auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+    base::TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner);
+
+    // Launch app window while in tablet mode
+    LaunchAppBrowser(false);
+    BrowserView* browser_view =
+        BrowserView::GetBrowserViewForBrowser(browser());
+    DCHECK_NE(ash::Config::MASH, chromeos::GetAshConfig());
+    frame_view = static_cast<BrowserNonClientFrameViewAsh*>(
+        browser_view->GetWidget()->non_client_view()->frame_view());
+
+    task_runner->FastForwardBy(
+        BrowserNonClientFrameViewAsh::kTitlebarAnimationDelay);
+
+    VerifyButtonsInImmersiveMode(frame_view, true);
+  }
+
+  // Verify the size button is visible in clamshell mode, and that it does not
+  // cover the other two buttons.
+  tablet_mode_controller->EnableTabletModeWindowManager(false);
+  tablet_mode_controller->FlushForTesting();
+
+  VerifyButtonsInImmersiveMode(frame_view, false);
 }

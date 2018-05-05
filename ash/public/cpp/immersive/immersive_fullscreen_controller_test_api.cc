@@ -19,7 +19,6 @@ ImmersiveFullscreenControllerTestApi::~ImmersiveFullscreenControllerTestApi() =
     default;
 
 void ImmersiveFullscreenControllerTestApi::SetupForTest() {
-  DCHECK(!immersive_fullscreen_controller_->enabled_);
   immersive_fullscreen_controller_->animations_disabled_for_test_ = true;
 
   // Move the mouse off of the top-of-window views so that it does not keep the
