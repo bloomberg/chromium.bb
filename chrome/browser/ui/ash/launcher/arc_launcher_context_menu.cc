@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/ash/launcher/arc_launcher_context_menu.h"
 
+#include <memory>
+#include <utility>
+
 #include "ash/public/cpp/shelf_item.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
@@ -17,13 +20,17 @@ ArcLauncherContextMenu::ArcLauncherContextMenu(
     ChromeLauncherController* controller,
     const ash::ShelfItem* item,
     int64_t display_id)
-    : LauncherContextMenu(controller, item, display_id) {
-  Init();
+    : LauncherContextMenu(controller, item, display_id) {}
+
+ArcLauncherContextMenu::~ArcLauncherContextMenu() = default;
+
+void ArcLauncherContextMenu::GetMenuModel(GetMenuModelCallback callback) {
+  auto menu_model = std::make_unique<ui::SimpleMenuModel>(this);
+  BuildMenu(menu_model.get());
+  std::move(callback).Run(std::move(menu_model));
 }
 
-ArcLauncherContextMenu::~ArcLauncherContextMenu() {}
-
-void ArcLauncherContextMenu::Init() {
+void ArcLauncherContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
   const ArcAppListPrefs* arc_list_prefs =
       ArcAppListPrefs::Get(controller()->profile());
   DCHECK(arc_list_prefs);
@@ -40,16 +47,19 @@ void ArcLauncherContextMenu::Init() {
   const bool app_is_open = controller()->IsOpen(item().id);
   if (!app_is_open) {
     DCHECK(app_info->launchable);
-    AddContextMenuOption(MENU_OPEN_NEW, IDS_APP_CONTEXT_MENU_ACTIVATE_ARC);
+    AddContextMenuOption(menu_model, MENU_OPEN_NEW,
+                         IDS_APP_CONTEXT_MENU_ACTIVATE_ARC);
     if (!features::IsTouchableAppContextMenuEnabled())
-      AddSeparator(ui::NORMAL_SEPARATOR);
+      menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
   }
 
   if (!app_id.has_shelf_group_id() && app_info->launchable)
-    AddPinMenu();
+    AddPinMenu(menu_model);
 
-  if (app_is_open)
-    AddContextMenuOption(MENU_CLOSE, IDS_LAUNCHER_CONTEXT_MENU_CLOSE);
+  if (app_is_open) {
+    AddContextMenuOption(menu_model, MENU_CLOSE,
+                         IDS_LAUNCHER_CONTEXT_MENU_CLOSE);
+  }
   if (!features::IsTouchableAppContextMenuEnabled())
-    AddSeparator(ui::NORMAL_SEPARATOR);
+    menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
 }

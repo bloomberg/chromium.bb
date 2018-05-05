@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/ash/launcher/crostini_shelf_context_menu.h"
 
+#include <memory>
+#include <utility>
+
 #include "ash/public/cpp/shelf_item.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
@@ -15,26 +18,33 @@ CrostiniShelfContextMenu::CrostiniShelfContextMenu(
     ChromeLauncherController* controller,
     const ash::ShelfItem* item,
     int64_t display_id)
-    : LauncherContextMenu(controller, item, display_id) {
-  Init();
+    : LauncherContextMenu(controller, item, display_id) {}
+
+CrostiniShelfContextMenu::~CrostiniShelfContextMenu() = default;
+
+void CrostiniShelfContextMenu::GetMenuModel(GetMenuModelCallback callback) {
+  auto menu_model = std::make_unique<ui::SimpleMenuModel>(this);
+  BuildMenu(menu_model.get());
+  std::move(callback).Run(std::move(menu_model));
 }
 
-CrostiniShelfContextMenu::~CrostiniShelfContextMenu() {}
-
-void CrostiniShelfContextMenu::Init() {
+void CrostiniShelfContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
   const crostini::CrostiniRegistryService* registry_service =
       crostini::CrostiniRegistryServiceFactory::GetForProfile(
           controller()->profile());
   std::unique_ptr<crostini::CrostiniRegistryService::Registration>
       registration = registry_service->GetRegistration(item().id.app_id);
   if (registration)
-    AddPinMenu();
+    AddPinMenu(menu_model);
 
-  if (controller()->IsOpen(item().id))
-    AddItemWithStringId(MENU_CLOSE, IDS_LAUNCHER_CONTEXT_MENU_CLOSE);
-  else
-    AddItemWithStringId(MENU_OPEN_NEW, IDS_APP_CONTEXT_MENU_ACTIVATE_ARC);
+  if (controller()->IsOpen(item().id)) {
+    menu_model->AddItemWithStringId(MENU_CLOSE,
+                                    IDS_LAUNCHER_CONTEXT_MENU_CLOSE);
+  } else {
+    menu_model->AddItemWithStringId(MENU_OPEN_NEW,
+                                    IDS_APP_CONTEXT_MENU_ACTIVATE_ARC);
+  }
 
   if (!features::IsTouchableAppContextMenuEnabled())
-    AddSeparator(ui::NORMAL_SEPARATOR);
+    menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
 }

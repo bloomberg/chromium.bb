@@ -14,11 +14,13 @@ class InternalAppShelfContextMenu : public LauncherContextMenu {
   InternalAppShelfContextMenu(ChromeLauncherController* controller,
                               const ash::ShelfItem* item,
                               int64_t display_id);
-
   ~InternalAppShelfContextMenu() override = default;
 
+  // LauncherContextMenu:
+  void GetMenuModel(GetMenuModelCallback callback) override;
+
  private:
-  void Init();
+  void BuildMenu(ui::SimpleMenuModel* menu_model);
 
   DISALLOW_COPY_AND_ASSIGN(InternalAppShelfContextMenu);
 };

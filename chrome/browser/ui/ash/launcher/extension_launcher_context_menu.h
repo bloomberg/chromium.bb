@@ -23,13 +23,16 @@ class ExtensionLauncherContextMenu : public LauncherContextMenu {
                                int64_t display_id);
   ~ExtensionLauncherContextMenu() override;
 
+  // LauncherContextMenu overrides:
+  void GetMenuModel(GetMenuModelCallback callback) override;
+
   // ui::SimpleMenuModel::Delegate overrides:
   bool IsCommandIdChecked(int command_id) const override;
   bool IsCommandIdEnabled(int command_id) const override;
   void ExecuteCommand(int command_id, int event_flags) override;
 
  private:
-  void Init();
+  void BuildMenu(ui::SimpleMenuModel* menu_model);
 
   // Helpers to get and set the launch type for the extension item.
   extensions::LaunchType GetLaunchType() const;

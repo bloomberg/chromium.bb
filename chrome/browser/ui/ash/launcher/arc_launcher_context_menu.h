@@ -16,8 +16,11 @@ class ArcLauncherContextMenu : public LauncherContextMenu {
                          int64_t display_id);
   ~ArcLauncherContextMenu() override;
 
+  // LauncherContextMenu:
+  void GetMenuModel(GetMenuModelCallback callback) override;
+
  private:
-  void Init();
+  void BuildMenu(ui::SimpleMenuModel* menu_model);
 
   DISALLOW_COPY_AND_ASSIGN(ArcLauncherContextMenu);
 };

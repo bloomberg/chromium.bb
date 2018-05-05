@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "ash/public/cpp/shelf_item_delegate.h"
@@ -15,6 +16,7 @@
 #include "base/time/time.h"
 
 class ArcAppDeferredLauncherController;
+class LauncherContextMenu;
 
 // ArcAppDeferredLauncherItemController displays the icon of the ARC app that
 // cannot be launched immediately (due to ARC not being ready) on Chrome OS'
@@ -56,6 +58,8 @@ class ArcAppDeferredLauncherItemController : public ash::ShelfItemDelegate {
 
   base::WeakPtr<ArcAppDeferredLauncherController> host_;
   const base::Time start_time_;
+
+  std::unique_ptr<LauncherContextMenu> context_menu_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppDeferredLauncherItemController);
 };

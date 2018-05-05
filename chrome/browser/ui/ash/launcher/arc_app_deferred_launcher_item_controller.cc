@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/ash/launcher/arc_app_deferred_launcher_item_controller.h"
 
-#include <memory>
 #include <utility>
 
 #include "base/strings/utf_string_conversions.h"
@@ -59,8 +58,8 @@ void ArcAppDeferredLauncherItemController::GetContextMenu(
     GetMenuModelCallback callback) {
   ChromeLauncherController* controller = ChromeLauncherController::instance();
   const ash::ShelfItem* item = controller->GetItem(shelf_id());
-  std::move(callback).Run(
-      LauncherContextMenu::Create(controller, item, display_id));
+  context_menu_ = LauncherContextMenu::Create(controller, item, display_id);
+  context_menu_->GetMenuModel(std::move(callback));
 }
 
 void ArcAppDeferredLauncherItemController::Close() {
