@@ -31,7 +31,6 @@
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -44,13 +43,13 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
-#include "extensions/browser/notification_types.h"
 #include "extensions/browser/runtime_data.h"
 #include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/api/declarative_net_request/test_utils.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/url_pattern.h"
+#include "extensions/test/extension_test_message_listener.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/test_data_directory.h"
@@ -184,6 +183,7 @@ class DeclarativeNetRequestBrowserTest
                             kJSONRulesFilename, rules, hosts,
                             has_background_script_);
 
+    ExtensionTestMessageListener listener("ready", false /*will_reply*/);
     const Extension* extension = nullptr;
     switch (GetParam()) {
       case ExtensionLoadType::PACKED:
@@ -200,6 +200,10 @@ class DeclarativeNetRequestBrowserTest
 
     // Ensure the ruleset is also loaded on the IO thread.
     content::RunAllTasksUntilIdle();
+
+    // Wait for the background page to load if needed.
+    if (has_background_script_)
+      WaitForBackgroundScriptToLoad(&listener, extension->id());
 
     // Ensure no load errors were reported.
     EXPECT_TRUE(LoadErrorReporter::GetInstance()->GetErrors()->empty());
@@ -218,6 +222,12 @@ class DeclarativeNetRequestBrowserTest
   void LoadExtensionWithRules(const std::vector<TestRule>& rules) {
     LoadExtensionWithRules(rules, "test_extension",
                            {URLPattern::kAllUrlsPattern});
+  }
+
+  void WaitForBackgroundScriptToLoad(ExtensionTestMessageListener* listener,
+                                     const ExtensionId& extension_id) {
+    ASSERT_TRUE(listener->WaitUntilSatisfied());
+    ASSERT_EQ(extension_id, listener->extension_id_for_message());
   }
 
  private:
@@ -1137,15 +1147,6 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   ASSERT_TRUE(dnr_extension);
   EXPECT_EQ("Test extension", dnr_extension->name());
 
-  // Ensure the background page is ready before dispatching the script to it.
-  if (!ExtensionSystem::Get(profile())->runtime_data()->IsBackgroundPageReady(
-          dnr_extension)) {
-    content::WindowedNotificationObserver(
-        NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
-        content::Source<Extension>(dnr_extension))
-        .Wait();
-  }
-
   // Whitelist "https://www.google.com/".
   const char* script1 = R"(
     chrome.declarativeNetRequest.addWhitelistedPages(
@@ -1191,12 +1192,14 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   ASSERT_TRUE(dnr_extension);
 
   // Ensure the background page is ready before dispatching the script to it.
+  // TODO(karandeepb): Remove the need to check IsBackgroundPageReady by
+  // creating the ExtensionTestMessageListener early. This should also ensure
+  // that the we start listening for messages from extension early enough to
+  // avoid any races. See crbug.com/838536.
   if (!ExtensionSystem::Get(profile())->runtime_data()->IsBackgroundPageReady(
           dnr_extension)) {
-    content::WindowedNotificationObserver(
-        NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
-        content::Source<Extension>(dnr_extension))
-        .Wait();
+    ExtensionTestMessageListener listener("ready", false /*will_reply*/);
+    WaitForBackgroundScriptToLoad(&listener, dnr_extension->id());
   }
 
   const char* script1 = R"(
