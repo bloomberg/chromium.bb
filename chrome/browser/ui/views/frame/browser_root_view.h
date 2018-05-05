@@ -72,6 +72,8 @@ class BrowserRootView : public views::internal::RootView {
   void OnMouseExited(const ui::MouseEvent& event) override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(BrowserRootViewBrowserTest, ClearDropInfo);
+
   // Used during a drop session of a url. Tracks the position of the drop.
   struct DropInfo {
     DropInfo();
