@@ -44,29 +44,12 @@ class BASE_EXPORT SchedulerWorker
     : public RefCountedThreadSafe<SchedulerWorker>,
       public PlatformThread::Delegate {
  public:
-  // Labels this SchedulerWorker's association. This doesn't affect any logic
-  // but will add a stack frame labeling this thread for ease of stack trace
-  // identification.
-  enum class ThreadLabel {
-    POOLED,
-    SHARED,
-    DEDICATED,
-#if defined(OS_WIN)
-    SHARED_COM,
-    DEDICATED_COM,
-#endif  // defined(OS_WIN)
-  };
-
   // Delegate interface for SchedulerWorker. All methods except
   // OnCanScheduleSequence() (inherited from CanScheduleSequenceObserver) are
   // called from the thread managed by the SchedulerWorker instance.
   class BASE_EXPORT Delegate : public CanScheduleSequenceObserver {
    public:
     ~Delegate() override = default;
-
-    // Returns the ThreadLabel the Delegate wants its SchedulerWorkers' stacks
-    // to be labeled with.
-    virtual ThreadLabel GetThreadLabel() const = 0;
 
     // Called by |worker|'s thread when it enters its main function.
     virtual void OnMainEntry(const SchedulerWorker* worker) = 0;
@@ -172,27 +155,6 @@ class BASE_EXPORT SchedulerWorker
 
   // PlatformThread::Delegate:
   void ThreadMain() override;
-
-  // Dummy frames to act as "RunLabeledWorker()" (see RunMain() below). Their
-  // impl is aliased to prevent compiler/linker from optimizing them out.
-  void RunPooledWorker();
-  void RunBackgroundPooledWorker();
-  void RunSharedWorker();
-  void RunBackgroundSharedWorker();
-  void RunDedicatedWorker();
-  void RunBackgroundDedicatedWorker();
-#if defined(OS_WIN)
-  void RunSharedCOMWorker();
-  void RunBackgroundSharedCOMWorker();
-  void RunDedicatedCOMWorker();
-  void RunBackgroundDedicatedCOMWorker();
-#endif  // defined(OS_WIN)
-
-  // The real main, invoked through :
-  //     ThreadMain() -> RunLabeledWorker() -> RunWorker().
-  // "RunLabeledWorker()" is a dummy frame based on ThreadLabel+ThreadPriority
-  // and used to easily identify threads in stack traces.
-  void RunWorker();
 
   // Self-reference to prevent destruction of |this| while the thread is alive.
   // Set in Start() before creating the thread. Reset in ThreadMain() before the
