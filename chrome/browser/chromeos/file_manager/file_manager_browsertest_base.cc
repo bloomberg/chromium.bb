@@ -582,7 +582,7 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
     CHECK(embedded_test_server()->Start());
     const GURL share_url_base(embedded_test_server()->GetURL(
         "/chromeos/file_manager/share_dialog_mock/index.html"));
-    drive_volume_ = drive_volumes_[profile()->GetOriginalProfile()];
+    drive_volume_ = std::move(drive_volumes_[profile()->GetOriginalProfile()]);
     drive_volume_->ConfigureShareUrlBase(share_url_base);
     test_util::WaitUntilDriveMountPointIsAdded(profile());
   }
@@ -724,7 +724,7 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
           local_volume_->CreateEntry(*message.entries[i]);
           break;
         case DRIVE_VOLUME:
-          if (drive_volume_.get())
+          if (drive_volume_)
             drive_volume_->CreateEntry(*message.entries[i]);
           break;
         case USB_VOLUME:
