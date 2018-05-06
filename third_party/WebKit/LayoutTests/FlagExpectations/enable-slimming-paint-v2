@@ -92,11 +92,14 @@ Bug(none) virtual/disable-spv175/ [ Skip ]
 Bug(none) virtual/spv2/ [ Skip ]
 Bug(none) virtual/stable/ [ Skip ]
 Bug(none) virtual/targetedstylerecalc/ [ Skip ]
+Bug(none) virtual/video-surface-layer/ [ Skip ]
 Bug(none) virtual/reporting-api/ [ Skip ]
 Bug(none) virtual/wheelscrolllatching/ [ Skip ]
 Bug(none) virtual/windows-directwrite/ [ Skip ]
 Bug(none) virtual/without-smil/ [ Skip ]
 Bug(none) virtual/blink-gen-property-trees/ [ Skip ]
+
+crbug.com/778875 virtual/threaded/fast/animationworklet/ [ Skip ]
 
 # Fail on SPv1, but succeed on SPv2
 crbug.com/472330 fast/borders/border-image-outset-split-inline-vertical-lr.html [ Pass ]
@@ -383,8 +386,10 @@ Bug(none) compositing/squashing/squashing-inside-perspective.html [ Failure ]
 Bug(none) compositing/squashing/squashing-sparsity-heuristic.html [ Failure ]
 Bug(none) compositing/tiled-layers-hidpi.html [ Failure ]
 Bug(none) compositing/update-paint-phases.html [ Failure ]
+Bug(none) compositing/video/video-controls-layer-creation-squashing.html [ Crash Failure ]
+Bug(none) compositing/video/video-controls-layer-creation.html [ Crash Failure ]
 Bug(none) compositing/video/video-poster.html [ Crash Failure ]
-Bug(none) compositing/video/video-reflection.html [ Crash Failure  ]
+Bug(none) compositing/video/video-reflection.html [ Crash Failure ]
 Bug(none) compositing/visibility/layer-visible-content.html [ Failure ]
 Bug(none) compositing/visibility/overlays.html [ Failure Crash ]
 Bug(none) compositing/visibility/visibility-image-layers-dynamic.html [ Crash Failure ]
@@ -1012,9 +1017,6 @@ crbug.com/702353 transitions/transition-end-event-destroy-iframe.html [ Timeout 
 crbug.com/702353 virtual/threaded/transitions/transition-end-event-destroy-iframe.html [ Timeout ]
 crbug.com/702365 virtual/threaded/animations/composited-filter-webkit-filter.html [ Failure ]
 crbug.com/702370 virtual/threaded/animations/compositor-independent-transform-cancel.html [ Failure ]
-crbug.com/778875 virtual/threaded/fast/animationworklet/animation-worklet-visual-update.html [ Failure Crash ]
-crbug.com/778875 virtual/threaded/fast/animationworklet/animation-worklet-animator-animate.html [ Failure ]
-crbug.com/778875 virtual/threaded/fast/animationworklet/animation-worklet-scroll-timeline.html [ Failure ]
 
 # Eight of the frames in the test below paint no content. In SPv2 we will never
 # composite animations that paint nothing. For now we mark this test as failing,
@@ -1406,4 +1408,4 @@ crbug.com/837467 paint/invalidation/compositing/end-of-opacity-transition.html [
 
 Bug(none) compositing/squashing/frame-clip-squashed-scrolled.html [ Failure ]
 Bug(none) fast/block/positioning/vertical-rl/002.html [ Failure ]
-Bug(none) virtual/threaded/fast/animationworklet/animation-worklet-start-delay.html [ Failure ]
+Bug(none) rootscroller/gesture-scroll-document-not-root-scroller.html [ Failure ]
