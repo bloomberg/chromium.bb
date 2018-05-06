@@ -21,11 +21,14 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
+#include "build/build_config.h"
 #include "content/browser/bad_message.h"
+#include "content/common/frame_messages.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/file_chooser_params.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_utils.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -215,6 +218,38 @@ class RenderProcessHostKillWaiter {
   base::HistogramTester histogram_tester_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderProcessHostKillWaiter);
+};
+
+class ShowWidgetMessageFilter : public content::BrowserMessageFilter {
+ public:
+  ShowWidgetMessageFilter();
+
+  bool OnMessageReceived(const IPC::Message& message) override;
+
+  gfx::Rect last_initial_rect() const { return initial_rect_; }
+
+  int last_routing_id() const { return routing_id_; }
+
+  void Wait();
+
+  void Reset();
+
+ private:
+  ~ShowWidgetMessageFilter() override;
+
+  void OnShowWidget(int route_id, const gfx::Rect& initial_rect);
+
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
+  void OnShowPopup(const FrameHostMsg_ShowPopup_Params& params);
+#endif
+
+  void OnShowWidgetOnUI(int route_id, const gfx::Rect& initial_rect);
+
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+  gfx::Rect initial_rect_;
+  int routing_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShowWidgetMessageFilter);
 };
 
 }  // namespace content

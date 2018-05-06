@@ -1280,17 +1280,39 @@ IntRect Element::BoundsInViewport() const {
 }
 
 IntRect Element::VisibleBoundsInVisualViewport() const {
-  if (!GetLayoutObject() || !GetDocument().GetPage())
+  if (!GetLayoutObject() || !GetDocument().GetPage() ||
+      !GetDocument().GetFrame())
     return IntRect();
-  // TODO(tkent): Can we check invisibility by scrollable non-frame elements?
 
-  IntSize viewport_size = GetDocument().GetPage()->GetVisualViewport().Size();
-  IntRect rect(0, 0, viewport_size.Width(), viewport_size.Height());
   // We don't use absoluteBoundingBoxRect() because it can return an IntRect
   // larger the actual size by 1px. crbug.com/470503
-  rect.Intersect(GetDocument().View()->ContentsToViewport(
-      RoundedIntRect(GetLayoutObject()->AbsoluteBoundingBoxFloatRect())));
-  return rect;
+  LayoutRect rect(
+      RoundedIntRect(GetLayoutObject()->AbsoluteBoundingBoxFloatRect()));
+  LayoutRect frame_clip_rect =
+      GetDocument().View()->GetLayoutBox()->ClippingRect(LayoutPoint());
+  rect.Intersect(frame_clip_rect);
+
+  // MapToVisualRectInAncestorSpace, called with a null ancestor argument,
+  // returns the viewport-visible rect in the local frame root's coordinates,
+  // accounting for clips and transformed in embedding containers. This
+  // includes clips that might be applied by out-of-process frame ancestors.
+  GetDocument().View()->GetLayoutView()->MapToVisualRectInAncestorSpace(
+      nullptr, rect, kUseTransforms | kTraverseDocumentBoundaries,
+      kDefaultVisualRectFlags);
+
+  IntRect visible_rect = PixelSnappedIntRect(rect);
+  // If the rect is in the coordinates of the main frame, then it should
+  // also be clipped to the viewport to account for page scale. For OOPIFs,
+  // local frame root -> viewport coordinate conversion is done in the
+  // browser process.
+  if (GetDocument().GetFrame()->LocalFrameRoot().IsMainFrame()) {
+    IntSize viewport_size = GetDocument().GetPage()->GetVisualViewport().Size();
+    visible_rect =
+        GetDocument().GetPage()->GetVisualViewport().RootFrameToViewport(
+            visible_rect);
+    visible_rect.Intersect(IntRect(IntPoint(), viewport_size));
+  }
+  return visible_rect;
 }
 
 void Element::ClientQuads(Vector<FloatQuad>& quads) {

@@ -11700,6 +11700,60 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_LE(compositing_rect.y(), expected_offset + 2);
 }
 
+// Verify that OOPIF select element popup menu coordinates account for scroll
+// offset in containers embedding frame.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, PopupMenuInTallIframeTest) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "/frame_tree/page_with_tall_positioned_frame.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  FrameTreeNode* child_node = root->child_at(0);
+  GURL site_url(embedded_test_server()->GetURL(
+      "baz.com", "/site_isolation/page-with-select.html"));
+  NavigateFrameToURL(child_node, site_url);
+
+  scoped_refptr<UpdateViewportIntersectionMessageFilter> filter =
+      new UpdateViewportIntersectionMessageFilter();
+  root->current_frame_host()->GetProcess()->AddFilter(filter.get());
+
+  // Position the select element so that it is out of the viewport, then scroll
+  // it into view.
+  EXPECT_TRUE(ExecuteScript(
+      child_node, "document.querySelector('select').style.top='2000px';"));
+  EXPECT_TRUE(ExecuteScript(root, "window.scrollTo(0, 1900);"));
+
+  // Wait for a viewport intersection update to be dispatched to the child, and
+  // ensure it is processed by the browser before continuing.
+  filter->Wait();
+  {
+    // This yields the UI thread in order to ensure that the new viewport
+    // intersection is sent to the to child renderer before the mouse click
+    // below.
+    base::RunLoop loop;
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  loop.QuitClosure());
+    loop.Run();
+  }
+
+  scoped_refptr<ShowWidgetMessageFilter> show_widget_filter =
+      new ShowWidgetMessageFilter();
+  child_node->current_frame_host()->GetProcess()->AddFilter(
+      show_widget_filter.get());
+
+  SimulateMouseClick(child_node->current_frame_host()->GetRenderWidgetHost(),
+                     55, 2005);
+
+  // Dismiss the popup.
+  SimulateMouseClick(child_node->current_frame_host()->GetRenderWidgetHost(), 1,
+                     1);
+
+  // The test passes if this wait returns, indicating that the popup was
+  // scrolled into view and the OOPIF renderer displayed it. Other tests verify
+  // the correctness of popup menu coordinates.
+  show_widget_filter->Wait();
+}
+
 namespace {
 
 // Helper class to intercept DidCommitProvisionalLoad messages and inject a
