@@ -68,6 +68,18 @@ message AccountIdentifier {
   optional string account_id = 2;
 }
 
+// Parameters for connecting and making requests to a key delegate service.
+// This is currently used for making challenge requests for keys of the
+// |KEY_TYPE_CHALLENGE_RESPONSE| type.
+message KeyDelegate {
+  // D-Bus service name of the key delegate service that exports the key
+  // delegate object.
+  optional string dbus_service_name = 1;
+  // D-Bus object path of the key delegate object that implements the
+  // org.chromium.CryptohomeKeyDelegateInterface interface.
+  optional string dbus_object_path = 2;
+}
+
 message AuthorizationRequest {
   // |key| must supply at least a |key.secret()|.  If no |key.data()| or
   // |key.data().label()| is supplied, the |key.secret()| will be tested
@@ -76,7 +88,11 @@ message AuthorizationRequest {
   // |key.data().label()| is supplied, then the |key.secret()| will only be
   // tested against the matching VaultKeyset.
   optional Key key = 1;
-};
+  // Describes delegate service that should be used for operations with the
+  // |key| key.
+  // Should be set only for keys with the |KEY_TYPE_CHALLENGE_RESPONSE| type.
+  optional KeyDelegate key_delegate = 2;
+}
 
 // These parameters are for inbound data to Cryptohome RPC
 // interfaces.  When calls are added that return data, a
@@ -133,7 +149,7 @@ message MountReply {
   optional bool recreated = 1 [default=false];
   // Returns the filesystem-sanitized username.
   optional string sanitized_username = 2;
-};
+}
 
 message CreateRequest {
   repeated Key keys = 1;
