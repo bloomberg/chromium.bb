@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_CHROMEOS_FILE_MANAGER_FILE_MANAGER_BROWSERTEST_BASE_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
-#include "base/memory/linked_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -77,8 +77,8 @@ class FileManagerBrowserTestBase : public ExtensionApiTest {
                  std::string* output);
 
   std::unique_ptr<LocalTestVolume> local_volume_;
-  linked_ptr<DriveTestVolume> drive_volume_;
-  std::map<Profile*, linked_ptr<DriveTestVolume>> drive_volumes_;
+  std::unique_ptr<DriveTestVolume> drive_volume_;
+  std::map<Profile*, std::unique_ptr<DriveTestVolume>> drive_volumes_;
   std::unique_ptr<FakeTestVolume> usb_volume_;
   std::unique_ptr<FakeTestVolume> mtp_volume_;
 
