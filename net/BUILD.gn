@@ -1271,8 +1271,6 @@ component("net") {
       "quic/core/quic_tag.h",
       "quic/core/quic_time.cc",
       "quic/core/quic_time.h",
-      "quic/core/quic_trace_visitor.cc",
-      "quic/core/quic_trace_visitor.h",
       "quic/core/quic_transmission_info.cc",
       "quic/core/quic_transmission_info.h",
       "quic/core/quic_types.cc",
@@ -2281,7 +2279,6 @@ proto_library("net_quic_proto") {
 
   sources = [
     "quic/core/proto/cached_network_parameters.proto",
-    "quic/core/proto/quic_trace.proto",
     "quic/core/proto/source_address_token.proto",
   ]
   cc_generator_options = "dllexport_decl=NET_EXPORT_PRIVATE:"
@@ -2289,6 +2286,17 @@ proto_library("net_quic_proto") {
   component_build_force_source_set = true
 
   defines = [ "NET_IMPLEMENTATION" ]
+
+  extra_configs = [ "//build/config/compiler:wexit_time_destructors" ]
+}
+
+proto_library("net_quic_trace_proto") {
+  visibility = [ ":simple_quic_tools" ]
+
+  sources = [
+    "quic/core/proto/quic_trace.proto",
+  ]
+  component_build_force_source_set = true
 
   extra_configs = [ "//build/config/compiler:wexit_time_destructors" ]
 }
@@ -3305,6 +3313,8 @@ source_set("quic_test_tools") {
 
 source_set("simple_quic_tools") {
   sources = [
+    "quic/core/quic_trace_visitor.cc",
+    "quic/core/quic_trace_visitor.h",
     "tools/quic/chlo_extractor.cc",
     "tools/quic/chlo_extractor.h",
     "tools/quic/quic_client_base.cc",
@@ -3353,8 +3363,10 @@ source_set("simple_quic_tools") {
   ]
   deps = [
     ":net",
+    ":net_quic_trace_proto",
     "//base",
     "//base/third_party/dynamic_annotations",
+    "//third_party/protobuf:protobuf_lite",
     "//url",
   ]
 }
