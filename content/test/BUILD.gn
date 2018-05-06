@@ -1096,6 +1096,7 @@ test("content_browsertests") {
 
   if (enable_webrtc) {
     sources += [
+      "../browser/webrtc/webrtc_add_stream_no_deadlock_browsertest.cc",
       "../browser/webrtc/webrtc_audio_browsertest.cc",
       "../browser/webrtc/webrtc_audio_debug_recordings_browsertest.cc",
       "../browser/webrtc/webrtc_browsertest.cc",
