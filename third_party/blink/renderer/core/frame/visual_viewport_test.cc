@@ -1598,6 +1598,10 @@ TEST_P(VisualViewportTest, ElementBoundsInViewportSpaceAccountsForViewport) {
 }
 
 TEST_P(VisualViewportTest, ElementVisibleBoundsInVisualViewport) {
+  // VisibleBoundsInVisualViewport() assumes root layer scrolling is enabled.
+  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled())
+    return;
+
   InitializeWithAndroidSettings();
   WebView()->Resize(IntSize(640, 1080));
   RegisterMockedHttpURLLoad("viewport-select.html");

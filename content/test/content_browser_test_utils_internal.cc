@@ -22,8 +22,8 @@
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/renderer_host/delegated_frame_host.h"
-#include "content/common/frame_messages.h"
 #include "content/common/frame_visual_properties.h"
+#include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -395,6 +395,65 @@ RenderProcessHostKillWaiter::Wait() {
 
   // Translate contents of the bucket into bad_message::BadMessageReason.
   return static_cast<bad_message::BadMessageReason>(bucket.min);
+}
+
+ShowWidgetMessageFilter::ShowWidgetMessageFilter()
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
+    : content::BrowserMessageFilter(FrameMsgStart),
+#else
+    : content::BrowserMessageFilter(ViewMsgStart),
+#endif
+      message_loop_runner_(new content::MessageLoopRunner) {
+}
+
+ShowWidgetMessageFilter::~ShowWidgetMessageFilter() {}
+
+bool ShowWidgetMessageFilter::OnMessageReceived(const IPC::Message& message) {
+  IPC_BEGIN_MESSAGE_MAP(ShowWidgetMessageFilter, message)
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_ShowPopup, OnShowPopup)
+#else
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ShowWidget, OnShowWidget)
+#endif
+  IPC_END_MESSAGE_MAP()
+  return false;
+}
+
+void ShowWidgetMessageFilter::Wait() {
+  initial_rect_ = gfx::Rect();
+  routing_id_ = MSG_ROUTING_NONE;
+  message_loop_runner_->Run();
+}
+
+void ShowWidgetMessageFilter::Reset() {
+  initial_rect_ = gfx::Rect();
+  routing_id_ = MSG_ROUTING_NONE;
+  message_loop_runner_ = new content::MessageLoopRunner;
+}
+
+void ShowWidgetMessageFilter::OnShowWidget(int route_id,
+                                           const gfx::Rect& initial_rect) {
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&ShowWidgetMessageFilter::OnShowWidgetOnUI, this, route_id,
+                     initial_rect));
+}
+
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
+void ShowWidgetMessageFilter::OnShowPopup(
+    const FrameHostMsg_ShowPopup_Params& params) {
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&ShowWidgetMessageFilter::OnShowWidgetOnUI, this,
+                 MSG_ROUTING_NONE, params.bounds));
+}
+#endif
+
+void ShowWidgetMessageFilter::OnShowWidgetOnUI(int route_id,
+                                               const gfx::Rect& initial_rect) {
+  initial_rect_ = initial_rect;
+  routing_id_ = route_id;
+  message_loop_runner_->Quit();
 }
 
 }  // namespace content
