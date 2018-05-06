@@ -196,7 +196,7 @@ class _CoverageReportHtmlGenerator(object):
     css_absolute_path = os.path.join(OUTPUT_DIR, css_file_name)
     assert os.path.exists(css_absolute_path), (
         'css file doesn\'t exit. Please make sure "llvm-cov show -format=html" '
-        'is called first, and the css file is generated at: "%s"' %
+        'is called first, and the css file is generated at: "%s".' %
         css_absolute_path)
 
     self._css_absolute_path = css_absolute_path
@@ -281,7 +281,7 @@ class _CoverageReportHtmlGenerator(object):
     if percentage == 100:
       return 'green'
 
-    assert False, 'Invalid coverage percentage: "%d"' % percentage
+    assert False, 'Invalid coverage percentage: "%d".' % percentage
 
   def WriteHtmlCoverageReport(self):
     """Writes html coverage report.
@@ -346,7 +346,7 @@ def _GetSharedLibraries(binary_paths):
     cmd.extend(['otool', '-L'])
     shared_library_re = re.compile(r'\s+(@rpath/.*\.dylib)\s.*')
   else:
-    assert False, ('Cannot detect shared libraries used by the given targets.')
+    assert False, 'Cannot detect shared libraries used by the given targets.'
 
   assert shared_library_re is not None
 
@@ -465,7 +465,7 @@ def DownloadCoverageToolsIfNeeded():
   try:
     clang_update.DownloadAndUnpack(coverage_tools_url,
                                    clang_update.LLVM_BUILD_DIR)
-    logging.info('Coverage tools %s unpacked', package_version)
+    logging.info('Coverage tools %s unpacked.', package_version)
     with open(coverage_revision_stamp_file, 'w') as file_handle:
       file_handle.write('%s,%s' % (package_version, host_platform))
       file_handle.write('\n')
@@ -492,7 +492,7 @@ def _GeneratePerFileLineByLineCoverageInHtml(binary_paths, profdata_file_path,
   # NOTE: For object files, the first one is specified as a positional argument,
   # and the rest are specified as keyword argument.
   logging.debug('Generating per file line by line coverage reports using '
-                '"llvm-cov show" command')
+                '"llvm-cov show" command.')
   subprocess_cmd = [
       LLVM_COV_PATH, 'show', '-format=html',
       '-output-dir={}'.format(OUTPUT_DIR),
@@ -514,7 +514,7 @@ def _GeneratePerFileLineByLineCoverageInHtml(binary_paths, profdata_file_path,
   platform_report_subdir_path = _GetCoverageReportRootDirPath()
   _MergeTwoDirectories(default_report_subdir_path, platform_report_subdir_path)
 
-  logging.debug('Finished running "llvm-cov show" command')
+  logging.debug('Finished running "llvm-cov show" command.')
 
 
 def _GenerateFileViewHtmlIndexFile(per_file_coverage_summary):
@@ -541,12 +541,13 @@ def _GenerateFileViewHtmlIndexFile(per_file_coverage_summary):
 
 def _CalculatePerDirectoryCoverageSummary(per_file_coverage_summary):
   """Calculates per directory coverage summary."""
-  logging.debug('Calculating per-directory coverage summary')
+  logging.debug('Calculating per-directory coverage summary.')
   per_directory_coverage_summary = defaultdict(lambda: _CoverageSummary())
 
   for file_path in per_file_coverage_summary:
     summary = per_file_coverage_summary[file_path]
     parent_dir = os.path.dirname(file_path)
+
     while True:
       per_directory_coverage_summary[parent_dir].AddSummary(summary)
 
@@ -554,19 +555,19 @@ def _CalculatePerDirectoryCoverageSummary(per_file_coverage_summary):
         break
       parent_dir = os.path.dirname(parent_dir)
 
-  logging.debug('Finished calculating per-directory coverage summary')
+  logging.debug('Finished calculating per-directory coverage summary.')
   return per_directory_coverage_summary
 
 
 def _GeneratePerDirectoryCoverageInHtml(per_directory_coverage_summary,
                                         per_file_coverage_summary):
   """Generates per directory coverage breakdown in html."""
-  logging.debug('Writing per-directory coverage html reports')
+  logging.debug('Writing per-directory coverage html reports.')
   for dir_path in per_directory_coverage_summary:
     _GenerateCoverageInHtmlForDirectory(
         dir_path, per_directory_coverage_summary, per_file_coverage_summary)
 
-  logging.debug('Finished writing per-directory coverage html reports')
+  logging.debug('Finished writing per-directory coverage html reports.')
 
 
 def _GenerateCoverageInHtmlForDirectory(
@@ -618,7 +619,7 @@ def _GenerateDirectoryViewHtmlIndexFile():
 def _CalculatePerComponentCoverageSummary(component_to_directories,
                                           per_directory_coverage_summary):
   """Calculates per component coverage summary."""
-  logging.debug('Calculating per-component coverage summary')
+  logging.debug('Calculating per-component coverage summary.')
   per_component_coverage_summary = defaultdict(lambda: _CoverageSummary())
 
   for component in component_to_directories:
@@ -628,7 +629,7 @@ def _CalculatePerComponentCoverageSummary(component_to_directories,
         per_component_coverage_summary[component].AddSummary(
             per_directory_coverage_summary[absolute_directory_path])
 
-  logging.debug('Finished calculating per-component coverage summary')
+  logging.debug('Finished calculating per-component coverage summary.')
   return per_component_coverage_summary
 
 
@@ -753,7 +754,7 @@ def _CleanUpOutputDir():
 
 def _GetCoverageHtmlReportPathForFile(file_path):
   """Given a file path, returns the corresponding html report path."""
-  assert os.path.isfile(file_path), '"%s" is not a file' % file_path
+  assert os.path.isfile(file_path), '"%s" is not a file.' % file_path
   html_report_path = os.extsep.join([os.path.abspath(file_path), 'html'])
 
   # '+' is used instead of os.path.join because both of them are absolute paths
@@ -764,7 +765,7 @@ def _GetCoverageHtmlReportPathForFile(file_path):
 
 def _GetCoverageHtmlReportPathForDirectory(dir_path):
   """Given a directory path, returns the corresponding html report path."""
-  assert os.path.isdir(dir_path), '"%s" is not a directory' % dir_path
+  assert os.path.isdir(dir_path), '"%s" is not a directory.' % dir_path
   html_report_path = os.path.join(
       os.path.abspath(dir_path), DIRECTORY_COVERAGE_HTML_REPORT_NAME)
 
@@ -869,7 +870,7 @@ def _BuildTargets(targets, jobs_count):
     build_args = _GetBuildArgs()
     return 'use_goma' in build_args and build_args['use_goma'] == 'true'
 
-  logging.info('Building %s', str(targets))
+  logging.info('Building %s.', str(targets))
   if jobs_count is None and _IsGomaConfigured():
     jobs_count = DEFAULT_GOMA_JOBS
 
@@ -879,7 +880,7 @@ def _BuildTargets(targets, jobs_count):
 
   subprocess_cmd.extend(targets)
   subprocess.check_call(subprocess_cmd)
-  logging.debug('Finished building %s', str(targets))
+  logging.debug('Finished building %s.', str(targets))
 
 
 def _GetTargetProfDataPathsByExecutingCommands(targets, commands):
@@ -892,7 +893,7 @@ def _GetTargetProfDataPathsByExecutingCommands(targets, commands):
   Returns:
     A list of relative paths to the generated profraw data files.
   """
-  logging.debug('Executing the test commands')
+  logging.debug('Executing the test commands.')
 
   # Remove existing profraw data files.
   for file_or_dir in os.listdir(_GetCoverageReportRootDirPath()):
@@ -912,7 +913,7 @@ def _GetTargetProfDataPathsByExecutingCommands(targets, commands):
 
     profdata_file_path = None
     for _ in xrange(MERGE_RETRIES):
-      logging.info('Running command: "%s", the output is redirected to "%s"',
+      logging.info('Running command: "%s", the output is redirected to "%s".',
                    command, output_file_path)
 
       if _IsIOSCommand(command):
@@ -937,7 +938,7 @@ def _GetTargetProfDataPathsByExecutingCommands(targets, commands):
                 os.path.join(_GetCoverageReportRootDirPath(), file_or_dir))
 
       assert profraw_file_paths, (
-          'Running target %s failed to generate any profraw data file, '
+          'Running target "%s" failed to generate any profraw data file, '
           'please make sure the binary exists and is properly '
           'instrumented.' % target)
 
@@ -953,14 +954,14 @@ def _GetTargetProfDataPathsByExecutingCommands(targets, commands):
           os.remove(profraw_file_path)
 
     assert profdata_file_path, (
-        'Failed to merge target %s profraw files after %d retries. '
+        'Failed to merge target "%s" profraw files after %d retries. '
         'Please file a bug with command you used, commit position and args.gn '
         'config here: '
         'https://bugs.chromium.org/p/chromium/issues/entry?'
-        'components=Tools%%3ECodeCoverage'% (target, MERGE_RETRIES))
+        'components=Tools%%3ECodeCoverage' % (target, MERGE_RETRIES))
     profdata_file_paths.append(profdata_file_path)
 
-  logging.debug('Finished executing the test commands')
+  logging.debug('Finished executing the test commands.')
 
   return profdata_file_paths
 
@@ -1001,7 +1002,7 @@ def _ExecuteCommand(target, command):
         env={'LLVM_PROFILE_FILE': expected_profraw_file_path})
   except subprocess.CalledProcessError as e:
     output = e.output
-    logging.warning('Command: "%s" exited with non-zero return code', command)
+    logging.warning('Command: "%s" exited with non-zero return code.', command)
 
   return output
 
@@ -1079,8 +1080,8 @@ def _CreateCoverageProfileDataFromTargetProfDataFiles(profdata_file_paths):
   Raises:
     CalledProcessError: An error occurred merging profdata files.
   """
-  logging.info('Creating the coverage profile data file')
-  logging.debug('Merging target profraw files to create target profdata file')
+  logging.info('Creating the coverage profile data file.')
+  logging.debug('Merging target profraw files to create target profdata file.')
   profdata_file_path = _GetProfdataFilePath()
   try:
     subprocess_cmd = [
@@ -1093,8 +1094,8 @@ def _CreateCoverageProfileDataFromTargetProfDataFiles(profdata_file_paths):
           'Try again.')
     raise error
 
-  logging.debug('Finished merging target profdata files')
-  logging.info('Code coverage profile data is created as: %s',
+  logging.debug('Finished merging target profdata files.')
+  logging.info('Code coverage profile data is created as: "%s".',
                profdata_file_path)
   return profdata_file_path
 
@@ -1113,8 +1114,8 @@ def _CreateTargetProfDataFileFromProfRawFiles(target, profraw_file_paths):
   Raises:
     CalledProcessError: An error occurred merging profdata files.
   """
-  logging.info('Creating target profile data file')
-  logging.debug('Merging target profraw files to create target profdata file')
+  logging.info('Creating target profile data file.')
+  logging.debug('Merging target profraw files to create target profdata file.')
   profdata_file_path = os.path.join(OUTPUT_DIR, '%s.profdata' % target)
 
   try:
@@ -1127,8 +1128,8 @@ def _CreateTargetProfDataFileFromProfRawFiles(target, profraw_file_paths):
     print('Failed to merge target profraw files to create target profdata.')
     raise error
 
-  logging.debug('Finished merging target profraw files')
-  logging.info('Target %s profile data is created as: %s', target,
+  logging.debug('Finished merging target profraw files.')
+  logging.info('Target "%s" profile data is created as: "%s".', target,
                profdata_file_path)
   return profdata_file_path
 
@@ -1141,7 +1142,7 @@ def _GeneratePerFileCoverageSummary(binary_paths, profdata_file_path, filters,
   # NOTE: For object files, the first one is specified as a positional argument,
   # and the rest are specified as keyword argument.
   logging.debug('Generating per-file code coverage summary using "llvm-cov '
-                'export -summary-only" command')
+                'export -summary-only" command.')
   subprocess_cmd = [
       LLVM_COV_PATH, 'export', '-summary-only',
       '-instr-profile=' + profdata_file_path, binary_paths[0]
@@ -1166,8 +1167,11 @@ def _GeneratePerFileCoverageSummary(binary_paths, profdata_file_path, filters,
   per_file_coverage_summary = {}
   for file_coverage_data in files_coverage_data:
     file_path = file_coverage_data['filename']
-    summary = file_coverage_data['summary']
+    assert file_path.startswith(SRC_ROOT_PATH + os.sep), (
+        'File path "%s" in coverage summary is outside source checkout.' %
+        file_path)
 
+    summary = file_coverage_data['summary']
     if summary['lines']['count'] == 0:
       continue
 
@@ -1179,7 +1183,7 @@ def _GeneratePerFileCoverageSummary(binary_paths, profdata_file_path, filters,
         lines_total=summary['lines']['count'],
         lines_covered=summary['lines']['covered'])
 
-  logging.debug('Finished generating per-file code coverage summary')
+  logging.debug('Finished generating per-file code coverage summary.')
   return per_file_coverage_summary
 
 
@@ -1219,7 +1223,7 @@ def _GetBinaryPath(command):
   command_parts = shlex.split(command)
   if os.path.basename(command_parts[0]) == 'python':
     assert os.path.basename(command_parts[1]) == xvfb_script_name, (
-        'This tool doesn\'t understand the command: "%s"' % command)
+        'This tool doesn\'t understand the command: "%s".' % command)
     return command_parts[2]
 
   if os.path.basename(command_parts[0]) == xvfb_script_name:
@@ -1351,7 +1355,7 @@ def _GetBinaryPathsFromTargets(targets, build_dir):
       binary_paths.append(binary_path)
     else:
       logging.warning(
-          'Target binary %s not found in build directory, skipping.',
+          'Target binary "%s" not found in build directory, skipping.',
           os.path.basename(binary_path))
 
   return binary_paths
@@ -1471,8 +1475,8 @@ def Main():
       'Number of targets must be equal to the number of test commands.')
 
   assert os.path.exists(BUILD_DIR), (
-      'Build directory: {} doesn\'t exist. '
-      'Please run "gn gen" to generate.').format(BUILD_DIR)
+      'Build directory: "%s" doesn\'t exist. '
+      'Please run "gn gen" to generate.' % BUILD_DIR)
 
   _ValidateCurrentPlatformIsSupported()
   _ValidateBuildingWithClangCoverage()
@@ -1498,7 +1502,7 @@ def Main():
     binary_paths = _GetBinaryPathsFromTargets(args.targets, args.build_dir)
 
   logging.info('Generating code coverage report in html (this can take a while '
-               'depending on size of target!)')
+               'depending on size of target!).')
   binary_paths.extend(_GetSharedLibraries(binary_paths))
   per_file_coverage_summary = _GeneratePerFileCoverageSummary(
       binary_paths, profdata_file_path, absolute_filter_paths,
@@ -1528,7 +1532,7 @@ def Main():
   _CleanUpOutputDir()
 
   html_index_file_path = 'file://' + os.path.abspath(_GetHtmlIndexPath())
-  logging.info('Index file for html report is generated as: %s',
+  logging.info('Index file for html report is generated as: "%s".',
                html_index_file_path)
 
 
