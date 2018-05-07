@@ -37,7 +37,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
-#include "chrome/browser/chromeos/accessibility/spoken_feedback_event_rewriter.h"
+#include "chrome/browser/chromeos/accessibility/spoken_feedback_event_rewriter_delegate.h"
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
@@ -1028,12 +1028,14 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
     event_rewriter_controller_ptr->SetKeyboardDrivenEventRewriterEnabled(true);
   }
 
+  // Construct a delegate to connect ChromeVox and SpokenFeedbackEventRewriter.
+  spoken_feedback_event_rewriter_delegate_ =
+      std::make_unique<SpokenFeedbackEventRewriterDelegate>();
+
   if (chromeos::GetAshConfig() != ash::Config::MASH) {
     // TODO(mash): Support EventRewriterController; see crbug.com/647781
     ash::EventRewriterController* event_rewriter_controller =
         ash::Shell::Get()->event_rewriter_controller();
-    event_rewriter_controller->AddEventRewriter(
-        std::unique_ptr<ui::EventRewriter>(new SpokenFeedbackEventRewriter()));
     event_rewriter_delegate_ = std::make_unique<EventRewriterDelegateImpl>();
     event_rewriter_controller->AddEventRewriter(
         std::make_unique<ui::EventRewriterChromeOS>(

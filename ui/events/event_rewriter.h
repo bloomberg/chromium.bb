@@ -7,11 +7,14 @@
 
 #include <memory>
 
+#include "base/macros.h"
+#include "ui/events/event_dispatcher.h"
 #include "ui/events/events_export.h"
 
 namespace ui {
 
 class Event;
+class EventSource;
 
 // Return status of EventRewriter operations; see that class below.
 enum EventRewriteStatus {
@@ -42,7 +45,8 @@ enum EventRewriteStatus {
 // before being dispatched from EventSource to EventSink.
 class EVENTS_EXPORT EventRewriter {
  public:
-  virtual ~EventRewriter() {}
+  EventRewriter() = default;
+  virtual ~EventRewriter() = default;
 
   // Potentially rewrites (replaces) an event, or requests it be discarded.
   // or discards an event. If the rewriter wants to rewrite an event, and
@@ -62,6 +66,15 @@ class EVENTS_EXPORT EventRewriter {
   virtual EventRewriteStatus NextDispatchEvent(
       const Event& last_event,
       std::unique_ptr<Event>* new_event) = 0;
+
+ protected:
+  // A helper that calls a protected EventSource function, which sends the event
+  // to subsequent event rewriters on the source and onto its event sink.
+  EventDispatchDetails SendEventToEventSource(EventSource* source,
+                                              Event* event) const;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(EventRewriter);
 };
 
 }  // namespace ui
