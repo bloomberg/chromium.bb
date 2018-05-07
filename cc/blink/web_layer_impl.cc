@@ -240,11 +240,6 @@ bool WebLayerImpl::UserScrollableVertical() const {
 
 void WebLayerImpl::AddMainThreadScrollingReasons(
     uint32_t main_thread_scrolling_reasons) {
-  // WebLayerImpl should only know about non-transient scrolling
-  // reasons. Transient scrolling reasons are computed per hit test.
-  DCHECK(main_thread_scrolling_reasons);
-  DCHECK(cc::MainThreadScrollingReason::MainThreadCanSetScrollReasons(
-      main_thread_scrolling_reasons));
   layer_->AddMainThreadScrollingReasons(main_thread_scrolling_reasons);
 }
 
@@ -347,17 +342,13 @@ cc::ElementId WebLayerImpl::GetElementId() const {
 }
 
 void WebLayerImpl::SetScrollParent(blink::WebLayer* parent) {
-  cc::Layer* scroll_parent = nullptr;
-  if (parent)
-    scroll_parent = static_cast<WebLayerImpl*>(parent)->layer();
-  layer_->SetScrollParent(scroll_parent);
+  layer_->SetScrollParent(parent ? static_cast<WebLayerImpl*>(parent)->layer()
+                                 : nullptr);
 }
 
 void WebLayerImpl::SetClipParent(blink::WebLayer* parent) {
-  cc::Layer* clip_parent = nullptr;
-  if (parent)
-    clip_parent = static_cast<WebLayerImpl*>(parent)->layer();
-  layer_->SetClipParent(clip_parent);
+  layer_->SetClipParent(parent ? static_cast<WebLayerImpl*>(parent)->layer()
+                               : nullptr);
 }
 
 Layer* WebLayerImpl::layer() const {
