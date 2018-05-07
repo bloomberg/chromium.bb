@@ -24,6 +24,7 @@
 #include "chromeos/dbus/power_manager_client.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "ui/events/devices/input_device_event_observer.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 
 namespace aura {
@@ -59,7 +60,8 @@ class ASH_EXPORT TabletModeController
       public mojom::TabletModeController,
       public ShellObserver,
       public WindowTreeHostManager::Observer,
-      public SessionObserver {
+      public SessionObserver,
+      public ui::InputDeviceEventObserver {
  public:
   // Used for keeping track if the user wants the machine to behave as a
   // clamshell/tablet regardless of hardware orientation.
@@ -134,6 +136,11 @@ class ASH_EXPORT TabletModeController
   void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
+  // ui::InputDeviceEventObserver::
+  void OnKeyboardDeviceConfigurationChanged() override;
+  void OnMouseDeviceConfigurationChanged() override;
+  void OnDeviceListsComplete() override;
+
  private:
   friend class TabletModeControllerTest;
   friend class TabletModeWindowManagerTest;
@@ -174,7 +181,7 @@ class ASH_EXPORT TabletModeController
 
   // Removes TabletModeWindowManager and resets the display rotation if there
   // is no rotation lock.
-  void LeaveTabletMode();
+  void LeaveTabletMode(bool called_by_device_update);
 
   // Record UMA stats tracking TabletMode usage. If |type| is
   // TABLET_MODE_INTERVAL_INACTIVE, then record that TabletMode has been
@@ -198,6 +205,10 @@ class ASH_EXPORT TabletModeController
   // returns false if the user set a flag for the software to behave in a
   // certain way regardless of configuration.
   bool AllowEnterExitTabletMode() const;
+
+  // Called when a mouse or keyboard config is changed, or when a device list is
+  // sent from device manager. This will exit tablet mode if needed.
+  void HandleDeviceAddedOrRemoved();
 
   // The maximized window manager (if enabled).
   std::unique_ptr<TabletModeWindowManager> tablet_mode_window_manager_;
@@ -236,6 +247,15 @@ class ASH_EXPORT TabletModeController
 
   // Last computed lid angle.
   double lid_angle_ = 0.0f;
+
+  // Tracks if the device has an external keyboard and mouse. The device will
+  // not enter tablet mode if this is true.
+  bool has_external_keyboard_and_mouse_ = false;
+
+  // Tracks if the device would enter tablet mode, but does not because of a
+  // attached external keyboard and mouse. If the external keyboard or mouse
+  // is detached and this is true, we will enter tablet mode.
+  bool should_enter_tablet_mode_ = false;
 
   // Tracks smoothed accelerometer data over time. This is done when the hinge
   // is approaching vertical to remove abrupt acceleration that can lead to
