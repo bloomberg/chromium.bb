@@ -875,9 +875,8 @@ TEST_F(ProcessUtilTest, FDRemappingIncludesStdio) {
   EXPECT_EQ(0, exit_code);
 }
 
-// TODO(https://crbug.com/793412): Disable on Debug/component builds due to
-// process launch taking too long and triggering timeouts.
-#if defined(OS_FUCHSIA) && defined(NDEBUG)
+#if defined(OS_FUCHSIA)
+
 const uint16_t kStartupHandleId = 43;
 MULTIPROCESS_TEST_MAIN(ProcessUtilsVerifyHandle) {
   zx_handle_t handle =
@@ -932,7 +931,8 @@ TEST_F(ProcessUtilTest, LaunchWithHandleTransfer) {
                                              &exit_code));
   EXPECT_EQ(0, exit_code);
 }
-#endif  // defined(OS_FUCHSIA) && defined(NDEBUG)
+
+#endif  // defined(OS_FUCHSIA)
 
 namespace {
 
