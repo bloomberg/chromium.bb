@@ -89,7 +89,7 @@ media::AudioManager* OwningAudioManagerAccessor::GetAudioManager() {
     // TODO(http://crbug/812557): pass AudioLogFactory (needed for output
     // streams).
     audio_manager_ = std::move(audio_manager_factory_cb_)
-                         .Run(std::make_unique<MainThread>(), nullptr);
+                         .Run(std::make_unique<MainThread>(), &log_factory_);
     DCHECK(audio_manager_);
   }
   DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
