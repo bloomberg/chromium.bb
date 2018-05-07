@@ -966,6 +966,7 @@ int SSLClientSocketImpl::Init() {
   // optimization. See https://crbug.com/boringssl/123.
   SSL_set_renegotiate_mode(ssl_.get(), ssl_renegotiate_freely);
 
+  SSL_set_shed_handshake_config(ssl_.get(), 1);
   return OK;
 }
 
