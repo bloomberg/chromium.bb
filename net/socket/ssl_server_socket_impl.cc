@@ -216,6 +216,7 @@ SSLServerContextImpl::SocketImpl::SocketImpl(
       weak_factory_(this) {
   ssl_.reset(SSL_new(context_->ssl_ctx_.get()));
   SSL_set_app_data(ssl_.get(), this);
+  SSL_set_shed_handshake_config(ssl_.get(), 1);
 }
 
 SSLServerContextImpl::SocketImpl::~SocketImpl() {
