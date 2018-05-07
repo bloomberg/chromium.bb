@@ -86,14 +86,8 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserTestWithLegacyEventDispatch, Test) {
 #define WRAPPED_INSTANTIATE_TEST_CASE_P(prefix, test_case_name, generator) \
   INSTANTIATE_TEST_CASE_P(prefix, test_case_name, generator)
 
-// Fails on official build. http://crbug.com/429294
-#if defined(DISABLE_SLOW_FILESAPP_TESTS) || defined(OFFICIAL_BUILD)
-#define MAYBE_FileDisplay DISABLED_FileDisplay
-#else
-#define MAYBE_FileDisplay FileDisplay
-#endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_FileDisplay,
+    FileDisplay,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "fileDisplayDownloads"),
                       TestParameter(IN_GUEST_MODE, "fileDisplayDownloads"),
