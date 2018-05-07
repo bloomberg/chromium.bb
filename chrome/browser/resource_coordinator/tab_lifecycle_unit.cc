@@ -130,11 +130,9 @@ content::Visibility TabLifecycleUnitSource::TabLifecycleUnit::GetVisibility()
 }
 
 bool TabLifecycleUnitSource::TabLifecycleUnit::Freeze() {
-  // Can't freeze tabs that are already discarded or frozen.
-  if (GetState() == LifecycleState::DISCARDED ||
-      GetState() == LifecycleState::FROZEN) {
+  // Can't request to freeze a discarded tab.
+  if (GetState() == LifecycleState::DISCARDED)
     return false;
-  }
 
   GetWebContents()->FreezePage();
   return true;

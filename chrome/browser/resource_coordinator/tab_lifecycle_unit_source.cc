@@ -220,8 +220,8 @@ void TabLifecycleUnitSource::OnLifecycleStateChanged(
     mojom::LifecycleState state) {
   TabLifecycleUnit* lifecycle_unit = GetTabLifecycleUnit(web_contents);
 
-  // The lifecycle state is currently only maintained for tabs, and some
-  // WebContents aren't attached to a tab.
+  // Some WebContents aren't attached to a tab, so there is no corresponding
+  // TabLifecycleUnit.
   if (lifecycle_unit)
     lifecycle_unit->UpdateLifecycleState(state);
 }

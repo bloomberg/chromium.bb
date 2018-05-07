@@ -81,7 +81,7 @@ class LifecycleUnit {
   virtual base::TimeTicks GetLastVisibilityChangeTime() const = 0;
 
   // Request that the LifecycleUnit be frozen, return true if the request is
-  // successfuly sent.
+  // successfully sent.
   virtual bool Freeze() = 0;
 
   // Returns the estimated number of kilobytes that would be freed if this
