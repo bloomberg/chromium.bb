@@ -31,6 +31,7 @@ mojom("interfaces") {
     "compositing/transferable_resource.mojom",
     "compositing/video_detector_observer.mojom",
     "constants.mojom",
+    "hit_test/aggregated_hit_test_region.mojom",
     "hit_test/hit_test_region_list.mojom",
     "hit_test/input_target_client.mojom",
   ]
