@@ -32,5 +32,10 @@ public final class ChromecastConfigAndroid {
         return sSettingsManager.isSendUsageStatsEnabled();
     }
 
+    @CalledByNative
+    public static void setSendUsageStats(boolean enabled) {
+        sSettingsManager.setSendUsageStatsEnabled(enabled);
+    }
+
     private static native void nativeSetSendUsageStatsEnabled(boolean enabled);
 }
