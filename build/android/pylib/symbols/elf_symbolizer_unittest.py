@@ -117,6 +117,31 @@ class ELFSymbolizerTest(unittest.TestCase):
 
     symbolizer.Join()
 
+  def testWaitForIdle(self):
+    symbolizer = elf_symbolizer.ELFSymbolizer(
+        elf_file_path='/path/doesnt/matter/mock_lib1.so',
+        addr2line_path=_MOCK_A2L_PATH,
+        callback=self._callback,
+        max_concurrent_jobs=1)
+
+    # Test symbols with valid name but incomplete path.
+    addr = _INCOMPLETE_MOCK_ADDR
+    exp_name = 'mock_sym_for_addr_%d' % addr
+    exp_source_path = None
+    exp_source_line = None
+    cb_arg = (addr, exp_name, exp_source_path, exp_source_line, False)
+    symbolizer.SymbolizeAsync(addr, cb_arg)
+    symbolizer.WaitForIdle()
+
+    # Test symbols with no name or sym info.
+    addr = _UNKNOWN_MOCK_ADDR
+    exp_name = None
+    exp_source_path = None
+    exp_source_line = None
+    cb_arg = (addr, exp_name, exp_source_path, exp_source_line, False)
+    symbolizer.SymbolizeAsync(addr, cb_arg)
+    symbolizer.Join()
+
   def _RunTest(self, max_concurrent_jobs, num_symbols):
     symbolizer = elf_symbolizer.ELFSymbolizer(
         elf_file_path='/path/doesnt/matter/mock_lib1.so',

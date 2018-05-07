@@ -185,6 +185,11 @@ class ELFSymbolizer(object):
 
     a2l.EnqueueRequest(addr, callback_arg)
 
+  def WaitForIdle(self):
+    """Waits for all the outstanding requests to complete."""
+    for a2l in self._a2l_instances:
+      a2l.WaitForIdle()
+
   def Join(self):
     """Waits for all the outstanding requests to complete and terminates."""
     for a2l in self._a2l_instances:
