@@ -1520,7 +1520,7 @@ CSSValue* ConsumeFontStretch(CSSParserTokenRange& range,
 
   CSSPrimitiveValue* start_percent =
       CSSPropertyParserHelpers::ConsumePercent(range, kValueRangeNonNegative);
-  if (!start_percent || start_percent->GetFloatValue() <= 0)
+  if (!start_percent)
     return nullptr;
 
   // In a non-font-face context, more than one percentage is not allowed.
@@ -1529,7 +1529,7 @@ CSSValue* ConsumeFontStretch(CSSParserTokenRange& range,
 
   CSSPrimitiveValue* end_percent =
       CSSPropertyParserHelpers::ConsumePercent(range, kValueRangeNonNegative);
-  if (!end_percent || end_percent->GetFloatValue() <= 0)
+  if (!end_percent)
     return nullptr;
 
   return CombineToRangeListOrNull(start_percent, end_percent);

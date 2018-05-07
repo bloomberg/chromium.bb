@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 82 tests; 65 PASS, 17 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 82 tests; 66 PASS, 16 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS font-weight(valid): 'normal' keyword: normal
 PASS font-weight(valid): 'bold' keyword: bold
 FAIL font-weight(invalid): 'lighter' keyword iside @font-face: lighter assert_equals: No properties should be set. expected "" but got "lighter"
@@ -43,12 +43,12 @@ PASS font-stretch(valid): Legal percentage: 100%
 PASS font-stretch(valid): Legal percentage: 1000%
 PASS font-stretch(invalid): Only percentages, not numbers allowed: 100
 PASS font-stretch(invalid): Negative values are illegal: -1%
-FAIL font-stretch(valid): Zero is legal: 0% assert_not_equals: Valid value should be accepted. got disallowed value ""
+PASS font-stretch(valid): Zero is legal: 0%
 PASS font-stretch(invalid): Extra content after value: 100% a
 FAIL font-stretch(valid): Simple calc value: calc(200.5%) assert_equals: Unexpected resulting value. expected "200.5%" but got "calc(200.5%)"
 FAIL font-stretch(valid): Valid calc expression: calc(50%*2 - 20%) assert_equals: Unexpected resulting value. expected "80%" but got "calc(80%)"
-PASS font-stretch(invalid): Negative calc value: calc(-100%)
-PASS font-stretch(invalid): Negative calc expression: calc(50% - 50%*2)
+PASS font-stretch(valid): Negative calc value (to be clamped): calc(-100%)
+PASS font-stretch(valid): Negative calc expression (to be clamped): calc(50% - 50%*2)
 PASS font-stretch(invalid): Unit-less calc value: calc(100)
 PASS font-stretch(invalid): Calc value with units: calc(100px)
 PASS font-stretch(valid): Simple range: 100% 200%
