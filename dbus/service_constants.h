@@ -657,6 +657,12 @@ const char kBluetoothObjectManagerServiceName[] = "org.chromium.Bluetooth";
 const char kBluetoothObjectManagerServicePath[] = "/";
 }  // namespace bluetooth_object_manager
 
+namespace newblue_object_manager {
+// NewBlue daemon Object Manager service identifiers.
+const char kNewblueObjectManagerServiceName[] = "org.chromium.Newblue";
+const char kNewblueObjectManagerServicePath[] = "/";
+}  // namespace newblue_object_manager
+
 namespace bluetooth_profile_manager {
 // Bluetooth Profile Manager service identifiers.
 const char kBluetoothProfileManagerServiceName[] = "org.bluez";
