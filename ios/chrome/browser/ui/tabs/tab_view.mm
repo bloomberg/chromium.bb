@@ -40,13 +40,18 @@ const CGFloat kTabCloseTopInset = -1.0;
 const CGFloat kTabCloseLeftInset = 0.0;
 const CGFloat kTabCloseBottomInset = 0.0;
 const CGFloat kTabCloseRightInset = 0.0;
-const CGFloat kTabBackgroundLeftCapInset = 24.0;
-const CGFloat kFaviconLeftInset = 23.5;
-const CGFloat kFaviconVerticalOffset = 2.0;
+const CGFloat kTabBackgroundLeftCapInset = 40.0;
+const CGFloat kTabBackgroundLeftCapInsetLegacy = 24.0;
+const CGFloat kFaviconLeftInset = 38;
+const CGFloat kFaviconLeftInsetLegacy = 23.5;
+const CGFloat kFaviconVerticalOffset = 17.0;
+const CGFloat kFaviconVerticalOffsetLegacy = 2.0;
 const CGFloat kTabStripLineMargin = 2.5;
 const CGFloat kTabStripLineHeight = 0.5;
-const CGFloat kCloseButtonHorizontalShift = 15;
-const CGFloat kCloseButtonVerticalShift = 4.0;
+const CGFloat kCloseButtonHorizontalShift = 35;
+const CGFloat kCloseButtonHorizontalShiftLegacy = 15;
+const CGFloat kCloseButtonVerticalShift = 19.0;
+const CGFloat kCloseButtonVerticalShiftLegacy = 4.0;
 const CGFloat kTitleLeftMargin = 8.0;
 const CGFloat kTitleRightMargin = 0.0;
 
@@ -351,15 +356,27 @@ const CGFloat kFaviconSize = 16.0;
     @"H:[favicon]-titleLeftMargin-[title]-titleRightMargin-[close]",
     @"V:[title(==titleHeight)]",
   ];
+
+  CGFloat closeButtonHorizontalShift = IsUIRefreshPhase1Enabled()
+                                           ? kCloseButtonHorizontalShift
+                                           : kCloseButtonHorizontalShiftLegacy;
+  CGFloat faviconLeftInset =
+      IsUIRefreshPhase1Enabled() ? kFaviconLeftInset : kFaviconLeftInsetLegacy;
+  CGFloat faviconVerticalOffset = IsUIRefreshPhase1Enabled()
+                                      ? kFaviconVerticalOffset
+                                      : kFaviconVerticalOffsetLegacy;
+  CGFloat closeButtonVerticalShift = IsUIRefreshPhase1Enabled()
+                                         ? kCloseButtonVerticalShift
+                                         : kCloseButtonVerticalShiftLegacy;
   NSDictionary* metrics = @{
     @"closeButtonSize" : @(kCloseButtonSize),
-    @"closeButtonHorizontalShift" : @(kCloseButtonHorizontalShift),
-    @"closeButtonVerticalShift" : @(kCloseButtonVerticalShift),
+    @"closeButtonHorizontalShift" : @(closeButtonHorizontalShift),
+    @"closeButtonVerticalShift" : @(closeButtonVerticalShift),
     @"titleLeftMargin" : @(kTitleLeftMargin),
     @"titleRightMargin" : @(kTitleRightMargin),
     @"titleHeight" : @(kFaviconSize),
-    @"faviconLeftInset" : @(AlignValueToPixel(kFaviconLeftInset)),
-    @"faviconVerticalOffset" : @(kFaviconVerticalOffset),
+    @"faviconLeftInset" : @(AlignValueToPixel(faviconLeftInset)),
+    @"faviconVerticalOffset" : @(faviconVerticalOffset),
     @"faviconSize" : @(kFaviconSize),
   };
   ApplyVisualConstraintsWithMetrics(constraints, viewsDictionary, metrics);
@@ -369,6 +386,8 @@ const CGFloat kFaviconSize = 16.0;
 }
 
 - (void)updateLineSeparator {
+  if (IsUIRefreshPhase1Enabled())
+    return;
   UIColor* separatorColor =
       _incognitoStyle ? [UIColor colorWithWhite:36 / 255.0 alpha:1.0]
                       : [UIColor colorWithWhite:185 / 255.0 alpha:1.0];
@@ -377,22 +396,27 @@ const CGFloat kFaviconSize = 16.0;
 
 - (void)updateBackgroundImage:(BOOL)selected {
   NSString* state = (selected ? @"foreground" : @"background");
+  NSString* refresh = (IsUIRefreshPhase1Enabled() ? @"" : @"_legacy");
   NSString* incognito = _incognitoStyle ? @"incognito_" : @"";
-  NSString* imageName =
-      [NSString stringWithFormat:@"tabstrip_%@%@_tab", incognito, state];
-  UIImage* backgroundImage = StretchableImageFromUIImage(
-      [UIImage imageNamed:imageName], kTabBackgroundLeftCapInset, 0);
+  NSString* imageName = [NSString
+      stringWithFormat:@"tabstrip_%@%@_tab%@", incognito, state, refresh];
+  CGFloat leftInset = IsUIRefreshPhase1Enabled()
+                          ? kTabBackgroundLeftCapInset
+                          : kTabBackgroundLeftCapInsetLegacy;
+  UIImage* backgroundImage =
+      StretchableImageFromUIImage([UIImage imageNamed:imageName], leftInset, 0);
   [_backgroundImageView setImage:backgroundImage];
 }
 
 - (void)updateCloseButtonImages {
+  NSString* refresh = (IsUIRefreshPhase1Enabled() ? @"" : @"_legacy");
+  NSString* incognito = self.incognitoStyle ? @"_incognito" : @"";
   UIImage* normalImage =
-      self.incognitoStyle ? [UIImage imageNamed:@"tabstrip_tab_close_incognito"]
-                          : [UIImage imageNamed:@"tabstrip_tab_close"];
-  UIImage* pressedImage =
-      self.incognitoStyle
-          ? [UIImage imageNamed:@"tabstrip_tab_close_incognito_pressed"]
-          : [UIImage imageNamed:@"tabstrip_tab_close_pressed"];
+      [UIImage imageNamed:[NSString stringWithFormat:@"tabstrip_tab_close%@%@",
+                                                     incognito, refresh]];
+  UIImage* pressedImage = [UIImage
+      imageNamed:[NSString stringWithFormat:@"tabstrip_tab_close%@_pressed%@",
+                                            incognito, refresh]];
   [_closeButton setImage:normalImage forState:UIControlStateNormal];
   [_closeButton setImage:pressedImage forState:UIControlStateHighlighted];
 }
