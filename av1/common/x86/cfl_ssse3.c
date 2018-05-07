@@ -271,40 +271,30 @@ static INLINE void cfl_luma_subsampling_444_hbd_ssse3(const uint16_t *input,
                                                       int16_t *pred_buf_q3,
                                                       int width, int height) {
   const int16_t *end = pred_buf_q3 + height * CFL_BUF_LINE;
-
-  __m128i row, row_1, row_2, row_3;
   do {
     if (width == 4) {
-      row = _mm_loadl_epi64((__m128i *)input);
-    } else {
-      row = _mm_loadu_si128((__m128i *)input);
-      if (width >= 16) {
-        row_1 = _mm_loadu_si128((__m128i *)(input + 8));
-        row_1 = _mm_slli_epi16(row_1, 3);
-      }
-      if (width == 32) {
-        row_2 = _mm_loadu_si128((__m128i *)(input + 16));
-        row_2 = _mm_slli_epi16(row_2, 3);
-        row_3 = _mm_loadu_si128((__m128i *)(input + 24));
-        row_3 = _mm_slli_epi16(row_3, 3);
-      }
-    }
-    row = _mm_slli_epi16(row, 3);
-
-    if (width == 4) {
+      const __m128i row = _mm_slli_epi16(_mm_loadl_epi64((__m128i *)input), 3);
       _mm_storel_epi64((__m128i *)pred_buf_q3, row);
     } else {
+      const __m128i row = _mm_slli_epi16(_mm_loadu_si128((__m128i *)input), 3);
       _mm_storeu_si128((__m128i *)pred_buf_q3, row);
       if (width >= 16) {
-        _mm_storeu_si128((__m128i *)(pred_buf_q3 + 8), row_1);
-      }
-      if (width == 32) {
-        _mm_storeu_si128((__m128i *)(pred_buf_q3 + 16), row_2);
-        _mm_storeu_si128((__m128i *)(pred_buf_q3 + 24), row_3);
+        __m128i row_1 = _mm_loadu_si128(((__m128i *)input) + 1);
+        row_1 = _mm_slli_epi16(row_1, 3);
+        _mm_storeu_si128(((__m128i *)pred_buf_q3) + 1, row_1);
+        if (width == 32) {
+          __m128i row_2 = _mm_loadu_si128(((__m128i *)input) + 2);
+          row_2 = _mm_slli_epi16(row_2, 3);
+          _mm_storeu_si128(((__m128i *)pred_buf_q3) + 2, row_2);
+          __m128i row_3 = _mm_loadu_si128(((__m128i *)input) + 3);
+          row_3 = _mm_slli_epi16(row_3, 3);
+          _mm_storeu_si128(((__m128i *)pred_buf_q3) + 3, row_3);
+        }
       }
     }
     input += input_stride;
-  } while ((pred_buf_q3 += CFL_BUF_LINE) < end);
+    pred_buf_q3 += CFL_BUF_LINE;
+  } while (pred_buf_q3 < end);
 }
 
 CFL_SUBSAMPLE_FUNCTIONS(ssse3, 444, hbd)
