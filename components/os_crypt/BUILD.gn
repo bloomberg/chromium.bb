@@ -51,7 +51,8 @@ static_library("os_crypt") {
     "//crypto:platform",
   ]
 
-  if (is_posix && !is_mac && !is_ios && (!is_desktop_linux || is_chromecast)) {
+  if ((is_posix || is_fuchsia) && !is_mac && !is_ios &&
+      (!is_desktop_linux || is_chromecast)) {
     sources += [ "os_crypt_posix.cc" ]
   }
 
