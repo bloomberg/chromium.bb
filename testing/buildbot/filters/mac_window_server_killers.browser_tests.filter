@@ -1,47 +1,7 @@
 # https://crbug.com/828031
 
 # Suites implicated in window_server deaths.
-# -PDFExtensionTest.*
-# -SubresourceFilterBrowserTest.*
-# -DevToolsBeforeUnloadTest.*
-# -PushMessagingBrowserTest.*
-# -TaskManagerBrowserTest.*
-# -AppBannerManagerBrowserTest.*
-# -SpellingMenuObserverTest.*
-# -PluginPowerSaverBrowserTest.*
-# -SubresourceFilterPopupBrowserTest.*
-# -FindInPageControllerTest.*
-# -TestStatsDictionaryTest.*
-# -PlatformAppWithFileBrowserTest.*
-# -PermissionDialogTest.*
-# -SecurityStateTabHelperTest.*
-# -PrerenderBrowserTest.*
-# -DomDistillerViewerSourceBrowserTest.*
-# -PredictorBrowserTest.*
-# -TabManagerTest.*
-# -PasswordManagerBrowserTestBase.*
-# -DevToolsSanityTest.*
-# -WebRtcBrowserTest.*
-# -LoginPromptBrowserTest.*
-# -ReferrerPolicyTest.*
-# -PlatformAppBrowserTest.*
-# -BrowserNavigatorTest.*
-# -ChromeResourceDispatcherHostDelegateBrowserTest.*
-# -NoStatePrefetchBrowserTest.*
-# -PageLoadMetricsBrowserTest.*
-# -DnsProbeBrowserTest.*
-# -FullscreenControllerTest.*
-# -InfoBarUiTest.*
-# -PrefsFunctionalTest.*
-# -BrowserTest.*
-# -DownloadTest.*
-# -PolicyTest.*
-# -SessionRestoreTest.*
-# -InstallableManagerBrowserTest.*
-# -ContextMenuBrowserTest.*
-# -ChromeSitePerProcessTest.*
-# -InterstitialUITest.*
-#-ConstrainedWebDialogBrowserTest.BasicTest
-#-ConstrainedWebDialogBrowserTest.ReleaseWebContents
+# -ConstrainedWebDialogBrowserTest.BasicTest
+-ConstrainedWebDialogBrowserTest.ReleaseWebContents
 -ConstrainedWebDialogBrowserTest.ContentResizeInAutoResizingDialog
 -ConstrainedWebDialogBrowserTest.ContentResizeInNonAutoResizingDialog
