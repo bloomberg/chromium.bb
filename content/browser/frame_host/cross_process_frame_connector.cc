@@ -141,7 +141,7 @@ gfx::PointF CrossProcessFrameConnector::TransformPointToRootCoordSpace(
   return transformed_point;
 }
 
-bool CrossProcessFrameConnector::TransformPointToLocalCoordSpace(
+bool CrossProcessFrameConnector::TransformPointToLocalCoordSpaceLegacy(
     const gfx::PointF& point,
     const viz::SurfaceId& original_surface,
     const viz::SurfaceId& local_surface_id,
@@ -170,7 +170,8 @@ bool CrossProcessFrameConnector::TransformPointToCoordSpaceForView(
     const gfx::PointF& point,
     RenderWidgetHostViewBase* target_view,
     const viz::SurfaceId& local_surface_id,
-    gfx::PointF* transformed_point) {
+    gfx::PointF* transformed_point,
+    viz::EventSource source) {
   RenderWidgetHostViewBase* root_view = GetRootRenderWidgetHostView();
   if (!root_view)
     return false;
@@ -180,14 +181,14 @@ bool CrossProcessFrameConnector::TransformPointToCoordSpaceForView(
   // be siblings). To account for this, the point is first transformed into the
   // root coordinate space and then the root is asked to perform the conversion.
   if (!root_view->TransformPointToLocalCoordSpace(point, local_surface_id,
-                                                  transformed_point))
+                                                  transformed_point, source))
     return false;
 
   if (target_view == root_view)
     return true;
 
   return root_view->TransformPointToCoordSpaceForView(
-      *transformed_point, target_view, transformed_point);
+      *transformed_point, target_view, transformed_point, source);
 }
 
 void CrossProcessFrameConnector::ForwardProcessAckedTouchEvent(

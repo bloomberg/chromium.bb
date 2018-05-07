@@ -247,7 +247,8 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockEventRouting) {
 
   gfx::PointF transformed_point;
   root_view->TransformPointToCoordSpaceForView(gfx::PointF(0, 0), child_view,
-                                               &transformed_point);
+                                               &transformed_point,
+                                               viz::EventSource::MOUSE);
 
   mouse_event.SetPositionInWidget(-transformed_point.x() + 14,
                                   -transformed_point.y() + 15);
@@ -481,7 +482,8 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockWheelEventRouting) {
 
   gfx::PointF transformed_point;
   root_view->TransformPointToCoordSpaceForView(gfx::PointF(0, 0), child_view,
-                                               &transformed_point);
+                                               &transformed_point,
+                                               viz::EventSource::MOUSE);
 
   wheel_event.SetPositionInWidget(-transformed_point.x() + 14,
                                   -transformed_point.y() + 15);

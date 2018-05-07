@@ -265,7 +265,7 @@ gfx::PointF RenderWidgetHostViewGuest::TransformPointToRootCoordSpaceF(
   return transformed_point;
 }
 
-bool RenderWidgetHostViewGuest::TransformPointToLocalCoordSpace(
+bool RenderWidgetHostViewGuest::TransformPointToLocalCoordSpaceLegacy(
     const gfx::PointF& point,
     const viz::SurfaceId& original_surface,
     gfx::PointF* transformed_point) {
@@ -545,6 +545,13 @@ bool RenderWidgetHostViewGuest::LockMouse() {
 
 void RenderWidgetHostViewGuest::UnlockMouse() {
   platform_view_->UnlockMouse();
+}
+
+viz::FrameSinkId RenderWidgetHostViewGuest::GetRootFrameSinkId() {
+  RenderWidgetHostViewBase* root_rwhv = GetRootView(this);
+  if (root_rwhv)
+    return root_rwhv->GetRootFrameSinkId();
+  return viz::FrameSinkId();
 }
 
 viz::LocalSurfaceId RenderWidgetHostViewGuest::GetLocalSurfaceId() const {

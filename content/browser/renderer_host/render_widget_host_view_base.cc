@@ -8,11 +8,13 @@
 #include "base/logging.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
+#include "components/viz/common/features.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface_hittest.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/compositor/surface_utils.h"
+#include "content/browser/frame_host/render_widget_host_view_guest.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/renderer_host/display_util.h"
 #include "content/browser/renderer_host/input/mouse_wheel_phase_handler.h"
@@ -20,7 +22,9 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_base_observer.h"
+#include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/common/content_switches_internal.h"
 #include "content/public/common/content_features.h"
@@ -52,6 +56,7 @@ RenderWidgetHostViewBase::RenderWidgetHostViewBase(RenderWidgetHost* host)
           features::kTouchpadAndWheelScrollLatching)),
       web_contents_accessibility_(nullptr),
       is_currently_scrolling_viewport_(false),
+      use_viz_hit_test_(features::IsVizHitTestingEnabled()),
       renderer_frame_number_(0),
       weak_factory_(this) {
   host_->render_frame_metadata_provider()->AddObserver(this);
@@ -512,6 +517,19 @@ gfx::PointF RenderWidgetHostViewBase::TransformRootPointToViewCoordSpace(
 bool RenderWidgetHostViewBase::TransformPointToLocalCoordSpace(
     const gfx::PointF& point,
     const viz::SurfaceId& original_surface,
+    gfx::PointF* transformed_point,
+    viz::EventSource source) {
+  if (use_viz_hit_test_) {
+    return TransformPointToLocalCoordSpaceViz(point, original_surface,
+                                              transformed_point, source);
+  }
+  return TransformPointToLocalCoordSpaceLegacy(point, original_surface,
+                                               transformed_point);
+}
+
+bool RenderWidgetHostViewBase::TransformPointToLocalCoordSpaceLegacy(
+    const gfx::PointF& point,
+    const viz::SurfaceId& original_surface,
     gfx::PointF* transformed_point) {
   *transformed_point = point;
   return true;
@@ -520,7 +538,8 @@ bool RenderWidgetHostViewBase::TransformPointToLocalCoordSpace(
 bool RenderWidgetHostViewBase::TransformPointToCoordSpaceForView(
     const gfx::PointF& point,
     RenderWidgetHostViewBase* target_view,
-    gfx::PointF* transformed_point) {
+    gfx::PointF* transformed_point,
+    viz::EventSource source) {
   NOTREACHED();
   return true;
 }
@@ -667,6 +686,84 @@ bool RenderWidgetHostViewBase::ShouldContinueToPauseForFrame() {
 void RenderWidgetHostViewBase::DidNavigate() {
   if (host())
     host()->SynchronizeVisualProperties();
+}
+
+bool RenderWidgetHostViewBase::TransformPointToTargetCoordSpace(
+    RenderWidgetHostViewBase* original_view,
+    RenderWidgetHostViewBase* target_view,
+    const gfx::PointF& point,
+    gfx::PointF* transformed_point,
+    viz::EventSource source) const {
+  DCHECK(use_viz_hit_test_);
+  viz::FrameSinkId root_frame_sink_id = original_view->GetRootFrameSinkId();
+  DCHECK(root_frame_sink_id.is_valid());
+  const auto& display_hit_test_query_map =
+      GetHostFrameSinkManager()->display_hit_test_query();
+  const auto iter = display_hit_test_query_map.find(root_frame_sink_id);
+  if (iter == display_hit_test_query_map.end())
+    return false;
+  viz::HitTestQuery* query = iter->second.get();
+
+  std::vector<viz::FrameSinkId> target_ancestors;
+  target_ancestors.push_back(target_view->GetFrameSinkId());
+  RenderWidgetHostViewBase* cur_view = target_view;
+  while (cur_view->IsRenderWidgetHostViewChildFrame()) {
+    if (cur_view->IsRenderWidgetHostViewGuest()) {
+      cur_view = static_cast<RenderWidgetHostViewGuest*>(cur_view)
+                     ->GetOwnerRenderWidgetHostView();
+    } else {
+      cur_view = static_cast<RenderWidgetHostViewChildFrame*>(cur_view)
+                     ->GetParentView();
+    }
+    if (!cur_view)
+      return false;
+    target_ancestors.push_back(cur_view->GetFrameSinkId());
+  }
+  target_ancestors.push_back(root_frame_sink_id);
+
+  float device_scale_factor = original_view->GetDeviceScaleFactor();
+  DCHECK_GT(device_scale_factor, 0.0f);
+  gfx::Point3F point_in_pixels(
+      gfx::ConvertPointToPixel(device_scale_factor, point));
+  // TODO(riajiang): Optimize so that |point_in_pixels| doesn't need to be in
+  // the coordinate space of the root surface in HitTestQuery.
+  gfx::Transform transform_root_to_original;
+  query->GetTransformToTarget(original_view->GetFrameSinkId(),
+                              &transform_root_to_original);
+  if (!transform_root_to_original.TransformPointReverse(&point_in_pixels))
+    return false;
+  if (!query->TransformLocationForTarget(source, target_ancestors,
+                                         point_in_pixels.AsPointF(),
+                                         transformed_point)) {
+    return false;
+  }
+  *transformed_point =
+      gfx::ConvertPointToDIP(device_scale_factor, *transformed_point);
+  return true;
+}
+
+bool RenderWidgetHostViewBase::TransformPointToLocalCoordSpaceViz(
+    const gfx::PointF& point,
+    const viz::SurfaceId& original_surface,
+    gfx::PointF* transformed_point,
+    viz::EventSource source) {
+  DCHECK(use_viz_hit_test_);
+  viz::FrameSinkId original_frame_sink_id = original_surface.frame_sink_id();
+  viz::FrameSinkId target_frame_sink_id = GetFrameSinkId();
+  if (!original_frame_sink_id.is_valid() || !target_frame_sink_id.is_valid())
+    return false;
+  if (original_frame_sink_id == target_frame_sink_id)
+    return true;
+  if (!host() || !host()->delegate())
+    return false;
+  auto* router = host()->delegate()->GetInputEventRouter();
+  if (!router)
+    return false;
+  *transformed_point = point;
+  return TransformPointToTargetCoordSpace(
+      router->FindViewFromFrameSinkId(original_frame_sink_id),
+      router->FindViewFromFrameSinkId(target_frame_sink_id), point,
+      transformed_point, source);
 }
 
 }  // namespace content

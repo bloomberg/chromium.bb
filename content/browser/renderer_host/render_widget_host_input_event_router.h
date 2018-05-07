@@ -105,6 +105,10 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
       const gfx::PointF& point,
       gfx::PointF* transformed_point);
 
+  // RenderWidgetTargeter::Delegate:
+  RenderWidgetHostViewBase* FindViewFromFrameSinkId(
+      const viz::FrameSinkId& frame_sink_id) const override;
+
   std::vector<RenderWidgetHostView*> GetRenderWidgetHostViewsForTests() const;
   RenderWidgetTargeter* GetRenderWidgetTargeterForTests();
 
@@ -247,8 +251,6 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
       const blink::WebInputEvent& event,
       const ui::LatencyInfo& latency,
       const base::Optional<gfx::PointF>& target_location) override;
-  RenderWidgetHostViewBase* FindViewFromFrameSinkId(
-      const viz::FrameSinkId& frame_sink_id) const override;
 
   FrameSinkIdOwnerMap owner_map_;
   TargetMap touchscreen_gesture_target_map_;

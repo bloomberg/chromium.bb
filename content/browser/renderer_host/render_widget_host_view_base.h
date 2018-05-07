@@ -20,6 +20,7 @@
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/scoped_surface_id_allocator.h"
 #include "components/viz/common/surfaces/surface_id.h"
+#include "components/viz/host/hit_test/hit_test_query.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/render_frame_metadata_provider.h"
@@ -353,7 +354,14 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // spaces of surfaces where one does not contain the other. To transform
   // between sibling surfaces, the point must be transformed to the root's
   // coordinate space as an intermediate step.
-  virtual bool TransformPointToLocalCoordSpace(
+  bool TransformPointToLocalCoordSpace(
+      const gfx::PointF& point,
+      const viz::SurfaceId& original_surface,
+      gfx::PointF* transformed_point,
+      viz::EventSource source = viz::EventSource::ANY);
+
+  // This is deprecated, and will be removed once Viz hit-test is the default.
+  virtual bool TransformPointToLocalCoordSpaceLegacy(
       const gfx::PointF& point,
       const viz::SurfaceId& original_surface,
       gfx::PointF* transformed_point);
@@ -363,7 +371,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   virtual bool TransformPointToCoordSpaceForView(
       const gfx::PointF& point,
       RenderWidgetHostViewBase* target_view,
-      gfx::PointF* transformed_point);
+      gfx::PointF* transformed_point,
+      viz::EventSource source = viz::EventSource::ANY);
 
   // TODO(kenrb, wjmaclean): This is a temporary subclass identifier for
   // RenderWidgetHostViewGuests that is needed for special treatment during
@@ -610,6 +619,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
 
   bool is_currently_scrolling_viewport_;
 
+  bool use_viz_hit_test_ = false;
+
  private:
 #if defined(USE_AURA)
   void OnDidScheduleEmbed(int routing_id,
@@ -622,6 +633,23 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // RenderWidgetHostImpl in order to allow the view to allocate a new
   // LocalSurfaceId.
   virtual void OnSynchronizedDisplayPropertiesChanged() {}
+
+  // Transforms |point| from |original_view| coord space to |target_view| coord
+  // space. Result is stored in |transformed_point|. Returns true if the
+  // transform is successful, false otherwise.
+  bool TransformPointToTargetCoordSpace(RenderWidgetHostViewBase* original_view,
+                                        RenderWidgetHostViewBase* target_view,
+                                        const gfx::PointF& point,
+                                        gfx::PointF* transformed_point,
+                                        viz::EventSource source) const;
+
+  // Used to transform |point| when Viz hit-test is enabled.
+  // TransformPointToLocalCoordSpaceLegacy is used in non-Viz hit-testing.
+  bool TransformPointToLocalCoordSpaceViz(
+      const gfx::PointF& point,
+      const viz::SurfaceId& original_surface,
+      gfx::PointF* transformed_point,
+      viz::EventSource source);
 
   gfx::Rect current_display_area_;
 

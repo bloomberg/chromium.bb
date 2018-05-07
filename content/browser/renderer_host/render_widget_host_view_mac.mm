@@ -1119,7 +1119,7 @@ void RenderWidgetHostViewMac::InjectTouchEvent(
   }
 }
 
-bool RenderWidgetHostViewMac::TransformPointToLocalCoordSpace(
+bool RenderWidgetHostViewMac::TransformPointToLocalCoordSpaceLegacy(
     const gfx::PointF& point,
     const viz::SurfaceId& original_surface,
     gfx::PointF* transformed_point) {
@@ -1128,8 +1128,8 @@ bool RenderWidgetHostViewMac::TransformPointToLocalCoordSpace(
   float scale_factor = display_.device_scale_factor();
   gfx::PointF point_in_pixels = gfx::ConvertPointToPixel(scale_factor, point);
   if (!browser_compositor_->GetDelegatedFrameHost()
-           ->TransformPointToLocalCoordSpace(point_in_pixels, original_surface,
-                                             transformed_point))
+           ->TransformPointToLocalCoordSpaceLegacy(
+               point_in_pixels, original_surface, transformed_point))
     return false;
   *transformed_point = gfx::ConvertPointToDIP(scale_factor, *transformed_point);
   return true;
@@ -1138,15 +1138,16 @@ bool RenderWidgetHostViewMac::TransformPointToLocalCoordSpace(
 bool RenderWidgetHostViewMac::TransformPointToCoordSpaceForView(
     const gfx::PointF& point,
     RenderWidgetHostViewBase* target_view,
-    gfx::PointF* transformed_point) {
+    gfx::PointF* transformed_point,
+    viz::EventSource source) {
   if (target_view == this) {
     *transformed_point = point;
     return true;
   }
 
   return browser_compositor_->GetDelegatedFrameHost()
-      ->TransformPointToCoordSpaceForView(point, target_view,
-                                          transformed_point);
+      ->TransformPointToCoordSpaceForView(point, target_view, transformed_point,
+                                          source);
 }
 
 viz::FrameSinkId RenderWidgetHostViewMac::GetRootFrameSinkId() {

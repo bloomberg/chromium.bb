@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_FRAME_CONNECTOR_DELEGATE_H_
 
 #include "components/viz/common/surfaces/local_surface_id.h"
+#include "components/viz/host/hit_test/hit_test_query.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/content_export.h"
 #include "content/public/common/input_event_ack_state.h"
@@ -116,12 +117,12 @@ class CONTENT_EXPORT FrameConnectorDelegate {
   // Given a point in the coordinate space of a different Surface, transform
   // it into the coordinate space for this view (corresponding to
   // local_surface_id).
-  // TransformPointToLocalCoordSpace() can only transform points between
+  // TransformPointToLocalCoordSpaceLegacy() can only transform points between
   // surfaces where one is embedded (not necessarily directly) within the
   // other, and will return false if this is not the case. For points that can
   // be in sibling surfaces, they must first be converted to the root
   // surface's coordinate space.
-  virtual bool TransformPointToLocalCoordSpace(
+  virtual bool TransformPointToLocalCoordSpaceLegacy(
       const gfx::PointF& point,
       const viz::SurfaceId& original_surface,
       const viz::SurfaceId& local_surface_id,
@@ -135,7 +136,8 @@ class CONTENT_EXPORT FrameConnectorDelegate {
       const gfx::PointF& point,
       RenderWidgetHostViewBase* target_view,
       const viz::SurfaceId& local_surface_id,
-      gfx::PointF* transformed_point);
+      gfx::PointF* transformed_point,
+      viz::EventSource source = viz::EventSource::ANY);
 
   // Pass acked touch events to the root view for gesture processing.
   virtual void ForwardProcessAckedTouchEvent(

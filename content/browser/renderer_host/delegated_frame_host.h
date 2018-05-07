@@ -13,6 +13,7 @@
 #include "components/viz/client/frame_evictor.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
+#include "components/viz/host/hit_test/hit_test_query.h"
 #include "components/viz/host/host_frame_sink_client.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/renderer_host/dip_util.h"
@@ -143,18 +144,21 @@ class CONTENT_EXPORT DelegatedFrameHost
   // Surface, find the relative transform between the Surfaces and apply it
   // to a point. Returns false if a Surface has not yet been created or if
   // |original_surface| is not embedded within our current Surface.
-  bool TransformPointToLocalCoordSpace(const gfx::PointF& point,
-                                       const viz::SurfaceId& original_surface,
-                                       gfx::PointF* transformed_point);
+  bool TransformPointToLocalCoordSpaceLegacy(
+      const gfx::PointF& point,
+      const viz::SurfaceId& original_surface,
+      gfx::PointF* transformed_point);
 
   // Given a RenderWidgetHostViewBase that renders to a Surface that is
   // contained within this class' Surface, find the relative transform between
   // the Surfaces and apply it to a point. Returns false if a Surface has not
   // yet been created or if |target_view| is not a descendant RWHV from our
   // client.
-  bool TransformPointToCoordSpaceForView(const gfx::PointF& point,
-                                         RenderWidgetHostViewBase* target_view,
-                                         gfx::PointF* transformed_point);
+  bool TransformPointToCoordSpaceForView(
+      const gfx::PointF& point,
+      RenderWidgetHostViewBase* target_view,
+      gfx::PointF* transformed_point,
+      viz::EventSource source = viz::EventSource::ANY);
 
   void SetNeedsBeginFrames(bool needs_begin_frames);
   void SetWantsAnimateOnlyBeginFrames();

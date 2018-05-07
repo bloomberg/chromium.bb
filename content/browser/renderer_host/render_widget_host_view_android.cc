@@ -547,7 +547,7 @@ viz::SurfaceId RenderWidgetHostViewAndroid::GetCurrentSurfaceId() const {
                                : viz::SurfaceId();
 }
 
-bool RenderWidgetHostViewAndroid::TransformPointToLocalCoordSpace(
+bool RenderWidgetHostViewAndroid::TransformPointToLocalCoordSpaceLegacy(
     const gfx::PointF& point,
     const viz::SurfaceId& original_surface,
     gfx::PointF* transformed_point) {
@@ -581,7 +581,8 @@ bool RenderWidgetHostViewAndroid::TransformPointToLocalCoordSpace(
 bool RenderWidgetHostViewAndroid::TransformPointToCoordSpaceForView(
     const gfx::PointF& point,
     RenderWidgetHostViewBase* target_view,
-    gfx::PointF* transformed_point) {
+    gfx::PointF* transformed_point,
+    viz::EventSource source) {
   if (target_view == this || !delegated_frame_host_) {
     *transformed_point = point;
     return true;
@@ -594,8 +595,8 @@ bool RenderWidgetHostViewAndroid::TransformPointToCoordSpaceForView(
   if (!surface_id.is_valid())
     return false;
 
-  return target_view->TransformPointToLocalCoordSpace(point, surface_id,
-                                                      transformed_point);
+  return target_view->TransformPointToLocalCoordSpace(
+      point, surface_id, transformed_point, source);
 }
 
 base::WeakPtr<RenderWidgetHostViewAndroid>

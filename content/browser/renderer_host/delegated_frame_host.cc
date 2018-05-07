@@ -145,7 +145,7 @@ bool DelegatedFrameHost::CanCopyFromCompositingSurface() const {
          active_device_scale_factor_ != 0.f;
 }
 
-bool DelegatedFrameHost::TransformPointToLocalCoordSpace(
+bool DelegatedFrameHost::TransformPointToLocalCoordSpaceLegacy(
     const gfx::PointF& point,
     const viz::SurfaceId& original_surface,
     gfx::PointF* transformed_point) {
@@ -165,13 +165,14 @@ bool DelegatedFrameHost::TransformPointToLocalCoordSpace(
 bool DelegatedFrameHost::TransformPointToCoordSpaceForView(
     const gfx::PointF& point,
     RenderWidgetHostViewBase* target_view,
-    gfx::PointF* transformed_point) {
+    gfx::PointF* transformed_point,
+    viz::EventSource source) {
   if (!HasFallbackSurface())
     return false;
 
   return target_view->TransformPointToLocalCoordSpace(
       point, viz::SurfaceId(frame_sink_id_, active_local_surface_id_),
-      transformed_point);
+      transformed_point, source);
 }
 
 void DelegatedFrameHost::SetNeedsBeginFrames(bool needs_begin_frames) {
