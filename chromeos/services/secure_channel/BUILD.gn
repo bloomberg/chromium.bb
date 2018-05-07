@@ -4,16 +4,49 @@
 
 assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
 
+static_library("secure_channel") {
+  sources = [
+    "pending_connection_request.h",
+    "pending_connection_request_delegate.cc",
+    "pending_connection_request_delegate.h",
+  ]
+
+  deps = [
+    "//base",
+    "//chromeos/components/proximity_auth/logging",
+    "//chromeos/services/secure_channel/public/mojom",
+  ]
+}
+
 static_library("test_support") {
   testonly = true
 
   sources = [
     "fake_connection_delegate.cc",
     "fake_connection_delegate.h",
+    "fake_pending_connection_request_delegate.cc",
+    "fake_pending_connection_request_delegate.h",
   ]
 
   deps = [
+    ":secure_channel",
     "//base",
     "//chromeos/services/secure_channel/public/mojom",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "pending_connection_request_unittest.cc",
+  ]
+
+  deps = [
+    ":secure_channel",
+    ":test_support",
+    "//base/test:test_support",
+    "//chromeos/services/secure_channel/public/mojom",
+    "//testing/gtest",
   ]
 }
