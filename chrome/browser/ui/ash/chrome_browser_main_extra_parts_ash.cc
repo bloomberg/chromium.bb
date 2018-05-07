@@ -148,6 +148,8 @@ void ChromeBrowserMainExtraPartsAsh::ServiceManagerConnectionStarted(
         ash::kCanConsumeSystemKeysKey,
         ash::mojom::kCanConsumeSystemKeys_Property,
         aura::PropertyConverter::CreateAcceptAnyValueCallback());
+    converter->RegisterImageSkiaProperty(
+        ash::kFrameImageActiveKey, ash::mojom::kFrameImageActive_Property);
     converter->RegisterPrimitiveProperty(
         ash::kHideShelfWhenFullscreenKey,
         ash::mojom::kHideShelfWhenFullscreen_Property,
@@ -180,6 +182,10 @@ void ChromeBrowserMainExtraPartsAsh::ServiceManagerConnectionStarted(
         ash::kRestoreWindowStateTypeOverrideKey,
         ash::mojom::kRestoreWindowStateTypeOverride_Property,
         base::BindRepeating(&ash::IsValidWindowStateType));
+    converter->RegisterPrimitiveProperty(
+        ash::kWindowTitleShownKey,
+        ui::mojom::WindowManager::kWindowTitleShown_Property,
+        aura::PropertyConverter::CreateAcceptAnyValueCallback());
 
     mus_client->SetMusPropertyMirror(
         std::make_unique<ash::MusPropertyMirrorAsh>());

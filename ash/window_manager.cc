@@ -95,6 +95,8 @@ WindowManager::WindowManager(service_manager::Connector* connector,
       aura::client::kDrawAttentionKey,
       ui::mojom::WindowManager::kDrawAttention_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
+  property_converter_->RegisterImageSkiaProperty(
+      kFrameImageActiveKey, ash::mojom::kFrameImageActive_Property);
   property_converter_->RegisterPrimitiveProperty(
       kPanelAttachedKey, ui::mojom::WindowManager::kPanelAttached_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
@@ -128,6 +130,10 @@ WindowManager::WindowManager(service_manager::Connector* connector,
       kRestoreWindowStateTypeOverrideKey,
       ash::mojom::kRestoreWindowStateTypeOverride_Property,
       base::BindRepeating(&ash::IsValidWindowStateType));
+  property_converter_->RegisterPrimitiveProperty(
+      kWindowTitleShownKey,
+      ui::mojom::WindowManager::kWindowTitleShown_Property,
+      aura::PropertyConverter::CreateAcceptAnyValueCallback());
 }
 
 WindowManager::~WindowManager() {

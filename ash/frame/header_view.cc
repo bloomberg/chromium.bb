@@ -11,13 +11,58 @@
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/custom_frame_view_ash.h"
 #include "ash/frame/default_frame_header.h"
+#include "ash/public/cpp/config.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
+#include "ui/aura/client/aura_constants.h"
+#include "ui/aura/window.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
+
+namespace {
+
+// An appearance provider that relies on window properties which have been set
+// by the client. Only used in Mash.
+class WindowPropertyAppearanceProvider
+    : public CustomFrameHeader::AppearanceProvider {
+ public:
+  explicit WindowPropertyAppearanceProvider(aura::Window* window)
+      : window_(window) {}
+  ~WindowPropertyAppearanceProvider() override = default;
+
+  SkColor GetFrameHeaderColor(bool active) override {
+    return window_->GetProperty(active ? ash::kFrameActiveColorKey
+                                       : ash::kFrameInactiveColorKey);
+  }
+
+  gfx::ImageSkia GetFrameHeaderImage(bool active) override {
+    // TODO(estade): handle !active.
+    gfx::ImageSkia* image = window_->GetProperty(kFrameImageActiveKey);
+    return image ? *image : gfx::ImageSkia();
+  }
+
+  gfx::ImageSkia GetFrameHeaderOverlayImage(bool active) override {
+    // TODO(estade): implement.
+    return gfx::ImageSkia();
+  }
+
+  bool IsTabletMode() override {
+    return Shell::Get()
+        ->tablet_mode_controller()
+        ->IsTabletModeWindowManagerEnabled();
+  }
+
+ private:
+  aura::Window* window_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowPropertyAppearanceProvider);
+};
+
+}  // namespace
 
 HeaderView::HeaderView(views::Widget* target_widget,
                        mojom::WindowStyle window_style,
@@ -32,9 +77,22 @@ HeaderView::HeaderView(views::Widget* target_widget,
   caption_button_container_->UpdateCaptionButtonState(false /*=animate*/);
   AddChildView(caption_button_container_);
 
-  frame_header_ = std::make_unique<DefaultFrameHeader>(
-      target_widget_, this, caption_button_container_, window_style);
+  if (window_style == mojom::WindowStyle::DEFAULT) {
+    frame_header_ = std::make_unique<DefaultFrameHeader>(
+        target_widget_, this, caption_button_container_);
+  } else {
+    DCHECK_EQ(mojom::WindowStyle::BROWSER, window_style);
+    DCHECK_EQ(Config::MASH, Shell::GetAshConfig());
+    appearance_provider_ = std::make_unique<WindowPropertyAppearanceProvider>(
+        target_widget_->GetNativeWindow());
+    auto frame_header = std::make_unique<CustomFrameHeader>();
+    // TODO(estade): pass correct value for |incognito|.
+    frame_header->Init(this, appearance_provider_.get(), false,
+                       caption_button_container_);
+    frame_header_ = std::move(frame_header);
+  }
 
+  window_observer_.Add(target_widget_->GetNativeWindow());
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
 }
 
@@ -85,7 +143,7 @@ void HeaderView::SetAvatarIcon(const gfx::ImageSkia& avatar) {
     }
     avatar_icon_->SetImage(avatar);
   }
-  frame_header_->set_left_header_view(avatar_icon_);
+  frame_header_->SetLeftHeaderView(avatar_icon_);
   Layout();
 }
 
@@ -95,34 +153,21 @@ void HeaderView::UpdateCaptionButtons() {
 
   bool has_back_button =
       caption_button_container_->model()->IsVisible(CAPTION_BUTTON_ICON_BACK);
-  FrameCaptionButton* back_button = frame_header_->back_button();
+  FrameCaptionButton* back_button = frame_header_->GetBackButton();
   if (has_back_button) {
     if (!back_button) {
       back_button = new FrameBackButton();
       AddChildView(back_button);
-      frame_header_->set_back_button(back_button);
+      frame_header_->SetBackButton(back_button);
     }
     back_button->SetEnabled(caption_button_container_->model()->IsEnabled(
         CAPTION_BUTTON_ICON_BACK));
   } else {
     delete back_button;
-    frame_header_->set_back_button(nullptr);
+    frame_header_->SetBackButton(nullptr);
   }
 
   Layout();
-}
-
-void HeaderView::SetFrameColors(SkColor active_frame_color,
-                                SkColor inactive_frame_color) {
-  frame_header_->SetFrameColors(active_frame_color, inactive_frame_color);
-}
-
-SkColor HeaderView::GetActiveFrameColor() const {
-  return frame_header_->GetActiveFrameColor();
-}
-
-SkColor HeaderView::GetInactiveFrameColor() const {
-  return frame_header_->GetInactiveFrameColor();
 }
 
 void HeaderView::OnShowStateChanged(ui::WindowShowState show_state) {
@@ -174,6 +219,28 @@ void HeaderView::OnTabletModeEnded() {
   target_widget_->non_client_view()->Layout();
 }
 
+void HeaderView::OnWindowPropertyChanged(aura::Window* window,
+                                         const void* key,
+                                         intptr_t old) {
+  DCHECK_EQ(target_widget_->GetNativeWindow(), window);
+  if (key == kFrameImageActiveKey) {
+    SchedulePaint();
+  } else if (key == aura::client::kAvatarIconKey) {
+    gfx::ImageSkia* const avatar_icon =
+        window->GetProperty(aura::client::kAvatarIconKey);
+    SetAvatarIcon(avatar_icon ? *avatar_icon : gfx::ImageSkia());
+  } else if (key == ash::kFrameActiveColorKey ||
+             key == ash::kFrameInactiveColorKey) {
+    frame_header_->SetFrameColors(
+        window->GetProperty(ash::kFrameActiveColorKey),
+        window->GetProperty(ash::kFrameInactiveColorKey));
+  }
+}
+
+void HeaderView::OnWindowDestroying(aura::Window* window) {
+  window_observer_.Remove(window);
+}
+
 views::View* HeaderView::avatar_icon() const {
   return avatar_icon_;
 }
@@ -188,7 +255,7 @@ void HeaderView::SetShouldPaintHeader(bool paint) {
 }
 
 FrameCaptionButton* HeaderView::GetBackButton() {
-  return frame_header_->back_button();
+  return frame_header_->GetBackButton();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
