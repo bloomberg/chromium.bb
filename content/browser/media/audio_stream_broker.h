@@ -11,6 +11,8 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "content/common/content_export.h"
+#include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
+#include "media/mojo/interfaces/audio_input_stream.mojom.h"
 #include "media/mojo/interfaces/audio_output_stream.mojom.h"
 
 namespace audio {
@@ -59,6 +61,17 @@ class CONTENT_EXPORT AudioStreamBrokerFactory {
 
   AudioStreamBrokerFactory();
   virtual ~AudioStreamBrokerFactory();
+
+  virtual std::unique_ptr<AudioStreamBroker> CreateAudioInputStreamBroker(
+      int render_process_id,
+      int render_frame_id,
+      const std::string& device_id,
+      const media::AudioParameters& params,
+      uint32_t shared_memory_count,
+      bool enable_agc,
+      AudioStreamBroker::DeleterCallback deleter,
+      mojom::RendererAudioInputStreamFactoryClientPtr
+          renderer_factory_client) = 0;
 
   virtual std::unique_ptr<AudioStreamBroker> CreateAudioOutputStreamBroker(
       int render_process_id,

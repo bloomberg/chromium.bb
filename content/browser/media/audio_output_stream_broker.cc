@@ -113,6 +113,7 @@ void AudioOutputStreamBroker::ObserverBindingLost(
 }
 
 void AudioOutputStreamBroker::Cleanup() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
   std::move(deleter_).Run(this);
 }
 

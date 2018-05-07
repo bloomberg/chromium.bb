@@ -1370,6 +1370,7 @@ test("content_unittests") {
     "../browser/manifest/manifest_icon_downloader_unittest.cc",
     "../browser/manifest/manifest_icon_selector_unittest.cc",
     "../browser/media/audible_metrics_unittest.cc",
+    "../browser/media/audio_input_stream_broker_unittest.cc",
     "../browser/media/audio_output_stream_broker_unittest.cc",
     "../browser/media/audio_stream_monitor_unittest.cc",
     "../browser/media/capture/audio_mirroring_manager_unittest.cc",

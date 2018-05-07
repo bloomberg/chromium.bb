@@ -1054,6 +1054,8 @@ jumbo_source_set("browser") {
     "media/android/media_web_contents_observer_android.h",
     "media/audible_metrics.cc",
     "media/audible_metrics.h",
+    "media/audio_input_stream_broker.cc",
+    "media/audio_input_stream_broker.h",
     "media/audio_output_stream_broker.cc",
     "media/audio_output_stream_broker.h",
     "media/audio_stream_broker.cc",

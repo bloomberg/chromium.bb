@@ -33,6 +33,28 @@ ForwardingAudioStreamFactory::~ForwardingAudioStreamFactory() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
+void ForwardingAudioStreamFactory::CreateInputStream(
+    RenderFrameHost* frame,
+    const std::string& device_id,
+    const media::AudioParameters& params,
+    uint32_t shared_memory_count,
+    bool enable_agc,
+    mojom::RendererAudioInputStreamFactoryClientPtr renderer_factory_client) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  const int process_id = frame->GetProcess()->GetID();
+  const int frame_id = frame->GetRoutingID();
+  inputs_
+      .insert(broker_factory_->CreateAudioInputStreamBroker(
+          process_id, frame_id, device_id, params, shared_memory_count,
+          enable_agc,
+          base::BindOnce(&ForwardingAudioStreamFactory::RemoveInput,
+                         base::Unretained(this)),
+          std::move(renderer_factory_client)))
+      .first->get()
+      ->CreateStream(GetFactory());
+}
+
 void ForwardingAudioStreamFactory::CreateOutputStream(
     RenderFrameHost* frame,
     const std::string& device_id,
@@ -70,6 +92,7 @@ void ForwardingAudioStreamFactory::DidFinishNavigation(
 
 void ForwardingAudioStreamFactory::WebContentsDestroyed() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(inputs_.empty());
   DCHECK(outputs_.empty());
 }
 
@@ -85,7 +108,16 @@ void ForwardingAudioStreamFactory::CleanupStreamsBelongingTo(
            broker->render_frame_id() == frame_id;
   };
 
+  base::EraseIf(inputs_, match_rfh);
   base::EraseIf(outputs_, match_rfh);
+
+  ResetRemoteFactoryPtrIfIdle();
+}
+
+void ForwardingAudioStreamFactory::RemoveInput(AudioStreamBroker* broker) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  size_t removed = inputs_.erase(broker);
+  DCHECK_EQ(1u, removed);
 
   ResetRemoteFactoryPtrIfIdle();
 }
@@ -114,13 +146,14 @@ audio::mojom::StreamFactory* ForwardingAudioStreamFactory::GetFactory() {
 
 void ForwardingAudioStreamFactory::ResetRemoteFactoryPtrIfIdle() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (outputs_.empty())
+  if (inputs_.empty() && outputs_.empty())
     remote_factory_.reset();
 }
 
 void ForwardingAudioStreamFactory::ResetRemoteFactoryPtr() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   remote_factory_.reset();
+  inputs_.clear();
   outputs_.clear();
 }
 
