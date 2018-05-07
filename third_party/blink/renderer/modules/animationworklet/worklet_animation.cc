@@ -231,6 +231,9 @@ WorkletAnimation::WorkletAnimation(
 
   AnimationEffect* target_effect = effects_.at(0);
   target_effect->Attach(this);
+
+  if (timeline_.IsScrollTimeline())
+    timeline.GetAsScrollTimeline()->AttachAnimation();
 }
 
 String WorkletAnimation::playState() {
@@ -431,6 +434,8 @@ KeyframeEffect* WorkletAnimation::GetEffect() const {
 
 void WorkletAnimation::Dispose() {
   DCHECK(IsMainThread());
+  if (timeline_.IsScrollTimeline())
+    timeline_.GetAsScrollTimeline()->DetachAnimation();
   DestroyCompositorAnimation();
 }
 

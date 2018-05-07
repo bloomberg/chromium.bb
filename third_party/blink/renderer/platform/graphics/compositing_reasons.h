@@ -35,6 +35,7 @@ using CompositingReasons = uint64_t;
   V(WillChangeCompositingHint)                                                \
   V(BackdropFilter)                                                           \
   V(RootScroller)                                                             \
+  V(ScrollTimelineTarget)                                                     \
                                                                               \
   /* Overlap reasons that require knowing what's behind you in paint-order    \
      before knowing the answer. */                                            \
