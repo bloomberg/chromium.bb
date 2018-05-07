@@ -1182,7 +1182,7 @@
       'Mojo Linux': {
         'test_suites': {
           'gtest_tests': 'network_service_gtests',
-          'isolated_scripts': 'mojo_linux_isolated_scripts',
+          'isolated_scripts': 'mojo_network_isolated_scripts',
         },
       },
       'Mojo Windows': {
@@ -1191,6 +1191,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'mojo_windows_gtests',
+          'isolated_scripts': 'mojo_network_isolated_scripts',
         },
       },
       'Out of Process Profiling Android': {

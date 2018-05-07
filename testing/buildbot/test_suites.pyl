@@ -1096,7 +1096,7 @@
     },
   },
 
-  'mojo_linux_isolated_scripts': {
+  'mojo_network_isolated_scripts': {
     'webkit_layout_tests': {
       'args': [
         '--additional-driver-flag=--enable-features=NetworkService',
@@ -1112,11 +1112,6 @@
       'only_retry_failed_tests': True,
       'results_handler': 'layout tests',
       'swarming': {
-        'dimension_sets': [
-          {
-            'os': 'Ubuntu-14.04',
-          }
-        ],
         'shards': 12,
       },
     },
@@ -2252,6 +2247,7 @@
 
   'mojo_windows_gtests': [
     'mojo_windows_specific_gtests',
+    'network_service_gtests',
     'viz_fyi_gtests',
   ],
 
