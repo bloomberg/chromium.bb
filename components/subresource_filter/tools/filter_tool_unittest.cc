@@ -10,6 +10,8 @@
 #include <string>
 #include <vector>
 
+#include "base/json/json_writer.h"
+#include "base/values.h"
 #include "components/subresource_filter/core/common/memory_mapped_ruleset.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
 #include "components/subresource_filter/core/common/test_ruleset_utils.h"
@@ -36,6 +38,19 @@ bool StringsHaveSameLines(const std::string& a, const std::string& b) {
   std::sort(lines_a.begin(), lines_a.end());
   std::sort(lines_b.begin(), lines_b.end());
   return lines_a == lines_b;
+}
+
+std::string CreateJsonLine(const std::string& origin,
+                           const std::string& request_url,
+                           const std::string& request_type) {
+  base::DictionaryValue dictionary;
+  dictionary.SetString("origin", origin);
+  dictionary.SetString("request_url", request_url);
+  dictionary.SetString("request_type", request_type);
+
+  std::string output;
+  EXPECT_TRUE(base::JSONWriter::Write(dictionary, &output));
+  return output + "\n";
 }
 
 class FilterToolTest : public ::testing::Test {
@@ -106,11 +121,13 @@ TEST_F(FilterToolTest, NoMatch) {
 
 TEST_F(FilterToolTest, MatchBatch) {
   std::stringstream batch_queries;
-  batch_queries
-      << "http://example.com http://example.com/disallowed1.png image\n"
-         "http://example.com http://example.com/disallowed2.png image\n"
-         "http://example.com http://example.com/whitelist/disallowed2.png "
-         "image\n";
+  batch_queries << CreateJsonLine("http://example.com",
+                                  "http://example.com/disallowed1.png", "image")
+                << CreateJsonLine("http://example.com",
+                                  "http://example.com/disallowed2.png", "image")
+                << CreateJsonLine(
+                       "http://example.com",
+                       "http://example.com/whitelist/disallowed2.png", "image");
 
   filter_tool_->MatchBatch(&batch_queries);
 
@@ -127,12 +144,15 @@ TEST_F(FilterToolTest, MatchBatch) {
 
 TEST_F(FilterToolTest, MatchRules) {
   std::stringstream batch_queries;
-  batch_queries
-      << "http://example.com http://example.com/disallowed1.png image\n"
-         "http://example.com http://example.com/disallowed1.png image\n"
-         "http://example.com http://example.com/disallowed2.png image\n"
-         "http://example.com http://example.com/whitelist/disallowed2.png "
-         "image\n";
+  batch_queries << CreateJsonLine("http://example.com",
+                                  "http://example.com/disallowed1.png", "image")
+                << CreateJsonLine("http://example.com",
+                                  "http://example.com/disallowed1.png", "image")
+                << CreateJsonLine("http://example.com",
+                                  "http://example.com/disallowed2.png", "image")
+                << CreateJsonLine(
+                       "http://example.com",
+                       "http://example.com/whitelist/disallowed2.png", "image");
 
   filter_tool_->MatchRules(&batch_queries, 1);
 
@@ -148,16 +168,21 @@ TEST_F(FilterToolTest, MatchRules) {
 
 TEST_F(FilterToolTest, MatchRulesMinCount) {
   std::stringstream batch_queries;
-  batch_queries
-      << "http://example.com http://example.com/disallowed1.png image\n"
-         "http://example.com http://example.com/disallowed1.png image\n"
-         "http://example.com http://example.com/disallowed2.png image\n"
-         "http://example.com http://example.com/whitelist/disallowed2.png "
-         "image\n"
-         "http://example.com http://example.com/whitelist/disallowed2.png "
-         "image\n"
-         "http://example.com http://example.com/whitelist/disallowed2.png "
-         "image\n";
+  batch_queries << CreateJsonLine("http://example.com",
+                                  "http://example.com/disallowed1.png", "image")
+                << CreateJsonLine("http://example.com",
+                                  "http://example.com/disallowed1.png", "image")
+                << CreateJsonLine("http://example.com",
+                                  "http://example.com/disallowed2.png", "image")
+                << CreateJsonLine(
+                       "http://example.com",
+                       "http://example.com/whitelist/disallowed2.png", "image")
+                << CreateJsonLine(
+                       "http://example.com",
+                       "http://example.com/whitelist/disallowed2.png", "image")
+                << CreateJsonLine(
+                       "http://example.com",
+                       "http://example.com/whitelist/disallowed2.png", "image");
 
   filter_tool_->MatchRules(&batch_queries, 2);
 

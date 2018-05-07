@@ -11,7 +11,9 @@
 #include <utility>
 #include <vector>
 
-#include "base/strings/string_split.h"
+#include "base/json/json_reader.h"
+#include "base/logging.h"
+#include "base/values.h"
 #include "components/subresource_filter/core/common/activation_level.h"
 #include "components/subresource_filter/core/common/activation_state.h"
 #include "components/subresource_filter/core/common/document_subresource_filter.h"
@@ -85,6 +87,15 @@ const url_pattern_index::flat::UrlRule* FindMatchingUrlRule(
   return filter.FindMatchingUrlRule(request_url, type);
 }
 
+const std::string& ExtractStringFromDictionary(base::Value* dictionary,
+                                               const std::string& key) {
+  DCHECK(dictionary->is_dict());
+
+  const base::Value* found = dictionary->FindKey(key);
+  CHECK(found);
+  return found->GetString();
+}
+
 }  // namespace
 
 FilterTool::FilterTool(
@@ -152,15 +163,15 @@ void FilterTool::MatchBatchImpl(std::istream* request_stream,
     if (line.empty())
       continue;
 
-    std::vector<base::StringPiece> strings = base::SplitStringPiece(
-        line, " ", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    std::unique_ptr<base::Value> dictionary = base::JSONReader::Read(line);
+    CHECK(dictionary);
 
-    LOG_IF(FATAL, strings.size() != 3u)
-        << "Incorrect number of arguments found in batch record";
-
-    base::StringPiece origin = strings[0];
-    base::StringPiece request_url = strings[1];
-    base::StringPiece request_type = strings[2];
+    const std::string& origin =
+        ExtractStringFromDictionary(dictionary.get(), "origin");
+    const std::string& request_url =
+        ExtractStringFromDictionary(dictionary.get(), "request_url");
+    const std::string& request_type =
+        ExtractStringFromDictionary(dictionary.get(), "request_type");
 
     bool blocked;
     const url_pattern_index::flat::UrlRule* rule =
