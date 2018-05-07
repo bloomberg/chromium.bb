@@ -71,6 +71,7 @@ struct RendererContentSettingRules {
   ContentSettingsForOneType script_rules;
   ContentSettingsForOneType autoplay_rules;
   ContentSettingsForOneType client_hints_rules;
+  ContentSettingsForOneType popup_redirect_rules;
 };
 
 namespace content_settings {

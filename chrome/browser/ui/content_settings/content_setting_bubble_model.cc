@@ -1621,13 +1621,15 @@ ContentSettingFramebustBlockBubbleModel::
   for (const auto& blocked_url : helper->blocked_urls())
     AddListItem(CreateListItem(blocked_url));
 
-  helper->SetObserver(this);
+  helper->AddObserver(this);
 }
 
 ContentSettingFramebustBlockBubbleModel::
     ~ContentSettingFramebustBlockBubbleModel() {
-  if (web_contents())
-    FramebustBlockTabHelper::FromWebContents(web_contents())->ClearObserver();
+  if (web_contents()) {
+    FramebustBlockTabHelper::FromWebContents(web_contents())
+        ->RemoveObserver(this);
+  }
 }
 
 void ContentSettingFramebustBlockBubbleModel::Observe(
@@ -1636,8 +1638,10 @@ void ContentSettingFramebustBlockBubbleModel::Observe(
     const content::NotificationDetails& details) {
   // The order is important because ContentSettingBubbleModel::Observer() clears
   // the value of |web_contents()|.
-  if (type == content::NOTIFICATION_WEB_CONTENTS_DESTROYED)
-    FramebustBlockTabHelper::FromWebContents(web_contents())->ClearObserver();
+  if (type == content::NOTIFICATION_WEB_CONTENTS_DESTROYED) {
+    FramebustBlockTabHelper::FromWebContents(web_contents())
+        ->RemoveObserver(this);
+  }
   ContentSettingBubbleModel::Observe(type, source, details);
 }
 

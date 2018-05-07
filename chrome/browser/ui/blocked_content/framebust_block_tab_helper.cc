@@ -16,8 +16,9 @@ void FramebustBlockTabHelper::AddBlockedUrl(const GURL& blocked_url,
   callbacks_.push_back(std::move(click_callback));
   DCHECK_EQ(blocked_urls_.size(), callbacks_.size());
 
-  if (observer_)
-    observer_->OnBlockedUrlAdded(blocked_url);
+  for (Observer& observer : observers_) {
+    observer.OnBlockedUrlAdded(blocked_url);
+  }
 }
 
 bool FramebustBlockTabHelper::HasBlockedUrls() const {
@@ -37,14 +38,12 @@ void FramebustBlockTabHelper::OnBlockedUrlClicked(size_t index) {
   callbacks_.clear();
 }
 
-void FramebustBlockTabHelper::SetObserver(Observer* observer) {
-  DCHECK(!observer_);
-  observer_ = observer;
+void FramebustBlockTabHelper::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
 }
 
-void FramebustBlockTabHelper::ClearObserver() {
-  DCHECK(observer_);
-  observer_ = nullptr;
+void FramebustBlockTabHelper::RemoveObserver(const Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 FramebustBlockTabHelper::FramebustBlockTabHelper(
