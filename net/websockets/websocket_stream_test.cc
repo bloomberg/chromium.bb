@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_samples.h"
@@ -57,12 +58,10 @@ enum HandshakeStreamType { BASIC_HANDSHAKE_STREAM, HTTP2_HANDSHAKE_STREAM };
 // any read/write data and so can't benefit from it anyway.  The arrays are not
 // copied. It is up to the caller to ensure they stay in scope until the test
 // ends.
-template <size_t reads_count, size_t writes_count>
 std::unique_ptr<SequencedSocketData> BuildSocketData(
-    MockRead (&reads)[reads_count],
-    MockWrite (&writes)[writes_count]) {
-  auto socket_data = std::make_unique<SequencedSocketData>(
-      reads, reads_count, writes, writes_count);
+    base::span<MockRead> reads,
+    base::span<MockWrite> writes) {
+  auto socket_data = std::make_unique<SequencedSocketData>(reads, writes);
   socket_data->set_connect_data(MockConnect(SYNCHRONOUS, OK));
   return socket_data;
 }
@@ -70,7 +69,7 @@ std::unique_ptr<SequencedSocketData> BuildSocketData(
 // Builder for a SequencedSocketData that expects nothing. This does not
 // set the connect data, so the calling code must do that explicitly.
 std::unique_ptr<SequencedSocketData> BuildNullSocketData() {
-  return std::make_unique<SequencedSocketData>(nullptr, 0, nullptr, 0);
+  return std::make_unique<SequencedSocketData>();
 }
 
 class MockWeakTimer : public base::MockTimer,
@@ -267,8 +266,7 @@ class WebSocketStreamCreateTest : public TestWithParam<HandshakeStreamType>,
     // EOF.
     reads_.push_back(MockRead(ASYNC, 0, sequence_number_++));
 
-    auto socket_data = std::make_unique<SequencedSocketData>(
-        reads_.data(), reads_.size(), writes_.data(), writes_.size());
+    auto socket_data = std::make_unique<SequencedSocketData>(reads_, writes_);
     socket_data->set_connect_data(MockConnect(SYNCHRONOUS, OK));
     url_request_context_host_.AddRawExpectations(std::move(socket_data));
 
@@ -1295,7 +1293,7 @@ TEST_P(WebSocketStreamCreateTest, CancellationDuringWrite) {
   // First write never completes.
   MockWrite writes[] = {MockWrite(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   SequencedSocketData* socket_data(
-      new SequencedSocketData(NULL, 0, writes, arraysize(writes)));
+      new SequencedSocketData(base::span<MockRead>(), writes));
   socket_data->set_connect_data(MockConnect(SYNCHRONOUS, OK));
   CreateAndConnectRawExpectations("ws://www.example.org/", NoSubProtocols(), "",
                                   base::WrapUnique(socket_data));

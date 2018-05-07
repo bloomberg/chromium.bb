@@ -111,17 +111,8 @@ class SpdyStreamTest : public ::testing::Test {
     reads_.push_back(MockRead(ASYNC, ERR_IO_PENDING, offset_++));
   }
 
-  MockRead* GetReads() { return reads_.data(); }
-
-  size_t GetNumReads() const {
-    return reads_.size();
-  }
-
-  MockWrite* GetWrites() { return writes_.data(); }
-
-  int GetNumWrites() const {
-    return writes_.size();
-  }
+  base::span<const MockRead> GetReads() { return reads_; }
+  base::span<const MockWrite> GetWrites() { return writes_; }
 
   void ActivatePushStream(SpdySession* session, SpdyStream* stream) {
     std::unique_ptr<SpdyStream> activated =
@@ -179,8 +170,7 @@ TEST_F(SpdyStreamTest, SendDataAfterOpen) {
 
   AddReadEOF();
 
-  SequencedSocketData data(GetReads(), GetNumReads(), GetWrites(),
-                           GetNumWrites());
+  SequencedSocketData data(GetReads(), GetWrites());
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
@@ -255,8 +245,7 @@ TEST_F(SpdyStreamTest, Trailers) {
 
   AddReadEOF();
 
-  SequencedSocketData data(GetReads(), GetNumReads(), GetWrites(),
-                           GetNumWrites());
+  SequencedSocketData data(GetReads(), GetWrites());
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
@@ -318,8 +307,7 @@ TEST_F(SpdyStreamTest, PushedStream) {
 
   AddReadEOF();
 
-  SequencedSocketData data(GetReads(), GetNumReads(), GetWrites(),
-                           GetNumWrites());
+  SequencedSocketData data(GetReads(), GetWrites());
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
@@ -417,8 +405,7 @@ TEST_F(SpdyStreamTest, StreamError) {
 
   BoundTestNetLog log;
 
-  SequencedSocketData data(GetReads(), GetNumReads(), GetWrites(),
-                           GetNumWrites());
+  SequencedSocketData data(GetReads(), GetWrites());
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
@@ -486,8 +473,7 @@ TEST_F(SpdyStreamTest, SendLargeDataAfterOpenRequestResponse) {
 
   AddReadEOF();
 
-  SequencedSocketData data(GetReads(), GetNumReads(), GetWrites(),
-                           GetNumWrites());
+  SequencedSocketData data(GetReads(), GetWrites());
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
@@ -537,8 +523,7 @@ TEST_F(SpdyStreamTest, SendLargeDataAfterOpenBidirectional) {
 
   AddReadEOF();
 
-  SequencedSocketData data(GetReads(), GetNumReads(), GetWrites(),
-                           GetNumWrites());
+  SequencedSocketData data(GetReads(), GetWrites());
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
@@ -585,8 +570,7 @@ TEST_F(SpdyStreamTest, UpperCaseHeaders) {
 
   AddReadEOF();
 
-  SequencedSocketData data(GetReads(), GetNumReads(), GetWrites(),
-                           GetNumWrites());
+  SequencedSocketData data(GetReads(), GetWrites());
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
@@ -643,8 +627,7 @@ TEST_F(SpdyStreamTest, UpperCaseHeadersOnPush) {
 
   AddReadEOF();
 
-  SequencedSocketData data(GetReads(), GetNumReads(), GetWrites(),
-                           GetNumWrites());
+  SequencedSocketData data(GetReads(), GetWrites());
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
@@ -698,8 +681,7 @@ TEST_F(SpdyStreamTest, HeadersMustHaveStatus) {
 
   AddReadEOF();
 
-  SequencedSocketData data(GetReads(), GetNumReads(), GetWrites(),
-                           GetNumWrites());
+  SequencedSocketData data(GetReads(), GetWrites());
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
@@ -764,8 +746,7 @@ TEST_F(SpdyStreamTest, HeadersMustHaveStatusOnPushedStream) {
 
   AddReadEOF();
 
-  SequencedSocketData data(GetReads(), GetNumReads(), GetWrites(),
-                           GetNumWrites());
+  SequencedSocketData data(GetReads(), GetWrites());
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
@@ -814,8 +795,7 @@ TEST_F(SpdyStreamTest, HeadersMustPreceedData) {
 
   AddReadEOF();
 
-  SequencedSocketData data(GetReads(), GetNumReads(), GetWrites(),
-                           GetNumWrites());
+  SequencedSocketData data(GetReads(), GetWrites());
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
@@ -868,8 +848,7 @@ TEST_F(SpdyStreamTest, HeadersMustPreceedDataOnPushedStream) {
 
   AddReadEOF();
 
-  SequencedSocketData data(GetReads(), GetNumReads(), GetWrites(),
-                           GetNumWrites());
+  SequencedSocketData data(GetReads(), GetWrites());
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
@@ -931,8 +910,7 @@ TEST_F(SpdyStreamTest, TrailersMustNotFollowTrailers) {
 
   AddReadEOF();
 
-  SequencedSocketData data(GetReads(), GetNumReads(), GetWrites(),
-                           GetNumWrites());
+  SequencedSocketData data(GetReads(), GetWrites());
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
@@ -988,8 +966,7 @@ TEST_F(SpdyStreamTest, DataMustNotFollowTrailers) {
 
   AddReadEOF();
 
-  SequencedSocketData data(GetReads(), GetNumReads(), GetWrites(),
-                           GetNumWrites());
+  SequencedSocketData data(GetReads(), GetWrites());
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
@@ -1039,8 +1016,7 @@ TEST_F(SpdyStreamTest, InformationalHeaders) {
 
   AddReadEOF();
 
-  SequencedSocketData data(GetReads(), GetNumReads(), GetWrites(),
-                           GetNumWrites());
+  SequencedSocketData data(GetReads(), GetWrites());
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
@@ -1089,8 +1065,7 @@ TEST_F(SpdyStreamTest, StatusMustBeNumber) {
 
   AddReadEOF();
 
-  SequencedSocketData data(GetReads(), GetNumReads(), GetWrites(),
-                           GetNumWrites());
+  SequencedSocketData data(GetReads(), GetWrites());
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
@@ -1141,8 +1116,7 @@ TEST_F(SpdyStreamTest, StatusCannotHaveExtraText) {
 
   AddReadEOF();
 
-  SequencedSocketData data(GetReads(), GetNumReads(), GetWrites(),
-                           GetNumWrites());
+  SequencedSocketData data(GetReads(), GetWrites());
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
@@ -1191,8 +1165,7 @@ TEST_F(SpdyStreamTest, StatusMustBePresent) {
 
   AddReadEOF();
 
-  SequencedSocketData data(GetReads(), GetNumReads(), GetWrites(),
-                           GetNumWrites());
+  SequencedSocketData data(GetReads(), GetWrites());
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
@@ -1241,8 +1214,7 @@ TEST_F(SpdyStreamTest, IncreaseSendWindowSizeOverflow) {
 
   BoundTestNetLog log;
 
-  SequencedSocketData data(GetReads(), GetNumReads(), GetWrites(),
-                           GetNumWrites());
+  SequencedSocketData data(GetReads(), GetWrites());
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
@@ -1327,8 +1299,7 @@ void SpdyStreamTest::RunResumeAfterUnstallRequestResponseTest(
 
   AddReadEOF();
 
-  SequencedSocketData data(GetReads(), GetNumReads(), GetWrites(),
-                           GetNumWrites());
+  SequencedSocketData data(GetReads(), GetWrites());
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
@@ -1403,8 +1374,7 @@ void SpdyStreamTest::RunResumeAfterUnstallBidirectionalTest(
 
   AddReadEOF();
 
-  SequencedSocketData data(GetReads(), GetNumReads(), GetWrites(),
-                           GetNumWrites());
+  SequencedSocketData data(GetReads(), GetWrites());
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
@@ -1480,8 +1450,7 @@ TEST_F(SpdyStreamTest, ReceivedBytes) {
 
   AddReadEOF();
 
-  SequencedSocketData data(GetReads(), GetNumReads(), GetWrites(),
-                           GetNumWrites());
+  SequencedSocketData data(GetReads(), GetWrites());
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
@@ -1551,8 +1520,7 @@ TEST_F(SpdyStreamTest, DataOnHalfClosedRemoveStream) {
 
   AddReadEOF();
 
-  SequencedSocketData data(GetReads(), GetNumReads(), GetWrites(),
-                           GetNumWrites());
+  SequencedSocketData data(GetReads(), GetWrites());
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
   session_deps_.socket_factory->AddSocketDataProvider(&data);

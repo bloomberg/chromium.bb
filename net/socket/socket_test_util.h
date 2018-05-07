@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/span.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -278,10 +279,8 @@ class AsyncSocket {
 // StaticSocketDataHelper manages a list of reads and writes.
 class StaticSocketDataHelper {
  public:
-  StaticSocketDataHelper(const MockRead* reads,
-                         size_t reads_count,
-                         const MockWrite* writes,
-                         size_t writes_count);
+  StaticSocketDataHelper(base::span<const MockRead> reads,
+                         base::span<const MockWrite> writes);
   ~StaticSocketDataHelper();
 
   // These functions get access to the next available read and write data. They
@@ -303,23 +302,21 @@ class StaticSocketDataHelper {
 
   size_t read_index() const { return read_index_; }
   size_t write_index() const { return write_index_; }
-  size_t read_count() const { return read_count_; }
-  size_t write_count() const { return write_count_; }
+  size_t read_count() const { return reads_.size(); }
+  size_t write_count() const { return writes_.size(); }
 
-  bool AllReadDataConsumed() const { return read_index_ >= read_count_; }
-  bool AllWriteDataConsumed() const { return write_index_ >= write_count_; }
+  bool AllReadDataConsumed() const { return read_index() >= read_count(); }
+  bool AllWriteDataConsumed() const { return write_index() >= write_count(); }
 
  private:
   // Returns the next available read or write that is not a pause event. CHECK
   // fails if no data is available.
   const MockWrite& PeekRealWrite() const;
 
-  const MockRead* const reads_;
+  const base::span<const MockRead> reads_;
   size_t read_index_;
-  const size_t read_count_;
-  const MockWrite* const writes_;
+  const base::span<const MockWrite> writes_;
   size_t write_index_;
-  const size_t write_count_;
 
   DISALLOW_COPY_AND_ASSIGN(StaticSocketDataHelper);
 };
@@ -329,10 +326,8 @@ class StaticSocketDataHelper {
 class StaticSocketDataProvider : public SocketDataProvider {
  public:
   StaticSocketDataProvider();
-  StaticSocketDataProvider(const MockRead* reads,
-                           size_t reads_count,
-                           const MockWrite* writes,
-                           size_t writes_count);
+  StaticSocketDataProvider(base::span<const MockRead> reads,
+                           base::span<const MockWrite> writes);
   ~StaticSocketDataProvider() override;
 
   // From SocketDataProvider:
@@ -398,21 +393,19 @@ struct SSLSocketDataProvider {
 // complete the operations in a specified order.
 class SequencedSocketData : public SocketDataProvider {
  public:
+  SequencedSocketData();
+
   // |reads| is the list of MockRead completions.
   // |writes| is the list of MockWrite completions.
-  SequencedSocketData(const MockRead* reads,
-                      size_t reads_count,
-                      const MockWrite* writes,
-                      size_t writes_count);
+  SequencedSocketData(base::span<const MockRead> reads,
+                      base::span<const MockWrite> writes);
 
   // |connect| is the result for the connect phase.
   // |reads| is the list of MockRead completions.
   // |writes| is the list of MockWrite completions.
   SequencedSocketData(const MockConnect& connect,
-                      const MockRead* reads,
-                      size_t reads_count,
-                      const MockWrite* writes,
-                      size_t writes_count);
+                      base::span<const MockRead> reads,
+                      base::span<const MockWrite> writes);
 
   ~SequencedSocketData() override;
 
@@ -1313,10 +1306,10 @@ extern const char kSOCKS5OkResponse[];
 extern const int kSOCKS5OkResponseLength;
 
 // Helper function to get the total data size of the MockReads in |reads|.
-int64_t CountReadBytes(const MockRead reads[], size_t reads_size);
+int64_t CountReadBytes(base::span<const MockRead> reads);
 
 // Helper function to get the total data size of the MockWrites in |writes|.
-int64_t CountWriteBytes(const MockWrite writes[], size_t writes_size);
+int64_t CountWriteBytes(base::span<const MockWrite> writes);
 
 #if defined(OS_ANDROID)
 // Query the system to find out how many bytes were received with tag

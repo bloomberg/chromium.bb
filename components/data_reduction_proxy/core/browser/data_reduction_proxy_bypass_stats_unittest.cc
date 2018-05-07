@@ -193,7 +193,7 @@ class DataReductionProxyBypassStatsEndToEndTest : public testing::Test {
         MockRead(net::SYNCHRONOUS, finish_code),
     };
     net::StaticSocketDataProvider initial_socket_data_provider(
-        initial_data_reads, arraysize(initial_data_reads), nullptr, 0);
+        initial_data_reads, base::span<net::MockWrite>());
     mock_socket_factory_.AddSocketDataProvider(&initial_socket_data_provider);
 
     // Prepare for the response from retrying the request, if applicable.
@@ -207,7 +207,7 @@ class DataReductionProxyBypassStatsEndToEndTest : public testing::Test {
       retry_data_reads.push_back(MockRead(net::SYNCHRONOUS, finish_code));
 
       retry_socket_data_provider.reset(new net::StaticSocketDataProvider(
-          &retry_data_reads.front(), retry_data_reads.size(), nullptr, 0));
+          retry_data_reads, base::span<net::MockWrite>()));
       mock_socket_factory_.AddSocketDataProvider(
           retry_socket_data_provider.get());
     }
@@ -231,7 +231,7 @@ class DataReductionProxyBypassStatsEndToEndTest : public testing::Test {
         MockRead(""), MockRead(net::SYNCHRONOUS, net::OK),
     };
     net::StaticSocketDataProvider redirect_socket_data_provider_1(
-        redirect_mock_reads_1, arraysize(redirect_mock_reads_1), nullptr, 0);
+        redirect_mock_reads_1, base::span<net::MockWrite>());
     mock_socket_factory_.AddSocketDataProvider(
         &redirect_socket_data_provider_1);
 
@@ -243,7 +243,7 @@ class DataReductionProxyBypassStatsEndToEndTest : public testing::Test {
         MockRead(""), MockRead(net::SYNCHRONOUS, net::OK),
     };
     net::StaticSocketDataProvider redirect_socket_data_provider_2(
-        redirect_mock_reads_2, arraysize(redirect_mock_reads_2), nullptr, 0);
+        redirect_mock_reads_2, base::span<net::MockWrite>());
     mock_socket_factory_.AddSocketDataProvider(
         &redirect_socket_data_provider_2);
 
@@ -256,7 +256,7 @@ class DataReductionProxyBypassStatsEndToEndTest : public testing::Test {
         MockRead(""), MockRead(net::SYNCHRONOUS, net::OK),
     };
     net::StaticSocketDataProvider redirect_socket_data_provider_3(
-        redirect_mock_reads_3, arraysize(redirect_mock_reads_3), nullptr, 0);
+        redirect_mock_reads_3, base::span<net::MockWrite>());
     mock_socket_factory_.AddSocketDataProvider(
         &redirect_socket_data_provider_3);
 
@@ -267,7 +267,7 @@ class DataReductionProxyBypassStatsEndToEndTest : public testing::Test {
         MockRead(net::SYNCHRONOUS, net::OK),
     };
     net::StaticSocketDataProvider response_socket_data_provider(
-        response_mock_reads, arraysize(response_mock_reads), nullptr, 0);
+        response_mock_reads, base::span<net::MockWrite>());
     mock_socket_factory_.AddSocketDataProvider(&response_socket_data_provider);
 
     std::unique_ptr<net::URLRequest> request(

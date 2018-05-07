@@ -136,9 +136,7 @@ class FakeSSLClientSocketTest : public testing::Test {
                std::vector<net::MockRead>* reads,
                std::vector<net::MockWrite>* writes) {
     static_socket_data_provider_.reset(
-        new net::StaticSocketDataProvider(
-            reads->empty() ? NULL : &*reads->begin(), reads->size(),
-            writes->empty() ? NULL : &*writes->begin(), writes->size()));
+        new net::StaticSocketDataProvider(*reads, *writes));
     static_socket_data_provider_->set_connect_data(mock_connect);
     mock_client_socket_factory_.AddSocketDataProvider(
         static_socket_data_provider_.get());

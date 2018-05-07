@@ -92,9 +92,8 @@ void GCMSocketStreamTest::BuildSocket(const ReadList& read_list,
                                       const WriteList& write_list) {
   mock_reads_ = read_list;
   mock_writes_ = write_list;
-  data_provider_.reset(new net::StaticSocketDataProvider(
-      mock_reads_.data(), mock_reads_.size(), mock_writes_.data(),
-      mock_writes_.size()));
+  data_provider_.reset(
+      new net::StaticSocketDataProvider(mock_reads_, mock_writes_));
   socket_factory_.AddSocketDataProvider(data_provider_.get());
   OpenConnection();
   ResetInputStream();

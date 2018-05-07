@@ -256,13 +256,12 @@ class MockTestCastSocket : public TestCastSocketBase {
   // may be live at a time.
   std::unique_ptr<net::TransportClientSocket> CreateTcpSocket() override {
     if (tcp_unresponsive_) {
-      socket_data_provider_ = std::make_unique<net::StaticSocketDataProvider>(
-          nullptr, 0, nullptr, 0);
+      socket_data_provider_ = std::make_unique<net::StaticSocketDataProvider>();
       return std::unique_ptr<net::TransportClientSocket>(
           new MockTCPSocket(true, socket_data_provider_.get()));
     } else {
-      socket_data_provider_ = std::make_unique<net::StaticSocketDataProvider>(
-          reads_.data(), reads_.size(), writes_.data(), writes_.size());
+      socket_data_provider_ =
+          std::make_unique<net::StaticSocketDataProvider>(reads_, writes_);
       socket_data_provider_->set_connect_data(*tcp_connect_data_);
       return std::unique_ptr<net::TransportClientSocket>(
           new MockTCPSocket(false, socket_data_provider_.get()));

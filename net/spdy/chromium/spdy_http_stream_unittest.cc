@@ -146,12 +146,9 @@ class SpdyHttpStreamTest : public testing::Test {
   }
 
   // Initializes the session using SequencedSocketData.
-  void InitSession(MockRead* reads,
-                   size_t reads_count,
-                   MockWrite* writes,
-                   size_t writes_count) {
-    sequenced_data_ = std::make_unique<SequencedSocketData>(
-        reads, reads_count, writes, writes_count);
+  void InitSession(base::span<const MockRead> reads,
+                   base::span<const MockWrite> writes) {
+    sequenced_data_ = std::make_unique<SequencedSocketData>(reads, writes);
     session_deps_.socket_factory->AddSocketDataProvider(sequenced_data_.get());
 
     ssl_.ssl_info.cert =
@@ -192,7 +189,7 @@ TEST_F(SpdyHttpStreamTest, SendRequest) {
       CreateMockRead(resp, 1), MockRead(SYNCHRONOUS, 0, 2)  // EOF
   };
 
-  InitSession(reads, arraysize(reads), writes, arraysize(writes));
+  InitSession(reads, writes);
 
   HttpRequestInfo request;
   request.method = "GET";
@@ -249,7 +246,7 @@ TEST_F(SpdyHttpStreamTest, RequestInfoDestroyedBeforeRead) {
       MockRead(ASYNC, 0, 3)  // EOF
   };
 
-  InitSession(reads, arraysize(reads), writes, arraysize(writes));
+  InitSession(reads, writes);
 
   std::unique_ptr<HttpRequestInfo> request =
       std::make_unique<HttpRequestInfo>();
@@ -313,7 +310,7 @@ TEST_F(SpdyHttpStreamTest, LoadTimingTwoRequests) {
       MockRead(ASYNC, 0, 6)  // EOF
   };
 
-  InitSession(reads, arraysize(reads), writes, arraysize(writes));
+  InitSession(reads, writes);
 
   HttpRequestInfo request1;
   request1.method = "GET";
@@ -411,7 +408,7 @@ TEST_F(SpdyHttpStreamTest, SendChunkedPost) {
       MockRead(SYNCHRONOUS, 0, 4)  // EOF
   };
 
-  InitSession(reads, arraysize(reads), writes, arraysize(writes));
+  InitSession(reads, writes);
 
   ChunkedUploadDataStream upload_stream(0);
   const int kFirstChunkSize = kUploadDataSize/2;
@@ -470,7 +467,7 @@ TEST_F(SpdyHttpStreamTest, SendChunkedPostLastEmpty) {
       MockRead(SYNCHRONOUS, 0, 4)  // EOF
   };
 
-  InitSession(reads, arraysize(reads), writes, arraysize(writes));
+  InitSession(reads, writes);
 
   ChunkedUploadDataStream upload_stream(0);
   upload_stream.AppendData(nullptr, 0, true);
@@ -524,7 +521,7 @@ TEST_F(SpdyHttpStreamTest, ConnectionClosedDuringChunkedPost) {
       MockRead(ASYNC, ERR_CONNECTION_CLOSED, 2)  // Server hangs up early.
   };
 
-  InitSession(reads, arraysize(reads), writes, arraysize(writes));
+  InitSession(reads, writes);
 
   ChunkedUploadDataStream upload_stream(0);
   // Append first chunk.
@@ -598,7 +595,7 @@ TEST_F(SpdyHttpStreamTest, DelayedSendChunkedPost) {
       MockRead(ASYNC, 0, 8)  // EOF
   };
 
-  InitSession(reads, arraysize(reads), writes, arraysize(writes));
+  InitSession(reads, writes);
 
   ChunkedUploadDataStream upload_stream(0);
 
@@ -695,7 +692,7 @@ TEST_F(SpdyHttpStreamTest, DelayedSendChunkedPostWithEmptyFinalDataFrame) {
       CreateMockRead(chunk2, 5), MockRead(ASYNC, 0, 6)  // EOF
   };
 
-  InitSession(reads, arraysize(reads), writes, arraysize(writes));
+  InitSession(reads, writes);
 
   ChunkedUploadDataStream upload_stream(0);
 
@@ -781,7 +778,7 @@ TEST_F(SpdyHttpStreamTest, ChunkedPostWithEmptyPayload) {
       MockRead(ASYNC, 0, 4)  // EOF
   };
 
-  InitSession(reads, arraysize(reads), writes, arraysize(writes));
+  InitSession(reads, writes);
 
   ChunkedUploadDataStream upload_stream(0);
 
@@ -849,7 +846,7 @@ TEST_F(SpdyHttpStreamTest, SpdyURLTest) {
       CreateMockRead(resp, 1), MockRead(SYNCHRONOUS, 0, 2)  // EOF
   };
 
-  InitSession(reads, arraysize(reads), writes, arraysize(writes));
+  InitSession(reads, writes);
 
   HttpRequestInfo request;
   request.method = "GET";
@@ -899,7 +896,7 @@ TEST_F(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
       MockRead(ASYNC, 0, 6)  // EOF
   };
 
-  InitSession(reads, arraysize(reads), writes, arraysize(writes));
+  InitSession(reads, writes);
 
   ChunkedUploadDataStream upload_stream(0);
 
@@ -1003,7 +1000,7 @@ TEST_F(SpdyHttpStreamTest, DataReadErrorSynchronous) {
       CreateMockRead(resp, 2), MockRead(SYNCHRONOUS, 0, 3),
   };
 
-  InitSession(reads, arraysize(reads), writes, arraysize(writes));
+  InitSession(reads, writes);
 
   ReadErrorUploadDataStream upload_data_stream(
       ReadErrorUploadDataStream::FailureMode::SYNC);
@@ -1058,7 +1055,7 @@ TEST_F(SpdyHttpStreamTest, DataReadErrorAsynchronous) {
       MockRead(ASYNC, 0, 2),
   };
 
-  InitSession(reads, arraysize(reads), writes, arraysize(writes));
+  InitSession(reads, writes);
 
   ReadErrorUploadDataStream upload_data_stream(
       ReadErrorUploadDataStream::FailureMode::ASYNC);
@@ -1103,7 +1100,7 @@ TEST_F(SpdyHttpStreamTest, RequestCallbackCancelsStream) {
   MockWrite writes[] = {CreateMockWrite(req, 0), CreateMockWrite(chunk, 1),
                         CreateMockWrite(rst, 2)};
   MockRead reads[] = {MockRead(ASYNC, 0, 3)};
-  InitSession(reads, arraysize(reads), writes, arraysize(writes));
+  InitSession(reads, writes);
 
   HttpRequestInfo request;
   request.method = "POST";

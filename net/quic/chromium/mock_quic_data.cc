@@ -53,10 +53,7 @@ void MockQuicData::Resume() {
 }
 
 SequencedSocketData* MockQuicData::InitializeAndGetSequencedSocketData() {
-  MockRead* reads = reads_.empty() ? nullptr : &reads_[0];
-  MockWrite* writes = writes_.empty() ? nullptr : &writes_[0];
-  socket_data_.reset(
-      new SequencedSocketData(reads, reads_.size(), writes, writes_.size()));
+  socket_data_.reset(new SequencedSocketData(reads_, writes_));
   if (connect_ != nullptr)
     socket_data_->set_connect_data(*connect_);
 

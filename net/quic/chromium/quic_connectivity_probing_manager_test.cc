@@ -4,6 +4,7 @@
 
 #include "net/quic/chromium/quic_connectivity_probing_manager.h"
 
+#include "base/stl_util.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "net/log/test_net_log.h"
 #include "net/quic/test_tools/mock_clock.h"
@@ -79,7 +80,8 @@ class QuicConnectivityProbingManagerTest : public ::testing::Test {
         probing_manager_(&session_, test_task_runner_.get()),
         default_read_(new MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)),
         socket_data_(
-            new SequencedSocketData(default_read_.get(), 1, nullptr, 0)) {
+            new SequencedSocketData(base::make_span(default_read_.get(), 1),
+                                    base::span<MockWrite>())) {
     socket_factory_.AddSocketDataProvider(socket_data_.get());
     // Create a connected socket for probing.
     socket_ = socket_factory_.CreateDatagramClientSocket(

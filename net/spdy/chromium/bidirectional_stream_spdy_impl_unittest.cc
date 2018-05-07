@@ -4,6 +4,7 @@
 
 #include "net/spdy/chromium/bidirectional_stream_spdy_impl.h"
 
+#include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -256,14 +257,11 @@ class BidirectionalStreamSpdyImplTest : public testing::TestWithParam<bool> {
   }
 
   // Initializes the session using SequencedSocketData.
-  void InitSession(MockRead* reads,
-                   size_t reads_count,
-                   MockWrite* writes,
-                   size_t writes_count) {
+  void InitSession(base::span<const MockRead> reads,
+                   base::span<const MockWrite> writes) {
     ASSERT_TRUE(ssl_data_.ssl_info.cert.get());
     session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data_);
-    sequenced_data_ = std::make_unique<SequencedSocketData>(
-        reads, reads_count, writes, writes_count);
+    sequenced_data_ = std::make_unique<SequencedSocketData>(reads, writes);
     session_deps_.socket_factory->AddSocketDataProvider(sequenced_data_.get());
     session_deps_.net_log = net_log_.bound().net_log();
     http_session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
@@ -300,7 +298,7 @@ TEST_F(BidirectionalStreamSpdyImplTest, SimplePostRequest) {
       MockRead(ASYNC, ERR_IO_PENDING, 2),  // Force a pause.
       CreateMockRead(response_body_frame, 4), MockRead(ASYNC, 0, 5),
   };
-  InitSession(reads, arraysize(reads), writes, arraysize(writes));
+  InitSession(reads, writes);
 
   BidirectionalStreamRequestInfo request_info;
   request_info.method = "POST";
@@ -328,10 +326,8 @@ TEST_F(BidirectionalStreamSpdyImplTest, SimplePostRequest) {
   EXPECT_EQ(1, delegate->on_data_read_count());
   EXPECT_EQ(1, delegate->on_data_sent_count());
   EXPECT_EQ(kProtoHTTP2, delegate->GetProtocol());
-  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)),
-            delegate->GetTotalSentBytes());
-  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
-            delegate->GetTotalReceivedBytes());
+  EXPECT_EQ(CountWriteBytes(writes), delegate->GetTotalSentBytes());
+  EXPECT_EQ(CountReadBytes(reads), delegate->GetTotalReceivedBytes());
 }
 
 TEST_F(BidirectionalStreamSpdyImplTest, LoadTimingTwoRequests) {
@@ -353,7 +349,7 @@ TEST_F(BidirectionalStreamSpdyImplTest, LoadTimingTwoRequests) {
   MockRead reads[] = {CreateMockRead(resp, 1), CreateMockRead(resp_body, 3),
                       CreateMockRead(resp2, 4), CreateMockRead(resp_body2, 5),
                       MockRead(ASYNC, 0, 6)};
-  InitSession(reads, arraysize(reads), writes, arraysize(writes));
+  InitSession(reads, writes);
 
   BidirectionalStreamRequestInfo request_info;
   request_info.method = "GET";
@@ -400,7 +396,7 @@ TEST_F(BidirectionalStreamSpdyImplTest, SendDataAfterStreamFailed) {
       CreateMockRead(resp, 1), MockRead(ASYNC, 0, 3),
   };
 
-  InitSession(reads, arraysize(reads), writes, arraysize(writes));
+  InitSession(reads, writes);
 
   BidirectionalStreamRequestInfo request_info;
   request_info.method = "POST";
@@ -428,7 +424,8 @@ TEST_F(BidirectionalStreamSpdyImplTest, SendDataAfterStreamFailed) {
   EXPECT_EQ(kProtoHTTP2, delegate->GetProtocol());
   // BidirectionalStreamSpdyStreamJob does not count the bytes sent for |rst|
   // because it is sent after SpdyStream::Delegate::OnClose is called.
-  EXPECT_EQ(CountWriteBytes(writes, 1), delegate->GetTotalSentBytes());
+  EXPECT_EQ(CountWriteBytes(base::make_span(writes, 1)),
+            delegate->GetTotalSentBytes());
   EXPECT_EQ(0, delegate->GetTotalReceivedBytes());
 }
 
@@ -451,7 +448,7 @@ TEST_P(BidirectionalStreamSpdyImplTest, RstWithNoErrorBeforeSendIsComplete) {
                       MockRead(ASYNC, ERR_IO_PENDING, 2),  // Force a pause.
                       CreateMockRead(rst, 3), MockRead(ASYNC, 0, 4)};
 
-  InitSession(reads, arraysize(reads), writes, arraysize(writes));
+  InitSession(reads, writes);
 
   BidirectionalStreamRequestInfo request_info;
   request_info.method = "POST";
@@ -499,9 +496,10 @@ TEST_P(BidirectionalStreamSpdyImplTest, RstWithNoErrorBeforeSendIsComplete) {
   EXPECT_EQ(1, delegate->on_data_read_count());
   EXPECT_EQ(is_test_sendv ? 2 : 4, delegate->on_data_sent_count());
   EXPECT_EQ(kProtoHTTP2, delegate->GetProtocol());
-  EXPECT_EQ(CountWriteBytes(writes, 1), delegate->GetTotalSentBytes());
+  EXPECT_EQ(CountWriteBytes(base::make_span(writes, 1)),
+            delegate->GetTotalSentBytes());
   // Should not count RST stream.
-  EXPECT_EQ(CountReadBytes(reads, arraysize(reads) - 2),
+  EXPECT_EQ(CountReadBytes(base::make_span(reads).first(base::size(reads) - 2)),
             delegate->GetTotalReceivedBytes());
 
   // Now call SendData again should produce an error because end of stream

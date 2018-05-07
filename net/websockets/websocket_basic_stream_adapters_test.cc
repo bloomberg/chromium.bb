@@ -110,7 +110,7 @@ TEST_F(WebSocketClientSocketHandleAdapterTest, Uninitialized) {
 }
 
 TEST_F(WebSocketClientSocketHandleAdapterTest, IsInitialized) {
-  StaticSocketDataProvider data(nullptr, 0, nullptr, 0);
+  StaticSocketDataProvider data;
   socket_factory_.AddSocketDataProvider(&data);
   SSLSocketDataProvider ssl_socket_data(ASYNC, OK);
   socket_factory_.AddSSLSocketDataProvider(&ssl_socket_data);
@@ -127,7 +127,7 @@ TEST_F(WebSocketClientSocketHandleAdapterTest, IsInitialized) {
 }
 
 TEST_F(WebSocketClientSocketHandleAdapterTest, Disconnect) {
-  StaticSocketDataProvider data(nullptr, 0, nullptr, 0);
+  StaticSocketDataProvider data;
   socket_factory_.AddSocketDataProvider(&data);
   SSLSocketDataProvider ssl_socket_data(ASYNC, OK);
   socket_factory_.AddSSLSocketDataProvider(&ssl_socket_data);
@@ -147,7 +147,7 @@ TEST_F(WebSocketClientSocketHandleAdapterTest, Disconnect) {
 
 TEST_F(WebSocketClientSocketHandleAdapterTest, Read) {
   MockRead reads[] = {MockRead(SYNCHRONOUS, "foo"), MockRead("bar")};
-  StaticSocketDataProvider data(reads, arraysize(reads), nullptr, 0);
+  StaticSocketDataProvider data(reads, base::span<MockWrite>());
   socket_factory_.AddSocketDataProvider(&data);
   SSLSocketDataProvider ssl_socket_data(ASYNC, OK);
   socket_factory_.AddSSLSocketDataProvider(&ssl_socket_data);
@@ -178,7 +178,7 @@ TEST_F(WebSocketClientSocketHandleAdapterTest, Read) {
 
 TEST_F(WebSocketClientSocketHandleAdapterTest, ReadIntoSmallBuffer) {
   MockRead reads[] = {MockRead(SYNCHRONOUS, "foo"), MockRead("bar")};
-  StaticSocketDataProvider data(reads, arraysize(reads), nullptr, 0);
+  StaticSocketDataProvider data(reads, base::span<MockWrite>());
   socket_factory_.AddSocketDataProvider(&data);
   SSLSocketDataProvider ssl_socket_data(ASYNC, OK);
   socket_factory_.AddSSLSocketDataProvider(&ssl_socket_data);
@@ -217,7 +217,7 @@ TEST_F(WebSocketClientSocketHandleAdapterTest, ReadIntoSmallBuffer) {
 
 TEST_F(WebSocketClientSocketHandleAdapterTest, Write) {
   MockWrite writes[] = {MockWrite(SYNCHRONOUS, "foo"), MockWrite("bar")};
-  StaticSocketDataProvider data(nullptr, 0, writes, arraysize(writes));
+  StaticSocketDataProvider data(base::span<MockRead>(), writes);
   socket_factory_.AddSocketDataProvider(&data);
   SSLSocketDataProvider ssl_socket_data(ASYNC, OK);
   socket_factory_.AddSSLSocketDataProvider(&ssl_socket_data);
@@ -250,8 +250,7 @@ TEST_F(WebSocketClientSocketHandleAdapterTest, Write) {
 TEST_F(WebSocketClientSocketHandleAdapterTest, AsyncReadAndWrite) {
   MockRead reads[] = {MockRead("foobar")};
   MockWrite writes[] = {MockWrite("baz")};
-  StaticSocketDataProvider data(reads, arraysize(reads), writes,
-                                arraysize(writes));
+  StaticSocketDataProvider data(reads, writes);
   socket_factory_.AddSocketDataProvider(&data);
   SSLSocketDataProvider ssl_socket_data(ASYNC, OK);
   socket_factory_.AddSSLSocketDataProvider(&ssl_socket_data);
@@ -351,7 +350,7 @@ class WebSocketSpdyStreamAdapterTest : public Test {
 TEST_F(WebSocketSpdyStreamAdapterTest, Disconnect) {
   MockRead reads[] = {MockRead(ASYNC, ERR_IO_PENDING, 0),
                       MockRead(ASYNC, 0, 1)};
-  SequencedSocketData data(reads, arraysize(reads), nullptr, 0);
+  SequencedSocketData data(reads, base::span<MockWrite>());
   AddSocketData(&data);
   AddSSLSocketData();
 
@@ -384,7 +383,7 @@ TEST_F(WebSocketSpdyStreamAdapterTest, SendRequestHeadersThenDisconnect) {
   SpdySerializedFrame rst(
       spdy_util_.ConstructSpdyRstStream(1, ERROR_CODE_CANCEL));
   MockWrite writes[] = {CreateMockWrite(headers, 1), CreateMockWrite(rst, 2)};
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   AddSocketData(&data);
   AddSSLSocketData();
 
@@ -423,7 +422,7 @@ TEST_F(WebSocketSpdyStreamAdapterTest, OnHeadersSentThenDisconnect) {
   SpdySerializedFrame rst(
       spdy_util_.ConstructSpdyRstStream(1, ERROR_CODE_CANCEL));
   MockWrite writes[] = {CreateMockWrite(headers, 0), CreateMockWrite(rst, 1)};
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   AddSocketData(&data);
   AddSSLSocketData();
 
@@ -464,7 +463,7 @@ TEST_F(WebSocketSpdyStreamAdapterTest, OnHeadersReceivedThenDisconnect) {
       spdy_util_.ConstructSpdyRstStream(1, ERROR_CODE_CANCEL));
   MockWrite writes[] = {CreateMockWrite(request_headers, 0),
                         CreateMockWrite(rst, 2)};
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   AddSocketData(&data);
   AddSSLSocketData();
 
@@ -496,7 +495,7 @@ TEST_F(WebSocketSpdyStreamAdapterTest, OnHeadersReceivedThenDisconnect) {
 
 TEST_F(WebSocketSpdyStreamAdapterTest, ServerClosesConnection) {
   MockRead reads[] = {MockRead(ASYNC, 0, 0)};
-  SequencedSocketData data(reads, arraysize(reads), nullptr, 0);
+  SequencedSocketData data(reads, base::span<MockWrite>());
   AddSocketData(&data);
   AddSSLSocketData();
 
@@ -523,7 +522,7 @@ TEST_F(WebSocketSpdyStreamAdapterTest,
   SpdySerializedFrame headers(spdy_util_.ConstructSpdyHeaders(
       1, RequestHeaders(), DEFAULT_PRIORITY, false));
   MockWrite writes[] = {CreateMockWrite(headers, 0)};
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   AddSocketData(&data);
   AddSSLSocketData();
 
@@ -557,7 +556,7 @@ TEST_F(WebSocketSpdyStreamAdapterTest,
   SpdySerializedFrame request_headers(spdy_util_.ConstructSpdyHeaders(
       1, RequestHeaders(), DEFAULT_PRIORITY, false));
   MockWrite writes[] = {CreateMockWrite(request_headers, 0)};
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   AddSocketData(&data);
   AddSSLSocketData();
 
@@ -591,7 +590,7 @@ TEST_F(WebSocketSpdyStreamAdapterTest, DetachDelegate) {
   SpdySerializedFrame request_headers(spdy_util_.ConstructSpdyHeaders(
       1, RequestHeaders(), DEFAULT_PRIORITY, false));
   MockWrite writes[] = {CreateMockWrite(request_headers, 0)};
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   AddSocketData(&data);
   AddSSLSocketData();
 
@@ -633,7 +632,7 @@ TEST_F(WebSocketSpdyStreamAdapterTest, Read) {
   SpdySerializedFrame request_headers(spdy_util_.ConstructSpdyHeaders(
       1, RequestHeaders(), DEFAULT_PRIORITY, false));
   MockWrite writes[] = {CreateMockWrite(request_headers, 0)};
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   AddSocketData(&data);
   AddSSLSocketData();
 
@@ -701,7 +700,7 @@ TEST_F(WebSocketSpdyStreamAdapterTest, CallDelegateOnCloseShouldNotCrash) {
   SpdySerializedFrame request_headers(spdy_util_.ConstructSpdyHeaders(
       1, RequestHeaders(), DEFAULT_PRIORITY, false));
   MockWrite writes[] = {CreateMockWrite(request_headers, 0)};
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   AddSocketData(&data);
   AddSSLSocketData();
 
@@ -760,7 +759,7 @@ TEST_F(WebSocketSpdyStreamAdapterTest, Write) {
       spdy_util_.ConstructSpdyDataFrame(1, "foo", false));
   MockWrite writes[] = {CreateMockWrite(request_headers, 0),
                         CreateMockWrite(data_frame, 2)};
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   AddSocketData(&data);
   AddSSLSocketData();
 
@@ -805,7 +804,7 @@ TEST_F(WebSocketSpdyStreamAdapterTest, AsyncReadAndWrite) {
       spdy_util_.ConstructSpdyDataFrame(1, "baz", false));
   MockWrite writes[] = {CreateMockWrite(request_headers, 0),
                         CreateMockWrite(write_data_frame, 2)};
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   AddSocketData(&data);
   AddSSLSocketData();
 
@@ -875,7 +874,7 @@ TEST_F(WebSocketSpdyStreamAdapterTest, ReadCallbackDestroysAdapter) {
   SpdySerializedFrame request_headers(spdy_util_.ConstructSpdyHeaders(
       1, RequestHeaders(), DEFAULT_PRIORITY, false));
   MockWrite writes[] = {CreateMockWrite(request_headers, 0)};
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   AddSocketData(&data);
   AddSSLSocketData();
 
@@ -925,7 +924,7 @@ TEST_F(WebSocketSpdyStreamAdapterTest, WriteCallbackDestroysAdapter) {
   SpdySerializedFrame request_headers(spdy_util_.ConstructSpdyHeaders(
       1, RequestHeaders(), DEFAULT_PRIORITY, false));
   MockWrite writes[] = {CreateMockWrite(request_headers, 0)};
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  SequencedSocketData data(reads, writes);
   AddSocketData(&data);
   AddSSLSocketData();
 

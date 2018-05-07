@@ -430,9 +430,8 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
     }
 
     EXPECT_FALSE(socket_);
-    socket_ = std::make_unique<net::StaticSocketDataProvider>(
-        reads_list->data(), reads_list->size(), writes_list->data(),
-        writes_list->size());
+    socket_ = std::make_unique<net::StaticSocketDataProvider>(*reads_list,
+                                                              *writes_list);
     mock_socket_factory_->AddSocketDataProvider(socket_.get());
   }
 
@@ -481,7 +480,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
     net::MockRead reads[] = {net::MockRead(response_headers.c_str()),
                              net::MockRead(response_body.c_str()),
                              net::MockRead(net::SYNCHRONOUS, net::OK)};
-    net::StaticSocketDataProvider socket(reads, arraysize(reads), nullptr, 0);
+    net::StaticSocketDataProvider socket(reads, base::span<net::MockWrite>());
     mock_socket_factory_->AddSocketDataProvider(&socket);
 
     net::TestDelegate delegate;
@@ -594,8 +593,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
     }
 
     net::MockWrite writes[] = {net::MockWrite(mock_write.c_str())};
-    net::StaticSocketDataProvider socket(reads, arraysize(reads), writes,
-                                         arraysize(writes));
+    net::StaticSocketDataProvider socket(reads, writes);
     mock_socket_factory_->AddSocketDataProvider(&socket);
 
     net::TestDelegate delegate;
@@ -707,12 +705,10 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
 
     std::unique_ptr<net::StaticSocketDataProvider> socket;
     if (!redirect_once) {
-      socket = std::make_unique<net::StaticSocketDataProvider>(
-          reads, arraysize(reads), writes, arraysize(writes));
+      socket = std::make_unique<net::StaticSocketDataProvider>(reads, writes);
     } else {
-      socket = std::make_unique<net::StaticSocketDataProvider>(
-          redirect_reads, arraysize(redirect_reads), redirect_writes,
-          arraysize(redirect_writes));
+      socket = std::make_unique<net::StaticSocketDataProvider>(redirect_reads,
+                                                               redirect_writes);
     }
 
     mock_socket_factory_->AddSocketDataProvider(socket.get());
@@ -2077,7 +2073,7 @@ TEST_F(DataReductionProxyNetworkDelegateClientLoFiTest, DataSavingsNonDRP) {
     net::MockRead reads[] = {net::MockRead(test.headers),
                              net::MockRead(response_body.c_str()),
                              net::MockRead(net::ASYNC, net::OK)};
-    net::StaticSocketDataProvider socket(reads, arraysize(reads), nullptr, 0);
+    net::StaticSocketDataProvider socket(reads, base::span<net::MockWrite>());
     mock_socket_factory()->AddSocketDataProvider(&socket);
 
     net::TestDelegate test_delegate;
@@ -2111,7 +2107,7 @@ TEST_F(DataReductionProxyNetworkDelegateClientLoFiTest, DataSavingsThroughDRP) {
   net::MockRead reads[] = {net::MockRead(kHeaders),
                            net::MockRead(response_body.c_str()),
                            net::MockRead(net::ASYNC, net::OK)};
-  net::StaticSocketDataProvider socket(reads, arraysize(reads), nullptr, 0);
+  net::StaticSocketDataProvider socket(reads, base::span<net::MockWrite>());
   mock_socket_factory()->AddSocketDataProvider(&socket);
 
   net::TestDelegate test_delegate;

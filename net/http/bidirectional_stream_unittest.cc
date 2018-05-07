@@ -9,9 +9,11 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "base/timer/mock_timer.h"
@@ -412,15 +414,12 @@ class BidirectionalStreamTest : public testing::Test {
   }
 
   // Initializes the session using SequencedSocketData.
-  void InitSession(MockRead* reads,
-                   size_t reads_count,
-                   MockWrite* writes,
-                   size_t writes_count,
+  void InitSession(base::span<const MockRead> reads,
+                   base::span<const MockWrite> writes,
                    const SocketTag& socket_tag) {
     ASSERT_TRUE(ssl_data_.ssl_info.cert.get());
     session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data_);
-    sequenced_data_.reset(
-        new SequencedSocketData(reads, reads_count, writes, writes_count));
+    sequenced_data_.reset(new SequencedSocketData(reads, writes));
     session_deps_.socket_factory->AddSocketDataProvider(sequenced_data_.get());
     session_deps_.net_log = net_log_.bound().net_log();
     http_session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
@@ -475,7 +474,7 @@ TEST_F(BidirectionalStreamTest, SimplePostRequest) {
       MockRead(ASYNC, ERR_IO_PENDING, 2),  // Force a pause.
       CreateMockRead(response_body_frame, 4), MockRead(ASYNC, 0, 5),
   };
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), SocketTag());
+  InitSession(reads, writes, SocketTag());
 
   std::unique_ptr<BidirectionalStreamRequestInfo> request_info(
       new BidirectionalStreamRequestInfo);
@@ -500,10 +499,8 @@ TEST_F(BidirectionalStreamTest, SimplePostRequest) {
   EXPECT_EQ(1, delegate->on_data_read_count());
   EXPECT_EQ(1, delegate->on_data_sent_count());
   EXPECT_EQ(kProtoHTTP2, delegate->GetProtocol());
-  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)),
-            delegate->GetTotalSentBytes());
-  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
-            delegate->GetTotalReceivedBytes());
+  EXPECT_EQ(CountWriteBytes(writes), delegate->GetTotalSentBytes());
+  EXPECT_EQ(CountReadBytes(reads), delegate->GetTotalReceivedBytes());
 }
 
 TEST_F(BidirectionalStreamTest, LoadTimingTwoRequests) {
@@ -525,7 +522,7 @@ TEST_F(BidirectionalStreamTest, LoadTimingTwoRequests) {
   MockRead reads[] = {CreateMockRead(resp, 1), CreateMockRead(resp_body, 3),
                       CreateMockRead(resp2, 4), CreateMockRead(resp_body2, 5),
                       MockRead(ASYNC, 0, 6)};
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), SocketTag());
+  InitSession(reads, writes, SocketTag());
 
   std::unique_ptr<BidirectionalStreamRequestInfo> request_info(
       new BidirectionalStreamRequestInfo);
@@ -590,7 +587,7 @@ TEST_F(BidirectionalStreamTest, ClientAuthRequestIgnored) {
   ssl_data1.cert_request_info = cert_request.get();
 
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data1);
-  StaticSocketDataProvider socket_data1(nullptr, 0, nullptr, 0);
+  StaticSocketDataProvider socket_data1;
   session_deps_.socket_factory->AddSocketDataProvider(&socket_data1);
 
   // Second attempt succeeds.
@@ -608,8 +605,7 @@ TEST_F(BidirectionalStreamTest, ClientAuthRequestIgnored) {
   SSLSocketDataProvider ssl_data2(ASYNC, OK);
   ssl_data2.next_proto = kProtoHTTP2;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data2);
-  SequencedSocketData socket_data2(reads, arraysize(reads), writes,
-                                   arraysize(writes));
+  SequencedSocketData socket_data2(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&socket_data2);
 
   http_session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
@@ -671,7 +667,7 @@ TEST_F(BidirectionalStreamTest, TestReadDataAfterClose) {
       MockRead(SYNCHRONOUS, 0, 7),
   };
 
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), SocketTag());
+  InitSession(reads, writes, SocketTag());
 
   std::unique_ptr<BidirectionalStreamRequestInfo> request_info(
       new BidirectionalStreamRequestInfo);
@@ -720,10 +716,8 @@ TEST_F(BidirectionalStreamTest, TestReadDataAfterClose) {
   EXPECT_EQ(1, delegate->on_data_read_count());
   EXPECT_EQ(0, delegate->on_data_sent_count());
   EXPECT_EQ(kProtoHTTP2, delegate->GetProtocol());
-  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)),
-            delegate->GetTotalSentBytes());
-  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
-            delegate->GetTotalReceivedBytes());
+  EXPECT_EQ(CountWriteBytes(writes), delegate->GetTotalSentBytes());
+  EXPECT_EQ(CountReadBytes(reads), delegate->GetTotalReceivedBytes());
 }
 
 // Tests that the NetLog contains correct entries.
@@ -757,7 +751,7 @@ TEST_F(BidirectionalStreamTest, TestNetLogContainEntries) {
       MockRead(ASYNC, 0, 8),
   };
 
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), SocketTag());
+  InitSession(reads, writes, SocketTag());
 
   std::unique_ptr<BidirectionalStreamRequestInfo> request_info(
       new BidirectionalStreamRequestInfo);
@@ -806,10 +800,8 @@ TEST_F(BidirectionalStreamTest, TestNetLogContainEntries) {
   EXPECT_EQ(1, delegate->on_data_sent_count());
   EXPECT_EQ(kProtoHTTP2, delegate->GetProtocol());
   EXPECT_EQ("bar", delegate->trailers().find("foo")->second);
-  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)),
-            delegate->GetTotalSentBytes());
-  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
-            delegate->GetTotalReceivedBytes());
+  EXPECT_EQ(CountWriteBytes(writes), delegate->GetTotalSentBytes());
+  EXPECT_EQ(CountReadBytes(reads), delegate->GetTotalReceivedBytes());
 
   // Destroy the delegate will destroy the stream, so we can get an end event
   // for BIDIRECTIONAL_STREAM_ALIVE.
@@ -900,7 +892,7 @@ TEST_F(BidirectionalStreamTest, TestInterleaveReadDataAndSendData) {
       MockRead(ASYNC, 0, 10),
   };
 
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), SocketTag());
+  InitSession(reads, writes, SocketTag());
 
   std::unique_ptr<BidirectionalStreamRequestInfo> request_info(
       new BidirectionalStreamRequestInfo);
@@ -965,10 +957,8 @@ TEST_F(BidirectionalStreamTest, TestInterleaveReadDataAndSendData) {
   EXPECT_EQ(2, delegate->on_data_read_count());
   EXPECT_EQ(3, delegate->on_data_sent_count());
   EXPECT_EQ(kProtoHTTP2, delegate->GetProtocol());
-  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)),
-            delegate->GetTotalSentBytes());
-  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
-            delegate->GetTotalReceivedBytes());
+  EXPECT_EQ(CountWriteBytes(writes), delegate->GetTotalSentBytes());
+  EXPECT_EQ(CountReadBytes(reads), delegate->GetTotalReceivedBytes());
 }
 
 TEST_F(BidirectionalStreamTest, TestCoalesceSmallDataBuffers) {
@@ -990,7 +980,7 @@ TEST_F(BidirectionalStreamTest, TestCoalesceSmallDataBuffers) {
       CreateMockRead(response_body_frame1, 4), MockRead(ASYNC, 0, 5),
   };
 
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), SocketTag());
+  InitSession(reads, writes, SocketTag());
 
   std::unique_ptr<BidirectionalStreamRequestInfo> request_info(
       new BidirectionalStreamRequestInfo);
@@ -1028,10 +1018,8 @@ TEST_F(BidirectionalStreamTest, TestCoalesceSmallDataBuffers) {
   EXPECT_EQ(1, delegate->on_data_read_count());
   EXPECT_EQ(1, delegate->on_data_sent_count());
   EXPECT_EQ(kProtoHTTP2, delegate->GetProtocol());
-  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)),
-            delegate->GetTotalSentBytes());
-  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
-            delegate->GetTotalReceivedBytes());
+  EXPECT_EQ(CountWriteBytes(writes), delegate->GetTotalSentBytes());
+  EXPECT_EQ(CountReadBytes(reads), delegate->GetTotalReceivedBytes());
 
   TestNetLogEntry::List entries;
   net_log_.GetEntries(&entries);
@@ -1092,7 +1080,7 @@ TEST_F(BidirectionalStreamTest, TestCompleteAsyncRead) {
       CreateMockRead(response_body_frame, 3), MockRead(SYNCHRONOUS, 0, 4),
   };
 
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), SocketTag());
+  InitSession(reads, writes, SocketTag());
 
   std::unique_ptr<BidirectionalStreamRequestInfo> request_info(
       new BidirectionalStreamRequestInfo);
@@ -1124,10 +1112,8 @@ TEST_F(BidirectionalStreamTest, TestCompleteAsyncRead) {
   EXPECT_EQ(0u, delegate->data_received().size());
   EXPECT_EQ(0, delegate->on_data_sent_count());
   EXPECT_EQ(kProtoHTTP2, delegate->GetProtocol());
-  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)),
-            delegate->GetTotalSentBytes());
-  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
-            delegate->GetTotalReceivedBytes());
+  EXPECT_EQ(CountWriteBytes(writes), delegate->GetTotalSentBytes());
+  EXPECT_EQ(CountReadBytes(reads), delegate->GetTotalReceivedBytes());
 }
 
 TEST_F(BidirectionalStreamTest, TestBuffering) {
@@ -1152,7 +1138,7 @@ TEST_F(BidirectionalStreamTest, TestBuffering) {
       MockRead(SYNCHRONOUS, 0, 6),
   };
 
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), SocketTag());
+  InitSession(reads, writes, SocketTag());
 
   std::unique_ptr<BidirectionalStreamRequestInfo> request_info(
       new BidirectionalStreamRequestInfo);
@@ -1198,10 +1184,8 @@ TEST_F(BidirectionalStreamTest, TestBuffering) {
   EXPECT_EQ("header-value", response_headers.find("header-name")->second);
   EXPECT_EQ(0, delegate->on_data_sent_count());
   EXPECT_EQ(kProtoHTTP2, delegate->GetProtocol());
-  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)),
-            delegate->GetTotalSentBytes());
-  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
-            delegate->GetTotalReceivedBytes());
+  EXPECT_EQ(CountWriteBytes(writes), delegate->GetTotalSentBytes());
+  EXPECT_EQ(CountReadBytes(reads), delegate->GetTotalReceivedBytes());
 }
 
 TEST_F(BidirectionalStreamTest, TestBufferingWithTrailers) {
@@ -1231,7 +1215,7 @@ TEST_F(BidirectionalStreamTest, TestBufferingWithTrailers) {
       MockRead(SYNCHRONOUS, 0, 7),
   };
 
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), SocketTag());
+  InitSession(reads, writes, SocketTag());
 
   scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
   MockTimer* timer = new MockTimer();
@@ -1271,10 +1255,8 @@ TEST_F(BidirectionalStreamTest, TestBufferingWithTrailers) {
   EXPECT_EQ("bar", delegate->trailers().find("foo")->second);
   EXPECT_EQ(0, delegate->on_data_sent_count());
   EXPECT_EQ(kProtoHTTP2, delegate->GetProtocol());
-  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)),
-            delegate->GetTotalSentBytes());
-  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
-            delegate->GetTotalReceivedBytes());
+  EXPECT_EQ(CountWriteBytes(writes), delegate->GetTotalSentBytes());
+  EXPECT_EQ(CountReadBytes(reads), delegate->GetTotalReceivedBytes());
 }
 
 TEST_F(BidirectionalStreamTest, DeleteStreamAfterSendData) {
@@ -1298,7 +1280,7 @@ TEST_F(BidirectionalStreamTest, DeleteStreamAfterSendData) {
       MockRead(ASYNC, 0, 6),
   };
 
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), SocketTag());
+  InitSession(reads, writes, SocketTag());
 
   std::unique_ptr<BidirectionalStreamRequestInfo> request_info(
       new BidirectionalStreamRequestInfo);
@@ -1333,10 +1315,10 @@ TEST_F(BidirectionalStreamTest, DeleteStreamAfterSendData) {
   // OnDataSent may or may not have been invoked.
   EXPECT_EQ(kProtoHTTP2, delegate->GetProtocol());
   // Bytes sent excludes the RST frame.
-  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes) - 1),
-            delegate->GetTotalSentBytes());
-  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
-            delegate->GetTotalReceivedBytes());
+  EXPECT_EQ(
+      CountWriteBytes(base::make_span(writes).first(base::size(writes) - 1)),
+      delegate->GetTotalSentBytes());
+  EXPECT_EQ(CountReadBytes(reads), delegate->GetTotalReceivedBytes());
 }
 
 TEST_F(BidirectionalStreamTest, DeleteStreamDuringReadData) {
@@ -1359,7 +1341,7 @@ TEST_F(BidirectionalStreamTest, DeleteStreamDuringReadData) {
       CreateMockRead(response_body_frame, 3), MockRead(ASYNC, 0, 5),
   };
 
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), SocketTag());
+  InitSession(reads, writes, SocketTag());
 
   std::unique_ptr<BidirectionalStreamRequestInfo> request_info(
       new BidirectionalStreamRequestInfo);
@@ -1391,11 +1373,12 @@ TEST_F(BidirectionalStreamTest, DeleteStreamDuringReadData) {
   EXPECT_EQ(0, delegate->on_data_sent_count());
   EXPECT_EQ(kProtoHTTP2, delegate->GetProtocol());
   // Bytes sent excludes the RST frame.
-  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes) - 1),
-            delegate->GetTotalSentBytes());
+  EXPECT_EQ(
+      CountWriteBytes(base::make_span(writes).first(base::size(writes) - 1)),
+      delegate->GetTotalSentBytes());
   // Response body frame isn't read becase stream is deleted once read returns
   // ERR_IO_PENDING.
-  EXPECT_EQ(CountReadBytes(reads, arraysize(reads) - 2),
+  EXPECT_EQ(CountReadBytes(base::make_span(reads).first(base::size(reads) - 2)),
             delegate->GetTotalReceivedBytes());
 }
 
@@ -1419,7 +1402,7 @@ TEST_F(BidirectionalStreamTest, PropagateProtocolError) {
       CreateMockRead(resp, 1), MockRead(ASYNC, 0, 3),
   };
 
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), SocketTag());
+  InitSession(reads, writes, SocketTag());
 
   std::unique_ptr<BidirectionalStreamRequestInfo> request_info(
       new BidirectionalStreamRequestInfo);
@@ -1444,7 +1427,8 @@ TEST_F(BidirectionalStreamTest, PropagateProtocolError) {
   EXPECT_EQ(kProtoHTTP2, delegate->GetProtocol());
   // BidirectionalStreamSpdyStreamJob does not count the bytes sent for |rst|
   // because it is sent after SpdyStream::Delegate::OnClose is called.
-  EXPECT_EQ(CountWriteBytes(writes, 1), delegate->GetTotalSentBytes());
+  EXPECT_EQ(CountWriteBytes(base::make_span(writes, 1)),
+            delegate->GetTotalSentBytes());
   EXPECT_EQ(0, delegate->GetTotalReceivedBytes());
 
   TestNetLogEntry::List entries;
@@ -1485,7 +1469,7 @@ TEST_F(BidirectionalStreamTest, DeleteStreamDuringOnHeadersReceived) {
       CreateMockRead(resp, 1), MockRead(ASYNC, 0, 3),
   };
 
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), SocketTag());
+  InitSession(reads, writes, SocketTag());
 
   std::unique_ptr<BidirectionalStreamRequestInfo> request_info(
       new BidirectionalStreamRequestInfo);
@@ -1511,10 +1495,10 @@ TEST_F(BidirectionalStreamTest, DeleteStreamDuringOnHeadersReceived) {
 
   EXPECT_EQ(kProtoHTTP2, delegate->GetProtocol());
   // Bytes sent excludes the RST frame.
-  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes) - 1),
-            delegate->GetTotalSentBytes());
-  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
-            delegate->GetTotalReceivedBytes());
+  EXPECT_EQ(
+      CountWriteBytes(base::make_span(writes).first(base::size(writes) - 1)),
+      delegate->GetTotalSentBytes());
+  EXPECT_EQ(CountReadBytes(reads), delegate->GetTotalReceivedBytes());
 }
 
 TEST_F(BidirectionalStreamTest, DeleteStreamDuringOnDataRead) {
@@ -1538,7 +1522,7 @@ TEST_F(BidirectionalStreamTest, DeleteStreamDuringOnDataRead) {
       MockRead(ASYNC, 0, 4),
   };
 
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), SocketTag());
+  InitSession(reads, writes, SocketTag());
 
   std::unique_ptr<BidirectionalStreamRequestInfo> request_info(
       new BidirectionalStreamRequestInfo);
@@ -1564,10 +1548,10 @@ TEST_F(BidirectionalStreamTest, DeleteStreamDuringOnDataRead) {
 
   EXPECT_EQ(kProtoHTTP2, delegate->GetProtocol());
   // Bytes sent excludes the RST frame.
-  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes) - 1),
-            delegate->GetTotalSentBytes());
-  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
-            delegate->GetTotalReceivedBytes());
+  EXPECT_EQ(
+      CountWriteBytes(base::make_span(writes).first(base::size(writes) - 1)),
+      delegate->GetTotalSentBytes());
+  EXPECT_EQ(CountReadBytes(reads), delegate->GetTotalReceivedBytes());
 }
 
 TEST_F(BidirectionalStreamTest, DeleteStreamDuringOnTrailersReceived) {
@@ -1596,7 +1580,7 @@ TEST_F(BidirectionalStreamTest, DeleteStreamDuringOnTrailersReceived) {
       CreateMockRead(response_trailers, 3), MockRead(ASYNC, 0, 5),
   };
 
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), SocketTag());
+  InitSession(reads, writes, SocketTag());
 
   std::unique_ptr<BidirectionalStreamRequestInfo> request_info(
       new BidirectionalStreamRequestInfo);
@@ -1622,10 +1606,10 @@ TEST_F(BidirectionalStreamTest, DeleteStreamDuringOnTrailersReceived) {
   // deleted.
   EXPECT_EQ(kProtoHTTP2, delegate->GetProtocol());
   // Bytes sent excludes the RST frame.
-  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes) - 1),
-            delegate->GetTotalSentBytes());
-  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
-            delegate->GetTotalReceivedBytes());
+  EXPECT_EQ(
+      CountWriteBytes(base::make_span(writes).first(base::size(writes) - 1)),
+      delegate->GetTotalSentBytes());
+  EXPECT_EQ(CountReadBytes(reads), delegate->GetTotalReceivedBytes());
 }
 
 TEST_F(BidirectionalStreamTest, DeleteStreamDuringOnFailed) {
@@ -1646,7 +1630,7 @@ TEST_F(BidirectionalStreamTest, DeleteStreamDuringOnFailed) {
       CreateMockRead(resp, 1), MockRead(ASYNC, 0, 3),
   };
 
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), SocketTag());
+  InitSession(reads, writes, SocketTag());
 
   std::unique_ptr<BidirectionalStreamRequestInfo> request_info(
       new BidirectionalStreamRequestInfo);
@@ -1671,8 +1655,9 @@ TEST_F(BidirectionalStreamTest, DeleteStreamDuringOnFailed) {
 
   EXPECT_EQ(kProtoHTTP2, delegate->GetProtocol());
   // Bytes sent excludes the RST frame.
-  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes) - 1),
-            delegate->GetTotalSentBytes());
+  EXPECT_EQ(
+      CountWriteBytes(base::make_span(writes).first(base::size(writes) - 1)),
+      delegate->GetTotalSentBytes());
   EXPECT_EQ(0, delegate->GetTotalReceivedBytes());
 }
 
@@ -1696,7 +1681,7 @@ TEST_F(BidirectionalStreamTest, TestHonorAlternativeServiceHeader) {
   // Enable QUIC so that the alternative service header can be added to
   // HttpServerProperties.
   session_deps_.enable_quic = true;
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), SocketTag());
+  InitSession(reads, writes, SocketTag());
 
   std::unique_ptr<BidirectionalStreamRequestInfo> request_info(
       new BidirectionalStreamRequestInfo);
@@ -1718,10 +1703,8 @@ TEST_F(BidirectionalStreamTest, TestHonorAlternativeServiceHeader) {
   EXPECT_EQ(0, delegate->on_data_sent_count());
   EXPECT_EQ(kProtoHTTP2, delegate->GetProtocol());
   EXPECT_EQ(kUploadData, delegate->data_received());
-  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)),
-            delegate->GetTotalSentBytes());
-  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
-            delegate->GetTotalReceivedBytes());
+  EXPECT_EQ(CountWriteBytes(writes), delegate->GetTotalSentBytes());
+  EXPECT_EQ(CountReadBytes(reads), delegate->GetTotalReceivedBytes());
 
   AlternativeServiceInfoVector alternative_service_info_vector =
       http_session_->http_server_properties()->GetAlternativeServiceInfos(
@@ -1755,7 +1738,7 @@ TEST_F(BidirectionalStreamTest, Tagging) {
 #else
   SocketTag tag;
 #endif
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), tag);
+  InitSession(reads, writes, tag);
 
   std::unique_ptr<BidirectionalStreamRequestInfo> request_info(
       new BidirectionalStreamRequestInfo);

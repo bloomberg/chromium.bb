@@ -348,8 +348,8 @@ class HttpNetworkTransactionTest : public PlatformTest {
                                         const MockRead* read_failure,
                                         bool use_spdy);
 
-  SimpleGetHelperResult SimpleGetHelperForData(StaticSocketDataProvider* data[],
-                                               size_t data_count) {
+  SimpleGetHelperResult SimpleGetHelperForData(
+      base::span<StaticSocketDataProvider*> providers) {
     SimpleGetHelperResult out;
 
     HttpRequestInfo request;
@@ -363,8 +363,8 @@ class HttpNetworkTransactionTest : public PlatformTest {
     std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
     HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
 
-    for (size_t i = 0; i < data_count; ++i) {
-      session_deps_.socket_factory->AddSocketDataProvider(data[i]);
+    for (auto* provider : providers) {
+      session_deps_.socket_factory->AddSocketDataProvider(provider);
     }
 
     TestCompletionCallback callback;
@@ -439,21 +439,18 @@ class HttpNetworkTransactionTest : public PlatformTest {
     return out;
   }
 
-  SimpleGetHelperResult SimpleGetHelper(MockRead data_reads[],
-                                        size_t reads_count) {
+  SimpleGetHelperResult SimpleGetHelper(base::span<const MockRead> data_reads) {
     MockWrite data_writes[] = {
         MockWrite("GET / HTTP/1.1\r\n"
                   "Host: www.example.org\r\n"
                   "Connection: keep-alive\r\n\r\n"),
     };
 
-    StaticSocketDataProvider reads(data_reads, reads_count, data_writes,
-                                   arraysize(data_writes));
+    StaticSocketDataProvider reads(data_reads, data_writes);
     StaticSocketDataProvider* data[] = {&reads};
-    SimpleGetHelperResult out = SimpleGetHelperForData(data, 1);
+    SimpleGetHelperResult out = SimpleGetHelperForData(data);
 
-    EXPECT_EQ(CountWriteBytes(data_writes, arraysize(data_writes)),
-              out.total_sent_bytes);
+    EXPECT_EQ(CountWriteBytes(data_writes), out.total_sent_bytes);
     return out;
   }
 
@@ -723,12 +720,11 @@ TEST_F(HttpNetworkTransactionTest, SimpleGET) {
     MockRead("hello world"),
     MockRead(SYNCHRONOUS, OK),
   };
-  SimpleGetHelperResult out = SimpleGetHelper(data_reads,
-                                              arraysize(data_reads));
+  SimpleGetHelperResult out = SimpleGetHelper(data_reads);
   EXPECT_THAT(out.rv, IsOk());
   EXPECT_EQ("HTTP/1.0 200 OK", out.status_line);
   EXPECT_EQ("hello world", out.response_data);
-  int64_t reads_size = CountReadBytes(data_reads, arraysize(data_reads));
+  int64_t reads_size = CountReadBytes(data_reads);
   EXPECT_EQ(reads_size, out.total_received_bytes);
   EXPECT_EQ(0u, out.connection_attempts.size());
 
@@ -741,12 +737,11 @@ TEST_F(HttpNetworkTransactionTest, SimpleGETNoHeaders) {
     MockRead("hello world"),
     MockRead(SYNCHRONOUS, OK),
   };
-  SimpleGetHelperResult out = SimpleGetHelper(data_reads,
-                                              arraysize(data_reads));
+  SimpleGetHelperResult out = SimpleGetHelper(data_reads);
   EXPECT_THAT(out.rv, IsOk());
   EXPECT_EQ("HTTP/0.9 200 OK", out.status_line);
   EXPECT_EQ("hello world", out.response_data);
-  int64_t reads_size = CountReadBytes(data_reads, arraysize(data_reads));
+  int64_t reads_size = CountReadBytes(data_reads);
   EXPECT_EQ(reads_size, out.total_received_bytes);
 }
 
@@ -756,7 +751,7 @@ TEST_F(HttpNetworkTransactionTest, SimpleGETNoHeadersWeirdPort) {
       MockRead("hello world"), MockRead(SYNCHRONOUS, OK),
   };
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), nullptr, 0);
+  StaticSocketDataProvider data(data_reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
@@ -785,7 +780,7 @@ TEST_F(HttpNetworkTransactionTest, SimpleGETNoReadDestroyRequestInfo) {
       MockRead("HTTP/1.0 200 OK\r\n"), MockRead("Connection: keep-alive\r\n"),
       MockRead("Content-Length: 100\r\n\r\n"), MockRead(SYNCHRONOUS, 0),
   };
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), NULL, 0);
+  StaticSocketDataProvider data(data_reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -813,7 +808,7 @@ TEST_F(HttpNetworkTransactionTest, SimpleGETNoHeadersWeirdPortAllowed) {
       MockRead("hello world"), MockRead(SYNCHRONOUS, OK),
   };
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), nullptr, 0);
+  StaticSocketDataProvider data(data_reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
   session_deps_.http_09_on_non_default_ports_enabled = true;
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
@@ -845,12 +840,11 @@ TEST_F(HttpNetworkTransactionTest, StatusLineJunk3Bytes) {
     MockRead("xxxHTTP/1.0 404 Not Found\nServer: blah\n\nDATA"),
     MockRead(SYNCHRONOUS, OK),
   };
-  SimpleGetHelperResult out = SimpleGetHelper(data_reads,
-                                              arraysize(data_reads));
+  SimpleGetHelperResult out = SimpleGetHelper(data_reads);
   EXPECT_THAT(out.rv, IsOk());
   EXPECT_EQ("HTTP/1.0 404 Not Found", out.status_line);
   EXPECT_EQ("DATA", out.response_data);
-  int64_t reads_size = CountReadBytes(data_reads, arraysize(data_reads));
+  int64_t reads_size = CountReadBytes(data_reads);
   EXPECT_EQ(reads_size, out.total_received_bytes);
 }
 
@@ -860,12 +854,11 @@ TEST_F(HttpNetworkTransactionTest, StatusLineJunk4Bytes) {
     MockRead("\n\nQJHTTP/1.0 404 Not Found\nServer: blah\n\nDATA"),
     MockRead(SYNCHRONOUS, OK),
   };
-  SimpleGetHelperResult out = SimpleGetHelper(data_reads,
-                                              arraysize(data_reads));
+  SimpleGetHelperResult out = SimpleGetHelper(data_reads);
   EXPECT_THAT(out.rv, IsOk());
   EXPECT_EQ("HTTP/1.0 404 Not Found", out.status_line);
   EXPECT_EQ("DATA", out.response_data);
-  int64_t reads_size = CountReadBytes(data_reads, arraysize(data_reads));
+  int64_t reads_size = CountReadBytes(data_reads);
   EXPECT_EQ(reads_size, out.total_received_bytes);
 }
 
@@ -875,12 +868,11 @@ TEST_F(HttpNetworkTransactionTest, StatusLineJunk5Bytes) {
     MockRead("xxxxxHTTP/1.1 404 Not Found\nServer: blah"),
     MockRead(SYNCHRONOUS, OK),
   };
-  SimpleGetHelperResult out = SimpleGetHelper(data_reads,
-                                              arraysize(data_reads));
+  SimpleGetHelperResult out = SimpleGetHelper(data_reads);
   EXPECT_THAT(out.rv, IsOk());
   EXPECT_EQ("HTTP/0.9 200 OK", out.status_line);
   EXPECT_EQ("xxxxxHTTP/1.1 404 Not Found\nServer: blah", out.response_data);
-  int64_t reads_size = CountReadBytes(data_reads, arraysize(data_reads));
+  int64_t reads_size = CountReadBytes(data_reads);
   EXPECT_EQ(reads_size, out.total_received_bytes);
 }
 
@@ -894,12 +886,11 @@ TEST_F(HttpNetworkTransactionTest, StatusLineJunk4Bytes_Slow) {
     MockRead("HTTP/1.0 404 Not Found\nServer: blah\n\nDATA"),
     MockRead(SYNCHRONOUS, OK),
   };
-  SimpleGetHelperResult out = SimpleGetHelper(data_reads,
-                                              arraysize(data_reads));
+  SimpleGetHelperResult out = SimpleGetHelper(data_reads);
   EXPECT_THAT(out.rv, IsOk());
   EXPECT_EQ("HTTP/1.0 404 Not Found", out.status_line);
   EXPECT_EQ("DATA", out.response_data);
-  int64_t reads_size = CountReadBytes(data_reads, arraysize(data_reads));
+  int64_t reads_size = CountReadBytes(data_reads);
   EXPECT_EQ(reads_size, out.total_received_bytes);
 }
 
@@ -909,12 +900,11 @@ TEST_F(HttpNetworkTransactionTest, StatusLinePartial) {
     MockRead("HTT"),
     MockRead(SYNCHRONOUS, OK),
   };
-  SimpleGetHelperResult out = SimpleGetHelper(data_reads,
-                                              arraysize(data_reads));
+  SimpleGetHelperResult out = SimpleGetHelper(data_reads);
   EXPECT_THAT(out.rv, IsOk());
   EXPECT_EQ("HTTP/0.9 200 OK", out.status_line);
   EXPECT_EQ("HTT", out.response_data);
-  int64_t reads_size = CountReadBytes(data_reads, arraysize(data_reads));
+  int64_t reads_size = CountReadBytes(data_reads);
   EXPECT_EQ(reads_size, out.total_received_bytes);
 }
 
@@ -928,12 +918,11 @@ TEST_F(HttpNetworkTransactionTest, StopsReading204) {
     MockRead(junk),  // Should not be read!!
     MockRead(SYNCHRONOUS, OK),
   };
-  SimpleGetHelperResult out = SimpleGetHelper(data_reads,
-                                              arraysize(data_reads));
+  SimpleGetHelperResult out = SimpleGetHelper(data_reads);
   EXPECT_THAT(out.rv, IsOk());
   EXPECT_EQ("HTTP/1.1 204 No Content", out.status_line);
   EXPECT_EQ("", out.response_data);
-  int64_t reads_size = CountReadBytes(data_reads, arraysize(data_reads));
+  int64_t reads_size = CountReadBytes(data_reads);
   int64_t response_size = reads_size - strlen(junk);
   EXPECT_EQ(response_size, out.total_received_bytes);
 }
@@ -952,12 +941,11 @@ TEST_F(HttpNetworkTransactionTest, ChunkedEncoding) {
     MockRead(last_read.data()),
     MockRead(SYNCHRONOUS, OK),
   };
-  SimpleGetHelperResult out = SimpleGetHelper(data_reads,
-                                              arraysize(data_reads));
+  SimpleGetHelperResult out = SimpleGetHelper(data_reads);
   EXPECT_THAT(out.rv, IsOk());
   EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
   EXPECT_EQ("Hello world", out.response_data);
-  int64_t reads_size = CountReadBytes(data_reads, arraysize(data_reads));
+  int64_t reads_size = CountReadBytes(data_reads);
   int64_t response_size = reads_size - extra_data.size();
   EXPECT_EQ(response_size, out.total_received_bytes);
 }
@@ -971,8 +959,7 @@ TEST_F(HttpNetworkTransactionTest,
     MockRead("Content-Length: 10\r\n"),
     MockRead("Content-Length: 5\r\n\r\n"),
   };
-  SimpleGetHelperResult out = SimpleGetHelper(data_reads,
-                                              arraysize(data_reads));
+  SimpleGetHelperResult out = SimpleGetHelper(data_reads);
   EXPECT_THAT(out.rv, IsError(ERR_RESPONSE_HEADERS_MULTIPLE_CONTENT_LENGTH));
 }
 
@@ -984,8 +971,7 @@ TEST_F(HttpNetworkTransactionTest,
     MockRead("Content-Length: 5\r\n\r\n"),
     MockRead("Hello"),
   };
-  SimpleGetHelperResult out = SimpleGetHelper(data_reads,
-                                              arraysize(data_reads));
+  SimpleGetHelperResult out = SimpleGetHelper(data_reads);
   EXPECT_THAT(out.rv, IsOk());
   EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
   EXPECT_EQ("Hello", out.response_data);
@@ -1002,8 +988,7 @@ TEST_F(HttpNetworkTransactionTest,
       MockRead("Content-Length: 5\r\n\r\n"),
       MockRead("Hello"),
     };
-    SimpleGetHelperResult out = SimpleGetHelper(data_reads,
-                                                arraysize(data_reads));
+    SimpleGetHelperResult out = SimpleGetHelper(data_reads);
     EXPECT_THAT(out.rv, IsOk());
     EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
     EXPECT_EQ("Hello", out.response_data);
@@ -1017,8 +1002,7 @@ TEST_F(HttpNetworkTransactionTest,
       MockRead("Content-Length: 5\r\n\r\n"),
       MockRead("Hello"),
     };
-    SimpleGetHelperResult out = SimpleGetHelper(data_reads,
-                                                arraysize(data_reads));
+    SimpleGetHelperResult out = SimpleGetHelper(data_reads);
     EXPECT_THAT(out.rv, IsOk());
     EXPECT_EQ("HTTP/1.0 200 OK", out.status_line);
     EXPECT_EQ("Hello", out.response_data);
@@ -1031,8 +1015,7 @@ TEST_F(HttpNetworkTransactionTest,
       MockRead("Content-Length: 10\r\n"),
       MockRead("Content-Length: 5\r\n\r\n"),
     };
-    SimpleGetHelperResult out = SimpleGetHelper(data_reads,
-                                                arraysize(data_reads));
+    SimpleGetHelperResult out = SimpleGetHelper(data_reads);
     EXPECT_THAT(out.rv, IsError(ERR_RESPONSE_HEADERS_MULTIPLE_CONTENT_LENGTH));
   }
 }
@@ -1051,8 +1034,7 @@ TEST_F(HttpNetworkTransactionTest,
     MockRead("0\r\n\r\nHTTP/1.1 200 OK\r\n"),
     MockRead(SYNCHRONOUS, OK),
   };
-  SimpleGetHelperResult out = SimpleGetHelper(data_reads,
-                                              arraysize(data_reads));
+  SimpleGetHelperResult out = SimpleGetHelper(data_reads);
   EXPECT_THAT(out.rv, IsOk());
   EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
   EXPECT_EQ("Hello world", out.response_data);
@@ -1068,8 +1050,7 @@ TEST_F(HttpNetworkTransactionTest, SingleContentDispositionHeader) {
     MockRead("Content-Length: 5\r\n\r\n"),
     MockRead("Hello"),
   };
-  SimpleGetHelperResult out = SimpleGetHelper(data_reads,
-                                              arraysize(data_reads));
+  SimpleGetHelperResult out = SimpleGetHelper(data_reads);
   EXPECT_THAT(out.rv, IsOk());
   EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
   EXPECT_EQ("Hello", out.response_data);
@@ -1084,8 +1065,7 @@ TEST_F(HttpNetworkTransactionTest, TwoIdenticalContentDispositionHeaders) {
     MockRead("Content-Length: 5\r\n\r\n"),
     MockRead("Hello"),
   };
-  SimpleGetHelperResult out = SimpleGetHelper(data_reads,
-                                              arraysize(data_reads));
+  SimpleGetHelperResult out = SimpleGetHelper(data_reads);
   EXPECT_THAT(out.rv, IsOk());
   EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
   EXPECT_EQ("Hello", out.response_data);
@@ -1100,8 +1080,7 @@ TEST_F(HttpNetworkTransactionTest, TwoDistinctContentDispositionHeaders) {
     MockRead("Content-Length: 5\r\n\r\n"),
     MockRead("Hello"),
   };
-  SimpleGetHelperResult out = SimpleGetHelper(data_reads,
-                                              arraysize(data_reads));
+  SimpleGetHelperResult out = SimpleGetHelper(data_reads);
   EXPECT_THAT(out.rv,
               IsError(ERR_RESPONSE_HEADERS_MULTIPLE_CONTENT_DISPOSITION));
 }
@@ -1126,7 +1105,7 @@ TEST_F(HttpNetworkTransactionTest, TwoIdenticalLocationHeaders) {
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), NULL, 0);
+  StaticSocketDataProvider data(data_reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -1155,8 +1134,7 @@ TEST_F(HttpNetworkTransactionTest, TwoDistinctLocationHeaders) {
     MockRead("Content-Length: 0\r\n\r\n"),
     MockRead(SYNCHRONOUS, OK),
   };
-  SimpleGetHelperResult out = SimpleGetHelper(data_reads,
-                                              arraysize(data_reads));
+  SimpleGetHelperResult out = SimpleGetHelper(data_reads);
   EXPECT_THAT(out.rv, IsError(ERR_RESPONSE_HEADERS_MULTIPLE_LOCATION));
 }
 
@@ -1189,8 +1167,7 @@ TEST_F(HttpNetworkTransactionTest, Head) {
       MockRead(SYNCHRONOUS, ERR_UNEXPECTED),
   };
 
-  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                 data_writes1, arraysize(data_writes1));
+  StaticSocketDataProvider data1(data_reads1, data_writes1);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
 
   TestCompletionCallback callback1;
@@ -1237,7 +1214,7 @@ TEST_F(HttpNetworkTransactionTest, ReuseConnection) {
     MockRead("world"),
     MockRead(SYNCHRONOUS, OK),
   };
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), NULL, 0);
+  StaticSocketDataProvider data(data_reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   const char* const kExpectedResponseData[] = {
@@ -1302,7 +1279,7 @@ TEST_F(HttpNetworkTransactionTest, Ignores100) {
     MockRead("hello world"),
     MockRead(SYNCHRONOUS, OK),
   };
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), NULL, 0);
+  StaticSocketDataProvider data(data_reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -1344,7 +1321,7 @@ TEST_F(HttpNetworkTransactionTest, Ignores1xx) {
     MockRead("hello world"),
     MockRead(SYNCHRONOUS, OK),
   };
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), NULL, 0);
+  StaticSocketDataProvider data(data_reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -1381,7 +1358,7 @@ TEST_F(HttpNetworkTransactionTest, Incomplete100ThenEOF) {
     MockRead(SYNCHRONOUS, "HTTP/1.0 100 Continue\r\n"),
     MockRead(ASYNC, 0),
   };
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), NULL, 0);
+  StaticSocketDataProvider data(data_reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -1411,7 +1388,7 @@ TEST_F(HttpNetworkTransactionTest, EmptyResponse) {
   MockRead data_reads[] = {
     MockRead(ASYNC, 0),
   };
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), NULL, 0);
+  StaticSocketDataProvider data(data_reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -1461,8 +1438,7 @@ void HttpNetworkTransactionTest::KeepAliveConnectionResendRequestTest(
     data1_reads[2] = *read_failure;
   }
 
-  StaticSocketDataProvider data1(data1_reads, arraysize(data1_reads),
-                                 data1_writes, arraysize(data1_writes));
+  StaticSocketDataProvider data1(data1_reads, data1_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
 
   MockRead data2_reads[] = {
@@ -1470,7 +1446,7 @@ void HttpNetworkTransactionTest::KeepAliveConnectionResendRequestTest(
     MockRead("world"),
     MockRead(ASYNC, OK),
   };
-  StaticSocketDataProvider data2(data2_reads, arraysize(data2_reads), NULL, 0);
+  StaticSocketDataProvider data2(data2_reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
 
   const char* const kExpectedResponseData[] = {
@@ -1567,8 +1543,7 @@ void HttpNetworkTransactionTest::PreconnectErrorResendRequestTest(
     data1_reads.push_back(*read_failure);
   }
 
-  StaticSocketDataProvider data1(&data1_reads[0], data1_reads.size(),
-                                 &data1_writes[0], data1_writes.size());
+  StaticSocketDataProvider data1(data1_reads, data1_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
 
   std::vector<MockRead> data2_reads;
@@ -1589,8 +1564,7 @@ void HttpNetworkTransactionTest::PreconnectErrorResendRequestTest(
     data2_reads.push_back(MockRead(ASYNC, kHttpData, strlen(kHttpData), 2));
     data2_reads.push_back(MockRead(ASYNC, OK, 3));
   }
-  SequencedSocketData data2(&data2_reads[0], data2_reads.size(),
-                            &data2_writes[0], data2_writes.size());
+  SequencedSocketData data2(data2_reads, data2_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
 
   // Preconnect a socket.
@@ -1649,13 +1623,13 @@ TEST_F(HttpNetworkTransactionTest, FiniteRetriesOnIOError) {
   SpdySerializedFrame spdy_request(spdy_util_.ConstructSpdyGet(
       request.url.spec().c_str(), 1, DEFAULT_PRIORITY));
   SpdySerializedFrame spdy_response_go_away(spdy_util_.ConstructSpdyGoAway(0));
-  MockRead data_read1 = CreateMockRead(spdy_response_go_away);
-  MockWrite data_write = CreateMockWrite(spdy_request, 0);
+  MockRead data_read1[] = {CreateMockRead(spdy_response_go_away)};
+  MockWrite data_write[] = {CreateMockWrite(spdy_request, 0)};
 
   // Three go away responses.
-  StaticSocketDataProvider data1(&data_read1, 1, &data_write, 1);
-  StaticSocketDataProvider data2(&data_read1, 1, &data_write, 1);
-  StaticSocketDataProvider data3(&data_read1, 1, &data_write, 1);
+  StaticSocketDataProvider data1(data_read1, data_write);
+  StaticSocketDataProvider data2(data_read1, data_write);
+  StaticSocketDataProvider data3(data_read1, data_write);
 
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
   AddSSLSocketData();
@@ -1688,8 +1662,8 @@ TEST_F(HttpNetworkTransactionTest, RetryTwiceOnIOError) {
   SpdySerializedFrame spdy_request(spdy_util_.ConstructSpdyGet(
       request.url.spec().c_str(), 1, DEFAULT_PRIORITY));
   SpdySerializedFrame spdy_response_go_away(spdy_util_.ConstructSpdyGoAway(0));
-  MockRead data_read1 = CreateMockRead(spdy_response_go_away);
-  MockWrite data_write = CreateMockWrite(spdy_request, 0);
+  MockRead data_read1[] = {CreateMockRead(spdy_response_go_away)};
+  MockWrite data_write[] = {CreateMockWrite(spdy_request, 0)};
 
   // Construct a non error HTTP2 response.
   SpdySerializedFrame spdy_response_no_error(
@@ -1699,10 +1673,10 @@ TEST_F(HttpNetworkTransactionTest, RetryTwiceOnIOError) {
                            CreateMockRead(spdy_data, 2)};
 
   // Two error responses.
-  StaticSocketDataProvider data1(&data_read1, 1, &data_write, 1);
-  StaticSocketDataProvider data2(&data_read1, 1, &data_write, 1);
+  StaticSocketDataProvider data1(data_read1, data_write);
+  StaticSocketDataProvider data2(data_read1, data_write);
   // Followed by a success response.
-  SequencedSocketData data3(data_read2, 2, &data_write, 1);
+  SequencedSocketData data3(data_read2, data_write);
 
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
   AddSSLSocketData();
@@ -1816,7 +1790,7 @@ TEST_F(HttpNetworkTransactionTest, NonKeepAliveConnectionReset) {
     MockRead("hello world"),
     MockRead(SYNCHRONOUS, OK),
   };
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), NULL, 0);
+  StaticSocketDataProvider data(data_reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -1848,8 +1822,7 @@ TEST_F(HttpNetworkTransactionTest, NonKeepAliveConnectionEOF) {
     MockRead("hello world"),
     MockRead(SYNCHRONOUS, OK),
   };
-  SimpleGetHelperResult out = SimpleGetHelper(data_reads,
-                                              arraysize(data_reads));
+  SimpleGetHelperResult out = SimpleGetHelper(data_reads);
   EXPECT_THAT(out.rv, IsError(ERR_EMPTY_RESPONSE));
 }
 
@@ -1875,7 +1848,7 @@ TEST_F(HttpNetworkTransactionTest, KeepAliveEarlyClose) {
     MockRead("hello"),
     MockRead(SYNCHRONOUS, 0),
   };
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), NULL, 0);
+  StaticSocketDataProvider data(data_reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -1916,7 +1889,7 @@ TEST_F(HttpNetworkTransactionTest, KeepAliveEarlyClose2) {
     MockRead("Content-Length: 100\r\n\r\n"),
     MockRead(SYNCHRONOUS, 0),
   };
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), NULL, 0);
+  StaticSocketDataProvider data(data_reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -2004,8 +1977,7 @@ TEST_F(HttpNetworkTransactionTest, KeepAliveAfterUnreadBody) {
       MockRead(ASYNC, 21, "HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\n"),
       MockRead(ASYNC, 22, "hello"),
   };
-  SequencedSocketData data(data_reads, arraysize(data_reads), data_writes,
-                           arraysize(data_writes));
+  SequencedSocketData data(data_reads, data_writes);
   data.set_busy_before_sync_reads(true);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
@@ -2104,11 +2076,9 @@ TEST_F(HttpNetworkTransactionTest, KeepAliveWithUnusedData1) {
                "Content-Length: 3\r\n\r\n"
                "foo"),
   };
-  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                 data_writes1, arraysize(data_writes1));
+  StaticSocketDataProvider data1(data_reads1, data_writes1);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
-  StaticSocketDataProvider data2(data_reads2, arraysize(data_reads2),
-                                 data_writes2, arraysize(data_writes2));
+  StaticSocketDataProvider data2(data_reads2, data_writes2);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
 
   TestCompletionCallback callback;
@@ -2184,11 +2154,9 @@ TEST_F(HttpNetworkTransactionTest, KeepAliveWithUnusedData2) {
                "Content-Length: 3\r\n\r\n"
                "foo"),
   };
-  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                 data_writes1, arraysize(data_writes1));
+  StaticSocketDataProvider data1(data_reads1, data_writes1);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
-  StaticSocketDataProvider data2(data_reads2, arraysize(data_reads2),
-                                 data_writes2, arraysize(data_writes2));
+  StaticSocketDataProvider data2(data_reads2, data_writes2);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
 
   TestCompletionCallback callback;
@@ -2264,11 +2232,9 @@ TEST_F(HttpNetworkTransactionTest, KeepAliveWithUnusedData3) {
                "Content-Length: 3\r\n\r\n"
                "foo"),
   };
-  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                 data_writes1, arraysize(data_writes1));
+  StaticSocketDataProvider data1(data_reads1, data_writes1);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
-  StaticSocketDataProvider data2(data_reads2, arraysize(data_reads2),
-                                 data_writes2, arraysize(data_writes2));
+  StaticSocketDataProvider data2(data_reads2, data_writes2);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
 
   TestCompletionCallback callback;
@@ -2336,8 +2302,7 @@ TEST_F(HttpNetworkTransactionTest, KeepAliveWithUnusedData4) {
       MockRead("16\r\nThis server is borked.\r\n"),
       MockRead("0\r\n\r\nBonus data!"),
   };
-  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                 data_writes1, arraysize(data_writes1));
+  StaticSocketDataProvider data1(data_reads1, data_writes1);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
 
   TestCompletionCallback callback;
@@ -2422,10 +2387,8 @@ TEST_F(HttpNetworkTransactionTest, BasicAuth) {
     MockRead(SYNCHRONOUS, OK),
   };
 
-  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                 data_writes1, arraysize(data_writes1));
-  StaticSocketDataProvider data2(data_reads2, arraysize(data_reads2),
-                                 data_writes2, arraysize(data_writes2));
+  StaticSocketDataProvider data1(data_reads1, data_writes1);
+  StaticSocketDataProvider data2(data_reads2, data_writes2);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
 
@@ -2441,9 +2404,9 @@ TEST_F(HttpNetworkTransactionTest, BasicAuth) {
   EXPECT_TRUE(trans.GetLoadTimingInfo(&load_timing_info1));
   TestLoadTimingNotReused(load_timing_info1, CONNECT_TIMING_HAS_DNS_TIMES);
 
-  int64_t writes_size1 = CountWriteBytes(data_writes1, arraysize(data_writes1));
+  int64_t writes_size1 = CountWriteBytes(data_writes1);
   EXPECT_EQ(writes_size1, trans.GetTotalSentBytes());
-  int64_t reads_size1 = CountReadBytes(data_reads1, arraysize(data_reads1));
+  int64_t reads_size1 = CountReadBytes(data_reads1);
   EXPECT_EQ(reads_size1, trans.GetTotalReceivedBytes());
 
   const HttpResponseInfo* response = trans.GetResponseInfo();
@@ -2467,9 +2430,9 @@ TEST_F(HttpNetworkTransactionTest, BasicAuth) {
             load_timing_info2.connect_timing.connect_start);
   EXPECT_NE(load_timing_info1.socket_log_id, load_timing_info2.socket_log_id);
 
-  int64_t writes_size2 = CountWriteBytes(data_writes2, arraysize(data_writes2));
+  int64_t writes_size2 = CountWriteBytes(data_writes2);
   EXPECT_EQ(writes_size1 + writes_size2, trans.GetTotalSentBytes());
-  int64_t reads_size2 = CountReadBytes(data_reads2, arraysize(data_reads2));
+  int64_t reads_size2 = CountReadBytes(data_reads2);
   EXPECT_EQ(reads_size1 + reads_size2, trans.GetTotalReceivedBytes());
 
   response = trans.GetResponseInfo();
@@ -2532,10 +2495,8 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthWithAddressChange) {
       MockRead("Content-Length: 100\r\n\r\n"), MockRead(SYNCHRONOUS, OK),
   };
 
-  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                 data_writes1, arraysize(data_writes1));
-  StaticSocketDataProvider data2(data_reads2, arraysize(data_reads2),
-                                 data_writes2, arraysize(data_writes2));
+  StaticSocketDataProvider data1(data_reads1, data_writes1);
+  StaticSocketDataProvider data2(data_reads2, data_writes2);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
 
@@ -2548,9 +2509,9 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthWithAddressChange) {
   EXPECT_TRUE(trans.GetLoadTimingInfo(&load_timing_info1));
   TestLoadTimingNotReused(load_timing_info1, CONNECT_TIMING_HAS_DNS_TIMES);
 
-  int64_t writes_size1 = CountWriteBytes(data_writes1, arraysize(data_writes1));
+  int64_t writes_size1 = CountWriteBytes(data_writes1);
   EXPECT_EQ(writes_size1, trans.GetTotalSentBytes());
-  int64_t reads_size1 = CountReadBytes(data_reads1, arraysize(data_reads1));
+  int64_t reads_size1 = CountReadBytes(data_reads1);
   EXPECT_EQ(reads_size1, trans.GetTotalReceivedBytes());
 
   const HttpResponseInfo* response = trans.GetResponseInfo();
@@ -2579,9 +2540,9 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthWithAddressChange) {
             load_timing_info2.connect_timing.connect_start);
   EXPECT_NE(load_timing_info1.socket_log_id, load_timing_info2.socket_log_id);
 
-  int64_t writes_size2 = CountWriteBytes(data_writes2, arraysize(data_writes2));
+  int64_t writes_size2 = CountWriteBytes(data_writes2);
   EXPECT_EQ(writes_size1 + writes_size2, trans.GetTotalSentBytes());
-  int64_t reads_size2 = CountReadBytes(data_reads2, arraysize(data_reads2));
+  int64_t reads_size2 = CountReadBytes(data_reads2);
   EXPECT_EQ(reads_size1 + reads_size2, trans.GetTotalReceivedBytes());
 
   response = trans.GetResponseInfo();
@@ -2636,8 +2597,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthForever) {
                 "Authorization: Basic Zm9vOmJhcg==\r\n\r\n"),
   };
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), data_writes,
-                                arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -2653,8 +2613,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthForever) {
     EXPECT_TRUE(CheckBasicServerAuth(response->auth_challenge.get()));
 
     data_restarts.push_back(std::make_unique<StaticSocketDataProvider>(
-        data_reads, arraysize(data_reads), data_writes_restart,
-        arraysize(data_writes_restart)));
+        data_reads, data_writes_restart));
     session_deps_.socket_factory->AddSocketDataProvider(
         data_restarts.back().get());
     rv = callback.GetResult(trans.RestartWithAuth(AuthCredentials(kFoo, kBar),
@@ -2692,8 +2651,7 @@ TEST_F(HttpNetworkTransactionTest, DoNotSendAuth) {
     MockRead(SYNCHRONOUS, ERR_FAILED),
   };
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads),
-                                data_writes, arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
   TestCompletionCallback callback;
 
@@ -2703,9 +2661,9 @@ TEST_F(HttpNetworkTransactionTest, DoNotSendAuth) {
   rv = callback.WaitForResult();
   EXPECT_EQ(0, rv);
 
-  int64_t writes_size = CountWriteBytes(data_writes, arraysize(data_writes));
+  int64_t writes_size = CountWriteBytes(data_writes);
   EXPECT_EQ(writes_size, trans.GetTotalSentBytes());
-  int64_t reads_size = CountReadBytes(data_reads, arraysize(data_reads));
+  int64_t reads_size = CountReadBytes(data_reads);
   EXPECT_EQ(reads_size, trans.GetTotalReceivedBytes());
 
   const HttpResponseInfo* response = trans.GetResponseInfo();
@@ -2759,8 +2717,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthKeepAlive) {
         MockRead(ASYNC, 10, "Hello"),
     };
 
-    SequencedSocketData data(data_reads, arraysize(data_reads), data_writes,
-                             arraysize(data_writes));
+    SequencedSocketData data(data_reads, data_writes);
     data.set_busy_before_sync_reads(true);
     session_deps_.socket_factory->AddSocketDataProvider(&data);
 
@@ -2801,9 +2758,9 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthKeepAlive) {
     std::string response_data;
     EXPECT_THAT(ReadTransaction(&trans, &response_data), IsOk());
 
-    int64_t writes_size = CountWriteBytes(data_writes, arraysize(data_writes));
+    int64_t writes_size = CountWriteBytes(data_writes);
     EXPECT_EQ(writes_size, trans.GetTotalSentBytes());
-    int64_t reads_size = CountReadBytes(data_reads, arraysize(data_reads));
+    int64_t reads_size = CountReadBytes(data_reads);
     EXPECT_EQ(reads_size, trans.GetTotalReceivedBytes());
   }
 }
@@ -2849,10 +2806,8 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthKeepAliveNoBody) {
     MockRead(SYNCHRONOUS, ERR_FAILED),
   };
 
-  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                 data_writes1, arraysize(data_writes1));
-  StaticSocketDataProvider data2(data_reads2, arraysize(data_reads2),
-                                 NULL, 0);
+  StaticSocketDataProvider data1(data_reads1, data_writes1);
+  StaticSocketDataProvider data2(data_reads2, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
 
@@ -2932,10 +2887,8 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthKeepAliveLargeBody) {
     MockRead(SYNCHRONOUS, ERR_FAILED),
   };
 
-  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                 data_writes1, arraysize(data_writes1));
-  StaticSocketDataProvider data2(data_reads2, arraysize(data_reads2),
-                                 NULL, 0);
+  StaticSocketDataProvider data1(data_reads1, data_writes1);
+  StaticSocketDataProvider data2(data_reads2, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
 
@@ -3020,10 +2973,8 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthKeepAliveImpatientServer) {
     MockRead("hello"),
   };
 
-  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                 data_writes1, arraysize(data_writes1));
-  StaticSocketDataProvider data2(data_reads2, arraysize(data_reads2),
-                                 data_writes2, arraysize(data_writes2));
+  StaticSocketDataProvider data1(data_reads1, data_writes1);
+  StaticSocketDataProvider data2(data_reads2, data_writes2);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
 
@@ -3112,11 +3063,9 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp10) {
       MockRead(SYNCHRONOUS, "hello"),
   };
 
-  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                 data_writes1, arraysize(data_writes1));
+  StaticSocketDataProvider data1(data_reads1, data_writes1);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
-  StaticSocketDataProvider data2(data_reads2, arraysize(data_reads2),
-                                 data_writes2, arraysize(data_writes2));
+  StaticSocketDataProvider data2(data_reads2, data_writes2);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
   SSLSocketDataProvider ssl(ASYNC, OK);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
@@ -3239,11 +3188,9 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp11) {
       MockRead(SYNCHRONOUS, "hello"),
   };
 
-  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                 data_writes1, arraysize(data_writes1));
+  StaticSocketDataProvider data1(data_reads1, data_writes1);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
-  StaticSocketDataProvider data2(data_reads2, arraysize(data_reads2),
-                                 data_writes2, arraysize(data_writes2));
+  StaticSocketDataProvider data2(data_reads2, data_writes2);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
   SSLSocketDataProvider ssl(ASYNC, OK);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
@@ -3372,8 +3319,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHttp10) {
         MockRead(SYNCHRONOUS, ERR_UNEXPECTED, 5),
     };
 
-    SequencedSocketData data1(data_reads1, arraysize(data_reads1), data_writes1,
-                              arraysize(data_writes1));
+    SequencedSocketData data1(data_reads1, data_writes1);
     data1.set_busy_before_sync_reads(true);
     session_deps_.socket_factory->AddSocketDataProvider(&data1);
 
@@ -3484,8 +3430,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHttp11) {
         MockRead(SYNCHRONOUS, ERR_UNEXPECTED, 5),
     };
 
-    SequencedSocketData data1(data_reads1, arraysize(data_reads1), data_writes1,
-                              arraysize(data_writes1));
+    SequencedSocketData data1(data_reads1, data_writes1);
     data1.set_busy_before_sync_reads(true);
     session_deps_.socket_factory->AddSocketDataProvider(&data1);
 
@@ -3602,12 +3547,10 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveExtraData) {
       MockRead(SYNCHRONOUS, ERR_UNEXPECTED, 4),
   };
 
-  SequencedSocketData data1(data_reads1, arraysize(data_reads1), data_writes1,
-                            arraysize(data_writes1));
+  SequencedSocketData data1(data_reads1, data_writes1);
   data1.set_busy_before_sync_reads(true);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
-  SequencedSocketData data2(data_reads2, arraysize(data_reads2), data_writes2,
-                            arraysize(data_writes2));
+  SequencedSocketData data2(data_reads2, data_writes2);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
   SSLSocketDataProvider ssl(ASYNC, OK);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
@@ -3724,11 +3667,9 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHangupDuringBody) {
       MockRead(SYNCHRONOUS, "hello"),
   };
 
-  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                 data_writes1, arraysize(data_writes1));
+  StaticSocketDataProvider data1(data_reads1, data_writes1);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
-  StaticSocketDataProvider data2(data_reads2, arraysize(data_reads2),
-                                 data_writes2, arraysize(data_writes2));
+  StaticSocketDataProvider data2(data_reads2, data_writes2);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
   SSLSocketDataProvider ssl(ASYNC, OK);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
@@ -3791,8 +3732,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyCancelTunnel) {
       MockRead(SYNCHRONOUS, ERR_UNEXPECTED),
   };
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads),
-                                data_writes, arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -3852,8 +3792,7 @@ TEST_F(HttpNetworkTransactionTest, SanitizeProxyAuthHeaders) {
       MockRead(SYNCHRONOUS, ERR_UNEXPECTED),
   };
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), data_writes,
-                                arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -3909,8 +3848,7 @@ TEST_F(HttpNetworkTransactionTest, UnexpectedProxyAuth) {
     MockRead(SYNCHRONOUS, ERR_FAILED),
   };
 
-  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                 data_writes1, arraysize(data_writes1));
+  StaticSocketDataProvider data1(data_reads1, data_writes1);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
 
   TestCompletionCallback callback;
@@ -3962,8 +3900,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsServerRequestsProxyAuthThroughProxy) {
     MockRead(SYNCHRONOUS, OK),
   };
 
-  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                 data_writes1, arraysize(data_writes1));
+  StaticSocketDataProvider data1(data_reads1, data_writes1);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
   SSLSocketDataProvider ssl(ASYNC, OK);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
@@ -4056,11 +3993,9 @@ TEST_F(HttpNetworkTransactionTest,
       MockRead(SYNCHRONOUS, "hello"),
   };
 
-  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                 data_writes1, arraysize(data_writes1));
+  StaticSocketDataProvider data1(data_reads1, data_writes1);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
-  StaticSocketDataProvider data2(data_reads2, arraysize(data_reads2),
-                                 data_writes2, arraysize(data_writes2));
+  StaticSocketDataProvider data2(data_reads2, data_writes2);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
   SSLSocketDataProvider ssl(ASYNC, OK);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
@@ -4178,11 +4113,9 @@ TEST_F(HttpNetworkTransactionTest,
       MockRead(SYNCHRONOUS, "hello"),
   };
 
-  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                 data_writes1, arraysize(data_writes1));
+  StaticSocketDataProvider data1(data_reads1, data_writes1);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
-  StaticSocketDataProvider data2(data_reads2, arraysize(data_reads2),
-                                 data_writes2, arraysize(data_writes2));
+  StaticSocketDataProvider data2(data_reads2, data_writes2);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
   SSLSocketDataProvider ssl(ASYNC, OK);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
@@ -4297,11 +4230,9 @@ TEST_F(HttpNetworkTransactionTest,
       MockRead(SYNCHRONOUS, ERR_CONNECTION_CLOSED),
   };
 
-  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                 data_writes1, arraysize(data_writes1));
+  StaticSocketDataProvider data1(data_reads1, data_writes1);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
-  StaticSocketDataProvider data2(data_reads2, arraysize(data_reads2),
-                                 data_writes2, arraysize(data_writes2));
+  StaticSocketDataProvider data2(data_reads2, data_writes2);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
 
   auto trans =
@@ -4396,11 +4327,9 @@ TEST_F(HttpNetworkTransactionTest,
       MockRead("Proxy-Connection: close\r\n\r\n"),
   };
 
-  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                 data_writes1, arraysize(data_writes1));
+  StaticSocketDataProvider data1(data_reads1, data_writes1);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
-  StaticSocketDataProvider data2(data_reads2, arraysize(data_reads2),
-                                 data_writes2, arraysize(data_writes2));
+  StaticSocketDataProvider data2(data_reads2, data_writes2);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
   SSLSocketDataProvider ssl(ASYNC, OK);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
@@ -4514,16 +4443,13 @@ TEST_F(HttpNetworkTransactionTest, NonPermanentGenerateAuthTokenError) {
                "Hello"),
   };
 
-  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                 data_writes1, arraysize(data_writes1));
+  StaticSocketDataProvider data1(data_reads1, data_writes1);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
 
-  StaticSocketDataProvider data2(data_reads2, arraysize(data_reads2),
-                                 data_writes2, arraysize(data_writes2));
+  StaticSocketDataProvider data2(data_reads2, data_writes2);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
 
-  StaticSocketDataProvider data3(data_reads3, arraysize(data_reads3),
-                                 data_writes3, arraysize(data_writes3));
+  StaticSocketDataProvider data3(data_reads3, data_writes3);
   session_deps_.socket_factory->AddSocketDataProvider(&data3);
 
   auto trans =
@@ -4662,8 +4588,7 @@ TEST_F(HttpNetworkTransactionTest, SameDestinationForDifferentProxyTypes) {
                "Content-Length: 15\r\n\r\n"
                "SOCKS4 Response"),
   };
-  StaticSocketDataProvider socks_data(socks_reads, arraysize(socks_reads),
-                                      socks_writes, arraysize(socks_writes));
+  StaticSocketDataProvider socks_data(socks_reads, socks_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&socks_data);
 
   const char kSOCKS5Request[] = {
@@ -4691,8 +4616,7 @@ TEST_F(HttpNetworkTransactionTest, SameDestinationForDifferentProxyTypes) {
                "Content-Length: 15\r\n\r\n"
                "SOCKS5 Response"),
   };
-  StaticSocketDataProvider socks5_data(socks5_reads, arraysize(socks5_reads),
-                                       socks5_writes, arraysize(socks5_writes));
+  StaticSocketDataProvider socks5_data(socks5_reads, socks5_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&socks5_data);
 
   MockWrite http_writes[] = {
@@ -4707,8 +4631,7 @@ TEST_F(HttpNetworkTransactionTest, SameDestinationForDifferentProxyTypes) {
                "Content-Length: 13\r\n\r\n"
                "HTTP Response"),
   };
-  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
-                                     http_writes, arraysize(http_writes));
+  StaticSocketDataProvider http_data(http_reads, http_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&http_data);
 
   MockWrite https_writes[] = {
@@ -4723,8 +4646,7 @@ TEST_F(HttpNetworkTransactionTest, SameDestinationForDifferentProxyTypes) {
                "Content-Length: 14\r\n\r\n"
                "HTTPS Response"),
   };
-  StaticSocketDataProvider https_data(https_reads, arraysize(https_reads),
-                                      https_writes, arraysize(https_writes));
+  StaticSocketDataProvider https_data(https_reads, https_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&https_data);
   SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
@@ -4842,8 +4764,7 @@ TEST_F(HttpNetworkTransactionTest, HttpProxyLoadTimingNoPacTwoRequests) {
     MockRead(SYNCHRONOUS, "22"),
   };
 
-  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                 data_writes1, arraysize(data_writes1));
+  StaticSocketDataProvider data1(data_reads1, data_writes1);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
   SSLSocketDataProvider ssl(ASYNC, OK);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
@@ -4947,8 +4868,7 @@ TEST_F(HttpNetworkTransactionTest, HttpProxyLoadTimingWithPacTwoRequests) {
     MockRead(SYNCHRONOUS, "22"),
   };
 
-  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                 data_writes1, arraysize(data_writes1));
+  StaticSocketDataProvider data1(data_reads1, data_writes1);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
   SSLSocketDataProvider ssl(ASYNC, OK);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
@@ -5030,8 +4950,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxyGet) {
     MockRead(SYNCHRONOUS, OK),
   };
 
-  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                 data_writes1, arraysize(data_writes1));
+  StaticSocketDataProvider data1(data_reads1, data_writes1);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
   SSLSocketDataProvider ssl(ASYNC, OK);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
@@ -5090,8 +5009,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyGet) {
       CreateMockRead(resp, 1), CreateMockRead(data, 2), MockRead(ASYNC, 0, 3),
   };
 
-  SequencedSocketData spdy_data(spdy_reads, arraysize(spdy_reads), spdy_writes,
-                                arraysize(spdy_writes));
+  SequencedSocketData spdy_data(spdy_reads, spdy_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
 
   SSLSocketDataProvider ssl(ASYNC, OK);
@@ -5152,8 +5070,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyGetWithSessionRace) {
       CreateMockRead(resp, 1), CreateMockRead(data, 2), MockRead(ASYNC, 0, 3),
   };
 
-  SequencedSocketData spdy_data(spdy_reads, arraysize(spdy_reads), spdy_writes,
-                                arraysize(spdy_writes));
+  SequencedSocketData spdy_data(spdy_reads, spdy_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
 
   SSLSocketDataProvider ssl(ASYNC, OK);
@@ -5248,8 +5165,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyGetWithProxyAuth) {
       MockRead(ASYNC, 0, 6),
   };
 
-  SequencedSocketData data(spdy_reads, arraysize(spdy_reads), spdy_writes,
-                           arraysize(spdy_writes));
+  SequencedSocketData data(spdy_reads, spdy_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   SSLSocketDataProvider ssl(ASYNC, OK);
@@ -5342,8 +5258,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyConnectHttps) {
       MockRead(ASYNC, 0, 7),
   };
 
-  SequencedSocketData spdy_data(spdy_reads, arraysize(spdy_reads), spdy_writes,
-                                arraysize(spdy_writes));
+  SequencedSocketData spdy_data(spdy_reads, spdy_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
 
   SSLSocketDataProvider ssl(ASYNC, OK);
@@ -5428,8 +5343,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyConnectSpdy) {
       MockRead(ASYNC, 0, 8),
   };
 
-  SequencedSocketData spdy_data(spdy_reads, arraysize(spdy_reads), spdy_writes,
-                                arraysize(spdy_writes));
+  SequencedSocketData spdy_data(spdy_reads, spdy_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
 
   SSLSocketDataProvider ssl(ASYNC, OK);
@@ -5498,8 +5412,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyConnectFailure) {
       CreateMockRead(resp, 1, ASYNC), MockRead(ASYNC, 0, 3),
   };
 
-  SequencedSocketData spdy_data(spdy_reads, arraysize(spdy_reads), spdy_writes,
-                                arraysize(spdy_writes));
+  SequencedSocketData spdy_data(spdy_reads, spdy_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
 
   SSLSocketDataProvider ssl(ASYNC, OK);
@@ -5605,8 +5518,7 @@ TEST_F(HttpNetworkTransactionTest,
       MockRead(ASYNC, 0, 10),
   };
 
-  SequencedSocketData spdy_data(spdy_reads, arraysize(spdy_reads), spdy_writes,
-                                arraysize(spdy_writes));
+  SequencedSocketData spdy_data(spdy_reads, spdy_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
 
   SSLSocketDataProvider ssl(ASYNC, OK);
@@ -5730,8 +5642,7 @@ TEST_F(HttpNetworkTransactionTest,
       MockRead(ASYNC, 0, 8),
   };
 
-  SequencedSocketData spdy_data(spdy_reads, arraysize(spdy_reads), spdy_writes,
-                                arraysize(spdy_writes));
+  SequencedSocketData spdy_data(spdy_reads, spdy_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
 
   SSLSocketDataProvider ssl(ASYNC, OK);
@@ -5836,8 +5747,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyLoadTimingTwoHttpRequests) {
       MockRead(ASYNC, 0, 6),
   };
 
-  SequencedSocketData spdy_data(spdy_reads, arraysize(spdy_reads), spdy_writes,
-                                arraysize(spdy_writes));
+  SequencedSocketData spdy_data(spdy_reads, spdy_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
 
   SSLSocketDataProvider ssl(ASYNC, OK);
@@ -5929,8 +5839,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxyAuthRetry) {
     MockRead(SYNCHRONOUS, OK),
   };
 
-  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                 data_writes1, arraysize(data_writes1));
+  StaticSocketDataProvider data1(data_reads1, data_writes1);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
   SSLSocketDataProvider ssl(ASYNC, OK);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
@@ -6008,8 +5917,7 @@ void HttpNetworkTransactionTest::ConnectStatusHelperWithExpectedStatus(
       MockRead(SYNCHRONOUS, ERR_UNEXPECTED),
   };
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads),
-                                data_writes, arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -6276,12 +6184,9 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyThenServer) {
     MockRead(SYNCHRONOUS, OK),
   };
 
-  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                 data_writes1, arraysize(data_writes1));
-  StaticSocketDataProvider data2(data_reads2, arraysize(data_reads2),
-                                 data_writes2, arraysize(data_writes2));
-  StaticSocketDataProvider data3(data_reads3, arraysize(data_reads3),
-                                 data_writes3, arraysize(data_writes3));
+  StaticSocketDataProvider data1(data_reads1, data_writes1);
+  StaticSocketDataProvider data2(data_reads2, data_writes2);
+  StaticSocketDataProvider data3(data_reads3, data_writes3);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
   session_deps_.socket_factory->AddSocketDataProvider(&data3);
@@ -6425,10 +6330,8 @@ TEST_F(HttpNetworkTransactionTest, NTLMAuthV2) {
       MockRead("Content-Length: 14\r\n\r\n"), MockRead("Please Login\r\n"),
   };
 
-  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                 data_writes1, arraysize(data_writes1));
-  StaticSocketDataProvider data2(data_reads2, arraysize(data_reads2),
-                                 data_writes2, arraysize(data_writes2));
+  StaticSocketDataProvider data1(data_reads1, data_writes1);
+  StaticSocketDataProvider data2(data_reads2, data_writes2);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
 
@@ -6630,12 +6533,9 @@ TEST_F(HttpNetworkTransactionTest, NTLMAuthV2WrongThenRightPassword) {
       MockRead("Content-Length: 14\r\n\r\n"), MockRead("Please Login\r\n"),
   };
 
-  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                 data_writes1, arraysize(data_writes1));
-  StaticSocketDataProvider data2(data_reads2, arraysize(data_reads2),
-                                 data_writes2, arraysize(data_writes2));
-  StaticSocketDataProvider data3(data_reads3, arraysize(data_reads3),
-                                 data_writes3, arraysize(data_writes3));
+  StaticSocketDataProvider data1(data_reads1, data_writes1);
+  StaticSocketDataProvider data2(data_reads2, data_writes2);
+  StaticSocketDataProvider data3(data_reads3, data_writes3);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
   session_deps_.socket_factory->AddSocketDataProvider(&data3);
@@ -6821,10 +6721,8 @@ TEST_F(HttpNetworkTransactionTest, NTLMOverHttp2) {
       MockRead("Content-Type: text/html; charset=utf-8\r\n"),
       MockRead("Content-Length: 14\r\n\r\n"), MockRead("Please Login\r\n"),
   };
-  SequencedSocketData data0(reads0, arraysize(reads0), writes0,
-                            arraysize(writes0));
-  StaticSocketDataProvider data1(reads1, arraysize(reads1), writes1,
-                                 arraysize(writes1));
+  SequencedSocketData data0(reads0, writes0);
+  StaticSocketDataProvider data1(reads1, writes1);
   session_deps_.socket_factory->AddSocketDataProvider(&data0);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
 
@@ -6984,11 +6882,9 @@ TEST_F(HttpNetworkTransactionTest, NTLMProxyTLSHandshakeReset) {
       MockRead("HTTP/1.1 200 Connected\r\n\r\n"),
   };
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), data_writes,
-                                arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   SSLSocketDataProvider data_ssl(ASYNC, ERR_CONNECTION_RESET);
-  StaticSocketDataProvider data2(data_reads, arraysize(data_reads), data_writes,
-                                 arraysize(data_writes));
+  StaticSocketDataProvider data2(data_reads, data_writes);
   SSLSocketDataProvider data_ssl2(ASYNC, ERR_CONNECTION_RESET);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&data_ssl);
@@ -7071,7 +6967,7 @@ TEST_F(HttpNetworkTransactionTest, LargeHeadersNoBody) {
     MockRead("\r\nBODY"),
     MockRead(SYNCHRONOUS, OK),
   };
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), NULL, 0);
+  StaticSocketDataProvider data(data_reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -7118,8 +7014,7 @@ TEST_F(HttpNetworkTransactionTest, DontRecycleTransportSocketForSSLTunnel) {
       MockRead(SYNCHRONOUS, ERR_UNEXPECTED),
   };
 
-  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                 data_writes1, arraysize(data_writes1));
+  StaticSocketDataProvider data1(data_reads1, data_writes1);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
 
   TestCompletionCallback callback1;
@@ -7165,7 +7060,7 @@ TEST_F(HttpNetworkTransactionTest, RecycleSocket) {
     MockRead(SYNCHRONOUS, OK),
   };
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), NULL, 0);
+  StaticSocketDataProvider data(data_reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -7224,8 +7119,7 @@ TEST_F(HttpNetworkTransactionTest, RecycleSSLSocket) {
   SSLSocketDataProvider ssl(ASYNC, OK);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads),
-                                data_writes, arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -7287,10 +7181,8 @@ TEST_F(HttpNetworkTransactionTest, RecycleDeadSSLSocket) {
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl2);
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads),
-                                data_writes, arraysize(data_writes));
-  StaticSocketDataProvider data2(data_reads, arraysize(data_reads),
-                                data_writes, arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
+  StaticSocketDataProvider data2(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
 
@@ -7376,7 +7268,7 @@ TEST_F(HttpNetworkTransactionTest, FlushSocketPoolOnLowMemoryNotifications) {
       MockRead(SYNCHRONOUS, OK),
   };
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), NULL, 0);
+  StaticSocketDataProvider data(data_reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -7447,7 +7339,7 @@ TEST_F(HttpNetworkTransactionTest, NoFlushSocketPoolOnLowMemoryNotifications) {
       MockRead(SYNCHRONOUS, OK),
   };
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), NULL, 0);
+  StaticSocketDataProvider data(data_reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -7522,8 +7414,7 @@ TEST_F(HttpNetworkTransactionTest, FlushSSLSocketPoolOnLowMemoryNotifications) {
   SSLSocketDataProvider ssl(ASYNC, OK);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), data_writes,
-                                arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -7592,7 +7483,7 @@ TEST_F(HttpNetworkTransactionTest, RecycleSocketAfterZeroContentLength) {
     MockRead(SYNCHRONOUS, OK),
   };
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), NULL, 0);
+  StaticSocketDataProvider data(data_reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   // Transaction must be created after the MockReads, so it's destroyed before
@@ -7672,8 +7563,7 @@ TEST_F(HttpNetworkTransactionTest, ResendRequestOnWriteBodyError) {
     MockWrite(SYNCHRONOUS, 93),  // POST
     MockWrite(SYNCHRONOUS, ERR_CONNECTION_ABORTED),  // POST data
   };
-  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                 data_writes1, arraysize(data_writes1));
+  StaticSocketDataProvider data1(data_reads1, data_writes1);
 
   // The second socket is used for the second attempt of transaction 2.
 
@@ -7688,8 +7578,7 @@ TEST_F(HttpNetworkTransactionTest, ResendRequestOnWriteBodyError) {
     MockWrite(SYNCHRONOUS, 93),  // POST
     MockWrite(SYNCHRONOUS, 3),  // POST data
   };
-  StaticSocketDataProvider data2(data_reads2, arraysize(data_reads2),
-                                 data_writes2, arraysize(data_writes2));
+  StaticSocketDataProvider data2(data_reads2, data_writes2);
 
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
@@ -7770,10 +7659,8 @@ TEST_F(HttpNetworkTransactionTest, AuthIdentityInURL) {
     MockRead(SYNCHRONOUS, OK),
   };
 
-  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                 data_writes1, arraysize(data_writes1));
-  StaticSocketDataProvider data2(data_reads2, arraysize(data_reads2),
-                                 data_writes2, arraysize(data_writes2));
+  StaticSocketDataProvider data1(data_reads1, data_writes1);
+  StaticSocketDataProvider data2(data_reads2, data_writes2);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
 
@@ -7867,12 +7754,9 @@ TEST_F(HttpNetworkTransactionTest, WrongAuthIdentityInURL) {
     MockRead(SYNCHRONOUS, OK),
   };
 
-  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                 data_writes1, arraysize(data_writes1));
-  StaticSocketDataProvider data2(data_reads2, arraysize(data_reads2),
-                                 data_writes2, arraysize(data_writes2));
-  StaticSocketDataProvider data3(data_reads3, arraysize(data_reads3),
-                                 data_writes3, arraysize(data_writes3));
+  StaticSocketDataProvider data1(data_reads1, data_writes1);
+  StaticSocketDataProvider data2(data_reads2, data_writes2);
+  StaticSocketDataProvider data3(data_reads3, data_writes3);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
   session_deps_.socket_factory->AddSocketDataProvider(&data3);
@@ -7962,10 +7846,8 @@ TEST_F(HttpNetworkTransactionTest, AuthIdentityInURLSuppressed) {
     MockRead(SYNCHRONOUS, OK),
   };
 
-  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                 data_writes1, arraysize(data_writes1));
-  StaticSocketDataProvider data3(data_reads3, arraysize(data_reads3),
-                                 data_writes3, arraysize(data_writes3));
+  StaticSocketDataProvider data1(data_reads1, data_writes1);
+  StaticSocketDataProvider data3(data_reads3, data_writes3);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
   session_deps_.socket_factory->AddSocketDataProvider(&data3);
 
@@ -8042,10 +7924,8 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthCacheAndPreauth) {
       MockRead(SYNCHRONOUS, OK),
     };
 
-    StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                   data_writes1, arraysize(data_writes1));
-    StaticSocketDataProvider data2(data_reads2, arraysize(data_reads2),
-                                   data_writes2, arraysize(data_writes2));
+    StaticSocketDataProvider data1(data_reads1, data_writes1);
+    StaticSocketDataProvider data2(data_reads2, data_writes2);
     session_deps_.socket_factory->AddSocketDataProvider(&data1);
     session_deps_.socket_factory->AddSocketDataProvider(&data2);
 
@@ -8124,10 +8004,8 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthCacheAndPreauth) {
       MockRead(SYNCHRONOUS, OK),
     };
 
-    StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                   data_writes1, arraysize(data_writes1));
-    StaticSocketDataProvider data2(data_reads2, arraysize(data_reads2),
-                                   data_writes2, arraysize(data_writes2));
+    StaticSocketDataProvider data1(data_reads1, data_writes1);
+    StaticSocketDataProvider data2(data_reads2, data_writes2);
     session_deps_.socket_factory->AddSocketDataProvider(&data1);
     session_deps_.socket_factory->AddSocketDataProvider(&data2);
 
@@ -8193,8 +8071,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthCacheAndPreauth) {
       MockRead(SYNCHRONOUS, OK),
     };
 
-    StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                   data_writes1, arraysize(data_writes1));
+    StaticSocketDataProvider data1(data_reads1, data_writes1);
     session_deps_.socket_factory->AddSocketDataProvider(&data1);
 
     TestCompletionCallback callback1;
@@ -8255,10 +8132,8 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthCacheAndPreauth) {
       MockRead(SYNCHRONOUS, OK),
     };
 
-    StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                   data_writes1, arraysize(data_writes1));
-    StaticSocketDataProvider data2(data_reads2, arraysize(data_reads2),
-                                   data_writes2, arraysize(data_writes2));
+    StaticSocketDataProvider data1(data_reads1, data_writes1);
+    StaticSocketDataProvider data2(data_reads2, data_writes2);
     session_deps_.socket_factory->AddSocketDataProvider(&data1);
     session_deps_.socket_factory->AddSocketDataProvider(&data2);
 
@@ -8345,12 +8220,9 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthCacheAndPreauth) {
       MockRead(SYNCHRONOUS, OK),
     };
 
-    StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                   data_writes1, arraysize(data_writes1));
-    StaticSocketDataProvider data2(data_reads2, arraysize(data_reads2),
-                                   data_writes2, arraysize(data_writes2));
-    StaticSocketDataProvider data3(data_reads3, arraysize(data_reads3),
-                                   data_writes3, arraysize(data_writes3));
+    StaticSocketDataProvider data1(data_reads1, data_writes1);
+    StaticSocketDataProvider data2(data_reads2, data_writes2);
+    StaticSocketDataProvider data3(data_reads3, data_writes3);
     session_deps_.socket_factory->AddSocketDataProvider(&data1);
     session_deps_.socket_factory->AddSocketDataProvider(&data2);
     session_deps_.socket_factory->AddSocketDataProvider(&data3);
@@ -8444,10 +8316,8 @@ TEST_F(HttpNetworkTransactionTest, DigestPreAuthNonceCount) {
       MockRead(SYNCHRONOUS, OK),
     };
 
-    StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                   data_writes1, arraysize(data_writes1));
-    StaticSocketDataProvider data2(data_reads2, arraysize(data_reads2),
-                                   data_writes2, arraysize(data_writes2));
+    StaticSocketDataProvider data1(data_reads1, data_writes1);
+    StaticSocketDataProvider data2(data_reads2, data_writes2);
     session_deps_.socket_factory->AddSocketDataProvider(&data1);
     session_deps_.socket_factory->AddSocketDataProvider(&data2);
 
@@ -8511,8 +8381,7 @@ TEST_F(HttpNetworkTransactionTest, DigestPreAuthNonceCount) {
       MockRead(SYNCHRONOUS, OK),
     };
 
-    StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                   data_writes1, arraysize(data_writes1));
+    StaticSocketDataProvider data1(data_reads1, data_writes1);
     session_deps_.socket_factory->AddSocketDataProvider(&data1);
 
     TestCompletionCallback callback1;
@@ -8597,8 +8466,7 @@ TEST_F(HttpNetworkTransactionTest, HTTPSBadCertificate) {
   };
 
   StaticSocketDataProvider ssl_bad_certificate;
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads),
-                                data_writes, arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   SSLSocketDataProvider ssl_bad(ASYNC, ERR_CERT_AUTHORITY_INVALID);
   SSLSocketDataProvider ssl(ASYNC, OK);
 
@@ -8667,11 +8535,8 @@ TEST_F(HttpNetworkTransactionTest, HTTPSBadCertificateViaProxy) {
     MockRead(SYNCHRONOUS, OK),
   };
 
-  StaticSocketDataProvider ssl_bad_certificate(
-      proxy_reads, arraysize(proxy_reads),
-      proxy_writes, arraysize(proxy_writes));
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads),
-                                data_writes, arraysize(data_writes));
+  StaticSocketDataProvider ssl_bad_certificate(proxy_reads, proxy_writes);
+  StaticSocketDataProvider data(data_reads, data_writes);
   SSLSocketDataProvider ssl_bad(ASYNC, ERR_CERT_AUTHORITY_INVALID);
   SSLSocketDataProvider ssl(ASYNC, OK);
 
@@ -8739,8 +8604,7 @@ TEST_F(HttpNetworkTransactionTest, HTTPSViaHttpsProxy) {
     MockRead(SYNCHRONOUS, OK),
   };
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads),
-                                data_writes, arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   SSLSocketDataProvider proxy_ssl(ASYNC, OK);  // SSL to the proxy
   SSLSocketDataProvider tunnel_ssl(ASYNC, OK);  // SSL through the tunnel
 
@@ -8801,8 +8665,7 @@ TEST_F(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaHttpsProxy) {
     MockRead(SYNCHRONOUS, OK),
   };
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads),
-                                data_writes, arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   SSLSocketDataProvider proxy_ssl(ASYNC, OK);  // SSL to the proxy
 
   session_deps_.socket_factory->AddSocketDataProvider(&data);
@@ -8881,8 +8744,7 @@ TEST_F(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaSpdyProxy) {
       CreateMockRead(resp, 1), MockRead(ASYNC, 0, 3),  // EOF
   };
 
-  SequencedSocketData data(data_reads, arraysize(data_reads), data_writes,
-                           arraysize(data_writes));
+  SequencedSocketData data(data_reads, data_writes);
   SSLSocketDataProvider proxy_ssl(ASYNC, OK);  // SSL to the proxy
   proxy_ssl.next_proto = kProtoHTTP2;
 
@@ -8933,8 +8795,7 @@ TEST_F(HttpNetworkTransactionTest, ErrorResponseToHttpsConnectViaHttpsProxy) {
     MockRead(SYNCHRONOUS, OK),
   };
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads),
-                                data_writes, arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   SSLSocketDataProvider proxy_ssl(ASYNC, OK);  // SSL to the proxy
 
   session_deps_.socket_factory->AddSocketDataProvider(&data);
@@ -8986,8 +8847,7 @@ TEST_F(HttpNetworkTransactionTest, ErrorResponseToHttpsConnectViaSpdyProxy) {
       MockRead(ASYNC, 0, 4),  // EOF
   };
 
-  SequencedSocketData data(data_reads, arraysize(data_reads), data_writes,
-                           arraysize(data_writes));
+  SequencedSocketData data(data_reads, data_writes);
   SSLSocketDataProvider proxy_ssl(ASYNC, OK);  // SSL to the proxy
   proxy_ssl.next_proto = kProtoHTTP2;
 
@@ -9080,8 +8940,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthSpdyProxy) {
       MockRead(ASYNC, OK, 8),  // EOF.  May or may not be read.
   };
 
-  SequencedSocketData spdy_data(spdy_reads, arraysize(spdy_reads), spdy_writes,
-                                arraysize(spdy_writes));
+  SequencedSocketData spdy_data(spdy_reads, spdy_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
   // Negotiate SPDY to the proxy
   SSLSocketDataProvider proxy(ASYNC, OK);
@@ -9207,8 +9066,7 @@ TEST_F(HttpNetworkTransactionTest, CrossOriginSPDYProxyPush) {
       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 6),  // Force a hang
   };
 
-  SequencedSocketData spdy_data(spdy_reads, arraysize(spdy_reads), spdy_writes,
-                                arraysize(spdy_writes));
+  SequencedSocketData spdy_data(spdy_reads, spdy_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
   // Negotiate SPDY to the proxy
   SSLSocketDataProvider proxy(ASYNC, OK);
@@ -9319,8 +9177,7 @@ TEST_F(HttpNetworkTransactionTest, CrossOriginProxyPushCorrectness) {
       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 5),  // Force a hang
   };
 
-  SequencedSocketData spdy_data(spdy_reads, arraysize(spdy_reads), spdy_writes,
-                                arraysize(spdy_writes));
+  SequencedSocketData spdy_data(spdy_reads, spdy_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
   // Negotiate SPDY to the proxy
   SSLSocketDataProvider proxy(ASYNC, OK);
@@ -9409,8 +9266,7 @@ TEST_F(HttpNetworkTransactionTest, SameOriginProxyPushCorrectness) {
       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 6),  // Force a hang
   };
 
-  SequencedSocketData spdy_data(spdy_reads, arraysize(spdy_reads), spdy_writes,
-                                arraysize(spdy_writes));
+  SequencedSocketData spdy_data(spdy_reads, spdy_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
   // Negotiate SPDY to the proxy
   SSLSocketDataProvider proxy(ASYNC, OK);
@@ -9484,11 +9340,8 @@ TEST_F(HttpNetworkTransactionTest, HTTPSBadCertificateViaHttpsProxy) {
     MockRead(SYNCHRONOUS, OK),
   };
 
-  StaticSocketDataProvider ssl_bad_certificate(
-      bad_cert_reads, arraysize(bad_cert_reads),
-      bad_cert_writes, arraysize(bad_cert_writes));
-  StaticSocketDataProvider data(good_cert_reads, arraysize(good_cert_reads),
-                                good_data_writes, arraysize(good_data_writes));
+  StaticSocketDataProvider ssl_bad_certificate(bad_cert_reads, bad_cert_writes);
+  StaticSocketDataProvider data(good_cert_reads, good_data_writes);
   SSLSocketDataProvider ssl_bad(ASYNC, ERR_CERT_AUTHORITY_INVALID);
   SSLSocketDataProvider ssl(ASYNC, OK);
 
@@ -9553,8 +9406,7 @@ TEST_F(HttpNetworkTransactionTest, BuildRequest_UserAgent) {
     MockRead(SYNCHRONOUS, OK),
   };
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads),
-                                data_writes, arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -9594,8 +9446,7 @@ TEST_F(HttpNetworkTransactionTest, BuildRequest_UserAgentOverTunnel) {
     MockRead("Proxy-Connection: close\r\n\r\n"),
   };
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads),
-                                data_writes, arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -9635,8 +9486,7 @@ TEST_F(HttpNetworkTransactionTest, BuildRequest_Referer) {
     MockRead(SYNCHRONOUS, OK),
   };
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads),
-                                data_writes, arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -9674,8 +9524,7 @@ TEST_F(HttpNetworkTransactionTest, BuildRequest_PostContentLengthZero) {
     MockRead(SYNCHRONOUS, OK),
   };
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads),
-                                data_writes, arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -9713,8 +9562,7 @@ TEST_F(HttpNetworkTransactionTest, BuildRequest_PutContentLengthZero) {
     MockRead(SYNCHRONOUS, OK),
   };
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads),
-                                data_writes, arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -9750,8 +9598,7 @@ TEST_F(HttpNetworkTransactionTest, BuildRequest_HeadContentLengthZero) {
     MockRead(SYNCHRONOUS, OK),
   };
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads),
-                                data_writes, arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -9791,8 +9638,7 @@ TEST_F(HttpNetworkTransactionTest, BuildRequest_CacheControlNoCache) {
     MockRead(SYNCHRONOUS, OK),
   };
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads),
-                                data_writes, arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -9831,8 +9677,7 @@ TEST_F(HttpNetworkTransactionTest, BuildRequest_CacheControlValidateCache) {
     MockRead(SYNCHRONOUS, OK),
   };
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads),
-                                data_writes, arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -9871,8 +9716,7 @@ TEST_F(HttpNetworkTransactionTest, BuildRequest_ExtraHeaders) {
     MockRead(SYNCHRONOUS, OK),
   };
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads),
-                                data_writes, arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -9915,8 +9759,7 @@ TEST_F(HttpNetworkTransactionTest, BuildRequest_ExtraHeadersStripped) {
     MockRead(SYNCHRONOUS, OK),
   };
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads),
-                                data_writes, arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -9962,8 +9805,7 @@ TEST_F(HttpNetworkTransactionTest, SOCKS4_HTTP_GET) {
     MockRead(SYNCHRONOUS, OK)
   };
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads),
-                                data_writes, arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -10025,8 +9867,7 @@ TEST_F(HttpNetworkTransactionTest, SOCKS4_SSL_GET) {
     MockRead(SYNCHRONOUS, OK)
   };
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads),
-                                data_writes, arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   SSLSocketDataProvider ssl(ASYNC, OK);
@@ -10088,8 +9929,7 @@ TEST_F(HttpNetworkTransactionTest, SOCKS4_HTTP_GET_no_PAC) {
     MockRead(SYNCHRONOUS, OK)
   };
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads),
-                                data_writes, arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -10161,8 +10001,7 @@ TEST_F(HttpNetworkTransactionTest, SOCKS5_HTTP_GET) {
     MockRead(SYNCHRONOUS, OK)
   };
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads),
-                                data_writes, arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -10237,8 +10076,7 @@ TEST_F(HttpNetworkTransactionTest, SOCKS5_SSL_GET) {
     MockRead(SYNCHRONOUS, OK)
   };
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads),
-                                data_writes, arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   SSLSocketDataProvider ssl(ASYNC, OK);
@@ -10579,7 +10417,7 @@ TEST_F(HttpNetworkTransactionTest, BypassHostCacheOnRefresh) {
   // Connect up a mock socket which will fail with ERR_UNEXPECTED during the
   // first read -- this won't be reached as the host resolution will fail first.
   MockRead data_reads[] = { MockRead(SYNCHRONOUS, ERR_UNEXPECTED) };
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), NULL, 0);
+  StaticSocketDataProvider data(data_reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   // Run the request.
@@ -10603,8 +10441,7 @@ TEST_F(HttpNetworkTransactionTest, RequestWriteError) {
   MockWrite write_failure[] = {
     MockWrite(ASYNC, ERR_CONNECTION_RESET),
   };
-  StaticSocketDataProvider data(NULL, 0,
-                                write_failure, arraysize(write_failure));
+  StaticSocketDataProvider data(base::span<MockRead>(), write_failure);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
@@ -10636,7 +10473,7 @@ TEST_F(HttpNetworkTransactionTest, ConnectionClosedAfterStartOfHeaders) {
     MockRead(SYNCHRONOUS, OK),
   };
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), NULL, 0);
+  StaticSocketDataProvider data(data_reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
@@ -10691,8 +10528,7 @@ TEST_F(HttpNetworkTransactionTest, DrainResetOK) {
     MockRead(ASYNC, ERR_CONNECTION_RESET),
   };
 
-  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                 data_writes1, arraysize(data_writes1));
+  StaticSocketDataProvider data1(data_reads1, data_writes1);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
 
   // After calling trans.RestartWithAuth(), this is the request we should
@@ -10713,8 +10549,7 @@ TEST_F(HttpNetworkTransactionTest, DrainResetOK) {
     MockRead(SYNCHRONOUS, OK),
   };
 
-  StaticSocketDataProvider data2(data_reads2, arraysize(data_reads2),
-                                 data_writes2, arraysize(data_writes2));
+  StaticSocketDataProvider data2(data_reads2, data_writes2);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
@@ -10762,7 +10597,7 @@ TEST_F(HttpNetworkTransactionTest, HTTPSViaProxyWithExtraData) {
     MockRead(SYNCHRONOUS, OK)
   };
 
-  StaticSocketDataProvider data(proxy_reads, arraysize(proxy_reads), NULL, 0);
+  StaticSocketDataProvider data(proxy_reads, base::span<MockWrite>());
   SSLSocketDataProvider ssl(ASYNC, OK);
 
   session_deps_.socket_factory->AddSocketDataProvider(&data);
@@ -10797,7 +10632,7 @@ TEST_F(HttpNetworkTransactionTest, LargeContentLengthThenClose) {
     MockRead(SYNCHRONOUS, OK),
   };
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), NULL, 0);
+  StaticSocketDataProvider data(data_reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -10846,7 +10681,7 @@ TEST_F(HttpNetworkTransactionTest, UploadFileSmallerThanLength) {
     MockRead("hello world"),
     MockRead(SYNCHRONOUS, OK),
   };
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), NULL, 0);
+  StaticSocketDataProvider data(data_reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -10891,7 +10726,7 @@ TEST_F(HttpNetworkTransactionTest, UploadUnreadableFile) {
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
 
-  StaticSocketDataProvider data(NULL, 0, NULL, 0);
+  StaticSocketDataProvider data;
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -11036,14 +10871,10 @@ TEST_F(HttpNetworkTransactionTest, ChangeAuthRealms) {
              "hello"),
   };
 
-  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                 data_writes1, arraysize(data_writes1));
-  StaticSocketDataProvider data2(data_reads2, arraysize(data_reads2),
-                                 data_writes2, arraysize(data_writes2));
-  StaticSocketDataProvider data3(data_reads3, arraysize(data_reads3),
-                                 data_writes3, arraysize(data_writes3));
-  StaticSocketDataProvider data4(data_reads4, arraysize(data_reads4),
-                                 data_writes4, arraysize(data_writes4));
+  StaticSocketDataProvider data1(data_reads1, data_writes1);
+  StaticSocketDataProvider data2(data_reads2, data_writes2);
+  StaticSocketDataProvider data3(data_reads3, data_writes3);
+  StaticSocketDataProvider data4(data_reads4, data_writes4);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
   session_deps_.socket_factory->AddSocketDataProvider(&data3);
@@ -11135,7 +10966,7 @@ TEST_F(HttpNetworkTransactionTest, IgnoreAltSvcWithInvalidCert) {
   request.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), NULL, 0);
+  StaticSocketDataProvider data(data_reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   SSLSocketDataProvider ssl(ASYNC, OK);
@@ -11191,7 +11022,7 @@ TEST_F(HttpNetworkTransactionTest, HonorAlternativeServiceHeader) {
   request.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), NULL, 0);
+  StaticSocketDataProvider data(data_reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   SSLSocketDataProvider ssl(ASYNC, OK);
@@ -11253,7 +11084,7 @@ TEST_F(HttpNetworkTransactionTest,
   request.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), NULL, 0);
+  StaticSocketDataProvider data(data_reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -11311,8 +11142,7 @@ TEST_F(HttpNetworkTransactionTest,
       MockRead("HTTP/1.1 200 OK\r\n\r\n"), MockRead("hello world"),
       MockRead(ASYNC, OK),
   };
-  StaticSocketDataProvider second_data(data_reads, arraysize(data_reads), NULL,
-                                       0);
+  StaticSocketDataProvider second_data(data_reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&second_data);
 
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
@@ -11353,8 +11183,7 @@ TEST_F(HttpNetworkTransactionTest,
       MockRead("HTTP/1.1 200 OK\r\n\r\n"), MockRead("hello world"),
       MockRead(ASYNC, OK),
   };
-  StaticSocketDataProvider second_data(data_reads, arraysize(data_reads), NULL,
-                                       0);
+  StaticSocketDataProvider second_data(data_reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&second_data);
 
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
@@ -11397,7 +11226,7 @@ TEST_F(HttpNetworkTransactionTest, ClearAlternativeServices) {
       MockRead("hello world"),
       MockRead(SYNCHRONOUS, OK),
   };
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), nullptr, 0);
+  StaticSocketDataProvider data(data_reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   SSLSocketDataProvider ssl(ASYNC, OK);
@@ -11449,7 +11278,7 @@ TEST_F(HttpNetworkTransactionTest, HonorMultipleAlternativeServiceHeaders) {
   request.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), NULL, 0);
+  StaticSocketDataProvider data(data_reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   SSLSocketDataProvider ssl(ASYNC, OK);
@@ -11522,8 +11351,7 @@ TEST_F(HttpNetworkTransactionTest, IdentifyQuicBroken) {
                "Content-Length: 40\r\n\r\n"
                "first HTTP/1.1 response from alternative"),
   };
-  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
-                                     http_writes, arraysize(http_writes));
+  StaticSocketDataProvider http_data(http_reads, http_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&http_data);
 
   StaticSocketDataProvider data_refused;
@@ -11584,8 +11412,7 @@ TEST_F(HttpNetworkTransactionTest, IdentifyQuicNotBroken) {
                "Content-Length: 40\r\n\r\n"
                "first HTTP/1.1 response from alternative1"),
   };
-  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
-                                     http_writes, arraysize(http_writes));
+  StaticSocketDataProvider http_data(http_reads, http_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&http_data);
 
   StaticSocketDataProvider data_refused;
@@ -11655,8 +11482,7 @@ TEST_F(HttpNetworkTransactionTest, MarkBrokenAlternateProtocolAndFallback) {
     MockRead("hello world"),
     MockRead(ASYNC, OK),
   };
-  StaticSocketDataProvider second_data(
-      data_reads, arraysize(data_reads), NULL, 0);
+  StaticSocketDataProvider second_data(data_reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&second_data);
 
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
@@ -11720,8 +11546,7 @@ TEST_F(HttpNetworkTransactionTest, AlternateProtocolPortRestrictedBlocked) {
     MockRead("hello world"),
     MockRead(ASYNC, OK),
   };
-  StaticSocketDataProvider second_data(
-      data_reads, arraysize(data_reads), NULL, 0);
+  StaticSocketDataProvider second_data(data_reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&second_data);
   SSLSocketDataProvider ssl_http11(ASYNC, OK);
   ssl_http11.next_proto = kProtoHTTP11;
@@ -11772,8 +11597,7 @@ TEST_F(HttpNetworkTransactionTest, AlternateProtocolPortRestrictedPermitted) {
     MockRead("hello world"),
     MockRead(ASYNC, OK),
   };
-  StaticSocketDataProvider second_data(
-      data_reads, arraysize(data_reads), NULL, 0);
+  StaticSocketDataProvider second_data(data_reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&second_data);
   SSLSocketDataProvider ssl_http11(ASYNC, OK);
   ssl_http11.next_proto = kProtoHTTP11;
@@ -11823,8 +11647,7 @@ TEST_F(HttpNetworkTransactionTest, AlternateProtocolPortRestrictedAllowed) {
     MockRead("hello world"),
     MockRead(ASYNC, OK),
   };
-  StaticSocketDataProvider second_data(
-      data_reads, arraysize(data_reads), NULL, 0);
+  StaticSocketDataProvider second_data(data_reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&second_data);
 
   SSLSocketDataProvider ssl(ASYNC, OK);
@@ -11874,8 +11697,7 @@ TEST_F(HttpNetworkTransactionTest, AlternateProtocolPortUnrestrictedAllowed1) {
     MockRead("hello world"),
     MockRead(ASYNC, OK),
   };
-  StaticSocketDataProvider second_data(
-      data_reads, arraysize(data_reads), NULL, 0);
+  StaticSocketDataProvider second_data(data_reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&second_data);
   SSLSocketDataProvider ssl_http11(ASYNC, OK);
   ssl_http11.next_proto = kProtoHTTP11;
@@ -11925,8 +11747,7 @@ TEST_F(HttpNetworkTransactionTest, AlternateProtocolPortUnrestrictedAllowed2) {
     MockRead("hello world"),
     MockRead(ASYNC, OK),
   };
-  StaticSocketDataProvider second_data(
-      data_reads, arraysize(data_reads), NULL, 0);
+  StaticSocketDataProvider second_data(data_reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&second_data);
 
   SSLSocketDataProvider ssl(ASYNC, OK);
@@ -11971,8 +11792,7 @@ TEST_F(HttpNetworkTransactionTest, AlternateProtocolUnsafeBlocked) {
     MockRead("hello world"),
     MockRead(ASYNC, OK),
   };
-  StaticSocketDataProvider data(
-      data_reads, arraysize(data_reads), NULL, 0);
+  StaticSocketDataProvider data(data_reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
@@ -12019,8 +11839,8 @@ TEST_F(HttpNetworkTransactionTest, UseAlternateProtocolForNpnSpdy) {
       MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
       MockRead(ASYNC, OK)};
 
-  StaticSocketDataProvider first_transaction(
-      data_reads, arraysize(data_reads), NULL, 0);
+  StaticSocketDataProvider first_transaction(data_reads,
+                                             base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&first_transaction);
   SSLSocketDataProvider ssl_http11(ASYNC, OK);
   ssl_http11.next_proto = kProtoHTTP11;
@@ -12038,13 +11858,11 @@ TEST_F(HttpNetworkTransactionTest, UseAlternateProtocolForNpnSpdy) {
       CreateMockRead(resp, 1), CreateMockRead(data, 2), MockRead(ASYNC, 0, 3),
   };
 
-  SequencedSocketData spdy_data(spdy_reads, arraysize(spdy_reads), spdy_writes,
-                                arraysize(spdy_writes));
+  SequencedSocketData spdy_data(spdy_reads, spdy_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
 
   MockConnect never_finishing_connect(SYNCHRONOUS, ERR_IO_PENDING);
-  StaticSocketDataProvider hanging_non_alternate_protocol_socket(
-      NULL, 0, NULL, 0);
+  StaticSocketDataProvider hanging_non_alternate_protocol_socket;
   hanging_non_alternate_protocol_socket.set_connect_data(
       never_finishing_connect);
   session_deps_.socket_factory->AddSocketDataProvider(
@@ -12104,8 +11922,7 @@ TEST_F(HttpNetworkTransactionTest, AlternateProtocolWithSpdyLateBinding) {
       MockRead(ASYNC, OK),
   };
 
-  StaticSocketDataProvider http11_data(data_reads, arraysize(data_reads), NULL,
-                                       0);
+  StaticSocketDataProvider http11_data(data_reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&http11_data);
 
   SSLSocketDataProvider ssl_http11(ASYNC, OK);
@@ -12117,11 +11934,11 @@ TEST_F(HttpNetworkTransactionTest, AlternateProtocolWithSpdyLateBinding) {
   // Second transaction starts an alternative and a non-alternative Job.
   // Both sockets hang.
   MockConnect never_finishing_connect(SYNCHRONOUS, ERR_IO_PENDING);
-  StaticSocketDataProvider hanging_socket1(NULL, 0, NULL, 0);
+  StaticSocketDataProvider hanging_socket1;
   hanging_socket1.set_connect_data(never_finishing_connect);
   session_deps_.socket_factory->AddSocketDataProvider(&hanging_socket1);
 
-  StaticSocketDataProvider hanging_socket2(NULL, 0, NULL, 0);
+  StaticSocketDataProvider hanging_socket2;
   hanging_socket2.set_connect_data(never_finishing_connect);
   session_deps_.socket_factory->AddSocketDataProvider(&hanging_socket2);
 
@@ -12145,13 +11962,12 @@ TEST_F(HttpNetworkTransactionTest, AlternateProtocolWithSpdyLateBinding) {
       MockRead(ASYNC, 0, 6),
   };
 
-  SequencedSocketData spdy_data(spdy_reads, arraysize(spdy_reads), spdy_writes,
-                                arraysize(spdy_writes));
+  SequencedSocketData spdy_data(spdy_reads, spdy_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
 
   AddSSLSocketData();
 
-  StaticSocketDataProvider hanging_socket3(NULL, 0, NULL, 0);
+  StaticSocketDataProvider hanging_socket3;
   hanging_socket3.set_connect_data(never_finishing_connect);
   session_deps_.socket_factory->AddSocketDataProvider(&hanging_socket3);
 
@@ -12220,8 +12036,8 @@ TEST_F(HttpNetworkTransactionTest, StallAlternativeServiceForNpnSpdy) {
       MockRead(ASYNC, OK),
   };
 
-  StaticSocketDataProvider first_transaction(
-      data_reads, arraysize(data_reads), NULL, 0);
+  StaticSocketDataProvider first_transaction(data_reads,
+                                             base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&first_transaction);
 
   SSLSocketDataProvider ssl(ASYNC, OK);
@@ -12231,16 +12047,15 @@ TEST_F(HttpNetworkTransactionTest, StallAlternativeServiceForNpnSpdy) {
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
   MockConnect never_finishing_connect(SYNCHRONOUS, ERR_IO_PENDING);
-  StaticSocketDataProvider hanging_alternate_protocol_socket(
-      NULL, 0, NULL, 0);
+  StaticSocketDataProvider hanging_alternate_protocol_socket;
   hanging_alternate_protocol_socket.set_connect_data(
       never_finishing_connect);
   session_deps_.socket_factory->AddSocketDataProvider(
       &hanging_alternate_protocol_socket);
 
   // 2nd request is just a copy of the first one, over HTTP/1.1 again.
-  StaticSocketDataProvider second_transaction(data_reads, arraysize(data_reads),
-                                              NULL, 0);
+  StaticSocketDataProvider second_transaction(data_reads,
+                                              base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&second_transaction);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
@@ -12360,8 +12175,7 @@ TEST_F(HttpNetworkTransactionTest, UseOriginNotAlternativeForProxy) {
 
   // Non-alternative job should hang.
   MockConnect never_finishing_connect(SYNCHRONOUS, ERR_IO_PENDING);
-  StaticSocketDataProvider hanging_alternate_protocol_socket(nullptr, 0,
-                                                             nullptr, 0);
+  StaticSocketDataProvider hanging_alternate_protocol_socket;
   hanging_alternate_protocol_socket.set_connect_data(never_finishing_connect);
   session_deps_.socket_factory->AddSocketDataProvider(
       &hanging_alternate_protocol_socket);
@@ -12386,8 +12200,7 @@ TEST_F(HttpNetworkTransactionTest, UseOriginNotAlternativeForProxy) {
       CreateMockRead(resp, 1), CreateMockRead(data, 2), MockRead(ASYNC, 0, 3),
   };
 
-  SequencedSocketData spdy_data(spdy_reads, arraysize(spdy_reads), spdy_writes,
-                                arraysize(spdy_writes));
+  SequencedSocketData spdy_data(spdy_reads, spdy_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
 
   TestCompletionCallback callback;
@@ -12443,8 +12256,8 @@ TEST_F(HttpNetworkTransactionTest, UseAlternativeServiceForTunneledNpnSpdy) {
       MockRead(ASYNC, OK),
   };
 
-  StaticSocketDataProvider first_transaction(
-      data_reads, arraysize(data_reads), NULL, 0);
+  StaticSocketDataProvider first_transaction(data_reads,
+                                             base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&first_transaction);
   SSLSocketDataProvider ssl_http11(ASYNC, OK);
   ssl_http11.next_proto = kProtoHTTP11;
@@ -12471,13 +12284,11 @@ TEST_F(HttpNetworkTransactionTest, UseAlternativeServiceForTunneledNpnSpdy) {
       CreateMockRead(data, 4), MockRead(SYNCHRONOUS, ERR_IO_PENDING, 5),
   };
 
-  SequencedSocketData spdy_data(spdy_reads, arraysize(spdy_reads), spdy_writes,
-                                arraysize(spdy_writes));
+  SequencedSocketData spdy_data(spdy_reads, spdy_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
 
   MockConnect never_finishing_connect(SYNCHRONOUS, ERR_IO_PENDING);
-  StaticSocketDataProvider hanging_non_alternate_protocol_socket(
-      NULL, 0, NULL, 0);
+  StaticSocketDataProvider hanging_non_alternate_protocol_socket;
   hanging_non_alternate_protocol_socket.set_connect_data(
       never_finishing_connect);
   session_deps_.socket_factory->AddSocketDataProvider(
@@ -12548,8 +12359,8 @@ TEST_F(HttpNetworkTransactionTest,
       MockRead(ASYNC, OK),
   };
 
-  StaticSocketDataProvider first_transaction(
-      data_reads, arraysize(data_reads), NULL, 0);
+  StaticSocketDataProvider first_transaction(data_reads,
+                                             base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&first_transaction);
   SSLSocketDataProvider ssl_http11(ASYNC, OK);
   ssl_http11.next_proto = kProtoHTTP11;
@@ -12567,8 +12378,7 @@ TEST_F(HttpNetworkTransactionTest,
       CreateMockRead(resp, 1), CreateMockRead(data, 2), MockRead(ASYNC, 0, 3),
   };
 
-  SequencedSocketData spdy_data(spdy_reads, arraysize(spdy_reads), spdy_writes,
-                                arraysize(spdy_writes));
+  SequencedSocketData spdy_data(spdy_reads, spdy_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
 
   TestCompletionCallback callback;
@@ -13514,8 +13324,7 @@ TEST_F(HttpNetworkTransactionTest, GenerateAuthToken) {
     std::vector<std::unique_ptr<StaticSocketDataProvider>> data_providers;
     for (size_t i = 0; i < mock_reads.size(); ++i) {
       data_providers.push_back(std::make_unique<StaticSocketDataProvider>(
-          mock_reads[i].data(), mock_reads[i].size(), mock_writes[i].data(),
-          mock_writes[i].size()));
+          mock_reads[i], mock_writes[i]));
       session_deps_.socket_factory->AddSocketDataProvider(
           data_providers.back().get());
     }
@@ -13649,8 +13458,7 @@ TEST_F(HttpNetworkTransactionTest, MultiRoundAuth) {
     // Competing response
     kSuccess,
   };
-  StaticSocketDataProvider data_provider(reads, arraysize(reads),
-                                         writes, arraysize(writes));
+  StaticSocketDataProvider data_provider(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data_provider);
 
   const char kSocketGroup[] = "www.example.com:80";
@@ -13780,8 +13588,7 @@ TEST_F(HttpNetworkTransactionTest, NpnWithHttpOverSSL) {
 
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads),
-                                data_writes, arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -13828,8 +13635,7 @@ TEST_F(HttpNetworkTransactionTest, SpdyPostNPNServerHangup) {
     MockRead(SYNCHRONOUS, 0, 0)   // Not async - return 0 immediately.
   };
 
-  SequencedSocketData spdy_data(spdy_reads, arraysize(spdy_reads), spdy_writes,
-                                arraysize(spdy_writes));
+  SequencedSocketData spdy_data(spdy_reads, spdy_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
 
   TestCompletionCallback callback;
@@ -13891,7 +13697,7 @@ TEST_F(HttpNetworkTransactionTest, SimpleCancel) {
   auto trans =
       std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), NULL, 0);
+  StaticSocketDataProvider data(data_reads, base::span<MockWrite>());
   data.set_connect_data(mock_connect);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
@@ -13922,7 +13728,7 @@ TEST_F(HttpNetworkTransactionTest, CancelAfterHeaders) {
     MockRead(ASYNC, "2"),
     MockRead(SYNCHRONOUS, ERR_IO_PENDING),  // Should never read this.
   };
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), NULL, 0);
+  StaticSocketDataProvider data(data_reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
@@ -13985,8 +13791,7 @@ TEST_F(HttpNetworkTransactionTest, ProxyGet) {
     MockRead(SYNCHRONOUS, OK),
   };
 
-  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                 data_writes1, arraysize(data_writes1));
+  StaticSocketDataProvider data1(data_reads1, data_writes1);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
 
   TestCompletionCallback callback1;
@@ -14059,8 +13864,7 @@ TEST_F(HttpNetworkTransactionTest, ProxyTunnelGet) {
     MockRead(SYNCHRONOUS, OK),
   };
 
-  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                 data_writes1, arraysize(data_writes1));
+  StaticSocketDataProvider data1(data_reads1, data_writes1);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
   SSLSocketDataProvider ssl(ASYNC, OK);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
@@ -14145,8 +13949,7 @@ TEST_F(HttpNetworkTransactionTest, ProxyTunnelGetIPv6) {
       MockRead(SYNCHRONOUS, OK),
   };
 
-  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                 data_writes1, arraysize(data_writes1));
+  StaticSocketDataProvider data1(data_reads1, data_writes1);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
   SSLSocketDataProvider ssl(ASYNC, OK);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
@@ -14219,8 +14022,7 @@ TEST_F(HttpNetworkTransactionTest, ProxyTunnelGetHangup) {
     MockRead(ASYNC, 0, 0),  // EOF
   };
 
-  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
-                                 data_writes1, arraysize(data_writes1));
+  StaticSocketDataProvider data1(data_reads1, data_writes1);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
   SSLSocketDataProvider ssl(ASYNC, OK);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
@@ -14257,8 +14059,7 @@ TEST_F(HttpNetworkTransactionTest, PreconnectWithExistingSpdySession) {
       CreateMockRead(resp, 1), CreateMockRead(data, 2), MockRead(ASYNC, 0, 3),
   };
 
-  SequencedSocketData spdy_data(spdy_reads, arraysize(spdy_reads), spdy_writes,
-                                arraysize(spdy_writes));
+  SequencedSocketData spdy_data(spdy_reads, spdy_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
 
   SSLSocketDataProvider ssl(ASYNC, OK);
@@ -14306,7 +14107,7 @@ void HttpNetworkTransactionTest::CheckErrorIsPassedBack(
   MockWrite data_writes[] = {
       MockWrite(mode, error),
   };
-  StaticSocketDataProvider data(NULL, 0, data_writes, arraysize(data_writes));
+  StaticSocketDataProvider data(base::span<MockRead>(), data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data);
 
@@ -14356,7 +14157,7 @@ TEST_F(HttpNetworkTransactionTest, ClientAuthCertCache_Direct_NoFalseStart) {
   SSLSocketDataProvider ssl_data1(ASYNC, ERR_SSL_CLIENT_AUTH_CERT_NEEDED);
   ssl_data1.cert_request_info = cert_request.get();
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data1);
-  StaticSocketDataProvider data1(NULL, 0, NULL, 0);
+  StaticSocketDataProvider data1;
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
 
   // [ssl_]data2 contains the data for the second SSL handshake. When TLS
@@ -14368,7 +14169,7 @@ TEST_F(HttpNetworkTransactionTest, ClientAuthCertCache_Direct_NoFalseStart) {
   SSLSocketDataProvider ssl_data2(ASYNC, ERR_SSL_PROTOCOL_ERROR);
   ssl_data2.cert_request_info = cert_request.get();
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data2);
-  StaticSocketDataProvider data2(NULL, 0, NULL, 0);
+  StaticSocketDataProvider data2;
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
 
   // [ssl_]data3 contains the data for the third SSL handshake. When a
@@ -14381,7 +14182,7 @@ TEST_F(HttpNetworkTransactionTest, ClientAuthCertCache_Direct_NoFalseStart) {
   SSLSocketDataProvider ssl_data3(ASYNC, ERR_SSL_PROTOCOL_ERROR);
   ssl_data3.cert_request_info = cert_request.get();
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data3);
-  StaticSocketDataProvider data3(NULL, 0, NULL, 0);
+  StaticSocketDataProvider data3;
   session_deps_.socket_factory->AddSocketDataProvider(&data3);
 
   // [ssl_]data4 contains the data for the fourth SSL handshake. When a
@@ -14394,7 +14195,7 @@ TEST_F(HttpNetworkTransactionTest, ClientAuthCertCache_Direct_NoFalseStart) {
   SSLSocketDataProvider ssl_data4(ASYNC, ERR_SSL_PROTOCOL_ERROR);
   ssl_data4.cert_request_info = cert_request.get();
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data4);
-  StaticSocketDataProvider data4(NULL, 0, NULL, 0);
+  StaticSocketDataProvider data4;
   session_deps_.socket_factory->AddSocketDataProvider(&data4);
 
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
@@ -14472,7 +14273,7 @@ TEST_F(HttpNetworkTransactionTest, ClientAuthCertCache_Direct_FalseStart) {
   SSLSocketDataProvider ssl_data1(ASYNC, ERR_SSL_CLIENT_AUTH_CERT_NEEDED);
   ssl_data1.cert_request_info = cert_request.get();
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data1);
-  StaticSocketDataProvider data1(NULL, 0, NULL, 0);
+  StaticSocketDataProvider data1;
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
 
   // When a client certificate is supplied, Connect() will not be aborted
@@ -14488,7 +14289,7 @@ TEST_F(HttpNetworkTransactionTest, ClientAuthCertCache_Direct_FalseStart) {
   MockRead data2_reads[] = {
       MockRead(ASYNC /* async */, ERR_SSL_PROTOCOL_ERROR),
   };
-  StaticSocketDataProvider data2(data2_reads, arraysize(data2_reads), NULL, 0);
+  StaticSocketDataProvider data2(data2_reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
 
   // As described in ClientAuthCertCache_Direct_NoFalseStart, [ssl_]data3 is
@@ -14497,7 +14298,7 @@ TEST_F(HttpNetworkTransactionTest, ClientAuthCertCache_Direct_FalseStart) {
   SSLSocketDataProvider ssl_data3(ASYNC, OK);
   ssl_data3.cert_request_info = cert_request.get();
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data3);
-  StaticSocketDataProvider data3(data2_reads, arraysize(data2_reads), NULL, 0);
+  StaticSocketDataProvider data3(data2_reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data3);
 
   // [ssl_]data4 is the data for the SSL handshake once the TLSv1 connection
@@ -14505,14 +14306,14 @@ TEST_F(HttpNetworkTransactionTest, ClientAuthCertCache_Direct_FalseStart) {
   SSLSocketDataProvider ssl_data4(ASYNC, OK);
   ssl_data4.cert_request_info = cert_request.get();
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data4);
-  StaticSocketDataProvider data4(data2_reads, arraysize(data2_reads), NULL, 0);
+  StaticSocketDataProvider data4(data2_reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data4);
 
   // Need one more if TLSv1.2 is enabled.
   SSLSocketDataProvider ssl_data5(ASYNC, OK);
   ssl_data5.cert_request_info = cert_request.get();
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data5);
-  StaticSocketDataProvider data5(data2_reads, arraysize(data2_reads), NULL, 0);
+  StaticSocketDataProvider data5(data2_reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data5);
 
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
@@ -14579,13 +14380,13 @@ TEST_F(HttpNetworkTransactionTest, ClientAuthCertCache_Proxy_Fail) {
   SSLSocketDataProvider ssl_data1(ASYNC, ERR_SSL_CLIENT_AUTH_CERT_NEEDED);
   ssl_data1.cert_request_info = cert_request.get();
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data1);
-  StaticSocketDataProvider data1(NULL, 0, NULL, 0);
+  StaticSocketDataProvider data1;
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
 
   SSLSocketDataProvider ssl_data2(ASYNC, ERR_SSL_PROTOCOL_ERROR);
   ssl_data2.cert_request_info = cert_request.get();
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data2);
-  StaticSocketDataProvider data2(NULL, 0, NULL, 0);
+  StaticSocketDataProvider data2;
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
 
   // TODO(wtc): find out why this unit test doesn't need [ssl_]data3.
@@ -14593,7 +14394,7 @@ TEST_F(HttpNetworkTransactionTest, ClientAuthCertCache_Proxy_Fail) {
   SSLSocketDataProvider ssl_data3(ASYNC, ERR_SSL_PROTOCOL_ERROR);
   ssl_data3.cert_request_info = cert_request.get();
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data3);
-  StaticSocketDataProvider data3(NULL, 0, NULL, 0);
+  StaticSocketDataProvider data3;
   session_deps_.socket_factory->AddSocketDataProvider(&data3);
 #endif
 
@@ -14690,8 +14491,7 @@ TEST_F(HttpNetworkTransactionTest, UseIPConnectionPooling) {
 
   IPEndPoint peer_addr(IPAddress::IPv4Localhost(), 443);
   MockConnect connect(ASYNC, OK, peer_addr);
-  SequencedSocketData spdy_data(connect, spdy_reads, arraysize(spdy_reads),
-                                spdy_writes, arraysize(spdy_writes));
+  SequencedSocketData spdy_data(connect, spdy_reads, spdy_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
 
   TestCompletionCallback callback;
@@ -14779,8 +14579,7 @@ TEST_F(HttpNetworkTransactionTest, UseIPConnectionPoolingAfterResolution) {
 
   IPEndPoint peer_addr(IPAddress::IPv4Localhost(), 443);
   MockConnect connect(ASYNC, OK, peer_addr);
-  SequencedSocketData spdy_data(connect, spdy_reads, arraysize(spdy_reads),
-                                spdy_writes, arraysize(spdy_writes));
+  SequencedSocketData spdy_data(connect, spdy_reads, spdy_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
 
   TestCompletionCallback callback;
@@ -14868,8 +14667,7 @@ TEST_F(HttpNetworkTransactionTest, RetryWithoutConnectionPooling) {
                        CreateMockRead(resp2, 4), MockRead(ASYNC, 0, 5)};
 
   MockConnect connect1(ASYNC, OK, peer_addr);
-  SequencedSocketData data1(connect1, reads1, arraysize(reads1), writes1,
-                            arraysize(writes1));
+  SequencedSocketData data1(connect1, reads1, writes1);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
 
   AddSSLSocketData();
@@ -14888,8 +14686,7 @@ TEST_F(HttpNetworkTransactionTest, RetryWithoutConnectionPooling) {
                        MockRead(ASYNC, 0, 3)};
 
   MockConnect connect2(ASYNC, OK, peer_addr);
-  SequencedSocketData data2(connect2, reads2, arraysize(reads2), writes2,
-                            arraysize(writes2));
+  SequencedSocketData data2(connect2, reads2, writes2);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
 
   AddSSLSocketData();
@@ -15000,8 +14797,7 @@ TEST_F(HttpNetworkTransactionTest, ReturnHTTP421OnRetry) {
                        CreateMockRead(resp2, 4), MockRead(ASYNC, 0, 5)};
 
   MockConnect connect1(ASYNC, OK, peer_addr);
-  SequencedSocketData data1(connect1, reads1, arraysize(reads1), writes1,
-                            arraysize(writes1));
+  SequencedSocketData data1(connect1, reads1, writes1);
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
 
   AddSSLSocketData();
@@ -15022,8 +14818,7 @@ TEST_F(HttpNetworkTransactionTest, ReturnHTTP421OnRetry) {
                        MockRead(ASYNC, 0, 3)};
 
   MockConnect connect2(ASYNC, OK, peer_addr);
-  SequencedSocketData data2(connect2, reads2, arraysize(reads2), writes2,
-                            arraysize(writes2));
+  SequencedSocketData data2(connect2, reads2, writes2);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
 
   AddSSLSocketData();
@@ -15141,8 +14936,7 @@ TEST_F(HttpNetworkTransactionTest,
 
   IPEndPoint peer_addr(IPAddress::IPv4Localhost(), 443);
   MockConnect connect(ASYNC, OK, peer_addr);
-  SequencedSocketData spdy_data(connect, spdy_reads, arraysize(spdy_reads),
-                                spdy_writes, arraysize(spdy_writes));
+  SequencedSocketData spdy_data(connect, spdy_reads, spdy_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
 
   TestCompletionCallback callback;
@@ -15217,8 +15011,7 @@ TEST_F(HttpNetworkTransactionTest, DoNotUseSpdySessionForHttp) {
   MockRead reads1[] = {CreateMockRead(resp1, 1), CreateMockRead(body1, 2),
                        MockRead(SYNCHRONOUS, ERR_IO_PENDING, 3)};
 
-  SequencedSocketData data1(reads1, arraysize(reads1), writes1,
-                            arraysize(writes1));
+  SequencedSocketData data1(reads1, writes1);
   MockConnect connect_data1(ASYNC, OK);
   data1.set_connect_data(connect_data1);
 
@@ -15236,8 +15029,7 @@ TEST_F(HttpNetworkTransactionTest, DoNotUseSpdySessionForHttp) {
       MockRead(ASYNC, OK, 3),
   };
 
-  SequencedSocketData data2(reads2, arraysize(reads2), writes2,
-                            arraysize(writes2));
+  SequencedSocketData data2(reads2, writes2);
 
   SSLSocketDataProvider ssl(ASYNC, OK);
   ssl.next_proto = kProtoHTTP2;
@@ -15368,8 +15160,7 @@ TEST_F(HttpNetworkTransactionTest, FailedAlternativeServiceIsNotUserVisible) {
       MockRead("Content-Length: 7\r\n\r\n"),
       MockRead("another"),
   };
-  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
-                                     http_writes, arraysize(http_writes));
+  StaticSocketDataProvider http_data(http_reads, http_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&http_data);
 
   // Set up alternative service for server.
@@ -15472,8 +15263,7 @@ TEST_F(HttpNetworkTransactionTest, AlternativeServiceShouldNotPoolToHttp11) {
           "Content-Length: 41\r\n\r\n"
           "second HTTP/1.1 response from alternative"),
   };
-  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
-                                     http_writes, arraysize(http_writes));
+  StaticSocketDataProvider http_data(http_reads, http_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&http_data);
 
   // This test documents that an alternate Job should not pool to an already
@@ -15607,8 +15397,7 @@ TEST_F(HttpNetworkTransactionTest, DoNotUseSpdySessionForHttpOverTunnel) {
       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 10),
   };
 
-  SequencedSocketData data1(reads1, arraysize(reads1), writes1,
-                            arraysize(writes1));
+  SequencedSocketData data1(reads1, writes1);
   MockConnect connect_data1(ASYNC, OK);
   data1.set_connect_data(connect_data1);
 
@@ -15707,8 +15496,7 @@ TEST_F(HttpNetworkTransactionTest, DoNotUseSpdySessionIfCertDoesNotMatch) {
       CreateMockRead(body1, 3), MockRead(ASYNC, OK, 4),  // EOF
   };
 
-  SequencedSocketData data1(reads1, arraysize(reads1), writes1,
-                            arraysize(writes1));
+  SequencedSocketData data1(reads1, writes1);
   IPAddress ip;
   ASSERT_TRUE(ip.AssignFromIPLiteral(ip_addr));
   IPEndPoint peer_addr = IPEndPoint(ip, 443);
@@ -15728,8 +15516,7 @@ TEST_F(HttpNetworkTransactionTest, DoNotUseSpdySessionIfCertDoesNotMatch) {
   MockRead reads2[] = {CreateMockRead(resp2, 1), CreateMockRead(body2, 2),
                        MockRead(ASYNC, OK, 3)};
 
-  SequencedSocketData data2(reads2, arraysize(reads2), writes2,
-                            arraysize(writes2));
+  SequencedSocketData data2(reads2, writes2);
   MockConnect connect_data2(ASYNC, OK);
   data2.set_connect_data(connect_data2);
 
@@ -15814,7 +15601,7 @@ TEST_F(HttpNetworkTransactionTest, ErrorSocketNotConnected) {
     MockRead(SYNCHRONOUS, ERR_CONNECTION_CLOSED, 0)
   };
 
-  SequencedSocketData data1(reads1, arraysize(reads1), NULL, 0);
+  SequencedSocketData data1(reads1, base::span<MockWrite>());
 
   SpdySerializedFrame req2(
       spdy_util_.ConstructSpdyGet(https_url.c_str(), 1, MEDIUM));
@@ -15829,8 +15616,7 @@ TEST_F(HttpNetworkTransactionTest, ErrorSocketNotConnected) {
       MockRead(ASYNC, OK, 3)  // EOF
   };
 
-  SequencedSocketData data2(reads2, arraysize(reads2), writes2,
-                            arraysize(writes2));
+  SequencedSocketData data2(reads2, writes2);
 
   SSLSocketDataProvider ssl1(ASYNC, OK);
   ssl1.next_proto = kProtoHTTP2;
@@ -15909,8 +15695,7 @@ TEST_F(HttpNetworkTransactionTest, CloseIdleSpdySessionToOpenNewOne) {
   // Use a separate test instance for the separate SpdySession that will be
   // created.
   SpdyTestUtil spdy_util_2;
-  SequencedSocketData spdy1_data(spdy1_reads, arraysize(spdy1_reads),
-                                 spdy1_writes, arraysize(spdy1_writes));
+  SequencedSocketData spdy1_data(spdy1_reads, spdy1_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&spdy1_data);
 
   SpdySerializedFrame host2_req(
@@ -15926,8 +15711,7 @@ TEST_F(HttpNetworkTransactionTest, CloseIdleSpdySessionToOpenNewOne) {
       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 3),
   };
 
-  SequencedSocketData spdy2_data(spdy2_reads, arraysize(spdy2_reads),
-                                 spdy2_writes, arraysize(spdy2_writes));
+  SequencedSocketData spdy2_data(spdy2_reads, spdy2_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&spdy2_data);
 
   MockWrite http_write[] = {
@@ -15942,8 +15726,7 @@ TEST_F(HttpNetworkTransactionTest, CloseIdleSpdySessionToOpenNewOne) {
     MockRead("Content-Length: 6\r\n\r\n"),
     MockRead("hello!"),
   };
-  StaticSocketDataProvider http_data(http_read, arraysize(http_read),
-                                     http_write, arraysize(http_write));
+  StaticSocketDataProvider http_data(http_read, http_write);
   session_deps_.socket_factory->AddSocketDataProvider(&http_data);
 
   HostPortPair host_port_pair_a("www.a.com", 443);
@@ -16134,8 +15917,7 @@ TEST_F(HttpNetworkTransactionTest, HttpSyncWriteError) {
     MockRead(SYNCHRONOUS, ERR_UNEXPECTED),  // Should not be reached.
   };
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads),
-                                data_writes, arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -16168,8 +15950,7 @@ TEST_F(HttpNetworkTransactionTest, HttpAsyncWriteError) {
     MockRead(SYNCHRONOUS, ERR_UNEXPECTED),  // Should not be reached.
   };
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads),
-                                data_writes, arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -16205,8 +15986,7 @@ TEST_F(HttpNetworkTransactionTest, HttpSyncReadError) {
     MockRead(SYNCHRONOUS, ERR_CONNECTION_RESET),
   };
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads),
-                                data_writes, arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -16242,8 +16022,7 @@ TEST_F(HttpNetworkTransactionTest, HttpAsyncReadError) {
     MockRead(ASYNC, ERR_CONNECTION_RESET),
   };
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads),
-                                data_writes, arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -16284,8 +16063,7 @@ TEST_F(HttpNetworkTransactionTest, GetFullRequestHeadersIncludesExtraHeader) {
     MockRead(ASYNC, ERR_UNEXPECTED),
   };
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads),
-                                data_writes, arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -16331,8 +16109,7 @@ TEST_F(HttpNetworkTransactionTest, CloseSSLSocketOnIdleForHttpRequest) {
     MockRead("hello world"),
     MockRead(SYNCHRONOUS, OK),
   };
-  StaticSocketDataProvider ssl_data(ssl_reads, arraysize(ssl_reads),
-                                    ssl_writes, arraysize(ssl_writes));
+  StaticSocketDataProvider ssl_data(ssl_reads, ssl_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&ssl_data);
 
   SSLSocketDataProvider ssl(ASYNC, OK);
@@ -16358,8 +16135,7 @@ TEST_F(HttpNetworkTransactionTest, CloseSSLSocketOnIdleForHttpRequest) {
     MockRead("falafel"),
     MockRead(SYNCHRONOUS, OK),
   };
-  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
-                                     http_writes, arraysize(http_writes));
+  StaticSocketDataProvider http_data(http_reads, http_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&http_data);
 
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
@@ -16442,8 +16218,7 @@ TEST_F(HttpNetworkTransactionTest, CloseSSLSocketOnIdleForHttpRequest2) {
     MockRead("falafel"),
     MockRead(SYNCHRONOUS, OK),
   };
-  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
-                                     http_writes, arraysize(http_writes));
+  StaticSocketDataProvider http_data(http_reads, http_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&http_data);
 
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
@@ -16501,8 +16276,7 @@ TEST_F(HttpNetworkTransactionTest, PostReadsErrorResponseAfterReset) {
     MockRead("hello world"),
     MockRead(SYNCHRONOUS, OK),
   };
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), data_writes,
-                                arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -16550,8 +16324,7 @@ TEST_F(HttpNetworkTransactionTest,
     MockRead("second response"),
     MockRead(SYNCHRONOUS, OK),
   };
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), data_writes,
-                                arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -16646,8 +16419,7 @@ TEST_F(HttpNetworkTransactionTest,
     MockRead("hello world"),
     MockRead(SYNCHRONOUS, OK),
   };
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), data_writes,
-                                arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -16698,8 +16470,7 @@ TEST_F(HttpNetworkTransactionTest, ChunkedPostReadsErrorResponseAfterReset) {
     MockRead("hello world"),
     MockRead(SYNCHRONOUS, OK),
   };
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), data_writes,
-                                arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -16759,8 +16530,7 @@ TEST_F(HttpNetworkTransactionTest, PostReadsErrorResponseAfterResetAnd100) {
     MockRead("hello world"),
     MockRead(SYNCHRONOUS, OK),
   };
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), data_writes,
-                                arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -16812,8 +16582,7 @@ TEST_F(HttpNetworkTransactionTest, PostIgnoresNonErrorResponseAfterReset) {
     MockRead("hello world"),
     MockRead(SYNCHRONOUS, OK),
   };
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), data_writes,
-                                arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -16857,8 +16626,7 @@ TEST_F(HttpNetworkTransactionTest,
     MockRead("Content-Length: 0\r\n\r\n"),
     MockRead(SYNCHRONOUS, OK),
   };
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), data_writes,
-                                arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -16898,8 +16666,7 @@ TEST_F(HttpNetworkTransactionTest, PostIgnoresHttp09ResponseAfterReset) {
     MockRead("HTTP 0.9 rocks!"),
     MockRead(SYNCHRONOUS, OK),
   };
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), data_writes,
-                                arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -16939,8 +16706,7 @@ TEST_F(HttpNetworkTransactionTest, PostIgnoresPartial400HeadersAfterReset) {
     MockRead("HTTP/1.0 400 Not a Full Response\r\n"),
     MockRead(SYNCHRONOUS, OK),
   };
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), data_writes,
-                                arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -16984,8 +16750,7 @@ TEST_F(HttpNetworkTransactionTest, CreateWebSocketHandshakeStream) {
                  "Connection: Upgrade\r\n"
                  "Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n\r\n")};
 
-    StaticSocketDataProvider data(data_reads, arraysize(data_reads),
-                                  data_writes, arraysize(data_writes));
+    StaticSocketDataProvider data(data_reads, data_writes);
     session_deps_.socket_factory->AddSocketDataProvider(&data);
     SSLSocketDataProvider ssl(ASYNC, OK);
     if (secure)
@@ -17080,8 +16845,7 @@ TEST_F(HttpNetworkTransactionTest, ProxyHeadersNotSentOverWssTunnel) {
                "Connection: Upgrade\r\n"
                "Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n\r\n")};
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), data_writes,
-                                arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
   SSLSocketDataProvider ssl(ASYNC, OK);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
@@ -17179,8 +16943,7 @@ TEST_F(HttpNetworkTransactionTest, ProxyHeadersNotSentOverWsTunnel) {
                "Connection: Upgrade\r\n"
                "Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n\r\n")};
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), data_writes,
-                                arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   session->http_auth_cache()->Add(
@@ -17241,8 +17004,7 @@ TEST_F(HttpNetworkTransactionTest, TotalNetworkBytesPost) {
       MockRead("HTTP/1.1 200 OK\r\n\r\n"), MockRead("hello world"),
       MockRead(SYNCHRONOUS, OK),
   };
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), data_writes,
-                                arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -17254,10 +17016,8 @@ TEST_F(HttpNetworkTransactionTest, TotalNetworkBytesPost) {
   std::string response_data;
   EXPECT_THAT(ReadTransaction(&trans, &response_data), IsOk());
 
-  EXPECT_EQ(CountWriteBytes(data_writes, arraysize(data_writes)),
-            trans.GetTotalSentBytes());
-  EXPECT_EQ(CountReadBytes(data_reads, arraysize(data_reads)),
-            trans.GetTotalReceivedBytes());
+  EXPECT_EQ(CountWriteBytes(data_writes), trans.GetTotalSentBytes());
+  EXPECT_EQ(CountReadBytes(data_reads), trans.GetTotalReceivedBytes());
 }
 
 TEST_F(HttpNetworkTransactionTest, TotalNetworkBytesPost100Continue) {
@@ -17288,8 +17048,7 @@ TEST_F(HttpNetworkTransactionTest, TotalNetworkBytesPost100Continue) {
       MockRead("HTTP/1.1 200 OK\r\n\r\n"), MockRead("hello world"),
       MockRead(SYNCHRONOUS, OK),
   };
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), data_writes,
-                                arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -17301,10 +17060,8 @@ TEST_F(HttpNetworkTransactionTest, TotalNetworkBytesPost100Continue) {
   std::string response_data;
   EXPECT_THAT(ReadTransaction(&trans, &response_data), IsOk());
 
-  EXPECT_EQ(CountWriteBytes(data_writes, arraysize(data_writes)),
-            trans.GetTotalSentBytes());
-  EXPECT_EQ(CountReadBytes(data_reads, arraysize(data_reads)),
-            trans.GetTotalReceivedBytes());
+  EXPECT_EQ(CountWriteBytes(data_writes), trans.GetTotalSentBytes());
+  EXPECT_EQ(CountReadBytes(data_reads), trans.GetTotalReceivedBytes());
 }
 
 TEST_F(HttpNetworkTransactionTest, TotalNetworkBytesChunkedPost) {
@@ -17332,8 +17089,7 @@ TEST_F(HttpNetworkTransactionTest, TotalNetworkBytesChunkedPost) {
       MockRead("HTTP/1.1 200 OK\r\n\r\n"), MockRead("hello world"),
       MockRead(SYNCHRONOUS, OK),
   };
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), data_writes,
-                                arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -17352,10 +17108,8 @@ TEST_F(HttpNetworkTransactionTest, TotalNetworkBytesChunkedPost) {
   std::string response_data;
   EXPECT_THAT(ReadTransaction(&trans, &response_data), IsOk());
 
-  EXPECT_EQ(CountWriteBytes(data_writes, arraysize(data_writes)),
-            trans.GetTotalSentBytes());
-  EXPECT_EQ(CountReadBytes(data_reads, arraysize(data_reads)),
-            trans.GetTotalReceivedBytes());
+  EXPECT_EQ(CountWriteBytes(data_writes), trans.GetTotalSentBytes());
+  EXPECT_EQ(CountReadBytes(data_reads), trans.GetTotalReceivedBytes());
 }
 
 #if !defined(OS_IOS)
@@ -17377,7 +17131,7 @@ TEST_F(HttpNetworkTransactionTest, TokenBindingSpdy) {
   SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockRead reads[] = {CreateMockRead(resp), CreateMockRead(body),
                       MockRead(ASYNC, ERR_IO_PENDING)};
-  StaticSocketDataProvider data(reads, arraysize(reads), nullptr, 0);
+  StaticSocketDataProvider data(reads, base::span<MockWrite>());
   session_deps_.socket_factory->AddSocketDataProvider(&data);
   session_deps_.channel_id_service =
       std::make_unique<ChannelIDService>(new DefaultChannelIDStore(nullptr));
@@ -17436,8 +17190,7 @@ void CheckContentEncodingMatching(SpdySessionDependencies* session_deps,
       MockRead("\r\n\r\n"),
       MockRead(SYNCHRONOUS, OK),
   };
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), data_writes,
-                                arraysize(data_writes));
+  StaticSocketDataProvider data(data_reads, data_writes);
   session_deps->socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;

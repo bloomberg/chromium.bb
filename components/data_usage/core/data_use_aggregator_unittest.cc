@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -275,7 +276,7 @@ class DataUseAggregatorTest : public testing::Test {
         net::MockRead("HTTP/1.1 200 OK\r\n\r\n"), net::MockRead("hello world"),
         net::MockRead(net::SYNCHRONOUS, net::OK),
     };
-    net::StaticSocketDataProvider socket(reads, arraysize(reads), nullptr, 0);
+    net::StaticSocketDataProvider socket(reads, base::span<net::MockWrite>());
     mock_socket_factory_->AddSocketDataProvider(&socket);
 
     net::TestDelegate delegate;

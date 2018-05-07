@@ -259,7 +259,8 @@ class QuicHttpStreamTest
     }
 
     socket_data_.reset(new StaticSocketDataProvider(
-        nullptr, 0, mock_writes_.get(), writes_.size()));
+        base::span<MockRead>(),
+        base::make_span(mock_writes_.get(), writes_.size())));
 
     std::unique_ptr<MockUDPClientSocket> socket(new MockUDPClientSocket(
         socket_data_.get(), net_log_.bound().net_log()));

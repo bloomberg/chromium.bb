@@ -1030,7 +1030,7 @@ TEST_F(TransportClientSocketPoolTest, IPv4HasNoFallback) {
 // Test that if TCP FastOpen is enabled, it is set on the socket
 // when we have only an IPv4 address.
 TEST_F(TransportClientSocketPoolTest, TCPFastOpenOnIPv4WithNoFallback) {
-  SequencedSocketData socket_data(nullptr, 0, nullptr, 0);
+  SequencedSocketData socket_data;
   MockClientSocketFactory factory;
   factory.AddSocketDataProvider(&socket_data);
   // Create a pool without backup jobs.
@@ -1054,7 +1054,7 @@ TEST_F(TransportClientSocketPoolTest, TCPFastOpenOnIPv4WithNoFallback) {
 // Test that if TCP FastOpen is enabled, it is set on the socket
 // when we have only IPv6 addresses.
 TEST_F(TransportClientSocketPoolTest, TCPFastOpenOnIPv6WithNoFallback) {
-  SequencedSocketData socket_data(nullptr, 0, nullptr, 0);
+  SequencedSocketData socket_data;
   MockClientSocketFactory factory;
   factory.AddSocketDataProvider(&socket_data);
   // Create a pool without backup jobs.
@@ -1083,9 +1083,10 @@ TEST_F(TransportClientSocketPoolTest, TCPFastOpenOnIPv6WithNoFallback) {
 // when the IPv6 connect fails and the IPv4 one succeeds.
 TEST_F(TransportClientSocketPoolTest,
        NoTCPFastOpenOnIPv6FailureWithIPv4Fallback) {
-  SequencedSocketData socket_data_1(nullptr, 0, nullptr, 0);
+  SequencedSocketData socket_data_1;
   socket_data_1.set_connect_data(MockConnect(SYNCHRONOUS, ERR_IO_PENDING));
-  SequencedSocketData socket_data_2(nullptr, 0, nullptr, 0);
+  SequencedSocketData socket_data_2;
+
   MockClientSocketFactory factory;
   factory.AddSocketDataProvider(&socket_data_1);
   factory.AddSocketDataProvider(&socket_data_2);
@@ -1119,7 +1120,7 @@ TEST_F(TransportClientSocketPoolTest,
 // when the IPv6 connect succeeds.
 TEST_F(TransportClientSocketPoolTest,
        NoTCPFastOpenOnIPv6SuccessWithIPv4Fallback) {
-  SequencedSocketData socket_data(nullptr, 0, nullptr, 0);
+  SequencedSocketData socket_data;
   MockClientSocketFactory factory;
   factory.AddSocketDataProvider(&socket_data);
   // Create a pool without backup jobs.

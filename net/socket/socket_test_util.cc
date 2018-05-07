@@ -23,6 +23,7 @@
 #include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "net/base/address_family.h"
@@ -175,16 +176,10 @@ SocketDataProvider::~SocketDataProvider() {
     socket_->OnDataProviderDestroyed();
 }
 
-StaticSocketDataHelper::StaticSocketDataHelper(const MockRead* reads,
-                                               size_t reads_count,
-                                               const MockWrite* writes,
-                                               size_t writes_count)
-    : reads_(reads),
-      read_index_(0),
-      read_count_(reads_count),
-      writes_(writes),
-      write_index_(0),
-      write_count_(writes_count) {}
+StaticSocketDataHelper::StaticSocketDataHelper(
+    base::span<const MockRead> reads,
+    base::span<const MockWrite> writes)
+    : reads_(reads), read_index_(0), writes_(writes), write_index_(0) {}
 
 StaticSocketDataHelper::~StaticSocketDataHelper() = default;
 
@@ -237,7 +232,7 @@ bool StaticSocketDataHelper::VerifyWriteData(const std::string& data) {
 }
 
 const MockWrite& StaticSocketDataHelper::PeekRealWrite() const {
-  for (size_t i = write_index_; i < write_count_; i++) {
+  for (size_t i = write_index_; i < write_count(); i++) {
     if (writes_[i].mode != ASYNC || writes_[i].result != ERR_IO_PENDING)
       return writes_[i];
   }
@@ -247,14 +242,13 @@ const MockWrite& StaticSocketDataHelper::PeekRealWrite() const {
 }
 
 StaticSocketDataProvider::StaticSocketDataProvider()
-    : StaticSocketDataProvider(nullptr, 0, nullptr, 0) {
-}
+    : StaticSocketDataProvider(base::span<const MockRead>(),
+                               base::span<const MockWrite>()) {}
 
-StaticSocketDataProvider::StaticSocketDataProvider(const MockRead* reads,
-                                                   size_t reads_count,
-                                                   const MockWrite* writes,
-                                                   size_t writes_count)
-    : helper_(reads, reads_count, writes, writes_count) {}
+StaticSocketDataProvider::StaticSocketDataProvider(
+    base::span<const MockRead> reads,
+    base::span<const MockWrite> writes)
+    : helper_(reads, writes) {}
 
 StaticSocketDataProvider::~StaticSocketDataProvider() = default;
 
@@ -325,11 +319,13 @@ SSLSocketDataProvider::SSLSocketDataProvider(
 
 SSLSocketDataProvider::~SSLSocketDataProvider() = default;
 
-SequencedSocketData::SequencedSocketData(const MockRead* reads,
-                                         size_t reads_count,
-                                         const MockWrite* writes,
-                                         size_t writes_count)
-    : helper_(reads, reads_count, writes, writes_count),
+SequencedSocketData::SequencedSocketData()
+    : SequencedSocketData(base::span<const MockRead>(),
+                          base::span<const MockWrite>()) {}
+
+SequencedSocketData::SequencedSocketData(base::span<const MockRead> reads,
+                                         base::span<const MockWrite> writes)
+    : helper_(reads, writes),
       sequence_number_(0),
       read_state_(IDLE),
       write_state_(IDLE),
@@ -339,24 +335,24 @@ SequencedSocketData::SequencedSocketData(const MockRead* reads,
   // Check that reads and writes have a contiguous set of sequence numbers
   // starting from 0 and working their way up, with no repeats and skipping
   // no values.
-  size_t next_read = 0;
-  size_t next_write = 0;
   int next_sequence_number = 0;
   bool last_event_was_pause = false;
-  while (next_read < reads_count || next_write < writes_count) {
-    if (next_read < reads_count &&
-        reads[next_read].sequence_number == next_sequence_number) {
+
+  auto* next_read = reads.begin();
+  auto* next_write = writes.begin();
+  while (next_read != reads.end() || next_write != writes.end()) {
+    if (next_read != reads.end() &&
+        next_read->sequence_number == next_sequence_number) {
       // Check if this is a pause.
-      if (reads[next_read].mode == ASYNC &&
-          reads[next_read].result == ERR_IO_PENDING) {
+      if (next_read->mode == ASYNC && next_read->result == ERR_IO_PENDING) {
         CHECK(!last_event_was_pause) << "Two pauses in a row are not allowed: "
                                      << next_sequence_number;
         last_event_was_pause = true;
       } else if (last_event_was_pause) {
-        CHECK_EQ(ASYNC, reads[next_read].mode)
+        CHECK_EQ(ASYNC, next_read->mode)
             << "A sync event after a pause makes no sense: "
             << next_sequence_number;
-        CHECK_NE(ERR_IO_PENDING, reads[next_read].result)
+        CHECK_NE(ERR_IO_PENDING, next_read->result)
             << "A pause event after a pause makes no sense: "
             << next_sequence_number;
         last_event_was_pause = false;
@@ -366,19 +362,18 @@ SequencedSocketData::SequencedSocketData(const MockRead* reads,
       ++next_sequence_number;
       continue;
     }
-    if (next_write < writes_count &&
-        writes[next_write].sequence_number == next_sequence_number) {
+    if (next_write != writes.end() &&
+        next_write->sequence_number == next_sequence_number) {
       // Check if this is a pause.
-      if (writes[next_write].mode == ASYNC &&
-          writes[next_write].result == ERR_IO_PENDING) {
+      if (next_write->mode == ASYNC && next_write->result == ERR_IO_PENDING) {
         CHECK(!last_event_was_pause) << "Two pauses in a row are not allowed: "
                                      << next_sequence_number;
         last_event_was_pause = true;
       } else if (last_event_was_pause) {
-        CHECK_EQ(ASYNC, writes[next_write].mode)
+        CHECK_EQ(ASYNC, next_write->mode)
             << "A sync event after a pause makes no sense: "
             << next_sequence_number;
-        CHECK_NE(ERR_IO_PENDING, writes[next_write].result)
+        CHECK_NE(ERR_IO_PENDING, next_write->result)
             << "A pause event after a pause makes no sense: "
             << next_sequence_number;
         last_event_was_pause = false;
@@ -398,16 +393,14 @@ SequencedSocketData::SequencedSocketData(const MockRead* reads,
   // ERR_IO_PENDING.
   CHECK(!last_event_was_pause);
 
-  CHECK_EQ(next_read, reads_count);
-  CHECK_EQ(next_write, writes_count);
+  CHECK_EQ(next_read, reads.end());
+  CHECK_EQ(next_write, writes.end());
 }
 
 SequencedSocketData::SequencedSocketData(const MockConnect& connect,
-                                         const MockRead* reads,
-                                         size_t reads_count,
-                                         const MockWrite* writes,
-                                         size_t writes_count)
-    : SequencedSocketData(reads, reads_count, writes, writes_count) {
+                                         base::span<const MockRead> reads,
+                                         base::span<const MockWrite> writes)
+    : SequencedSocketData(reads, writes) {
   set_connect_data(connect);
 }
 
@@ -2240,36 +2233,36 @@ MockTaggingClientSocketFactory::CreateDatagramClientSocket(
 const char kSOCKS4OkRequestLocalHostPort80[] = {0x04, 0x01, 0x00, 0x50, 127,
                                                 0,    0,    1,    0};
 const int kSOCKS4OkRequestLocalHostPort80Length =
-    arraysize(kSOCKS4OkRequestLocalHostPort80);
+    base::size(kSOCKS4OkRequestLocalHostPort80);
 
 const char kSOCKS4OkReply[] = {0x00, 0x5A, 0x00, 0x00, 0, 0, 0, 0};
-const int kSOCKS4OkReplyLength = arraysize(kSOCKS4OkReply);
+const int kSOCKS4OkReplyLength = base::size(kSOCKS4OkReply);
 
 const char kSOCKS5GreetRequest[] = { 0x05, 0x01, 0x00 };
-const int kSOCKS5GreetRequestLength = arraysize(kSOCKS5GreetRequest);
+const int kSOCKS5GreetRequestLength = base::size(kSOCKS5GreetRequest);
 
 const char kSOCKS5GreetResponse[] = { 0x05, 0x00 };
-const int kSOCKS5GreetResponseLength = arraysize(kSOCKS5GreetResponse);
+const int kSOCKS5GreetResponseLength = base::size(kSOCKS5GreetResponse);
 
 const char kSOCKS5OkRequest[] =
     { 0x05, 0x01, 0x00, 0x03, 0x04, 'h', 'o', 's', 't', 0x00, 0x50 };
-const int kSOCKS5OkRequestLength = arraysize(kSOCKS5OkRequest);
+const int kSOCKS5OkRequestLength = base::size(kSOCKS5OkRequest);
 
 const char kSOCKS5OkResponse[] =
     { 0x05, 0x00, 0x00, 0x01, 127, 0, 0, 1, 0x00, 0x50 };
-const int kSOCKS5OkResponseLength = arraysize(kSOCKS5OkResponse);
+const int kSOCKS5OkResponseLength = base::size(kSOCKS5OkResponse);
 
-int64_t CountReadBytes(const MockRead reads[], size_t reads_size) {
+int64_t CountReadBytes(base::span<const MockRead> reads) {
   int64_t total = 0;
-  for (const MockRead* read = reads; read != reads + reads_size; ++read)
-    total += read->data_len;
+  for (const MockRead& read : reads)
+    total += read.data_len;
   return total;
 }
 
-int64_t CountWriteBytes(const MockWrite writes[], size_t writes_size) {
+int64_t CountWriteBytes(base::span<const MockWrite> writes) {
   int64_t total = 0;
-  for (const MockWrite* write = writes; write != writes + writes_size; ++write)
-    total += write->data_len;
+  for (const MockWrite& write : writes)
+    total += write.data_len;
   return total;
 }
 

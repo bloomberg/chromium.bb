@@ -21,7 +21,7 @@ namespace net {
 
 // Make sure that Request passes on its priority updates to its jobs.
 TEST(HttpStreamRequestTest, SetPriority) {
-  SequencedSocketData data(nullptr, 0, nullptr, 0);
+  SequencedSocketData data;
   data.set_connect_data(MockConnect(ASYNC, OK));
   auto ssl_data = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
   SpdySessionDependencies session_deps(ProxyResolutionService::CreateDirect());

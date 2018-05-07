@@ -2109,7 +2109,7 @@ TEST_F(SSLClientSocketTest, PrematureApplicationData) {
                arraysize(application_data)),
       MockRead(SYNCHRONOUS, OK), };
 
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), NULL, 0);
+  StaticSocketDataProvider data(data_reads, base::span<MockWrite>());
 
   TestCompletionCallback callback;
   std::unique_ptr<StreamSocket> transport(

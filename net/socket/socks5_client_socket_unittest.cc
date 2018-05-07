@@ -9,7 +9,9 @@
 #include <map>
 #include <utility>
 
+#include "base/containers/span.h"
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/sys_byteorder.h"
 #include "build/build_config.h"
 #include "net/base/address_list.h"
@@ -46,10 +48,8 @@ class SOCKS5ClientSocketTest : public PlatformTest {
   SOCKS5ClientSocketTest();
   // Create a SOCKSClientSocket on top of a MockSocket.
   std::unique_ptr<SOCKS5ClientSocket> BuildMockSocket(
-      MockRead reads[],
-      size_t reads_count,
-      MockWrite writes[],
-      size_t writes_count,
+      base::span<const MockRead> reads,
+      base::span<const MockWrite> writes,
       const std::string& hostname,
       int port,
       NetLog* net_log);
@@ -94,16 +94,13 @@ void SOCKS5ClientSocketTest::SetUp() {
 }
 
 std::unique_ptr<SOCKS5ClientSocket> SOCKS5ClientSocketTest::BuildMockSocket(
-    MockRead reads[],
-    size_t reads_count,
-    MockWrite writes[],
-    size_t writes_count,
+    base::span<const MockRead> reads,
+    base::span<const MockWrite> writes,
     const std::string& hostname,
     int port,
     NetLog* net_log) {
   TestCompletionCallback callback;
-  data_.reset(new StaticSocketDataProvider(reads, reads_count,
-                                           writes, writes_count));
+  data_.reset(new StaticSocketDataProvider(reads, writes));
   tcp_sock_ = new MockTCPClientSocket(address_list_, net_log, data_.get());
 
   int rv = tcp_sock_->Connect(callback.callback());
@@ -140,16 +137,15 @@ TEST_F(SOCKS5ClientSocketTest, CompleteHandshake) {
 
   MockWrite data_writes[] = {
       MockWrite(ASYNC, kSOCKS5GreetRequest, kSOCKS5GreetRequestLength),
-      MockWrite(ASYNC, kOkRequest, arraysize(kOkRequest)),
-      MockWrite(ASYNC, payload_write.data(), payload_write.size()) };
+      MockWrite(ASYNC, kOkRequest, base::size(kOkRequest)),
+      MockWrite(ASYNC, payload_write.data(), payload_write.size())};
   MockRead data_reads[] = {
       MockRead(ASYNC, kSOCKS5GreetResponse, kSOCKS5GreetResponseLength),
       MockRead(ASYNC, kSOCKS5OkResponse, kSOCKS5OkResponseLength),
       MockRead(ASYNC, payload_read.data(), payload_read.size()) };
 
-  user_sock_ = BuildMockSocket(data_reads, arraysize(data_reads),
-                               data_writes, arraysize(data_writes),
-                               "localhost", 80, &net_log_);
+  user_sock_ =
+      BuildMockSocket(data_reads, data_writes, "localhost", 80, &net_log_);
 
   // At this state the TCP connection is completed but not the SOCKS handshake.
   EXPECT_TRUE(tcp_sock_->IsConnected());
@@ -204,7 +200,7 @@ TEST_F(SOCKS5ClientSocketTest, ConnectAndDisconnectTwice) {
       0x03,  // ATYPE
   };
 
-  std::string request(kSOCKS5DomainRequest, arraysize(kSOCKS5DomainRequest));
+  std::string request(kSOCKS5DomainRequest, base::size(kSOCKS5DomainRequest));
   request.push_back(static_cast<char>(hostname.size()));
   request.append(hostname);
   request.append(reinterpret_cast<const char*>(&kNwPort), sizeof(kNwPort));
@@ -219,9 +215,7 @@ TEST_F(SOCKS5ClientSocketTest, ConnectAndDisconnectTwice) {
         MockRead(SYNCHRONOUS, kSOCKS5OkResponse, kSOCKS5OkResponseLength)
     };
 
-    user_sock_ = BuildMockSocket(data_reads, arraysize(data_reads),
-                                 data_writes, arraysize(data_writes),
-                                 hostname, 80, NULL);
+    user_sock_ = BuildMockSocket(data_reads, data_writes, hostname, 80, NULL);
 
     int rv = user_sock_->Connect(callback_.callback());
     EXPECT_THAT(rv, IsOk());
@@ -241,9 +235,8 @@ TEST_F(SOCKS5ClientSocketTest, LargeHostNameFails) {
   // Create a SOCKS socket, with mock transport socket.
   MockWrite data_writes[] = {MockWrite()};
   MockRead data_reads[] = {MockRead()};
-  user_sock_ = BuildMockSocket(data_reads, arraysize(data_reads),
-                               data_writes, arraysize(data_writes),
-                               large_host_name, 80, NULL);
+  user_sock_ =
+      BuildMockSocket(data_reads, data_writes, large_host_name, 80, NULL);
 
   // Try to connect -- should fail (without having read/written anything to
   // the transport socket first) because the hostname is too long.
@@ -271,15 +264,14 @@ TEST_F(SOCKS5ClientSocketTest, PartialReadWrites) {
     const char partial1[] = { 0x05, 0x01 };
     const char partial2[] = { 0x00 };
     MockWrite data_writes[] = {
-        MockWrite(ASYNC, partial1, arraysize(partial1)),
-        MockWrite(ASYNC, partial2, arraysize(partial2)),
-        MockWrite(ASYNC, kOkRequest, arraysize(kOkRequest)) };
+        MockWrite(ASYNC, partial1, base::size(partial1)),
+        MockWrite(ASYNC, partial2, base::size(partial2)),
+        MockWrite(ASYNC, kOkRequest, base::size(kOkRequest))};
     MockRead data_reads[] = {
         MockRead(ASYNC, kSOCKS5GreetResponse, kSOCKS5GreetResponseLength),
         MockRead(ASYNC, kSOCKS5OkResponse, kSOCKS5OkResponseLength) };
-    user_sock_ = BuildMockSocket(data_reads, arraysize(data_reads),
-                                 data_writes, arraysize(data_writes),
-                                 hostname, 80, &net_log_);
+    user_sock_ =
+        BuildMockSocket(data_reads, data_writes, hostname, 80, &net_log_);
     int rv = user_sock_->Connect(callback_.callback());
     EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
@@ -303,14 +295,13 @@ TEST_F(SOCKS5ClientSocketTest, PartialReadWrites) {
     const char partial2[] = { 0x00 };
     MockWrite data_writes[] = {
         MockWrite(ASYNC, kSOCKS5GreetRequest, kSOCKS5GreetRequestLength),
-        MockWrite(ASYNC, kOkRequest, arraysize(kOkRequest)) };
+        MockWrite(ASYNC, kOkRequest, base::size(kOkRequest))};
     MockRead data_reads[] = {
-        MockRead(ASYNC, partial1, arraysize(partial1)),
-        MockRead(ASYNC, partial2, arraysize(partial2)),
-        MockRead(ASYNC, kSOCKS5OkResponse, kSOCKS5OkResponseLength) };
-    user_sock_ = BuildMockSocket(data_reads, arraysize(data_reads),
-                                 data_writes, arraysize(data_writes),
-                                 hostname, 80, &net_log_);
+        MockRead(ASYNC, partial1, base::size(partial1)),
+        MockRead(ASYNC, partial2, base::size(partial2)),
+        MockRead(ASYNC, kSOCKS5OkResponse, kSOCKS5OkResponseLength)};
+    user_sock_ =
+        BuildMockSocket(data_reads, data_writes, hostname, 80, &net_log_);
     int rv = user_sock_->Connect(callback_.callback());
     EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
@@ -333,14 +324,12 @@ TEST_F(SOCKS5ClientSocketTest, PartialReadWrites) {
         MockWrite(ASYNC, kSOCKS5GreetRequest, kSOCKS5GreetRequestLength),
         MockWrite(ASYNC, kOkRequest, kSplitPoint),
         MockWrite(ASYNC, kOkRequest + kSplitPoint,
-                  arraysize(kOkRequest) - kSplitPoint)
-    };
+                  base::size(kOkRequest) - kSplitPoint)};
     MockRead data_reads[] = {
         MockRead(ASYNC, kSOCKS5GreetResponse, kSOCKS5GreetResponseLength),
         MockRead(ASYNC, kSOCKS5OkResponse, kSOCKS5OkResponseLength) };
-    user_sock_ = BuildMockSocket(data_reads, arraysize(data_reads),
-                                 data_writes, arraysize(data_writes),
-                                 hostname, 80, &net_log_);
+    user_sock_ =
+        BuildMockSocket(data_reads, data_writes, hostname, 80, &net_log_);
     int rv = user_sock_->Connect(callback_.callback());
     EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
     TestNetLogEntry::List net_log_entries;
@@ -360,8 +349,7 @@ TEST_F(SOCKS5ClientSocketTest, PartialReadWrites) {
     const int kSplitPoint = 6;  // Break the handshake read into two parts.
     MockWrite data_writes[] = {
         MockWrite(ASYNC, kSOCKS5GreetRequest, kSOCKS5GreetRequestLength),
-        MockWrite(ASYNC, kOkRequest, arraysize(kOkRequest))
-    };
+        MockWrite(ASYNC, kOkRequest, base::size(kOkRequest))};
     MockRead data_reads[] = {
         MockRead(ASYNC, kSOCKS5GreetResponse, kSOCKS5GreetResponseLength),
         MockRead(ASYNC, kSOCKS5OkResponse, kSplitPoint),
@@ -369,9 +357,8 @@ TEST_F(SOCKS5ClientSocketTest, PartialReadWrites) {
                  kSOCKS5OkResponseLength - kSplitPoint)
     };
 
-    user_sock_ = BuildMockSocket(data_reads, arraysize(data_reads),
-                                 data_writes, arraysize(data_writes),
-                                 hostname, 80, &net_log_);
+    user_sock_ =
+        BuildMockSocket(data_reads, data_writes, hostname, 80, &net_log_);
     int rv = user_sock_->Connect(callback_.callback());
     EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
     TestNetLogEntry::List net_log_entries;

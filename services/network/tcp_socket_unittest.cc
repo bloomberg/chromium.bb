@@ -668,7 +668,7 @@ TEST_P(TCPSocketWithMockSocketTest,
   std::vector<std::unique_ptr<net::StaticSocketDataProvider>> data_providers;
   for (size_t i = 0; i < kBacklog + 1; ++i) {
     auto provider = std::make_unique<net::StaticSocketDataProvider>(
-        kReads, arraysize(kReads), nullptr, 0);
+        kReads, base::span<net::MockWrite>());
     provider->set_connect_data(net::MockConnect(net::SYNCHRONOUS, net::OK));
     data_providers.push_back(std::move(provider));
   }
@@ -737,7 +737,7 @@ TEST_P(TCPSocketWithMockSocketTest, ServerAcceptWithObserverReadError) {
   std::vector<std::unique_ptr<net::StaticSocketDataProvider>> data_providers;
   std::unique_ptr<net::StaticSocketDataProvider> provider;
   provider = std::make_unique<net::StaticSocketDataProvider>(
-      kReadError, arraysize(kReadError), nullptr, 0);
+      kReadError, base::span<net::MockWrite>());
   provider->set_connect_data(net::MockConnect(net::SYNCHRONOUS, net::OK));
   data_providers.push_back(std::move(provider));
 
@@ -791,8 +791,8 @@ TEST_P(TCPSocketWithMockSocketTest, ServerAcceptWithObserverWriteError) {
       net::MockWrite(mode, net::ERR_TIMED_OUT)};
   std::vector<std::unique_ptr<net::StaticSocketDataProvider>> data_providers;
   std::unique_ptr<net::StaticSocketDataProvider> provider;
-  provider = std::make_unique<net::StaticSocketDataProvider>(
-      kReads, arraysize(kReads), kWriteError, arraysize(kWriteError));
+  provider =
+      std::make_unique<net::StaticSocketDataProvider>(kReads, kWriteError);
   provider->set_connect_data(net::MockConnect(net::SYNCHRONOUS, net::OK));
   data_providers.push_back(std::move(provider));
 
@@ -864,8 +864,7 @@ TEST_P(TCPSocketWithMockSocketTest, ReadAndWriteMultiple) {
           net::MockWrite(mode, &kTestMsg[i], 1, sequence_number++));
     }
   }
-  net::StaticSocketDataProvider data_provider(reads.data(), reads.size(),
-                                              writes.data(), writes.size());
+  net::StaticSocketDataProvider data_provider(reads, writes);
   net::IPEndPoint server_addr(net::IPAddress::IPv4Localhost(), 1234);
   data_provider.set_connect_data(
       net::MockConnect(net::SYNCHRONOUS, net::OK, server_addr));
@@ -917,8 +916,7 @@ TEST_P(TCPSocketWithMockSocketTest, PartialStreamSocketWrite) {
           net::MockWrite(mode, &kTestMsg[i], 1, sequence_number++));
     }
   }
-  net::StaticSocketDataProvider data_provider(reads.data(), reads.size(),
-                                              writes.data(), writes.size());
+  net::StaticSocketDataProvider data_provider(reads, writes);
   net::IPEndPoint server_addr(net::IPAddress::IPv4Localhost(), 1234);
   data_provider.set_connect_data(
       net::MockConnect(net::SYNCHRONOUS, net::OK, server_addr));
@@ -964,8 +962,7 @@ TEST_P(TCPSocketWithMockSocketTest, ReadError) {
   net::MockWrite writes[] = {
       net::MockWrite(mode, kTestMsg, strlen(kTestMsg), 0)};
   net::IPEndPoint server_addr(net::IPAddress::IPv4Localhost(), 1234);
-  net::StaticSocketDataProvider data_provider(reads, arraysize(reads), writes,
-                                              arraysize(writes));
+  net::StaticSocketDataProvider data_provider(reads, writes);
   data_provider.set_connect_data(
       net::MockConnect(net::SYNCHRONOUS, net::OK, server_addr));
   mock_client_socket_factory_.AddSocketDataProvider(&data_provider);
@@ -996,8 +993,7 @@ TEST_P(TCPSocketWithMockSocketTest, WriteError) {
   net::MockRead reads[] = {net::MockRead(mode, kTestMsg, strlen(kTestMsg), 0),
                            net::MockRead(mode, net::OK)};
   net::MockWrite writes[] = {net::MockWrite(mode, net::ERR_FAILED)};
-  net::StaticSocketDataProvider data_provider(reads, arraysize(reads), writes,
-                                              arraysize(writes));
+  net::StaticSocketDataProvider data_provider(reads, writes);
   net::IPEndPoint server_addr(net::IPAddress::IPv4Localhost(), 1234);
   data_provider.set_connect_data(
       net::MockConnect(net::SYNCHRONOUS, net::OK, server_addr));

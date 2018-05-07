@@ -172,8 +172,8 @@ TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLNoViaHeader) {
   success_reads[2] = net::MockRead(net::SYNCHRONOUS, net::OK);
 
   socket_data_providers.push_back(
-      (std::make_unique<net::StaticSocketDataProvider>(
-          success_reads, arraysize(success_reads), nullptr, 0)));
+      std::make_unique<net::StaticSocketDataProvider>(
+          success_reads, base::span<net::MockWrite>()));
   mock_socket_factory.AddSocketDataProvider(socket_data_providers.back().get());
 
   std::unique_ptr<net::TestURLRequestContext> test_request_context(
@@ -236,8 +236,8 @@ TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLWithViaHeader) {
   success_reads[2] = net::MockRead(net::SYNCHRONOUS, net::OK);
 
   socket_data_providers.push_back(
-      (std::make_unique<net::StaticSocketDataProvider>(
-          success_reads, arraysize(success_reads), nullptr, 0)));
+      std::make_unique<net::StaticSocketDataProvider>(
+          success_reads, base::span<net::MockWrite>()));
   mock_socket_factory.AddSocketDataProvider(socket_data_providers.back().get());
 
   std::unique_ptr<net::TestURLRequestContext> test_request_context(
@@ -300,8 +300,8 @@ TEST(WarmupURLFetcherTest,
   success_reads[2] = net::MockRead(net::SYNCHRONOUS, net::OK);
 
   socket_data_providers.push_back(
-      (std::make_unique<net::StaticSocketDataProvider>(
-          success_reads, arraysize(success_reads), nullptr, 0)));
+      std::make_unique<net::StaticSocketDataProvider>(
+          success_reads, base::span<net::MockWrite>()));
   mock_socket_factory.AddSocketDataProvider(socket_data_providers.back().get());
 
   std::unique_ptr<net::TestURLRequestContext> test_request_context(
@@ -353,8 +353,8 @@ TEST(WarmupURLFetcherTest, TestConnectionResetFetchWarmupURL) {
   success_reads[0] = net::MockRead(net::SYNCHRONOUS, net::ERR_CONNECTION_RESET);
 
   socket_data_providers.push_back(
-      (std::make_unique<net::StaticSocketDataProvider>(
-          success_reads, arraysize(success_reads), nullptr, 0)));
+      std::make_unique<net::StaticSocketDataProvider>(
+          success_reads, base::span<net::MockWrite>()));
   mock_socket_factory.AddSocketDataProvider(socket_data_providers.back().get());
 
   std::unique_ptr<net::TestURLRequestContext> test_request_context(
@@ -413,8 +413,8 @@ TEST(WarmupURLFetcherTest, TestFetchTimesout) {
   success_reads[2] = net::MockRead(net::SYNCHRONOUS, net::OK);
 
   socket_data_providers.push_back(
-      (std::make_unique<net::StaticSocketDataProvider>(
-          success_reads, arraysize(success_reads), nullptr, 0)));
+      std::make_unique<net::StaticSocketDataProvider>(
+          success_reads, base::span<net::MockWrite>()));
   mock_socket_factory.AddSocketDataProvider(socket_data_providers.back().get());
 
   std::unique_ptr<net::TestURLRequestContext> test_request_context(
@@ -473,8 +473,8 @@ TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLWithDelay) {
   success_reads[2] = net::MockRead(net::SYNCHRONOUS, net::OK);
 
   socket_data_providers.push_back(
-      (std::make_unique<net::StaticSocketDataProvider>(
-          success_reads, arraysize(success_reads), nullptr, 0)));
+      std::make_unique<net::StaticSocketDataProvider>(
+          success_reads, base::span<net::MockWrite>()));
   mock_socket_factory.AddSocketDataProvider(socket_data_providers.back().get());
 
   std::unique_ptr<net::TestURLRequestContext> test_request_context(
