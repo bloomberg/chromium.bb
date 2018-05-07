@@ -13,6 +13,9 @@ enum WebClientHintsType {
   // arbitrary origins. As such, this list should not include any client hint
   // that provides user identification information, or anything that can be
   // considered as privacy sensitive information.
+  // Additionally, all client hints headers are considered as CORS-safelisted
+  // headers, and as such should not include any user identification or
+  // privacy sensitive information.
   kDeviceMemory = 0,
   kDpr = 1,
   kResourceWidth = 2,

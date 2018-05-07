@@ -33,6 +33,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "third_party/blink/public/common/client_hints/client_hints.h"
@@ -464,6 +465,24 @@ class ClientHintsBrowserTest : public InProcessBrowserTest {
 
   DISALLOW_COPY_AND_ASSIGN(ClientHintsBrowserTest);
 };
+
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, CorsChecks) {
+  for (size_t i = 0; i < blink::kClientHintsHeaderMappingCount; ++i) {
+    // Do not test for headers that have not been enabled on the blink "stable"
+    // yet.
+    if (std::string(blink::kClientHintsHeaderMapping[i]) == "rtt" ||
+        std::string(blink::kClientHintsHeaderMapping[i]) == "downlink" ||
+        std::string(blink::kClientHintsHeaderMapping[i]) == "ect") {
+      continue;
+    }
+    EXPECT_TRUE(network::cors::IsCORSSafelistedHeader(
+        blink::kClientHintsHeaderMapping[i], "42" /* value */));
+  }
+  EXPECT_FALSE(network::cors::IsCORSSafelistedHeader("not-a-client-hint-header",
+                                                     "" /* value */));
+  EXPECT_TRUE(
+      network::cors::IsCORSSafelistedHeader("save-data", "on" /* value */));
+}
 
 // Loads a webpage that requests persisting of client hints. Verifies that
 // the browser receives the mojo notification from the renderer and persists the
