@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_edit_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_folder_editor_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_folder_view_controller.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_home_shared_state.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_waiting_view.h"
 #include "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_navigation_controller.h"
@@ -72,6 +73,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     BookmarkEditViewControllerDelegate,
     BookmarkFolderEditorViewControllerDelegate,
     BookmarkFolderViewControllerDelegate,
+    BookmarkHomeSharedStateObserver,
     BookmarkModelBridgeObserver,
     BookmarkPromoControllerDelegate,
     BookmarkTableViewDelegate,
@@ -86,6 +88,10 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   // YES if NSLayoutConstraits were added.
   BOOL _addedConstraints;
 }
+
+// Shared state between BookmarkHome classes.  Used as a temporary refactoring
+// aid.
+@property(nonatomic, strong) BookmarkHomeSharedState* sharedState;
 
 // The bookmark model used.
 @property(nonatomic, assign) bookmarks::BookmarkModel* bookmarks;
@@ -153,6 +159,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 @synthesize dispatcher = _dispatcher;
 @synthesize cachedContentPosition = _cachedContentPosition;
 @synthesize isReconstructingFromCache = _isReconstructingFromCache;
+@synthesize sharedState = _sharedState;
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -243,13 +250,18 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 #pragma mark - Protected
 
 - (void)loadBookmarkViews {
+  DCHECK(_rootNode);
+  self.sharedState =
+      [[BookmarkHomeSharedState alloc] initWithBookmarkModel:_bookmarks
+                                           displayedRootNode:_rootNode];
+  self.sharedState.observer = self;
+
   self.automaticallyAdjustsScrollViewInsets = NO;
-  self.bookmarksTableView = [[BookmarkTableView alloc]
-      initWithBrowserState:self.browserState
-                  delegate:self
-                  rootNode:_rootNode
-                     frame:self.view.bounds
-                 presenter:self /* id<SigninPresenter> */];
+  self.bookmarksTableView =
+      [[BookmarkTableView alloc] initWithSharedState:self.sharedState
+                                        browserState:self.browserState
+                                            delegate:self
+                                               frame:self.view.bounds];
   [self.bookmarksTableView
       setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
                           UIViewAutoresizingFlexibleHeight];
@@ -413,7 +425,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
         selectedEditNodes:
             (const std::set<const bookmarks::BookmarkNode*>&)nodes {
   // Early return if bookmarks table is not in edit mode.
-  if (!self.bookmarksTableView.editing) {
+  if (!self.sharedState.currentlyInEditMode) {
     return;
   }
 
@@ -716,15 +728,15 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 // Set up navigation bar for the new UI.
 - (void)setupNavigationBar {
+  DCHECK(self.sharedState.tableView);
   self.navigationController.navigationBarHidden = YES;
   self.appBar = [[MDCAppBar alloc] init];
   [self addChildViewController:self.appBar.headerViewController];
   ConfigureAppBarWithCardStyle(self.appBar);
   // Set the header view's tracking scroll view.
   self.appBar.headerViewController.headerView.trackingScrollView =
-      self.bookmarksTableView.tableView;
-  self.bookmarksTableView.headerView =
-      self.appBar.headerViewController.headerView;
+      self.sharedState.tableView;
+  self.sharedState.headerView = self.appBar.headerViewController.headerView;
 
   [self.appBar addSubviewsToParent];
   // Prevent the touch events on appBar from being forwarded to the tableView.
@@ -840,7 +852,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 // Sets the editing mode for tableView, update context bar state accordingly.
 - (void)setTableViewEditing:(BOOL)editing {
-  [self.bookmarksTableView setEditing:editing];
+  self.sharedState.currentlyInEditMode = editing;
   [self setContextBarState:editing ? BookmarksContextBarBeginSelection
                                    : BookmarksContextBarDefault];
 }
@@ -854,7 +866,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     return;
   }
   const std::set<const bookmarks::BookmarkNode*> nodes =
-      [self.bookmarksTableView editNodes];
+      self.sharedState.editNodes;
   switch (self.contextBarState) {
     case BookmarksContextBarDefault:
       // New Folder clicked.
@@ -886,7 +898,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     return;
   }
   const std::set<const bookmarks::BookmarkNode*> nodes =
-      [self.bookmarksTableView editNodes];
+      self.sharedState.editNodes;
   // Center button is shown and is clickable only when at least
   // one node is selected.
   DCHECK(nodes.size() > 0);
@@ -941,7 +953,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     return;
   }
   // Toggle edit mode.
-  [self setTableViewEditing:!self.bookmarksTableView.editing];
+  [self setTableViewEditing:!self.sharedState.currentlyInEditMode];
 }
 
 #pragma mark - ContextBarStates
@@ -1200,6 +1212,13 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 - (void)showSignin:(ShowSigninCommand*)command {
   [self.dispatcher showSignin:command baseViewController:self];
+}
+
+#pragma mark - BookmarkHomeSharedStateObserver
+
+- (void)sharedStateDidClearEditNodes:(BookmarkHomeSharedState*)sharedState {
+  [self bookmarkTableView:self.bookmarksTableView
+        selectedEditNodes:sharedState.editNodes];
 }
 
 @end
