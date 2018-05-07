@@ -131,4 +131,10 @@ void SyntheticGestureTargetMac::DispatchInputEventToPlatform(
   SyntheticGestureTargetBase::DispatchInputEventToPlatform(event);
 }
 
+void SyntheticGestureTargetMac::DispatchWebTouchEventToPlatform(
+    const blink::WebTouchEvent& web_touch,
+    const ui::LatencyInfo& latency_info) {
+  render_widget_host()->GetView()->InjectTouchEvent(web_touch, latency_info);
+}
+
 }  // namespace content
