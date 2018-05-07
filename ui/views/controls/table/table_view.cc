@@ -31,14 +31,11 @@
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/style/typography.h"
 
-// Size of images.
-static const int kImageSize = 16;
-
-static const int kGroupingIndicatorSize = 6;
-
 namespace views {
 
 namespace {
+
+constexpr int kGroupingIndicatorSize = 6;
 
 // Returns result, unless ascending is false in which case -result is returned.
 int SwapCompareResult(int result, bool ascending) {
@@ -588,14 +585,15 @@ void TableView::OnPaint(gfx::Canvas* canvas) {
       if (j == 0 && table_type_ == ICON_AND_TEXT) {
         gfx::ImageSkia image = model_->GetIcon(model_index);
         if (!image.isNull()) {
-          int image_x = GetMirroredXWithWidthInView(text_x, kImageSize);
+          int image_x =
+              GetMirroredXWithWidthInView(text_x, ui::TableModel::kIconSize);
           canvas->DrawImageInt(
-              image, 0, 0, image.width(), image.height(),
-              image_x,
-              cell_bounds.y() + (cell_bounds.height() - kImageSize) / 2,
-              kImageSize, kImageSize, true);
+              image, 0, 0, image.width(), image.height(), image_x,
+              cell_bounds.y() +
+                  (cell_bounds.height() - ui::TableModel::kIconSize) / 2,
+              ui::TableModel::kIconSize, ui::TableModel::kIconSize, true);
         }
-        text_x += kImageSize + cell_element_spacing;
+        text_x += ui::TableModel::kIconSize + cell_element_spacing;
       }
       if (text_x < cell_bounds.right() - cell_margin) {
         canvas->DrawStringRectWithFlags(
@@ -743,7 +741,7 @@ void TableView::AdjustCellBoundsForText(int visible_column_index,
     if (grouper_)
       text_x += kGroupingIndicatorSize + cell_element_spacing;
     if (table_type_ == ICON_AND_TEXT)
-      text_x += kImageSize + cell_element_spacing;
+      text_x += ui::TableModel::kIconSize + cell_element_spacing;
   }
   bounds->set_x(text_x);
   bounds->set_width(std::max(0, bounds->right() - cell_margin - text_x));
@@ -770,7 +768,7 @@ void TableView::UpdateVisibleColumnSizes() {
   const int cell_element_spacing = GetCellElementSpacing();
   int first_column_padding = 0;
   if (table_type_ == ICON_AND_TEXT && header_)
-    first_column_padding += kImageSize + cell_element_spacing;
+    first_column_padding += ui::TableModel::kIconSize + cell_element_spacing;
   if (grouper_)
     first_column_padding += kGroupingIndicatorSize + cell_element_spacing;
 

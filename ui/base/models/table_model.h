@@ -22,16 +22,19 @@ class TableModelObserver;
 // The model driving the TableView.
 class UI_BASE_EXPORT TableModel {
  public:
+  // Size of the table row icon, if used.
+  static constexpr int kIconSize = 16;
+
   // Number of rows in the model.
   virtual int RowCount() = 0;
 
   // Returns the value at a particular location in text.
   virtual base::string16 GetText(int row, int column_id) = 0;
 
-  // Returns the small icon (16x16) that should be displayed in the first
-  // column before the text. This is only used when the TableView was created
-  // with the ICON_AND_TEXT table type. Returns an isNull() image if there is
-  // no image.
+  // Returns the small icon (|kIconSize| x |kIconSize|) that should be displayed
+  // in the first column before the text. This is only used when the TableView
+  // was created with the ICON_AND_TEXT table type. Returns an isNull() image if
+  // there is no image.
   virtual gfx::ImageSkia GetIcon(int row);
 
   // Returns the tooltip, if any, to show for a particular row.  If there are
