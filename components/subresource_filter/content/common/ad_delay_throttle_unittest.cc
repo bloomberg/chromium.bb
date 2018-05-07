@@ -19,9 +19,9 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/subresource_filter/core/common/common_features.h"
-#include "content/public/common/weak_wrapper_shared_url_loader_factory.h"
 #include "content/public/test/throttling_url_loader_test_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -38,7 +38,7 @@ class AdDelayThrottleTest : public testing::Test {
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
         client_(std::make_unique<network::TestURLLoaderClient>()),
         shared_factory_(
-            base::MakeRefCounted<content::WeakWrapperSharedURLLoaderFactory>(
+            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &loader_factory_)) {
     scoped_ad_tagging_.InitAndEnableFeature(kAdTagging);
   }
@@ -81,7 +81,7 @@ class AdDelayThrottleTest : public testing::Test {
   // InitAndEnableFeaturesWithParameters does not support enabling multiple
   // features.
   base::test::ScopedFeatureList scoped_ad_tagging_;
-  scoped_refptr<content::WeakWrapperSharedURLLoaderFactory> shared_factory_;
+  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory> shared_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AdDelayThrottleTest);
 };

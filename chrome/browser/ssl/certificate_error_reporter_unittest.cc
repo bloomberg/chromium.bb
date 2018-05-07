@@ -19,10 +19,10 @@
 #include "base/test/bind_test_util.h"
 #include "components/encrypted_messages/encrypted_message.pb.h"
 #include "components/encrypted_messages/message_encrypter.h"
-#include "content/public/common/weak_wrapper_shared_url_loader_factory.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/boringssl/src/include/openssl/curve25519.h"
@@ -39,7 +39,7 @@ class ErrorReporterTest : public ::testing::Test {
  public:
   ErrorReporterTest()
       : test_shared_loader_factory_(
-            base::MakeRefCounted<content::WeakWrapperSharedURLLoaderFactory>(
+            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)) {
     memset(server_private_key_, 1, sizeof(server_private_key_));
     X25519_public_from_private(server_public_key_, server_private_key_);

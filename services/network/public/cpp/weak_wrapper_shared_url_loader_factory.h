@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_COMMON_WEAK_WRAPPER_SHARED_URL_LOADER_FACTORY_H_
-#define CONTENT_PUBLIC_COMMON_WEAK_WRAPPER_SHARED_URL_LOADER_FACTORY_H_
+#ifndef SERVICES_NETWORK_PUBLIC_CPP_WEAK_WRAPPER_SHARED_URL_LOADER_FACTORY_H_
+#define SERVICES_NETWORK_PUBLIC_CPP_WEAK_WRAPPER_SHARED_URL_LOADER_FACTORY_H_
 
-#include "content/common/content_export.h"
+#include "base/component_export.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
-namespace content {
+namespace network {
 
 // A SharedURLLoaderFactory implementation that wraps a raw
 // mojom::URLLoaderFactory pointer.
-class CONTENT_EXPORT WeakWrapperSharedURLLoaderFactory
+class COMPONENT_EXPORT(NETWORK_CPP) WeakWrapperSharedURLLoaderFactory
     : public network::SharedURLLoaderFactory {
  public:
   explicit WeakWrapperSharedURLLoaderFactory(
@@ -42,6 +42,6 @@ class CONTENT_EXPORT WeakWrapperSharedURLLoaderFactory
   network::mojom::URLLoaderFactory* factory_ptr_ = nullptr;
 };
 
-}  // namespace content
+}  // namespace network
 
-#endif  // CONTENT_PUBLIC_COMMON_WEAK_WRAPPER_SHARED_URL_LOADER_FACTORY_H_
+#endif  // SERVICES_NETWORK_PUBLIC_CPP_WEAK_WRAPPER_SHARED_URL_LOADER_FACTORY_H_

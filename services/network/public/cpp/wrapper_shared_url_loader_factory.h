@@ -2,20 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_WRAPPER_SHARED_URL_LOADER_FACTORY_H_
-#define CONTENT_COMMON_WRAPPER_SHARED_URL_LOADER_FACTORY_H_
+#ifndef SERVICES_NETWORK_PUBLIC_CPP_WRAPPER_SHARED_URL_LOADER_FACTORY_H_
+#define SERVICES_NETWORK_PUBLIC_CPP_WRAPPER_SHARED_URL_LOADER_FACTORY_H_
 
-#include "content/common/content_export.h"
-#include "content/common/possibly_associated_interface_ptr.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "base/component_export.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
-namespace content {
+namespace network {
 
 // A SharedURLLoaderFactoryInfo implementation that wraps a
 // network::mojom::URLLoaderFactoryPtrInfo.
-class CONTENT_EXPORT WrapperSharedURLLoaderFactoryInfo
+class COMPONENT_EXPORT(NETWORK_CPP) WrapperSharedURLLoaderFactoryInfo
     : public network::SharedURLLoaderFactoryInfo {
  public:
   WrapperSharedURLLoaderFactoryInfo();
@@ -85,11 +83,7 @@ class WrapperSharedURLLoaderFactoryBase
 
 using WrapperSharedURLLoaderFactory =
     WrapperSharedURLLoaderFactoryBase<mojo::InterfacePtr>;
-using AssociatedWrapperSharedURLLoaderFactory =
-    WrapperSharedURLLoaderFactoryBase<mojo::AssociatedInterfacePtr>;
-using PossiblyAssociatedWrapperSharedURLLoaderFactory =
-    WrapperSharedURLLoaderFactoryBase<PossiblyAssociatedInterfacePtr>;
 
-}  // namespace content
+}  // namespace network
 
-#endif  // CONTENT_COMMON_WRAPPER_URL_LOADER_FACTORY_H_
+#endif  // SERVICES_NETWORK_PUBLIC_CPP_WRAPPER_SHARED_URL_LOADER_FACTORY_H_

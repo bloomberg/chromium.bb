@@ -248,6 +248,7 @@ source_set("common") {
     "plugin_list.h",
     "possibly_associated_interface_ptr.h",
     "possibly_associated_interface_ptr_info.h",
+    "possibly_associated_wrapper_shared_url_loader_factory.h",
     "presentation/presentation_struct_traits.cc",
     "presentation/presentation_struct_traits.h",
     "process_type.cc",
@@ -297,8 +298,6 @@ source_set("common") {
     "view_messages.h",
     "visual_properties.cc",
     "visual_properties.h",
-    "wrapper_shared_url_loader_factory.cc",
-    "wrapper_shared_url_loader_factory.h",
     "zygote_commands_linux.h",
   ]
 

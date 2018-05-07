@@ -10,7 +10,6 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/common/frame_messages.h"
 #include "content/common/service_worker/service_worker_utils.h"
-#include "content/common/wrapper_shared_url_loader_factory.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/renderer/url_loader_throttle_provider.h"
@@ -23,6 +22,7 @@
 #include "content/renderer/service_worker/service_worker_subresource_loader.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 
@@ -62,7 +62,7 @@ class WorkerFetchContextImpl::URLLoaderFactoryImpl
   void SetServiceWorkerURLLoaderFactory(
       network::mojom::URLLoaderFactoryPtr service_worker_url_loader_factory) {
     service_worker_url_loader_factory_ =
-        base::MakeRefCounted<WrapperSharedURLLoaderFactory>(
+        base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
             std::move(service_worker_url_loader_factory));
   }
 
@@ -209,7 +209,7 @@ WorkerFetchContextImpl::WrapURLLoaderFactory(
     mojo::ScopedMessagePipeHandle url_loader_factory_handle) {
   return std::make_unique<content::WebURLLoaderFactoryImpl>(
       resource_dispatcher_->GetWeakPtr(),
-      base::MakeRefCounted<WrapperSharedURLLoaderFactory>(
+      base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
           network::mojom::URLLoaderFactoryPtrInfo(
               std::move(url_loader_factory_handle),
               network::mojom::URLLoaderFactory::Version_)));

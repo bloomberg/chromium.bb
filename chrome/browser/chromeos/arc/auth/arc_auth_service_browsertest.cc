@@ -44,8 +44,8 @@
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
-#include "content/public/common/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -217,7 +217,7 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, SuccessfulBackgroundFetch) {
   ASSERT_TRUE(auth_service);
 
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory =
-      base::MakeRefCounted<content::WeakWrapperSharedURLLoaderFactory>(
+      base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
           &test_url_loader_factory);
   auth_service->SetURLLoaderFactoryForTesting(test_shared_loader_factory);
 
@@ -275,7 +275,7 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceChildAccountTest, ChildAccountFetch) {
   ASSERT_TRUE(auth_service);
 
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory =
-      base::MakeRefCounted<content::WeakWrapperSharedURLLoaderFactory>(
+      base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
           &test_url_loader_factory);
   auth_service->SetURLLoaderFactoryForTesting(test_shared_loader_factory);
 

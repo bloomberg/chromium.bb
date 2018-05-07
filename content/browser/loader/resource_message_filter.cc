@@ -18,9 +18,9 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/cors/cors_url_loader_factory.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "storage/browser/fileapi/file_system_context.h"
 
 namespace content {
@@ -131,7 +131,7 @@ void ResourceMessageFilter::CreateLoaderAndStart(
     prefetch_url_loader_service_->CreateLoaderAndStart(
         std::move(request), routing_id, request_id, options, url_request,
         std::move(client), traffic_annotation,
-        base::MakeRefCounted<WeakWrapperSharedURLLoaderFactory>(
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             url_loader_factory_.get()),
         base::BindRepeating(&GetFrameTreeNodeId, child_id(),
                             url_request.render_frame_id));

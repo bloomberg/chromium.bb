@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/wrapper_shared_url_loader_factory.h"
+#include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 
-
-namespace content {
+namespace network {
 
 WrapperSharedURLLoaderFactoryInfo::WrapperSharedURLLoaderFactoryInfo() =
     default;
@@ -23,4 +22,4 @@ WrapperSharedURLLoaderFactoryInfo::CreateFactory() {
       std::move(factory_ptr_info_));
 }
 
-}  // namespace content
+}  // namespace network

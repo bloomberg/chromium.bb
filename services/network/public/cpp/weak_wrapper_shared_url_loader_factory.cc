@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/common/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 
-#include "content/common/wrapper_shared_url_loader_factory.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 
-namespace content {
+namespace network {
 
 WeakWrapperSharedURLLoaderFactory::WeakWrapperSharedURLLoaderFactory(
     network::mojom::URLLoaderFactory* factory_ptr)
@@ -51,4 +51,4 @@ WeakWrapperSharedURLLoaderFactory::Clone() {
 WeakWrapperSharedURLLoaderFactory::~WeakWrapperSharedURLLoaderFactory() =
     default;
 
-}  // namespace content
+}  // namespace network
