@@ -14,6 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class CWVAutofillController;
 @class CWVAutofillFormSuggestion;
 @class CWVCreditCard;
+@class CWVCreditCardVerifier;
 
 // Storage policies for autofill data.
 typedef NS_ENUM(NSInteger, CWVStoragePolicy) {
@@ -70,6 +71,11 @@ CWV_EXPORT
     decidePolicyForLocalStorageOfCreditCard:(CWVCreditCard*)creditCard
                             decisionHandler:(void (^)(CWVStoragePolicy policy))
                                                 decisionHandler;
+
+// Called when the user needs to use |verifier| to verify a credit card.
+// Lifetime of |verifier| should be managed by the delegate.
+- (void)autofillController:(CWVAutofillController*)autofillController
+    verifyCreditCardWithVerifier:(CWVCreditCardVerifier*)verifier;
 
 @end
 

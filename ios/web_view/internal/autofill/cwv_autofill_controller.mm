@@ -24,6 +24,7 @@
 #import "ios/web_view/internal/autofill/cwv_autofill_client_ios_bridge.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_suggestion_internal.h"
 #import "ios/web_view/internal/autofill/cwv_credit_card_internal.h"
+#import "ios/web_view/internal/autofill/cwv_credit_card_verifier_internal.h"
 #import "ios/web_view/internal/autofill/web_view_autofill_client_ios.h"
 #include "ios/web_view/internal/autofill/web_view_personal_data_manager_factory.h"
 #include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
@@ -58,6 +59,10 @@
 
   // The |webState| which this autofill controller should observe.
   web::WebState* _webState;
+
+  // The current credit card verifier. Can be nil if no verification is pending.
+  // Held weak because |_delegate| is responsible for maintaing its lifetime.
+  __weak CWVCreditCardVerifier* _verifier;
 }
 
 @synthesize delegate = _delegate;
@@ -278,6 +283,33 @@
                                   }
                                 }];
   }
+}
+
+- (void)
+showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
+                 reason:(autofill::AutofillClient::UnmaskCardReason)reason
+               delegate:(base::WeakPtr<autofill::CardUnmaskDelegate>)delegate {
+  if ([_delegate respondsToSelector:@selector
+                 (autofillController:verifyCreditCardWithVerifier:)]) {
+    ios_web_view::WebViewBrowserState* browserState =
+        ios_web_view::WebViewBrowserState::FromBrowserState(
+            _webState->GetBrowserState());
+    CWVCreditCardVerifier* verifier = [[CWVCreditCardVerifier alloc]
+         initWithPrefs:browserState->GetPrefs()
+        isOffTheRecord:browserState->IsOffTheRecord()
+            creditCard:creditCard
+                reason:reason
+              delegate:delegate];
+    [_delegate autofillController:self verifyCreditCardWithVerifier:verifier];
+
+    // Store so verifier can receive unmask verification results later on.
+    _verifier = verifier;
+  }
+}
+
+- (void)didReceiveUnmaskVerificationResult:
+    (autofill::AutofillClient::PaymentsRpcResult)result {
+  [_verifier didReceiveUnmaskVerificationResult:result];
 }
 
 #pragma mark - AutofillDriverIOSBridge
