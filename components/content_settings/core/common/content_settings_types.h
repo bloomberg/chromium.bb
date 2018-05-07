@@ -23,6 +23,11 @@ enum ContentSettingsType {
   CONTENT_SETTINGS_TYPE_IMAGES,
   CONTENT_SETTINGS_TYPE_JAVASCRIPT,
   CONTENT_SETTINGS_TYPE_PLUGINS,
+
+  // This setting governs both popups and unwanted redirects like tab-unders and
+  // framebusting.
+  // TODO(csharrison): Consider renaming it to POPUPS_AND_REDIRECTS, but it
+  // might not be worth the trouble.
   CONTENT_SETTINGS_TYPE_POPUPS,
   CONTENT_SETTINGS_TYPE_GEOLOCATION,
   CONTENT_SETTINGS_TYPE_NOTIFICATIONS,

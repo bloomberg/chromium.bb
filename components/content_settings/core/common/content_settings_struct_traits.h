@@ -140,6 +140,11 @@ struct StructTraits<
     return r.client_hints_rules;
   }
 
+  static const std::vector<ContentSettingPatternSource>& popup_redirect_rules(
+      const RendererContentSettingRules& r) {
+    return r.popup_redirect_rules;
+  }
+
   static bool Read(
       content_settings::mojom::RendererContentSettingRulesDataView data,
       RendererContentSettingRules* out);

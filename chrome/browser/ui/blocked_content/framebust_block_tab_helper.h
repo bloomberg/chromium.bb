@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "url/gurl.h"
 
@@ -45,9 +46,8 @@ class FramebustBlockTabHelper
   // vector of blocked URLs.
   void OnBlockedUrlClicked(size_t index);
 
-  // Sets and clears the current observer.
-  void SetObserver(Observer* observer);
-  void ClearObserver();
+  void AddObserver(Observer* observer);
+  void RemoveObserver(const Observer* observer);
 
   // Returns all of the currently blocked URLs.
   const std::vector<GURL>& blocked_urls() const { return blocked_urls_; }
@@ -74,8 +74,7 @@ class FramebustBlockTabHelper
   // Remembers if the animation has run.
   bool animation_has_run_ = false;
 
-  // Points to the unique observer of this class.
-  Observer* observer_ = nullptr;
+  base::ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(FramebustBlockTabHelper);
 };

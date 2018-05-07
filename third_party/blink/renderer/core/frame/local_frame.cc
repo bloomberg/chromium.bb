@@ -991,8 +991,13 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
     // Frame-busting used to be generally allowed in most situations, but may
     // now blocked if the document initiating the navigation has never received
     // a user gesture and the navigation isn't same-origin with the target.
+    //
+    // TODO(csharrison,japhet): Consider not logging an error message if the
+    // user has allowed popups/redirects.
     if (!RuntimeEnabledFeatures::
-            FramebustingNeedsSameOriginOrUserGestureEnabled()) {
+            FramebustingNeedsSameOriginOrUserGestureEnabled() ||
+        Client()->GetContentSettingsClient().AllowPopupsAndRedirects(
+            false /* default_value */)) {
       String target_frame_description =
           target_frame.IsLocalFrame() ? "with URL '" +
                                             ToLocalFrame(target_frame)

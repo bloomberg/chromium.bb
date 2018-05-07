@@ -449,6 +449,16 @@ bool ContentSettingsObserver::AllowAutoplay(bool default_value) {
          CONTENT_SETTING_ALLOW;
 }
 
+bool ContentSettingsObserver::AllowPopupsAndRedirects(bool default_value) {
+  if (!content_setting_rules_)
+    return default_value;
+  blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
+  return GetContentSettingFromRules(
+             content_setting_rules_->popup_redirect_rules, frame,
+             url::Origin(frame->GetDocument().GetSecurityOrigin()).GetURL()) ==
+         CONTENT_SETTING_ALLOW;
+}
+
 void ContentSettingsObserver::PassiveInsecureContentFound(
     const blink::WebURL& resource_url) {
   // Note: this implementation is a mirror of

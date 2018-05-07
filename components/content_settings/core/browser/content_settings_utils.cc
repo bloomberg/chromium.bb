@@ -144,6 +144,8 @@ void GetRendererContentSettingRules(const HostContentSettingsMap* map,
   map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_CLIENT_HINTS,
                              ResourceIdentifier(),
                              &(rules->client_hints_rules));
+  map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_POPUPS, ResourceIdentifier(),
+                             &(rules->popup_redirect_rules));
 }
 
 bool IsMorePermissive(ContentSetting a, ContentSetting b) {

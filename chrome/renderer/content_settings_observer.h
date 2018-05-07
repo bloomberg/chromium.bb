@@ -89,6 +89,7 @@ class ContentSettingsObserver
                                    const blink::WebSecurityOrigin& context,
                                    const blink::WebURL& url) override;
   bool AllowAutoplay(bool default_value) override;
+  bool AllowPopupsAndRedirects(bool default_value) override;
   void PassiveInsecureContentFound(const blink::WebURL&) override;
   void PersistClientHints(
       const blink::WebEnabledClientHints& enabled_client_hints,
