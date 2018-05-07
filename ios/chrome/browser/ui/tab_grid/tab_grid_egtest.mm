@@ -68,10 +68,8 @@
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::TabGridUndoCloseAllButton()]
       performAction:grey_tap()];
-  // TODO(crbug.com/804567) : Implement Undo Close All and replace this alert
-  // check with tabs that have been previously closed.
-  [[EarlGrey selectElementWithMatcher:grey_text(@"OK")]
-      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridCellAtIndex(0)]
+      assertWithMatcher:grey_sufficientlyVisible()];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridCloseAllButton()]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
