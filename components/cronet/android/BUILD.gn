@@ -1609,13 +1609,22 @@ copy("cronet_maven_test_copy") {
   ]
 }
 
-process_version("cronet_maven_build_copy") {
-  template_file = "maven/test/build.gradle.template"
+process_version("cronet_maven_build_embedded_copy") {
+  template_file = "maven/test/build_embedded.gradle.template"
   sources = [
     "//build/util/LASTCHANGE",
     "//chrome/VERSION",
   ]
-  output = "$_maven_test_dir/app/build.gradle"
+  output = "$_maven_test_dir/test_embedded/build.gradle"
+}
+
+process_version("cronet_maven_build_fallback_copy") {
+  template_file = "maven/test/build_fallback.gradle.template"
+  sources = [
+    "//build/util/LASTCHANGE",
+    "//chrome/VERSION",
+  ]
+  output = "$_maven_test_dir/test_fallback/build.gradle"
 }
 
 if (use_platform_icu_alternatives) {
@@ -1623,10 +1632,9 @@ if (use_platform_icu_alternatives) {
     script = "maven/test/build_with_gradle.py"
     depfile = "$target_gen_dir/$target_name.d"
     deps = [
-      ":cronet_maven_api_module",
-      ":cronet_maven_build_copy",
-      ":cronet_maven_impl_common_module",
-      ":cronet_maven_impl_native_module",
+      ":cronet_maven_build_embedded_copy",
+      ":cronet_maven_build_fallback_copy",
+      ":cronet_maven_modules",
       ":cronet_maven_test_copy",
 
       # These deps ensure all source files of the sample app are deps.
