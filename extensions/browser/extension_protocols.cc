@@ -1053,10 +1053,6 @@ MaybeCreateExtensionSubresourceURLLoaderFactory(
     int render_frame_id,
     const GURL& frame_url,
     scoped_refptr<extensions::InfoMap> extension_info_map) {
-  // Ensure we have a non-empty URL so that the factory we create knows it's
-  // only for subresources.
-  CHECK(!frame_url.is_empty());
-
   // TODO(rockot): We can probably avoid creating this factory in cases where
   // |frame_url| corresponds to a non-extensions URL and the URL in question
   // cannot have any active content scripts running and has no access to
