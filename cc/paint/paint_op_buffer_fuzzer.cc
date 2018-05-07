@@ -89,6 +89,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   cc::TransferCacheTestHelper transfer_cache_helper;
   cc::PaintOp::DeserializeOptions deserialize_options;
   deserialize_options.transfer_cache = &transfer_cache_helper;
+  deserialize_options.strike_client = font_manager.strike_client();
 
   // Need 4 bytes to be able to read the type/skip.
   while (size >= 4) {
