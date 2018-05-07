@@ -4,15 +4,42 @@
 
 #include "base/synchronization/lock_impl.h"
 
-#include <string.h>
+#include <string>
 
 #include "base/debug/activity_tracker.h"
+#include "base/logging.h"
+#include "base/posix/safe_strerror.h"
+#include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/synchronization_buildflags.h"
 #include "build/build_config.h"
 
 namespace base {
 namespace internal {
+
+namespace {
+
+#if DCHECK_IS_ON()
+const char* AdditionalHintForSystemErrorCode(int error_code) {
+  switch (error_code) {
+    case EINVAL:
+      return "Hint: This is often related to a use-after-free.";
+    default:
+      return "";
+  }
+}
+#endif  // DCHECK_IS_ON()
+
+std::string SystemErrorCodeToString(int error_code) {
+#if DCHECK_IS_ON()
+  return base::safe_strerror(error_code) + ". " +
+         AdditionalHintForSystemErrorCode(error_code);
+#else   // DCHECK_IS_ON()
+  return std::string();
+#endif  // DCHECK_IS_ON()
+}
+
+}  // namespace
 
 // Determines which platforms can consider using priority inheritance locks. Use
 // this define for platform code that may not compile if priority inheritance
@@ -30,32 +57,32 @@ namespace internal {
 LockImpl::LockImpl() {
   pthread_mutexattr_t mta;
   int rv = pthread_mutexattr_init(&mta);
-  DCHECK_EQ(rv, 0) << ". " << strerror(rv);
+  DCHECK_EQ(rv, 0) << ". " << SystemErrorCodeToString(rv);
 #if PRIORITY_INHERITANCE_LOCKS_POSSIBLE()
   if (PriorityInheritanceAvailable()) {
     rv = pthread_mutexattr_setprotocol(&mta, PTHREAD_PRIO_INHERIT);
-    DCHECK_EQ(rv, 0) << ". " << strerror(rv);
+    DCHECK_EQ(rv, 0) << ". " << SystemErrorCodeToString(rv);
   }
 #endif
 #ifndef NDEBUG
   // In debug, setup attributes for lock error checking.
   rv = pthread_mutexattr_settype(&mta, PTHREAD_MUTEX_ERRORCHECK);
-  DCHECK_EQ(rv, 0) << ". " << strerror(rv);
+  DCHECK_EQ(rv, 0) << ". " << SystemErrorCodeToString(rv);
 #endif
   rv = pthread_mutex_init(&native_handle_, &mta);
-  DCHECK_EQ(rv, 0) << ". " << strerror(rv);
+  DCHECK_EQ(rv, 0) << ". " << SystemErrorCodeToString(rv);
   rv = pthread_mutexattr_destroy(&mta);
-  DCHECK_EQ(rv, 0) << ". " << strerror(rv);
+  DCHECK_EQ(rv, 0) << ". " << SystemErrorCodeToString(rv);
 }
 
 LockImpl::~LockImpl() {
   int rv = pthread_mutex_destroy(&native_handle_);
-  DCHECK_EQ(rv, 0) << ". " << strerror(rv);
+  DCHECK_EQ(rv, 0) << ". " << SystemErrorCodeToString(rv);
 }
 
 bool LockImpl::Try() {
   int rv = pthread_mutex_trylock(&native_handle_);
-  DCHECK(rv == 0 || rv == EBUSY) << ". " << strerror(rv);
+  DCHECK(rv == 0 || rv == EBUSY) << ". " << SystemErrorCodeToString(rv);
   return rv == 0;
 }
 
@@ -73,7 +100,7 @@ void LockImpl::Lock() {
 
   base::debug::ScopedLockAcquireActivity lock_activity(this);
   int rv = pthread_mutex_lock(&native_handle_);
-  DCHECK_EQ(rv, 0) << ". " << strerror(rv);
+  DCHECK_EQ(rv, 0) << ". " << SystemErrorCodeToString(rv);
 }
 
 // static
