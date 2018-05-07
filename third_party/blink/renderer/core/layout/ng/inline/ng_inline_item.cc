@@ -210,14 +210,4 @@ bool NGInlineItem::HasEndEdge() const {
          !ToLayoutInline(GetLayoutObject())->Continuation();
 }
 
-NGInlineItemRange::NGInlineItemRange(Vector<NGInlineItem>* items,
-                                     unsigned start_index,
-                                     unsigned end_index)
-    : start_item_(&(*items)[start_index]),
-      size_(end_index - start_index),
-      start_index_(start_index) {
-  CHECK_LE(start_index, end_index);
-  CHECK_LE(end_index, items->size());
-}
-
 }  // namespace blink

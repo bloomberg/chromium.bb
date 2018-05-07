@@ -22,7 +22,6 @@ class LayoutBlockFlow;
 struct MinMaxSize;
 class NGConstraintSpace;
 class NGInlineItem;
-class NGInlineItemRange;
 using NGInlineItemsBuilder =
     NGInlineItemsBuilderTemplate<EmptyOffsetMappingBuilder>;
 struct NGInlineNodeData;
@@ -64,7 +63,6 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   }
 
   const Vector<NGInlineItem>& Items(bool is_first_line = false) const;
-  NGInlineItemRange Items(unsigned start_index, unsigned end_index);
 
   // Returns the DOM to text content offset mapping of this block. If it is not
   // computed before, compute and store it in NGInlineNodeData.

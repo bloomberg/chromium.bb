@@ -172,43 +172,6 @@ inline void NGInlineItem::AssertEndOffset(unsigned offset) const {
   DCHECK_LE(offset, end_offset_);
 }
 
-// A vector-like object that points to a subset of an array of |NGInlineItem|.
-// The source vector must keep alive and must not resize while this object
-// is alive.
-class NGInlineItemRange {
-  STACK_ALLOCATED();
-
- public:
-  NGInlineItemRange(Vector<NGInlineItem>*,
-                    unsigned start_index,
-                    unsigned end_index);
-
-  unsigned StartIndex() const { return start_index_; }
-  unsigned EndIndex() const { return start_index_ + size_; }
-  unsigned Size() const { return size_; }
-
-  NGInlineItem& operator[](unsigned index) {
-    CHECK_LT(index, size_);
-    return start_item_[index];
-  }
-  const NGInlineItem& operator[](unsigned index) const {
-    CHECK_LT(index, size_);
-    return start_item_[index];
-  }
-
-  using iterator = NGInlineItem*;
-  using const_iterator = const NGInlineItem*;
-  iterator begin() { return start_item_; }
-  iterator end() { return start_item_ + size_; }
-  const_iterator begin() const { return start_item_; }
-  const_iterator end() const { return start_item_ + size_; }
-
- private:
-  NGInlineItem* start_item_;
-  unsigned size_;
-  unsigned start_index_;
-};
-
 }  // namespace blink
 
 #endif  // NGInlineItem_h
