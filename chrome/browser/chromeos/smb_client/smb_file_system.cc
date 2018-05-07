@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/posix/eintr_wrapper.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/chromeos/file_system_provider/service.h"
 #include "chrome/browser/chromeos/smb_client/smb_file_system_id.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -393,14 +394,46 @@ AbortCallback SmbFileSystem::WriteFile(
   }
 
   const std::vector<uint8_t> data(buffer->data(), buffer->data() + length);
-  base::ScopedFD temp_fd = temp_file_manager_.CreateTempFile(data);
+  if (!temp_file_manager_) {
+    SmbTask task =
+        base::BindOnce(base::IgnoreResult(&SmbFileSystem::CallWriteFile),
+                       base::Unretained(this), file_handle, std::move(data),
+                       offset, length, std::move(callback));
+    InitTempFileManagerAndExecuteTask(std::move(task));
+    // The call to init temp_file_manager_ will not be abortable since it is
+    // asynchronous.
+    return CreateAbortCallback();
+  }
+
+  return CallWriteFile(file_handle, data, offset, length, std::move(callback));
+}
+
+void SmbFileSystem::InitTempFileManagerAndExecuteTask(SmbTask task) {
+  // InitTempFileManager() has to be called on a separate thread since it
+  // contains a call that requires a blockable thread.
+  base::TaskTraits task_traits = {base::MayBlock(),
+                                  base::TaskPriority::USER_BLOCKING,
+                                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
+  base::OnceClosure init_task = base::BindOnce(
+      &SmbFileSystem::InitTempFileManager, base::Unretained(this));
+
+  base::PostTaskWithTraitsAndReply(FROM_HERE, task_traits, std::move(init_task),
+                                   std::move(task));
+}
+
+AbortCallback SmbFileSystem::CallWriteFile(
+    int file_handle,
+    const std::vector<uint8_t>& data,
+    int64_t offset,
+    int length,
+    storage::AsyncFileUtil::StatusCallback callback) {
+  base::ScopedFD temp_fd = temp_file_manager_->CreateTempFile(data);
 
   auto reply = base::BindOnce(&SmbFileSystem::HandleStatusCallback, AsWeakPtr(),
                               std::move(callback));
   SmbTask task = base::BindOnce(
       &SmbProviderClient::WriteFile, GetWeakSmbProviderClient(), GetMountId(),
       file_handle, offset, length, std::move(temp_fd), std::move(reply));
-
   return EnqueueTaskAndGetCallback(std::move(task));
 }
 
@@ -623,6 +656,11 @@ void SmbFileSystem::HandleStatusCallback(
   task_queue_.TaskFinished();
 
   std::move(callback).Run(TranslateError(error));
+}
+
+void SmbFileSystem::InitTempFileManager() {
+  DCHECK(!temp_file_manager_);
+  temp_file_manager_ = std::make_unique<TempFileManager>();
 }
 
 base::WeakPtr<file_system_provider::ProvidedFileSystemInterface>
