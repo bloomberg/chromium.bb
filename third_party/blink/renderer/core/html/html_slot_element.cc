@@ -553,8 +553,6 @@ void HTMLSlotElement::LazyReattachNodesByDynamicProgramming(
 
 void HTMLSlotElement::LazyReattachDistributedNodesIfNeeded() {
   DCHECK(!RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
-  // TODO(hayato): Move this probe to a better place.
-  probe::didPerformSlotDistribution(this);
 
   LazyReattachNodesIfNeeded(old_distributed_nodes_, distributed_nodes_);
   old_distributed_nodes_.clear();
@@ -565,6 +563,7 @@ void HTMLSlotElement::LazyReattachNodesIfNeeded(
     const HeapVector<Member<Node>>& nodes2) {
   if (nodes1 == nodes2)
     return;
+  probe::didPerformSlotDistribution(this);
 
   if (nodes1.size() + 1 > kLCSTableSizeLimit ||
       nodes2.size() + 1 > kLCSTableSizeLimit) {

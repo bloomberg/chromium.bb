@@ -1720,7 +1720,6 @@ crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/ord
 # ====== IncrementalShadowDOM-only failures from here ======
 
 crbug.com/776656 virtual/incremental-shadow-dom/external/wpt/shadow-dom/untriaged/styles/test-003.html [ Failure ]
-crbug.com/776656 virtual/incremental-shadow-dom/http/tests/devtools/elements/shadow/shadow-distribution.js [ Failure ]
 
 # ====== IncrementalShadowDOM-only failures until here ======
 
