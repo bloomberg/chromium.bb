@@ -130,6 +130,10 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
     kHandledChildren
   };
 
+  void EmitChar16AfterNode(UChar code_unit, const Node& node);
+  void EmitChar16AsNode(UChar code_unit, const Node& node);
+  void EmitChar16BeforeNode(UChar code_unit, const Node& node);
+
   void ExitNode();
   bool ShouldRepresentNodeOffsetZero();
   bool ShouldEmitSpaceBeforeAndAfterNode(const Node&);
@@ -141,11 +145,6 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
   void HandleTextNode();
   void HandleReplacedElement();
   void HandleNonTextNode();
-  void SpliceBuffer(UChar,
-                    const Node* text_node,
-                    const Node* offset_base_node,
-                    unsigned text_start_offset,
-                    unsigned text_end_offset);
 
   // Used by selection preservation code. There should be one character emitted
   // between every VisiblePosition in the Range used to create the TextIterator.
@@ -201,6 +200,9 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
   void CopyCodeUnitsTo(ForwardsTextBuffer* output,
                        unsigned position,
                        unsigned copy_length) const;
+
+  // Ensure container node of current text run for computing position.
+  void EnsurePositionContainer() const;
 
   // The range.
   const Member<const Node> start_container_;

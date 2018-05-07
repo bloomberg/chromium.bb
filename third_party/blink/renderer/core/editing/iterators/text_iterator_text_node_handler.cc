@@ -181,7 +181,7 @@ void TextIteratorTextNodeHandler::HandlePreFormattedTextNode() {
       HasVisibleTextNode(layout_object)) {
     if (!behavior_.CollapseTrailingSpace() ||
         (offset_ > 0 && str[offset_ - 1] == ' ')) {
-      SpliceBuffer(kSpaceCharacter, text_node_, nullptr, offset_, offset_);
+      EmitChar16Before(kSpaceCharacter, offset_);
       needs_handle_pre_formatted_text_node_ = true;
       return;
     }
@@ -377,8 +377,7 @@ void TextIteratorTextNodeHandler::HandleTextBox() {
             --space_run_start;
           EmitText(layout_object, space_run_start, space_run_start + 1);
         } else {
-          SpliceBuffer(kSpaceCharacter, text_node_, nullptr, run_start,
-                       run_start);
+          EmitChar16Before(kSpaceCharacter, run_start);
         }
         return;
       }
@@ -416,10 +415,9 @@ void TextIteratorTextNodeHandler::HandleTextBox() {
           // We need to preserve new lines in case of PreLine.
           // See bug crbug.com/317365.
           if (layout_object->Style()->WhiteSpace() == EWhiteSpace::kPreLine) {
-            SpliceBuffer('\n', text_node_, nullptr, run_start, run_start);
+            EmitChar16Before('\n', run_start);
           } else {
-            SpliceBuffer(kSpaceCharacter, text_node_, nullptr, run_start,
-                         run_start + 1);
+            EmitReplacmentCodeUnit(kSpaceCharacter, run_start);
           }
           offset_ = text_start_offset + run_start + 1;
         } else {
@@ -537,11 +535,10 @@ bool TextIteratorTextNodeHandler::ShouldFixLeadingWhiteSpaceForReplacedElement()
   return offset_ > 0 && str[offset_ - 1] == ' ';
 }
 
-bool TextIteratorTextNodeHandler::FixLeadingWhiteSpaceForReplacedElement(
-    const Node* parent) {
+bool TextIteratorTextNodeHandler::FixLeadingWhiteSpaceForReplacedElement() {
   if (!ShouldFixLeadingWhiteSpaceForReplacedElement())
     return false;
-  text_state_.SpliceBuffer(kSpaceCharacter, parent, text_node_, 1, 1);
+  text_state_.EmitChar16AfterNode(kSpaceCharacter, *text_node_);
   ResetCollapsedWhiteSpaceFixup();
   return true;
 }
@@ -552,13 +549,15 @@ void TextIteratorTextNodeHandler::ResetCollapsedWhiteSpaceFixup() {
   last_text_node_ended_with_collapsed_space_ = false;
 }
 
-void TextIteratorTextNodeHandler::SpliceBuffer(UChar c,
-                                               const Node* text_node,
-                                               const Node* offset_base_node,
-                                               unsigned text_start_offset,
-                                               unsigned text_end_offset) {
-  text_state_.SpliceBuffer(c, text_node, offset_base_node, text_start_offset,
-                           text_end_offset);
+void TextIteratorTextNodeHandler::EmitChar16Before(UChar code_unit,
+                                                   unsigned offset) {
+  text_state_.EmitChar16Before(code_unit, *text_node_, offset);
+  ResetCollapsedWhiteSpaceFixup();
+}
+
+void TextIteratorTextNodeHandler::EmitReplacmentCodeUnit(UChar code_unit,
+                                                         unsigned offset) {
+  text_state_.EmitReplacmentCodeUnit(code_unit, *text_node_, offset);
   ResetCollapsedWhiteSpaceFixup();
 }
 
