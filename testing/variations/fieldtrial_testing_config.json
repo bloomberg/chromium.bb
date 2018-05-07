@@ -2397,23 +2397,6 @@
             ]
         }
     ],
-    "PageRevisitInstrumentation": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled"
-                }
-            ]
-        }
-    ],
     "ParallelDownloading": [
         {
             "platforms": [
