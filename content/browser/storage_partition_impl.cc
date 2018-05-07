@@ -44,10 +44,10 @@
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/canonical_cookie.h"
-#include "net/cookies/cookie_monster.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/buildflags/buildflags.h"
+#include "services/network/cookie_manager.h"
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
@@ -66,7 +66,8 @@
 #include "content/browser/plugin_private_storage_helper.h"
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
-using CookieDeletionInfo = net::CookieDeletionInfo;
+using CookieDeletionFilter = network::mojom::CookieDeletionFilter;
+using CookieDeletionFilterPtr = network::mojom::CookieDeletionFilterPtr;
 
 namespace content {
 
@@ -85,19 +86,6 @@ void OnClearedCookies(base::OnceClosure callback, uint32_t num_deleted) {
   }
 
   std::move(callback).Run();
-}
-
-void ClearCookiesOnIOThread(
-    const scoped_refptr<net::URLRequestContextGetter>& rq_context,
-    CookieDeletionInfo delete_info,
-    base::OnceClosure callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  net::CookieStore* cookie_store =
-      rq_context->GetURLRequestContext()->cookie_store();
-
-  cookie_store->DeleteAllMatchingInfoAsync(
-      std::move(delete_info),
-      base::BindOnce(&OnClearedCookies, std::move(callback)));
 }
 
 void CheckQuotaManagedDataDeletionStatus(size_t* deletion_task_count,
@@ -451,13 +439,14 @@ class StoragePartitionImpl::DataDeletionHelper {
   void ClearDataOnUIThread(
       const GURL& storage_origin,
       const OriginMatcherFunction& origin_matcher,
-      CookieDeletionInfo cookie_delete_info,
+      CookieDeletionFilterPtr cookie_deletion_filter,
       const base::FilePath& path,
       net::URLRequestContextGetter* rq_context,
       DOMStorageContextWrapper* dom_storage_context,
       storage::QuotaManager* quota_manager,
       storage::SpecialStoragePolicy* special_storage_policy,
       storage::FileSystemContext* filesystem_context,
+      network::mojom::CookieManager* cookie_manager,
       const base::Time begin,
       const base::Time end);
 
@@ -861,7 +850,7 @@ void StoragePartitionImpl::ClearDataImpl(
     uint32_t quota_storage_remove_mask,
     const GURL& storage_origin,
     const OriginMatcherFunction& origin_matcher,
-    CookieDeletionInfo cookie_delete_info,
+    CookieDeletionFilterPtr cookie_deletion_filter,
     const base::Time begin,
     const base::Time end,
     base::OnceClosure callback) {
@@ -874,9 +863,11 @@ void StoragePartitionImpl::ClearDataImpl(
   // DataDeletionHelper::DecrementTaskCount().
   deletion_helpers_running_++;
   helper->ClearDataOnUIThread(
-      storage_origin, origin_matcher, std::move(cookie_delete_info), GetPath(),
-      GetURLRequestContext(), dom_storage_context_.get(), quota_manager_.get(),
-      special_storage_policy_.get(), filesystem_context_.get(), begin, end);
+      storage_origin, origin_matcher, std::move(cookie_deletion_filter),
+      GetPath(), GetURLRequestContext(), dom_storage_context_.get(),
+      quota_manager_.get(), special_storage_policy_.get(),
+      filesystem_context_.get(), GetCookieManagerForBrowserProcess(), begin,
+      end);
 }
 
 void StoragePartitionImpl::DeletionHelperDone(base::OnceClosure callback) {
@@ -1021,13 +1012,14 @@ void StoragePartitionImpl::DataDeletionHelper::DecrementTaskCount() {
 void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
     const GURL& storage_origin,
     const OriginMatcherFunction& origin_matcher,
-    CookieDeletionInfo cookie_delete_info,
+    CookieDeletionFilterPtr cookie_deletion_filter,
     const base::FilePath& path,
     net::URLRequestContextGetter* rq_context,
     DOMStorageContextWrapper* dom_storage_context,
     storage::QuotaManager* quota_manager,
     storage::SpecialStoragePolicy* special_storage_policy,
     storage::FileSystemContext* filesystem_context,
+    network::mojom::CookieManager* cookie_manager,
     const base::Time begin,
     const base::Time end) {
   DCHECK_NE(remove_mask_, 0u);
@@ -1038,12 +1030,21 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
       &DataDeletionHelper::DecrementTaskCount, base::Unretained(this));
 
   if (remove_mask_ & REMOVE_DATA_MASK_COOKIES) {
-    // Handle the cookies.
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    // The CookieDeletionFilter has a redundant time interval to |begin| and
+    // |end|. Ensure that the filter has no time interval specified to help
+    // callers detect when they are using the wrong interval values.
+    DCHECK(!cookie_deletion_filter->created_after_time.has_value());
+    DCHECK(!cookie_deletion_filter->created_before_time.has_value());
+
+    if (!begin.is_null())
+      cookie_deletion_filter->created_after_time = begin;
+    if (!end.is_null())
+      cookie_deletion_filter->created_before_time = end;
+
+    cookie_manager->DeleteCookies(
+        std::move(cookie_deletion_filter),
         base::BindOnce(
-            &ClearCookiesOnIOThread, base::WrapRefCounted(rq_context),
-            std::move(cookie_delete_info),
+            &OnClearedCookies,
             // Use OwnsReference instead of Increment/DecrementTaskCount*
             // to handle the cookie store being destroyed and the callback
             // thus not being called.
@@ -1112,12 +1113,12 @@ void StoragePartitionImpl::ClearDataForOrigin(
     uint32_t quota_storage_remove_mask,
     const GURL& storage_origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  CookieDeletionInfo delete_info;
+  CookieDeletionFilterPtr deletion_filter = CookieDeletionFilter::New();
   if (!storage_origin.host().empty())
-    delete_info.host = storage_origin.host();
+    deletion_filter->host_name = storage_origin.host();
   ClearDataImpl(remove_mask, quota_storage_remove_mask, storage_origin,
-                OriginMatcherFunction(), std::move(delete_info), base::Time(),
-                base::Time::Max(), base::DoNothing());
+                OriginMatcherFunction(), std::move(deletion_filter),
+                base::Time(), base::Time::Max(), base::DoNothing());
 }
 
 void StoragePartitionImpl::ClearData(
@@ -1128,11 +1129,11 @@ void StoragePartitionImpl::ClearData(
     const base::Time begin,
     const base::Time end,
     base::OnceClosure callback) {
-  CookieDeletionInfo delete_info;
+  CookieDeletionFilterPtr deletion_filter = CookieDeletionFilter::New();
   if (!storage_origin.host().empty())
-    delete_info.host = storage_origin.host();
+    deletion_filter->host_name = storage_origin.host();
   ClearDataImpl(remove_mask, quota_storage_remove_mask, storage_origin,
-                origin_matcher, std::move(delete_info), begin, end,
+                origin_matcher, std::move(deletion_filter), begin, end,
                 std::move(callback));
 }
 
@@ -1140,12 +1141,13 @@ void StoragePartitionImpl::ClearData(
     uint32_t remove_mask,
     uint32_t quota_storage_remove_mask,
     const OriginMatcherFunction& origin_matcher,
-    CookieDeletionInfo cookie_delete_info,
+    network::mojom::CookieDeletionFilterPtr cookie_deletion_filter,
     const base::Time begin,
     const base::Time end,
     base::OnceClosure callback) {
   ClearDataImpl(remove_mask, quota_storage_remove_mask, GURL(), origin_matcher,
-                std::move(cookie_delete_info), begin, end, std::move(callback));
+                std::move(cookie_deletion_filter), begin, end,
+                std::move(callback));
 }
 
 void StoragePartitionImpl::ClearHttpAndMediaCaches(

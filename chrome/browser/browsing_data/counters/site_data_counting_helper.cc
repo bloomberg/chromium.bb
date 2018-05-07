@@ -14,13 +14,13 @@
 #include "content/public/browser/local_storage_usage_info.h"
 #include "content/public/browser/session_storage_usage_info.h"
 #include "content/public/browser/storage_partition.h"
-#include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_util.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/channel_id_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/buildflags/buildflags.h"
+#include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "storage/browser/quota/quota_manager.h"
 
 using content::BrowserThread;
@@ -47,10 +47,10 @@ void SiteDataCountingHelper::CountAndDestroySelfWhenFinished() {
 
   tasks_ += 1;
   // Count origins with cookies.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&SiteDataCountingHelper::GetCookiesOnIOThread,
-                     base::Unretained(this), base::WrapRefCounted(rq_context)));
+  network::mojom::CookieManager* cookie_manager =
+      partition->GetCookieManagerForBrowserProcess();
+  cookie_manager->GetAllCookies(base::BindOnce(
+      &SiteDataCountingHelper::GetCookiesCallback, base::Unretained(this)));
 
   storage::QuotaManager* quota_manager = partition->GetQuotaManager();
   if (quota_manager) {
@@ -125,27 +125,8 @@ void SiteDataCountingHelper::GetOriginsFromHostContentSettignsMap(
   Done(std::vector<GURL>(origins.begin(), origins.end()));
 }
 
-void SiteDataCountingHelper::GetCookiesOnIOThread(
-    const scoped_refptr<net::URLRequestContextGetter>& rq_context) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  net::CookieStore* cookie_store =
-      rq_context->GetURLRequestContext()->cookie_store();
-
-  if (cookie_store) {
-    cookie_store->GetAllCookiesAsync(base::BindOnce(
-        &SiteDataCountingHelper::GetCookiesCallback, base::Unretained(this)));
-  } else {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&SiteDataCountingHelper::Done, base::Unretained(this),
-                       std::vector<GURL>()));
-  }
-}
-
 void SiteDataCountingHelper::GetCookiesCallback(
     const net::CookieList& cookies) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   std::vector<GURL> origins;
   for (const net::CanonicalCookie& cookie : cookies) {
     if (cookie.CreationDate() >= begin_) {

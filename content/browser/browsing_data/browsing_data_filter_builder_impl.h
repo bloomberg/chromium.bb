@@ -25,7 +25,8 @@ class CONTENT_EXPORT BrowsingDataFilterBuilderImpl
   base::RepeatingCallback<bool(const GURL&)>
       BuildGeneralFilter() const override;
   network::mojom::ClearDataFilterPtr BuildNetworkServiceFilter() const override;
-  net::CookieDeletionInfo BuildCookieDeletionInfo() const override;
+  network::mojom::CookieDeletionFilterPtr BuildCookieDeletionFilter()
+      const override;
   base::RepeatingCallback<bool(const std::string& site)>
       BuildPluginFilter() const override;
   Mode GetMode() const override;

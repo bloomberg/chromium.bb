@@ -4,6 +4,8 @@
 
 #include "services/network/cookie_manager.h"
 
+#include <utility>
+
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
@@ -187,8 +189,9 @@ CookieDeletionInfo DeletionFilterToInfo(
       !filter->created_before_time.value().is_null()) {
     delete_info.creation_range.SetEnd(filter->created_before_time.value());
   }
-  delete_info.name = filter->cookie_name;
-  delete_info.url = filter->url;
+  delete_info.name = std::move(filter->cookie_name);
+  delete_info.url = std::move(filter->url);
+  delete_info.host = std::move(filter->host_name);
 
   switch (filter->session_control) {
     case network::mojom::CookieDeletionSessionControl::IGNORE_CONTROL:
@@ -212,14 +215,6 @@ CookieDeletionInfo DeletionFilterToInfo(
     delete_info.domains_and_ips_to_ignore.insert(
         filter->excluding_domains.value().begin(),
         filter->excluding_domains.value().end());
-  }
-  if (filter->url.has_value()) {
-    // Options to use for deletion of cookies associated with
-    // a particular URL.  These options will make sure that all
-    // cookies associated with the URL are deleted.
-    delete_info.cookie_options.set_include_httponly();
-    delete_info.cookie_options.set_same_site_cookie_mode(
-        net::CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
   }
 
   return delete_info;

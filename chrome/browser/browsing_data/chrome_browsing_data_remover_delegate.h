@@ -201,9 +201,6 @@ class ChromeBrowsingDataRemoverDelegate
   void OnClearPlatformKeys(base::OnceClosure done, base::Optional<bool> result);
 #endif
 
-  // Callback for when cookies have been deleted. Invokes NotifyIfDone.
-  void OnClearedCookies(base::OnceClosure done);
-
 #if BUILDFLAG(ENABLE_PLUGINS)
   // Called when plugin data has been cleared. Invokes NotifyIfDone.
   void OnWaitableEventSignaled(base::OnceClosure done,

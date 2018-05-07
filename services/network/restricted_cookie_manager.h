@@ -15,7 +15,6 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_change_dispatcher.h"
-#include "net/cookies/cookie_store.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom.h"
 #include "url/gurl.h"
 

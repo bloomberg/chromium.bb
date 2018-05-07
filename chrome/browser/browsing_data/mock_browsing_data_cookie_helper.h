@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
 #include "net/cookies/canonical_cookie.h"
-#include "net/cookies/cookie_store.h"
 
 // Mock for BrowsingDataCookieHelper.
 class MockBrowsingDataCookieHelper : public BrowsingDataCookieHelper {

@@ -68,12 +68,6 @@
 -PageLoadMetricsBrowserTest.PayloadSize
 -PageLoadMetricsBrowserTest.PayloadSizeChildFrame
 
-# http://crbug.com/823297 StoragePartition::ClearData needs to use
-# CookieManager.
--BrowsingDataRemoverBrowserTest.CookieDeletion
--WebViewTest.ClearPersistentCookies
--WebViewTest.ClearSessionCookies
-
 # Accessing cookies after they were set in onload handler is flaky:
 # https://crbug.com/820969.
 -ContentSettingsTest.BasicCookies
