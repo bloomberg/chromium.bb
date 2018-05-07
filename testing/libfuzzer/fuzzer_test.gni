@@ -18,6 +18,7 @@ import("//testing/test.gni")
 # - dict - a dictionary file for the fuzzer.
 # - libfuzzer_options - options for the fuzzer (e.g. -max_len or -timeout).
 # - seed_corpus - a directory with seed corpus.
+# - seed_corpus_deps - dependencies for generating the seed corpus.
 # - skip_owners - if true, skips writing the owners file.
 #
 # If use_libfuzzer gn flag is defined, then proper fuzzer would be build.
@@ -48,6 +49,12 @@ template("fuzzer_test") {
 
       out = "$root_build_dir/$target_name" + "_seed_corpus.zip"
 
+      seed_corpus_deps = []
+
+      if (defined(invoker.seed_corpus_deps)) {
+        seed_corpus_deps += invoker.seed_corpus_deps
+      }
+
       action(target_name + "_seed_corpus") {
         script = "//testing/libfuzzer/archive_corpus.py"
 
@@ -70,9 +77,7 @@ template("fuzzer_test") {
           out,
         ]
 
-        deps = [
-          "//testing/libfuzzer:seed_corpus",
-        ]
+        deps = [ "//testing/libfuzzer:seed_corpus" ] + seed_corpus_deps
       }
 
       test_deps += [ ":" + target_name + "_seed_corpus" ]
@@ -194,6 +199,9 @@ template("fuzzer_test") {
     }
     if (defined(invoker.seed_corpuses)) {
       assert(invoker.seed_corpuses == [] || invoker.seed_corpuses != [])
+    }
+    if (defined(invoker.seed_corpus_deps)) {
+      assert(invoker.seed_corpus_deps == [] || invoker.seed_corpus_deps != [])
     }
     assert(!defined(invoker.check_includes) || invoker.check_includes != [])
     assert(!defined(invoker.include_dirs) || invoker.include_dirs != [])
