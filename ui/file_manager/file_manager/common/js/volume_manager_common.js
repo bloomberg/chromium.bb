@@ -95,6 +95,13 @@ VolumeManagerCommon.RootType = {
 
   // Fake root for the mixed "Recent" view.
   RECENT: 'recent',
+
+  // 'Google Drive' fake parent entry of 'My Drive', 'Shared with me' and
+  // 'Offline'.
+  DRIVE_FAKE_ROOT: 'drive_fake_root',
+
+  // 'Add new services' menu item.
+  ADD_NEW_SERVICES_MENU: 'add_new_services_menu',
 };
 Object.freeze(VolumeManagerCommon.RootType);
 
@@ -122,6 +129,8 @@ VolumeManagerCommon.RootTypesForUMA = [
   VolumeManagerCommon.RootType.DRIVE_RECENT,
   VolumeManagerCommon.RootType.MEDIA_VIEW,
   VolumeManagerCommon.RootType.RECENT,
+  VolumeManagerCommon.RootType.DRIVE_FAKE_ROOT,
+  VolumeManagerCommon.RootType.ADD_NEW_SERVICES_MENU,
 ];
 console.assert(
     Object.keys(VolumeManagerCommon.RootType).length ===

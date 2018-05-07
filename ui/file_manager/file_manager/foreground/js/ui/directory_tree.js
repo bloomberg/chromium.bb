@@ -69,6 +69,32 @@ DirectoryItemTreeBaseMethods.searchAndSelectByEntry = function(entry) {
   }
   return false;
 };
+/**
+ * Records UMA for the selected entry at {@code location}. Records slightly
+ * differently if the expand icon is selected and {@code expandIconSelected} is
+ * true.
+ *
+ * @param {Event} e The click event.
+ * @param {VolumeManagerCommon.RootType} rootType The root type to record.
+ * @param {boolean} isRootEntry Whether the entry selected was a root entry.
+ * @return
+ */
+DirectoryItemTreeBaseMethods.recordUMASelectedEntry = function(
+    e, rootType, isRootEntry) {
+  var expandIconSelected = e.target.classList.contains('expand-icon');
+  var metricName = 'Location.OnEntrySelected.TopLevel';
+  if (!expandIconSelected && isRootEntry) {
+    metricName = 'Location.OnEntrySelected.TopLevel';
+  } else if (!expandIconSelected && !isRootEntry) {
+    metricName = 'Location.OnEntrySelected.NonTopLevel';
+  } else if (expandIconSelected && isRootEntry) {
+    metricName = 'Location.OnEntryExpandedOrCollapsed.TopLevel';
+  } else if (expandIconSelected && !isRootEntry) {
+    metricName = 'Location.OnEntryExpandedOrCollapsed.NonTopLevel';
+  }
+
+  metrics.recordEnum(metricName, rootType, VolumeManagerCommon.RootTypesForUMA);
+};
 
 Object.freeze(DirectoryItemTreeBaseMethods);
 
@@ -324,12 +350,20 @@ DirectoryItem.prototype.onCollapse_ = function(e) {
 DirectoryItem.prototype.handleClick = function(e) {
   cr.ui.TreeItem.prototype.handleClick.call(this, e);
 
-  if (!this.entry || e.button === 2 ||
-      e.target.classList.contains('expand-icon')) {
+  if (!this.entry || e.button === 2) {
     return;
   }
 
-  this.directoryModel_.activateDirectoryEntry(this.entry);
+  if (!e.target.classList.contains('expand-icon')) {
+    this.directoryModel_.activateDirectoryEntry(this.entry);
+  }
+
+  // If this is DriveVolumeItem, the UMA has already been recorded.
+  if (!(this instanceof DriveVolumeItem)) {
+    var location = this.tree.volumeManager.getLocationInfo(this.entry);
+    DirectoryItemTreeBaseMethods.recordUMASelectedEntry.call(
+        this, e, location.rootType, location.isRootEntry);
+  }
 };
 
 /**
@@ -761,6 +795,9 @@ DriveVolumeItem.prototype.handleClick = function(e) {
       this.searchAndSelectByEntry(displayRoot);
     }.bind(this));
   }
+
+  DirectoryItemTreeBaseMethods.recordUMASelectedEntry.call(
+      this, e, VolumeManagerCommon.RootType.DRIVE_FAKE_ROOT, true);
 };
 
 /**
@@ -923,10 +960,14 @@ ShortcutItem.prototype.handleClick = function(e) {
   // Do not activate with right click.
   if (e.button === 2)
     return;
-
   this.activate();
+
   // Resets file selection when a volume is clicked.
   this.parentTree_.directoryModel.clearSelection();
+
+  var location = this.tree.volumeManager.getLocationInfo(this.entry);
+  DirectoryItemTreeBaseMethods.recordUMASelectedEntry.call(
+      this, e, location.rootType, location.isRootEntry);
 };
 
 /**
@@ -1035,6 +1076,9 @@ MenuItem.prototype.searchAndSelectByEntry = function(entry) {
  */
 MenuItem.prototype.handleClick = function(e) {
   this.activate();
+
+  DirectoryItemTreeBaseMethods.recordUMASelectedEntry.call(
+      this, e, VolumeManagerCommon.RootType.ADD_NEW_SERVICES_MENU, true);
 };
 
 /**
@@ -1111,6 +1155,9 @@ RecentItem.prototype.searchAndSelectByEntry = function(entry) {
  */
 RecentItem.prototype.handleClick = function(e) {
   this.activate();
+
+  DirectoryItemTreeBaseMethods.recordUMASelectedEntry.call(
+      this, e, VolumeManagerCommon.RootType.RECENT, true);
 };
 
 /**
