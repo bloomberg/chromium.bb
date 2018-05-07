@@ -22,6 +22,8 @@ class ChromecastConfigAndroid {
   // crash reports.
   bool CanSendUsageStats();
 
+  void SetSendUsageStats(bool enabled);
+
   // Registers a handler to be notified when SendUsageStats is changed.
   void SetSendUsageStatsChangedCallback(
       base::RepeatingCallback<void(bool)> callback);
