@@ -46,9 +46,6 @@ class VIEWS_MUS_EXPORT AuraInit {
     // Indicates AuraInit should target using aura with mus, for a Window
     // Manager client.
     AURA_MUS_WINDOW_MANAGER,
-
-    // Indicates AuraInit should target using ui::Window.
-    UI
   };
 
   ~AuraInit();
@@ -65,7 +62,7 @@ class VIEWS_MUS_EXPORT AuraInit {
       const std::string& resource_file,
       const std::string& resource_file_200 = std::string(),
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner = nullptr,
-      Mode mode = Mode::UI,
+      Mode mode = Mode::AURA_MUS,
       bool register_path_provider = true);
 
   // Only valid if Mode::AURA_MUS was passed to constructor.
