@@ -504,6 +504,12 @@ bool SequencedSocketData::AllReadDataConsumed() const {
   return helper_.AllReadDataConsumed();
 }
 
+void SequencedSocketData::CancelPendingRead() {
+  DCHECK_EQ(PENDING, read_state_);
+
+  read_state_ = IDLE;
+}
+
 bool SequencedSocketData::AllWriteDataConsumed() const {
   return helper_.AllWriteDataConsumed();
 }
@@ -929,6 +935,14 @@ int MockTCPClientSocket::ReadIfReady(IOBuffer* buf,
   return ReadIfReadyImpl(buf, buf_len, std::move(callback));
 }
 
+int MockTCPClientSocket::CancelReadIfReady() {
+  DCHECK(pending_read_if_ready_callback_);
+
+  pending_read_if_ready_callback_.Reset();
+  data_->CancelPendingRead();
+  return OK;
+};
+
 int MockTCPClientSocket::Write(
     IOBuffer* buf,
     int buf_len,
@@ -945,6 +959,11 @@ int MockTCPClientSocket::Write(
 
   was_used_to_convey_data_ = true;
 
+  if (write_result.result == ERR_CONNECTION_CLOSED) {
+    // This MockWrite is just a marker to instruct us to set
+    // peer_closed_connection_.
+    peer_closed_connection_ = true;
+  }
   // ERR_IO_PENDING is a signal that the socket data will call back
   // asynchronously later.
   if (write_result.result == ERR_IO_PENDING) {

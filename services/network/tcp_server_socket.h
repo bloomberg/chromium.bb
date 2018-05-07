@@ -54,7 +54,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) TCPServerSocket
              net::IPEndPoint* local_addr_out);
 
   // TCPServerSocket implementation.
-  void Accept(mojom::TCPConnectedSocketObserverPtr observer,
+  void Accept(mojom::SocketObserverPtr observer,
               AcceptCallback callback) override;
   void GetLocalAddress(GetLocalAddressCallback callback) override;
 
@@ -63,19 +63,18 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) TCPServerSocket
 
  private:
   struct PendingAccept {
-    PendingAccept(AcceptCallback callback,
-                  mojom::TCPConnectedSocketObserverPtr observer);
+    PendingAccept(AcceptCallback callback, mojom::SocketObserverPtr observer);
     ~PendingAccept();
 
     AcceptCallback callback;
-    mojom::TCPConnectedSocketObserverPtr observer;
+    mojom::SocketObserverPtr observer;
   };
   // Invoked when socket_->Accept() completes.
   void OnAcceptCompleted(int result);
   // Process the next Accept() from |pending_accepts_queue_|.
   void ProcessNextAccept();
 
-  Delegate* delegate_;
+  Delegate* const delegate_;
   std::unique_ptr<net::ServerSocket> socket_;
   int backlog_;
   std::vector<std::unique_ptr<PendingAccept>> pending_accepts_queue_;

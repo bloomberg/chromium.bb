@@ -31,27 +31,49 @@ namespace network {
 // pipe. Specifically, it (1) reads from the network socket and writes to a mojo
 // producer pipe, and (2) reads from a mojo consumer pipe and writes to the
 // network socket. On network read/write errors, it (3) also notifies the
-// mojom::TCPConnectedSocketObserverPtr appropriately.
+// mojom::SocketObserverPtr appropriately.
 class COMPONENT_EXPORT(NETWORK_SERVICE) SocketDataPump {
  public:
+  // Interface to notify a consumer that about network errors and whether both
+  // data pipes have been shut down from the client side.
+  class Delegate {
+   public:
+    Delegate() {}
+    ~Delegate() {}
+
+    // Called when SocketDataPump detects a network read error.
+    virtual void OnNetworkReadError(int net_error) = 0;
+
+    // Called when SocketDataPump detects a network write error.
+    virtual void OnNetworkWriteError(int net_error) = 0;
+
+    // Called when SocketDataPump detects both send and receive pipes have shut
+    // down.
+    virtual void OnShutdown() = 0;
+  };
+
   // Constructs a data pump that pumps data between |socket| and mojo data
   // pipe handles. Data are read from |send_pipe_handle| and sent to |socket|.
   // Data are read from |socket| and written to |receive_pipe_handle|.
   // |traffic_annotation| is attached to all writes to |socket|. Note that
   // |socket| must outlive |this|.
-  SocketDataPump(mojom::TCPConnectedSocketObserverPtr observer,
-                 net::StreamSocket* socket,
+  SocketDataPump(net::StreamSocket* socket,
+                 Delegate* delegate,
                  mojo::ScopedDataPipeProducerHandle receive_pipe_handle,
                  mojo::ScopedDataPipeConsumerHandle send_pipe_handle,
                  const net::NetworkTrafficAnnotationTag& traffic_annotation);
   ~SocketDataPump();
 
  private:
+  // Maybe notifies |delegate_| of the shutdown if both pipes are closed.
+  void MaybeNotifyDelegate();
+
   // "Receiving" in this context means reading from |socket_| and writing to
   // the Mojo |receive_stream_|.
   void ReceiveMore();
   void OnReceiveStreamWritable(MojoResult result);
-  void OnNetworkReadCompleted(int result);
+  void OnReceiveStreamClosed(MojoResult result);
+  void OnNetworkReadIfReadyCompleted(int result);
   void ShutdownReceive();
 
   // "Writing" is reading from the Mojo |send_stream_| and writing to the
@@ -61,9 +83,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SocketDataPump {
   void OnNetworkWriteCompleted(int result);
   void ShutdownSend();
 
-  mojom::TCPConnectedSocketObserverPtr observer_;
-
-  net::StreamSocket* socket_;
+  net::StreamSocket* const socket_;
+  Delegate* const delegate_;
 
   // The *stream handles will be null when there's a pending read from |socket_|
   // to |pending_receive_buffer_|, or while there is a pending write from
@@ -75,8 +96,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SocketDataPump {
 
   // For reading from the network and writing to Mojo pipe.
   mojo::ScopedDataPipeProducerHandle receive_stream_;
-  scoped_refptr<NetToMojoPendingBuffer> pending_receive_buffer_;
   mojo::SimpleWatcher receive_stream_watcher_;
+  // A separate watcher is needed to observe |receive_stream_|'s close event, so
+  // that when the client shuts down their end of the pipe for
+  // TCPConnectedSocket::UpgradeToTLS() during the waiting of the async callback
+  // of ReadIfReady, |this| can be notified of the shutdown.
+  mojo::SimpleWatcher receive_stream_close_watcher_;
+  bool read_if_ready_pending_ = false;
 
   // For reading from the Mojo pipe and writing to the network.
   mojo::ScopedDataPipeConsumerHandle send_stream_;

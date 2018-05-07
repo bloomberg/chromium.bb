@@ -89,6 +89,7 @@ class NET_EXPORT TCPSocketPosix {
   // Returns a net error code.
   int Read(IOBuffer* buf, int buf_len, CompletionOnceCallback callback);
   int ReadIfReady(IOBuffer* buf, int buf_len, CompletionOnceCallback callback);
+  int CancelReadIfReady();
 
   // Writes to the socket.
   // Returns a net error code.
