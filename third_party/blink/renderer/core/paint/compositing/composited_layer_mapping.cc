@@ -733,13 +733,15 @@ bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration(
   // that sibling need not be composited at all. In such scenarios, an ancestor
   // clipping layer is necessary to apply the composited clip for this layer.
   bool needs_ancestor_clip = false;
-  bool needs_ancestor_clipping_mask = false;
-  UpdateClipInheritanceAncestor(compositing_container);
-  OwningLayerClippedOrMaskedByLayerNotAboveCompositedAncestor(
-      needs_ancestor_clip, needs_ancestor_clipping_mask);
-  if (UpdateClippingLayers(needs_ancestor_clip, needs_ancestor_clipping_mask,
-                           needs_descendants_clipping_layer))
-    layer_config_changed = true;
+  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    bool needs_ancestor_clipping_mask = false;
+    UpdateClipInheritanceAncestor(compositing_container);
+    OwningLayerClippedOrMaskedByLayerNotAboveCompositedAncestor(
+        needs_ancestor_clip, needs_ancestor_clipping_mask);
+    if (UpdateClippingLayers(needs_ancestor_clip, needs_ancestor_clipping_mask,
+                             needs_descendants_clipping_layer))
+      layer_config_changed = true;
+  }
 
   if (UpdateScrollingLayers(owning_layer_.NeedsCompositedScrolling()))
     layer_config_changed = true;
@@ -796,27 +798,29 @@ bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration(
   // If we have a border radius on a scrolling layer, we need a clipping mask
   // to properly clip the scrolled contents, even if there are no composited
   // descendants.
-  bool is_accelerated_contents = IsAcceleratedContents(layout_object);
-  bool has_children_subject_to_overflow_clip =
-      HasClippingLayer() || HasScrollingLayer() || is_accelerated_contents;
-  bool needs_child_clipping_mask =
-      style.HasBorderRadius() && has_children_subject_to_overflow_clip;
-  if (UpdateChildClippingMaskLayer(needs_child_clipping_mask))
-    layer_config_changed = true;
-  {
-    // Attach child clipping mask layer to the first layer that can be applied
-    // and clear the rest.
-    // TODO(trchen): Verify if the 3 cases are mutually exclusive.
-    GraphicsLayer* first_come_first_served = child_clipping_mask_layer_.get();
-    if (HasClippingLayer()) {
-      ClippingLayer()->SetMaskLayer(first_come_first_served);
-      first_come_first_served = nullptr;
+  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    bool is_accelerated_contents = IsAcceleratedContents(layout_object);
+    bool has_children_subject_to_overflow_clip =
+        HasClippingLayer() || HasScrollingLayer() || is_accelerated_contents;
+    bool needs_child_clipping_mask =
+        style.HasBorderRadius() && has_children_subject_to_overflow_clip;
+    if (UpdateChildClippingMaskLayer(needs_child_clipping_mask))
+      layer_config_changed = true;
+    {
+      // Attach child clipping mask layer to the first layer that can be applied
+      // and clear the rest.
+      // TODO(trchen): Verify if the 3 cases are mutually exclusive.
+      GraphicsLayer* first_come_first_served = child_clipping_mask_layer_.get();
+      if (HasClippingLayer()) {
+        ClippingLayer()->SetMaskLayer(first_come_first_served);
+        first_come_first_served = nullptr;
+      }
+      if (HasScrollingLayer()) {
+        ScrollingLayer()->SetMaskLayer(first_come_first_served);
+        first_come_first_served = nullptr;
+      }
+      graphics_layer_->SetContentsClippingMaskLayer(first_come_first_served);
     }
-    if (HasScrollingLayer()) {
-      ScrollingLayer()->SetMaskLayer(first_come_first_served);
-      first_come_first_served = nullptr;
-    }
-    graphics_layer_->SetContentsClippingMaskLayer(first_come_first_served);
   }
 
   UpdateBackgroundColor();
