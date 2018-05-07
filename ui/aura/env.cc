@@ -61,10 +61,9 @@ Env::~Env() {
 }
 
 // static
-std::unique_ptr<Env> Env::CreateInstance(Mode mode,
-                                         bool create_mouse_location_manager) {
+std::unique_ptr<Env> Env::CreateInstance(Mode mode) {
   DCHECK(!lazy_tls_ptr.Pointer()->Get());
-  std::unique_ptr<Env> env(new Env(mode, create_mouse_location_manager));
+  std::unique_ptr<Env> env(new Env(mode));
   env->Init();
   return env;
 }
@@ -141,6 +140,11 @@ void Env::SetLastMouseLocation(const gfx::Point& last_mouse_location) {
     mouse_location_manager_->SetMouseLocation(last_mouse_location);
 }
 
+void Env::CreateMouseLocationManager() {
+  if (!mouse_location_manager_)
+    mouse_location_manager_ = std::make_unique<MouseLocationManager>();
+}
+
 mojo::ScopedSharedBufferHandle Env::GetLastMouseLocationMemory() {
   DCHECK(mouse_location_manager_);
   return mouse_location_manager_->GetMouseLocationMemory();
@@ -167,7 +171,7 @@ void Env::ScheduleEmbed(
 // static
 bool Env::initial_throttle_input_on_resize_ = true;
 
-Env::Env(Mode mode, bool create_mouse_location_manager)
+Env::Env(Mode mode)
     : mode_(mode),
       env_controller_(new EnvInputStateController),
       mouse_button_flags_(0),
@@ -178,14 +182,6 @@ Env::Env(Mode mode, bool create_mouse_location_manager)
       context_factory_private_(nullptr) {
   DCHECK(lazy_tls_ptr.Pointer()->Get() == NULL);
   lazy_tls_ptr.Pointer()->Set(this);
-#if defined(OS_CHROMEOS)
-  // TODO(sky): this isn't quite right. Really the MouseLocationManager should
-  // be created only when this process is hosting the WindowService. Clean this
-  // up.
-  create_mouse_location_manager = true;
-#endif
-  if (create_mouse_location_manager)
-    mouse_location_manager_ = std::make_unique<MouseLocationManager>();
 }
 
 void Env::Init() {

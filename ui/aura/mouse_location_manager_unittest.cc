@@ -20,9 +20,8 @@ gfx::Point Atomic32ToPoint(base::subtle::Atomic32 atomic) {
 
 TEST(MouseLocationManagerTest, PositiveCoordinates) {
   test::EnvReinstaller reinstaller;
-  const bool create_mouse_location_manager = true;
-  auto env =
-      Env::CreateInstance(Env::Mode::LOCAL, create_mouse_location_manager);
+  auto env = Env::CreateInstance(Env::Mode::LOCAL);
+  env->CreateMouseLocationManager();
   const gfx::Point point(100, 150);
 
   env->SetLastMouseLocation(point);
@@ -43,9 +42,8 @@ TEST(MouseLocationManagerTest, PositiveCoordinates) {
 
 TEST(MouseLocationManagerTest, NegativeCoordinates) {
   test::EnvReinstaller reinstaller;
-  const bool create_mouse_location_manager = true;
-  auto env =
-      Env::CreateInstance(Env::Mode::LOCAL, create_mouse_location_manager);
+  auto env = Env::CreateInstance(Env::Mode::LOCAL);
+  env->CreateMouseLocationManager();
   const gfx::Point point(-10, -11);
 
   env->SetLastMouseLocation(point);
