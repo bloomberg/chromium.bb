@@ -145,7 +145,7 @@ static const char *opcodeNames[CTO_None] = {
 static short gOpcodeLengths[CTO_None] = { 0 };
 
 static void
-compileError(FileInfo *nested, char *format, ...);
+compileError(FileInfo *nested, const char *format, ...);
 
 static int
 getAChar(FileInfo *nested) {
@@ -261,7 +261,7 @@ getToken(FileInfo *nested, CharsString *result, const char *description, int *la
 }
 
 static void
-compileError(FileInfo *nested, char *format, ...) {
+compileError(FileInfo *nested, const char *format, ...) {
 #ifndef __SYMBIAN32__
 	char buffer[MAXSTRING];
 	va_list arguments;
@@ -278,7 +278,7 @@ compileError(FileInfo *nested, char *format, ...) {
 }
 
 static void
-compileWarning(FileInfo *nested, char *format, ...) {
+compileWarning(FileInfo *nested, const char *format, ...) {
 #ifndef __SYMBIAN32__
 	char buffer[MAXSTRING];
 	va_list arguments;
@@ -2668,7 +2668,7 @@ compilePassOpcode(FileInfo *nested, TranslationTableOpcode opcode,
 /* End of multipass compiler */
 
 static int
-compileBrailleIndicator(FileInfo *nested, char *ermsg, TranslationTableOpcode opcode,
+compileBrailleIndicator(FileInfo *nested, const char *ermsg, TranslationTableOpcode opcode,
 		TranslationTableOffset *rule, int *lastToken,
 		TranslationTableOffset *newRuleOffset, TranslationTableRule **newRule, int noback,
 		int nofor, TranslationTableHeader **table) {
