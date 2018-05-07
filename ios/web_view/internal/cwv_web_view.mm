@@ -87,6 +87,8 @@ NSDictionary* NSDictionaryFromDictionaryValue(
   // Handles presentation of JavaScript dialogs.
   std::unique_ptr<ios_web_view::WebViewJavaScriptDialogPresenter>
       _javaScriptDialogPresenter;
+  std::map<std::string, web::WebState::ScriptCommandCallback>
+      _scriptCommandCallbacks;
 }
 
 // Redefine these properties as readwrite to define setters, which send KVO
@@ -429,13 +431,15 @@ static NSString* gUserAgentProduct = nil;
         return [handler webView:weakSelf handleScriptCommand:command];
       });
 
-  _webState->AddScriptCommandCallback(callback,
-                                      base::SysNSStringToUTF8(commandPrefix));
+  std::string stdCommandPrefix = base::SysNSStringToUTF8(commandPrefix);
+  _webState->AddScriptCommandCallback(callback, stdCommandPrefix);
+  _scriptCommandCallbacks[stdCommandPrefix] = callback;
 }
 
 - (void)removeScriptCommandHandlerForCommandPrefix:(NSString*)commandPrefix {
-  _webState->RemoveScriptCommandCallback(
-      base::SysNSStringToUTF8(commandPrefix));
+  std::string stdCommandPrefix = base::SysNSStringToUTF8(commandPrefix);
+  _webState->RemoveScriptCommandCallback(stdCommandPrefix);
+  _scriptCommandCallbacks.erase(stdCommandPrefix);
 }
 
 #pragma mark - Translation
@@ -518,6 +522,9 @@ static NSString* gUserAgentProduct = nil;
     if (_webStateObserver) {
       _webState->RemoveObserver(_webStateObserver.get());
     }
+    for (const auto& pair : _scriptCommandCallbacks) {
+      _webState->RemoveScriptCommandCallback(pair.first);
+    }
 
     // The web view provided by the old |_webState| has been added as a subview.
     // It must be removed and replaced with a new |_webState|'s web view, which
@@ -550,6 +557,10 @@ static NSString* gUserAgentProduct = nil;
   _javaScriptDialogPresenter =
       std::make_unique<ios_web_view::WebViewJavaScriptDialogPresenter>(self,
                                                                        nullptr);
+
+  for (const auto& pair : _scriptCommandCallbacks) {
+    _webState->AddScriptCommandCallback(pair.second, pair.first);
+  }
 
   _scrollView.proxy = _webState.get()->GetWebViewProxy().scrollViewProxy;
 

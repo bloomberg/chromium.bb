@@ -42,6 +42,11 @@ bool WaitForWebViewContainingTextOrTimeout(CWVWebView* web_view,
 bool WaitForWebViewLoadCompletionOrTimeout(CWVWebView* web_view)
     WARN_UNUSED_RESULT;
 
+// Copies the state of |source_web_view| to |destination_web_view| using state
+// restoration.
+void CopyWebViewState(CWVWebView* source_web_view,
+                      CWVWebView* destination_web_view);
+
 }  // namespace test
 }  // namespace ios_web_view
 
