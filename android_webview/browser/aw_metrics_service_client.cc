@@ -87,7 +87,7 @@ void AwMetricsServiceClient::LoadOrCreateClientId() {
   // anonymously identify logs. Every WebView-using app on every device
   // is given a GUID, stored in this file in the app's data directory.
   base::FilePath user_data_dir;
-  if (!PathService::Get(base::DIR_ANDROID_APP_DATA, &user_data_dir)) {
+  if (!base::PathService::Get(base::DIR_ANDROID_APP_DATA, &user_data_dir)) {
     LOG(ERROR) << "Failed to get app data directory for Android WebView";
 
     // Generate a 1-time GUID so metrics can still be collected

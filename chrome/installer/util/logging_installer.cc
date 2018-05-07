@@ -123,7 +123,7 @@ base::FilePath GetLogFilePath(const installer::MasterPreferences& prefs) {
 
   // Fallback to current directory if getting the temp directory fails.
   base::FilePath tmp_path;
-  ignore_result(PathService::Get(base::DIR_TEMP, &tmp_path));
+  ignore_result(base::PathService::Get(base::DIR_TEMP, &tmp_path));
   return tmp_path.Append(kLogFilename);
 }
 

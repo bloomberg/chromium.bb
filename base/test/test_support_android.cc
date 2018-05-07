@@ -154,8 +154,10 @@ bool GetTestProviderPath(int key, base::FilePath* result) {
 void InitPathProvider(int key) {
   base::FilePath path;
   // If failed to override the key, that means the way has not been registered.
-  if (GetTestProviderPath(key, &path) && !PathService::Override(key, path))
-    PathService::RegisterProvider(&GetTestProviderPath, key, key + 1);
+  if (GetTestProviderPath(key, &path) &&
+      !base::PathService::Override(key, path)) {
+    base::PathService::RegisterProvider(&GetTestProviderPath, key, key + 1);
+  }
 }
 
 }  // namespace

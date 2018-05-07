@@ -364,7 +364,7 @@ class BattOrAgentBin : public BattOrAgent::Listener {
       if (trace_output_file_.empty()) {
         // Save the detailed results in case they are needed.
         base::FilePath default_path;
-        PathService::Get(base::DIR_USER_DESKTOP, &default_path);
+        base::PathService::Get(base::DIR_USER_DESKTOP, &default_path);
         default_path = default_path.Append(FILE_PATH_LITERAL("trace_data.txt"));
         output_file = default_path.AsUTF8Unsafe().c_str();
         std::cout << "Saving detailed results to " << output_file << std::endl;

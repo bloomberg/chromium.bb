@@ -34,7 +34,7 @@ bool RemovePrefix(const std::string& input,
 
 base::FilePath GetTestFilePath(const std::string& relative_path) {
   base::FilePath path;
-  if (!PathService::Get(base::DIR_SOURCE_ROOT, &path))
+  if (!base::PathService::Get(base::DIR_SOURCE_ROOT, &path))
     return base::FilePath();
   path = path.AppendASCII("google_apis")
              .AppendASCII("test")

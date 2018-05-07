@@ -173,7 +173,7 @@ class ZipReaderTest : public PlatformTest {
   }
 
   bool GetTestDataDirectory(base::FilePath* path) {
-    bool success = PathService::Get(base::DIR_SOURCE_ROOT, path);
+    bool success = base::PathService::Get(base::DIR_SOURCE_ROOT, path);
     EXPECT_TRUE(success);
     if (!success)
       return false;

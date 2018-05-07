@@ -27,7 +27,7 @@ namespace {
 
 base::FilePath ResolveSourceRootRelativePath(const char* relative_path) {
   base::FilePath path;
-  if (!PathService::Get(base::DIR_SOURCE_ROOT, &path))
+  if (!base::PathService::Get(base::DIR_SOURCE_ROOT, &path))
     return base::FilePath();
 
   for (const base::StringPiece& component : base::SplitStringPiece(

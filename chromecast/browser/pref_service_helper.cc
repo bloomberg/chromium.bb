@@ -36,7 +36,7 @@ void UserPrefsLoadError(PersistentPrefStore::PrefReadError* error_val,
 
 base::FilePath GetConfigPath() {
   base::FilePath config_path;
-  CHECK(PathService::Get(FILE_CAST_CONFIG, &config_path));
+  CHECK(base::PathService::Get(FILE_CAST_CONFIG, &config_path));
   return config_path;
 }
 

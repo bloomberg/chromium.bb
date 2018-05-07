@@ -43,11 +43,11 @@ base::FilePath GetConfigDir() {
   base::FilePath app_data_dir;
 
 #if defined(OS_WIN)
-  PathService::Get(base::DIR_COMMON_APP_DATA, &app_data_dir);
+  base::PathService::Get(base::DIR_COMMON_APP_DATA, &app_data_dir);
 #elif defined(OS_MACOSX)
-  PathService::Get(base::DIR_APP_DATA, &app_data_dir);
+  base::PathService::Get(base::DIR_APP_DATA, &app_data_dir);
 #else
-  PathService::Get(base::DIR_HOME, &app_data_dir);
+  base::PathService::Get(base::DIR_HOME, &app_data_dir);
 #endif
 
   return app_data_dir.Append(kConfigDir);

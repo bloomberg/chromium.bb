@@ -173,7 +173,7 @@ void HeadlessContentMainDelegate::InitLogging(
 
   // Otherwise we log to where the executable is.
   if (log_path.empty()) {
-    if (PathService::Get(base::DIR_MODULE, &log_path)) {
+    if (base::PathService::Get(base::DIR_MODULE, &log_path)) {
       log_path = log_path.Append(log_filename);
     } else {
       log_path = log_filename;
@@ -314,7 +314,7 @@ void HeadlessContentMainDelegate::InitializeResourceBundle() {
 #else
 
   base::FilePath dir_module;
-  bool result = PathService::Get(base::DIR_MODULE, &dir_module);
+  bool result = base::PathService::Get(base::DIR_MODULE, &dir_module);
   DCHECK(result);
 
   // Try loading the headless library pak file first. If it doesn't exist (i.e.,

@@ -20,7 +20,7 @@ using FormatTest = TestWithScheduler;
     std::string out;                                                        \
     std::string expected;                                                   \
     base::FilePath src_dir;                                                 \
-    PathService::Get(base::DIR_SOURCE_ROOT, &src_dir);                      \
+    base::PathService::Get(base::DIR_SOURCE_ROOT, &src_dir);                \
     base::SetCurrentDirectory(src_dir);                                     \
     EXPECT_TRUE(commands::FormatFileToString(                               \
         &setup, SourceFile("//tools/gn/format_test_data/" #n ".gn"), false, \

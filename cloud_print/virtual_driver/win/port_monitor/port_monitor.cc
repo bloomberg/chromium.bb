@@ -278,7 +278,7 @@ void LaunchChromeDownloadPage() {
   // Consider using the shell to invoke the default browser instead of hardcoded
   // reference to IE which might not be available on the system.
   base::FilePath ie_path;
-  PathService::Get(base::DIR_PROGRAM_FILESX86, &ie_path);
+  base::PathService::Get(base::DIR_PROGRAM_FILESX86, &ie_path);
   ie_path = ie_path.Append(kIePath);
   base::CommandLine command_line(ie_path);
   command_line.AppendArg(kChromeInstallUrl);
@@ -670,7 +670,7 @@ MONITOR2* WINAPI InitializePrintMonitor2(MONITORINIT*, HANDLE* handle) {
     // Unit tests set up their own AtExitManager
     monitor_data->at_exit_manager.reset(new base::AtExitManager());
     // Single spooler.exe handles verbose users.
-    PathService::DisableCache();
+    base::PathService::DisableCache();
   }
   return &cloud_print::g_monitor_2;
 }

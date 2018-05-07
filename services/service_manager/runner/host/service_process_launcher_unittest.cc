@@ -68,7 +68,7 @@ class ServiceProcessLauncherDelegateImpl
 #endif  // defined(OS_ANDROID)
 TEST(ServiceProcessLauncherTest, MAYBE_StartJoin) {
   base::FilePath service_manager_dir;
-  PathService::Get(base::DIR_MODULE, &service_manager_dir);
+  base::PathService::Get(base::DIR_MODULE, &service_manager_dir);
   base::test::ScopedTaskEnvironment scoped_task_environment;
 
   base::FilePath test_service_path;

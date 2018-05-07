@@ -751,7 +751,7 @@ CastContentBrowserClient::CreateCrashHandlerHost(
   // Let cast shell dump to /tmp. Internal minidump generator code can move it
   // to /data/minidumps later, since /data/minidumps is file lock-controlled.
   base::FilePath dumps_path;
-  PathService::Get(base::DIR_TEMP, &dumps_path);
+  base::PathService::Get(base::DIR_TEMP, &dumps_path);
 
   // Alway set "upload" to false to use our own uploader.
   breakpad::CrashHandlerHostLinux* crash_handler =

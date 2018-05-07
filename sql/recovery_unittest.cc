@@ -702,7 +702,7 @@ TEST_F(SQLRecoveryTest, AutoRecoverTableMissingColumns) {
 // case happened in <http://crbug.com/387868>.
 TEST_F(SQLRecoveryTest, Bug387868) {
   base::FilePath golden_path;
-  ASSERT_TRUE(PathService::Get(sql::test::DIR_TEST_DATA, &golden_path));
+  ASSERT_TRUE(base::PathService::Get(sql::test::DIR_TEST_DATA, &golden_path));
   golden_path = golden_path.AppendASCII("recovery_387868");
   db().Close();
   ASSERT_TRUE(base::CopyFile(golden_path, db_path()));

@@ -215,7 +215,7 @@ bool IsDomainJoined() {
   bool got_function_addresses = false;
   // Use an absolute path to load the DLL to avoid DLL preloading attacks.
   base::FilePath path;
-  if (PathService::Get(base::DIR_SYSTEM, &path)) {
+  if (base::PathService::Get(base::DIR_SYSTEM, &path)) {
     HINSTANCE net_api_library = ::LoadLibraryEx(
         path.Append(FILE_PATH_LITERAL("netapi32.dll")).value().c_str(), nullptr,
         LOAD_WITH_ALTERED_SEARCH_PATH);

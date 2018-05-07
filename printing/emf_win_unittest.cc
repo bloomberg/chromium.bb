@@ -92,7 +92,7 @@ TEST_F(EmfPrintingTest, Enumerate) {
   EXPECT_EQ(PrintingContext::OK, context.InitWithSettingsForTest(settings));
 
   base::FilePath emf_file;
-  EXPECT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &emf_file));
+  EXPECT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &emf_file));
   emf_file = emf_file.Append(FILE_PATH_LITERAL("printing"))
                      .Append(FILE_PATH_LITERAL("test"))
                      .Append(FILE_PATH_LITERAL("data"))

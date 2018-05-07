@@ -54,7 +54,7 @@ class HeadlessJsBindingsTest
   void SetUpOnMainThread() override {
     base::ThreadRestrictions::SetIOAllowed(true);
     base::FilePath pak_path;
-    ASSERT_TRUE(PathService::Get(base::DIR_MODULE, &pak_path));
+    ASSERT_TRUE(base::PathService::Get(base::DIR_MODULE, &pak_path));
     pak_path = pak_path.AppendASCII("headless_browser_tests.pak");
     ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
         pak_path, ui::SCALE_FACTOR_NONE);

@@ -46,12 +46,12 @@ class PortMonitorTest : public testing::Test {
                           KEY_ALL_ACCESS);
 
     base::FilePath path;
-    PathService::Get(base::DIR_LOCAL_APP_DATA, &path);
+    base::PathService::Get(base::DIR_LOCAL_APP_DATA, &path);
     path = path.Append(kAlternateChromeExePath);
     ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(cloud_print::kChromeExePathRegValue,
                                             path.value().c_str()));
     base::FilePath temp;
-    PathService::Get(base::DIR_TEMP, &temp);
+    base::PathService::Get(base::DIR_TEMP, &temp);
     // Write any dir here.
     ASSERT_EQ(ERROR_SUCCESS,
               key.WriteValue(cloud_print::kChromeProfilePathRegValue,
@@ -71,7 +71,7 @@ class PortMonitorTest : public testing::Test {
 
   virtual void CreateTempChromeExeFiles() {
     base::FilePath path;
-    PathService::Get(base::DIR_LOCAL_APP_DATA, &path);
+    base::PathService::Get(base::DIR_LOCAL_APP_DATA, &path);
     base::FilePath main_path = path.Append(kChromeExePath);
     ASSERT_TRUE(base::CreateDirectory(main_path));
     base::FilePath alternate_path = path.Append(kAlternateChromeExePath);
@@ -80,10 +80,10 @@ class PortMonitorTest : public testing::Test {
 
   virtual void DeleteTempChromeExeFiles() {
     base::FilePath path;
-    PathService::Get(base::DIR_LOCAL_APP_DATA, &path);
+    base::PathService::Get(base::DIR_LOCAL_APP_DATA, &path);
     base::FilePath main_path = path.Append(kChromeExePath);
     ASSERT_TRUE(base::DeleteFile(main_path, true));
-    PathService::Get(base::DIR_LOCAL_APP_DATA, &path);
+    base::PathService::Get(base::DIR_LOCAL_APP_DATA, &path);
     base::FilePath alternate_path = path.Append(kAlternateChromeExePath);
     ASSERT_TRUE(base::DeleteFile(alternate_path, true));
   }
@@ -124,7 +124,7 @@ TEST_F(PortMonitorTest, GetChromeProfilePathTest) {
   base::FilePath data_path = cloud_print::GetChromeProfilePath();
   EXPECT_FALSE(data_path.empty());
   base::FilePath temp;
-  PathService::Get(base::DIR_TEMP, &temp);
+  base::PathService::Get(base::DIR_TEMP, &temp);
   EXPECT_EQ(data_path, temp);
   EXPECT_TRUE(base::DirectoryExists(data_path));
   DeleteChromeExeRegistry();

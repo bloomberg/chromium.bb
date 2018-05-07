@@ -40,7 +40,7 @@ std::unique_ptr<KeyedService> BuildTestOfflinePageModel(
   // If base::PathService::Get returns false, the temporary_archives_dir will be
   // empty, and no temporary pages will be saved during this chrome lifecycle.
   base::FilePath temporary_archives_dir;
-  if (PathService::Get(base::DIR_CACHE, &temporary_archives_dir)) {
+  if (base::PathService::Get(base::DIR_CACHE, &temporary_archives_dir)) {
     temporary_archives_dir =
         temporary_archives_dir.Append(chrome::kOfflinePageArchivesDirname);
   }

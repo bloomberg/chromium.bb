@@ -11,7 +11,7 @@
 
 base::FilePath GinShellPath() {
   base::FilePath dir;
-  PathService::Get(base::DIR_EXE, &dir);
+  base::PathService::Get(base::DIR_EXE, &dir);
 #if defined(OS_WIN)
   return dir.AppendASCII("gin_shell.exe");
 #else
@@ -21,7 +21,7 @@ base::FilePath GinShellPath() {
 
 base::FilePath HelloWorldPath() {
   base::FilePath path;
-  PathService::Get(base::DIR_SOURCE_ROOT, &path);
+  base::PathService::Get(base::DIR_SOURCE_ROOT, &path);
   return path
     .AppendASCII("gin")
     .AppendASCII("shell")

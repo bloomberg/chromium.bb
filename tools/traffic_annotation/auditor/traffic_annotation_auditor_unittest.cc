@@ -55,7 +55,7 @@ using namespace testing;
 class TrafficAnnotationAuditorTest : public ::testing::Test {
  public:
   void SetUp() override {
-    if (!PathService::Get(base::DIR_SOURCE_ROOT, &source_path_)) {
+    if (!base::PathService::Get(base::DIR_SOURCE_ROOT, &source_path_)) {
       LOG(ERROR) << "Could not get current directory to find source path.";
       return;
     }

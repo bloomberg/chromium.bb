@@ -14,7 +14,7 @@ const char kTestAbsPath[] = "/abs/path/to/dir";
 
 std::string GetTestString(int base_dir_key) {
   base::FilePath basedir;
-  EXPECT_TRUE(PathService::Get(base_dir_key, &basedir));
+  EXPECT_TRUE(base::PathService::Get(base_dir_key, &basedir));
   return basedir.value() + "/" + kTestRelPath;
 }
 

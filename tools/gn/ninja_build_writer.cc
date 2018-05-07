@@ -52,7 +52,7 @@ std::string GetSelfInvocationCommand(const BuildSettings* build_settings) {
       build_settings->build_dir().Resolve(build_settings->root_path());
 
   base::FilePath exe_path;
-  PathService::Get(base::FILE_EXE, &exe_path);
+  base::PathService::Get(base::FILE_EXE, &exe_path);
   if (build_path.IsAbsolute())
     exe_path = MakeAbsoluteFilePathRelativeIfPossible(build_path, exe_path);
 

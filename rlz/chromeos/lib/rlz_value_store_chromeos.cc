@@ -52,7 +52,7 @@ base::LazyInstance<base::FilePath>::Leaky g_testing_rlz_store_path =
 
 base::FilePath GetRlzStorePathCommon() {
   base::FilePath homedir;
-  PathService::Get(base::DIR_HOME, &homedir);
+  base::PathService::Get(base::DIR_HOME, &homedir);
   return g_testing_rlz_store_path.Get().empty()
              ? homedir
              : g_testing_rlz_store_path.Get();

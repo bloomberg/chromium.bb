@@ -43,7 +43,7 @@ bool CastCrashReporterClientAndroid::GetCrashDumpLocation(
     const std::string& process_type,
     base::FilePath* crash_dir) {
   base::FilePath crash_dir_local;
-  if (!PathService::Get(base::DIR_ANDROID_APP_DATA, &crash_dir_local)) {
+  if (!base::PathService::Get(base::DIR_ANDROID_APP_DATA, &crash_dir_local)) {
     return false;
   }
   crash_dir_local = crash_dir_local.Append("crashes");

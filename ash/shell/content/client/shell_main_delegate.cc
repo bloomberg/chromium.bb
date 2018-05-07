@@ -83,7 +83,7 @@ content::ContentBrowserClient* ShellMainDelegate::CreateContentBrowserClient() {
 void ShellMainDelegate::InitializeResourceBundle() {
   // Load ash resources and strings; not 'common' (Chrome) resources.
   base::FilePath path;
-  PathService::Get(base::DIR_MODULE, &path);
+  base::PathService::Get(base::DIR_MODULE, &path);
   base::FilePath ash_test_strings =
       path.Append(FILE_PATH_LITERAL("ash_test_strings.pak"));
 

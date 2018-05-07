@@ -14,7 +14,7 @@ int main(int argc, const char** argv) {
   base::AtExitManager exit_manager;
 
   base::FilePath log_filename;
-  PathService::Get(base::DIR_EXE, &log_filename);
+  base::PathService::Get(base::DIR_EXE, &log_filename);
   log_filename = log_filename.AppendASCII("ash_shell.log");
   logging::LoggingSettings settings;
   settings.logging_dest = logging::LOG_TO_ALL;

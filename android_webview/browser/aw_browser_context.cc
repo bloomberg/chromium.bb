@@ -134,7 +134,7 @@ AwBrowserContext* AwBrowserContext::FromWebContents(
 
 void AwBrowserContext::PreMainMessageLoopRun(net::NetLog* net_log) {
   FilePath cache_path;
-  PathService::Get(base::DIR_CACHE, &cache_path);
+  base::PathService::Get(base::DIR_CACHE, &cache_path);
   cache_path =
       cache_path.Append(FILE_PATH_LITERAL("org.chromium.android_webview"));
 

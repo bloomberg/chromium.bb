@@ -28,8 +28,8 @@ bool LoadResources(const std::string& pref_locale) {
 
     // Point DIR_LOCALES to 'remoting_locales'.
     base::FilePath path = base::FilePath(info.dli_fname).DirName();
-    PathService::Override(ui::DIR_LOCALES,
-                          path.AppendASCII(kLocaleResourcesDirName));
+    base::PathService::Override(ui::DIR_LOCALES,
+                                path.AppendASCII(kLocaleResourcesDirName));
 
     ui::ResourceBundle::InitSharedInstanceWithLocale(
         pref_locale, NULL, ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);

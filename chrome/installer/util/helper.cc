@@ -20,7 +20,7 @@ base::FilePath GetChromeInstallPath(bool system_install) {
 #else
   int key = system_install ? base::DIR_PROGRAM_FILES : base::DIR_LOCAL_APP_DATA;
 #endif
-  if (PathService::Get(key, &install_path)) {
+  if (base::PathService::Get(key, &install_path)) {
     install_path =
         install_path.Append(install_static::GetChromeInstallSubDirectory());
     install_path = install_path.Append(kInstallBinaryDir);

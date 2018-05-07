@@ -1100,7 +1100,7 @@ ui::DataPack* ChromeMainDelegate::LoadServiceManifestDataPack() {
 #endif
 
   base::FilePath resources_pack_path;
-  PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
+  base::PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
 
 #if defined(OS_ANDROID)
   service_manifest_data_pack_ =

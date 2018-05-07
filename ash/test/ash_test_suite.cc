@@ -42,7 +42,7 @@ void AshTestSuite::Initialize() {
 
   // Load ash test resources and en-US strings; not 'common' (Chrome) resources.
   base::FilePath path;
-  PathService::Get(base::DIR_MODULE, &path);
+  base::PathService::Get(base::DIR_MODULE, &path);
   base::FilePath ash_test_strings =
       path.Append(FILE_PATH_LITERAL("ash_test_strings.pak"));
   ui::ResourceBundle::InitSharedInstanceWithPakPath(ash_test_strings);

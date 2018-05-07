@@ -216,7 +216,7 @@ AwContentBrowserClient::~AwContentBrowserClient() {}
 
 AwBrowserContext* AwContentBrowserClient::InitBrowserContext() {
   base::FilePath user_data_dir;
-  if (!PathService::Get(base::DIR_ANDROID_APP_DATA, &user_data_dir)) {
+  if (!base::PathService::Get(base::DIR_ANDROID_APP_DATA, &user_data_dir)) {
     NOTREACHED() << "Failed to get app data directory for Android WebView";
   }
   browser_context_.reset(new AwBrowserContext(user_data_dir));

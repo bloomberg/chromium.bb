@@ -71,7 +71,7 @@ class BlacklistTest : public testing::Test {
 
   void CheckBlacklistedDllsNotLoaded() {
     base::FilePath current_dir;
-    ASSERT_TRUE(PathService::Get(base::DIR_EXE, &current_dir));
+    ASSERT_TRUE(base::PathService::Get(base::DIR_EXE, &current_dir));
 
     for (size_t i = 0; i < arraysize(test_data); ++i) {
       // Ensure that the dll has not been loaded both by inspecting the handle
@@ -287,7 +287,7 @@ TEST_F(BlacklistTest, SuccessfullyBlocked) {
 // Disabled due to flakiness.  https://crbug.com/711651.
 TEST_F(BlacklistTest, DISABLED_LoadBlacklistedLibrary) {
   base::FilePath current_dir;
-  ASSERT_TRUE(PathService::Get(base::DIR_EXE, &current_dir));
+  ASSERT_TRUE(base::PathService::Get(base::DIR_EXE, &current_dir));
 
   // Ensure that the blacklist is loaded.
   ASSERT_TRUE(TestDll_IsBlacklistInitialized());

@@ -45,8 +45,8 @@ AwSafeBrowsingUIManager::AwSafeBrowsingUIManager(
 
   // TODO(timvolodine): verify this is what we want regarding the directory.
   base::FilePath user_data_dir;
-  bool result =
-      PathService::Get(android_webview::DIR_SAFE_BROWSING, &user_data_dir);
+  bool result = base::PathService::Get(android_webview::DIR_SAFE_BROWSING,
+                                       &user_data_dir);
   DCHECK(result);
 
   url_request_context_getter_ =

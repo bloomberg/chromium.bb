@@ -36,7 +36,7 @@ bool PathProvider(int key, base::FilePath* result) {
 }
 
 void RegisterPathProvider() {
-  PathService::RegisterProvider(PathProvider, PATH_START, PATH_END);
+  base::PathService::RegisterProvider(PathProvider, PATH_START, PATH_END);
 }
 
 }  // namespace android_webview

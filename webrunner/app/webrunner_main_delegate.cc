@@ -21,7 +21,7 @@ void InitLoggingFromCommandLine(const base::CommandLine& command_line) {
   base::FilePath log_filename;
   std::string filename = command_line.GetSwitchValueASCII(switches::kLogFile);
   if (filename.empty()) {
-    PathService::Get(base::DIR_EXE, &log_filename);
+    base::PathService::Get(base::DIR_EXE, &log_filename);
     log_filename = log_filename.AppendASCII("webrunner.log");
   } else {
     log_filename = base::FilePath::FromUTF8Unsafe(filename);

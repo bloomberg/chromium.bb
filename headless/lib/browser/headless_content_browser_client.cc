@@ -62,7 +62,7 @@ breakpad::CrashHandlerHostLinux* CreateCrashHandlerHost(
     const HeadlessBrowser::Options& options) {
   base::FilePath dumps_path = options.crash_dumps_dir;
   if (dumps_path.empty()) {
-    bool ok = PathService::Get(base::DIR_MODULE, &dumps_path);
+    bool ok = base::PathService::Get(base::DIR_MODULE, &dumps_path);
     DCHECK(ok);
   }
 

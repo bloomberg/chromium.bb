@@ -340,7 +340,7 @@ std::vector<base::FilePath> SharedSampler::GetSupportedImageNames() {
   std::vector<base::FilePath> supported_names;
 
   base::FilePath current_exe;
-  if (PathService::Get(base::FILE_EXE, &current_exe))
+  if (base::PathService::Get(base::FILE_EXE, &current_exe))
     supported_names.push_back(current_exe.BaseName());
 
   supported_names.push_back(

@@ -14,7 +14,7 @@ int main(void) {
   base::TearDownFontconfig();
 
   base::FilePath dir_module;
-  CHECK(PathService::Get(base::DIR_MODULE, &dir_module));
+  CHECK(base::PathService::Get(base::DIR_MODULE, &dir_module));
   base::FilePath fontconfig_caches = dir_module.Append("fontconfig_caches");
   CHECK(base::DirectoryExists(fontconfig_caches));
   base::FilePath stamp = fontconfig_caches.Append("STAMP");

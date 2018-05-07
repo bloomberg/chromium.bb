@@ -18,7 +18,7 @@
 TEST(FuzzerConfigTest, DictOnly) {
   // Test of automatically generated .options file for fuzzer with dict option.
   base::FilePath exe_path;
-  PathService::Get(base::FILE_EXE, &exe_path);
+  base::PathService::Get(base::FILE_EXE, &exe_path);
   std::string launcher_path =
     exe_path.DirName().Append("check_fuzzer_config.py").value();
 
@@ -39,7 +39,7 @@ TEST(FuzzerConfigTest, DictOnly) {
 TEST(FuzzerConfigTest, ConfigOnly) {
   // Test of .options file for fuzzer with libfuzzer_options and without dict.
   base::FilePath exe_path;
-  PathService::Get(base::FILE_EXE, &exe_path);
+  base::PathService::Get(base::FILE_EXE, &exe_path);
   std::string launcher_path =
     exe_path.DirName().Append("check_fuzzer_config.py").value();
 
@@ -61,7 +61,7 @@ TEST(FuzzerConfigTest, ConfigOnly) {
 TEST(FuzzerConfigTest, ConfigAndDict) {
   // Test of .options file for fuzzer with options file and dictionary.
   base::FilePath exe_path;
-  PathService::Get(base::FILE_EXE, &exe_path);
+  base::PathService::Get(base::FILE_EXE, &exe_path);
   std::string launcher_path =
     exe_path.DirName().Append("check_fuzzer_config.py").value();
 
@@ -85,7 +85,7 @@ TEST(FuzzerConfigTest, ConfigAndDict) {
 TEST(FuzzerConfigTest, ConfigAndSeedCorpus) {
   // Test of .options file for fuzzer with libfuzzer_options and seed corpus.
   base::FilePath exe_path;
-  PathService::Get(base::FILE_EXE, &exe_path);
+  base::PathService::Get(base::FILE_EXE, &exe_path);
   std::string launcher_path =
     exe_path.DirName().Append("check_fuzzer_config.py").value();
 
@@ -121,7 +121,7 @@ TEST(FuzzerConfigTest, ConfigAndSeedCorpus) {
 TEST(FuzzerConfigTest, ConfigAndSeedCorpuses) {
   // Test of .options file for fuzzer with libfuzzer_options and seed corpuses.
   base::FilePath exe_path;
-  PathService::Get(base::FILE_EXE, &exe_path);
+  base::PathService::Get(base::FILE_EXE, &exe_path);
   std::string launcher_path =
     exe_path.DirName().Append("check_fuzzer_config.py").value();
 
@@ -157,7 +157,7 @@ TEST(FuzzerConfigTest, ConfigAndSeedCorpuses) {
 TEST(FuzzerConfigTest, DictSubdir) {
   // Test of auto-generated .options file for fuzzer with dict in sub-directory.
   base::FilePath exe_path;
-  PathService::Get(base::FILE_EXE, &exe_path);
+  base::PathService::Get(base::FILE_EXE, &exe_path);
   std::string launcher_path =
     exe_path.DirName().Append("check_fuzzer_config.py").value();
 

@@ -91,7 +91,7 @@ int AwBrowserMainParts::PreCreateThreads() {
   // Try to directly mmap the resources.pak from the apk. Fall back to load
   // from file, using PATH_SERVICE, otherwise.
   base::FilePath pak_file_path;
-  PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &pak_file_path);
+  base::PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &pak_file_path);
   pak_file_path = pak_file_path.AppendASCII("resources.pak");
   ui::LoadMainAndroidPackFile("assets/resources.pak", pak_file_path);
 
@@ -104,15 +104,15 @@ int AwBrowserMainParts::PreCreateThreads() {
   // initially, because safe browsing can be enabled later at runtime
   // on a per-webview basis.
   base::FilePath safe_browsing_dir;
-  if (PathService::Get(android_webview::DIR_SAFE_BROWSING,
-                       &safe_browsing_dir)) {
+  if (base::PathService::Get(android_webview::DIR_SAFE_BROWSING,
+                             &safe_browsing_dir)) {
     if (!base::PathExists(safe_browsing_dir))
       base::CreateDirectory(safe_browsing_dir);
   }
 
   base::FilePath crash_dir;
   if (crash_reporter::IsCrashReporterEnabled()) {
-    if (PathService::Get(android_webview::DIR_CRASH_DUMPS, &crash_dir)) {
+    if (base::PathService::Get(android_webview::DIR_CRASH_DUMPS, &crash_dir)) {
       if (!base::PathExists(crash_dir))
         base::CreateDirectory(crash_dir);
     }

@@ -712,7 +712,7 @@ void DriveInternalsWebUIHandler::UpdateLocalStorageUsageSection() {
 
   // Propagate the amount of local free space in bytes.
   base::FilePath home_path;
-  if (PathService::Get(base::DIR_HOME, &home_path)) {
+  if (base::PathService::Get(base::DIR_HOME, &home_path)) {
     base::DictionaryValue* local_storage_summary = new base::DictionaryValue;
     base::PostTaskWithTraitsAndReply(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},

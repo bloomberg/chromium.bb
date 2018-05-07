@@ -114,7 +114,7 @@ void GetV8FilePath(const char* file_name, base::FilePath* path_out) {
   *path_out = base::mac::PathForFrameworkBundleResource(natives_file_name);
 #else
   base::FilePath data_path;
-  bool r = PathService::Get(base::DIR_ASSETS, &data_path);
+  bool r = base::PathService::Get(base::DIR_ASSETS, &data_path);
   DCHECK(r);
   *path_out = data_path.AppendASCII(file_name);
 #endif

@@ -119,7 +119,7 @@ void MarkLpOptions(base::StringPiece printer_name, ppd_file_t** ppd) {
   std::vector<base::FilePath> file_locations;
   file_locations.push_back(base::FilePath(kSystemLpOptionPath));
   base::FilePath homedir;
-  PathService::Get(base::DIR_HOME, &homedir);
+  base::PathService::Get(base::DIR_HOME, &homedir);
   file_locations.push_back(base::FilePath(homedir.Append(kUserLpOptionPath)));
 
   for (const base::FilePath& location : file_locations) {

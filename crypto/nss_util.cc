@@ -73,7 +73,7 @@ std::string GetNSSErrorMessage() {
 #if !defined(OS_CHROMEOS)
 base::FilePath GetDefaultConfigDirectory() {
   base::FilePath dir;
-  PathService::Get(base::DIR_HOME, &dir);
+  base::PathService::Get(base::DIR_HOME, &dir);
   if (dir.empty()) {
     LOG(ERROR) << "Failed to get home directory.";
     return dir;
