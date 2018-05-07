@@ -966,7 +966,14 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
       static_cast<blink::WebEffectiveConnectionType>(
           prefs.low_priority_iframes_threshold));
 
-  settings->SetPictureInPictureEnabled(prefs.picture_in_picture_enabled);
+  // TODO(crbug.com/806249): Remove this once Picture-in-Picture is compatible
+  // without GPU compositing.
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
+  if (render_thread && render_thread->IsGpuCompositingDisabled()) {
+    settings->SetPictureInPictureEnabled(false);
+  } else {
+    settings->SetPictureInPictureEnabled(prefs.picture_in_picture_enabled);
+  }
 
 #if defined(OS_MACOSX)
   settings->SetDoubleTapToZoomEnabled(true);
