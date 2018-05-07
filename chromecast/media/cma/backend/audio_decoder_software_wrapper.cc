@@ -36,7 +36,7 @@ bool IsChannelLayoutSupported(AudioConfig config) {
 
 // Codecs that cannot be decoded on the device and must be passed through.
 constexpr media::AudioCodec kPassthroughCodecs[] = {
-    kCodecEAC3, kCodecAC3, kCodecDTS,
+    kCodecEAC3, kCodecAC3, kCodecDTS, kCodecMpegHAudio,
 };
 
 }  // namespace

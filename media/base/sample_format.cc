@@ -15,6 +15,7 @@ int SampleFormatToBytesPerChannel(SampleFormat sample_format) {
     case kSampleFormatU8:
     case kSampleFormatAc3:
     case kSampleFormatEac3:
+    case kSampleFormatMpegHAudio:
       return 1;
     case kSampleFormatS16:
     case kSampleFormatPlanarS16:
@@ -59,6 +60,8 @@ const char* SampleFormatToString(SampleFormat sample_format) {
       return "Compressed AC3 bitstream";
     case kSampleFormatEac3:
       return "Compressed E-AC3 bitstream";
+    case kSampleFormatMpegHAudio:
+      return "Compressed MPEG-H audio bitstream";
   }
   NOTREACHED() << "Invalid sample format provided: " << sample_format;
   return "";
@@ -78,6 +81,7 @@ bool IsPlanar(SampleFormat sample_format) {
     case kSampleFormatF32:
     case kSampleFormatAc3:
     case kSampleFormatEac3:
+    case kSampleFormatMpegHAudio:
       return false;
   }
 
@@ -94,6 +98,7 @@ bool IsInterleaved(SampleFormat sample_format) {
     case kSampleFormatF32:
     case kSampleFormatAc3:
     case kSampleFormatEac3:
+    case kSampleFormatMpegHAudio:
       return true;
     case kUnknownSampleFormat:
     case kSampleFormatPlanarS16:
@@ -110,6 +115,7 @@ bool IsBitstream(SampleFormat sample_format) {
   switch (sample_format) {
     case kSampleFormatAc3:
     case kSampleFormatEac3:
+    case kSampleFormatMpegHAudio:
       return true;
     case kUnknownSampleFormat:
     case kSampleFormatU8:

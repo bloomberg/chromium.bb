@@ -66,6 +66,7 @@ message AudioDecoderConfig {
     kCodecPCM_ALAW = 14;
     kCodecALAC = 15;
     kCodecAC3 = 16;
+    kCodecMpegHAudio = 17;
   }
 
   // Proto version of media::SampleFormat.
@@ -82,6 +83,7 @@ message AudioDecoderConfig {
     kSampleFormatS24 = 8;
     kSampleFormatAc3 = 9;
     kSampleFormatEac3 = 10;
+    kSampleFormatMpegHAudio = 11;
   };
 
   // Proto version of media::ChannelLayout.
@@ -119,6 +121,7 @@ message AudioDecoderConfig {
     CHANNEL_LAYOUT_DISCRETE = 29;
     CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC = 30;
     CHANNEL_LAYOUT_4_1_QUAD_SIDE = 31;
+    CHANNEL_LAYOUT_BITSTREAM = 32;
   };
 
   optional Codec codec = 1;

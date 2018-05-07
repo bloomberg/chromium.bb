@@ -108,8 +108,13 @@ enum ChannelLayout {
   // Front L, Front R, Side L, Side R, LFE
   CHANNEL_LAYOUT_4_1_QUAD_SIDE = 31,
 
+  // Actual channel layout is specified in the bitstream and the actual channel
+  // count is unknown at Chromium media pipeline level (useful for audio
+  // pass-through mode).
+  CHANNEL_LAYOUT_BITSTREAM = 32,
+
   // Max value, must always equal the largest entry ever logged.
-  CHANNEL_LAYOUT_MAX = CHANNEL_LAYOUT_4_1_QUAD_SIDE
+  CHANNEL_LAYOUT_MAX = CHANNEL_LAYOUT_BITSTREAM
 };
 
 // Note: Do not reorder or reassign these values; other code depends on their

@@ -21,11 +21,13 @@ TEST(ChannelMixingMatrixTest, ConstructAllPossibleLayouts) {
     for (ChannelLayout output_layout = CHANNEL_LAYOUT_MONO;
          output_layout <= CHANNEL_LAYOUT_MAX;
          output_layout = static_cast<ChannelLayout>(output_layout + 1)) {
-      // DISCRETE can't be tested here based on the current approach.
+      // DISCRETE, BITSTREAM can't be tested here based on the current approach.
       // CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC is not mixable.
       // Stereo down mix should never be the output layout.
-      if (input_layout == CHANNEL_LAYOUT_DISCRETE ||
+      if (input_layout == CHANNEL_LAYOUT_BITSTREAM ||
+          input_layout == CHANNEL_LAYOUT_DISCRETE ||
           input_layout == CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC ||
+          output_layout == CHANNEL_LAYOUT_BITSTREAM ||
           output_layout == CHANNEL_LAYOUT_DISCRETE ||
           output_layout == CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC ||
           output_layout == CHANNEL_LAYOUT_STEREO_DOWNMIX) {

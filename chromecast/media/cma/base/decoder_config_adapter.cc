@@ -38,6 +38,8 @@ AudioCodec ToAudioCodec(const ::media::AudioCodec audio_codec) {
       return kCodecEAC3;
     case ::media::kCodecAC3:
       return kCodecAC3;
+    case ::media::kCodecMpegHAudio:
+      return kCodecMpegHAudio;
     default:
       LOG(ERROR) << "Unsupported audio codec " << audio_codec;
   }
@@ -49,6 +51,7 @@ SampleFormat ToSampleFormat(const ::media::SampleFormat sample_format) {
     case ::media::kUnknownSampleFormat:
     case ::media::kSampleFormatAc3:
     case ::media::kSampleFormatEac3:
+    case ::media::kSampleFormatMpegHAudio:
       return kUnknownSampleFormat;
     case ::media::kSampleFormatU8:
       return kSampleFormatU8;
@@ -133,6 +136,8 @@ SampleFormat ToSampleFormat(const ::media::SampleFormat sample_format) {
       return ::media::kCodecEAC3;
     case kCodecAC3:
       return ::media::kCodecAC3;
+    case kCodecMpegHAudio:
+      return ::media::kCodecMpegHAudio;
     default:
       return ::media::kUnknownAudioCodec;
   }

@@ -32,13 +32,14 @@ enum AudioCodec {
   kCodecPCM_ALAW = 14,
   kCodecALAC = 15,
   kCodecAC3 = 16,
+  kCodecMpegHAudio = 17,
   // DO NOT ADD RANDOM AUDIO CODECS!
   //
   // The only acceptable time to add a new codec is if there is production code
   // that uses said codec in the same CL.
 
   // Must always be equal to the largest entry ever logged.
-  kAudioCodecMax = kCodecAC3,
+  kAudioCodecMax = kCodecMpegHAudio,
 };
 
 std::string MEDIA_EXPORT GetCodecName(AudioCodec codec);

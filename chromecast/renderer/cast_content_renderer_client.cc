@@ -215,6 +215,8 @@ bool CastContentRendererClient::IsSupportedAudioConfig(
     return kBitstreamAudioCodecEac3 & supported_bitstream_audio_codecs_;
   if (config.codec == ::media::kCodecAC3)
     return kBitstreamAudioCodecAc3 & supported_bitstream_audio_codecs_;
+  if (config.codec == ::media::kCodecMpegHAudio)
+    return kBitstreamAudioCodecMpegHAudio & supported_bitstream_audio_codecs_;
 
   // TODO(sanfin): Implement this for Android.
   return true;
@@ -257,7 +259,9 @@ bool CastContentRendererClient::IsSupportedBitstreamAudioCodec(
   return (codec == ::media::kCodecAC3 &&
           (kBitstreamAudioCodecAc3 & supported_bitstream_audio_codecs_)) ||
          (codec == ::media::kCodecEAC3 &&
-          (kBitstreamAudioCodecEac3 & supported_bitstream_audio_codecs_));
+          (kBitstreamAudioCodecEac3 & supported_bitstream_audio_codecs_)) ||
+         (codec == ::media::kCodecMpegHAudio &&
+          (kBitstreamAudioCodecMpegHAudio & supported_bitstream_audio_codecs_));
 }
 
 blink::WebPrescientNetworking*

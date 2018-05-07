@@ -82,6 +82,8 @@ void MediaCodecAudioDecoder::Initialize(
     sample_format_ = kSampleFormatAc3;
   else if (config.codec() == kCodecEAC3)
     sample_format_ = kSampleFormatEac3;
+  else if (config.codec() == kCodecMpegHAudio)
+    sample_format_ = kSampleFormatMpegHAudio;
 
   if (state_ == STATE_ERROR) {
     DVLOG(1) << "Decoder is in error state.";

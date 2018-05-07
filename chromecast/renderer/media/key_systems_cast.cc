@@ -125,6 +125,10 @@ SupportedCodecs GetCastEmeSupportedCodecs() {
   codecs |= ::media::EME_CODEC_MP4_AC3 | ::media::EME_CODEC_MP4_EAC3;
 #endif  // BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
 
+#if BUILDFLAG(ENABLE_MPEG_H_AUDIO_DEMUXING)
+  codecs |= ::media::EME_CODEC_MP4_MPEG_H_AUDIO;
+#endif  // BUILDFLAG(ENABLE_MPEG_H_AUDIO_DEMUXING)
+
   return codecs;
 }
 
