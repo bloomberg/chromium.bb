@@ -47,6 +47,8 @@ class PolicyToolUIHandler : public PolicyUIHandler {
 
   void HandleExportLinux(const base::ListValue* args);
 
+  void HandleExportMac(const base::ListValue* args);
+
   void OnSessionDeleted(bool is_successful);
 
   std::string ReadOrCreateFileCallback();

@@ -27,6 +27,7 @@ content::WebUIDataSource* CreatePolicyToolUIHtmlSource() {
   source->AddLocalizedString("showExpandedValue",
                              IDS_POLICY_SHOW_EXPANDED_VALUE);
   source->AddLocalizedString("exportLinux", IDS_EXPORT_POLICIES_LINUX);
+  source->AddLocalizedString("exportMac", IDS_EXPORT_POLICIES_MAC);
   source->AddLocalizedString("hideExpandedValue",
                              IDS_POLICY_HIDE_EXPANDED_VALUE);
   source->AddLocalizedString("loadSession", IDS_POLICY_TOOL_LOAD_SESSION);

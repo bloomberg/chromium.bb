@@ -24,6 +24,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/policy/core/common/plist_writer.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
@@ -736,6 +737,38 @@ IN_PROC_BROWSER_TEST_F(PolicyToolUIExportTest, ExportSessionPolicyToLinux) {
   EXPECT_TRUE(
       base::ContentsEqual(export_policies_test_file_path_,
                           GetSessionPath(FILE_PATH_LITERAL("test_session"))));
+  TestSelectFileDialogPolicyTool::SetFactory(nullptr);
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyToolUIExportTest, ExportSessionToMac) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  // Set SelectFileDialog to use our factory.
+  ui::SelectFileDialog::SetFactory(new TestSelectFileDialogFactoryPolicyTool(
+      export_policies_test_file_path_));
+  // Create a session with default values.
+  CreateSingleSessionWithFixedValues(
+      base::FilePath::FromUTF8Unsafe("test_session").value());
+
+  // Test if the current policy session is successfully exported.
+  ui_test_utils::NavigateToURL(browser(), GURL("chrome://policy-tool"));
+  content::RunAllTasksUntilIdle();
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  std::string export_js = "$('export-policies-mac').click()";
+  EXPECT_TRUE(content::ExecuteScript(contents, export_js));
+  // Wait until the posted task export to Mac is done.
+  content::RunAllTasksUntilIdle();
+
+  // Read the content of the exported file and the |test_session| file.
+  std::string file_export_content = "", file_session_content = "";
+  base::ReadFileToString(export_policies_test_file_path_, &file_export_content);
+  base::ReadFileToString(GetSessionPath(FILE_PATH_LITERAL("test_session")),
+                         &file_session_content);
+  // The format of every session file is JSON.
+  policy::PlistWrite(*base::JSONReader::Read(file_session_content),
+                     &file_session_content);
+  EXPECT_TRUE(file_export_content == file_session_content);
   TestSelectFileDialogPolicyTool::SetFactory(nullptr);
 }
 

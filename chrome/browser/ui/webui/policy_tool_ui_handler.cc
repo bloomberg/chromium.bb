@@ -16,6 +16,7 @@
 #include "chrome/browser/policy/schema_registry_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
+#include "components/policy/core/common/plist_writer.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -34,6 +35,9 @@ const base::FilePath::CharType kPolicyToolSessionExtension[] =
 
 const base::FilePath::CharType kPolicyToolLinuxExtension[] =
     FILE_PATH_LITERAL("json");
+
+const base::FilePath::CharType kPolicyToolMacExtension[] =
+    FILE_PATH_LITERAL("plist");
 
 // Returns the current list of all sessions sorted by last access time in
 // decreasing order.
@@ -153,6 +157,9 @@ void PolicyToolUIHandler::RegisterMessages() {
       "exportLinux",
       base::BindRepeating(&PolicyToolUIHandler::HandleExportLinux,
                           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "exportMac", base::BindRepeating(&PolicyToolUIHandler::HandleExportMac,
+                                       base::Unretained(this)));
 }
 
 void PolicyToolUIHandler::OnJavascriptDisallowed() {
@@ -444,9 +451,14 @@ void PolicyToolUIHandler::HandleDeleteSession(const base::ListValue* args) {
 
 void PolicyToolUIHandler::HandleExportLinux(const base::ListValue* args) {
   DCHECK_EQ(1U, args->GetSize());
-
   base::JSONWriter::Write(args->GetList()[0], &session_dict_for_exporting_);
   ExportSessionToFile(kPolicyToolLinuxExtension);
+}
+
+void PolicyToolUIHandler::HandleExportMac(const base::ListValue* args) {
+  DCHECK_EQ(1U, args->GetSize());
+  policy::PlistWrite(args->GetList()[0], &session_dict_for_exporting_);
+  ExportSessionToFile(kPolicyToolMacExtension);
 }
 
 void DoWriteSessionPolicyToFile(const base::FilePath& path,
