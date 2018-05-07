@@ -104,8 +104,12 @@ void UsbServiceLinux::FileThreadHelper::Start() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   base::AssertBlockingAllowed();
 
+  // Initializing udev for device enumeration and monitoring may fail. In that
+  // case this service will continue to exist but no devices will be found.
   watcher_ = UdevWatcher::StartWatching(this);
-  watcher_->EnumerateExistingDevices();
+  if (watcher_)
+    watcher_->EnumerateExistingDevices();
+
   task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&UsbServiceLinux::HelperStarted, service_));
 }
