@@ -4,8 +4,12 @@
 
 #include "ash/system/unified/unified_system_tray.h"
 
+#include "ash/shell.h"
+#include "ash/system/date/date_view.h"
+#include "ash/system/model/system_tray_model.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/system/tray/tray_container.h"
 #include "ash/system/unified/unified_system_tray_bubble.h"
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "ash/system/web_notification/ash_popup_alignment_delegate.h"
@@ -96,11 +100,11 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
     : TrayBackgroundView(shelf),
       ui_delegate_(std::make_unique<UiDelegate>(this)),
       model_(std::make_unique<UnifiedSystemTrayModel>()) {
-  // On the first step, features in the status area button are still provided by
-  // TrayViews in SystemTray.
-  // TODO(tetsui): Remove SystemTray from StatusAreaWidget and provide these
-  // features from UnifiedSystemTray.
-  SetVisible(false);
+  tray_container()->AddChildView(
+      new tray::TimeView(tray::TimeView::ClockLayout::HORIZONTAL_CLOCK,
+                         Shell::Get()->system_tray_model()->clock()));
+  SetInkDropMode(InkDropMode::ON);
+  SetVisible(true);
 }
 
 UnifiedSystemTray::~UnifiedSystemTray() = default;
@@ -140,14 +144,12 @@ void UnifiedSystemTray::ClickedOutsideBubble() {}
 
 void UnifiedSystemTray::ShowBubbleInternal(bool show_by_click) {
   bubble_ = std::make_unique<UnifiedSystemTrayBubble>(this, show_by_click);
-  // TODO(tetsui): Call its own SetIsActive. See the comment in the ctor.
-  shelf()->GetStatusAreaWidget()->system_tray()->SetIsActive(true);
+  SetIsActive(true);
 }
 
 void UnifiedSystemTray::HideBubbleInternal() {
   bubble_.reset();
-  // TODO(tetsui): Call its own SetIsActive. See the comment in the ctor.
-  shelf()->GetStatusAreaWidget()->system_tray()->SetIsActive(false);
+  SetIsActive(false);
 }
 
 }  // namespace ash
