@@ -10,6 +10,7 @@
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ash/system/unified/unified_system_tray_view.h"
+#include "base/metrics/histogram_macros.h"
 
 namespace ash {
 
@@ -19,11 +20,15 @@ constexpr int kPaddingFromScreenTop = 8;
 
 }  // namespace
 
-UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray)
+UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray,
+                                                 bool show_by_click)
     : controller_(std::make_unique<UnifiedSystemTrayController>(
           tray->model(),
           tray->shelf()->GetStatusAreaWidget()->system_tray())),
       tray_(tray) {
+  if (show_by_click)
+    time_shown_by_click_ = base::TimeTicks::Now();
+
   views::TrayBubbleView::InitParams init_params;
   init_params.anchor_alignment = views::TrayBubbleView::ANCHOR_ALIGNMENT_BOTTOM;
   init_params.min_width = kTrayMenuWidth;
@@ -40,6 +45,8 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray)
                    kPaddingFromScreenTop -
                    bubble_view->GetBorderInsets().height();
   auto* unified_view = controller_->CreateView();
+  time_to_click_recorder_ =
+      std::make_unique<TimeToClickRecorder>(this, unified_view);
   unified_view->SetMaxHeight(max_height);
   bubble_view->SetMaxHeight(max_height);
   bubble_view->AddChildView(unified_view);
@@ -75,6 +82,17 @@ void UnifiedSystemTrayBubble::OnWidgetDestroying(views::Widget* widget) {
   bubble_widget_->RemoveObserver(this);
   bubble_widget_ = nullptr;
   tray_->CloseBubble();
+}
+
+void UnifiedSystemTrayBubble::RecordTimeToClick() {
+  // Ignore if the tray bubble is not opened by click.
+  if (!time_shown_by_click_)
+    return;
+
+  UMA_HISTOGRAM_TIMES("ChromeOS.SystemTray.TimeToClick",
+                      base::TimeTicks::Now() - time_shown_by_click_.value());
+
+  time_shown_by_click_.reset();
 }
 
 }  // namespace ash

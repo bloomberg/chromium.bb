@@ -51,7 +51,7 @@ class UnifiedSystemTray : public TrayBackgroundView {
   class UiDelegate;
 
   // Forwarded from UiDelegate.
-  void ShowBubbleInternal();
+  void ShowBubbleInternal(bool show_by_click);
   void HideBubbleInternal();
 
   std::unique_ptr<UiDelegate> ui_delegate_;

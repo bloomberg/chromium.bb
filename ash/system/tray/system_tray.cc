@@ -620,12 +620,12 @@ bool SystemTray::PerformAction(const ui::Event& event) {
   UserMetricsRecorder::RecordUserClickOnTray(
       LoginMetricsRecorder::TrayClickTarget::kSystemTray);
 
-  last_button_clicked_ = base::TimeTicks::Now();
-
   if (features::IsSystemTrayUnifiedEnabled()) {
     return shelf()->GetStatusAreaWidget()->unified_system_tray()->PerformAction(
         event);
   }
+
+  last_button_clicked_ = base::TimeTicks::Now();
 
   // If we're already showing a full system tray menu, either default or
   // detailed menu, hide it; otherwise, show it (and hide any popup that's
@@ -745,18 +745,6 @@ void SystemTray::RecordSystemMenuMetrics() {
         "Ash.SystemMenu.PercentageOfWorkAreaHeightCoveredByMenu",
         100 * bubble_view->height() / work_area_height, 1, 300, 100);
   }
-}
-
-TimeToClickRecorder::TimeToClickRecorder(SystemTray* tray) : tray_(tray) {}
-
-void TimeToClickRecorder::OnEvent(ui::Event* event) {
-  // Ignore if the event is neither click nor tap.
-  if (event->type() != ui::ET_MOUSE_PRESSED &&
-      event->type() != ui::ET_GESTURE_TAP) {
-    return;
-  }
-
-  tray_->RecordTimeToClick();
 }
 
 }  // namespace ash

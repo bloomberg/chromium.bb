@@ -80,7 +80,7 @@ bool UnifiedSystemTray::UiDelegate::ShowMessageCenter(bool show_by_click) {
   if (owner_->IsBubbleShown())
     return false;
 
-  owner_->ShowBubbleInternal();
+  owner_->ShowBubbleInternal(show_by_click);
   return true;
 }
 
@@ -138,8 +138,8 @@ void UnifiedSystemTray::HideBubbleWithView(
 
 void UnifiedSystemTray::ClickedOutsideBubble() {}
 
-void UnifiedSystemTray::ShowBubbleInternal() {
-  bubble_ = std::make_unique<UnifiedSystemTrayBubble>(this);
+void UnifiedSystemTray::ShowBubbleInternal(bool show_by_click) {
+  bubble_ = std::make_unique<UnifiedSystemTrayBubble>(this, show_by_click);
   // TODO(tetsui): Call its own SetIsActive. See the comment in the ctor.
   shelf()->GetStatusAreaWidget()->system_tray()->SetIsActive(true);
 }

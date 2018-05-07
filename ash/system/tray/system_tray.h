@@ -12,6 +12,7 @@
 #include "ash/ash_export.h"
 #include "ash/system/tray/system_tray_bubble.h"
 #include "ash/system/tray/system_tray_view.h"
+#include "ash/system/tray/time_to_click_recorder.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "base/callback.h"
 #include "base/macros.h"
@@ -53,7 +54,8 @@ enum BubbleCreationType {
 // manages all the SystemTrayItem controllers, creates icon views that appear in
 // the tray, creates the bubble menu and fills the menu with items. It is also
 // the view that contains the icons in the tray.
-class ASH_EXPORT SystemTray : public TrayBackgroundView {
+class ASH_EXPORT SystemTray : public TrayBackgroundView,
+                              public TimeToClickRecorder::Delegate {
  public:
   explicit SystemTray(Shelf* shelf);
   ~SystemTray() override;
@@ -133,10 +135,6 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView {
   // Returns TrayIME object if present or null otherwise.
   TrayIME* GetTrayIME() const;
 
-  // Record TimeToClick metrics and reset |last_button_clicked_|. Called by
-  // TimeToClickRecorder which is system tray view's PreTargetHandler.
-  void RecordTimeToClick();
-
   // Determines if it's ok to switch away from the currently active user. Screen
   // casting may block this (or at least throw up a confirmation dialog). Calls
   // |callback| with the result.
@@ -161,6 +159,9 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView {
   base::string16 GetAccessibleNameForBubble() override;
   bool ShouldEnableExtraKeyboardAccessibility() override;
   void HideBubble(const views::TrayBubbleView* bubble_view) override;
+
+  // TimeToClickRecorder::Delegate:
+  void RecordTimeToClick() override;
 
   ScreenTrayItem* GetScreenShareItem() { return screen_share_tray_item_; }
   ScreenTrayItem* GetScreenCaptureItem() { return screen_capture_tray_item_; }
@@ -254,22 +255,6 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView {
   ScreenTrayItem* screen_share_tray_item_ = nullptr;    // not owned
 
   DISALLOW_COPY_AND_ASSIGN(SystemTray);
-};
-
-// An event handler that will be installed as system tray view PreTargetHandler
-// to record TimeToClick metrics.
-class TimeToClickRecorder : public ui::EventHandler {
- public:
-  TimeToClickRecorder(SystemTray* tray);
-  ~TimeToClickRecorder() override = default;
-
- private:
-  // ui::EventHandler:
-  void OnEvent(ui::Event* event) override;
-
-  SystemTray* const tray_;
-
-  DISALLOW_COPY_AND_ASSIGN(TimeToClickRecorder);
 };
 
 }  // namespace ash

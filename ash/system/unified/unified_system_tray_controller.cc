@@ -73,9 +73,6 @@ UnifiedSystemTrayView* UnifiedSystemTrayController::CreateView() {
       std::make_unique<UnifiedBrightnessSliderController>(model_);
   unified_view_->AddSliderView(brightness_slider_controller_->CreateView());
 
-  time_to_click_recorder_ = std::make_unique<TimeToClickRecorder>(system_tray_);
-  unified_view_->AddPreTargetHandler(time_to_click_recorder_.get());
-
   return unified_view_;
 }
 

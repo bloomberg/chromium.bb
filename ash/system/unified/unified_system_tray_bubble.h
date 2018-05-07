@@ -7,7 +7,10 @@
 
 #include <memory>
 
+#include "ash/system/tray/time_to_click_recorder.h"
 #include "base/macros.h"
+#include "base/optional.h"
+#include "base/time/time.h"
 #include "ui/views/widget/widget_observer.h"
 
 namespace views {
@@ -23,13 +26,17 @@ class UnifiedSystemTrayController;
 // Shows the bubble on the constructor, and closes the bubble on the destructor.
 // It is possible that the bubble widget is closed on deactivation. In such
 // case, this class calls UnifiedSystemTray::CloseBubble() to delete itself.
-class UnifiedSystemTrayBubble : public views::WidgetObserver {
+class UnifiedSystemTrayBubble : public views::WidgetObserver,
+                                public TimeToClickRecorder::Delegate {
  public:
-  explicit UnifiedSystemTrayBubble(UnifiedSystemTray* tray);
+  explicit UnifiedSystemTrayBubble(UnifiedSystemTray* tray, bool show_by_click);
   ~UnifiedSystemTrayBubble() override;
 
   // views::WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;
+
+  // TimeToClickRecorder::Delegate:
+  void RecordTimeToClick() override;
 
  private:
   // Controller of UnifiedSystemTrayView. As the view is owned by views
@@ -45,6 +52,13 @@ class UnifiedSystemTrayBubble : public views::WidgetObserver {
   // UnifiedSystemTray::CloseBubble().
   // In order to do this, we observe OnWidgetDestroying().
   views::Widget* bubble_widget_ = nullptr;
+
+  // PreTargetHandler of |unified_view_| to record TimeToClick metrics. Owned.
+  std::unique_ptr<TimeToClickRecorder> time_to_click_recorder_;
+
+  // The time the bubble is created. If the bubble is not created by button
+  // click (|show_by_click| in ctor is false), it is not set.
+  base::Optional<base::TimeTicks> time_shown_by_click_;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedSystemTrayBubble);
 };
