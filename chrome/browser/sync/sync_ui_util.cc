@@ -55,12 +55,6 @@ namespace sync_ui_util {
 
 namespace {
 
-bool IsChromeDashboardEnabled() {
-  const std::string group_name =
-      base::FieldTrialList::FindFullName("ChromeDashboard");
-  return group_name == "Enabled";
-}
-
 // Returns the message that should be displayed when the user is authenticated
 // and can connect to the sync server. If the user hasn't yet authenticated, an
 // empty string is returned.
@@ -86,11 +80,6 @@ base::string16 GetSyncedStateStatusLabel(ProfileSyncService* service,
           sync_everything ? IDS_SYNC_ACCOUNT_SYNCING
                           : IDS_SYNC_ACCOUNT_SYNCING_CUSTOM_DATA_TYPES);
     case WITH_HTML:
-      if (IsChromeDashboardEnabled()) {
-        return l10n_util::GetStringFUTF16(
-            IDS_SYNC_ACCOUNT_SYNCING_WITH_MANAGE_LINK_NEW,
-            base::ASCIIToUTF16(chrome::kSyncGoogleDashboardURL));
-      }
       return l10n_util::GetStringFUTF16(
           IDS_SYNC_ACCOUNT_SYNCING_WITH_MANAGE_LINK,
           base::ASCIIToUTF16(chrome::kSyncGoogleDashboardURL));

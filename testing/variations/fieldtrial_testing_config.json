@@ -766,24 +766,6 @@
             ]
         }
     ],
-    "ChromeDashboard": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled"
-                },
-                {
-                    "name": "Default"
-                }
-            ]
-        }
-    ],
     "ChromeModernDesign": [
         {
             "platforms": [
