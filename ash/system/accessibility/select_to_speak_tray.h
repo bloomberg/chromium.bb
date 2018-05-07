@@ -41,8 +41,9 @@ class ASH_EXPORT SelectToSpeakTray : public TrayBackgroundView,
   // Also updates visibility when select-to-speak is enabled / disabled.
   void CheckStatusAndUpdateIcon();
 
-  gfx::ImageSkia start_selection_image_;
-  gfx::ImageSkia cancel_speech_image_;
+  gfx::ImageSkia inactive_image_;
+  gfx::ImageSkia selecting_image_;
+  gfx::ImageSkia speaking_image_;
 
   // Weak pointer, will be parented by TrayContainer for its lifetime.
   views::ImageView* icon_;
