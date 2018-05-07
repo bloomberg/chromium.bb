@@ -78,4 +78,43 @@ TEST_F(WebViewScriptCommandTest, TestScriptCommand) {
   [web_view_ removeScriptCommandHandlerForCommandPrefix:@"test"];
 }
 
+// Tests that added script commands are still valid after state restoration.
+// Tests the same thing as TestScriptCommand() after state restoration.
+TEST_F(WebViewScriptCommandTest, TestScriptCommandAfterStateRestoration) {
+  CWVFakeScriptCommandHandler* handler =
+      [[CWVFakeScriptCommandHandler alloc] init];
+  [web_view_ addScriptCommandHandler:handler commandPrefix:@"test"];
+
+  CWVWebView* source_web_view = test::CreateWebView();
+  test::CopyWebViewState(source_web_view, web_view_);
+
+  // Uses GetUrlForPageWithHtmlBody() instead of simply using about:blank
+  // because it looks __gCrWeb may not be available on about:blank.
+  // TODO(crbug.com/836114): Analyze why.
+  NSURL* url = net::NSURLWithGURL(GetUrlForPageWithHtmlBody(""));
+  ASSERT_TRUE(test::LoadUrl(web_view_, url));
+  ASSERT_TRUE(test::WaitForWebViewLoadCompletionOrTimeout(web_view_));
+
+  NSString* script =
+      @"__gCrWeb.message.invokeOnHost("
+      @"{'command': 'test.command1', 'key1': 'value1', 'key2': 42});";
+  NSError* script_error = nil;
+  test::EvaluateJavaScript(web_view_, script, &script_error);
+  ASSERT_NSEQ(nil, script_error);
+
+  EXPECT_TRUE(testing::WaitUntilConditionOrTimeout(
+      testing::kWaitForJSCompletionTimeout, ^{
+        return handler.lastReceivedCommand != nil;
+      }));
+
+  EXPECT_NSEQ(@"test.command1",
+              handler.lastReceivedCommand.content[@"command"]);
+  EXPECT_NSEQ(@"value1", handler.lastReceivedCommand.content[@"key1"]);
+  EXPECT_NSEQ(@42, handler.lastReceivedCommand.content[@"key2"]);
+  EXPECT_NSEQ(url, handler.lastReceivedCommand.mainDocumentURL);
+  EXPECT_FALSE(handler.lastReceivedCommand.userInteracting);
+
+  [web_view_ removeScriptCommandHandlerForCommandPrefix:@"test"];
+}
+
 }  // namespace ios_web_view
