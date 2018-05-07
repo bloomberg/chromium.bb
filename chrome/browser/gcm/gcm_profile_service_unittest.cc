@@ -54,6 +54,7 @@ std::unique_ptr<KeyedService> BuildGCMProfileService(
       profile->GetPrefs(), profile->GetPath(), profile->GetRequestContext(),
       chrome::GetChannel(),
       gcm::GetProductCategoryForSubtypes(profile->GetPrefs()),
+      SigninManagerFactory::GetForProfile(profile),
       std::unique_ptr<ProfileIdentityProvider>(new ProfileIdentityProvider(
           SigninManagerFactory::GetForProfile(profile),
           ProfileOAuth2TokenServiceFactory::GetForProfile(profile),

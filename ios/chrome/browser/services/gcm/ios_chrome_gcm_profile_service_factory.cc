@@ -67,6 +67,7 @@ IOSChromeGCMProfileServiceFactory::BuildServiceInstanceFor(
       browser_state->GetPrefs(), browser_state->GetStatePath(),
       browser_state->GetRequestContext(), ::GetChannel(),
       GetProductCategoryForSubtypes(),
+      ios::SigninManagerFactory::GetForBrowserState(browser_state),
       base::WrapUnique(new ProfileIdentityProvider(
           ios::SigninManagerFactory::GetForBrowserState(browser_state),
           OAuth2TokenServiceFactory::GetForBrowserState(browser_state),
