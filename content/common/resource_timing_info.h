@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/optional.h"
+#include "base/time/time.h"
 
 namespace content {
 
@@ -36,22 +37,22 @@ struct ResourceLoadTiming {
   ResourceLoadTiming(const ResourceLoadTiming&);
   ~ResourceLoadTiming();
 
-  double request_time = 0.0;
-  double proxy_start = 0.0;
-  double proxy_end = 0.0;
-  double dns_start = 0.0;
-  double dns_end = 0.0;
-  double connect_start = 0.0;
-  double connect_end = 0.0;
-  double worker_start = 0.0;
-  double worker_ready = 0.0;
-  double send_start = 0.0;
-  double send_end = 0.0;
-  double receive_headers_end = 0.0;
-  double ssl_start = 0.0;
-  double ssl_end = 0.0;
-  double push_start = 0.0;
-  double push_end = 0.0;
+  base::TimeTicks request_time;
+  base::TimeTicks proxy_start;
+  base::TimeTicks proxy_end;
+  base::TimeTicks dns_start;
+  base::TimeTicks dns_end;
+  base::TimeTicks connect_start;
+  base::TimeTicks connect_end;
+  base::TimeTicks worker_start;
+  base::TimeTicks worker_ready;
+  base::TimeTicks send_start;
+  base::TimeTicks send_end;
+  base::TimeTicks receive_headers_end;
+  base::TimeTicks ssl_start;
+  base::TimeTicks ssl_end;
+  base::TimeTicks push_start;
+  base::TimeTicks push_end;
 };
 
 // TODO(dcheng): Migrate this struct over to Mojo so it doesn't need to be

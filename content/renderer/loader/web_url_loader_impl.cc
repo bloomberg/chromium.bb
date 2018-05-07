@@ -142,32 +142,21 @@ void PopulateURLLoadTiming(const net::LoadTimingInfo& load_timing,
                            WebURLLoadTiming* url_timing) {
   DCHECK(!load_timing.request_start.is_null());
 
-  const TimeTicks kNullTicks;
   url_timing->Initialize();
-  url_timing->SetRequestTime(
-      (load_timing.request_start - kNullTicks).InSecondsF());
-  url_timing->SetProxyStart(
-      (load_timing.proxy_resolve_start - kNullTicks).InSecondsF());
-  url_timing->SetProxyEnd(
-      (load_timing.proxy_resolve_end - kNullTicks).InSecondsF());
-  url_timing->SetDNSStart(
-      (load_timing.connect_timing.dns_start - kNullTicks).InSecondsF());
-  url_timing->SetDNSEnd(
-      (load_timing.connect_timing.dns_end - kNullTicks).InSecondsF());
-  url_timing->SetConnectStart(
-      (load_timing.connect_timing.connect_start - kNullTicks).InSecondsF());
-  url_timing->SetConnectEnd(
-      (load_timing.connect_timing.connect_end - kNullTicks).InSecondsF());
-  url_timing->SetSSLStart(
-      (load_timing.connect_timing.ssl_start - kNullTicks).InSecondsF());
-  url_timing->SetSSLEnd(
-      (load_timing.connect_timing.ssl_end - kNullTicks).InSecondsF());
-  url_timing->SetSendStart((load_timing.send_start - kNullTicks).InSecondsF());
-  url_timing->SetSendEnd((load_timing.send_end - kNullTicks).InSecondsF());
-  url_timing->SetReceiveHeadersEnd(
-      (load_timing.receive_headers_end - kNullTicks).InSecondsF());
-  url_timing->SetPushStart((load_timing.push_start - kNullTicks).InSecondsF());
-  url_timing->SetPushEnd((load_timing.push_end - kNullTicks).InSecondsF());
+  url_timing->SetRequestTime(load_timing.request_start);
+  url_timing->SetProxyStart(load_timing.proxy_resolve_start);
+  url_timing->SetProxyEnd(load_timing.proxy_resolve_end);
+  url_timing->SetDNSStart(load_timing.connect_timing.dns_start);
+  url_timing->SetDNSEnd(load_timing.connect_timing.dns_end);
+  url_timing->SetConnectStart(load_timing.connect_timing.connect_start);
+  url_timing->SetConnectEnd(load_timing.connect_timing.connect_end);
+  url_timing->SetSSLStart(load_timing.connect_timing.ssl_start);
+  url_timing->SetSSLEnd(load_timing.connect_timing.ssl_end);
+  url_timing->SetSendStart(load_timing.send_start);
+  url_timing->SetSendEnd(load_timing.send_end);
+  url_timing->SetReceiveHeadersEnd(load_timing.receive_headers_end);
+  url_timing->SetPushStart(load_timing.push_start);
+  url_timing->SetPushEnd(load_timing.push_end);
 }
 
 net::RequestPriority ConvertWebKitPriorityToNetPriority(
@@ -1237,11 +1226,8 @@ void WebURLLoaderImpl::PopulateURLResponse(
   if (!info.load_timing.receive_headers_end.is_null()) {
     WebURLLoadTiming timing;
     PopulateURLLoadTiming(info.load_timing, &timing);
-    const TimeTicks kNullTicks;
-    timing.SetWorkerStart(
-        (info.service_worker_start_time - kNullTicks).InSecondsF());
-    timing.SetWorkerReady(
-        (info.service_worker_ready_time - kNullTicks).InSecondsF());
+    timing.SetWorkerStart(info.service_worker_start_time);
+    timing.SetWorkerReady(info.service_worker_ready_time);
     response->SetLoadTiming(timing);
   }
 
