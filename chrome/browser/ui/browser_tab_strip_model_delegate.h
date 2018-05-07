@@ -22,10 +22,9 @@ class BrowserTabStripModelDelegate : public TabStripModelDelegate {
  private:
   // Overridden from TabStripModelDelegate:
   void AddTabAt(const GURL& url, int index, bool foreground) override;
-  Browser* CreateNewStripWithContents(
-      const std::vector<NewStripContents>& contentses,
-      const gfx::Rect& window_bounds,
-      bool maximize) override;
+  Browser* CreateNewStripWithContents(std::vector<NewStripContents> contentses,
+                                      const gfx::Rect& window_bounds,
+                                      bool maximize) override;
   void WillAddWebContents(content::WebContents* contents) override;
   int GetDragActions() const override;
   bool CanDuplicateContentsAt(int index) override;

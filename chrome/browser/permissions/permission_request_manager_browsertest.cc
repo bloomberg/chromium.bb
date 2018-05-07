@@ -480,10 +480,9 @@ IN_PROC_BROWSER_TEST_F(PermissionDialogTest, SwitchBrowserWindow) {
   // Drag out into a dragging window. E.g. see steps in [BrowserWindowController
   // detachTabsToNewWindow:..].
   std::vector<TabStripModelDelegate::NewStripContents> contentses(1);
-  contentses.back().web_contents = strip->GetWebContentsAt(0);
-  strip->DetachWebContentsAt(0).release();
+  contentses.back().web_contents = strip->DetachWebContentsAt(0);
   Browser* dragging_browser = strip->delegate()->CreateNewStripWithContents(
-      contentses, gfx::Rect(100, 100, 640, 480), false);
+      std::move(contentses), gfx::Rect(100, 100, 640, 480), false);
 
   // Attach the tab back to the original window. E.g. See steps in
   // [BrowserWindowController moveTabViews:..].
