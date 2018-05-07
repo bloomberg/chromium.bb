@@ -7,11 +7,16 @@
 
 #include <stdint.h>
 
-#include "components/viz/common/surfaces/surface_id.h"
+#include "components/viz/common/surfaces/frame_sink_id.h"
+#include "mojo/public/cpp/bindings/struct_traits.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/transform.h"
 
 namespace viz {
+
+namespace mojom {
+class AggregatedHitTestRegionDataView;
+}
 
 // A AggregatedHitTestRegion element with child_count of kEndOfList indicates
 // the last element and end of the list.
@@ -24,10 +29,12 @@ constexpr int32_t kEndOfList = -1;
 // write the hit_test data, and the viz host can read without
 // process hops.
 struct AggregatedHitTestRegion {
-  AggregatedHitTestRegion(FrameSinkId frame_sink_id,
+  AggregatedHitTestRegion() = default;
+
+  AggregatedHitTestRegion(const FrameSinkId& frame_sink_id,
                           uint32_t flags,
-                          gfx::Rect rect,
-                          gfx::Transform transform,
+                          const gfx::Rect& rect,
+                          const gfx::Transform& transform,
                           int32_t child_count)
       : frame_sink_id(frame_sink_id),
         flags(flags),
@@ -68,6 +75,9 @@ struct AggregatedHitTestRegion {
   }
 
  private:
+  friend struct mojo::StructTraits<mojom::AggregatedHitTestRegionDataView,
+                                   AggregatedHitTestRegion>;
+
   // The transform applied to the rect in parent region's coordinate space.
   gfx::Transform transform_;
 };
