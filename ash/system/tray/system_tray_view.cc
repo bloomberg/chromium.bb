@@ -51,11 +51,10 @@ SystemTrayView::SystemTrayView(SystemTray* system_tray,
                                SystemTrayType system_tray_type,
                                const std::vector<ash::SystemTrayItem*>& items)
     : time_to_click_recorder_(
-          std::make_unique<TimeToClickRecorder>(system_tray)),
+          std::make_unique<TimeToClickRecorder>(system_tray, this)),
       items_(items),
       system_tray_type_(system_tray_type) {
   SetLayoutManager(std::make_unique<BottomAlignedBoxLayout>());
-  AddPreTargetHandler(time_to_click_recorder_.get());
 }
 
 SystemTrayView::~SystemTrayView() {
