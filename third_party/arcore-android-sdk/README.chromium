@@ -16,10 +16,5 @@ To address binary size concerns, we are using a minimal shim produced for
 Chromium that is not publicly distributed elsewhere. We have also stripped the
 .so's to minimize their size.
 
-Also, added BUILD.gn for compilation in chrome.
-
 The LICENSE file is taken from
  * https://github.com/google-ar/arcore-unity-sdk/blob/master/LICENSE
-
-Changes:
-2018-05-04 - Updated BUILD.gn to work properly for arm64.
