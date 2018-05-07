@@ -466,9 +466,6 @@ class ProfileSyncService : public syncer::SyncServiceBase,
   // Used by tests to inspect the OAuth2 access tokens used by PSS.
   std::string GetAccessTokenForTest() const;
 
-  // TODO(sync): This is only used in tests.  Can we remove it?
-  void GetModelSafeRoutingInfo(syncer::ModelSafeRoutingInfo* out) const;
-
   // SyncPrefObserver implementation.
   void OnSyncManagedPrefChange(bool is_sync_managed) override;
 
