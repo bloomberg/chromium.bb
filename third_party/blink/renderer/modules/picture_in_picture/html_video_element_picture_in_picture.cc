@@ -20,6 +20,10 @@ namespace {
 
 const char kDetachedError[] =
     "The element is no longer associated with a document.";
+const char kMetadataNotLoadedError[] =
+    "Metadata for the video element are not loaded yet.";
+const char kVideoTrackNotAvailableError[] =
+    "The video element has no video track.";
 const char kFeaturePolicyBlocked[] =
     "Access to the feature \"picture-in-picture\" is disallowed by feature "
     "policy.";
@@ -43,6 +47,14 @@ ScriptPromise HTMLVideoElementPictureInPicture::requestPictureInPicture(
       return ScriptPromise::RejectWithDOMException(
           script_state,
           DOMException::Create(kInvalidStateError, kDetachedError));
+    case Status::kMetadataNotLoaded:
+      return ScriptPromise::RejectWithDOMException(
+          script_state,
+          DOMException::Create(kInvalidStateError, kMetadataNotLoadedError));
+    case Status::kVideoTrackNotAvailable:
+      return ScriptPromise::RejectWithDOMException(
+          script_state, DOMException::Create(kInvalidStateError,
+                                             kVideoTrackNotAvailableError));
     case Status::kDisabledByFeaturePolicy:
       return ScriptPromise::RejectWithDOMException(
           script_state,
@@ -69,22 +81,15 @@ ScriptPromise HTMLVideoElementPictureInPicture::requestPictureInPicture(
         DOMException::Create(kNotAllowedError, kUserGestureRequired));
   }
 
-  // TODO(crbug.com/806249): Returns callback in promise.
-  element.enterPictureInPicture();
-
-  // TODO(crbug.com/806249): Don't use fake width and height.
-  PictureInPictureWindow* window = controller.CreatePictureInPictureWindow(
-      500 /* width */, 300 /* height */);
-
-  controller.SetPictureInPictureElement(element);
-
-  element.DispatchEvent(
-      Event::CreateBubble(EventTypeNames::enterpictureinpicture));
-
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  resolver->Resolve(window);
+  document.GetTaskRunner(TaskType::kMediaElementEvent)
+      ->PostTask(
+          FROM_HERE,
+          WTF::Bind(&PictureInPictureControllerImpl::EnterPictureInPicture,
+                    WrapPersistent(&controller), WrapPersistent(&element),
+                    WrapPersistent(resolver)));
 
   return promise;
 }
@@ -108,21 +113,12 @@ void HTMLVideoElementPictureInPicture::SetBooleanAttribute(
   if (!value)
     return;
 
-  // TODO(crbug.com/806249): Reject pending PiP requests.
-
   Document& document = element.GetDocument();
   TreeScope& scope = element.GetTreeScope();
   PictureInPictureControllerImpl& controller =
       PictureInPictureControllerImpl::From(document);
   if (controller.PictureInPictureElement(scope) == &element) {
-    element.exitPictureInPicture();
-
-    controller.OnClosePictureInPictureWindow();
-
-    controller.UnsetPictureInPictureElement();
-
-    element.DispatchEvent(
-        Event::CreateBubble(EventTypeNames::leavepictureinpicture));
+    controller.ExitPictureInPicture(&element, nullptr);
   }
 }
 

@@ -1348,8 +1348,8 @@ TEST_F(WebMediaPlayerImplTest, PictureInPictureTriggerCallback) {
   InitializeWebMediaPlayerImpl();
 
   // These calls should do nothing since there is no SurfaceId set.
-  wmpi_->EnterPictureInPicture();
-  wmpi_->ExitPictureInPicture();
+  wmpi_->EnterPictureInPicture(base::DoNothing());
+  wmpi_->ExitPictureInPicture(base::DoNothing());
 
   EXPECT_CALL(client_, IsInPictureInPictureMode());
   wmpi_->OnSurfaceIdUpdated(surface_id_);
@@ -1359,7 +1359,7 @@ TEST_F(WebMediaPlayerImplTest, PictureInPictureTriggerCallback) {
               DidPictureInPictureSourceChange(delegate_.player_id()));
   EXPECT_CALL(pip_surface_info_cb_, Run(surface_id_, GetNaturalSize()));
   // This call should trigger the callback since the SurfaceId is set.
-  wmpi_->EnterPictureInPicture();
+  wmpi_->EnterPictureInPicture(base::DoNothing());
   testing::Mock::VerifyAndClearExpectations(&client_);
 
   // Upon exiting Picture-in-Picture mode, functions to cleanup are expected to

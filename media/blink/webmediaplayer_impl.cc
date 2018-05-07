@@ -318,7 +318,7 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
   client_->MediaRemotingStopped(
       blink::WebLocalizedString::kMediaRemotingStopNoText);
 
-  ExitPictureInPicture();
+  ExitPictureInPicture(base::DoNothing());
 
   if (!surface_layer_for_video_enabled_ && video_weblayer_) {
     static_cast<cc::VideoLayer*>(video_weblayer_->layer())->StopUsingProvider();
@@ -776,7 +776,11 @@ void WebMediaPlayerImpl::SetVolume(double volume) {
   UpdatePlayState();
 }
 
-void WebMediaPlayerImpl::EnterPictureInPicture() {
+void WebMediaPlayerImpl::EnterPictureInPicture(
+    blink::WebMediaPlayer::PipWindowSizeCallback callback) {
+  // TODO(crbug.com/806249): Use Picture-in-Picture window size.
+  std::move(callback).Run(WebSize(pipeline_metadata_.natural_size));
+
   if (!pip_surface_id_.is_valid())
     return;
 
@@ -792,7 +796,11 @@ void WebMediaPlayerImpl::EnterPictureInPicture() {
     client_->PictureInPictureStarted();
 }
 
-void WebMediaPlayerImpl::ExitPictureInPicture() {
+void WebMediaPlayerImpl::ExitPictureInPicture(
+    blink::WebMediaPlayer::PipWindowClosedCallback callback) {
+  // TODO(crbug.com/806249): Run callback when Picture-in-Picture window closes.
+  std::move(callback).Run();
+
   // Do not clear |pip_surface_id_| in case we enter Picture-in-Picture mode
   // again.
   if (!pip_surface_id_.is_valid())
@@ -801,7 +809,7 @@ void WebMediaPlayerImpl::ExitPictureInPicture() {
   OnPictureInPictureModeEnded();
 
   // Signals that Picture-in-Picture has ended. This lets the
-  // PictureInPictureWindowController know the window should be closed.
+  // content::PictureInPictureWindowController know the window should be closed.
   exit_pip_cb_.Run();
 }
 

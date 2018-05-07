@@ -611,6 +611,8 @@ TEST_F(MediaControlsImplPictureInPictureTest, PictureInPictureButtonVisible) {
 
   MediaControls().MediaElement().SetSrc("https://example.com/foo.mp4");
   test::RunPendingTasks();
+  SetReady();
+  test::RunPendingTasks();
   SimulateLoadedMetadata();
   ASSERT_TRUE(IsElementVisible(*picture_in_picture_button));
 
@@ -622,6 +624,8 @@ TEST_F(MediaControlsImplPictureInPictureTest, PictureInPictureButtonVisible) {
   MediaControls().MediaElement().SetBooleanAttribute(
       HTMLNames::disablepictureinpictureAttr, true);
   MediaControls().MediaElement().SetSrc("https://example.com/foo.mp4");
+  test::RunPendingTasks();
+  SetReady();
   test::RunPendingTasks();
   SimulateLoadedMetadata();
   ASSERT_FALSE(IsElementVisible(*picture_in_picture_button));

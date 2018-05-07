@@ -45,7 +45,7 @@ const char* MediaControlPictureInPictureButtonElement::GetNameForHistograms()
 void MediaControlPictureInPictureButtonElement::DefaultEventHandler(
     Event* event) {
   if (event->type() == EventTypeNames::click)
-    MediaElement().enterPictureInPicture();
+    MediaElement().enterPictureInPicture(base::DoNothing());
 
   MediaControlInputElement::DefaultEventHandler(event);
 }

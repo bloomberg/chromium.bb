@@ -2597,14 +2597,16 @@ void HTMLMediaElement::setMuted(bool muted) {
   autoplay_policy_->StopAutoplayMutedWhenVisible();
 }
 
-void HTMLMediaElement::enterPictureInPicture() {
+void HTMLMediaElement::enterPictureInPicture(
+    WebMediaPlayer::PipWindowSizeCallback callback) {
   if (GetWebMediaPlayer())
-    GetWebMediaPlayer()->EnterPictureInPicture();
+    GetWebMediaPlayer()->EnterPictureInPicture(std::move(callback));
 }
 
-void HTMLMediaElement::exitPictureInPicture() {
+void HTMLMediaElement::exitPictureInPicture(
+    WebMediaPlayer::PipWindowClosedCallback callback) {
   if (GetWebMediaPlayer())
-    GetWebMediaPlayer()->ExitPictureInPicture();
+    GetWebMediaPlayer()->ExitPictureInPicture(std::move(callback));
 }
 
 double HTMLMediaElement::EffectiveMediaVolume() const {

@@ -81,6 +81,11 @@ class ContextMenuControllerTest : public testing::Test {
     return web_frame_client_;
   }
 
+  void SetReadyState(HTMLVideoElement* video,
+                     HTMLMediaElement::ReadyState state) {
+    video->SetReadyState(state);
+  }
+
  private:
   TestWebFrameClientImpl web_frame_client_;
   FrameTestHelpers::WebViewHelper web_view_helper_;
@@ -99,6 +104,8 @@ TEST_F(ContextMenuControllerTest, VideoNotLoaded) {
   Persistent<HTMLVideoElement> video = HTMLVideoElement::Create(*GetDocument());
   video->SetSrc(video_url);
   GetDocument()->body()->AppendChild(video);
+  test::RunPendingTasks();
+  SetReadyState(video.Get(), HTMLMediaElement::kHaveNothing);
   test::RunPendingTasks();
 
   EXPECT_CALL(*static_cast<MockWebMediaPlayerForContextMenu*>(
@@ -155,6 +162,8 @@ TEST_F(ContextMenuControllerTest, PictureInPictureEnabledVideoLoaded) {
   video->SetSrc(video_url);
   GetDocument()->body()->AppendChild(video);
   test::RunPendingTasks();
+  SetReadyState(video.Get(), HTMLMediaElement::kHaveMetadata);
+  test::RunPendingTasks();
 
   EXPECT_CALL(*static_cast<MockWebMediaPlayerForContextMenu*>(
                   video->GetWebMediaPlayer()),
@@ -197,7 +206,7 @@ TEST_F(ContextMenuControllerTest, PictureInPictureEnabledVideoLoaded) {
 }
 
 TEST_F(ContextMenuControllerTest, PictureInPictureDisabledVideoLoaded) {
-  // Make sure Picture-in-Picture is enabled.
+  // Make sure Picture-in-Picture is disabled.
   GetDocument()->GetSettings()->SetPictureInPictureEnabled(false);
 
   ContextMenuAllowedScope context_menu_allowed_scope;
@@ -209,6 +218,8 @@ TEST_F(ContextMenuControllerTest, PictureInPictureDisabledVideoLoaded) {
   Persistent<HTMLVideoElement> video = HTMLVideoElement::Create(*GetDocument());
   video->SetSrc(video_url);
   GetDocument()->body()->AppendChild(video);
+  test::RunPendingTasks();
+  SetReadyState(video.Get(), HTMLMediaElement::kHaveMetadata);
   test::RunPendingTasks();
 
   EXPECT_CALL(*static_cast<MockWebMediaPlayerForContextMenu*>(

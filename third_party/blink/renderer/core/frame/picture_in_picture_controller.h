@@ -33,6 +33,8 @@ class CORE_EXPORT PictureInPictureController
   enum class Status {
     kEnabled,
     kFrameDetached,
+    kMetadataNotLoaded,
+    kVideoTrackNotAvailable,
     kDisabledBySystem,
     kDisabledByFeaturePolicy,
     kDisabledByAttribute,

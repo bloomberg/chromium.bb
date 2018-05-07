@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PICTURE_IN_PICTURE_PICTURE_IN_PICTURE_WINDOW_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PICTURE_IN_PICTURE_PICTURE_IN_PICTURE_WINDOW_H_
 
+#include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -20,10 +21,10 @@ class PictureInPictureWindow : public EventTargetWithInlineData,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  PictureInPictureWindow(ExecutionContext*, int width, int height);
+  PictureInPictureWindow(ExecutionContext*, const WebSize& size);
 
-  int width() const { return width_; }
-  int height() const { return height_; }
+  int width() const { return size_.width; }
+  int height() const { return size_.height; }
 
   // Called when Picture-in-Picture window state is closed.
   void OnClose();
@@ -39,11 +40,8 @@ class PictureInPictureWindow : public EventTargetWithInlineData,
   void Trace(blink::Visitor*) override;
 
  private:
-  // The Picture-in-Picture window width in pixels.
-  int width_;
-
-  // The Picture-in-Picture window height in pixels.
-  int height_;
+  // The Picture-in-Picture window size in pixels.
+  WebSize size_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(PictureInPictureWindow);
 };

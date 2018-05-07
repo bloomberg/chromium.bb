@@ -211,8 +211,8 @@ class CORE_EXPORT HTMLMediaElement
   bool muted() const;
   void setMuted(bool);
   virtual bool SupportsPictureInPicture() const { return false; }
-  void enterPictureInPicture();
-  void exitPictureInPicture();
+  void enterPictureInPicture(WebMediaPlayer::PipWindowSizeCallback callback);
+  void exitPictureInPicture(WebMediaPlayer::PipWindowClosedCallback callback);
 
   void TogglePlayState();
 
@@ -731,6 +731,7 @@ class CORE_EXPORT HTMLMediaElement
   friend class MediaControlsOrientationLockDelegateTest;
   friend class MediaControlsRotateToFullscreenDelegateTest;
   friend class MediaControlLoadingPanelElementTest;
+  friend class ContextMenuControllerTest;
 
   Member<AutoplayPolicy> autoplay_policy_;
 
