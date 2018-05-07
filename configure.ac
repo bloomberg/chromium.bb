@@ -82,6 +82,7 @@ gl_MANYWARN_ALL_GCC([warnings])
 # Set up the list of the pointless, undesired warnings.
 nw=
 nw="$nw -Wsystem-headers"       # Don't let system headers trigger warnings
+nw="$nw -Wsuggest-attribute=pure" # ignore recommendations to use the pure attribute
 # Enable all GCC warnings not in this list.
 gl_MANYWARN_COMPLEMENT([warnings], [$warnings], [$nw])
 for w in $warnings; do
