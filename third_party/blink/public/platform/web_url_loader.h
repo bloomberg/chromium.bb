@@ -56,6 +56,7 @@ class WebURLLoader {
   // will instead be redirected to a blob, which is passed out in
   // |downloaded_blob|.
   virtual void LoadSynchronously(
+      WebURLLoaderClient*,
       const WebURLRequest&,
       WebURLResponse&,
       base::Optional<WebURLError>&,

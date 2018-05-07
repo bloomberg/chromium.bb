@@ -798,8 +798,8 @@ TEST_F(WebURLLoaderImplTest, SyncLengths) {
   base::Optional<int64_t> downloaded_file_length;
   blink::WebBlobInfo downloaded_blob;
   client()->loader()->LoadSynchronously(
-      request, response, error, data, encoded_data_length, encoded_body_length,
-      downloaded_file_length, downloaded_blob);
+      nullptr, request, response, error, data, encoded_data_length,
+      encoded_body_length, downloaded_file_length, downloaded_blob);
 
   EXPECT_EQ(kEncodedBodyLength, encoded_body_length);
   EXPECT_EQ(kEncodedDataLength, encoded_data_length);

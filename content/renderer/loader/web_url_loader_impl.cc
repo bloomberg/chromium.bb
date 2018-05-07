@@ -1290,7 +1290,8 @@ void WebURLLoaderImpl::PopulateURLResponse(
 }
 
 void WebURLLoaderImpl::LoadSynchronously(
-    const WebURLRequest& request,
+    WebURLLoaderClient* client,
+    const WebURLRequest& passed_request,
     WebURLResponse& response,
     base::Optional<WebURLError>& error,
     WebData& data,
@@ -1300,7 +1301,40 @@ void WebURLLoaderImpl::LoadSynchronously(
     blink::WebBlobInfo& downloaded_blob) {
   TRACE_EVENT0("loading", "WebURLLoaderImpl::loadSynchronously");
   SyncLoadResponse sync_load_response;
-  context_->Start(request, &sync_load_response);
+  int redirect_limit = net::URLRequest::kMaxRedirects;
+  WebURLRequest request(passed_request);
+
+  // SyncLoadResponse won't automatically follow redirects, so manually
+  // check and follow valid redirects here.
+  while (true) {
+    context_->Start(request, &sync_load_response);
+
+    if (!sync_load_response.redirect_info)
+      break;
+
+    if (!redirect_limit--) {
+      error = WebURLError(net::ERR_TOO_MANY_REDIRECTS, sync_load_response.url);
+      return;
+    }
+
+    const net::RedirectInfo& redirect_info = *sync_load_response.redirect_info;
+    WebURLResponse redirect_response;
+    PopulateURLResponse(sync_load_response.url, sync_load_response.info,
+                        &redirect_response, request.ReportRawHeaders());
+    bool report_raw_headers = false;
+    if (!client->WillFollowRedirect(
+            redirect_info.new_url, redirect_info.new_site_for_cookies,
+            WebString::FromUTF8(redirect_info.new_referrer),
+            Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
+                redirect_info.new_referrer_policy),
+            WebString::FromUTF8(redirect_info.new_method), redirect_response,
+            report_raw_headers)) {
+      return;
+    }
+
+    request.SetURL(redirect_info.new_url);
+    sync_load_response = SyncLoadResponse();
+  }
 
   const GURL& final_url = sync_load_response.url;
 

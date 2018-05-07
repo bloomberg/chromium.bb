@@ -740,8 +740,8 @@ void ResourceLoader::RequestSynchronously(const ResourceRequest& request) {
   int64_t encoded_body_length = 0;
   base::Optional<int64_t> downloaded_file_length;
   WebBlobInfo downloaded_blob;
-  loader_->LoadSynchronously(request_in, response_out, error_out, data_out,
-                             encoded_data_length, encoded_body_length,
+  loader_->LoadSynchronously(this, request_in, response_out, error_out,
+                             data_out, encoded_data_length, encoded_body_length,
                              downloaded_file_length, downloaded_blob);
 
   // A message dispatched while synchronously fetching the resource

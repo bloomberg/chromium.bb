@@ -596,6 +596,8 @@ static void* OpenFunc(const char* uri) {
     ResourceLoaderOptions options;
     options.initiator_info.name = FetchInitiatorTypeNames::xml;
     FetchParameters params(ResourceRequest(url), options);
+    params.MutableResourceRequest().SetFetchRequestMode(
+        network::mojom::FetchRequestMode::kSameOrigin);
     Resource* resource =
         RawResource::FetchSynchronously(params, document->Fetcher());
     if (!resource->ErrorOccurred()) {
