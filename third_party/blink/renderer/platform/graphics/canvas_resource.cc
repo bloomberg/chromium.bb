@@ -97,35 +97,35 @@ GLenum CanvasResource::GLFilter() const {
   return filter_quality_ == kNone_SkFilterQuality ? GL_NEAREST : GL_LINEAR;
 }
 
-// CanvasResource_Bitmap
+// CanvasResourceBitmap
 //==============================================================================
 
-CanvasResource_Bitmap::CanvasResource_Bitmap(
+CanvasResourceBitmap::CanvasResourceBitmap(
     scoped_refptr<StaticBitmapImage> image,
     base::WeakPtr<CanvasResourceProvider> provider,
     SkFilterQuality filter_quality)
     : CanvasResource(std::move(provider), filter_quality),
       image_(std::move(image)) {}
 
-scoped_refptr<CanvasResource_Bitmap> CanvasResource_Bitmap::Create(
+scoped_refptr<CanvasResourceBitmap> CanvasResourceBitmap::Create(
     scoped_refptr<StaticBitmapImage> image,
     base::WeakPtr<CanvasResourceProvider> provider,
     SkFilterQuality filter_quality) {
-  scoped_refptr<CanvasResource_Bitmap> resource =
-      AdoptRef(new CanvasResource_Bitmap(std::move(image), std::move(provider),
-                                         filter_quality));
+  scoped_refptr<CanvasResourceBitmap> resource =
+      AdoptRef(new CanvasResourceBitmap(std::move(image), std::move(provider),
+                                        filter_quality));
   if (resource->IsValid())
     return resource;
   return nullptr;
 }
 
-bool CanvasResource_Bitmap::IsValid() const {
+bool CanvasResourceBitmap::IsValid() const {
   if (!image_)
     return false;
   return image_->IsValid();
 }
 
-void CanvasResource_Bitmap::TearDown() {
+void CanvasResourceBitmap::TearDown() {
   WaitSyncTokenBeforeRelease();
   // We must not disassociate the mailbox from the texture object here because
   // the texture may be recycled by skia and the associated cached mailbox
@@ -133,42 +133,42 @@ void CanvasResource_Bitmap::TearDown() {
   image_ = nullptr;
 }
 
-IntSize CanvasResource_Bitmap::Size() const {
+IntSize CanvasResourceBitmap::Size() const {
   if (!image_)
     return IntSize(0, 0);
   return IntSize(image_->width(), image_->height());
 }
 
-GLenum CanvasResource_Bitmap::TextureTarget() const {
+GLenum CanvasResourceBitmap::TextureTarget() const {
   return GL_TEXTURE_2D;
 }
 
-const gpu::Mailbox& CanvasResource_Bitmap::GetOrCreateGpuMailbox() {
+const gpu::Mailbox& CanvasResourceBitmap::GetOrCreateGpuMailbox() {
   DCHECK(image_);  // Calling code should check IsValid() before calling this.
   image_->EnsureMailbox(kUnverifiedSyncToken, GLFilter());
   return image_->GetMailbox();
 }
 
-bool CanvasResource_Bitmap::HasGpuMailbox() const {
+bool CanvasResourceBitmap::HasGpuMailbox() const {
   return image_ && image_->HasMailbox();
 }
 
-const gpu::SyncToken& CanvasResource_Bitmap::GetSyncToken() {
+const gpu::SyncToken& CanvasResourceBitmap::GetSyncToken() {
   DCHECK(image_);  // Calling code should check IsValid() before calling this.
   return image_->GetSyncToken();
 }
 
 base::WeakPtr<WebGraphicsContext3DProviderWrapper>
-CanvasResource_Bitmap::ContextProviderWrapper() const {
+CanvasResourceBitmap::ContextProviderWrapper() const {
   if (!image_)
     return nullptr;
   return image_->ContextProviderWrapper();
 }
 
-// CanvasResource_GpuMemoryBuffer
+// CanvasResourceGpuMemoryBuffer
 //==============================================================================
 
-CanvasResource_GpuMemoryBuffer::CanvasResource_GpuMemoryBuffer(
+CanvasResourceGpuMemoryBuffer::CanvasResourceGpuMemoryBuffer(
     const IntSize& size,
     const CanvasColorParams& color_params,
     base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
@@ -209,28 +209,28 @@ CanvasResource_GpuMemoryBuffer::CanvasResource_GpuMemoryBuffer(
   gl->BindTexImage2DCHROMIUM(target, image_id_);
 }
 
-CanvasResource_GpuMemoryBuffer::~CanvasResource_GpuMemoryBuffer() {
+CanvasResourceGpuMemoryBuffer::~CanvasResourceGpuMemoryBuffer() {
   TearDown();
 }
 
-GLenum CanvasResource_GpuMemoryBuffer::TextureTarget() const {
+GLenum CanvasResourceGpuMemoryBuffer::TextureTarget() const {
   return GL_TEXTURE_RECTANGLE_ARB;
 }
 
-IntSize CanvasResource_GpuMemoryBuffer::Size() const {
+IntSize CanvasResourceGpuMemoryBuffer::Size() const {
   return IntSize(gpu_memory_buffer_->GetSize().width(),
                  gpu_memory_buffer_->GetSize().height());
 }
 
-scoped_refptr<CanvasResource_GpuMemoryBuffer>
-CanvasResource_GpuMemoryBuffer::Create(
+scoped_refptr<CanvasResourceGpuMemoryBuffer>
+CanvasResourceGpuMemoryBuffer::Create(
     const IntSize& size,
     const CanvasColorParams& color_params,
     base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
     base::WeakPtr<CanvasResourceProvider> provider,
     SkFilterQuality filter_quality) {
-  scoped_refptr<CanvasResource_GpuMemoryBuffer> resource =
-      AdoptRef(new CanvasResource_GpuMemoryBuffer(
+  scoped_refptr<CanvasResourceGpuMemoryBuffer> resource =
+      AdoptRef(new CanvasResourceGpuMemoryBuffer(
           size, color_params, std::move(context_provider_wrapper), provider,
           filter_quality));
   if (resource->IsValid())
@@ -238,7 +238,7 @@ CanvasResource_GpuMemoryBuffer::Create(
   return nullptr;
 }
 
-void CanvasResource_GpuMemoryBuffer::TearDown() {
+void CanvasResourceGpuMemoryBuffer::TearDown() {
   WaitSyncTokenBeforeRelease();
   if (!context_provider_wrapper_ || !image_id_)
     return;
@@ -256,7 +256,7 @@ void CanvasResource_GpuMemoryBuffer::TearDown() {
   gpu_memory_buffer_ = nullptr;
 }
 
-const gpu::Mailbox& CanvasResource_GpuMemoryBuffer::GetOrCreateGpuMailbox() {
+const gpu::Mailbox& CanvasResourceGpuMemoryBuffer::GetOrCreateGpuMailbox() {
   auto* gl = ContextGL();
   DCHECK(gl);  // caller should already have early exited if !gl.
   if (gpu_mailbox_.IsZero() && gl) {
@@ -267,11 +267,11 @@ const gpu::Mailbox& CanvasResource_GpuMemoryBuffer::GetOrCreateGpuMailbox() {
   return gpu_mailbox_;
 }
 
-bool CanvasResource_GpuMemoryBuffer::HasGpuMailbox() const {
+bool CanvasResourceGpuMemoryBuffer::HasGpuMailbox() const {
   return !gpu_mailbox_.IsZero();
 }
 
-const gpu::SyncToken& CanvasResource_GpuMemoryBuffer::GetSyncToken() {
+const gpu::SyncToken& CanvasResourceGpuMemoryBuffer::GetSyncToken() {
   if (mailbox_needs_new_sync_token_) {
     auto* gl = ContextGL();
     DCHECK(gl);  // caller should already have early exited if !gl.
@@ -281,9 +281,9 @@ const gpu::SyncToken& CanvasResource_GpuMemoryBuffer::GetSyncToken() {
   return sync_token_;
 }
 
-void CanvasResource_GpuMemoryBuffer::CopyFromTexture(GLuint source_texture,
-                                                     GLenum format,
-                                                     GLenum type) {
+void CanvasResourceGpuMemoryBuffer::CopyFromTexture(GLuint source_texture,
+                                                    GLenum format,
+                                                    GLenum type) {
   if (!IsValid())
     return;
 
@@ -295,7 +295,7 @@ void CanvasResource_GpuMemoryBuffer::CopyFromTexture(GLuint source_texture,
 }
 
 base::WeakPtr<WebGraphicsContext3DProviderWrapper>
-CanvasResource_GpuMemoryBuffer::ContextProviderWrapper() const {
+CanvasResourceGpuMemoryBuffer::ContextProviderWrapper() const {
   return context_provider_wrapper_;
 }
 
