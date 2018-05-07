@@ -4355,7 +4355,7 @@ resolveSubtable(const char *table, const char *base, const char *searchPath) {
 }
 
 char *EXPORT_CALL
-_lou_getTablePath() {
+_lou_getTablePath(void) {
 	char searchPath[MAXSTRING];
 	char *path;
 	char *cp;

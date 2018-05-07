@@ -590,7 +590,7 @@ listFiles(char *searchPath) {
 }
 
 static void
-indexTablePath() {
+indexTablePath(void) {
 	char *searchPath;
 	List *tables;
 	const char **tablesArray;
@@ -692,7 +692,7 @@ lou_getTableInfo(const char *table, const char *key) {
 }
 
 const char **EXPORT_CALL
-lou_listTables() {
+lou_listTables(void) {
 	const char **tablesArray;
 	List *tables = NULL;
 	List *l;
