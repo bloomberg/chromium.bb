@@ -1052,7 +1052,7 @@ TEST(FindOneCharTest, EdgeCases) {
 
 #ifndef THREAD_SANITIZER  // Allocates too much memory for tsan.
 TEST(HugeStringView, TwoPointTwoGB) {
-  if (sizeof(size_t) <= 4 || RunningOnValgrind())
+  if (sizeof(size_t) <= 4 || AbslRunningOnValgrind())
     return;
   // Try a huge std::string piece.
   const size_t size = size_t{2200} * 1000 * 1000;

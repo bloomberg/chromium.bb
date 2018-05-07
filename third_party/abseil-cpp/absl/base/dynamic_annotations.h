@@ -81,26 +81,26 @@
      point where "pointer" has been allocated, preferably close to the point
      where the race happens.  See also ANNOTATE_BENIGN_RACE_STATIC. */
   #define ANNOTATE_BENIGN_RACE(pointer, description) \
-    AnnotateBenignRaceSized(__FILE__, __LINE__, pointer, \
+    AbslAnnotateBenignRaceSized(__FILE__, __LINE__, pointer, \
                             sizeof(*(pointer)), description)
 
   /* Same as ANNOTATE_BENIGN_RACE(address, description), but applies to
      the memory range [address, address+size). */
   #define ANNOTATE_BENIGN_RACE_SIZED(address, size, description) \
-    AnnotateBenignRaceSized(__FILE__, __LINE__, address, size, description)
+    AbslAnnotateBenignRaceSized(__FILE__, __LINE__, address, size, description)
 
   /* Enable (enable!=0) or disable (enable==0) race detection for all threads.
      This annotation could be useful if you want to skip expensive race analysis
      during some period of program execution, e.g. during initialization. */
   #define ANNOTATE_ENABLE_RACE_DETECTION(enable) \
-    AnnotateEnableRaceDetection(__FILE__, __LINE__, enable)
+    AbslAnnotateEnableRaceDetection(__FILE__, __LINE__, enable)
 
   /* -------------------------------------------------------------
      Annotations useful for debugging. */
 
   /* Report the current thread name to a race detector. */
   #define ANNOTATE_THREAD_NAME(name) \
-    AnnotateThreadName(__FILE__, __LINE__, name)
+    AbslAnnotateThreadName(__FILE__, __LINE__, name)
 
   /* -------------------------------------------------------------
      Annotations useful when implementing locks.  They are not
@@ -109,29 +109,29 @@
 
   /* Report that a lock has been created at address "lock". */
   #define ANNOTATE_RWLOCK_CREATE(lock) \
-    AnnotateRWLockCreate(__FILE__, __LINE__, lock)
+    AbslAnnotateRWLockCreate(__FILE__, __LINE__, lock)
 
   /* Report that a linker initialized lock has been created at address "lock".
    */
 #ifdef THREAD_SANITIZER
   #define ANNOTATE_RWLOCK_CREATE_STATIC(lock) \
-    AnnotateRWLockCreateStatic(__FILE__, __LINE__, lock)
+    AbslAnnotateRWLockCreateStatic(__FILE__, __LINE__, lock)
 #else
   #define ANNOTATE_RWLOCK_CREATE_STATIC(lock) ANNOTATE_RWLOCK_CREATE(lock)
 #endif
 
   /* Report that the lock at address "lock" is about to be destroyed. */
   #define ANNOTATE_RWLOCK_DESTROY(lock) \
-    AnnotateRWLockDestroy(__FILE__, __LINE__, lock)
+    AbslAnnotateRWLockDestroy(__FILE__, __LINE__, lock)
 
   /* Report that the lock at address "lock" has been acquired.
      is_w=1 for writer lock, is_w=0 for reader lock. */
   #define ANNOTATE_RWLOCK_ACQUIRED(lock, is_w) \
-    AnnotateRWLockAcquired(__FILE__, __LINE__, lock, is_w)
+    AbslAnnotateRWLockAcquired(__FILE__, __LINE__, lock, is_w)
 
   /* Report that the lock at address "lock" is about to be released. */
   #define ANNOTATE_RWLOCK_RELEASED(lock, is_w) \
-    AnnotateRWLockReleased(__FILE__, __LINE__, lock, is_w)
+    AbslAnnotateRWLockReleased(__FILE__, __LINE__, lock, is_w)
 
 #else  /* DYNAMIC_ANNOTATIONS_ENABLED == 0 */
 
@@ -150,10 +150,10 @@
 /* These annotations are also made available to LLVM's Memory Sanitizer */
 #if DYNAMIC_ANNOTATIONS_ENABLED == 1 || defined(MEMORY_SANITIZER)
   #define ANNOTATE_MEMORY_IS_INITIALIZED(address, size) \
-    AnnotateMemoryIsInitialized(__FILE__, __LINE__, address, size)
+    AbslAnnotateMemoryIsInitialized(__FILE__, __LINE__, address, size)
 
   #define ANNOTATE_MEMORY_IS_UNINITIALIZED(address, size) \
-    AnnotateMemoryIsUninitialized(__FILE__, __LINE__, address, size)
+    AbslAnnotateMemoryIsUninitialized(__FILE__, __LINE__, address, size)
 #else
   #define ANNOTATE_MEMORY_IS_INITIALIZED(address, size) /* empty */
   #define ANNOTATE_MEMORY_IS_UNINITIALIZED(address, size) /* empty */
@@ -190,19 +190,19 @@
      other reads and all writes.
      See also ANNOTATE_UNPROTECTED_READ. */
   #define ANNOTATE_IGNORE_READS_BEGIN() \
-    AnnotateIgnoreReadsBegin(__FILE__, __LINE__)
+    AbslAnnotateIgnoreReadsBegin(__FILE__, __LINE__)
 
   /* Stop ignoring reads. */
   #define ANNOTATE_IGNORE_READS_END() \
-    AnnotateIgnoreReadsEnd(__FILE__, __LINE__)
+    AbslAnnotateIgnoreReadsEnd(__FILE__, __LINE__)
 
   /* Similar to ANNOTATE_IGNORE_READS_BEGIN, but ignore writes instead. */
   #define ANNOTATE_IGNORE_WRITES_BEGIN() \
-    AnnotateIgnoreWritesBegin(__FILE__, __LINE__)
+    AbslAnnotateIgnoreWritesBegin(__FILE__, __LINE__)
 
   /* Stop ignoring writes. */
   #define ANNOTATE_IGNORE_WRITES_END() \
-    AnnotateIgnoreWritesEnd(__FILE__, __LINE__)
+    AbslAnnotateIgnoreWritesEnd(__FILE__, __LINE__)
 
 /* Clang provides limited support for static thread-safety analysis
    through a feature called Annotalysis. We configure macro-definitions
@@ -210,16 +210,16 @@
 #elif defined(ANNOTALYSIS_ENABLED)
 
   #define ANNOTATE_IGNORE_READS_BEGIN() \
-    StaticAnnotateIgnoreReadsBegin(__FILE__, __LINE__)
+    StaticAbslAnnotateIgnoreReadsBegin(__FILE__, __LINE__)
 
   #define ANNOTATE_IGNORE_READS_END() \
-    StaticAnnotateIgnoreReadsEnd(__FILE__, __LINE__)
+    StaticAbslAnnotateIgnoreReadsEnd(__FILE__, __LINE__)
 
   #define ANNOTATE_IGNORE_WRITES_BEGIN() \
-    StaticAnnotateIgnoreWritesBegin(__FILE__, __LINE__)
+    StaticAbslAnnotateIgnoreWritesBegin(__FILE__, __LINE__)
 
   #define ANNOTATE_IGNORE_WRITES_END() \
-    StaticAnnotateIgnoreWritesEnd(__FILE__, __LINE__)
+    StaticAbslAnnotateIgnoreWritesEnd(__FILE__, __LINE__)
 
 #else
   #define ANNOTATE_IGNORE_READS_BEGIN()  /* empty */
@@ -256,41 +256,41 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-void AnnotateRWLockCreate(const char *file, int line,
+void AbslAnnotateRWLockCreate(const char *file, int line,
                           const volatile void *lock);
-void AnnotateRWLockCreateStatic(const char *file, int line,
+void AbslAnnotateRWLockCreateStatic(const char *file, int line,
                           const volatile void *lock);
-void AnnotateRWLockDestroy(const char *file, int line,
+void AbslAnnotateRWLockDestroy(const char *file, int line,
                            const volatile void *lock);
-void AnnotateRWLockAcquired(const char *file, int line,
+void AbslAnnotateRWLockAcquired(const char *file, int line,
                             const volatile void *lock, long is_w);  /* NOLINT */
-void AnnotateRWLockReleased(const char *file, int line,
+void AbslAnnotateRWLockReleased(const char *file, int line,
                             const volatile void *lock, long is_w);  /* NOLINT */
-void AnnotateBenignRace(const char *file, int line,
+void AbslAnnotateBenignRace(const char *file, int line,
                         const volatile void *address,
                         const char *description);
-void AnnotateBenignRaceSized(const char *file, int line,
+void AbslAnnotateBenignRaceSized(const char *file, int line,
                         const volatile void *address,
                         size_t size,
                         const char *description);
-void AnnotateThreadName(const char *file, int line,
+void AbslAnnotateThreadName(const char *file, int line,
                         const char *name);
-void AnnotateEnableRaceDetection(const char *file, int line, int enable);
-void AnnotateMemoryIsInitialized(const char *file, int line,
+void AbslAnnotateEnableRaceDetection(const char *file, int line, int enable);
+void AbslAnnotateMemoryIsInitialized(const char *file, int line,
                                  const volatile void *mem, size_t size);
-void AnnotateMemoryIsUninitialized(const char *file, int line,
+void AbslAnnotateMemoryIsUninitialized(const char *file, int line,
                                    const volatile void *mem, size_t size);
 
 /* Annotations expand to these functions, when Dynamic Annotations are enabled.
    These functions are either implemented as no-op calls, if no Sanitizer is
    attached, or provided with externally-linked implementations by a library
    like ThreadSanitizer. */
-void AnnotateIgnoreReadsBegin(const char *file, int line)
+void AbslAnnotateIgnoreReadsBegin(const char *file, int line)
     ATTRIBUTE_IGNORE_READS_BEGIN;
-void AnnotateIgnoreReadsEnd(const char *file, int line)
+void AbslAnnotateIgnoreReadsEnd(const char *file, int line)
     ATTRIBUTE_IGNORE_READS_END;
-void AnnotateIgnoreWritesBegin(const char *file, int line);
-void AnnotateIgnoreWritesEnd(const char *file, int line);
+void AbslAnnotateIgnoreWritesBegin(const char *file, int line);
+void AbslAnnotateIgnoreWritesEnd(const char *file, int line);
 
 #if defined(ANNOTALYSIS_ENABLED)
 /* When Annotalysis is enabled without Dynamic Annotations, the use of
@@ -301,13 +301,13 @@ void AnnotateIgnoreWritesEnd(const char *file, int line);
    allows IGNORE_READS_AND_WRITES to work properly. */
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
-static inline void StaticAnnotateIgnoreReadsBegin(const char *file, int line)
+static inline void StaticAbslAnnotateIgnoreReadsBegin(const char *file, int line)
     ATTRIBUTE_IGNORE_READS_BEGIN { (void)file; (void)line; }
-static inline void StaticAnnotateIgnoreReadsEnd(const char *file, int line)
+static inline void StaticAbslAnnotateIgnoreReadsEnd(const char *file, int line)
     ATTRIBUTE_IGNORE_READS_END { (void)file; (void)line; }
-static inline void StaticAnnotateIgnoreWritesBegin(
+static inline void StaticAbslAnnotateIgnoreWritesBegin(
     const char *file, int line) { (void)file; (void)line; }
-static inline void StaticAnnotateIgnoreWritesEnd(
+static inline void StaticAbslAnnotateIgnoreWritesEnd(
     const char *file, int line) { (void)file; (void)line; }
 #pragma GCC diagnostic pop
 #endif
@@ -324,23 +324,23 @@ static inline void StaticAnnotateIgnoreWritesEnd(
   If for some reason you can't use "valgrind.h" or want to fake valgrind,
   there are two ways to make this function return non-zero:
     - Use environment variable: export RUNNING_ON_VALGRIND=1
-    - Make your tool intercept the function RunningOnValgrind() and
+    - Make your tool intercept the function AbslRunningOnValgrind() and
       change its return value.
  */
-int RunningOnValgrind(void);
+int AbslRunningOnValgrind(void);
 
 /* ValgrindSlowdown returns:
-    * 1.0, if (RunningOnValgrind() == 0)
-    * 50.0, if (RunningOnValgrind() != 0 && getenv("VALGRIND_SLOWDOWN") == NULL)
+    * 1.0, if (AbslRunningOnValgrind() == 0)
+    * 50.0, if (AbslRunningOnValgrind() != 0 && getenv("VALGRIND_SLOWDOWN") == NULL)
     * atof(getenv("VALGRIND_SLOWDOWN")) otherwise
    This function can be used to scale timeout values:
    EXAMPLE:
    for (;;) {
      DoExpensiveBackgroundTask();
-     SleepForSeconds(5 * ValgrindSlowdown());
+     SleepForSeconds(5 * AbslValgrindSlowdown());
    }
  */
-double ValgrindSlowdown(void);
+double AbslValgrindSlowdown(void);
 
 #ifdef __cplusplus
 }
