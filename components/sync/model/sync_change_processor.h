@@ -29,7 +29,6 @@ class SyncChangeProcessor {
  public:
   // Whether a context change should force a datatype refresh or not.
   enum ContextRefreshStatus { NO_REFRESH, REFRESH_NEEDED };
-  using GetSyncDataCallback = base::Callback<void(const SyncData&)>;
 
   SyncChangeProcessor();
   virtual ~SyncChangeProcessor();
@@ -51,21 +50,6 @@ class SyncChangeProcessor {
   // WARNING: This can be a potentially slow & memory intensive operation and
   // should only be used when absolutely necessary / sparingly.
   virtual SyncDataList GetAllSyncData(ModelType type) const = 0;
-
-  // Retrieves the SyncData identified by |type| and |sync_tag| and invokes
-  // |callback| asynchronously. If no such SyncData exists locally, IsValid on
-  // the SyncData passed to |callback| will return false.
-  //
-  // This is an asynchronous local operation that may result in disk IO.
-  //
-  // Refer to sync_data.h for a description of |sync_tag|.
-  //
-  // TODO(maniscalco): N.B. this method should really be pure virtual. An
-  // implentation is provided here just to verify that everything compiles.
-  // Update this method to be pure virtual (bug 353300).
-  virtual void GetSyncData(const ModelType& type,
-                           const std::string& sync_tag,
-                           const GetSyncDataCallback& callback) const {}
 
   // Updates the context for |type|, triggering an optional context refresh.
   // Default implementation does nothing. A type's context is a per-client blob
