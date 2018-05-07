@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/browser_action_test_util.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/interactive_test_utils.h"
@@ -135,6 +136,22 @@ class CommandsApiTest : public ExtensionApiTest {
  public:
   CommandsApiTest() {}
   ~CommandsApiTest() override {}
+
+  void SetUpOnMainThread() override {
+    ExtensionApiTest::SetUpOnMainThread();
+#if defined(OS_MACOSX)
+    // ExtensionKeybindingRegistryViews doesn't get registered until BrowserView
+    // is activated at least once.
+    // TODO(crbug.com/839469): Registry creation should happen independent of
+    // activation. Focus manager lifetime may make this tricky to untangle.
+    // TODO(crbug.com/650859): Reassess after activation is restored in the
+    // focus manager.
+    ui_test_utils::BrowserActivationWaiter waiter(browser());
+    ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+    waiter.WaitForActivation();
+    ASSERT_TRUE(browser()->window()->IsActive());
+#endif
+  }
 
  protected:
   bool IsGrantedForTab(const Extension* extension,
