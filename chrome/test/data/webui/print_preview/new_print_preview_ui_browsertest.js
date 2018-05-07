@@ -549,3 +549,29 @@ TEST_F('PrintPreviewAdvancedDialogTest', 'AdvancedSettings2Options',
        function() {
   this.runMochaTest(advanced_dialog_test.TestNames.AdvancedSettings2Options);
 });
+
+PrintPreviewCustomMarginsTest = class extends NewPrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/new/margin_control_container.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      ROOT_PATH + 'chrome/test/data/webui/settings/test_util.js',
+      'print_preview_test_utils.js',
+      'custom_margins_test.js',
+    ]);
+  }
+
+  /** @override */
+  get suiteName() {
+    return custom_margins_test.suiteName;
+  }
+};
+
+TEST_F('PrintPreviewCustomMarginsTest', 'ControlsCheck',
+       function() {
+  this.runMochaTest(custom_margins_test.TestNames.ControlsCheck);
+});
