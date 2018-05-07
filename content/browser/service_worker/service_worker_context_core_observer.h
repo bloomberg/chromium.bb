@@ -91,11 +91,18 @@ class ServiceWorkerContextCoreObserver {
                                    const std::string& uuid) {}
   // Called when the ServiceWorkerContainer.register() promise is resolved.
   //
-  // This is called before the service worker registration is persisted to disk.
-  // The caller cannot assume that the ServiceWorkerContextCore will find the
-  // registration at this point.
+  // This is called before the service worker registration is persisted to
+  // storage. The implementation cannot assume that the ServiceWorkerContextCore
+  // will find the registration at this point.
   virtual void OnRegistrationCompleted(int64_t registration_id,
                                        const GURL& pattern) {}
+  // Called after a service worker registration is persisted to storage.
+  //
+  // This happens after OnRegistrationCompleted(). The implementation can assume
+  // that ServiceWorkerContextCore will find the registration, and can safely
+  // add user data to the registration.
+  virtual void OnRegistrationStored(int64_t registration_id,
+                                    const GURL& pattern) {}
   virtual void OnRegistrationDeleted(int64_t registration_id,
                                      const GURL& pattern) {}
 

@@ -1391,6 +1391,8 @@ void ServiceWorkerStorage::DidStoreRegistration(
             deleted_version.resources_total_size_bytes);
   }
 
+  context_->NotifyRegistrationStored(new_version.registration_id,
+                                     new_version.scope);
   std::move(callback).Run(SERVICE_WORKER_OK);
 
   if (!context_->GetLiveVersion(deleted_version.version_id))

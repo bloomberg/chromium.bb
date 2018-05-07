@@ -287,6 +287,9 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   // version. The count resets to zero when the worker successfully starts.
   int GetVersionFailureCount(int64_t version_id);
 
+  // Called by ServiceWorkerStorage when StoreRegistration() succeeds.
+  void NotifyRegistrationStored(int64_t registration_id, const GURL& pattern);
+
   URLLoaderFactoryGetter* loader_factory_getter() {
     return loader_factory_getter_.get();
   }
