@@ -4,6 +4,10 @@
 
 source_set("cells") {
   sources = [
+    "bookmark_home_node_item.h",
+    "bookmark_home_node_item.mm",
+    "bookmark_home_promo_item.h",
+    "bookmark_home_promo_item.mm",
     "bookmark_parent_folder_item.h",
     "bookmark_parent_folder_item.mm",
     "bookmark_table_cell.h",
@@ -23,6 +27,7 @@ source_set("cells") {
     "//components/bookmarks/browser:browser",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui/authentication",
     "//ios/chrome/browser/ui/authentication:authentication_ui",
     "//ios/chrome/browser/ui/collection_view/cells",
     "//ios/chrome/browser/ui/colors",

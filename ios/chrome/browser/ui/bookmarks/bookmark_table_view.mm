@@ -26,6 +26,8 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_waiting_view.h"
 #include "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
+#import "ios/chrome/browser/ui/bookmarks/cells/bookmark_home_node_item.h"
+#import "ios/chrome/browser/ui/bookmarks/cells/bookmark_home_promo_item.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_table_cell.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_table_signin_promo_cell.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
@@ -70,73 +72,6 @@ using bookmarks::BookmarkNode;
 // Used to store a pair of NSIntegers when storing a NSIndexPath in C++
 // collections.
 using IntegerPair = std::pair<NSInteger, NSInteger>;
-
-@interface BookmarkNodeItem : TableViewItem
-
-@property(nonatomic, readwrite, assign) const BookmarkNode* bookmarkNode;
-
-- (instancetype)initWithType:(NSInteger)type
-                bookmarkNode:(const BookmarkNode*)node
-    NS_DESIGNATED_INITIALIZER;
-
-- (instancetype)initWithType:(NSInteger)type NS_UNAVAILABLE;
-
-@end
-
-@implementation BookmarkNodeItem
-@synthesize bookmarkNode = _bookmarkNode;
-
-- (instancetype)initWithType:(NSInteger)type
-                bookmarkNode:(const BookmarkNode*)node {
-  if ((self = [super initWithType:type])) {
-    self.cellClass = [BookmarkTableCell class];
-    _bookmarkNode = node;
-  }
-  return self;
-}
-
-- (void)configureCell:(UITableViewCell*)cell
-           withStyler:(ChromeTableViewStyler*)styler {
-  [super configureCell:cell withStyler:styler];
-  BookmarkTableCell* bookmarkCell =
-      base::mac::ObjCCastStrict<BookmarkTableCell>(cell);
-  [bookmarkCell setNode:self.bookmarkNode];
-}
-
-@end
-
-@interface BookmarkPromoItem : TableViewItem
-
-@property(nonatomic, weak) id<BookmarkTableViewDelegate> mediatorProvider;
-
-@end
-
-@implementation BookmarkPromoItem
-@synthesize mediatorProvider = _mediatorProvider;
-
-- (instancetype)initWithType:(NSInteger)type {
-  if ((self = [super initWithType:type])) {
-    self.cellClass = [BookmarkTableSigninPromoCell class];
-  }
-  return self;
-}
-
-- (void)configureCell:(UITableViewCell*)cell
-           withStyler:(ChromeTableViewStyler*)styler {
-  [super configureCell:cell withStyler:styler];
-  BookmarkTableSigninPromoCell* signinPromoCell =
-      base::mac::ObjCCastStrict<BookmarkTableSigninPromoCell>(cell);
-  SigninPromoViewMediator* mediator =
-      self.mediatorProvider.signinPromoViewMediator;
-
-  signinPromoCell.signinPromoView.delegate = mediator;
-  [[mediator createConfigurator]
-      configureSigninPromoView:signinPromoCell.signinPromoView];
-  signinPromoCell.selectionStyle = UITableViewCellSelectionStyleNone;
-  [mediator signinPromoViewVisible];
-}
-
-@end
 
 @interface BookmarkTableView ()<BookmarkModelBridgeObserver,
                                 BookmarkTableCellTitleEditDelegate,
@@ -272,9 +207,9 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
     [self.sharedState.tableViewModel
         insertSectionWithIdentifier:BookmarkHomeSectionIdentifierPromo
                             atIndex:0];
-    BookmarkPromoItem* item =
-        [[BookmarkPromoItem alloc] initWithType:BookmarkHomeItemTypePromo];
-    item.mediatorProvider = self.delegate;
+    BookmarkHomePromoItem* item =
+        [[BookmarkHomePromoItem alloc] initWithType:BookmarkHomeItemTypePromo];
+    item.delegate = self.delegate;
     [self.sharedState.tableViewModel
                         addItem:item
         toSectionWithIdentifier:BookmarkHomeSectionIdentifierPromo];
@@ -336,7 +271,7 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
           self.sharedState.tableViewDisplayedRootNode->child_count(),
           folderTitle);
 
-  BookmarkNodeItem* nodeItem = [[BookmarkNodeItem alloc]
+  BookmarkHomeNodeItem* nodeItem = [[BookmarkHomeNodeItem alloc]
       initWithType:BookmarkHomeItemTypeBookmark
       bookmarkNode:self.sharedState.editingFolderNode];
   [self.sharedState.tableViewModel
@@ -443,8 +378,8 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   [item configureCell:cell withStyler:[[ChromeTableViewStyler alloc] init]];
 
   if (item.type == BookmarkHomeItemTypeBookmark) {
-    BookmarkNodeItem* nodeItem =
-        base::mac::ObjCCastStrict<BookmarkNodeItem>(item);
+    BookmarkHomeNodeItem* nodeItem =
+        base::mac::ObjCCastStrict<BookmarkHomeNodeItem>(item);
     BookmarkTableCell* tableCell =
         base::mac::ObjCCastStrict<BookmarkTableCell>(cell);
     if (nodeItem.bookmarkNode == self.sharedState.editingFolderNode) {
@@ -477,8 +412,8 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 
   // Enable the swipe-to-delete gesture and reordering control for nodes of
   // type URL or Folder, but not the permanent ones.
-  BookmarkNodeItem* nodeItem =
-      base::mac::ObjCCastStrict<BookmarkNodeItem>(item);
+  BookmarkHomeNodeItem* nodeItem =
+      base::mac::ObjCCastStrict<BookmarkHomeNodeItem>(item);
   const BookmarkNode* node = nodeItem.bookmarkNode;
   return [self isUrlOrFolder:node];
 }
@@ -494,8 +429,8 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   }
 
   if (editingStyle == UITableViewCellEditingStyleDelete) {
-    BookmarkNodeItem* nodeItem =
-        base::mac::ObjCCastStrict<BookmarkNodeItem>(item);
+    BookmarkHomeNodeItem* nodeItem =
+        base::mac::ObjCCastStrict<BookmarkHomeNodeItem>(item);
     const BookmarkNode* node = nodeItem.bookmarkNode;
     std::set<const BookmarkNode*> nodes;
     nodes.insert(node);
@@ -656,7 +591,7 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   DCHECK(bookmarkNode->is_url());
 
   // Update image of corresponding cell.
-  BookmarkNodeItem* nodeItem = [self itemForNode:bookmarkNode];
+  BookmarkHomeNodeItem* nodeItem = [self itemForNode:bookmarkNode];
   if (!nodeItem) {
     return;
   }
@@ -723,8 +658,8 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   NSArray<TableViewItem*>* items = [self.sharedState.tableViewModel
       itemsInSectionWithIdentifier:BookmarkHomeSectionIdentifierBookmarks];
   for (TableViewItem* item in items) {
-    BookmarkNodeItem* nodeItem =
-        base::mac::ObjCCastStrict<BookmarkNodeItem>(item);
+    BookmarkHomeNodeItem* nodeItem =
+        base::mac::ObjCCastStrict<BookmarkHomeNodeItem>(item);
     const BookmarkNode* node = nodeItem.bookmarkNode;
     if (self.sharedState.editNodes.find(node) !=
         self.sharedState.editNodes.end()) {
@@ -770,8 +705,8 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
       [self.sharedState.tableViewModel itemAtIndexPath:indexPath];
 
   if (item.type == BookmarkHomeItemTypeBookmark) {
-    BookmarkNodeItem* nodeItem =
-        base::mac::ObjCCastStrict<BookmarkNodeItem>(item);
+    BookmarkHomeNodeItem* nodeItem =
+        base::mac::ObjCCastStrict<BookmarkHomeNodeItem>(item);
     return nodeItem.bookmarkNode;
   }
 
@@ -814,9 +749,9 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   for (int i = 0; i < childCount; ++i) {
     const BookmarkNode* node =
         self.sharedState.tableViewDisplayedRootNode->GetChild(i);
-    BookmarkNodeItem* nodeItem =
-        [[BookmarkNodeItem alloc] initWithType:BookmarkHomeItemTypeBookmark
-                                  bookmarkNode:node];
+    BookmarkHomeNodeItem* nodeItem =
+        [[BookmarkHomeNodeItem alloc] initWithType:BookmarkHomeItemTypeBookmark
+                                      bookmarkNode:node];
     [self.sharedState.tableViewModel
                         addItem:nodeItem
         toSectionWithIdentifier:BookmarkHomeSectionIdentifierBookmarks];
@@ -829,9 +764,9 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   // Add "Mobile Bookmarks" to the table.
   const BookmarkNode* mobileNode =
       self.sharedState.bookmarkModel->mobile_node();
-  BookmarkNodeItem* mobileItem =
-      [[BookmarkNodeItem alloc] initWithType:BookmarkHomeItemTypeBookmark
-                                bookmarkNode:mobileNode];
+  BookmarkHomeNodeItem* mobileItem =
+      [[BookmarkHomeNodeItem alloc] initWithType:BookmarkHomeItemTypeBookmark
+                                    bookmarkNode:mobileNode];
   [self.sharedState.tableViewModel
                       addItem:mobileItem
       toSectionWithIdentifier:BookmarkHomeSectionIdentifierBookmarks];
@@ -840,9 +775,9 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   const BookmarkNode* bookmarkBar =
       self.sharedState.bookmarkModel->bookmark_bar_node();
   if (!bookmarkBar->empty()) {
-    BookmarkNodeItem* barItem =
-        [[BookmarkNodeItem alloc] initWithType:BookmarkHomeItemTypeBookmark
-                                  bookmarkNode:bookmarkBar];
+    BookmarkHomeNodeItem* barItem =
+        [[BookmarkHomeNodeItem alloc] initWithType:BookmarkHomeItemTypeBookmark
+                                      bookmarkNode:bookmarkBar];
     [self.sharedState.tableViewModel
                         addItem:barItem
         toSectionWithIdentifier:BookmarkHomeSectionIdentifierBookmarks];
@@ -851,9 +786,9 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   const BookmarkNode* otherBookmarks =
       self.sharedState.bookmarkModel->other_node();
   if (!otherBookmarks->empty()) {
-    BookmarkNodeItem* otherItem =
-        [[BookmarkNodeItem alloc] initWithType:BookmarkHomeItemTypeBookmark
-                                  bookmarkNode:otherBookmarks];
+    BookmarkHomeNodeItem* otherItem =
+        [[BookmarkHomeNodeItem alloc] initWithType:BookmarkHomeItemTypeBookmark
+                                      bookmarkNode:otherBookmarks];
     [self.sharedState.tableViewModel
                         addItem:otherItem
         toSectionWithIdentifier:BookmarkHomeSectionIdentifierBookmarks];
@@ -924,13 +859,14 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   self.sharedState.tableView.backgroundView = self.emptyTableBackgroundView;
 }
 
-- (BookmarkNodeItem*)itemForNode:(const bookmarks::BookmarkNode*)bookmarkNode {
+- (BookmarkHomeNodeItem*)itemForNode:
+    (const bookmarks::BookmarkNode*)bookmarkNode {
   NSArray<TableViewItem*>* items = [self.sharedState.tableViewModel
       itemsInSectionWithIdentifier:BookmarkHomeSectionIdentifierBookmarks];
   for (TableViewItem* item in items) {
     if (item.type == BookmarkHomeItemTypeBookmark) {
-      BookmarkNodeItem* nodeItem =
-          base::mac::ObjCCastStrict<BookmarkNodeItem>(item);
+      BookmarkHomeNodeItem* nodeItem =
+          base::mac::ObjCCastStrict<BookmarkHomeNodeItem>(item);
       if (nodeItem.bookmarkNode == bookmarkNode) {
         return nodeItem;
       }
