@@ -188,7 +188,7 @@ class FileURLDirectoryLoader
 
 #if defined(OS_WIN)
       const base::string16& title = path_.value();
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
       const base::string16& title =
           base::WideToUTF16(base::SysNativeMBToWide(path_.value()));
 #endif
@@ -210,7 +210,7 @@ class FileURLDirectoryLoader
         filename.value() != base::FilePath::kParentDirectory) {
 #if defined(OS_WIN)
       std::string raw_bytes;  // Empty on Windows means UTF-8 encoded name.
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
       const std::string& raw_bytes = filename.value();
 #endif
       pending_data_.append(net::GetDirectoryListingEntry(

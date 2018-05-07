@@ -79,7 +79,7 @@
 #include "content/browser/mach_broker_mac.h"
 #endif  // OS_WIN
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 #include <signal.h>
 
 #include "base/file_descriptor_store.h"
@@ -94,7 +94,7 @@
 #include "sandbox/linux/services/libc_interceptor.h"
 #endif
 
-#endif  // OS_POSIX
+#endif  // OS_POSIX || OS_FUCHSIA
 
 #if defined(OS_LINUX)
 #include "base/native_library.h"
@@ -193,14 +193,14 @@ void InitializeFieldTrialAndFeatureList(
 
   // Ensure any field trials in browser are reflected into the child
   // process.
-#if defined(OS_POSIX)
+#if defined(OS_WIN)
+  base::FieldTrialList::CreateTrialsFromCommandLine(
+      command_line, switches::kFieldTrialHandle, -1);
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   // On POSIX systems that use the zygote, we get the trials from a shared
   // memory segment backed by an fd instead of the command line.
   base::FieldTrialList::CreateTrialsFromCommandLine(
       command_line, switches::kFieldTrialHandle, kFieldTrialDescriptor);
-#else
-  base::FieldTrialList::CreateTrialsFromCommandLine(
-      command_line, switches::kFieldTrialHandle, -1);
 #endif
 
   std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
@@ -811,7 +811,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     // unexpected absence has security implications.
     CHECK(base::allocator::IsAllocatorInitialized());
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
     if (!process_type.empty()) {
       // When you hit Ctrl-C in a terminal running the browser
       // process, a SIGINT is delivered to the entire process group.

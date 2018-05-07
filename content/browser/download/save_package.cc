@@ -86,7 +86,7 @@ const int32_t kMaxFileOrdinalNumber = 9999;
 // is less than MAX_PATH
 #if defined(OS_WIN)
 const uint32_t kMaxFilePathLength = MAX_PATH - 1;
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 const uint32_t kMaxFilePathLength = PATH_MAX - 1;
 #endif
 
@@ -360,12 +360,12 @@ void SavePackage::OnMHTMLGenerated(int64_t size) {
 // '/path/to/save_dir' + '/' + NAME_MAX.
 uint32_t SavePackage::GetMaxPathLengthForDirectory(
     const base::FilePath& base_dir) {
-#if defined(OS_POSIX)
+#if defined(OS_WIN)
+  return kMaxFilePathLength;
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   return std::min(
       kMaxFilePathLength,
       static_cast<uint32_t>(base_dir.value().length()) + NAME_MAX + 1);
-#else
-  return kMaxFilePathLength;
 #endif
 }
 

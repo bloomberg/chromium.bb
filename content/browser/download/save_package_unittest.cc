@@ -30,7 +30,7 @@ namespace content {
 #define HTML_EXTENSION ".html"
 #if defined(OS_WIN)
 #define FPL_HTML_EXTENSION L".html"
-#else
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 #define FPL_HTML_EXTENSION ".html"
 #endif
 
@@ -40,7 +40,7 @@ namespace {
 #if defined(OS_WIN)
 const uint32_t kMaxFilePathLength = MAX_PATH - 1;
 const uint32_t kMaxFileNameLength = MAX_PATH - 1;
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 const uint32_t kMaxFilePathLength = PATH_MAX - 1;
 const uint32_t kMaxFileNameLength = NAME_MAX;
 #endif

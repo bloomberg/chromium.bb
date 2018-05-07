@@ -49,13 +49,13 @@ class SandboxedProcessLauncherDelegate;
 struct ChildProcessLauncherPriority;
 struct ChildProcessTerminationInfo;
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 class PosixFileDescriptorInfo;
 #endif
 
 namespace internal {
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 using FileMappedForLaunch = PosixFileDescriptorInfo;
 #else
 using FileMappedForLaunch = base::HandlesToInheritVector;
