@@ -35,7 +35,6 @@
 #include "content/common/storage_partition_service.mojom.h"
 #include "content/public/browser/storage_partition.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "net/cookies/cookie_store.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "storage/browser/quota/special_storage_policy.h"
@@ -121,7 +120,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   void ClearData(uint32_t remove_mask,
                  uint32_t quota_storage_remove_mask,
                  const OriginMatcherFunction& origin_matcher,
-                 net::CookieDeletionInfo delete_info,
+                 network::mojom::CookieDeletionFilterPtr cookie_deletion_filter,
                  const base::Time begin,
                  const base::Time end,
                  base::OnceClosure callback) override;
@@ -241,14 +240,15 @@ class CONTENT_EXPORT StoragePartitionImpl
                        storage::SpecialStoragePolicy* special_storage_policy);
 
   // We will never have both remove_origin be populated and a cookie_matcher.
-  void ClearDataImpl(uint32_t remove_mask,
-                     uint32_t quota_storage_remove_mask,
-                     const GURL& remove_origin,
-                     const OriginMatcherFunction& origin_matcher,
-                     net::CookieDeletionInfo cookie_delete_info,
-                     const base::Time begin,
-                     const base::Time end,
-                     base::OnceClosure callback);
+  void ClearDataImpl(
+      uint32_t remove_mask,
+      uint32_t quota_storage_remove_mask,
+      const GURL& remove_origin,
+      const OriginMatcherFunction& origin_matcher,
+      network::mojom::CookieDeletionFilterPtr cookie_deletion_filter,
+      const base::Time begin,
+      const base::Time end,
+      base::OnceClosure callback);
 
   void DeletionHelperDone(base::OnceClosure callback);
 

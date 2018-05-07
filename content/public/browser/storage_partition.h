@@ -14,8 +14,8 @@
 #include "base/files/file_path.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "net/cookies/cookie_store.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/mojom/cookie_manager.mojom.h"
 
 class GURL;
 
@@ -179,18 +179,24 @@ class CONTENT_EXPORT StoragePartition {
   // * |origin_matcher| is present if special storage policy is to be handled,
   //   otherwise the callback should be null (base::Callback::is_null()==true).
   //   The origin matcher does not apply to cookies, instead use:
-  // * |cookie_delete_info| identifies which cookies to delete.
+  // * |cookie_deletion_filter| identifies the cookies to delete and will be
+  //   used if |remove_mask| has the REMOVE_DATA_MASK_COOKIES bit set. Note:
+  //   CookieDeletionFilterPtr also contains a time interval
+  //   (created_after_time/created_before_time), so when deleting cookies
+  //   |begin| and |end| will be used ignoring the interval in
+  //   |cookie_deletion_filter|.
   // * |callback| is called when data deletion is done or at least the deletion
   //   is scheduled.
   // Note: Make sure you know what you are doing before clearing cookies
   // selectively. You don't want to break the web.
-  virtual void ClearData(uint32_t remove_mask,
-                         uint32_t quota_storage_remove_mask,
-                         const OriginMatcherFunction& origin_matcher,
-                         net::CookieDeletionInfo cookie_delete_info,
-                         const base::Time begin,
-                         const base::Time end,
-                         base::OnceClosure callback) = 0;
+  virtual void ClearData(
+      uint32_t remove_mask,
+      uint32_t quota_storage_remove_mask,
+      const OriginMatcherFunction& origin_matcher,
+      network::mojom::CookieDeletionFilterPtr cookie_deletion_filter,
+      const base::Time begin,
+      const base::Time end,
+      base::OnceClosure callback) = 0;
 
   // Clears the HTTP and media caches associated with this StoragePartition's
   // request contexts. If |begin| and |end| are not null, only entries with

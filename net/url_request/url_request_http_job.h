@@ -19,7 +19,6 @@
 #include "net/base/completion_callback.h"
 #include "net/base/net_error_details.h"
 #include "net/base/net_export.h"
-#include "net/cookies/cookie_store.h"
 #include "net/http/http_request_info.h"
 #include "net/net_buildflags.h"
 #include "net/socket/connection_attempts.h"

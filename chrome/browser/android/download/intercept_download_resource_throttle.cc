@@ -7,6 +7,7 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/android/download/download_controller_base.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_store.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"

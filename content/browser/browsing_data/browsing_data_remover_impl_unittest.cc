@@ -42,6 +42,7 @@
 #include "content/public/test/test_storage_partition.h"
 #include "content/public/test/test_utils.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_deletion_info.h"
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_transaction_factory.h"
@@ -51,6 +52,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/buildflags/buildflags.h"
+#include "services/network/cookie_manager.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -69,6 +71,7 @@ using testing::Not;
 using testing::Return;
 using testing::SizeIs;
 using testing::WithArgs;
+using CookieDeletionFilterPtr = network::mojom::CookieDeletionFilterPtr;
 
 namespace content {
 
@@ -106,12 +109,36 @@ const base::FilePath::CharType kDomStorageExt[] = FILE_PATH_LITERAL(
     "chrome-extension_abcdefghijklmnopqrstuvwxyz_0.localstorage");
 
 struct StoragePartitionRemovalData {
-  uint32_t remove_mask = 0;
-  uint32_t quota_storage_remove_mask = 0;
+  StoragePartitionRemovalData()
+      : remove_mask(0),
+        quota_storage_remove_mask(0),
+        cookie_deletion_filter(network::mojom::CookieDeletionFilter::New()) {}
+
+  StoragePartitionRemovalData(const StoragePartitionRemovalData& other)
+      : remove_mask(other.remove_mask),
+        quota_storage_remove_mask(other.quota_storage_remove_mask),
+        remove_begin(other.remove_begin),
+        remove_end(other.remove_end),
+        origin_matcher(other.origin_matcher),
+        cookie_deletion_filter(other.cookie_deletion_filter.Clone()) {}
+
+  StoragePartitionRemovalData& operator=(
+      const StoragePartitionRemovalData& rhs) {
+    remove_mask = rhs.remove_mask;
+    quota_storage_remove_mask = rhs.quota_storage_remove_mask;
+    remove_begin = rhs.remove_begin;
+    remove_end = rhs.remove_end;
+    origin_matcher = rhs.origin_matcher;
+    cookie_deletion_filter = rhs.cookie_deletion_filter.Clone();
+    return *this;
+  }
+
+  uint32_t remove_mask;
+  uint32_t quota_storage_remove_mask;
   base::Time remove_begin;
   base::Time remove_end;
   StoragePartition::OriginMatcherFunction origin_matcher;
-  net::CookieDeletionInfo cookie_delete_info;
+  CookieDeletionFilterPtr cookie_deletion_filter;
 };
 
 net::CanonicalCookie CreateCookieWithHost(const GURL& source) {
@@ -159,7 +186,7 @@ class StoragePartitionRemovalTestStoragePartition
   void ClearData(uint32_t remove_mask,
                  uint32_t quota_storage_remove_mask,
                  const OriginMatcherFunction& origin_matcher,
-                 net::CookieDeletionInfo cookie_delete_info,
+                 CookieDeletionFilterPtr cookie_deletion_filter,
                  const base::Time begin,
                  const base::Time end,
                  base::OnceClosure callback) override {
@@ -170,8 +197,8 @@ class StoragePartitionRemovalTestStoragePartition
     storage_partition_removal_data_.remove_begin = begin;
     storage_partition_removal_data_.remove_end = end;
     storage_partition_removal_data_.origin_matcher = origin_matcher;
-    storage_partition_removal_data_.cookie_delete_info =
-        std::move(cookie_delete_info);
+    storage_partition_removal_data_.cookie_deletion_filter =
+        std::move(cookie_deletion_filter);
 
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
@@ -250,6 +277,11 @@ inline Matcher<const base::Callback<bool(const GURL&)>&> ProbablySameFilter(
 
 base::Time AnHourAgo() {
   return base::Time::Now() - base::TimeDelta::FromHours(1);
+}
+
+bool FilterMatchesCookie(const CookieDeletionFilterPtr& filter,
+                         const net::CanonicalCookie& cookie) {
+  return network::DeletionFilterToInfo(filter.Clone()).Matches(cookie);
 }
 
 }  // namespace
@@ -643,16 +675,16 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveCookiesDomainBlacklist) {
   // Even though it's a different origin, it's the same domain.
   EXPECT_FALSE(removal_data.origin_matcher.Run(kOrigin4, mock_policy()));
 
-  EXPECT_FALSE(
-      removal_data.cookie_delete_info.Matches(CreateCookieWithHost(kOrigin1)));
-  EXPECT_TRUE(
-      removal_data.cookie_delete_info.Matches(CreateCookieWithHost(kOrigin2)));
-  EXPECT_FALSE(
-      removal_data.cookie_delete_info.Matches(CreateCookieWithHost(kOrigin3)));
+  EXPECT_FALSE(FilterMatchesCookie(removal_data.cookie_deletion_filter,
+                                   CreateCookieWithHost(kOrigin1)));
+  EXPECT_TRUE(FilterMatchesCookie(removal_data.cookie_deletion_filter,
+                                  CreateCookieWithHost(kOrigin2)));
+  EXPECT_FALSE(FilterMatchesCookie(removal_data.cookie_deletion_filter,
+                                   CreateCookieWithHost(kOrigin3)));
   // This is false, because this is the same domain as 3, just with a different
   // scheme.
-  EXPECT_FALSE(
-      removal_data.cookie_delete_info.Matches(CreateCookieWithHost(kOrigin4)));
+  EXPECT_FALSE(FilterMatchesCookie(removal_data.cookie_deletion_filter,
+                                   CreateCookieWithHost(kOrigin4)));
 }
 
 // Test that removing cookies clears HTTP auth data.

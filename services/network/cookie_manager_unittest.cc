@@ -1855,6 +1855,7 @@ TEST_F(FlushableCookieManagerTest, DeletionFilterToInfo) {
   filter_ptr->created_after_time = base::Time::FromDoubleT(kTestStartEpoch);
   filter_ptr->created_before_time = base::Time::FromDoubleT(kTestEndEpoch);
   filter_ptr->cookie_name = "cookie-name";
+  filter_ptr->host_name = "cookie-host";
   filter_ptr->including_domains =
       std::vector<std::string>({"first.com", "second.com", "third.com"});
   filter_ptr->excluding_domains =
@@ -1871,8 +1872,8 @@ TEST_F(FlushableCookieManagerTest, DeletionFilterToInfo) {
 
   EXPECT_EQ(CookieDeletionInfo::SessionControl::PERSISTENT_COOKIES,
             delete_info.session_control);
-  EXPECT_FALSE(delete_info.host.has_value());
   EXPECT_EQ("cookie-name", delete_info.name.value());
+  EXPECT_EQ("cookie-host", delete_info.host.value());
   EXPECT_EQ(GURL("https://www.example.com"), delete_info.url.value());
   EXPECT_EQ(3u, delete_info.domains_and_ips_to_delete.size());
   EXPECT_NE(delete_info.domains_and_ips_to_delete.find("first.com"),

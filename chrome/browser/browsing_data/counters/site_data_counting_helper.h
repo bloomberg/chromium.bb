@@ -43,8 +43,6 @@ class SiteDataCountingHelper {
  private:
   void GetOriginsFromHostContentSettignsMap(HostContentSettingsMap* hcsm,
                                             ContentSettingsType type);
-  void GetCookiesOnIOThread(
-      const scoped_refptr<net::URLRequestContextGetter>& rq_context);
   void GetCookiesCallback(const net::CookieList& cookies);
   void GetSessionStorageUsageInfoCallback(
       const scoped_refptr<storage::SpecialStoragePolicy>&

@@ -11,6 +11,8 @@
 
 #include "base/callback.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_deletion_info.h"
+#include "services/network/cookie_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -50,8 +52,11 @@ void RunTestCase(TestCase test_case,
       << test_case.url;
 }
 
-void RunTestCase(TestCase test_case, CookieDeletionInfo delete_info) {
+void RunTestCase(TestCase test_case,
+                 network::mojom::CookieDeletionFilterPtr deletion_filter) {
   // Test with regular cookie, http only, domain, and secure.
+  CookieDeletionInfo delete_info =
+      network::DeletionFilterToInfo(std::move(deletion_filter));
   std::string cookie_line = "A=2";
   GURL test_url(test_case.url);
   EXPECT_TRUE(test_url.is_valid()) << test_case.url;
@@ -249,7 +254,7 @@ TEST(BrowsingDataFilterBuilderImplTest,
   };
 
   for (TestCase test_case : test_cases)
-    RunTestCase(test_case, builder.BuildCookieDeletionInfo());
+    RunTestCase(test_case, builder.BuildCookieDeletionFilter());
 }
 
 TEST(BrowsingDataFilterBuilderImplTest,
@@ -299,7 +304,7 @@ TEST(BrowsingDataFilterBuilderImplTest,
   };
 
   for (TestCase test_case : test_cases)
-    RunTestCase(test_case, builder.BuildCookieDeletionInfo());
+    RunTestCase(test_case, builder.BuildCookieDeletionFilter());
 }
 
 TEST(BrowsingDataFilterBuilderImplTest, NetworkServiceFilterWhitelist) {

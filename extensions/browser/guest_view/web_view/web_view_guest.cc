@@ -425,9 +425,9 @@ void WebViewGuest::ClearDataInternal(base::Time remove_since,
     return;
   }
 
-  net::CookieDeletionInfo cookie_delete_info;
-  cookie_delete_info.creation_range.SetStart(remove_since);
-  cookie_delete_info.creation_range.SetEnd(base::Time::Now());
+  auto cookie_delete_filter = network::mojom::CookieDeletionFilter::New();
+  // Intentionally do not set the deletion filter time interval because the
+  // time interval parameters to ClearData() will be used.
 
   // TODO(cmumford): Make this (and webview::* constants) constexpr.
   const uint32_t ALL_COOKIES_MASK =
@@ -435,29 +435,28 @@ void WebViewGuest::ClearDataInternal(base::Time remove_since,
       webview::WEB_VIEW_REMOVE_DATA_MASK_PERSISTENT_COOKIES;
 
   if ((removal_mask & ALL_COOKIES_MASK) == ALL_COOKIES_MASK) {
-    cookie_delete_info.session_control =
-        net::CookieDeletionInfo::SessionControl::IGNORE_CONTROL;
+    cookie_delete_filter->session_control =
+        network::mojom::CookieDeletionSessionControl::IGNORE_CONTROL;
   } else if (removal_mask &
              webview::WEB_VIEW_REMOVE_DATA_MASK_SESSION_COOKIES) {
-    cookie_delete_info.session_control =
-        net::CookieDeletionInfo::SessionControl::SESSION_COOKIES;
+    cookie_delete_filter->session_control =
+        network::mojom::CookieDeletionSessionControl::SESSION_COOKIES;
   } else if (removal_mask &
              webview::WEB_VIEW_REMOVE_DATA_MASK_PERSISTENT_COOKIES) {
-    cookie_delete_info.session_control =
-        net::CookieDeletionInfo::SessionControl::PERSISTENT_COOKIES;
+    cookie_delete_filter->session_control =
+        network::mojom::CookieDeletionSessionControl::PERSISTENT_COOKIES;
   }
 
   content::StoragePartition* partition =
       content::BrowserContext::GetStoragePartition(
           web_contents()->GetBrowserContext(),
           web_contents()->GetSiteInstance());
-  base::Time start_time = cookie_delete_info.creation_range.start();
-  base::Time end_time = cookie_delete_info.creation_range.end();
   partition->ClearData(
       storage_partition_removal_mask,
       content::StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
       content::StoragePartition::OriginMatcherFunction(),
-      std::move(cookie_delete_info), start_time, end_time, callback);
+      std::move(cookie_delete_filter), remove_since, base::Time::Now(),
+      callback);
 }
 
 void WebViewGuest::GuestViewDidStopLoading() {

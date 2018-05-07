@@ -141,24 +141,24 @@ BrowsingDataFilterBuilderImpl::BuildNetworkServiceFilter() const {
   return filter;
 }
 
-net::CookieDeletionInfo BrowsingDataFilterBuilderImpl::BuildCookieDeletionInfo()
-    const {
+network::mojom::CookieDeletionFilterPtr
+BrowsingDataFilterBuilderImpl::BuildCookieDeletionFilter() const {
   DCHECK(origins_.empty())
       << "Origin-based deletion is not suitable for cookies. Please use "
          "different scoping, such as RegistrableDomainFilterBuilder.";
-  net::CookieDeletionInfo delete_info;
+  auto deletion_filter = network::mojom::CookieDeletionFilter::New();
 
   switch (mode_) {
     case WHITELIST:
-      delete_info.domains_and_ips_to_delete.insert(domains_.begin(),
-                                                   domains_.end());
+      deletion_filter->including_domains.emplace(domains_.begin(),
+                                                 domains_.end());
       break;
     case BLACKLIST:
-      delete_info.domains_and_ips_to_ignore.insert(domains_.begin(),
-                                                   domains_.end());
+      deletion_filter->excluding_domains.emplace(domains_.begin(),
+                                                 domains_.end());
       break;
   }
-  return delete_info;
+  return deletion_filter;
 }
 
 base::RepeatingCallback<bool(const std::string& site)>
