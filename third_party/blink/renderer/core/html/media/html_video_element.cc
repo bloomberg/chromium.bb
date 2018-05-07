@@ -539,9 +539,6 @@ void HTMLVideoElement::MediaRemotingStopped(
 }
 
 bool HTMLVideoElement::SupportsPictureInPicture() const {
-  if (!HasVideo())
-    return false;
-
   return PictureInPictureController::From(GetDocument())
              .IsElementAllowed(*this) ==
          PictureInPictureController::Status::kEnabled;

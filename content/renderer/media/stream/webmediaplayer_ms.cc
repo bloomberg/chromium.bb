@@ -589,13 +589,21 @@ void WebMediaPlayerMS::SetVolume(double volume) {
   delegate_->DidPlayerMutedStatusChange(delegate_id_, volume == 0.0);
 }
 
-void WebMediaPlayerMS::EnterPictureInPicture() {
+void WebMediaPlayerMS::EnterPictureInPicture(
+    blink::WebMediaPlayer::PipWindowSizeCallback callback) {
+  // TODO(crbug.com/806249): Use Picture-in-Picture window size.
+  std::move(callback).Run(this->NaturalSize());
+
   NOTIMPLEMENTED();
   // TODO(apacible): Implement after video in surfaces is supported for
   // WebMediaPlayerMS. See http://crbug/746182.
 }
 
-void WebMediaPlayerMS::ExitPictureInPicture() {
+void WebMediaPlayerMS::ExitPictureInPicture(
+    blink::WebMediaPlayer::PipWindowClosedCallback callback) {
+  // TODO(crbug.com/806249): Run callback when Picture-in-Picture window closes.
+  std::move(callback).Run();
+
   NOTIMPLEMENTED();
   // TODO(apacible): Implement after video in surfaces is supported for
   // WebMediaPlayerMS. See http://crbug/746182.

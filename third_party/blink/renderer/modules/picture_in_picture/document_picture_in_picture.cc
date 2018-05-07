@@ -41,18 +41,19 @@ ScriptPromise DocumentPictureInPicture::exitPictureInPicture(
         DOMException::Create(kInvalidStateError, kNoPictureInPictureElement));
   }
 
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
+
   // TODO(crbug.com/806249): Check element is a video element.
-  // TODO(crbug.com/806249): Returns callback in promise.
-  ToHTMLVideoElement(picture_in_picture_element)->exitPictureInPicture();
-
-  controller.OnClosePictureInPictureWindow();
-
-  controller.UnsetPictureInPictureElement();
-
-  picture_in_picture_element->DispatchEvent(
-      Event::CreateBubble(EventTypeNames::leavepictureinpicture));
-
-  return ScriptPromise::CastUndefined(script_state);
+  document.GetTaskRunner(TaskType::kMediaElementEvent)
+      ->PostTask(
+          FROM_HERE,
+          WTF::Bind(
+              &PictureInPictureControllerImpl::ExitPictureInPicture,
+              WrapPersistent(&controller),
+              WrapPersistent(ToHTMLVideoElement(picture_in_picture_element)),
+              WrapPersistent(resolver)));
+  return promise;
 }
 
 // static

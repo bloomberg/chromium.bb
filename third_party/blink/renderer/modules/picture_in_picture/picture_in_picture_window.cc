@@ -10,13 +10,11 @@ namespace blink {
 
 PictureInPictureWindow::PictureInPictureWindow(
     ExecutionContext* execution_context,
-    int width,
-    int height)
-    : ContextClient(execution_context), width_(width), height_(height) {}
+    const WebSize& size)
+    : ContextClient(execution_context), size_(size) {}
 
 void PictureInPictureWindow::OnClose() {
-  width_ = 0;
-  height_ = 0;
+  size_.width = size_.height = 0;
 }
 
 const AtomicString& PictureInPictureWindow::InterfaceName() const {
