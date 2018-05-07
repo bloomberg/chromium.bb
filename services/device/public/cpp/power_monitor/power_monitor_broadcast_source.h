@@ -45,10 +45,17 @@ class PowerMonitorBroadcastSource : public base::PowerMonitorSource {
   FRIEND_TEST_ALL_PREFIXES(PowerMonitorMessageBroadcasterTest,
                            PowerMessageBroadcast);
 
+  // Client holds the mojo connection. It is created on the main thread, and
+  // destroyed on task runner's thread. Unless otherwise noted, all its methods
+  // all called on the task runner's thread.
   class Client : public device::mojom::PowerMonitorClient {
    public:
     Client();
     ~Client() override;
+
+    // Called on main thread when the source is destroyed. Prevents data race
+    // on the power monitor and source due to use on task runner thread.
+    void Shutdown();
 
     void Init(std::unique_ptr<service_manager::Connector> connector);
 
@@ -64,6 +71,9 @@ class PowerMonitorBroadcastSource : public base::PowerMonitorSource {
    private:
     std::unique_ptr<service_manager::Connector> connector_;
     mojo::Binding<device::mojom::PowerMonitorClient> binding_;
+
+    base::Lock is_shutdown_lock_;
+    bool is_shutdown_ = false;
 
     bool last_reported_on_battery_power_state_ = false;
 
