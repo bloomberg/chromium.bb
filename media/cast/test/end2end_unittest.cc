@@ -400,7 +400,7 @@ class End2EndTest : public ::testing::Test {
  public:
   void ReceivePacket(std::unique_ptr<media::cast::Packet> packet) {
     cast_receiver_->ReceivePacket(std::move(packet));
-  };
+  }
 
  protected:
   End2EndTest()
@@ -1094,11 +1094,11 @@ TEST_F(End2EndTest, BasicFakeSoftwareVideo) {
 
 // The following tests run many many iterations to make sure that buffers don't
 // fill, timers don't go askew etc. However, these high-level tests are too
-// expensive when running under Valgrind or other sanitizer, or in non-optimized
-// debug builds. In these cases, we reduce the number of iterations.
-#if (defined(OS_WIN) && !defined(NVALGRIND)) || defined(ADDRESS_SANITIZER) || \
-    defined(LEAK_SANITIZER) || defined(MEMORY_SANITIZER) ||                   \
-    defined(THREAD_SANITIZER) || defined(UNDEFINED_SANITIZER)
+// expensive when running under sanitizers, or in non-optimized debug builds.
+// In these cases, we reduce the number of iterations.
+#if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER) ||  \
+    defined(MEMORY_SANITIZER) || defined(THREAD_SANITIZER) || \
+    defined(UNDEFINED_SANITIZER)
 const int kLongTestIterations = 500;  // http://crbug.com/487033
 #elif defined(NDEBUG)
 const int kLongTestIterations = 10000;
