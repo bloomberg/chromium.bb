@@ -1220,17 +1220,29 @@ bool IsTabDetachingInFullscreenEnabled() {
     bool isActive = (index == model->active_index());
 
     TabStripModelDelegate::NewStripContents item;
-    item.web_contents = model->DetachWebContentsAt(index);
+    item.web_contents = model->GetWebContentsAt(index);
     item.add_types =
         (isActive ? TabStripModel::ADD_ACTIVE : TabStripModel::ADD_NONE) |
         (isPinned ? TabStripModel::ADD_PINNED : TabStripModel::ADD_NONE);
-    contentses.push_back(std::move(item));
+    contentses.push_back(item);
+  }
+
+  for (TabView* tabView in tabViews) {
+    int index = [tabStripController_ modelIndexForTabView:tabView];
+    // Detach it from the source window, which just updates the model without
+    // deleting the tab contents. This needs to come before creating the new
+    // Browser because it clears the WebContents' delegate, which gets hooked
+    // up during creation of the new window.
+
+    // TODO(erikchen): While it might be nice to fix ownership semantics here,
+    // realistically the code is going to be deleted in the not-too-distant
+    // future.
+    model->DetachWebContentsAt(index).release();
   }
 
   // Create a new window with the dragged tabs in its model.
-  Browser* newBrowser =
-      browser_->tab_strip_model()->delegate()->CreateNewStripWithContents(
-          std::move(contentses), browserRect, false);
+  Browser* newBrowser = browser_->tab_strip_model()->delegate()->
+      CreateNewStripWithContents(contentses, browserRect, false);
 
   // Get the new controller by asking the new window for its delegate.
   BrowserWindowController* controller = [BrowserWindowController

@@ -195,15 +195,9 @@ class TabDragController : public views::WidgetObserver,
   struct TabDragData {
     TabDragData();
     ~TabDragData();
-    TabDragData(TabDragData&&);
 
     // The WebContents being dragged.
     content::WebContents* contents;
-
-    // There is a brief period of time when a tab is being moved from one tab
-    // strip to another [after Detach but before Attach] that the TabDragData
-    // owns the WebContents.
-    std::unique_ptr<content::WebContents> owned_contents;
 
     // This is the index of the tab in |source_tabstrip_| when the drag
     // began. This is used to restore the previous state if the drag is aborted.
@@ -214,9 +208,6 @@ class TabDragController : public views::WidgetObserver,
 
     // Is the tab pinned?
     bool pinned;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(TabDragData);
   };
 
   typedef std::vector<TabDragData> DragData;
