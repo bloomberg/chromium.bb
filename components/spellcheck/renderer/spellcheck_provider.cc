@@ -38,6 +38,44 @@ static_assert(int(blink::kWebTextDecorationTypeGrammar) ==
                   int(SpellCheckResult::GRAMMAR),
               "mismatching enums");
 
+class SpellCheckProvider::DictionaryUpdateObserverImpl
+    : public DictionaryUpdateObserver {
+ public:
+  explicit DictionaryUpdateObserverImpl(SpellCheckProvider* owner);
+  ~DictionaryUpdateObserverImpl() override;
+
+  // DictionaryUpdateObserver:
+  void OnDictionaryUpdated(const WebVector<WebString>& words_added) override;
+
+ private:
+  SpellCheckProvider* owner_;
+};
+
+SpellCheckProvider::DictionaryUpdateObserverImpl::DictionaryUpdateObserverImpl(
+    SpellCheckProvider* owner)
+    : owner_(owner) {
+  owner_->spellcheck_->AddDictionaryUpdateObserver(this);
+}
+
+SpellCheckProvider::DictionaryUpdateObserverImpl::
+    ~DictionaryUpdateObserverImpl() {
+  owner_->spellcheck_->RemoveDictionaryUpdateObserver(this);
+}
+
+void SpellCheckProvider::DictionaryUpdateObserverImpl::OnDictionaryUpdated(
+    const WebVector<WebString>& words_added) {
+  // Clear only cache. Current pending requests should continue as they are.
+  owner_->last_request_.clear();
+  owner_->last_results_.Assign(
+      blink::WebVector<blink::WebTextCheckingResult>());
+
+  // owner_->render_frame() is nullptr in unit tests.
+  if (auto* render_frame = owner_->render_frame()) {
+    DCHECK(render_frame->GetWebFrame());
+    render_frame->GetWebFrame()->RemoveSpellingMarkersUnderWords(words_added);
+  }
+}
+
 SpellCheckProvider::SpellCheckProvider(
     content::RenderFrame* render_frame,
     SpellCheck* spellcheck,
@@ -51,9 +89,16 @@ SpellCheckProvider::SpellCheckProvider(
   DCHECK(embedder_provider);
   if (render_frame)  // NULL in unit tests.
     render_frame->GetWebFrame()->SetTextCheckClient(this);
+
+  dictionary_update_observer_ =
+      std::make_unique<DictionaryUpdateObserverImpl>(this);
 }
 
 SpellCheckProvider::~SpellCheckProvider() {
+}
+
+void SpellCheckProvider::ResetDictionaryUpdateObserverForTesting() {
+  dictionary_update_observer_.reset();
 }
 
 spellcheck::mojom::SpellCheckHost& SpellCheckProvider::GetSpellCheckHost() {

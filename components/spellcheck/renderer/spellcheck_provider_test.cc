@@ -44,6 +44,8 @@ TestingSpellCheckProvider::TestingSpellCheckProvider(
 
 TestingSpellCheckProvider::~TestingSpellCheckProvider() {
   binding_.Close();
+  // dictionary_update_observer_ must be released before deleting spellcheck_.
+  ResetDictionaryUpdateObserverForTesting();
   delete spellcheck_;
 }
 

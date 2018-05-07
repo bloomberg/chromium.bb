@@ -70,6 +70,9 @@ class TestingSpellCheckProvider : public SpellCheckProvider,
   std::vector<RequestTextCheckParams> text_check_requests_;
 #endif
 
+  // Returns |spellcheck|.
+  SpellCheck* spellcheck() { return spellcheck_; }
+
  private:
   // spellcheck::mojom::SpellCheckHost:
   void RequestDictionary() override;

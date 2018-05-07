@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SPELLCHECK_RENDERER_SPELLCHECK_PROVIDER_H_
 #define COMPONENTS_SPELLCHECK_RENDERER_SPELLCHECK_PROVIDER_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/containers/id_map.h"
@@ -63,11 +64,15 @@ class SpellCheckProvider
 
  private:
   friend class TestingSpellCheckProvider;
+  class DictionaryUpdateObserverImpl;
 
   // Sets the SpellCheckHost (for unit tests).
   void SetSpellCheckHostForTesting(spellcheck::mojom::SpellCheckHostPtr host) {
     spell_check_host_ = std::move(host);
   }
+
+  // Reset dictionary_update_observer_ in TestingSpellCheckProvider dtor.
+  void ResetDictionaryUpdateObserverForTesting();
 
   // Returns the SpellCheckHost.
   spellcheck::mojom::SpellCheckHost& GetSpellCheckHost();
@@ -128,6 +133,9 @@ class SpellCheckProvider
 
   // Interface to the SpellCheckHost.
   spellcheck::mojom::SpellCheckHostPtr spell_check_host_;
+
+  // Dictionary updated observer.
+  std::unique_ptr<DictionaryUpdateObserverImpl> dictionary_update_observer_;
 
   base::WeakPtrFactory<SpellCheckProvider> weak_factory_;
 

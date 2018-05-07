@@ -65,29 +65,12 @@ bool UpdateSpellcheckEnabled::Visit(content::RenderFrame* render_frame) {
   return true;
 }
 
-class DocumentMarkersRemover : public content::RenderFrameVisitor {
- public:
-  explicit DocumentMarkersRemover(const std::set<std::string>& words);
-  ~DocumentMarkersRemover() override {}
-  bool Visit(content::RenderFrame* render_frame) override;
-
- private:
-  WebVector<WebString> words_;
-  DISALLOW_COPY_AND_ASSIGN(DocumentMarkersRemover);
-};
-
-DocumentMarkersRemover::DocumentMarkersRemover(
-    const std::set<std::string>& words)
-    : words_(words.size()) {
-  std::transform(words.begin(), words.end(), words_.begin(),
+WebVector<WebString> ConvertToWebStringFromUtf8(
+    const std::set<std::string>& words) {
+  WebVector<WebString> result(words.size());
+  std::transform(words.begin(), words.end(), result.begin(),
                  [](const std::string& w) { return WebString::FromUTF8(w); });
-}
-
-bool DocumentMarkersRemover::Visit(content::RenderFrame* render_frame) {
-  // TODO(xiaochengh): Both nullptr checks seem unnecessary.
-  if (render_frame && render_frame->GetWebFrame())
-    render_frame->GetWebFrame()->RemoveSpellingMarkersUnderWords(words_);
-  return true;
+  return result;
 }
 
 bool IsApostrophe(base::char16 c) {
@@ -245,14 +228,9 @@ void SpellCheck::CustomDictionaryChanged(
     const std::vector<std::string>& words_added,
     const std::vector<std::string>& words_removed) {
   const std::set<std::string> added(words_added.begin(), words_added.end());
-
+  NotifyDictionaryObservers(ConvertToWebStringFromUtf8(added));
   custom_dictionary_.OnCustomDictionaryChanged(
       added, std::set<std::string>(words_removed.begin(), words_removed.end()));
-  if (added.empty())
-    return;
-
-  DocumentMarkersRemover markersRemover(added);
-  content::RenderFrame::ForEach(&markersRemover);
 }
 
 // TODO(groby): Make sure we always have a spelling engine, even before
@@ -532,4 +510,21 @@ bool SpellCheck::IsSpellcheckEnabled() {
   if (!spellcheck::IsAndroidSpellCheckFeatureEnabled()) return false;
 #endif
   return spellcheck_enabled_;
+}
+
+void SpellCheck::AddDictionaryUpdateObserver(
+    DictionaryUpdateObserver* observer) {
+  return dictionary_update_observers_.AddObserver(observer);
+}
+
+void SpellCheck::RemoveDictionaryUpdateObserver(
+    DictionaryUpdateObserver* observer) {
+  return dictionary_update_observers_.RemoveObserver(observer);
+}
+
+void SpellCheck::NotifyDictionaryObservers(
+    const WebVector<WebString>& words_added) {
+  for (auto& observer : dictionary_update_observers_) {
+    observer.OnDictionaryUpdated(words_added);
+  }
 }
