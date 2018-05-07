@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "third_party/khronos/EGL/eglplatform.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/ozone/public/gl_ozone.h"
 
@@ -42,7 +43,7 @@ class GLOzoneEGL : public GLOzone {
  protected:
   // Returns native platform display handle. This is used to obtain the EGL
   // display connection for the native display.
-  virtual intptr_t GetNativeDisplay() = 0;
+  virtual EGLNativeDisplayType GetNativeDisplay() = 0;
 
   // Sets up GL bindings for the native surface.
   virtual bool LoadGLES2Bindings(gl::GLImplementation implementation) = 0;
