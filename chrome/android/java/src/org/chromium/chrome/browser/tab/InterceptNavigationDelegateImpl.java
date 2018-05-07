@@ -98,10 +98,6 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
             return true;
         }
 
-        if (navigationParams.suggestedFilename != null) {
-            return false;
-        }
-
         TabRedirectHandler tabRedirectHandler = null;
         if (navigationParams.isMainFrame) {
             tabRedirectHandler = mTab.getTabRedirectHandler();

@@ -17,9 +17,7 @@ namespace navigation_loader_util {
 
 bool MustDownload(const GURL& url,
                   net::HttpResponseHeaders* headers,
-                  const std::string& mime_type,
-                  bool have_suggested_filename,
-                  bool is_cross_origin) {
+                  const std::string& mime_type) {
   if (headers) {
     std::string disposition;
     if (headers->GetNormalizedHeader("content-disposition", &disposition) &&
@@ -28,8 +26,6 @@ bool MustDownload(const GURL& url,
             .is_attachment()) {
       return true;
     }
-    if (have_suggested_filename && !is_cross_origin)
-      return true;
     if (GetContentClient()->browser()->ShouldForceDownloadResource(url,
                                                                    mime_type))
       return true;
@@ -48,27 +44,14 @@ bool MustDownload(const GURL& url,
 
 bool IsDownload(const GURL& url,
                 net::HttpResponseHeaders* headers,
-                const std::string& mime_type,
-                bool have_suggested_filename,
-                bool is_cross_origin) {
-  if (MustDownload(url, headers, mime_type, have_suggested_filename,
-                   is_cross_origin)) {
+                const std::string& mime_type) {
+  if (MustDownload(url, headers, mime_type))
     return true;
-  }
 
   if (blink::IsSupportedMimeType(mime_type))
     return false;
 
   return !headers || headers->response_code() / 100 == 2;
-}
-
-bool IsCrossOriginRequest(const GURL& request_url,
-                          const base::Optional<url::Origin>& initiator) {
-  return initiator.has_value() && !request_url.SchemeIsBlob() &&
-         !request_url.SchemeIsFileSystem() &&
-         !request_url.SchemeIs(url::kAboutScheme) &&
-         !request_url.SchemeIs(url::kDataScheme) &&
-         initiator->GetURL() != request_url.GetOrigin();
 }
 
 }  // namespace navigation_loader_util

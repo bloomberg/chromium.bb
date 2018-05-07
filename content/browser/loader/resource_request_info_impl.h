@@ -69,8 +69,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
       bool is_async,
       PreviewsState previews_state,
       const scoped_refptr<network::ResourceRequestBody> body,
-      bool initiated_in_secure_context,
-      const base::Optional<std::string>& suggested_filename);
+      bool initiated_in_secure_context);
   ~ResourceRequestInfoImpl() override;
 
   // ResourceRequestInfo implementation:
@@ -181,10 +180,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
 
   void SetBlobHandles(BlobHandles blob_handles);
 
-  const base::Optional<std::string>& suggested_filename() const {
-    return suggested_filename_;
-  }
-
   bool blocked_cross_site_document() const {
     return blocked_cross_site_document_;
   }
@@ -239,7 +234,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   scoped_refptr<network::ResourceRequestBody> body_;
   bool initiated_in_secure_context_;
   std::unique_ptr<NavigationUIData> navigation_ui_data_;
-  base::Optional<std::string> suggested_filename_;
   bool blocked_cross_site_document_;
   bool first_auth_attempt_;
 

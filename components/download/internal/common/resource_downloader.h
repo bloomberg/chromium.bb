@@ -47,7 +47,6 @@ class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
       const GURL& tab_url,
       const GURL& tab_referrer_url,
       std::vector<GURL> url_chain,
-      const base::Optional<std::string>& suggested_filename,
       const scoped_refptr<network::ResourceResponse>& response,
       net::CertStatus cert_status,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
@@ -85,7 +84,6 @@ class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
   void InterceptResponse(
       const scoped_refptr<network::ResourceResponse>& response,
       std::vector<GURL> url_chain,
-      const base::Optional<std::string>& suggested_filename,
       net::CertStatus cert_status,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints);
 

@@ -1490,7 +1490,7 @@ void RenderFrameHostImpl::OnOpenURL(const FrameHostMsg_OpenURL_Params& params) {
       this, validated_url, params.uses_post, params.resource_request_body,
       params.extra_headers, params.referrer, params.disposition,
       params.should_replace_current_entry, params.user_gesture,
-      params.triggering_event_info, params.suggested_filename);
+      params.triggering_event_info);
 }
 
 void RenderFrameHostImpl::CancelInitialHistoryLoad() {
@@ -3529,8 +3529,7 @@ void RenderFrameHostImpl::NavigateToInterstitialURL(const GURL& data_url) {
       GURL(), GURL(), PREVIEWS_OFF, base::TimeTicks::Now(), "GET", nullptr,
       base::Optional<SourceLocation>(),
       CSPDisposition::CHECK /* should_check_main_world_csp */,
-      false /* started_from_context_menu */, false /* has_user_gesture */,
-      base::nullopt /* suggested_filename */);
+      false /* started_from_context_menu */, false /* has_user_gesture */);
   CommitNavigation(nullptr, network::mojom::URLLoaderClientEndpointsPtr(),
                    common_params, RequestNavigationParams(), false,
                    base::nullopt, base::nullopt /* subresource_overrides */,
@@ -3795,7 +3794,7 @@ void RenderFrameHostImpl::CommitNavigation(
           this, false /* is_navigation */, &factory_request);
       // Keep DevTools proxy lasy, i.e. closest to the network.
       RenderFrameDevToolsAgentHost::WillCreateURLLoaderFactory(
-          this, false, false /* have_suggested_filename */, &factory_request);
+          this, false, &factory_request);
       factory.second->Clone(std::move(factory_request));
       subresource_loader_factories->factories_info().emplace(
           factory.first, std::move(factory_proxy_info));
@@ -4367,7 +4366,7 @@ void RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryAndObserve(
       this, false /* is_navigation */, &default_factory_request);
   // Keep DevTools proxy lasy, i.e. closest to the network.
   RenderFrameDevToolsAgentHost::WillCreateURLLoaderFactory(
-      this, false, false, &default_factory_request);
+      this, false, &default_factory_request);
   StoragePartitionImpl* storage_partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetStoragePartition(context, GetSiteInstance()));
   if (g_create_network_factory_callback_for_test.Get().is_null()) {
@@ -4732,7 +4731,6 @@ RenderFrameHostImpl::TakeNavigationHandleForSameDocumentCommit(
       false,                  // started_from_context_menu
       CSPDisposition::CHECK,  // should_check_main_world_csp
       false,                  // is_form_submission
-      base::nullopt,          // suggested_filename
       nullptr);               // navigation_ui_data
 }
 
@@ -4794,7 +4792,6 @@ RenderFrameHostImpl::TakeNavigationHandleForCommit(
       false,                  // started_from_context_menu
       CSPDisposition::CHECK,  // should_check_main_world_csp
       false,                  // is_form_submission
-      base::nullopt,          // suggested_filename
       nullptr);               // navigation_ui_data
 }
 

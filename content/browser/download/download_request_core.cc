@@ -203,12 +203,6 @@ DownloadRequestCore::DownloadRequestCore(
     is_partial_request_ = save_info_->offset > 0;
   } else {
     save_info_.reset(new download::DownloadSaveInfo);
-    ResourceRequestInfoImpl* request_info =
-        ResourceRequestInfoImpl::ForRequest(request_);
-    if (request_info && request_info->suggested_filename().has_value()) {
-      save_info_->suggested_name =
-          base::UTF8ToUTF16(*request_info->suggested_filename());
-    }
   }
 }
 

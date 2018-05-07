@@ -607,9 +607,8 @@ void NavigationRequest::CreateNavigationHandle() {
           common_params_.navigation_start, nav_entry_id_,
           common_params_.started_from_context_menu,
           common_params_.should_check_main_world_csp,
-          begin_params_->is_form_submission, common_params_.suggested_filename,
-          std::move(navigation_ui_data_), common_params_.method,
-          std::move(headers), common_params_.post_data,
+          begin_params_->is_form_submission, std::move(navigation_ui_data_),
+          common_params_.method, std::move(headers), common_params_.post_data,
           Referrer::SanitizeForRequest(common_params_.url,
                                        common_params_.referrer),
           common_params_.has_user_gesture, common_params_.transition,
@@ -1028,15 +1027,11 @@ void NavigationRequest::OnRequestFailedInternal(
   if (navigation_handle_.get())
     navigation_handle_->set_net_error_code(static_cast<net::Error>(net_error));
 
-  int expected_pending_entry_id = nav_entry_id_;
-  bool is_download = false;
-  if (navigation_handle_.get()) {
-    expected_pending_entry_id = navigation_handle_->pending_nav_entry_id();
-    is_download = navigation_handle_->IsDownload();
-  }
-
+  int expected_pending_entry_id =
+      navigation_handle_.get() ? navigation_handle_->pending_nav_entry_id()
+                               : nav_entry_id_;
   frame_tree_node_->navigator()->DiscardPendingEntryIfNeeded(
-      expected_pending_entry_id, is_download);
+      expected_pending_entry_id);
 
   // If the request was canceled by the user do not show an error page.
   if (net_error == net::ERR_ABORTED) {
@@ -1350,9 +1345,8 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
           BrowserContext::GetDownloadManager(browser_context));
       download_manager->InterceptNavigation(
           std::move(resource_request), navigation_handle_->GetRedirectChain(),
-          common_params_.suggested_filename, response_,
-          std::move(url_loader_client_endpoints_), ssl_info_.cert_status,
-          frame_tree_node_->frame_tree_node_id());
+          response_, std::move(url_loader_client_endpoints_),
+          ssl_info_.cert_status, frame_tree_node_->frame_tree_node_id());
 
       OnRequestFailed(false, net::ERR_ABORTED, base::nullopt);
       return;

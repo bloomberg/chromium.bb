@@ -1,4 +1,0 @@
-Downloading URL with suggested filename "foo.pdf"
-Tests that a suggested filename on a download attribute is passed along even if the link is cross origin.
-
-The suggested filename at the top should be non-empty. The actual cross-origin check will be done in the browser process.

@@ -726,7 +726,6 @@ bool FrameLoader::PrepareRequestForThisFrame(FrameLoadRequest& request) {
       !request.GetResourceRequest().IsSameDocumentNavigation() &&
       !frame_->Client()->AllowContentInitiatedDataUrlNavigations(
           request.OriginDocument()->Url()) &&
-      !request.GetResourceRequest().GetSuggestedFilename().has_value() &&
       (url.ProtocolIs("filesystem") ||
        (url.ProtocolIsData() &&
         NetworkUtils::IsDataURLMimeTypeSupported(url)))) {

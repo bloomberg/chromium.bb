@@ -296,7 +296,6 @@ void RenderFrameDevToolsAgentHost::ApplyOverrides(
 bool RenderFrameDevToolsAgentHost::WillCreateURLLoaderFactory(
     RenderFrameHostImpl* rfh,
     bool is_navigation,
-    bool has_suggested_download_filename,
     network::mojom::URLLoaderFactoryRequest* target_factory_request) {
   FrameTreeNode* frame_tree_node = rfh->frame_tree_node();
   base::UnguessableToken frame_token = frame_tree_node->devtools_frame_token();
@@ -305,11 +304,9 @@ bool RenderFrameDevToolsAgentHost::WillCreateURLLoaderFactory(
   if (!agent_host)
     return false;
   int process_id = is_navigation ? 0 : rfh->GetProcess()->GetID();
-  DCHECK(!has_suggested_download_filename || is_navigation);
   for (auto* network : protocol::NetworkHandler::ForAgentHost(agent_host)) {
-    if (network->MaybeCreateProxyForInterception(
-            frame_token, process_id, has_suggested_download_filename,
-            target_factory_request)) {
+    if (network->MaybeCreateProxyForInterception(frame_token, process_id,
+                                                 target_factory_request)) {
       return true;
     }
   }

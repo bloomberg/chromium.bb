@@ -167,7 +167,6 @@ class CONTENT_EXPORT DownloadManagerImpl
   void InterceptNavigation(
       std::unique_ptr<network::ResourceRequest> resource_request,
       std::vector<GURL> url_chain,
-      const base::Optional<std::string>& suggested_filename,
       scoped_refptr<network::ResourceResponse> response,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       net::CertStatus cert_status,
@@ -254,7 +253,6 @@ class CONTENT_EXPORT DownloadManagerImpl
       ResourceRequestInfo::WebContentsGetter web_contents_getter,
       std::unique_ptr<network::ResourceRequest> resource_request,
       std::vector<GURL> url_chain,
-      const base::Optional<std::string>& suggested_filename,
       scoped_refptr<network::ResourceResponse> response,
       net::CertStatus cert_status,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,

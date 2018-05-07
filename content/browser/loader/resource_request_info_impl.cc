@@ -84,8 +84,7 @@ void ResourceRequestInfo::AllocateForTesting(
       is_async,                            // is_async
       previews_state,                      // previews_state
       nullptr,                             // body
-      false,                               // initiated_in_secure_context
-      base::nullopt);                      // suggested_filename
+      false);                              // initiated_in_secure_context
   info->AssociateWithRequest(request);
   info->set_navigation_ui_data(std::move(navigation_ui_data));
 }
@@ -152,8 +151,7 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
     bool is_async,
     PreviewsState previews_state,
     const scoped_refptr<network::ResourceRequestBody> body,
-    bool initiated_in_secure_context,
-    const base::Optional<std::string>& suggested_filename)
+    bool initiated_in_secure_context)
     : detachable_handler_(nullptr),
       requester_info_(std::move(requester_info)),
       route_id_(route_id),
@@ -183,7 +181,6 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
       previews_state_(previews_state),
       body_(body),
       initiated_in_secure_context_(initiated_in_secure_context),
-      suggested_filename_(suggested_filename),
       blocked_cross_site_document_(false),
       first_auth_attempt_(true) {}
 

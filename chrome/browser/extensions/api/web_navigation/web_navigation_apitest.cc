@@ -40,6 +40,7 @@
 #include "content/public/common/resource_type.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/download_test_observer.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/switches.h"
@@ -233,10 +234,17 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, DISABLED_ServerRedirect) {
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, Download) {
+// https://crbug.com/660288
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, DISABLED_Download) {
   ASSERT_TRUE(StartEmbeddedTestServer());
-  ASSERT_TRUE(RunExtensionTest("webnavigation/download"))
-      << message_;
+  content::DownloadManager* download_manager =
+      content::BrowserContext::GetDownloadManager(browser()->profile());
+  content::DownloadTestObserverTerminal observer(
+      download_manager, 1,
+      content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
+  bool result = RunExtensionTest("webnavigation/download");
+  observer.WaitForFinished();
+  ASSERT_TRUE(result) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, ServerRedirectSingleProcess) {

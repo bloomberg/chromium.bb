@@ -251,8 +251,7 @@ base::FilePath GetTemporaryDownloadDirectory() {
 
 scoped_refptr<download::DownloadURLLoaderFactoryGetter>
 CreateDownloadURLLoaderFactoryGetter(StoragePartitionImpl* storage_partition,
-                                     RenderFrameHost* rfh,
-                                     bool has_suggested_filename) {
+                                     RenderFrameHost* rfh) {
   network::mojom::URLLoaderFactoryPtrInfo proxy_factory_ptr_info;
   network::mojom::URLLoaderFactoryRequest proxy_factory_request;
   if (rfh) {
@@ -261,7 +260,7 @@ CreateDownloadURLLoaderFactoryGetter(StoragePartitionImpl* storage_partition,
         MakeRequest(&devtools_factory_ptr_info);
     if (RenderFrameDevToolsAgentHost::WillCreateURLLoaderFactory(
             static_cast<RenderFrameHostImpl*>(rfh), true,
-            has_suggested_filename, &devtools_factory_request)) {
+            &devtools_factory_request)) {
       proxy_factory_ptr_info = std::move(devtools_factory_ptr_info);
       proxy_factory_request = std::move(devtools_factory_request);
     }
@@ -716,7 +715,6 @@ download::DownloadInterruptReason DownloadManagerImpl::BeginDownloadRequest(
 void DownloadManagerImpl::InterceptNavigation(
     std::unique_ptr<network::ResourceRequest> resource_request,
     std::vector<GURL> url_chain,
-    const base::Optional<std::string>& suggested_filename,
     scoped_refptr<network::ResourceResponse> response,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     net::CertStatus cert_status,
@@ -738,7 +736,7 @@ void DownloadManagerImpl::InterceptNavigation(
       on_download_checks_done = base::BindOnce(
           &DownloadManagerImpl::InterceptNavigationOnChecksComplete,
           weak_factory_.GetWeakPtr(), web_contents_getter,
-          std::move(resource_request), std::move(url_chain), suggested_filename,
+          std::move(resource_request), std::move(url_chain),
           std::move(response), cert_status,
           std::move(url_loader_client_endpoints));
 
@@ -979,7 +977,6 @@ void DownloadManagerImpl::InterceptNavigationOnChecksComplete(
     ResourceRequestInfo::WebContentsGetter web_contents_getter,
     std::unique_ptr<network::ResourceRequest> resource_request,
     std::vector<GURL> url_chain,
-    const base::Optional<std::string>& suggested_filename,
     scoped_refptr<network::ResourceResponse> response,
     net::CertStatus cert_status,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
@@ -1011,11 +1008,10 @@ void DownloadManagerImpl::InterceptNavigationOnChecksComplete(
       GetStoragePartition(browser_context_, render_process_id, render_frame_id);
   in_progress_manager_->InterceptDownloadFromNavigation(
       std::move(resource_request), render_process_id, render_frame_id, site_url,
-      tab_url, tab_referrer_url, std::move(url_chain), suggested_filename,
-      std::move(response), std::move(cert_status),
-      std::move(url_loader_client_endpoints),
-      CreateDownloadURLLoaderFactoryGetter(storage_partition, render_frame_host,
-                                           suggested_filename.has_value()));
+      tab_url, tab_referrer_url, std::move(url_chain), std::move(response),
+      std::move(cert_status), std::move(url_loader_client_endpoints),
+      CreateDownloadURLLoaderFactoryGetter(storage_partition,
+                                           render_frame_host));
 }
 
 void DownloadManagerImpl::BeginDownloadInternal(
@@ -1060,8 +1056,8 @@ void DownloadManagerImpl::BeginDownloadInternal(
           base::MakeRefCounted<BlobDownloadURLLoaderFactoryGetter>(
               params->url(), std::move(blob_data_handle));
     } else {
-      url_loader_factory_getter = CreateDownloadURLLoaderFactoryGetter(
-          storage_partition, rfh, !params->suggested_name().empty());
+      url_loader_factory_getter =
+          CreateDownloadURLLoaderFactoryGetter(storage_partition, rfh);
     }
 
     in_progress_manager_->BeginDownload(

@@ -514,12 +514,9 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
       // already updated its state properly, and doesn't need to be notified.
       if (speculative_render_frame_host_->GetNavigationHandle() &&
           request.from_begin_navigation()) {
-        DCHECK(!speculative_render_frame_host_->GetNavigationHandle()
-                    ->IsDownload());
         frame_tree_node_->navigator()->DiscardPendingEntryIfNeeded(
             speculative_render_frame_host_->GetNavigationHandle()
-                ->pending_nav_entry_id(),
-            false /* is_download */);
+                ->pending_nav_entry_id());
       }
       DiscardUnusedFrame(UnsetSpeculativeRenderFrameHost());
     }
@@ -556,12 +553,9 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
       if (speculative_render_frame_host_ &&
           speculative_render_frame_host_->GetNavigationHandle() &&
           request.from_begin_navigation()) {
-        DCHECK(!speculative_render_frame_host_->GetNavigationHandle()
-                    ->IsDownload());
         frame_tree_node_->navigator()->DiscardPendingEntryIfNeeded(
             speculative_render_frame_host_->GetNavigationHandle()
-                ->pending_nav_entry_id(),
-            false /* is_download */);
+                ->pending_nav_entry_id());
       }
 
       // If a previous speculative RenderFrameHost didn't exist or if its

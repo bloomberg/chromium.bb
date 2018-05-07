@@ -92,7 +92,6 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
       const GURL& tab_url,
       const GURL& tab_referrer_url,
       std::vector<GURL> url_chain,
-      const base::Optional<std::string>& suggested_filename,
       scoped_refptr<network::ResourceResponse> response,
       net::CertStatus cert_status,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,

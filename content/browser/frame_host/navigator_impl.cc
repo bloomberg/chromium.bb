@@ -237,13 +237,11 @@ void NavigatorImpl::DidFailProvisionalLoadWithError(
   }
 
   // Discard the pending navigation entry if needed.
-  int expected_pending_entry_id = 0;
-  if (render_frame_host->GetNavigationHandle()) {
-    expected_pending_entry_id =
-        render_frame_host->GetNavigationHandle()->pending_nav_entry_id();
-    DCHECK(!render_frame_host->GetNavigationHandle()->IsDownload());
-  }
-  DiscardPendingEntryIfNeeded(expected_pending_entry_id, false);
+  int expected_pending_entry_id =
+      render_frame_host->GetNavigationHandle()
+          ? render_frame_host->GetNavigationHandle()->pending_nav_entry_id()
+          : 0;
+  DiscardPendingEntryIfNeeded(expected_pending_entry_id);
 }
 
 void NavigatorImpl::DidFailLoadWithError(
@@ -556,8 +554,7 @@ void NavigatorImpl::RequestOpenURL(
     WindowOpenDisposition disposition,
     bool should_replace_current_entry,
     bool user_gesture,
-    blink::WebTriggeringEventInfo triggering_event_info,
-    const base::Optional<std::string>& suggested_filename) {
+    blink::WebTriggeringEventInfo triggering_event_info) {
   // Note: This can be called for subframes (even when OOPIFs are not possible)
   // if the disposition calls for a different window.
 
@@ -606,7 +603,6 @@ void NavigatorImpl::RequestOpenURL(
   params.should_replace_current_entry = should_replace_current_entry;
   params.user_gesture = user_gesture;
   params.triggering_event_info = triggering_event_info;
-  params.suggested_filename = suggested_filename;
 
   // RequestOpenURL is used only for local frames, so we can get here only if
   // the navigation is initiated by a frame in the same SiteInstance as this
@@ -645,8 +641,7 @@ void NavigatorImpl::NavigateFromFrameProxy(
     bool should_replace_current_entry,
     const std::string& method,
     scoped_refptr<network::ResourceRequestBody> post_body,
-    const std::string& extra_headers,
-    const base::Optional<std::string>& suggested_filename) {
+    const std::string& extra_headers) {
   // |method != "POST"| should imply absence of |post_body|.
   if (method != "POST" && post_body) {
     NOTREACHED();
@@ -694,7 +689,7 @@ void NavigatorImpl::NavigateFromFrameProxy(
   controller_->NavigateFromFrameProxy(
       render_frame_host, url, is_renderer_initiated, source_site_instance,
       referrer_to_use, page_transition, should_replace_current_entry, method,
-      post_body, extra_headers, suggested_filename);
+      post_body, extra_headers);
 }
 
 void NavigatorImpl::OnBeforeUnloadACK(FrameTreeNode* frame_tree_node,
@@ -884,15 +879,14 @@ void NavigatorImpl::LogBeforeUnloadTime(
   }
 }
 
-void NavigatorImpl::DiscardPendingEntryIfNeeded(int expected_pending_entry_id,
-                                                bool is_download) {
+void NavigatorImpl::DiscardPendingEntryIfNeeded(int expected_pending_entry_id) {
   // Racy conditions can cause a fail message to arrive after its corresponding
   // pending entry has been replaced by another navigation. If
   // |DiscardPendingEntry| is called in this case, then the completely valid
   // entry for the new navigation would be discarded. See crbug.com/513742. To
   // catch this case, the current pending entry is compared against the current
   // navigation handle's entry id, which should correspond to the failed load.
-  NavigationEntryImpl* pending_entry = controller_->GetPendingEntry();
+  NavigationEntry* pending_entry = controller_->GetPendingEntry();
   bool pending_matches_fail_msg =
       pending_entry &&
       expected_pending_entry_id == pending_entry->GetUniqueID();
@@ -913,13 +907,9 @@ void NavigatorImpl::DiscardPendingEntryIfNeeded(int expected_pending_entry_id,
   // allow the view to clear the pending entry and typed URL if the user
   // requests (e.g., hitting Escape with focus in the address bar).
   //
-  // Note that the pending entry does not need to be preserved for downloads,
-  // since the user is unlikely to try again.
-  //
   // Note: don't touch the transient entry, since an interstitial may exist.
-  bool should_preserve_entry = (controller_->IsUnmodifiedBlankTab() ||
-                                delegate_->ShouldPreserveAbortedURLs()) &&
-                               !is_download;
+  bool should_preserve_entry = controller_->IsUnmodifiedBlankTab() ||
+                               delegate_->ShouldPreserveAbortedURLs();
   if (pending_entry != controller_->GetVisibleEntry() ||
       !should_preserve_entry) {
     controller_->DiscardPendingEntry(true);
