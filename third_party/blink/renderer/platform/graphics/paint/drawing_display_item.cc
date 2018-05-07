@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
 
-#include "third_party/blink/public/platform/web_display_item_list.h"
+#include "cc/paint/display_item_list.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -18,14 +18,16 @@ void DrawingDisplayItem::Replay(GraphicsContext& context) const {
     context.DrawRecord(record_);
 }
 
-void DrawingDisplayItem::AppendToWebDisplayItemList(
+void DrawingDisplayItem::AppendToDisplayItemList(
     const FloatSize& visual_rect_offset,
-    WebDisplayItemList* list) const {
+    cc::DisplayItemList& list) const {
   if (record_) {
+    list.StartPaint();
+    list.push<cc::DrawRecordOp>(record_);
     // Convert visual rect into the GraphicsLayer's coordinate space.
     auto visual_rect = VisualRect();
     visual_rect.Move(-visual_rect_offset);
-    list->AppendDrawingItem(EnclosingIntRect(visual_rect), record_);
+    list.EndPaintOfUnpaired(EnclosingIntRect(visual_rect));
   }
 }
 

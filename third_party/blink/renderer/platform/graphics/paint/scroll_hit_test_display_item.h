@@ -36,8 +36,8 @@ class PLATFORM_EXPORT ScrollHitTestDisplayItem final : public DisplayItem {
 
   // DisplayItem
   void Replay(GraphicsContext&) const override;
-  void AppendToWebDisplayItemList(const FloatSize&,
-                                  WebDisplayItemList*) const override;
+  void AppendToDisplayItemList(const FloatSize&,
+                               cc::DisplayItemList&) const override;
   bool Equals(const DisplayItem&) const override;
 #if DCHECK_IS_ON()
   void PropertiesAsJSON(JSONObject&) const override;

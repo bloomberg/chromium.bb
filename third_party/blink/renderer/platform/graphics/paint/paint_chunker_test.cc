@@ -39,8 +39,8 @@ class TestChunkerDisplayItem : public DisplayItem {
       : DisplayItem(client, type, sizeof(*this)) {}
 
   void Replay(GraphicsContext&) const final { NOTREACHED(); }
-  void AppendToWebDisplayItemList(const FloatSize&,
-                                  WebDisplayItemList*) const final {
+  void AppendToDisplayItemList(const FloatSize&,
+                               cc::DisplayItemList&) const final {
     NOTREACHED();
   }
 };

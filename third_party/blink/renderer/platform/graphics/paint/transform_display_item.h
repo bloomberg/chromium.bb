@@ -19,8 +19,8 @@ class PLATFORM_EXPORT BeginTransformDisplayItem final
         transform_(transform) {}
 
   void Replay(GraphicsContext&) const override;
-  void AppendToWebDisplayItemList(const FloatSize&,
-                                  WebDisplayItemList*) const override;
+  void AppendToDisplayItemList(const FloatSize&,
+                               cc::DisplayItemList&) const override;
 
   const AffineTransform& Transform() const { return transform_; }
 
@@ -44,8 +44,8 @@ class PLATFORM_EXPORT EndTransformDisplayItem final
       : PairedEndDisplayItem(client, kEndTransform, sizeof(*this)) {}
 
   void Replay(GraphicsContext&) const override;
-  void AppendToWebDisplayItemList(const FloatSize&,
-                                  WebDisplayItemList*) const override;
+  void AppendToDisplayItemList(const FloatSize&,
+                               cc::DisplayItemList&) const override;
 
  private:
 #if DCHECK_IS_ON()

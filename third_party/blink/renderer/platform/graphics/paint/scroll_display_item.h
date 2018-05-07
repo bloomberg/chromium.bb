@@ -23,8 +23,8 @@ class PLATFORM_EXPORT BeginScrollDisplayItem final
   }
 
   void Replay(GraphicsContext&) const override;
-  void AppendToWebDisplayItemList(const FloatSize&,
-                                  WebDisplayItemList*) const override;
+  void AppendToDisplayItemList(const FloatSize&,
+                               cc::DisplayItemList&) const override;
 
   const IntSize& CurrentOffset() const { return current_offset_; }
 
@@ -49,8 +49,8 @@ class PLATFORM_EXPORT EndScrollDisplayItem final : public PairedEndDisplayItem {
   }
 
   void Replay(GraphicsContext&) const override;
-  void AppendToWebDisplayItemList(const FloatSize&,
-                                  WebDisplayItemList*) const override;
+  void AppendToDisplayItemList(const FloatSize&,
+                               cc::DisplayItemList&) const override;
 
  private:
 #if DCHECK_IS_ON()

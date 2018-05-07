@@ -33,9 +33,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/layers/layer.h"
+#include "cc/paint/display_item_list.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_compositor_support.h"
-#include "third_party/blink/public/platform/web_display_item_list.h"
 #include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/platform/web_layer.h"
@@ -1392,39 +1392,41 @@ void GraphicsLayer::SetLayerState(const PropertyTreeState& layer_state,
   layer_state_->offset = layer_offset;
 }
 
-void GraphicsLayer::PaintContents(WebDisplayItemList* web_display_item_list,
-                                  PaintingControlSetting painting_control) {
+scoped_refptr<cc::DisplayItemList> GraphicsLayer::PaintContentsToDisplayList(
+    PaintingControlSetting painting_control) {
   TRACE_EVENT0("blink,benchmark", "GraphicsLayer::PaintContents");
 
   PaintController& paint_controller = GetPaintController();
   paint_controller.SetDisplayItemConstructionIsDisabled(
-      painting_control == kDisplayListConstructionDisabled);
-  paint_controller.SetSubsequenceCachingIsDisabled(painting_control ==
-                                                   kSubsequenceCachingDisabled);
+      painting_control == DISPLAY_LIST_CONSTRUCTION_DISABLED);
+  paint_controller.SetSubsequenceCachingIsDisabled(
+      painting_control == SUBSEQUENCE_CACHING_DISABLED);
 
-  if (painting_control == kPartialInvalidation)
+  if (painting_control == PARTIAL_INVALIDATION)
     client_.InvalidateTargetElementForTesting();
 
   // We also disable caching when Painting or Construction are disabled. In both
   // cases we would like to compare assuming the full cost of recording, not the
   // cost of re-using cached content.
-  if (painting_control == kDisplayListCachingDisabled ||
-      painting_control == kDisplayListPaintingDisabled ||
-      painting_control == kDisplayListConstructionDisabled)
+  if (painting_control == DISPLAY_LIST_CACHING_DISABLED ||
+      painting_control == DISPLAY_LIST_PAINTING_DISABLED ||
+      painting_control == DISPLAY_LIST_CONSTRUCTION_DISABLED)
     paint_controller.InvalidateAll();
 
   GraphicsContext::DisabledMode disabled_mode =
       GraphicsContext::kNothingDisabled;
-  if (painting_control == kDisplayListPaintingDisabled ||
-      painting_control == kDisplayListConstructionDisabled)
+  if (painting_control == DISPLAY_LIST_PAINTING_DISABLED ||
+      painting_control == DISPLAY_LIST_CONSTRUCTION_DISABLED)
     disabled_mode = GraphicsContext::kFullyDisabled;
 
-  // Anything other than PaintDefaultBehavior is for testing. In non-testing
+  // Anything other than PAINTING_BEHAVIOR_NORMAL is for testing. In non-testing
   // scenarios, it is an error to call GraphicsLayer::Paint. Actual painting
   // occurs in LocalFrameView::PaintTree() which calls GraphicsLayer::Paint();
-  // this method merely copies the painted output to the WebDisplayItemList.
-  if (painting_control != kPaintDefaultBehavior)
+  // this method merely copies the painted output to the cc::DisplayItemList.
+  if (painting_control != PAINTING_BEHAVIOR_NORMAL)
     Paint(nullptr, disabled_mode);
+
+  auto display_list = base::MakeRefCounted<cc::DisplayItemList>();
 
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     DCHECK(layer_state_) << "No layer state for GraphicsLayer: " << DebugName();
@@ -1433,18 +1435,21 @@ void GraphicsLayer::PaintContents(WebDisplayItemList* web_display_item_list,
         gfx::Vector2dF(layer_state_->offset.X(), layer_state_->offset.Y()),
         VisualRectSubpixelOffset(),
         paint_controller.GetPaintArtifact().GetDisplayItemList(),
-        *web_display_item_list->GetCcDisplayItemList());
+        *display_list);
   } else {
-    paint_controller.GetPaintArtifact().AppendToWebDisplayItemList(
+    paint_controller.GetPaintArtifact().AppendToDisplayItemList(
         FloatSize(OffsetFromLayoutObjectWithSubpixelAccumulation()),
-        web_display_item_list);
+        *display_list);
   }
 
   paint_controller.SetDisplayItemConstructionIsDisabled(false);
   paint_controller.SetSubsequenceCachingIsDisabled(false);
+
+  display_list->Finalize();
+  return display_list;
 }
 
-size_t GraphicsLayer::ApproximateUnsharedMemoryUsage() const {
+size_t GraphicsLayer::GetApproximateUnsharedMemoryUsage() const {
   size_t result = sizeof(*this);
   result += GetPaintController().ApproximateUnsharedMemoryUsage();
   if (raster_invalidator_)

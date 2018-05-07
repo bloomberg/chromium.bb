@@ -19,12 +19,15 @@
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #endif
 
+namespace cc {
+class DisplayItemList;
+}
+
 namespace blink {
 
 class GraphicsContext;
 class FloatSize;
 enum class PaintPhase;
-class WebDisplayItemList;
 
 class PLATFORM_EXPORT DisplayItem {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
@@ -261,12 +264,12 @@ class PLATFORM_EXPORT DisplayItem {
   void SetSkippedCache() { skipped_cache_ = true; }
   bool SkippedCache() const { return skipped_cache_; }
 
-  // Appends this display item to the WebDisplayItemList, if applicable.
+  // Appends this display item to the cc::DisplayItemList, if applicable.
   // |visual_rect_offset| is the offset between the space of the GraphicsLayer
   // which owns the display item and the coordinate space of VisualRect().
   // TODO(wangxianzhu): Remove the parameter for slimming paint v2.
-  virtual void AppendToWebDisplayItemList(const FloatSize& visual_rect_offset,
-                                          WebDisplayItemList*) const {}
+  virtual void AppendToDisplayItemList(const FloatSize& visual_rect_offset,
+                                       cc::DisplayItemList&) const {}
 
 // See comments of enum Type for usage of the following macros.
 #define DEFINE_CATEGORY_METHODS(Category)                           \

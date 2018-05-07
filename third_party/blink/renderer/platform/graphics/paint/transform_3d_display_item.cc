@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/paint/transform_3d_display_item.h"
 
-#include "third_party/blink/public/platform/web_display_item_list.h"
+#include "cc/paint/display_item_list.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/transforms/affine_transform.h"
 
@@ -17,13 +17,20 @@ void BeginTransform3DDisplayItem::Replay(GraphicsContext& context) const {
   context.ConcatCTM(transform.ToAffineTransform());
 }
 
-void BeginTransform3DDisplayItem::AppendToWebDisplayItemList(
+void BeginTransform3DDisplayItem::AppendToDisplayItemList(
     const FloatSize&,
-    WebDisplayItemList* list) const {
+    cc::DisplayItemList& list) const {
   // TODO(jbroman): The compositor will need the transform origin separately.
   TransformationMatrix transform(transform_);
   transform.ApplyTransformOrigin(transform_origin_);
-  list->AppendTransformItem(TransformationMatrix::ToSkMatrix44(transform));
+
+  list.StartPaint();
+  list.push<cc::SaveOp>();
+  if (!transform.IsIdentity()) {
+    list.push<cc::ConcatOp>(
+        static_cast<SkMatrix>(TransformationMatrix::ToSkMatrix44(transform)));
+  }
+  list.EndPaintOfPairedBegin();
 }
 
 #if DCHECK_IS_ON()
@@ -38,10 +45,12 @@ void EndTransform3DDisplayItem::Replay(GraphicsContext& context) const {
   context.Restore();
 }
 
-void EndTransform3DDisplayItem::AppendToWebDisplayItemList(
+void EndTransform3DDisplayItem::AppendToDisplayItemList(
     const FloatSize&,
-    WebDisplayItemList* list) const {
-  list->AppendEndTransformItem();
+    cc::DisplayItemList& list) const {
+  list.StartPaint();
+  list.push<cc::RestoreOp>();
+  list.EndPaintOfPairedEnd();
 }
 
 }  // namespace blink

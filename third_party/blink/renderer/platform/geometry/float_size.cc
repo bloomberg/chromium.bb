@@ -33,6 +33,8 @@
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/skia/include/core/SkSize.h"
+#include "ui/gfx/geometry/size_f.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 
 namespace blink {
 
@@ -56,6 +58,14 @@ FloatSize FloatSize::NarrowPrecision(double width, double height) {
 
 FloatSize::operator SkSize() const {
   return SkSize::Make(width_, height_);
+}
+
+FloatSize::operator gfx::SizeF() const {
+  return gfx::SizeF(width_, height_);
+}
+
+FloatSize::operator gfx::Vector2dF() const {
+  return gfx::Vector2dF(width_, height_);
 }
 
 std::ostream& operator<<(std::ostream& ostream, const FloatSize& size) {

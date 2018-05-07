@@ -29,10 +29,10 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "cc/paint/display_item_list.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_compositor_support.h"
 #include "third_party/blink/public/platform/web_content_layer.h"
-#include "third_party/blink/public/platform/web_display_item_list.h"
 #include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_rect.h"
@@ -273,11 +273,14 @@ gfx::Rect LinkHighlightImpl::PaintableRegion() {
   return gfx::Rect(ContentLayer()->Layer()->Bounds());
 }
 
-void LinkHighlightImpl::PaintContents(
-    WebDisplayItemList* web_display_item_list,
-    WebContentLayerClient::PaintingControlSetting painting_control) {
-  if (!node_ || !node_->GetLayoutObject())
-    return;
+scoped_refptr<cc::DisplayItemList>
+LinkHighlightImpl::PaintContentsToDisplayList(
+    PaintingControlSetting painting_control) {
+  auto display_list = base::MakeRefCounted<cc::DisplayItemList>();
+  if (!node_ || !node_->GetLayoutObject()) {
+    display_list->Finalize();
+    return display_list;
+  }
 
   PaintRecorder recorder;
   gfx::Rect record_bounds = PaintableRegion();
@@ -290,8 +293,12 @@ void LinkHighlightImpl::PaintContents(
   flags.setColor(node_->GetLayoutObject()->Style()->TapHighlightColor().Rgb());
   canvas->drawPath(path_.GetSkPath(), flags);
 
-  web_display_item_list->AppendDrawingItem(record_bounds,
-                                           recorder.finishRecordingAsPicture());
+  display_list->StartPaint();
+  display_list->push<cc::DrawRecordOp>(recorder.finishRecordingAsPicture());
+  display_list->EndPaintOfUnpaired(record_bounds);
+
+  display_list->Finalize();
+  return display_list;
 }
 
 void LinkHighlightImpl::StartHighlightAnimationIfNeeded() {

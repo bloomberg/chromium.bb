@@ -4,9 +4,8 @@
 
 #include "third_party/blink/renderer/platform/graphics/paint/scroll_display_item.h"
 
-#include "third_party/blink/public/platform/web_display_item_list.h"
+#include "cc/paint/display_item_list.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
-#include "third_party/blink/renderer/platform/transforms/affine_transform.h"
 
 namespace blink {
 
@@ -15,12 +14,14 @@ void BeginScrollDisplayItem::Replay(GraphicsContext& context) const {
   context.Translate(-current_offset_.Width(), -current_offset_.Height());
 }
 
-void BeginScrollDisplayItem::AppendToWebDisplayItemList(
+void BeginScrollDisplayItem::AppendToDisplayItemList(
     const FloatSize&,
-    WebDisplayItemList* list) const {
-  WebDisplayItemList::ScrollContainerId scroll_container_id = &Client();
-  list->AppendScrollItem(static_cast<gfx::Vector2d>(current_offset_),
-                         scroll_container_id);
+    cc::DisplayItemList& list) const {
+  list.StartPaint();
+  list.push<cc::SaveOp>();
+  list.push<cc::TranslateOp>(static_cast<float>(-current_offset_.Width()),
+                             static_cast<float>(-current_offset_.Height()));
+  list.EndPaintOfPairedBegin();
 }
 
 #if DCHECK_IS_ON()
@@ -34,10 +35,12 @@ void EndScrollDisplayItem::Replay(GraphicsContext& context) const {
   context.Restore();
 }
 
-void EndScrollDisplayItem::AppendToWebDisplayItemList(
+void EndScrollDisplayItem::AppendToDisplayItemList(
     const FloatSize&,
-    WebDisplayItemList* list) const {
-  list->AppendEndScrollItem();
+    cc::DisplayItemList& list) const {
+  list.StartPaint();
+  list.push<cc::RestoreOp>();
+  list.EndPaintOfPairedEnd();
 }
 
 }  // namespace blink

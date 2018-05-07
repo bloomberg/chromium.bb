@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/paint/clip_path_display_item.h"
 
-#include "third_party/blink/public/platform/web_display_item_list.h"
+#include "cc/paint/display_item_list.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/path.h"
 #include "third_party/skia/include/core/SkScalar.h"
@@ -16,20 +16,26 @@ void BeginClipPathDisplayItem::Replay(GraphicsContext& context) const {
   context.ClipPath(clip_path_, kAntiAliased);
 }
 
-void BeginClipPathDisplayItem::AppendToWebDisplayItemList(
+void BeginClipPathDisplayItem::AppendToDisplayItemList(
     const FloatSize&,
-    WebDisplayItemList* list) const {
-  list->AppendClipPathItem(clip_path_, true);
+    cc::DisplayItemList& list) const {
+  list.StartPaint();
+  list.push<cc::SaveOp>();
+  list.push<cc::ClipPathOp>(clip_path_, SkClipOp::kIntersect,
+                            /*antialias=*/true);
+  list.EndPaintOfPairedBegin();
 }
 
 void EndClipPathDisplayItem::Replay(GraphicsContext& context) const {
   context.Restore();
 }
 
-void EndClipPathDisplayItem::AppendToWebDisplayItemList(
+void EndClipPathDisplayItem::AppendToDisplayItemList(
     const FloatSize&,
-    WebDisplayItemList* list) const {
-  list->AppendEndClipPathItem();
+    cc::DisplayItemList& list) const {
+  list.StartPaint();
+  list.push<cc::RestoreOp>();
+  list.EndPaintOfPairedEnd();
 }
 
 #if DCHECK_IS_ON()

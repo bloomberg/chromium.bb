@@ -19,7 +19,6 @@ namespace blink {
 
 class GraphicsContext;
 class PaintChunkSubset;
-class WebDisplayItemList;
 
 using ChunkRasterInvalidationRects = Vector<FloatRect, 2>;
 using ChunkRasterInvalidationTracking = Vector<RasterInvalidationInfo>;
@@ -95,7 +94,7 @@ class PLATFORM_EXPORT PaintArtifact final {
   void Reset();
 
   // Returns the approximate memory usage, excluding memory likely to be
-  // shared with the embedder after copying to WebDisplayItemList.
+  // shared with the embedder after copying to cc::DisplayItemList.
   size_t ApproximateUnsharedMemoryUsage() const;
 
   // Draws the paint artifact to a GraphicsContext.
@@ -110,9 +109,9 @@ class PLATFORM_EXPORT PaintArtifact final {
               const PropertyTreeState& replay_state,
               const IntPoint& offset = IntPoint()) const;
 
-  // Writes the paint artifact into a WebDisplayItemList.
-  void AppendToWebDisplayItemList(const FloatSize& visual_rect_offset,
-                                  WebDisplayItemList*) const;
+  // Writes the paint artifact into a cc::DisplayItemList.
+  void AppendToDisplayItemList(const FloatSize& visual_rect_offset,
+                               cc::DisplayItemList& display_list) const;
 
   const ChunkRasterInvalidationRects* GetRasterInvalidationRects(
       size_t chunk_index) const {
