@@ -16,15 +16,17 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
+#include "content/public/common/weak_wrapper_shared_url_loader_factory.h"
 #include "net/base/net_errors.h"
-#include "net/url_request/test_url_fetcher_factory.h"
+#include "net/http/http_status_code.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 const char kAccountId[] = "user@gmail.com";
 const char kDifferentAccountId[] = "some_other_user@gmail.com";
-const int kFamilyInfoFetcherURLFetcherID = 0;
 
 bool operator==(const FamilyInfoFetcher::FamilyProfile& family1,
                 const FamilyInfoFetcher::FamilyProfile& family2) {
@@ -110,9 +112,12 @@ class FamilyInfoFetcherTest : public testing::Test,
                               public FamilyInfoFetcher::Consumer {
  public:
   FamilyInfoFetcherTest()
-      : request_context_(new net::TestURLRequestContextGetter(
-            base::ThreadTaskRunnerHandle::Get())),
-        fetcher_(this, kAccountId, &token_service_, request_context_.get()) {}
+      : fetcher_(
+            this,
+            kAccountId,
+            &token_service_,
+            base::MakeRefCounted<content::WeakWrapperSharedURLLoaderFactory>(
+                &test_url_loader_factory_)) {}
 
   MOCK_METHOD1(OnGetFamilyProfileSuccess,
                void(const FamilyInfoFetcher::FamilyProfile& family));
@@ -137,20 +142,8 @@ class FamilyInfoFetcherTest : public testing::Test,
         base::Time::Now() + base::TimeDelta::FromHours(1));
   }
 
-  net::TestURLFetcher* GetURLFetcher() {
-    net::TestURLFetcher* url_fetcher =
-        url_fetcher_factory_.GetFetcherByID(
-            kFamilyInfoFetcherURLFetcherID);
-    EXPECT_TRUE(url_fetcher);
-    return url_fetcher;
-  }
-
   void SendResponse(net::Error error, const std::string& response) {
-    net::TestURLFetcher* url_fetcher = GetURLFetcher();
-    url_fetcher->set_status(net::URLRequestStatus::FromError(error));
-    url_fetcher->set_response_code(net::HTTP_OK);
-    url_fetcher->SetResponseString(response);
-    url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
+    fetcher_.OnSimpleLoaderCompleteInternal(error, net::HTTP_OK, response);
   }
 
   void SendValidGetFamilyProfileResponse(
@@ -173,8 +166,7 @@ class FamilyInfoFetcherTest : public testing::Test,
 
   base::MessageLoop message_loop_;
   FakeProfileOAuth2TokenService token_service_;
-  scoped_refptr<net::TestURLRequestContextGetter> request_context_;
-  net::TestURLFetcherFactory url_fetcher_factory_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
   FamilyInfoFetcher fetcher_;
 };
 
