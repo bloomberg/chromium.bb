@@ -27,7 +27,8 @@ class CONTENT_EXPORT RenderFrameMetadataProviderImpl
     : public RenderFrameMetadataProvider,
       public mojom::RenderFrameMetadataObserverClient {
  public:
-  explicit RenderFrameMetadataProviderImpl(
+  RenderFrameMetadataProviderImpl(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       FrameTokenMessageQueue* frame_token_message_queue);
   ~RenderFrameMetadataProviderImpl() override;
 
@@ -68,6 +69,8 @@ class CONTENT_EXPORT RenderFrameMetadataProviderImpl
   cc::RenderFrameMetadata last_render_frame_metadata_;
 
   base::Optional<viz::LocalSurfaceId> last_local_surface_id_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // Not owned.
   FrameTokenMessageQueue* const frame_token_message_queue_;
