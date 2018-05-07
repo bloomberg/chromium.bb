@@ -11556,9 +11556,10 @@ class UpdateViewportIntersectionMessageFilter
 
 // Tests that when a large OOPIF has been scaled, the compositor raster area
 // sent from the embedder is correct.
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
 // Temporarily disabled on Android because this doesn't account for browser
 // control height or page scale factor.
+// Flaky on Mac. https://crbug.com/840314
 #define MAYBE_ScaledIframeRasterSize DISABLED_ScaledframeRasterSize
 #else
 #define MAYBE_ScaledIframeRasterSize ScaledIframeRasterSize
