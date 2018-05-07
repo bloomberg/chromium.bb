@@ -16,6 +16,7 @@
 #include "chromeos/system/version_loader.h"
 
 class NotificationPlatformBridge;
+class SpokenFeedbackEventRewriterDelegate;
 
 namespace lock_screen_apps {
 class StateController;
@@ -106,6 +107,10 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   std::unique_ptr<ShutdownPolicyForwarder> shutdown_policy_forwarder_;
 
   std::unique_ptr<EventRewriterDelegateImpl> event_rewriter_delegate_;
+
+  // Handles event dispatch to the spoken feedback extension (ChromeVox).
+  std::unique_ptr<SpokenFeedbackEventRewriterDelegate>
+      spoken_feedback_event_rewriter_delegate_;
 
   scoped_refptr<chromeos::ExternalMetrics> external_metrics_;
 
