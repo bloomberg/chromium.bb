@@ -5,6 +5,7 @@
 #include "services/network/public/cpp/cors/cors.h"
 
 #include <algorithm>
+#include <cctype>
 #include <vector>
 
 #include "base/strings/string_util.h"
@@ -51,6 +52,58 @@ std::string Serialize(const url::Origin& origin, bool allow_file_origin) {
   if (!allow_file_origin && origin.scheme() == url::kFileScheme)
     return "null";
   return origin.Serialize();
+}
+
+// Returns true only if |header_value| satisfies ABNF: 1*DIGIT [ "." 1*DIGIT ]
+bool IsSimilarToDoubleABNF(const std::string& header_value) {
+  if (header_value.empty())
+    return false;
+  char first_char = header_value.at(0);
+  if (!isdigit(first_char))
+    return false;
+
+  bool period_found = false;
+  bool digit_found_after_period = false;
+  for (char ch : header_value) {
+    if (isdigit(ch)) {
+      if (period_found) {
+        digit_found_after_period = true;
+      }
+      continue;
+    }
+    if (ch == '.') {
+      if (period_found)
+        return false;
+      period_found = true;
+      continue;
+    }
+    return false;
+  }
+  if (period_found)
+    return digit_found_after_period;
+  return true;
+}
+
+// Returns true only if |header_value| satisfies ABNF: 1*DIGIT
+bool IsSimilarToIntABNF(const std::string& header_value) {
+  if (header_value.empty())
+    return false;
+
+  for (char ch : header_value) {
+    if (!isdigit(ch))
+      return false;
+  }
+  return true;
+}
+
+// |lower_case_media_type| should be lower case.
+bool IsCORSSafelistedLowerCaseContentType(
+    const std::string& lower_case_media_type) {
+  DCHECK_EQ(lower_case_media_type, base::ToLowerASCII(lower_case_media_type));
+  static const std::set<std::string> safe_types = {
+      "application/x-www-form-urlencoded", "multipart/form-data", "text/plain"};
+  std::string mime_type = ExtractMIMETypeFromMediaType(lower_case_media_type);
+  return safe_types.find(mime_type) != safe_types.end();
 }
 
 }  // namespace
@@ -245,11 +298,7 @@ bool IsCORSSafelistedMethod(const std::string& method) {
 }
 
 bool IsCORSSafelistedContentType(const std::string& media_type) {
-  static const std::set<std::string> safe_types = {
-      "application/x-www-form-urlencoded", "multipart/form-data", "text/plain"};
-  std::string mime_type =
-      base::ToLowerASCII(ExtractMIMETypeFromMediaType(media_type));
-  return safe_types.find(mime_type) != safe_types.end();
+  return IsCORSSafelistedLowerCaseContentType(base::ToLowerASCII(media_type));
 }
 
 bool IsCORSSafelistedHeader(const std::string& name, const std::string& value) {
@@ -257,28 +306,48 @@ bool IsCORSSafelistedHeader(const std::string& name, const std::string& value) {
   // "A CORS-safelisted header is a header whose name is either one of `Accept`,
   // `Accept-Language`, and `Content-Language`, or whose name is
   // `Content-Type` and value, once parsed, is one of
-  // `application/x-www-form-urlencoded`, `multipart/form-data`, and
-  // `text/plain`."
+  //     `application/x-www-form-urlencoded`, `multipart/form-data`, and
+  //     `text/plain`
+  // or whose name is a byte-case-insensitive match for one of
+  //      `DPR`, `Save-Data`, `device-memory`, `Viewport-Width`, and `Width`,
+  // and whose value, once extracted, is not failure."
   //
-  // Treat 'Save-Data' as a CORS-safelisted header, since it is added by Chrome
-  // when Data Saver feature is enabled. Treat inspector headers as a
-  // CORS-safelisted headers, since they are added by blink when the inspector
-  // is open.
+  // Treat inspector headers as a CORS-safelisted headers, since they are added
+  // by blink when the inspector is open.
   //
   // Treat 'Intervention' as a CORS-safelisted header, since it is added by
   // Chrome when an intervention is (or may be) applied.
   static const std::set<std::string> safe_names = {
-      "accept",           "accept-language",
-      "content-language", "x-devtools-emulate-network-conditions-client-id",
-      "save-data",        "intervention"};
-  std::string lower_name = base::ToLowerASCII(name);
-  if (safe_names.find(lower_name) != safe_names.end())
-    return true;
+      "accept", "accept-language", "content-language",
+      "x-devtools-emulate-network-conditions-client-id", "intervention",
+      "content-type", "save-data",
+      // The Device Memory header field is a number that indicates the client’s
+      // device memory i.e. approximate amount of ram in GiB. The header value
+      // must satisfy ABNF  1*DIGIT [ "." 1*DIGIT ]
+      // See
+      // https://w3c.github.io/device-memory/#sec-device-memory-client-hint-header
+      // for more details.
+      "device-memory", "dpr", "width", "viewport-width"};
+  const std::string lower_name = base::ToLowerASCII(name);
+  if (safe_names.find(lower_name) == safe_names.end())
+    return false;
+
+  // Client hints are device specific, and not origin specific. As such all
+  // client hint headers are considered as safe.
+  // See third_party/WebKit/public/platform/web_client_hints_types.mojom.
+  // Client hint headers can be added by Chrome automatically or via JavaScript.
+  if (lower_name == "device-memory" || lower_name == "dpr")
+    return IsSimilarToDoubleABNF(value);
+  if (lower_name == "width" || lower_name == "viewport-width")
+    return IsSimilarToIntABNF(value);
+  const std::string lower_value = base::ToLowerASCII(value);
+  if (lower_name == "save-data")
+    return lower_value == "on";
 
   if (lower_name == "content-type")
-    return IsCORSSafelistedContentType(value);
+    return IsCORSSafelistedLowerCaseContentType(lower_value);
 
-  return false;
+  return true;
 }
 
 bool IsForbiddenMethod(const std::string& method) {

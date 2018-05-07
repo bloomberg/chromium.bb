@@ -251,11 +251,62 @@ TEST_F(CORSTest, CheckCORSSafelist) {
   EXPECT_TRUE(cors::IsCORSSafelistedHeader("Content-Language", "ja"));
   EXPECT_TRUE(cors::IsCORSSafelistedHeader(
       "x-devtools-emulate-network-conditions-client-id", ""));
-  EXPECT_TRUE(cors::IsCORSSafelistedHeader("SAVE-DATA", ""));
+  EXPECT_TRUE(cors::IsCORSSafelistedHeader("SAVE-DATA", "on"));
   EXPECT_TRUE(cors::IsCORSSafelistedHeader("Intervention", ""));
   EXPECT_FALSE(cors::IsCORSSafelistedHeader("Cache-Control", ""));
   EXPECT_TRUE(cors::IsCORSSafelistedHeader("Content-Type", "text/plain"));
   EXPECT_FALSE(cors::IsCORSSafelistedHeader("Content-Type", "image/png"));
+}
+
+TEST_F(CORSTest, CheckCORSClientHintsSafelist) {
+  EXPECT_FALSE(cors::IsCORSSafelistedHeader("device-memory", ""));
+  EXPECT_FALSE(cors::IsCORSSafelistedHeader("device-memory", "abc"));
+  EXPECT_TRUE(cors::IsCORSSafelistedHeader("device-memory", "1.25"));
+  EXPECT_TRUE(cors::IsCORSSafelistedHeader("DEVICE-memory", "1.25"));
+  EXPECT_FALSE(cors::IsCORSSafelistedHeader("device-memory", "1.25-2.5"));
+  EXPECT_FALSE(cors::IsCORSSafelistedHeader("device-memory", "-1.25"));
+  EXPECT_FALSE(cors::IsCORSSafelistedHeader("device-memory", "1e2"));
+  EXPECT_FALSE(cors::IsCORSSafelistedHeader("device-memory", "inf"));
+  EXPECT_FALSE(cors::IsCORSSafelistedHeader("device-memory", "-2.3"));
+  EXPECT_FALSE(cors::IsCORSSafelistedHeader("device-memory", "NaN"));
+  EXPECT_FALSE(cors::IsCORSSafelistedHeader("DEVICE-memory", "1.25.3"));
+  EXPECT_FALSE(cors::IsCORSSafelistedHeader("DEVICE-memory", "1."));
+  EXPECT_FALSE(cors::IsCORSSafelistedHeader("DEVICE-memory", ".1"));
+  EXPECT_FALSE(cors::IsCORSSafelistedHeader("DEVICE-memory", "."));
+  EXPECT_TRUE(cors::IsCORSSafelistedHeader("DEVICE-memory", "1"));
+
+  EXPECT_FALSE(cors::IsCORSSafelistedHeader("dpr", ""));
+  EXPECT_FALSE(cors::IsCORSSafelistedHeader("dpr", "abc"));
+  EXPECT_TRUE(cors::IsCORSSafelistedHeader("dpr", "1.25"));
+  EXPECT_TRUE(cors::IsCORSSafelistedHeader("Dpr", "1.25"));
+  EXPECT_FALSE(cors::IsCORSSafelistedHeader("dpr", "1.25-2.5"));
+  EXPECT_FALSE(cors::IsCORSSafelistedHeader("dpr", "-1.25"));
+  EXPECT_FALSE(cors::IsCORSSafelistedHeader("dpr", "1e2"));
+  EXPECT_FALSE(cors::IsCORSSafelistedHeader("dpr", "inf"));
+  EXPECT_FALSE(cors::IsCORSSafelistedHeader("dpr", "-2.3"));
+  EXPECT_FALSE(cors::IsCORSSafelistedHeader("dpr", "NaN"));
+  EXPECT_FALSE(cors::IsCORSSafelistedHeader("dpr", "1.25.3"));
+  EXPECT_FALSE(cors::IsCORSSafelistedHeader("dpr", "1."));
+  EXPECT_FALSE(cors::IsCORSSafelistedHeader("dpr", ".1"));
+  EXPECT_FALSE(cors::IsCORSSafelistedHeader("dpr", "."));
+  EXPECT_TRUE(cors::IsCORSSafelistedHeader("dpr", "1"));
+
+  EXPECT_FALSE(cors::IsCORSSafelistedHeader("width", ""));
+  EXPECT_FALSE(cors::IsCORSSafelistedHeader("width", "abc"));
+  EXPECT_TRUE(cors::IsCORSSafelistedHeader("width", "125"));
+  EXPECT_TRUE(cors::IsCORSSafelistedHeader("width", "1"));
+  EXPECT_TRUE(cors::IsCORSSafelistedHeader("WIDTH", "125"));
+  EXPECT_FALSE(cors::IsCORSSafelistedHeader("width", "125.2"));
+  EXPECT_FALSE(cors::IsCORSSafelistedHeader("width", "-125"));
+  EXPECT_TRUE(cors::IsCORSSafelistedHeader("width", "2147483648"));
+
+  EXPECT_FALSE(cors::IsCORSSafelistedHeader("viewport-width", ""));
+  EXPECT_FALSE(cors::IsCORSSafelistedHeader("viewport-width", "abc"));
+  EXPECT_TRUE(cors::IsCORSSafelistedHeader("viewport-width", "125"));
+  EXPECT_TRUE(cors::IsCORSSafelistedHeader("viewport-width", "1"));
+  EXPECT_TRUE(cors::IsCORSSafelistedHeader("viewport-Width", "125"));
+  EXPECT_FALSE(cors::IsCORSSafelistedHeader("viewport-width", "125.2"));
+  EXPECT_TRUE(cors::IsCORSSafelistedHeader("viewport-width", "2147483648"));
 }
 
 }  // namespace
