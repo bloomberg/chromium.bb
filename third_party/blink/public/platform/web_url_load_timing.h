@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_URL_LOAD_TIMING_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_URL_LOAD_TIMING_H_
 
+#include "base/time/time.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_private_ptr.h"
 
@@ -62,53 +63,53 @@ class WebURLLoadTiming {
 
   bool IsNull() const { return private_.IsNull(); }
 
-  BLINK_PLATFORM_EXPORT double RequestTime() const;
-  BLINK_PLATFORM_EXPORT void SetRequestTime(double);
+  BLINK_PLATFORM_EXPORT base::TimeTicks RequestTime() const;
+  BLINK_PLATFORM_EXPORT void SetRequestTime(base::TimeTicks);
 
-  BLINK_PLATFORM_EXPORT double ProxyStart() const;
-  BLINK_PLATFORM_EXPORT void SetProxyStart(double);
+  BLINK_PLATFORM_EXPORT base::TimeTicks ProxyStart() const;
+  BLINK_PLATFORM_EXPORT void SetProxyStart(base::TimeTicks);
 
-  BLINK_PLATFORM_EXPORT double ProxyEnd() const;
-  BLINK_PLATFORM_EXPORT void SetProxyEnd(double);
+  BLINK_PLATFORM_EXPORT base::TimeTicks ProxyEnd() const;
+  BLINK_PLATFORM_EXPORT void SetProxyEnd(base::TimeTicks);
 
-  BLINK_PLATFORM_EXPORT double DnsStart() const;
-  BLINK_PLATFORM_EXPORT void SetDNSStart(double);
+  BLINK_PLATFORM_EXPORT base::TimeTicks DnsStart() const;
+  BLINK_PLATFORM_EXPORT void SetDNSStart(base::TimeTicks);
 
-  BLINK_PLATFORM_EXPORT double DnsEnd() const;
-  BLINK_PLATFORM_EXPORT void SetDNSEnd(double);
+  BLINK_PLATFORM_EXPORT base::TimeTicks DnsEnd() const;
+  BLINK_PLATFORM_EXPORT void SetDNSEnd(base::TimeTicks);
 
-  BLINK_PLATFORM_EXPORT double ConnectStart() const;
-  BLINK_PLATFORM_EXPORT void SetConnectStart(double);
+  BLINK_PLATFORM_EXPORT base::TimeTicks ConnectStart() const;
+  BLINK_PLATFORM_EXPORT void SetConnectStart(base::TimeTicks);
 
-  BLINK_PLATFORM_EXPORT double ConnectEnd() const;
-  BLINK_PLATFORM_EXPORT void SetConnectEnd(double);
+  BLINK_PLATFORM_EXPORT base::TimeTicks ConnectEnd() const;
+  BLINK_PLATFORM_EXPORT void SetConnectEnd(base::TimeTicks);
 
-  BLINK_PLATFORM_EXPORT double WorkerStart() const;
-  BLINK_PLATFORM_EXPORT void SetWorkerStart(double);
+  BLINK_PLATFORM_EXPORT base::TimeTicks WorkerStart() const;
+  BLINK_PLATFORM_EXPORT void SetWorkerStart(base::TimeTicks);
 
-  BLINK_PLATFORM_EXPORT double WorkerReady() const;
-  BLINK_PLATFORM_EXPORT void SetWorkerReady(double);
+  BLINK_PLATFORM_EXPORT base::TimeTicks WorkerReady() const;
+  BLINK_PLATFORM_EXPORT void SetWorkerReady(base::TimeTicks);
 
-  BLINK_PLATFORM_EXPORT double SendStart() const;
-  BLINK_PLATFORM_EXPORT void SetSendStart(double);
+  BLINK_PLATFORM_EXPORT base::TimeTicks SendStart() const;
+  BLINK_PLATFORM_EXPORT void SetSendStart(base::TimeTicks);
 
-  BLINK_PLATFORM_EXPORT double SendEnd() const;
-  BLINK_PLATFORM_EXPORT void SetSendEnd(double);
+  BLINK_PLATFORM_EXPORT base::TimeTicks SendEnd() const;
+  BLINK_PLATFORM_EXPORT void SetSendEnd(base::TimeTicks);
 
-  BLINK_PLATFORM_EXPORT double ReceiveHeadersEnd() const;
-  BLINK_PLATFORM_EXPORT void SetReceiveHeadersEnd(double);
+  BLINK_PLATFORM_EXPORT base::TimeTicks ReceiveHeadersEnd() const;
+  BLINK_PLATFORM_EXPORT void SetReceiveHeadersEnd(base::TimeTicks);
 
-  BLINK_PLATFORM_EXPORT double SslStart() const;
-  BLINK_PLATFORM_EXPORT void SetSSLStart(double);
+  BLINK_PLATFORM_EXPORT base::TimeTicks SslStart() const;
+  BLINK_PLATFORM_EXPORT void SetSSLStart(base::TimeTicks);
 
-  BLINK_PLATFORM_EXPORT double SslEnd() const;
-  BLINK_PLATFORM_EXPORT void SetSSLEnd(double);
+  BLINK_PLATFORM_EXPORT base::TimeTicks SslEnd() const;
+  BLINK_PLATFORM_EXPORT void SetSSLEnd(base::TimeTicks);
 
-  BLINK_PLATFORM_EXPORT double PushStart() const;
-  BLINK_PLATFORM_EXPORT void SetPushStart(double);
+  BLINK_PLATFORM_EXPORT base::TimeTicks PushStart() const;
+  BLINK_PLATFORM_EXPORT void SetPushStart(base::TimeTicks);
 
-  BLINK_PLATFORM_EXPORT double PushEnd() const;
-  BLINK_PLATFORM_EXPORT void SetPushEnd(double);
+  BLINK_PLATFORM_EXPORT base::TimeTicks PushEnd() const;
+  BLINK_PLATFORM_EXPORT void SetPushEnd(base::TimeTicks);
 
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT WebURLLoadTiming(scoped_refptr<ResourceLoadTiming>);
