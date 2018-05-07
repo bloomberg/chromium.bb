@@ -148,6 +148,7 @@ bool IsSupportedAudioConfig(const AudioConfig& config) {
     case media::kCodecEAC3:
     case media::kCodecALAC:
     case media::kCodecAC3:
+    case media::kCodecMpegHAudio:
     case media::kUnknownAudioCodec:
       return false;
   }

@@ -15,19 +15,20 @@ enum SampleFormat {
   // adding a sample format, do so at the bottom before kSampleFormatMax, and
   // update the value of kSampleFormatMax.
   kUnknownSampleFormat = 0,
-  kSampleFormatU8,         // Unsigned 8-bit w/ bias of 128.
-  kSampleFormatS16,        // Signed 16-bit.
-  kSampleFormatS32,        // Signed 32-bit.
-  kSampleFormatF32,        // Float 32-bit.
-  kSampleFormatPlanarS16,  // Signed 16-bit planar.
-  kSampleFormatPlanarF32,  // Float 32-bit planar.
-  kSampleFormatPlanarS32,  // Signed 32-bit planar.
-  kSampleFormatS24,        // Signed 24-bit.
-  kSampleFormatAc3,        // Compressed AC3 bitstream.
-  kSampleFormatEac3,       // Compressed E-AC3 bitstream.
+  kSampleFormatU8,          // Unsigned 8-bit w/ bias of 128.
+  kSampleFormatS16,         // Signed 16-bit.
+  kSampleFormatS32,         // Signed 32-bit.
+  kSampleFormatF32,         // Float 32-bit.
+  kSampleFormatPlanarS16,   // Signed 16-bit planar.
+  kSampleFormatPlanarF32,   // Float 32-bit planar.
+  kSampleFormatPlanarS32,   // Signed 32-bit planar.
+  kSampleFormatS24,         // Signed 24-bit.
+  kSampleFormatAc3,         // Compressed AC3 bitstream.
+  kSampleFormatEac3,        // Compressed E-AC3 bitstream.
+  kSampleFormatMpegHAudio,  // Compressed MPEG-H audio bitstream.
 
   // Must always be equal to largest value ever logged.
-  kSampleFormatMax = kSampleFormatEac3,
+  kSampleFormatMax = kSampleFormatMpegHAudio,
 };
 
 // Returns the number of bytes used per channel for the specified

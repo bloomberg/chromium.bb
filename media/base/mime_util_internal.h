@@ -45,7 +45,8 @@ class MEDIA_EXPORT MimeUtil {
     THEORA,
     DOLBY_VISION,
     AV1,
-    LAST_CODEC = AV1
+    MPEG_H_AUDIO,
+    LAST_CODEC = MPEG_H_AUDIO
   };
 
   // Platform configuration structure.  Controls which codecs are supported at

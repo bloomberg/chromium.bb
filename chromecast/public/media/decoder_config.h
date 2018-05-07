@@ -31,9 +31,10 @@ enum AudioCodec : int {
   kCodecAC3,
   kCodecDTS,
   kCodecFLAC,
+  kCodecMpegHAudio,
 
   kAudioCodecMin = kAudioCodecUnknown,
-  kAudioCodecMax = kCodecFLAC,
+  kAudioCodecMax = kCodecMpegHAudio,
 };
 
 enum SampleFormat : int {
@@ -375,17 +376,19 @@ inline VideoConfig::~VideoConfig() {
 // are to keep existing CMA backend implementation consistent until the clean up
 // is done. These SHOULD NOT be used in New CMA backend implementation.
 inline bool IsValidConfig(const AudioConfig& config) {
-  return config.codec >= kAudioCodecMin &&
-      config.codec <= kAudioCodecMax &&
-      config.codec != kAudioCodecUnknown &&
-      config.sample_format >= kSampleFormatMin &&
-      config.sample_format <= kSampleFormatMax &&
-      config.sample_format != kUnknownSampleFormat &&
-      config.channel_number > 0 &&
-      config.bytes_per_channel > 0 &&
-      config.bytes_per_channel <= kMaxBytesPerSample &&
-      config.samples_per_second > 0 &&
-      config.samples_per_second <= kMaxSampleRate;
+  return config.codec >= kAudioCodecMin && config.codec <= kAudioCodecMax &&
+         config.codec != kAudioCodecUnknown &&
+         config.sample_format >= kSampleFormatMin &&
+         config.sample_format <= kSampleFormatMax &&
+         config.sample_format != kUnknownSampleFormat &&
+         // TODO(servolk): Add channel_layout field to the AudioConfig in the
+         // next Cast system update and change this condition to
+         // (channel_number > 0 || channel_layout == CHANNEL_LAYOUT_BITSTREAM)
+         (config.channel_number > 0 || config.codec == kCodecMpegHAudio) &&
+         config.bytes_per_channel > 0 &&
+         config.bytes_per_channel <= kMaxBytesPerSample &&
+         config.samples_per_second > 0 &&
+         config.samples_per_second <= kMaxSampleRate;
 }
 
 inline bool IsValidConfig(const VideoConfig& config) {

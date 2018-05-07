@@ -358,12 +358,14 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
                                 ? entry.sinf.format.format
                                 : entry.format;
 
+      if (audio_format != FOURCC_FLAC &&
 #if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
-      if (audio_format != FOURCC_MP4A && audio_format != FOURCC_FLAC &&
-          audio_format != FOURCC_AC3 && audio_format != FOURCC_EAC3) {
-#else
-      if (audio_format != FOURCC_MP4A && audio_format != FOURCC_FLAC) {
+          audio_format != FOURCC_AC3 && audio_format != FOURCC_EAC3 &&
 #endif
+#if BUILDFLAG(ENABLE_MPEG_H_AUDIO_DEMUXING)
+          audio_format != FOURCC_MHM1 &&
+#endif
+          audio_format != FOURCC_MP4A) {
         MEDIA_LOG(ERROR, media_log_) << "Unsupported audio format 0x"
                                      << std::hex << entry.format
                                      << " in stsd box.";
@@ -390,6 +392,13 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
         sample_per_second = entry.samplerate;
         extra_data = entry.dfla.stream_info;
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
+#if BUILDFLAG(ENABLE_MPEG_H_AUDIO_DEMUXING)
+      } else if (audio_format == FOURCC_MHM1) {
+        codec = kCodecMpegHAudio;
+        channel_layout = CHANNEL_LAYOUT_BITSTREAM;
+        sample_per_second = entry.samplerate;
+        extra_data = entry.dfla.stream_info;
+#endif
       } else {
         uint8_t audio_type = entry.esds.object_type;
 #if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)

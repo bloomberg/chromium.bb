@@ -27,6 +27,8 @@ const char* BitstreamAudioCodecToString(int codec) {
       return "EAC3";
     case kBitstreamAudioCodecPcmSurround:
       return "PCM";
+    case kBitstreamAudioCodecMpegHAudio:
+      return "MPEG-H Audio";
     default:
       return "";
   }
@@ -40,9 +42,10 @@ std::string BitstreamAudioCodecsToString(int codecs) {
     return codec_string;
   }
   std::vector<base::StringPiece> codec_strings;
-  for (int codec : {kBitstreamAudioCodecAc3, kBitstreamAudioCodecDts,
-                    kBitstreamAudioCodecDtsHd, kBitstreamAudioCodecEac3,
-                    kBitstreamAudioCodecPcmSurround}) {
+  for (int codec :
+       {kBitstreamAudioCodecAc3, kBitstreamAudioCodecDts,
+        kBitstreamAudioCodecDtsHd, kBitstreamAudioCodecEac3,
+        kBitstreamAudioCodecPcmSurround, kBitstreamAudioCodecMpegHAudio}) {
     if ((codec & codecs) != 0) {
       codec_strings.push_back(BitstreamAudioCodecToString(codec));
     }

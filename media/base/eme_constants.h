@@ -36,6 +36,7 @@ enum EmeCodec : uint32_t {
   EME_CODEC_MP4_DV_HEVC = 1 << 9,
   EME_CODEC_MP4_AC3 = 1 << 10,
   EME_CODEC_MP4_EAC3 = 1 << 11,
+  EME_CODEC_MP4_MPEG_H_AUDIO = 1 << 12,
 };
 
 // *_ALL values should only be used for masking, do not use them to specify
@@ -50,6 +51,9 @@ constexpr SupportedCodecs GetMp4AudioCodecs() {
 #if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
   codecs |= EME_CODEC_MP4_AC3 | EME_CODEC_MP4_EAC3;
 #endif  // BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+#if BUILDFLAG(ENABLE_MPEG_H_AUDIO_DEMUXING)
+  codecs |= EME_CODEC_MP4_MPEG_H_AUDIO;
+#endif  // BUILDFLAG(ENABLE_MPEG_H_AUDIO_DEMUXING)
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
   return codecs;
 }

@@ -395,6 +395,7 @@ void AudioBuffer::TrimRange(int start, int end) {
       case kUnknownSampleFormat:
       case kSampleFormatAc3:
       case kSampleFormatEac3:
+      case kSampleFormatMpegHAudio:
         NOTREACHED() << "Invalid sample format!";
     }
   } else {

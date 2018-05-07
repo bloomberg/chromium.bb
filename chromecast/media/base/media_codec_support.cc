@@ -30,6 +30,8 @@ AudioCodec ToCastAudioCodec(const ::media::AudioCodec codec) {
       return kCodecAC3;
     case ::media::kCodecFLAC:
       return kCodecFLAC;
+    case ::media::kCodecMpegHAudio:
+      return kCodecMpegHAudio;
     default:
       LOG(ERROR) << "Unsupported audio codec " << codec;
   }

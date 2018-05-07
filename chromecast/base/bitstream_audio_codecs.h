@@ -9,13 +9,14 @@
 
 namespace chromecast {
 
-constexpr int kBitstreamAudioCodecNone = 0b00000;
-constexpr int kBitstreamAudioCodecAc3 = 0b00001;
-constexpr int kBitstreamAudioCodecDts = 0b00010;
-constexpr int kBitstreamAudioCodecDtsHd = 0b00100;
-constexpr int kBitstreamAudioCodecEac3 = 0b01000;
-constexpr int kBitstreamAudioCodecPcmSurround = 0b10000;
-constexpr int kBitstreamAudioCodecAll = 0b11111;
+constexpr int kBitstreamAudioCodecNone = 0b000000;
+constexpr int kBitstreamAudioCodecAc3 = 0b000001;
+constexpr int kBitstreamAudioCodecDts = 0b000010;
+constexpr int kBitstreamAudioCodecDtsHd = 0b000100;
+constexpr int kBitstreamAudioCodecEac3 = 0b001000;
+constexpr int kBitstreamAudioCodecPcmSurround = 0b010000;
+constexpr int kBitstreamAudioCodecMpegHAudio = 0b100000;
+constexpr int kBitstreamAudioCodecAll = 0b111111;
 
 std::string BitstreamAudioCodecsToString(int codecs);
 

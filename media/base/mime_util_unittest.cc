@@ -435,6 +435,7 @@ TEST(IsCodecSupportedOnAndroidTest, EncryptedCodecBehavior) {
           // These codecs are never supported by the Android platform.
           case MimeUtil::INVALID_CODEC:
           case MimeUtil::AV1:
+          case MimeUtil::MPEG_H_AUDIO:
           case MimeUtil::THEORA:
             EXPECT_FALSE(result);
             break;
@@ -493,6 +494,7 @@ TEST(IsCodecSupportedOnAndroidTest, ClearCodecBehavior) {
         switch (codec) {
           // These codecs are never supported by the Android platform.
           case MimeUtil::INVALID_CODEC:
+          case MimeUtil::MPEG_H_AUDIO:
           case MimeUtil::THEORA:
           case MimeUtil::AV1:
             EXPECT_FALSE(result);

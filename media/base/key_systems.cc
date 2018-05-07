@@ -71,6 +71,9 @@ static const NameToCodec kCodecMap[] = {
     {"ac-3", EME_CODEC_MP4_AC3},   // AC3.
     {"ec-3", EME_CODEC_MP4_EAC3},  // EAC3.
 #endif
+#if BUILDFLAG(ENABLE_MPEG_H_AUDIO_DEMUXING)
+    {"mhm1", EME_CODEC_MP4_MPEG_H_AUDIO},  // MPEG-H Audio.
+#endif
     {"avc1", EME_CODEC_MP4_AVC1},  // AVC1 for MP4 and MP2T
     {"avc3", EME_CODEC_MP4_AVC1},  // AVC3 for MP4 and MP2T
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)

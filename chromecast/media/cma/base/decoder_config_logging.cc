@@ -31,6 +31,8 @@ std::ostream& operator<<(std::ostream& stream,
       return stream << "DTS";
     case ::chromecast::media::kCodecFLAC:
       return stream << "FLAC";
+    case ::chromecast::media::kCodecMpegHAudio:
+      return stream << "MPEG-H Audio";
   }
   NOTREACHED();
   return stream << "UNKNOWN";

@@ -59,7 +59,9 @@ struct CodecInfo {
     HISTOGRAM_DOLBYVISION,
     HISTOGRAM_FLAC,
     HISTOGRAM_AV1,
-    HISTOGRAM_MAX = HISTOGRAM_AV1  // Must be equal to largest logged entry.
+    HISTOGRAM_MPEG_H_AUDIO,
+    HISTOGRAM_MAX =
+        HISTOGRAM_MPEG_H_AUDIO  // Must be equal to largest logged entry.
   };
 
   const char* pattern;
@@ -206,6 +208,11 @@ static const CodecInfo kEAC3CodecInfo3 = {"mp4a.A6", CodecInfo::AUDIO, nullptr,
                                           CodecInfo::HISTOGRAM_EAC3};
 #endif  // BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
 
+#if BUILDFLAG(ENABLE_MPEG_H_AUDIO_DEMUXING)
+static const CodecInfo kMpegHAudioCodecInfo = {
+    "mhm1.*", CodecInfo::AUDIO, nullptr, CodecInfo::HISTOGRAM_MPEG_H_AUDIO};
+#endif
+
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
 static const CodecInfo kMP3CodecInfo = {nullptr, CodecInfo::AUDIO, nullptr,
@@ -241,6 +248,9 @@ static const CodecInfo* const kVideoMP4Codecs[] = {&kMPEG4FLACCodecInfo,
 #endif
                                                    &kMPEG4AACCodecInfo,
                                                    &kMPEG2AACLCCodecInfo,
+#if BUILDFLAG(ENABLE_MPEG_H_AUDIO_DEMUXING)
+                                                   &kMpegHAudioCodecInfo,
+#endif
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 #if BUILDFLAG(ENABLE_AV1_DECODER)
                                                    &kAV1CodecInfo,
@@ -251,7 +261,9 @@ static const CodecInfo* const kAudioMP4Codecs[] = {&kMPEG4FLACCodecInfo,
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
                                                    &kMPEG4AACCodecInfo,
                                                    &kMPEG2AACLCCodecInfo,
-
+#if BUILDFLAG(ENABLE_MPEG_H_AUDIO_DEMUXING)
+                                                   &kMpegHAudioCodecInfo,
+#endif
 #if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
                                                    &kAC3CodecInfo1,
                                                    &kAC3CodecInfo2,
