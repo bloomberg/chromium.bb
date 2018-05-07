@@ -47,9 +47,9 @@ class _ProcessMetricsCollector(object):
                        test_func=partial(_is_python_module,
                                          'lucifer.cmd.job_reporter')),
         _ProcessMetric('lucifer_run_job',
-                       test_func=_is_lucifer_run_job),
+                       test_func=partial(_is_process_name, 'lucifer_run_job')),
         _ProcessMetric('apache',
-                       test_func=_is_apache),
+                       test_func=partial(_is_process_name, 'apache2')),
     ]
     self._other_metric = _ProcessMetric('other')
 
@@ -119,12 +119,7 @@ def _is_autoserv(proc):
   # This relies on the autoserv script being run directly.  The script should
   # be named autoserv exactly and start with a shebang that is /usr/bin/python,
   # NOT /bin/env
-  return proc.name() == 'autoserv'
-
-
-def _is_apache(proc):
-  """Return whether a proc is an apache2 process."""
-  return proc.name() == 'apache2'
+  return _is_process_name('autoserv', proc)
 
 
 def _is_python_module(module, proc):
@@ -135,6 +130,6 @@ def _is_python_module(module, proc):
           cmdline[1:3] == ['-m', module])
 
 
-def _is_lucifer_run_job(proc):
-  """Return whether proc is a lucifer_run_job process."""
-  return proc.name() == 'lucifer_run_job'
+def _is_process_name(name, proc):
+  """Return whether process proc is named name."""
+  return proc.name() == name
