@@ -1,10 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="../settings_shared_css.html">
-<link rel="import" href="constants.html">
-<link rel="import" href="site_list.html">
-<link rel="import" href="site_settings_behavior.html">
+<link rel="import" href="site_entry.html">
 
 <dom-module id="all-sites">
   <template>
@@ -12,28 +9,19 @@
       :host {
         display: block;
       }
+
+      /* There is only one top-level heading for All Sites, so remove the
+       * additional leading padding used for lists. */
+      .list-frame.without-heading {
+        -webkit-padding-start: var(--settings-box-row-padding);
+      }
     </style>
     <div class="list-frame" hidden$="[[sites.length]]">
       <div class="list-item secondary">$i18n{noSitesAdded}</div>
     </div>
-    <div class="list-frame menu-content vertical-list" id="listContainer">
+    <div class="list-frame without-heading" id="listContainer">
       <template is="dom-repeat" items="[[sites]]">
-        <div class="list-item">
-          <div class="layout horizontal center flex" on-click="onOriginTap_"
-              actionable>
-            <div class="favicon-image"
-                style$="[[computeSiteIcon(item.origin)]]">
-            </div>
-            <div class="middle no-min-width text-elide"
-                id="displayName">
-              [[item.displayName]]
-            </div>
-            <paper-icon-button-light class="subpage-arrow">
-              <button aria-label$="[[item.displayName]]"
-                  aria-describedby="displayName"></button>
-            </paper-icon-button-light>
-          </div>
-        </div>
+        <site-entry site="{{item}}" label="[[item.displayName]]">
       </template>
     </div>
   </template>
