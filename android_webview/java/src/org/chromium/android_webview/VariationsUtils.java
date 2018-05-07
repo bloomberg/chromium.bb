@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.Date;
 
 /**
@@ -31,7 +32,7 @@ public class VariationsUtils {
     private static final String NEW_SEED_FILE_NAME = "variations_seed_new";
     private static final String STAMP_FILE_NAME = "variations_stamp";
 
-    private static void closeSafely(Closeable c) {
+    public static void closeSafely(Closeable c) {
         if (c != null) {
             try {
                 c.close();
@@ -113,6 +114,14 @@ public class VariationsUtils {
             info.date = proto.getDate();
             info.isGzipCompressed = proto.getIsGzipCompressed();
             info.seedData = proto.getSeedData().toByteArray();
+
+            try {
+                info.parseDate();
+            } catch (ParseException e) {
+                Log.e(TAG, "Malformed seed date: " + e.getMessage());
+                return null;
+            }
+
             return info;
         } catch (IOException e) {
             Log.e(TAG, "Failed reading seed file \"" + inFile + "\": " + e.getMessage());
