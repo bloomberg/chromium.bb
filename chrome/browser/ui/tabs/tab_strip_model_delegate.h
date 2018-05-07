@@ -5,7 +5,10 @@
 #ifndef CHROME_BROWSER_UI_TABS_TAB_STRIP_MODEL_DELEGATE_H_
 #define CHROME_BROWSER_UI_TABS_TAB_STRIP_MODEL_DELEGATE_H_
 
+#include <memory>
 #include <vector>
+
+#include "base/macros.h"
 
 class Browser;
 class GURL;
@@ -59,13 +62,19 @@ class TabStripModelDelegate {
   // about the Browser type. At least fix so that this returns a
   // TabStripModelDelegate, or perhaps even move this code elsewhere.
   struct NewStripContents {
+    NewStripContents();
+    ~NewStripContents();
+    NewStripContents(NewStripContents&&);
     // The WebContents to add.
-    content::WebContents* web_contents;
+    std::unique_ptr<content::WebContents> web_contents;
     // A bitmask of TabStripModel::AddTabTypes to apply to the added contents.
     int add_types;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(NewStripContents);
   };
   virtual Browser* CreateNewStripWithContents(
-      const std::vector<NewStripContents>& contentses,
+      std::vector<NewStripContents> contentses,
       const gfx::Rect& window_bounds,
       bool maximize) = 0;
 
