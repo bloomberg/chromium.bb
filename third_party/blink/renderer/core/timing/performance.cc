@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/loader/document_load_timing.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/timing/performance_event_timing.h"
 #include "third_party/blink/renderer/core/timing/performance_long_task_timing.h"
 #include "third_party/blink/renderer/core/timing/performance_observer.h"
 #include "third_party/blink/renderer/core/timing/performance_resource_timing.h"
@@ -87,12 +88,14 @@ using PerformanceObserverVector = HeapVector<Member<PerformanceObserver>>;
 
 static const size_t kDefaultResourceTimingBufferSize = 150;
 static const size_t kDefaultFrameTimingBufferSize = 150;
+constexpr size_t kDefaultEventTimingBufferSize = 150;
 
 Performance::Performance(
     TimeTicks time_origin,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : frame_timing_buffer_size_(kDefaultFrameTimingBufferSize),
       resource_timing_buffer_size_(kDefaultResourceTimingBufferSize),
+      event_timing_buffer_max_size_(kDefaultEventTimingBufferSize),
       user_timing_(nullptr),
       time_origin_(time_origin),
       observer_filter_options_(PerformanceEntry::kInvalid),
@@ -129,6 +132,7 @@ PerformanceEntryVector Performance::getEntries() {
   PerformanceEntryVector entries;
 
   entries.AppendVector(resource_timing_buffer_);
+  entries.AppendVector(event_timing_buffer_);
   if (!navigation_timing_)
     navigation_timing_ = CreateNavigationTimingInstance();
   // This extra checking is needed when WorkerPerformance
@@ -161,6 +165,10 @@ PerformanceEntryVector Performance::getEntriesByType(const String& entry_type) {
     case PerformanceEntry::kResource:
       for (const auto& resource : resource_timing_buffer_)
         entries.push_back(resource);
+      break;
+    case PerformanceEntry::kEvent:
+      for (const auto& event : event_timing_buffer_)
+        entries.push_back(event);
       break;
     case PerformanceEntry::kNavigation:
       if (!navigation_timing_)
@@ -221,6 +229,13 @@ PerformanceEntryVector Performance::getEntriesByName(const String& name,
     for (const auto& resource : resource_timing_buffer_) {
       if (resource->name() == name)
         entries.push_back(resource);
+    }
+  }
+
+  if (entry_type.IsNull() || type == PerformanceEntry::kEvent) {
+    for (const auto& event : event_timing_buffer_) {
+      if (event->name() == name)
+        entries.push_back(event);
     }
   }
 
@@ -439,6 +454,31 @@ void Performance::NotifyNavigationTimingToObservers() {
     navigation_timing_ = CreateNavigationTimingInstance();
   if (navigation_timing_)
     NotifyObserversOfEntry(*navigation_timing_);
+}
+
+bool Performance::IsEventTimingBufferFull() const {
+  return event_timing_buffer_.size() >= event_timing_buffer_max_size_;
+}
+
+void Performance::AddEventTimingBuffer(PerformanceEventTiming& entry) {
+  event_timing_buffer_.push_back(&entry);
+
+  if (IsEventTimingBufferFull())
+    DispatchEvent(Event::Create(EventTypeNames::eventtimingbufferfull));
+}
+
+unsigned Performance::EventTimingBufferSize() const {
+  return event_timing_buffer_.size();
+}
+
+void Performance::clearEventTimings() {
+  event_timing_buffer_.clear();
+}
+
+void Performance::setEventTimingBufferMaxSize(unsigned size) {
+  event_timing_buffer_max_size_ = size;
+  if (IsEventTimingBufferFull())
+    DispatchEvent(Event::Create(EventTypeNames::eventtimingbufferfull));
 }
 
 void Performance::AddFirstPaintTiming(TimeTicks start_time) {
@@ -717,6 +757,7 @@ void Performance::BuildJSONValue(V8ObjectBuilder& builder) const {
 void Performance::Trace(blink::Visitor* visitor) {
   visitor->Trace(frame_timing_buffer_);
   visitor->Trace(resource_timing_buffer_);
+  visitor->Trace(event_timing_buffer_);
   visitor->Trace(navigation_timing_);
   visitor->Trace(user_timing_);
   visitor->Trace(first_paint_timing_);

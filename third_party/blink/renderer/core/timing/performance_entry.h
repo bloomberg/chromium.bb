@@ -63,7 +63,8 @@ class CORE_EXPORT PerformanceEntry : public ScriptWrappable {
     kResource = 1 << 5,
     kLongTask = 1 << 6,
     kTaskAttribution = 1 << 7,
-    kPaint = 1 << 8
+    kPaint = 1 << 8,
+    kEvent = 1 << 9
   };
 
   String name() const;

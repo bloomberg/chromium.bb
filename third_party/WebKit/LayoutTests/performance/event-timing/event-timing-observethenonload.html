@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<meta charset=utf-8 />
+<title>Event Timing: Performance observers can observe long-latency events
+</title>
+<button id='button' onclick='1'>Generate a 'click' event</button>
+<script src=../../resources/testharness.js></script>
+<script src=../../resources/testharnessreport.js></script>
+<script src=./resources/event-timing-support.js></script>
+<script>
+  let observerStart;
+  let processingStartMin;
+  let observedEntries = [];
+
+  function verifyBuffer(bufferedEntries) {
+    const loadStart =
+      performance.timing.loadEventStart - performance.timeOrigin;
+    assert_equals(bufferedEntries.length, 1,
+      "Only events before onload should be buffered");
+    const entry = bufferedEntries[0];
+    assert_true(entry.startTime < loadStart);
+    assert_true(entry.processingStart > processingStartMin);
+    verifyClickEvent(entry);
+  }
+
+  function verifyObserverEntries(observedEntries) {
+    const observedEntriesHappenAfterObserver = observedEntries.filter(e => e.startTime >
+      observerStart);
+    assert_equals(observedEntriesHappenAfterObserver.length, 1,
+      'Events DISPATCHED after observer start should be observed.');
+    const entry1 = observedEntriesHappenAfterObserver[0];
+    verifyClickEvent(entry1);
+    assert_true(entry1.processingStart > processingStartMin);
+    assert_true(entry1.startTime > observerStart);
+
+    // This case is tricky in that the click happened before observer,
+    // but the dispatching of it is delayed until after observer start
+    // due to busy mainthread. The observer is thus able to observe the click.
+    const observedEntriesHappenBeforeObserver =
+      observedEntries.filter(e => e.startTime < observerStart);
+    assert_equals(observedEntriesHappenBeforeObserver.length, 1,
+      'Events HAPPENING before observer but DISPATCHED after observer start should be observed.'
+    );
+    const entry2 = observedEntriesHappenBeforeObserver[0];
+    verifyClickEvent(entry2);
+    assert_true(entry2.processingStart > processingStartMin);
+    assert_true(entry2.startTime < observerStart);
+  }
+
+  /* Timeline:
+     Begin Busy Loop
+     Click 1 arrives
+     End Busy Loop
+     Observer starts
+     (Dispatch and Process Click 1 (buffered, observed))
+     Onload Event Fires
+     Begin Busy Loop
+     Click 2 arrives
+     End Busy Loop
+     (Dispatch and Process Click 2 (buffered, observed))
+     observer callback start
+  */
+  async_test(function(t) {
+    clickAndBlockMain('button');
+    const observerPromise = new Promise((resolve, reject) => {
+      new PerformanceObserver(function(entryList) {
+        observedEntries = observedEntries.concat(entryList.getEntries());
+        if (observedEntries.length < 2) return;
+        resolve(observedEntries);
+      }).observe({ entryTypes: ['event'] });
+    });
+    observerStart = performance.now();
+    on_event(window, 'load', function(e) {
+      // After onload start and before registering observer.
+      const bufferPromise = clickAndBlockMain('button').then(wait);
+      Promise.all([observerPromise, bufferPromise]).then((results) => {
+        t.step(verifyObserverEntries.bind(null, results[0]));
+        t.step(verifyBuffer.bind(null, performance.getEntriesByName('click')));
+        t.done();
+      });
+    });
+    processingStartMin = performance.now();
+  }, "Event Timing: click, observer, onload, click.");
+
+</script>
+</html>

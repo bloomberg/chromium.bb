@@ -89,6 +89,8 @@ PerformanceEntry::EntryType PerformanceEntry::ToEntryTypeEnum(
     return kTaskAttribution;
   if (entry_type == "paint")
     return kPaint;
+  if (entry_type == "event")
+    return kEvent;
   return kInvalid;
 }
 

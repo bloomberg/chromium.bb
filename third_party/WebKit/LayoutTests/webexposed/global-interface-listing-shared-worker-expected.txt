@@ -876,8 +876,10 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method set
 [Worker] interface Performance : EventTarget
 [Worker]     attribute @@toStringTag
+[Worker]     getter oneventtimingbufferfull
 [Worker]     getter onresourcetimingbufferfull
 [Worker]     getter timeOrigin
+[Worker]     method clearEventTimings
 [Worker]     method clearMarks
 [Worker]     method clearMeasures
 [Worker]     method clearResourceTimings
@@ -888,8 +890,10 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method mark
 [Worker]     method measure
 [Worker]     method now
+[Worker]     method setEventTimingBufferMaxSize
 [Worker]     method setResourceTimingBufferSize
 [Worker]     method toJSON
+[Worker]     setter oneventtimingbufferfull
 [Worker]     setter onresourcetimingbufferfull
 [Worker] interface PerformanceEntry
 [Worker]     attribute @@toStringTag

@@ -2656,6 +2656,9 @@ crbug.com/763830 http/tests/security/cors-rfc1918/ [ Skip ]
 
 crbug.com/822757 external/wpt/resource-timing/resource_initiator_types.html [ Pass Failure ]
 
+crbug.com/831729 performance/event-timing/event-timing-crossiframe.html [ Timeout ]
+crbug.com/831729 performance/event-timing/event-timing-observer-manual.html [ Skip ]
+
 # Working on getting the CSP tests going:
 crbug.com/694525 external/wpt/content-security-policy/object-src [ Skip ]
 crbug.com/694525 external/wpt/content-security-policy/connect-src/connect-src-eventsource-blocked.sub.html [ Skip ]

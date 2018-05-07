@@ -980,8 +980,10 @@ interface PaymentRequestEvent : ExtendableEvent
     method respondWith
 interface Performance : EventTarget
     attribute @@toStringTag
+    getter oneventtimingbufferfull
     getter onresourcetimingbufferfull
     getter timeOrigin
+    method clearEventTimings
     method clearMarks
     method clearMeasures
     method clearResourceTimings
@@ -992,8 +994,10 @@ interface Performance : EventTarget
     method mark
     method measure
     method now
+    method setEventTimingBufferMaxSize
     method setResourceTimingBufferSize
     method toJSON
+    setter oneventtimingbufferfull
     setter onresourcetimingbufferfull
 interface PerformanceEntry
     attribute @@toStringTag

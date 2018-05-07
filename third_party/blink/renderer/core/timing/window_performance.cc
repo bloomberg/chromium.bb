@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
+#include "third_party/blink/renderer/core/timing/performance_event_timing.h"
 #include "third_party/blink/renderer/core/timing/performance_timing.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -277,6 +278,39 @@ void WindowPerformance::ReportLongTask(
         GetFrameAttribute(frame_owner, HTMLNames::nameAttr, true),
         IsSameOrigin(attribution.first) ? sub_task_attributions : empty_vector);
   }
+}
+
+bool WindowPerformance::ShouldBufferEventTiming() {
+  // We buffer Long-latency events until onload, i.e., LoadEventStart
+  // is not reached yet.
+  const DocumentLoader* loader = GetFrame()->Loader().GetDocumentLoader();
+  DCHECK(loader);
+  TimeTicks load_start = loader->GetTiming().LoadEventStart();
+  return load_start.is_null();
+}
+
+bool WindowPerformance::ObservingEventTimingEntries() {
+  return HasObserverFor(PerformanceEntry::kEvent);
+}
+
+void WindowPerformance::AddEventTiming(String event_type,
+                                       TimeTicks start_time,
+                                       TimeTicks processing_start,
+                                       TimeDelta duration,
+                                       bool cancelable) {
+  DCHECK(RuntimeEnabledFeatures::EventTimingEnabled());
+
+  DCHECK(!start_time.is_null());
+  DCHECK(!processing_start.is_null());
+  PerformanceEventTiming* entry = PerformanceEventTiming::Create(
+      event_type, start_time - time_origin_, processing_start - time_origin_,
+      start_time + duration - time_origin_, cancelable);
+
+  if (ObservingEventTimingEntries())
+    NotifyObserversOfEntry(*entry);
+
+  if (ShouldBufferEventTiming() && !IsEventTimingBufferFull())
+    AddEventTimingBuffer(*entry);
 }
 
 }  // namespace blink
