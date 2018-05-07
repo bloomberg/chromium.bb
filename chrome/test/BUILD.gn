@@ -2997,7 +2997,6 @@ test("unit_tests") {
       "../browser/ui/omnibox/chrome_omnibox_navigation_observer_unittest.cc",
       "../browser/ui/omnibox/clipboard_utils_unittest.cc",
       "../browser/ui/omnibox/favicon_cache_unittest.cc",
-      "../browser/ui/omnibox/omnibox_controller_unittest.cc",
       "../browser/ui/page_info/permission_menu_model_unittest.cc",
       "../browser/ui/passwords/manage_passwords_bubble_model_unittest.cc",
       "../browser/ui/passwords/password_dialog_controller_impl_unittest.cc",

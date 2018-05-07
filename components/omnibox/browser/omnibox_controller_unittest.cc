@@ -7,15 +7,13 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
-#include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
+#include "base/message_loop/message_loop.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/omnibox_client.h"
 #include "components/omnibox/browser/omnibox_controller.h"
 #include "components/omnibox/browser/test_omnibox_client.h"
 #include "components/sessions/core/session_id.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class OmniboxControllerTest : public testing::Test {
@@ -35,18 +33,16 @@ class OmniboxControllerTest : public testing::Test {
   void SetUp() override;
   void TearDown() override;
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  base::MessageLoop message_loop_;
   std::unique_ptr<TestOmniboxClient> omnibox_client_;
   std::unique_ptr<OmniboxController> omnibox_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxControllerTest);
 };
 
-OmniboxControllerTest::OmniboxControllerTest() {
-}
+OmniboxControllerTest::OmniboxControllerTest() {}
 
-OmniboxControllerTest::~OmniboxControllerTest() {
-}
+OmniboxControllerTest::~OmniboxControllerTest() {}
 
 void OmniboxControllerTest::CreateController() {
   DCHECK(omnibox_client_);
