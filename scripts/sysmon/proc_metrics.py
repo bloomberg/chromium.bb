@@ -50,6 +50,10 @@ class _ProcessMetricsCollector(object):
                        test_func=partial(_is_process_name, 'lucifer_run_job')),
         _ProcessMetric('apache',
                        test_func=partial(_is_process_name, 'apache2')),
+        _ProcessMetric('lxc-start',
+                       test_func=partial(_is_process_name, 'lxc-start')),
+        _ProcessMetric('lxc-attach',
+                       test_func=partial(_is_process_name, 'lxc-attach')),
     ]
     self._other_metric = _ProcessMetric('other')
 

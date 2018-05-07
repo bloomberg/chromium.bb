@@ -128,6 +128,24 @@ class TestProcMetrics(cros_test_lib.TestCase):
                        '-watcherpath',
                        '/opt/infra-tools/usr/bin/lucifer_watcher']
           ),
+          _mock_process(
+              name='lxc-start',
+              cmdline=['[lcx monitor] /usr/local/autotest/containers'
+                       ' test_196499100_1525673902_240543]']
+          ),
+          _mock_process(
+              name='lxc-attach',
+              cmdline=['lxc-attach',
+                       '-P',
+                       '/usr/local/autotest/containers',
+                       '-n',
+                       'test_196499100_1525673902_240543',
+                       '--',
+                       'bash',
+                       '-c',
+                       ('/usr/local/autotest/server/autoserv'
+                        ' -s -P 196499100-chromeos-test/group0 ...')]
+          ),
       ]
       proc_metrics.collect_proc_info()
 
@@ -139,6 +157,8 @@ class TestProcMetrics(cros_test_lib.TestCase):
     calls.extend(_expected_calls_for('job_reporter'))
     calls.extend(_expected_calls_for('lucifer_run_job'))
     calls.extend(_expected_calls_for('apache'))
+    calls.extend(_expected_calls_for('lxc-start'))
+    calls.extend(_expected_calls_for('lxc-attach'))
     calls.extend(_expected_calls_for('other'))
     setter.assert_has_calls(calls)
     self.assertEqual(len(setter.mock_calls), len(calls))
