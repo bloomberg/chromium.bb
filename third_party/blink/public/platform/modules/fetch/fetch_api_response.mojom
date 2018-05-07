@@ -60,4 +60,9 @@ struct FetchAPIResponse {
 
   // True when the response was retrieved from Cache Storage.
   bool is_in_cache_storage;
+
+  // Side data is used to pass the metadata of the response (eg. V8 code cache).
+  string side_data_blob_uuid;
+  uint64 side_data_blob_size;
+  Blob? side_data_blob;
 };
