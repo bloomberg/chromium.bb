@@ -1218,11 +1218,21 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
   base::debug::SetCrashKeyString(
       target_ptr_key,
       base::StringPrintf("%p", touchscreen_gesture_target_.target));
+  static auto* root_ptr_key = base::debug::AllocateCrashKeyString(
+      "touchscreen-gesture-root-ptr", base::debug::CrashKeySize::Size64);
+  base::debug::SetCrashKeyString(root_ptr_key,
+                                 base::StringPrintf("%p", root_view));
   static auto* target_ptr_in_map_key = base::debug::AllocateCrashKeyString(
       "touchscreen-gesture-target-in-map", base::debug::CrashKeySize::Size32);
   base::debug::SetCrashKeyString(
       target_ptr_in_map_key,
       touchscreen_gesture_target_in_map_ ? "true" : "false");
+  static auto* map_size_key = base::debug::AllocateCrashKeyString(
+      "touchscreen-gesture-map-size", base::debug::CrashKeySize::Size32);
+  base::debug::SetCrashKeyString(
+      map_size_key,
+      base::StringPrintf("%u", static_cast<int>(owner_map_.size())));
+
   touchscreen_gesture_target_.target->ProcessGestureEvent(event, latency);
 }
 
