@@ -1467,10 +1467,14 @@ void LayoutFlexibleBox::LayoutLineItems(FlexLine* current_line,
     }
     // We may have already forced relayout for orthogonal flowing children in
     // computeInnerFlexBaseSizeForChild.
+    // TODO(crbug.com/839661): LayoutNG does not correctly set
+    // HasPercentHeightDescendants(), so we need to bypass this optimization
+    // for now.
     bool force_child_relayout =
         relayout_children && !relaid_out_children_.Contains(child);
-    if (child->IsLayoutBlock() &&
-        ToLayoutBlock(*child).HasPercentHeightDescendants()) {
+    if (RuntimeEnabledFeatures::LayoutNGEnabled() ||
+        (child->IsLayoutBlock() &&
+         ToLayoutBlock(*child).HasPercentHeightDescendants())) {
       // Have to force another relayout even though the child is sized
       // correctly, because its descendants are not sized correctly yet. Our
       // previous layout of the child was done without an override height set.
