@@ -99,7 +99,7 @@ class UnitTest(unittest.TestCase):
     for i in xrange(num_shards):
       bot_id = previous_task_assignment_map.get(i)
       files['base_trigger_dimensions%d.json' % file_index] = (
-          self.generate_last_task_to_shard_query_response(bot_id))
+          self.generate_last_task_to_shard_query_response(i, bot_id))
       file_index = file_index + 1
     for i in xrange(num_shards):
       task = {
@@ -120,9 +120,14 @@ class UnitTest(unittest.TestCase):
       file_index = file_index + 1
     return files
 
-  def generate_last_task_to_shard_query_response(self, bot_id):
+  def generate_last_task_to_shard_query_response(self, shard, bot_id):
     if len(bot_id):
-      return {'items': [{'tags': [('id:%s' % bot_id)]}]}
+      # Test both cases where bot_id is present and you have to parse
+      # out of the tags.
+      if shard % 2:
+        return {'items': [{'bot_id': bot_id}]}
+      else:
+        return {'items': [{'tags': [('id:%s' % bot_id)]}]}
     return {}
 
   def generate_list_of_eligible_bots_query_response(
