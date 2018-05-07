@@ -258,7 +258,6 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
         false,                  // started_from_context_menu
         CSPDisposition::CHECK,  // should_check_main_world_csp
         false,                  // is_form_submission
-        base::nullopt,          // suggested_filename
         nullptr,                // navigation_ui_data
         "GET", net::HttpRequestHeaders(),
         nullptr,  // resource_request_body

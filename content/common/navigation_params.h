@@ -76,8 +76,7 @@ struct CONTENT_EXPORT CommonNavigationParams {
       base::Optional<SourceLocation> source_location,
       CSPDisposition should_check_main_world_csp,
       bool started_from_context_menu,
-      bool has_user_gesture,
-      const base::Optional<std::string>& suggested_filename);
+      bool has_user_gesture);
   CommonNavigationParams(const CommonNavigationParams& other);
   ~CommonNavigationParams();
 
@@ -161,11 +160,6 @@ struct CONTENT_EXPORT CommonNavigationParams {
 
   // True if the request was user initiated.
   bool has_user_gesture = false;
-
-  // If the navigation started in response to a HTML anchor element with a
-  // download attribute, this is the (possible empty) value of the download
-  // attribute.
-  base::Optional<std::string> suggested_filename;
 };
 
 // Provided by the browser -----------------------------------------------------

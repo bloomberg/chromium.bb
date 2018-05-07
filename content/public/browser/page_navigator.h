@@ -108,11 +108,6 @@ struct CONTENT_EXPORT OpenURLParams {
   // Indicates whether this navigation was started via context menu.
   bool started_from_context_menu;
 
-  // If this event was triggered by an anchor element with a download
-  // attribute, |suggested_filename| will contain the (possibly empty) value of
-  // that attribute.
-  base::Optional<std::string> suggested_filename;
-
   // Indicates that the navigation should happen in an app window if
   // possible, i.e. if an app for the URL is installed.
   bool open_app_window_if_possible;

@@ -654,7 +654,6 @@ std::unique_ptr<NavigationEntryImpl> NavigationEntryImpl::CloneAndReplace(
   // ResetForCommit: reload_type_
   copy->extra_data_ = extra_data_;
   copy->replaced_entry_data_ = replaced_entry_data_;
-  // ResetForCommit: suggested_filename_
 
   return copy;
 }
@@ -693,7 +692,7 @@ CommonNavigationParams NavigationEntryImpl::ConstructCommonNavigationParams(
       navigation_start, method, post_body ? post_body : post_data_,
       base::Optional<SourceLocation>(),
       CSPDisposition::CHECK /* should_check_main_world_csp */,
-      has_started_from_context_menu(), has_user_gesture(), suggested_filename_);
+      has_started_from_context_menu(), has_user_gesture());
 }
 
 RequestNavigationParams NavigationEntryImpl::ConstructRequestNavigationParams(
@@ -771,7 +770,6 @@ void NavigationEntryImpl::ResetForCommit(FrameNavigationEntry* frame_entry) {
   // loaded again in the future.
   set_intent_received_timestamp(base::TimeTicks());
 #endif
-  suggested_filename_.reset();
 }
 
 NavigationEntryImpl::TreeNode* NavigationEntryImpl::GetTreeNode(

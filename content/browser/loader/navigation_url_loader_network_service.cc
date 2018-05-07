@@ -149,14 +149,6 @@ const net::NetworkTrafficAnnotationTag kNavigationUrlLoaderTrafficAnnotation =
         "combination of both) limits the scope of these requests."
       )");
 
-bool HasContentDispositionAttachment(const net::HttpResponseHeaders& headers) {
-  std::string disposition;
-  return headers.GetNormalizedHeader("content-disposition", &disposition) &&
-         !disposition.empty() &&
-         net::HttpContentDisposition(disposition, std::string())
-             .is_attachment();
-}
-
 std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
     NavigationRequestInfo* request_info,
     int frame_tree_node_id,
@@ -289,8 +281,6 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       ResourceContext* resource_context,
       scoped_refptr<URLLoaderFactoryGetter> default_url_loader_factory_getter,
       const GURL& url,
-      base::Optional<url::Origin> initiator_origin,
-      base::Optional<std::string> suggested_filename,
       network::mojom::URLLoaderFactoryRequest proxied_factory_request,
       network::mojom::URLLoaderFactoryPtrInfo proxied_factory_info,
       std::set<std::string> known_schemes,
@@ -300,8 +290,6 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
         resource_context_(resource_context),
         default_url_loader_factory_getter_(default_url_loader_factory_getter),
         url_(url),
-        initiator_origin_(initiator_origin),
-        suggested_filename_(suggested_filename),
         owner_(owner),
         response_loader_binding_(this),
         proxied_factory_request_(std::move(proxied_factory_request)),
@@ -811,17 +799,8 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
     bool is_stream;
     std::unique_ptr<NavigationData> cloned_navigation_data;
     if (IsLoaderInterceptionEnabled()) {
-      DCHECK(url_chain_.empty() || url_ == url_chain_.back());
-      bool is_cross_origin =
-          navigation_loader_util::IsCrossOriginRequest(url_, initiator_origin_);
       bool must_download = navigation_loader_util::MustDownload(
-          url_, head.headers.get(), head.mime_type,
-          suggested_filename_.has_value(), is_cross_origin);
-      if (must_download && suggested_filename_.has_value() && is_cross_origin &&
-          (!head.headers || !HasContentDispositionAttachment(*head.headers))) {
-        download::RecordDownloadCount(
-            download::CROSS_ORIGIN_DOWNLOAD_WITHOUT_CONTENT_DISPOSITION);
-      }
+          url_, head.headers.get(), head.mime_type);
       bool known_mime_type = blink::IsSupportedMimeType(head.mime_type);
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -1095,13 +1074,6 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
   // Current URL that is being navigated, updated after redirection.
   GURL url_;
 
-  base::Optional<url::Origin> initiator_origin_;
-
-  // If this request was triggered by an anchor tag with a download attribute,
-  // the |suggested_filename_| will be the (possibly empty) value of said
-  // attribute.
-  base::Optional<std::string> suggested_filename_;
-
   // Currently used by the AppCache loader to pass its factory to the
   // renderer which enables it to handle subresources.
   base::Optional<SubresourceLoaderParams> subresource_loader_params_;
@@ -1207,8 +1179,6 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
         std::move(new_request), resource_context,
         /* default_url_factory_getter = */ nullptr,
         request_info->common_params.url,
-        request_info->begin_params->initiator_origin,
-        request_info->common_params.suggested_filename,
         /* proxied_url_loader_factory_request */ nullptr,
         /* proxied_url_loader_factory_info */ nullptr, std::set<std::string>(),
         weak_factory_.GetWeakPtr());
@@ -1259,9 +1229,7 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
         frame_tree_node->current_frame_host(), true /* is_navigation */,
         &factory_request);
     if (RenderFrameDevToolsAgentHost::WillCreateURLLoaderFactory(
-            frame_tree_node->current_frame_host(), true,
-            request_info->common_params.suggested_filename.has_value(),
-            &factory_request)) {
+            frame_tree_node->current_frame_host(), true, &factory_request)) {
       use_proxy = true;
     }
     if (use_proxy) {
@@ -1285,8 +1253,6 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
   request_controller_ = std::make_unique<URLLoaderRequestController>(
       std::move(initial_interceptors), std::move(new_request), resource_context,
       partition->url_loader_factory_getter(), request_info->common_params.url,
-      request_info->begin_params->initiator_origin,
-      request_info->common_params.suggested_filename,
       std::move(proxied_factory_request), std::move(proxied_factory_info),
       std::move(known_schemes), weak_factory_.GetWeakPtr());
   BrowserThread::PostTask(

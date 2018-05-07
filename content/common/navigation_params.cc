@@ -44,8 +44,7 @@ CommonNavigationParams::CommonNavigationParams(
     base::Optional<SourceLocation> source_location,
     CSPDisposition should_check_main_world_csp,
     bool started_from_context_menu,
-    bool has_user_gesture,
-    const base::Optional<std::string>& suggested_filename)
+    bool has_user_gesture)
     : url(url),
       referrer(referrer),
       transition(transition),
@@ -63,8 +62,7 @@ CommonNavigationParams::CommonNavigationParams(
       source_location(source_location),
       should_check_main_world_csp(should_check_main_world_csp),
       started_from_context_menu(started_from_context_menu),
-      has_user_gesture(has_user_gesture),
-      suggested_filename(suggested_filename) {
+      has_user_gesture(has_user_gesture) {
   // |method != "POST"| should imply absence of |post_data|.
   if (method != "POST" && post_data) {
     NOTREACHED();

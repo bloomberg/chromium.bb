@@ -386,15 +386,6 @@ void WebFrameTestClient::LoadErrorPage(int reason) {
 void WebFrameTestClient::DidStartProvisionalLoad(
     blink::WebDocumentLoader* document_loader,
     blink::WebURLRequest& request) {
-  if (request.GetSuggestedFilename().has_value() &&
-      test_runner()->shouldWaitUntilExternalURLLoad()) {
-    delegate_->PrintMessage(
-        std::string("Downloading URL with suggested filename \"") +
-        request.GetSuggestedFilename()->Utf8() + "\"\n");
-    delegate_->PostTask(base::BindRepeating(&WebTestDelegate::TestFinished,
-                                            base::Unretained(delegate_)));
-  }
-
   // PlzNavigate
   // A provisional load notification is received when a frame navigation is
   // sent to the browser. We don't want to log it again during commit.

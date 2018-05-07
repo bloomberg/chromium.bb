@@ -36,10 +36,9 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
       has_user_gesture,  // has_user_gesture
       false,             // is_post, doesn't matter here.
       page_transition,
-      false,           // is_redirect, doesn't matter here.
-      true,            // is_external_protocol
-      false,           // is_main_frame
-      GURL(),          // base_url_for_data_url, not applicable.
-      base::nullopt);  // suggested_filename
+      false,    // is_redirect, doesn't matter here.
+      true,     // is_external_protocol
+      false,    // is_main_frame
+      GURL());  // base_url_for_data_url, not applicable.
   delegate->ShouldIgnoreNavigation(navigation_params);
 }

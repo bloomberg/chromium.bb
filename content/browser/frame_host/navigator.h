@@ -141,8 +141,7 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       WindowOpenDisposition disposition,
       bool should_replace_current_entry,
       bool user_gesture,
-      blink::WebTriggeringEventInfo triggering_event_info,
-      const base::Optional<std::string>& suggested_filename) {}
+      blink::WebTriggeringEventInfo triggering_event_info) {}
 
   // Called when a document requests a navigation in another document through a
   // RenderFrameProxy. If |method| is "POST", then |post_body| needs to specify
@@ -156,8 +155,7 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       bool should_replace_current_entry,
       const std::string& method,
       scoped_refptr<network::ResourceRequestBody> post_body,
-      const std::string& extra_headers,
-      const base::Optional<std::string>& suggested_filename) {}
+      const std::string& extra_headers) {}
 
   // Called after receiving a BeforeUnloadACK IPC from the renderer. If
   // |frame_tree_node| has a NavigationRequest waiting for the renderer
@@ -211,8 +209,7 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
   // With sufficiently bad interleaving of IPCs, this may no longer be the
   // pending NavigationEntry, in which case the pending NavigationEntry will not
   // be discarded.
-  virtual void DiscardPendingEntryIfNeeded(int expected_pending_entry_id,
-                                           bool is_download) {}
+  virtual void DiscardPendingEntryIfNeeded(int expected_pending_entry_id) {}
 
  protected:
   friend class base::RefCounted<Navigator>;

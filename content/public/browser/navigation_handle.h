@@ -262,10 +262,6 @@ class CONTENT_EXPORT NavigationHandle {
   // Returns true if this navigation was initiated by a form submission.
   virtual bool IsFormSubmission() = 0;
 
-  // If this navigation was triggered by an anchor with a download attribute,
-  // this returns the (possibly empty) value of that attribute.
-  virtual const base::Optional<std::string>& GetSuggestedFilename() = 0;
-
   // Testing methods ----------------------------------------------------------
   //
   // The following methods should be used exclusively for writing unit tests.

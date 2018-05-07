@@ -430,14 +430,6 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
     replaced_entry_data_ = data;
   }
 
-  const base::Optional<std::string> suggested_filename() const {
-    return suggested_filename_;
-  }
-  void set_suggested_filename(
-      const base::Optional<std::string> suggested_filename) {
-    suggested_filename_ = suggested_filename;
-  }
-
  private:
   // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
   // Session/Tab restore save portions of this class so that it can be recreated
@@ -580,11 +572,6 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   // subframe navigations but we only need to track it for main frames, that's
   // why the field is listed here.
   base::Optional<ReplacedNavigationEntryData> replaced_entry_data_;
-
-  // If this event was triggered by an anchor element with a download
-  // attribute, |suggested_filename_| will contain the (possibly empty) value of
-  // that attribute. Reset at commit and not persisted.
-  base::Optional<std::string> suggested_filename_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationEntryImpl);
 };

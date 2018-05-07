@@ -557,22 +557,10 @@ bool MimeSniffingResourceHandler::MustDownload() {
 
   must_download_is_set_ = true;
 
-  bool is_cross_origin =
-      (request()->initiator().has_value() &&
-       !request()->url_chain().back().SchemeIsBlob() &&
-       !request()->url_chain().back().SchemeIsFileSystem() &&
-       !request()->url_chain().back().SchemeIs(url::kAboutScheme) &&
-       !request()->url_chain().back().SchemeIs(url::kDataScheme) &&
-       request()->initiator()->GetURL() !=
-           request()->url_chain().back().GetOrigin());
-
   std::string disposition;
   request()->GetResponseHeaderByName("content-disposition", &disposition);
   if (!disposition.empty() &&
       net::HttpContentDisposition(disposition, std::string()).is_attachment()) {
-    must_download_ = true;
-  } else if (GetRequestInfo()->suggested_filename().has_value() &&
-             !is_cross_origin) {
     must_download_ = true;
   } else if (GetContentClient()->browser()->ShouldForceDownloadResource(
                  request()->url(), response_->head.mime_type)) {
@@ -590,11 +578,6 @@ bool MimeSniffingResourceHandler::MustDownload() {
             info->GetNavigationUIData());
   } else {
     must_download_ = false;
-  }
-
-  if (GetRequestInfo()->suggested_filename().has_value() && !must_download_) {
-    download::RecordDownloadCount(
-        download::CROSS_ORIGIN_DOWNLOAD_WITHOUT_CONTENT_DISPOSITION);
   }
 
   return must_download_;

@@ -554,11 +554,7 @@ CommonNavigationParams MakeCommonNavigationParams(
       base::TimeTicks::Now(), info.url_request.HttpMethod().Latin1(),
       GetRequestBodyForWebURLRequest(info.url_request), source_location,
       should_check_main_world_csp, false /* started_from_context_menu */,
-      info.url_request.HasUserGesture(),
-      info.url_request.GetSuggestedFilename().has_value()
-          ? base::Optional<std::string>(
-                info.url_request.GetSuggestedFilename()->Utf8())
-          : base::nullopt);
+      info.url_request.HasUserGesture());
 }
 
 WebFrameLoadType NavigationTypeToLoadType(
@@ -5967,10 +5963,7 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
       info.url_request.CheckForBrowserSideNavigation() &&
       // No need to dispatch beforeunload if the frame has not committed a
       // navigation and contains an empty initial document.
-      (has_accessed_initial_document_ || !current_history_item_.IsNull()) &&
-      // Don't dispatch beforeunload if the navigation might end up as a
-      // download.
-      !info.url_request.GetSuggestedFilename().has_value();
+      (has_accessed_initial_document_ || !current_history_item_.IsNull());
 
   if (should_dispatch_before_unload) {
     // Execute the BeforeUnload event. If asked not to proceed or the frame is
@@ -6406,11 +6399,6 @@ void RenderFrameImpl::OpenURL(const NavigationPolicyInfo& info,
                                   : content::Referrer();
   params.disposition = RenderViewImpl::NavigationPolicyToDisposition(policy);
   params.triggering_event_info = info.triggering_event_info;
-  params.suggested_filename =
-      info.url_request.GetSuggestedFilename().has_value()
-          ? base::Optional<std::string>(
-                info.url_request.GetSuggestedFilename()->Utf8())
-          : base::nullopt;
 
   if (IsBrowserInitiated(pending_navigation_params_.get())) {
     // This is necessary to preserve the should_replace_current_entry value on

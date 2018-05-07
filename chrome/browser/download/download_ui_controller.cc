@@ -143,8 +143,7 @@ void DownloadUIController::OnDownloadCreated(content::DownloadManager* manager,
   content::WebContents* web_contents =
       content::DownloadItemUtils::GetWebContents(item);
   if (web_contents && (item->IsSavePackageDownload() ||
-                       (!web_contents->GetURL().is_empty() &&
-                        web_contents->GetURL() != item->GetOriginalUrl() &&
+                       (web_contents->GetURL() != item->GetOriginalUrl() &&
                         web_contents->GetURL() != item->GetURL()))) {
     auto* security_state_tab_helper =
         SecurityStateTabHelper::FromWebContents(web_contents);

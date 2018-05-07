@@ -86,8 +86,7 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
       WindowOpenDisposition disposition,
       bool should_replace_current_entry,
       bool user_gesture,
-      blink::WebTriggeringEventInfo triggering_event_info,
-      const base::Optional<std::string>& suggested_filename) override;
+      blink::WebTriggeringEventInfo triggering_event_info) override;
   void NavigateFromFrameProxy(
       RenderFrameHostImpl* render_frame_host,
       const GURL& url,
@@ -97,8 +96,7 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
       bool should_replace_current_entry,
       const std::string& method,
       scoped_refptr<network::ResourceRequestBody> post_body,
-      const std::string& extra_headers,
-      const base::Optional<std::string>& suggested_filename) override;
+      const std::string& extra_headers) override;
   void OnBeforeUnloadACK(FrameTreeNode* frame_tree_node,
                          bool proceed,
                          const base::TimeTicks& proceed_time) override;
@@ -117,8 +115,7 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
       const base::TimeTicks& renderer_before_unload_end_time) override;
   void CancelNavigation(FrameTreeNode* frame_tree_node,
                         bool inform_renderer) override;
-  void DiscardPendingEntryIfNeeded(int expected_pending_entry_id,
-                                   bool is_download) override;
+  void DiscardPendingEntryIfNeeded(int expected_pending_entry_id) override;
 
  private:
   // Holds data used to track browser side navigation metrics.

@@ -770,10 +770,6 @@ void RenderFrameProxy::Navigate(const blink::WebURLRequest& request,
   params.should_replace_current_entry = should_replace_current_entry;
   params.user_gesture = request.HasUserGesture();
   params.triggering_event_info = blink::WebTriggeringEventInfo::kUnknown;
-  params.suggested_filename =
-      request.GetSuggestedFilename().has_value()
-          ? base::Optional<std::string>(request.GetSuggestedFilename()->Utf8())
-          : base::nullopt;
 
   Send(new FrameHostMsg_OpenURL(routing_id_, params));
 }

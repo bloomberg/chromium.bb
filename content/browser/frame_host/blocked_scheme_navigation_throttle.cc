@@ -36,12 +36,6 @@ BlockedSchemeNavigationThrottle::WillProcessResponse() {
   if (handle->IsDownload())
     return PROCEED;
 
-  // We treat <a download href="data:.."> and <a download href="filesystem:..">
-  // as a navigation, but it will always result in a download, not a top-level
-  // navigation, so not blocking it here.
-  if (handle->GetSuggestedFilename().has_value())
-    return PROCEED;
-
   RenderFrameHost* top_frame =
       handle->frame_tree_node()->frame_tree()->root()->current_frame_host();
   top_frame->AddMessageToConsole(

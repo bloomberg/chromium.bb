@@ -809,7 +809,6 @@ void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
     entry->set_source_site_instance(
         static_cast<SiteInstanceImpl*>(params.source_site_instance.get()));
     entry->SetRedirectChain(params.redirect_chain);
-    entry->set_suggested_filename(params.suggested_filename);
   }
 
   // Set the FTN ID (only used in non-site-per-process, for tests).
@@ -1922,8 +1921,7 @@ void NavigationControllerImpl::NavigateFromFrameProxy(
     bool should_replace_current_entry,
     const std::string& method,
     scoped_refptr<network::ResourceRequestBody> post_body,
-    const std::string& extra_headers,
-    const base::Optional<std::string>& suggested_filename) {
+    const std::string& extra_headers) {
   FrameTreeNode* node = render_frame_host->frame_tree_node();
   // Create a NavigationEntry for the transfer, without making it the pending
   // entry. Subframe transfers should have a clone of the last committed entry
@@ -1963,7 +1961,6 @@ void NavigationControllerImpl::NavigateFromFrameProxy(
         static_cast<SiteInstanceImpl*>(source_site_instance));
     entry->root_node()->frame_entry->set_method(method);
   }
-  entry->set_suggested_filename(suggested_filename);
 
   // Don't allow an entry replacement if there is no entry to replace.
   // http://crbug.com/457149

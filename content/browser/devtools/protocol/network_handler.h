@@ -135,7 +135,6 @@ class NetworkHandler : public DevToolsDomainHandler,
   bool MaybeCreateProxyForInterception(
       const base::UnguessableToken& frame_token,
       int process_id,
-      bool has_suggested_download_filename,
       network::mojom::URLLoaderFactoryRequest* target_factory_request);
 
   void ApplyOverrides(net::HttpRequestHeaders* headers,

@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/strings/utf_string_conversions.h"
 #include "components/download/public/common/download_url_loader_factory_getter.h"
 #include "components/download/public/common/stream_handle_input_stream.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -90,7 +89,6 @@ ResourceDownloader::InterceptNavigationResponse(
     const GURL& tab_url,
     const GURL& tab_referrer_url,
     std::vector<GURL> url_chain,
-    const base::Optional<std::string>& suggested_filename,
     const scoped_refptr<network::ResourceResponse>& response,
     net::CertStatus cert_status,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
@@ -102,7 +100,7 @@ ResourceDownloader::InterceptNavigationResponse(
       site_url, tab_url, tab_referrer_url, download::DownloadItem::kInvalidId,
       task_runner, std::move(url_loader_factory_getter));
   downloader->InterceptResponse(std::move(response), std::move(url_chain),
-                                suggested_filename, cert_status,
+                                cert_status,
                                 std::move(url_loader_client_endpoints));
   return downloader;
 }
@@ -173,18 +171,14 @@ void ResourceDownloader::Start(
 void ResourceDownloader::InterceptResponse(
     const scoped_refptr<network::ResourceResponse>& response,
     std::vector<GURL> url_chain,
-    const base::Optional<std::string>& suggested_filename,
     net::CertStatus cert_status,
     network::mojom::URLLoaderClientEndpointsPtr endpoints) {
   // Set the URLLoader.
   url_loader_.Bind(std::move(endpoints->url_loader));
 
   // Create the new URLLoaderClient that will intercept the navigation.
-  auto save_info = std::make_unique<DownloadSaveInfo>();
-  if (suggested_filename.has_value())
-    save_info->suggested_name = base::UTF8ToUTF16(suggested_filename.value());
   url_loader_client_ = std::make_unique<DownloadResponseHandler>(
-      resource_request_.get(), this, std::move(save_info),
+      resource_request_.get(), this, std::make_unique<DownloadSaveInfo>(),
       false, /* is_parallel_request */
       false, /* is_transient */
       false, /* fetch_error_body */

@@ -13,9 +13,6 @@ class GURL;
 namespace net {
 class HttpResponseHeaders;
 }
-namespace url {
-class Origin;
-}
 
 namespace content {
 namespace navigation_loader_util {
@@ -23,20 +20,13 @@ namespace navigation_loader_util {
 // Returns true if the given response must be downloaded because of the headers.
 bool MustDownload(const GURL& url,
                   net::HttpResponseHeaders* headers,
-                  const std::string& mime_type,
-                  bool have_suggested_filename,
-                  bool is_cross_origin);
+                  const std::string& mime_type);
 
 // Determines whether given response would result in a download.
 // Note this doesn't handle the case when a plugin exists for the |mime_type|.
 bool IsDownload(const GURL& url,
                 net::HttpResponseHeaders* headers,
-                const std::string& mime_type,
-                bool have_suggested_filename,
-                bool is_cross_origin);
-
-bool IsCrossOriginRequest(const GURL& request_url,
-                          const base::Optional<url::Origin>& initiator);
+                const std::string& mime_type);
 
 }  // namespace navigation_loader_util
 }  // namespace content

@@ -8097,39 +8097,4 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, DataURLSameDocumentNavigation) {
   EXPECT_TRUE(capturer.is_same_document());
 }
 
-IN_PROC_BROWSER_TEST_F(ContentBrowserTest, HideDownloadFromUnmodifiedNewTab) {
-  GURL url("data:application/octet-stream,");
-
-  const NavigationControllerImpl& controller =
-      static_cast<const NavigationControllerImpl&>(
-          shell()->web_contents()->GetController());
-
-  {
-    base::ScopedAllowBlockingForTesting allow_blocking;
-    base::ScopedTempDir downloads_directory;
-    ASSERT_TRUE(downloads_directory.CreateUniqueTempDir());
-    DownloadManager* download_manager = BrowserContext::GetDownloadManager(
-        shell()->web_contents()->GetBrowserContext());
-    ShellDownloadManagerDelegate* download_delegate =
-        static_cast<ShellDownloadManagerDelegate*>(
-            download_manager->GetDelegate());
-    download_delegate->SetDownloadBehaviorForTesting(
-        downloads_directory.GetPath());
-
-    DownloadTestObserverTerminal observer(
-        download_manager, 1, DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
-
-    OpenURLParams params(url, Referrer(), WindowOpenDisposition::CURRENT_TAB,
-                         ui::PAGE_TRANSITION_LINK, true);
-    params.suggested_filename = std::string("foo");
-
-    shell()->web_contents()->OpenURL(params);
-    WaitForLoadStop(shell()->web_contents());
-    observer.WaitForFinished();
-  }
-
-  EXPECT_FALSE(controller.GetPendingEntry());
-  EXPECT_FALSE(controller.GetVisibleEntry());
-}
-
 }  // namespace content

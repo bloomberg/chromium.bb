@@ -155,8 +155,7 @@ DevToolsURLInterceptorRequestJob::SubRequest::SubRequest(
       resource_request_info->ShouldReportRawHeaders(),
       resource_request_info->IsAsync(),
       resource_request_info->GetPreviewsState(), resource_request_info->body(),
-      resource_request_info->initiated_in_secure_context(),
-      resource_request_info->suggested_filename());
+      resource_request_info->initiated_in_secure_context());
   extra_data->AssociateWithRequest(request_.get());
 
   if (request_details.post_data)
@@ -549,12 +548,9 @@ bool IsDownload(net::URLRequest* orig_request, net::URLRequest* subrequest) {
   // should not have this problem, as it's on top of MIME sniffer.
   std::string mime_type;
   subrequest->GetMimeType(&mime_type);
-  bool is_cross_origin = navigation_loader_util::IsCrossOriginRequest(
-      orig_request->url(), orig_request->initiator());
   return req_info->allow_download() &&
          navigation_loader_util::IsDownload(
-             orig_request->url(), subrequest->response_headers(), mime_type,
-             req_info->suggested_filename().has_value(), is_cross_origin);
+             orig_request->url(), subrequest->response_headers(), mime_type);
 }
 
 }  // namespace

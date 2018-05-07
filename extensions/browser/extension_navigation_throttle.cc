@@ -85,13 +85,6 @@ ExtensionNavigationThrottle::WillStartOrRedirectRequest() {
           navigation_handle()->GetStartingSiteInstance()->GetSiteURL());
 
   if (!url_has_extension_scheme && !current_frame_is_extension_process) {
-    // Relax this restriction for navigations that will result in downloads.
-    // See https://crbug.com/714373.
-    if (target_origin.scheme() == kExtensionScheme &&
-        navigation_handle()->GetSuggestedFilename().has_value()) {
-      return content::NavigationThrottle::PROCEED;
-    }
-
     // Relax this restriction for apps that use <webview>.  See
     // https://crbug.com/652077.
     bool has_webview_permission =

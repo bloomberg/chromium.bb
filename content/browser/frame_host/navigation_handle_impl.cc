@@ -118,7 +118,6 @@ std::unique_ptr<NavigationHandleImpl> NavigationHandleImpl::Create(
     bool started_from_context_menu,
     CSPDisposition should_check_main_world_csp,
     bool is_form_submission,
-    const base::Optional<std::string>& suggested_filename,
     std::unique_ptr<NavigationUIData> navigation_ui_data,
     const std::string& method,
     net::HttpRequestHeaders request_headers,
@@ -133,10 +132,10 @@ std::unique_ptr<NavigationHandleImpl> NavigationHandleImpl::Create(
       url, redirect_chain, frame_tree_node, is_renderer_initiated,
       is_same_document, navigation_start, pending_nav_entry_id,
       started_from_context_menu, should_check_main_world_csp,
-      is_form_submission, suggested_filename, std::move(navigation_ui_data),
-      method, std::move(request_headers), resource_request_body,
-      sanitized_referrer, has_user_gesture, transition, is_external_protocol,
-      request_context_type, mixed_content_context_type));
+      is_form_submission, std::move(navigation_ui_data), method,
+      std::move(request_headers), resource_request_body, sanitized_referrer,
+      has_user_gesture, transition, is_external_protocol, request_context_type,
+      mixed_content_context_type));
 }
 
 NavigationHandleImpl::NavigationHandleImpl(
@@ -150,7 +149,6 @@ NavigationHandleImpl::NavigationHandleImpl(
     bool started_from_context_menu,
     CSPDisposition should_check_main_world_csp,
     bool is_form_submission,
-    const base::Optional<std::string>& suggested_filename,
     std::unique_ptr<NavigationUIData> navigation_ui_data,
     const std::string& method,
     net::HttpRequestHeaders request_headers,
@@ -192,7 +190,6 @@ NavigationHandleImpl::NavigationHandleImpl(
       navigation_type_(NAVIGATION_TYPE_UNKNOWN),
       should_check_main_world_csp_(should_check_main_world_csp),
       expected_render_process_host_id_(ChildProcessHost::kInvalidUniqueID),
-      suggested_filename_(suggested_filename),
       is_transferring_(false),
       is_form_submission_(is_form_submission),
       should_replace_current_entry_(false),
@@ -602,11 +599,6 @@ bool NavigationHandleImpl::IsFormSubmission() {
   return is_form_submission_;
 }
 
-const base::Optional<std::string>&
-NavigationHandleImpl::GetSuggestedFilename() {
-  return suggested_filename_;
-}
-
 void NavigationHandleImpl::InitServiceWorkerHandle(
     ServiceWorkerContextWrapper* service_worker_context) {
   service_worker_handle_.reset(
@@ -794,16 +786,8 @@ void NavigationHandleImpl::WillProcessResponse(
   // If the navigation is done processing the response, then it's ready to
   // commit. Inform observers that the navigation is now ready to commit, unless
   // it is not set to commit (204/205s/downloads).
-  if (result.action() == NavigationThrottle::PROCEED && render_frame_host_) {
-    CHECK(!suggested_filename_.has_value() ||
-          !(url_.SchemeIsBlob() || url_.SchemeIsFileSystem() ||
-            url_.SchemeIs(url::kAboutScheme) ||
-            url_.SchemeIs(url::kDataScheme)))
-        << "Blob, filesystem, data, and about URLs with a suggested filename "
-           "should always result in a download, so we should never process a "
-           "navigation response here.";
+  if (result.action() == NavigationThrottle::PROCEED && render_frame_host_)
     ReadyToCommitNavigation(render_frame_host_, false);
-  }
 
   TRACE_EVENT_ASYNC_STEP_INTO1("navigation", "NavigationHandle", this,
                                "ProcessResponse", "result", result.action());

@@ -113,8 +113,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       bool should_replace_current_entry,
       const std::string& method,
       scoped_refptr<network::ResourceRequestBody> post_body,
-      const std::string& extra_headers,
-      const base::Optional<std::string>& suggested_filename);
+      const std::string& extra_headers);
 
   void ClearAllScreenshots() override;
 

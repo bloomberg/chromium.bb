@@ -50,7 +50,6 @@ NavigationHandle::CreateNavigationHandleForTesting(
           false,                  // started_from_context_menu
           CSPDisposition::CHECK,  // should_check_main_world_csp
           is_form_submission,     // is_form_submission
-          base::nullopt,          // suggested_filename
           nullptr,                // navigation_ui_data
           method, net::HttpRequestHeaders(), resource_request_body, Referrer(),
           false,  // has_user_gesture
