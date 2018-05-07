@@ -232,7 +232,7 @@ AV1LfMTInfo *get_lf_job_info(AV1LfSync *lf_sync) {
 // Implement row loopfiltering for each thread.
 static INLINE void thread_loop_filter_rows(
     const YV12_BUFFER_CONFIG *const frame_buffer, AV1_COMMON *const cm,
-    struct macroblockd_plane planes[MAX_MB_PLANE], MACROBLOCKD *xd,
+    struct macroblockd_plane *planes, MACROBLOCKD *xd,
     AV1LfSync *const lf_sync) {
   const int sb_cols =
       ALIGN_POWER_OF_TWO(cm->mi_cols, MAX_MIB_SIZE_LOG2) >> MAX_MIB_SIZE_LOG2;
