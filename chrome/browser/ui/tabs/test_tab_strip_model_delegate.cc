@@ -19,7 +19,7 @@ void TestTabStripModelDelegate::AddTabAt(const GURL& url,
 }
 
 Browser* TestTabStripModelDelegate::CreateNewStripWithContents(
-    std::vector<NewStripContents> contentses,
+    const std::vector<NewStripContents>& contentses,
     const gfx::Rect& window_bounds,
     bool maximize) {
   return NULL;
