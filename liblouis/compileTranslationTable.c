@@ -2668,8 +2668,8 @@ compilePassOpcode(FileInfo *nested, TranslationTableOpcode opcode,
 /* End of multipass compiler */
 
 static int
-compileBrailleIndicator(FileInfo *nested, const char *ermsg, TranslationTableOpcode opcode,
-		TranslationTableOffset *rule, int *lastToken,
+compileBrailleIndicator(FileInfo *nested, const char *ermsg,
+		TranslationTableOpcode opcode, TranslationTableOffset *rule, int *lastToken,
 		TranslationTableOffset *newRuleOffset, TranslationTableRule **newRule, int noback,
 		int nofor, TranslationTableHeader **table) {
 	CharsString token;
