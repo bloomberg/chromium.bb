@@ -245,6 +245,7 @@
 # Fails because of missing support to navigate to filesystem: URLs.
 # https://crbug.com/797292
 -ProcessManagerBrowserTest.NestedURLNavigationsToExtensionBlocked
+-ProcessManagerBrowserTest.NestedURLDownloadsToExtensionAllowed
 -SecurityStateTabHelperTest.DefaultSecurityLevelOnSecureFilesystemUrl
 
 # Tests check state of NQE in the browser process, but need to be updated to
