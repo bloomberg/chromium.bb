@@ -50,7 +50,7 @@ class GPU_EXPORT DecoderClient {
 
   // Called when SwapBuffers, PostSubBufferCHROMIUM,
   // SwapBuffersWithBoundsCHROMIUM or CommitOverlayPlanesCHROMIUM is called.
-  virtual void OnSwapBuffers(uint32_t flags) = 0;
+  virtual void OnSwapBuffers(uint64_t swap_id, uint32_t flags) = 0;
 };
 
 }  // namespace gpu

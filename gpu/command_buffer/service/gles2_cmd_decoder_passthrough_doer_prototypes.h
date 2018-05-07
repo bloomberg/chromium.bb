@@ -731,7 +731,7 @@ error::Error DoGenVertexArraysOES(GLsizei n, volatile GLuint* arrays);
 error::Error DoDeleteVertexArraysOES(GLsizei n, const volatile GLuint* arrays);
 error::Error DoIsVertexArrayOES(GLuint array, uint32_t* result);
 error::Error DoBindVertexArrayOES(GLuint array);
-error::Error DoSwapBuffers(GLbitfield flags);
+error::Error DoSwapBuffers(uint64_t swap_id, GLbitfield flags);
 error::Error DoGetMaxValueInBufferCHROMIUM(GLuint buffer_id,
                                            GLsizei count,
                                            GLenum type,
@@ -764,10 +764,12 @@ error::Error DoGetUniformsES3CHROMIUM(GLuint program,
                                       std::vector<uint8_t>* data);
 error::Error DoGetTranslatedShaderSourceANGLE(GLuint shader,
                                               std::string* source);
-error::Error DoSwapBuffersWithBoundsCHROMIUM(GLsizei count,
+error::Error DoSwapBuffersWithBoundsCHROMIUM(uint64_t swap_id,
+                                             GLsizei count,
                                              const volatile GLint* rects,
                                              GLbitfield flags);
-error::Error DoPostSubBufferCHROMIUM(GLint x,
+error::Error DoPostSubBufferCHROMIUM(uint64_t swap_id,
+                                     GLint x,
                                      GLint y,
                                      GLint width,
                                      GLint height,
@@ -870,7 +872,7 @@ error::Error DoScheduleDCLayerCHROMIUM(
     GLuint edge_aa_mask,
     GLenum filter,
     const GLfloat* bounds_rect);
-error::Error DoCommitOverlayPlanesCHROMIUM(GLbitfield flags);
+error::Error DoCommitOverlayPlanesCHROMIUM(uint64_t swap_id, GLbitfield flags);
 error::Error DoSetColorSpaceMetadataCHROMIUM(GLuint texture_id,
                                              gfx::ColorSpace color_space);
 error::Error DoFlushDriverCachesCHROMIUM();

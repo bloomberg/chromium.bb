@@ -3204,7 +3204,8 @@ error::Error GLES2DecoderPassthroughImpl::DoBindVertexArrayOES(GLuint array) {
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::DoSwapBuffers(GLbitfield flags) {
+error::Error GLES2DecoderPassthroughImpl::DoSwapBuffers(uint64_t swap_id,
+                                                        GLbitfield flags) {
   dc_layer_shared_state_.reset();
 
   if (offscreen_) {
@@ -3256,7 +3257,7 @@ error::Error GLES2DecoderPassthroughImpl::DoSwapBuffers(GLbitfield flags) {
     return error::kNoError;
   }
 
-  client_->OnSwapBuffers(flags);
+  client_->OnSwapBuffers(swap_id, flags);
   return CheckSwapBuffersResult(surface_->SwapBuffers(base::DoNothing()),
                                 "SwapBuffers");
 }
@@ -3824,6 +3825,7 @@ error::Error GLES2DecoderPassthroughImpl::DoGetTranslatedShaderSourceANGLE(
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoSwapBuffersWithBoundsCHROMIUM(
+    uint64_t swap_id,
     GLsizei count,
     const volatile GLint* rects,
     GLbitfield flags) {
@@ -3840,13 +3842,14 @@ error::Error GLES2DecoderPassthroughImpl::DoSwapBuffersWithBoundsCHROMIUM(
                           rects[i * 4 + 3]);
   }
 
-  client_->OnSwapBuffers(flags);
+  client_->OnSwapBuffers(swap_id, flags);
   return CheckSwapBuffersResult(
       surface_->SwapBuffersWithBounds(bounds, base::DoNothing()),
       "SwapBuffersWithBounds");
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoPostSubBufferCHROMIUM(
+    uint64_t swap_id,
     GLint x,
     GLint y,
     GLint width,
@@ -3860,7 +3863,7 @@ error::Error GLES2DecoderPassthroughImpl::DoPostSubBufferCHROMIUM(
 
   dc_layer_shared_state_.reset();
 
-  client_->OnSwapBuffers(flags);
+  client_->OnSwapBuffers(swap_id, flags);
   return CheckSwapBuffersResult(
       surface_->PostSubBuffer(x, y, width, height, base::DoNothing()),
       "PostSubBuffer");
@@ -4268,6 +4271,7 @@ error::Error GLES2DecoderPassthroughImpl::DoScheduleDCLayerCHROMIUM(
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoCommitOverlayPlanesCHROMIUM(
+    uint64_t swap_id,
     GLbitfield flags) {
   if (!surface_->SupportsCommitOverlayPlanes()) {
     InsertError(GL_INVALID_OPERATION,
@@ -4277,7 +4281,7 @@ error::Error GLES2DecoderPassthroughImpl::DoCommitOverlayPlanesCHROMIUM(
 
   dc_layer_shared_state_.reset();
 
-  client_->OnSwapBuffers(flags);
+  client_->OnSwapBuffers(swap_id, flags);
   return CheckSwapBuffersResult(
       surface_->CommitOverlayPlanes(base::DoNothing()), "CommitOverlayPlanes");
 }

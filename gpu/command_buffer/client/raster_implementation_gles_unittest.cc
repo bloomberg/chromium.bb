@@ -176,12 +176,15 @@ class ContextSupportStub : public ContextSupport {
   void SetAggressivelyFreeResources(bool aggressively_free_resources) override {
   }
 
-  void Swap(uint32_t flags) override {}
+  void Swap(uint32_t flags, SwapCompletedCallback swap_completed) override {}
   void SwapWithBounds(const std::vector<gfx::Rect>& rects,
-                      uint32_t flags) override {}
+                      uint32_t flags,
+                      SwapCompletedCallback swap_completed) override {}
   void PartialSwapBuffers(const gfx::Rect& sub_buffer,
-                          uint32_t flags) override {}
-  void CommitOverlayPlanes(uint32_t flags) override {}
+                          uint32_t flags,
+                          SwapCompletedCallback swap_completed) override {}
+  void CommitOverlayPlanes(uint32_t flags,
+                           SwapCompletedCallback swap_completed) override {}
   void ScheduleOverlayPlane(int plane_z_order,
                             gfx::OverlayTransform plane_transform,
                             unsigned overlay_texture_id,

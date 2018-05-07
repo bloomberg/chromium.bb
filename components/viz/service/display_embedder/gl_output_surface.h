@@ -17,8 +17,7 @@ class SyntheticBeginFrameSource;
 
 // An OutputSurface implementation that directly draws and
 // swaps to an actual GL surface.
-class GLOutputSurface : public OutputSurface,
-                        public OutputSurface::LatencyInfoCache::Client {
+class GLOutputSurface : public OutputSurface {
  public:
   GLOutputSurface(scoped_refptr<VizProcessContextProvider> context_provider,
                   SyntheticBeginFrameSource* synthetic_begin_frame_source);
@@ -47,10 +46,6 @@ class GLOutputSurface : public OutputSurface,
   gpu::VulkanSurface* GetVulkanSurface() override;
 #endif
 
-  // OutputSurface::LatencyInfoCache::Client implementation.
-  void LatencyInfoCompleted(
-      const std::vector<ui::LatencyInfo>& latency_info) override;
-
  protected:
   OutputSurfaceClient* client() const { return client_; }
 
@@ -60,7 +55,8 @@ class GLOutputSurface : public OutputSurface,
 
  private:
   // Called when a swap completion is signaled from ImageTransportSurface.
-  void OnGpuSwapBuffersCompleted(const gpu::SwapBuffersCompleteParams& params);
+  void OnGpuSwapBuffersCompleted(std::vector<ui::LatencyInfo> latency_info,
+                                 const gpu::SwapBuffersCompleteParams& params);
   void OnVSyncParametersUpdated(base::TimeTicks timebase,
                                 base::TimeDelta interval);
   void OnPresentation(uint64_t swap_id,
@@ -74,7 +70,6 @@ class GLOutputSurface : public OutputSurface,
   // True if the draw rectangle has been set at all since the last resize.
   bool has_set_draw_rectangle_since_last_resize_ = false;
   gfx::Size size_;
-  LatencyInfoCache latency_info_cache_;
 
   base::WeakPtrFactory<GLOutputSurface> weak_ptr_factory_;
 };

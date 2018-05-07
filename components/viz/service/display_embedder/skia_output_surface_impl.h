@@ -101,8 +101,7 @@ class SkiaOutputSurfaceImpl : public SkiaOutputSurface,
   void SetSnapshotRequestedCallback(const base::Closure& callback) override;
   void UpdateVSyncParameters(base::TimeTicks timebase,
                              base::TimeDelta interval) override;
-  void BufferPresented(uint64_t swap_id,
-                       const gfx::PresentationFeedback& feedback) override;
+  void BufferPresented(const gfx::PresentationFeedback& feedback) override;
 
   void AddFilter(IPC::MessageFilter* message_filter) override;
   int32_t GetRouteID() const override;
@@ -152,6 +151,9 @@ class SkiaOutputSurfaceImpl : public SkiaOutputSurface,
   void OnPromiseTextureFullfill(const RenderPassId id,
                                 GrBackendTexture* backend_texture);
 
+  // Generage the next swap ID and push it to our pending swap ID queues.
+  void OnSwapBuffers();
+
   const gpu::CommandBufferId command_buffer_id_;
   uint64_t sync_fence_release_ = 0;
   GpuServiceImpl* const gpu_service_;
@@ -188,6 +190,12 @@ class SkiaOutputSurfaceImpl : public SkiaOutputSurface,
   // TODO(penghuang): Remove it when Skia supports drawing YUV textures
   // directly.
   std::vector<YUVResourceMetadata*> yuv_resource_metadatas_;
+
+  // ID is pushed each time we begin a swap, and popped each time we present or
+  // complete a swap.
+  base::circular_deque<uint64_t> pending_presented_ids_;
+  base::circular_deque<uint64_t> pending_swap_completed_ids_;
+  uint64_t swap_id_ = 0;
 
   // The task runner for running task on the client (compositor) thread.
   scoped_refptr<base::SingleThreadTaskRunner> client_thread_task_runner_;

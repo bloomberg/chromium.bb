@@ -290,6 +290,6 @@ void RasterCommandBufferStub::OnReturnFrontBuffer(const Mailbox& mailbox,
   NOTREACHED();
 }
 
-void RasterCommandBufferStub::OnSwapBuffers(uint32_t flags) {}
+void RasterCommandBufferStub::OnSwapBuffers(uint64_t swap_id, uint32_t flags) {}
 
 }  // namespace gpu

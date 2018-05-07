@@ -27,6 +27,7 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/gl_switches_util.h"
 #include "ui/gl/gl_version_info.h"
 
 namespace viz {
@@ -475,6 +476,8 @@ void SkiaOutputSurfaceImpl::RemoveRenderPassResource(
 void SkiaOutputSurfaceImpl::DidSwapBuffersComplete(
     gpu::SwapBuffersCompleteParams params) {
   DCHECK_CALLED_ON_VALID_THREAD(gpu_thread_checker_);
+  params.swap_response.swap_id = pending_swap_completed_ids_.front();
+  pending_swap_completed_ids_.pop_front();
 
   client_thread_task_runner_->PostTask(
       FROM_HERE,
@@ -504,6 +507,7 @@ void SkiaOutputSurfaceImpl::SetSnapshotRequestedCallback(
 void SkiaOutputSurfaceImpl::UpdateVSyncParameters(base::TimeTicks timebase,
                                                   base::TimeDelta interval) {
   DCHECK_CALLED_ON_VALID_THREAD(gpu_thread_checker_);
+  DCHECK(!gl::IsPresentationCallbackEnabled());
 
   client_thread_task_runner_->PostTask(
       FROM_HERE,
@@ -513,9 +517,11 @@ void SkiaOutputSurfaceImpl::UpdateVSyncParameters(base::TimeTicks timebase,
 }
 
 void SkiaOutputSurfaceImpl::BufferPresented(
-    uint64_t swap_id,
     const gfx::PresentationFeedback& feedback) {
   DCHECK_CALLED_ON_VALID_THREAD(gpu_thread_checker_);
+  DCHECK(gl::IsPresentationCallbackEnabled());
+  uint64_t swap_id = pending_presented_ids_.front();
+  pending_presented_ids_.pop_front();
 
   client_thread_task_runner_->PostTask(
       FROM_HERE,
@@ -670,6 +676,7 @@ void SkiaOutputSurfaceImpl::SwapBuffersOnGpuThread(
 
   sk_surface_->draw(ddl.get());
   gpu_service_->gr_context()->flush();
+  OnSwapBuffers();
   surface_->SwapBuffers(
       base::BindRepeating([](const gfx::PresentationFeedback&) {}));
   sync_point_client_state_->ReleaseFenceSync(sync_fence_release);
@@ -875,6 +882,16 @@ void SkiaOutputSurfaceImpl::OnPromiseTextureFullfill(
   DLOG_IF(ERROR, !backend_texture->isValid())
       << "Failed to full fill the promise texture created from RenderPassId:"
       << id;
+}
+
+void SkiaOutputSurfaceImpl::OnSwapBuffers() {
+  uint64_t swap_id = swap_id_++;
+  pending_swap_completed_ids_.push_back(swap_id);
+
+  // Only push to |pending_presented_ids_| if presentation callbacks
+  // are enabled, otherwise these will never be popped.
+  if (gl::IsPresentationCallbackEnabled())
+    pending_presented_ids_.push_back(swap_id);
 }
 
 }  // namespace viz

@@ -61,10 +61,6 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GLInProcessContext {
 
   virtual void SetLock(base::Lock* lock) = 0;
 
-  virtual void SetSwapBuffersCompletionCallback(
-      const InProcessCommandBuffer::SwapBuffersCompletionCallback&
-          callback) = 0;
-
   virtual void SetUpdateVSyncParametersCallback(
       const InProcessCommandBuffer::UpdateVSyncParametersCallback&
           callback) = 0;

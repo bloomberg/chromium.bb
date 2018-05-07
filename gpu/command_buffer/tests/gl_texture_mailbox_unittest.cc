@@ -75,7 +75,7 @@ class GLTextureMailboxTest : public testing::Test {
     glResizeCHROMIUM(10, 10, 1, GL_COLOR_SPACE_UNSPECIFIED_CHROMIUM, true);
     glClearColor(0, 1, 1, 1);
     glClear(GL_COLOR_BUFFER_BIT);
-    ::gles2::GetGLContext()->SwapBuffers();
+    ::gles2::GetGLContext()->SwapBuffers(1);
 
     Mailbox mailbox;
     glGenMailboxCHROMIUM(mailbox.name);
@@ -418,7 +418,7 @@ TEST_F(GLTextureMailboxTest, TakeFrontBuffer) {
   glResizeCHROMIUM(10, 10, 1, GL_COLOR_SPACE_UNSPECIFIED_CHROMIUM, true);
   glClearColor(0, 1, 1, 1);
   glClear(GL_COLOR_BUFFER_BIT);
-  ::gles2::GetGLContext()->SwapBuffers();
+  ::gles2::GetGLContext()->SwapBuffers(1);
   gl2_.decoder()->TakeFrontBuffer(mailbox);
 
   gl1_.MakeCurrent();
@@ -430,7 +430,7 @@ TEST_F(GLTextureMailboxTest, TakeFrontBuffer) {
   gl2_.MakeCurrent();
   glClearColor(1, 0, 0, 1);
   glClear(GL_COLOR_BUFFER_BIT);
-  ::gles2::GetGLContext()->SwapBuffers();
+  ::gles2::GetGLContext()->SwapBuffers(1);
 
   gl1_.MakeCurrent();
   EXPECT_EQ(0xFFFFFF00u, ReadTexel(tex1, 0, 0));
@@ -443,7 +443,7 @@ TEST_F(GLTextureMailboxTest, TakeFrontBuffer) {
   gl2_.MakeCurrent();
   gl2_.decoder()->ReturnFrontBuffer(mailbox, false);
 
-  // Flushing doesn't matter, only SwapBuffers().
+  // Flushing doesn't matter, only SwapBuffers(1).
   glClearColor(0, 1, 0, 1);
   glClear(GL_COLOR_BUFFER_BIT);
   glFlush();
@@ -525,7 +525,7 @@ TEST_F(GLTextureMailboxTest, FrontBufferChangeSize) {
   EXPECT_EQ(5u, gl1_.decoder()->GetSavedBackTextureCountForTest());
 
   glResizeCHROMIUM(21, 31, 1, GL_COLOR_SPACE_UNSPECIFIED_CHROMIUM, true);
-  ::gles2::GetGLContext()->SwapBuffers();
+  ::gles2::GetGLContext()->SwapBuffers(1);
   EXPECT_EQ(0u, gl1_.decoder()->GetSavedBackTextureCountForTest());
 }
 
@@ -556,7 +556,7 @@ TEST_F(GLTextureMailboxTest, FrontBufferChangeColor) {
   for (int i = 0; i < 5; ++i) {
     glClearColor(1, 0, 0, 1);
     glClear(GL_COLOR_BUFFER_BIT);
-    ::gles2::GetGLContext()->SwapBuffers();
+    ::gles2::GetGLContext()->SwapBuffers(1);
 
     Mailbox mailbox;
     glGenMailboxCHROMIUM(mailbox.name);
@@ -590,7 +590,7 @@ TEST_F(GLTextureMailboxTest, FrontBufferSamplerParameters) {
   glResizeCHROMIUM(10, 10, 1, GL_COLOR_SPACE_UNSPECIFIED_CHROMIUM, true);
   glClearColor(0, 1, 1, 1);
   glClear(GL_COLOR_BUFFER_BIT);
-  ::gles2::GetGLContext()->SwapBuffers();
+  ::gles2::GetGLContext()->SwapBuffers(1);
   gl2_.decoder()->TakeFrontBuffer(mailbox);
 
   gl1_.MakeCurrent();
@@ -630,7 +630,7 @@ TEST_F(GLTextureMailboxTest, TakeFrontBufferMultipleContexts) {
     glResizeCHROMIUM(10, 10, 1, GL_COLOR_SPACE_UNSPECIFIED_CHROMIUM, true);
     glClearColor(1 - i % 2, i % 2, 0, 1);
     glClear(GL_COLOR_BUFFER_BIT);
-    ::gles2::GetGLContext()->SwapBuffers();
+    ::gles2::GetGLContext()->SwapBuffers(0, 1);
     other_gl[i].decoder()->TakeFrontBuffer(mailbox[i]);
     // Make sure both "other gl" are in the same share group.
     if (!options.share_group_manager)

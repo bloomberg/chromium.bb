@@ -385,6 +385,8 @@ void GLES2CommandBufferStub::DidCreateAcceleratedSurfaceChildWindow(
 
 void GLES2CommandBufferStub::DidSwapBuffersComplete(
     SwapBuffersCompleteParams params) {
+  params.swap_response.swap_id = pending_swap_completed_params_.front().swap_id;
+  pending_swap_completed_params_.pop_front();
   Send(new GpuCommandBufferMsg_SwapBuffersCompleted(route_id_, params));
 }
 
@@ -409,15 +411,17 @@ void GLES2CommandBufferStub::UpdateVSyncParameters(base::TimeTicks timebase,
 }
 
 void GLES2CommandBufferStub::BufferPresented(
-    uint64_t swap_id,
     const gfx::PresentationFeedback& feedback) {
   DCHECK(gl::IsPresentationCallbackEnabled());
-  if (pending_swaps_.front() & gpu::SwapBuffersFlags::kPresentationFeedback ||
-      (pending_swaps_.front() & gpu::SwapBuffersFlags::kVSyncParams &&
+  const SwapBufferParams& params = pending_presented_params_.front();
+  pending_presented_params_.pop_front();
+
+  if (params.flags & gpu::SwapBuffersFlags::kPresentationFeedback ||
+      (params.flags & gpu::SwapBuffersFlags::kVSyncParams &&
        feedback.flags & gfx::PresentationFeedback::kVSync)) {
-    Send(new GpuCommandBufferMsg_BufferPresented(route_id_, swap_id, feedback));
+    Send(new GpuCommandBufferMsg_BufferPresented(route_id_, params.swap_id,
+                                                 feedback));
   }
-  pending_swaps_.pop_front();
 }
 
 void GLES2CommandBufferStub::AddFilter(IPC::MessageFilter* message_filter) {
@@ -443,9 +447,13 @@ void GLES2CommandBufferStub::OnReturnFrontBuffer(const Mailbox& mailbox,
   gles2_decoder_->ReturnFrontBuffer(mailbox, is_lost);
 }
 
-void GLES2CommandBufferStub::OnSwapBuffers(uint32_t flags) {
+void GLES2CommandBufferStub::OnSwapBuffers(uint64_t swap_id, uint32_t flags) {
+  pending_swap_completed_params_.push_back({swap_id, flags});
+
+  // Only push to |pending_presented_params_| if presentation callbacks
+  // are enabled, otherwise these will never be popped.
   if (gl::IsPresentationCallbackEnabled())
-    pending_swaps_.push_back(flags);
+    pending_presented_params_.push_back({swap_id, flags});
 }
 
 }  // namespace gpu

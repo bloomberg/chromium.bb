@@ -318,7 +318,7 @@ bool MailboxToSurfaceBridge::CopyMailboxToSurfaceAndSwap(
   GLuint sourceTexture = ConsumeTexture(gl_, mailbox);
   DrawQuad(sourceTexture);
   gl_->DeleteTextures(1, &sourceTexture);
-  gl_->SwapBuffers();
+  gl_->SwapBuffers(swap_id_++);
   return true;
 }
 

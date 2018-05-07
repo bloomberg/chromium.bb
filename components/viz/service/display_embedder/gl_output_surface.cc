@@ -25,15 +25,11 @@ GLOutputSurface::GLOutputSurface(
     SyntheticBeginFrameSource* synthetic_begin_frame_source)
     : OutputSurface(context_provider),
       synthetic_begin_frame_source_(synthetic_begin_frame_source),
-      latency_info_cache_(this),
       weak_ptr_factory_(this) {
   capabilities_.flipped_output_surface =
       context_provider->ContextCapabilities().flips_vertically;
   capabilities_.supports_stencil =
       context_provider->ContextCapabilities().num_stencil_bits > 0;
-  context_provider->SetSwapBuffersCompletionCallback(
-      base::BindRepeating(&GLOutputSurface::OnGpuSwapBuffersCompleted,
-                          weak_ptr_factory_.GetWeakPtr()));
   context_provider->SetUpdateVSyncParametersCallback(
       base::BindRepeating(&GLOutputSurface::OnVSyncParametersUpdated,
                           weak_ptr_factory_.GetWeakPtr()));
@@ -92,15 +88,18 @@ void GLOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
   if (synthetic_begin_frame_source_)
     flags |= gpu::SwapBuffersFlags::kVSyncParams;
 
-  if (latency_info_cache_.WillSwap(std::move(frame.latency_info)))
+  if (LatencyInfoHasSnapshotRequest(frame.latency_info))
     context_provider_->ContextSupport()->SetSnapshotRequested();
 
+  auto swap_callback = base::BindOnce(
+      &GLOutputSurface::OnGpuSwapBuffersCompleted,
+      weak_ptr_factory_.GetWeakPtr(), std::move(frame.latency_info));
   set_draw_rectangle_for_frame_ = false;
   if (frame.sub_buffer_rect) {
     context_provider_->ContextSupport()->PartialSwapBuffers(
-        *frame.sub_buffer_rect, flags);
+        *frame.sub_buffer_rect, flags, std::move(swap_callback));
   } else {
-    context_provider_->ContextSupport()->Swap(flags);
+    context_provider_->ContextSupport()->Swap(flags, std::move(swap_callback));
   }
 }
 
@@ -140,6 +139,7 @@ void GLOutputSurface::DidReceiveSwapBuffersAck(gfx::SwapResult result,
 }
 
 void GLOutputSurface::OnGpuSwapBuffersCompleted(
+    std::vector<ui::LatencyInfo> latency_info,
     const gpu::SwapBuffersCompleteParams& params) {
   if (!params.texture_in_use_responses.empty())
     client_->DidReceiveTextureInUseResponses(params.texture_in_use_responses);
@@ -147,11 +147,8 @@ void GLOutputSurface::OnGpuSwapBuffersCompleted(
     client_->DidReceiveCALayerParams(params.ca_layer_params);
   DidReceiveSwapBuffersAck(params.swap_response.result,
                            params.swap_response.swap_id);
-  latency_info_cache_.OnSwapBuffersCompleted(params.swap_response);
-}
 
-void GLOutputSurface::LatencyInfoCompleted(
-    const std::vector<ui::LatencyInfo>& latency_info) {
+  UpdateLatencyInfoOnSwap(params.swap_response, &latency_info);
   latency_tracker_.OnGpuSwapBuffersCompleted(latency_info);
   client_->DidFinishLatencyInfo(latency_info);
 }

@@ -131,49 +131,15 @@ class VIZ_SERVICE_EXPORT OutputSurface {
   virtual gpu::VulkanSurface* GetVulkanSurface() = 0;
 #endif
 
-  // A helper class for implementations of OutputSurface that want to cache
-  // LatencyInfos that can be updated when we get the corresponding
-  // gfx::SwapResponse.
-  class VIZ_SERVICE_EXPORT LatencyInfoCache {
-   public:
-    class Client {
-     public:
-      virtual ~Client() = default;
-      virtual void LatencyInfoCompleted(
-          const std::vector<ui::LatencyInfo>& latency_info) = 0;
-    };
+  // Returns true if any of the LatencyInfos provided contains a snapshot
+  // request.
+  static bool LatencyInfoHasSnapshotRequest(
+      const std::vector<ui::LatencyInfo>& latency_info);
 
-    explicit LatencyInfoCache(Client* client);
-    ~LatencyInfoCache();
-
-    // Returns true if there's a snapshot request.
-    bool WillSwap(std::vector<ui::LatencyInfo> latency_info);
-    void OnSwapBuffersCompleted(const gfx::SwapResponse& response);
-
-   private:
-    struct SwapInfo {
-      SwapInfo(uint64_t id, std::vector<ui::LatencyInfo> info);
-      SwapInfo(SwapInfo&& src);
-      SwapInfo& operator=(SwapInfo&& src);
-      ~SwapInfo();
-      uint64_t swap_id;
-      std::vector<ui::LatencyInfo> latency_info;
-      DISALLOW_COPY_AND_ASSIGN(SwapInfo);
-    };
-
-    Client* client_ = nullptr;
-
-    // Incremented in sync with the ImageTransportSurface's swap_id_.
-    uint64_t swap_id_ = 0;
-    base::circular_deque<SwapInfo> swap_infos_;
-
-    // We only expect a couple swap acks outstanding, but there are cases where
-    // we will get timestamps for swaps from several frames ago when using
-    // platform extensions like eglGetFrameTimestampsANDROID.
-    static constexpr size_t kCacheCountMax = 10;
-
-    DISALLOW_COPY_AND_ASSIGN(LatencyInfoCache);
-  };
+  // Updates timing info on the provided LatencyInfo when swap completes.
+  static void UpdateLatencyInfoOnSwap(
+      const gfx::SwapResponse& response,
+      std::vector<ui::LatencyInfo>* latency_info);
 
  protected:
   struct OutputSurface::Capabilities capabilities_;

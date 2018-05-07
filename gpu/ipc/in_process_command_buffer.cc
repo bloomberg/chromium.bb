@@ -29,6 +29,7 @@
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
+#include "gpu/command_buffer/common/swap_buffers_flags.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
@@ -1059,7 +1060,14 @@ void InProcessCommandBuffer::OnRescheduleAfterFinished() {
   }
 }
 
-void InProcessCommandBuffer::OnSwapBuffers(uint32_t flags) {}
+void InProcessCommandBuffer::OnSwapBuffers(uint64_t swap_id, uint32_t flags) {
+  pending_swap_completed_params_.push_back({swap_id, flags});
+
+  // Only push to |pending_presented_params_| if presentation callbacks
+  // are enabled, otherwise these will never be popped.
+  if (gl::IsPresentationCallbackEnabled())
+    pending_presented_params_.push_back({swap_id, flags});
+}
 
 void InProcessCommandBuffer::SignalSyncTokenOnGpuThread(
     const SyncToken& sync_token,
@@ -1248,6 +1256,9 @@ void InProcessCommandBuffer::DidCreateAcceleratedSurfaceChildWindow(
 
 void InProcessCommandBuffer::DidSwapBuffersComplete(
     SwapBuffersCompleteParams params) {
+  params.swap_response.swap_id = pending_swap_completed_params_.front().swap_id;
+  pending_swap_completed_params_.pop_front();
+
   if (!origin_task_runner_) {
     DidSwapBuffersCompleteOnOriginThread(std::move(params));
     return;
@@ -1284,16 +1295,19 @@ void InProcessCommandBuffer::SetSnapshotRequestedCallback(
 }
 
 void InProcessCommandBuffer::BufferPresented(
-    uint64_t swap_id,
     const gfx::PresentationFeedback& feedback) {
+  const SwapBufferParams& params = pending_presented_params_.front();
+  pending_presented_params_.pop_front();
+
   if (!origin_task_runner_) {
-    BufferPresentedOnOriginThread(swap_id, feedback);
+    BufferPresentedOnOriginThread(params.swap_id, params.flags, feedback);
     return;
   }
   origin_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&InProcessCommandBuffer::BufferPresentedOnOriginThread,
-                 client_thread_weak_ptr_, swap_id, feedback));
+                 client_thread_weak_ptr_, params.swap_id, params.flags,
+                 feedback));
 }
 
 void InProcessCommandBuffer::AddFilter(IPC::MessageFilter* message_filter) {
@@ -1307,8 +1321,8 @@ int32_t InProcessCommandBuffer::GetRouteID() const {
 
 void InProcessCommandBuffer::DidSwapBuffersCompleteOnOriginThread(
     SwapBuffersCompleteParams params) {
-  if (!swap_buffers_completion_callback_.is_null())
-    swap_buffers_completion_callback_.Run(std::move(params));
+  if (gpu_control_client_)
+    gpu_control_client_->OnGpuControlSwapBuffersCompleted(params);
 }
 
 void InProcessCommandBuffer::UpdateVSyncParametersOnOriginThread(
@@ -1321,19 +1335,19 @@ void InProcessCommandBuffer::UpdateVSyncParametersOnOriginThread(
 
 void InProcessCommandBuffer::BufferPresentedOnOriginThread(
     uint64_t swap_id,
+    uint32_t flags,
     const gfx::PresentationFeedback& feedback) {
   DCHECK(gl::IsPresentationCallbackEnabled());
-  if (presentation_callback_)
-    presentation_callback_.Run(swap_id, feedback);
-  if (update_vsync_parameters_completion_callback_ &&
-      feedback.timestamp != base::TimeTicks())
-    update_vsync_parameters_completion_callback_.Run(feedback.timestamp,
-                                                     feedback.interval);
-}
-
-void InProcessCommandBuffer::SetSwapBuffersCompletionCallback(
-    const SwapBuffersCompletionCallback& callback) {
-  swap_buffers_completion_callback_ = callback;
+  if (flags & gpu::SwapBuffersFlags::kPresentationFeedback ||
+      (flags & gpu::SwapBuffersFlags::kVSyncParams &&
+       feedback.flags & gfx::PresentationFeedback::kVSync)) {
+    if (presentation_callback_)
+      presentation_callback_.Run(swap_id, feedback);
+    if (update_vsync_parameters_completion_callback_ &&
+        feedback.timestamp != base::TimeTicks())
+      update_vsync_parameters_completion_callback_.Run(feedback.timestamp,
+                                                       feedback.interval);
+  }
 }
 
 void InProcessCommandBuffer::SetUpdateVSyncParametersCallback(

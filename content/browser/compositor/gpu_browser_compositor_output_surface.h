@@ -38,10 +38,8 @@ class ReflectorTexture;
 // Adapts a WebGraphicsContext3DCommandBufferImpl into a
 // viz::OutputSurface that also handles vsync parameter updates
 // arriving from the GPU process.
-class GpuBrowserCompositorOutputSurface
-    : public BrowserCompositorOutputSurface,
-      public GpuVSyncControl,
-      public viz::OutputSurface::LatencyInfoCache::Client {
+class GpuBrowserCompositorOutputSurface : public BrowserCompositorOutputSurface,
+                                          public GpuVSyncControl {
  public:
   GpuBrowserCompositorOutputSurface(
       scoped_refptr<ui::ContextProviderCommandBuffer> context,
@@ -53,6 +51,7 @@ class GpuBrowserCompositorOutputSurface
 
   // Called when a swap completion is sent from the GPU process.
   virtual void OnGpuSwapBuffersCompleted(
+      std::vector<ui::LatencyInfo> latency_info,
       const gpu::SwapBuffersCompleteParams& params);
 
   // BrowserCompositorOutputSurface implementation.
@@ -82,10 +81,6 @@ class GpuBrowserCompositorOutputSurface
   gpu::VulkanSurface* GetVulkanSurface() override;
 #endif
 
-  // OutputSurface::LatencyInfoCache::Client implementation.
-  void LatencyInfoCompleted(
-      const std::vector<ui::LatencyInfo>& latency_info) override;
-
  protected:
   void OnPresentation(uint64_t swap_id,
                       const gfx::PresentationFeedback& feedback);
@@ -98,7 +93,6 @@ class GpuBrowserCompositorOutputSurface
   // True if the draw rectangle has been set at all since the last resize.
   bool has_set_draw_rectangle_since_last_resize_ = false;
   gfx::Size size_;
-  LatencyInfoCache latency_info_cache_;
   ui::LatencyTracker latency_tracker_;
 
  private:

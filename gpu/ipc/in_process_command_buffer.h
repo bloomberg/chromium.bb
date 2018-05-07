@@ -162,7 +162,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   bool OnWaitSyncToken(const SyncToken& sync_token) override;
   void OnDescheduleUntilFinished() override;
   void OnRescheduleAfterFinished() override;
-  void OnSwapBuffers(uint32_t flags) override;
+  void OnSwapBuffers(uint64_t swap_id, uint32_t flags) override;
 
 // ImageTransportSurfaceDelegate implementation:
 #if defined(OS_WIN)
@@ -177,19 +177,13 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   void SetSnapshotRequestedCallback(const base::Closure& callback) override;
   void UpdateVSyncParameters(base::TimeTicks timebase,
                              base::TimeDelta interval) override;
-  void BufferPresented(uint64_t swap_id,
-                       const gfx::PresentationFeedback& feedback) override;
+  void BufferPresented(const gfx::PresentationFeedback& feedback) override;
 
   void AddFilter(IPC::MessageFilter* message_filter) override;
   int32_t GetRouteID() const override;
 
   // Upstream this function to GpuControl if needs arise.
   const GpuFeatureInfo& GetGpuFeatureInfo() const;
-
-  using SwapBuffersCompletionCallback =
-      base::RepeatingCallback<void(const SwapBuffersCompleteParams& params)>;
-  void SetSwapBuffersCompletionCallback(
-      const SwapBuffersCompletionCallback& callback);
 
   using UpdateVSyncParametersCallback =
       base::Callback<void(base::TimeTicks timebase, base::TimeDelta interval)>;
@@ -205,6 +199,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   void UpdateVSyncParametersOnOriginThread(base::TimeTicks timebase,
                                            base::TimeDelta interval);
   void BufferPresentedOnOriginThread(uint64_t swap_id,
+                                     uint32_t flags,
                                      const gfx::PresentationFeedback& feedback);
 
   // Mostly the GpuFeatureInfo from GpuInit will be used to create a gpu thread
@@ -413,9 +408,17 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   };
   base::queue<std::unique_ptr<GpuTask>> task_queue_;
 
-  SwapBuffersCompletionCallback swap_buffers_completion_callback_;
   UpdateVSyncParametersCallback update_vsync_parameters_completion_callback_;
   PresentationCallback presentation_callback_;
+
+  // Params pushed each time we call OnSwapBuffers, and popped when a buffer
+  // is presented or a swap completed.
+  struct SwapBufferParams {
+    uint64_t swap_id;
+    uint32_t flags;
+  };
+  base::circular_deque<SwapBufferParams> pending_presented_params_;
+  base::circular_deque<SwapBufferParams> pending_swap_completed_params_;
 
   base::WeakPtr<InProcessCommandBuffer> client_thread_weak_ptr_;
   base::WeakPtr<InProcessCommandBuffer> gpu_thread_weak_ptr_;

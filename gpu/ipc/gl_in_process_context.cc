@@ -58,9 +58,6 @@ class GLInProcessContextImpl
   const Capabilities& GetCapabilities() const override;
   const GpuFeatureInfo& GetGpuFeatureInfo() const override;
   gles2::GLES2Implementation* GetImplementation() override;
-  void SetSwapBuffersCompletionCallback(
-      const InProcessCommandBuffer::SwapBuffersCompletionCallback& callback)
-      override;
   void SetUpdateVSyncParametersCallback(
       const InProcessCommandBuffer::UpdateVSyncParametersCallback& callback)
       override;
@@ -107,11 +104,6 @@ const GpuFeatureInfo& GLInProcessContextImpl::GetGpuFeatureInfo() const {
 
 gles2::GLES2Implementation* GLInProcessContextImpl::GetImplementation() {
   return gles2_implementation_.get();
-}
-
-void GLInProcessContextImpl::SetSwapBuffersCompletionCallback(
-    const InProcessCommandBuffer::SwapBuffersCompletionCallback& callback) {
-  command_buffer_->SetSwapBuffersCompletionCallback(callback);
 }
 
 void GLInProcessContextImpl::SetUpdateVSyncParametersCallback(

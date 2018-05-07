@@ -181,14 +181,19 @@ typedef void (GL_APIENTRYP PFNGLREQUESTEXTENSIONCHROMIUMPROC) (
 #ifndef GL_CHROMIUM_post_sub_buffer
 #define GL_CHROMIUM_post_sub_buffer 1
 #ifdef GL_GLEXT_PROTOTYPES
-GL_APICALL void GL_APIENTRY glPostSubBufferCHROMIUM(GLint x,
+GL_APICALL void GL_APIENTRY glPostSubBufferCHROMIUM(GLuint64 swap_id,
+                                                    GLint x,
                                                     GLint y,
                                                     GLint width,
                                                     GLint height,
                                                     GLbitfield flags);
 #endif
-typedef void (GL_APIENTRYP PFNGLPOSTSUBBUFFERCHROMIUMPROC) (
-    GLint x, GLint y, GLint width, GLint height);
+typedef void(GL_APIENTRYP PFNGLPOSTSUBBUFFERCHROMIUMPROC)(GLuint64 swap_id,
+                                                          GLint x,
+                                                          GLint y,
+                                                          GLint width,
+                                                          GLint height,
+                                                          GLbitfield flags);
 #endif  /* GL_CHROMIUM_post_sub_buffer */
 
 /* GL_CHROMIUM_bind_uniform_location */

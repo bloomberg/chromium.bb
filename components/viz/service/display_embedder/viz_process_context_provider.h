@@ -64,10 +64,6 @@ class VIZ_SERVICE_EXPORT VizProcessContextProvider
 
   uint32_t GetCopyTextureInternalFormat();
 
-  void SetSwapBuffersCompletionCallback(
-      const gpu::InProcessCommandBuffer::SwapBuffersCompletionCallback&
-          callback);
-
   void SetUpdateVSyncParametersCallback(
       const gpu::InProcessCommandBuffer::UpdateVSyncParametersCallback&
           callback);

@@ -93,7 +93,7 @@ class ProgramManagerTestBase : public GpuServiceTest, public DecoderClient {
   bool OnWaitSyncToken(const gpu::SyncToken&) override { return false; }
   void OnDescheduleUntilFinished() override {}
   void OnRescheduleAfterFinished() override {}
-  void OnSwapBuffers(uint32_t flags) override {}
+  void OnSwapBuffers(uint64_t swap_id, uint32_t flags) override {}
 
   std::unique_ptr<ProgramManager> manager_;
   GpuPreferences gpu_preferences_;

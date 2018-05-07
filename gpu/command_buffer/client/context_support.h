@@ -21,6 +21,7 @@ class RectF;
 
 namespace gpu {
 
+struct SwapBuffersCompleteParams;
 struct SyncToken;
 
 class ContextSupport {
@@ -53,12 +54,17 @@ class ContextSupport {
   virtual void SetAggressivelyFreeResources(
       bool aggressively_free_resources) = 0;
 
-  virtual void Swap(uint32_t flags) = 0;
+  using SwapCompletedCallback =
+      base::OnceCallback<void(const SwapBuffersCompleteParams&)>;
+  virtual void Swap(uint32_t flags, SwapCompletedCallback swap_completed) = 0;
   virtual void SwapWithBounds(const std::vector<gfx::Rect>& rects,
-                              uint32_t flags) = 0;
+                              uint32_t flags,
+                              SwapCompletedCallback swap_completed) = 0;
   virtual void PartialSwapBuffers(const gfx::Rect& sub_buffer,
-                                  uint32_t flags) = 0;
-  virtual void CommitOverlayPlanes(uint32_t flags) = 0;
+                                  uint32_t flags,
+                                  SwapCompletedCallback swap_completed) = 0;
+  virtual void CommitOverlayPlanes(uint32_t flags,
+                                   SwapCompletedCallback swap_completed) = 0;
 
   // Schedule a texture to be presented as an overlay synchronously with the
   // primary surface during the next buffer swap or CommitOverlayPlanes.

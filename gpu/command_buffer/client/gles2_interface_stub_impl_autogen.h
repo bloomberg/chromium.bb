@@ -817,7 +817,8 @@ GLboolean GLES2InterfaceStub::IsVertexArrayOES(GLuint /* array */) {
   return 0;
 }
 void GLES2InterfaceStub::BindVertexArrayOES(GLuint /* array */) {}
-void GLES2InterfaceStub::SwapBuffers(GLbitfield /* flags */) {}
+void GLES2InterfaceStub::SwapBuffers(GLuint64 /* swap_id */,
+                                     GLbitfield /* flags */) {}
 GLuint GLES2InterfaceStub::GetMaxValueInBufferCHROMIUM(GLuint /* buffer_id */,
                                                        GLsizei /* count */,
                                                        GLenum /* type */,
@@ -904,7 +905,8 @@ void GLES2InterfaceStub::GetTranslatedShaderSourceANGLE(GLuint /* shader */,
                                                         GLsizei /* bufsize */,
                                                         GLsizei* /* length */,
                                                         char* /* source */) {}
-void GLES2InterfaceStub::PostSubBufferCHROMIUM(GLint /* x */,
+void GLES2InterfaceStub::PostSubBufferCHROMIUM(GLuint64 /* swap_id */,
+                                               GLint /* x */,
                                                GLint /* y */,
                                                GLint /* width */,
                                                GLint /* height */,
@@ -1022,7 +1024,8 @@ void GLES2InterfaceStub::ScheduleCALayerCHROMIUM(
 void GLES2InterfaceStub::ScheduleCALayerInUseQueryCHROMIUM(
     GLsizei /* count */,
     const GLuint* /* textures */) {}
-void GLES2InterfaceStub::CommitOverlayPlanesCHROMIUM(GLbitfield /* flags */) {}
+void GLES2InterfaceStub::CommitOverlayPlanesCHROMIUM(GLuint64 /* swap_id */,
+                                                     GLbitfield /* flags */) {}
 void GLES2InterfaceStub::FlushDriverCachesCHROMIUM() {}
 GLuint GLES2InterfaceStub::GetLastFlushIdCHROMIUM() {
   return 0;
@@ -1185,7 +1188,8 @@ void GLES2InterfaceStub::OverlayPromotionHintCHROMIUM(
     GLint /* display_y */,
     GLint /* display_width */,
     GLint /* display_height */) {}
-void GLES2InterfaceStub::SwapBuffersWithBoundsCHROMIUM(GLsizei /* count */,
+void GLES2InterfaceStub::SwapBuffersWithBoundsCHROMIUM(GLuint64 /* swap_id */,
+                                                       GLsizei /* count */,
                                                        const GLint* /* rects */,
                                                        GLbitfield /* flags */) {
 }

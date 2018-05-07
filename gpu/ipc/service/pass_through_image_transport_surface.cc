@@ -68,7 +68,7 @@ gfx::SwapResult PassThroughImageTransportSurface::SwapBuffers(
   StartSwapBuffers(&response);
   gfx::SwapResult result = gl::GLSurfaceAdapter::SwapBuffers(
       base::Bind(&PassThroughImageTransportSurface::BufferPresented,
-                 weak_ptr_factory_.GetWeakPtr(), response.swap_id, callback));
+                 weak_ptr_factory_.GetWeakPtr(), callback));
   response.result = result;
   FinishSwapBuffers(GetAndResetSnapshotRequested(), std::move(response));
   return result;
@@ -84,14 +84,12 @@ void PassThroughImageTransportSurface::SwapBuffersAsync(
   // of this class. Callback will not be called once the instance of this class
   // is destroyed. However, this also means that the callback can be run on
   // the calling thread only.
-  uint64_t swap_id = response.swap_id;
   gl::GLSurfaceAdapter::SwapBuffersAsync(
       base::Bind(&PassThroughImageTransportSurface::FinishSwapBuffersAsync,
                  weak_ptr_factory_.GetWeakPtr(), completion_callback,
                  GetAndResetSnapshotRequested(), base::Passed(&response)),
       base::Bind(&PassThroughImageTransportSurface::BufferPresented,
-                 weak_ptr_factory_.GetWeakPtr(), swap_id,
-                 presentation_callback));
+                 weak_ptr_factory_.GetWeakPtr(), presentation_callback));
 }
 
 gfx::SwapResult PassThroughImageTransportSurface::SwapBuffersWithBounds(
@@ -99,10 +97,9 @@ gfx::SwapResult PassThroughImageTransportSurface::SwapBuffersWithBounds(
     const PresentationCallback& callback) {
   gfx::SwapResponse response;
   StartSwapBuffers(&response);
-  const uint64_t swap_id = response.swap_id;
   gfx::SwapResult result = gl::GLSurfaceAdapter::SwapBuffersWithBounds(
       rects, base::Bind(&PassThroughImageTransportSurface::BufferPresented,
-                        weak_ptr_factory_.GetWeakPtr(), swap_id, callback));
+                        weak_ptr_factory_.GetWeakPtr(), callback));
   response.result = result;
   FinishSwapBuffers(GetAndResetSnapshotRequested(), std::move(response));
   return result;
@@ -116,11 +113,10 @@ gfx::SwapResult PassThroughImageTransportSurface::PostSubBuffer(
     const PresentationCallback& callback) {
   gfx::SwapResponse response;
   StartSwapBuffers(&response);
-  const uint64_t swap_id = response.swap_id;
   gfx::SwapResult result = gl::GLSurfaceAdapter::PostSubBuffer(
       x, y, width, height,
       base::Bind(&PassThroughImageTransportSurface::BufferPresented,
-                 weak_ptr_factory_.GetWeakPtr(), swap_id, callback));
+                 weak_ptr_factory_.GetWeakPtr(), callback));
   response.result = result;
   FinishSwapBuffers(GetAndResetSnapshotRequested(), std::move(response));
 
@@ -136,25 +132,22 @@ void PassThroughImageTransportSurface::PostSubBufferAsync(
     const PresentationCallback& presentation_callback) {
   gfx::SwapResponse response;
   StartSwapBuffers(&response);
-  const uint64_t swap_id = response.swap_id;
   gl::GLSurfaceAdapter::PostSubBufferAsync(
       x, y, width, height,
       base::Bind(&PassThroughImageTransportSurface::FinishSwapBuffersAsync,
                  weak_ptr_factory_.GetWeakPtr(), completion_callback,
                  GetAndResetSnapshotRequested(), base::Passed(&response)),
       base::Bind(&PassThroughImageTransportSurface::BufferPresented,
-                 weak_ptr_factory_.GetWeakPtr(), swap_id,
-                 presentation_callback));
+                 weak_ptr_factory_.GetWeakPtr(), presentation_callback));
 }
 
 gfx::SwapResult PassThroughImageTransportSurface::CommitOverlayPlanes(
     const PresentationCallback& callback) {
   gfx::SwapResponse response;
   StartSwapBuffers(&response);
-  const uint64_t swap_id = response.swap_id;
   gfx::SwapResult result = gl::GLSurfaceAdapter::CommitOverlayPlanes(
       base::Bind(&PassThroughImageTransportSurface::BufferPresented,
-                 weak_ptr_factory_.GetWeakPtr(), swap_id, callback));
+                 weak_ptr_factory_.GetWeakPtr(), callback));
   response.result = result;
   FinishSwapBuffers(GetAndResetSnapshotRequested(), std::move(response));
   return result;
@@ -165,14 +158,12 @@ void PassThroughImageTransportSurface::CommitOverlayPlanesAsync(
     const PresentationCallback& presentation_callback) {
   gfx::SwapResponse response;
   StartSwapBuffers(&response);
-  const uint64_t swap_id = response.swap_id;
   gl::GLSurfaceAdapter::CommitOverlayPlanesAsync(
       base::Bind(&PassThroughImageTransportSurface::FinishSwapBuffersAsync,
                  weak_ptr_factory_.GetWeakPtr(), callback,
                  GetAndResetSnapshotRequested(), base::Passed(&response)),
       base::Bind(&PassThroughImageTransportSurface::BufferPresented,
-                 weak_ptr_factory_.GetWeakPtr(), swap_id,
-                 presentation_callback));
+                 weak_ptr_factory_.GetWeakPtr(), presentation_callback));
 }
 
 void PassThroughImageTransportSurface::SetSnapshotRequested() {
@@ -239,7 +230,9 @@ void PassThroughImageTransportSurface::StartSwapBuffers(
   SendVSyncUpdateIfAvailable();
   UpdateSwapInterval();
 
-  response->swap_id = swap_id_++;
+  // Populated later in the DecoderClient, before passing to client.
+  response->swap_id = 0;
+
   response->swap_start = base::TimeTicks::Now();
 }
 
@@ -268,14 +261,13 @@ void PassThroughImageTransportSurface::FinishSwapBuffersAsync(
 }
 
 void PassThroughImageTransportSurface::BufferPresented(
-    uint64_t swap_id,
     const GLSurface::PresentationCallback& callback,
     const gfx::PresentationFeedback& feedback) {
   if (!is_presentation_callback_enabled_)
     return;
   callback.Run(feedback);
   if (delegate_)
-    delegate_->BufferPresented(swap_id, feedback);
+    delegate_->BufferPresented(feedback);
 }
 
 }  // namespace gpu

@@ -85,7 +85,7 @@ bool Context::SwapBuffers(Surface* current_surface) {
   DCHECK(HasService() && is_current_in_some_thread_);
   if (WasServiceContextLost())
     return false;
-  client_gl_context_->SwapBuffers();
+  client_gl_context_->SwapBuffers(1);
   return true;
 }
 

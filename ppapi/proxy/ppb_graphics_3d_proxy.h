@@ -69,6 +69,8 @@ class PPAPI_PROXY_EXPORT Graphics3D : public PPB_Graphics3D_Shared {
 
   std::unique_ptr<PpapiCommandBufferProxy> command_buffer_;
 
+  uint64_t swap_id_ = 0;
+
   DISALLOW_COPY_AND_ASSIGN(Graphics3D);
 };
 

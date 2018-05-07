@@ -142,12 +142,6 @@ uint32_t VizProcessContextProvider::GetCopyTextureInternalFormat() {
   return GL_RGB;
 }
 
-void VizProcessContextProvider::SetSwapBuffersCompletionCallback(
-    const gpu::InProcessCommandBuffer::SwapBuffersCompletionCallback&
-        callback) {
-  context_->SetSwapBuffersCompletionCallback(callback);
-}
-
 void VizProcessContextProvider::SetUpdateVSyncParametersCallback(
     const gpu::InProcessCommandBuffer::UpdateVSyncParametersCallback&
         callback) {

@@ -62,7 +62,7 @@ class GLNativeGMBTest : public testing::Test {
     EXPECT_NEAR(alpha2, pixel[3], 2);
 
     // Swap buffers, then clear the back buffer and check its contents.
-    ::gles2::GetGLContext()->SwapBuffers();
+    ::gles2::GetGLContext()->SwapBuffers(0, 1);
     glClearColor(0.1f, 0.2f, 0.3f, 0.4f);
     glClear(GL_COLOR_BUFFER_BIT);
     memset(pixel, 0, 4);
