@@ -31,15 +31,14 @@ SelectToSpeakTray::SelectToSpeakTray(Shelf* shelf)
     : TrayBackgroundView(shelf), icon_(new views::ImageView()) {
   SetInkDropMode(InkDropMode::ON);
 
-  start_selection_image_ =
+  inactive_image_ =
       gfx::CreateVectorIcon(kSystemTraySelectToSpeakIcon, kShelfIconColor);
-  cancel_speech_image_ =
-      gfx::CreateVectorIcon(kSystemTrayStopIcon, kShelfIconColor);
-  icon_->SetImage(start_selection_image_);
-  const int vertical_padding =
-      (kTrayItemSize - start_selection_image_.height()) / 2;
-  const int horizontal_padding =
-      (kTrayItemSize - start_selection_image_.width()) / 2;
+  selecting_image_ = gfx::CreateVectorIcon(kSystemTraySelectToSpeakActiveIcon,
+                                           kShelfIconColor);
+  speaking_image_ = gfx::CreateVectorIcon(kSystemTrayStopIcon, kShelfIconColor);
+  icon_->SetImage(inactive_image_);
+  const int vertical_padding = (kTrayItemSize - inactive_image_.height()) / 2;
+  const int horizontal_padding = (kTrayItemSize - inactive_image_.width()) / 2;
   icon_->SetBorder(views::CreateEmptyBorder(
       gfx::Insets(vertical_padding, horizontal_padding)));
   tray_container()->AddChildView(icon_);
@@ -82,16 +81,16 @@ void SelectToSpeakTray::CheckStatusAndUpdateIcon() {
       Shell::Get()->accessibility_controller()->GetSelectToSpeakState();
   switch (state) {
     case ash::mojom::SelectToSpeakState::kSelectToSpeakStateInactive:
-      icon_->SetImage(start_selection_image_);
+      icon_->SetImage(inactive_image_);
       SetIsActive(false);
       break;
     case ash::mojom::SelectToSpeakState::kSelectToSpeakStateSelecting:
       // Activate the start selection button during selection.
-      icon_->SetImage(start_selection_image_);
+      icon_->SetImage(selecting_image_);
       SetIsActive(true);
       break;
     case ash::mojom::SelectToSpeakState::kSelectToSpeakStateSpeaking:
-      icon_->SetImage(cancel_speech_image_);
+      icon_->SetImage(speaking_image_);
       SetIsActive(true);
       break;
   }

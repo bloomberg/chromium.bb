@@ -58,13 +58,11 @@ class SelectToSpeakTrayTest : public AshTestBase {
   // Gets the current tray image view.
   views::ImageView* GetImageView() { return GetTray()->icon_; }
 
-  gfx::ImageSkia GetStartSelectionImage() {
-    return GetTray()->start_selection_image_;
-  }
+  gfx::ImageSkia GetInactiveImage() { return GetTray()->inactive_image_; }
 
-  gfx::ImageSkia GetCancelSpeechImage() {
-    return GetTray()->cancel_speech_image_;
-  }
+  gfx::ImageSkia GetSelectingImage() { return GetTray()->selecting_image_; }
+
+  gfx::ImageSkia GetSpeakingImage() { return GetTray()->speaking_image_; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SelectToSpeakTrayTest);
@@ -112,20 +110,20 @@ TEST_F(SelectToSpeakTrayTest, SelectToSpeakStateImpactsImageAndActivation) {
   controller->SetSelectToSpeakState(
       ash::mojom::SelectToSpeakState::kSelectToSpeakStateSelecting);
   EXPECT_TRUE(IsTrayBackgroundActive());
-  EXPECT_TRUE(GetStartSelectionImage().BackedBySameObjectAs(
-      GetImageView()->GetImage()));
+  EXPECT_TRUE(
+      GetSelectingImage().BackedBySameObjectAs(GetImageView()->GetImage()));
 
   controller->SetSelectToSpeakState(
       ash::mojom::SelectToSpeakState::kSelectToSpeakStateSpeaking);
   EXPECT_TRUE(IsTrayBackgroundActive());
   EXPECT_TRUE(
-      GetCancelSpeechImage().BackedBySameObjectAs(GetImageView()->GetImage()));
+      GetSpeakingImage().BackedBySameObjectAs(GetImageView()->GetImage()));
 
   controller->SetSelectToSpeakState(
       ash::mojom::SelectToSpeakState::kSelectToSpeakStateInactive);
   EXPECT_FALSE(IsTrayBackgroundActive());
-  EXPECT_TRUE(GetStartSelectionImage().BackedBySameObjectAs(
-      GetImageView()->GetImage()));
+  EXPECT_TRUE(
+      GetInactiveImage().BackedBySameObjectAs(GetImageView()->GetImage()));
 }
 
 }  // namespace ash
