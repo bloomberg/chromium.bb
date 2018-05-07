@@ -633,7 +633,8 @@ TEST(ProcessMitigationsWin32kTest, CheckWin8LockDownFailure) {
 // along with the policy to fake user32 and gdi32 initialization successfully
 // launches the target process.
 // The test process itself links against user32/gdi32.
-TEST(ProcessMitigationsWin32kTest, CheckWin8LockDownSuccess) {
+// Flaky. https://crbug.com/840335
+TEST(ProcessMitigationsWin32kTest, DISABLED_CheckWin8LockDownSuccess) {
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return;
 
@@ -659,7 +660,8 @@ TEST(ProcessMitigationsWin32kTest, CheckWin8LockDownSuccess) {
 
 // This test validates the even though we're running under win32k lockdown
 // we can use the IPC redirection to enumerate the list of monitors.
-TEST(ProcessMitigationsWin32kTest, CheckWin8Redirection) {
+// Flaky. https://crbug.com/840335
+TEST(ProcessMitigationsWin32kTest, DISABLED_CheckWin8Redirection) {
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return;
 
