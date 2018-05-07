@@ -40,13 +40,7 @@ int AutocompleteClassifier::DefaultOmniboxProviders() {
       // Custom search engines cannot be used on mobile.
       AutocompleteProvider::TYPE_KEYWORD |
 #endif
-#if defined(OS_IOS)
-      (base::FeatureList::IsEnabled(omnibox::kZeroSuggestProviderIOS)
-           ? AutocompleteProvider::TYPE_ZERO_SUGGEST
-           : 0) |
-#else
       AutocompleteProvider::TYPE_ZERO_SUGGEST |
-#endif
       (base::FeatureList::IsEnabled(omnibox::kEnableClipboardProvider)
            ? AutocompleteProvider::TYPE_CLIPBOARD_URL
            : 0) |
