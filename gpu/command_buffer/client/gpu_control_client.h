@@ -8,6 +8,7 @@
 #include <cstdint>
 
 namespace gpu {
+struct SwapBuffersCompleteParams;
 
 class GpuControlClient {
  public:
@@ -22,6 +23,8 @@ class GpuControlClient {
   // visible immediately while unwinding the call stack.
   virtual void OnGpuControlLostContextMaybeReentrant() = 0;
   virtual void OnGpuControlErrorMessage(const char* message, int32_t id) = 0;
+  virtual void OnGpuControlSwapBuffersCompleted(
+      const SwapBuffersCompleteParams& params) = 0;
 };
 
 }  // namespace gpu

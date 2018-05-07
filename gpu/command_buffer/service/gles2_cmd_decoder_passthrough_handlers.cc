@@ -1586,9 +1586,10 @@ error::Error GLES2DecoderPassthroughImpl::HandlePostSubBufferCHROMIUM(
   GLint y = static_cast<GLint>(c.y);
   GLint width = static_cast<GLint>(c.width);
   GLint height = static_cast<GLint>(c.height);
+  GLuint64 swap_id = static_cast<GLuint64>(c.swap_id());
   GLbitfield flags = static_cast<GLbitfield>(c.flags);
 
-  return DoPostSubBufferCHROMIUM(x, y, width, height, flags);
+  return DoPostSubBufferCHROMIUM(swap_id, x, y, width, height, flags);
 }
 
 error::Error GLES2DecoderPassthroughImpl::HandleDrawArraysInstancedANGLE(

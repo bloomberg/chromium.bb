@@ -61,7 +61,7 @@ class RasterDecoderTestBase : public ::testing::TestWithParam<bool>,
   bool OnWaitSyncToken(const gpu::SyncToken&) override;
   void OnDescheduleUntilFinished() override;
   void OnRescheduleAfterFinished() override;
-  void OnSwapBuffers(uint32_t flags) override;
+  void OnSwapBuffers(uint64_t swap_id, uint32_t flags) override;
 
   // Template to call glGenXXX functions.
   template <typename T>

@@ -157,6 +157,9 @@ class MailboxToSurfaceBridge {
   int resize_width_;
   int resize_height_;
 
+  // A swap ID which is passed to GL swap. Incremented each call.
+  uint64_t swap_id_ = 0;
+
   // A task runner for the thread the object was created on.
   scoped_refptr<base::SingleThreadTaskRunner> constructor_thread_task_runner_;
 

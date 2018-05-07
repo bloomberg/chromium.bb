@@ -124,7 +124,7 @@ int32_t Graphics3D::DoSwapBuffers(const gpu::SyncToken& sync_token,
   DCHECK(!sync_token.HasData());
 
   gpu::gles2::GLES2Implementation* gl = gles2_impl();
-  gl->SwapBuffers();
+  gl->SwapBuffers(swap_id_++);
 
   PluginDispatcher::GetForResource(this)->Send(
       new PpapiHostMsg_PPBGraphics3D_TakeFrontBuffer(API_ID_PPB_GRAPHICS_3D,

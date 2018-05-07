@@ -4496,13 +4496,14 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
     const volatile void* cmd_data) {
   const volatile gles2::cmds::SwapBuffers& c =
       *static_cast<const volatile gles2::cmds::SwapBuffers*>(cmd_data);
+  GLuint64 swap_id = c.swap_id();
   GLbitfield flags = static_cast<GLbitfield>(c.flags);
   if (!validators_->swap_buffers_flags.IsValid(flags)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glSwapBuffers",
                        "flags GL_INVALID_VALUE");
     return error::kNoError;
   }
-  DoSwapBuffers(flags);
+  DoSwapBuffers(swap_id, flags);
   return error::kNoError;
 }
 
@@ -4918,13 +4919,14 @@ error::Error GLES2DecoderImpl::HandleCommitOverlayPlanesCHROMIUM(
   const volatile gles2::cmds::CommitOverlayPlanesCHROMIUM& c =
       *static_cast<const volatile gles2::cmds::CommitOverlayPlanesCHROMIUM*>(
           cmd_data);
+  GLuint64 swap_id = c.swap_id();
   GLbitfield flags = static_cast<GLbitfield>(c.flags);
   if (!validators_->swap_buffers_flags.IsValid(flags)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCommitOverlayPlanesCHROMIUM",
                        "flags GL_INVALID_VALUE");
     return error::kNoError;
   }
-  DoCommitOverlayPlanes(flags);
+  DoCommitOverlayPlanes(swap_id, flags);
   return error::kNoError;
 }
 
@@ -5130,6 +5132,7 @@ error::Error GLES2DecoderImpl::HandleSwapBuffersWithBoundsCHROMIUMImmediate(
       *static_cast<
           const volatile gles2::cmds::SwapBuffersWithBoundsCHROMIUMImmediate*>(
           cmd_data);
+  GLuint64 swap_id = c.swap_id();
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32_t data_size = 0;
   if (count >= 0 && !GLES2Util::ComputeDataSize<GLint, 4>(count, &data_size)) {
@@ -5154,7 +5157,7 @@ error::Error GLES2DecoderImpl::HandleSwapBuffersWithBoundsCHROMIUMImmediate(
                        "flags GL_INVALID_VALUE");
     return error::kNoError;
   }
-  DoSwapBuffersWithBoundsCHROMIUM(count, rects, flags);
+  DoSwapBuffersWithBoundsCHROMIUM(swap_id, count, rects, flags);
   return error::kNoError;
 }
 

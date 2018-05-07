@@ -144,11 +144,6 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
 
   bool EnsureBackbuffer();
 
-  using SwapBuffersCompletionCallback =
-      base::RepeatingCallback<void(const SwapBuffersCompleteParams& params)>;
-  void SetSwapBuffersCompletionCallback(
-      const SwapBuffersCompletionCallback& callback);
-
   using UpdateVSyncParametersCallback =
       base::Callback<void(base::TimeTicks timebase, base::TimeDelta interval)>;
   void SetUpdateVSyncParametersCallback(
@@ -294,7 +289,6 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
 
   bool snapshot_requested_ = false;
 
-  SwapBuffersCompletionCallback swap_buffers_completion_callback_;
   UpdateVSyncParametersCallback update_vsync_parameters_completion_callback_;
   PresentationCallback presentation_callback_;
 

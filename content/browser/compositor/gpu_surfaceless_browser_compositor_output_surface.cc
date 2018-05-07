@@ -112,6 +112,7 @@ void GpuSurfacelessBrowserCompositorOutputSurface::Reshape(
 }
 
 void GpuSurfacelessBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(
+    std::vector<ui::LatencyInfo> latency_info,
     const gpu::SwapBuffersCompleteParams& params) {
   gpu::SwapBuffersCompleteParams modified_params(params);
   bool force_swap = false;
@@ -124,7 +125,8 @@ void GpuSurfacelessBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(
     force_swap = true;
   }
   buffer_queue_->PageFlipComplete();
-  GpuBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(modified_params);
+  GpuBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(
+      std::move(latency_info), modified_params);
   if (force_swap)
     client_->SetNeedsRedrawRect(gfx::Rect(swap_size_));
 }

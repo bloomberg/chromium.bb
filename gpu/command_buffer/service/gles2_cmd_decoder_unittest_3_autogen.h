@@ -274,7 +274,7 @@ TEST_P(GLES2DecoderTest3, PopGroupMarkerEXTValidArgs) {
 TEST_P(GLES2DecoderTest3, SwapBuffersValidArgs) {
   SpecializedSetup<cmds::SwapBuffers, 0>(true);
   cmds::SwapBuffers cmd;
-  cmd.Init(0);
+  cmd.Init(1, 0);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }

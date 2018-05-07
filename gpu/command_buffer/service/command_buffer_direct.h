@@ -59,7 +59,7 @@ class GPU_EXPORT CommandBufferDirect : public CommandBuffer,
   bool OnWaitSyncToken(const gpu::SyncToken&) override;
   void OnDescheduleUntilFinished() override;
   void OnRescheduleAfterFinished() override;
-  void OnSwapBuffers(uint32_t flags) override;
+  void OnSwapBuffers(uint64_t swap_id, uint32_t flags) override;
 
   CommandBufferNamespace GetNamespaceID() const;
   CommandBufferId GetCommandBufferID() const;

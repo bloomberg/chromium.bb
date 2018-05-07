@@ -51,6 +51,7 @@ class GpuSurfacelessBrowserCompositorOutputSurface
 
   // BrowserCompositorOutputSurface implementation.
   void OnGpuSwapBuffersCompleted(
+      std::vector<ui::LatencyInfo> latency_info,
       const gpu::SwapBuffersCompleteParams& params) override;
 
  private:

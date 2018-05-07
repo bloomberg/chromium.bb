@@ -30,8 +30,7 @@ GpuBrowserCompositorOutputSurface::GpuBrowserCompositorOutputSurface(
         overlay_candidate_validator)
     : BrowserCompositorOutputSurface(std::move(context),
                                      update_vsync_parameters_callback,
-                                     std::move(overlay_candidate_validator)),
-      latency_info_cache_(this) {
+                                     std::move(overlay_candidate_validator)) {
   if (capabilities_.uses_default_gl_framebuffer) {
     capabilities_.flipped_output_surface =
         context_provider()->ContextCapabilities().flips_vertically;
@@ -43,8 +42,6 @@ GpuBrowserCompositorOutputSurface::GpuBrowserCompositorOutputSurface(
 GpuBrowserCompositorOutputSurface::~GpuBrowserCompositorOutputSurface() {
   // Reset GetCommandBufferProxy() callbacks to avoid calling those callbacks
   // from dtor of the base class.
-  GetCommandBufferProxy()->SetSwapBuffersCompletionCallback(
-      gpu::CommandBufferProxyImpl::SwapBuffersCompletionCallback());
   GetCommandBufferProxy()->SetUpdateVSyncParametersCallback(
       UpdateVSyncParametersCallback());
   GetCommandBufferProxy()->SetPresentationCallback(
@@ -60,17 +57,14 @@ void GpuBrowserCompositorOutputSurface::SetNeedsVSync(bool needs_vsync) {
 }
 
 void GpuBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(
+    std::vector<ui::LatencyInfo> latency_info,
     const gpu::SwapBuffersCompleteParams& params) {
   if (!params.ca_layer_params.is_empty)
     client_->DidReceiveCALayerParams(params.ca_layer_params);
   if (!params.texture_in_use_responses.empty())
     client_->DidReceiveTextureInUseResponses(params.texture_in_use_responses);
   client_->DidReceiveSwapBuffersAck(params.swap_response.swap_id);
-  latency_info_cache_.OnSwapBuffersCompleted(params.swap_response);
-}
-
-void GpuBrowserCompositorOutputSurface::LatencyInfoCompleted(
-    const std::vector<ui::LatencyInfo>& latency_info) {
+  UpdateLatencyInfoOnSwap(params.swap_response, &latency_info);
   RenderWidgetHostImpl::OnGpuSwapBuffersCompleted(latency_info);
   latency_tracker_.OnGpuSwapBuffersCompleted(latency_info);
 }
@@ -93,9 +87,6 @@ void GpuBrowserCompositorOutputSurface::BindToClient(
 
   // CommandBufferProxy() will always call below callbacks directly (no
   // PostTask), so it is safe to use base::Unretained(this).
-  GetCommandBufferProxy()->SetSwapBuffersCompletionCallback(
-      base::Bind(&GpuBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted,
-                 base::Unretained(this)));
   GetCommandBufferProxy()->SetUpdateVSyncParametersCallback(
       update_vsync_parameters_callback_);
   GetCommandBufferProxy()->SetPresentationCallback(
@@ -128,7 +119,7 @@ void GpuBrowserCompositorOutputSurface::Reshape(
 
 void GpuBrowserCompositorOutputSurface::SwapBuffers(
     viz::OutputSurfaceFrame frame) {
-  if (latency_info_cache_.WillSwap(std::move(frame.latency_info)))
+  if (LatencyInfoHasSnapshotRequest(frame.latency_info))
     GetCommandBufferProxy()->SetSnapshotRequested();
 
   gfx::Size surface_size = frame.size;
@@ -145,18 +136,21 @@ void GpuBrowserCompositorOutputSurface::SwapBuffers(
 
   set_draw_rectangle_for_frame_ = false;
 
+  auto swap_callback = base::BindOnce(
+      &GpuBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted,
+      base::Unretained(this), std::move(frame.latency_info));
   uint32_t flags = gpu::SwapBuffersFlags::kVSyncParams;
   if (frame.need_presentation_feedback)
     flags |= gpu::SwapBuffersFlags::kPresentationFeedback;
   if (frame.sub_buffer_rect) {
     DCHECK(frame.content_bounds.empty());
     context_provider_->ContextSupport()->PartialSwapBuffers(
-        *frame.sub_buffer_rect, flags);
+        *frame.sub_buffer_rect, flags, std::move(swap_callback));
   } else if (!frame.content_bounds.empty()) {
-    context_provider_->ContextSupport()->SwapWithBounds(frame.content_bounds,
-                                                        flags);
+    context_provider_->ContextSupport()->SwapWithBounds(
+        frame.content_bounds, flags, std::move(swap_callback));
   } else {
-    context_provider_->ContextSupport()->Swap(flags);
+    context_provider_->ContextSupport()->Swap(flags, std::move(swap_callback));
   }
 }
 

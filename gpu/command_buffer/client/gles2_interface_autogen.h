@@ -617,7 +617,7 @@ virtual void GenVertexArraysOES(GLsizei n, GLuint* arrays) = 0;
 virtual void DeleteVertexArraysOES(GLsizei n, const GLuint* arrays) = 0;
 virtual GLboolean IsVertexArrayOES(GLuint array) = 0;
 virtual void BindVertexArrayOES(GLuint array) = 0;
-virtual void SwapBuffers(GLbitfield flags = 0) = 0;
+virtual void SwapBuffers(GLuint64 swap_id, GLbitfield flags = 0) = 0;
 virtual GLuint GetMaxValueInBufferCHROMIUM(GLuint buffer_id,
                                            GLsizei count,
                                            GLenum type,
@@ -681,7 +681,8 @@ virtual void GetTranslatedShaderSourceANGLE(GLuint shader,
                                             GLsizei bufsize,
                                             GLsizei* length,
                                             char* source) = 0;
-virtual void PostSubBufferCHROMIUM(GLint x,
+virtual void PostSubBufferCHROMIUM(GLuint64 swap_id,
+                                   GLint x,
                                    GLint y,
                                    GLint width,
                                    GLint height,
@@ -778,7 +779,8 @@ virtual void ScheduleCALayerCHROMIUM(GLuint contents_texture_id,
                                      GLuint filter) = 0;
 virtual void ScheduleCALayerInUseQueryCHROMIUM(GLsizei count,
                                                const GLuint* textures) = 0;
-virtual void CommitOverlayPlanesCHROMIUM(GLbitfield flags = 0) = 0;
+virtual void CommitOverlayPlanesCHROMIUM(GLuint64 swap_id,
+                                         GLbitfield flags = 0) = 0;
 virtual void FlushDriverCachesCHROMIUM() = 0;
 virtual GLuint GetLastFlushIdCHROMIUM() = 0;
 virtual void ScheduleDCLayerSharedStateCHROMIUM(GLfloat opacity,
@@ -911,7 +913,8 @@ virtual void OverlayPromotionHintCHROMIUM(GLuint texture,
                                           GLint display_y,
                                           GLint display_width,
                                           GLint display_height) = 0;
-virtual void SwapBuffersWithBoundsCHROMIUM(GLsizei count,
+virtual void SwapBuffersWithBoundsCHROMIUM(GLuint64 swap_id,
+                                           GLsizei count,
                                            const GLint* rects,
                                            GLbitfield flags = 0) = 0;
 virtual void SetDrawRectangleCHROMIUM(GLint x,

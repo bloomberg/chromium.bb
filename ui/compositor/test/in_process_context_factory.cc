@@ -93,9 +93,10 @@ class DirectOutputSurface : public viz::OutputSurface {
     DCHECK(context_provider_.get());
     if (frame.sub_buffer_rect) {
       context_provider_->ContextSupport()->PartialSwapBuffers(
-          *frame.sub_buffer_rect, 0 /* flags */);
+          *frame.sub_buffer_rect, 0 /* flags */, base::DoNothing());
     } else {
-      context_provider_->ContextSupport()->Swap(0 /* flags */);
+      context_provider_->ContextSupport()->Swap(0 /* flags */,
+                                                base::DoNothing());
     }
     gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
     gpu::SyncToken sync_token;

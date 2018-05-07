@@ -82,14 +82,12 @@ class PassThroughImageTransportSurface : public gl::GLSurfaceAdapter {
                               gfx::SwapResponse response,
                               gfx::SwapResult result);
 
-  void BufferPresented(uint64_t swap_id,
-                       const GLSurface::PresentationCallback& callback,
+  void BufferPresented(const GLSurface::PresentationCallback& callback,
                        const gfx::PresentationFeedback& feedback);
 
   const bool is_gpu_vsync_disabled_;
   const bool is_presentation_callback_enabled_;
   base::WeakPtr<ImageTransportSurfaceDelegate> delegate_;
-  uint64_t swap_id_ = 0;
   bool snapshot_requested_ = false;
   MultiWindowSwapInterval multi_window_swap_interval_ =
       kMultiWindowSwapIntervalDefault;

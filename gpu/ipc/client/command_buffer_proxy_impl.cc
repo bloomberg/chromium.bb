@@ -289,12 +289,6 @@ void CommandBufferProxyImpl::OrderingBarrierHelper(int32_t put_offset) {
   flushed_fence_sync_release_ = next_fence_sync_release_ - 1;
 }
 
-void CommandBufferProxyImpl::SetSwapBuffersCompletionCallback(
-    const SwapBuffersCompletionCallback& callback) {
-  CheckLock();
-  swap_buffers_completion_callback_ = callback;
-}
-
 void CommandBufferProxyImpl::SetUpdateVSyncParametersCallback(
     const UpdateVSyncParametersCallback& callback) {
   CheckLock();
@@ -821,8 +815,8 @@ gpu::CommandBufferSharedState* CommandBufferProxyImpl::shared_state() const {
 
 void CommandBufferProxyImpl::OnSwapBuffersCompleted(
     const SwapBuffersCompleteParams& params) {
-  if (!swap_buffers_completion_callback_.is_null())
-    swap_buffers_completion_callback_.Run(params);
+  if (gpu_control_client_)
+    gpu_control_client_->OnGpuControlSwapBuffersCompleted(params);
 }
 
 void CommandBufferProxyImpl::OnUpdateVSyncParameters(base::TimeTicks timebase,

@@ -596,7 +596,7 @@ void GenVertexArraysOES(GLsizei n, GLuint* arrays) override;
 void DeleteVertexArraysOES(GLsizei n, const GLuint* arrays) override;
 GLboolean IsVertexArrayOES(GLuint array) override;
 void BindVertexArrayOES(GLuint array) override;
-void SwapBuffers(GLbitfield flags) override;
+void SwapBuffers(GLuint64 swap_id, GLbitfield flags) override;
 GLuint GetMaxValueInBufferCHROMIUM(GLuint buffer_id,
                                    GLsizei count,
                                    GLenum type,
@@ -660,7 +660,8 @@ void GetTranslatedShaderSourceANGLE(GLuint shader,
                                     GLsizei bufsize,
                                     GLsizei* length,
                                     char* source) override;
-void PostSubBufferCHROMIUM(GLint x,
+void PostSubBufferCHROMIUM(GLuint64 swap_id,
+                           GLint x,
                            GLint y,
                            GLint width,
                            GLint height,
@@ -756,7 +757,7 @@ void ScheduleCALayerCHROMIUM(GLuint contents_texture_id,
                              GLuint filter) override;
 void ScheduleCALayerInUseQueryCHROMIUM(GLsizei count,
                                        const GLuint* textures) override;
-void CommitOverlayPlanesCHROMIUM(GLbitfield flags) override;
+void CommitOverlayPlanesCHROMIUM(GLuint64 swap_id, GLbitfield flags) override;
 void FlushDriverCachesCHROMIUM() override;
 GLuint GetLastFlushIdCHROMIUM() override;
 void ScheduleDCLayerSharedStateCHROMIUM(GLfloat opacity,
@@ -885,7 +886,8 @@ void OverlayPromotionHintCHROMIUM(GLuint texture,
                                   GLint display_y,
                                   GLint display_width,
                                   GLint display_height) override;
-void SwapBuffersWithBoundsCHROMIUM(GLsizei count,
+void SwapBuffersWithBoundsCHROMIUM(GLuint64 swap_id,
+                                   GLsizei count,
                                    const GLint* rects,
                                    GLbitfield flags) override;
 void SetDrawRectangleCHROMIUM(GLint x,

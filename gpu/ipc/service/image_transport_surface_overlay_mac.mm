@@ -42,7 +42,6 @@ ImageTransportSurfaceOverlayMac::ImageTransportSurfaceOverlayMac(
     : delegate_(delegate),
       use_remote_layer_api_(ui::RemoteLayerAPISupported()),
       scale_factor_(1),
-      swap_id_(0),
       gl_renderer_id_(0) {
   ui::GpuSwitchingManager::GetInstance()->AddObserver(this);
 
@@ -209,7 +208,7 @@ gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
     params.ca_layer_params.pixel_size = pixel_size_;
     params.ca_layer_params.scale_factor = scale_factor_;
     params.ca_layer_params.is_empty = false;
-    params.swap_response.swap_id = swap_id_++;
+    params.swap_response.swap_id = 0;  // Set later, in DecoderClient.
     params.swap_response.result = gfx::SwapResult::SWAP_ACK;
     // TODO(brianderson): Tie swap_start to before_flush_time.
     params.swap_response.swap_start = after_flush_before_commit_time;

@@ -1208,8 +1208,8 @@ GLboolean GL_APIENTRY GLES2IsVertexArrayOES(GLuint array) {
 void GL_APIENTRY GLES2BindVertexArrayOES(GLuint array) {
   gles2::GetGLContext()->BindVertexArrayOES(array);
 }
-void GL_APIENTRY GLES2SwapBuffers(GLbitfield flags) {
-  gles2::GetGLContext()->SwapBuffers(flags);
+void GL_APIENTRY GLES2SwapBuffers(GLuint64 swap_id, GLbitfield flags) {
+  gles2::GetGLContext()->SwapBuffers(swap_id, flags);
 }
 GLuint GL_APIENTRY GLES2GetMaxValueInBufferCHROMIUM(GLuint buffer_id,
                                                     GLsizei count,
@@ -1325,12 +1325,14 @@ void GL_APIENTRY GLES2GetTranslatedShaderSourceANGLE(GLuint shader,
   gles2::GetGLContext()->GetTranslatedShaderSourceANGLE(shader, bufsize, length,
                                                         source);
 }
-void GL_APIENTRY GLES2PostSubBufferCHROMIUM(GLint x,
+void GL_APIENTRY GLES2PostSubBufferCHROMIUM(GLuint64 swap_id,
+                                            GLint x,
                                             GLint y,
                                             GLint width,
                                             GLint height,
                                             GLbitfield flags) {
-  gles2::GetGLContext()->PostSubBufferCHROMIUM(x, y, width, height, flags);
+  gles2::GetGLContext()->PostSubBufferCHROMIUM(swap_id, x, y, width, height,
+                                               flags);
 }
 void GL_APIENTRY GLES2CopyTextureCHROMIUM(GLuint source_id,
                                           GLint source_level,
@@ -1500,8 +1502,9 @@ void GL_APIENTRY
 GLES2ScheduleCALayerInUseQueryCHROMIUM(GLsizei count, const GLuint* textures) {
   gles2::GetGLContext()->ScheduleCALayerInUseQueryCHROMIUM(count, textures);
 }
-void GL_APIENTRY GLES2CommitOverlayPlanesCHROMIUM(GLbitfield flags) {
-  gles2::GetGLContext()->CommitOverlayPlanesCHROMIUM(flags);
+void GL_APIENTRY GLES2CommitOverlayPlanesCHROMIUM(GLuint64 swap_id,
+                                                  GLbitfield flags) {
+  gles2::GetGLContext()->CommitOverlayPlanesCHROMIUM(swap_id, flags);
 }
 void GL_APIENTRY GLES2FlushDriverCachesCHROMIUM() {
   gles2::GetGLContext()->FlushDriverCachesCHROMIUM();
@@ -1742,10 +1745,12 @@ void GL_APIENTRY GLES2OverlayPromotionHintCHROMIUM(GLuint texture,
       texture, promotion_hint, display_x, display_y, display_width,
       display_height);
 }
-void GL_APIENTRY GLES2SwapBuffersWithBoundsCHROMIUM(GLsizei count,
+void GL_APIENTRY GLES2SwapBuffersWithBoundsCHROMIUM(GLuint64 swap_id,
+                                                    GLsizei count,
                                                     const GLint* rects,
                                                     GLbitfield flags) {
-  gles2::GetGLContext()->SwapBuffersWithBoundsCHROMIUM(count, rects, flags);
+  gles2::GetGLContext()->SwapBuffersWithBoundsCHROMIUM(swap_id, count, rects,
+                                                       flags);
 }
 void GL_APIENTRY GLES2SetDrawRectangleCHROMIUM(GLint x,
                                                GLint y,

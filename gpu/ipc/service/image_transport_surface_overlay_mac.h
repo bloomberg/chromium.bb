@@ -87,7 +87,6 @@ class ImageTransportSurfaceOverlayMac : public gl::GLSurface,
   float scale_factor_;
 
   std::vector<CALayerInUseQuery> ca_layer_in_use_queries_;
-  uint64_t swap_id_;
 
   // A GLFence marking the end of the previous frame. Must only be accessed
   // while the associated |previous_frame_context_| is bound.
