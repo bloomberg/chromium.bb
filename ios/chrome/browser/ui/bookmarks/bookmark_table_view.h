@@ -8,6 +8,8 @@
 #import <UIKit/UIKit.h>
 #include <set>
 
+@class BookmarkHomeSharedState;
+@class BookmarkTableView;
 class GURL;
 @protocol SigninPresenter;
 @class SigninPromoViewConfigurator;
@@ -20,9 +22,6 @@ class BookmarkNode;
 namespace ios {
 class ChromeBrowserState;
 }
-
-@class BookmarkTableView;
-@class MDCFlexibleHeaderView;
 
 // Delegate to handle actions on the table.
 @protocol BookmarkTableViewDelegate<NSObject>
@@ -70,24 +69,15 @@ class ChromeBrowserState;
 @end
 
 @interface BookmarkTableView : UIView
-// If the table is in edit mode.
-@property(nonatomic, assign) BOOL editing;
-// The UITableView to show bookmarks.
-@property(nonatomic, strong, readonly) UITableView* tableView;
-// Header view to display the shadow below the app bar. It must be tracking the
-// |tableView|.
-@property(nonatomic, weak) MDCFlexibleHeaderView* headerView;
 
 // Shows all sub-folders and sub-urls of a folder node (that is set as the root
 // node) in a UITableView. Note: This class intentionally does not try to
 // maintain state through a folder transition. A new instance of this class is
 // pushed on the navigation stack for a different root node.
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                            delegate:(id<BookmarkTableViewDelegate>)delegate
-                            rootNode:(const bookmarks::BookmarkNode*)rootNode
-                               frame:(CGRect)frame
-                           presenter:(id<SigninPresenter>)presenter
-    NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithSharedState:(BookmarkHomeSharedState*)sharedState
+                       browserState:(ios::ChromeBrowserState*)browserState
+                           delegate:(id<BookmarkTableViewDelegate>)delegate
+                              frame:(CGRect)frame NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
 - (instancetype)initWithFrame:(CGRect)frame
@@ -107,9 +97,6 @@ class ChromeBrowserState;
 
 // Called when adding a new folder
 - (void)addNewFolder;
-
-// Returns the currently selected edit nodes.
-- (const std::set<const bookmarks::BookmarkNode*>&)editNodes;
 
 // Returns a vector of edit nodes.
 - (std::vector<const bookmarks::BookmarkNode*>)getEditNodesInVector;

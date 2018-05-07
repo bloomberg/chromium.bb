@@ -22,6 +22,7 @@
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_consumer.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
 #include "ios/chrome/browser/ui/bookmarks/bookmark_empty_background.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_home_shared_state.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_waiting_view.h"
 #include "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
@@ -40,21 +41,6 @@
 #endif
 
 namespace {
-// Minimal acceptable favicon size, in points.
-const CGFloat kMinFaviconSizePt = 16.0;
-
-// Desired favicon size, in points.
-const CGFloat kDesiredFaviconSizePt = 32.0;
-
-// Cell height, in points.
-const CGFloat kCellHeightPt = 56.0;
-
-// Minimium spacing between keyboard and the titleText when creating new folder,
-// in points.
-const CGFloat kKeyboardSpacing = 16.0;
-
-// Max number of favicon download requests in the lifespan of this tableView.
-const NSUInteger kMaxDownloadFaviconCount = 50;
 
 // NetworkTrafficAnnotationTag for fetching favicon from a Google server.
 const net::NetworkTrafficAnnotationTag kTrafficAnnotation =
@@ -76,16 +62,6 @@ const net::NetworkTrafficAnnotationTag kTrafficAnnotation =
           policy_exception_justification: "Not implemented."
         }
       )");
-
-typedef NS_ENUM(NSInteger, SectionIdentifier) {
-  SectionIdentifierPromo = kSectionIdentifierEnumZero,
-  SectionIdentifierBookmarks,
-};
-
-typedef NS_ENUM(NSInteger, ItemType) {
-  ItemTypePromo = kItemTypeEnumZero,
-  ItemTypeBookmark,
-};
 
 }  // namespace
 
@@ -168,12 +144,6 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
                                 UIGestureRecognizerDelegate,
                                 UITableViewDataSource,
                                 UITableViewDelegate> {
-  // The current root node of this table view.
-  const BookmarkNode* _currentRootNode;
-
-  // The newly created folder node its name is being edited.
-  const BookmarkNode* _editingFolderNode;
-
   // Bridge to register for bookmark changes.
   std::unique_ptr<bookmarks::BookmarkModelBridge> _modelBridge;
 
@@ -187,18 +157,10 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   std::map<IntegerPair, base::CancelableTaskTracker::TaskId> _faviconLoadTasks;
   // Task tracker used for async favicon loads.
   base::CancelableTaskTracker _faviconTaskTracker;
-
-  // True if the promo is visible.
-  BOOL _promoVisible;
-
-  // Set of nodes being editing currently.
-  std::set<const bookmarks::BookmarkNode*> _editNodes;
 }
 
-// The model backing the table view.
-@property(nonatomic, strong) TableViewModel* tableViewModel;
-// The model holding bookmark data.
-@property(nonatomic, assign) bookmarks::BookmarkModel* bookmarkModel;
+// State used by this table view.
+@property(nonatomic, strong) BookmarkHomeSharedState* sharedState;
 // The browser state.
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;
 // The delegate for actions on the table.
@@ -209,94 +171,71 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 // The loading spinner background which appears when syncing.
 @property(nonatomic, strong) BookmarkHomeWaitingView* spinnerView;
 
-// Presenter for showing signin UI.
-@property(nonatomic, readonly, weak) id<SigninPresenter> presenter;
-
-// If a new folder is being added currently.
-@property(nonatomic, assign) BOOL addingNewFolder;
-
-// The cell for the newly created folder while its name is being edited. Set
-// to nil once the editing completes. Corresponds to |_editingFolderNode|.
-@property(nonatomic, weak) BookmarkTableCell* editingFolderCell;
-
-// Counts the number of favicon download requests from Google server in the
-// lifespan of this tableView.
-@property(nonatomic, assign) NSUInteger faviconDownloadCount;
-
 @end
 
 @implementation BookmarkTableView
 
-@synthesize tableView = _tableView;
-@synthesize tableViewModel = _tableViewModel;
-@synthesize headerView = _headerView;
-@synthesize bookmarkModel = _bookmarkModel;
 @synthesize browserState = _browserState;
 @synthesize delegate = _delegate;
 @synthesize emptyTableBackgroundView = _emptyTableBackgroundView;
 @synthesize spinnerView = _spinnerView;
-@synthesize editing = _editing;
-@synthesize presenter = _presenter;
-@synthesize addingNewFolder = _addingNewFolder;
-@synthesize editingFolderCell = _editingFolderCell;
-@synthesize faviconDownloadCount = _faviconDownloadCount;
+@synthesize sharedState = _sharedState;
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                            delegate:(id<BookmarkTableViewDelegate>)delegate
-                            rootNode:(const BookmarkNode*)rootNode
-                               frame:(CGRect)frame
-                           presenter:(id<SigninPresenter>)presenter {
+- (instancetype)initWithSharedState:(BookmarkHomeSharedState*)sharedState
+                       browserState:(ios::ChromeBrowserState*)browserState
+                           delegate:(id<BookmarkTableViewDelegate>)delegate
+                              frame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
-    DCHECK(rootNode);
+    DCHECK(sharedState.tableViewDisplayedRootNode);
+    _sharedState = sharedState;
     _browserState = browserState;
     _delegate = delegate;
-    _currentRootNode = rootNode;
-    _presenter = presenter;
 
-    // Set up connection to the BookmarkModel.
-    _bookmarkModel =
-        ios::BookmarkModelFactory::GetForBrowserState(browserState);
+    // Temporary calls to ensure that we're initializing to the right values.
+    DCHECK_EQ(self.sharedState.bookmarkModel,
+              ios::BookmarkModelFactory::GetForBrowserState(browserState));
 
     // Set up observers.
-    _modelBridge =
-        std::make_unique<bookmarks::BookmarkModelBridge>(self, _bookmarkModel);
+    _modelBridge = std::make_unique<bookmarks::BookmarkModelBridge>(
+        self, self.sharedState.bookmarkModel);
     _syncedSessionsObserver =
         std::make_unique<synced_sessions::SyncedSessionsObserverBridge>(
             self, _browserState);
 
-    // Create and populate the model.
-    _tableViewModel = [[TableViewModel alloc] init];
+    // Populate the model.
     [self computeBookmarkTableViewData];
 
     // Set promo state before the tableview is created.
     [self promoStateChangedAnimated:NO];
 
     // Create and setup tableview.
-    _tableView =
+    self.sharedState.tableView =
         [[UITableView alloc] initWithFrame:frame style:UITableViewStylePlain];
-    self.tableView.accessibilityIdentifier = @"bookmarksTableView";
-    self.tableView.dataSource = self;
-    self.tableView.delegate = self;
+    self.sharedState.tableView.accessibilityIdentifier = @"bookmarksTableView";
+    self.sharedState.tableView.dataSource = self;
+    self.sharedState.tableView.delegate = self;
     if (@available(iOS 11.0, *)) {
-      self.tableView.contentInsetAdjustmentBehavior =
+      self.sharedState.tableView.contentInsetAdjustmentBehavior =
           UIScrollViewContentInsetAdjustmentNever;
     }
-    self.tableView.estimatedRowHeight = kCellHeightPt;
-    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    self.sharedState.tableView.estimatedRowHeight =
+        [BookmarkHomeSharedState cellHeightPt];
+    self.sharedState.tableView.separatorStyle =
+        UITableViewCellSeparatorStyleNone;
     // Remove extra rows.
-    self.tableView.autoresizingMask =
+    self.sharedState.tableView.autoresizingMask =
         UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    self.tableView.allowsMultipleSelectionDuringEditing = YES;
+    self.sharedState.tableView.allowsMultipleSelectionDuringEditing = YES;
     UILongPressGestureRecognizer* longPressRecognizer =
         [[UILongPressGestureRecognizer alloc]
             initWithTarget:self
                     action:@selector(handleLongPress:)];
     longPressRecognizer.numberOfTouchesRequired = 1;
     longPressRecognizer.delegate = self;
-    [self.tableView addGestureRecognizer:longPressRecognizer];
-    [self addSubview:self.tableView];
-    [self bringSubviewToFront:self.tableView];
+    [self.sharedState.tableView addGestureRecognizer:longPressRecognizer];
+    [self addSubview:self.sharedState.tableView];
+    [self bringSubviewToFront:self.sharedState.tableView];
 
     [self registerForKeyboardNotifications];
     [self showEmptyOrLoadingSpinnerBackgroundIfNeeded];
@@ -306,8 +245,8 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 
 - (void)dealloc {
   [self removeKeyboardObservers];
-  _tableView.dataSource = nil;
-  _tableView.delegate = nil;
+  _sharedState.tableView.dataSource = nil;
+  _sharedState.tableView.delegate = nil;
   _faviconTaskTracker.TryCancelAll();
 }
 
@@ -317,25 +256,28 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   // We show promo cell only on the root view, that is when showing
   // the permanent nodes.
   BOOL promoVisible =
-      ((_currentRootNode == self.bookmarkModel->root_node()) &&
+      ((self.sharedState.tableViewDisplayedRootNode ==
+        self.sharedState.bookmarkModel->root_node()) &&
        [self.delegate bookmarkTableViewShouldShowPromoCell:self]);
 
-  if (promoVisible == _promoVisible) {
+  if (promoVisible == self.sharedState.promoVisible) {
     return;
   }
-  _promoVisible = promoVisible;
+  self.sharedState.promoVisible = promoVisible;
 
   SigninPromoViewMediator* mediator = self.delegate.signinPromoViewMediator;
-  if (_promoVisible) {
-    DCHECK(![self.tableViewModel
-        hasSectionForSectionIdentifier:SectionIdentifierPromo]);
-    [self.tableViewModel insertSectionWithIdentifier:SectionIdentifierPromo
-                                             atIndex:0];
+  if (self.sharedState.promoVisible) {
+    DCHECK(![self.sharedState.tableViewModel
+        hasSectionForSectionIdentifier:BookmarkHomeSectionIdentifierPromo]);
+    [self.sharedState.tableViewModel
+        insertSectionWithIdentifier:BookmarkHomeSectionIdentifierPromo
+                            atIndex:0];
     BookmarkPromoItem* item =
-        [[BookmarkPromoItem alloc] initWithType:ItemTypePromo];
+        [[BookmarkPromoItem alloc] initWithType:BookmarkHomeItemTypePromo];
     item.mediatorProvider = self.delegate;
-    [self.tableViewModel addItem:item
-         toSectionWithIdentifier:SectionIdentifierPromo];
+    [self.sharedState.tableViewModel
+                        addItem:item
+        toSectionWithIdentifier:BookmarkHomeSectionIdentifierPromo];
     [mediator signinPromoViewVisible];
   } else {
     if (![mediator isInvalidClosedOrNeverVisible]) {
@@ -344,27 +286,28 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
       [mediator signinPromoViewHidden];
     }
 
-    DCHECK([self.tableViewModel
-        hasSectionForSectionIdentifier:SectionIdentifierPromo]);
-    [self.tableViewModel removeSectionWithIdentifier:SectionIdentifierPromo];
+    DCHECK([self.sharedState.tableViewModel
+        hasSectionForSectionIdentifier:BookmarkHomeSectionIdentifierPromo]);
+    [self.sharedState.tableViewModel
+        removeSectionWithIdentifier:BookmarkHomeSectionIdentifierPromo];
   }
-  [self.tableView reloadData];
+  [self.sharedState.tableView reloadData];
 }
 
 - (void)configureSigninPromoWithConfigurator:
             (SigninPromoViewConfigurator*)configurator
                              identityChanged:(BOOL)identityChanged {
-  if (![self.tableViewModel
-          hasSectionForSectionIdentifier:SectionIdentifierPromo]) {
+  if (![self.sharedState.tableViewModel
+          hasSectionForSectionIdentifier:BookmarkHomeSectionIdentifierPromo]) {
     return;
   }
 
-  NSIndexPath* indexPath =
-      [self.tableViewModel indexPathForItemType:ItemTypePromo
-                              sectionIdentifier:SectionIdentifierPromo];
+  NSIndexPath* indexPath = [self.sharedState.tableViewModel
+      indexPathForItemType:BookmarkHomeItemTypePromo
+         sectionIdentifier:BookmarkHomeSectionIdentifierPromo];
   BookmarkTableSigninPromoCell* signinPromoCell =
       base::mac::ObjCCast<BookmarkTableSigninPromoCell>(
-          [self.tableView cellForRowAtIndexPath:indexPath]);
+          [self.sharedState.tableView cellForRowAtIndexPath:indexPath]);
   if (!signinPromoCell) {
     return;
   }
@@ -374,68 +317,59 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   if (identityChanged) {
     // The section should be reload to update the cell height.
     NSIndexSet* indexSet = [NSIndexSet indexSetWithIndex:indexPath.section];
-    [self.tableView reloadSections:indexSet
-                  withRowAnimation:UITableViewRowAnimationNone];
+    [self.sharedState.tableView reloadSections:indexSet
+                              withRowAnimation:UITableViewRowAnimationNone];
   }
 }
 
 - (void)addNewFolder {
-  [self.editingFolderCell stopEdit];
-  if (!_currentRootNode) {
+  [self.sharedState.editingFolderCell stopEdit];
+  if (!self.sharedState.tableViewDisplayedRootNode) {
     return;
   }
-  self.addingNewFolder = YES;
+  self.sharedState.addingNewFolder = YES;
   base::string16 folderTitle = base::SysNSStringToUTF16(
       l10n_util::GetNSString(IDS_IOS_BOOKMARK_NEW_GROUP_DEFAULT_NAME));
-  _editingFolderNode = self.bookmarkModel->AddFolder(
-      _currentRootNode, _currentRootNode->child_count(), folderTitle);
+  self.sharedState.editingFolderNode =
+      self.sharedState.bookmarkModel->AddFolder(
+          self.sharedState.tableViewDisplayedRootNode,
+          self.sharedState.tableViewDisplayedRootNode->child_count(),
+          folderTitle);
 
-  BookmarkNodeItem* nodeItem =
-      [[BookmarkNodeItem alloc] initWithType:ItemTypeBookmark
-                                bookmarkNode:_editingFolderNode];
-  [self.tableViewModel addItem:nodeItem
-       toSectionWithIdentifier:SectionIdentifierBookmarks];
+  BookmarkNodeItem* nodeItem = [[BookmarkNodeItem alloc]
+      initWithType:BookmarkHomeItemTypeBookmark
+      bookmarkNode:self.sharedState.editingFolderNode];
+  [self.sharedState.tableViewModel
+                      addItem:nodeItem
+      toSectionWithIdentifier:BookmarkHomeSectionIdentifierBookmarks];
 
   // Insert the new folder cell at the end of the table.
   NSIndexPath* newRowIndexPath =
-      [self.tableViewModel indexPathForItem:nodeItem];
+      [self.sharedState.tableViewModel indexPathForItem:nodeItem];
   NSMutableArray* newRowIndexPaths =
       [[NSMutableArray alloc] initWithObjects:newRowIndexPath, nil];
-  [self.tableView beginUpdates];
-  [self.tableView insertRowsAtIndexPaths:newRowIndexPaths
-                        withRowAnimation:UITableViewRowAnimationNone];
-  [self.tableView endUpdates];
+  [self.sharedState.tableView beginUpdates];
+  [self.sharedState.tableView
+      insertRowsAtIndexPaths:newRowIndexPaths
+            withRowAnimation:UITableViewRowAnimationNone];
+  [self.sharedState.tableView endUpdates];
 
   // Scroll to the end of the table
-  [self.tableView scrollToRowAtIndexPath:newRowIndexPath
-                        atScrollPosition:UITableViewScrollPositionBottom
-                                animated:YES];
-}
-
-- (void)setEditing:(BOOL)editing {
-  // If not in editing mode but the tableView's editing is ON, it means the
-  // table is waiting for a swipe-to-delete confirmation.  In this case, we need
-  // to close the confirmation by setting tableView.editing to NO.
-  if (!_editing && self.tableView.editing) {
-    self.tableView.editing = NO;
-  }
-  [self.editingFolderCell stopEdit];
-  _editing = editing;
-  [self resetEditNodes];
-  [self.tableView setEditing:editing animated:YES];
-}
-
-- (const std::set<const bookmarks::BookmarkNode*>&)editNodes {
-  return _editNodes;
+  [self.sharedState.tableView
+      scrollToRowAtIndexPath:newRowIndexPath
+            atScrollPosition:UITableViewScrollPositionBottom
+                    animated:YES];
 }
 
 - (std::vector<const bookmarks::BookmarkNode*>)getEditNodesInVector {
   // Create a vector of edit nodes in the same order as the nodes in folder.
   std::vector<const bookmarks::BookmarkNode*> nodes;
-  int childCount = _currentRootNode->child_count();
+  int childCount = self.sharedState.tableViewDisplayedRootNode->child_count();
   for (int i = 0; i < childCount; ++i) {
-    const BookmarkNode* node = _currentRootNode->GetChild(i);
-    if (_editNodes.find(node) != _editNodes.end()) {
+    const BookmarkNode* node =
+        self.sharedState.tableViewDisplayedRootNode->GetChild(i);
+    if (self.sharedState.editNodes.find(node) !=
+        self.sharedState.editNodes.end()) {
       nodes.push_back(node);
     }
   }
@@ -443,31 +377,37 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 }
 
 - (BOOL)hasBookmarksOrFolders {
-  return _currentRootNode && !_currentRootNode->empty();
+  return self.sharedState.tableViewDisplayedRootNode &&
+         !self.sharedState.tableViewDisplayedRootNode->empty();
 }
 
 - (BOOL)allowsNewFolder {
   // When the current root node has been removed remotely (becomes NULL),
   // creating new folder is forbidden.
-  return _currentRootNode != NULL;
+  return self.sharedState.tableViewDisplayedRootNode != NULL;
 }
 
 - (CGFloat)contentPosition {
-  if (_currentRootNode == self.bookmarkModel->root_node()) {
+  if (self.sharedState.tableViewDisplayedRootNode ==
+      self.sharedState.bookmarkModel->root_node()) {
     return 0;
   }
   // Divided the scroll position by cell height so that it will stay correct in
   // case the cell height is changed in future.
-  return self.tableView.contentOffset.y / kCellHeightPt;
+  return self.sharedState.tableView.contentOffset.y /
+         [BookmarkHomeSharedState cellHeightPt];
 }
 
 - (void)setContentPosition:(CGFloat)position {
   // The scroll position was divided by the cell height when stored.
-  [self.tableView setContentOffset:CGPointMake(0, position * kCellHeightPt)];
+  [self.sharedState.tableView
+      setContentOffset:CGPointMake(
+                           0,
+                           position * [BookmarkHomeSharedState cellHeightPt])];
 }
 
 - (void)navigateAway {
-  [self.editingFolderCell stopEdit];
+  [self.sharedState.editingFolderCell stopEdit];
 }
 
 #pragma mark - UIView
@@ -475,41 +415,42 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
   // Stop edit of current bookmark folder name, if any.
-  [self.editingFolderCell stopEdit];
+  [self.sharedState.editingFolderCell stopEdit];
 }
 
 #pragma mark - UITableViewDataSource
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView*)tableView {
-  return [self.tableViewModel numberOfSections];
+  return [self.sharedState.tableViewModel numberOfSections];
 }
 
 - (NSInteger)tableView:(UITableView*)tableView
     numberOfRowsInSection:(NSInteger)section {
-  return [self.tableViewModel numberOfItemsInSection:section];
+  return [self.sharedState.tableViewModel numberOfItemsInSection:section];
 }
 
 - (UITableViewCell*)tableView:(UITableView*)tableView
         cellForRowAtIndexPath:(NSIndexPath*)indexPath {
-  TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
+  TableViewItem* item =
+      [self.sharedState.tableViewModel itemAtIndexPath:indexPath];
   Class cellClass = [item cellClass];
   NSString* reuseIdentifier = NSStringFromClass(cellClass);
-  [self.tableView registerClass:cellClass
-         forCellReuseIdentifier:reuseIdentifier];
-  UITableViewCell* cell =
-      [self.tableView dequeueReusableCellWithIdentifier:reuseIdentifier
-                                           forIndexPath:indexPath];
+  [self.sharedState.tableView registerClass:cellClass
+                     forCellReuseIdentifier:reuseIdentifier];
+  UITableViewCell* cell = [self.sharedState.tableView
+      dequeueReusableCellWithIdentifier:reuseIdentifier
+                           forIndexPath:indexPath];
   [item configureCell:cell withStyler:[[ChromeTableViewStyler alloc] init]];
 
-  if (item.type == ItemTypeBookmark) {
+  if (item.type == BookmarkHomeItemTypeBookmark) {
     BookmarkNodeItem* nodeItem =
         base::mac::ObjCCastStrict<BookmarkNodeItem>(item);
     BookmarkTableCell* tableCell =
         base::mac::ObjCCastStrict<BookmarkTableCell>(cell);
-    if (nodeItem.bookmarkNode == _editingFolderNode) {
+    if (nodeItem.bookmarkNode == self.sharedState.editingFolderNode) {
       // Delay starting edit, so that the cell is fully created.
       dispatch_async(dispatch_get_main_queue(), ^{
-        self.editingFolderCell = tableCell;
+        self.sharedState.editingFolderCell = tableCell;
         [tableCell startEdit];
         tableCell.textDelegate = self;
       });
@@ -527,8 +468,9 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 
 - (BOOL)tableView:(UITableView*)tableView
     canEditRowAtIndexPath:(NSIndexPath*)indexPath {
-  TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
-  if (item.type != ItemTypeBookmark) {
+  TableViewItem* item =
+      [self.sharedState.tableViewModel itemAtIndexPath:indexPath];
+  if (item.type != BookmarkHomeItemTypeBookmark) {
     // Can only edit bookmarks.
     return NO;
   }
@@ -544,8 +486,9 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 - (void)tableView:(UITableView*)tableView
     commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
      forRowAtIndexPath:(NSIndexPath*)indexPath {
-  TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
-  if (item.type != ItemTypeBookmark) {
+  TableViewItem* item =
+      [self.sharedState.tableViewModel itemAtIndexPath:indexPath];
+  if (item.type != BookmarkHomeItemTypeBookmark) {
     // Can only commit edits for bookmarks.
     return;
   }
@@ -562,8 +505,9 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 
 - (BOOL)tableView:(UITableView*)tableView
     canMoveRowAtIndexPath:(NSIndexPath*)indexPath {
-  TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
-  if (item.type != ItemTypeBookmark) {
+  TableViewItem* item =
+      [self.sharedState.tableViewModel itemAtIndexPath:indexPath];
+  if (item.type != BookmarkHomeItemTypeBookmark) {
     // Can only move bookmarks.
     return NO;
   }
@@ -596,10 +540,10 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 
 - (CGFloat)tableView:(UITableView*)tableView
     heightForRowAtIndexPath:(NSIndexPath*)indexPath {
-  NSInteger sectionIdentifier =
-      [self.tableViewModel sectionIdentifierForSection:indexPath.section];
-  if (sectionIdentifier == SectionIdentifierBookmarks) {
-    return kCellHeightPt;
+  NSInteger sectionIdentifier = [self.sharedState.tableViewModel
+      sectionIdentifierForSection:indexPath.section];
+  if (sectionIdentifier == BookmarkHomeSectionIdentifierBookmarks) {
+    return [BookmarkHomeSharedState cellHeightPt];
   }
   return UITableViewAutomaticDimension;
 }
@@ -608,18 +552,19 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 
 - (void)tableView:(UITableView*)tableView
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
-  NSInteger sectionIdentifier =
-      [self.tableViewModel sectionIdentifierForSection:indexPath.section];
-  if (sectionIdentifier == SectionIdentifierBookmarks) {
+  NSInteger sectionIdentifier = [self.sharedState.tableViewModel
+      sectionIdentifierForSection:indexPath.section];
+  if (sectionIdentifier == BookmarkHomeSectionIdentifierBookmarks) {
     const BookmarkNode* node = [self nodeAtIndexPath:indexPath];
     DCHECK(node);
     // If table is in edit mode, record all the nodes added to edit set.
-    if (self.editing) {
-      _editNodes.insert(node);
-      [self.delegate bookmarkTableView:self selectedEditNodes:_editNodes];
+    if (self.sharedState.currentlyInEditMode) {
+      self.sharedState.editNodes.insert(node);
+      [self.delegate bookmarkTableView:self
+                     selectedEditNodes:self.sharedState.editNodes];
       return;
     }
-    [self.editingFolderCell stopEdit];
+    [self.sharedState.editingFolderCell stopEdit];
     if (node->is_folder()) {
       [self.delegate bookmarkTableView:self selectedFolderForNavigation:node];
     } else {
@@ -634,13 +579,15 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 
 - (void)tableView:(UITableView*)tableView
     didDeselectRowAtIndexPath:(NSIndexPath*)indexPath {
-  NSInteger sectionIdentifier =
-      [self.tableViewModel sectionIdentifierForSection:indexPath.section];
-  if (sectionIdentifier == SectionIdentifierBookmarks && self.editing) {
+  NSInteger sectionIdentifier = [self.sharedState.tableViewModel
+      sectionIdentifierForSection:indexPath.section];
+  if (sectionIdentifier == BookmarkHomeSectionIdentifierBookmarks &&
+      self.sharedState.currentlyInEditMode) {
     const BookmarkNode* node = [self nodeAtIndexPath:indexPath];
     DCHECK(node);
-    _editNodes.erase(node);
-    [self.delegate bookmarkTableView:self selectedEditNodes:_editNodes];
+    self.sharedState.editNodes.erase(node);
+    [self.delegate bookmarkTableView:self
+                   selectedEditNodes:self.sharedState.editNodes];
   }
 }
 
@@ -656,7 +603,7 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 // The node has changed, but not its children.
 - (void)bookmarkNodeChanged:(const BookmarkNode*)bookmarkNode {
   // The root folder changed. Do nothing.
-  if (bookmarkNode == _currentRootNode) {
+  if (bookmarkNode == self.sharedState.tableViewDisplayedRootNode) {
     return;
   }
 
@@ -671,7 +618,8 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   // The current root folder's children changed. Reload everything.
   // (When adding new folder, table is already been updated. So no need to
   // reload here.)
-  if (bookmarkNode == _currentRootNode && !self.addingNewFolder) {
+  if (bookmarkNode == self.sharedState.tableViewDisplayedRootNode &&
+      !self.sharedState.addingNewFolder) {
     [self refreshContents];
     return;
   }
@@ -681,7 +629,8 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 - (void)bookmarkNode:(const BookmarkNode*)bookmarkNode
      movedFromParent:(const BookmarkNode*)oldParent
             toParent:(const BookmarkNode*)newParent {
-  if (oldParent == _currentRootNode || newParent == _currentRootNode) {
+  if (oldParent == self.sharedState.tableViewDisplayedRootNode ||
+      newParent == self.sharedState.tableViewDisplayedRootNode) {
     // A folder was added or removed from the current root folder.
     [self refreshContents];
   }
@@ -690,8 +639,8 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 // |node| was deleted from |folder|.
 - (void)bookmarkNodeDeleted:(const BookmarkNode*)node
                  fromFolder:(const BookmarkNode*)folder {
-  if (_currentRootNode == node) {
-    _currentRootNode = NULL;
+  if (self.sharedState.tableViewDisplayedRootNode == node) {
+    self.sharedState.tableViewDisplayedRootNode = NULL;
     [self refreshContents];
   }
 }
@@ -713,8 +662,9 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   }
 
   // Check that this cell is visible.
-  NSIndexPath* indexPath = [self.tableViewModel indexPathForItem:nodeItem];
-  NSArray* visiblePaths = [self.tableView indexPathsForVisibleRows];
+  NSIndexPath* indexPath =
+      [self.sharedState.tableViewModel indexPathForItem:nodeItem];
+  NSArray* visiblePaths = [self.sharedState.tableView indexPathsForVisibleRows];
   if (![visiblePaths containsObject:indexPath]) {
     return;
   }
@@ -728,7 +678,7 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 - (BOOL)gestureRecognizer:(UIGestureRecognizer*)gestureRecognizer
        shouldReceiveTouch:(UITouch*)touch {
   // Ignore long press in edit mode.
-  if (self.editing) {
+  if (self.sharedState.currentlyInEditMode) {
     return NO;
   }
   return YES;
@@ -737,15 +687,17 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 #pragma mark - Private
 
 - (void)handleLongPress:(UILongPressGestureRecognizer*)gestureRecognizer {
-  if (self.editing ||
+  if (self.sharedState.currentlyInEditMode ||
       gestureRecognizer.state != UIGestureRecognizerStateBegan) {
     return;
   }
-  CGPoint touchPoint = [gestureRecognizer locationInView:self.tableView];
-  NSIndexPath* indexPath = [self.tableView indexPathForRowAtPoint:touchPoint];
-  if (indexPath == nil ||
-      [self.tableViewModel sectionIdentifierForSection:indexPath.section] !=
-          SectionIdentifierBookmarks) {
+  CGPoint touchPoint =
+      [gestureRecognizer locationInView:self.sharedState.tableView];
+  NSIndexPath* indexPath =
+      [self.sharedState.tableView indexPathForRowAtPoint:touchPoint];
+  if (indexPath == nil || [self.sharedState.tableViewModel
+                              sectionIdentifierForSection:indexPath.section] !=
+                              BookmarkHomeSectionIdentifierBookmarks) {
     return;
   }
 
@@ -759,14 +711,6 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   [self.delegate bookmarkTableView:self showContextMenuForNode:node];
 }
 
-- (void)resetEditNodes {
-  _editNodes.clear();
-  if (self.editing) {
-    // Also update viewcontroler that the edit nodes changed, if in edit mode.
-    [self.delegate bookmarkTableView:self selectedEditNodes:_editNodes];
-  }
-}
-
 // Row selection of the tableView will be cleared after reloadData.  This
 // function is used to restore the row selection.  It also updates editNodes in
 // case some selected nodes are removed.
@@ -776,31 +720,35 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 
   // Add selected nodes to editNodes only if they are not removed (still exist
   // in the table).
-  NSArray<TableViewItem*>* items = [self.tableViewModel
-      itemsInSectionWithIdentifier:SectionIdentifierBookmarks];
+  NSArray<TableViewItem*>* items = [self.sharedState.tableViewModel
+      itemsInSectionWithIdentifier:BookmarkHomeSectionIdentifierBookmarks];
   for (TableViewItem* item in items) {
     BookmarkNodeItem* nodeItem =
         base::mac::ObjCCastStrict<BookmarkNodeItem>(item);
     const BookmarkNode* node = nodeItem.bookmarkNode;
-    if (_editNodes.find(node) != _editNodes.end()) {
+    if (self.sharedState.editNodes.find(node) !=
+        self.sharedState.editNodes.end()) {
       newEditNodes.insert(node);
       // Reselect the row of this node.
-      NSIndexPath* itemPath = [self.tableViewModel indexPathForItem:nodeItem];
-      [self.tableView selectRowAtIndexPath:itemPath
-                                  animated:NO
-                            scrollPosition:UITableViewScrollPositionNone];
+      NSIndexPath* itemPath =
+          [self.sharedState.tableViewModel indexPathForItem:nodeItem];
+      [self.sharedState.tableView
+          selectRowAtIndexPath:itemPath
+                      animated:NO
+                scrollPosition:UITableViewScrollPositionNone];
     }
   }
 
   // if editNodes is changed, update it and tell BookmarkTableViewDelegate.
-  if (_editNodes.size() != newEditNodes.size()) {
-    _editNodes = newEditNodes;
-    [self.delegate bookmarkTableView:self selectedEditNodes:_editNodes];
+  if (self.sharedState.editNodes.size() != newEditNodes.size()) {
+    self.sharedState.editNodes = newEditNodes;
+    [self.delegate bookmarkTableView:self
+                   selectedEditNodes:self.sharedState.editNodes];
   }
 }
 
 - (BOOL)shouldShowPromoCell {
-  return _promoVisible;
+  return self.sharedState.promoVisible;
 }
 
 - (void)refreshContents {
@@ -808,18 +756,20 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   [self showEmptyOrLoadingSpinnerBackgroundIfNeeded];
   [self cancelAllFaviconLoads];
   [self.delegate bookmarkTableViewRefreshContextBar:self];
-  [self.editingFolderCell stopEdit];
-  [self.tableView reloadData];
-  if (self.editing && !_editNodes.empty()) {
+  [self.sharedState.editingFolderCell stopEdit];
+  [self.sharedState.tableView reloadData];
+  if (self.sharedState.currentlyInEditMode &&
+      !self.sharedState.editNodes.empty()) {
     [self restoreRowSelection];
   }
 }
 
 // Returns the bookmark node associated with |indexPath|.
 - (const BookmarkNode*)nodeAtIndexPath:(NSIndexPath*)indexPath {
-  TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
+  TableViewItem* item =
+      [self.sharedState.tableViewModel itemAtIndexPath:indexPath];
 
-  if (item.type == ItemTypeBookmark) {
+  if (item.type == BookmarkHomeItemTypeBookmark) {
     BookmarkNodeItem* nodeItem =
         base::mac::ObjCCastStrict<BookmarkNodeItem>(item);
     return nodeItem.bookmarkNode;
@@ -832,18 +782,22 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 // Computes the bookmarks table view based on the current root node.
 - (void)computeBookmarkTableViewData {
   // Regenerate the list of all bookmarks.
-  if ([self.tableViewModel
-          hasSectionForSectionIdentifier:SectionIdentifierBookmarks]) {
-    [self.tableViewModel
-        removeSectionWithIdentifier:SectionIdentifierBookmarks];
+  if ([self.sharedState.tableViewModel
+          hasSectionForSectionIdentifier:
+              BookmarkHomeSectionIdentifierBookmarks]) {
+    [self.sharedState.tableViewModel
+        removeSectionWithIdentifier:BookmarkHomeSectionIdentifierBookmarks];
   }
-  [self.tableViewModel addSectionWithIdentifier:SectionIdentifierBookmarks];
+  [self.sharedState.tableViewModel
+      addSectionWithIdentifier:BookmarkHomeSectionIdentifierBookmarks];
 
-  if (!self.bookmarkModel->loaded() || !_currentRootNode) {
+  if (!self.sharedState.bookmarkModel->loaded() ||
+      !self.sharedState.tableViewDisplayedRootNode) {
     return;
   }
 
-  if (_currentRootNode == self.bookmarkModel->root_node()) {
+  if (self.sharedState.tableViewDisplayedRootNode ==
+      self.sharedState.bookmarkModel->root_node()) {
     [self generateTableViewDataForRootNode];
     return;
   }
@@ -852,18 +806,20 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 
 // Generate the table view data when the current root node is a child node.
 - (void)generateTableViewData {
-  if (!_currentRootNode) {
+  if (!self.sharedState.tableViewDisplayedRootNode) {
     return;
   }
   // Add all bookmarks and folders of the current root node to the table.
-  int childCount = _currentRootNode->child_count();
+  int childCount = self.sharedState.tableViewDisplayedRootNode->child_count();
   for (int i = 0; i < childCount; ++i) {
-    const BookmarkNode* node = _currentRootNode->GetChild(i);
+    const BookmarkNode* node =
+        self.sharedState.tableViewDisplayedRootNode->GetChild(i);
     BookmarkNodeItem* nodeItem =
-        [[BookmarkNodeItem alloc] initWithType:ItemTypeBookmark
+        [[BookmarkNodeItem alloc] initWithType:BookmarkHomeItemTypeBookmark
                                   bookmarkNode:node];
-    [self.tableViewModel addItem:nodeItem
-         toSectionWithIdentifier:SectionIdentifierBookmarks];
+    [self.sharedState.tableViewModel
+                        addItem:nodeItem
+        toSectionWithIdentifier:BookmarkHomeSectionIdentifierBookmarks];
   }
 }
 
@@ -871,38 +827,45 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 // root.
 - (void)generateTableViewDataForRootNode {
   // Add "Mobile Bookmarks" to the table.
-  const BookmarkNode* mobileNode = self.bookmarkModel->mobile_node();
+  const BookmarkNode* mobileNode =
+      self.sharedState.bookmarkModel->mobile_node();
   BookmarkNodeItem* mobileItem =
-      [[BookmarkNodeItem alloc] initWithType:ItemTypeBookmark
+      [[BookmarkNodeItem alloc] initWithType:BookmarkHomeItemTypeBookmark
                                 bookmarkNode:mobileNode];
-  [self.tableViewModel addItem:mobileItem
-       toSectionWithIdentifier:SectionIdentifierBookmarks];
+  [self.sharedState.tableViewModel
+                      addItem:mobileItem
+      toSectionWithIdentifier:BookmarkHomeSectionIdentifierBookmarks];
 
   // Add "Bookmarks Bar" and "Other Bookmarks" only when they are not empty.
-  const BookmarkNode* bookmarkBar = self.bookmarkModel->bookmark_bar_node();
+  const BookmarkNode* bookmarkBar =
+      self.sharedState.bookmarkModel->bookmark_bar_node();
   if (!bookmarkBar->empty()) {
     BookmarkNodeItem* barItem =
-        [[BookmarkNodeItem alloc] initWithType:ItemTypeBookmark
+        [[BookmarkNodeItem alloc] initWithType:BookmarkHomeItemTypeBookmark
                                   bookmarkNode:bookmarkBar];
-    [self.tableViewModel addItem:barItem
-         toSectionWithIdentifier:SectionIdentifierBookmarks];
+    [self.sharedState.tableViewModel
+                        addItem:barItem
+        toSectionWithIdentifier:BookmarkHomeSectionIdentifierBookmarks];
   }
 
-  const BookmarkNode* otherBookmarks = self.bookmarkModel->other_node();
+  const BookmarkNode* otherBookmarks =
+      self.sharedState.bookmarkModel->other_node();
   if (!otherBookmarks->empty()) {
     BookmarkNodeItem* otherItem =
-        [[BookmarkNodeItem alloc] initWithType:ItemTypeBookmark
+        [[BookmarkNodeItem alloc] initWithType:BookmarkHomeItemTypeBookmark
                                   bookmarkNode:otherBookmarks];
-    [self.tableViewModel addItem:otherItem
-         toSectionWithIdentifier:SectionIdentifierBookmarks];
+    [self.sharedState.tableViewModel
+                        addItem:otherItem
+        toSectionWithIdentifier:BookmarkHomeSectionIdentifierBookmarks];
   }
 }
 
 // If the current root node is the outermost root, check if we need to show the
 // spinner backgound.  Otherwise, check if we need to show the empty background.
 - (void)showEmptyOrLoadingSpinnerBackgroundIfNeeded {
-  if (_currentRootNode == self.bookmarkModel->root_node()) {
-    if (self.bookmarkModel->HasNoUserCreatedBookmarksOrFolders() &&
+  if (self.sharedState.tableViewDisplayedRootNode ==
+      self.sharedState.bookmarkModel->root_node()) {
+    if (self.sharedState.bookmarkModel->HasNoUserCreatedBookmarksOrFolders() &&
         _syncedSessionsObserver->IsSyncing()) {
       [self showLoadingSpinnerBackground];
     } else {
@@ -915,19 +878,19 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
     [self showEmptyBackground];
   } else {
     // Hides the empty bookmarks background if it is showing.
-    self.tableView.backgroundView = nil;
+    self.sharedState.tableView.backgroundView = nil;
   }
 }
 
 // Shows loading spinner background view.
 - (void)showLoadingSpinnerBackground {
   if (!self.spinnerView) {
-    self.spinnerView =
-        [[BookmarkHomeWaitingView alloc] initWithFrame:self.tableView.bounds
-                                       backgroundColor:[UIColor clearColor]];
+    self.spinnerView = [[BookmarkHomeWaitingView alloc]
+          initWithFrame:self.sharedState.tableView.bounds
+        backgroundColor:[UIColor clearColor]];
     [self.spinnerView startWaiting];
   }
-  self.tableView.backgroundView = self.spinnerView;
+  self.sharedState.tableView.backgroundView = self.spinnerView;
 }
 
 // Hide the loading spinner if it is showing.
@@ -939,7 +902,7 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
             self.spinnerView.alpha = 0.0;
           }
           completion:^(BOOL finished) {
-            self.tableView.backgroundView = nil;
+            self.sharedState.tableView.backgroundView = nil;
             self.spinnerView = nil;
           }];
     }];
@@ -950,22 +913,22 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 - (void)showEmptyBackground {
   if (!self.emptyTableBackgroundView) {
     // Set up the background view shown when the table is empty.
-    self.emptyTableBackgroundView =
-        [[BookmarkEmptyBackground alloc] initWithFrame:self.tableView.bounds];
+    self.emptyTableBackgroundView = [[BookmarkEmptyBackground alloc]
+        initWithFrame:self.sharedState.tableView.bounds];
     self.emptyTableBackgroundView.autoresizingMask =
         UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     self.emptyTableBackgroundView.text =
         l10n_util::GetNSString(IDS_IOS_BOOKMARK_NO_BOOKMARKS_LABEL);
-    self.emptyTableBackgroundView.frame = self.tableView.bounds;
+    self.emptyTableBackgroundView.frame = self.sharedState.tableView.bounds;
   }
-  self.tableView.backgroundView = self.emptyTableBackgroundView;
+  self.sharedState.tableView.backgroundView = self.emptyTableBackgroundView;
 }
 
 - (BookmarkNodeItem*)itemForNode:(const bookmarks::BookmarkNode*)bookmarkNode {
-  NSArray<TableViewItem*>* items = [self.tableViewModel
-      itemsInSectionWithIdentifier:SectionIdentifierBookmarks];
+  NSArray<TableViewItem*>* items = [self.sharedState.tableViewModel
+      itemsInSectionWithIdentifier:BookmarkHomeSectionIdentifierBookmarks];
   for (TableViewItem* item in items) {
-    if (item.type == ItemTypeBookmark) {
+    if (item.type == BookmarkHomeItemTypeBookmark) {
       BookmarkNodeItem* nodeItem =
           base::mac::ObjCCastStrict<BookmarkNodeItem>(item);
       if (nodeItem.bookmarkNode == bookmarkNode) {
@@ -981,7 +944,8 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
               backgroundColor:(UIColor*)backgroundColor
                     textColor:(UIColor*)textColor
                  fallbackText:(NSString*)fallbackText {
-  BookmarkTableCell* cell = [self.tableView cellForRowAtIndexPath:indexPath];
+  BookmarkTableCell* cell =
+      [self.sharedState.tableView cellForRowAtIndexPath:indexPath];
   if (!cell) {
     return;
   }
@@ -1050,8 +1014,10 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   }
 
   CGFloat scale = [UIScreen mainScreen].scale;
-  CGFloat desiredFaviconSizeInPixel = scale * kDesiredFaviconSizePt;
-  CGFloat minFaviconSizeInPixel = scale * kMinFaviconSizePt;
+  CGFloat desiredFaviconSizeInPixel =
+      scale * [BookmarkHomeSharedState desiredFaviconSizePt];
+  CGFloat minFaviconSizeInPixel =
+      scale * [BookmarkHomeSharedState minFaviconSizePt];
 
   // Start loading a favicon.
   __weak BookmarkTableView* weakSelf = self;
@@ -1068,7 +1034,8 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
     // cache is allowed, fetch icon from server here when cached icon is smaller
     // than the desired size.
     if (!result.bitmap.is_valid() && continueToGoogleServer &&
-        strongSelf.faviconDownloadCount < kMaxDownloadFaviconCount) {
+        strongSelf.sharedState.faviconDownloadCount <
+            [BookmarkHomeSharedState maxDownloadFaviconCount]) {
       void (^faviconLoadedFromServerBlock)(
           favicon_base::GoogleFaviconServerRequestStatus status) =
           ^(const favicon_base::GoogleFaviconServerRequestStatus status) {
@@ -1088,7 +1055,7 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
             }
           };  // faviconLoadedFromServerBlock
 
-      strongSelf.faviconDownloadCount++;
+      strongSelf.sharedState.faviconDownloadCount++;
       IOSChromeLargeIconServiceFactory::GetForBrowserState(self.browserState)
           ->GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
               node->url(), minFaviconSizeInPixel, desiredFaviconSizeInPixel,
@@ -1149,18 +1116,20 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   NSDictionary* info = [aNotification userInfo];
   CGFloat keyboardTop =
       [[info objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue].origin.y;
-  CGFloat tableBottom =
-      CGRectGetMaxY([self convertRect:self.tableView.frame toView:nil]);
-  CGFloat shiftY = tableBottom - keyboardTop + kKeyboardSpacing;
+  CGFloat tableBottom = CGRectGetMaxY(
+      [self convertRect:self.sharedState.tableView.frame toView:nil]);
+  CGFloat shiftY =
+      tableBottom - keyboardTop + [BookmarkHomeSharedState keyboardSpacingPt];
 
   if (shiftY >= 0) {
-    UIEdgeInsets previousContentInsets = self.tableView.contentInset;
+    UIEdgeInsets previousContentInsets =
+        self.sharedState.tableView.contentInset;
     // Shift the content inset to prevent the editing content from being hidden
     // by the keyboard.
     UIEdgeInsets contentInsets =
         UIEdgeInsetsMake(previousContentInsets.top, 0.0, shiftY, 0.0);
-    self.tableView.contentInset = contentInsets;
-    self.tableView.scrollIndicatorInsets = contentInsets;
+    self.sharedState.tableView.contentInset = contentInsets;
+    self.sharedState.tableView.scrollIndicatorInsets = contentInsets;
   }
 }
 
@@ -1169,12 +1138,12 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   if (![self.delegate isAtTopOfNavigation:self]) {
     return;
   }
-  UIEdgeInsets previousContentInsets = self.tableView.contentInset;
+  UIEdgeInsets previousContentInsets = self.sharedState.tableView.contentInset;
   // Restore the content inset now that the keyboard has been hidden.
   UIEdgeInsets contentInsets =
       UIEdgeInsetsMake(previousContentInsets.top, 0, 0, 0);
-  self.tableView.contentInset = contentInsets;
-  self.tableView.scrollIndicatorInsets = contentInsets;
+  self.sharedState.tableView.contentInset = contentInsets;
+  self.sharedState.tableView.scrollIndicatorInsets = contentInsets;
 }
 
 #pragma mark - SyncedSessionsObserver
@@ -1186,7 +1155,8 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 - (void)onSyncStateChanged {
   // Permanent nodes ("Bookmarks Bar", "Other Bookmarks") at the root node might
   // be added after syncing.  So we need to refresh here.
-  if (_currentRootNode == self.bookmarkModel->root_node()) {
+  if (self.sharedState.tableViewDisplayedRootNode ==
+      self.sharedState.bookmarkModel->root_node()) {
     [self refreshContents];
     return;
   }
@@ -1196,43 +1166,44 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 #pragma mark - BookmarkTableCellTextFieldDelegate
 
 - (void)textDidChangeTo:(NSString*)newName {
-  DCHECK(_editingFolderNode);
-  self.addingNewFolder = NO;
+  DCHECK(self.sharedState.editingFolderNode);
+  self.sharedState.addingNewFolder = NO;
   if (newName.length > 0) {
-    self.bookmarkModel->SetTitle(_editingFolderNode,
-                                 base::SysNSStringToUTF16(newName));
+    self.sharedState.bookmarkModel->SetTitle(self.sharedState.editingFolderNode,
+                                             base::SysNSStringToUTF16(newName));
   }
-  _editingFolderNode = NULL;
-  self.editingFolderCell = nil;
+  self.sharedState.editingFolderNode = NULL;
+  self.sharedState.editingFolderCell = nil;
   [self refreshContents];
 }
 
 #pragma mark UIScrollViewDelegate
 
 - (void)scrollViewDidScroll:(UIScrollView*)scrollView {
-  if (scrollView == self.headerView.trackingScrollView) {
-    [self.headerView trackingScrollViewDidScroll];
+  if (scrollView == self.sharedState.headerView.trackingScrollView) {
+    [self.sharedState.headerView trackingScrollViewDidScroll];
   }
 }
 
 - (void)scrollViewDidEndDecelerating:(UIScrollView*)scrollView {
-  if (scrollView == self.headerView.trackingScrollView) {
-    [self.headerView trackingScrollViewDidEndDecelerating];
+  if (scrollView == self.sharedState.headerView.trackingScrollView) {
+    [self.sharedState.headerView trackingScrollViewDidEndDecelerating];
   }
 }
 
 - (void)scrollViewDidEndDragging:(UIScrollView*)scrollView
                   willDecelerate:(BOOL)decelerate {
-  if (scrollView == self.headerView.trackingScrollView) {
-    [self.headerView trackingScrollViewDidEndDraggingWillDecelerate:decelerate];
+  if (scrollView == self.sharedState.headerView.trackingScrollView) {
+    [self.sharedState.headerView
+        trackingScrollViewDidEndDraggingWillDecelerate:decelerate];
   }
 }
 
 - (void)scrollViewWillEndDragging:(UIScrollView*)scrollView
                      withVelocity:(CGPoint)velocity
               targetContentOffset:(inout CGPoint*)targetContentOffset {
-  if (scrollView == self.headerView.trackingScrollView) {
-    [self.headerView
+  if (scrollView == self.sharedState.headerView.trackingScrollView) {
+    [self.sharedState.headerView
         trackingScrollViewWillEndDraggingWithVelocity:velocity
                                   targetContentOffset:targetContentOffset];
   }
