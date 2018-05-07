@@ -503,10 +503,6 @@ class ProfileSyncService : public syncer::SyncServiceBase,
   // TODO(sync): This is only used in tests.  Can we remove it?
   const syncer::DataTypeStatusTable& data_type_status_table() const;
 
-  syncer::DataTypeManager::ConfigureStatus configure_status() {
-    return configure_status_;
-  }
-
   // If true, the ProfileSyncService has detected that a new GAIA signin has
   // succeeded, and is waiting for initialization to complete. This is used by
   // the UI to differentiate between a new auth error (encountered as part of
@@ -806,14 +802,8 @@ class ProfileSyncService : public syncer::SyncServiceBase,
   // or must delay loading for some reason).
   syncer::DataTypeStatusTable data_type_status_table_;
 
-  syncer::DataTypeManager::ConfigureStatus configure_status_;
-
   // The set of currently enabled sync experiments.
   syncer::Experiments current_experiments_;
-
-  // Sync's internal debug info listener. Used to record datatype configuration
-  // and association information.
-  syncer::WeakHandle<syncer::DataTypeDebugInfoListener> debug_info_listener_;
 
   // ProfileSyncService uses this service to get access tokens.
   ProfileOAuth2TokenService* const oauth2_token_service_;
