@@ -113,11 +113,6 @@ const char kUseFileForFakeAudioCapture[] = "use-file-for-fake-audio-capture";
 // accelerator hardware to be present.
 const char kUseFakeJpegDecodeAccelerator[] = "use-fake-jpeg-decode-accelerator";
 
-// Disable hardware acceleration of mjpeg decode for captured frame, where
-// available.
-const char kDisableAcceleratedMjpegDecode[] =
-    "disable-accelerated-mjpeg-decode";
-
 // Enables support for inband text tracks in media content.
 const char kEnableInbandTextTracks[] = "enable-inband-text-tracks";
 
@@ -415,20 +410,5 @@ const base::Feature kMediaEngagementBypassAutoplayPolicies{
 const base::Feature kPreloadMediaEngagementData{
     "PreloadMediaEngagementData", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
-
-bool IsVideoCaptureAcceleratedJpegDecodingEnabled() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableAcceleratedMjpegDecode)) {
-    return false;
-  }
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUseFakeJpegDecodeAccelerator)) {
-    return true;
-  }
-#if defined(OS_CHROMEOS)
-  return true;
-#endif
-  return false;
-}
 
 }  // namespace media

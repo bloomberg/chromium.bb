@@ -23,15 +23,11 @@ class VideoFrameReceiver;
 class VideoCaptureJpegDecoder;
 
 using VideoCaptureJpegDecoderFactoryCB =
-    base::OnceCallback<std::unique_ptr<VideoCaptureJpegDecoder>()>;
+    base::Callback<std::unique_ptr<VideoCaptureJpegDecoder>()>;
 
 // Implementation of VideoCaptureDevice::Client that uses a buffer pool
 // to provide buffers and converts incoming data to the I420 format for
-// consumption by a given VideoFrameReceiver. If
-// |optional_jpeg_decoder_factory_callback| is provided, the
-// VideoCaptureDeviceClient will attempt to use it for decoding of MJPEG frames.
-// Otherwise, it will use libyuv to perform MJPEG to I420 conversion in
-// software.
+// consumption by a given VideoFrameReceiver.
 //
 // Methods of this class may be called from any thread, and in practice will
 // often be called on some auxiliary thread depending on the platform and the
@@ -45,7 +41,7 @@ class CAPTURE_EXPORT VideoCaptureDeviceClient
   VideoCaptureDeviceClient(
       std::unique_ptr<VideoFrameReceiver> receiver,
       scoped_refptr<VideoCaptureBufferPool> buffer_pool,
-      VideoCaptureJpegDecoderFactoryCB optional_jpeg_decoder_factory_callback);
+      const VideoCaptureJpegDecoderFactoryCB& jpeg_decoder_factory);
   ~VideoCaptureDeviceClient() override;
 
   static Buffer MakeBufferStruct(
@@ -103,8 +99,11 @@ class CAPTURE_EXPORT VideoCaptureDeviceClient
   const std::unique_ptr<VideoFrameReceiver> receiver_;
   std::vector<int> buffer_ids_known_by_receiver_;
 
-  VideoCaptureJpegDecoderFactoryCB optional_jpeg_decoder_factory_callback_;
+  const VideoCaptureJpegDecoderFactoryCB jpeg_decoder_factory_callback_;
   std::unique_ptr<VideoCaptureJpegDecoder> external_jpeg_decoder_;
+
+  // Whether |external_jpeg_decoder_| has been initialized.
+  bool external_jpeg_decoder_initialized_;
   base::OnceClosure on_started_using_gpu_cb_;
 
   // The pool of shared-memory buffers used for capturing.

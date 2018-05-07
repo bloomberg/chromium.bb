@@ -13,8 +13,6 @@
 
 namespace media {
 
-// All methods are allowed to be called from any thread, but calls must be
-// non-concurrently.
 class CAPTURE_EXPORT VideoCaptureJpegDecoder {
  public:
   // Enumeration of decoder status. The enumeration is published for clients to
@@ -26,7 +24,7 @@ class CAPTURE_EXPORT VideoCaptureJpegDecoder {
                    // decode error.
   };
 
-  using DecodeDoneCB = base::RepeatingCallback<void(
+  using DecodeDoneCB = base::Callback<void(
       int buffer_id,
       int frame_feedback_id,
       std::unique_ptr<VideoCaptureDevice::Client::Buffer::

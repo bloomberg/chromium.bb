@@ -65,7 +65,6 @@ MEDIA_EXPORT extern const char kUseFakeDeviceForMediaStream[];
 MEDIA_EXPORT extern const char kUseFileForFakeVideoCapture[];
 MEDIA_EXPORT extern const char kUseFileForFakeAudioCapture[];
 MEDIA_EXPORT extern const char kUseFakeJpegDecodeAccelerator[];
-MEDIA_EXPORT extern const char kDisableAcceleratedMjpegDecode[];
 
 MEDIA_EXPORT extern const char kEnableInbandTextTracks[];
 
@@ -160,8 +159,6 @@ MEDIA_EXPORT std::string GetEffectiveAutoplayPolicy(
 // Based on the command line of the current process, determine if
 // audio focus duck flash should be enabled.
 MEDIA_EXPORT bool IsAudioFocusDuckFlashEnabled();
-
-MEDIA_EXPORT bool IsVideoCaptureAcceleratedJpegDecodingEnabled();
 
 }  // namespace media
 

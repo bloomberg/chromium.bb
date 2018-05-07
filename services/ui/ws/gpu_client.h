@@ -8,7 +8,6 @@
 #include "base/memory/weak_ptr.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_info.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/ui/public/interfaces/gpu.mojom.h"
 
 namespace viz {
@@ -29,8 +28,7 @@ class GpuHostTest;
 
 // The implementation that relays requests from clients to the real
 // service implementation in the GPU process over mojom.GpuService.
-class GpuClient : public ui::mojom::GpuMemoryBufferFactory,
-                  public ui::mojom::Gpu {
+class GpuClient : public mojom::Gpu {
  public:
   GpuClient(int client_id,
             gpu::GPUInfo* gpu_info,
@@ -45,30 +43,22 @@ class GpuClient : public ui::mojom::GpuMemoryBufferFactory,
   // EstablishGpuChannelCallback:
   void OnGpuChannelEstablished(mojo::ScopedMessagePipeHandle channel_handle);
 
-  // ui::mojom::GpuMemoryBufferFactory overrides:
+  // mojom::Gpu overrides:
+  void EstablishGpuChannel(EstablishGpuChannelCallback callback) override;
+  void CreateJpegDecodeAccelerator(
+      media::mojom::JpegDecodeAcceleratorRequest jda_request) override;
+  void CreateVideoEncodeAcceleratorProvider(
+      media::mojom::VideoEncodeAcceleratorProviderRequest request) override;
   void CreateGpuMemoryBuffer(
       gfx::GpuMemoryBufferId id,
       const gfx::Size& size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage,
-      ui::mojom::GpuMemoryBufferFactory::CreateGpuMemoryBufferCallback callback)
-      override;
+      mojom::Gpu::CreateGpuMemoryBufferCallback callback) override;
   void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                               const gpu::SyncToken& sync_token) override;
 
-  // ui::mojom::Gpu overrides:
-  void CreateGpuMemoryBufferFactory(
-      ui::mojom::GpuMemoryBufferFactoryRequest request) override;
-  void EstablishGpuChannel(EstablishGpuChannelCallback callback) override;
-  void CreateJpegDecodeAccelerator(
-      media::mojom::JpegDecodeAcceleratorRequest jda_request) override;
-  void CreateVideoEncodeAcceleratorProvider(
-      media::mojom::VideoEncodeAcceleratorProviderRequest vea_provider_request)
-      override;
-
   const int client_id_;
-  mojo::BindingSet<ui::mojom::GpuMemoryBufferFactory>
-      gpu_memory_buffer_factory_bindings_;
 
   // The objects these pointers refer to are owned by the GpuHost object.
   const gpu::GPUInfo* gpu_info_;

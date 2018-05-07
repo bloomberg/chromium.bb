@@ -1976,8 +1976,8 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   if (gpu_client_) {
     // |gpu_client_| outlives the registry, because its destruction is posted to
     // IO thread from the destructor of |this|.
-    registry->AddInterface(base::BindRepeating(
-        &GpuClientImpl::Add, base::Unretained(gpu_client_.get())));
+    registry->AddInterface(
+        base::Bind(&GpuClientImpl::Add, base::Unretained(gpu_client_.get())));
   }
 
   registry->AddInterface(

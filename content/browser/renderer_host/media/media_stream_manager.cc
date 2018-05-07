@@ -35,7 +35,6 @@
 #include "content/browser/renderer_host/media/media_devices_manager.h"
 #include "content/browser/renderer_host/media/media_stream_ui_proxy.h"
 #include "content/browser/renderer_host/media/service_video_capture_provider.h"
-#include "content/browser/renderer_host/media/video_capture_dependencies.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/browser/renderer_host/media/video_capture_provider_switcher.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -94,6 +93,42 @@ std::string RandomLabel() {
     DCHECK(std::isalnum(c)) << c;
   }
   return label;
+}
+
+void CreateJpegDecodeAcceleratorOnIOThread(
+    media::mojom::JpegDecodeAcceleratorRequest request) {
+  auto* host =
+      GpuProcessHost::Get(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED, false);
+  if (host) {
+    host->gpu_service()->CreateJpegDecodeAccelerator(std::move(request));
+  } else {
+    LOG(ERROR) << "No GpuProcessHost";
+  }
+}
+
+void CreateJpegDecodeAccelerator(
+    media::mojom::JpegDecodeAcceleratorRequest request) {
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::BindOnce(&CreateJpegDecodeAcceleratorOnIOThread,
+                                         std::move(request)));
+}
+
+void CreateJpegEncodeAcceleratorOnIOThread(
+    media::mojom::JpegEncodeAcceleratorRequest request) {
+  auto* host =
+      GpuProcessHost::Get(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED, false);
+  if (host) {
+    host->gpu_service()->CreateJpegEncodeAccelerator(std::move(request));
+  } else {
+    LOG(ERROR) << "No GpuProcessHost";
+  }
+}
+
+void CreateJpegEncodeAccelerator(
+    media::mojom::JpegEncodeAcceleratorRequest request) {
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::BindOnce(&CreateJpegEncodeAcceleratorOnIOThread,
+                                         std::move(request)));
 }
 
 void ParseStreamType(const StreamControls& controls,
@@ -473,10 +508,8 @@ MediaStreamManager::MediaStreamManager(
               media::VideoCaptureDeviceFactory::CreateFactory(
                   BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
                   BrowserGpuMemoryBufferManager::current(),
-                  base::BindRepeating(
-                      &VideoCaptureDependencies::CreateJpegDecodeAccelerator),
-                  base::BindRepeating(
-                      &VideoCaptureDependencies::CreateJpegEncodeAccelerator))),
+                  base::BindRepeating(&CreateJpegDecodeAccelerator),
+                  base::BindRepeating(&CreateJpegEncodeAccelerator))),
           std::move(device_task_runner),
           base::BindRepeating(&SendVideoCaptureLogMessage));
     }
