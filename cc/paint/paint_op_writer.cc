@@ -179,10 +179,9 @@ void PaintOpWriter::Write(const PaintFlags& flags) {
   WriteSimple(flags.blend_mode_);
   WriteSimple(flags.bitfields_uint_);
 
-  // TODO(enne): WriteTypeface, http://crbug.com/737629
-
   // Flattenables must be written starting at a 4 byte boundary, which should be
   // the case here.
+  AlignMemory(4);
   WriteFlattenable(flags.path_effect_.get());
   AlignMemory(4);
   WriteFlattenable(flags.mask_filter_.get());
