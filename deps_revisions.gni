@@ -7,6 +7,6 @@ declare_args() {
   # rebuilds on libc++ rolls.
   clang_format_svn_revision = "302580"
   libcxx_svn_revision =       "329375"
-  libcxxabi_svn_revision =    "329629"
+  libcxxabi_svn_revision =    "331450"
   libunwind_svn_revision =    "329340"
 }
