@@ -227,4 +227,8 @@ bool ChromeAutofillClientIOS::IsAutofillSupported() {
   return true;
 }
 
+bool ChromeAutofillClientIOS::AreServerCardsSupported() {
+  return true;
+}
+
 }  // namespace autofill

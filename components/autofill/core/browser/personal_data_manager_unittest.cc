@@ -2043,7 +2043,8 @@ TEST_F(PersonalDataManagerTest,
 
   std::vector<Suggestion> suggestions =
       personal_data_->GetCreditCardSuggestions(AutofillType(CREDIT_CARD_NUMBER),
-                                               base::ASCIIToUTF16("12345678"));
+                                               base::ASCIIToUTF16("12345678"),
+                                               /*include_server_cards=*/true);
 
   // There should be no suggestions.
   ASSERT_EQ(0U, suggestions.size());
@@ -2058,7 +2059,8 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions_LocalCardsRanking) {
   std::vector<Suggestion> suggestions =
       personal_data_->GetCreditCardSuggestions(
           AutofillType(CREDIT_CARD_NAME_FULL),
-          /* field_contents= */ base::string16());
+          /* field_contents= */ base::string16(),
+          /*include_server_cards=*/true);
   ASSERT_EQ(3U, suggestions.size());
 
   // Ordered as expected.
@@ -2106,7 +2108,8 @@ TEST_F(PersonalDataManagerTest,
   std::vector<Suggestion> suggestions =
       personal_data_->GetCreditCardSuggestions(
           AutofillType(CREDIT_CARD_NAME_FULL),
-          /* field_contents= */ base::string16());
+          /* field_contents= */ base::string16(),
+          /*include_server_cards=*/true);
   ASSERT_EQ(5U, suggestions.size());
 
   // All cards should be ordered as expected.
@@ -2155,7 +2158,8 @@ TEST_F(PersonalDataManagerTest,
   std::vector<Suggestion> suggestions =
       personal_data_->GetCreditCardSuggestions(
           AutofillType(CREDIT_CARD_NAME_FULL),
-          /* field_contents= */ base::string16());
+          /* field_contents= */ base::string16(),
+          /*include_server_cards=*/true);
   ASSERT_EQ(0U, suggestions.size());
 }
 
@@ -2203,7 +2207,8 @@ TEST_F(PersonalDataManagerTest,
   std::vector<Suggestion> suggestions =
       personal_data_->GetCreditCardSuggestions(
           AutofillType(CREDIT_CARD_NAME_FULL),
-          /* field_contents= */ base::string16());
+          /* field_contents= */ base::string16(),
+          /*include_server_cards=*/true);
   ASSERT_EQ(0U, suggestions.size());
 }
 
@@ -2248,7 +2253,8 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions_ExpiredCards) {
   std::vector<Suggestion> suggestions =
       personal_data_->GetCreditCardSuggestions(
           AutofillType(CREDIT_CARD_NAME_FULL),
-          /* field_contents= */ base::string16());
+          /* field_contents= */ base::string16(),
+          /* include_server_cards= */ true);
   ASSERT_EQ(3U, suggestions.size());
 
   // The never used non expired card should be suggested first.
@@ -2316,7 +2322,8 @@ TEST_F(PersonalDataManagerTest,
 
     std::vector<Suggestion> suggestions =
         personal_data_->GetCreditCardSuggestions(
-            AutofillType(CREDIT_CARD_NAME_FULL), base::string16());
+            AutofillType(CREDIT_CARD_NAME_FULL), base::string16(),
+            /*include_server_cards=*/true);
     EXPECT_EQ(4U, suggestions.size());
     EXPECT_EQ(base::ASCIIToUTF16("Bonnie Parker"), suggestions[0].value);
     EXPECT_EQ(base::ASCIIToUTF16("Clyde Barrow"), suggestions[1].value);
@@ -2332,7 +2339,8 @@ TEST_F(PersonalDataManagerTest,
   {
     std::vector<Suggestion> suggestions =
         personal_data_->GetCreditCardSuggestions(
-            AutofillType(CREDIT_CARD_NAME_FULL), base::string16());
+            AutofillType(CREDIT_CARD_NAME_FULL), base::string16(),
+            /*include_server_cards=*/true);
     EXPECT_EQ(2U, suggestions.size());
     EXPECT_EQ(base::ASCIIToUTF16("Bonnie Parker"), suggestions[0].value);
     EXPECT_EQ(base::ASCIIToUTF16("Clyde Barrow"), suggestions[1].value);
@@ -2342,7 +2350,8 @@ TEST_F(PersonalDataManagerTest,
   {
     std::vector<Suggestion> suggestions =
         personal_data_->GetCreditCardSuggestions(
-            AutofillType(CREDIT_CARD_NAME_FULL), base::ASCIIToUTF16("B"));
+            AutofillType(CREDIT_CARD_NAME_FULL), base::ASCIIToUTF16("B"),
+            /*include_server_cards=*/true);
 
     ASSERT_EQ(1U, suggestions.size());
     EXPECT_EQ(base::ASCIIToUTF16("Bonnie Parker"), suggestions[0].value);
@@ -2352,7 +2361,8 @@ TEST_F(PersonalDataManagerTest,
   {
     std::vector<Suggestion> suggestions =
         personal_data_->GetCreditCardSuggestions(
-            AutofillType(CREDIT_CARD_NAME_FULL), base::ASCIIToUTF16("Cl"));
+            AutofillType(CREDIT_CARD_NAME_FULL), base::ASCIIToUTF16("Cl"),
+            /*include_server_cards=*/true);
 
     ASSERT_EQ(1U, suggestions.size());
     EXPECT_EQ(base::ASCIIToUTF16("Clyde Barrow"), suggestions[0].value);
@@ -2362,7 +2372,8 @@ TEST_F(PersonalDataManagerTest,
   {
     std::vector<Suggestion> suggestions =
         personal_data_->GetCreditCardSuggestions(
-            AutofillType(CREDIT_CARD_NAME_FULL), base::ASCIIToUTF16("Jo"));
+            AutofillType(CREDIT_CARD_NAME_FULL), base::ASCIIToUTF16("Jo"),
+            /*include_server_cards=*/true);
 
     ASSERT_EQ(1U, suggestions.size());
     EXPECT_EQ(base::ASCIIToUTF16("John Dillinger"), suggestions[0].value);
@@ -2374,7 +2385,8 @@ TEST_F(PersonalDataManagerTest,
   {
     std::vector<Suggestion> suggestions =
         personal_data_->GetCreditCardSuggestions(
-            AutofillType(CREDIT_CARD_NUMBER), base::ASCIIToUTF16("4234"));
+            AutofillType(CREDIT_CARD_NUMBER), base::ASCIIToUTF16("4234"),
+            /*include_server_cards=*/true);
 
     ASSERT_EQ(2U, suggestions.size());
     EXPECT_EQ(
@@ -2420,7 +2432,8 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions_NumberMissing) {
   std::vector<Suggestion> suggestions =
       personal_data_->GetCreditCardSuggestions(
           AutofillType(CREDIT_CARD_NUMBER),
-          /* field_contents= */ base::string16());
+          /* field_contents= */ base::string16(),
+          /*include_server_cards=*/true);
   ASSERT_EQ(1U, suggestions.size());
   EXPECT_EQ(
       base::UTF8ToUTF16(std::string("Amex") + kUTF8MidlineEllipsis + "0005"),
@@ -2478,7 +2491,8 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions_ServerDuplicates) {
   std::vector<Suggestion> suggestions =
       personal_data_->GetCreditCardSuggestions(
           AutofillType(CREDIT_CARD_NAME_FULL),
-          /* field_contents= */ base::string16());
+          /* field_contents= */ base::string16(),
+          /*include_server_cards=*/true);
   ASSERT_EQ(4U, suggestions.size());
   EXPECT_EQ(base::ASCIIToUTF16("John Dillinger"), suggestions[0].value);
   EXPECT_EQ(base::ASCIIToUTF16("Clyde Barrow"), suggestions[1].value);
@@ -2486,7 +2500,8 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions_ServerDuplicates) {
   EXPECT_EQ(base::ASCIIToUTF16("Bonnie Parker"), suggestions[3].value);
 
   suggestions = personal_data_->GetCreditCardSuggestions(
-      AutofillType(CREDIT_CARD_NUMBER), /* field_contents= */ base::string16());
+      AutofillType(CREDIT_CARD_NUMBER), /* field_contents= */ base::string16(),
+      /*include_server_cards=*/true);
   ASSERT_EQ(4U, suggestions.size());
   EXPECT_EQ(
       base::UTF8ToUTF16(std::string("Visa") + kUTF8MidlineEllipsis + "3456"),
@@ -2527,7 +2542,8 @@ TEST_F(PersonalDataManagerTest,
   std::vector<Suggestion> suggestions =
       personal_data_->GetCreditCardSuggestions(
           AutofillType(CREDIT_CARD_NAME_FULL),
-          /* field_contents= */ base::string16());
+          /* field_contents= */ base::string16(),
+          /*include_server_cards=*/true);
   ASSERT_EQ(3U, suggestions.size());
 
   // Add a second dupe local card to make sure a full server card can be a dupe
@@ -2541,7 +2557,7 @@ TEST_F(PersonalDataManagerTest,
 
   suggestions = personal_data_->GetCreditCardSuggestions(
       AutofillType(CREDIT_CARD_NAME_FULL),
-      /* field_contents= */ base::string16());
+      /* field_contents= */ base::string16(), /*include_server_cards=*/true);
   ASSERT_EQ(3U, suggestions.size());
 }
 
@@ -2597,7 +2613,8 @@ TEST_F(PersonalDataManagerTest,
   std::vector<Suggestion> suggestions =
       personal_data_->GetCreditCardSuggestions(
           AutofillType(CREDIT_CARD_NUMBER),
-          /* field_contents= */ base::string16());
+          /* field_contents= */ base::string16(),
+          /*include_server_cards=*/true);
   ASSERT_EQ(3U, suggestions.size());
 
   // Local cards will show network.
@@ -3759,7 +3776,7 @@ TEST_F(PersonalDataManagerTest,
   std::vector<AutofillProfile*> profiles =
       personal_data_->GetProfilesToSuggest();
   std::vector<CreditCard*> credit_cards =
-      personal_data_->GetCreditCardsToSuggest();
+      personal_data_->GetCreditCardsToSuggest(/*include_server_cards=*/true);
 
   // |profile1| should have been merged into |profile2| which should then have
   // been merged into |profile3|. |profile4| should have been merged into
@@ -5735,7 +5752,7 @@ TEST_F(PersonalDataManagerTest, SyncAuthErrorHidesServerCards) {
   // Check that no server cards are available for suggestion, but that the other
   // calls to get the credit cards are unaffected.
   EXPECT_EQ(3U, personal_data_->GetCreditCards().size());
-  EXPECT_EQ(1U, personal_data_->GetCreditCardsToSuggest().size());
+  EXPECT_EQ(1U, personal_data_->GetCreditCardsToSuggest(true).size());
   EXPECT_EQ(1U, personal_data_->GetLocalCreditCards().size());
   EXPECT_EQ(2U, personal_data_->GetServerCreditCards().size());
 
@@ -5744,7 +5761,21 @@ TEST_F(PersonalDataManagerTest, SyncAuthErrorHidesServerCards) {
 
   // Check that all cards are available.
   EXPECT_EQ(3U, personal_data_->GetCreditCards().size());
-  EXPECT_EQ(3U, personal_data_->GetCreditCardsToSuggest().size());
+  EXPECT_EQ(3U, personal_data_->GetCreditCardsToSuggest(true).size());
+  EXPECT_EQ(1U, personal_data_->GetLocalCreditCards().size());
+  EXPECT_EQ(2U, personal_data_->GetServerCreditCards().size());
+}
+
+TEST_F(PersonalDataManagerTest, ExcludeServerSideCards) {
+  SetUpThreeCardTypes();
+
+  // include_server_cards is set to false, therefore no server cards should be
+  // available for suggestion, but that the other calls to get the credit cards
+  // are unaffected.
+  EXPECT_EQ(3U, personal_data_->GetCreditCards().size());
+  EXPECT_EQ(1U, personal_data_
+                    ->GetCreditCardsToSuggest(/*include_server_cards=*/false)
+                    .size());
   EXPECT_EQ(1U, personal_data_->GetLocalCreditCards().size());
   EXPECT_EQ(2U, personal_data_->GetServerCreditCards().size());
 }

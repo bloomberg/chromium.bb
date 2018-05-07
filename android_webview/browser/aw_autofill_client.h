@@ -103,6 +103,7 @@ class AwAutofillClient : public autofill::AutofillClient,
   bool IsContextSecure() override;
   bool ShouldShowSigninPromo() override;
   bool IsAutofillSupported() override;
+  bool AreServerCardsSupported() override;
   void ExecuteCommand(int id) override;
 
   void Dismissed(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);

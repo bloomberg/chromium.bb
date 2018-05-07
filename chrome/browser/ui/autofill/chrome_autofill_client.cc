@@ -290,6 +290,11 @@ bool ChromeAutofillClient::IsAutocompleteEnabled() {
   return GetPrefs()->GetBoolean(prefs::kAutofillEnabled);
 }
 
+bool ChromeAutofillClient::AreServerCardsSupported() {
+  // When in VR, server side cards are not supported.
+  return !vr::VrTabHelper::IsInVr(web_contents());
+}
+
 void ChromeAutofillClient::MainFrameWasResized(bool width_changed) {
 #if defined(OS_ANDROID)
   // Ignore virtual keyboard showing and hiding a strip of suggestions.

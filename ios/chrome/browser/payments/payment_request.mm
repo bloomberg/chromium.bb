@@ -523,7 +523,8 @@ void PaymentRequest::CreateNativeAppPaymentMethods() {
 void PaymentRequest::PopulatePaymentMethodCache(
     std::vector<std::unique_ptr<IOSPaymentInstrument>> native_app_instruments) {
   const std::vector<autofill::CreditCard*>& credit_cards_to_suggest =
-      personal_data_manager_->GetCreditCardsToSuggest();
+      personal_data_manager_->GetCreditCardsToSuggest(
+          /*include_server_cards=*/true);
 
   // Return early if the user has no stored credit cards or installed payment
   // apps.

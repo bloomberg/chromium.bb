@@ -231,8 +231,10 @@ class PersonalDataManager : public KeyedService,
 
   // Returns the credit cards to suggest to the user. Those have been deduped
   // and ordered by frecency with the expired cards put at the end of the
-  // vector.
-  const std::vector<CreditCard*> GetCreditCardsToSuggest() const;
+  // vector. If |include_server_cards| is false, server side cards should not
+  // be included.
+  const std::vector<CreditCard*> GetCreditCardsToSuggest(
+      bool include_server_cards) const;
 
   // Remove credit cards that are expired at |comparison_time| and not used
   // since |min_last_used| from |cards|. The relative ordering of |cards| is
@@ -244,10 +246,12 @@ class PersonalDataManager : public KeyedService,
 
   // Gets credit cards that can suggest data for |type|. See
   // GetProfileSuggestions for argument descriptions. The variant in each
-  // GUID pair should be ignored.
+  // GUID pair should be ignored. If |include_server_cards| is false, server
+  // side cards should not be included.
   std::vector<Suggestion> GetCreditCardSuggestions(
       const AutofillType& type,
-      const base::string16& field_contents);
+      const base::string16& field_contents,
+      bool include_server_cards);
 
   // Tries to delete disused credit cards once per major version if the
   // feature is enabled.

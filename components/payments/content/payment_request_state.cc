@@ -414,7 +414,8 @@ void PaymentRequestState::PopulateProfileCache() {
   // Create the list of available instruments. A copy of each card will be made
   // by their respective AutofillPaymentInstrument.
   const std::vector<autofill::CreditCard*>& cards =
-      personal_data_manager_->GetCreditCardsToSuggest();
+      personal_data_manager_->GetCreditCardsToSuggest(
+          /*include_server_cards=*/true);
   for (autofill::CreditCard* card : cards)
     AddAutofillPaymentInstrument(/*selected=*/false, *card);
 }
