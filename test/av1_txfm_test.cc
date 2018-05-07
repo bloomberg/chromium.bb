@@ -119,9 +119,10 @@ void reference_idct_1d(const double *in, double *out, int size) {
   }
 }
 
-// TODO(any): Copied from dct.c. Should be replaced by a proper reference
-// function that takes 'double' input & output.
-static void fadst4(const tran_low_t *input, tran_low_t *output) {
+// TODO(any): Copied from the old 'fadst4' (same as the new 'av1_fadst4_new'
+// function). Should be replaced by a proper reference function that takes
+// 'double' input & output.
+static void fadst4_new(const tran_low_t *input, tran_low_t *output) {
   tran_high_t x0, x1, x2, x3;
   tran_high_t s0, s1, s2, s3, s4, s5, s6, s7;
 
@@ -168,7 +169,7 @@ void reference_adst_1d(const double *in, double *out, int size) {
       int_input[i] = static_cast<tran_low_t>(round(in[i]));
     }
     tran_low_t int_output[4];
-    fadst4(int_input, int_output);
+    fadst4_new(int_input, int_output);
     for (int i = 0; i < 4; ++i) {
       out[i] = int_output[i];
     }

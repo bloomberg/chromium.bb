@@ -16,6 +16,67 @@
 #include "av1/common/idct.h"
 #include "av1/encoder/hybrid_fwd_txfm.h"
 
+/* 4-point reversible, orthonormal Walsh-Hadamard in 3.5 adds, 0.5 shifts per
+   pixel. */
+void av1_fwht4x4_c(const int16_t *input, tran_low_t *output, int stride) {
+  int i;
+  tran_high_t a1, b1, c1, d1, e1;
+  const int16_t *ip_pass0 = input;
+  const tran_low_t *ip = NULL;
+  tran_low_t *op = output;
+
+  for (i = 0; i < 4; i++) {
+    a1 = ip_pass0[0 * stride];
+    b1 = ip_pass0[1 * stride];
+    c1 = ip_pass0[2 * stride];
+    d1 = ip_pass0[3 * stride];
+
+    a1 += b1;
+    d1 = d1 - c1;
+    e1 = (a1 - d1) >> 1;
+    b1 = e1 - b1;
+    c1 = e1 - c1;
+    a1 -= c1;
+    d1 += b1;
+    op[0] = (tran_low_t)a1;
+    op[4] = (tran_low_t)c1;
+    op[8] = (tran_low_t)d1;
+    op[12] = (tran_low_t)b1;
+
+    ip_pass0++;
+    op++;
+  }
+  ip = output;
+  op = output;
+
+  for (i = 0; i < 4; i++) {
+    a1 = ip[0];
+    b1 = ip[1];
+    c1 = ip[2];
+    d1 = ip[3];
+
+    a1 += b1;
+    d1 -= c1;
+    e1 = (a1 - d1) >> 1;
+    b1 = e1 - b1;
+    c1 = e1 - c1;
+    a1 -= c1;
+    d1 += b1;
+    op[0] = (tran_low_t)(a1 * UNIT_QUANT_FACTOR);
+    op[1] = (tran_low_t)(c1 * UNIT_QUANT_FACTOR);
+    op[2] = (tran_low_t)(d1 * UNIT_QUANT_FACTOR);
+    op[3] = (tran_low_t)(b1 * UNIT_QUANT_FACTOR);
+
+    ip += 4;
+    op += 4;
+  }
+}
+
+void av1_highbd_fwht4x4_c(const int16_t *input, tran_low_t *output,
+                          int stride) {
+  av1_fwht4x4_c(input, output, stride);
+}
+
 static void highbd_fwd_txfm_4x4(const int16_t *src_diff, tran_low_t *coeff,
                                 int diff_stride, TxfmParam *txfm_param) {
   int32_t *dst_coeff = (int32_t *)coeff;
