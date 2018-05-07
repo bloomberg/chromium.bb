@@ -6,11 +6,18 @@
 
 #include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 
 namespace blink {
 
 namespace {
+using ActiveScrollTimelineSet = PersistentHeapHashCountedSet<WeakMember<Node>>;
+ActiveScrollTimelineSet& GetActiveScrollTimelineSet() {
+  DEFINE_STATIC_LOCAL(ActiveScrollTimelineSet, set, ());
+  return set;
+}
+
 bool StringToScrollDirection(String scroll_direction,
                              ScrollTimeline::ScrollDirection& result) {
   // TODO(smcgruer): Support 'auto' value.
@@ -46,17 +53,17 @@ ScrollTimeline* ScrollTimeline::Create(Document& document,
     return nullptr;
   }
 
-  return new ScrollTimeline(document, scroll_source, orientation,
+  return new ScrollTimeline(scroll_source, orientation,
                             options.timeRange().GetAsDouble());
 }
 
-ScrollTimeline::ScrollTimeline(const Document& document,
-                               Element* scroll_source,
+ScrollTimeline::ScrollTimeline(Element* scroll_source,
                                ScrollDirection orientation,
                                double time_range)
     : scroll_source_(scroll_source),
       orientation_(orientation),
       time_range_(time_range) {
+  DCHECK(scroll_source_);
 }
 
 double ScrollTimeline::currentTime(bool& is_null) {
@@ -140,9 +147,36 @@ void ScrollTimeline::timeRange(DoubleOrScrollTimelineAutoKeyword& result) {
   result.SetDouble(time_range_);
 }
 
+void ScrollTimeline::AttachAnimation() {
+  if (!scroll_source_)
+    return;
+  GetActiveScrollTimelineSet().insert(scroll_source_);
+  scroll_source_->GetDocument()
+      .GetLayoutView()
+      ->Compositor()
+      ->SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
+}
+
+void ScrollTimeline::DetachAnimation() {
+  if (!scroll_source_)
+    return;
+  DCHECK(GetActiveScrollTimelineSet().Contains(scroll_source_));
+  GetActiveScrollTimelineSet().erase(scroll_source_);
+  scroll_source_->GetDocument()
+      .GetLayoutView()
+      ->Compositor()
+      ->SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
+}
+
 void ScrollTimeline::Trace(blink::Visitor* visitor) {
   visitor->Trace(scroll_source_);
   AnimationTimeline::Trace(visitor);
+}
+
+bool ScrollTimeline::HasActiveScrollTimeline(Node* node) {
+  ActiveScrollTimelineSet& set = GetActiveScrollTimelineSet();
+  auto it = set.find(node);
+  return it != set.end() && it->value > 0;
 }
 
 }  // namespace blink
