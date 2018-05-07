@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/smb_client/smb_file_system.h"
 #include "chrome/browser/chromeos/smb_client/smb_file_system_id.h"
@@ -40,9 +41,36 @@ SmbService* SmbService::Get(content::BrowserContext* context) {
 void SmbService::Mount(const file_system_provider::MountOptions& options,
                        const base::FilePath& share_path,
                        MountResponse callback) {
-  // TODO(allenvic): Temporary workaround for https://crbug.com/837492.
-  CHECK(false);
+  if (!temp_file_manager_) {
+    InitTempFileManagerAndMount(options, share_path, std::move(callback));
+    return;
+  }
 
+  CallMount(options, share_path, std::move(callback));
+}
+
+void SmbService::InitTempFileManagerAndMount(
+    const file_system_provider::MountOptions& options,
+    const base::FilePath& share_path,
+    MountResponse callback) {
+  // InitTempFileManager() has to be called on a separate thread since it
+  // contains a call that requires a blockable thread.
+  base::TaskTraits task_traits = {base::MayBlock(),
+                                  base::TaskPriority::USER_BLOCKING,
+                                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
+  base::OnceClosure task =
+      base::BindOnce(&SmbService::InitTempFileManager, base::Unretained(this));
+  base::OnceClosure reply =
+      base::BindOnce(&SmbService::CallMount, base::Unretained(this), options,
+                     share_path, base::Passed(&callback));
+
+  base::PostTaskWithTraitsAndReply(FROM_HERE, task_traits, std::move(task),
+                                   std::move(reply));
+}
+
+void SmbService::CallMount(const file_system_provider::MountOptions& options,
+                           const base::FilePath& share_path,
+                           MountResponse callback) {
   // TODO(allenvic): Implement passing of credentials. This currently passes
   // empty credentials to SmbProvider.
   GetSmbProviderClient()->Mount(
@@ -116,6 +144,10 @@ void SmbService::OnRemountResponse(const std::string& file_system_id,
                << file_system_id;
     Unmount(file_system_id, file_system_provider::Service::UNMOUNT_REASON_USER);
   }
+}
+
+void SmbService::InitTempFileManager() {
+  temp_file_manager_ = std::make_unique<TempFileManager>();
 }
 
 }  // namespace smb_client
