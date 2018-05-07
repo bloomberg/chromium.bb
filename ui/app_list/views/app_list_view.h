@@ -207,6 +207,8 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
 
   bool is_tablet_mode() const { return is_tablet_mode_; }
 
+  bool is_side_shelf() const { return is_side_shelf_; }
+
   bool is_in_drag() const { return is_in_drag_; }
 
   int app_list_y_position_in_screen() const {

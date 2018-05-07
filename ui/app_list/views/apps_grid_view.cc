@@ -2204,9 +2204,14 @@ bool AppsGridView::IsPointWithinBottomDragBuffer(
       display::Screen::GetScreen()->GetDisplayNearestView(
           GetWidget()->GetNativeView());
 
-  return point_in_screen.y() >
-             GetBoundsInScreen().height() - kPageFlipZoneSize &&
-         point_in_screen.y() < display.work_area().height();
+  const int kBottomDragBufferMin =
+      GetBoundsInScreen().bottom() - kPageFlipZoneSize;
+  const int kBottomDragBufferMax =
+      display.bounds().bottom() -
+      (contents_view_->app_list_view()->is_side_shelf() ? 0 : kShelfSize);
+
+  return point_in_screen.y() > kBottomDragBufferMin &&
+         point_in_screen.y() < kBottomDragBufferMax;
 }
 
 void AppsGridView::ButtonPressed(views::Button* sender,
