@@ -358,8 +358,14 @@ void ChromeAppListModelUpdater::ContextMenuItemSelected(const std::string& id,
                                                         int command_id,
                                                         int event_flags) {
   ChromeAppListItem* chrome_item = FindItem(id);
-  if (chrome_item)
+  if (chrome_item) {
     chrome_item->ContextMenuItemSelected(command_id, event_flags);
+    return;
+  }
+
+  ChromeSearchResult* chrome_search_result = FindSearchResult(id);
+  if (chrome_search_result)
+    chrome_search_result->ContextMenuItemSelected(command_id, event_flags);
 }
 
 void ChromeAppListModelUpdater::GetSearchResultContextMenuModel(

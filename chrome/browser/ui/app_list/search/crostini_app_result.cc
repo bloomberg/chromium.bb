@@ -55,4 +55,8 @@ void CrostiniAppResult::OnAppImageUpdated(const std::string& app_id,
   SetIcon(image);
 }
 
+AppContextMenu* CrostiniAppResult::GetAppContextMenu() {
+  return context_menu_.get();
+}
+
 }  // namespace app_list

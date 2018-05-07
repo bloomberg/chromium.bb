@@ -75,4 +75,8 @@ void ArcAppResult::GetContextMenuModel(GetMenuModelCallback callback) {
   context_menu_->GetMenuModel(std::move(callback));
 }
 
+AppContextMenu* ArcAppResult::GetAppContextMenu() {
+  return context_menu_.get();
+}
+
 }  // namespace app_list

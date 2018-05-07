@@ -52,6 +52,9 @@ class ExtensionAppResult : public AppResult,
   // running.
   bool RunExtensionEnableFlow();
 
+  // ChromeSearchResult overrides:
+  AppContextMenu* GetAppContextMenu() override;
+
   // AppContextMenuDelegate overrides:
   void ExecuteLaunchCommand(int event_flags) override;
 

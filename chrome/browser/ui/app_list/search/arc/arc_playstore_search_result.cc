@@ -117,4 +117,8 @@ void ArcPlayStoreSearchResult::ExecuteLaunchCommand(int event_flags) {
   Open(event_flags);
 }
 
+AppContextMenu* ArcPlayStoreSearchResult::GetAppContextMenu() {
+  return context_menu_.get();
+}
+
 }  // namespace app_list

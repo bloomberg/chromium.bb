@@ -126,6 +126,10 @@ bool ExtensionAppResult::RunExtensionEnableFlow() {
   return true;
 }
 
+AppContextMenu* ExtensionAppResult::GetAppContextMenu() {
+  return context_menu_.get();
+}
+
 void ExtensionAppResult::OnIconUpdated(extensions::ChromeAppIcon* icon) {
   SetIcon(icon->image_skia());
 }
