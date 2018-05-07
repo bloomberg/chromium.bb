@@ -31,6 +31,8 @@ class LauncherContextMenu : public ui::SimpleMenuModel::Delegate {
     LAUNCH_TYPE_WINDOW = 6,
     MENU_NEW_WINDOW = 7,
     MENU_NEW_INCOGNITO_WINDOW = 8,
+    LAUNCH_APP_SHORTCUT_FIRST = 100,
+    LAUNCH_APP_SHORTCUT_LAST = 199,
     MENU_ITEM_COUNT
   };
 

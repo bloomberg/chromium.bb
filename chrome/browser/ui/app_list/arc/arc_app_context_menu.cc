@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "chrome/browser/chromeos/arc/app_shortcuts/arc_app_shortcuts_menu_builder.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
@@ -96,7 +97,8 @@ void ArcAppContextMenu::ExecuteCommand(int command_id, int event_flags) {
     ShowPackageInfo();
   } else if (command_id >= LAUNCH_APP_SHORTCUT_FIRST &&
              command_id <= LAUNCH_APP_SHORTCUT_LAST) {
-    ExecuteLaunchAppShortcutCommand(command_id);
+    DCHECK(app_shortcuts_menu_builder_);
+    app_shortcuts_menu_builder_->ExecuteCommand(command_id);
   } else {
     app_list::AppContextMenu::ExecuteCommand(command_id, event_flags);
   }
@@ -112,47 +114,16 @@ void ArcAppContextMenu::BuildAppShortcutsMenu(
   if (!app_info) {
     LOG(ERROR) << "App " << app_id() << " is not available.";
     std::move(callback).Run(std::move(menu_model));
-    arc_app_shortcuts_request_.reset();
     return;
   }
 
-  DCHECK(!arc_app_shortcuts_request_);
-  // Using base::Unretained(this) here is safe becuase |this| owns
-  // |arc_app_shortcuts_request_|. When |this| is deleted,
-  // |arc_app_shortcuts_request_| is also deleted, and once that happens,
-  // |arc_app_shortcuts_request_| will never run the callback.
-  arc_app_shortcuts_request_ =
-      std::make_unique<arc::ArcAppShortcutsRequest>(base::BindOnce(
-          &ArcAppContextMenu::OnGetAppShortcutItems, base::Unretained(this),
-          std::move(menu_model), std::move(callback)));
-  arc_app_shortcuts_request_->StartForPackage(app_info->package_name);
-}
-
-void ArcAppContextMenu::OnGetAppShortcutItems(
-    std::unique_ptr<ui::SimpleMenuModel> menu_model,
-    GetMenuModelCallback callback,
-    std::unique_ptr<arc::ArcAppShortcutItems> app_shortcut_items) {
-  app_shortcut_items_ = std::move(app_shortcut_items);
-  if (app_shortcut_items_) {
-    int command_id = LAUNCH_APP_SHORTCUT_FIRST;
-    DCHECK_LT(command_id + app_shortcut_items_->size(),
-              LAUNCH_APP_SHORTCUT_LAST);
-    for (const auto& item : *app_shortcut_items_)
-      menu_model->AddItemWithIcon(command_id++, item.short_label, item.icon);
-  }
-  std::move(callback).Run(std::move(menu_model));
-  arc_app_shortcuts_request_.reset();
-}
-
-void ArcAppContextMenu::ExecuteLaunchAppShortcutCommand(int command_id) {
-  DCHECK(command_id >= LAUNCH_APP_SHORTCUT_FIRST &&
-         command_id <= LAUNCH_APP_SHORTCUT_LAST);
-  size_t index = command_id - LAUNCH_APP_SHORTCUT_FIRST;
-  DCHECK(app_shortcut_items_);
-  DCHECK_LT(index, app_shortcut_items_->size());
-  arc::LaunchAppShortcutItem(profile(), app_id(),
-                             app_shortcut_items_->at(index).shortcut_id,
-                             controller()->GetAppListDisplayId());
+  DCHECK(!app_shortcuts_menu_builder_);
+  app_shortcuts_menu_builder_ =
+      std::make_unique<arc::ArcAppShortcutsMenuBuilder>(
+          profile(), app_id(), controller()->GetAppListDisplayId(),
+          LAUNCH_APP_SHORTCUT_FIRST, LAUNCH_APP_SHORTCUT_LAST);
+  app_shortcuts_menu_builder_->BuildMenu(
+      app_info->package_name, std::move(menu_model), std::move(callback));
 }
 
 void ArcAppContextMenu::ShowPackageInfo() {

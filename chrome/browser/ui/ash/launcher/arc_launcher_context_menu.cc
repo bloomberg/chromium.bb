@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/public/cpp/shelf_item.h"
+#include "chrome/browser/chromeos/arc/app_shortcuts/arc_app_shortcuts_menu_builder.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
@@ -25,12 +26,23 @@ ArcLauncherContextMenu::ArcLauncherContextMenu(
 ArcLauncherContextMenu::~ArcLauncherContextMenu() = default;
 
 void ArcLauncherContextMenu::GetMenuModel(GetMenuModelCallback callback) {
-  auto menu_model = std::make_unique<ui::SimpleMenuModel>(this);
-  BuildMenu(menu_model.get());
-  std::move(callback).Run(std::move(menu_model));
+  BuildMenu(std::make_unique<ui::SimpleMenuModel>(this), std::move(callback));
 }
 
-void ArcLauncherContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
+void ArcLauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
+  if (command_id >= LAUNCH_APP_SHORTCUT_FIRST &&
+      command_id <= LAUNCH_APP_SHORTCUT_LAST) {
+    DCHECK(app_shortcuts_menu_builder_);
+    app_shortcuts_menu_builder_->ExecuteCommand(command_id);
+    return;
+  }
+
+  LauncherContextMenu::ExecuteCommand(command_id, event_flags);
+}
+
+void ArcLauncherContextMenu::BuildMenu(
+    std::unique_ptr<ui::SimpleMenuModel> menu_model,
+    GetMenuModelCallback callback) {
   const ArcAppListPrefs* arc_list_prefs =
       ArcAppListPrefs::Get(controller()->profile());
   DCHECK(arc_list_prefs);
@@ -41,25 +53,40 @@ void ArcLauncherContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
       arc_list_prefs->GetApp(app_id.app_id());
   if (!app_info && !app_id.has_shelf_group_id()) {
     NOTREACHED();
+    std::move(callback).Run(std::move(menu_model));
     return;
   }
 
   const bool app_is_open = controller()->IsOpen(item().id);
   if (!app_is_open) {
     DCHECK(app_info->launchable);
-    AddContextMenuOption(menu_model, MENU_OPEN_NEW,
+    AddContextMenuOption(menu_model.get(), MENU_OPEN_NEW,
                          IDS_APP_CONTEXT_MENU_ACTIVATE_ARC);
     if (!features::IsTouchableAppContextMenuEnabled())
       menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
   }
 
   if (!app_id.has_shelf_group_id() && app_info->launchable)
-    AddPinMenu(menu_model);
+    AddPinMenu(menu_model.get());
 
   if (app_is_open) {
-    AddContextMenuOption(menu_model, MENU_CLOSE,
+    AddContextMenuOption(menu_model.get(), MENU_CLOSE,
                          IDS_LAUNCHER_CONTEXT_MENU_CLOSE);
   }
   if (!features::IsTouchableAppContextMenuEnabled())
     menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
+
+  // App shortcuts from Android are shown on touchable context menu only.
+  if (!features::IsTouchableAppContextMenuEnabled()) {
+    std::move(callback).Run(std::move(menu_model));
+    return;
+  }
+
+  DCHECK(!app_shortcuts_menu_builder_);
+  app_shortcuts_menu_builder_ =
+      std::make_unique<arc::ArcAppShortcutsMenuBuilder>(
+          controller()->profile(), item().id.app_id, display_id(),
+          LAUNCH_APP_SHORTCUT_FIRST, LAUNCH_APP_SHORTCUT_LAST);
+  app_shortcuts_menu_builder_->BuildMenu(
+      app_info->package_name, std::move(menu_model), std::move(callback));
 }
