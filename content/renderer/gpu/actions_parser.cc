@@ -117,14 +117,6 @@ bool ActionsParser::ParsePointerActions(const base::DictionaryValue& pointer) {
 
   if (source_type_.empty()) {
     source_type_ = source_type;
-
-#if defined(OS_MACOSX)
-    if (source_type == "touch") {
-      error_message_ =
-          base::StringPrintf("Mac OS does not support touch events");
-      return false;
-    }
-#endif  // defined(OS_MACOSX)
   }
 
   if (source_type_ != source_type) {

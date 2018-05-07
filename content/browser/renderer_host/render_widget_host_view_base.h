@@ -327,6 +327,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
       gfx::PointF* transformed_point,
       bool* out_query_renderer);
 
+  virtual void InjectTouchEvent(const blink::WebTouchEvent& event,
+                                const ui::LatencyInfo& latency) {}
+
   virtual void PreProcessMouseEvent(const blink::WebMouseEvent& event) {}
   virtual void PreProcessTouchEvent(const blink::WebTouchEvent& event) {}
 

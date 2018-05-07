@@ -25,6 +25,7 @@
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
 #include "ui/accelerated_widget_mac/display_link_mac.h"
 #include "ui/base/cocoa/remote_layer_api.h"
+#include "ui/events/gesture_detection/filtered_gesture_provider.h"
 
 namespace content {
 class CursorManager;
@@ -67,6 +68,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
       public RenderWidgetHostNSViewClient,
       public BrowserCompositorMacClient,
       public TextInputManager::Observer,
+      public ui::GestureProviderClient,
       public ui::AcceleratedWidgetMacNSView,
       public IPC::Sender {
  public:
@@ -120,6 +122,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void UpdateCursor(const WebCursor& cursor) override;
   void DisplayCursor(const WebCursor& cursor) override;
   CursorManager* GetCursorManager() override;
+  void OnDidNavigateMainFrameToNewPage() override;
   void SetIsLoading(bool is_loading) override;
   void RenderProcessGone(base::TerminationStatus status,
                          int error_code) override;
@@ -166,6 +169,8 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   bool IsKeyboardLocked() override;
   void GestureEventAck(const blink::WebGestureEvent& event,
                        InputEventAckState ack_result) override;
+  void ProcessAckedTouchEvent(const TouchEventWithLatencyInfo& touch,
+                              InputEventAckState ack_result) override;
 
   void DidOverscroll(const ui::DidOverscrollParams& params) override;
 
@@ -184,6 +189,11 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // consumer, such as PDF or maps, wants to intercept them and implement a
   // custom behavior.
   void SendGesturePinchEvent(blink::WebGestureEvent* event);
+
+  // Inject synthetic touch events.
+  void InjectTouchEvent(const blink::WebTouchEvent& event,
+                        const ui::LatencyInfo& latency_info) override;
+
   bool TransformPointToLocalCoordSpace(const gfx::PointF& point,
                                        const viz::SurfaceId& original_surface,
                                        gfx::PointF* transformed_point) override;
@@ -209,14 +219,14 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void OnTextSelectionChanged(TextInputManager* text_input_manager,
                               RenderWidgetHostViewBase* updated_view) override;
 
+  // ui::GestureProviderClient implementation.
+  void OnGestureEvent(const ui::GestureEventData& gesture) override;
+
   // RenderFrameMetadataProvider::Observer
   void OnRenderFrameMetadataChanged() override;
 
   // IPC::Sender implementation.
   bool Send(IPC::Message* message) override;
-
-  // Forwards the mouse event to the renderer.
-  void ForwardMouseEvent(const blink::WebMouseEvent& event);
 
   void SetTextInputActive(bool active);
 
@@ -514,6 +524,10 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // Used to track active password input sessions.
   std::unique_ptr<ui::ScopedPasswordInputEnabler> password_input_enabler_;
+
+  // Provides gesture synthesis given a stream of touch events and touch event
+  // acks. This is for generating gesture events from injected touch events.
+  ui::FilteredGestureProvider gesture_provider_;
 
   // Used to ensure that a consistent RenderWidgetHost is targeted throughout
   // the duration of a keyboard event.

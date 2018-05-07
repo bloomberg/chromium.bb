@@ -19,6 +19,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/accessibility/browser_accessibility_manager_mac.h"
 #include "content/browser/renderer_host/cursor_manager.h"
+#include "content/browser/renderer_host/input/motion_event_web.h"
 #import "content/browser/renderer_host/input/synthetic_gesture_target_mac.h"
 #include "content/browser/renderer_host/input/web_input_event_builders_mac.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
@@ -28,6 +29,7 @@
 #import "content/browser/renderer_host/render_widget_host_ns_view_bridge.h"
 #import "content/browser/renderer_host/render_widget_host_view_cocoa.h"
 #import "content/browser/renderer_host/text_input_client_mac.h"
+#import "content/browser/renderer_host/ui_events_helper.h"
 #include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
@@ -45,6 +47,7 @@
 #include "ui/base/cocoa/text_services_context_menu.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
@@ -53,6 +56,7 @@
 using blink::WebInputEvent;
 using blink::WebMouseEvent;
 using blink::WebGestureEvent;
+using blink::WebTouchEvent;
 
 namespace content {
 
@@ -132,6 +136,9 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
       is_loading_(false),
       allow_pause_for_resize_or_repaint_(true),
       is_guest_view_hack_(is_guest_view_hack),
+      gesture_provider_(ui::GetGestureProviderConfig(
+                            ui::GestureProviderConfigType::CURRENT_PLATFORM),
+                        this),
       weak_factory_(this) {
   // The NSView is on the other side of |ns_view_bridge_|.
   ns_view_bridge_ = RenderWidgetHostNSViewBridge::Create(this);
@@ -415,6 +422,10 @@ CursorManager* RenderWidgetHostViewMac::GetCursorManager() {
   return cursor_manager_.get();
 }
 
+void RenderWidgetHostViewMac::OnDidNavigateMainFrameToNewPage() {
+  gesture_provider_.ResetDetection();
+}
+
 void RenderWidgetHostViewMac::SetIsLoading(bool is_loading) {
   is_loading_ = is_loading;
   // If we ever decide to show the waiting cursor while the page is loading
@@ -519,6 +530,22 @@ void RenderWidgetHostViewMac::OnTextSelectionChanged(
     return;
   ns_view_bridge_->SetTextSelection(selection->text(), selection->offset(),
                                     selection->range());
+}
+
+void RenderWidgetHostViewMac::OnGestureEvent(
+    const ui::GestureEventData& gesture) {
+  blink::WebGestureEvent web_gesture =
+      ui::CreateWebGestureEventFromGestureEventData(gesture);
+
+  ui::LatencyInfo latency_info(ui::SourceEventType::TOUCH);
+
+  if (ShouldRouteEvent(web_gesture)) {
+    blink::WebGestureEvent gesture_event(web_gesture);
+    host()->delegate()->GetInputEventRouter()->RouteGestureEvent(
+        this, &gesture_event, latency_info);
+  } else {
+    host()->ForwardGestureEventWithLatencyInfo(web_gesture, latency_info);
+  }
 }
 
 void RenderWidgetHostViewMac::OnRenderFrameMetadataChanged() {
@@ -1015,6 +1042,23 @@ void RenderWidgetHostViewMac::GestureEventAck(const WebGestureEvent& event,
   mouse_wheel_phase_handler_.GestureEventAck(event, ack_result);
 }
 
+void RenderWidgetHostViewMac::ProcessAckedTouchEvent(
+    const TouchEventWithLatencyInfo& touch,
+    InputEventAckState ack_result) {
+  const bool event_consumed = ack_result == INPUT_EVENT_ACK_STATE_CONSUMED;
+  gesture_provider_.OnTouchEventAck(
+      touch.event.unique_touch_event_id, event_consumed,
+      InputEventAckStateIsSetNonBlocking(ack_result));
+  if (touch.event.touch_start_or_first_touch_move && event_consumed &&
+      host()->delegate() && host()->delegate()->GetInputEventRouter()) {
+    host()
+        ->delegate()
+        ->GetInputEventRouter()
+        ->OnHandledTouchStartOrFirstTouchMove(
+            touch.event.unique_touch_event_id);
+  }
+}
+
 void RenderWidgetHostViewMac::DidOverscroll(
     const ui::DidOverscrollParams& params) {
   [cocoa_view() processedOverscroll:params];
@@ -1041,9 +1085,8 @@ bool RenderWidgetHostViewMac::ShouldRouteEvent(
   // See also RenderWidgetHostViewAura::ShouldRouteEvent.
   // TODO(wjmaclean): Update this function if RenderWidgetHostViewMac implements
   // OnTouchEvent(), to match what we are doing in RenderWidgetHostViewAura.
-  DCHECK(WebInputEvent::IsMouseEventType(event.GetType()) ||
-         event.GetType() == WebInputEvent::kMouseWheel ||
-         WebInputEvent::IsPinchGestureEventType(event.GetType()));
+  // The only touch events and touch gesture events expected here are
+  // injected synthetic events.
   return host()->delegate() && host()->delegate()->GetInputEventRouter();
 }
 
@@ -1057,6 +1100,23 @@ void RenderWidgetHostViewMac::SendGesturePinchEvent(WebGestureEvent* event) {
     return;
   }
   host()->ForwardGestureEvent(*event);
+}
+
+void RenderWidgetHostViewMac::InjectTouchEvent(
+    const WebTouchEvent& event,
+    const ui::LatencyInfo& latency_info) {
+  ui::FilteredGestureProvider::TouchHandlingResult result =
+      gesture_provider_.OnTouchEvent(MotionEventWeb(event));
+  if (!result.succeeded)
+    return;
+
+  if (ShouldRouteEvent(event)) {
+    WebTouchEvent touch_event(event);
+    host()->delegate()->GetInputEventRouter()->RouteTouchEvent(
+        this, &touch_event, latency_info);
+  } else {
+    host()->ForwardTouchEventWithLatencyInfo(event, latency_info);
+  }
 }
 
 bool RenderWidgetHostViewMac::TransformPointToLocalCoordSpace(

@@ -35,6 +35,7 @@ WebMouseEvent SyntheticWebMouseEventBuilder::Build(
   DCHECK(WebInputEvent::IsMouseEventType(type));
   WebMouseEvent result(type, modifiers, ui::EventTimeForNow());
   result.SetPositionInWidget(window_x, window_y);
+  result.SetPositionInScreen(window_x, window_y);
   result.SetModifiers(modifiers);
   result.pointer_type = pointer_type;
   result.id = ui::MouseEvent::kMousePointerId;
@@ -198,6 +199,7 @@ int SyntheticWebTouchEvent::PressPoint(float x, float y) {
   point.rotation_angle = 1.f;
   point.force = 1.f;
   point.tilt_x = point.tilt_y = 0;
+  point.pointer_type = blink::WebPointerProperties::PointerType::kTouch;
   ++touches_length;
   WebTouchEventTraits::ResetType(WebInputEvent::kTouchStart, TimeStamp(), this);
   return point.id;
