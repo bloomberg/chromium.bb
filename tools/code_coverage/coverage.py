@@ -333,8 +333,9 @@ def _ConfigureLogging(args):
 
 
 def _GetSharedLibraries(binary_paths):
-  """Returns set of shared libraries used by specified binaries."""
-  libraries = set()
+  """Returns list of shared libraries used by specified binaries."""
+  logging.info('Finding shared libraries for targets (if any).')
+  shared_libraries = []
   cmd = []
   shared_library_re = None
 
@@ -363,6 +364,9 @@ def _GetSharedLibraries(binary_paths):
       # otool outputs "@rpath" macro instead of the dirname of the given binary.
       shared_library_path = shared_library_path.replace('@rpath', BUILD_DIR)
 
+    if shared_library_path in shared_libraries:
+      continue
+
     assert os.path.exists(shared_library_path), ('Shared library "%s" used by '
                                                  'the given target(s) does not '
                                                  'exist.' % shared_library_path)
@@ -371,9 +375,12 @@ def _GetSharedLibraries(binary_paths):
 
     # Do not add non-instrumented libraries. Otherwise, llvm-cov errors outs.
     if '__llvm_cov' in data:
-      libraries.add(shared_library_path)
+      shared_libraries.append(shared_library_path)
 
-  return list(libraries)
+  logging.debug('Found shared libraries (%d): %s.', len(shared_libraries),
+                shared_libraries)
+  logging.info('Finished finding shared libraries for targets.')
+  return shared_libraries
 
 
 def _GetHostPlatform():
@@ -1501,9 +1508,10 @@ def Main():
     profdata_file_path = args.profdata_file
     binary_paths = _GetBinaryPathsFromTargets(args.targets, args.build_dir)
 
+  binary_paths.extend(_GetSharedLibraries(binary_paths))
+
   logging.info('Generating code coverage report in html (this can take a while '
                'depending on size of target!).')
-  binary_paths.extend(_GetSharedLibraries(binary_paths))
   per_file_coverage_summary = _GeneratePerFileCoverageSummary(
       binary_paths, profdata_file_path, absolute_filter_paths,
       args.ignore_filename_regex)
