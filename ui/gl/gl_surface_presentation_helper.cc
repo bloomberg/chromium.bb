@@ -97,19 +97,9 @@ void GLSurfacePresentationHelper::PreSwapBuffers(
 
 void GLSurfacePresentationHelper::PostSwapBuffers(gfx::SwapResult result) {
   DCHECK(!pending_frames_.empty());
-  if (result != gfx::SwapResult::SWAP_ACK) {
-    // SwapBuffers failed, we just remove the pending frame from the queue
-    // and run the callback.
-    auto frame = std::move(pending_frames_.back());
-    pending_frames_.pop_back();
-    if (frame.timer) {
-      bool has_context = gl_context_ && gl_context_->IsCurrent(surface_);
-      frame.timer->Destroy(has_context);
-    }
-    frame.callback.Run(gfx::PresentationFeedback());
-  }
-
-  if (!waiting_for_vsync_parameters_ && !pending_frames_.empty())
+  auto& frame = pending_frames_.back();
+  frame.result = result;
+  if (!waiting_for_vsync_parameters_)
     CheckPendingFrames();
 }
 
@@ -154,9 +144,12 @@ void GLSurfacePresentationHelper::CheckPendingFrames() {
       timestamp = timestamp.SnappedToNextTick(vsync_timebase_, vsync_interval_);
       flags = gfx::PresentationFeedback::kVSync;
     }
+    gfx::PresentationFeedback feedback(timestamp, vsync_interval_, flags);
     for (auto& frame : pending_frames_) {
-      frame.callback.Run(
-          gfx::PresentationFeedback(timestamp, vsync_interval_, flags));
+      if (frame.result == gfx::SwapResult::SWAP_ACK)
+        frame.callback.Run(feedback);
+      else
+        frame.callback.Run(gfx::PresentationFeedback());
     }
     pending_frames_.clear();
     // We want to update VSync, if we can not get VSync parameters
@@ -173,6 +166,21 @@ void GLSurfacePresentationHelper::CheckPendingFrames() {
 
   while (!pending_frames_.empty()) {
     auto& frame = pending_frames_.front();
+    // Helper lambda for running the presentation callback and releasing the
+    // frame.
+    auto frame_presentation_callback =
+        [this, &frame](const gfx::PresentationFeedback& feedback) {
+          frame.timer->Destroy(true /* has_context */);
+          frame.callback.Run(feedback);
+          pending_frames_.pop_front();
+        };
+
+    if (frame.result != gfx::SwapResult::SWAP_ACK) {
+      DCHECK(!frame.timer);
+      frame_presentation_callback(gfx::PresentationFeedback());
+      continue;
+    }
+
     if (!frame.timer->IsAvailable())
       break;
 
@@ -182,14 +190,6 @@ void GLSurfacePresentationHelper::CheckPendingFrames() {
     auto timestamp =
         base::TimeTicks() + base::TimeDelta::FromMicroseconds(start);
 
-    // Helper lambda for running the presentation callback and releasing the
-    // frame.
-    auto frame_presentation_callback =
-        [this, &frame](const gfx::PresentationFeedback& feedback) {
-          frame.timer->Destroy(true /* has_context */);
-          frame.callback.Run(feedback);
-          pending_frames_.pop_front();
-        };
 
     if (vsync_interval_.is_zero() || fixed_vsync) {
       // If VSync parameters are fixed or not avaliable, we just run
