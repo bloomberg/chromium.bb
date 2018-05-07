@@ -887,6 +887,10 @@ void Layer::AddMainThreadScrollingReasons(
     uint32_t main_thread_scrolling_reasons) {
   DCHECK(IsPropertyChangeAllowed());
   DCHECK(main_thread_scrolling_reasons);
+  // Layer should only see non-transient scrolling reasons. Transient scrolling
+  // reasons are computed per hit test.
+  DCHECK(MainThreadScrollingReason::MainThreadCanSetScrollReasons(
+      main_thread_scrolling_reasons));
   uint32_t new_reasons =
       inputs_.main_thread_scrolling_reasons | main_thread_scrolling_reasons;
   if (inputs_.main_thread_scrolling_reasons == new_reasons)
