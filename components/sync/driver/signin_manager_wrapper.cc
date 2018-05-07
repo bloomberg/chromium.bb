@@ -20,11 +20,3 @@ identity::IdentityManager* SigninManagerWrapper::GetIdentityManager() {
 SigninManagerBase* SigninManagerWrapper::GetSigninManager() {
   return signin_manager_;
 }
-
-std::string SigninManagerWrapper::GetEffectiveUsername() const {
-  return identity_manager_->GetPrimaryAccountInfo().email;
-}
-
-std::string SigninManagerWrapper::GetAccountIdToUse() const {
-  return identity_manager_->GetPrimaryAccountInfo().account_id;
-}

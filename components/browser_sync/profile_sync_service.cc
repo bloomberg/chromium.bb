@@ -486,9 +486,10 @@ SyncCredentials ProfileSyncService::GetCredentials() {
   if (IsLocalSyncEnabled())
     return credentials;
 
-  credentials.account_id = signin_->GetAccountIdToUse();
+  const AccountInfo account_info = GetAuthenticatedAccountInfo();
+  credentials.account_id = account_info.account_id;
   DCHECK(!credentials.account_id.empty());
-  credentials.email = signin_->GetEffectiveUsername();
+  credentials.email = account_info.email;
   credentials.sync_token = access_token_;
 
   if (credentials.sync_token.empty())
@@ -735,13 +736,13 @@ void ProfileSyncService::AccessTokenFetched(const GoogleServiceAuthError& error,
 void ProfileSyncService::OnRefreshTokenAvailable(
     const std::string& account_id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (account_id == signin_->GetAccountIdToUse())
+  if (account_id == GetAuthenticatedAccountInfo().account_id)
     OnRefreshTokensLoaded();
 }
 
 void ProfileSyncService::OnRefreshTokenRevoked(const std::string& account_id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (account_id == signin_->GetAccountIdToUse()) {
+  if (account_id == GetAuthenticatedAccountInfo().account_id) {
     access_token_.clear();
     UpdateAuthErrorState(
         GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED));
@@ -751,8 +752,8 @@ void ProfileSyncService::OnRefreshTokenRevoked(const std::string& account_id) {
 void ProfileSyncService::OnRefreshTokensLoaded() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  GoogleServiceAuthError token_error =
-      oauth2_token_service_->GetAuthError(signin_->GetAccountIdToUse());
+  GoogleServiceAuthError token_error = oauth2_token_service_->GetAuthError(
+      GetAuthenticatedAccountInfo().account_id);
   if (token_error == GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
                          GoogleServiceAuthError::InvalidGaiaCredentialsReason::
                              CREDENTIALS_REJECTED_BY_CLIENT)) {
@@ -1543,8 +1544,8 @@ void ProfileSyncService::TriggerRefresh(const syncer::ModelTypeSet& types) {
 }
 
 bool ProfileSyncService::IsSignedIn() const {
-  // Sync is logged in if there is a non-empty effective account id.
-  return !signin_->GetAccountIdToUse().empty();
+  // Sync is logged in if there is a non-empty account id.
+  return !GetAuthenticatedAccountInfo().account_id.empty();
 }
 
 bool ProfileSyncService::CanEngineStart() const {
@@ -1552,7 +1553,7 @@ bool ProfileSyncService::CanEngineStart() const {
     return true;
   return CanSyncStart() && oauth2_token_service_ &&
          oauth2_token_service_->RefreshTokenIsAvailable(
-             signin_->GetAccountIdToUse());
+             GetAuthenticatedAccountInfo().account_id);
 }
 
 bool ProfileSyncService::IsEngineInitialized() const {
@@ -1963,8 +1964,7 @@ void ProfileSyncService::RequestAccessToken() {
   // token again.
   if (!access_token_.empty()) {
     signin_->GetIdentityManager()->RemoveAccessTokenFromCache(
-        signin_->GetIdentityManager()->GetPrimaryAccountInfo(), oauth2_scopes,
-        access_token_);
+        GetAuthenticatedAccountInfo(), oauth2_scopes, access_token_);
   }
 
   access_token_.clear();
@@ -2091,7 +2091,7 @@ void ProfileSyncService::OnGaiaAccountsInCookieUpdatedWithCallback(
 
 bool ProfileSyncService::HasCookieJarMismatch(
     const std::vector<gaia::ListedAccount>& cookie_jar_accounts) {
-  std::string account_id = signin_->GetAccountIdToUse();
+  std::string account_id = GetAuthenticatedAccountInfo().account_id;
   // Iterate through list of accounts, looking for current sync account.
   for (const auto& account : cookie_jar_accounts) {
     if (account.id == account_id)

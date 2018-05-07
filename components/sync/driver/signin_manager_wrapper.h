@@ -5,8 +5,6 @@
 #ifndef COMPONENTS_SYNC_DRIVER_SIGNIN_MANAGER_WRAPPER_H_
 #define COMPONENTS_SYNC_DRIVER_SIGNIN_MANAGER_WRAPPER_H_
 
-#include <string>
-
 #include "base/macros.h"
 
 class SigninManagerBase;
@@ -22,12 +20,6 @@ class SigninManagerWrapper {
   explicit SigninManagerWrapper(identity::IdentityManager* identity_manager,
                                 SigninManagerBase* signin_manager);
   ~SigninManagerWrapper();
-
-  // Get the email address to use for this account.
-  std::string GetEffectiveUsername() const;
-
-  // Get the unique ID used to represent this account.
-  std::string GetAccountIdToUse() const;
 
   // Return the original IdentityManager object that was passed in.
   identity::IdentityManager* GetIdentityManager();
