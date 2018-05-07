@@ -49,6 +49,16 @@ TextIteratorTextState::TextIteratorTextState(
     const TextIteratorBehavior& behavior)
     : behavior_(behavior) {}
 
+unsigned TextIteratorTextState::PositionStartOffset() const {
+  DCHECK(position_container_node_);
+  return position_start_offset_.value();
+}
+
+unsigned TextIteratorTextState::PositionEndOffset() const {
+  DCHECK(position_container_node_);
+  return position_end_offset_.value();
+}
+
 UChar TextIteratorTextState::CharacterAt(unsigned index) const {
   SECURITY_DCHECK(index < length());
   if (!(index < length()))
@@ -93,59 +103,116 @@ void TextIteratorTextState::AppendTextToStringBuilder(
   }
 }
 
-void TextIteratorTextState::UpdateForReplacedElement(const Node& parent_node,
-                                                     const Node& base_node) {
-  has_emitted_ = true;
-  position_node_ = &parent_node;
-  position_offset_base_node_ = &base_node;
+void TextIteratorTextState::UpdateForReplacedElement(const Node& node) {
+  ResetPositionContainerNode(PositionNodeType::kAsNode, node);
+  PopulateStringBuffer("", 0, 0);
+}
+
+void TextIteratorTextState::ResetPositionContainerNode(
+    PositionNodeType node_type,
+    const Node& node) {
+  DCHECK_NE(node_type, PositionNodeType::kBeforeChildren);
+  DCHECK_NE(node_type, PositionNodeType::kInText);
+  DCHECK_NE(node_type, PositionNodeType::kNone);
+  position_node_type_ = node_type;
+  position_container_node_ = nullptr;
+  position_node_ = node;
+  position_start_offset_ = base::nullopt;
+  position_end_offset_ = base::nullopt;
+}
+
+void TextIteratorTextState::UpdatePositionOffsets(
+    const ContainerNode& container_node,
+    unsigned node_index) const {
+  DCHECK(!position_container_node_);
+  DCHECK(!position_start_offset_.has_value());
+  DCHECK(!position_end_offset_.has_value());
+  switch (position_node_type_) {
+    case PositionNodeType::kAfterNode:
+      position_container_node_ = &container_node;
+      position_start_offset_ = node_index + 1;
+      position_end_offset_ = node_index + 1;
+      return;
+    case PositionNodeType::kAltText:
+    case PositionNodeType::kAsNode:
+      position_container_node_ = &container_node;
+      position_start_offset_ = node_index;
+      position_end_offset_ = node_index + 1;
+      return;
+    case PositionNodeType::kBeforeNode:
+      position_container_node_ = &container_node;
+      position_start_offset_ = node_index;
+      position_end_offset_ = node_index;
+      return;
+    case PositionNodeType::kBeforeChildren:
+    case PositionNodeType::kInText:
+    case PositionNodeType::kNone:
+      NOTREACHED();
+      return;
+  }
+  NOTREACHED() << static_cast<int>(position_node_type_);
+}
+
+void TextIteratorTextState::EmitAltText(const HTMLElement& element) {
+  ResetPositionContainerNode(PositionNodeType::kAltText, element);
+  const String text = element.AltText();
+  PopulateStringBuffer(text, 0, text.length());
+}
+
+void TextIteratorTextState::EmitChar16AfterNode(UChar code_unit,
+                                                const Node& node) {
+  ResetPositionContainerNode(PositionNodeType::kAfterNode, node);
+  PopulateStringBufferFromChar16(code_unit);
+}
+
+void TextIteratorTextState::EmitChar16AsNode(UChar code_unit,
+                                             const Node& node) {
+  ResetPositionContainerNode(PositionNodeType::kAsNode, node);
+  PopulateStringBufferFromChar16(code_unit);
+}
+
+void TextIteratorTextState::EmitChar16BeforeChildren(
+    UChar code_unit,
+    const ContainerNode& container_node) {
+  position_node_type_ = PositionNodeType::kBeforeChildren;
+  position_container_node_ = &container_node;
+  position_node_ = &container_node;
   position_start_offset_ = 0;
-  position_end_offset_ = 1;
-  single_character_buffer_ = 0;
-
-  text_length_ = 0;
-  text_start_offset_ = 0;
-  last_character_ = 0;
+  position_end_offset_ = 0;
+  PopulateStringBufferFromChar16(code_unit);
 }
 
-void TextIteratorTextState::EmitAltText(const Node* node) {
-  text_ = ToHTMLElement(node)->AltText();
-  text_start_offset_ = 0;
-  text_length_ = text_.length();
-  last_character_ = text_length_ ? text_[text_length_ - 1] : 0;
+void TextIteratorTextState::EmitChar16BeforeNode(UChar code_unit,
+                                                 const Node& node) {
+  ResetPositionContainerNode(PositionNodeType::kBeforeNode, node);
+  PopulateStringBufferFromChar16(code_unit);
 }
 
-void TextIteratorTextState::UpdatePositionOffsets(unsigned index) const {
-  DCHECK(position_offset_base_node_);
-  position_start_offset_ += index;
-  position_end_offset_ += index;
-  position_offset_base_node_ = nullptr;
+void TextIteratorTextState::EmitChar16Before(UChar code_unit,
+                                             const Text& text_node,
+                                             unsigned offset) {
+  SetTextNodePosition(text_node, offset, offset);
+  PopulateStringBufferFromChar16(code_unit);
 }
 
-void TextIteratorTextState::SpliceBuffer(UChar c,
-                                         const Node* text_node,
-                                         const Node* offset_base_node,
-                                         unsigned text_start_offset,
-                                         unsigned text_end_offset) {
-  DCHECK(text_node);
+void TextIteratorTextState::EmitReplacmentCodeUnit(UChar code_unit,
+                                                   const Text& text_node,
+                                                   unsigned offset) {
+  SetTextNodePosition(text_node, offset, offset + 1);
+  PopulateStringBufferFromChar16(code_unit);
+}
+
+void TextIteratorTextState::PopulateStringBufferFromChar16(UChar code_unit) {
   has_emitted_ = true;
-
-  // Remember information with which to construct the TextIterator::range().
-  // NOTE: textNode is often not a text node, so the range will specify child
-  // nodes of positionNode
-  position_node_ = text_node;
-  position_offset_base_node_ = offset_base_node;
-  position_start_offset_ = text_start_offset;
-  position_end_offset_ = text_end_offset;
-
   // remember information with which to construct the TextIterator::characters()
   // and length()
-  single_character_buffer_ = c;
+  single_character_buffer_ = code_unit;
   DCHECK(single_character_buffer_);
   text_length_ = 1;
   text_start_offset_ = 0;
 
   // remember some iteration state
-  last_character_ = c;
+  last_character_ = code_unit;
 }
 
 void TextIteratorTextState::EmitText(const Text& text_node,
@@ -155,29 +222,46 @@ void TextIteratorTextState::EmitText(const Text& text_node,
                                      unsigned text_start_offset,
                                      unsigned text_end_offset) {
   DCHECK_LE(position_start_offset, position_end_offset);
-  // TODO(editing-dev): text-transform:uppercase can make text longer, e.g.
-  // "U+00DF" to "SS". See "fast/css/case-transform.html"
-  // DCHECK_LE(position_end_offset, text_node.length());
-  text_ =
+  const String text =
       behavior_.EmitsSmallXForTextSecurity() && IsTextSecurityNode(text_node)
           ? RepeatString("x", string.length())
-          : string,
+          : string;
 
-  DCHECK(!text_.IsEmpty());
-  DCHECK_LT(text_start_offset, text_.length());
-  DCHECK_LE(text_end_offset, text_.length());
+  DCHECK(!text.IsEmpty());
+  DCHECK_LT(text_start_offset, text.length());
+  DCHECK_LE(text_end_offset, text.length());
   DCHECK_LE(text_start_offset, text_end_offset);
 
-  position_node_ = &text_node;
-  position_offset_base_node_ = nullptr;
-  position_start_offset_ = position_start_offset;
-  position_end_offset_ = position_end_offset;
+  SetTextNodePosition(text_node, position_start_offset, position_end_offset);
+  PopulateStringBuffer(text, text_start_offset, text_end_offset);
+}
+
+void TextIteratorTextState::PopulateStringBuffer(const String& text,
+                                                 unsigned text_start_offset,
+                                                 unsigned text_end_offset) {
+  DCHECK_LE(text_start_offset, text_end_offset);
+  DCHECK_LE(text_end_offset, text.length());
+  text_ = text;
   single_character_buffer_ = 0;
   text_start_offset_ = text_start_offset;
   text_length_ = text_end_offset - text_start_offset;
-  last_character_ = text_[text_end_offset - 1];
+  last_character_ = text_end_offset == 0 ? 0 : text_[text_end_offset - 1];
 
   has_emitted_ = true;
+}
+
+void TextIteratorTextState::SetTextNodePosition(const Text& text_node,
+                                                unsigned position_start_offset,
+                                                unsigned position_end_offset) {
+  DCHECK_LE(position_start_offset, position_end_offset);
+  // TODO(editing-dev): text-transform:uppercase can make text longer, e.g.
+  // "U+00DF" to "SS". See "fast/css/case-transform.html"
+  // DCHECK_LE(position_end_offset, text_node.length());
+  position_node_type_ = PositionNodeType::kInText;
+  position_container_node_ = &text_node;
+  position_node_ = &text_node;
+  position_start_offset_ = position_start_offset;
+  position_end_offset_ = position_end_offset;
 }
 
 void TextIteratorTextState::AppendTextTo(ForwardsTextBuffer* output,

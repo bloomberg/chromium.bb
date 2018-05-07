@@ -73,6 +73,14 @@ class CORE_TEMPLATE_CLASS_EXPORT SimplifiedBackwardsTextIteratorAlgorithm {
                  int min_length) const;
   int CopyTextTo(BackwardsTextBuffer* output, int position = 0) const;
 
+  // TODO(editing-dev): We should consider code sharing between |TextIterator|
+  // and |SimplifiedBackwardsTextIterator| for
+  //  - StartContainer()
+  //  - EndOffset()
+  //  - StartContainer()
+  //  - EndPosition()
+  // TODO(editing-dev): We should rename |StartContainer()| to
+  // |CurrentContainer()| as |TextIterator|.
   const Node* StartContainer() const;
   int EndOffset() const;
   PositionTemplate<Strategy> StartPosition() const;
@@ -88,10 +96,16 @@ class CORE_TEMPLATE_CLASS_EXPORT SimplifiedBackwardsTextIteratorAlgorithm {
   LayoutText* HandleFirstLetter(int& start_offset, int& offset_in_node);
   bool HandleReplacedElement();
   bool HandleNonTextNode();
-  void EmitCharacter(UChar, const Node*, int start_offset, int end_offset);
   bool AdvanceRespectingRange(const Node*);
 
   bool IsBetweenSurrogatePair(int position) const;
+
+  // TODO(editing-dev): We should consider code sharing between |TextIterator|
+  // and |SimplifiedBackwardsTextIterator| for
+  //  - EnsurePositionContainer()
+  //  - StartOffset()
+  void EnsurePositionContainer() const;
+  int StartOffset() const;
 
   TextIteratorBehavior behavior_;
 

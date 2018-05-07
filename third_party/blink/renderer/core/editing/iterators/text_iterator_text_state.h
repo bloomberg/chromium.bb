@@ -26,6 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_ITERATORS_TEXT_ITERATOR_TEXT_STATE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_ITERATORS_TEXT_ITERATOR_TEXT_STATE_H_
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/editing/iterators/forwards_text_buffer.h"
 #include "third_party/blink/renderer/core/editing/iterators/text_iterator_behavior.h"
@@ -35,6 +36,8 @@
 namespace blink {
 
 class BackwardsTextBuffer;
+class ContainerNode;
+class HTMLElement;
 class Text;
 
 class CORE_EXPORT TextIteratorTextState {
@@ -57,28 +60,37 @@ class CORE_EXPORT TextIteratorTextState {
                      unsigned position,
                      unsigned length_to_prepend) const;
 
-  void SpliceBuffer(UChar,
-                    const Node* text_node,
-                    const Node* offset_base_node,
-                    unsigned text_start_offset,
-                    unsigned text_end_offset);
+  // Emits code unit relative to |node|.
+  void EmitChar16AfterNode(UChar code_unit, const Node& node);
+  void EmitChar16AsNode(UChar code_unit, const Node& node);
+  void EmitChar16BeforeChildren(UChar code_unit,
+                                const ContainerNode& container_node);
+  void EmitChar16BeforeNode(UChar code_unit, const Node& node);
+
+  // Emits |code_unit| before |offset| in |text_node|.
+  void EmitChar16Before(UChar code_unit,
+                        const Text& text_node,
+                        unsigned offset);
+  // Emits |code_unit| as replacement of code unit at |offset| in |text_node|.
+  void EmitReplacmentCodeUnit(UChar code_unit,
+                              const Text& text_node,
+                              unsigned offset);
   void EmitText(const Text&,
                 unsigned position_start_offset,
                 unsigned position_end_offset,
                 const String&,
                 unsigned text_start_offset,
                 unsigned text_end_offset);
-  void EmitAltText(const Node*);
-  void UpdateForReplacedElement(const Node& parent_node, const Node& base_node);
+  void EmitAltText(const HTMLElement&);
+  void UpdateForReplacedElement(const Node& node);
 
   // Return position of the current text.
-  void UpdatePositionOffsets(unsigned node_index) const;
-  unsigned PositionStartOffset() const { return position_start_offset_; }
-  unsigned PositionEndOffset() const { return position_end_offset_; }
+  void UpdatePositionOffsets(const ContainerNode& container_node,
+                             unsigned index) const;
+  unsigned PositionStartOffset() const;
+  unsigned PositionEndOffset() const;
   const Node* PositionNode() const { return position_node_; }
-  const Node* PositionOffsetBaseNode() const {
-    return position_offset_base_node_;
-  }
+  const Node* PositionContainerNode() const { return position_container_node_; }
 
   bool HasEmitted() const { return has_emitted_; }
   UChar LastCharacter() const { return last_character_; }
@@ -88,9 +100,29 @@ class CORE_EXPORT TextIteratorTextState {
   }
 
  private:
+  // Location of text run relative to |position_node_|.
+  enum class PositionNodeType {
+    kNone,
+    kAfterNode,
+    kAltText,
+    kAsNode,
+    kBeforeChildren,
+    kBeforeNode,
+    kInText,
+  };
+
+  void ResetPositionContainerNode(PositionNodeType node_type, const Node& node);
+  void SetTextNodePosition(const Text& text_node,
+                           unsigned start_offset,
+                           unsigned end_offset);
+  void PopulateStringBuffer(const String& text, unsigned start, unsigned end);
+  void PopulateStringBufferFromChar16(UChar code_unit);
+
   const TextIteratorBehavior behavior_;
   unsigned text_length_ = 0;
 
+  // TODO(editing-dev): We should integrate single character buffer and
+  // string buffer.
   // Used for whitespace characters that aren't in the DOM, so we can point at
   // them.
   // If non-zero, overrides |text_|.
@@ -99,13 +131,17 @@ class CORE_EXPORT TextIteratorTextState {
   // The current text when |single_character_buffer_| is zero, in which case it
   // is |text_.Substring(text_start_offset_, text_length_)|.
   String text_;
+  // TODO(editing-dev): We should make |text_| to hold substring instead of
+  // entire string with |text_start_offset_| and |text_length_|.
   unsigned text_start_offset_ = 0;
 
   // Position of the current text, in the form to be returned from the iterator.
   Member<const Node> position_node_;
-  mutable Member<const Node> position_offset_base_node_;
-  mutable unsigned position_start_offset_ = 0;
-  mutable unsigned position_end_offset_ = 0;
+  // |Text| node when |position_node_type_ == kInText| or |ContainerNode|.
+  mutable Member<const Node> position_container_node_;
+  mutable base::Optional<unsigned> position_start_offset_;
+  mutable base::Optional<unsigned> position_end_offset_;
+  PositionNodeType position_node_type_ = PositionNodeType::kNone;
 
   // Used when deciding whether to emit a "positioning" (e.g. newline) before
   // any other content

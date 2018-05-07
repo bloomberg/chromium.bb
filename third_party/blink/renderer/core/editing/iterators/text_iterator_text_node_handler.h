@@ -32,7 +32,7 @@ class TextIteratorTextNodeHandler {
   bool HandleRemainingTextRuns();
 
   // Returns true if a leading white space is emitted before a replaced element.
-  bool FixLeadingWhiteSpaceForReplacedElement(const Node*);
+  bool FixLeadingWhiteSpaceForReplacedElement();
 
   void ResetCollapsedWhiteSpaceFixup();
 
@@ -65,12 +65,12 @@ class TextIteratorTextNodeHandler {
 
   bool ShouldFixLeadingWhiteSpaceForReplacedElement() const;
 
-  // Emit a character before |offset| of characters in |text_node_|.
-  void SpliceBuffer(UChar,
-                    const Node* text_node,
-                    const Node* offset_base_node,
-                    unsigned text_start_offset,
-                    unsigned text_end_offset);
+  // Emits |code_unit| before |offset| of characters in |text_node_|.
+  void EmitChar16Before(UChar code_unit, unsigned offset);
+  // Emits |code_unit| as replacement of a code unit after |offset| in
+  // |text_node_|.
+  void EmitReplacmentCodeUnit(UChar code_unit, unsigned offset);
+
   void EmitText(const LayoutText* layout_object,
                 unsigned text_start_offset,
                 unsigned text_end_offset);

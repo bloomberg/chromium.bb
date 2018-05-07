@@ -302,12 +302,11 @@ LayoutText* SimplifiedBackwardsTextIteratorAlgorithm<
 template <typename Strategy>
 bool SimplifiedBackwardsTextIteratorAlgorithm<
     Strategy>::HandleReplacedElement() {
-  unsigned index = Strategy::Index(*node_);
   // We want replaced elements to behave like punctuation for boundary
   // finding, and to simply take up space for the selection preservation
   // code in moveParagraphs, so we use a comma. Unconditionally emit
   // here because this iterator is only used for boundary finding.
-  EmitCharacter(',', Strategy::Parent(*node_), index, index + 1);
+  text_state_.EmitChar16AsNode(',', *node_);
   return true;
 }
 
@@ -319,11 +318,10 @@ bool SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::HandleNonTextNode() {
   if (TextIterator::ShouldEmitNewlineForNode(*node_, false) ||
       TextIterator::ShouldEmitNewlineAfterNode(*node_) ||
       TextIterator::ShouldEmitTabBeforeNode(*node_)) {
-    unsigned index = Strategy::Index(*node_);
-    // The start of this emitted range is wrong. Ensuring correctness would
-    // require VisiblePositions and so would be slow. previousBoundary expects
-    // this.
-    EmitCharacter('\n', Strategy::Parent(*node_), index + 1, index + 1);
+    // TODO(editing-dev):The start of this emitted range is wrong. Ensuring
+    // correctness would require |VisiblePositions| and so would be slow.
+    // |previousBoundary expects this.
+    text_state_.EmitChar16AfterNode('\n', *node_);
   }
   return true;
 }
@@ -333,20 +331,15 @@ void SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::ExitNode() {
   if (TextIterator::ShouldEmitNewlineForNode(*node_, false) ||
       TextIterator::ShouldEmitNewlineBeforeNode(*node_) ||
       TextIterator::ShouldEmitTabBeforeNode(*node_)) {
-    // The start of this emitted range is wrong. Ensuring correctness would
-    // require VisiblePositions and so would be slow. previousBoundary expects
-    // this.
-    EmitCharacter('\n', node_, 0, 0);
+    // TODO(editing-dev): When we want to use |EmitChar16BeforeNode()| when
+    // test[1] and and test[2] failures are addressed.
+    // [1] readonly-disabled-text-selection.html
+    // [2] extend_selection_05_ltr_backward_word.html
+    // TODO(editing-dev): The start of this emitted range is wrong. Ensuring
+    // correctness would require |VisiblePositions| and so would be slow.
+    // previousBoundary expects this.
+    text_state_.EmitChar16BeforeChildren('\n', ToContainerNode(*node_));
   }
-}
-
-template <typename Strategy>
-void SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::EmitCharacter(
-    UChar c,
-    const Node* node,
-    int start_offset,
-    int end_offset) {
-  text_state_.SpliceBuffer(c, node, node, start_offset, end_offset);
 }
 
 template <typename Strategy>
@@ -362,40 +355,54 @@ bool SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::AdvanceRespectingRange(
 }
 
 template <typename Strategy>
+void SimplifiedBackwardsTextIteratorAlgorithm<
+    Strategy>::EnsurePositionContainer() const {
+  DCHECK(text_state_.PositionNode());
+  if (text_state_.PositionContainerNode())
+    return;
+  const Node& node = *text_state_.PositionNode();
+  const ContainerNode* parent = Strategy::Parent(node);
+  DCHECK(parent);
+  text_state_.UpdatePositionOffsets(*parent, Strategy::Index(node));
+}
+
+template <typename Strategy>
 const Node* SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::StartContainer()
     const {
-  if (text_state_.PositionNode())
-    return text_state_.PositionNode();
-  return start_node_;
+  if (!text_state_.PositionNode())
+    return start_node_;
+  EnsurePositionContainer();
+  return text_state_.PositionContainerNode();
+}
+
+template <typename Strategy>
+int SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::StartOffset() const {
+  if (!text_state_.PositionNode())
+    return start_offset_;
+  EnsurePositionContainer();
+  return text_state_.PositionStartOffset();
 }
 
 template <typename Strategy>
 int SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::EndOffset() const {
-  if (text_state_.PositionNode())
-    return text_state_.PositionEndOffset();
-  return start_offset_;
+  if (!text_state_.PositionNode())
+    return start_offset_;
+  EnsurePositionContainer();
+  return text_state_.PositionEndOffset();
 }
 
 template <typename Strategy>
 PositionTemplate<Strategy>
 SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::StartPosition() const {
-  if (text_state_.PositionNode()) {
-    return PositionTemplate<Strategy>::EditingPositionOf(
-        text_state_.PositionNode(), text_state_.PositionStartOffset());
-  }
-  return PositionTemplate<Strategy>::EditingPositionOf(start_node_.Get(),
-                                                       start_offset_);
+  return PositionTemplate<Strategy>::EditingPositionOf(StartContainer(),
+                                                       StartOffset());
 }
 
 template <typename Strategy>
 PositionTemplate<Strategy>
 SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::EndPosition() const {
-  if (text_state_.PositionNode()) {
-    return PositionTemplate<Strategy>::EditingPositionOf(
-        text_state_.PositionNode(), text_state_.PositionEndOffset());
-  }
-  return PositionTemplate<Strategy>::EditingPositionOf(start_node_.Get(),
-                                                       start_offset_);
+  return PositionTemplate<Strategy>::EditingPositionOf(StartContainer(),
+                                                       EndOffset());
 }
 
 template <typename Strategy>
