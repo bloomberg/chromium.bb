@@ -205,10 +205,6 @@ const Vector<NGInlineItem>& NGInlineNode::Items(bool is_first_line) const {
   return *data.first_line_items_;
 }
 
-NGInlineItemRange NGInlineNode::Items(unsigned start, unsigned end) {
-  return NGInlineItemRange(&MutableData()->items_, start, end);
-}
-
 void NGInlineNode::InvalidatePrepareLayoutForTest() {
   GetLayoutBlockFlow()->ResetNGInlineNodeData();
   DCHECK(!IsPrepareLayoutFinished());
