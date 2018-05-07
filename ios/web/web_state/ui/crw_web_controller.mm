@@ -4333,16 +4333,24 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
   [self clearWebUI];
 
-  // When using WKBasedNavigationManager, if |backForwardList.currentItem| is a
-  // placeholder URL for the provisional load URL (i.e. webView.URL), then this
-  // is an in-progress app-specific load and should not be restarted.
-  bool currentItemIsPlaceholderForProvisionalURL =
-      web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
-      CreatePlaceholderUrlForUrl(webViewURL) ==
-          net::GURLWithNSURL(webView.backForwardList.currentItem.URL);
+  // When using WKBasedNavigationManager, renderer-initiated app-specific loads
+  // should be allowed in two specific cases:
+  // 1) if |backForwardList.currentItem| is a placeholder URL for the
+  //    provisional load URL (i.e. webView.URL), then this is an in-progress
+  //    app-specific load and should not be restarted.
+  // 2) back/forward navigation to an app-specific URL should be allowed.
+  bool exemptedAppSpecificLoad = false;
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    bool currentItemIsPlaceholder =
+        CreatePlaceholderUrlForUrl(webViewURL) ==
+        net::GURLWithNSURL(webView.backForwardList.currentItem.URL);
+    bool isBackForward =
+        _pendingNavigationInfo.navigationType == WKNavigationTypeBackForward;
+    exemptedAppSpecificLoad = currentItemIsPlaceholder || isBackForward;
+  }
 
   if (web::GetWebClient()->IsAppSpecificURL(webViewURL) &&
-      !currentItemIsPlaceholderForProvisionalURL) {
+      !exemptedAppSpecificLoad) {
     // Restart app specific URL loads to properly capture state.
     // TODO(crbug.com/546347): Extract necessary tasks for app specific URL
     // navigation rather than restarting the load.
@@ -4469,7 +4477,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
     // webView.backForwardList.currentItem.URL will return the right committed
     // URL (crbug.com/784480).
     webViewURL = net::GURLWithNSURL(webView.backForwardList.currentItem.URL);
-  } else if (context->GetUrl() == currentWKItemURL) {
+  } else if (context && context->GetUrl() == currentWKItemURL) {
     // If webView.backForwardList.currentItem.URL matches |context|, then this
     // is a known edge case where |webView.URL| is wrong.
     // TODO(crbug.com/826013): Remove this workaround.
@@ -4562,13 +4570,13 @@ registerLoadRequestForURL:(const GURL&)requestURL
         !navigation ||
         [[_navigationStates lastAddedNavigation] isEqual:navigation];
     if (isLastNavigation) {
-      [self webPageChangedWithContext:context];
-    } else {
+      if (context)
+        [self webPageChangedWithContext:context];
+    } else if (web::NavigationContextImpl* context =
+                   [_navigationStates contextForNavigation:navigation]) {
       // WKWebView has more than one in progress navigation, and committed
       // navigation was not the latest. Change last committed item to one that
       // corresponds to committed navigation.
-      web::NavigationContextImpl* context =
-          [_navigationStates contextForNavigation:navigation];
       int itemIndex = web::GetCommittedItemIndexWithUniqueID(
           self.navigationManagerImpl, context->GetNavigationItemUniqueID());
       // Do not discard pending entry, because another pending navigation is
@@ -4577,7 +4585,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
                      discardNonCommittedItems:NO];
     }
 
-    self.webStateImpl->OnNavigationFinished(context);
+    if (context)
+      self.webStateImpl->OnNavigationFinished(context);
   }
 
   // Do not update the HTML5 history state or states of the last committed item
@@ -4639,7 +4648,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
   web::NavigationContextImpl* context =
       [_navigationStates contextForNavigation:navigation];
-  if (context->GetUrl() == currentWKItemURL) {
+  if (context && context->GetUrl() == currentWKItemURL) {
     // If webView.backForwardList.currentItem.URL matches |context|, then this
     // is a known edge case where |webView.URL| is wrong.
     // TODO(crbug.com/826013): Remove this workaround.
@@ -4688,7 +4697,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
       } else if (isWebUIURL) {
         DCHECK(_webUIManager);
         [_webUIManager loadWebUIForURL:item->GetURL()];
-      } else if (context->GetError()) {
+      } else if (context && context->GetError()) {
         item->SetErrorRetryState(
             web::ErrorRetryState::kReadyToDisplayErrorForFailedNavigation);
         [self loadErrorPageForNavigationItem:item navigationContext:context];
@@ -4706,8 +4715,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
     if (!web::GetWebClient()->IsAppSpecificURL(item->GetURL())) {
       switch (errorRetryState) {
         case web::ErrorRetryState::kDisplayingNativeErrorForFailedNavigation:
-          DCHECK(context->GetPageTransition() &
-                 ui::PAGE_TRANSITION_FORWARD_BACK);
+          DCHECK(context && context->GetPageTransition() &
+                                ui::PAGE_TRANSITION_FORWARD_BACK);
           if (item->GetURL() == webViewURL) {
             // Shortcut: if WebView already has the original URL (can happen
             // when WebKit renders page from cache after after repeated
