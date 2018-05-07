@@ -65,6 +65,7 @@ TEST_F(KeyCommandsProviderTest, MoreKeyboardCommandsWhenTabs) {
 
   // Tabs.
   [[[mockConsumer expect] andReturnUnsignedInteger:1] tabsCount];
+  [[[mockConsumer expect] andReturnBool:YES] isFindInPageAvailable];
   NSUInteger numberOfKeyCommandsWithTabs =
       [[provider keyCommandsForConsumer:mockConsumer
                      baseViewController:nil
@@ -82,6 +83,7 @@ TEST_F(KeyCommandsProviderTest, LessKeyCommandsWhenTabsAndEditingText) {
 
   // Not editing text.
   [[[mockConsumer expect] andReturnUnsignedInteger:1] tabsCount];
+  [[[mockConsumer expect] andReturnBool:YES] isFindInPageAvailable];
   NSUInteger numberOfKeyCommandsWhenNotEditingText =
       [[provider keyCommandsForConsumer:mockConsumer
                      baseViewController:nil
@@ -90,6 +92,7 @@ TEST_F(KeyCommandsProviderTest, LessKeyCommandsWhenTabsAndEditingText) {
 
   // Editing text.
   [[[mockConsumer expect] andReturnUnsignedInteger:1] tabsCount];
+  [[[mockConsumer expect] andReturnBool:YES] isFindInPageAvailable];
   NSUInteger numberOfKeyCommandsWhenEditingText =
       [[provider keyCommandsForConsumer:mockConsumer
                      baseViewController:nil
@@ -98,6 +101,33 @@ TEST_F(KeyCommandsProviderTest, LessKeyCommandsWhenTabsAndEditingText) {
 
   EXPECT_LT(numberOfKeyCommandsWhenEditingText,
             numberOfKeyCommandsWhenNotEditingText);
+}
+
+TEST_F(KeyCommandsProviderTest, MoreKeyboardCommandsWhenFindInPageAvailable) {
+  KeyCommandsProvider* provider = [[KeyCommandsProvider alloc] init];
+  id mockConsumer =
+      [OCMockObject mockForProtocol:@protocol(KeyCommandsPlumbing)];
+  id<ApplicationCommands, BrowserCommands, OmniboxFocuser> dispatcher = nil;
+
+  // No Find in Page.
+  [[[mockConsumer expect] andReturnUnsignedInteger:1] tabsCount];
+  [[[mockConsumer expect] andReturnBool:NO] isFindInPageAvailable];
+  NSUInteger numberOfKeyCommandsWithoutFIP =
+      [[provider keyCommandsForConsumer:mockConsumer
+                     baseViewController:nil
+                             dispatcher:dispatcher
+                            editingText:NO] count];
+
+  // Tabs.
+  [[[mockConsumer expect] andReturnUnsignedInteger:1] tabsCount];
+  [[[mockConsumer expect] andReturnBool:YES] isFindInPageAvailable];
+  NSUInteger numberOfKeyCommandsWithFIP =
+      [[provider keyCommandsForConsumer:mockConsumer
+                     baseViewController:nil
+                             dispatcher:dispatcher
+                            editingText:NO] count];
+
+  EXPECT_GT(numberOfKeyCommandsWithFIP, numberOfKeyCommandsWithoutFIP);
 }
 
 }  // namespace
