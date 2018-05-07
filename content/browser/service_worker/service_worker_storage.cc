@@ -120,24 +120,25 @@ ServiceWorkerStorage::~ServiceWorkerStorage() {
 
 // static
 std::unique_ptr<ServiceWorkerStorage> ServiceWorkerStorage::Create(
-    const base::FilePath& path,
+    const base::FilePath& user_data_directory,
     const base::WeakPtr<ServiceWorkerContextCore>& context,
     scoped_refptr<base::SequencedTaskRunner> database_task_runner,
     storage::QuotaManagerProxy* quota_manager_proxy,
     storage::SpecialStoragePolicy* special_storage_policy) {
-  return base::WrapUnique(
-      new ServiceWorkerStorage(path, context, std::move(database_task_runner),
-                               quota_manager_proxy, special_storage_policy));
+  return base::WrapUnique(new ServiceWorkerStorage(
+      user_data_directory, context, std::move(database_task_runner),
+      quota_manager_proxy, special_storage_policy));
 }
 
 // static
 std::unique_ptr<ServiceWorkerStorage> ServiceWorkerStorage::Create(
     const base::WeakPtr<ServiceWorkerContextCore>& context,
     ServiceWorkerStorage* old_storage) {
-  return base::WrapUnique(new ServiceWorkerStorage(
-      old_storage->path_, context, old_storage->database_task_runner_,
-      old_storage->quota_manager_proxy_.get(),
-      old_storage->special_storage_policy_.get()));
+  return base::WrapUnique(
+      new ServiceWorkerStorage(old_storage->user_data_directory_, context,
+                               old_storage->database_task_runner_,
+                               old_storage->quota_manager_proxy_.get(),
+                               old_storage->special_storage_policy_.get()));
 }
 
 void ServiceWorkerStorage::FindRegistrationForDocument(
@@ -1051,7 +1052,7 @@ void ServiceWorkerStorage::PurgeResources(const ResourceList& resources) {
 }
 
 ServiceWorkerStorage::ServiceWorkerStorage(
-    const base::FilePath& path,
+    const base::FilePath& user_data_directory,
     base::WeakPtr<ServiceWorkerContextCore> context,
     scoped_refptr<base::SequencedTaskRunner> database_task_runner,
     storage::QuotaManagerProxy* quota_manager_proxy,
@@ -1061,7 +1062,7 @@ ServiceWorkerStorage::ServiceWorkerStorage(
       next_resource_id_(kInvalidServiceWorkerResourceId),
       state_(UNINITIALIZED),
       expecting_done_with_disk_on_disable_(false),
-      path_(path),
+      user_data_directory_(user_data_directory),
       context_(context),
       database_task_runner_(std::move(database_task_runner)),
       quota_manager_proxy_(quota_manager_proxy),
@@ -1074,16 +1075,18 @@ ServiceWorkerStorage::ServiceWorkerStorage(
 }
 
 base::FilePath ServiceWorkerStorage::GetDatabasePath() {
-  if (path_.empty())
+  if (user_data_directory_.empty())
     return base::FilePath();
-  return path_.Append(ServiceWorkerContextCore::kServiceWorkerDirectory)
+  return user_data_directory_
+      .Append(ServiceWorkerContextCore::kServiceWorkerDirectory)
       .Append(kDatabaseName);
 }
 
 base::FilePath ServiceWorkerStorage::GetDiskCachePath() {
-  if (path_.empty())
+  if (user_data_directory_.empty())
     return base::FilePath();
-  return path_.Append(ServiceWorkerContextCore::kServiceWorkerDirectory)
+  return user_data_directory_
+      .Append(ServiceWorkerContextCore::kServiceWorkerDirectory)
       .Append(kDiskCacheName);
 }
 
