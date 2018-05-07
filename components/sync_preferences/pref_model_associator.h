@@ -61,19 +61,12 @@ class PrefModelAssociator : public syncer::SyncableService {
       std::unique_ptr<syncer::SyncErrorFactory> sync_error_factory) override;
   void StopSyncing(syncer::ModelType type) override;
 
-  // Returns the list of preference names that are registered as syncable, and
-  // hence should be monitored for changes.
-  std::set<std::string> registered_preferences() const;
-
   // Register a preference with the specified name for syncing. We do not care
   // about the type at registration time, but when changes arrive from the
   // syncer, we check if they can be applied and if not drop them.
   // Note: This should only be called at profile startup time (before sync
   // begins).
   virtual void RegisterPref(const char* name);
-
-  // Returns true if the specified preference is registered for syncing.
-  virtual bool IsPrefRegistered(const char* name);
 
   // Process a local preference change. This can trigger new SyncChanges being
   // sent to the syncer.
@@ -95,14 +88,12 @@ class PrefModelAssociator : public syncer::SyncableService {
   bool CreatePrefSyncData(const std::string& name,
                           const base::Value& value,
                           syncer::SyncData* sync_data) const;
-
-  // Extract preference value from sync specifics.
-  base::Value* ReadPreferenceSpecifics(
-      const sync_pb::PreferenceSpecifics& specifics);
-
   // Returns true if the pref under the given name is pulled down from sync.
   // Note this does not refer to SYNCABLE_PREF.
   bool IsPrefSynced(const std::string& name) const;
+
+  // Returns true if the specified preference is registered for syncing.
+  bool IsPrefRegistered(const std::string& name) const;
 
   // Adds a SyncedPrefObserver to watch for changes to a specific pref.
   void AddSyncedPrefObserver(const std::string& name,
@@ -115,18 +106,12 @@ class PrefModelAssociator : public syncer::SyncableService {
   // Returns the PrefModelAssociatorClient for this object.
   const PrefModelAssociatorClient* client() const { return client_; }
 
-  // Set the PrefModelAssociatorClient to use for that object during tests.
-  void SetPrefModelAssociatorClientForTesting(
-      const PrefModelAssociatorClient* client);
-
   // Register callback method which will get called at the end of
   // PrefModelAssociator::MergeDataAndStartSyncing().
   void RegisterMergeDataFinishedCallback(const base::Closure& callback);
 
- protected:
+ private:
   friend class PrefServiceSyncableTest;
-
-  typedef std::map<std::string, syncer::SyncData> SyncDataMap;
 
   // Create an association for a given preference. If |sync_pref| is valid,
   // signifying that sync has data for this preference, we reconcile their data
@@ -143,8 +128,13 @@ class PrefModelAssociator : public syncer::SyncableService {
   static std::unique_ptr<base::Value> MergeListValues(
       const base::Value& from_value,
       const base::Value& to_value);
+
   static base::Value MergeDictionaryValues(const base::Value& from_value,
                                            const base::Value& to_value);
+
+  // Extract preference value from sync specifics.
+  static base::Value* ReadPreferenceSpecifics(
+      const sync_pb::PreferenceSpecifics& specifics);
 
   // Do we have an active association between the preferences and sync models?
   // Set when start syncing, reset in StopSyncing. While this is not set, we
@@ -184,17 +174,14 @@ class PrefModelAssociator : public syncer::SyncableService {
   // PRIORITY_PREFERENCES.
   syncer::ModelType type_;
 
- private:
+  void NotifySyncedPrefObservers(const std::string& path, bool from_sync) const;
+
   // Map prefs to lists of observers. Observers will receive notification when
   // a pref changes, including the detail of whether or not the change came
   // from sync.
-  using SyncedPrefObserverList = base::ObserverList<SyncedPrefObserver>;
-  using SyncedPrefObserverMap =
-      base::hash_map<std::string, std::unique_ptr<SyncedPrefObserverList>>;
-
-  void NotifySyncedPrefObservers(const std::string& path, bool from_sync) const;
-
-  SyncedPrefObserverMap synced_pref_observers_;
+  base::hash_map<std::string,
+                 std::unique_ptr<base::ObserverList<SyncedPrefObserver>>>
+      synced_pref_observers_;
   const PrefModelAssociatorClient* client_;  // Weak.
 
   std::vector<base::Closure> callback_list_;

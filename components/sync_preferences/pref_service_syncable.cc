@@ -174,15 +174,6 @@ void PrefServiceSyncable::RegisterMergeDataFinishedCallback(
   pref_sync_associator_.RegisterMergeDataFinishedCallback(callback);
 }
 
-// Set the PrefModelAssociatorClient to use for that object during tests.
-void PrefServiceSyncable::SetPrefModelAssociatorClientForTesting(
-    const PrefModelAssociatorClient* pref_model_associator_client) {
-  pref_sync_associator_.SetPrefModelAssociatorClientForTesting(
-      pref_model_associator_client);
-  priority_pref_sync_associator_.SetPrefModelAssociatorClientForTesting(
-      pref_model_associator_client);
-}
-
 void PrefServiceSyncable::AddRegisteredSyncablePreference(
     const std::string& path,
     uint32_t flags) {

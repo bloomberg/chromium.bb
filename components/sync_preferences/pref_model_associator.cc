@@ -375,7 +375,7 @@ syncer::SyncError PrefModelAssociator::ProcessSyncChanges(
     // Windows client, the Windows client does not support
     // kConfirmToQuitEnabled. Ignore updates from these preferences.
     std::string pref_name = pref_specifics.name();
-    if (!IsPrefRegistered(pref_name.c_str()))
+    if (!IsPrefRegistered(pref_name))
       continue;
 
     if (iter->change_type() == syncer::SyncChange::ACTION_DELETE) {
@@ -406,6 +406,7 @@ syncer::SyncError PrefModelAssociator::ProcessSyncChanges(
   return syncer::SyncError();
 }
 
+// static
 base::Value* PrefModelAssociator::ReadPreferenceSpecifics(
     const sync_pb::PreferenceSpecifics& preference) {
   base::JSONReader reader;
@@ -425,10 +426,10 @@ bool PrefModelAssociator::IsPrefSynced(const std::string& name) const {
 
 void PrefModelAssociator::AddSyncedPrefObserver(const std::string& name,
                                                 SyncedPrefObserver* observer) {
-  std::unique_ptr<SyncedPrefObserverList>& observers =
+  std::unique_ptr<base::ObserverList<SyncedPrefObserver>>& observers =
       synced_pref_observers_[name];
   if (!observers)
-    observers = std::make_unique<SyncedPrefObserverList>();
+    observers = std::make_unique<base::ObserverList<SyncedPrefObserver>>();
 
   observers->AddObserver(observer);
 }
@@ -439,18 +440,7 @@ void PrefModelAssociator::RemoveSyncedPrefObserver(
   auto observer_iter = synced_pref_observers_.find(name);
   if (observer_iter == synced_pref_observers_.end())
     return;
-  SyncedPrefObserverList* observers = observer_iter->second.get();
-  observers->RemoveObserver(observer);
-}
-
-void PrefModelAssociator::SetPrefModelAssociatorClientForTesting(
-    const PrefModelAssociatorClient* client) {
-  DCHECK(!client_);
-  client_ = client;
-}
-
-std::set<std::string> PrefModelAssociator::registered_preferences() const {
-  return registered_preferences_;
+  observer_iter->second->RemoveObserver(observer);
 }
 
 void PrefModelAssociator::RegisterPref(const char* name) {
@@ -458,7 +448,7 @@ void PrefModelAssociator::RegisterPref(const char* name) {
   registered_preferences_.insert(name);
 }
 
-bool PrefModelAssociator::IsPrefRegistered(const char* name) {
+bool PrefModelAssociator::IsPrefRegistered(const std::string& name) const {
   return registered_preferences_.count(name) > 0;
 }
 
@@ -475,7 +465,7 @@ void PrefModelAssociator::ProcessPrefChange(const std::string& name) {
   if (!preference)
     return;
 
-  if (!IsPrefRegistered(name.c_str()))
+  if (!IsPrefRegistered(name))
     return;  // We are not syncing this preference.
 
   syncer::SyncChangeList changes;
@@ -522,8 +512,7 @@ void PrefModelAssociator::NotifySyncedPrefObservers(const std::string& path,
   auto observer_iter = synced_pref_observers_.find(path);
   if (observer_iter == synced_pref_observers_.end())
     return;
-  SyncedPrefObserverList* observers = observer_iter->second.get();
-  for (auto& observer : *observers)
+  for (auto& observer : *observer_iter->second)
     observer.OnSyncedPrefChanged(path, from_sync);
 }
 

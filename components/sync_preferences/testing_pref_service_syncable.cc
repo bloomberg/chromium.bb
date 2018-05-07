@@ -4,6 +4,8 @@
 
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_notifier_impl.h"
@@ -31,7 +33,7 @@ TestingPrefServiceBase<sync_preferences::PrefServiceSyncable,
                                            pref_notifier),
           user_prefs,
           pref_registry,
-          nullptr,  // pref_model_associator_client
+          /*pref_model_associator_client=*/nullptr,
           base::Bind(&TestingPrefServiceBase<
                      PrefServiceSyncable,
                      user_prefs::PrefRegistrySyncable>::HandleReadError),
