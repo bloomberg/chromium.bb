@@ -62,9 +62,7 @@ void RemoveTaskObserver(WebThreadImplForWorkerScheduler* thread,
 }
 
 void ShutdownOnThread(WebThreadImplForWorkerScheduler* thread) {
-  WebSchedulerImpl* web_scheduler_impl =
-      static_cast<WebSchedulerImpl*>(thread->Scheduler());
-  web_scheduler_impl->Shutdown();
+  thread->Scheduler()->Shutdown();
 }
 
 class WebThreadImplForWorkerSchedulerTest : public testing::Test {

@@ -11,7 +11,6 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/time/default_tick_clock.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
-#include "third_party/blink/renderer/platform/scheduler/child/web_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/child/worker_scheduler_proxy.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_thread_scheduler.h"
 
@@ -65,10 +64,6 @@ void WebThreadImplForWorkerScheduler::InitOnThread(
   non_main_thread_scheduler_->Init();
   task_queue_ = non_main_thread_scheduler_->DefaultTaskQueue();
   idle_task_runner_ = non_main_thread_scheduler_->IdleTaskRunner();
-  web_scheduler_.reset(
-      new WebSchedulerImpl(non_main_thread_scheduler_.get(),
-                           non_main_thread_scheduler_->IdleTaskRunner(),
-                           non_main_thread_scheduler_->DefaultTaskQueue()));
   base::MessageLoopCurrent::Get()->AddDestructionObserver(this);
   completion->Signal();
 }
@@ -79,7 +74,6 @@ void WebThreadImplForWorkerScheduler::ShutdownOnThread(
 
   task_queue_ = nullptr;
   idle_task_runner_ = nullptr;
-  web_scheduler_ = nullptr;
   non_main_thread_scheduler_ = nullptr;
 
   if (completion)
@@ -101,7 +95,7 @@ blink::PlatformThreadId WebThreadImplForWorkerScheduler::ThreadId() const {
 }
 
 blink::ThreadScheduler* WebThreadImplForWorkerScheduler::Scheduler() const {
-  return web_scheduler_.get();
+  return non_main_thread_scheduler_.get();
 }
 
 SingleThreadIdleTaskRunner* WebThreadImplForWorkerScheduler::GetIdleTaskRunner()

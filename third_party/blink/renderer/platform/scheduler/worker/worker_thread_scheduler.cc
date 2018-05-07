@@ -145,7 +145,7 @@ scoped_refptr<WorkerTaskQueue> WorkerThreadScheduler::DefaultTaskQueue() {
   return helper_->DefaultWorkerTaskQueue();
 }
 
-void WorkerThreadScheduler::Init() {
+void WorkerThreadScheduler::InitImpl() {
   initialized_ = true;
   idle_helper_.EnableLongIdlePeriod();
 }

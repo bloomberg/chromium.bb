@@ -23,7 +23,7 @@ class MockIdleDeadlineScheduler final : public ThreadScheduler {
   base::SingleThreadTaskRunner* V8TaskRunner() override { return nullptr; }
   void Shutdown() override {}
   bool ShouldYieldForHighPriorityWork() override { return true; }
-  bool CanExceedIdleDeadlineIfRequired() override { return false; }
+  bool CanExceedIdleDeadlineIfRequired() const override { return false; }
   void PostIdleTask(const base::Location&, WebThread::IdleTask) override {}
   void PostNonNestableIdleTask(const base::Location&,
                                WebThread::IdleTask) override {}

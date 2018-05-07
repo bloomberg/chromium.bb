@@ -42,7 +42,7 @@ class PLATFORM_EXPORT ThreadScheduler {
   // its deadline has expired - post a new idle task for the continuation of
   // the work in this case.
   // Must be called from the associated WebThread.
-  virtual bool CanExceedIdleDeadlineIfRequired() = 0;
+  virtual bool CanExceedIdleDeadlineIfRequired() const = 0;
 
   // Schedule an idle task to run the associated WebThread. For non-critical
   // tasks which may be reordered relative to other task types and may be

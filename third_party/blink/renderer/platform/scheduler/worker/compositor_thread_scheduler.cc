@@ -31,7 +31,7 @@ scoped_refptr<WorkerTaskQueue> CompositorThreadScheduler::DefaultTaskQueue() {
   return helper_->DefaultWorkerTaskQueue();
 }
 
-void CompositorThreadScheduler::Init() {}
+void CompositorThreadScheduler::InitImpl() {}
 
 void CompositorThreadScheduler::OnTaskCompleted(
     WorkerTaskQueue* worker_task_queue,

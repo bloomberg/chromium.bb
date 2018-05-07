@@ -14,13 +14,19 @@
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/child/worker_task_queue.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_scheduler_helper.h"
 
 namespace blink {
 namespace scheduler {
+class TaskRunnerImpl;
 class WorkerSchedulerProxy;
 
-class PLATFORM_EXPORT NonMainThreadScheduler : public WebThreadScheduler {
+// TODO(yutak): Remove the dependency to WebThreadScheduler. We want to
+// separate interfaces to Chromium (in blink/public/platform/scheduler) from
+// interfaces to Blink (in blink/renderer/platform/scheduler/public).
+class PLATFORM_EXPORT NonMainThreadScheduler : public WebThreadScheduler,
+                                               public ThreadScheduler {
  public:
   ~NonMainThreadScheduler() override;
 
@@ -34,7 +40,7 @@ class PLATFORM_EXPORT NonMainThreadScheduler : public WebThreadScheduler {
 
   // Must be called before the scheduler can be used. Does any post construction
   // initialization needed such as initializing idle period detection.
-  virtual void Init() = 0;
+  void Init();
 
   virtual void OnTaskCompleted(WorkerTaskQueue* worker_task_queue,
                                const TaskQueue::Task& task,
@@ -42,13 +48,53 @@ class PLATFORM_EXPORT NonMainThreadScheduler : public WebThreadScheduler {
                                base::TimeTicks end,
                                base::Optional<base::TimeDelta> thread_time) = 0;
 
+  // ThreadScheduler implementation.
+  // TODO(yutak): Some functions are only meaningful in main thread. Move them
+  // to MainThreadScheduler.
+  void PostIdleTask(const base::Location& location,
+                    WebThread::IdleTask task) override;
+  void PostNonNestableIdleTask(const base::Location& location,
+                               WebThread::IdleTask task) override;
+  base::SingleThreadTaskRunner* V8TaskRunner() override;
+  base::SingleThreadTaskRunner* CompositorTaskRunner() override;
+  std::unique_ptr<PageScheduler> CreatePageScheduler(
+      PageScheduler::Delegate*) override;
+  std::unique_ptr<RendererPauseHandle> PauseScheduler() override
+      WARN_UNUSED_RESULT;
+  void AddPendingNavigation(
+      scheduler::WebMainThreadScheduler::NavigatingFrameType type) override {}
+  void RemovePendingNavigation(
+      scheduler::WebMainThreadScheduler::NavigatingFrameType type) override {}
+
+  // Returns TimeTicks::Now() by default.
+  base::TimeTicks MonotonicallyIncreasingVirtualTime() const override;
+
+  // The following virtual methods are defined in *both* WebThreadScheduler
+  // and ThreadScheduler, with identical interfaces and semantics. They are
+  // overriden in a subclass, effectively implementing the virtual methods
+  // in both classes at the same time. This is allowed in C++, as long as
+  // there is only one final overrider (i.e. definitions in base classes are
+  // not used in instantiated objects, since otherwise they may have multiple
+  // definitions of the virtual function in question).
+  //
+  // virtual void Shutdown();
+  // virtual bool ShouldYieldForHighPriorityWork();
+  // virtual bool CanExceedIdleDeadlineIfRequired() const;
+
   scoped_refptr<WorkerTaskQueue> CreateTaskRunner();
 
  protected:
   explicit NonMainThreadScheduler(
       std::unique_ptr<NonMainThreadSchedulerHelper> helper);
 
+  // Called during Init() for delayed initialization for subclasses.
+  virtual void InitImpl() = 0;
+
   std::unique_ptr<NonMainThreadSchedulerHelper> helper_;
+
+ private:
+  static void RunIdleTask(WebThread::IdleTask task, base::TimeTicks deadline);
+  scoped_refptr<TaskRunnerImpl> v8_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(NonMainThreadScheduler);
 };
