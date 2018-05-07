@@ -172,6 +172,12 @@ class CORE_EXPORT NGOffsetMapping {
 
   // TODO(xiaochengh): Add offset-to-DOM APIs skipping generated contents.
 
+  // ------ APIs inspecting the text content string ------
+
+  // Returns false if all characters in [start, end) of |text_| are bidi
+  // control charcters. Returns true otherwise.
+  bool HasBidiControlCharactersOnly(unsigned start, unsigned end) const;
+
  private:
   // The NGOffsetMappingUnits of the inline formatting context in osrted order.
   UnitVector units_;
