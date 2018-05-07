@@ -772,8 +772,7 @@ class ProfileSyncService : public syncer::SyncService,
 
   // Used to ensure that certain operations are performed on the thread that
   // this object was created on.
-  // TODO(treib): Use thread checker macros, see thread_checker.h.
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   SigninScopedDeviceIdCallback signin_scoped_device_id_callback_;
 

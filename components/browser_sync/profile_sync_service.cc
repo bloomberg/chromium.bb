@@ -207,7 +207,7 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
       passphrase_prompt_triggered_by_version_(false),
       sync_enabled_weak_factory_(this),
       weak_factory_(this) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(signin_scoped_device_id_callback_);
   DCHECK(sync_client_);
 
@@ -232,7 +232,7 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
 }
 
 ProfileSyncService::~ProfileSyncService() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (gaia_cookie_manager_service_)
     gaia_cookie_manager_service_->RemoveObserver(this);
   sync_prefs_.RemoveSyncPrefObserver(this);
@@ -241,13 +241,13 @@ ProfileSyncService::~ProfileSyncService() {
 }
 
 bool ProfileSyncService::CanSyncStart() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return (IsSyncAllowed() && IsSyncRequested() &&
           (IsLocalSyncEnabled() || IsSignedIn()));
 }
 
 void ProfileSyncService::Initialize() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   sync_client_->Initialize();
 
   // We don't pass StartupController an Unretained reference to future-proof
@@ -391,14 +391,14 @@ void ProfileSyncService::StartSyncingWithServer() {
 }
 
 void ProfileSyncService::RegisterAuthNotifications() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   oauth2_token_service_->AddObserver(this);
   if (signin_)
     signin_->GetIdentityManager()->AddObserver(this);
 }
 
 void ProfileSyncService::UnregisterAuthNotifications() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (signin_)
     signin_->GetIdentityManager()->RemoveObserver(this);
   if (oauth2_token_service_)
@@ -407,7 +407,7 @@ void ProfileSyncService::UnregisterAuthNotifications() {
 
 void ProfileSyncService::RegisterDataTypeController(
     std::unique_ptr<DataTypeController> data_type_controller) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_EQ(data_type_controllers_.count(data_type_controller->type()), 0U);
   data_type_controllers_[data_type_controller->type()] =
       std::move(data_type_controller);
@@ -415,7 +415,7 @@ void ProfileSyncService::RegisterDataTypeController(
 
 bool ProfileSyncService::IsDataTypeControllerRunning(
     syncer::ModelType type) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DataTypeController::TypeMap::const_iterator iter =
       data_type_controllers_.find(type);
   if (iter == data_type_controllers_.end()) {
@@ -425,7 +425,7 @@ bool ProfileSyncService::IsDataTypeControllerRunning(
 }
 
 sync_sessions::OpenTabsUIDelegate* ProfileSyncService::GetOpenTabsUIDelegate() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // Although the backing data actually is of type |SESSIONS|, the desire to use
   // open tabs functionality is tracked by the state of the |PROXY_TABS| type.
   if (!IsDataTypeControllerRunning(syncer::PROXY_TABS)) {
@@ -437,24 +437,24 @@ sync_sessions::OpenTabsUIDelegate* ProfileSyncService::GetOpenTabsUIDelegate() {
 }
 
 sync_sessions::FaviconCache* ProfileSyncService::GetFaviconCache() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return sessions_sync_manager_->GetFaviconCache();
 }
 
 syncer::DeviceInfoTracker* ProfileSyncService::GetDeviceInfoTracker() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return device_info_sync_bridge_.get();
 }
 
 syncer::LocalDeviceInfoProvider*
 ProfileSyncService::GetLocalDeviceInfoProvider() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return local_device_.get();
 }
 
 void ProfileSyncService::GetDataTypeControllerStates(
     DataTypeController::StateMap* state_map) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   for (const auto& item : data_type_controllers_) {
     const syncer::ModelType type = item.first;
     const std::unique_ptr<DataTypeController>& controller = item.second;
@@ -463,7 +463,7 @@ void ProfileSyncService::GetDataTypeControllerStates(
 }
 
 void ProfileSyncService::OnSessionRestoreComplete() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DataTypeController::TypeMap::const_iterator iter =
       data_type_controllers_.find(syncer::SESSIONS);
   if (iter == data_type_controllers_.end()) {
@@ -536,7 +536,7 @@ bool ProfileSyncService::IsEncryptedDatatypeEnabled() const {
 }
 
 void ProfileSyncService::OnProtocolEvent(const syncer::ProtocolEvent& event) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   for (auto& observer : protocol_event_observers_)
     observer.OnProtocolEvent(event);
 }
@@ -544,7 +544,7 @@ void ProfileSyncService::OnProtocolEvent(const syncer::ProtocolEvent& event) {
 void ProfileSyncService::OnDirectoryTypeCommitCounterUpdated(
     syncer::ModelType type,
     const syncer::CommitCounters& counters) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   for (auto& observer : type_debug_info_observers_)
     observer.OnCommitCountersUpdated(type, counters);
 }
@@ -552,7 +552,7 @@ void ProfileSyncService::OnDirectoryTypeCommitCounterUpdated(
 void ProfileSyncService::OnDirectoryTypeUpdateCounterUpdated(
     syncer::ModelType type,
     const syncer::UpdateCounters& counters) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   for (auto& observer : type_debug_info_observers_)
     observer.OnUpdateCountersUpdated(type, counters);
 }
@@ -560,13 +560,13 @@ void ProfileSyncService::OnDirectoryTypeUpdateCounterUpdated(
 void ProfileSyncService::OnDatatypeStatusCounterUpdated(
     syncer::ModelType type,
     const syncer::StatusCounters& counters) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   for (auto& observer : type_debug_info_observers_)
     observer.OnStatusCountersUpdated(type, counters);
 }
 
 void ProfileSyncService::OnDataTypeRequestsSyncStartup(syncer::ModelType type) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(syncer::UserTypes().Has(type));
 
   if (!GetPreferredDataTypes().Has(type)) {
@@ -678,7 +678,7 @@ void ProfileSyncService::InitializeEngine() {
 
 void ProfileSyncService::AccessTokenFetched(const GoogleServiceAuthError& error,
                                             const std::string& access_token) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(ongoing_access_token_fetch_);
 
   std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher> fetcher_deleter(
@@ -734,13 +734,13 @@ void ProfileSyncService::AccessTokenFetched(const GoogleServiceAuthError& error,
 
 void ProfileSyncService::OnRefreshTokenAvailable(
     const std::string& account_id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (account_id == signin_->GetAccountIdToUse())
     OnRefreshTokensLoaded();
 }
 
 void ProfileSyncService::OnRefreshTokenRevoked(const std::string& account_id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (account_id == signin_->GetAccountIdToUse()) {
     access_token_.clear();
     UpdateAuthErrorState(
@@ -749,7 +749,7 @@ void ProfileSyncService::OnRefreshTokenRevoked(const std::string& account_id) {
 }
 
 void ProfileSyncService::OnRefreshTokensLoaded() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   GoogleServiceAuthError token_error =
       oauth2_token_service_->GetAuthError(signin_->GetAccountIdToUse());
@@ -787,7 +787,7 @@ void ProfileSyncService::OnRefreshTokensLoaded() {
 }
 
 void ProfileSyncService::Shutdown() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   UnregisterAuthNotifications();
 
   ShutdownImpl(syncer::BROWSER_SHUTDOWN);
@@ -897,12 +897,12 @@ void ProfileSyncService::StopImpl(SyncStopDataFate data_fate) {
 }
 
 bool ProfileSyncService::IsFirstSetupComplete() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return sync_prefs_.IsFirstSetupComplete();
 }
 
 void ProfileSyncService::SetFirstSetupComplete() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   sync_prefs_.SetFirstSetupComplete();
   if (IsEngineInitialized()) {
     ReconfigureDatatypeManager();
@@ -910,7 +910,7 @@ void ProfileSyncService::SetFirstSetupComplete() {
 }
 
 bool ProfileSyncService::IsSyncConfirmationNeeded() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return (!IsLocalSyncEnabled() && IsSignedIn()) && !IsFirstSetupInProgress() &&
          !IsFirstSetupComplete() && IsSyncRequested();
 }
@@ -958,7 +958,7 @@ void ProfileSyncService::ClearUnrecoverableError() {
 // to do as little work as possible, to avoid further corruption or crashes.
 void ProfileSyncService::OnUnrecoverableError(const base::Location& from_here,
                                               const std::string& message) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // Unrecoverable errors that arrive via the syncer::UnrecoverableErrorHandler
   // interface are assumed to originate within the syncer.
   unrecoverable_error_reason_ = ERROR_REASON_SYNCER;
@@ -987,7 +987,7 @@ void ProfileSyncService::OnUnrecoverableErrorImpl(
 }
 
 void ProfileSyncService::ReenableDatatype(syncer::ModelType type) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!engine_initialized_ || !data_type_manager_)
     return;
   data_type_manager_->ReenableType(type);
@@ -1019,7 +1019,7 @@ void ProfileSyncService::OnEngineInitialized(
         debug_info_listener,
     const std::string& cache_guid,
     bool success) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   UpdateEngineInitUMA(success);
 
   if (!success) {
@@ -1098,7 +1098,7 @@ void ProfileSyncService::OnEngineInitialized(
 
 void ProfileSyncService::OnSyncCycleCompleted(
     const syncer::SyncCycleSnapshot& snapshot) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   last_snapshot_ = snapshot;
 
@@ -1125,7 +1125,7 @@ void ProfileSyncService::OnSyncCycleCompleted(
 
 void ProfileSyncService::OnExperimentsChanged(
     const syncer::Experiments& experiments) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (current_experiments_.Matches(experiments))
     return;
 
@@ -1170,7 +1170,7 @@ GoogleServiceAuthError ConnectionStatusToAuthError(
 
 void ProfileSyncService::OnConnectionStatusChange(
     syncer::ConnectionStatus status) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   token_status_.connection_status_update_time = base::Time::Now();
   token_status_.connection_status = status;
   if (status == syncer::CONNECTION_AUTH_ERROR) {
@@ -1231,7 +1231,7 @@ void ProfileSyncService::OnConnectionStatusChange(
 }
 
 void ProfileSyncService::OnMigrationNeededForTypes(syncer::ModelTypeSet types) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(engine_initialized_);
   DCHECK(data_type_manager_);
 
@@ -1241,7 +1241,7 @@ void ProfileSyncService::OnMigrationNeededForTypes(syncer::ModelTypeSet types) {
 }
 
 void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   last_actionable_error_ = error;
   DCHECK_NE(last_actionable_error_.action, syncer::UNKNOWN_ACTION);
   switch (error.action) {
@@ -1298,7 +1298,7 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
 }
 
 void ProfileSyncService::ClearAndRestartSyncForPassphraseEncryption() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   engine_->ClearServerData(
       base::BindRepeating(&ProfileSyncService::OnClearServerDataDone,
                           sync_enabled_weak_factory_.GetWeakPtr()));
@@ -1322,7 +1322,7 @@ void ProfileSyncService::OnClearServerDataDone() {
 }
 
 void ProfileSyncService::ClearServerDataForTest(const base::Closure& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // Sync has a restriction that the engine must be in configuration mode
   // in order to run clear server data.
   engine_->StartConfiguration();
@@ -1331,7 +1331,7 @@ void ProfileSyncService::ClearServerDataForTest(const base::Closure& callback) {
 
 void ProfileSyncService::OnConfigureDone(
     const DataTypeManager::ConfigureResult& result) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   data_type_status_table_ = result.data_type_status_table;
 
   if (!sync_configure_start_time_.is_null()) {
@@ -1424,7 +1424,7 @@ void ProfileSyncService::OnConfigureDone(
 }
 
 void ProfileSyncService::OnConfigureStart() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   sync_configure_start_time_ = base::Time::Now();
   engine_->StartConfiguration();
   NotifyObservers();
@@ -1432,7 +1432,7 @@ void ProfileSyncService::OnConfigureStart() {
 
 ProfileSyncService::SyncStatusSummary
 ProfileSyncService::QuerySyncStatusSummary() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (HasUnrecoverableError())
     return UNRECOVERABLE_ERROR;
   if (!engine_)
@@ -1449,7 +1449,7 @@ ProfileSyncService::QuerySyncStatusSummary() {
 }
 
 std::string ProfileSyncService::QuerySyncStatusSummaryString() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   switch (QuerySyncStatusSummary()) {
     case UNRECOVERABLE_ERROR:
@@ -1468,17 +1468,17 @@ std::string ProfileSyncService::QuerySyncStatusSummaryString() {
 }
 
 std::string ProfileSyncService::GetEngineInitializationStateString() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return startup_controller_->GetEngineInitializationStateString();
 }
 
 bool ProfileSyncService::IsSetupInProgress() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return startup_controller_->IsSetupInProgress();
 }
 
 bool ProfileSyncService::QueryDetailedSyncStatus(SyncEngine::Status* result) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (engine_ && engine_initialized_) {
     *result = engine_->GetDetailedStatus();
     return true;
@@ -1490,7 +1490,7 @@ bool ProfileSyncService::QueryDetailedSyncStatus(SyncEngine::Status* result) {
 }
 
 const GoogleServiceAuthError& ProfileSyncService::GetAuthError() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return last_auth_error_;
 }
 
@@ -1499,13 +1499,13 @@ bool ProfileSyncService::CanConfigureDataTypes() const {
 }
 
 bool ProfileSyncService::IsFirstSetupInProgress() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return !IsFirstSetupComplete() && startup_controller_->IsSetupInProgress();
 }
 
 std::unique_ptr<syncer::SyncSetupInProgressHandle>
 ProfileSyncService::GetSetupInProgressHandle() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (++outstanding_setup_in_progress_handles_ == 1) {
     DCHECK(!startup_controller_->IsSetupInProgress());
@@ -1520,24 +1520,24 @@ ProfileSyncService::GetSetupInProgressHandle() {
 }
 
 bool ProfileSyncService::IsSyncAllowed() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return IsSyncAllowedByFlag() && !IsManaged() && IsSyncAllowedByPlatform();
 }
 
 bool ProfileSyncService::IsSyncActive() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return engine_initialized_ && data_type_manager_ &&
          data_type_manager_->state() != DataTypeManager::STOPPED;
 }
 
 bool ProfileSyncService::IsLocalSyncEnabled() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return sync_prefs_.IsLocalSyncEnabled();
 }
 
 // TODO(tschumann): This is only called for tests. Add ForTesting name suffix.
 void ProfileSyncService::TriggerRefresh(const syncer::ModelTypeSet& types) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (engine_initialized_)
     engine_->TriggerRefresh(types);
 }
@@ -1556,34 +1556,34 @@ bool ProfileSyncService::CanEngineStart() const {
 }
 
 bool ProfileSyncService::IsEngineInitialized() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return engine_initialized_;
 }
 
 bool ProfileSyncService::ConfigurationDone() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return data_type_manager_ &&
          data_type_manager_->state() == DataTypeManager::CONFIGURED;
 }
 
 bool ProfileSyncService::waiting_for_auth() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return is_auth_in_progress_;
 }
 
 bool ProfileSyncService::HasUnrecoverableError() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return unrecoverable_error_reason_ != ERROR_REASON_UNSET;
 }
 
 bool ProfileSyncService::IsPassphraseRequired() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return crypto_->passphrase_required_reason() !=
          syncer::REASON_PASSPHRASE_NOT_REQUIRED;
 }
 
 bool ProfileSyncService::IsPassphraseRequiredForDecryption() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // If there is an encrypted datatype enabled and we don't have the proper
   // passphrase, we must prompt the user for a passphrase. The only way for the
   // user to avoid entering their passphrase is to disable the encrypted types.
@@ -1651,7 +1651,7 @@ void ProfileSyncService::UpdateSelectedTypesHistogram(
 void ProfileSyncService::OnUserChoseDatatypes(
     bool sync_everything,
     syncer::ModelTypeSet chosen_types) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(syncer::UserSelectableTypes().HasAll(chosen_types));
 
   if (!engine_ && !HasUnrecoverableError()) {
@@ -1668,7 +1668,7 @@ void ProfileSyncService::OnUserChoseDatatypes(
 }
 
 void ProfileSyncService::OnUserChangedSyncEverythingOnly(bool sync_everything) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!engine_ && !HasUnrecoverableError()) {
     NOTREACHED();
     return;
@@ -1683,7 +1683,7 @@ void ProfileSyncService::OnUserChangedSyncEverythingOnly(bool sync_everything) {
 
 void ProfileSyncService::ChangePreferredDataTypes(
     syncer::ModelTypeSet preferred_types) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DVLOG(1) << "ChangePreferredDataTypes invoked";
   const syncer::ModelTypeSet registered_types = GetRegisteredDataTypes();
   // Will only enable those types that are registered and preferred.
@@ -1694,35 +1694,35 @@ void ProfileSyncService::ChangePreferredDataTypes(
 }
 
 syncer::ModelTypeSet ProfileSyncService::GetActiveDataTypes() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!data_type_manager_)
     return syncer::ModelTypeSet();
   return data_type_manager_->GetActiveDataTypes();
 }
 
 syncer::SyncClient* ProfileSyncService::GetSyncClient() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return sync_client_.get();
 }
 
 void ProfileSyncService::AddObserver(syncer::SyncServiceObserver* observer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   observers_.AddObserver(observer);
 }
 
 void ProfileSyncService::RemoveObserver(syncer::SyncServiceObserver* observer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   observers_.RemoveObserver(observer);
 }
 
 bool ProfileSyncService::HasObserver(
     const syncer::SyncServiceObserver* observer) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return observers_.HasObserver(observer);
 }
 
 syncer::ModelTypeSet ProfileSyncService::GetPreferredDataTypes() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   const syncer::ModelTypeSet registered_types = GetRegisteredDataTypes();
   const syncer::ModelTypeSet preferred_types =
       Union(sync_prefs_.GetPreferredDataTypes(registered_types),
@@ -1733,7 +1733,7 @@ syncer::ModelTypeSet ProfileSyncService::GetPreferredDataTypes() const {
 }
 
 syncer::ModelTypeSet ProfileSyncService::GetForcedDataTypes() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // TODO(treib,zea): When SyncPrefs also implements SyncTypePreferenceProvider,
   // we'll need another way to distinguish user-choosable types from
   // programmatically-enabled types.
@@ -1741,7 +1741,7 @@ syncer::ModelTypeSet ProfileSyncService::GetForcedDataTypes() const {
 }
 
 syncer::ModelTypeSet ProfileSyncService::GetRegisteredDataTypes() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   syncer::ModelTypeSet registered_types;
   // The data_type_controllers_ are determined by command-line flags;
   // that's effectively what controls the values returned here.
@@ -1754,12 +1754,12 @@ syncer::ModelTypeSet ProfileSyncService::GetRegisteredDataTypes() const {
 }
 
 bool ProfileSyncService::IsUsingSecondaryPassphrase() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return crypto_->IsUsingSecondaryPassphrase();
 }
 
 std::string ProfileSyncService::GetCustomPassphraseKey() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   syncer::SystemEncryptor encryptor;
   syncer::Cryptographer cryptographer(&encryptor);
   cryptographer.Bootstrap(sync_prefs_.GetEncryptionBootstrapToken());
@@ -1767,24 +1767,24 @@ std::string ProfileSyncService::GetCustomPassphraseKey() const {
 }
 
 syncer::PassphraseType ProfileSyncService::GetPassphraseType() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return crypto_->GetPassphraseType();
 }
 
 base::Time ProfileSyncService::GetExplicitPassphraseTime() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return crypto_->GetExplicitPassphraseTime();
 }
 
 bool ProfileSyncService::IsCryptographerReady(
     const syncer::BaseTransaction* trans) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return engine_ && engine_->IsCryptographerReady(trans);
 }
 
 void ProfileSyncService::SetPlatformSyncAllowedProvider(
     const PlatformSyncAllowedProvider& platform_sync_allowed_provider) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   platform_sync_allowed_provider_ = platform_sync_allowed_provider;
 }
 
@@ -1841,7 +1841,7 @@ void ProfileSyncService::ConfigureDataTypeManager() {
 }
 
 syncer::UserShare* ProfileSyncService::GetUserShare() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (engine_ && engine_initialized_) {
     return engine_->GetUserShare();
   }
@@ -1850,25 +1850,25 @@ syncer::UserShare* ProfileSyncService::GetUserShare() const {
 }
 
 syncer::SyncCycleSnapshot ProfileSyncService::GetLastCycleSnapshot() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return last_snapshot_;
 }
 
 void ProfileSyncService::HasUnsyncedItemsForTest(
     base::OnceCallback<void(bool)> cb) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(HasSyncingEngine());
   DCHECK(engine_initialized_);
   engine_->HasUnsyncedItemsForTest(std::move(cb));
 }
 
 BackendMigrator* ProfileSyncService::GetBackendMigratorForTest() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return migrator_.get();
 }
 
 std::unique_ptr<base::Value> ProfileSyncService::GetTypeStatusMap() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   auto result = std::make_unique<base::ListValue>();
 
   if (!engine_ || !engine_initialized_) {
@@ -1982,13 +1982,13 @@ void ProfileSyncService::RequestAccessToken() {
 
 void ProfileSyncService::SetEncryptionPassphrase(const std::string& passphrase,
                                                  PassphraseType type) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   crypto_->SetEncryptionPassphrase(passphrase, type == EXPLICIT);
 }
 
 bool ProfileSyncService::SetDecryptionPassphrase(
     const std::string& passphrase) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (IsPassphraseRequired()) {
     DVLOG(1) << "Setting passphrase for decryption.";
     bool result = crypto_->SetDecryptionPassphrase(passphrase);
@@ -2001,22 +2001,22 @@ bool ProfileSyncService::SetDecryptionPassphrase(
 }
 
 bool ProfileSyncService::IsEncryptEverythingAllowed() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return crypto_->IsEncryptEverythingAllowed();
 }
 
 void ProfileSyncService::SetEncryptEverythingAllowed(bool allowed) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   crypto_->SetEncryptEverythingAllowed(allowed);
 }
 
 void ProfileSyncService::EnableEncryptEverything() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   crypto_->EnableEncryptEverything();
 }
 
 bool ProfileSyncService::encryption_pending() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // We may be called during the setup process before we're
   // initialized (via IsEncryptedDatatypeEnabled and
   // IsPassphraseRequiredForDecryption).
@@ -2024,17 +2024,17 @@ bool ProfileSyncService::encryption_pending() const {
 }
 
 bool ProfileSyncService::IsEncryptEverythingEnabled() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return crypto_->IsEncryptEverythingEnabled();
 }
 
 syncer::ModelTypeSet ProfileSyncService::GetEncryptedDataTypes() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return crypto_->GetEncryptedDataTypes();
 }
 
 void ProfileSyncService::OnSyncManagedPrefChange(bool is_sync_managed) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (is_sync_managed) {
     StopImpl(CLEAR_DATA);
   } else {
@@ -2045,7 +2045,7 @@ void ProfileSyncService::OnSyncManagedPrefChange(bool is_sync_managed) {
 
 void ProfileSyncService::OnPrimaryAccountSet(
     const AccountInfo& primary_account_info) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!IsEngineInitialized() ||
       GetAuthError().state() != GoogleServiceAuthError::NONE) {
     // Track the fact that we're still waiting for auth to complete.
@@ -2060,7 +2060,7 @@ void ProfileSyncService::OnPrimaryAccountSet(
 
 void ProfileSyncService::OnPrimaryAccountCleared(
     const AccountInfo& previous_primary_account_info) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   sync_disabled_by_admin_ = false;
   UMA_HISTOGRAM_ENUMERATION("Sync.StopSource", syncer::SIGN_OUT,
                             syncer::STOP_SOURCE_LIMIT);
@@ -2077,7 +2077,7 @@ void ProfileSyncService::OnGaiaAccountsInCookieUpdated(
 void ProfileSyncService::OnGaiaAccountsInCookieUpdatedWithCallback(
     const std::vector<gaia::ListedAccount>& accounts,
     const base::Closure& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!IsEngineInitialized())
     return;
 
@@ -2102,7 +2102,7 @@ bool ProfileSyncService::HasCookieJarMismatch(
 
 void ProfileSyncService::AddProtocolEventObserver(
     ProtocolEventObserver* observer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   protocol_event_observers_.AddObserver(observer);
   if (HasSyncingEngine()) {
     engine_->RequestBufferedProtocolEventsAndEnableForwarding();
@@ -2111,7 +2111,7 @@ void ProfileSyncService::AddProtocolEventObserver(
 
 void ProfileSyncService::RemoveProtocolEventObserver(
     ProtocolEventObserver* observer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   protocol_event_observers_.RemoveObserver(observer);
   if (HasSyncingEngine() && !protocol_event_observers_.might_have_observers()) {
     engine_->DisableProtocolEventForwarding();
@@ -2120,7 +2120,7 @@ void ProfileSyncService::RemoveProtocolEventObserver(
 
 void ProfileSyncService::AddTypeDebugInfoObserver(
     syncer::TypeDebugInfoObserver* type_debug_info_observer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   type_debug_info_observers_.AddObserver(type_debug_info_observer);
   if (type_debug_info_observers_.might_have_observers() &&
       engine_initialized_) {
@@ -2130,7 +2130,7 @@ void ProfileSyncService::AddTypeDebugInfoObserver(
 
 void ProfileSyncService::RemoveTypeDebugInfoObserver(
     syncer::TypeDebugInfoObserver* type_debug_info_observer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   type_debug_info_observers_.RemoveObserver(type_debug_info_observer);
   if (!type_debug_info_observers_.might_have_observers() &&
       engine_initialized_) {
@@ -2140,7 +2140,7 @@ void ProfileSyncService::RemoveTypeDebugInfoObserver(
 
 void ProfileSyncService::AddPreferenceProvider(
     syncer::SyncTypePreferenceProvider* provider) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!HasPreferenceProvider(provider))
       << "Providers may only be added once!";
   preference_providers_.insert(provider);
@@ -2148,7 +2148,7 @@ void ProfileSyncService::AddPreferenceProvider(
 
 void ProfileSyncService::RemovePreferenceProvider(
     syncer::SyncTypePreferenceProvider* provider) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(HasPreferenceProvider(provider))
       << "Only providers that have been added before can be removed!";
   preference_providers_.erase(provider);
@@ -2156,7 +2156,7 @@ void ProfileSyncService::RemovePreferenceProvider(
 
 bool ProfileSyncService::HasPreferenceProvider(
     syncer::SyncTypePreferenceProvider* provider) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return preference_providers_.count(provider) > 0;
 }
 
@@ -2204,7 +2204,7 @@ GetAllNodesRequestHelper::~GetAllNodesRequestHelper() {
 void GetAllNodesRequestHelper::OnReceivedNodesForType(
     const syncer::ModelType type,
     std::unique_ptr<base::ListValue> node_list) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // Add these results to our list.
   std::unique_ptr<base::DictionaryValue> type_dict(new base::DictionaryValue());
@@ -2225,7 +2225,7 @@ void GetAllNodesRequestHelper::OnReceivedNodesForType(
 
 void ProfileSyncService::GetAllNodes(
     const base::Callback<void(std::unique_ptr<base::ListValue>)>& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   ModelTypeSet all_types = GetActiveDataTypes();
   all_types.PutAll(syncer::ControlTypes());
   scoped_refptr<GetAllNodesRequestHelper> helper =
@@ -2256,7 +2256,7 @@ void ProfileSyncService::GetAllNodes(
 }
 
 AccountInfo ProfileSyncService::GetAuthenticatedAccountInfo() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return signin_ ? signin_->GetIdentityManager()->GetPrimaryAccountInfo()
                  : AccountInfo();
 }
@@ -2266,7 +2266,7 @@ syncer::GlobalIdMapper* ProfileSyncService::GetGlobalIdMapper() const {
 }
 
 base::WeakPtr<syncer::JsController> ProfileSyncService::GetJsController() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return sync_js_controller_.AsWeakPtr();
 }
 
@@ -2282,31 +2282,31 @@ bool ProfileSyncService::IsSyncAllowedByFlag() {
 }
 
 bool ProfileSyncService::IsSyncAllowedByPlatform() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return platform_sync_allowed_provider_.is_null() ||
          platform_sync_allowed_provider_.Run();
 }
 
 bool ProfileSyncService::IsManaged() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return sync_prefs_.IsManaged() || sync_disabled_by_admin_;
 }
 
 void ProfileSyncService::RequestStop(SyncStopDataFate data_fate) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   sync_prefs_.SetSyncRequested(false);
   StopImpl(data_fate);
 }
 
 bool ProfileSyncService::IsSyncRequested() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // When local sync is on sync should be considered requsted or otherwise it
   // will not resume after the policy or the flag has been removed.
   return sync_prefs_.IsSyncRequested() || sync_prefs_.IsLocalSyncEnabled();
 }
 
 void ProfileSyncService::RequestStart() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!IsSyncAllowed()) {
     // Sync cannot be requested if it's not allowed.
     return;
@@ -2320,7 +2320,7 @@ void ProfileSyncService::RequestStart() {
 }
 
 void ProfileSyncService::ReconfigureDatatypeManager() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // If we haven't initialized yet, don't configure the DTM as it could cause
   // association to start before a Directory has even been created.
   if (engine_initialized_) {
@@ -2349,7 +2349,7 @@ syncer::ModelTypeSet ProfileSyncService::GetDataTypesFromPreferenceProviders()
 }
 
 const DataTypeStatusTable& ProfileSyncService::data_type_status_table() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return data_type_status_table_;
 }
 
@@ -2364,37 +2364,37 @@ void ProfileSyncService::OnInternalUnrecoverableError(
 }
 
 bool ProfileSyncService::IsRetryingAccessTokenFetchForTest() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return request_access_token_retry_timer_.IsRunning();
 }
 
 std::string ProfileSyncService::GetAccessTokenForTest() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return access_token_;
 }
 
 syncer::SyncableService* ProfileSyncService::GetSessionsSyncableService() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!sessions_sync_manager_)
     return nullptr;
   return sessions_sync_manager_->GetSyncableService();
 }
 
 syncer::ModelTypeSyncBridge* ProfileSyncService::GetSessionSyncBridge() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!sessions_sync_manager_)
     return nullptr;
   return sessions_sync_manager_->GetModelTypeSyncBridge();
 }
 
 syncer::ModelTypeSyncBridge* ProfileSyncService::GetDeviceInfoSyncBridge() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return device_info_sync_bridge_.get();
 }
 
 syncer::SyncService::SyncTokenStatus ProfileSyncService::GetSyncTokenStatus()
     const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   SyncTokenStatus status = token_status_;
   if (!request_access_token_retry_timer_.IsRunning())
     status.next_token_request_time = base::Time();
@@ -2403,7 +2403,7 @@ syncer::SyncService::SyncTokenStatus ProfileSyncService::GetSyncTokenStatus()
 
 void ProfileSyncService::OverrideNetworkResourcesForTest(
     std::unique_ptr<syncer::NetworkResources> network_resources) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   network_resources_ = std::move(network_resources);
 }
 
@@ -2421,7 +2421,7 @@ void ProfileSyncService::UpdateFirstSyncTimePref() {
 }
 
 void ProfileSyncService::FlushDirectory() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // engine_initialized_ implies engine_ isn't null and the manager exists.
   // If sync is not initialized yet, we fail silently.
   if (engine_initialized_)
@@ -2429,12 +2429,12 @@ void ProfileSyncService::FlushDirectory() const {
 }
 
 base::FilePath ProfileSyncService::GetDirectoryPathForTest() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return FormatSyncDataPath(base_directory_);
 }
 
 base::MessageLoop* ProfileSyncService::GetSyncLoopForTest() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return sync_thread_ ? sync_thread_->message_loop() : nullptr;
 }
 
@@ -2497,17 +2497,17 @@ void ProfileSyncService::RecordMemoryUsageHistograms() {
 }
 
 const GURL& ProfileSyncService::sync_service_url() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return sync_service_url_;
 }
 
 std::string ProfileSyncService::unrecoverable_error_message() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return unrecoverable_error_message_;
 }
 
 base::Location ProfileSyncService::unrecoverable_error_location() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return unrecoverable_error_location_;
 }
 
