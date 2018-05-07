@@ -1961,10 +1961,10 @@ void ProfileSyncService::RequestAccessToken() {
 
   // Invalidate previous token, otherwise token service will return the same
   // token again.
-  const std::string& account_id = signin_->GetAccountIdToUse();
   if (!access_token_.empty()) {
-    oauth2_token_service_->InvalidateAccessToken(account_id, oauth2_scopes,
-                                                 access_token_);
+    signin_->GetIdentityManager()->RemoveAccessTokenFromCache(
+        signin_->GetIdentityManager()->GetPrimaryAccountInfo(), oauth2_scopes,
+        access_token_);
   }
 
   access_token_.clear();
@@ -1973,9 +1973,8 @@ void ProfileSyncService::RequestAccessToken() {
   token_status_.token_receive_time = base::Time();
   token_status_.next_token_request_time = base::Time();
   ongoing_access_token_fetch_ =
-      std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
-          kSyncOAuthConsumerName, signin_->GetSigninManager(),
-          oauth2_token_service_, oauth2_scopes,
+      signin_->GetIdentityManager()->CreateAccessTokenFetcherForPrimaryAccount(
+          kSyncOAuthConsumerName, oauth2_scopes,
           base::BindOnce(&ProfileSyncService::AccessTokenFetched,
                          base::Unretained(this)),
           identity::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
