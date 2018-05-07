@@ -121,6 +121,14 @@ HeapVector<Member<PointerEvent>> PointerEvent::getCoalescedEvents() {
   return coalesced_events_;
 }
 
+TimeTicks PointerEvent::OldestPlatformTimeStamp() const {
+  if (coalesced_events_.size() > 0) {
+    // Assume that time stamps of coalesced events are in ascending order.
+    return coalesced_events_[0]->PlatformTimeStamp();
+  }
+  return this->PlatformTimeStamp();
+}
+
 void PointerEvent::Trace(blink::Visitor* visitor) {
   visitor->Trace(coalesced_events_);
   MouseEvent::Trace(visitor);

@@ -420,6 +420,10 @@
       status: "test",
     },
     {
+      name: "EventTiming",
+      status: "test",
+    },
+    {
       name: "ExecCommandInJavaScript",
       status: "test",
     },

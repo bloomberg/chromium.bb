@@ -144,6 +144,7 @@ PASS childWindow.outerHeight is 0
 PASS childWindow.outerWidth is 0
 PASS childWindow.pageXOffset is 0
 PASS childWindow.pageYOffset is 0
+PASS childWindow.performance.oneventtimingbufferfull is null
 PASS childWindow.performance.onresourcetimingbufferfull is null
 PASS childWindow.personalbar.visible is false
 PASS childWindow.screen.availHeight is 0

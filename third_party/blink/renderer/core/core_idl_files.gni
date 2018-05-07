@@ -409,6 +409,7 @@ core_idl_files =
                     "timing/memory_info.idl",
                     "timing/performance.idl",
                     "timing/performance_entry.idl",
+                    "timing/performance_event_timing.idl",
                     "timing/performance_long_task_timing.idl",
                     "timing/performance_mark.idl",
                     "timing/performance_measure.idl",

@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
+#include "third_party/blink/renderer/core/timing/event_timing.h"
 #include "third_party/blink/renderer/platform/event_dispatch_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
@@ -136,6 +137,14 @@ DispatchEventResult EventDispatcher::Dispatch() {
     // retargeting.
     return DispatchEventResult::kNotCanceled;
   }
+  std::unique_ptr<EventTiming> eventTiming;
+  if (RuntimeEnabledFeatures::EventTimingEnabled()) {
+    LocalFrame* frame = node_->GetDocument().GetFrame();
+    if (frame && frame->DomWindow()) {
+      eventTiming = std::make_unique<EventTiming>(frame->DomWindow());
+      eventTiming->WillDispatchEvent(event_);
+    }
+  }
   event_->GetEventPath().EnsureWindowEventContext();
 
   // 6. Let isActivationEvent be true, if event is a MouseEvent object and
@@ -181,6 +190,9 @@ DispatchEventResult EventDispatcher::Dispatch() {
   }
   DispatchEventPostProcess(activation_target,
                            pre_dispatch_event_handler_result);
+  if (eventTiming)
+    eventTiming->DidDispatchEvent(event_);
+
   return EventTarget::GetDispatchEventResult(*event_);
 }
 

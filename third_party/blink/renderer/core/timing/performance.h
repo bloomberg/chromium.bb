@@ -65,6 +65,7 @@ class ScriptState;
 class ScriptValue;
 class SubTaskAttribution;
 class V8ObjectBuilder;
+class PerformanceEventTiming;
 
 using PerformanceEntryVector = HeapVector<Member<PerformanceEntry>>;
 
@@ -146,6 +147,13 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   void AddFirstPaintTiming(TimeTicks start_time);
 
   void AddFirstContentfulPaintTiming(TimeTicks start_time);
+
+  bool IsEventTimingBufferFull() const;
+  void AddEventTimingBuffer(PerformanceEventTiming&);
+  unsigned EventTimingBufferSize() const;
+  void clearEventTimings();
+  void setEventTimingBufferMaxSize(unsigned);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(eventtimingbufferfull);
 
   void mark(ScriptState*, const String& mark_name, ExceptionState&);
 
@@ -257,6 +265,8 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   unsigned frame_timing_buffer_size_;
   PerformanceEntryVector resource_timing_buffer_;
   unsigned resource_timing_buffer_size_;
+  PerformanceEntryVector event_timing_buffer_;
+  unsigned event_timing_buffer_max_size_;
   Member<PerformanceEntry> navigation_timing_;
   Member<UserTiming> user_timing_;
   Member<PerformanceEntry> first_paint_timing_;

@@ -4940,9 +4940,11 @@ interface Performance : EventTarget
     attribute @@toStringTag
     getter memory
     getter navigation
+    getter oneventtimingbufferfull
     getter onresourcetimingbufferfull
     getter timeOrigin
     getter timing
+    method clearEventTimings
     method clearMarks
     method clearMeasures
     method clearResourceTimings
@@ -4953,8 +4955,10 @@ interface Performance : EventTarget
     method mark
     method measure
     method now
+    method setEventTimingBufferMaxSize
     method setResourceTimingBufferSize
     method toJSON
+    setter oneventtimingbufferfull
     setter onresourcetimingbufferfull
 interface PerformanceEntry
     attribute @@toStringTag
@@ -4962,6 +4966,12 @@ interface PerformanceEntry
     getter entryType
     getter name
     getter startTime
+    method constructor
+    method toJSON
+interface PerformanceEventTiming : PerformanceEntry
+    attribute @@toStringTag
+    getter cancelable
+    getter processingStart
     method constructor
     method toJSON
 interface PerformanceLongTaskTiming : PerformanceEntry

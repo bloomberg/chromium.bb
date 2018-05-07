@@ -51,6 +51,12 @@ interface Performance : EventTarget {
     void setResourceTimingBufferSize(unsigned long maxSize);
     attribute EventHandler onresourcetimingbufferfull;
 
+    // Event Timing
+    // https://github.com/wicg/event-timing
+    [RuntimeEnabled=EventTiming] void clearEventTimings();
+    [RuntimeEnabled=EventTiming] void setEventTimingBufferMaxSize(unsigned long maxSize);
+    [RuntimeEnabled=EventTiming] attribute EventHandler oneventtimingbufferfull;
+
     // Navigation Timing
     // https://w3c.github.io/navigation-timing/#extensions-to-the-performance-interface
     [Exposed=Window, SameObject, Measure] readonly attribute PerformanceTiming timing;

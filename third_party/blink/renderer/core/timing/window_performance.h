@@ -63,6 +63,15 @@ class CORE_EXPORT WindowPerformance final : public Performance,
 
   void UpdateLongTaskInstrumentation() override;
 
+  bool ObservingEventTimingEntries();
+  bool ShouldBufferEventTiming();
+
+  void AddEventTiming(String event_type,
+                      TimeTicks start_time,
+                      TimeTicks processing_start,
+                      TimeDelta duration,
+                      bool cancelable);
+
   void Trace(blink::Visitor*) override;
   using Performance::TraceWrappers;
 

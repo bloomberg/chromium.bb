@@ -56,6 +56,7 @@ class CORE_EXPORT PointerEvent final : public MouseEvent {
   Node* toElement() const final;
 
   HeapVector<Member<PointerEvent>> getCoalescedEvents();
+  TimeTicks OldestPlatformTimeStamp() const;
 
   DispatchEventResult DispatchEvent(EventDispatcher&) override;
 
