@@ -23,6 +23,8 @@ class SystemProviderImpl : public assistant_client::SystemProvider {
   void RegisterMicMuteChangeCallback(ConfigChangeCallback callback) override;
   assistant_client::PowerManagerProvider* GetPowerManagerProvider() override;
   bool GetBatteryState(BatteryState* state) override;
+  void UpdateTimezoneAndLocale(const std::string& timezone,
+                               const std::string& locale) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SystemProviderImpl);

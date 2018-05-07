@@ -38,5 +38,8 @@ bool SystemProviderImpl::GetBatteryState(BatteryState* state) {
   return false;
 }
 
+void SystemProviderImpl::UpdateTimezoneAndLocale(const std::string& timezone,
+                                                 const std::string& locale) {}
+
 }  // namespace assistant
 }  // namespace chromeos
