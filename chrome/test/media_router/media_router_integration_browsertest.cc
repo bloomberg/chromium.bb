@@ -15,6 +15,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -839,8 +840,14 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
   RunReconnectSessionTest();
 }
 
+// Flaky on Linux MSAN. https://crbug.com/840165
+#if defined(OS_LINUX) && defined(MEMORY_SANITIZER)
+#define MAYBE_Fail_ReconnectSession DISABLED_Fail_ReconnectSession
+#else
+#define MAYBE_Fail_ReconnectSession Fail_ReconnectSession
+#endif
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
-                       Fail_ReconnectSession) {
+                       MAYBE_Fail_ReconnectSession) {
   WebContents* web_contents = StartSessionWithTestPageAndChooseSink();
   CheckSessionValidity(web_contents);
   std::string session_id(GetStartedConnectionId(web_contents));
