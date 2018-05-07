@@ -488,8 +488,19 @@ static void AdjustEffectiveTouchAction(ComputedStyle& style,
   inherited_action =
       AdjustTouchActionForElement(inherited_action, style, element);
 
+  TouchAction enforced_by_policy = TouchAction::kTouchActionNone;
+  if (element &&
+      IsSupportedInFeaturePolicy(
+          mojom::FeaturePolicyFeature::kVerticalScroll) &&
+      element->GetDocument().GetFrame() &&
+      !element->GetDocument().GetFrame()->IsFeatureEnabled(
+          mojom::FeaturePolicyFeature::kVerticalScroll)) {
+    enforced_by_policy = TouchAction::kTouchActionPanY;
+  }
+
   // Apply the adjusted parent effective touch actions.
-  style.SetEffectiveTouchAction(element_touch_action & inherited_action);
+  style.SetEffectiveTouchAction((element_touch_action & inherited_action) |
+                                enforced_by_policy);
 
   // Touch action is inherited across frames.
   if (element && element->IsFrameOwnerElement() &&

@@ -82,12 +82,12 @@
         // is web-platform.test.
         const path = location.pathname;
         if (location.hostname == 'web-platform.test' &&
-            /.*-manual(\.sub)?(\.https)?\.html$/.test(path)) {
+            /.*-manual(\.sub)?(\.https)?(\.tentative)?\.html$/.test(path)) {
             return true;
         }
         // If the file is loaded locally via file://, it must include
         // the wpt directory in the path.
-        return /\/external\/wpt\/.*-manual(\.sub)?(\.https)?\.html$/.test(path);
+        return /\/external\/wpt\/.*-manual(\.sub)?(\.https)?(\.tentative)?\.html$/.test(path);
     }
 
     /** Loads the WPT automation script for the current test, if applicable. */
@@ -122,7 +122,8 @@
             pathAndBase.startsWith('/input-events/') ||
             pathAndBase.startsWith('/css/selectors/') ||
             pathAndBase.startsWith('/css/cssom-view/') ||
-            pathAndBase.startsWith('/css/css-scroll-snap/')) {
+            pathAndBase.startsWith('/css/css-scroll-snap/') ||
+            pathAndBase.startsWith('/feature-policy/experimental-features/')) {
             // Per-test automation scripts.
             src = automationPath + pathAndBase + '-automation.js';
         } else {

@@ -2363,6 +2363,9 @@ crbug.com/806357 [ Win Debug ] fast/events/pointerevents/pointerevent_touch-acti
 crbug.com/839038 [ Mac ] external/wpt/pointerevents/pointerevent_lostpointercapture_for_disconnected_node-manual.html [ Skip ]
 
 # These tests are skipped as there is no touch support on Mac.
+crbug.com/613672 [ Mac ] external/wpt/feature-policy/experimental-features/vertical-scroll-touch-action-manual.tentative.html [ Skip ]
+crbug.com/613672 [ Mac ] virtual/picture-in-picture/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-action-manual.tentative.html [ Skip ]
+crbug.com/613672 [ Mac ] virtual/unified-auto/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-action-manual.tentative.html [ Skip ]
 crbug.com/613672 [ Mac ] fast/events/touch/multi-touch-user-gesture.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/multi-touch-user-gesture.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/multi-touch-user-gesture.html [ Skip ]
