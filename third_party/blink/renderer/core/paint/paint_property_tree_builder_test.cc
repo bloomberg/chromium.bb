@@ -54,8 +54,10 @@ const ClipPaintPropertyNode* PaintPropertyTreeBuilderTest::FrameContentClip(
   if (!frame_view)
     frame_view = GetDocument().View();
   if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    return OverflowClip(
-        *frame_view->GetLayoutView()->FirstFragment().PaintProperties());
+    return frame_view->GetLayoutView()
+        ->FirstFragment()
+        .PaintProperties()
+        ->OverflowClip();
   }
   return frame_view->ContentClip();
 }
@@ -146,10 +148,10 @@ TEST_P(PaintPropertyTreeBuilderTest, FixedPosition) {
   const ObjectPaintProperties* target1_properties =
       target1->GetLayoutObject()->FirstFragment().PaintProperties();
   EXPECT_EQ(FloatRoundedRect(200, 150, 100, 100),
-            OverflowClip(*target1_properties)->ClipRect());
+            target1_properties->OverflowClip()->ClipRect());
   // Likewise, it inherits clip from the viewport, skipping overflow clip of the
   // scroller.
-  EXPECT_EQ(FrameContentClip(), OverflowClip(*target1_properties)->Parent());
+  EXPECT_EQ(FrameContentClip(), target1_properties->OverflowClip()->Parent());
   // target1 should not have its own scroll node and instead should inherit
   // positionedScroll's.
   const ObjectPaintProperties* positioned_scroll_properties =
@@ -174,9 +176,9 @@ TEST_P(PaintPropertyTreeBuilderTest, FixedPosition) {
   const ObjectPaintProperties* scroller_properties =
       scroller->GetLayoutObject()->FirstFragment().PaintProperties();
   EXPECT_EQ(FloatRoundedRect(200, 150, 100, 100),
-            OverflowClip(*target2_properties)->ClipRect());
-  EXPECT_EQ(OverflowClip(*scroller_properties),
-            OverflowClip(*target2_properties)->Parent());
+            target2_properties->OverflowClip()->ClipRect());
+  EXPECT_EQ(scroller_properties->OverflowClip(),
+            target2_properties->OverflowClip()->Parent());
   // target2 should not have it's own scroll node and instead should inherit
   // transformedScroll's.
   const ObjectPaintProperties* transformed_scroll_properties =
@@ -211,7 +213,7 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionAndScroll) {
   EXPECT_EQ(FrameScrollTranslation(),
             scroller_properties->PaintOffsetTranslation()->Parent());
   EXPECT_EQ(scroller_properties->PaintOffsetTranslation(),
-            OverflowClip(*scroller_properties)->LocalTransformSpace());
+            scroller_properties->OverflowClip()->LocalTransformSpace());
   const auto* scroll = scroller_properties->ScrollTranslation()->ScrollNode();
   EXPECT_EQ(FrameScroll(), scroll->Parent());
   EXPECT_EQ(IntRect(0, 0, 413, 317), scroll->ContainerRect());
@@ -222,8 +224,8 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionAndScroll) {
                                      ->Matrix()
                                      .To2DTranslation());
   EXPECT_EQ(FloatRoundedRect(0, 0, 413, 317),
-            OverflowClip(*scroller_properties)->ClipRect());
-  EXPECT_EQ(FrameContentClip(), OverflowClip(*scroller_properties)->Parent());
+            scroller_properties->OverflowClip()->ClipRect());
+  EXPECT_EQ(FrameContentClip(), scroller_properties->OverflowClip()->Parent());
   CHECK_EXACT_VISUAL_RECT(LayoutRect(120, 340, 413, 317),
                           scroller->GetLayoutObject(),
                           frame_view->GetLayoutView());
@@ -238,11 +240,11 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionAndScroll) {
   EXPECT_EQ(scroller_properties->ScrollTranslation(),
             rel_pos_properties->PaintOffsetTranslation()->Parent());
   EXPECT_EQ(rel_pos_properties->Transform(),
-            OverflowClip(*rel_pos_properties)->LocalTransformSpace());
+            rel_pos_properties->OverflowClip()->LocalTransformSpace());
   EXPECT_EQ(FloatRoundedRect(0, 0, 100, 200),
-            OverflowClip(*rel_pos_properties)->ClipRect());
-  EXPECT_EQ(OverflowClip(*scroller_properties),
-            OverflowClip(*rel_pos_properties)->Parent());
+            rel_pos_properties->OverflowClip()->ClipRect());
+  EXPECT_EQ(scroller_properties->OverflowClip(),
+            rel_pos_properties->OverflowClip()->Parent());
   CHECK_EXACT_VISUAL_RECT(LayoutRect(), rel_pos->GetLayoutObject(),
                           frame_view->GetLayoutView());
 
@@ -256,10 +258,10 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionAndScroll) {
   EXPECT_EQ(FrameScrollTranslation(),
             abs_pos_properties->PaintOffsetTranslation()->Parent());
   EXPECT_EQ(abs_pos_properties->Transform(),
-            OverflowClip(*abs_pos_properties)->LocalTransformSpace());
+            abs_pos_properties->OverflowClip()->LocalTransformSpace());
   EXPECT_EQ(FloatRoundedRect(0, 0, 300, 400),
-            OverflowClip(*abs_pos_properties)->ClipRect());
-  EXPECT_EQ(FrameContentClip(), OverflowClip(*abs_pos_properties)->Parent());
+            abs_pos_properties->OverflowClip()->ClipRect());
+  EXPECT_EQ(FrameContentClip(), abs_pos_properties->OverflowClip()->Parent());
   CHECK_EXACT_VISUAL_RECT(LayoutRect(123, 456, 300, 400),
                           abs_pos->GetLayoutObject(),
                           frame_view->GetLayoutView());
@@ -276,7 +278,7 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollExcludeScrollbars) {
   CHECK(GetDocument().GetPage()->GetScrollbarTheme().UsesOverlayScrollbars());
 
   const auto* properties = PaintPropertiesForElement("scroller");
-  const auto* overflow_clip = OverflowClip(*properties);
+  const auto* overflow_clip = properties->OverflowClip();
 
   EXPECT_EQ(FrameContentClip(), overflow_clip->Parent());
   EXPECT_EQ(properties->PaintOffsetTranslation(),
@@ -304,7 +306,7 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollExcludeScrollbarsSubpixel) {
   CHECK(GetDocument().GetPage()->GetScrollbarTheme().UsesOverlayScrollbars());
 
   const auto* properties = PaintPropertiesForElement("scroller");
-  const auto* overflow_clip = OverflowClip(*properties);
+  const auto* overflow_clip = properties->OverflowClip();
 
   EXPECT_EQ(FrameContentClip(), overflow_clip->Parent());
   EXPECT_EQ(properties->PaintOffsetTranslation(),
@@ -329,46 +331,6 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollExcludeScrollbarsSubpixel) {
   }
 }
 
-TEST_P(PaintPropertyTreeBuilderTest,
-       OverflowScrollExcludeScrollbarsWithBorderRadius) {
-  SetBodyInnerHTML(R"HTML(
-    <div id='scroller'
-         style='width: 100px; height: 100px; overflow: scroll;
-                 border: 10px solid blue; border-radius: 20px'>
-      <div style='width: 400px; height: 400px'></div>
-    </div>
-  )HTML");
-  CHECK(GetDocument().GetPage()->GetScrollbarTheme().UsesOverlayScrollbars());
-
-  const auto* properties = PaintPropertiesForElement("scroller");
-  // We create both InnerBorderRadiusClip and OverflowClip if there are overlay
-  // scrollbars.
-  const auto* inner_border_radius_clip = properties->InnerBorderRadiusClip();
-  ASSERT_NE(nullptr, inner_border_radius_clip);
-  const auto* overflow_clip = OverflowClip(*properties);
-  ASSERT_NE(nullptr, overflow_clip);
-
-  EXPECT_EQ(FrameContentClip(), inner_border_radius_clip->Parent());
-  EXPECT_EQ(
-      FloatRoundedRect(FloatRect(10, 10, 100, 100), FloatSize(10, 10),
-                       FloatSize(10, 10), FloatSize(10, 10), FloatSize(10, 10)),
-      inner_border_radius_clip->ClipRect());
-
-  EXPECT_EQ(inner_border_radius_clip, overflow_clip->Parent());
-  EXPECT_EQ(properties->PaintOffsetTranslation(),
-            overflow_clip->LocalTransformSpace());
-  EXPECT_EQ(FloatRoundedRect(10, 10, 100, 100), overflow_clip->ClipRect());
-
-  PaintLayer* paint_layer =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"))->Layer();
-  EXPECT_TRUE(paint_layer->GetScrollableArea()
-                  ->VerticalScrollbar()
-                  ->IsOverlayScrollbar());
-
-  EXPECT_EQ(FloatRoundedRect(10, 10, 93, 93),
-            overflow_clip->ClipRectExcludingOverlayScrollbars());
-}
-
 TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollVerticalRL) {
   SetBodyInnerHTML(R"HTML(
     <style>::-webkit-scrollbar {width: 15px; height: 15px}</style>
@@ -380,7 +342,7 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollVerticalRL) {
   )HTML");
 
   const auto* properties = PaintPropertiesForElement("scroller");
-  const auto* overflow_clip = OverflowClip(*properties);
+  const auto* overflow_clip = properties->OverflowClip();
   const auto* scroll_translation = properties->ScrollTranslation();
   const auto* scroll = properties->Scroll();
 
@@ -411,7 +373,7 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollRTL) {
   )HTML");
 
   const auto* properties = PaintPropertiesForElement("scroller");
-  const auto* overflow_clip = OverflowClip(*properties);
+  const auto* overflow_clip = properties->OverflowClip();
   const auto* scroll_translation = properties->ScrollTranslation();
   const auto* scroll = properties->Scroll();
 
@@ -923,7 +885,7 @@ TEST_P(PaintPropertyTreeBuilderTest, EffectNodesInSVG) {
     </svg>
   )HTML");
 
-  const auto* svg_clip = OverflowClip(*PaintPropertiesForElement("svgRoot"));
+  const auto* svg_clip = PaintPropertiesForElement("svgRoot")->OverflowClip();
 
   const auto* group_with_opacity_properties =
       PaintPropertiesForElement("groupWithOpacity");
@@ -989,7 +951,7 @@ TEST_P(PaintPropertyTreeBuilderTest, EffectNodesAcrossHTMLSVGBoundary) {
   const auto* rect_with_opacity_properties =
       PaintPropertiesForElement("rectWithOpacity");
   EXPECT_EQ(0.4f, rect_with_opacity_properties->Effect()->Opacity());
-  EXPECT_EQ(OverflowClip(*svg_root_with_opacity_properties),
+  EXPECT_EQ(svg_root_with_opacity_properties->OverflowClip(),
             rect_with_opacity_properties->Effect()->OutputClip());
   EXPECT_EQ(svg_root_with_opacity_properties->Effect(),
             rect_with_opacity_properties->Effect()->Parent());
@@ -1019,7 +981,7 @@ TEST_P(PaintPropertyTreeBuilderTest, EffectNodesAcrossSVGHTMLBoundary) {
   const auto* foreign_object_with_opacity_properties =
       PaintPropertiesForElement("foreignObjectWithOpacity");
   EXPECT_EQ(0.4f, foreign_object_with_opacity_properties->Effect()->Opacity());
-  EXPECT_EQ(OverflowClip(*svg_root_with_opacity_properties),
+  EXPECT_EQ(svg_root_with_opacity_properties->OverflowClip(),
             foreign_object_with_opacity_properties->Effect()->OutputClip());
   EXPECT_EQ(svg_root_with_opacity_properties->Effect(),
             foreign_object_with_opacity_properties->Effect()->Parent());
@@ -1375,12 +1337,12 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGViewportContainer) {
   const auto* svg_properties = PaintPropertiesForElement("svg");
   ASSERT_NE(nullptr, svg_properties);
   const auto* parent_transform = svg_properties->PaintOffsetTranslation();
-  const auto* parent_clip = svg_properties->InnerBorderRadiusClip();
+  const auto* parent_clip = svg_properties->OverflowClip();
 
   // overflow: hidden and zero offset: OverflowClip only.
   const auto* properties1 = PaintPropertiesForElement("container1");
   ASSERT_NE(nullptr, properties1);
-  const auto* clip = OverflowClip(*properties1);
+  const auto* clip = properties1->OverflowClip();
   const auto* transform = properties1->Transform();
   ASSERT_NE(nullptr, clip);
   EXPECT_EQ(nullptr, transform);
@@ -1392,7 +1354,7 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGViewportContainer) {
   // both Transform and OverflowClip.
   const auto* properties2 = PaintPropertiesForElement("container2");
   ASSERT_NE(nullptr, properties2);
-  clip = OverflowClip(*properties2);
+  clip = properties2->OverflowClip();
   transform = properties2->Transform();
   ASSERT_NE(nullptr, clip);
   ASSERT_NE(nullptr, transform);
@@ -1410,7 +1372,7 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGViewportContainer) {
   // overflow: visible and non-zero offset: Transform only.
   const auto* properties4 = PaintPropertiesForElement("container4");
   ASSERT_NE(nullptr, properties4);
-  clip = OverflowClip(*properties4);
+  clip = properties4->OverflowClip();
   transform = properties4->Transform();
   EXPECT_EQ(nullptr, clip);
   ASSERT_NE(nullptr, transform);
@@ -1436,11 +1398,11 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGForeignObjectOverflowClip) {
   const auto* svg_properties = PaintPropertiesForElement("svg");
   ASSERT_NE(nullptr, svg_properties);
   const auto* parent_transform = svg_properties->PaintOffsetTranslation();
-  const auto* parent_clip = OverflowClip(*svg_properties);
+  const auto* parent_clip = svg_properties->OverflowClip();
 
   const auto* properties1 = PaintPropertiesForElement("object1");
   ASSERT_NE(nullptr, properties1);
-  const auto* clip = OverflowClip(*properties1);
+  const auto* clip = properties1->OverflowClip();
   ASSERT_NE(nullptr, clip);
   EXPECT_EQ(parent_clip, clip->Parent());
   EXPECT_EQ(FloatRect(10, 20, 30, 40), clip->ClipRect().Rect());
@@ -1537,10 +1499,10 @@ TEST_P(PaintPropertyTreeBuilderTest, ControlClip) {
   // content).
   EXPECT_TRUE(!FrameScrollTranslation());
   EXPECT_EQ(FramePreTranslation(),
-            OverflowClip(*button_properties)->LocalTransformSpace());
+            button_properties->OverflowClip()->LocalTransformSpace());
   EXPECT_EQ(FloatRoundedRect(5, 5, 335, 113),
-            OverflowClip(*button_properties)->ClipRect());
-  EXPECT_EQ(FrameContentClip(), OverflowClip(*button_properties)->Parent());
+            button_properties->OverflowClip()->ClipRect());
+  EXPECT_EQ(FrameContentClip(), button_properties->OverflowClip()->Parent());
   CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 345, 123), &button,
                           GetDocument().View()->GetLayoutView());
 }
@@ -1567,7 +1529,7 @@ TEST_P(PaintPropertyTreeBuilderTest, ControlClipInsideForeignObject) {
   // content).
   EXPECT_TRUE(!FrameScrollTranslation());
   EXPECT_EQ(FloatRoundedRect(2, 2, 341, 119),
-            OverflowClip(*button_properties)->ClipRect());
+            button_properties->OverflowClip()->ClipRect());
   CHECK_EXACT_VISUAL_RECT(LayoutRect(8, 8, 345, 123), &button,
                           GetDocument().View()->GetLayoutView());
 }
@@ -1586,7 +1548,7 @@ TEST_P(PaintPropertyTreeBuilderTest, BorderRadiusClip) {
        border-left: 60px solid;
        width: 500px;
        height: 400px;
-       overflow: hidden;
+       overflow: scroll;
      }
     </style>
     <div id='div'></div>
@@ -1598,7 +1560,15 @@ TEST_P(PaintPropertyTreeBuilderTest, BorderRadiusClip) {
   // No scroll translation because the document does not scroll (not enough
   // content).
   EXPECT_TRUE(!FrameScrollTranslation());
-  const auto* border_radius_clip = div_properties->InnerBorderRadiusClip();
+  EXPECT_EQ(FramePreTranslation(),
+            div_properties->OverflowClip()->LocalTransformSpace());
+  // The overflow clip rect includes only the padding box.
+  // padding box = border box(500+60+50, 400+45+55) - border outset(60+50,
+  // 45+55) - scrollbars(15, 15)
+  EXPECT_EQ(FloatRoundedRect(60, 45, 500, 400),
+            div_properties->OverflowClip()->ClipRect());
+  const ClipPaintPropertyNode* border_radius_clip =
+      div_properties->OverflowClip()->Parent();
   EXPECT_EQ(FramePreTranslation(), border_radius_clip->LocalTransformSpace());
   // The border radius clip is the area enclosed by inner border edge, including
   // the scrollbars.  As the border-radius is specified in outer radius, the
@@ -1620,8 +1590,6 @@ TEST_P(PaintPropertyTreeBuilderTest, BorderRadiusClip) {
   EXPECT_EQ(FrameContentClip(), border_radius_clip->Parent());
   CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 610, 500), &div,
                           GetDocument().View()->GetLayoutView());
-  // No OverflowClip because InnerBorderRadiusClip already serves the purpose.
-  EXPECT_EQ(nullptr, OverflowClip(*div_properties));
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, TransformNodesAcrossSubframes) {
@@ -1808,7 +1776,7 @@ TEST_P(PaintPropertyTreeBuilderTest, TreeContextClipByNonStackingContext) {
       scroller->FirstFragment().PaintProperties();
   LayoutObject* child = GetLayoutObjectByElementId("child");
 
-  EXPECT_EQ(OverflowClip(*scroller_properties),
+  EXPECT_EQ(scroller_properties->OverflowClip(),
             child->FirstFragment().LocalBorderBoxProperties().Clip());
   EXPECT_EQ(scroller_properties->ScrollTranslation(),
             child->FirstFragment().LocalBorderBoxProperties().Transform());
@@ -2105,7 +2073,7 @@ TEST_P(PaintPropertyTreeBuilderTest, CSSClipFixedPositionDescendantNonShared) {
   LayoutObject& overflow = *GetLayoutObjectByElementId("overflow");
   const ObjectPaintProperties* overflow_properties =
       overflow.FirstFragment().PaintProperties();
-  EXPECT_EQ(FrameContentClip(), OverflowClip(*overflow_properties)->Parent());
+  EXPECT_EQ(FrameContentClip(), overflow_properties->OverflowClip()->Parent());
   // No scroll translation because the document does not scroll (not enough
   // content).
   EXPECT_TRUE(!FrameScrollTranslation());
@@ -2117,7 +2085,7 @@ TEST_P(PaintPropertyTreeBuilderTest, CSSClipFixedPositionDescendantNonShared) {
   LayoutObject* clip = GetLayoutObjectByElementId("clip");
   const ObjectPaintProperties* clip_properties =
       clip->FirstFragment().PaintProperties();
-  EXPECT_EQ(OverflowClip(*overflow_properties),
+  EXPECT_EQ(overflow_properties->OverflowClip(),
             clip_properties->CssClip()->Parent());
   EXPECT_EQ(overflow_properties->ScrollTranslation(),
             clip_properties->CssClip()->LocalTransformSpace());
@@ -3065,11 +3033,11 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowClipContentsTreeState) {
   auto contents_properties = clipper->FirstFragment().ContentsProperties();
   EXPECT_EQ(LayoutPoint(30, 20), clipper->FirstFragment().PaintOffset());
   EXPECT_EQ(FramePreTranslation(), contents_properties.Transform());
-  EXPECT_EQ(OverflowClip(*clip_properties), contents_properties.Clip());
+  EXPECT_EQ(clip_properties->OverflowClip(), contents_properties.Clip());
 
   EXPECT_EQ(FramePreTranslation(),
             child->FirstFragment().LocalBorderBoxProperties().Transform());
-  EXPECT_EQ(OverflowClip(*clip_properties),
+  EXPECT_EQ(clip_properties->OverflowClip(),
             child->FirstFragment().LocalBorderBoxProperties().Clip());
 
   EXPECT_NE(nullptr,
@@ -3104,11 +3072,11 @@ TEST_P(PaintPropertyTreeBuilderTest, ContainsPaintContentsTreeState) {
   auto contents_properties = clipper->FirstFragment().ContentsProperties();
   EXPECT_EQ(LayoutPoint(30, 20), clipper->FirstFragment().PaintOffset());
   EXPECT_EQ(FramePreTranslation(), contents_properties.Transform());
-  EXPECT_EQ(OverflowClip(*clip_properties), contents_properties.Clip());
+  EXPECT_EQ(clip_properties->OverflowClip(), contents_properties.Clip());
 
   EXPECT_EQ(FramePreTranslation(),
             child->FirstFragment().LocalBorderBoxProperties().Transform());
-  EXPECT_EQ(OverflowClip(*clip_properties),
+  EXPECT_EQ(clip_properties->OverflowClip(),
             child->FirstFragment().LocalBorderBoxProperties().Clip());
 
   EXPECT_NE(nullptr,
@@ -3155,49 +3123,14 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollContentsTreeState) {
   EXPECT_EQ(LayoutPoint(0, 0), clipper->FirstFragment().PaintOffset());
   EXPECT_EQ(clip_properties->ScrollTranslation(),
             contents_properties.Transform());
-  EXPECT_EQ(OverflowClip(*clip_properties), contents_properties.Clip());
+  EXPECT_EQ(clip_properties->OverflowClip(), contents_properties.Clip());
 
   EXPECT_EQ(clip_properties->ScrollTranslation(),
             child->FirstFragment().LocalBorderBoxProperties().Transform());
-  EXPECT_EQ(OverflowClip(*clip_properties),
+  EXPECT_EQ(clip_properties->OverflowClip(),
             child->FirstFragment().LocalBorderBoxProperties().Clip());
 
   CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 500, 600), child, clipper);
-}
-
-TEST_P(PaintPropertyTreeBuilderTest, OverflowHiddenWithRoundedRect) {
-  SetBodyInnerHTML(R"HTML(
-    <style>
-      * { margin: 0; }
-      #roundedBox {
-        width: 200px;
-        height: 200px;
-        border-radius: 100px;
-        background-color: red;
-        border: 50px solid green;
-        overflow: hidden;
-      }
-      #roundedBoxChild {
-        width: 200px;
-        height: 200px;
-        background-color: orange;
-      }
-    </style>
-    <div id='roundedBox'>
-      <div id='roundedBoxChild'></div>
-    </div>
-  )HTML");
-
-  const auto* rounded_box_properties = PaintPropertiesForElement("roundedBox");
-  EXPECT_EQ(
-      FloatRoundedRect(FloatRect(50, 50, 200, 200), FloatSize(50, 50),
-                       FloatSize(50, 50), FloatSize(50, 50), FloatSize(50, 50)),
-      rounded_box_properties->InnerBorderRadiusClip()->ClipRect());
-
-  EXPECT_EQ(FrameContentClip(),
-            rounded_box_properties->InnerBorderRadiusClip()->Parent());
-  // No OverflowClip because InnerBorderRadiusClip already serves the purpose.
-  EXPECT_EQ(nullptr, OverflowClip(*rounded_box_properties));
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollWithRoundedRect) {
@@ -3238,11 +3171,11 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollWithRoundedRect) {
   // Unlike the inner border radius clip, the overflow clip is inset by the
   // scrollbars (13px).
   EXPECT_EQ(FloatRoundedRect(50, 50, 187, 187),
-            OverflowClip(*rounded_box_properties)->ClipRect());
+            rounded_box_properties->OverflowClip()->ClipRect());
   EXPECT_EQ(FrameContentClip(),
             rounded_box_properties->InnerBorderRadiusClip()->Parent());
   EXPECT_EQ(rounded_box_properties->InnerBorderRadiusClip(),
-            OverflowClip(*rounded_box_properties)->Parent());
+            rounded_box_properties->OverflowClip()->Parent());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, CssClipContentsTreeState) {
@@ -3637,8 +3570,10 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGRootClip) {
     </svg>
   )HTML");
 
-  const ClipPaintPropertyNode* clip = OverflowClip(
-      *GetLayoutObjectByElementId("svg")->FirstFragment().PaintProperties());
+  const ClipPaintPropertyNode* clip = GetLayoutObjectByElementId("svg")
+                                          ->FirstFragment()
+                                          .PaintProperties()
+                                          ->OverflowClip();
   EXPECT_EQ(FrameContentClip(), clip->Parent());
   EXPECT_EQ(FloatSize(8, 8), GetLayoutObjectByElementId("svg")
                                  ->FirstFragment()
@@ -3657,8 +3592,10 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGRootNoClip) {
     </svg>
   )HTML");
 
-  EXPECT_FALSE(OverflowClip(
-      *GetLayoutObjectByElementId("svg")->FirstFragment().PaintProperties()));
+  EXPECT_FALSE(GetLayoutObjectByElementId("svg")
+                   ->FirstFragment()
+                   .PaintProperties()
+                   ->OverflowClip());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, MainThreadScrollReasonsWithoutScrolling) {
@@ -4317,7 +4254,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FilterReparentClips) {
   const ObjectPaintProperties* filter_properties =
       GetLayoutObjectByElementId("filter")->FirstFragment().PaintProperties();
   EXPECT_TRUE(filter_properties->Filter()->Parent()->IsRoot());
-  EXPECT_EQ(OverflowClip(*clip_properties),
+  EXPECT_EQ(clip_properties->OverflowClip(),
             filter_properties->Filter()->OutputClip());
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(FrameScrollTranslation(),
@@ -4436,13 +4373,13 @@ TEST_P(PaintPropertyTreeBuilderTest, ChangePositionUpdateDescendantProperties) {
 
   LayoutObject* ancestor = GetLayoutObjectByElementId("ancestor");
   LayoutObject* descendant = GetLayoutObjectByElementId("descendant");
-  EXPECT_EQ(OverflowClip(*ancestor->FirstFragment().PaintProperties()),
+  EXPECT_EQ(ancestor->FirstFragment().PaintProperties()->OverflowClip(),
             descendant->FirstFragment().LocalBorderBoxProperties().Clip());
 
   ToElement(ancestor->GetNode())
       ->setAttribute(HTMLNames::styleAttr, "position: static");
   GetDocument().View()->UpdateAllLifecyclePhases();
-  EXPECT_NE(OverflowClip(*ancestor->FirstFragment().PaintProperties()),
+  EXPECT_NE(ancestor->FirstFragment().PaintProperties()->OverflowClip(),
             descendant->FirstFragment().LocalBorderBoxProperties().Clip());
 }
 
@@ -4561,10 +4498,10 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowClipSubpixelPosition) {
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     // Result is pixel-snapped.
     EXPECT_EQ(FloatRect(32, 20, 400, 300),
-              OverflowClip(*clip_properties)->ClipRect().Rect());
+              clip_properties->OverflowClip()->ClipRect().Rect());
   } else {
     EXPECT_EQ(FloatRect(31.5, 20, 400, 300),
-              OverflowClip(*clip_properties)->ClipRect().Rect());
+              clip_properties->OverflowClip()->ClipRect().Rect());
   }
 }
 
@@ -4658,7 +4595,7 @@ TEST_P(PaintPropertyTreeBuilderTest, MaskEscapeClip) {
       target_properties->MaskClip()->Parent();
   const ClipPaintPropertyNode* mask_clip = target_properties->MaskClip();
   const ClipPaintPropertyNode* overflow_clip2 =
-      OverflowClip(*target_properties);
+      target_properties->OverflowClip();
   const auto* target = GetLayoutObjectByElementId("target");
   const TransformPaintPropertyNode* scroll_translation =
       target->FirstFragment().LocalBorderBoxProperties().Transform();
@@ -5075,7 +5012,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FrameBorderRadius) {
             border_radius_clip->ClipRect());
   EXPECT_EQ(FrameContentClip(), border_radius_clip->Parent());
   EXPECT_EQ(FramePreTranslation(), border_radius_clip->LocalTransformSpace());
-  EXPECT_EQ(nullptr, OverflowClip(*properties));
+  EXPECT_EQ(nullptr, properties->OverflowClip());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, NoPropertyForSVGTextWithReflection) {
@@ -5102,7 +5039,7 @@ TEST_P(PaintPropertyTreeBuilderTest, ImageBorderRadius) {
             border_radius_clip->ClipRect());
   EXPECT_EQ(FrameContentClip(), border_radius_clip->Parent());
   EXPECT_EQ(FramePreTranslation(), border_radius_clip->LocalTransformSpace());
-  EXPECT_EQ(nullptr, OverflowClip(*properties));
+  EXPECT_EQ(nullptr, properties->OverflowClip());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, FrameClipWhenPrinting) {
@@ -5459,22 +5396,22 @@ TEST_P(PaintPropertyTreeBuilderTest, OmitOverflowClip) {
   )HTML");
   CHECK(GetDocument().GetPage()->GetScrollbarTheme().UsesOverlayScrollbars());
 
-  EXPECT_FALSE(OverflowClip(*PaintPropertiesForElement("auto-size")));
+  EXPECT_FALSE(PaintPropertiesForElement("auto-size")->OverflowClip());
   EXPECT_FALSE(
-      OverflowClip(*PaintPropertiesForElement("overflow-hidden-no-overflow")));
+      PaintPropertiesForElement("overflow-hidden-no-overflow")->OverflowClip());
   EXPECT_TRUE(
-      OverflowClip(*PaintPropertiesForElement("overflow-hidden-overflow")));
+      PaintPropertiesForElement("overflow-hidden-overflow")->OverflowClip());
   EXPECT_FALSE(
-      OverflowClip(*PaintPropertiesForElement("contain-paint-no-overflow")));
+      PaintPropertiesForElement("contain-paint-no-overflow")->OverflowClip());
   EXPECT_TRUE(
-      OverflowClip(*PaintPropertiesForElement("contain-paint-overflow")));
-  EXPECT_TRUE(
-      OverflowClip(*PaintPropertiesForElement("has-self-painting-descendant")));
+      PaintPropertiesForElement("contain-paint-overflow")->OverflowClip());
+  EXPECT_TRUE(PaintPropertiesForElement("has-self-painting-descendant")
+                  ->OverflowClip());
   EXPECT_FALSE(
-      OverflowClip(*PaintPropertiesForElement("overflow-auto-no-overflow")));
+      PaintPropertiesForElement("overflow-auto-no-overflow")->OverflowClip());
   EXPECT_TRUE(
-      OverflowClip(*PaintPropertiesForElement("overflow-auto-overflow")));
-  EXPECT_TRUE(OverflowClip(*PaintPropertiesForElement("button")));
+      PaintPropertiesForElement("overflow-auto-overflow")->OverflowClip());
+  EXPECT_TRUE(PaintPropertiesForElement("button")->OverflowClip());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, ClipHitTestChangeDoesNotCauseFullRepaint) {

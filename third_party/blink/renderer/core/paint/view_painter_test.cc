@@ -130,7 +130,7 @@ TEST_P(ViewPainterTest, DocumentBackgroundWithScroll) {
   const auto* properties = GetLayoutView().FirstFragment().PaintProperties();
   if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
     EXPECT_EQ(properties->ScrollTranslation(), tree_state.Transform());
-    EXPECT_EQ(OverflowClip(*properties), tree_state.Clip());
+    EXPECT_EQ(properties->OverflowClip(), tree_state.Clip());
   } else {
     EXPECT_EQ(nullptr, properties);
     const auto* frame_view = GetDocument().View();

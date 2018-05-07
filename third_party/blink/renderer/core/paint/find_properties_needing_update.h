@@ -189,8 +189,8 @@ class FindObjectPropertiesNeedingUpdateScope {
       DCHECK_OBJECT_PROPERTY_EQ(object_,
                                 original_properties_->InnerBorderRadiusClip(),
                                 object_properties->InnerBorderRadiusClip());
-      DCHECK_OBJECT_PROPERTY_EQ(object_, OverflowClip(*original_properties_),
-                                OverflowClip(*object_properties));
+      DCHECK_OBJECT_PROPERTY_EQ(object_, original_properties_->OverflowClip(),
+                                object_properties->OverflowClip());
       DCHECK_OBJECT_PROPERTY_EQ(object_, original_properties_->Perspective(),
                                 object_properties->Perspective());
       DCHECK_OBJECT_PROPERTY_EQ(

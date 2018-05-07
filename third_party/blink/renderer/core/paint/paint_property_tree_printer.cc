@@ -101,7 +101,7 @@ class PropertyTreePrinterTraits<ClipPaintPropertyNode> {
     printer.AddNode(properties.CssClipFixedPosition());
     printer.AddNode(properties.OverflowControlsClip());
     printer.AddNode(properties.InnerBorderRadiusClip());
-    printer.AddNode(OverflowClip(properties));
+    printer.AddNode(properties.OverflowClip());
   }
 };
 
@@ -183,7 +183,7 @@ void UpdateDebugNames(const LayoutObject& object,
                object);
   SetDebugName(properties.InnerBorderRadiusClip(), "InnerBorderRadiusClip",
                object);
-  SetDebugName(OverflowClip(properties), "OverflowClip", object);
+  SetDebugName(properties.OverflowClip(), "OverflowClip", object);
   SetDebugName(properties.Effect(), "Effect", object);
   SetDebugName(properties.Filter(), "Filter", object);
   SetDebugName(properties.Mask(), "Mask", object);

@@ -147,10 +147,6 @@ class CORE_EXPORT ObjectPaintProperties {
   const ClipPaintPropertyNode* OverflowClip() const {
     return overflow_clip_.get();
   }
-  const ClipPaintPropertyNode* OverflowOrInnerBorderRadiusClip() const {
-    return overflow_clip_ ? overflow_clip_.get()
-                          : inner_border_radius_clip_.get();
-  }
 
   // The following clear* functions return true if the property tree structure
   // changes (an existing node was deleted), and false otherwise. See the
@@ -333,9 +329,6 @@ class CORE_EXPORT ObjectPaintProperties {
 #endif
 
  private:
-  friend const ClipPaintPropertyNode* OverflowClip(
-      const ObjectPaintProperties&);
-
   ObjectPaintProperties() = default;
 
   // Return true if the property tree structure changes (an existing node was
@@ -390,15 +383,6 @@ class CORE_EXPORT ObjectPaintProperties {
 
   DISALLOW_COPY_AND_ASSIGN(ObjectPaintProperties);
 };
-
-// ObjectPaintProperties doesn't provide public OverflowClip() method to avoid
-// misuse because in most cases we want OverflowOrInnerBorderRadiusClip().
-// This function returns the actual OverflowClip for actual requirements of
-// mere OverflowClip, e.g. PaintPropertyTreePrinter, tests etc.
-inline const ClipPaintPropertyNode* OverflowClip(
-    const ObjectPaintProperties& properties) {
-  return properties.overflow_clip_.get();
-}
 
 }  // namespace blink
 
