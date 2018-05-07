@@ -1656,12 +1656,25 @@ InspectorDOMAgent::BuildArrayForDistributedNodes(
 
 std::unique_ptr<protocol::Array<protocol::DOM::BackendNode>>
 InspectorDOMAgent::BuildDistributedNodesForSlot(HTMLSlotElement* slot_element) {
+  // TODO(hayato): In Shadow DOM v1, the concept of distributed nodes should
+  // not be used anymore. DistributedNodes should be replaced with
+  // AssignedNodes() when IncrementalShadowDOM becomes stable and Shadow DOM v0
+  // is removed.
   std::unique_ptr<protocol::Array<protocol::DOM::BackendNode>>
       distributed_nodes = protocol::Array<protocol::DOM::BackendNode>::create();
   if (RuntimeEnabledFeatures::IncrementalShadowDOMEnabled()) {
-    // TODO(hayato): Support distributed_nodes for IncrementalShadowDOM.
-    // We might use HTMLSlotElement::flat_tree_children here, however, we don't
-    // want to expose it, as of now.
+    for (auto& node : slot_element->AssignedNodes()) {
+      if (IsWhitespace(node))
+        continue;
+
+      std::unique_ptr<protocol::DOM::BackendNode> backend_node =
+          protocol::DOM::BackendNode::create()
+              .setNodeType(node->getNodeType())
+              .setNodeName(node->nodeName())
+              .setBackendNodeId(DOMNodeIds::IdForNode(node))
+              .build();
+      distributed_nodes->addItem(std::move(backend_node));
+    }
     return distributed_nodes;
   }
   for (Node* node = slot_element->FirstDistributedNode(); node;
