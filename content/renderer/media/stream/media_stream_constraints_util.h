@@ -373,10 +373,12 @@ double StringConstraintFitnessDistance(
 // This method computes capabilities for a video source based on the given
 // |formats|. |facing_mode| is valid only in case of video device capture.
 blink::WebMediaStreamSource::Capabilities CONTENT_EXPORT
-ComputeCapabilitiesForVideoSource(const blink::WebString& device_id,
-                                  const media::VideoCaptureFormats& formats,
-                                  media::VideoFacingMode facing_mode,
-                                  bool is_device_capture);
+ComputeCapabilitiesForVideoSource(
+    const blink::WebString& device_id,
+    const media::VideoCaptureFormats& formats,
+    media::VideoFacingMode facing_mode,
+    bool is_device_capture,
+    const base::Optional<std::string>& group_id = base::nullopt);
 
 }  // namespace content
 

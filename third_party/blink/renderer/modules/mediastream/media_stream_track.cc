@@ -318,6 +318,8 @@ void MediaStreamTrack::getCapabilities(MediaTrackCapabilities& capabilities) {
 
   auto platform_capabilities = component_->Source()->GetCapabilities();
   capabilities.setDeviceId(platform_capabilities.device_id);
+  if (!platform_capabilities.group_id.IsNull())
+    capabilities.setGroupId(platform_capabilities.group_id);
 
   if (component_->Source()->GetType() == MediaStreamSource::kTypeAudio) {
     Vector<bool> echo_cancellation, auto_gain_control, noise_suppression;

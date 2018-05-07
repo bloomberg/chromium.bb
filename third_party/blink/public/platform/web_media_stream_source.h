@@ -88,6 +88,7 @@ class WebMediaStreamSource {
     WebMediaStreamTrack::FacingMode facing_mode =
         WebMediaStreamTrack::FacingMode::kNone;
     WebString device_id;
+    WebString group_id;
   };
 
   WebMediaStreamSource() = default;

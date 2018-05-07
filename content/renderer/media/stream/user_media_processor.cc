@@ -812,7 +812,8 @@ blink::WebMediaStreamSource UserMediaProcessor::InitializeVideoSourceObject(
     source.SetCapabilities(ComputeCapabilitiesForVideoSource(
         blink::WebString::FromUTF8(device.id),
         *current_request_info_->GetNativeVideoFormats(device.id),
-        device.video_facing, current_request_info_->is_video_device_capture()));
+        device.video_facing, current_request_info_->is_video_device_capture(),
+        device.group_id));
     local_sources_.push_back(source);
   }
   return source;
