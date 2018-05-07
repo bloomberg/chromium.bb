@@ -49,7 +49,7 @@
     &lt;li&gt;तुमचे इंटरनेट कनेक्शन नेहमीप्रमाणे चालत असल्याची खात्री करा.&lt;/li&gt;
     &lt;li&gt;वेबसाइटच्या मालकाशी संपर्क साधा.&lt;/li&gt;
     &lt;/ol&gt;</translation>
-<translation id="1257286744552378071">तुमच्या संस्थेद्वारे व्यवस्थापित केल्या न जाणाऱ्या साइटवर तुम्ही तुमचा पासवर्ड प्रविष्ट केला आहे. तुमचे खाते संरक्षित करण्यासाठी इतर अॅप्स आणि साइतवर तुमच्या पासवर्डचा पुन्हा वापर करू नका.</translation>
+<translation id="1257286744552378071">तुमच्या संस्थेद्वारे व्यवस्थापित केल्या न जाणाऱ्या साइटवर तुम्ही तुमचा पासवर्ड एंटर केला आहे. तुमचे खाते संरक्षित करण्यासाठी इतर अॅप्स आणि साइतवर तुमच्या पासवर्डचा पुन्हा वापर करू नका.</translation>
 <translation id="1263231323834454256">वाचन सूची</translation>
 <translation id="1264126396475825575"><ph name="CRASH_TIME" /> वाजता क्रॅश अहवाल कॅप्चर केला (अद्याप अपलोड केलेला नाही किंवा दुर्लक्ष केले)</translation>
 <translation id="1270502636509132238">घेण्याची पद्धत</translation>
@@ -399,7 +399,6 @@
 <translation id="3678529606614285348">पेज एका नवीन गुप्त विंडोमध्ये उघडा (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">क्रॅश अहवाल <ph name="CRASH_TIME" /> वाजता कॅप्चर केला, <ph name="UPLOAD_TIME" /> वाजता अपलोड केला</translation>
 <translation id="3681007416295224113">प्रमाणपत्र माहिती...</translation>
-<translation id="3690164694835360974">लॉग इन सुरक्षित नाही</translation>
 <translation id="3704162925118123524">आपण वापरत असलेल्या नेटवर्कला आपण त्याच्या लॉग इन पृष्ठास भेट देण्याची आवश्यकता असू शकते.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">लोड करीत आहे...</translation>
@@ -835,7 +834,6 @@
 <translation id="7138472120740807366">वितरण पद्धत</translation>
 <translation id="7139724024395191329">अमिरात</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> आणि <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> आणखी}one{<ph name="PAYMENT_METHOD_PREVIEW" /> आणि <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> आणखी}other{<ph name="PAYMENT_METHOD_PREVIEW" /> आणि <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> आणखी}}</translation>
-<translation id="7155487117670177674">पेमेंट सुरक्षित नाही</translation>
 <translation id="717330890047184534">Gaia आयडी:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> आणि <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> आणखी}one{<ph name="SHIPPING_OPTION_PREVIEW" /> आणि <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> आणखी}other{<ph name="SHIPPING_OPTION_PREVIEW" /> आणि <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> आणखी}}</translation>
 <translation id="7180611975245234373">रिफ्रेश करा</translation>

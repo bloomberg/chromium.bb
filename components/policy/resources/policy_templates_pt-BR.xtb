@@ -416,6 +416,21 @@
       A verificação ortográfica ainda poderá ser realizada utilizando-se um dicionário baixado; esta política só controla o uso do serviço on-line.
 
       Se esta configuração não for feita, os usuários poderão escolher se o serviço de verificação ortográfica deve ser usado ou não.</translation>
+<translation id="2294283832646774959">Configura uma lista de impressoras.
+
+      Esta política permite aos administradores fornecer configurações de impressora para
+      os usuários.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> e <ph name="PRINTER_DESCRIPTION" /> são strings de formato livre que podem ser personalizadas para facilitar a seleção da impressora. <ph name="PRINTER_MANUFACTURER" /> e <ph name="PRINTER_MODEL" /> servem para facilitar a identificação da impressora pelos usuários finais. Esses dados representam o fabricante e o modelo da impressora. <ph name="PRINTER_URI" /> deve ser um endereço que pode ser acessado a partir do computador do cliente, incluindo <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> e <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> é opcional. Se fornecido, será usado para ajudar a eliminar a duplicação de impressoras <ph name="ZEROCONF_DISCOVERY" />.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> precisa corresponder a uma das strings que representam uma impressora <ph name="PRODUCT_NAME" /> compatível. A string será usada para identificar e instalar o PPD apropriado para a impressora. Mais informações estão disponíveis em https://support.google.com/chrome?p=noncloudprint.
+
+      A configuração da impressora é concluída depois que ela é utilizada pela primeira vez. O download de PPDs não será realizado enquanto a impressora não for usada. Depois disso, os PPDs usados com frequência são armazenados em cache.
+
+      Esta política não afeta a possibilidade de os usuários configurarem impressoras em dispositivos individuais. Ela tem o objetivo de complementar a configuração de impressoras por usuários individuais.
+
+      Para dispositivos gerenciados pelo Active Directory, esta política permite a expansão de <ph name="MACHINE_NAME_VARIABLE" /> para o nome do computador com Active Directory ou uma substring correspondente. Por exemplo, se o nome do computador for <ph name="MACHINE_NAME_EXAMPLE" />, <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> será substituído pelos quatro caracteres que começam depois da 6ª posição, ou seja, <ph name="MACHINE_NAME_PART_EXAMPLE" />. A posição é baseada em zero.
+      </translation>
 <translation id="2294382669900758280">A reprodução de vídeos em apps Android não é levada em consideração, mesmo se esta política estiver definida como <ph name="TRUE" />.</translation>
 <translation id="2298647742290373702">Configurar a página "Nova guia" padrão no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Especifica uma lista de plug-ins ativados</translation>
@@ -868,7 +883,6 @@
 <translation id="3715569262675717862">Autenticação baseada em certificados do cliente</translation>
 <translation id="3736879847913515635">Ativar adição de uma pessoa no gerenciador de usuários</translation>
 <translation id="3737544779868348650">Nome de host da rede do dispositivo</translation>
-<translation id="3740754010292550733">Definir o período para notificações de reinicialização de atualização</translation>
 <translation id="3750220015372671395">Bloquear a geração de chaves nesses sites</translation>
 <translation id="3756011779061588474">Bloquear modo de desenvolvedor</translation>
 <translation id="3758089716224084329">Permite que você especifique o servidor proxy usado pelo <ph name="PRODUCT_NAME" /> e impede que os usuários alterem as configurações de proxy.
@@ -967,9 +981,6 @@
       Lista extensões que são instaladas automaticamente para o usuário Demo, para dispositivos em modo de varejo. Essas extensões são salvas no dispositivo e podem ser instaladas off-line, após a instalação.
 
       Cada entrada da lista contém um dicionário que deve incluir a identificação de extensão no campo 'extensão-id', e o URL de atualização no campo 'update-url'.</translation>
-<translation id="3873159954366380945">Permite que você configure o período em que as notificações de reinicialização do <ph name="PRODUCT_NAME" /> são mostradas para aplicar uma atualização pendente.
-
-      A configuração desta política pode ser usada para controlar o período, em milissegundos, durante o qual um usuário é informado progressivamente de que o <ph name="PRODUCT_NAME" /> precisa ser reaberto (ou que o <ph name="PRODUCT_OS_NAME" /> precisa ser reiniciado) para uma atualização. Durante esse período, o usuário será informado repetidamente da necessidade de uma atualização com base na configuração da política <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Caso não esteja configurada, o período padrão de 345.600.000 milissegundos (quatro dias) será usado para o <ph name="PRODUCT_OS_NAME" /> e 604.800.000 milissegundos (uma semana) para todas as outras plataformas.</translation>
 <translation id="3877517141460819966">Modo de autenticação de segundo fator integrado</translation>
 <translation id="388237772682176890">O uso dessa política foi suspenso no M53 e removido no M54, porque a compatibilidade com o SPDY/3.1 foi removida.
 
@@ -1174,6 +1185,7 @@
 <translation id="4508686775017063528">Se essa política for definida como verdadeira ou não for definida, o <ph name="PRODUCT_NAME" /> será ativado, e os usuários poderão iniciá-lo no menu do app, nos menus de contexto da página, nos controles de mídia em sites compatíveis com o Cast e (se mostrado) no ícone da barra de ferramentas do Google Cast.
 
           Se essa política for definida como falsa, o <ph name="PRODUCT_NAME" /> será desativado.</translation>
+<translation id="4515404363392014383">Ativar a Navegação segura para fontes confiáveis</translation>
 <translation id="4518251772179446575">Perguntar sempre que um site quiser rastrear a localização física dos usuários</translation>
 <translation id="4519046672992331730">Permite sugestões de pesquisa na omnibox do <ph name="PRODUCT_NAME" /> e impede que os usuários alterem esta configuração.
 
@@ -1294,6 +1306,7 @@
 
           Se esta política estiver definida como falsa, as solicitações de bloqueio de ativação da tela são ignoradas.</translation>
 <translation id="487460824085252184">Migrar automaticamente, sem autorização do usuário.</translation>
+<translation id="4874982543810021567">Bloquear o WebUSB nesses sites</translation>
 <translation id="4876805738539874299">Versão máxima de SSL ativada</translation>
 <translation id="4897928009230106190">Especifica os parâmetros usados ao pesquisar sugestões com POST. Consiste em pares de nomes/valores separados por vírgula. Se um valor for um parâmetro de modelo, como {searchTerms} no exemplo acima, ele será substituído por dados de termos de pesquisa reais.
 
@@ -1819,6 +1832,11 @@
       Se esta política não é configurada, a previsão de redes fica ativada, e o usuário pode alterá-la.</translation>
 <translation id="6658245400435704251">Especifica o número de segundos que um dispositivo pode chegar a atrasar aleatoriamente o download de uma atualização a partir do momento em que a atualização foi lançada no servidor. O dispositivo pode esperar uma parte desse intervalo de tempo em tempo cronológico e o restante contado em número de verificações de atualizações. Em todo caso, a dispersão tem como limite máximo uma quantidade constante de tempo para que o dispositivo nunca fique parado indefinidamente esperando para fazer o download de uma atualização.</translation>
 <translation id="6665670272107384733">Definir com que frequência o usuário precisa digitar a senha para usar o desbloqueio rápido</translation>
+<translation id="6681229465468164801">Permite definir uma lista de padrões de URL que especificam quais sites não podem pedir que o usuário conceda acesso a um dispositivo USB.
+
+          Se esta política não for configurada, o valor padrão global será usado para todos os sites a partir da política "DefaultWebUsbGuardSetting", se ela estiver definida, ou a partir das configurações pessoais do usuário.
+
+          Os padrões de URL desta política não devem ser contrários àqueles configurados por meio de WebUsbAskForUrls. Não é especificado qual das duas políticas tem precedência quando um URL corresponde a ambas.</translation>
 <translation id="6689792153960219308">Informar status de hardware</translation>
 <translation id="6698071416141001300">A sinalização de conta com a proteção de senha em risco é acionada pela reutilização de senha</translation>
 <translation id="6699880231565102694">Ativar autenticação de dois fatores para hosts de acesso remoto</translation>
@@ -1973,6 +1991,11 @@
       Se essa configuração for desativada ou não for configurada, a proteção padrão do Navegação segura será aplicada a todos os recursos.
       Esta política não está disponível em instâncias do Windows que não estejam vinculadas a um domínio do <ph name="MS_AD_NAME" />.</translation>
 <translation id="7079519252486108041">Bloquear pop-ups nestes sites</translation>
+<translation id="7085803328069945025">Permite definir uma lista de padrões de URL que especificam quais sites podem pedir que o usuário conceda acesso a um dispositivo USB.
+
+          Se esta política não for configurada, o valor padrão global será usado para todos os sites a partir da política "DefaultWebUsbGuardSetting", se ela estiver definida, ou a partir das configurações pessoais do usuário.
+
+          Os padrões de URL nesta política não devem ser contrários àqueles configurados por meio de WebUsbBlockedForUrls. Não é especificado qual das duas políticas tem precedência quando um URL corresponde a ambas.</translation>
 <translation id="7106631983877564505">Ativa o bloqueio quando os dispositivos <ph name="PRODUCT_OS_NAME" /> entram no modo inativo ou suspenso.
 
       Se você ativar esta configuração, será solicitado aos usuários uma senha para retirar o dispositivo do modo de espera.
@@ -2642,6 +2665,7 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 <translation id="9096086085182305205">Lista branca do servidor de autenticação</translation>
 <translation id="9098553063150791878">Políticas para a autenticação HTTP</translation>
 <translation id="9105265795073104888">Somente um subconjunto de opções de configuração de proxy é disponibilizado para apps Android. Esses apps podem optar voluntariamente por usar o proxy. Não é possível forçá-los a usar um proxy.</translation>
+<translation id="9106865192244721694">Permitir WebUSB nesses sites</translation>
 <translation id="9112727953998243860">Arquivo de configuração de impressora corporativa</translation>
 <translation id="9112897538922695510">Permite registrar uma lista de gerenciadores de protocolo. Essa política só pode ser uma política recomendada. A propriedade |protocolo| deve ser definida para o esquema, por exemplo, 'mailto', e a propriedade |url| deve ser definida para o padrão URL do aplicativo que administra o esquema. O padrão pode incluir '%s', que, se presente, será substituído por um URL administrado.
 
@@ -2674,6 +2698,11 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 <translation id="915194831143859291">Se esta política é definida como "false" ou se não é configurada, o <ph name="PRODUCT_OS_NAME" /> permite que o usuário desligue o dispositivo.
       Se esta política é definida como "true", o <ph name="PRODUCT_OS_NAME" /> aciona uma reinicialização quando o usuário desliga o dispositivo. O <ph name="PRODUCT_OS_NAME" /> substitui todas as ocorrências de botões de desligamento da interface de usuário por botões de reinicialização. Se o usuário desliga o dispositivo no botão liga/desliga, ele não é reinicializado automaticamente, mesmo que a política esteja ativa.</translation>
 <translation id="9158929520101169054">Permitir login múltiplo no navegador</translation>
+<translation id="9165792353046089850">Permite definir se os sites podem ter acesso aos dispositivos USB conectados. O acesso pode ser completamente bloqueado, ou uma pergunta será feita ao usuário toda vez que um site solicitar acesso a dispositivos USB conectados.
+
+          Esta política pode ser substituída por padrões de URL específicos por meio das políticas "WebUsbAskForUrls" e "WebUsbBlockedForUrls".
+
+          Se esta política não for configurada, será usado "3", e o usuário poderá alterar essa configuração.</translation>
 <translation id="9167719789236691545">Desativar o Drive no app Arquivos do <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="9187743794267626640">Desativa a montagem de armazenamento externo</translation>
 <translation id="9197740283131855199">Percentual pelo qual calcular o intervalo de escurecimento da tela se o usuário ficar ativo após o escurecimento</translation>

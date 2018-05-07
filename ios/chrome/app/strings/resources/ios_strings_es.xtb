@@ -81,6 +81,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="2381405137052800939">Configuración básica</translation>
 <translation id="2386793615875593361">1 foto seleccionada</translation>
 <translation id="2435457462613246316">Mostrar contraseña</translation>
+<translation id="2481538920734869610">AÑADIR CUENTA</translation>
 <translation id="2523363575747517183">Este sitio web está intentando abrir otra aplicación reiteradamente.</translation>
 <translation id="2529021024822217800">Abrir todos</translation>
 <translation id="2572712655377361602">Una política de dispositivos ha bloqueado el acceso a tus fotos</translation>
@@ -344,6 +345,7 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="7203585745079012652">Decir las respuestas</translation>
 <translation id="722055596168483966">Personalizar los servicios de Google</translation>
 <translation id="7272437679830969316">No se puede verificar tu identidad. No se ha copiado la contraseña.</translation>
+<translation id="7285236536143823449">SÍ, ACEPTO</translation>
 <translation id="7291368939935408496">Preparando contraseñas...</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" />% descargado</translation>
 <translation id="7346909386216857016">Entendido</translation>
@@ -422,7 +424,7 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="8870413625673593573">Cerrado recientemente</translation>
 <translation id="8881801611828450202">Buscar esta imagen en <ph name="SEARCH_ENGINE" /></translation>
 <translation id="8904976895050290827">Sincronización de Chrome</translation>
-<translation id="895541991026785598">Notificar un error</translation>
+<translation id="895541991026785598">Notificar un problema</translation>
 <translation id="8971089644512329999">Entendido</translation>
 <translation id="8981454092730389528">Gestión de tu actividad en Google</translation>
 <translation id="8985320356172329008">Has iniciado sesión en Google como</translation>

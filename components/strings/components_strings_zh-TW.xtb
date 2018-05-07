@@ -399,7 +399,6 @@
 <translation id="3678529606614285348">在新的無痕式視窗中開啟網頁 (Ctrl + Shift + N 鍵)</translation>
 <translation id="3679803492151881375">當機報告擷取時間：<ph name="CRASH_TIME" />，報告上傳時間：<ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">憑證資訊</translation>
-<translation id="3690164694835360974">登入行為不安全</translation>
 <translation id="3704162925118123524">您可能需要造訪目前所使用網路的登入網頁。</translation>
 <translation id="3704609568417268905"><ph name="TIME" />，<ph name="BOOKMARKED" />，<ph name="TITLE" />，<ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">載入中…</translation>
@@ -834,7 +833,6 @@
 <translation id="7138472120740807366">快遞方式</translation>
 <translation id="7139724024395191329">大公國</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> 和另外 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> 種付款方式}other{<ph name="PAYMENT_METHOD_PREVIEW" /> 和另外 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> 種付款方式}}</translation>
-<translation id="7155487117670177674">付款行為不安全</translation>
 <translation id="717330890047184534">GAIA ID：</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" />和另外 <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> 種選項}other{<ph name="SHIPPING_OPTION_PREVIEW" />和另外 <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> 種選項}}</translation>
 <translation id="7180611975245234373">重新整理</translation>

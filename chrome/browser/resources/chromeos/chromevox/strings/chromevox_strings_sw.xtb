@@ -88,6 +88,7 @@
 <translation id="1810107444790159527">Kikasha orodha</translation>
 <translation id="1828385960365606039">Mei</translation>
 <translation id="1834891354138622109">Safu wima</translation>
+<translation id="1845944666972354496">Gusa mara mbili ili uwashe</translation>
 <translation id="1865601187525349519">Mwisho wa maandishi</translation>
 <translation id="1876229593313240038">hati</translation>
 <translation id="188130072164734898">Tamka saa ya sasa na tarehe.</translation>
@@ -119,6 +120,7 @@
 <translation id="2179452035581866348">ChromeVox hutumia sauti kukupa maelezo ya msingi na ya ziada. Unaweza kutumia sauti hizi kusogeza kwa haraka kwa kujifunza maana ya kila sauti. Baada ya kuzifahamu vyema sauti hizi, unaweza kuzima kipengele cha maelezo ya maneno mengi kwa matamshi na kutegemea sauti kupata maelezo muhimu kuhusu ukurasa. Ifuatayo ni orodha kamili ya sauti na maana ya kila moja.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{alama ya kufunga mabano}other{alama # za kufunga mabano}}</translation>
 <translation id="2199994615414171367">Hisabati iliyotangulia</translation>
+<translation id="2203046366315513658">Punguza thamani</translation>
 <translation id="2220529011494928058">Ripoti tatizo</translation>
 <translation id="2223693656926968778">Chukua hatua kwenye kipengee cha sasa</translation>
 <translation id="225732394367814946">Ongeza kasi ya usemi</translation>
@@ -157,6 +159,7 @@
 <translation id="2637227747952042642">Hisabati</translation>
 <translation id="2639750663247012216">Kirekebishaji cha ChromeVox</translation>
 <translation id="2644542693584024604">kosa la tahajia</translation>
+<translation id="2673280813984708147">unabadilisha</translation>
 <translation id="267442004702508783">onyesha upya</translation>
 <translation id="2684412629217766642">Funga Mafunzo ya ChromeVox</translation>
 <translation id="2697408785920771974">autoinl</translation>
@@ -208,6 +211,7 @@
 <translation id="3060756054951570867">Menyu <ph name="TITLE" /> imefunguliwa</translation>
 <translation id="3078345202707391975">Kichwa cha ngazi ya 2 kinachofuata</translation>
 <translation id="3078740164268491126">jedwali</translation>
+<translation id="3082249673510793544">Sogeza nyuma</translation>
 <translation id="3082557070674409251">Kimebofiwa</translation>
 <translation id="3084806535845658316">hakuna mwangwi wa kuchapa</translation>
 <translation id="3086746722712840547">dokezo</translation>
@@ -395,6 +399,7 @@
 <translation id="4372705107434148843">Achisha usemi</translation>
 <translation id="4373197658375206385">Hakuna kipengee kilichotangulia ambacho si kiungo.</translation>
 <translation id="4376316291247992553">Angalia Michoro Kama Breli</translation>
+<translation id="4378308539633073595">Sogeza mbele</translation>
 <translation id="4391478986194775161">maelezo ya maudhui</translation>
 <translation id="443163561286008705">weka upya</translation>
 <translation id="4457472090507035117">Chagua sauti iliyopo sasa:</translation>
@@ -402,6 +407,7 @@
 <translation id="4476183483923481720">mstari mpya</translation>
 <translation id="4482330759234983253">Jedwali lililotangulia</translation>
 <translation id="4491109536499578614">Picha</translation>
+<translation id="4517854969512651305">Ongeza thamani</translation>
 <translation id="4529987814483543472">Ramani msingi ya zamani</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{mkwaju}other{mikwaju #}}</translation>
 <translation id="4547556996012970016">Kichwa cha ngazi ya 5 kinachofuata</translation>
@@ -417,6 +423,7 @@
 <translation id="461613135510474570">Sentensi</translation>
 <translation id="463135993322337640">Bonyeza ChromeVox o, n ili upate matoleo mapya</translation>
 <translation id="4647836961514597010">Kiteua rangi</translation>
+<translation id="4652110509054054146">Tumia kitufe cha Kutafuta + kishale cha Kushoto au Kulia badala ya kitufe cha Home au End; kitufe cha Kutafuta + Control ya Kulia au Kushoto badala ya Control + Home au Control + End; kitufe cha Kutafuta + kishale cha Juu au Chini badala ya Page Up au Down</translation>
 <translation id="4660783501463101648">Kibodi ya kawaida imeondolewa. Kipengele cha kugeuza kibodi ili kurudi kwenye kibodi ya Kawaida ya ChromeVox kimeondolewa.</translation>
 <translation id="4661075872484491155">mti</translation>
 <translation id="4668929960204016307">,</translation>

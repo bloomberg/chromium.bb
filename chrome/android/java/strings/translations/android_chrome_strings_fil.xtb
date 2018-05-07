@@ -82,10 +82,12 @@
 <translation id="1718835860248848330">Huling oras</translation>
 <translation id="1729516292547892356">Upang tingnan ang virtual reality na content, i-update ang Mga Serbisyo ng Google VR</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - Na-update <ph name="TIME_SINCE_UPDATE" /></translation>
+<translation id="1743802530341753419">Magtanong bago payagan ang mga site na kumonekta sa isang device (inirerekomenda)</translation>
 <translation id="1749561566933687563">I-sync ang iyong mga bookmark</translation>
 <translation id="17513872634828108">Mga bukas na tab</translation>
 <translation id="1756600373018374892">I-tap ang button na ito para sa mabilis na access sa iyong mga tab.</translation>
 <translation id="1779089405699405702">Pang-decode ng larawan</translation>
+<translation id="1792959175193046959">Baguhin ang default na lokasyon ng pag-download anumang oras</translation>
 <translation id="1807246157184219062">Maliwanag</translation>
 <translation id="1829244130665387512">Nahanap sa pahina</translation>
 <translation id="1832521218263067499">Mga insidenteng nauugnay sa seguridad</translation>
@@ -158,7 +160,6 @@
 <translation id="2450083983707403292">Gusto mo bang simulang muli ang pag-download sa <ph name="FILE_NAME" />?</translation>
 <translation id="2476578072172137802">Mga Setting ng Site</translation>
 <translation id="2482878487686419369">Mga Abiso</translation>
-<translation id="2490674006498621843">Hilahin pataas ang toolbar upang makita ang iyong mga file at page sa mga download</translation>
 <translation id="2496180316473517155">History ng Pagba-browse</translation>
 <translation id="2498359688066513246">Tulong at feedback</translation>
 <translation id="2501278716633472235">Bumalik</translation>
@@ -648,6 +649,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="6910211073230771657">Na-delete</translation>
 <translation id="6912998170423641340">I-block ang mga site sa pag-read ng text at mga larawan mula sa clipboard</translation>
 <translation id="6914783257214138813">Makikita ng sinumang makakatingin sa na-export na file ang iyong mga password.</translation>
+<translation id="6942665639005891494">Baguhin ang default na lokasyon ng pag-download anumang oras gamit ang opsyong menu ng Mga Setting</translation>
 <translation id="6945221475159498467">Pumili</translation>
 <translation id="6963766334940102469">Mag-delete ng mga bookmark</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -673,6 +675,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="7121362699166175603">Kini-clear ang history at mga autocompletion sa address bar. Maaaring may iba pang anyo ng history ng pag-browse ang iyong Google Account sa <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128222689758636196">Payagan para sa kasalukuyang search engine</translation>
 <translation id="7138678301420049075">Iba pa</translation>
+<translation id="7144878232160441200">Subukang muli</translation>
 <translation id="7149893636342594995">Nakalipas na 24 na oras</translation>
 <translation id="7177466738963138057">Maaari mo itong baguhin sa ibang pagkakataon sa Mga Setting</translation>
 <translation id="7180611975245234373">I-refresh</translation>
@@ -814,6 +817,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="8503813439785031346">Username</translation>
 <translation id="8514477925623180633">Mag-export ng mga password na naka-store sa Chrome</translation>
 <translation id="8514577642972634246">Pumasok sa mode na incognito</translation>
+<translation id="851751545965956758">I-block ang mga site sa pagkonekta sa mga device</translation>
 <translation id="8523928698583292556">I-delete ang nakaimbak na password</translation>
 <translation id="854522910157234410">Buksan ang page na ito</translation>
 <translation id="8559990750235505898">Mag-alok na magsalin ng mga page sa iba pang wika</translation>

@@ -82,10 +82,12 @@
 <translation id="1718835860248848330">Zadnja ura</translation>
 <translation id="1729516292547892356">Če si želite ogledati vsebino v navidezni resničnosti, posodobite Googlove storitve za navidezno resničnost</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – Posodobljeno: <ph name="TIME_SINCE_UPDATE" /></translation>
+<translation id="1743802530341753419">Poziv, preden se spletnim mestom dovoli povezovanje z napravo (priporočeno)</translation>
 <translation id="1749561566933687563">Sinhroniziranje zaznamkov</translation>
 <translation id="17513872634828108">Odpri zavihke</translation>
 <translation id="1756600373018374892">Dotaknite se tega gumba, če želite hitro dostopati do svojih zavihkov.</translation>
 <translation id="1779089405699405702">Slikovni dekodirnik</translation>
+<translation id="1792959175193046959">Kadar koli lahko spremenite privzeto mesto za prenose</translation>
 <translation id="1807246157184219062">Svetlo</translation>
 <translation id="1829244130665387512">Poišči na strani</translation>
 <translation id="1832521218263067499">Varnostni dogodki</translation>
@@ -158,7 +160,6 @@
 <translation id="2450083983707403292">Ali želite znova začeti prenos datoteke <ph name="FILE_NAME" />?</translation>
 <translation id="2476578072172137802">Nastavitve mesta</translation>
 <translation id="2482878487686419369">Obvestila</translation>
-<translation id="2490674006498621843">Povlecite navzgor po orodni vrstici, če želite poiskati datoteke in strani med prenosi</translation>
 <translation id="2496180316473517155">Zgodovina brskanja</translation>
 <translation id="2498359688066513246">Pomoč in povratne informacije</translation>
 <translation id="2501278716633472235">Nazaj</translation>
@@ -182,7 +183,7 @@
 <translation id="2650751991977523696">Želite znova prenesti datoteko?</translation>
 <translation id="2653659639078652383">Pošlji</translation>
 <translation id="2677748264148917807">Zapusti</translation>
-<translation id="2693813674743028984">Skrijte shrambo</translation>
+<translation id="2693813674743028984">Skrij shrambo</translation>
 <translation id="2704606927547763573">Kopirano</translation>
 <translation id="2707726405694321444">Osveži stran</translation>
 <translation id="2709516037105925701">Samodejno izpolnjevanje</translation>
@@ -208,7 +209,7 @@
 <translation id="2956410042958133412">Ta računa upravljata <ph name="PARENT_NAME_1" /> in <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Vse pravice pridržane.</translation>
 <translation id="2962095958535813455">Preklopljeno na zavihke brez beleženja zgodovine</translation>
-<translation id="2965945119655563012">Prikažite shrambo</translation>
+<translation id="2965945119655563012">Prikaži shrambo</translation>
 <translation id="2968755619301702150">Pregledovalnik potrdil</translation>
 <translation id="2979025552038692506">Izbrani zavihek brez beleženja zgodovine</translation>
 <translation id="2989523299700148168">Nedavno obiskano</translation>
@@ -648,6 +649,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="6910211073230771657">Izbrisano</translation>
 <translation id="6912998170423641340">Preprečevanje, da spletna mesta berejo besedila in slike v odložišču</translation>
 <translation id="6914783257214138813">Gesla bodo vidna vsakomur, ki si lahko ogleda izvoženo datoteko z gesli.</translation>
+<translation id="6942665639005891494">Z možnostjo v meniju z nastavitvami lahko kadar koli spremenite privzeto mesto za prenose</translation>
 <translation id="6945221475159498467">Izberi</translation>
 <translation id="6963766334940102469">Izbriši zaznamke</translation>
 <translation id="6965382102122355670">V redu</translation>
@@ -673,6 +675,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="7121362699166175603">Izbriše zgodovino in samodokončanja v naslovni vrstici. V Google Računu so morda druge vrste zgodovine brskanja na <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128222689758636196">Dovoli trenutni iskalnik</translation>
 <translation id="7138678301420049075">Drugo</translation>
+<translation id="7144878232160441200">Poskusi znova</translation>
 <translation id="7149893636342594995">Zadnjih 24 ur</translation>
 <translation id="7177466738963138057">To lahko pozneje spremenite v nastavitvah</translation>
 <translation id="7180611975245234373">Osveži</translation>
@@ -702,7 +705,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="7455923816558154057">Dotaknite se za ogled</translation>
 <translation id="7473891865547856676">Ne, hvala</translation>
 <translation id="7475192538862203634">Če se to pogosto pokaže, poskusite te <ph name="BEGIN_LINK" />predloge<ph name="END_LINK" />.</translation>
-<translation id="7475688122056506577">Kartica SD ni najdena. Nekatere vaše datoteke morda manjkajo.</translation>
+<translation id="7475688122056506577">Kartice SD ni bilo mogoče najti. Nekatere vaše datoteke morda manjkajo.</translation>
 <translation id="748127970106343339">Potrditev izbrisa poverilnice naprave</translation>
 <translation id="7481312909269577407">Naprej</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Posodobljeno: <ph name="TIME_SINCE_UPDATE" />)</translation>
@@ -814,6 +817,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="8503813439785031346">Uporabniško ime</translation>
 <translation id="8514477925623180633">Izvoz gesel, shranjenih v Chromu</translation>
 <translation id="8514577642972634246">Vklop načina brez beleženja zgodovine</translation>
+<translation id="851751545965956758">Spletnim mestom prepreči povezovanje z napravami</translation>
 <translation id="8523928698583292556">Izbris shranjenega gesla</translation>
 <translation id="854522910157234410">Odpri to stran</translation>
 <translation id="8559990750235505898">Ponudi prevajanje strani v drugih jezikih</translation>

@@ -416,6 +416,20 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
       Die Rechtschreibprüfung kann weiterhin mit einem heruntergeladenen Wörterbuch durchgeführt werden. Diese Richtlinie bezieht sich nur auf die Verwendung des Online-Dienstes.
 
       Ist diese Einstellung nicht konfiguriert, können die Nutzer auswählen, ob die Rechtschreibprüfung verwendet werden soll oder nicht.</translation>
+<translation id="2294283832646774959">Eine Liste der Drucker wird konfiguriert.
+
+      Mit dieser Richtlinie können Administratoren den Nutzern Druckerkonfigurationen bereitstellen.
+
+      Bei <ph name="PRINTER_DISPLAY_NAME" /> und <ph name="PRINTER_DESCRIPTION" /> handelt es sich um Freiform-Strings, die für eine einfachere Druckerauswahl angepasst werden können. <ph name="PRINTER_MANUFACTURER" /> und <ph name="PRINTER_MODEL" /> dienen der vereinfachten Druckererkennung durch die Nutzer. Sie geben den Hersteller und das Modell des Druckers an. Bei <ph name="PRINTER_URI" /> sollte es sich um eine Adresse, einschließlich <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> und <ph name="URI_QUEUE" />, handeln, auf die über einen Client-Computer zugegriffen werden kann. Die <ph name="PRINTER_UUID" /> ist optional. Wenn sie angegeben ist, wird sie zum Entfernen von Duplikaten bei <ph name="ZEROCONF_DISCOVERY" />-Druckern verwendet.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> muss mit einem der Strings übereinstimmen, die einen von <ph name="PRODUCT_NAME" /> unterstützten Drucker angeben. Der String wird zur Ermittlung und Installation der korrekten PPD für den Drucker verwendet. Weitere Informationen finden Sie unter https://support.google.com/chrome?p=noncloudprint.
+
+      Die Druckereinrichtung wird bei der ersten Verwendung des Druckers abgeschlossen. PPDs werden erst dann heruntergeladen, wenn der Drucker genutzt wird. Anschließend werden häufig verwendete PPDs im Cache gespeichert.
+
+      Diese Richtlinie hat keinen Einfluss darauf, ob Nutzer Drucker auf ihren individuellen Geräten konfigurieren können. Sie ist als Ergänzung zu den Druckerkonfigurationen der einzelnen Nutzer gedacht.
+
+      Bei Geräten, die über Active Directory verwaltet werden, unterstützt diese Richtlinie die Erweiterung von <ph name="MACHINE_NAME_VARIABLE" /> auf den Active Directory-Computernamen oder einen Teilstring davon. Wenn der Computername beispielsweise <ph name="MACHINE_NAME_EXAMPLE" /> lautet, wird <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> durch die vier Zeichen nach der sechsten Stelle ersetzt, z. B. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Beachten Sie, dass die Position auf Null basiert.
+      </translation>
 <translation id="2294382669900758280">Das Abspielen von Videos in Android-Apps wird nicht berücksichtigt, auch wenn diese Richtlinie auf <ph name="TRUE" /> gesetzt ist.</translation>
 <translation id="2298647742290373702">Standardmäßige "Neuer Tab"-Seite in <ph name="PRODUCT_NAME" /> konfigurieren.</translation>
 <translation id="2299220924812062390">Liste der aktivierten Plug-ins angeben</translation>
@@ -869,7 +883,6 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
 <translation id="3715569262675717862">Authentifizierung auf Grundlage von Clientzertifikaten</translation>
 <translation id="3736879847913515635">"Person hinzufügen" im Nutzermanager aktivieren</translation>
 <translation id="3737544779868348650">Hostname im Gerätenetzwerk</translation>
-<translation id="3740754010292550733">Zeitraum für Neustartbenachrichtigungen für ein Update festlegen</translation>
 <translation id="3750220015372671395">Schlüsselgenerierung auf diesen Websites blockieren</translation>
 <translation id="3756011779061588474">Entwicklermodus blockieren</translation>
 <translation id="3758089716224084329">Ermöglicht Ihnen, den von <ph name="PRODUCT_NAME" /> verwendeten Proxy-Server anzugeben, und verhindert, dass Nutzer die Proxy-Einstellungen ändern.
@@ -965,9 +978,6 @@ Falls die Richtlinie nicht festgelegt wird, bleibt die Varianten-Seed-URL unver�
       Führt Erweiterungen auf, die bei Geräten im Händlermodus automatisch für den Demo-Nutzer installiert werden. Diese Erweiterungen werden auf dem Gerät gespeichert und können anschließend offline installiert werden.
 
        Jeder Eintrag enthält ein Verzeichnis, in dem im Feld "extension-id" die Erweiterungs-ID und im Feld "update-url" die Aktualisierungs-URL angegeben werden müssen.</translation>
-<translation id="3873159954366380945">Mit dieser Einstellung können Sie festlegen, wie lange Benachrichtigungen zum Neustart von <ph name="PRODUCT_NAME" /> angezeigt werden, um ein ausstehendes Update durchzuführen.
-
-      Mit dieser Richtlinieneinstellung kann der Zeitraum in Millisekunden festgelegt werden, in dem ein Nutzer fortschreitend darüber informiert wird, dass <ph name="PRODUCT_NAME" /> oder <ph name="PRODUCT_OS_NAME" /> für ein Update neu gestartet werden muss. Während dieses Zeitraums wird der Nutzer entsprechend der Einstellung der Richtlinie <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> wiederholt über die Notwendigkeit eines Updates informiert. Wenn die Richtlinie nicht festgelegt ist, wird der Standardzeitraum von 345.600.000 Millisekunden (vier Tage) für <ph name="PRODUCT_OS_NAME" /> und 604.800.000 Millisekunden (eine Woche) für alle anderen Plattformen verwendet.</translation>
 <translation id="3877517141460819966">Integrierter Zwei-Faktor-Authentifizierungsmodus</translation>
 <translation id="388237772682176890">Da SPDY/3.1 nicht mehr unterstützt wird, wurde diese Richtlinie in M53 eingestellt und in M54 entfernt.
 
@@ -1174,6 +1184,7 @@ Wird die Richtlinie auf "false" gesetzt oder nicht konfiguriert, wird kein Zerti
 <translation id="4508686775017063528">Wird diese Richtlinie auf "true" gesetzt oder nicht definiert, dann wird <ph name="PRODUCT_NAME" /> aktiviert und Nutzer können die Funktion über das App-Menü, Kontextmenüs von Seiten, Mediensteuerelemente auf Cast-fähigen Websites und das Toolbar-Symbol von Cast (falls angezeigt) starten.
 
           Wird diese Richtlinie auf "false" gesetzt, dann wird <ph name="PRODUCT_NAME" /> deaktiviert.</translation>
+<translation id="4515404363392014383">Safe Browsing für vertrauenswürdige Quellen aktivieren</translation>
 <translation id="4518251772179446575">Nachfragen, wenn eine Website den physischen Standort der Nutzer verfolgen möchte</translation>
 <translation id="4519046672992331730">Aktiviert Suchvorschläge in der Omnibox von <ph name="PRODUCT_NAME" /> und verhindert, dass Nutzer diese Einstellung ändern.
 
@@ -1295,6 +1306,7 @@ Falls diese Richtlinie auf "true" gesetzt oder nicht festgelegt wird, werden Bil
 
 Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-Wakelocks ignoriert.</translation>
 <translation id="487460824085252184">Automatisch migrieren, ohne die Zustimmung des Nutzers einzuholen</translation>
+<translation id="4874982543810021567">WebUSB auf diesen Websites blockieren</translation>
 <translation id="4876805738539874299">SSL-Höchstversion aktiviert</translation>
 <translation id="4897928009230106190">Gibt die Parameter für die Vorschlagsuche mit POST an. Sie besteht aus durch Komma getrennten Name/Wert-Paaren. Wenn ein Wert ein Vorlagenparameter wie z. B. {searchTerms} im obigen Beispiel ist, wird er durch echte Suchbegriffsdaten ersetzt.
 
@@ -1826,6 +1838,11 @@ Wenn Sie diese Einstellung auf "Immer", "Nie" oder "Nur WLAN" festlegen, können
 Ist die Richtlinie nicht konfiguriert, wird die Netzwerkvorhersage aktiviert, kann jedoch vom Nutzer geändert werden. </translation>
 <translation id="6658245400435704251">Legt die Anzahl von Sekunden fest, die eine Verzögerung ab dem Übertragungszeitpunkt an den Server maximal betragen darf, wenn ein Gerät ein Update herunterlädt. Die Verzögerungszeit setzt sich aus der Istzeit und der auf die Anzahl der Überprüfungen auf Updates verwendeten Zeit zusammen. Die obere Grenze für den Streufaktor bildet ein konstanter Zeitraum, sodass ein Gerät nur eine begrenzte Zeit lang auf den Download eines Updates wartet.</translation>
 <translation id="6665670272107384733">Festlegen, wie oft der Nutzer das Passwort eingeben muss, um das schnelle Entsperren zu verwenden</translation>
+<translation id="6681229465468164801">Ermöglicht Ihnen die Erstellung einer Liste mit URL-Mustern. Den angegebenen Websites ist es nicht gestattet, Zugriff auf ein USB-Gerät anzufordern.
+
+         Ist diese Richtlinie nicht konfiguriert, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultWebUsbGuardSetting", sofern konfiguriert, oder der persönlichen Konfiguration des Nutzers zum Einsatz.
+
+          URL-Muster in dieser Richtlinie sollten sich nicht mit den über "WebUsbAskForUrls" konfigurierten URL-Mustern überschneiden. Es ist nicht festgelegt, welche der beiden Richtlinien Vorrang hat, falls eine URL mit beiden übereinstimmt.</translation>
 <translation id="6689792153960219308">Hardwarestatus senden</translation>
 <translation id="6698071416141001300">Die Kontomeldung "Passwortschutz gefährdet" wird durch die Wiederverwendung eines Passworts ausgelöst</translation>
 <translation id="6699880231565102694">Zwei-Faktor-Authentifizierung für Remotezugriff-Hosts aktivieren</translation>
@@ -1982,6 +1999,11 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
       Wenn diese Einstellung deaktiviert oder nicht festgelegt ist, wird der Safe Browsing-Standardschutz auf alle Ressourcen angewendet.
       Diese Richtlinie ist nur in Windows-Instanzen verfügbar, die mit einer <ph name="MS_AD_NAME" />-Domain verbunden sind.</translation>
 <translation id="7079519252486108041">Pop-ups auf diesen Websites blockieren</translation>
+<translation id="7085803328069945025">Ermöglicht Ihnen die Erstellung einer Liste mit URL-Mustern. Den angegebenen Websites ist es gestattet, Zugriff auf ein USB-Gerät anzufordern.
+
+         Ist diese Richtlinie nicht konfiguriert, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultWebUsbGuardSetting", sofern konfiguriert, oder der persönlichen Konfiguration des Nutzers zum Einsatz.
+
+          URL-Muster in dieser Richtlinie sollten sich nicht mit den über "WebUsbBlockedForUrls" konfigurierten URL-Mustern überschneiden. Es ist nicht festgelegt, welche der beiden Richtlinien Vorrang hat, falls eine URL mit beiden übereinstimmt.</translation>
 <translation id="7106631983877564505">Ermöglicht das Sperren von Geräten, wenn ein <ph name="PRODUCT_OS_NAME" />-Gerät inaktiv ist oder angehalten wird.
 
       Wenn Sie diese Einstellung aktivieren, werden Nutzer nach einem Passwort gefragt, um das Gerät aus dem Ruhemodus zu reaktivieren.
@@ -2646,6 +2668,7 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
 <translation id="9096086085182305205">Weiße Liste für Authentifizierungsserver</translation>
 <translation id="9098553063150791878">Richtlinien für die HTTP-Authentifizierung</translation>
 <translation id="9105265795073104888">Android-Apps wird nur ein Teil der Proxykonfigurationsoptionen zur Verfügung gestellt. Der Proxy kann in Android-Apps auf freiwilliger Basis verwendet werden. Es ist nicht möglich, die Verwendung eines Proxys zu erzwingen.</translation>
+<translation id="9106865192244721694">WebUSB auf diesen Websites zulassen</translation>
 <translation id="9112727953998243860">Unternehmensdrucker-Konfigurationsdatei</translation>
 <translation id="9112897538922695510">Damit können Sie eine Liste mit Protokoll-Handlern registrieren, wobei dies lediglich eine empfohlene Richtlinie sein kann. Für die Eigenschaft |protocol| sollte ein Schema wie "mailto" und für die Eigenschaft |url| das URL-Muster der Anwendung festgelegt werden, die das Schema verwaltet. Das Muster kann "%s" enthalten, was später durch die jeweilige URL ersetzt wird.
 
@@ -2679,6 +2702,11 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
 <translation id="915194831143859291">Wenn diese Richtlinie auf "false" gesetzt oder nicht konfiguriert ist, erlaubt <ph name="PRODUCT_OS_NAME" /> dem Nutzer, das Gerät herunterzufahren.
       Ist diese Richtlinie auf "true" gesetzt, löst <ph name="PRODUCT_OS_NAME" /> einen Neustart aus, wenn der Nutzer das Gerät herunterfährt. <ph name="PRODUCT_OS_NAME" /> ersetzt alle Schaltflächen zum Herunterfahren auf der Benutzeroberfläche durch Schaltflächen zum Neustarten. Wenn der Nutzer das Gerät über die Ein-/Aus-Taste herunterfährt, wird es nicht automatisch neu gestartet, auch wenn die Richtlinie aktiviert ist.</translation>
 <translation id="9158929520101169054">Mehrfachanmeldung im Browser zulassen</translation>
+<translation id="9165792353046089850">Mit dieser Richtlinie können Sie festlegen, ob Websites Zugriff auf angeschlossene USB-Geräte erhalten. Der Zugriff kann vollständig blockiert werden oder der Nutzer wird jedes Mal gefragt, wenn eine Website auf angeschlossene USB-Geräte zugreifen möchte.
+
+          Diese Richtlinie kann für spezifische URL-Muster mithilfe der Richtlinien "WebUsbAskForUrls" und "WebUsbBlockedForUrls" überschrieben werden.
+
+          Wenn diese Richtlinie nicht konfiguriert ist, wird die Einstellung "3" verwendet, die vom Nutzer später geändert werden kann.</translation>
 <translation id="9167719789236691545">Synchronisierung zwischen Drive und der App "Dateien" von <ph name="PRODUCT_OS_NAME" /> deaktivieren</translation>
 <translation id="9187743794267626640">Bereitstellen von externem Speicher deaktivieren</translation>
 <translation id="9197740283131855199">Prozentsatz für die Skalierung der Spanne für die Bildschirmabdunkelung, wenn der Nutzer nach der Abdunkelung aktiv wird</translation>

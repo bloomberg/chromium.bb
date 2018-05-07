@@ -158,7 +158,6 @@
 <translation id="2450083983707403292">क्या आप <ph name="FILE_NAME" /> को डाउनलोड करना फिर से शुरू करना चाहते हैं?</translation>
 <translation id="2476578072172137802">साइट की सेटिंग</translation>
 <translation id="2482878487686419369">अधिसूचनाएं</translation>
-<translation id="2490674006498621843">डाउनलोड में अपनी फ़ाइलें और पेज पाने के लिए टूलबार को ऊपर खींचें</translation>
 <translation id="2496180316473517155">ब्राउज़िंग इतिहास...</translation>
 <translation id="2498359688066513246">सहायता और फ़ीडबैक</translation>
 <translation id="2501278716633472235">वापस जाएं</translation>
@@ -182,6 +181,7 @@
 <translation id="2650751991977523696">फ़ाइल दोबारा डाउनलोड करें?</translation>
 <translation id="2653659639078652383">सबमिट करें</translation>
 <translation id="2677748264148917807">छोड़ें</translation>
+<translation id="2693813674743028984">मेमोरी छिपाएं</translation>
 <translation id="2704606927547763573">कॉपी किया गया</translation>
 <translation id="2707726405694321444">पेज रीफ्रेश करें</translation>
 <translation id="2709516037105925701">ऑटोमैटिक भरना</translation>
@@ -207,6 +207,7 @@
 <translation id="2956410042958133412">यह खाता <ph name="PARENT_NAME_1" /> और <ph name="PARENT_NAME_2" /> के द्वारा प्रबंधित है.</translation>
 <translation id="2960796085439532066">कॉपीराइट <ph name="YEAR" /> Google Inc. सर्वाधिकार सुरक्षित.</translation>
 <translation id="2962095958535813455">गुप्त टैब पर स्विच कर दिया गया</translation>
+<translation id="2965945119655563012">मेमोरी दिखाएं</translation>
 <translation id="2968755619301702150">प्रमाणपत्र व्यूअर</translation>
 <translation id="2979025552038692506">चयनित गुप्त टैब</translation>
 <translation id="2989523299700148168">हाल ही में देखे गए</translation>
@@ -334,6 +335,7 @@
 <translation id="4170011742729630528">सेवा उपलब्ध नहीं है; बाद में पुन: प्रयास करें.</translation>
 <translation id="4181841719683918333">भाषाएं</translation>
 <translation id="4195643157523330669">नए टैब में खोलें</translation>
+<translation id="4198423547019359126">डाउनलोड करने की कोई जगह उपलब्ध नहीं है</translation>
 <translation id="4226663524361240545">नोटिफ़िकेशन से डिवाइस में कंपन हो सकता है</translation>
 <translation id="4242533952199664413">सेटिंग खोलें</translation>
 <translation id="424864128008805179">Chrome से प्रस्थान करें?</translation>
@@ -670,6 +672,7 @@
 <translation id="7121362699166175603">पता बार में स्वत: पूर्णता और इतिहास को हटाता है. आपके Google खाते में <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> पर अन्य प्रकार के ब्राउज़िंग इतिहास हो सकतेे हैं.</translation>
 <translation id="7128222689758636196">वर्तमान खोज इंजन के लिए अनुमति दें</translation>
 <translation id="7138678301420049075">अन्य</translation>
+<translation id="7144878232160441200">पुन: प्रयास करें</translation>
 <translation id="7149893636342594995">पिछले 24 घंटे</translation>
 <translation id="7177466738963138057">आप इसे बाद में सेटिंग में जाकर बदल सकते हैं</translation>
 <translation id="7180611975245234373">रीफ्रेश करें</translation>
@@ -699,6 +702,7 @@
 <translation id="7455923816558154057">देखने के लिए टैप करें</translation>
 <translation id="7473891865547856676">जी रहने दें</translation>
 <translation id="7475192538862203634">यदि आपको यह बार-बार दिखाई दे रहा हो, तो इन <ph name="BEGIN_LINK" />सुझावों<ph name="END_LINK" /> को आज़माएं.</translation>
+<translation id="7475688122056506577">SD कार्ड नहीं मिला. हो सकता है कि आपकी कुछ फ़ाइलें उपलब्ध न हों.</translation>
 <translation id="748127970106343339">डिवाइस प्रमाणिकता हटाने की पुष्‍टि करें</translation>
 <translation id="7481312909269577407">आगे भेजें</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (<ph name="TIME_SINCE_UPDATE" /> अपडेट किया गया)</translation>
@@ -762,6 +766,7 @@
 <translation id="8026334261755873520">ब्राउज़िंग डेटा साफ़ करें</translation>
 <translation id="8035133914807600019">नया फ़ोल्‍डर…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> दिन शेष</translation>
+<translation id="804335162455518893">SD कार्ड नहीं मिला</translation>
 <translation id="805047784848435650">आपके ब्राउज़िंग इतिहास के आधार पर</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB उपलब्ध</translation>
 <translation id="8058746566562539958">नए Chrome टैब में खोलें</translation>

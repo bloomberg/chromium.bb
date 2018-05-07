@@ -89,6 +89,7 @@
 <translation id="1810107444790159527">Оквир са листом</translation>
 <translation id="1828385960365606039">мај</translation>
 <translation id="1834891354138622109">Колона</translation>
+<translation id="1845944666972354496">Додирните двапут ради активирања</translation>
 <translation id="1865601187525349519">Крај текста</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">Изговара актуелно време и датум.</translation>
@@ -120,6 +121,7 @@
 <translation id="2179452035581866348">ChromeVox користи звукове да би пружао важне и додатне информације. Можете да користите ове звукове да бисте се брже кретали тако што ћете научити шта сваки од звукова значи. Када се боље упознате са услугом, можете да искључите говорне описе и користите звукове за важне информације о страници. Ево комплетне листе звукова и њихових значења.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{затворена заграда}one{# затворена заграда}few{# затворене заграде}other{# затворених заграда}}</translation>
 <translation id="2199994615414171367">Претходни математички израз</translation>
+<translation id="2203046366315513658">Смањује вредност</translation>
 <translation id="2220529011494928058">Пријави проблем</translation>
 <translation id="2223693656926968778">Предузимање радње за актуелну ставку</translation>
 <translation id="225732394367814946">Повећавање брзине говора</translation>
@@ -158,6 +160,7 @@
 <translation id="2637227747952042642">Математика</translation>
 <translation id="2639750663247012216">ChromeVox модификатор</translation>
 <translation id="2644542693584024604">погрешно написано</translation>
+<translation id="2673280813984708147">мења</translation>
 <translation id="267442004702508783">освежи</translation>
 <translation id="2684412629217766642">Затвори водич за ChromeVox</translation>
 <translation id="2697408785920771974">аутоматско довршавање уметнутог текста</translation>
@@ -209,6 +212,7 @@
 <translation id="3060756054951570867">Отворен је мени <ph name="TITLE" /></translation>
 <translation id="3078345202707391975">Следеће заглавље 2. нивоа</translation>
 <translation id="3078740164268491126">табела</translation>
+<translation id="3082249673510793544">Помера уназад</translation>
 <translation id="3082557070674409251">Кликнуто</translation>
 <translation id="3084806535845658316">нема одјека знакова</translation>
 <translation id="3086746722712840547">белешка</translation>
@@ -396,6 +400,7 @@
 <translation id="4372705107434148843">Заустављање говора</translation>
 <translation id="4373197658375206385">Нема претходне ставке која није линк.</translation>
 <translation id="4376316291247992553">Прикажи графику као Брајеву азбуку</translation>
+<translation id="4378308539633073595">Помера унапред</translation>
 <translation id="4391478986194775161">информације о садржају</translation>
 <translation id="443163561286008705">ресетуј</translation>
 <translation id="4457472090507035117">Изаберите актуелни глас:</translation>
@@ -403,6 +408,7 @@
 <translation id="4476183483923481720">нови ред</translation>
 <translation id="4482330759234983253">Претходна табела</translation>
 <translation id="4491109536499578614">Слика</translation>
+<translation id="4517854969512651305">Повећава вредност</translation>
 <translation id="4529987814483543472">Класична мапа тастера</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{коса црта}one{# коса црта}few{# косе црте}other{# косих црта}}</translation>
 <translation id="4547556996012970016">Следеће заглавље 5. нивоа</translation>
@@ -418,6 +424,7 @@
 <translation id="461613135510474570">Реченица</translation>
 <translation id="463135993322337640">Притисните ChromeVox o, n да бисте сазнали шта је ново</translation>
 <translation id="4647836961514597010">Бирач боја</translation>
+<translation id="4652110509054054146">Користите тастер за претрагу и стрелицу улево или удесно за тастере Home или End, тастер за претрагу, тастер Control и стрелицу улево или удесно за комбинацију тастера Control Home или Control End, тастер за претрагу и стрелицу нагоре или надоле за тастер Page Up или Page Down.</translation>
 <translation id="4660783501463101648">Classic је уклоњен. Тастери за укључивање/искључивање који омогућавају враћање на ChromeVox Classic су уклоњени.</translation>
 <translation id="4661075872484491155">стабло</translation>
 <translation id="4668929960204016307">,</translation>

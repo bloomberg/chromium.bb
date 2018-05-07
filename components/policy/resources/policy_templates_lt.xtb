@@ -416,7 +416,7 @@
 
           Šiai politikai teikiama pirmenybė prieš potencialiai nesuderinamą politiką „<ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />“. Jei programa ar plėtinys, kuris anksčiau buvo priverstinai įdiegtas, pašalinamas iš šio sąrašo, „<ph name="PRODUCT_NAME" />“ jį automatiškai pašalina.
 
-          „Windows“ objektų, kurie nėra susieti su „<ph name="MS_AD_NAME" />“ domenu, priverstinis diegimas ribojamas naudojant programas ir plėtinius, nurodytus „Chrome“ internetinėje parduotuvėje.
+          „Windows“ objektų, kurie nėra susieti su domenu „<ph name="MS_AD_NAME" />“, priverstinis diegimas ribojamas naudojant programas ir plėtinius, nurodytus „Chrome“ internetinėje parduotuvėje.
 
           Atminkite, kad naudotojai gali keisti bet kurio plėtinio šaltinio kodą, naudodami kūrėjo įrankius (tai gali sutrikdyti plėtinio funkcijas). Jei tai kelia rūpesčių, reikia nustatyti politiką „<ph name="DEVELOPER_TOOLS_POLICY_NAME" />“.
 
@@ -430,6 +430,21 @@
       Rašybą tikrinti vis tiek galima naudojant atsisiųstą žodyną; taikant šią politiką valdomas tik internetinės paslaugos naudojimas.
 
       Jei šis nustatymas nesukonfigūruotas, naudotojai gali pasirinkti, ar turėtų būti naudojama rašybos tikrinimo paslauga.</translation>
+<translation id="2294283832646774959">Konfigūruojamas spausdintuvų sąrašas.
+
+      Taikant šią politiką leidžiama administratoriams teikti spausdintuvo konfigūracijas
+      naudotojams.
+
+      „<ph name="PRINTER_DISPLAY_NAME" />“ ir „<ph name="PRINTER_DESCRIPTION" />“ yra laisvos formos eilutės, kurias galima tinkinti, kad būtų lengviau pasirinkti spausdintuvą. „<ph name="PRINTER_MANUFACTURER" />“ ir „<ph name="PRINTER_MODEL" />“ naudojamos siekiant palengvinti spausdintuvo identifikavimą galutiniams naudotojams. Jos nurodo spausdintuvo gamintoją ir modelį. „<ph name="PRINTER_URI" />“ turėtų būti adresas, kurį galima pasiekti iš kliento kompiuterio, įskaitant „<ph name="URI_SCHEME" />“, „<ph name="URI_PORT" />“ ir „<ph name="URI_QUEUE" />“. „<ph name="PRINTER_UUID" />“ yra pasirenkama. Jei nurodyta, ji naudojama siekiant panaikinti pasikartojančius „<ph name="ZEROCONF_DISCOVERY" />“ spausdintuvus.
+
+      „<ph name="PRINTER_EFFECTIVE_MODEL" />“ turi atitikti vieną iš eilučių, nurodančių „<ph name="PRODUCT_NAME" />“ palaikomą spausdintuvą. Eilutė bus naudojama siekiant identifikuoti ir įdiegti tinkamą spausdintuvo PPD. Daugiau informacijos galima rasti adresu https://support.google.com/chrome?p=noncloudprint.
+
+      Spausdintuvo sąranka užbaigiama pirmą kartą panaudojus spausdintuvą. PPD neatsisiunčiami, kol spausdintuvas nenaudojamas. Paskui dažnai naudojami PPD saugomi talpykloje.
+
+      Ši politika neturi įtakos tam, ar naudotojai gali konfigūruoti spausdintuvus atskiruose įrenginiuose. Ji skirta papildyti atskirų naudotojų spausdintuvų konfigūraciją.
+
+      Jei naudojami „Active Directory“ tvarkomi įrenginiai, ši politika palaiko „Active Directory“ įrenginio pavadinimo „<ph name="MACHINE_NAME_VARIABLE" />“ arba jo poeilučio plėtinį. Pavyzdžiui, jei įrenginio pavadinimas yra „<ph name="MACHINE_NAME_EXAMPLE" />“, tada „<ph name="MACHINE_NAME_VARIABLE_EXAMPLE" />“ turėtų būti pakeistas 4 simboliais nuo 6-osios pozicijos, pvz., „<ph name="MACHINE_NAME_PART_EXAMPLE" />“. Atminkite, kad pozicija nustatoma nuo nulio.
+      </translation>
 <translation id="2294382669900758280">Į vaizdo įrašų leidimą „Android“ programose neatsižvelgiama, net jei ši politika nustatyta į „<ph name="TRUE" />“.</translation>
 <translation id="2298647742290373702">Konfigūruokite numatytąjį naujo skirtuko puslapį sistemoje „<ph name="PRODUCT_NAME" />“.</translation>
 <translation id="2299220924812062390">Nurodyti įgalintų papildinių sąrašą</translation>
@@ -909,7 +924,6 @@
 <translation id="3715569262675717862">Autentifikavimas atsižvelgiant į klientų sertifikatus</translation>
 <translation id="3736879847913515635">Asmens pridėjimo naudotojų tvarkytuvėje įgalinimas</translation>
 <translation id="3737544779868348650">Įrenginio tinklo prieglobos serverio pavadinimas</translation>
-<translation id="3740754010292550733">Paleidimo iš naujo norint atnaujinti pranešimų laikotarpio nustatymas</translation>
 <translation id="3750220015372671395">Blokuoti rakto generavimą šiose svetainėse</translation>
 <translation id="3756011779061588474">Blokuoti kūrėjo režimą</translation>
 <translation id="3758089716224084329">Leidžiama nurodyti „<ph name="PRODUCT_NAME" />“ naudojamą tarpinį serverį ir neleidžiama naudotojams keisti tarpinio serverio nustatymų.
@@ -1016,9 +1030,6 @@
       Nurodomi plėtiniai, kurie automatiškai įdiegiami demonstracinės versijos naudotojui (-ai) įrenginiuose mažmeninės prekybos režimu. Šie plėtiniai išsaugomi įrenginyje ir juos galima įdiegti neprisijungus, baigus diegimą.
 
       Kiekviename sąrašo įraše yra žodynas, į kurį turi būti įtrauktas plėtinio ID lauke „extension-id“ (plėtinio ID) ir naujinio URL lauke „update-url“ (naujinio URL).</translation>
-<translation id="3873159954366380945">Leidžiama nustatyti laikotarpį, kada rodomi pranešimai iš naujo paleisti „<ph name="PRODUCT_NAME" />“, kad būtų pritaikytas laukiantis naujinys.
-
-      Šį politikos nustatymą galima naudoti norint valdyti laikotarpį (milisekundėmis), kada naudotojas pakartotinai informuojamas, kad reikia iš naujo paleisti „<ph name="PRODUCT_NAME" />“ (arba „<ph name="PRODUCT_OS_NAME" />“), kad būtų pritaikytas naujinys. Per šį laikotarpį naudotojui bus pakartotinai pranešama, kad reikia pritaikyti naujinį, atsižvelgiant į politikos „<ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />“ nustatymą. Jei politika nenustatyta, sistemoje „<ph name="PRODUCT_OS_NAME" />“ naudojamas numatytasis 345 600 000 milisekundžių (keturių dienų) laikotarpis, o visose kitose platformose – 604 800 000 milisekundžių (vienos savaitės) laikotarpis.</translation>
 <translation id="3877517141460819966">Integruotas tapatybės nustatymo dviem veiksniais režimas</translation>
 <translation id="388237772682176890">Ši politika nebenaudojama M53 ir pašalinta iš M54, nes nebeteikiamas SPDY/3.1 palaikymas.
 
@@ -1233,6 +1244,7 @@
 <translation id="4508686775017063528">Jei ši politika bus nustatyta kaip „True“ arba nenustatyta, „<ph name="PRODUCT_NAME" />“ bus įgalinta ir naudotojai galės paleisti ją per programos meniu, puslapio konteksto meniu, medijos valdiklius su „Cast“ suderinamose svetainėse ir (jei rodoma) „Cast“ įrankių juostos piktogramą.
 
           Jei ši politika bus nustatyta kaip „False“, „<ph name="PRODUCT_NAME" />“ bus išjungta.</translation>
+<translation id="4515404363392014383">Patikimų šaltinių Saugaus naršymo įgalinimas</translation>
 <translation id="4518251772179446575">Paklausti kaskart, kai svetainėje bus norima stebėti naudotojo buvimo vietą</translation>
 <translation id="4519046672992331730">Įgalinami paieškos pasiūlymai „<ph name="PRODUCT_NAME" />“ „Omnibox“ ir neleidžiama naudotojams keisti šio nustatymo.
 
@@ -1354,6 +1366,7 @@
 
           Jei ši politika nustatyta kaip „Netiesa“, ekrano pažadinimo užraktų užklausų nepaisoma.</translation>
 <translation id="487460824085252184">Perkeliama automatiškai, neprašant naudotojo sutikimo.</translation>
+<translation id="4874982543810021567">„WebUSB“ blokavimas šiose svetainėse</translation>
 <translation id="4876805738539874299">Maksimali SSL versija įgalinta</translation>
 <translation id="4897928009230106190">Nurodomi parametrai, naudojami atliekant pasiūlymų paiešką naudojant POST. Jie sudaryti iš kableliais atskirtų pavadinimų / verčių porų. Jei vertė yra šablono parametras, pvz., {searchTerms} anksčiau pateiktame pavyzdyje, ji pakeičiama realiais paieškos terminų duomenimis.
 
@@ -1928,6 +1941,11 @@
       Jei ši politika nebus nustatyta, bus įgalintas tinklo numatymas, bet naudotojas galės jį pakeisti.</translation>
 <translation id="6658245400435704251">Nurodoma, iki kiek sekundžių įrenginys gali atsitiktinai atidėti naujinio atsisiuntimą nuo tada, kai naujinys buvo pirmąkart išsiųstas iš serverio. Įrenginys gali laukti dalį šio laiko pagal realųjį laiką, o likusią dalį – pagal naujinio tikrinimo kartus. Bet kuriuo atveju yra nustatyta viršutinė sklaidos riba (tam tikra trukmė), kad įrenginys nelauktų atsisiuntimo be galo.</translation>
 <translation id="6665670272107384733">Nustatyti, kaip dažnai naudotojas turi įvesti slaptažodį, kad galėtų naudoti spartųjį atrakinimą</translation>
+<translation id="6681229465468164801">Galite nustatyti URL šablonų, kuriuose nurodomos svetainės, kurioms neleidžiama prašyti naudotojo suteikti jiems galimybės pasiekti USB įrenginį, sąrašą.
+
+          Jei ši politika nenustatyta, visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „DefaultWebUsbGuardSetting“ (jei ji nustatyta) arba naudotojo asmeninės konfigūracijos (kitu atveju).
+
+          Šios politikos URL šablonai negali būti nesuderinami su tais, kurie sukonfigūruoti naudojant „WebUsbAskForUrls“. Nenurodyta, kuri iš dviejų politikų turi pirmenybę, jei URL atitinka jas abi.</translation>
 <translation id="6689792153960219308">Aparatinės įrangos būsenos ataskaitos pateikimas</translation>
 <translation id="6698071416141001300">Paskyros, kuriai iškilo pavojus, žymėjimas dėl slaptažodžio apsaugos suaktyvinamas pakartotinai naudojant slaptažodį</translation>
 <translation id="6699880231565102694">Įgalinti nuotolinės prieigos prieglobų autentifikavimą dviem veiksniais</translation>
@@ -2097,6 +2115,11 @@
       Jei šis nustatymas išjungtas arba nenustatytas, visiems šaltiniams taikoma numatytoji Saugaus naršymo apsauga.
        Ši politika nepasiekiama „Windows“ objektuose, kurie nesusieti su „<ph name="MS_AD_NAME" />“ domenu.</translation>
 <translation id="7079519252486108041">Blokuoti iššokančiuosius langus šiose svetainėse</translation>
+<translation id="7085803328069945025">Galite nustatyti URL šablonų, kuriuose nurodomos svetainės, kurioms leidžiama prašyti naudotojo suteikti jiems galimybę pasiekti USB įrenginį, sąrašą.
+
+          Jei ši politika nenustatyta, visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „DefaultWebUsbGuardSetting“ (jei ji nustatyta) arba naudotojo asmeninės konfigūracijos (kitu atveju).
+
+          Šios politikos URL šablonai negali būti nesuderinami su tais, kurie sukonfigūruoti naudojant „WebUsbBlockedForUrls“. Nenurodyta, kuri iš dviejų politikų turi pirmenybę, jei URL atitinka jas abi.</translation>
 <translation id="7106631983877564505">Kai „<ph name="PRODUCT_OS_NAME" />“ įrenginiai tampa neaktyvūs ar sustabdomi, įjungiamas užraktas.
 
       Jei įgalinsite šį nustatymą, naudotojų bus prašoma pateikti slaptažodį, kad būtų galima atrakinti įrenginį iš miego režimo.
@@ -2795,6 +2818,7 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
 <translation id="9096086085182305205">Tapatumo nustatymo serverio baltasis sąrašas</translation>
 <translation id="9098553063150791878">HTTP autentifikavimo politika</translation>
 <translation id="9105265795073104888">„Android“ programos gali pasiekti tik dalį tarpinio serverio konfigūravimo parinkčių. „Android“ programos gali pasirinkti naudoti tarpinį serverį. Negalite jų priversti naudoti tarpinio serverio.</translation>
+<translation id="9106865192244721694">„WebUSB“ leidimas šiose svetainėse</translation>
 <translation id="9112727953998243860">Įmonės spausdintuvo konfigūracijos failas</translation>
 <translation id="9112897538922695510">Leidžiama registruoti protokolo doroklių sąrašą. Tai gali būti tik rekomenduojama politika. Ypatybė |protocol| turėtų būti nustatyta į schemą, pvz., „mailto“, o ypatybė |url| turėtų būti nustatyta į schemą apdorojančios programos URL šabloną. Šablone gali būti įtrauktas „%s“, kurį pakeis apdorotas URL.
 
@@ -2834,6 +2858,11 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
 <translation id="915194831143859291">Jei ši politika nustatyta į „false“ arba nesukonfigūruota, „<ph name="PRODUCT_OS_NAME" />“ leidžia naudotojui išjungti įrenginį.
       Jei ši politika nustatyta į „true“, „<ph name="PRODUCT_OS_NAME" />“ suaktyvina paleidimą iš naujo, kai naudotojas išjungia įrenginį. Visus išjungimo mygtukų atvejus NS „<ph name="PRODUCT_OS_NAME" />“ pakeičia paleidimo iš naujo mygtukais. Jei naudotojas išjungia įrenginį naudodamas maitinimo mygtuką, įrenginys nėra automatiškai paleidžiamas iš naujo, net jei politika įgalinta.</translation>
 <translation id="9158929520101169054">Leidimas naršyklėje prisijungti prie kelių paskyrų</translation>
+<translation id="9165792353046089850">Galite nustatyti, ar svetainėms leidžiama pasiekti prijungtus USB įrenginius. Pasiekiamumą galima užblokuoti visiškai arba naudotojo gali būti klausiama kiekvieną kartą, kai svetainė nori pasiekti prijungtus USB įrenginius.
+
+          Šios politikos galima nepaisyti konkretiems URL šablonams, naudojantiems politiką „WebUsbAskForUrls“ ir „WebUsbBlockedForUrls“.
+
+          Jei ši politika nenustatyta, bus naudojama vertė „3“ ir naudotojas galės ją pakeisti.</translation>
 <translation id="9167719789236691545">Išjungti Diską „<ph name="PRODUCT_OS_NAME" />“ programoje „Failai“</translation>
 <translation id="9187743794267626640">Neleisti montuoti išorinės atminties</translation>
 <translation id="9197740283131855199">Ekrano užtemdymo delsos mastelio keitimo procentas, naudojamas, jei naudotojas atlieka veiksmų po užtemdymo</translation>

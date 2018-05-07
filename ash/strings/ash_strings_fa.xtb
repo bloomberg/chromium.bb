@@ -164,6 +164,7 @@
 <translation id="4379531060876907730">این‌ها ابزارهای قلم شما هستند</translation>
 <translation id="4421231901400348175">هم‌رسانی کنترل صفحه‌تان با <ph name="HELPER_NAME" /> از طریق راهنمایی ازراه‌دور.</translation>
 <translation id="4430019312045809116">میزان صدا</translation>
+<translation id="4450893287417543264">دیگر نشان داده نشود</translation>
 <translation id="4479639480957787382">اترنت</translation>
 <translation id="4481530544597605423">دستگاه‌های لغو ارتباط‌شده</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: در حال اتصال...</translation>
@@ -196,6 +197,7 @@
 <translation id="54609108002486618">مدیریت شده</translation>
 <translation id="553675580533261935">خروج از جلسه</translation>
 <translation id="5548285847212963613">افزونه «<ph name="EXTENSION_NAME" />» می‌تواند در اتصال به این شبکه به شما کمک کند.</translation>
+<translation id="554893713779400387">روشن/خاموش کردن املا</translation>
 <translation id="5571066253365925590">بلوتوث فعال شد</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />، <ph name="DATE" /></translation>
 <translation id="5600837773213129531">‏برای غیرفعال کردن بازخورد گفتاری، Ctrl + Alt + Z را فشار دهید.</translation>
@@ -284,6 +286,7 @@
 <translation id="7536035074519304529">‏نشانی IP: <ph name="ADDRESS" /></translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" />،‏ <ph name="SPECIFIED_RESOLUTION" /> را پشتیبانی نمی‌کند. وضوح به <ph name="FALLBACK_RESOLUTION" /> تغییر کرد</translation>
 <translation id="7562368315689366235">پالت صورتک</translation>
+<translation id="7564874036684306347">انتقال پنجره‌ها به میز کار دیگر می‌تواند به رفتار غیرمنتظره منجر شود. اعلان‌ها، پنجره‌ها و کادرهای گفتگوی بعدی ممکن است بین میز کارها تقسیم شوند.</translation>
 <translation id="7569509451529460200">‏بریل و ChromeVox فعال هستند</translation>
 <translation id="7593891976182323525">‏جستجو یا Shift</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (مالک)</translation>
@@ -296,6 +299,7 @@
 <translation id="7798302898096527229">‏برای لغو کردن، Search یا Shift را فشار دهید.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> و <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">سیگنال قوی</translation>
+<translation id="7842569679327885685">هشدار: ویژگی آزمایشی</translation>
 <translation id="7904094684485781019">سرپرست این حساب اجازه ورود چندگانه به سیستم را نمی‌دهد.</translation>
 <translation id="7933084174919150729">‏«دستیار Google» فقط برای نمایه اصلی دردسترس است.</translation>
 <translation id="79341161159229895">حساب تحت مدیریت <ph name="FIRST_PARENT_EMAIL" /> و <ph name="SECOND_PARENT_EMAIL" /> است</translation>
@@ -348,6 +352,7 @@
 <translation id="9091626656156419976">نمایشگر <ph name="DISPLAY_NAME" /> برداشته شد</translation>
 <translation id="9111102763498581341">باز کردن قفل</translation>
 <translation id="9151726767154816831">‏راه‌اندازی مجدد و Powerwash برای به‌روزرسانی</translation>
+<translation id="9179259655489829027">این ویژگی امکان می‌دهد بدون نیاز به گذرواژه، به هر کاربری که به سیستم واردشده به‌سرعت دسترسی داشته باشید. تنها برای حساب‌های مورد اعتمادتان از این ویژگی استفاده کنید.</translation>
 <translation id="9194617393863864469">ورود به سیستم حسابی دیگر...</translation>
 <translation id="9201131092683066720">باتری <ph name="PERCENTAGE" /> درصد پر است.</translation>
 <translation id="9210037371811586452">خروج از حالت میزکار یکپارچه</translation>

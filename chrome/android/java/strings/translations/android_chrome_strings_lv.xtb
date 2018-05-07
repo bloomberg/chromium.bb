@@ -82,10 +82,12 @@
 <translation id="1718835860248848330">Pēdējā stunda</translation>
 <translation id="1729516292547892356">Lai skatītu virtuālās realitātes saturu, atjauniniet Google VR pakalpojumus.</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> — atjaunināts <ph name="TIME_SINCE_UPDATE" /></translation>
+<translation id="1743802530341753419">Jautāt, pirms atļaut vietnēm izveidot savienojumu ar ierīci (ieteicams)</translation>
 <translation id="1749561566933687563">Sinhronizējiet grāmatzīmes</translation>
 <translation id="17513872634828108">Atvērt cilnes</translation>
 <translation id="1756600373018374892">Pieskaries šai pogai, lai ātri piekļūt savām cilnēm.</translation>
 <translation id="1779089405699405702">Attēlu dekodētājs</translation>
+<translation id="1792959175193046959">Noklusējuma lejupielādes vietu var mainīt jebkurā laikā.</translation>
 <translation id="1807246157184219062">Gaišs</translation>
 <translation id="1829244130665387512">Atrast lapā</translation>
 <translation id="1832521218263067499">Drošības problēmas</translation>
@@ -158,7 +160,6 @@
 <translation id="2450083983707403292">Vai vēlaties vēlreiz sākt faila <ph name="FILE_NAME" /> lejupielādi?</translation>
 <translation id="2476578072172137802">Vietnes iestatījumi</translation>
 <translation id="2482878487686419369">Paziņojumi</translation>
-<translation id="2490674006498621843">Velciet augšup rīkjoslu, lai atrastu savus failus un lapas sadaļā Lejupielādes</translation>
 <translation id="2496180316473517155">Pārlūkošanas vēsture</translation>
 <translation id="2498359688066513246">Palīdzība un atsauksmes</translation>
 <translation id="2501278716633472235">Doties atpakaļ</translation>
@@ -648,6 +649,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="6910211073230771657">Dzēsts</translation>
 <translation id="6912998170423641340">Bloķēt vietņu piekļuvi teksta un attēlu lasīšanai no starpliktuves</translation>
 <translation id="6914783257214138813">Jūsu paroles būs redzamas ikvienam, kas var skatīt eksportēto failu.</translation>
+<translation id="6942665639005891494">Noklusējuma lejupielādes vietu var mainīt jebkurā laikā, izmantojot izvēlnes Iestatījumi opciju.</translation>
 <translation id="6945221475159498467">Atlasīt</translation>
 <translation id="6963766334940102469">Dzēst grāmatzīmes</translation>
 <translation id="6965382102122355670">Labi</translation>
@@ -673,6 +675,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="7121362699166175603">Notīra vēsturi un automātiskās pabeigšanas datus adreses joslā. Jūsu Google kontam var būt cita veida pārlūkošanas vēstures dati vietnē <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128222689758636196">Atļaut pašreizējai meklētājprogrammai</translation>
 <translation id="7138678301420049075">Cits</translation>
+<translation id="7144878232160441200">Mēģināt vēlreiz</translation>
 <translation id="7149893636342594995">Pēdējās 24 stundas</translation>
 <translation id="7177466738963138057">Vēlāk varēsiet to mainīt iestatījumos</translation>
 <translation id="7180611975245234373">Atsvaidzināt</translation>
@@ -814,6 +817,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="8503813439785031346">Lietotājvārds</translation>
 <translation id="8514477925623180633">Eksportēt pārlūkā Chrome saglabātās paroles</translation>
 <translation id="8514577642972634246">Atvērt inkognito režīmā</translation>
+<translation id="851751545965956758">Neļaut vietnēm izveidot savienojumu ar ierīci</translation>
 <translation id="8523928698583292556">Dzēst saglabāto paroli</translation>
 <translation id="854522910157234410">Atvērt šo lapu</translation>
 <translation id="8559990750235505898">Piedāvāt tulkot lapas citās valodās</translation>

@@ -420,6 +420,20 @@
       Oikoluvun voi suorittaa myös ladatun sanakirjan avulla. Käytäntö hallinnoi vain verkkopalvelun käyttöä.
 
       Jos asetusta ei ole määritetty, käyttäjät voivat valita, haluavatko he käyttää oikolukupalvelua.</translation>
+<translation id="2294283832646774959">Määrittää tulostinluettelon
+
+      Tämän käytännön avulla järjestelmänvalvojat voivat määrittää tulostinasetuksia käyttäjiä varten.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> ja <ph name="PRINTER_DESCRIPTION" /> ovat vapaamuotoisia merkkijonoja, joita voidaan muokata tulostimen valinnan helpottamiseksi. <ph name="PRINTER_MANUFACTURER" /> ja <ph name="PRINTER_MODEL" /> auttavat käyttäjiä tunnistamaan tulostimet. Ne vastaavat tulostimen valmistajaa ja mallia. Määritä kohteen <ph name="PRINTER_URI" /> arvoksi osoite, joka on käytettävissä asiakastietokoneelta ja johon sisältyvät <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> ja <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> on valinnainen arvo. Sen tarkoituksena on auttaa tyypin <ph name="ZEROCONF_DISCOVERY" /> tulostimien deduplikoinnissa.
+
+      Kohteen <ph name="PRINTER_EFFECTIVE_MODEL" /> on vastattava jotakin merkkijonoista, jotka edustavat tulostimia, joita <ph name="PRODUCT_NAME" /> tukee. Merkkijonoa käytetään oikean PPD:n tunnistamiseen ja asentamiseen tulostinta varten. Saat lisätietoja osoitteesta https://support.google.com/chrome?p=noncloudprint.
+
+      Tulostin määritetään sen ensimmäisen käyttökerran yhteydessä. PPD:t ladataan vasta, kun tulostinta käytetään. Tämän jälkeen PPD:t tallennetaan välimuistiin, jos niitä käytetään usein.
+
+      Tämä käytäntö ei vaikuta siihen, voivatko käyttäjät määrittää tulostimia yksittäisillä laitteilla. Se on tarkoitettu käytettäväksi yksittäisten käyttäjien tekemien tulostinmääritysten lisäksi.
+
+      Jos laitetta hallinnoidaan Active Directoryn avulla, tämä käytäntö sallii, että <ph name="MACHINE_NAME_VARIABLE" /> liitetään Active Directory ‑koneen nimeen tai sen alimerkkijonoon. Jos koneen nimi on esimerkiksi <ph name="MACHINE_NAME_EXAMPLE" />, <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> korvattaisiin kuudennetta kohtaa seuraavilla neljällä merkillä: <ph name="MACHINE_NAME_PART_EXAMPLE" />. Huomaa, että kohtien laskeminen aloitetaan nollasta.
+      </translation>
 <translation id="2294382669900758280">Videoiden toistamista Android-sovelluksissa ei oteta huomioon, vaikka tämän käytännön arvoksi olisi määritetty <ph name="TRUE" />.</translation>
 <translation id="2298647742290373702">Määritä oletusarvoinen Uusi välilehti ‑sivu kohteessa <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Määritä käytössä olevat laajennukset</translation>
@@ -877,7 +891,6 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 <translation id="3715569262675717862">Käyttöoikeusvarmenteisiin perustuva todennus</translation>
 <translation id="3736879847913515635">Salli profiilien luominen käyttäjien hallinnassa</translation>
 <translation id="3737544779868348650">Laitteen verkon isäntänimi</translation>
-<translation id="3740754010292550733">Määritä päivitysten uudelleenkäynnistysilmoitusten ajanjakso</translation>
 <translation id="3750220015372671395">Estä avainten luominen näillä sivustoilla</translation>
 <translation id="3756011779061588474">Estä kehittäjätila</translation>
 <translation id="3758089716224084329">Voit määrittää välityspalvelimen, jota <ph name="PRODUCT_NAME" /> käyttää, ja estää käyttäjiä muokkaamasta välityspalvelinasetuksia.
@@ -976,9 +989,6 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
       Luettelee laajennukset, jotka asennetaan automaattisesti esittelykäyttäjälle myyntitilassa olevilla laitteilla. Tällaiset laajennukset on tallennettu laitteelle, ja niitä on mahdollista asentaa offline-tilassa.
 
       Luettelon jokainen merkintä sisältää sanakirjan, jonka tulee sisältää laajennuksen tunnus (extension-id-kenttä) sekä sen päivitysosoite (update-url-kenttä).</translation>
-<translation id="3873159954366380945">Sallii sinun määrittää ajanjakson, jolloin tuotteen <ph name="PRODUCT_NAME" /> uudelleenkäynnistysilmoituksia näytetään
-
-      Tämän käytäntöasetuksen avulla voit määrittää millisekunteina sen ajan, jolloin käyttäjä saa ilmoituksia päivityksen edellyttämästä tuotteen <ph name="PRODUCT_NAME" /> uudelleenkäynnistyksestä (tai tuotteen <ph name="PRODUCT_OS_NAME" /> uudelleenkäynnistyksestä). Tänä aikana käyttäjä saa toistuvia muistutuksia <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />-käytännön mukaisen päivityksen tarpeellisuudesta. Jos ajanjaksoa ei ole määritetty, tuotteen <ph name="PRODUCT_OS_NAME" /> oletus on 345 600 000 millisekuntia (neljä päivää) ja kaikkien muiden käyttöympäristöjen oletus on 604 800 000 millisekuntia (yksi viikko).</translation>
 <translation id="3877517141460819966">Sisäänrakennettu monitasoinen todennustila</translation>
 <translation id="388237772682176890">Tämä käytäntö poistetaan käytöstä M53:ssa ja poistetaan kokonaan M54:ssä, koska SPDY/3.1-tuki poistuu.
 
@@ -1184,6 +1194,7 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 <translation id="4508686775017063528">Jos tämän käytännön arvo on Tosi tai sitä ei ole määritetty, <ph name="PRODUCT_NAME" /> on käytössä, ja käyttäjät voivat käynnistää sen sovellusvalikosta, sivujen kontekstivalikoista, Cast-yhteensopivien sivustojen mediasäätimillä tai Cast-yläpalkkikuvakkeella (jos se on näkyvissä).
 
           Jos käytännön arvo on Epätosi, <ph name="PRODUCT_NAME" /> ei ole käytössä.</translation>
+<translation id="4515404363392014383">Ota selaussuoja käyttöön luotetuissa lähteissä</translation>
 <translation id="4518251772179446575">Kysy aina, kun sivusto haluaa seurata käyttäjän fyysistä sijaintia</translation>
 <translation id="4519046672992331730">Ottaa käyttöön hakuehdotukset tuotteen <ph name="PRODUCT_NAME" /> omniboxissa ja estää käyttäjiä muuttamasta tätä asetusta.
 
@@ -1304,6 +1315,7 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 
           Jos käytännön asetus on epätosi, näytön herätyksen lukituspyynnöt ohitetaan.</translation>
 <translation id="487460824085252184">Siirrä automaattisesti, älä kysy käyttäjältä</translation>
+<translation id="4874982543810021567">Estä WebUSB näillä sivustoilla</translation>
 <translation id="4876805738539874299">Uusin SSL-versio käytössä</translation>
 <translation id="4897928009230106190">Määrittää parametrit, joita käytetään tehtäessä ehdotushakuja POST-metodin avulla. Se koostuu pilkuilla erotetuista nimi/arvo-pareista. Jos arvo on malliparametri kuten yllä olevan esimerkin {searchTerms}, se korvataan oikeilla hakusanatiedoilla.
 
@@ -1832,6 +1844,11 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
       Jos tätä käytäntöä ei aseteta, verkon ennakointi otetaan käyttöön, mutta käyttäjä voi muokata asetusta.</translation>
 <translation id="6658245400435704251">Määrittää sekunteina ajan, jonka laite voi viivyttää päivityksen lataamista siitä hetkestä, kun päivitys on lähetetty palvelimelle. Osa odotusajasta voidaan määrittää aikana ja loput päivitystarkistusten määränä. Hajonnalle on kuitenkin yläraja, joten laite ei koskaan jää odottamaan päivityksen lataamista loputtomasti.</translation>
 <translation id="6665670272107384733">Määritä, kuinka usein käyttäjän on kirjoitettava salasana, jotta hän voi käyttää lukituksen pika-avaamista</translation>
+<translation id="6681229465468164801">Antaa sinun määrittää luettelon URL-osoitemalleja, joiden määrittämät sivustot eivät saa pyytää käyttäjältä USB-laitteen käyttöoikeutta.
+
+          Jos tätä käytäntöä ei ole määritetty, kaikkiin sivustoihin sovelletaan DefaultWebUsbGuardSetting-käytäntöä (jos se on määritetty) tai käyttäjän omien asetusten mukaista yleistä oletusarvoa.
+
+          Tämän käytännön URL-osoitemallien on sovittava yhteen WebUsbAskForUrlsin kautta määritettyjen kanssa. Jos URL-osoite sopii yhteen kummankin kanssa, etusijan ottavaa käytäntöä ei ole määritetty.</translation>
 <translation id="6689792153960219308">Laitteiston tilan raportointi</translation>
 <translation id="6698071416141001300">Salasanasuojauksen riskialttiin tilin merkintä käynnistyy, kun salasanaa käytetään uudelleen</translation>
 <translation id="6699880231565102694">Ota kahden tekijän todennus käyttöön etäisännille</translation>
@@ -1985,6 +2002,11 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
       Jos asetus on pois käytöstä tai sitä ole määritetty, Selaussuojan oletussuojausta sovelletaan kaikkiin resursseihin.
        Tämä käytäntö ei ole käytettävissä Windowsin esiintymissä, joita ei ole liitetty <ph name="MS_AD_NAME" /> ‑verkkotunnukseen.</translation>
 <translation id="7079519252486108041">Estä ponnahdusikkunat näissä sivustoissa</translation>
+<translation id="7085803328069945025">Antaa sinun määrittää luettelon URL-osoitemalleja, joiden määrittämät sivustot saavat pyytää käyttäjältä USB-laitteen käyttöoikeutta.
+
+          Jos tätä käytäntöä ei ole määritetty, kaikkiin sivustoihin sovelletaan DefaultWebUsbGuardSetting-käytäntöä (jos se on määritetty) tai käyttäjän omien asetusten mukaista yleistä oletusarvoa.
+
+          Tämän käytännön URL-osoitemallien on sovittava yhteen WebUsbAskForUrlsin kautta määritettyjen kanssa. Jos URL-osoite sopii yhteen kummankin kanssa, etusijan ottavaa käytäntöä ei ole määritetty.</translation>
 <translation id="7106631983877564505">Ota lukitus käyttöön, kun tuotetta <ph name="PRODUCT_OS_NAME" /> käyttävä laite on käyttämättömänä tai virransäästötilassa.
 
       Jos otat tämän asetuksen käyttöön, käyttäjältä pyydetään salasanaa laitteen herättämiseksi virransäästötilasta.
@@ -2658,6 +2680,7 @@ Suosittelemme määrittämään käytännöt Windowsissa ryhmäkäytäntöobjekt
 <translation id="9096086085182305205">Sallittujen todennuspalvelimien luettelo</translation>
 <translation id="9098553063150791878">HTTP-todennuksen käytännöt</translation>
 <translation id="9105265795073104888">Vain osa välityspalvelinasetuksista on Android-sovellusten käytettävissä. Android-sovellukset voivat käyttää välityspalvelinta halutessaan. Et voi pakottaa niitä käyttämään välityspalvelinta.</translation>
+<translation id="9106865192244721694">Salli WebUSB näillä sivustoilla</translation>
 <translation id="9112727953998243860">Yritystulostimen määritystiedosto</translation>
 <translation id="9112897538922695510">Tämän käytännön avulla voit rekisteröidä luettelon protokollan käsittelijöitä. Tämä voi olla vain suositeltu käytäntö. |protocol|-ominaisuudeksi tulee asettaa malli, kuten "mailto", ja |url|-ominaisuudeksi tulee asettaa kyseistä mallia käsittelevän sovelluksen URL-osoitemalli. Osoitemalli voi sisältää merkin %s, joka korvataan käsiteltävällä URL-osoitteella.
 
@@ -2690,6 +2713,11 @@ Suosittelemme määrittämään käytännöt Windowsissa ryhmäkäytäntöobjekt
 <translation id="915194831143859291">Jos tämän käytännön arvo on Epätosi tai jos sitä ei määritetä, <ph name="PRODUCT_OS_NAME" /> sallii käyttäjän sammuttaa laitteen.
       Jos tämän käytännön arvo on Tosi, <ph name="PRODUCT_OS_NAME" /> käynnistää laitteen uudelleen, jos käyttäjä sammuttaa sen. <ph name="PRODUCT_OS_NAME" /> korvaa käyttöliittymän kaikki sammutuspainikkeet uudelleenkäynnistyspainikkeilla. Jos käyttäjä käyttää sammuttamiseen laitteen virtapainiketta, laite ei käynnisty automaattisesti uudelleen, vaikka tämä käytäntö olisikin käytössä.</translation>
 <translation id="9158929520101169054">Salli kirjautuminen usealle tilille selaimessa</translation>
+<translation id="9165792353046089850">Antaa sinun määrittää, sallitaanko sivustojen käyttää yhdistettyjä USB-laitteita. Käyttö on mahdollista estää kokonaan, tai käyttäjältä voidaan pyytää vahvistusta aina, kun verkkosivusto haluaa käyttää yhdistettyä USB-laitetta.
+
+          Tämä käytäntö voidaan ohittaa sellaisten URL-osoitemallien kohdalla, jotka käyttävät WebUsbAskForUrls- ja WebUsbBlockedForUrls-käytäntöjä.
+
+          Jos tätä käytäntöä ei ole määritetty, sen arvoksi asetetaan 3 ja käyttäjä voi halutessaan muokata sitä.</translation>
 <translation id="9167719789236691545">Poista Drive käytöstä <ph name="PRODUCT_OS_NAME" />:n Tiedostot-sovelluksesta</translation>
 <translation id="9187743794267626640">Estä ulkoisen tallennustilan käyttöönotto</translation>
 <translation id="9197740283131855199">Prosenttimäärä, jonka mukaan näytön himmennys skaalataan, jos käyttäjä on aktiivinen himmennyksen jälkeen</translation>

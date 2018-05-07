@@ -49,7 +49,7 @@
     &lt;li&gt;تأكّد من أن اتصالك بالإنترنت يعمل بشكل طبيعي.&lt;/li&gt;
     &lt;li&gt;اتصل بمالك موقع الويب.&lt;/li&gt;
     &lt;/ol&gt;</translation>
-<translation id="1257286744552378071">لقد أدخلتَ كلمة المرور في موقع ويب لا تديره مؤسستك. ولحماية حسابك، يُرجى عدم إعادة استخدام كلمة المرور في التطبيقات ومواقع الويب الأخرى.</translation>
+<translation id="1257286744552378071">لقد أدخلتَ كلمة المرور في موقع ويب لا تديره مؤسستك. ينصح بعدم استخدام كلمة المرور مجددًا في التطبيقات ومواقع الويب الأخرى لحماية حسابك.</translation>
 <translation id="1263231323834454256">قائمة القراءة</translation>
 <translation id="1264126396475825575">تقرير الأعطال الذي تم الحصول عليه في <ph name="CRASH_TIME" /> (لم يتم تحميله بعد أو تجاهله)</translation>
 <translation id="1270502636509132238">طريقة الاستلام</translation>
@@ -188,7 +188,7 @@
 <translation id="2212735316055980242">تعذر العثور على السياسة</translation>
 <translation id="2213606439339815911">جارٍ جلب الإدخالات...</translation>
 <translation id="2218879909401188352">يمكن حاليًا للمهاجمين على <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> تثبيت تطبيقات خطيرة تدمر الجهاز أو تضيف رسومًا إلى فاتورة الجوّال أو تسرق المعلومات الشخصية. <ph name="BEGIN_LEARN_MORE_LINK" />مزيد من المعلومات<ph name="END_LEARN_MORE_LINK" /></translation>
-<translation id="2224337661447660594">لا يتوفر اتصال بإنترنت</translation>
+<translation id="2224337661447660594">الاتصال بالإنترنت مقطوع</translation>
 <translation id="2230458221926704099">إصلاح الاتصال باستخدام <ph name="BEGIN_LINK" />تطبيق بيانات التشخيص<ph name="END_LINK" /></translation>
 <translation id="2239100178324503013">إرسال الآن</translation>
 <translation id="225207911366869382">تم تجاهل القيمة لهذه السياسة.</translation>
@@ -362,7 +362,7 @@
 <translation id="3422472998109090673">يتعذر الوصول إلى <ph name="HOST_NAME" /> حاليًا.</translation>
 <translation id="3427092606871434483">السماح (تلقائي)</translation>
 <translation id="3427342743765426898">إعادة الت&amp;حرير</translation>
-<translation id="342781501876943858">‏يُوصي Chromium بإعادة تعيين كلمة المرور في حال إعادة استخدامها في مواقع ويب أخرى.</translation>
+<translation id="342781501876943858">‏يُوصي Chromium بإعادة تحديد كلمة المرور في حال إعادة استخدامها في مواقع ويب أخرى.</translation>
 <translation id="3431636764301398940">حفظ هذه البطاقة إلى هذا الجهاز</translation>
 <translation id="3447661539832366887">أوقف مالك هذا الجهاز تشغيل لعبة الديناصور.</translation>
 <translation id="3447884698081792621">عرض الشهادة (من إصدار <ph name="ISSUER" />)</translation>
@@ -399,7 +399,6 @@
 <translation id="3678529606614285348">‏يمكنك فتح الصفحة في نافذة جديدة للتصفح المتخفي (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">تم تسجيل تقرير الأعطال في <ph name="CRASH_TIME" />، وتم تحميله في <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">معلومات الشهادة</translation>
-<translation id="3690164694835360974">عملية تسجيل الدخول غير آمنة</translation>
 <translation id="3704162925118123524">قد تتطلب الشبكة التي تستخدمها زيارة صفحة تسجيل الدخول.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">جارٍ التحميل...</translation>
@@ -678,7 +677,7 @@
 <translation id="5710435578057952990">لم  يتمّ التحقق من هوية هذا الموقع.</translation>
 <translation id="5719499550583120431">يتم قبول بطاقات الدفع المسبق.</translation>
 <translation id="5720705177508910913">المستخدم الحالي</translation>
-<translation id="5730040223043577876">‏يُوصي Chrome بإعادة تعيين كلمة المرور في حال إعادة استخدامها في مواقع ويب أخرى.</translation>
+<translation id="5730040223043577876">‏يُوصي Chrome بإعادة تحديد كلمة المرور في حال إعادة استخدامها في مواقع ويب أخرى.</translation>
 <translation id="5732392974455271431">يمكن لوالديك إلغاء الحظر لك</translation>
 <translation id="5763042198335101085">أدخِل عنوان بريد إلكتروني صحيحًا</translation>
 <translation id="5765072501007116331">لعرض طرق التسليم ومتطلباته، حدِّد عنوانًا</translation>
@@ -718,6 +717,7 @@
 <translation id="6047927260846328439">قد يحاول هذا المحتوى خداعك لتثبيت برامج أو الكشف عن معلومات شخصية. <ph name="BEGIN_LINK" />عرض على أي حال<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">لا يمكنك زيارة <ph name="SITE" /> في الوقت الحالي لأن الموقع يستخدم أداة التحقق من صحة الشهادات. أخطاء الشبكة والهجمات عليها عادةً ما تكون مؤقتة، لذا ستعمل هذه الصفحة في وقت لاحق على الأرجح.</translation>
 <translation id="6059925163896151826">‏أجهزة USB</translation>
+<translation id="6071091556643036997">نوع السياسة غير صالح.</translation>
 <translation id="6080696365213338172">لقد دخلت إلى المحتوى باستخدام شهادة وفرها المشرف. ويمكن أن يعترض المشرف طريق البيانات التي تقدمها إلى <ph name="DOMAIN" />.</translation>
 <translation id="610911394827799129">‏قد يتضمن حسابك على Google نماذج أخرى من سجل التصفح على <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{بدون}=1{ كلمة مرور واحدة (تمت مزامنتها)}two{كلمتا مرور (#) (تمت مزامنتهما)}few{# كلمات مرور (تمت مزامنتها)}many{# كلمة مرور (تمت مزامنتها)}other{# كلمة مرور (تمت مزامنتها)}}</translation>
@@ -727,7 +727,7 @@
 <translation id="6151417162996330722">فترة صلاحية شهادة الخادم طويلة جدًا.</translation>
 <translation id="6157877588268064908">لعرض طرق الشحن ومتطلباته، حدِّد عنوانًا</translation>
 <translation id="6165508094623778733">مزيد من المعلومات</translation>
-<translation id="6169916984152623906">يمكنك الآن التصفح بشكلٍ سري، ولن يتمكّن الأشخاص الآخرون الذين يستخدمون هذا الجهاز من مشاهدة نشاطك. ولكن، سيتم حفظ عمليات التنزيل والإشارات المرجعيّة.</translation>
+<translation id="6169916984152623906">يمكنك الآن التصفّح بخصوصية تامّة، ولن يتمكّن الأشخاص الآخرون الذين يستخدمون هذا الجهاز من مشاهدة نشاطك. ولكن، سيتم حفظ عمليات التنزيل والإشارات المرجعيّة.</translation>
 <translation id="6177128806592000436">إن اتصالك بهذا الموقع غير آمن</translation>
 <translation id="6203231073485539293">التحقق من اتصالك بالإنترنت</translation>
 <translation id="6218753634732582820">‏هل تريد إزالة العنوان من Chromium؟</translation>
@@ -812,7 +812,7 @@
 <translation id="6915804003454593391">المستخدم:</translation>
 <translation id="6945221475159498467">تحديد</translation>
 <translation id="6948701128805548767">لعرض طرق الاستلام ومتطلباته، حدِّد عنوانًا</translation>
-<translation id="6949872517221025916">إعادة تعيين كلمة المرور</translation>
+<translation id="6949872517221025916">إعادة تحديد كلمة المرور</translation>
 <translation id="6957887021205513506">يبدو أن شهادة الخادم مزيفة.</translation>
 <translation id="6965382102122355670">موافق</translation>
 <translation id="6965978654500191972">جهاز</translation>
@@ -834,8 +834,7 @@
 <translation id="7138472120740807366">طريقة التسليم</translation>
 <translation id="7139724024395191329">الإمارة</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> وطريقة دفع <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> أخرى}two{<ph name="PAYMENT_METHOD_PREVIEW" /> وطريقتا دفع <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> أخريان}few{<ph name="PAYMENT_METHOD_PREVIEW" /> و<ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> طرق دفع أخرى}many{<ph name="PAYMENT_METHOD_PREVIEW" /> و<ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> طريقة دفع أخرى}other{<ph name="PAYMENT_METHOD_PREVIEW" /> و<ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> طريقة دفع أخرى}}</translation>
-<translation id="7155487117670177674">عملية الدفع غير آمنة</translation>
-<translation id="717330890047184534">‏رقم تعريف GAIA:</translation>
+<translation id="717330890047184534">‏معرّف GAIA:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> وخيار <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> آخر}two{<ph name="SHIPPING_OPTION_PREVIEW" /> وخياران (<ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />) آخران}few{<ph name="SHIPPING_OPTION_PREVIEW" /> و<ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> خيارات أخرى}many{<ph name="SHIPPING_OPTION_PREVIEW" /> و<ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> خيارًا آخر}other{<ph name="SHIPPING_OPTION_PREVIEW" /> و<ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> خيار آخر}}</translation>
 <translation id="7180611975245234373">تحديث</translation>
 <translation id="7182878459783632708">لم يتم تعيين أي سياسات</translation>
@@ -1037,7 +1036,7 @@
 <translation id="8553075262323480129">تعذّرت الترجمة لتعذر تحديد لغة الصفحة.</translation>
 <translation id="8557066899867184262">‏رمز التحقق من البطاقة (CVC) موجود خلف بطاقتك.</translation>
 <translation id="8559762987265718583">تعذر إنشاء اتصال خاص بـ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> نظرًا لأن التاريخ والوقت للجهاز (<ph name="DATE_AND_TIME" />) غير صحيحين.</translation>
-<translation id="8564985650692024650">‏يُوصي Chromium بإعادة تعيين كلمة المرور <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> في حال إعادة استخدامها في مواقع ويب أخرى.</translation>
+<translation id="8564985650692024650">‏يُوصي Chromium بإعادة تحديد كلمة المرور <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> في حال إعادة استخدامها في مواقع ويب أخرى.</translation>
 <translation id="8571890674111243710">جارٍ ترجمة الصفحة إلى <ph name="LANGUAGE" />...</translation>
 <translation id="858637041960032120">إضافة رقم هاتف
 </translation>
@@ -1065,7 +1064,7 @@
 <translation id="884264119367021077">عنوان الشحن</translation>
 <translation id="884923133447025588">لم يتمّ العثور على أي آلبة إبطال.</translation>
 <translation id="885730110891505394">‏مشاركة مع Google</translation>
-<translation id="8858065207712248076">‏يُوصي Chrome بإعادة تعيين كلمة المرور <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> في حال إعادة استخدامها في مواقع ويب أخرى.</translation>
+<translation id="8858065207712248076">‏يُوصي Chrome بإعادة تحديد كلمة المرور <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> في حال إعادة استخدامها في مواقع ويب أخرى.</translation>
 <translation id="8866481888320382733">خطأ في إعدادات تحليل السياسة</translation>
 <translation id="8870413625673593573">العناصر المغلقة مؤخرًا</translation>
 <translation id="8874824191258364635">أدخِل رقم بطاقة صحيحًا</translation>

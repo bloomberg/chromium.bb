@@ -431,6 +431,21 @@
       Pareizrakstības pārbaudi joprojām var veikt, izmantojot lejupielādēto vārdnīcu; šī politika tikai kontrolē tiešsaistes pakalpojuma lietojumu.
 
       Ja šis iestatījums nav konfigurēts, lietotāji var izvēlēties, vai izmantot pareizrakstības pārbaudes pakalpojumu vai neizmantot to.</translation>
+<translation id="2294283832646774959">Konfigurē printeru sarakstu.
+
+      Izmantojot šo politiku, administratori var nodrošināt printeru konfigurāciju
+      lietotājiem.
+
+      Parametri <ph name="PRINTER_DISPLAY_NAME" /> un <ph name="PRINTER_DESCRIPTION" /> ir brīva formāta virknes, ko var pielāgot ērtai printera atlasei. Parametri <ph name="PRINTER_MANUFACTURER" /> un <ph name="PRINTER_MODEL" /> ļauj galalietotājiem identificēt printeri. Tie apzīmē printera ražotāju un modeli. Parametram <ph name="PRINTER_URI" /> ir jābūt adresei, ko var sasniegt no klienta datora, tostarp <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> un <ph name="URI_QUEUE" />. Parametrs <ph name="PRINTER_UUID" /> nav norāda obligāti. Ja tas ir norādīts, tas tiek izmantots, lai novērstu <ph name="ZEROCONF_DISCOVERY" /> printeru dublēšanu.
+
+      Parametram <ph name="PRINTER_EFFECTIVE_MODEL" /> ir jāatbilst vienai no virknēm, kas apzīmē pārlūkā <ph name="PRODUCT_NAME" /> atbalstītu printeri. Šī virkne tiks izmantota, lai identificētu un instalētu printerim atbilstošo PPD failu. Plašāku informāciju skatiet vietnē https://support.google.com/chrome?p=noncloudprint.
+
+      Printera iestatīšana tiek pabeigta, kad printeris tiek izmantots pirmo reizi. PPD faili netiek lejupielādēti, kamēr printeris netiek izmantots. Pēc tam bieži izmantotie PPD faili tiek saglabāti kešatmiņā.
+
+      Šī politika neietekmē to, vai lietotāji var konfigurēt printerus atsevišķās ierīcēs. Tās mērķis ir papildināt printeru konfigurāciju, ko veic individuāli lietotāji.
+
+      Ierīcēs, kas tiek pārvaldītas pakalpojumā Active Directory, šī politika atbalsta Active Directory ierīces nosaukuma vai tās apakšvirknes iekļaušanu ierīces <ph name="MACHINE_NAME_VARIABLE" /> nosaukumā. Piemēram, ja ierīces nosaukums ir <ph name="MACHINE_NAME_EXAMPLE" />, vērtība <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> pēc sestās pozīcijas tiktu aizstāta ar četrām rakstzīmēm: <ph name="MACHINE_NAME_PART_EXAMPLE" />. Pozīciju numurēšana sākas ar nulli.
+      </translation>
 <translation id="2294382669900758280">Android lietotnēs atskaņoti videoklipi netiek ņemti vērā, pat ja šī politika ir iestatīta kā <ph name="TRUE" />.</translation>
 <translation id="2298647742290373702">Konfigurēt noklusējuma jaunas cilnes lapu sistēmā <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Norādīt iespējoto spraudņu sarakstu</translation>
@@ -908,7 +923,6 @@ Ja šim iestatījumam ir izvēlēta vērtība “Izslēgts” vai vērtība nav 
 <translation id="3715569262675717862">Uz klientu sertifikātiem balstīta autentifikācija</translation>
 <translation id="3736879847913515635">Iespēja pievienot personu lietotāju pārvaldniekā</translation>
 <translation id="3737544779868348650">Ierīces tīkla saimniekdatora nosaukums</translation>
-<translation id="3740754010292550733">Iestatīt periodu paziņojumiem par atkārtotu palaišanu atjaunināšanas nolūkā</translation>
 <translation id="3750220015372671395">Bloķēt atslēgu ģenerēšanu šajās vietnēs</translation>
 <translation id="3756011779061588474">Bloķēt izstrādātāja režīmu</translation>
 <translation id="3758089716224084329">Ļauj norādīt <ph name="PRODUCT_NAME" /> izmantoto starpniekserveri un neļauj lietotājiem mainīt starpniekserveru iestatījumus.
@@ -1012,9 +1026,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Norāda paplašinājumus, kas tiek automātiski instalēti demonstrācijas lietotājam ierīcēs, kurās atvērts mazumtirdzniecības režīms. Šie paplašinājumi tiek saglabāti ierīcē, un pēc instalēšanas tos var instalēt bezsaistē.
 
       Katrā saraksta ierakstā ir ietverta vārdnīca, kurai laukā “extension-id” ir jāiekļauj paplašinājuma ID, bet laukā “update-url”  — tā atjaunināšanas URL.</translation>
-<translation id="3873159954366380945">Ļauj iestatīt laika periodu, kurā tiek rādīti <ph name="PRODUCT_NAME" /> atkārtotas palaišanas paziņojumi, lai veiktu neapstrādātu atjauninājumu.
-
-      Šīs politikas iestatījumus var izmantot, lai kontrolētu laika periodu (milisekundēs), kurā lietotājs tiek pakāpeniski informēts, ka pārlūks <ph name="PRODUCT_NAME" /> ir atkārtoti jāpalaiž (vai ka pārlūks <ph name="PRODUCT_OS_NAME" /> ir jārestartē), lai to atjauninātu. Šajā laika periodā lietotājs tiks atkārtoti informēts par to, ka jāveic atjaunināšana, pamatojoties uz politikas <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> iestatījumu. Ja šī politika nav iestatīta, tiek izmantots noklusējuma periods — 345 600 000 milisekundes (četras dienas) operētājsistēmai <ph name="PRODUCT_OS_NAME" /> un 604 800 000 milisekundes (viena nedēļa) pārējām platformām.</translation>
 <translation id="3877517141460819966">Integrētais divfaktoru autentificēšanas režīms</translation>
 <translation id="388237772682176890">Šī politika ir novecojusi versijā M53 un noņemta no versijas M54, jo ir noņemts protokola SPDY/3.1 atbalsts.
 
@@ -1229,6 +1240,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="4508686775017063528">Ja šai politikai ir iestatīta vērtība “True” vai tā nav iestatīta, <ph name="PRODUCT_NAME" /> tiks iespējota, un lietotāji to varēs palaist, izmantojot lietotnes izvēlni, lapu kontekstizvēlnes, multivides vadīklas vietnēs, kurās ir iespējota tehnoloģija Cast, un Cast rīkjoslas ikonu, ja tā tiek parādīta.
 
           Ja šai politikai ir iestatīta vērtība “False”, <ph name="PRODUCT_NAME" /> tiks atspējota.</translation>
+<translation id="4515404363392014383">Drošas pārlūkošanas iespējošana uzticamiem avotiem</translation>
 <translation id="4518251772179446575">Vaicāt ikreiz, kad vietne vēlas izsekot lietotāju fizisko atrašanās vietu</translation>
 <translation id="4519046672992331730">Tiek iespējota meklēšanas ieteikumu rādīšana produkta <ph name="PRODUCT_NAME" /> universālajā lodziņā, un lietotāji nevar mainīt šo iestatījumu.
 
@@ -1351,6 +1363,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
           Ja politikai ir iestatīta vērtība “false”, ekrāna aktivizēšanas bloķēšana tiks ignorēta.</translation>
 <translation id="487460824085252184">Migrē automātiski, nepieprasa lietotāja piekrišanu.</translation>
+<translation id="4874982543810021567">WebUSB bloķēšana šajās vietnēs</translation>
 <translation id="4876805738539874299">Maksimālā iespējotā SSL versija</translation>
 <translation id="4897928009230106190">Norāda parametrus, kas tiek izmantoti, veicot ieteikumu meklēšanu ar metodi POST. Izmantojot šo metodi, tiek meklēti ar komatu atdalītu vārdu/vērtību pāri. Ja vērtība ir veidnes parametrs, piemēram, {searchTerms} (iepriekšējā piemērā), tas tiks aizstāts ar īstiem meklēšanas vienumu datiem.
 
@@ -1923,6 +1936,11 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Ja šī politika netiks iestatīta, tīkla prognozes tiks iespējotas, taču lietotājs varēs mainīt šo iestatījumu.</translation>
 <translation id="6658245400435704251">Norāda sekunžu skaitu, kuru laikā ierīce var nejaušā secībā atlikt atjauninājuma lejupielādi, sākot ar laiku, kad serveris pirmo reizi nosūtīja atjauninājumu. Daļa no šī ierīces gaidīšanas laika var būt pulksteņa laiks, un daļa — atjauninājuma pārbaužu skaits. Jebkurā gadījumā izkliede ir saistīta ar noteiktu laika periodu, lai ierīces nebūtu bezgalīgi jāgaida atjauninājuma lejupielāde.</translation>
 <translation id="6665670272107384733">Paroles ievadīšanas biežuma iestatīšana, lai varētu izmantot ātro atbloķēšanu</translation>
+<translation id="6681229465468164801">Ļauj iestatīt vietrāžu URL modeļu sarakstu ar vietnēm, kurām nav atļauts lūgt lietotājam piešķirt piekļuvi USB ierīcei.
+
+         Ja šī politika nav iestatīta, visām vietnēm tiks izmantota vispārējā noklusējuma vērtība no politikas “DefaultWebUsbGuardSetting” (ja tā ir iestatīta) vai lietotāja personiskās konfigurācijas.
+
+          Šai politikai pievienotie vietrāžu URL modeļi nedrīkst būt pretrunā ar tiem modeļiem, kas ir konfigurēti, izmantojot politiku “WebUsbAskForUrls”. Nav noteikts, kurai no divām politikām ir priekšroka gadījumos, ja vietrādis URL atbilst abām politikām.</translation>
 <translation id="6689792153960219308">Ziņošana par aparatūras statusu</translation>
 <translation id="6698071416141001300">Apdraudēta paroles aizsardzība — konta atzīmēšana aktivizēta, atkārtoti izmantojot paroli</translation>
 <translation id="6699880231565102694">Divu faktoru autentifikācijas iespējošana attālās piekļuves saimniekdatoriem</translation>
@@ -2092,6 +2110,11 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
       Ja šis iestatījums ir atspējots vai tam nav iestatīta vērtība, visiem resursiem tiks lietota noklusējuma drošās pārlūkošanas aizsardzība.
       Šī politika nav pieejama Windows instancēs, kas nav pievienotas <ph name="MS_AD_NAME" /> domēnam.</translation>
 <translation id="7079519252486108041">Bloķēt uznirstošos logus šajās vietnēs</translation>
+<translation id="7085803328069945025">Ļauj iestatīt vietrāžu URL modeļu sarakstu ar vietnēm, kurām ir atļauts jautāt lietotājam piešķirt piekļuvi USB ierīcei.
+
+          Ja šī politika nav iestatīta, visām vietnēm tiks izmantota vispārējā noklusējuma vērtība no politikas “DefaultWebUsbGuardSetting” (ja tā ir iestatīta) vai lietotāja personiskās konfigurācijas.
+
+          Šai politikai pievienotie vietrāžu URL modeļi nedrīkst būt pretrunā ar tiem modeļiem, kas ir konfigurēti, izmantojot politiku “WebUsbBlockedForUrls”. Nav noteikts, kurai no divām politikām ir priekšroka gadījumos, ja vietrādis URL atbilst abām politikām.</translation>
 <translation id="7106631983877564505">Blokatora iespējošana, ja <ph name="PRODUCT_OS_NAME" /> ierīces ir neaktīvas vai to darbība tiek apturēta.
 
       Ja šis iestatījums ir iespējots, lietotājiem būs jāievada parole, lai atbloķētu ierīci no miega režīma.
@@ -2788,6 +2811,7 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
 <translation id="9096086085182305205">Autentifikācijas serveru baltais saraksts</translation>
 <translation id="9098553063150791878">HTTP autentifikācijas politikas</translation>
 <translation id="9105265795073104888">Android lietotnēm ir pieejama tikai starpniekservera konfigurācijas opciju apakškopa. Android lietotnes šo starpniekserveri var izmantot, ja tas ir nepieciešams. Jūs nevarat likt lietotnēm izmantot starpniekserveri.</translation>
+<translation id="9106865192244721694">WebUSB atļaušana šajās vietnēs</translation>
 <translation id="9112727953998243860">Uzņēmuma printeru konfigurācijas fails</translation>
 <translation id="9112897538922695510">Ļauj reģistrēt protokolu apdarinātāju sarakstu. Šī var būt tikai ieteicama politika. Rekvizītā |protocol| ir jāiestata shēma, piemēram “mailto”, un rekvizītā |url| ir jāiestata tās lietojumprogrammas URL raksts, kura apstrādā shēmu. Parametrā var iekļaut “%s”, kas tiks aizstāts ar apstrādāto URL.
 
@@ -2827,6 +2851,11 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
 <translation id="915194831143859291">Ja šai politikai ir iestatīta vērtība Nepatiesa vai ja politika nav konfigurēta, lietotājs var izslēgt <ph name="PRODUCT_OS_NAME" /> ierīci.
       Ja šai politikai ir iestatīta vērtība Patiesa, lietotājam izslēdzot ierīci, operētājsistēmā <ph name="PRODUCT_OS_NAME" /> tiek aktivizēta atkārtotā palaišana. <ph name="PRODUCT_OS_NAME" /> aizstāj visas lietotāja saskarnē esošās izslēgšanas pogas ar atkārtotas palaišanas pogām. Ja lietotājs izslēdz ierīci, izmantojot barošanas pogu, ierīce tiek automātiski atkārtoti palaista, pat ja ir iespējota politika.</translation>
 <translation id="9158929520101169054">Atļauj pārlūkā vairākkārtēju pierakstīšanos</translation>
+<translation id="9165792353046089850">Ļauj iestatīt, vai vietnēm atļauts iegūt piekļuvi pievienotajām USB ierīcēm. Piekļuvi var pilnībā bloķēt, vai lietotājam var tikt parādīta uzvedne ar jautājumu katru reizi, kad vietne vēlas iegūt piekļuvi pievienotajām USB ierīcēm.
+
+          Šo politiku var ignorēt noteiktiem vietrāžu URL modeļiem, izmantojot politiku “WebUsbAskForUrls” un “WebUsbBlockedForUrls”.
+
+          Ja šī politika nav iestatīta, tiks izmantota vērtība “3”, un lietotājs to varēs mainīt.</translation>
 <translation id="9167719789236691545">Diska atspējošana <ph name="PRODUCT_OS_NAME" /> lietotnē Faili</translation>
 <translation id="9187743794267626640">Ārējas krātuves uzstādīšanas atspējošana</translation>
 <translation id="9197740283131855199">Aizkaves līdz ekrāna aptumšošanai norādīšana procentos, ja lietotājs ir aktīvs pēc aptumšošanas</translation>

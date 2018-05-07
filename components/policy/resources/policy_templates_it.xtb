@@ -377,6 +377,27 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
           Quando questa norma non è impostata, non viene visualizzata alcuna finestra di dialogo di avviso.
 
           Il valore della norma deve essere specificato in millisecondi. I valori sono fissati in modo da essere minori o uguali al ritardo di inattività.</translation>
+<translation id="2289578386193672044">Consente di specificare un elenco di app ed estensioni che vengono installate automaticamente,
+          senza l'interazione dell'utente, e che non possono essere disinstallate né
+          disattivate dall'utente. Tutte le autorizzazioni richieste dalle
+          app/estensioni vengono concesse implicitamente, senza interazione dell'utente,
+          comprese le eventuali autorizzazioni aggiuntive richieste dalle future versioni delle
+          app/estensioni. Inoltre, le autorizzazioni sono concesse per le
+          API delle estensioni enterprise.deviceAttributes ed
+          enterprise.platformKeys. (Queste due API non sono disponibili per le app/estensioni prive di
+          installazione forzata).
+
+          Questa norma ha precedenza su una norma <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />potenzialmente in conflitto. Se un'app o un'estensione con installazione forzata viene rimossa da questo elenco, tale app o estensione viene disinstallata automaticamente da <ph name="PRODUCT_NAME" />.
+
+          Per le istanze di Windows che non fanno parte di un dominio <ph name="MS_AD_NAME" />, l'installazione forzata è limitata alle app e alle estensioni elencate nel Chrome Web Store.
+
+          Tieni presente che il codice sorgente delle estensioni potrebbe essere modificato dagli utenti tramite gli strumenti per sviluppatori (causando potenzialmente il malfunzionamento dell'estensione). Per evitare un problema di questo tipo, è consigliabile impostare la norma <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+          Ogni voce della norma è una stringa contenente un ID estensione e un URL di "aggiornamento" separati da punto e virgola (<ph name="SEMICOLON" />). L'ID estensione è la stringa di 32 lettere che si trova, ad esempio, all'indirizzo <ph name="CHROME_EXTENSIONS_LINK" /> quando è attivata la modalità sviluppatore. L'URL di "aggiornamento", se specificato, deve indirizzare a un documento XML Manifest di aggiornamento, come descritto all'indirizzo <ph name="LINK_TO_EXTENSION_DOC1" />. Per impostazione predefinita, viene utilizzato l'URL di aggiornamento del Chrome Web Store (che attualmente è "https://clients2.google.com/service/update2/crx"). L'URL di "aggiornamento" impostato in questa norma viene utilizzato esclusivamente per l'installazione iniziale; per i successivi aggiornamenti dell'estensione viene utilizzato l'URL di aggiornamento indicato nel file manifest dell'estensione. Inoltre, specificare l'URL di "aggiornamento" in modo esplicito era obbligatorio nelle versioni di <ph name="PRODUCT_NAME" /> fino alla 67 inclusa.
+
+          Ad esempio, <ph name="EXTENSION_POLICY_EXAMPLE" /> installa l'app <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> dall'URL di "aggiornamento" del Chrome Web Store standard. Ulteriori informazioni sulle estensioni in hosting sono disponibili all'indirizzo <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Se questa norma non è impostata, le app e le estensioni non vengono installate automaticamente e l'utente può disinstallare qualsiasi app o estensione in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME" /> può utilizzare un servizio web Google per correggere gli errori di ortografia. Se questa impostazione è abilitata, il servizio viene sempre utilizzato. Se questa impostazione è disabilitata, il servizio non viene mai utilizzato.
 
       Il controllo ortografico può essere comunque effettuato utilizzando un dizionario scaricato; questa norma controlla soltanto l'utilizzo del servizio online.
@@ -665,6 +686,16 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 Questa norma è facoltativa. Se non viene impostata, non verrà effettuata alcuna sostituzione dei termini di ricerca.
 
 Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearchProviderEnabled".</translation>
+<translation id="3056439054015239107">
+      Questa norma si applica alla schermata di accesso. Vedi anche la norma <ph name="SITE_PER_PROCESS_POLICY_NAME" /> che viene applicata alla sessione utente. È consigliabile impostare lo stesso valore per entrambe le norme. Se i valori non corrispondono, può verificarsi un ritardo quando si accede a una sessione utente mentre viene applicato il valore specificato dalla norma relativa agli utenti.
+      Potresti considerare l'impostazione della norma IsolateOrigins per ottenere
+      sia l'isolamento sia un impatto limitato per gli utenti. Usa
+      IsolateOrigins con un elenco dei siti che vuoi isolare. Questa impostazione,
+      SitePerProcess, isola tutti i siti.
+      Se la norma è attivata, ciascun sito verrà eseguito nel proprio processo.
+      Se la norma è disattivata, non avverrà alcun isolamento esplicito dei siti e le prove sul campo di IsolateOrigins e SitePerProcess saranno disattivate. Gli utenti potranno ancora attivare SitePerProcess manualmente.
+      Se la norma non viene configurata, l'utente potrà modificare questa impostazione.
+      </translation>
 <translation id="306887062252197004">Questa norma consente agli utenti della funzione WebDriver di eseguire l'override delle norme che possono interferire con il relativo funzionamento.
 
       Al momento questa norma disattiva le norme SitePerProcess e IsolateOrigins.
@@ -821,9 +852,9 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 <translation id="3660562134618097814">Trasferisci i cookie dell'IdP SAML durante l'accesso</translation>
 <translation id="3709266154059827597">Configura blacklist per l'installazione delle estensioni</translation>
 <translation id="3711895659073496551">Sospensione</translation>
+<translation id="3715569262675717862">Autenticazione basata su certificati client</translation>
 <translation id="3736879847913515635">Attiva la funzione Aggiungi persona in Gestione utenti</translation>
 <translation id="3737544779868348650">Nome host della rete del dispositivo</translation>
-<translation id="3740754010292550733">Imposta il periodo per le notifiche di riavvio dell'aggiornamento</translation>
 <translation id="3750220015372671395">Blocca la generazione di chiavi su questi siti</translation>
 <translation id="3756011779061588474">Blocca modalità sviluppatore</translation>
 <translation id="3758089716224084329">Consente di specificare il server proxy utilizzato da <ph name="PRODUCT_NAME" /> e impedisce agli utenti di modificare le impostazioni proxy.
@@ -919,9 +950,6 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
       Consente di elencare le estensioni che vengono installate automaticamente per gli utenti Demo di dispositivi in modalità retail. Queste estensioni vengono salvate sul dispositivo e possono essere installate offline, dopo l'installazione.
 
       Ogni voce dell'elenco contiene un dizionario che deve includere l'ID dell'estensione nel campo "extension-id" e il relativo URL di aggiornamento nel campo "update-url".</translation>
-<translation id="3873159954366380945">Ti consente di impostare il periodo di tempo durante il quale mostrare le notifiche relative al riavvio di <ph name="PRODUCT_NAME" /> per applicare un aggiornamento in attesa.
-
-      È possibile usare l'impostazione di questo criterio per stabilire per quanto tempo, in millisecondi, un utente viene progressivamente informato della necessità di riavviare <ph name="PRODUCT_NAME" /> (o <ph name="PRODUCT_OS_NAME" />) per applicare un aggiornamento. Durante questo periodo di tempo l'utente verrà informato più volte della necessità di un aggiornamento in base all'impostazione del criterio <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Se non viene definito un periodo, viene usato il periodo predefinito di 345600000 millisecondi (quattro giorni) per <ph name="PRODUCT_OS_NAME" /> e di 604800000 millisecondi (una settimana) per tutte le altre piattaforme.</translation>
 <translation id="3877517141460819966">Modalità di autenticazione a due fattori integrata</translation>
 <translation id="388237772682176890">Questa norma è stata ritirata in M53 e rimossa in M54 perché è stato rimosso il supporto di SPDY/3.1.
 
@@ -1785,6 +1813,15 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
       Qualora l'accesso a un altro account non debba essere consentito tramite la modalità di navigazione in incognito, potresti bloccare tale modalità usando la norma IncognitoModeAvailability.
 
       Tieni presente che gli utenti potranno accedere ai servizi Google in uno stato non autenticato bloccando i loro cookie.</translation>
+<translation id="6738326937072482736">Consente di configurare la disponibilità e il comportamento della funzionalità di aggiornamento del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+
+      Le impostazioni individuali possono essere specificate nelle proprietà JSON:
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: se viene impostata l'opzione <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, gli utenti potranno attivare il flusso della funzione Powerwash per l'installazione di un aggiornamento del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: se viene impostata l'opzione <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, gli utenti potranno richiamare il flusso di aggiornamento del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> che conserverà lo stato a livello di dispositivo  (registrazione aziendale compresa), ma che comporta la perdita dei degli utenti. Questo flusso di aggiornamento è disponibile a partire dalla versione 68.
+
+      Se la norma non viene impostata, la funzionalità di aggiornamento del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> non sarà disponibile.</translation>
 <translation id="6757438632136860443">Consente di impostare un elenco di pattern URL che specificano i siti che possono eseguire il plug-in <ph name="FLASH_PLUGIN_NAME" />.
 
           Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultPluginsSetting", se impostata, oppure la configurazione personale dell'utente..</translation>
@@ -1805,6 +1842,16 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
       Le informazioni sulla memoria sono comunque riportate sulla pagina, indipendentemente dal valore opzione, ma le dimensioni segnalate presentano
       restrizioni e la frequenza di aggiornamento è stata limitata per motivi di sicurezza. Per acquisire dati precisi in tempo reale,
       utilizza strumenti come Telemetry.</translation>
+<translation id="6870914592443697993">
+      Questa norma si applica alla schermata di accesso. Vedi anche la norma <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> che viene applicata alla sessione utente. È consigliabile impostare lo stesso valore per entrambe le norme. Se i valori non corrispondono, può verificarsi un ritardo quando si accede a una sessione utente mentre viene applicato il valore specificato dalla norma relativa agli utenti.
+      . Se la norma viene attivata, ogni origine indicata in un
+      elenco di valori separati da virgole verrà eseguita in un proprio processo. Verranno inoltre isolate
+      le origini indicate dai sottodomini; ad esempio, se viene specificato il sito https://example.com/ viene
+      isolato anche https://foo.example.com/, perché fa parte
+      del sito https://example.com/.
+      Se la norma è disattivata, non avverrà alcun isolamento esplicito dei siti e le prove sul campo di IsolateOrigins e SitePerProcess saranno disattivate. Gli utenti potranno ancora attivare SitePerProcess manualmente.
+      Se la norma non è configurata, per la schermata di accesso verranno usate le impostazioni di isolamento dei siti predefinite della piattaforma.
+      </translation>
 <translation id="6894178810167845842">URL della pagina Nuova scheda</translation>
 <translation id="6899705656741990703">Rileva automaticamente impostazioni proxy</translation>
 <translation id="6903814433019432303">Questa norma è attiva soltanto in modalità retail.
@@ -2041,6 +2088,7 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
       Se viene impostata su False, gli aggiornamenti dei componenti vengono disattivati. Tuttavia, alcuni componenti sono esclusi da questa norma: gli aggiornamenti dei componenti che non contengono codice eseguibile, che non alterano in modo significativo il comportamento del browser o che sono fondamentali per la sicurezza non vengono disattivati.
       Esempi di tali componenti sono gli elenchi di revoche di certificati e i dati di Navigazione sicura.
       Visita il sito https://developers.google.com/safe-browsing per avere ulteriori informazioni sulla funzione Navigazione sicura.</translation>
+<translation id="7566878661979235378">Tipo di autenticazione dell'accesso SAML</translation>
 <translation id="757395965347379751">Quando questa impostazione è attivata, <ph name="PRODUCT_NAME" /> consente l'utilizzo dei certificati SHA-1 firmati che sono convalidati e concatenati a certificati CA installati localmente.
 
       Considera che questa norma dipende dallo stack di verifica dei certificati del sistema operativo che autorizza le firme SHA-1. Se un aggiornamento del sistema operativo modifica la gestione dei certificati SHA-1 da parte del sistema operativo, la norma potrebbe non essere più valida. Inoltre, questa norma è da considerarsi come soluzione alternativa temporanea per concedere alle aziende più tempo per l'abbandono della crittografia SHA-1. Questa norma verrà rimossa il 1° gennaio 2019 o intorno a quella data.
@@ -2206,6 +2254,16 @@ Se questa norma non viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà il v
 <translation id="7961779417826583251">Disattiva l'applicazione di Certificate Transparency per un elenco di autorità di certificazione precedenti</translation>
 <translation id="7974114691960514888">Questa norma non è più supportata. Consente di attivare l'utilizzo di server relay e STUN durante la connessione a un client remoto. Se questa impostazione viene attivata, questo computer potrà rilevare i computer host remoti e collegarsi a essi anche se sono separati da un firewall. Se questa impostazione viene disattivata e le connessioni UDP in uscita vengono filtrate dal firewall, questo computer potrà collegarsi ai computer host soltanto all'interno della rete locale.</translation>
 <translation id="7976157349247117979">Nome della destinazione di <ph name="PRODUCT_NAME" /></translation>
+<translation id="7978060394348264922">
+      Potresti considerare l'impostazione della norma IsolateOrigins per ottenere
+      sia l'isolamento sia un impatto limitato per gli utenti. Usa
+      IsolateOrigins con un elenco dei siti che vuoi isolare. Questa impostazione,
+      SitePerProcess, isola tutti i siti.
+      Se la norma è attivata, ciascun sito verrà eseguito nel proprio processo.
+      Se la norma è disattivata, non avverrà alcun isolamento esplicito dei siti e le prove sul campo di IsolateOrigins e SitePerProcess saranno disattivate. Gli utenti potranno ancora attivare SitePerProcess manualmente.
+      Se la norma non è configurata, l'utente potrà modificare questa impostazione.
+      In <ph name="PRODUCT_OS_NAME" />, si consiglia di impostare anche la norma relativa ai dispositivi <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> sullo stesso valore. Se i valori specificati dalle due norme non corrispondono, può verificarsi un ritardo durante l'accesso a una sessione utente mentre viene applicato il valore specificato dalla norma relativa agli utenti.
+      </translation>
 <translation id="7980227303582973781">Nessuna limitazione speciale</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Ruota lo schermo di 0°</translation>
@@ -2394,6 +2452,13 @@ Se l'impostazione viene impostata su true, o se non viene impostata, l'attestazi
           Separa più nomi di server con delle virgole. Sono ammessi i caratteri jolly (*).
 
           Se questa norma non viene impostata <ph name="PRODUCT_NAME" /> tenterà di rilevare se sulla Intranet è presente un server e solo allora risponderà alle richieste IWA. Se viene rilevato un server su Internet, le sue richieste IWA verranno ignorate da <ph name="PRODUCT_NAME" />.</translation>
+<translation id="8667812577403206506">consente di controllare se le macchine virtuali possono essere eseguite su Chrome OS.
+
+      Se la norma viene impostata su true, al dispositivo è consentito eseguire le macchine virtuali.
+      Se la norma viene impostata su false, al dispositivo non è consentito eseguire le macchine virtuali.
+      Quando l'impostazione di questa norma viene modificata in false, la norma consente di avviare le nuove macchine virtuali, ma non determina l'arresto delle macchine virtuali già in esecuzione.
+      Quando questa norma non è impostata su un dispositivo gestito, il dispositivo non può eseguire macchine virtuali.
+      I dispositivi non gestiti sono autorizzati a eseguire macchine virtuali.</translation>
 <translation id="8672321184841719703">Scegli versione target dell'aggiornamento automatico</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
 <translation id="8685024486845674965">L'avviso di protezione tramite password viene attivato se vengono riutilizzate password</translation>
@@ -2504,6 +2569,7 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 
       Questa norma non deve essere attivata quando la norma <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> è attiva, perché tale funzione ha la stessa funzionalità lato client. La sincronizzazione in hosting su Google viene completamente disattivata in questo caso.</translation>
 <translation id="8955719471735800169">Torna all'inizio</translation>
+<translation id="8959992920425111821">Configurazione predefinita</translation>
 <translation id="8960850473856121830">I pattern di questo elenco verranno confrontati con l'origine di sicurezza dell'URL richiedente. Se viene trovata una corrispondenza, l'accesso ai dispositivi di acquisizione audio viene concesso senza richieste.
 
       NOTA. Fino alla versione 45, questa norma era supportata soltanto in modalità kiosk.</translation>
@@ -2512,6 +2578,16 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="8976248126101463034">Consenti l'autenticazione Gnubby per gli host di accesso remoto</translation>
 <translation id="8976531594979650914">Usa stampante di sistema come predefinita</translation>
 <translation id="8992176907758534924">Non consentire la visualizzazione di immagini nei siti</translation>
+<translation id="9034729899149506577">
+      Se la norma viene attivata, ogni origine indicata in un
+      elenco di valori separati da virgole verrà eseguita in un proprio processo. Verranno inoltre isolate
+      le origini indicate dai sottodomini; ad esempio, se viene specificato il sito https://example.com/ viene
+      isolato anche https://foo.example.com/, perché fa parte
+      del sito https://example.com/.
+      Se la norma è disattivata, non avverrà alcun isolamento esplicito dei siti e le prove sul campo di IsolateOrigins e SitePerProcess saranno disattivate. Gli utenti potranno ancora attivare SitePerProcess manualmente.
+      Se la norma non è configurata, l'utente potrà cambiare questa impostazione.
+      In <ph name="PRODUCT_OS_NAME" />, si consiglia di impostare anche la norma relativa ai dispositivi <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> sullo stesso valore. Se i valori specificati dalle due norme non corrispondono, può verificarsi un ritardo durante l'accesso a una sessione utente mentre viene applicato il valore specificato dalla norma relativa agli utenti.
+      </translation>
 <translation id="9035964157729712237">ID delle estensioni da escludere dalla blacklist</translation>
 <translation id="9042911395677044526">Consente di forzare l'applicazione della configurazione di rete per utente su un dispositivo <ph name="PRODUCT_OS_NAME" />. La configurazione di rete è una stringa in formato JSON definita secondo il formato Open Network Configuration descritto all'indirizzo <ph name="ONC_SPEC_URL" />.</translation>
 <translation id="9084985621503260744">Specifica se l'attività video incide sulla gestione dell'alimentazione</translation>
@@ -2556,6 +2632,13 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="9187743794267626640">Disabilita il montaggio di una memoria esterna</translation>
 <translation id="9197740283131855199">Percentuale di regolazione del ritardo di oscuramento dello schermo se l'utente diventa attivo dopo l'oscuramento</translation>
 <translation id="9200828125069750521">Parametri per l'URL dell'immagine che utilizza POST</translation>
+<translation id="9210953373038593554">Consente di configurare il tipo di autenticazione per gli accessi SAML.
+
+      Se questa norma non viene impostata o è impostata sul valore predefinito (0), il comportamento degli accessi SAML è determinato dal browser sulla base di altri fattori. Nella situazione di base, l'autenticazione dell'utente e la protezione dei dati degli utenti memorizzati nella cache sono basati sulle password inserite manualmente dagli utenti.
+
+      Se questa norma è impostata su ClientCertificate (valore 1), l'autenticazione del certificato client viene utilizzata per gli utenti aggiunti di recente che accedono tramite SAML. Per questi utenti non vengono utilizzate password e i loro dati locali memorizzati nella cache vengono protetti mediante le chiavi crittografiche corrispondenti. Ad esempio, questa impostazione consente di configurare un'autenticazione dell'utente basata su smart card (considera che le app middleware per smart card devono essere installate tramite la norma DeviceLoginScreenAppInstallList).
+
+      Questa norma riguarda solo gli utenti che eseguono l'autenticazione utilizzando SAML.</translation>
 <translation id="9213347477683611358">Configura l'immagine di sfondo a livello del dispositivo che viene mostrata nella schermata di accesso nel caso in cui nessun utente abbia ancora effettuato l'accesso al dispositivo. Questa norma viene impostata specificando l'URL dal quale il dispositivo Chrome OS può scaricare l'immagine di sfondo e un hash crittografico la cui funzione è quella di verificare l'integrità del download. L'immagine deve essere in formato JPEG e non deve superare le dimensioni di 16 MB. L'URL specificato deve essere accessibile senza bisogno di autenticazione. L'immagine di sfondo viene scaricata e memorizzata nella cache. Verrà scaricata nuovamente ogni volta che l'URL e l'hash vengono modificati.
 
       La norma deve essere specificata sotto forma di stringa in cui l'URL e l'hash vengono espressi in formato JSON, ad esempio,

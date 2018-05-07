@@ -163,6 +163,7 @@
 <translation id="4379531060876907730">タッチペン ツール</translation>
 <translation id="4421231901400348175">リモート サポート経由で <ph name="HELPER_NAME" /> と画面の制御を共有しています。</translation>
 <translation id="4430019312045809116">音量</translation>
+<translation id="4450893287417543264">次回から表示しない</translation>
 <translation id="4479639480957787382">イーサネット</translation>
 <translation id="4481530544597605423">ペア設定されていないデバイス</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: 接続しています...</translation>
@@ -195,6 +196,7 @@
 <translation id="54609108002486618">管理</translation>
 <translation id="553675580533261935">セッションの終了</translation>
 <translation id="5548285847212963613">拡張機能「<ph name="EXTENSION_NAME" />」はこのネットワークへの接続をサポートします。</translation>
+<translation id="554893713779400387">音声入力を切り替え</translation>
 <translation id="5571066253365925590">Bluetooth オン</translation>
 <translation id="5597451508971090205"><ph name="DATE" /> (<ph name="SHORT_WEEKDAY" />)</translation>
 <translation id="5600837773213129531">音声フィードバックを無効にするには Ctrl+Alt+Z を押してください。</translation>
@@ -284,6 +286,7 @@
 <translation id="7536035074519304529">IP アドレス: <ph name="ADDRESS" /></translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> は <ph name="SPECIFIED_RESOLUTION" /> に対応していません。解像度は <ph name="FALLBACK_RESOLUTION" /> に変更されました</translation>
 <translation id="7562368315689366235">絵文字パレット</translation>
+<translation id="7564874036684306347">ウィンドウを別のデスクトップに移動すると、予期しない動作が起こることがあります。以降の通知、ウィンドウ、ダイアログは、複数のデスクトップに分かれて表示される可能性があります。</translation>
 <translation id="7569509451529460200">Braille と ChromeVox が有効になっています</translation>
 <translation id="7593891976182323525">検索/Shift</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" />（所有者）</translation>
@@ -296,6 +299,7 @@
 <translation id="7798302898096527229">キャンセルするには検索キーまたは Shift キーを押します。</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">電波: 強い</translation>
+<translation id="7842569679327885685">警告: 試験運用版の機能</translation>
 <translation id="7904094684485781019">このアカウントの管理者がマルチ ログインを許可していません。</translation>
 <translation id="7933084174919150729">Google アシスタントはメインのプロフィールでのみご利用いただけます。</translation>
 <translation id="79341161159229895">このアカウントは <ph name="FIRST_PARENT_EMAIL" /> と <ph name="SECOND_PARENT_EMAIL" /> により管理されています</translation>
@@ -348,6 +352,7 @@
 <translation id="9091626656156419976">ディスプレイ「<ph name="DISPLAY_NAME" />」を削除しました</translation>
 <translation id="9111102763498581341">ロック解除</translation>
 <translation id="9151726767154816831">更新するには、再起動して Powerwash を実行してください</translation>
+<translation id="9179259655489829027">この機能を使用すると、パスワードを入力せずにログイン ユーザーにすばやくアクセスできます。この機能は信頼できるアカウントにのみ使用してください。</translation>
 <translation id="9194617393863864469">別のユーザーとしてログイン...</translation>
 <translation id="9201131092683066720">バッテリー残量: <ph name="PERCENTAGE" />%。</translation>
 <translation id="9210037371811586452">デスクトップ統合モードの終了中</translation>

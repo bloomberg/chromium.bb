@@ -82,10 +82,12 @@
 <translation id="1718835860248848330">Ostatnia godzina</translation>
 <translation id="1729516292547892356">Aby oglądać treści rzeczywistości wirtualnej, zaktualizuj Usługi Google VR</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – zaktualizowano <ph name="TIME_SINCE_UPDATE" /></translation>
+<translation id="1743802530341753419">Pytaj, zanim zezwolisz stronom na połączenie z urządzeniem (zalecane)</translation>
 <translation id="1749561566933687563">Synchronizuj swoje zakładki</translation>
 <translation id="17513872634828108">Otwarte karty</translation>
 <translation id="1756600373018374892">Kliknij ten przycisk, by uzyskać szybki dostęp do swoich kart.</translation>
 <translation id="1779089405699405702">Dekoder obrazów</translation>
+<translation id="1792959175193046959">W dowolnej chwili możesz zmienić domyślną lokalizację pobierania</translation>
 <translation id="1807246157184219062">Jasny</translation>
 <translation id="1829244130665387512">Znajdź na stronie</translation>
 <translation id="1832521218263067499">Incydenty dotyczące zabezpieczeń</translation>
@@ -158,7 +160,6 @@
 <translation id="2450083983707403292">Czy chcesz jeszcze raz rozpocząć pobieranie pliku <ph name="FILE_NAME" />?</translation>
 <translation id="2476578072172137802">Ustawienia witryny</translation>
 <translation id="2482878487686419369">Powiadomienia</translation>
-<translation id="2490674006498621843">Pociągnij w górę pasek narzędzi, by znaleźć pliki i strony w Pobranych plikach</translation>
 <translation id="2496180316473517155">Historia przeglądania</translation>
 <translation id="2498359688066513246">Pomoc i opinie</translation>
 <translation id="2501278716633472235">Wróć</translation>
@@ -648,6 +649,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6910211073230771657">Usunięto</translation>
 <translation id="6912998170423641340">Zablokuj stronom możliwość odczytywania tekstu i obrazów ze schowka</translation>
 <translation id="6914783257214138813">Twoje hasła będą widoczne dla każdego, kto może zobaczyć wyeksportowany plik.</translation>
+<translation id="6942665639005891494">W dowolnej chwili w Ustawieniach możesz zmienić domyślną lokalizację pobierania</translation>
 <translation id="6945221475159498467">Wybierz</translation>
 <translation id="6963766334940102469">Usuń zakładki</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -673,6 +675,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7121362699166175603">Usuwa historię i pamięć autouzupełniania na pasku adresu. Inne rodzaje historii przeglądania mogą być nadal dostępne na Twoim koncie Google na <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128222689758636196">Zezwalaj na dostęp obecnej wyszukiwarce</translation>
 <translation id="7138678301420049075">Inne</translation>
+<translation id="7144878232160441200">Ponów próbę</translation>
 <translation id="7149893636342594995">Ostatnie 24 godziny</translation>
 <translation id="7177466738963138057">Możesz zmienić to później w Ustawieniach</translation>
 <translation id="7180611975245234373">Odśwież</translation>
@@ -814,6 +817,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8503813439785031346">Nazwa użytkownika</translation>
 <translation id="8514477925623180633">Eksportuj hasła zapisane w Chrome</translation>
 <translation id="8514577642972634246">Włącz tryb incognito</translation>
+<translation id="851751545965956758">Nie zezwalaj stronom na łączenie się z urządzeniami</translation>
 <translation id="8523928698583292556">Usuń zapisane hasło</translation>
 <translation id="854522910157234410">Otwórz tę stronę</translation>
 <translation id="8559990750235505898">Proponuj tłumaczenie stron w innych językach</translation>

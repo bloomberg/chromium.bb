@@ -400,11 +400,47 @@
           Når dette ikke er angitt, vises ingen advarsel.
 
           Innstillingsverdien skal angis i millisekunder. Verdiene må være mindre enn eller lik med inaktivitetsperioden.</translation>
+<translation id="2289578386193672044">Spesifiserer en liste over apper og utvidelser som installeres stille,
+          uten brukerinteraksjon, og som ikke kan avinstalleres eller
+          deaktiveres av brukeren. Alle tillatelser som appene/utvidelsene
+          ber om, blir gitt implisitt, uten brukerinteraksjon, inkludert
+          eventuelle ekstra tillatelser som fremtidige versjoner av
+          appen/utvidelsen ber om. I tillegg gis tillatelser for utvidelses-API-ene
+          enterprise.deviceAttributes og enterprise.platformKeys extension.
+          (Disse to API-ene er ikke tilgjengelige for apper/utvidelser som
+          ikke tvangsinstalleres.)
+
+          Denne regelen kommer foran en <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> -regel som kan være i konflikt med den. Hvis en app eller utvidelse som tidligere ble tvangsinstallert, fjernes fra denne listen, avinstalleres den automatisk av <ph name="PRODUCT_NAME" />.
+
+          For Windows-forekomster som ikke er koblet til et <ph name="MS_AD_NAME" />-domene, er tvungen installasjon begrenset til apper og utvidelser oppført i Chrome Nettmarked.
+
+          Merk at kildekoden for alle utvidelser kan endres av brukere via utviklerverktøyene (noe som potensielt kan ødelegge funksjonaliteten for utvidelsen). Hvis dette er noe som skaper bekymring, er det best å angi <ph name="DEVELOPER_TOOLS_POLICY_NAME" />-regelen.
+
+          Listeelementene i regelen er strenger som inneholder en utvidelses-ID og en nettadresse for oppdatering atskilt med semikolon (<ph name="SEMICOLON" />). Utvidelses-ID-en er strengen på 32 tegn du for eksempel finner i <ph name="CHROME_EXTENSIONS_LINK" /> når du er i utviklermodus. Nettadressen for oppdatering skal peke til oppdateringsmanifestet i XML-format som beskrevet i <ph name="LINK_TO_EXTENSION_DOC1" />. Som standard brukes nettadressen for oppdatering av Chrome Nettmarked (som nå er «https://clients2.google.com/service/update2/crx»). Merk at nettadressen for oppdatering som er angitt i denne regelen, bare brukes for første installasjon – senere oppdateringer av utvidelsen bruker nettadressen for oppdatering som er oppgitt i utvidelsens manifest. Merk også at angivelse av nettadressen for oppdatering var obligatorisk i <ph name="PRODUCT_NAME" />-versjoner til og med 67.
+
+          <ph name="EXTENSION_POLICY_EXAMPLE" /> installerer for eksempel <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" />-appen fra standardnettadressen for oppdatering for Chrome Nettmarked. Hvis du vil ha mer informasjon om verter for utvidelser, kan du se: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Hvis denne regelen ikke angis, installeres ingen apper eller utvidelser automatisk, og brukeren kan avinstallere hvilken som helst app eller utvidelse i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME" /> kan bruke en Google-nett-tjeneste for å få bukt med stavefeil. Hvis denne innstillingen er aktivert, så blir denne tjenesten alltid brukt. Hvis innstillinger er deaktivert, forblir tjenesten ubrukt.
 
       Du kan fortsatt utføre stavekontroll av innhold, men da med en ordliste du har lastet ned selv – denne innstillingen styrer bare bruk av tjenesten på nettet.
 
       Hvis denne innstillingen ikke er konfigurert, kan brukere velge om tjenesten for stavekontroll skal eller ikke skal brukes.</translation>
+<translation id="2294283832646774959">Konfigurerer en liste over skrivere.
+
+      Denne regelen gjør det mulig for administratorer å gi ut skriverkonfigurasjoner til
+      brukerne sine.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> og <ph name="PRINTER_DESCRIPTION" /> er strenger i et fritt format som kan tilpasses for å gjøre det enklere å velge skriver. <ph name="PRINTER_MANUFACTURER" /> og <ph name="PRINTER_MODEL" /> brukes til å gjøre det lettere for brukerne å identifisere skrivere. De representerer skrivermodellen og -produsenten. <ph name="PRINTER_URI" /> skal være en adresse som kan nås fra en klientdatamaskin, inkludert <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> og <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> er valgfritt. Hvis den oppgis, brukes den til å deduplisere <ph name="ZEROCONF_DISCOVERY" />-skrivere.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> må samsvare med en av strengene som representerer en <ph name="PRODUCT_NAME" />-støttet skriver. Strengen blir brukt til å identifisere og installere den riktige PPD-filen for skriveren. Du finner mer informasjon på https://support.google.com/chrome?p=noncloudprint.
+
+      Skriverkonfigureringen er fullført når en skriver brukes for første gang. PPD-filer lastes ikke ned før skriveren brukes. Etter det blir PPD-filer som brukes ofte, bufret.
+
+      Denne regelen kan ikke brukes til å bestemme om brukere kan konfigurere skrivere på individuelle enheter. Den er ment å være et supplement til konfigureringen av skrivere som er gjort av individuelle brukere.
+
+      For Active Directory-administrerte enheter støtter denne regelen utvidelse av <ph name="MACHINE_NAME_VARIABLE" /> til Active Directory-maskinnavnet eller en delstreng av det. Hvis maskinnavnet for eksempel er <ph name="MACHINE_NAME_EXAMPLE" />, erstattes <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> med de 4 tegnene etter 6. posisjon, dvs. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Merk at posisjonen er null-basert.
+      </translation>
 <translation id="2294382669900758280">Videoavspilling i Android-apper tas ikke med i betraktningen – selv ikke når denne regelen er angitt som <ph name="TRUE" />.</translation>
 <translation id="2298647742290373702">Konfigurer standardsiden for nye faner i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Angi en liste over aktiverte programtillegg</translation>
@@ -697,6 +733,16 @@
           Denne innstillingen er valgfri. hvis den ikke er angitt, forekommer det ingen søkeordserstatning.
 
           Denne innstillingen brukes bare hvis «DefaultSearchProviderEnabled»-innstillingen er angitt.</translation>
+<translation id="3056439054015239107">
+      Denne regelen gjelder for påloggingsskjermen. Se også <ph name="SITE_PER_PROCESS_POLICY_NAME" />-regelen, som gjelder for brukerøkten. Vi anbefaler å bruke den samme verdien for begge reglene. Hvis verdiene ikke samsvarer, kan det oppstå en forsinkelse ved start av en brukerøkt mens verdien som er angitt av brukerinnstillingene, blir brukt.
+      Du kan endre innstillingen av IsolateOrigins-regelen for å få det beste
+      fra begge verdener – isolering og begrenset innvirkning for brukere – ved
+      å bruke IsolateOrigins sammen med en liste over nettstedene du vil isolere.
+      Denne innstillingen (SitePerProcess) isolerer alle nettsteder.
+      Hvis regelen er aktivert, kjøres alle nettsteder i sine egne prosesser.
+      Hvis regelen er deaktivert, er det ingen nettstedsisolering, og feltprøver for IsolateOrigins og SitePerProcess deaktiveres. Brukerne kan fortsatt aktivere SitePerProcess manuelt.
+      Hvis regelen ikke er konfigurert, kan brukerne endre denne innstillingen.
+      </translation>
 <translation id="306887062252197004">Denne regelen tillater at brukere av WebDriver-funksjoner overstyrer
       regler som kan forstyrre bruk av WebDriver.
 
@@ -854,9 +900,9 @@
 <translation id="3660562134618097814">Overfør SAML IdP-informasjonskapsler ved pålogging</translation>
 <translation id="3709266154059827597">Konfigurer installasjonssperrelisten for utvidelser</translation>
 <translation id="3711895659073496551">Suspender</translation>
+<translation id="3715569262675717862">Autentisering basert på klientsertifikater</translation>
 <translation id="3736879847913515635">Slå på «Legg til person» i brukeradministreringen</translation>
 <translation id="3737544779868348650">Vertsnavn for enheten på nettverket</translation>
-<translation id="3740754010292550733">Angi hvor lenge varsler om omstart skal sendes i forbindelse med oppdateringer</translation>
 <translation id="3750220015372671395">Blokkér nøkkelgenerering på disse nettstedene</translation>
 <translation id="3756011779061588474">Blokkering av utviklermodus</translation>
 <translation id="3758089716224084329">Lar deg spesifisere hvilken proxy-tjener som brukes av <ph name="PRODUCT_NAME" />, og hindrer brukerne i å endre proxy-innstillingene.
@@ -955,9 +1001,6 @@
       Oppfører utvidelser som automatisk installeres for demo-brukeren, for enheter i detaljistmodus. Disse utvidelsene lagres på enheten og kan installeres utenfor nettet, etter installeringen.
 
       Hver oppføring på listen inneholder en ordliste som må inkludere utvidelse-ID-en i feltet for utvidelse-ID samt dets oppdateringsnettadresse i feltet for oppdateringsnettadresse.</translation>
-<translation id="3873159954366380945">Lar deg angi hvor lenge varsler for omstart av <ph name="PRODUCT_NAME" /> skal vises når det finnes en oppdatering som ikke er installert ennå.
-
-      Denne regelen kan brukes til å styre tidsperioden (i millisekunder) brukeren skal informeres om at <ph name="PRODUCT_NAME" /> må startes på nytt (eller <ph name="PRODUCT_OS_NAME" /> må startes på nytt) på grunn av en oppdatering. I denne tidsperioden blir brukeren gjentatte ganger informert om at oppdateringen må installeres. Dette er basert på innstillingen for regelen <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Hvis denne regelen ikke er angitt, brukes standardperioden på 345 600 000 millisekunder (fire dager) for <ph name="PRODUCT_OS_NAME" /> og 604 800 000 millisekunder (én uke) for alle andre plattformer.</translation>
 <translation id="3877517141460819966">Modus for integrert tofaktor-autentisering</translation>
 <translation id="388237772682176890">Denne regelen ble avviklet i M53 og fjernet i M54, fordi støtten for SPDY/3.1 ble fjernet.
 
@@ -1173,6 +1216,7 @@
 <translation id="4508686775017063528">Hvis denne retningslinjen er satt til Sann eller ikke er angitt, er <ph name="PRODUCT_NAME" /> slått på, og brukere kan starte den fra appmenyen, kontekstuelle menyer på siden, mediekontroller på Cast-kompatible nettsteder og (hvis det vises) ikonet for Cast-verktøylinjen.
 
           Hvis denne retningslinjen er satt til Usann, er <ph name="PRODUCT_NAME" /> slått av.</translation>
+<translation id="4515404363392014383">Aktiver Safe Browsing for pålitelige kilder</translation>
 <translation id="4518251772179446575">Spør hver gang et nettsted ønsker å spore brukernes fysiske plassering</translation>
 <translation id="4519046672992331730">Aktiverer søkeforslag i søkefeltet til <ph name="PRODUCT_NAME" />, og hindrer brukerne i å endre på dette.
 
@@ -1293,6 +1337,7 @@
 
           Hvis denne regelen har verdien «false», ignoreres forespørsler om låsing av skjermaktivering.</translation>
 <translation id="487460824085252184">Overfør automatisk. Ikke be om brukersamtykke.</translation>
+<translation id="4874982543810021567">Blokkér WebUSB på disse nettstedene</translation>
 <translation id="4876805738539874299">Høyeste SSL-versjon er slått på</translation>
 <translation id="4897928009230106190">Angir parameterene som brukes når du utfører et forslagssøk med POST. De består av kommainndelte navn og verdi-par. Hvis en verdi er et malparameter, som {searchTerms} i eksempelet ovenfor, blir den erstattet med virkelige søkeordsdata.
 
@@ -1860,6 +1905,11 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
       Hvis denne regelen ikke spesifiseres, er nettverksforutsigelse slått på, men brukeren kan endre innstillingen.</translation>
 <translation id="6658245400435704251">Angir grensen for hvor mange sekunder en enhet tilfeldig kan utsette nedlastingen av en oppdatering, fra tidspunktet oppdateringen første ble sendt til tjeneren. Enheten kan sette av en del av denne tiden i form av faktisk ventetid, og den gjenværende delen i form av antall oppdateringer som skal kontrolleres. I alle tilfelle er det den øvre grensen for spredning knyttet til en konstant tidsmengde, slik at enheten aldri blir stående fast og vente på å laste ned en oppdatering for alltid.</translation>
 <translation id="6665670272107384733">Angi hvor ofte brukerne må skrive inn passord for å bruke hurtigopplåsing</translation>
+<translation id="6681229465468164801">Lar deg angi en liste med nettadressemønstre for å spesifisere nettsteder som er forhindret fra å be brukeren om tilgang til en USB-enhet.
+
+          Hvis denne regelen ikke angis, brukes den globale standardverdien for alle nettsteder. Denne verdien hentes fra DefaultWebUsbGuardSetting-regelen hvis den er angitt, eller fra brukerens personlige konfigurasjon hvis regelen ikke er angitt.
+
+          Nettadressemønstre i denne regelen må ikke kollidere med de som er konfigurert via WebUsbAskForUrls. Det er ikke spesifisert hvilken av reglene som har prioritet hvis en nettadresse samsvarer med begge.</translation>
 <translation id="6689792153960219308">Rapportér maskinvarestatus</translation>
 <translation id="6698071416141001300">Rapportering av kontoer der passordbeskyttelsen kan være kompromittert, utløses ved gjenbruk av passord</translation>
 <translation id="6699880231565102694">Aktiver to-delt autentisering for verter med ekstern adgang</translation>
@@ -1883,6 +1933,15 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
       Hvis det ikke skal være lov å logge på andre kontoer i inkognitomodus, kan du blokkere denne modusen i IncognitoModeAvailability-regelen.
 
       Vær oppmerksom på at brukerne kan få tilgang til Google-tjenester uten autentisering ved å blokkere informasjonskapsler.</translation>
+<translation id="6738326937072482736">Konfigurerer tilgjengeligheten og funksjonaliteten for oppdatering av <ph name="TPM_FIRMWARE_UPDATE_TPM" />-fastvaren.
+
+      Enkeltinnstillinger kan angis i JSON-egenskaper:
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: Hvis den er satt til <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, kan brukere utløse Powerwash-prosessen for å installere en oppdatering for <ph name="TPM_FIRMWARE_UPDATE_TPM" />-fastvaren.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: Hvis den er satt til <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, kan brukere sette i gang oppdateringsflyten for <ph name="TPM_FIRMWARE_UPDATE_TPM" />-fastvaren som opprettholder den enhetsgjeldende tilstanden (inkludert bedriftsregistrering), men taper brukerdata. Denne oppdateringsflyten er tilgjengelig fra versjon 68.
+
+      Hvis regelen ikke er angitt, er ikke funksjonaliteten for oppdatering av <ph name="TPM_FIRMWARE_UPDATE_TPM" />-fastvaren tilgjengelig.</translation>
 <translation id="6757438632136860443">Lar deg angi en liste med nettadressemønstre for å spesifisere nettsteder hvor <ph name="FLASH_PLUGIN_NAME" />-programtillegget skal kunne kjøres automatisk.
 
           Hvis denne regelen ikke angis, brukes den globale standardverdien for alle nettsteder. Denne verdien hentes fra «DefaultPluginsSetting»-regelen hvis den er angitt, eller fra brukerens personlige konfigurasjon hvis den ikke er angitt.</translation>
@@ -1901,6 +1960,16 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
 <translation id="687046793986382807">Disse retningslinjene ble avviklet fra og med versjon 35 av <ph name="PRODUCT_NAME" />.
 
 Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alternativet, men de rapporterte størrelsene blir kvantisert, og oppdateringsfrekvensen er av sikkerhetsgrunner begrenset. Hvis du vil ha data med sanntidspresisjon, må du bruke verktøy som telemetri (fjernmåling).</translation>
+<translation id="6870914592443697993">
+      Denne regelen gjelder for påloggingsskjermen. Se også  <ph name="ISOLATE_ORIGINS_POLICY_NAME" />-regelen, som gjelder for brukerøkten. Vi anbefaler å bruke den samme verdien for begge reglene. Hvis verdiene ikke samsvarer, kan det oppstå en forsinkelse ved start av en brukerøkt mens verdien som er angitt av brukerinnstillingene, blir brukt.
+      Hvis regelen er aktivert, kjøres alle navngitte opprinnelser i
+      kommadelte lister i egne prosesser. Da isoleres også opprinnelser som har
+      navn basert på underdomener. Hvis for eksempel https://example.com/
+      angis, isoleres også https://foo.example.com/ som en del av nettstedet
+      https://example.com/.
+     Hvis regelen er deaktivert, er det ingen nettstedsisolering, feltprøver for IsolateOrigins og SitePerProcess deaktiveres. Brukerne kan fortsatt aktivere IsolateOrigins manuelt.
+      Hvis regelen ikke er konfigurert, brukes plattformens standardinnstillinger for nettstedsisolering for påloggingsskjermen.
+      </translation>
 <translation id="6894178810167845842">Nettadresse for Ny fane-siden</translation>
 <translation id="6899705656741990703">Gjenkjenn mellomtjenerinnstillinger automatisk</translation>
 <translation id="6903814433019432303">Denne retningslinjen er aktiv bare i detaljistmodus.
@@ -2004,6 +2073,11 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Hvis denne innstillingen er deaktivert, brukes standard Safe Browsing-beskyttelse for alle ressurser.
       Denne regelen er ikke tilgjengelig i Windows-forekomster som ikke er knyttet til noe <ph name="MS_AD_NAME" />-domene.</translation>
 <translation id="7079519252486108041">Blokkér forgrunnsvinder på disse nettstedene</translation>
+<translation id="7085803328069945025">Lar deg angi en liste med nettadressemønstre for å spesifisere nettsteder som kan be brukeren om tilgang til en USB-enhet.
+
+          Hvis denne regelen ikke angis, brukes den globale standardverdien for alle nettsteder. Denne verdien hentes fra DefaultWebUsbGuardSetting-regelen hvis den er angitt, eller fra brukerens personlige konfigurasjon hvis den ikke er angitt.
+
+          Nettadressemønstre i denne regelen må ikke kollidere med de som er konfigurert via WebUsbBlockedForUrls. Det er ikke spesifisert hvilken av reglene som har prioritet hvis en nettadresse samsvarer med begge.</translation>
 <translation id="7106631983877564505">Slå på lås når <ph name="PRODUCT_OS_NAME" />-enheter blir inaktive eller suspenderes.
 
       Hvis du slår på denne innstillingen, må brukere angi passord for å låse opp enheten fra hvilemodus.
@@ -2161,6 +2235,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Hvis regelen angis som «False» (usann), slås komponentoppdateringer av. Enkelte komponenter er imidlertid unntatt fra denne regelen, og oppdateringer slås ikke av for disse. Dette gjelder oppdateringer av komponenter som er avgjørende for sikkerheten, som ikke inneholder kjørbar kode, eller som endrer nettleserens atferd betydelig.
       Noen eksempler på slike komponenter er Safe Browsing-data og listene over tilbaketrukne sertifikater.
       Gå til https://developers.google.com/safe-browsing for å få mer informasjon om Safe Browsing.</translation>
+<translation id="7566878661979235378">SAML-autentiseringstype for pålogging</translation>
 <translation id="757395965347379751">Når denne innstillingen er slått på, tillater <ph name="PRODUCT_NAME" /> SHA-1-signerte sertifikater så lenge de valideres og kjedes til lokalt installerte CA-sertifikater.
 
       Vær oppmerksom på at denne regelen avhenger av at operativsystemstakken for sertifikatverifisering tillater SHA-1-signaturer. Hvis en OS-oppdatering endrer hvordan OS-et håndterer SHA-1-sertifikater, kan det hende denne regelen ikke har noen effekt lenger. Videre er denne regelen ment som en midlertidig løsning for å gi bedrifter mer tid til å gå bort fra bruken av SHA-1. Denne regelen blir fjernet ca. 1. januar 2019.
@@ -2331,6 +2406,16 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="7961779417826583251">Slå av tvungen sertifikatåpenhet for en liste med eldre sertifiseringsinstanser</translation>
 <translation id="7974114691960514888">Denne retningslinjen støttes ikke lenger. Aktiverer bruk av STUN og relétjenere ved tilkobling til en ekstern klient. Hvis denne innstillingen er aktivert, kan maskinen oppdage og koble seg til eksterne vertsmaskiner selv om de er adskilt av en brannmur. Hvis denne innstillingen er deaktivert og utgående UDP-tilkoblinger filtreres av brannmuren, kan denne maskinen bare koble seg til vertsmaskiner i det lokale nettverket.</translation>
 <translation id="7976157349247117979">Navnet på <ph name="PRODUCT_NAME" />-destinasjonen</translation>
+<translation id="7978060394348264922">
+      Du kan endre innstillingen av IsolateOrigins-regelen for å få det beste
+      fra begge verdener – isolering og begrenset innvirkning for brukere – ved
+      å bruke IsolateOrigins sammen med en liste over nettstedene du vil isolere.
+      Denne innstillingen (SitePerProcess) isolerer alle nettsteder.
+      Hvis regelen er aktivert, kjøres alle nettsteder i sine egne prosesser.
+      Hvis regelen er deaktivert, er det ingen nettstedsisolering, og feltprøver for IsolateOrigins og SitePerProcess deaktiveres. Brukerne kan fortsatt aktivere SitePerProcess manuelt.
+      Hvis regelen ikke er konfigurert, kan brukerne endre denne innstillingen.
+      I <ph name="PRODUCT_OS_NAME" /> bør du også angi samme verdi for enhetsinnstillingene <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en forsinkelse ved start av en brukerøkt mens verdien som er angitt av brukerinnstillingene, blir brukt.
+      </translation>
 <translation id="7980227303582973781">Ingen spesielle begrensninger</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Rotér skjermen 0 grader</translation>
@@ -2531,6 +2616,13 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
           Adskill tjenernavn med komma. Jokertegn (*) er tillatt.
 
           Hvis du ikke spesifiserer denne regelen, forsøker <ph name="PRODUCT_NAME" /> å oppdage om en tjener er på intranett og bare svare på IWA-forespørsler hvis den er det. Hvis en tjener registreres som Internett, ignorerer <ph name="PRODUCT_NAME" /> IWA-forespørsler fra tjeneren.</translation>
+<translation id="8667812577403206506">Lar deg styre om virtuelle maskiner kan kjøre i Chrome OS.
+
+      Hvis regelen er angitt som «true» (sann), kan enheten kjøre virtuelle maskiner.
+      Hvis regelen er angitt som «false» (usann), kan ikke enheten kjøre virtuelle maskiner.
+      Når denne regelen endres til «false» (usann), gjelder det for nye virtuelle maskiner. Virtuelle maskiner som allerede kjører, blir imidlertid ikke slått av.
+      Når denne regelen ikke er angitt på en administrert enhet, kan ikke enheten kjøre virtuelle maskiner.
+      Ikke-administrerte enheter kan kjøre virtuelle maskiner.</translation>
 <translation id="8672321184841719703">Målversjon for automatiske oppdateringer</translation>
 <translation id="867410340948518937">Universal tofaktor-autentisering (U2F)</translation>
 <translation id="8685024486845674965">Advarselen om passordbeskyttelse utløses ved gjenbruk av passord</translation>
@@ -2645,6 +2737,7 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
 
       Denne innstillingen bør ikke være slått på mens regelen <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> er slått på, ettersom disse funksjonene har samme funksjonalitet på klientsiden. Hvis begge er slått på, deaktiveres synkroniseringen Google er vert for, fullstendig.</translation>
 <translation id="8955719471735800169">Tilbake til toppen</translation>
+<translation id="8959992920425111821">Standardkonfigurasjon</translation>
 <translation id="8960850473856121830">Mønstrene i denne listen sammenlignes med sikkerhetskilden
       til nettadressen forespørselen kommer fra. Hvis det finnes samsvar, blir 
       tilgang til lydopptaksenheter gitt uten forespørsel på forhånd.
@@ -2655,6 +2748,16 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
 <translation id="8976248126101463034">Tillat gnubby-autentisering for fjerntilgangsverter</translation>
 <translation id="8976531594979650914">Bruk standardskriveren i systemet, som standard</translation>
 <translation id="8992176907758534924">Ikke la noen nettsteder vise bilder</translation>
+<translation id="9034729899149506577">
+      Hvis regelen er aktivert, kjøres alle navngitte opprinnelser i
+      kommadelte lister i egne prosesser. Da isoleres også opprinnelser som har
+      navn basert på underdomener. Hvis for eksempel https://example.com/
+      angis, isoleres også https://foo.example.com/ som en del av nettstedet
+      https://example.com/.
+      Hvis regelen er deaktivert, er det ingen nettstedsisolering, og feltprøver for IsolateOrigins og SitePerProcess deaktiveres. Brukerne kan fortsatt aktivere IsolateOrigins manuelt.
+      Hvis regelen ikke er konfigurert, kan brukerne endre denne innstillingen.
+      I <ph name="PRODUCT_OS_NAME" /> bør du også angi samme verdi for enhetsinnstillingene <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en forsinkelse ved start av en brukerøkt mens verdien som er angitt av brukerinnstillingene, blir brukt.
+      </translation>
 <translation id="9035964157729712237">Utvidelses-ID-er som skal unntas sperrelisten</translation>
 <translation id="9042911395677044526">Tillater skyving av nettverkskonfigurasjon for enkeltbrukere på en <ph name="PRODUCT_OS_NAME" />-enhet. Nettverkskonfigurasjon er en JSON-formatert streng, som definert av Open Network Configuration-formatet beskrevet på <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Angi om videoaktivitet skal påvirke strømbehandling</translation>
@@ -2663,6 +2766,7 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
 <translation id="9096086085182305205">Godkjenningsliste for autentiseringstjener</translation>
 <translation id="9098553063150791878">Regler for HTTP-autentisering</translation>
 <translation id="9105265795073104888">Bare en undergruppe av konfigurasjonsalternativer for proxy-tjenere er gjort tilgjengelig for Android-apper. Android-apper kan velge å bruke proxy-tjeneren frivillig. Du kan ikke tvinge dem til å bruke proxy-tjenere.</translation>
+<translation id="9106865192244721694">Tillat WebUSB på disse nettstedene</translation>
 <translation id="9112727953998243860">Konfigurasjonsfil for bedriftsskriver</translation>
 <translation id="9112897538922695510">Med denne innstillingen kan du registrere en liste over protokollbehandlere. Dette er bare en anbefalt innstilling. Egenskapen |protocol| bør settes til det aktuelle skjemaet, for eksempel «mailto», og egenskapen |url| bør settes til nettadressemønsteret for appen som behandler skjemaet. Mønsteret kan inkludere en «%s» som, hvis den brukes, erstattes av nettadressen som behandles.
 
@@ -2702,10 +2806,22 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
 <translation id="915194831143859291">Hvis denne regelen settes til usann eller ikke konfigureres, kan brukerne slå av enhetene sine i <ph name="PRODUCT_OS_NAME" />.
       Hvis denne regelen settes til sann, gjør <ph name="PRODUCT_OS_NAME" /> at enhetene starter på nytt når brukerne slår dem av. Alle «slå av»-knappene i <ph name="PRODUCT_OS_NAME" />-brukergrensesnittet blir byttet ut med «start på nytt»-knapper. Hvis brukerne slår av enhetene med den fysiske av/på-knappen, starter de ikke på nytt – selv om regelen er slått på.</translation>
 <translation id="9158929520101169054">Tillat multipålogging i nettleseren</translation>
+<translation id="9165792353046089850">Gjør det mulig å velge om nettsteder kan få tilgang til tilkoblede USB-enheter. Tilgangen kan blokkeres helt, eller brukeren kan bli spurt hver gang et nettsted vil ha tilgang til tilkoblede USB-enheter.
+
+          Denne regelen kan overstyres for spesifikke nettadressemønstre ved hjelp av WebUsbAskForUrls- og WebUsbBlockedForUrls-reglene.
+
+          Hvis denne regelen ikke angis, brukes «3», og brukeren kan endre denne innstillingen.</translation>
 <translation id="9167719789236691545">Deaktiver Disk i Filer-appen for <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="9187743794267626640">Deaktiver bruk av ekstern lagring</translation>
 <translation id="9197740283131855199">Prosentandelen det skaleres etter for å justere forsinkelse i skjermdemping, hvis brukeren har blitt aktiv igjen etter demping</translation>
 <translation id="9200828125069750521">Parametere for bildenettadresser som bruker POST</translation>
+<translation id="9210953373038593554">Konfigurerer autentiseringstypen for SAML-pålogging.
+
+      Når denne regelen ikke er spesifisert eller er satt til standard (verdi 0), bestemmes atferden for SAML pålogging av nettleseren avhengig av andre faktorer. I det mest grunnleggende scenarioet baseres brukerautentisering og beskyttelse av bufret brukerdata på passord som skrives inn manuelt av brukerne.
+
+      Når denne regelen er satt til klientsertifikat (verdi 1), brukes autentisering av klientsertifikat for brukere som nylig er lagt til, og som logger inn via SAML. Ingen passord brukes for slike brukere, og bufret lokal data beskyttes med tilhørende kryptografiske nøkler. Denne innstillingen tillater for eksempel konfigurering av smartkortbasert brukerautentisering (merk at mellomvareapper for smartkort må installeres via DeviceLoginScreenAppInstallList-regelen).
+
+      Denne regelen påvirker bare brukere som autentiserer via SAML.</translation>
 <translation id="9213347477683611358">Konfigurer bakgrunnsbildet som vises på påloggingsskjermen, på enhentsnivå hvis ingen brukere har logget på enheten ennå. Regelen angis ved å spesifisere nettadressen hvor Chrome OS-enheten kan laste ned bakgrunnsbildet, og dessuten en kryptografisk hash-verdi som brukes til bekrefte nedlastingens integritet. Bildet må være i JPEG-format, og filstørrelsen kan ikke overskride 16 MB. Nettadressen må være tilgjengelig uten autentisering. Bakgrunnsbildet lastes ned og bufres. Det lastes ned på nytt hvis nettadressen eller hash-verdien endres.
 
       Regelen skal spesifiseres som en streng der nettadressen og hash-verdien skrives i JSON-format, for eksempel

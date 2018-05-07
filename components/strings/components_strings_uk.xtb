@@ -399,7 +399,6 @@
 <translation id="3678529606614285348">Відкрийте сторінку в анонімному вікні (Ctrl+Shift+N)</translation>
 <translation id="3679803492151881375">Звіт про аварійне завершення роботи створено: <ph name="CRASH_TIME" />, завантажено: <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Інформація про сертифікат</translation>
-<translation id="3690164694835360974">Вхід не захищено</translation>
 <translation id="3704162925118123524">Можливо, щоб з’єднатися з цією мережею, потрібно відвідати її сторінку входу.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Завантаження...</translation>
@@ -502,7 +501,7 @@
 <translation id="4340982228985273705">Цим комп’ютером не керує адміністратор підприємства, тому правило може лише автоматично встановити розширення, розміщені у Веб-магазині Chrome. URL-адреса для оновлення Веб-магазину Chrome: <ph name="CWS_UPDATE_URL" />.</translation>
 <translation id="4346197816712207223">Кредитні картки, які приймаються до оплати</translation>
 <translation id="4356973930735388585">Зловмисники на цьому сайті можуть намагатися встановити на ваш комп’ютер небезпечні програми, що викрадають або видаляють інформацію (наприклад, фотографії, паролі, повідомлення й дані кредитних карток).</translation>
-<translation id="4358461427845829800">Керуйте способами оплати…</translation>
+<translation id="4358461427845829800">Керувати способами оплати…</translation>
 <translation id="4372948949327679948">Очікуване значення: <ph name="VALUE_TYPE" />.</translation>
 <translation id="4377125064752653719">Ви пробували зв’язатися з доменом <ph name="DOMAIN" />, проте сервер надав сертифікат, відкликаний його видавцем. Це означає, що не варто довіряти обліковим даним системи захисту, наданим сервером. Можливо, ви обмінюєтеся даними зі зловмисником.</translation>
 <translation id="4406896451731180161">результати пошуку</translation>
@@ -589,7 +588,7 @@
 <translation id="5115563688576182185">(64-розрядна версія)</translation>
 <translation id="5121084798328133320">Щойно ви підтвердите дані картки з облікового запису Google Payments, цей сайт отримає доступ до них.</translation>
 <translation id="5128122789703661928">Сеанс із цією назвою не можна видалити.</translation>
-<translation id="5135404736266831032">Керуйте адресами…</translation>
+<translation id="5135404736266831032">Керувати адресами…</translation>
 <translation id="5141240743006678641">Шифрувати синхронізовані паролі за допомогою облікових даних Google</translation>
 <translation id="5145883236150621069">Відповідь правила містить код помилки</translation>
 <translation id="5159010409087891077">Відкрийте сторінку в анонімному вікні (⇧⌘N)</translation>
@@ -674,7 +673,7 @@
 <translation id="5685654322157854305">Додати адресу доставки</translation>
 <translation id="5689199277474810259">Експортувати у формат JSON</translation>
 <translation id="5689516760719285838">Місцезнаходження</translation>
-<translation id="570530837424789914">Керуйте…</translation>
+<translation id="570530837424789914">Керувати…</translation>
 <translation id="5710435578057952990">Ідентифікаційну інформацію цього веб-сайта не було перевірено.</translation>
 <translation id="5719499550583120431">Передплачені картки, які приймаються.</translation>
 <translation id="5720705177508910913">Поточний користувач</translation>
@@ -718,6 +717,7 @@
 <translation id="6047927260846328439">Цей вміст може оманливим шляхом змусити вас установити програмну або надати особисту інформацію. <ph name="BEGIN_LINK" />Усе одно показати<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">Зараз не можна перейти на сторінку <ph name="SITE" />, оскільки цей веб-сайт використовує закріплення сертифікатів. Помилки мережі й атаки зазвичай тимчасові, тому ця сторінка, скоріш за все, запрацює пізніше.</translation>
 <translation id="6059925163896151826">Пристрої USB</translation>
+<translation id="6071091556643036997">Це правило недійсне.</translation>
 <translation id="6080696365213338172">Ви отримали доступ до вмісту, використовуючи наданий адміністратором сертифікат. Адміністратор може перехоплювати дані, які ви надасте домену <ph name="DOMAIN" />.</translation>
 <translation id="610911394827799129">У вашому обліковому записі Google на сторінці <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> можуть бути інші форми історії веб-перегляду</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Немає}=1{1 пароль (синхронізовано)}one{# пароль (синхронізовано)}few{# паролі (синхронізовано)}many{# паролів (синхронізовано)}other{# пароля (синхронізовано)}}</translation>
@@ -765,7 +765,7 @@
 <translation id="6446608382365791566">Додати більше інформації</translation>
 <translation id="6447842834002726250">Cookie-файли</translation>
 <translation id="6451458296329894277">Підтвердити повторне надсилання форми</translation>
-<translation id="6465306955648956876">Керуйте паролями…</translation>
+<translation id="6465306955648956876">Керувати паролями…</translation>
 <translation id="647261751007945333">Правила пристрою</translation>
 <translation id="6477321094435799029">Chrome виявив на цій сторінці незвичний код і заблокував його, щоб захистити вашу особисту інформацію (наприклад, паролі, номери телефонів або кредитних карток).</translation>
 <translation id="6489534406876378309">Почати завантаження даних про аварійне завершення роботи</translation>
@@ -834,7 +834,6 @@
 <translation id="7138472120740807366">Спосіб доставки</translation>
 <translation id="7139724024395191329">Емірат</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}one{<ph name="PAYMENT_METHOD_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}few{<ph name="PAYMENT_METHOD_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}many{<ph name="PAYMENT_METHOD_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
-<translation id="7155487117670177674">Платіж не захищено</translation>
 <translation id="717330890047184534">Ідентифікатор GAIA:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}one{<ph name="SHIPPING_OPTION_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}few{<ph name="SHIPPING_OPTION_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}many{<ph name="SHIPPING_OPTION_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="7180611975245234373">Оновити</translation>

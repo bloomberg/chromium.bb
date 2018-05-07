@@ -399,7 +399,6 @@
 <translation id="3678529606614285348">‏صفحه را در پنجره‌ «ناشناس» جدیدی باز کنید (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">گزارش خرابی در <ph name="CRASH_TIME" /> ثبت شد، در <ph name="UPLOAD_TIME" /> بارگذاری شد</translation>
 <translation id="3681007416295224113">اطلاعات گواهی</translation>
-<translation id="3690164694835360974">ورود به سیستم امن نیست</translation>
 <translation id="3704162925118123524">شاید شبکه‌ای که استفاده می‌کنید، بازدید از صفحه ورود به سیستم خودش را برای شما ضروری کرده باشد.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> ‏<ph name="BOOKMARKED" /> ‏<ph name="TITLE" /> ‏<ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">در حال بارکردن…</translation>
@@ -718,6 +717,7 @@
 <translation id="6047927260846328439">شاید محتوای این صفحه تلاش کند شما را فریب دهد تا نرم‌افزاری نصب کنید یا اطلاعات شخصی را افشا سازید. <ph name="BEGIN_LINK" />درهرصورت نمایش داده شود<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">درحال‌حاضر نمی‌توانید از <ph name="SITE" /> دیدن کنید، زیرا وب‌سایت از پین کردن گواهینامه استفاده می‌کند. خطاهای شبکه و حمله‌ها موقتی هستند، بنابراین احتمالاً این صفحه بعداً کار خواهد کرد.</translation>
 <translation id="6059925163896151826">‏دستگاه‌های USB</translation>
+<translation id="6071091556643036997">نوع خط‌مشی نامعتبر است.</translation>
 <translation id="6080696365213338172">شما با استفاده از گواهی ارائه شده توسط سرپرست سیستم به محتوا دسترسی پیدا کرده‌اید. داده‌هایی که به <ph name="DOMAIN" /> ارائه می‌کنید ممکن است توسط سرپرست سیستم رهگیری شوند.</translation>
 <translation id="610911394827799129">‏ممکن است حساب Google شما اشکال دیگری از سابقه مرور در <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> داشته باشد</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{هیچ‌کدام}=1{۱ گذرواژه (همگام‌سازی‌شده)}one{# گذرواژه (همگام‌سازی‌شده)}other{# گذرواژه (همگام‌سازی‌شده)}}</translation>
@@ -834,7 +834,6 @@
 <translation id="7138472120740807366">روش تحویل</translation>
 <translation id="7139724024395191329">امارت</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> و <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> روش دیگر}one{<ph name="PAYMENT_METHOD_PREVIEW" /> و <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> روش دیگر}other{<ph name="PAYMENT_METHOD_PREVIEW" /> و <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> روش دیگر}}</translation>
-<translation id="7155487117670177674">پرداخت امن نیست</translation>
 <translation id="717330890047184534">‏شناسه Gaia:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> و <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> گزینه دیگر}one{<ph name="SHIPPING_OPTION_PREVIEW" /> و <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> گزینه دیگر}other{<ph name="SHIPPING_OPTION_PREVIEW" /> و <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> گزینه دیگر}}</translation>
 <translation id="7180611975245234373">بازخوانی</translation>

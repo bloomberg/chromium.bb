@@ -388,20 +388,20 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
           El valor de la política deberá especificarse en milisegundos. Los valores deben ser menores o iguales que la demora por inactividad.</translation>
 <translation id="2289578386193672044">Especifica una lista de apps y extensiones que se instalan de forma silenciosa,
-          sin interacción del usuario, y que el usuario no puede desinstalar
+          sin interacción del usuario, y que este no puede desinstalar
           ni inhabilitar. Todos los permisos que solicitan las apps y extensiones
           se conceden de forma implícita, sin interacción del usuario, incluso los
           permisos adicionales que soliciten las apps o extensiones en próximas
           versiones. Además, los permisos se conceden para las API de las
           extensiones enterprise.deviceAttributes y enterprise.platformKeys (estas
-          no están disponibles para las apps o extensiones cuyas instalaciones
-          no se hayan forzado).
+          no están disponibles para las apps o extensiones instaladas de manera
+          automática).
 
-          Esta política tiene prioridad por sobre una política de <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> posiblemente conflictiva. Si una app o extensión, cuya instalación se forzó anteriormente, se quita de esta lista, <ph name="PRODUCT_NAME" /> la desinstala de forma automática.
+          Esta política tiene prioridad por sobre una política de <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> posiblemente conflictiva. Si una app o extensión, instalada de manera automática, se quita de esta lista, <ph name="PRODUCT_NAME" /> la desinstala de forma automática.
 
-          Para las instancias de Windows que no están unidas a un dominio de <ph name="MS_AD_NAME" /> solo se puede forzar la instalación de las apps y extensiones que aparecen en Chrome Web Store.
+          Para las instancias de Windows que no están unidas a un dominio de <ph name="MS_AD_NAME" />, solo se pueden instalar de manera automática las apps y extensiones que aparecen en Chrome Web Store.
 
-          Ten en cuenta que es posible que los usuarios modifiquen el código fuente de cualquier extensión a través de las herramientas para desarrolladores (y muy probablemente deje de funcionar). Si esta situación te inquieta, establece la política <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+          Ten en cuenta que es posible que los usuarios modifiquen el código fuente de cualquier extensión a través de las Herramientas para desarrolladores (y muy probablemente deje de funcionar). Si esta situación te inquieta, establece la política <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
 
           Cada elemento de la lista de la política es un string que contiene un ID de extensión y una URL de actualización separada por un punto y coma (<ph name="SEMICOLON" />). El ID de extensión es el string de 32 letras que se encuentra, p. ej., en <ph name="CHROME_EXTENSIONS_LINK" /> en el modo de desarrollador. Si se especifica, la URL de actualización debe direccionarte a un documento XML del manifiesto de actualización, como se describe en <ph name="LINK_TO_EXTENSION_DOC1" />. De forma predeterminada, se usa la URL de actualización de Chrome Web Store (actualmente es "https://clients2.google.com/service/update2/crx"). Ten en cuenta que la URL de actualización que se establece en esta política solo se usa para la instalación inicial; las actualizaciones posteriores de la extensión utilizan la URL de actualización que se indica en el manifiesto de la extensión. Ten en cuenta también que el uso de la URL de actualización era explícitamente obligatorio en las versiones de <ph name="PRODUCT_NAME" /> hasta la 67 inclusive.
 
@@ -869,7 +869,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="3715569262675717862">Autenticación basada en certificados de clientes</translation>
 <translation id="3736879847913515635">Habilitar la opción para agregar una persona en el Administrador de usuarios</translation>
 <translation id="3737544779868348650">Nombre de host de la red del dispositivo</translation>
-<translation id="3740754010292550733">Establecer el período de las notificaciones de reinicio para instalar actualizaciones</translation>
 <translation id="3750220015372671395">Bloquear generación de claves en estos sitios</translation>
 <translation id="3756011779061588474">Bloquear modo de programador</translation>
 <translation id="3758089716224084329">Te permite establecer el servidor proxy que usa <ph name="PRODUCT_NAME" /> y evita que los usuarios cambien la configuración del proxy.
@@ -968,9 +967,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Elabora una lista de las extensiones que se instalan automáticamente para el usuario de demostración, para los dispositivos en modo de venta. Estas extensiones se guardan en el dispositivo y se pueden instalar sin conexión, después de la instalación.
 
       Cada entrada de la lista contiene un diccionario que debe incluir el ID de extensión en el campo "extension-id" y su URL de actualización en el campo "update-url".</translation>
-<translation id="3873159954366380945">Te permite establecer el período en el que se mostrarán las notificaciones sobre el reinicio de <ph name="PRODUCT_NAME" /> para aplicar una actualización pendiente.
-
-      Esta política se puede usar para controlar el período (en milisegundos) en el que el usuario recibe notificaciones de forma progresiva sobre el reinicio de <ph name="PRODUCT_NAME" /> (o el reinicio de <ph name="PRODUCT_OS_NAME" />) para aplicar una actualización. En este período, el usuario recibirá repetidas notificaciones sobre la necesidad de instalar una actualización, según la configuración de la política <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Si no se establece esta política, se usará el período predeterminado de 345600000 milisegundos (cuatro días) para <ph name="PRODUCT_OS_NAME" /> y de 604800000 milisegundos (una semana) para el resto de las plataformas.</translation>
 <translation id="3877517141460819966">Modo de autenticación de dos factores integrado</translation>
 <translation id="388237772682176890">Esta política ya no está disponible en M53 y se quitó en M54 porque se quitó la compatibilidad con SPDY/3.1.
 
@@ -1880,9 +1876,9 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si se habilita la política, cada origen designado en una lista de elementos
       separados por comas se ejecutará en su propio proceso. Esta acción
       también aislará los orígenes designados a partir de subdominios; p. ej.,
-      al especificar https://ejemplo.com/ también se aislará https://foo.ejemplo.com/
+      al especificar https://ejemplo.com/, también se aislará https://foo.ejemplo.com/
       como parte del sitio https://ejemplo.com/.
-      Si se inhabilita, no se aplicará el aislamiento de sitios, y se inhabilitarán las pruebas de campo de IsolateOrigins y SitePerProcess. Aun así, los usuarios podrán habilitar SitePerProcess de forma manual.
+      Si se inhabilita, no se aplicará el aislamiento de sitios y se inhabilitarán las pruebas de campo de IsolateOrigins y SitePerProcess. Aun así, los usuarios podrán habilitar SitePerProcess de forma manual.
       Si no se configura, se usará la configuración predeterminada de aislamiento de sitios de la plataforma para la pantalla de acceso.
       </translation>
 <translation id="6894178810167845842">URL de la página Nueva pestaña</translation>
@@ -2304,7 +2300,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       limitado de los usuarios. Esta configuración, SitePerProcess, aísla todos los
       sitios.
       Si se habilita la política, cada sitio se ejecutará en su propio proceso.
-      Si se inhabilita, no se aplicará el aislamiento de sitios, y se inhabilitarán las pruebas de campo de IsolateOrigins y SitePerProcess. Aun así, los usuarios podrán habilitar SitePerProcess de forma manual.
+      Si se inhabilita, no se aplicará el aislamiento de sitios y se inhabilitarán las pruebas de campo de IsolateOrigins y SitePerProcess. Aun así, los usuarios podrán habilitar SitePerProcess de forma manual.
       Si no se establece, el usuario podrá cambiar esta configuración.
       En <ph name="PRODUCT_OS_NAME" />, se recomienda establecer la política de dispositivo <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> en el mismo valor. Si los valores de ambas políticas no coinciden, es posible que se produzca un retraso al ingresar una sesión de usuario mientras se aplica el valor especificado por la política del usuario.
       </translation>
@@ -2653,7 +2649,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       también aislará los sitios designados a partir de subdominios; p. ej., si se
       especifica https://ejemplo.com/, también se aislará https://foo.ejemplo.com/
       como parte del sitio https://ejemplo.com/.
-      Si se inhabilita la política, no se aplicará el aislamiento de sitios, y
+      Si se inhabilita la política, no se aplicará el aislamiento de sitios y
       se inhabilitarán las pruebas de campo de IsolateOrigins y SitePerProcess.
       Aun así, los usuarios podrán habilitar SitePerProcess de forma manual.
       Si no se establece la política, el usuario podrá cambiar esta configuración.
@@ -2705,9 +2701,9 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="9200828125069750521">Parámetros para URL de imagen que utiliza POST</translation>
 <translation id="9210953373038593554">Configura el tipo de autenticación para los accesos SAML.
 
-      Cuando no se configura esta política o se establece como predeterminada (valor 0), el comportamiento de los accesos SAML se determina por el navegador según otros factores. En el caso más básico, la autenticación del usuario y la protección de los datos del usuario en caché se basan en las contraseñas que los usuarios hayan ingresado manualmente.
+      Cuando no se configura esta política o se establece como predeterminada (valor 0), el navegador determina el comportamiento de los accesos SAML según otros factores. En el caso más básico, la autenticación del usuario y la protección de los datos del usuario en caché se basan en las contraseñas que los usuarios hayan ingresado manualmente.
 
-      Si esta política se establece como ClientCertificate (valor 1), la autenticación de certificados de cliente se usa para los usuarios agregados recientemente con acceso mediante SAML. No se usan contraseñas para estos usuarios y sus datos almacenados localmente en caché se protegen con claves criptográficas correspondientes. Por ejemplo, esta configuración permite establecer la autenticación de usuarios basada en tarjetas inteligentes (ten en cuenta que las apps de middleware de tarjetas inteligentes deben instalarse mediante la política DeviceLoginScreenAppInstallList).
+      Si esta política se establece como ClientCertificate (valor 1), la autenticación de certificados de cliente se usa para los usuarios agregados recientemente con acceso mediante SAML. No se usan contraseñas para estos usuarios, y sus datos almacenados localmente en caché se protegen con claves criptográficas correspondientes. Por ejemplo, esta configuración permite establecer la autenticación de usuarios basada en tarjetas inteligentes (ten en cuenta que las apps de middleware de tarjetas inteligentes deben instalarse mediante la política DeviceLoginScreenAppInstallList).
 
       Esta política solo afecta a los usuarios que realizan la autenticación con SAML.</translation>
 <translation id="9213347477683611358">Si aún ningún usuario accedió a su cuenta en el dispositivo, configura una imagen de fondo de pantalla en el dispositivo que se muestre en la pantalla de acceso. Para establecer la política, especifica la URL correspondiente a la imagen de fondo de pantalla para que el dispositivo con el Sistema operativo Chrome pueda descargarla y un hash criptográfico para verificar la integridad de la descarga. La imagen debe estar en formato JPEG y el tamaño no debe superar los 16 MB. El acceso a la URL no debe requerir autenticación. La imagen de fondo de pantalla se descarga y almacena en caché. Si la URL o el hash cambian, la imagen se volverá a descargar.

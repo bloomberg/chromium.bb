@@ -399,7 +399,6 @@
 <translation id="3678529606614285348">Obre la pàgina en una finestra d'incògnit nova (Ctrl+Maj+N)</translation>
 <translation id="3679803492151881375">Informe d'error generat el <ph name="CRASH_TIME" /> i enviat el <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Informació del certificat</translation>
-<translation id="3690164694835360974">L'inici de sessió no és segur</translation>
 <translation id="3704162925118123524">És possible que la xarxa que esteu fent servir requereixi que visiteu la pàgina d'inici de sessió.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">S'està carregant...</translation>
@@ -718,6 +717,7 @@
 <translation id="6047927260846328439">Aquest contingut pot provar d'enganyar-te perquè instal·lis programari o proporcionis informació personal. <ph name="BEGIN_LINK" />Mostra igualment<ph name="END_LINK" />.</translation>
 <translation id="6051221802930200923">En aquests moments no pots visitar <ph name="SITE" /> perquè el lloc web fa servir una fixació de certificat. Els atacs i els errors de xarxa acostumen a ser temporals, o sigui que probablement la pàgina funcionarà més endavant.</translation>
 <translation id="6059925163896151826">Dispositius USB</translation>
+<translation id="6071091556643036997">El tipus de política no és vàlid.</translation>
 <translation id="6080696365213338172">Heu accedit a contingut mitjançant un certificat proporcionat per l'administrador. Per tant, l'administrador por interceptar les dades que proporcioneu a <ph name="DOMAIN" />.</translation>
 <translation id="610911394827799129">A <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />, trobaràs altres maneres d'explorar l'historial del teu compte de Google</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Cap}=1{1 contrasenya (sincronitzada)}other{# contrasenyes (sincronitzades)}}</translation>
@@ -834,7 +834,6 @@
 <translation id="7138472120740807366">Mètode d'entrega</translation>
 <translation id="7139724024395191329">Emirat</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> i <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> més}other{<ph name="PAYMENT_METHOD_PREVIEW" /> i <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> més}}</translation>
-<translation id="7155487117670177674">El pagament no és segur</translation>
 <translation id="717330890047184534">Identificador de Gaia:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> i <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> més}other{<ph name="SHIPPING_OPTION_PREVIEW" /> i <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> més}}</translation>
 <translation id="7180611975245234373">Actualitza</translation>
@@ -1106,7 +1105,7 @@
 <translation id="9128870381267983090">Connecta't a la xarxa</translation>
 <translation id="9137013805542155359">Mostra l'original</translation>
 <translation id="9137248913990643158">Obre Chrome i inicia-hi la sessió abans d'utilitzar aquesta aplicació.</translation>
-<translation id="9148088599418889305">Tria un mètode d'enviament</translation>
+<translation id="9148088599418889305">Tria el mètode d'enviament</translation>
 <translation id="9148507642005240123">&amp;Desfés la modificació</translation>
 <translation id="9154194610265714752">S'ha actualitzat.</translation>
 <translation id="9157595877708044936">S'està configurant...</translation>

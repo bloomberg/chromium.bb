@@ -399,7 +399,6 @@
 <translation id="3678529606614285348">కొత్త అజ్ఞాత విండోలో పేజీని తెరవండి (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">క్రాష్ నివేదిక <ph name="CRASH_TIME" />కి సంగ్రహించబడింది, <ph name="UPLOAD_TIME" />కి అప్‌లోడ్ చేయబడింది</translation>
 <translation id="3681007416295224113">సర్టిఫికెట్ సమాచారం</translation>
-<translation id="3690164694835360974">లాగిన్ సురక్షితం కాదు</translation>
 <translation id="3704162925118123524">మీరు ఉపయోగించే నెట్‌వర్క్‌కి మీరు దాని లాగిన్ పేజీని సందర్శించడం అవసరం కావచ్చు.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">లోడ్ అవుతోంది...</translation>
@@ -834,7 +833,6 @@
 <translation id="7138472120740807366">బట్వాడా పద్ధతి</translation>
 <translation id="7139724024395191329">ఎమిరేట్</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> మరియు మరో <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> మరియు మరో <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
-<translation id="7155487117670177674">చెల్లింపు సురక్షితం కాదు</translation>
 <translation id="717330890047184534">Gaia ID:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> మరియు మరో <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> మరియు మరో <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="7180611975245234373">రీఫ్రెష్ చేయి</translation>

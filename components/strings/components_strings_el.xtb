@@ -399,7 +399,6 @@
 <translation id="3678529606614285348">Ανοίξτε τη σελίδα σε ένα νέο παράθυρο ανώνυμης περιήγησης (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">Η αναφορά σφαλμάτων καταγράφηκε στις <ph name="CRASH_TIME" /> και μεταφορτώθηκε στις <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Πληροφορίες πιστοποιητικού</translation>
-<translation id="3690164694835360974">Μη ασφαλής σύνδεση</translation>
 <translation id="3704162925118123524">Το δίκτυο που χρησιμοποιείτε ενδέχεται να σας ζητήσει να επισκεφτείτε τη σελίδα σύνδεσης του.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Φόρτωση...</translation>
@@ -719,6 +718,7 @@
 <translation id="6047927260846328439">Αυτό το περιεχόμενο μπορεί να προσπαθήσει να σας εξαπατήσει έτσι ώστε να εγκαταστήσετε λογισμικό ή να αποκαλύψετε προσωπικά στοιχεία. <ph name="BEGIN_LINK" />Εμφάνιση ούτως ή άλλως<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">Δεν μπορείτε να επισκεφτείτε το <ph name="SITE" /> αυτήν τη στιγμή επειδή ο ιστότοπος χρησιμοποιεί certificate pinning (κλείδωμα πιστοποιητικών). Τα σφάλματα δικτύου και οι επιθέσεις είναι συνήθως προσωρινά, συνεπώς αυτή η σελίδα πιθανότατα θα λειτουργήσει αργότερα.</translation>
 <translation id="6059925163896151826">Συσκευές USB</translation>
+<translation id="6071091556643036997">Ο τύπος πολιτικής δεν είναι έγκυρος.</translation>
 <translation id="6080696365213338172">Η πρόσβασή σας στο περιεχόμενο πραγματοποιήθηκε με τη χρήση ενός πιστοποιητικού που παρασχέθηκε από διαχειριστή. Τα δεδομένα που παρέχετε στο <ph name="DOMAIN" /> μπορεί να ελέγχονται από το διαχειριστή σας.</translation>
 <translation id="610911394827799129">Ο Λογαριασμός Google ενδέχεται να διαθέτει άλλες μορφές ιστορικού περιήγησης στη διεύθυνση <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Κανένας}=1{1 κωδικός πρόσβασης (συγχρονισμένος)}other{# κωδικοί πρόσβασης (συγχρονισμένοι)}}</translation>
@@ -835,7 +835,6 @@
 <translation id="7138472120740807366">Μέθοδος προβολής</translation>
 <translation id="7139724024395191329">Εμιράτο</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> και <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ακόμη}other{<ph name="PAYMENT_METHOD_PREVIEW" /> και <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ακόμη}}</translation>
-<translation id="7155487117670177674">Μη ασφαλής πληρωμή</translation>
 <translation id="717330890047184534">Αναγνωριστικό Gaia:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> και <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ακόμη}other{<ph name="SHIPPING_OPTION_PREVIEW" /> και <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ακόμη}}</translation>
 <translation id="7180611975245234373">Ανανέωση</translation>

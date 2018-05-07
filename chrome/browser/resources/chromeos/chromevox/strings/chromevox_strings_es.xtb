@@ -89,6 +89,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="1810107444790159527">Cuadro de lista</translation>
 <translation id="1828385960365606039">Mayo</translation>
 <translation id="1834891354138622109">Columna</translation>
+<translation id="1845944666972354496">Toca dos veces para activar</translation>
 <translation id="1865601187525349519">Fin del texto</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">Di la fecha y la hora actuales.</translation>
@@ -120,7 +121,8 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="2179452035581866348">ChromeVox usa sonidos para proporcionarte información esencial y adicional. Puedes aprender el significado de los sonidos para navegar con mayor rapidez. Cuando te hayas familiarizado con ChromeVox, puedes desactivar las descripciones detalladas por voz y usarlas para obtener información esencial sobre la página. A continuación se indica una lista completa de los sonidos y su significado.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{paréntesis de cierre}other{# paréntesis de cierre}}</translation>
 <translation id="2199994615414171367">Anterior expresión matemática</translation>
-<translation id="2220529011494928058">Notificar un error</translation>
+<translation id="2203046366315513658">Reducir el valor</translation>
+<translation id="2220529011494928058">Notificar un problema</translation>
 <translation id="2223693656926968778">Realiza la acción con el elemento actual</translation>
 <translation id="225732394367814946">Habla más rápido</translation>
 <translation id="2267945578749931355">Carácter siguiente</translation>
@@ -158,6 +160,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="2637227747952042642">Objeto matemático</translation>
 <translation id="2639750663247012216">Modificador de ChromeVox</translation>
 <translation id="2644542693584024604">error ortográfico</translation>
+<translation id="2673280813984708147">se está editando</translation>
 <translation id="267442004702508783">actualizar</translation>
 <translation id="2684412629217766642">Cierra el tutorial de ChromeVox</translation>
 <translation id="2697408785920771974">autoinl</translation>
@@ -209,6 +212,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="3060756054951570867"><ph name="TITLE" />, menú abierto</translation>
 <translation id="3078345202707391975">Siguiente encabezado de nivel 2</translation>
 <translation id="3078740164268491126">tabla</translation>
+<translation id="3082249673510793544">Desplazarse hacia atrás</translation>
 <translation id="3082557070674409251">Se ha hecho clic</translation>
 <translation id="3084806535845658316">no hablar al escribir</translation>
 <translation id="3086746722712840547">nota</translation>
@@ -396,6 +400,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="4372705107434148843">Detiene la voz</translation>
 <translation id="4373197658375206385">No hay ningún elemento anterior que no sea un enlace.</translation>
 <translation id="4376316291247992553">Muestra los gráficos en braille</translation>
+<translation id="4378308539633073595">Desplazarse hacia delante.</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
 <translation id="443163561286008705">restablecer</translation>
 <translation id="4457472090507035117">Selecciona la voz actual:</translation>
@@ -403,6 +408,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="4476183483923481720">nueva línea</translation>
 <translation id="4482330759234983253">Tabla anterior</translation>
 <translation id="4491109536499578614">Imagen</translation>
+<translation id="4517854969512651305">Aumentar el valor</translation>
 <translation id="4529987814483543472">Mapa de teclado clásico</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{barra}other{# barras}}</translation>
 <translation id="4547556996012970016">Siguiente encabezado de nivel 5</translation>
@@ -418,6 +424,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="461613135510474570">Oración</translation>
 <translation id="463135993322337640">Pulsa las teclas O y N en ChromeVox para descubrir las novedades</translation>
 <translation id="4647836961514597010">Selector de color</translation>
+<translation id="4652110509054054146">Usa la tecla de búsqueda + flecha hacia la izquierda o hacia la derecha para Inicio o Fin; la tecla de búsqueda + Control + flecha hacia la izquierda o hacia la derecha para Control + Inicio o Fin; y la tecla de búsqueda + flecha hacia arriba o hacia abajo para Re Pág o Av Pág</translation>
 <translation id="4660783501463101648">Versión clásica de ChromeVox eliminada. Se ha quitado la combinación de teclas para volver a la versión anterior.</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4668929960204016307">,</translation>

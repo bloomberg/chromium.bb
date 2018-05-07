@@ -399,7 +399,6 @@
 <translation id="3678529606614285348">ページを新しいシークレット ウィンドウで開く（Ctrl-Shift-N）</translation>
 <translation id="3679803492151881375"><ph name="CRASH_TIME" /> にクラッシュ レポートが作成され、<ph name="UPLOAD_TIME" /> にアップロードされました</translation>
 <translation id="3681007416295224113">証明書情報</translation>
-<translation id="3690164694835360974">ログイン情報は保護されません</translation>
 <translation id="3704162925118123524">ご利用のネットワークでは、ログインページへのアクセスが必要な可能性があります。</translation>
 <translation id="3704609568417268905"><ph name="TIME" />、<ph name="TITLE" />（<ph name="DOMAIN" />）を<ph name="BOOKMARKED" /></translation>
 <translation id="370665806235115550">読み込んでいます...</translation>
@@ -718,6 +717,7 @@
 <translation id="6047927260846328439">アクセス先のコンテンツは、ユーザーをだましてソフトウェアをインストールさせようとしたり、個人情報を危険にさらしたりする可能性があります。<ph name="BEGIN_LINK" />危険性を理解したうえで表示する<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923"><ph name="SITE" /> では証明書ピンニングが使用されているため、現在アクセスできません。通常、ネットワーク エラーやネットワークへの攻撃は一時的なものです。しばらくするとページにアクセスできるようになります。</translation>
 <translation id="6059925163896151826">USB デバイス</translation>
+<translation id="6071091556643036997">ポリシーのタイプが無効です。</translation>
 <translation id="6080696365213338172">管理者が提供する証明書を使用してコンテンツにアクセスしています。<ph name="DOMAIN" /> に提供するデータは管理者によって傍受される可能性があります。</translation>
 <translation id="610911394827799129">お使いの Google アカウントの <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> に、他の形式の閲覧履歴が記録されている場合があります</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{なし}=1{1 個のパスワード（同期済み）}other{# 個のパスワード（同期済み）}}</translation>
@@ -834,7 +834,6 @@
 <translation id="7138472120740807366">配達方法</translation>
 <translation id="7139724024395191329">管轄区域</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" />（他 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> 件）}other{<ph name="PAYMENT_METHOD_PREVIEW" />（他 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> 件）}}</translation>
-<translation id="7155487117670177674">お支払い情報は保護されません</translation>
 <translation id="717330890047184534">GAIA ID:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" />（他 <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> 件）}other{<ph name="SHIPPING_OPTION_PREVIEW" />（他 <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> 件）}}</translation>
 <translation id="7180611975245234373">更新</translation>

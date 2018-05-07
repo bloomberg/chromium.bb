@@ -164,6 +164,7 @@
 <translation id="4379531060876907730">Đây là các công cụ bút dành cho bút cảm ứng</translation>
 <translation id="4421231901400348175">Chia sẻ quyền kiểm soát màn hình của bạn với <ph name="HELPER_NAME" /> qua Trợ giúp từ xa.</translation>
 <translation id="4430019312045809116">Âm lượng</translation>
+<translation id="4450893287417543264">Không hiển thị lại</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Thiết bị được hủy ghép nối</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: Đang kết nối...</translation>
@@ -196,6 +197,7 @@
 <translation id="54609108002486618">Được quản lý</translation>
 <translation id="553675580533261935">Thoát phiên</translation>
 <translation id="5548285847212963613">Tiện ích "<ph name="EXTENSION_NAME" />" có thể giúp kết nối với mạng này.</translation>
+<translation id="554893713779400387">Bật/tắt tính năng nhập bằng giọng nói</translation>
 <translation id="5571066253365925590">Đã bật bluetooth</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5600837773213129531">Nhấn Ctrl + Alt + Z để tắt phản hồi bằng giọng nói.</translation>
@@ -284,6 +286,7 @@
 <translation id="7536035074519304529">Địa chỉ IP: <ph name="ADDRESS" /></translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> không hỗ trợ <ph name="SPECIFIED_RESOLUTION" />. Độ phân giải đã được thay đổi thành <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Bảng màu biểu tượng cảm xúc</translation>
+<translation id="7564874036684306347">Di chuyển cửa sổ sang màn hình khác có thể gây ra hoạt động không mong muốn. Các thông báo, cửa sổ và hộp thoại tiếp theo có thể bị phân tách giữa các màn hình.</translation>
 <translation id="7569509451529460200">Đã bật chữ nổi Braille và ChromeVox</translation>
 <translation id="7593891976182323525">Search hoặc Shift</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (chủ sở hữu)</translation>
@@ -296,6 +299,7 @@
 <translation id="7798302898096527229">Nhấn phím Search hoặc Shift để hủy.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> và <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Tín hiệu mạnh</translation>
+<translation id="7842569679327885685">Cảnh báo: Tính năng thử nghiệm</translation>
 <translation id="7904094684485781019">Quản trị viên của tài khoản này đã không cho phép đăng nhập nhiều tài khoản.</translation>
 <translation id="7933084174919150729">Bạn chỉ có thể sử dụng Trợ lý Google cho hồ sơ chính.</translation>
 <translation id="79341161159229895">Tài khoản được quản lý bởi <ph name="FIRST_PARENT_EMAIL" /> và <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -348,6 +352,7 @@
 <translation id="9091626656156419976">Đã xóa màn hình <ph name="DISPLAY_NAME" /></translation>
 <translation id="9111102763498581341">Mở khóa</translation>
 <translation id="9151726767154816831">Khởi động lại và powerwash để cập nhật</translation>
+<translation id="9179259655489829027">Tính năng này cho phép bạn truy cập nhanh vào bất kỳ người dùng đã đăng nhập nào mà không cần mật khẩu. Chỉ sử dụng tính năng này với các tài khoản mà bạn tin tưởng.</translation>
 <translation id="9194617393863864469">Đăng nhập người dùng khác...</translation>
 <translation id="9201131092683066720">Pin đầy <ph name="PERCENTAGE" />%.</translation>
 <translation id="9210037371811586452">Đang thoát chế độ màn hình hợp nhất</translation>

@@ -56,7 +56,7 @@
 <translation id="1446450296470737166">‏السماح بالتحكم الكامل لأجهزة MIDI</translation>
 <translation id="145097072038377568">‏تم إيقافه في إعدادات Android.</translation>
 <translation id="1455941322673536744">الملء التلقائي والدفعات</translation>
-<translation id="1477626028522505441">تعذّر تنزيل الملف <ph name="FILE_NAME" /> بسبب مشكلات بالخادم.</translation>
+<translation id="1477626028522505441">تعذّر تنزيل الملف <ph name="FILE_NAME" /> بسبب مشاكل بالخادم.</translation>
 <translation id="1506061864768559482">محرك البحث</translation>
 <translation id="1513352483775369820">الإشارات المرجعية وسجل بحث الويب</translation>
 <translation id="1513858653616922153">حذف كلمة المرور</translation>
@@ -82,10 +82,12 @@
 <translation id="1718835860248848330">آخر ساعة</translation>
 <translation id="1729516292547892356">‏لعرض محتوى الواقع الافتراضي، يلزمك تحديث خدمات Google VR</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - تم تحديثه منذ <ph name="TIME_SINCE_UPDATE" /> دقائق</translation>
+<translation id="1743802530341753419">السؤال قبل السماح للمواقع بالاتصال بجهاز (مُوصَى به)</translation>
 <translation id="1749561566933687563">مزامنة الإشارات المرجعية</translation>
 <translation id="17513872634828108">علامات التبويب المفتوحة</translation>
 <translation id="1756600373018374892">انقر على هذا الزر للوصول السريع إلى علامات التبويب.</translation>
 <translation id="1779089405699405702">أداة فك تشفير الصور</translation>
+<translation id="1792959175193046959">تغيير موقع التنزيل التلقائي في أي وقت</translation>
 <translation id="1807246157184219062">فاتح</translation>
 <translation id="1829244130665387512">البحث في الصفحة</translation>
 <translation id="1832521218263067499">حوادث تتعلق بالأمن</translation>
@@ -158,7 +160,6 @@
 <translation id="2450083983707403292">هل ترغب في بدء تنزيل <ph name="FILE_NAME" /> مرة أخرى؟</translation>
 <translation id="2476578072172137802">إعدادات الموقع</translation>
 <translation id="2482878487686419369">الاشعارات</translation>
-<translation id="2490674006498621843">سحب شريط الأدوات للأعلى للعثور على الملفات والصفحات في التنزيلات</translation>
 <translation id="2496180316473517155">سجل التصفح</translation>
 <translation id="2498359688066513246">المساعدة والتعليقات</translation>
 <translation id="2501278716633472235">الرجوع للخلف</translation>
@@ -336,7 +337,7 @@
 <translation id="4170011742729630528">الخدمة غير متاحة، أعد المحاولة لاحقًا.</translation>
 <translation id="4181841719683918333">اللغات</translation>
 <translation id="4195643157523330669">فتح الإشارة في علامة تبويب جديدة</translation>
-<translation id="4198423547019359126">ليست هناك مواقع تنزيل متاحة</translation>
+<translation id="4198423547019359126">ما من مواقع تنزيل متاحة</translation>
 <translation id="4226663524361240545">يمكن أن تؤدي الإشعارات إلى اهتزاز الجهاز</translation>
 <translation id="4242533952199664413">فتح الإعدادات</translation>
 <translation id="424864128008805179">‏هل تريد الخروج من Chrome؟</translation>
@@ -448,7 +449,7 @@
 <translation id="5210286577605176222">الانتقال السريع إلى علامة التبويب السابقة</translation>
 <translation id="5210365745912300556">إغلاق علامة التبويب</translation>
 <translation id="5222676887888702881">الخروج</translation>
-<translation id="5224771365102442243">يتضمن مقطع فيديو</translation>
+<translation id="5224771365102442243">يتضمن فيديو</translation>
 <translation id="5233638681132016545">علامة تبويب جديدة</translation>
 <translation id="5271967389191913893">لا يمكن للجهاز فتح المحتوى لتنزيله</translation>
 <translation id="528192093759286357">اسحب من الجزء العلوي والمس زر الرجوع للخروج من وضع ملء الشاشة.</translation>
@@ -631,7 +632,7 @@
 <translation id="6746124502594467657">الانتقال إلى أسفل</translation>
 <translation id="6762156594045689028">لتغيير هذا الإعداد، يمكنك <ph name="BEGIN_LINK" />إعادة تعيين المزامنة<ph name="END_LINK" /></translation>
 <translation id="6770414673596662518">‏سيتم استخدام نظام التصفح الآمن من Chrome أيضًا في اكتشاف الصفحات الضارة وحمايتك من التصيّد، والبرامج الضارة، والتنزيلات التي تلحق أذى بالجهاز.</translation>
-<translation id="6776813977906306442">يمكنك تنزيل مقاطع فيديو لمشاهدتها لاحقًا باستخدام زر "التنزيل"</translation>
+<translation id="6776813977906306442">يمكنك تنزيل فيديوهات لمشاهدتها لاحقًا باستخدام زر "التنزيل"</translation>
 <translation id="6790428901817661496">التشغيل</translation>
 <translation id="679325081238418596">يمكنك الحصول على الإشارات المرجعية والسِجل وكلمات المرور والإعدادات الأخرى على جميع أجهزتك</translation>
 <translation id="6820607729870073286">ليس لديك أي إعدادات محفوظة لمواقع ويب.</translation>
@@ -649,6 +650,7 @@
 <translation id="6910211073230771657">تم الحذف</translation>
 <translation id="6912998170423641340">حظر المواقع من قراءة الصور والنصوص من الحافظة</translation>
 <translation id="6914783257214138813">ستكون كلمات مرورك مرئية لأي شخص يمكنه الاطلاع على الملف الذي تم تصديره.</translation>
+<translation id="6942665639005891494">تغيير موقع التنزيل التلقائي في أي وقت باستخدام خيار قائمة "الإعدادات"</translation>
 <translation id="6945221475159498467">تحديد</translation>
 <translation id="6963766334940102469">حذف الإشارات المرجعية</translation>
 <translation id="6965382102122355670">موافق</translation>
@@ -674,6 +676,7 @@
 <translation id="7121362699166175603">‏مسح السجل وميزة الإكمال التلقائي في شريط العناوين. وقد يتضمن حسابك في Google نماذج أخرى من سجل التصفح في <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128222689758636196">السماح بمحرك البحث الحالي</translation>
 <translation id="7138678301420049075">أخرى</translation>
+<translation id="7144878232160441200">إعادة المحاولة</translation>
 <translation id="7149893636342594995">آخر 24 ساعة</translation>
 <translation id="7177466738963138057">يمكنك تغيير ذلك لاحقًا من "الإعدادات"</translation>
 <translation id="7180611975245234373">تحديث</translation>
@@ -697,13 +700,13 @@
 <translation id="7423098979219808738">السؤال أولاً</translation>
 <translation id="7423538860840206698">تم الحظر من قراءة الحافظة</translation>
 <translation id="7437998757836447326">‏الخروج من Chrome</translation>
-<translation id="7445411102860286510">السماح للمواقع بتشغيل مقاطع الفيديو مكتومة الصوت تلقائيًا (مُستحسن)</translation>
+<translation id="7445411102860286510">السماح للمواقع بتشغيل الفيديوهات مكتومة الصوت تلقائيًا (مُستحسن)</translation>
 <translation id="7453467225369441013">‏سيتم تسجيل الخروج من معظم مواقع الويب لكن لن يتم تسجيل الخروج من حسابك في Google.</translation>
 <translation id="7454641608352164238">سعة التخزين غير كافية</translation>
 <translation id="7455923816558154057">يُرجى النقر للعرض</translation>
 <translation id="7473891865547856676">لا، شكرًا</translation>
 <translation id="7475192538862203634">إذا تكرر ظهور هذا، فحاول الاستفادة من <ph name="BEGIN_LINK" />الاقتراحات<ph name="END_LINK" />.</translation>
-<translation id="7475688122056506577">‏لم يتم العثور على بطاقة SD. ربما تكون بعض الملفات مفقودة.</translation>
+<translation id="7475688122056506577">‏لم يتم العثور على بطاقة SD. قد يكون بعض الملفات مفقودًا.</translation>
 <translation id="748127970106343339">تأكيد حذف بيانات اعتماد الجهاز</translation>
 <translation id="7481312909269577407">إلى الأمام</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (تم التحديث منذ <ph name="TIME_SINCE_UPDATE" />)</translation>
@@ -744,7 +747,7 @@
 <translation id="7791543448312431591">إضافة</translation>
 <translation id="780301667611848630">لا، شكرًا</translation>
 <translation id="7810647596859435254">فتح باستخدام...</translation>
-<translation id="7837721118676387834">السماح بالتشغيل التلقائي لمقاطع الفيديو المكتومة الصوت لموقع معين.</translation>
+<translation id="7837721118676387834">السماح بالتشغيل التلقائي للفيديوهات المكتومة الصوت لموقع معين.</translation>
 <translation id="7846076177841592234">إلغاء التحديد</translation>
 <translation id="784934925303690534">النطاق الزمني</translation>
 <translation id="7851858861565204677">أجهزة أخرى</translation>
@@ -815,6 +818,7 @@
 <translation id="8503813439785031346">اسم المستخدم</translation>
 <translation id="8514477925623180633">‏تصدير كلمات المرور المخزنة من خلال Chrome</translation>
 <translation id="8514577642972634246">الدخول إلى وضع التصفح المتخفي</translation>
+<translation id="851751545965956758">حظر المواقع من الاتصال بأجهزة</translation>
 <translation id="8523928698583292556">حذف كلمة المرور المخزنة</translation>
 <translation id="854522910157234410">فتح هذه الصفحة</translation>
 <translation id="8559990750235505898">عرض ترجمة للصفحات بلغات أخرى</translation>
@@ -863,7 +867,7 @@
 <translation id="8951232171465285730">‏لقد وفر Chrome لك <ph name="MEGABYTES" /> ميغابايت</translation>
 <translation id="8959122750345127698">التنقل غير قابل للوصول: <ph name="URL" /></translation>
 <translation id="8972098258593396643">هل تريد التنزيل إلى المجلد التلقائي؟</translation>
-<translation id="8979405271719829084">يمكنك تنزيل مقاطع فيديو لمشاهدتها لاحقًا</translation>
+<translation id="8979405271719829084">يمكنك تنزيل فيديوهات لمشاهدتها لاحقًا</translation>
 <translation id="8981454092730389528">‏عناصر التحكم في النشاط على Google</translation>
 <translation id="8986494364107987395">‏إرسال إحصائيات الاستخدام وتقارير الأعطال إلى Google تلقائيًا</translation>
 <translation id="8993760627012879038">فتح علامة تبويب جديدة في وضع التصفّح المتخفّي</translation>

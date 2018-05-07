@@ -81,6 +81,7 @@ Noen nettsteder kan for eksempel svare på forespørselen ved å vise deg annons
 <translation id="2381405137052800939">Grunninnstillinger</translation>
 <translation id="2386793615875593361">1 er valgt</translation>
 <translation id="2435457462613246316">Vis passord</translation>
+<translation id="2481538920734869610">LEGG TIL KONTO</translation>
 <translation id="2523363575747517183">Dette nettstedet prøver gjentatte ganger å åpne en annen app.</translation>
 <translation id="2529021024822217800">Åpne alle</translation>
 <translation id="2572712655377361602">En enhetsinnstilling har blokkert tilgangen til bildene dine</translation>
@@ -344,6 +345,7 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="7203585745079012652">Svar med tale</translation>
 <translation id="722055596168483966">Tilpass Google-tjenester</translation>
 <translation id="7272437679830969316">Kan ikke bekrefte identiteten din. Passordet er ikke kopiert.</translation>
+<translation id="7285236536143823449">JA, JEG BLIR MED</translation>
 <translation id="7291368939935408496">Klargjør passordene …</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> prosent fullført</translation>
 <translation id="7346909386216857016">Greit</translation>
@@ -386,6 +388,7 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="8073670137947914548">Nedlastingen er fullført</translation>
 <translation id="8076014560081431679">Lagrede nettstedsinnstillinger slettes ikke og kan gjenspeile nettleserbruken din. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">Lukk alle faner</translation>
+<translation id="8114753159095730575">Filnedlasting er tilgjengelig. Du finner alternativer på nedre del av skjermen.</translation>
 <translation id="8205564605687841303">Avbryt</translation>
 <translation id="8225985093977202398">Bufrede bilder og filer</translation>
 <translation id="8261506727792406068">Slett</translation>

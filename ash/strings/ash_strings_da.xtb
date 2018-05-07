@@ -163,6 +163,7 @@
 <translation id="4379531060876907730">Dette er dine penneværktøjer</translation>
 <translation id="4421231901400348175">Skærmdeling med <ph name="HELPER_NAME" /> via Fjernsupport.</translation>
 <translation id="4430019312045809116">Lydstyrke</translation>
+<translation id="4450893287417543264">Vis ikke igen</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Ikke-parrede enheder</translation>
 <translation id="4508225577814909926"><ph name="NAME" /> : Opretter forbindelse...</translation>
@@ -195,6 +196,7 @@
 <translation id="54609108002486618">Administreret</translation>
 <translation id="553675580533261935">Afslutter session</translation>
 <translation id="5548285847212963613">Udvidelsen "<ph name="EXTENSION_NAME" />" kan hjælpe med at oprette forbindelse til dette netværk.</translation>
+<translation id="554893713779400387">Slå diktering til/fra</translation>
 <translation id="5571066253365925590">Bluetooth er aktiveret</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" /> d. <ph name="DATE" /></translation>
 <translation id="5600837773213129531">Tryk på Ctrl+Alt+Z for at deaktivere oplæsning.</translation>
@@ -284,6 +286,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7536035074519304529">IP-adresse: <ph name="ADDRESS" /></translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> understøtter ikke <ph name="SPECIFIED_RESOLUTION" />. Opløsningen blev ændret til <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Emojipalet</translation>
+<translation id="7564874036684306347">Hvis du flytter vinduer til et andet skrivebord, kan det resultere i uventet adfærd. Efterfølgende underretninger, vinduer og dialogbokse kan blive delt mellem skriveborde.</translation>
 <translation id="7569509451529460200">Braille og ChromeVox er aktiveret</translation>
 <translation id="7593891976182323525">Søg eller Shift</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (ejer)</translation>
@@ -296,6 +299,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7798302898096527229">Tryk på Søg eller Shift for at annullere.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> og <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Stærkt signal</translation>
+<translation id="7842569679327885685">Advarsel! Eksperimentel funktion</translation>
 <translation id="7904094684485781019">Administratoren for denne konto tillader ikke samlet login fra flere konti.</translation>
 <translation id="7933084174919150729">Google Assistent kan kun bruges via den primære profil.</translation>
 <translation id="79341161159229895">Kontoen administreres af <ph name="FIRST_PARENT_EMAIL" /> og <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -348,6 +352,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="9091626656156419976">Skærmen <ph name="DISPLAY_NAME" /> blev fjernet</translation>
 <translation id="9111102763498581341">Lås op</translation>
 <translation id="9151726767154816831">Genstart, og udfør en powerwash for at opdatere</translation>
+<translation id="9179259655489829027">Denne funktion giver dig hurtig adgang til alle brugere, der er logget ind, uden at du behøver at angive en adgangskode. Brug kun denne funktion til konti, du har tillid til.</translation>
 <translation id="9194617393863864469">Log ind med en anden bruger...</translation>
 <translation id="9201131092683066720">Batteriet er <ph name="PERCENTAGE" /> % opladet.</translation>
 <translation id="9210037371811586452">Lukker tilstanden Kombineret skrivebord</translation>

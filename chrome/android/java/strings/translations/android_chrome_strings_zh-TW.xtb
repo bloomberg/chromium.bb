@@ -158,7 +158,6 @@
 <translation id="2450083983707403292">要重新下載「<ph name="FILE_NAME" />」嗎？</translation>
 <translation id="2476578072172137802">網站設定</translation>
 <translation id="2482878487686419369">通知</translation>
-<translation id="2490674006498621843">將工具列往上拉，即可前往「下載」主畫面尋找你的檔案和網頁</translation>
 <translation id="2496180316473517155">瀏覽記錄</translation>
 <translation id="2498359688066513246">說明與意見回饋</translation>
 <translation id="2501278716633472235">返回</translation>
@@ -673,6 +672,7 @@
 <translation id="7121362699166175603">將歷史記錄和自動即時查詢從網址列中清除。你的 Google 帳戶可能會儲存其他形式的瀏覽記錄，請參閱 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />。</translation>
 <translation id="7128222689758636196">對目前的搜尋引擎開放</translation>
 <translation id="7138678301420049075">其他</translation>
+<translation id="7144878232160441200">重試</translation>
 <translation id="7149893636342594995">過去 24 小時</translation>
 <translation id="7177466738963138057">日後可前往設定頁面進行變更</translation>
 <translation id="7180611975245234373">重新整理</translation>

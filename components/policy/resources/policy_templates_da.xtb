@@ -420,6 +420,21 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Stavekontrol kan stadig udføres ved hjælp af den downloadede ordbog. Denne politik kontrollerer kun brugen af onlinetjenesten.
 
       Hvis denne indstilling ikke er konfigureret, kan brugerne vælge, om stavekontrol skal aktiveres eller ej.</translation>
+<translation id="2294283832646774959">Konfigurerer en liste over printere.
+
+      Denne politik giver administratorer mulighed for at angive printerkonfigurationer
+      for deres brugere.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> og <ph name="PRINTER_DESCRIPTION" /> er strenge i frit format, der kan tilpasses, så valg af printer bliver nemmere. <ph name="PRINTER_MANUFACTURER" /> og <ph name="PRINTER_MODEL" /> gør det nemmere for slutbrugerne at identificere printere. De repræsenterer printerproducenten og -model. <ph name="PRINTER_URI" /> skal være en adresse, der er tilgængelig fra en klientcomputer, bl.a. <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> og <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> er valgfri. Hvis den angives, bruges den som en hjælp til at deduplikere <ph name="ZEROCONF_DISCOVERY" />-printere.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> skal stemme overens med en af de strenge, der repræsenterer en <ph name="PRODUCT_NAME" />-understøttet printer. Strengen bruges til at identificere og installere den relevante PPD-fil til printeren. Du kan finde flere oplysninger på https://support.google.com/chrome?p=noncloudprint.
+
+      Printerkonfigurationen fuldføres, første gang printeren tages i brug.  PPD-filer downloades ikke, før printeren benyttes.  Derefter gemmes ofte anvendte PPD-filer i cachen.
+
+      Denne politik påvirker ikke, om brugerne kan konfigurere printere på individuelle enheder.  Den er beregnet til at fungere som supplement til den enkelte brugers konfiguration af printere.
+
+      For enheder, der administreres med Active Directory, understøtter denne politik udvidelse af <ph name="MACHINE_NAME_VARIABLE" /> til Active Directory-enhedsnavnet eller en af dets understrenge. Hvis enhedsnavnet f.eks. er <ph name="MACHINE_NAME_EXAMPLE" />, erstattes <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> af de fire tegn, der kommer efter den sjette position, dvs. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Bemærk! Positionen er nulbaseret.
+      </translation>
 <translation id="2294382669900758280">Videoafspilning i Android-apps tages ikke med i betragtning, selv hvis denne politik angives som <ph name="TRUE" />.</translation>
 <translation id="2298647742290373702">Konfigurer standardsiden Ny fane i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Angiv en liste over aktiverede plugins</translation>
@@ -877,7 +892,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="3715569262675717862">Godkendelse på baggrund af klientcertifikater</translation>
 <translation id="3736879847913515635">Aktivér tilføjelse af personer i brugeradministration</translation>
 <translation id="3737544779868348650">Enhedens hostname på netværket</translation>
-<translation id="3740754010292550733">Angiv tidsrummet for underretninger om genstart i forbindelse med opdateringer</translation>
 <translation id="3750220015372671395">Bloker nøglegenerering på disse websites</translation>
 <translation id="3756011779061588474">Bloker udviklertilstand</translation>
 <translation id="3758089716224084329">Giver dig mulighed for at angive den proxyserver, der anvendes af <ph name="PRODUCT_NAME" />, og forhindrer brugerne i at ændre proxyindstillingerne.
@@ -982,9 +996,6 @@ Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME" /> tillade b
       Listeudvidelser, der automatisk er installeret for demobrugeren til enheder i detailtilstand. Disse udvidelser gemmes i enheden og kan installeres i offlinetilstand efter installationen.
 
       Alle poster på listen indeholder en ordbog, der skal indeholde udvidelses-id'et i feltet "udvidelses-id" samt webadressen til opdatering i feltet "opdateringswebadresse".</translation>
-<translation id="3873159954366380945">Giver dig mulighed for at angive, hvor længe underretninger om genstart af <ph name="PRODUCT_NAME" /> skal vises i forbindelse med anvendelsen af en afventende opdatering.
-
-      Denne politikindstilling kan bruges til at bestemme det tidsrum i millisekunder, hvor en bruger i stigende grad underrettes om, at <ph name="PRODUCT_NAME" /> skal genstartes (eller at <ph name="PRODUCT_OS_NAME" /> skal genstartes) i forbindelse med en opdatering. I løbet af dette tidsrum får brugeren gentagne gange besked om, at en opdatering er nødvendig på baggrund af indstillingen af politikken <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Hvis politikken ikke indstilles, anvendes der som standard et tidsrum på 345.600.000 millisekunder (fire dage) for <ph name="PRODUCT_OS_NAME" /> og 604.800.000 millisekunder (en uge) for alle andre platforme.</translation>
 <translation id="3877517141460819966">Integreret godkendelsestilstand med sekundær faktor</translation>
 <translation id="388237772682176890">Denne politik er udfaset i M53 og fjernet i M54, da understøttelse af SPDY/3.1 er fjernet.
 
@@ -1189,6 +1200,7 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 <translation id="4508686775017063528">Hvis denne politik er angivet til Sand eller ikke er angivet, er <ph name="PRODUCT_NAME" /> aktiveret, og brugerne kan åbne det via appmenuen, genvejsmenuen til sider, knapper til mediestyring på Cast-kompatible websites og Cast-ikonet på værktøjslinjen (hvis det vises).
 
           Hvis denne politik er angivet som Falsk, er <ph name="PRODUCT_NAME" /> deaktiveret.</translation>
+<translation id="4515404363392014383">Aktivér Beskyttet browsing i forbindelse med godkendte kilder</translation>
 <translation id="4518251772179446575">Spørg, hver gang et website ønsker at spore brugerens fysiske placering</translation>
 <translation id="4519046672992331730">Aktiverer søgeforslag i omnifeltet i <ph name="PRODUCT_NAME" /> og forhindrer, at brugerne ændrer denne indstilling.
 
@@ -1310,6 +1322,7 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 
           Hvis denne politik er angivet til falsk, ignoreres anmodninger om aktiveringslås for skærm.</translation>
 <translation id="487460824085252184">Migrer automatisk uden at bede om brugerens samtykke.</translation>
+<translation id="4874982543810021567">Bloker WebUSB på disse websites</translation>
 <translation id="4876805738539874299">Maksimalversion af SSL er aktiveret</translation>
 <translation id="4897928009230106190">Angiver de parametre, der anvendes ved forslagssøgning med POST. De består af kommaseparerede navne/værdipar. Hvis en værdi er en skabelonparameter såsom {searchTerms} i ovenstående eksempel, erstattes den med rigtige søgetermdata.
 
@@ -1838,6 +1851,11 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
       Hvis denne politik ikke indstilles, aktiveres netværksforudsigelse, men brugeren vil kunne ændre det.</translation>
 <translation id="6658245400435704251">Angiver det antal sekunder, som en enhed på en tilfældig måde maksimalt kan forsinke en download af en opdatering fra det tidspunkt, hvor opdateringen først blev sendt ud til serveren. Enheden kan afsætte en del af denne tid i form af faktisk ventetid og den igangværende tid i form af det antal af opdateringer, der skal kontrolleres. Uanset hvad, er spredningen bundet af en øvre grænse til en konstant mængde af tid, således at en enhed aldrig kommer til at sidde fast og til evig tid vente på, at en opdatering downloades.</translation>
 <translation id="6665670272107384733">Konfigurer, hvor ofte brugeren skal indtaste adgangskoden for at bruge hurtig oplåsning.</translation>
+<translation id="6681229465468164801">Giver dig mulighed for at angive en liste med webadressemønstre, der angiver websites, som ikke må anmode brugeren om adgang til en USB-enhed.
+
+          Hvis denne politik ikke angives, anvendes den globale på alle websites, enten fra politikken "DefaultWebUsbGuardSetting", hvis den er angivet, eller alternativt brugerens personlige konfiguration.
+
+          Webadressemønstre i denne politik må ikke være i strid med dem, der er konfigureret via WebUsbAskForUrls. Det er ikke angivet, hvilken af de to politikker der har forrang, hvis en webadresse matcher begge.</translation>
 <translation id="6689792153960219308">Rapportér hardwarestatus</translation>
 <translation id="6698071416141001300">Rapportering om truet konto via adgangskodebeskyttelse udløses ved genbrug af adgangskoder</translation>
 <translation id="6699880231565102694">Aktivér godkendelse med to faktorer for værter med fjernadgang</translation>
@@ -1986,6 +2004,11 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
       Hvis indstillingen er deaktiveret eller ikke angives, anvendes Beskyttet browsing som standard for alle ressourcer.
       Politikken er ikke tilgængelig i Windows-forekomster, der ikke er tilknyttet et <ph name="MS_AD_NAME" />-domæne.</translation>
 <translation id="7079519252486108041">Bloker pop op-vinduer på disse websites</translation>
+<translation id="7085803328069945025">Giver dig mulighed for at angive en liste med webadressemønstre, der angiver websites, som gerne må anmode brugeren om adgang til en USB-enhed.
+
+          Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken "DefaultWebUsbGuardSetting", hvis den er angivet, eller alternativt brugerens personlige konfiguration.
+
+          Webadressemønstre i denne politik må ikke være i strid med dem, der er konfigureret via WebUsbBlockedForUrls. Det er ikke angivet, hvilken af de to politikker der har forrang, hvis en webadresse matcher begge.</translation>
 <translation id="7106631983877564505">Aktivér låsen, når <ph name="PRODUCT_OS_NAME" />-enheder bliver inaktive eller suspenderes.
 
       Hvis du aktiverer denne indstilling, vil brugerne blive bedt om en adgangskode for at låse enheden op fra dvale.
@@ -2658,6 +2681,7 @@ Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via G
 <translation id="9096086085182305205">Hvidliste til godkendelse af server</translation>
 <translation id="9098553063150791878">Politikker for HTTP-godkendelse</translation>
 <translation id="9105265795073104888">Det er kun bestemte muligheder for proxykonfiguration, der er tilgængelige for Android-apps. Android-apps kan vælge at anvende proxyen. Du kan ikke tvinge dem til at anvende en proxy.</translation>
+<translation id="9106865192244721694">Tillad WebUSB på disse websites</translation>
 <translation id="9112727953998243860">Fil til konfiguration af virksomhedsprintere</translation>
 <translation id="9112897538922695510">Giver dig mulighed for at registrere en liste over protokolhandlere. Dette kan kun være en anbefalet politik. Egenskaben |protocol| skal indstilles til ordningen, f.eks. "mailto", og egenskaben |url| bør indstilles til webadressemønsteret for den applikation, der handler ordningen. Dette mønster kan omfatte et "%s", som, hvis det findes, erstattes med den handlede webadresse.
 
@@ -2690,6 +2714,11 @@ Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via G
 <translation id="915194831143859291">Hvis denne politik er angivet til Falsk eller ikke er konfigureret, tillader <ph name="PRODUCT_OS_NAME" />, at brugeren lukker enheden ned.
       Hvis denne politik er angivet til Sand, aktiverer <ph name="PRODUCT_OS_NAME" /> en genstart, når brugeren lukker enheden ned. <ph name="PRODUCT_OS_NAME" /> erstatter alle forekomster af Luk-knapper i grænsefladen med genstartsknapper. Hvis brugeren lukker enheden ved hjælp af afbryderknappen, genstartes den ikke automatisk, selvom politikken er aktiveret.</translation>
 <translation id="9158929520101169054">Tillad samlet login fra flere konti i browseren</translation>
+<translation id="9165792353046089850">Giver dig mulighed for at angive, om websites må få adgang til tilsluttede USB-enheder. Adgangen kan være fuldstændig blokeret, eller brugeren kan blive spurgt, hver gang et website vil have adgang til tilsluttede USB-enheder.
+
+          Denne politik kan tilsidesættes for bestemte webadressemønstre ved hjælp af politikkerne "WebUsbAskForUrls" og "WebUsbBlockedForUrls".
+
+          Hvis politikken ikke angives, anvendes "3", og brugeren kan ændre denne indstilling.</translation>
 <translation id="9167719789236691545">Deaktiver Drev i appen Filer i <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="9187743794267626640">Deaktiver isætning af eksternt lager</translation>
 <translation id="9197740283131855199">Den procentdel, som nedtoningsforsinkelsen på skærmen skaleres, hvis brugeren bliver aktiv efter nedtoningen</translation>

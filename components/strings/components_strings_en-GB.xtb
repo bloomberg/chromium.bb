@@ -399,7 +399,6 @@
 <translation id="3678529606614285348">Open page in a new Incognito window (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">Crash report captured on <ph name="CRASH_TIME" />, uploaded on <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Certificate information</translation>
-<translation id="3690164694835360974">Login not secure</translation>
 <translation id="3704162925118123524">The network that you are using may require you to visit its log-in page.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Loading...</translation>
@@ -718,6 +717,7 @@
 <translation id="6047927260846328439">This content might try to trick you into installing software or revealing personal information. <ph name="BEGIN_LINK" />Show anyway<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">You cannot visit <ph name="SITE" /> right now because the website uses certificate pinning. Network errors and attacks are usually temporary, so this page will probably work later.</translation>
 <translation id="6059925163896151826">USB devices</translation>
+<translation id="6071091556643036997">The policy type is invalid.</translation>
 <translation id="6080696365213338172">You have accessed content using an administrator-provided certificate. Data you provide to <ph name="DOMAIN" /> can be intercepted by your administrator.</translation>
 <translation id="610911394827799129">Your Google Account may have other forms of browsing history at <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{None}=1{1 password (synced)}other{# passwords (synced)}}</translation>
@@ -834,7 +834,6 @@
 <translation id="7138472120740807366">Delivery method</translation>
 <translation id="7139724024395191329">Emirate</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> and <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> more}other{<ph name="PAYMENT_METHOD_PREVIEW" /> and <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> more}}</translation>
-<translation id="7155487117670177674">Payment not secure</translation>
 <translation id="717330890047184534">Gaia ID:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> and <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> more}other{<ph name="SHIPPING_OPTION_PREVIEW" /> and <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> more}}</translation>
 <translation id="7180611975245234373">Refresh</translation>

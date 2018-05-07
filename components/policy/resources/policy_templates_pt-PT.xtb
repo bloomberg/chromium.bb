@@ -412,7 +412,7 @@
           não estão disponíveis para as aplicações/extensões que não sejam de
           instalação forçada.)
 
-          Esta política tem precedência sobre uma política <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> potencialmente em conflito. Se uma aplicação ou uma extensão de instalação forçada anterior for removida desta lista, é desinstalada automaticamente pelo <ph name="PRODUCT_NAME" />.
+          Esta política tem prioridade relativamente a uma política <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> potencialmente em conflito. Se uma aplicação ou uma extensão de instalação forçada anterior for removida desta lista, é desinstalada automaticamente pelo <ph name="PRODUCT_NAME" />.
 
           Para as instâncias do Windows que não estão associadas a um domínio do <ph name="MS_AD_NAME" />, a instalação forçada está limitada às aplicações e às extensões indicadas na Web Store do Chrome.
 
@@ -428,6 +428,20 @@
       A verificação ortográfica também pode ser efetuada através de um dicionário previamente transferido; esta política apenas controla a utilização do serviço online.
 
       Se esta definição não estiver configurada, os utilizadores podem optar por utilizar o serviço de verificação ortográfica ou não.</translation>
+<translation id="2294283832646774959">Configura uma lista de impressoras.
+
+      Esta política permite que os administradores facultem configurações de impressoras aos utilizadores.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> e <ph name="PRINTER_DESCRIPTION" /> são strings de forma livre que podem ser personalizadas para facilitar a seleção da impressora. <ph name="PRINTER_MANUFACTURER" /> e <ph name="PRINTER_MODEL" /> servem para facilitar a identificação da impressora por parte dos utilizadores finais. Representam o fabricante e o modelo da impressora. <ph name="PRINTER_URI" /> deve ser um endereço acessível a partir do computador do cliente, incluindo <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> e <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> é opcional. Se fornecido, é utilizado para ajudar a remover duplicados de impressoras <ph name="ZEROCONF_DISCOVERY" />.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> tem de corresponder a uma das strings que representam uma impressora compatível com <ph name="PRODUCT_NAME" />. A string será utilizada para identificar e instalar os PPDs adequados à impressora. Pode encontrar mais informações em https://support.google.com/chrome?p=noncloudprint.
+
+      A configuração das impressoras fica concluída com a primeira utilização de uma impressora. Os PPDs não são transferidos enquanto a impressora não for utilizada. Posteriormente, os PPDs utilizados com frequência são colocados em cache.
+
+      Esta política não influencia a possibilidade de os utilizadores poderem configurar impressoras em dispositivos individuais e destina-se a complementar a configuração das impressoras por parte de utilizadores individuais.
+
+      Para dispositivos geridos pelo Active Directory, esta política suporta a expansão de <ph name="MACHINE_NAME_VARIABLE" /> para o nome do computador do Active Directory ou uma substring do mesmo. Por exemplo, se o nome do computador for <ph name="MACHINE_NAME_EXAMPLE" />, <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> será substituído pelos 4 carateres a partir da 6.ª posição, ou seja, <ph name="MACHINE_NAME_PART_EXAMPLE" />. Tenha em atenção que a posição baseia-se em zero.
+      </translation>
 <translation id="2294382669900758280">A reprodução de vídeos em aplicações Android não é tida em consideração mesmo que esta política esteja definida como <ph name="TRUE" />.</translation>
 <translation id="2298647742290373702">Configurar a página Novo separador predefinida no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Especificar uma lista de plug-ins ativados</translation>
@@ -885,7 +899,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="3715569262675717862">Autenticação baseada em certificados de cliente</translation>
 <translation id="3736879847913515635">Ativar a opção para adicionar uma pessoa no gestor de utilizadores</translation>
 <translation id="3737544779868348650">Nome do anfitrião da rede do dispositivo</translation>
-<translation id="3740754010292550733">Definir o período para as notificações de reinício para aplicação de atualizações</translation>
 <translation id="3750220015372671395">Bloquear a geração de chaves nestes sites</translation>
 <translation id="3756011779061588474">Bloquear modo de programador</translation>
 <translation id="3758089716224084329">Permite-lhe especificar o servidor proxy utilizado pelo <ph name="PRODUCT_NAME" /> e impede os utilizadores de alterarem as definições de proxy.
@@ -984,9 +997,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Lista as extensões que são instaladas automaticamente para o utilizador em modo de Demonstração, para dispositivos no modo de retalho. Estas extensões são guardadas no dispositivo e podem ser instaladas offline, após a instalação.
 
       Cada entrada da lista contém um dicionário que tem de incluir o ID da extensão no campo "extension-id" e o respetivo URL de atualização no campo "update-url".</translation>
-<translation id="3873159954366380945">Permite-lhe definir o período de tempo durante o qual são apresentadas notificações de reinício do <ph name="PRODUCT_NAME" /> para aplicar uma atualização pendente.
-
-      Esta definição de política pode ser utilizada para controlar o período de tempo, em milissegundos, durante o qual o utilizador é gradualmente informado de que o <ph name="PRODUCT_NAME" /> tem de ser reiniciado (ou o <ph name="PRODUCT_OS_NAME" /> tem de ser reiniciado) para aplicar uma atualização. Durante este período de tempo, o utilizador é repetidamente informado da necessidade de aplicar uma atualização com base na definição da política <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Se não estiver definida, é utilizado o período predefinido de 345 600 000 milissegundos (quatro dias) para o <ph name="PRODUCT_OS_NAME" /> e 604 800 000 milissegundos (uma semana) para todas as outras plataformas.</translation>
 <translation id="3877517141460819966">Modo de autenticação do fator duplo integrado</translation>
 <translation id="388237772682176890">Esta política foi descontinuada no M53 e removida no M54, uma vez que a compatibilidade com o SPDY/3.1 foi removida.
 
@@ -1191,6 +1201,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="4508686775017063528">Se esta política estiver definida como verdadeira ou não estiver definida, o <ph name="PRODUCT_NAME" /> será ativado e os utilizadores podem iniciá-lo a partir do menu da aplicação, dos menus de contexto da página, dos controlos multimédia nos Websites compatíveis com o Cast e (se apresentado) do ícone da barra de ferramentas do Cast.
 
           Se esta política estiver definida como falsa, o <ph name="PRODUCT_NAME" /> está desativado.</translation>
+<translation id="4515404363392014383">Ativar a Navegação segura para fontes fidedignas</translation>
 <translation id="4518251772179446575">Perguntar sempre que um site pretender registar a localização física dos utilizadores</translation>
 <translation id="4519046672992331730">Ativa as sugestões de pesquisa na caixa geral do <ph name="PRODUCT_NAME" /> e impede que os utilizadores alterem esta definição.
 
@@ -1311,6 +1322,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 
           Se esta política estiver definida como falsa, os pedidos de bloqueio da ativação do ecrã serão ignorados.</translation>
 <translation id="487460824085252184">Migrar automaticamente sem solicitar a autorização do utilizador</translation>
+<translation id="4874982543810021567">Bloquear WebUSB nestes sites</translation>
 <translation id="4876805738539874299">Versão SSL máxima ativada</translation>
 <translation id="4897928009230106190">Especifica os parâmetros utilizados ao efetuar uma pesquisa de sugestões com POST. Consiste em pares de nome/valor separados por vírgulas. Se um valor for o parâmetro de um modelo, como {searchTerms} no exemplo acima, será substituído por dados dos termos de pesquisa reais.
 
@@ -1841,6 +1853,11 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
       Se esta política permanecer por definir, a previsão de rede é ativada, mas o utilizador pode alterá-la.</translation>
 <translation id="6658245400435704251">Especifica o número de segundos até que um dispositivo possa aleatoriamente atrasar a sua transferência de uma atualização a partir do momento em que a atualização foi retirada pela primeira vez do servidor. O dispositivo pode esperar uma parte deste tempo em termos de tempo total de processamento e a restante parte em termos do número de verificações de atualização. Em qualquer caso, a dispersão está associada de forma superior a uma quantidade constante de tempo para que um dispositivo nunca fique preso indefinidamente à espera de transferir uma atualização.</translation>
 <translation id="6665670272107384733">Definir com que frequência o utilizador tem de introduzir a palavra-passe para utilizar o desbloqueio rápido</translation>
+<translation id="6681229465468164801">Permite definir uma lista de padrões de URL que especificam sites impedidos de pedir ao utilizador que lhes conceda acesso a um dispositivo USB.
+
+          Se esta política não for definida, será utilizado o valor predefinido global para todos os sites da política "DefaultWebUsbGuardSetting", se estiver definida, ou da configuração pessoal do utilizador.
+
+          Os padrões de URL nesta política não devem entrar em conflito com os configurados através da política "WebUsbAskForUrls". Não está especificado qual das duas políticas prevalece se um URL corresponder a ambas.</translation>
 <translation id="6689792153960219308">Comunicar o estado do hardware</translation>
 <translation id="6698071416141001300">A sinalização de conta protegida por palavra-passe em risco é acionada pela reutilização da palavra-passe.</translation>
 <translation id="6699880231565102694">Ativar a autenticação de dois fatores para anfitriões de acesso remoto</translation>
@@ -1898,7 +1915,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
       Se a política estiver ativada, cada uma das origens nomeadas numa lista
       separada por vírgulas é executada no seu próprio processo. Deste modo,
       são também isoladas as origens nomeadas por subdomínios: por exemplo,
-      ao especificar https://example.com/ também fará com que
+      ao especificar https://example.com/, também fará com que
       https://foo.example.com/ seja isolado como fazendo parte do site
       https://example.com/.
       Se a política estiver desativada, não ocorre qualquer isolamento de site e os testes de campo IsolateOrigins e SitePerProcess serão desativados. Os utilizadores ainda conseguem ativar IsolateOrigins manualmente.
@@ -1997,6 +2014,11 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
       Se esta definição estiver desativada, ou não estiver definida, é aplicada a proteção predefinida da Navegação segura a todos os recursos.
       Esta política não está disponível em instâncias do Windows que não pertençam a um domínio <ph name="MS_AD_NAME" />.</translation>
 <translation id="7079519252486108041">Bloquear pop-ups nestes sites</translation>
+<translation id="7085803328069945025">Permite definir uma lista de padrões URL que especificam sites que podem pedir ao utilizador que lhes conceda acesso a um dispositivo USB.
+
+          Se esta política não for definida, será utilizado o valor predefinido global para todos os sites da política "DefaultWebUsbGuardSetting", se estiver definida, ou da configuração pessoal do utilizador.
+
+          Os padrões de URL nesta política não devem entrar em conflito com os configurados através da política "WebUsbBlockedForUrls". Não está especificado qual das duas políticas prevalece se um URL corresponder a ambas.</translation>
 <translation id="7106631983877564505">Ativar o bloqueio quando os dispositivos <ph name="PRODUCT_OS_NAME" /> ficam inativos ou entram em suspensão.
 
       Se ativar esta definição, os utilizadores são solicitados a introduzir uma palavra-passe para desbloquear o dispositivo do modo de suspensão.
@@ -2671,6 +2693,7 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 <translation id="9096086085182305205">Lista de permissões do servidor de autenticação</translation>
 <translation id="9098553063150791878">Políticas para a autenticação HTTP</translation>
 <translation id="9105265795073104888">Apenas é disponibilizado um subconjunto de opções de configuração de proxy para aplicações Android. As aplicações Android podem optar voluntariamente por utilizar o proxy. Não as pode forçar a utilizar um proxy.</translation>
+<translation id="9106865192244721694">Permitir WebUSB nestes sites</translation>
 <translation id="9112727953998243860">Ficheiro de configuração de impressoras empresariais</translation>
 <translation id="9112897538922695510">Permite-lhe registar uma lista de controladores de protocolos. Esta apenas pode ser uma política recomendada. A propriedade |protocol| deve ser definida para um esquema como "mailto" e a propriedade |url| deve ser definida para o padrão do URL da aplicação que controla o esquema. O padrão pode incluir um "%s" que, caso esteja presente, é substituído pelo URL controlado.
 
@@ -2703,17 +2726,22 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 <translation id="915194831143859291">Se esta política estiver definida como falsa ou não estiver configurada, o <ph name="PRODUCT_OS_NAME" /> permite ao utilizador encerrar o dispositivo.
       Se esta política estiver definida como verdadeira, o <ph name="PRODUCT_OS_NAME" /> aciona um reinício quando o utilizador encerrar o dispositivo. O <ph name="PRODUCT_OS_NAME" /> substitui todas as ocorrências de botões de encerramento na IU por botões de reinício. Se o utilizador encerrar o dispositivo através do botão ligar/desligar, este não reinicia automaticamente, mesmo que a política esteja ativada.</translation>
 <translation id="9158929520101169054">Permitir o início de sessão integrado no navegador</translation>
+<translation id="9165792353046089850">Permite definir se os Websites podem aceder a dispositivos USB ligados. O acesso pode ser totalmente bloqueado ou pode ser efetuado um pedido ao utilizador sempre que um Website pretender aceder a dispositivos USB ligados.
+
+          Esta política pode ser substituída para padrões de URL específicos ao utilizar as políticas "WebUsbAskForUrls" e "WebUsbBlockedForUrls".
+
+          Se esta política não for definida, será utilizado o valor "3" e o utilizador poderá alterar esta definição.</translation>
 <translation id="9167719789236691545">Desativar o Drive na aplicação Ficheiros do <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="9187743794267626640">Desativar a montagem do armazenamento externo</translation>
 <translation id="9197740283131855199">Percentagem que determina a escala do atraso do esbatimento do ecrã se o utilizador se tornar ativo depois do esbatimento</translation>
 <translation id="9200828125069750521">Parâmetros do URL de imagem que utilize POST</translation>
 <translation id="9210953373038593554">Configura o tipo de autenticação para inícios de sessão SAML.
 
-      Quando esta política não está definida ou está definida como Predefinição (valor 0), o comportamento dos inícios de sessão SAML é determinado pelo navegador, dependendo de outros fatores. No cenário mais básico, a autenticação do utilizador e a proteção dos dados do utilizador em cache baseiam-se em palavras-passe introduzidas manualmente pelos utilizadores.
+      Quando esta política não está definida ou está definida como Predefinição (valor 0), o comportamento dos inícios de sessão SAML é determinado pelo navegador, consoante outros fatores. No cenário mais básico, a autenticação do utilizador e a proteção dos dados do utilizador em cache baseiam-se em palavras-passe introduzidas manualmente pelos utilizadores.
 
-      Quando esta política está definida como ClientCertificate (valor 1), utiliza-se a autenticação por certificado de cliente para utilizadores recentemente adicionados que iniciem sessão via SAML. Não são utilizadas palavras-passe para esse tipo de utilizadores e os seus dados locais em cache estão protegidos através das correspondentes chaves criptográficas. Por exemplo, esta definição permite configurar uma autenticação do utilizador baseada em smart card (tenha em atenção que as aplicações middleware do smart card têm de ser instaladas através da política DeviceLoginScreenAppInstallList).
+      Quando esta política está definida como ClientCertificate (valor 1), utiliza-se a autenticação por certificado de cliente para utilizadores recentemente adicionados que iniciem sessão via SAML. Não são utilizadas palavras-passe para esse tipo de utilizadores e os seus dados locais em cache estão protegidos através das correspondentes chaves criptográficas. Por exemplo, esta definição permite configurar uma autenticação do utilizador baseada num cartão inteligente (tenha em atenção que as aplicações middleware do cartão inteligente têm de ser instaladas através da política DeviceLoginScreenAppInstallList).
 
-      Esta política afeta apenas utilizadores que autenticam através de SAML.</translation>
+      Esta política afeta apenas utilizadores que fazem a autenticação através de SAML.</translation>
 <translation id="9213347477683611358">Configure uma imagem de fundo ao nível do dispositivo mostrada no ecrã de início de sessão se nenhum utilizador tiver iniciado sessão no dispositivo. A política é definida ao especificar o URL a partir do qual o dispositivo com o Chrome OS pode transferir a imagem de fundo e um hash criptográfico para verificar a integridade da transferência. A imagem tem de estar no formato JPEG e o tamanho do ficheiro não pode exceder 16 MB. O URL tem de ser acessível sem nenhuma autenticação. A imagem de fundo é transferida e colocada na cache. É transferida sempre que o URL ou o hash for alterado.
 
       A política deve ser especificada como uma string que expressa o URL e o hash no formato JSON, por exemplo,

@@ -82,10 +82,12 @@
 <translation id="1718835860248848330">Saa iliyopita</translation>
 <translation id="1729516292547892356">Sasisha Huduma za Google VR ili uangalie maudhui ya uhalisi pepe</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - Imesasishwa <ph name="TIME_SINCE_UPDATE" /></translation>
+<translation id="1743802530341753419">Iulize kabla ya kuruhusu tovuti ziunganishe kwenye kifaa (inapendekezwa)</translation>
 <translation id="1749561566933687563">Sawazisha alamisho zako</translation>
 <translation id="17513872634828108">Vichupo vilivyo wazi</translation>
 <translation id="1756600373018374892">Gusa kitufe hiki ili ufikie vichupo vyako haraka.</translation>
 <translation id="1779089405699405702">Kisimbuaji cha picha</translation>
+<translation id="1792959175193046959">Badilisha sehemu chaguomsingi ya kupakua wakati wowote</translation>
 <translation id="1807246157184219062">Mwangaza</translation>
 <translation id="1829244130665387512">Tafuta katika ukurasa</translation>
 <translation id="1832521218263067499">Matukio ya utovu wa usalama</translation>
@@ -158,7 +160,6 @@
 <translation id="2450083983707403292">Je, unataka kuanza kupakua <ph name="FILE_NAME" /> tena?</translation>
 <translation id="2476578072172137802">Mipangilio ya Tovuti</translation>
 <translation id="2482878487686419369">Arifa</translation>
-<translation id="2490674006498621843">Sogeza juu upau wa vidhibiti ili upate faili na kurasa zako katika vipakuliwa</translation>
 <translation id="2496180316473517155">Historia ya kuvinjari</translation>
 <translation id="2498359688066513246">Usaidizi na maoni</translation>
 <translation id="2501278716633472235">Rudi nyuma</translation>
@@ -648,6 +649,7 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="6910211073230771657">Imeondolewa</translation>
 <translation id="6912998170423641340">Zuia tovuti zisisome maandishi na picha kutoka ubao wa kunakili</translation>
 <translation id="6914783257214138813">Mtu yeyote anayeweza kuona faili uliyohamisha ataona manenosiri yako.</translation>
+<translation id="6942665639005891494">Badilisha sehemu chaguomsingi ya kupakua wakati wowote ukitumia chaguo la menyu ya Mipangilio</translation>
 <translation id="6945221475159498467">Chagua</translation>
 <translation id="6963766334940102469">Futa alamisho</translation>
 <translation id="6965382102122355670">Sawa</translation>
@@ -673,6 +675,7 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="7121362699166175603">Hufuta historia na ukamilishaji kiotomatiki kwenye sehemu ya anwani. Huenda Akaunti yako ya Google ikawa na aina nyingine za historia ya kuvinjari kwenye <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128222689758636196">Ruhusu kwa mtambo wa sasa wa kutafuta</translation>
 <translation id="7138678301420049075">Nyingine</translation>
+<translation id="7144878232160441200">Jaribu tena</translation>
 <translation id="7149893636342594995">Saa 24 zilizopita</translation>
 <translation id="7177466738963138057">Unaweza kubadilisha hii baadaye katika Mipangilio</translation>
 <translation id="7180611975245234373">Onyesha upya</translation>
@@ -814,6 +817,7 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="8503813439785031346">Jina la mtumiaji</translation>
 <translation id="8514477925623180633">Tuma manenosiri yaliyohifadhiwa kwenye Chrome</translation>
 <translation id="8514577642972634246">Ingia kwenye hali fiche</translation>
+<translation id="851751545965956758">Zuia tovuti zisiunganishe kwenye vifaa</translation>
 <translation id="8523928698583292556">Futa manenosiri yaliyohifadhiwa</translation>
 <translation id="854522910157234410">Fungua ukurasa huu</translation>
 <translation id="8559990750235505898">Jitolee kutafsiri kurasa katika lugha zingine</translation>

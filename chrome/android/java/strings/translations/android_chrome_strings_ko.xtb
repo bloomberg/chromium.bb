@@ -158,7 +158,6 @@
 <translation id="2450083983707403292"><ph name="FILE_NAME" />의 다운로드를 다시 시작하시겠습니까?</translation>
 <translation id="2476578072172137802">사이트 설정</translation>
 <translation id="2482878487686419369">알림</translation>
-<translation id="2490674006498621843">다운로드된 파일과 페이지를 확인하려면 툴바를 위로 당기세요</translation>
 <translation id="2496180316473517155">인터넷 사용 기록</translation>
 <translation id="2498359688066513246">고객센터</translation>
 <translation id="2501278716633472235">뒤로 이동</translation>
@@ -673,6 +672,7 @@
 <translation id="7121362699166175603">검색주소창에 저장된 방문 기록과 자동 완성 내역을 지웁니다. Google 계정의 내 활동(<ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />)에는 인터넷 사용 기록이 다른 형식으로 남아 있을 수도 있습니다.</translation>
 <translation id="7128222689758636196">현재 검색 엔진에 허용</translation>
 <translation id="7138678301420049075">기타</translation>
+<translation id="7144878232160441200">다시 시도</translation>
 <translation id="7149893636342594995">지난 24시간</translation>
 <translation id="7177466738963138057">나중에 설정에서 변경 가능</translation>
 <translation id="7180611975245234373">새로고침</translation>

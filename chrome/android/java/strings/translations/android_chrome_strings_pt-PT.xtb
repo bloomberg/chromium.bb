@@ -82,10 +82,12 @@
 <translation id="1718835860248848330">Última hora</translation>
 <translation id="1729516292547892356">Para ver conteúdo de realidade virtual, atualize os Serviços de RV da Google</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – atualizado <ph name="TIME_SINCE_UPDATE" /></translation>
+<translation id="1743802530341753419">Perguntar antes de permitir a ligação de sites a um dispositivo (recomendado)</translation>
 <translation id="1749561566933687563">Sincronizar os marcadores</translation>
 <translation id="17513872634828108">Separadores abertos</translation>
 <translation id="1756600373018374892">Toque neste botão para aceder rapidamente aos seus separadores.</translation>
 <translation id="1779089405699405702">Descodificador de imagem</translation>
+<translation id="1792959175193046959">Altere a localização de transferência predefinida a qualquer momento.</translation>
 <translation id="1807246157184219062">Claro</translation>
 <translation id="1829244130665387512">Localizar na página</translation>
 <translation id="1832521218263067499">Incidentes de segurança</translation>
@@ -158,7 +160,6 @@
 <translation id="2450083983707403292">Pretende começar a transferir <ph name="FILE_NAME" /> novamente?</translation>
 <translation id="2476578072172137802">Definições de sites</translation>
 <translation id="2482878487686419369">Notificações</translation>
-<translation id="2490674006498621843">Puxe a barra de ferramentas para cima de forma a encontrar os seus ficheiros e páginas nas transferências.</translation>
 <translation id="2496180316473517155">Histórico de navegação</translation>
 <translation id="2498359688066513246">Ajuda e comentários</translation>
 <translation id="2501278716633472235">Retroceder</translation>
@@ -648,6 +649,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="6910211073230771657">Eliminado</translation>
 <translation id="6912998170423641340">Impedir sites de lerem texto e imagens da área de transferência</translation>
 <translation id="6914783257214138813">As suas palavras-passe serão visíveis para todas as pessoas que consigam ver o ficheiro exportado.</translation>
+<translation id="6942665639005891494">Altere a localização de transferência predefinida a qualquer momento ao utilizar a opção do menu Definições.</translation>
 <translation id="6945221475159498467">Selecionar</translation>
 <translation id="6963766334940102469">Eliminar marcadores</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -673,6 +675,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="7121362699166175603">Limpa o histórico e os preenchimentos automáticos na barra de endereço. A sua Conta Google pode ter outras formas do histórico de navegação em <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128222689758636196">Permitir o motor de pesquisa atual</translation>
 <translation id="7138678301420049075">Outros</translation>
+<translation id="7144878232160441200">Repetir</translation>
 <translation id="7149893636342594995">Últimas 24 horas</translation>
 <translation id="7177466738963138057">Pode alterar esta opção mais tarde nas Definições</translation>
 <translation id="7180611975245234373">Atualizar</translation>
@@ -814,6 +817,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="8503813439785031346">Nome de utilizador</translation>
 <translation id="8514477925623180633">Exportar palavras-passe armazenadas com o Chrome</translation>
 <translation id="8514577642972634246">Entrar no modo de navegação anónima</translation>
+<translation id="851751545965956758">Impedir a ligação de sites a dispositivos</translation>
 <translation id="8523928698583292556">Eliminar palavra-passe armazenada</translation>
 <translation id="854522910157234410">Abrir esta página</translation>
 <translation id="8559990750235505898">Propor a tradução de páginas noutros idiomas</translation>
