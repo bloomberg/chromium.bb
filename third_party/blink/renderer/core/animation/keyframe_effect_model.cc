@@ -64,6 +64,7 @@ void KeyframeEffectModelBase::SetFrames(Vector<K>& keyframes) {
   interpolation_effect_.Clear();
   last_fraction_ = std::numeric_limits<double>::quiet_NaN();
   keyframes_.AppendVector(keyframes);
+  needs_compositor_keyframes_snapshot_ = true;
 }
 
 template CORE_EXPORT void KeyframeEffectModelBase::SetFrames(
@@ -132,10 +133,12 @@ bool KeyframeEffectModelBase::SnapshotNeutralCompositorKeyframes(
   return updated;
 }
 
-bool KeyframeEffectModelBase::SnapshotAllCompositorKeyframes(
+bool KeyframeEffectModelBase::SnapshotAllCompositorKeyframesIfNecessary(
     Element& element,
     const ComputedStyle& base_style,
     const ComputedStyle* parent_style) const {
+  if (!needs_compositor_keyframes_snapshot_)
+    return false;
   needs_compositor_keyframes_snapshot_ = false;
   bool updated = false;
   bool has_neutral_compositable_keyframe = false;
