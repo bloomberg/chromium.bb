@@ -575,6 +575,8 @@ static bool ShouldEmitNewlinesBeforeAndAfterNode(const Node& node) {
   // a newline both before and after the element.
   LayoutObject* r = node.GetLayoutObject();
   if (!r) {
+    if (HasDisplayContents(node))
+      return false;
     return (node.HasTagName(blockquoteTag) || node.HasTagName(ddTag) ||
             node.HasTagName(divTag) || node.HasTagName(dlTag) ||
             node.HasTagName(dtTag) || node.HasTagName(h1Tag) ||

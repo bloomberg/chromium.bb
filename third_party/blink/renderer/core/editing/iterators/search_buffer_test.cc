@@ -81,4 +81,25 @@ TEST_F(SearchBufferTest, FindPlainTextInvalidTarget) {
   }
 }
 
+TEST_F(SearchBufferTest, DisplayInline) {
+  SetBodyContent("<span>fi</span>nd");
+  GetDocument().UpdateStyleAndLayout();
+  auto match_range = FindPlainText(EphemeralRange(GetBodyRange()), "find", 0);
+  EXPECT_FALSE(match_range.IsCollapsed());
+}
+
+TEST_F(SearchBufferTest, DisplayBlock) {
+  SetBodyContent("<div>fi</div>nd");
+  GetDocument().UpdateStyleAndLayout();
+  auto match_range = FindPlainText(EphemeralRange(GetBodyRange()), "find", 0);
+  EXPECT_TRUE(match_range.IsCollapsed());
+}
+
+TEST_F(SearchBufferTest, DisplayContents) {
+  SetBodyContent("<div style='display: contents'>fi</div>nd");
+  GetDocument().UpdateStyleAndLayout();
+  auto match_range = FindPlainText(EphemeralRange(GetBodyRange()), "find", 0);
+  EXPECT_FALSE(match_range.IsCollapsed());
+}
+
 }  // namespace blink
