@@ -222,9 +222,11 @@ class PerfDeviceTriggerer(base_test_triggerer.BaseTestTriggerer):
       # We queried with a limit of 1 so we could only get back
       # the most recent which is what we care about.
       task = tasks[0]
+      if 'bot_id' in task:
+        return task['bot_id']
       for tag in task['tags']:
-        if 'id' in tag:
-          return tag[len('id;'):]
+        if tag.startswith('id:'):
+          return tag[len('id:'):]
     # No eligible shard for this bot
     return None
 
