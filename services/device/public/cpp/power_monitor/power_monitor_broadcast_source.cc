@@ -25,6 +25,12 @@ PowerMonitorBroadcastSource::PowerMonitorBroadcastSource(
     : client_(std::move(client)), task_runner_(task_runner) {}
 
 PowerMonitorBroadcastSource::~PowerMonitorBroadcastSource() {
+  // When power monitor and source are destroyed, the IO thread could still be
+  // receiving mojo messages that access the monitor and source in
+  // |ProcessPowerEvent|, thus causing a data race. Calling Shutdown() on the
+  // client tells it to ignore future mojo messages, and thus prevents the data
+  // race.
+  client_->Shutdown();
   task_runner_->DeleteSoon(FROM_HERE, client_.release());
 }
 
@@ -47,6 +53,9 @@ PowerMonitorBroadcastSource::Client::~Client() {}
 
 void PowerMonitorBroadcastSource::Client::Init(
     std::unique_ptr<service_manager::Connector> connector) {
+  base::AutoLock auto_lock(is_shutdown_lock_);
+  if (is_shutdown_)
+    return;
   connector_ = std::move(connector);
   device::mojom::PowerMonitorPtr power_monitor;
   connector_->BindInterface(device::mojom::kServiceName,
@@ -56,17 +65,32 @@ void PowerMonitorBroadcastSource::Client::Init(
   power_monitor->AddClient(std::move(client));
 }
 
+void PowerMonitorBroadcastSource::Client::Shutdown() {
+  base::AutoLock auto_lock(is_shutdown_lock_);
+  DCHECK(!is_shutdown_);
+  is_shutdown_ = true;
+}
+
 void PowerMonitorBroadcastSource::Client::PowerStateChange(
     bool on_battery_power) {
+  base::AutoLock auto_lock(is_shutdown_lock_);
+  if (is_shutdown_)
+    return;
   last_reported_on_battery_power_state_ = on_battery_power;
   ProcessPowerEvent(PowerMonitorSource::POWER_STATE_EVENT);
 }
 
 void PowerMonitorBroadcastSource::Client::Suspend() {
+  base::AutoLock auto_lock(is_shutdown_lock_);
+  if (is_shutdown_)
+    return;
   ProcessPowerEvent(PowerMonitorSource::SUSPEND_EVENT);
 }
 
 void PowerMonitorBroadcastSource::Client::Resume() {
+  base::AutoLock auto_lock(is_shutdown_lock_);
+  if (is_shutdown_)
+    return;
   ProcessPowerEvent(PowerMonitorSource::RESUME_EVENT);
 }
 
