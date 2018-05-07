@@ -99,12 +99,14 @@ WindowsSurfaceFactory::~WindowsSurfaceFactory() = default;
 std::vector<gl::GLImplementation>
 WindowsSurfaceFactory::GetAllowedGLImplementations() {
   return std::vector<gl::GLImplementation>{gl::kGLImplementationEGLGLES2,
-                                           gl::kGLImplementationOSMesaGL};
+                                           gl::kGLImplementationOSMesaGL,
+                                           gl::kGLImplementationSwiftShaderGL};
 }
 
 GLOzone* WindowsSurfaceFactory::GetGLOzone(
     gl::GLImplementation implementation) {
   switch (implementation) {
+    case gl::kGLImplementationSwiftShaderGL:
     case gl::kGLImplementationEGLGLES2:
       return egl_implementation_.get();
     case gl::kGLImplementationOSMesaGL:
