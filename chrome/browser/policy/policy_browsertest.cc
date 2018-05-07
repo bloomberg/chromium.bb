@@ -1375,8 +1375,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DisablePacHttpsUrlStripping) {
   EXPECT_FALSE(GetPacHttpsUrlStrippingEnabled());
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, DeveloperToolsDisabled) {
-  // Verifies that access to the developer tools can be disabled.
+IN_PROC_BROWSER_TEST_F(PolicyTest, DeveloperToolsDisabledByLegacyPolicy) {
+  // Verifies that access to the developer tools can be disabled by setting the
+  // legacy DeveloperToolsDisabled policy.
 
   // Open devtools.
   EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_DEV_TOOLS));
@@ -1391,6 +1392,39 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DeveloperToolsDisabled) {
   policies.Set(key::kDeveloperToolsDisabled, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                std::make_unique<base::Value>(true), nullptr);
+  content::WindowedNotificationObserver close_observer(
+      content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+      content::Source<content::WebContents>(
+          DevToolsWindowTesting::Get(devtools_window)->main_web_contents()));
+  UpdateProviderPolicy(policies);
+  // wait for devtools close
+  close_observer.Wait();
+  // The existing devtools window should have closed.
+  EXPECT_FALSE(DevToolsWindow::GetInstanceForInspectedWebContents(contents));
+  // And it's not possible to open it again.
+  EXPECT_FALSE(chrome::ExecuteCommand(browser(), IDC_DEV_TOOLS));
+  EXPECT_FALSE(DevToolsWindow::GetInstanceForInspectedWebContents(contents));
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest,
+                       DeveloperToolsDisabledByDeveloperToolsAvailability) {
+  // Verifies that access to the developer tools can be disabled by setting the
+  // DeveloperToolsAvailability policy.
+
+  // Open devtools.
+  EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_DEV_TOOLS));
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  DevToolsWindow* devtools_window =
+      DevToolsWindow::GetInstanceForInspectedWebContents(contents);
+  EXPECT_TRUE(devtools_window);
+
+  // Disable devtools via policy.
+  PolicyMap policies;
+  policies.Set(key::kDeveloperToolsAvailability, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(2 /* DeveloperToolsDisallowed */),
+               nullptr);
   content::WindowedNotificationObserver close_observer(
       content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
       content::Source<content::WebContents>(
@@ -1445,7 +1479,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DeveloperToolsDisabledExtensionsDevMode) {
   // in chrome://extensions is actively turned off and the checkbox
   // is disabled.
   // Note: We don't test the indicator as it is tested in the policy pref test
-  // for kDeveloperToolsDisabled.
+  // for kDeveloperToolsDisabled and kDeveloperToolsAvailability.
 
   // This test depends on the following helper methods to locate the DOM elemens
   // to be tested.
@@ -1486,9 +1520,10 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DeveloperToolsDisabledExtensionsDevMode) {
 
   // Disable devtools via policy.
   PolicyMap policies;
-  policies.Set(key::kDeveloperToolsDisabled, POLICY_LEVEL_MANDATORY,
+  policies.Set(key::kDeveloperToolsAvailability, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(true), nullptr);
+               std::make_unique<base::Value>(2 /*DeveloperToolsDisallowed*/),
+               nullptr);
   UpdateProviderPolicy(policies);
 
   // Expect devcontrols to be hidden now...

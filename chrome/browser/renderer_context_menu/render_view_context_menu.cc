@@ -40,6 +40,7 @@
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
+#include "chrome/browser/policy/developer_tools_policy_handler.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
@@ -2096,8 +2097,13 @@ bool RenderViewContextMenu::IsDevCommandEnabled(int id) const {
 
     // Don't enable the web inspector if the developer tools are disabled via
     // the preference dev-tools-disabled.
-    if (prefs->GetBoolean(prefs::kDevToolsDisabled))
+    // TODO(pfeldman): Possibly implement handling for
+    // Availability::kDisallowedForForceInstalledExtensions
+    // (https://crbug.com/838146).
+    if (policy::DeveloperToolsPolicyHandler::GetDevToolsAvailability(prefs) ==
+        policy::DeveloperToolsPolicyHandler::Availability::kDisallowed) {
       return false;
+    }
   }
 
   return true;

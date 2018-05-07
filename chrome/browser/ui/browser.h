@@ -758,8 +758,8 @@ class Browser : public TabStripModelObserver,
 
   // Command and state updating ///////////////////////////////////////////////
 
-  // Handle changes to kDevTools preference.
-  void OnDevToolsDisabledChanged();
+  // Handle changes to kDevToolsAvailability preference.
+  void OnDevToolsAvailabilityChanged();
 
   // UI update coalescing and handling ////////////////////////////////////////
 

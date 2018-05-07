@@ -516,7 +516,7 @@ extern const char kContentSuggestionsNotificationsSentCount[];
 extern const char kNtpShownPage[];
 
 extern const char kDevToolsAdbKey[];
-extern const char kDevToolsDisabled[];
+extern const char kDevToolsAvailability[];
 extern const char kDevToolsDiscoverUsbDevicesEnabled[];
 extern const char kDevToolsEditedFiles[];
 extern const char kDevToolsFileSystemPaths[];

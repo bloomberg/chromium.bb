@@ -38,6 +38,7 @@
 #include "chrome/browser/notifications/notification_channels_provider_android.h"
 #include "chrome/browser/notifications/notifier_state_tracker.h"
 #include "chrome/browser/pepper_flash_settings_manager.h"
+#include "chrome/browser/policy/developer_tools_policy_handler.h"
 #include "chrome/browser/policy/policy_helpers.h"
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -505,6 +506,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   password_bubble_experiment::RegisterPrefs(registry);
   password_manager::PasswordManager::RegisterProfilePrefs(registry);
   payments::RegisterProfilePrefs(registry);
+  policy::DeveloperToolsPolicyHandler::RegisterProfilePrefs(registry);
   policy::URLBlacklistManager::RegisterProfilePrefs(registry);
   PrefProxyConfigTrackerImpl::RegisterProfilePrefs(registry);
   PrefsTabHelper::RegisterProfilePrefs(registry);

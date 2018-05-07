@@ -91,9 +91,10 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
 
   // Perform specified action for current WebContents inside a |browser|.
   // This may close currently open DevTools window.
-  // If DeveloperToolsDisabled policy is set, no DevTools window created.
-  // In case if needed pointer to the created window one should use
-  // DevToolsAgentHost and DevToolsWindow::FindDevToolsWindow(). E.g.:
+  // If DeveloperToolsAvailability policy disallows developer tools for the
+  // current WebContents, no DevTools window created. In case if needed pointer
+  // to the created window one should use DevToolsAgentHost and
+  // DevToolsWindow::FindDevToolsWindow(). E.g.:
   //
   // scoped_refptr<content::DevToolsAgentHost> agent(
   //   content::DevToolsAgentHost::GetOrCreateFor(inspected_web_contents));

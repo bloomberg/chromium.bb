@@ -68,6 +68,7 @@
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
+#include "chrome/browser/policy/developer_tools_policy_handler.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -420,8 +421,8 @@ Browser::Browser(const CreateParams& params)
 
   profile_pref_registrar_.Init(profile_->GetPrefs());
   profile_pref_registrar_.Add(
-      prefs::kDevToolsDisabled,
-      base::BindRepeating(&Browser::OnDevToolsDisabledChanged,
+      prefs::kDevToolsAvailability,
+      base::BindRepeating(&Browser::OnDevToolsAvailabilityChanged,
                           base::Unretained(this)));
   profile_pref_registrar_.Add(
       bookmarks::prefs::kShowBookmarkBar,
@@ -2181,9 +2182,16 @@ void Browser::OnTranslateEnabledChanged(content::WebContents* source) {
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, Command and state updating (private):
 
-void Browser::OnDevToolsDisabledChanged() {
-  if (profile_->GetPrefs()->GetBoolean(prefs::kDevToolsDisabled))
+void Browser::OnDevToolsAvailabilityChanged() {
+  using DTPH = policy::DeveloperToolsPolicyHandler;
+  // TODO(pfeldman): If |new_value| maps to
+  // |DTPH::Availability::kDisallowedForForceInstalledExtensions|, we may either
+  // close all windows as a safety measure, or close those that are known to
+  // correspond to such extensions (https://crbug.com/838146).
+  if (DTPH::GetDevToolsAvailability(profile_->GetPrefs()) ==
+      DTPH::Availability::kDisallowed) {
     content::DevToolsAgentHost::DetachAllClients();
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
