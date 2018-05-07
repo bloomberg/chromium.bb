@@ -3,16 +3,22 @@
 // found in the LICENSE file.
 
 /**
+ * A single action, that can be taken on a set of entries.
  * @interface
  */
 function Action() {
 }
 
+/**
+ * Executes this action on the set of entries.
+ */
 Action.prototype.execute = function() {
 };
 
 /**
- * @return {boolean}
+ * Checks whether this action can execute on the set of entries.
+ *
+ * @return {boolean} True if the function can execute, false if not.
  */
 Action.prototype.canExecute = function() {
 };
@@ -400,7 +406,97 @@ DriveRemoveFolderShortcutAction.prototype.getTitle = function() {
   return null;
 };
 
+
 /**
+ * Opens the entry in Drive Web for the user to manage permissions etc.
+ *
+ * @param {!Entry} entry The entry to open the 'Manage' page for.
+ * @param {!ActionModelUI} ui
+ * @param {!VolumeManagerWrapper} volumeManager
+ * @implements {Action}
+ * @constructor
+ * @struct
+ */
+function DriveManageAction(entry, volumeManager, ui) {
+  /**
+   * The entry to open the 'Manage' page for.
+   *
+   * @private {!Entry}
+   * @const
+   */
+  this.entry_ = entry;
+
+  /**
+   * @private {!VolumeManagerWrapper}
+   * @const
+   */
+  this.volumeManager_ = volumeManager;
+
+  /**
+   * @private {!ActionModelUI}
+   * @const
+   */
+  this.ui_ = ui;
+}
+
+/**
+ * Creates a new DriveManageAction object.
+ * |entries| must contain only a single entry.
+ *
+ * @param {!Array<!Entry>} entries
+ * @param {!ActionModelUI} ui
+ * @param {!VolumeManagerWrapper} volumeManager
+ * @return {DriveManageAction}
+ */
+DriveManageAction.create = function(entries, volumeManager, ui) {
+  if (entries.length !== 1)
+    return null;
+
+  return new DriveManageAction(entries[0], volumeManager, ui);
+};
+
+/**
+ * @override
+ */
+DriveManageAction.prototype.execute = function() {
+  chrome.fileManagerPrivate.getEntryProperties(
+      [this.entry_], ['alternateUrl'], function(results) {
+        if (chrome.runtime.lastError) {
+          console.error(chrome.runtime.lastError.message);
+          return;
+        }
+        if (results.length == 1) {
+          console.error(
+              'getEntryProperties for alternateUrl should return 1 entry ' +
+              '(returned ' + results.length + ')');
+          return;
+        }
+        util.visitURL(results[0].alternateUrl);
+      }.bind(this));
+};
+
+/**
+ * @override
+ */
+DriveManageAction.prototype.canExecute = function() {
+  // For now, only allow managing of regular files (not directories).
+  return !this.entry_.isDirectory &&
+      this.volumeManager_.getDriveConnectionState().type !==
+      VolumeManagerCommon.DriveConnectionType.OFFLINE &&
+      !util.isTeamDriveRoot(this.entry_);
+};
+
+/**
+ * @return {?string}
+ */
+DriveManageAction.prototype.getTitle = function() {
+  return null;
+};
+
+
+/**
+ * A custom action set by the FSP API.
+ *
  * @param {!Array<!Entry>} entries
  * @param {string} id
  * @param {?string} title
@@ -464,7 +560,8 @@ CustomAction.prototype.getTitle = function() {
 };
 
 /**
- * Represents a set of actions for a set of entries.
+ * Represents a set of actions for a set of entries. Includes actions set
+ * locally in JS, as well as those retrieved from the FSP API.
  *
  * @param {!VolumeManagerWrapper} volumeManager
  * @param {!MetadataModel} metadataModel
@@ -556,10 +653,13 @@ ActionsModel.CommonActionId = {
  */
 ActionsModel.InternalActionId = {
   CREATE_FOLDER_SHORTCUT: 'create-folder-shortcut',
-  REMOVE_FOLDER_SHORTCUT: 'remove-folder-shortcut'
+  REMOVE_FOLDER_SHORTCUT: 'remove-folder-shortcut',
+  MANAGE_IN_DRIVE: 'manage-in-drive'
 };
 
 /**
+ * Initializes the ActionsModel, including populating the list of available
+ * actions for the given entries.
  * @return {!Promise}
  */
 ActionsModel.prototype.initialize = function() {
@@ -632,6 +732,14 @@ ActionsModel.prototype.initialize = function() {
           actions[ActionsModel.InternalActionId.REMOVE_FOLDER_SHORTCUT] =
               removeFolderShortcutAction;
         }
+
+        var manageInDriveAction = DriveManageAction.create(
+            this.entries_, this.volumeManager_, this.ui_);
+        if (manageInDriveAction) {
+          actions[ActionsModel.InternalActionId.MANAGE_IN_DRIVE] =
+              manageInDriveAction;
+        }
+
         fulfill(actions);
         break;
 

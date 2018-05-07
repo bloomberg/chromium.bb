@@ -30,6 +30,7 @@ var IconSet;
  *   thumbnailUrl: (string|undefined),
  *   croppedThumbnailUrl: (string|undefined),
  *   externalFileUrl: (string|undefined),
+ *   alternateUrl: (string|undefined),
  *   imageWidth: (number|undefined),
  *   imageHeight: (number|undefined),
  *   imageRotation: (number|undefined),

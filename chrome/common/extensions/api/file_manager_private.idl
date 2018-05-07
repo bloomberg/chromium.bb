@@ -175,7 +175,8 @@ enum EntryPropertyName {
   sharedWithMe,
   shared,
   starred,
-  externalFileUrl
+  externalFileUrl,
+  alternateUrl
 };
 
 // Entry property visibility for setEntryTag();
@@ -301,8 +302,11 @@ dictionary EntryProperties {
   // True if the entry is starred by the user.
   boolean? starred;
 
-  // External file URL to open the file in browser.
+  // externalfile:// URL to open the file in browser.
   DOMString? externalFileUrl;
+
+  // https:// URL to open the file in the Drive website.
+  DOMString? alternateUrl;
 };
 
 // Information about total and remaining size on the mount point.
