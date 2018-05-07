@@ -82,6 +82,9 @@ bool CanResolveCaretPositionAfterFragment(const NGPaintFragment& fragment,
   return !current_line.HasSoftWrapToNextLine();
 }
 
+// Returns a |kFailed| resolution if |offset| doesn't belong to the text
+// fragment. Otherwise, return either |kFoundCandidate| or |kResolved| depending
+// on |affinity|.
 CaretPositionResolution TryResolveCaretPositionInTextFragment(
     const NGPaintFragment& paint_fragment,
     unsigned offset,
@@ -92,12 +95,28 @@ CaretPositionResolution TryResolveCaretPositionInTextFragment(
   if (fragment.IsAnonymousText())
     return CaretPositionResolution();
 
-  // [StartOffset(), EndOffset()] is the range allowing caret placement.
-  // For example, "foo" has 4 offsets allowing caret placement.
-  if (offset < fragment.StartOffset() || offset > fragment.EndOffset()) {
-    // TODO(xiaochengh): This may introduce false negatives. Investigate.
+  const NGOffsetMapping& mapping =
+      *NGOffsetMapping::GetFor(paint_fragment.GetLayoutObject());
+
+  // A text fragment natually allows caret placement in offset range
+  // [StartOffset(), EndOffset()], i.e., from before the first character to
+  // after the last character.
+  // Besides, leading/trailing bidi control characters are ignored since their
+  // two sides are considered the same caret position. Hence, if there are n and
+  // m leading and trailing bidi control characters, then the allowed offset
+  // range is [StartOffset() - n, EndOffset() + m].
+  // Note that we don't ignore other characters that are not in fragments. For
+  // example, a trailing space of a line is not in any fragment, but its two
+  // sides are still different caret positions, so we don't ignore it.
+  if (offset < fragment.StartOffset() &&
+      !mapping.HasBidiControlCharactersOnly(offset, fragment.StartOffset()))
     return CaretPositionResolution();
-  }
+  if (offset > fragment.EndOffset() &&
+      !mapping.HasBidiControlCharactersOnly(fragment.EndOffset(), offset))
+    return CaretPositionResolution();
+
+  offset = std::max(offset, fragment.StartOffset());
+  offset = std::min(offset, fragment.EndOffset());
   NGCaretPosition candidate = {&paint_fragment,
                                NGCaretPositionType::kAtTextOffset, offset};
 
@@ -133,6 +152,9 @@ unsigned GetTextOffsetBefore(const NGPhysicalFragment& fragment) {
   return maybe_offset_before.value();
 }
 
+// Returns a |kFailed| resolution if |offset| doesn't belong to the atomic
+// inline box fragment. Otherwise, return either |kFoundCandidate| or
+// |kResolved| depending on |affinity|.
 CaretPositionResolution TryResolveCaretPositionByBoxFragmentSide(
     const NGPaintFragment& fragment,
     unsigned offset,
@@ -146,6 +168,7 @@ CaretPositionResolution TryResolveCaretPositionByBoxFragmentSide(
   const unsigned offset_before =
       GetTextOffsetBefore(fragment.PhysicalFragment());
   const unsigned offset_after = offset_before + 1;
+  // TODO(xiaochengh): Ignore bidi control characters before & after the box.
   if (offset != offset_before && offset != offset_after)
     return CaretPositionResolution();
   const NGCaretPositionType position_type =

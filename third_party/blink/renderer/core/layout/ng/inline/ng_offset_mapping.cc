@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/editing/position.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
+#include "third_party/blink/renderer/platform/text/character.h"
 
 namespace blink {
 
@@ -383,6 +384,17 @@ Position NGOffsetMapping::GetLastPosition(unsigned offset) const {
   const Node& node = result->GetOwner();
   const unsigned dom_offset = result->ConvertTextContentToLastDOMOffset(offset);
   return CreatePositionForOffsetMapping(node, dom_offset);
+}
+
+bool NGOffsetMapping::HasBidiControlCharactersOnly(unsigned start,
+                                                   unsigned end) const {
+  DCHECK_LE(start, end);
+  DCHECK_LE(end, text_.length());
+  for (unsigned i = start; i < end; ++i) {
+    if (!Character::IsBidiControl(text_[i]))
+      return false;
+  }
+  return true;
 }
 
 }  // namespace blink
