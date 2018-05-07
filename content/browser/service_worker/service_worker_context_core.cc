@@ -768,6 +768,14 @@ int ServiceWorkerContextCore::GetVersionFailureCount(int64_t version_id) {
   return it->second.count;
 }
 
+void ServiceWorkerContextCore::NotifyRegistrationStored(int64_t registration_id,
+                                                        const GURL& pattern) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  observer_list_->Notify(
+      FROM_HERE, &ServiceWorkerContextCoreObserver::OnRegistrationStored,
+      registration_id, pattern);
+}
+
 void ServiceWorkerContextCore::OnStorageWiped() {
   observer_list_->Notify(FROM_HERE,
                          &ServiceWorkerContextCoreObserver::OnStorageWiped);
