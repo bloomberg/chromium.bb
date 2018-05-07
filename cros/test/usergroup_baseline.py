@@ -185,10 +185,10 @@ GROUP_BASELINE_JETSTREAM.update(dict((e.group, e) for e in (
     GroupEntry(group='leds', gid=1102, users={'ap-controller'}),
     GroupEntry(group='wpa_supplicant', gid=1114,
                users={'ap-wifi-diagnostics', 'wpa_supplicant',
-                      'ap-wifi-manager'}),
+                      'ap-wifi-manager', 'ap-hal'}),
     GroupEntry(group='hostapd', gid=1106,
                users={'hostapd', 'ap-wireless-optimizer', 'ap-monitor',
-                      'ap-wifi-manager', 'ap-wifi-diagnostics'}),
+                      'ap-wifi-manager', 'ap-wifi-diagnostics', 'ap-hal'}),
 )))
 
 # rialtod:!:400:rialto
