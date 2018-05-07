@@ -18,6 +18,10 @@
 // Whether the current profile is off-the-record.
 - (BOOL)isOffTheRecord;
 
+// Whether the Find in Page is available on current page. For example it's not
+// supported on NTP and other native content pages.
+- (BOOL)isFindInPageAvailable;
+
 // Returns the current number of tabs.
 - (NSUInteger)tabsCount;
 

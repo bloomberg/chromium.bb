@@ -114,6 +114,33 @@ keyCommandsForConsumer:(id<KeyCommandsPlumbing>)consumer
   // List the commands that only appear when there is at least a tab. When they
   // appear, they are in the HUD since they have titles.
   if (hasTabs) {
+    if ([consumer isFindInPageAvailable]) {
+      [keyCommands addObjectsFromArray:@[
+
+        [UIKeyCommand
+            cr_keyCommandWithInput:@"f"
+                     modifierFlags:UIKeyModifierCommand
+                             title:l10n_util::GetNSStringWithFixup(
+                                       IDS_IOS_TOOLS_MENU_FIND_IN_PAGE)
+                            action:^{
+                              [weakDispatcher showFindInPage];
+                            }],
+        [UIKeyCommand cr_keyCommandWithInput:@"g"
+                               modifierFlags:UIKeyModifierCommand
+                                       title:nil
+                                      action:^{
+                                        [weakDispatcher findNextStringInPage];
+                                      }],
+        [UIKeyCommand
+            cr_keyCommandWithInput:@"g"
+                     modifierFlags:UIKeyModifierCommand | UIKeyModifierShift
+                             title:nil
+                            action:^{
+                              [weakDispatcher findPreviousStringInPage];
+                            }]
+      ]];
+    }
+
     [keyCommands addObjectsFromArray:@[
       [UIKeyCommand cr_keyCommandWithInput:@"l"
                              modifierFlags:UIKeyModifierCommand
@@ -136,26 +163,6 @@ keyCommandsForConsumer:(id<KeyCommandsPlumbing>)consumer
                                      IDS_IOS_KEYBOARD_BOOKMARK_THIS_PAGE)
                           action:^{
                             [weakDispatcher bookmarkPage];
-                          }],
-      [UIKeyCommand cr_keyCommandWithInput:@"f"
-                             modifierFlags:UIKeyModifierCommand
-                                     title:l10n_util::GetNSStringWithFixup(
-                                               IDS_IOS_TOOLS_MENU_FIND_IN_PAGE)
-                                    action:^{
-                                      [weakDispatcher showFindInPage];
-                                    }],
-      [UIKeyCommand cr_keyCommandWithInput:@"g"
-                             modifierFlags:UIKeyModifierCommand
-                                     title:nil
-                                    action:^{
-                                      [weakDispatcher findNextStringInPage];
-                                    }],
-      [UIKeyCommand
-          cr_keyCommandWithInput:@"g"
-                   modifierFlags:UIKeyModifierCommand | UIKeyModifierShift
-                           title:nil
-                          action:^{
-                            [weakDispatcher findPreviousStringInPage];
                           }],
       [UIKeyCommand cr_keyCommandWithInput:@"r"
                              modifierFlags:UIKeyModifierCommand

@@ -4115,6 +4115,16 @@ bubblePresenterForFeature:(const base::Feature&)feature
   return _isOffTheRecord;
 }
 
+- (BOOL)isFindInPageAvailable {
+  Tab* tab = [_model currentTab];
+  if (!tab) {
+    return NO;
+  }
+
+  auto* helper = FindTabHelper::FromWebState(tab.webState);
+  return (helper && helper->CurrentPageSupportsFindInPage());
+}
+
 - (NSUInteger)tabsCount {
   return [_model count];
 }
