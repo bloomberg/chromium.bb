@@ -33,6 +33,7 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
+#include "third_party/blink/renderer/platform/heap/address_cache.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc_memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/heap/heap_compact.h"
 #include "third_party/blink/renderer/platform/heap/marking_verifier.h"
@@ -659,7 +660,7 @@ void NormalPageArena::TakeFreelistSnapshot(const String& dump_name) {
 }
 
 void NormalPageArena::AllocatePage() {
-  GetThreadState()->Heap().ShouldFlushHeapDoesNotContainCache();
+  GetThreadState()->Heap().address_cache()->MarkDirty();
   PageMemory* page_memory =
       GetThreadState()->Heap().GetFreePagePool()->Take(ArenaIndex());
 
@@ -1014,7 +1015,7 @@ Address LargeObjectArena::DoAllocateLargeObjectPage(size_t allocation_size,
   large_object_size += kAllocationGranularity;
 #endif
 
-  GetThreadState()->Heap().ShouldFlushHeapDoesNotContainCache();
+  GetThreadState()->Heap().address_cache()->MarkDirty();
   PageMemory* page_memory = PageMemory::Allocate(
       large_object_size, GetThreadState()->Heap().GetRegionTree());
   Address large_object_address = page_memory->WritableStart();
@@ -1774,45 +1775,5 @@ bool LargeObjectPage::Contains(Address object) {
          object < RoundToBlinkPageEnd(GetAddress() + size());
 }
 #endif
-
-void HeapDoesNotContainCache::Flush() {
-  if (has_entries_) {
-    for (size_t i = 0; i < kNumberOfEntries; ++i)
-      entries_[i] = nullptr;
-    has_entries_ = false;
-  }
-}
-
-size_t HeapDoesNotContainCache::GetHash(Address address) {
-  size_t value = (reinterpret_cast<size_t>(address) >> kBlinkPageSizeLog2);
-  value ^= value >> kNumberOfEntriesLog2;
-  value ^= value >> (kNumberOfEntriesLog2 * 2);
-  value &= kNumberOfEntries - 1;
-  return value & ~1;  // Returns only even number.
-}
-
-bool HeapDoesNotContainCache::Lookup(Address address) {
-  DCHECK(ThreadState::Current()->InAtomicMarkingPause());
-
-  size_t index = GetHash(address);
-  DCHECK(!(index & 1));
-  Address cache_page = RoundToBlinkPageStart(address);
-  if (entries_[index] == cache_page)
-    return entries_[index];
-  if (entries_[index + 1] == cache_page)
-    return entries_[index + 1];
-  return false;
-}
-
-void HeapDoesNotContainCache::AddEntry(Address address) {
-  DCHECK(ThreadState::Current()->InAtomicMarkingPause());
-
-  has_entries_ = true;
-  size_t index = GetHash(address);
-  DCHECK(!(index & 1));
-  Address cache_page = RoundToBlinkPageStart(address);
-  entries_[index + 1] = entries_[index];
-  entries_[index] = cache_page;
-}
 
 }  // namespace blink

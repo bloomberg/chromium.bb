@@ -37,6 +37,7 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
+#include "third_party/blink/renderer/platform/heap/address_cache.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc_memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/heap/heap_compact.h"
 #include "third_party/blink/renderer/platform/heap/marking_visitor.h"
@@ -57,10 +58,6 @@ namespace blink {
 
 HeapAllocHooks::AllocationHook* HeapAllocHooks::allocation_hook_ = nullptr;
 HeapAllocHooks::FreeHook* HeapAllocHooks::free_hook_ = nullptr;
-
-void ThreadHeap::FlushHeapDoesNotContainCache() {
-  heap_does_not_contain_cache_->Flush();
-}
 
 ThreadHeapStats::ThreadHeapStats()
     : allocated_space_(0),
@@ -132,14 +129,13 @@ double ThreadHeapStats::LiveObjectRateSinceLastGC() const {
 ThreadHeap::ThreadHeap(ThreadState* thread_state)
     : thread_state_(thread_state),
       region_tree_(std::make_unique<RegionTree>()),
-      heap_does_not_contain_cache_(std::make_unique<HeapDoesNotContainCache>()),
+      address_cache_(std::make_unique<AddressCache>()),
       free_page_pool_(std::make_unique<PagePool>()),
       marking_worklist_(nullptr),
       not_fully_constructed_worklist_(nullptr),
       weak_callback_worklist_(nullptr),
       vector_backing_arena_index_(BlinkGC::kVector1ArenaIndex),
-      current_arena_ages_(0),
-      should_flush_heap_does_not_contain_cache_(false) {
+      current_arena_ages_(0) {
   if (ThreadState::Current()->IsMainThread())
     main_thread_heap_ = this;
 
@@ -164,7 +160,7 @@ Address ThreadHeap::CheckAndMarkPointer(MarkingVisitor* visitor,
   DCHECK(thread_state_->InAtomicMarkingPause());
 
 #if !DCHECK_IS_ON()
-  if (heap_does_not_contain_cache_->Lookup(address))
+  if (address_cache_->Lookup(address))
     return nullptr;
 #endif
 
@@ -172,17 +168,17 @@ Address ThreadHeap::CheckAndMarkPointer(MarkingVisitor* visitor,
 #if DCHECK_IS_ON()
     DCHECK(page->Contains(address));
 #endif
-    DCHECK(!heap_does_not_contain_cache_->Lookup(address));
+    DCHECK(!address_cache_->Lookup(address));
     DCHECK(&visitor->Heap() == &page->Arena()->GetThreadState()->Heap());
     visitor->ConservativelyMarkAddress(page, address);
     return address;
   }
 
 #if !DCHECK_IS_ON()
-  heap_does_not_contain_cache_->AddEntry(address);
+  address_cache_->AddEntry(address);
 #else
-  if (!heap_does_not_contain_cache_->Lookup(address))
-    heap_does_not_contain_cache_->AddEntry(address);
+  if (!address_cache_->Lookup(address))
+    address_cache_->AddEntry(address);
 #endif
   return nullptr;
 }
@@ -199,13 +195,13 @@ Address ThreadHeap::CheckAndMarkPointer(
 
   if (BasePage* page = LookupPageForAddress(address)) {
     DCHECK(page->Contains(address));
-    DCHECK(!heap_does_not_contain_cache_->Lookup(address));
+    DCHECK(!address_cache_->Lookup(address));
     DCHECK(&visitor->Heap() == &page->Arena()->GetThreadState()->Heap());
     visitor->ConservativelyMarkAddress(page, address, callback);
     return address;
   }
-  if (!heap_does_not_contain_cache_->Lookup(address))
-    heap_does_not_contain_cache_->AddEntry(address);
+  if (!address_cache_->Lookup(address))
+    address_cache_->AddEntry(address);
   return nullptr;
 }
 #endif  // DCHECK_IS_ON()
@@ -449,26 +445,6 @@ size_t ThreadHeap::ObjectPayloadSizeForTesting() {
   return object_payload_size;
 }
 
-void ThreadHeap::ShouldFlushHeapDoesNotContainCache() {
-  should_flush_heap_does_not_contain_cache_ = true;
-}
-
-void ThreadHeap::FlushHeapDoesNotContainCacheIfNeeded() {
-  if (should_flush_heap_does_not_contain_cache_) {
-    FlushHeapDoesNotContainCache();
-    should_flush_heap_does_not_contain_cache_ = false;
-  }
-}
-
-bool ThreadHeap::IsAddressInHeapDoesNotContainCache(Address address) {
-  // If the cache has been marked as invalidated, it's cleared prior
-  // to performing the next GC. Hence, consider the cache as being
-  // effectively empty.
-  if (should_flush_heap_does_not_contain_cache_)
-    return false;
-  return heap_does_not_contain_cache_->Lookup(address);
-}
-
 void ThreadHeap::VisitPersistentRoots(Visitor* visitor) {
   DCHECK(thread_state_->InAtomicMarkingPause());
   TRACE_EVENT0("blink_gc", "ThreadHeap::visitPersistentRoots");
@@ -478,7 +454,10 @@ void ThreadHeap::VisitPersistentRoots(Visitor* visitor) {
 void ThreadHeap::VisitStackRoots(MarkingVisitor* visitor) {
   DCHECK(thread_state_->InAtomicMarkingPause());
   TRACE_EVENT0("blink_gc", "ThreadHeap::visitStackRoots");
+  address_cache_->FlushIfDirty();
+  address_cache_->EnableLookup();
   thread_state_->VisitStack(visitor);
+  address_cache_->DisableLookup();
 }
 
 BasePage* ThreadHeap::LookupPageForAddress(Address address) {

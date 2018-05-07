@@ -1423,7 +1423,6 @@ void ThreadState::MarkPhasePrologue(BlinkGC::StackState stack_state,
 
   DCHECK(InAtomicMarkingPause());
   Heap().MakeConsistentForGC();
-  Heap().FlushHeapDoesNotContainCacheIfNeeded();
   Heap().ClearArenaAges();
 
   if (marking_type != BlinkGC::kTakeSnapshot)
