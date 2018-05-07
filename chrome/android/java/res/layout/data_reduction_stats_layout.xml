@@ -89,18 +89,6 @@
 
     </FrameLayout>
 
-    <TextView
-        android:id="@+id/data_reduction_proxy_unreachable"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="20dp"
-        android:layout_marginTop="20dp"
-        android:drawableStart="@drawable/exclamation_triangle"
-        android:drawablePadding="6dp"
-        android:text="@string/data_reduction_proxy_unreachable_warn"
-        android:textColor="?android:attr/textColorPrimary"
-        android:textSize="14sp" />
-
     <include layout="@layout/data_usage_breakdown" />
 
     <Button
