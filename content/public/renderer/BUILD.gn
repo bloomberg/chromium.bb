@@ -42,6 +42,16 @@ target(link_target_type, "renderer_sources") {
     "document_state.h",
     "fixed_received_data.cc",
     "fixed_received_data.h",
+    "media_stream_audio_renderer.h",
+    "media_stream_audio_sink.cc",
+    "media_stream_audio_sink.h",
+    "media_stream_renderer_factory.h",
+    "media_stream_sink.h",
+    "media_stream_utils.cc",
+    "media_stream_utils.h",
+    "media_stream_video_renderer.h",
+    "media_stream_video_sink.cc",
+    "media_stream_video_sink.h",
     "navigation_state.cc",
     "navigation_state.h",
     "pepper_plugin_instance.h",
@@ -72,6 +82,7 @@ target(link_target_type, "renderer_sources") {
     "v8_value_converter.h",
     "video_encode_accelerator.cc",
     "video_encode_accelerator.h",
+    "webrtc_log_message_delegate.h",
     "websocket_handshake_throttle_provider.h",
     "window_features_converter.cc",
     "window_features_converter.h",
@@ -86,7 +97,9 @@ target(link_target_type, "renderer_sources") {
 
   deps = [
     "//content/public/child:child_sources",
+    "//content/public/common:buildflags",
     "//content/public/common:common_sources",
+    "//content/public/common:feature_h264_with_openh264_ffmpeg",
     "//content/renderer",
     "//gin",
     "//media/capture",
@@ -96,6 +109,7 @@ target(link_target_type, "renderer_sources") {
     "//ppapi/c",
     "//skia",
     "//third_party/blink/public:blink_headers",
+    "//third_party/webrtc_overrides",
     "//third_party/widevine/cdm:headers",
     "//ui/base",
     "//ui/base/ime",
@@ -112,27 +126,6 @@ target(link_target_type, "renderer_sources") {
   if (is_android) {
     # For seccomp_sandbox_status_android.h.
     deps += [ "//sandbox" ]
-  }
-
-  if (enable_webrtc) {
-    sources += [
-      "media_stream_audio_renderer.h",
-      "media_stream_audio_sink.cc",
-      "media_stream_audio_sink.h",
-      "media_stream_renderer_factory.h",
-      "media_stream_sink.h",
-      "media_stream_utils.cc",
-      "media_stream_utils.h",
-      "media_stream_video_renderer.h",
-      "media_stream_video_sink.cc",
-      "media_stream_video_sink.h",
-      "webrtc_log_message_delegate.h",
-    ]
-    deps += [
-      "//content/public/common:buildflags",
-      "//content/public/common:feature_h264_with_openh264_ffmpeg",
-      "//third_party/webrtc_overrides",
-    ]
   }
 
   if (enable_plugins) {

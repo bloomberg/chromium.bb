@@ -16,7 +16,6 @@ import("//components/os_crypt/features.gni")
 import("//components/signin/features.gni")
 import("//components/spellcheck/spellcheck_build_features.gni")
 import("//extensions/buildflags/buildflags.gni")
-import("//media/media_options.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//ppapi/buildflags/buildflags.gni")
 import("//remoting/remoting_enable.gni")
@@ -1742,6 +1741,7 @@ test("browser_tests") {
         "//components/exo:test_support",
         "//components/prefs",
         "//components/user_manager:test_support",
+        "//content/public/common:feature_h264_with_openh264_ffmpeg",
         "//services/audio/public/cpp:test_support",
         "//services/network/public/mojom",
         "//services/preferences/public/cpp",
@@ -1805,31 +1805,7 @@ test("browser_tests") {
     if (enable_captive_portal_detection) {
       sources += [ "../browser/captive_portal/captive_portal_browsertest.cc" ]
     }
-    if (enable_webrtc) {
-      deps += [ "//content/public/common:feature_h264_with_openh264_ffmpeg" ]
-    } else {
-      sources -= [
-        "../browser/media/webrtc/webrtc_apprtc_browsertest.cc",
-        "../browser/media/webrtc/webrtc_audio_quality_browsertest.cc",
-        "../browser/media/webrtc/webrtc_browsertest.cc",
-        "../browser/media/webrtc/webrtc_disable_encryption_flag_browsertest.cc",
-        "../browser/media/webrtc/webrtc_getmediadevices_browsertest.cc",
-        "../browser/media/webrtc/webrtc_internals_integration_browsertest.cc",
-        "../browser/media/webrtc/webrtc_internals_perf_browsertest.cc",
-        "../browser/media/webrtc/webrtc_rtp_browsertest.cc",
-        "../browser/media/webrtc/webrtc_simulcast_browsertest.cc",
-        "../browser/media/webrtc/webrtc_stats_perf_browsertest.cc",
-        "../browser/media/webrtc/webrtc_video_display_perf_browsertest.cc",
-        "../browser/media/webrtc/webrtc_video_quality_browsertest.cc",
-        "../browser/media/webrtc/webrtc_webcam_browsertest.cc",
-      ]
-      if (enable_extensions) {
-        sources -= [
-          "../browser/extensions/api/webrtc_audio_private/webrtc_audio_private_browsertest.cc",
-          "../browser/extensions/api/webrtc_logging_private/webrtc_logging_private_apitest.cc",
-        ]
-      }
-    }
+
     if (is_mac) {
       # Other platforms only need .pak files, and can build this target
       # standalone much faster.
@@ -3148,6 +3124,9 @@ test("unit_tests") {
       "../browser/media/router/providers/dial/dial_media_route_provider_unittest.cc",
       "../browser/media/router/providers/extension/extension_media_route_provider_proxy_unittest.cc",
       "../browser/media/router/providers/wired_display/wired_display_media_route_provider_unittest.cc",
+      "../browser/media/webrtc/webrtc_log_uploader_unittest.cc",
+      "../browser/media/webrtc/webrtc_rtp_dump_handler_unittest.cc",
+      "../browser/media/webrtc/webrtc_rtp_dump_writer_unittest.cc",
       "../browser/policy/local_sync_policy_handler_unittest.cc",
       "../browser/renderer_context_menu/render_view_context_menu_test_util.cc",
       "../browser/renderer_context_menu/render_view_context_menu_test_util.h",
@@ -3174,6 +3153,7 @@ test("unit_tests") {
       "../common/media_router/discovery/media_sink_service_base_unittest.cc",
       "../common/media_router/mojo/media_router_struct_traits_unittest.cc",
       "../common/media_router/providers/cast/cast_media_source_unittest.cc",
+      "../renderer/media/chrome_webrtc_log_message_delegate_unittest.cc",
     ]
     deps += [
       "//components/bubble:test_support",
@@ -3901,14 +3881,6 @@ test("unit_tests") {
         "../browser/ui/startup/session_crashed_infobar_delegate_unittest.cc",
       ]
     }
-  }
-  if (enable_webrtc) {
-    sources += [
-      "../browser/media/webrtc/webrtc_log_uploader_unittest.cc",
-      "../browser/media/webrtc/webrtc_rtp_dump_handler_unittest.cc",
-      "../browser/media/webrtc/webrtc_rtp_dump_writer_unittest.cc",
-      "../renderer/media/chrome_webrtc_log_message_delegate_unittest.cc",
-    ]
   }
   if (is_chromeos) {
     deps += [

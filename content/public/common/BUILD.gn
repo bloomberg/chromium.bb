@@ -8,7 +8,6 @@ import("//build/config/features.gni")
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//content/public/common/zygote_features.gni")
-import("//media/media_options.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//ppapi/buildflags/buildflags.gni")
 import("//third_party/webrtc/webrtc.gni")
@@ -242,6 +241,8 @@ jumbo_source_set("common_sources") {
     "webplugininfo.cc",
     "webplugininfo.h",
     "webplugininfo_param_traits.h",
+    "webrtc_ip_handling_policy.cc",
+    "webrtc_ip_handling_policy.h",
     "zygote_fork_delegate_linux.h",
   ]
 
@@ -316,13 +317,6 @@ jumbo_source_set("common_sources") {
     sources -= [
       "pepper_plugin_info.cc",
       "pepper_plugin_info.h",
-    ]
-  }
-
-  if (enable_webrtc) {
-    sources += [
-      "webrtc_ip_handling_policy.cc",
-      "webrtc_ip_handling_policy.h",
     ]
   }
 
