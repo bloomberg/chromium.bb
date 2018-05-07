@@ -22,11 +22,6 @@
 #include "ipc/ipc_message_attachment_set.h"
 #include "ipc/ipc_mojo_param_traits.h"
 
-#if defined(OS_POSIX)
-#include "base/file_descriptor_posix.h"
-#include "ipc/ipc_platform_file_attachment_posix.h"
-#endif
-
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #include "ipc/mach_port_mac.h"
 #endif
@@ -35,6 +30,9 @@
 #include <tchar.h>
 #include "ipc/handle_win.h"
 #include "ipc/ipc_platform_file.h"
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+#include "base/file_descriptor_posix.h"
+#include "ipc/ipc_platform_file_attachment_posix.h"
 #endif
 
 #if defined(OS_FUCHSIA)
@@ -60,7 +58,7 @@ void LogBytes(const std::vector<CharType>& data, std::string* out) {
   // Windows has a GUI for logging, which can handle arbitrary binary data.
   for (size_t i = 0; i < data.size(); ++i)
     out->push_back(data[i]);
-#else
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   // On POSIX, we log to stdout, which we assume can display ASCII.
   static const size_t kMaxBytesToLog = 100;
   for (size_t i = 0; i < std::min(data.size(), kMaxBytesToLog); ++i) {
@@ -514,7 +512,7 @@ void ParamTraits<base::DictionaryValue>::Log(const param_type& p,
   l->append(json);
 }
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 void ParamTraits<base::FileDescriptor>::Write(base::Pickle* m,
                                               const param_type& p) {
   // This serialization must be kept in sync with
@@ -571,7 +569,7 @@ void ParamTraits<base::FileDescriptor>::Log(const param_type& p,
     l->append(base::StringPrintf("FD(%d)", p.fd));
   }
 }
-#endif  // defined(OS_POSIX)
+#endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
 
 #if defined(OS_ANDROID)
 void ParamTraits<AHardwareBuffer*>::Write(base::Pickle* m,
@@ -655,16 +653,16 @@ void ParamTraits<base::SharedMemoryHandle>::Write(base::Pickle* m,
   if (!valid)
     return;
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  MachPortMac mach_port_mac(p.GetMemoryObject());
-  WriteParam(m, mach_port_mac);
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
   HandleWin handle_win(p.GetHandle());
   WriteParam(m, handle_win);
 #elif defined(OS_FUCHSIA)
   HandleFuchsia handle_fuchsia(p.GetHandle());
   WriteParam(m, handle_fuchsia);
-#else
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
+  MachPortMac mach_port_mac(p.GetMemoryObject());
+  WriteParam(m, mach_port_mac);
+#elif defined(OS_POSIX)
 #if defined(OS_ANDROID)
   WriteParam(m, p.IsReadOnly());
 
@@ -710,11 +708,7 @@ bool ParamTraits<base::SharedMemoryHandle>::Read(const base::Pickle* m,
   if (!valid)
     return true;
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  MachPortMac mach_port_mac;
-  if (!ReadParam(m, iter, &mach_port_mac))
-    return false;
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
   HandleWin handle_win;
   if (!ReadParam(m, iter, &handle_win))
     return false;
@@ -722,7 +716,11 @@ bool ParamTraits<base::SharedMemoryHandle>::Read(const base::Pickle* m,
   HandleFuchsia handle_fuchsia;
   if (!ReadParam(m, iter, &handle_fuchsia))
     return false;
-#else
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
+  MachPortMac mach_port_mac;
+  if (!ReadParam(m, iter, &mach_port_mac))
+    return false;
+#elif defined(OS_POSIX)
 #if defined(OS_ANDROID)
   bool is_read_only = false;
   if (!ReadParam(m, iter, &is_read_only))
@@ -745,16 +743,16 @@ bool ParamTraits<base::SharedMemoryHandle>::Read(const base::Pickle* m,
     return false;
   }
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  *r = base::SharedMemoryHandle(mach_port_mac.get_mach_port(),
-                                static_cast<size_t>(size), guid);
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
   *r = base::SharedMemoryHandle(handle_win.get_handle(),
                                 static_cast<size_t>(size), guid);
 #elif defined(OS_FUCHSIA)
   *r = base::SharedMemoryHandle(handle_fuchsia.get_handle(),
                                 static_cast<size_t>(size), guid);
-#else
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
+  *r = base::SharedMemoryHandle(mach_port_mac.get_mach_port(),
+                                static_cast<size_t>(size), guid);
+#elif defined(OS_POSIX)
   *r = base::SharedMemoryHandle(
       base::FileDescriptor(
           static_cast<internal::PlatformFileAttachment*>(attachment.get())
@@ -773,13 +771,13 @@ bool ParamTraits<base::SharedMemoryHandle>::Read(const base::Pickle* m,
 
 void ParamTraits<base::SharedMemoryHandle>::Log(const param_type& p,
                                                 std::string* l) {
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  l->append("Mach port: ");
-  LogParam(p.GetMemoryObject(), l);
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
   l->append("HANDLE: ");
   LogParam(p.GetHandle(), l);
-#else
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
+  l->append("Mach port: ");
+  LogParam(p.GetMemoryObject(), l);
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   l->append("FD: ");
   LogParam(p.GetHandle(), l);
 #endif
@@ -888,23 +886,23 @@ void ParamTraits<base::subtle::PlatformSharedMemoryRegion>::Write(
   WriteParam(m, static_cast<uint64_t>(p.GetSize()));
   WriteParam(m, p.GetGUID());
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  base::mac::ScopedMachSendRight h =
-      const_cast<param_type&>(p).PassPlatformHandle();
-  MachPortMac mach_port_mac(h.release());
-  WriteParam(m, mach_port_mac);
+#if defined(OS_WIN)
+  base::win::ScopedHandle h = const_cast<param_type&>(p).PassPlatformHandle();
+  HandleWin handle_win(h.Take());
+  WriteParam(m, handle_win);
 #elif defined(OS_FUCHSIA)
   base::ScopedZxHandle h = const_cast<param_type&>(p).PassPlatformHandle();
   HandleFuchsia handle_fuchsia(h.release());
   WriteParam(m, handle_fuchsia);
-#elif defined(OS_WIN)
-  base::win::ScopedHandle h = const_cast<param_type&>(p).PassPlatformHandle();
-  HandleWin handle_win(h.Take());
-  WriteParam(m, handle_win);
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
+  base::mac::ScopedMachSendRight h =
+      const_cast<param_type&>(p).PassPlatformHandle();
+  MachPortMac mach_port_mac(h.release());
+  WriteParam(m, mach_port_mac);
 #elif defined(OS_ANDROID)
   m->WriteAttachment(new internal::PlatformFileAttachment(
       base::ScopedFD(const_cast<param_type&>(p).PassPlatformHandle())));
-#else
+#elif defined(OS_POSIX)
   base::subtle::ScopedFDPair h =
       const_cast<param_type&>(p).PassPlatformHandle();
   m->WriteAttachment(new internal::PlatformFileAttachment(std::move(h.fd)));
@@ -938,26 +936,26 @@ bool ParamTraits<base::subtle::PlatformSharedMemoryRegion>::Read(
   }
   size_t size = static_cast<size_t>(shm_size);
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  MachPortMac mach_port_mac;
-  if (!ReadParam(m, iter, &mach_port_mac))
+#if defined(OS_WIN)
+  HandleWin handle_win;
+  if (!ReadParam(m, iter, &handle_win))
     return false;
   *r = base::subtle::PlatformSharedMemoryRegion::Take(
-      base::mac::ScopedMachSendRight(mach_port_mac.get_mach_port()), mode, size,
-      guid);
+      base::win::ScopedHandle(handle_win.get_handle()), mode, size, guid);
 #elif defined(OS_FUCHSIA)
   HandleFuchsia handle_fuchsia;
   if (!ReadParam(m, iter, &handle_fuchsia))
     return false;
   *r = base::subtle::PlatformSharedMemoryRegion::Take(
       base::ScopedZxHandle(handle_fuchsia.get_handle()), mode, size, guid);
-#elif defined(OS_WIN)
-  HandleWin handle_win;
-  if (!ReadParam(m, iter, &handle_win))
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
+  MachPortMac mach_port_mac;
+  if (!ReadParam(m, iter, &mach_port_mac))
     return false;
   *r = base::subtle::PlatformSharedMemoryRegion::Take(
-      base::win::ScopedHandle(handle_win.get_handle()), mode, size, guid);
-#else
+      base::mac::ScopedMachSendRight(mach_port_mac.get_mach_port()), mode, size,
+      guid);
+#elif defined(OS_POSIX)
   scoped_refptr<base::Pickle::Attachment> attachment;
   if (!m->ReadAttachment(iter, &attachment))
     return false;
@@ -1004,16 +1002,16 @@ bool ParamTraits<base::subtle::PlatformSharedMemoryRegion>::Read(
 void ParamTraits<base::subtle::PlatformSharedMemoryRegion>::Log(
     const param_type& p,
     std::string* l) {
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  l->append("Mach port: ");
-  LogParam(p.GetPlatformHandle(), l);
-#elif defined(OS_FUCHSIA) || defined(OS_WIN)
+#if defined(OS_FUCHSIA) || defined(OS_WIN)
   l->append("Handle: ");
+  LogParam(p.GetPlatformHandle(), l);
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
+  l->append("Mach port: ");
   LogParam(p.GetPlatformHandle(), l);
 #elif defined(OS_ANDROID)
   l->append("FD: ");
   LogParam(p.GetPlatformHandle(), l);
-#else
+#elif defined(OS_POSIX)
   base::subtle::FDPair h = p.GetPlatformHandle();
   l->append("FD: ");
   LogParam(h.fd, l);
@@ -1350,7 +1348,7 @@ void ParamTraits<LogData>::Log(const param_type& p, std::string* l) {
 }
 
 void ParamTraits<Message>::Write(base::Pickle* m, const Message& p) {
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
   // We don't serialize the file descriptors in the nested message, so there
   // better not be any.
   DCHECK(!p.HasAttachments());
