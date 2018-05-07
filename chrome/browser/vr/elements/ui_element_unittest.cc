@@ -89,6 +89,26 @@ TEST(UiElement, BoundsContainChildren) {
   EXPECT_FLOAT_EQ(-3.9, p.y());
 }
 
+TEST(UiElement, ReplaceChild) {
+  auto a = std::make_unique<UiElement>();
+  auto b = std::make_unique<UiElement>();
+  auto c = std::make_unique<UiElement>();
+  auto d = std::make_unique<UiElement>();
+  auto x = std::make_unique<UiElement>();
+
+  auto* x_ptr = x.get();
+  auto* c_ptr = c.get();
+
+  a->AddChild(std::move(b));
+  a->AddChild(std::move(c));
+  a->AddChild(std::move(d));
+
+  auto removed = a->ReplaceChild(c_ptr, std::move(x));
+
+  EXPECT_EQ(c_ptr, removed.get());
+  EXPECT_EQ(x_ptr, a->children()[1].get());
+}
+
 TEST(UiElement, IgnoringAsymmetricPadding) {
   // This test ensures that when we ignore asymmetric padding that we don't
   // accidentally shift the location of the parent; it should stay put.
