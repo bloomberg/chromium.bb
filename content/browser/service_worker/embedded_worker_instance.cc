@@ -417,13 +417,16 @@ class EmbeddedWorkerInstance::StartTask {
       network::mojom::URLLoaderFactoryPtrInfo non_network_loader_factory_info) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-    // We allocated a process but will not use it. Tell the process manager to
-    // release the process, by making a WorkerProcessHandle and immediately
-    // destroying it.
-    if (status == SERVICE_WORKER_OK && !instance_->context_) {
-      WorkerProcessHandle(process_manager, instance_->embedded_worker_id(),
-                          process_info->process_id);
-      status = SERVICE_WORKER_ERROR_ABORT;
+    std::unique_ptr<WorkerProcessHandle> process_handle;
+    if (status == SERVICE_WORKER_OK) {
+      // If we allocated a process, WorkerProcessHandle has to be created before
+      // returning to ensure the process is eventually released.
+      process_handle = std::make_unique<WorkerProcessHandle>(
+          process_manager, instance_->embedded_worker_id(),
+          process_info->process_id);
+
+      if (!instance_->context_)
+        status = SERVICE_WORKER_ERROR_ABORT;
     }
 
     if (status != SERVICE_WORKER_OK) {
@@ -452,11 +455,7 @@ class EmbeddedWorkerInstance::StartTask {
 
     // Notify the instance that a process is allocated.
     state_ = ProcessAllocationState::ALLOCATED;
-    instance_->OnProcessAllocated(
-        std::make_unique<WorkerProcessHandle>(process_manager,
-                                              instance_->embedded_worker_id(),
-                                              process_info->process_id),
-        start_situation);
+    instance_->OnProcessAllocated(std::move(process_handle), start_situation);
 
     // Notify the instance that it is registered to the DevTools manager.
     instance_->OnRegisteredToDevToolsManager(std::move(devtools_proxy),
@@ -464,14 +463,9 @@ class EmbeddedWorkerInstance::StartTask {
 
     network::mojom::URLLoaderFactoryPtr non_network_loader_factory(
         std::move(non_network_loader_factory_info));
-    status = instance_->SendStartWorker(std::move(params),
-                                        std::move(non_network_loader_factory));
-    if (status != SERVICE_WORKER_OK) {
-      StatusCallback callback = std::move(start_callback_);
-      start_callback_.Reset();
-      instance_->OnStartFailed(std::move(callback), status);
-      // |this| may be destroyed.
-    }
+    instance_->SendStartWorker(std::move(params),
+                               std::move(non_network_loader_factory));
+
     TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ServiceWorker",
                                       "INITIALIZING_ON_RENDERER", this);
     // |this|'s work is done here, but |instance_| still uses its state until
@@ -642,23 +636,10 @@ void EmbeddedWorkerInstance::OnRegisteredToDevToolsManager(
     observer.OnRegisteredToDevToolsManager();
 }
 
-ServiceWorkerStatusCode EmbeddedWorkerInstance::SendStartWorker(
+void EmbeddedWorkerInstance::SendStartWorker(
     mojom::EmbeddedWorkerStartParamsPtr params,
     network::mojom::URLLoaderFactoryPtr non_network_loader_factory) {
   DCHECK(context_);
-
-  if (!context_->GetDispatcherHost(process_id())) {
-    // Check if there's a dispatcher host, which is a good sign the process is
-    // still alive. It's possible that previously the process crashed, and the
-    // Mojo connection error via |client_| detected it and this instance was
-    // detached, but on restart ServiceWorkerProcessManager assigned us the
-    // process again before RenderProcessHostImpl itself or
-    // ServiceWorkerProcessManager knew it crashed, and by the time we get here
-    // RenderProcessHostImpl::EnableSendQueue may have been called in
-    // anticipation of the RPHI being reused for another renderer process, so
-    // Mojo doesn't consider it an error. See https://crbug.com/732729.
-    return SERVICE_WORKER_ERROR_IPC_FAILED;
-  }
   DCHECK(params->dispatcher_request.is_pending());
   DCHECK(params->controller_request.is_pending());
   DCHECK(params->service_worker_host.is_valid());
@@ -677,12 +658,7 @@ ServiceWorkerStatusCode EmbeddedWorkerInstance::SendStartWorker(
           .Run(process_id(), std::move(non_network_loader_factory));
   client_->StartWorker(std::move(params));
   registry_->BindWorkerToProcess(process_id(), embedded_worker_id());
-  OnStartWorkerMessageSent(is_script_streaming);
-  return SERVICE_WORKER_OK;
-}
 
-void EmbeddedWorkerInstance::OnStartWorkerMessageSent(
-    bool is_script_streaming) {
   if (!step_time_.is_null()) {
     base::TimeDelta duration = UpdateStepTime();
     if (inflight_start_task_->is_installed()) {

@@ -234,13 +234,6 @@ class EmbeddedWorkerInstanceTest : public testing::Test,
     worker->status_ = status;
   }
 
-  ServiceWorkerStatusCode SimulateSendStartWorker(
-      EmbeddedWorkerInstance* worker,
-      mojom::EmbeddedWorkerStartParamsPtr params) {
-    return worker->SendStartWorker(std::move(params),
-                                   nullptr /* non_network_loader_factory */);
-  }
-
   blink::mojom::ServiceWorkerInstalledScriptsInfoPtr
   GetInstalledScriptsInfoPtr() {
     installed_scripts_managers_.emplace_back();
@@ -974,23 +967,6 @@ TEST_F(EmbeddedWorkerInstanceTest, AddMessageToConsole) {
   worker->Stop();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, worker->status());
-}
-
-// Test that SendStartWorker checks if dispatcher host exists.
-TEST_F(EmbeddedWorkerInstanceTest, NoDispatcherHost) {
-  const GURL scope("http://example.com/");
-  const GURL url("http://example.com/worker.js");
-
-  RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
-  std::unique_ptr<EmbeddedWorkerInstance> worker =
-      embedded_worker_registry()->CreateWorker(pair.second.get());
-  SetWorkerStatus(worker.get(), EmbeddedWorkerStatus::STARTING);
-  auto params = mojom::EmbeddedWorkerStartParams::New();
-  ServiceWorkerStatusCode result =
-      SimulateSendStartWorker(worker.get(), std::move(params));
-  EXPECT_EQ(SERVICE_WORKER_ERROR_IPC_FAILED, result);
-  // Set to STOPPED because EWInstance's destructor DCHECKs status.
-  SetWorkerStatus(worker.get(), EmbeddedWorkerStatus::STOPPED);
 }
 
 }  // namespace content
