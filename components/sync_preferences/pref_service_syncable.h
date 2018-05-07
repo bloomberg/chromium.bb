@@ -40,7 +40,7 @@ class PrefServiceSyncable : public PrefService {
       std::unique_ptr<PrefValueStore> pref_value_store,
       scoped_refptr<PersistentPrefStore> user_prefs,
       scoped_refptr<user_prefs::PrefRegistrySyncable> pref_registry,
-      const PrefModelAssociatorClient* pref_model_associato_client,
+      const PrefModelAssociatorClient* pref_model_associator_client,
       base::RepeatingCallback<void(PersistentPrefStore::PrefReadError)>
           read_error_callback,
       bool async);
@@ -90,11 +90,6 @@ class PrefServiceSyncable : public PrefService {
                              SyncedPrefObserver* observer);
   void RemoveSyncedPrefObserver(const std::string& name,
                                 SyncedPrefObserver* observer);
-
- protected:
-  // Set the PrefModelAssociatorClient to use for that object during tests.
-  void SetPrefModelAssociatorClientForTesting(
-      const PrefModelAssociatorClient* pref_model_associator_client);
 
  private:
   friend class PrefModelAssociator;

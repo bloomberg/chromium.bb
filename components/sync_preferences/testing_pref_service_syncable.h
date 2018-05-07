@@ -16,6 +16,18 @@ class PrefRegistrySyncable;
 namespace sync_preferences {
 
 // Test version of PrefServiceSyncable.
+// This class hierarchy has a flaw: TestingPrefServiceBase is inheriting from
+// the first template parameter (PrefServiceSyncable in this case). This means,
+// all of the supported parameter types must support the same constructor
+// signatures -- which they don't. Hence, it's not possible to properly inject
+//  a PrefModelAssociatorClient.
+// TODO(tschumann) The whole purpose of TestingPrefServiceBase is questionable
+// and I'd be in favor of removing it completely:
+//  -- it hides the dependency injetion of the different stores
+//  -- just to later offer ways to manipulate speficic stores.
+//  -- if tests just dependency injects the individual stores directly, they
+//     already have full control and won't need that indirection at all.
+// See PrefServiceSyncableMergeTest as an example of a cleaner way.
 class TestingPrefServiceSyncable
     : public TestingPrefServiceBase<PrefServiceSyncable,
                                     user_prefs::PrefRegistrySyncable> {
@@ -33,8 +45,6 @@ class TestingPrefServiceSyncable
   // you would do all registrations before constructing it, passing it
   // a PrefRegistry via its constructor (or via e.g. PrefServiceFactory).
   user_prefs::PrefRegistrySyncable* registry();
-
-  using PrefServiceSyncable::SetPrefModelAssociatorClientForTesting;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestingPrefServiceSyncable);
