@@ -144,26 +144,55 @@ class TriggerThrottlerTestFinch : public ::testing::Test {
       const TriggerType trigger_type,
       const std::string& group_name,
       int quota) {
-    base::FieldTrial* trial = base::FieldTrialList::CreateFieldTrial(
-        safe_browsing::kTriggerThrottlerDailyQuotaFeature.name, group_name);
+    std::string feature_name = "";
+    std::string param_name = "";
+    GetFeatureAndParamForTrigger(trigger_type, &feature_name, &param_name);
+
+    base::FieldTrial* trial =
+        base::FieldTrialList::CreateFieldTrial(feature_name, group_name);
     std::map<std::string, std::string> feature_params;
-    feature_params[std::string(safe_browsing::kTriggerTypeAndQuotaParam)] =
-        base::StringPrintf("%d,%d", trigger_type, quota);
-    base::AssociateFieldTrialParams(
-        safe_browsing::kTriggerThrottlerDailyQuotaFeature.name, group_name,
-        feature_params);
+    feature_params[param_name] =
+        GetQuotaParamValueForTrigger(trigger_type, quota);
+    base::AssociateFieldTrialParams(feature_name, group_name, feature_params);
     std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-    feature_list->InitializeFromCommandLine(
-        safe_browsing::kTriggerThrottlerDailyQuotaFeature.name, std::string());
+    feature_list->InitializeFromCommandLine(feature_name, std::string());
     feature_list->AssociateReportingFieldTrial(
-        safe_browsing::kTriggerThrottlerDailyQuotaFeature.name,
-        base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial);
+        feature_name, base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial);
     return feature_list;
   }
 
   size_t GetDailyQuotaForTrigger(const TriggerThrottler& throttler,
                                  const TriggerType trigger_type) {
     return throttler.GetDailyQuotaForTrigger(trigger_type);
+  }
+
+ private:
+  void GetFeatureAndParamForTrigger(const TriggerType trigger_type,
+                                    std::string* out_feature,
+                                    std::string* out_param) {
+    switch (trigger_type) {
+      case TriggerType::AD_SAMPLE:
+        *out_feature = safe_browsing::kTriggerThrottlerDailyQuotaFeature.name;
+        *out_param = safe_browsing::kTriggerTypeAndQuotaParam;
+        break;
+
+      case TriggerType::SUSPICIOUS_SITE:
+        *out_feature = safe_browsing::kSuspiciousSiteTriggerQuotaFeature.name;
+        *out_param = safe_browsing::kSuspiciousSiteTriggerQuotaParam;
+        break;
+
+      default:
+        NOTREACHED() << "Unhandled trigger type: "
+                     << static_cast<int>(trigger_type);
+    }
+  }
+
+  std::string GetQuotaParamValueForTrigger(const TriggerType trigger_type,
+                                           int quota) {
+    if (trigger_type == TriggerType::AD_SAMPLE)
+      return base::StringPrintf("%d,%d", trigger_type, quota);
+    else
+      return base::StringPrintf("%d", quota);
   }
 };
 

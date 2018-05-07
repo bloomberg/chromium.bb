@@ -13,8 +13,9 @@
 #include "components/safe_browsing/features.h"
 
 namespace safe_browsing {
-const char kTriggerTypeAndQuotaParam[] = "trigger_type_and_quota_csv";
 const size_t kAdSamplerTriggerDefaultQuota = 10;
+const char kSuspiciousSiteTriggerQuotaParam[] = "suspicious_site_trigger_quota";
+const char kTriggerTypeAndQuotaParam[] = "trigger_type_and_quota_csv";
 
 namespace {
 const size_t kUnlimitedTriggerQuota = std::numeric_limits<size_t>::max();
@@ -35,13 +36,20 @@ class TriggerTypeIs {
 void ParseTriggerTypeAndQuotaParam(
     std::vector<TriggerTypeAndQuotaItem>* trigger_type_and_quota_list) {
   DCHECK(trigger_type_and_quota_list);
+  trigger_type_and_quota_list->clear();
+
+  // First, handle the trigger-specific features.
+  trigger_type_and_quota_list->push_back(std::make_pair(
+      TriggerType::SUSPICIOUS_SITE, base::GetFieldTrialParamByFeatureAsInt(
+                                        kSuspiciousSiteTriggerQuotaFeature,
+                                        kSuspiciousSiteTriggerQuotaParam, 0)));
+
   // If the feature is disabled we just use the default list. Otherwise the list
   // from the Finch param will be the one used.
   if (!base::FeatureList::IsEnabled(kTriggerThrottlerDailyQuotaFeature)) {
     return;
   }
 
-  trigger_type_and_quota_list->clear();
   const std::string& trigger_and_quota_csv_param =
       base::GetFieldTrialParamValueByFeature(kTriggerThrottlerDailyQuotaFeature,
                                              kTriggerTypeAndQuotaParam);

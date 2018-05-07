@@ -14,13 +14,20 @@
 #include "base/time/clock.h"
 
 namespace safe_browsing {
+// Default quota for ad sampler trigger.
+extern const size_t kAdSamplerTriggerDefaultQuota;
+
+// Param name of the finch param containing the quota for the suspicious site
+// trigger.
+extern const char kSuspiciousSiteTriggerQuotaParam[];
 
 // Param name of the finch param containing the comma-separated list of trigger
 // types and daily quotas.
+// TODO(crbug.com/744869): This param should be deprecated after ad sampler
+// launch in favour of having a unique quota feature and param per trigger.
+// Having a single shared feature makes it impossible to run multiple trigger
+// trials simultaneously.
 extern const char kTriggerTypeAndQuotaParam[];
-
-// Default quota for ad sampler trigger.
-extern const size_t kAdSamplerTriggerDefaultQuota;
 
 enum class TriggerType {
   SECURITY_INTERSTITIAL = 1,
