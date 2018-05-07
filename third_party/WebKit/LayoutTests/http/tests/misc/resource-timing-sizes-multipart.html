@@ -26,10 +26,8 @@ function waitForEntryWithUrl(absoluteUrl) {
 function checkTransferSize(entry) {
     // These comparisons are not strict because multipart responses are
     // non-standard. Any reasonable answer is acceptable.
-    // TODO(ricea): encodedBodySize and decodedBodySize don't pass.
-    // Fix the code or make this test even more relaxed. See crbug.com/631004.
-    // assert_greater_than(entry.encodedBodySize, abePngSize - 1, 'encodedBodySize');
-    // assert_greater_than(entry.decodedBodySize, abePngSize - 1, 'decodedBodySize');
+    assert_greater_than(entry.encodedBodySize, abePngSize - 1, 'encodedBodySize');
+    assert_greater_than(entry.decodedBodySize, abePngSize - 1, 'decodedBodySize');
     assert_greater_than(entry.transferSize, abePngSize + minHeaderSize, 'transferSize');
     t.done();
 }
