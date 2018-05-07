@@ -1594,7 +1594,7 @@ bool WebFormElementToFormData(
 
   form->name = GetFormIdentifier(form_element);
   form->origin = GetCanonicalOriginForDocument(frame->GetDocument());
-  form->action = frame->GetDocument().CompleteURL(form_element.Action());
+  form->action = GetCanonicalActionForForm(form_element);
   if (frame->Top()) {
     form->main_frame_origin = frame->Top()->GetSecurityOrigin();
   } else {

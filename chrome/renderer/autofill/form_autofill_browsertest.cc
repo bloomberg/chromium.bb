@@ -2530,30 +2530,31 @@ TEST_F(FormAutofillTest, DetectTextDirectionWhenAncestorHasInlineStyle) {
 }
 
 TEST_F(FormAutofillTest, WebFormElementToFormData) {
-  LoadHTML("<FORM name='TestForm' action='http://cnn.com' method='post'>"
-           "  <LABEL for='firstname'>First name:</LABEL>"
-           "    <INPUT type='text' id='firstname' value='John'/>"
-           "  <LABEL for='lastname'>Last name:</LABEL>"
-           "    <INPUT type='text' id='lastname' value='Smith'/>"
-           "  <LABEL for='street-address'>Address:</LABEL>"
-           "    <TEXTAREA id='street-address'>"
-                 "123 Fantasy Ln.&#10;"
-                 "Apt. 42"
-                "</TEXTAREA>"
-           "  <LABEL for='state'>State:</LABEL>"
-           "    <SELECT id='state'/>"
-           "      <OPTION value='CA'>California</OPTION>"
-           "      <OPTION value='TX'>Texas</OPTION>"
-           "    </SELECT>"
-           "  <LABEL for='password'>Password:</LABEL>"
-           "    <INPUT type='password' id='password' value='secret'/>"
-           "  <LABEL for='month'>Card expiration:</LABEL>"
-           "    <INPUT type='month' id='month' value='2011-12'/>"
-           "    <INPUT type='submit' name='reply-send' value='Send'/>"
-           // The below inputs should be ignored
-           "  <LABEL for='notvisible'>Hidden:</LABEL>"
-           "    <INPUT type='hidden' id='notvisible' value='apple'/>"
-           "</FORM>");
+  LoadHTML(
+      "<FORM name='TestForm' action='http://cnn.com/submit/?a=1' method='post'>"
+      "  <LABEL for='firstname'>First name:</LABEL>"
+      "    <INPUT type='text' id='firstname' value='John'/>"
+      "  <LABEL for='lastname'>Last name:</LABEL>"
+      "    <INPUT type='text' id='lastname' value='Smith'/>"
+      "  <LABEL for='street-address'>Address:</LABEL>"
+      "    <TEXTAREA id='street-address'>"
+      "123 Fantasy Ln.&#10;"
+      "Apt. 42"
+      "</TEXTAREA>"
+      "  <LABEL for='state'>State:</LABEL>"
+      "    <SELECT id='state'/>"
+      "      <OPTION value='CA'>California</OPTION>"
+      "      <OPTION value='TX'>Texas</OPTION>"
+      "    </SELECT>"
+      "  <LABEL for='password'>Password:</LABEL>"
+      "    <INPUT type='password' id='password' value='secret'/>"
+      "  <LABEL for='month'>Card expiration:</LABEL>"
+      "    <INPUT type='month' id='month' value='2011-12'/>"
+      "    <INPUT type='submit' name='reply-send' value='Send'/>"
+      // The below inputs should be ignored
+      "  <LABEL for='notvisible'>Hidden:</LABEL>"
+      "    <INPUT type='hidden' id='notvisible' value='apple'/>"
+      "</FORM>");
 
   WebLocalFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
@@ -2571,7 +2572,7 @@ TEST_F(FormAutofillTest, WebFormElementToFormData) {
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
   EXPECT_EQ(GetCanonicalOriginForDocument(frame->GetDocument()), form.origin);
   EXPECT_FALSE(form.origin.is_empty());
-  EXPECT_EQ(GURL("http://cnn.com"), form.action);
+  EXPECT_EQ(GURL("http://cnn.com/submit/"), form.action);
 
   const std::vector<FormFieldData>& fields = form.fields;
   ASSERT_EQ(6U, fields.size());
