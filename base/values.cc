@@ -430,6 +430,16 @@ Value::const_dict_iterator_proxy Value::DictItems() const {
   return const_dict_iterator_proxy(&dict_);
 }
 
+size_t Value::DictSize() const {
+  CHECK(is_dict());
+  return dict_.size();
+}
+
+bool Value::DictEmpty() const {
+  CHECK(is_dict());
+  return dict_.empty();
+}
+
 bool Value::GetAsBoolean(bool* out_value) const {
   if (out_value && is_bool()) {
     *out_value = bool_value_;

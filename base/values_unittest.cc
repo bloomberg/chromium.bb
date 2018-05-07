@@ -888,8 +888,12 @@ TEST(ValuesTest, DictionaryDeletion) {
   DictionaryValue dict;
   dict.Set(key, std::make_unique<Value>());
   EXPECT_FALSE(dict.empty());
+  EXPECT_FALSE(dict.DictEmpty());
+  EXPECT_EQ(1U, dict.DictSize());
   dict.Clear();
   EXPECT_TRUE(dict.empty());
+  EXPECT_TRUE(dict.DictEmpty());
+  EXPECT_EQ(0U, dict.DictSize());
 }
 
 TEST(ValuesTest, DictionarySetReturnsPointer) {
@@ -955,12 +959,19 @@ TEST(ValuesTest, DictionaryRemoval) {
 
   {
     DictionaryValue dict;
+    EXPECT_EQ(0U, dict.DictSize());
+    EXPECT_TRUE(dict.DictEmpty());
     dict.Set(key, std::make_unique<Value>());
     EXPECT_TRUE(dict.HasKey(key));
     EXPECT_FALSE(dict.Remove("absent key", &removed_item));
+    EXPECT_EQ(1U, dict.DictSize());
+    EXPECT_FALSE(dict.DictEmpty());
+
     EXPECT_TRUE(dict.Remove(key, &removed_item));
     EXPECT_FALSE(dict.HasKey(key));
     ASSERT_TRUE(removed_item);
+    EXPECT_EQ(0U, dict.DictSize());
+    EXPECT_TRUE(dict.DictEmpty());
   }
 
   {
