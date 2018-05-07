@@ -671,20 +671,15 @@ gfx::Rect DesktopWindowTreeHostX11::GetRestoredBounds() const {
 }
 
 std::string DesktopWindowTreeHostX11::GetWorkspace() const {
-  if (workspace_.empty())
-    const_cast<DesktopWindowTreeHostX11*>(this)->UpdateWorkspace();
-  return workspace_;
+  return workspace_ ? base::IntToString(workspace_.value()) : std::string();
 }
 
-bool DesktopWindowTreeHostX11::UpdateWorkspace() {
-  int workspace_int;
-  if (!ui::GetWindowDesktop(xwindow_, &workspace_int))
-    return false;
-  std::string workspace_str = base::IntToString(workspace_int);
-  if (workspace_ == workspace_str)
-    return false;
-  workspace_ = workspace_str;
-  return true;
+void DesktopWindowTreeHostX11::UpdateWorkspace() {
+  int workspace;
+  if (ui::GetWindowDesktop(xwindow_, &workspace))
+    workspace_ = workspace;
+  else
+    workspace_ = base::nullopt;
 }
 
 gfx::Rect DesktopWindowTreeHostX11::GetWorkAreaBoundsInScreen() const {
@@ -894,7 +889,7 @@ void DesktopWindowTreeHostX11::SetVisibleOnAllWorkspaces(bool always_visible) {
       return;
   }
 
-  workspace_ = base::IntToString(kAllDesktops);
+  workspace_ = kAllDesktops;
   XEvent xevent;
   memset (&xevent, 0, sizeof (xevent));
   xevent.type = ClientMessage;
@@ -1504,7 +1499,7 @@ void DesktopWindowTreeHostX11::InitX11Window(
   if (is_always_on_top_)
     state_atom_list.push_back(gfx::GetAtom("_NET_WM_STATE_ABOVE"));
 
-  workspace_.clear();
+  workspace_ = base::nullopt;
   if (params.visible_on_all_workspaces) {
     state_atom_list.push_back(gfx::GetAtom("_NET_WM_STATE_STICKY"));
     ui::SetIntProperty(xwindow_, "_NET_WM_DESKTOP", "CARDINAL", kAllDesktops);
@@ -2267,7 +2262,9 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
       } else if (changed_atom == gfx::GetAtom("_NET_FRAME_EXTENTS")) {
         OnFrameExtentsUpdated();
       } else if (changed_atom == gfx::GetAtom("_NET_WM_DESKTOP")) {
-        if (UpdateWorkspace())
+        base::Optional<int> old_workspace = workspace_;
+        UpdateWorkspace();
+        if (workspace_ != old_workspace)
           OnHostWorkspaceChanged();
       }
       break;
