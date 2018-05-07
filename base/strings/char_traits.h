@@ -7,6 +7,8 @@
 
 #include <stddef.h>
 
+#include "base/compiler_specific.h"
+
 namespace base {
 
 // constexpr version of http://en.cppreference.com/w/cpp/string/char_traits.
@@ -61,7 +63,7 @@ struct CharTraits<char> {
 constexpr int CharTraits<char>::compare(const char* s1,
                                         const char* s2,
                                         size_t n) noexcept {
-#if __has_feature(cxx_constexpr_string_builtins)
+#if HAS_FEATURE(cxx_constexpr_string_builtins)
   return __builtin_memcmp(s1, s2, n);
 #else
   for (; n; --n, ++s1, ++s2) {
