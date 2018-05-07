@@ -509,9 +509,10 @@ TEST_F(SelectToSpeakEventHandlerTest, SelectionRequestedWorksWithTouch) {
   // Touch up is the last event captured in the sequence
   generator_->ReleaseTouch();
   EXPECT_FALSE(event_capturer_.last_touch_event());
+  EXPECT_TRUE(mouse_event_delegate_->CapturedMouseEvent(ui::ET_MOUSE_RELEASED));
   event_capturer_.Reset();
 
-  // Another mouse event is let through normally.
+  // Another touch event is let through normally.
   generator_->PressTouch();
   EXPECT_TRUE(event_capturer_.last_touch_event());
   event_capturer_.Reset();
@@ -547,6 +548,49 @@ TEST_F(SelectToSpeakEventHandlerTest, SelectionRequestedIgnoresOtherInput) {
   // Complete the touch selection.
   generator_->ReleaseTouch();
   EXPECT_FALSE(event_capturer_.last_touch_event());
+  event_capturer_.Reset();
+}
+
+TEST_F(SelectToSpeakEventHandlerTest, TrackingTouchIgnoresOtherTouchPointers) {
+  gfx::Point touch_location = gfx::Point(100, 12);
+  gfx::Point drag_location = gfx::Point(120, 32);
+  generator_->set_current_location(touch_location);
+  select_to_speak_event_handler_->SetSelectToSpeakStateSelecting(true);
+
+  // The first touch event is captured and sent to the extension.
+  generator_->PressTouchId(1);
+  EXPECT_FALSE(event_capturer_.last_touch_event());
+  EXPECT_TRUE(mouse_event_delegate_->CapturedMouseEvent(ui::ET_MOUSE_PRESSED));
+  event_capturer_.Reset();
+  mouse_event_delegate_->Reset();
+
+  // A second touch event up and down is canceled but not sent to the extension.
+  generator_->PressTouchId(2);
+  EXPECT_FALSE(event_capturer_.last_touch_event());
+  EXPECT_FALSE(mouse_event_delegate_->CapturedMouseEvent(ui::ET_MOUSE_PRESSED));
+  generator_->MoveTouchId(drag_location, 2);
+  EXPECT_FALSE(event_capturer_.last_touch_event());
+  EXPECT_FALSE(mouse_event_delegate_->CapturedMouseEvent(ui::ET_MOUSE_DRAGGED));
+  generator_->ReleaseTouchId(2);
+  EXPECT_FALSE(event_capturer_.last_touch_event());
+  EXPECT_FALSE(
+      mouse_event_delegate_->CapturedMouseEvent(ui::ET_MOUSE_RELEASED));
+
+  // The first pointer is still tracked.
+  generator_->MoveTouchId(drag_location, 1);
+  EXPECT_EQ(drag_location, mouse_event_delegate_->last_mouse_event_location());
+  EXPECT_TRUE(mouse_event_delegate_->CapturedMouseEvent(ui::ET_MOUSE_DRAGGED));
+  EXPECT_TRUE(event_capturer_.last_touch_event());
+  event_capturer_.Reset();
+
+  // Touch up is the last event captured in the sequence
+  generator_->ReleaseTouchId(1);
+  EXPECT_FALSE(event_capturer_.last_touch_event());
+  event_capturer_.Reset();
+
+  // Another touch event is let through normally.
+  generator_->PressTouchId(3);
+  EXPECT_TRUE(event_capturer_.last_touch_event());
   event_capturer_.Reset();
 }
 

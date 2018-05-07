@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "ui/events/event.h"
 #include "ui/events/event_handler.h"
 
 namespace chromeos {
@@ -108,6 +109,8 @@ class SelectToSpeakEventHandler : public ui::EventHandler {
   };
 
   State state_ = INACTIVE;
+
+  ui::PointerId touch_id_ = ui::PointerDetails::kUnknownPointerId;
 
   SelectToSpeakEventDelegateForTesting* event_delegate_for_testing_ = nullptr;
 
