@@ -1666,12 +1666,8 @@ void BrowserView::NativeThemeUpdated(const ui::NativeTheme* theme) {
 
 FullscreenControlHost* BrowserView::GetFullscreenControlHost() {
   if (!fullscreen_control_host_) {
-    // This is a do-nothing view that controls the z-order of the fullscreen
-    // control host. See DropdownBarHost::SetHostViewNative() for more details.
-    auto fullscreen_exit_host_view = std::make_unique<views::View>();
-    fullscreen_control_host_ = std::make_unique<FullscreenControlHost>(
-        this, fullscreen_exit_host_view.get());
-    AddChildView(fullscreen_exit_host_view.release());
+    fullscreen_control_host_ =
+        std::make_unique<FullscreenControlHost>(this, this);
   }
 
   return fullscreen_control_host_.get();
@@ -2726,6 +2722,10 @@ void BrowserView::HideDownloadShelf() {
   StatusBubble* status_bubble = GetStatusBubble();
   if (status_bubble)
     status_bubble->Hide();
+}
+
+ExclusiveAccessBubbleViews* BrowserView::GetExclusiveAccessBubble() {
+  return exclusive_access_bubble();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

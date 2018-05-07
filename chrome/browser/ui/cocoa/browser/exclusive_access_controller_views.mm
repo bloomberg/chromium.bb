@@ -8,14 +8,16 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/accelerators_cocoa.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
-#include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_controller.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/status_bubble.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
+#include "chrome/browser/ui/views/fullscreen_control/fullscreen_control_host.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
+#include "ui/views/event_monitor.h"
 
 namespace {
 
@@ -91,10 +93,23 @@ void ExclusiveAccessController::EnterFullscreen(
     [controller_ enterWebContentFullscreen];
   else
     [controller_ enterBrowserFullscreen];
+
+  // This is not guarded by FullscreenControlHost::IsFullscreenExitUIEnabled()
+  // because ShouldHideUIForFullscreen() already guards that mouse and touch
+  // inputs will not trigger the exit UI, and we always need
+  // FullscreenControlHost whenever keyboard lock requires press-and-hold ESC.
+  fullscreen_control_host_event_monitor_ =
+      views::EventMonitor::CreateWindowMonitor(
+          GetFullscreenControlHost(),
+          GetActiveWebContents()->GetTopLevelNativeWindow());
 }
 
 void ExclusiveAccessController::ExitFullscreen() {
   [controller_ exitAnyFullscreen];
+  if (fullscreen_control_host_) {
+    fullscreen_control_host_->Hide(false);
+    fullscreen_control_host_event_monitor_.reset();
+  }
 }
 
 void ExclusiveAccessController::UpdateExclusiveAccessExitBubbleContent(
@@ -127,6 +142,15 @@ void ExclusiveAccessController::HideDownloadShelf() {
   StatusBubble* statusBubble = GetBrowserWindow()->GetStatusBubble();
   if (statusBubble)
     statusBubble->Hide();
+}
+
+bool ExclusiveAccessController::ShouldHideUIForFullscreen() const {
+  return false;
+}
+
+ExclusiveAccessBubbleViews*
+ExclusiveAccessController::GetExclusiveAccessBubble() {
+  return views_bubble_.get();
 }
 
 bool ExclusiveAccessController::GetAcceleratorForCommandId(
@@ -185,4 +209,13 @@ bool ExclusiveAccessController::CanTriggerOnMouse() const {
 
 BrowserWindow* ExclusiveAccessController::GetBrowserWindow() const {
   return [controller_ browserWindow];
+}
+
+FullscreenControlHost* ExclusiveAccessController::GetFullscreenControlHost() {
+  if (!fullscreen_control_host_) {
+    fullscreen_control_host_ =
+        std::make_unique<FullscreenControlHost>(this, this);
+  }
+
+  return fullscreen_control_host_.get();
 }

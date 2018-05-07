@@ -468,6 +468,7 @@ class BrowserView : public BrowserWindow,
   content::WebContents* GetActiveWebContents() override;
   void HideDownloadShelf() override;
   void UnhideDownloadShelf() override;
+  ExclusiveAccessBubbleViews* GetExclusiveAccessBubble() override;
 
   // ExclusiveAccessBubbleViewsContext overrides
   ExclusiveAccessManager* GetExclusiveAccessManager() override;

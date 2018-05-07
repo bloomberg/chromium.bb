@@ -67,6 +67,7 @@ class FullscreenControllerTestWindow : public TestBrowserWindow,
       ExclusiveAccessBubbleHideCallback bubble_first_hide_callback,
       bool force_update) override;
   void OnExclusiveAccessUserInput() override;
+  ExclusiveAccessBubbleViews* GetExclusiveAccessBubble() override;
 
   // Simulates the window changing state.
   void ChangeWindowFullscreenState();
@@ -196,6 +197,11 @@ void FullscreenControllerTestWindow::UpdateExclusiveAccessExitBubbleContent(
     bool force_update) {}
 
 void FullscreenControllerTestWindow::OnExclusiveAccessUserInput() {}
+
+ExclusiveAccessBubbleViews*
+FullscreenControllerTestWindow::GetExclusiveAccessBubble() {
+  return nullptr;
+}
 
 }  // namespace
 

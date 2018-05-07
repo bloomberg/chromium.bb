@@ -102,6 +102,8 @@ class ChromeNativeAppWindowViewsAuraAsh
   content::WebContents* GetActiveWebContents() override;
   void UnhideDownloadShelf() override;
   void HideDownloadShelf() override;
+  bool ShouldHideUIForFullscreen() const override;
+  ExclusiveAccessBubbleViews* GetExclusiveAccessBubble() override;
 
   // ExclusiveAccessBubbleViewsContext:
   ExclusiveAccessManager* GetExclusiveAccessManager() override;

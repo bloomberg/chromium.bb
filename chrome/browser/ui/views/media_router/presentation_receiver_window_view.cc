@@ -359,6 +359,15 @@ void PresentationReceiverWindowView::UnhideDownloadShelf() {}
 
 void PresentationReceiverWindowView::HideDownloadShelf() {}
 
+bool PresentationReceiverWindowView::ShouldHideUIForFullscreen() const {
+  return false;
+}
+
+ExclusiveAccessBubbleViews*
+PresentationReceiverWindowView::GetExclusiveAccessBubble() {
+  return exclusive_access_bubble_.get();
+}
+
 ExclusiveAccessManager*
 PresentationReceiverWindowView::GetExclusiveAccessManager() {
   return &exclusive_access_manager_;
