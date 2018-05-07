@@ -43,6 +43,14 @@ bool StructTraits<blink::mojom::FetchAPIResponseDataView,
     out->blob = base::MakeRefCounted<storage::BlobHandle>(std::move(blob));
   }
 
+  out->side_data_blob_size = data.side_data_blob_size();
+  if (!out->side_data_blob_uuid.empty()) {
+    blink::mojom::BlobPtr side_data_blob =
+        data.TakeSideDataBlob<blink::mojom::BlobPtr>();
+    out->side_data_blob =
+        base::MakeRefCounted<storage::BlobHandle>(std::move(side_data_blob));
+  }
+
   return true;
 }
 

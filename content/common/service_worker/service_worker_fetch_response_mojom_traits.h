@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/numerics/safe_conversions.h"
+#include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_response.mojom.h"
@@ -16,8 +17,8 @@
 namespace mojo {
 
 template <>
-struct StructTraits<blink::mojom::FetchAPIResponseDataView,
-                    content::ServiceWorkerResponse> {
+struct CONTENT_EXPORT StructTraits<blink::mojom::FetchAPIResponseDataView,
+                                   content::ServiceWorkerResponse> {
   static const std::vector<GURL>& url_list(
       const content::ServiceWorkerResponse& response) {
     return response.url_list;
@@ -71,6 +72,21 @@ struct StructTraits<blink::mojom::FetchAPIResponseDataView,
   static const std::vector<std::string>& cors_exposed_header_names(
       const content::ServiceWorkerResponse& response) {
     return response.cors_exposed_header_names;
+  }
+  static std::string side_data_blob_uuid(
+      const content::ServiceWorkerResponse& response) {
+    return response.side_data_blob_uuid;
+  }
+  static uint64_t side_data_blob_size(
+      const content::ServiceWorkerResponse& response) {
+    return response.side_data_blob_size;
+  }
+  static blink::mojom::BlobPtr side_data_blob(
+      const content::ServiceWorkerResponse& response) {
+    if (response.side_data_blob) {
+      return response.side_data_blob->Clone();
+    }
+    return nullptr;
   }
   static bool Read(blink::mojom::FetchAPIResponseDataView,
                    content::ServiceWorkerResponse* output);

@@ -3,7 +3,13 @@
 // found in the LICENSE file.
 
 #include "content/common/service_worker/service_worker_types.h"
+#include "base/guid.h"
+#include "content/common/service_worker/service_worker_fetch_response_mojom_traits.h"
+#include "mojo/public/cpp/base/time_mojom_traits.h"
+#include "mojo/public/cpp/test_support/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_response.mojom.h"
+#include "url/mojom/url_gurl_mojom_traits.h"
 
 #include "net/base/load_flags.h"
 
@@ -37,6 +43,48 @@ TEST(ServiceWorkerFetchRequestTest, CacheModeTest) {
   EXPECT_EQ(FetchCacheMode::kUnspecifiedForceCacheMiss,
             ServiceWorkerFetchRequest::GetCacheModeFromLoadFlags(
                 net::LOAD_ONLY_FROM_CACHE | net::LOAD_BYPASS_CACHE));
+}
+
+// Tests that mojo serialization/deserialization of ServiceWorkerResponse works.
+TEST(ServiceWorkerResponseTest, StructTraits) {
+  ServiceWorkerResponse input;
+  ServiceWorkerResponse output;
+
+  input.url_list = {GURL("https://www.google.ca/"),
+                    GURL("https://www.google.com")};
+  input.status_code = 200;
+  input.status_text = "status_text";
+  input.response_type = network::mojom::FetchResponseType::kDefault;
+  input.headers.insert(
+      std::pair<std::string, std::string>("header1", "value1"));
+  input.headers.insert(
+      std::pair<std::string, std::string>("header2", "value2"));
+  input.blob_size = 123;
+  input.error = blink::mojom::ServiceWorkerResponseError::kUnknown;
+  input.response_time = base::Time::Now();
+  input.is_in_cache_storage = true;
+  input.cache_storage_cache_name = "cache_name";
+  input.side_data_blob_size = 456;
+
+  mojo::test::SerializeAndDeserialize<blink::mojom::FetchAPIResponse>(&input,
+                                                                      &output);
+
+  EXPECT_EQ(input.url_list, output.url_list);
+  EXPECT_EQ(input.status_code, output.status_code);
+  EXPECT_EQ(input.status_text, output.status_text);
+  EXPECT_EQ(input.response_type, output.response_type);
+  EXPECT_EQ(input.headers, output.headers);
+  EXPECT_EQ(input.blob_uuid, output.blob_uuid);
+  EXPECT_EQ(input.blob_size, output.blob_size);
+  EXPECT_EQ(input.blob, output.blob);
+  EXPECT_EQ(input.error, output.error);
+  EXPECT_EQ(input.response_time, output.response_time);
+  EXPECT_EQ(input.is_in_cache_storage, output.is_in_cache_storage);
+  EXPECT_EQ(input.cache_storage_cache_name, output.cache_storage_cache_name);
+  EXPECT_EQ(input.cors_exposed_header_names, output.cors_exposed_header_names);
+  EXPECT_EQ(input.side_data_blob_uuid, output.side_data_blob_uuid);
+  EXPECT_EQ(input.side_data_blob_size, output.side_data_blob_size);
+  EXPECT_EQ(input.side_data_blob, output.side_data_blob);
 }
 
 }  // namespace
