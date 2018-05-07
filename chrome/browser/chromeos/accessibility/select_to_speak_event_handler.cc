@@ -71,6 +71,9 @@ void SelectToSpeakEventHandler::SetSelectToSpeakStateSelecting(
     // If we are already in any state besides INACTIVE then there is no
     // work that needs to be done.
     state_ = SELECTION_REQUESTED;
+  } else if (!is_selecting) {
+    state_ = INACTIVE;
+    touch_id_ = ui::PointerDetails::kUnknownPointerId;
   }
 }
 
@@ -209,13 +212,26 @@ void SelectToSpeakEventHandler::OnTouchEvent(ui::TouchEvent* event) {
 
   // On a touch-down event, if selection was requested, we begin capturing
   // touch events.
-  if (event->type() == ui::ET_TOUCH_PRESSED && state_ == SELECTION_REQUESTED)
+  if (event->type() == ui::ET_TOUCH_PRESSED && state_ == SELECTION_REQUESTED &&
+      touch_id_ == ui::PointerDetails::kUnknownPointerId) {
     state_ = CAPTURING_TOUCH_ONLY;
+    touch_id_ = event->pointer_details().id;
+  }
+
+  if (touch_id_ != event->pointer_details().id) {
+    // If this was a different pointer, cancel the event and return early.
+    // We only want to track one touch pointer at a time.
+    CancelEvent(event);
+    return;
+  }
 
   // On a touch-up event, we go back to inactive state, but still forward the
   // event to the extension.
-  if (event->type() == ui::ET_TOUCH_RELEASED && state_ == CAPTURING_TOUCH_ONLY)
+  if (event->type() == ui::ET_TOUCH_RELEASED &&
+      state_ == CAPTURING_TOUCH_ONLY) {
     state_ = INACTIVE;
+    touch_id_ = ui::PointerDetails::kUnknownPointerId;
+  }
 
   // Create a mouse event to send to the extension, describing the touch.
   // This is done because there is no RenderWidgetHost::ForwardTouchEvent,
