@@ -650,6 +650,12 @@ void UiElement::AddChild(std::unique_ptr<UiElement> child) {
 }
 
 std::unique_ptr<UiElement> UiElement::RemoveChild(UiElement* to_remove) {
+  return ReplaceChild(to_remove, nullptr);
+}
+
+std::unique_ptr<UiElement> UiElement::ReplaceChild(
+    UiElement* to_remove,
+    std::unique_ptr<UiElement> to_add) {
   for (UiElement* current = this; current; current = current->parent())
     current->set_descendants_updated(true);
   DCHECK_EQ(this, to_remove->parent_);
@@ -663,8 +669,13 @@ std::unique_ptr<UiElement> UiElement::RemoveChild(UiElement* to_remove) {
   DCHECK(it != std::end(children_));
 
   std::unique_ptr<UiElement> removed(it->release());
-  children_.erase(it);
-  DCHECK_NE(old_size, children_.size());
+  if (to_add) {
+    to_add->parent_ = this;
+    *it = std::move(to_add);
+  } else {
+    children_.erase(it);
+    DCHECK_EQ(old_size - 1, children_.size());
+  }
   return removed;
 }
 

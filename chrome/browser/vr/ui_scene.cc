@@ -93,8 +93,9 @@ void UiScene::AddParentUiElement(UiElementName child,
   CHECK_NE(nullptr, child_ptr);
   auto* parent_ptr = child_ptr->parent();
   CHECK_NE(nullptr, parent_ptr);
-  element->AddChild(parent_ptr->RemoveChild(child_ptr));
-  parent_ptr->AddChild(std::move(element));
+  auto* element_ptr = element.get();
+  element_ptr->AddChild(
+      parent_ptr->ReplaceChild(child_ptr, std::move(element)));
   is_dirty_ = true;
 }
 
