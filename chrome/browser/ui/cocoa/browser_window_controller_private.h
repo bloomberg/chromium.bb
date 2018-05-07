@@ -141,16 +141,6 @@ enum class FullscreenSource {
 // to prevent redraws.
 - (void)setContentViewSubviews:(NSArray*)subviews;
 
-// There is a bug in Mavericks for applications linked against OSX 10.8 and
-// earlier. The bug requires Screens Have Separate Spaces to be enabled, and
-// for the window to be on a secondary screen. When AppKit Fullscreen is
-// invoked on the window, its final frame is 22pt too short. These methods
-// detect when the relevant conditions have been met so that a hack can be
-// applied to fix the size of the window.
-// http://crbug.com/396980
-+ (BOOL)systemSettingsRequireMavericksAppKitFullscreenHack;
-- (BOOL)shouldUseMavericksAppKitFullscreenHack;
-
 // Whether the instance should use a custom transition when animating into and
 // out of AppKit Fullscreen.
 - (BOOL)shouldUseCustomAppKitFullscreenTransition:(BOOL)enterFullScreen;

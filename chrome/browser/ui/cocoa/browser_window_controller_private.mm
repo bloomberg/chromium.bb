@@ -616,32 +616,6 @@ willPositionSheet:(NSWindow*)sheet
     }
   }
 
-  if ([self shouldUseMavericksAppKitFullscreenHack]) {
-    // Apply a hack to fix the size of the window. This is the last run of the
-    // MessageLoop where the hack will not work, so dispatch the hack to the
-    // top of the MessageLoop.
-    base::Callback<void(void)> callback = base::BindBlock(^{
-        if (![self isInAppKitFullscreen])
-          return;
-
-        // The window's frame should be exactly 22 points too short.
-        CGFloat kExpectedHeightDifference = 22;
-        NSRect currentFrame = [[self window] frame];
-        NSRect expectedFrame = [[[self window] screen] frame];
-        if (!NSEqualPoints(currentFrame.origin, expectedFrame.origin))
-          return;
-        if (currentFrame.size.width != expectedFrame.size.width)
-          return;
-        CGFloat heightDelta =
-            expectedFrame.size.height - currentFrame.size.height;
-        if (fabs(heightDelta - kExpectedHeightDifference) > 0.01)
-          return;
-
-        [[self window] setFrame:expectedFrame display:YES];
-    });
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
-  }
-
   if (notification)  // For System Fullscreen when non-nil.
     [self deregisterForContentViewResizeNotifications];
 
@@ -1083,24 +1057,6 @@ willPositionSheet:(NSWindow*)sheet
   }
 }
 
-+ (BOOL)systemSettingsRequireMavericksAppKitFullscreenHack {
-  if (!base::mac::IsOS10_9())
-    return NO;
-  return [NSScreen respondsToSelector:@selector(screensHaveSeparateSpaces)] &&
-         [NSScreen screensHaveSeparateSpaces];
-}
-
-- (BOOL)shouldUseMavericksAppKitFullscreenHack {
-  if (![[self class] systemSettingsRequireMavericksAppKitFullscreenHack])
-    return NO;
-  if (!enteringAppKitFullscreen_)
-    return NO;
-  if (enteringAppKitFullscreenOnPrimaryScreen_)
-    return NO;
-
-  return YES;
-}
-
 - (BOOL)shouldUseCustomAppKitFullscreenTransition:(BOOL)enterFullScreen {
   // Use the native transition on 10.13+: https://crbug.com/741478.
   if (base::mac::IsAtLeastOS10_13())
@@ -1113,15 +1069,6 @@ willPositionSheet:(NSWindow*)sheet
   NSView* root = [[self.window contentView] superview];
   if (!root.layer)
     return NO;
-
-  // AppKit on OSX 10.9 has a bug for applications linked against OSX 10.8 SDK
-  // and earlier. Under specific circumstances, it prevents the custom AppKit
-  // transition from working well. See http://crbug.com/396980 for more
-  // details.
-  if ([[self class] systemSettingsRequireMavericksAppKitFullscreenHack] &&
-      ![[[self window] screen] isEqual:[[NSScreen screens] firstObject]]) {
-    return NO;
-  }
 
   return YES;
 }
