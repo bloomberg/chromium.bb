@@ -364,13 +364,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestParameter(IN_GUEST_MODE, "defaultTaskDialogOnDownloads"),
         TestParameter(NOT_IN_GUEST_MODE, "defaultTaskDialogOnDrive")));
 
-#if defined(DISABLE_SLOW_FILESAPP_TESTS)
-#define MAYBE_GenericTask DISABLED_GenericTask
-#else
-#define MAYBE_GenericTask GenericTask
-#endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_GenericTask,
+    GenericTask,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE, "genericTaskIsNotExecuted"),
