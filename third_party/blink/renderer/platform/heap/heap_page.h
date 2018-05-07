@@ -646,54 +646,6 @@ class LargeObjectPage final : public BasePage {
 #endif
 };
 
-// |HeapDoesNotContainCache| provides a fast way to determine whether an
-// aribtrary pointer-sized word can be interpreted as a pointer to an area that
-// is managed by the garbage collected Blink heap. This is a cache of 'pages'
-// that have previously been determined to be wholly outside of the heap. The
-// size of these pages must be smaller than the allocation alignment of the heap
-// pages. We determine off-heap-ness by rounding down the pointer to the nearest
-// page and looking up the page in the cache. If there is a miss in the cache we
-// can determine the status of the pointer precisely using the heap
-// |RegionTree|.
-//
-// This is a negative cache, so it must be flushed when memory is added to the
-// heap.
-class HeapDoesNotContainCache {
-  USING_FAST_MALLOC(HeapDoesNotContainCache);
-
- public:
-  HeapDoesNotContainCache() : has_entries_(false) {
-    // Start by flushing the cache in a non-empty state to initialize all the
-    // cache entries.
-    for (size_t i = 0; i < kNumberOfEntries; ++i)
-      entries_[i] = nullptr;
-  }
-
-  void Flush();
-  bool IsEmpty() { return !has_entries_; }
-
-  // Perform a lookup in the cache.
-  //
-  // If lookup returns false, the argument address was not found in the cache
-  // and it is unknown if the address is in the Blink heap.
-  //
-  // If lookup returns true, the argument address was found in the cache which
-  // means the address is not in the heap.
-  PLATFORM_EXPORT bool Lookup(Address);
-
-  // Add an entry to the cache.
-  PLATFORM_EXPORT void AddEntry(Address);
-
- private:
-  static constexpr size_t kNumberOfEntriesLog2 = 12;
-  static constexpr size_t kNumberOfEntries = 1 << kNumberOfEntriesLog2;
-
-  static size_t GetHash(Address);
-
-  Address entries_[kNumberOfEntries];
-  bool has_entries_;
-};
-
 class FreeList {
   DISALLOW_NEW();
 

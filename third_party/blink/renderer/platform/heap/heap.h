@@ -55,6 +55,7 @@ namespace incremental_marking_test {
 class IncrementalMarkingScopeBase;
 }  // namespace incremental_marking_test
 
+class AddressCache;
 class PagePool;
 class RegionTree;
 
@@ -358,10 +359,7 @@ class PLATFORM_EXPORT ThreadHeap {
 
   size_t ObjectPayloadSizeForTesting();
 
-  void FlushHeapDoesNotContainCache();
-  bool IsAddressInHeapDoesNotContainCache(Address);
-  void FlushHeapDoesNotContainCacheIfNeeded();
-  void ShouldFlushHeapDoesNotContainCache();
+  AddressCache* address_cache() { return address_cache_.get(); }
 
   PagePool* GetFreePagePool() { return free_page_pool_.get(); }
 
@@ -499,7 +497,7 @@ class PLATFORM_EXPORT ThreadHeap {
   ThreadState* thread_state_;
   ThreadHeapStats stats_;
   std::unique_ptr<RegionTree> region_tree_;
-  std::unique_ptr<HeapDoesNotContainCache> heap_does_not_contain_cache_;
+  std::unique_ptr<AddressCache> address_cache_;
   std::unique_ptr<PagePool> free_page_pool_;
   std::unique_ptr<MarkingWorklist> marking_worklist_;
   std::unique_ptr<NotFullyConstructedWorklist> not_fully_constructed_worklist_;
@@ -515,7 +513,6 @@ class PLATFORM_EXPORT ThreadHeap {
   int vector_backing_arena_index_;
   size_t arena_ages_[BlinkGC::kNumberOfArenas];
   size_t current_arena_ages_;
-  bool should_flush_heap_does_not_contain_cache_;
 
   // Ideally we want to allocate an array of size |gcInfoTableMax| but it will
   // waste memory. Thus we limit the array size to 2^8 and share one entry

@@ -169,15 +169,6 @@ class PageMemory {
 
   WARN_UNUSED_RESULT bool Commit() {
     reserved_->MarkPageUsed(WritableStart());
-    // Check that in-use page isn't also marked as being a non-heap page
-    // by the current heap's negative cache. That cache is invalidated
-    // when allocating new pages, but crbug.com/649485 suggests that
-    // we do get out of sync somehow.
-    //
-    // TODO(sof): consider removing check once bug has been diagnosed
-    // and addressed.
-    CHECK(!ThreadState::Current()->Heap().IsAddressInHeapDoesNotContainCache(
-        WritableStart()));
     return writable_.Commit();
   }
 
