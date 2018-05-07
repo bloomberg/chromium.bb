@@ -169,8 +169,7 @@ struct TestEnvironment {
             TestParams(),
             group,
             deleter.Get(),
-            provider_client.MakePtr())),
-        factory_ptr(stream_factory.MakePtr()) {}
+            provider_client.MakePtr())) {}
 
   void RunUntilIdle() { env.RunUntilIdle(); }
 

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "content/browser/media/audio_input_stream_broker.h"
 #include "content/browser/media/audio_output_stream_broker.h"
 
 namespace content {
@@ -16,6 +17,22 @@ class AudioStreamBrokerFactoryImpl final : public AudioStreamBrokerFactory {
  public:
   AudioStreamBrokerFactoryImpl() = default;
   ~AudioStreamBrokerFactoryImpl() final = default;
+
+  std::unique_ptr<AudioStreamBroker> CreateAudioInputStreamBroker(
+      int render_process_id,
+      int render_frame_id,
+      const std::string& device_id,
+      const media::AudioParameters& params,
+      uint32_t shared_memory_count,
+      bool enable_agc,
+      AudioStreamBroker::DeleterCallback deleter,
+      mojom::RendererAudioInputStreamFactoryClientPtr renderer_factory_client)
+      final {
+    return std::make_unique<AudioInputStreamBroker>(
+        render_process_id, render_frame_id, device_id, params,
+        shared_memory_count, enable_agc, std::move(deleter),
+        std::move(renderer_factory_client));
+  }
 
   std::unique_ptr<AudioStreamBroker> CreateAudioOutputStreamBroker(
       int render_process_id,

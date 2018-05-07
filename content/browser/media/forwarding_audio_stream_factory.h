@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "content/browser/media/audio_stream_broker.h"
 #include "content/common/content_export.h"
+#include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"
 
@@ -41,9 +42,17 @@ class CONTENT_EXPORT ForwardingAudioStreamFactory final
 
   ~ForwardingAudioStreamFactory() final;
 
-  // TODO(https://crbug.com/803102): Add input streams, loopback, and muting.
+  // TODO(https://crbug.com/803102): Add loopback and muting streams.
   // TODO(https://crbug.com/787806): Automatically restore streams on audio
   // service restart.
+  void CreateInputStream(
+      RenderFrameHost* frame,
+      const std::string& device_id,
+      const media::AudioParameters& params,
+      uint32_t shared_memory_count,
+      bool enable_agc,
+      mojom::RendererAudioInputStreamFactoryClientPtr renderer_factory_client);
+
   void CreateOutputStream(
       RenderFrameHost* frame,
       const std::string& device_id,
@@ -62,6 +71,7 @@ class CONTENT_EXPORT ForwardingAudioStreamFactory final
 
   void CleanupStreamsBelongingTo(RenderFrameHost* render_frame_host);
 
+  void RemoveInput(AudioStreamBroker* handle);
   void RemoveOutput(AudioStreamBroker* handle);
 
   audio::mojom::StreamFactory* GetFactory();
@@ -84,6 +94,7 @@ class CONTENT_EXPORT ForwardingAudioStreamFactory final
   // remove it.
   int stream_id_counter_ = 0;
 
+  StreamBrokerSet inputs_;
   StreamBrokerSet outputs_;
 
   DISALLOW_COPY_AND_ASSIGN(ForwardingAudioStreamFactory);
