@@ -46,12 +46,16 @@ const char kHelpMsg[] = R"(
         For a given request if a whitelist rule matches as well as a blacklist
         rule, the whitelist rule is printed but not the blacklist rule.
 
-    * match_batch --input_file=<csv_file_path>
-        Like match, except it does the same for each request in a space
-        delimited file. The file format is:
-            <document_origin> <request_url> <type>
+    * match_batch --input_file=<json_file_path>
+        Like match, except it does the same for each request in a json file.
+        The file format is one json expression per line. An example line
+        follows (note: in the file it wouldn't have a line break like this
+        comment does):
 
-    * match_rules --input_file=<csv_file_path> --min_matches=<optional>
+        {"origin":"http://www.example.com/","request_url":"http://www.exam
+        ple.com/foo.js","request_type":"script"}
+
+    * match_rules --input_file=<json_file_path> --min_matches=<optional>
         For each record in the given whitespace delimited file (see
         match_batch for input file format), records the matching rule (see
         match command above) and prints all of the matched rules at the end.

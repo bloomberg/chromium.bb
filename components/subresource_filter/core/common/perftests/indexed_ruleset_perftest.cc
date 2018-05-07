@@ -36,9 +36,12 @@ class IndexedRulesetPerftest : public testing::Test {
   void SetUp() override {
     base::FilePath dir_path;
     base::PathService::Get(base::DIR_SOURCE_ROOT, &dir_path);
+
+    // The file contains the subresource URLs of the top-100 Alexa landing
+    // pages.
     base::FilePath request_path = dir_path.AppendASCII(
         "components/subresource_filter/core/common/perftests/"
-        "/data/httparchive_request_corpus.csv");
+        "/data/http_archive_top_100_page_requests");
     base::ReadFileToString(request_path, &requests_);
 
     unindexed_path_ = dir_path.AppendASCII(
