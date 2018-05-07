@@ -554,10 +554,10 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
   void SuspendVideoCaptureDevices(bool suspend);
 #endif
 
-#if defined(OS_WIN) || (defined(OS_POSIX) && !defined(OS_MACOSX))
-  void UpdateFontRenderingFromRendererPrefs();
-#else
+#if defined(OS_MACOSX)
   void UpdateFontRenderingFromRendererPrefs() {}
+#else
+  void UpdateFontRenderingFromRendererPrefs();
 #endif
 
   // In OOPIF-enabled modes, this tells each RenderFrame with a pending state
@@ -585,7 +585,7 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
 // Platform specific theme preferences if any are updated here.
 #if defined(OS_WIN)
   void UpdateThemePrefs();
-#else
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   void UpdateThemePrefs() {}
 #endif
 

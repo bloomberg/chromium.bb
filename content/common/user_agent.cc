@@ -13,12 +13,10 @@
 #include "build/build_config.h"
 #include "build/util/webkit_version.h"
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-#include <sys/utsname.h>
-#endif
-
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
+#elif (defined(OS_POSIX) && !defined(OS_MACOSX)) || defined(OS_FUCHSIA)
+#include <sys/utsname.h>
 #endif
 
 namespace content {
@@ -47,21 +45,6 @@ std::string BuildOSCpuInfo() {
                                                &os_bugfix_version);
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
-  // Should work on any Posix system.
-  struct utsname unixinfo;
-  uname(&unixinfo);
-
-  std::string cputype;
-  // special case for biarch systems
-  if (strcmp(unixinfo.machine, "x86_64") == 0 &&
-      sizeof(void*) == sizeof(int32_t)) {  // NOLINT
-    cputype.assign("i686 (x86_64)");
-  } else {
-    cputype.assign(unixinfo.machine);
-  }
-#endif
-
 #if defined(OS_WIN)
   std::string architecture_token;
   base::win::OSInfo* os_info = base::win::OSInfo::GetInstance();
@@ -75,9 +58,7 @@ std::string BuildOSCpuInfo() {
     else if (windows_architecture == base::win::OSInfo::IA64_ARCHITECTURE)
       architecture_token = "; Win64; IA64";
   }
-#endif
-
-#if defined(OS_ANDROID)
+#elif defined(OS_ANDROID)
   std::string android_version_str = base::SysInfo::OperatingSystemVersion();
 
   std::string android_info_str;
@@ -98,6 +79,19 @@ std::string BuildOSCpuInfo() {
       android_info_str += ";";
     }
     android_info_str += " Build/" + android_build_id;
+  }
+#elif (defined(OS_POSIX) && !defined(OS_MACOSX)) || defined(OS_FUCHSIA)
+  // Should work on any Posix system.
+  struct utsname unixinfo;
+  uname(&unixinfo);
+
+  std::string cputype;
+  // special case for biarch systems
+  if (strcmp(unixinfo.machine, "x86_64") == 0 &&
+      sizeof(void*) == sizeof(int32_t)) {  // NOLINT
+    cputype.assign("i686 (x86_64)");
+  } else {
+    cputype.assign(unixinfo.machine);
   }
 #endif
 
@@ -124,10 +118,10 @@ std::string BuildOSCpuInfo() {
       "Android %s%s",
       android_version_str.c_str(),
       android_info_str.c_str()
-#else
-      "%s %s",
-      unixinfo.sysname,  // e.g. Linux
-      cputype.c_str()    // e.g. i686
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+                      "%s %s",
+                      unixinfo.sysname,  // e.g. Linux
+                      cputype.c_str()    // e.g. i686
 #endif
   );  // NOLINT
 
@@ -144,7 +138,7 @@ std::string getUserAgentPlatform() {
       "X11; ";           // strange, but that's what Firefox uses
 #elif defined(OS_ANDROID)
       "Linux; ";
-#else
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
       "Unknown; ";
 #endif
 }

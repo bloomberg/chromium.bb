@@ -711,7 +711,7 @@ blink::Platform::FileHandle BlinkPlatformImpl::DatabaseOpenFile(
     int desired_flags) {
 #if defined(OS_WIN)
   return INVALID_HANDLE_VALUE;
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   return -1;
 #endif
 }
