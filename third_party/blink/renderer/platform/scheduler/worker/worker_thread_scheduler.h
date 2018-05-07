@@ -47,7 +47,6 @@ class PLATFORM_EXPORT WorkerThreadScheduler : public NonMainThreadScheduler,
 
   // NonMainThreadScheduler implementation:
   scoped_refptr<WorkerTaskQueue> DefaultTaskQueue() override;
-  void Init() override;
   void OnTaskCompleted(WorkerTaskQueue* worker_task_queue,
                        const TaskQueue::Task& task,
                        base::TimeTicks start,
@@ -71,6 +70,9 @@ class PLATFORM_EXPORT WorkerThreadScheduler : public NonMainThreadScheduler,
   scoped_refptr<WorkerTaskQueue> ControlTaskQueue();
 
  protected:
+  // NonMainThreadScheduler implementation:
+  void InitImpl() override;
+
   // IdleHelper::Delegate implementation:
   bool CanEnterLongIdlePeriod(
       base::TimeTicks now,

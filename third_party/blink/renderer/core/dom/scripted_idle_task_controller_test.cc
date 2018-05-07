@@ -30,7 +30,7 @@ class MockScriptedIdleTaskControllerScheduler final : public ThreadScheduler {
   base::SingleThreadTaskRunner* V8TaskRunner() override { return nullptr; }
   void Shutdown() override {}
   bool ShouldYieldForHighPriorityWork() override { return should_yield_; }
-  bool CanExceedIdleDeadlineIfRequired() override { return false; }
+  bool CanExceedIdleDeadlineIfRequired() const override { return false; }
   void PostIdleTask(const base::Location&,
                     WebThread::IdleTask idle_task) override {
     idle_task_ = std::move(idle_task);

@@ -32,7 +32,7 @@ class PLATFORM_EXPORT WebSchedulerImpl : public ThreadScheduler {
   // ThreadScheduler implementation:
   void Shutdown() override;
   bool ShouldYieldForHighPriorityWork() override;
-  bool CanExceedIdleDeadlineIfRequired() override;
+  bool CanExceedIdleDeadlineIfRequired() const override;
   void PostIdleTask(const base::Location& location,
                     WebThread::IdleTask task) override;
   void PostNonNestableIdleTask(const base::Location& location,

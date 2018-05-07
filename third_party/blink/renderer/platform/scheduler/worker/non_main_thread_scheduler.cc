@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "third_party/blink/renderer/platform/scheduler/child/task_runner_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_thread_scheduler.h"
 
 namespace blink {
@@ -25,11 +26,66 @@ std::unique_ptr<NonMainThreadScheduler> NonMainThreadScheduler::Create(
       thread_type, TaskQueueManager::TakeOverCurrentThread(), proxy);
 }
 
+void NonMainThreadScheduler::Init() {
+  InitImpl();
+
+  // DefaultTaskQueue() is a virtual function, so it can't be called in the
+  // constructor. Also, DefaultTaskQueue() checks if InitImpl() is called.
+  // Therefore, v8_task_runner_ needs to be initialized here.
+  // TODO(kraynov): Ditch kDeprecatedNone here.
+  v8_task_runner_ =
+      TaskRunnerImpl::Create(DefaultTaskQueue(), TaskType::kDeprecatedNone);
+}
+
 scoped_refptr<WorkerTaskQueue> NonMainThreadScheduler::CreateTaskRunner() {
   helper_->CheckOnValidThread();
   return helper_->NewTaskQueue(TaskQueue::Spec("worker_tq")
                                    .SetShouldMonitorQuiescence(true)
                                    .SetTimeDomain(nullptr));
+}
+
+void NonMainThreadScheduler::RunIdleTask(blink::WebThread::IdleTask task,
+                                         base::TimeTicks deadline) {
+  std::move(task).Run((deadline - base::TimeTicks()).InSecondsF());
+}
+
+void NonMainThreadScheduler::PostIdleTask(const base::Location& location,
+                                          blink::WebThread::IdleTask task) {
+  IdleTaskRunner()->PostIdleTask(
+      location,
+      base::BindOnce(&NonMainThreadScheduler::RunIdleTask, std::move(task)));
+}
+
+void NonMainThreadScheduler::PostNonNestableIdleTask(
+    const base::Location& location,
+    blink::WebThread::IdleTask task) {
+  IdleTaskRunner()->PostNonNestableIdleTask(
+      location,
+      base::BindOnce(&NonMainThreadScheduler::RunIdleTask, std::move(task)));
+}
+
+base::SingleThreadTaskRunner* NonMainThreadScheduler::V8TaskRunner() {
+  return v8_task_runner_.get();
+}
+
+base::SingleThreadTaskRunner* NonMainThreadScheduler::CompositorTaskRunner() {
+  return nullptr;
+}
+
+std::unique_ptr<blink::PageScheduler>
+NonMainThreadScheduler::CreatePageScheduler(PageScheduler::Delegate* delegate) {
+  NOTREACHED();
+  return nullptr;
+}
+
+std::unique_ptr<NonMainThreadScheduler::RendererPauseHandle>
+NonMainThreadScheduler::PauseScheduler() {
+  return nullptr;
+}
+
+base::TimeTicks NonMainThreadScheduler::MonotonicallyIncreasingVirtualTime()
+    const {
+  return base::TimeTicks::Now();
 }
 
 }  // namespace scheduler

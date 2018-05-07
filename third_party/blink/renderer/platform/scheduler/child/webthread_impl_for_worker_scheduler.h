@@ -25,7 +25,6 @@ namespace blink {
 namespace scheduler {
 class SingleThreadIdleTaskRunner;
 class TaskQueue;
-class WebSchedulerImpl;
 class NonMainThreadScheduler;
 class WorkerSchedulerProxy;
 
@@ -76,7 +75,6 @@ class PLATFORM_EXPORT WebThreadImplForWorkerScheduler
   const WebThreadType thread_type_;
   std::unique_ptr<scheduler::WorkerSchedulerProxy> worker_scheduler_proxy_;
   std::unique_ptr<scheduler::NonMainThreadScheduler> non_main_thread_scheduler_;
-  std::unique_ptr<scheduler::WebSchedulerImpl> web_scheduler_;
   scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner_;
   scoped_refptr<TaskQueue> task_queue_;
   scoped_refptr<scheduler::SingleThreadIdleTaskRunner> idle_task_runner_;

@@ -34,7 +34,7 @@ bool WebSchedulerImpl::ShouldYieldForHighPriorityWork() {
   return thread_scheduler_->ShouldYieldForHighPriorityWork();
 }
 
-bool WebSchedulerImpl::CanExceedIdleDeadlineIfRequired() {
+bool WebSchedulerImpl::CanExceedIdleDeadlineIfRequired() const {
   return thread_scheduler_->CanExceedIdleDeadlineIfRequired();
 }
 

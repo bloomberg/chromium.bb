@@ -32,16 +32,15 @@ class PLATFORM_EXPORT CompositorThreadScheduler
 
   ~CompositorThreadScheduler() override;
 
-  // WorkerScheduler:
+  // NonMainThreadScheduler:
   scoped_refptr<WorkerTaskQueue> DefaultTaskQueue() override;
-  void Init() override;
   void OnTaskCompleted(WorkerTaskQueue* worker_task_queue,
                        const TaskQueue::Task& task,
                        base::TimeTicks start,
                        base::TimeTicks end,
                        base::Optional<base::TimeDelta> thread_time) override;
 
-  // ChildScheduler:
+  // WebThreadScheduler:
   scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner() override;
   scoped_refptr<scheduler::SingleThreadIdleTaskRunner> IdleTaskRunner()
       override;
@@ -58,6 +57,10 @@ class PLATFORM_EXPORT CompositorThreadScheduler
   base::TimeTicks WillProcessIdleTask() override;
   void DidProcessIdleTask() override;
   base::TimeTicks NowTicks() override;
+
+ protected:
+  // NonMainThreadScheduler:
+  void InitImpl() override;
 
  private:
   base::Thread* thread_;
