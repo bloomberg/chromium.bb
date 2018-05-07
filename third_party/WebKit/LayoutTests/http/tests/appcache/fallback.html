@@ -143,11 +143,24 @@ function test6()
 {
     setNetworkEnabled(false);
 
-    if (load(testURL) != load("resources/simple.txt")) {
+    var req = new XMLHttpRequest;
+    req.open("GET", testURL);
+    req.onerror = function() {
         log("FAIL: Loading an URL from fallback namespace when network is disabled returned unexpected response");
         hadError = true;
+        finish();
     }
+    req.onload = function() {
+        if (req.responseText != "Hello, World!") {
+            hadError = true;
+            log("FAIL: Loading an URL from fallback namespace when network is disabled returned unexpected response");
+        }
+        finish();
+    }
+    req.send("");
+}
 
+function finish() {
     log(hadError ? "FAILURE" : "SUCCESS");
     if (window.testRunner)
         testRunner.notifyDone();

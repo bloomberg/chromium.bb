@@ -26,6 +26,8 @@ struct CONTENT_EXPORT SyncLoadResponse {
 
   SyncLoadResponse& operator=(SyncLoadResponse&& other);
 
+  base::Optional<net::RedirectInfo> redirect_info;
+
   network::ResourceResponseInfo info;
 
   // The response error code.
