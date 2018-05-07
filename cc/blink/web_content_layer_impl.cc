@@ -8,9 +8,8 @@
 
 #include "base/command_line.h"
 #include "cc/base/switches.h"
-#include "cc/blink/web_display_item_list_impl.h"
+#include "cc/layers/content_layer_client.h"
 #include "cc/layers/picture_layer.h"
-#include "third_party/blink/public/platform/web_content_layer_client.h"
 #include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/platform/web_rect.h"
@@ -21,30 +20,7 @@ using cc::PictureLayer;
 
 namespace cc_blink {
 
-static blink::WebContentLayerClient::PaintingControlSetting
-PaintingControlToWeb(
-    cc::ContentLayerClient::PaintingControlSetting painting_control) {
-  switch (painting_control) {
-    case cc::ContentLayerClient::PAINTING_BEHAVIOR_NORMAL:
-      return blink::WebContentLayerClient::kPaintDefaultBehavior;
-    case cc::ContentLayerClient::PAINTING_BEHAVIOR_NORMAL_FOR_TEST:
-      return blink::WebContentLayerClient::kPaintDefaultBehaviorForTest;
-    case cc::ContentLayerClient::DISPLAY_LIST_CONSTRUCTION_DISABLED:
-      return blink::WebContentLayerClient::kDisplayListConstructionDisabled;
-    case cc::ContentLayerClient::DISPLAY_LIST_CACHING_DISABLED:
-      return blink::WebContentLayerClient::kDisplayListCachingDisabled;
-    case cc::ContentLayerClient::DISPLAY_LIST_PAINTING_DISABLED:
-      return blink::WebContentLayerClient::kDisplayListPaintingDisabled;
-    case cc::ContentLayerClient::SUBSEQUENCE_CACHING_DISABLED:
-      return blink::WebContentLayerClient::kSubsequenceCachingDisabled;
-    case cc::ContentLayerClient::PARTIAL_INVALIDATION:
-      return blink::WebContentLayerClient::kPartialInvalidation;
-  }
-  NOTREACHED();
-  return blink::WebContentLayerClient::kPaintDefaultBehavior;
-}
-
-WebContentLayerImpl::WebContentLayerImpl(blink::WebContentLayerClient* client)
+WebContentLayerImpl::WebContentLayerImpl(cc::ContentLayerClient* client)
     : client_(client) {
   layer_ = std::make_unique<WebLayerImpl>(PictureLayer::Create(this));
 }
@@ -73,22 +49,16 @@ gfx::Rect WebContentLayerImpl::PaintableRegion() {
 
 scoped_refptr<cc::DisplayItemList>
 WebContentLayerImpl::PaintContentsToDisplayList(
-    cc::ContentLayerClient::PaintingControlSetting painting_control) {
-  auto display_list = base::MakeRefCounted<cc::DisplayItemList>();
-  if (client_) {
-    WebDisplayItemListImpl list(display_list.get());
-    client_->PaintContents(&list, PaintingControlToWeb(painting_control));
-  }
-  display_list->Finalize();
-  return display_list;
+    PaintingControlSetting painting_control) {
+  return client_->PaintContentsToDisplayList(painting_control);
 }
 
 bool WebContentLayerImpl::FillsBoundsCompletely() const {
-  return false;
+  return client_->FillsBoundsCompletely();
 }
 
 size_t WebContentLayerImpl::GetApproximateUnsharedMemoryUsage() const {
-  return client_->ApproximateUnsharedMemoryUsage();
+  return client_->GetApproximateUnsharedMemoryUsage();
 }
 
 }  // namespace cc_blink

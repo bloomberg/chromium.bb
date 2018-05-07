@@ -28,11 +28,12 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GRAPHICS_LAYER_H_
 
 #include <memory>
+
 #include "base/memory/weak_ptr.h"
 #include "cc/input/overscroll_behavior.h"
+#include "cc/layers/content_layer_client.h"
 #include "cc/layers/layer_client.h"
 #include "third_party/blink/public/platform/web_content_layer.h"
-#include "third_party/blink/public/platform/web_content_layer_client.h"
 #include "third_party/blink/public/platform/web_image_layer.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
@@ -73,7 +74,7 @@ typedef Vector<GraphicsLayer*, 64> GraphicsLayerVector;
 // which may have associated transformation and animations.
 class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
                                       public DisplayItemClient,
-                                      private WebContentLayerClient {
+                                      private cc::ContentLayerClient {
   WTF_MAKE_NONCOPYABLE(GraphicsLayer);
   USING_FAST_MALLOC(GraphicsLayer);
 
@@ -282,8 +283,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   void SetElementId(const CompositorElementId&);
   CompositorElementId GetElementId() const;
 
-  WebContentLayerClient& WebContentLayerClientForTesting() { return *this; }
-
   // DisplayItemClient methods
   String DebugName() const final { return client_.DebugName(this); }
   LayoutRect VisualRect() const override;
@@ -322,11 +321,12 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   friend class GraphicsLayerTest;
 
  private:
-  // WebContentLayerClient implementation.
+  // cc::ContentLayerClient implementation.
   gfx::Rect PaintableRegion() final { return InterestRect(); }
-  void PaintContents(WebDisplayItemList*,
-                     PaintingControlSetting = kPaintDefaultBehavior) final;
-  size_t ApproximateUnsharedMemoryUsage() const final;
+  scoped_refptr<cc::DisplayItemList> PaintContentsToDisplayList(
+      PaintingControlSetting painting_control) final;
+  bool FillsBoundsCompletely() const override { return false; }
+  size_t GetApproximateUnsharedMemoryUsage() const final;
 
   void PaintRecursivelyInternal(Vector<GraphicsLayer*>& repainted_layers);
 

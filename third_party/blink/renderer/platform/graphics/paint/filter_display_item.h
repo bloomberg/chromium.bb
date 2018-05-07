@@ -28,8 +28,8 @@ class PLATFORM_EXPORT BeginFilterDisplayItem final
         origin_(origin) {}
 
   void Replay(GraphicsContext&) const override;
-  void AppendToWebDisplayItemList(const FloatSize&,
-                                  WebDisplayItemList*) const override;
+  void AppendToDisplayItemList(const FloatSize&,
+                               cc::DisplayItemList&) const override;
   bool DrawsContent() const override;
 
  private:
@@ -61,8 +61,8 @@ class PLATFORM_EXPORT EndFilterDisplayItem final : public PairedEndDisplayItem {
       : PairedEndDisplayItem(client, kEndFilter, sizeof(*this)) {}
 
   void Replay(GraphicsContext&) const override;
-  void AppendToWebDisplayItemList(const FloatSize&,
-                                  WebDisplayItemList*) const override;
+  void AppendToDisplayItemList(const FloatSize&,
+                               cc::DisplayItemList&) const override;
 
  private:
 #if DCHECK_IS_ON()

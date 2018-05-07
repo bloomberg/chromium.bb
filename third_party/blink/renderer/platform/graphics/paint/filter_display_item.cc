@@ -4,7 +4,8 @@
 
 #include "third_party/blink/renderer/platform/graphics/paint/filter_display_item.h"
 
-#include "third_party/blink/public/platform/web_display_item_list.h"
+#include "cc/paint/display_item_list.h"
+#include "cc/paint/render_surface_filters.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -21,11 +22,28 @@ void BeginFilterDisplayItem::Replay(GraphicsContext& context) const {
   context.Translate(-origin_.X(), -origin_.Y());
 }
 
-void BeginFilterDisplayItem::AppendToWebDisplayItemList(
+void BeginFilterDisplayItem::AppendToDisplayItemList(
     const FloatSize&,
-    WebDisplayItemList* list) const {
-  list->AppendFilterItem(compositor_filter_operations_.AsCcFilterOperations(),
-                         bounds_, origin_);
+    cc::DisplayItemList& list) const {
+  list.StartPaint();
+
+  // TODO(danakj): Skip the save+translate+restore if the origin is 0,0. This
+  // should be easier to do when this code is part of the blink DisplayItem
+  // which can keep related state.
+  list.push<cc::SaveOp>();
+  list.push<cc::TranslateOp>(origin_.X(), origin_.Y());
+
+  cc::PaintFlags flags;
+  flags.setImageFilter(cc::RenderSurfaceFilters::BuildImageFilter(
+      compositor_filter_operations_.AsCcFilterOperations(),
+      static_cast<gfx::SizeF>(bounds_.Size())));
+
+  SkRect layer_bounds = bounds_;
+  layer_bounds.offset(-origin_.X(), -origin_.Y());
+  list.push<cc::SaveLayerOp>(&layer_bounds, &flags);
+  list.push<cc::TranslateOp>(-origin_.X(), -origin_.Y());
+
+  list.EndPaintOfPairedBegin(EnclosingIntRect(bounds_));
 }
 
 bool BeginFilterDisplayItem::DrawsContent() const {
@@ -46,10 +64,13 @@ void EndFilterDisplayItem::Replay(GraphicsContext& context) const {
   context.Restore();
 }
 
-void EndFilterDisplayItem::AppendToWebDisplayItemList(
+void EndFilterDisplayItem::AppendToDisplayItemList(
     const FloatSize&,
-    WebDisplayItemList* list) const {
-  list->AppendEndFilterItem();
+    cc::DisplayItemList& list) const {
+  list.StartPaint();
+  list.push<cc::RestoreOp>();  // For SaveLayerOp.
+  list.push<cc::RestoreOp>();  // For SaveOp.
+  list.EndPaintOfPairedEnd();
 }
 
 }  // namespace blink

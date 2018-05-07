@@ -35,9 +35,9 @@ void ForeignLayerDisplayItem::Replay(GraphicsContext&) const {
   NOTREACHED();
 }
 
-void ForeignLayerDisplayItem::AppendToWebDisplayItemList(
+void ForeignLayerDisplayItem::AppendToDisplayItemList(
     const FloatSize&,
-    WebDisplayItemList*) const {
+    cc::DisplayItemList&) const {
   NOTREACHED();
 }
 

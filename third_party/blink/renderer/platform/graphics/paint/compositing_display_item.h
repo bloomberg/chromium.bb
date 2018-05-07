@@ -30,8 +30,8 @@ class PLATFORM_EXPORT BeginCompositingDisplayItem final
   }
 
   void Replay(GraphicsContext&) const override;
-  void AppendToWebDisplayItemList(const FloatSize&,
-                                  WebDisplayItemList*) const override;
+  void AppendToDisplayItemList(const FloatSize&,
+                               cc::DisplayItemList&) const override;
 
  private:
 #if DCHECK_IS_ON()
@@ -66,8 +66,8 @@ class PLATFORM_EXPORT EndCompositingDisplayItem final
       : PairedEndDisplayItem(client, kEndCompositing, sizeof(*this)) {}
 
   void Replay(GraphicsContext&) const override;
-  void AppendToWebDisplayItemList(const FloatSize&,
-                                  WebDisplayItemList*) const override;
+  void AppendToDisplayItemList(const FloatSize&,
+                               cc::DisplayItemList&) const override;
 
  private:
 #if DCHECK_IS_ON()

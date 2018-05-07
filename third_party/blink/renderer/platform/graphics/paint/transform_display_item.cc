@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/paint/transform_display_item.h"
 
-#include "third_party/blink/public/platform/web_display_item_list.h"
+#include "cc/paint/display_item_list.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/transforms/affine_transform.h"
 
@@ -15,10 +15,14 @@ void BeginTransformDisplayItem::Replay(GraphicsContext& context) const {
   context.ConcatCTM(transform_);
 }
 
-void BeginTransformDisplayItem::AppendToWebDisplayItemList(
+void BeginTransformDisplayItem::AppendToDisplayItemList(
     const FloatSize&,
-    WebDisplayItemList* list) const {
-  list->AppendTransformItem(AffineTransformToSkMatrix(transform_));
+    cc::DisplayItemList& list) const {
+  list.StartPaint();
+  list.push<cc::SaveOp>();
+  if (!transform_.IsIdentity())
+    list.push<cc::ConcatOp>(AffineTransformToSkMatrix(transform_));
+  list.EndPaintOfPairedBegin();
 }
 
 #if DCHECK_IS_ON()
@@ -32,10 +36,12 @@ void EndTransformDisplayItem::Replay(GraphicsContext& context) const {
   context.Restore();
 }
 
-void EndTransformDisplayItem::AppendToWebDisplayItemList(
+void EndTransformDisplayItem::AppendToDisplayItemList(
     const FloatSize&,
-    WebDisplayItemList* list) const {
-  list->AppendEndTransformItem();
+    cc::DisplayItemList& list) const {
+  list.StartPaint();
+  list.push<cc::RestoreOp>();
+  list.EndPaintOfPairedEnd();
 }
 
 }  // namespace blink

@@ -28,9 +28,9 @@ void ScrollHitTestDisplayItem::Replay(GraphicsContext&) const {
   NOTREACHED();
 }
 
-void ScrollHitTestDisplayItem::AppendToWebDisplayItemList(
+void ScrollHitTestDisplayItem::AppendToDisplayItemList(
     const FloatSize&,
-    WebDisplayItemList*) const {
+    cc::DisplayItemList&) const {
   NOTREACHED();
 }
 

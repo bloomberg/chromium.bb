@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
 
+#include "cc/paint/display_item_list.h"
+
 namespace blink {
 
 struct SameSizeAsDisplayItem {

@@ -15,8 +15,8 @@
 #include "cc/layers/content_layer_client.h"
 #include "third_party/blink/public/platform/web_content_layer.h"
 
-namespace blink {
-class WebContentLayerClient;
+namespace cc {
+class ContentLayerClient;
 }
 
 namespace cc_blink {
@@ -24,7 +24,7 @@ namespace cc_blink {
 class WebContentLayerImpl : public blink::WebContentLayer,
                             public cc::ContentLayerClient {
  public:
-  CC_BLINK_EXPORT explicit WebContentLayerImpl(blink::WebContentLayerClient*);
+  CC_BLINK_EXPORT explicit WebContentLayerImpl(cc::ContentLayerClient*);
 
   ~WebContentLayerImpl() override;
 
@@ -42,7 +42,7 @@ class WebContentLayerImpl : public blink::WebContentLayer,
   size_t GetApproximateUnsharedMemoryUsage() const override;
 
   std::unique_ptr<WebLayerImpl> layer_;
-  blink::WebContentLayerClient* client_;
+  cc::ContentLayerClient* client_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebContentLayerImpl);

@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/paint/clip_display_item.h"
 
-#include "third_party/blink/public/platform/web_display_item_list.h"
+#include "cc/paint/display_item_list.h"
 #include "third_party/blink/renderer/platform/geometry/float_rounded_rect.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/skia/include/core/SkScalar.h"
@@ -25,24 +25,35 @@ void ClipDisplayItem::Replay(GraphicsContext& context) const {
     context.ClipRoundedRect(rounded_rect);
 }
 
-void ClipDisplayItem::AppendToWebDisplayItemList(
-    const FloatSize&,
-    WebDisplayItemList* list) const {
-  WebVector<SkRRect> web_rounded_rects(rounded_rect_clips_.size());
-  for (size_t i = 0; i < rounded_rect_clips_.size(); ++i)
-    web_rounded_rects[i] = rounded_rect_clips_[i];
-
-  list->AppendClipItem(clip_rect_, web_rounded_rects);
+void ClipDisplayItem::AppendToDisplayItemList(const FloatSize&,
+                                              cc::DisplayItemList& list) const {
+  list.StartPaint();
+  list.push<cc::SaveOp>();
+  list.push<cc::ClipRectOp>(clip_rect_, SkClipOp::kIntersect,
+                            /*antialias=*/true);
+  for (const FloatRoundedRect& rrect : rounded_rect_clips_) {
+    SkRRect skrrect = rrect;
+    if (skrrect.isRect()) {
+      list.push<cc::ClipRectOp>(skrrect.rect(), SkClipOp::kIntersect,
+                                /*antialias=*/true);
+    } else {
+      list.push<cc::ClipRRectOp>(skrrect, SkClipOp::kIntersect,
+                                 /*antialias=*/true);
+    }
+  }
+  list.EndPaintOfPairedBegin();
 }
 
 void EndClipDisplayItem::Replay(GraphicsContext& context) const {
   context.Restore();
 }
 
-void EndClipDisplayItem::AppendToWebDisplayItemList(
+void EndClipDisplayItem::AppendToDisplayItemList(
     const FloatSize&,
-    WebDisplayItemList* list) const {
-  list->AppendEndClipItem();
+    cc::DisplayItemList& list) const {
+  list.StartPaint();
+  list.push<cc::RestoreOp>();
+  list.EndPaintOfPairedEnd();
 }
 
 #if DCHECK_IS_ON()

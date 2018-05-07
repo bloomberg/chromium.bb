@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_artifact.h"
 
 #include "cc/paint/display_item_list.h"
-#include "third_party/blink/public/platform/web_display_item_list.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_chunks_to_cc_layer.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
@@ -113,12 +112,11 @@ void PaintArtifact::Replay(PaintCanvas& canvas,
 }
 
 DISABLE_CFI_PERF
-void PaintArtifact::AppendToWebDisplayItemList(
-    const FloatSize& visual_rect_offset,
-    WebDisplayItemList* list) const {
-  TRACE_EVENT0("blink,benchmark", "PaintArtifact::appendToWebDisplayItemList");
+void PaintArtifact::AppendToDisplayItemList(const FloatSize& visual_rect_offset,
+                                            cc::DisplayItemList& list) const {
+  TRACE_EVENT0("blink,benchmark", "PaintArtifact::AppendToDisplayItemList");
   for (const DisplayItem& item : display_item_list_)
-    item.AppendToWebDisplayItemList(visual_rect_offset, list);
+    item.AppendToDisplayItemList(visual_rect_offset, list);
 }
 
 void PaintArtifact::FinishCycle() {

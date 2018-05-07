@@ -4,13 +4,13 @@
 
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
 
-#include "SkTypes.h"
+#include "cc/paint/display_item_list.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/web_display_item_list.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/testing/fake_display_item_client.h"
+#include "third_party/skia/include/core/SkTypes.h"
 
 namespace blink {
 namespace {
@@ -20,13 +20,6 @@ using testing::_;
 class DrawingDisplayItemTest : public testing::Test {
  protected:
   FakeDisplayItemClient client_;
-};
-
-class MockWebDisplayItemList : public WebDisplayItemList {
- public:
-  MOCK_METHOD2(AppendDrawingItem,
-               void(const gfx::Rect& visual_rect,
-                    sk_sp<const cc::PaintRecord>));
 };
 
 static sk_sp<PaintRecord> CreateRectRecord(const FloatRect& record_bounds) {
@@ -60,18 +53,17 @@ TEST_F(DrawingDisplayItemTest, VisualRectAndDrawingBounds) {
                           CreateRectRecord(record_bounds));
   EXPECT_EQ(FloatRect(drawing_bounds), item.VisualRect());
 
-  MockWebDisplayItemList list1;
-  gfx::Rect expected_rect = EnclosingIntRect(drawing_bounds);
-  EXPECT_CALL(list1, AppendDrawingItem(expected_rect, _)).Times(1);
-  item.AppendToWebDisplayItemList(FloatSize(), &list1);
+  auto list1 = base::MakeRefCounted<cc::DisplayItemList>();
+  item.AppendToDisplayItemList(FloatSize(), *list1);
+  EXPECT_EQ(EnclosingIntRect(drawing_bounds), list1->VisualRectForTesting(0));
 
   FloatSize offset(2.1, 3.6);
+  auto list2 = base::MakeRefCounted<cc::DisplayItemList>();
+  item.AppendToDisplayItemList(offset, *list2);
   FloatRect visual_rect_with_offset(drawing_bounds);
   visual_rect_with_offset.Move(-offset);
-  gfx::Rect expected_visual_rect = EnclosingIntRect(visual_rect_with_offset);
-  MockWebDisplayItemList list2;
-  EXPECT_CALL(list2, AppendDrawingItem(expected_visual_rect, _)).Times(1);
-  item.AppendToWebDisplayItemList(offset, &list2);
+  EXPECT_EQ(EnclosingIntRect(visual_rect_with_offset),
+            list2->VisualRectForTesting(0));
 }
 
 TEST_F(DrawingDisplayItemTest, Equals) {

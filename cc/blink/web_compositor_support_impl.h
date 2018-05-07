@@ -9,8 +9,11 @@
 #include "base/memory/ref_counted.h"
 #include "cc/blink/cc_blink_export.h"
 #include "third_party/blink/public/platform/web_compositor_support.h"
-#include "third_party/blink/public/platform/web_content_layer_client.h"
 #include "third_party/blink/public/platform/web_layer.h"
+
+namespace cc {
+class ContentLayerClient;
+}
 
 namespace cc_blink {
 
@@ -23,7 +26,7 @@ class CC_BLINK_EXPORT WebCompositorSupportImpl
   std::unique_ptr<blink::WebLayer> CreateLayer() override;
   std::unique_ptr<blink::WebLayer> CreateLayerFromCCLayer(cc::Layer*) override;
   std::unique_ptr<blink::WebContentLayer> CreateContentLayer(
-      blink::WebContentLayerClient* client) override;
+      cc::ContentLayerClient* client) override;
   std::unique_ptr<blink::WebExternalTextureLayer> CreateExternalTextureLayer(
       cc::TextureLayerClient* client) override;
   std::unique_ptr<blink::WebImageLayer> CreateImageLayer() override;

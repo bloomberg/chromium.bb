@@ -57,7 +57,7 @@ class TestingCompositorSupport : public WebCompositorSupport {
   std::unique_ptr<WebLayer> CreateLayer() override;
   std::unique_ptr<WebLayer> CreateLayerFromCCLayer(cc::Layer*) override;
   std::unique_ptr<WebContentLayer> CreateContentLayer(
-      WebContentLayerClient*) override;
+      cc::ContentLayerClient*) override;
   std::unique_ptr<WebExternalTextureLayer> CreateExternalTextureLayer(
       cc::TextureLayerClient*) override;
   std::unique_ptr<WebImageLayer> CreateImageLayer() override;

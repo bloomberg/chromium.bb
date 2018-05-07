@@ -26,8 +26,8 @@ class PLATFORM_EXPORT BeginTransform3DDisplayItem final
   }
 
   void Replay(GraphicsContext&) const override;
-  void AppendToWebDisplayItemList(const FloatSize&,
-                                  WebDisplayItemList*) const override;
+  void AppendToDisplayItemList(const FloatSize&,
+                               cc::DisplayItemList&) const override;
 
   const TransformationMatrix& Transform() const { return transform_; }
   const FloatPoint3D& TransformOrigin() const { return transform_origin_; }
@@ -58,8 +58,8 @@ class PLATFORM_EXPORT EndTransform3DDisplayItem final
   }
 
   void Replay(GraphicsContext&) const override;
-  void AppendToWebDisplayItemList(const FloatSize&,
-                                  WebDisplayItemList*) const override;
+  void AppendToDisplayItemList(const FloatSize&,
+                               cc::DisplayItemList&) const override;
 
  private:
 #if DCHECK_IS_ON()

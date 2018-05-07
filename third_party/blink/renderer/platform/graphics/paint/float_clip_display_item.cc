@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/paint/float_clip_display_item.h"
 
-#include "third_party/blink/public/platform/web_display_item_list.h"
+#include "cc/paint/display_item_list.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/skia/include/core/SkScalar.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -16,20 +16,26 @@ void FloatClipDisplayItem::Replay(GraphicsContext& context) const {
   context.ClipRect(clip_rect_, kAntiAliased);
 }
 
-void FloatClipDisplayItem::AppendToWebDisplayItemList(
+void FloatClipDisplayItem::AppendToDisplayItemList(
     const FloatSize&,
-    WebDisplayItemList* list) const {
-  list->AppendFloatClipItem(clip_rect_);
+    cc::DisplayItemList& list) const {
+  list.StartPaint();
+  list.push<cc::SaveOp>();
+  list.push<cc::ClipRectOp>(clip_rect_, SkClipOp::kIntersect,
+                            /*antialias=*/true);
+  list.EndPaintOfPairedBegin();
 }
 
 void EndFloatClipDisplayItem::Replay(GraphicsContext& context) const {
   context.Restore();
 }
 
-void EndFloatClipDisplayItem::AppendToWebDisplayItemList(
+void EndFloatClipDisplayItem::AppendToDisplayItemList(
     const FloatSize&,
-    WebDisplayItemList* list) const {
-  list->AppendEndFloatClipItem();
+    cc::DisplayItemList& list) const {
+  list.StartPaint();
+  list.push<cc::RestoreOp>();
+  list.EndPaintOfPairedEnd();
 }
 
 #if DCHECK_IS_ON()

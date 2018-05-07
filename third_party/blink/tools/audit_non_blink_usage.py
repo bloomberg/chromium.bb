@@ -168,6 +168,15 @@ _CONFIG = [
         ],
     },
     {
+        'paths': ['third_party/blink/renderer/core/paint'],
+        'allowed': [
+            # cc painting types.
+            'cc::ContentLayerClient',
+            'cc::DisplayItemList',
+            'cc::DrawRecordOp',
+        ],
+    },
+    {
         'paths': ['third_party/blink/renderer/core/inspector/InspectorMemoryAgent.cpp'],
         'allowed': [
             'base::SamplingHeapProfiler',

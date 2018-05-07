@@ -100,7 +100,7 @@ std::unique_ptr<WebLayer> TestingCompositorSupport::CreateLayerFromCCLayer(
 }
 
 std::unique_ptr<WebContentLayer> TestingCompositorSupport::CreateContentLayer(
-    WebContentLayerClient*) {
+    cc::ContentLayerClient*) {
   return nullptr;
 }
 std::unique_ptr<WebExternalTextureLayer>

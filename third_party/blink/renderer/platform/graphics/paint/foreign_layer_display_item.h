@@ -39,8 +39,8 @@ class PLATFORM_EXPORT ForeignLayerDisplayItem final : public DisplayItem {
 
   // DisplayItem
   void Replay(GraphicsContext&) const override;
-  void AppendToWebDisplayItemList(const FloatSize&,
-                                  WebDisplayItemList*) const override;
+  void AppendToDisplayItemList(const FloatSize&,
+                               cc::DisplayItemList&) const override;
   bool DrawsContent() const override;
   bool Equals(const DisplayItem&) const override;
 #if DCHECK_IS_ON()
