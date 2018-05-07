@@ -1702,28 +1702,18 @@ class ChromeDriverSiteIsolation(ChromeDriverBaseTestWithWebServer):
     self.assertTrue(frame_url.endswith('#two'))
 
 
-def log(message):
-  # Log a message with timestamp, in a format similar to ChromeDriver log
-  print '[%.3f] %s' % (time.time(), message)
-
 class ChromeDriverPageLoadTimeoutTest(ChromeDriverBaseTestWithWebServer):
 
   class _RequestHandler(object):
     def __init__(self):
       self.request_received_event = threading.Event()
       self.send_response_event = threading.Event()
-      print
-      log('Created _RequestHandler')
 
     def handle(self, request):
-      log('Request received')
       self.request_received_event.set()
-      log('After request_received_event.set()')
       # Don't hang infinitely, 10 seconds are enough.
       self.send_response_event.wait(10)
-      log('After send_response_event.wait(10)')
       self.send_response_event.clear()
-      log('After send_response_event.clear()')
       return {'Cache-Control': 'no-store'}, 'Hi!'
 
   def setUp(self):
@@ -1740,16 +1730,13 @@ class ChromeDriverPageLoadTimeoutTest(ChromeDriverBaseTestWithWebServer):
     # on Mac. So we use longer timeout on Mac, 0.5 second on others.
     timeout = 3000 if util.GetPlatformName() == 'mac' else 500
     self._driver.SetTimeout('page load', timeout)
-    log('setUp complete')
 
   def tearDown(self):
     super(ChromeDriverPageLoadTimeoutTest, self).tearDown()
     self._http_server.SetCallbackForPath('/hang', None)
 
   def _LoadHangingUrl(self, host=None):
-    log('Entering _LoadHangingUrl')
     self._driver.Load(self._http_server.GetUrl(host) + '/hang')
-    log('Leaving _LoadHangingUrl')
 
   def _CheckPageLoadTimeout(self, action):
     self._handler.request_received_event.clear()
@@ -1779,30 +1766,21 @@ class ChromeDriverPageLoadTimeoutTest(ChromeDriverBaseTestWithWebServer):
 
   def testHistoryNavigationWithPageLoadTimeout(self):
     # Allow the page to load for the first time.
-    log('Entering testHistoryNavigationWithPageLoadTimeout')
     self._handler.send_response_event.set()
-    log('After self._handler.send_response_event.set()')
     self._LoadHangingUrl()
     self.assertTrue(self._handler.request_received_event.wait(1))
 
-    log('Before GoBack')
     self._driver.GoBack()
-    log('Before GoForward')
     self._CheckPageLoadTimeout(self._driver.GoForward)
-    log('After GoForward')
     self.assertEquals(self._initial_url, self._driver.GetCurrentUrl())
 
   def testRefreshWithPageLoadTimeout(self):
     # Allow the page to load for the first time.
-    log('Entering testRefreshWithPageLoadTimeout')
     self._handler.send_response_event.set()
-    log('After self._handler.send_response_event.set()')
     self._LoadHangingUrl()
     self.assertTrue(self._handler.request_received_event.wait(1))
 
-    log('Before Refresh')
     self._CheckPageLoadTimeout(self._driver.Refresh)
-    log('After Refresh')
 
 
 class ChromeDriverAndroidTest(ChromeDriverBaseTest):
