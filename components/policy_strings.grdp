@@ -241,6 +241,10 @@
   in linux format.">
     Export Linux
   </message>
+  <message name="IDS_EXPORT_POLICIES_MAC" desc="Button that exports the current session policy
+  in mac format (.plist).">
+    Export MacOS
+  </message>
   <message name="IDS_POLICY_TOOL_EDIT" desc="Label for the button to change policy value in current session.">
     Edit
   </message>
