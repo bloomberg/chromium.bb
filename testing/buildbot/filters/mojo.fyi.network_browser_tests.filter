@@ -83,7 +83,6 @@
 # crbug.com/776589 Intercepting requests with net::URLRequestFilter.
 -ContinueWhereILeftOffTest.CookiesClearedOnExit
 -DownloadExtensionTest.DownloadExtensionTest_Download_FileSystemURL
--MimeHandlerViewTests/MimeHandlerViewTest.SingleRequest/0
 -PolicyTest.ExtensionInstallSources
 -PolicyTest.ForceGoogleSafeSearch
 -ProfileBrowserTest.SendHPKPReport
@@ -154,8 +153,6 @@
 # Remove streams concept from code and replace with data pipe passing.
 -MimeHandlerViewTests/MimeHandlerViewTest.Abort/0
 -MimeHandlerViewTests/MimeHandlerViewTest.Abort/1
--MimeHandlerViewTests/MimeHandlerViewTest.SingleRequest/0
--MimeHandlerViewTests/MimeHandlerViewTest.SingleRequest/1
 
 # http://crbug.com/784576
 # Convert ExtensionRequestLimitingThrottle into a URLLoaderThrottle.
