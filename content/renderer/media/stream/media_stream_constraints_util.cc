@@ -9,6 +9,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/public/common/media_stream_request.h"
 #include "content/renderer/media/stream/media_stream_constraints_util_sets.h"
 #include "content/renderer/media/stream/media_stream_constraints_util_video_device.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -327,11 +328,15 @@ blink::WebMediaStreamSource::Capabilities ComputeCapabilitiesForVideoSource(
     const blink::WebString& device_id,
     const media::VideoCaptureFormats& formats,
     media::VideoFacingMode facing_mode,
-    bool is_device_capture) {
+    bool is_device_capture,
+    const base::Optional<std::string>& group_id) {
   blink::WebMediaStreamSource::Capabilities capabilities;
-  capabilities.device_id = device_id;
-  if (is_device_capture)
+  capabilities.device_id = std::move(device_id);
+  if (is_device_capture) {
     capabilities.facing_mode = ToWebFacingMode(facing_mode);
+    if (group_id)
+      capabilities.group_id = blink::WebString::FromUTF8(*group_id);
+  }
   if (!formats.empty()) {
     int max_width = 1;
     int max_height = 1;
