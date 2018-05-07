@@ -22,11 +22,13 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/fill_layout.h"
@@ -47,6 +49,7 @@ class ReadOnlyOriginView : public views::View {
  public:
   ReadOnlyOriginView(const base::string16& page_title,
                      const GURL& origin,
+                     const gfx::ImageSkia* icon_image_skia,
                      SkColor background_color,
                      views::ButtonListener* site_settings_listener) {
     std::unique_ptr<views::View> title_origin_container =
@@ -86,6 +89,17 @@ class ReadOnlyOriginView : public views::View {
     views::GridLayout* top_level_layout =
         SetLayoutManager(std::make_unique<views::GridLayout>(this));
     views::ColumnSet* top_level_columns = top_level_layout->AddColumnSet(0);
+    // Payment handler icon comes from Web Manifest, which are square.
+    constexpr int kPaymentHandlerIconSize = 32;
+    bool has_icon = icon_image_skia && icon_image_skia->width();
+    if (has_icon) {
+      // A column for the instrument icon.
+      top_level_columns->AddColumn(
+          views::GridLayout::LEADING, views::GridLayout::FILL, 0,
+          views::GridLayout::FIXED, kPaymentHandlerIconSize,
+          kPaymentHandlerIconSize);
+      top_level_columns->AddPaddingColumn(0, 8);
+    }
     top_level_columns->AddColumn(views::GridLayout::LEADING,
                                  views::GridLayout::FILL, 1,
                                  views::GridLayout::USE_PREF, 0, 0);
@@ -95,6 +109,14 @@ class ReadOnlyOriginView : public views::View {
         views::GridLayout::FIXED, kSiteSettingsSize, kSiteSettingsSize);
 
     top_level_layout->StartRow(0, 0);
+    if (has_icon) {
+      std::unique_ptr<views::ImageView> instrument_icon_view =
+          CreateInstrumentIconView(/*icon_id=*/0, icon_image_skia,
+                                   /*label=*/page_title);
+      instrument_icon_view->SetImageSize(
+          gfx::Size(kPaymentHandlerIconSize, kPaymentHandlerIconSize));
+      top_level_layout->AddView(instrument_icon_view.release());
+    }
     top_level_layout->AddView(title_origin_container.release());
 
     views::ImageButton* site_settings_button =
@@ -175,8 +197,10 @@ PaymentHandlerWebFlowViewController::CreateHeaderContentView() {
   const GURL origin =
       web_contents() ? web_contents()->GetVisibleURL().GetOrigin() : GURL();
   std::unique_ptr<views::Background> background = GetHeaderBackground();
-  return std::make_unique<ReadOnlyOriginView>(GetSheetTitle(), origin,
-                                              background->get_color(), this);
+  return std::make_unique<ReadOnlyOriginView>(
+      GetSheetTitle(), origin,
+      state()->selected_instrument()->icon_image_skia(),
+      background->get_color(), this);
 }
 
 std::unique_ptr<views::Background>

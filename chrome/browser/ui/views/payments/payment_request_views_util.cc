@@ -203,7 +203,7 @@ void PopulateSheetHeaderView(bool show_back_arrow,
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 0,
                      views::GridLayout::USE_PREF, 0, 0);
 
-  constexpr int kPaddingBetweenArrowAndTitle = 16;
+  constexpr int kPaddingBetweenArrowAndTitle = 8;
   if (show_back_arrow)
     columns->AddPaddingColumn(0, kPaddingBetweenArrowAndTitle);
 
