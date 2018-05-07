@@ -913,6 +913,9 @@
     'gpu_passthrough_cmd_decoder': {
       'filepath': 'gpu/command_buffer/service/.*passthrough',
     },
+    'headless': {
+      'filepath': 'headless/'
+    },
     'history_ui': {
       'filepath': 'chrome/browser/resources/(md_)?history|'\
                   'chrome/browser/ui/webui/.*history',
@@ -2081,6 +2084,7 @@
     'gpu': ['piman+watch@chromium.org'],
     'gpu_passthrough_cmd_decoder': ['cwallez+watch@chromium.org',
                                     'geofflang+watch@chromium.org'],
+    'headless': ['headless-reviews@chromium.org'],
     'history_ui': ['pam+watch@chromium.org'],
     'i18n': ['jshin+watch@chromium.org'],
     'importer': ['tfarina@chromium.org'],
