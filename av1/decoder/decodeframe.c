@@ -10,6 +10,7 @@
  */
 
 #include <assert.h>
+#include <stddef.h>
 
 #include "./aom_config.h"
 #include "./aom_dsp_rtcd.h"
@@ -73,7 +74,7 @@ int av1_check_trailing_bits(AV1Decoder *pbi, struct aom_read_bit_buffer *rb) {
   int trailing = aom_rb_read_literal(rb, bits_before_alignment);
   if (trailing != (1 << (bits_before_alignment - 1))) {
     cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
-    return 1;
+    return -1;
   }
   return 0;
 }
@@ -1811,6 +1812,32 @@ static void decode_tile_sb_row(AV1Decoder *pbi, ThreadData *const td,
                        "Failed to decode tile data");
 }
 
+static int check_trailing_bits_after_symbol_coder(aom_reader *r) {
+  uint32_t nb_bits = aom_reader_tell(r);
+  uint32_t nb_bytes = (nb_bits + 7) >> 3;
+
+  const uint8_t *p_begin = aom_reader_find_begin(r);
+  const uint8_t *p_end = aom_reader_find_end(r);
+
+  // It is legal to have no padding bytes (nb_bytes == p_end - p_begin).
+  if ((ptrdiff_t)nb_bytes > p_end - p_begin) return -1;
+  const uint8_t *p = p_begin + nb_bytes;
+
+  // aom_reader_tell() returns 1 for a newly initialized decoder, and the
+  // return value only increases as values are decoded. So nb_bits > 0, and
+  // thus p > p_begin. Therefore accessing p[-1] is safe.
+  uint8_t last_byte = p[-1];
+  uint8_t pattern = 128 >> ((nb_bits - 1) & 7);
+  if ((last_byte & (2 * pattern - 1)) != pattern) return -1;
+
+  // Make sure that all padding bytes are zero as required by the spec.
+  while (p < p_end) {
+    if (*p != 0) return -1;
+    p++;
+  }
+  return 0;
+}
+
 static void decode_tile(AV1Decoder *pbi, ThreadData *const td, int tile_row,
                         int tile_col) {
   TileInfo tile_info;
@@ -1829,31 +1856,9 @@ static void decode_tile(AV1Decoder *pbi, ThreadData *const td, int tile_row,
     decode_tile_sb_row(pbi, td, tile_info, mi_row);
   }
 
-  uint32_t nb_bits = aom_reader_tell(td->bit_reader);
-  uint32_t nb_bytes = (nb_bits + 7) >> 3;
-
-  const uint8_t *p_begin = aom_reader_find_begin(td->bit_reader);
-  const uint8_t *p_end = aom_reader_find_end(td->bit_reader);
-  const uint8_t *p = p_begin + nb_bytes;
-
-  if (p > p_end) {
+  if (check_trailing_bits_after_symbol_coder(td->bit_reader)) {
     aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                        "Decode failed. Frame data is corrupted.");
-  }
-
-  uint8_t last_byte = p[-1];
-  uint8_t pattern = 128 >> ((nb_bits - 1) & 7);
-  if ((last_byte & (2 * pattern - 1)) != pattern) {
-    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
-                       "Decode failed. Frame data is corrupted.");
-  }
-
-  while (p < p_end) {
-    if (*p != 0) {
-      aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
-                         "Decode failed. Frame data is corrupted.");
-    }
-    p++;
   }
 }
 
