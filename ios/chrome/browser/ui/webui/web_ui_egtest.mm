@@ -204,4 +204,37 @@ id<GREYMatcher> WaitForOmniboxText(std::string text) {
       assertWithMatcher:grey_notNil()];
 }
 
+// Tests that repeated back/forward navigation from web URL is allowed.
+- (void)testBackForwardFromWebURL {
+  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
+
+  // Not using kChromeUIVersionURL because it has a final "/" that is not
+  // displayed in Omnibox.
+  const char kChromeVersionURL[] = "chrome://version";
+  const char kChromeVersionWebText[] = "The Chromium Authors";
+  const char kWebPageText[] = "pony";
+
+  LoadWebUIUrl(kChromeUIVersionHost);
+  [[EarlGrey selectElementWithMatcher:WaitForOmniboxText(kChromeVersionURL)]
+      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kChromeVersionWebText];
+
+  GURL webURL = self.testServer->GetURL("/pony.html");
+  [ChromeEarlGrey loadURL:webURL];
+  [ChromeEarlGrey waitForWebViewContainingText:kWebPageText];
+
+  [ChromeEarlGrey goBack];
+  [[EarlGrey selectElementWithMatcher:WaitForOmniboxText(kChromeVersionURL)]
+      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kChromeVersionWebText];
+
+  [ChromeEarlGrey goForward];
+  [ChromeEarlGrey waitForWebViewContainingText:kWebPageText];
+
+  [ChromeEarlGrey goBack];
+  [[EarlGrey selectElementWithMatcher:WaitForOmniboxText(kChromeVersionURL)]
+      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kChromeVersionWebText];
+}
+
 @end
