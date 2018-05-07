@@ -19489,6 +19489,8 @@ Called by update_net_error_codes.py.-->
   <int value="11" label="DRIVE_RECENT"/>
   <int value="12" label="MEDIA_VIEW"/>
   <int value="13" label="RECENT"/>
+  <int value="14" label="DRIVE_FAKE_ROOT"/>
+  <int value="15" label="ADD_NEW_SERVICES_MENU"/>
 </enum>
 
 <enum name="FileManagerTaskType">
