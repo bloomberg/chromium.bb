@@ -11,6 +11,7 @@
 #include "base/containers/flat_set.h"
 #include "base/optional.h"
 #include "ui/events/events_export.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace ui {
 
@@ -31,9 +32,9 @@ class EVENTS_EXPORT KeyboardHook {
   // |callback| is called for each key which is intercepted.
   // Returns a valid instance if the hook was created and successfully
   // registered otherwise nullptr.
-  // TODO(joedow): Update this interface to use DomCodes.
   static std::unique_ptr<KeyboardHook> Create(
       base::Optional<base::flat_set<DomCode>> dom_codes,
+      gfx::AcceleratedWidget accelerated_widget,
       KeyEventCallback callback);
 
   // True if |dom_code| is reserved for an active KeyboardLock request.

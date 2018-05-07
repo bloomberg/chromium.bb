@@ -31,6 +31,10 @@ class KeyboardHookBase : public KeyboardHook {
   // Forwards the key event using |key_event_callback_|.
   void ForwardCapturedKeyEvent(std::unique_ptr<KeyEvent> event);
 
+  const base::Optional<base::flat_set<DomCode>>& dom_codes() {
+    return dom_codes_;
+  }
+
  private:
   // Used to forward key events.
   KeyEventCallback key_event_callback_;
