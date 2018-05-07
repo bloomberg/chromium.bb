@@ -88,7 +88,7 @@ TEST_F(CanvasResourceTest, SkiaResourceNoMailboxLeak) {
   testing::Mock::VerifyAndClearExpectations(&gl_);
 
   EXPECT_TRUE(!!context_provider_wrapper_);
-  scoped_refptr<CanvasResource> resource = CanvasResource_Bitmap::Create(
+  scoped_refptr<CanvasResource> resource = CanvasResourceBitmap::Create(
       StaticBitmapImage::Create(surface->makeImageSnapshot(),
                                 context_provider_wrapper_),
       nullptr, kLow_SkFilterQuality);
@@ -129,7 +129,7 @@ TEST_F(CanvasResourceTest, GpuMemoryBufferSyncTokenRefresh) {
   constexpr GLuint image_id = 1;
   EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _)).WillOnce(Return(image_id));
   scoped_refptr<CanvasResource> resource =
-      CanvasResource_GpuMemoryBuffer::Create(
+      CanvasResourceGpuMemoryBuffer::Create(
           IntSize(10, 10), CanvasColorParams(),
           SharedGpuContext::ContextProviderWrapper(),
           nullptr,  // Resource provider

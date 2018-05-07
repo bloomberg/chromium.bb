@@ -76,13 +76,13 @@ class PLATFORM_EXPORT CanvasResource : public WTF::RefCounted<CanvasResource> {
 };
 
 // Resource type for skia Bitmaps (RAM and texture backed)
-class PLATFORM_EXPORT CanvasResource_Bitmap final : public CanvasResource {
+class PLATFORM_EXPORT CanvasResourceBitmap final : public CanvasResource {
  public:
-  static scoped_refptr<CanvasResource_Bitmap> Create(
+  static scoped_refptr<CanvasResourceBitmap> Create(
       scoped_refptr<StaticBitmapImage>,
       base::WeakPtr<CanvasResourceProvider>,
       SkFilterQuality);
-  ~CanvasResource_Bitmap() override { Abandon(); }
+  ~CanvasResourceBitmap() override { Abandon(); }
 
   // Not recyclable: Skia handles texture recycling internally and bitmaps are
   // cheap to allocate.
@@ -100,24 +100,24 @@ class PLATFORM_EXPORT CanvasResource_Bitmap final : public CanvasResource {
   bool HasGpuMailbox() const override;
   const gpu::SyncToken& GetSyncToken() override;
 
-  CanvasResource_Bitmap(scoped_refptr<StaticBitmapImage>,
-                        base::WeakPtr<CanvasResourceProvider>,
-                        SkFilterQuality);
+  CanvasResourceBitmap(scoped_refptr<StaticBitmapImage>,
+                       base::WeakPtr<CanvasResourceProvider>,
+                       SkFilterQuality);
 
   scoped_refptr<StaticBitmapImage> image_;
 };
 
 // Resource type for GpuMemoryBuffers
-class PLATFORM_EXPORT CanvasResource_GpuMemoryBuffer final
+class PLATFORM_EXPORT CanvasResourceGpuMemoryBuffer final
     : public CanvasResource {
  public:
-  static scoped_refptr<CanvasResource_GpuMemoryBuffer> Create(
+  static scoped_refptr<CanvasResourceGpuMemoryBuffer> Create(
       const IntSize&,
       const CanvasColorParams&,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
       base::WeakPtr<CanvasResourceProvider>,
       SkFilterQuality);
-  ~CanvasResource_GpuMemoryBuffer() override;
+  ~CanvasResourceGpuMemoryBuffer() override;
   bool IsRecycleable() const final { return IsValid(); }
   bool IsValid() const override {
     return context_provider_wrapper_ && image_id_;
@@ -138,7 +138,7 @@ class PLATFORM_EXPORT CanvasResource_GpuMemoryBuffer final
                        GLenum format,
                        GLenum type) override;
 
-  CanvasResource_GpuMemoryBuffer(
+  CanvasResourceGpuMemoryBuffer(
       const IntSize&,
       const CanvasColorParams&,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>,

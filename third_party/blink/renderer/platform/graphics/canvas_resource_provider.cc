@@ -94,7 +94,7 @@ class CanvasResourceProviderTexture : public CanvasResourceProvider {
         StaticBitmapImage::Create(skia_image, ContextProviderWrapper());
 
     scoped_refptr<CanvasResource> resource =
-        CanvasResource_Bitmap::Create(image, CreateWeakPtr(), FilterQuality());
+        CanvasResourceBitmap::Create(image, CreateWeakPtr(), FilterQuality());
     if (!resource)
       return nullptr;
 
@@ -143,7 +143,7 @@ class CanvasResourceProviderTextureGpuMemoryBuffer final
 
  protected:
   scoped_refptr<CanvasResource> CreateResource() final {
-    return CanvasResource_GpuMemoryBuffer::Create(
+    return CanvasResourceGpuMemoryBuffer::Create(
         Size(), ColorParams(), ContextProviderWrapper(), CreateWeakPtr(),
         FilterQuality());
   }
