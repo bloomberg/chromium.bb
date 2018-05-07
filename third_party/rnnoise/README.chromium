@@ -25,3 +25,4 @@ Local Modifications:
 * rnn_vad_weights.h: output layer sizes + weights scaling factor
 * removing unwanted extern from constants in rnn_vad_weights.h and using
   constants to declare array sizes
+* Add braces around arrays in unit test.
