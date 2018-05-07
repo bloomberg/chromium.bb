@@ -28,8 +28,6 @@ class PLATFORM_EXPORT TaskRunnerImpl : public base::SingleThreadTaskRunner {
   // base::SingleThreadTaskRunner implementation:
   bool RunsTasksInCurrentSequence() const override;
 
-  TaskQueue* GetTaskQueue() const { return task_queue_.get(); }
-
  protected:
   bool PostDelayedTask(const base::Location&,
                        base::OnceClosure,
