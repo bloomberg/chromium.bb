@@ -8,12 +8,15 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/frame/default_frame_header.h"
+#include "ash/frame/custom_frame_header.h"
+#include "ash/frame/frame_header.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_delegate.h"
 #include "ash/public/interfaces/window_style.mojom.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/aura/window_observer.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/view.h"
 
@@ -38,7 +41,8 @@ enum class FrameBackButtonState;
 // and on screen in immersive fullscreen.
 class ASH_EXPORT HeaderView : public views::View,
                               public ImmersiveFullscreenControllerDelegate,
-                              public TabletModeObserver {
+                              public TabletModeObserver,
+                              public aura::WindowObserver {
  public:
   // |target_widget| is the widget that the caption buttons act on.
   // |target_widget| is not necessarily the same as the widget the header is
@@ -75,10 +79,6 @@ class ASH_EXPORT HeaderView : public views::View,
 
   void UpdateCaptionButtons();
 
-  void SetFrameColors(SkColor active_frame_color, SkColor inactive_frame_color);
-  SkColor GetActiveFrameColor() const;
-  SkColor GetInactiveFrameColor() const;
-
   // Called when the target widget show state changed.
   void OnShowStateChanged(ui::WindowShowState show_state);
 
@@ -91,6 +91,12 @@ class ASH_EXPORT HeaderView : public views::View,
   void OnTabletModeStarted() override;
   void OnTabletModeEnded() override;
 
+  // aura::WindowObserver:
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override;
+  void OnWindowDestroying(aura::Window* window) override;
+
   FrameCaptionButtonContainerView* caption_button_container() {
     return caption_button_container_;
   }
@@ -99,10 +105,6 @@ class ASH_EXPORT HeaderView : public views::View,
 
   bool in_immersive_mode() const { return in_immersive_mode_; }
   bool is_revealed() const { return fullscreen_visible_fraction_ > 0.0; }
-
-  void set_title(const base::string16& title) {
-    frame_header_->set_title(title);
-  }
 
   void SetShouldPaintHeader(bool paint);
 
@@ -120,8 +122,14 @@ class ASH_EXPORT HeaderView : public views::View,
   // The widget that the caption buttons act on.
   views::Widget* target_widget_;
 
-  // Helper for painting the header.
-  std::unique_ptr<DefaultFrameHeader> frame_header_;
+  std::unique_ptr<CustomFrameHeader::AppearanceProvider> appearance_provider_;
+
+  // Helper for painting the header. The exact type of FrameHeader will depend
+  // on the type of window: In Mash, Chrome Browser windows use
+  // CustomFrameHeader which is aware of theming. In classic Ash, Chrome Browser
+  // windows won't use HeaderView at all. In either configuration, non Browser
+  // windows will use DefaultFrameHeader.
+  std::unique_ptr<FrameHeader> frame_header_;
 
   views::ImageView* avatar_icon_;
 
@@ -141,6 +149,9 @@ class ASH_EXPORT HeaderView : public views::View,
   bool should_paint_;
 
   bool in_immersive_mode_ = false;
+
+  // Observes property changes to |target_widget_|'s window.
+  ScopedObserver<aura::Window, aura::WindowObserver> window_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HeaderView);
 };

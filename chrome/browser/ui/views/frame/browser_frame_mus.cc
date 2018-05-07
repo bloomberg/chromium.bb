@@ -52,7 +52,6 @@ views::Widget::InitParams BrowserFrameMus::GetWidgetParams() {
   params.delegate = browser_view_;
   std::map<std::string, std::vector<uint8_t>> properties =
       views::MusClient::ConfigurePropertiesFromParams(params);
-  const std::string chrome_app_id(extension_misc::kChromeAppId);
   // Indicates mash shouldn't handle immersive, rather we will.
   properties[ui::mojom::WindowManager::kDisableImmersive_InitProperty] =
       mojo::ConvertTo<std::vector<uint8_t>>(true);
@@ -66,6 +65,9 @@ views::Widget::InitParams BrowserFrameMus::GetWidgetParams() {
   properties[ui::mojom::WindowManager::kShelfItemType_Property] =
       mojo::ConvertTo<std::vector<uint8_t>>(
           static_cast<int64_t>(ash::TYPE_BROWSER_SHORTCUT));
+  properties[ui::mojom::WindowManager::kWindowTitleShown_Property] =
+      mojo::ConvertTo<std::vector<uint8_t>>(
+          static_cast<int64_t>(browser_view_->ShouldShowWindowTitle()));
 
   // TODO(estade): to match classic Ash, this property should be toggled to true
   // for non-popups after the window is initially shown.

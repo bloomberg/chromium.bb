@@ -9,6 +9,10 @@ module ash.mojom;
 const string kCanConsumeSystemKeys_Property =
   "ash:can-consume-system-keys";
 
+// A gfx::ImageSkia used to tell Mash the frame image to use for a custom
+// Browser theme.
+const string kFrameImageActive_Property = "ash:frame-image-active";
+
 // True if the shelf should be hidden when this window is put into fullscreen.
 // Exposed because some windows want to explicitly opt-out of this.
 const string kHideShelfWhenFullscreen_Property =

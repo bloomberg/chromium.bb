@@ -144,7 +144,6 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView,
   void UpdateHeaderView();
 
  private:
-  class AvatarObserver;
   class OverlayView;
   friend class CustomFrameViewAshSizeLock;
   friend class CustomFrameTestWidgetDelegate;
@@ -170,9 +169,6 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView,
   OverlayView* overlay_view_;
 
   ImmersiveFullscreenControllerDelegate* immersive_delegate_;
-
-  // Observes avatar icon change and updates |header_view_|.
-  std::unique_ptr<AvatarObserver> avatar_observer_;
 
   static bool use_empty_minimum_size_for_test_;
 

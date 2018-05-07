@@ -7,13 +7,13 @@
 
 #include <memory>
 
+#include "ash/frame/custom_frame_header.h"
 #include "ash/public/interfaces/split_view.mojom.h"
 #include "ash/shell_observer.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "chrome/browser/command_observer.h"
 #include "chrome/browser/ui/ash/tablet_mode_client_observer.h"
-#include "chrome/browser/ui/views/frame/browser_frame_header_ash.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/tab_icon_view_model.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -35,7 +35,7 @@ class FrameHeaderOriginText;
 // Provides the BrowserNonClientFrameView for Chrome OS.
 class BrowserNonClientFrameViewAsh
     : public BrowserNonClientFrameView,
-      public BrowserFrameHeaderAsh::AppearanceProvider,
+      public ash::CustomFrameHeader::AppearanceProvider,
       public ash::ShellObserver,
       public TabletModeClientObserver,
       public TabIconViewModel,
@@ -76,7 +76,7 @@ class BrowserNonClientFrameViewAsh
   gfx::Size GetMinimumSize() const override;
   void ChildPreferredSizeChanged(views::View* child) override;
 
-  // BrowserFrameHeaderAsh::AppearanceProvider:
+  // ash::CustomFrameHeader::AppearanceProvider:
   SkColor GetFrameHeaderColor(bool active) override;
   gfx::ImageSkia GetFrameHeaderImage(bool active) override;
   gfx::ImageSkia GetFrameHeaderOverlayImage(bool active) override;
@@ -135,7 +135,6 @@ class BrowserNonClientFrameViewAsh
                            FrameLayout);
 
   friend class HostedAppNonClientFrameViewAshTest;
-  friend class BrowserFrameHeaderAsh;
 
   // Distance between the right edge of the NonClientFrameView and the tab
   // strip.
