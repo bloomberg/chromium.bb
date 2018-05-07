@@ -19,10 +19,10 @@ DiscardMetricsLifecycleUnitObserver::~DiscardMetricsLifecycleUnitObserver() =
 
 void DiscardMetricsLifecycleUnitObserver::OnLifecycleUnitStateChanged(
     LifecycleUnit* lifecycle_unit,
-    mojom::LifecycleState previous_state) {
-  if (lifecycle_unit->GetState() == mojom::LifecycleState::kDiscarded)
+    LifecycleState last_state) {
+  if (lifecycle_unit->GetState() == LifecycleState::DISCARDED)
     OnDiscard(lifecycle_unit);
-  else if (previous_state == mojom::LifecycleState::kDiscarded)
+  else if (last_state == LifecycleState::DISCARDED)
     OnReload();
 }
 
@@ -31,7 +31,7 @@ void DiscardMetricsLifecycleUnitObserver::OnLifecycleUnitDestroyed(
   // If the browser is not shutting down and the tab is loaded after
   // being discarded, record TabManager.Discarding.ReloadToCloseTime.
   if (g_browser_process && !g_browser_process->IsShuttingDown() &&
-      lifecycle_unit->GetState() != mojom::LifecycleState::kDiscarded &&
+      lifecycle_unit->GetState() != LifecycleState::DISCARDED &&
       !reload_time_.is_null()) {
     auto reload_to_close_time = NowTicks() - reload_time_;
     UMA_HISTOGRAM_CUSTOM_TIMES(
