@@ -1095,10 +1095,10 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
 
 // TODO(crbug.com/613187): Investigate if it would be more efficient to dedupe
 // with a vector instead of a list.
-const std::vector<CreditCard*> PersonalDataManager::GetCreditCardsToSuggest()
-    const {
+const std::vector<CreditCard*> PersonalDataManager::GetCreditCardsToSuggest(
+    bool include_server_cards) const {
   std::vector<CreditCard*> credit_cards;
-  if (ShouldSuggestServerCards()) {
+  if (include_server_cards && ShouldSuggestServerCards()) {
     credit_cards = GetCreditCards();
   } else {
     credit_cards = GetLocalCreditCards();
@@ -1150,10 +1150,12 @@ void PersonalDataManager::RemoveExpiredCreditCardsNotUsedSinceTimestamp(
 
 std::vector<Suggestion> PersonalDataManager::GetCreditCardSuggestions(
     const AutofillType& type,
-    const base::string16& field_contents) {
+    const base::string16& field_contents,
+    bool include_server_cards) {
   if (IsInAutofillSuggestionsDisabledExperiment())
     return std::vector<Suggestion>();
-  std::vector<CreditCard*> cards = GetCreditCardsToSuggest();
+  std::vector<CreditCard*> cards =
+      GetCreditCardsToSuggest(include_server_cards);
   // If enabled, suppress disused address profiles when triggered from an empty
   // field.
   if (field_contents.empty() &&

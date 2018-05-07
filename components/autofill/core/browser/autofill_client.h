@@ -194,6 +194,10 @@ class AutofillClient : public RiskDataLoader {
   // features of Autofill are disabled, including Autocomplete.
   virtual bool IsAutofillSupported() = 0;
 
+  // Whether server side cards are supported by the client. If false, only
+  // local cards will be shown.
+  virtual bool AreServerCardsSupported() = 0;
+
   // Handles simple actions for the autofill popups.
   virtual void ExecuteCommand(int id) = 0;
 };

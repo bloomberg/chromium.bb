@@ -132,4 +132,8 @@ bool TestAutofillClient::IsAutofillSupported() {
   return true;
 }
 
+bool TestAutofillClient::AreServerCardsSupported() {
+  return true;
+}
+
 }  // namespace autofill

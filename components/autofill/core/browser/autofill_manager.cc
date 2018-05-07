@@ -1590,9 +1590,11 @@ std::vector<Suggestion> AutofillManager::GetCreditCardSuggestions(
   // data.
   std::vector<Suggestion> suggestions =
       personal_data_->GetCreditCardSuggestions(
-          type, SanitizeCreditCardFieldValue(field.value));
+          type, SanitizeCreditCardFieldValue(field.value),
+          client_->AreServerCardsSupported());
   const std::vector<CreditCard*> cards_to_suggest =
-      personal_data_->GetCreditCardsToSuggest();
+      personal_data_->GetCreditCardsToSuggest(
+          client_->AreServerCardsSupported());
   for (const CreditCard* credit_card : cards_to_suggest) {
     if (!credit_card->bank_name().empty()) {
       credit_card_form_event_logger_->SetBankNameAvailable();
@@ -1687,7 +1689,8 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
   // class' FillCreditCardForm().
   if (autofill_assistant_.CanShowCreditCardAssist(form_structures_)) {
     const std::vector<CreditCard*> cards =
-        personal_data_->GetCreditCardsToSuggest();
+        personal_data_->GetCreditCardsToSuggest(
+            client_->AreServerCardsSupported());
     // Expired cards are last in the sorted order, so if the first one is
     // expired, they all are.
     if (!cards.empty() && !cards.front()->IsExpired(AutofillClock::Now()))
