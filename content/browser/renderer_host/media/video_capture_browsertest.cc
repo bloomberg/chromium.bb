@@ -115,8 +115,6 @@ class VideoCaptureBrowserTest : public ContentBrowserTest,
     params_ = TestParams(GetParam());
     if (params_.use_mojo_service) {
       scoped_feature_list_.InitAndEnableFeature(features::kMojoVideoCapture);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(features::kMojoVideoCapture);
     }
   }
 
@@ -233,6 +231,11 @@ IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest, StartAndImmediatelyStop) {
   if (params_.use_mojo_service)
     return;
 #endif
+  // Mojo video capture currently does not support accelerated jpeg decoding.
+  // TODO(chfremer): Remove this as soon as https://crbug.com/720604 is
+  // resolved.
+  if (params_.use_mojo_service && params_.exercise_accelerated_jpeg_decoding)
+    return;
 
   SetUpRequiringBrowserMainLoopOnMainThread();
   base::RunLoop run_loop;
@@ -263,11 +266,21 @@ IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest,
   if (params_.use_mojo_service)
     return;
 #endif
+  // Mojo video capture currently does not support accelerated jpeg decoding.
+  // TODO(chfremer): Remove this as soon as https://crbug.com/720604 is
+  // resolved.
+  if (params_.use_mojo_service && params_.exercise_accelerated_jpeg_decoding)
+    return;
   // Only fake device with index 2 delivers MJPEG.
   if (params_.exercise_accelerated_jpeg_decoding &&
-      params_.device_index_to_use != 2) {
+      params_.device_index_to_use != 2)
     return;
-  }
+  // There is an intermittent use-after-free in GpuChannelHost::Send() during
+  // Browser shutdown, which causes MSan tests to fail.
+  // TODO(chfremer): Remove this as soon as https://crbug.com/725271 is
+  // resolved.
+  if (params_.exercise_accelerated_jpeg_decoding)
+    return;
 
   SetUpRequiringBrowserMainLoopOnMainThread();
 

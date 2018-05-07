@@ -75,7 +75,7 @@ void GpuClient::CreateGpuMemoryBuffer(
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
-    mojom::GpuMemoryBufferFactory::CreateGpuMemoryBufferCallback callback) {
+    mojom::Gpu::CreateGpuMemoryBufferCallback callback) {
   gpu_memory_buffer_manager_->AllocateGpuMemoryBuffer(
       id, client_id_, size, format, usage, gpu::kNullSurfaceHandle,
       std::move(callback));
@@ -85,11 +85,6 @@ void GpuClient::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                                        const gpu::SyncToken& sync_token) {
   gpu_memory_buffer_manager_->DestroyGpuMemoryBuffer(id, client_id_,
                                                      sync_token);
-}
-
-void GpuClient::CreateGpuMemoryBufferFactory(
-    ui::mojom::GpuMemoryBufferFactoryRequest request) {
-  gpu_memory_buffer_factory_bindings_.AddBinding(this, std::move(request));
 }
 
 }  // namespace ws

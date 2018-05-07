@@ -9,14 +9,13 @@
 #include "build/build_config.h"
 #include "content/browser/renderer_host/media/in_process_launched_video_capture_device.h"
 #include "content/browser/renderer_host/media/video_capture_controller.h"
-#include "content/browser/renderer_host/media/video_capture_dependencies.h"
+#include "content/browser/renderer_host/media/video_capture_gpu_jpeg_decoder.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/media_stream_request.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/capture/video/video_capture_buffer_pool_impl.h"
 #include "media/capture/video/video_capture_buffer_tracker_factory_impl.h"
 #include "media/capture/video/video_capture_device_client.h"
-#include "media/capture/video/video_capture_jpeg_decoder_impl.h"
 #include "media/capture/video/video_frame_receiver.h"
 #include "media/capture/video/video_frame_receiver_on_task_runner.h"
 
@@ -41,11 +40,7 @@ namespace {
 std::unique_ptr<media::VideoCaptureJpegDecoder> CreateGpuJpegDecoder(
     media::VideoCaptureJpegDecoder::DecodeDoneCB decode_done_cb,
     base::Callback<void(const std::string&)> send_log_message_cb) {
-  return std::make_unique<media::VideoCaptureJpegDecoderImpl>(
-      base::BindRepeating(
-          &content::VideoCaptureDependencies::CreateJpegDecodeAccelerator),
-      content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::IO),
+  return std::make_unique<content::VideoCaptureGpuJpegDecoder>(
       std::move(decode_done_cb), std::move(send_log_message_cb));
 }
 

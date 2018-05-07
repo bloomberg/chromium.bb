@@ -27,23 +27,14 @@ class CONTENT_EXPORT ServiceVideoCaptureProvider : public VideoCaptureProvider {
         video_capture::mojom::DeviceFactoryProviderPtr* provider) = 0;
   };
 
-  using CreateMemoryBufferFactoryCallback = base::RepeatingCallback<
-      std::unique_ptr<ui::mojom::GpuMemoryBufferFactory>()>;
-  using CreateAcceleratorFactoryCallback = base::RepeatingCallback<
-      std::unique_ptr<video_capture::mojom::AcceleratorFactory>()>;
-
-  // This constructor creates a default ServiceConnector which
+  // The parameterless constructor creates a default ServiceConnector which
   // uses the ServiceManager associated with the current process to connect
-  // to the video capture service. It uses a default factory for instances of
-  // ui::mojom::Gpu which produces instances of class content::GpuClient.
+  // to the video capture service.
   explicit ServiceVideoCaptureProvider(
       base::RepeatingCallback<void(const std::string&)> emit_log_message_cb);
-  // Lets clients provide a custom ServiceConnector and factory method for
-  // creating instances of ui::mojom::Gpu.
+  // Lets clients provide a custom ServiceConnector.
   ServiceVideoCaptureProvider(
       std::unique_ptr<ServiceConnector> service_connector,
-      CreateMemoryBufferFactoryCallback create_memory_buffer_factory_cb,
-      CreateAcceleratorFactoryCallback create_accelerator_factory_cb,
       base::RepeatingCallback<void(const std::string&)> emit_log_message_cb);
   ~ServiceVideoCaptureProvider() override;
 
@@ -65,8 +56,6 @@ class CONTENT_EXPORT ServiceVideoCaptureProvider : public VideoCaptureProvider {
   void UninitializeInternal(ReasonForUninitialize reason);
 
   std::unique_ptr<ServiceConnector> service_connector_;
-  CreateMemoryBufferFactoryCallback create_memory_buffer_factory_cb_;
-  CreateAcceleratorFactoryCallback create_accelerator_factory_cb_;
   base::RepeatingCallback<void(const std::string&)> emit_log_message_cb_;
   // We must hold on to |device_factory_provider_| because it holds the
   // service-side binding for |device_factory_|.
@@ -74,6 +63,7 @@ class CONTENT_EXPORT ServiceVideoCaptureProvider : public VideoCaptureProvider {
   video_capture::mojom::DeviceFactoryPtr device_factory_;
   // Used for automatically uninitializing when no longer in use.
   int usage_count_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   bool launcher_has_connected_to_device_factory_;
   base::TimeTicks time_of_last_connect_;

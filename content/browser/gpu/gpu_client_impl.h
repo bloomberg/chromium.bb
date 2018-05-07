@@ -13,9 +13,7 @@
 
 namespace content {
 
-class GpuClientImpl : public ui::mojom::GpuMemoryBufferFactory,
-                      public ui::mojom::Gpu,
-                      public GpuClient {
+class GpuClientImpl : public ui::mojom::Gpu, public GpuClient {
  public:
   explicit GpuClientImpl(int render_process_id);
   ~GpuClientImpl() override;
@@ -26,27 +24,6 @@ class GpuClientImpl : public ui::mojom::GpuMemoryBufferFactory,
 
   void SetConnectionErrorHandler(
       ConnectionErrorHandlerClosure connection_error_handler);
-
-  // ui::mojom::GpuMemoryBufferFactory overrides:
-  void CreateGpuMemoryBuffer(
-      gfx::GpuMemoryBufferId id,
-      const gfx::Size& size,
-      gfx::BufferFormat format,
-      gfx::BufferUsage usage,
-      ui::mojom::GpuMemoryBufferFactory::CreateGpuMemoryBufferCallback callback)
-      override;
-  void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
-                              const gpu::SyncToken& sync_token) override;
-
-  // ui::mojom::Gpu overrides:
-  void CreateGpuMemoryBufferFactory(
-      ui::mojom::GpuMemoryBufferFactoryRequest request) override;
-  void EstablishGpuChannel(EstablishGpuChannelCallback callback) override;
-  void CreateJpegDecodeAccelerator(
-      media::mojom::JpegDecodeAcceleratorRequest jda_request) override;
-  void CreateVideoEncodeAcceleratorProvider(
-      media::mojom::VideoEncodeAcceleratorProviderRequest vea_provider_request)
-      override;
 
  private:
   enum class ErrorReason {
@@ -64,10 +41,24 @@ class GpuClientImpl : public ui::mojom::GpuMemoryBufferFactory,
                                const gfx::GpuMemoryBufferHandle& handle);
   void ClearCallback();
 
-  const int client_id_;
-  mojo::BindingSet<ui::mojom::GpuMemoryBufferFactory>
-      gpu_memory_buffer_factory_bindings_;
-  mojo::BindingSet<ui::mojom::Gpu> gpu_bindings_;
+  // ui::mojom::Gpu overrides:
+  void EstablishGpuChannel(EstablishGpuChannelCallback callback) override;
+  void CreateJpegDecodeAccelerator(
+      media::mojom::JpegDecodeAcceleratorRequest jda_request) override;
+  void CreateVideoEncodeAcceleratorProvider(
+      media::mojom::VideoEncodeAcceleratorProviderRequest vea_provider_request)
+      override;
+  void CreateGpuMemoryBuffer(
+      gfx::GpuMemoryBufferId id,
+      const gfx::Size& size,
+      gfx::BufferFormat format,
+      gfx::BufferUsage usage,
+      ui::mojom::Gpu::CreateGpuMemoryBufferCallback callback) override;
+  void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
+                              const gpu::SyncToken& sync_token) override;
+
+  const int render_process_id_;
+  mojo::BindingSet<ui::mojom::Gpu> bindings_;
   bool gpu_channel_requested_ = false;
   EstablishGpuChannelCallback callback_;
   mojo::ScopedMessagePipeHandle channel_handle_;
