@@ -17,6 +17,7 @@
 #include "components/gcm_driver/gcm_buildflags.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/profile_identity_provider.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "components/version_info/version_info.h"
 
 class PrefService;
@@ -48,6 +49,7 @@ class GCMProfileService : public KeyedService {
       net::URLRequestContextGetter* request_context,
       version_info::Channel channel,
       const std::string& product_category_for_subtypes,
+      SigninManagerBase* signin_manager,
       std::unique_ptr<ProfileIdentityProvider> identity_provider,
       std::unique_ptr<GCMClientFactory> gcm_client_factory,
       const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
@@ -76,6 +78,7 @@ class GCMProfileService : public KeyedService {
   std::unique_ptr<GCMDriver> driver_;
 
 #if !BUILDFLAG(USE_GCM_FROM_PLATFORM)
+  SigninManagerBase* signin_manager_;
   net::URLRequestContextGetter* request_context_ = nullptr;
 
   // Used for both account tracker and GCM.UserSignedIn UMA.
