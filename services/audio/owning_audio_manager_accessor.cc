@@ -4,8 +4,12 @@
 
 #include "services/audio/owning_audio_manager_accessor.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/threading/thread.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_thread.h"
 
@@ -14,7 +18,8 @@ namespace audio {
 namespace {
 
 // Thread class for hosting owned AudioManager on the main thread of the
-// service.
+// service, with a separate worker thread (started on-demand) for running things
+// that shouldn't be blocked by main-thread tasks.
 class MainThread : public media::AudioThread {
  public:
   MainThread();
@@ -27,10 +32,17 @@ class MainThread : public media::AudioThread {
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  // This is not started until the first time GetWorkerTaskRunner() is called.
+  base::Thread worker_thread_;
+  scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner_;
+
   DISALLOW_COPY_AND_ASSIGN(MainThread);
 };
 
-MainThread::MainThread() : task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
+MainThread::MainThread()
+    : task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      worker_thread_("AudioWorkerThread") {}
 
 MainThread::~MainThread() {
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -38,6 +50,10 @@ MainThread::~MainThread() {
 
 void MainThread::Stop() {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  if (worker_task_runner_) {
+    worker_task_runner_ = nullptr;
+    worker_thread_.Stop();
+  }
 }
 
 base::SingleThreadTaskRunner* MainThread::GetTaskRunner() {
@@ -45,8 +61,12 @@ base::SingleThreadTaskRunner* MainThread::GetTaskRunner() {
 }
 
 base::SingleThreadTaskRunner* MainThread::GetWorkerTaskRunner() {
-  NOTREACHED();
-  return task_runner_.get();
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  if (!worker_task_runner_) {
+    CHECK(worker_thread_.Start());
+    worker_task_runner_ = worker_thread_.task_runner();
+  }
+  return worker_task_runner_.get();
 }
 
 }  // namespace
