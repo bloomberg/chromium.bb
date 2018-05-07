@@ -1725,16 +1725,6 @@ BackendMigrator* ProfileSyncService::GetBackendMigratorForTest() {
   return migrator_.get();
 }
 
-void ProfileSyncService::GetModelSafeRoutingInfo(
-    syncer::ModelSafeRoutingInfo* out) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (engine_ && engine_initialized_) {
-    engine_->GetModelSafeRoutingInfo(out);
-  } else {
-    NOTREACHED();
-  }
-}
-
 std::unique_ptr<base::Value> ProfileSyncService::GetTypeStatusMap() {
   DCHECK(thread_checker_.CalledOnValidThread());
   auto result = std::make_unique<base::ListValue>();
