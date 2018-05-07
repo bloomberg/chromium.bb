@@ -26,7 +26,7 @@ class CrostiniAppResult : public AppResult, public AppIconLoaderDelegate {
 
   ~CrostiniAppResult() override;
 
-  // AppResult overrides:
+  // ChromeSearchResult overrides:
   void Open(int event_flags) override;
   std::unique_ptr<ChromeSearchResult> Duplicate() const override;
   void GetContextMenuModel(GetMenuModelCallback callback) override;
@@ -37,6 +37,9 @@ class CrostiniAppResult : public AppResult, public AppIconLoaderDelegate {
                          const gfx::ImageSkia& image) override;
 
  private:
+  // ChromeSearchResult overrides:
+  AppContextMenu* GetAppContextMenu() override;
+
   std::unique_ptr<CrostiniAppIconLoader> icon_loader_;
   std::unique_ptr<CrostiniAppContextMenu> context_menu_;
 

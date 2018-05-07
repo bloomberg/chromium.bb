@@ -9,6 +9,7 @@
 #include "ash/public/cpp/app_list/tokenized_string.h"
 #include "ash/public/cpp/app_list/tokenized_string_match.h"
 #include "base/containers/adapters.h"
+#include "chrome/browser/ui/app_list/app_context_menu.h"
 
 ChromeSearchResult::ChromeSearchResult() = default;
 
@@ -29,6 +30,12 @@ void ChromeSearchResult::UpdateFromMatch(
 
 void ChromeSearchResult::GetContextMenuModel(GetMenuModelCallback callback) {
   std::move(callback).Run(nullptr);
+}
+
+void ChromeSearchResult::ContextMenuItemSelected(int command_id,
+                                                 int event_flags) {
+  if (GetAppContextMenu())
+    GetAppContextMenu()->ExecuteCommand(command_id, event_flags);
 }
 
 // static
@@ -57,4 +64,8 @@ std::string ChromeSearchResult::TagsDebugStringForTest(const std::string& text,
     result.insert(insert.first, insert.second);
 
   return result;
+}
+
+app_list::AppContextMenu* ChromeSearchResult::GetAppContextMenu() {
+  return nullptr;
 }

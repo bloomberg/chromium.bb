@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 
 namespace app_list {
+class AppContextMenu;
 class TokenizedString;
 class TokenizedStringMatch;
 }  // namespace app_list
@@ -51,6 +52,9 @@ class ChromeSearchResult : public app_list::SearchResult {
       base::OnceCallback<void(std::unique_ptr<ui::MenuModel>)>;
   virtual void GetContextMenuModel(GetMenuModelCallback callback);
 
+  // Invoked when a context menu item of this search result is selected.
+  void ContextMenuItemSelected(int command_id, int event_flags);
+
   static std::string TagsDebugStringForTest(const std::string& text,
                                             const Tags& tags);
 
@@ -58,6 +62,10 @@ class ChromeSearchResult : public app_list::SearchResult {
   void set_comparable_id(const std::string& comparable_id) {
     comparable_id_ = comparable_id;
   }
+
+  // Get the context menu of a certain search result. This could be different
+  // for different kinds of items.
+  virtual app_list::AppContextMenu* GetAppContextMenu();
 
  private:
   // ID that can be compared across results from different providers to remove

@@ -41,6 +41,9 @@ class ArcAppResult : public AppResult,
                          const gfx::ImageSkia& image) override;
 
  private:
+  // ChromeSearchResult overrides:
+  AppContextMenu* GetAppContextMenu() override;
+
   std::unique_ptr<ArcAppIconLoader> icon_loader_;
   std::unique_ptr<ArcAppContextMenu> context_menu_;
 

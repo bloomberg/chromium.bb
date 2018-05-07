@@ -68,4 +68,8 @@ void InternalAppResult::GetContextMenuModel(GetMenuModelCallback callback) {
   context_menu_->GetMenuModel(std::move(callback));
 }
 
+AppContextMenu* InternalAppResult::GetAppContextMenu() {
+  return context_menu_.get();
+}
+
 }  // namespace app_list

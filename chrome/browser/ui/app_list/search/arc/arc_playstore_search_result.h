@@ -55,6 +55,9 @@ class ArcPlayStoreSearchResult : public ChromeSearchResult,
     return data_->icon_png_data;
   }
 
+  // ChromeSearchResult overrides:
+  AppContextMenu* GetAppContextMenu() override;
+
   arc::mojom::AppDiscoveryResultPtr data_;
   std::unique_ptr<arc::IconDecodeRequest> icon_decode_request_;
 
