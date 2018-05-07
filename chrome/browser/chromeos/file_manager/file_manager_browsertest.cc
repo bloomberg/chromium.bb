@@ -177,13 +177,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestParameter(NOT_IN_GUEST_MODE, "renameNewDirectoryDownloads"),
         TestParameter(NOT_IN_GUEST_MODE, "renameNewDirectoryDrive")));
 
-#if defined(DISABLE_SLOW_FILESAPP_TESTS)
-#define MAYBE_Delete DISABLED_Delete
-#else
-#define MAYBE_Delete Delete
-#endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_Delete,
+    Delete,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE,
