@@ -497,11 +497,11 @@ crbug.com/714962 virtual/layout_ng/fast/writing-mode/vertical-rl-replaced-select
 
 # Crashes/asserts due to inline item reuse.
 crbug.com/636993 virtual/layout_ng/fast/block/float/add-float-back-to-anonymous-block-previous.html [ Crash ]
-crbug.com/636993 virtual/layout_ng/fast/inline/inline-empty-block-continuation-remove.html [ Crash ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/remove-block-from-content-after-spanner.html [ Failure Crash ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/remove-block-from-content-before-spanner.html [ Failure Crash ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/remove-block-from-content-between-spanners.html [ Failure Crash ]
-crbug.com/636993 virtual/layout_ng_experimental/fast/multicol/dynamic/remove-inline-and-spanner-after-spanner-foreignObject.html [ Crash ]
+crbug.com/636993 virtual/layout_ng/fast/inline/inline-empty-block-continuation-remove.html [ Crash Timeout ]
+crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/remove-block-from-content-after-spanner.html [ Failure Crash Timeout ]
+crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/remove-block-from-content-before-spanner.html [ Failure Crash Timeout ]
+crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/remove-block-from-content-between-spanners.html [ Failure Crash Timeout ]
+crbug.com/636993 virtual/layout_ng_experimental/fast/multicol/dynamic/remove-inline-and-spanner-after-spanner-foreignObject.html [ Crash Timeout ]
 
 ### 1px diff with ref files.
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/linebox/vertical-align-sub-001.xht [ Failure ]
