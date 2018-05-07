@@ -124,7 +124,6 @@ class GridTrackSizingAlgorithm final {
   base::Optional<LayoutUnit> AvailableSpace() const;
   GridTrackSize RawGridTrackSize(GridTrackSizingDirection,
                                  size_t translated_index) const;
-  LayoutUnit AssumedRowsSizeForOrthogonalChild(const LayoutBox&) const;
   LayoutUnit ComputeTrackBasedSize() const;
 
   // Helper methods for step 1. initializeTrackSizes().
@@ -185,7 +184,6 @@ class GridTrackSizingAlgorithm final {
 
   // Data.
   bool needs_setup_{true};
-  bool is_in_perform_layout_{true};
   base::Optional<LayoutUnit> available_space_columns_;
   base::Optional<LayoutUnit> available_space_rows_;
 
@@ -245,8 +243,8 @@ class GridTrackSizingAlgorithmStrategy {
  public:
   virtual ~GridTrackSizingAlgorithmStrategy();
 
-  LayoutUnit MinContentForChild(LayoutBox&) const;
-  LayoutUnit MaxContentForChild(LayoutBox&) const;
+  virtual LayoutUnit MinContentForChild(LayoutBox&) const;
+  virtual LayoutUnit MaxContentForChild(LayoutBox&) const;
   LayoutUnit MinSizeForChild(LayoutBox&) const;
 
   virtual void MaximizeTracks(Vector<GridTrack>&,
@@ -293,7 +291,6 @@ class GridTrackSizingAlgorithmStrategy {
   base::Optional<LayoutUnit> AvailableSpace() const {
     return algorithm_.AvailableSpace();
   }
-  void SetNeedsLayoutForChild(LayoutBox&) const;
 
   // Helper functions
   static bool ShouldClearOverrideContainingBlockContentSizeForChild(

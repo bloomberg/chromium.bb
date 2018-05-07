@@ -108,6 +108,10 @@ class LayoutGrid final : public LayoutBlock {
   LayoutUnit GridGap(GridTrackSizingDirection) const;
   LayoutUnit GridItemOffset(GridTrackSizingDirection) const;
 
+  LayoutUnit EstimatedGridAreaBreadthForChild(const Grid&,
+                                              const LayoutBox&,
+                                              GridTrackSizingDirection) const;
+
   StyleContentAlignmentData ContentAlignment(GridTrackSizingDirection) const;
 
  protected:
@@ -160,6 +164,9 @@ class LayoutGrid final : public LayoutBlock {
       Grid&,
       GridTrackSizingDirection) const;
 
+  void LayoutOrthogonalWritingModeRoots(const Grid&,
+                                        const Vector<LayoutBox*>&) const;
+
   void PlaceItemsOnGrid(
       Grid&,
       base::Optional<LayoutUnit> available_logical_width) const;
@@ -191,6 +198,7 @@ class LayoutGrid final : public LayoutBlock {
   void RepeatTracksSizingIfNeeded(LayoutUnit available_space_for_columns,
                                   LayoutUnit available_space_for_rows);
 
+  void UpdateGridAreaLogicalSize(LayoutBox&, LayoutSize) const;
   void LayoutGridItems();
   void PrepareChildForPositionedLayout(LayoutBox&);
   bool HasStaticPositionForChild(const LayoutBox&,
