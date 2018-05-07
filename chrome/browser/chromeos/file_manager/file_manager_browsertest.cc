@@ -340,13 +340,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestParameter(NOT_IN_GUEST_MODE, "executeDefaultTaskOnDownloads"),
         TestParameter(IN_GUEST_MODE, "executeDefaultTaskOnDownloads")));
 
-#if defined(DISABLE_SLOW_FILESAPP_TESTS)
-#define MAYBE_ExecuteDefaultTaskOnDrive DISABLED_ExecuteDefaultTaskOnDrive
-#else
-#define MAYBE_ExecuteDefaultTaskOnDrive ExecuteDefaultTaskOnDrive
-#endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_ExecuteDefaultTaskOnDrive,
+    ExecuteDefaultTaskOnDrive,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
                                     "executeDefaultTaskOnDrive")));
