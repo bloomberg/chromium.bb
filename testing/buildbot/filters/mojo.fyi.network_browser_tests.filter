@@ -14,8 +14,6 @@
 -EnabledSignInIsolationBrowserTest.SyntheticTrial
 -ExpectCTBrowserTest.TestDynamicExpectCTHeaderProcessing
 -ExpectCTBrowserTest.TestDynamicExpectCTReporting
--ExtensionApiTest.Debugger
--ExtensionApiTestWithSwitch.ExtensionDebugger
 -ExtensionUnloadBrowserTest.UnloadWithContentScripts
 -MediaGalleriesPlatformAppBrowserTest.ToURL
 -NetInternalsTest.netInternalsSessionBandwidthSucceed
@@ -214,6 +212,11 @@
 -ServiceWorkerTestWithNativeBindings/ServiceWorkerTest.SWServedBackgroundPageReceivesEvent/0
 -ServiceWorkerTestWithNativeBindings/ServiceWorkerTest.WebAccessibleResourcesFetch/0
 -ServiceWorkerTestWithNativeBindings/ServiceWorkerTest.WebAccessibleResourcesIframeSrc/0
+
+# Support URLLoaderFactories from embedder in shared workers.
+# https://crbug.com/839982
+-ExtensionApiTest.Debugger
+-ExtensionApiTestWithSwitch.ExtensionDebugger
 
 # https://crbug.com/832749
 # Add DMServer header
