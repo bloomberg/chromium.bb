@@ -185,8 +185,16 @@ void KeyboardShortcutItemView::MaybeCalculateAndDoLayout(int width) const {
 
   // The width of |description_label_view_| will be dynamically adjusted to fill
   // the spacing.
-  const int description_view_preferred_width =
+  int description_view_preferred_width =
       width - (shortcut_view_preferred_width - min_left) - kMinimumSpacing;
+  if (description_view_preferred_width < kMinimumSpacing) {
+    // The min width of |description_label_view_| as a ratio of its parent
+    // view's width when the |description_view_preferred_width| calculated above
+    // is smaller than |kMinimumSpacing|.
+    constexpr float kDescriptionViewMinWidthRatio = 0.29f;
+    description_view_preferred_width = width * kDescriptionViewMinWidthRatio;
+  }
+
   const int description_view_height =
       description_label_view_->GetHeightForWidth(
           description_view_preferred_width);
