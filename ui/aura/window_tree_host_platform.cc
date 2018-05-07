@@ -131,7 +131,7 @@ bool WindowTreeHostPlatform::CaptureSystemKeyEventsImpl(
   // destruction ordering.
   DCHECK(!keyboard_hook_);
   keyboard_hook_ = ui::KeyboardHook::Create(
-      std::move(dom_codes),
+      std::move(dom_codes), GetAcceleratedWidget(),
       base::BindRepeating(
           [](ui::PlatformWindowDelegate* delegate, ui::KeyEvent* event) {
             delegate->DispatchEvent(event);

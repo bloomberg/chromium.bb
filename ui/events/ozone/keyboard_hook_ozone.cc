@@ -11,6 +11,7 @@
 #include "base/optional.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/dom/dom_code.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace ui {
 
@@ -47,6 +48,7 @@ bool KeyboardHookOzone::Register() {
 // static
 std::unique_ptr<KeyboardHook> KeyboardHook::Create(
     base::Optional<base::flat_set<DomCode>> dom_codes,
+    gfx::AcceleratedWidget accelerated_widget,
     KeyEventCallback callback) {
   std::unique_ptr<KeyboardHookOzone> keyboard_hook =
       std::make_unique<KeyboardHookOzone>(std::move(dom_codes),
