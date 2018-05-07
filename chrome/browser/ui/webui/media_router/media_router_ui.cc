@@ -418,7 +418,7 @@ base::Optional<RouteParameters> MediaRouterUI::GetLocalFileRouteParameters(
   CHECK(initiator());
   params.incognito = initiator()->GetBrowserContext()->IsOffTheRecord();
 
-  return params;
+  return base::make_optional(std::move(params));
 }
 
 bool MediaRouterUI::ConnectRoute(const MediaSink::Id& sink_id,
