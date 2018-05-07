@@ -11,13 +11,18 @@
 #include "services/ui/ws2/window_service_client.h"
 #include "services/ui/ws2/window_service_delegate.h"
 #include "services/ui/ws2/window_tree_factory.h"
+#include "ui/aura/env.h"
 
 namespace ui {
 namespace ws2 {
 
 WindowService::WindowService(WindowServiceDelegate* delegate,
                              std::unique_ptr<GpuSupport> gpu_support)
-    : delegate_(delegate), gpu_support_(std::move(gpu_support)) {}
+    : delegate_(delegate), gpu_support_(std::move(gpu_support)) {
+  // MouseLocationManager is necessary for providing the shared memory with the
+  // location of the mouse to clients.
+  aura::Env::GetInstance()->CreateMouseLocationManager();
+}
 
 WindowService::~WindowService() {}
 

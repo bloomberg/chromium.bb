@@ -7,6 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/test/scoped_task_environment.h"
 #include "services/ui/ws2/gpu_support.h"
 #include "services/ui/ws2/test_window_service_delegate.h"
@@ -35,6 +37,7 @@ class WindowServiceTestHelper {
     ui::InitializeContextFactoryForTests(enable_pixel_output, &context_factory,
                                          &context_factory_private);
     aura_test_helper_.SetUp(context_factory, context_factory_private);
+    service_ = std::make_unique<WindowService>(&delegate_, nullptr);
     delegate_.set_top_level_parent(root());
   }
   ~WindowServiceTestHelper() {
@@ -42,7 +45,7 @@ class WindowServiceTestHelper {
     ui::TerminateContextFactoryForTests();
   }
 
-  WindowService* service() { return &service_; }
+  WindowService* service() { return service_.get(); }
   aura::Window* root() { return aura_test_helper_.root_window(); }
 
  private:
@@ -50,7 +53,7 @@ class WindowServiceTestHelper {
       base::test::ScopedTaskEnvironment::MainThreadType::UI};
   aura::test::AuraTestHelper aura_test_helper_;
   TestWindowServiceDelegate delegate_;
-  WindowService service_{&delegate_, nullptr};
+  std::unique_ptr<WindowService> service_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowServiceTestHelper);
 };

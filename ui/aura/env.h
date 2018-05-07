@@ -68,15 +68,10 @@ class AURA_EXPORT Env : public ui::EventTarget,
 
   ~Env() override;
 
-  // Creates a new Env instance. If |create_mouse_location_manager| is true,
-  // then Env creates a MouseLocationManager that is updated any time the
-  // mouse location is updated. This is only useful when hosting the
-  // WindowService on top of Aura (such as Ash).
+  // Creates a new Env instance.
   // NOTE: if you pass in Mode::MUS it is expected that you call
   // SetWindowTreeClient() before any windows are created.
-  static std::unique_ptr<Env> CreateInstance(
-      Mode mode = Mode::LOCAL,
-      bool create_mouse_location_manager = false);
+  static std::unique_ptr<Env> CreateInstance(Mode mode = Mode::LOCAL);
   static Env* GetInstance();
   static Env* GetInstanceDontCreate();
 
@@ -104,6 +99,9 @@ class AURA_EXPORT Env : public ui::EventTarget,
   // coordinates.
   const gfx::Point& last_mouse_location() const;
   void SetLastMouseLocation(const gfx::Point& last_mouse_location);
+
+  // Creates the MouseLocationManager if it hasn't been created yet.
+  void CreateMouseLocationManager();
 
   // Returns a read-only handle to the shared memory which contains the global
   // mouse position. Each call returns a new handle. This is only valid if Env
@@ -157,7 +155,7 @@ class AURA_EXPORT Env : public ui::EventTarget,
   friend class WindowTreeClient;  // For call to WindowTreeClientDestroyed().
   friend class WindowTreeHost;
 
-  Env(Mode mode, bool create_mouse_location_manager);
+  explicit Env(Mode mode);
 
   void Init();
 
@@ -231,7 +229,7 @@ class AURA_EXPORT Env : public ui::EventTarget,
   static bool initial_throttle_input_on_resize_;
   bool throttle_input_on_resize_ = initial_throttle_input_on_resize_;
 
-  // Only created if |create_mouse_location_manager| was true.
+  // Only created if CreateMouseLocationManager() was called.
   std::unique_ptr<MouseLocationManager> mouse_location_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(Env);
