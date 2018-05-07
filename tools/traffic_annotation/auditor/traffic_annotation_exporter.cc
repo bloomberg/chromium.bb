@@ -276,6 +276,7 @@ bool TrafficAnnotationExporter::UpdateAnnotations(
 std::string TrafficAnnotationExporter::GenerateSerializedXML() const {
   XmlWriter writer;
   writer.StartWriting();
+  writer.AppendElementContent(kXmlComment);
   writer.StartElement("annotations");
 
   for (const auto& item : archive_) {
@@ -334,11 +335,8 @@ std::string TrafficAnnotationExporter::GenerateSerializedXML() const {
   writer.EndElement();
 
   writer.StopWriting();
-  std::string xml_content = writer.GetWrittenString();
-  // Add comment before annotation tag (and after xml version).
-  xml_content.insert(xml_content.find("<annotations>"), kXmlComment);
 
-  return xml_content;
+  return writer.GetWrittenString();
 }
 
 bool TrafficAnnotationExporter::SaveAnnotationsXML() const {
