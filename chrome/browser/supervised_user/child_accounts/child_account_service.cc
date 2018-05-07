@@ -32,6 +32,8 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_pref_names.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/storage_partition.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -328,7 +330,8 @@ void ChildAccountService::StartFetchingFamilyInfo() {
       SigninManagerFactory::GetForProfile(profile_)
           ->GetAuthenticatedAccountId(),
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_),
-      profile_->GetRequestContext()));
+      content::BrowserContext::GetDefaultStoragePartition(profile_)
+          ->GetURLLoaderFactoryForBrowserProcess()));
   family_fetcher_->StartGetFamilyMembers();
 }
 

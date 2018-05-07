@@ -11,9 +11,8 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "google_apis/gaia/oauth2_token_service.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
 
 namespace base {
 class DictionaryValue;
@@ -21,16 +20,16 @@ class ListValue;
 class Time;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}
+namespace network {
+class SimpleURLLoader;
+class SharedURLLoaderFactory;
+}  // namespace network
 
 // Fetches information about the family of the signed-in user. It can get
 // information about the family itself (e.g. a name), as well as a list of
 // family members and their properties.
 class FamilyInfoFetcher : public OAuth2TokenService::Observer,
-                          public OAuth2TokenService::Consumer,
-                          public net::URLFetcherDelegate {
+                          public OAuth2TokenService::Consumer {
  public:
   enum ErrorCode {
     TOKEN_ERROR,    // Failed to get OAuth2 token.
@@ -81,10 +80,11 @@ class FamilyInfoFetcher : public OAuth2TokenService::Observer,
 
   // Instantiates a fetcher, but doesn't start a fetch - use the StartGet*
   // methods below. |consumer| must outlive us.
-  FamilyInfoFetcher(Consumer* consumer,
-                    const std::string& account_id,
-                    OAuth2TokenService* token_service,
-                    net::URLRequestContextGetter* request_context);
+  FamilyInfoFetcher(
+      Consumer* consumer,
+      const std::string& account_id,
+      OAuth2TokenService* token_service,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~FamilyInfoFetcher() override;
 
   // Public so tests can use them.
@@ -95,6 +95,11 @@ class FamilyInfoFetcher : public OAuth2TokenService::Observer,
   // Note: Only one fetch is supported at a time.
   void StartGetFamilyProfile();
   void StartGetFamilyMembers();
+
+  // Public so tests can use it.
+  void OnSimpleLoaderCompleteInternal(int net_error,
+                                      int response_code,
+                                      const std::string& response_body);
 
  private:
   // OAuth2TokenService::Observer implementation:
@@ -108,8 +113,7 @@ class FamilyInfoFetcher : public OAuth2TokenService::Observer,
   void OnGetTokenFailure(const OAuth2TokenService::Request* request,
                          const GoogleServiceAuthError& error) override;
 
-  // net::URLFetcherDelegate implementation.
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
 
   static bool ParseMembers(const base::ListValue* list,
                            std::vector<FamilyMember>* members);
@@ -126,13 +130,13 @@ class FamilyInfoFetcher : public OAuth2TokenService::Observer,
   Consumer* consumer_;
   const std::string account_id_;
   OAuth2TokenService* token_service_;
-  net::URLRequestContextGetter* request_context_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   std::string request_path_;
   std::unique_ptr<OAuth2TokenService::Request> access_token_request_;
   std::string access_token_;
   bool access_token_expired_;
-  std::unique_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<network::SimpleURLLoader> simple_url_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(FamilyInfoFetcher);
 };

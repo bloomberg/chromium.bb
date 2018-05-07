@@ -16,7 +16,9 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
 const char kGetFamilyProfileApiPath[] = "families/mine?alt=json";
@@ -80,14 +82,13 @@ FamilyInfoFetcher::FamilyInfoFetcher(
     Consumer* consumer,
     const std::string& account_id,
     OAuth2TokenService* token_service,
-    net::URLRequestContextGetter* request_context)
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : OAuth2TokenService::Consumer("family_info_fetcher"),
       consumer_(consumer),
       account_id_(account_id),
       token_service_(token_service),
-      request_context_(request_context),
-      access_token_expired_(false) {
-}
+      url_loader_factory_(std::move(url_loader_factory)),
+      access_token_expired_(false) {}
 
 FamilyInfoFetcher::~FamilyInfoFetcher() {
   // Ensures O2TS observation is cleared when FamilyInfoFetcher is destructed
@@ -167,7 +168,7 @@ void FamilyInfoFetcher::OnGetTokenSuccess(
   access_token_ = access_token;
 
   GURL url = kids_management_api::GetURL(request_path_);
-  const int id = 0;
+
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("family_info", R"(
         semantics {
@@ -195,21 +196,24 @@ void FamilyInfoFetcher::OnGetTokenSuccess(
             }
           }
         })");
-  url_fetcher_ = net::URLFetcher::Create(id, url, net::URLFetcher::GET, this,
-                                         traffic_annotation);
 
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      url_fetcher_.get(),
-      data_use_measurement::DataUseUserData::SUPERVISED_USER);
-  url_fetcher_->SetRequestContext(request_context_);
-  url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
-                             net::LOAD_DO_NOT_SAVE_COOKIES);
-  url_fetcher_->SetAutomaticallyRetryOnNetworkChanges(
-      kNumFamilyInfoFetcherRetries);
-  url_fetcher_->AddExtraRequestHeader(base::StringPrintf(
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = url;
+  resource_request->load_flags =
+      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+  resource_request->headers.AddHeaderFromString(base::StringPrintf(
       supervised_users::kAuthorizationHeaderFormat, access_token.c_str()));
-
-  url_fetcher_->Start();
+  simple_url_loader_ = network::SimpleURLLoader::Create(
+      std::move(resource_request), traffic_annotation);
+  simple_url_loader_->SetRetryOptions(
+      kNumFamilyInfoFetcherRetries,
+      network::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE);
+  // TODO re-add data use measurement once SimpleURLLoader supports it
+  // data_use_measurement::DataUseUserData::SUPERVISED_USER
+  simple_url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory_.get(),
+      base::BindOnce(&FamilyInfoFetcher::OnSimpleLoaderComplete,
+                     base::Unretained(this)));
 }
 
 void FamilyInfoFetcher::OnGetTokenFailure(
@@ -220,16 +224,25 @@ void FamilyInfoFetcher::OnGetTokenFailure(
   consumer_->OnFailure(TOKEN_ERROR);
 }
 
-void FamilyInfoFetcher::OnURLFetchComplete(
-    const net::URLFetcher* source) {
-  const net::URLRequestStatus& status = source->GetStatus();
-  if (!status.is_success()) {
-    DLOG(WARNING) << "URLRequestStatus error " << status.error();
-    consumer_->OnFailure(NETWORK_ERROR);
-    return;
+void FamilyInfoFetcher::OnSimpleLoaderComplete(
+    std::unique_ptr<std::string> response_body) {
+  int response_code = -1;
+  if (simple_url_loader_->ResponseInfo() &&
+      simple_url_loader_->ResponseInfo()->headers) {
+    response_code =
+        simple_url_loader_->ResponseInfo()->headers->response_code();
   }
+  std::string body;
+  if (response_body)
+    body = std::move(*response_body);
+  OnSimpleLoaderCompleteInternal(simple_url_loader_->NetError(), response_code,
+                                 body);
+}
 
-  int response_code = source->GetResponseCode();
+void FamilyInfoFetcher::OnSimpleLoaderCompleteInternal(
+    int net_error,
+    int response_code,
+    const std::string& response_body) {
   if (response_code == net::HTTP_UNAUTHORIZED && !access_token_expired_) {
     DVLOG(1) << "Access token expired, retrying";
     access_token_expired_ = true;
@@ -246,8 +259,11 @@ void FamilyInfoFetcher::OnURLFetchComplete(
     return;
   }
 
-  std::string response_body;
-  source->GetResponseAsString(&response_body);
+  if (net_error != net::OK) {
+    DLOG(WARNING) << "NetError " << net_error;
+    consumer_->OnFailure(NETWORK_ERROR);
+    return;
+  }
 
   if (request_path_ == kGetFamilyProfileApiPath) {
     FamilyProfileFetched(response_body);
