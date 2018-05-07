@@ -128,7 +128,7 @@ var PeerConnectionUpdateTable = (function() {
             'update-log-legacy-api-usage');
         valueContainer.parentElement.title = update.type + ' is no longer ' +
             'part of the WebRTC API and may be removed in future versions. ' +
-            'Use the addTrack/removeTrack APIs instead.'
+            'Use the addTrack/removeTrack APIs instead.';
       }
 
       var value = update.value;

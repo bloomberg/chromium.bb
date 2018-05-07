@@ -67,7 +67,7 @@ var ClientRenderer = (function() {
     while (element.hasChildNodes()) {
       element.removeChild(element.lastChild);
     }
-  };
+  }
 
   function createSelectableButton(id, groupName, buttonLabel, select_cb,
                                   isDestructed) {
@@ -94,7 +94,7 @@ var ClientRenderer = (function() {
     });
 
     return fragment;
-  };
+  }
 
   function selectSelectableButton(id) {
     var element = document.getElementById(id);
@@ -208,7 +208,7 @@ var ClientRenderer = (function() {
       table.appendChild(thead);
       var tbody = document.createElement('tbody');
       for (var i=0; i < formats.length; ++i) {
-        var tr = document.createElement('tr')
+        var tr = document.createElement('tr');
         for (var key in formats[i]) {
           var td = document.createElement('td');
           td.appendChild(document.createTextNode(formats[i][key]));
@@ -245,7 +245,7 @@ var ClientRenderer = (function() {
             cellElement = document.createTextNode(
                 ((typeof value) == 'undefined') ? 'n/a' : value);
           }
-          tableCell.appendChild(cellElement)
+          tableCell.appendChild(cellElement);
           tableRow.appendChild(tableCell);
         }
         videoTableBodyElement.appendChild(tableRow);
@@ -263,7 +263,7 @@ var ClientRenderer = (function() {
           baseName = 'Stream';
           break;
         default:
-          baseName = 'UnknownType'
+          baseName = 'UnknownType';
           console.error('Unrecognized component type: ' + componentType);
           break;
       }
@@ -377,7 +377,7 @@ var ClientRenderer = (function() {
           label.appendChild(frame_node);
         }
 
-        var desc = []
+        var desc = [];
         if (p.width && p.height)
           desc.push(p.width + 'x' + p.height);
         if (p.video_codec_name)
@@ -468,7 +468,7 @@ var ClientRenderer = (function() {
     },
 
     saveLog_: function() {
-      var strippedPlayers = []
+      var strippedPlayers = [];
       for (var id in this.players) {
         var p = this.players[id];
         strippedPlayers.push({properties: p.properties, events: p.allEvents});

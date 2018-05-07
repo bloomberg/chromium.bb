@@ -26,7 +26,7 @@ var PeerConnectionRecord = (function() {
       updateLog: [],
       url: '',
     };
-  };
+  }
 
   PeerConnectionRecord.prototype = {
     /** @override */

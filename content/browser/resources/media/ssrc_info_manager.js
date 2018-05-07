@@ -34,7 +34,7 @@ function GetSsrcFromReport(report) {
     }
   }
   return report.id;
-};
+}
 
 /**
  * SsrcInfoManager stores the ssrc stream info extracted from SDP.
