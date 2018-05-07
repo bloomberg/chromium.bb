@@ -16,7 +16,7 @@
 namespace {
 struct dyld_interpose_tuple {
   template <typename T>
-  dyld_interpose_tuple(const T* replacement, const T* replacee)
+  dyld_interpose_tuple(T* replacement, T* replacee)
       : replacement(reinterpret_cast<const void*>(replacement)),
         replacee(reinterpret_cast<const void*>(replacee)) {}
   const void* replacement;
