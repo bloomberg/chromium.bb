@@ -244,12 +244,9 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   // |non_network_loader_factory| is non-null when the service worker script URL
   // has a non-http(s) scheme. In that case, it is used to load the script since
   // the usual network factory can't be used.
-  ServiceWorkerStatusCode SendStartWorker(
+  void SendStartWorker(
       mojom::EmbeddedWorkerStartParamsPtr params,
       network::mojom::URLLoaderFactoryPtr non_network_loader_factory);
-
-  // Called back from StartTask after a start worker message is sent.
-  void OnStartWorkerMessageSent(bool is_script_streaming);
 
   // Implements mojom::EmbeddedWorkerInstanceHost.
   // These functions all run on the IO thread.
