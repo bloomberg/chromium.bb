@@ -2344,6 +2344,9 @@ void DownloadItemImpl::ResumeInterruptedDownload(
   for (const auto& header : request_headers_) {
     download_params->add_request_header(header.first, header.second);
   }
+  // The offset is calculated after decompression, so the range request cannot
+  // involve any compression,
+  download_params->add_request_header("Accept-Encoding", "identity");
 
   auto entry = delegate_->GetInProgressEntry(this);
   if (entry)
