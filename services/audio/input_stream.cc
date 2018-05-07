@@ -37,13 +37,15 @@ InputStream::InputStream(CreatedCallback created_callback,
     : binding_(this, std::move(request)),
       client_(std::move(client)),
       observer_(std::move(observer)),
-      log_(media::mojom::ThreadSafeAudioLogPtr::Create(std::move(log))),
+      log_(log ? media::mojom::ThreadSafeAudioLogPtr::Create(std::move(log))
+               : nullptr),
       created_callback_(std::move(created_callback)),
       delete_callback_(std::move(delete_callback)),
       foreign_socket_(),
       writer_(media::AudioInputSyncWriter::Create(
-          base::BindRepeating(&media::mojom::AudioLog::OnLogMessage,
-                              base::Unretained(log_->get())),
+          log_ ? base::BindRepeating(&media::mojom::AudioLog::OnLogMessage,
+                                     base::Unretained(log_->get()))
+               : base::RepeatingCallback<void(const std::string&)>(),
           shared_memory_count,
           params,
           &foreign_socket_)),
@@ -52,7 +54,6 @@ InputStream::InputStream(CreatedCallback created_callback,
   DCHECK(audio_manager);
   DCHECK(binding_.is_bound());
   DCHECK(client_.is_bound());
-  DCHECK(observer_.is_bound());
   DCHECK(created_callback_);
   DCHECK(delete_callback_);
 
@@ -61,8 +62,12 @@ InputStream::InputStream(CreatedCallback created_callback,
       base::BindRepeating(&InputStream::OnStreamError, base::Unretained(this));
   binding_.set_connection_error_handler(error_handler);
   client_.set_connection_error_handler(error_handler);
-  observer_.set_connection_error_handler(std::move(error_handler));
-  log_->get()->OnCreated(params, device_id);
+
+  if (observer_)
+    observer_.set_connection_error_handler(std::move(error_handler));
+
+  if (log_)
+    log_->get()->OnCreated(params, device_id);
 
   // Only MONO, STEREO and STEREO_AND_KEYBOARD_MIC channel layouts are expected,
   // see AudioManagerBase::MakeAudioInputStream().
@@ -84,7 +89,8 @@ InputStream::InputStream(CreatedCallback created_callback,
 InputStream::~InputStream() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
 
-  log_->get()->OnClosed();
+  if (log_)
+    log_->get()->OnClosed();
 
   if (created_callback_) {
     // Didn't manage to create the stream. Call the callback anyways as mandated
@@ -106,8 +112,10 @@ void InputStream::Record() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
   DCHECK(controller_);
   controller_->Record();
-  observer_->DidStartRecording();
-  log_->get()->OnStarted();
+  if (observer_)
+    observer_->DidStartRecording();
+  if (log_)
+    log_->get()->OnStarted();
 }
 
 void InputStream::SetVolume(double volume) {
@@ -121,7 +129,8 @@ void InputStream::SetVolume(double volume) {
   }
 
   controller_->SetVolume(volume);
-  log_->get()->OnSetVolume(volume);
+  if (log_)
+    log_->get()->OnSetVolume(volume);
 }
 
 void InputStream::OnCreated(bool initially_muted) {
@@ -153,13 +162,15 @@ void InputStream::OnCreated(bool initially_muted) {
 void InputStream::OnError(media::AudioInputController::ErrorCode error_code) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
   client_->OnError();
-  log_->get()->OnError();
+  if (log_)
+    log_->get()->OnError();
   OnStreamError();
 }
 
 void InputStream::OnLog(base::StringPiece message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
-  log_->get()->OnLogMessage(message.as_string());
+  if (log_)
+    log_->get()->OnLogMessage(message.as_string());
 }
 
 void InputStream::OnMuted(bool is_muted) {

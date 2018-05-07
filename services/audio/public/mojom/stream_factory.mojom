@@ -40,8 +40,8 @@ interface StreamFactory {
   CreateInputStream(
     media.mojom.AudioInputStream& stream,
     media.mojom.AudioInputStreamClient client,
-    media.mojom.AudioInputStreamObserver observer,
-    media.mojom.AudioLog log,
+    media.mojom.AudioInputStreamObserver? observer,
+    media.mojom.AudioLog? log,
     string device_id, media.mojom.AudioParameters params,
     uint32 shared_memory_count, bool enable_agc,
     handle<shared_buffer>? key_press_count_buffer)
