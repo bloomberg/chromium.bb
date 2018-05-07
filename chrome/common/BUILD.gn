@@ -479,9 +479,6 @@ static_library("common") {
       "pepper_permission_util.h",
     ]
   }
-  if (!enable_webrtc) {
-    sources -= [ "media/webrtc_logging_messages.h" ]
-  }
 
   if (safe_browsing_mode != 0) {
     public_deps += [ "//chrome/common/safe_browsing" ]

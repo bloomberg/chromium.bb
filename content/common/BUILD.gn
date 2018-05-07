@@ -7,7 +7,6 @@ import("//build/buildflag_header.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//ipc/features.gni")
-import("//media/media_options.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//ppapi/buildflags/buildflags.gni")
 import("//sandbox/features.gni")
@@ -231,6 +230,8 @@ source_set("common") {
     "notifications/notification_struct_traits.cc",
     "notifications/notification_struct_traits.h",
     "origin_util.cc",
+    "p2p_messages.h",
+    "p2p_socket_type.h",
     "page_message_enums.h",
     "page_messages.h",
     "page_state_serialization.cc",
@@ -376,6 +377,8 @@ source_set("common") {
     "//third_party/angle:angle_gpu_info_util",
     "//third_party/boringssl",
     "//third_party/icu",
+    "//third_party/webrtc/rtc_base:rtc_base",
+    "//third_party/webrtc_overrides",
     "//ui/base",
     "//ui/base/ime",
     "//ui/display",
@@ -431,17 +434,6 @@ source_set("common") {
     # some unit test binaries won't compile. This only worked in release mode
     # because logging is disabled there.
     deps += [ "//ppapi/proxy:ipc_sources" ]
-  }
-
-  if (enable_webrtc) {
-    sources += [
-      "p2p_messages.h",
-      "p2p_socket_type.h",
-    ]
-    deps += [
-      "//third_party/webrtc/rtc_base:rtc_base",
-      "//third_party/webrtc_overrides",
-    ]
   }
 
   if (use_ozone) {

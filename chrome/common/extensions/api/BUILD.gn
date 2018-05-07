@@ -6,7 +6,6 @@ import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//chrome/common/features.gni")
 import("//extensions/buildflags/buildflags.gni")
-import("//media/media_options.gni")
 import("//tools/json_schema_compiler/json_features.gni")
 import("//tools/json_schema_compiler/json_schema_api.gni")
 
@@ -16,6 +15,10 @@ schema_sources = [
   "accessibility_features.json",
   "accessibility_private.json",
   "activity_log_private.json",
+  "cast_streaming_receiver_session.idl",
+  "cast_streaming_rtp_stream.idl",
+  "cast_streaming_session.idl",
+  "cast_streaming_udp_transport.idl",
   "autofill_private.idl",
   "automation.idl",
   "automation_internal.idl",
@@ -129,15 +132,6 @@ if (enable_print_preview && !is_chromeos) {
 
 if (enable_service_discovery) {
   schema_sources += [ "mdns.idl" ]
-}
-
-if (enable_webrtc) {
-  schema_sources += [
-    "cast_streaming_receiver_session.idl",
-    "cast_streaming_rtp_stream.idl",
-    "cast_streaming_session.idl",
-    "cast_streaming_udp_transport.idl",
-  ]
 }
 
 extensions_api_root_namespace = "extensions::api::%(namespace)s"

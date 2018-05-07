@@ -12,7 +12,6 @@ import("//components/nacl/features.gni")
 import("//components/offline_pages/buildflags/features.gni")
 import("//components/signin/features.gni")
 import("//extensions/buildflags/buildflags.gni")
-import("//media/media_options.gni")
 import("//ppapi/buildflags/buildflags.gni")
 import("//printing/buildflags/buildflags.gni")
 import("//rlz/buildflags/buildflags.gni")
@@ -784,6 +783,8 @@ split_static_library("ui") {
     "webui/log_web_ui_url.h",
     "webui/media/media_engagement_ui.cc",
     "webui/media/media_engagement_ui.h",
+    "webui/media/webrtc_logs_ui.cc",
+    "webui/media/webrtc_logs_ui.h",
     "webui/memory_internals_ui.cc",
     "webui/memory_internals_ui.h",
     "webui/metrics_handler.cc",
@@ -1015,6 +1016,7 @@ split_static_library("ui") {
     "//components/version_ui",
     "//components/web_cache/browser",
     "//components/web_resource",
+    "//components/webrtc_logging/browser",
     "//content/app/resources",
     "//content/public/common",
     "//crypto",
@@ -3848,14 +3850,6 @@ split_static_library("ui") {
     if (enable_print_preview && !is_chromeos) {
       deps += [ "//chrome/common:service_process_mojom" ]
     }
-  }
-
-  if (enable_webrtc) {
-    sources += [
-      "webui/media/webrtc_logs_ui.cc",
-      "webui/media/webrtc_logs_ui.h",
-    ]
-    deps += [ "//components/webrtc_logging/browser" ]
   }
 
   if (safe_browsing_mode == 1) {

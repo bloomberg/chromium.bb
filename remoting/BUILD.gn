@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//components/nacl/features.gni")
-import("//media/media_options.gni")
 import("//remoting/build/config/remoting_build.gni")
 
 group("remoting_all") {
@@ -176,9 +175,7 @@ test("remoting_unittests") {
     ]
   }
 
-  if (enable_webrtc) {
-    deps += [ "//third_party/webrtc_overrides:init_webrtc" ]
-  }
+  deps += [ "//third_party/webrtc_overrides:init_webrtc" ]
 
   if (is_android) {
     deps += [ "//net/android:net_java" ]
@@ -221,9 +218,7 @@ if (enable_remoting_host) {
       "//third_party/webrtc_overrides",
     ]
 
-    if (enable_webrtc) {
-      deps += [ "//third_party/webrtc_overrides:init_webrtc" ]
-    }
+    deps += [ "//third_party/webrtc_overrides:init_webrtc" ]
 
     if (is_win) {
       defines += [ "_ALT_NO_EXCEPTIONS" ]

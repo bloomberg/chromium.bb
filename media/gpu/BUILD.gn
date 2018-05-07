@@ -152,6 +152,8 @@ component("gpu") {
       "android/android_image_reader_compat.h",
       "android/android_video_decode_accelerator.cc",
       "android/android_video_decode_accelerator.h",
+      "android/android_video_encode_accelerator.cc",
+      "android/android_video_encode_accelerator.h",
       "android/android_video_surface_chooser.h",
       "android/android_video_surface_chooser_impl.cc",
       "android/android_video_surface_chooser_impl.h",
@@ -202,14 +204,8 @@ component("gpu") {
       # TODO(crbug.com/789435): This can be removed once CdmManager is removed.
       "//media/mojo:buildflags",
       "//services/service_manager/public/cpp:cpp",
+      "//third_party/libyuv",
     ]
-    if (enable_webrtc) {
-      deps += [ "//third_party/libyuv" ]
-      sources += [
-        "android/android_video_encode_accelerator.cc",
-        "android/android_video_encode_accelerator.h",
-      ]
-    }
 
     # TODO(crbug.com/789435): This is needed for AVDA to access the CDM
     # directly.  Remove this dependency after VDAs are also running as part of
