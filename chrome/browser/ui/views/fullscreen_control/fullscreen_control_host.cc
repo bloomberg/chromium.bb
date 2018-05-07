@@ -8,8 +8,10 @@
 #include "base/callback.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
-#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/exclusive_access_bubble_views_context.h"
 #include "chrome/browser/ui/views/fullscreen_control/fullscreen_control_view.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_features.h"
@@ -59,13 +61,15 @@ constexpr base::TimeDelta kKeyPressPopupDelay = base::TimeDelta::FromSeconds(1);
 
 }  // namespace
 
-FullscreenControlHost::FullscreenControlHost(BrowserView* browser_view,
-                                             views::View* host_view)
-    : browser_view_(browser_view),
+FullscreenControlHost::FullscreenControlHost(
+    ExclusiveAccessContext* exclusive_access_context,
+    ExclusiveAccessBubbleViewsContext* bubble_views_context)
+    : exclusive_access_context_(exclusive_access_context),
+      bubble_views_context_(bubble_views_context),
       fullscreen_control_popup_(
-          browser_view->GetBubbleParentView(),
-          base::BindRepeating(&BrowserView::ExitFullscreen,
-                              base::Unretained(browser_view)),
+          bubble_views_context->GetBubbleParentView(),
+          base::BindRepeating(&ExclusiveAccessContext::ExitFullscreen,
+                              base::Unretained(exclusive_access_context)),
           base::BindRepeating(&FullscreenControlHost::OnVisibilityChanged,
                               base::Unretained(this))) {}
 
@@ -96,8 +100,7 @@ void FullscreenControlHost::OnKeyEvent(ui::KeyEvent* event) {
   // KeyboardLockController class.
   if (event->type() == ui::ET_KEY_PRESSED &&
       !key_press_delay_timer_.IsRunning() &&
-      browser_view_->browser()
-          ->exclusive_access_manager()
+      bubble_views_context_->GetExclusiveAccessManager()
           ->keyboard_lock_controller()
           ->RequiresPressAndHoldEscToExit()) {
     key_press_delay_timer_.Start(
@@ -173,10 +176,11 @@ bool FullscreenControlHost::IsVisible() const {
 void FullscreenControlHost::ShowForInputEntryMethod(
     InputEntryMethod input_entry_method) {
   input_entry_method_ = input_entry_method;
-  auto* bubble = browser_view_->exclusive_access_bubble();
+  auto* bubble = exclusive_access_context_->GetExclusiveAccessBubble();
   if (bubble)
     bubble->HideImmediately();
-  fullscreen_control_popup_.Show(browser_view_->GetClientAreaBoundsInScreen());
+  fullscreen_control_popup_.Show(
+      bubble_views_context_->GetClientAreaBoundsInScreen());
 
   // Exit cooldown mode in case the exit UI is triggered by a different method.
   in_mouse_cooldown_mode_ = false;
@@ -213,13 +217,14 @@ void FullscreenControlHost::OnPopupTimeout(
 }
 
 bool FullscreenControlHost::IsExitUiNeeded() {
-  return browser_view_->IsFullscreen() &&
-         browser_view_->ShouldHideUIForFullscreen();
+  return exclusive_access_context_->IsFullscreen() &&
+         exclusive_access_context_->ShouldHideUIForFullscreen();
 }
 
 float FullscreenControlHost::CalculateCursorBufferHeight() const {
-  float control_bottom = FullscreenControlPopup::GetButtonBottomOffset() +
-                         browser_view_->GetClientAreaBoundsInScreen().y();
+  float control_bottom =
+      FullscreenControlPopup::GetButtonBottomOffset() +
+      bubble_views_context_->GetClientAreaBoundsInScreen().y();
   DCHECK_GT(control_bottom, 0);
   return control_bottom * kExitHeightScaleFactor;
 }

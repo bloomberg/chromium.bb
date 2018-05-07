@@ -11,7 +11,8 @@
 #include "chrome/browser/ui/views/fullscreen_control/fullscreen_control_popup.h"
 #include "ui/events/event_handler.h"
 
-class BrowserView;
+class ExclusiveAccessContext;
+class ExclusiveAccessBubbleViewsContext;
 class FullscreenControlView;
 
 namespace ui {
@@ -20,15 +21,17 @@ class MouseEvent;
 class TouchEvent;
 }  // namespace ui
 
-namespace views {
-class View;
-}  // namespace views
-
+// This is a UI component that helps user exit fullscreen without using a
+// keyboard. It drops an "X" button from the top of the screen when user moves
+// cursor to the top or long-press on the screen. Pressing that button will exit
+// fullscreen.
+// This UI is also used as a visual progress indicator when keyboard lock
+// requires user to press-and-hold ESC key to exit fullscreen.
 class FullscreenControlHost : public ui::EventHandler {
  public:
-  // |host_view| allows the host to control the z-order of the underlying view.
-  explicit FullscreenControlHost(BrowserView* browser_view,
-                                 views::View* host_view);
+  FullscreenControlHost(
+      ExclusiveAccessContext* exclusive_access_context,
+      ExclusiveAccessBubbleViewsContext* bubble_views_context);
   ~FullscreenControlHost() override;
 
   static bool IsFullscreenExitUIEnabled();
@@ -70,7 +73,8 @@ class FullscreenControlHost : public ui::EventHandler {
 
   bool in_mouse_cooldown_mode_ = false;
 
-  BrowserView* const browser_view_;
+  ExclusiveAccessContext* const exclusive_access_context_;
+  ExclusiveAccessBubbleViewsContext* const bubble_views_context_;
 
   FullscreenControlPopup fullscreen_control_popup_;
   base::OneShotTimer popup_timeout_timer_;

@@ -24,7 +24,12 @@ class Browser;
 class BrowserWindow;
 @class BrowserWindowController;
 class ExclusiveAccessBubbleViews;
+class FullscreenControlHost;
 class GURL;
+
+namespace views {
+class EventMonitor;
+}
 
 // Component placed into a browser window controller to manage communication
 // with subtle notification bubbles, which appear for events such as entering
@@ -63,6 +68,8 @@ class ExclusiveAccessController : public ExclusiveAccessContext,
   content::WebContents* GetActiveWebContents() override;
   void UnhideDownloadShelf() override;
   void HideDownloadShelf() override;
+  bool ShouldHideUIForFullscreen() const override;
+  ExclusiveAccessBubbleViews* GetExclusiveAccessBubble() override;
 
   // ui::AcceleratorProvider:
   bool GetAcceleratorForCommandId(int command_id,
@@ -83,6 +90,10 @@ class ExclusiveAccessController : public ExclusiveAccessContext,
  private:
   BrowserWindow* GetBrowserWindow() const;
 
+  // Gets the FullscreenControlHost for this BrowserView, creating it if it does
+  // not yet exist.
+  FullscreenControlHost* GetFullscreenControlHost();
+
   BrowserWindowController* controller_;  // Weak. Owns |this|.
   Browser* browser_;                     // Weak. Owned by controller.
 
@@ -94,6 +105,8 @@ class ExclusiveAccessController : public ExclusiveAccessContext,
   ExclusiveAccessBubbleHideCallback bubble_first_hide_callback_;
 
   std::unique_ptr<ExclusiveAccessBubbleViews> views_bubble_;
+  std::unique_ptr<FullscreenControlHost> fullscreen_control_host_;
+  std::unique_ptr<views::EventMonitor> fullscreen_control_host_event_monitor_;
 
   // Used to keep track of the kShowFullscreenToolbar preference.
   PrefChangeRegistrar pref_registrar_;

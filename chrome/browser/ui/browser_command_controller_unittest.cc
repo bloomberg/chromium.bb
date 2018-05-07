@@ -277,6 +277,9 @@ class FullscreenTestBrowserWindow : public TestBrowserWindow,
       ExclusiveAccessBubbleHideCallback bubble_first_hide_callback,
       bool force_update) override {}
   void OnExclusiveAccessUserInput() override {}
+  ExclusiveAccessBubbleViews* GetExclusiveAccessBubble() override {
+    return nullptr;
+  }
 
   void set_toolbar_showing(bool showing) { toolbar_showing_ = showing; }
 
