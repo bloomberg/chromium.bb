@@ -22,9 +22,11 @@
 #include "chromeos/accelerometer/accelerometer_types.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
+#include "services/ui/public/cpp/input_devices/input_device_client_test_api.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
+#include "ui/events/devices/input_device.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/vector3d_f.h"
@@ -725,6 +727,65 @@ TEST_F(TabletModeControllerTest, RecordLidAngle) {
   ASSERT_TRUE(tablet_mode_controller()->TriggerRecordLidAngleTimerForTesting());
   histogram_tester.ExpectBucketCount(
       TabletModeController::kLidAngleHistogramName, 180, 1);
+}
+
+// Tests that when an external keyboard and mouse is connected, flipping the
+// lid of the chromebook will not enter tablet mode.
+TEST_F(TabletModeControllerTest,
+       CannotEnterTabletModeWithExternalKeyboardAndMouse) {
+  // Set the current list of devices to empty so that they don't interfere
+  // with the test.
+  RunAllPendingInMessageLoop();
+  ui::InputDeviceClientTestApi().SetKeyboardDevices({});
+  ui::InputDeviceClientTestApi().SetMouseDevices({});
+  RunAllPendingInMessageLoop();
+
+  OpenLidToAngle(300.0f);
+  EXPECT_TRUE(IsTabletModeStarted());
+
+  OpenLidToAngle(30.0f);
+  EXPECT_FALSE(IsTabletModeStarted());
+
+  // Attach a external mouse and keyboard.
+  ui::InputDeviceClientTestApi().SetKeyboardDevices({ui::InputDevice(
+      2, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, "keyboard")});
+  ui::InputDeviceClientTestApi().SetMouseDevices({ui::InputDevice(
+      3, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, "mouse")});
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(IsTabletModeStarted());
+
+  // Open lid to tent mode. Verify that tablet mode is not started.
+  OpenLidToAngle(300.0f);
+  EXPECT_FALSE(IsTabletModeStarted());
+}
+
+// Tests that when we plug in a external keyboard and mouse the device will
+// leave tablet mode.
+TEST_F(TabletModeControllerTest,
+       LeaveTabletModeWhenExternalKeyboardAndMouseConnected) {
+  // Set the current list of devices to empty so that they don't interfere
+  // with the test.
+  RunAllPendingInMessageLoop();
+  ui::InputDeviceClientTestApi().SetKeyboardDevices({});
+  ui::InputDeviceClientTestApi().SetMouseDevices({});
+  RunAllPendingInMessageLoop();
+
+  // Start in tablet mode.
+  OpenLidToAngle(300.0f);
+  EXPECT_TRUE(IsTabletModeStarted());
+
+  // Attach external mouse and keyboard. Verify that tablet mode has ended.
+  ui::InputDeviceClientTestApi().SetKeyboardDevices({ui::InputDevice(
+      2, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, "keyboard")});
+  ui::InputDeviceClientTestApi().SetMouseDevices({ui::InputDevice(
+      3, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, "mouse")});
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(IsTabletModeStarted());
+
+  // Verify that after unplugging the keyboard, tablet mode will resume.
+  ui::InputDeviceClientTestApi().SetKeyboardDevices({});
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(IsTabletModeStarted());
 }
 
 }  // namespace ash

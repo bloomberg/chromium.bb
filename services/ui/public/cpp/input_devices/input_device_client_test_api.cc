@@ -68,6 +68,15 @@ void InputDeviceClientTestApi::SetKeyboardDevices(
   }
 }
 
+void InputDeviceClientTestApi::SetMouseDevices(
+    const std::vector<InputDevice>& devices) {
+  if (DeviceDataManager::instance_) {
+    DeviceDataManager::instance_->OnMouseDevicesUpdated(devices);
+  } else {
+    GetInputDeviceClient()->OnMouseDeviceConfigurationChanged(devices);
+  }
+}
+
 void InputDeviceClientTestApi::SetTouchscreenDevices(
     const std::vector<TouchscreenDevice>& devices,
     bool are_touchscreen_target_displays_valid) {
