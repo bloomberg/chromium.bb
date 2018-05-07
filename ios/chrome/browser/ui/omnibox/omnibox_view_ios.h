@@ -216,6 +216,11 @@ class OmniboxViewIOS : public OmniboxView,
   NSMutableAttributedString* attributing_display_string_;
 
   OmniboxPopupProvider* popup_provider_;  // weak
+
+  // A flag that is set whenever any input or copy/paste event happened in the
+  // omnibox while it was focused. Used to count event "user focuses the omnibox
+  // to view the complete URL and immediately defocuses it".
+  BOOL omnibox_interacted_while_focused_;
 };
 
 #endif  // IOS_CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_VIEW_IOS_H_
