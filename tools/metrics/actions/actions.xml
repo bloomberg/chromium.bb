@@ -11122,6 +11122,14 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Mobile_FocusedDefocusedOmnibox_WithNoAction">
+  <owner>stkhapugin@chromium.org</owner>
+  <description>
+    Records when a user focuses the omnibox and then defocuses it without
+    modifying or copying the URL. iOS only.
+  </description>
+</action>
+
 <action name="MobileActionBarShown">
   <owner>donnd@chromium.org</owner>
   <description>
