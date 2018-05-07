@@ -94,7 +94,7 @@
     "bing": {
       "name": "Bing",
       "keyword": "bing.com",
-      "favicon_url": "https://www.bing.com/s/a/bing_p.ico",
+      "favicon_url": "https://www.bing.com/sa/simg/bing_p_rr_teal_min.ico",
       "search_url": "https://www.bing.com/search?q={searchTerms}&PC=U316&FORM=CHROMN",
       "suggest_url": "https://www.bing.com/osjson.aspx?query={searchTerms}&language={language}&PC=U316",
       "image_url": "https://www.bing.com/images/detail/search?iss=sbi&FORM=CHROMI#enterInsights",
@@ -117,7 +117,7 @@
     "google": {
       "name": "Google",
       "keyword": "google.com",
-      "favicon_url": "https://www.google.com/favicon.ico",
+      "favicon_url": "https://www.google.com/images/branding/product/ico/googleg_lodp.ico",
       "search_url": "{google:baseURL}search?q={searchTerms}&{google:RLZ}{google:originalQueryForSuggestion}{google:assistedQueryStats}{google:searchFieldtrialParameter}{google:iOSSearchLanguage}{google:searchClient}{google:sourceId}{google:contextualSearchVersion}ie={inputEncoding}",
       "suggest_url": "{google:baseSuggestURL}search?{google:searchFieldtrialParameter}client={google:suggestClient}&gs_ri={google:suggestRid}&xssi=t&q={searchTerms}&{google:inputType}{google:cursorPosition}{google:currentPageUrl}{google:pageClassification}{google:searchVersion}{google:sessionToken}{google:prefetchQuery}sugkey={google:suggestAPIKeyParameter}",
       "image_url": "{google:baseURL}searchbyimage/upload",
