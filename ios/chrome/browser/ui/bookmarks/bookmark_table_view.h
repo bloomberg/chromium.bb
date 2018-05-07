@@ -8,6 +8,8 @@
 #import <UIKit/UIKit.h>
 #include <set>
 
+#import "ios/chrome/browser/ui/bookmarks/cells/bookmark_home_promo_item.h"
+
 @class BookmarkHomeSharedState;
 @class BookmarkTableView;
 class GURL;
@@ -24,7 +26,7 @@ class ChromeBrowserState;
 }
 
 // Delegate to handle actions on the table.
-@protocol BookmarkTableViewDelegate<NSObject>
+@protocol BookmarkTableViewDelegate<BookmarkHomePromoItemDelegate>
 
 // Returns the SigninPromoViewMediator to use for the sign-in promo view in the
 // bookmark table view.
