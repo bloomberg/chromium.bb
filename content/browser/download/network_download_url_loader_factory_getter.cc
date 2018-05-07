@@ -6,8 +6,8 @@
 
 #include "components/download/public/common/download_task_runner.h"
 #include "content/browser/url_loader_factory_getter.h"
-#include "content/common/wrapper_shared_url_loader_factory.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 
 namespace content {
 
@@ -31,8 +31,9 @@ NetworkDownloadURLLoaderFactoryGetter::GetURLLoaderFactory() {
   if (proxy_factory_request_.is_pending()) {
     url_loader_factory_getter_->CloneNetworkFactory(
         std::move(proxy_factory_request_));
-    lazy_factory_ = base::MakeRefCounted<WrapperSharedURLLoaderFactory>(
-        std::move(proxy_factory_ptr_info_));
+    lazy_factory_ =
+        base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
+            std::move(proxy_factory_ptr_info_));
   } else {
     lazy_factory_ = url_loader_factory_getter_->GetNetworkFactory();
   }

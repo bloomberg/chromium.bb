@@ -11,10 +11,10 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/safe_browsing/proto/csd.pb.h"
-#include "content/public/common/weak_wrapper_shared_url_loader_factory.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -44,7 +44,7 @@ class IncidentReportUploaderImplTest : public testing::Test {
 TEST_F(IncidentReportUploaderImplTest, Success) {
   network::TestURLLoaderFactory test_url_loader_factory;
   auto url_loader_factory =
-      base::MakeRefCounted<content::WeakWrapperSharedURLLoaderFactory>(
+      base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
           &test_url_loader_factory);
 
   ClientIncidentReport report;

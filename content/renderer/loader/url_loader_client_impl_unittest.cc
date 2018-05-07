@@ -7,7 +7,6 @@
 #include <vector>
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "content/public/common/weak_wrapper_shared_url_loader_factory.h"
 #include "content/renderer/loader/navigation_response_override_parameters.h"
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "content/renderer/loader/test_request_peer.h"
@@ -15,6 +14,7 @@
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/redirect_info.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
@@ -31,7 +31,7 @@ class URLLoaderClientImplTest : public ::testing::Test,
         TRAFFIC_ANNOTATION_FOR_TESTS, false, false,
         std::make_unique<TestRequestPeer>(dispatcher_.get(),
                                           &request_peer_context_),
-        base::MakeRefCounted<WeakWrapperSharedURLLoaderFactory>(this),
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(this),
         std::vector<std::unique_ptr<URLLoaderThrottle>>(),
         nullptr /* navigation_response_override_params */,
         nullptr /* continue_navigation_function */);

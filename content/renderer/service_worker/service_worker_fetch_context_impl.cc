@@ -5,7 +5,6 @@
 #include "content/renderer/service_worker/service_worker_fetch_context_impl.h"
 
 #include "base/feature_list.h"
-#include "content/common/wrapper_shared_url_loader_factory.h"
 #include "content/public/common/content_features.h"
 #include "content/public/renderer/url_loader_throttle_provider.h"
 #include "content/public/renderer/websocket_handshake_throttle_provider.h"
@@ -14,6 +13,7 @@
 #include "content/renderer/loader/web_url_loader_impl.h"
 #include "content/renderer/loader/web_url_request_util.h"
 #include "ipc/ipc_message.h"
+#include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 
 namespace content {
 
@@ -61,7 +61,7 @@ ServiceWorkerFetchContextImpl::WrapURLLoaderFactory(
     mojo::ScopedMessagePipeHandle url_loader_factory_handle) {
   return std::make_unique<content::WebURLLoaderFactoryImpl>(
       resource_dispatcher_->GetWeakPtr(),
-      base::MakeRefCounted<WrapperSharedURLLoaderFactory>(
+      base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
           network::mojom::URLLoaderFactoryPtrInfo(
               std::move(url_loader_factory_handle),
               network::mojom::URLLoaderFactory::Version_)));

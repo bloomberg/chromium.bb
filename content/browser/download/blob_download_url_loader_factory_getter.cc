@@ -6,7 +6,7 @@
 
 #include "components/download/public/common/download_task_runner.h"
 #include "content/browser/url_loader_factory_getter.h"
-#include "content/common/wrapper_shared_url_loader_factory.h"
+#include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_url_loader_factory.h"
@@ -31,7 +31,7 @@ BlobDownloadURLLoaderFactoryGetter::GetURLLoaderFactory() {
   storage::BlobURLLoaderFactory::Create(
       std::move(blob_data_handle_), url_,
       mojo::MakeRequest(&url_loader_factory_ptr_info));
-  return base::MakeRefCounted<WrapperSharedURLLoaderFactory>(
+  return base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
       std::move(url_loader_factory_ptr_info));
 }
 

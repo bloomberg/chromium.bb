@@ -10,7 +10,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "content/public/common/weak_wrapper_shared_url_loader_factory.h"
 #include "content/public/renderer/request_peer.h"
 #include "content/renderer/loader/navigation_response_override_parameters.h"
 #include "content/renderer/loader/request_extra_data.h"
@@ -19,6 +18,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
@@ -159,7 +159,8 @@ class URLResponseBodyConsumerTest : public ::testing::Test {
         TRAFFIC_ANNOTATION_FOR_TESTS, false,
         false /* pass_response_pipe_to_peer */,
         std::make_unique<TestRequestPeer>(context, message_loop_.task_runner()),
-        base::MakeRefCounted<WeakWrapperSharedURLLoaderFactory>(&factory_),
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+            &factory_),
         std::vector<std::unique_ptr<URLLoaderThrottle>>(),
         nullptr /* navigation_response_override_params */,
         nullptr /* continue_navigation_function */);

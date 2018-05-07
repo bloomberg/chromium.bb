@@ -9,8 +9,8 @@
 #include "base/test/scoped_task_environment.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/url_loader_throttle.h"
-#include "content/public/common/weak_wrapper_shared_url_loader_factory.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,8 +26,9 @@ class TestURLLoaderFactory : public network::mojom::URLLoaderFactory,
  public:
   TestURLLoaderFactory() : binding_(this), url_loader_binding_(this) {
     binding_.Bind(mojo::MakeRequest(&factory_ptr_));
-    shared_factory_ = base::MakeRefCounted<WeakWrapperSharedURLLoaderFactory>(
-        factory_ptr_.get());
+    shared_factory_ =
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+            factory_ptr_.get());
   }
 
   ~TestURLLoaderFactory() override { shared_factory_->Detach(); }
@@ -116,7 +117,7 @@ class TestURLLoaderFactory : public network::mojom::URLLoaderFactory,
   mojo::Binding<network::mojom::URLLoader> url_loader_binding_;
   network::mojom::URLLoaderFactoryPtr factory_ptr_;
   network::mojom::URLLoaderClientPtr client_ptr_;
-  scoped_refptr<WeakWrapperSharedURLLoaderFactory> shared_factory_;
+  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory> shared_factory_;
   DISALLOW_COPY_AND_ASSIGN(TestURLLoaderFactory);
 };
 

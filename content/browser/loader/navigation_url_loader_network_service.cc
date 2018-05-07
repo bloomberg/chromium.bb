@@ -40,7 +40,6 @@
 #include "content/common/navigation_subresource_loader_params.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/common/throttling_url_loader.h"
-#include "content/common/wrapper_shared_url_loader_factory.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -54,7 +53,6 @@
 #include "content/public/common/referrer.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
-#include "content/public/common/weak_wrapper_shared_url_loader_factory.h"
 #include "content/public/common/webplugininfo.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_content_disposition.h"
@@ -66,6 +64,8 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/loader_util.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -493,7 +493,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
     // or be intercepted, so we just let it go here.
     if (factory_for_webui.is_valid()) {
       url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
-          base::MakeRefCounted<WrapperSharedURLLoaderFactory>(
+          base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
               std::move(factory_for_webui)),
           CreateURLLoaderThrottles(), 0 /* routing_id */, 0 /* request_id? */,
           network::mojom::kURLLoadOptionNone, resource_request_.get(), this,
@@ -664,8 +664,9 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
     }
 
     if (resource_request_->url.SchemeIs(url::kBlobScheme)) {
-      factory = base::MakeRefCounted<WeakWrapperSharedURLLoaderFactory>(
-          default_url_loader_factory_getter_->GetBlobFactory());
+      factory =
+          base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+              default_url_loader_factory_getter_->GetBlobFactory());
     } else if (!IsURLHandledByNetworkService(resource_request_->url) &&
                !resource_request_->url.SchemeIs(url::kDataScheme)) {
       if (known_schemes_.find(resource_request_->url.scheme()) ==
@@ -690,8 +691,9 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
                              resource_request_->url,
                              mojo::MakeRequest(&non_network_factory)));
         }
-        factory = base::MakeRefCounted<WeakWrapperSharedURLLoaderFactory>(
-            non_network_factory.get());
+        factory =
+            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+                non_network_factory.get());
       }
     } else {
       default_loader_used_ = true;
@@ -708,7 +710,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
         // We don't worry about reconnection since it's a single navigation.
         default_url_loader_factory_getter_->CloneNetworkFactory(
             std::move(proxied_factory_request_));
-        factory = base::MakeRefCounted<WrapperSharedURLLoaderFactory>(
+        factory = base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
             std::move(proxied_factory_info_));
       } else {
         factory = default_url_loader_factory_getter_->GetNetworkFactory();

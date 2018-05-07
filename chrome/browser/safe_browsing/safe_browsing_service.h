@@ -26,7 +26,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/public/common/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 
 #if defined(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/incident_reporting/delayed_analysis_callback.h"
@@ -315,7 +315,7 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
 
   // A SharedURLLoaderFactory and its interfaceptr used on the IO thread.
   network::mojom::URLLoaderFactoryPtr url_loader_factory_on_io_;
-  scoped_refptr<content::WeakWrapperSharedURLLoaderFactory>
+  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
       shared_url_loader_factory_on_io_;
 
 #if defined(SAFE_BROWSING_DB_LOCAL)

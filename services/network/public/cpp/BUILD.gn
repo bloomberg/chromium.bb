@@ -27,6 +27,10 @@ component("cpp") {
     "simple_url_loader.cc",
     "simple_url_loader.h",
     "simple_url_loader_stream_consumer.h",
+    "weak_wrapper_shared_url_loader_factory.cc",
+    "weak_wrapper_shared_url_loader_factory.h",
+    "wrapper_shared_url_loader_factory.cc",
+    "wrapper_shared_url_loader_factory.h",
   ]
 
   if (!is_ios) {

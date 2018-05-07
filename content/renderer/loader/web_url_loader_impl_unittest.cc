@@ -19,7 +19,6 @@
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/weak_wrapper_shared_url_loader_factory.h"
 #include "content/public/renderer/fixed_received_data.h"
 #include "content/public/renderer/request_peer.h"
 #include "content/renderer/loader/navigation_response_override_parameters.h"
@@ -36,6 +35,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/resource_response_info.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
@@ -175,7 +175,7 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
       : loader_(new WebURLLoaderImpl(
             dispatcher,
             blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
-            base::MakeRefCounted<WeakWrapperSharedURLLoaderFactory>(
+            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &fake_url_loader_factory_))),
         delete_on_receive_redirect_(false),
         delete_on_receive_response_(false),

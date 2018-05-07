@@ -16,12 +16,12 @@
 #include "chrome/browser/search/one_google_bar/one_google_bar_data.h"
 #include "components/google/core/browser/google_url_tracker.h"
 #include "components/signin/core/browser/signin_header_helper.h"
-#include "content/public/common/weak_wrapper_shared_url_loader_factory.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "services/data_decoder/public/cpp/testing_json_parser.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -91,7 +91,7 @@ class OneGoogleBarLoaderImplTest : public testing::Test {
         google_url_tracker_(std::make_unique<GoogleURLTrackerClientStub>(),
                             GoogleURLTracker::ALWAYS_DOT_COM_MODE),
         test_shared_loader_factory_(
-            base::MakeRefCounted<content::WeakWrapperSharedURLLoaderFactory>(
+            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)),
         api_url_override_(api_url_override),
         account_consistency_mirror_required_(

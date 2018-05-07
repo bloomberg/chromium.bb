@@ -9,10 +9,10 @@
 #include "content/browser/web_package/web_package_loader.h"
 #include "content/browser/web_package/web_package_request_handler.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/weak_wrapper_shared_url_loader_factory.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace content {

@@ -249,7 +249,7 @@ SafeBrowsingService::GetURLLoaderFactoryOnIOThread() {
         base::BindOnce(&SafeBrowsingService::CreateURLLoaderFactoryForIO, this,
                        MakeRequest(&url_loader_factory_on_io_)));
     shared_url_loader_factory_on_io_ =
-        base::MakeRefCounted<content::WeakWrapperSharedURLLoaderFactory>(
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             url_loader_factory_on_io_.get());
   }
   return shared_url_loader_factory_on_io_;

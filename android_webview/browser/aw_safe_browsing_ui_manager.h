@@ -11,7 +11,7 @@
 
 #include "components/safe_browsing/base_ui_manager.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 
 class PrefService;
 
@@ -88,7 +88,7 @@ class AwSafeBrowsingUIManager : public safe_browsing::BaseUIManager {
 
   // A SharedURLLoaderFactory and its interfaceptr used on the IO thread.
   network::mojom::URLLoaderFactoryPtr url_loader_factory_on_io_;
-  scoped_refptr<content::WeakWrapperSharedURLLoaderFactory>
+  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
       shared_url_loader_factory_on_io_;
 
   // non-owning
