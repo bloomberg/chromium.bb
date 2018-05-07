@@ -543,13 +543,13 @@ void FileManagerBrowserTestBase::SetUp() {
 
 void FileManagerBrowserTestBase::SetUpCommandLine(
     base::CommandLine* command_line) {
-  if (GetGuestMode() == IN_GUEST_MODE) {
+  if (IsGuestModeTest()) {
     command_line->AppendSwitch(chromeos::switches::kGuestSession);
     command_line->AppendSwitchNative(chromeos::switches::kLoginUser, "");
     command_line->AppendSwitch(switches::kIncognito);
   }
 
-  if (GetGuestMode() == IN_INCOGNITO) {
+  if (IsIncognitoModeTest()) {
     command_line->AppendSwitch(switches::kIncognito);
   }
 
@@ -561,7 +561,7 @@ void FileManagerBrowserTestBase::SetUpInProcessBrowserTestFixture() {
 
   local_volume_.reset(new DownloadsTestVolume);
 
-  if (GetGuestMode() != IN_GUEST_MODE) {
+  if (!IsGuestModeTest()) {
     create_drive_integration_service_ =
         base::Bind(&FileManagerBrowserTestBase::CreateDriveIntegrationService,
                    base::Unretained(this));
@@ -577,7 +577,7 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
 
   CHECK(local_volume_->Mount(profile()));
 
-  if (GetGuestMode() != IN_GUEST_MODE) {
+  if (!IsGuestModeTest()) {
     // Start the embedded test server to serve the mocked share dialog.
     CHECK(embedded_test_server()->Start());
     const GURL share_url_base(embedded_test_server()->GetURL(
@@ -671,29 +671,36 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
                                            std::string* output) {
   base::ScopedAllowBlockingForTesting allow_blocking;
 
-  if (name == "getTestName") {
-    // Obtain the test case name.
-    *output = GetTestCaseName();
+  if (name == "isInGuestMode") {
+    // Obtain if the test runs in guest or incognito mode, or not.
+    if (IsGuestModeTest() || IsIncognitoModeTest()) {
+      LOG(INFO) << GetTestCaseName() << " isInGuestMode: true";
+      *output = "true";
+    } else {
+      ASSERT_EQ(NOT_IN_GUEST_MODE, GetGuestMode());
+      *output = "false";
+    }
+
     return;
   }
 
   if (name == "getRootPaths") {
     // Obtain the root paths.
-    const auto downloads = util::GetDownloadsMountPointName(profile());
+    const auto downloads_root = util::GetDownloadsMountPointName(profile());
     const auto drive = drive::util::GetDriveMountPointPath(profile());
 
     base::DictionaryValue dictionary;
     auto drive_root = drive.BaseName().AsUTF8Unsafe().append("/root");
     dictionary.SetString("drive", "/" + drive_root);
-    dictionary.SetString("downloads", "/" + downloads);
+    dictionary.SetString("downloads", "/" + downloads_root);
 
     base::JSONWriter::Write(dictionary, output);
     return;
   }
 
-  if (name == "isInGuestMode") {
-    // Obtain whether the test is in guest mode or not.
-    *output = GetGuestMode() != NOT_IN_GUEST_MODE ? "true" : "false";
+  if (name == "getTestName") {
+    // Obtain the test case name.
+    *output = GetTestCaseName();
     return;
   }
 

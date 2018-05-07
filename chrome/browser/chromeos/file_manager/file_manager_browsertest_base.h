@@ -55,6 +55,12 @@ class FileManagerBrowserTestBase : public ExtensionApiTest {
   virtual const char* GetTestExtensionManifestName() const = 0;
 
  private:
+  // Returns true if the test requires incognito mode.
+  bool IsIncognitoModeTest() const { return GetGuestMode() == IN_INCOGNITO; }
+
+  // Returns true if the test requires in guest mode.
+  bool IsGuestModeTest() const { return GetGuestMode() == IN_GUEST_MODE; }
+
   // Called during setup if needed, to create a drive integration service for
   // the given |profile|. Caller owns the return result.
   drive::DriveIntegrationService* CreateDriveIntegrationService(
