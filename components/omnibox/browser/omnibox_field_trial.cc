@@ -134,12 +134,6 @@ const base::Feature kSpeculativeServiceWorkerStartOnQueryInput{
 const base::Feature kBreakWordsAtUnderscores{"OmniboxBreakWordsAtUnderscores",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if defined(OS_IOS)
-// Feature used to enable ZeroSuggestProvider on iOS.
-const base::Feature kZeroSuggestProviderIOS{"ZeroSuggestProviderIOS",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
-
 }  // namespace omnibox
 
 namespace {
