@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL non-secure origins should be able to force out insecure cookies. create_cookie_from_js is not defined
+Harness: the test ran to completion.
+
