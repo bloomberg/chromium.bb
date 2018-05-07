@@ -218,6 +218,12 @@ static INLINE void cfl_subtract_average_null(int16_t *pred_buf_q3) {
     return sub_avg[tx_size % TX_SIZES_ALL];                                 \
   }
 
+// For VSX SIMD optimization, the C versions of width == 4 subtract are
+// faster than the VSX. As such, the VSX code calls the C versions.
+void subtract_average_4x4_c(int16_t *pred_buf_q3);
+void subtract_average_4x8_c(int16_t *pred_buf_q3);
+void subtract_average_4x16_c(int16_t *pred_buf_q3);
+
 #define CFL_PREDICT_lbd(arch, width, height)                                 \
   void predict_lbd_##width##x##height##_##arch(const int16_t *pred_buf_q3,   \
                                                uint8_t *dst, int dst_stride, \
