@@ -253,8 +253,16 @@ IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest, StartAndImmediatelyStop) {
   run_loop.Run();
 }
 
+// Flaky on MSAN. https://crbug.com/840294
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_ReceiveFramesFromFakeCaptureDevice \
+  DISABLED_ReceiveFramesFromFakeCaptureDevice
+#else
+#define MAYBE_ReceiveFramesFromFakeCaptureDevice \
+  ReceiveFramesFromFakeCaptureDevice
+#endif
 IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest,
-                       ReceiveFramesFromFakeCaptureDevice) {
+                       MAYBE_ReceiveFramesFromFakeCaptureDevice) {
 #if defined(OS_ANDROID)
   // TODO(chfremer): This test case is flaky on Android. Find out cause of
   // flakiness and then re-enable. See https://crbug.com/709039.
