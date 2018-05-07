@@ -19,6 +19,10 @@
 #include "services/viz/public/interfaces/compositing/compositing_mode_watcher.mojom.h"
 #include "ui/base/ui_features.h"
 
+#if defined(OS_CHROMEOS)
+#include "content/browser/media/keyboard_mic_registration.h"
+#endif
+
 #if defined(USE_AURA)
 namespace aura {
 class Env;
@@ -166,6 +170,13 @@ class CONTENT_EXPORT BrowserMainLoop {
   media::UserInputMonitor* user_input_monitor() const {
     return user_input_monitor_.get();
   }
+
+#if defined(OS_CHROMEOS)
+  KeyboardMicRegistration* keyboard_mic_registration() {
+    return &keyboard_mic_registration_;
+  }
+#endif
+
   discardable_memory::DiscardableSharedMemoryManager*
   discardable_shared_memory_manager() const {
     return discardable_shared_memory_manager_.get();
@@ -343,6 +354,10 @@ class CONTENT_EXPORT BrowserMainLoop {
   std::unique_ptr<media::AudioManager> audio_manager_;
   scoped_refptr<base::DeferredSequencedTaskRunner> audio_service_runner_;
   std::unique_ptr<media::AudioSystem> audio_system_;
+
+#if defined(OS_CHROMEOS)
+  KeyboardMicRegistration keyboard_mic_registration_;
+#endif
 
   std::unique_ptr<midi::MidiService> midi_service_;
 
