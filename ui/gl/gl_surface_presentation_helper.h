@@ -63,6 +63,7 @@ class GL_EXPORT GLSurfacePresentationHelper {
     Frame& operator=(Frame&& other);
     std::unique_ptr<GPUTimer> timer;
     GLSurface::PresentationCallback callback;
+    gfx::SwapResult result = gfx::SwapResult::SWAP_ACK;
   };
 
   // Check |pending_frames_| and run presentation callbacks.
