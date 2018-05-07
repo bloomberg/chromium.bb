@@ -206,6 +206,8 @@ const gfx::VectorIcon& LauncherContextMenu::GetMenuItemVectorIcon(
     case LAUNCH_TYPE_WINDOW:
       // Check items use a default icon in touchable and default context menus.
       return blank;
+    case LAUNCH_APP_SHORTCUT_FIRST:
+    case LAUNCH_APP_SHORTCUT_LAST:
     case MENU_ITEM_COUNT:
       NOTREACHED();
       return blank;

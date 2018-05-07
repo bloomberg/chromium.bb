@@ -61,6 +61,8 @@ TEST_F(ArcAppShortcutsRequestTest, Basic) {
   for (size_t i = 0; i < items->size(); ++i) {
     EXPECT_EQ(base::StringPrintf("ShortLabel %zu", i),
               base::UTF16ToUTF8(items->at(i).short_label));
+    EXPECT_EQ(base::StringPrintf("ShortcutId %zu", i),
+              items->at(i).shortcut_id);
   }
 }
 

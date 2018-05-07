@@ -5,8 +5,14 @@
 #ifndef CHROME_BROWSER_UI_ASH_LAUNCHER_ARC_LAUNCHER_CONTEXT_MENU_H_
 #define CHROME_BROWSER_UI_ASH_LAUNCHER_ARC_LAUNCHER_CONTEXT_MENU_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
+
+namespace arc {
+class ArcAppShortcutsMenuBuilder;
+}  // namespace arc
 
 // Class for context menu which is shown for ARC app in the shelf.
 class ArcLauncherContextMenu : public LauncherContextMenu {
@@ -18,9 +24,13 @@ class ArcLauncherContextMenu : public LauncherContextMenu {
 
   // LauncherContextMenu:
   void GetMenuModel(GetMenuModelCallback callback) override;
+  void ExecuteCommand(int command_id, int event_flags) override;
 
  private:
-  void BuildMenu(ui::SimpleMenuModel* menu_model);
+  void BuildMenu(std::unique_ptr<ui::SimpleMenuModel> menu_model,
+                 GetMenuModelCallback callback);
+
+  std::unique_ptr<arc::ArcAppShortcutsMenuBuilder> app_shortcuts_menu_builder_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcLauncherContextMenu);
 };
