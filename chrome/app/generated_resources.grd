@@ -8023,9 +8023,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
         <message name="IDS_SYNC_ACCOUNT_SYNCING_WITH_MANAGE_LINK" desc="The message that appears in the options dialog indicating that account is syncing along with a link to manage their data (where supported, or not possible through the application)">
           Manage your synced data on <ph name="BEGIN_LINK">&lt;a href="$1" target=&quot;_blank&quot;&gt;<ex>&lt;a href="$1" target=&quot;_blank&quot;&gt;</ex></ph>Google Dashboard<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
         </message>
-        <message name="IDS_SYNC_ACCOUNT_SYNCING_WITH_MANAGE_LINK_NEW" desc="The message that appears in the options dialog indicating that account is syncing along with a link to manage their data (where supported, or not possible through the application)">
-          Manage your synced data and devices on <ph name="BEGIN_LINK">&lt;a href="$1" target=&quot;_blank&quot;&gt;<ex>&lt;a href="$1" target=&quot;_blank&quot;&gt;</ex></ph>Chrome Dashboard<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
-        </message>
         <message name="IDS_SYNC_AUTHENTICATING_LABEL" desc="Label to display while the user is being authenticated to use sync.">
           Authenticating...
         </message>
